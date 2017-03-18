@@ -104,7 +104,7 @@ module alu
   // prepare operand b
   assign adder_op_b = adder_op_b_negate ? operand_b_neg : operand_b_i;
 
-  assign adder_result = adder_op_a + adder_op_b + adder_op_b_negate;
+  assign adder_result = adder_op_a + adder_op_b + { 31'b0 , adder_op_b_negate };
 
   ////////////////////////////////////////
   //  ____  _   _ ___ _____ _____       //
@@ -118,11 +118,11 @@ module alu
   logic        shift_left;         // should we shift left
   logic        shift_arithmetic;
 
-  logic [31:0] shift_amt_left;     // amount of shift, if to the left
-  logic [31:0] shift_amt;          // amount of shift, to the right
-  logic [31:0] shift_amt_int;      // amount of shift, used for the actual shifters
-  logic [31:0] shift_op_a;         // input of the shifter
-  logic [32:0] shift_op_a_ext;     // sign extension
+  logic [31:0] shift_amt_left;                                // amount of shift, if to the left
+  logic [31:0] shift_amt;                                     // amount of shift, to the right
+  logic [31:0] shift_amt_int;                                 // amount of shift, used for the actual shifters
+  logic [31:0] shift_op_a;                                    // input of the shifter
+  logic [32:0] shift_op_a_ext, shift_right_sign_extended;     // sign extension
   logic [31:0] shift_result;
   logic [31:0] shift_right_result;
   logic [31:0] shift_left_result;
@@ -141,11 +141,10 @@ module alu
   assign shift_op_a    = shift_left ? operand_a_rev : operand_a_i;
   assign shift_amt_int = shift_left ? shift_amt_left : shift_amt;
 
-  assign shift_amt_norm = {4{3'b000, bmask_b_i}};
-
   assign shift_op_a_ext = shift_arithmetic ? {shift_op_a[31], shift_op_a} : {1'b0, shift_op_a};
 
-  assign shift_right_result = $signed(shift_op_a_ext) >>> shift_amt_int[4:0];
+  assign shift_right_sign_extended = $signed(shift_op_a_ext) >>> shift_amt_int;
+  assign shift_right_result = shift_right_sign_extended[31:0];
 
   // bit reverse the shift_right_result for left shifts
   genvar       j;
