@@ -16,4 +16,6 @@ typedef enum logic [7:0] { add, sub, addu, subu, addr, subr, addur, subug,  // b
                      min, minu, max, maxu                             // min/max
                    } alu_op;
 
+typedef enum logic [1:0] { mode8, mode16 } vec_mode;
+
 endpackage

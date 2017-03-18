@@ -24,7 +24,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-
+import ariane_pkg::*;
 
 module alu
 (
@@ -36,7 +36,7 @@ module alu
   input  logic [31:0]              operand_b_i,
   input  logic [31:0]              operand_c_i,
 
-  input  logic [ 1:0]              vector_mode_i,
+  input  vec_mode                  vector_mode_i,
   input  logic [ 4:0]              bmask_a_i,
   input  logic [ 4:0]              bmask_b_i,
   input  logic [ 1:0]              imm_vec_ext_i,
@@ -95,11 +95,11 @@ module alu
   logic [31:0] adder_result;
   logic [35:0] adder_result_expanded;
 
-  assign adder_op_b_negate = (operator_i == alu_op.sub) || (operator_i == alu_op.subr) ||
-                             (operator_i == alu_op.subu) || (operator_i == alu_op.subr);
+  assign adder_op_b_negate = (operator_i == sub) || (operator_i == subr) ||
+                             (operator_i == subu) || (operator_i == subr);
 
   // prepare operand a
-  assign adder_op_a = (operator_i == alu_op.abs) ? operand_a_neg : operand_a_i;
+  assign adder_op_a = (operator_i == abs) ? operand_a_neg : operand_a_i;
 
   // prepare operand b
   assign adder_op_b = adder_op_b_negate ? operand_b_neg : operand_b_i;
@@ -133,9 +133,9 @@ module alu
   assign shift_amt_left[31: 0] = shift_amt[31: 0];
 
   // ALU_FL1 and ALU_CBL are used for the bit counting ops later
-  assign shift_left = (operator_i == alu_op.sll);
+  assign shift_left = (operator_i == sll);
 
-  assign shift_arithmetic = (operator_i == alu_op.sra);
+  assign shift_arithmetic = (operator_i == sra);
 
   // choose the bit reversed or the normal input for shift operand a
   assign shift_op_a    = shift_left ? operand_a_rev : operand_a_i;
@@ -181,20 +181,20 @@ module alu
     cmp_signed = 4'b0;
 
     unique case (operator_i)
-      alu_op.gts,
-      alu_op.ges,
-      alu_op.lts,
-      alu_op.les,
-      alu_op.slts,
-      alu_op.slets,
-      alu_op.min,
-      alu_op.max,
-      alu_op.abs,
-      alu_op.clip,
-      alu_op.clipu: begin
+      gts,
+      ges,
+      lts,
+      les,
+      slts,
+      slets,
+      min,
+      max,
+      abs,
+      clip,
+      clipu: begin
         case (vector_mode_i)
-          VEC_MODE8:  cmp_signed[3:0] = 4'b1111;
-          VEC_MODE16: cmp_signed[3:0] = 4'b1010;
+          mode8:  cmp_signed[3:0] = 4'b1111;
+          mode16: cmp_signed[3:0] = 4'b1010;
           default:     cmp_signed[3:0] = 4'b1000;
         endcase
       end
@@ -227,7 +227,7 @@ module alu
                                              | (is_equal_vec[1] & (is_greater_vec[0]))))))}};
 
     case(vector_mode_i)
-      VEC_MODE16:
+      mode16:
       begin
         is_equal[1:0]   = {2{is_equal_vec[0]   & is_equal_vec[1]}};
         is_equal[3:2]   = {2{is_equal_vec[2]   & is_equal_vec[3]}};
@@ -235,7 +235,7 @@ module alu
         is_greater[3:2] = {2{is_greater_vec[3] | (is_equal_vec[3] & is_greater_vec[2])}};
       end
 
-      VEC_MODE8:
+      mode8:
       begin
         is_equal[3:0]   = is_equal_vec[3:0];
         is_greater[3:0] = is_greater_vec[3:0];
@@ -253,15 +253,15 @@ module alu
     cmp_result = is_equal;
 
     unique case (operator_i)
-      alu_op.eq:            cmp_result = is_equal;
-      alu_op.ne:            cmp_result = ~is_equal;
-      alu_op.gts, alu_op.gtu:  cmp_result = is_greater;
-      alu_op.ges, alu_op.geu:  cmp_result = is_greater | is_equal;
-      alu_op.lts, alu_op.slts,
-      alu_op.ltu, alu_op.sltu: cmp_result = ~(is_greater | is_equal);
-      alu_op.slets,
-      alu_op.sletu,
-      alu_op.les, alu_op.alu_leu:  cmp_result = ~is_greater;
+      eq:            cmp_result = is_equal;
+      ne:            cmp_result = ~is_equal;
+      gts, gtu:  cmp_result = is_greater;
+      ges, geu:  cmp_result = is_greater | is_equal;
+      lts, slts,
+      ltu, sltu: cmp_result = ~(is_greater | is_equal);
+      slets,
+      sletu,
+      les, leu:  cmp_result = ~is_greater;
 
       default: ;
     endcase
@@ -284,30 +284,30 @@ module alu
 
     unique case (operator_i)
       // Standard Operations
-      alu_op.land:  result_o = operand_a_i & operand_b_i;
-      alu_op.lor:   result_o = operand_a_i | operand_b_i;
-      alu_op.lxor:  result_o = operand_a_i ^ operand_b_i;
+      land:  result_o = operand_a_i & operand_b_i;
+      lor:   result_o = operand_a_i | operand_b_i;
+      lxor:  result_o = operand_a_i ^ operand_b_i;
 
       // Shift Operations
-      alu_op.add,
-      alu_op.sub: result_o = adder_result;
+      add,
+      sub: result_o = adder_result;
 
-      alu_op.sll,
-      alu_op.srl, alu_op.sra:  result_o = shift_result;
+      sll,
+      srl, sra:  result_o = shift_result;
 
       // Comparison Operations
-      alu_op.eq,    alu_op.ne,
-      alu_op.gtu,   alu_op.geu,
-      alu_op.ltu,   alu_op.leu,
-      alu_op.gts,   alu_op.ges,
-      alu_op.lts,   alu_op.les: begin
+      eq,    ne,
+      gtu,   geu,
+      ltu,   leu,
+      gts,   ges,
+      lts,   les: begin
           result_o[31:24] = {8{cmp_result[3]}};
           result_o[23:16] = {8{cmp_result[2]}};
           result_o[15: 8] = {8{cmp_result[1]}};
           result_o[ 7: 0] = {8{cmp_result[0]}};
        end
-      alu_op.slts,  alu_op.sltu,
-      alu_op.slets, alu_op.sletu: result_o = {31'b0, comparison_result_o};
+      slts, sltu,
+      slets, sletu: result_o = {31'b0, comparison_result_o};
 
       default: $warning("instruction not supported in basic alu"); // default case to suppress unique warning
     endcase
