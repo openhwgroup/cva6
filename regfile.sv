@@ -27,7 +27,7 @@
 module regfile
 #(
     parameter ADDR_WIDTH    = 5,
-    parameter DATA_WIDTH    = 32
+    parameter DATA_WIDTH    = 64
 )
 (
     // Clock and Reset
