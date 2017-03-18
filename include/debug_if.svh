@@ -11,8 +11,8 @@ interface debug_if
       logic                  rvalid;
       logic [ADDR_WIDTH-1:0] addr;
       logic                  we;
-      logic [31: 0]          wdata;
-      logic [31: 0]          rdata;
+      logic [64: 0]          wdata;
+      logic [64: 0]          rdata;
       // Master Side
       //***************************************
       modport Master
