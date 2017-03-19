@@ -2,7 +2,7 @@
 // Date: 12/21/2016
 // Description: Driver of the memory interface
 
-class fu_if_monitor extends uvm_component #(fu_if_seq_item);
+class fu_if_monitor extends uvm_component;
 
     // UVM Factory Registration Macro
     `uvm_component_utils(fu_if_monitor)
@@ -37,24 +37,25 @@ class fu_if_monitor extends uvm_component #(fu_if_seq_item);
     endfunction
 
     task run_phase(uvm_phase phase);
+	
+	fu_if_seq_item cmd =  fu_if_seq_item::type_id::create("cmd");
+	fu_if_seq_item cloned_item;
 
         forever begin : cmd_loop
             longint result;
             // using clocking blocks this is possible
             @(negedge fu.pck)
 
-            fu_if_seq_item cmd;
-            fu_if_seq_item cloned_item;
 
-            cmd.operator = fu.sck.operator;
-            cmd.operand_a = fu.sck.operand_a;
-            cmd.operand_b = fu.sck.operand_b;
-            cmd.operand_c = fu.sck.operand_c;
-            cmd.result    = fu.sck.result;
+            cmd.operator  = fu.pck.operator;
+            cmd.operand_a = fu.pck.operand_a;
+            cmd.operand_b = fu.pck.operand_b;
+            cmd.operand_c = fu.pck.operand_c;
+            cmd.result    = fu.pck.result;
 
             $cast(cloned_item, cmd.clone());
             ap.write(cloned_item);
 
         end : cmd_loop
     endtask : run_phase
-endclass : fu_if_driver
+endclass : fu_if_monitor

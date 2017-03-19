@@ -29,7 +29,7 @@ interface fu_if #(parameter int OPERATOR_SIZE = 8, parameter int OPERAND_SIZE = 
     endclocking
     // FU interface configured in passive mode
     clocking pck @(posedge clk);
-        input operator, operand_a, operand_b, operand_c, ready;
+        input operator, operand_a, operand_b, operand_c, result, ready;
     endclocking
 
     modport master  (clocking mck);
