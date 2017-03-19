@@ -34,10 +34,10 @@ function void alu_env::build_phase(uvm_phase phase);
         `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration alu_env_config from uvm_config_db. Have you set() it?")
     // Conditional instantiation goes here
 
-    // Create agent configuration
+    // Create agent configuratio
     uvm_config_db #(fu_if_agent_config)::set(this, "m_fu_if_agent*",
                                            "fu_if_agent_config",
-                                           m_cfg.m_fu_if);
+                                           m_cfg.m_fu_if_agent_config);
     m_fu_if_agent = fu_if_agent::type_id::create("m_fu_if_agent", this);
 
     // Get sequencer

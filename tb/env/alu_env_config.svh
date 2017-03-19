@@ -7,9 +7,11 @@ class alu_env_config extends uvm_object;
     // UVM Factory Registration Macro
     `uvm_object_utils(alu_env_config)
 
-    // Instruction cache master interface can currently either be
-
     // a functional unit master interface
-    fu_if_agent_config m_fu_if;
+    virtual fu_if m_fu_if;
+
+    // an agent config
+
+    fu_if_agent_config m_fu_if_agent_config;
 
 endclass : alu_env_config

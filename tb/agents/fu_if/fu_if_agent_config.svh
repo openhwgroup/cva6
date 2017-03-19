@@ -9,7 +9,7 @@ class fu_if_agent_config extends uvm_object;
     `uvm_object_utils(fu_if_agent_config)
 
     // Virtual Interface
-    virtual fu_if mem;
+    virtual fu_if fu;
     //------------------------------------------
     // Data Members
     //------------------------------------------

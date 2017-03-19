@@ -38,6 +38,6 @@ endfunction : build_phase
 
 function void fu_if_agent::connect_phase(uvm_phase phase);
 
-    //m_driver.seq_item_port.connect(m_sequencer.seq_item_export);
+    m_driver.seq_item_port.connect(m_sequencer.seq_item_export);
     m_driver.m_cfg = m_cfg;
 endfunction: connect_phase

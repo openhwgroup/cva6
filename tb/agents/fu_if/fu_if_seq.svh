@@ -2,7 +2,7 @@
 // Date: 12/21/2016
 // Description: Memory interface sequence
 
-class fu_if_seq extends uvm_sequence;
+class fu_if_seq extends uvm_sequence #(fu_if_seq_item);
 
     // UVM Factory Registration Macro
     `uvm_object_utils(fu_if_seq)

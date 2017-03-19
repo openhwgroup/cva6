@@ -14,6 +14,14 @@ class fibonacci_sequence extends fu_if_seq;
 
       command = fu_if_seq_item::type_id::create("command");
 
+      // reset 
+      start_item(command);
+      command.operand_a = 0;
+      command.operand_b = 0;
+      command.operand_c = 0;
+      command.operator = 7'b00;
+      finish_item(command);
+
       `uvm_info("FIBONACCI", " Fib(01) = 00", UVM_MEDIUM);
       `uvm_info("FIBONACCI", " Fib(02) = 01", UVM_MEDIUM);
       for(int ff = 3; ff<=14; ff++) begin

@@ -41,8 +41,9 @@ task fu_if_driver::run_phase(uvm_phase phase);
         fu.sck.operand_c <= cmd.operand_c;
         fu.sck.operator <= cmd.operator;
 
-        cmd.result = fu.result;
-        cmd.compare_result = fu.comparison_result;
+        @(negedge fu.sck) 
+	cmd.result = fu.sck.result;
+        cmd.compare_result = fu.sck.comparison_result;
 
         seq_item_port.item_done();
 
@@ -52,4 +53,6 @@ endtask : run_phase
 function void fu_if_driver::build_phase(uvm_phase phase);
   if (!uvm_config_db #(fu_if_agent_config)::get(this, "", "fu_if_agent_config", m_cfg) )
      `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration fu_if_agent_config from uvm_config_db. Have you set() it?")
+
+  fu = m_cfg.fu;  
 endfunction: build_phase

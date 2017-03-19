@@ -25,7 +25,7 @@ list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
 # Build the TB and module using QuestaSim
 build:
 	# Create the library
-	rm -rf ${library}
+#	rm -rf ${library}
 	vlib${questa_version} ${library}
 	# Compile source files
 	# Compile agents
@@ -39,7 +39,7 @@ build:
 # Run the specified test case
 sim:
 	# vsim${questa_version} ${top_level}_optimized -c -do "run -a"
-	vsim${questa_version} ${top_level}_optimized  -c +UVM_TESTNAME=${test_case} -do "run -a"
+	vsim${questa_version} ${top_level}_optimized +UVM_TESTNAME=${test_case} -do "run -a"
 
 # User Verilator to lint the target
 lint:

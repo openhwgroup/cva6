@@ -3,7 +3,7 @@
 // Description: Sequencer
 
 
-class fu_if_sequencer extends uvm_sequencer;
+class fu_if_sequencer extends uvm_sequencer #(fu_if_seq_item);
 
     // UVM Factory Registration Macro
     `uvm_component_utils(fu_if_sequencer)

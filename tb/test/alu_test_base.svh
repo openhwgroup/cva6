@@ -20,6 +20,7 @@ class alu_test_base extends uvm_test;
     alu_env_config m_env_cfg;
     // environment
     alu_env m_env;
+    fu_if_sequencer sequencer_h;
 
     // ---------------------
     // Agent configuration
@@ -34,7 +35,7 @@ class alu_test_base extends uvm_test;
     // Standard UVM Methods:
     extern function new(string name = "alu_test_base", uvm_component parent = null);
     extern function void build_phase(uvm_phase phase);
-
+    extern function void end_of_elaboration_phase(uvm_phase phase);
 endclass : alu_test_base
 
 function alu_test_base::new(string name = "alu_test_base", uvm_component parent = null);
@@ -50,16 +51,20 @@ function void alu_test_base::build_phase(uvm_phase phase);
     // create agent configurations and assign interfaces
     // create agent memory master configuration
     m_cfg = fu_if_agent_config::type_id::create("m_cfg");
-
+    m_env_cfg.m_fu_if_agent_config = m_cfg;
     // Get Virtual Interfaces
     // get master interface DB
-    if (!uvm_config_db #(virtual fu_if)::get(this, "", "fu_vif", m_cfg.mem))
+    if (!uvm_config_db #(virtual fu_if)::get(this, "", "fu_vif", m_cfg.fu))
         `uvm_fatal("VIF CONFIG", "Cannot get() interface fu_vif from uvm_config_db. Have you set() it?")
-    m_env_cfg.m_fu_if = m_cfg;
+    m_env_cfg.m_fu_if = m_cfg.fu;
 
 
     // create environment
     uvm_config_db #(alu_env_config)::set(this, "*", "alu_env_config", m_env_cfg);
     m_env = alu_env::type_id::create("m_env", this);
 
+endfunction
+
+function void alu_test_base::end_of_elaboration_phase(uvm_phase phase);
+    sequencer_h = m_env.m_fu_if_sequencer;
 endfunction

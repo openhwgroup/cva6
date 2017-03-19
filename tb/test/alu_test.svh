@@ -7,6 +7,8 @@ class alu_test extends alu_test_base;
     // UVM Factory Registration Macro
     `uvm_component_utils(alu_test)
 
+    fibonacci_sequence fibonacci;
+
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -28,9 +30,9 @@ endfunction
 
 task alu_test::run_phase(uvm_phase phase);
     phase.raise_objection(this, "alu_test");
-    
-    //fibonacci_sequence fibonacci_seq = fibonacci_sequence::type_id::create("fibonacci_sequence");
-    ////fibonacci_seq.start(m_env.m_fu_if_sequencer);
+    //fibonacci_sequence fibonacci;
+    fibonacci = new("fibonacci");
+    fibonacci.start(sequencer_h);    
     // Testlogic goes here
     #100ns;
     
