@@ -1,4 +1,5 @@
-class fibonacci_sequence extends uvm_sequence #(sequence_item);
+class fibonacci_sequence extends fu_if_seq;
+
    `uvm_object_utils(fibonacci_sequence);
 
    function new(string name = "fibonacci");
@@ -9,7 +10,7 @@ class fibonacci_sequence extends uvm_sequence #(sequence_item);
    task body();
       byte unsigned n_minus_2=0;
       byte unsigned n_minus_1=1;
-      sequence_item command;
+      fu_if_seq_item command;
 
       command = fu_if_seq_item::type_id::create("command");
 
@@ -17,9 +18,9 @@ class fibonacci_sequence extends uvm_sequence #(sequence_item);
       `uvm_info("FIBONACCI", " Fib(02) = 01", UVM_MEDIUM);
       for(int ff = 3; ff<=14; ff++) begin
        start_item(command);
-       command.operandA = n_minus_2;
-       command.operandB = n_minus_1;
-       command.op = 7'b00;
+       command.operand_a = n_minus_2;
+       command.operand_b = n_minus_1;
+       command.operator = 7'b00;
 
        finish_item(command);
 

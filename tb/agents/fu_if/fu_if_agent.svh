@@ -32,12 +32,12 @@ function void fu_if_agent::build_phase(uvm_phase phase);
      `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration apb_agent_config from uvm_config_db. Have you set() it?")
 
     m_driver = fu_if_driver::type_id::create("m_driver", this);
-    m_sequencer = spi_sequencer::type_id::create("m_sequencer", this);
+    m_sequencer = fu_if_sequencer::type_id::create("m_sequencer", this);
 
 endfunction : build_phase
 
 function void fu_if_agent::connect_phase(uvm_phase phase);
 
-    m_driver.seq_item_port.connect(m_sequencer.seq_item_export);
+    //m_driver.seq_item_port.connect(m_sequencer.seq_item_export);
     m_driver.m_cfg = m_cfg;
 endfunction: connect_phase

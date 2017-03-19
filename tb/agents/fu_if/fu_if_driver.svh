@@ -2,7 +2,7 @@
 // Date: 12/21/2016
 // Description: Driver of the memory interface
 
-class fu_if_driver extends uvm_driver #(sequence_item);
+class fu_if_driver extends uvm_driver #(fu_if_seq_item);
 
     // UVM Factory Registration Macro
     `uvm_component_utils(fu_if_driver)
@@ -28,21 +28,21 @@ function fu_if_driver::new(string name = "fu_if_driver", uvm_component parent = 
 endfunction
 
 task fu_if_driver::run_phase(uvm_phase phase);
-    sequence_item cmd;
+    fu_if_seq_item cmd;
 
     forever begin : cmd_loop
         shortint unsigned result;
         seq_item_port.get_next_item(cmd);
 
         // using clocking blocks this is possible
-        @(fu.mck)
-        fu.mclk.operandA <= cmd.operandA;
-        fu.mclk.operandB <= cmd.operandB;
-        fu.mclk.operandC <= cmd.operandC;
-        fu.mclk.operator <= cmd.operator;
+        @(posedge fu.sck)
+        fu.sck.operand_a <= cmd.operand_a;
+        fu.sck.operand_b <= cmd.operand_b;
+        fu.sck.operand_c <= cmd.operand_c;
+        fu.sck.operator <= cmd.operator;
 
-        cmd.result <= fu.mclk.result;
-        cmd.compare_result <= fu.mclk.compare_result;
+        cmd.result = fu.result;
+        cmd.compare_result = fu.comparison_result;
 
         seq_item_port.item_done();
 

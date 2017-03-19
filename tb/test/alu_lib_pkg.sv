@@ -8,6 +8,8 @@ package alu_lib_pkg;
     // Import the memory interface agent
     import fu_if_agent_pkg::*;
     import alu_env_pkg::*;
+    import alu_sequence_pkg::*;
+    
     // Test based includes like base test class and specializations of it
     // ----------------
     // Base test class
@@ -18,4 +20,5 @@ package alu_lib_pkg;
     // -------------------
     // plain randomized test
     `include "alu_test.svh"
+
 endpackage
