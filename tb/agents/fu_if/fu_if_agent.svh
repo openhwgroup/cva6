@@ -13,6 +13,7 @@ class fu_if_agent extends uvm_component;
     //------------------------------------------
     uvm_analysis_port #(fu_if_seq_item) ap;
     fu_if_driver m_driver;
+    fu_if_monitor m_monitor;
     fu_if_sequencer m_sequencer;
     //------------------------------------------
     // Methods
@@ -33,11 +34,14 @@ function void fu_if_agent::build_phase(uvm_phase phase);
 
     m_driver = fu_if_driver::type_id::create("m_driver", this);
     m_sequencer = fu_if_sequencer::type_id::create("m_sequencer", this);
-
+    m_monitor = fu_if_monitor::type_id::create("m_monitor", this);
 endfunction : build_phase
 
 function void fu_if_agent::connect_phase(uvm_phase phase);
 
     m_driver.seq_item_port.connect(m_sequencer.seq_item_export);
+    // m_monitor.ap.connect(m_cov_monitor.analysis_port)
     m_driver.m_cfg = m_cfg;
+    m_monitor.m_cfg = m_cfg;
+
 endfunction: connect_phase

@@ -17,7 +17,7 @@ package fu_if_agent_pkg;
     // Coverage monitor
     // `include "fu_if_coverage_monitor.svh"
     // Monitor that includes analysis port
-    // `include "fu_if_monitor.svh"
+    `include "fu_if_monitor.svh"
     // Sequencer
     `include "fu_if_sequencer.svh"
     // Main agent
