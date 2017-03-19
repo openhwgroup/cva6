@@ -9,12 +9,12 @@ top_level = alu_tb
 # path to agents
 agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv
 # this list contains the standalone components
-src = include/ariane_pkg.svh alu.sv tb/alu_tb.sv
+src = include/ariane_pkg.svh alu.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv tb/alu_tb.sv
 
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
 # Test case to run
-test_case = alu_test_base
+test_case = alu_test
 # QuestaSim Version
 questa_version = -10.5c
 
@@ -38,8 +38,8 @@ build:
 	# vopt${questa_version} instr_cache_top_dut -o instr_cache_top_dut_optimized +acc -check_synthesis
 # Run the specified test case
 sim:
-	vsim${questa_version} ${top_level}_optimized -c -do "run -a"
-	# vsim${questa_version} ${top_level}_optimized  instr_cache_top_dut_optimized -c +UVM_TESTNAME=${test_case} -do "run -a"
+	# vsim${questa_version} ${top_level}_optimized -c -do "run -a"
+	vsim${questa_version} ${top_level}_optimized  -c +UVM_TESTNAME=${test_case} -do "run -a"
 
 # User Verilator to lint the target
 lint:

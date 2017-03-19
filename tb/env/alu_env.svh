@@ -10,7 +10,7 @@ class alu_env extends uvm_env;
     //------------------------------------------
     // Data Members
     //------------------------------------------
-    mem_if_agent m_fu_if_agent;
+    fu_if_agent m_fu_if_agent;
 
     alu_env_config m_cfg;
 

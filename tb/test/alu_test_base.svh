@@ -26,14 +26,7 @@ class alu_test_base extends uvm_test;
     // ---------------------
     // Instruction cache master interface can currently either be
     // a memory master interface
-    mem_if_agent_config m_master_cfg;
-    // an AXI interface
-    // axi_if_agent_config m_axi_if_master;
-    // an AHB interface
-    // ahb_if_agent_config m_ahb_if_master;
-
-    // slave memory interface config
-    mem_if_agent_config m_slave_cfg;
+    fu_if_agent_config m_cfg;
 
     //------------------------------------------
     // Methods
@@ -60,7 +53,7 @@ function void alu_test_base::build_phase(uvm_phase phase);
 
     // Get Virtual Interfaces
     // get master interface DB
-    if (!uvm_config_db #(virtual mem_if)::get(this, "", "fu_vif", m_cfg.mem))
+    if (!uvm_config_db #(virtual fu_if)::get(this, "", "fu_vif", m_cfg.mem))
         `uvm_fatal("VIF CONFIG", "Cannot get() interface fu_vif from uvm_config_db. Have you set() it?")
     m_env_cfg.m_fu_if = m_cfg;
 

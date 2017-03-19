@@ -54,7 +54,7 @@ function void fu_if_seq_item::do_copy(uvm_object rhs);
   operand_c = rhs_.operand_c;
 
   result = rhs_.result;
-  compare_result = rhs.compare_result;
+  compare_result = rhs_.compare_result;
 
 endfunction:do_copy
 
@@ -79,7 +79,7 @@ function string fu_if_seq_item::convert2string();
 
   $sformat(s, "%s\n", super.convert2string());
   // Convert to string function reusing s:
-  $sformat(s, "%s\n addr\t%0h\n data\t%0h\n we\t%0b\n delay\t%0d\n", s, addr, data, we, delay);
+  $sformat(s, "%s\n operator\t%0h\n operandA\t%0h\n operandB\t%0b\n operandC\t%0h\n", s, operator, operand_a, operand_b, operand_c);
   return s;
 
 endfunction:convert2string
