@@ -28,6 +28,8 @@ endfunction
 
 task alu_test::run_phase(uvm_phase phase);
     phase.raise_objection(this, "alu_test");
+    fibonacci_sequence fibonacci_seq = fibonacci_sequence::type_id::create("fibonacci_sequence");
+    fibonacci_seq.start(m_env.m_fu_if_sequencer);
     // Testlogic goes here
     #100ns;
     phase.drop_objection(this, "alu_test");

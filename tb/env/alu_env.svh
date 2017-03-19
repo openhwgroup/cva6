@@ -11,7 +11,7 @@ class alu_env extends uvm_env;
     // Data Members
     //------------------------------------------
     fu_if_agent m_fu_if_agent;
-
+    fu_if_sequencer m_fu_if_sequencer;
     alu_env_config m_cfg;
 
     //------------------------------------------
@@ -40,11 +40,12 @@ function void alu_env::build_phase(uvm_phase phase);
                                            m_cfg.m_fu_if);
     m_fu_if_agent = fu_if_agent::type_id::create("m_fu_if_agent", this);
 
-
+    // Get sequencer
+    m_fu_if_sequencer = fu_if_sequencer::type_id::create("m_fu_if_sequencer", this);
 
 endfunction:build_phase
 
 function void alu_env::connect_phase(uvm_phase phase);
-
+   m_fu_if_sequencer = m_fu_if_agent.m_sequencer;
 
 endfunction: connect_phase
