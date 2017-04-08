@@ -28,7 +28,7 @@ module scoreboard #(
     // instruction to put on top of scoreboard e.g.: top pointer
     // we can always put this instruction to the top unless we signal with asserted full_o
     input  dtype                                   decoded_instr_i,
-    input  logic                                   decoded_intr_valid_i,
+    input  logic                                   decoded_instr_valid_i,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
     output dtype                                   issue_instr_o,
@@ -53,8 +53,8 @@ logic                          empty;
 // full and empty signaling: signal that we are not able to take new instructions
 // track pointer overflow
 assign pointer_overflow = (commit_pointer_q <= top_pointer_q) ? 1'b0 : 1'b1;
-assign full_o           = (pointer_overflow) ? commit_pointer_q == top_pointer_q : 1'b0;
-assign empty            = (pointer_overflow) ? 1'b0 : commit_pointer_q == top_pointer_q;
+assign full_o           = (pointer_overflow) ? (commit_pointer_q == top_pointer_q) : 1'b0;
+assign empty            = (pointer_overflow) ? 1'b0 : (commit_pointer_q == top_pointer_q);
 
 // rd_clobber output: output currently clobbered destination registers
 // but only between commit and issue pointer
@@ -129,7 +129,7 @@ always_latch begin : push_instruction_and_wb
     // default assignment
     top_pointer_n = top_pointer_q;
     // if we are not full we can push a new instruction
-    if (~full_o && decoded_intr_valid_i) begin
+    if (~full_o && decoded_instr_valid_i) begin
         mem[$unsigned(top_pointer_q)] = decoded_instr_i;
         top_pointer_n = top_pointer_q + 1;
     end
@@ -145,6 +145,11 @@ always_latch begin : push_instruction_and_wb
             end
         end
     end
+
+    // flush signal
+    if (flush_i)
+        mem <= '{default: 0};
+
 end
 
 // issue instruction: advance the issue pointer
@@ -153,7 +158,7 @@ always_comb begin : issue_instruction
     // provide a combinatorial path in case the scoreboard is empty
     if (empty) begin
         issue_instr_o       = decoded_instr_i;
-        issue_instr_valid_o = decoded_intr_valid_i;
+        issue_instr_valid_o = decoded_instr_valid_i;
     // if not empty go to scoreboard and get the instruction at the issue pointer
     end else begin
         issue_instr_o = mem[$unsigned(issue_pointer_q)];
@@ -172,7 +177,7 @@ end
 always_comb begin: commit_instruction
     commit_pointer_n = commit_pointer_q;
     // we can always safely output the instruction at which the commit pointer points
-    // since the scoreboard entry has a valid bit which the commit unit needs to check anyway
+    // since the scoreboard entry has a valid bit which the commit stage needs to check anyway
     commit_instr_o   = mem[commit_pointer_q];
     if (commit_ready_i) begin
         commit_pointer_n = commit_pointer_q + 1;
