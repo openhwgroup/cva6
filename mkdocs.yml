@@ -1,0 +1,8 @@
+site_name: Ariane
+pages:
+  - Home: 'index.md'
+  - Architecture: 'architecture.md'
+  - Block Details: 'block_details.md'
+  - Ideas: 'ideas.md'
+  - Test Bench: 'tb.md'
+theme: 'material'

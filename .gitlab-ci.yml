@@ -1,0 +1,6 @@
+pages:
+  script:
+    - mkdocs build
+  artifacts:
+    paths:
+      - site
