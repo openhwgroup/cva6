@@ -8,8 +8,6 @@ The processor has 5-stages:
 PC gen is responsible for generating the next program counter. All program counters are logical addressed. If the logical to physical mapping changes a fence instruction should flush the pipeline, caches (?) and TLB.
 This stage contains speculation on the next branch target as well as the information if the branch target is taken or not. In addition, it provides ports to the branch history table (BHT) and branch target buffer (BTB).
 
-<!-- If the ID stage decodes a jump and link instruction it sets PC+4 in the RAS. If it the decode stage decodes a return instruction the decode stage kills the program counter in the IF stage and the return address stack is popped accordingly.
- -->
 If the branch target buffer decodes a certain PC as a jump the BHT decides if the branch is taken or not.
 Because of the various state-full memory structures this stage is split into two pipeline stages. It also provides a handshaking signal to the decode stage to stall the pipeline if this should be necessary (back-pressure).
 
@@ -39,36 +37,104 @@ The instruction queue is part of the IF stage. Its purpose is to decouple the in
 
 ### Interface
 
-|      **Signal**     | **Direction** |            **Description**             |         **Category**        |
-| ------------------- | ------------- | -------------------------------------- | --------------------------- |
-| epc_i               | Input         | EPC from CSR registers                 | CSR Regs                    |
-| ecall_i             | Input         | Ecall request from WB                  | WB/Commit                   |
-| mtvec_i             | Input         | Base of machine trap vector            | CSR Regs                    |
-| stvec_i             | Input         | Base of supervisor trap vector         | CSR Regs                    |
-| epc_wb_i            | Input         | EPC Writeback                          | WB/Commit                   |
-| epc_wb_valid_i      | Input         | EPC from WB is valid                   | WB/Commit                   |
-|                     |               |                                        |                             |
-| flush_s1_i          | Input         | Flush PC Gen stage                     | Control                     |
-| flush_s2_i          | Input         | Flush fetch stage                      | Control                     |
-| bp_pc_i             | Input         | Branch prediction PC, from EX stage    | EX -- Update BP/take branch |
-| bp_misspredict_i    | Input         | Branch was misspredicted               | EX -- Update BP/take branch |
-| bp_target_address_i | Input         | Target address of miss-predicted  jump | EX -- Update BP/take branch |
-| instr_req_o         | Output        | Request to ICache                      | ICache                      |
-| instr_addr_o        | Output        | Instruction address                    | ICache                      |
-| instr_rdata_i       | Input         | Instruction data in                    | ICache                      |
-|                     |               |                                        |                             |
-| dbg_addr_i          | Input         | Fetch address from debug               | Debug                       |
-| instr_valid_o       | Output        | Instruction is valid                   | To ID                       |
-| instr_rdata_o       | Output        | Instruction                            | To ID                       |
-| pc_o                | Output        | PC of instruction                      | To ID                       |
-| is_spec_branch_o    | Output        | Is a speculative branch instruction    | To ID                       |
-| spec_branch_pc_o    | Output        | Speculated branch target               | To ID                       |
-| busy_o              | Output        | If is busy                             | To ID                       |
-| ready_i             | Input         | ID is ready                            | From ID                     |
+|      **Signal**     | **Direction** |                                         **Description**                                         |         **Category**        |
+|---------------------|---------------|-------------------------------------------------------------------------------------------------|-----------------------------|
+| epc_i               | Input         | EPC from CSR registers, depending on the privilege level the epc points to a different address. | CSR Regs                    |
+| ecall_i             | Input         | Ecall request from WB                                                                           | WB/Commit                   |
+| epc_wb_i            | Input         | EPC Writeback                                                                                   | WB/Commit                   |
+| epc_wb_valid_i      | Input         | EPC from WB is valid                                                                            | WB/Commit                   |
+| flush_s1_i          | Input         | Flush PC Gen stage                                                                              | Control                     |
+| flush_s2_i          | Input         | Flush fetch stage                                                                               | Control                     |
+| bp_pc_i             | Input         | Branch prediction PC, from EX stage                                                             | EX -- Update BP/take branch |
+| bp_misspredict_i    | Input         | Branch was misspredicted                                                                        | EX -- Update BP/take branch |
+| bp_target_address_i | Input         | Target address of miss-predicted  jump                                                          | EX -- Update BP/take branch |
+| instr_req_o         | Output        | Request to ICache                                                                               | ICache                      |
+| instr_addr_o        | Output        | Instruction address                                                                             | ICache                      |
+| instr_rdata_i       | Input         | Instruction data in                                                                             | ICache                      |
+| dbg_addr_i          | Input         | Fetch address from debug                                                                        | Debug                       |
+| instr_valid_o       | Output        | Instruction is valid                                                                            | To ID                       |
+| instr_rdata_o       | Output        | Instruction                                                                                     | To ID                       |
+| pc_o                | Output        | PC of instruction                                                                               | To ID                       |
+| is_spec_branch_o    | Output        | Is a speculative branch instruction                                                             | To ID                       |
+| spec_branch_pc_o    | Output        | Speculated branch target                                                                        | To ID                       |
+| busy_o              | Output        | If is busy                                                                                      | To ID                       |
+| ready_i             | Input         | ID is ready                                                                                     | From ID                     |
 
 ## Instruction Decode (ID)
 
 The ID stage contains the instruction decode logic (including the planned compressed decoder) as well as the register files (CSR, floating point and regular register file). The decoded instruction is committed to the scoreboard. The scoreboard decides which instruction it can issues next to the execute stage.
+
+### Decoder
+
+The decoder's purpose is to expand the 32 bit incoming instruction stream to set the right values in the scoreboard, e.g.: which functional unit to activate, setting wright path and reading the destination, src1 and src2 register.
+
+|   **Signal**   | **Direction** |                              **Description**                              |  **Category** |
+|----------------|---------------|---------------------------------------------------------------------------|---------------|
+| instr_i        | Input         | 32 bit instruction to decode                                              | From IF       |
+| illegal_insn_o | Output        | decoded an illegal instruction                                            | Exception     |
+| ebrk_insn_o    | Output        | Ebreak instruction encountered                                            | Exception     |
+| mret_insn_o    | Output        | return from machine exception instruction encountered, as a hint to IF    | Exception     |
+| sret_insn_o    | Output        | return from supervisor exception instruction encountered, as a hint to IF | Exception     |
+| uret_insn_o    | Output        | return from user exception instruction encountered, as a hint to IF       | Exception     |
+| ecall_insn_o   | Output        | environment call instruction encountered, as a hint to IF                 | Exception     |
+| fu_o           | Output        | Which functional unit the scoreboard needs to activate                    | To scoreboard |
+| op_o           | Output        | Operation the FU should perform                                           | To scoreboard |
+| rd_o           | Output        | Destination register                                                      | To scoreboard |
+| rs1_o          | Output        | Source register 1                                                         | To scoreboard |
+| rs2_o          | Output        | Source register 2                                                         | To scoreboard |
+| wfi_o          | Output        | Wait for interrupt                                                        | To IF         |
+
+
+The current privilege level is not checked in the decoder since there could be an operation in progress that sets the privilege level to the appropriate level.
+### Scoreboard
+
+The scoreboard's purpose was described in detail in the architecture section.
+
+![Scoreboad](./fig/scoreboard.png)
+
+The field functional unit can be of the following types:
+
+- CSR: Modify the CSR register using OP, OP can be of type:
+    + MRET (check the current privilege level against the mret instruction, are we allowed to execute it?)
+    + SRET (same as above but with sret)
+    + URET (same as above but with uret)
+    + ECALL (make an environment call)
+    + WRITE (writing a CSR, we need to flush the whole pipeline after a write)
+    + READ (we can simply continue with the execution, the worst that could happen is an access fault if we do not have the right privilege level)
+    + SET (atomic set, flush the whole pipeline)
+    + CLEAR (atomic clear, flush the whole pipeline)
+- ALU: Use the ALU to perform OP
+    + ADD, SUB, etc. all arithmetic instructions. ALU always writes to the register file
+- LSU: Use the LSU to perform OP
+    + LD, SD, LBU, etc. Loads are writing to the register file, stores are committed as soon as the store address and store data is known.
+- MULT: Use the Multiplier to perform OP
+    + MULT, DIV, etc. all multiplier instructions are writing to the register file.
+
+#### Interface
+
+|     **Signal**    | **Direction** |                                             **Description**                                             |     **Category**    |
+|-------------------|---------------|---------------------------------------------------------------------------------------------------------|---------------------|
+| flush_i           | Input         | Flush the scoreboard, there was an architectural state change that needs to invalidate the whole buffer | From controller     |
+| ready_o           | Output        | The scoreboard is ready to accept new instructions.                                                     | To ID               |
+| valid_i           | Input         | The instruction is valid                                                                                | From ID             |
+| imm_i             | Input         | Immediate field in                                                                                      | From ID             |
+| rs1_i             | Input         | Source register 1                                                                                       | From ID             |
+| rs2_i             | Input         | Source register 2                                                                                       | From ID             |
+| rd_i              | Input         | Destination register                                                                                    | From ID             |
+| fu_i              | Input         | Functional unit needed                                                                                  | From ID             |
+| op_i              | Input         | Operation to perform                                                                                    | From ID             |
+| exception_i       | Input         | Exception                                                                                               | From ID             |
+| exception_valid_i | Input         | Exception is valid                                                                                      | From ID             |
+| epc_i             | Input         | Exception pointer                                                                                       | From ID             |
+| FU_ALU_o          | Output        | Signals to ALU e.g.: operation to perform etc.                                                          | To ALU              |
+| FU_ALU_i          | Input         | Signals from ALU e.g.: finished operation, result                                                       | From ALU            |
+| FU_MULT_o         | Output        | Signals to Multiplier                                                                                   | To Mult             |
+| FU_MULT_i         | Input         | Signals from Multiplier                                                                                 | From Mult           |
+| FU_LSU_o          | Output        | Signals to LSU                                                                                          | To LSU              |
+| FU_LSU_i          | Input         | Signals from LSU                                                                                        | From LSU            |
+| Regfile           | Inout         | Signals from and to register file                                                                       | From/To regfile     |
+| CSR               | Inout         | Signals from and to CSR register file                                                                   | From/To CSR regfile |
+|                   |               |                                                                                                         |                     |
 
 ### Compressed Decoder
 The compressed decoders purpose is to expand a compressed instruction (16 bit) to its 32 bit equivalent.
@@ -98,7 +164,7 @@ The writeback stage is the single commit point in the whole architecture. Everyt
 The CSR register file contains all registers which are not directly related to arithmetic instructions. It contains the following registers supervisor registers:
 
 | **Register** | **Address** |                      **Description**                      |
-| ------------ | ----------- | --------------------------------------------------------- |
+|--------------|-------------|-----------------------------------------------------------|
 | sstatus      | 0x100       | Supervisor status register                                |
 | sedeleg      | 0x102       | Supervisor exception delegation register (maybe external) |
 | sideleg      | 0x103       | Supervisor interrupt delegation register (maybe external) |
@@ -110,6 +176,10 @@ The CSR register file contains all registers which are not directly related to a
 | stval        | 0x143       | Supervisor bad address or instruction                     |
 | sip          | 0x144       | Supervisor interrupt pending (maybe external)             |
 | sptbr        | 0x180       | Page-table base register                                  |
+| tlbflush     | ?           | Flush TLB                                                 |
+| cflush       | ?           | Flush Cache                                               |
+
+
 
 And the following machine mode CSR registers:
 
@@ -132,6 +202,8 @@ And the following machine mode CSR registers:
 | mcycle              | 0xB00          | Machine cycle counter                                  |
 | minstret            | 0xB02          | Machine instruction-retired counter                    |
 | Performance Counter | 0xB03 -- 0xB9F | Machine performance-monitoring counter                 |
+
+We need to be careful when altering some of the register. Some of those registers would potentially lead to different behavior (e.g.: mstatus by enabling address translation).
 
 ### Interface
 

@@ -21,16 +21,19 @@ TODO: Detailed Bookkeeping
 The scoreboard has the following entries:
 
 |            **Name**           | **Abbr.** |                                           **Description**                                           |
-| ----------------------------- | --------- | --------------------------------------------------------------------------------------------------- |
+|-------------------------------|-----------|-----------------------------------------------------------------------------------------------------|
 | Program Counter               | PC        | Program counter of instruction                                                                      |
 | Functional Unit               | FU        | Which type of  functional unit this instruction is going to need                                    |
-| FU Result                     | FUR       | Which functional unit the result is coming from                                                     |
 | Operation                     | OP        | Which operation the functional unit is going to perform on it                                       |
 | Destination Register          | RD        | Destination register address of instruction                                                         |
 | Value of destination register | VAL(RD)   | Result written by the functional unit. The result in here is valid only if the finished bit is set. |
 | Immediate                     | IMM       | Immediate Field                                                                                     |
 | Source Register 1             | RS1       | First source registers address of instruction                                                       |
+| FU Result RS 1                | FURS1     | Which functional unit the RS1 is coming from                                                        |
+| FU Result RS 1 Ready          | FURS1R    | RS1 is ready                                                                                        |
 | Source Register 2             | RS2       | Second source registers address of instruction                                                      |
+| FU Result RS 2                | FURS2     | Which functional unit the RS1 is coming from                                                        |
+| FU Result RS 2 Ready          | FURS2R    | RS2 is ready                                                                                        |
 | In Flight                     | IF        | Set to one if the instruction is currently being processed                                          |
 | Valid                         | VALID     | The instruction has been executed and the result is valid                                           |
 | Exception Valid               | ISEXCPT   | Set if an exception occurred.                                                                       |
