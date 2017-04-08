@@ -54,6 +54,7 @@ typedef enum logic [7:0]      { add, sub, addu, subu, addr, subr, addur, subug, 
 typedef enum logic [1:0]      { mode8, mode16 } vec_mode;
 
 typedef struct packed {
+    logic [63:0]    pc;
     fu_t            fu;
     alu_op          op;
     logic [4:0]     rs1;
