@@ -5,4 +5,4 @@ pages:
   - Block Details: 'block_details.md'
   - Ideas: 'ideas.md'
   - Test Bench: 'tb.md'
-theme: 'material'
+theme: 'flatly'
