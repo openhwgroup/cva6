@@ -148,7 +148,7 @@ always_latch begin : push_instruction_and_wb
 
     // flush signal
     if (flush_i)
-        mem <= '{default: 0};
+        mem = '{default: 0};
 
 end
 
