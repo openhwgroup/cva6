@@ -1,3 +1,5 @@
+[![build status](https://iis-git.ee.ethz.ch/floce/ariane/badges/initial-dev/build.svg)](https://iis-git.ee.ethz.ch/floce/ariane/commits/initial-dev)
+
 # Ariane RISC-V CPU
 
 ![](docs/fig/ariane_overview.png)
