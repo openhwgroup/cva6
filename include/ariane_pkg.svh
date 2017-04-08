@@ -1,3 +1,10 @@
+/* File:   ariane_pkg.svh
+ * Author: Florian Zaruba <zarubaf@ethz.ch>
+ * Date:   8.4.2017
+ *
+ * Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ */
 package ariane_pkg;
 
 // ---------------

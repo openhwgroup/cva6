@@ -1,8 +1,10 @@
 /* Ariane Top-level module
+ * File:   scoreboard.sv
+ * Author: Florian Zaruba <zarubaf@ethz.ch>
+ * Date:   19.3.2017
  *
- * Author: Florian Zaruba
- * Date: 19.3.2017
- *
+ * Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
  */
 import ariane_pkg::*;
 
