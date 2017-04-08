@@ -115,7 +115,7 @@ The field functional unit can be of the following types:
 |       **Signal**      | **Direction** |                                 **Description**                                  |      **Category**      |
 |-----------------------|---------------|----------------------------------------------------------------------------------|------------------------|
 | flush_i               | Input         | Flush Scoreboard                                                                 | Control                |
-| full_o                | Output        | Scoreboard is full                                                     | Control                |
+| full_o                | Output        | Scoreboard is full                                                               | Control                |
 | rd_clobber_o          | Output        | Used destination registers, includes the FU that is going to write this register | To issue/read operands |
 | rs1_i                 | Input         | Check the scoreboard for a valid register at that address                        | From read operands     |
 | rs2_i                 | Input         | Check the scoreboard for a valid register at that address                        | From read operands     |
