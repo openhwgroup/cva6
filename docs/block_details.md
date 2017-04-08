@@ -40,9 +40,9 @@ The instruction queue is part of the IF stage. Its purpose is to decouple the in
 |      **Signal**     | **Direction** |                                         **Description**                                         |         **Category**        |
 |---------------------|---------------|-------------------------------------------------------------------------------------------------|-----------------------------|
 | epc_i               | Input         | EPC from CSR registers, depending on the privilege level the epc points to a different address. | CSR Regs                    |
-| ecall_i             | Input         | Ecall request from WB                                                                           | WB/Commit                   |
-| epc_wb_i            | Input         | EPC Writeback                                                                                   | WB/Commit                   |
-| epc_wb_valid_i      | Input         | EPC from WB is valid                                                                            | WB/Commit                   |
+| ecall_i             | Input         | Ecall request from WB                                                                           | Commit                      |
+| epc_commit_i        | Input         | EPC Commit                                                                                      | Commit                      |
+| epc_commit_valid_i  | Input         | EPC from Commit is valid                                                                        | Commit                      |
 | flush_s1_i          | Input         | Flush PC Gen stage                                                                              | Control                     |
 | flush_s2_i          | Input         | Flush fetch stage                                                                               | Control                     |
 | bp_pc_i             | Input         | Branch prediction PC, from EX stage                                                             | EX -- Update BP/take branch |
@@ -112,9 +112,38 @@ The field functional unit can be of the following types:
 
 #### Interface
 
+|       **Signal**      | **Direction** |                                 **Description**                                  |      **Category**      |
+|-----------------------|---------------|----------------------------------------------------------------------------------|------------------------|
+| flush_i               | Input         | Flush Scoreboard                                                                 | Control                |
+| full_o                | Output        | Scoreboard is full                                                     | Control                |
+| rd_clobber_o          | Output        | Used destination registers, includes the FU that is going to write this register | To issue/read operands |
+| rs1_i                 | Input         | Check the scoreboard for a valid register at that address                        | From read operands     |
+| rs2_i                 | Input         | Check the scoreboard for a valid register at that address                        | From read operands     |
+| rs1_o                 | Output        | Data for rs1                                                                     | To read operands       |
+| rs1_valid_o           | Output        | Data for rs1 is valid                                                            | To read operands       |
+| rs2_o                 | Output        | Data for rs2                                                                     | To read operands       |
+| rs2_valid_o           | Output        | Data for rs2 is valid                                                            | To read operands       |
+| commit_instr_o        | Output        | Instruction to commit                                                            | To WB stage            |
+| commit_instr_valid_o  | Output        | Instruction to commit is valid                                                   | To WB stage            |
+| decoded_instr_i       | Input         | Decoded instruction entering scoreboard                                          | From ID                |
+| decoded_instr_valid_i | Input         | Decoded instruction entering scoreboard is valid                                 | From ID                |
+| issue_instr_o         | Output        | Instruction to issue stage                                                       | To Issue               |
+| issue_instr_valid_o   | Output        | Instruction to issue stage is valid                                              | To Issue               |
+
+### Issue
+
+The issue stage itself is not a real stage in the sense that it is pipelined, it is still part of the decode stage. The purpose of the issue stage is to find out whether we can issue the current top of the scoreboard to one of the functional units. It therefore takes into account whether the any other FU has or is going to write the destination register of the current instruction and whether or not the necessary functional unit is currently busy. If the FU is not busy and there are no dependencies we can issue the instruction to the execute stage.
+
+
+### Compressed Decoder
+The compressed decoders purpose is to expand a compressed instruction (16 bit) to its 32 bit equivalent.
+
+
+### Interface
+
 |     **Signal**    | **Direction** |                                             **Description**                                             |     **Category**    |
 |-------------------|---------------|---------------------------------------------------------------------------------------------------------|---------------------|
-| flush_i           | Input         | Flush the scoreboard, there was an architectural state change that needs to invalidate the whole buffer | From controller     |
+| flush_i           | Input         | Flush ID, there was an architectural state change that needs to invalidate the whole buffer | From controller     |
 | ready_o           | Output        | The scoreboard is ready to accept new instructions.                                                     | To ID               |
 | valid_i           | Input         | The instruction is valid                                                                                | From ID             |
 | imm_i             | Input         | Immediate field in                                                                                      | From ID             |
@@ -125,7 +154,7 @@ The field functional unit can be of the following types:
 | op_i              | Input         | Operation to perform                                                                                    | From ID             |
 | exception_i       | Input         | Exception                                                                                               | From ID             |
 | exception_valid_i | Input         | Exception is valid                                                                                      | From ID             |
-| epc_i             | Input         | Exception pointer                                                                                       | From ID             |
+| epc_i             | Input         | Exception PC                                                                                            | From ID             |
 | FU_ALU_o          | Output        | Signals to ALU e.g.: operation to perform etc.                                                          | To ALU              |
 | FU_ALU_i          | Input         | Signals from ALU e.g.: finished operation, result                                                       | From ALU            |
 | FU_MULT_o         | Output        | Signals to Multiplier                                                                                   | To Mult             |
@@ -134,30 +163,41 @@ The field functional unit can be of the following types:
 | FU_LSU_i          | Input         | Signals from LSU                                                                                        | From LSU            |
 | Regfile           | Inout         | Signals from and to register file                                                                       | From/To regfile     |
 | CSR               | Inout         | Signals from and to CSR register file                                                                   | From/To CSR regfile |
-|                   |               |                                                                                                         |                     |
-
-### Compressed Decoder
-The compressed decoders purpose is to expand a compressed instruction (16 bit) to its 32 bit equivalent.
-
-
-### Interface
-
-| **Signal** | **Direction** |    **Description**     | **Category** |
-| ---------- | ------------- | ---------------------- | ------------ |
-| flush_i    | Input         | EPC from CSR registers | CSR Regs     |
 
 
 ## Execute Stage (EX)
 
+### Read Operands
+
+The read operands stage is still part of the scoreboard but conceptually lies at the boundary between ID and EX. The operands where read in the previous cycle but we can still use forwarding to get the source operands from either:
+
+1. Register file
+2. Scoreboard
+3. Functional Unit (Forwarding)
+4. Immediate field
+
+The scoreboard and forwarding are mutually exclusive. The selection logic is a classical priority selection giving precedence to results form the scoreboard/FU over the register file.
+
 ### Interface
 
-| **Signal** | **Direction** |    **Description**     | **Category** |
-| ---------- | ------------- | ---------------------- | ------------ |
-| flush_i    | Input         | EPC from CSR registers | CSR Regs     |
+| **Signal** | **Direction** |                  **Description**                  | **Category** |
+|------------|---------------|---------------------------------------------------|--------------|
+| flush_i    | Input         | Flush ex stage                                    | CSR Regs     |
+| FU_ALU_i   | Input         | Signals to ALU e.g.: operation to perform etc.    | To ALU       |
+| FU_ALU_o   | Output        | Signals from ALU e.g.: finished operation, result | From ALU     |
+| FU_MULT_i  | Input         | Signals to Multiplier                             | To Mult      |
+| FU_MULT_o  | Output        | Signals from Multiplier                           | From Mult    |
+| FU_LSU_i   | Input         | Signals to LSU                                    | To LSU       |
+| FU_LSU_o   | Output        | Signals from LSU                                  | From LSU     |
 
-## Writeback Stage (WB)
+### Write-Back
 
-The writeback stage is the single commit point in the whole architecture. Everything prior to this stage was just computed in a temporary fashion. This is also the only point where an exception can occur.
+The write-back stage writes the results from the FU back to the scoreboard. They are committed in-order in the next stage.
+
+## Commit Stage (Commit)
+
+The commit stage is the single commit point in the whole architecture. Everything prior to this stage was just computed in a temporary fashion. This is also the only point where an exception can occur.
+The commit stage is entirely decoupled from the rest of the pipeline. It has access to the scoreboard which issues finished instructions in-order to the commit stage.
 
 ### CSR Register File
 
@@ -178,8 +218,6 @@ The CSR register file contains all registers which are not directly related to a
 | sptbr        | 0x180       | Page-table base register                                  |
 | tlbflush     | ?           | Flush TLB                                                 |
 | cflush       | ?           | Flush Cache                                               |
-
-
 
 And the following machine mode CSR registers:
 
@@ -207,9 +245,13 @@ We need to be careful when altering some of the register. Some of those register
 
 ### Interface
 
-| **Signal** | **Direction** |    **Description**     | **Category** |
-| ---------- | ------------- | ---------------------- | ------------ |
-| flush_i    | Input         | EPC from CSR registers | CSR Regs     |
+|   **Signal**   | **Direction** |               **Description**                |       **Category**       |
+|----------------|---------------|----------------------------------------------|--------------------------|
+| flush_i        | Input         | Flush WB stage                               | CSR Regs                 |
+| instr_commit_i | Input         | Instruction to commit                        | From Scoreboard/ID Stage |
+| CSR Regs       | Output        | Interface to CSR registers                   | To CSR Registers         |
+| Regfile        | Output        | Interface to the architectural register file | To regfile               |
+| Exception      | Output        | Exception occured                            | To PC gen                |
 
 
 ## MMU
