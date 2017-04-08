@@ -42,7 +42,7 @@ module scoreboard #(
 );
 localparam BITS_ENTRIES      = $clog2(NR_ENTRIES);
 
-dtype [NR_ENTRIES-1:0]         mem_n, mem_q;
+dtype [NR_ENTRIES-1:0]         mem;
 logic [BITS_ENTRIES-1:0]       issue_pointer_n, issue_pointer_q, // points to the instruction currently in issue
                                commit_pointer_n, commit_pointer_q, // points to the instruction currently in commit
                                top_pointer_n, top_pointer_q; // points to the top of the scoreboard, an empty slot
@@ -75,12 +75,12 @@ always_comb begin : clobber_output
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             // non overflowed case, depicted on the left
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q && i[BITS_ENTRIES-1:0] < issue_pointer_q)
-                rd_clobber_o[mem_q[$unsigned(i)].rd] = mem_q[$unsigned(i)].fu;
+                rd_clobber_o[mem[$unsigned(i)].rd] = mem[$unsigned(i)].fu;
         end
     end else begin // the issue pointer has overflowed, invert logic, depicted on the right
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q)
-                rd_clobber_o[mem_q[$unsigned(i)].rd] = mem_q[$unsigned(i)].fu;
+                rd_clobber_o[mem[$unsigned(i)].rd] = mem[$unsigned(i)].fu;
         end
     end
 end
@@ -97,13 +97,13 @@ always_comb begin : read_operands
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q && i[BITS_ENTRIES-1:0] < issue_pointer_q) begin
                 // look at the appropriate fields and look whether there was an
                 // instruction that wrote the rd field before, first for RS1 and then for RS2
-                if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
-                    rs1_o = mem_q[i[BITS_ENTRIES-1:0]].result;
-                    rs1_valid_o = mem_q[i[BITS_ENTRIES-1:0]].valid;
+                if (mem[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
+                    rs1_o = mem[i[BITS_ENTRIES-1:0]].result;
+                    rs1_valid_o = mem[i[BITS_ENTRIES-1:0]].valid;
                 // do the same for rs2
-                end else if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs2_i) begin
-                    rs2_o = mem_q[i[BITS_ENTRIES-1:0]].result;
-                    rs2_valid_o = mem_q[i[BITS_ENTRIES-1:0]].valid;
+                end else if (mem[i[BITS_ENTRIES-1:0]].rd == rs2_i) begin
+                    rs2_o = mem[i[BITS_ENTRIES-1:0]].result;
+                    rs2_valid_o = mem[i[BITS_ENTRIES-1:0]].valid;
                 end
             end
         end
@@ -111,13 +111,13 @@ always_comb begin : read_operands
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q) begin
                 // same as above but for the overflowed pointer case
-                if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
-                    rs1_o = mem_q[i[BITS_ENTRIES-1:0]].result;
-                    rs1_valid_o = mem_q[i[BITS_ENTRIES-1:0]].valid;
+                if (mem[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
+                    rs1_o = mem[i[BITS_ENTRIES-1:0]].result;
+                    rs1_valid_o = mem[i[BITS_ENTRIES-1:0]].valid;
                 // do the same for rs2
-                end else if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs2_i) begin
-                    rs2_o = mem_q[i[BITS_ENTRIES-1:0]].result;
-                    rs2_valid_o = mem_q[i[BITS_ENTRIES-1:0]].valid;
+                end else if (mem[i[BITS_ENTRIES-1:0]].rd == rs2_i) begin
+                    rs2_o = mem[i[BITS_ENTRIES-1:0]].result;
+                    rs2_valid_o = mem[i[BITS_ENTRIES-1:0]].valid;
                 end
             end
         end
@@ -125,13 +125,12 @@ always_comb begin : read_operands
 end
 // push new decoded instruction: if still empty space push the instruction to the scoreboard
 // write-back instruction: update value of RD register in scoreboard
-always_comb begin : push_instruction_and_wb
+always_latch begin : push_instruction_and_wb
     // default assignment
-    mem_n         = mem_q;
     top_pointer_n = top_pointer_q;
     // if we are not full we can push a new instruction
     if (~full_o && decoded_intr_valid_i) begin
-        mem_n[$unsigned(top_pointer_q)] = decoded_instr_i;
+        mem[$unsigned(top_pointer_q)] = decoded_instr_i;
         top_pointer_n = top_pointer_q + 1;
     end
 
@@ -140,9 +139,9 @@ always_comb begin : push_instruction_and_wb
     // also set the valid bit
     if (wb_valid_i) begin
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
-            if (mem_q[i[BITS_ENTRIES-1:0]].pc == pc_i) begin
-                mem_n[i[BITS_ENTRIES-1:0]].valid  = 1'b1;
-                mem_n[i[BITS_ENTRIES-1:0]].result = wdata_i;
+            if (mem[i[BITS_ENTRIES-1:0]].pc == pc_i) begin
+                mem[i[BITS_ENTRIES-1:0]].valid  = 1'b1;
+                mem[i[BITS_ENTRIES-1:0]].result = wdata_i;
             end
         end
     end
@@ -157,7 +156,7 @@ always_comb begin : issue_instruction
         issue_instr_valid_o = decoded_intr_valid_i;
     // if not empty go to scoreboard and get the instruction at the issue pointer
     end else begin
-        issue_instr_o = mem_q[$unsigned(issue_pointer_q)];
+        issue_instr_o = mem[$unsigned(issue_pointer_q)];
         issue_instr_valid_o = 1'b1;
     end
     // default assignment: issue didn't read
@@ -174,7 +173,7 @@ always_comb begin: commit_instruction
     commit_pointer_n = commit_pointer_q;
     // we can always safely output the instruction at which the commit pointer points
     // since the scoreboard entry has a valid bit which the commit unit needs to check anyway
-    commit_instr_o   = mem_q[commit_pointer_q];
+    commit_instr_o   = mem[commit_pointer_q];
     if (commit_ready_i) begin
         commit_pointer_n = commit_pointer_q + 1;
     end
@@ -183,12 +182,10 @@ end
 // sequential process
 always_ff @(posedge clk_i or negedge rst_ni) begin : sequential
     if(~rst_ni) begin
-        mem_q            <= '{default: 0};
         issue_pointer_q  <= '{default: 0};
         commit_pointer_q <= '{default: 0};
         top_pointer_q    <= '{default: 0};
     end else begin
-        mem_q            <= mem_n;
         issue_pointer_q  <= issue_pointer_n;
         commit_pointer_q <= commit_pointer_n;
         top_pointer_q    <= top_pointer_n;
