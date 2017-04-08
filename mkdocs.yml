@@ -5,4 +5,5 @@ pages:
   - Block Details: 'block_details.md'
   - Ideas: 'ideas.md'
   - Test Bench: 'tb.md'
-theme: 'material'
+  - Synthesis Results: 'synthesis.md'
+# theme: 'material'

@@ -1,6 +1,14 @@
+stages:
+  - deploy
+
 pages:
   script:
     - mkdocs build
   artifacts:
     paths:
       - site
+
+publishToFTP:
+  stage: deploy
+  script:
+    - lftp -e "mirror -R site . ; quit;" -u $FTP_USER,$FTP_PASSWORD $FTP_HOST
