@@ -39,7 +39,7 @@ typedef struct packed {
 } misspredict;
 
 typedef enum logic[3:0] {
-    ALU, MULT, LSU, CSR
+    NONE, ALU, MULT, LSU, CSR
 } fu_t;
 
 // ---------------
