@@ -29,25 +29,25 @@ endfunction
 
 task fu_if_driver::run_phase(uvm_phase phase);
     fu_if_seq_item cmd;
-
+    fork
     forever begin : cmd_loop
         shortint unsigned result;
-        seq_item_port.get_next_item(cmd);
 
         // using clocking blocks this is possible
-        @(posedge fu.sck)
+	seq_item_port.get_next_item(cmd);
+
         fu.sck.operand_a <= cmd.operand_a;
         fu.sck.operand_b <= cmd.operand_b;
         fu.sck.operand_c <= cmd.operand_c;
         fu.sck.operator <= cmd.operator;
-
-        @(negedge fu.sck) 
+	@(fu.sck)
 	cmd.result = fu.sck.result;
         cmd.compare_result = fu.sck.comparison_result;
 
         seq_item_port.item_done();
 
     end : cmd_loop
+    join_none
 endtask : run_phase
 
 function void fu_if_driver::build_phase(uvm_phase phase);

@@ -22,6 +22,7 @@ class alu_test_base extends uvm_test;
     alu_env m_env;
     fu_if_sequencer sequencer_h;
 
+    reset_sequence reset;
     // ---------------------
     // Agent configuration
     // ---------------------
@@ -36,6 +37,7 @@ class alu_test_base extends uvm_test;
     extern function new(string name = "alu_test_base", uvm_component parent = null);
     extern function void build_phase(uvm_phase phase);
     extern function void end_of_elaboration_phase(uvm_phase phase);
+    extern task run_phase(uvm_phase phase);
 endclass : alu_test_base
 
 function alu_test_base::new(string name = "alu_test_base", uvm_component parent = null);
@@ -68,3 +70,8 @@ endfunction
 function void alu_test_base::end_of_elaboration_phase(uvm_phase phase);
     sequencer_h = m_env.m_fu_if_sequencer;
 endfunction
+
+task alu_test_base::run_phase(uvm_phase phase);
+    reset = new("reset");
+    reset.start(sequencer_h);
+endtask

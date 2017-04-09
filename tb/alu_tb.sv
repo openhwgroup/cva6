@@ -55,7 +55,7 @@ module alu_tb;
     initial begin
         // print the topology
         uvm_top.enable_print_topology = 1;
-        // Start UVM test
+	// Start UVM test
         run_test();
     end
 endmodule

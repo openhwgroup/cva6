@@ -6,5 +6,5 @@ import uvm_pkg::*;
 
 `include "uvm_macros.svh"
 `include "fibonacci_sequence.svh"
-
+`include "reset_sequence.svh"
 endpackage

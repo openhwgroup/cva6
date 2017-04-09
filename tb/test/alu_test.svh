@@ -31,6 +31,7 @@ endfunction
 task alu_test::run_phase(uvm_phase phase);
     phase.raise_objection(this, "alu_test");
     //fibonacci_sequence fibonacci;
+    super.run_phase(phase);
     fibonacci = new("fibonacci");
     fibonacci.start(sequencer_h);    
     // Testlogic goes here
