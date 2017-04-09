@@ -9,7 +9,7 @@ top_level = alu_tb
 # path to agents
 agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv
 # this list contains the standalone components
-src = ariane_pkg.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv tb/alu_tb.sv
+src = include/ariane_pkg.svh alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv tb/alu_tb.sv
 
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
