@@ -6,5 +6,7 @@ pages:
   - Ideas: 'ideas.md'
   - Test Bench: 'tb.md'
   - Synthesis Results: 'synthesis.md'
+  - Coverage Report: 'covhtmlreport'
+
 # cosmo, readthedocs, journal, slate, material, readable, spacelab, united, bootstrap, simplex, flatly, yeti, amelia, cerulean, cyborg, mkdocs
 theme: 'flatly'
