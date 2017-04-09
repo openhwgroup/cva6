@@ -40,7 +40,7 @@ class alu_test extends alu_test_base;
         super.run_phase(phase);
 
         add_sequence = new("add");
-	    add_sequence.start(sequencer_h);
+        add_sequence.start(sequencer_h);
 
         addw_sequence = new("addw");
         addw_sequence.start(sequencer_h);
