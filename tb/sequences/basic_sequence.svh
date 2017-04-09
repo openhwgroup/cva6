@@ -12,11 +12,12 @@ virtual class basic_sequence extends fu_if_seq;
       fu_if_seq_item command;
 
       command = fu_if_seq_item::type_id::create("command");
+      `uvm_info("ALU Sequence", $sformatf("Starting %s sequence", get_operator().name))
 
       for(int i = 0; i <= 100; i++) begin
           start_item(command);
           if(~command.randomize())
-		`uvm_warning("ALU Basic Sequence", "Randomization constraints can not be met.")
+		        `uvm_warning("ALU Basic Sequence", "Randomization constraints can not be met.")
           command.operator = get_operator();
 
           finish_item(command);

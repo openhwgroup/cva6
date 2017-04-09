@@ -8,7 +8,10 @@ class alu_test extends alu_test_base;
     `uvm_component_utils(alu_test)
 
     fibonacci_sequence fibonacci;
-    add_sequence add_sequence;
+    add_sequence  add_sequence;
+    addw_sequence addw_sequence;
+    subw_sequence subw_sequence;
+    sub_sequence  sub_sequence;
 
     //------------------------------------------
     // Methods
@@ -27,8 +30,19 @@ class alu_test extends alu_test_base;
         phase.raise_objection(this, "alu_test");
         //fibonacci_sequence fibonacci;
         super.run_phase(phase);
-	add_sequence = new("add");
-	add_sequence.start(sequencer_h);
+
+        add_sequence = new("add");
+	    add_sequence.start(sequencer_h);
+
+        addw_sequence = new("addw");
+        addw_sequence.start(sequencer_h);
+
+        subw_sequence = new("subw");
+        subw_sequence.start(sequencer_h);
+
+        sub_sequence = new("sub");
+        sub_sequence.start(sequencer_h);
+
         fibonacci = new("fibonacci");
         fibonacci.start(sequencer_h);
         // Testlogic goes here

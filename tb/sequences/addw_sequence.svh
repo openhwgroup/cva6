@@ -1,16 +1,16 @@
-class add_sequence extends basic_sequence;
+class addw_sequence extends basic_sequence;
 
-   `uvm_object_utils(add_sequence);
+   `uvm_object_utils(addw_sequence);
 
-   function new(string name = "add");
+   function new(string name = "addw");
       super.new(name);
    endfunction : new
 
    function alu_op get_operator();
-	return ADD;
+	return ADDW;
    endfunction : get_operator
 
    task body();
       super.body();
    endtask : body
-endclass : add_sequence
+endclass : addw_sequence
