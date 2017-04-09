@@ -10,4 +10,8 @@ import ariane_pkg::*;
 `include "reset_sequence.svh"
 `include "basic_sequence.svh"
 `include "add_sequence.svh"
+`include "addw_sequence.svh"
+`include "subw_sequence.svh"
+`include "sub_sequence.svh"
+
 endpackage
