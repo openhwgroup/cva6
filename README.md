@@ -5,7 +5,7 @@
 
 ![](docs/fig/ariane_overview.png)
 
-For detailed documentation refer to the online documentation.
+For detailed documentation refer to the [online documentation](http://www.be4web.net) (Login: `zarubaf` Password: `zaruba`).
 # Coding Style
 
 - Keep the files tidy. No superfluous line breaks, align ports on a common boundary.
