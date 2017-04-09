@@ -69,7 +69,7 @@ class fu_if_seq_item extends uvm_sequence_item;
 
       $sformat(s, "%s\n", super.convert2string());
       // Convert to string function reusing s:
-      $sformat(s, "%s\n operator\t%0h\n operandA\t%0h\n operandB\t%0b\n operandC\t%0h\n", s, operator, operand_a, operand_b, operand_c);
+      $sformat(s, "%s\n operator\t%0h\n operandA\t%0h\n operandB\t%0h\n operandC\t%0h\n result\t%0h\n", s, operator, operand_a, operand_b, operand_c, result);
       return s;
 
     endfunction:convert2string

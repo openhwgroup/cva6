@@ -9,7 +9,6 @@ package alu_lib_pkg;
     import fu_if_agent_pkg::*;
     import alu_env_pkg::*;
     import alu_sequence_pkg::*;
-    
     // Test based includes like base test class and specializations of it
     // ----------------
     // Base test class

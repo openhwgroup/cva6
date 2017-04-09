@@ -43,19 +43,18 @@ class fu_if_monitor extends uvm_component;
 
         forever begin : cmd_loop
             longint result;
-            // using clocking blocks this is possible
-            @(negedge fu.pck)
-
 
             cmd.operator  = fu.pck.operator;
             cmd.operand_a = fu.pck.operand_a;
             cmd.operand_b = fu.pck.operand_b;
             cmd.operand_c = fu.pck.operand_c;
             cmd.result    = fu.pck.result;
+            
+            @(fu.pck)
 
             $cast(cloned_item, cmd.clone());
             ap.write(cloned_item);
-
+            
         end : cmd_loop
     endtask : run_phase
 endclass : fu_if_monitor
