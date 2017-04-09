@@ -24,3 +24,12 @@ Ariane is not going to support floating points and atomic operations.
 - Memory instructions: FENCE.I (flush D$ and I$, kill pipeline), SFENCE.VM (flush TLB)
 - System Instructions: CSRR[..], RDCYCLE, RDTIME, RDINSTRET, ECALL, EBREAK, WFI, MRET/SRET/URET
 
+## ToDo Section:
+
+Things that need to be done (in no particular order):
+
+- Scoreboard testbench
+- Branch prediction, detailed block diagram
+- Processor front-end, detailed design
+- Commit stage, detailed design
+- LSU detailed design
