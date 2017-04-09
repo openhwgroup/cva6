@@ -5,6 +5,8 @@
  * Copyright (C) 2017 ETH Zurich, University of Bologna
  * All rights reserved.
  */
+import ariane_pkg::*;
+
 module scoreboard #(
     parameter int  NR_ENTRIES = 8,
     parameter type dtype      = scoreboard_entry
