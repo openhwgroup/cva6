@@ -30,14 +30,16 @@ class fu_if_driver extends uvm_driver #(fu_if_seq_item);
             shortint unsigned result;
 
             // using clocking blocks this is possible
-        seq_item_port.get_next_item(cmd);
+            seq_item_port.get_next_item(cmd);
 
             fu.sck.operand_a <= cmd.operand_a;
             fu.sck.operand_b <= cmd.operand_b;
             fu.sck.operand_c <= cmd.operand_c;
             fu.sck.operator <= cmd.operator;
-        @(fu.sck)
-        cmd.result = fu.sck.result;
+
+            @(fu.sck)
+
+            cmd.result = fu.sck.result;
             cmd.compare_result = fu.sck.comparison_result;
 
             seq_item_port.item_done();

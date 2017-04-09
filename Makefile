@@ -7,7 +7,9 @@ library = work
 # Top level module to compile
 top_level = alu_tb
 # path to agents
-agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv
+agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv \
+		 tb/agents/scoreboard_if/scoreboard_if.sv tb/agents/scoreboard_if/scoreboard_if_agent_pkg.sv
+
 # this list contains the standalone components
 src = include/ariane_pkg.svh alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv tb/alu_tb.sv
 
