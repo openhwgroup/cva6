@@ -1,5 +1,12 @@
 stages:
+  - test
   - deploy
+
+testALU:
+  stage: test
+  script:
+    - make build
+    - vsim-10.5c alu_tb_optimized +UVM_TESTNAME=alu_test -do "run -a"
 
 pages:
   stage: deploy
