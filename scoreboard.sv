@@ -82,14 +82,16 @@ always_comb begin : clobber_output
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             // non overflowed case, depicted on the left
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q && i[BITS_ENTRIES-1:0] < issue_pointer_q)
-                rd_clobber_o[mem[$unsigned(i)].rd] = mem[$unsigned(i)].fu;
+                rd_clobber_o[mem[i].rd] = mem[i].fu;
         end
     end else begin // the issue pointer has overflowed, invert logic, depicted on the right
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q)
-                rd_clobber_o[mem[$unsigned(i)].rd] = mem[$unsigned(i)].fu;
+                rd_clobber_o[mem[i].rd] = mem[i].fu;
         end
     end
+    // the zero register is always free
+    rd_clobber_o[0] = NONE;
 end
 // read operand interface: same logic as register file, including a valid file
 always_comb begin : read_operands
@@ -105,12 +107,12 @@ always_comb begin : read_operands
                 // look at the appropriate fields and look whether there was an
                 // instruction that wrote the rd field before, first for RS1 and then for RS2
                 if (mem[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
-                    rs1_o = mem[i[BITS_ENTRIES-1:0]].result;
-                    rs1_valid_o = mem[i[BITS_ENTRIES-1:0]].valid;
+                    rs1_o = mem[i].result;
+                    rs1_valid_o = mem[i].valid;
                 // do the same for rs2
-                end else if (mem[i[BITS_ENTRIES-1:0]].rd == rs2_i) begin
-                    rs2_o = mem[i[BITS_ENTRIES-1:0]].result;
-                    rs2_valid_o = mem[i[BITS_ENTRIES-1:0]].valid;
+                end else if (mem[i].rd == rs2_i) begin
+                    rs2_o = mem[i].result;
+                    rs2_valid_o = mem[i].valid;
                 end
             end
         end
@@ -119,16 +121,21 @@ always_comb begin : read_operands
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q) begin
                 // same as above but for the overflowed pointer case
                 if (mem[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
-                    rs1_o = mem[i[BITS_ENTRIES-1:0]].result;
-                    rs1_valid_o = mem[i[BITS_ENTRIES-1:0]].valid;
+                    rs1_o = mem[i].result;
+                    rs1_valid_o = mem[i].valid;
                 // do the same for rs2
                 end else if (mem[i[BITS_ENTRIES-1:0]].rd == rs2_i) begin
-                    rs2_o = mem[i[BITS_ENTRIES-1:0]].result;
-                    rs2_valid_o = mem[i[BITS_ENTRIES-1:0]].valid;
+                    rs2_o = mem[i].result;
+                    rs2_valid_o = mem[i].valid;
                 end
             end
         end
     end
+    // make sure we didn't read the zero register
+    if (rs1_i == '0)
+        rs1_valid_o = 1'b0;
+    if (rs2_i == '0)
+        rs2_valid_o = 1'b0;
 end
 // push new decoded instruction: if still empty space push the instruction to the scoreboard
 // write-back instruction: update value of RD register in scoreboard
@@ -146,9 +153,9 @@ always_latch begin : push_instruction_and_wb
     // also set the valid bit
     if (wb_valid_i) begin
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
-            if (mem[i[BITS_ENTRIES-1:0]].pc == pc_i) begin
-                mem[i[BITS_ENTRIES-1:0]].valid  = 1'b1;
-                mem[i[BITS_ENTRIES-1:0]].result = wdata_i;
+            if (mem[i].pc == pc_i) begin
+                mem[i].valid  = 1'b1;
+                mem[i].result = wdata_i;
             end
         end
     end
@@ -207,7 +214,7 @@ end
 `ifndef SYNTHESIS
 `ifndef verilator
     assert (NR_ENTRIES == 2**$clog2(NR_ENTRIES)) else $error("Scoreboard size needs to be a power of two.");
-    // asserts
+    // there should never be more than one instruction writing the same destination register (except x0)
 `endif
 `endif
 endmodule
