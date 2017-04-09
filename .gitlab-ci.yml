@@ -18,9 +18,10 @@ pages:
   dependencies:
     - testALU
   script:
-    - mkdocs build
-    - lftp -e "mirror -R site . ; quit;" -u $FTP_USER,$FTP_PASSWORD $FTP_HOST
-    - covhtmlreport/ site/
+    - mkdir public
+    - mkdocs build -d public
+    - mv covhtmlreport/ public/
+    - lftp -e "mirror -R public . ; quit;" -u $FTP_USER,$FTP_PASSWORD $FTP_HOST
   artifacts:
     paths:
       - site
