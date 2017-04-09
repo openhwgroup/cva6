@@ -49,12 +49,14 @@ class alu_scoreboard extends uvm_scoreboard;
               result32 = $unsigned(seq_item.operand_a[31:0]) >>> seq_item.operand_b[4:0];
               result = {{32{result32[31]}}, result32};
             end
-            SLLW:
+            SLLW: begin
               result32 = $unsigned(seq_item.operand_a[31:0]) <<< seq_item.operand_b[4:0];
               result = {{32{result32[31]}}, result32};
-            SRAW:
+            end
+            SRAW: begin
               result32 = $signed(seq_item.operand_a[31:0]) >>> seq_item.operand_b[4:0];
               result = {{32{result32[31]}}, result32};
+            end
         endcase
 
         if (result != seq_item.result)
