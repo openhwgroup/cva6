@@ -12,209 +12,234 @@
  * Copyright (C) 2017 ETH Zurich, University of Bologna
  * All rights reserved.
  */
-
 import ariane_pkg::*;
 
 module alu
 (
-  input  logic          clk,
-  input  logic          rst_n,
+  input  alu_op                    operator_i,
+  input  logic [63:0]              operand_a_i,
+  input  logic [63:0]              operand_b_i,
 
-  input  alu_op         operator_i,
-  input  logic [63:0]   operand_a_i,
-  input  logic [63:0]   operand_b_i,
-  input  logic [63:0]   operand_c_i,
+  input  logic [64:0]              multdiv_operand_a_i,
+  input  logic [64:0]              multdiv_operand_b_i,
 
-  output logic [63:0]   result_o,
-  output logic          comparison_result_o,
+  input  logic                     multdiv_en_i,
 
-  output logic          ready_o,
-  input  logic          ex_ready_i
+  output logic [63:0]              adder_result_o,
+  output logic [65:0]              adder_result_ext_o,
+
+  output logic [63:0]              result_o,
+  output logic                     comparison_result_o,
+  output logic                     is_equal_result_o
 );
 
-
   logic [63:0] operand_a_rev;
-  logic [63:0] operand_a_neg;
-  logic [63:0] operand_a_neg_rev;
-
-  assign operand_a_neg = ~operand_a_i;
+  logic [31:0] operand_a_rev32;
+  logic [64:0] operand_b_neg;
 
   // bit reverse operand_a for left shifts and bit counting
   generate
     genvar k;
     for(k = 0; k < 64; k++)
       assign operand_a_rev[k] = operand_a_i[63-k];
+
+    for (k = 0; k < 32; k++)
+      assign operand_a_rev32[k] = operand_a_i[31-k];
   endgenerate
 
-  // bit reverse operand_a_neg for left shifts and bit counting
-  generate
-    genvar m;
-    for(m = 0; m < 64; m++)
-      assign operand_a_neg_rev[m] = operand_a_neg[63-m];
-  endgenerate
-
-  logic [63:0] operand_b_neg;
-
-  assign operand_b_neg = ~operand_b_i;
-
-  logic [63:0] bmask;
-
-  //--------------------
-  // Partitioned added
-  //--------------------
+  // ------
+  // Adder
+  // ------
   logic        adder_op_b_negate;
-  logic [63:0] adder_op_a, adder_op_b;
+  logic [64:0] adder_in_a, adder_in_b;
   logic [63:0] adder_result;
 
-  assign adder_op_b_negate = (operator_i == sub) || (operator_i == subr) ||
-                             (operator_i == subu) || (operator_i == subr);
+  always_comb
+  begin
+    adder_op_b_negate = 1'b0;
+
+    unique case (operator_i)
+      // ADDER OPS
+      SUB, SUBW,
+      // COMPARATOR OPs
+      EQ,    NE,
+      GTU,   GEU,
+      LTU,   LEU,
+      GTS,   GES,
+      LTS,   LES,
+      SLTS,  SLTU,
+      SLETS, SLETU: adder_op_b_negate = 1'b1;
+
+      default: ;
+    endcase
+  end
 
   // prepare operand a
-  assign adder_op_a = (operator_i == abs) ? operand_a_neg : operand_a_i;
+  assign adder_in_a    = multdiv_en_i ? multdiv_operand_a_i : {operand_a_i, 1'b1};
 
   // prepare operand b
-  assign adder_op_b = adder_op_b_negate ? operand_b_neg : operand_b_i;
+  assign operand_b_neg = {operand_b_i, 1'b0} ^ {65{adder_op_b_negate}};
+  assign adder_in_b    = multdiv_en_i ? multdiv_operand_b_i : operand_b_neg ;
 
-  assign adder_result = adder_op_a + adder_op_b + { 63'b0 , adder_op_b_negate };
+  // actual adder
+  assign adder_result_ext_o = $unsigned(adder_in_a) + $unsigned(adder_in_b);
 
-  //----------
+  assign adder_result       = adder_result_ext_o[64:1];
+
+  assign adder_result_o     = adder_result;
+
+  // ---------
   // Shifts
-  //----------
-  logic        shift_left;                                    // should we shift left
+  // ---------
+
+  // TODO: this can probably optimized significantly
+  logic        shift_left;          // should we shift left
   logic        shift_arithmetic;
 
-  logic [5:0]  shift_amt_left;                                // amount of shift, if to the left
-  logic [5:0]  shift_amt;                                     // amount of shift, to the right
-  logic [5:0]  shift_amt_int;                                 // amount of shift, used for the actual shifters
-  logic [63:0] shift_op_a;                                    // input of the shifter
-  logic [64:0] shift_op_a_ext, shift_right_sign_extended;     // sign extension
+  logic [63:0] shift_amt;           // amount of shift, to the right
+  logic [63:0] shift_op_a;          // input of the shifter
+  logic [31:0] shift_op_a32;        // input to the 32 bit shift operation
+
   logic [63:0] shift_result;
-  logic [63:0] shift_right_result;
+  logic [31:0] shift_result32;
+
+  logic [64:0] shift_right_result;
+  logic [32:0] shift_right_result32;
+
   logic [63:0] shift_left_result;
+  logic [31:0] shift_left_result32;
 
-  assign shift_amt = operand_b_i[5:0];
+  assign shift_amt = operand_b_i;
 
-  // by reversing the bits of the input, we also have to reverse the order of shift amounts
-  assign shift_amt_left[5:0] = shift_amt[5:0];
+  assign shift_left = (operator_i == sll) | (operator_i == sllw);
 
-  // ALU_FL1 and ALU_CBL are used for the bit counting ops later
-  assign shift_left = (operator_i == sll);
+  assign shift_arithmetic = (operator_i == sra) | (operator_i == sraw);
 
-  assign shift_arithmetic = (operator_i == sra);
+  // right shifts, we let the synthesizer optimize this
+  logic [64:0] shift_op_a_64;
+  logic [32:0] shift_op_a_32;
 
   // choose the bit reversed or the normal input for shift operand a
-  assign shift_op_a    = shift_left ? operand_a_rev : operand_a_i;
-  assign shift_amt_int = shift_left ? shift_amt_left : shift_amt;
+  assign shift_op_a    = shift_left ? operand_a_rev   : operand_a_i;
+  assign shift_op_a32  = shift_left ? operand_a_rev32 : operand_a_i[31:0];
 
-  assign shift_op_a_ext = shift_arithmetic ? {shift_op_a[63], shift_op_a} : {1'b0, shift_op_a};
+  assign shift_op_a_64 = { shift_arithmetic & shift_op_a[63], shift_op_a};
+  assign shift_op_a_32 = { shift_arithmetic & shift_op_a[31], shift_op_a32};
 
-  assign shift_right_sign_extended = $signed(shift_op_a_ext) >>> shift_amt_int;
-  assign shift_right_result = shift_right_sign_extended[63:0];
+  assign shift_right_result     = $signed(shift_op_a_64) >>> shift_amt[5:0];
 
+  assign shift_right_result32   = $signed(shift_op_a_32) >>> shift_amt[4:0];
   // bit reverse the shift_right_result for left shifts
   genvar j;
   generate
     for(j = 0; j < 64; j++)
-    begin
       assign shift_left_result[j] = shift_right_result[63-j];
-    end
+
+    for(j = 0; j < 32; j++)
+      assign shift_left_result32[j] = shift_right_result32[31-j];
+
   endgenerate
 
-  assign shift_result = shift_left ? shift_left_result : shift_right_result;
+  assign shift_result = shift_left ? shift_left_result : shift_right_result[63:0];
+  assign shift_result32 = shift_left ? shift_left_result32 : shift_right_result32[31:0];
 
-  //----------------
-  // Comparisons
-  //----------------
-  logic [3:0] is_equal;
-  logic [3:0] is_greater;  // handles both signed and unsigned forms
-
-  logic [3:0] cmp_signed;
+// ------------
+// Comparisons
+// ------------
+  logic is_equal;
+  logic is_greater_equal;  // handles both signed and unsigned forms
+  logic cmp_signed;
 
   always_comb
   begin
-    cmp_signed = 4'b0;
+    cmp_signed = 1'b0;
 
     unique case (operator_i)
-      gts,
-      ges,
-      lts,
-      les,
-      slts,
-      slets,
-      min,
-      max,
-      abs,
-      clip,
-      clipu: begin
-        cmp_signed[3:0] = 4'b1000;
+      GTS,
+      GES,
+      LTS,
+      LES,
+      SLTS,
+      SLETS: begin
+        cmp_signed = 1'b1;
       end
 
       default:;
     endcase
   end
 
+  assign is_equal = (adder_result == 64'b0);
+  assign is_equal_result_o = is_equal;
+
+
+  // Is greater equal
+  always_comb
+  begin
+    if ((operand_a_i[63] ^ operand_b_i[63]) == 0)
+      is_greater_equal = (adder_result[63] == 0);
+    else
+      is_greater_equal = operand_a_i[63] ^ (cmp_signed);
+  end
+
   // generate comparison result
-  logic [3:0] cmp_result;
+  logic cmp_result;
 
   always_comb
   begin
     cmp_result = is_equal;
 
     unique case (operator_i)
-      eq:            cmp_result = is_equal;
-      ne:            cmp_result = ~is_equal;
-      gts, gtu:  cmp_result = is_greater;
-      ges, geu:  cmp_result = is_greater | is_equal;
-      lts, slts,
-      ltu, sltu: cmp_result = ~(is_greater | is_equal);
-      slets,
-      sletu,
-      les, leu:  cmp_result = ~is_greater;
+      EQ:            cmp_result = is_equal;
+      NE:            cmp_result = (~is_equal);
+      GTS, GTU:  cmp_result = is_greater_equal && (~is_equal);
+      GES, GEU:  cmp_result = is_greater_equal;
+      LTS, SLTS,
+      LTU, SLTU: cmp_result = (~is_greater_equal);
+      SLETS,
+      SLETU,
+      LES, LEU:  cmp_result = (~is_greater_equal) || is_equal;
 
       default: ;
     endcase
   end
 
-  assign comparison_result_o = cmp_result[3];
-  //----------------
-  // Result MUX
-  //----------------
+  assign comparison_result_o = cmp_result;
 
+  // -----------
+  // Result MUX
+  // -----------
   always_comb
   begin
-    result_o   = 'x;
+    result_o   = '0;
 
     unique case (operator_i)
       // Standard Operations
-      land:  result_o = operand_a_i & operand_b_i;
-      lor:   result_o = operand_a_i | operand_b_i;
-      lxor:  result_o = operand_a_i ^ operand_b_i;
+      ANDL:  result_o = operand_a_i & operand_b_i;
+      ORL:   result_o = operand_a_i | operand_b_i;
+      XORL:  result_o = operand_a_i ^ operand_b_i;
 
+      // Adder Operations
+      ADD, SUB: result_o = adder_result;
+      // Add word: Ignore the upper bits and sign extend to 64 bit
+      ADDW, SUBW: result_o = {{32{adder_result[31]}}, adder_result[31:0]};
       // Shift Operations
-      add,
-      sub: result_o = adder_result;
-
-      sll,
-      srl, sra:  result_o = shift_result;
+      SLL,
+      SRL, SRA: result_o = shift_result;
+      // Shifts 32 bit
+      SLLW,
+      SRLW, SRAW: result_o = {{32{shift_result32[31]}}, shift_result32[31:0]};
 
       // Comparison Operations
-      eq,    ne,
-      gtu,   geu,
-      ltu,   leu,
-      gts,   ges,
-      lts,   les: begin
-          result_o[31:24] = {8{cmp_result[3]}};
-          result_o[23:16] = {8{cmp_result[2]}};
-          result_o[15: 8] = {8{cmp_result[1]}};
-          result_o[ 7: 0] = {8{cmp_result[0]}};
-       end
-      slts, sltu,
-      slets, sletu: result_o = {63'b0, comparison_result_o};
+      EQ,    NE,
+      GTU,   GEU,
+      LTU,   LEU,
+      GTS,   GES,
+      LTS,   LES,
+      SLTS,  SLTU,
+      SLETS, SLETU: result_o = {63'b0, cmp_result};
 
-      default: $warning("instruction not supported in basic alu"); // default case to suppress unique warning
+      default: ; // default case to suppress unique warning
     endcase
   end
-
-  assign ready_o = 1'b1;
 
 endmodule

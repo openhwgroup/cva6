@@ -4,6 +4,9 @@
  *
  * Copyright (C) 2017 ETH Zurich, University of Bologna
  * All rights reserved.
+ *
+ * Description: Contains all the necessary defines for Ariane
+ *              in one package.
  */
 package ariane_pkg;
 
@@ -43,23 +46,20 @@ typedef enum logic[3:0] {
 } fu_t;
 
 // ---------------
-// ALU operations
+// EX Stage
 // ---------------
-typedef enum logic [7:0]      { add, sub, addu, subu, addr, subr, addur, subug,  // basic ALU op
-                                lxor, lor, land,                                 // logic operations
-                                sra, srl, ror, sll,                              // shifts
-                                // bext, bextu, bins, bclr, bset,                // bit manipulation, currently not implemented
-                                ff1, fl1, cnt, clb,                              // bit counting
-                                exts, ext,                                       // sign-/zero-extensions
-                                lts, ltu, les, leu, gts, gtu, ges, geu, eq, ne,  // comparisons
-                                slts, sltu, slets, sletu,                        // set lower than operations
-                                abs, clip, clipu,                                // absolute value
-                                ins,                                             // insert/extract
-                                min, minu, max, maxu                             // min/max
+typedef enum logic [7:0]      { ADD, SUB,                                        // basic ALU op
+                                LXOR, LOR, LAND,                                 // logic operations
+                                SRA, SRL, SLL,                                   // shifts
+                                LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,  // comparisons
+                                SLTS, SLTU, SLETS, SLETU,                        // set lower than operations
                               } alu_op;
 
 typedef enum logic [1:0]      { mode8, mode16 } vec_mode;
 
+// ---------------
+// ID/EX/WB Stage
+// ---------------
 typedef struct packed {
     logic [63:0]    pc;
     fu_t            fu;

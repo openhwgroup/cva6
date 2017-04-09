@@ -1,9 +1,9 @@
 class alu_scoreboard extends uvm_scoreboard;
-    
+
     `uvm_component_utils(alu_scoreboard);
 
      uvm_analysis_imp#(fu_if_seq_item, alu_scoreboard) item_export;
-    
+
     bit [63:0] result;
     function new(string name, uvm_component parent);
         super.new(name, parent);
@@ -19,7 +19,7 @@ class alu_scoreboard extends uvm_scoreboard;
         result = 64'b0;
 
 	case (alu_op'(seq_item.operator))
-	    add: 
+	    ADD:
 		result = seq_item.operand_a + seq_item.operand_b;
         endcase
 
