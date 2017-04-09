@@ -1,7 +1,9 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 12/20/2016
 // Description: Configuration file for the pure instruction cache environment
-
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 class alu_env_config extends uvm_object;
 
     // UVM Factory Registration Macro

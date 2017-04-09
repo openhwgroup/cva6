@@ -2,6 +2,9 @@
 // Date: 12/20/2016
 // Description: Encapsulates the whole memory agent into one package by including
 //              all the necessary files.
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 
 package fu_if_agent_pkg;
     // UVM Import

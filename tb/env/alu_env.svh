@@ -1,7 +1,9 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 12/21/2016
 // Description: Instruction cache main verification environment
-
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 class alu_env extends uvm_env;
 
     // UVM Factory Registration Macro

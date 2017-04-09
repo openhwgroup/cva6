@@ -2,6 +2,9 @@
 // Date: 3/18/2017
 // Description: Generic functional unit interface (fu if)
 //              The interface can be used in Master or Slave mode.
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 
 // Guard statement proposed by "Easier UVM" (doulos)
 `ifndef ALU_IF__SV

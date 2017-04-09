@@ -124,11 +124,15 @@ The field functional unit can be of the following types:
 | rs2_o                 | Output        | Data for rs2                                                                     | To read operands       |
 | rs2_valid_o           | Output        | Data for rs2 is valid                                                            | To read operands       |
 | commit_instr_o        | Output        | Instruction to commit                                                            | To WB stage            |
-| commit_instr_valid_o  | Output        | Instruction to commit is valid                                                   | To WB stage            |
+| commit_ready_i        | Input         | Commit unit is ready                                                             | To WB stage            |
 | decoded_instr_i       | Input         | Decoded instruction entering scoreboard                                          | From ID                |
 | decoded_instr_valid_i | Input         | Decoded instruction entering scoreboard is valid                                 | From ID                |
 | issue_instr_o         | Output        | Instruction to issue stage                                                       | To Issue               |
 | issue_instr_valid_o   | Output        | Instruction to issue stage is valid                                              | To Issue               |
+| issue_ready_i         | Input         | Issue stage is ready to accept a new instruction                                 | From Issue             |
+| pc_i                  | Input         | PC at which to write back the data                                               | From WB                |
+| wdata_i               | Input         | Write data from WB                                                               | From WB                |
+| wb_valid_i            | Input         | Data from WB stage is valid                                                      | From WB                       |
 
 ### Issue
 

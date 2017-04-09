@@ -1,6 +1,10 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 12/20/2016
 // Description: This package contains all test related functionality.
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
+
 package alu_lib_pkg;
     // Standard UVM import & include:
     import uvm_pkg::*;

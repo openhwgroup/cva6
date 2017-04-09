@@ -1,6 +1,9 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 12/20/2016
 // Description: This is the main memory interface agent.
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 class fu_if_agent extends uvm_component;
     // UVM Factory Registration Macro
     `uvm_component_utils(fu_if_agent)

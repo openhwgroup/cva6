@@ -1,3 +1,10 @@
+// Author: Florian Zaruba, ETH Zurich
+// Date: 09/04/2017
+// Description: Package containing all ALU sequences
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
+
 package alu_sequence_pkg;
 
 

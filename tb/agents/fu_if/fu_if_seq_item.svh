@@ -2,8 +2,9 @@
 // Date: 12/21/2016
 // Description: Sequence contains the necessary fields along with randomization constraints
 //              Requests can be arbitrarily delayed.
-
-// Copy of APB Sequence Item
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 
 class fu_if_seq_item extends uvm_sequence_item;
 

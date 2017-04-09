@@ -2,6 +2,9 @@
 // Date: 03/19/2017
 // Description: Top level testbench module. Instantiates the top level DUT, configures
 //              the virtual interfaces and starts the test passed by +UVM_TEST+
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 module alu_tb;
 
     import uvm_pkg::*;
@@ -33,7 +36,7 @@ module alu_tb;
         .adder_result_o         (     			    ),
 	.multdiv_en_i           ( 1'b0		            ),
         .multdiv_operand_b_i    ( 65'b0			    ),
-	.multdiv_operand_a_i    ( 65'b0		   	    ) 
+	.multdiv_operand_a_i    ( 65'b0		   	    )
     );
 
     initial begin

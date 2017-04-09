@@ -2,7 +2,9 @@
 // Date: 12/20/2016
 // Description: Agent configuration object.
 //              This object is used by the agent to modularize the build and connect process.
-
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 class fu_if_agent_config extends uvm_object;
 
     // UVM Factory Registration Macro

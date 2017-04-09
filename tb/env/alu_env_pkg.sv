@@ -1,7 +1,9 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 12/20/2016
 // Description: Contains the environment for pure alu verification (functional unit interface)
-
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 package alu_env_pkg;
     // Standard UVM import & include:
     import uvm_pkg::*;

@@ -1,3 +1,11 @@
+// Author: Florian Zaruba, ETH Zurich
+// Date: 09/04/2017
+// Description: Fibonacci sequence, loosely based on 'The UVM Primer'
+//              by Ray Salemi
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
+
 class fibonacci_sequence extends fu_if_seq;
 
    `uvm_object_utils(fibonacci_sequence);
@@ -14,7 +22,7 @@ class fibonacci_sequence extends fu_if_seq;
 
       command = fu_if_seq_item::type_id::create("command");
 
-      // reset 
+      // reset
       start_item(command);
       command.operand_a = 0;
       command.operand_b = 0;

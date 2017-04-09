@@ -3,7 +3,9 @@
 // Description: This is the test base class which can be extended by real implementations.
 //              Advantage of that approach is that the individual child classes do not need to care
 //              about the build and connect phase anymore.
-
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 class alu_test_base extends uvm_test;
 
     // UVM Factory Registration Macro

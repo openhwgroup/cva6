@@ -1,3 +1,10 @@
+// Author: Florian Zaruba, ETH Zurich
+// Date: 09/04/2017
+// Description: ALU scoreboard, checks stimuli it receives from
+//              the monitors export
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 class alu_scoreboard extends uvm_scoreboard;
 
     `uvm_component_utils(alu_scoreboard);
@@ -19,7 +26,7 @@ class alu_scoreboard extends uvm_scoreboard;
     virtual function void write (fu_if_seq_item seq_item);
         result = 64'b0;
         result32 = 32'b0;
-
+        // check for all possible ALU operations
         case(alu_op'(seq_item.operator))
             ADD:
               result = seq_item.operand_a + seq_item.operand_b;

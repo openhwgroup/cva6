@@ -1,6 +1,9 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 12/21/2016
 // Description: Driver of the memory interface
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 
 class fu_if_driver extends uvm_driver #(fu_if_seq_item);
 

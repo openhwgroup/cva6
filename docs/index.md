@@ -5,7 +5,7 @@ This document describes the 5-stage, single issue Ariane CPU which implements th
 ## Scope and Purpose
 
 The purpose of the core is to run a full OS at reasonable speed and IPC. To achieve the necessary speed (targeting 1.6ns cycle time in UMC65) the core features a 5-stage pipelined design. In order to increase the IPC the CPU features a scoreboarding technique that should hide the rather long latency to the data RAM (cache) by issuing independent instructions.
-The instruction RAM has (or L1 instruction cache) an access latency of 1 cycle on a hit, while accesses to the data RAM (or L2 data cache) have a longer latency of 3 cycles on a hit.
+The instruction RAM has (or L1 instruction cache) an access latency of 1 cycle on a hit, while accesses to the data RAM (or L1 data cache) have a longer latency of 3 cycles on a hit.
 
 ![Ariane Block Diagram](fig/ariane_overview.png)
 
@@ -31,5 +31,19 @@ Things that need to be done (in no particular order):
 - Scoreboard testbench
 - Branch prediction, detailed block diagram
 - Processor front-end, detailed design
-- Commit stage, detailed design
+- Commit stage, detailed design (especially concerning CSR register, APB interface)
 - LSU detailed design
+- Debug
+
+## File Headers
+
+For the time being everything is restricted with all rights reserved:
+
+```
+// Author: <name>, ETH Zurich
+// Date: <date>
+// Description: Lorem Impsum...
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
+```

@@ -2,7 +2,9 @@
 // Date: 12/20/2016
 // Description: This is the main implementation of the test class.
 //              Randomized testing should take place here.
-
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
 class alu_test extends alu_test_base;
     // UVM Factory Registration Macro
     `uvm_component_utils(alu_test)
