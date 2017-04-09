@@ -25,7 +25,7 @@ class alu_scoreboard extends uvm_scoreboard;
       		    result = seq_item.operand_a + seq_item.operand_b;
             ADDW: begin
       		    result32 = seq_item.operand_a[31:0] + seq_item.operand_b[31:0];
-      		    result = {{32{result32[31]}}, result32};
+      		    result = {{32{result32[31]}}, result32}; // sign extend the result
       	    end
       	    SUB:
         		  result = seq_item.operand_a - seq_item.operand_b;
@@ -45,12 +45,16 @@ class alu_scoreboard extends uvm_scoreboard;
               result = $unsigned(seq_item.operand_a) >>> seq_item.operand_b[5:0];
             SLL:
               result = $unsigned(seq_item.operand_a) <<< seq_item.operand_b[5:0];
-            SRLW:
+            SRLW: begin
               result32 = $unsigned(seq_item.operand_a[31:0]) >>> seq_item.operand_b[4:0];
+              result = {{32{result32[31]}}, result32};
+            end
             SLLW:
               result32 = $unsigned(seq_item.operand_a[31:0]) <<< seq_item.operand_b[4:0];
+              result = {{32{result32[31]}}, result32};
             SRAW:
               result32 = $signed(seq_item.operand_a[31:0]) >>> seq_item.operand_b[4:0];
+              result = {{32{result32[31]}}, result32};
         endcase
 
         if (result != seq_item.result)
