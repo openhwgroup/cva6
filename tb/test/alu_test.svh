@@ -12,7 +12,9 @@ class alu_test extends alu_test_base;
     addw_sequence addw_sequence;
     subw_sequence subw_sequence;
     sub_sequence  sub_sequence;
-
+    xor_sequence  xor_sequence;
+    or_sequence   or_sequence;
+    and_sequence  and_sequence;
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -42,6 +44,15 @@ class alu_test extends alu_test_base;
 
         sub_sequence = new("sub");
         sub_sequence.start(sequencer_h);
+
+        xor_sequence = new("xor");
+        xor_sequence.start(sequencer_h);
+
+        or_sequence  = new("or");
+        or_sequence.start(sequencer_h);
+
+        and_sequence = new("and");
+        and_sequence.start(sequencer_h);
 
         fibonacci = new("fibonacci");
         fibonacci.start(sequencer_h);

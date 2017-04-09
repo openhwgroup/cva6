@@ -13,5 +13,8 @@ import ariane_pkg::*;
 `include "addw_sequence.svh"
 `include "subw_sequence.svh"
 `include "sub_sequence.svh"
+`include "xor_sequence.svh"
+`include "or_sequence.svh"
+`include "and_sequence.svh"
 
 endpackage
