@@ -16,15 +16,12 @@ class fu_if_agent_config extends uvm_object;
     // Is the agent active or passive
     uvm_active_passive_enum active = UVM_ACTIVE;
 
-    // Is the memory interface a master or slave
-    bit is_master = 0;
-
     // Standard UVM Methods:
-    extern function new(string name = "fu_if_agent_config");
+    function new(string name = "fu_if_agent_config");
+        super.new(name);
+    endfunction : new
 
 endclass : fu_if_agent_config
 
 
-function fu_if_agent_config::new(string name = "fu_if_agent_config");
-    super.new(name);
-endfunction : new
+

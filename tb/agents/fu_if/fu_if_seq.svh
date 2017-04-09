@@ -23,22 +23,19 @@ class fu_if_seq extends uvm_sequence #(fu_if_seq_item);
     //------------------------------------------
 
     // Standard UVM Methods:
-    extern function new(string name = "fu_if_seq");
-    extern task body;
+    function new(string name = "fu_if_seq");
+      super.new(name);
+    endfunction
+
+    task body;
+      fu_if_seq_item req;
+
+      begin
+        req = fu_if_seq_item::type_id::create("req");
+        start_item(req);
+        assert(req.randomize());
+        finish_item(req);
+      end
+    endtask:body
 
 endclass:fu_if_seq
-
-function fu_if_seq::new(string name = "fu_if_seq");
-  super.new(name);
-endfunction
-
-task fu_if_seq::body;
-  fu_if_seq_item req;
-
-  begin
-    req = fu_if_seq_item::type_id::create("req");
-    start_item(req);
-    assert(req.randomize());
-    finish_item(req);
-  end
-endtask:body

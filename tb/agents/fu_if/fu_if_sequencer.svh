@@ -9,10 +9,10 @@ class fu_if_sequencer extends uvm_sequencer #(fu_if_seq_item);
     `uvm_component_utils(fu_if_sequencer)
 
     // Standard UVM Methods:
-    extern function new(string name="fu_if_sequencer", uvm_component parent = null);
+    function new(string name="fu_if_sequencer", uvm_component parent = null);
+        super.new(name, parent);
+    endfunction
 
     endclass: fu_if_sequencer
 
-    function fu_if_sequencer::new(string name="fu_if_sequencer", uvm_component parent = null);
-      super.new(name, parent);
-endfunction
+

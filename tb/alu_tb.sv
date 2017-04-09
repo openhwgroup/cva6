@@ -39,7 +39,7 @@ module alu_tb;
 	// register the alu itnerface
 	uvm_config_db #(virtual fu_if)::set(null, "uvm_test_top", "fu_vif", alu_if);
     end
-	
+
     initial begin
         clk = 1'b0;
 	rstn_i = 1'b0;
@@ -51,11 +51,11 @@ module alu_tb;
 	    #10ns clk = ~clk;
 	end
     end
-    
+
     initial begin
         // print the topology
         uvm_top.enable_print_topology = 1;
-	// Start UVM test
+	    // Start UVM test
         run_test();
     end
 endmodule
