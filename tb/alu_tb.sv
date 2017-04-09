@@ -23,16 +23,17 @@ module alu_tb;
     alu
     dut
     (
-        .clk                    ( clk                       ),
-        .rst_n                  ( rstn_i                    ),
         .operator_i             ( alu_op'(alu_if.operator)  ),
         .operand_a_i            ( alu_if.operand_a          ),
         .operand_b_i            ( alu_if.operand_b          ),
-        .operand_c_i            ( alu_if.operand_c          ),
         .result_o               ( alu_if.result             ),
         .comparison_result_o    ( alu_if.comparison_result  ),
-        .ready_o                ( alu_if.valid              ),
-        .ex_ready_i             ( alu_if.ready              )
+        .is_equal_result_o      (  		            ),
+        .adder_result_ext_o     (   		            ),
+        .adder_result_o         (     			    ),
+	.multdiv_en_i           ( 1'b0		            ),
+        .multdiv_operand_b_i    ( 65'b0			    ),
+	.multdiv_operand_a_i    ( 65'b0		   	    ) 
     );
 
     initial begin

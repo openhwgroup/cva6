@@ -36,11 +36,11 @@ typedef enum logic[3:0] {
 // ---------------
 // EX Stage
 // ---------------
-typedef enum logic [7:0]      { ADD, SUB,                                        // basic ALU op
-                                LXOR, LOR, LAND,                                 // logic operations
-                                SRA, SRL, SLL,                                   // shifts
+typedef enum logic [7:0]      { ADD, SUB, ADDW, SUBW,                            // basic ALU op
+                                XORL, ORL, ANDL,                                 // logic operations
+                                SRA, SRL, SLL, SRLW, SLLW, SRAW,                 // shifts
                                 LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,  // comparisons
-                                SLTS, SLTU, SLETS, SLETU,                        // set lower than operations
+                                SLTS, SLTU, SLETS, SLETU                         // set lower than operations
                               } alu_op;
 
 typedef enum logic [1:0]      { mode8, mode16 } vec_mode;
