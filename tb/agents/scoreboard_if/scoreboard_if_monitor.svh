@@ -41,8 +41,8 @@ class scoreboard_if_monitor extends uvm_component;
 
     task run_phase(uvm_phase phase);
 
-	fu_if_seq_item cmd =  scoreboard_if_seq_item::type_id::create("cmd");
-	fu_if_seq_item cloned_item;
+	scoreboard_if_seq_item cmd =  scoreboard_if_seq_item::type_id::create("cmd");
+	scoreboard_if_seq_item cloned_item;
 
         forever begin : cmd_loop
             // longint result;

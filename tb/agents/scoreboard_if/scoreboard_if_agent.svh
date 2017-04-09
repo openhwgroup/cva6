@@ -10,7 +10,7 @@ class scoreboard_if_agent extends uvm_component;
     //------------------------------------------
     // Data Members
     //------------------------------------------
-    fu_if_agent_config m_cfg;
+    scoreboard_if_agent_config m_cfg;
     //------------------------------------------
     // Component Members
     //------------------------------------------
@@ -43,4 +43,4 @@ class scoreboard_if_agent extends uvm_component;
         m_monitor.m_cfg = m_cfg;
 
     endfunction: connect_phase
-endclass : fu_if_agent
+endclass : scoreboard_if_agent

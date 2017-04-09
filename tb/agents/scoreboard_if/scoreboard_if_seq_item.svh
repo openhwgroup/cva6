@@ -55,7 +55,7 @@ class scoreboard_if_seq_item extends uvm_sequence_item;
       return super.do_compare(rhs, comparer) &&
                 instruction_type == rhs_.instruction_type     &&
                 scoreboard_entry == rhs_.scoreboard_entry   &&
-                delay == rhs_.delay
+                delay == rhs_.delay;
     endfunction:do_compare
 
     function string convert2string();

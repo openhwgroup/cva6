@@ -9,6 +9,7 @@
 package scoreboard_if_agent_pkg;
     // UVM Import
     import uvm_pkg::*;
+    import ariane_pkg::*;
     `include "uvm_macros.svh"
 
     // Sequence item to model transactions
@@ -18,7 +19,7 @@ package scoreboard_if_agent_pkg;
     // Driver
     `include "scoreboard_if_driver.svh"
     // Coverage monitor
-    // `include "fu_if_coverage_monitor.svh"
+    // `include "scoreboard_if_coverage_monitor.svh"
     // Monitor that includes analysis port
     `include "scoreboard_if_monitor.svh"
     // Sequencer
@@ -27,4 +28,4 @@ package scoreboard_if_agent_pkg;
     `include "scoreboard_if_agent.svh"
     // Sequence
     `include "scoreboard_if_seq.svh"
-endpackage: fu_if_agent_pkg
+endpackage: scoreboard_if_agent_pkg

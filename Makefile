@@ -38,7 +38,6 @@ build:
 	# Optimize top level
 	vopt${questa_version} ${compile_flag} ${top_level} -o ${top_level}_optimized +acc -check_synthesis
 
-	# vopt${questa_version} instr_cache_top_dut -o instr_cache_top_dut_optimized +acc -check_synthesis
 # Run the specified test case
 sim:
 	# vsim${questa_version} ${top_level}_optimized -c -do "run -a"

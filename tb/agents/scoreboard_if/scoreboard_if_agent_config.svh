@@ -9,10 +9,10 @@
 class scoreboard_if_agent_config extends uvm_object;
 
     // UVM Factory Registration Macro
-    `uvm_object_utils(fu_if_agent_config)
+    `uvm_object_utils(scoreboard_if_agent_config)
 
     // Virtual Interface
-    virtual fu_if scoreboard_if;
+    virtual scoreboard_if scoreboard;
     //------------------------------------------
     // Data Members
     //------------------------------------------
