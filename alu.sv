@@ -111,9 +111,9 @@ module alu
 
   assign shift_amt = operand_b_i;
 
-  assign shift_left = (operator_i == sll) | (operator_i == sllw);
+  assign shift_left = (operator_i == SLL) | (operator_i == SLLW);
 
-  assign shift_arithmetic = (operator_i == sra) | (operator_i == sraw);
+  assign shift_arithmetic = (operator_i == SRA) | (operator_i == SRAW);
 
   // right shifts, we let the synthesizer optimize this
   logic [64:0] shift_op_a_64;
