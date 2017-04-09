@@ -34,11 +34,11 @@ class alu_scoreboard extends uvm_scoreboard;
       		    result = {{32{result32[31]}}, result32};
       	    end
             XORL:
-              result =  seq_item.operand_a xor seq_item.operand_b;
+              result =  seq_item.operand_a ^ seq_item.operand_b;
             ORL:
-              result =  seq_item.operand_a or seq_item.operand_b;
+              result =  seq_item.operand_a | seq_item.operand_b;
             ANDL:
-              result =  seq_item.operand_a and seq_item.operand_b;
+              result =  seq_item.operand_a & seq_item.operand_b;
             SRA:
               result = $signed(seq_item.operand_a) >>> seq_item.operand_b[5:0];
             SRL:
