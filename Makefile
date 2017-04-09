@@ -8,10 +8,10 @@ library = work
 top_level = alu_tb
 # path to agents
 agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv \
-		 tb/agents/scoreboard_if/scoreboard_if.sv tb/agents/scoreboard_if/scoreboard_if_agent_pkg.sv
+	include/ariane_pkg.svh tb/agents/scoreboard_if/scoreboard_if.sv tb/agents/scoreboard_if/scoreboard_if_agent_pkg.sv
 
 # this list contains the standalone components
-src = include/ariane_pkg.svh alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv tb/alu_tb.sv
+src = alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv tb/alu_tb.sv
 
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
@@ -30,10 +30,10 @@ build:
 	# Create the library
 #	rm -rf ${library}
 	vlib${questa_version} ${library}
-	# Compile source files
+	# Suppress message that always_latch may not be checked thoroughly bu Questa.
 	# Compile agents
 	vlog${questa_version} ${compile_flag} -incr ${agents} ${list_incdir} -suppress 2583
-	# Suppress message that always_latch may not be checked thoroughly bu Questa.
+	# Compile source files
 	vlog${questa_version} ${compile_flag} -incr ${src} ${list_incdir} -suppress 2583
 	# Optimize top level
 	vopt${questa_version} ${compile_flag} ${top_level} -o ${top_level}_optimized +acc -check_synthesis
@@ -48,5 +48,7 @@ lint:
 	verilator ${src} --lint-only \
 	${list_incdir}
 
+clean:
+	rm -rf work/
 .PHONY:
 	build lint
