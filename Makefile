@@ -17,6 +17,7 @@ incdir = ./includes
 test_case = alu_test
 # QuestaSim Version
 questa_version = -10.5c
+compile_flag = +cover=bcfst+/dut
 
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
@@ -29,11 +30,11 @@ build:
 	vlib${questa_version} ${library}
 	# Compile source files
 	# Compile agents
-	vlog${questa_version} -incr ${agents} ${list_incdir} -suppress 2583
+	vlog${questa_version} ${compile_flag} -incr ${agents} ${list_incdir} -suppress 2583
 	# Suppress message that always_latch may not be checked thoroughly bu Questa.
-	vlog${questa_version} -incr ${src} ${list_incdir} -suppress 2583
+	vlog${questa_version} ${compile_flag} -incr ${src} ${list_incdir} -suppress 2583
 	# Optimize top level
-	vopt${questa_version} ${top_level} -o ${top_level}_optimized +acc -check_synthesis
+	vopt${questa_version} ${compile_flag} ${top_level} -o ${top_level}_optimized +acc -check_synthesis
 
 	# vopt${questa_version} instr_cache_top_dut -o instr_cache_top_dut_optimized +acc -check_synthesis
 # Run the specified test case
