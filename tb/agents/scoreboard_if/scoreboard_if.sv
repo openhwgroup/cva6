@@ -9,37 +9,39 @@
 // Guard statement proposed by "Easier UVM" (doulos)
 `ifndef SCOREBOARD_IF__SV
 `define SCOREBOARD_IF_SV
+
+import ariane_pkg::*;
+
 interface scoreboard_if (input clk);
-    wire                                   rst;
     wire                                   full;
     wire                                   flush;
-    wire [31:0][7:0]           rd_clobber;
+    wire [31:0][$bits(fu_t)-1:0]           rd_clobber;
     wire [4:0]                             rs1_address;
     wire [63:0]                            rs1;
     wire                                   rs1_valid;
     wire [4:0]                             rs2_address;
     wire [63:0]                            rs2;
     wire                                   rs2_valid;
-    wire                                   commitnstr;
-    wire                                   commit_ready;
-    wire                                   decodednstr;
-    wire                                   decodednstr_valid;
-    wire                                   issuenstr;
-    wire                                   issuenstr_valid;
-    wire                                   issue_ready;
+    scoreboard_entry                       commit_instr;
+    wire                                   commit_ack;
+    scoreboard_entry                       decoded_instr;
+    wire                                   decoded_instr_valid;
+    scoreboard_entry                       issue_instr;
+    wire                                   issue_instr_valid;
+    wire                                   issue_ack;
     wire [63:0]                            pc;
     wire [63:0]                            wdata;
     wire                                   wb_valid;
 
     // Scoreboard interface configured as master
     clocking mck @(posedge clk);
-        output   rst, flush, rs1_address, rs2_address, commit_ready, decodednstr, decodednstr_valid, issue_ready, pc, wdata, wb_valid;
-        input    full, rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commitnstr, issuenstr, issuenstr_valid;
+        output   flush, rs1_address, rs2_address, commit_ack, decoded_instr, decoded_instr_valid, issue_ack, pc, wdata, wb_valid;
+        input    full, rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commit_instr, issue_instr, issue_instr_valid;
     endclocking
     // Scoreboard interface configured in passive mode (-> monitor)
     clocking pck @(posedge clk);
-        input rst, flush, rs1_address, rs2_address, commit_ready, decodednstr, decodednstr_valid, issue_ready, pc, wdata, wb_valid,
-              full, rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commitnstr, issuenstr, issuenstr_valid;
+        input flush, rs1_address, rs2_address, commit_ack, decoded_instr, decoded_instr_valid, issue_ack, pc, wdata, wb_valid,
+              full, rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commit_instr, issue_instr, issue_instr_valid;
     endclocking
 
     modport master  (clocking mck);

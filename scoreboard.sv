@@ -30,7 +30,7 @@ module scoreboard #(
 
     // advertise instruction to commit stage, if ready_i is asserted advance the commit pointer
     output dtype                                   commit_instr_o,
-    input  logic                                   commit_ready_i,
+    input  logic                                   commit_ack_i,
 
     // instruction to put on top of scoreboard e.g.: top pointer
     // we can always put this instruction to the top unless we signal with asserted full_o
@@ -40,7 +40,7 @@ module scoreboard #(
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
     output dtype                                   issue_instr_o,
     output logic                                   issue_instr_valid_o,
-    input  logic                                   issue_ready_i,
+    input  logic                                   issue_ack_i,
 
     // write-back port
     input logic[63:0]                              pc_i,        // PC at which to write the result back
@@ -51,16 +51,18 @@ localparam BITS_ENTRIES      = $clog2(NR_ENTRIES);
 
 dtype [NR_ENTRIES-1:0]         mem;
 logic [BITS_ENTRIES-1:0]       issue_pointer_n, issue_pointer_q, // points to the instruction currently in issue
-                               commit_pointer_n, commit_pointer_q, // points to the instruction currently in commit
-                               top_pointer_n, top_pointer_q; // points to the top of the scoreboard, an empty slot
+                               commit_pointer_n, commit_pointer_q, commit_pointer_qq, // points to the instruction currently in commit
+                               top_pointer_n, top_pointer_q, top_pointer_qq; // points to the top of the scoreboard, an empty slot, top pointer two cycles ago
 
 logic                          pointer_overflow;
 logic                          empty;
-
+logic                          reset_condition;
 // full and empty signaling: signal that we are not able to take new instructions
 // track pointer overflow
-assign pointer_overflow = (commit_pointer_q <= top_pointer_q) ? 1'b0 : 1'b1;
-assign full_o           = (pointer_overflow) ? (commit_pointer_q == top_pointer_q) : 1'b0;
+// && top_pointer_q >= top_pointer_qq
+assign reset_condition  = top_pointer_q == top_pointer_qq;
+assign pointer_overflow = (top_pointer_q <= commit_pointer_q && ~reset_condition) ? 1'b1 : 1'b0;
+assign full_o           = (reset_condition) ? 1'b0 : (commit_pointer_q == top_pointer_q);
 assign empty            = (pointer_overflow) ? 1'b0 : (commit_pointer_q == top_pointer_q);
 
 // rd_clobber output: output currently clobbered destination registers
@@ -169,6 +171,7 @@ end
 // issue instruction: advance the issue pointer
 always_comb begin : issue_instruction
 
+
     // provide a combinatorial path in case the scoreboard is empty
     if (empty) begin
         issue_instr_o       = decoded_instr_i;
@@ -176,12 +179,27 @@ always_comb begin : issue_instruction
     // if not empty go to scoreboard and get the instruction at the issue pointer
     end else begin
         issue_instr_o = mem[$unsigned(issue_pointer_q)];
-        issue_instr_valid_o = 1'b1;
+        // we have not reached the top of the buffer
+        // issue pointer has overflowed
+        if (issue_pointer_q < commit_pointer_q) begin
+            if (issue_pointer_q <= top_pointer_q)
+                issue_instr_valid_o = 1'b1;
+            else
+                issue_instr_valid_o = 1'b0;
+        end else begin // issue pointer has not overflowed
+            if (pointer_overflow)
+                issue_instr_valid_o = 1'b1;
+            else if (issue_pointer_q <= top_pointer_q)
+                issue_instr_valid_o = 1'b1;
+            else
+                issue_instr_valid_o = 1'b0;
+        end
+
     end
     // default assignment: issue didn't read
     issue_pointer_n = issue_pointer_q;
     // advance pointer if the issue logic was ready
-    if (issue_ready_i) begin
+    if (issue_ack_i) begin
         issue_pointer_n = issue_pointer_q + 1;
     end
 
@@ -193,7 +211,7 @@ always_comb begin: commit_instruction
     // we can always safely output the instruction at which the commit pointer points
     // since the scoreboard entry has a valid bit which the commit stage needs to check anyway
     commit_instr_o   = mem[commit_pointer_q];
-    if (commit_ready_i) begin
+    if (commit_ack_i) begin
         commit_pointer_n = commit_pointer_q + 1;
     end
 end
@@ -201,20 +219,80 @@ end
 // sequential process
 always_ff @(posedge clk_i or negedge rst_ni) begin : sequential
     if(~rst_ni) begin
-        issue_pointer_q  <= '{default: 0};
-        commit_pointer_q <= '{default: 0};
-        top_pointer_q    <= '{default: 0};
+        issue_pointer_q   <= '{default: 0};
+        commit_pointer_q  <= '{default: 0};
+        top_pointer_q     <= '{default: 0};
+        top_pointer_qq    <= '{default: 0};
+    end else if (flush_i) begin // reset pointers on flush
+        issue_pointer_q   <= '{default: 0};
+        commit_pointer_q  <= '{default: 0};
+        top_pointer_q     <= '{default: 0};
+        top_pointer_qq    <= '{default: 0};
     end else begin
-        issue_pointer_q  <= issue_pointer_n;
-        commit_pointer_q <= commit_pointer_n;
-        top_pointer_q    <= top_pointer_n;
+        issue_pointer_q   <= issue_pointer_n;
+        commit_pointer_q  <= commit_pointer_n;
+        top_pointer_q     <= top_pointer_n;
+        if (decoded_instr_valid_i) // only advance if we decoded instruction
+            top_pointer_qq    <= top_pointer_q;
     end
 end
 
 `ifndef SYNTHESIS
 `ifndef verilator
-    assert (NR_ENTRIES == 2**$clog2(NR_ENTRIES)) else $error("Scoreboard size needs to be a power of two.");
-    // there should never be more than one instruction writing the same destination register (except x0)
+initial begin
+    assert (NR_ENTRIES == 2**$clog2(NR_ENTRIES)) else $fatal("Scoreboard size needs to be a power of two.");
+end
+
+// assert that zero is never set
+assert property (
+    @(posedge clk_i) rst_ni |-> (rd_clobber_o[0] == NONE))
+    else $error ("RD 0 should not bet set");
+// assert that we never acknowledge a commit if the instruction is not valid
+assert property (
+    @(posedge clk_i) (rst_ni && commit_ack_i |-> commit_instr_o.valid))
+    else $error ("Commit acknowledged but instruction is not valid");
+// assert that we never give an issue ack signal if the instruction is not valid
+assert property (
+    @(posedge clk_i) (rst_ni && issue_ack_i |-> issue_instr_valid_o))
+    else $error ("Issue acknowledged but instruction is not valid");
+
+// there should never be more than one instruction writing the same destination register (except x0)
+// assert strict pointer ordering
+
+// print scoreboard
+// initial begin
+//         automatic string pointer = "";
+//         static integer f = $fopen("scoreboard.txt", "w");
+
+//         forever begin
+//             wait(rst_ni == 1'b1);
+//             @(posedge clk_i)
+//             $fwrite(f, $time);
+//             $fwrite(f, "\n");
+//             $fwrite(f, "._________________________.\n");
+//             for (int i = 0; i < NR_ENTRIES; i++) begin
+//                 if (i == commit_pointer_q && i == issue_pointer_q && i == top_pointer_q)
+//                     pointer = " <- top, issue, commit pointer";
+//                 else if (i == commit_pointer_q && i == issue_pointer_q)
+//                     pointer = " <- issue, commit pointer";
+//                 else if (i == top_pointer_q && i == issue_pointer_q)
+//                     pointer = " <- top, issue pointer";
+//                 else if (i == top_pointer_q && i == commit_pointer_q)
+//                     pointer = " <- top, commit pointer";
+//                 else if (i == top_pointer_q)
+//                     pointer = " <- top pointer";
+//                 else if (i == commit_pointer_q)
+//                     pointer = " <- commit pointer";
+//                 else if (i == issue_pointer_q)
+//                     pointer = " <- issue pointer";
+//                 else
+//                     pointer = "";
+//                 $fwrite(f, "|_________________________| %s\n", pointer);
+//             end
+//              $fwrite(f, "\n");
+//         end
+//         $fclose(f);
+// end
 `endif
 `endif
 endmodule

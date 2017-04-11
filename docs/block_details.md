@@ -112,27 +112,27 @@ The field functional unit can be of the following types:
 
 #### Interface
 
-|       **Signal**      | **Direction** |                                 **Description**                                  |      **Category**      |
-|-----------------------|---------------|----------------------------------------------------------------------------------|------------------------|
-| flush_i               | Input         | Flush Scoreboard                                                                 | Control                |
-| full_o                | Output        | Scoreboard is full                                                               | Control                |
-| rd_clobber_o          | Output        | Used destination registers, includes the FU that is going to write this register | To issue/read operands |
-| rs1_i                 | Input         | Check the scoreboard for a valid register at that address                        | From read operands     |
-| rs2_i                 | Input         | Check the scoreboard for a valid register at that address                        | From read operands     |
-| rs1_o                 | Output        | Data for rs1                                                                     | To read operands       |
-| rs1_valid_o           | Output        | Data for rs1 is valid                                                            | To read operands       |
-| rs2_o                 | Output        | Data for rs2                                                                     | To read operands       |
-| rs2_valid_o           | Output        | Data for rs2 is valid                                                            | To read operands       |
-| commit_instr_o        | Output        | Instruction to commit                                                            | To WB stage            |
-| commit_ready_i        | Input         | Commit unit is ready                                                             | To WB stage            |
-| decoded_instr_i       | Input         | Decoded instruction entering scoreboard                                          | From ID                |
-| decoded_instr_valid_i | Input         | Decoded instruction entering scoreboard is valid                                 | From ID                |
-| issue_instr_o         | Output        | Instruction to issue stage                                                       | To Issue               |
-| issue_instr_valid_o   | Output        | Instruction to issue stage is valid                                              | To Issue               |
-| issue_ready_i         | Input         | Issue stage is ready to accept a new instruction                                 | From Issue             |
-| pc_i                  | Input         | PC at which to write back the data                                               | From WB                |
-| wdata_i               | Input         | Write data from WB                                                               | From WB                |
-| wb_valid_i            | Input         | Data from WB stage is valid                                                      | From WB                       |
+|       **Signal**      | **Direction** |                                  **Description**                                  |      **Category**      |
+|-----------------------|---------------|-----------------------------------------------------------------------------------|------------------------|
+| flush_i               | Input         | Flush Scoreboard                                                                  | Control                |
+| full_o                | Output        | Scoreboard is full                                                                | Control                |
+| rd_clobber_o          | Output        | Used destination registers, includes the FU that is going to write this register  | To issue/read operands |
+| rs1_i                 | Input         | Check the scoreboard for a valid register at that address                         | From read operands     |
+| rs2_i                 | Input         | Check the scoreboard for a valid register at that address                         | From read operands     |
+| rs1_o                 | Output        | Data for rs1                                                                      | To read operands       |
+| rs1_valid_o           | Output        | Data for rs1 is valid                                                             | To read operands       |
+| rs2_o                 | Output        | Data for rs2                                                                      | To read operands       |
+| rs2_valid_o           | Output        | Data for rs2 is valid                                                             | To read operands       |
+| commit_instr_o        | Output        | Instruction to commit                                                             | To WB stage            |
+| commit_ack_i          | Input         | Commit unit acknowledges instruction, it mus immediately begin with processing it | To WB stage            |
+| decoded_instr_i       | Input         | Decoded instruction entering scoreboard                                           | From ID                |
+| decoded_instr_valid_i | Input         | Decoded instruction entering scoreboard is valid                                  | From ID                |
+| issue_instr_o         | Output        | Instruction to issue stage                                                        | To Issue               |
+| issue_instr_valid_o   | Output        | Instruction to issue stage is valid                                               | To Issue               |
+| issue_ack_i           | Input         | Issue stage is acknowledging instruction, it must immediately begin processing    | From Issue             |
+| pc_i                  | Input         | PC at which to write back the data                                                | From WB                |
+| wdata_i               | Input         | Write data from WB                                                                | From WB                |
+| wb_valid_i            | Input         | Data from WB stage is valid                                                       | From WB                |
 
 ### Issue
 

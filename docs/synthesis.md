@@ -12,3 +12,14 @@ Synthesized @ 0.4 ns, typical case, UMC65:
 | **Total**     | **45568 (~32 kGE)**            | **32441 (~23 kGE)**        | **16088 (~ 11 kGE)**       |
 
 
+## ALU
+
+|    **Type**   | **1.6 ns, worst case, UMC65** |
+|---------------|-------------------------------|
+| Sequential    | 0                             |
+| Combinatorial | 9019                          |
+| Buffer        | 582                           |
+| **Total**     | **9019 (~6.4 kGE)**           |
+
+
+w
