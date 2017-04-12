@@ -49,9 +49,9 @@ module scoreboard #(
 );
 localparam BITS_ENTRIES      = $clog2(NR_ENTRIES);
 
-dtype [NR_ENTRIES-1:0]         mem;
+dtype [NR_ENTRIES-1:0]         mem_q, mem_n;
 logic [BITS_ENTRIES-1:0]       issue_pointer_n, issue_pointer_q, // points to the instruction currently in issue
-                               commit_pointer_n, commit_pointer_q, commit_pointer_qq, // points to the instruction currently in commit
+                               commit_pointer_n, commit_pointer_q, // points to the instruction currently in commit
                                top_pointer_n, top_pointer_q, top_pointer_qq; // points to the top of the scoreboard, an empty slot, top pointer two cycles ago
 
 logic                          pointer_overflow;
@@ -84,12 +84,12 @@ always_comb begin : clobber_output
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             // non overflowed case, depicted on the left
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q && i[BITS_ENTRIES-1:0] < issue_pointer_q)
-                rd_clobber_o[mem[i].rd] = mem[i].fu;
+                rd_clobber_o[mem_q[i].rd] = mem_q[i].fu;
         end
     end else begin // the issue pointer has overflowed, invert logic, depicted on the right
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q)
-                rd_clobber_o[mem[i].rd] = mem[i].fu;
+                rd_clobber_o[mem_q[i].rd] = mem_q[i].fu;
         end
     end
     // the zero register is always free
@@ -108,13 +108,13 @@ always_comb begin : read_operands
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q && i[BITS_ENTRIES-1:0] < issue_pointer_q) begin
                 // look at the appropriate fields and look whether there was an
                 // instruction that wrote the rd field before, first for RS1 and then for RS2
-                if (mem[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
-                    rs1_o = mem[i].result;
-                    rs1_valid_o = mem[i].valid;
+                if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
+                    rs1_o = mem_q[i].result;
+                    rs1_valid_o = mem_q[i].valid;
                 // do the same for rs2
-                end else if (mem[i].rd == rs2_i) begin
-                    rs2_o = mem[i].result;
-                    rs2_valid_o = mem[i].valid;
+                end else if (mem_q[i].rd == rs2_i) begin
+                    rs2_o = mem_q[i].result;
+                    rs2_valid_o = mem_q[i].valid;
                 end
             end
         end
@@ -122,13 +122,13 @@ always_comb begin : read_operands
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q) begin
                 // same as above but for the overflowed pointer case
-                if (mem[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
-                    rs1_o = mem[i].result;
-                    rs1_valid_o = mem[i].valid;
+                if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
+                    rs1_o = mem_q[i].result;
+                    rs1_valid_o = mem_q[i].valid;
                 // do the same for rs2
-                end else if (mem[i[BITS_ENTRIES-1:0]].rd == rs2_i) begin
-                    rs2_o = mem[i].result;
-                    rs2_valid_o = mem[i].valid;
+                end else if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs2_i) begin
+                    rs2_o = mem_q[i].result;
+                    rs2_valid_o = mem_q[i].valid;
                 end
             end
         end
@@ -144,9 +144,10 @@ end
 always_latch begin : push_instruction_and_wb
     // default assignment
     top_pointer_n = top_pointer_q;
+    mem_n = mem_q;
     // if we are not full we can push a new instruction
     if (~full_o && decoded_instr_valid_i) begin
-        mem[$unsigned(top_pointer_q)] = decoded_instr_i;
+        mem_n[$unsigned(top_pointer_q)] = decoded_instr_i;
         top_pointer_n = top_pointer_q + 1;
     end
 
@@ -155,16 +156,16 @@ always_latch begin : push_instruction_and_wb
     // also set the valid bit
     if (wb_valid_i) begin
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
-            if (mem[i].pc == pc_i) begin
-                mem[i].valid  = 1'b1;
-                mem[i].result = wdata_i;
+            if (mem_q[i].pc == pc_i) begin
+                mem_n[i].valid  = 1'b1;
+                mem_n[i].result = wdata_i;
             end
         end
     end
 
     // flush signal
     if (flush_i)
-        mem = '{default: 0};
+        mem_n = '{default: 0};
 
 end
 
@@ -173,16 +174,16 @@ always_comb begin : issue_instruction
 
 
     // provide a combinatorial path in case the scoreboard is empty
-    if (empty) begin
+    if (top_pointer_q == issue_pointer_q) begin
         issue_instr_o       = decoded_instr_i;
         issue_instr_valid_o = decoded_instr_valid_i;
     // if not empty go to scoreboard and get the instruction at the issue pointer
     end else begin
-        issue_instr_o = mem[$unsigned(issue_pointer_q)];
+        issue_instr_o = mem_q[$unsigned(issue_pointer_q)];
         // we have not reached the top of the buffer
         // issue pointer has overflowed
-        if (issue_pointer_q < commit_pointer_q) begin
-            if (issue_pointer_q <= top_pointer_q)
+        if (issue_pointer_q <= commit_pointer_q) begin
+            if (issue_pointer_q < top_pointer_q)
                 issue_instr_valid_o = 1'b1;
             else
                 issue_instr_valid_o = 1'b0;
@@ -210,7 +211,7 @@ always_comb begin: commit_instruction
     commit_pointer_n = commit_pointer_q;
     // we can always safely output the instruction at which the commit pointer points
     // since the scoreboard entry has a valid bit which the commit stage needs to check anyway
-    commit_instr_o   = mem[commit_pointer_q];
+    commit_instr_o   = mem_q[commit_pointer_q];
     if (commit_ack_i) begin
         commit_pointer_n = commit_pointer_q + 1;
     end
@@ -223,15 +224,18 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : sequential
         commit_pointer_q  <= '{default: 0};
         top_pointer_q     <= '{default: 0};
         top_pointer_qq    <= '{default: 0};
+        mem_q             <= '{default: 0};
     end else if (flush_i) begin // reset pointers on flush
         issue_pointer_q   <= '{default: 0};
         commit_pointer_q  <= '{default: 0};
         top_pointer_q     <= '{default: 0};
         top_pointer_qq    <= '{default: 0};
+        mem_q             <= '{default: 0};
     end else begin
         issue_pointer_q   <= issue_pointer_n;
         commit_pointer_q  <= commit_pointer_n;
         top_pointer_q     <= top_pointer_n;
+        mem_q             <= mem_n;
         if (decoded_instr_valid_i) // only advance if we decoded instruction
             top_pointer_qq    <= top_pointer_q;
     end

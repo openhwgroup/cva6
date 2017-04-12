@@ -6,7 +6,7 @@
 // Copyright (C) 2017 ETH Zurich, University of Bologna
 // All rights reserved.
 //
-// TODO, test register read and clobber interface
+// TODO, test register read and clobber interface, make a proper TB out of it
 module scoreboard_tb;
 
 import uvm_pkg::*;
@@ -16,6 +16,7 @@ logic rst_ni, clk;
 scoreboard_entry scoreboard_queue[$];
 scoreboard_entry temp_scoreboard_entry;
 scoreboard_entry comp;
+semaphore wb_lock = new(1);
 
 integer unsigned pc = 0;
 
@@ -97,19 +98,30 @@ scoreboard dut (
         forever begin
 
             @(scoreboard_if.mck);
-            scoreboard_if.mck.wb_valid <= 1'b0;
+
             // if we are not full then load another instruction
             if (scoreboard_if.issue_instr_valid == 1'b1) begin
                 scoreboard_if.mck.issue_ack <= 1'b1;
                 issue_instruction <= scoreboard_if.mck.issue_instr;
+                $display("Time: %t, Issuing: %0h, Valid: %h", $time, scoreboard_if.mck.issue_instr.pc, scoreboard_if.issue_instr_valid);
                 @(scoreboard_if.mck)
                 scoreboard_if.mck.issue_ack <= 1'b0;
 
-                // generate a delay between 1 and 3 cycles for WB
-                repeat ($urandom_range(0,3)) @(scoreboard_if.mck);
-                scoreboard_if.mck.pc <= issue_instruction.pc;
-                scoreboard_if.mck.wdata <= 64'h7777;
-                scoreboard_if.mck.wb_valid <= 1'b1;
+                // generate a delay between 0 and 3 cycles for WB, write-back out of order
+                fork
+                    write_back: begin
+                        automatic scoreboard_entry thread_copy = issue_instruction;
+                        repeat ($urandom_range(0,20)) @(scoreboard_if.mck);
+                        wb_lock.get(1);
+                        $display("Time: %t, Writing Back: %0h", $time, thread_copy.pc);
+                        scoreboard_if.mck.pc <= thread_copy.pc;
+                        scoreboard_if.mck.wdata <= 64'h7777;
+                        scoreboard_if.mck.wb_valid <= 1'b1;
+                        @(scoreboard_if.mck);
+                        scoreboard_if.mck.wb_valid <= 1'b0;
+                        wb_lock.put(1);
+                    end
+                join_none
             end else begin
                 scoreboard_if.mck.issue_ack <= 1'b0;
             end
@@ -122,6 +134,7 @@ scoreboard dut (
         forever begin
             repeat ($urandom_range(1,3)) @(scoreboard_if.mck);
             if (scoreboard_if.mck.commit_instr.valid == 1'b1) begin
+                $display("Time: %t, Commiting: %0h", $time, scoreboard_if.mck.commit_instr.pc);
                 scoreboard_if.mck.commit_ack <= 1'b1;
                 @(scoreboard_if.mck);
                 scoreboard_if.mck.commit_ack <= 1'b0;

@@ -35,6 +35,7 @@ interface scoreboard_if (input clk);
 
     // Scoreboard interface configured as master
     clocking mck @(posedge clk);
+        default input #1 output #5; // save timing
         output   flush, rs1_address, rs2_address, commit_ack, decoded_instr, decoded_instr_valid, issue_ack, pc, wdata, wb_valid;
         input    full, rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commit_instr, issue_instr, issue_instr_valid;
     endclocking
