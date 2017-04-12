@@ -26,3 +26,7 @@ A single sequence item consists of the following entries:
 ```
 
 Currently the testbench is limited to the ALU use-case, e.g.: a single instruction needs exactly one cycle and it implements logical operations, arithmetic operations and shifts logical/arithmetic left and right.
+
+## Scoreboard Testbench
+
+This is a basic testbench using a program block and two clocking ports. One for driving the DUT and one for monitoring output. There is a very rudimentary golden model that checks for the monitors answers.
