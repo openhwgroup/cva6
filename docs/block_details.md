@@ -176,11 +176,12 @@ The compressed decoders purpose is to expand a compressed instruction (16 bit) t
 The read operands stage is still part of the scoreboard but conceptually lies at the boundary between ID and EX. The operands where read in the previous cycle but we can still use forwarding to get the source operands from either:
 
 1. Register file
-2. Scoreboard
-3. Functional Unit (Forwarding)
+2. Scoreboard (Forwarding)
 4. Immediate field
 
 The scoreboard and forwarding are mutually exclusive. The selection logic is a classical priority selection giving precedence to results form the scoreboard/FU over the register file.
+
+To obtain the right register value we need to poll the scoreboard for both source operands.
 
 ### Interface
 

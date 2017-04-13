@@ -29,7 +29,7 @@ Ariane is not going to support floating points and atomic operations.
 Things that need to be done (in no particular order):
 
 - Scoreboard testbench
-- Branch prediction, detailed block diagram
+- Branch prediction, detailed block diagram (support in scoreboard)
 - Processor front-end, detailed design
 - Commit stage, detailed design (especially concerning CSR register, APB interface)
 - LSU detailed design
