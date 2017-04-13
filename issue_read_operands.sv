@@ -12,7 +12,7 @@ import ariane_pkg::*;
 
 module issue_read_operands (
     input  logic                                   clk_i,    // Clock
-    input  logic                                   rst_ni,  // Asynchronous reset active low
+    input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   test_en_i,
     // coming from scoreboard
     input  scoreboard_entry                        issue_instr_i,
@@ -86,6 +86,8 @@ module issue_read_operands (
                 fu_busy = ~lsu_ready_i;
             CSR:
                 fu_busy = 1'b0;
+            default:
+                fu_busy = 1'b0;
         endcase
     end
 
@@ -158,6 +160,9 @@ module issue_read_operands (
                     mult_valid_o = 1'b1;
                 LSU:
                     lsu_valid_o  = 1'b1;
+                default: begin
+
+                end
             endcase
         end
     end

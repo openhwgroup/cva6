@@ -27,7 +27,7 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-module zeroriscy_register_file
+module regfile
 #(
   parameter DATA_WIDTH    = 32
 )
@@ -76,12 +76,6 @@ module zeroriscy_register_file
 
   logic clk_int;
 
-  int unsigned i;
-  int unsigned j;
-  int unsigned k;
-
-  genvar x;
-
   //-----------------------------------------------------------------------------
   //-- READ : Read address decoder RAD
   //-----------------------------------------------------------------------------
@@ -116,9 +110,9 @@ module zeroriscy_register_file
   //-----------------------------------------------------------------------------
   always_comb
   begin : p_WADa
-    for(i = 1; i < NUM_WORDS; i++)
+    for (int unsigned i = 1; i < NUM_WORDS; i++)
     begin : p_WordItera
-      if ( (we_a_i == 1'b1 ) && (waddr_a_int == i) )
+      if ( (we_a_i == 1'b1 ) && (waddr_a_int == i[4:0]) )
         waddr_onehot_a[i] = 1'b1;
       else
         waddr_onehot_a[i] = 1'b0;
@@ -129,8 +123,9 @@ module zeroriscy_register_file
   //-----------------------------------------------------------------------------
   //-- WRITE : Clock gating (if integrated clock-gating cells are available)
   //-----------------------------------------------------------------------------
+  genvar x;
   generate
-    for(x = 1; x < NUM_WORDS; x++)
+    for (x = 1; x < NUM_WORDS; x++)
     begin : CG_CELL_WORD_ITER
       cluster_clock_gating CG_Inst
       (
@@ -156,7 +151,7 @@ module zeroriscy_register_file
     // Note: The assignment has to be done inside this process or Modelsim complains about it
     mem[0] = '0;
 
-    for(k = 1; k < NUM_WORDS; k++)
+    for(int unsigned k = 1; k < NUM_WORDS; k++)
     begin : w_WordIter
       if(mem_clocks[k] == 1'b1)
         mem[k] = wdata_a_q;
