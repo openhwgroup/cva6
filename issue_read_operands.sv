@@ -33,6 +33,7 @@ module issue_read_operands (
     output alu_op                                  operator_o,
     output logic [63:0]                            operand_a_o,
     output logic [63:0]                            operand_b_o,
+    output logic [4:0]                             trans_id_o,
     // ALU 1
     input  logic                                   alu_ready_i,      // FU is ready
     output logic                                   alu_valid_o,      // Output is valid

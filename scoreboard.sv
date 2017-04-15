@@ -44,7 +44,7 @@ module scoreboard #(
     input  logic                                   issue_ack_i,
 
     // write-back port
-    input logic [NR_WB_PORTS-1:0][63:0]            pc_i,        // PC at which to write the result back
+    input logic [NR_WB_PORTS-1:0][4:0]             trans_id_i,  // transaction ID at which to write the result back
     input logic [NR_WB_PORTS-1:0][63:0]            wdata_i,     // write data in
     input logic [NR_WB_PORTS-1:0]                  wb_valid_i   // data in is valid
 );
@@ -148,16 +148,18 @@ always_comb begin : push_instruction_and_wb
     // if we are not full we can push a new instruction
     if (~full_o && decoded_instr_valid_i) begin
         mem_n[$unsigned(top_pointer_q)] = decoded_instr_i;
+        // label the transaction ID with the current top pointer
+        mem_n[$unsigned(top_pointer_q)].trans_id = top_pointer_q;
         top_pointer_n = top_pointer_q + 1;
     end
 
     // write back:
-    // look for the intruction with the given PC and write the result data back
+    // look for the intruction with the given transaction ID and write the result data back
     // also set the valid bit
     for (int j = 0; j < NR_WB_PORTS; j++) begin
         if (wb_valid_i[j]) begin
             for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
-                if (mem_q[i].pc == pc_i[j]) begin
+                if (mem_q[i].trans_id == trans_id_i[j]) begin
                     mem_n[i].valid  = 1'b1;
                     mem_n[i].result = wdata_i[j];
                 end

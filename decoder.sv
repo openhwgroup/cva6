@@ -1,3 +1,13 @@
+/* File:   issue_read_operands.sv
+ * Author: Florian Zaruba <zarubaf@ethz.ch>
+ * Date:   8.4.2017
+ *
+ * Copyright (C) 2017 ETH Zurich, University of Bologna
+ * All rights reserved.
+ *
+ * Description: Issues instruction from the scoreboard and fetches the operands
+ *              This also includes all the forwarding logic
+ */
 import ariane_pkg::*;
 
 module decoder (
@@ -37,7 +47,6 @@ module decoder (
         instruction_o.rs1 = 5'b0;
         instruction_o.rs2 = 5'b0;
         instruction_o.rd = 5'b0;
-        instruction_o.pc = pc_i;
 
         if (~ex_i.valid) begin
             case (instr.rtype.opcode)

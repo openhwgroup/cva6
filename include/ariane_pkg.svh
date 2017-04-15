@@ -62,7 +62,8 @@ package ariane_pkg;
     // ID/EX/WB Stage
     // ---------------
     typedef struct packed {
-        logic [63:0]    pc;
+        logic [4:0]     trans_id; // this can potentially be simplified, we could index the scoreboard entry with the transaction id
+                                  // in any case make the width more generic
         fu_t            fu;
         alu_op          op;
         logic [4:0]     rs1;
@@ -72,7 +73,7 @@ package ariane_pkg;
         logic           valid;
         logic           use_imm;
         logic [63:0]    imm;       // maybe we can get this into the results field
-        exception       ex;        // the PC is redundant here
+        exception       ex;
     } scoreboard_entry;
 
     // --------------------
