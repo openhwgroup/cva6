@@ -6,9 +6,9 @@ class Scoreboard;
 
     // utility function to get randomized input data
     static function automatic scoreboard_entry randomize_scoreboard();
-            exception exception = { 64'h55, 63'h0, 1'b0};
+            exception exception = { pc, 63'h0, 1'b0};
             scoreboard_entry entry = {
-                pc, ALU, ADD, 5'h5, 5'h5, 5'h5, 64'h0, 1'b0, 1'b0, exception
+                ALU, ADD, 5'h5, 5'h5, 5'h5, 64'h0, 1'b0, 1'b0, exception
             };
             pc++;
             return entry;
@@ -27,9 +27,9 @@ class Scoreboard;
     endfunction : get_issue
 
     // write back to scoreboard
-    function void write_back(logic [63:0] pc, logic [63:0] value);
+    function void write_back(logic [4:0] trans_id, logic [63:0] value);
         for (int i = 0; i < $size(issued_instructions); i++) begin
-            if (issued_instructions[i].pc == pc) begin
+            if (issued_instructions[i].trans_id == trans_id) begin
                 issued_instructions[i].valid = 1'b1;
                 issued_instructions[i].result  = value;
             end

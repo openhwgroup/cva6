@@ -31,8 +31,8 @@ interface mem_if
         // Memory interface configured as slave
         modport Slave
         (
-            input   address, data_wdata, data_req, data_we, data_be,
-            output  data_gnt, data_rvalid, data_rdata
+            output  address, data_wdata, data_req, data_we, data_be,
+            input   data_gnt, data_rvalid, data_rdata
         );
 endinterface
 `endif

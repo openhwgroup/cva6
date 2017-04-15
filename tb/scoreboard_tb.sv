@@ -37,7 +37,7 @@ module scoreboard_tb;
         .issue_instr_o        ( scoreboard_if.issue_instr         ),
         .issue_instr_valid_o  ( scoreboard_if.issue_instr_valid   ),
         .issue_ack_i          ( scoreboard_if.issue_ack           ),
-        .pc_i                 ( scoreboard_if.pc                  ),
+        .trans_id_i           ( scoreboard_if.trans_id            ),
         .wdata_i              ( scoreboard_if.wdata               ),
         .wb_valid_i           ( scoreboard_if.wb_valid            )
     );
@@ -107,10 +107,10 @@ module scoreboard_tb;
                             repeat ($urandom_range(1,20)) @(scoreboard_if.mck);
                             wb_lock.get(1);
                             // $display("Time: %t, Writing Back: %0h", $time, thread_copy.pc);
-                            scoreboard_if.mck.pc <= thread_copy.pc;
+                            scoreboard_if.mck.trans_id <= thread_copy.trans_id;
                             scoreboard_if.mck.wdata <= rand_data;
                             scoreboard_if.mck.wb_valid <= 1'b1;
-                            sb.write_back(thread_copy.pc, rand_data);
+                            sb.write_back(thread_copy.trans_id, rand_data);
                             @(scoreboard_if.mck);
                             scoreboard_if.mck.wb_valid <= 1'b0;
                             wb_lock.put(1);
@@ -158,7 +158,7 @@ module scoreboard_tb;
                 @(scoreboard_if.pck);
                 if (scoreboard_if.pck.issue_instr_valid == 1'b1 && scoreboard_if.pck.issue_ack) begin
                     tmp_sbe = sb.get_issue();
-                    assert (tmp_sbe.pc == issue_instruction.pc) else $error("Issue instruction mismatch. Expected: %0h Got: %0h", tmp_sbe, issue_instruction);
+                    assert (tmp_sbe.trans_id == issue_instruction.trans_id) else $error("Issue instruction mismatch. Expected: %0h Got: %0h", tmp_sbe, issue_instruction);
                 end
             end
         end
