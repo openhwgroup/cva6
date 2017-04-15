@@ -14,6 +14,8 @@ module issue_read_operands (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   test_en_i,
+    // flush
+    input  logic                                   flush_i,
     // coming from scoreboard
     input  scoreboard_entry                        issue_instr_i,
     input  logic                                   issue_instr_valid_i,
@@ -40,6 +42,8 @@ module issue_read_operands (
     // MULT
     input  logic                                   mult_ready_i,      // FU is ready
     output logic                                   mult_valid_o,      // Output is valid
+    // Forward port
+
     // commit port
     input  logic [4:0]                             waddr_a_i,
     input  logic [63:0]                            wdata_a_i,
@@ -48,7 +52,7 @@ module issue_read_operands (
     logic stall; // stall signal, we do not want to fetch any more entries
     logic fu_busy; // functional unit is busy
     scoreboard_entry sbe_n, sbe_q; // instruction register (ID <-> EX)
-    logic [63:0] operand_a_regfile, operand_b_regfile; // operands coming from regfile
+    logic [63:0] operand_a_regfile_n, operand_a_regfile_q, operand_b_regfile_n, operand_b_regfile_q; // operands coming from regfile
     logic forward_rs1, forward_rs2;
 
     // ---------------
@@ -94,6 +98,7 @@ module issue_read_operands (
     // ---------------
     // Register stage
     // ---------------
+    assign operator_o  = sbe_q.op;
     // check that all operands are available, otherwise stall
     // forward corresponding register
     always_comb begin : operands_available
@@ -101,10 +106,12 @@ module issue_read_operands (
         // operand forwarding signals
         forward_rs1 = 1'b0;
         forward_rs2 = 1'b0;
+        // address needs to be applied one cycle earlier
+        rs1_o = issue_instr_i.rs1;
+        rs2_o = issue_instr_i.rs2;
         // 1. check if the source registers are clobberd
         // 2. poll the scoreboard
         if (rd_clobber_i[sbe_q.rs1] != NONE) begin
-            rs1_o = sbe_q.rs1;
             // the operand is available, forward it
             if (rs1_valid_i)
                 forward_rs1 = 1'b1;
@@ -114,7 +121,6 @@ module issue_read_operands (
         end
 
         if (rd_clobber_i[sbe_q.rs2] != NONE) begin
-            rs2_o = sbe_q.rs2;
             // the operand is available, forward it
             if (rs2_valid_i)
                 forward_rs2 = 1'b1;
@@ -127,8 +133,8 @@ module issue_read_operands (
     // Forwarding/Output MUX
     always_comb begin : forwarding
         // default is regfile
-        operand_a_o = operand_a_regfile;
-        operand_b_o = operand_b_regfile;
+        operand_a_o = operand_a_regfile_q;
+        operand_b_o = operand_b_regfile_q;
 
         // or should we forward
         if (forward_rs1) begin
@@ -139,7 +145,7 @@ module issue_read_operands (
             operand_b_o  = rs2_i;
         end
 
-        // or is is an immediate (including PC)
+        // or is it an immediate (including PC)
         if (sbe_q.use_imm) begin
             operand_b_o = sbe_q.imm;
         end
@@ -168,31 +174,35 @@ module issue_read_operands (
     end
 
     regfile #(
-        .DATA_WIDTH     ( 64                )
+        .DATA_WIDTH     ( 64                  )
     )
     regfile_i (
         // Clock and Reset
-        .clk            ( clk_i             ),
-        .rst_n          ( rst_ni            ),
-        .test_en_i      ( test_en_i         ),
+        .clk            ( clk_i               ),
+        .rst_n          ( rst_ni              ),
+        .test_en_i      ( test_en_i           ),
 
-        .raddr_a_i      ( issue_instr_i.rs1 ),
-        .rdata_a_o      ( operand_a_regfile ),
+        .raddr_a_i      ( issue_instr_i.rs1   ),
+        .rdata_a_o      ( operand_a_regfile_n ),
 
-        .raddr_b_i      ( issue_instr_i.rs2 ),
-        .rdata_b_o      ( operand_b_regfile ),
+        .raddr_b_i      ( issue_instr_i.rs2   ),
+        .rdata_b_o      ( operand_b_regfile_n ),
 
-        .waddr_a_i      ( waddr_a_i         ),
-        .wdata_a_i      ( wdata_a_i         ),
-        .we_a_i         ( we_a_i            )
+        .waddr_a_i      ( waddr_a_i           ),
+        .wdata_a_i      ( wdata_a_i           ),
+        .we_a_i         ( we_a_i              )
     );
 
     // Registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-           sbe_q <= '{default: 0};
+           sbe_q                <= '{default: 0};
+           operand_a_regfile_q  <= '{default: 0};
+           operand_b_regfile_q  <= '{default: 0};
         end else begin
-           sbe_q <= sbe_n;
+           sbe_q                <= sbe_n;
+           operand_a_regfile_q  <= operand_a_regfile_n;
+           operand_b_regfile_q  <= operand_b_regfile_n;
         end
     end
 endmodule

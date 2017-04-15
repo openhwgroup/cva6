@@ -9,6 +9,7 @@ import ariane_pkg::*;
 
 module scoreboard #(
     parameter int  NR_ENTRIES = 8,
+    parameter int  NR_WB_PORTS = 4,
     parameter type dtype      = scoreboard_entry
     )
     (
@@ -28,7 +29,7 @@ module scoreboard #(
     output logic [63:0]                            rs2_o,
     output logic                                   rs2_valid_o,
 
-    // advertise instruction to commit stage, if ready_i is asserted advance the commit pointer
+    // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
     output dtype                                   commit_instr_o,
     input  logic                                   commit_ack_i,
 
@@ -43,9 +44,9 @@ module scoreboard #(
     input  logic                                   issue_ack_i,
 
     // write-back port
-    input logic[63:0]                              pc_i,        // PC at which to write the result back
-    input logic[63:0]                              wdata_i,     // write data in
-    input logic                                    wb_valid_i   // data in is valid
+    input logic [NR_WB_PORTS-1:0][63:0]            pc_i,        // PC at which to write the result back
+    input logic [NR_WB_PORTS-1:0][63:0]            wdata_i,     // write data in
+    input logic [NR_WB_PORTS-1:0]                  wb_valid_i   // data in is valid
 );
 localparam BITS_ENTRIES      = $clog2(NR_ENTRIES);
 
@@ -53,7 +54,11 @@ dtype [NR_ENTRIES-1:0]         mem_q, mem_n;
 logic [BITS_ENTRIES-1:0]       issue_pointer_n, issue_pointer_q, // points to the instruction currently in issue
                                commit_pointer_n, commit_pointer_q, // points to the instruction currently in commit
                                top_pointer_n, top_pointer_q, top_pointer_qq; // points to the top of the scoreboard, an empty slot, top pointer two cycles ago
-
+// rd clobber register
+logic [31:0][$bits(fu_t)-1:0]  rd_clobber_n, rd_clobber_q;
+// register read stage
+logic [63:0]                   rs1_n, rs1_q, rs2_n, rs2_q;
+logic                          rs1_valid_n, rs1_valid_q, rs2_valid_n, rs2_valid_q;
 logic                          pointer_overflow;
 logic                          empty;
 logic                          reset_condition;
@@ -64,7 +69,11 @@ assign reset_condition  = top_pointer_q == top_pointer_qq;
 assign pointer_overflow = (top_pointer_q <= commit_pointer_q && ~reset_condition) ? 1'b1 : 1'b0;
 assign full_o           = (reset_condition) ? 1'b0 : (commit_pointer_q == top_pointer_q);
 assign empty            = (pointer_overflow) ? 1'b0 : (commit_pointer_q == top_pointer_q);
-
+assign rd_clobber_o     = rd_clobber_q;
+assign rs1_o            = rs1_q;
+assign rs2_o            = rs2_q;
+assign rs1_valid_o      = rs1_valid_q;
+assign rs2_valid_o      = rs2_valid_q;
 // rd_clobber output: output currently clobbered destination registers
 // but only between commit and issue pointer
 // normal case:                                      overflow case:
@@ -76,32 +85,31 @@ assign empty            = (pointer_overflow) ? 1'b0 : (commit_pointer_q == top_p
 // |_________________________|<- top pointer        |_________________________|
 //
 always_comb begin : clobber_output
-    rd_clobber_o = '{default: 0};
-
+    rd_clobber_n = rd_clobber_q;
     // excluding issue, the issue pointer points to the instruction which is currently not issued
     // but might be issued as soon as the issue unit acknowledges
     if (commit_pointer_q < issue_pointer_q) begin
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             // non overflowed case, depicted on the left
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q && i[BITS_ENTRIES-1:0] < issue_pointer_q)
-                rd_clobber_o[mem_q[i].rd] = mem_q[i].fu;
+                rd_clobber_n[mem_q[i].rd] = mem_q[i].fu;
         end
     end else begin // the issue pointer has overflowed, invert logic, depicted on the right
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q)
-                rd_clobber_o[mem_q[i].rd] = mem_q[i].fu;
+                rd_clobber_n[mem_q[i].rd] = mem_q[i].fu;
         end
     end
-    // the zero register is always free
-    rd_clobber_o[0] = NONE;
+    // // the zero register is always free
+    rd_clobber_n[0] = NONE;
 end
 // read operand interface: same logic as register file, including a valid file
 always_comb begin : read_operands
 
-    rs1_o       = 64'b0;
-    rs2_o       = 64'b0;
-    rs1_valid_o = 1'b0;
-    rs2_valid_o = 1'b0;
+    rs1_n       = rs1_q;
+    rs2_n       = rs2_q;
+    rs1_valid_n = rs1_valid_q;
+    rs2_valid_n = rs2_valid_q;
 
     if (commit_pointer_q < issue_pointer_q) begin
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
@@ -109,12 +117,12 @@ always_comb begin : read_operands
                 // look at the appropriate fields and look whether there was an
                 // instruction that wrote the rd field before, first for RS1 and then for RS2
                 if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
-                    rs1_o = mem_q[i].result;
-                    rs1_valid_o = mem_q[i].valid;
+                    rs1_n = mem_q[i].result;
+                    rs1_valid_n = mem_q[i].valid;
                 // do the same for rs2
                 end else if (mem_q[i].rd == rs2_i) begin
-                    rs2_o = mem_q[i].result;
-                    rs2_valid_o = mem_q[i].valid;
+                    rs2_n = mem_q[i].result;
+                    rs2_valid_n = mem_q[i].valid;
                 end
             end
         end
@@ -123,25 +131,25 @@ always_comb begin : read_operands
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q) begin
                 // same as above but for the overflowed pointer case
                 if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs1_i) begin
-                    rs1_o = mem_q[i].result;
-                    rs1_valid_o = mem_q[i].valid;
+                    rs1_n = mem_q[i].result;
+                    rs1_valid_n = mem_q[i].valid;
                 // do the same for rs2
                 end else if (mem_q[i[BITS_ENTRIES-1:0]].rd == rs2_i) begin
-                    rs2_o = mem_q[i].result;
-                    rs2_valid_o = mem_q[i].valid;
+                    rs2_n = mem_q[i].result;
+                    rs2_valid_n = mem_q[i].valid;
                 end
             end
         end
     end
     // make sure we didn't read the zero register
     if (rs1_i == '0)
-        rs1_valid_o = 1'b0;
+        rs1_valid_n = 1'b0;
     if (rs2_i == '0)
-        rs2_valid_o = 1'b0;
+        rs2_valid_n = 1'b0;
 end
 // push new decoded instruction: if still empty space push the instruction to the scoreboard
 // write-back instruction: update value of RD register in scoreboard
-always_latch begin : push_instruction_and_wb
+always_comb begin : push_instruction_and_wb
     // default assignment
     top_pointer_n = top_pointer_q;
     mem_n = mem_q;
@@ -154,11 +162,13 @@ always_latch begin : push_instruction_and_wb
     // write back:
     // look for the intruction with the given PC and write the result data back
     // also set the valid bit
-    if (wb_valid_i) begin
-        for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
-            if (mem_q[i].pc == pc_i) begin
-                mem_n[i].valid  = 1'b1;
-                mem_n[i].result = wdata_i;
+    for (int j = 0; j < NR_WB_PORTS; j++) begin
+        if (wb_valid_i[j]) begin
+            for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
+                if (mem_q[i].pc == pc_i[j]) begin
+                    mem_n[i].valid  = 1'b1;
+                    mem_n[i].result = wdata_i[j];
+                end
             end
         end
     end
@@ -220,18 +230,33 @@ end
 // sequential process
 always_ff @(posedge clk_i or negedge rst_ni) begin : sequential
     if(~rst_ni) begin
+        rd_clobber_q      <= '{default: 0};
+        rs1_q             <= 64'b0;
+        rs2_q             <= 64'b0;
+        rs1_valid_q       <= 1'b0;
+        rs2_valid_q       <= 1'b0;
         issue_pointer_q   <= '{default: 0};
         commit_pointer_q  <= '{default: 0};
         top_pointer_q     <= '{default: 0};
         top_pointer_qq    <= '{default: 0};
         mem_q             <= '{default: 0};
     end else if (flush_i) begin // reset pointers on flush
+        rd_clobber_q      <= '{default: 0};
+        rs1_q             <= 64'b0;
+        rs2_q             <= 64'b0;
+        rs1_valid_q       <= 1'b0;
+        rs2_valid_q       <= 1'b0;
         issue_pointer_q   <= '{default: 0};
         commit_pointer_q  <= '{default: 0};
         top_pointer_q     <= '{default: 0};
         top_pointer_qq    <= '{default: 0};
         mem_q             <= '{default: 0};
     end else begin
+        rs1_q             <= rs1_n;
+        rs2_q             <= rs2_n;
+        rs1_valid_q       <= rs1_valid_n;
+        rs2_valid_q       <= rs2_valid_n;
+        rd_clobber_q      <= rd_clobber_n;
         issue_pointer_q   <= issue_pointer_n;
         commit_pointer_q  <= commit_pointer_n;
         top_pointer_q     <= top_pointer_n;
