@@ -12,7 +12,7 @@ agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv \
 
 # this list contains the standalone components
 src = alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv tb/alu_tb.sv \
-	  issue_read_operands.sv
+	  issue_read_operands.sv decoder.sv
 
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes

@@ -10,70 +10,137 @@
  */
 package ariane_pkg;
 
-// ---------------
-// Fetch Stage
-// ---------------
+    // ---------------
+    // Fetch Stage
+    // ---------------
 
-// Only use struct when signals have same direction
-typedef struct packed {
-     logic [63:0] pc;
-     logic [63:0] branch_target_address;
-     logic        valid;
-} btb;
+    // Only use struct when signals have same direction
+    typedef struct packed {
+         logic [63:0] pc;
+         logic [63:0] branch_target_address;
+         logic        valid;
+    } btb;
 
-// input to the fetch stage
-typedef struct packed {
-     logic [63:0] ra;           // return address
-     logic        is_call;      // is call - pop from stack
-     logic        is_return;    // is return - push on stack
-} ras;
+    // input to the fetch stage
+    typedef struct packed {
+         logic [63:0] ra;           // return address
+         logic        is_call;      // is call - pop from stack
+         logic        is_return;    // is return - push on stack
+    } ras;
 
-// exception
-typedef struct packed {
-     logic [63:0] epc;
-     logic [63:0] cause;
-     logic        valid;
-} exception;
+    // exception
+    typedef struct packed {
+         logic [63:0] epc;
+         logic [63:0] cause;
+         logic        valid;
+    } exception;
 
-// miss-predict
-typedef struct packed {
-     logic [63:0] pc;
-     logic        valid; // is miss-predict
-} misspredict;
+    // miss-predict
+    typedef struct packed {
+         logic [63:0] pc;
+         logic        valid; // is miss-predict
+    } misspredict;
 
-typedef enum logic[3:0] {
-    NONE, ALU, MULT, LSU, CSR
-} fu_t;
+    typedef enum logic[3:0] {
+        NONE, ALU, MULT, LSU, CSR
+    } fu_t;
 
-// ---------------
-// EX Stage
-// ---------------
+    // ---------------
+    // EX Stage
+    // ---------------
 
-typedef enum logic [7:0]      { ADD, SUB, ADDW, SUBW,                             // basic ALU op
-                                XORL, ORL, ANDL,                                  // logic operations
-                                SRA, SRL, SLL, SRLW, SLLW, SRAW,                  // shifts
-                                LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,   // comparisons
-                                SLTS, SLTU, SLETS, SLETU,                         // set lower than operations
-                                MRET, SRET, URET, ECALL, WRITE, READ, SET, CLEAR, // CSR functions
-                                LD, SD, LW, SW, LH, SH, LB, SB, LBU, SBU          // LSU functions
-                              } alu_op;
+    typedef enum logic [7:0]      { ADD, SUB, ADDW, SUBW,                             // basic ALU op
+                                    XORL, ORL, ANDL,                                  // logic operations
+                                    SRA, SRL, SLL, SRLW, SLLW, SRAW,                  // shifts
+                                    LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,   // comparisons
+                                    SLTS, SLTU, SLETS, SLETU,                         // set lower than operations
+                                    MRET, SRET, URET, ECALL, WRITE, READ, SET, CLEAR, // CSR functions
+                                    LD, SD, LW, SW, LH, SH, LB, SB, LBU, SBU          // LSU functions
+                                  } alu_op;
 
+    // ---------------
+    // ID/EX/WB Stage
+    // ---------------
+    typedef struct packed {
+        logic [63:0]    pc;
+        fu_t            fu;
+        alu_op          op;
+        logic [4:0]     rs1;
+        logic [4:0]     rs2;
+        logic [4:0]     rd;
+        logic [63:0]    result;
+        logic           valid;
+        logic           use_imm;
+        logic [63:0]    imm;       // maybe we can get this into the results field
+        exception       ex;        // the PC is redundant here
+    } scoreboard_entry;
 
-// ---------------
-// ID/EX/WB Stage
-// ---------------
-typedef struct packed {
-    logic [63:0]    pc;
-    fu_t            fu;
-    alu_op          op;
-    logic [4:0]     rs1;
-    logic [4:0]     rs2;
-    logic [4:0]     rd;
-    logic [63:0]    result;
-    logic           valid;
-    logic           use_imm;
-    logic [63:0]    imm;       // maybe we can get this into the results field
-    exception       ex;        // the PC is redundant here
-} scoreboard_entry;
+    // --------------------
+    // Instruction Types
+    // --------------------
+    typedef struct packed {
+        logic [6:0]   opcode;
+        logic [11:7]  rd;
+        logic [14:12] funct3;
+        logic [19:15] rs1;
+        logic [24:20] rs2;
+        logic [31:25] funct7;
+    } rtype;
+
+    typedef struct packed {
+        logic [6:0]   opcode;
+        logic [11:7]  rd;
+        logic [14:12] funct3;
+        logic [19:15] rs1;
+        logic [31:20] imm;
+    } itype;
+
+    typedef struct packed {
+        logic [6:0]   opcode;
+        logic [11:7]  imm0;
+        logic [14:12] funct3;
+        logic [19:15] rs1;
+        logic [24:20] rs2;
+        logic [31:25] imm1;
+    } stype;
+
+    typedef struct packed {
+        logic [6:0]   opcode;
+        logic [11:7]  rd;
+        logic [31:12] funct3;
+    } utype;
+
+    typedef union packed {
+        logic [31:0] instr;
+        rtype        rtype;
+        itype        itype;
+        stype        stype;
+        utype        utype;
+    } instruction;
+
+    // --------------------
+    // Opcodes
+    // --------------------
+    localparam OPCODE_SYSTEM    = 7'h73;
+    localparam OPCODE_FENCE     = 7'h0f;
+    localparam OPCODE_OP        = 7'h33;
+    localparam OPCODE_OP32      = 7'h3B;
+    localparam OPCODE_OPIMM     = 7'h13;
+    localparam OPCODE_OPIMM32   = 7'h1B;
+    localparam OPCODE_STORE     = 7'h23;
+    localparam OPCODE_LOAD      = 7'h03;
+    localparam OPCODE_BRANCH    = 7'h63;
+    localparam OPCODE_JALR      = 7'h67;
+    localparam OPCODE_JAL       = 7'h6f;
+    localparam OPCODE_AUIPC     = 7'h17;
+    localparam OPCODE_LUI       = 7'h37;
+
+    // --------------------
+    // Immediate select
+    // --------------------
+    typedef enum logic[3:0] {
+        NOIMM, PCIMM, IIMM, SIMM, BIMM, UIMM, JIMM
+    } imm_sel_t;
+
 
 endpackage

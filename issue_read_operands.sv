@@ -51,10 +51,20 @@ module issue_read_operands (
 );
     logic stall; // stall signal, we do not want to fetch any more entries
     logic fu_busy; // functional unit is busy
-    scoreboard_entry sbe_n, sbe_q; // instruction register (ID <-> EX)
-    logic [63:0] operand_a_regfile_n, operand_a_regfile_q, operand_b_regfile_n, operand_b_regfile_q; // operands coming from regfile
+    logic [63:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
+
+    // output flipflop (ID <-> EX)
+    logic [63:0] operand_a_n, operand_a_q, operand_b_n, operand_b_q;
+    logic alu_valid_n, alu_valid_q;
+    alu_op operator_n, operator_q;
+
+    // forwarding signals
     logic forward_rs1, forward_rs2;
 
+    assign operand_a_o = operand_a_q;
+    assign operand_b_o = operand_b_q;
+    assign operator_o  = operator_q;
+    assign alu_valid_o = alu_valid_q;
     // ---------------
     // Issue Stage
     // ---------------
@@ -63,7 +73,6 @@ module issue_read_operands (
     // We also need to check if there is an unresolved branch in the scoreboard.
     always_comb begin : issue
         // default assignment
-        sbe_n = sbe_q;
         issue_ack_o = 1'b0;
         // check that we didn't stall, that the instruction we got is valid
         // and that the functional unit we need is not busy
@@ -71,7 +80,6 @@ module issue_read_operands (
             // check that the corresponding functional unit is not busy
             // no other instruction has the same destination register -> fetch the instruction
             if (rd_clobber_i[issue_instr_i.rd] == NONE) begin
-                sbe_n = issue_instr_i;
                 issue_ack_o = 1'b1;
             end
         end
@@ -98,7 +106,6 @@ module issue_read_operands (
     // ---------------
     // Register stage
     // ---------------
-    assign operator_o  = sbe_q.op;
     // check that all operands are available, otherwise stall
     // forward corresponding register
     always_comb begin : operands_available
@@ -106,12 +113,12 @@ module issue_read_operands (
         // operand forwarding signals
         forward_rs1 = 1'b0;
         forward_rs2 = 1'b0;
-        // address needs to be applied one cycle earlier
+        // poll the scoreboard for those values
         rs1_o = issue_instr_i.rs1;
         rs2_o = issue_instr_i.rs2;
         // 1. check if the source registers are clobberd
         // 2. poll the scoreboard
-        if (rd_clobber_i[sbe_q.rs1] != NONE) begin
+        if (rd_clobber_i[issue_instr_i.rs1] != NONE) begin
             // the operand is available, forward it
             if (rs1_valid_i)
                 forward_rs1 = 1'b1;
@@ -120,7 +127,7 @@ module issue_read_operands (
 
         end
 
-        if (rd_clobber_i[sbe_q.rs2] != NONE) begin
+        if (rd_clobber_i[issue_instr_i.rs2] != NONE) begin
             // the operand is available, forward it
             if (rs2_valid_i)
                 forward_rs2 = 1'b1;
@@ -133,35 +140,35 @@ module issue_read_operands (
     // Forwarding/Output MUX
     always_comb begin : forwarding
         // default is regfile
-        operand_a_o = operand_a_regfile_q;
-        operand_b_o = operand_b_regfile_q;
+        operand_a_n = operand_a_regfile;
+        operand_b_n = operand_b_regfile;
 
         // or should we forward
         if (forward_rs1) begin
-            operand_a_o  = rs1_i;
+            operand_a_n  = rs1_i;
         end
 
         if (forward_rs2) begin
-            operand_b_o  = rs2_i;
+            operand_b_n  = rs2_i;
         end
 
         // or is it an immediate (including PC)
-        if (sbe_q.use_imm) begin
-            operand_b_o = sbe_q.imm;
+        if (issue_instr_i.use_imm) begin
+            operand_b_n = issue_instr_i.imm;
         end
 
     end
     // FU select
     always_comb begin : unit_valid
-        alu_valid_o  = 1'b0;
+        alu_valid_n  = alu_valid_q;
         lsu_valid_o  = 1'b0;
         mult_valid_o = 1'b0;
         // Exception pass through
         // if an exception has occurred simply pass it through
-        if (~sbe_q.ex.valid) begin
-            case (sbe_q.fu)
+        if (~issue_instr_i.ex.valid) begin
+            case (issue_instr_i.fu)
                 ALU:
-                    alu_valid_o  = 1'b1;
+                    alu_valid_n  = 1'b1;
                 MULT:
                     mult_valid_o = 1'b1;
                 LSU:
@@ -183,10 +190,10 @@ module issue_read_operands (
         .test_en_i      ( test_en_i           ),
 
         .raddr_a_i      ( issue_instr_i.rs1   ),
-        .rdata_a_o      ( operand_a_regfile_n ),
+        .rdata_a_o      ( operand_a_regfile   ),
 
         .raddr_b_i      ( issue_instr_i.rs2   ),
-        .rdata_b_o      ( operand_b_regfile_n ),
+        .rdata_b_o      ( operand_b_regfile   ),
 
         .waddr_a_i      ( waddr_a_i           ),
         .wdata_a_i      ( wdata_a_i           ),
@@ -196,13 +203,15 @@ module issue_read_operands (
     // Registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-           sbe_q                <= '{default: 0};
-           operand_a_regfile_q  <= '{default: 0};
-           operand_b_regfile_q  <= '{default: 0};
+            operand_a_q          <= '{default: 0};
+            operand_b_q          <= '{default: 0};
+            alu_valid_q          <= 1'b0;
+            operator_q           <= ADD;
         end else begin
-           sbe_q                <= sbe_n;
-           operand_a_regfile_q  <= operand_a_regfile_n;
-           operand_b_regfile_q  <= operand_b_regfile_n;
+            operand_a_q          <= operand_a_n;
+            operand_b_q          <= operand_b_n;
+            alu_valid_q          <= alu_valid_n;
+            operator_q           <= operator_n;
         end
     end
 endmodule
