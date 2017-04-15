@@ -26,6 +26,7 @@
 //                 buffering (sampling) of the read instruction               //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+import ariane_pkg::*;
 
 module if_stage (
     input  logic                   clk_i,       // Clock
@@ -54,6 +55,14 @@ module if_stage (
     logic              if_ready, if_valid;
     logic              branch_req;
     logic              valid;
+    logic              prefetch_busy;
+    logic       [63:0] fetch_addr_n;
+
+    logic              fetch_valid;
+    logic              fetch_ready;
+    logic       [31:0] fetch_rdata;
+    logic       [63:0] fetch_addr;
+
     // offset FSM
     enum logic[0:0] {WAIT, IDLE} offset_fsm_cs, offset_fsm_ns;
 
@@ -77,13 +86,6 @@ module if_stage (
         .illegal_instr_o ( illegal_c_insn       )
       );
 
-    logic              prefetch_busy;
-    logic       [63:0] fetch_addr_n;
-
-    logic              fetch_valid;
-    logic              fetch_ready;
-    logic       [31:0] fetch_rdata;
-    logic       [63:0] fetch_addr;
     // prefetch buffer, caches a fixed number of instructions
     prefetch_buffer prefetch_buffer_i
         (

@@ -13,7 +13,6 @@ package ariane_pkg;
     // ---------------
     // Fetch Stage
     // ---------------
-
     // Only use struct when signals have same direction
     typedef struct packed {
          logic [63:0] pc;
@@ -45,6 +44,7 @@ package ariane_pkg;
         NONE, ALU, MULT, LSU, CSR
     } fu_t;
 
+    localparam EXC_OFF_RST      = 8'h80;
     // ---------------
     // EX Stage
     // ---------------
@@ -143,5 +143,14 @@ package ariane_pkg;
         NOIMM, PCIMM, IIMM, SIMM, BIMM, UIMM, JIMM
     } imm_sel_t;
 
+    // --------------------
+    // Privilege Spec
+    // --------------------
+    typedef enum logic[1:0] {
+      PRIV_LVL_M = 2'b11,
+      // PRIV_LVL_H = 2'b10, This mode does not longer exist
+      PRIV_LVL_S = 2'b01,
+      PRIV_LVL_U = 2'b00
+    } priv_lvl_t;
 
 endpackage
