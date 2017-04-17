@@ -71,6 +71,8 @@ module core_tb;
 
     end
 
+    assign instr_if.data_gnt = instr_if.data_req;
+
     program testbench (mem_if instr_if);
         logic [7:0] imem [400];
         logic [63:0] address;
@@ -83,14 +85,14 @@ module core_tb;
             // apply stimuli for instruction interface
             forever begin
                 // instr_if.mck.data_rvalid <= 1'b0;
-                instr_if.mck.data_gnt    <= 1'b0;
-                @(instr_if.mck iff instr_if.mck.data_req)
-                    // while (instr_if.mck.data_req) begin
+                // instr_if.mck.data_gnt    <= 1'b0;
+
+                @(instr_if.mck)
+                    if (instr_if.mck.data_req) begin
+                        // instr_if.mck.data_gnt <= 1'b1;
                         address <= instr_if.mck.address;
-                        instr_if.mck.data_gnt <= 1'b1;
-                        instr_if.mck.data_rvalid <= 1'b0;
-                        $display("Address %0h", address);
-                        @(instr_if.mck)
+                        $display("Time %t, Address %0h", $time, address);
+                        // @(instr_if.mck)
                         instr_if.mck.data_rvalid <= 1'b1;
                         instr_if.mck.data_rdata  <= {
                             imem[$unsigned(address + 3)],
@@ -98,7 +100,9 @@ module core_tb;
                             imem[$unsigned(address + 1)],
                             imem[$unsigned(address + 0)]
                             };
-                    // end
+                    end else
+                        instr_if.mck.data_rvalid <= 1'b0;
+
             end
         end
     endprogram

@@ -133,6 +133,19 @@ always_comb begin : read_operands
             end
         end
     end
+
+    // provide a direct combinational path from WB a.k.a forwarding
+    if (mem_q[trans_id_i].rs1 == rs1_i && wb_valid_i) begin
+        rs1_o = wdata_i;
+        rs1_valid_o = 1'b1;
+        // rs1_valid_o = wb_valid_i;
+    end
+    if (mem_q[trans_id_i].rs2 == rs2_i && wb_valid_i) begin
+        rs2_o = wdata_i;
+        rs2_valid_o = 1'b1;
+        // rs2_valid_o = wb_valid_i;
+    end
+
     // make sure we didn't read the zero register
     if (rs1_i == '0)
         rs1_valid_o = 1'b0;
