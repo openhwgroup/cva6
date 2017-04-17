@@ -31,12 +31,9 @@ module alu_tb;
         .operand_b_i            ( alu_if.operand_b          ),
         .result_o               ( alu_if.result             ),
         .comparison_result_o    ( alu_if.comparison_result  ),
-        .is_equal_result_o      (  		            ),
-        .adder_result_ext_o     (   		            ),
-        .adder_result_o         (     			    ),
-        .multdiv_en_i           ( 1'b0		            ),
-        .multdiv_operand_b_i    ( 65'b0			    ),
-        .multdiv_operand_a_i    ( 65'b0		   	    )
+        .is_equal_result_o      (  		                    ),
+        .adder_result_ext_o     (   		                ),
+        .adder_result_o         (     			            )
     );
 
     initial begin

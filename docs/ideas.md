@@ -7,3 +7,5 @@ By widening the fetch interface to 64bit we could theoretically fetch two and mo
 ## Power-down Mode
 
 The CSR’s APB interface would allow for storing the CPU state (registers, CSR registers, etc.) to a state retentive memory when the core is in complete power down.
+
+## Input silencing of ALU
