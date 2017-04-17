@@ -2,14 +2,14 @@
 
 ## Scoreboard
 
-Synthesized @ 0.4 ns, typical case, UMC65:
+Synthesized @ 0.4 ns, worst case, UMC65:
 
-|    **Type**   | **Flip-flop based, 8 entries** | **Latch based, 8 entries** | **Latch based, 4 entries** |
-|---------------|--------------------------------|----------------------------|----------------------------|
-| Sequential    | 18125                          | 11620                      | 6649                       |
-| Combinatorial | 27333                          | 20821                      | 9438                       |
-| Buffer        | 1863                           | 1000                       | 594                        |
-| **Total**     | **45568 (~32 kGE)**            | **32441 (~23 kGE)**        | **16088 (~ 11 kGE)**       |
+|    **Type**   | **Flip-flop based, 8 entries** | **Latch based, 8 entries** | **Flip-flop based, 4 entries** | **Latch based, 4 entries** |
+|---------------|--------------------------------|----------------------------|--------------------------------|----------------------------|
+| Sequential    | 18125                          | 11620                      | 12143                          | 6649                       |
+| Combinatorial | 27333                          | 20821                      | 19717                          | 9438                       |
+| Buffer        | 1863                           | 1000                       | 2694                           | 594                        |
+| **Total**     | **45568 (~32 kGE)**            | **32441 (~23 kGE)**        | **31861 (~23 kGE)**            | **16088 (~ 11 kGE)**       |
 
 
 ## ALU
@@ -21,5 +21,3 @@ Synthesized @ 0.4 ns, typical case, UMC65:
 | Buffer        | 582                           |
 | **Total**     | **9019 (~6.4 kGE)**           |
 
-
-w
