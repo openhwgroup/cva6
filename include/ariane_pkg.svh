@@ -80,35 +80,35 @@ package ariane_pkg;
     // Instruction Types
     // --------------------
     typedef struct packed {
-        logic [6:0]   opcode;
-        logic [11:7]  rd;
-        logic [14:12] funct3;
-        logic [19:15] rs1;
-        logic [24:20] rs2;
         logic [31:25] funct7;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:12] funct3;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
     } rtype;
 
     typedef struct packed {
-        logic [6:0]   opcode;
-        logic [11:7]  rd;
-        logic [14:12] funct3;
-        logic [19:15] rs1;
         logic [31:20] imm;
+        logic [19:15] rs1;
+        logic [14:12] funct3;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
     } itype;
 
     typedef struct packed {
-        logic [6:0]   opcode;
-        logic [11:7]  imm0;
-        logic [14:12] funct3;
-        logic [19:15] rs1;
-        logic [24:20] rs2;
         logic [31:25] imm1;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:12] funct3;
+        logic [11:7]  imm0;
+        logic [6:0]   opcode;
     } stype;
 
     typedef struct packed {
-        logic [6:0]   opcode;
-        logic [11:7]  rd;
         logic [31:12] funct3;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
     } utype;
 
     typedef union packed {

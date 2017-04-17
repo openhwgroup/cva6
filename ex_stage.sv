@@ -25,8 +25,8 @@ module ex_stage (
 );
 
 
-// ALU is a single cycle instructions
-assign alu_ready_o = alu_valid_i;
+// ALU is a single cycle instructions, hence it is always ready
+assign alu_ready_o = 1'b1;
 assign alu_valid_o = alu_valid_i;
 assign alu_trans_id_o = trans_id_i;
 
@@ -34,9 +34,6 @@ alu alu_i (
     .operator_i          ( operator_i          ),
     .operand_a_i         ( operand_a_i         ),
     .operand_b_i         ( operand_b_i         ),
-    .multdiv_operand_a_i (                     ),
-    .multdiv_operand_b_i (                     ),
-    .multdiv_en_i        (                     ),
     .adder_result_o      (                     ),
     .adder_result_ext_o  (                     ),
     .result_o            ( alu_result_o        ),

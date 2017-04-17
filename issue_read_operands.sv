@@ -57,6 +57,7 @@ module issue_read_operands (
     // output flipflop (ID <-> EX)
     logic [63:0] operand_a_n, operand_a_q, operand_b_n, operand_b_q;
     logic alu_valid_n, alu_valid_q;
+    logic [4:0] trans_id_n, trans_id_q;
     alu_op operator_n, operator_q;
 
     // forwarding signals
@@ -66,6 +67,7 @@ module issue_read_operands (
     assign operand_b_o = operand_b_q;
     assign operator_o  = operator_q;
     assign alu_valid_o = alu_valid_q;
+    assign trans_id_o  = trans_id_q;
     // ---------------
     // Issue Stage
     // ---------------
@@ -158,15 +160,17 @@ module issue_read_operands (
             operand_b_n = issue_instr_i.imm;
         end
 
+        trans_id_n = issue_instr_i.trans_id;
+        operator_n = issue_instr_i.op;
     end
     // FU select
     always_comb begin : unit_valid
-        alu_valid_n  = alu_valid_q;
+        alu_valid_n  = 1'b0;
         lsu_valid_o  = 1'b0;
         mult_valid_o = 1'b0;
         // Exception pass through
         // if an exception has occurred simply pass it through
-        if (~issue_instr_i.ex.valid) begin
+        if (~issue_instr_i.ex.valid && issue_instr_valid_i) begin
             case (issue_instr_i.fu)
                 ALU:
                     alu_valid_n  = 1'b1;
@@ -208,11 +212,13 @@ module issue_read_operands (
             operand_b_q          <= '{default: 0};
             alu_valid_q          <= 1'b0;
             operator_q           <= ADD;
+            trans_id_q           <= 5'b0;
         end else begin
             operand_a_q          <= operand_a_n;
             operand_b_q          <= operand_b_n;
             alu_valid_q          <= alu_valid_n;
             operator_q           <= operator_n;
+            trans_id_q           <= trans_id_n;
         end
     end
 endmodule

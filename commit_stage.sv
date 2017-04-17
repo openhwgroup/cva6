@@ -33,7 +33,8 @@ module commit_stage (
     // commit instruction
     always_comb begin : commit
         // default assignments
-        we_a_o = 1'b0;
+        commit_ack_o = 1'b0;
+        we_a_o       = 1'b0;
         if (commit_instr_i.valid) begin
             we_a_o       = 1'b1;
             commit_ack_o = 1'b1;

@@ -45,7 +45,6 @@ module ariane
     );
 
 
-    logic rst_ni;
     logic flush_i;
     // logic [31:0] instruction_i;
     // logic instruction_valid_i;
@@ -68,7 +67,6 @@ module ariane
     // synth stuff
     assign flush_i = 1'b0;
 
-    logic req_i;
     logic if_busy_o;
     logic id_ready_i;
     logic halt_if_i;
@@ -90,27 +88,32 @@ module ariane
     logic mult_valid_i;
     priv_lvl_t priv_lvl_o;
     exception exception_o;
+    scoreboard_entry commit_instr_o;
 
-if_stage i_if_stage (
-    .clk_i               ( clk_i                   ),
-    .rst_ni              ( rst_ni                  ),
-    .req_i               ( req_i                   ),
-    .if_busy_o           ( if_busy_o               ),
-    .id_ready_i          ( id_ready_i              ),
-    .halt_if_i           ( halt_if_i               ),
-    .instr_req_o         ( instr_if.data_req       ),
-    .instr_addr_o        ( instr_if.address        ),
-    .instr_gnt_i         ( instr_if.data_gnt       ),
-    .instr_rvalid_i      ( instr_if.data_rvalid    ),
-    .instr_rdata_i       ( instr_if.data_rdata     ),
-    .instr_valid_id_o    ( instr_valid_id_o        ),
-    .instr_rdata_id_o    ( instr_rdata_id_o        ),
-    .is_compressed_id_o  ( is_compressed_id_o      ),
-    .illegal_c_insn_id_o ( illegal_c_insn_id_o     ),
-    .pc_if_o             ( pc_if_o                 ),
-    .pc_id_o             ( pc_id_o                 ),
-    .boot_addr_i         ( boot_addr_i             )
-);
+    assign id_ready_i = 1'b1;
+    assign halt_if_i = 1'b0;
+
+    if_stage i_if_stage (
+        .clk_i               ( clk_i                   ),
+        .rst_ni              ( rst_n                   ),
+        .flush_i             ( 1'b0                    ),
+        .req_i               ( fetch_enable_i          ),
+        .if_busy_o           ( if_busy_o               ),
+        .id_ready_i          ( id_ready_i              ),
+        .halt_if_i           ( halt_if_i               ),
+        .instr_req_o         ( instr_if.data_req       ),
+        .instr_addr_o        ( instr_if.address        ),
+        .instr_gnt_i         ( instr_if.data_gnt       ),
+        .instr_rvalid_i      ( instr_if.data_rvalid    ),
+        .instr_rdata_i       ( instr_if.data_rdata     ),
+        .instr_valid_id_o    ( instr_valid_id_o        ),
+        .instr_rdata_id_o    ( instr_rdata_id_o        ),
+        .is_compressed_id_o  ( is_compressed_id_o      ),
+        .illegal_c_insn_id_o ( illegal_c_insn_id_o     ),
+        .pc_if_o             ( pc_if_o                 ),
+        .pc_id_o             ( pc_id_o                 ),
+        .boot_addr_i         ( boot_addr_i             )
+    );
 
     id_stage
     #(
@@ -118,13 +121,13 @@ if_stage i_if_stage (
     )
     id_stage_i (
         .clk_i               ( clk_i               ),
-        .rst_ni              ( rst_ni              ),
+        .rst_ni              ( rst_n               ),
         .test_en_i           ( test_en_i           ),
         .flush_i             ( flush_i             ),
         .instruction_i       ( instr_rdata_id_o    ),
         .instruction_valid_i ( instr_valid_id_o    ),
         .pc_if_i             ( pc_if_o             ), // PC from if
-        .ex_i                (                     ), // exception from if
+        .ex_i                ( '{default: 0}       ), // exception from if
         .ready_o             ( ready_o             ),
         .operator_o          ( operator_o          ),
         .operand_a_o         ( operand_a_o         ),
@@ -150,7 +153,7 @@ if_stage i_if_stage (
 
     ex_stage ex_stage_i (
         .clk_i               ( clk_i               ),
-        .rst_ni              ( rst_ni              ),
+        .rst_ni              ( rst_n               ),
         .operator_i          ( operator_o          ),
         .operand_a_i         ( operand_a_o         ),
         .operand_b_i         ( operand_b_o         ),
@@ -171,7 +174,7 @@ if_stage i_if_stage (
 
     commit_stage i_commit_stage (
         .clk_i           ( clk_i               ),
-        .rst_ni          ( rst_ni              ),
+        .rst_ni          ( rst_n               ),
         .priv_lvl_o      ( priv_lvl_o          ),
         .exception_o     ( exception_o         ),
         .commit_instr_i  ( commit_instr_o      ),

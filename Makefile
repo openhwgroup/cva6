@@ -5,8 +5,8 @@
 # compile everything in the following library
 library = work
 # Top level module to compile
-top_level = ariane
-test_top_level = alu_tb
+top_level = core_tb
+test_top_level = core_tb
 tests = alu scoreboard
 # path to agents
 agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv \
@@ -49,7 +49,7 @@ build:
 # Run the specified test case
 sim:
 	# vsim${questa_version} ${top_level}_optimized -c -do "run -a"
-	vsim${questa_version} ${top_level}_optimized +UVM_TESTNAME=${test_case} -do "run -a"
+	vsim${questa_version} ${top_level}_optimized +UVM_TESTNAME=${test_case}
 
 $(tests):
 	# Optimize top level

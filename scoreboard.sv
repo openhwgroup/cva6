@@ -179,8 +179,9 @@ always_comb begin : issue_instruction
 
     // provide a combinatorial path in case the scoreboard is empty
     if (top_pointer_q == issue_pointer_q) begin
-        issue_instr_o       = decoded_instr_i;
-        issue_instr_valid_o = decoded_instr_valid_i;
+        issue_instr_o          = decoded_instr_i;
+        issue_instr_o.trans_id = issue_pointer_q;
+        issue_instr_valid_o    = decoded_instr_valid_i;
     // if not empty go to scoreboard and get the instruction at the issue pointer
     end else begin
         issue_instr_o = mem_q[$unsigned(issue_pointer_q)];

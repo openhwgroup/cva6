@@ -68,7 +68,7 @@ module id_stage #(
     // TODO: Branching logic
     assign ready_o = ~full_o;
 
-        logic illegal_instr_o;
+    logic illegal_instr_o;
 
     decoder decoder_i (
         .clk_i           ( clk_i            ),

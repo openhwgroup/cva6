@@ -82,15 +82,24 @@ module decoder (
                 end
 
                 OPCODE_OP32: begin
-
+                    instruction_o.fu  = ALU;
+                    instruction_o.rs1 = instr.rtype.rs1;
+                    instruction_o.rs2 = instr.rtype.rs2;
+                    instruction_o.rd  = instr.rtype.rd;
                 end
 
                 OPCODE_OPIMM: begin
+                    instruction_o.fu  = ALU;
                     imm_select = IIMM;
+                    instruction_o.rs1 = instr.itype.rs1;
+                    instruction_o.rd  = instr.itype.rd;
                 end
 
                 OPCODE_OPIMM32: begin
+                    instruction_o.fu  = ALU;
                     imm_select = IIMM;
+                    instruction_o.rs1 = instr.itype.rs1;
+                    instruction_o.rd  = instr.itype.rd;
                 end
 
                 OPCODE_STORE: begin

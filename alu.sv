@@ -20,11 +20,6 @@ module alu
   input  logic [63:0]              operand_a_i,
   input  logic [63:0]              operand_b_i,
 
-  input  logic [64:0]              multdiv_operand_a_i,
-  input  logic [64:0]              multdiv_operand_b_i,
-
-  input  logic                     multdiv_en_i,
-
   output logic [63:0]              adder_result_o,
   output logic [65:0]              adder_result_ext_o,
 
@@ -75,11 +70,11 @@ module alu
   end
 
   // prepare operand a
-  assign adder_in_a    = multdiv_en_i ? multdiv_operand_a_i : {operand_a_i, 1'b1};
+  assign adder_in_a    = {operand_a_i, 1'b1};
 
   // prepare operand b
   assign operand_b_neg = {operand_b_i, 1'b0} ^ {65{adder_op_b_negate}};
-  assign adder_in_b    = multdiv_en_i ? multdiv_operand_b_i : operand_b_neg ;
+  assign adder_in_b    =  operand_b_neg ;
 
   // actual adder
   assign adder_result_ext_o = $unsigned(adder_in_a) + $unsigned(adder_in_b);

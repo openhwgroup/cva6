@@ -31,6 +31,7 @@ import ariane_pkg::*;
 module if_stage (
     input  logic                   clk_i,       // Clock
     input  logic                   rst_ni,      // Asynchronous reset active low
+    input  logic                   flush_i,
     input  logic                   req_i,       // request new instructions
     output logic                   if_busy_o,   // is the IF stage busy fetching instructions?
     input  logic                   id_ready_i,
@@ -65,19 +66,20 @@ module if_stage (
 
     // offset FSM
     enum logic[0:0] {WAIT, IDLE} offset_fsm_cs, offset_fsm_ns;
-
-    assign pc_if_o         = fetch_addr;
-
-    // compressed instruction decoding, or more precisely compressed instruction
-    // expander
-    //
-    // since it does not matter where we decompress instructions, we do it here
-    // to ease timing closure
     logic [31:0] instr_decompressed;
     logic        illegal_c_insn;
     logic        instr_compressed_int;
     logic        clear_instr_valid_i;
 
+
+    assign pc_if_o             = fetch_addr;
+    // id stage acknowledged
+    assign clear_instr_valid_i = id_ready_i;
+    // compressed instruction decoding, or more precisely compressed instruction
+    // expander
+    //
+    // since it does not matter where we decompress instructions, we do it here
+    // to ease timing closure
     compressed_decoder compressed_decoder_i
       (
         .instr_i         ( fetch_rdata          ),
@@ -94,7 +96,7 @@ module if_stage (
 
         .req_i             ( req_i                       ),
 
-        .branch_i          (                   ), // kill everything
+        .branch_i          ( flush_i                     ), // kill everything
         .addr_i            ( {fetch_addr_n[63:1], 1'b0}  ),
 
         .ready_i           ( fetch_ready                 ),
@@ -113,7 +115,7 @@ module if_stage (
         .busy_o            ( prefetch_busy               )
         );
 
-        assign fetch_addr_n = {boot_addr_i[63:8], EXC_OFF_RST};
+        assign fetch_addr_n = 64'b0; //{boot_addr_i[63:8], EXC_OFF_RST};
 
         // offset FSM state
         always_ff @(posedge clk_i, negedge rst_ni)
@@ -202,7 +204,7 @@ module if_stage (
 
 
         assign if_ready  = valid & id_ready_i;
-        assign if_valid  = (~halt_if_i) & id_ready_i;
+        assign if_valid  = (~halt_if_i) & if_ready;
         assign if_busy_o = prefetch_busy;
         //-------------
         // Assertions
