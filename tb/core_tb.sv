@@ -29,8 +29,13 @@ module core_tb;
     logic sec_lvl_o;
     debug_if debug_if();
 
-    assign boot_addr_i = 64'b0;
-    assign test_en_i   = 1'b0;
+    assign boot_addr_i    = 64'b0;
+    assign test_en_i      = 1'b0;
+    assign core_id_i      = 4'b0;
+    assign cluster_id_i   = 6'b0;
+    assign irq_i          = 1'b0;
+    assign irq_id_i       = 5'b0;
+    assign irq_sec_i      = 1'b0;
 
     ariane dut (
         .clk_i               ( clk_i              ),
@@ -67,7 +72,7 @@ module core_tb;
     initial begin
         fetch_enable_i = 1'b0;
         wait(rst_ni)
-        #1ns fetch_enable_i = 1'b1;
+        #80ns fetch_enable_i = 1'b1;
 
     end
 
@@ -75,7 +80,8 @@ module core_tb;
 
     program testbench (mem_if instr_if);
         logic [7:0] imem [400];
-        logic [63:0] address;
+        logic [63:0] address [$];
+        logic [63:0] addr;
         // instruction memory
         initial begin
             // read mem file
@@ -88,20 +94,35 @@ module core_tb;
                 // instr_if.mck.data_gnt    <= 1'b0;
 
                 @(instr_if.mck)
-                    if (instr_if.mck.data_req) begin
-                        // instr_if.mck.data_gnt <= 1'b1;
-                        address <= instr_if.mck.address;
-                        $display("Time %t, Address %0h", $time, address);
-                        // @(instr_if.mck)
-                        instr_if.mck.data_rvalid <= 1'b1;
-                        instr_if.mck.data_rdata  <= {
-                            imem[$unsigned(address + 3)],
-                            imem[$unsigned(address + 2)],
-                            imem[$unsigned(address + 1)],
-                            imem[$unsigned(address + 0)]
-                            };
-                    end else
-                        instr_if.mck.data_rvalid <= 1'b0;
+                instr_if.mck.data_rvalid <= 1'b0;
+                    fork
+                        imem_read: begin
+                            // instr_if.mck.data_rvalid <= 1'b0;
+                            if (instr_if.mck.data_req) begin
+                                address.push_back(instr_if.mck.address);
+                            end
+                        end
+
+                        imem_write: begin
+                            if (address.size() != 0) begin
+                                instr_if.mck.data_rvalid <= 1'b1;
+                                addr = address.pop_front();
+                                instr_if.mck.data_rdata  <= {
+                                    imem[$unsigned(addr + 3)],
+                                    imem[$unsigned(addr + 2)],
+                                    imem[$unsigned(addr + 1)],
+                                    imem[$unsigned(addr + 0)]
+                                    };
+                                $display("Address: %0h, Data: %0h", addr, {
+                                    imem[$unsigned(addr + 3)],
+                                    imem[$unsigned(addr + 2)],
+                                    imem[$unsigned(addr + 1)],
+                                    imem[$unsigned(addr + 0)]
+                                    });
+                            end else
+                                instr_if.mck.data_rvalid <= 1'b0;
+                        end
+                    join_none
 
             end
         end

@@ -38,17 +38,17 @@ module if_stage (
     input  logic                   halt_if_i,   // pipeline stall
     // instruction cache interface
     output logic                   instr_req_o,
-    output logic            [63:0] instr_addr_o,
+    output logic [63:0]            instr_addr_o,
     input  logic                   instr_gnt_i,
     input  logic                   instr_rvalid_i,
-    input  logic            [31:0] instr_rdata_i,
+    input  logic [31:0]            instr_rdata_i,
     // Output of IF Pipeline stage
     output logic                   instr_valid_id_o,      // instruction in IF/ID pipeline is valid
-    output logic            [31:0] instr_rdata_id_o,      // read instruction is sampled and sent to ID stage for decoding
+    output logic [31:0]            instr_rdata_id_o,      // read instruction is sampled and sent to ID stage for decoding
     output logic                   is_compressed_id_o,    // compressed decoder thinks this is a compressed instruction
     output logic                   illegal_c_insn_id_o,   // compressed decoder thinks this is an invalid instruction
-    output logic            [63:0] pc_if_o,
-    output logic            [63:0] pc_id_o,
+    output logic [63:0]            pc_if_o,
+    output logic [63:0]            pc_id_o,
 
     input  logic [63:0]            boot_addr_i
 );
@@ -96,7 +96,7 @@ module if_stage (
 
         .req_i             ( req_i                       ),
 
-        .branch_i          ( flush_i                     ), // kill everything
+        .branch_i          ( branch_req                  ), // kill everything
         .addr_i            ( {fetch_addr_n[63:1], 1'b0}  ),
 
         .ready_i           ( fetch_ready                 ),

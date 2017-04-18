@@ -46,6 +46,7 @@ module ariane
 
 
     logic flush_i;
+    logic fetch_enable;
     // logic [31:0] instruction_i;
     // logic instruction_valid_i;
     logic ready_o;
@@ -97,7 +98,7 @@ module ariane
         .clk_i               ( clk_i                   ),
         .rst_ni              ( rst_n                   ),
         .flush_i             ( 1'b0                    ),
-        .req_i               ( fetch_enable_i          ),
+        .req_i               ( fetch_enable            ),
         .if_busy_o           ( if_busy_o               ),
         .id_ready_i          ( id_ready_i              ),
         .halt_if_i           ( halt_if_i               ),
@@ -183,5 +184,13 @@ module ariane
         .wdata_a_o       ( wdata_a_i           ),
         .we_a_o          ( we_a_i              )
     );
+
+    always_ff @(posedge clk_i or negedge rst_n) begin
+        if(~rst_n) begin
+            fetch_enable <= 0;
+        end else begin
+            fetch_enable <= fetch_enable_i;
+        end
+    end
 
 endmodule // ariane

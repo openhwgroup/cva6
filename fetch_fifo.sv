@@ -233,8 +233,8 @@ module fetch_fifo
   //----------------------------------------------------------------------------
   // Assertions
   //----------------------------------------------------------------------------
-`ifndef VERILATOR
+  `ifndef VERILATOR
   assert property (
     @(posedge clk) (in_valid_i) |-> ((valid_Q[DEPTH-1] == 1'b0) || (clear_i == 1'b1)) );
-`endif
+  `endif
 endmodule

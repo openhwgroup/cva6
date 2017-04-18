@@ -23,19 +23,19 @@ interface mem_if #(parameter int ADDRESS_SIZE = 64,
         wire [DATA_WIDTH/8-1:0] data_be;           // Byte enable
         // Memory interface configured as master
         clocking mck @(posedge clk);
-            default input #1ns output #1ns;
+            // default input #1ns output #1ns;
             input   address, data_wdata, data_req, data_we, data_be;
             output  data_gnt, data_rvalid, data_rdata;
         endclocking
         // Memory interface configured as slave
         clocking sck @(posedge clk);
-            default input #1ns output #1ns;
+            // default input #1ns output #1ns;
             output  address, data_wdata, data_req, data_we, data_be;
             input   data_gnt, data_rvalid, data_rdata;
         endclocking
 
         clocking pck @(posedge clk);
-            default input #1ns output #1ns;
+            // default input #1ns output #1ns;
             input  address, data_wdata, data_req, data_we, data_be,
                    data_gnt, data_rvalid, data_rdata;
         endclocking

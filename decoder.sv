@@ -47,7 +47,10 @@ module decoder (
         instruction_o.rs1 = 5'b0;
         instruction_o.rs2 = 5'b0;
         instruction_o.rd = 5'b0;
-
+        // TODO: think about how necessary this really is?!
+        instruction_o.result = 64'b0;
+        instruction_o.trans_id = 5'b0;
+        // TODO end
         if (~ex_i.valid) begin
             case (instr.rtype.opcode)
                 OPCODE_SYSTEM: begin
