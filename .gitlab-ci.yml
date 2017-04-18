@@ -13,6 +13,16 @@ testALU:
     paths:
       - covhtmlreport
 
+testScoreboard:
+  stage: test
+  script:
+    - make build
+    - make scoreboard
+    - vcover report scoreboard.ucdb
+    - vcover report -html scoreboard.ucdb
+  artifacts:
+    paths:
+      - covhtmlreport
 
 pages:
   stage: deploy

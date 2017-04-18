@@ -87,6 +87,7 @@ module ariane
     logic lsu_valid_i;
     logic mult_ready_o;
     logic mult_valid_i;
+    logic commit_ack_i;
     priv_lvl_t priv_lvl_o;
     exception exception_o;
     scoreboard_entry commit_instr_o;

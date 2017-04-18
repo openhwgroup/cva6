@@ -2,26 +2,28 @@ class Scoreboard;
 
     scoreboard_entry decoded_instructions[$];
     scoreboard_entry issued_instructions[$];
-    static integer unsigned pc = 0;
+    static logic[4:0] i = 0;
 
     // utility function to get randomized input data
-    static function automatic scoreboard_entry randomize_scoreboard();
-            exception exception = { pc, 63'h0, 1'b0};
+    static function scoreboard_entry randomize_scoreboard();
+            exception exception = { 63'h0, 63'h0, 1'b0};
             scoreboard_entry entry = {
-                ALU, ADD, 5'h5, 5'h5, 5'h5, 64'h0, 1'b0, 1'b0, exception
+                i, ALU, ADD, 5'h5, 5'h5, 5'h5, 64'h0, 1'b0, 1'b0, exception
             };
-            pc++;
             return entry;
     endfunction : randomize_scoreboard
 
     // just allow one operation
     function void submit_instruction(scoreboard_entry entry);
+        entry.trans_id = i;
+        i = (++i % 8);
         decoded_instructions.push_back(entry);
     endfunction : submit_instruction
 
     // get the current issue instruction
     function scoreboard_entry get_issue();
         scoreboard_entry issue = decoded_instructions.pop_front();
+        // put in issue queue
         issued_instructions.push_back(issue);
         return issue;
     endfunction : get_issue

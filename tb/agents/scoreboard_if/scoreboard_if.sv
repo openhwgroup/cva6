@@ -12,7 +12,7 @@
 
 import ariane_pkg::*;
 
-interface scoreboard_if (input clk);
+interface scoreboard_if #(parameter int NR_WB_PORTS = 1)(input clk);
     wire                                   full;
     wire                                   flush;
     wire [31:0][$bits(fu_t)-1:0]           rd_clobber;
@@ -29,9 +29,9 @@ interface scoreboard_if (input clk);
     scoreboard_entry                       issue_instr;
     wire                                   issue_instr_valid;
     wire                                   issue_ack;
-    wire [4:0]                             trans_id;
-    wire [63:0]                            wdata;
-    wire                                   wb_valid;
+    wire [NR_WB_PORTS-1:0][4:0]            trans_id;
+    wire [NR_WB_PORTS-1:0][63:0]           wdata;
+    wire [NR_WB_PORTS-1:0]                 wb_valid;
 
     // Scoreboard interface configured as master
     clocking mck @(posedge clk);

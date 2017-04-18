@@ -53,7 +53,7 @@ sim:
 
 $(tests):
 	# Optimize top level
-	vopt${questa_version} ${compile_flag} $@_tb -o $@_optimized +acc -check_synthesis
+	vopt${questa_version} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
 	vsim${questa_version} -c +UVM_TESTNAME=$@_test -coverage -do "coverage save -onexit $@.ucdb; run -a; exit" $@_tb_optimized
 # User Verilator to lint the target
 lint:

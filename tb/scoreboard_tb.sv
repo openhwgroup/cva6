@@ -16,9 +16,13 @@ module scoreboard_tb;
     `include "models/scoreboard.sv"
 
     logic rst_ni, clk;
-    scoreboard_if scoreboard_if (clk);
+    scoreboard_if #(.NR_WB_PORTS(1)) scoreboard_if (clk);
 
-    scoreboard dut (
+    scoreboard #(
+        .NR_WB_PORTS          ( 1                                 )
+    )
+    dut
+    (
         .clk_i                ( clk                               ),
         .rst_ni               ( rst_ni                            ),
         .full_o               ( scoreboard_if.full                ),
@@ -53,11 +57,17 @@ module scoreboard_tb;
             #10ns clk = ~clk;
     end
 
+    // simulator stopper, this is suboptimal better go for coverage
+    initial begin
+        #10000000ns
+        $finish;
+    end
+
     program testbench (scoreboard_if scoreboard_if);
         // variable declarations
         Scoreboard sb = new;
         semaphore wb_lock = new(1);
-
+        logic[4:0] i = 0;
         assign scoreboard_if.flush = 1'b0;
 
         initial begin

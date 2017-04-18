@@ -9,7 +9,7 @@ import ariane_pkg::*;
 
 module scoreboard #(
     parameter int  NR_ENTRIES = 8,
-    parameter int  NR_WB_PORTS = 4,
+    parameter int  NR_WB_PORTS = 1,
     parameter type dtype      = scoreboard_entry
     )
     (

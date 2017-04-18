@@ -29,8 +29,8 @@ module core_tb;
     logic sec_lvl_o;
     debug_if debug_if();
 
-    assign boot_addr_i    = 64'b0;
     assign test_en_i      = 1'b0;
+    assign boot_addr_i    = 64'b0;
     assign core_id_i      = 4'b0;
     assign cluster_id_i   = 6'b0;
     assign irq_i          = 1'b0;
