@@ -47,6 +47,7 @@ module decoder (
         instruction_o.rs1 = 5'b0;
         instruction_o.rs2 = 5'b0;
         instruction_o.rd = 5'b0;
+        instruction_o.use_pc = 1'b0;
         // TODO: think about how necessary this really is?!
         instruction_o.result = 64'b0;
         instruction_o.trans_id = 5'b0;
@@ -61,6 +62,9 @@ module decoder (
                     // TODO: Implement
                 end
 
+                // --------------------------
+                // Reg-Reg Operations
+                // --------------------------
                 OPCODE_OP: begin
                     instruction_o.fu  = ALU;
                     instruction_o.rs1 = instr.rtype.rs1;
@@ -84,11 +88,27 @@ module decoder (
                     endcase
                 end
 
+                // --------------------------
+                // 32bit Reg-Reg Operations
+                // --------------------------
                 OPCODE_OP32: begin
                     instruction_o.fu  = ALU;
                     instruction_o.rs1 = instr.rtype.rs1;
                     instruction_o.rs2 = instr.rtype.rs2;
                     instruction_o.rd  = instr.rtype.rd;
+
+                    if (~instr.instr[28])
+                      unique case ({instr.rtype.funct7, instr.rtype.funct3})
+
+                        {6'b00_0000, 3'b000}: instruction_o.op = ADDW; // addw
+                        {6'b10_0000, 3'b000}: instruction_o.op = SUBW; // subw
+                        {6'b00_0000, 3'b001}: instruction_o.op = SLLW; // sllw
+                        {6'b00_0000, 3'b101}: instruction_o.op = SRLW; // srlw
+                        {6'b10_0000, 3'b101}: instruction_o.op = SRAW; // sraw
+                        // multiplications
+
+                        default: illegal_instr_o = 1'b1;
+                      endcase
                 end
 
                 OPCODE_OPIMM: begin
@@ -96,41 +116,100 @@ module decoder (
                     imm_select = IIMM;
                     instruction_o.rs1 = instr.itype.rs1;
                     instruction_o.rd  = instr.itype.rd;
+
+                    unique case (instr.itype.funct3)
+                      3'b000: instruction_o.op = ADD;   // Add Immediate
+                      3'b010: instruction_o.op = SLTS;  // Set to one if Lower Than Immediate
+                      3'b011: instruction_o.op = SLTU;  // Set to one if Lower Than Immediate Unsigned
+                      3'b100: instruction_o.op = XORL;  // Exclusive Or with Immediate
+                      3'b110: instruction_o.op = ORL;   // Or with Immediate
+                      3'b111: instruction_o.op = ANDL;  // And with Immediate
+
+                      3'b001: begin
+                        instruction_o.op = SLL;  // Shift Left Logical by Immediate
+                        if (instr.instr[31:26] != 6'b0)
+                          illegal_instr_o = 1'b1;
+                      end
+
+                      3'b101: begin
+                        if (instr.instr[31:26] == 6'b0)
+                          instruction_o.op = SRL;  // Shift Right Logical by Immediate
+                        else if (instr.instr[31:26] == 6'b010_000)
+                          instruction_o.op = SRA;  // Shift Right Arithmetically by Immediate
+                        else
+                          illegal_instr_o = 1'b1;
+                      end
+
+                      default: illegal_instr_o = 1'b1;
+                    endcase
                 end
 
+                // --------------------------------
+                // 32 bit Reg-Immediate Operations
+                // --------------------------------
                 OPCODE_OPIMM32: begin
                     instruction_o.fu  = ALU;
                     imm_select = IIMM;
                     instruction_o.rs1 = instr.itype.rs1;
                     instruction_o.rd  = instr.itype.rd;
+
+                    unique case (instr.itype.funct3)
+                      3'b000: instruction_o.op = ADDW;  // Add Immediate
+
+                      3'b001: begin
+                        instruction_o.op = SLLW;  // Shift Left Logical by Immediate
+                        if (instr.instr[31:25] != 7'b0)
+                          illegal_instr_o = 1'b1;
+                      end
+
+                      3'b101: begin
+                        if (instr.instr[31:25] == 7'b0)
+                          instruction_o.op = SRLW;  // Shift Right Logical by Immediate
+                        else if (instr.instr[31:25] == 7'b010_0000)
+                          instruction_o.op = SRAW;  // Shift Right Arithmetically by Immediate
+                        else
+                          illegal_instr_o = 1'b1;
+                      end
+
+                      default: illegal_instr_o = 1'b1;
+                    endcase
                 end
 
                 OPCODE_STORE: begin
+                    // TODO: Implement
                     imm_select = SIMM;
                 end
 
                 OPCODE_LOAD: begin
+                    // TODO: Implement
                     imm_select = IIMM;
                 end
 
                 OPCODE_BRANCH: begin
+                    // TODO: Implement
                     imm_select = BIMM;
                 end
 
                 OPCODE_JALR: begin
+                    // TODO: Implement
                     imm_select = UIMM;
                 end
 
                 OPCODE_JAL: begin
+                    // TODO: Implement
                     imm_select = JIMM;
                 end
 
                 OPCODE_AUIPC: begin
-                    imm_select = UIMM;
+                    instruction_o.fu     = ALU;
+                    imm_select           = UIMM;
+                    instruction_o.use_pc = 1'b1;
                 end
 
                 OPCODE_LUI: begin
-                    imm_select = UIMM;
+                    imm_select           = UIMM;
+                    instruction_o.fu     = ALU;
+                    instruction_o.rd     = instr.utype.rd;
                 end
 
                 default: illegal_instr_o = 1'b1;

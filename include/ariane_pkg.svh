@@ -72,6 +72,7 @@ package ariane_pkg;
         logic [63:0]    result;
         logic           valid;
         logic           use_imm;
+        logic           use_pc;    // set if we need to use the PC as operand A, PC from exception
         logic [63:0]    imm;       // maybe we can get this into the results field
         exception       ex;
     } scoreboard_entry;

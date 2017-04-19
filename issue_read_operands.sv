@@ -155,6 +155,11 @@ module issue_read_operands (
             operand_b_n  = rs2_i;
         end
 
+        // use the PC as operand a
+        if (issue_instr_i.use_pc) begin
+            operand_a_n = issue_instr_i.ex.epc;
+        end
+
         // or is it an immediate (including PC)
         if (issue_instr_i.use_imm) begin
             operand_b_n = issue_instr_i.imm;
