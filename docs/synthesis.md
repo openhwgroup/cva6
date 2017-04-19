@@ -21,3 +21,16 @@ Synthesized @ 0.4 ns, worst case, UMC65:
 | Buffer        | 582                           |
 | **Total**     | **9019 (~6.4 kGE)**           |
 
+## BTB
+
+Synthesized @ 1.1 ns, worst case, UMC65
+
+|    **Type**   |    **64 entries**   |    **32 entries**   |
+|---------------|---------------------|---------------------|
+| Sequential    | 4288                | 2113                |
+| Combinatorial | 7901                | 5923                |
+| Buffer        | 342                 | 2276                |
+| **Total**     | **55490 (~39 kGE)** | **29327 (~20 kGE)** |
+
+
+

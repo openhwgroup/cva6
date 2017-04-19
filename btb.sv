@@ -19,7 +19,7 @@
 import ariane_pkg::*;
 
 module btb #(
-    parameter int NR_ENTRIES = 32,
+    parameter int NR_ENTRIES = 64,
     parameter int BITS_SATURATION_COUNTER = 2
     )
     (
@@ -62,6 +62,7 @@ module btb #(
         saturation_counter = btb_q[$unsigned(update_pc)].saturation_counter;
 
         if (misspredict_i.valid) begin
+            btb_n[$unsigned(update_pc)].valid = 1'b1;
             // update saturation counter
             // first check if counter is already saturated in the positive regime e.g.: branch taken
             if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}} && ~misspredict_i.is_taken) begin
