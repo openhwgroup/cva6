@@ -16,3 +16,84 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 //
+import ariane_pkg::*;
+
+module btb #(
+    parameter int NR_ENTRIES = 32,
+    parameter int BITS_SATURATION_COUNTER = 2
+    )
+    (
+    input  logic            clk_i,    // Clock
+    input  logic            rst_ni,   // Asynchronous reset active low
+    input  logic            flush_i,  // flush the btb
+
+    input  logic [63:0]     vpc_i,
+    input  misspredict      misspredict_i,
+
+    output logic            is_branch_o,               // instruction at vpc_i is a branch
+    output logic            predict_taken_o,           // the branch is taken
+    output logic [63:0]     branch_target_address_o    // instruction has the following target address
+);
+    // typedef for all branch target entries
+    // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
+    struct packed {
+        logic                                   valid;
+        logic [63:0]                            target_address;
+        logic [BITS_SATURATION_COUNTER-1:0]     saturation_counter;
+    } btb_n [NR_ENTRIES-1:0], btb_q [NR_ENTRIES-1:0];
+
+    logic [$clog2(NR_ENTRIES)-1:0]          index, update_pc;
+    logic [BITS_SATURATION_COUNTER-1:0]     saturation_counter;
+
+    // get actual index positions
+    // we ignore the 0th bit since all instructions are aligned on
+    // a half word boundary
+    assign update_pc = misspredict_i.pc[$clog2(NR_ENTRIES):1];
+    assign index     = vpc_i[$clog2(NR_ENTRIES):1];
+
+    // we combinatorially predict the branch and the target address
+    assign is_branch_o             = btb_q[$unsigned(index)].valid;
+    assign predict_taken_o         = btb_q[$unsigned(index)].saturation_counter[BITS_SATURATION_COUNTER-1];
+    assign branch_target_address_o = btb_q[$unsigned(index)].target_address;
+
+    // update on a miss-predict
+    always_comb begin : update_misspredict
+        btb_n              = btb_q;
+        saturation_counter = btb_q[$unsigned(update_pc)].saturation_counter;
+
+        if (misspredict_i.valid) begin
+            // update saturation counter
+            // first check if counter is already saturated in the positive regime e.g.: branch taken
+            if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}} && ~misspredict_i.is_taken) begin
+                // we can safely decrease it
+                btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter - 1;
+            // then check if it saturated in the negative regime e.g.: branch not taken
+            end else if (saturation_counter == {BITS_SATURATION_COUNTER{1'b0}} && misspredict_i.is_taken) begin
+                // we can safely increase it
+                btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter + 1;
+            end else begin // otherwise we are not in any boundaries and can decrease or increase it
+                if (misspredict_i.is_taken)
+                    btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter + 1;
+                else
+                    btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter - 1;
+            end
+            // the target address is simply updated
+            btb_n[$unsigned(update_pc)].target_address = misspredict_i.target_address;
+        end
+    end
+
+    // sequential process
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+             btb_q <= '{default: 0};
+        end else begin
+            // evict all entries
+            if (flush_i) begin
+                for (int i = 0; i < NR_ENTRIES; i++)
+                    btb_q[i].valid <=  1'b0;
+            end else begin
+                btb_q <=  btb_n;
+            end
+        end
+    end
+endmodule

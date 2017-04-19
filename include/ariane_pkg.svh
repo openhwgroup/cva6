@@ -20,19 +20,6 @@ package ariane_pkg;
     // Fetch Stage
     // ---------------
     // Only use struct when signals have same direction
-    typedef struct packed {
-         logic [63:0] pc;
-         logic [63:0] branch_target_address;
-         logic        valid;
-    } btb;
-
-    // input to the fetch stage
-    typedef struct packed {
-         logic [63:0] ra;           // return address
-         logic        is_call;      // is call - pop from stack
-         logic        is_return;    // is return - push on stack
-    } ras;
-
     // exception
     typedef struct packed {
          logic [63:0] epc;
@@ -43,6 +30,8 @@ package ariane_pkg;
     // miss-predict
     typedef struct packed {
          logic [63:0] pc;
+         logic [63:0] target_address;
+         logic        is_taken;
          logic        valid; // is miss-predict
     } misspredict;
 
@@ -117,13 +106,13 @@ package ariane_pkg;
         logic [6:0]   opcode;
     } utype;
 
-    typedef union packed {
-        logic [31:0] instr;
-        rtype        rtype;
-        itype        itype;
-        stype        stype;
-        utype        utype;
-    } instruction;
+    // typedef union packed {
+    //     logic [31:0] instr;
+    //     rtype        rtype;
+    //     itype        itype;
+    //     stype        stype;
+    //     utype        utype;
+    // } instruction;
 
     // --------------------
     // Opcodes
