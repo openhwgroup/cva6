@@ -162,7 +162,7 @@ module issue_read_operands (
 
         // or is it an immediate (including PC)
         if (issue_instr_i.use_imm) begin
-            operand_b_n = issue_instr_i.imm;
+            operand_b_n = issue_instr_i.result;
         end
 
         trans_id_n = issue_instr_i.trans_id;

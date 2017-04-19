@@ -48,8 +48,6 @@ module decoder (
         instruction_o.rs2 = 5'b0;
         instruction_o.rd = 5'b0;
         instruction_o.use_pc = 1'b0;
-        // TODO: think about how necessary this really is?!
-        instruction_o.result = 64'b0;
         instruction_o.trans_id = 5'b0;
         // TODO end
         if (~ex_i.valid) begin
@@ -235,31 +233,31 @@ module decoder (
         // select immediate
         case (imm_select)
             PCIMM: begin
-                instruction_o.imm = pc_i;
+                instruction_o.result = pc_i;
                 instruction_o.use_imm = 1'b1;
             end
             IIMM: begin
-                instruction_o.imm = imm_i_type;
+                instruction_o.result = imm_i_type;
                 instruction_o.use_imm = 1'b1;
             end
             SIMM: begin
-                instruction_o.imm = imm_s_type;
+                instruction_o.result = imm_s_type;
                 instruction_o.use_imm = 1'b1;
             end
             BIMM: begin
-                instruction_o.imm = imm_bi_type;
+                instruction_o.result = imm_bi_type;
                 instruction_o.use_imm = 1'b1;
             end
             UIMM: begin
-                instruction_o.imm = imm_u_type;
+                instruction_o.result = imm_u_type;
                 instruction_o.use_imm = 1'b1;
             end
             JIMM: begin
-                instruction_o.imm = imm_uj_type;
+                instruction_o.result = imm_uj_type;
                 instruction_o.use_imm = 1'b1;
             end
             default: begin
-                instruction_o.imm = 64'b0;
+                instruction_o.result = 64'b0;
                 instruction_o.use_imm = 1'b0;
             end
         endcase
