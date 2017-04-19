@@ -106,13 +106,13 @@ package ariane_pkg;
         logic [6:0]   opcode;
     } utype;
 
-    // typedef union packed {
-    //     logic [31:0] instr;
-    //     rtype        rtype;
-    //     itype        itype;
-    //     stype        stype;
-    //     utype        utype;
-    // } instruction;
+    typedef union packed {
+        logic [31:0] instr;
+        rtype        rtype;
+        itype        itype;
+        stype        stype;
+        utype        utype;
+    } instruction;
 
     // --------------------
     // Opcodes
