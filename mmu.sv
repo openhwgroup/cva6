@@ -36,15 +36,17 @@ module mmu #(
         output logic                            fetch_valid_o,
         output logic                            fetch_err_o,
         input  logic [63:0]                     fetch_vaddr_i,
-        output logic [31:0]                     fetch_rdata_o,
+        output logic [31:0]                     fetch_rdata_o, // pass-through because of interfaces
         // LSU interface
         input  logic                            lsu_req_i,
         output logic                            lsu_gnt_o,
         output logic                            lsu_valid_o,
         input  logic                            lsu_we_i,
-        input  logic [3:0]                      lsu_be_i,
+        input  logic [7:0]                      lsu_be_i,
         output logic                            lsu_err_o,
         input  logic [63:0]                     lsu_vaddr_i,
+        input  logic [63:0]                     lsu_wdata_i, // pass-through because of interfaces
+        output logic [63:0]                     lsu_rdata_o, // pass-through because of interfaces
         // General control signals
         input priv_lvl_t                        priv_lvl_i,
         input logic                             flag_pum_i,
