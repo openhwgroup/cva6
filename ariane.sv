@@ -53,10 +53,7 @@ module ariane
     logic [63:0] operand_b_o;
     logic alu_ready_i;
     logic alu_valid_i;
-    logic lsu_ready_i;
     logic lsu_valid_o;
-    logic mult_ready_i;
-    logic mult_valid_o;
     logic [4:0] waddr_a_i;
     logic [63:0] wdata_a_i;
     logic we_a_i;
@@ -69,11 +66,6 @@ module ariane
     logic if_busy_o;
     logic id_ready_i;
     logic halt_if_i;
-    logic instr_req_o;
-    logic [63:0] instr_addr_o;
-    logic instr_gnt_i;
-    logic instr_rvalid_i;
-    logic [31:0] instr_rdata_i;
     logic [31:0] fetch_rdata_o;
     logic instr_valid_id_o;
     logic [31:0] instr_rdata_id_o;
@@ -98,13 +90,6 @@ module ariane
     logic fetch_valid_o;
     logic fetch_err_o;
     logic [63:0] fetch_vaddr_i;
-
-    logic lsu_req_i;
-    logic lsu_gnt_o;
-    logic lsu_we_i;
-    logic [7:0] lsu_be_i;
-    logic lsu_err_o;
-    logic [63:0] lsu_vaddr_i;
     priv_lvl_t priv_lvl_i;
     logic flag_pum_i;
     logic flag_mxr_i;
@@ -113,8 +98,14 @@ module ariane
     logic flush_tlb_i;
     logic lsu_ready_wb_i;
 
-    logic [63:0] lsu_wdata_i;
-    logic [63:0] lsu_rdata_o;
+    logic          data_req_o;
+    logic          data_gnt_i;
+    logic          data_err_i;
+    logic [63:0]   data_addr_o;
+    logic          data_we_o;
+    logic [7:0]    data_be_o;
+    logic [63:0]   data_wdata_o;
+    logic [63:0]   data_rdata_i;
 
     assign id_ready_i = 1'b1;
     assign halt_if_i = 1'b0;
@@ -169,7 +160,7 @@ module ariane
         .mult_valid_o        (                              ),
         .trans_id_i          ( {alu_trans_id, lsu_trans_id} ),
         .wdata_i             ( {alu_result,   lsu_result}   ),
-        .wb_valid_i          ( {alu_valid_o, l su_valid_o}  ),
+        .wb_valid_i          ( {alu_valid_o, lsu_valid_o}   ),
 
         .waddr_a_i           ( waddr_a_i                    ),
         .wdata_a_i           ( wdata_a_i                    ),
@@ -199,21 +190,30 @@ module ariane
         .lsu_result_o        ( lsu_result          ),
         .lsu_trans_id_o      ( lsu_trans_id        ),
         .lsu_valid_o         ( lsu_valid_o         ),
+        .data_req_o          ( data_req_o          ),
+        .data_gnt_i          ( data_gnt_i          ),
+        .data_rvalid_i       ( data_rvalid_i       ),
+        .data_err_i          ( data_err_i          ),
+        .data_addr_o         ( data_addr_o         ),
+        .data_we_o           ( data_we_o           ),
+        .data_be_o           ( data_be_o           ),
+        .data_wdata_o        ( data_wdata_o        ),
+        .data_rdata_i        ( data_rdata_i        ),
 
         .mult_ready_o        ( mult_ready_o        ),
         .mult_valid_i        ( mult_valid_i        )
     );
 
-    commit_stage commit_stage (
-        .clk_i           ( clk_i               ),
-        .rst_ni          ( rst_n               ),
-        .priv_lvl_o      ( priv_lvl_o          ),
-        .exception_o     ( exception_o         ),
-        .commit_instr_i  ( commit_instr_o      ),
-        .commit_ack_o    ( commit_ack_i        ),
-        .waddr_a_o       ( waddr_a_i           ),
-        .wdata_a_o       ( wdata_a_i           ),
-        .we_a_o          ( we_a_i              )
+    commit_stage commit_stage_i (
+        .clk_i               ( clk_i               ),
+        .rst_ni              ( rst_n               ),
+        .priv_lvl_o          ( priv_lvl_o          ),
+        .exception_o         ( exception_o         ),
+        .commit_instr_i      ( commit_instr_o      ),
+        .commit_ack_o        ( commit_ack_i        ),
+        .waddr_a_o           ( waddr_a_i           ),
+        .wdata_a_o           ( wdata_a_i           ),
+        .we_a_o              ( we_a_i              )
     );
 
     mmu mmu_i (
@@ -226,15 +226,15 @@ module ariane
         .fetch_err_o          ( fetch_err_o          ),
         .fetch_vaddr_i        ( fetch_vaddr_i        ),
         .fetch_rdata_o        ( fetch_rdata_o        ),
-        .lsu_req_i            ( lsu_req_i            ),
-        .lsu_gnt_o            ( lsu_gnt_o            ),
-        .lsu_valid_o          (           ),
-        .lsu_we_i             ( lsu_we_i             ),
-        .lsu_be_i             ( lsu_be_i             ),
-        .lsu_err_o            ( lsu_err_o            ),
-        .lsu_vaddr_i          ( lsu_vaddr_i          ),
-        .lsu_wdata_i          ( lsu_wdata_i          ),
-        .lsu_rdata_o          ( lsu_rdata_o          ),
+        .lsu_req_i            ( data_req_o           ),
+        .lsu_gnt_o            ( data_gnt_i           ),
+        .lsu_valid_o          ( data_rvalid_i        ),
+        .lsu_we_i             ( data_we_o            ),
+        .lsu_be_i             ( data_be_o            ),
+        .lsu_err_o            ( data_err_i           ),
+        .lsu_vaddr_i          ( data_addr_o          ),
+        .lsu_wdata_i          ( data_wdata_o         ),
+        .lsu_rdata_o          ( data_rdata_i         ),
         .priv_lvl_i           ( priv_lvl_i           ),  // from CSR
         .flag_pum_i           ( flag_pum_i           ),  // from CSR
         .flag_mxr_i           ( flag_mxr_i           ),  // from CSR

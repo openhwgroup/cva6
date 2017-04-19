@@ -1,8 +1,8 @@
 import ariane_pkg::*;
 
 module lsu (
-    input  logic         clk,
-    input  logic         rst_n,
+    input  logic         clk_i,
+    input  logic         rst_ni,
 
     // output to data memory
     output logic         data_req_o,
