@@ -99,16 +99,25 @@ If an exception was signaled by the WB stage, the LSU kills all entries in its s
 The LSU of the core takes care of accessing the data memory. Load and stores on words (32 bit), half words (16 bit) and bytes (8 bit) are supported.
 Table 3 describes the signals that are used by the LSU.
 
-|     **Signal**     | **Direction** |                                                    **Description**                                                     |
-| ------------------ | ------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| data_req_o         | output        | Request ready, must stay high until data_gnt_i is high for one cycle                                                   |
-| data_addr_o[31:0]  | output        | Address                                                                                                                |
-| data_we_o          | output        | Write Enable, high for writes, low for reads. Sent together with data_req_o                                            |
-| data_be_o[3:0]     | output        | Byte Enable. Is set for the bytes to write/read, sent together with data_req_o                                         |
-| data_wdata_o[31:0] | output        | Data to be written to memory, sent together with data_req_o                                                            |
-| data_rdata_i[31:0] | input         | Data read from memory                                                                                                  |
-| data_rvalid_i      | input         | data_rdata_is holds valid data when data_rvalid_i is high. This signal will be high for exactly one cycle per request. |
-| data_gnt_i         | input         | The other side accepted the request. data_addr_o may change in the next cycle                                          |
+|    **Signal**   | **Direction** |                                                    **Description**                                                     |
+|-----------------|---------------|------------------------------------------------------------------------------------------------------------------------|
+| data_req_o      | Output        | Request ready, must stay high until data_gnt_i is high for one cycle                                                   |
+| data_addr_o     | Output        | Address                                                                                                                |
+| data_we_o       | Output        | Write Enable, high for writes, low for reads. Sent together with data_req_o                                            |
+| data_be_o       | Output        | Byte Enable. Is set for the bytes to write/read, sent together with data_req_o                                         |
+| data_wdata_o    | Output        | Data to be written to memory, sent together with data_req_o                                                            |
+| data_rdata_i    | Input         | Data read from memory                                                                                                  |
+| data_rvalid_i   | Input         | data_rdata_is holds valid data when data_rvalid_i is high. This signal will be high for exactly one cycle per request. |
+| data_gnt_i      | Input         | The other side accepted the request. data_addr_o may change in the next cycle                                          |
+| operator_i      | Input         | Operation to perform e.g.: LD/SD/...                                                                                   |
+| operand_a_i     | Input         | Operand a in from scoreboard/issue                                                                                     |
+| operand_b_i     | Input         | Operand b in from scoreboard/issue                                                                                     |
+| lsu_ready_o     | Output        | LSU is ready e.g. not busy and can accept new instructions                                                             |
+| lsu_valid_i     | Input         | LSU is requested to perform the instruction given in operator_i                                                        |
+| lsu_trans_id_i  | Input         | Transaction ID needed for the correct writeback                                                                        |
+| lsu_trans_id_o  | Output        | Output to writeback for which it acknowledges the corresponding transaction                                            |
+| lsu_valid_o     | Output        | Output of LSU is valid                                                                                                 |
+| lsu_exception_o | Output        | To writeback, an exception has occured for the following instruction                                                   |
 
 ## Protocol
 

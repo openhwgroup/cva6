@@ -113,6 +113,9 @@ module ariane
     logic flush_tlb_i;
     logic lsu_ready_wb_i;
 
+    logic [63:0] lsu_wdata_i;
+    logic [63:0] lsu_rdata_o;
+
     assign id_ready_i = 1'b1;
     assign halt_if_i = 1'b0;
 
@@ -225,6 +228,8 @@ module ariane
         .lsu_be_i             ( lsu_be_i             ),
         .lsu_err_o            ( lsu_err_o            ),
         .lsu_vaddr_i          ( lsu_vaddr_i          ),
+        .lsu_wdata_i          ( lsu_wdata_i          ),
+        .lsu_rdata_o          ( lsu_rdata_o          ),
         .priv_lvl_i           ( priv_lvl_i           ),  // from CSR
         .flag_pum_i           ( flag_pum_i           ),  // from CSR
         .flag_mxr_i           ( flag_mxr_i           ),  // from CSR
