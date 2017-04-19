@@ -73,7 +73,6 @@ package ariane_pkg;
         logic           valid;    // is the result valid
         logic           use_imm;  // should we use the immediate as operand b?
         logic           use_pc;   // set if we need to use the PC as operand A, PC from exception
-        // logic [63:0]    imm;       // maybe we can get this into the results field
         exception       ex;       // exception has occurred
     } scoreboard_entry;
 
@@ -154,4 +153,18 @@ package ariane_pkg;
       PRIV_LVL_U = 2'b00
     } priv_lvl_t;
 
+    // ----------------------
+    // Exception Cause Codes
+    // ----------------------
+    localparam INSTR_ADDR_MISALIGNED = 64'h0;
+    localparam INSTR_ACCESS_FAULT    = 64'h1;
+    localparam ILLEGAL_INSTR         = 64'h2;
+    localparam BREAKPOINT            = 64'h3;
+    localparam LD_ADDR_MISALIGNED    = 64'h4;
+    localparam LD_ACCESS_FAULT       = 64'h5;
+    localparam ST_ADDR_MISALIGNED    = 64'h6;
+    localparam ST_ACCESS_FAULT       = 64'h7;
+    localparam ENV_CALL_UMODE        = 64'h8;
+    localparam ENV_CALL_SMODE        = 64'h9;
+    localparam ENV_CALL_MMODE        = 64'hB;
 endpackage

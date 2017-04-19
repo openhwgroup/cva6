@@ -41,7 +41,6 @@ module decoder (
         imm_select = NOIMM;
         illegal_instr_o = 1'b0;
         instruction_o.valid = 1'b0;
-        instruction_o.ex = ex_i;
         instruction_o.fu = NONE;
         instruction_o.op = ADD;
         instruction_o.rs1 = 5'b0;
@@ -108,7 +107,9 @@ module decoder (
                         default: illegal_instr_o = 1'b1;
                       endcase
                 end
-
+                // --------------------------------
+                // Reg-Immediate Operations
+                // --------------------------------
                 OPCODE_OPIMM: begin
                     instruction_o.fu  = ALU;
                     imm_select = IIMM;
@@ -214,7 +215,9 @@ module decoder (
             endcase
         end
     end
-
+    // --------------------------------
+    // Sign extend immediate
+    // --------------------------------
     always_comb begin : sign_extend
         imm_i_type  = { {52 {instruction_i[31]}}, instruction_i[31:20] };
         imm_iz_type = {  52'b0, instruction_i[31:20] };
@@ -229,7 +232,7 @@ module decoder (
         imm_vs_type = { {58 {instruction_i[24]}}, instruction_i[24:20], instruction_i[25] };
         imm_vu_type = { 58'b0, instruction_i[24:20], instruction_i[25] };
 
-        //  NOIMM, PCIMM, IIMM, SIMM, BIMM, BIMM, UIMM, JIMM
+        // NOIMM, PCIMM, IIMM, SIMM, BIMM, BIMM, UIMM, JIMM
         // select immediate
         case (imm_select)
             PCIMM: begin
@@ -262,5 +265,15 @@ module decoder (
             end
         endcase
     end
+    // --------------------------------
+    // Exception handling
+    // --------------------------------
+    always_comb begin : exception_handling
+        instruction_o.ex = ex_i;
 
+        if (~ex_i.valid && illegal_instr_o) begin
+            instruction_o.ex.valid = 1'b1;
+            instruction_o.ex.cause = ILLEGAL_INSTR;
+        end
+    end
 endmodule

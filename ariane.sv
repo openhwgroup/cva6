@@ -114,6 +114,7 @@ module ariane
         .illegal_c_insn_id_o ( illegal_c_insn_id_o     ),
         .pc_if_o             ( pc_if_o                 ),
         .pc_id_o             ( pc_id_o                 ),
+        .ex_o                ( exception_o             ),
         .boot_addr_i         ( boot_addr_i             )
     );
 
@@ -129,7 +130,7 @@ module ariane
         .instruction_i       ( instr_rdata_id_o    ),
         .instruction_valid_i ( instr_valid_id_o    ),
         .pc_if_i             ( pc_if_o             ), // PC from if
-        .ex_i                ( '{default: 0}       ), // exception from if
+        .ex_i                ( exception_o         ), // exception from if
         .ready_o             ( ready_o             ),
         .operator_o          ( operator_o          ),
         .operand_a_o         ( operand_a_o         ),

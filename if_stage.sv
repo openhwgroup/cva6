@@ -49,6 +49,7 @@ module if_stage (
     output logic                   illegal_c_insn_id_o,   // compressed decoder thinks this is an invalid instruction
     output logic [63:0]            pc_if_o,
     output logic [63:0]            pc_id_o,
+    output exception               ex_o,
 
     input  logic [63:0]            boot_addr_i
 );
@@ -184,6 +185,7 @@ module if_stage (
               illegal_c_insn_id_o   <= 1'b0;
               is_compressed_id_o    <= 1'b0;
               pc_id_o               <= '0;
+              ex_o                  <= '{default: 0};
             end
           else
             begin
@@ -195,6 +197,9 @@ module if_stage (
                   illegal_c_insn_id_o <= illegal_c_insn;
                   is_compressed_id_o  <= instr_compressed_int;
                   pc_id_o             <= pc_if_o;
+                  ex_o.epc            <= pc_if_o;
+                  ex_o.cause          <= 64'b0; // TODO: Output exception
+                  ex_o.valid          <= 1'b0;  // TODO: Output exception
               end else if (clear_instr_valid_i) begin
                 instr_valid_id_o    <= 1'b0;
               end

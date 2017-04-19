@@ -140,5 +140,4 @@ module id_stage #(
         .we_a_i              (we_a_i             )
     );
 
-
 endmodule
