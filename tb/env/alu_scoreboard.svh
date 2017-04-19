@@ -27,7 +27,7 @@ class alu_scoreboard extends uvm_scoreboard;
         result = 64'b0;
         result32 = 32'b0;
         // check for all possible ALU operations
-        case(alu_op'(seq_item.operator))
+        case(fu_op'(seq_item.operator))
             ADD:
               result = seq_item.operand_a + seq_item.operand_b;
             ADDW: begin

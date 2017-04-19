@@ -4,7 +4,7 @@ module ex_stage (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
 
-    input  alu_op                                  operator_i,
+    input  fu_op                                   operator_i,
     input  logic [63:0]                            operand_a_i,
     input  logic [63:0]                            operand_b_i,
     input  logic [4:0]                             trans_id_i,

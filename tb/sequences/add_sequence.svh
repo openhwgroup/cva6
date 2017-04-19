@@ -12,7 +12,7 @@ class add_sequence extends basic_sequence;
       super.new(name);
    endfunction : new
 
-   function alu_op get_operator();
+   function fu_op get_operator();
 	return ADD;
    endfunction : get_operator
 

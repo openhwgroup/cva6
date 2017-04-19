@@ -25,7 +25,7 @@ module id_stage #(
     input  logic [63:0]                     pc_if_i,
     input  exception                        ex_i,
     output logic                            ready_o,   // id is ready
-    output alu_op                           operator_o,
+    output fu_op                            operator_o,
     output logic [63:0]                     operand_a_o,
     output logic [63:0]                     operand_b_o,
     output logic [4:0]                      trans_id_o,

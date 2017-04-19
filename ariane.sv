@@ -50,7 +50,7 @@ module ariane
     // logic [31:0] instruction_i;
     // logic instruction_valid_i;
     logic ready_o;
-    alu_op operator_o;
+    fu_op operator_o;
     logic [63:0] operand_a_o;
     logic [63:0] operand_b_o;
     logic alu_ready_i;

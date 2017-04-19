@@ -26,7 +26,7 @@ module alu_tb;
     alu
     dut
     (
-        .operator_i             ( alu_op'(alu_if.operator)  ),
+        .operator_i             ( fu_op'(alu_if.operator)   ),
         .operand_a_i            ( alu_if.operand_a          ),
         .operand_b_i            ( alu_if.operand_b          ),
         .result_o               ( alu_if.result             ),

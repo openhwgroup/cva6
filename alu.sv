@@ -16,7 +16,7 @@ import ariane_pkg::*;
 
 module alu
 (
-  input  alu_op                    operator_i,
+  input  fu_op                     operator_i,
   input  logic [63:0]              operand_a_i,
   input  logic [63:0]              operand_b_i,
 

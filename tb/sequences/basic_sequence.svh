@@ -13,7 +13,7 @@ virtual class basic_sequence extends fu_if_seq;
       super.new(name);
    endfunction : new
 
-   pure virtual function alu_op get_operator();
+   pure virtual function fu_op get_operator();
 
    task body();
       fu_if_seq_item command;

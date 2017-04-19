@@ -13,7 +13,7 @@ class srlw_sequence extends basic_sequence;
       super.new(name);
    endfunction : new
 
-   function alu_op get_operator();
+   function fu_op get_operator();
 	return SRLW;
    endfunction : get_operator
 

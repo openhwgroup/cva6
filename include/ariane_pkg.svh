@@ -56,7 +56,7 @@ package ariane_pkg;
                                     SLTS, SLTU, SLETS, SLETU,                         // set lower than operations
                                     MRET, SRET, URET, ECALL, WRITE, READ, SET, CLEAR, // CSR functions
                                     LD, SD, LW, SW, LH, SH, LB, SB, LBU, SBU          // LSU functions
-                                  } alu_op;
+                                  } fu_op;
 
     // ---------------
     // ID/EX/WB Stage
@@ -65,7 +65,7 @@ package ariane_pkg;
         logic [4:0]     trans_id; // this can potentially be simplified, we could index the scoreboard entry with the transaction id
                                   // in any case make the width more generic
         fu_t            fu;       // functional unit to use
-        alu_op          op;       // operation to perform in each functional unit
+        fu_op           op;       // operation to perform in each functional unit
         logic [4:0]     rs1;      // register source address 1
         logic [4:0]     rs2;      // register source address 2
         logic [4:0]     rd;       // register destination address

@@ -30,7 +30,7 @@ module issue_read_operands (
     // get clobber input
     input  logic [31:0][$bits(fu_t)-1:0]           rd_clobber_i,
     // To FU, just single issue for now
-    output alu_op                                  operator_o,
+    output fu_op                                  operator_o,
     output logic [63:0]                            operand_a_o,
     output logic [63:0]                            operand_b_o,
     output logic [4:0]                             trans_id_o,
@@ -58,7 +58,7 @@ module issue_read_operands (
     logic [63:0] operand_a_n, operand_a_q, operand_b_n, operand_b_q;
     logic alu_valid_n, alu_valid_q;
     logic [4:0] trans_id_n, trans_id_q;
-    alu_op operator_n, operator_q;
+    fu_op operator_n, operator_q;
 
     // forwarding signals
     logic forward_rs1, forward_rs2;
