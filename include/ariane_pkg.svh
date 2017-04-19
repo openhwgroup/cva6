@@ -106,6 +106,11 @@ package ariane_pkg;
         logic [6:0]   opcode;
     } utype;
 
+    // for some reason verilator complains about this union
+    // since I am not using it for simulation anyway and linting only
+    // it is not too bad to deactivate it, but a future me (or you)
+    // should look into that more thoroughly
+    `ifndef verilator
     typedef union packed {
         logic [31:0] instr;
         rtype        rtype;
@@ -113,6 +118,7 @@ package ariane_pkg;
         stype        stype;
         utype        utype;
     } instruction;
+    `endif
 
     // --------------------
     // Opcodes

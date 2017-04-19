@@ -34,6 +34,9 @@ module btb #(
     output logic            predict_taken_o,           // the branch is taken
     output logic [63:0]     branch_target_address_o    // instruction has the following target address
 );
+    // number of bits which are not used for indexing
+    localparam OFFSET = 2;
+
     // typedef for all branch target entries
     // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
     struct packed {
@@ -48,8 +51,8 @@ module btb #(
     // get actual index positions
     // we ignore the 0th bit since all instructions are aligned on
     // a half word boundary
-    assign update_pc = misspredict_i.pc[$clog2(NR_ENTRIES):1];
-    assign index     = vpc_i[$clog2(NR_ENTRIES):1];
+    assign update_pc = misspredict_i.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
+    assign index     = vpc_i[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
 
     // we combinatorially predict the branch and the target address
     assign is_branch_o             = btb_q[$unsigned(index)].valid;
