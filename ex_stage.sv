@@ -7,18 +7,21 @@ module ex_stage (
     input  fu_op                                   operator_i,
     input  logic [63:0]                            operand_a_i,
     input  logic [63:0]                            operand_b_i,
-    input  logic [4:0]                             trans_id_i,
+    input  logic [TRANS_ID_BITS-1:0]               trans_id_i,
 
     // ALU 1
     output logic                                   alu_ready_o,      // FU is ready
     input  logic                                   alu_valid_i,      // Output is valid
     output logic                                   alu_valid_o,      // ALU result is valid
     output logic [63:0]                            alu_result_o,
-    output logic [4:0]                             alu_trans_id_o,       // ID of scoreboard entry at which to write back
+    output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,       // ID of scoreboard entry at which to write back
     output logic                                   comparison_result_o,
     // LSU
     output logic                                   lsu_ready_o,      // FU is ready
-    input  logic                                   lsu_valid_i,      // Output is valid
+    input  logic                                   lsu_valid_i,      // Input is valid
+    output logic                                   lsu_valid_o,      // Output is valid
+    output logic [63:0]                            lsu_result_o,
+    output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
     // MULT
     output logic                                   mult_ready_o,      // FU is ready
     input  logic                                   mult_valid_i       // Output is valid
@@ -44,6 +47,21 @@ alu alu_i (
 // Multiplication
 
 // Load-Store Unit
+
+    assign lsu_valid_o = 1'b0;
+    assign lsu_trans_id_o = trans_id_i;
+    logic rst_n;
+    logic data_req_o;
+    logic data_gnt_i;
+    logic data_rvalid_i;
+    logic data_err_i;
+    logic [63:0] data_addr_o;
+    logic data_we_o;
+    logic [7:0] data_be_o;
+    logic [63:0] data_wdata_o;
+    logic [63:0] data_rdata_i;
+    logic lsu_trans_id_i;
+    exception lsu_exception_o;
 
 // pass through
 

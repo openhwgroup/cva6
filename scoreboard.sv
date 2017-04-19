@@ -8,45 +8,45 @@
 import ariane_pkg::*;
 
 module scoreboard #(
-    parameter int  NR_ENTRIES = 8,
+    parameter int  NR_ENTRIES  = 8,
     parameter int  NR_WB_PORTS = 1,
-    parameter type dtype      = scoreboard_entry
+    parameter type dtype       = scoreboard_entry
     )
     (
-    input  logic                                   clk_i,    // Clock
-    input  logic                                   rst_ni,   // Asynchronous reset active low
-    output logic                                   full_o,   // We can't take anymore data
-    input  logic                                   flush_i,
+    input  logic                                      clk_i,    // Clock
+    input  logic                                      rst_ni,   // Asynchronous reset active low
+    output logic                                      full_o,   // We can't take anymore data
+    input  logic                                      flush_i,
     // list of clobbered registers to issue stage
-    output logic [31:0][$bits(fu_t)-1:0]           rd_clobber_o,
+    output logic [31:0][$bits(fu_t)-1:0]              rd_clobber_o,
 
     // regfile like interface to operand read stage
-    input  logic [4:0]                             rs1_i,
-    output logic [63:0]                            rs1_o,
-    output logic                                   rs1_valid_o,
+    input  logic [4:0]                                rs1_i,
+    output logic [63:0]                               rs1_o,
+    output logic                                      rs1_valid_o,
 
-    input  logic [4:0]                             rs2_i,
-    output logic [63:0]                            rs2_o,
-    output logic                                   rs2_valid_o,
+    input  logic [4:0]                                rs2_i,
+    output logic [63:0]                               rs2_o,
+    output logic                                      rs2_valid_o,
 
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
-    output dtype                                   commit_instr_o,
-    input  logic                                   commit_ack_i,
+    output dtype                                      commit_instr_o,
+    input  logic                                      commit_ack_i,
 
-    // instruction to put on top of scoreboard e.g.: top pointer
-    // we can always put this instruction to the top unless we signal with asserted full_o
-    input  dtype                                   decoded_instr_i,
-    input  logic                                   decoded_instr_valid_i,
+    // instruction to put on top of scoreboard e.g.   : top pointer
+    // we can always put this instruction to the to   p unless we signal with asserted full_o
+    input  dtype                                      decoded_instr_i,
+    input  logic                                      decoded_instr_valid_i,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
-    output dtype                                   issue_instr_o,
-    output logic                                   issue_instr_valid_o,
-    input  logic                                   issue_ack_i,
+    output dtype                                      issue_instr_o,
+    output logic                                      issue_instr_valid_o,
+    input  logic                                      issue_ack_i,
 
     // write-back port
-    input logic [NR_WB_PORTS-1:0][4:0]             trans_id_i,  // transaction ID at which to write the result back
-    input logic [NR_WB_PORTS-1:0][63:0]            wdata_i,     // write data in
-    input logic [NR_WB_PORTS-1:0]                  wb_valid_i   // data in is valid
+    input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
+    input logic [NR_WB_PORTS-1:0][63:0]               wdata_i,     // write data in
+    input logic [NR_WB_PORTS-1:0]                     wb_valid_i   // data in is valid
 );
 localparam BITS_ENTRIES      = $clog2(NR_ENTRIES);
 
@@ -135,13 +135,17 @@ always_comb begin : read_operands
     end
 
     // provide a direct combinational path from WB a.k.a forwarding
-    if (mem_q[trans_id_i].rd == rs1_i && wb_valid_i) begin
-        rs1_o = wdata_i;
-        rs1_valid_o = wb_valid_i;
-    end
-    if (mem_q[trans_id_i].rd == rs2_i && wb_valid_i) begin
-        rs2_o = wdata_i;
-        rs2_valid_o = wb_valid_i;
+    for (int j = 0; j < NR_WB_PORTS; j++) begin
+        if (mem_q[trans_id_i[j]].rd == rs1_i && wb_valid_i[j]) begin
+            rs1_o = wdata_i[j];
+            rs1_valid_o = wb_valid_i[j];
+            break;
+        end
+        if (mem_q[trans_id_i[j]].rd == rs2_i && wb_valid_i[j]) begin
+            rs2_o = wdata_i[j];
+            rs2_valid_o = wb_valid_i[j];
+            break;
+        end
     end
 
     // make sure we didn't read the zero register

@@ -9,7 +9,13 @@
  *              in one package.
  */
 package ariane_pkg;
-
+    // ---------------
+    // Global Config
+    // ---------------
+    localparam NR_SB_ENTRIES = 4; // number of scoreboard entries
+    localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
+                                                      // to uniquely identify the entry in the scoreboard
+    localparam NR_WB_PORTS   = 2;
     // ---------------
     // Fetch Stage
     // ---------------
@@ -41,7 +47,7 @@ package ariane_pkg;
     } misspredict;
 
     typedef enum logic[3:0] {
-        NONE, ALU, MULT, LSU, CSR
+        NONE, LSU, ALU, MULT, CSR
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -62,18 +68,18 @@ package ariane_pkg;
     // ID/EX/WB Stage
     // ---------------
     typedef struct packed {
-        logic [4:0]     trans_id; // this can potentially be simplified, we could index the scoreboard entry with the transaction id
-                                  // in any case make the width more generic
-        fu_t            fu;       // functional unit to use
-        fu_op           op;       // operation to perform in each functional unit
-        logic [4:0]     rs1;      // register source address 1
-        logic [4:0]     rs2;      // register source address 2
-        logic [4:0]     rd;       // register destination address
-        logic [63:0]    result;   // for unfinished instructions this field also holds the immediate
-        logic           valid;    // is the result valid
-        logic           use_imm;  // should we use the immediate as operand b?
-        logic           use_pc;   // set if we need to use the PC as operand A, PC from exception
-        exception       ex;       // exception has occurred
+        logic [TRANS_ID_BITS-1:0]     trans_id; // this can potentially be simplified, we could index the scoreboard entry
+                                                // with the transaction id in any case make the width more generic
+        fu_t                          fu;       // functional unit to use
+        fu_op                         op;       // operation to perform in each functional unit
+        logic [4:0]                   rs1;      // register source address 1
+        logic [4:0]                   rs2;      // register source address 2
+        logic [4:0]                   rd;       // register destination address
+        logic [63:0]                  result;   // for unfinished instructions this field also holds the immediate
+        logic                         valid;    // is the result valid
+        logic                         use_imm;  // should we use the immediate as operand b?
+        logic                         use_pc;   // set if we need to use the PC as operand A, PC from exception
+        exception                     ex;       // exception has occurred
     } scoreboard_entry;
 
     // --------------------

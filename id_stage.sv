@@ -14,41 +14,41 @@ module id_stage #(
     parameter int  NR_ENTRIES = 4,
     parameter int  NR_WB_PORTS = 4
     )(
-    input  logic                            clk_i,     // Clock
-    input  logic                            rst_ni,    // Asynchronous reset active low
-    input  logic                            test_en_i, // Test Enable
+    input  logic                                     clk_i,     // Clock
+    input  logic                                     rst_ni,    // Asynchronous reset active low
+    input  logic                                     test_en_i, // Test Enable
 
-    input  logic                            flush_i,
+    input  logic                                     flush_i,
     // from IF
-    input  logic [31:0]                     instruction_i,
-    input  logic                            instruction_valid_i,
-    input  logic [63:0]                     pc_if_i,
-    input  exception                        ex_i,
-    output logic                            ready_o,   // id is ready
-    output fu_op                            operator_o,
-    output logic [63:0]                     operand_a_o,
-    output logic [63:0]                     operand_b_o,
-    output logic [4:0]                      trans_id_o,
+    input  logic [31:0]                              instruction_i,
+    input  logic                                     instruction_valid_i,
+    input  logic [63:0]                              pc_if_i,
+    input  exception                                 ex_i,
+    output logic                                     ready_o,   // id is ready
+    output fu_op                                     operator_o,
+    output logic [63:0]                              operand_a_o,
+    output logic [63:0]                              operand_b_o,
+    output logic [TRANS_ID_BITS-1:0]                 trans_id_o,
 
-    input  logic                            alu_ready_i,
-    output logic                            alu_valid_o,
+    input  logic                                     alu_ready_i,
+    output logic                                     alu_valid_o,
 
-    input  logic                            lsu_ready_i,
-    output logic                            lsu_valid_o,
+    input  logic                                     lsu_ready_i,
+    output logic                                     lsu_valid_o,
 
-    input  logic                            mult_ready_i,
-    output logic                            mult_valid_o,
+    input  logic                                     mult_ready_i,
+    output logic                                     mult_valid_o,
     // write back port
-    input logic [NR_WB_PORTS-1:0][4:0]      trans_id_i,
-    input logic [NR_WB_PORTS-1:0][63:0]     wdata_i,
-    input logic [NR_WB_PORTS-1:0]           wb_valid_i,
+    input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
+    input logic [NR_WB_PORTS-1:0][63:0]              wdata_i,
+    input logic [NR_WB_PORTS-1:0]                    wb_valid_i,
     // commit port
-    input  logic[4:0]                       waddr_a_i,
-    input  logic[63:0]                      wdata_a_i,
-    input  logic                            we_a_i,
+    input  logic[4:0]                                waddr_a_i,
+    input  logic[63:0]                               wdata_a_i,
+    input  logic                                     we_a_i,
 
-    output scoreboard_entry                 commit_instr_o,
-    input  logic                            commit_ack_i
+    output scoreboard_entry                          commit_instr_o,
+    input  logic                                     commit_ack_i
 );
 
 
