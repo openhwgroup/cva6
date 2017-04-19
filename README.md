@@ -14,6 +14,7 @@ For detailed documentation refer to the [online documentation](http://www.be4web
 - For port definitions keep a post-fix direction (`_o`, `_i`).
 - For active low signals put an additional (`_no`, `_ni`).
 - Denote output of ff with `_q` and the input with `_n`.
+- Do not use CamelCase
 - Do not put overly large comment headers. Nevertheless, try to structure your HDL code, e.g.:
 ```
   // ------------------------------------

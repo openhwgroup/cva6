@@ -17,6 +17,7 @@ interfaces = include/debug_if.svh include/mem_if.svh
 src = alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv tb/alu_tb.sv \
 	  tb/scoreboard_tb.sv \
 	  if_stage.sv compressed_decoder.sv fetch_fifo.sv commit_stage.sv prefetch_buffer.sv \
+	  mmu.sv \
 	  scoreboard.sv issue_read_operands.sv decoder.sv id_stage.sv util/cluster_clock_gating.sv regfile.sv ex_stage.sv ariane.sv \
 	  tb/core_tb.sv
 
