@@ -20,16 +20,20 @@ The next PC can originate from the following sources:
 5.  Environment Call (`ecall) instruction. Read the CSRs to figure out where to jump.
 6.  Miss-predict: This triggers a pipeline flush and the PC Gen stage starts fetching from there.
 
-### ITLB
+### BTB and BHT
+
+Currently all branch prediction data structures reside in a single register like file. It is indexed with the appropriate number of bits from the PC and contains information about the predicted target address as well as the outcome of a two (actually configurable) saturation counter. The prediction result is used in the subsequent stage to jump (or not).
+
+For a future version a more accurate predictor might be necessary (gshare, tournament,...).
+
 
 ## Instruction Fetch (IF)
 
 In the IF stage we already know the physical PC. The request of the instruction is on its way to the instruction memory. We know the result of the BHT and can set the next PC accordingly. At the end of this stage the instruction PC is passed on to the ID stage. Retrieved instructions are stored in an instruction queue.
 It is possible that a TLB or cache miss occurred. If this is the case the IF stage signals that it is not ready. The pipeline in the direction of the ID stage will empty itself.
 
-### BTB
+### ITLB
 
-### BHT
 
 ### Instruction Queue
 

@@ -23,12 +23,12 @@ module btb #(
     parameter int BITS_SATURATION_COUNTER = 2
     )
     (
-    input  logic            clk_i,    // Clock
-    input  logic            rst_ni,   // Asynchronous reset active low
-    input  logic            flush_i,  // flush the btb
+    input  logic            clk_i,                     // Clock
+    input  logic            rst_ni,                    // Asynchronous reset active low
+    input  logic            flush_i,                   // flush the btb
 
-    input  logic [63:0]     vpc_i,
-    input  misspredict      misspredict_i,
+    input  logic [63:0]     vpc_i,                     // virtual PC from IF stage
+    input  misspredict      misspredict_i,             // a miss-predict happened -> update data structure
 
     output logic            is_branch_o,               // instruction at vpc_i is a branch
     output logic            predict_taken_o,           // the branch is taken
@@ -89,12 +89,15 @@ module btb #(
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-             btb_q <= '{default: 0};
+            // TODO: think about the reset value
+            btb_q <= '{default: 0};
         end else begin
             // evict all entries
             if (flush_i) begin
-                for (int i = 0; i < NR_ENTRIES; i++)
-                    btb_q[i].valid <=  1'b0;
+                for (int i = 0; i < NR_ENTRIES; i++) begin
+                    btb_q[i].valid              <=  1'b0;
+                    btb_q[i].saturation_counter <= '{default: 0};
+                end
             end else begin
                 btb_q <=  btb_n;
             end
