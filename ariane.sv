@@ -96,16 +96,6 @@ module ariane
     logic [19:0] pd_ppn_i;
     logic [0:0] asid_i;
     logic flush_tlb_i;
-    logic lsu_ready_wb_i;
-
-    logic          data_req_o;
-    logic          data_gnt_i;
-    logic          data_err_i;
-    logic [63:0]   data_addr_o;
-    logic          data_we_o;
-    logic [7:0]    data_be_o;
-    logic [63:0]   data_wdata_o;
-    logic [63:0]   data_rdata_i;
 
     assign id_ready_i = 1'b1;
     assign halt_if_i = 1'b0;
@@ -172,80 +162,58 @@ module ariane
     );
 
     ex_stage ex_stage_i (
-        .clk_i               ( clk_i               ),
-        .rst_ni              ( rst_n               ),
-        .operator_i          ( operator_o          ),
-        .operand_a_i         ( operand_a_o         ),
-        .operand_b_i         ( operand_b_o         ),
-        .imm_i               ( imm_o               ),
-        .trans_id_i          ( trans_id_o          ),
-        .comparison_result_o ( comparison_result_o ),
+        .clk_i               ( clk_i                 ),
+        .rst_ni              ( rst_n                 ),
+        .operator_i          ( operator_o            ),
+        .operand_a_i         ( operand_a_o           ),
+        .operand_b_i         ( operand_b_o           ),
+        .imm_i               ( imm_o                 ),
+        .trans_id_i          ( trans_id_o            ),
+        .comparison_result_o ( comparison_result_o   ),
 
-        .alu_ready_o         ( alu_ready_i         ),
-        .alu_valid_i         ( alu_valid_i         ),
-        .alu_result_o        ( alu_result          ),
-        .alu_trans_id_o      ( alu_trans_id        ),
-        .alu_valid_o         ( alu_valid_o         ),
+        .alu_ready_o         ( alu_ready_i           ),
+        .alu_valid_i         ( alu_valid_i           ),
+        .alu_result_o        ( alu_result            ),
+        .alu_trans_id_o      ( alu_trans_id          ),
+        .alu_valid_o         ( alu_valid_o           ),
 
-        .lsu_ready_o         ( lsu_ready_o         ),
-        .lsu_valid_i         ( lsu_valid_i         ),
-        .lsu_result_o        ( lsu_result          ),
-        .lsu_trans_id_o      ( lsu_trans_id        ),
-        .lsu_valid_o         ( lsu_valid_o         ),
-        .data_req_o          ( data_req_o          ),
-        .data_gnt_i          ( data_gnt_i          ),
-        .data_rvalid_i       ( data_rvalid_i       ),
-        .data_err_i          ( data_err_i          ),
-        .data_addr_o         ( data_addr_o         ),
-        .data_we_o           ( data_we_o           ),
-        .data_be_o           ( data_be_o           ),
-        .data_wdata_o        ( data_wdata_o        ),
-        .data_rdata_i        ( data_rdata_i        ),
+        .lsu_ready_o         ( lsu_ready_o           ),
+        .lsu_valid_i         ( lsu_valid_i           ),
+        .lsu_result_o        ( lsu_result            ),
+        .lsu_trans_id_o      ( lsu_trans_id          ),
+        .lsu_valid_o         ( lsu_valid_o           ),
 
-        .mult_ready_o        ( mult_ready_o        ),
-        .mult_valid_i        ( mult_valid_i        )
-    );
-
-    commit_stage commit_stage_i (
-        .clk_i               ( clk_i               ),
-        .rst_ni              ( rst_n               ),
-        .priv_lvl_o          ( priv_lvl_o          ),
-        .exception_o         ( exception_o         ),
-        .commit_instr_i      ( commit_instr_o      ),
-        .commit_ack_o        ( commit_ack_i        ),
-        .waddr_a_o           ( waddr_a_i           ),
-        .wdata_a_o           ( wdata_a_i           ),
-        .we_a_o              ( we_a_i              )
-    );
-
-    mmu mmu_i (
-        .clk_i                ( clk_i                ),
-        .rst_ni               ( rst_n                ),
-        .enable_translation_i ( enable_translation_i ),
+        // memory management
+        .enable_translation_i ( enable_translation_i ),  // from CSR
         .fetch_req_i          ( fetch_req_i          ),
         .fetch_gnt_o          ( fetch_gnt_o          ),
         .fetch_valid_o        ( fetch_valid_o        ),
         .fetch_err_o          ( fetch_err_o          ),
         .fetch_vaddr_i        ( fetch_vaddr_i        ),
         .fetch_rdata_o        ( fetch_rdata_o        ),
-        .lsu_req_i            ( data_req_o           ),
-        .lsu_gnt_o            ( data_gnt_i           ),
-        .lsu_valid_o          ( data_rvalid_i        ),
-        .lsu_we_i             ( data_we_o            ),
-        .lsu_be_i             ( data_be_o            ),
-        .lsu_err_o            ( data_err_i           ),
-        .lsu_vaddr_i          ( data_addr_o          ),
-        .lsu_wdata_i          ( data_wdata_o         ),
-        .lsu_rdata_o          ( data_rdata_i         ),
         .priv_lvl_i           ( priv_lvl_i           ),  // from CSR
         .flag_pum_i           ( flag_pum_i           ),  // from CSR
         .flag_mxr_i           ( flag_mxr_i           ),  // from CSR
         .pd_ppn_i             ( pd_ppn_i             ),  // from CSR
         .asid_i               ( asid_i               ),  // from CSR
         .flush_tlb_i          ( flush_tlb_i          ),
-        .lsu_ready_wb_i       ( lsu_ready_wb_i       ),
         .instr_if             ( instr_if             ),
-        .data_if              ( data_if              )
+        .data_if              ( data_if              ),
+
+        .mult_ready_o        ( mult_ready_o          ),
+        .mult_valid_i        ( mult_valid_i          )
+    );
+
+    commit_stage commit_stage_i (
+        .clk_i               ( clk_i                 ),
+        .rst_ni              ( rst_n                 ),
+        .priv_lvl_o          ( priv_lvl_o            ),
+        .exception_o         ( exception_o           ),
+        .commit_instr_i      ( commit_instr_o        ),
+        .commit_ack_o        ( commit_ack_i          ),
+        .waddr_a_o           ( waddr_a_i             ),
+        .wdata_a_o           ( wdata_a_i             ),
+        .we_a_o              ( we_a_i                )
     );
 
     always_ff @(posedge clk_i or negedge rst_n) begin
