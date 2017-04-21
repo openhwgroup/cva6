@@ -1,4 +1,4 @@
-// Author: Florian Zaruba, ETH Zurich - David Schaffenrath, TU Graz
+// Author: David Schaffenrath, TU Graz - Florian Zaruba, ETH Zurich
 // Date: 21.4.2017
 // Description: Transaction Lookaside Buffer, SV39
 //              fully set-associative
@@ -220,5 +220,36 @@ module tlb #(
             plru_tree_q <= plru_tree_n;
         end
     end
+
+    //--------------
+    // Sanity checks
+    //--------------
+
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
+
+    initial begin : p_assertions
+      assert ((TLB_ENTRIES % 2 == 0) && (TLB_ENTRIES > 1))
+        else begin $error("TLB size must be a multiple of 2 and greater than 1"); $stop(); end
+      assert (ASID_WIDTH >= 1)
+        else begin $error("ASID width must be at least 1"); $stop(); end
+    end
+
+    // Just for checking
+    function int countSetBits(logic[TLB_ENTRIES-1:0] vector);
+      automatic int count = 0;
+      foreach(vector[idx]) begin
+        count += vector[idx];
+      end
+      return count;
+    endfunction
+
+    assert property (@(posedge clk_i)(countSetBits(lu_hit) <= 1))
+      else begin $error("More then one hit in TLB!"); $stop(); end
+    assert property (@(posedge clk_i)(countSetBits(replace_en) <= 1))
+      else begin $error("More then one TLB entry selected for next replace!"); $stop(); end
+
+    `endif
+    `endif
 
 endmodule
