@@ -95,19 +95,12 @@ module ex_stage #(
 
     lsu i_lsu (
         .clk_i                ( clk_i           ),
-        .rst_ni               ( rst_ni           ),
-        .data_req_o           ( data_req_o      ),
-        .data_gnt_i           ( data_gnt_i      ),
-        .data_rvalid_i        ( data_rvalid_i   ),
-        .data_err_i           ( data_err_i      ),
-        .data_addr_o          ( data_addr_o     ),
-        .data_we_o            ( data_we_o       ),
-        .data_be_o            ( data_be_o       ),
-        .data_wdata_o         ( data_wdata_o    ),
-        .data_rdata_i         ( data_rdata_i    ),
+        .rst_ni               ( rst_ni          ),
+
         .operator_i           ( operator_i      ),
         .operand_a_i          ( operand_a_i     ),
         .operand_b_i          ( operand_b_i     ),
+        .imm_i                ( imm_i           ),
         .lsu_ready_o          ( lsu_ready_o     ),
         .lsu_valid_i          ( lsu_valid_i     ),
         .lsu_trans_id_i       ( trans_id_i      ),

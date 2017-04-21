@@ -24,21 +24,10 @@ module lsu #(
     input  logic                  clk_i,
     input  logic                  rst_ni,
 
-    // output to data memory
-    output logic                  data_req_o,
-    input  logic                  data_gnt_i,
-    input  logic                  data_rvalid_i,
-    input  logic                  data_err_i,
-
-    output logic [63:0]           data_addr_o,
-    output logic                  data_we_o,
-    output logic [7:0]            data_be_o,
-    output logic [63:0]           data_wdata_o,
-    input  logic [63:0]           data_rdata_i,
-
     input  fu_op                  operator_i,
     input  logic [63:0]           operand_a_i,
     input  logic [63:0]           operand_b_i,
+    input  logic [63:0]           imm_i,
     output logic                  lsu_ready_o,      // FU is ready e.g. not busy
     input  logic                  lsu_valid_i,      // Input is valid
     input  logic                  lsu_trans_id_i,   // transaction id, needed for WB
@@ -46,12 +35,14 @@ module lsu #(
     output logic                  lsu_valid_o,      // transaction id for which the output is the requested one
 
     input  logic                  enable_translation_i,
+
     input  logic                  fetch_req_i,
     output logic                  fetch_gnt_o,
     output logic                  fetch_valid_o,
     output logic                  fetch_err_o,
     input  logic [63:0]           fetch_vaddr_i,
     output logic [31:0]           fetch_rdata_o,
+
     input  priv_lvl_t             priv_lvl_i,
     input  logic                  flag_pum_i,
     input  logic                  flag_mxr_i,
@@ -64,6 +55,8 @@ module lsu #(
     output exception              lsu_exception_o   // to writeback, signal exception status ld/st exception
 
 );
+    logic [63:0] vaddr;
+
     // dummy implementation
     // instruction interface
     assign instr_if.data_req       = fetch_req_i;
@@ -73,19 +66,36 @@ module lsu #(
     assign fetch_rdata_o           = instr_if.data_rdata;
     assign fetch_err_o             = 1'b0;
 
-    // MMU e.g.: TLBs
+    // -------------------
+    // MMU e.g.: TLBs/PTW
+    // -------------------
 
-    // memory arbiter
+    // ---------------
+    // Memory Arbiter
+    // ---------------
 
-    // store queue
+    // ---------------
+    // Store Queue
+    // ---------------
 
-    // sign extend
+    // ---------------
+    // Sign Extend
+    // ---------------
 
-    // address generation unit (AGU)
+    // ------------------------------
+    // Address Generation Unit (AGU)
+    // ------------------------------
+    assign vaddr = imm_i + operand_a_i;
+    assign data_if.address = vaddr;
 
-    // LSU control logic
+    // ------------------
+    // LSU Control
+    // ------------------
 
-    // exception unit
+    // ------------------
+    // Exception Control
+    // ------------------
     // misaligned detector
+    // page fault, privilege exception
 
 endmodule
