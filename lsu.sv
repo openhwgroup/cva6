@@ -47,4 +47,7 @@ module lsu (
 
 );
 
+    // exception unit
+    // misaligned detector
+
 endmodule

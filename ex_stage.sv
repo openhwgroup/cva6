@@ -25,6 +25,7 @@ module ex_stage (
     input  fu_op                                   operator_i,
     input  logic [63:0]                            operand_a_i,
     input  logic [63:0]                            operand_b_i,
+    input  logic [63:0]                            imm_i,
     input  logic [TRANS_ID_BITS-1:0]               trans_id_i,
 
     // ALU 1

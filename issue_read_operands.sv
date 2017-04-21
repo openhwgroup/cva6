@@ -33,6 +33,7 @@ module issue_read_operands (
     output fu_op                                   operator_o,
     output logic [63:0]                            operand_a_o,
     output logic [63:0]                            operand_b_o,
+    output logic [63:0]                            imm_o,           // output immediate for the LSU
     output logic [TRANS_ID_BITS-1:0]               trans_id_o,
     // ALU 1
     input  logic                                   alu_ready_i,      // FU is ready
@@ -55,7 +56,7 @@ module issue_read_operands (
     logic [63:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
 
     // output flipflop (ID <-> EX)
-    logic [63:0] operand_a_n, operand_a_q, operand_b_n, operand_b_q;
+    logic [63:0] operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q;
     logic alu_valid_n, alu_valid_q;
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q;
@@ -68,6 +69,7 @@ module issue_read_operands (
     assign operator_o  = operator_q;
     assign alu_valid_o = alu_valid_q;
     assign trans_id_o  = trans_id_q;
+    assign imm_o       = imm_q;
     // ---------------
     // Issue Stage
     // ---------------
@@ -160,11 +162,16 @@ module issue_read_operands (
             operand_a_n = issue_instr_i.ex.epc;
         end
 
-        // or is it an immediate (including PC)
-        if (issue_instr_i.use_imm) begin
+        // or is it an immediate (including PC), this is not the case for a store
+        if (issue_instr_i.use_imm && issue_instr_i.op != SD
+                                  && issue_instr_i.op != SW
+                                  && issue_instr_i.op != SH
+                                  && issue_instr_i.op != SB
+                                  && issue_instr_i.op != SBU ) begin
             operand_b_n = issue_instr_i.result;
         end
-
+        // immediates are the third operands in the store case
+        imm_n      = issue_instr_i.result;
         trans_id_n = issue_instr_i.trans_id;
         operator_n = issue_instr_i.op;
     end

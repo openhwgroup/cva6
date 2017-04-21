@@ -28,6 +28,7 @@ module id_stage #(
     output fu_op                                     operator_o,
     output logic [63:0]                              operand_a_o,
     output logic [63:0]                              operand_b_o,
+    output logic [63:0]                              imm_o,
     output logic [TRANS_ID_BITS-1:0]                 trans_id_o,
 
     input  logic                                     alu_ready_i,
@@ -128,6 +129,7 @@ module id_stage #(
         .operator_o          (operator_o         ),
         .operand_a_o         (operand_a_o        ),
         .operand_b_o         (operand_b_o        ),
+        .imm_o               (imm_o              ),
         .trans_id_o          (trans_id_o         ),
         .alu_ready_i         (alu_ready_i        ),
         .alu_valid_o         (alu_valid_o        ),

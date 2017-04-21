@@ -175,13 +175,50 @@ module decoder (
                 end
 
                 OPCODE_STORE: begin
-                    // TODO: Implement
+                    instruction_o.fu  = LSU;
                     imm_select = SIMM;
+                    instruction_o.rs1  = instr.stype.rs1;
+                    instruction_o.rs2  = instr.stype.rs2;
+                    // determine store size
+                    unique case (instr.stype.funct3)
+                        3'b000:
+                            instruction_o.op  = SB;
+                        3'b001:
+                            instruction_o.op  = SH;
+                        3'b010:
+                            instruction_o.op  = SW;
+                        3'b011:
+                            instruction_o.op  = SD;
+                        default:
+                            illegal_instr_o = 1'b1;
+                    endcase
                 end
 
                 OPCODE_LOAD: begin
-                    // TODO: Implement
+                    instruction_o.fu  = LSU;
                     imm_select = IIMM;
+                    instruction_o.rs1 = instr.itype.rs1;
+                    instruction_o.rd  = instr.itype.rd;
+                    // determine load size and signed type
+                    unique case (instr.itype.funct3)
+                        3'b000:
+                            instruction_o.op  = LB;
+                        3'b001:
+                            instruction_o.op  = LH;
+                        3'b010:
+                            instruction_o.op  = LW;
+                        3'b100:
+                            instruction_o.op  = LBU;
+                        3'b101:
+                            instruction_o.op  = LHU;
+                        3'b110:
+                            instruction_o.op  = LW;
+                        3'b011:
+                            instruction_o.op  = LD;
+                        default:
+                            illegal_instr_o = 1'b1;
+                    endcase
+
                 end
 
                 OPCODE_BRANCH: begin

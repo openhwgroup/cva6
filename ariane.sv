@@ -71,7 +71,7 @@ module ariane
     logic [31:0] instr_rdata_id_o;
     logic is_compressed_id_o;
     logic illegal_c_insn_id_o;
-    logic [63:0] pc_if_o;
+    logic [63:0] pc_if_o, imm_o;
     logic [63:0] pc_id_o;
     logic comparison_result_o;
     logic lsu_ready_o;
@@ -151,6 +151,7 @@ module ariane
         .operator_o          ( operator_o                   ),
         .operand_a_o         ( operand_a_o                  ),
         .operand_b_o         ( operand_b_o                  ),
+        .imm_o               ( imm_o                        ),
         .trans_id_o          ( trans_id_o                   ),
         .alu_ready_i         ( alu_ready_i                  ),
         .alu_valid_o         ( alu_valid_i                  ),
@@ -176,6 +177,7 @@ module ariane
         .operator_i          ( operator_o          ),
         .operand_a_i         ( operand_a_o         ),
         .operand_b_i         ( operand_b_o         ),
+        .imm_i               ( imm_o               ),
         .trans_id_i          ( trans_id_o          ),
         .comparison_result_o ( comparison_result_o ),
 

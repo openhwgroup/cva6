@@ -50,7 +50,7 @@ package ariane_pkg;
                                     LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,   // comparisons
                                     SLTS, SLTU, SLETS, SLETU,                         // set lower than operations
                                     MRET, SRET, URET, ECALL, WRITE, READ, SET, CLEAR, // CSR functions
-                                    LD, SD, LW, SW, LH, SH, LB, SB, LBU, SBU          // LSU functions
+                                    LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU, SBU          // LSU functions
                                   } fu_op;
 
     // ---------------
