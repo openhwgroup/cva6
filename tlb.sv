@@ -46,7 +46,7 @@ module tlb #(
     output logic                    lu_hit_o
 );
 
-    // SV39 defines three levels of page table
+    // SV39 defines three levels of page tables
     struct packed {
       logic [ASID_WIDTH-1:0] asid;
       logic [8:0]            vpn2;
@@ -59,7 +59,7 @@ module tlb #(
 
     logic [TLB_ENTRIES-1:0][CONTENT_SIZE-1:0] content_q, content_n;
     logic [8:0] vpn0, vpn1, vpn2;
-    logic [TLB_ENTRIES-1:0] lu_hit; // to replacement logic
+    logic [TLB_ENTRIES-1:0] lu_hit;     // to replacement logic
     logic [TLB_ENTRIES-1:0] replace_en; // replace the following entry, set by replacement strategy
     //-------------
     // Translation
@@ -73,6 +73,8 @@ module tlb #(
         lu_hit       = '{default: 0};
         lu_hit_o     = 1'b0;
         lu_content_o = '{default: 0};
+        lu_is_1G_o   = 1'b0;
+        lu_is_2M_o   = 1'b0;
 
         for (int i = 0; i < TLB_ENTRIES; i++) begin
             // first level match, this may be a giga page, check the ASID flags as well
@@ -127,7 +129,7 @@ module tlb #(
                     valid: 1'b1
                 };
                 // and content as well
-                content_n[i] = content_q[i];
+                content_n[i] = update_content_i;
             end
         end
     end
@@ -168,7 +170,7 @@ module tlb #(
                 for (int lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl += 1) begin
                   automatic int idx_base = (2**lvl)-1;
                   // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
-                  automatic int shift     = $clog2(TLB_ENTRIES)-lvl;
+                  automatic int shift     = $clog2(TLB_ENTRIES) - lvl;
                   // to circumvent the 32 bit integer arithmetic assignment
                   automatic int new_index =  ~((i >> (shift-1)) & 32'b1);
                   plru_tree_n[idx_base + (i >> shift)] = new_index[0];
@@ -194,7 +196,7 @@ module tlb #(
           for (int lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl += 1) begin
             automatic int idx_base = (2**lvl)-1;
             // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
-            automatic int shift = $clog2(TLB_ENTRIES)-lvl;
+            automatic int shift = $clog2(TLB_ENTRIES) - lvl;
 
             // en &= plru_tree_q[idx_base + (i>>shift)] == ((i >> (shift-1)) & 1'b1);
             automatic int new_index =  (i >> (shift-1)) & 32'b1;
