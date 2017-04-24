@@ -13,6 +13,17 @@ testALU:
     paths:
       - covhtmlreport
 
+testFIFO:
+  stage: test
+  script:
+    - make build
+    - make fifo
+    - vcover report fifo.ucdb
+    - vcover report -html fifo.ucdb
+  artifacts:
+    paths:
+      - covhtmlreport
+
 testScoreboard:
   stage: test
   script:

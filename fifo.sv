@@ -50,6 +50,7 @@ module fifo #(
         write_pointer_n = write_pointer_q;
         status_cnt_n    = status_cnt_q;
         data_o          = mem_q[read_pointer_q];
+        mem_n           = mem_q;
         // push a new element to the queue
         if (push_i && ~full_o) begin
             // push the data onto the queue
@@ -67,7 +68,11 @@ module fifo #(
             // ... and decrement the overall count
             status_cnt_n   = status_cnt_q - 1;
         end
+        // keep the count pointer stable if we push and pop at the same time
+        if (push_i &&  ~full_o && pop_i && ~empty_o)
+            status_cnt_n   = status_cnt_q;
     end
+
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
@@ -82,4 +87,21 @@ module fifo #(
             mem_q           <= mem_n;
         end
     end
+
+    `ifndef SYNTHESIS
+    `ifndef verilator
+    initial begin
+        assert (DEPTH == 2**$clog2(DEPTH)) else $fatal("FIFO size needs to be a power of two.");
+
+    assert property(
+        @(posedge clk_i) (rst_ni && full_o |-> ~push_i))
+        else $error ("Trying to push new data although the FIFO is full.");
+
+    assert property(
+        @(posedge clk_i) (rst_ni && empty_o |-> ~pop_i))
+        else $error ("Trying to pop data although the FIFO is empty.");
+    `endif
+    `endif
+end
+
 endmodule
