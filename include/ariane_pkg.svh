@@ -153,6 +153,22 @@ package ariane_pkg;
       PRIV_LVL_S = 2'b01,
       PRIV_LVL_U = 2'b00
     } priv_lvl_t;
+    // memory management, pte
+    typedef struct packed {
+        logic[37:0] ppn;
+        logic[1:0] sw_reserved;
+        logic d;
+        logic a;
+        logic g;
+        logic u;
+        logic x;
+        logic w;
+        logic r;
+        logic v;
+    } pte_t;
+    // Bits required for representation of physical address space as 4K pages
+    // (e.g. 27*4K == 39bit address space).
+    localparam PPN4K_WIDTH = 38;
 
     // ----------------------
     // Exception Cause Codes

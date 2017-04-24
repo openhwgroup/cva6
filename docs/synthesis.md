@@ -32,5 +32,17 @@ Synthesized @ 1.1 ns, worst case, UMC65
 | Buffer        | 342                 | 2276                |
 | **Total**     | **55490 (~39 kGE)** | **29327 (~20 kGE)** |
 
+## TLB
+
+Synthesized @ 0.6 ns, worst case, UMC65
+
+|    **Type**   |    **32 entries**   |   |
+|---------------|---------------------|---|
+| Sequential    | 14185               |   |
+| Combinatorial | 18607               |   |
+| Buffer        | 2642                |   |
+| **Total**     | **32793 (~23 kGE)** |   |
+
+The address generation unit has a delay of 0.4 ns (WC).
 
 
