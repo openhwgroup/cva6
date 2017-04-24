@@ -7,8 +7,8 @@
 // All rights reserved.
 
 // Guard statement proposed by "Easier UVM" (doulos)
-`ifndef MEM_IF__SV
-`define MEM_IF__SV
+`ifndef MEM_IF_SV
+`define MEM_IF_SV
 interface mem_if #(parameter int ADDRESS_SIZE = 64,
                    parameter int DATA_WIDTH = 64   )
                   (input clk);

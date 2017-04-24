@@ -82,7 +82,7 @@ module tlb #(
             && vpn2 == tags_q[i].vpn2) begin
                 // second level
                 if (tags_q[i].is_1G) begin
-                    lu_is_1G_o = 1'b1;;
+                    lu_is_1G_o = 1'b1;
                     lu_content_o = content_q[i];
                     lu_hit_o   = 1'b1;
                     lu_hit[i]  = 1'b1;

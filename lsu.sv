@@ -52,7 +52,7 @@ module lsu #(
     mem_if.Slave                  instr_if,
     mem_if.Slave                  data_if,
 
-    output exception              lsu_exception_o   // to writeback, signal exception status ld/st exception
+    output exception              lsu_exception_o   // to WB, signal exception status LD/ST exception
 
 );
     logic [63:0] vaddr;
