@@ -1,4 +1,3 @@
-
 // Author: David Schaffenrath, TU Graz - Florian Zaruba, ETH Zurich
 // Date: 24.4.2017
 // Description: Hardware-PTW
@@ -18,6 +17,7 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 //
+
 import ariane_pkg::*;
 
 module ptw #(
@@ -42,18 +42,14 @@ module ptw #(
     input  logic [63:0]             data_rdata_i,
     // to TLBs, update logic
     output logic                    itlb_update_o,
-    output logic                    itlb_update_is_2M_i,
-    output logic                    itlb_update_is_1G_i,
-    output logic [26:0]             itlb_update_vpn_i,
-    output logic [ASID_WIDTH-1:0]   itlb_update_asid_i,
-    output logic [CONTENT_SIZE-1:0] itlb_update_content_i,
-
     output logic                    dtlb_update_o,
-    output logic                    dtlb_update_is_2M_i,
-    output logic                    dtlb_update_is_1G_i,
-    output logic [26:0]             dtlb_update_vpn_i,
-    output logic [ASID_WIDTH-1:0]   dtlb_update_asid_i,
-    output logic [CONTENT_SIZE-1:0] dtlb_update_content_i,
+    output logic [CONTENT_SIZE-1:0] itlb_update_content_o,
+    output logic [CONTENT_SIZE-1:0] dtlb_update_content_o,
+
+    output logic                    update_is_2M_o,
+    output logic                    update_is_1G_o,
+    output logic [26:0]             update_vpn_o,
+    output logic [ASID_WIDTH-1:0]   update_asid_o,
     // from TLBs
     // did we miss?
     input  logic                    itlb_access_i,
@@ -98,6 +94,12 @@ module ptw #(
     logic[45:0] ptw_pptr_q, ptw_pptr_n;
     // directly output the correct physical address
     assign address_o = {ptw_pptr_q, 4'b0};
+    // update the correct page table level
+    assign update_is_2M_o = (ptw_lvl_q == LVL2);
+    assign update_is_1G_o = (ptw_lvl_q == LVL1);
+    // output the correct VPN and ASID
+    assign update_vpn_o  = tlb_update_vpn_q;
+    assign update_asid_o = tlb_update_asid_q;
 
     struct packed {
         // logic r; don't care
@@ -106,7 +108,7 @@ module ptw #(
         logic u;
         logic g;
         logic[PPN4K_WIDTH-1:0] ppn;
-    } itlb_content, itlb_update_content;
+    } itlb_content;
 
     struct packed {
          // logic r; If page isn't readable it isn't put in the data TLB (unless it
@@ -117,15 +119,15 @@ module ptw #(
         logic u;
         logic g;
         logic[PPN4K_WIDTH-1:0] ppn;
-    } dtlb_content, dtlb_update_content;
+    } dtlb_content;
 
     always_comb begin
-        itlb_update_content = '{
+        itlb_update_content_o = '{
             u   : ptw_pte_i.u,
             g   : ptw_pte_i.g,
             ppn : ptw_pte_i.ppn[37:0]
         };
-        dtlb_update_content = '{
+        dtlb_update_content_o = '{
             x_only : ptw_pte_i.x & ~ptw_pte_i.r,
             w      : ptw_pte_i.w,
             u      : ptw_pte_i.u,

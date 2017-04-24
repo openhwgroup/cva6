@@ -17,6 +17,7 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 //
+
 module mem_arbiter #(
         parameter int NR_PORTS = 3
     )
