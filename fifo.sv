@@ -40,7 +40,7 @@ module fifo #(
     // actual memory
     dtype [DEPTH-1:0] mem_n, mem_q;
 
-    assign full_o  = (status_cnt_q == DEPTH);
+    assign full_o  = (status_cnt_q == DEPTH - 1);
     assign empty_o = (status_cnt_q == 0);
 
     // read and write queue logic
