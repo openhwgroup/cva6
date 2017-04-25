@@ -150,8 +150,58 @@ module lsu #(
     // ---------------
 
     // ---------------
-    // Byte Enable
+    // Byte Enable - TODO: Find a more beautiful way to accomplish this functionality
     // ---------------
+    logic [7:0] data_be_o;
+    always_comb begin : byte_enable
+
+        case (operator_i)
+            LD, SD: // double word
+                case (vaddr[2:0])
+                    3'b000: data_be_o = 8'b1111_1111;
+                    3'b001: data_be_o = 8'b1111_1110;
+                    3'b010: data_be_o = 8'b1111_1100;
+                    3'b011: data_be_o = 8'b1111_1000;
+                    3'b100: data_be_o = 8'b1111_0000;
+                    3'b101: data_be_o = 8'b1110_0000;
+                    3'b110: data_be_o = 8'b1100_0000;
+                    3'b111: data_be_o = 8'b1000_0000;
+                endcase
+            LW, LWU, SW: // word
+                case (vaddr[2:0])
+                    3'b000: data_be_o = 8'b0000_1111;
+                    3'b001: data_be_o = 8'b0001_1110;
+                    3'b010: data_be_o = 8'b0011_1100;
+                    3'b011: data_be_o = 8'b0111_1000;
+                    3'b100: data_be_o = 8'b1111_0000;
+                    3'b101: data_be_o = 8'b1110_0000;
+                    3'b110: data_be_o = 8'b1100_0000;
+                    3'b111: data_be_o = 8'b1000_0000;
+                endcase
+            LH, LHU, SH: // half word
+                case (vaddr[2:0])
+                    3'b000: data_be_o = 8'b0000_0011;
+                    3'b001: data_be_o = 8'b0000_0110;
+                    3'b010: data_be_o = 8'b0000_1100;
+                    3'b011: data_be_o = 8'b0001_1000;
+                    3'b100: data_be_o = 8'b0011_0000;
+                    3'b101: data_be_o = 8'b0110_0000;
+                    3'b110: data_be_o = 8'b1100_0000;
+                    3'b111: data_be_o = 8'b1000_0000;
+                endcase
+            LB, LBU, SB: // byte
+                case (vaddr[2:0])
+                    3'b000: data_be_o = 8'b0000_0001;
+                    3'b001: data_be_o = 8'b0000_0010;
+                    3'b010: data_be_o = 8'b0000_0100;
+                    3'b011: data_be_o = 8'b0000_1000;
+                    3'b100: data_be_o = 8'b0001_0000;
+                    3'b101: data_be_o = 8'b0010_0000;
+                    3'b110: data_be_o = 8'b0100_0000;
+                    3'b111: data_be_o = 8'b1000_0000;
+                endcase
+        endcase
+    end
 
     // ---------------
     // Sign Extend
