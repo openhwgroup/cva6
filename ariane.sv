@@ -183,6 +183,7 @@ module ariane
         .lsu_result_o        ( lsu_result            ),
         .lsu_trans_id_o      ( lsu_trans_id          ),
         .lsu_valid_o         ( lsu_valid_o           ),
+        .lsu_commit_i        (                       ),
 
         // memory management
         .enable_translation_i ( 1'b0                 ),  // from CSR

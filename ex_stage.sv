@@ -45,6 +45,7 @@ module ex_stage #(
     output logic                                   lsu_valid_o,      // Output is valid
     output logic [63:0]                            lsu_result_o,
     output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
+    input  logic                                   lsu_commit_i,
     // memory management
     input  logic                                   enable_translation_i,
     input  logic                                   fetch_req_i,
@@ -90,6 +91,7 @@ module ex_stage #(
     lsu i_lsu (
         .lsu_trans_id_i  ( trans_id_i      ),
         .lsu_exception_o ( lsu_exception_o ),  // TODO: exception
+        .commit_i        ( lsu_commit_i    ),
         .*
     );
 

@@ -35,6 +35,7 @@ module lsu #(
     output logic [TRANS_ID_BITS-1:0] lsu_trans_id_o,   // ID of scoreboard entry at which to write back
     output logic [63:0]              lsu_result_o,
     output logic                     lsu_valid_o,      // transaction id for which the output is the requested one
+    input  logic                     commit_i,         // commit the pending store
 
     input  logic                     enable_translation_i,
 
@@ -59,12 +60,29 @@ module lsu #(
 
 );
     mem_if ptw_if(clk_i);
+    // byte enable based on operation to perform
+    logic [7:0] data_be_o;
     // data is misaligned
     logic data_misaligned;
-    assign lsu_trans_id_o = lsu_trans_id_i;
     assign lsu_valid_o = 1'b0;
 
+    enum { IDLE, STORE, LOAD_WAIT_TRANSLATION, LOAD_WAIT_GNT, LOAD_WAIT_RVALID } CS, NS;
+
+    // virtual address as calculated by the AGU
     logic [63:0] vaddr;
+
+     // for ld/st address checker
+    logic [63:0] st_buffer_paddr;   // physical address for store
+    logic [63:0] st_buffer_data;  // store buffer data out
+    logic [7:0]  st_buffer_be;
+    logic        st_buffer_valid;
+
+    // store buffer control signals
+    logic        st_ready;
+    logic        st_valid;
+    // from MMU
+    logic translation_req, translation_valid;
+    logic [63:0]  lsu_paddr_o;
 
     // ------------------------------
     // Address Generation Unit (AGU)
@@ -86,29 +104,26 @@ module lsu #(
 
     // port 0 PTW, port 1 loads, port 2 stores
     mem_arbiter mem_arbiter_i (
-        .clk_i        ( clk_i               ),
-        .rst_ni       ( rst_ni              ),
-
         // to D$
-        .address_o    ( data_if.address     ),
-        .data_wdata_o ( data_if.data_wdata  ),
-        .data_req_o   ( data_if.data_req    ),
-        .data_we_o    ( data_if.data_we     ),
-        .data_be_o    ( data_if.data_be     ),
-        .data_gnt_i   ( data_if.data_gnt    ),
-        .data_rvalid_i( data_if.data_rvalid ),
-        .data_rdata_i ( data_if.data_rdata  ),
+        .address_o     ( data_if.address     ),
+        .data_wdata_o  ( data_if.data_wdata  ),
+        .data_req_o    ( data_if.data_req    ),
+        .data_we_o     ( data_if.data_we     ),
+        .data_be_o     ( data_if.data_be     ),
+        .data_gnt_i    ( data_if.data_gnt    ),
+        .data_rvalid_i ( data_if.data_rvalid ),
+        .data_rdata_i  ( data_if.data_rdata  ),
 
         // from PTW, Load logic and store queue
-        .address_i    ( address_i           ),
-        .data_wdata_i ( data_wdata_i        ),
-        .data_req_i   ( data_req_i          ),
-        .data_we_i    ( data_we_i           ),
-        .data_be_i    ( data_be_i           ),
-        .data_gnt_o   ( data_gnt_o          ),
-        .data_rvalid_o( data_rvalid_o       ),
-        .data_rdata_o ( data_rdata_o        ),
-        .flush_ready_o(                     ), // TODO: connect, wait for flush to be valid
+        .address_i     ( address_i           ),
+        .data_wdata_i  ( data_wdata_i        ),
+        .data_req_i    ( data_req_i          ),
+        .data_we_i     ( data_we_i           ),
+        .data_be_i     ( data_be_i           ),
+        .data_gnt_o    ( data_gnt_o          ),
+        .data_rvalid_o ( data_rvalid_o       ),
+        .data_rdata_o  ( data_rdata_o        ),
+        .flush_ready_o (                     ), // TODO: connect, wait for flush to be valid
         .*
     );
 
@@ -120,22 +135,24 @@ module lsu #(
     assign data_be_i [0]      = ptw_if.data_be;
     assign ptw_if.data_rvalid = data_rvalid_o[0];
     assign ptw_if.data_rdata  = data_rdata_o[0];
-
+    // connect the load logic to the memory arbiter
+    assign address_i [1]       = lsu_paddr_o;
+    // this is a read only interface
+    assign data_we_i [1]       = 1'b0;
+    // assign data_be_i [1]       =
 
     // -------------------
     // MMU e.g.: TLBs/PTW
     // -------------------
-    logic lsu_req_i;
-    logic [63:0] lsu_vaddr_i;
-
     mmu #(
         .INSTR_TLB_ENTRIES      ( 16                   ),
         .DATA_TLB_ENTRIES       ( 16                   ),
         .ASID_WIDTH             ( ASID_WIDTH           )
     ) i_mmu (
-        .lsu_req_i              ( lsu_req_i            ),
-        .lsu_vaddr_i            ( lsu_vaddr_i          ),
-        .lsu_valid_o            (                      ),
+        .lsu_req_i              ( translation_req      ),
+        .lsu_vaddr_i            ( vaddr                ),
+        .lsu_valid_o            ( translation_valid    ),
+        .lsu_paddr_o            ( lsu_paddr_o          ),
         .data_if                ( ptw_if               ),
         .*
     );
@@ -143,20 +160,128 @@ module lsu #(
     // ------------------
     // LSU Control
     // ------------------
-    always_comb begin : lsu_control
+    // is the operation a load or store or nothing of relevance for the LSU
+    enum { NONE, LD, ST } op;
 
+    always_comb begin : lsu_control
+        // default assignment
+        NS = CS;
+        lsu_ready_o     = 1'b1;
+        // is the store valid e.g.: can we put it in the store buffer
+        st_valid        = 1'b0;
+        // as a default we are not requesting on the read interface
+        data_req_i[1]   = 1'b0;
+        // request the address translation
+        translation_req = 1'b0;
+        // lsu_valid_i;
+        // lsu_trans_id_i
+        // lsu_trans_id_o
+        unique case (CS)
+            // we can freely accept new request
+            IDLE: begin
+                // First of all we distinguish between load and stores
+                // 1. for loads we need to wait until they can happen
+                // 2. stores can be placed in the store buffer if it is empty
+                // in any case we need to do address translation beforehand
+                if (op == LD) begin
+                    translation_req = 1'b1;
+                    // we can never handle a load in a single cycle
+                    // but at least on a tlb hit we can output it to the memory
+                    if (translation_valid) begin
+                        // lets request this read
+                        data_req_i[1] = 1'b1;
+                        // we already got a grant here so lets wait for the rvalid
+                        if (data_gnt_o[1]) begin
+                            NS = LOAD_WAIT_RVALID;
+                        end else begin // we didn't get a grant so wait for it in a separate stage
+                            NS = LOAD_WAIT_GNT;
+                        end
+                    end else begin// otherwise we need to wait for the translation
+                        NS = LOAD_WAIT_TRANSLATION;
+                    end
+                    lsu_ready_o = 1'b0;
+                end else if (op == ST) begin
+                    translation_req = 1'b1;
+                    // we can handle this store in a single cycle if
+                    // a. the storebuffer is not full
+                    // b. the TLB was a hit
+                    if (st_ready && translation_valid) begin
+                        NS = IDLE;
+                        // and commit to the store buffer
+                        st_valid = 1'b1;
+                        // make a dummy writeback so we
+                        // tell the scoreboard that we processed the instruction accordingly
+                        lsu_trans_id_o = lsu_trans_id_i;
+                    end else begin
+                        // otherwise we are not able to process new requests
+                        lsu_ready_o = 1'b0;
+                        NS = STORE;
+                    end
+                end
+            end
+
+            STORE: begin
+
+            end
+
+            LOAD_WAIT_TRANSLATION: begin
+
+            end
+
+            LOAD_WAIT_GNT: begin
+
+            end
+
+            LOAD_WAIT_RVALID: begin
+
+            end
+        endcase
+    end
+
+    // determine whether this is a load or store
+    always_comb begin : which_op
+        unique case (operator_i)
+            // all loads go here
+            LD, LW, LWU, LH, LHU, LB, LBU:  op = LD;
+            // all stores go here
+            SD, SW, SH, SB, SBU:            op = ST;
+            // not relevant for the lsu
+            default:                        op = NONE;
+        endcase
     end
 
     // ---------------
     // Store Queue
     // ---------------
+    store_queue store_queue_i (
+        .paddr_o       ( st_buffer_paddr     ),
+        .data_o        ( st_buffer_data      ),
+        .valid_o       ( st_buffer_valid     ),
+        .be_o          ( st_buffer_be        ),
+        .ready_o       ( st_ready            ),
+
+        .valid_i       ( st_valid            ),
+        .paddr_i       ( lsu_paddr_o         ),
+        .data_i        ( operand_b_i         ),
+        .be_i          ( data_be_o           ),
+
+        .address_o     ( address_i    [2]    ),
+        .data_wdata_o  ( data_wdata_i [2]    ),
+        .data_req_o    ( data_req_i   [2]    ),
+        .data_we_o     ( data_we_i    [2]    ),
+        .data_be_o     ( data_be_i    [2]    ),
+        .data_gnt_i    ( data_gnt_o   [2]    ),
+        .data_rvalid_i ( data_rvalid_o[2]    ),
+        .data_rdata_i  ( data_rdata_o [2]    ),
+        .*
+    );
 
     // ---------------
     // Byte Enable - TODO: Find a more beautiful way to accomplish this functionality
     // ---------------
-    logic [7:0] data_be_o;
     always_comb begin : byte_enable
-
+        // we can generate the byte enable from the virtual address since the last
+        // 12 bit are the same anyway
         case (operator_i)
             LD, SD: // double word
                 case (vaddr[2:0])
@@ -289,7 +414,6 @@ module lsu #(
     // misaligned detector
     // page fault, privilege exception
     always_comb begin : exception_control
-
         data_misaligned = 1'b0;
 
         if(lsu_valid_i) begin
@@ -316,10 +440,9 @@ module lsu #(
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-        // if the request was valid latch it
-        // it is the purpose of the issue stage to not dispatch
-        // instructions if the unit was not ready
-        end else if (lsu_valid_i) begin
+            CS <= IDLE;
+        end else begin
+            CS <= NS;
         end
     end
 

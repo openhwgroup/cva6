@@ -1,6 +1,7 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 25.04.2017
 // Description: Store queue persists store requests and pushes them to memory
+//              if they are no longer speculative
 //
 // Copyright (C) 2017 ETH Zurich, University of Bologna
 // All rights reserved.
@@ -28,7 +29,7 @@ module store_queue (
     output logic         valid_o,   // committed data is valid
     output logic [7:0]   be_o,      // byte enable set
 
-    input  logic         commmit_i, // commit the instruction which was placed there most recently
+    input  logic         commit_i, // commit the instruction which was placed there most recently
 
     output logic         ready_o,  // the store queue is ready to accept a new request
                                    // it is only ready if it can unconditionally commit the instruction, e.g.:
@@ -113,7 +114,7 @@ module store_queue (
 
         // shift the store request from the speculative buffer
         // to the non-speculative
-        if (commmit_i) begin
+        if (commit_i) begin
             commit_queue_n = store_queue_q;
         end
     end
@@ -125,7 +126,7 @@ module store_queue (
         ready_o       =  ready;
         store_queue_n = store_queue_q;
         // we are ready to accept a new entry and the input data is valid
-        if (ready & valid_i & ~commmit_i) begin
+        if (ready & valid_i & ~commit_i) begin
             store_queue_n.address = paddr_i;
             store_queue_n.data    = data_i;
             store_queue_n.be      = be_i;
@@ -133,7 +134,7 @@ module store_queue (
         end
         // invalidate this result
         // as it is moved to the non-speculative queue
-        if (~valid_i & commmit_i) begin
+        if (~valid_i & commit_i) begin
             store_queue_n.valid   = 1'b0;
         end
     end

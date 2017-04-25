@@ -44,6 +44,7 @@ module mmu #(
         input  logic [63:0]                     lsu_vaddr_i,
         // if we need to walk the page table we can't grant in the same cycle
         output logic                            lsu_valid_o, // translation is valid
+        output logic [63:0]                     lsu_paddr_o, // translated address
         // General control signals
         input priv_lvl_t                        priv_lvl_i,
         input logic                             flag_pum_i,
@@ -77,6 +78,7 @@ module mmu #(
     logic [26:0] update_vpn;
     logic [0:0] update_asid;
     pte_t update_content;
+
     logic itlb_update;
     logic itlb_lu_access;
     logic [0:0] lu_asid_i;
@@ -86,6 +88,14 @@ module mmu #(
     logic itlb_is_2M;
     logic itlb_is_1G;
     logic itlb_lu_hit;
+
+    logic dtlb_update;
+    logic dtlb_lu_access;
+    pte_t dtlb_content;
+
+    logic dtlb_is_2M;
+    logic dtlb_is_1G;
+    logic dtlb_lu_hit;
 
     tlb #(
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
@@ -110,6 +120,30 @@ module mmu #(
         .lu_hit_o         ( itlb_lu_hit                )
     );
 
+    tlb #(
+        .TLB_ENTRIES(DATA_TLB_ENTRIES),
+        .ASID_WIDTH(ASID_WIDTH))
+    dtlb_i (
+        .clk_i            ( clk_i                       ),
+        .rst_ni           ( rst_ni                      ),
+        .flush_i          ( flush_tlb_i                 ),
+        .update_is_2M_i   ( update_is_2M                ),
+        .update_is_1G_i   ( update_is_1G                ),
+        .update_vpn_i     ( update_vpn                  ),
+        .update_asid_i    ( update_asid                 ),
+        .update_content_i ( update_content              ),
+        .update_tlb_i     ( dtlb_update                 ),
+
+        .lu_access_i      ( dtlb_lu_access              ),
+        .lu_asid_i        ( lu_asid_i                   ),
+        .lu_vaddr_i       ( lu_vaddr_i                  ),
+        .lu_content_o     ( dtlb_content                ),
+        .lu_is_2M_o       ( dtlb_is_2M                  ),
+        .lu_is_1G_o       ( dtlb_is_1G                  ),
+        .lu_hit_o         ( dtlb_lu_hi                  )
+    );
+
+
     ptw  #(
         .ASID_WIDTH             ( ASID_WIDTH           )
     ) ptw_i
@@ -131,7 +165,7 @@ module mmu #(
         .data_rvalid_i          ( data_if.data_rvalid  ),
         .data_rdata_i           ( data_if.data_rdata   ),
         .itlb_update_o          ( itlb_update          ),
-        .dtlb_update_o          (                      ),
+        .dtlb_update_o          ( dtlb_update          ),
         .update_content_o       ( update_content       ),
         .update_is_2M_o         ( update_is_2M         ),
         .update_is_1G_o         ( update_is_1G         ),
@@ -142,9 +176,9 @@ module mmu #(
         .itlb_miss_i            ( ~itlb_lu_hit         ),
         .itlb_vaddr_i           ( fetch_vaddr_i        ),
 
-        .dtlb_access_i          (                      ),
-        .dtlb_miss_i            (                      ),
-        .dtlb_vaddr_i           (                      ),
+        .dtlb_access_i          ( dtlb_lu_access       ),
+        .dtlb_miss_i            ( ~dtlb_lu_hit         ),
+        .dtlb_vaddr_i           ( lsu_vaddr_i          ),
 
         .*
      );
@@ -158,7 +192,7 @@ assign iaccess_err = fetch_req_i & (
     //-----------------------
     // Instruction interface
     //-----------------------
-    always_comb begin
+    always_comb begin : instr_interface
       // MMU disabled: just pass through
       automatic logic fetch_valid   = instr_if.data_rvalid;
       fetch_req                     = fetch_req_i;
@@ -220,5 +254,14 @@ assign iaccess_err = fetch_req_i & (
     //-----------------------
     // Data interface
     //-----------------------
+    always_comb begin : data_interface
+        // stub
+        // lsu_req_i
+        // lsu_vaddr_i
+        // lsu_valid_o
+        // lsu_paddr_o
+        lsu_paddr_o = lsu_vaddr_i;
+        lsu_valid_o = lsu_req_i;
+    end
 
 endmodule
