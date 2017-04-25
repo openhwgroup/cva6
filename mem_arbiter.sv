@@ -108,11 +108,11 @@ module mem_arbiter #(
             data_rvalid_o[i] = 1'b0;
             data_rdata_o[i]  = 64'b0;
         end
-        // if there is an entry in the queue we are waiting for a read to return
-        // there is a valid signal and the FIFO should not be empty anyway
+        // if there is an entry in the queue -> we are waiting for a read/write to return
+        // if there is a valid signal the FIFO should not be empty anyway
         if (data_rvalid_i) begin
-            // pass the read through to the appropriate slave
-            pop_i                       = 1'b1;
+            // pass the read to the appropriate slave
+            pop_i                 = 1'b1;
             data_rvalid_o[data_o] = data_rvalid_i;
             data_rdata_o[data_o]  = data_rdata_i;
         end
