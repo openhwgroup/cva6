@@ -73,57 +73,23 @@ module ex_stage #(
     assign alu_trans_id_o = trans_id_i;
 
     alu alu_i (
-        .operator_i          ( operator_i          ),
-        .operand_a_i         ( operand_a_i         ),
-        .operand_b_i         ( operand_b_i         ),
         .adder_result_o      (                     ),
         .adder_result_ext_o  (                     ),
         .result_o            ( alu_result_o        ),
         .comparison_result_o ( comparison_result_o ),
-        .is_equal_result_o   (                     )
+        .is_equal_result_o   (                     ),
+        .*
     );
 
     // Multiplication
 
     // Load-Store Unit
-
-    assign lsu_valid_o = 1'b0;
-    assign lsu_trans_id_o = trans_id_i;
-
-
     exception lsu_exception_o;
 
     lsu i_lsu (
-        .clk_i                ( clk_i           ),
-        .rst_ni               ( rst_ni          ),
-
-        .operator_i           ( operator_i      ),
-        .operand_a_i          ( operand_a_i     ),
-        .operand_b_i          ( operand_b_i     ),
-        .imm_i                ( imm_i           ),
-        .lsu_ready_o          ( lsu_ready_o     ),
-        .lsu_valid_i          ( lsu_valid_i     ),
-        .lsu_trans_id_i       ( trans_id_i      ),
-        .lsu_trans_id_o       ( lsu_trans_id_o  ),
-        .lsu_valid_o          ( lsu_valid_o     ),
-
-        .enable_translation_i ( enable_translation_i ),
-        .fetch_req_i          ( fetch_req_i          ),
-        .fetch_gnt_o          ( fetch_gnt_o          ),
-        .fetch_valid_o        ( fetch_valid_o        ),
-        .fetch_err_o          ( fetch_err_o          ),
-        .fetch_vaddr_i        ( fetch_vaddr_i        ),
-        .fetch_rdata_o        ( fetch_rdata_o        ),
-        .priv_lvl_i           ( priv_lvl_i           ),
-        .flag_pum_i           ( flag_pum_i           ),
-        .flag_mxr_i           ( flag_mxr_i           ),
-        .pd_ppn_i             ( pd_ppn_i             ),
-        .asid_i               ( asid_i               ),
-        .flush_tlb_i          ( flush_tlb_i          ),
-        .instr_if             ( instr_if             ),
-        .data_if              ( data_if              ),
-
-        .lsu_exception_o ( lsu_exception_o )  // TODO: exception
+        .lsu_trans_id_i  ( trans_id_i      ),
+        .lsu_exception_o ( lsu_exception_o ),  // TODO: exception
+        .*
     );
 
     // pass through
