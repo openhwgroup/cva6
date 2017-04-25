@@ -164,6 +164,7 @@ module ariane
     ex_stage ex_stage_i (
         .clk_i               ( clk_i                 ),
         .rst_ni              ( rst_n                 ),
+        .flush_i             ( 1'b0                  ),
         .operator_i          ( operator_o            ),
         .operand_a_i         ( operand_a_o           ),
         .operand_b_i         ( operand_b_o           ),

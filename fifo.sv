@@ -23,6 +23,7 @@ module fifo #(
     )(
         input  logic clk_i,    // Clock
         input  logic rst_ni,   // Asynchronous reset active low
+        input  logic flush_i,  // flush the queue
         // status flags
         output logic full_o,   // queue is full
         output logic empty_o,  // queue is empty
@@ -76,6 +77,11 @@ module fifo #(
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
+            read_pointer_q  <= '{default: 0};
+            write_pointer_q <= '{default: 0};
+            status_cnt_q    <= '{default: 0};
+            mem_q           <= '{default: 0};
+        end else if (flush_i) begin
             read_pointer_q  <= '{default: 0};
             write_pointer_q <= '{default: 0};
             status_cnt_q    <= '{default: 0};

@@ -52,7 +52,6 @@ module mmu #(
         input logic [37:0]                      pd_ppn_i,
         input logic [ASID_WIDTH-1:0]            asid_i,
         input logic                             flush_tlb_i,
-        input logic                             lsu_ready_wb_i,
         // Memory interfaces
         // Instruction memory interface
         mem_if.Slave                            instr_if,
@@ -73,7 +72,6 @@ module mmu #(
     logic walking_instr;
     logic ptw_error;
 
-    logic flush_i;
     logic update_is_2M;
     logic update_is_1G;
     logic [26:0] update_vpn;
@@ -95,7 +93,7 @@ module mmu #(
     ) itlb_i (
         .clk_i            ( clk_i                      ),
         .rst_ni           ( rst_ni                     ),
-        .flush_i          ( flush_i                    ),
+        .flush_i          ( flush_tlb_i                ),
         .update_is_2M_i   ( update_is_2M               ),
         .update_is_1G_i   ( update_is_1G               ),
         .update_vpn_i     ( update_vpn                 ),
@@ -118,7 +116,7 @@ module mmu #(
     (
         .clk_i                  ( clk_i                ),
         .rst_ni                 ( rst_ni               ),
-        .flush_i                (                      ),
+        .flush_i                ( flush_tlb_i          ),
         .ptw_active_o           ( ptw_active           ),
         .walking_instr_o        ( walking_instr        ),
         .ptw_error_o            ( ptw_error            ),

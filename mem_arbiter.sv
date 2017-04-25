@@ -22,8 +22,9 @@ module mem_arbiter #(
         parameter int NR_PORTS = 3
     )
     (
-    input logic                            clk_i,    // Clock
-    input logic                            rst_ni,  // Asynchronous reset active low
+    input  logic                           clk_i,          // Clock
+    input  logic                           rst_ni,         // Asynchronous reset active low
+    output logic                           flush_ready_o,  // the flush is ready, e.g.: all transaction returned
     // slave port
     output logic [63:0]                    address_o,
     output logic [63:0]                    data_wdata_o,
@@ -51,12 +52,17 @@ module mem_arbiter #(
     logic [NR_PORTS-1:0] data_o;
     logic pop_i;
 
+    // essentially wait for the queue to be empty
+    assign flush_ready_o = empty_o;
+
     fifo #(
         .dtype   ( logic [NR_PORTS-1:0] ),
         .DEPTH   ( 4                    )
     ) fifo_i (
         .clk_i   ( clk_i                ),
         .rst_ni  ( rst_ni               ),
+        // the flush is accomplished implicitly by waiting for the flush ready signal
+        .flush_i ( 1'b0                 ),
         .full_o  ( full_o               ),
         .empty_o ( empty_o              ),
         .data_i  ( data_i               ),

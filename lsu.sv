@@ -23,6 +23,7 @@ module lsu #(
     )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
+    input  logic                     flush_i,
 
     input  fu_op                     operator_i,
     input  logic [63:0]              operand_a_i,
@@ -106,7 +107,9 @@ module lsu #(
         .data_be_i    ( data_be_i           ),
         .data_gnt_o   ( data_gnt_o          ),
         .data_rvalid_o( data_rvalid_o       ),
-        .data_rdata_o ( data_rdata_o        )
+        .data_rdata_o ( data_rdata_o        ),
+        .flush_ready_o(                     ), // TODO: connect, wait for flush to be valid
+        .*
     );
 
     // connecting PTW to D$ (aka mem arbiter)
@@ -124,7 +127,6 @@ module lsu #(
     // -------------------
     logic lsu_req_i;
     logic [63:0] lsu_vaddr_i;
-    logic lsu_ready_wb_i;
 
     mmu #(
         .INSTR_TLB_ENTRIES      ( 16                   ),

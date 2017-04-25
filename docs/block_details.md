@@ -298,3 +298,16 @@ We need to be careful when altering some of the register. Some of those register
 | asid_i               | Input         | ASID (address space identifier)                                                          |
 | flush_tlb_i          | Input         | Flush TLB                                                                                |
 | lsu_ready_wb_i       | Input         | LSU is ready to accept new data                                                          |
+
+
+## LSU
+
+### Memory Arbiter
+
+The memory arbiter's purpose is to arbitrate the memory accesses coming/going from/to the PTW, store queue and load requests. On a flush it needs to wait for all previous transactions to return. We currently do not have another way to squash load and stores that already went into the memory hierarchy.
+
+### Store Queue
+
+The store queue keeps track of all stores. It has two entries: One is for already committed instructions and one is for outstanding instructions. On a flush only the instruction which has the already committed instruction saved persists its data. But on a flush it can't request further to the memory since this could potentially stall us indefinitely because of the property of the memory arbiter (see above).
+
+The store queue works with physical addresses only. At the time when they are committed the translation is correct. Furthermore the store queue directly outputs the address and value of the instruction it is going to commit since any subsequent store also needs to check for the address.

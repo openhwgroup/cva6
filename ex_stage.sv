@@ -24,6 +24,7 @@ module ex_stage #(
     )(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
+    input  logic                                   flush_i,
 
     input  fu_op                                   operator_i,
     input  logic [63:0]                            operand_a_i,
