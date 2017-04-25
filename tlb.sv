@@ -17,11 +17,11 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 //
+import ariane_pkg::*;
 
 module tlb #(
       parameter int TLB_ENTRIES = 4,
-      parameter int ASID_WIDTH = 1,
-      parameter int CONTENT_SIZE = 24 // data: ppn + u + g + w + x_only , instr: ppn + u + g
+      parameter int ASID_WIDTH = 1
   )
   (
     input logic                     clk_i,    // Clock
@@ -33,14 +33,14 @@ module tlb #(
     input  logic                    update_is_1G_i,
     input  logic [26:0]             update_vpn_i,
     input  logic [ASID_WIDTH-1:0]   update_asid_i,
-    input  logic [CONTENT_SIZE-1:0] update_content_i,
+    input  pte_t                    update_content_i,
     input  logic                    update_tlb_i,
 
     // Lookup signals
     input  logic                    lu_access_i,
     input  logic [ASID_WIDTH-1:0]   lu_asid_i,
     input  logic [63:0]             lu_vaddr_i,
-    output logic [CONTENT_SIZE-1:0] lu_content_o,
+    output pte_t                    lu_content_o,
     output logic                    lu_is_2M_o,
     output logic                    lu_is_1G_o,
     output logic                    lu_hit_o
@@ -57,7 +57,7 @@ module tlb #(
       logic                  valid;
     } [TLB_ENTRIES-1:0] tags_q, tags_n;
 
-    logic [TLB_ENTRIES-1:0][CONTENT_SIZE-1:0] content_q, content_n;
+    pte_t [TLB_ENTRIES-1:0] content_q, content_n;
     logic [8:0] vpn0, vpn1, vpn2;
     logic [TLB_ENTRIES-1:0] lu_hit;     // to replacement logic
     logic [TLB_ENTRIES-1:0] replace_en; // replace the following entry, set by replacement strategy

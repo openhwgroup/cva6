@@ -38,21 +38,18 @@ module mmu #(
         input  logic [63:0]                     fetch_vaddr_i,
         output logic [31:0]                     fetch_rdata_o, // pass-through because of interfaces
         // LSU interface
+        // this is a more minimalistic interface because the actual addressing logic is handled
+        // in the LSU as we distinguish load and stores, what we do here is simple address translation
         input  logic                            lsu_req_i,
-        output logic                            lsu_gnt_o,
-        output logic                            lsu_valid_o,
-        input  logic                            lsu_we_i,
-        input  logic [7:0]                      lsu_be_i,
-        output logic                            lsu_err_o,
         input  logic [63:0]                     lsu_vaddr_i,
-        input  logic [63:0]                     lsu_wdata_i, // pass-through because of interfaces
-        output logic [63:0]                     lsu_rdata_o, // pass-through because of interfaces
+        // if we need to walk the page table we can't grant in the same cycle
+        output logic                            lsu_valid_o, // translation is valid
         // General control signals
         input priv_lvl_t                        priv_lvl_i,
         input logic                             flag_pum_i,
         input logic                             flag_mxr_i,
         // input logic flag_mprv_i,
-        input logic [19:0]                      pd_ppn_i,
+        input logic [37:0]                      pd_ppn_i,
         input logic [ASID_WIDTH-1:0]            asid_i,
         input logic                             flush_tlb_i,
         input logic                             lsu_ready_wb_i,
@@ -62,13 +59,168 @@ module mmu #(
         // Data memory interface
         mem_if.Slave                            data_if
 );
-
-    // dummy implementation
-    // instruction interface
-    assign instr_if.data_req       = fetch_req_i;
-    assign fetch_gnt_o             = instr_if.data_gnt;
-    assign fetch_valid_o           = instr_if.data_rvalid;
-    assign instr_if.address        = fetch_vaddr_i;
+    // assignments necessary to use interfaces here
+    // only done for the few signals of the instruction interface
+    logic [63:0] fetch_paddr;
+    logic  fetch_req;
+    assign instr_if.data_req       = fetch_req;
+    assign instr_if.address        = fetch_paddr;
     assign fetch_rdata_o           = instr_if.data_rdata;
-    assign fetch_err_o             = 1'b0;
+    // instruction error
+    logic ierr_valid_q, ierr_valid_n;
+    logic iaccess_err;
+    logic ptw_active;
+    logic walking_instr;
+    logic ptw_error;
+
+    logic flush_i;
+    logic update_is_2M;
+    logic update_is_1G;
+    logic [26:0] update_vpn;
+    logic [0:0] update_asid;
+    pte_t update_content;
+    logic itlb_update;
+    logic itlb_lu_access;
+    logic [0:0] lu_asid_i;
+    logic [63:0] lu_vaddr_i;
+    pte_t itlb_content;
+
+    logic itlb_is_2M;
+    logic itlb_is_1G;
+    logic itlb_lu_hit;
+
+    tlb #(
+        .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
+        .ASID_WIDTH       ( ASID_WIDTH                 )
+    ) itlb_i (
+        .clk_i            ( clk_i                      ),
+        .rst_ni           ( rst_ni                     ),
+        .flush_i          ( flush_i                    ),
+        .update_is_2M_i   ( update_is_2M               ),
+        .update_is_1G_i   ( update_is_1G               ),
+        .update_vpn_i     ( update_vpn                 ),
+        .update_asid_i    ( update_asid                ),
+        .update_content_i ( update_content             ),
+        .update_tlb_i     ( itlb_update_i              ),
+
+        .lu_access_i      ( itlb_lu_access             ),
+        .lu_asid_i        ( lu_asid_i                  ),
+        .lu_vaddr_i       ( lu_vaddr_i                 ),
+        .lu_content_o     ( itlb_content               ),
+        .lu_is_2M_o       ( itlb_is_2M                 ),
+        .lu_is_1G_o       ( itlb_is_1G                 ),
+        .lu_hit_o         ( itlb_lu_hit                )
+    );
+
+    ptw  #(
+        .ASID_WIDTH             ( ASID_WIDTH           )
+    ) ptw_i
+    (
+        .clk_i                  ( clk_i                ),
+        .rst_ni                 ( rst_ni               ),
+        .flush_i                (                      ),
+        .ptw_active_o           ( ptw_active           ),
+        .walking_instr_o        ( walking_instr        ),
+        .ptw_error_o            ( ptw_error            ),
+        .enable_translation_i   ( enable_translation_i ),
+
+        .address_o              ( data_if.address      ),
+        .data_wdata_o           ( data_if.data_wdata   ),
+        .data_req_o             ( data_if.data_req     ),
+        .data_we_o              ( data_if.data_we      ),
+        .data_be_o              ( data_if.data_be      ),
+        .data_gnt_i             ( data_if.data_gnt     ),
+        .data_rvalid_i          ( data_if.data_rvalid  ),
+        .data_rdata_i           ( data_if.data_rdata   ),
+        .itlb_update_o          ( itlb_update          ),
+        .dtlb_update_o          (                      ),
+        .update_content_o       ( update_content       ),
+        .update_is_2M_o         ( update_is_2M         ),
+        .update_is_1G_o         ( update_is_1G         ),
+        .update_vpn_o           ( update_vpn           ),
+        .update_asid_o          ( update_asid          ),
+
+        .itlb_access_i          ( itlb_lu_access       ),
+        .itlb_miss_i            ( ~itlb_lu_hit         ),
+        .itlb_vaddr_i           ( fetch_vaddr_i        ),
+
+        .dtlb_access_i          (                      ),
+        .dtlb_miss_i            (                      ),
+        .dtlb_vaddr_i           (                      ),
+
+        .*
+     );
+
+
+assign iaccess_err = fetch_req_i & (
+                     ((priv_lvl_i == PRIV_LVL_U) & ~itlb_content.u)
+                   | (flag_pum_i & (priv_lvl_i == PRIV_LVL_S) & itlb_content.u)
+                   );
+
+    //-----------------------
+    // Instruction interface
+    //-----------------------
+    always_comb begin
+      // MMU disabled: just pass through
+      automatic logic fetch_valid   = instr_if.data_rvalid;
+      fetch_req                     = fetch_req_i;
+      fetch_paddr                   = fetch_vaddr_i;
+      fetch_gnt_o                   = instr_if.data_gnt;
+      fetch_err_o                   = 1'b0;
+      ierr_valid_n                  = 1'b0;
+
+      // MMU enabled: address from TLB, request delayed until hit. Error when TLB
+      // hit and no access right or TLB hit and translated address not valid (e.g.
+      // AXI decode error), or when PTW performs walk due to itlb miss and raises
+      // an error.
+      if (enable_translation_i) begin
+        fetch_req = 1'b0;
+        fetch_paddr = {itlb_content.ppn, fetch_vaddr_i[11:0]};
+
+        if (itlb_is_2M) begin
+          fetch_paddr[20:12] = fetch_vaddr_i[20:12];
+        end
+
+        if (itlb_is_1G) begin
+            fetch_paddr[29:12] = fetch_vaddr_i[29:12];
+        end
+
+        fetch_gnt_o = instr_if.data_gnt;
+
+        // TODO the following two ifs should be mutually exclusive
+        if (itlb_lu_hit) begin
+          fetch_req = fetch_req_i;
+          if (iaccess_err) begin
+            // Play through an instruction fetch with error signaled with rvalid
+            fetch_req    = 1'b0;
+            fetch_gnt_o  = 1'b1;  // immediate grant
+            //fetch_valid = 1'b0; NOTE: valid from previous fetch: pass through
+            // NOTE: back-to-back transfers: We only get a request if previous
+            //       transfer is completed, or completes in this cycle)
+            ierr_valid_n = 1'b1; // valid signaled in next cycle
+          end
+        end
+        if (ptw_active & walking_instr) begin
+          // On error play through fetch with error signaled with valid
+          fetch_gnt_o  = ptw_error;
+          ierr_valid_n = ptw_error; // signal valid/error on next cycle
+        end
+      end
+      fetch_err_o = ierr_valid_q;
+      fetch_valid_o = fetch_valid || ierr_valid_q;
+    end
+
+    // registers
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            ierr_valid_q <= 1'b0;
+        end else begin
+            ierr_valid_q <= ierr_valid_n;
+        end
+    end
+
+    //-----------------------
+    // Data interface
+    //-----------------------
+
 endmodule

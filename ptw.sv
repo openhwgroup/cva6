@@ -21,8 +21,7 @@
 import ariane_pkg::*;
 
 module ptw #(
-        parameter int ASID_WIDTH = 1,
-        parameter int CONTENT_SIZE = 24 // data: ppn + u + g + w + x_only , instr: ppn + u + g
+        parameter int ASID_WIDTH = 1
     )
     (
     input  logic                    clk_i,    // Clock
@@ -30,6 +29,9 @@ module ptw #(
     input  logic                    flush_i,  // flush everything, we need to do this because
                                               // actually everything we do is speculative at this stage
                                               // e.g.: there could be a CSR instruction that changes everything
+    output logic                    ptw_active_o,
+    output logic                    walking_instr_o, // set when walking for TLB
+    output logic                    ptw_error_o, // set when an error occured
     input  logic                    enable_translation_i,
     // memory port
     output logic [63:0]             address_o,
@@ -43,23 +45,21 @@ module ptw #(
     // to TLBs, update logic
     output logic                    itlb_update_o,
     output logic                    dtlb_update_o,
-    output logic [CONTENT_SIZE-1:0] itlb_update_content_o,
-    output logic [CONTENT_SIZE-1:0] dtlb_update_content_o,
+    output pte_t                    update_content_o,
 
     output logic                    update_is_2M_o,
     output logic                    update_is_1G_o,
     output logic [26:0]             update_vpn_o,
     output logic [ASID_WIDTH-1:0]   update_asid_o,
+    input  logic [ASID_WIDTH-1:0]   asid_i,
     // from TLBs
     // did we miss?
     input  logic                    itlb_access_i,
     input  logic                    itlb_miss_i,
-    input  logic [ASID_WIDTH-1:0]   itlb_asid_i,
     input  logic [63:0]             itlb_vaddr_i,
 
     input  logic                    dtlb_access_i,
     input  logic                    dtlb_miss_i,
-    input  logic [ASID_WIDTH-1:0]   dtlb_asid_i,
     input  logic [63:0]             dtlb_vaddr_i,
     // from CSR file
     input  logic [37:0]             pd_ppn_i, // ppn from sptbr
@@ -77,15 +77,17 @@ module ptw #(
       PTW_PROPAGATE_ERROR
     } ptw_state_q, ptw_state_n;
 
-    // RV39 defines three levels of page tables
+    // SV39 defines three levels of page tables
     enum logic [1:0] {
         LVL1, LVL2, LVL3
     } ptw_lvl_q, ptw_lvl_n;
 
-    logic ptw_active;
-    assign ptw_active = (ptw_state_q != PTW_READY);
     // is this an instruction page table walk?
     logic is_instr_ptw_q, is_instr_ptw_n;
+
+    assign ptw_active_o    = (ptw_state_q != PTW_READY);
+    assign walking_instr_o = is_instr_ptw_q;
+
     // register the ASID
     logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
     // register the VPN we need to walk
@@ -101,40 +103,7 @@ module ptw #(
     assign update_vpn_o  = tlb_update_vpn_q;
     assign update_asid_o = tlb_update_asid_q;
 
-    struct packed {
-        // logic r; don't care
-        // logic w; don't care
-        // logic x; If page isn't executable it isn't put in the instruction TLB
-        logic u;
-        logic g;
-        logic[PPN4K_WIDTH-1:0] ppn;
-    } itlb_content;
-
-    struct packed {
-         // logic r; If page isn't readable it isn't put in the data TLB (unless it
-         //          is executable and the MXR flag is set)
-        logic x_only; // Because of the MXR flag we need an indication if the page
-                      // is actually not readable, but executable
-        logic w;
-        logic u;
-        logic g;
-        logic[PPN4K_WIDTH-1:0] ppn;
-    } dtlb_content;
-
-    always_comb begin
-        itlb_update_content_o = '{
-            u   : ptw_pte_i.u,
-            g   : ptw_pte_i.g,
-            ppn : ptw_pte_i.ppn[37:0]
-        };
-        dtlb_update_content_o = '{
-            x_only : ptw_pte_i.x & ~ptw_pte_i.r,
-            w      : ptw_pte_i.w,
-            u      : ptw_pte_i.u,
-            g      : ptw_pte_i.g,
-            ppn    : ptw_pte_i.ppn[37:0]
-        };
-    end
+    assign update_content_o = ptw_pte_i;
 
     //-------------------
     // Page table walker
@@ -162,6 +131,7 @@ module ptw #(
     always_comb begin : ptw
         // default assignments
         data_req_o        = 1'b0;
+        ptw_error_o       = 1'b0;
         itlb_update_o     = 1'b0;
         dtlb_update_o     = 1'b0;
         is_instr_ptw_n    = is_instr_ptw_q;
@@ -178,14 +148,14 @@ module ptw #(
                 if (enable_translation_i & itlb_access_i & itlb_miss_i & ~dtlb_access_i) begin
                     ptw_pptr_n          = {pd_ppn_i, itlb_vaddr_i[38:30]};
                     is_instr_ptw_n      = 1'b0;
-                    tlb_update_asid_n   = itlb_asid_i;
+                    tlb_update_asid_n   = asid_i;
                     tlb_update_vpn_n    = itlb_vaddr_i[38:12];
                     ptw_state_n         = PTW_WAIT_GRANT;
                 // we got a DTLB miss
                 end else if (enable_translation_i & dtlb_access_i & dtlb_miss_i) begin
                     ptw_pptr_n          = {pd_ppn_i, dtlb_vaddr_i[38:30]};
                     is_instr_ptw_n      = 1'b0;
-                    tlb_update_asid_n   = dtlb_asid_i;
+                    tlb_update_asid_n   = asid_i;
                     tlb_update_vpn_n    = dtlb_vaddr_i[38:12];
                     ptw_state_n         = PTW_WAIT_GRANT;
                 end
@@ -263,6 +233,7 @@ module ptw #(
             // TODO: propagate error
             PTW_PROPAGATE_ERROR: begin
                 ptw_state_n = PTW_READY;
+                ptw_error_o = 1'b1;
             end
 
             default:

@@ -55,7 +55,7 @@ module ex_stage #(
     input  priv_lvl_t                              priv_lvl_i,
     input  logic                                   flag_pum_i,
     input  logic                                   flag_mxr_i,
-    input  logic [19:0]                            pd_ppn_i,
+    input  logic [37:0]                            pd_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
     input  logic                                   flush_tlb_i,
     mem_if.Slave                                   instr_if,

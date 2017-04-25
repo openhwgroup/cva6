@@ -93,7 +93,7 @@ module ariane
     priv_lvl_t priv_lvl_i;
     logic flag_pum_i;
     logic flag_mxr_i;
-    logic [19:0] pd_ppn_i;
+    logic [37:0] pd_ppn_i;
     logic [0:0] asid_i;
     logic flush_tlb_i;
 
@@ -184,7 +184,7 @@ module ariane
         .lsu_valid_o         ( lsu_valid_o           ),
 
         // memory management
-        .enable_translation_i ( enable_translation_i ),  // from CSR
+        .enable_translation_i ( 1'b0                 ),  // from CSR
         .fetch_req_i          ( fetch_req_i          ),
         .fetch_gnt_o          ( fetch_gnt_o          ),
         .fetch_valid_o        ( fetch_valid_o        ),
