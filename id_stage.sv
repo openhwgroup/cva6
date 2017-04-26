@@ -22,6 +22,7 @@ module id_stage #(
     // from IF
     input  logic [31:0]                              instruction_i,
     input  logic                                     instruction_valid_i,
+    input  logic                                     is_compressed_i,
     input  logic [63:0]                              pc_if_i,
     input  exception                                 ex_i,
     output logic                                     ready_o,   // id is ready
@@ -75,6 +76,7 @@ module id_stage #(
         .clk_i           ( clk_i            ),
         .rst_ni          ( rst_ni           ),
         .pc_i            ( pc_if_i          ),
+        .is_compressed_i ( is_compressed_i  ),
         .instruction_i   ( instruction_i    ),
         .ex_i            ( ex_i             ),
         .instruction_o   ( decoded_instr_i  ),

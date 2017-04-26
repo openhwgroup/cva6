@@ -57,18 +57,20 @@ package ariane_pkg;
     // ID/EX/WB Stage
     // ---------------
     typedef struct packed {
-        logic [TRANS_ID_BITS-1:0]     trans_id; // this can potentially be simplified, we could index the scoreboard entry
-                                                // with the transaction id in any case make the width more generic
-        fu_t                          fu;       // functional unit to use
-        fu_op                         op;       // operation to perform in each functional unit
-        logic [4:0]                   rs1;      // register source address 1
-        logic [4:0]                   rs2;      // register source address 2
-        logic [4:0]                   rd;       // register destination address
-        logic [63:0]                  result;   // for unfinished instructions this field also holds the immediate
-        logic                         valid;    // is the result valid
-        logic                         use_imm;  // should we use the immediate as operand b?
-        logic                         use_pc;   // set if we need to use the PC as operand A, PC from exception
-        exception                     ex;       // exception has occurred
+        logic [TRANS_ID_BITS-1:0]     trans_id;      // this can potentially be simplified, we could index the scoreboard entry
+                                                     // with the transaction id in any case make the width more generic
+        fu_t                          fu;            // functional unit to use
+        fu_op                         op;            // operation to perform in each functional unit
+        logic [4:0]                   rs1;           // register source address 1
+        logic [4:0]                   rs2;           // register source address 2
+        logic [4:0]                   rd;            // register destination address
+        logic [63:0]                  result;        // for unfinished instructions this field also holds the immediate
+        logic                         valid;         // is the result valid
+        logic                         use_imm;       // should we use the immediate as operand b?
+        logic                         use_pc;        // set if we need to use the PC as operand A, PC from exception
+        exception                     ex;            // exception has occurred
+        logic                         is_compressed; // signals a compressed instructions, we need this information at the commit stage if
+                                                     // we want jump accordingly e.g.: +4, +2
     } scoreboard_entry;
 
     // --------------------

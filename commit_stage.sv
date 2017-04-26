@@ -31,6 +31,7 @@ module commit_stage (
     assign wdata_a_o = commit_instr_i.result;
 
     // commit instruction
+    // write register file
     always_comb begin : commit
         // default assignments
         commit_ack_o = 1'b0;
@@ -40,8 +41,6 @@ module commit_stage (
             commit_ack_o = 1'b1;
         end
     end
-
-    // write register file
 
     // CSR logic
 

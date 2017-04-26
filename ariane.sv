@@ -135,6 +135,7 @@ module ariane
         .flush_i             ( flush_i                      ),
         .instruction_i       ( instr_rdata_id_o             ),
         .instruction_valid_i ( instr_valid_id_o             ),
+        .is_compressed_i     ( is_compressed_id_o           ),
         .pc_if_i             ( pc_if_o                      ), // PC from if
         .ex_i                ( exception_if                 ), // exception from if
         .ready_o             ( ready_o                      ),
