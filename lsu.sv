@@ -356,12 +356,11 @@ module lsu #(
                         end else begin// otherwise we need to wait for the translation
                             NS = LOAD_WAIT_TRANSLATION;
                         end
-
-                        lsu_ready_o = 1'b0;
-
                     // STORE
                     end else if (op == ST & lsu_valid_i) begin
                         NS = STORE;
+                    end else begin
+                        NS = IDLE;
                     end
 
                 end else begin
