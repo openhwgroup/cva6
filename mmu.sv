@@ -233,7 +233,7 @@ assign iaccess_err = fetch_req_i & (
           end
         end
         if (ptw_active & walking_instr) begin
-          // On error play through fetch with error signaled with valid
+          // On error pass through fetch with error signaled with valid
           fetch_gnt_o  = ptw_error;
           ierr_valid_n = ptw_error; // signal valid/error on next cycle
         end

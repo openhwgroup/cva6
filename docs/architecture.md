@@ -55,18 +55,20 @@ The scoreboard is implemented as a circular buffer with two pointers. The first 
 
 The FU are not supposed to have inter-unit dependencies for the moment, e.g.: every FU must be able to perform its operation independently of every other unit. The following interface is proposed to keep maximum interoperability. A minimum set of port definitions would be:
 
-| **Signal** | **Direction** |                **Description**                |
-| ---------- | ------------- | --------------------------------------------- |
-| clk_i      | Input         | Global clock signal                           |
-| rst_ni     | Input         | Reset the functional unit to a specific state |
-| operator_i | Input         | Operation to perform                          |
-| operand_ai | Input         | Operand A                                     |
-| operand_bi | Input         | Operand B                                     |
-| result_o   | Output        | Result Output                                 |
-| valid_i    | Input         | Data is valid from ID/Scoreboard              |
-| ready_o    | Output        | Ready signal to ID/Scoreboard                 |
-| ready_i    | Input         | Ready signal from WB/Scoreboard               |
-| valid_o    | Output        | Data is valid to WB/Scoreboard                |
+|  **Signal** | **Direction** |                 **Description**                  |
+|-------------|---------------|--------------------------------------------------|
+| clk_i       | Input         | Global clock signal                              |
+| rst_ni      | Input         | Reset the functional unit to a specific state    |
+| operator_i  | Input         | Operation to perform                             |
+| operand_a_i | Input         | Operand A                                        |
+| operand_b_i | Input         | Operand B                                        |
+| result_o    | Output        | Result Output                                    |
+| valid_i     | Input         | Data is valid from ID/Scoreboard                 |
+| ready_o     | Output        | Ready signal to ID/Scoreboard                    |
+| valid_o     | Output        | Data is valid to WB/Scoreboard                   |
+| trans_id_i  | Input         | Transaction ID for the operation to perform      |
+| trans_id_o  | Output        | Transaction ID at which to write back the result |
+
 
 TODO: Details about comparisons and branches.
 
