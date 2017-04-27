@@ -32,14 +32,16 @@ module fifo_tb;
         #(.dtype ( logic[7:0] ))
     dut
      (
-        .clk_i   ( clk               ),
-        .rst_ni  ( rst_ni            ),
-        .full_o  ( fifo_if.full      ),
-        .empty_o ( fifo_if.empty     ),
-        .data_i  ( fifo_if.wdata     ),
-        .push_i  ( fifo_if.push      ),
-        .data_o  ( fifo_if.rdata     ),
-        .pop_i   ( fifo_if.pop       )
+        .clk_i            ( clk               ),
+        .rst_ni           ( rst_ni            ),
+        .flush_i          ( 1'b0              ),
+        .full_o           ( fifo_if.full      ),
+        .empty_o          ( fifo_if.empty     ),
+        .single_element_o (                   ),
+        .data_i           ( fifo_if.wdata     ),
+        .push_i           ( fifo_if.push      ),
+        .data_o           ( fifo_if.rdata     ),
+        .pop_i            ( fifo_if.pop       )
     );
 
     initial begin
@@ -56,7 +58,7 @@ module fifo_tb;
     // simulator stopper, this is suboptimal better go for coverage
     initial begin
         #10000000ns
-        $finish;
+        $stop;
     end
 
     program testbench (fifo_if fifo_if, output logic push, output logic pop);
@@ -113,7 +115,7 @@ module fifo_tb;
                 if (fifo_if.pck.pop) begin
                     data = queue.pop_front();
                     // $display("Time: %t, Expected: %0h Got %0h", $time, data, fifo_if.pck.rdata);
-                    assert(data == fifo_if.mck.rdata) else $error("Mismatch, Expected: %0h Got %0h", data, fifo_if.pck.rdata);
+                    assert(data == fifo_if.pck.rdata) else $error("Mismatch, Expected: %0h Got %0h", data, fifo_if.pck.rdata);
                 end
 
             end

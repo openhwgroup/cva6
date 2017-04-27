@@ -27,6 +27,7 @@ module fifo #(
         // status flags
         output logic full_o,   // queue is full
         output logic empty_o,  // queue is empty
+        output logic single_element_o, // there is just a single element in the queue
         // as long as the queue is not full we can push new data
         input  dtype data_i,  // data to push into the queue
         input  logic push_i,  // data is valid and can be pushed to the queue
@@ -41,9 +42,9 @@ module fifo #(
     // actual memory
     dtype [DEPTH-1:0] mem_n, mem_q;
 
-    assign full_o  = (status_cnt_q == DEPTH - 1);
-    assign empty_o = (status_cnt_q == 0);
-
+    assign full_o            = (status_cnt_q == DEPTH);
+    assign empty_o           = (status_cnt_q == 0);
+    assign single_element_o = (status_cnt_q == 1);
     // read and write queue logic
     always_comb begin : read_write_comb
         // default assignment

@@ -51,30 +51,34 @@ module mem_arbiter #(
     logic push_i;
     logic [NR_PORTS-1:0] data_o;
     logic pop_i;
-
+    logic single_element_o;
     // essentially wait for the queue to be empty
-    assign flush_ready_o = empty_o;
+    // or we just got a grant -> this means we issued a memory request in this cycle
+    // although we are ready if we only got a single element in the queue and an rvalid
+    // which means we are getting this element back in this cycle
+    assign flush_ready_o = (empty_o & ~(|data_gnt_i)) | (single_element_o & data_rvalid_i);
 
     fifo #(
-        .dtype   ( logic [NR_PORTS-1:0] ),
-        .DEPTH   ( 4                    )
+        .dtype            ( logic [NR_PORTS-1:0] ),
+        .DEPTH            ( 4                    )
     ) fifo_i (
-        .clk_i   ( clk_i                ),
-        .rst_ni  ( rst_ni               ),
+        .clk_i            ( clk_i                ),
+        .rst_ni           ( rst_ni               ),
+        .single_element_o ( single_element_o     ),
         // the flush is accomplished implicitly by waiting for the flush ready signal
-        .flush_i ( 1'b0                 ),
-        .full_o  ( full_o               ),
-        .empty_o ( empty_o              ),
-        .data_i  ( data_i               ),
-        .push_i  ( push_i               ),
-        .data_o  ( data_o               ),
-        .pop_i   ( pop_i                )
+        .flush_i          ( 1'b0                 ),
+        .full_o           ( full_o               ),
+        .empty_o          ( empty_o              ),
+        .data_i           ( data_i               ),
+        .push_i           ( push_i               ),
+        .data_o           ( data_o               ),
+        .pop_i            ( pop_i                )
     );
 
     // addressing read and full write
     always_comb begin : read_req_write
         // default assignment
-        data_req_o   = data_req_i[0];
+        data_req_o   = 1'b0;
         address_o    = address_i[0];
         data_wdata_o = data_wdata_i[0];
         data_be_o    = data_be_i[0];
@@ -84,7 +88,7 @@ module mem_arbiter #(
 
         for (int i = 0; i < NR_PORTS; i++)
             data_gnt_o[i] = 1'b0;
-        // only go for a new request if we can wait for the valid
+        // only go for a new request if we can wait for the valid e.g.: we have enough space in the buffer
         if (~full_o) begin
             for (int i = 0; i < NR_PORTS; i++) begin
                 if (data_req_i[i] == 1'b1) begin

@@ -2,7 +2,7 @@ stages:
   - test
   - deploy
 
-testALU:
+test_alu:
   stage: test
   script:
     - make build
@@ -13,7 +13,7 @@ testALU:
     paths:
       - covhtmlreport
 
-testFIFO:
+test_fifo:
   stage: test
   script:
     - make build
@@ -24,13 +24,24 @@ testFIFO:
     paths:
       - covhtmlreport
 
-testScoreboard:
+test_scoreboard:
   stage: test
   script:
     - make build
     - make scoreboard
     - vcover report scoreboard.ucdb
     - vcover report -html scoreboard.ucdb
+  artifacts:
+    paths:
+      - covhtmlreport
+
+test_mem_arbiter:
+  stage: test
+  script:
+    - make build
+    - make mem_arbiter
+    - vcover report mem_arbiter.ucdb
+    - vcover report -html mem_arbiter.ucdb
   artifacts:
     paths:
       - covhtmlreport

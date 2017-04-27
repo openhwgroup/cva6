@@ -60,7 +60,7 @@ module scoreboard_tb;
     // simulator stopper, this is suboptimal better go for coverage
     initial begin
         #10000000ns
-        $finish;
+        $stop;
     end
 
     program testbench (scoreboard_if scoreboard_if);

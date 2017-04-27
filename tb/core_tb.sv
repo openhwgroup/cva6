@@ -98,7 +98,7 @@ module core_tb;
                     fork
                         imem_read: begin
                             // instr_if.mck.data_rvalid <= 1'b0;
-                            if (instr_if.mck.data_req) begin
+                            if (instr_if.data_req) begin
                                 address.push_back(instr_if.mck.address);
                             end
                         end

@@ -40,12 +40,12 @@ interface mem_if #(parameter int ADDRESS_SIZE = 64,
                    data_gnt, data_rvalid, data_rdata;
         endclocking
 
-        modport Master (
+        modport master (
             clocking mck,
             input   address, data_wdata, data_req, data_we, data_be,
             output  data_gnt, data_rvalid, data_rdata
         );
-        modport Slave  (
+        modport slave  (
             clocking sck,
             output  address, data_wdata, data_req, data_we, data_be,
             input   data_gnt, data_rvalid, data_rdata
