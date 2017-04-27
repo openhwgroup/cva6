@@ -408,7 +408,6 @@ module lsu #(
         .data_be_o     ( data_be_i    [2]    ),
         .data_gnt_i    ( data_gnt_o   [2]    ),
         .data_rvalid_i ( data_rvalid_o[2]    ),
-        .data_rdata_i  ( data_rdata_o [2]    ),
         .*
     );
 
