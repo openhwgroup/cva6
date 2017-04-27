@@ -96,9 +96,6 @@ module mem_arbiter_tb;
         end
         // instruction memory
         initial begin
-            // read mem file
-            $readmemh("add_test.v", imem, 64'b0);
-            $display("Read instruction memory file");
             slave.mck.data_rdata  <= 32'b0;
             // apply stimuli for instruction interface
             forever begin
@@ -116,18 +113,6 @@ module mem_arbiter_tb;
                                 slave.mck.data_rvalid <= 1'b1;
                                 addr = address.pop_front();
                                 slave.mck.data_rdata  <= addr;
-                                // {
-                                //     imem[$unsigned(addr + 3)],
-                                //     imem[$unsigned(addr + 2)],
-                                //     imem[$unsigned(addr + 1)],
-                                //     imem[$unsigned(addr + 0)]
-                                //     };
-                                // $display("Address: %0h, Data: %0h", addr, {
-                                //     imem[$unsigned(addr + 3)],
-                                //     imem[$unsigned(addr + 2)],
-                                //     imem[$unsigned(addr + 1)],
-                                //     imem[$unsigned(addr + 0)]
-                                //     });
                             end else
                                 slave.mck.data_rvalid <= 1'b0;
                             end
