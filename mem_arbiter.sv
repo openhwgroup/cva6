@@ -82,6 +82,8 @@ module mem_arbiter #(
         data_i       = '{default: 0};
         push_i       = 1'b0;
 
+        for (int i = 0; i < NR_PORTS; i++)
+            data_gnt_o[i] = 1'b0;
         // only go for a new request if we can wait for the valid
         if (~full_o) begin
             for (int i = 0; i < NR_PORTS; i++) begin

@@ -106,8 +106,7 @@ module fifo #(
     assert property(
         @(posedge clk_i) (rst_ni && empty_o |-> ~pop_i))
         else $error ("Trying to pop data although the FIFO is empty.");
+    end
     `endif
     `endif
-end
-
 endmodule
