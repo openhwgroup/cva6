@@ -49,7 +49,11 @@ test_mem_arbiter:
 pages:
   stage: deploy
   dependencies:
-    - testALU
+    - test_alu
+    - test_fifo
+    - test_scoreboard
+    - test_mem_arbiter
+    - test_mem_arbiter
   script:
     - mkdir public
     - mkdocs build -d public
