@@ -30,3 +30,11 @@ Currently the testbench is limited to the ALU use-case, e.g.: a single instructi
 ## Scoreboard Testbench
 
 This is a basic testbench using a program block and two clocking ports. One for driving the DUT and one for monitoring output. There is a very rudimentary golden model that checks for the monitors answers.
+
+## FIFO Testbench
+
+The test writes random data into the FIFO and also randomly pulls it. A golden model with infinite memory keeps track of all issued read and writes.
+
+## Memory Arbiter Testbench
+
+The testbench tests multiple reads issued to the memory arbiter. The testbench randomly issues requests and also randomly delays the grant and valid signal. The testbench asserts that read results are always issued to the right slave as well as that every issued read eventually gets through to the arbitrated memory interface
