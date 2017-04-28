@@ -9,9 +9,13 @@
 // Guard statement proposed by "Easier UVM" (doulos)
 `ifndef MEM_IF_SV
 `define MEM_IF_SV
-interface mem_if #(parameter int ADDRESS_SIZE = 64,
-                   parameter int DATA_WIDTH = 64   )
-                  (input clk);
+interface mem_if
+    #( parameter int ADDRESS_SIZE = 64,
+       parameter int DATA_WIDTH = 64
+    )
+    (
+        input clk
+    );
         wire [ADDRESS_SIZE-1:0] address;           // Address for read/write request
         wire [DATA_WIDTH-1:0]   data_wdata;        // Data to be written
         wire                    data_req;          // Requests read data

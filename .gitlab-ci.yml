@@ -46,6 +46,17 @@ test_mem_arbiter:
     paths:
       - covhtmlreport
 
+test_store_queue:
+  stage: test
+  script:
+    - make build
+    - make store_queue
+    - vcover report store_queue.ucdb
+    - vcover report -html store_queue.ucdb
+  artifacts:
+    paths:
+      - covhtmlreport
+
 pages:
   stage: deploy
   dependencies:

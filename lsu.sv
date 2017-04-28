@@ -29,32 +29,32 @@ module lsu #(
     input  logic [63:0]              operand_a_i,
     input  logic [63:0]              operand_b_i,
     input  logic [63:0]              imm_i,
-    output logic                     lsu_ready_o,      // FU is ready e.g. not busy
-    input  logic                     lsu_valid_i,      // Input is valid
-    input  logic [TRANS_ID_BITS-1:0] lsu_trans_id_i,   // transaction id, needed for WB
-    output logic [TRANS_ID_BITS-1:0] lsu_trans_id_o,   // ID of scoreboard entry at which to write back
+    output logic                     lsu_ready_o,              // FU is ready e.g. not busy
+    input  logic                     lsu_valid_i,              // Input is valid
+    input  logic [TRANS_ID_BITS-1:0] lsu_trans_id_i,           // transaction id, needed for WB
+    output logic [TRANS_ID_BITS-1:0] lsu_trans_id_o,           // ID of scoreboard entry at which to write back
     output logic [63:0]              lsu_result_o,
-    output logic                     lsu_valid_o,      // transaction id for which the output is the requested one
-    input  logic                     commit_i,         // commit the pending store
+    output logic                     lsu_valid_o,              // transaction id for which the output is the requested one
+    input  logic                     commit_i,                 // commit the pending store
 
-    input  logic                     enable_translation_i,
+    input  logic                     enable_translation_i,     // enable virtual memory translation
 
-    input  logic                     fetch_req_i,
-    output logic                     fetch_gnt_o,
-    output logic                     fetch_valid_o,
-    output logic                     fetch_err_o,
-    input  logic [63:0]              fetch_vaddr_i,
-    output logic [31:0]              fetch_rdata_o,
+    input  logic                     fetch_req_i,              // Instruction fetch interface
+    output logic                     fetch_gnt_o,              // Instruction fetch interface
+    output logic                     fetch_valid_o,            // Instruction fetch interface
+    output logic                     fetch_err_o,              // Instruction fetch interface
+    input  logic [63:0]              fetch_vaddr_i,            // Instruction fetch interface
+    output logic [31:0]              fetch_rdata_o,            // Instruction fetch interface
 
-    input  priv_lvl_t                priv_lvl_i,
-    input  logic                     flag_pum_i,
-    input  logic                     flag_mxr_i,
-    input  logic [37:0]              pd_ppn_i,
-    input  logic [ASID_WIDTH-1:0]    asid_i,
+    input  priv_lvl_t                priv_lvl_i,               // From CSR register file
+    input  logic                     flag_pum_i,               // From CSR register file
+    input  logic                     flag_mxr_i,               // From CSR register file
+    input  logic [37:0]              pd_ppn_i,                 // From CSR register file
+    input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
     input  logic                     flush_tlb_i,
 
-    mem_if.Slave                     instr_if,
-    mem_if.Slave                     data_if,
+    mem_if.Slave                     instr_if,                 // Instruction memory/cache
+    mem_if.Slave                     data_if,                  // Data memory/cache
 
     output exception                 lsu_exception_o   // to WB, signal exception status LD/ST exception
 

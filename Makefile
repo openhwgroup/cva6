@@ -7,19 +7,20 @@ library = work
 # Top level module to compile
 top_level = core_tb
 test_top_level = core_tb
-tests = alu scoreboard fifo mem_arbiter
+tests = alu scoreboard fifo mem_arbiter store_queue
 # path to agents
 agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv \
 	include/ariane_pkg.svh tb/agents/scoreboard_if/scoreboard_if.sv tb/agents/scoreboard_if/scoreboard_if_agent_pkg.sv tb/common/eth_tb_pkg.sv
 
-interfaces = include/debug_if.svh include/mem_if.svh tb/agents/fifo_if/fifo_if.sv
+interfaces = include/debug_if.svh include/mem_if.svh tb/agents/fifo_if/fifo_if.sv tb/agents/store_queue_if/store_queue_if.sv
 # this list contains the standalone components
-src = alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv tb/alu_tb.sv \
-	  tb/scoreboard_tb.sv ptw.sv tlb.sv store_queue.sv \
+src = alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv  \
+	  ptw.sv tlb.sv store_queue.sv \
 	  if_stage.sv compressed_decoder.sv fetch_fifo.sv commit_stage.sv prefetch_buffer.sv \
 	  mmu.sv lsu.sv fifo.sv tb/fifo_tb.sv mem_arbiter.sv \
-	  scoreboard.sv issue_read_operands.sv decoder.sv id_stage.sv util/cluster_clock_gating.sv regfile.sv ex_stage.sv ariane.sv \
-	  tb/mem_arbiter_tb.sv tb/core_tb.sv
+	  scoreboard.sv issue_read_operands.sv decoder.sv id_stage.sv util/cluster_clock_gating.sv regfile.sv ex_stage.sv ariane.sv
+
+tb =  tb/alu_tb.sv tb/mem_arbiter_tb.sv tb/core_tb.sv tb/scoreboard_tb.sv tb/store_queue_tb.sv
 
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
@@ -43,7 +44,7 @@ build:
 	# Compile interfaces
 	vlog${questa_version} ${compile_flag} -incr ${interfaces} ${list_incdir} -suppress 2583
 	# Compile source files
-	vlog${questa_version} ${compile_flag} -incr ${src} ${list_incdir} -suppress 2583
+	vlog${questa_version} ${compile_flag} -incr ${src} ${tb}  ${list_incdir} -suppress 2583
 	# Optimize top level
 	vopt${questa_version} ${compile_flag} ${test_top_level} -o ${test_top_level}_optimized +acc -check_synthesis
 
