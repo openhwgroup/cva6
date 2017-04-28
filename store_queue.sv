@@ -57,8 +57,6 @@ module store_queue (
     // In the current implementation this is represented by a single entry and
     // differentiated by the is_speculative flag.
 
-    enum logic { IDLE, WAIT_RVALID } CS, NS;
-
     struct packed {
         logic [63:0] address;
         logic [63:0] data;
@@ -68,10 +66,10 @@ module store_queue (
     } commit_queue_n, commit_queue_q;
 
     // we can directly output the commit entry since we just have one element in this "queue"
-    assign paddr_o = commit_queue_q.address;
-    assign data_o  = commit_queue_q.data;
-    assign be_o    = commit_queue_q.be;
-    assign valid_o = commit_queue_q.valid;
+    assign paddr_o      = commit_queue_q.address;
+    assign data_o       = commit_queue_q.data;
+    assign be_o         = commit_queue_q.be;
+    assign valid_o      = commit_queue_q.valid;
 
     // those signals can directly be output to the memory if
     assign address_o    = commit_queue_q.address;
@@ -81,44 +79,32 @@ module store_queue (
     // memory interface
     always_comb begin : store_if
         // if there is no commit pending and the uncommitted queue is empty as well we can accept the request
-        automatic logic ready = ~commit_queue_q.valid;
-        ready_o       =  ready;
+        // if we got a grant this implies that the value was not speculative anymore and that we
+        // do not need to save the values anymore since the memory already processed them
+        automatic logic ready = ~commit_queue_q.valid | data_gnt_i;
+        ready_o               =  ready;
 
         commit_queue_n = commit_queue_q;
 
         data_we_o    = 1'b1; // we will always write in the store queue
         data_req_o   = 1'b0;
-        NS           = CS;
 
+        // there should be no commit when we are flushing
         if (~flush_i) begin
-            case (CS)
-                // we can accept a new request if we were idle
-                IDLE: begin
-                    if (commit_queue_q.valid) begin
-                        data_req_o = 1'b1;
-                        if (data_gnt_i) begin// advance to the next state if we received the grant
-                            NS = WAIT_RVALID;
-
-                        end
-                    end
+            // if the entry in the commit queue is valid and not speculative anymore
+            // we can issue this instruction
+            // we can issue it as soon as the commit_i goes high or any number of cycles later
+            // by looking at the is_speculative flag
+            if (commit_queue_q.valid & (~commit_queue_q.is_speculative | commit_i)) begin
+                data_req_o = 1'b1;
+                if (data_gnt_i) begin// advance to the next state if we received the grant
+                    // NS = WAIT_RVALID;
+                    // we can evict it from the commit buffer
+                    commit_queue_n.valid = 1'b0;
                 end
-
-                WAIT_RVALID: begin
-
-                    if (data_rvalid_i) begin
-                        // if we got the rvalid we can already perform a new store request
-                        if (commit_queue_q.valid) begin
-                            // we can evict it from the commit buffer
-                            commit_queue_n.valid = 1'b0;
-                            data_req_o = 1'b1;
-                        end else // if do not need to perform another
-                            NS = IDLE;
-                    end else // wait here for the rvalid
-                        NS = WAIT_RVALID;
-                end
-
-                default:;
-            endcase
+            end
+            // we ignore the rvalid signal for now as we assume that the store
+            // happened
         end
 
         // shift the store request from the speculative buffer
@@ -129,12 +115,17 @@ module store_queue (
 
         // LSU interface
         // we are ready to accept a new entry and the input data is valid
-        if (ready & valid_i & ~commit_i) begin
+        if (ready & valid_i) begin
             commit_queue_n.address        = paddr_i;
             commit_queue_n.data           = data_i;
             commit_queue_n.be             = be_i;
             commit_queue_n.valid          = 1'b1;
             commit_queue_n.is_speculative = 1'b1;
+        end
+
+        // when we flush evict the speculative store
+        if (flush_i & commit_queue_q.is_speculative) begin
+            commit_queue_n.valid          = 1'b0;
         end
 
     end
@@ -143,13 +134,17 @@ module store_queue (
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
         if(~rst_ni) begin
            commit_queue_q  <= '{default: 0};
-           CS              <= IDLE;
-        end else if (flush_i) begin // just empty the speculative queue
-            commit_queue_q <= commit_queue_n;
-            CS             <= NS;
         end else begin
             commit_queue_q <= commit_queue_n;
-            CS             <= NS;
         end
      end
+    `ifndef SYNTHESIS
+    `ifndef verilator
+    // assert that commit is never set when we are flushing this would be counter intuitive
+    // as flush and commit is decided in the same stage
+    assert property (
+        @(posedge clk_i) rst_ni & flush_i |-> ~commit_i)
+        else $error ("You are trying to commit and flush in the same cycle");
+    `endif
+    `endif
 endmodule

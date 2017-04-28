@@ -41,8 +41,8 @@ interface store_queue_if
    wire [DATA_WIDTH/8-1:0]  store_be;
 
    clocking mck @(posedge clk);
-        output  flush, commit, valid, store_paddr, store_data, store_be;
-        input  check_paddr, check_data, check_be, ready, store_valid;
+        output  flush, commit, valid, store_paddr, store_data, store_be, store_valid;
+        input  check_paddr, check_data, check_be, ready;
 
    endclocking
 
