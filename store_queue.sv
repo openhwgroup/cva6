@@ -82,7 +82,7 @@ module store_queue (
         // if we got a grant this implies that the value was not speculative anymore and that we
         // do not need to save the values anymore since the memory already processed them
         automatic logic ready = ~commit_queue_q.valid | data_gnt_i;
-        ready_o               =  ready;
+        ready_o               =  ready & ~flush_i;
 
         commit_queue_n = commit_queue_q;
 
