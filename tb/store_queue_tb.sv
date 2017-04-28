@@ -131,7 +131,6 @@ module store_queue_tb;
 
         // grant process
         initial begin
-
             forever begin
                 slave_data_gnt = 1'b0;
                 wait (slave.data_req);
@@ -157,6 +156,7 @@ module store_queue_tb;
         // -------------------
         // Monitor && Checker
         // -------------------
+
         initial begin
 
         end
