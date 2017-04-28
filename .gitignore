@@ -1,1 +1,7 @@
 site/*
+*.ucdb
+covhtmlreport/*
+work/*
+transcript
+*.ini
+*.wlf

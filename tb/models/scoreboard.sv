@@ -2,7 +2,7 @@ class Scoreboard;
 
     scoreboard_entry decoded_instructions[$];
     scoreboard_entry issued_instructions[$];
-    static logic[4:0] i = 0;
+    static logic[TRANS_ID_BITS-1:0] i = 0;
 
     // utility function to get randomized input data
     static function scoreboard_entry randomize_scoreboard();
@@ -29,16 +29,17 @@ class Scoreboard;
     endfunction : get_issue
 
     // write back to scoreboard
-    function void write_back(logic [4:0] trans_id, logic [63:0] value);
+    function void write_back(logic [TRANS_ID_BITS-1:0] trans_id, logic [63:0] value);
         for (int i = 0; i < $size(issued_instructions); i++) begin
             if (issued_instructions[i].trans_id == trans_id) begin
-                issued_instructions[i].valid = 1'b1;
-                issued_instructions[i].result  = value;
+                // $display("Model Write Back: %0h", value);
+                issued_instructions[i].valid    = 1'b1;
+                issued_instructions[i].result   = value;
             end
         end
     endfunction : write_back
 
-    // // commit the instruction, e.g.: delete it from the entries
+    // commit the instruction, e.g.: delete it from the entries
     function scoreboard_entry commit();
         return issued_instructions.pop_front();
     endfunction : commit

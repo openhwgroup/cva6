@@ -16,10 +16,11 @@ module scoreboard_tb;
     `include "models/scoreboard.sv"
 
     logic rst_ni, clk;
-    scoreboard_if #(.NR_WB_PORTS(1)) scoreboard_if (clk);
+    scoreboard_if #(.NR_WB_PORTS(1) ) scoreboard_if (clk);
 
     scoreboard #(
-        .NR_WB_PORTS          ( 1                                 )
+        .NR_WB_PORTS          ( 1                                 ),
+        .NR_ENTRIES           ( NR_SB_ENTRIES                     )
     )
     dut
     (
@@ -97,7 +98,13 @@ module scoreboard_tb;
         scoreboard_entry issue_instruction;
         // pull e.g. issue instructions
         initial begin
+            // reset values
+            scoreboard_if.mck.trans_id <= 'b0;
+            scoreboard_if.mck.wdata    <= 'b0;
+            scoreboard_if.mck.wb_valid <= 1'b0;
+
             wait(rst_ni == 1'b1);
+
             forever begin
 
                 @(scoreboard_if.mck);
@@ -112,15 +119,16 @@ module scoreboard_tb;
                     // generate a delay between 0 and 3 cycles for WB, write-back out of order
                     fork
                         write_back: begin
-                            automatic scoreboard_entry thread_copy = issue_instruction;
-                            automatic logic [63:0] rand_data = $urandom_range(0, 2**31);
-                            repeat ($urandom_range(1,20)) @(scoreboard_if.mck);
+                            automatic logic [TRANS_ID_BITS-1:0] trans_id = issue_instruction.trans_id;
+                            automatic logic [63:0] random_data = $urandom_range(0, 2**31);
                             wb_lock.get(1);
+                            repeat ($urandom_range(1,20)) @(scoreboard_if.mck);
                             // $display("Time: %t, Writing Back: %0h", $time, thread_copy.pc);
-                            scoreboard_if.mck.trans_id <= thread_copy.trans_id;
-                            scoreboard_if.mck.wdata <= rand_data;
+                            scoreboard_if.mck.trans_id <= trans_id;
+                            scoreboard_if.mck.wdata    <= random_data;
                             scoreboard_if.mck.wb_valid <= 1'b1;
-                            sb.write_back(thread_copy.trans_id, rand_data);
+                            // $display("Write Back: %0h", random_data);
+                            sb.write_back(trans_id, random_data);
                             @(scoreboard_if.mck);
                             scoreboard_if.mck.wb_valid <= 1'b0;
                             wb_lock.put(1);
@@ -168,7 +176,7 @@ module scoreboard_tb;
                 @(scoreboard_if.pck);
                 if (scoreboard_if.pck.issue_instr_valid == 1'b1 && scoreboard_if.pck.issue_ack) begin
                     tmp_sbe = sb.get_issue();
-                    assert (tmp_sbe.trans_id == issue_instruction.trans_id) else $error("Issue instruction mismatch. Expected: %0h Got: %0h", tmp_sbe, issue_instruction);
+                    assert (tmp_sbe.trans_id == issue_instruction.trans_id) else $error("Issue instruction mismatch. Expected: %p Got: %p", tmp_sbe, issue_instruction);
                 end
             end
         end
@@ -181,7 +189,7 @@ module scoreboard_tb;
                 @(scoreboard_if.pck);
                 if (scoreboard_if.pck.commit_ack == 1'b1) begin
                     comp = sb.commit();
-                    assert (comp === scoreboard_if.pck.commit_instr) else $error($sformatf("Mismatch: Expected: %0h Got: %0h", comp, scoreboard_if.pck.commit_instr));
+                    assert (comp === scoreboard_if.pck.commit_instr) else $error($sformatf("Mismatch: \nExpected: %p \nGot: %p", comp, scoreboard_if.pck.commit_instr));
                 end
             end
         end
