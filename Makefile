@@ -10,8 +10,8 @@ test_top_level = core_tb
 tests = alu scoreboard fifo mem_arbiter store_queue
 # path to agents
 agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv \
-	include/ariane_pkg.svh tb/agents/scoreboard_if/scoreboard_if_agent_pkg.sv tb/common/eth_tb_pkg.sv  
-#	uvm-scaffold/tmp/agent/mem_if/mem_if_agent_pkg.sv
+	include/ariane_pkg.svh tb/agents/scoreboard_if/scoreboard_if_agent_pkg.sv tb/common/eth_tb_pkg.sv \
+	tb/agents/mem_if/mem_if_agent_pkg.sv
 
 interfaces = include/debug_if.svh include/mem_if.svh tb/agents/fifo_if/fifo_if.sv \
 			 tb/agents/store_queue_if/store_queue_if.sv tb/agents/scoreboard_if/scoreboard_if.sv

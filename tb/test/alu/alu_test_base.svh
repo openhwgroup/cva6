@@ -28,8 +28,7 @@ class alu_test_base extends uvm_test;
     // ---------------------
     // Agent configuration
     // ---------------------
-    // Instruction cache master interface can currently either be
-    // a memory master interface
+    // functional unit interface
     fu_if_agent_config m_cfg;
 
     //------------------------------------------

@@ -14,7 +14,7 @@ class scoreboard_if_monitor extends uvm_component;
     uvm_analysis_port #(scoreboard_if_seq_item) ap;
 
     // Virtual Interface
-    virtual scoreboard_if scoreboard;
+    virtual scoreboard_if fu;
 
     //---------------------
     // Data Members
@@ -36,7 +36,7 @@ class scoreboard_if_monitor extends uvm_component;
 
     function void connect_phase(uvm_phase phase);
         // connect virtual interface
-        scoreboard = m_cfg.scoreboard;
+        fu = m_cfg.fu;
     endfunction
 
     task run_phase(uvm_phase phase);
