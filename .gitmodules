@@ -1,0 +1,3 @@
+[submodule "uvm-scaffold"]
+	path = uvm-scaffold
+	url = git@iis-git.ee.ethz.ch:floce/uvm-scaffold.git
