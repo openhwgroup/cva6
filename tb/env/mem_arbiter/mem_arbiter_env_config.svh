@@ -20,10 +20,10 @@ class mem_arbiter_env_config extends uvm_object;
     `uvm_object_utils(mem_arbiter_env_config)
 
     // a functional unit master interface
-    virtual mem_if m_mem_if;
-
+    virtual mem_if m_mem_if_slave;
+    virtual mem_if m_mem_if_masters[3];
     // an agent config
-
-    mem_if_agent_config m_mem_if_agent_config;
+    mem_if_agent_config m_mem_if_slave_agent;
+    mem_if_agent_config m_mem_if_master_agents[3];
 
 endclass : mem_arbiter_env_config

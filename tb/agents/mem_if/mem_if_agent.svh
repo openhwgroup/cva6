@@ -38,6 +38,7 @@ class mem_if_agent extends uvm_component;
     endfunction : new
 
     function void build_phase(uvm_phase phase);
+        // uvm_config_db #(int)::dump();
         if (!uvm_config_db #(mem_if_agent_config)::get(this, "", "mem_if_agent_config", m_cfg) )
          `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration mem_if_agent_config from uvm_config_db. Have you set() it?")
 

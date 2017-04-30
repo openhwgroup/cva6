@@ -66,8 +66,11 @@ module mem_arbiter_tb;
 
     program testbench (mem_if master[3], mem_if slave);
         initial begin
-            // register the ALU interface
-            uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if", slave);
+            // register the memory interface
+            uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if_slave", slave);
+            uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if_master0", master[0]);
+            uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if_master1", master[1]);
+            uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if_master2", master[2]);
             // print the topology
             uvm_top.enable_print_topology = 1;
             // Start UVM test
