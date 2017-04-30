@@ -25,6 +25,16 @@ interface mem_if
         wire [DATA_WIDTH-1:0]   data_rdata;        // Read data
         wire                    data_we;           // Write enable
         wire [DATA_WIDTH/8-1:0] data_be;           // Byte enable
+
+        // super hack in assigning the wire a value
+        // we need to keep all interface signals as wire as
+        // the simulator does not now if this interface will be used
+        // as an active or passive device
+        // only helpful thread so far:
+        // https://verificationacademy.com/forums/uvm/getting-multiply-driven-warnings-vsim-passive-agent
+        logic data_gnt_driver = 'z;
+        assign data_gnt = data_gnt_driver;
+
         // Memory interface configured as master
         clocking mck @(posedge clk);
             // default input #1ns output #1ns;

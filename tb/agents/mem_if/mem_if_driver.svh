@@ -49,12 +49,12 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
                 slave_gnt: begin
                     forever begin
                         slave_data_gnt = 1'b0;
-                        fu.data_gnt = slave_data_gnt;
+                        fu.data_gnt_driver = slave_data_gnt;
                         wait (fu.data_req);
                         // randomize grant delay
                         repeat ($urandom_range(0,4)) @(fu.mck);
                         slave_data_gnt = 1'b1;
-                        fu.data_gnt = slave_data_gnt;
+                        fu.data_gnt_driver = slave_data_gnt;
                         wait (~fu.data_req);
                     end
                 end
