@@ -30,7 +30,7 @@ class alu_env extends uvm_env;
             `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration alu_env_config from uvm_config_db. Have you set() it?")
         // Conditional instantiation goes here
 
-        // Create agent configuratio
+        // Create agent configuration
         uvm_config_db #(fu_if_agent_config)::set(this, "m_fu_if_agent*",
                                                "fu_if_agent_config",
                                                m_cfg.m_fu_if_agent_config);

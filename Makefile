@@ -10,11 +10,13 @@ test_top_level = core_tb
 tests = alu scoreboard fifo mem_arbiter store_queue
 # path to agents
 agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv \
-	include/ariane_pkg.svh tb/agents/scoreboard_if/scoreboard_if.sv tb/agents/scoreboard_if/scoreboard_if_agent_pkg.sv tb/common/eth_tb_pkg.sv
+	include/ariane_pkg.svh tb/agents/scoreboard_if/scoreboard_if_agent_pkg.sv tb/common/eth_tb_pkg.sv  
+#	uvm-scaffold/tmp/agent/mem_if/mem_if_agent_pkg.sv
 
-interfaces = include/debug_if.svh include/mem_if.svh tb/agents/fifo_if/fifo_if.sv tb/agents/store_queue_if/store_queue_if.sv
+interfaces = include/debug_if.svh include/mem_if.svh tb/agents/fifo_if/fifo_if.sv \
+			 tb/agents/store_queue_if/store_queue_if.sv tb/agents/scoreboard_if/scoreboard_if.sv
 # this list contains the standalone components
-src = alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv  \
+src = alu.sv tb/sequences/alu/alu_sequence_pkg.sv tb/env/alu/alu_env_pkg.sv tb/test/alu/alu_lib_pkg.sv  \
 	  ptw.sv tlb.sv store_queue.sv \
 	  if_stage.sv compressed_decoder.sv fetch_fifo.sv commit_stage.sv prefetch_buffer.sv \
 	  mmu.sv lsu.sv fifo.sv tb/fifo_tb.sv mem_arbiter.sv \
