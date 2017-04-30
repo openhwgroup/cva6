@@ -12,7 +12,7 @@ class scoreboard_if_agent_config extends uvm_object;
     `uvm_object_utils(scoreboard_if_agent_config)
 
     // Virtual Interface
-    virtual scoreboard_if scoreboard;
+    virtual scoreboard_if fu;
     //------------------------------------------
     // Data Members
     //------------------------------------------

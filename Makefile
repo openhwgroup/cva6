@@ -7,20 +7,27 @@ library = work
 # Top level module to compile
 top_level = core_tb
 test_top_level = core_tb
+# test targets
 tests = alu scoreboard fifo mem_arbiter store_queue
-# path to agents
-agents = tb/agents/fu_if/fu_if.sv tb/agents/fu_if/fu_if_agent_pkg.sv \
-	include/ariane_pkg.svh tb/agents/scoreboard_if/scoreboard_if.sv tb/agents/scoreboard_if/scoreboard_if_agent_pkg.sv tb/common/eth_tb_pkg.sv
+# UVM agents
+agents = include/ariane_pkg.svh $(wildcard tb/agents/*/*.sv) tb/common/eth_tb_pkg.sv
+# path to interfaces
+interfaces = $(wildcard include/*.svh)
+# UVM environments
+envs = $(wildcard tb/env/*.sv)
+# UVM Sequences
+sequences =  $(wildcard tb/sequences/*.sv)
+# Test packages
+test_pkg = tb/test/alu_lib_pkg.sv
 
-interfaces = include/debug_if.svh include/mem_if.svh tb/agents/fifo_if/fifo_if.sv tb/agents/store_queue_if/store_queue_if.sv
 # this list contains the standalone components
-src = alu.sv tb/sequences/alu_sequence_pkg.sv tb/env/alu_env_pkg.sv tb/test/alu_lib_pkg.sv  \
-	  ptw.sv tlb.sv store_queue.sv \
-	  if_stage.sv compressed_decoder.sv fetch_fifo.sv commit_stage.sv prefetch_buffer.sv \
-	  mmu.sv lsu.sv fifo.sv tb/fifo_tb.sv mem_arbiter.sv \
-	  scoreboard.sv issue_read_operands.sv decoder.sv id_stage.sv util/cluster_clock_gating.sv regfile.sv ex_stage.sv ariane.sv
+src = alu.sv if_stage.sv compressed_decoder.sv	mem_arbiter.sv	decoder.sv            \
+	  fetch_fifo.sv commit_stage.sv prefetch_buffer.sv regfile.sv                     \
+	  ptw.sv tlb.sv store_queue.sv mmu.sv lsu.sv fifo.sv ex_stage.sv                  \
+	  scoreboard.sv issue_read_operands.sv  id_stage.sv util/cluster_clock_gating.sv  \
+	  ariane.sv
 
-tb =  tb/alu_tb.sv tb/mem_arbiter_tb.sv tb/core_tb.sv tb/scoreboard_tb.sv tb/store_queue_tb.sv
+tbs =  tb/alu_tb.sv tb/mem_arbiter_tb.sv tb/core_tb.sv tb/scoreboard_tb.sv tb/store_queue_tb.sv tb/fifo_tb.sv
 
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
@@ -33,20 +40,27 @@ compile_flag = +cover=bcfst+/dut
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
+# create library if not exists
 
-# Build the TB and module using QuestaSim
-build:
+$(library):
 	# Create the library
 	vlib${questa_version} ${library}
-	# Suppress message that always_latch may not be checked thoroughly bu Questa.
-	# Compile agents
-	vlog${questa_version} ${compile_flag} -incr ${agents} ${list_incdir} -suppress 2583
-	# Compile interfaces
-	vlog${questa_version} ${compile_flag} -incr ${interfaces} ${list_incdir} -suppress 2583
+
+# Build the TB and module using QuestaSim
+build: $(library) build-agents build-interfaces
+	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
+	# Compile agents, interfaces and environments
+	vlog${questa_version} ${compile_flag} -incr ${envs} ${sequences} ${test_pkg} ${list_incdir} -suppress 2583
 	# Compile source files
-	vlog${questa_version} ${compile_flag} -incr ${src} ${tb}  ${list_incdir} -suppress 2583
+	vlog${questa_version} ${compile_flag} -incr ${src} ${tbs}  ${list_incdir} -suppress 2583
 	# Optimize top level
 	vopt${questa_version} ${compile_flag} ${test_top_level} -o ${test_top_level}_optimized +acc -check_synthesis
+
+build-agents: ${agents}
+	vlog${questa_version} ${compile_flag} -incr ${agents} ${list_incdir} -suppress 2583
+
+build-interfaces: ${interfaces}
+	vlog${questa_version} ${compile_flag} -incr ${interfaces} ${list_incdir} -suppress 2583
 
 # Run the specified test case
 sim:

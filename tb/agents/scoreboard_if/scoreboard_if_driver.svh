@@ -11,7 +11,7 @@ class scoreboard_if_driver extends uvm_driver #(scoreboard_if_seq_item);
     `uvm_component_utils(scoreboard_if_driver)
 
     // Virtual Interface
-    virtual scoreboard_if scoreboard;
+    virtual scoreboard_if fu;
 
     //---------------------
     // Data Members
@@ -32,6 +32,6 @@ class scoreboard_if_driver extends uvm_driver #(scoreboard_if_seq_item);
       if (!uvm_config_db #(scoreboard_if_agent_config)::get(this, "", "scoreboard_if_agent_config", m_cfg) )
          `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration scoreboard_if_agent_config from uvm_config_db. Have you set() it?")
 
-      scoreboard = m_cfg.scoreboard;
+      fu = m_cfg.fu;
     endfunction: build_phase
 endclass : scoreboard_if_driver
