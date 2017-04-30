@@ -18,9 +18,7 @@ envs = $(wildcard tb/env/*/*.sv)
 # UVM Sequences
 sequences =  $(wildcard tb/sequences/*/*.sv)
 # Test packages
-test_pkg = tb/test/alu/alu_lib_pkg.sv
-
-src2obj     = $(addsuffix /_primary.dat, $(addprefix $(library)/, $(basename $(notdir $(1)))))
+test_pkg =tb/test/mem_arbiter/mem_arbiter_sequence_pkg.sv  $(wildcard tb/test/*/*.sv)
 
 # this list contains the standalone components
 src = alu.sv if_stage.sv compressed_decoder.sv	mem_arbiter.sv	decoder.sv			  \
