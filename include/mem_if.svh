@@ -32,20 +32,18 @@ interface mem_if
         // as an active or passive device
         // only helpful thread so far:
         // https://verificationacademy.com/forums/uvm/getting-multiply-driven-warnings-vsim-passive-agent
-        logic data_gnt_driver = 'z;
-        assign data_gnt = data_gnt_driver;
 
         // Memory interface configured as master
         clocking mck @(posedge clk);
-            // default input #1ns output #1ns;
-            input   address, data_wdata, data_req, data_we, data_be;
-            output  data_gnt, data_rvalid, data_rdata;
+            default input #1ns output #1ns;
+            input   address, data_wdata, data_we, data_req, data_be;
+            output  data_rvalid, data_rdata, data_gnt;
         endclocking
         // Memory interface configured as slave
         clocking sck @(posedge clk);
-            // default input #1ns output #1ns;
-            output  address, data_wdata, data_req, data_we, data_be;
-            input   data_gnt, data_rvalid, data_rdata;
+            default input #1ns output #1ns;
+            output  address, data_wdata, data_we, data_req, data_be;
+            input   data_rvalid, data_rdata, data_gnt;
         endclocking
 
         clocking pck @(posedge clk);
@@ -65,5 +63,6 @@ interface mem_if
             input   data_gnt, data_rvalid, data_rdata
         );
         // modport Passive (clocking pck);
+
 endinterface
 `endif

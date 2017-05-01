@@ -27,6 +27,8 @@ class mem_arbiter_env extends uvm_env;
 
     mem_if_sequencer m_mem_if_sequencers[3];
     mem_arbiter_env_config m_cfg;
+
+    mem_arbiter_scoreboard m_scoreboard;
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -46,35 +48,30 @@ class mem_arbiter_env extends uvm_env;
                                                "mem_if_agent_config",
                                                m_cfg.m_mem_if_slave_agent);
 
-        uvm_config_db #(mem_if_agent_config)::set(this, "m_mem_if_master0*",
-                                               "mem_if_agent_config",
-                                               m_cfg.m_mem_if_master_agents[0]);
-
-        uvm_config_db #(mem_if_agent_config)::set(this, "m_mem_if_master1*",
-                                               "mem_if_agent_config",
-                                               m_cfg.m_mem_if_master_agents[1]);
-
-        uvm_config_db #(mem_if_agent_config)::set(this, "m_mem_if_master2*",
-                                               "mem_if_agent_config",
-                                               m_cfg.m_mem_if_master_agents[2]);
 
         m_mem_if_slave_agent = mem_if_agent::type_id::create("m_mem_if_slave_agent", this);
 
         // create 3 master memory interfaces
-        m_mem_if_master_agents[0] = mem_if_agent::type_id::create("m_mem_if_master0_agent", this);
-        m_mem_if_master_agents[1] = mem_if_agent::type_id::create("m_mem_if_master1_agent", this);
-        m_mem_if_master_agents[2] = mem_if_agent::type_id::create("m_mem_if_master2_agent", this);
+        for (int i = 0; i < 3; i++) begin
+            uvm_config_db #(mem_if_agent_config)::set(this, {"m_mem_if_master", i, "*"},
+                                       "mem_if_agent_config",
+                                       m_cfg.m_mem_if_master_agents[i]);
 
-        // Get 3 sequencers
-        m_mem_if_sequencers[0] = mem_if_sequencer::type_id::create("m_mem_if_sequencer0", this);
-        m_mem_if_sequencers[1] = mem_if_sequencer::type_id::create("m_mem_if_sequencer1", this);
-        m_mem_if_sequencers[2] = mem_if_sequencer::type_id::create("m_mem_if_sequencer2", this);
-
+            m_mem_if_master_agents[i] = mem_if_agent::type_id::create({"m_mem_if_master", i, "_agent"}, this);
+            // Get 3 sequencers
+            m_mem_if_sequencers[i] = mem_if_sequencer::type_id::create({"m_mem_if_sequencer", i}, this);
+        end
+        // instantiate the scoreboard
+        m_scoreboard = mem_arbiter_scoreboard::type_id::create("m_scoreboard", this);
     endfunction:build_phase
 
     function void connect_phase(uvm_phase phase);
-       m_mem_if_sequencers[0] = m_mem_if_master_agents[0].m_sequencer;
-       m_mem_if_sequencers[1] = m_mem_if_master_agents[1].m_sequencer;
-       m_mem_if_sequencers[2] = m_mem_if_master_agents[2].m_sequencer;
+        // connect the sequencers and monitor to the master agents
+        for (int i = 0; i < 3; i++) begin
+            m_mem_if_sequencers[i] = m_mem_if_master_agents[i].m_sequencer;
+            m_mem_if_master_agents[i].m_monitor.m_ap.connect(m_scoreboard.item_export);
+        end
+        // connect the slave monitor to the scoreboard
+        m_mem_if_slave_agent.m_monitor.m_ap.connect(m_scoreboard.item_export);
     endfunction: connect_phase
 endclass : mem_arbiter_env

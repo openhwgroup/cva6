@@ -50,19 +50,42 @@ class mem_if_monitor extends uvm_component;
     endfunction
 
     task run_phase(uvm_phase phase);
-
+        logic[63:0] address [$];
+        logic[7:0]  be [$];
     	mem_if_seq_item cmd =  mem_if_seq_item::type_id::create("cmd");
-    	mem_if_seq_item cloned_item;
-
         // Monitor
         // we should also distinguish between slave and master here
-        forever begin
-            @(fu.pck iff fu.pck.data_rvalid);
-            `uvm_info("MEM IF MONITOR", "Got rvalid", UVM_MEDIUM);
-        end
+        fork
+            // detect a request
+            forever begin
+                // wait until detecting a valid request -> store be and address
+                @(fu.pck iff (fu.pck.data_gnt & fu.pck.data_req));
+                // if (m_cfg.mem_if_config == MASTER)
+                // $display("Pushing Address: %0h", fu.pck.address);
+                address.push_back(fu.pck.address);
+                be.push_back(fu.pck.data_be);
 
-        $cast(cloned_item, cmd.clone());
-        m_ap.write(cloned_item);
+            end
+            // request finished send it to the monitor
+            forever begin
+                mem_if_seq_item cloned_item;
+                automatic logic [63:0] addr;
+                // wait for the rvalid minimum a cycle later
+                @(fu.pck iff fu.pck.data_rvalid);
+                addr = address.pop_front();
+                // if (m_cfg.mem_if_config == MASTER)
+                // $display("Popping Address: %0h", addr);
+                cmd.address = addr;
+                cmd.be      = be.pop_front();
+                cmd.data    = fu.pck.data_rdata;
+                // was this from a master or slave agent monitor?
+                cmd.isSlaveAnswer = (m_cfg.mem_if_config == SLAVE) ? 1'b1 : 1'b0;
+                // export the item via the analysis port
+                $cast(cloned_item, cmd.clone());
+                m_ap.write(cloned_item);
+            end
+
+        join_none
 
     endtask : run_phase
 endclass : mem_if_monitor

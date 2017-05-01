@@ -130,4 +130,31 @@ module mem_arbiter #(
         end
     end
 
+    // ------------
+    // Assertions
+    // ------------
+
+    `ifndef synthesis
+    `ifndef VERILATOR
+    // make sure that we eventually get an rvalid after we received a grant
+    assert property (@(posedge clk_i) data_gnt_i |-> ##[1:$] data_rvalid_i )
+        else begin $error("There was a grant without a rvalid"); $stop(); end
+    // assert that there is no grant without a request
+    assert property (@(negedge clk_i) data_gnt_i |-> data_req_o)
+        else begin $error("There was a grant without a request."); $stop(); end
+    // assert that the address does not contain X when request is sent
+    assert property ( @(posedge clk_i) (data_req_o) |-> (!$isunknown(address_o)) )
+      else begin $error("address contains X when request is set"); $stop(); end
+
+    // there should be no rvalid when we are in IDLE
+    // assert property (
+    //   @(posedge clk) (CS == IDLE) |-> (data_rvalid_i == 1'b0) )
+    //   else begin $error("Received rvalid while in IDLE state"); $stop(); end
+
+    // assert that errors are only sent at the same time as grant or rvalid
+    // assert property ( @(posedge clk) (data_err_i) |-> (data_gnt_i || data_rvalid_i) )
+    //   else begin $error("Error without data grant or rvalid"); $stop(); end
+
+    `endif
+    `endif
 endmodule

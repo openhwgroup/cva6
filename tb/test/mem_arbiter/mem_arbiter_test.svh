@@ -38,9 +38,9 @@ class mem_arbiter_test extends mem_arbiter_test_base;
     endtask
 
     task run_phase(uvm_phase phase);
+        uvm_objection objection;
         phase.raise_objection(this, "mem_arbiter_test");
         #200ns;
-        //fibonacci_sequence fibonacci;
         super.run_phase(phase);
         // fork three sequencers and wait for all of them to finish
         // until dropping the objection again
@@ -50,7 +50,9 @@ class mem_arbiter_test extends mem_arbiter_test_base;
             start_sequence(2);
         join
         // Testlogic goes here
-        #100ns;
+        // drain time until the objection gets dropped
+        objection = phase.get_objection();
+        objection.set_drain_time(this, 100ns );
         phase.drop_objection(this, "mem_arbiter_test");
     endtask
 

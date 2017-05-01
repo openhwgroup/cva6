@@ -28,20 +28,28 @@ module mem_arbiter_tb;
 
     mem_if master[3](clk);
     mem_if slave(clk);
+    // super hack in assigning the wire a value
+    // we need to keep all interface signals as wire as
+    // the simulator does not now if this interface will be used
+    // as an active or passive device
+    // only helpful thread so far:
+    // https://verificationacademy.com/forums/uvm/getting-multiply-driven-warnings-vsim-passive-agent
+    // logic data_gnt_driver = 'z;
+    // assign data_gnt = data_gnt_driver & data_req;
 
     mem_arbiter dut (
-        .clk_i          ( clk               ),
-        .rst_ni         ( rst_ni            ),
-        .flush_ready_o  ( flush_ready_o     ),
+        .clk_i          ( clk                             ),
+        .rst_ni         ( rst_ni                          ),
+        .flush_ready_o  ( flush_ready_o                   ),
 
-        .address_o      ( slave.address     ),
-        .data_wdata_o   ( slave.data_wdata  ),
-        .data_req_o     ( slave.data_req    ),
-        .data_we_o      ( slave.data_we     ),
-        .data_be_o      ( slave.data_be     ),
-        .data_gnt_i     ( slave.data_gnt    ),
-        .data_rvalid_i  ( slave.data_rvalid ),
-        .data_rdata_i   ( slave.data_rdata  ),
+        .address_o      ( slave.address                   ),
+        .data_wdata_o   ( slave.data_wdata                ),
+        .data_req_o     ( slave.data_req                  ),
+        .data_we_o      ( slave.data_we                   ),
+        .data_be_o      ( slave.data_be                   ),
+        .data_gnt_i     ( slave.data_req & slave.data_gnt ),
+        .data_rvalid_i  ( slave.data_rvalid               ),
+        .data_rdata_i   ( slave.data_rdata                ),
 
         .address_i      ( {master[2].address,     master[1].address,     master[0].address}      ),
         .data_wdata_i   ( {master[2].data_wdata,  master[1].data_wdata,  master[0].data_wdata}   ),

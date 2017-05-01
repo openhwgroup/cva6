@@ -27,6 +27,7 @@ class mem_if_seq_item extends uvm_sequence_item;
     rand logic [7:0]  be;
     rand int requestDelay;
     mode_t mode;
+    logic isSlaveAnswer;
 
     constraint delay_bounds {
         requestDelay inside {[0:10]};
@@ -53,6 +54,7 @@ class mem_if_seq_item extends uvm_sequence_item;
       data = rhs_.data;
       be = rhs_.be;
       mode = rhs_.mode;
+      isSlaveAnswer = rhs_.isSlaveAnswer;
     endfunction:do_copy
 
     function bit do_compare(uvm_object rhs, uvm_comparer comparer);
@@ -75,7 +77,7 @@ class mem_if_seq_item extends uvm_sequence_item;
       string s;
 
       $sformat(s, "%s\n", super.convert2string());
-      $sformat(s, "%s\n Mode: %s\n Address: %0h \nData: %0h \nBE: %0h \n", s, mode.name, address, data, be);
+      $sformat(s, "%s\nMode: %s\nAddress: %0h\nData: %0h\nBE: %0h \nisSlaveAnswer: %h", s, mode.name, address, data, be, isSlaveAnswer);
       return s;
 
     endfunction:convert2string
