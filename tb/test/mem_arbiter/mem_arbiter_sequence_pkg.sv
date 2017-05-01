@@ -22,5 +22,5 @@ import uvm_pkg::*;
 
 `include "uvm_macros.svh"
 // Include your sequences here e.g.:
-// `include "fibonacci_sequence.svh"
+`include "mem_arbiter_sequence.svh"
 endpackage

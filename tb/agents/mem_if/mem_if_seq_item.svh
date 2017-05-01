@@ -25,9 +25,12 @@ class mem_if_seq_item extends uvm_sequence_item;
     rand logic [63:0] address;
     rand logic [63:0] data;
     rand logic [7:0]  be;
-    rand int grantDelay;
+    rand int requestDelay;
     mode_t mode;
 
+    constraint delay_bounds {
+        requestDelay inside {[0:10]};
+    }
     //------------------------------------------
     // Methods
     //------------------------------------------

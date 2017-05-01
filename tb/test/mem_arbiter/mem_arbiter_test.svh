@@ -17,8 +17,7 @@
 class mem_arbiter_test extends mem_arbiter_test_base;
     // UVM Factory Registration Macro
     `uvm_component_utils(mem_arbiter_test)
-    // TODO: declare sequence here
-    // mem_arbiter_sequence mem_arbiter;
+    mem_arbiter_sequence mem_arbiter_sequences[3];
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -32,17 +31,26 @@ class mem_arbiter_test extends mem_arbiter_test_base;
         super.build_phase(phase);
     endfunction
 
+    // start the sequencer with number sequencer
+    task start_sequence(int sequencer);
+        mem_arbiter_sequences[sequencer] = new({"mem_arbiter_sequences", sequencer});
+        mem_arbiter_sequences[sequencer].start(sequencer_h[sequencer]);
+    endtask
+
     task run_phase(uvm_phase phase);
         phase.raise_objection(this, "mem_arbiter_test");
+        #200ns;
         //fibonacci_sequence fibonacci;
         super.run_phase(phase);
-
-        // mem_arbiter = new("mem_arbiter");
-        // TODO: Start sequence here
-        // mem_arbiter.start(sequencer_h);
+        // fork three sequencers and wait for all of them to finish
+        // until dropping the objection again
+        fork
+            start_sequence(0);
+            start_sequence(1);
+            start_sequence(2);
+        join
         // Testlogic goes here
         #100ns;
-
         phase.drop_objection(this, "mem_arbiter_test");
     endtask
 

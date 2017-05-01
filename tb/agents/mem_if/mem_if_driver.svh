@@ -50,12 +50,15 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
                     forever begin
                         slave_data_gnt = 1'b0;
                         fu.data_gnt_driver = slave_data_gnt;
+                        // wait until we got a valid request
                         wait (fu.data_req);
-                        // randomize grant delay
-                        repeat ($urandom_range(0,4)) @(fu.mck);
+                        // randomize grant delay - the grant may come in the same clock cycle
+                        repeat ($urandom_range(0,3)) @(fu.mck);
+                        // now set the grant to one
                         slave_data_gnt = 1'b1;
                         fu.data_gnt_driver = slave_data_gnt;
-                        wait (~fu.data_req);
+                        @(fu.mck);
+                        // do we have another request?
                     end
                 end
                 slave_serve: begin
@@ -65,20 +68,22 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
                         @(fu.mck)
                         fu.mck.data_rvalid <= 1'b0;
                         fork
+                            // replay interface
                             imem_read: begin
                                 @(fu.mck);
                                 if (slave_data_gnt) begin
-                                // $display("Time: %t, Pushing", $time);
-                                address.push_back(fu.mck.address);
-                                if (address.size() != 0) begin
-                                    // we an wait a couple of cycles here
-                                    repeat (3) @(fu.mck);
-                                    fu.mck.data_rvalid <= 1'b1;
-                                    addr = address.pop_front();
-                                    fu.mck.data_rdata  <= addr;
-                                end else
-                                    fu.mck.data_rvalid <= 1'b0;
-                                end
+                                    // $display("Time: %t, Pushing", $time);
+                                    address.push_back(fu.mck.address);
+                                    if (address.size() != 0) begin
+                                        // we an wait a couple of cycles here
+                                        // but at least one
+                                        repeat ($urandom_range(1,3)) @(fu.mck);
+                                        fu.mck.data_rvalid <= 1'b1;
+                                        addr = address.pop_front();
+                                        fu.mck.data_rdata  <= addr;
+                                    end else
+                                        fu.mck.data_rvalid <= 1'b0;
+                                    end
                             end
                             imem_write: begin
 
@@ -87,6 +92,7 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
                     end
                 end
             join_none
+
         // although no other option exist lets be specific about its purpose
         // this is a master interface
         end else if (m_cfg.mem_if_config == MASTER) begin
@@ -104,17 +110,19 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
             // we don't care about results at this point
             forever begin
                 seq_item_port.get_next_item(cmd);
-                   do begin
-                        fu.sck.data_req    <= 1'b1;
-                        fu.sck.address     <= cmd.address;
-                        fu.sck.data_be     <= cmd.be;
-                        fu.sck.data_we     <= (cmd.mode == READ) ? 1'b0 : 1'b1;
-                        fu.sck.data_wdata  <= cmd.data;
-                        @(fu.sck);
-                    end while (~fu.data_gnt);
-                end
+                    do begin
+                         fu.sck.data_req    <= 1'b1;
+                         fu.sck.address     <= cmd.address;
+                         fu.sck.data_be     <= cmd.be;
+                         fu.sck.data_we     <= (cmd.mode == READ) ? 1'b0 : 1'b1;
+                         fu.sck.data_wdata  <= cmd.data;
+                         @(fu.sck);
+                     end while (~fu.sck.data_gnt);
                 fu.sck.data_req <= 1'b0;
+                // delay the next request
+                repeat(cmd.requestDelay) @(fu.sck);
                 seq_item_port.item_done();
+            end
         end
     endtask : run_phase
 
