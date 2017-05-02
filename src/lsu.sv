@@ -65,7 +65,7 @@ module lsu #(
     logic data_misaligned;
     assign lsu_valid_o = 1'b0;
 
-    enum [3:0] { IDLE, STORE, LOAD_WAIT_TRANSLATION, LOAD_WAIT_GNT, LOAD_WAIT_RVALID } CS, NS;
+    enum logic [3:0] { IDLE, STORE, LOAD_WAIT_TRANSLATION, LOAD_WAIT_GNT, LOAD_WAIT_RVALID } CS, NS;
 
     // virtual address as calculated by the AGU in the first cycle
     logic [63:0] vaddr_i;
@@ -195,7 +195,7 @@ module lsu #(
     // LSU Control
     // ------------------
     // is the operation a load or store or nothing of relevance for the LSU
-    enum [1:0] { NONE, LD, ST } op;
+    enum logic [1:0] { NONE, LD, ST } op;
 
     always_comb begin : lsu_control
         // default assignment
