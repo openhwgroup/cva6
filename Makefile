@@ -10,7 +10,7 @@ test_top_level = core_tb
 # test targets
 tests = alu scoreboard fifo mem_arbiter store_queue
 # UVM agents
-agents = include/ariane_pkg.svh $(wildcard tb/agents/*/*.sv) tb/common/eth_tb_pkg.sv
+agents = include/ariane_pkg.svh $(wildcard tb/agents/*/*.sv)
 # path to interfaces
 interfaces = $(wildcard include/*.svh)
 # UVM environments
