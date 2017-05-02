@@ -103,7 +103,7 @@ module mem_arbiter #(
                     if (data_gnt_i) begin
                         data_gnt_o[i] = data_gnt_i;
                         // set the slave on which we are waiting
-                        data_i = i;
+                        data_i = i[NR_PORTS-1:0];
                         push_i = 1'b1;
                     end
                     break; // break here as this is a priority select
@@ -125,8 +125,12 @@ module mem_arbiter #(
         if (data_rvalid_i) begin
             // pass the read to the appropriate slave
             pop_i                 = 1'b1;
-            data_rvalid_o[data_o] = data_rvalid_i;
-            data_rdata_o[data_o]  = data_rdata_i;
+            for (int i = 0; i < NR_PORTS; i++) begin
+                if (data_o[i] == 1'b1) begin
+                    data_rvalid_o[i] = data_rvalid_i;
+                    data_rdata_o[i]  = data_rdata_i;
+                end
+            end
         end
     end
 

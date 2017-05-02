@@ -35,6 +35,7 @@ interface mem_if
 
         // Memory interface configured as master
         // we are also synthesizing this interface
+        `ifndef VERILATOR
         `ifndef SYNTHESIS
         clocking mck @(posedge clk);
             default input #1ns output #1ns;
@@ -54,17 +55,23 @@ interface mem_if
                    data_gnt, data_rvalid, data_rdata;
         endclocking
         `endif
+        `endif
+
 
         modport master (
+            `ifndef VERILATOR
             `ifndef SYNTHESIS
             clocking mck,
+            `endif
             `endif
             input   address, data_wdata, data_req, data_we, data_be,
             output  data_gnt, data_rvalid, data_rdata
         );
         modport slave  (
+            `ifndef VERILATOR
             `ifndef SYNTHESIS
             clocking sck,
+            `endif
             `endif
             output  address, data_wdata, data_req, data_we, data_be,
             input   data_gnt, data_rvalid, data_rdata

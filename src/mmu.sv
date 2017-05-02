@@ -206,8 +206,9 @@ module mmu #(
         // an error.
         if (enable_translation_i) begin
             fetch_req = 1'b0;
+            /* verilator lint_off WIDTH */
             fetch_paddr = {itlb_content.ppn, fetch_vaddr_i[11:0]};
-
+            /* verilator lint_on WIDTH */
             if (itlb_is_2M) begin
               fetch_paddr[20:12] = fetch_vaddr_i[20:12];
             end

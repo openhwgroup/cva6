@@ -17,7 +17,7 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 //
-
+/* verilator lint_off WIDTH */
 import ariane_pkg::*;
 
 module ptw #(
@@ -267,3 +267,4 @@ module ptw #(
     end
 
 endmodule
+/* verilator lint_on WIDTH */

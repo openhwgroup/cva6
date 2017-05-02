@@ -103,7 +103,6 @@ module lsu #(
     // Address Generation Unit (AGU)
     // ------------------------------
     assign vaddr_i = imm_i + operand_a_i;
-    assign data_if.address = vaddr_i;
 
     // ---------------
     // Memory Arbiter
@@ -155,7 +154,7 @@ module lsu #(
     assign address_i [1]       = paddr_o;
     // this is a read only interface
     assign data_we_i    [1]    = 1'b0;
-    assign data_wdata_i [1]    = 1'b0;
+    assign data_wdata_i [1]    = 64'b0;
     assign data_be_i    [1]    = be;
     logic [63:0] rdata;
     // data coming from arbiter interface 1
@@ -422,22 +421,12 @@ module lsu #(
     // Byte Enable - TODO: Find a more beautiful way to accomplish this functionality
     // ---------------
     always_comb begin : byte_enable
-        be = 8'b0;
         // we can generate the byte enable from the virtual address since the last
         // 12 bit are the same anyway
         // and we can always generate the byte enable from the address at hand
         case (operator)
             LD, SD: // double word
-                case (vaddr[2:0])
-                    3'b000: be = 8'b1111_1111;
-                    // 3'b001: be = 8'b1111_1110;
-                    // 3'b010: be = 8'b1111_1100;
-                    // 3'b011: be = 8'b1111_1000;
-                    // 3'b100: be = 8'b1111_0000;
-                    // 3'b101: be = 8'b1110_0000;
-                    // 3'b110: be = 8'b1100_0000;
-                    // 3'b111: be = 8'b1000_0000;
-                endcase
+                    be = 8'b1111_1111;
             LW, LWU, SW: // word
                 case (vaddr[2:0])
                     3'b000: be = 8'b0000_1111;
@@ -445,9 +434,7 @@ module lsu #(
                     3'b010: be = 8'b0011_1100;
                     3'b011: be = 8'b0111_1000;
                     3'b100: be = 8'b1111_0000;
-                    // 3'b101: be = 8'b1110_0000;
-                    // 3'b110: be = 8'b1100_0000;
-                    // 3'b111: be = 8'b1000_0000;
+                    default:;
                 endcase
             LH, LHU, SH: // half word
                 case (vaddr[2:0])
@@ -458,7 +445,7 @@ module lsu #(
                     3'b100: be = 8'b0011_0000;
                     3'b101: be = 8'b0110_0000;
                     3'b110: be = 8'b1100_0000;
-                    // 3'b111: be = 8'b1000_0000;
+                    default:;
                 endcase
             LB, LBU, SB: // byte
                 case (vaddr[2:0])
@@ -471,6 +458,8 @@ module lsu #(
                     3'b110: be = 8'b0100_0000;
                     3'b111: be = 8'b1000_0000;
                 endcase
+            default:
+                be = 8'b0;
         endcase
     end
 
