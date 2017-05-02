@@ -34,6 +34,8 @@ interface mem_if
         // https://verificationacademy.com/forums/uvm/getting-multiply-driven-warnings-vsim-passive-agent
 
         // Memory interface configured as master
+        // we are also synthesizing this interface
+        `ifndef SYNTHESIS
         clocking mck @(posedge clk);
             default input #1ns output #1ns;
             input   address, data_wdata, data_we, data_req, data_be;
@@ -51,14 +53,19 @@ interface mem_if
             input  address, data_wdata, data_req, data_we, data_be,
                    data_gnt, data_rvalid, data_rdata;
         endclocking
+        `endif
 
         modport master (
+            `ifndef SYNTHESIS
             clocking mck,
+            `endif
             input   address, data_wdata, data_req, data_we, data_be,
             output  data_gnt, data_rvalid, data_rdata
         );
         modport slave  (
+            `ifndef SYNTHESIS
             clocking sck,
+            `endif
             output  address, data_wdata, data_req, data_we, data_be,
             input   data_gnt, data_rvalid, data_rdata
         );

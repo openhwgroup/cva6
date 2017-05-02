@@ -65,7 +65,7 @@ module lsu #(
     logic data_misaligned;
     assign lsu_valid_o = 1'b0;
 
-    enum { IDLE, STORE, LOAD_WAIT_TRANSLATION, LOAD_WAIT_GNT, LOAD_WAIT_RVALID } CS, NS;
+    enum [3:0] { IDLE, STORE, LOAD_WAIT_TRANSLATION, LOAD_WAIT_GNT, LOAD_WAIT_RVALID } CS, NS;
 
     // virtual address as calculated by the AGU in the first cycle
     logic [63:0] vaddr_i;
@@ -195,7 +195,7 @@ module lsu #(
     // LSU Control
     // ------------------
     // is the operation a load or store or nothing of relevance for the LSU
-    enum { NONE, LD, ST } op;
+    enum [1:0] { NONE, LD, ST } op;
 
     always_comb begin : lsu_control
         // default assignment
@@ -370,6 +370,7 @@ module lsu #(
                     lsu_ready_o = 1'b0;
                 end
             end
+            default:;
         endcase
     end
 
@@ -415,6 +416,7 @@ module lsu #(
     // Byte Enable - TODO: Find a more beautiful way to accomplish this functionality
     // ---------------
     always_comb begin : byte_enable
+        be = 8'b0;
         // we can generate the byte enable from the virtual address since the last
         // 12 bit are the same anyway
         // and we can always generate the byte enable from the address at hand
@@ -478,7 +480,7 @@ module lsu #(
     // double words
     always_comb begin : sign_extend_double_word
         case (vaddr[2:0])
-            3'b000: rdata_d_ext = rdata[63:0];
+            default: rdata_d_ext = rdata[63:0];
             // this is for misaligned accesse only
             // 3'b001: rdata_d_ext = {data_rdata_i[7:0],  rdata_q[63:8]};
             // 3'b010: rdata_d_ext = {data_rdata_i[15:0], rdata_q[63:16]};
@@ -493,7 +495,7 @@ module lsu #(
       // sign extension for words
     always_comb begin : sign_extend_word
         case (vaddr[2:0])
-            3'b000: rdata_w_ext = (operator == LW) ? {{32{rdata[31]}}, rdata[31:0]}  : {32'h0, rdata[31:0]};
+            default: rdata_w_ext = (operator == LW) ? {{32{rdata[31]}}, rdata[31:0]}  : {32'h0, rdata[31:0]};
             3'b001: rdata_w_ext = (operator == LW) ? {{32{rdata[39]}}, rdata[39:8]}  : {32'h0, rdata[39:8]};
             3'b010: rdata_w_ext = (operator == LW) ? {{32{rdata[47]}}, rdata[47:16]} : {32'h0, rdata[47:16]};
             3'b011: rdata_w_ext = (operator == LW) ? {{32{rdata[55]}}, rdata[55:24]} : {32'h0, rdata[55:24]};
@@ -508,7 +510,7 @@ module lsu #(
     // sign extension for half words
     always_comb begin : sign_extend_half_word
         case (vaddr[2:0])
-            3'b000: rdata_h_ext = (operator == LH) ? {{48{rdata[15]}}, rdata[15:0]}  : {48'h0, rdata[15:0]};
+            default: rdata_h_ext = (operator == LH) ? {{48{rdata[15]}}, rdata[15:0]}  : {48'h0, rdata[15:0]};
             3'b001: rdata_h_ext = (operator == LH) ? {{48{rdata[23]}}, rdata[23:8]}  : {48'h0, rdata[23:8]};
             3'b010: rdata_h_ext = (operator == LH) ? {{48{rdata[31]}}, rdata[31:16]} : {48'h0, rdata[31:16]};
             3'b011: rdata_h_ext = (operator == LH) ? {{48{rdata[39]}}, rdata[39:24]} : {48'h0, rdata[39:24]};
@@ -522,7 +524,7 @@ module lsu #(
 
     always_comb begin : sign_extend_byte
         case (vaddr[2:0])
-            3'b000: rdata_b_ext = (operator == LB) ? {{56{rdata[7]}},  rdata[7:0]}   : {56'h0, rdata[7:0]};
+            default: rdata_b_ext = (operator == LB) ? {{56{rdata[7]}},  rdata[7:0]}   : {56'h0, rdata[7:0]};
             3'b001: rdata_b_ext = (operator == LB) ? {{56{rdata[15]}}, rdata[15:8]}  : {56'h0, rdata[15:8]};
             3'b010: rdata_b_ext = (operator == LB) ? {{56{rdata[23]}}, rdata[23:16]} : {56'h0, rdata[23:16]};
             3'b011: rdata_b_ext = (operator == LB) ? {{56{rdata[31]}}, rdata[31:24]} : {56'h0, rdata[31:24]};
@@ -535,10 +537,10 @@ module lsu #(
 
     always_comb begin
         case (operator)
-            LD:            lsu_result_o = rdata_d_ext;
             LW, LWU:       lsu_result_o = rdata_w_ext;
             LH, LHU:       lsu_result_o = rdata_h_ext;
             LB, LBU:       lsu_result_o = rdata_b_ext;
+            default:       lsu_result_o = rdata_d_ext;
         endcase //~case(rdata_type_q)
     end
 

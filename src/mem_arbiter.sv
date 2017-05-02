@@ -134,7 +134,7 @@ module mem_arbiter #(
     // Assertions
     // ------------
 
-    `ifndef synthesis
+    `ifndef SYNTHESIS
     `ifndef VERILATOR
     // make sure that we eventually get an rvalid after we received a grant
     assert property (@(posedge clk_i) data_gnt_i |-> ##[1:$] data_rvalid_i )

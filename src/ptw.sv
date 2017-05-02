@@ -137,6 +137,7 @@ module ptw #(
         is_instr_ptw_n    = is_instr_ptw_q;
         ptw_lvl_n         = ptw_lvl_q;
         ptw_pptr_n        = ptw_pptr_q;
+        ptw_state_n       = ptw_state_q;
         // input registers
         tlb_update_asid_n = tlb_update_asid_q;
         tlb_update_vpn_n  = tlb_update_vpn_q;

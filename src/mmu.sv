@@ -109,7 +109,7 @@ module mmu #(
         .update_vpn_i     ( update_vpn                 ),
         .update_asid_i    ( update_asid                ),
         .update_content_i ( update_content             ),
-        .update_tlb_i     ( itlb_update_i              ),
+        .update_tlb_i     ( itlb_update                ),
 
         .lu_access_i      ( itlb_lu_access             ),
         .lu_asid_i        ( lu_asid_i                  ),
@@ -140,7 +140,7 @@ module mmu #(
         .lu_content_o     ( dtlb_content                ),
         .lu_is_2M_o       ( dtlb_is_2M                  ),
         .lu_is_1G_o       ( dtlb_is_1G                  ),
-        .lu_hit_o         ( dtlb_lu_hi                  )
+        .lu_hit_o         ( dtlb_lu_hit                 )
     );
 
 
