@@ -8,7 +8,7 @@ library = work
 top_level = core_tb
 test_top_level = core_tb
 # test targets
-tests = alu scoreboard fifo mem_arbiter store_queue
+tests = alu scoreboard fifo mem_arbiter store_queue lsu
 # UVM agents
 agents = include/ariane_pkg.svh $(wildcard tb/agents/*/*.sv)
 # path to interfaces
@@ -18,12 +18,12 @@ envs = $(wildcard tb/env/*/*.sv)
 # UVM Sequences
 sequences =  $(wildcard tb/sequences/*/*.sv)
 # Test packages
-test_pkg =tb/test/mem_arbiter/mem_arbiter_sequence_pkg.sv  $(wildcard tb/test/*/*.sv)
+test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv) $(wildcard tb/test/*/*lib_pkg.sv)
 
 # this list contains the standalone components
 src = $(wildcard src/util/*.sv) $(wildcard src/*.sv)
-
-tbs =  tb/alu_tb.sv tb/mem_arbiter_tb.sv tb/core_tb.sv tb/scoreboard_tb.sv tb/store_queue_tb.sv tb/fifo_tb.sv
+# look for testbenches
+tbs =  $(wildcard tb/*_tb.sv)
 
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes

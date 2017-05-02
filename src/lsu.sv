@@ -53,8 +53,8 @@ module lsu #(
     input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
     input  logic                     flush_tlb_i,
 
-    mem_if.Slave                     instr_if,                 // Instruction memory/cache
-    mem_if.Slave                     data_if,                  // Data memory/cache
+    mem_if.slave                     instr_if,                 // Instruction memory/cache
+    mem_if.slave                     data_if,                  // Data memory/cache
 
     output exception                 lsu_exception_o   // to WB, signal exception status LD/ST exception
 

@@ -55,9 +55,9 @@ module mmu #(
         input logic                             flush_tlb_i,
         // Memory interfaces
         // Instruction memory interface
-        mem_if.Slave                            instr_if,
+        mem_if.slave                            instr_if,
         // Data memory interface
-        mem_if.Slave                            data_if
+        mem_if.slave                            data_if
 );
     // assignments necessary to use interfaces here
     // only done for the few signals of the instruction interface
