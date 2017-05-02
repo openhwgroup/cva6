@@ -15,7 +15,7 @@ import ariane_pkg::*;
 interface scoreboard_if #(parameter int NR_WB_PORTS = 1)(input clk);
     wire                                          full;
     wire                                          flush;
-    wire [31:0][$bits(fu_t)-1:0]                  rd_clobber;
+    wire [31:0]                                   rd_clobber;
     wire [4:0]                                    rs1_address;
     wire [63:0]                                   rs1;
     wire                                          rs1_valid;

@@ -130,7 +130,11 @@ module ptw #(
     //      - pa.ppn[LEVELS-1:i] = pte.ppn[LEVELS-1:i].
     always_comb begin : ptw
         // default assignments
+        // PTW memory interface
         data_req_o        = 1'b0;
+        data_be_o         = 8'hFF;
+        data_we_o         = 1'b0;
+        data_wdata_o      = 64'b0;
         ptw_error_o       = 1'b0;
         itlb_update_o     = 1'b0;
         dtlb_update_o     = 1'b0;

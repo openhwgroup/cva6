@@ -28,7 +28,7 @@ module issue_read_operands (
     input  logic [63:0]                            rs2_i,
     input  logic                                   rs2_valid_i,
     // get clobber input
-    input  logic [31:0][$bits(fu_t)-1:0]           rd_clobber_i,
+    input  fu_t [31:0]                             rd_clobber_i,
     // To FU, just single issue for now
     output fu_op                                   operator_o,
     output logic [63:0]                            operand_a_o,

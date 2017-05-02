@@ -63,7 +63,6 @@ module lsu #(
     // byte enable based on operation to perform
     // data is misaligned
     logic data_misaligned;
-    assign lsu_valid_o = 1'b0;
 
     enum logic [3:0] { IDLE, STORE, LOAD_WAIT_TRANSLATION, LOAD_WAIT_GNT, LOAD_WAIT_RVALID } CS, NS;
 
@@ -195,7 +194,7 @@ module lsu #(
     // LSU Control
     // ------------------
     // is the operation a load or store or nothing of relevance for the LSU
-    enum logic [1:0] { NONE, LD, ST } op;
+    enum logic [1:0] { NONE, LD_OP, ST_OP } op;
 
     always_comb begin : lsu_control
         // default assignment
@@ -213,7 +212,9 @@ module lsu #(
         // as a default we won't take the operands from the internal
         // registers
         get_from_register = 1'b0;
-
+        // LSU result is valid
+        // we need to give the valid result even to stores
+        lsu_valid_o       = 1'b0;
         unique case (CS)
             // we can freely accept new request
             IDLE: begin
@@ -222,7 +223,7 @@ module lsu #(
                 // 2. stores can be placed in the store buffer if it is empty
                 // in any case we need to do address translation beforehand
                 // LOAD
-                if (op == LD & lsu_valid_i) begin
+                if (op == LD_OP & lsu_valid_i) begin
                     translation_req = 1'b1;
                     // we can never handle a load in a single cycle
                     // but at least on a tlb hit we can output it to the memory
@@ -246,7 +247,7 @@ module lsu #(
                     lsu_ready_o = 1'b0;
 
                 // STORE
-                end else if (op == ST & lsu_valid_i) begin
+                end else if (op == ST_OP & lsu_valid_i) begin
                     translation_req = 1'b1;
                     // we can handle this store in this cycle if
                     // a. the storebuffer is not full
@@ -254,7 +255,8 @@ module lsu #(
                     if (st_ready & translation_valid) begin
                         NS = IDLE;
                         // and commit to the store buffer
-                        st_valid = 1'b1;
+                        st_valid    = 1'b1;
+                        lsu_valid_o = 1'b1;
                         // make a dummy writeback so we
                         // tell the scoreboard that we processed the instruction accordingly
 
@@ -278,6 +280,8 @@ module lsu #(
                     st_valid = 1'b1;
                     // go back to the IDLE state
                     NS = IDLE;
+                    // and tell the scoreboard that the result is valid
+                    lsu_valid_o = 1'b1;
                 end else begin // we can't accept a new request and stay in the store state
                     stall = 1'b1;
                 end
@@ -331,12 +335,14 @@ module lsu #(
                     lsu_trans_id_o = trans_id_q;
                     // we got a rvalid so we can accept a new store/load request
                     lsu_ready_o = 1'b1;
+                    // the result is valid if we got the rvalid
+                    lsu_valid_o = 1'b1;
                     // did we get a new request?
 
                     // essentially the same part as in IDLE but we can't accept a new store
                     // as the store could immediately be performed and we would collide on the
                     // trans id part (e.g.: a structural hazard)
-                    if (op == LD & lsu_valid_i) begin
+                    if (op == LD_OP & lsu_valid_i) begin
                         translation_req = 1'b1;
                         // we can never handle a load in a single cycle
                         // but at least on a tlb hit we can output it to the memory
@@ -357,7 +363,7 @@ module lsu #(
                             NS = LOAD_WAIT_TRANSLATION;
                         end
                     // STORE
-                    end else if (op == ST & lsu_valid_i) begin
+                    end else if (op == ST_OP & lsu_valid_i) begin
                         NS = STORE;
                     end else begin
                         NS = IDLE;
@@ -378,9 +384,9 @@ module lsu #(
     always_comb begin : which_op
         unique case (operator_i)
             // all loads go here
-            LD, LW, LWU, LH, LHU, LB, LBU:  op = LD;
+            LD, LW, LWU, LH, LHU, LB, LBU:  op = LD_OP;
             // all stores go here
-            SD, SW, SH, SB, SBU:            op = ST;
+            SD, SW, SH, SB, SBU:            op = ST_OP;
             // not relevant for the lsu
             default:                        op = NONE;
         endcase
@@ -479,31 +485,17 @@ module lsu #(
 
     // double words
     always_comb begin : sign_extend_double_word
-        case (vaddr[2:0])
-            default: rdata_d_ext = rdata[63:0];
-            // this is for misaligned accesse only
-            // 3'b001: rdata_d_ext = {data_rdata_i[7:0],  rdata_q[63:8]};
-            // 3'b010: rdata_d_ext = {data_rdata_i[15:0], rdata_q[63:16]};
-            // 3'b011: rdata_d_ext = {data_rdata_i[23:0], rdata_q[63:24]};
-            // 3'b100: rdata_d_ext = {data_rdata_i[31:0], rdata_q[63:32]};
-            // 3'b101: rdata_d_ext = {data_rdata_i[39:0], rdata_q[63:40]};
-            // 3'b110: rdata_d_ext = {data_rdata_i[47:0], rdata_q[63:48]};
-            // 3'b111: rdata_d_ext = {data_rdata_i[55:0], rdata_q[63:56]};
-        endcase
+        rdata_d_ext = rdata[63:0];
     end
 
       // sign extension for words
     always_comb begin : sign_extend_word
         case (vaddr[2:0])
             default: rdata_w_ext = (operator == LW) ? {{32{rdata[31]}}, rdata[31:0]}  : {32'h0, rdata[31:0]};
-            3'b001: rdata_w_ext = (operator == LW) ? {{32{rdata[39]}}, rdata[39:8]}  : {32'h0, rdata[39:8]};
-            3'b010: rdata_w_ext = (operator == LW) ? {{32{rdata[47]}}, rdata[47:16]} : {32'h0, rdata[47:16]};
-            3'b011: rdata_w_ext = (operator == LW) ? {{32{rdata[55]}}, rdata[55:24]} : {32'h0, rdata[55:24]};
-            3'b100: rdata_w_ext = (operator == LW) ? {{32{rdata[63]}}, rdata[63:32]} : {32'h0, rdata[63:32]};
-            // miss-aligned access
-            // 3'b101: rdata_w_ext = (data_sign_ext_q) ? {{32{data_rdata_i[7]}},  data_rdata_i[7:0],   rdata_q[63:40]} : {32'h0, data_rdata_i[7:0],  rdata_q[63:40]};
-            // 3'b110: rdata_w_ext = (data_sign_ext_q) ? {{32{data_rdata_i[15]}},  data_rdata_i[15:0], rdata_q[63:48]} : {32'h0, data_rdata_i[15:0], rdata_q[63:48]};
-            // 3'b111: rdata_w_ext = (data_sign_ext_q) ? {{32{data_rdata_i[23]}},  data_rdata_i[23:0], rdata_q[63:56]} : {32'h0, data_rdata_i[23:0], rdata_q[63:56]};
+            3'b001:  rdata_w_ext = (operator == LW) ? {{32{rdata[39]}}, rdata[39:8]}  : {32'h0, rdata[39:8]};
+            3'b010:  rdata_w_ext = (operator == LW) ? {{32{rdata[47]}}, rdata[47:16]} : {32'h0, rdata[47:16]};
+            3'b011:  rdata_w_ext = (operator == LW) ? {{32{rdata[55]}}, rdata[55:24]} : {32'h0, rdata[55:24]};
+            3'b100:  rdata_w_ext = (operator == LW) ? {{32{rdata[63]}}, rdata[63:32]} : {32'h0, rdata[63:32]};
         endcase
     end
 
@@ -511,28 +503,26 @@ module lsu #(
     always_comb begin : sign_extend_half_word
         case (vaddr[2:0])
             default: rdata_h_ext = (operator == LH) ? {{48{rdata[15]}}, rdata[15:0]}  : {48'h0, rdata[15:0]};
-            3'b001: rdata_h_ext = (operator == LH) ? {{48{rdata[23]}}, rdata[23:8]}  : {48'h0, rdata[23:8]};
-            3'b010: rdata_h_ext = (operator == LH) ? {{48{rdata[31]}}, rdata[31:16]} : {48'h0, rdata[31:16]};
-            3'b011: rdata_h_ext = (operator == LH) ? {{48{rdata[39]}}, rdata[39:24]} : {48'h0, rdata[39:24]};
-            3'b100: rdata_h_ext = (operator == LH) ? {{48{rdata[47]}}, rdata[47:32]} : {48'h0, rdata[47:32]};
-            3'b101: rdata_h_ext = (operator == LH) ? {{48{rdata[55]}}, rdata[55:40]} : {48'h0, rdata[55:40]};
-            3'b110: rdata_h_ext = (operator == LH) ? {{48{rdata[63]}}, rdata[63:48]} : {48'h0, rdata[63:48]};
-            // miss-aligned access
-            // 3'b111: rdata_h_ext = (data_sign_ext_q) ? {{48{data_rdata_i[7]}},  data_rdata_i[7:0], rdata_q[31:24]} : {48'h0, data_rdata_i[7:0], rdata_q[31:24]};
+            3'b001:  rdata_h_ext = (operator == LH) ? {{48{rdata[23]}}, rdata[23:8]}  : {48'h0, rdata[23:8]};
+            3'b010:  rdata_h_ext = (operator == LH) ? {{48{rdata[31]}}, rdata[31:16]} : {48'h0, rdata[31:16]};
+            3'b011:  rdata_h_ext = (operator == LH) ? {{48{rdata[39]}}, rdata[39:24]} : {48'h0, rdata[39:24]};
+            3'b100:  rdata_h_ext = (operator == LH) ? {{48{rdata[47]}}, rdata[47:32]} : {48'h0, rdata[47:32]};
+            3'b101:  rdata_h_ext = (operator == LH) ? {{48{rdata[55]}}, rdata[55:40]} : {48'h0, rdata[55:40]};
+            3'b110:  rdata_h_ext = (operator == LH) ? {{48{rdata[63]}}, rdata[63:48]} : {48'h0, rdata[63:48]};
         endcase
     end
 
     always_comb begin : sign_extend_byte
         case (vaddr[2:0])
             default: rdata_b_ext = (operator == LB) ? {{56{rdata[7]}},  rdata[7:0]}   : {56'h0, rdata[7:0]};
-            3'b001: rdata_b_ext = (operator == LB) ? {{56{rdata[15]}}, rdata[15:8]}  : {56'h0, rdata[15:8]};
-            3'b010: rdata_b_ext = (operator == LB) ? {{56{rdata[23]}}, rdata[23:16]} : {56'h0, rdata[23:16]};
-            3'b011: rdata_b_ext = (operator == LB) ? {{56{rdata[31]}}, rdata[31:24]} : {56'h0, rdata[31:24]};
-            3'b100: rdata_b_ext = (operator == LB) ? {{56{rdata[39]}}, rdata[39:32]} : {56'h0, rdata[39:32]};
-            3'b101: rdata_b_ext = (operator == LB) ? {{56{rdata[47]}}, rdata[47:40]} : {56'h0, rdata[47:40]};
-            3'b110: rdata_b_ext = (operator == LB) ? {{56{rdata[55]}}, rdata[55:48]} : {56'h0, rdata[55:48]};
-            3'b111: rdata_b_ext = (operator == LB) ? {{56{rdata[63]}}, rdata[63:56]} : {56'h0, rdata[63:56]};
-        endcase // case (rdata_offset_q)
+            3'b001:  rdata_b_ext = (operator == LB) ? {{56{rdata[15]}}, rdata[15:8]}  : {56'h0, rdata[15:8]};
+            3'b010:  rdata_b_ext = (operator == LB) ? {{56{rdata[23]}}, rdata[23:16]} : {56'h0, rdata[23:16]};
+            3'b011:  rdata_b_ext = (operator == LB) ? {{56{rdata[31]}}, rdata[31:24]} : {56'h0, rdata[31:24]};
+            3'b100:  rdata_b_ext = (operator == LB) ? {{56{rdata[39]}}, rdata[39:32]} : {56'h0, rdata[39:32]};
+            3'b101:  rdata_b_ext = (operator == LB) ? {{56{rdata[47]}}, rdata[47:40]} : {56'h0, rdata[47:40]};
+            3'b110:  rdata_b_ext = (operator == LB) ? {{56{rdata[55]}}, rdata[55:48]} : {56'h0, rdata[55:48]};
+            3'b111:  rdata_b_ext = (operator == LB) ? {{56{rdata[63]}}, rdata[63:56]} : {56'h0, rdata[63:56]};
+        endcase
     end
 
     always_comb begin
@@ -541,7 +531,7 @@ module lsu #(
             LH, LHU:       lsu_result_o = rdata_h_ext;
             LB, LBU:       lsu_result_o = rdata_b_ext;
             default:       lsu_result_o = rdata_d_ext;
-        endcase //~case(rdata_type_q)
+        endcase
     end
 
     // ------------------
@@ -550,7 +540,7 @@ module lsu #(
     // misaligned detector
     // page fault, privilege exception
     // we can detect a misaligned exception immediately
-    always_comb begin : exception_control
+    always_comb begin : data_misaligned_detection
         data_misaligned = 1'b0;
 
         if(lsu_valid_i) begin
@@ -571,6 +561,29 @@ module lsu #(
             end  // byte -> is always aligned
             default:;
           endcase
+        end
+    end
+
+    always_comb begin : exception_control
+        lsu_exception_o = {
+            64'b0,
+            64'b0,
+            1'b0
+        };
+        if (data_misaligned) begin
+            if (op == LD_OP) begin
+                lsu_exception_o = {
+                    64'b0,
+                    LD_ADDR_MISALIGNED,
+                    1'b1
+                };
+            end else if (op == ST_OP) begin
+                lsu_exception_o = {
+                    64'b0,
+                    ST_ADDR_MISALIGNED,
+                    1'b1
+                };
+            end
         end
     end
 
@@ -610,30 +623,36 @@ module lsu #(
         end
     end
 
-  // // ------------
-  // // Assertions
-  // // ------------
+    // ------------
+    // Assertions
+    // ------------
 
-  // // make sure there is no new request when the old one is not yet completely done
-  // // i.e. it should not be possible to get a grant without an rvalid for the
-  // // last request
-  // `ifndef VERILATOR
-  // assert property (
-  //   @(posedge clk) ((CS == WAIT_RVALID) && (data_gnt_i == 1'b1)) |-> (data_rvalid_i == 1'b1) )
-  //   else begin $error("data grant without rvalid"); $stop(); end
+    // // make sure there is no new request when the old one is not yet completely done
+    // // i.e. it should not be possible to get a grant without an rvalid for the
+    // // last request
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
+    // assert property (
+    //   @(posedge clk) ((CS == WAIT_RVALID) && (data_gnt_i == 1'b1)) |-> (data_rvalid_i == 1'b1) )
+    //   else begin $error("data grant without rvalid"); $stop(); end
 
-  // // there should be no rvalid when we are in IDLE
-  // assert property (
-  //   @(posedge clk) (CS == IDLE) |-> (data_rvalid_i == 1'b0) )
-  //   else begin $error("Received rvalid while in IDLE state"); $stop(); end
+    // // there should be no rvalid when we are in IDLE
+    // assert property (
+    //   @(posedge clk) (CS == IDLE) |-> (data_rvalid_i == 1'b0) )
+    //   else begin $error("Received rvalid while in IDLE state"); $stop(); end
 
-  // // assert that errors are only sent at the same time as grant or rvalid
-  // assert property ( @(posedge clk) (data_err_i) |-> (data_gnt_i || data_rvalid_i) )
-  //   else begin $error("Error without data grant or rvalid"); $stop(); end
+    // // assert that errors are only sent at the same time as grant or rvalid
+    // assert property ( @(posedge clk) (data_err_i) |-> (data_gnt_i || data_rvalid_i) )
+    //   else begin $error("Error without data grant or rvalid"); $stop(); end
 
-  // // assert that the address does not contain X when request is sent
-  // assert property ( @(posedge clk) (data_req_o) |-> (!$isunknown(data_addr_o)) )
-  //   else begin $error("address contains X when request is set"); $stop(); end
-  // `endif
+    // assert that errors are only sent at the same time as grant or rvalid
+    // assert that we only get a valid in if we said that we are ready
+    // assert property ( @(posedge clk_i) lsu_valid_i |->  lsu_ready_o)
+    //   else begin $error("[LSU] We got a valid but didn't say we were ready."); $stop(); end
 
+    // // assert that the address does not contain X when request is sent
+    // assert property ( @(posedge clk) (data_req_o) |-> (!$isunknown(data_addr_o)) )
+    //   else begin $error("address contains X when request is set"); $stop(); end
+    `endif
+    `endif
 endmodule

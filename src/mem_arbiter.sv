@@ -90,7 +90,7 @@ module mem_arbiter #(
             data_gnt_o[i] = 1'b0;
         // only go for a new request if we can wait for the valid e.g.: we have enough space in the buffer
         if (~full_o) begin
-            for (int i = 0; i < NR_PORTS; i++) begin
+            for (int unsigned i = 0; i < NR_PORTS; i++) begin
                 if (data_req_i[i] == 1'b1) begin
                     // pass through all signals from the correct slave port
                     data_req_o   = data_req_i[i];

@@ -35,11 +35,13 @@ interface lsu_if #(
 
     // FU interface configured as master
     clocking mck @(posedge clk);
+        default input #1ns output #1ns;
         output operator, operand_a, operand_b, imm, source_valid, commit, lsu_trans_id_id;
         input  result, lsu_trans_id_wb, result_valid, ready, exception;
     endclocking
     // FU interface configured as slave
     clocking sck @(posedge clk);
+        default input #1ns output #1ns;
         input  operator, operand_a, operand_b, imm, source_valid, commit, lsu_trans_id_id;
         output result, lsu_trans_id_wb, result_valid, ready, exception;
     endclocking

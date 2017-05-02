@@ -68,6 +68,8 @@ module lsu_tb;
 
     // hack to not get a grant without a request
     assign slave.data_gnt = slave.data_req & slave.data_gnt;
+    // hack to get a combinatorial path between ready and source valid
+    // assign lsu.source_valid = lsu.source_valid & lsu.ready;
 
     initial begin
         clk = 1'b0;

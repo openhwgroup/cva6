@@ -81,8 +81,6 @@ module mmu #(
 
     logic itlb_update;
     logic itlb_lu_access;
-    logic [0:0] lu_asid_i;
-    logic [63:0] lu_vaddr_i;
     pte_t itlb_content;
 
     logic itlb_is_2M;
@@ -112,8 +110,8 @@ module mmu #(
         .update_tlb_i     ( itlb_update                ),
 
         .lu_access_i      ( itlb_lu_access             ),
-        .lu_asid_i        ( lu_asid_i                  ),
-        .lu_vaddr_i       ( lu_vaddr_i                 ),
+        .lu_asid_i        ( asid_i                     ),
+        .lu_vaddr_i       ( fetch_vaddr_i              ),
         .lu_content_o     ( itlb_content               ),
         .lu_is_2M_o       ( itlb_is_2M                 ),
         .lu_is_1G_o       ( itlb_is_1G                 ),
@@ -135,8 +133,8 @@ module mmu #(
         .update_tlb_i     ( dtlb_update                 ),
 
         .lu_access_i      ( dtlb_lu_access              ),
-        .lu_asid_i        ( lu_asid_i                   ),
-        .lu_vaddr_i       ( lu_vaddr_i                  ),
+        .lu_asid_i        ( asid_i                      ),
+        .lu_vaddr_i       ( lsu_vaddr_i                 ),
         .lu_content_o     ( dtlb_content                ),
         .lu_is_2M_o       ( dtlb_is_2M                  ),
         .lu_is_1G_o       ( dtlb_is_1G                  ),
@@ -183,8 +181,9 @@ module mmu #(
         .*
      );
 
-
-assign iaccess_err = fetch_req_i & (
+    assign itlb_lu_access = fetch_req_i;
+    assign dtlb_lu_access = lsu_req_i;
+    assign iaccess_err = fetch_req_i & (
                      ((priv_lvl_i == PRIV_LVL_U) & ~itlb_content.u)
                    | (flag_pum_i & (priv_lvl_i == PRIV_LVL_S) & itlb_content.u)
                    );
@@ -193,53 +192,53 @@ assign iaccess_err = fetch_req_i & (
     // Instruction interface
     //-----------------------
     always_comb begin : instr_interface
-      // MMU disabled: just pass through
-      automatic logic fetch_valid   = instr_if.data_rvalid;
-      fetch_req                     = fetch_req_i;
-      fetch_paddr                   = fetch_vaddr_i;
-      fetch_gnt_o                   = instr_if.data_gnt;
-      fetch_err_o                   = 1'b0;
-      ierr_valid_n                  = 1'b0;
+        // MMU disabled: just pass through
+        automatic logic fetch_valid   = instr_if.data_rvalid;
+        fetch_req                     = fetch_req_i;
+        fetch_paddr                   = fetch_vaddr_i;
+        fetch_gnt_o                   = instr_if.data_gnt;
+        fetch_err_o                   = 1'b0;
+        ierr_valid_n                  = 1'b0;
 
-      // MMU enabled: address from TLB, request delayed until hit. Error when TLB
-      // hit and no access right or TLB hit and translated address not valid (e.g.
-      // AXI decode error), or when PTW performs walk due to itlb miss and raises
-      // an error.
-      if (enable_translation_i) begin
-        fetch_req = 1'b0;
-        fetch_paddr = {itlb_content.ppn, fetch_vaddr_i[11:0]};
+        // MMU enabled: address from TLB, request delayed until hit. Error when TLB
+        // hit and no access right or TLB hit and translated address not valid (e.g.
+        // AXI decode error), or when PTW performs walk due to itlb miss and raises
+        // an error.
+        if (enable_translation_i) begin
+            fetch_req = 1'b0;
+            fetch_paddr = {itlb_content.ppn, fetch_vaddr_i[11:0]};
 
-        if (itlb_is_2M) begin
-          fetch_paddr[20:12] = fetch_vaddr_i[20:12];
+            if (itlb_is_2M) begin
+              fetch_paddr[20:12] = fetch_vaddr_i[20:12];
+            end
+
+            if (itlb_is_1G) begin
+                fetch_paddr[29:12] = fetch_vaddr_i[29:12];
+            end
+
+            fetch_gnt_o = instr_if.data_gnt;
+
+            // TODO the following two ifs should be mutually exclusive
+            if (itlb_lu_hit) begin
+              fetch_req = fetch_req_i;
+              if (iaccess_err) begin
+                // Play through an instruction fetch with error signaled with rvalid
+                fetch_req    = 1'b0;
+                fetch_gnt_o  = 1'b1;  // immediate grant
+                //fetch_valid = 1'b0; NOTE: valid from previous fetch: pass through
+                // NOTE: back-to-back transfers: We only get a request if previous
+                //       transfer is completed, or completes in this cycle)
+                ierr_valid_n = 1'b1; // valid signaled in next cycle
+              end
+            end
+            if (ptw_active & walking_instr) begin
+              // On error pass through fetch with error signaled with valid
+              fetch_gnt_o  = ptw_error;
+              ierr_valid_n = ptw_error; // signal valid/error on next cycle
+            end
         end
-
-        if (itlb_is_1G) begin
-            fetch_paddr[29:12] = fetch_vaddr_i[29:12];
-        end
-
-        fetch_gnt_o = instr_if.data_gnt;
-
-        // TODO the following two ifs should be mutually exclusive
-        if (itlb_lu_hit) begin
-          fetch_req = fetch_req_i;
-          if (iaccess_err) begin
-            // Play through an instruction fetch with error signaled with rvalid
-            fetch_req    = 1'b0;
-            fetch_gnt_o  = 1'b1;  // immediate grant
-            //fetch_valid = 1'b0; NOTE: valid from previous fetch: pass through
-            // NOTE: back-to-back transfers: We only get a request if previous
-            //       transfer is completed, or completes in this cycle)
-            ierr_valid_n = 1'b1; // valid signaled in next cycle
-          end
-        end
-        if (ptw_active & walking_instr) begin
-          // On error pass through fetch with error signaled with valid
-          fetch_gnt_o  = ptw_error;
-          ierr_valid_n = ptw_error; // signal valid/error on next cycle
-        end
-      end
-      fetch_err_o = ierr_valid_q;
-      fetch_valid_o = fetch_valid || ierr_valid_q;
+        fetch_err_o = ierr_valid_q;
+        fetch_valid_o = fetch_valid || ierr_valid_q;
     end
 
     // registers

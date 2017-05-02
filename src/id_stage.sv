@@ -55,7 +55,7 @@ module id_stage #(
 
 
     logic full_o;
-    logic [31:0][$bits(fu_t)-1:0] rd_clobber_o;
+    fu_t [31:0] rd_clobber_o;
     logic [4:0] rs1_i;
     logic [63:0] rs1_o;
     logic rs1_valid_o;

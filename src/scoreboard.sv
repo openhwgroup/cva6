@@ -18,7 +18,7 @@ module scoreboard #(
     output logic                                      full_o,   // We can't take anymore data
     input  logic                                      flush_i,
     // list of clobbered registers to issue stage
-    output logic [31:0][$bits(fu_t)-1:0]              rd_clobber_o,
+    output fu_t [31:0]                                rd_clobber_o,
 
     // regfile like interface to operand read stage
     input  logic [4:0]                                rs1_i,
@@ -77,7 +77,7 @@ assign empty            = (pointer_overflow) ? 1'b0 : (commit_pointer_q == top_p
 // |_________________________|<- top pointer        |_________________________|
 //
 always_comb begin : clobber_output
-    rd_clobber_o = '{default: 0};
+    rd_clobber_o = '{default: NONE};
     // excluding issue, the issue pointer points to the instruction which is currently not issued
     // but might be issued as soon as the issue unit acknowledges
     if (commit_pointer_q < issue_pointer_q) begin

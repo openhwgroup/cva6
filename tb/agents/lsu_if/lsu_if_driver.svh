@@ -56,6 +56,8 @@ class lsu_if_driver extends uvm_driver #(lsu_if_seq_item);
                 m_vif.mck.operand_a       <= cmd.operandA;
                 m_vif.mck.operand_b       <= cmd.operandB;
 
+                @(m_vif.mck);
+                m_vif.mck.source_valid    <= 1'b0;
                 seq_item_port.item_done();
             end else
                 m_vif.mck.source_valid <= 1'b0;
