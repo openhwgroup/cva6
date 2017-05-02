@@ -31,7 +31,7 @@ incdir = ./includes
 test_case = alu_test
 # QuestaSim Version
 questa_version = -10.5c
-compile_flag = +cover=bcfst+/dut
+compile_flag = +cover=bcfst+/dut -lint
 
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
