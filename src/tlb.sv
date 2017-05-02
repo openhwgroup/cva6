@@ -20,8 +20,8 @@
 import ariane_pkg::*;
 
 module tlb #(
-      parameter int TLB_ENTRIES = 4,
-      parameter int ASID_WIDTH = 1
+      parameter int unsigned TLB_ENTRIES = 4,
+      parameter int unsigned ASID_WIDTH = 1
   )
   (
     input logic                     clk_i,    // Clock
@@ -76,7 +76,7 @@ module tlb #(
         lu_is_1G_o   = 1'b0;
         lu_is_2M_o   = 1'b0;
 
-        for (int i = 0; i < TLB_ENTRIES; i++) begin
+        for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
             // first level match, this may be a giga page, check the ASID flags as well
             if (tags_q[i].valid && (lu_asid_i == tags_q[i].asid)
             && vpn2 == tags_q[i].vpn2) begin
@@ -108,7 +108,7 @@ module tlb #(
         tags_n    = tags_q;
         content_n = content_q;
 
-        for (int i = 0; i < TLB_ENTRIES; i++) begin
+        for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
             if (flush_i) begin
                 // invalidate logic
                 if (lu_asid_i == 1'b0) // flush everything if ASID is 0
@@ -163,16 +163,16 @@ module tlb #(
         // lu_hit[0]: plru_tree_n[0, 1, 3] = {0, 0, 0};
         // default: begin /* No hit */ end
         // endcase
-        for (int i = 0; i < TLB_ENTRIES; i++) begin
+        for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
             // we got a hit so update the pointer as it was least recently used
             if (lu_hit[i] & lu_access_i) begin
                 // Set the nodes to the values we would expect
-                for (int lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl += 1) begin
-                  automatic int idx_base = (2**lvl)-1;
+                for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl += 1) begin
+                  automatic int unsigned idx_base = $unsigned((2**lvl)-1);
                   // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
-                  automatic int shift     = $clog2(TLB_ENTRIES) - lvl;
+                  automatic int unsigned shift     = $clog2(TLB_ENTRIES) - lvl;
                   // to circumvent the 32 bit integer arithmetic assignment
-                  automatic int new_index =  ~((i >> (shift-1)) & 32'b1);
+                  automatic int unsigned new_index =  ~((i >> (shift-1)) & 32'b1);
                   plru_tree_n[idx_base + (i >> shift)] = new_index[0];
                 end
             end
@@ -191,15 +191,15 @@ module tlb #(
         // For each entry traverse the tree. If every tree-node matches,
         // the corresponding bit of the entry's index, this is
         // the next entry to replace.
-        for (int i = 0; i < TLB_ENTRIES; i += 1) begin
+        for (int unsigned i = 0; i < TLB_ENTRIES; i += 1) begin
           automatic logic en = 1'b1;
-          for (int lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl += 1) begin
-            automatic int idx_base = (2**lvl)-1;
+          for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl += 1) begin
+            automatic int unsigned idx_base = $unsigned((2**lvl)-1);
             // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
-            automatic int shift = $clog2(TLB_ENTRIES) - lvl;
+            automatic int unsigned shift = $clog2(TLB_ENTRIES) - lvl;
 
             // en &= plru_tree_q[idx_base + (i>>shift)] == ((i >> (shift-1)) & 1'b1);
-            automatic int new_index =  (i >> (shift-1)) & 32'b1;
+            automatic int unsigned new_index =  (i >> (shift-1)) & 32'b1;
             if(new_index[0]) begin
               en &= plru_tree_q[idx_base + (i>>shift)];
             end else begin
