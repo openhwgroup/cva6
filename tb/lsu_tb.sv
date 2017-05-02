@@ -29,38 +29,41 @@ module lsu_tb;
 
     mem_if slave(clk);
     mem_if instr_if(clk);
+    lsu_if lsu(clk);
 
     lsu dut (
-        .clk_i                  ( clk         ),
-        .rst_ni                 ( rst_ni      ),
-        .flush_i                ( 1'b0        ),
-        .operator_i             (             ),
-        .operand_a_i            (             ),
-        .operand_b_i            (             ),
-        .imm_i                  (             ),
-        .lsu_ready_o            (             ),
-        .lsu_valid_i            (             ),
-        .lsu_trans_id_i         (             ),
-        .lsu_trans_id_o         (             ),
-        .lsu_result_o           (             ),
-        .lsu_valid_o            (             ),
-        .commit_i               (             ),
+        .clk_i                  ( clk                  ),
+        .rst_ni                 ( rst_ni               ),
+        .flush_i                ( 1'b0                 ),
+        .operator_i             ( lsu.operator         ),
+        .operand_a_i            ( lsu.operand_a        ),
+        .operand_b_i            ( lsu.operand_b        ),
+        .imm_i                  ( lsu.imm              ),
+        .lsu_ready_o            ( lsu.ready            ),
+        .lsu_valid_i            ( lsu.source_valid     ),
+        .lsu_trans_id_i         ( lsu.lsu_trans_id_id  ),
+        .lsu_trans_id_o         ( lsu.lsu_trans_id_wb  ),
+        .lsu_result_o           ( lsu.result           ),
+        .lsu_valid_o            ( lsu.result_valid     ),
+        .commit_i               ( lsu.commit           ),
+        // we are currently no testing the PTW and MMU
         .enable_translation_i   ( 1'b0        ),
-        .fetch_req_i            (             ),
+        .fetch_req_i            ( 1'b0        ),
         .fetch_gnt_o            (             ),
         .fetch_valid_o          (             ),
         .fetch_err_o            (             ),
-        .fetch_vaddr_i          (             ),
+        .fetch_vaddr_i          ( 64'b0       ),
         .fetch_rdata_o          (             ),
-        .priv_lvl_i             (             ),
-        .flag_pum_i             (             ),
-        .flag_mxr_i             (             ),
-        .pd_ppn_i               (             ),
-        .asid_i                 (             ),
-        .flush_tlb_i            (             ),
-        .instr_if               ( instr_if    ),
-        .data_if                ( slave       ),
-        .lsu_exception_o        (             )
+        .priv_lvl_i             ( PRIV_LVL_M  ),
+        .flag_pum_i             ( 1'b0        ),
+        .flag_mxr_i             ( 1'b0        ),
+        .pd_ppn_i               ( 38'b0       ),
+        .asid_i                 ( 1'b0        ),
+        .flush_tlb_i            ( 1'b0        ),
+
+        .instr_if               ( instr_if      ),
+        .data_if                ( slave         ),
+        .lsu_exception_o        ( lsu.exception )
     );
 
     initial begin
@@ -74,10 +77,11 @@ module lsu_tb;
             #10ns clk = ~clk;
     end
 
-    program testbench (mem_if slave);
+    program testbench (mem_if slave, lsu_if lsu);
         initial begin
             // register the memory interface
             uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if", slave);
+            uvm_config_db #(virtual lsu_if)::set(null, "uvm_test_top", "lsu_if", lsu);
 
             // print the topology
             uvm_top.enable_print_topology = 1;
@@ -86,5 +90,5 @@ module lsu_tb;
         end
     endprogram
 
-    testbench tb (slave);
+    testbench tb (slave, lsu);
 endmodule
