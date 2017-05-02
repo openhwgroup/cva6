@@ -21,11 +21,7 @@ sequences =  $(wildcard tb/sequences/*/*.sv)
 test_pkg =tb/test/mem_arbiter/mem_arbiter_sequence_pkg.sv  $(wildcard tb/test/*/*.sv)
 
 # this list contains the standalone components
-src = alu.sv if_stage.sv compressed_decoder.sv	mem_arbiter.sv	decoder.sv			  \
-	  fetch_fifo.sv commit_stage.sv prefetch_buffer.sv regfile.sv	            	  \
-	  ptw.sv tlb.sv store_queue.sv mmu.sv lsu.sv fifo.sv ex_stage.sv   		    	  \
-	  scoreboard.sv issue_read_operands.sv  id_stage.sv util/cluster_clock_gating.sv  \
-	  ariane.sv
+src = $(wildcard src/util/*.sv) $(wildcard src/*.sv)
 
 tbs =  tb/alu_tb.sv tb/mem_arbiter_tb.sv tb/core_tb.sv tb/scoreboard_tb.sv tb/store_queue_tb.sv tb/fifo_tb.sv
 
@@ -78,7 +74,7 @@ lint:
 	${list_incdir}
 
 clean:
-	rm -rf work/
+	rm -rf work/ *.ucdb
 
 .PHONY:
 	build lint
