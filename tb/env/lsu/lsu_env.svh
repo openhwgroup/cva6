@@ -23,7 +23,9 @@ class lsu_env extends uvm_env;
     // Data Members
     //------------------------------------------
     mem_if_agent m_mem_if_agent;
-    mem_if_sequencer m_mem_if_sequencer;
+    lsu_if_agent m_lsu_if_agent;
+
+    lsu_if_sequencer m_lsu_if_sequencer;
     lsu_env_config m_cfg;
     //------------------------------------------
     // Methods
@@ -39,18 +41,23 @@ class lsu_env extends uvm_env;
             `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration lsu_env_config from uvm_config_db. Have you set() it?")
         // Conditional instantiation goes here
 
-        // Create agent configuration
+        // Create mem_if agent configuration
         uvm_config_db #(mem_if_agent_config)::set(this, "m_mem_if_agent*",
                                                "mem_if_agent_config",
                                                m_cfg.m_mem_if_agent_config);
         m_mem_if_agent = mem_if_agent::type_id::create("m_mem_if_agent", this);
+        // Create lsu_if agent configuration
+        uvm_config_db #(lsu_if_agent_config)::set(this, "m_lsu_if_agent*",
+                                               "lsu_if_agent_config",
+                                               m_cfg.m_lsu_if_agent_config);
+        m_lsu_if_agent = lsu_if_agent::type_id::create("m_lsu_if_agent", this);
 
         // Get sequencer
-        m_mem_if_sequencer = mem_if_sequencer::type_id::create("m_mem_if_sequencer", this);
+        m_lsu_if_sequencer = lsu_if_sequencer::type_id::create("m_lsu_if_sequencer", this);
 
     endfunction:build_phase
 
     function void connect_phase(uvm_phase phase);
-       m_mem_if_sequencer = m_mem_if_agent.m_sequencer;
+       m_lsu_if_sequencer = m_lsu_if_agent.m_sequencer;
     endfunction: connect_phase
 endclass : lsu_env

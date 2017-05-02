@@ -66,6 +66,9 @@ module lsu_tb;
         .lsu_exception_o        ( lsu.exception )
     );
 
+    // hack to not get a grant without a request
+    assign slave.data_gnt = slave.data_req & slave.data_gnt;
+
     initial begin
         clk = 1'b0;
         rst_ni = 1'b0;

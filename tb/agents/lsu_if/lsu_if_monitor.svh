@@ -24,7 +24,7 @@ class lsu_if_monitor extends uvm_component;
     uvm_analysis_port #(lsu_if_seq_item) m_ap;
 
     // Virtual Interface
-    virtual lsu_if fu;
+    virtual lsu_if m_vif;
 
     //---------------------
     // Data Members
@@ -46,7 +46,7 @@ class lsu_if_monitor extends uvm_component;
 
     function void connect_phase(uvm_phase phase);
         // connect virtual interface
-        fu = m_cfg.fu;
+        m_vif = m_cfg.m_vif;
     endfunction
 
     task run_phase(uvm_phase phase);

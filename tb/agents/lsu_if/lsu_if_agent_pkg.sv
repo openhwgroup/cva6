@@ -16,6 +16,9 @@
 package lsu_if_agent_pkg;
     // UVM Import
     import uvm_pkg::*;
+    // import the ariane package for the various data-types
+    import ariane_pkg::*;
+
     `include "uvm_macros.svh"
 
     // Sequence item to model transactions

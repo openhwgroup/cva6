@@ -18,7 +18,7 @@ class lsu_test extends lsu_test_base;
     // UVM Factory Registration Macro
     `uvm_component_utils(lsu_test)
     // TODO: declare sequence here
-    // lsu_sequence lsu;
+    lsu_sequence lsu;
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -34,13 +34,12 @@ class lsu_test extends lsu_test_base;
 
     task run_phase(uvm_phase phase);
         phase.raise_objection(this, "lsu_test");
-        //fibonacci_sequence fibonacci;
         super.run_phase(phase);
 
-        // lsu = new("lsu");
-        // TODO: Start sequence here
-        // lsu.start(sequencer_h);
-        // Testlogic goes here
+        lsu = new("lsu");
+
+        lsu.start(sequencer_h);
+
         #100ns;
 
         phase.drop_objection(this, "lsu_test");

@@ -20,6 +20,7 @@ package lsu_lib_pkg;
     `include "uvm_macros.svh"
     // Import the memory interface agent
     import mem_if_agent_pkg::*;
+    import lsu_if_agent_pkg::*;
     // ------------------------------------------------
     // Environment which will be instantiated
     // ------------------------------------------------

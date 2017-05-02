@@ -19,7 +19,7 @@ class lsu_if_driver extends uvm_driver #(lsu_if_seq_item);
     `uvm_component_utils(lsu_if_driver)
 
     // Virtual Interface
-    virtual lsu_if fu;
+    virtual lsu_if m_vif;
 
     //---------------------
     // Data Members
@@ -28,20 +28,45 @@ class lsu_if_driver extends uvm_driver #(lsu_if_seq_item);
 
     // Standard UVM Methods:
     function new(string name = "lsu_if_driver", uvm_component parent = null);
-      super.new(name, parent);
+        super.new(name, parent);
     endfunction
 
     task run_phase(uvm_phase phase);
         lsu_if_seq_item cmd;
-        seq_item_port.get_next_item(cmd);
+        // reset values
+        m_vif.mck.lsu_trans_id_id <= 'b0;
+        m_vif.mck.source_valid    <= 1'b0;
+        m_vif.mck.imm             <= 'b0;
+        m_vif.mck.operator        <=  ADD;
+        m_vif.mck.operand_a       <= 'b0;
+        m_vif.mck.operand_b       <= 'b0;
+        forever begin
+            // if the LSU is ready apply a new stimuli
+            @(m_vif.mck);
+            if (m_vif.mck.ready) begin
+                seq_item_port.get_next_item(cmd);
+                // we potentially want to wait a couple of cycles before applying
+                // a new request
+                repeat(cmd.requestDelay) @(m_vif.mck);
+                // the data we apply is valid
+                m_vif.mck.lsu_trans_id_id <= cmd.trans_id;
+                m_vif.mck.source_valid    <= 1'b1;
+                m_vif.mck.imm             <= cmd.imm;
+                m_vif.mck.operator        <= cmd.operator;
+                m_vif.mck.operand_a       <= cmd.operandA;
+                m_vif.mck.operand_b       <= cmd.operandB;
 
-        seq_item_port.item_done();
+                seq_item_port.item_done();
+            end else
+                m_vif.mck.source_valid <= 1'b0;
+
+        end
     endtask : run_phase
 
     function void build_phase(uvm_phase phase);
-      if (!uvm_config_db #(lsu_if_agent_config)::get(this, "", "lsu_if_agent_config", m_cfg) )
-         `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration lsu_if_agent_config from uvm_config_db. Have you set() it?")
+        if (!uvm_config_db #(lsu_if_agent_config)::get(this, "", "lsu_if_agent_config", m_cfg) )
+           `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration lsu_if_agent_config from uvm_config_db. Have you set() it?")
 
-      fu = m_cfg.fu;
+        m_vif = m_cfg.m_vif;
     endfunction: build_phase
 endclass : lsu_if_driver

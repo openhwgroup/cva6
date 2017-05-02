@@ -30,14 +30,14 @@ class lsu_test_base extends uvm_test;
     lsu_env_config m_env_cfg;
     // environment
     lsu_env m_env;
-    mem_if_sequencer sequencer_h;
+    lsu_if_sequencer sequencer_h;
 
-    // reset_sequence reset;
     // ---------------------
     // Agent configuration
     // ---------------------
     // functional unit interface
-    mem_if_agent_config m_cfg;
+    mem_if_agent_config m_mem_if_cfg;
+    lsu_if_agent_config m_lsu_if_cfg;
 
     //------------------------------------------
     // Methods
@@ -54,15 +54,22 @@ class lsu_test_base extends uvm_test;
         m_env_cfg = lsu_env_config::type_id::create("m_env_cfg");
 
         // create agent configurations and assign interfaces
-        // create agent memory master configuration
-        m_cfg = mem_if_agent_config::type_id::create("m_cfg");
-        m_env_cfg.m_mem_if_agent_config = m_cfg;
+        m_mem_if_cfg = mem_if_agent_config::type_id::create("m_mem_if_cfg");
+        m_env_cfg.m_mem_if_agent_config = m_mem_if_cfg;
+        // make it a slave agent
+        m_env_cfg.m_mem_if_agent_config.mem_if_config = SLAVE;
+        // create lsu agent configuration
+        m_lsu_if_cfg = lsu_if_agent_config::type_id::create("m_lsu_if_cfg");
+        m_env_cfg.m_lsu_if_agent_config = m_lsu_if_cfg;
         // Get Virtual Interfaces
-        // get master interface DB
-        if (!uvm_config_db #(virtual mem_if)::get(this, "", "mem_if", m_cfg.fu))
+        // get memory interface DB
+        if (!uvm_config_db #(virtual mem_if)::get(this, "", "mem_if", m_mem_if_cfg.fu))
             `uvm_fatal("VIF CONFIG", "Cannot get() interface mem_if from uvm_config_db. Have you set() it?")
-        m_env_cfg.m_mem_if = m_cfg.fu;
-
+        m_env_cfg.m_mem_if = m_mem_if_cfg.fu;
+        // get lsu interface
+        if (!uvm_config_db #(virtual lsu_if)::get(this, "", "lsu_if", m_lsu_if_cfg.m_vif))
+            `uvm_fatal("VIF CONFIG", "Cannot get() interface lsu_if from uvm_config_db. Have you set() it?")
+        m_env_cfg.m_lsu_if = m_lsu_if_cfg.m_vif;
 
         // create environment
         uvm_config_db #(lsu_env_config)::set(this, "*", "lsu_env_config", m_env_cfg);
@@ -71,7 +78,7 @@ class lsu_test_base extends uvm_test;
     endfunction
 
     function void end_of_elaboration_phase(uvm_phase phase);
-        sequencer_h = m_env.m_mem_if_sequencer;
+        sequencer_h = m_env.m_lsu_if_sequencer;
     endfunction
 
     task run_phase(uvm_phase phase);

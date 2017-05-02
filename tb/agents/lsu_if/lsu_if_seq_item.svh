@@ -22,8 +22,41 @@ class lsu_if_seq_item extends uvm_sequence_item;
     //------------------------------------------
     // Data Members (Outputs rand, inputs non-rand)
     //------------------------------------------
-    // TODO: set data members
+    rand fu_op  operator;
+    rand logic [63:0] operandA;
+    rand logic [63:0] operandB;
+    rand logic [63:0] imm;
+    rand logic [TRANS_ID_BITS-1:0]  trans_id;
+    rand int requestDelay;
+    logic [63:0] result;
 
+    const fu_op allowed_ops[] = {LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU, SBU};
+    // constraint the delay we allow
+    constraint delay_bounds {
+        requestDelay inside {[0:10]};
+    }
+    // constraint the allowed operators
+    constraint allowed_operations {
+        operator inside {allowed_ops};
+    }
+    constraint base {
+        operandA[2:0] == 3'b000;
+    }
+    // aligned memory constraint
+    constraint aligned_address {
+        // constraint to signed or unsigned immediate
+        imm[62:11] == {52 {imm[63]}};
+        // constraint aligness
+        (operator == LD || operator == SD) -> {
+            imm[3:0] == 3'b000;
+        }
+        (operator == LW || operator == LWU || operator == SW) -> {
+            imm[3:0] == 3'b00;
+        }
+        (operator == LH || operator == LHU || operator == SH) -> {
+            imm[3:0] == 3'b0;
+        }
+    }
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -41,8 +74,11 @@ class lsu_if_seq_item extends uvm_sequence_item;
       end
       super.do_copy(rhs);
       // Copy over data members:
-      // e.g.:
-      // operator = rhs_.operator;
+      operator = rhs_.operator;
+      operandA = rhs_.operandA;
+      operandB = rhs_.operandA;
+      imm      = rhs_.imm;
+      result   = rhs_.result;
 
     endfunction:do_copy
 
@@ -54,7 +90,11 @@ class lsu_if_seq_item extends uvm_sequence_item;
         return 0;
       end
       // TODO
-      return super.do_compare(rhs, comparer); // && operator == rhs_.operator
+      return super.do_compare(rhs, comparer)
+                && operandA == rhs_.operandA
+                && operandB == rhs_.operandB
+                && imm == rhs_.imm
+                && result == rhs_.result;
 
     endfunction:do_compare
 
@@ -63,8 +103,7 @@ class lsu_if_seq_item extends uvm_sequence_item;
 
       $sformat(s, "%s\n", super.convert2string());
       // Convert to string function reusing s:
-      // TODO
-      // $sformat(s, "%s\n operator\n", s, operator);
+      $sformat(s, "%s\n operandA: %0h\noperandB: %0h\imm: %0h\result: %0h\n", s, operandA, operandB, imm, result);
       return s;
 
     endfunction:convert2string
@@ -82,8 +121,11 @@ class lsu_if_seq_item extends uvm_sequence_item;
       super.do_record(recorder);
 
       // Use the record macros to record the item fields:
-      // TODO
-      // `uvm_record_field("operator", operator)
+      `uvm_record_field("operandA", operandA)
+      `uvm_record_field("operandB", operandB)
+      `uvm_record_field("imm", imm)
+      `uvm_record_field("result", result)
+
     endfunction:do_record
 
 endclass : lsu_if_seq_item

@@ -21,9 +21,10 @@ class lsu_env_config extends uvm_object;
 
     // a functional unit master interface
     virtual mem_if m_mem_if;
+    virtual lsu_if m_lsu_if;
 
     // an agent config
-
     mem_if_agent_config m_mem_if_agent_config;
+    lsu_if_agent_config m_lsu_if_agent_config;
 
 endclass : lsu_env_config

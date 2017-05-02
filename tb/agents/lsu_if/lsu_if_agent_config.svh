@@ -19,7 +19,7 @@ class lsu_if_agent_config extends uvm_object;
     `uvm_object_utils(lsu_if_agent_config)
 
     // Virtual Interface
-    virtual lsu_if fu;
+    virtual lsu_if m_vif;
     //------------------------------------------
     // Data Members
     //------------------------------------------
