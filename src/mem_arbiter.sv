@@ -45,11 +45,12 @@ module mem_arbiter #(
     output logic [NR_PORTS-1:0][63:0]      data_rdata_o
 );
 
+    localparam DATA_WIDTH = $clog2(NR_PORTS);
     logic full_o;
     logic empty_o;
-    logic [NR_PORTS-1:0] data_i;
+    logic [DATA_WIDTH-1:0] data_i;
     logic push_i;
-    logic [NR_PORTS-1:0] data_o;
+    logic [DATA_WIDTH-1:0] data_o;
     logic pop_i;
     logic single_element_o;
     // essentially wait for the queue to be empty
@@ -59,20 +60,20 @@ module mem_arbiter #(
     assign flush_ready_o = (empty_o & ~(|data_gnt_i)) | (single_element_o & data_rvalid_i);
 
     fifo #(
-        .dtype            ( logic [NR_PORTS-1:0] ),
-        .DEPTH            ( 4                    )
+        .dtype            ( logic [DATA_WIDTH-1:0] ),
+        .DEPTH            ( 4                      )
     ) fifo_i (
-        .clk_i            ( clk_i                ),
-        .rst_ni           ( rst_ni               ),
-        .single_element_o ( single_element_o     ),
+        .clk_i            ( clk_i                  ),
+        .rst_ni           ( rst_ni                 ),
+        .single_element_o ( single_element_o       ),
         // the flush is accomplished implicitly by waiting for the flush ready signal
-        .flush_i          ( 1'b0                 ),
-        .full_o           ( full_o               ),
-        .empty_o          ( empty_o              ),
-        .data_i           ( data_i               ),
-        .push_i           ( push_i               ),
-        .data_o           ( data_o               ),
-        .pop_i            ( pop_i                )
+        .flush_i          ( 1'b0                   ),
+        .full_o           ( full_o                 ),
+        .empty_o          ( empty_o                ),
+        .data_i           ( data_i                 ),
+        .push_i           ( push_i                 ),
+        .data_o           ( data_o                 ),
+        .pop_i            ( pop_i                  )
     );
 
     // addressing read and full write
@@ -103,7 +104,7 @@ module mem_arbiter #(
                     if (data_gnt_i) begin
                         data_gnt_o[i] = data_gnt_i;
                         // set the slave on which we are waiting
-                        data_i = i[NR_PORTS-1:0];
+                        data_i = i[DATA_WIDTH-1:0];
                         push_i = 1'b1;
                     end
                     break; // break here as this is a priority select
