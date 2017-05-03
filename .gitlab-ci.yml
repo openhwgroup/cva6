@@ -57,6 +57,18 @@ test_store_queue:
     paths:
       - covhtmlreport
 
+test_lsu:
+  stage: test
+  script:
+    - make build
+    - make lsu
+    - vcover report lsu.ucdb
+    - vcover report -html lsu.ucdb
+  artifacts:
+    paths:
+      - covhtmlreport
+
+
 pages:
   stage: deploy
   dependencies:

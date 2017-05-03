@@ -32,6 +32,8 @@ class lsu_if_driver extends uvm_driver #(lsu_if_seq_item);
     endfunction
 
     task run_phase(uvm_phase phase);
+        semaphore lock = new(1);
+
         lsu_if_seq_item cmd;
         // reset values
         m_vif.mck.lsu_trans_id_id <= 'b0;
@@ -40,6 +42,7 @@ class lsu_if_driver extends uvm_driver #(lsu_if_seq_item);
         m_vif.mck.operator        <=  ADD;
         m_vif.mck.operand_a       <= 'b0;
         m_vif.mck.operand_b       <= 'b0;
+        m_vif.mck.commit          <= 1'b0;
         forever begin
             // if the LSU is ready apply a new stimuli
             @(m_vif.mck);
@@ -55,8 +58,21 @@ class lsu_if_driver extends uvm_driver #(lsu_if_seq_item);
                 m_vif.mck.operator        <= cmd.operator;
                 m_vif.mck.operand_a       <= cmd.operandA;
                 m_vif.mck.operand_b       <= cmd.operandB;
-
                 @(m_vif.mck);
+                // spawn a commit thread that will eventually commit this instruction
+                case (cmd.operator)
+                    SD, SW, SH, SB, SBU:
+                        fork
+                            commit_thread: begin
+                                lock.get(1);
+                                    @(m_vif.mck);
+                                    m_vif.mck.commit <= 1'b1;
+                                    @(m_vif.mck);
+                                    m_vif.mck.commit <= 1'b0;
+                                lock.put(1);
+                            end
+                        join_none
+                endcase
                 m_vif.mck.source_valid    <= 1'b0;
                 seq_item_port.item_done();
             end else
