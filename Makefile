@@ -31,7 +31,7 @@ incdir = ./includes
 test_case = alu_test
 # QuestaSim Version
 questa_version = -10.5c
-compile_flag = +cover=bcfst+/dut -lint
+compile_flag = +cover=bcfst+/dut
 
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
@@ -68,6 +68,8 @@ $(tests):
 	vopt${questa_version} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
 	# vsim${questa_version} $@_tb_optimized
 	# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
+	vsim${questa_version} +UVM_TESTNAME=$@_test -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $@_tb_optimized
+
 # User Verilator to lint the target
 lint:
 	verilator ${src} --lint-only \
