@@ -52,9 +52,22 @@ module lsu #(
     input  logic [37:0]              pd_ppn_i,                 // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
     input  logic                     flush_tlb_i,
-
-    mem_if.slave                     instr_if,                 // Instruction memory/cache
-    mem_if.slave                     data_if,                  // Data memory/cache
+     // Instruction memory/cache
+    output logic [63:0]              instr_if_address_o,
+    output logic                     instr_if_data_req_o,
+    output logic [7:0]               instr_if_data_be_o,
+    input  logic                     instr_if_data_gnt_i,
+    input  logic                     instr_if_data_rvalid_i,
+    input  logic [63:0]              instr_if_data_rdata_i,
+    // Data memory/cache
+    output logic [63:0]              data_if_address_o,
+    output logic [63:0]              data_if_data_wdata_o,
+    output logic                     data_if_data_req_o,
+    output logic                     data_if_data_we_o,
+    output logic [7:0]               data_if_data_be_o,
+    input  logic                     data_if_data_gnt_i,
+    input  logic                     data_if_data_rvalid_i,
+    input  logic [63:0]              data_if_data_rdata_i,
 
     output exception                 lsu_exception_o   // to WB, signal exception status LD/ST exception
 
@@ -119,36 +132,27 @@ module lsu #(
     // port 0 PTW, port 1 loads, port 2 stores
     mem_arbiter mem_arbiter_i (
         // to D$
-        .address_o     ( data_if.address     ),
-        .data_wdata_o  ( data_if.data_wdata  ),
-        .data_req_o    ( data_if.data_req    ),
-        .data_we_o     ( data_if.data_we     ),
-        .data_be_o     ( data_if.data_be     ),
-        .data_gnt_i    ( data_if.data_gnt    ),
-        .data_rvalid_i ( data_if.data_rvalid ),
-        .data_rdata_i  ( data_if.data_rdata  ),
+        .address_o     ( data_if_address_o     ),
+        .data_wdata_o  ( data_if_data_wdata_o  ),
+        .data_req_o    ( data_if_data_req_o    ),
+        .data_we_o     ( data_if_data_we_o     ),
+        .data_be_o     ( data_if_data_be_o     ),
+        .data_gnt_i    ( data_if_data_gnt_i    ),
+        .data_rvalid_i ( data_if_data_rvalid_i ),
+        .data_rdata_i  ( data_if_data_rdata_i  ),
 
         // from PTW, Load logic and store queue
-        .address_i     ( address_i           ),
-        .data_wdata_i  ( data_wdata_i        ),
-        .data_req_i    ( data_req_i          ),
-        .data_we_i     ( data_we_i           ),
-        .data_be_i     ( data_be_i           ),
-        .data_gnt_o    ( data_gnt_o          ),
-        .data_rvalid_o ( data_rvalid_o       ),
-        .data_rdata_o  ( data_rdata_o        ),
-        .flush_ready_o (                     ), // TODO: connect, wait for flush to be valid
+        .address_i     ( address_i             ),
+        .data_wdata_i  ( data_wdata_i          ),
+        .data_req_i    ( data_req_i            ),
+        .data_we_i     ( data_we_i             ),
+        .data_be_i     ( data_be_i             ),
+        .data_gnt_o    ( data_gnt_o            ),
+        .data_rvalid_o ( data_rvalid_o         ),
+        .data_rdata_o  ( data_rdata_o          ),
+        .flush_ready_o (                       ), // TODO: connect, wait for flush to be valid
         .*
     );
-
-    // connecting PTW to D$ IF (aka mem arbiter)
-    assign address_i   [0]    = ptw_if.address;
-    assign data_wdata_i[0]    = ptw_if.data_wdata;
-    assign data_req_i  [0]    = ptw_if.data_req;
-    assign data_we_i   [0]    = ptw_if.data_we;
-    assign data_be_i   [0]    = ptw_if.data_be;
-    assign ptw_if.data_rvalid = data_rvalid_o[0];
-    assign ptw_if.data_rdata  = data_rdata_o[0];
 
     // connect the load logic to the memory arbiter
     assign address_i [1]       = paddr_o;
@@ -171,7 +175,15 @@ module lsu #(
         .lsu_vaddr_i            ( vaddr                ),
         .lsu_valid_o            ( translation_valid    ),
         .lsu_paddr_o            ( paddr_o              ),
-        .data_if                ( ptw_if               ),
+        // connecting PTW to D$ IF (aka mem arbiter)
+        .data_if_address_o      ( address_i     [0]    ),
+        .data_if_data_wdata_o   ( data_wdata_i  [0]    ),
+        .data_if_data_req_o     ( data_req_i    [0]    ),
+        .data_if_data_we_o      ( data_we_i     [0]    ),
+        .data_if_data_be_o      ( data_be_i     [0]    ),
+        .data_if_data_gnt_i     ( data_gnt_o    [0]    ),
+        .data_if_data_rvalid_i  ( data_rvalid_o [0]    ),
+        .data_if_data_rdata_i   ( data_rdata_o  [0]    ),
         .*
     );
 
@@ -421,6 +433,7 @@ module lsu #(
     // Byte Enable - TODO: Find a more beautiful way to accomplish this functionality
     // ---------------
     always_comb begin : byte_enable
+        be = 8'b0;
         // we can generate the byte enable from the virtual address since the last
         // 12 bit are the same anyway
         // and we can always generate the byte enable from the address at hand

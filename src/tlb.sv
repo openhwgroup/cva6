@@ -151,7 +151,7 @@ module tlb #(
         //      ... ... ... ...
         // Just predefine which nodes will be set/cleared
         // E.g. for a TLB with 8 entries, the for-loop is semantically
-        // following pseudecode:
+        // equivalent to the following pseudo-code:
         // unique case (1'b1)
         // lu_hit[7]: plru_tree_n[0, 2, 6] = {1, 1, 1};
         // lu_hit[6]: plru_tree_n[0, 2, 6] = {1, 1, 0};
@@ -167,7 +167,7 @@ module tlb #(
             // we got a hit so update the pointer as it was least recently used
             if (lu_hit[i] & lu_access_i) begin
                 // Set the nodes to the values we would expect
-                for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl += 1) begin
+                for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
                   automatic int unsigned idx_base = $unsigned((2**lvl)-1);
                   // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
                   automatic int unsigned shift     = $clog2(TLB_ENTRIES) - lvl;
@@ -179,7 +179,7 @@ module tlb #(
         end
         // Decode tree to write enable signals
         // Next for-loop basically creates the following logic for e.g. an 8 entry
-        // TLB (note: pseudocode obviously):
+        // TLB (note: pseudo-code obviously):
         // replace_en[7] = &plru_tree_q[ 6, 2, 0]; //plru_tree_q[0,2,6]=={1,1,1}
         // replace_en[6] = &plru_tree_q[~6, 2, 0]; //plru_tree_q[0,2,6]=={1,1,0}
         // replace_en[5] = &plru_tree_q[ 5,~2, 0]; //plru_tree_q[0,2,5]=={1,0,1}
@@ -192,21 +192,21 @@ module tlb #(
         // the corresponding bit of the entry's index, this is
         // the next entry to replace.
         for (int unsigned i = 0; i < TLB_ENTRIES; i += 1) begin
-          automatic logic en = 1'b1;
-          for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl += 1) begin
-            automatic int unsigned idx_base = $unsigned((2**lvl)-1);
-            // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
-            automatic int unsigned shift = $clog2(TLB_ENTRIES) - lvl;
+            automatic logic en = 1'b1;
+            for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
+                automatic int unsigned idx_base = $unsigned((2**lvl)-1);
+                // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
+                automatic int unsigned shift = $clog2(TLB_ENTRIES) - lvl;
 
-            // en &= plru_tree_q[idx_base + (i>>shift)] == ((i >> (shift-1)) & 1'b1);
-            automatic int unsigned new_index =  (i >> (shift-1)) & 32'b1;
-            if(new_index[0]) begin
-              en &= plru_tree_q[idx_base + (i>>shift)];
-            end else begin
-              en &= ~plru_tree_q[idx_base + (i>>shift)];
+                // en &= plru_tree_q[idx_base + (i>>shift)] == ((i >> (shift-1)) & 1'b1);
+                automatic int unsigned new_index =  (i >> (shift-1)) & 32'b1;
+                if(new_index[0]) begin
+                  en &= plru_tree_q[idx_base + (i>>shift)];
+                end else begin
+                  en &= ~plru_tree_q[idx_base + (i>>shift)];
+                end
             end
-          end
-          replace_en[i] = en;
+            replace_en[i] = en;
         end
     end
 

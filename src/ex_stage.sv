@@ -60,8 +60,22 @@ module ex_stage #(
     input  logic [37:0]                            pd_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
     input  logic                                   flush_tlb_i,
-    mem_if.Slave                                   instr_if,
-    mem_if.Slave                                   data_if,
+
+    output logic [63:0]                            instr_if_address_o,
+    output logic                                   instr_if_data_req_o,
+    output logic [7:0]                             instr_if_data_be_o,
+    input  logic                                   instr_if_data_gnt_i,
+    input  logic                                   instr_if_data_rvalid_i,
+    input  logic [63:0]                            instr_if_data_rdata_i,
+
+    output logic [63:0]                            data_if_address_o,
+    output logic [63:0]                            data_if_data_wdata_o,
+    output logic                                   data_if_data_req_o,
+    output logic                                   data_if_data_we_o,
+    output logic [7:0]                             data_if_data_be_o,
+    input  logic                                   data_if_data_gnt_i,
+    input  logic                                   data_if_data_rvalid_i,
+    input  logic [63:0]                            data_if_data_rdata_i,
 
     // MULT
     output logic                                   mult_ready_o,      // FU is ready

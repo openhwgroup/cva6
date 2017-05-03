@@ -54,18 +54,30 @@ module mmu #(
         input logic [ASID_WIDTH-1:0]            asid_i,
         input logic                             flush_tlb_i,
         // Memory interfaces
-        // Instruction memory interface
-        mem_if.slave                            instr_if,
-        // Data memory interface
-        mem_if.slave                            data_if
+        // Instruction memory/cache
+        output logic [63:0]                     instr_if_address_o,
+        output logic                            instr_if_data_req_o,
+        output logic [7:0]                      instr_if_data_be_o,
+        input  logic                            instr_if_data_gnt_i,
+        input  logic                            instr_if_data_rvalid_i,
+        input  logic [63:0]                     instr_if_data_rdata_i,
+        // Data memory/cache
+        output logic [63:0]                     data_if_address_o,
+        output logic [63:0]                     data_if_data_wdata_o,
+        output logic                            data_if_data_req_o,
+        output logic                            data_if_data_we_o,
+        output logic [7:0]                      data_if_data_be_o,
+        input  logic                            data_if_data_gnt_i,
+        input  logic                            data_if_data_rvalid_i,
+        input  logic [63:0]                     data_if_data_rdata_i
 );
     // assignments necessary to use interfaces here
     // only done for the few signals of the instruction interface
     logic [63:0] fetch_paddr;
     logic  fetch_req;
-    assign instr_if.data_req       = fetch_req;
-    assign instr_if.address        = fetch_paddr;
-    assign fetch_rdata_o           = instr_if.data_rdata;
+    assign instr_if_data_req_o       = fetch_req;
+    assign instr_if_address_o        = fetch_paddr;
+    assign fetch_rdata_o             = instr_if_data_rdata_i;
     // instruction error
     logic ierr_valid_q, ierr_valid_n;
     logic iaccess_err;
@@ -143,40 +155,41 @@ module mmu #(
 
 
     ptw  #(
-        .ASID_WIDTH             ( ASID_WIDTH           )
+        .ASID_WIDTH             ( ASID_WIDTH            )
     ) ptw_i
     (
-        .clk_i                  ( clk_i                ),
-        .rst_ni                 ( rst_ni               ),
-        .flush_i                ( flush_tlb_i          ),
-        .ptw_active_o           ( ptw_active           ),
-        .walking_instr_o        ( walking_instr        ),
-        .ptw_error_o            ( ptw_error            ),
-        .enable_translation_i   ( enable_translation_i ),
+        .clk_i                  ( clk_i                 ),
+        .rst_ni                 ( rst_ni                ),
+        .flush_i                ( flush_tlb_i           ),
+        .ptw_active_o           ( ptw_active            ),
+        .walking_instr_o        ( walking_instr         ),
+        .ptw_error_o            ( ptw_error             ),
+        .enable_translation_i   ( enable_translation_i  ),
 
-        .address_o              ( data_if.address      ),
-        .data_wdata_o           ( data_if.data_wdata   ),
-        .data_req_o             ( data_if.data_req     ),
-        .data_we_o              ( data_if.data_we      ),
-        .data_be_o              ( data_if.data_be      ),
-        .data_gnt_i             ( data_if.data_gnt     ),
-        .data_rvalid_i          ( data_if.data_rvalid  ),
-        .data_rdata_i           ( data_if.data_rdata   ),
-        .itlb_update_o          ( itlb_update          ),
-        .dtlb_update_o          ( dtlb_update          ),
-        .update_content_o       ( update_content       ),
-        .update_is_2M_o         ( update_is_2M         ),
-        .update_is_1G_o         ( update_is_1G         ),
-        .update_vpn_o           ( update_vpn           ),
-        .update_asid_o          ( update_asid          ),
+        .address_o              ( data_if_address_o     ),
+        .data_wdata_o           ( data_if_data_wdata_o  ),
+        .data_req_o             ( data_if_data_req_o    ),
+        .data_we_o              ( data_if_data_we_o     ),
+        .data_be_o              ( data_if_data_be_o     ),
+        .data_gnt_i             ( data_if_data_gnt_i    ),
+        .data_rvalid_i          ( data_if_data_rvalid_i ),
+        .data_rdata_i           ( data_if_data_rdata_i  ),
 
-        .itlb_access_i          ( itlb_lu_access       ),
-        .itlb_miss_i            ( ~itlb_lu_hit         ),
-        .itlb_vaddr_i           ( fetch_vaddr_i        ),
+        .itlb_update_o          ( itlb_update           ),
+        .dtlb_update_o          ( dtlb_update           ),
+        .update_content_o       ( update_content        ),
+        .update_is_2M_o         ( update_is_2M          ),
+        .update_is_1G_o         ( update_is_1G          ),
+        .update_vpn_o           ( update_vpn            ),
+        .update_asid_o          ( update_asid           ),
 
-        .dtlb_access_i          ( dtlb_lu_access       ),
-        .dtlb_miss_i            ( ~dtlb_lu_hit         ),
-        .dtlb_vaddr_i           ( lsu_vaddr_i          ),
+        .itlb_access_i          ( itlb_lu_access        ),
+        .itlb_miss_i            ( ~itlb_lu_hit          ),
+        .itlb_vaddr_i           ( fetch_vaddr_i         ),
+
+        .dtlb_access_i          ( dtlb_lu_access        ),
+        .dtlb_miss_i            ( ~dtlb_lu_hit          ),
+        .dtlb_vaddr_i           ( lsu_vaddr_i           ),
 
         .*
      );
@@ -193,10 +206,10 @@ module mmu #(
     //-----------------------
     always_comb begin : instr_interface
         // MMU disabled: just pass through
-        automatic logic fetch_valid   = instr_if.data_rvalid;
+        automatic logic fetch_valid   = instr_if_data_rvalid_i;
         fetch_req                     = fetch_req_i;
         fetch_paddr                   = fetch_vaddr_i;
-        fetch_gnt_o                   = instr_if.data_gnt;
+        fetch_gnt_o                   = instr_if_data_gnt_i;
         fetch_err_o                   = 1'b0;
         ierr_valid_n                  = 1'b0;
 
@@ -217,7 +230,7 @@ module mmu #(
                 fetch_paddr[29:12] = fetch_vaddr_i[29:12];
             end
 
-            fetch_gnt_o = instr_if.data_gnt;
+            fetch_gnt_o = instr_if_data_gnt_i;
 
             // TODO the following two ifs should be mutually exclusive
             if (itlb_lu_hit) begin
@@ -260,7 +273,7 @@ module mmu #(
         // lsu_vaddr_i
         // lsu_valid_o
         // lsu_paddr_o
-        lsu_paddr_o = lsu_vaddr_i;
+        lsu_paddr_o = (enable_translation_i) ? dtlb_content : lsu_vaddr_i;
         lsu_valid_o = lsu_req_i;
     end
 

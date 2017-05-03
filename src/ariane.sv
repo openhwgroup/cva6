@@ -28,9 +28,21 @@ module ariane
         input  logic [ 3:0]                    core_id_i,
         input  logic [ 5:0]                    cluster_id_i,
         // Instruction memory interface
-        mem_if.Slave                           instr_if,
+        output logic [63:0]                    instr_if_address_o,
+        output logic                           instr_if_data_req_o,
+        output logic [7:0]                     instr_if_data_be_o,
+        input  logic                           instr_if_data_gnt_i,
+        input  logic                           instr_if_data_rvalid_i,
+        input  logic [63:0]                    instr_if_data_rdata_i,
         // Data memory interface
-        mem_if.Slave                           data_if,
+        output logic [63:0]                    data_if_address_o,
+        output logic [63:0]                    data_if_data_wdata_o,
+        output logic                           data_if_data_req_o,
+        output logic                           data_if_data_we_o,
+        output logic [7:0]                     data_if_data_be_o,
+        input  logic                           data_if_data_gnt_i,
+        input  logic                           data_if_data_rvalid_i,
+        input  logic [63:0]                    data_if_data_rdata_i,
         // Interrupt inputs
         input  logic                           irq_i,                 // level sensitive IR lines
         input  logic [4:0]                     irq_id_i,
@@ -200,11 +212,10 @@ module ariane
         .pd_ppn_i             ( pd_ppn_i             ),  // from CSR
         .asid_i               ( asid_i               ),  // from CSR
         .flush_tlb_i          ( flush_tlb_i          ),
-        .instr_if             ( instr_if             ),
-        .data_if              ( data_if              ),
 
         .mult_ready_o        ( mult_ready_o          ),
-        .mult_valid_i        ( mult_valid_i          )
+        .mult_valid_i        ( mult_valid_i          ),
+        .*
     );
 
     commit_stage commit_stage_i (

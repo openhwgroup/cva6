@@ -38,24 +38,39 @@ module core_tb;
     assign irq_sec_i      = 1'b0;
 
     ariane dut (
-        .clk_i               ( clk_i              ),
-        .rst_n               ( rst_ni             ),
-        .clock_en_i          ( clock_en_i         ),
-        .test_en_i           ( test_en_i          ),
-        .fetch_enable_i      ( fetch_enable_i     ),
-        .core_busy_o         ( core_busy_o        ),
-        .ext_perf_counters_i (  ),
-        .boot_addr_i         ( boot_addr_i        ),
-        .core_id_i           ( core_id_i          ),
-        .cluster_id_i        ( cluster_id_i       ),
-        .instr_if            ( instr_if           ),
-        .data_if             ( data_if            ),
-        .irq_i               ( irq_i              ),
-        .irq_id_i            ( irq_id_i           ),
-        .irq_ack_o           ( irq_ack_o          ),
-        .irq_sec_i           ( irq_sec_i          ),
-        .sec_lvl_o           ( sec_lvl_o          ),
-        .debug_if            ( debug_if           )
+        .clk_i                  ( clk_i               ),
+        .rst_n                  ( rst_ni              ),
+        .clock_en_i             ( clock_en_i          ),
+        .test_en_i              ( test_en_i           ),
+        .fetch_enable_i         ( fetch_enable_i      ),
+        .core_busy_o            ( core_busy_o         ),
+        .ext_perf_counters_i    (                     ),
+        .boot_addr_i            ( boot_addr_i         ),
+        .core_id_i              ( core_id_i           ),
+        .cluster_id_i           ( cluster_id_i        ),
+
+        .instr_if_address_o     ( instr_if.address     ),
+        .instr_if_data_req_o    ( instr_if.data_req    ),
+        .instr_if_data_be_o     ( instr_if.data_be     ),
+        .instr_if_data_gnt_i    ( instr_if.data_gnt    ),
+        .instr_if_data_rvalid_i ( instr_if.data_rvalid ),
+        .instr_if_data_rdata_i  ( instr_if.data_rdata  ),
+
+        .data_if_address_o      ( data_if.address     ),
+        .data_if_data_wdata_o   ( data_if.data_wdata  ),
+        .data_if_data_req_o     ( data_if.data_req    ),
+        .data_if_data_we_o      ( data_if.data_we     ),
+        .data_if_data_be_o      ( data_if.data_be     ),
+        .data_if_data_gnt_i     ( data_if.data_gnt    ),
+        .data_if_data_rvalid_i  ( data_if.data_rvalid ),
+        .data_if_data_rdata_i   ( data_if.data_rdata  ),
+
+        .irq_i                  ( irq_i               ),
+        .irq_id_i               ( irq_id_i            ),
+        .irq_ack_o              ( irq_ack_o           ),
+        .irq_sec_i              ( irq_sec_i           ),
+        .sec_lvl_o              ( sec_lvl_o           ),
+        .debug_if               ( debug_if            )
     );
 
     // clock process
