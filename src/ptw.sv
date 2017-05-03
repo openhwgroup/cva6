@@ -70,7 +70,7 @@ module ptw #(
     pte_t ptw_pte_i;
     assign ptw_pte_i = pte_t'(data_rdata_i);
 
-    enum logic[3:0] {
+    enum logic[1:0] {
       PTW_READY,
       PTW_WAIT_GRANT,
       PTW_PTE_LOOKUP,
@@ -152,7 +152,7 @@ module ptw #(
                 // if we got an ITLB miss
                 if (enable_translation_i & itlb_access_i & itlb_miss_i & ~dtlb_access_i) begin
                     ptw_pptr_n          = {pd_ppn_i, itlb_vaddr_i[38:30]};
-                    is_instr_ptw_n      = 1'b0;
+                    is_instr_ptw_n      = 1'b1;
                     tlb_update_asid_n   = asid_i;
                     tlb_update_vpn_n    = itlb_vaddr_i[38:12];
                     ptw_state_n         = PTW_WAIT_GRANT;
@@ -241,8 +241,6 @@ module ptw #(
                 ptw_error_o = 1'b1;
             end
 
-            default:
-                ptw_state_n = PTW_READY;
 
         endcase // ptw_state_q
     end

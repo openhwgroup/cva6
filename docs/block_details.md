@@ -311,3 +311,40 @@ The memory arbiter's purpose is to arbitrate the memory accesses coming/going fr
 The store queue keeps track of all stores. It has two entries: One is for already committed instructions and one is for outstanding instructions. On a flush only the instruction which has the already committed instruction saved persists its data. But on a flush it can't request further to the memory since this could potentially stall us indefinitely because of the property of the memory arbiter (see above).
 
 The store queue works with physical addresses only. At the time when they are committed the translation is correct. Furthermore the store queue directly outputs the address and value of the instruction it is going to commit since any subsequent store also needs to check for the address.
+
+# Cache
+
+## Interface
+
+```verilog
+    input  logic                                          clk,
+    input  logic                                          rst_n,
+
+    // Data Port (TLB or CORE )
+    input  logic [DATA_WIDTH-1:0]                         data_wdata_i,
+    input  logic                                          data_req_i,
+    input  logic [BE_WIDTH-1:0]                           data_be_i,
+    input  logic                                          data_we_i,
+    input  logic [ADDR_WIDTH-1:0]                         data_add_i,
+    input  logic [ID_WIDTH-1:0]                           data_ID_i,
+    output logic                                          data_gnt_o,
+
+    output logic [DATA_WIDTH-1:0]                         data_r_rdata_o,
+    output logic                                          data_r_valid_o,
+    input  logic [ID_WIDTH-1:0]                           data_r_ID_o,
+    input  logic                                          data_r_gnt_i,
+
+    //Service Port (32bit)
+    input  logic                                          conf_req_i,
+    input  logic [31:0]                                   conf_addr_i,
+    input  logic                                          conf_wen_i,
+    input  logic [31:0]                                   conf_wdata_i,
+    input  logic [3:0]                                    conf_be_i,
+    input  logic [PE_ID_WIDTH-1:0]                        conf_id_i,
+    output logic                                          conf_gnt_o,
+
+    output logic                                          conf_r_valid_o,
+    output logic                                          conf_r_opc_o,
+    output logic [PE_ID_WIDTH-1:0]                        conf_r_id_o,
+    output logic [31:0]                                   conf_r_rdata_o,
+```

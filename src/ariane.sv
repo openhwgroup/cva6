@@ -33,7 +33,7 @@ module ariane
         output logic [7:0]                     instr_if_data_be_o,
         input  logic                           instr_if_data_gnt_i,
         input  logic                           instr_if_data_rvalid_i,
-        input  logic [63:0]                    instr_if_data_rdata_i,
+        input  logic [31:0]                    instr_if_data_rdata_i,
         // Data memory interface
         output logic [63:0]                    data_if_address_o,
         output logic [63:0]                    data_if_data_wdata_o,

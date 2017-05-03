@@ -58,7 +58,7 @@ module lsu #(
     output logic [7:0]               instr_if_data_be_o,
     input  logic                     instr_if_data_gnt_i,
     input  logic                     instr_if_data_rvalid_i,
-    input  logic [63:0]              instr_if_data_rdata_i,
+    input  logic [31:0]              instr_if_data_rdata_i,
     // Data memory/cache
     output logic [63:0]              data_if_address_o,
     output logic [63:0]              data_if_data_wdata_o,
@@ -77,7 +77,7 @@ module lsu #(
     // data is misaligned
     logic data_misaligned;
 
-    enum logic [3:0] { IDLE, STORE, LOAD_WAIT_TRANSLATION, LOAD_WAIT_GNT, LOAD_WAIT_RVALID } CS, NS;
+    enum logic [2:0] { IDLE, STORE, LOAD_WAIT_TRANSLATION, LOAD_WAIT_GNT, LOAD_WAIT_RVALID } CS, NS;
 
     // virtual address as calculated by the AGU in the first cycle
     logic [63:0] vaddr_i;
@@ -167,8 +167,8 @@ module lsu #(
     // MMU e.g.: TLBs/PTW
     // -------------------
     mmu #(
-        .INSTR_TLB_ENTRIES      ( 16                   ),
-        .DATA_TLB_ENTRIES       ( 16                   ),
+        .INSTR_TLB_ENTRIES      ( 4                   ),
+        .DATA_TLB_ENTRIES       ( 4                   ),
         .ASID_WIDTH             ( ASID_WIDTH           )
     ) i_mmu (
         .lsu_req_i              ( translation_req      ),

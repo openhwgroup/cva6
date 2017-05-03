@@ -47,7 +47,7 @@ module lsu_tb;
         .lsu_valid_o            ( lsu.result_valid     ),
         .commit_i               ( lsu.commit           ),
         // we are currently no testing the PTW and MMU
-        .enable_translation_i   ( 1'b1        ),
+        .enable_translation_i   ( 1'b0        ),
         .fetch_req_i            ( 1'b0        ),
         .fetch_gnt_o            (             ),
         .fetch_valid_o          (             ),
@@ -64,7 +64,7 @@ module lsu_tb;
         .instr_if_address_o     ( instr_if.address     ),
         .instr_if_data_req_o    ( instr_if.data_req    ),
         .instr_if_data_be_o     ( instr_if.data_be     ),
-        .instr_if_data_gnt_i    ( instr_if.data_gnt & instr_if.data_req    ),
+        .instr_if_data_gnt_i    ( instr_if.data_gnt    ),
         .instr_if_data_rvalid_i ( instr_if.data_rvalid ),
         .instr_if_data_rdata_i  ( instr_if.data_rdata  ),
 
@@ -73,17 +73,13 @@ module lsu_tb;
         .data_if_data_req_o     ( slave.data_req       ),
         .data_if_data_we_o      ( slave.data_we        ),
         .data_if_data_be_o      ( slave.data_be        ),
-        .data_if_data_gnt_i     ( slave.data_gnt       ),
+        // hack to not get a grant without a request
+        .data_if_data_gnt_i     ( slave.data_req & slave.data_gnt       ),
         .data_if_data_rvalid_i  ( slave.data_rvalid    ),
         .data_if_data_rdata_i   ( slave.data_rdata     ),
 
         .lsu_exception_o        ( lsu.exception )
     );
-
-    // hack to not get a grant without a request
-    assign slave.data_gnt = slave.data_req & slave.data_gnt;
-    // hack to get a combinatorial path between ready and source valid
-    // assign lsu.source_valid = lsu.source_valid & lsu.ready;
 
     initial begin
         clk = 1'b0;
