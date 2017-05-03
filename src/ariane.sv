@@ -51,7 +51,16 @@ module ariane
         output logic                           sec_lvl_o,
 
         // Debug Interface
-        debug_if.Slave                         debug_if
+        input  logic                           debug_req_i,
+        output logic                           debug_gnt_o,
+        output logic                           debug_rvalid_o,
+        input  logic [14:0]                    debug_addr_i,
+        input  logic                           debug_we_i,
+        input  logic [63:0]                    debug_wdata_i,
+        output logic [63:0]                    debug_rdata_o,
+        output logic                           debug_halted_o,
+        input  logic                           debug_halt_i,
+        input  logic                           debug_resume_i
     );
 
 

@@ -70,7 +70,17 @@ module core_tb;
         .irq_ack_o              ( irq_ack_o           ),
         .irq_sec_i              ( irq_sec_i           ),
         .sec_lvl_o              ( sec_lvl_o           ),
-        .debug_if               ( debug_if            )
+
+        .debug_req_i            (                     ),
+        .debug_gnt_o            (                     ),
+        .debug_rvalid_o         (                     ),
+        .debug_addr_i           (                     ),
+        .debug_we_i             (                     ),
+        .debug_wdata_i          (                     ),
+        .debug_rdata_o          (                     ),
+        .debug_halted_o         (                     ),
+        .debug_halt_i           (                     ),
+        .debug_resume_i         (                     )
     );
 
     // clock process
