@@ -125,12 +125,8 @@ module mem_arbiter #(
         if (data_rvalid_i) begin
             // pass the read to the appropriate slave
             pop_i                 = 1'b1;
-            for (int i = 0; i < NR_PORTS; i++) begin
-                if (data_o[i] == 1'b1) begin
-                    data_rvalid_o[i] = data_rvalid_i;
-                    data_rdata_o[i]  = data_rdata_i;
-                end
-            end
+            data_rvalid_o[data_o] = data_rvalid_i;
+            data_rdata_o[data_o]  = data_rdata_i;
         end
     end
 
