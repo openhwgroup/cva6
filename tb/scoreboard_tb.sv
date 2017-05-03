@@ -28,7 +28,7 @@ module scoreboard_tb;
         .rst_ni               ( rst_ni                            ),
         .full_o               ( scoreboard_if.full                ),
         .flush_i              ( scoreboard_if.flush               ),
-        .rd_clobber_o         ( fu_t'(scoreboard_if.rd_clobber)   ),
+        .rd_clobber_o         ( scoreboard_if.rd_clobber          ),
         .rs1_i                ( scoreboard_if.rs1_address         ),
         .rs1_o                ( scoreboard_if.rs1                 ),
         .rs1_valid_o          ( scoreboard_if.rs1_valid           ),
