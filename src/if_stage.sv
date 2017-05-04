@@ -197,8 +197,8 @@ module if_stage (
                   illegal_c_insn_id_o <= illegal_c_insn;
                   is_compressed_id_o  <= instr_compressed_int;
                   pc_id_o             <= pc_if_o;
-                  ex_o.epc            <= pc_if_o;
                   ex_o.cause          <= 64'b0; // TODO: Output exception
+                  ex_o.tval           <= 64'b0; // TODO: Output exception
                   ex_o.valid          <= 1'b0;  // TODO: Output exception
               end else if (clear_instr_valid_i) begin
                 instr_valid_id_o    <= 1'b0;

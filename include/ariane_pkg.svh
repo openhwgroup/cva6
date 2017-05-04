@@ -31,17 +31,18 @@ package ariane_pkg;
     // Only use struct when signals have same direction
     // exception
     typedef struct packed {
-         logic [63:0] epc;
-         logic [63:0] cause;
+         logic [63:0] cause; // cause of exception
+         logic [63:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
+                             // address of ld/st fault
          logic        valid;
     } exception;
 
     // miss-predict
     typedef struct packed {
-         logic [63:0] pc;
-         logic [63:0] target_address;
-         logic        is_taken;
-         logic        valid; // is miss-predict
+        logic [63:0] pc;
+        logic [63:0] target_address;
+        logic        is_taken;
+        logic        valid; // is miss-predict
     } misspredict;
 
     typedef enum logic[3:0] {
@@ -49,10 +50,10 @@ package ariane_pkg;
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
+
     // ---------------
     // EX Stage
     // ---------------
-
     typedef enum logic [7:0] { // basic ALU op
                                ADD, SUB, ADDW, SUBW,
                                // logic operations
@@ -73,6 +74,7 @@ package ariane_pkg;
     // ID/EX/WB Stage
     // ---------------
     typedef struct packed {
+        logic [63:0]              pc;            // PC of instruction
         logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
                                                  // with the transaction id in any case make the width more generic
         fu_t                      fu;            // functional unit to use

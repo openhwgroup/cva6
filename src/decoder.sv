@@ -46,6 +46,7 @@ module decoder (
 
         imm_select = NOIMM;
         illegal_instr_o = 1'b0;
+        instruction_o.pc = pc_i;
         instruction_o.fu = NONE;
         instruction_o.op = ADD;
         instruction_o.rs1 = 5'b0;

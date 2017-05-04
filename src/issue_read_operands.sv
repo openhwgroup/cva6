@@ -178,7 +178,7 @@ module issue_read_operands (
 
         // use the PC as operand a
         if (issue_instr_i.use_pc) begin
-            operand_a_n = issue_instr_i.ex.epc;
+            operand_a_n = issue_instr_i.pc;
         end
 
         // or is it an immediate (including PC), this is not the case for a store

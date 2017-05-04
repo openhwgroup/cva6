@@ -8,7 +8,7 @@ class Scoreboard;
     static function scoreboard_entry randomize_scoreboard();
             exception exception = { 63'h0, 63'h0, 1'b0};
             scoreboard_entry entry = {
-                i, ALU, ADD, 5'h5, 5'h5, 5'h5, 64'h0, 1'b0, 1'b0, exception, 1'b0
+                63'b0, i, ALU, ADD, 5'h5, 5'h5, 5'h5, 64'h0, 1'b0, 1'b0, exception, 1'b0
             };
             return entry;
     endfunction : randomize_scoreboard
