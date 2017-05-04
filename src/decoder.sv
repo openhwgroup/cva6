@@ -46,7 +46,6 @@ module decoder (
 
         imm_select = NOIMM;
         illegal_instr_o = 1'b0;
-        instruction_o.valid = 1'b0;
         instruction_o.fu = NONE;
         instruction_o.op = ADD;
         instruction_o.rs1 = 5'b0;
@@ -314,10 +313,14 @@ module decoder (
     // Exception handling
     // --------------------------------
     always_comb begin : exception_handling
-        instruction_o.ex = ex_i;
+        instruction_o.ex    = ex_i;
+        instruction_o.valid = 1'b0;
         // look if we didn't already get an exception in any previous
         // stage - we should not overwrite it as we retain order regarding the exception
         if (~ex_i.valid && illegal_instr_o) begin
+            // instructions which will throw an exception are marked as valid
+            // e.g.: they can be committed anytime and do not need to wait for any functional unit
+            instruction_o.valid    = 1'b1;
             instruction_o.ex.valid = 1'b1;
             // we decoded an illegal exception here
             instruction_o.ex.cause = ILLEGAL_INSTR;
