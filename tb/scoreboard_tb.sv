@@ -44,6 +44,7 @@ module scoreboard_tb;
         .issue_ack_i          ( scoreboard_if.issue_ack           ),
         .trans_id_i           ( scoreboard_if.trans_id            ),
         .wdata_i              ( scoreboard_if.wdata               ),
+        .ex_i                 ( scoreboard_if.ex                  ),
         .wb_valid_i           ( scoreboard_if.wb_valid            )
     );
 
@@ -127,6 +128,8 @@ module scoreboard_tb;
                             scoreboard_if.mck.trans_id <= trans_id;
                             scoreboard_if.mck.wdata    <= random_data;
                             scoreboard_if.mck.wb_valid <= 1'b1;
+                            // so far no exception testing
+                            scoreboard_if.mck.ex       <= '{default: 0};
                             // $display("Write Back: %0h", random_data);
                             sb.write_back(trans_id, random_data);
                             @(scoreboard_if.mck);

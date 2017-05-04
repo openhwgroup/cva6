@@ -31,17 +31,18 @@ interface scoreboard_if #(parameter int NR_WB_PORTS = 1)(input clk);
     wire                                          issue_ack;
     wire [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0]     trans_id;
     wire [NR_WB_PORTS-1:0][63:0]                  wdata;
+    wire [NR_WB_PORTS-1:0][$bits(exception)-1:0]  ex;
     wire [NR_WB_PORTS-1:0]                        wb_valid;
 
     // Scoreboard interface configured as master
     clocking mck @(posedge clk);
         default input #1 output #5; // save timing
-        output   flush, rs1_address, rs2_address, commit_ack, decoded_instr, decoded_instr_valid, issue_ack, trans_id, wdata, wb_valid;
+        output   flush, rs1_address, rs2_address, commit_ack, decoded_instr, decoded_instr_valid, issue_ack, trans_id, wdata, ex, wb_valid;
         input    full, rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commit_instr, issue_instr, issue_instr_valid;
     endclocking
     // Scoreboard interface configured in passive mode (-> monitor)
     clocking pck @(posedge clk);
-        input flush, rs1_address, rs2_address, commit_ack, decoded_instr, decoded_instr_valid, issue_ack, trans_id, wdata, wb_valid,
+        input flush, rs1_address, rs2_address, commit_ack, decoded_instr, decoded_instr_valid, issue_ack, trans_id, wdata, ex, wb_valid,
               full, rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commit_instr, issue_instr, issue_instr_valid;
     endclocking
 
