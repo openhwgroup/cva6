@@ -16,6 +16,15 @@ package ariane_pkg;
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
     localparam NR_WB_PORTS   = 2;
+    localparam ISA_CODE      = (1 <<  2)  // C - Compressed extension
+                             | (1 <<  8)  // I - RV32I/64I/128I base ISA
+                             | (1 << 12)  // M - Integer Multiply/Divide extension
+                             | (0 << 13)  // N - User level interrupts supported
+                             | (1 << 18)  // S - Supervisor mode implemented
+                             | (1 << 20)  // U - User mode implemented
+                             | (0 << 23)  // X - Non-standard extensions present
+                             | (2 << 62); // RV64
+
     // ---------------
     // Fetch Stage
     // ---------------
@@ -44,33 +53,40 @@ package ariane_pkg;
     // EX Stage
     // ---------------
 
-    typedef enum logic [7:0]      { ADD, SUB, ADDW, SUBW,                             // basic ALU op
-                                    XORL, ORL, ANDL,                                  // logic operations
-                                    SRA, SRL, SLL, SRLW, SLLW, SRAW,                  // shifts
-                                    LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,   // comparisons
-                                    SLTS, SLTU, SLETS, SLETU,                         // set lower than operations
-                                    MRET, SRET, URET, ECALL, WRITE, READ, SET, CLEAR, // CSR functions
-                                    LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU, SBU          // LSU functions
-                                  } fu_op;
+    typedef enum logic [7:0] { // basic ALU op
+                               ADD, SUB, ADDW, SUBW,
+                               // logic operations
+                               XORL, ORL, ANDL,
+                               // shifts
+                               SRA, SRL, SLL, SRLW, SLLW, SRAW,
+                               // comparisons
+                               LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,
+                               // set lower than operations
+                               SLTS, SLTU, SLETS, SLETU,
+                               // CSR functions
+                               MRET, SRET, URET, ECALL, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
+                               // LSU functions
+                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU, SBU
+                             } fu_op;
 
     // ---------------
     // ID/EX/WB Stage
     // ---------------
     typedef struct packed {
-        logic [TRANS_ID_BITS-1:0]     trans_id;      // this can potentially be simplified, we could index the scoreboard entry
-                                                     // with the transaction id in any case make the width more generic
-        fu_t                          fu;            // functional unit to use
-        fu_op                         op;            // operation to perform in each functional unit
-        logic [4:0]                   rs1;           // register source address 1
-        logic [4:0]                   rs2;           // register source address 2
-        logic [4:0]                   rd;            // register destination address
-        logic [63:0]                  result;        // for unfinished instructions this field also holds the immediate
-        logic                         valid;         // is the result valid
-        logic                         use_imm;       // should we use the immediate as operand b?
-        logic                         use_pc;        // set if we need to use the PC as operand A, PC from exception
-        exception                     ex;            // exception has occurred
-        logic                         is_compressed; // signals a compressed instructions, we need this information at the commit stage if
-                                                     // we want jump accordingly e.g.: +4, +2
+        logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
+                                                 // with the transaction id in any case make the width more generic
+        fu_t                      fu;            // functional unit to use
+        fu_op                     op;            // operation to perform in each functional unit
+        logic [4:0]               rs1;           // register source address 1
+        logic [4:0]               rs2;           // register source address 2
+        logic [4:0]               rd;            // register destination address
+        logic [63:0]              result;        // for unfinished instructions this field also holds the immediate
+        logic                     valid;         // is the result valid
+        logic                     use_imm;       // should we use the immediate as operand b?
+        logic                     use_pc;        // set if we need to use the PC as operand A, PC from exception
+        exception                 ex;            // exception has occurred
+        logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
+                                                 // we want jump accordingly e.g.: +4, +2
     } scoreboard_entry;
 
     // --------------------
@@ -144,7 +160,6 @@ package ariane_pkg;
     // --------------------
     typedef enum logic[1:0] {
       PRIV_LVL_M = 2'b11,
-      // PRIV_LVL_H = 2'b10, This mode does not longer exist
       PRIV_LVL_S = 2'b01,
       PRIV_LVL_U = 2'b00
     } priv_lvl_t;
@@ -181,4 +196,47 @@ package ariane_pkg;
     localparam ENV_CALL_UMODE        = 64'h8;
     localparam ENV_CALL_SMODE        = 64'h9;
     localparam ENV_CALL_MMODE        = 64'hB;
+
+    typedef enum logic [11:0] {
+
+        CSR_SSTATUS   = 12'h100,
+        CSR_SIE       = 12'h104,
+        CSR_STVEC     = 12'h105,
+        CSR_SSCRATCH  = 12'h140,
+        CSR_SEPC      = 12'h141,
+        CSR_SCAUSE    = 12'h142,
+        CSR_STVAL     = 12'h143,
+        CSR_SIP       = 12'h144,
+        CSR_SATP      = 12'h180,
+
+        CSR_MSTATUS   = 12'h300,
+        CSR_MISA      = 12'h301,
+        CSR_MEDELEG   = 12'h302,
+        CSR_MIDELEG   = 12'h303,
+        CSR_MIE       = 12'h304,
+        CSR_MTVEC     = 12'h305,
+        CSR_MSCRATCH  = 12'h340,
+        CSR_MEPC      = 12'h341,
+        CSR_MCAUSE    = 12'h342,
+        CSR_MTVAL     = 12'h343,
+        CSR_MIP       = 12'h344,
+        CSR_MVENDORID = 12'hF11,
+        CSR_MARCHID   = 12'hF12,
+        CSR_MIMPID    = 12'hF13,
+        CSR_MHARTID   = 12'hF14
+    } csr_reg_t;
+
+    // decoded csr address
+    typedef struct packed {
+        logic [1:0]  rw;
+        priv_lvl_t   priv_lvl;
+        logic  [7:0] address;
+    } csr_addr_t;
+
+    `ifndef VERILATOR
+    typedef union packed {
+        csr_reg_t   address;
+        csr_addr_t  csr_decode;
+    } csr_t;
+    `endif
 endpackage
