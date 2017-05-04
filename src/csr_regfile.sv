@@ -72,10 +72,10 @@ module csr_regfile #(
     priv_lvl_t   priv_lvl_n, priv_lvl_q, prev_priv_lvl_n, prev_priv_lvl_q;
     typedef struct packed {
         logic         sd;     // signal dirty - read-only - hardwired zero
-        logic [62:36] wpri4;
+        logic [62:36] wpri4;  // writes preserved reads ignored
         logic [1:0]   sxl;    // variable supervisor mode xlen - hardwired to zero
         logic [1:0]   uxl;    // variable user mode xlen - hardwired to zero
-        logic [8:0]   wpri3;
+        logic [8:0]   wpri3;  // writes preserved reads ignored
         logic         tsr;    // trap sret
         logic         tw;     // time wait
         logic         tvm;    // trap virtual memory
@@ -156,7 +156,7 @@ module csr_regfile #(
             CSR_MTVAL:              csr_rdata = mtval_q;
             CSR_MVENDORID:          csr_rdata = 63'b0; // not implemented
             CSR_MARCHID:            csr_rdata = 63'b0; // PULP, anonymous source (no allocated ID yet)
-            CSR_MIMPID:             csr_rdata = 63'b0;
+            CSR_MIMPID:             csr_rdata = 63'b0; // not implemented
             CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
             default: read_access_exception = 1'b1;
         endcase
@@ -203,7 +203,7 @@ module csr_regfile #(
 
                 CSR_MSTATUS: begin
                     mstatus_n    = csr_wdata;
-                    // hardwired zero register
+                    // hardwired zero registers
                     mstatus_n.sd = 1'b0;
                     mstatus.xs   = 2'b0;
                     mstatus.fs   = 2'b0;
@@ -231,19 +231,46 @@ module csr_regfile #(
         end else begin
             update_access_exception = 1'b1;
         end
-
+        // update exception CSRs
         // we got an exception update cause, pc and stval register
         if (ex_i.valid) begin
-            // TODO
-            // set cause
+            automatic priv_lvl_t trap_to_priv_lvl;
+            // figure out where to trap to
+            // a m-mode trap might be delegated
+            if ((ex_i.cause[63] && mideleg_q[ex_i.cause[62:0]]) ||
+                (~ex_i.cause[63] && mideleg_q[ex_i.cause[62:0]])) begin
+                trap_to_priv_lvl = PRIV_LVL_S;
+            end
 
-            // set epc
-
-            // set mtval or stval
+            // trap to supervisor mode
+            if (trap_to_priv_lvl == PRIV_LVL_S) begin
+                // update sstatus
+                mstatus_n.sie  = 1'b0;
+                mstatus_n.spie = mstatus_q.sie;
+                mstatus_n.spp  = logic'(priv_lvl_q);
+                // set cause
+                scause_n = ex_i.cause;
+                // set epc
+                sepc_n = pc_i;
+                // set mtval or stval
+                stval_n = ex_i.tval;
+            // trap to machine mode
+            end else begin
+                // update mstatus
+                mstatus_n.mie  = 1'b0;
+                mstatus_n.mpie = mstatus_q.sie;
+                mstatus_n.mpp  = priv_lvl_q;
+                mcause_n = ex_i.cause;
+                // set epc
+                mepc_n = pc_i;
+                // set mtval or stval
+                mtval_n = ex_i.tval;
+            end
+            priv_lvl_n = trap_to_priv_lvl;
         end
     end
     // ---------------------------
-    // CSR Op Select Logic
+    // CSR OP Select Logic
     // ---------------------------
     always_comb begin : csr_op_logic
         csr_wdata = csr_wdata_i;
@@ -276,15 +303,30 @@ module csr_regfile #(
     // -------------------
     assign csr_rdata_o = csr_rdata;
     assign priv_lvl_o  = priv_lvl_q;
+    // MMU outputs
     assign pd_ppn_o    = satp_q.ppn;
     assign asid_o      = satp_q.asid;
+    assign flag_pum_o  = mstatus_q.sum;
+    assign enable_translation_o = mstatus_q.tvm;
+    assign flag_mxr_o  = mstatus_q.mxr;
+
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
         trap_vector_base_o = mtvec_q;
-
+        epc_o              = mepc_q;
         // output user mode stvec
         if (priv_lvl_q == PRIV_LVL_S) begin
             trap_vector_base_o = stvec_q;
+        end
+        if (prev_priv_lvl_q == PRIV_LVL_S) begin
+            epc_o              = sepc_q;
+        end
+
+        for (int i = 0; i < 4; i++) begin
+          irq_enable_o[i] = mstatus_q.mie;
+          if (mideleg_q[i + 4]) begin
+            irq_enable_o[i] = mstatus_q.sie & mstatus_q.mie;
+          end
         end
     end
 
@@ -293,6 +335,7 @@ module csr_regfile #(
         if (~rst_ni) begin
             priv_lvl_q      <= PRIV_LVL_M;
             prev_priv_lvl_q <= PRIV_LVL_M;
+            // machine mode registers
             mstatus_q       <= 64'b0;
             mtvec_q         <= {boot_addr_i[63:2], 2'b0}; // set to boot address + direct mode
             medeleg_q       <= 64'b0;
@@ -301,7 +344,7 @@ module csr_regfile #(
             mcause_q        <= 64'b0;
             mscratch_q      <= 64'b0;
             mtval_q         <= 64'b0;
-
+            // supervisor mode registers
             sepc_q          <= 64'b0;
             scause_q        <= 64'b0;
             stvec_q         <= 64'b0;
@@ -310,6 +353,7 @@ module csr_regfile #(
         end else begin
             priv_lvl_q      <= priv_lvl_n;
             prev_priv_lvl_q <= prev_priv_lvl_n;
+            // supervisor mode registers
             mstatus_q       <= mstatus_n;
             mtvec_q         <= mtvec_n;
             medeleg_q       <= medeleg_n;
@@ -320,7 +364,7 @@ module csr_regfile #(
             mcause_q        <= mcause_n;
             mscratch_q      <= mscratch_n;
             mtval_q         <= mtval_n;
-
+            // machine mode registers
             sepc_q          <= sepc_n;
             scause_q        <= scause_n;
             stvec_q         <= stvec_n;
