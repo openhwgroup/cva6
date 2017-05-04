@@ -46,6 +46,7 @@ module scoreboard #(
     // write-back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
     input logic [NR_WB_PORTS-1:0][63:0]               wdata_i,     // write data in
+    input exception [NR_WB_PORTS-1:0]                 ex_i,        // exception from a functional unit (e.g.: ld/st exception, divide by zero)
     input logic [NR_WB_PORTS-1:0]                     wb_valid_i   // data in is valid
 );
 localparam BITS_ENTRIES      = $clog2(NR_ENTRIES);
@@ -135,13 +136,14 @@ always_comb begin : read_operands
     end
 
     // provide a direct combinational path from WB a.k.a forwarding
+    // make sure that we are not forwarding a result that got an exception
     for (int j = 0; j < NR_WB_PORTS; j++) begin
-        if (mem_q[trans_id_i[j]].rd == rs1_i && wb_valid_i[j]) begin
+        if (mem_q[trans_id_i[j]].rd == rs1_i && wb_valid_i[j] && ~ex_i[j].valid) begin
             rs1_o = wdata_i[j];
             rs1_valid_o = wb_valid_i[j];
             break;
         end
-        if (mem_q[trans_id_i[j]].rd == rs2_i && wb_valid_i[j]) begin
+        if (mem_q[trans_id_i[j]].rd == rs2_i && wb_valid_i[j] && ~ex_i[j].valid) begin
             rs2_o = wdata_i[j];
             rs2_valid_o = wb_valid_i[j];
             break;
@@ -177,6 +179,7 @@ always_comb begin : push_instruction_and_wb
                 if (mem_q[i].trans_id == trans_id_i[j]) begin
                     mem_n[i].valid  = 1'b1;
                     mem_n[i].result = wdata_i[j];
+                    mem_n[i].ex     = ex_i[j];
                 end
             end
         end

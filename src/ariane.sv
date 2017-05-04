@@ -118,6 +118,8 @@ module ariane
     logic [0:0] asid_i;
     logic flush_tlb_i;
 
+    logic lsu_exception;
+
     assign id_ready_i = 1'b1;
     assign halt_if_i = 1'b0;
 
@@ -158,7 +160,7 @@ module ariane
         .instruction_valid_i ( instr_valid_id_o             ),
         .is_compressed_i     ( is_compressed_id_o           ),
         .pc_if_i             ( pc_if_o                      ), // PC from if
-        .ex_i                ( exception_if                 ), // exception from if
+        .ex_if_i             ( exception_if                 ), // exception from if
         .ready_o             ( ready_o                      ),
         .operator_o          ( operator_o                   ),
         .operand_a_o         ( operand_a_o                  ),
@@ -173,6 +175,7 @@ module ariane
         .mult_valid_o        (                              ),
         .trans_id_i          ( {alu_trans_id, lsu_trans_id} ),
         .wdata_i             ( {alu_result,   lsu_result}   ),
+        .ex_ex_i             ( {'b0, lsu_exception }        ),
         .wb_valid_i          ( {alu_valid_o, lsu_valid_o}   ),
 
         .waddr_a_i           ( waddr_a_i                    ),
@@ -184,29 +187,29 @@ module ariane
     );
 
     ex_stage ex_stage_i (
-        .clk_i               ( clk_i                 ),
-        .rst_ni              ( rst_n                 ),
-        .flush_i             ( 1'b0                  ),
-        .operator_i          ( operator_o            ),
-        .operand_a_i         ( operand_a_o           ),
-        .operand_b_i         ( operand_b_o           ),
-        .imm_i               ( imm_o                 ),
-        .trans_id_i          ( trans_id_o            ),
-        .comparison_result_o ( comparison_result_o   ),
+        .clk_i                ( clk_i                 ),
+        .rst_ni               ( rst_n                 ),
+        .flush_i              ( 1'b0                  ),
+        .operator_i           ( operator_o            ),
+        .operand_a_i          ( operand_a_o           ),
+        .operand_b_i          ( operand_b_o           ),
+        .imm_i                ( imm_o                 ),
+        .trans_id_i           ( trans_id_o            ),
+        .comparison_result_o  ( comparison_result_o   ),
 
-        .alu_ready_o         ( alu_ready_i           ),
-        .alu_valid_i         ( alu_valid_i           ),
-        .alu_result_o        ( alu_result            ),
-        .alu_trans_id_o      ( alu_trans_id          ),
-        .alu_valid_o         ( alu_valid_o           ),
+        .alu_ready_o          ( alu_ready_i           ),
+        .alu_valid_i          ( alu_valid_i           ),
+        .alu_result_o         ( alu_result            ),
+        .alu_trans_id_o       ( alu_trans_id          ),
+        .alu_valid_o          ( alu_valid_o           ),
 
-        .lsu_ready_o         ( lsu_ready_o           ),
-        .lsu_valid_i         ( lsu_valid_i           ),
-        .lsu_result_o        ( lsu_result            ),
-        .lsu_trans_id_o      ( lsu_trans_id          ),
-        .lsu_valid_o         ( lsu_valid_o           ),
-        .lsu_commit_i        (                       ),
-
+        .lsu_ready_o          ( lsu_ready_o           ),
+        .lsu_valid_i          ( lsu_valid_i           ),
+        .lsu_result_o         ( lsu_result            ),
+        .lsu_trans_id_o       ( lsu_trans_id          ),
+        .lsu_valid_o          ( lsu_valid_o           ),
+        .lsu_commit_i         (                       ),
+        .lsu_exception_o      ( lsu_exception         ),
         // memory management
         .enable_translation_i ( 1'b0                 ),  // from CSR
         .fetch_req_i          ( fetch_req_i          ),
@@ -222,8 +225,8 @@ module ariane
         .asid_i               ( asid_i               ),  // from CSR
         .flush_tlb_i          ( flush_tlb_i          ),
 
-        .mult_ready_o        ( mult_ready_o          ),
-        .mult_valid_i        ( mult_valid_i          ),
+        .mult_ready_o         ( mult_ready_o          ),
+        .mult_valid_i         ( mult_valid_i          ),
         .*
     );
 

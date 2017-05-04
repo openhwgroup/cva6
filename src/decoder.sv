@@ -22,7 +22,12 @@ module decoder (
 );
     instruction instr;
     assign instr = instruction'(instruction_i);
-    imm_sel_t imm_select;
+    // --------------------
+    // Immediate select
+    // --------------------
+    enum logic[3:0] {
+        NOIMM, PCIMM, IIMM, SIMM, BIMM, UIMM, JIMM
+    } imm_select;
 
     logic [63:0] imm_i_type;
     logic [63:0] imm_iz_type;
@@ -304,14 +309,17 @@ module decoder (
             end
         endcase
     end
+
     // --------------------------------
     // Exception handling
     // --------------------------------
     always_comb begin : exception_handling
         instruction_o.ex = ex_i;
-
+        // look if we didn't already get an exception in any previous
+        // stage - we should not overwrite it as we retain order regarding the exception
         if (~ex_i.valid && illegal_instr_o) begin
             instruction_o.ex.valid = 1'b1;
+            // we decoded an illegal exception here
             instruction_o.ex.cause = ILLEGAL_INSTR;
         end
     end

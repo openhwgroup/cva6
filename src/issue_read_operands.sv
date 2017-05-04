@@ -44,8 +44,6 @@ module issue_read_operands (
     // MULT
     input  logic                                   mult_ready_i,      // FU is ready
     output logic                                   mult_valid_o,      // Output is valid
-    // Forward port
-
     // commit port
     input  logic [4:0]                             waddr_a_i,
     input  logic [63:0]                            wdata_a_i,
@@ -81,10 +79,24 @@ module issue_read_operands (
         issue_ack_o = 1'b0;
         // check that we didn't stall, that the instruction we got is valid
         // and that the functional unit we need is not busy
-        if (~stall && issue_instr_valid_i && ~fu_busy) begin
-            // check that the corresponding functional unit is not busy
-            // no other instruction has the same destination register -> fetch the instruction
-            if (rd_clobber_i[issue_instr_i.rd] == NONE) begin
+        if (issue_instr_valid_i) begin
+            if (~stall && ~fu_busy) begin
+                // check that the corresponding functional unit is not busy
+                // no other instruction has the same destination register -> fetch the instruction
+                if (rd_clobber_i[issue_instr_i.rd] == NONE) begin
+                    issue_ack_o = 1'b1;
+                end
+            end
+            // we can also issue the instruction under the following two circumstances:
+            // we can do this even if we are stalled or no functional unit is ready (as we don't need one)
+            // the decoder needs to make sure that the instruction is marked as valid when it does not
+            // need any functional unit or if an exception occurred previous to the execute stage.
+            // 1. we already got an exception
+            if (issue_instr_i.ex.valid) begin
+                issue_ack_o = 1'b1;
+            end
+            // 2. it is an instruction which does not need any functional unit
+            if (issue_instr_i.fu == NONE) begin
                 issue_ack_o = 1'b1;
             end
         end
@@ -101,8 +113,6 @@ module issue_read_operands (
                 fu_busy = ~mult_ready_i;
             LSU:
                 fu_busy = ~lsu_ready_i;
-            CSR:
-                fu_busy = 1'b0;
             default:
                 fu_busy = 1'b0;
         endcase

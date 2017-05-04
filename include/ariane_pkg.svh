@@ -36,7 +36,7 @@ package ariane_pkg;
     } misspredict;
 
     typedef enum logic[3:0] {
-        NONE, LSU, ALU, MULT, CSR
+        NONE, LSU, ALU, MULT
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -138,13 +138,6 @@ package ariane_pkg;
     localparam OPCODE_JAL       = 7'h6f;
     localparam OPCODE_AUIPC     = 7'h17;
     localparam OPCODE_LUI       = 7'h37;
-
-    // --------------------
-    // Immediate select
-    // --------------------
-    typedef enum logic[3:0] {
-        NOIMM, PCIMM, IIMM, SIMM, BIMM, UIMM, JIMM
-    } imm_sel_t;
 
     // --------------------
     // Privilege Spec

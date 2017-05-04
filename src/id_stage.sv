@@ -24,8 +24,9 @@ module id_stage #(
     input  logic                                     instruction_valid_i,
     input  logic                                     is_compressed_i,
     input  logic [63:0]                              pc_if_i,
-    input  exception                                 ex_i,
-    output logic                                     ready_o,   // id is ready
+    input  exception                                 ex_if_i,       // we already got an exception in IF
+
+    output logic                                     ready_o,    // id is ready
     output fu_op                                     operator_o,
     output logic [63:0]                              operand_a_o,
     output logic [63:0]                              operand_b_o,
@@ -43,6 +44,7 @@ module id_stage #(
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
     input logic [NR_WB_PORTS-1:0][63:0]              wdata_i,
+    input exception [NR_WB_PORTS-1:0]                ex_ex_i, // exception from execute stage
     input logic [NR_WB_PORTS-1:0]                    wb_valid_i,
     // commit port
     input  logic[4:0]                                waddr_a_i,
@@ -78,7 +80,7 @@ module id_stage #(
         .pc_i            ( pc_if_i          ),
         .is_compressed_i ( is_compressed_i  ),
         .instruction_i   ( instruction_i    ),
-        .ex_i            ( ex_i             ),
+        .ex_i            ( ex_if_i          ),
         .instruction_o   ( decoded_instr_i  ),
         .illegal_instr_o ( illegal_instr_o  )
     );
@@ -89,59 +91,60 @@ module id_stage #(
     )
     scoreboard_i
     (
-        .clk_i                 (clk_i                ),
-        .rst_ni                (rst_ni               ),
-        .full_o                (full_o               ),
-        .flush_i               (flush_i              ),
-        .rd_clobber_o          (rd_clobber_o         ),
-        .rs1_i                 (rs1_i                ),
-        .rs1_o                 (rs1_o                ),
-        .rs1_valid_o           (rs1_valid_o          ),
-        .rs2_i                 (rs2_i                ),
-        .rs2_o                 (rs2_o                ),
-        .rs2_valid_o           (rs2_valid_o          ),
-        .commit_instr_o        (commit_instr_o       ),
-        .commit_ack_i          (commit_ack_i         ),
-        .decoded_instr_i       (decoded_instr_i      ),
-        .decoded_instr_valid_i (instruction_valid_i  ),
-        .issue_instr_o         (issue_instr_o        ),
-        .issue_instr_valid_o   (issue_instr_valid_o  ),
-        .issue_ack_i           (issue_ack_i          ),
-        .trans_id_i            (trans_id_i           ),
-        .wdata_i               (wdata_i              ),
-        .wb_valid_i            (wb_valid_i           )
+        .clk_i                 ( clk_i                ),
+        .rst_ni                ( rst_ni               ),
+        .full_o                ( full_o               ),
+        .flush_i               ( flush_i              ),
+        .rd_clobber_o          ( rd_clobber_o         ),
+        .rs1_i                 ( rs1_i                ),
+        .rs1_o                 ( rs1_o                ),
+        .rs1_valid_o           ( rs1_valid_o          ),
+        .rs2_i                 ( rs2_i                ),
+        .rs2_o                 ( rs2_o                ),
+        .rs2_valid_o           ( rs2_valid_o          ),
+        .commit_instr_o        ( commit_instr_o       ),
+        .commit_ack_i          ( commit_ack_i         ),
+        .decoded_instr_i       ( decoded_instr_i      ),
+        .decoded_instr_valid_i ( instruction_valid_i  ),
+        .issue_instr_o         ( issue_instr_o        ),
+        .issue_instr_valid_o   ( issue_instr_valid_o  ),
+        .issue_ack_i           ( issue_ack_i          ),
+        .trans_id_i            ( trans_id_i           ),
+        .wdata_i               ( wdata_i              ),
+        .ex_i                  ( ex_ex_i              ),
+        .wb_valid_i            ( wb_valid_i           )
     );
 
 
     issue_read_operands issue_read_operands_i  (
-        .clk_i               (clk_i              ),
-        .rst_ni              (rst_ni             ),
-        .flush_i             (flush_i            ),
-        .test_en_i           (test_en_i          ),
-        .issue_instr_i       (issue_instr_o      ),
-        .issue_instr_valid_i (issue_instr_valid_o),
-        .issue_ack_o         (issue_ack_i        ),
-        .rs1_o               (rs1_i              ),
-        .rs1_i               (rs1_o              ),
-        .rs1_valid_i         (rs1_valid_o        ),
-        .rs2_o               (rs2_i              ),
-        .rs2_i               (rs2_o              ),
-        .rs2_valid_i         (rs2_valid_o        ),
-        .rd_clobber_i        (rd_clobber_o       ),
-        .operator_o          (operator_o         ),
-        .operand_a_o         (operand_a_o        ),
-        .operand_b_o         (operand_b_o        ),
-        .imm_o               (imm_o              ),
-        .trans_id_o          (trans_id_o         ),
-        .alu_ready_i         (alu_ready_i        ),
-        .alu_valid_o         (alu_valid_o        ),
-        .lsu_ready_i         (lsu_ready_i        ),
-        .lsu_valid_o         (lsu_valid_o        ),
-        .mult_ready_i        (mult_ready_i       ),
-        .mult_valid_o        (mult_valid_o       ),
-        .waddr_a_i           (waddr_a_i          ),
-        .wdata_a_i           (wdata_a_i          ),
-        .we_a_i              (we_a_i             )
+        .clk_i               ( clk_i              ),
+        .rst_ni              ( rst_ni             ),
+        .flush_i             ( flush_i            ),
+        .test_en_i           ( test_en_i          ),
+        .issue_instr_i       ( issue_instr_o      ),
+        .issue_instr_valid_i ( issue_instr_valid_o),
+        .issue_ack_o         ( issue_ack_i        ),
+        .rs1_o               ( rs1_i              ),
+        .rs1_i               ( rs1_o              ),
+        .rs1_valid_i         ( rs1_valid_o        ),
+        .rs2_o               ( rs2_i              ),
+        .rs2_i               ( rs2_o              ),
+        .rs2_valid_i         ( rs2_valid_o        ),
+        .rd_clobber_i        ( rd_clobber_o       ),
+        .operator_o          ( operator_o         ),
+        .operand_a_o         ( operand_a_o        ),
+        .operand_b_o         ( operand_b_o        ),
+        .imm_o               ( imm_o              ),
+        .trans_id_o          ( trans_id_o         ),
+        .alu_ready_i         ( alu_ready_i        ),
+        .alu_valid_o         ( alu_valid_o        ),
+        .lsu_ready_i         ( lsu_ready_i        ),
+        .lsu_valid_o         ( lsu_valid_o        ),
+        .mult_ready_i        ( mult_ready_i       ),
+        .mult_valid_o        ( mult_valid_o       ),
+        .waddr_a_i           ( waddr_a_i          ),
+        .wdata_a_i           ( wdata_a_i          ),
+        .we_a_i              ( we_a_i             )
     );
 
 endmodule
