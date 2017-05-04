@@ -114,6 +114,13 @@ The field functional unit can be of the following types:
 - MULT: Use the Multiplier to perform OP
     + MULT, DIV, etc. all multiplier instructions are writing to the register file.
 
+The scoreboard also contains all exception information which occurred during execution. In particular those fields are:
+- exception cause
+- additional information like illegal instruction and faulting address
+- if it is valid or not
+
+If an exception already occurred in IF or ID the corresponding instruction is not executed anymore. Additionally a valid exception is never overwritten. For example an instruction fetch access fault is never overwritten by a load store access fault.
+
 #### Interface
 
 |       **Signal**      | **Direction** |                                  **Description**                                  |      **Category**      |
