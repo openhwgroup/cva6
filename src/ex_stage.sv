@@ -47,6 +47,14 @@ module ex_stage #(
     output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
     input  logic                                   lsu_commit_i,
     output exception                               lsu_exception_o,
+    // CSR
+    output logic                                   csr_ready_o,
+    input  logic                                   csr_valid_i,
+    output logic [TRANS_ID_BITS-1:0]               csr_trans_id_o,
+    output logic [63:0]                            csr_result_o,
+    output logic                                   csr_valid_o,
+    output logic [11:0]                            csr_addr_o,
+    input  logic                                   csr_commit_i,
     // memory management
     input  logic                                   enable_translation_i,
     input  logic                                   fetch_req_i,
@@ -88,7 +96,9 @@ module ex_stage #(
     assign alu_ready_o = 1'b1;
     assign alu_valid_o = alu_valid_i;
     assign alu_trans_id_o = trans_id_i;
-
+    // -----
+    // ALU
+    // -----
     alu alu_i (
         .adder_result_o      (                     ),
         .adder_result_ext_o  (                     ),
@@ -97,17 +107,24 @@ module ex_stage #(
         .is_equal_result_o   (                     ),
         .*
     );
-
+    // ----------------
     // Multiplication
-
+    // ----------------
+    // TODO
+    // ----------------
     // Load-Store Unit
-    lsu i_lsu (
-        .lsu_trans_id_i  ( trans_id_i      ),
-        .commit_i        ( lsu_commit_i    ),
+    // ----------------
+    lsu lsu_i (
+        .commit_i  ( lsu_commit_i ),
         .*
     );
+    // -----
+    // CSR
+    // -----
 
-    // pass through
-
+    csr_buffer csr_buffer_i (
+        .commit_i ( csr_commit_i  ),
+        .*
+    );
 
 endmodule

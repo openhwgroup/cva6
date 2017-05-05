@@ -31,7 +31,7 @@ module lsu #(
     input  logic [63:0]              imm_i,
     output logic                     lsu_ready_o,              // FU is ready e.g. not busy
     input  logic                     lsu_valid_i,              // Input is valid
-    input  logic [TRANS_ID_BITS-1:0] lsu_trans_id_i,           // transaction id, needed for WB
+    input  logic [TRANS_ID_BITS-1:0] trans_id_i,               // transaction id, needed for WB
     output logic [TRANS_ID_BITS-1:0] lsu_trans_id_o,           // ID of scoreboard entry at which to write back
     output logic [63:0]              lsu_result_o,
     output logic                     lsu_valid_o,              // transaction id for which the output is the requested one
@@ -602,7 +602,7 @@ module lsu #(
             vaddr    = vaddr_i;
             data     = operand_b_i;
             operator = operator_i;
-            trans_id = lsu_trans_id_i;
+            trans_id = trans_id_i;
         end
     end
 
@@ -620,7 +620,7 @@ module lsu #(
                 vaddr_q    <= vaddr_i;
                 data_q     <= operand_b_i;
                 operator_q <= operator_i;
-                trans_id_q <= lsu_trans_id_i;
+                trans_id_q <= trans_id_i;
             end
         end
     end
