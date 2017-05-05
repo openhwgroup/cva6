@@ -53,6 +53,9 @@ module issue_read_operands (
     // MULT
     input  logic                                   mult_ready_i,      // FU is ready
     output logic                                   mult_valid_o,      // Output is valid
+    // CSR
+    input  logic                                   csr_ready_i,      // FU is ready
+    output logic                                   csr_valid_o,      // Output is valid
     // commit port
     input  logic [4:0]                             waddr_a_i,
     input  logic [63:0]                            wdata_a_i,
@@ -112,6 +115,7 @@ module issue_read_operands (
     end
 
     // select the right busy signal
+    // this obviously depends on the functional unit we need
     always_comb begin : unit_busy
         unique case (issue_instr_i.fu)
             NONE:
@@ -122,6 +126,8 @@ module issue_read_operands (
                 fu_busy = ~mult_ready_i;
             LSU:
                 fu_busy = ~lsu_ready_i;
+            CSR:
+                fu_busy = ~csr_ready_i;
             default:
                 fu_busy = 1'b0;
         endcase
@@ -199,8 +205,10 @@ module issue_read_operands (
         alu_valid_n  = 1'b0;
         lsu_valid_o  = 1'b0;
         mult_valid_o = 1'b0;
+        csr_valid_o  = 1'b0;
         // Exception pass through
         // if an exception has occurred simply pass it through
+        // we do not want to issue this instruction
         if (~issue_instr_i.ex.valid && issue_instr_valid_i) begin
             case (issue_instr_i.fu)
                 ALU:
@@ -209,6 +217,8 @@ module issue_read_operands (
                     mult_valid_o = 1'b1;
                 LSU:
                     lsu_valid_o  = 1'b1;
+                CSR:
+                    csr_valid_o  = 1'b1;
                 default: begin
 
                 end

@@ -206,12 +206,19 @@ module ariane
         .operand_b_o         ( operand_b_id_ex                          ),
         .imm_o               ( imm_id_ex                                ),
         .trans_id_o          ( trans_id_id_ex                           ),
+
         .alu_ready_i         ( alu_ready_ex_id                          ),
         .alu_valid_o         ( alu_valid_id_ex                          ),
+
         .lsu_ready_i         ( lsu_ready_ex_id                          ),
         .lsu_valid_o         ( lsu_valid_id_ex                          ),
+
         .mult_ready_i        (                                          ),
         .mult_valid_o        (                                          ),
+
+        .csr_ready_i         (                                          ),
+        .csr_valid_o         (                                          ),
+
         .trans_id_i          ( {alu_trans_id_ex_id, lsu_trans_id_ex_id} ),
         .wdata_i             ( {alu_result_ex_id,   lsu_result_ex_id}   ),
         .ex_ex_i             ( {'b0, lsu_exception_ex_id }              ),
@@ -269,13 +276,13 @@ module ariane
     );
 
     commit_stage commit_stage_i (
-        .priv_lvl_o          ( priv_lvl                      ),
-        .exception_o         (                               ),
-        .commit_instr_i      ( commit_instr_id_commit        ),
-        .commit_ack_o        ( commit_ack_commit_id          ),
-        .waddr_a_o           ( waddr_a_commit_id             ),
-        .wdata_a_o           ( wdata_a_commit_id             ),
-        .we_a_o              ( we_a_commit_id                ),
+        .priv_lvl_o          ( priv_lvl                   ),
+        .exception_o         (                            ),
+        .commit_instr_i      ( commit_instr_id_commit     ),
+        .commit_ack_o        ( commit_ack_commit_id       ),
+        .waddr_a_o           ( waddr_a_commit_id          ),
+        .wdata_a_o           ( wdata_a_commit_id          ),
+        .we_a_o              ( we_a_commit_id             ),
         .*
     );
 

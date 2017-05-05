@@ -50,6 +50,10 @@ module id_stage #(
 
     input  logic                                     mult_ready_i,
     output logic                                     mult_valid_o,
+
+    input  logic                                     csr_ready_i,
+    output logic                                     csr_valid_o,
+
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
     input logic [NR_WB_PORTS-1:0][63:0]              wdata_i,
@@ -100,8 +104,6 @@ module id_stage #(
     )
     scoreboard_i
     (
-        .clk_i                 ( clk_i                ),
-        .rst_ni                ( rst_ni               ),
         .full_o                ( full_o               ),
         .flush_i               ( flush_i              ),
         .rd_clobber_o          ( rd_clobber_o         ),
@@ -121,15 +123,11 @@ module id_stage #(
         .trans_id_i            ( trans_id_i           ),
         .wdata_i               ( wdata_i              ),
         .ex_i                  ( ex_ex_i              ),
-        .wb_valid_i            ( wb_valid_i           )
+        .*
     );
 
 
     issue_read_operands issue_read_operands_i  (
-        .clk_i               ( clk_i              ),
-        .rst_ni              ( rst_ni             ),
-        .flush_i             ( flush_i            ),
-        .test_en_i           ( test_en_i          ),
         .issue_instr_i       ( issue_instr_o      ),
         .issue_instr_valid_i ( issue_instr_valid_o),
         .issue_ack_o         ( issue_ack_i        ),
@@ -140,20 +138,7 @@ module id_stage #(
         .rs2_i               ( rs2_o              ),
         .rs2_valid_i         ( rs2_valid_o        ),
         .rd_clobber_i        ( rd_clobber_o       ),
-        .operator_o          ( operator_o         ),
-        .operand_a_o         ( operand_a_o        ),
-        .operand_b_o         ( operand_b_o        ),
-        .imm_o               ( imm_o              ),
-        .trans_id_o          ( trans_id_o         ),
-        .alu_ready_i         ( alu_ready_i        ),
-        .alu_valid_o         ( alu_valid_o        ),
-        .lsu_ready_i         ( lsu_ready_i        ),
-        .lsu_valid_o         ( lsu_valid_o        ),
-        .mult_ready_i        ( mult_ready_i       ),
-        .mult_valid_o        ( mult_valid_o       ),
-        .waddr_a_i           ( waddr_a_i          ),
-        .wdata_a_i           ( wdata_a_i          ),
-        .we_a_i              ( we_a_i             )
+        .*
     );
 
 endmodule

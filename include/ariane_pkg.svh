@@ -46,7 +46,7 @@ package ariane_pkg;
     } misspredict;
 
     typedef enum logic[3:0] {
-        NONE, LSU, ALU, MULT
+        NONE, LSU, ALU, MULT, CSR
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
