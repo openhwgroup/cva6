@@ -68,34 +68,37 @@ module id_stage #(
     input  logic                                     commit_ack_i
 );
 
-
-    logic full_o;
-    fu_t [31:0] rd_clobber_o;
-    logic [4:0] rs1_i;
-    logic [63:0] rs1_o;
-    logic rs1_valid_o;
-    logic [4:0] rs2_i;
-    logic [63:0] rs2_o;
-    logic rs2_valid_o;
-    scoreboard_entry issue_instr_o;
-    scoreboard_entry decoded_instr_i;
-    logic issue_instr_valid_o;
-    logic issue_ack_i;
+    // Global signals
+    logic full;
+    // ---------------------------------------------------
+    // Scoreboard (SB) <-> Issue and Read Operands (iro)
+    // ---------------------------------------------------
+    fu_t  [31:0]     rd_clobber_sb_iro;
+    logic [4:0]      rs1_iro_sb;
+    logic [63:0]     rs1_sb_iro;
+    logic            rs1_valid_sb_iro;
+    logic [4:0]      rs2_iro_sb;
+    logic [63:0]     rs2_sb_iro;
+    logic            rs2_valid_iro_sb;
+    scoreboard_entry issue_instr_sb_iro;
+    logic            issue_instr_valid_sb_iro;
+    logic            issue_ack_iro_sb;
+    // ---------------------------------------------------
+    // Decoder (DC) <-> Scoreboard (SB)
+    // ---------------------------------------------------
+    scoreboard_entry decoded_instr_dc_sb;
 
     // TODO: Branching logic
-    assign ready_o = ~full_o;
-
-    logic illegal_instr_o;
+    assign ready_o = ~full;
 
     decoder decoder_i (
-        .clk_i           ( clk_i            ),
-        .rst_ni          ( rst_ni           ),
-        .pc_i            ( pc_if_i          ),
-        .is_compressed_i ( is_compressed_i  ),
-        .instruction_i   ( instruction_i    ),
-        .ex_i            ( ex_if_i          ),
-        .instruction_o   ( decoded_instr_i  ),
-        .illegal_instr_o ( illegal_instr_o  )
+        .clk_i           ( clk_i                ),
+        .rst_ni          ( rst_ni               ),
+        .pc_i            ( pc_if_i              ),
+        .is_compressed_i ( is_compressed_i      ),
+        .instruction_i   ( instruction_i        ),
+        .ex_i            ( ex_if_i              ),
+        .instruction_o   ( decoded_instr_dc_sb  )
     );
 
     scoreboard  #(
@@ -104,40 +107,40 @@ module id_stage #(
     )
     scoreboard_i
     (
-        .full_o                ( full_o               ),
-        .flush_i               ( flush_i              ),
-        .rd_clobber_o          ( rd_clobber_o         ),
-        .rs1_i                 ( rs1_i                ),
-        .rs1_o                 ( rs1_o                ),
-        .rs1_valid_o           ( rs1_valid_o          ),
-        .rs2_i                 ( rs2_i                ),
-        .rs2_o                 ( rs2_o                ),
-        .rs2_valid_o           ( rs2_valid_o          ),
-        .commit_instr_o        ( commit_instr_o       ),
-        .commit_ack_i          ( commit_ack_i         ),
-        .decoded_instr_i       ( decoded_instr_i      ),
-        .decoded_instr_valid_i ( instruction_valid_i  ),
-        .issue_instr_o         ( issue_instr_o        ),
-        .issue_instr_valid_o   ( issue_instr_valid_o  ),
-        .issue_ack_i           ( issue_ack_i          ),
-        .trans_id_i            ( trans_id_i           ),
-        .wdata_i               ( wdata_i              ),
-        .ex_i                  ( ex_ex_i              ),
+        .full_o                ( full                     ),
+        .flush_i               ( flush_i                  ),
+        .rd_clobber_o          ( rd_clobber_sb_iro        ),
+        .rs1_i                 ( rs1_iro_sb               ),
+        .rs1_o                 ( rs1_sb_iro               ),
+        .rs1_valid_o           ( rs1_valid_sb_iro         ),
+        .rs2_i                 ( rs2_iro_sb               ),
+        .rs2_o                 ( rs2_sb_iro               ),
+        .rs2_valid_o           ( rs2_valid_iro_sb         ),
+        .commit_instr_o        ( commit_instr_o           ),
+        .commit_ack_i          ( commit_ack_i             ),
+        .decoded_instr_i       ( decoded_instr_dc_sb      ),
+        .decoded_instr_valid_i ( instruction_valid_i      ),
+        .issue_instr_o         ( issue_instr_sb_iro       ),
+        .issue_instr_valid_o   ( issue_instr_valid_sb_iro ),
+        .issue_ack_i           ( issue_ack_iro_sb         ),
+        .trans_id_i            ( trans_id_i               ),
+        .wdata_i               ( wdata_i                  ),
+        .ex_i                  ( ex_ex_i                  ),
         .*
     );
 
 
     issue_read_operands issue_read_operands_i  (
-        .issue_instr_i       ( issue_instr_o      ),
-        .issue_instr_valid_i ( issue_instr_valid_o),
-        .issue_ack_o         ( issue_ack_i        ),
-        .rs1_o               ( rs1_i              ),
-        .rs1_i               ( rs1_o              ),
-        .rs1_valid_i         ( rs1_valid_o        ),
-        .rs2_o               ( rs2_i              ),
-        .rs2_i               ( rs2_o              ),
-        .rs2_valid_i         ( rs2_valid_o        ),
-        .rd_clobber_i        ( rd_clobber_o       ),
+        .issue_instr_i       ( issue_instr_sb_iro         ),
+        .issue_instr_valid_i ( issue_instr_valid_sb_iro   ),
+        .issue_ack_o         ( issue_ack_iro_sb           ),
+        .rs1_o               ( rs1_iro_sb                 ),
+        .rs1_i               ( rs1_sb_iro                 ),
+        .rs1_valid_i         ( rs1_valid_sb_iro           ),
+        .rs2_o               ( rs2_iro_sb                 ),
+        .rs2_i               ( rs2_sb_iro                 ),
+        .rs2_valid_i         ( rs2_valid_iro_sb           ),
+        .rd_clobber_i        ( rd_clobber_sb_iro          ),
         .*
     );
 

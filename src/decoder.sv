@@ -17,9 +17,9 @@ module decoder (
     input  logic            is_compressed_i, // is a compressed instruction
     input  logic [31:0]     instruction_i,   // instruction from IF
     input  exception        ex_i,            // if an exception occured in if
-    output scoreboard_entry instruction_o,   // scoreboard entry to scoreboard
-    output logic            illegal_instr_o
+    output scoreboard_entry instruction_o   // scoreboard entry to scoreboard
 );
+    logic illegal_instr;
     instruction instr;
     assign instr = instruction'(instruction_i);
     // --------------------
@@ -45,7 +45,7 @@ module decoder (
     always_comb begin : decoder
 
         imm_select = NOIMM;
-        illegal_instr_o = 1'b0;
+        illegal_instr = 1'b0;
         instruction_o.pc = pc_i;
         instruction_o.fu = NONE;
         instruction_o.op = ADD;
@@ -87,7 +87,7 @@ module decoder (
                         {6'b00_0000, 3'b101}: instruction_o.op = SRL;   // Shift Right Logical
                         {6'b10_0000, 3'b101}: instruction_o.op = SRA;   // Shift Right Arithmetic
                         default: begin
-                            illegal_instr_o = 1'b1;
+                            illegal_instr = 1'b1;
                         end
                     endcase
                 end
@@ -111,7 +111,7 @@ module decoder (
                         {6'b10_0000, 3'b101}: instruction_o.op = SRAW; // sraw
                         // multiplications
 
-                        default: illegal_instr_o = 1'b1;
+                        default: illegal_instr = 1'b1;
                       endcase
                 end
                 // --------------------------------
@@ -134,7 +134,7 @@ module decoder (
                       3'b001: begin
                         instruction_o.op = SLL;  // Shift Left Logical by Immediate
                         if (instr.instr[31:26] != 6'b0)
-                          illegal_instr_o = 1'b1;
+                          illegal_instr = 1'b1;
                       end
 
                       3'b101: begin
@@ -143,10 +143,10 @@ module decoder (
                         else if (instr.instr[31:26] == 6'b010_000)
                           instruction_o.op = SRA;  // Shift Right Arithmetically by Immediate
                         else
-                          illegal_instr_o = 1'b1;
+                          illegal_instr = 1'b1;
                       end
 
-                      default: illegal_instr_o = 1'b1;
+                      default: illegal_instr = 1'b1;
                     endcase
                 end
 
@@ -165,7 +165,7 @@ module decoder (
                       3'b001: begin
                         instruction_o.op = SLLW;  // Shift Left Logical by Immediate
                         if (instr.instr[31:25] != 7'b0)
-                          illegal_instr_o = 1'b1;
+                          illegal_instr = 1'b1;
                       end
 
                       3'b101: begin
@@ -174,10 +174,10 @@ module decoder (
                         else if (instr.instr[31:25] == 7'b010_0000)
                           instruction_o.op = SRAW;  // Shift Right Arithmetically by Immediate
                         else
-                          illegal_instr_o = 1'b1;
+                          illegal_instr = 1'b1;
                       end
 
-                      default: illegal_instr_o = 1'b1;
+                      default: illegal_instr = 1'b1;
                     endcase
                 end
 
@@ -197,7 +197,7 @@ module decoder (
                         3'b011:
                             instruction_o.op  = SD;
                         default:
-                            illegal_instr_o = 1'b1;
+                            illegal_instr = 1'b1;
                     endcase
                 end
 
@@ -223,7 +223,7 @@ module decoder (
                         3'b011:
                             instruction_o.op  = LD;
                         default:
-                            illegal_instr_o = 1'b1;
+                            illegal_instr = 1'b1;
                     endcase
 
                 end
@@ -255,7 +255,7 @@ module decoder (
                     instruction_o.rd     = instr.utype.rd;
                 end
 
-                default: illegal_instr_o = 1'b1;
+                default: illegal_instr = 1'b1;
             endcase
         end
     end
@@ -318,7 +318,7 @@ module decoder (
         instruction_o.valid = 1'b0;
         // look if we didn't already get an exception in any previous
         // stage - we should not overwrite it as we retain order regarding the exception
-        if (~ex_i.valid && illegal_instr_o) begin
+        if (~ex_i.valid && illegal_instr) begin
             // instructions which will throw an exception are marked as valid
             // e.g.: they can be committed anytime and do not need to wait for any functional unit
             instruction_o.valid    = 1'b1;
