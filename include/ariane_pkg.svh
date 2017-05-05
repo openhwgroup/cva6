@@ -86,7 +86,8 @@ package ariane_pkg;
         logic [63:0]              result;        // for unfinished instructions this field also holds the immediate
         logic                     valid;         // is the result valid
         logic                     use_imm;       // should we use the immediate as operand b?
-        logic                     use_pc;        // set if we need to use the PC as operand A, PC from exception
+        logic                     use_zimm;      // use zimm as operand a
+        logic                     use_pc;        // set if we need to use the PC as operand a, PC from exception
         exception                 ex;            // exception has occurred
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2

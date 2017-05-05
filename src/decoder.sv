@@ -30,7 +30,7 @@ module decoder (
     } imm_select;
 
     logic [63:0] imm_i_type;
-    logic [63:0] imm_iz_type;
+    logic [11:0] imm_iz_type;
     logic [63:0] imm_s_type;
     logic [63:0] imm_sb_type;
     logic [63:0] imm_u_type;
@@ -44,26 +44,90 @@ module decoder (
 
     always_comb begin : decoder
 
-        imm_select = NOIMM;
-        illegal_instr = 1'b0;
-        instruction_o.pc = pc_i;
-        instruction_o.fu = NONE;
-        instruction_o.op = ADD;
-        instruction_o.rs1 = 5'b0;
-        instruction_o.rs2 = 5'b0;
-        instruction_o.rd = 5'b0;
-        instruction_o.use_pc = 1'b0;
-        instruction_o.trans_id = 5'b0;
+        imm_select                  = NOIMM;
+        illegal_instr               = 1'b0;
+        instruction_o.pc            = pc_i;
+        instruction_o.fu            = NONE;
+        instruction_o.op            = ADD;
+        instruction_o.rs1           = 5'b0;
+        instruction_o.rs2           = 5'b0;
+        instruction_o.rd            = 5'b0;
+        instruction_o.use_pc        = 1'b0;
+        instruction_o.trans_id      = 5'b0;
         instruction_o.is_compressed = is_compressed_i;
-        // TODO end
+        instruction_o.use_zimm      = 1'b0;
+
         if (~ex_i.valid) begin
             case (instr.rtype.opcode)
                 OPCODE_SYSTEM: begin
-                    // TODO: Implement
+                    instruction_o.fu  = CSR;
+                    instruction_o.rs1 = instr.itype.rs1;
+                    instruction_o.rd  = instr.itype.rd;
+
+                    unique case (instr.itype.funct3)
+                        3'b000: begin
+                            // TODO:
+                            // ECALL, EBREAK, SFEBCE.VM
+                            // MRET/SRET/URET, WFI
+                            illegal_instr = 1'b1;
+                        end
+                        // atomically swaps values in the CSR and integer register
+                        3'b001: begin// CSRRW
+                            imm_select = IIMM;
+                            instruction_o.op = CSR_WRITE;
+                        end
+                        // atomically set values in the CSR and write back to rd
+                        3'b010: begin// CSRRS
+                            imm_select = IIMM;
+                            // this is just a read
+                            if (instr.itype.rs1 == 5'b0)
+                                instruction_o.op = CSR_READ;
+                            else
+                                instruction_o.op = CSR_SET;
+                        end
+                        // atomically clear values in the CSR and write back to rd
+                        3'b011: begin// CSRRC
+                            imm_select = IIMM;
+                            // this is just a read
+                            if (instr.itype.rs1 == 5'b0)
+                                instruction_o.op = CSR_READ;
+                            else
+                                instruction_o.op = CSR_SET;
+                        end
+                        // use zimm and iimm
+                        3'b101: begin// CSRRWI
+                            instruction_o.rs1 = 5'b0;
+                            imm_select = IIMM;
+                            instruction_o.use_zimm = 1'b1;
+                            instruction_o.op = CSR_WRITE;
+                        end
+                        3'b110: begin// CSRRSI
+                            instruction_o.rs1 = 5'b0;
+                            imm_select = IIMM;
+                            instruction_o.use_zimm = 1'b1;
+                            // this is just a read
+                            if (instr.itype.rs1 == 5'b0)
+                                instruction_o.op = CSR_READ;
+                            else
+                                instruction_o.op = CSR_SET;
+                        end
+                        3'b111: begin// CSRRCI
+                            instruction_o.rs1 = 5'b0;
+                            imm_select = IIMM;
+                            instruction_o.use_zimm = 1'b1;
+                            // this is just a read
+                            if (instr.itype.rs1 == 5'b0)
+                                instruction_o.op = CSR_READ;
+                            else
+                                instruction_o.op = CSR_CLEAR;
+                        end
+                        default: illegal_instr = 1'b1;
+                    endcase
                 end
 
                 OPCODE_FENCE: begin
                     // TODO: Implement
+                    // FENCE, FENCE.I,
                 end
 
                 // --------------------------
@@ -269,7 +333,6 @@ module decoder (
         imm_sb_type = { {51 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
         imm_u_type  = { {32 {instruction_i[31]}}, instruction_i[31:12], 12'b0 }; // JAL, AUIPC, sign extended to 64 bit
         imm_uj_type = { {44 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
-        // imm_z_type  = {  59'b0, instruction_i[`REG_S1] };
         imm_s2_type = { 59'b0, instruction_i[24:20] };
         imm_bi_type = { {59{instruction_i[24]}}, instruction_i[24:20] };
         imm_s3_type = { 59'b0, instruction_i[29:25] };

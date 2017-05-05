@@ -50,6 +50,7 @@ module commit_stage (
     assign waddr_a_o = commit_instr_i.rd;
     assign wdata_a_o = commit_instr_i.result;
     assign pc_o      = commit_instr_i.pc;
+
     // commit instruction
     // write register file
     always_comb begin : commit

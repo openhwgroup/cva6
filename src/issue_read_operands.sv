@@ -61,7 +61,7 @@ module issue_read_operands (
     input  logic [63:0]                            wdata_a_i,
     input  logic                                   we_a_i
 );
-    logic stall; // stall signal, we do not want to fetch any more entries
+    logic stall;   // stall signal, we do not want to fetch any more entries
     logic fu_busy; // functional unit is busy
     logic [63:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
 
@@ -146,9 +146,11 @@ module issue_read_operands (
         // poll the scoreboard for those values
         rs1_o = issue_instr_i.rs1;
         rs2_o = issue_instr_i.rs2;
+        // 0. check that we are not using the zimm type in rs1
+        //    as this is an immediate we do not have to wait on anything here
         // 1. check if the source registers are clobberd
         // 2. poll the scoreboard
-        if (rd_clobber_i[issue_instr_i.rs1] != NONE) begin
+        if (~issue_instr_i.use_zimm && rd_clobber_i[issue_instr_i.rs1] != NONE) begin
             // the operand is available, forward it
             if (rs1_valid_i)
                 forward_rs1 = 1'b1;
@@ -164,8 +166,6 @@ module issue_read_operands (
             else // the operand is not available -> stall
                 stall = 1'b1;
         end
-
-
     end
     // Forwarding/Output MUX
     always_comb begin : forwarding
@@ -187,6 +187,11 @@ module issue_read_operands (
             operand_a_n = issue_instr_i.pc;
         end
 
+        // use the zimm as operand a
+        if (issue_instr_i.use_zimm) begin
+            // zero extend operand a
+            operand_a_n = {52'b0, issue_instr_i.rs1};
+        end
         // or is it an immediate (including PC), this is not the case for a store
         if (issue_instr_i.use_imm && issue_instr_i.op != SD
                                   && issue_instr_i.op != SW
