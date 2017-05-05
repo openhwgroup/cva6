@@ -41,7 +41,7 @@ module lsu_tb;
         .imm_i                  ( lsu.imm              ),
         .lsu_ready_o            ( lsu.ready            ),
         .lsu_valid_i            ( lsu.source_valid     ),
-        .lsu_trans_id_i         ( lsu.lsu_trans_id_id  ),
+        .trans_id_i             ( lsu.lsu_trans_id_id  ),
         .lsu_trans_id_o         ( lsu.lsu_trans_id_wb  ),
         .lsu_result_o           ( lsu.result           ),
         .lsu_valid_o            ( lsu.result_valid     ),
