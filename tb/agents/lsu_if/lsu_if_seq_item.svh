@@ -30,7 +30,7 @@ class lsu_if_seq_item extends uvm_sequence_item;
     rand int requestDelay;
     logic [63:0] result;
 
-    const fu_op allowed_ops[] = {LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU, SBU};
+    const fu_op allowed_ops[] = {LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU};
     // constraint the delay we allow
     constraint delay_bounds {
         requestDelay inside {[0:10]};

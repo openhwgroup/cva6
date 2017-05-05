@@ -72,6 +72,7 @@ $(tests):
 	vsim${questa_version} +UVM_TESTNAME=$@_test +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $@_tb_optimized
 
 build-moore:
+	[ ! -e .moore ] || rm .moore
 	# $(moore) compile src/fifo.sv
 	$(foreach src_file, $(src), $(moore) compile $(src_file);)
 

@@ -23,7 +23,7 @@ module commit_stage (
     input logic                 rst_ni,     // Asynchronous reset active low
 
     output priv_lvl_t           priv_lvl_o,  // privilege level out
-    output exception            exception_o, // take exception to controller and if
+    output exception            exception_o, // take exception to controller
 
     // from scoreboard
     input  scoreboard_entry     commit_instr_i,
@@ -36,7 +36,7 @@ module commit_stage (
 
     // to/from CSR file
     output logic [63:0]         pc_o,
-    input  fu_op                csr_op_o,
+    output fu_op                csr_op_o,
     output logic [63:0]         csr_wdata_o,
     output logic [63:0]         csr_rdata_i,
     input  exception            csr_exception_i,
@@ -48,24 +48,61 @@ module commit_stage (
 );
 
     assign waddr_a_o = commit_instr_i.rd;
-    assign wdata_a_o = commit_instr_i.result;
     assign pc_o      = commit_instr_i.pc;
 
-    // commit instruction
-    // write register file
+    logic exception;
+
+    // -------------------
+    // Commit Instruction
+    // -------------------
+    // write register file or commit instruction in LSU or CSR Buffer
     always_comb begin : commit
         // default assignments
         commit_ack_o = 1'b0;
         we_a_o       = 1'b0;
-        if (commit_instr_i.valid) begin
-            we_a_o       = 1'b1;
-            commit_ack_o = 1'b1;
+        commit_lsu_o = 1'b0;
+        commit_csr_o = 1'b0;
+        exception    = 1'b0;
+        wdata_a_o    = commit_instr_i.result;
+        csr_op_o     = ADD; // this corresponds to a CSR NOP
+        // we will not commit the instruction if we took an exception
+        if (~(commit_instr_i.ex.valid || csr_exception_i.valid)) begin
+            if (commit_instr_i.valid) begin
+                // we can definitely write the register file
+                // if the instruction is not committing anything the destination
+                // register will be the all zero register.
+                we_a_o       = 1'b1;
+                commit_ack_o = 1'b1;
+                // check whether the instruction we retire was a store
+                if (commit_instr_i.op inside {SD, SW, SH, SB}) begin
+                    commit_lsu_o = 1'b1;
+                end
+                // ---------
+                // CSR Logic
+                // ---------
+                // check whether the instruction we retire was a CSR instruction
+                if (commit_instr_i.fu == CSR) begin
+                    // write the CSR file
+                    commit_csr_o = 1'b1;
+                    wdata_a_o    = csr_rdata_i;
+                    csr_op_o     = commit_instr_i.op;
+                    csr_wdata_o  = commit_instr_i.result;
+                end
+            end
+        end else begin // we got an exception either from the instruction directly or from the CS regfile
+            exception = 1'b1;
         end
     end
 
-    // CSR logic
-
     // privilege check
 
-    // exception logic
+    // ----------------
+    // Exception Logic
+    // ----------------
+    // here we know for sure that we are taking the exception
+    always_comb begin : exception_handling
+        if (exception) begin
+
+        end
+    end
 endmodule

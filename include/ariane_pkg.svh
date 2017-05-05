@@ -68,7 +68,7 @@ package ariane_pkg;
                                // CSR functions
                                MRET, SRET, URET, ECALL, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
                                // LSU functions
-                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU, SBU
+                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
                              } fu_op;
 
     // ---------------

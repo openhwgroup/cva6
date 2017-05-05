@@ -397,7 +397,7 @@ module lsu #(
             // all loads go here
             LD, LW, LWU, LH, LHU, LB, LBU:  op = LD_OP;
             // all stores go here
-            SD, SW, SH, SB, SBU:            op = ST_OP;
+            SD, SW, SH, SB:                 op = ST_OP;
             // not relevant for the lsu
             default:                        op = NONE;
         endcase

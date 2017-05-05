@@ -61,7 +61,7 @@ class lsu_if_driver extends uvm_driver #(lsu_if_seq_item);
                 @(m_vif.mck);
                 // spawn a commit thread that will eventually commit this instruction
                 case (cmd.operator)
-                    SD, SW, SH, SB, SBU:
+                    SD, SW, SH, SB:
                         fork
                             commit_thread: begin
                                 lock.get(1);
