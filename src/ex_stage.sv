@@ -121,7 +121,7 @@ module ex_stage #(
     // -----
     // CSR
     // -----
-
+    // CSR address buffer
     csr_buffer csr_buffer_i (
         .commit_i ( csr_commit_i  ),
         .*

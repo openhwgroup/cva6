@@ -32,13 +32,24 @@ module commit_stage (
     // to register file
     output  logic[4:0]          waddr_a_o,
     output  logic[63:0]         wdata_a_o,
-    output  logic               we_a_o
+    output  logic               we_a_o,
 
+    // to/from CSR file
+    output logic [63:0]         pc_o,
+    input  fu_op                csr_op_o,
+    output logic [63:0]         csr_wdata_o,
+    output logic [63:0]         csr_rdata_i,
+    input  exception            csr_exception_i,
+    // to ex
+    output logic                commit_lsu_o,
+    output logic                commit_csr_o,
+    // general control signal
+    input  logic [4:0]          irq_enable_i
 );
 
     assign waddr_a_o = commit_instr_i.rd;
     assign wdata_a_o = commit_instr_i.result;
-
+    assign pc_o      = commit_instr_i.pc;
     // commit instruction
     // write register file
     always_comb begin : commit

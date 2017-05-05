@@ -32,7 +32,8 @@ test_case = alu_test
 # QuestaSim Version
 questa_version = -10.5c
 compile_flag = +cover=bcfst+/dut
-
+# Moore binary
+moore = ~fschuiki/bin/moore
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
@@ -70,6 +71,10 @@ $(tests):
 	# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
 	vsim${questa_version} +UVM_TESTNAME=$@_test +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $@_tb_optimized
 
+build-moore:
+	# $(moore) compile src/fifo.sv
+	$(foreach src_file, $(src), $(moore) compile $(src_file);)
+
 # User Verilator to lint the target
 lint:
 	verilator ${src} --lint-only \
@@ -79,4 +84,4 @@ clean:
 	rm -rf work/ *.ucdb
 
 .PHONY:
-	build lint
+	build lint build-moore

@@ -32,7 +32,7 @@ module csr_regfile #(
     // we are taking an exception
     input exception               ex_i,
 
-    input  fu_op  [1:0]           csr_op_i,
+    input  fu_op                  csr_op_i,
     input  logic  [11:0]          csr_addr_i,
     input  logic  [63:0]          csr_wdata_i,
     output logic  [63:0]          csr_rdata_o,
@@ -45,9 +45,6 @@ module csr_regfile #(
     output logic  [31:0]          epc_o,
     output logic  [31:0]          trap_vector_base_o,
     output priv_lvl_t             priv_lvl_o,
-    input  logic  [63:0]          badaddr_i,
-    input  logic  [63:0]          exc_cause_i,
-    input  logic                  save_exc_cause_i,
     // MMU
     output logic                  enable_translation_o,
     output logic                  flag_pum_o,
@@ -205,10 +202,10 @@ module csr_regfile #(
                     mstatus_n    = csr_wdata;
                     // hardwired zero registers
                     mstatus_n.sd = 1'b0;
-                    mstatus.xs   = 2'b0;
-                    mstatus.fs   = 2'b0;
-                    mstatus.upie = 1'b0;
-                    mstatus.uie  = 1'b0;
+                    mstatus_n.xs   = 2'b0;
+                    mstatus_n.fs   = 2'b0;
+                    mstatus_n.upie = 1'b0;
+                    mstatus_n.uie  = 1'b0;
                 end
                 // machine exception delegation register
                 // 0 - 12 exceptions supported
