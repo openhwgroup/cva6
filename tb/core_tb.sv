@@ -39,7 +39,7 @@ module core_tb;
 
     ariane dut (
         .clk_i                  ( clk_i               ),
-        .rst_n                  ( rst_ni              ),
+        .rst_ni                 ( rst_ni              ),
         .clock_en_i             ( clock_en_i          ),
         .test_en_i              ( test_en_i           ),
         .fetch_enable_i         ( fetch_enable_i      ),
