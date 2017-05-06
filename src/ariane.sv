@@ -174,7 +174,7 @@ module ariane
     exception                 csr_exception_csr_commit;
     // --------------
     // EX <-> CSR
-    // --------------    
+    // --------------
 
     // TODO: Preliminary signal assignments
     logic flush_tlb;
@@ -339,8 +339,9 @@ module ariane
     // ---------
     csr_regfile #(
         .ASID_WIDTH           ( ASID_WIDTH                )
-    ) 
+    )
     csr_regfile_i (
+        .flush_o              (                           ),
         .ex_i                 ( ex_commit_csr             ),
         .csr_op_i             ( csr_op_commit_csr         ),
         .csr_addr_i           ( csr_addr_ex_csr           ),

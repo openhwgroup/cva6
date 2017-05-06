@@ -22,9 +22,10 @@ import ariane_pkg::*;
 module csr_regfile #(
     parameter int ASID_WIDTH = 1
     )(
-    input logic                   clk_i,    // Clock
-    input logic                   rst_ni,   // Asynchronous reset active low
-
+    input  logic                  clk_i,    // Clock
+    input  logic                  rst_ni,   // Asynchronous reset active low
+    // send a flush request out if a CSR with a side effect has changed
+    output logic                  flush_o,
     // Core and Cluster ID
     input  logic  [3:0]           core_id_i,
     input  logic  [5:0]           cluster_id_i,
@@ -42,8 +43,8 @@ module csr_regfile #(
                                                     // raises illegal instruction exceptions.
     // Interrupts/Exceptions
     output logic  [3:0]           irq_enable_o,
-    output logic  [31:0]          epc_o,
-    output logic  [31:0]          trap_vector_base_o,
+    output logic  [63:0]          epc_o,
+    output logic  [63:0]          trap_vector_base_o,
     output priv_lvl_t             priv_lvl_o,
     // MMU
     output logic                  enable_translation_o,
@@ -151,9 +152,9 @@ module csr_regfile #(
             CSR_MEPC:               csr_rdata = mepc_q;
             CSR_MCAUSE:             csr_rdata = mcause_q;
             CSR_MTVAL:              csr_rdata = mtval_q;
-            CSR_MVENDORID:          csr_rdata = 63'b0; // not implemented
-            CSR_MARCHID:            csr_rdata = 63'b0; // PULP, anonymous source (no allocated ID yet)
-            CSR_MIMPID:             csr_rdata = 63'b0; // not implemented
+            CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
+            CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
+            CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
             CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
             default: read_access_exception = 1'b1;
         endcase
@@ -164,6 +165,7 @@ module csr_regfile #(
     always_comb begin : csr_update
         update_access_exception = 1'b0;
 
+        priv_lvl_n = priv_lvl_q;
         mstatus_n  = mstatus_q;
         mtvec_n    = mtvec_q;
         medeleg_n  = medeleg_q;
@@ -180,9 +182,10 @@ module csr_regfile #(
         stvec_n    = stvec_q;
         sscratch_n = sscratch_q;
         stval_n    = stval_q;
+        satp_n     = satp_q;
 
         // check for correct access rights and that we are writing
-        if ((priv_lvl_q && csr_addr.csr_decode.priv_lvl) == csr_addr.csr_decode.priv_lvl && csr_we) begin
+        if (((priv_lvl_q & csr_addr.csr_decode.priv_lvl) == csr_addr.csr_decode.priv_lvl) && csr_we) begin
             case (csr_addr.address)
                 // sstatus is a subset of mstatus - mask it accordingly
                 CSR_SSTATUS:            mstatus_n    = csr_wdata & 64'h3fffe1fee;
@@ -192,16 +195,18 @@ module csr_regfile #(
                 CSR_SIP:                mip_n       = csr_wdata & (~64'h111) & mideleg_q;
                 CSR_STVEC:              stvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                 CSR_SSCRATCH:           sscratch_n  = csr_wdata;
-                CSR_SEPC:               sepc_n      = csr_wdata_i[63:1];
-                CSR_SCAUSE:             scause_n    = csr_wdata_i;
-                CSR_STVAL:              stval_n     = csr_wdata_i;
+                CSR_SEPC:               sepc_n      = {csr_wdata[63:1], 1'b0};
+                CSR_SCAUSE:             scause_n    = csr_wdata;
+                CSR_STVAL:              stval_n     = csr_wdata;
                 // supervisor address translation and protection
-                CSR_SATP:               satp_n      = sapt_t'(csr_wdata_i);
+                CSR_SATP:               satp_n      = sapt_t'(csr_wdata);
 
                 CSR_MSTATUS: begin
-                    mstatus_n    = csr_wdata;
+                    mstatus_n      = csr_wdata;
+                    mstatus_n.sxl  = 2'b0;
+                    mstatus_n.uxl  = 2'b0;
                     // hardwired zero registers
-                    mstatus_n.sd = 1'b0;
+                    mstatus_n.sd   = 1'b0;
                     mstatus_n.xs   = 2'b0;
                     mstatus_n.fs   = 2'b0;
                     mstatus_n.upie = 1'b0;
@@ -219,10 +224,10 @@ module csr_regfile #(
                 CSR_MIP:                mip_n       = csr_wdata & (~64'h111);
 
                 CSR_MTVEC:              mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
-                CSR_MSCRATCH:           mscratch_n  = csr_wdata_i;
-                CSR_MEPC:               mepc_n      = csr_wdata_i[63:1];
-                CSR_MCAUSE:             mcause_n    = csr_wdata_i;
-                CSR_MTVAL:              mtval_n     = csr_wdata_i;
+                CSR_MSCRATCH:           mscratch_n  = csr_wdata;
+                CSR_MEPC:               mepc_n      = {csr_wdata[63:1], 1'b0};
+                CSR_MCAUSE:             mcause_n    = csr_wdata;
+                CSR_MTVAL:              mtval_n     = csr_wdata;
                 default: update_access_exception = 1'b1;
             endcase
         end else begin
@@ -234,6 +239,7 @@ module csr_regfile #(
             automatic priv_lvl_t trap_to_priv_lvl;
             // figure out where to trap to
             // a m-mode trap might be delegated
+            // first figure out if this was an exception or an interrupt e.g.: look at bit 63
             if ((ex_i.cause[63] && mideleg_q[ex_i.cause[62:0]]) ||
                 (~ex_i.cause[63] && mideleg_q[ex_i.cause[62:0]])) begin
                 trap_to_priv_lvl = PRIV_LVL_S;
@@ -302,7 +308,7 @@ module csr_regfile #(
     assign priv_lvl_o  = priv_lvl_q;
     // MMU outputs
     assign pd_ppn_o    = satp_q.ppn;
-    assign asid_o      = satp_q.asid;
+    assign asid_o      = satp_q.asid[ASID_WIDTH-1:0];
     assign flag_pum_o  = mstatus_q.sum;
     assign enable_translation_o = mstatus_q.tvm;
     assign flag_mxr_o  = mstatus_q.mxr;
@@ -347,10 +353,11 @@ module csr_regfile #(
             stvec_q         <= 64'b0;
             sscratch_q      <= 64'b0;
             stval_q         <= 64'b0;
+            satp_q          <= 64'b0;
         end else begin
             priv_lvl_q      <= priv_lvl_n;
             prev_priv_lvl_q <= prev_priv_lvl_n;
-            // supervisor mode registers
+            // machine mode registers
             mstatus_q       <= mstatus_n;
             mtvec_q         <= mtvec_n;
             medeleg_q       <= medeleg_n;
@@ -361,12 +368,13 @@ module csr_regfile #(
             mcause_q        <= mcause_n;
             mscratch_q      <= mscratch_n;
             mtval_q         <= mtval_n;
-            // machine mode registers
+            // supervisor mode registers
             sepc_q          <= sepc_n;
             scause_q        <= scause_n;
             stvec_q         <= stvec_n;
             sscratch_q      <= sscratch_n;
             stval_q         <= stval_n;
+            satp_q          <= satp_n;
         end
     end
 endmodule

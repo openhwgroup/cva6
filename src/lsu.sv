@@ -167,8 +167,8 @@ module lsu #(
     // MMU e.g.: TLBs/PTW
     // -------------------
     mmu #(
-        .INSTR_TLB_ENTRIES      ( 4                   ),
-        .DATA_TLB_ENTRIES       ( 4                   ),
+        .INSTR_TLB_ENTRIES      ( 16                   ),
+        .DATA_TLB_ENTRIES       ( 16                   ),
         .ASID_WIDTH             ( ASID_WIDTH           )
     ) i_mmu (
         .lsu_req_i              ( translation_req      ),

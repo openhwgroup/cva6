@@ -202,7 +202,6 @@ package ariane_pkg;
     localparam ENV_CALL_MMODE        = 64'hB;
 
     typedef enum logic [11:0] {
-
         CSR_SSTATUS   = 12'h100,
         CSR_SIE       = 12'h104,
         CSR_STVEC     = 12'h105,
@@ -237,10 +236,10 @@ package ariane_pkg;
         logic  [7:0] address;
     } csr_addr_t;
 
-    `ifndef VERILATOR
+    // `ifndef VERILATOR
     typedef union packed {
         csr_reg_t   address;
         csr_addr_t  csr_decode;
     } csr_t;
-    `endif
+    // `endif
 endpackage
