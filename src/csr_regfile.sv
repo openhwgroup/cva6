@@ -185,53 +185,55 @@ module csr_regfile #(
         satp_n     = satp_q;
 
         // check for correct access rights and that we are writing
-        if (((priv_lvl_q & csr_addr.csr_decode.priv_lvl) == csr_addr.csr_decode.priv_lvl) && csr_we) begin
-            case (csr_addr.address)
-                // sstatus is a subset of mstatus - mask it accordingly
-                CSR_SSTATUS:            mstatus_n    = csr_wdata & 64'h3fffe1fee;
-                // even machine mode interrupts can be visible and set-able to supervisor
-                // if the corresponding bit in mideleg is set
-                CSR_SIE:                mie_n       = csr_wdata & (~64'h111) & mideleg_q;
-                CSR_SIP:                mip_n       = csr_wdata & (~64'h111) & mideleg_q;
-                CSR_STVEC:              stvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
-                CSR_SSCRATCH:           sscratch_n  = csr_wdata;
-                CSR_SEPC:               sepc_n      = {csr_wdata[63:1], 1'b0};
-                CSR_SCAUSE:             scause_n    = csr_wdata;
-                CSR_STVAL:              stval_n     = csr_wdata;
-                // supervisor address translation and protection
-                CSR_SATP:               satp_n      = sapt_t'(csr_wdata);
+        if(csr_we) begin
+            if (((priv_lvl_q & csr_addr.csr_decode.priv_lvl) == csr_addr.csr_decode.priv_lvl)) begin
+                case (csr_addr.address)
+                    // sstatus is a subset of mstatus - mask it accordingly
+                    CSR_SSTATUS:            mstatus_n    = csr_wdata & 64'h3fffe1fee;
+                    // even machine mode interrupts can be visible and set-able to supervisor
+                    // if the corresponding bit in mideleg is set
+                    CSR_SIE:                mie_n       = csr_wdata & (~64'h111) & mideleg_q;
+                    CSR_SIP:                mip_n       = csr_wdata & (~64'h111) & mideleg_q;
+                    CSR_STVEC:              stvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                    CSR_SSCRATCH:           sscratch_n  = csr_wdata;
+                    CSR_SEPC:               sepc_n      = {csr_wdata[63:1], 1'b0};
+                    CSR_SCAUSE:             scause_n    = csr_wdata;
+                    CSR_STVAL:              stval_n     = csr_wdata;
+                    // supervisor address translation and protection
+                    CSR_SATP:               satp_n      = sapt_t'(csr_wdata);
 
-                CSR_MSTATUS: begin
-                    mstatus_n      = csr_wdata;
-                    mstatus_n.sxl  = 2'b0;
-                    mstatus_n.uxl  = 2'b0;
-                    // hardwired zero registers
-                    mstatus_n.sd   = 1'b0;
-                    mstatus_n.xs   = 2'b0;
-                    mstatus_n.fs   = 2'b0;
-                    mstatus_n.upie = 1'b0;
-                    mstatus_n.uie  = 1'b0;
-                end
-                // machine exception delegation register
-                // 0 - 12 exceptions supported
-                CSR_MEDELEG:            medeleg_n   = csr_wdata & (~64'hBFF);
-                // machine interrupt delegation register
-                // we do not support user interrupt delegation
-                CSR_MIDELEG:            mideleg_n   = csr_wdata & (~64'hAAA);
+                    CSR_MSTATUS: begin
+                        mstatus_n      = csr_wdata;
+                        mstatus_n.sxl  = 2'b0;
+                        mstatus_n.uxl  = 2'b0;
+                        // hardwired zero registers
+                        mstatus_n.sd   = 1'b0;
+                        mstatus_n.xs   = 2'b0;
+                        mstatus_n.fs   = 2'b0;
+                        mstatus_n.upie = 1'b0;
+                        mstatus_n.uie  = 1'b0;
+                    end
+                    // machine exception delegation register
+                    // 0 - 12 exceptions supported
+                    CSR_MEDELEG:            medeleg_n   = csr_wdata & (~64'hBFF);
+                    // machine interrupt delegation register
+                    // we do not support user interrupt delegation
+                    CSR_MIDELEG:            mideleg_n   = csr_wdata & (~64'hAAA);
 
-                // mask the register so that user interrupts can never be set
-                CSR_MIE:                mie_n       = csr_wdata & (~64'h111);
-                CSR_MIP:                mip_n       = csr_wdata & (~64'h111);
+                    // mask the register so that user interrupts can never be set
+                    CSR_MIE:                mie_n       = csr_wdata & (~64'h111);
+                    CSR_MIP:                mip_n       = csr_wdata & (~64'h111);
 
-                CSR_MTVEC:              mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
-                CSR_MSCRATCH:           mscratch_n  = csr_wdata;
-                CSR_MEPC:               mepc_n      = {csr_wdata[63:1], 1'b0};
-                CSR_MCAUSE:             mcause_n    = csr_wdata;
-                CSR_MTVAL:              mtval_n     = csr_wdata;
-                default: update_access_exception = 1'b1;
-            endcase
-        end else begin
-            update_access_exception = 1'b1;
+                    CSR_MTVEC:              mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                    CSR_MSCRATCH:           mscratch_n  = csr_wdata;
+                    CSR_MEPC:               mepc_n      = {csr_wdata[63:1], 1'b0};
+                    CSR_MCAUSE:             mcause_n    = csr_wdata;
+                    CSR_MTVAL:              mtval_n     = csr_wdata;
+                    default: update_access_exception = 1'b1;
+                endcase
+            end else begin
+                update_access_exception = 1'b1;
+            end
         end
         // update exception CSRs
         // we got an exception update cause, pc and stval register

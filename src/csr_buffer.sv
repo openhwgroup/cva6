@@ -38,21 +38,21 @@ module csr_buffer (
     input  logic                     commit_i,       // commit the pending CSR OP
 
     // to CSR file
-    input  logic  [11:0]             csr_addr_o      // CSR address to commit stage
+    output logic  [11:0]             csr_addr_o      // CSR address to commit stage
 );
+    // this is a single entry store buffer for the address of the CSR
+    // which we are going to need in the commit stage
+    struct packed {
+        logic [11:0] csr_address;
+        logic        valid;
+    } csr_reg_n, csr_reg_q;
+
     // control logic, scoreboard signals
     assign csr_trans_id_o = trans_id_i;
     assign csr_valid_o    = csr_reg_q.valid | csr_valid_i;
     assign csr_result_o   = operand_a_i;
     assign csr_ready_o    = (csr_reg_q.valid && ~commit_i) ? 1'b0 : 1'b1;
     assign csr_addr_o     = csr_reg_q.csr_address;
-
-    // this is a single entry store buffer for the address of the CSR
-    // which we are going to need in the commit stage
-    struct {
-        logic [11:0] csr_address;
-        logic        valid;
-    } csr_reg_n, csr_reg_q;
 
     // write logic
     always_comb begin : write

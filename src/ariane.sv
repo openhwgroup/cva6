@@ -90,10 +90,11 @@ module ariane
     logic [31:0]              fetch_rdata_id_if;
     logic                     instr_valid_if_id;
     logic [31:0]              instr_rdata_if_id;
-    logic                     is_compressed_id_if;
+    logic                     illegal_c_insn_if_id;
+    logic                     is_compressed_if_id;
     logic                     illegal_c_insn_id_if;
-    logic [63:0]              pc_if_id_if;
-    logic [63:0]              pc_id_id_if;
+    logic [63:0]              pc_if_if_id;
+    logic [63:0]              pc_id_if_id;
     exception                 exception_if_id;
     // --------------
     // ID <-> EX
@@ -119,7 +120,7 @@ module ariane
     exception                 lsu_exception_ex_id;
     // MULT
     logic                     mult_ready_ex_id;
-    logic                     mult_valid_ex_id;
+    logic                     mult_valid_id_ex;
     // CSR
     logic                     csr_ready_ex_id;
     logic                     csr_valid_id_ex;
@@ -149,7 +150,8 @@ module ariane
     // --------------
     logic                     fetch_req_if_ex;
     logic                     fetch_gnt_ex_if;
-    logic                     fetch_valid_if_ex;
+    logic                     fetch_valid_ex_if;
+    logic [31:0]              fetch_rdata_ex_if;
     logic                     fetch_err_ex_if;
     logic [63:0]              fetch_vaddr_if_ex;
     // --------------
@@ -170,7 +172,7 @@ module ariane
     logic [63:0]              csr_wdata_commit_csr;
     logic [63:0]              csr_rdata_csr_commit;
     logic [63:0]              pc_commit_csr;
-    logic [3:0]               irq_enable_csr_commit;
+    logic [4:0]               irq_enable_csr_commit;
     exception                 csr_exception_csr_commit;
     // --------------
     // EX <-> CSR
@@ -181,7 +183,6 @@ module ariane
     assign flush_tlb = 1'b0;
     assign flush = 1'b0;
 
-    assign id_ready_i = 1'b1;
     assign halt_if = 1'b0;
     // --------------
     // NPC Generation
@@ -242,15 +243,15 @@ module ariane
         .lsu_ready_i         ( lsu_ready_ex_id                          ),
         .lsu_valid_o         ( lsu_valid_id_ex                          ),
 
-        .mult_ready_i        (                                          ),
-        .mult_valid_o        (                                          ),
+        .mult_ready_i        ( mult_ready_ex_id                         ),
+        .mult_valid_o        ( mult_valid_id_ex                         ),
 
         .csr_ready_i         ( csr_ready_ex_id                          ),
         .csr_valid_o         ( csr_valid_id_ex                          ),
 
         .trans_id_i          ( {alu_trans_id_ex_id, lsu_trans_id_ex_id , csr_trans_id_ex_id} ),
         .wdata_i             ( {alu_result_ex_id,   lsu_result_ex_id, csr_result_ex_id}      ),
-        .ex_ex_i             ( {'b0, lsu_exception_ex_id, 'b0 }                              ),
+        .ex_ex_i             ( {{$bits(exception){1'b0}}, lsu_exception_ex_id, {$bits(exception){1'b0}} }                              ),
         .wb_valid_i          ( {alu_valid_ex_id, lsu_valid_ex_id, csr_valid_ex_id}           ),
 
         .waddr_a_i           ( waddr_a_commit_id                        ),
@@ -295,11 +296,11 @@ module ariane
         .csr_addr_o           ( csr_addr_ex_csr           ),
         .csr_commit_i         ( csr_commit_commit_ex      ), // from commit
         // memory management
-        .enable_translation_i ( enable_translation_csr_ex                      ), // from CSR
+        .enable_translation_i ( enable_translation_csr_ex ), // from CSR
         .fetch_req_i          ( fetch_req_if_ex           ),
         .fetch_gnt_o          ( fetch_gnt_ex_if           ),
         .fetch_valid_o        ( fetch_valid_ex_if         ),
-        .fetch_err_o          ( fetch_err_o               ),
+        .fetch_err_o          ( fetch_err_ex_if           ),
         .fetch_vaddr_i        ( fetch_vaddr_if_ex         ),
         .fetch_rdata_o        ( fetch_rdata_ex_if         ),
         .priv_lvl_i           ( priv_lvl                  ), // from CSR
@@ -348,8 +349,8 @@ module ariane
         .csr_wdata_i          ( csr_wdata_commit_csr      ),
         .csr_rdata_o          ( csr_rdata_csr_commit      ),
         .pc_i                 ( pc_commit_csr             ),
-        .csr_exception_o      ( csr_exception_o           ),
-        .irq_enable_o         ( irq_enable_o              ),
+        .csr_exception_o      ( csr_exception_csr_commit  ),
+        .irq_enable_o         (                           ),
         .epc_o                (                           ),
         .trap_vector_base_o   (                           ),
         .priv_lvl_o           ( priv_lvl                  ),

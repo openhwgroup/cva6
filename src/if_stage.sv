@@ -214,10 +214,12 @@ module if_stage (
         //-------------
         // Assertions
         //-------------
+        `ifndef SYNTHESIS
         `ifndef VERILATOR
         // there should never be a grant when there was no request
         assert property (
           @(posedge clk_i) (instr_gnt_i) |-> (instr_req_o) )
         else $warning("There was a grant without a request");
+        `endif
         `endif
 endmodule
