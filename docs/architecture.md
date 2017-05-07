@@ -69,6 +69,7 @@ The FU are not supposed to have inter-unit dependencies for the moment, e.g.: ev
 | trans_id_i  | Input         | Transaction ID for the operation to perform      |
 | trans_id_o  | Output        | Transaction ID at which to write back the result |
 
+Refer to the [timing diagram](timing_diagrams/#functional-unit) section for further detail.
 
 TODO: Details about comparisons and branches.
 
@@ -125,4 +126,4 @@ Table 3 describes the signals that are used by the LSU.
 
 The protocol that is used by the LSU to communicate with a memory works as follows:
 
-The LSU provides a valid address in data_addr_o and sets data_req_o high. The memory then answers with a data_gnt_i set high as soon as it is ready to serve the request. This may happen in the same cycle as the request was sent or any number of cycles later. After a grant was received, the address may be changed in the next cycle by the LSU. In addition, the data_wdata_o, data_we_o and data_be_o signals may be changed as it is assumed that the memory has already processed and stored that information. After receiving a grant, the memory answers with a data_rvalid_i set high if data_rdata_i is valid. This may happen one or more cycles after the grant has been received. Note that data_rvalid_i must also be set when a write was performed, although the data_rdata_i has no meaning in this case.
+The LSU provides a valid address in data_addr_o and sets data_req_o high. The memory then answers with a data_gnt_i set high as soon as it is ready to serve the request. This may happen in the same cycle as the request was sent or any number of cycles later. After a grant was received, the address may be changed in the next cycle by the LSU. In addition, the data_wdata_o, data_we_o and data_be_o signals may be changed as it is assumed that the memory has already processed and stored that information. After receiving a grant, the memory answers with a data_rvalid_i set high if data_rdata_i is valid. This may happen one or more cycles after the grant has been received. Note that data_rvalid_i must also be set when a write was performed, although the data_rdata_i has no meaning in this case. Check the [timing diagrams](timing_diagrams/#memory-interface) for further details.
