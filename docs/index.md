@@ -62,3 +62,26 @@ For the time being everything is restricted with all rights reserved:
 // University of Bologna.
 //
 ```
+# Timing Diagrams
+
+The documentation scheme allows you to insert timing diagrams written in [WaveJSON](https://github.com/drom/wavedrom/wiki/WaveJSON). To do so:
+
+Insert [WaveJSON](https://github.com/drom/wavedrom/wiki/WaveJSON) source inside HTML ``<body>`` wrapped with ``<script>`` tag:
+
+```html
+<script type="WaveDrom">
+{ signal : [
+  { name: "clk",  wave: "p......" },
+  { name: "bus",  wave: "x.34.5x",   data: "head body tail" },
+  { name: "wire", wave: "0.1..0." },
+]}
+</script>
+```
+
+<script type="WaveDrom">
+{ signal : [
+  { name: "clk",  wave: "p......" },
+  { name: "bus",  wave: "x.34.5x",   data: "head body tail" },
+  { name: "wire", wave: "0.1..0." },
+]}
+</script>

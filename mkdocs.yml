@@ -9,3 +9,4 @@ pages:
 
 # cosmo, readthedocs, journal, slate, material, readable, spacelab, united, bootstrap, simplex, flatly, yeti, amelia, cerulean, cyborg, mkdocs
 theme: 'flatly'
+extra_javascript: [js/default.js, js/wavedrom.min.js, js/ariane.js]
