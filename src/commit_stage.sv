@@ -65,8 +65,10 @@ module commit_stage (
         exception    = 1'b0;
         wdata_a_o    = commit_instr_i.result;
         csr_op_o     = ADD; // this corresponds to a CSR NOP
+        csr_wdata_o  = 64'b0;
+
         // we will not commit the instruction if we took an exception
-        if (~(commit_instr_i.ex.valid || csr_exception_i.valid)) begin
+        if (~commit_instr_i.ex.valid) begin
             if (commit_instr_i.valid) begin
                 // we can definitely write the register file
                 // if the instruction is not committing anything the destination
@@ -101,8 +103,10 @@ module commit_stage (
     // ----------------
     // here we know for sure that we are taking the exception
     always_comb begin : exception_handling
-        if (exception) begin
-
+        exception_o.valid = 1'b0;
+        if (commit_instr_i.ex.valid || csr_exception_i.valid) begin
+            // check for CSR exception
+            exception_o.valid = 1'b1;
         end
     end
 endmodule
