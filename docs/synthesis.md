@@ -1,6 +1,8 @@
 # Synthesis Results
 
-## Scoreboard
+## UMC65 WC
+
+### Scoreboard
 
 Synthesized @ 0.4 ns, worst case, UMC65:
 
@@ -12,7 +14,7 @@ Synthesized @ 0.4 ns, worst case, UMC65:
 | **Total**     | **45568 (~32 kGE)**            | **32441 (~23 kGE)**        | **31861 (~23 kGE)**            | **16088 (~ 11 kGE)**       |
 
 
-## ALU
+### ALU
 
 |    **Type**   | **1.6 ns, worst case, UMC65** |
 |---------------|-------------------------------|
@@ -21,7 +23,7 @@ Synthesized @ 0.4 ns, worst case, UMC65:
 | Buffer        | 582                           |
 | **Total**     | **9019 (~6.4 kGE)**           |
 
-## BTB
+### BTB
 
 Synthesized @ 1.1 ns, worst case, UMC65
 
@@ -32,7 +34,7 @@ Synthesized @ 1.1 ns, worst case, UMC65
 | Buffer        | 342                 | 2276                |
 | **Total**     | **55490 (~39 kGE)** | **29327 (~20 kGE)** |
 
-## TLB
+### TLB
 
 Synthesized @ 0.6 ns, worst case, UMC65
 
@@ -44,5 +46,7 @@ Synthesized @ 0.6 ns, worst case, UMC65
 | **Total**     | **32793 (~23 kGE)** |   |
 
 The address generation unit has a delay of 0.4 ns (WC).
+
+## STM28 FDSOI
 
 
