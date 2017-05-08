@@ -22,7 +22,6 @@ module commit_stage (
     input logic                 clk_i,      // Clock
     input logic                 rst_ni,     // Asynchronous reset active low
 
-    output priv_lvl_t           priv_lvl_o,  // privilege level out
     output exception            exception_o, // take exception to controller
 
     // from scoreboard
@@ -38,7 +37,7 @@ module commit_stage (
     output logic [63:0]         pc_o,
     output fu_op                csr_op_o,
     output logic [63:0]         csr_wdata_o,
-    output logic [63:0]         csr_rdata_i,
+    input  logic [63:0]         csr_rdata_i,
     input  exception            csr_exception_i,
     // to ex
     output logic                commit_lsu_o,
@@ -104,9 +103,16 @@ module commit_stage (
     // here we know for sure that we are taking the exception
     always_comb begin : exception_handling
         exception_o.valid = 1'b0;
-        if (commit_instr_i.ex.valid || csr_exception_i.valid) begin
-            // check for CSR exception
-            exception_o.valid = 1'b1;
+        exception_o.cause = 64'b0;
+        exception_o.tval  = 64'b0;
+        // check for CSR exception
+        if (csr_exception_i.valid) begin
+            exception_o = csr_exception_i;
         end
+        // but we give precedence to exceptions which happened earlier
+        if (commit_instr_i.ex.valid) begin
+            exception_o = commit_instr_i.ex;
+        end
+
     end
 endmodule

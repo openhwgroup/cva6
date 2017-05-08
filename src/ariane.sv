@@ -41,7 +41,7 @@ module ariane
         // Instruction memory interface
         output logic [63:0]                    instr_if_address_o,
         output logic                           instr_if_data_req_o,
-        output logic [7:0]                     instr_if_data_be_o,
+        output logic [3:0]                     instr_if_data_be_o,
         input  logic                           instr_if_data_gnt_i,
         input  logic                           instr_if_data_rvalid_i,
         input  logic [31:0]                    instr_if_data_rdata_i,
@@ -318,7 +318,6 @@ module ariane
     // Commit
     // ---------
     commit_stage commit_stage_i (
-        .priv_lvl_o          ( priv_lvl                   ),
         .exception_o         ( ex_commit_csr              ),
         .commit_instr_i      ( commit_instr_id_commit     ),
         .commit_ack_o        ( commit_ack_commit_id       ),

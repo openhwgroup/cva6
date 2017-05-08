@@ -57,7 +57,7 @@ module mmu #(
         // Instruction memory/cache
         output logic [63:0]                     instr_if_address_o,
         output logic                            instr_if_data_req_o,
-        output logic [7:0]                      instr_if_data_be_o,
+        output logic [3:0]                      instr_if_data_be_o,
         input  logic                            instr_if_data_gnt_i,
         input  logic                            instr_if_data_rvalid_i,
         input  logic [31:0]                     instr_if_data_rdata_i,
