@@ -82,6 +82,23 @@ module ariane
     logic                     flush;
     logic                     fetch_enable;
     logic                     halt_if;
+    logic [63:0]              pc_if;
+    exception                 ex_commit; // exception from commit stage
+    // --------------
+    // PCGEN <-> IF
+    // --------------
+    logic [63:0]              pc_pcgen_if;
+    logic                     set_pc_pcgen_if;
+    logic                     is_branch_pcgen_if;
+    // --------------
+    // PCGEN <-> EX
+    // --------------
+    mispredict                mispredict_ex_pcgen;
+    // --------------
+    // PCGEN <-> CSR
+    // --------------
+    logic [63:0]              trap_vector_base_commit_pcgen;
+    logic [63:0]              epc_commit_pcgen;
     // --------------
     // IF <-> ID
     // --------------
@@ -93,7 +110,6 @@ module ariane
     logic                     illegal_c_insn_if_id;
     logic                     is_compressed_if_id;
     logic                     illegal_c_insn_id_if;
-    logic [63:0]              pc_if_if_id;
     logic [63:0]              pc_id_if_id;
     exception                 exception_if_id;
     // --------------
@@ -167,7 +183,6 @@ module ariane
     // --------------
     // COMMIT <-> CSR
     // --------------
-    exception                 ex_commit_csr;
     fu_op                     csr_op_commit_csr;
     logic [63:0]              csr_wdata_commit_csr;
     logic [63:0]              csr_rdata_csr_commit;
@@ -187,16 +202,30 @@ module ariane
     // --------------
     // NPC Generation
     // --------------
-
+    pcgen pcgen_i (
+        .flush_i            ( flush                          ),
+        .pc_if_i            ( pc_if                          ),
+        .mispredict_i       ( mispredict_ex_pcgen            ),
+        .pc_if_o            ( pc_pcgen_if                    ),
+        .set_pc_o           ( set_pc_pcgen_if                ),
+        .is_branch_o        ( is_branch_o                    ),
+        .boot_addr_i        ( boot_addr_i                    ),
+        .epc_i              ( epc_i                          ),
+        .trap_vector_base_i ( trap_vector_base_commit_pcgen  ),
+        .ex_i               ( ex_commit                      ),
+        .*
+    );
     // ---------
     // IF
     // ---------
     if_stage if_stage_i (
         .flush_i             ( flush                    ),
         .req_i               ( fetch_enable             ),
-        .if_busy_o           (                          ),
+        .if_busy_o           (                          ), // ?
         .id_ready_i          ( ready_id_if              ),
         .halt_if_i           ( halt_if                  ),
+        .set_pc_i            ( set_pc_pcgen_if          ),
+        .fetch_addr_i        ( pc_pcgen_if              ),
         .instr_req_o         ( fetch_req_if_ex          ),
         .instr_addr_o        ( fetch_vaddr_if_ex        ),
         .instr_gnt_i         ( fetch_gnt_ex_if          ),
@@ -207,10 +236,9 @@ module ariane
         .instr_rdata_id_o    ( instr_rdata_if_id        ),
         .is_compressed_id_o  ( is_compressed_if_id      ),
         .illegal_c_insn_id_o ( illegal_c_insn_if_id     ),
-        .pc_if_o             ( pc_if_if_id              ),
+        .pc_if_o             ( pc_if                    ),
         .pc_id_o             ( pc_id_if_id              ),
         .ex_o                ( exception_if_id          ),
-        .boot_addr_i         ( boot_addr_i              ), // TODO
         .*
     );
     // ---------
@@ -227,7 +255,7 @@ module ariane
         .instruction_i       ( instr_rdata_if_id                        ),
         .instruction_valid_i ( instr_valid_if_id                        ),
         .is_compressed_i     ( is_compressed_if_id                      ),
-        .pc_if_i             ( pc_if_if_id                              ), // PC from if
+        .pc_if_i             ( pc_if                                    ), // PC from if
         .ex_if_i             ( exception_if_id                          ), // exception from if
         .ready_o             ( ready_id_if                              ),
         // Functional Units
@@ -249,10 +277,10 @@ module ariane
         .csr_ready_i         ( csr_ready_ex_id                          ),
         .csr_valid_o         ( csr_valid_id_ex                          ),
 
-        .trans_id_i          ( {alu_trans_id_ex_id, lsu_trans_id_ex_id , csr_trans_id_ex_id} ),
-        .wdata_i             ( {alu_result_ex_id,   lsu_result_ex_id, csr_result_ex_id}      ),
-        .ex_ex_i             ( {{$bits(exception){1'b0}}, lsu_exception_ex_id, {$bits(exception){1'b0}} }                              ),
-        .wb_valid_i          ( {alu_valid_ex_id, lsu_valid_ex_id, csr_valid_ex_id}           ),
+        .trans_id_i          ( {alu_trans_id_ex_id, lsu_trans_id_ex_id , csr_trans_id_ex_id}                    ),
+        .wdata_i             ( {alu_result_ex_id,   lsu_result_ex_id, csr_result_ex_id}                         ),
+        .ex_ex_i             ( {{$bits(exception){1'b0}}, lsu_exception_ex_id, {$bits(exception){1'b0}} }       ),
+        .wb_valid_i          ( {alu_valid_ex_id, lsu_valid_ex_id, csr_valid_ex_id}                              ),
 
         .waddr_a_i           ( waddr_a_commit_id                        ),
         .wdata_a_i           ( wdata_a_commit_id                        ),
@@ -318,7 +346,7 @@ module ariane
     // Commit
     // ---------
     commit_stage commit_stage_i (
-        .exception_o         ( ex_commit_csr              ),
+        .exception_o         ( ex_commit              ),
         .commit_instr_i      ( commit_instr_id_commit     ),
         .commit_ack_o        ( commit_ack_commit_id       ),
         .waddr_a_o           ( waddr_a_commit_id          ),
@@ -338,32 +366,42 @@ module ariane
     // CSR
     // ---------
     csr_regfile #(
-        .ASID_WIDTH           ( ASID_WIDTH                )
+        .ASID_WIDTH           ( ASID_WIDTH                      )
     )
     csr_regfile_i (
-        .flush_o              (                           ),
-        .ex_i                 ( ex_commit_csr             ),
-        .csr_op_i             ( csr_op_commit_csr         ),
-        .csr_addr_i           ( csr_addr_ex_csr           ),
-        .csr_wdata_i          ( csr_wdata_commit_csr      ),
-        .csr_rdata_o          ( csr_rdata_csr_commit      ),
-        .pc_i                 ( pc_commit_csr             ),
-        .csr_exception_o      ( csr_exception_csr_commit  ),
-        .irq_enable_o         (                           ),
-        .epc_o                (                           ),
-        .trap_vector_base_o   (                           ),
-        .priv_lvl_o           ( priv_lvl                  ),
+        .flush_o              (                                 ),
+        .ex_i                 ( ex_commit                       ),
+        .csr_op_i             ( csr_op_commit_csr               ),
+        .csr_addr_i           ( csr_addr_ex_csr                 ),
+        .csr_wdata_i          ( csr_wdata_commit_csr            ),
+        .csr_rdata_o          ( csr_rdata_csr_commit            ),
+        .pc_i                 ( pc_commit_csr                   ),
+        .csr_exception_o      ( csr_exception_csr_commit        ),
+        .irq_enable_o         (                                 ),
+        .epc_o                ( epc_commit_pcgen                ),
+        .trap_vector_base_o   ( trap_vector_base_commit_pcgen   ),
+        .priv_lvl_o           ( priv_lvl                        ),
 
-        .enable_translation_o ( enable_translation_csr_ex ),
-        .flag_pum_o           ( flag_pum_csr_ex           ),
-        .flag_mxr_o           ( flag_mxr_csr_ex           ),
-        .pd_ppn_o             ( pd_ppn_csr_ex             ),
-        .asid_o               ( asid_csr_ex               ),
+        .enable_translation_o ( enable_translation_csr_ex       ),
+        .flag_pum_o           ( flag_pum_csr_ex                 ),
+        .flag_mxr_o           ( flag_mxr_csr_ex                 ),
+        .pd_ppn_o             ( pd_ppn_csr_ex                   ),
+        .asid_o               ( asid_csr_ex                     ),
         .*
     );
     // ------------
     // Controller
     // ------------
+    logic flush_commit_i;
+    logic mispredict_i;
+    mispredict mispredict_o;
+    controller i_controller (
+        .clk_i         (clk_i         ),
+        .rst_ni        (rst_ni        ),
+        .flush_commit_i(flush_commit_i),
+        .mispredict_i  (mispredict_i  ),
+        .mispredict_o  (mispredict_o  )
+    );
 
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

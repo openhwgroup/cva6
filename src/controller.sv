@@ -29,4 +29,7 @@ module controller (
     output mispredict mispredict_o // to pcgen update branch history table
 );
 
+// flush on mispredict
+
+// flush on exception
 endmodule

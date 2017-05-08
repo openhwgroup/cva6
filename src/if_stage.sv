@@ -36,6 +36,8 @@ module if_stage (
     output logic                   if_busy_o,   // is the IF stage busy fetching instructions?
     input  logic                   id_ready_i,
     input  logic                   halt_if_i,   // pipeline stall
+    input  logic                   set_pc_i,    // set new PC
+    input  logic [63:0]            fetch_addr_i,
     // instruction cache interface
     output logic                   instr_req_o,
     output logic [63:0]            instr_addr_o,
@@ -49,16 +51,13 @@ module if_stage (
     output logic                   illegal_c_insn_id_o,   // compressed decoder thinks this is an invalid instruction
     output logic [63:0]            pc_if_o,
     output logic [63:0]            pc_id_o,
-    output exception               ex_o,
-
-    input  logic [63:0]            boot_addr_i
+    output exception               ex_o
 );
 
     logic              if_ready, if_valid;
     logic              branch_req;
     logic              valid;
     logic              prefetch_busy;
-    logic       [63:0] fetch_addr_n;
 
     logic              fetch_valid;
     logic              fetch_ready;
@@ -98,7 +97,7 @@ module if_stage (
         .req_i             ( req_i                       ),
 
         .branch_i          ( branch_req                  ), // kill everything
-        .addr_i            ( {fetch_addr_n[63:1], 1'b0}  ),
+        .addr_i            ( {fetch_addr_i[63:1], 1'b0}  ),
 
         .ready_i           ( fetch_ready                 ),
         .valid_o           ( fetch_valid                 ),
@@ -115,8 +114,6 @@ module if_stage (
         // Prefetch Buffer Status
         .busy_o            ( prefetch_busy               )
         );
-
-        assign fetch_addr_n = 64'b0; //{boot_addr_i[63:8], EXC_OFF_RST};
 
         // offset FSM state
         always_ff @(posedge clk_i, negedge rst_ni)
@@ -165,14 +162,14 @@ module if_stage (
           endcase
 
 
-          // take care of jumps and branches
-          // if (pc_set_i) begin
-          //   valid = 1'b0;
+          // take care of control flow changes
+          if (set_pc_i) begin
+            valid = 1'b0;
 
-          //   // switch to new PC from ID stage
-          //   branch_req = 1'b1;
-          //   offset_fsm_ns = WAIT;
-          // end
+            // switch to new PC from ID stage
+            branch_req = 1'b1;
+            offset_fsm_ns = WAIT;
+          end
         end
 
         // IF-ID pipeline registers, frozen when the ID stage is stalled
