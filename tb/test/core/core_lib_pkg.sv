@@ -18,8 +18,9 @@ package core_lib_pkg;
     // Standard UVM import & include:
     import uvm_pkg::*;
     `include "uvm_macros.svh"
-    // Import the memory interface agent
+    // Import the core and memory interface agent
     import core_if_agent_pkg::*;
+    import mem_if_agent_pkg::*;
     // ------------------------------------------------
     // Environment which will be instantiated
     // ------------------------------------------------

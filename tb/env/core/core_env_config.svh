@@ -21,9 +21,11 @@ class core_env_config extends uvm_object;
 
     // a functional unit master interface
     virtual core_if m_core_if;
+    virtual mem_if m_instr_mem_if;
 
     // an agent config
 
     core_if_agent_config m_core_if_agent_config;
+    mem_if_agent_config m_instr_if_agent_config;
 
 endclass : core_env_config

@@ -20,7 +20,8 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
 
     // Virtual Interface
     virtual mem_if fu;
-
+    // create a 4 kB memory
+    logic [7:0]  rmem [4096];
     //---------------------
     // Data Members
     //---------------------
@@ -31,41 +32,47 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
       super.new(name, parent);
     endfunction
 
+    task read_mem(logic [64:0] address, string path);
+        $readmemh(path, rmem, address);
+        $display("Read instruction memory file @%0h from %s", address, path);
+    endtask : read_mem
+
     task run_phase(uvm_phase phase);
         mem_if_seq_item cmd;
 
+        // --------------
+        // Slave Port
+        // --------------
         // this driver is configured as a SLAVE
-        if (m_cfg.mem_if_config == SLAVE) begin
-            // we serve all requests from the memory file we store in our configuration object
-            // --------------
-            // Slave Port
-            // --------------
-            logic [7:0]  imem [400];
+        if (m_cfg.mem_if_config inside {SLAVE, SLAVE_REPLAY, SLAVE_NO_RANDOM}) begin
+
             logic [63:0] address [$];
             logic [63:0] addr;
             logic slave_data_gnt;
             semaphore lock = new(1);
             slave_data_gnt = 1'b1;
+
+            // we serve all requests from the memory file we store in our configuration object
+            // read memory file
+            // TODO: get the filename and address from plusarg
+            if (m_cfg.mem_if_config inside {SLAVE, SLAVE_NO_RANDOM}) begin
+                read_mem(64'b0, "add_test.v");
+            end
+
             // grant process is combinatorial
             fork
                 slave_gnt: begin
                     fu.mck.data_gnt <= 1'b1;
-                    forever begin
-
-                        // @(fu.mck);
-                        // wait until we got a valid request
-                        // randomize grant delay - the grant may come in the same clock cycle
-                        repeat ($urandom_range(0,3)) @(fu.mck);
-                        fu.mck.data_gnt <= 1'b1;
-                        repeat ($urandom_range(0,3)) @(fu.mck);
-                        fu.mck.data_gnt <= 1'b0;
-                        // now set the grant to one
-                        // if the request is still here go for it
-                        // end else begin
-                        //     fu.mck.data_gnt <= 1'b0;
-                        //     slave_data_gnt  = 1'b0;
-                        // end
-                        // do we have another request?
+                    // we don't to give random grants
+                    // instead we always grant immediately
+                    if (m_cfg.mem_if_config != SLAVE_NO_RANDOM) begin
+                        forever begin
+                            // randomize grant delay - the grant may come in the same clock cycle
+                            repeat ($urandom_range(0,3)) @(fu.mck);
+                            fu.mck.data_gnt <= 1'b1;
+                            repeat ($urandom_range(0,3)) @(fu.mck);
+                            fu.mck.data_gnt <= 1'b0;
+                        end
                     end
                 end
                 slave_serve: begin
@@ -84,10 +91,24 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
                                         // we an wait a couple of cycles here
                                         // but at least one
                                         lock.get(1);
-                                        repeat ($urandom_range(1,3)) @(fu.mck);
+                                        // we give the rvalid in the next cycle if didn't request randomization
+                                        if (m_cfg.mem_if_config != SLAVE_NO_RANDOM)
+                                            repeat ($urandom_range(1,3)) @(fu.mck);
+
                                         fu.mck.data_rvalid <= 1'b1;
                                         addr = address.pop_front();
-                                        fu.mck.data_rdata  <= addr;
+                                        // simply replay the address on the data port
+                                        if (m_cfg.mem_if_config == SLAVE_REPLAY)
+                                            fu.mck.data_rdata  <= addr;
+                                        else begin
+                                            // read from memory
+                                            fu.mck.data_rdata  <= {
+                                                rmem[$unsigned(addr + 3)],
+                                                rmem[$unsigned(addr + 2)],
+                                                rmem[$unsigned(addr + 1)],
+                                                rmem[$unsigned(addr + 0)]
+                                                };
+                                        end
                                         lock.put(1);
                                     end else
                                         fu.mck.data_rvalid <= 1'b0;
@@ -102,11 +123,11 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
             join_none
 
         // although no other option exist lets be specific about its purpose
-        // this is a master interface
+        // -> this is a master interface
+        // --------------
+        // Master Port
+        // --------------
         end else if (m_cfg.mem_if_config == MASTER) begin
-            // --------------
-            // Master Port
-            // --------------
             // request a read
             // initial statements, sane resets
             fu.sck.data_req        <= 1'b0;

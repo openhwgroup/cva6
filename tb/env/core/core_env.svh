@@ -23,6 +23,8 @@ class core_env extends uvm_env;
     // Data Members
     //------------------------------------------
     core_if_agent m_core_if_agent;
+    mem_if_agent m_mem_if_instr_agent;
+
     core_if_sequencer m_core_if_sequencer;
     core_env_config m_cfg;
     //------------------------------------------
@@ -44,6 +46,15 @@ class core_env extends uvm_env;
                                                "core_if_agent_config",
                                                m_cfg.m_core_if_agent_config);
         m_core_if_agent = core_if_agent::type_id::create("m_core_if_agent", this);
+
+        uvm_config_db #(core_if_agent_config)::set(this, "m_core_if_agent*",
+                                               "core_if_agent_config",
+                                               m_cfg.m_core_if_agent_config);
+        // get instruction memory interface
+        m_mem_if_instr_agent = mem_if_agent::type_id::create("m_mem_if_instr_agent", this);
+        uvm_config_db #(mem_if_agent_config)::set(this, "m_mem_if_instr_agent*",
+                                               "mem_if_agent_config",
+                                               m_cfg.m_instr_if_agent_config);
 
         // Get sequencer
         m_core_if_sequencer = core_if_sequencer::type_id::create("m_core_if_sequencer", this);

@@ -16,7 +16,7 @@ module core_tb;
     logic clk_i;
     logic rst_ni;
 
-    mem_if #(.DATA_WIDTH(32)) instr_if(clk_i);
+    mem_if instr_if(clk_i);
     mem_if data_if(clk_i);
     debug_if debug_if();
     core_if core_if(clk_i);
@@ -35,10 +35,10 @@ module core_tb;
 
         .instr_if_address_o     ( instr_if.address     ),
         .instr_if_data_req_o    ( instr_if.data_req    ),
-        .instr_if_data_be_o     ( instr_if.data_be     ),
+        .instr_if_data_be_o     ( instr_if.data_be[3:0]     ),
         .instr_if_data_gnt_i    ( instr_if.data_gnt & instr_if.data_req   ),
         .instr_if_data_rvalid_i ( instr_if.data_rvalid ),
-        .instr_if_data_rdata_i  ( instr_if.data_rdata  ),
+        .instr_if_data_rdata_i  ( instr_if.data_rdata[31:0]  ),
 
         .data_if_address_o      ( data_if.address      ),
         .data_if_data_wdata_o   ( data_if.data_wdata   ),
@@ -81,6 +81,7 @@ module core_tb;
     program testbench (core_if core_if, mem_if instr_if);
         initial begin
             uvm_config_db #(virtual core_if)::set(null, "uvm_test_top", "core_if", core_if);
+            uvm_config_db #(virtual mem_if )::set(null, "uvm_test_top", "instr_mem_if", instr_if);
             // print the topology
             uvm_top.enable_print_topology = 1;
             // Start UVM test

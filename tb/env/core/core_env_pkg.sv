@@ -19,6 +19,7 @@ package core_env_pkg;
     `include "uvm_macros.svh"
     // Testbench related imports
     import core_if_agent_pkg::*;
+    import mem_if_agent_pkg::*;
     // Includes for the config for the environment
     `include "core_env_config.svh"
     // Includes the environment

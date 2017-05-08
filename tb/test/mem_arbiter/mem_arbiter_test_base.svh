@@ -57,7 +57,7 @@ class mem_arbiter_test_base extends uvm_test;
         // create a slave configuration
         m_cfg_slave = mem_if_agent_config::type_id::create("m_cfg_slave");
         m_env_cfg.m_mem_if_slave_agent = m_cfg_slave;
-        m_env_cfg.m_mem_if_slave_agent.mem_if_config = SLAVE;
+        m_env_cfg.m_mem_if_slave_agent.mem_if_config = SLAVE_REPLAY;
 
         // create agent memory master configuration
         m_cfg_masters[0] = mem_if_agent_config::type_id::create("m_cfg_master0");
