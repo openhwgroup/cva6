@@ -34,9 +34,9 @@ module core_tb;
         .cluster_id_i           ( core_if.cluster_id   ),
 
         .instr_if_address_o     ( instr_if.address     ),
-        .instr_if_data_req_o    ( instr_if.data_req & instr_if.data_req   ),
+        .instr_if_data_req_o    ( instr_if.data_req    ),
         .instr_if_data_be_o     ( instr_if.data_be     ),
-        .instr_if_data_gnt_i    ( instr_if.data_gnt    ),
+        .instr_if_data_gnt_i    ( instr_if.data_gnt & instr_if.data_req   ),
         .instr_if_data_rvalid_i ( instr_if.data_rvalid ),
         .instr_if_data_rdata_i  ( instr_if.data_rdata  ),
 
@@ -81,6 +81,10 @@ module core_tb;
     program testbench (core_if core_if, mem_if instr_if);
         initial begin
             uvm_config_db #(virtual core_if)::set(null, "uvm_test_top", "core_if", core_if);
+            // print the topology
+            uvm_top.enable_print_topology = 1;
+            // Start UVM test
+            run_test();
         end
         // logic [7:0] imem [400];
         // logic [63:0] address [$];

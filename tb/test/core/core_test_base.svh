@@ -32,7 +32,7 @@ class core_test_base extends uvm_test;
     core_env m_env;
     core_if_sequencer sequencer_h;
 
-    // reset_sequence reset;
+    core_sequence m_core_sequence;
     // ---------------------
     // Agent configuration
     // ---------------------
@@ -75,8 +75,8 @@ class core_test_base extends uvm_test;
     endfunction
 
     task run_phase(uvm_phase phase);
-        // reset = new("reset");
-        // reset.start(sequencer_h);
+        m_core_sequence = new("m_core_sequence");
+        m_core_sequence.start(sequencer_h);
     endtask
 
 endclass : core_test_base

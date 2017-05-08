@@ -37,6 +37,7 @@ class core_if_driver extends uvm_driver #(core_if_seq_item);
 
         // seq_item_port.item_done();
         m_vif.mck.test_en      <= 1'b0;
+        m_vif.mck.clock_en     <= 1'b1;
         m_vif.mck.boot_addr    <= 64'b0;
         m_vif.mck.core_id      <= 4'b0;
         m_vif.mck.cluster_id   <= 6'b0;
@@ -47,6 +48,7 @@ class core_if_driver extends uvm_driver #(core_if_seq_item);
 
         repeat (20) @(m_vif.mck);
         m_vif.mck.fetch_enable <= 1'b1;
+
     endtask : run_phase
 
     function void build_phase(uvm_phase phase);

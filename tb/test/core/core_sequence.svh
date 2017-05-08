@@ -1,6 +1,6 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 08.05.2017
-// Description: core sequence package
+// Description: Core test sequence - simply waits for now
 //
 // Copyright (C) 2017 ETH Zurich, University of Bologna
 // All rights reserved.
@@ -14,12 +14,27 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 
-package core_sequence_pkg;
+class core_sequence extends core_if_sequence;
 
-    import core_if_agent_pkg::*;
-    import uvm_pkg::*;
+    `uvm_object_utils(core_sequence);
 
-    `include "uvm_macros.svh"
-    // Include your sequences here e.g.:
-    `include "core_sequence.svh"
-endpackage
+    function new(string name = "core_sequence");
+       super.new(name);
+    endfunction : new
+
+    task body();
+        core_if_seq_item command;
+
+        command = core_if_seq_item::type_id::create("command");
+        `uvm_info("Core Sequence", "Starting Core Test", UVM_LOW)
+
+        for(int i = 0; i <= 100; i++) begin
+            start_item(command);
+
+            void'(command.randomize());
+
+            finish_item(command);
+        end
+        `uvm_info("Core Sequence", "Finished Core Test", UVM_LOW)
+    endtask : body
+endclass : core_sequence
