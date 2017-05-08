@@ -61,7 +61,7 @@ module csr_regfile #(
 
     // internal signal to keep track of access exceptions
     logic read_access_exception, update_access_exception;
-    logic csr_we;
+    logic csr_we, csr_read;
     logic [63:0] csr_wdata, csr_rdata;
     // ----------------
     // CSR Registers
@@ -125,39 +125,41 @@ module csr_regfile #(
     // ----------------
     // CSR Read logic
     // ----------------
-    always_comb begin : csr_read
+    always_comb begin : csr_read_process
         // a read access exception can only occur if we attempt to read a CSR which does not exist
         read_access_exception = 1'b0;
         csr_rdata = 64'b0;
-        case (csr_addr.address)
+        if (csr_read) begin
+            case (csr_addr.address)
 
-            CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h3fffe1fee;
-            CSR_SIE:                csr_rdata = mie_q & mideleg_q;
-            CSR_SIP:                csr_rdata = mip_q & mideleg_q;
-            CSR_STVEC:              csr_rdata = stvec_q;
-            CSR_SSCRATCH:           csr_rdata = sscratch_q;
-            CSR_SEPC:               csr_rdata = sepc_q;
-            CSR_SCAUSE:             csr_rdata = scause_q;
-            CSR_STVAL:              csr_rdata = stval_q;
-            CSR_SATP:               csr_rdata = satp_q;
+                CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h3fffe1fee;
+                CSR_SIE:                csr_rdata = mie_q & mideleg_q;
+                CSR_SIP:                csr_rdata = mip_q & mideleg_q;
+                CSR_STVEC:              csr_rdata = stvec_q;
+                CSR_SSCRATCH:           csr_rdata = sscratch_q;
+                CSR_SEPC:               csr_rdata = sepc_q;
+                CSR_SCAUSE:             csr_rdata = scause_q;
+                CSR_STVAL:              csr_rdata = stval_q;
+                CSR_SATP:               csr_rdata = satp_q;
 
-            CSR_MSTATUS:            csr_rdata = mstatus_q;
-            CSR_MISA:               csr_rdata = ISA_CODE;
-            CSR_MEDELEG:            csr_rdata = medeleg_q;
-            CSR_MIDELEG:            csr_rdata = mideleg_q;
-            CSR_MIP:                csr_rdata = mip_q;
-            CSR_MIE:                csr_rdata = mie_q;
-            CSR_MTVEC:              csr_rdata = mtvec_q;
-            CSR_MSCRATCH:           csr_rdata = mscratch_q;
-            CSR_MEPC:               csr_rdata = mepc_q;
-            CSR_MCAUSE:             csr_rdata = mcause_q;
-            CSR_MTVAL:              csr_rdata = mtval_q;
-            CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
-            CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
-            CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
-            CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
-            default: read_access_exception = 1'b1;
-        endcase
+                CSR_MSTATUS:            csr_rdata = mstatus_q;
+                CSR_MISA:               csr_rdata = ISA_CODE;
+                CSR_MEDELEG:            csr_rdata = medeleg_q;
+                CSR_MIDELEG:            csr_rdata = mideleg_q;
+                CSR_MIP:                csr_rdata = mip_q;
+                CSR_MIE:                csr_rdata = mie_q;
+                CSR_MTVEC:              csr_rdata = mtvec_q;
+                CSR_MSCRATCH:           csr_rdata = mscratch_q;
+                CSR_MEPC:               csr_rdata = mepc_q;
+                CSR_MCAUSE:             csr_rdata = mcause_q;
+                CSR_MTVAL:              csr_rdata = mtval_q;
+                CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
+                CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
+                CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
+                CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
+                default: read_access_exception = 1'b1;
+            endcase
+        end
     end
     // ---------------------------
     // CSR Write and update logic
@@ -238,7 +240,7 @@ module csr_regfile #(
         // update exception CSRs
         // we got an exception update cause, pc and stval register
         if (ex_i.valid) begin
-            automatic priv_lvl_t trap_to_priv_lvl;
+            automatic priv_lvl_t trap_to_priv_lvl = PRIV_LVL_M;
             // figure out where to trap to
             // a m-mode trap might be delegated
             // first figure out if this was an exception or an interrupt e.g.: look at bit 63
@@ -280,12 +282,16 @@ module csr_regfile #(
     always_comb begin : csr_op_logic
         csr_wdata = csr_wdata_i;
         csr_we    = 1'b1;
-
+        csr_read  = 1'b1;
         unique case (csr_op_i)
             CSR_WRITE: csr_wdata = csr_wdata_i;
             CSR_SET:   csr_wdata = csr_wdata_i | csr_rdata;
             CSR_CLEAR: csr_wdata = (~csr_wdata_i) & csr_rdata;
-            default: csr_we = 1'b0;
+            CSR_READ:  csr_we   = 1'b0;
+            default: begin
+                csr_we   = 1'b0;
+                csr_read = 1'b0;
+            end
         endcase
     end
     // -------------------
@@ -345,6 +351,8 @@ module csr_regfile #(
             mtvec_q         <= {boot_addr_i[63:2], 2'b0}; // set to boot address + direct mode
             medeleg_q       <= 64'b0;
             mideleg_q       <= 64'b0;
+            mip_q           <= 64'b0;
+            mie_q           <= 64'b0;
             mepc_q          <= 64'b0;
             mcause_q        <= 64'b0;
             mscratch_q      <= 64'b0;
@@ -358,7 +366,7 @@ module csr_regfile #(
             satp_q          <= 64'b0;
         end else begin
             priv_lvl_q      <= priv_lvl_n;
-            prev_priv_lvl_q <= prev_priv_lvl_n;
+            prev_priv_lvl_q <= priv_lvl_q;
             // machine mode registers
             mstatus_q       <= mstatus_n;
             mtvec_q         <= mtvec_n;

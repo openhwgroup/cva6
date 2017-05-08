@@ -92,18 +92,18 @@ module id_stage #(
     assign ready_o = ~full;
 
     decoder decoder_i (
-        .clk_i           ( clk_i                ),
-        .rst_ni          ( rst_ni               ),
-        .pc_i            ( pc_if_i              ),
-        .is_compressed_i ( is_compressed_i      ),
-        .instruction_i   ( instruction_i        ),
-        .ex_i            ( ex_if_i              ),
-        .instruction_o   ( decoded_instr_dc_sb  )
+        .clk_i                 ( clk_i                    ),
+        .rst_ni                ( rst_ni                   ),
+        .pc_i                  ( pc_if_i                  ),
+        .is_compressed_i       ( is_compressed_i          ),
+        .instruction_i         ( instruction_i            ),
+        .ex_i                  ( ex_if_i                  ),
+        .instruction_o         ( decoded_instr_dc_sb      )
     );
 
     scoreboard  #(
-        .NR_ENTRIES            ( NR_ENTRIES          ),
-        .NR_WB_PORTS           ( NR_WB_PORTS         )
+        .NR_ENTRIES            ( NR_ENTRIES               ),
+        .NR_WB_PORTS           ( NR_WB_PORTS              )
     )
     scoreboard_i
     (

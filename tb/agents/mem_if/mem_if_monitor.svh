@@ -79,7 +79,7 @@ class mem_if_monitor extends uvm_component;
                 cmd.be      = be.pop_front();
                 cmd.data    = fu.pck.data_rdata;
                 // was this from a master or slave agent monitor?
-                cmd.isSlaveAnswer = (m_cfg.mem_if_config == SLAVE) ? 1'b1 : 1'b0;
+                cmd.isSlaveAnswer = (m_cfg.mem_if_config inside {SLAVE, SLAVE_REPLAY, SLAVE_NO_RANDOM}) ? 1'b1 : 1'b0;
                 // export the item via the analysis port
                 $cast(cloned_item, cmd.clone());
                 m_ap.write(cloned_item);

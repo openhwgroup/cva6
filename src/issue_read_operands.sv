@@ -67,19 +67,26 @@ module issue_read_operands (
 
     // output flipflop (ID <-> EX)
     logic [63:0] operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q;
-    logic alu_valid_n, alu_valid_q;
+    logic alu_valid_n,  alu_valid_q;
+    logic mult_valid_n, mult_valid_q;
+    logic lsu_valid_n,  lsu_valid_q;
+    logic csr_valid_n,  csr_valid_q;
+
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q;
 
     // forwarding signals
     logic forward_rs1, forward_rs2;
 
-    assign operand_a_o = operand_a_q;
-    assign operand_b_o = operand_b_q;
-    assign operator_o  = operator_q;
-    assign alu_valid_o = alu_valid_q;
-    assign trans_id_o  = trans_id_q;
-    assign imm_o       = imm_q;
+    assign operand_a_o  = operand_a_q;
+    assign operand_b_o  = operand_b_q;
+    assign operator_o   = operator_q;
+    assign alu_valid_o  = alu_valid_q;
+    assign lsu_valid_o  = lsu_valid_q;
+    assign csr_valid_o  = csr_valid_q;
+    assign mult_valid_o = mult_valid_q;
+    assign trans_id_o   = trans_id_q;
+    assign imm_o        = imm_q;
     // ---------------
     // Issue Stage
     // ---------------
@@ -193,7 +200,7 @@ module issue_read_operands (
             operand_a_n = {52'b0, issue_instr_i.rs1};
         end
         // or is it an immediate (including PC), this is not the case for a store
-        if (issue_instr_i.use_imm && (issue_instr_i.op inside {SD, SW, SH, SB})) begin
+        if (issue_instr_i.use_imm && ~(issue_instr_i.op inside {SD, SW, SH, SB})) begin
             operand_b_n = issue_instr_i.result;
         end
         // immediates are the third operands in the store case
@@ -204,9 +211,9 @@ module issue_read_operands (
     // FU select
     always_comb begin : unit_valid
         alu_valid_n  = 1'b0;
-        lsu_valid_o  = 1'b0;
-        mult_valid_o = 1'b0;
-        csr_valid_o  = 1'b0;
+        lsu_valid_n  = 1'b0;
+        mult_valid_n = 1'b0;
+        csr_valid_n  = 1'b0;
         // Exception pass through
         // if an exception has occurred simply pass it through
         // we do not want to issue this instruction
@@ -215,11 +222,11 @@ module issue_read_operands (
                 ALU:
                     alu_valid_n  = 1'b1;
                 MULT:
-                    mult_valid_o = 1'b1;
+                    mult_valid_n = 1'b1;
                 LSU:
-                    lsu_valid_o  = 1'b1;
+                    lsu_valid_n  = 1'b1;
                 CSR:
-                    csr_valid_o  = 1'b1;
+                    csr_valid_n  = 1'b1;
                 default: begin
 
                 end
@@ -253,12 +260,18 @@ module issue_read_operands (
             operand_a_q          <= '{default: 0};
             operand_b_q          <= '{default: 0};
             alu_valid_q          <= 1'b0;
+            mult_valid_q         <= 1'b0;
+            lsu_valid_q          <= 1'b0;
+            csr_valid_q          <= 1'b0;
             operator_q           <= ADD;
             trans_id_q           <= 5'b0;
         end else begin
             operand_a_q          <= operand_a_n;
             operand_b_q          <= operand_b_n;
             alu_valid_q          <= alu_valid_n;
+            mult_valid_q         <= mult_valid_n;
+            lsu_valid_q          <= lsu_valid_n;
+            csr_valid_q          <= csr_valid_n;
             operator_q           <= operator_n;
             trans_id_q           <= trans_id_n;
         end

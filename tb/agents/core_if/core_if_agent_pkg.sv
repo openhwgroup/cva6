@@ -1,6 +1,6 @@
 // Author: Florian Zaruba, ETH Zurich
-// Date: 30.04.2017
-// Description: mem_if_agent package - compile unit
+// Date: 08.05.2017
+// Description: core_if_agent package - compile unit
 // Copyright (C) 2017 ETH Zurich, University of Bologna
 // All rights reserved.
 // This code is under development and not yet released to the public.
@@ -13,38 +13,25 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 
-package mem_if_agent_pkg;
-    // configure the slave memory interface
-    // 1. either as a slave with random grant response
-    // 2. as a master interface making random data requests
-    // 3. as a slave with no grant randomization
-    // 4. replay data
-    typedef enum {
-        SLAVE, SLAVE_REPLAY, SLAVE_NO_RANDOM, MASTER
-    } mem_if_config;
-    // Mode of request either read or write
-    typedef enum {
-        READ, WRITE
-    } mode_t;
-
+package core_if_agent_pkg;
     // UVM Import
     import uvm_pkg::*;
     `include "uvm_macros.svh"
 
     // Sequence item to model transactions
-    `include "mem_if_seq_item.svh"
+    `include "core_if_seq_item.svh"
     // Agent configuration object
-    `include "mem_if_agent_config.svh"
+    `include "core_if_agent_config.svh"
     // Driver
-    `include "mem_if_driver.svh"
+    `include "core_if_driver.svh"
     // Coverage monitor
-    // `include "mem_if_coverage_monitor.svh"
+    // `include "core_if_coverage_monitor.svh"
     // Monitor that includes analysis port
-    `include "mem_if_monitor.svh"
+    `include "core_if_monitor.svh"
     // Sequencer
-    `include "mem_if_sequencer.svh"
+    `include "core_if_sequencer.svh"
     // Main agent
-    `include "mem_if_agent.svh"
+    `include "core_if_agent.svh"
     // Sequence
-    `include "mem_if_sequence.svh"
-endpackage: mem_if_agent_pkg
+    `include "core_if_sequence.svh"
+endpackage: core_if_agent_pkg

@@ -44,7 +44,7 @@ package ariane_pkg;
         logic [63:0] target_address;
         logic        is_taken;
         logic        valid; // is miss-predict
-    } misspredict;
+    } mispredict;
 
     typedef enum logic[3:0] {
         NONE, LSU, ALU, MULT, CSR
