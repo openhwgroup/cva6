@@ -180,26 +180,26 @@ module if_stage (
         begin : IF_ID_PIPE_REGISTERS
           if (rst_ni == 1'b0)
             begin
-              instr_valid_id_o      <= 1'b0;
-              instr_rdata_id_o      <= '0;
-              illegal_c_insn_id_o   <= 1'b0;
-              is_compressed_id_o    <= 1'b0;
-              pc_id_o               <= '0;
-              ex_o                  <= '{default: 0};
+                instr_valid_id_o      <= 1'b0;
+                instr_rdata_id_o      <= '0;
+                illegal_c_insn_id_o   <= 1'b0;
+                is_compressed_id_o    <= 1'b0;
+                pc_id_o               <= '0;
+                ex_o                  <= '{default: 0};
             end
           else
             begin
 
               if (if_valid)
               begin
-                  instr_valid_id_o    <= 1'b1;
-                  instr_rdata_id_o    <= instr_decompressed;
-                  illegal_c_insn_id_o <= illegal_c_insn;
-                  is_compressed_id_o  <= instr_compressed_int;
-                  pc_id_o             <= pc_if_o;
-                  ex_o.cause          <= 64'b0; // TODO: Output exception
-                  ex_o.tval           <= 64'b0; // TODO: Output exception
-                  ex_o.valid          <= 1'b0;  // TODO: Output exception
+                instr_valid_id_o    <= 1'b1;
+                instr_rdata_id_o    <= instr_decompressed;
+                illegal_c_insn_id_o <= illegal_c_insn;
+                is_compressed_id_o  <= instr_compressed_int;
+                pc_id_o             <= pc_if_o;
+                ex_o.cause          <= 64'b0; // TODO: Output exception
+                ex_o.tval           <= 64'b0; // TODO: Output exception
+                ex_o.valid          <= 1'b0;  // TODO: Output exception
               end else if (clear_instr_valid_i) begin
                 instr_valid_id_o    <= 1'b0;
               end
