@@ -193,7 +193,7 @@ module issue_read_operands (
             operand_a_n = {52'b0, issue_instr_i.rs1};
         end
         // or is it an immediate (including PC), this is not the case for a store
-        if (issue_instr_i.use_imm && (issue_instr_i.op inside {SD, SW, SH, SB})) begin
+        if (issue_instr_i.use_imm && ~(issue_instr_i.op inside {SD, SW, SH, SB})) begin
             operand_b_n = issue_instr_i.result;
         end
         // immediates are the third operands in the store case
