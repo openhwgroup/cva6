@@ -126,4 +126,8 @@ Fast back to back memory response:
   {name: 'fu_result_o',         wave: 'x..23x.45x.', data: ['r1', 'r2', 'r3', 'r4']},
 ]}
 </script>
+# Pipeline Diagram
 
+## LSU
+
+![Ariane Block Diagram](fig/ld_pipeline_diagram.svg)
