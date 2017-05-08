@@ -16,3 +16,36 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 //
+
+import ariane_pkg::*;
+
+module pcgen (
+    input  logic        clk_i,                    // Clock
+    input  logic        rst_ni,                   // Asynchronous reset active low
+
+    input  logic        flush_i,
+    input  logic [63:0] pc_if_i,
+    input  mispredict   mispredict_i,             // from controller signaling a mispredict -> update BTB
+    // to IF
+    output logic [63:0] branch_target_address_o,
+    output logic        predict_taken_o,          // btb thinks we should take that branch
+    output logic        is_branch_o               // to check if we mispredicted
+);
+
+
+    btb #(
+        .NR_ENTRIES(64),
+        .BITS_SATURATION_COUNTER(2)
+    )
+    btb_i
+    (
+        .vpc_i                   ( pc_if_i                 ),
+        .misspredict_i           ( misspredict_i           ),
+        .is_branch_o             ( is_branch_o             ),
+        .predict_taken_o         ( predict_taken_o         ),
+        .branch_target_address_o ( branch_target_address_o ),
+        .*
+    );
+
+
+endmodule

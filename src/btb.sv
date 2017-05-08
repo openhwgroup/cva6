@@ -28,7 +28,7 @@ module btb #(
     input  logic            flush_i,                   // flush the btb
 
     input  logic [63:0]     vpc_i,                     // virtual PC from IF stage
-    input  misspredict      misspredict_i,             // a miss-predict happened -> update data structure
+    input  mispredict       mispredict_i,             // a miss-predict happened -> update data structure
 
     output logic            is_branch_o,               // instruction at vpc_i is a branch
     output logic            predict_taken_o,           // the branch is taken
@@ -51,7 +51,7 @@ module btb #(
     // get actual index positions
     // we ignore the 0th bit since all instructions are aligned on
     // a half word boundary
-    assign update_pc = misspredict_i.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
+    assign update_pc = mispredict_i.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
     assign index     = vpc_i[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
 
     // we combinatorially predict the branch and the target address
@@ -60,29 +60,29 @@ module btb #(
     assign branch_target_address_o = btb_q[$unsigned(index)].target_address;
 
     // update on a miss-predict
-    always_comb begin : update_misspredict
+    always_comb begin : update_mispredict
         btb_n              = btb_q;
         saturation_counter = btb_q[$unsigned(update_pc)].saturation_counter;
 
-        if (misspredict_i.valid) begin
+        if (mispredict_i.valid) begin
             btb_n[$unsigned(update_pc)].valid = 1'b1;
             // update saturation counter
             // first check if counter is already saturated in the positive regime e.g.: branch taken
-            if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}} && ~misspredict_i.is_taken) begin
+            if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}} && ~mispredict_i.is_taken) begin
                 // we can safely decrease it
                 btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter - 1;
             // then check if it saturated in the negative regime e.g.: branch not taken
-            end else if (saturation_counter == {BITS_SATURATION_COUNTER{1'b0}} && misspredict_i.is_taken) begin
+            end else if (saturation_counter == {BITS_SATURATION_COUNTER{1'b0}} && mispredict_i.is_taken) begin
                 // we can safely increase it
                 btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter + 1;
             end else begin // otherwise we are not in any boundaries and can decrease or increase it
-                if (misspredict_i.is_taken)
+                if (mispredict_i.is_taken)
                     btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter + 1;
                 else
                     btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter - 1;
             end
             // the target address is simply updated
-            btb_n[$unsigned(update_pc)].target_address = misspredict_i.target_address;
+            btb_n[$unsigned(update_pc)].target_address = mispredict_i.target_address;
         end
     end
 
