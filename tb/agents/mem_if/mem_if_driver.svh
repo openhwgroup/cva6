@@ -56,7 +56,7 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
             // read memory file
             // TODO: get the filename and address from plusarg
             if (m_cfg.mem_if_config inside {SLAVE, SLAVE_NO_RANDOM}) begin
-                read_mem(64'b0, "add_test.v");
+                read_mem(64'b0, "test/add_test.v");
             end
 
             // grant process is combinatorial

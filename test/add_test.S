@@ -11,6 +11,7 @@
     add  x7, x5, x6
     add  x8, x6, x7
     add  x9, x7, x8
+    csrr x1, mstatus
     nop
     nop
     nop
