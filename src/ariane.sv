@@ -278,6 +278,7 @@ module ariane
         .branch_valid_o      ( branch_valid_id_ex                       ),
         .predict_address_o   ( predict_address_id_ex                    ),
         .predict_taken_o     ( predict_taken_id_ex                      ),
+        .branchpredict_i     ( branchpredict                            ), // in order to resolve the branch
         // LSU
         .lsu_ready_i         ( lsu_ready_ex_id                          ),
         .lsu_valid_o         ( lsu_valid_id_ex                          ),

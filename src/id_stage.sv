@@ -49,6 +49,8 @@ module id_stage #(
     output logic                                     branch_valid_o,
     output logic [63:0]                              predict_address_o,
     output logic                                     predict_taken_o,
+    // ex just resolved our predicted branch, we are ready to accept new requests
+    input  branchpredict                             branchpredict_i,
 
     input  logic                                     lsu_ready_i,
     output logic                                     lsu_valid_o,
@@ -92,9 +94,29 @@ module id_stage #(
     // Decoder (DC) <-> Scoreboard (SB)
     // ---------------------------------------------------
     scoreboard_entry decoded_instr_dc_sb;
+    // ---------------------------------------------------
+    // Decoder (DC) <-> Branch Logic
+    // ---------------------------------------------------
+    logic is_control_flow_instr;
 
-    // TODO: Branching logic
-    assign ready_o = ~full;
+    // -----------------
+    // Branch logic
+    // -----------------
+    logic unresolved_branch_n, unresolved_branch_q;
+
+    always_comb begin : unresolved_branch
+        unresolved_branch_n = unresolved_branch_q;
+        // we just resolved the branch
+        if (branchpredict_i.valid) begin
+            unresolved_branch_n = 1'b0;
+        end
+        // if the instruction is valid and it is a control flow instruction
+        if (instruction_valid_i && is_control_flow_instr) begin
+            unresolved_branch_n = 1'b1;
+        end
+    end
+    // we are ready if we are not full and don't have any unresolved branches
+    assign ready_o = ~full & ~unresolved_branch_q;
 
     decoder decoder_i (
         .clk_i                   ( clk_i                    ),
@@ -104,7 +126,7 @@ module id_stage #(
         .instruction_i           ( instruction_i            ),
         .ex_i                    ( ex_if_i                  ),
         .instruction_o           ( decoded_instr_dc_sb      ),
-        .is_control_flow_instr_o (                          )
+        .is_control_flow_instr_o ( is_control_flow_instr    )
     );
 
     scoreboard  #(
@@ -149,5 +171,13 @@ module id_stage #(
         .rd_clobber_i        ( rd_clobber_sb_iro          ),
         .*
     );
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            unresolved_branch_q <= 1'b0;
+        end else begin
+            unresolved_branch_q <= unresolved_branch_n;
+        end
+    end
 
 endmodule
