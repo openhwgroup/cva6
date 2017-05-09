@@ -84,6 +84,7 @@ module ariane
     logic                     halt_if;
     logic [63:0]              pc_if;
     exception                 ex_commit; // exception from commit stage
+    branchpredict             branchpredict;
     // --------------
     // PCGEN <-> IF
     // --------------
@@ -93,7 +94,6 @@ module ariane
     // --------------
     // PCGEN <-> EX
     // --------------
-    branchpredict             branchpredict_ex_pcgen;
     // --------------
     // PCGEN <-> CSR
     // --------------
@@ -211,7 +211,7 @@ module ariane
     pcgen pcgen_i (
         .flush_i            ( flush                          ),
         .pc_if_i            ( pc_if                          ),
-        .branchpredict_i    ( branchpredict_ex_pcgen         ),
+        .branchpredict_i    ( branchpredict                  ),
         .pc_if_o            ( pc_pcgen_if                    ),
         .set_pc_o           ( set_pc_pcgen_if                ),
         .is_branch_o        ( is_branch_o                    ),
@@ -323,7 +323,7 @@ module ariane
         .branch_valid_i       ( branch_valid_id_ex        ),
         .predict_address_i    ( predict_address_id_ex     ),
         .predict_taken_i      ( predict_taken_id_ex       ),
-        .branchpredict_o      ( branchpredict_ex_pcgen    ),
+        .branchpredict_o      ( branchpredict             ),
         // LSU
         .lsu_ready_o          ( lsu_ready_ex_id           ),
         .lsu_valid_i          ( lsu_valid_id_ex           ),
@@ -386,7 +386,7 @@ module ariane
         .ASID_WIDTH           ( ASID_WIDTH                      )
     )
     csr_regfile_i (
-        .flush_o              (                                 ),
+        .flush_o              ( flus_csr_ctrl                   ),
         .ex_i                 ( ex_commit                       ),
         .csr_op_i             ( csr_op_commit_csr               ),
         .csr_addr_i           ( csr_addr_ex_csr                 ),
@@ -413,10 +413,11 @@ module ariane
     logic branchpredict_i;
 
     controller i_controller (
-        .clk_i            (clk_i         ),
-        .rst_ni           (rst_ni        ),
-        .flush_commit_i   (flush_commit_i),
-        .branchpredict_i  (branchpredict_i  )
+        .clk_i            ( clk_i                   ),
+        .rst_ni           ( rst_ni                  ),
+        .flush_commit_i   ( flush_commit_i          ),
+        .flush_csr_i      ( flus_csr_ctrl           ),
+        .branchpredict_i  ( branchpredict           )
     );
 
 

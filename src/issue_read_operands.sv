@@ -42,11 +42,14 @@ module issue_read_operands (
     output fu_op                                   operator_o,
     output logic [63:0]                            operand_a_o,
     output logic [63:0]                            operand_b_o,
+    output logic [63:0]                            operand_c_o,
     output logic [63:0]                            imm_o,           // output immediate for the LSU
     output logic [TRANS_ID_BITS-1:0]               trans_id_o,
     // ALU 1
     input  logic                                   alu_ready_i,      // FU is ready
     output logic                                   alu_valid_o,      // Output is valid
+    // Branches and Jumps
+    output logic                                   branch_valid_o,   // this is a valid branch instruction
     // LSU
     input  logic                                   lsu_ready_i,      // FU is ready
     output logic                                   lsu_valid_o,      // Output is valid
@@ -66,27 +69,33 @@ module issue_read_operands (
     logic [63:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
 
     // output flipflop (ID <-> EX)
-    logic [63:0] operand_a_n, operand_a_q, operand_b_n, operand_b_q, imm_n, imm_q;
-    logic alu_valid_n,  alu_valid_q;
-    logic mult_valid_n, mult_valid_q;
-    logic lsu_valid_n,  lsu_valid_q;
-    logic csr_valid_n,  csr_valid_q;
+    logic [63:0] operand_a_n, operand_a_q,
+                 operand_b_n, operand_b_q,
+                 operand_c_n, operand_c_q,
+                 imm_n, imm_q;
+    logic alu_valid_n,    alu_valid_q;
+    logic mult_valid_n,   mult_valid_q;
+    logic lsu_valid_n,    lsu_valid_q;
+    logic csr_valid_n,    csr_valid_q;
+    logic branch_valid_n, branch_valid_q;
 
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q;
 
     // forwarding signals
     logic forward_rs1, forward_rs2;
-
-    assign operand_a_o  = operand_a_q;
-    assign operand_b_o  = operand_b_q;
-    assign operator_o   = operator_q;
-    assign alu_valid_o  = alu_valid_q;
-    assign lsu_valid_o  = lsu_valid_q;
-    assign csr_valid_o  = csr_valid_q;
-    assign mult_valid_o = mult_valid_q;
-    assign trans_id_o   = trans_id_q;
-    assign imm_o        = imm_q;
+    // ID <-> EX registers
+    assign operand_a_o    = operand_a_q;
+    assign operand_b_o    = operand_b_q;
+    assign operand_c_o    = operand_c_q;
+    assign operator_o     = operator_q;
+    assign alu_valid_o    = alu_valid_q;
+    assign branch_valid_o = branch_valid_q;
+    assign lsu_valid_o    = lsu_valid_q;
+    assign csr_valid_o    = csr_valid_q;
+    assign mult_valid_o   = mult_valid_q;
+    assign trans_id_o     = trans_id_q;
+    assign imm_o          = imm_q;
     // ---------------
     // Issue Stage
     // ---------------
@@ -127,7 +136,8 @@ module issue_read_operands (
         unique case (issue_instr_i.fu)
             NONE:
                 fu_busy = 1'b0;
-            ALU:
+            ALU, CTRL_FLOW: // control flow instruction also need the ALU
+                            // and they are always ready if the ALU is ready
                 fu_busy = ~alu_ready_i;
             MULT:
                 fu_busy = ~mult_ready_i;
@@ -175,10 +185,16 @@ module issue_read_operands (
         end
     end
     // Forwarding/Output MUX
-    always_comb begin : forwarding
+    always_comb begin : forwarding_operand_select
         // default is regfile
         operand_a_n = operand_a_regfile;
         operand_b_n = operand_b_regfile;
+        // set PC as default operand c
+        operand_c_n = issue_instr_i.pc;
+        // immediates are the third operands in the store case
+        imm_n      = issue_instr_i.result;
+        trans_id_n = issue_instr_i.trans_id;
+        operator_n = issue_instr_i.op;
 
         // or should we forward
         if (forward_rs1) begin
@@ -203,17 +219,38 @@ module issue_read_operands (
         if (issue_instr_i.use_imm && ~(issue_instr_i.op inside {SD, SW, SH, SB})) begin
             operand_b_n = issue_instr_i.result;
         end
-        // immediates are the third operands in the store case
-        imm_n      = issue_instr_i.result;
-        trans_id_n = issue_instr_i.trans_id;
-        operator_n = issue_instr_i.op;
+        // special assignments in the JAL and JALR case
+        case (issue_instr_i.op)
+            // re-write the operator since
+            // we need the ALU for addition
+            JAL: begin
+                operator_n  = ADD;
+                // output 4 as operand b as we
+                // need to save PC + 4
+                operand_b_n = 64'h4;
+            end
+
+            JALR: begin
+                operator_n  = ADD;
+                // output 4 as operand b as we
+                // need to save PC + 4
+                operand_b_n = 64'h4;
+                // get RS1 as operand C
+                operand_c_n = operand_a_regfile;
+                // forward rs1
+                if (forward_rs1) begin
+                    operand_c_n  = rs1_i;
+                end
+            end
+        endcase
     end
     // FU select
     always_comb begin : unit_valid
-        alu_valid_n  = 1'b0;
-        lsu_valid_n  = 1'b0;
-        mult_valid_n = 1'b0;
-        csr_valid_n  = 1'b0;
+        alu_valid_n    = 1'b0;
+        lsu_valid_n    = 1'b0;
+        mult_valid_n   = 1'b0;
+        csr_valid_n    = 1'b0;
+        branch_valid_n = 1'b0;
         // Exception pass through
         // if an exception has occurred simply pass it through
         // we do not want to issue this instruction
@@ -227,6 +264,10 @@ module issue_read_operands (
                     lsu_valid_n  = 1'b1;
                 CSR:
                     csr_valid_n  = 1'b1;
+                CTRL_FLOW: begin
+                    alu_valid_n    = 1'b1;
+                    branch_valid_n = 1'b1;
+                end
                 default: begin
 
                 end
@@ -259,7 +300,9 @@ module issue_read_operands (
         if(~rst_ni) begin
             operand_a_q          <= '{default: 0};
             operand_b_q          <= '{default: 0};
+            operand_c_q          <= '{default: 0};
             alu_valid_q          <= 1'b0;
+            branch_valid_q       <= 1'b0;
             mult_valid_q         <= 1'b0;
             lsu_valid_q          <= 1'b0;
             csr_valid_q          <= 1'b0;
@@ -268,7 +311,9 @@ module issue_read_operands (
         end else begin
             operand_a_q          <= operand_a_n;
             operand_b_q          <= operand_b_n;
+            operand_c_q          <= operand_c_n;
             alu_valid_q          <= alu_valid_n;
+            branch_valid_q       <= branch_valid_n;
             mult_valid_q         <= mult_valid_n;
             lsu_valid_q          <= lsu_valid_n;
             csr_valid_q          <= csr_valid_n;

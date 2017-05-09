@@ -48,7 +48,7 @@ package ariane_pkg;
     } branchpredict;
 
     typedef enum logic[3:0] {
-        NONE, LSU, ALU, MULT, CSR
+        NONE, LSU, ALU, CTRL_FLOW, MULT, CSR
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -64,6 +64,8 @@ package ariane_pkg;
                                SRA, SRL, SLL, SRLW, SLLW, SRAW,
                                // comparisons
                                LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,
+                               // jumps
+                               JAL, JALR,
                                // set lower than operations
                                SLTS, SLTU, SLETS, SLETU,
                                // CSR functions

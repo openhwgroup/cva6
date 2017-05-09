@@ -297,7 +297,7 @@ module decoder (
                 OPCODE_BRANCH: begin
                     // TODO: Implement
                     imm_select              = BIMM;
-                    instruction_o.fu        = ALU;
+                    instruction_o.fu        = CTRL_FLOW;
                     is_control_flow_instr_o = 1'b1;
 
                     case (instr.stype.funct3)
@@ -313,19 +313,19 @@ module decoder (
                         end
                     endcase
                 end
-
+                // Jump and link register
                 OPCODE_JALR: begin
-                    // TODO: Implement
-                    instruction_o.fu        = ALU;
+                    instruction_o.fu        = CTRL_FLOW;
+                    instruction_o.op        = JALR;
                     imm_select              = UIMM;
                     instruction_o.use_pc    = 1'b1;
                     instruction_o.rd        = instr.itype.rd;
                     is_control_flow_instr_o = 1'b1;
                 end
-
+                // Jump and link
                 OPCODE_JAL: begin
-                    // TODO: Implement
-                    instruction_o.fu        = ALU;
+                    instruction_o.fu        = CTRL_FLOW;
+                    instruction_o.op        = JAL;
                     imm_select              = JIMM;
                     instruction_o.use_pc    = 1'b1;
                     instruction_o.rd        = instr.utype.rd;

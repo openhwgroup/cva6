@@ -20,9 +20,6 @@
 import ariane_pkg::*;
 
 module branch_engine (
-    input  logic         clk_i,    // Clock
-    input  logic         rst_ni,  // Asynchronous reset active low
-
     input  logic [63:0]  operand_a_i,
     input  logic [63:0]  operand_b_i,
     input  logic         valid_i,
