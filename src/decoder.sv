@@ -11,13 +11,14 @@
 import ariane_pkg::*;
 
 module decoder (
-    input  logic            clk_i,           // Clock
-    input  logic            rst_ni,          // Asynchronous reset active low
-    input  logic [63:0]     pc_i,            // PC from IF
-    input  logic            is_compressed_i, // is a compressed instruction
-    input  logic [31:0]     instruction_i,   // instruction from IF
-    input  exception        ex_i,            // if an exception occured in if
-    output scoreboard_entry instruction_o   // scoreboard entry to scoreboard
+    input  logic            clk_i,                   // Clock
+    input  logic            rst_ni,                  // Asynchronous reset active low
+    input  logic [63:0]     pc_i,                    // PC from IF
+    input  logic            is_compressed_i,         // is a compressed instruction
+    input  logic [31:0]     instruction_i,           // instruction from IF
+    input  exception        ex_i,                    // if an exception occured in if
+    output scoreboard_entry instruction_o,           // scoreboard entry to scoreboard
+    output logic            is_control_flow_instr_o  // this instruction will change the control flow
 );
     logic illegal_instr;
     instruction instr;
@@ -45,6 +46,7 @@ module decoder (
     always_comb begin : decoder
 
         imm_select                  = NOIMM;
+        is_control_flow_instr_o     = 1'b0;
         illegal_instr               = 1'b0;
         instruction_o.pc            = pc_i;
         instruction_o.fu            = NONE;
@@ -294,17 +296,40 @@ module decoder (
 
                 OPCODE_BRANCH: begin
                     // TODO: Implement
-                    imm_select = BIMM;
+                    imm_select              = BIMM;
+                    instruction_o.fu        = ALU;
+                    is_control_flow_instr_o = 1'b1;
+
+                    case (instr.stype.funct3)
+                        3'b000: instruction_o.op = EQ;
+                        3'b001: instruction_o.op = NE;
+                        3'b100: instruction_o.op = LTS;
+                        3'b101: instruction_o.op = GES;
+                        3'b110: instruction_o.op = LTU;
+                        3'b111: instruction_o.op = GEU;
+                        default: begin
+                            is_control_flow_instr_o = 1'b0;
+                            illegal_instr           = 1'b1;
+                        end
+                    endcase
                 end
 
                 OPCODE_JALR: begin
                     // TODO: Implement
-                    imm_select = UIMM;
+                    instruction_o.fu        = ALU;
+                    imm_select              = UIMM;
+                    instruction_o.use_pc    = 1'b1;
+                    instruction_o.rd        = instr.itype.rd;
+                    is_control_flow_instr_o = 1'b1;
                 end
 
                 OPCODE_JAL: begin
                     // TODO: Implement
-                    imm_select = JIMM;
+                    instruction_o.fu        = ALU;
+                    imm_select              = JIMM;
+                    instruction_o.use_pc    = 1'b1;
+                    instruction_o.rd        = instr.utype.rd;
+                    is_control_flow_instr_o = 1'b1;
                 end
 
                 OPCODE_AUIPC: begin

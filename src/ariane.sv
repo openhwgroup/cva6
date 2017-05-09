@@ -210,7 +210,7 @@ module ariane
         .set_pc_o           ( set_pc_pcgen_if                ),
         .is_branch_o        ( is_branch_o                    ),
         .boot_addr_i        ( boot_addr_i                    ),
-        .epc_i              ( epc_i                          ),
+        .epc_i              ( epc_commit_pcgen               ),
         .trap_vector_base_i ( trap_vector_base_commit_pcgen  ),
         .ex_i               ( ex_commit                      ),
         .*

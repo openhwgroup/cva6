@@ -107,10 +107,17 @@ module ex_stage #(
         .is_equal_result_o   (                     ),
         .*
     );
+    // --------------------
+    // Control Flow Change
+    // -------------------
+    // use ALU exception signal for storing instruction fetch exceptions if
+    // the target address is not aligned to a 4 byte boundary
+
     // ----------------
     // Multiplication
     // ----------------
     // TODO
+
     // ----------------
     // Load-Store Unit
     // ----------------
@@ -126,5 +133,6 @@ module ex_stage #(
         .commit_i ( csr_commit_i  ),
         .*
     );
+
 
 endmodule
