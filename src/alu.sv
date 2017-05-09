@@ -181,7 +181,10 @@ module alu
 
   always_comb
   begin
-    cmp_result = is_equal;
+    // this is used only for branches
+    // as we are also using it for unconditional branches
+    // set it to 1 as a default
+    cmp_result = 1'b1;
 
     unique case (operator_i)
       EQ:            cmp_result = is_equal;

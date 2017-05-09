@@ -110,8 +110,7 @@ module ex_stage #(
     // --------------------
     // Control Flow Change
     // -------------------
-    // use ALU exception signal for storing instruction fetch exceptions if
-    // the target address is not aligned to a 4 byte boundary
+
 
     // ----------------
     // Multiplication
