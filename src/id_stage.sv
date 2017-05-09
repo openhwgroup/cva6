@@ -74,8 +74,9 @@ module id_stage #(
     output scoreboard_entry                          commit_instr_o,
     input  logic                                     commit_ack_i
 );
-
+    // ---------------------------------------------------
     // Global signals
+    // ---------------------------------------------------
     logic full;
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (iro)
@@ -102,6 +103,10 @@ module id_stage #(
     // -----------------
     // Branch logic
     // -----------------
+    // This should basically prevent the scoreboard from accepting
+    // instructions past a branch. We need to resolve the branch beforehand.
+    // This limitation is in place to ease the backtracking of mis-predicted branches as they
+    // can simply be in the front-end of the processor.
     logic unresolved_branch_n, unresolved_branch_q;
 
     always_comb begin : unresolved_branch
