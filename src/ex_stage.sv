@@ -29,6 +29,7 @@ module ex_stage #(
     input  fu_op                                   operator_i,
     input  logic [63:0]                            operand_a_i,
     input  logic [63:0]                            operand_b_i,
+    input  logic [63:0]                            operand_c_i,
     input  logic [63:0]                            imm_i,
     input  logic [TRANS_ID_BITS-1:0]               trans_id_i,
 
@@ -37,8 +38,13 @@ module ex_stage #(
     input  logic                                   alu_valid_i,      // Output is valid
     output logic                                   alu_valid_o,      // ALU result is valid
     output logic [63:0]                            alu_result_o,
-    output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,       // ID of scoreboard entry at which to write back
-    output logic                                   comparison_result_o,
+    output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,   // ID of scoreboard entry at which to write back
+    output exception                               alu_exception_o,
+    // Branches and Jumps
+    input  logic                                   branch_valid_i,
+    input  logic [63:0]                            predict_address_i,
+    output branchpredict                           branchpredict_o,
+    input  logic                                   predict_taken_i,
     // LSU
     output logic                                   lsu_ready_o,      // FU is ready
     input  logic                                   lsu_valid_i,      // Input is valid
@@ -90,7 +96,8 @@ module ex_stage #(
     output logic                                   mult_ready_o,      // FU is ready
     input  logic                                   mult_valid_i       // Output is valid
 );
-
+    // Wires
+    logic comparison_result_alu_branch;
 
     // ALU is a single cycle instructions, hence it is always ready
     assign alu_ready_o = 1'b1;
@@ -100,17 +107,27 @@ module ex_stage #(
     // ALU
     // -----
     alu alu_i (
-        .adder_result_o      (                     ),
-        .adder_result_ext_o  (                     ),
-        .result_o            ( alu_result_o        ),
-        .comparison_result_o ( comparison_result_o ),
-        .is_equal_result_o   (                     ),
+        .adder_result_o      (                              ),
+        .adder_result_ext_o  (                              ),
+        .result_o            ( alu_result_o                 ),
+        .comparison_result_o ( comparison_result_alu_branch ),
+        .is_equal_result_o   (                              ),
         .*
     );
-    // --------------------
-    // Control Flow Change
-    // -------------------
 
+    // --------------------
+    // Branch Engine
+    // --------------------
+    branch_engine branch_engine_i (
+        .operand_a_i         ( operand_c_i                  ),
+        .operand_b_i         ( imm_i                        ),
+        .valid_i             ( branch_valid_i               ),
+        .comparison_result_i ( comparison_result_alu_branch ),
+        .predict_address_i   ( predict_address_i            ),
+        .branchpredict_o     ( branchpredict_o              ),
+        .branch_ex_o         ( alu_exception_o              ),
+        .*
+    );
 
     // ----------------
     // Multiplication

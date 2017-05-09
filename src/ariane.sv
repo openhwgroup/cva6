@@ -93,7 +93,7 @@ module ariane
     // --------------
     // PCGEN <-> EX
     // --------------
-    mispredict                mispredict_ex_pcgen;
+    branchpredict             branchpredict_ex_pcgen;
     // --------------
     // PCGEN <-> CSR
     // --------------
@@ -121,12 +121,18 @@ module ariane
     fu_op                     operator_id_ex;
     logic [63:0]              operand_a_id_ex;
     logic [63:0]              operand_b_id_ex;
+    logic [63:0]              operand_c_id_ex;
     // ALU
     logic                     alu_ready_ex_id;
     logic                     alu_valid_id_ex;
     logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
     logic                     alu_valid_ex_id;
     logic [63:0]              alu_result_ex_id;
+    exception                 alu_exception_ex_id;
+    // Branches and Jumps
+    logic                     branch_valid_id_ex;
+    logic [63:0]              predict_address_id_ex;
+    logic                     predict_taken_id_ex;
     // LSU
     logic [TRANS_ID_BITS-1:0] lsu_trans_id_ex_id;
     logic                     lsu_valid_id_ex;
@@ -205,7 +211,7 @@ module ariane
     pcgen pcgen_i (
         .flush_i            ( flush                          ),
         .pc_if_i            ( pc_if                          ),
-        .mispredict_i       ( mispredict_ex_pcgen            ),
+        .branchpredict_i    ( branchpredict_ex_pcgen         ),
         .pc_if_o            ( pc_pcgen_if                    ),
         .set_pc_o           ( set_pc_pcgen_if                ),
         .is_branch_o        ( is_branch_o                    ),
@@ -262,25 +268,30 @@ module ariane
         .operator_o          ( operator_id_ex                           ),
         .operand_a_o         ( operand_a_id_ex                          ),
         .operand_b_o         ( operand_b_id_ex                          ),
+        .operand_c_o         ( operand_c_id_ex                          ),
         .imm_o               ( imm_id_ex                                ),
         .trans_id_o          ( trans_id_id_ex                           ),
-
+        // ALU
         .alu_ready_i         ( alu_ready_ex_id                          ),
         .alu_valid_o         ( alu_valid_id_ex                          ),
-
+        // Branches and Jumps
+        .branch_valid_o      ( branch_valid_id_ex                       ),
+        .predict_address_o   ( predict_address_id_ex                    ),
+        .predict_taken_o     ( predict_taken_id_ex                      ),
+        // LSU
         .lsu_ready_i         ( lsu_ready_ex_id                          ),
         .lsu_valid_o         ( lsu_valid_id_ex                          ),
-
+        // Multiplier
         .mult_ready_i        ( mult_ready_ex_id                         ),
         .mult_valid_o        ( mult_valid_id_ex                         ),
-
+        // CSR
         .csr_ready_i         ( csr_ready_ex_id                          ),
         .csr_valid_o         ( csr_valid_id_ex                          ),
 
-        .trans_id_i          ( {alu_trans_id_ex_id, lsu_trans_id_ex_id , csr_trans_id_ex_id}                    ),
-        .wdata_i             ( {alu_result_ex_id,   lsu_result_ex_id, csr_result_ex_id}                         ),
-        .ex_ex_i             ( {{$bits(exception){1'b0}}, lsu_exception_ex_id, {$bits(exception){1'b0}} }       ),
-        .wb_valid_i          ( {alu_valid_ex_id, lsu_valid_ex_id, csr_valid_ex_id}                              ),
+        .trans_id_i          ( {alu_trans_id_ex_id,  lsu_trans_id_ex_id,  csr_trans_id_ex_id       }),
+        .wdata_i             ( {alu_result_ex_id,    lsu_result_ex_id,    csr_result_ex_id         }),
+        .ex_ex_i             ( {alu_exception_ex_id, lsu_exception_ex_id, {$bits(exception){1'b0}} }),
+        .wb_valid_i          ( {alu_valid_ex_id,     lsu_valid_ex_id,     csr_valid_ex_id          }),
 
         .waddr_a_i           ( waddr_a_commit_id                        ),
         .wdata_a_i           ( wdata_a_commit_id                        ),
@@ -298,15 +309,21 @@ module ariane
         .operator_i           ( operator_id_ex            ),
         .operand_a_i          ( operand_a_id_ex           ),
         .operand_b_i          ( operand_b_id_ex           ),
+        .operand_c_i          ( operand_c_id_ex           ),
         .imm_i                ( imm_id_ex                 ),
         .trans_id_i           ( trans_id_id_ex            ),
-        .comparison_result_o  (                           ),
         // ALU
         .alu_ready_o          ( alu_ready_ex_id           ),
         .alu_valid_i          ( alu_valid_id_ex           ),
         .alu_result_o         ( alu_result_ex_id          ),
         .alu_trans_id_o       ( alu_trans_id_ex_id        ),
         .alu_valid_o          ( alu_valid_ex_id           ),
+        .alu_exception_o      ( alu_exception_ex_id       ),
+        // Branches and Jumps
+        .branch_valid_i       ( branch_valid_id_ex        ),
+        .predict_address_i    ( predict_address_id_ex     ),
+        .predict_taken_i      ( predict_taken_id_ex       ),
+        .branchpredict_o      ( branchpredict_ex_pcgen    ),
         // LSU
         .lsu_ready_o          ( lsu_ready_ex_id           ),
         .lsu_valid_i          ( lsu_valid_id_ex           ),
@@ -393,14 +410,13 @@ module ariane
     // Controller
     // ------------
     logic flush_commit_i;
-    logic mispredict_i;
-    mispredict mispredict_o;
+    logic branchpredict_i;
+
     controller i_controller (
-        .clk_i         (clk_i         ),
-        .rst_ni        (rst_ni        ),
-        .flush_commit_i(flush_commit_i),
-        .mispredict_i  (mispredict_i  ),
-        .mispredict_o  (mispredict_o  )
+        .clk_i            (clk_i         ),
+        .rst_ni           (rst_ni        ),
+        .flush_commit_i   (flush_commit_i),
+        .branchpredict_i  (branchpredict_i  )
     );
 
 

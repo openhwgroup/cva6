@@ -20,13 +20,11 @@
 import ariane_pkg::*;
 
 module controller (
-    input  logic      clk_i,    // Clock
-    input  logic      rst_ni,   // Asynchronous reset active low
+    input  logic         clk_i,    // Clock
+    input  logic         rst_ni,   // Asynchronous reset active low
 
-    input  logic      flush_commit_i, // flush request from commit stage in
-    input  logic      mispredict_i,
-
-    output mispredict mispredict_o // to pcgen update branch history table
+    input  logic         flush_commit_i, // flush request from commit stage in
+    input  logic         branchpredict_i
 );
 
 // flush on mispredict

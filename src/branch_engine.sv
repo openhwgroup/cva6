@@ -20,36 +20,37 @@
 import ariane_pkg::*;
 
 module branch_engine (
-    input  logic        clk_i,    // Clock
-    input  logic        rst_ni,  // Asynchronous reset active low
+    input  logic         clk_i,    // Clock
+    input  logic         rst_ni,  // Asynchronous reset active low
 
-    input  logic [63:0] operand_a,
-    input  logic [63:0] operand_b,
-    input  logic        valid_i,
+    input  logic [63:0]  operand_a_i,
+    input  logic [63:0]  operand_b_i,
+    input  logic         valid_i,
 
-    input  logic        comparison_result_i, // result of comparison
-    input  logic [63:0] predict_address_i,   // this is the address we predicted
-    output mispredict   mispredict_o,        // this is the actual address we are targeting
-    output exception    branch_ex_o          // branch exception out
+    input  logic         comparison_result_i, // result of comparison
+    input  logic [63:0]  predict_address_i,   // this is the address we predicted
+    output branchpredict branchpredict_o,     // this is the actual address we are targeting
+    output exception     branch_ex_o          // branch exception out
 );
     logic [63:0] target_address;
 
     always_comb begin : target_address_calc
-        target_address              = 64'b0;
-        mispredict_o.pc             = 64'b0;
-        mispredict_o.target_address = 64'b0;
-        mispredict_o.is_taken       = 1'b0;
-        mispredict_o.valid          = 1'b0;
+        target_address                 = 64'b0;
+        branchpredict_o.pc             = 64'b0;
+        branchpredict_o.target_address = 64'b0;
+        branchpredict_o.is_taken       = 1'b0;
+        branchpredict_o.valid          = valid_i;
+        branchpredict_o.is_mispredict  = 1'b0;
 
         if (valid_i) begin
             // calculate target address simple 64 bit addition
-            target_address = $signed(operand_a) + $signed(operand_b);
+            target_address = $signed(operand_a_i) + $signed(operand_b_i);
+            // write target address
+            branchpredict_o.target_address = target_address;
+            branchpredict_o.is_taken       = comparison_result_i;
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
             if (target_address != predict_address_i && target_address[1:0] == 2'b0) begin
-                // write target address
-                mispredict_o.target_address = target_address;
-                mispredict_o.is_taken       = comparison_result_i;
-                mispredict_o.valid          = 1'b1;
+                branchpredict_o.is_mispredict  = 1'b0;
             end
         end
     end

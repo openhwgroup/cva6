@@ -40,11 +40,12 @@ package ariane_pkg;
 
     // miss-predict
     typedef struct packed {
-        logic [63:0] pc;
-        logic [63:0] target_address;
-        logic        is_taken;
-        logic        valid; // is miss-predict
-    } mispredict;
+        logic [63:0] pc;              // pc of predict or mis-predict
+        logic [63:0] target_address;  // target address at which to jump, or not
+        logic        is_mispredict;   // set if this was a mis-predict
+        logic        is_taken;        // branch is taken
+        logic        valid;           // prediction with all its values is valid
+    } branchpredict;
 
     typedef enum logic[3:0] {
         NONE, LSU, ALU, MULT, CSR

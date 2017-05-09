@@ -20,22 +20,22 @@
 import ariane_pkg::*;
 
 module pcgen (
-    input  logic        clk_i,              // Clock
-    input  logic        rst_ni,             // Asynchronous reset active low
+    input  logic          clk_i,              // Clock
+    input  logic          rst_ni,             // Asynchronous reset active low
 
-    input  logic        flush_i,
-    input  logic [63:0] pc_if_i,
-    input  mispredict   mispredict_i,       // from controller signaling a mispredict -> update BTB
+    input  logic          flush_i,
+    input  logic [63:0]   pc_if_i,
+    input  branchpredict  branchpredict_i,       // from controller signaling a branchpredict -> update BTB
     // to IF
-    output logic [63:0] pc_if_o,            // new PC
-    output logic        set_pc_o,           // request the PC to be set to pc_if_o
-    output logic        is_branch_o,        // to check if we mispredicted we need to save whether this was a branch or not
+    output logic [63:0]   pc_if_o,            // new PC
+    output logic          set_pc_o,           // request the PC to be set to pc_if_o
+    output logic          is_branch_o,        // to check if we branchpredicted we need to save whether this was a branch or not
     // global input
-    input  logic [63:0] boot_addr_i,
+    input  logic [63:0]   boot_addr_i,
     // CSR input
-    input  logic [63:0] epc_i,              // return from exception
-    input  logic [63:0] trap_vector_base_i, // base of trap vector
-    input  exception    ex_i                // exception in - from commit
+    input  logic [63:0]   epc_i,              // return from exception
+    input  logic [63:0]   trap_vector_base_i, // base of trap vector
+    input  exception      ex_i                // exception in - from commit
 );
 
     logic [63:0] branch_target_address;
@@ -56,7 +56,7 @@ module pcgen (
     btb_i
     (
         .vpc_i                   ( pc_if_i                 ),
-        .mispredict_i            ( mispredict_i           ),
+        .branchpredict_i         ( branchpredict_i         ),
         .is_branch_o             ( is_branch               ),
         .predict_taken_o         ( predict_taken           ),
         .branch_target_address_o ( branch_target_address   ),
