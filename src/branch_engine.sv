@@ -26,6 +26,7 @@ module branch_engine (
 
     input  logic         comparison_result_i, // result of comparison
     input  logic [63:0]  predict_address_i,   // this is the address we predicted
+    input  logic         predict_taken_i,
     output branchpredict branchpredict_o,     // this is the actual address we are targeting
     output exception     branch_ex_o          // branch exception out
 );
@@ -46,8 +47,10 @@ module branch_engine (
             branchpredict_o.target_address = target_address;
             branchpredict_o.is_taken       = comparison_result_i;
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
-            if (target_address != predict_address_i && target_address[1:0] == 2'b0) begin
-                branchpredict_o.is_mispredict  = 1'b0;
+            if (target_address[1:0] == 2'b0) begin
+                if (target_address != predict_address_i || predict_taken_i != comparison_result_i) begin
+                    branchpredict_o.is_mispredict  = 1'b1;
+                end
             end
         end
     end

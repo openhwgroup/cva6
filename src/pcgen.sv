@@ -25,7 +25,7 @@ module pcgen (
 
     input  logic          flush_i,
     input  logic [63:0]   pc_if_i,
-    input  branchpredict  branchpredict_i,       // from controller signaling a branchpredict -> update BTB
+    input  branchpredict  branchpredict_i,    // from controller signaling a branchpredict -> update BTB
     // to IF
     output logic [63:0]   pc_if_o,            // new PC
     output logic          set_pc_o,           // request the PC to be set to pc_if_o

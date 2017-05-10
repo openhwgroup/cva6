@@ -36,8 +36,14 @@ module if_stage (
     output logic                   if_busy_o,   // is the IF stage busy fetching instructions?
     input  logic                   id_ready_i,
     input  logic                   halt_if_i,   // pipeline stall
-    input  logic                   set_pc_i,    // set new PC
+    // ctrl flow instruction in
     input  logic [63:0]            fetch_addr_i,
+    input  logic                   set_pc_i,    // set new PC
+    input  logic                   is_branch_i,  // the new PC was a branch e.g.: branch or jump
+    // branchpredict out
+    output logic                   branch_valid_o,
+    output logic [63:0]            predict_address_o,
+    output logic                   predict_taken_o,
     // instruction cache interface
     output logic                   instr_req_o,
     output logic [63:0]            instr_addr_o,
@@ -64,6 +70,11 @@ module if_stage (
     logic       [31:0] fetch_rdata;
     logic       [63:0] fetch_addr;
 
+    // branch predict registers
+    logic         branch_valid_n,    branch_valid_q;
+    logic [63:0]  predict_address_n, predict_address_q;
+    logic         predict_taken_n,   predict_taken_q;
+
     // offset FSM
     enum logic[0:0] {WAIT, IDLE} offset_fsm_cs, offset_fsm_ns;
     logic [31:0] instr_decompressed;
@@ -71,26 +82,20 @@ module if_stage (
     logic        instr_compressed_int;
     logic        clear_instr_valid_i;
 
-
-    assign pc_if_o             = fetch_addr;
-    // id stage acknowledged
-    assign clear_instr_valid_i = id_ready_i;
     // compressed instruction decoding, or more precisely compressed instruction
     // expander
     //
     // since it does not matter where we decompress instructions, we do it here
     // to ease timing closure
-    compressed_decoder compressed_decoder_i
-      (
+    compressed_decoder compressed_decoder_i (
         .instr_i         ( fetch_rdata          ),
         .instr_o         ( instr_decompressed   ),
         .is_compressed_o ( instr_compressed_int ),
         .illegal_instr_o ( illegal_c_insn       )
-      );
+    );
 
-    // prefetch buffer, caches a fixed number of instructions
-    prefetch_buffer prefetch_buffer_i
-        (
+    // Pre-fetch buffer, caches a fixed number of instructions
+    prefetch_buffer prefetch_buffer_i (
         .clk               ( clk_i                       ),
         .rst_n             ( rst_ni                       ),
 
@@ -113,110 +118,138 @@ module if_stage (
 
         // Prefetch Buffer Status
         .busy_o            ( prefetch_busy               )
-        );
+    );
 
-        // offset FSM state
-        always_ff @(posedge clk_i, negedge rst_ni)
-        begin
-          if (rst_ni == 1'b0) begin
-            offset_fsm_cs     <= IDLE;
-          end else begin
-            offset_fsm_cs     <= offset_fsm_ns;
-          end
-        end
+    // offset FSM state transition logic
+    always_comb begin
+      offset_fsm_ns = offset_fsm_cs;
 
-        // offset FSM state transition logic
-        always_comb
-        begin
-          offset_fsm_ns = offset_fsm_cs;
+      fetch_ready   = 1'b0;
+      branch_req    = 1'b0;
+      valid         = 1'b0;
 
-          fetch_ready   = 1'b0;
-          branch_req    = 1'b0;
-          valid         = 1'b0;
-
-          unique case (offset_fsm_cs)
-            // no valid instruction data for ID stage
-            // assume aligned
-            IDLE: begin
-              if (req_i) begin
-                branch_req    = 1'b1;
-                offset_fsm_ns = WAIT;
-              end
-            end
-
-            // serving aligned 32 bit or 16 bit instruction, we don't know yet
-            WAIT: begin
-              if (fetch_valid) begin
-                valid   = 1'b1; // an instruction is ready for ID stage
-
-                if (req_i && if_valid) begin
-                  fetch_ready   = 1'b1;
-                  offset_fsm_ns = WAIT;
-                end
-              end
-            end
-
-            default: begin
-              offset_fsm_ns = IDLE;
-            end
-          endcase
-
-
-          // take care of control flow changes
-          if (set_pc_i) begin
-            valid = 1'b0;
-
-            // switch to new PC from ID stage
-            branch_req = 1'b1;
+      unique case (offset_fsm_cs)
+        // no valid instruction data for ID stage
+        // assume aligned
+        IDLE: begin
+          if (req_i) begin
+            branch_req    = 1'b1;
             offset_fsm_ns = WAIT;
           end
         end
 
-        // IF-ID pipeline registers, frozen when the ID stage is stalled
-        always_ff @(posedge clk_i, negedge rst_ni)
-        begin : IF_ID_PIPE_REGISTERS
-          if (rst_ni == 1'b0)
-            begin
-                instr_valid_id_o      <= 1'b0;
-                instr_rdata_id_o      <= '0;
-                illegal_c_insn_id_o   <= 1'b0;
-                is_compressed_id_o    <= 1'b0;
-                pc_id_o               <= '0;
-                ex_o                  <= '{default: 0};
-            end
-          else
-            begin
+        // serving aligned 32 bit or 16 bit instruction, we don't know yet
+        WAIT: begin
+          if (fetch_valid) begin
+            valid   = 1'b1; // an instruction is ready for ID stage
 
-              if (if_valid)
-              begin
-                instr_valid_id_o    <= 1'b1;
-                instr_rdata_id_o    <= instr_decompressed;
-                illegal_c_insn_id_o <= illegal_c_insn;
-                is_compressed_id_o  <= instr_compressed_int;
-                pc_id_o             <= pc_if_o;
-                ex_o.cause          <= 64'b0; // TODO: Output exception
-                ex_o.tval           <= 64'b0; // TODO: Output exception
-                ex_o.valid          <= 1'b0;  // TODO: Output exception
-              end else if (clear_instr_valid_i) begin
-                instr_valid_id_o    <= 1'b0;
-              end
-
+            if (req_i && if_valid) begin
+              fetch_ready   = 1'b1;
+              offset_fsm_ns = WAIT;
             end
+          end
         end
 
+        default: begin
+          offset_fsm_ns = IDLE;
+        end
+      endcase
 
-        assign if_ready  = valid & id_ready_i;
-        assign if_valid  = (~halt_if_i) & if_ready;
-        assign if_busy_o = prefetch_busy;
-        //-------------
-        // Assertions
-        //-------------
-        `ifndef SYNTHESIS
-        `ifndef VERILATOR
-        // there should never be a grant when there was no request
-        assert property (
-          @(posedge clk_i) (instr_gnt_i) |-> (instr_req_o) )
-        else $warning("There was a grant without a request");
-        `endif
-        `endif
+      // take care of control flow changes
+      if (set_pc_i) begin
+        valid = 1'b0;
+        // switch to new PC from ID stage
+        branch_req = 1'b1;
+        offset_fsm_ns = WAIT;
+      end
+    end
+
+    // -------------
+    // Branch Logic
+    // -------------
+    // We need to pass those registers on to ID in the case we've set
+    // a new branch target (or jump) and we got a valid instruction
+    always_comb begin
+        branch_valid_n    = branch_valid_q;
+        predict_address_n = predict_address_q;
+        predict_taken_n   = predict_taken_q;
+        // we got a branch redirect from PCGEN
+        if (is_branch_i) begin
+            // set the registers to the correct address
+            branch_valid_n    = 1'b1;
+            predict_address_n = fetch_addr_i;
+            // whether we took the branch or not can be seen from the set PC
+            // nevertheless we also need to keep branches not taken
+            predict_taken_n   = set_pc_i;
+        end
+        // we have a valid instruction and id excepted it so we consider all the
+        // branch information to be sampled correctly
+        if (if_valid && clear_instr_valid_i) begin
+            branch_valid_n = 1'b0;
+        end
+
+    end
+
+    // --------------------------------------------------------------
+    // IF-ID pipeline registers, frozen when the ID stage is stalled
+    // --------------------------------------------------------------
+    always_ff @(posedge clk_i, negedge rst_ni) begin : IF_ID_PIPE_REGISTERS
+      if (~rst_ni) begin
+            // offset FSM state
+            offset_fsm_cs         <= IDLE;
+            instr_valid_id_o      <= 1'b0;
+            instr_rdata_id_o      <= '0;
+            illegal_c_insn_id_o   <= 1'b0;
+            is_compressed_id_o    <= 1'b0;
+            pc_id_o               <= '0;
+            ex_o                  <= '{default: 0};
+            branch_valid_q        <= 1'b0;
+            predict_address_q     <= 64'b0;
+            predict_taken_q       <= 1'b0;
+        end
+      else
+        begin
+            offset_fsm_cs         <= offset_fsm_ns;
+            branch_valid_q        <= branch_valid_n;
+            predict_address_q     <= predict_address_n;
+            predict_taken_q       <= predict_taken_n;
+
+            if (if_valid) begin
+              instr_valid_id_o    <= 1'b1;
+              instr_rdata_id_o    <= instr_decompressed;
+              illegal_c_insn_id_o <= illegal_c_insn;
+              is_compressed_id_o  <= instr_compressed_int;
+              pc_id_o             <= pc_if_o;
+              ex_o.cause          <= 64'b0; // TODO: Output exception
+              ex_o.tval           <= 64'b0; // TODO: Output exception
+              ex_o.valid          <= 1'b0;  // TODO: Output exception
+            end else if (clear_instr_valid_i) begin
+              instr_valid_id_o    <= 1'b0;
+            end
+
+        end
+    end
+
+    // Assignments
+    assign pc_if_o             = fetch_addr;
+    // id stage acknowledged
+    assign clear_instr_valid_i = id_ready_i;
+    assign if_ready            = valid & id_ready_i;
+    assign if_valid            = (~halt_if_i) & if_ready;
+    assign if_busy_o           = prefetch_busy;
+    assign branch_valid_o      = branch_valid_q;
+    assign predict_address_o   = predict_address_q;
+    assign predict_taken_o     = predict_taken_q;
+
+    //-------------
+    // Assertions
+    //-------------
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
+    // there should never be a grant when there was no request
+    assert property (
+      @(posedge clk_i) (instr_gnt_i) |-> (instr_req_o) )
+    else $warning("There was a grant without a request");
+    `endif
+    `endif
 endmodule

@@ -43,8 +43,8 @@ module ex_stage #(
     // Branches and Jumps
     input  logic                                   branch_valid_i,
     input  logic [63:0]                            predict_address_i,
-    output branchpredict                           branchpredict_o,
     input  logic                                   predict_taken_i,
+    output branchpredict                           branchpredict_o,
     // LSU
     output logic                                   lsu_ready_o,      // FU is ready
     input  logic                                   lsu_valid_i,      // Input is valid
@@ -123,8 +123,6 @@ module ex_stage #(
         .operand_b_i         ( imm_i                        ),
         .valid_i             ( branch_valid_i               ),
         .comparison_result_i ( comparison_result_alu_branch ),
-        .predict_address_i   ( predict_address_i            ),
-        .branchpredict_o     ( branchpredict_o              ),
         .branch_ex_o         ( alu_exception_o              ),
         .*
     );

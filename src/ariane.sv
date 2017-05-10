@@ -112,6 +112,9 @@ module ariane
     logic                     illegal_c_insn_id_if;
     logic [63:0]              pc_id_if_id;
     exception                 exception_if_id;
+    logic                     branch_valid_if_id;
+    logic [63:0]              predict_address_if_id;
+    logic                     predict_taken_if_id;
     // --------------
     // ID <-> EX
     // --------------
@@ -199,6 +202,8 @@ module ariane
     // EX <-> CSR
     // --------------
 
+    // * -> CTRL
+    logic                     flush_csr_ctrl;
     // TODO: Preliminary signal assignments
     logic flush_tlb;
     assign flush_tlb = 1'b0;
@@ -214,7 +219,7 @@ module ariane
         .branchpredict_i    ( branchpredict                  ),
         .pc_if_o            ( pc_pcgen_if                    ),
         .set_pc_o           ( set_pc_pcgen_if                ),
-        .is_branch_o        ( is_branch_o                    ),
+        .is_branch_o        ( is_branch_pcgen_if             ),
         .boot_addr_i        ( boot_addr_i                    ),
         .epc_i              ( epc_commit_pcgen               ),
         .trap_vector_base_i ( trap_vector_base_commit_pcgen  ),
@@ -231,6 +236,10 @@ module ariane
         .id_ready_i          ( ready_id_if              ),
         .halt_if_i           ( halt_if                  ),
         .set_pc_i            ( set_pc_pcgen_if          ),
+        .is_branch_i         ( is_branch_pcgen_if       ),
+        .branch_valid_o      ( branch_valid_if_id       ),
+        .predict_address_o   ( predict_address_if_id    ),
+        .predict_taken_o     ( predict_taken_if_id      ),
         .fetch_addr_i        ( pc_pcgen_if              ),
         .instr_req_o         ( fetch_req_if_ex          ),
         .instr_addr_o        ( fetch_vaddr_if_ex        ),
@@ -275,6 +284,9 @@ module ariane
         .alu_ready_i         ( alu_ready_ex_id                          ),
         .alu_valid_o         ( alu_valid_id_ex                          ),
         // Branches and Jumps
+        .branch_valid_i      ( branch_valid_if_id                       ),
+        .predict_address_i   ( predict_address_if_id                    ),
+        .predict_taken_i     ( predict_taken_if_id                      ),
         .branch_valid_o      ( branch_valid_id_ex                       ),
         .predict_address_o   ( predict_address_id_ex                    ),
         .predict_taken_o     ( predict_taken_id_ex                      ),
@@ -387,7 +399,7 @@ module ariane
         .ASID_WIDTH           ( ASID_WIDTH                      )
     )
     csr_regfile_i (
-        .flush_o              ( flus_csr_ctrl                   ),
+        .flush_o              ( flush_csr_ctrl                  ),
         .ex_i                 ( ex_commit                       ),
         .csr_op_i             ( csr_op_commit_csr               ),
         .csr_addr_i           ( csr_addr_ex_csr                 ),
@@ -417,7 +429,7 @@ module ariane
         .clk_i            ( clk_i                   ),
         .rst_ni           ( rst_ni                  ),
         .flush_commit_i   ( flush_commit_i          ),
-        .flush_csr_i      ( flus_csr_ctrl           ),
+        .flush_csr_i      ( flsh_csr_ctrl           ),
         .branchpredict_i  ( branchpredict           )
     );
 
