@@ -402,8 +402,8 @@ module decoder (
     // Exception handling
     // --------------------------------
     always_comb begin : exception_handling
-        instruction_o.ex    = ex_i;
-        instruction_o.valid = 1'b0;
+        instruction_o.ex     = ex_i;
+        instruction_o.valid  = 1'b0;
         // look if we didn't already get an exception in any previous
         // stage - we should not overwrite it as we retain order regarding the exception
         if (~ex_i.valid && illegal_instr) begin
@@ -413,6 +413,8 @@ module decoder (
             instruction_o.ex.valid = 1'b1;
             // we decoded an illegal exception here
             instruction_o.ex.cause = ILLEGAL_INSTR;
+            // if we decoded an illegal instruction save the faulting instruction to tval
+            instruction_o.ex.tval  = instruction_i;
         end
     end
 endmodule

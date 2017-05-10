@@ -100,6 +100,8 @@ always_comb begin : clobber_output
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q && i[BITS_ENTRIES-1:0] < issue_pointer_q)
                 rd_clobber_o[mem_q[i].rd] = mem_q[i].fu;
         end
+    end else if (commit_pointer_q == issue_pointer_q) begin // everything committed
+        rd_clobber_o = '{default: NONE};
     end else begin // the issue pointer has overflowed, invert logic, depicted on the right
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q)
@@ -209,7 +211,7 @@ always_comb begin : issue_instruction
 
 
     // provide a combinatorial path in case the scoreboard is empty
-    if (top_pointer_q == issue_pointer_q) begin
+    if (top_pointer_q == issue_pointer_q && ~full_o) begin
         issue_instr_o          = decoded_instr_i;
         issue_instr_o.trans_id = issue_pointer_q;
         issue_instr_valid_o    = decoded_instr_valid_i;
@@ -218,7 +220,7 @@ always_comb begin : issue_instruction
         issue_instr_o = mem_q[$unsigned(issue_pointer_q)];
         // we have not reached the top of the buffer
         // issue pointer has overflowed
-        if (issue_pointer_q <= commit_pointer_q) begin
+        if (issue_pointer_q < commit_pointer_q) begin
             if (issue_pointer_q < top_pointer_q)
                 issue_instr_valid_o = 1'b1;
             else
@@ -272,7 +274,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : sequential
         commit_pointer_q  <= commit_pointer_n;
         top_pointer_q     <= top_pointer_n;
         mem_q             <= mem_n;
-        if (decoded_instr_valid_i) // only advance if we decoded instruction
+        if (decoded_instr_valid_i && ~full_o) // only advance if we decoded instruction and we are not full
             top_pointer_qq    <= top_pointer_q;
     end
 end

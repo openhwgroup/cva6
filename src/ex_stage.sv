@@ -32,7 +32,7 @@ module ex_stage #(
     input  logic [63:0]                            operand_c_i,
     input  logic [63:0]                            imm_i,
     input  logic [TRANS_ID_BITS-1:0]               trans_id_i,
-
+    input  logic [63:0]                            pc_i,             // PC of current instruction
     // ALU 1
     output logic                                   alu_ready_o,      // FU is ready
     input  logic                                   alu_valid_i,      // Output is valid
@@ -42,6 +42,7 @@ module ex_stage #(
     output exception                               alu_exception_o,
     // Branches and Jumps
     input  logic                                   branch_valid_i,
+    input  logic                                   predict_branch_valid_i,
     input  logic [63:0]                            predict_address_i,
     input  logic                                   predict_taken_i,
     output branchpredict                           branchpredict_o,
@@ -139,6 +140,7 @@ module ex_stage #(
         .commit_i  ( lsu_commit_i ),
         .*
     );
+
     // -----
     // CSR
     // -----

@@ -22,13 +22,15 @@ import ariane_pkg::*;
 module branch_engine (
     input  logic [63:0]  operand_a_i,
     input  logic [63:0]  operand_b_i,
+    input  logic [63:0]  pc_i,
     input  logic         valid_i,
 
-    input  logic         comparison_result_i, // result of comparison
-    input  logic [63:0]  predict_address_i,   // this is the address we predicted
+    input  logic         comparison_result_i,     // result of comparison
+    input  logic [63:0]  predict_address_i,       // this is the address we predicted
+    input  logic         predict_branch_valid_i,  // we predicted that this was a valid branch
     input  logic         predict_taken_i,
-    output branchpredict branchpredict_o,     // this is the actual address we are targeting
-    output exception     branch_ex_o          // branch exception out
+    output branchpredict branchpredict_o,         // this is the actual address we are targeting
+    output exception     branch_ex_o              // branch exception out
 );
     logic [63:0] target_address;
 
@@ -41,6 +43,8 @@ module branch_engine (
         branchpredict_o.is_mispredict  = 1'b0;
 
         if (valid_i) begin
+            // save pc
+            branchpredict_o.pc = pc_i;
             // calculate target address simple 64 bit addition
             target_address = $signed(operand_a_i) + $signed(operand_b_i);
             // write target address
@@ -48,7 +52,10 @@ module branch_engine (
             branchpredict_o.is_taken       = comparison_result_i;
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
             if (target_address[1:0] == 2'b0) begin
-                if (target_address != predict_address_i || predict_taken_i != comparison_result_i) begin
+                if (   target_address != predict_address_i    // we mis-predicted the address of the branch
+                    || predict_taken_i != comparison_result_i // we mis-predicted the outcome of the branch
+                    || predict_branch_valid_i == 1'b0         // this means branch-prediction thought it was no branch but in real it was one
+                    ) begin
                     branchpredict_o.is_mispredict  = 1'b1;
                 end
             end

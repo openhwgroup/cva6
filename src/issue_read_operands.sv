@@ -45,6 +45,7 @@ module issue_read_operands (
     output logic [63:0]                            operand_c_o,
     output logic [63:0]                            imm_o,           // output immediate for the LSU
     output logic [TRANS_ID_BITS-1:0]               trans_id_o,
+    output logic [63:0]                            pc_o,
     // ALU 1
     input  logic                                   alu_ready_i,      // FU is ready
     output logic                                   alu_valid_o,      // Output is valid
@@ -102,7 +103,7 @@ module issue_read_operands (
     // We can issue an instruction if we do not detect that any other instruction is writing the same
     // destination register.
     // We also need to check if there is an unresolved branch in the scoreboard.
-    always_comb begin : issue
+    always_comb begin : issue_scoreboard
         // default assignment
         issue_ack_o = 1'b0;
         // check that we didn't stall, that the instruction we got is valid
@@ -112,6 +113,11 @@ module issue_read_operands (
                 // check that the corresponding functional unit is not busy
                 // no other instruction has the same destination register -> fetch the instruction
                 if (rd_clobber_i[issue_instr_i.rd] == NONE) begin
+                    issue_ack_o = 1'b1;
+                end
+                // or check that the target destination register will be written in this cycle by the
+                // commit stage
+                if (we_a_i && waddr_a_i == issue_instr_i.rd) begin
                     issue_ack_o = 1'b1;
                 end
             end
@@ -254,7 +260,7 @@ module issue_read_operands (
         // Exception pass through
         // if an exception has occurred simply pass it through
         // we do not want to issue this instruction
-        if (~issue_instr_i.ex.valid && issue_instr_valid_i) begin
+        if (~issue_instr_i.ex.valid && issue_instr_valid_i && issue_ack_o) begin
             case (issue_instr_i.fu)
                 ALU:
                     alu_valid_n  = 1'b1;
@@ -301,6 +307,7 @@ module issue_read_operands (
             operand_a_q          <= '{default: 0};
             operand_b_q          <= '{default: 0};
             operand_c_q          <= '{default: 0};
+            imm_q                <= 64'b0;
             alu_valid_q          <= 1'b0;
             branch_valid_q       <= 1'b0;
             mult_valid_q         <= 1'b0;
@@ -308,10 +315,12 @@ module issue_read_operands (
             csr_valid_q          <= 1'b0;
             operator_q           <= ADD;
             trans_id_q           <= 5'b0;
+            pc_o                 <= 64'b0;
         end else begin
             operand_a_q          <= operand_a_n;
             operand_b_q          <= operand_b_n;
             operand_c_q          <= operand_c_n;
+            imm_q                <= imm_n;
             alu_valid_q          <= alu_valid_n;
             branch_valid_q       <= branch_valid_n;
             mult_valid_q         <= mult_valid_n;
@@ -319,6 +328,7 @@ module issue_read_operands (
             csr_valid_q          <= csr_valid_n;
             operator_q           <= operator_n;
             trans_id_q           <= trans_id_n;
+            pc_o                 <= issue_instr_i.pc;
         end
     end
 endmodule
