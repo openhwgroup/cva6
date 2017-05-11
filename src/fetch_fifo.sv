@@ -49,7 +49,7 @@ module fetch_fifo
                                            // included. This signal is available immediately as it comes directly out of FFs
   );
 
-  localparam DEPTH = 3; // must be 3 or greater
+  localparam DEPTH = 4; // must be 3 or greater
   /* verilator lint_off LITENDIAN */
   // index 0 is used for output
   logic [0:DEPTH-1] [63:0]  addr_n,    addr_int,    addr_Q;

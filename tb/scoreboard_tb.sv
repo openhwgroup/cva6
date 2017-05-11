@@ -110,7 +110,6 @@ module scoreboard_tb;
 
                 @(scoreboard_if.mck);
 
-                // if we are not full then load another instruction
                 if (scoreboard_if.issue_instr_valid == 1'b1) begin
                     scoreboard_if.mck.issue_ack <= 1'b1;
                     issue_instruction <= scoreboard_if.mck.issue_instr;

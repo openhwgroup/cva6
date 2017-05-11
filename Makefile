@@ -28,7 +28,7 @@ tbs =  $(wildcard tb/*_tb.sv)
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
 # Test case to run
-test_case = alu_test
+test_case = core_test
 # QuestaSim Version
 questa_version = -10.5c
 compile_flag = +cover=bcfst+/dut
