@@ -43,6 +43,7 @@ module id_stage #(
     output logic [63:0]                              imm_o,
     output logic [TRANS_ID_BITS-1:0]                 trans_id_o,
     output logic [63:0]                              pc_o,
+    output logic                                     is_compressed_instr_o,
 
     input  logic                                     alu_ready_i,
     output logic                                     alu_valid_o,

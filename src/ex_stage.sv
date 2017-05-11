@@ -33,6 +33,8 @@ module ex_stage #(
     input  logic [63:0]                            imm_i,
     input  logic [TRANS_ID_BITS-1:0]               trans_id_i,
     input  logic [63:0]                            pc_i,             // PC of current instruction
+    input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
+                                                                          // in order to calculate the next PC on a mis-predict
     // ALU 1
     output logic                                   alu_ready_o,      // FU is ready
     input  logic                                   alu_valid_i,      // Output is valid

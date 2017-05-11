@@ -46,6 +46,7 @@ module issue_read_operands (
     output logic [63:0]                            imm_o,           // output immediate for the LSU
     output logic [TRANS_ID_BITS-1:0]               trans_id_o,
     output logic [63:0]                            pc_o,
+    output logic                                   is_compressed_instr_o,
     // ALU 1
     input  logic                                   alu_ready_i,      // FU is ready
     output logic                                   alu_valid_o,      // Output is valid
@@ -74,6 +75,7 @@ module issue_read_operands (
                  operand_b_n, operand_b_q,
                  operand_c_n, operand_c_q,
                  imm_n, imm_q;
+
     logic alu_valid_n,    alu_valid_q;
     logic mult_valid_n,   mult_valid_q;
     logic lsu_valid_n,    lsu_valid_q;
@@ -232,15 +234,15 @@ module issue_read_operands (
             JAL: begin
                 operator_n  = ADD;
                 // output 4 as operand b as we
-                // need to save PC + 4
-                operand_b_n = 64'h4;
+                // need to save PC + 4 or in case of a compressed instruction PC + 4
+                operand_b_n = (issue_instr_i.is_compressed) ? 64'h2 : 64'h4;
             end
 
             JALR: begin
                 operator_n  = ADD;
                 // output 4 as operand b as we
-                // need to save PC + 4
-                operand_b_n = 64'h4;
+                // need to save PC + 4 or in case of a compressed instruction PC + 4
+                operand_b_n = (issue_instr_i.is_compressed) ? 64'h2 : 64'h4;
                 // get RS1 as operand C
                 operand_c_n = operand_a_regfile;
                 // forward rs1
@@ -304,31 +306,33 @@ module issue_read_operands (
     // Registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            operand_a_q          <= '{default: 0};
-            operand_b_q          <= '{default: 0};
-            operand_c_q          <= '{default: 0};
-            imm_q                <= 64'b0;
-            alu_valid_q          <= 1'b0;
-            branch_valid_q       <= 1'b0;
-            mult_valid_q         <= 1'b0;
-            lsu_valid_q          <= 1'b0;
-            csr_valid_q          <= 1'b0;
-            operator_q           <= ADD;
-            trans_id_q           <= 5'b0;
-            pc_o                 <= 64'b0;
+            operand_a_q           <= '{default: 0};
+            operand_b_q           <= '{default: 0};
+            operand_c_q           <= '{default: 0};
+            imm_q                 <= 64'b0;
+            alu_valid_q           <= 1'b0;
+            branch_valid_q        <= 1'b0;
+            mult_valid_q          <= 1'b0;
+            lsu_valid_q           <= 1'b0;
+            csr_valid_q           <= 1'b0;
+            operator_q            <= ADD;
+            trans_id_q            <= 5'b0;
+            pc_o                  <= 64'b0;
+            is_compressed_instr_o <= 1'b0;
         end else begin
-            operand_a_q          <= operand_a_n;
-            operand_b_q          <= operand_b_n;
-            operand_c_q          <= operand_c_n;
-            imm_q                <= imm_n;
-            alu_valid_q          <= alu_valid_n;
-            branch_valid_q       <= branch_valid_n;
-            mult_valid_q         <= mult_valid_n;
-            lsu_valid_q          <= lsu_valid_n;
-            csr_valid_q          <= csr_valid_n;
-            operator_q           <= operator_n;
-            trans_id_q           <= trans_id_n;
-            pc_o                 <= issue_instr_i.pc;
+            operand_a_q           <= operand_a_n;
+            operand_b_q           <= operand_b_n;
+            operand_c_q           <= operand_c_n;
+            imm_q                 <= imm_n;
+            alu_valid_q           <= alu_valid_n;
+            branch_valid_q        <= branch_valid_n;
+            mult_valid_q          <= mult_valid_n;
+            lsu_valid_q           <= lsu_valid_n;
+            csr_valid_q           <= csr_valid_n;
+            operator_q            <= operator_n;
+            trans_id_q            <= trans_id_n;
+            pc_o                  <= issue_instr_i.pc;
+            is_compressed_instr_o <= issue_instr_i.is_compressed;
         end
     end
 endmodule

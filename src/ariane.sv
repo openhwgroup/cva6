@@ -283,6 +283,7 @@ module ariane
         .imm_o                  ( imm_id_ex                                ),
         .trans_id_o             ( trans_id_id_ex                           ),
         .pc_o                   ( pc_id_ex                                 ),
+        .is_compressed_instr_o  ( is_compressed_instr_id_ex                ),
         // ALU
         .alu_ready_i            ( alu_ready_ex_id                          ),
         .alu_valid_o            ( alu_valid_id_ex                          ),
@@ -330,6 +331,7 @@ module ariane
         .imm_i                  ( imm_id_ex                  ),
         .trans_id_i             ( trans_id_id_ex             ),
         .pc_i                   ( pc_id_ex                   ),
+        .is_compressed_instr_i  ( is_compressed_instr_id_ex  ),
         // ALU
         .alu_ready_o            ( alu_ready_ex_id            ),
         .alu_valid_i            ( alu_valid_id_ex            ),

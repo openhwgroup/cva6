@@ -23,6 +23,7 @@ module branch_engine (
     input  logic [63:0]  operand_a_i,
     input  logic [63:0]  operand_b_i,
     input  logic [63:0]  pc_i,
+    input  logic         is_compressed_instr_i,
     input  logic         valid_i,
 
     input  logic         comparison_result_i,     // result of comparison
@@ -47,14 +48,14 @@ module branch_engine (
             branchpredict_o.pc = pc_i;
             // calculate target address simple 64 bit addition
             target_address = $signed(operand_a_i) + $signed(operand_b_i);
-            // write target address
-            branchpredict_o.target_address = target_address;
+            // write target address which goes to pc gen
+            branchpredict_o.target_address = (comparison_result_i) ? target_address : pc_i + (is_compressed_instr_i) ? 64'h2 : 64'h4;
             branchpredict_o.is_taken       = comparison_result_i;
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
             if (target_address[1:0] == 2'b0) begin
                 if (   target_address != predict_address_i    // we mis-predicted the address of the branch
                     || predict_taken_i != comparison_result_i // we mis-predicted the outcome of the branch
-                    || predict_branch_valid_i == 1'b0         // this means branch-prediction thought it was no branch but in real it was one
+                    || predict_branch_valid_i == 1'b0         // this means branch-prediction thought it was no branch but in reality it was one
                     ) begin
                     branchpredict_o.is_mispredict  = 1'b1;
                 end
