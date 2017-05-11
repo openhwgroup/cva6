@@ -51,6 +51,7 @@ module scoreboard #(
     // we can always put this instruction to the to   p unless we signal with asserted full_o
     input  dtype                                      decoded_instr_i,
     input  logic                                      decoded_instr_valid_i,
+    output logic                                      decoded_instr_ack_o,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
     output dtype                                      issue_instr_o,
@@ -176,14 +177,17 @@ end
 // write-back instruction: update value of RD register in scoreboard
 always_comb begin : push_instruction_and_wb
     // default assignment
-    top_pointer_n = top_pointer_q;
-    mem_n = mem_q;
+    top_pointer_n       = top_pointer_q;
+    mem_n               = mem_q;
+    // acknowledge decoded instruction
+    decoded_instr_ack_o = 1'b0;
     // if we are not full we can push a new instruction
     if (~full_o && decoded_instr_valid_i) begin
         mem_n[$unsigned(top_pointer_q)] = decoded_instr_i;
         // label the transaction ID with the current top pointer
         mem_n[$unsigned(top_pointer_q)].trans_id = top_pointer_q;
-        top_pointer_n = top_pointer_q + 1;
+        top_pointer_n       = top_pointer_q + 1;
+        decoded_instr_ack_o = 1'b1;
     end
 
     // write back:

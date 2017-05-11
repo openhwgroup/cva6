@@ -38,7 +38,7 @@ package ariane_pkg;
          logic        valid;
     } exception;
 
-    // miss-predict
+    // branch-predict
     typedef struct packed {
         logic [63:0] pc;              // pc of predict or mis-predict
         logic [63:0] target_address;  // target address at which to jump, or not
@@ -46,6 +46,13 @@ package ariane_pkg;
         logic        is_taken;        // branch is taken
         logic        valid;           // prediction with all its values is valid
     } branchpredict;
+
+    // branchpredict scoreboard entry
+    typedef struct packed {
+        logic [63:0] predict_address_i;  // target address at which to jump, or not
+        logic        predict_taken_i;   // set if this was a mis-predict
+        logic        valid;        // branch is taken
+    } branchpredict_sbe;
 
     typedef enum logic[3:0] {
         NONE, LSU, ALU, CTRL_FLOW, MULT, CSR
@@ -92,6 +99,7 @@ package ariane_pkg;
         logic                     use_zimm;      // use zimm as operand a
         logic                     use_pc;        // set if we need to use the PC as operand a, PC from exception
         exception                 ex;            // exception has occurred
+        branchpredict_sbe         bp;            // branch predict scoreboard data structure
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2
     } scoreboard_entry;

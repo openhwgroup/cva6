@@ -53,6 +53,7 @@ module if_stage (
     // Output of IF Pipeline stage
     output logic                   instr_valid_id_o,      // instruction in IF/ID pipeline is valid
     output logic [31:0]            instr_rdata_id_o,      // read instruction is sampled and sent to ID stage for decoding
+    input  logic                   instr_ack_i,
     output logic                   is_compressed_id_o,    // compressed decoder thinks this is a compressed instruction
     output logic                   illegal_c_insn_id_o,   // compressed decoder thinks this is an invalid instruction
     output logic [63:0]            pc_if_o,
@@ -76,7 +77,7 @@ module if_stage (
     logic         predict_taken_n,   predict_taken_q;
 
     // offset FSM
-    enum logic[0:0] {WAIT, IDLE} offset_fsm_cs, offset_fsm_ns;
+    enum logic[1:0] {WAIT, IDLE, WAIT_BRANCHED} offset_fsm_cs, offset_fsm_ns;
     logic [31:0] instr_decompressed;
     logic        illegal_c_insn;
     logic        instr_compressed_int;
@@ -132,22 +133,55 @@ module if_stage (
         // no valid instruction data for ID stage
         // assume aligned
         IDLE: begin
-          if (req_i) begin
-            branch_req    = 1'b1;
-            offset_fsm_ns = WAIT;
-          end
+            if (req_i) begin
+                branch_req    = 1'b1;
+                offset_fsm_ns = WAIT;
+            end
+
+            // take care of control flow changes
+            if (set_pc_i) begin
+                valid = 1'b0;
+                // switch to new PC from ID stage
+                branch_req = 1'b1;
+                offset_fsm_ns = WAIT;
+            end
         end
 
         // serving aligned 32 bit or 16 bit instruction, we don't know yet
         WAIT: begin
-          if (fetch_valid) begin
-            valid   = 1'b1; // an instruction is ready for ID stage
+            if (fetch_valid) begin
+              valid   = 1'b1; // an instruction is ready for ID stage
 
-            if (req_i && if_valid) begin
-              fetch_ready   = 1'b1;
-              offset_fsm_ns = WAIT;
+              if (req_i && if_valid) begin
+                fetch_ready   = 1'b1;
+                offset_fsm_ns = WAIT;
+              end
             end
-          end
+                      // take care of control flow changes
+            if (set_pc_i) begin
+                valid = 1'b0;
+                // switch to new PC from ID stage
+                branch_req = 1'b1;
+                offset_fsm_ns = WAIT_BRANCHED;
+            end
+        end
+        // we just branched so keep this instruction as valid
+        WAIT_BRANCHED: begin
+            if (fetch_valid) begin
+              valid   = 1'b1; // an instruction is ready for ID stage
+
+              if (req_i && if_valid) begin
+                fetch_ready   = 1'b1;
+                offset_fsm_ns = WAIT;
+              end
+            end
+
+            // take care of control flow changes
+            if (set_pc_i) begin
+                // switch to new PC from ID stage
+                branch_req = 1'b1;
+                offset_fsm_ns = WAIT_BRANCHED;
+            end
         end
 
         default: begin
@@ -155,13 +189,7 @@ module if_stage (
         end
       endcase
 
-      // take care of control flow changes
-      if (set_pc_i) begin
-        valid = 1'b0;
-        // switch to new PC from ID stage
-        branch_req = 1'b1;
-        offset_fsm_ns = WAIT;
-      end
+
     end
 
     // -------------
@@ -208,10 +236,10 @@ module if_stage (
         end
       else
         begin
-                offset_fsm_cs         <= offset_fsm_ns;
-                predict_address_q     <= predict_address_n;
-                predict_taken_q       <= predict_taken_n;
-                branch_valid_q        <= branch_valid_n;
+                offset_fsm_cs               <= offset_fsm_ns;
+                predict_address_q           <= predict_address_n;
+                predict_taken_q             <= predict_taken_n;
+                branch_valid_q              <= branch_valid_n;
 
                 if (if_valid) begin
                     // in case of a flush simply say that the next instruction
@@ -227,7 +255,8 @@ module if_stage (
                     ex_o.cause              <= 64'b0; // TODO: Output exception
                     ex_o.tval               <= 64'b0; // TODO: Output exception
                     ex_o.valid              <= 1'b0;  // TODO: Output exception
-                end else if (clear_instr_valid_i) begin
+                // id stage acknowledged
+                end else if (instr_ack_i) begin
                     instr_valid_id_o    <= 1'b0;
                 end
 
@@ -236,8 +265,7 @@ module if_stage (
 
     // Assignments
     assign pc_if_o             = fetch_addr;
-    // id stage acknowledged
-    assign clear_instr_valid_i = id_ready_i;
+
     assign if_ready            = valid & id_ready_i;
     assign if_valid            = (~halt_if_i) & if_ready;
     assign if_busy_o           = prefetch_busy;

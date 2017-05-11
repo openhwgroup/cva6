@@ -33,6 +33,7 @@ module id_stage #(
     // from IF
     input  logic [31:0]                              instruction_i,
     input  logic                                     instruction_valid_i,
+    output logic                                     decoded_instr_ack_o,
     input  logic                                     is_compressed_i,
     input  logic [63:0]                              pc_if_i,
     input  exception                                 ex_if_i,       // we already got an exception in IF
@@ -54,7 +55,7 @@ module id_stage #(
     input  logic [63:0]                              predict_address_i,
     input  logic                                     predict_taken_i,
     // Branch predict Out
-    output logic                                     branch_valid_o,
+    output logic                                     branch_valid_o, // use the branch engine
     output logic                                     predict_branch_valid_o, // this is a valid prediction
     output logic [63:0]                              predict_address_o,
     output logic                                     predict_taken_o,
@@ -145,7 +146,7 @@ module id_stage #(
     end
     // we are ready if we are not full and don't have any unresolved branches, but it can be
     // the case that we have an unresolved branch which is cleared in that cycle (branchpredict_i.valid == 1)
-    assign ready_o           = ~full & (~unresolved_branch_q || branchpredict_i.valid);
+    assign ready_o           = ~full && (~unresolved_branch_q || branchpredict_i.valid) && ~(instruction_valid_i && is_control_flow_instr);
     // output branch prediction bits
     assign predict_branch_valid_o    = branch_valid_q;
     assign predict_address_o         = predict_address_q;

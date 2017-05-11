@@ -107,6 +107,7 @@ module ariane
     logic [31:0]              fetch_rdata_id_if;
     logic                     instr_valid_if_id;
     logic [31:0]              instr_rdata_if_id;
+    logic                     decode_ack_id_if;
     logic                     illegal_c_insn_if_id;
     logic                     is_compressed_if_id;
     logic                     illegal_c_insn_id_if;
@@ -252,6 +253,7 @@ module ariane
         .instr_gnt_i         ( fetch_gnt_ex_if          ),
         .instr_rvalid_i      ( fetch_valid_ex_if        ),
         .instr_rdata_i       ( fetch_rdata_ex_if        ),
+        .instr_ack_i         ( decode_ack_id_if         ),
 
         .instr_valid_id_o    ( instr_valid_if_id        ),
         .instr_rdata_id_o    ( instr_rdata_if_id        ),
@@ -277,6 +279,7 @@ module ariane
         .flush_scoreboard_i     ( flush_scoreboard_ctrl_id                 ),
         .instruction_i          ( instr_rdata_if_id                        ),
         .instruction_valid_i    ( instr_valid_if_id                        ),
+        .decoded_instr_ack_o    ( decode_ack_id_if                         ),
         .is_compressed_i        ( is_compressed_if_id                      ),
         .pc_if_i                ( pc_id_if_id                              ), // PC from if
         .ex_if_i                ( exception_if_id                          ), // exception from if
