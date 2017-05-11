@@ -127,6 +127,7 @@ module ariane
     logic [63:0]              operand_b_id_ex;
     logic [63:0]              operand_c_id_ex;
     logic [63:0]              pc_id_ex;
+    logic                     is_compressed_instr_id_ex;
     // ALU
     logic                     alu_ready_ex_id;
     logic                     alu_valid_id_ex;

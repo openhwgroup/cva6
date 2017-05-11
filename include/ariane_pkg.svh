@@ -63,14 +63,14 @@ package ariane_pkg;
     // ---------------
     // EX Stage
     // ---------------
-    typedef enum logic [7:0] { // basic ALU op
+    typedef enum logic [5:0] { // basic ALU op
                                ADD, SUB, ADDW, SUBW,
                                // logic operations
                                XORL, ORL, ANDL,
                                // shifts
                                SRA, SRL, SLL, SRLW, SLLW, SRAW,
                                // comparisons
-                               LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,
+                               LTS, LTU, GES, GEU, EQ, NE,
                                // jumps
                                JAL, JALR,
                                // set lower than operations
