@@ -225,6 +225,10 @@ always_comb begin : issue_instruction
                 issue_instr_valid_o = 1'b1;
             else
                 issue_instr_valid_o = 1'b0;
+        end else if (issue_pointer_q == commit_pointer_q) begin
+            // commit and issue pointer are the same, so we are waiting
+            // for instructions to be written back
+            issue_instr_valid_o = 1'b0;
         end else begin // issue pointer has not overflowed
             if (pointer_overflow)
                 issue_instr_valid_o = 1'b1;
