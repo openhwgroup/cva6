@@ -26,6 +26,7 @@ module prefetch_buffer
 (
   input  logic        clk,
   input  logic        rst_n,
+  input  logic        flush_i,
 
   input  logic        req_i,
 
@@ -97,11 +98,8 @@ module prefetch_buffer
   //---------------
 
   assign fetch_addr = {instr_addr_q[63:2], 2'b00} + 64'd4;
+  assign fifo_clear = branch_i || flush_i;
 
-  always_comb
-  begin
-    fifo_clear = branch_i;
-  end
 
   //-------------------------
   // Instruction fetch FSM

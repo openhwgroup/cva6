@@ -97,8 +97,8 @@ module if_stage (
     // Pre-fetch buffer, caches a fixed number of instructions
     prefetch_buffer prefetch_buffer_i (
         .clk               ( clk_i                       ),
-        .rst_n             ( rst_ni                       ),
-
+        .rst_n             ( rst_ni                      ),
+        .flush_i           ( flush_i                     ),
         .req_i             ( req_i                       ),
 
         .branch_i          ( branch_req                  ), // kill everything
@@ -209,24 +209,38 @@ module if_stage (
         end
       else
         begin
-            offset_fsm_cs         <= offset_fsm_ns;
-            branch_valid_q        <= branch_valid_n;
-            predict_address_q     <= predict_address_n;
-            predict_taken_q       <= predict_taken_n;
+            if (flush_i) begin
+                // offset FSM state
+                offset_fsm_cs         <= IDLE;
+                instr_valid_id_o      <= 1'b0;
+                instr_rdata_id_o      <= '0;
+                illegal_c_insn_id_o   <= 1'b0;
+                is_compressed_id_o    <= 1'b0;
+                pc_id_o               <= '0;
+                ex_o                  <= '{default: 0};
+                branch_valid_q        <= 1'b0;
+                predict_address_q     <= 64'b0;
+                predict_taken_q       <= 1'b0;
+            end else begin
 
-            if (if_valid) begin
-              instr_valid_id_o    <= 1'b1;
-              instr_rdata_id_o    <= instr_decompressed;
-              illegal_c_insn_id_o <= illegal_c_insn;
-              is_compressed_id_o  <= instr_compressed_int;
-              pc_id_o             <= pc_if_o;
-              ex_o.cause          <= 64'b0; // TODO: Output exception
-              ex_o.tval           <= 64'b0; // TODO: Output exception
-              ex_o.valid          <= 1'b0;  // TODO: Output exception
-            end else if (clear_instr_valid_i) begin
-              instr_valid_id_o    <= 1'b0;
+                offset_fsm_cs         <= offset_fsm_ns;
+                branch_valid_q        <= branch_valid_n;
+                predict_address_q     <= predict_address_n;
+                predict_taken_q       <= predict_taken_n;
+
+                if (if_valid) begin
+                  instr_valid_id_o    <= 1'b1;
+                  instr_rdata_id_o    <= instr_decompressed;
+                  illegal_c_insn_id_o <= illegal_c_insn;
+                  is_compressed_id_o  <= instr_compressed_int;
+                  pc_id_o             <= pc_if_o;
+                  ex_o.cause          <= 64'b0; // TODO: Output exception
+                  ex_o.tval           <= 64'b0; // TODO: Output exception
+                  ex_o.valid          <= 1'b0;  // TODO: Output exception
+                end else if (clear_instr_valid_i) begin
+                  instr_valid_id_o    <= 1'b0;
+                end
             end
-
         end
     end
 

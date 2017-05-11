@@ -206,6 +206,10 @@ module ariane
 
     // * -> CTRL
     logic                     flush_csr_ctrl;
+    logic                     flush_unissued_instr_ctrl_id;
+    logic                     flush_scoreboard_ctrl_id;
+    logic                     flush_ctrl_if;
+
     // TODO: Preliminary signal assignments
     logic flush_tlb;
     assign flush_tlb = 1'b0;
@@ -232,7 +236,7 @@ module ariane
     // IF
     // ---------
     if_stage if_stage_i (
-        .flush_i             ( flush                    ),
+        .flush_i             ( flush_ctrl_if            ),
         .req_i               ( fetch_enable             ),
         .if_busy_o           (                          ), // ?
         .id_ready_i          ( ready_id_if              ),
@@ -269,6 +273,8 @@ module ariane
     id_stage_i (
         .test_en_i              ( test_en_i                                ),
         .flush_i                ( flush                                    ),
+        .flush_unissued_instr_i ( flush_unissued_instr_ctrl_id             ),
+        .flush_scoreboard_i     ( flush_scoreboard_ctrl_id                 ),
         .instruction_i          ( instr_rdata_if_id                        ),
         .instruction_valid_i    ( instr_valid_if_id                        ),
         .is_compressed_i        ( is_compressed_if_id                      ),
@@ -434,11 +440,18 @@ module ariane
     logic branchpredict_i;
 
     controller controller_i (
-        .clk_i            ( clk_i                   ),
-        .rst_ni           ( rst_ni                  ),
-        .flush_commit_i   ( flush_commit_i          ),
-        .flush_csr_i      ( flush_csr_ctrl          ),
-        .branchpredict_i  ( branchpredict           )
+        .flush_bp_o             (                               ),
+        .flush_scoreboard_o     ( flush_scoreboard_ctrl_id      ),
+        .flush_unissued_instr_o ( flush_unissued_instr_ctrl_id  ),
+        .flush_if_o             ( flush_ctrl_if                 ),
+        .flush_id_o             (                               ),
+        .flush_ex_o             (                               ),
+
+        .flush_ready_lsu_i      (                               ),
+        .flush_commit_i         ( flush_commit_i                ),
+        .flush_csr_i            ( flush_csr_ctrl                ),
+        .branchpredict_i        ( branchpredict                 ),
+        .*
     );
 
 

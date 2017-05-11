@@ -23,12 +23,30 @@ module controller (
     input  logic            clk_i,    // Clock
     input  logic            rst_ni,   // Asynchronous reset active low
 
-    input  logic            flush_commit_i, // flush request from commit stage in
+    output logic            flush_bp_o, // flush branch prediction data structures
+    output logic            flush_unissued_instr_o,
+    output logic            flush_scoreboard_o,
+    output logic            flush_if_o,
+    output logic            flush_id_o,
+    output logic            flush_ex_o,
+
+    input  logic            flush_ready_lsu_i, // we need to wait for this signal from LSU
+    input  logic            flush_commit_i,    // flush request from commit stage in
     input  logic            flush_csr_i,
     input  branchpredict    branchpredict_i
 );
+    assign flush_bp_o = 1'b0;
 
-// flush on mispredict
+    always_comb begin : flush_ctrl
+        flush_unissued_instr_o = 1'b0;
+        flush_scoreboard_o     = 1'b0;
+        flush_if_o             = 1'b0;
+        // flush on mispredict
+        if (branchpredict_i.is_mispredict) begin
+            flush_unissued_instr_o = 1'b1;
+            flush_if_o             = 1'b1;
+        end
 
-// flush on exception
+    end
+    // flush on exception
 endmodule

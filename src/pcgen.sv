@@ -84,6 +84,12 @@ module pcgen (
         end
         // 1.Debug
 
+        // 3. Control flow change request
+        if (branchpredict_i.is_mispredict) begin
+            set_pc_n = 1'b1;
+            // we already got the correct target address
+            npc_n    = branchpredict_i.target_address;
+        end
         // 2. Exception
         if (ex_i.valid) begin
             npc_n       = trap_vector_base_i;

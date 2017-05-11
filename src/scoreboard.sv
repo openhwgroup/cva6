@@ -29,7 +29,8 @@ module scoreboard #(
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
     output logic                                      full_o,   // We can't take anymore data
-    input  logic                                      flush_i,
+    input  logic                                      flush_i,  // flush whole scoreboard
+    input  logic                                      flush_unissued_instr_i,
     // list of clobbered registers to issue stage
     output fu_t [31:0]                                rd_clobber_o,
 
@@ -199,8 +200,12 @@ always_comb begin : push_instruction_and_wb
             end
         end
     end
-
-    // flush signal
+    // flush all instructions which are not issued, e.g. set the top pointer back to the issue pointer
+    // -> everything we decoded so far was garbage
+    if (flush_unissued_instr_i) begin
+        top_pointer_n = issue_pointer_q;
+    end
+    // flush signal, e.g.: flush everything we need to backtrack after an exception
     if (flush_i)
         mem_n = '{default: 0};
 
@@ -246,6 +251,10 @@ always_comb begin : issue_instruction
         issue_pointer_n = issue_pointer_q + 1;
     end
 
+    // if we are flushing we should not issue the current instruction
+    if (flush_unissued_instr_i)
+        issue_instr_valid_o = 1'b0;
+
 end
 
 // commit instruction: remove from scoreboard, advance pointer
@@ -279,7 +288,10 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : sequential
         top_pointer_q     <= top_pointer_n;
         mem_q             <= mem_n;
         if (decoded_instr_valid_i && ~full_o) // only advance if we decoded instruction and we are not full
-            top_pointer_qq    <= top_pointer_q;
+            if (flush_unissued_instr_i)
+                top_pointer_qq    <= top_pointer_n;
+            else
+                top_pointer_qq    <= top_pointer_q;
     end
 end
 
