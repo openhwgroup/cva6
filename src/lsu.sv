@@ -170,7 +170,7 @@ module lsu #(
         .INSTR_TLB_ENTRIES      ( 16                   ),
         .DATA_TLB_ENTRIES       ( 16                   ),
         .ASID_WIDTH             ( ASID_WIDTH           )
-    ) i_mmu (
+    ) mmu_i (
         .lsu_req_i              ( translation_req      ),
         .lsu_vaddr_i            ( vaddr                ),
         .lsu_valid_o            ( translation_valid    ),

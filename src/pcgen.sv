@@ -29,7 +29,7 @@ module pcgen (
     // to IF
     output logic [63:0]   pc_if_o,            // new PC
     output logic          set_pc_o,           // request the PC to be set to pc_if_o
-    output logic          is_branch_o,        // to check if we branchpredicted we need to save whether this was a branch or not
+    output logic          is_branch_o,        // to check if we branchpredicted we need to save whether this was a branch or not <- LOL
     // global input
     input  logic [63:0]   boot_addr_i,
     // CSR input
@@ -44,10 +44,28 @@ module pcgen (
     logic        is_branch;
     logic        is_branch_n, is_branch_q;
     logic        set_pc_n, set_pc_q;
+    // pc which is used to look up the prediction in the BTB
+    logic [63:0] predict_pc;
 
     assign pc_if_o     = npc_q;
     assign set_pc_o    = set_pc_q;
     assign is_branch_o = is_branch_q;
+
+    // Predict PC source select
+    // the PC which we use for lookup in the BTB can come from two sources:
+    // 1. PC from if stage plus + 4
+    // 2. or PC which we just predicted + 4
+    always_comb begin : pc_btb_lookup
+        // Ad 2: From PC of previous cycle (which is now in IF)
+        if (set_pc_q) begin
+            predict_pc = npc_q;
+        // Ad 1:
+        // in the previous cycle we set the PC to npc_q
+        // calculate the plus one version
+        end else begin
+            predict_pc = {pc_if_i[62:2], 2'b0}  + 64'h4;
+        end
+    end
 
     btb #(
         .NR_ENTRIES(64),
@@ -55,7 +73,7 @@ module pcgen (
     )
     btb_i
     (
-        .vpc_i                   ( pc_if_i                 ),
+        .vpc_i                   ( predict_pc              ),
         .branchpredict_i         ( branchpredict_i         ),
         .is_branch_o             ( is_branch               ),
         .predict_taken_o         ( predict_taken           ),
@@ -79,7 +97,8 @@ module pcgen (
         set_pc_n    = 1'b0;
         is_branch_n = is_branch;
         // 4. Predict taken
-        if (predict_taken) begin
+        if (is_branch && predict_taken) begin
+            set_pc_n    = 1'b1;
             npc_n       = branch_target_address;
         end
         // 1.Debug

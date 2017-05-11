@@ -38,7 +38,7 @@ module if_stage (
     input  logic                   halt_if_i,   // pipeline stall
     // ctrl flow instruction in
     input  logic [63:0]            fetch_addr_i,
-    input  logic                   set_pc_i,    // set new PC
+    input  logic                   set_pc_i,     // set new PC
     input  logic                   is_branch_i,  // the new PC was a branch e.g.: branch or jump
     // branchpredict out
     output logic                   branch_valid_o,
@@ -170,24 +170,23 @@ module if_stage (
     // We need to pass those registers on to ID in the case we've set
     // a new branch target (or jump) and we got a valid instruction
     always_comb begin
-        branch_valid_n    = branch_valid_q;
+        // this is the latch case we keep the values
         predict_address_n = predict_address_q;
         predict_taken_n   = predict_taken_q;
-        // we got a branch redirect from PCGEN
-        if (is_branch_i) begin
-            // set the registers to the correct address
-            branch_valid_n    = 1'b1;
+        branch_valid_n    = branch_valid_q;
+        // a new branch target has been set by PCGEN
+        // save this in the register stage
+        if (set_pc_i && is_branch_i) begin
             predict_address_n = fetch_addr_i;
             // whether we took the branch or not can be seen from the set PC
             // nevertheless we also need to keep branches not taken
             predict_taken_n   = set_pc_i;
-        end
-        // we have a valid instruction and id excepted it so we consider all the
-        // branch information to be sampled correctly
-        if (if_valid && clear_instr_valid_i) begin
-            branch_valid_n = 1'b0;
+            branch_valid_n    = is_branch_i;
         end
 
+        if (if_valid) begin
+            branch_valid_n = is_branch_i;
+        end
     end
 
     // --------------------------------------------------------------
@@ -209,38 +208,29 @@ module if_stage (
         end
       else
         begin
-            if (flush_i) begin
-                // offset FSM state
-                offset_fsm_cs         <= IDLE;
-                instr_valid_id_o      <= 1'b0;
-                instr_rdata_id_o      <= '0;
-                illegal_c_insn_id_o   <= 1'b0;
-                is_compressed_id_o    <= 1'b0;
-                pc_id_o               <= '0;
-                ex_o                  <= '{default: 0};
-                branch_valid_q        <= 1'b0;
-                predict_address_q     <= 64'b0;
-                predict_taken_q       <= 1'b0;
-            end else begin
-
                 offset_fsm_cs         <= offset_fsm_ns;
-                branch_valid_q        <= branch_valid_n;
                 predict_address_q     <= predict_address_n;
                 predict_taken_q       <= predict_taken_n;
+                branch_valid_q        <= branch_valid_n;
 
                 if (if_valid) begin
-                  instr_valid_id_o    <= 1'b1;
-                  instr_rdata_id_o    <= instr_decompressed;
-                  illegal_c_insn_id_o <= illegal_c_insn;
-                  is_compressed_id_o  <= instr_compressed_int;
-                  pc_id_o             <= pc_if_o;
-                  ex_o.cause          <= 64'b0; // TODO: Output exception
-                  ex_o.tval           <= 64'b0; // TODO: Output exception
-                  ex_o.valid          <= 1'b0;  // TODO: Output exception
+                    // in case of a flush simply say that the next instruction
+                    // is not valid anymore
+                    if (flush_i) begin
+                        instr_valid_id_o    <= 1'b0;
+                    end else
+                        instr_valid_id_o    <= 1'b1;
+                    instr_rdata_id_o        <= instr_decompressed;
+                    illegal_c_insn_id_o     <= illegal_c_insn;
+                    is_compressed_id_o      <= instr_compressed_int;
+                    pc_id_o                 <= pc_if_o;
+                    ex_o.cause              <= 64'b0; // TODO: Output exception
+                    ex_o.tval               <= 64'b0; // TODO: Output exception
+                    ex_o.valid              <= 1'b0;  // TODO: Output exception
                 end else if (clear_instr_valid_i) begin
-                  instr_valid_id_o    <= 1'b0;
+                    instr_valid_id_o    <= 1'b0;
                 end
-            end
+
         end
     end
 

@@ -68,13 +68,15 @@ module btb #(
             btb_n[$unsigned(update_pc)].valid = 1'b1;
             // update saturation counter
             // first check if counter is already saturated in the positive regime e.g.: branch taken
-            if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}} && ~branchpredict_i.is_taken) begin
+            if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}}) begin
                 // we can safely decrease it
-                btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter - 1;
+                if (~branchpredict_i.is_taken)
+                    btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter - 1;
             // then check if it saturated in the negative regime e.g.: branch not taken
-            end else if (saturation_counter == {BITS_SATURATION_COUNTER{1'b0}} && branchpredict_i.is_taken) begin
+            end else if (saturation_counter == {BITS_SATURATION_COUNTER{1'b0}}) begin
                 // we can safely increase it
-                btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter + 1;
+                if (branchpredict_i.is_taken)
+                    btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter + 1;
             end else begin // otherwise we are not in any boundaries and can decrease or increase it
                 if (branchpredict_i.is_taken)
                     btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter + 1;
@@ -89,8 +91,9 @@ module btb #(
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            // TODO: think about the reset value
-            btb_q <= '{default: 0};
+            // Bias the branches to be taken upon first arrival
+            for (int i = 0; i < NR_ENTRIES; i++)
+                btb_q[i] <= '{1'b0, 64'b0, 2'b10};
         end else begin
             // evict all entries
             if (flush_i) begin
