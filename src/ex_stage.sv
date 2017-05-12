@@ -44,10 +44,8 @@ module ex_stage #(
     output exception                               alu_exception_o,
     // Branches and Jumps
     input  logic                                   branch_valid_i,  // we are using the branch unit
-    input  logic                                   predict_branch_valid_i,
-    input  logic [63:0]                            predict_address_i,
-    input  logic                                   predict_taken_i,
-    output branchpredict                           branchpredict_o, // the branch engine uses the write back from the ALU
+    input  branchpredict_sbe                       branch_predict_i,       // branch prediction in
+    output branchpredict                           resolved_branch_o, // the branch engine uses the write back from the ALU
     // LSU
     output logic                                   lsu_ready_o,      // FU is ready
     input  logic                                   lsu_valid_i,      // Input is valid
@@ -112,7 +110,7 @@ module ex_stage #(
         .adder_result_ext_o  (                              ),
         .result_o            ( alu_result_o                 ),
         .is_equal_result_o   (                              ),
-        .comparison_result_o( ),
+        .comparison_result_o (                              ),
         .*
     );
 
@@ -121,7 +119,7 @@ module ex_stage #(
     // --------------------
     branch_engine branch_engine_i (
         .valid_i             ( branch_valid_i               ),
-        .branch_ex_o         ( alu_exception_o              ),
+        .branch_ex_o         ( alu_exception_o              ), // we use the ALU exception WB for the branch exception
         .*
     );
 

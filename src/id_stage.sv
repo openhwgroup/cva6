@@ -50,23 +50,18 @@ module id_stage #(
 
     input  logic                                     alu_ready_i,
     output logic                                     alu_valid_o,
+    output logic                                     branch_valid_o, // use branch prediction unit
     // Branch predict In
-    input  logic                                     branch_valid_i,
-    input  logic [63:0]                              predict_address_i,
-    input  logic                                     predict_taken_i,
-    // Branch predict Out
-    output logic                                     branch_valid_o, // use the branch engine
-    output logic                                     predict_branch_valid_o, // this is a valid prediction
-    output logic [63:0]                              predict_address_o,
-    output logic                                     predict_taken_o,
+    input  branchpredict_sbe                         branch_predict_i,
     // ex just resolved our predicted branch, we are ready to accept new requests
-    input  branchpredict                             branchpredict_i,
+    input  branchpredict                             resolved_branch_i,
 
     input  logic                                     lsu_ready_i,
     output logic                                     lsu_valid_o,
 
     input  logic                                     mult_ready_i,
-    output logic                                     mult_valid_o,
+    output logic                                     mult_valid_o,    // Branch predict Out
+    output branchpredict_sbe                         branch_predict_o,
 
     input  logic                                     csr_ready_i,
     output logic                                     csr_valid_o,
@@ -117,50 +112,31 @@ module id_stage #(
     // instructions past a branch. We need to resolve the branch beforehand.
     // This limitation is in place to ease the backtracking of mis-predicted branches as they
     // can simply be in the front-end of the processor.
-    logic         unresolved_branch_n, unresolved_branch_q;
-    // branch predict registers
-    logic         branch_valid_n,      branch_valid_q;
-    logic [63:0]  predict_address_n,   predict_address_q;
-    logic         predict_taken_n,     predict_taken_q;
+    logic unresolved_branch_n, unresolved_branch_q;
 
     always_comb begin : unresolved_branch
         unresolved_branch_n = unresolved_branch_q;
         // we just resolved the branch
-        if (branchpredict_i.valid) begin
+        if (resolved_branch_i.valid) begin
             unresolved_branch_n = 1'b0;
         end
         // if the instruction is valid and it is a control flow instruction
         if (instruction_valid_i && is_control_flow_instr) begin
             unresolved_branch_n = 1'b1;
         end
-
-        branch_valid_n    = branch_valid_q;
-        predict_address_n = predict_address_q;
-        predict_taken_n   = predict_taken_q;
-        // save branch prediction information until the ex stage resolves the prediction
-        if (~unresolved_branch_q) begin
-            branch_valid_n    =  branch_valid_i;
-            predict_address_n =  predict_address_i;
-            predict_taken_n   =  predict_taken_i;
-        end
     end
     // we are ready if we are not full and don't have any unresolved branches, but it can be
-    // the case that we have an unresolved branch which is cleared in that cycle (branchpredict_i.valid == 1)
-    assign ready_o           = ~full && (~unresolved_branch_q || branchpredict_i.valid) && ~(instruction_valid_i && is_control_flow_instr);
-    // output branch prediction bits
-    assign predict_branch_valid_o    = branch_valid_q;
-    assign predict_address_o         = predict_address_q;
-    assign predict_taken_o           = predict_taken_q;
+    // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i.valid == 1)
+    assign ready_o           = ~full && (~unresolved_branch_q || resolved_branch_i.valid) && ~(instruction_valid_i && is_control_flow_instr);
 
     decoder decoder_i (
-        .clk_i                   ( clk_i                    ),
-        .rst_ni                  ( rst_ni                   ),
         .pc_i                    ( pc_if_i                  ),
         .is_compressed_i         ( is_compressed_i          ),
         .instruction_i           ( instruction_i            ),
         .ex_i                    ( ex_if_i                  ),
         .instruction_o           ( decoded_instr_dc_sb      ),
-        .is_control_flow_instr_o ( is_control_flow_instr    )
+        .is_control_flow_instr_o ( is_control_flow_instr    ),
+        .*
     );
 
     scoreboard  #(
@@ -209,14 +185,8 @@ module id_stage #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             unresolved_branch_q <= 1'b0;
-            branch_valid_q      <= 1'b0;
-            predict_address_q   <= 64'b0;
-            predict_taken_q     <= 1'b0;
         end else begin
             unresolved_branch_q <= unresolved_branch_n;
-            branch_valid_q      <= branch_valid_n;
-            predict_address_q   <= predict_address_n;
-            predict_taken_q     <= predict_taken_n;
         end
     end
 

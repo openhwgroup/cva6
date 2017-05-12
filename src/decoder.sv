@@ -11,14 +11,15 @@
 import ariane_pkg::*;
 
 module decoder (
-    input  logic            clk_i,                   // Clock
-    input  logic            rst_ni,                  // Asynchronous reset active low
-    input  logic [63:0]     pc_i,                    // PC from IF
-    input  logic            is_compressed_i,         // is a compressed instruction
-    input  logic [31:0]     instruction_i,           // instruction from IF
-    input  exception        ex_i,                    // if an exception occured in if
-    output scoreboard_entry instruction_o,           // scoreboard entry to scoreboard
-    output logic            is_control_flow_instr_o  // this instruction will change the control flow
+    input  logic             clk_i,                   // Clock
+    input  logic             rst_ni,                  // Asynchronous reset active low
+    input  logic [63:0]      pc_i,                    // PC from IF
+    input  logic             is_compressed_i,         // is a compressed instruction
+    input  logic [31:0]      instruction_i,           // instruction from IF
+    input  branchpredict_sbe branch_predict_i,
+    input  exception         ex_i,                    // if an exception occured in if
+    output scoreboard_entry  instruction_o,           // scoreboard entry to scoreboard
+    output logic             is_control_flow_instr_o  // this instruction will change the control flow
 );
     logic illegal_instr;
     instruction instr;
@@ -58,6 +59,7 @@ module decoder (
         instruction_o.trans_id      = 5'b0;
         instruction_o.is_compressed = is_compressed_i;
         instruction_o.use_zimm      = 1'b0;
+        instruction_o.bp            = branch_predict_i;
 
         if (~ex_i.valid) begin
             case (instr.rtype.opcode)

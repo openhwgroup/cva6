@@ -25,7 +25,7 @@ module pcgen (
 
     input  logic          flush_i,
     input  logic [63:0]   pc_if_i,
-    input  branchpredict  branchpredict_i,    // from controller signaling a branchpredict -> update BTB
+    input  branchpredict  resolved_branch_i,    // from controller signaling a branchpredict -> update BTB
     // to IF
     output logic [63:0]   pc_if_o,            // new PC
     output logic          set_pc_o,           // request the PC to be set to pc_if_o
@@ -74,7 +74,7 @@ module pcgen (
     btb_i
     (
         .vpc_i                   ( predict_pc              ),
-        .branchpredict_i         ( branchpredict_i         ),
+        .branchpredict_i         ( resolved_branch_i       ),
         .is_branch_o             ( is_branch               ),
         .predict_taken_o         ( predict_taken           ),
         .branch_target_address_o ( branch_target_address   ),
@@ -104,10 +104,10 @@ module pcgen (
         // 1.Debug
 
         // 3. Control flow change request
-        if (branchpredict_i.is_mispredict) begin
+        if (resolved_branch_i.is_mispredict) begin
             set_pc_n = 1'b1;
             // we already got the correct target address
-            npc_n    = branchpredict_i.target_address;
+            npc_n    = resolved_branch_i.target_address;
         end
         // 2. Exception
         if (ex_i.valid) begin

@@ -84,7 +84,7 @@ module ariane
     logic                     halt_if;
     logic [63:0]              pc_if;
     exception                 ex_commit; // exception from commit stage
-    branchpredict             branchpredict;
+    branchpredict             resolved_branch;
     // --------------
     // PCGEN <-> IF
     // --------------
@@ -113,9 +113,7 @@ module ariane
     logic                     illegal_c_insn_id_if;
     logic [63:0]              pc_id_if_id;
     exception                 exception_if_id;
-    logic                     branch_valid_if_id;
-    logic [63:0]              predict_address_if_id;
-    logic                     predict_taken_if_id;
+    branchpredict_sbe         branch_predict_if_id;
     // --------------
     // ID <-> EX
     // --------------
@@ -137,9 +135,7 @@ module ariane
     exception                 alu_exception_ex_id;
     // Branches and Jumps
     logic                     branch_valid_id_ex;
-    logic                     predict_branch_valid_id_ex;
-    logic [63:0]              predict_address_id_ex;
-    logic                     predict_taken_id_ex;
+    branchpredict_sbe         branch_predict_id_ex;
     // LSU
     logic [TRANS_ID_BITS-1:0] lsu_trans_id_ex_id;
     logic                     lsu_valid_id_ex;
@@ -224,7 +220,7 @@ module ariane
     pcgen pcgen_i (
         .flush_i            ( flush                          ),
         .pc_if_i            ( pc_if                          ),
-        .branchpredict_i    ( branchpredict                  ),
+        .resolved_branch_i  ( resolved_branch                ),
         .pc_if_o            ( pc_pcgen_if                    ),
         .set_pc_o           ( set_pc_pcgen_if                ),
         .is_branch_o        ( is_branch_pcgen_if             ),
@@ -245,9 +241,7 @@ module ariane
         .halt_if_i           ( halt_if                  ),
         .set_pc_i            ( set_pc_pcgen_if          ),
         .is_branch_i         ( is_branch_pcgen_if       ),
-        .branch_valid_o      ( branch_valid_if_id       ),
-        .predict_address_o   ( predict_address_if_id    ),
-        .predict_taken_o     ( predict_taken_if_id      ),
+        .branch_predict_o    ( branch_predict_if_id     ),
         .fetch_addr_i        ( pc_pcgen_if              ),
         .instr_req_o         ( fetch_req_if_ex          ),
         .instr_addr_o        ( fetch_vaddr_if_ex        ),
@@ -298,14 +292,10 @@ module ariane
         .alu_ready_i            ( alu_ready_ex_id                          ),
         .alu_valid_o            ( alu_valid_id_ex                          ),
         // Branches and Jumps
-        .branch_valid_i         ( branch_valid_if_id                       ),
-        .predict_address_i      ( predict_address_if_id                    ),
-        .predict_taken_i        ( predict_taken_if_id                      ),
-        .branch_valid_o         ( branch_valid_id_ex                       ),
-        .predict_branch_valid_o ( predict_branch_valid_id_ex               ),
-        .predict_address_o      ( predict_address_id_ex                    ),
-        .predict_taken_o        ( predict_taken_id_ex                      ),
-        .branchpredict_i        ( branchpredict                            ), // in order to resolve the branch
+        .branch_valid_o         ( branch_valid_id_ex                       ), // branch is valid
+        .branch_predict_i       ( branch_predict_if_id                     ), // branch predict from if
+        .branch_predict_o       ( branch_predict_id_ex                     ), // branch predict to ex
+        .resolved_branch_i      ( resolved_branch                          ), // in order to resolve the branch
         // LSU
         .lsu_ready_i            ( lsu_ready_ex_id                          ),
         .lsu_valid_o            ( lsu_valid_id_ex                          ),
@@ -351,10 +341,8 @@ module ariane
         .alu_exception_o        ( alu_exception_ex_id        ),
         // Branches and Jumps
         .branch_valid_i         ( branch_valid_id_ex         ),
-        .predict_branch_valid_i ( predict_branch_valid_id_ex ),
-        .predict_address_i      ( predict_address_id_ex      ),
-        .predict_taken_i        ( predict_taken_id_ex        ),
-        .branchpredict_o        ( branchpredict              ),
+        .branch_predict_i       ( branch_predict_id_ex                     ), // branch predict to ex
+        .resolved_branch_o      ( resolved_branch            ),
         // LSU
         .lsu_ready_o            ( lsu_ready_ex_id            ),
         .lsu_valid_i            ( lsu_valid_id_ex            ),
@@ -441,7 +429,6 @@ module ariane
     // Controller
     // ------------
     logic flush_commit_i;
-    logic branchpredict_i;
 
     controller controller_i (
         .flush_bp_o             (                               ),
@@ -454,7 +441,7 @@ module ariane
         .flush_ready_lsu_i      (                               ),
         .flush_commit_i         ( flush_commit_i                ),
         .flush_csr_i            ( flush_csr_ctrl                ),
-        .branchpredict_i        ( branchpredict                 ),
+        .resolved_branch_i      ( resolved_branch               ),
         .*
     );
 

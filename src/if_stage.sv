@@ -41,9 +41,7 @@ module if_stage (
     input  logic                   set_pc_i,     // set new PC
     input  logic                   is_branch_i,  // the new PC was a branch e.g.: branch or jump
     // branchpredict out
-    output logic                   branch_valid_o,
-    output logic [63:0]            predict_address_o,
-    output logic                   predict_taken_o,
+    output branchpredict_sbe       branch_predict_o,
     // instruction cache interface
     output logic                   instr_req_o,
     output logic [63:0]            instr_addr_o,
@@ -269,10 +267,7 @@ module if_stage (
     assign if_ready            = valid & id_ready_i;
     assign if_valid            = (~halt_if_i) & if_ready;
     assign if_busy_o           = prefetch_busy;
-    assign branch_valid_o      = branch_valid_q;
-    assign predict_address_o   = predict_address_q;
-    assign predict_taken_o     = predict_taken_q;
-
+    assign branch_predict_o    = {predict_address_q, predict_taken_q, branch_valid_q};
     //-------------
     // Assertions
     //-------------

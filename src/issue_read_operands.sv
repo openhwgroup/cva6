@@ -52,6 +52,7 @@ module issue_read_operands (
     output logic                                   alu_valid_o,      // Output is valid
     // Branches and Jumps
     output logic                                   branch_valid_o,   // this is a valid branch instruction
+    output branchpredict_sbe                       branch_predict_o,
     // LSU
     input  logic                                   lsu_ready_i,      // FU is ready
     output logic                                   lsu_valid_o,      // Output is valid
@@ -319,6 +320,7 @@ module issue_read_operands (
             trans_id_q            <= 5'b0;
             pc_o                  <= 64'b0;
             is_compressed_instr_o <= 1'b0;
+            branch_predict_o      <= '{default: 0};
         end else begin
             operand_a_q           <= operand_a_n;
             operand_b_q           <= operand_b_n;
@@ -333,6 +335,7 @@ module issue_read_operands (
             trans_id_q            <= trans_id_n;
             pc_o                  <= issue_instr_i.pc;
             is_compressed_instr_o <= issue_instr_i.is_compressed;
+            branch_predict_o      <= issue_instr_i.bp;
         end
     end
 endmodule
