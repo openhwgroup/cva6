@@ -57,14 +57,13 @@ module pcgen (
     // 2. or PC which we just predicted + 4
     always_comb begin : pc_btb_lookup
         // Ad 2: From PC of previous cycle (which is now in IF)
-        if (set_pc_q) begin
-            predict_pc = npc_q;
-        // Ad 1:
-        // in the previous cycle we set the PC to npc_q
-        // calculate the plus one version
-        end else begin
+            // predict_pc = npc_q;
+        // // Ad 1:
+        // // in the previous cycle we set the PC to npc_q
+        // // calculate the plus one version
+        // end else begin
             predict_pc = {pc_if_i[62:2], 2'b0}  + 64'h4;
-        end
+        // end
     end
 
     btb #(
@@ -96,8 +95,12 @@ module pcgen (
         npc_n       = npc_q;
         set_pc_n    = 1'b0;
         is_branch_n = is_branch;
+
+        // we already set the PC a cycle earlier
+        if (set_pc_q)
+            is_branch_n = 1'b0;
         // 4. Predict taken
-        if (is_branch && predict_taken) begin
+        if (is_branch && predict_taken && ~set_pc_q) begin
             set_pc_n    = 1'b1;
             npc_n       = branch_target_address;
         end

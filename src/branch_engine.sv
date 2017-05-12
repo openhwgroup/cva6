@@ -27,6 +27,7 @@ module branch_engine (
     input  logic [63:0]      imm_i,
     input  logic [63:0]      pc_i,
     input  logic             is_compressed_instr_i,
+    input  logic             fu_valid_i, // any functional unit is valid, check that there is no accidental mis-predict
     input  logic             valid_i,
 
     input  branchpredict_sbe branch_predict_i,       // this is the address we predicted
@@ -66,7 +67,7 @@ module branch_engine (
         resolved_branch_o.valid          = valid_i;
         resolved_branch_o.is_mispredict  = 1'b0;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
-        next_pc                        = pc_i + (is_compressed_instr_i) ? 64'h2 : 64'h4;
+        next_pc                        = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
         target_address                 = $signed(operand_c_i) + $signed(imm_i);
         // save pc
@@ -86,10 +87,9 @@ module branch_engine (
                     resolved_branch_o.is_mispredict  = 1'b1;
                 end
             end
-        end
         // the other case would be that this instruction was no branch but branchprediction thought that it was one
         // this is essentially also a mis-predict
-        if (branch_predict_i.valid) begin
+        end else if (fu_valid_i && branch_predict_i.valid) begin
             // re-set the branch to the next PC
             resolved_branch_o.is_mispredict  = 1'b1;
             resolved_branch_o.target_address = next_pc;

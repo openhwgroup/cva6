@@ -121,13 +121,13 @@ module id_stage #(
             unresolved_branch_n = 1'b0;
         end
         // if the instruction is valid and it is a control flow instruction
-        if (instruction_valid_i && is_control_flow_instr) begin
+        if (instruction_valid_i && is_control_flow_instr && ~flush_unissued_instr_i) begin
             unresolved_branch_n = 1'b1;
         end
     end
     // we are ready if we are not full and don't have any unresolved branches, but it can be
     // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i.valid == 1)
-    assign ready_o           = ~full && (~unresolved_branch_q || resolved_branch_i.valid) && ~(instruction_valid_i && is_control_flow_instr);
+    assign ready_o           = ~full && (~unresolved_branch_q || resolved_branch_i.valid);
 
     decoder decoder_i (
         .pc_i                    ( pc_if_i                  ),

@@ -15,14 +15,18 @@
     add  x9, x7, x8
     csrr x1, mstatus
     nop
-L0: jal L1
+L0: nop
     nop
     nop
     nop
+    jal L1
+    nop
+    nop
+L1: nop
     nop
     nop
     nop
-L1: jal L0
+    jal L0
     nop
     nop
     addi x1, x0, 55

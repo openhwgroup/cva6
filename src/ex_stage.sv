@@ -118,8 +118,9 @@ module ex_stage #(
     // Branch Engine
     // --------------------
     branch_engine branch_engine_i (
-        .valid_i             ( branch_valid_i               ),
-        .branch_ex_o         ( alu_exception_o              ), // we use the ALU exception WB for the branch exception
+        .fu_valid_i          ( alu_valid_i & lsu_valid_i & csr_valid_i ),
+        .valid_i             ( branch_valid_i                          ),
+        .branch_ex_o         ( alu_exception_o                         ), // we use the ALU exception WB for the branch exception
         .*
     );
 

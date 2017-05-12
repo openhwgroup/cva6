@@ -79,7 +79,6 @@ module if_stage (
     logic [31:0] instr_decompressed;
     logic        illegal_c_insn;
     logic        instr_compressed_int;
-    logic        clear_instr_valid_i;
 
     // compressed instruction decoding, or more precisely compressed instruction
     // expander
@@ -121,73 +120,55 @@ module if_stage (
 
     // offset FSM state transition logic
     always_comb begin
-      offset_fsm_ns = offset_fsm_cs;
+        offset_fsm_ns = offset_fsm_cs;
 
-      fetch_ready   = 1'b0;
-      branch_req    = 1'b0;
-      valid         = 1'b0;
+        fetch_ready   = 1'b0;
+        branch_req    = 1'b0;
+        valid         = 1'b0;
 
-      unique case (offset_fsm_cs)
-        // no valid instruction data for ID stage
-        // assume aligned
-        IDLE: begin
-            if (req_i) begin
-                branch_req    = 1'b1;
-                offset_fsm_ns = WAIT;
-            end
-
-            // take care of control flow changes
-            if (set_pc_i) begin
-                valid = 1'b0;
-                // switch to new PC from ID stage
-                branch_req = 1'b1;
-                offset_fsm_ns = WAIT;
-            end
-        end
-
-        // serving aligned 32 bit or 16 bit instruction, we don't know yet
-        WAIT: begin
-            if (fetch_valid) begin
-              valid   = 1'b1; // an instruction is ready for ID stage
-
-              if (req_i && if_valid) begin
-                fetch_ready   = 1'b1;
-                offset_fsm_ns = WAIT;
+        unique case (offset_fsm_cs)
+          // no valid instruction data for ID stage
+          // assume aligned
+          IDLE: begin
+              if (req_i) begin
+                  branch_req    = 1'b1;
+                  offset_fsm_ns = WAIT;
               end
-            end
-                      // take care of control flow changes
-            if (set_pc_i) begin
-                valid = 1'b0;
-                // switch to new PC from ID stage
-                branch_req = 1'b1;
-                offset_fsm_ns = WAIT_BRANCHED;
-            end
-        end
-        // we just branched so keep this instruction as valid
-        WAIT_BRANCHED: begin
-            if (fetch_valid) begin
-              valid   = 1'b1; // an instruction is ready for ID stage
 
-              if (req_i && if_valid) begin
-                fetch_ready   = 1'b1;
-                offset_fsm_ns = WAIT;
+              // take care of control flow changes
+              if (set_pc_i) begin
+                  valid = 1'b0;
+                  // switch to new PC from ID stage
+                  branch_req = 1'b1;
+                  offset_fsm_ns = WAIT;
               end
-            end
+          end
 
-            // take care of control flow changes
-            if (set_pc_i) begin
-                // switch to new PC from ID stage
-                branch_req = 1'b1;
-                offset_fsm_ns = WAIT_BRANCHED;
-            end
+          // serving aligned 32 bit or 16 bit instruction, we don't know yet
+          WAIT: begin
+              if (fetch_valid) begin
+                valid   = 1'b1; // an instruction is ready for ID stage
+
+                if (req_i && if_valid) begin
+                  fetch_ready   = 1'b1;
+                  offset_fsm_ns = WAIT;
+                end
+              end
+
+          end
+
+          default: begin
+            offset_fsm_ns = IDLE;
+          end
+        endcase
+
+        // take care of control flow changes
+        if (set_pc_i) begin
+            valid = 1'b0;
+            // switch to new PC from PCGEN stage
+            branch_req = 1'b1;
+            offset_fsm_ns = WAIT;
         end
-
-        default: begin
-          offset_fsm_ns = IDLE;
-        end
-      endcase
-
-
     end
 
     // -------------
