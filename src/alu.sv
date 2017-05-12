@@ -59,8 +59,7 @@ module alu
       // COMPARATOR OPs
       EQ,    NE,
       GEU,   LTU,
-      GES,   LTS,
-      SLETS, SLETU: adder_op_b_negate = 1'b1;
+      GES,   LTS: adder_op_b_negate = 1'b1;
 
       default: ;
     endcase
@@ -147,7 +146,9 @@ module alu
     cmp_signed = 1'b0;
 
     unique case (operator_i)
-      GES, LTS: begin
+      GES,
+      LTS,
+      SLTS: begin
         cmp_signed = 1'b1;
       end
 
@@ -181,11 +182,9 @@ module alu
     unique case (operator_i)
       EQ:        cmp_result = is_equal;
       NE:        cmp_result = (~is_equal);
-      // GTS, GTU:  cmp_result = is_greater_equal && (~is_equal);
       GES, GEU:  cmp_result = is_greater_equal;
-      LTS, LTU:  cmp_result = (~is_greater_equal);
-      // LES, LEU:  cmp_result = (~is_greater_equal) || is_equal;
-
+      LTS, SLTS,
+      LTU, SLTU: cmp_result = (~is_greater_equal);
       default: ;
     endcase
   end
@@ -217,9 +216,10 @@ module alu
       SRLW, SRAW: result_o = {{32{shift_result32[31]}}, shift_result32[31:0]};
 
       // Comparison Operations
-      EQ,  NE,
-      LTU, GEU,
-      GES, LTS : result_o = {63'b0, cmp_result};
+      EQ,    NE,
+      GEU,   LTU,
+      LTS,   GES,
+      SLTS,  SLTU: result_o = {63'b0, cmp_result};
 
       default: ; // default case to suppress unique warning
     endcase

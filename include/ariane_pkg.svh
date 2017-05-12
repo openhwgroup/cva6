@@ -74,7 +74,7 @@ package ariane_pkg;
                                // jumps
                                JAL, JALR,
                                // set lower than operations
-                               SLTS, SLTU, SLETS, SLETU,
+                               SLTS, SLTU,
                                // CSR functions
                                MRET, SRET, URET, ECALL, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
                                // LSU functions
