@@ -43,11 +43,11 @@ module ex_stage #(
     output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,   // ID of scoreboard entry at which to write back
     output exception                               alu_exception_o,
     // Branches and Jumps
-    input  logic                                   branch_valid_i,
+    input  logic                                   branch_valid_i,  // we are using the branch unit
     input  logic                                   predict_branch_valid_i,
     input  logic [63:0]                            predict_address_i,
     input  logic                                   predict_taken_i,
-    output branchpredict                           branchpredict_o,
+    output branchpredict                           branchpredict_o, // the branch engine uses the write back from the ALU
     // LSU
     output logic                                   lsu_ready_o,      // FU is ready
     input  logic                                   lsu_valid_i,      // Input is valid
@@ -99,8 +99,6 @@ module ex_stage #(
     output logic                                   mult_ready_o,      // FU is ready
     input  logic                                   mult_valid_i       // Output is valid
 );
-    // Wires
-    logic comparison_result_alu_branch;
 
     // ALU is a single cycle instructions, hence it is always ready
     assign alu_ready_o = 1'b1;
@@ -113,8 +111,8 @@ module ex_stage #(
         .adder_result_o      (                              ),
         .adder_result_ext_o  (                              ),
         .result_o            ( alu_result_o                 ),
-        .comparison_result_o ( comparison_result_alu_branch ),
         .is_equal_result_o   (                              ),
+        .comparison_result_o( ),
         .*
     );
 
@@ -122,10 +120,7 @@ module ex_stage #(
     // Branch Engine
     // --------------------
     branch_engine branch_engine_i (
-        .operand_a_i         ( operand_c_i                  ),
-        .operand_b_i         ( imm_i                        ),
         .valid_i             ( branch_valid_i               ),
-        .comparison_result_i ( comparison_result_alu_branch ),
         .branch_ex_o         ( alu_exception_o              ),
         .*
     );
