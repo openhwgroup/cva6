@@ -209,13 +209,6 @@ always_comb begin : push_instruction_and_wb
     if (flush_unissued_instr_i) begin
         top_pointer_n = issue_pointer_q;
     end
-    // flush signal, e.g.: flush everything we need to backtrack after an exception
-    if (flush_i) begin
-        for (int i = 0; i < NR_ENTRIES; i++) begin
-            mem_n[i] = {$bits(scoreboard_entry){1'b0}};
-        end
-    end
-
 end
 
 // issue instruction: advance the issue pointer
@@ -282,13 +275,18 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : sequential
         commit_pointer_q  <= '{default: 0};
         top_pointer_q     <= '{default: 0};
         top_pointer_qq    <= '{default: 0};
-        mem_q             <= '{default: 0};
+        for (int i = 0; i < NR_ENTRIES; i++) begin
+            mem_q[i] <= {$bits(scoreboard_entry){1'b0}};
+        end
     end else if (flush_i) begin // reset pointers on flush
+        // flush signal, e.g.: flush everything we need to backtrack after an exception
         issue_pointer_q   <= '{default: 0};
         commit_pointer_q  <= '{default: 0};
         top_pointer_q     <= '{default: 0};
         top_pointer_qq    <= '{default: 0};
-        mem_q             <= '{default: 0};
+        for (int i = 0; i < NR_ENTRIES; i++) begin
+            mem_q[i] <= {$bits(scoreboard_entry){1'b0}};
+        end
     end else begin
         issue_pointer_q   <= issue_pointer_n;
         commit_pointer_q  <= commit_pointer_n;
