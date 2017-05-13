@@ -58,9 +58,6 @@ module prefetch_buffer
   logic        fifo_ready;
   logic        fifo_clear;
 
-  logic        valid_stored;
-
-
   //---------------------------------
   // Prefetch buffer status
   //---------------------------------
@@ -71,26 +68,23 @@ module prefetch_buffer
   // Fetch FIFO
   // consumes addresses and rdata
   //---------------------------------
-  fetch_fifo fifo_i
-  (
-    .clk                   ( clk               ),
-    .rst_n                 ( rst_n             ),
+    fetch_fifo fifo_i (
+        .clk                   ( clk               ),
+        .rst_n                 ( rst_n             ),
 
-    .clear_i               ( fifo_clear        ),
+        .clear_i               ( fifo_clear        ),
 
-    .in_addr_i             ( instr_addr_q      ),
-    .in_rdata_i            ( instr_rdata_i     ),
-    .in_valid_i            ( fifo_valid        ),
-    .in_ready_o            ( fifo_ready        ),
+        .in_addr_i             ( instr_addr_q      ),
+        .in_rdata_i            ( instr_rdata_i     ),
+        .in_valid_i            ( fifo_valid        ),
+        .in_ready_o            ( fifo_ready        ),
 
 
-    .out_valid_o           ( valid_o           ),
-    .out_ready_i           ( ready_i           ),
-    .out_rdata_o           ( rdata_o           ),
-    .out_addr_o            ( addr_o            ),
-
-    .out_valid_stored_o    ( valid_stored      )
-  );
+        .out_valid_o           ( valid_o           ),
+        .out_ready_i           ( ready_i           ),
+        .out_rdata_o           ( rdata_o           ),
+        .out_addr_o            ( addr_o            )
+    );
 
 
   //---------------
