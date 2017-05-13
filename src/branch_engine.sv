@@ -67,11 +67,19 @@ module branch_engine (
         resolved_branch_o.valid          = valid_i;
         resolved_branch_o.is_mispredict  = 1'b0;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
-        next_pc                        = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
+        next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
-        target_address                 = $signed(operand_c_i) + $signed(imm_i);
-        // save pc
-        resolved_branch_o.pc = pc_i;
+        target_address                   = $signed(operand_c_i) + $signed(imm_i);
+        // save PC - we need this to get the target row in the branch target buffer
+        // we play this trick with the branch instruction which wraps a byte boundary:
+        //  |---------- Place the prediction on this PC
+        // \/
+        // ____________________________________________________
+        // |branch [15:0] | branch[31:16] | compressed 1[15:0] |
+        // |____________________________________________________
+        // This will relief the prefetcher to re-fetch partially fetched unaligned branch instructions e.g.:
+        // we don't have a back arch between prefetcher and decoder/instruction FIFO.
+        resolved_branch_o.pc = (is_compressed_instr_i || pc_i[1] == 1'b0) ? pc_i : (pc_i[63:2] + 64'h4);
         // write target address which goes to pc gen
         resolved_branch_o.target_address = (comparison_result) ? target_address : next_pc;
         resolved_branch_o.is_taken       = comparison_result;
@@ -81,7 +89,7 @@ module branch_engine (
             if (target_address[0] == 1'b0) begin
                 // TODO in case of branch which is not taken it is not necessary to check for the address
                 if (   target_address != branch_predict_i.predict_address_i    // we mis-predicted the address of the branch
-                    || branch_predict_i.predict_taken_i != comparison_result // we mis-predicted the outcome of the branch
+                    || branch_predict_i.predict_taken_i != comparison_result   // we mis-predicted the outcome of the branch
                     || branch_predict_i.valid == 1'b0         // this means branch-prediction thought it was no branch but in reality it was one
                     ) begin
                     resolved_branch_o.is_mispredict  = 1'b1;

@@ -59,7 +59,7 @@ module btb #(
     assign predict_taken_o         = btb_q[$unsigned(index)].saturation_counter[BITS_SATURATION_COUNTER-1];
     assign branch_target_address_o = btb_q[$unsigned(index)].target_address;
 
-    // update on a miss-predict
+    // update on a mis-predict
     always_comb begin : update_branchpredict
         btb_n              = btb_q;
         saturation_counter = btb_q[$unsigned(update_pc)].saturation_counter;

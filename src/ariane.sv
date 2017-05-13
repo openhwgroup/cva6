@@ -91,6 +91,8 @@ module ariane
     logic [63:0]              pc_pcgen_if;
     logic                     set_pc_pcgen_if;
     logic                     is_branch_pcgen_if;
+    logic                     if_ready_if_pcgen;
+    logic                     pc_valid_pcgen_if;
     // --------------
     // PCGEN <-> EX
     // --------------
@@ -108,7 +110,6 @@ module ariane
     logic                     instr_valid_if_id;
     logic [31:0]              instr_rdata_if_id;
     logic                     decode_ack_id_if;
-    logic                     illegal_c_insn_if_id;
     logic                     is_compressed_if_id;
     logic                     illegal_c_insn_id_if;
     logic [63:0]              pc_id_if_id;
@@ -218,11 +219,12 @@ module ariane
     // NPC Generation
     // --------------
     pcgen pcgen_i (
+        .fetch_enable_i     ( fetch_enable                   ),
         .flush_i            ( flush                          ),
-        .pc_if_i            ( pc_if                          ),
+        .if_ready_i         ( ~if_ready_if_pcgen             ),
         .resolved_branch_i  ( resolved_branch                ),
         .pc_if_o            ( pc_pcgen_if                    ),
-        .set_pc_o           ( set_pc_pcgen_if                ),
+        .pc_if_valid_o      ( pc_valid_pcgen_if              ),
         .is_branch_o        ( is_branch_pcgen_if             ),
         .boot_addr_i        ( boot_addr_i                    ),
         .epc_i              ( epc_commit_pcgen               ),
@@ -235,11 +237,9 @@ module ariane
     // ---------
     if_stage if_stage_i (
         .flush_i             ( flush_ctrl_if            ),
-        .req_i               ( fetch_enable             ),
-        .if_busy_o           (                          ), // ?
+        .pc_if_valid_i       ( pc_valid_pcgen_if        ),
+        .if_busy_o           ( if_ready_if_pcgen        ),
         .id_ready_i          ( ready_id_if              ),
-        .halt_if_i           ( halt_if                  ),
-        .set_pc_i            ( set_pc_pcgen_if          ),
         .is_branch_i         ( is_branch_pcgen_if       ),
         .branch_predict_o    ( branch_predict_if_id     ),
         .fetch_addr_i        ( pc_pcgen_if              ),
@@ -252,9 +252,6 @@ module ariane
 
         .instr_valid_id_o    ( instr_valid_if_id        ),
         .instr_rdata_id_o    ( instr_rdata_if_id        ),
-        .is_compressed_id_o  ( is_compressed_if_id      ),
-        .illegal_c_insn_id_o ( illegal_c_insn_if_id     ),
-        .pc_if_o             ( pc_if                    ),
         .pc_id_o             ( pc_id_if_id              ),
         .ex_o                ( exception_if_id          ),
         .*
@@ -275,7 +272,6 @@ module ariane
         .instruction_i          ( instr_rdata_if_id                        ),
         .instruction_valid_i    ( instr_valid_if_id                        ),
         .decoded_instr_ack_o    ( decode_ack_id_if                         ),
-        .is_compressed_i        ( is_compressed_if_id                      ),
         .pc_if_i                ( pc_id_if_id                              ), // PC from if
         .ex_if_i                ( exception_if_id                          ), // exception from if
         .ready_o                ( ready_id_if                              ),

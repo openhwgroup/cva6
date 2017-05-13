@@ -28,10 +28,8 @@ module prefetch_buffer
   input  logic        rst_n,
   input  logic        flush_i,
 
-  input  logic        req_i,
-
-  input  logic        branch_i,
-  input  logic [63:0] addr_i,
+  input  logic [63:0] fetch_addr_i,
+  input  logic        fetch_valid_i,
 
   input  logic        ready_i,
   output logic        valid_o,
@@ -51,9 +49,8 @@ module prefetch_buffer
 
   enum logic [1:0] {IDLE, WAIT_GNT, WAIT_RVALID, WAIT_ABORTED } CS, NS;
 
-  logic [63:0] instr_addr_q, fetch_addr;
   logic        addr_valid;
-
+  logic [63:0] instr_addr_q;
   logic        fifo_valid;
   logic        fifo_ready;
   logic        fifo_clear;
@@ -61,24 +58,24 @@ module prefetch_buffer
   //---------------------------------
   // Prefetch buffer status
   //---------------------------------
-
-  assign busy_o = (CS != IDLE) || instr_req_o;
+  // we are busy if we are either waiting for a grant
+  // or if the fifo is full
+  assign busy_o = (CS inside {WAIT_GNT, WAIT_ABORTED}) && fifo_ready;
 
   //---------------------------------
   // Fetch FIFO
   // consumes addresses and rdata
   //---------------------------------
     fetch_fifo fifo_i (
-        .clk                   ( clk               ),
-        .rst_n                 ( rst_n             ),
+        .clk_i                 ( clk               ),
+        .rst_ni                ( rst_n             ),
 
-        .clear_i               ( fifo_clear        ),
+        .clear_i               ( flush_i           ),
 
         .in_addr_i             ( instr_addr_q      ),
         .in_rdata_i            ( instr_rdata_i     ),
         .in_valid_i            ( fifo_valid        ),
         .in_ready_o            ( fifo_ready        ),
-
 
         .out_valid_o           ( valid_o           ),
         .out_ready_i           ( ready_i           ),
@@ -86,39 +83,25 @@ module prefetch_buffer
         .out_addr_o            ( addr_o            )
     );
 
-
-  //---------------
-  // Fetch address
-  //---------------
-
-  assign fetch_addr = {instr_addr_q[63:2], 2'b00} + 64'd4;
-  assign fifo_clear = branch_i || flush_i;
-
-
-  //-------------------------
+  //--------------------------------------------------
   // Instruction fetch FSM
   // deals with instruction memory / instruction cache
-  //-------------------------
+  //--------------------------------------------------
 
   always_comb
   begin
     instr_req_o   = 1'b0;
-    instr_addr_o  = fetch_addr;
+    instr_addr_o  = fetch_addr_i;
     fifo_valid    = 1'b0;
-    addr_valid    = 1'b0;
     NS            = CS;
 
     unique case(CS)
       // default state, not waiting for requested data
-      IDLE:
-      begin
-        instr_addr_o = fetch_addr;
+      IDLE: begin
+        instr_addr_o = fetch_addr_i;
         instr_req_o  = 1'b0;
 
-        if (branch_i)
-          instr_addr_o = addr_i;
-
-        if (req_i & (fifo_ready | branch_i )) begin
+        if (fifo_ready && fetch_valid_i) begin
           instr_req_o = 1'b1;
           addr_valid  = 1'b1;
 
@@ -132,15 +115,9 @@ module prefetch_buffer
       end // case: IDLE
 
       // we sent a request but did not yet get a grant
-      WAIT_GNT:
-      begin
+      WAIT_GNT: begin
         instr_addr_o = instr_addr_q;
         instr_req_o  = 1'b1;
-
-        if (branch_i) begin
-          instr_addr_o = addr_i;
-          addr_valid   = 1'b1;
-        end
 
         if(instr_gnt_i)
           NS = WAIT_RVALID;
@@ -150,16 +127,12 @@ module prefetch_buffer
 
       // we wait for rvalid, after that we are ready to serve a new request
       WAIT_RVALID: begin
-        instr_addr_o = fetch_addr;
+        instr_addr_o = fetch_addr_i;
 
-        if (branch_i)
-          instr_addr_o  = addr_i;
-
-
-        if (req_i & (fifo_ready | branch_i)) begin
+        if (fifo_ready) begin
           // prepare for next request
 
-          if (instr_rvalid_i) begin
+          if (fifo_ready && fetch_valid_i) begin
             instr_req_o = 1'b1;
             fifo_valid  = 1'b1;
             addr_valid  = 1'b1;
@@ -173,14 +146,12 @@ module prefetch_buffer
           end else begin
             // we are requested to abort our current request
             // we didn't get an rvalid yet, so wait for it
-            if (branch_i) begin
-              addr_valid = 1'b1;
-              NS         = WAIT_ABORTED;
+            if (flush_i) begin
+                NS         = WAIT_ABORTED;
             end
           end
         end else begin
           // just wait for rvalid and go back to IDLE, no new request
-
           if (instr_rvalid_i) begin
             fifo_valid = 1'b1;
             NS         = IDLE;
@@ -193,11 +164,6 @@ module prefetch_buffer
       // we assume that req_i is set to high
       WAIT_ABORTED: begin
         instr_addr_o = instr_addr_q;
-
-        if (branch_i) begin
-          instr_addr_o = addr_i;
-          addr_valid   = 1'b1;
-        end
 
         if (instr_rvalid_i) begin
           instr_req_o  = 1'b1;
