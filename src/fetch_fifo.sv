@@ -59,6 +59,8 @@ module fetch_fifo
     logic [63:0]            in_addr_n,        in_addr_q;
     logic [31:0]            in_rdata_n,       in_rdata_q;
     logic                   in_valid_n,       in_valid_q;
+    // this bit indicates whether there is a instruction waiting in the pipeline register or not
+    logic                   pipelein_register_valid_n, pipelein_register_valid_q;
 
     fetch_entry mem_n[DEPTH-1:0], mem_q[DEPTH-1:0];
     logic [$clog2(DEPTH)-1:0]     read_pointer_n, read_pointer_q;
@@ -66,7 +68,7 @@ module fetch_fifo
     int unsigned status_cnt_n,    status_cnt_q; // this integer will be truncated by the synthesis tool
 
     // status signals
-    logic full, empty, two_left;
+    logic full, empty, one_left;
     // the last instruction was unaligned
     logic unaligned_n, unaligned_q;
     // save the unaligned part of the instruction to this ff
@@ -76,10 +78,10 @@ module fetch_fifo
 
     // we always need two empty places
     // as it could happen that we get two compressed instructions/cycle
-    assign full        = (status_cnt_q >= DEPTH - 2);
+    assign full        = (status_cnt_q > DEPTH - 2);
     assign one_left    = (status_cnt_q == DEPTH - 1); // two spaces are left
     assign empty       = (status_cnt_q == 0);
-    // the output is valid if we are either empty or just got an valid
+    // the output is valid if we are either empty or just got a valid
     assign out_valid_o = !empty || in_valid_q;
     // we need space for at least two instructions: the full flag is conditioned on that
     // but if we pop in the current cycle and we have one place left we can still fit two instructions alt
@@ -115,12 +117,13 @@ module fetch_fifo
         automatic int status_cnt    = status_cnt_q;
         automatic int write_pointer = write_pointer_q;
 
-        write_pointer_n     = write_pointer_q;
-        read_pointer_n      = read_pointer_q;
-        mem_n               = mem_q;
-        unaligned_n         = unaligned_q;
-        unaligned_instr_n   = unaligned_instr_q;
-        unaligned_address_n = unaligned_address_q;
+        write_pointer_n           = write_pointer_q;
+        read_pointer_n            = read_pointer_q;
+        mem_n                     = mem_q;
+        unaligned_n               = unaligned_q;
+        unaligned_instr_n         = unaligned_instr_q;
+        unaligned_address_n       = unaligned_address_q;
+        pipelein_register_valid_n = pipelein_register_valid_q;
         // ---------------------------------
         // Input port & Instruction Aligner
         // ---------------------------------
@@ -220,21 +223,39 @@ module fetch_fifo
         out_rdata_o      = mem_q[read_pointer_q].instruction;
 
         // pass-through if queue is empty but we are currently expanding or re-aligning an instruction
-        if (empty && in_valid_q && out_ready_i) begin
+        if (empty && in_valid_q) begin
             // we either have a full 32 bit instruction a compressed 16 bit instruction
             branch_predict_o = branch_predict_q;
             out_addr_o       = in_addr_q;
             // depending on whether the instruction is compressed or not output the correct thing
-            if (in_rdata_q[1:0] != 2'b11)
-                out_rdata_o = in_rdata_q[15:0];
-            else
-                out_rdata_o = in_rdata_q;
+            if (!unaligned_q) begin
+                if (in_rdata_q[1:0] != 2'b11)
+                    out_rdata_o = {16'b0, in_rdata_q[15:0]};
+                else
+                    out_rdata_o = in_rdata_q;
+            // serve unaligned
+            end else begin
+                out_addr_o  = unaligned_address_q;
+                out_rdata_o = {in_rdata_q[15:0], unaligned_instr_q};
+            end
+            // there is currently no valid instruction in the pipeline register push this instruction
+            if (out_ready_i || !pipelein_register_valid_q) begin
+                pipelein_register_valid_n = 1'b1;
+                read_pointer_n = read_pointer_q + 1;
+                status_cnt--;
+            end
         // regular read but do not issue if we are already empty
         // this can happen since we have an output latch in the IF stage and the ID stage will only know a cycle
         // later that we do not have any valid instructions anymore
-        end else if (out_ready_i && !empty) begin
+        end
+
+        if (out_ready_i && !empty) begin
             read_pointer_n = read_pointer_q + 1;
             status_cnt--;
+        end
+
+        if (out_ready_i) begin
+            pipelein_register_valid_n = 1'b0;
         end
 
         write_pointer_n = write_pointer;
@@ -242,7 +263,6 @@ module fetch_fifo
 
         if (clear_i)
             status_cnt_n = '0;
-
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -259,6 +279,7 @@ module fetch_fifo
             in_rdata_q          <= 32'b0;
             in_valid_q          <= 1'b0;
             branch_predict_q    <= '{default: 0};
+            pipelein_register_valid_q <= 1'b0;
         end else begin
             status_cnt_q        <= status_cnt_n;
             mem_q               <= mem_n;
@@ -272,6 +293,7 @@ module fetch_fifo
             in_rdata_q          <= in_rdata_n;
             in_valid_q          <= in_valid_n;
             branch_predict_q    <= branch_predict_n;
+            pipelein_register_valid_q <= pipelein_register_valid_n;
         end
     end
 endmodule
