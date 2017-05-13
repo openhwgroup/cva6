@@ -100,9 +100,9 @@ module branch_engine (
     always_comb begin : exception_handling
         branch_ex_o.cause = INSTR_ADDR_MISALIGNED;
         branch_ex_o.valid = 1'b0;
+        branch_ex_o.tval  = pc_i;
         // only throw exception if this is indeed a branch
         if (valid_i && target_address[0] != 1'b0)
-            branch_ex_o.tval  = pc_i;
             branch_ex_o.valid = 1'b1;
     end
 endmodule
