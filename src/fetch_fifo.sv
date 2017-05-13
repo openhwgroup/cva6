@@ -192,8 +192,7 @@ module fetch_fifo
           end else begin
             // move to next entry in FIFO
             addr_n[0] = {addr_next[63:2], 2'b00};
-            for (int i = 0; i < DEPTH - 1; i++)
-            begin
+            for (int i = 0; i < DEPTH - 1; i++) begin
               rdata_n[i] = rdata_int[i + 1];
             end
             rdata_n[DEPTH - 1] = 32'b0;

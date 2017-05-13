@@ -78,7 +78,7 @@ module branch_engine (
         // we've detected a branch in ID with the following parameters
         if (valid_i) begin
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
-            if (target_address[1:0] == 2'b0) begin
+            if (target_address[0] == 1'b0) begin
                 // TODO in case of branch which is not taken it is not necessary to check for the address
                 if (   target_address != branch_predict_i.predict_address_i    // we mis-predicted the address of the branch
                     || branch_predict_i.predict_taken_i != comparison_result // we mis-predicted the outcome of the branch
@@ -96,13 +96,13 @@ module branch_engine (
         end
     end
     // use ALU exception signal for storing instruction fetch exceptions if
-    // the target address is not aligned to a 4 byte boundary
+    // the target address is not aligned to a 2 byte boundary
     always_comb begin : exception_handling
         branch_ex_o.cause = INSTR_ADDR_MISALIGNED;
-        branch_ex_o.tval  = 64'b0; // TODO
         branch_ex_o.valid = 1'b0;
         // only throw exception if this is indeed a branch
-        if (valid_i && target_address[1:0] != 2'b0)
+        if (valid_i && target_address[0] != 1'b0)
+            branch_ex_o.tval  = pc_i;
             branch_ex_o.valid = 1'b1;
     end
 endmodule
