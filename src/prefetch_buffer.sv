@@ -60,7 +60,7 @@ module prefetch_buffer
   //---------------------------------
   // we are busy if we are either waiting for a grant
   // or if the fifo is full
-  assign busy_o = (CS inside {WAIT_GNT, WAIT_ABORTED}) && fifo_ready;
+  assign busy_o = (CS inside {WAIT_GNT, WAIT_ABORTED}) || !fifo_ready;
 
   //---------------------------------
   // Fetch FIFO

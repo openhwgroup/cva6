@@ -111,10 +111,10 @@ module ariane
     logic [31:0]              instr_rdata_if_id;
     logic                     decode_ack_id_if;
     logic                     is_compressed_if_id;
-    logic                     illegal_c_insn_id_if;
     logic [63:0]              pc_id_if_id;
     exception                 exception_if_id;
     branchpredict_sbe         branch_predict_if_id;
+    logic                     instr_is_compressed_if_id;
     // --------------
     // ID <-> EX
     // --------------
@@ -236,24 +236,25 @@ module ariane
     // IF
     // ---------
     if_stage if_stage_i (
-        .flush_i             ( flush_ctrl_if            ),
-        .pc_if_valid_i       ( pc_valid_pcgen_if        ),
-        .if_busy_o           ( if_ready_if_pcgen        ),
-        .id_ready_i          ( ready_id_if              ),
-        .is_branch_i         ( is_branch_pcgen_if       ),
-        .branch_predict_o    ( branch_predict_if_id     ),
-        .fetch_addr_i        ( pc_pcgen_if              ),
-        .instr_req_o         ( fetch_req_if_ex          ),
-        .instr_addr_o        ( fetch_vaddr_if_ex        ),
-        .instr_gnt_i         ( fetch_gnt_ex_if          ),
-        .instr_rvalid_i      ( fetch_valid_ex_if        ),
-        .instr_rdata_i       ( fetch_rdata_ex_if        ),
-        .instr_ack_i         ( decode_ack_id_if         ),
+        .flush_i                    ( flush_ctrl_if                  ),
+        .pc_if_valid_i              ( pc_valid_pcgen_if              ),
+        .if_busy_o                  ( if_ready_if_pcgen              ),
+        .id_ready_i                 ( ready_id_if                    ),
+        .is_branch_i                ( is_branch_pcgen_if             ),
+        .fetch_addr_i               ( pc_pcgen_if                    ),
+        .instr_req_o                ( fetch_req_if_ex                ),
+        .instr_addr_o               ( fetch_vaddr_if_ex              ),
+        .instr_gnt_i                ( fetch_gnt_ex_if                ),
+        .instr_rvalid_i             ( fetch_valid_ex_if              ),
+        .instr_rdata_i              ( fetch_rdata_ex_if              ),
 
-        .instr_valid_id_o    ( instr_valid_if_id        ),
-        .instr_rdata_id_o    ( instr_rdata_if_id        ),
-        .pc_id_o             ( pc_id_if_id              ),
-        .ex_o                ( exception_if_id          ),
+        .pc_id_o                    ( pc_id_if_id                    ),
+        .instr_valid_id_o           ( instr_valid_if_id              ),
+        .instr_ack_i                ( decode_ack_id_if               ),
+        .instr_rdata_id_o           ( instr_rdata_if_id              ),
+        .instr_is_compressed_o      ( instr_is_compressed_if_id      ),
+        .branch_predict_o           ( branch_predict_if_id           ),
+        .ex_o                       ( exception_if_id                ),
         .*
     );
     // ---------
@@ -265,54 +266,55 @@ module ariane
         .NR_WB_PORTS         ( NR_WB_PORTS                  )
     )
     id_stage_i (
-        .test_en_i              ( test_en_i                                ),
-        .flush_i                ( flush                                    ),
-        .flush_unissued_instr_i ( flush_unissued_instr_ctrl_id             ),
-        .flush_scoreboard_i     ( flush_scoreboard_ctrl_id                 ),
-        .instruction_i          ( instr_rdata_if_id                        ),
-        .instruction_valid_i    ( instr_valid_if_id                        ),
-        .decoded_instr_ack_o    ( decode_ack_id_if                         ),
-        .pc_if_i                ( pc_id_if_id                              ), // PC from if
-        .ex_if_i                ( exception_if_id                          ), // exception from if
-        .ready_o                ( ready_id_if                              ),
+        .test_en_i                  ( test_en_i                                ),
+        .flush_i                    ( flush                                    ),
+        .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id             ),
+        .flush_scoreboard_i         ( flush_scoreboard_ctrl_id                 ),
+        .instruction_i              ( instr_rdata_if_id                        ),
+        .instr_is_compressed_i      ( instr_is_compressed_if_id                ),
+        .instruction_valid_i        ( instr_valid_if_id                        ),
+        .decoded_instr_ack_o        ( decode_ack_id_if                         ),
+        .pc_if_i                    ( pc_id_if_id                              ), // PC from if
+        .ex_if_i                    ( exception_if_id                          ), // exception from if
+        .ready_o                    ( ready_id_if                              ),
         // Functional Units
-        .operator_o             ( operator_id_ex                           ),
-        .operand_a_o            ( operand_a_id_ex                          ),
-        .operand_b_o            ( operand_b_id_ex                          ),
-        .operand_c_o            ( operand_c_id_ex                          ),
-        .imm_o                  ( imm_id_ex                                ),
-        .trans_id_o             ( trans_id_id_ex                           ),
-        .pc_o                   ( pc_id_ex                                 ),
-        .is_compressed_instr_o  ( is_compressed_instr_id_ex                ),
+        .operator_o                 ( operator_id_ex                           ),
+        .operand_a_o                ( operand_a_id_ex                          ),
+        .operand_b_o                ( operand_b_id_ex                          ),
+        .operand_c_o                ( operand_c_id_ex                          ),
+        .imm_o                      ( imm_id_ex                                ),
+        .trans_id_o                 ( trans_id_id_ex                           ),
+        .pc_o                       ( pc_id_ex                                 ),
+        .is_compressed_instr_o      ( is_compressed_instr_id_ex                ),
         // ALU
-        .alu_ready_i            ( alu_ready_ex_id                          ),
-        .alu_valid_o            ( alu_valid_id_ex                          ),
+        .alu_ready_i                ( alu_ready_ex_id                          ),
+        .alu_valid_o                ( alu_valid_id_ex                          ),
         // Branches and Jumps
-        .branch_valid_o         ( branch_valid_id_ex                       ), // branch is valid
-        .branch_predict_i       ( branch_predict_if_id                     ), // branch predict from if
-        .branch_predict_o       ( branch_predict_id_ex                     ), // branch predict to ex
-        .resolved_branch_i      ( resolved_branch                          ), // in order to resolve the branch
+        .branch_valid_o             ( branch_valid_id_ex                       ), // branch is valid
+        .branch_predict_i           ( branch_predict_if_id                     ), // branch predict from if
+        .branch_predict_o           ( branch_predict_id_ex                     ), // branch predict to ex
+        .resolved_branch_i          ( resolved_branch                          ), // in order to resolve the branch
         // LSU
-        .lsu_ready_i            ( lsu_ready_ex_id                          ),
-        .lsu_valid_o            ( lsu_valid_id_ex                          ),
+        .lsu_ready_i                ( lsu_ready_ex_id                          ),
+        .lsu_valid_o                ( lsu_valid_id_ex                          ),
         // Multiplier
-        .mult_ready_i           ( mult_ready_ex_id                         ),
-        .mult_valid_o           ( mult_valid_id_ex                         ),
+        .mult_ready_i               ( mult_ready_ex_id                         ),
+        .mult_valid_o               ( mult_valid_id_ex                         ),
         // CSR
-        .csr_ready_i            ( csr_ready_ex_id                          ),
-        .csr_valid_o            ( csr_valid_id_ex                          ),
+        .csr_ready_i                ( csr_ready_ex_id                          ),
+        .csr_valid_o                ( csr_valid_id_ex                          ),
 
-        .trans_id_i             ( {alu_trans_id_ex_id,  lsu_trans_id_ex_id,  csr_trans_id_ex_id       }),
-        .wdata_i                ( {alu_result_ex_id,    lsu_result_ex_id,    csr_result_ex_id         }),
-        .ex_ex_i                ( {alu_exception_ex_id, lsu_exception_ex_id, {$bits(exception){1'b0}} }),
-        .wb_valid_i             ( {alu_valid_ex_id,     lsu_valid_ex_id,     csr_valid_ex_id          }),
+        .trans_id_i                 ( {alu_trans_id_ex_id,  lsu_trans_id_ex_id,  csr_trans_id_ex_id       }),
+        .wdata_i                    ( {alu_result_ex_id,    lsu_result_ex_id,    csr_result_ex_id         }),
+        .ex_ex_i                    ( {alu_exception_ex_id, lsu_exception_ex_id, {$bits(exception){1'b0}} }),
+        .wb_valid_i                 ( {alu_valid_ex_id,     lsu_valid_ex_id,     csr_valid_ex_id          }),
 
-        .waddr_a_i              ( waddr_a_commit_id                        ),
-        .wdata_a_i              ( wdata_a_commit_id                        ),
-        .we_a_i                 ( we_a_commit_id                           ),
+        .waddr_a_i                  ( waddr_a_commit_id                        ),
+        .wdata_a_i                  ( wdata_a_commit_id                        ),
+        .we_a_i                     ( we_a_commit_id                           ),
 
-        .commit_instr_o         ( commit_instr_id_commit                   ),
-        .commit_ack_i           ( commit_ack_commit_id                     ),
+        .commit_instr_o             ( commit_instr_id_commit                   ),
+        .commit_ack_i               ( commit_ack_commit_id                     ),
         .*
     );
     // ---------

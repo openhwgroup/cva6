@@ -63,10 +63,10 @@ module fetch_fifo
     fetch_entry mem_n[DEPTH-1:0], mem_q[DEPTH-1:0];
     logic [$clog2(DEPTH)-1:0]     read_pointer_n, read_pointer_q;
     logic [$clog2(DEPTH)-1:0]     write_pointer_n, write_pointer_q;
-    int unsigned status_cnt_n, status_cnt_q; // this integer will be truncated by the synthesis tool
+    int unsigned status_cnt_n,    status_cnt_q; // this integer will be truncated by the synthesis tool
 
     // status signals
-    logic full, empty;
+    logic full, empty, two_left;
     // the last instruction was unaligned
     logic unaligned_n, unaligned_q;
     // save the unaligned part of the instruction to this ff
@@ -76,15 +76,14 @@ module fetch_fifo
 
     // we always need two empty places
     // as it could happen that we get two compressed instructions/cycle
-    assign full        = (status_cnt_q == DEPTH - 2);
+    assign full        = (status_cnt_q >= DEPTH - 2);
+    assign one_left    = (status_cnt_q == DEPTH - 1); // two spaces are left
     assign empty       = (status_cnt_q == 0);
-    assign out_valid_o = ~empty;
-    assign in_ready_o  = ~full;
-
-    // Output assignments
-    assign branch_predict_o = mem_q[read_pointer_q].branch_predict;
-    assign out_addr_o       = mem_q[read_pointer_q].address;
-    assign out_rdata_o      = mem_q[read_pointer_q].instruction;
+    // the output is valid if we are either empty or just got an valid
+    assign out_valid_o = !empty || in_valid_q;
+    // we need space for at least two instructions: the full flag is conditioned on that
+    // but if we pop in the current cycle and we have one place left we can still fit two instructions alt
+    assign in_ready_o  = !full || (out_ready_i && one_left);
 
     // ----------------
     // Input Registers
@@ -93,10 +92,10 @@ module fetch_fifo
         // if we are not ready latch the values
         in_addr_n           = in_addr_q;
         in_rdata_n          = in_rdata_q;
-        in_valid_n          = in_rdata_q;
+        in_valid_n          = 1'b0;
         branch_predict_n    = branch_predict_q;
         // if we are ready to accept new data - do so!
-        if (out_valid_o) begin
+        if (in_ready_o) begin
             in_addr_n        = in_addr_i;
             in_rdata_n       = in_rdata_i;
             in_valid_n       = in_valid_i;
@@ -125,11 +124,11 @@ module fetch_fifo
         // ---------------------------------
         // Input port & Instruction Aligner
         // ---------------------------------
-        if (in_valid_i && !unaligned_q) begin
+        if (in_valid_q && !unaligned_q) begin
             // we got a valid instruction so we can satisfy the unaligned instruction
             unaligned_n = 1'b0;
             // check if the instruction is compressed
-            if(in_rdata_i[1:0] != 2'b11) begin
+            if (in_rdata_q[1:0] != 2'b11) begin
                 // it is compressed
                 mem_n[write_pointer_q].branch_predict = branch_predict_q;
                 mem_n[write_pointer_q].address        = in_addr_q;
@@ -141,7 +140,7 @@ module fetch_fifo
                 // _____________________________________________
                 // | compressed 2 [31:16] | compressed 1[15:0] |
                 // |____________________________________________
-                if (in_rdata_i[17:16] != 2'b11) begin
+                if (in_rdata_q[17:16] != 2'b11) begin
                     mem_n[write_pointer_q + 1].branch_predict = branch_predict_q;
                     mem_n[write_pointer_q + 1].address        = {in_addr_q[63:2], 2'b10};
                     mem_n[write_pointer_q + 1].instruction    = in_rdata_q[31:16];
@@ -175,7 +174,7 @@ module fetch_fifo
             end
         end
         // we have an outstanding unaligned instruction
-        if (in_valid_i && unaligned_q) begin
+        if (in_valid_q && unaligned_q) begin
             mem_n[write_pointer_q].branch_predict = branch_predict_q;
             mem_n[write_pointer_q].address        = unaligned_address_q;
             mem_n[write_pointer_q].instruction    = {in_rdata_q[15:0], unaligned_instr_q};
@@ -186,7 +185,7 @@ module fetch_fifo
             // _____________________________________________
             // | compressed 2 [31:16] | compressed 1[15:0] |
             // |____________________________________________
-            if (in_rdata_i[17:16] != 2'b11) begin
+            if (in_rdata_q[17:16] != 2'b11) begin
                 mem_n[write_pointer_q + 1].branch_predict = branch_predict_q;
                 mem_n[write_pointer_q + 1].address        = {in_addr_q[63:2], 2'b10};
                 mem_n[write_pointer_q + 1].instruction    = in_rdata_q[31:16];
@@ -214,10 +213,30 @@ module fetch_fifo
         // Output port
         // -------------
         // we are ready to accept a new request if we still have two places in the queue
-        if (out_ready_i) begin
+
+        // Output assignments
+        branch_predict_o = mem_q[read_pointer_q].branch_predict;
+        out_addr_o       = mem_q[read_pointer_q].address;
+        out_rdata_o      = mem_q[read_pointer_q].instruction;
+
+        // pass-through if queue is empty but we are currently expanding or re-aligning an instruction
+        if (empty && in_valid_q && out_ready_i) begin
+            // we either have a full 32 bit instruction a compressed 16 bit instruction
+            branch_predict_o = branch_predict_q;
+            out_addr_o       = in_addr_q;
+            // depending on whether the instruction is compressed or not output the correct thing
+            if (in_rdata_q[1:0] != 2'b11)
+                out_rdata_o = in_rdata_q[15:0];
+            else
+                out_rdata_o = in_rdata_q;
+        // regular read but do not issue if we are already empty
+        // this can happen since we have an output latch in the IF stage and the ID stage will only know a cycle
+        // later that we do not have any valid instructions anymore
+        end else if (out_ready_i && !empty) begin
             read_pointer_n = read_pointer_q + 1;
             status_cnt--;
         end
+
         write_pointer_n = write_pointer;
         status_cnt_n    = status_cnt;
 
@@ -251,7 +270,7 @@ module fetch_fifo
             // input registers
             in_addr_q           <= in_addr_n;
             in_rdata_q          <= in_rdata_n;
-            in_valid_q          <= in_rdata_n;
+            in_valid_q          <= in_valid_n;
             branch_predict_q    <= branch_predict_n;
         end
     end
