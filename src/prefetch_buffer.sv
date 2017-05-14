@@ -98,109 +98,107 @@ module prefetch_buffer
     NS            = CS;
 
     unique case(CS)
-      // default state, not waiting for requested data
-      IDLE: begin
-        instr_addr_o = fetch_address_i;
-        instr_req_o  = 1'b0;
+        // default state, not waiting for requested data
+        IDLE: begin
+            instr_addr_o = fetch_address_i;
+            instr_req_o  = 1'b0;
 
-        if (fifo_ready && fetch_valid_i) begin
-          instr_req_o = 1'b1;
-          addr_valid  = 1'b1;
+            // make a new request
+            if (fifo_ready && fetch_valid_i) begin
+                instr_req_o = 1'b1;
+                addr_valid  = 1'b1;
 
 
-          if(instr_gnt_i) //~>  granted request
+                if(instr_gnt_i) //~>  granted request
+                    // we have one outstanding rvalid: wait for it
+                    if (flush_i)
+                        NS = WAIT_ABORTED;
+                    else
+                        NS = WAIT_RVALID;
+                else begin //~> got a request but no grant
+                    NS = WAIT_GNT;
+                end
+            end
+        end // case: IDLE
+
+        // we sent a request but did not yet get a grant
+        WAIT_GNT: begin
+            instr_addr_o = instr_addr_q;
+            instr_req_o  = 1'b1;
+
+            if(instr_gnt_i)
                 // we have one outstanding rvalid: wait for it
                 if (flush_i)
                     NS = WAIT_ABORTED;
                 else
                     NS = WAIT_RVALID;
-          else begin //~> got a request but no grant
-            NS = WAIT_GNT;
-          end
-        end
-      end // case: IDLE
-
-      // we sent a request but did not yet get a grant
-      WAIT_GNT: begin
-        instr_addr_o = instr_addr_q;
-        instr_req_o  = 1'b1;
-
-        if(instr_gnt_i)
-            // we have one outstanding rvalid: wait for it
-            if (flush_i)
-                NS = WAIT_ABORTED;
             else
-                NS = WAIT_RVALID;
-        else
-          NS = WAIT_GNT;
-      end // case: WAIT_GNT
+                NS = WAIT_GNT;
+        end // case: WAIT_GNT
 
-      // we wait for rvalid, after that we are ready to serve a new request
-      WAIT_RVALID: begin
-        instr_addr_o = fetch_address_i;
+          // we wait for rvalid, after that we are ready to serve a new request
+        WAIT_RVALID: begin
+            instr_addr_o = fetch_address_i;
+            // prepare for next request
+            if (fifo_ready && fetch_valid_i) begin
+                // wait for the valid signal
+                if (instr_rvalid_i) begin
+                    instr_req_o = 1'b1;
+                    fifo_valid  = 1'b1;
+                    addr_valid  = 1'b1;
 
-        if (fifo_ready) begin
-          // prepare for next request
-          if (fifo_ready && fetch_valid_i) begin
-            instr_req_o = 1'b1;
-            // if we are receiving a data item during a flush ignore it
-            fifo_valid  = 1'b1;
-            addr_valid  = 1'b1;
-
-            if (instr_gnt_i) begin
-                // we have one outstanding rvalid: wait for it
-                if (flush_i)
-                    NS = WAIT_ABORTED;
-                else
-                    NS = WAIT_RVALID;
+                    if (instr_gnt_i) begin
+                    // we have one outstanding rvalid: wait for it
+                        // if we are receiving a data item during a flush ignore it
+                        if (flush_i)
+                            NS = WAIT_ABORTED;
+                        else
+                            NS = WAIT_RVALID;
+                    end else begin
+                      NS = WAIT_GNT;
+                    end
+                end
             end else begin
-              NS = WAIT_GNT;
-            end
-          end else begin
-            // we are requested to abort our current request
-            // we didn't get an rvalid yet, so wait for it
-            if (flush_i) begin
-                NS = WAIT_ABORTED;
-            end
-          end
-        end else begin
-          // just wait for rvalid and go back to IDLE, no new request
-          if (instr_rvalid_i) begin
-            // if we are receiving a data item during a flush ignore it
-            fifo_valid = 1'b1;
-            NS         = IDLE;
-          end
-        end
-      end // case: WAIT_RVALID
-
-      // our last request was aborted, but we didn't yet get a rvalid and
-      // there was no new request sent yet
-      // we assume that req_i is set to high
-      WAIT_ABORTED: begin
-        instr_addr_o = fetch_address_i;
-
-        if (instr_rvalid_i) begin
-          instr_req_o  = 1'b1;
-          // no need to send address, already done in WAIT_RVALID
-
-          if (instr_gnt_i) begin
-                // we have one outstanding rvalid
-                if (flush_i)
+                // we are requested to abort our current request
+                // we didn't get an rvalid yet, so wait for it
+                if (flush_i) begin
                     NS = WAIT_ABORTED;
-                else
-                    NS = WAIT_RVALID;
-          end else begin
-            NS = WAIT_GNT;
-          end
+                end
+                // just wait for rvalid and go back to IDLE, no new request
+                if (instr_rvalid_i) begin
+                  // if we are receiving a data item during a flush ignore it
+                  fifo_valid = 1'b1;
+                  NS         = IDLE;
+                end
+            end
+
+        end // case: WAIT_RVALID
+
+        // our last request was aborted, but we didn't yet get a rvalid and
+        // there was no new request sent yet we assume that req_i is set to high
+        WAIT_ABORTED: begin
+            instr_addr_o = fetch_address_i;
+
+            if (instr_rvalid_i) begin
+                instr_req_o  = 1'b1;
+
+                if (instr_gnt_i) begin
+                    // we have one outstanding rvalid
+                    if (flush_i)
+                        NS = WAIT_ABORTED;
+                    else
+                        NS = WAIT_RVALID;
+                end else begin
+                    NS = WAIT_GNT;
+                end
+            end
         end
-      end
 
-      default: begin
-        NS          = IDLE;
-        instr_req_o = 1'b0;
-      end
+        default: begin
+            NS          = IDLE;
+            instr_req_o = 1'b0;
+        end
     endcase
-
   end
 
   //-------------

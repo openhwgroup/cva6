@@ -19,6 +19,7 @@
 //
 
 package fetch_fifo_pkg;
-    `include "instruction_stream.svh"
+    import ariane_pkg::*;
     `include "fetch_fifo_model.svh"
+    `include "instruction_stream.svh"
 endpackage

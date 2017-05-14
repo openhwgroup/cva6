@@ -19,44 +19,79 @@
 //
 
 // Read 32 bit instruction, separate and re-align them
+typedef struct {
+        logic [63:0] address;
+        logic [31:0] instr;
+        branchpredict_sbe bp;
+} instruction_queue_entry_t;
+
 class fetch_fifo_model;
 
     logic [15:0] unaligned_part;
     int          is_unaligned = 0;
+    logic [63:0] unaligend_address;
 
-    logic [31:0] instruction_queue[$];
+    instruction_queue_entry_t instruction_queue[$];
 
-    function void put(logic [31:0] instr);
+    function void put(logic [63:0] address, logic [31:0] instr, branchpredict_sbe bp);
+        instruction_queue_entry_t param;
 
         if (is_unaligned == 0) begin
-            // we've generated a compressed instruction so generate another one
+            // we've got a compressed instruction
             if (instr[1:0] != 2'b11) begin
-                instruction_queue.push_back({16'b0, instr[15:0]});
+                param.address = address;
+                param.instr   = {16'b0, instr[15:0]};
+                param.bp      = bp;
 
+                instruction_queue.push_back(param);
+                // the upper part is a unaligned 32 bit instruction
                 if (instr[17:16] == 2'b11) begin
-                    is_unaligned = 1;
-                    unaligned_part = instr[31:16];
+                    unaligend_address = {address[63:2], 2'b10};
+                    is_unaligned      = 1;
+                    unaligned_part    = instr[31:16];
+                // there is another compressed instruction
+                // don't include if branch prediction predicted a compressed
+                // branch in the first instruction part
+                end else if (!(bp.predict_taken && bp.valid && bp.is_lower_16)) begin
+                    param.address = {address[63:2], 2'b10};
+                    param.instr   = instr[31:16];
+                    param.bp      = bp;
+                    instruction_queue.push_back(param);
                 end
             // normal instruction
             end else begin
-                instruction_queue.push_back(instr);
+                param.address = address;
+                param.instr   = instr;
+                param.bp      = bp;
+                instruction_queue.push_back(param);
             end
         // the last generation iteration produced an outstanding instruction
         end else begin
-            instruction_queue.push_back({instr[15:0], unaligned_part});
-
+            param.address = unaligend_address;
+            param.instr   = {instr[15:0], unaligned_part};
+            param.bp      = bp;
+            instruction_queue.push_back(param);
+            // there is another compressed instruction
+            // don't include if branch prediction predicted a compressed
+            // branch in the first instruction part
             if (instr[17:16] != 2'b11) begin
-                instruction_queue.push_back({16'b0, instr[31:16]});
+                if (!(bp.predict_taken && bp.valid && bp.is_lower_16)) begin
+                    param.address = {address[63:2], 2'b10};
+                    param.instr   = instr[31:16];
+                    param.bp      = bp;
+                    instruction_queue.push_back(param);
+                end
                 is_unaligned = 0;
             end else begin
                 // again we have an unaligned instruction
+                param.address = {address[63:2], 2'b10};
                 is_unaligned = 1;
                 unaligned_part = instr[31:16];
             end
         end
     endfunction : put
 
-    function logic [31:0] pull();
+    function instruction_queue_entry_t pull();
         return instruction_queue.pop_front();
     endfunction : pull
 

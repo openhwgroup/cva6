@@ -43,11 +43,16 @@ endclass : instruction
 
 class instruction_stream;
 
+    logic [63:0] address = 0;
     instruction  instr;
     logic [15:0] unaligned_part;
     int          is_unaligned = 0;
     // get an instruction stream of consecutive data
-    function logic [31:0] get_instruction();
+    function instruction_queue_entry_t get_instruction();
+
+        branchpredict_sbe bp = '0;
+        instruction_queue_entry_t return_entry;
+
         logic [31:0] return_instruction;
         // generate a new instruction
         if (is_unaligned == 0) begin
@@ -59,7 +64,7 @@ class instruction_stream;
                 // get a new instruction
                 instr = new;
                 void'(randomize(instr));
-                return_instruction[31:0] = instr.instruction[15:0];
+                return_instruction[31:16] = instr.instruction[15:0];
                 // $display("Instruction: [ c  | c  ]");
                 // was this a compressed instruction as well?
                 // if not than store that this was an unaligned access
@@ -79,9 +84,9 @@ class instruction_stream;
             // generate a new isntruction
             instr = new;
             void'(randomize(instr));
+            return_instruction [31:16] = instr.instruction[15:0];
             // was it compressed?
             if (instr.is_compressed) begin
-                return_instruction [31:16] = instr.instruction[15:0];
                 is_unaligned = 0;
                 // $display("Instruction: [ c  | i1 ]");
             end else begin
@@ -90,8 +95,13 @@ class instruction_stream;
                 // $display("Instruction: [ i0 | i1 ]");
             end
         end
+        return_entry.instr   = return_instruction;
+        return_entry.bp      = bp;
+        return_entry.address = address;
 
-        return return_instruction;
+        address = address + 4;
+
+        return return_entry;
     endfunction : get_instruction
 
 endclass : instruction_stream

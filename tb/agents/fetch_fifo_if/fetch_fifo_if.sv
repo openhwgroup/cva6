@@ -21,9 +21,7 @@
 `define FETCH_FIFO_IF_SV
 import ariane_pkg::*;
 
-interface fetch_fifo_if #(
-        parameter type dtype = logic[7:0]
-    )(
+interface fetch_fifo_if (
         input clk
     );
 

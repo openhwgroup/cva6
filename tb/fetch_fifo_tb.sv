@@ -24,7 +24,7 @@ import fetch_fifo_pkg::*;
 module fetch_fifo_tb;
 
     logic rst_ni, clk_i;
-    fetch_fifo_if fetch_fifo_if (clk);
+    fetch_fifo_if fetch_fifo_if (clk_i);
 
     fetch_fifo
     dut (
@@ -57,25 +57,38 @@ module fetch_fifo_tb;
     // simulator stopper, this is suboptimal better go for coverage
     initial begin
         #10000000ns
-        $stop;
+        $finish;
     end
 
     program testbench (fetch_fifo_if fetch_fifo_if);
 
         instruction_stream is    = new;
         fetch_fifo_model   model = new;
+        instruction_queue_entry_t iqe;
 
         initial begin
+
             fetch_fifo_if.mck.flush              <= 1'b0;
             fetch_fifo_if.mck.in_branch_predict  <= 'b0;
             fetch_fifo_if.mck.in_addr            <= 'b0;
             fetch_fifo_if.mck.in_rdata           <= 'b0;
             fetch_fifo_if.mck.in_valid           <= 'b0;
             fetch_fifo_if.mck.out_ready          <= 'b0;
+            wait(rst_ni == 1'b1);
 
+            // Driver
             forever begin
-                is.get_instruction();
-                // @(fetch_fifo_if.mck);
+                @(fetch_fifo_if.mck iff fetch_fifo_if.in_ready);
+
+                do begin
+                    iqe = is.get_instruction();
+                    fetch_fifo_if.mck.in_addr           <= iqe.address;
+                    fetch_fifo_if.mck.in_rdata          <= iqe.instr;
+                    fetch_fifo_if.mck.in_branch_predict <= iqe.bp;
+                    fetch_fifo_if.mck.in_valid          <= 1'b1;
+                    @(fetch_fifo_if.mck);
+                end while (fetch_fifo_if.mck.in_ready);
+                fetch_fifo_if.mck.in_valid <= 1'b0;
             end
         end
 

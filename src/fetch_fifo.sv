@@ -73,7 +73,7 @@ module fetch_fifo
     // we always need two empty places
     // as it could happen that we get two compressed instructions/cycle
     /* verilator lint_off WIDTH */
-    assign full        = (status_cnt_q >= DEPTH - 2);
+    assign full        = (status_cnt_q >= DEPTH - 3);
     assign empty       = (status_cnt_q == 0);
     /* verilator lint_on WIDTH */
     // the output is valid if we are either empty or just got a valid
@@ -141,27 +141,25 @@ module fetch_fifo
                 // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
                 // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
                 if (in_rdata_q[17:16] != 2'b11 && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
-                    mem_n[write_pointer_q + 1].branch_predict = branch_predict_q;
-                    mem_n[write_pointer_q + 1].address        = {in_addr_q[63:2], 2'b10};
-                    mem_n[write_pointer_q + 1].instruction    = {16'b0, in_rdata_q[31:16]};
+                    mem_n[(write_pointer_q + 1) % DEPTH].branch_predict = branch_predict_q;
+                    mem_n[(write_pointer_q + 1) % DEPTH].address        = {in_addr_q[63:2], 2'b10};
+                    mem_n[(write_pointer_q + 1) % DEPTH].instruction    = {16'b0, in_rdata_q[31:16]};
 
                     status_cnt++;
                     write_pointer++;
+                    $display("Instruction: [ c  | c  ] @ %t", $time);
                 // or is it an unaligned 32 bit instruction like
                 // ____________________________________________________
                 // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
                 // |____________________________________________________
-                end else begin
-                    // we've got an unaligned 32 bit instruction
-                    // check if the previous instruction was no predicted taken branch
-                    if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
-                        // save the lower 16 bit
-                        unaligned_instr_n = in_rdata_q[31:16];
-                        // and that it was unaligned
-                        unaligned_n = 1'b1;
-                        // save the address as well
-                        unaligned_address_n = {in_addr_q[63:2], 2'b10};
-                    end
+                end else if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+                    // save the lower 16 bit
+                    unaligned_instr_n = in_rdata_q[31:16];
+                    // and that it was unaligned
+                    unaligned_n = 1'b1;
+                    // save the address as well
+                    unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                    $display("Instruction: [ i0 | c  ] @ %t", $time);
                     // this does not consume space in the FIFO
                 end
             end else begin
@@ -174,6 +172,7 @@ module fetch_fifo
                 mem_n[write_pointer_q].instruction    = in_rdata_q;
                 status_cnt++;
                 write_pointer++;
+                $display("Instruction: [    i    ] @ %t", $time);
             end
         end
         // we have an outstanding unaligned instruction
@@ -191,28 +190,26 @@ module fetch_fifo
             // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
             // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
             if (in_rdata_q[17:16] != 2'b11  && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
-                mem_n[write_pointer_q + 1].branch_predict = branch_predict_q;
-                mem_n[write_pointer_q + 1].address        = {in_addr_q[63:2], 2'b10};
-                mem_n[write_pointer_q + 1].instruction    = {16'b0, in_rdata_q[31:16]};
+                mem_n[(write_pointer_q + 1) % DEPTH].branch_predict = branch_predict_q;
+                mem_n[(write_pointer_q + 1) % DEPTH].address        = {in_addr_q[63:2], 2'b10};
+                mem_n[(write_pointer_q + 1) % DEPTH].instruction    = {16'b0, in_rdata_q[31:16]};
                 status_cnt++;
                 write_pointer++;
                 // unaligned access served
                 unaligned_n = 1'b0;
+                $display("Instruction: [ c  | i1 ] @ %t", $time);
             // or is it an unaligned 32 bit instruction like
             // ____________________________________________________
             // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
             // |____________________________________________________
-            end else begin
-                // we've got an unaligned 32 bit instruction
-                // check if the previous instruction was no predicted taken branch
-                if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
-                    // save the lower 16 bit
-                    unaligned_instr_n = in_rdata_q[31:16];
-                    // and that it was unaligned
-                    unaligned_n = 1'b1;
-                    // save the address as well
-                    unaligned_address_n = {in_addr_q[63:2], 2'b10};
-                end
+            end else if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+                // save the lower 16 bit
+                unaligned_instr_n = in_rdata_q[31:16];
+                // and that it was unaligned
+                unaligned_n = 1'b1;
+                // save the address as well
+                unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                $display("Instruction: [ i0 | i1 ] @ %t", $time);
                 // this does not consume space in the FIFO
             end
         end
