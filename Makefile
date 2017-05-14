@@ -62,7 +62,7 @@ build-interfaces: ${interfaces}
 # Run the specified test case
 sim:
 	# vsim${questa_version} ${top_level}_optimized -c -do "run -a"
-	vsim${questa_version} ${top_level}_optimized +UVM_TESTNAME=${test_case}
+	vsim${questa_version} ${top_level}_optimized +UVM_TESTNAME=${test_case} -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 $(tests):
 	# Optimize top level

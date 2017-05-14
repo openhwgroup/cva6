@@ -48,7 +48,7 @@ module fetch_fifo
 
 );
 
-    localparam DEPTH = 4; // must be 3 or greater
+    localparam DEPTH = 8; // must be a power of two
     typedef struct packed {
         branchpredict_sbe branch_predict;
         logic [63:0]      address;
@@ -85,7 +85,7 @@ module fetch_fifo
     assign out_valid_o = !empty || in_valid_q;
     // we need space for at least two instructions: the full flag is conditioned on that
     // but if we pop in the current cycle and we have one place left we can still fit two instructions alt
-    assign in_ready_o  = !full || (out_ready_i && one_left);
+    assign in_ready_o  = !full;
 
     // ----------------
     // Input Registers
