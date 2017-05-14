@@ -88,11 +88,11 @@ module ariane
     // --------------
     // PCGEN <-> IF
     // --------------
-    logic [63:0]              pc_pcgen_if;
-    logic                     set_pc_pcgen_if;
-    logic                     is_branch_pcgen_if;
+    logic [63:0]              fetch_address_pcgen_if;
+    logic                     set_fetch_address_pcgen_if;
+    branchpredict_sbe         branch_predict_pcgen_if;
     logic                     if_ready_if_pcgen;
-    logic                     pc_valid_pcgen_if;
+    logic                     fetch_valid_pcgen_if;
     // --------------
     // PCGEN <-> EX
     // --------------
@@ -111,7 +111,7 @@ module ariane
     logic [31:0]              instr_rdata_if_id;
     logic                     decode_ack_id_if;
     logic                     is_compressed_if_id;
-    logic [63:0]              pc_id_if_id;
+    logic [63:0]              pc_if_id;
     exception                 exception_if_id;
     branchpredict_sbe         branch_predict_if_id;
     logic                     instr_is_compressed_if_id;
@@ -223,9 +223,9 @@ module ariane
         .flush_i            ( flush                          ),
         .if_ready_i         ( ~if_ready_if_pcgen             ),
         .resolved_branch_i  ( resolved_branch                ),
-        .pc_if_o            ( pc_pcgen_if                    ),
-        .pc_if_valid_o      ( pc_valid_pcgen_if              ),
-        .is_branch_o        ( is_branch_pcgen_if             ),
+        .fetch_address_o    ( fetch_address_pcgen_if         ),
+        .fetch_valid_o      ( fetch_valid_pcgen_if           ),
+        .branch_predict_o   ( branch_predict_pcgen_if        ),
         .boot_addr_i        ( boot_addr_i                    ),
         .epc_i              ( epc_commit_pcgen               ),
         .trap_vector_base_i ( trap_vector_base_commit_pcgen  ),
@@ -236,25 +236,25 @@ module ariane
     // IF
     // ---------
     if_stage if_stage_i (
-        .flush_i                    ( flush_ctrl_if                  ),
-        .pc_if_valid_i              ( pc_valid_pcgen_if              ),
-        .if_busy_o                  ( if_ready_if_pcgen              ),
-        .id_ready_i                 ( ready_id_if                    ),
-        .is_branch_i                ( is_branch_pcgen_if             ),
-        .fetch_addr_i               ( pc_pcgen_if                    ),
-        .instr_req_o                ( fetch_req_if_ex                ),
-        .instr_addr_o               ( fetch_vaddr_if_ex              ),
-        .instr_gnt_i                ( fetch_gnt_ex_if                ),
-        .instr_rvalid_i             ( fetch_valid_ex_if              ),
-        .instr_rdata_i              ( fetch_rdata_ex_if              ),
+        .flush_i               ( flush_ctrl_if                  ),
+        .if_busy_o             ( if_ready_if_pcgen              ),
+        .id_ready_i            ( ready_id_if                    ),
+        .fetch_address_i       ( fetch_address_pcgen_if         ),
+        .fetch_valid_i         ( fetch_valid_pcgen_if           ),
+        .branch_predict_i      ( branch_predict_pcgen_if        ),
+        .instr_req_o           ( fetch_req_if_ex                ),
+        .instr_addr_o          ( fetch_vaddr_if_ex              ),
+        .instr_gnt_i           ( fetch_gnt_ex_if                ),
+        .instr_rvalid_i        ( fetch_valid_ex_if              ),
+        .instr_rdata_i         ( fetch_rdata_ex_if              ),
 
-        .pc_id_o                    ( pc_id_if_id                    ),
-        .instr_valid_id_o           ( instr_valid_if_id              ),
-        .instr_ack_i                ( decode_ack_id_if               ),
-        .instr_rdata_id_o           ( instr_rdata_if_id              ),
-        .instr_is_compressed_o      ( instr_is_compressed_if_id      ),
-        .branch_predict_o           ( branch_predict_if_id           ),
-        .ex_o                       ( exception_if_id                ),
+        .pc_o                  ( pc_if_id                       ),
+        .instr_valid_o         ( instr_valid_if_id              ),
+        .instr_ack_i           ( decode_ack_id_if               ),
+        .instr_rdata_o         ( instr_rdata_if_id              ),
+        .instr_is_compressed_o ( instr_is_compressed_if_id      ),
+        .branch_predict_o      ( branch_predict_if_id           ),
+        .ex_o                  ( exception_if_id                ),
         .*
     );
     // ---------
@@ -274,7 +274,7 @@ module ariane
         .instr_is_compressed_i      ( instr_is_compressed_if_id                ),
         .instruction_valid_i        ( instr_valid_if_id                        ),
         .decoded_instr_ack_o        ( decode_ack_id_if                         ),
-        .pc_if_i                    ( pc_id_if_id                              ), // PC from if
+        .pc_if_i                    ( pc_if_id                                 ), // PC from if
         .ex_if_i                    ( exception_if_id                          ), // exception from if
         .ready_o                    ( ready_id_if                              ),
         // Functional Units

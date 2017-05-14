@@ -23,16 +23,14 @@ module btb #(
     parameter int BITS_SATURATION_COUNTER = 2
     )
     (
-    input  logic            clk_i,                     // Clock
-    input  logic            rst_ni,                    // Asynchronous reset active low
-    input  logic            flush_i,                   // flush the btb
+    input  logic             clk_i,                     // Clock
+    input  logic             rst_ni,                    // Asynchronous reset active low
+    input  logic             flush_i,                   // flush the btb
 
-    input  logic [63:0]     vpc_i,                     // virtual PC from IF stage
-    input  branchpredict    branchpredict_i,           // a miss-predict happened -> update data structure
+    input  logic [63:0]      vpc_i,                     // virtual PC from IF stage
+    input  branchpredict     branch_predict_i,           // a mis-predict happened -> update data structure
 
-    output logic            is_branch_o,               // instruction at vpc_i is a branch
-    output logic            predict_taken_o,           // the branch is taken
-    output logic [63:0]     branch_target_address_o    // instruction has the following target address
+    output branchpredict_sbe branch_predict_o            // branch prediction for issuing to the pipeline
 );
     // number of bits which are not used for indexing
     localparam OFFSET = 2;
@@ -52,42 +50,43 @@ module btb #(
     // get actual index positions
     // we ignore the 0th bit since all instructions are aligned on
     // a half word boundary
-    assign update_pc = branchpredict_i.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
+    assign update_pc = branch_predict_i.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
     assign index     = vpc_i[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
 
     // we combinatorially predict the branch and the target address
-    assign is_branch_o             = btb_q[index].valid;
-    assign predict_taken_o         = btb_q[index].saturation_counter[BITS_SATURATION_COUNTER-1];
-    assign branch_target_address_o = btb_q[index].target_address;
+    assign branch_predict_o.valid           = btb_q[index].valid;
+    assign branch_predict_o.predict_taken   = btb_q[index].saturation_counter[BITS_SATURATION_COUNTER-1];
+    assign branch_predict_o.predict_address = btb_q[index].target_address;
+    assign branch_predict_o.is_lower_16     = btb_q[index].is_lower_16;
 
     // update on a mis-predict
-    always_comb begin : update_branchpredict
+    always_comb begin : update_branch_predict
         btb_n              = btb_q;
         saturation_counter = btb_q[update_pc].saturation_counter;
 
-        if (branchpredict_i.valid) begin
+        if (branch_predict_i.valid) begin
             btb_n[update_pc].valid = 1'b1;
             // update saturation counter
             // first check if counter is already saturated in the positive regime e.g.: branch taken
             if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}}) begin
                 // we can safely decrease it
-                if (~branchpredict_i.is_taken)
+                if (~branch_predict_i.is_taken)
                     btb_n[update_pc].saturation_counter = saturation_counter - 1;
             // then check if it saturated in the negative regime e.g.: branch not taken
             end else if (saturation_counter == {BITS_SATURATION_COUNTER{1'b0}}) begin
                 // we can safely increase it
-                if (branchpredict_i.is_taken)
+                if (branch_predict_i.is_taken)
                     btb_n[update_pc].saturation_counter = saturation_counter + 1;
             end else begin // otherwise we are not in any boundaries and can decrease or increase it
-                if (branchpredict_i.is_taken)
+                if (branch_predict_i.is_taken)
                     btb_n[update_pc].saturation_counter = saturation_counter + 1;
                 else
                     btb_n[update_pc].saturation_counter = saturation_counter - 1;
             end
             // the target address is simply updated
-            btb_n[update_pc].target_address = branchpredict_i.target_address;
+            btb_n[update_pc].target_address = branch_predict_i.target_address;
             // as is the information whether this was a compressed branch
-            btb_n[update_pc].is_lower_16    = branchpredict_i.is_lower_16;
+            btb_n[update_pc].is_lower_16    = branch_predict_i.is_lower_16;
         end
     end
 

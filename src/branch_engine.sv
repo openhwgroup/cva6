@@ -92,8 +92,8 @@ module branch_engine (
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
             if (target_address[0] == 1'b0) begin
                 // TODO in case of branch which is not taken it is not necessary to check for the address
-                if (   target_address != branch_predict_i.predict_address_i    // we mis-predicted the address of the branch
-                    || branch_predict_i.predict_taken_i != comparison_result   // we mis-predicted the outcome of the branch
+                if (   target_address != branch_predict_i.predict_address      // we mis-predicted the address of the branch
+                    || branch_predict_i.predict_taken != comparison_result   // we mis-predicted the outcome of the branch
                     || branch_predict_i.valid == 1'b0         // this means branch-prediction thought it was no branch but in reality it was one
                     ) begin
                     resolved_branch_o.is_mispredict  = 1'b1;

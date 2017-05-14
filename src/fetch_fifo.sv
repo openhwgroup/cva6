@@ -145,7 +145,9 @@ module fetch_fifo
                 // _____________________________________________
                 // | compressed 2 [31:16] | compressed 1[15:0] |
                 // |____________________________________________
-                if (in_rdata_q[17:16] != 2'b11) begin
+                // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
+                // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
+                if (in_rdata_q[17:16] != 2'b11 && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
                     mem_n[write_pointer_q + 1].branch_predict = branch_predict_q;
                     mem_n[write_pointer_q + 1].address        = {in_addr_q[63:2], 2'b10};
                     mem_n[write_pointer_q + 1].instruction    = {16'b0, in_rdata_q[31:16]};
@@ -158,12 +160,15 @@ module fetch_fifo
                 // |____________________________________________________
                 end else begin
                     // we've got an unaligned 32 bit instruction
-                    // save the lower 16 bit
-                    unaligned_instr_n = in_rdata_q[31:16];
-                    // and that it was unaligned
-                    unaligned_n = 1'b1;
-                    // save the address as well
-                    unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                    // check if the previous instruction was no predicted taken branch
+                    if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+                        // save the lower 16 bit
+                        unaligned_instr_n = in_rdata_q[31:16];
+                        // and that it was unaligned
+                        unaligned_n = 1'b1;
+                        // save the address as well
+                        unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                    end
                     // this does not consume space in the FIFO
                 end
             end else begin
@@ -188,9 +193,11 @@ module fetch_fifo
             // whats up with the other upper 16 bit of this instruction
             // is the second instruction also compressed, like:
             // _____________________________________________
-            // | compressed 2 [31:16] | compressed 1[15:0] |
+            // | compressed 2 [31:16] | unaligned[31:16]    |
             // |____________________________________________
-            if (in_rdata_q[17:16] != 2'b11) begin
+            // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
+            // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
+            if (in_rdata_q[17:16] != 2'b11  && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
                 mem_n[write_pointer_q + 1].branch_predict = branch_predict_q;
                 mem_n[write_pointer_q + 1].address        = {in_addr_q[63:2], 2'b10};
                 mem_n[write_pointer_q + 1].instruction    = {16'b0, in_rdata_q[31:16]};
@@ -204,12 +211,15 @@ module fetch_fifo
             // |____________________________________________________
             end else begin
                 // we've got an unaligned 32 bit instruction
-                // save the lower 16 bit
-                unaligned_instr_n = in_rdata_q[31:16];
-                // and that it was unaligned
-                unaligned_n = 1'b1;
-                // save the address as well
-                unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                // check if the previous instruction was no predicted taken branch
+                if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+                    // save the lower 16 bit
+                    unaligned_instr_n = in_rdata_q[31:16];
+                    // and that it was unaligned
+                    unaligned_n = 1'b1;
+                    // save the address as well
+                    unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                end
                 // this does not consume space in the FIFO
             end
         end

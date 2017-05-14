@@ -55,9 +55,11 @@ package ariane_pkg;
     // this is the struct which we will inject into the pipeline to guide the various
     // units towards the correct branch decision and resolve
     typedef struct packed {
-        logic [63:0] predict_address_i;  // target address at which to jump, or not
-        logic        predict_taken_i;   // set if this was a mis-predict
-        logic        valid;        // branch is taken
+        logic [63:0] predict_address; // target address at which to jump, or not
+        logic        predict_taken;   // branch is taken
+        logic        is_lower_16;     // branch instruction is compressed and resides
+                                      // in the lower 16 bit of the word
+        logic        valid;           // this is a valid hint
     } branchpredict_sbe;
 
     typedef enum logic[3:0] {

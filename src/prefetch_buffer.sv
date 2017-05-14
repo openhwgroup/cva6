@@ -21,27 +21,31 @@
 //                 long critical paths to the instruction cache               //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
+import ariane_pkg::*;
 
 module prefetch_buffer
 (
-  input  logic        clk,
-  input  logic        rst_n,
-  input  logic        flush_i,
+  input  logic             clk_i,
+  input  logic             rst_ni,
+  input  logic             flush_i,
 
-  input  logic [63:0] fetch_addr_i,
-  input  logic        fetch_valid_i,
-
-  input  logic        ready_i,
-  output logic        valid_o,
-  output logic [63:0] addr_o,
-  output logic [31:0] rdata_o,
+  // input side
+  input  logic [63:0]      fetch_address_i,
+  input  logic             fetch_valid_i,
+  input  branchpredict_sbe branch_predict_i,
+  // output side
+  input  logic             ready_i,
+  output logic             valid_o,
+  output logic [63:0]      addr_o,
+  output logic [31:0]      rdata_o,
+  output branchpredict_sbe branch_predict_o,
 
   // goes to instruction memory / instruction cache
-  output logic        instr_req_o,
-  input  logic        instr_gnt_i,
-  output logic [63:0] instr_addr_o,
-  input  logic [31:0] instr_rdata_i,
-  input  logic        instr_rvalid_i,
+  output logic             instr_req_o,
+  input  logic             instr_gnt_i,
+  output logic [63:0]      instr_addr_o,
+  input  logic [31:0]      instr_rdata_i,
+  input  logic             instr_rvalid_i,
 
   // Prefetch Buffer Status
   output logic        busy_o
@@ -49,12 +53,12 @@ module prefetch_buffer
 
   enum logic [1:0] {IDLE, WAIT_GNT, WAIT_RVALID, WAIT_ABORTED } CS, NS;
 
-  logic        addr_valid;
-  logic [63:0] instr_addr_q;
-  logic        fifo_valid;
-  logic        fifo_ready;
-  logic        fifo_clear;
-
+  logic             addr_valid;
+  logic [63:0]      instr_addr_q;
+  logic             fifo_valid;
+  logic             fifo_ready;
+  logic             fifo_clear;
+  branchpredict_sbe branchpredict_q;
   //---------------------------------
   // Prefetch buffer status
   //---------------------------------
@@ -67,16 +71,18 @@ module prefetch_buffer
   // consumes addresses and rdata
   //---------------------------------
     fetch_fifo fifo_i (
-        .clk_i                 ( clk               ),
-        .rst_ni                ( rst_n             ),
+        .clk_i                 ( clk_i               ),
+        .rst_ni                ( rst_n_i             ),
 
         .clear_i               ( flush_i           ),
 
+        .branch_predict_i      ( branchpredict_q   ),
         .in_addr_i             ( instr_addr_q      ),
         .in_rdata_i            ( instr_rdata_i     ),
         .in_valid_i            ( fifo_valid        ),
         .in_ready_o            ( fifo_ready        ),
 
+        .branch_predict_o      ( branch_predict_o  ),
         .out_valid_o           ( valid_o           ),
         .out_ready_i           ( ready_i           ),
         .out_rdata_o           ( rdata_o           ),
@@ -91,14 +97,14 @@ module prefetch_buffer
   always_comb
   begin
     instr_req_o   = 1'b0;
-    instr_addr_o  = fetch_addr_i;
+    instr_addr_o  = fetch_address_i;
     fifo_valid    = 1'b0;
     NS            = CS;
 
     unique case(CS)
       // default state, not waiting for requested data
       IDLE: begin
-        instr_addr_o = fetch_addr_i;
+        instr_addr_o = fetch_address_i;
         instr_req_o  = 1'b0;
 
         if (fifo_ready && fetch_valid_i) begin
@@ -127,7 +133,7 @@ module prefetch_buffer
 
       // we wait for rvalid, after that we are ready to serve a new request
       WAIT_RVALID: begin
-        instr_addr_o = fetch_addr_i;
+        instr_addr_o = fetch_address_i;
 
         if (fifo_ready) begin
           // prepare for next request
@@ -189,19 +195,17 @@ module prefetch_buffer
   // Registers
   //-------------
 
-  always_ff @(posedge clk, negedge rst_n)
+  always_ff @(posedge clk_i, negedge rst_n_i)
   begin
-    if(rst_n == 1'b0)
-    begin
+    if (~rst_ni) begin
       CS              <= IDLE;
       instr_addr_q    <= '0;
-    end
-    else
-    begin
+      branchpredict_q <= '{default: 0};
+    end else begin
       CS              <= NS;
-
       if (addr_valid) begin
         instr_addr_q    <= instr_addr_o;
+        branchpredict_q <= branch_predict_i;
       end
     end
   end
