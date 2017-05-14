@@ -19,5 +19,6 @@
 //
 
 package fetch_fifo_pkg;
-
+    `include "instruction_stream.svh"
+    `include "fetch_fifo_model.svh"
 endpackage

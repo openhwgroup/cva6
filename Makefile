@@ -18,7 +18,7 @@ envs = $(wildcard tb/env/*/*.sv)
 # UVM Sequences
 sequences =  $(wildcard tb/sequences/*/*.sv)
 # Test packages
-test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv) $(wildcard tb/test/*/*lib_pkg.sv)
+test_pkg = $(wildcard tb/test/*/*_pkg.sv)
 
 # this list contains the standalone components
 src = $(wildcard src/util/*.sv) $(wildcard src/*.sv)

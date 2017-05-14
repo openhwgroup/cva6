@@ -18,6 +18,9 @@
 // University of Bologna.
 //
 
+import ariane_pkg::*;
+import fetch_fifo_pkg::*;
+
 module fetch_fifo_tb;
 
     logic rst_ni, clk_i;
@@ -59,6 +62,9 @@ module fetch_fifo_tb;
 
     program testbench (fetch_fifo_if fetch_fifo_if);
 
+        instruction_stream is    = new;
+        fetch_fifo_model   model = new;
+
         initial begin
             fetch_fifo_if.mck.flush              <= 1'b0;
             fetch_fifo_if.mck.in_branch_predict  <= 'b0;
@@ -67,6 +73,10 @@ module fetch_fifo_tb;
             fetch_fifo_if.mck.in_valid           <= 'b0;
             fetch_fifo_if.mck.out_ready          <= 'b0;
 
+            forever begin
+                is.get_instruction();
+                // @(fetch_fifo_if.mck);
+            end
         end
 
     endprogram
