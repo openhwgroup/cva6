@@ -31,8 +31,8 @@ module branch_engine (
     input  logic             valid_i,
 
     input  branchpredict_sbe branch_predict_i,       // this is the address we predicted
-    output branchpredict     resolved_branch_o,         // this is the actual address we are targeting
-    output exception         branch_ex_o              // branch exception out
+    output branchpredict     resolved_branch_o,      // this is the actual address we are targeting
+    output exception         branch_ex_o             // branch exception out
 );
     logic [63:0] target_address;
     logic [63:0] next_pc;
@@ -69,7 +69,7 @@ module branch_engine (
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
         next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
-        target_address                   = $signed(operand_c_i) + $signed(imm_i);
+        target_address                   = $unsigned($signed(operand_c_i) + $signed(imm_i));
         // save PC - we need this to get the target row in the branch target buffer
         // we play this trick with the branch instruction which wraps a byte boundary:
         //  |---------- Place the prediction on this PC
@@ -79,7 +79,11 @@ module branch_engine (
         // |____________________________________________________
         // This will relief the prefetcher to re-fetch partially fetched unaligned branch instructions e.g.:
         // we don't have a back arch between prefetcher and decoder/instruction FIFO.
-        resolved_branch_o.pc = (is_compressed_instr_i || pc_i[1] == 1'b0) ? pc_i : (pc_i[63:2] + 64'h4);
+        resolved_branch_o.pc = (is_compressed_instr_i || pc_i[1] == 1'b0) ? pc_i : ({pc_i[63:2], 2'b0} + 64'h4);
+        // save if the branch instruction was in the lower 16 bit of the instruction word
+        // the first case is a compressed instruction which is in slot 0
+        // the other case is a misaligned uncompressed instruction which we only predict in the next cycle (see notes above)
+        resolved_branch_o.is_lower_16 = (is_compressed_instr_i && pc_i[1] == 1'b0) || (!is_compressed_instr_i && pc_i[1] == 1'b1);
         // write target address which goes to pc gen
         resolved_branch_o.target_address = (comparison_result) ? target_address : next_pc;
         resolved_branch_o.is_taken       = comparison_result;

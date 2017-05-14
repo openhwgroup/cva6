@@ -34,20 +34,26 @@ package ariane_pkg;
     typedef struct packed {
          logic [63:0] cause; // cause of exception
          logic [63:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
-                             // address of ld/st fault
+                             // address of LD/ST fault
          logic        valid;
     } exception;
 
     // branch-predict
+    // this is the struct we get back from ex stage and we will use it to update
+    // all the necessary data structures
     typedef struct packed {
         logic [63:0] pc;              // pc of predict or mis-predict
         logic [63:0] target_address;  // target address at which to jump, or not
         logic        is_mispredict;   // set if this was a mis-predict
         logic        is_taken;        // branch is taken
+        logic        is_lower_16;     // branch instruction is compressed and resides
+                                      // in the lower 16 bit of the word
         logic        valid;           // prediction with all its values is valid
     } branchpredict;
 
     // branchpredict scoreboard entry
+    // this is the struct which we will inject into the pipeline to guide the various
+    // units towards the correct branch decision and resolve
     typedef struct packed {
         logic [63:0] predict_address_i;  // target address at which to jump, or not
         logic        predict_taken_i;   // set if this was a mis-predict
@@ -114,7 +120,7 @@ package ariane_pkg;
         logic [14:12] funct3;
         logic [11:7]  rd;
         logic [6:0]   opcode;
-    } rtype;
+    } rtype_t;
 
     typedef struct packed {
         logic [31:20] imm;
@@ -122,7 +128,7 @@ package ariane_pkg;
         logic [14:12] funct3;
         logic [11:7]  rd;
         logic [6:0]   opcode;
-    } itype;
+    } itype_t;
 
     typedef struct packed {
         logic [31:25] imm1;
@@ -131,27 +137,21 @@ package ariane_pkg;
         logic [14:12] funct3;
         logic [11:7]  imm0;
         logic [6:0]   opcode;
-    } stype;
+    } stype_t;
 
     typedef struct packed {
         logic [31:12] funct3;
         logic [11:7]  rd;
         logic [6:0]   opcode;
-    } utype;
+    } utype_t;
 
-    // for some reason verilator complains about this union
-    // since I am not using it for simulation anyway and linting only
-    // it is not too bad to deactivate it, but a future me (or you)
-    // should look into that more thoroughly
-    `ifndef verilator
     typedef union packed {
-        logic [31:0] instr;
-        rtype        rtype;
-        itype        itype;
-        stype        stype;
-        utype        utype;
+        logic [31:0]   instr;
+        rtype_t        rtype;
+        itype_t        itype;
+        stype_t        stype;
+        utype_t        utype;
     } instruction;
-    `endif
 
     // --------------------
     // Opcodes
@@ -247,10 +247,9 @@ package ariane_pkg;
         logic  [7:0] address;
     } csr_addr_t;
 
-    // `ifndef VERILATOR
     typedef union packed {
         csr_reg_t   address;
         csr_addr_t  csr_decode;
     } csr_t;
-    // `endif
+
 endpackage

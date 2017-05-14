@@ -40,7 +40,7 @@ module fetch_fifo
     input  logic                   in_valid_i,
     output logic                   in_ready_o,
     // output port
-    output branchpredict_sbe [1:0] branch_predict_o,
+    output branchpredict_sbe       branch_predict_o,
     output logic [63:0]            out_addr_o,
     output logic [31:0]            out_rdata_o,
     output logic                   out_valid_o,
@@ -65,7 +65,7 @@ module fetch_fifo
     fetch_entry mem_n[DEPTH-1:0], mem_q[DEPTH-1:0];
     logic [$clog2(DEPTH)-1:0]     read_pointer_n, read_pointer_q;
     logic [$clog2(DEPTH)-1:0]     write_pointer_n, write_pointer_q;
-    int unsigned status_cnt_n,    status_cnt_q; // this integer will be truncated by the synthesis tool
+    logic [$clog2(DEPTH)-1:0]     status_cnt_n,    status_cnt_q; // this integer will be truncated by the synthesis tool
 
     // status signals
     logic full, empty, one_left;
@@ -78,9 +78,11 @@ module fetch_fifo
 
     // we always need two empty places
     // as it could happen that we get two compressed instructions/cycle
+    /* verilator lint_off WIDTH */
     assign full        = (status_cnt_q > DEPTH - 2);
     assign one_left    = (status_cnt_q == DEPTH - 1); // two spaces are left
     assign empty       = (status_cnt_q == 0);
+    /* verilator lint_on WIDTH */
     // the output is valid if we are either empty or just got a valid
     assign out_valid_o = !empty || in_valid_q;
     // we need space for at least two instructions: the full flag is conditioned on that
@@ -114,8 +116,8 @@ module fetch_fifo
     // --------------
     always_comb begin : output_port
         // counter
-        automatic int status_cnt    = status_cnt_q;
-        automatic int write_pointer = write_pointer_q;
+        automatic logic [$clog2(DEPTH)-1:0] status_cnt    = status_cnt_q;
+        automatic logic [$clog2(DEPTH)-1:0] write_pointer = write_pointer_q;
 
         write_pointer_n           = write_pointer_q;
         read_pointer_n            = read_pointer_q;
@@ -135,7 +137,7 @@ module fetch_fifo
                 // it is compressed
                 mem_n[write_pointer_q].branch_predict = branch_predict_q;
                 mem_n[write_pointer_q].address        = in_addr_q;
-                mem_n[write_pointer_q].instruction    = in_rdata_q[15:0];
+                mem_n[write_pointer_q].instruction    = {16'b0, in_rdata_q[15:0]};
 
                 status_cnt++;
                 write_pointer++;
@@ -146,7 +148,7 @@ module fetch_fifo
                 if (in_rdata_q[17:16] != 2'b11) begin
                     mem_n[write_pointer_q + 1].branch_predict = branch_predict_q;
                     mem_n[write_pointer_q + 1].address        = {in_addr_q[63:2], 2'b10};
-                    mem_n[write_pointer_q + 1].instruction    = in_rdata_q[31:16];
+                    mem_n[write_pointer_q + 1].instruction    = {16'b0, in_rdata_q[31:16]};
 
                     status_cnt++;
                     write_pointer++;
@@ -191,7 +193,7 @@ module fetch_fifo
             if (in_rdata_q[17:16] != 2'b11) begin
                 mem_n[write_pointer_q + 1].branch_predict = branch_predict_q;
                 mem_n[write_pointer_q + 1].address        = {in_addr_q[63:2], 2'b10};
-                mem_n[write_pointer_q + 1].instruction    = in_rdata_q[31:16];
+                mem_n[write_pointer_q + 1].instruction    = {16'b0, in_rdata_q[31:16]};
                 status_cnt++;
                 write_pointer++;
                 // unaligned access served
