@@ -66,29 +66,31 @@ module branch_engine (
         resolved_branch_o.is_taken       = 1'b0;
         resolved_branch_o.valid          = valid_i;
         resolved_branch_o.is_mispredict  = 1'b0;
+        resolved_branch_o.is_lower_16    = 1'b0;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
         next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
         target_address                   = $unsigned($signed(operand_c_i) + $signed(imm_i));
-        // save PC - we need this to get the target row in the branch target buffer
-        // we play this trick with the branch instruction which wraps a byte boundary:
-        //  |---------- Place the prediction on this PC
-        // \/
-        // ____________________________________________________
-        // |branch [15:0] | branch[31:16] | compressed 1[15:0] |
-        // |____________________________________________________
-        // This will relief the prefetcher to re-fetch partially fetched unaligned branch instructions e.g.:
-        // we don't have a back arch between prefetcher and decoder/instruction FIFO.
-        resolved_branch_o.pc = (is_compressed_instr_i || pc_i[1] == 1'b0) ? pc_i : ({pc_i[63:2], 2'b0} + 64'h4);
-        // save if the branch instruction was in the lower 16 bit of the instruction word
-        // the first case is a compressed instruction which is in slot 0
-        // the other case is a misaligned uncompressed instruction which we only predict in the next cycle (see notes above)
-        resolved_branch_o.is_lower_16 = (is_compressed_instr_i && pc_i[1] == 1'b0) || (!is_compressed_instr_i && pc_i[1] == 1'b1);
-        // write target address which goes to pc gen
-        resolved_branch_o.target_address = (comparison_result) ? target_address : next_pc;
-        resolved_branch_o.is_taken       = comparison_result;
-        // we've detected a branch in ID with the following parameters
+
         if (valid_i) begin
+            // save PC - we need this to get the target row in the branch target buffer
+            // we play this trick with the branch instruction which wraps a byte boundary:
+            //  |---------- Place the prediction on this PC
+            // \/
+            // ____________________________________________________
+            // |branch [15:0] | branch[31:16] | compressed 1[15:0] |
+            // |____________________________________________________
+            // This will relief the prefetcher to re-fetch partially fetched unaligned branch instructions e.g.:
+            // we don't have a back arch between prefetcher and decoder/instruction FIFO.
+            resolved_branch_o.pc = (is_compressed_instr_i || pc_i[1] == 1'b0) ? pc_i : ({pc_i[63:2], 2'b0} + 64'h4);
+            // save if the branch instruction was in the lower 16 bit of the instruction word
+            // the first case is a compressed instruction which is in slot 0
+            // the other case is a misaligned uncompressed instruction which we only predict in the next cycle (see notes above)
+            resolved_branch_o.is_lower_16 = (is_compressed_instr_i && pc_i[1] == 1'b0) || (!is_compressed_instr_i && pc_i[1] == 1'b1);
+            // write target address which goes to pc gen
+            resolved_branch_o.target_address = (comparison_result) ? target_address : next_pc;
+            resolved_branch_o.is_taken       = comparison_result;
+            // we've detected a branch in ID with the following parameters
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
             if (target_address[0] == 1'b0) begin
                 // TODO in case of branch which is not taken it is not necessary to check for the address

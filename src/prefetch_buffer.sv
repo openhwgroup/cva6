@@ -64,18 +64,13 @@ module prefetch_buffer
   //---------------------------------
   // we are busy if we are either waiting for a grant
   // or if the fifo is full
-  assign busy_o = (CS inside {WAIT_GNT, WAIT_ABORTED}) || !fifo_ready;
+  assign busy_o = (CS inside {WAIT_GNT, WAIT_ABORTED} && !instr_req_o) || !fifo_ready;
 
   //---------------------------------
   // Fetch FIFO
   // consumes addresses and rdata
   //---------------------------------
     fetch_fifo fifo_i (
-        .clk_i                 ( clk_i               ),
-        .rst_ni                ( rst_n_i             ),
-
-        .clear_i               ( flush_i           ),
-
         .branch_predict_i      ( branchpredict_q   ),
         .in_addr_i             ( instr_addr_q      ),
         .in_rdata_i            ( instr_rdata_i     ),
@@ -86,7 +81,8 @@ module prefetch_buffer
         .out_valid_o           ( valid_o           ),
         .out_ready_i           ( ready_i           ),
         .out_rdata_o           ( rdata_o           ),
-        .out_addr_o            ( addr_o            )
+        .out_addr_o            ( addr_o            ),
+        .*
     );
 
   //--------------------------------------------------
@@ -113,7 +109,11 @@ module prefetch_buffer
 
 
           if(instr_gnt_i) //~>  granted request
-            NS = WAIT_RVALID;
+                // we have one outstanding rvalid: wait for it
+                if (flush_i)
+                    NS = WAIT_ABORTED;
+                else
+                    NS = WAIT_RVALID;
           else begin //~> got a request but no grant
             NS = WAIT_GNT;
           end
@@ -126,7 +126,11 @@ module prefetch_buffer
         instr_req_o  = 1'b1;
 
         if(instr_gnt_i)
-          NS = WAIT_RVALID;
+            // we have one outstanding rvalid: wait for it
+            if (flush_i)
+                NS = WAIT_ABORTED;
+            else
+                NS = WAIT_RVALID;
         else
           NS = WAIT_GNT;
       end // case: WAIT_GNT
@@ -137,15 +141,18 @@ module prefetch_buffer
 
         if (fifo_ready) begin
           // prepare for next request
-
           if (fifo_ready && fetch_valid_i) begin
             instr_req_o = 1'b1;
+            // if we are receiving a data item during a flush ignore it
             fifo_valid  = 1'b1;
             addr_valid  = 1'b1;
 
-
             if (instr_gnt_i) begin
-              NS = WAIT_RVALID;
+                // we have one outstanding rvalid: wait for it
+                if (flush_i)
+                    NS = WAIT_ABORTED;
+                else
+                    NS = WAIT_RVALID;
             end else begin
               NS = WAIT_GNT;
             end
@@ -153,12 +160,13 @@ module prefetch_buffer
             // we are requested to abort our current request
             // we didn't get an rvalid yet, so wait for it
             if (flush_i) begin
-                NS         = WAIT_ABORTED;
+                NS = WAIT_ABORTED;
             end
           end
         end else begin
           // just wait for rvalid and go back to IDLE, no new request
           if (instr_rvalid_i) begin
+            // if we are receiving a data item during a flush ignore it
             fifo_valid = 1'b1;
             NS         = IDLE;
           end
@@ -169,33 +177,37 @@ module prefetch_buffer
       // there was no new request sent yet
       // we assume that req_i is set to high
       WAIT_ABORTED: begin
-        instr_addr_o = instr_addr_q;
+        instr_addr_o = fetch_address_i;
 
         if (instr_rvalid_i) begin
           instr_req_o  = 1'b1;
           // no need to send address, already done in WAIT_RVALID
 
           if (instr_gnt_i) begin
-            NS = WAIT_RVALID;
+                // we have one outstanding rvalid
+                if (flush_i)
+                    NS = WAIT_ABORTED;
+                else
+                    NS = WAIT_RVALID;
           end else begin
             NS = WAIT_GNT;
           end
         end
       end
 
-      default:
-      begin
+      default: begin
         NS          = IDLE;
         instr_req_o = 1'b0;
       end
     endcase
+
   end
 
   //-------------
   // Registers
   //-------------
 
-  always_ff @(posedge clk_i, negedge rst_n_i)
+  always_ff @(posedge clk_i, negedge rst_ni)
   begin
     if (~rst_ni) begin
       CS              <= IDLE;

@@ -1,36 +1,30 @@
-////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2017 ETH Zurich, University of Bologna                       //
-// All rights reserved.                                                       //
-//                                                                            //
-// This code is under development and not yet released to the public.         //
-// Until it is released, the code is under the copyright of ETH Zurich        //
-// and the University of Bologna, and may contain unpublished work.           //
-// Any reuse/redistribution should only be under explicit permission.         //
-//                                                                            //
-// Bug fixes and contributions will eventually be released under the          //
-// SolderPad open hardware license and under the copyright of ETH Zurich      //
-// and the University of Bologna.                                             //
-//                                                                            //
-// Engineer:       Andreas Traber - atraber@iis.ee.ethz.ch                    //
-//                                                                            //
-// Design Name:    Fetch Fifo for 32 bit memory interface                     //
-// Project Name:   zero-riscy                                                 //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Fetch fifo                                                 //
-////////////////////////////////////////////////////////////////////////////////
+// Author: Florian Zaruba, ETH Zurich
+// Date: 14.05.2017
+// Description: Dual Port fetch FIFO with instruction aligner and support for compressed instructions
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
+//
+// This code is under development and not yet released to the public.
+// Until it is released, the code is under the copyright of ETH Zurich and
+// the University of Bologna, and may contain confidential and/or unpublished
+// work. Any reuse/redistribution is strictly forbidden without written
+// permission from ETH Zurich.
+//
+// Bug fixes and contributions will eventually be released under the
+// SolderPad open hardware license in the context of the PULP platform
+// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+// University of Bologna.
+//
 
 import ariane_pkg::*;
 
-// input port: send address one cycle before the data
-// clear_i clears the FIFO for the following cycle.
 module fetch_fifo
 (
     input  logic                   clk_i,
     input  logic                   rst_ni,
     // control signals
-    input  logic                   clear_i,          // clears the contents of the fifo
-    // input port
+    input  logic                   flush_i,    // clears the contents of the FIFO -> quasi reset
     // branch prediction at in_addr_i address, as this is an address and not PC it can be the case
     // that we have two compressed instruction (or one compressed instruction and one unaligned instruction) so we need
     // keep two prediction inputs: [c1|c0] <- prediction for c1 and c0
@@ -68,7 +62,7 @@ module fetch_fifo
     logic [$clog2(DEPTH)-1:0]     status_cnt_n,    status_cnt_q; // this integer will be truncated by the synthesis tool
 
     // status signals
-    logic full, empty, one_left;
+    logic full, empty;
     // the last instruction was unaligned
     logic unaligned_n, unaligned_q;
     // save the unaligned part of the instruction to this ff
@@ -79,8 +73,7 @@ module fetch_fifo
     // we always need two empty places
     // as it could happen that we get two compressed instructions/cycle
     /* verilator lint_off WIDTH */
-    assign full        = (status_cnt_q > DEPTH - 2);
-    assign one_left    = (status_cnt_q == DEPTH - 1); // two spaces are left
+    assign full        = (status_cnt_q >= DEPTH - 2);
     assign empty       = (status_cnt_q == 0);
     /* verilator lint_on WIDTH */
     // the output is valid if we are either empty or just got a valid
@@ -106,7 +99,7 @@ module fetch_fifo
             branch_predict_n = branch_predict_i;
         end
         // flush the input registers
-        if (clear_i) begin
+        if (flush_i) begin
             in_valid_n = 1'b0;
         end
     end
@@ -251,17 +244,17 @@ module fetch_fifo
                 out_rdata_o = {in_rdata_q[15:0], unaligned_instr_q};
             end
             // there is currently no valid instruction in the pipeline register push this instruction
-            if (out_ready_i || !pipelein_register_valid_q) begin
-                pipelein_register_valid_n = 1'b1;
-                read_pointer_n = read_pointer_q + 1;
-                status_cnt--;
-            end
+            // if (out_ready_i) begin
+            //     pipelein_register_valid_n = 1'b1;
+            //     read_pointer_n = read_pointer_q + 1;
+            //     status_cnt--;
+            // end
         // regular read but do not issue if we are already empty
         // this can happen since we have an output latch in the IF stage and the ID stage will only know a cycle
         // later that we do not have any valid instructions anymore
         end
 
-        if (out_ready_i && !empty) begin
+        if (out_ready_i) begin
             read_pointer_n = read_pointer_q + 1;
             status_cnt--;
         end
@@ -273,39 +266,55 @@ module fetch_fifo
         write_pointer_n = write_pointer;
         status_cnt_n    = status_cnt;
 
-        if (clear_i)
-            status_cnt_n = '0;
+        if (flush_i) begin
+            status_cnt_n    = '0;
+            write_pointer_n = 'b0;
+            read_pointer_n  = 'b0;
+        end
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            status_cnt_q        <= '{default: 0};
-            mem_q               <= '{default: 0};
-            read_pointer_q      <= '{default: 0};
-            write_pointer_q     <= '{default: 0};
-            unaligned_q         <= 1'b0;
-            unaligned_instr_q   <= 16'b0;
-            unaligned_address_q <= 64'b0;
+            status_cnt_q              <= '{default: 0};
+            mem_q                     <= '{default: 0};
+            read_pointer_q            <= '{default: 0};
+            write_pointer_q           <= '{default: 0};
+            unaligned_q               <= 1'b0;
+            unaligned_instr_q         <= 16'b0;
+            unaligned_address_q       <= 64'b0;
             // input registers
-            in_addr_q           <= 64'b0;
-            in_rdata_q          <= 32'b0;
-            in_valid_q          <= 1'b0;
-            branch_predict_q    <= '{default: 0};
+            in_addr_q                 <= 64'b0;
+            in_rdata_q                <= 32'b0;
+            in_valid_q                <= 1'b0;
+            branch_predict_q          <= '{default: 0};
             pipelein_register_valid_q <= 1'b0;
         end else begin
-            status_cnt_q        <= status_cnt_n;
-            mem_q               <= mem_n;
-            read_pointer_q      <= read_pointer_n;
-            write_pointer_q     <= write_pointer_n;
-            unaligned_q         <= unaligned_n;
-            unaligned_instr_q   <= unaligned_instr_n;
-            unaligned_address_q <= unaligned_address_n;
+            status_cnt_q              <= status_cnt_n;
+            mem_q                     <= mem_n;
+            read_pointer_q            <= read_pointer_n;
+            write_pointer_q           <= write_pointer_n;
+            unaligned_q               <= unaligned_n;
+            unaligned_instr_q         <= unaligned_instr_n;
+            unaligned_address_q       <= unaligned_address_n;
             // input registers
-            in_addr_q           <= in_addr_n;
-            in_rdata_q          <= in_rdata_n;
-            in_valid_q          <= in_valid_n;
-            branch_predict_q    <= branch_predict_n;
+            in_addr_q                 <= in_addr_n;
+            in_rdata_q                <= in_rdata_n;
+            in_valid_q                <= in_valid_n;
+            branch_predict_q          <= branch_predict_n;
             pipelein_register_valid_q <= pipelein_register_valid_n;
         end
     end
+
+    //-------------
+    // Assertions
+    //-------------
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
+    // since this is a dual port queue the status count of the queue should never change more than two
+    assert property (@(posedge clk_i) ((status_cnt_n - status_cnt_q) < 3 || (status_cnt_n - status_cnt_q) > 3)) else $error("FIFO underflowed or overflowed");
+    // assert property (
+    //   @(posedge clk_i) (instr_gnt_i) |-> (instr_req_o) )
+    // else $warning("There was a grant without a request");
+    `endif
+    `endif
 endmodule

@@ -19,7 +19,7 @@
 import ariane_pkg::*;
 
 module btb #(
-    parameter int NR_ENTRIES = 64,
+    parameter int NR_ENTRIES = 1024,
     parameter int BITS_SATURATION_COUNTER = 2
     )
     (

@@ -66,12 +66,12 @@ module if_stage (
     // ---------------------
     // IF <-> ID Registers
     // ---------------------
-    logic [63:0] pc_n,                  pc_q;
-    logic        instr_valid_n,         instr_valid_q;
-    logic [31:0] instr_rdata_n,         instr_rdata_q;
-    logic        instr_is_compressed_n, instr_is_compressed_q;
+    logic [63:0]      pc_n,                  pc_q;
+    logic             instr_valid_n,         instr_valid_q;
+    logic [31:0]      instr_rdata_n,         instr_rdata_q;
+    logic             instr_is_compressed_n, instr_is_compressed_q;
     // branch predict registers
-    logic              branch_predict_n,    branch_predict_q;
+    branchpredict_sbe branch_predict_n,    branch_predict_q;
 
     // compressed instruction decoding, or more precisely compressed instruction expander
     // since it does not matter where we decompress instructions, we do it here to ease timing closure
@@ -116,7 +116,7 @@ module if_stage (
         if (flush_i) begin
             instr_valid_n = 1'b0;
         end
-        // exception forwarding in here
+        // TODO: exception forwarding in here
     end
 
     // --------------------------------------------------------------
@@ -125,7 +125,7 @@ module if_stage (
     always_ff @(posedge clk_i, negedge rst_ni) begin : IF_ID_PIPE_REGISTERS
       if (~rst_ni) begin
             ex_o                    <= '{default: 0};
-            branch_predict_q        <= '{default: 0};
+            branch_predict_q        <= '0;
             pc_q                    <= 64'b0;
             instr_valid_q           <= 1'b0;
             instr_rdata_q           <= 32'b0;

@@ -42,10 +42,10 @@ module pcgen (
     logic [63:0]      npc_n, npc_q;
     branchpredict_sbe branch_predict_btb;
 
-    assign pc_if_o = npc_q;
+    assign fetch_address_o = npc_q;
 
     btb #(
-        .NR_ENTRIES(64),
+        .NR_ENTRIES(1024),
         .BITS_SATURATION_COUNTER(2)
     )
     btb_i
