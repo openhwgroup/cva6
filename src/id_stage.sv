@@ -132,7 +132,7 @@ module id_stage #(
         .pc_i                    ( fetch_entry_i.address         ),
         .is_compressed_i         ( fetch_entry_i.is_compressed   ),
         .instruction_i           ( fetch_entry_i.instruction     ),
-        .branch_predict_i        ( fetch_entry_ibranch_predict   ),
+        .branch_predict_i        ( fetch_entry_i.branch_predict  ),
         .ex_i                    ( ex_if_i                       ),
         .instruction_o           ( decoded_instr_dc_sb           ),
         .is_control_flow_instr_o ( is_control_flow_instr         ),

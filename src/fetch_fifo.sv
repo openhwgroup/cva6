@@ -69,8 +69,8 @@ module fetch_fifo
     assign full        = (status_cnt_q >= DEPTH - 3);
     assign empty       = (status_cnt_q == 0);
     /* verilator lint_on WIDTH */
-    // the output is valid if we are either empty or just got a valid
-    assign out_valid_o = !empty || in_valid_q;
+    // the output is valid if we are are not empty
+    assign out_valid_o = !empty;
     // we need space for at least two instructions: the full flag is conditioned on that
     // but if we pop in the current cycle and we have one place left we can still fit two instructions alt
     assign in_ready_o  = !full;
@@ -155,7 +155,7 @@ module fetch_fifo
 
                     status_cnt++;
                     write_pointer++;
-                    $display("Instruction: [ c  | c  ] @ %t", $time);
+                    // $display("Instruction: [ c  | c  ] @ %t", $time);
                 // or is it an unaligned 32 bit instruction like
                 // ____________________________________________________
                 // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
@@ -167,7 +167,7 @@ module fetch_fifo
                     unaligned_n = 1'b1;
                     // save the address as well
                     unaligned_address_n = {in_addr_q[63:2], 2'b10};
-                    $display("Instruction: [ i0 | c  ] @ %t", $time);
+                    // $display("Instruction: [ i0 | c  ] @ %t", $time);
                     // this does not consume space in the FIFO
                 end
             end else begin
@@ -180,7 +180,7 @@ module fetch_fifo
                 };
                 status_cnt++;
                 write_pointer++;
-                $display("Instruction: [    i    ] @ %t", $time);
+                // $display("Instruction: [    i    ] @ %t", $time);
             end
         end
         // we have an outstanding unaligned instruction
@@ -208,7 +208,7 @@ module fetch_fifo
                 write_pointer++;
                 // unaligned access served
                 unaligned_n = 1'b0;
-                $display("Instruction: [ c  | i1 ] @ %t", $time);
+                // $display("Instruction: [ c  | i1 ] @ %t", $time);
             // or is it an unaligned 32 bit instruction like
             // ____________________________________________________
             // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
@@ -220,7 +220,7 @@ module fetch_fifo
                 unaligned_n = 1'b1;
                 // save the address as well
                 unaligned_address_n = {in_addr_q[63:2], 2'b10};
-                $display("Instruction: [ i0 | i1 ] @ %t", $time);
+                // $display("Instruction: [ i0 | i1 ] @ %t", $time);
                 // this does not consume space in the FIFO
             end
         end
@@ -231,7 +231,7 @@ module fetch_fifo
         // we are ready to accept a new request if we still have two places in the queue
 
         // Output assignments
-        fetch_entry_o = mem_q[read_pointer_q].branch_predict;
+        fetch_entry_o = mem_q[read_pointer_q];
 
         if (out_ready_i) begin
             read_pointer_n = read_pointer_q + 1;

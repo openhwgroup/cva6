@@ -36,7 +36,7 @@ module fetch_fifo_tb;
         .in_rdata_i       ( fetch_fifo_if.in_rdata           ),
         .in_valid_i       ( fetch_fifo_if.in_valid           ),
         .in_ready_o       ( fetch_fifo_if.in_ready           ),
-        .fetch_entry_o    ( fetch_fifo_if.fetch_entry ),
+        .fetch_entry_o    ( fetch_fifo_if.fetch_entry        ),
         .out_valid_o      ( fetch_fifo_if.out_valid          ),
         .out_ready_i      ( fetch_fifo_if.out_ready          )
     );

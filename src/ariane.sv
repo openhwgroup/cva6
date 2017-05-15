@@ -105,16 +105,11 @@ module ariane
     // IF <-> ID
     // --------------
     logic                     busy_if_id;
+    fetch_entry               fetch_entry_if_id;
     logic                     ready_id_if;
-    logic [31:0]              fetch_rdata_id_if;
     logic                     fetch_valid_if_id;
-    logic [31:0]              instr_rdata_if_id;
     logic                     decode_ack_id_if;
-    logic                     is_compressed_if_id;
-    logic [63:0]              pc_if_id;
     exception                 exception_if_id;
-    branchpredict_sbe         branch_predict_if_id;
-    logic                     instr_is_compressed_if_id;
     // --------------
     // ID <-> EX
     // --------------

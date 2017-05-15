@@ -41,37 +41,19 @@ module if_stage (
     input  logic                   instr_ack_i,
     output exception               ex_o
 );
-    // output logic illegal_compressed_instr_o -> in exception
-    logic              fetch_valid;
     logic              prefetch_busy;
-    // ---------------------
-    // IF <-> ID Registers
-    // ---------------------
-    logic             instr_valid_n,         instr_valid_q;
 
     // Pre-fetch buffer, caches a fixed number of instructions
     prefetch_buffer prefetch_buffer_i (
 
         .ready_i           ( instr_ack_i                 ),
-        .valid_o           ( fetch_valid                 ),
+        .valid_o           ( fetch_entry_valid_i         ),
         // Prefetch Buffer Status
         .busy_o            ( prefetch_busy               ),
         .*
     );
 
     assign if_busy_o             = prefetch_busy;
-    assign fetch_entry_valid_i   = instr_valid_q;
-
-    // Pipeline registers
-    always_comb begin
-        // Instruction is valid, latch new data
-        instr_valid_n           = fetch_valid;
-
-        if (flush_i) begin
-            instr_valid_n = 1'b0;
-        end
-        // TODO: exception forwarding in here
-    end
 
     // --------------------------------------------------------------
     // IF-ID pipeline registers, frozen when the ID stage is stalled
@@ -79,9 +61,7 @@ module if_stage (
     always_ff @(posedge clk_i, negedge rst_ni) begin : IF_ID_PIPE_REGISTERS
       if (~rst_ni) begin
             ex_o                    <= '{default: 0};
-            instr_valid_q           <= 1'b0;
         end else begin
-            instr_valid_q           <= instr_valid_n;
             ex_o.cause              <= 64'b0; // TODO: Output exception
             ex_o.tval               <= 64'b0; // TODO: Output exception
             ex_o.valid              <= 1'b0; //illegal_compressed_instr;  // TODO: Output exception
