@@ -31,11 +31,9 @@ module id_stage #(
     input  logic                                     flush_unissued_instr_i,
     input  logic                                     flush_scoreboard_i,
     // from IF
-    input  logic [31:0]                              instruction_i,
-    input  logic                                     instr_is_compressed_i,
-    input  logic                                     instruction_valid_i,
+    input  fetch_entry                               fetch_entry_i,
+    input  logic                                     fetch_entry_valid_i,
     output logic                                     decoded_instr_ack_o,
-    input  logic [63:0]                              pc_if_i,
     input  exception                                 ex_if_i,       // we already got an exception in IF
 
     output logic                                     ready_o,    // id is ready
@@ -51,8 +49,6 @@ module id_stage #(
     input  logic                                     alu_ready_i,
     output logic                                     alu_valid_o,
     output logic                                     branch_valid_o, // use branch prediction unit
-    // Branch predict In
-    input  branchpredict_sbe                         branch_predict_i,
     // ex just resolved our predicted branch, we are ready to accept new requests
     input  branchpredict                             resolved_branch_i,
 
@@ -124,7 +120,7 @@ module id_stage #(
             unresolved_branch_n = 1'b0;
         end
         // if the instruction is valid and it is a control flow instruction
-        if (instruction_valid_i && is_control_flow_instr && ~flush_unissued_instr_i) begin
+        if (fetch_entry_valid_i && is_control_flow_instr && ~flush_unissued_instr_i) begin
             unresolved_branch_n = 1'b1;
         end
     end
@@ -133,12 +129,13 @@ module id_stage #(
     assign ready_o           = ~full && (~unresolved_branch_q || resolved_branch_i.valid);
 
     decoder decoder_i (
-        .pc_i                    ( pc_if_i                  ),
-        .is_compressed_i         ( instr_is_compressed_i    ),
-        .instruction_i           ( instruction_i            ),
-        .ex_i                    ( ex_if_i                  ),
-        .instruction_o           ( decoded_instr_dc_sb      ),
-        .is_control_flow_instr_o ( is_control_flow_instr    ),
+        .pc_i                    ( fetch_entry_i.address         ),
+        .is_compressed_i         ( fetch_entry_i.is_compressed   ),
+        .instruction_i           ( fetch_entry_i.instruction     ),
+        .branch_predict_i        ( fetch_entry_ibranch_predict   ),
+        .ex_i                    ( ex_if_i                       ),
+        .instruction_o           ( decoded_instr_dc_sb           ),
+        .is_control_flow_instr_o ( is_control_flow_instr         ),
         .*
     );
 
@@ -160,7 +157,7 @@ module id_stage #(
         .commit_instr_o        ( commit_instr_o           ),
         .commit_ack_i          ( commit_ack_i             ),
         .decoded_instr_i       ( decoded_instr_dc_sb      ),
-        .decoded_instr_valid_i ( instruction_valid_i      ),
+        .decoded_instr_valid_i ( fetch_entry_valid_i      ),
         .issue_instr_o         ( issue_instr_sb_iro       ),
         .issue_instr_valid_o   ( issue_instr_valid_sb_iro ),
         .issue_ack_i           ( issue_ack_iro_sb         ),

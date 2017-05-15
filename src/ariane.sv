@@ -107,7 +107,7 @@ module ariane
     logic                     busy_if_id;
     logic                     ready_id_if;
     logic [31:0]              fetch_rdata_id_if;
-    logic                     instr_valid_if_id;
+    logic                     fetch_valid_if_id;
     logic [31:0]              instr_rdata_if_id;
     logic                     decode_ack_id_if;
     logic                     is_compressed_if_id;
@@ -248,12 +248,9 @@ module ariane
         .instr_rvalid_i        ( fetch_valid_ex_if              ),
         .instr_rdata_i         ( fetch_rdata_ex_if              ),
 
-        .pc_o                  ( pc_if_id                       ),
-        .instr_valid_o         ( instr_valid_if_id              ),
+        .fetch_entry_o         ( fetch_entry_if_id              ),
+        .fetch_entry_valid_i   ( fetch_valid_if_id              ),
         .instr_ack_i           ( decode_ack_id_if               ),
-        .instr_rdata_o         ( instr_rdata_if_id              ),
-        .instr_is_compressed_o ( instr_is_compressed_if_id      ),
-        .branch_predict_o      ( branch_predict_if_id           ),
         .ex_o                  ( exception_if_id                ),
         .*
     );
@@ -270,11 +267,9 @@ module ariane
         .flush_i                    ( flush                                    ),
         .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id             ),
         .flush_scoreboard_i         ( flush_scoreboard_ctrl_id                 ),
-        .instruction_i              ( instr_rdata_if_id                        ),
-        .instr_is_compressed_i      ( instr_is_compressed_if_id                ),
-        .instruction_valid_i        ( instr_valid_if_id                        ),
+        .fetch_entry_i              ( fetch_entry_if_id                        ),
+        .fetch_entry_valid_i        ( fetch_valid_if_id                        ),
         .decoded_instr_ack_o        ( decode_ack_id_if                         ),
-        .pc_if_i                    ( pc_if_id                                 ), // PC from if
         .ex_if_i                    ( exception_if_id                          ), // exception from if
         .ready_o                    ( ready_id_if                              ),
         // Functional Units
@@ -291,7 +286,6 @@ module ariane
         .alu_valid_o                ( alu_valid_id_ex                          ),
         // Branches and Jumps
         .branch_valid_o             ( branch_valid_id_ex                       ), // branch is valid
-        .branch_predict_i           ( branch_predict_if_id                     ), // branch predict from if
         .branch_predict_o           ( branch_predict_id_ex                     ), // branch predict to ex
         .resolved_branch_i          ( resolved_branch                          ), // in order to resolve the branch
         // LSU

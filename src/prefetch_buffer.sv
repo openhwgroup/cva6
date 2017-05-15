@@ -36,9 +36,7 @@ module prefetch_buffer
   // output side
   input  logic             ready_i,
   output logic             valid_o,
-  output logic [63:0]      addr_o,
-  output logic [31:0]      rdata_o,
-  output branchpredict_sbe branch_predict_o,
+  output fetch_entry       fetch_entry_o,
 
   // goes to instruction memory / instruction cache
   output logic             instr_req_o,
@@ -77,11 +75,8 @@ module prefetch_buffer
         .in_valid_i            ( fifo_valid        ),
         .in_ready_o            ( fifo_ready        ),
 
-        .branch_predict_o      ( branch_predict_o  ),
         .out_valid_o           ( valid_o           ),
         .out_ready_i           ( ready_i           ),
-        .out_rdata_o           ( rdata_o           ),
-        .out_addr_o            ( addr_o            ),
         .*
     );
 

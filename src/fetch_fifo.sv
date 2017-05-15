@@ -34,27 +34,21 @@ module fetch_fifo
     input  logic                   in_valid_i,
     output logic                   in_ready_o,
     // output port
-    output branchpredict_sbe       branch_predict_o,
-    output logic [63:0]            out_addr_o,
-    output logic [31:0]            out_rdata_o,
+    output fetch_entry             fetch_entry_o,
     output logic                   out_valid_o,
     input  logic                   out_ready_i
-
 );
 
     localparam DEPTH = 8; // must be a power of two
-    typedef struct packed {
-        branchpredict_sbe branch_predict;
-        logic [63:0]      address;
-        logic [31:0]      instruction;
-    } fetch_entry;
+
     // input registers - bounding the path from memory
     branchpredict_sbe       branch_predict_n, branch_predict_q;
     logic [63:0]            in_addr_n,        in_addr_q;
     logic [31:0]            in_rdata_n,       in_rdata_q;
     logic                   in_valid_n,       in_valid_q;
-    // this bit indicates whether there is a instruction waiting in the pipeline register or not
-    logic                   pipelein_register_valid_n, pipelein_register_valid_q;
+    // compressed to decompressed instruction
+    logic [31:0] decompressed_instruction [2];
+    logic        is_illegal [2];
 
     fetch_entry mem_n[DEPTH-1:0], mem_q[DEPTH-1:0];
     logic [$clog2(DEPTH)-1:0]     read_pointer_n, read_pointer_q;
@@ -69,7 +63,6 @@ module fetch_fifo
     logic [15:0] unaligned_instr_n, unaligned_instr_q;
     // save the address of the unaligned instruction
     logic [63:0] unaligned_address_n, unaligned_address_q;
-
     // we always need two empty places
     // as it could happen that we get two compressed instructions/cycle
     /* verilator lint_off WIDTH */
@@ -103,10 +96,25 @@ module fetch_fifo
             in_valid_n = 1'b0;
         end
     end
+    // --------------------
+    // Compressed Decoders
+    // --------------------
+    // compressed instruction decoding, or more precisely compressed instruction expander
+    // since it does not matter where we decompress instructions, we do it here to ease timing closure
+    genvar i;
+    generate
+        for (i = 0; i < 2; i++) begin
+            compressed_decoder compressed_decoder_i (
+                .instr_i          ( in_rdata_q[(16*(i+1)-1):(i*16)]  ),
+                .instr_o          ( decompressed_instruction[i]      ),
+                .illegal_instr_o  ( is_illegal[i]                    )
+            );
+        end
+    endgenerate
 
-    // --------------
-    // FIFO Management
-    // --------------
+    // --------------------------------------------
+    // FIFO Management + Instruction (re)-aligner
+    // --------------------------------------------
     always_comb begin : output_port
         // counter
         automatic logic [$clog2(DEPTH)-1:0] status_cnt    = status_cnt_q;
@@ -118,7 +126,6 @@ module fetch_fifo
         unaligned_n               = unaligned_q;
         unaligned_instr_n         = unaligned_instr_q;
         unaligned_address_n       = unaligned_address_q;
-        pipelein_register_valid_n = pipelein_register_valid_q;
         // ---------------------------------
         // Input port & Instruction Aligner
         // ---------------------------------
@@ -128,9 +135,9 @@ module fetch_fifo
             // check if the instruction is compressed
             if (in_rdata_q[1:0] != 2'b11) begin
                 // it is compressed
-                mem_n[write_pointer_q].branch_predict = branch_predict_q;
-                mem_n[write_pointer_q].address        = in_addr_q;
-                mem_n[write_pointer_q].instruction    = {16'b0, in_rdata_q[15:0]};
+                mem_n[write_pointer_q]    = {
+                    branch_predict_q, in_addr_q, decompressed_instruction[0], 1'b1, is_illegal[0]
+                };
 
                 status_cnt++;
                 write_pointer++;
@@ -141,9 +148,10 @@ module fetch_fifo
                 // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
                 // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
                 if (in_rdata_q[17:16] != 2'b11 && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
-                    mem_n[(write_pointer_q + 1) % DEPTH].branch_predict = branch_predict_q;
-                    mem_n[(write_pointer_q + 1) % DEPTH].address        = {in_addr_q[63:2], 2'b10};
-                    mem_n[(write_pointer_q + 1) % DEPTH].instruction    = {16'b0, in_rdata_q[31:16]};
+
+                    mem_n[write_pointer_q + 1'b1]    = {
+                        branch_predict_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
+                    };
 
                     status_cnt++;
                     write_pointer++;
@@ -167,9 +175,9 @@ module fetch_fifo
                 // _______________________
                 // | instruction [31:0]  |
                 // |______________________
-                mem_n[write_pointer_q].branch_predict = branch_predict_q;
-                mem_n[write_pointer_q].address        = in_addr_q;
-                mem_n[write_pointer_q].instruction    = in_rdata_q;
+                mem_n[write_pointer_q]    = {
+                    branch_predict_q, in_addr_q, in_rdata_q, 1'b0, 1'b0
+                };
                 status_cnt++;
                 write_pointer++;
                 $display("Instruction: [    i    ] @ %t", $time);
@@ -177,9 +185,11 @@ module fetch_fifo
         end
         // we have an outstanding unaligned instruction
         if (in_valid_q && unaligned_q) begin
-            mem_n[write_pointer_q].branch_predict = branch_predict_q;
-            mem_n[write_pointer_q].address        = unaligned_address_q;
-            mem_n[write_pointer_q].instruction    = {in_rdata_q[15:0], unaligned_instr_q};
+
+            mem_n[write_pointer_q]    = {
+                branch_predict_q, unaligned_address_q, {in_rdata_q[15:0], unaligned_instr_q}, 1'b0, 1'b0
+            };
+
             status_cnt++;
             write_pointer++;
             // whats up with the other upper 16 bit of this instruction
@@ -190,9 +200,10 @@ module fetch_fifo
             // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
             // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
             if (in_rdata_q[17:16] != 2'b11  && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
-                mem_n[(write_pointer_q + 1) % DEPTH].branch_predict = branch_predict_q;
-                mem_n[(write_pointer_q + 1) % DEPTH].address        = {in_addr_q[63:2], 2'b10};
-                mem_n[(write_pointer_q + 1) % DEPTH].instruction    = {16'b0, in_rdata_q[31:16]};
+                mem_n[write_pointer_q + 1'b1] = {
+                    branch_predict_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
+                };
+
                 status_cnt++;
                 write_pointer++;
                 // unaligned access served
@@ -220,44 +231,11 @@ module fetch_fifo
         // we are ready to accept a new request if we still have two places in the queue
 
         // Output assignments
-        branch_predict_o = mem_q[read_pointer_q].branch_predict;
-        out_addr_o       = mem_q[read_pointer_q].address;
-        out_rdata_o      = mem_q[read_pointer_q].instruction;
-
-        // pass-through if queue is empty but we are currently expanding or re-aligning an instruction
-        if (empty && in_valid_q) begin
-            // we either have a full 32 bit instruction a compressed 16 bit instruction
-            branch_predict_o = branch_predict_q;
-            out_addr_o       = in_addr_q;
-            // depending on whether the instruction is compressed or not output the correct thing
-            if (!unaligned_q) begin
-                if (in_rdata_q[1:0] != 2'b11)
-                    out_rdata_o = {16'b0, in_rdata_q[15:0]};
-                else
-                    out_rdata_o = in_rdata_q;
-            // serve unaligned
-            end else begin
-                out_addr_o  = unaligned_address_q;
-                out_rdata_o = {in_rdata_q[15:0], unaligned_instr_q};
-            end
-            // there is currently no valid instruction in the pipeline register push this instruction
-            // if (out_ready_i) begin
-            //     pipelein_register_valid_n = 1'b1;
-            //     read_pointer_n = read_pointer_q + 1;
-            //     status_cnt--;
-            // end
-        // regular read but do not issue if we are already empty
-        // this can happen since we have an output latch in the IF stage and the ID stage will only know a cycle
-        // later that we do not have any valid instructions anymore
-        end
+        fetch_entry_o = mem_q[read_pointer_q].branch_predict;
 
         if (out_ready_i) begin
             read_pointer_n = read_pointer_q + 1;
             status_cnt--;
-        end
-
-        if (out_ready_i) begin
-            pipelein_register_valid_n = 1'b0;
         end
 
         write_pointer_n = write_pointer;
@@ -284,7 +262,6 @@ module fetch_fifo
             in_rdata_q                <= 32'b0;
             in_valid_q                <= 1'b0;
             branch_predict_q          <= '{default: 0};
-            pipelein_register_valid_q <= 1'b0;
         end else begin
             status_cnt_q              <= status_cnt_n;
             mem_q                     <= mem_n;
@@ -298,7 +275,6 @@ module fetch_fifo
             in_rdata_q                <= in_rdata_n;
             in_valid_q                <= in_valid_n;
             branch_predict_q          <= branch_predict_n;
-            pipelein_register_valid_q <= pipelein_register_valid_n;
         end
     end
 

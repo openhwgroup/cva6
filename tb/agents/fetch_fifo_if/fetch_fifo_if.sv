@@ -31,19 +31,17 @@ interface fetch_fifo_if (
     wire [31:0]                         in_rdata;
     wire                                in_valid;
     wire                                in_ready;
-    wire [$bits(branchpredict_sbe)-1:0] out_branch_predict;
-    wire [63:0]                         out_addr;
-    wire [31:0]                         out_rdata;
+    wire [$bits(fetch_entry)-1:0]       fetch_entry;
     wire                                out_valid;
     wire                                out_ready;
 
    clocking mck @(posedge clk);
-        input  in_ready, out_branch_predict, out_addr, out_rdata, out_valid;
+        input  in_ready, fetch_entry, out_valid;
         output flush, in_branch_predict, in_addr, in_rdata, in_valid, out_ready;
    endclocking
 
    clocking pck @(posedge clk);
-        input  in_ready, out_branch_predict, out_addr, out_rdata, out_valid,
+        input  in_ready, fetch_entry, out_valid,
                flush, in_branch_predict, in_addr, in_rdata, in_valid, out_ready;
    endclocking
 

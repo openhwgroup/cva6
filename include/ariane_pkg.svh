@@ -88,6 +88,17 @@ package ariane_pkg;
                                // LSU functions
                                LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
                              } fu_op;
+        // ---------------
+    // ID/EX/WB Stage
+    // ---------------
+    // store the decompressed instruction
+    typedef struct packed {
+        branchpredict_sbe branch_predict;
+        logic [63:0]      address;
+        logic [31:0]      instruction;
+        logic             is_compressed;
+        logic             is_illegal;
+    } fetch_entry;
 
     // ---------------
     // ID/EX/WB Stage

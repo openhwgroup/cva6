@@ -36,9 +36,7 @@ module fetch_fifo_tb;
         .in_rdata_i       ( fetch_fifo_if.in_rdata           ),
         .in_valid_i       ( fetch_fifo_if.in_valid           ),
         .in_ready_o       ( fetch_fifo_if.in_ready           ),
-        .branch_predict_o ( fetch_fifo_if.out_branch_predict ),
-        .out_addr_o       ( fetch_fifo_if.out_addr           ),
-        .out_rdata_o      ( fetch_fifo_if.out_rdata          ),
+        .fetch_entry_o    ( fetch_fifo_if.fetch_entry ),
         .out_valid_o      ( fetch_fifo_if.out_valid          ),
         .out_ready_i      ( fetch_fifo_if.out_ready          )
     );
