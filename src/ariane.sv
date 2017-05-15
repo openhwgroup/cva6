@@ -82,14 +82,12 @@ module ariane
     logic                     flush;
     logic                     fetch_enable;
     logic                     halt_if;
-    logic [63:0]              pc_if;
     exception                 ex_commit; // exception from commit stage
     branchpredict             resolved_branch;
     // --------------
     // PCGEN <-> IF
     // --------------
     logic [63:0]              fetch_address_pcgen_if;
-    logic                     set_fetch_address_pcgen_if;
     branchpredict_sbe         branch_predict_pcgen_if;
     logic                     if_ready_if_pcgen;
     logic                     fetch_valid_pcgen_if;
@@ -104,7 +102,6 @@ module ariane
     // --------------
     // IF <-> ID
     // --------------
-    logic                     busy_if_id;
     fetch_entry               fetch_entry_if_id;
     logic                     ready_id_if;
     logic                     fetch_valid_if_id;
@@ -114,7 +111,6 @@ module ariane
     // ID <-> EX
     // --------------
     logic [63:0]              imm_id_ex;
-    logic                     ready_id_ex;
     logic [TRANS_ID_BITS-1:0] trans_id_id_ex;
     fu_op                     operator_id_ex;
     logic [63:0]              operand_a_id_ex;
@@ -183,7 +179,6 @@ module ariane
     logic                     flag_mxr_csr_ex;
     logic [37:0]              pd_ppn_csr_ex;
     logic [0:0]               asid_csr_ex;
-    logic                     flush_tlb_csr_ex;
     logic [11:0]              csr_addr_ex_csr;
     // --------------
     // COMMIT <-> CSR

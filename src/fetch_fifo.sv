@@ -79,18 +79,11 @@ module fetch_fifo
     // Input Registers
     // ----------------
     always_comb begin
-        // if we are not ready latch the values
-        in_addr_n           = in_addr_q;
-        in_rdata_n          = in_rdata_q;
-        in_valid_n          = 1'b0;
-        branch_predict_n    = branch_predict_q;
         // if we are ready to accept new data - do so!
-        if (in_ready_o) begin
-            in_addr_n        = in_addr_i;
-            in_rdata_n       = in_rdata_i;
-            in_valid_n       = in_valid_i;
-            branch_predict_n = branch_predict_i;
-        end
+        in_addr_n           = in_addr_i;
+        in_rdata_n          = in_rdata_i;
+        in_valid_n          = in_valid_i;
+        branch_predict_n    = branch_predict_i;
         // flush the input registers
         if (flush_i) begin
             in_valid_n = 1'b0;
@@ -222,6 +215,10 @@ module fetch_fifo
                 unaligned_address_n = {in_addr_q[63:2], 2'b10};
                 // $display("Instruction: [ i0 | i1 ] @ %t", $time);
                 // this does not consume space in the FIFO
+            // we've got a predicted taken branch we need to clear the unaligned flag if it was decoded as a lower 16 instruction
+            end else if (branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16) begin
+                // the next fetch will start from a 4 byte boundary again
+                unaligned_n = 1'b0;
             end
         end
 
@@ -245,6 +242,8 @@ module fetch_fifo
             status_cnt_n    = '0;
             write_pointer_n = 'b0;
             read_pointer_n  = 'b0;
+            // clear the unaligned instruction
+            unaligned_n     = 1'b0;
         end
     end
 

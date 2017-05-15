@@ -16,7 +16,6 @@
 L0: nop
     nop
     nop
-    nop
     jal L1
     nop
     nop
