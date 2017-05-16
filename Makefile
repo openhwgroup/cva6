@@ -7,6 +7,9 @@ library = work
 # Top level module to compile
 top_level = core_tb
 test_top_level = core_tb
+
+# utility modules
+util = $(wildcard src/util/*.sv)
 # test targets
 tests = alu scoreboard fifo mem_arbiter store_queue lsu core fetch_fifo
 # UVM agents
@@ -21,9 +24,9 @@ sequences =  $(wildcard tb/sequences/*/*.sv)
 test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv) $(wildcard tb/test/*/*_pkg.sv)
 
 # this list contains the standalone components
-src = $(wildcard src/util/*.sv) $(wildcard src/*.sv)
+src = $(wildcard src/*.sv)
 # look for testbenches
-tbs =  $(wildcard tb/*_tb.sv)
+tbs = $(wildcard tb/*_tb.sv)
 
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
@@ -46,6 +49,7 @@ $(library):
 # Build the TB and module using QuestaSim
 build: $(library) build-agents build-interfaces
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
+	vlog${questa_version} ${compile_flag} -incr ${util} ${list_incdir} -suppress 2583
 	# Compile agents, interfaces and environments
 	vlog${questa_version} ${compile_flag} -incr ${envs} ${sequences} ${test_pkg} ${list_incdir} -suppress 2583
 	# Compile source files

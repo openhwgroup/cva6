@@ -18,6 +18,9 @@
 // University of Bologna.
 //
 import ariane_pkg::*;
+`ifndef SYNTHESIS
+import instruction_tracer_pkg::*;
+`endif
 
 module ariane
     #(
@@ -428,7 +431,32 @@ module ariane
         .resolved_branch_i      ( resolved_branch               ),
         .*
     );
+    // -------------------
+    // Instruction Tracer
+    // -------------------
+    `ifndef SYNTHESIS
+    instruction_tracer_if tracer_if (clk_i);
+    // assign instruction tracer interface
+    assign tracer_if.rstn = rst_ni;
+    assign tracer_if.commit_instr = commit_instr_id_commit;
+    assign tracer_if.commit_ack   = commit_ack_commit_id;
+    assign tracer_if.fetch        = fetch_entry_if_id;
+    assign tracer_if.fetch_valid  = fetch_valid_if_id;
+    assign tracer_if.fetch_ack    = decode_ack_id_if;
+    assign tracer_if.waddr        = waddr_a_commit_id;
+    assign tracer_if.wdata        = wdata_a_commit_id;
+    assign tracer_if.we           = we_a_commit_id;
 
+    program instr_tracer (instruction_tracer_if tracer_if);
+        instruction_tracer it = new (tracer_if);
+
+        initial begin
+            it.trace();
+        end
+    endprogram
+
+    instr_tracer instr_tracer_i (tracer_if);
+    `endif
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
