@@ -32,24 +32,25 @@ module ex_stage #(
     input  logic [63:0]                            operand_c_i,
     input  logic [63:0]                            imm_i,
     input  logic [TRANS_ID_BITS-1:0]               trans_id_i,
-    input  logic [63:0]                            pc_i,             // PC of current instruction
+    input  logic [63:0]                            pc_i,                  // PC of current instruction
     input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
                                                                           // in order to calculate the next PC on a mis-predict
     // ALU 1
-    output logic                                   alu_ready_o,      // FU is ready
-    input  logic                                   alu_valid_i,      // Output is valid
-    output logic                                   alu_valid_o,      // ALU result is valid
+    output logic                                   alu_ready_o,           // FU is ready
+    input  logic                                   alu_valid_i,           // Output is valid
+    output logic                                   alu_valid_o,           // ALU result is valid
     output logic [63:0]                            alu_result_o,
-    output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,   // ID of scoreboard entry at which to write back
+    output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
     output exception                               alu_exception_o,
     // Branches and Jumps
-    input  logic                                   branch_valid_i,  // we are using the branch unit
-    input  branchpredict_sbe                       branch_predict_i,       // branch prediction in
-    output branchpredict                           resolved_branch_o, // the branch engine uses the write back from the ALU
+    input  logic                                   branch_valid_i,        // we are using the branch unit
+    input  branchpredict_sbe                       branch_predict_i,      // branch prediction in
+    output branchpredict                           resolved_branch_o,     // the branch engine uses the write back from the ALU
+    output logic                                   resolve_branch_o,      // to ID signaling that we resolved the branch
     // LSU
-    output logic                                   lsu_ready_o,      // FU is ready
-    input  logic                                   lsu_valid_i,      // Input is valid
-    output logic                                   lsu_valid_o,      // Output is valid
+    output logic                                   lsu_ready_o,           // FU is ready
+    input  logic                                   lsu_valid_i,           // Input is valid
+    output logic                                   lsu_valid_o,           // Output is valid
     output logic [63:0]                            lsu_result_o,
     output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
     input  logic                                   lsu_commit_i,

@@ -32,6 +32,8 @@ module branch_engine (
 
     input  branchpredict_sbe branch_predict_i,       // this is the address we predicted
     output branchpredict     resolved_branch_o,      // this is the actual address we are targeting
+    output logic             resolve_branch_o,       // to ID to clear that we resolved the branch and we can
+                                                     // accept new entries to the scoreboard
     output exception         branch_ex_o             // branch exception out
 );
     logic [63:0] target_address;
@@ -67,6 +69,7 @@ module branch_engine (
         resolved_branch_o.valid          = valid_i;
         resolved_branch_o.is_mispredict  = 1'b0;
         resolved_branch_o.is_lower_16    = 1'b0;
+        resolved_branch_o                = 1'b0;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
         next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
@@ -94,14 +97,17 @@ module branch_engine (
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
             if (target_address[0] == 1'b0) begin
                 // TODO in case of branch which is not taken it is not necessary to check for the address
-                if (   target_address != branch_predict_i.predict_address      // we mis-predicted the address of the branch
-                    || branch_predict_i.predict_taken != comparison_result   // we mis-predicted the outcome of the branch
-                    || branch_predict_i.valid == 1'b0         // this means branch-prediction thought it was no branch but in reality it was one
+                if (target_address != branch_predict_i.predict_address     // we mis-predicted the address of the branch
+                    || branch_predict_i.predict_taken != comparison_result // we mis-predicted the outcome of the branch
+                    || branch_predict_i.valid == 1'b0                      // this means branch-prediction thought it was no
+                                                                           // branch but in reality it was one
                     ) begin
                     resolved_branch_o.is_mispredict  = 1'b1;
                 end
             end
-        // the other case would be that this instruction was no branch but branchprediction thought that it was one
+            // to resolve the branch in ID -> only do this if this was indeed a branch (hence vald_i is asserted)
+            resolved_branch_o = 1'b1;
+        // the other case would be that this instruction was no branch but branch prediction thought that it was one
         // this is essentially also a mis-predict
         end else if (fu_valid_i && branch_predict_i.valid) begin
             // re-set the branch to the next PC

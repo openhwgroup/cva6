@@ -128,6 +128,7 @@ module ariane
     // Branches and Jumps
     logic                     branch_valid_id_ex;
     branchpredict_sbe         branch_predict_id_ex;
+    logic                     resolve_branch_ex_id;
     // LSU
     logic [TRANS_ID_BITS-1:0] lsu_trans_id_ex_id;
     logic                     lsu_valid_id_ex;
@@ -277,7 +278,7 @@ module ariane
         // Branches and Jumps
         .branch_valid_o             ( branch_valid_id_ex                       ), // branch is valid
         .branch_predict_o           ( branch_predict_id_ex                     ), // branch predict to ex
-        .resolved_branch_i          ( resolved_branch                          ), // in order to resolve the branch
+        .resolve_branch_i           ( resolve_branch_ex_id                     ), // in order to resolve the branch
         // LSU
         .lsu_ready_i                ( lsu_ready_ex_id                          ),
         .lsu_valid_o                ( lsu_valid_id_ex                          ),
@@ -323,8 +324,9 @@ module ariane
         .alu_exception_o        ( alu_exception_ex_id        ),
         // Branches and Jumps
         .branch_valid_i         ( branch_valid_id_ex         ),
-        .branch_predict_i       ( branch_predict_id_ex                     ), // branch predict to ex
+        .branch_predict_i       ( branch_predict_id_ex       ), // branch predict to ex
         .resolved_branch_o      ( resolved_branch            ),
+        .resolve_branch_o       ( resolve_branch_ex_id       ),
         // LSU
         .lsu_ready_o            ( lsu_ready_ex_id            ),
         .lsu_valid_i            ( lsu_valid_id_ex            ),

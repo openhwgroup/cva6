@@ -50,7 +50,7 @@ module id_stage #(
     output logic                                     alu_valid_o,
     output logic                                     branch_valid_o, // use branch prediction unit
     // ex just resolved our predicted branch, we are ready to accept new requests
-    input  branchpredict                             resolved_branch_i,
+    input  logic                                     resolve_branch_i,
 
     input  logic                                     lsu_ready_i,
     output logic                                     lsu_valid_o,
@@ -116,17 +116,22 @@ module id_stage #(
     always_comb begin : unresolved_branch
         unresolved_branch_n = unresolved_branch_q;
         // we just resolved the branch
-        if (resolved_branch_i.valid) begin
+        if (resolve_branch_i) begin
             unresolved_branch_n = 1'b0;
         end
         // if the instruction is valid and it is a control flow instruction
-        if (fetch_entry_valid_i && is_control_flow_instr && ~flush_unissued_instr_i) begin
+        if (fetch_entry_valid_i && is_control_flow_instr) begin
             unresolved_branch_n = 1'b1;
+        end
+        // if we are requested to flush also flush the unresolved branch flag because either the flush
+        // was requested by a branch or an exception. In any case: any unresolved branch will get evicted
+        if (flush_unissued_instr_i || flush_i) begin
+            unresolved_branch_n = 1'b0;
         end
     end
     // we are ready if we are not full and don't have any unresolved branches, but it can be
     // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i.valid == 1)
-    assign ready_o           = ~full && (~unresolved_branch_q || resolved_branch_i.valid);
+    assign ready_o           = ~full && (~unresolved_branch_q || resolve_branch_i);
 
     decoder decoder_i (
         .pc_i                    ( fetch_entry_i.address         ),
