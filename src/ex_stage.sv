@@ -98,19 +98,11 @@ module ex_stage #(
     input  logic                                   mult_valid_i       // Output is valid
 );
 
-    // ALU is a single cycle instructions, hence it is always ready
-    assign alu_ready_o = 1'b1;
-    assign alu_valid_o = alu_valid_i;
-    assign alu_trans_id_o = trans_id_i;
     // -----
     // ALU
     // -----
     alu alu_i (
-        .adder_result_o      (                              ),
-        .adder_result_ext_o  (                              ),
         .result_o            ( alu_result_o                 ),
-        .is_equal_result_o   (                              ),
-        .comparison_result_o (                              ),
         .*
     );
 
