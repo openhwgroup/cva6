@@ -69,7 +69,7 @@ module branch_engine (
         resolved_branch_o.valid          = valid_i;
         resolved_branch_o.is_mispredict  = 1'b0;
         resolved_branch_o.is_lower_16    = 1'b0;
-        resolved_branch_o                = 1'b0;
+        resolve_branch_o                 = 1'b0;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
         next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
@@ -106,7 +106,7 @@ module branch_engine (
                 end
             end
             // to resolve the branch in ID -> only do this if this was indeed a branch (hence vald_i is asserted)
-            resolved_branch_o = 1'b1;
+            resolve_branch_o = 1'b1;
         // the other case would be that this instruction was no branch but branch prediction thought that it was one
         // this is essentially also a mis-predict
         end else if (fu_valid_i && branch_predict_i.valid) begin

@@ -115,4 +115,27 @@ module commit_stage (
         end
 
     end
+    `ifndef SYNTHESIS
+        always_ff @(posedge clk_i) begin : exception_displayer
+            string cause;
+            // we encountered an exception
+            // format cause
+            if (exception_o.valid) begin
+                case (exception_o.cause)
+                    INSTR_ADDR_MISALIGNED: cause = "Instruction Address Misaligned";
+                    INSTR_ACCESS_FAULT:    cause = "Instruction Access Fault";
+                    ILLEGAL_INSTR:         cause = "Illegal Instruction";
+                    BREAKPOINT:            cause = "Breakpoint";
+                    LD_ADDR_MISALIGNED:    cause = "Load Address Misaligned";
+                    LD_ACCESS_FAULT:       cause = "Load Access Fault";
+                    ST_ADDR_MISALIGNED:    cause = "Store Address Misaligned";
+                    ST_ACCESS_FAULT:       cause = "Store Access Fault";
+                    ENV_CALL_UMODE:        cause = "Environment Call UMode";
+                    ENV_CALL_SMODE:        cause = "Environment Call SMode";
+                    ENV_CALL_MMODE:        cause = "Environment Call MMode";
+                endcase
+            $display("Exception @%t, PC: %0h, TVal: %0h, Cause: %s", $time, commit_instr_i.pc, exception_o.tval, cause);
+            end
+        end
+    `endif
 endmodule

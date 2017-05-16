@@ -122,33 +122,89 @@ module fetch_fifo
         // ---------------------------------
         // Input port & Instruction Aligner
         // ---------------------------------
-        if (in_valid_q && !unaligned_q) begin
-            // we got a valid instruction so we can satisfy the unaligned instruction
-            unaligned_n = 1'b0;
-            // check if the instruction is compressed
-            if (in_rdata_q[1:0] != 2'b11) begin
-                // it is compressed
+        // do we actually want the first instruction or was the address a half word access?
+        if (in_valid_q && in_addr_q[1] == 1'b0) begin
+            if (!unaligned_q) begin
+                // we got a valid instruction so we can satisfy the unaligned instruction
+                unaligned_n = 1'b0;
+                // check if the instruction is compressed
+                if (in_rdata_q[1:0] != 2'b11) begin
+                    // it is compressed
+                    mem_n[write_pointer_q]    = {
+                        branch_predict_q, in_addr_q, decompressed_instruction[0], 1'b1, is_illegal[0]
+                    };
+
+                    status_cnt++;
+                    write_pointer++;
+
+                    // is the second instruction also compressed, like:
+                    // _____________________________________________
+                    // | compressed 2 [31:16] | compressed 1[15:0] |
+                    // |____________________________________________
+                    // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
+                    // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
+                    if (in_rdata_q[17:16] != 2'b11 && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+
+                        mem_n[write_pointer_q + 1'b1]    = {
+                            branch_predict_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
+                        };
+
+                        status_cnt++;
+                        write_pointer++;
+                        // $display("Instruction: [ c  | c  ] @ %t", $time);
+                    // or is it an unaligned 32 bit instruction like
+                    // ____________________________________________________
+                    // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
+                    // |____________________________________________________
+                    end else if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+                        // save the lower 16 bit
+                        unaligned_instr_n = in_rdata_q[31:16];
+                        // and that it was unaligned
+                        unaligned_n = 1'b1;
+                        // save the address as well
+                        unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                        // $display("Instruction: [ i0 | c  ] @ %t", $time);
+                        // this does not consume space in the FIFO
+                    end
+                end else begin
+                    // this is a full 32 bit instruction like
+                    // _______________________
+                    // | instruction [31:0]  |
+                    // |______________________
+                    mem_n[write_pointer_q]    = {
+                        branch_predict_q, in_addr_q, in_rdata_q, 1'b0, 1'b0
+                    };
+                    status_cnt++;
+                    write_pointer++;
+                    // $display("Instruction: [    i    ] @ %t", $time);
+                end
+            end
+            // we have an outstanding unaligned instruction
+            if (in_valid_q && unaligned_q) begin
+
                 mem_n[write_pointer_q]    = {
-                    branch_predict_q, in_addr_q, decompressed_instruction[0], 1'b1, is_illegal[0]
+                    branch_predict_q, unaligned_address_q, {in_rdata_q[15:0], unaligned_instr_q}, 1'b0, 1'b0
                 };
 
                 status_cnt++;
                 write_pointer++;
+                // whats up with the other upper 16 bit of this instruction
                 // is the second instruction also compressed, like:
                 // _____________________________________________
-                // | compressed 2 [31:16] | compressed 1[15:0] |
+                // | compressed 2 [31:16] | unaligned[31:16]    |
                 // |____________________________________________
                 // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
                 // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
-                if (in_rdata_q[17:16] != 2'b11 && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
-
-                    mem_n[write_pointer_q + 1'b1]    = {
+                if (in_rdata_q[17:16] != 2'b11  && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+                    mem_n[write_pointer_q + 1'b1] = {
                         branch_predict_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
                     };
 
                     status_cnt++;
                     write_pointer++;
-                    // $display("Instruction: [ c  | c  ] @ %t", $time);
+                    // unaligned access served
+                    unaligned_n = 1'b0;
+                    // $display("Instruction: [ c  | i1 ] @ %t", $time);
                 // or is it an unaligned 32 bit instruction like
                 // ____________________________________________________
                 // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
@@ -160,66 +216,36 @@ module fetch_fifo
                     unaligned_n = 1'b1;
                     // save the address as well
                     unaligned_address_n = {in_addr_q[63:2], 2'b10};
-                    // $display("Instruction: [ i0 | c  ] @ %t", $time);
+                    // $display("Instruction: [ i0 | i1 ] @ %t", $time);
                     // this does not consume space in the FIFO
+                // we've got a predicted taken branch we need to clear the unaligned flag if it was decoded as a lower 16 instruction
+                end else if (branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16) begin
+                    // the next fetch will start from a 4 byte boundary again
+                    unaligned_n = 1'b0;
                 end
-            end else begin
-                // this is a full 32 bit instruction like
-                // _______________________
-                // | instruction [31:0]  |
-                // |______________________
-                mem_n[write_pointer_q]    = {
-                    branch_predict_q, in_addr_q, in_rdata_q, 1'b0, 1'b0
-                };
-                status_cnt++;
-                write_pointer++;
-                // $display("Instruction: [    i    ] @ %t", $time);
             end
-        end
-        // we have an outstanding unaligned instruction
-        if (in_valid_q && unaligned_q) begin
-
-            mem_n[write_pointer_q]    = {
-                branch_predict_q, unaligned_address_q, {in_rdata_q[15:0], unaligned_instr_q}, 1'b0, 1'b0
-            };
-
-            status_cnt++;
-            write_pointer++;
-            // whats up with the other upper 16 bit of this instruction
-            // is the second instruction also compressed, like:
-            // _____________________________________________
-            // | compressed 2 [31:16] | unaligned[31:16]    |
-            // |____________________________________________
-            // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
-            // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
-            if (in_rdata_q[17:16] != 2'b11  && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
-                mem_n[write_pointer_q + 1'b1] = {
-                    branch_predict_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
+        end else if (in_valid_q && in_addr_q[1] == 1'b1) begin // address was a half word access
+            // reset the unaligned flag as this is a completely new fetch (because consecutive fetches only happen on a word basis)
+            unaligned_n = 1'b0;
+            // this is a compressed instruction
+            if (in_rdata_q[17:16] != 2'b11) begin
+                // it is compressed
+                mem_n[write_pointer_q]    = {
+                    branch_predict_q, in_addr_q, decompressed_instruction[1], 1'b1, is_illegal[1]
                 };
 
                 status_cnt++;
                 write_pointer++;
-                // unaligned access served
-                unaligned_n = 1'b0;
-                // $display("Instruction: [ c  | i1 ] @ %t", $time);
-            // or is it an unaligned 32 bit instruction like
-            // ____________________________________________________
-            // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
-            // |____________________________________________________
-            end else if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
-                // save the lower 16 bit
+            end else begin // this is the first part of a 32 bit unaligned instruction
+                 // save the lower 16 bit
                 unaligned_instr_n = in_rdata_q[31:16];
                 // and that it was unaligned
                 unaligned_n = 1'b1;
                 // save the address as well
                 unaligned_address_n = {in_addr_q[63:2], 2'b10};
-                // $display("Instruction: [ i0 | i1 ] @ %t", $time);
                 // this does not consume space in the FIFO
-            // we've got a predicted taken branch we need to clear the unaligned flag if it was decoded as a lower 16 instruction
-            end else if (branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16) begin
-                // the next fetch will start from a 4 byte boundary again
-                unaligned_n = 1'b0;
             end
+            // there can never be a whole 32 bit instruction on a half word access
         end
 
         // -------------

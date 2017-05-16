@@ -51,6 +51,7 @@ module prefetch_buffer
 
   enum logic [1:0] {IDLE, WAIT_GNT, WAIT_RVALID, WAIT_ABORTED } CS, NS;
 
+  logic [63:0]      fetch_address;
   logic             addr_valid;
   logic [63:0]      instr_addr_q;
   logic             fifo_valid;
@@ -63,7 +64,7 @@ module prefetch_buffer
   // we are busy if we are either waiting for a grant
   // or if the fifo is full
   assign busy_o = (CS inside {WAIT_GNT, WAIT_ABORTED} && !instr_req_o) || !fifo_ready;
-
+  assign fetch_address = {fetch_address_i[63:2], 2'b0};
   //---------------------------------
   // Fetch FIFO
   // consumes addresses and rdata
@@ -84,18 +85,16 @@ module prefetch_buffer
   // Instruction fetch FSM
   // deals with instruction memory / instruction cache
   //--------------------------------------------------
-
-  always_comb
-  begin
+  always_comb begin
     instr_req_o   = 1'b0;
-    instr_addr_o  = fetch_address_i;
+    instr_addr_o  = fetch_address;
     fifo_valid    = 1'b0;
     NS            = CS;
 
     unique case(CS)
         // default state, not waiting for requested data
         IDLE: begin
-            instr_addr_o = fetch_address_i;
+            instr_addr_o = fetch_address;
             instr_req_o  = 1'b0;
 
             // make a new request
@@ -118,7 +117,7 @@ module prefetch_buffer
 
         // we sent a request but did not yet get a grant
         WAIT_GNT: begin
-            instr_addr_o = instr_addr_q;
+            instr_addr_o = {instr_addr_q[63:2], 2'b0};
             instr_req_o  = 1'b1;
 
             if(instr_gnt_i)
@@ -133,7 +132,7 @@ module prefetch_buffer
 
           // we wait for rvalid, after that we are ready to serve a new request
         WAIT_RVALID: begin
-            instr_addr_o = fetch_address_i;
+            instr_addr_o = fetch_address;
             // prepare for next request
             if (fifo_ready && fetch_valid_i) begin
                 // wait for the valid signal
@@ -172,9 +171,10 @@ module prefetch_buffer
         // our last request was aborted, but we didn't yet get a rvalid and
         // there was no new request sent yet we assume that req_i is set to high
         WAIT_ABORTED: begin
-            instr_addr_o = fetch_address_i;
-
+            instr_addr_o = {fetch_address_i[63:2], 2'b0};
             if (instr_rvalid_i) begin
+                // we are aborting this instruction so don't tell the FIFO it is valid
+                fifo_valid   = 1'b0;
                 instr_req_o  = 1'b1;
 
                 if (instr_gnt_i) begin
@@ -209,7 +209,7 @@ module prefetch_buffer
     end else begin
       CS              <= NS;
       if (addr_valid) begin
-        instr_addr_q    <= instr_addr_o;
+        instr_addr_q    <= fetch_address_i;
         branchpredict_q <= branch_predict_i;
       end
     end
