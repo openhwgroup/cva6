@@ -170,7 +170,7 @@ module lsu #(
         .INSTR_TLB_ENTRIES      ( 16                   ),
         .DATA_TLB_ENTRIES       ( 16                   ),
         .ASID_WIDTH             ( ASID_WIDTH           )
-    ) i_mmu (
+    ) mmu_i (
         .lsu_req_i              ( translation_req      ),
         .lsu_vaddr_i            ( vaddr                ),
         .lsu_valid_o            ( translation_valid    ),
@@ -353,32 +353,32 @@ module lsu #(
                     // essentially the same part as in IDLE but we can't accept a new store
                     // as the store could immediately be performed and we would collide on the
                     // trans id part (e.g.: a structural hazard)
-                    if (op == LD_OP & lsu_valid_i) begin
-                        translation_req = 1'b1;
-                        // we can never handle a load in a single cycle
-                        // but at least on a tlb hit we can output it to the memory
-                        if (translation_valid) begin
-                            // check if the address is in the store buffer otherwise we need
-                            // to wait until the store buffer has cleared its entry
-                            if (~address_match) begin
-                                // lets request this read
-                                data_req_i[1] = 1'b1;
-                                // we already got a grant here so lets wait for the rvalid
-                                if (data_gnt_o[1]) begin
-                                    NS = LOAD_WAIT_RVALID;
-                                end else begin // we didn't get a grant so wait for it in a separate stage
-                                    NS = LOAD_WAIT_GNT;
-                                end
-                            end
-                        end else begin// otherwise we need to wait for the translation
-                            NS = LOAD_WAIT_TRANSLATION;
-                        end
-                    // STORE
-                    end else if (op == ST_OP & lsu_valid_i) begin
-                        NS = STORE;
-                    end else begin
+                    // if (op == LD_OP & lsu_valid_i) begin
+                    //     translation_req = 1'b1;
+                    //     // we can never handle a load in a single cycle
+                    //     // but at least on a tlb hit we can output it to the memory
+                    //     if (translation_valid) begin
+                    //         // check if the address is in the store buffer otherwise we need
+                    //         // to wait until the store buffer has cleared its entry
+                    //         if (~address_match) begin
+                    //             // lets request this read
+                    //             data_req_i[1] = 1'b1;
+                    //             // we already got a grant here so lets wait for the rvalid
+                    //             if (data_gnt_o[1]) begin
+                    //                 NS = LOAD_WAIT_RVALID;
+                    //             end else begin // we didn't get a grant so wait for it in a separate stage
+                    //                 NS = LOAD_WAIT_GNT;
+                    //             end
+                    //         end
+                    //     end else begin// otherwise we need to wait for the translation
+                    //         NS = LOAD_WAIT_TRANSLATION;
+                    //     end
+                    // // STORE
+                    // end else if (op == ST_OP & lsu_valid_i) begin
+                    //     NS = STORE;
+                    // end else begin
                         NS = IDLE;
-                    end
+                    // end
 
                 end else begin
                     // and stall

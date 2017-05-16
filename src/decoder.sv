@@ -11,13 +11,15 @@
 import ariane_pkg::*;
 
 module decoder (
-    input  logic            clk_i,           // Clock
-    input  logic            rst_ni,          // Asynchronous reset active low
-    input  logic [63:0]     pc_i,            // PC from IF
-    input  logic            is_compressed_i, // is a compressed instruction
-    input  logic [31:0]     instruction_i,   // instruction from IF
-    input  exception        ex_i,            // if an exception occured in if
-    output scoreboard_entry instruction_o   // scoreboard entry to scoreboard
+    input  logic             clk_i,                   // Clock
+    input  logic             rst_ni,                  // Asynchronous reset active low
+    input  logic [63:0]      pc_i,                    // PC from IF
+    input  logic             is_compressed_i,         // is a compressed instruction
+    input  logic [31:0]      instruction_i,           // instruction from IF
+    input  branchpredict_sbe branch_predict_i,
+    input  exception         ex_i,                    // if an exception occured in if
+    output scoreboard_entry  instruction_o,           // scoreboard entry to scoreboard
+    output logic             is_control_flow_instr_o  // this instruction will change the control flow
 );
     logic illegal_instr;
     instruction instr;
@@ -45,6 +47,7 @@ module decoder (
     always_comb begin : decoder
 
         imm_select                  = NOIMM;
+        is_control_flow_instr_o     = 1'b0;
         illegal_instr               = 1'b0;
         instruction_o.pc            = pc_i;
         instruction_o.fu            = NONE;
@@ -56,6 +59,7 @@ module decoder (
         instruction_o.trans_id      = 5'b0;
         instruction_o.is_compressed = is_compressed_i;
         instruction_o.use_zimm      = 1'b0;
+        instruction_o.bp            = branch_predict_i;
 
         if (~ex_i.valid) begin
             case (instr.rtype.opcode)
@@ -294,17 +298,40 @@ module decoder (
 
                 OPCODE_BRANCH: begin
                     // TODO: Implement
-                    imm_select = BIMM;
-                end
+                    imm_select              = BIMM;
+                    instruction_o.fu        = CTRL_FLOW;
+                    is_control_flow_instr_o = 1'b1;
 
+                    case (instr.stype.funct3)
+                        3'b000: instruction_o.op = EQ;
+                        3'b001: instruction_o.op = NE;
+                        3'b100: instruction_o.op = LTS;
+                        3'b101: instruction_o.op = GES;
+                        3'b110: instruction_o.op = LTU;
+                        3'b111: instruction_o.op = GEU;
+                        default: begin
+                            is_control_flow_instr_o = 1'b0;
+                            illegal_instr           = 1'b1;
+                        end
+                    endcase
+                end
+                // Jump and link register
                 OPCODE_JALR: begin
-                    // TODO: Implement
-                    imm_select = UIMM;
+                    instruction_o.fu        = CTRL_FLOW;
+                    instruction_o.op        = JALR;
+                    imm_select              = UIMM;
+                    instruction_o.use_pc    = 1'b1;
+                    instruction_o.rd        = instr.itype.rd;
+                    is_control_flow_instr_o = 1'b1;
                 end
-
+                // Jump and link
                 OPCODE_JAL: begin
-                    // TODO: Implement
-                    imm_select = JIMM;
+                    instruction_o.fu        = CTRL_FLOW;
+                    instruction_o.op        = JAL;
+                    imm_select              = JIMM;
+                    instruction_o.use_pc    = 1'b1;
+                    instruction_o.rd        = instr.utype.rd;
+                    is_control_flow_instr_o = 1'b1;
                 end
 
                 OPCODE_AUIPC: begin
@@ -377,8 +404,8 @@ module decoder (
     // Exception handling
     // --------------------------------
     always_comb begin : exception_handling
-        instruction_o.ex    = ex_i;
-        instruction_o.valid = 1'b0;
+        instruction_o.ex      = ex_i;
+        instruction_o.valid   = 1'b0;
         // look if we didn't already get an exception in any previous
         // stage - we should not overwrite it as we retain order regarding the exception
         if (~ex_i.valid && illegal_instr) begin
@@ -388,6 +415,8 @@ module decoder (
             instruction_o.ex.valid = 1'b1;
             // we decoded an illegal exception here
             instruction_o.ex.cause = ILLEGAL_INSTR;
+            // if we decoded an illegal instruction save the faulting instruction to tval
+            instruction_o.ex.tval  = instruction_i;
         end
     end
 endmodule

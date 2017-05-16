@@ -26,14 +26,15 @@ module alu_tb;
     alu
     dut
     (
+        .trans_id_i             (                           ),
+        .alu_valid_i            (                           ),
         .operator_i             ( fu_op'(alu_if.operator)   ),
         .operand_a_i            ( alu_if.operand_a          ),
         .operand_b_i            ( alu_if.operand_b          ),
         .result_o               ( alu_if.result             ),
-        .comparison_result_o    ( alu_if.comparison_result  ),
-        .is_equal_result_o      (  		                    ),
-        .adder_result_ext_o     (   		                ),
-        .adder_result_o         (     			            )
+        .alu_valid_o            (                           ),
+        .alu_ready_o            (                           ),
+        .alu_trans_id_o         (                           )
     );
 
     initial begin

@@ -20,34 +20,29 @@
 import ariane_pkg::*;
 
 module pcgen (
-    input  logic        clk_i,              // Clock
-    input  logic        rst_ni,             // Asynchronous reset active low
-
-    input  logic        flush_i,
-    input  logic [63:0] pc_if_i,
-    input  mispredict   mispredict_i,       // from controller signaling a mispredict -> update BTB
+    input  logic             clk_i,              // Clock
+    input  logic             rst_ni,             // Asynchronous reset active low
+    // control signals
+    input  logic             fetch_enable_i,
+    input  logic             flush_i,
+    input  logic             if_ready_i,
+    input  branchpredict     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
     // to IF
-    output logic [63:0] pc_if_o,            // new PC
-    output logic        set_pc_o,           // request the PC to be set to pc_if_o
-    output logic        is_branch_o,        // to check if we mispredicted we need to save whether this was a branch or not
+    output logic [63:0]      fetch_address_o,    // new PC (address because we do not distinguish instructions)
+    output logic             fetch_valid_o,      // the PC (address) is valid
+    output branchpredict_sbe branch_predict_o,   // pass on the information if this is speculative
     // global input
-    input  logic [63:0] boot_addr_i,
+    input  logic [63:0]      boot_addr_i,
     // CSR input
-    input  logic [63:0] epc_i,              // return from exception
-    input  logic [63:0] trap_vector_base_i, // base of trap vector
-    input  exception    ex_i                // exception in - from commit
+    input  logic [63:0]      epc_i,              // return from exception
+    input  logic [63:0]      trap_vector_base_i, // base of trap vector
+    input  exception         ex_i                // exception in - from commit
 );
 
-    logic [63:0] branch_target_address;
-    logic        predict_taken;
-    logic [63:0] npc_n, npc_q;
-    logic        is_branch;
-    logic        is_branch_n, is_branch_q;
-    logic        set_pc_n, set_pc_q;
+    logic [63:0]      npc_n, npc_q;
+    branchpredict_sbe branch_predict_btb;
 
-    assign pc_if_o     = npc_q;
-    assign set_pc_o    = set_pc_q;
-    assign is_branch_o = is_branch_q;
+    assign fetch_address_o = npc_q;
 
     btb #(
         .NR_ENTRIES(64),
@@ -55,58 +50,63 @@ module pcgen (
     )
     btb_i
     (
-        .vpc_i                   ( pc_if_i                 ),
-        .mispredict_i            ( mispredict_i           ),
-        .is_branch_o             ( is_branch               ),
-        .predict_taken_o         ( predict_taken           ),
-        .branch_target_address_o ( branch_target_address   ),
+        // Use the PC from last cycle to perform branch lookup for the current cycle
+        .vpc_i                   ( npc_q                   ),
+        .branch_predict_i        ( resolved_branch_i       ), // update port
+        .branch_predict_o        ( branch_predict_btb      ), // read port
         .*
     );
-
-    // TODO: on flush output exception or other things but do not take branch
     // -------------------
     // Next PC
     // -------------------
-    // next PC (npc) can come from:
+    // next PC (NPC) can come from:
     // 1. Exception
     // 2. Return from exception
     // 3. Predicted branch
     // 4. Debug
     // 5. Boot address
     always_comb begin : npc_select
-        // default assignment
-        npc_n       = npc_q;
-        set_pc_n    = 1'b0;
-        is_branch_n = is_branch;
+        branch_predict_o = branch_predict_btb;
+        fetch_valid_o = 1'b1;
+
+        // 0. Default assignment
+        // default is a consecutive PC
+        if (if_ready_i && fetch_enable_i)
+            npc_n       = {npc_q[62:2], 2'b0}  + 64'h4;
+        else // or keep the PC stable if IF is not ready
+            npc_n       =  npc_q;
         // 4. Predict taken
-        if (predict_taken) begin
-            npc_n       = branch_target_address;
+        if (branch_predict_btb.valid && branch_predict_btb.predict_taken) begin
+            npc_n = branch_predict_btb.predict_address;
         end
         // 1.Debug
-
+        // 3. Control flow change request
+        if (resolved_branch_i.is_mispredict) begin
+            // we already got the correct target address
+            npc_n    = resolved_branch_i.target_address;
+        end
         // 2. Exception
         if (ex_i.valid) begin
-            npc_n       = trap_vector_base_i;
-            is_branch_n = 1'b0;
+            npc_n                 = trap_vector_base_i;
+            branch_predict_o.valid = 1'b0;
         end
 
         // 3. Return from exception
 
-
+        // fetch enable
+        if (!fetch_enable_i) begin
+            fetch_valid_o = 1'b0;
+        end
     end
     // -------------------
     // Sequential Process
     // -------------------
-    // PCGEN -> IF Register
+    // PCGEN -> IF Pipeline Stage
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-           npc_q       <= 64'b0;
-           set_pc_q    <= 1'b0;
-           is_branch_q <= 1'b0;
+           npc_q       <= boot_addr_i;
         end else begin
            npc_q       <= npc_n;
-           set_pc_q    <= set_pc_n;
-           is_branch_q <= is_branch_n;
         end
     end
 

@@ -61,16 +61,13 @@ module tlb #(
     logic [8:0] vpn0, vpn1, vpn2;
     logic [TLB_ENTRIES-1:0] lu_hit;     // to replacement logic
     logic [TLB_ENTRIES-1:0] replace_en; // replace the following entry, set by replacement strategy
-    // register signals
-    logic                   lu_access_q;
-    logic [63:0]            lu_vaddr_q;
     //-------------
     // Translation
     //-------------
     always_comb begin : translation
-        vpn0 = lu_vaddr_q[20:12];
-        vpn1 = lu_vaddr_q[29:21];
-        vpn2 = lu_vaddr_q[38:30];
+        vpn0 = lu_vaddr_i[20:12];
+        vpn1 = lu_vaddr_i[29:21];
+        vpn2 = lu_vaddr_i[38:30];
 
         // default assignment
         lu_hit       = '{default: 0};
@@ -168,7 +165,7 @@ module tlb #(
         // endcase
         for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
             // we got a hit so update the pointer as it was least recently used
-            if (lu_hit[i] & lu_access_q) begin
+            if (lu_hit[i] & lu_access_i) begin
                 // Set the nodes to the values we would expect
                 for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
                   automatic int unsigned idx_base = $unsigned((2**lvl)-1);
@@ -223,16 +220,6 @@ module tlb #(
             tags_q      <= tags_n;
             content_q   <= content_n;
             plru_tree_q <= plru_tree_n;
-        end
-    end
-    // sequential process
-    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
-        if(~rst_ni) begin
-            lu_access_q <= 1'b0;
-            lu_vaddr_q  <= 64'b0;
-        end else begin
-            lu_access_q <= lu_access_i;
-            lu_vaddr_q  <= lu_vaddr_i;
         end
     end
     //--------------

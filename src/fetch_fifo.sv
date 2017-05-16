@@ -1,242 +1,318 @@
-////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2017 ETH Zurich, University of Bologna                       //
-// All rights reserved.                                                       //
-//                                                                            //
-// This code is under development and not yet released to the public.         //
-// Until it is released, the code is under the copyright of ETH Zurich        //
-// and the University of Bologna, and may contain unpublished work.           //
-// Any reuse/redistribution should only be under explicit permission.         //
-//                                                                            //
-// Bug fixes and contributions will eventually be released under the          //
-// SolderPad open hardware license and under the copyright of ETH Zurich      //
-// and the University of Bologna.                                             //
-//                                                                            //
-// Engineer:       Andreas Traber - atraber@iis.ee.ethz.ch                    //
-//                                                                            //
-// Design Name:    Fetch Fifo for 32 bit memory interface                     //
-// Project Name:   zero-riscy                                                 //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Fetch fifo                                                 //
-////////////////////////////////////////////////////////////////////////////////
+// Author: Florian Zaruba, ETH Zurich
+// Date: 14.05.2017
+// Description: Dual Port fetch FIFO with instruction aligner and support for compressed instructions
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
+//
+// This code is under development and not yet released to the public.
+// Until it is released, the code is under the copyright of ETH Zurich and
+// the University of Bologna, and may contain confidential and/or unpublished
+// work. Any reuse/redistribution is strictly forbidden without written
+// permission from ETH Zurich.
+//
+// Bug fixes and contributions will eventually be released under the
+// SolderPad open hardware license in the context of the PULP platform
+// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+// University of Bologna.
+//
 
 import ariane_pkg::*;
 
-// input port: send address one cycle before the data
-// clear_i clears the FIFO for the following cycle. in_addr_i can be sent in
-// this cycle already
 module fetch_fifo
 (
-    input  logic        clk,
-    input  logic        rst_n,
-
+    input  logic                   clk_i,
+    input  logic                   rst_ni,
     // control signals
-    input  logic        clear_i,          // clears the contents of the fifo
-
-    // input port
-    input  logic [63:0] in_addr_i,
-    input  logic [31:0] in_rdata_i,
-    input  logic        in_valid_i,
-    output logic        in_ready_o,
-
+    input  logic                   flush_i,    // clears the contents of the FIFO -> quasi reset
+    // branch prediction at in_addr_i address, as this is an address and not PC it can be the case
+    // that we have two compressed instruction (or one compressed instruction and one unaligned instruction) so we need
+    // keep two prediction inputs: [c1|c0] <- prediction for c1 and c0
+    input  branchpredict_sbe       branch_predict_i,
+    input  logic [63:0]            in_addr_i,
+    input  logic [31:0]            in_rdata_i,
+    input  logic                   in_valid_i,
+    output logic                   in_ready_o,
     // output port
-    output logic [63:0] out_addr_o,
-    output logic [31:0] out_rdata_o,
-    output logic        out_valid_o,
-    input  logic        out_ready_i,
+    output fetch_entry             fetch_entry_o,
+    output logic                   out_valid_o,
+    input  logic                   out_ready_i
+);
 
-    output logic        out_valid_stored_o // same as out_valid_o, except that if something is incoming now it is not
-                                           // included. This signal is available immediately as it comes directly out of FFs
-  );
+    localparam DEPTH = 8; // must be a power of two
 
-  localparam DEPTH = 3; // must be 3 or greater
-  /* verilator lint_off LITENDIAN */
-  // index 0 is used for output
-  logic [0:DEPTH-1] [63:0]  addr_n,    addr_int,    addr_Q;
-  logic [0:DEPTH-1] [31:0]  rdata_n,   rdata_int,   rdata_Q;
-  logic [0:DEPTH-1]         valid_n,   valid_int,   valid_Q;
+    // input registers - bounding the path from memory
+    branchpredict_sbe       branch_predict_n, branch_predict_q;
+    logic [63:0]            in_addr_n,        in_addr_q;
+    logic [31:0]            in_rdata_n,       in_rdata_q;
+    logic                   in_valid_n,       in_valid_q;
+    // compressed to decompressed instruction
+    logic [31:0] decompressed_instruction [2];
+    logic        is_illegal [2];
 
-  logic             [63:0]  addr_next;
-  logic             [31:0]  rdata, rdata_unaligned;
-  logic                     valid, valid_unaligned;
+    fetch_entry mem_n[DEPTH-1:0], mem_q[DEPTH-1:0];
+    logic [$clog2(DEPTH)-1:0]     read_pointer_n, read_pointer_q;
+    logic [$clog2(DEPTH)-1:0]     write_pointer_n, write_pointer_q;
+    logic [$clog2(DEPTH)-1:0]     status_cnt_n,    status_cnt_q; // this integer will be truncated by the synthesis tool
 
-  logic                     aligned_is_compressed, unaligned_is_compressed;
-  logic                     aligned_is_compressed_st, unaligned_is_compressed_st;
-  /* lint_on */
-  //----------------------------------------------------------------------------
-  // output port
-  //----------------------------------------------------------------------------
+    // status signals
+    logic full, empty;
+    // the last instruction was unaligned
+    logic unaligned_n, unaligned_q;
+    // save the unaligned part of the instruction to this ff
+    logic [15:0] unaligned_instr_n, unaligned_instr_q;
+    // save the address of the unaligned instruction
+    logic [63:0] unaligned_address_n, unaligned_address_q;
+    // we always need two empty places
+    // as it could happen that we get two compressed instructions/cycle
+    /* verilator lint_off WIDTH */
+    assign full        = (status_cnt_q >= DEPTH - 3);
+    assign empty       = (status_cnt_q == 0);
+    /* verilator lint_on WIDTH */
+    // the output is valid if we are are not empty
+    assign out_valid_o = !empty;
+    // we need space for at least two instructions: the full flag is conditioned on that
+    // but if we pop in the current cycle and we have one place left we can still fit two instructions alt
+    assign in_ready_o  = !full;
 
-
-  assign rdata = (valid_Q[0]) ? rdata_Q[0] : in_rdata_i;
-  assign valid = valid_Q[0] || in_valid_i;
-
-  assign rdata_unaligned = (valid_Q[1]) ? {rdata_Q[1][15:0], rdata[31:16]} : {in_rdata_i[15:0], rdata[31:16]};
-  // it is implied that rdata_valid_Q[0] is set
-  assign valid_unaligned = (valid_Q[1] || (valid_Q[0] && in_valid_i));
-
-  assign unaligned_is_compressed    = rdata[17:16] != 2'b11;
-  assign aligned_is_compressed      = rdata[1:0] != 2'b11;
-  assign unaligned_is_compressed_st = rdata_Q[0][17:16] != 2'b11;
-  assign aligned_is_compressed_st   = rdata_Q[0][1:0] != 2'b11;
-
-  //----------------------------------------------------------------------------
-  // instruction aligner (if unaligned)
-  //----------------------------------------------------------------------------
-
-  always_comb
-  begin
-    // serve the aligned case even though the output address is unaligned when
-    // the next instruction will be from a hardware loop target
-    // in this case the current instruction is already prealigned in element 0
-    if (out_addr_o[1]) begin
-      // unaligned case
-      out_rdata_o = rdata_unaligned;
-
-      if (unaligned_is_compressed)
-        out_valid_o = valid;
-      else
-        out_valid_o = valid_unaligned;
-    end else begin
-      // aligned case
-      out_rdata_o = rdata;
-      out_valid_o = valid;
-    end
-  end
-
-  assign out_addr_o    = (valid_Q[0]) ? addr_Q[0] : in_addr_i;
-
-  // this valid signal must not depend on signals from outside!
-  always_comb
-  begin
-    out_valid_stored_o = 1'b1;
-
-    if (out_addr_o[1]) begin
-      if (unaligned_is_compressed_st)
-        out_valid_stored_o = 1'b1;
-      else
-        out_valid_stored_o = valid_Q[1];
-    end else begin
-      out_valid_stored_o = valid_Q[0];
-    end
-  end
-
-
-  //----------------------------------------------------------------------------
-  // input port
-  //----------------------------------------------------------------------------
-
-  // we accept data as long as our fifo is not full
-  // we don't care about clear here as the data will be received one cycle
-  // later anyway
-  assign in_ready_o = ~valid_Q[DEPTH-2];
-
-
-  //----------------------------------------------------------------------------
-  // FIFO management
-  //----------------------------------------------------------------------------
-
-  int j;
-  always_comb
-  begin
-    addr_int    = addr_Q;
-    rdata_int   = rdata_Q;
-    valid_int   = valid_Q;
-
-
-    if (in_valid_i) begin
-      for(j = 0; j < DEPTH; j++) begin
-        if (~valid_Q[j]) begin
-          addr_int[j]  = in_addr_i;
-          rdata_int[j] = in_rdata_i;
-          valid_int[j] = 1'b1;
-
-          break;
+    // ----------------
+    // Input Registers
+    // ----------------
+    always_comb begin
+        // if we are ready to accept new data - do so!
+        in_addr_n           = in_addr_i;
+        in_rdata_n          = in_rdata_i;
+        in_valid_n          = in_valid_i;
+        branch_predict_n    = branch_predict_i;
+        // flush the input registers
+        if (flush_i) begin
+            in_valid_n = 1'b0;
         end
-      end
-
     end
-  end
+    // --------------------
+    // Compressed Decoders
+    // --------------------
+    // compressed instruction decoding, or more precisely compressed instruction expander
+    // since it does not matter where we decompress instructions, we do it here to ease timing closure
+    genvar i;
+    generate
+        for (i = 0; i < 2; i++) begin
+            compressed_decoder compressed_decoder_i (
+                .instr_i          ( in_rdata_q[(16*(i+1)-1):(i*16)]  ),
+                .instr_o          ( decompressed_instruction[i]      ),
+                .illegal_instr_o  ( is_illegal[i]                    )
+            );
+        end
+    endgenerate
 
-  assign addr_next = {addr_int[0][63:2], 2'b00} + 64'h4;
+    // --------------------------------------------
+    // FIFO Management + Instruction (re)-aligner
+    // --------------------------------------------
+    always_comb begin : output_port
+        // counter
+        automatic logic [$clog2(DEPTH)-1:0] status_cnt    = status_cnt_q;
+        automatic logic [$clog2(DEPTH)-1:0] write_pointer = write_pointer_q;
 
-  // move everything by one step
-  always_comb
-  begin
-    addr_n     = addr_int;
-    rdata_n    = rdata_int;
-    valid_n    = valid_int;
+        write_pointer_n           = write_pointer_q;
+        read_pointer_n            = read_pointer_q;
+        mem_n                     = mem_q;
+        unaligned_n               = unaligned_q;
+        unaligned_instr_n         = unaligned_instr_q;
+        unaligned_address_n       = unaligned_address_q;
+        // ---------------------------------
+        // Input port & Instruction Aligner
+        // ---------------------------------
+        // do we actually want the first instruction or was the address a half word access?
+        if (in_valid_q && in_addr_q[1] == 1'b0) begin
+            if (!unaligned_q) begin
+                // we got a valid instruction so we can satisfy the unaligned instruction
+                unaligned_n = 1'b0;
+                // check if the instruction is compressed
+                if (in_rdata_q[1:0] != 2'b11) begin
+                    // it is compressed
+                    mem_n[write_pointer_q]    = {
+                        branch_predict_q, in_addr_q, decompressed_instruction[0], 1'b1, is_illegal[0]
+                    };
 
-    if (out_ready_i && out_valid_o) begin
-      begin
-        if (addr_int[0][1]) begin
-          // unaligned case
-          if (unaligned_is_compressed) begin
-            addr_n[0] = {addr_next[63:2], 2'b00};
-          end else begin
-            addr_n[0] = {addr_next[63:2], 2'b10};
-          end
+                    status_cnt++;
+                    write_pointer++;
 
-          for (int i = 0; i < DEPTH - 1; i++)
-          begin
-            rdata_n[i] = rdata_int[i + 1];
-          end
-          rdata_n[DEPTH - 1] = 32'b0;
+                    // is the second instruction also compressed, like:
+                    // _____________________________________________
+                    // | compressed 2 [31:16] | compressed 1[15:0] |
+                    // |____________________________________________
+                    // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
+                    // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
+                    if (in_rdata_q[17:16] != 2'b11 && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
 
-          valid_n  = {valid_int[1:DEPTH-1], 1'b0};
-        end else begin
+                        mem_n[write_pointer_q + 1'b1]    = {
+                            branch_predict_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
+                        };
 
-          if (aligned_is_compressed) begin
-            // just increase address, do not move to next entry in FIFO
-            addr_n[0] = {addr_int[0][63:2], 2'b10};
-          end else begin
-            // move to next entry in FIFO
-            addr_n[0] = {addr_next[63:2], 2'b00};
-            for (int i = 0; i < DEPTH - 1; i++)
-            begin
-              rdata_n[i] = rdata_int[i + 1];
+                        status_cnt++;
+                        write_pointer++;
+                        // $display("Instruction: [ c  | c  ] @ %t", $time);
+                    // or is it an unaligned 32 bit instruction like
+                    // ____________________________________________________
+                    // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
+                    // |____________________________________________________
+                    end else if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+                        // save the lower 16 bit
+                        unaligned_instr_n = in_rdata_q[31:16];
+                        // and that it was unaligned
+                        unaligned_n = 1'b1;
+                        // save the address as well
+                        unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                        // $display("Instruction: [ i0 | c  ] @ %t", $time);
+                        // this does not consume space in the FIFO
+                    end
+                end else begin
+                    // this is a full 32 bit instruction like
+                    // _______________________
+                    // | instruction [31:0]  |
+                    // |______________________
+                    mem_n[write_pointer_q]    = {
+                        branch_predict_q, in_addr_q, in_rdata_q, 1'b0, 1'b0
+                    };
+                    status_cnt++;
+                    write_pointer++;
+                    // $display("Instruction: [    i    ] @ %t", $time);
+                end
             end
-            rdata_n[DEPTH - 1] = 32'b0;
-            valid_n   = {valid_int[1:DEPTH-1], 1'b0};
-          end
+            // we have an outstanding unaligned instruction
+            if (in_valid_q && unaligned_q) begin
+
+                mem_n[write_pointer_q]    = {
+                    branch_predict_q, unaligned_address_q, {in_rdata_q[15:0], unaligned_instr_q}, 1'b0, 1'b0
+                };
+
+                status_cnt++;
+                write_pointer++;
+                // whats up with the other upper 16 bit of this instruction
+                // is the second instruction also compressed, like:
+                // _____________________________________________
+                // | compressed 2 [31:16] | unaligned[31:16]    |
+                // |____________________________________________
+                // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
+                // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
+                if (in_rdata_q[17:16] != 2'b11  && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+                    mem_n[write_pointer_q + 1'b1] = {
+                        branch_predict_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
+                    };
+
+                    status_cnt++;
+                    write_pointer++;
+                    // unaligned access served
+                    unaligned_n = 1'b0;
+                    // $display("Instruction: [ c  | i1 ] @ %t", $time);
+                // or is it an unaligned 32 bit instruction like
+                // ____________________________________________________
+                // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
+                // |____________________________________________________
+                end else if (!(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
+                    // save the lower 16 bit
+                    unaligned_instr_n = in_rdata_q[31:16];
+                    // and that it was unaligned
+                    unaligned_n = 1'b1;
+                    // save the address as well
+                    unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                    // $display("Instruction: [ i0 | i1 ] @ %t", $time);
+                    // this does not consume space in the FIFO
+                // we've got a predicted taken branch we need to clear the unaligned flag if it was decoded as a lower 16 instruction
+                end else if (branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16) begin
+                    // the next fetch will start from a 4 byte boundary again
+                    unaligned_n = 1'b0;
+                end
+            end
+        end else if (in_valid_q && in_addr_q[1] == 1'b1) begin // address was a half word access
+            // reset the unaligned flag as this is a completely new fetch (because consecutive fetches only happen on a word basis)
+            unaligned_n = 1'b0;
+            // this is a compressed instruction
+            if (in_rdata_q[17:16] != 2'b11) begin
+                // it is compressed
+                mem_n[write_pointer_q]    = {
+                    branch_predict_q, in_addr_q, decompressed_instruction[1], 1'b1, is_illegal[1]
+                };
+
+                status_cnt++;
+                write_pointer++;
+            end else begin // this is the first part of a 32 bit unaligned instruction
+                 // save the lower 16 bit
+                unaligned_instr_n = in_rdata_q[31:16];
+                // and that it was unaligned
+                unaligned_n = 1'b1;
+                // save the address as well
+                unaligned_address_n = {in_addr_q[63:2], 2'b10};
+                // this does not consume space in the FIFO
+            end
+            // there can never be a whole 32 bit instruction on a half word access
         end
-      end
-    end
-  end
 
-  //----------------------------------------------------------------------------
-  // registers
-  //----------------------------------------------------------------------------
+        // -------------
+        // Output port
+        // -------------
+        // we are ready to accept a new request if we still have two places in the queue
 
-  always_ff @(posedge clk, negedge rst_n)
-  begin
-    if(rst_n == 1'b0)
-    begin
-      addr_Q    <= '{default: '0};
-      rdata_Q   <= '{default: '0};
-      valid_Q   <= '0;
-    end
-    else
-    begin
-      // on a clear signal from outside we invalidate the content of the FIFO
-      // completely and start from an empty state
-      if (clear_i) begin
-        valid_Q    <= '0;
-      end else begin
-        addr_Q    <= addr_n;
-        rdata_Q   <= rdata_n;
-        valid_Q   <= valid_n;
-      end
-    end
-  end
+        // Output assignments
+        fetch_entry_o = mem_q[read_pointer_q];
 
-  //----------------------------------------------------------------------------
-  // Assertions
-  //----------------------------------------------------------------------------
-  `ifndef SYNTHESIS
-  `ifndef VERILATOR
-  assert property (
-    @(posedge clk) (in_valid_i) |-> ((valid_Q[DEPTH-1] == 1'b0) || (clear_i == 1'b1)) );
-  `endif
-  `endif
+        if (out_ready_i) begin
+            read_pointer_n = read_pointer_q + 1;
+            status_cnt--;
+        end
+
+        write_pointer_n = write_pointer;
+        status_cnt_n    = status_cnt;
+
+        if (flush_i) begin
+            status_cnt_n    = '0;
+            write_pointer_n = 'b0;
+            read_pointer_n  = 'b0;
+            // clear the unaligned instruction
+            unaligned_n     = 1'b0;
+        end
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            status_cnt_q              <= '{default: 0};
+            mem_q                     <= '{default: 0};
+            read_pointer_q            <= '{default: 0};
+            write_pointer_q           <= '{default: 0};
+            unaligned_q               <= 1'b0;
+            unaligned_instr_q         <= 16'b0;
+            unaligned_address_q       <= 64'b0;
+            // input registers
+            in_addr_q                 <= 64'b0;
+            in_rdata_q                <= 32'b0;
+            in_valid_q                <= 1'b0;
+            branch_predict_q          <= '{default: 0};
+        end else begin
+            status_cnt_q              <= status_cnt_n;
+            mem_q                     <= mem_n;
+            read_pointer_q            <= read_pointer_n;
+            write_pointer_q           <= write_pointer_n;
+            unaligned_q               <= unaligned_n;
+            unaligned_instr_q         <= unaligned_instr_n;
+            unaligned_address_q       <= unaligned_address_n;
+            // input registers
+            in_addr_q                 <= in_addr_n;
+            in_rdata_q                <= in_rdata_n;
+            in_valid_q                <= in_valid_n;
+            branch_predict_q          <= branch_predict_n;
+        end
+    end
+
+    //-------------
+    // Assertions
+    //-------------
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
+    // since this is a dual port queue the status count of the queue should never change more than two
+    assert property (@(posedge clk_i) ((status_cnt_n - status_cnt_q) < 3 || (status_cnt_n - status_cnt_q) > 3)) else $error("FIFO underflowed or overflowed");
+    // assert property (
+    //   @(posedge clk_i) (instr_gnt_i) |-> (instr_req_o) )
+    // else $warning("There was a grant without a request");
+    `endif
+    `endif
 endmodule

@@ -29,20 +29,28 @@ module ex_stage #(
     input  fu_op                                   operator_i,
     input  logic [63:0]                            operand_a_i,
     input  logic [63:0]                            operand_b_i,
+    input  logic [63:0]                            operand_c_i,
     input  logic [63:0]                            imm_i,
     input  logic [TRANS_ID_BITS-1:0]               trans_id_i,
-
+    input  logic [63:0]                            pc_i,                  // PC of current instruction
+    input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
+                                                                          // in order to calculate the next PC on a mis-predict
     // ALU 1
-    output logic                                   alu_ready_o,      // FU is ready
-    input  logic                                   alu_valid_i,      // Output is valid
-    output logic                                   alu_valid_o,      // ALU result is valid
+    output logic                                   alu_ready_o,           // FU is ready
+    input  logic                                   alu_valid_i,           // Output is valid
+    output logic                                   alu_valid_o,           // ALU result is valid
     output logic [63:0]                            alu_result_o,
-    output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,       // ID of scoreboard entry at which to write back
-    output logic                                   comparison_result_o,
+    output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
+    output exception                               alu_exception_o,
+    // Branches and Jumps
+    input  logic                                   branch_valid_i,        // we are using the branch unit
+    input  branchpredict_sbe                       branch_predict_i,      // branch prediction in
+    output branchpredict                           resolved_branch_o,     // the branch engine uses the write back from the ALU
+    output logic                                   resolve_branch_o,      // to ID signaling that we resolved the branch
     // LSU
-    output logic                                   lsu_ready_o,      // FU is ready
-    input  logic                                   lsu_valid_i,      // Input is valid
-    output logic                                   lsu_valid_o,      // Output is valid
+    output logic                                   lsu_ready_o,           // FU is ready
+    input  logic                                   lsu_valid_i,           // Input is valid
+    output logic                                   lsu_valid_o,           // Output is valid
     output logic [63:0]                            lsu_result_o,
     output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
     input  logic                                   lsu_commit_i,
@@ -91,26 +99,29 @@ module ex_stage #(
     input  logic                                   mult_valid_i       // Output is valid
 );
 
-
-    // ALU is a single cycle instructions, hence it is always ready
-    assign alu_ready_o = 1'b1;
-    assign alu_valid_o = alu_valid_i;
-    assign alu_trans_id_o = trans_id_i;
     // -----
     // ALU
     // -----
     alu alu_i (
-        .adder_result_o      (                     ),
-        .adder_result_ext_o  (                     ),
-        .result_o            ( alu_result_o        ),
-        .comparison_result_o ( comparison_result_o ),
-        .is_equal_result_o   (                     ),
+        .result_o            ( alu_result_o                 ),
         .*
     );
+
+    // --------------------
+    // Branch Engine
+    // --------------------
+    branch_engine branch_engine_i (
+        .fu_valid_i          ( alu_valid_i & lsu_valid_i & csr_valid_i ),
+        .valid_i             ( branch_valid_i                          ),
+        .branch_ex_o         ( alu_exception_o                         ), // we use the ALU exception WB for the branch exception
+        .*
+    );
+
     // ----------------
     // Multiplication
     // ----------------
     // TODO
+
     // ----------------
     // Load-Store Unit
     // ----------------
@@ -118,6 +129,7 @@ module ex_stage #(
         .commit_i  ( lsu_commit_i ),
         .*
     );
+
     // -----
     // CSR
     // -----
@@ -126,5 +138,6 @@ module ex_stage #(
         .commit_i ( csr_commit_i  ),
         .*
     );
+
 
 endmodule

@@ -34,20 +34,36 @@ package ariane_pkg;
     typedef struct packed {
          logic [63:0] cause; // cause of exception
          logic [63:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
-                             // address of ld/st fault
+                             // address of LD/ST fault
          logic        valid;
     } exception;
 
-    // miss-predict
+    // branch-predict
+    // this is the struct we get back from ex stage and we will use it to update
+    // all the necessary data structures
     typedef struct packed {
-        logic [63:0] pc;
-        logic [63:0] target_address;
-        logic        is_taken;
-        logic        valid; // is miss-predict
-    } mispredict;
+        logic [63:0] pc;              // pc of predict or mis-predict
+        logic [63:0] target_address;  // target address at which to jump, or not
+        logic        is_mispredict;   // set if this was a mis-predict
+        logic        is_taken;        // branch is taken
+        logic        is_lower_16;     // branch instruction is compressed and resides
+                                      // in the lower 16 bit of the word
+        logic        valid;           // prediction with all its values is valid
+    } branchpredict;
+
+    // branchpredict scoreboard entry
+    // this is the struct which we will inject into the pipeline to guide the various
+    // units towards the correct branch decision and resolve
+    typedef struct packed {
+        logic [63:0] predict_address; // target address at which to jump, or not
+        logic        predict_taken;   // branch is taken
+        logic        is_lower_16;     // branch instruction is compressed and resides
+                                      // in the lower 16 bit of the word
+        logic        valid;           // this is a valid hint
+    } branchpredict_sbe;
 
     typedef enum logic[3:0] {
-        NONE, LSU, ALU, MULT, CSR
+        NONE, LSU, ALU, CTRL_FLOW, MULT, CSR
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -55,21 +71,34 @@ package ariane_pkg;
     // ---------------
     // EX Stage
     // ---------------
-    typedef enum logic [7:0] { // basic ALU op
+    typedef enum logic [5:0] { // basic ALU op
                                ADD, SUB, ADDW, SUBW,
                                // logic operations
                                XORL, ORL, ANDL,
                                // shifts
                                SRA, SRL, SLL, SRLW, SLLW, SRAW,
                                // comparisons
-                               LTS, LTU, LES, LEU, GTS, GTU, GES, GEU, EQ, NE,
+                               LTS, LTU, GES, GEU, EQ, NE,
+                               // jumps
+                               JAL, JALR,
                                // set lower than operations
-                               SLTS, SLTU, SLETS, SLETU,
+                               SLTS, SLTU,
                                // CSR functions
                                MRET, SRET, URET, ECALL, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
                                // LSU functions
                                LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
                              } fu_op;
+        // ---------------
+    // ID/EX/WB Stage
+    // ---------------
+    // store the decompressed instruction
+    typedef struct packed {
+        branchpredict_sbe branch_predict;
+        logic [63:0]      address;
+        logic [31:0]      instruction;
+        logic             is_compressed;
+        logic             is_illegal;
+    } fetch_entry;
 
     // ---------------
     // ID/EX/WB Stage
@@ -89,6 +118,7 @@ package ariane_pkg;
         logic                     use_zimm;      // use zimm as operand a
         logic                     use_pc;        // set if we need to use the PC as operand a, PC from exception
         exception                 ex;            // exception has occurred
+        branchpredict_sbe         bp;            // branch predict scoreboard data structure
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2
     } scoreboard_entry;
@@ -103,7 +133,7 @@ package ariane_pkg;
         logic [14:12] funct3;
         logic [11:7]  rd;
         logic [6:0]   opcode;
-    } rtype;
+    } rtype_t;
 
     typedef struct packed {
         logic [31:20] imm;
@@ -111,7 +141,7 @@ package ariane_pkg;
         logic [14:12] funct3;
         logic [11:7]  rd;
         logic [6:0]   opcode;
-    } itype;
+    } itype_t;
 
     typedef struct packed {
         logic [31:25] imm1;
@@ -120,27 +150,21 @@ package ariane_pkg;
         logic [14:12] funct3;
         logic [11:7]  imm0;
         logic [6:0]   opcode;
-    } stype;
+    } stype_t;
 
     typedef struct packed {
         logic [31:12] funct3;
         logic [11:7]  rd;
         logic [6:0]   opcode;
-    } utype;
+    } utype_t;
 
-    // for some reason verilator complains about this union
-    // since I am not using it for simulation anyway and linting only
-    // it is not too bad to deactivate it, but a future me (or you)
-    // should look into that more thoroughly
-    `ifndef verilator
     typedef union packed {
-        logic [31:0] instr;
-        rtype        rtype;
-        itype        itype;
-        stype        stype;
-        utype        utype;
+        logic [31:0]   instr;
+        rtype_t        rtype;
+        itype_t        itype;
+        stype_t        stype;
+        utype_t        utype;
     } instruction;
-    `endif
 
     // --------------------
     // Opcodes
@@ -236,10 +260,9 @@ package ariane_pkg;
         logic  [7:0] address;
     } csr_addr_t;
 
-    // `ifndef VERILATOR
     typedef union packed {
         csr_reg_t   address;
         csr_addr_t  csr_decode;
     } csr_t;
-    // `endif
+
 endpackage

@@ -19,20 +19,18 @@
 import ariane_pkg::*;
 
 module btb #(
-    parameter int NR_ENTRIES = 64,
+    parameter int NR_ENTRIES = 1024,
     parameter int BITS_SATURATION_COUNTER = 2
     )
     (
-    input  logic            clk_i,                     // Clock
-    input  logic            rst_ni,                    // Asynchronous reset active low
-    input  logic            flush_i,                   // flush the btb
+    input  logic             clk_i,                     // Clock
+    input  logic             rst_ni,                    // Asynchronous reset active low
+    input  logic             flush_i,                   // flush the btb
 
-    input  logic [63:0]     vpc_i,                     // virtual PC from IF stage
-    input  mispredict       mispredict_i,             // a miss-predict happened -> update data structure
+    input  logic [63:0]      vpc_i,                     // virtual PC from IF stage
+    input  branchpredict     branch_predict_i,           // a mis-predict happened -> update data structure
 
-    output logic            is_branch_o,               // instruction at vpc_i is a branch
-    output logic            predict_taken_o,           // the branch is taken
-    output logic [63:0]     branch_target_address_o    // instruction has the following target address
+    output branchpredict_sbe branch_predict_o            // branch prediction for issuing to the pipeline
 );
     // number of bits which are not used for indexing
     localparam OFFSET = 2;
@@ -43,6 +41,7 @@ module btb #(
         logic                                   valid;
         logic [63:0]                            target_address;
         logic [BITS_SATURATION_COUNTER-1:0]     saturation_counter;
+        logic                                   is_lower_16;
     } btb_n [NR_ENTRIES-1:0], btb_q [NR_ENTRIES-1:0];
 
     logic [$clog2(NR_ENTRIES)-1:0]          index, update_pc;
@@ -51,46 +50,52 @@ module btb #(
     // get actual index positions
     // we ignore the 0th bit since all instructions are aligned on
     // a half word boundary
-    assign update_pc = mispredict_i.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
+    assign update_pc = branch_predict_i.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
     assign index     = vpc_i[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
 
     // we combinatorially predict the branch and the target address
-    assign is_branch_o             = btb_q[$unsigned(index)].valid;
-    assign predict_taken_o         = btb_q[$unsigned(index)].saturation_counter[BITS_SATURATION_COUNTER-1];
-    assign branch_target_address_o = btb_q[$unsigned(index)].target_address;
+    assign branch_predict_o.valid           = btb_q[index].valid;
+    assign branch_predict_o.predict_taken   = btb_q[index].saturation_counter[BITS_SATURATION_COUNTER-1];
+    assign branch_predict_o.predict_address = btb_q[index].target_address;
+    assign branch_predict_o.is_lower_16     = btb_q[index].is_lower_16;
 
-    // update on a miss-predict
-    always_comb begin : update_mispredict
+    // update on a mis-predict
+    always_comb begin : update_branch_predict
         btb_n              = btb_q;
-        saturation_counter = btb_q[$unsigned(update_pc)].saturation_counter;
+        saturation_counter = btb_q[update_pc].saturation_counter;
 
-        if (mispredict_i.valid) begin
-            btb_n[$unsigned(update_pc)].valid = 1'b1;
+        if (branch_predict_i.valid) begin
+            btb_n[update_pc].valid = 1'b1;
             // update saturation counter
             // first check if counter is already saturated in the positive regime e.g.: branch taken
-            if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}} && ~mispredict_i.is_taken) begin
+            if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}}) begin
                 // we can safely decrease it
-                btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter - 1;
+                if (~branch_predict_i.is_taken)
+                    btb_n[update_pc].saturation_counter = saturation_counter - 1;
             // then check if it saturated in the negative regime e.g.: branch not taken
-            end else if (saturation_counter == {BITS_SATURATION_COUNTER{1'b0}} && mispredict_i.is_taken) begin
+            end else if (saturation_counter == {BITS_SATURATION_COUNTER{1'b0}}) begin
                 // we can safely increase it
-                btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter + 1;
+                if (branch_predict_i.is_taken)
+                    btb_n[update_pc].saturation_counter = saturation_counter + 1;
             end else begin // otherwise we are not in any boundaries and can decrease or increase it
-                if (mispredict_i.is_taken)
-                    btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter + 1;
+                if (branch_predict_i.is_taken)
+                    btb_n[update_pc].saturation_counter = saturation_counter + 1;
                 else
-                    btb_n[$unsigned(update_pc)].saturation_counter = saturation_counter - 1;
+                    btb_n[update_pc].saturation_counter = saturation_counter - 1;
             end
             // the target address is simply updated
-            btb_n[$unsigned(update_pc)].target_address = mispredict_i.target_address;
+            btb_n[update_pc].target_address = branch_predict_i.target_address;
+            // as is the information whether this was a compressed branch
+            btb_n[update_pc].is_lower_16    = branch_predict_i.is_lower_16;
         end
     end
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            // TODO: think about the reset value
-            btb_q <= '{default: 0};
+            // Bias the branches to be taken upon first arrival
+            for (int i = 0; i < NR_ENTRIES; i++)
+                btb_q[i] <= '{1'b0, 64'b0, 2'b10, 1'b0};
         end else begin
             // evict all entries
             if (flush_i) begin

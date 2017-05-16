@@ -21,19 +21,19 @@ module fifo #(
         parameter type dtype            = logic[63:0],
         parameter int unsigned DEPTH    = 4
     )(
-        input  logic clk_i,    // Clock
-        input  logic rst_ni,   // Asynchronous reset active low
-        input  logic flush_i,  // flush the queue
+        input  logic clk_i,            // Clock
+        input  logic rst_ni,           // Asynchronous reset active low
+        input  logic flush_i,          // flush the queue
         // status flags
-        output logic full_o,   // queue is full
-        output logic empty_o,  // queue is empty
+        output logic full_o,           // queue is full
+        output logic empty_o,          // queue is empty
         output logic single_element_o, // there is just a single element in the queue
         // as long as the queue is not full we can push new data
-        input  dtype data_i,  // data to push into the queue
-        input  logic push_i,  // data is valid and can be pushed to the queue
+        input  dtype data_i,           // data to push into the queue
+        input  logic push_i,           // data is valid and can be pushed to the queue
         // as long as the queue is not empty we can pop new elements
-        output dtype data_o,  // output data
-        input  logic pop_i    // pop head from queue
+        output dtype data_o,           // output data
+        input  logic pop_i             // pop head from queue
     );
     // pointer to the read and write section of the queue
     logic [$clog2(DEPTH) - 1:0] read_pointer_n, read_pointer_q, write_pointer_n, write_pointer_q;
@@ -44,7 +44,7 @@ module fifo #(
 
     assign full_o            = (status_cnt_q == DEPTH);
     assign empty_o           = (status_cnt_q == 0);
-    assign single_element_o = (status_cnt_q == 1);
+    assign single_element_o  = (status_cnt_q == 1);
     // read and write queue logic
     always_comb begin : read_write_comb
         // default assignment

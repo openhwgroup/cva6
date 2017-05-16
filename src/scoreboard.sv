@@ -29,7 +29,8 @@ module scoreboard #(
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
     output logic                                      full_o,   // We can't take anymore data
-    input  logic                                      flush_i,
+    input  logic                                      flush_i,  // flush whole scoreboard
+    input  logic                                      flush_unissued_instr_i,
     // list of clobbered registers to issue stage
     output fu_t [31:0]                                rd_clobber_o,
 
@@ -50,6 +51,7 @@ module scoreboard #(
     // we can always put this instruction to the to   p unless we signal with asserted full_o
     input  dtype                                      decoded_instr_i,
     input  logic                                      decoded_instr_valid_i,
+    output logic                                      decoded_instr_ack_o,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
     output dtype                                      issue_instr_o,
@@ -100,6 +102,8 @@ always_comb begin : clobber_output
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q && i[BITS_ENTRIES-1:0] < issue_pointer_q)
                 rd_clobber_o[mem_q[i].rd] = mem_q[i].fu;
         end
+    end else if (commit_pointer_q == issue_pointer_q) begin // everything committed
+        rd_clobber_o = '{default: NONE};
     end else begin // the issue pointer has overflowed, invert logic, depicted on the right
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (i[BITS_ENTRIES-1:0] >= commit_pointer_q || i[BITS_ENTRIES-1:0] < issue_pointer_q)
@@ -173,14 +177,17 @@ end
 // write-back instruction: update value of RD register in scoreboard
 always_comb begin : push_instruction_and_wb
     // default assignment
-    top_pointer_n = top_pointer_q;
-    mem_n = mem_q;
+    top_pointer_n       = top_pointer_q;
+    mem_n               = mem_q;
+    // acknowledge decoded instruction
+    decoded_instr_ack_o = 1'b0;
     // if we are not full we can push a new instruction
     if (~full_o && decoded_instr_valid_i) begin
         mem_n[$unsigned(top_pointer_q)] = decoded_instr_i;
         // label the transaction ID with the current top pointer
         mem_n[$unsigned(top_pointer_q)].trans_id = top_pointer_q;
-        top_pointer_n = top_pointer_q + 1;
+        top_pointer_n       = top_pointer_q + 1;
+        decoded_instr_ack_o = 1'b1;
     end
 
     // write back:
@@ -197,11 +204,11 @@ always_comb begin : push_instruction_and_wb
             end
         end
     end
-
-    // flush signal
-    if (flush_i)
-        mem_n = '{default: 0};
-
+    // flush all instructions which are not issued, e.g. set the top pointer back to the issue pointer
+    // -> everything we decoded so far was garbage
+    if (flush_unissued_instr_i) begin
+        top_pointer_n = issue_pointer_q;
+    end
 end
 
 // issue instruction: advance the issue pointer
@@ -209,7 +216,7 @@ always_comb begin : issue_instruction
 
 
     // provide a combinatorial path in case the scoreboard is empty
-    if (top_pointer_q == issue_pointer_q) begin
+    if (top_pointer_q == issue_pointer_q && ~full_o) begin
         issue_instr_o          = decoded_instr_i;
         issue_instr_o.trans_id = issue_pointer_q;
         issue_instr_valid_o    = decoded_instr_valid_i;
@@ -218,11 +225,15 @@ always_comb begin : issue_instruction
         issue_instr_o = mem_q[$unsigned(issue_pointer_q)];
         // we have not reached the top of the buffer
         // issue pointer has overflowed
-        if (issue_pointer_q <= commit_pointer_q) begin
+        if (issue_pointer_q < commit_pointer_q) begin
             if (issue_pointer_q < top_pointer_q)
                 issue_instr_valid_o = 1'b1;
             else
                 issue_instr_valid_o = 1'b0;
+        end else if (issue_pointer_q == commit_pointer_q) begin
+            // commit and issue pointer are the same, so we are waiting
+            // for instructions to be written back
+            issue_instr_valid_o = 1'b0;
         end else begin // issue pointer has not overflowed
             if (pointer_overflow)
                 issue_instr_valid_o = 1'b1;
@@ -239,6 +250,10 @@ always_comb begin : issue_instruction
     if (issue_ack_i) begin
         issue_pointer_n = issue_pointer_q + 1;
     end
+
+    // if we are flushing we should not issue the current instruction
+    if (flush_unissued_instr_i)
+        issue_instr_valid_o = 1'b0;
 
 end
 
@@ -260,20 +275,28 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : sequential
         commit_pointer_q  <= '{default: 0};
         top_pointer_q     <= '{default: 0};
         top_pointer_qq    <= '{default: 0};
-        mem_q             <= '{default: 0};
+        for (int i = 0; i < NR_ENTRIES; i++) begin
+            mem_q[i] <= {$bits(scoreboard_entry){1'b0}};
+        end
     end else if (flush_i) begin // reset pointers on flush
+        // flush signal, e.g.: flush everything we need to backtrack after an exception
         issue_pointer_q   <= '{default: 0};
         commit_pointer_q  <= '{default: 0};
         top_pointer_q     <= '{default: 0};
         top_pointer_qq    <= '{default: 0};
-        mem_q             <= '{default: 0};
+        for (int i = 0; i < NR_ENTRIES; i++) begin
+            mem_q[i] <= {$bits(scoreboard_entry){1'b0}};
+        end
     end else begin
         issue_pointer_q   <= issue_pointer_n;
         commit_pointer_q  <= commit_pointer_n;
         top_pointer_q     <= top_pointer_n;
         mem_q             <= mem_n;
-        if (decoded_instr_valid_i) // only advance if we decoded instruction
-            top_pointer_qq    <= top_pointer_q;
+        if (decoded_instr_valid_i && ~full_o) // only advance if we decoded instruction and we are not full
+            if (flush_unissued_instr_i)
+                top_pointer_qq    <= top_pointer_n;
+            else
+                top_pointer_qq    <= top_pointer_q;
     end
 end
 

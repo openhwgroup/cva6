@@ -28,28 +28,36 @@ module id_stage #(
     input  logic                                     test_en_i, // Test Enable
 
     input  logic                                     flush_i,
+    input  logic                                     flush_unissued_instr_i,
+    input  logic                                     flush_scoreboard_i,
     // from IF
-    input  logic [31:0]                              instruction_i,
-    input  logic                                     instruction_valid_i,
-    input  logic                                     is_compressed_i,
-    input  logic [63:0]                              pc_if_i,
+    input  fetch_entry                               fetch_entry_i,
+    input  logic                                     fetch_entry_valid_i,
+    output logic                                     decoded_instr_ack_o,
     input  exception                                 ex_if_i,       // we already got an exception in IF
 
     output logic                                     ready_o,    // id is ready
     output fu_op                                     operator_o,
     output logic [63:0]                              operand_a_o,
     output logic [63:0]                              operand_b_o,
+    output logic [63:0]                              operand_c_o,
     output logic [63:0]                              imm_o,
     output logic [TRANS_ID_BITS-1:0]                 trans_id_o,
+    output logic [63:0]                              pc_o,
+    output logic                                     is_compressed_instr_o,
 
     input  logic                                     alu_ready_i,
     output logic                                     alu_valid_o,
+    output logic                                     branch_valid_o, // use branch prediction unit
+    // ex just resolved our predicted branch, we are ready to accept new requests
+    input  logic                                     resolve_branch_i,
 
     input  logic                                     lsu_ready_i,
     output logic                                     lsu_valid_o,
 
     input  logic                                     mult_ready_i,
-    output logic                                     mult_valid_o,
+    output logic                                     mult_valid_o,    // Branch predict Out
+    output branchpredict_sbe                         branch_predict_o,
 
     input  logic                                     csr_ready_i,
     output logic                                     csr_valid_o,
@@ -67,8 +75,9 @@ module id_stage #(
     output scoreboard_entry                          commit_instr_o,
     input  logic                                     commit_ack_i
 );
-
+    // ---------------------------------------------------
     // Global signals
+    // ---------------------------------------------------
     logic full;
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (iro)
@@ -84,21 +93,55 @@ module id_stage #(
     logic            issue_instr_valid_sb_iro;
     logic            issue_ack_iro_sb;
     // ---------------------------------------------------
+    // Compressed Decoder <-> Decoder
+    // ---------------------------------------------------
+    // ---------------------------------------------------
     // Decoder (DC) <-> Scoreboard (SB)
     // ---------------------------------------------------
     scoreboard_entry decoded_instr_dc_sb;
+    // ---------------------------------------------------
+    // Decoder (DC) <-> Branch Logic
+    // ---------------------------------------------------
+    logic is_control_flow_instr;
 
-    // TODO: Branching logic
-    assign ready_o = ~full;
+    // -----------------
+    // Branch logic
+    // -----------------
+    // This should basically prevent the scoreboard from accepting
+    // instructions past a branch. We need to resolve the branch beforehand.
+    // This limitation is in place to ease the backtracking of mis-predicted branches as they
+    // can simply be in the front-end of the processor.
+    logic unresolved_branch_n, unresolved_branch_q;
+
+    always_comb begin : unresolved_branch
+        unresolved_branch_n = unresolved_branch_q;
+        // we just resolved the branch
+        if (resolve_branch_i) begin
+            unresolved_branch_n = 1'b0;
+        end
+        // if the instruction is valid and it is a control flow instruction
+        if (fetch_entry_valid_i && is_control_flow_instr) begin
+            unresolved_branch_n = 1'b1;
+        end
+        // if we are requested to flush also flush the unresolved branch flag because either the flush
+        // was requested by a branch or an exception. In any case: any unresolved branch will get evicted
+        if (flush_unissued_instr_i || flush_i) begin
+            unresolved_branch_n = 1'b0;
+        end
+    end
+    // we are ready if we are not full and don't have any unresolved branches, but it can be
+    // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i.valid == 1)
+    assign ready_o           = ~full && (~unresolved_branch_q || resolve_branch_i);
 
     decoder decoder_i (
-        .clk_i                 ( clk_i                    ),
-        .rst_ni                ( rst_ni                   ),
-        .pc_i                  ( pc_if_i                  ),
-        .is_compressed_i       ( is_compressed_i          ),
-        .instruction_i         ( instruction_i            ),
-        .ex_i                  ( ex_if_i                  ),
-        .instruction_o         ( decoded_instr_dc_sb      )
+        .pc_i                    ( fetch_entry_i.address         ),
+        .is_compressed_i         ( fetch_entry_i.is_compressed   ),
+        .instruction_i           ( fetch_entry_i.instruction     ),
+        .branch_predict_i        ( fetch_entry_i.branch_predict  ),
+        .ex_i                    ( ex_if_i                       ),
+        .instruction_o           ( decoded_instr_dc_sb           ),
+        .is_control_flow_instr_o ( is_control_flow_instr         ),
+        .*
     );
 
     scoreboard  #(
@@ -108,7 +151,7 @@ module id_stage #(
     scoreboard_i
     (
         .full_o                ( full                     ),
-        .flush_i               ( flush_i                  ),
+        .flush_i               ( flush_scoreboard_i       ),
         .rd_clobber_o          ( rd_clobber_sb_iro        ),
         .rs1_i                 ( rs1_iro_sb               ),
         .rs1_o                 ( rs1_sb_iro               ),
@@ -119,7 +162,7 @@ module id_stage #(
         .commit_instr_o        ( commit_instr_o           ),
         .commit_ack_i          ( commit_ack_i             ),
         .decoded_instr_i       ( decoded_instr_dc_sb      ),
-        .decoded_instr_valid_i ( instruction_valid_i      ),
+        .decoded_instr_valid_i ( fetch_entry_valid_i      ),
         .issue_instr_o         ( issue_instr_sb_iro       ),
         .issue_instr_valid_o   ( issue_instr_valid_sb_iro ),
         .issue_ack_i           ( issue_ack_iro_sb         ),
@@ -143,5 +186,13 @@ module id_stage #(
         .rd_clobber_i        ( rd_clobber_sb_iro          ),
         .*
     );
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            unresolved_branch_q <= 1'b0;
+        end else begin
+            unresolved_branch_q <= unresolved_branch_n;
+        end
+    end
 
 endmodule

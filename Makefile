@@ -7,8 +7,11 @@ library = work
 # Top level module to compile
 top_level = core_tb
 test_top_level = core_tb
+
+# utility modules
+util = $(wildcard src/util/*.sv)
 # test targets
-tests = alu scoreboard fifo mem_arbiter store_queue lsu core
+tests = alu scoreboard fifo mem_arbiter store_queue lsu core fetch_fifo
 # UVM agents
 agents = include/ariane_pkg.svh $(wildcard tb/agents/*/*.sv)
 # path to interfaces
@@ -18,17 +21,17 @@ envs = $(wildcard tb/env/*/*.sv)
 # UVM Sequences
 sequences =  $(wildcard tb/sequences/*/*.sv)
 # Test packages
-test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv) $(wildcard tb/test/*/*lib_pkg.sv)
+test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv) $(wildcard tb/test/*/*_pkg.sv)
 
 # this list contains the standalone components
-src = $(wildcard src/util/*.sv) $(wildcard src/*.sv)
+src = $(wildcard src/*.sv)
 # look for testbenches
-tbs =  $(wildcard tb/*_tb.sv)
+tbs = $(wildcard tb/*_tb.sv)
 
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
 # Test case to run
-test_case = alu_test
+test_case = core_test
 # QuestaSim Version
 questa_version = -10.5c
 compile_flag = +cover=bcfst+/dut
@@ -46,6 +49,7 @@ $(library):
 # Build the TB and module using QuestaSim
 build: $(library) build-agents build-interfaces
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
+	vlog${questa_version} ${compile_flag} -incr ${util} ${list_incdir} -suppress 2583
 	# Compile agents, interfaces and environments
 	vlog${questa_version} ${compile_flag} -incr ${envs} ${sequences} ${test_pkg} ${list_incdir} -suppress 2583
 	# Compile source files
@@ -62,13 +66,13 @@ build-interfaces: ${interfaces}
 # Run the specified test case
 sim:
 	# vsim${questa_version} ${top_level}_optimized -c -do "run -a"
-	vsim${questa_version} ${top_level}_optimized +UVM_TESTNAME=${test_case}
+	vsim${questa_version} ${top_level}_optimized +UVM_TESTNAME=${test_case} -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 $(tests):
 	# Optimize top level
 	vopt${questa_version} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
 	# vsim${questa_version} $@_tb_optimized
-	# vsim${questa_version} -c +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
+	# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
 	vsim${questa_version} +UVM_TESTNAME=$@_test +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $@_tb_optimized
 
 build-moore:
