@@ -1,11 +1,16 @@
 stages:
+  - build
   - test
   - deploy
 
+build_rtl:
+  stage: build
+  script:
+    - make build
+    
 test_alu:
   stage: test
   script:
-    - make build
     - make alu
     - vcover report alu.ucdb
     - vcover report -html alu.ucdb
@@ -16,7 +21,6 @@ test_alu:
 test_fifo:
   stage: test
   script:
-    - make build
     - make fifo
     - vcover report fifo.ucdb
     - vcover report -html fifo.ucdb
@@ -27,7 +31,6 @@ test_fifo:
 test_scoreboard:
   stage: test
   script:
-    - make build
     - make scoreboard
     - vcover report scoreboard.ucdb
     - vcover report -html scoreboard.ucdb
@@ -38,7 +41,6 @@ test_scoreboard:
 test_mem_arbiter:
   stage: test
   script:
-    - make build
     - make mem_arbiter
     - vcover report mem_arbiter.ucdb
     - vcover report -html mem_arbiter.ucdb
@@ -49,7 +51,6 @@ test_mem_arbiter:
 test_store_queue:
   stage: test
   script:
-    - make build
     - make store_queue
     - vcover report store_queue.ucdb
     - vcover report -html store_queue.ucdb
@@ -60,7 +61,6 @@ test_store_queue:
 test_lsu:
   stage: test
   script:
-    - make build
     - make lsu
     - vcover report lsu.ucdb
     - vcover report -html lsu.ucdb
