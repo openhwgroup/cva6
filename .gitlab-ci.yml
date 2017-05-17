@@ -10,6 +10,8 @@ build_rtl:
     
 test_alu:
   stage: test
+  before_script:
+    - make build
   script:
     - make alu
     - vcover report alu.ucdb
@@ -20,6 +22,8 @@ test_alu:
 
 test_fifo:
   stage: test
+  before_script:
+    - make build
   script:
     - make fifo
     - vcover report fifo.ucdb
@@ -30,6 +34,8 @@ test_fifo:
 
 test_scoreboard:
   stage: test
+  before_script:
+    - make build
   script:
     - make scoreboard
     - vcover report scoreboard.ucdb
@@ -40,6 +46,8 @@ test_scoreboard:
 
 test_mem_arbiter:
   stage: test
+  before_script:
+    - make build
   script:
     - make mem_arbiter
     - vcover report mem_arbiter.ucdb
@@ -50,6 +58,8 @@ test_mem_arbiter:
 
 test_store_queue:
   stage: test
+  before_script:
+    - make build
   script:
     - make store_queue
     - vcover report store_queue.ucdb
@@ -60,6 +70,8 @@ test_store_queue:
 
 test_lsu:
   stage: test
+  before_script:
+    - make build
   script:
     - make lsu
     - vcover report lsu.ucdb
