@@ -11,9 +11,9 @@ build_rtl:
 test_alu:
   stage: test
   before_script:
-    - make build library=alu
+    - make build library=alu_lib
   script:
-    - make alu library=alu
+    - make alu library=alu_lib
     - vcover report alu.ucdb
     - vcover report -html alu.ucdb
   artifacts:
