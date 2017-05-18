@@ -225,15 +225,23 @@ module mem_arbiter #(
                 NS = WAIT_FLUSH;
     end
 
+    // ------------
+    // Read port
+    // ------------
     // results, listening on the input signals of the slave port
+    genvar i;
+    // this is very timing sensitive since we can give a new request if we got an rvalid
+    // hence this combines the to most critical paths (from and to memory)
+    generate
+        // default assignment & one hot decoder
+        for (i = 0; i < NR_PORTS; i++) begin
+            assign data_rvalid_o[i] = out_data[i] & data_rvalid_i;
+            assign data_rdata_o[i]  = data_rdata_i;
+        end
+    endgenerate
+
     always_comb begin : slave_read_port
         pop = 1'b0;
-        // default assignment & one hot decoder
-        for (int i = 0; i < NR_PORTS; i++) begin
-            data_rvalid_o[i] = (out_data[i] == 1'b1) ? data_rvalid_i : 1'b0;
-            data_rdata_o[i]  = data_rdata_i;
-        end
-        // if there is an entry in the queue -> we are waiting for a read/write to return
         // if there is a valid signal the FIFO should not be empty anyway
         if (data_rvalid_i) begin
             pop = 1'b1;
