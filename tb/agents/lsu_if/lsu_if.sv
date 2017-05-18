@@ -18,20 +18,20 @@ interface lsu_if #(
         input clk
     );
 
-    fu_op                    operator;          // FU operation
-    wire [OPERAND_SIZE-1:0]  operand_a;         // Operand A
-    wire [OPERAND_SIZE-1:0]  operand_b;         // Operand B
-    wire [OPERAND_SIZE-1:0]  imm;               // Operand B
-    wire [OPERAND_SIZE-1:0]  result;            // Result
-    wire [TRANS_ID_BITS-1:0] lsu_trans_id_id;   // transaction id from ID
-    wire [TRANS_ID_BITS-1:0] lsu_trans_id_wb;   // transaction id to WB
+    fu_op                        operator;          // FU operation
+    wire [OPERAND_SIZE-1:0]      operand_a;         // Operand A
+    wire [OPERAND_SIZE-1:0]      operand_b;         // Operand B
+    wire [OPERAND_SIZE-1:0]      imm;               // Operand B
+    wire [OPERAND_SIZE-1:0]      result;            // Result
+    wire [TRANS_ID_BITS-1:0]     lsu_trans_id_id;   // transaction id from ID
+    wire [TRANS_ID_BITS-1:0]     lsu_trans_id_wb;   // transaction id to WB
     // LSU control signals
-    wire                     commit;
-    wire                     source_valid;      // Source operands are valid
-    wire                     result_valid;      // Result is valid, ready to accept new request
-    wire                     ready;             // Sink is ready
+    wire                         commit;
+    wire                         source_valid;      // Source operands are valid
+    wire                         result_valid;      // Result is valid, ready to accept new request
+    wire                         ready;             // Sink is ready
     // exceptions
-    exception                exception;
+    wire [$bits(exception)-1:0]  exception;
 
     // FU interface configured as master
     clocking mck @(posedge clk);

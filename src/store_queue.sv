@@ -45,9 +45,11 @@ module store_queue (
     output logic         data_req_o,
     output logic         data_we_o,
     output logic [7:0]   data_be_o,
+    output logic [1:0]   data_tag_status_o,
     input  logic         data_gnt_i,
     input  logic         data_rvalid_i
     );
+
     // the store queue has two parts:
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
@@ -66,16 +68,16 @@ module store_queue (
     } commit_queue_n, commit_queue_q;
 
     // we can directly output the commit entry since we just have one element in this "queue"
-    assign paddr_o      = commit_queue_q.address;
-    assign data_o       = commit_queue_q.data;
-    assign be_o         = commit_queue_q.be;
-    assign valid_o      = commit_queue_q.valid;
+    assign paddr_o           = commit_queue_q.address;
+    assign data_o            = commit_queue_q.data;
+    assign be_o              = commit_queue_q.be;
+    assign valid_o           = commit_queue_q.valid;
 
     // those signals can directly be output to the memory if
-    assign address_o    = commit_queue_q.address;
-    assign data_wdata_o = commit_queue_q.data;
-    assign data_be_o    = commit_queue_q.be;
-
+    assign address_o         = commit_queue_q.address;
+    assign data_wdata_o      = commit_queue_q.data;
+    assign data_be_o         = commit_queue_q.be;
+    assign data_tag_status_o = 2'b01; // the tag is always ready since we are using physical addresses
     // memory interface
     always_comb begin : store_if
         // if there is no commit pending and the uncommitted queue is empty as well we can accept the request

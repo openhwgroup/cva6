@@ -181,23 +181,24 @@ module lsu #(
     // MMU e.g.: TLBs/PTW
     // -------------------
     mmu #(
-        .INSTR_TLB_ENTRIES      ( 16                  ),
-        .DATA_TLB_ENTRIES       ( 16                  ),
-        .ASID_WIDTH             ( ASID_WIDTH          )
+        .INSTR_TLB_ENTRIES      ( 16                   ),
+        .DATA_TLB_ENTRIES       ( 16                   ),
+        .ASID_WIDTH             ( ASID_WIDTH           )
     ) mmu_i (
-        .lsu_req_i              ( translation_req     ),
-        .lsu_vaddr_i            ( vaddr               ),
-        .lsu_valid_o            ( translation_valid_n ),
-        .lsu_paddr_o            ( paddr_n             ),
+        .lsu_req_i              ( translation_req      ),
+        .lsu_vaddr_i            ( vaddr                ),
+        .lsu_valid_o            ( translation_valid_n  ),
+        .lsu_paddr_o            ( paddr_n              ),
         // connecting PTW to D$ IF (aka mem arbiter
-        .data_if_address_o      ( address_i     [0] ),
-        .data_if_data_wdata_o   ( data_wdata_i  [0] ),
-        .data_if_data_req_o     ( data_req_i    [0] ),
-        .data_if_data_we_o      ( data_we_i     [0] ),
-        .data_if_data_be_o      ( data_be_i     [0] ),
-        .data_if_data_gnt_i     ( data_gnt_o    [0] ),
-        .data_if_data_rvalid_i  ( data_rvalid_o [0] ),
-        .data_if_data_rdata_i   ( data_rdata_o  [0] ),
+        .data_if_address_o      ( address_i        [0] ),
+        .data_if_data_wdata_o   ( data_wdata_i     [0] ),
+        .data_if_data_req_o     ( data_req_i       [0] ),
+        .data_if_data_we_o      ( data_we_i        [0] ),
+        .data_if_data_be_o      ( data_be_i        [0] ),
+        .data_if_tag_status_o   ( data_tag_status_i[0] ),
+        .data_if_data_gnt_i     ( data_gnt_o       [0] ),
+        .data_if_data_rvalid_i  ( data_rvalid_o    [0] ),
+        .data_if_data_rdata_i   ( data_rdata_o     [0] ),
         .*
     );
 
@@ -206,24 +207,25 @@ module lsu #(
     // ---------------
     store_queue store_queue_i (
         // store queue write port
-        .valid_i       ( st_valid            ),
-        .paddr_i       ( paddr_q             ),
-        .data_i        ( data                ),
-        .be_i          ( be                  ),
+        .valid_i           ( st_valid            ),
+        .paddr_i           ( paddr_q             ),
+        .data_i            ( data                ),
+        .be_i              ( be                  ),
         // store buffer in
-        .paddr_o       ( st_buffer_paddr     ),
-        .data_o        ( st_buffer_data      ),
-        .valid_o       ( st_buffer_valid     ),
-        .be_o          ( st_buffer_be        ),
-        .ready_o       ( st_ready            ),
+        .paddr_o           ( st_buffer_paddr     ),
+        .data_o            ( st_buffer_data      ),
+        .valid_o           ( st_buffer_valid     ),
+        .be_o              ( st_buffer_be        ),
+        .ready_o           ( st_ready            ),
 
-        .address_o     ( address_i    [2]    ),
-        .data_wdata_o  ( data_wdata_i [2]    ),
-        .data_req_o    ( data_req_i   [2]    ),
-        .data_we_o     ( data_we_i    [2]    ),
-        .data_be_o     ( data_be_i    [2]    ),
-        .data_gnt_i    ( data_gnt_o   [2]    ),
-        .data_rvalid_i ( data_rvalid_o[2]    ),
+        .address_o         ( address_i        [2] ),
+        .data_wdata_o      ( data_wdata_i     [2] ),
+        .data_req_o        ( data_req_i       [2] ),
+        .data_we_o         ( data_we_i        [2] ),
+        .data_be_o         ( data_be_i        [2] ),
+        .data_tag_status_o ( data_tag_status_i[2] ),
+        .data_gnt_i        ( data_gnt_o       [2] ),
+        .data_rvalid_i     ( data_rvalid_o    [2] ),
         .*
     );
 
@@ -371,7 +373,7 @@ module lsu #(
                 translation_req = 1'b1;
                 // check if this operation is a load or store
                 // it is a LOAD
-                if (operator == LD_OP) begin
+                if (op == LD_OP) begin
 
                     data_req_i[1]        = 1'b1; // request this address
                     // if address translation is enabled wait for the tag in second (or n-th) cycle
@@ -387,9 +389,10 @@ module lsu #(
                     end
                 end
             // a store does not need to pass the address conflict check because it can't conflict
-            end else if (operator == ST_OP) begin
+            end else if (op == ST_OP) begin
                 // A store can pass through if the store buffer is not full
                 if (st_ready) begin
+                    translation_req = 1'b1;
                     // e.g.: if the address was valid
                     NS = WAIT_STORE;
                 end else begin
