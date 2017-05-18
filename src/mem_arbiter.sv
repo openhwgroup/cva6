@@ -154,7 +154,7 @@ module mem_arbiter #(
                     // two possibilities to not go into the tag wait state
                     // 1. The tag is valid now
                     // 2. The tag has been aborted
-                    if (data_tag_status_i[request_port_q] inside {`ABORT_TRANSLATION, `VALID_TRANSLATION}) begin
+                    if (data_tag_status_i[request_port_q] == `ABORT_TRANSLATION || data_tag_status_i[request_port_q] == `VALID_TRANSLATION) begin
                         NS = IDLE;
                     end
                 end
@@ -166,7 +166,7 @@ module mem_arbiter #(
             // here we are waiting for a valid (or aborted) tag
             WAIT_TAG: begin
                 // if we are waiting for the tag we can't issue a new request
-                if (data_tag_status_i[request_port_q] inside {`ABORT_TRANSLATION, `VALID_TRANSLATION}) begin
+                if (data_tag_status_i[request_port_q] == `ABORT_TRANSLATION || data_tag_status_i[request_port_q] == `VALID_TRANSLATION) begin
                     NS = IDLE;
                     // if we got a valid tag we can make a new request under the same assumption as in the IDLE state
                     if (~full) begin
