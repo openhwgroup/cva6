@@ -63,7 +63,7 @@ module prefetch_buffer
   //---------------------------------
   // we are busy if we are either waiting for a grant
   // or if the fifo is full
-  assign busy_o = (CS == WAIT_GNT || CS == WAIT_ABORTED} && !instr_req_o) || !fifo_ready;
+  assign busy_o = ((CS == WAIT_GNT || CS == WAIT_ABORTED) && !instr_req_o) || !fifo_ready;
   assign fetch_address = {fetch_address_i[63:2], 2'b0};
   //---------------------------------
   // Fetch FIFO
