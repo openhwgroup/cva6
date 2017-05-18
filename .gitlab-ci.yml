@@ -7,13 +7,13 @@ build_rtl:
   stage: build
   script:
     - make build
-    
+
 test_alu:
   stage: test
   before_script:
-    - make build
+    - make build library=alu
   script:
-    - make alu
+    - make alu library=alu
     - vcover report alu.ucdb
     - vcover report -html alu.ucdb
   artifacts:
@@ -23,9 +23,9 @@ test_alu:
 test_fifo:
   stage: test
   before_script:
-    - make build
+    - make build library=fifo
   script:
-    - make fifo
+    - make fifo library=fifo
     - vcover report fifo.ucdb
     - vcover report -html fifo.ucdb
   artifacts:
@@ -35,9 +35,9 @@ test_fifo:
 test_scoreboard:
   stage: test
   before_script:
-    - make build
+    - make build library=scoreboard
   script:
-    - make scoreboard
+    - make scoreboard library=scoreboard
     - vcover report scoreboard.ucdb
     - vcover report -html scoreboard.ucdb
   artifacts:
@@ -47,9 +47,9 @@ test_scoreboard:
 test_mem_arbiter:
   stage: test
   before_script:
-    - make build
+    - make build library=mem_arbiter
   script:
-    - make mem_arbiter
+    - make mem_arbiter library=mem_arbiter
     - vcover report mem_arbiter.ucdb
     - vcover report -html mem_arbiter.ucdb
   artifacts:
@@ -59,9 +59,9 @@ test_mem_arbiter:
 test_store_queue:
   stage: test
   before_script:
-    - make build
+    - make build library=store_queue
   script:
-    - make store_queue
+    - make store_queue library=store_queue
     - vcover report store_queue.ucdb
     - vcover report -html store_queue.ucdb
   artifacts:
@@ -71,9 +71,9 @@ test_store_queue:
 test_lsu:
   stage: test
   before_script:
-    - make build
+    - make build library=lsu
   script:
-    - make lsu
+    - make lsu library=lsu
     - vcover report lsu.ucdb
     - vcover report -html lsu.ucdb
   artifacts:
