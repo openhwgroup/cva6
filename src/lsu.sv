@@ -65,6 +65,7 @@ module lsu #(
     output logic                     data_if_data_req_o,
     output logic                     data_if_data_we_o,
     output logic [7:0]               data_if_data_be_o,
+    output logic [1:0]               data_if_tag_status_o,
     input  logic                     data_if_data_gnt_i,
     input  logic                     data_if_data_rvalid_i,
     input  logic [63:0]              data_if_data_rdata_i,
@@ -72,6 +73,9 @@ module lsu #(
     output exception                 lsu_exception_o   // to WB, signal exception status LD/ST exception
 
 );
+    // tag status
+    enum logic [1:0] { WAIT_TRANSLATION, ABORT_TRANSLATION, VALID_TRANSLATION, NOT_IMPL } tag_status;
+
     mem_if ptw_if(clk_i);
     // byte enable based on operation to perform
     // data is misaligned
@@ -81,17 +85,14 @@ module lsu #(
 
     // virtual address as calculated by the AGU in the first cycle
     logic [63:0] vaddr_i;
-    // stall signal e.g.: do not update registers from above
-    logic stall;
     // gets the data from the register
     logic get_from_register;
-
     // those are the signals which are always correct
     // e.g.: they keep the value in the stall case
-    logic [63:0] vaddr;
-    logic [63:0] data;
-    logic [7:0]  be;
-    fu_op        operator;
+    logic [63:0]              vaddr;
+    logic [63:0]              data;
+    logic [7:0]               be;
+    fu_op                     operator;
     logic [TRANS_ID_BITS-1:0] trans_id;
 
     // registered address in case of a necessary stall
@@ -99,6 +100,8 @@ module lsu #(
     logic [63:0]              data_q;
     fu_op                     operator_q;
     logic [TRANS_ID_BITS-1:0] trans_id_q;
+    // stall signal e.g.: do not update registers from above
+    logic stall;
 
      // for ld/st address checker
     logic [63:0]             st_buffer_paddr;   // physical address for store
@@ -167,37 +170,38 @@ module lsu #(
     // MMU e.g.: TLBs/PTW
     // -------------------
     mmu #(
-        .INSTR_TLB_ENTRIES      ( 16                   ),
-        .DATA_TLB_ENTRIES       ( 16                   ),
-        .ASID_WIDTH             ( ASID_WIDTH           )
+        .INSTR_TLB_ENTRIES      ( 16                ),
+        .DATA_TLB_ENTRIES       ( 16                ),
+        .ASID_WIDTH             ( ASID_WIDTH        )
     ) mmu_i (
-        .lsu_req_i              ( translation_req      ),
-        .lsu_vaddr_i            ( vaddr                ),
-        .lsu_valid_o            ( translation_valid    ),
-        .lsu_paddr_o            ( paddr_o              ),
-        // connecting PTW to D$ IF (aka mem arbiter)
-        .data_if_address_o      ( address_i     [0]    ),
-        .data_if_data_wdata_o   ( data_wdata_i  [0]    ),
-        .data_if_data_req_o     ( data_req_i    [0]    ),
-        .data_if_data_we_o      ( data_we_i     [0]    ),
-        .data_if_data_be_o      ( data_be_i     [0]    ),
-        .data_if_data_gnt_i     ( data_gnt_o    [0]    ),
-        .data_if_data_rvalid_i  ( data_rvalid_o [0]    ),
-        .data_if_data_rdata_i   ( data_rdata_o  [0]    ),
+        .lsu_req_i              ( translation_req   ),
+        .lsu_vaddr_i            ( vaddr             ),
+        .lsu_valid_o            ( translation_valid ),
+        .lsu_paddr_o            ( paddr_o           ),
+        // connecting PTW to D$ IF (aka mem arbiter
+        .data_if_address_o      ( address_i     [0] ),
+        .data_if_data_wdata_o   ( data_wdata_i  [0] ),
+        .data_if_data_req_o     ( data_req_i    [0] ),
+        .data_if_data_we_o      ( data_we_i     [0] ),
+        .data_if_data_be_o      ( data_be_i     [0] ),
+        .data_if_data_gnt_i     ( data_gnt_o    [0] ),
+        .data_if_data_rvalid_i  ( data_rvalid_o [0] ),
+        .data_if_data_rdata_i   ( data_rdata_o  [0] ),
         .*
     );
 
     // ------------------
     // Address Checker
     // ------------------
-    logic address_match;
+    logic page_offset_match;
     // checks if the requested load is in the store buffer
+    // page offsets are virtually and physically the same
     always_comb begin : address_checker
-        address_match = 1'b0;
-        // as a beginning the uppermost bits are identical and the entry is valid
-        if (translation_valid & (paddr_o[63:3] == st_buffer_paddr[63:3]) & st_buffer_valid) begin
+        page_offset_match = 1'b0;
+        // check if the LSBs are identical and the entry is valid
+        if ((paddr_o[11:3] == st_buffer_paddr[11:3]) & st_buffer_valid) begin
             // TODO: implement propperly, this is overly pessimistic
-            address_match = 1'b1;
+            page_offset_match = 1'b1;
         end
     end
 
@@ -210,16 +214,16 @@ module lsu #(
     always_comb begin : lsu_control
         // default assignment
         NS = CS;
-        lsu_trans_id_o  = trans_id;
-        lsu_ready_o     = 1'b1;
+        lsu_trans_id_o    = trans_id;
+        lsu_ready_o       = 1'b1;
         // is the store valid e.g.: can we put it in the store buffer
-        st_valid        = 1'b0;
+        st_valid          = 1'b0;
         // as a default we are not requesting on the read interface
-        data_req_i[1]   = 1'b0;
+        data_req_i[1]     = 1'b0;
         // request the address translation
-        translation_req = 1'b0;
+        translation_req   = 1'b0;
         // as a default we don't stall
-        stall           = 1'b0;
+        stall             = 1'b0;
         // as a default we won't take the operands from the internal
         // registers
         get_from_register = 1'b0;
@@ -227,166 +231,6 @@ module lsu #(
         // we need to give the valid result even to stores
         lsu_valid_o       = 1'b0;
         unique case (CS)
-            // we can freely accept new request
-            IDLE: begin
-                // First of all we distinguish between load and stores
-                // 1. for loads we need to wait until they can happen
-                // 2. stores can be placed in the store buffer if it is empty
-                // in any case we need to do address translation beforehand
-                // LOAD
-                if (op == LD_OP & lsu_valid_i) begin
-                    translation_req = 1'b1;
-                    // we can never handle a load in a single cycle
-                    // but at least on a tlb hit we can output it to the memory
-                    if (translation_valid) begin
-                        // check if the address is in the store buffer otherwise we need
-                        // to wait until the store buffer has cleared its entry
-                        if (~address_match) begin
-                            // lets request this read
-                            data_req_i[1] = 1'b1;
-                            // we already got a grant here so lets wait for the rvalid
-                            if (data_gnt_o[1]) begin
-                                NS = LOAD_WAIT_RVALID;
-                            end else begin // we didn't get a grant so wait for it in a separate stage
-                                NS = LOAD_WAIT_GNT;
-                            end
-                        end
-                    end else begin// otherwise we need to wait for the translation
-                        NS = LOAD_WAIT_TRANSLATION;
-                    end
-
-                    lsu_ready_o = 1'b0;
-
-                // STORE
-                end else if (op == ST_OP & lsu_valid_i) begin
-                    translation_req = 1'b1;
-                    // we can handle this store in this cycle if
-                    // a. the storebuffer is not full
-                    // b. the TLB was a hit
-                    if (st_ready & translation_valid) begin
-                        NS = IDLE;
-                        // and commit to the store buffer
-                        st_valid    = 1'b1;
-                        lsu_valid_o = 1'b1;
-                        // make a dummy writeback so we
-                        // tell the scoreboard that we processed the instruction accordingly
-
-                    end else begin
-                        // otherwise we are not able to process new requests, we wait for and ad
-                        lsu_ready_o = 1'b0;
-                        NS = STORE;
-                    end
-                end
-            end
-            // we wait here until the store buffer becomes ready again
-            STORE: begin
-                translation_req = 1'b1;
-                // we are here because we weren't able to finish either the translation
-                // or the store buffer was not ready. Wait here for both events.
-                // this gets the data from the flipflop
-                get_from_register = 1'b1;
-                if (st_ready & translation_valid) begin
-                    // we can accept a new request if we are here
-                    // but first lets commit to the store buffer
-                    st_valid = 1'b1;
-                    // go back to the IDLE state
-                    NS = IDLE;
-                    // and tell the scoreboard that the result is valid
-                    lsu_valid_o = 1'b1;
-                end else begin // we can't accept a new request and stay in the store state
-                    stall = 1'b1;
-                end
-                // we are not ready to accept new requests in this state.
-                lsu_ready_o = 1'b0;
-            end
-            // we wait here for the translation to finish
-            LOAD_WAIT_TRANSLATION: begin
-                translation_req = 1'b1;
-                // get everything from the registers
-                get_from_register = 1'b1;
-                // and stall
-                stall = 1'b1;
-                // we can't accept new data
-                lsu_ready_o = 1'b0;
-                // wait here for the translation to be valid and request the data
-                // also be sure that the address doesn't match with the one in the store buffer
-                if (translation_valid & ~address_match) begin
-                    // lets request this read
-                    data_req_i[1] = 1'b1;
-                    // we already got a grant here so lets wait for the rvalid
-                    if (data_gnt_o[1]) begin
-                        NS = LOAD_WAIT_RVALID;
-                    end else begin // we didn't get a grant so wait for it in a separate stage
-                        NS = LOAD_WAIT_GNT;
-                    end
-                end
-            end
-            // we wait here for the grant to happen
-            LOAD_WAIT_GNT: begin
-                translation_req = 1'b1;
-                // we can't accept new data
-                lsu_ready_o = 1'b0;
-                // get everything from the registers
-                get_from_register = 1'b1;
-                // and stall
-                stall = 1'b1;
-                // lets request this read
-                data_req_i[1] = 1'b1;
-                // wait for the grant
-                if (data_gnt_o[1]) begin
-                        NS = LOAD_WAIT_RVALID;
-                end
-            end
-            // we wait here for the rvalid to happen
-            LOAD_WAIT_RVALID: begin
-                // we got an rvalid, query for new data
-                if (data_rvalid_o[1]) begin
-                    translation_req = 1'b1;
-                    // output the correct transaction_id since we don't use the get from register signal here
-                    lsu_trans_id_o = trans_id_q;
-                    // we got a rvalid so we can accept a new store/load request
-                    lsu_ready_o = 1'b1;
-                    // the result is valid if we got the rvalid
-                    lsu_valid_o = 1'b1;
-                    // did we get a new request?
-
-                    // essentially the same part as in IDLE but we can't accept a new store
-                    // as the store could immediately be performed and we would collide on the
-                    // trans id part (e.g.: a structural hazard)
-                    // if (op == LD_OP & lsu_valid_i) begin
-                    //     translation_req = 1'b1;
-                    //     // we can never handle a load in a single cycle
-                    //     // but at least on a tlb hit we can output it to the memory
-                    //     if (translation_valid) begin
-                    //         // check if the address is in the store buffer otherwise we need
-                    //         // to wait until the store buffer has cleared its entry
-                    //         if (~address_match) begin
-                    //             // lets request this read
-                    //             data_req_i[1] = 1'b1;
-                    //             // we already got a grant here so lets wait for the rvalid
-                    //             if (data_gnt_o[1]) begin
-                    //                 NS = LOAD_WAIT_RVALID;
-                    //             end else begin // we didn't get a grant so wait for it in a separate stage
-                    //                 NS = LOAD_WAIT_GNT;
-                    //             end
-                    //         end
-                    //     end else begin// otherwise we need to wait for the translation
-                    //         NS = LOAD_WAIT_TRANSLATION;
-                    //     end
-                    // // STORE
-                    // end else if (op == ST_OP & lsu_valid_i) begin
-                    //     NS = STORE;
-                    // end else begin
-                        NS = IDLE;
-                    // end
-
-                end else begin
-                    // and stall
-                    stall = 1'b1;
-                     // we can't accept new data
-                    lsu_ready_o = 1'b0;
-                end
-            end
             default:;
         endcase
     end
@@ -593,7 +437,7 @@ module lsu #(
     // it can either be feedthrough from the issue stage or from the internal register
     always_comb begin : input_select
         // if we are stalling use the values we saved
-        if (get_from_register) begin
+        if (lsu_ready_o) begin
             vaddr    = vaddr_q;
             data     = data_q;
             operator = operator_q;
@@ -616,7 +460,7 @@ module lsu #(
             CS           <= IDLE;
         end else begin
             CS <= NS;
-            if (~stall) begin
+            if (lsu_ready_o) begin
                 vaddr_q    <= vaddr_i;
                 data_q     <= operand_b_i;
                 operator_q <= operator_i;

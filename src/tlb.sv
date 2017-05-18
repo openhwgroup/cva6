@@ -78,8 +78,7 @@ module tlb #(
 
         for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
             // first level match, this may be a giga page, check the ASID flags as well
-            if (tags_q[i].valid && (lu_asid_i == tags_q[i].asid)
-            && vpn2 == tags_q[i].vpn2) begin
+            if (tags_q[i].valid && lu_asid_i == tags_q[i].asid && vpn2 == tags_q[i].vpn2) begin
                 // second level
                 if (tags_q[i].is_1G) begin
                     lu_is_1G_o = 1'b1;
@@ -91,7 +90,7 @@ module tlb #(
                     // this could be a 2 mega page hit or a 4 kB hit
                     // output accordingly
                     if (tags_q[i].is_2M || vpn0 == tags_q[i].vpn0) begin
-                        lu_is_2M_o   = tags_q[i].is_1G;
+                        lu_is_2M_o   = tags_q[i].is_2M;
                         lu_content_o = content_q[i];
                         lu_hit_o     = 1'b1;
                         lu_hit[i]    = 1'b1;

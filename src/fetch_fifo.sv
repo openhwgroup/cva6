@@ -26,8 +26,8 @@ module fetch_fifo
     // control signals
     input  logic                   flush_i,    // clears the contents of the FIFO -> quasi reset
     // branch prediction at in_addr_i address, as this is an address and not PC it can be the case
-    // that we have two compressed instruction (or one compressed instruction and one unaligned instruction) so we need
-    // keep two prediction inputs: [c1|c0] <- prediction for c1 and c0
+    // that we have two compressed instruction (or one compressed instruction and one unaligned instruction) so we
+    // only predict on one entry and discard (or keep) the other depending on its position and prediction.
     input  branchpredict_sbe       branch_predict_i,
     input  logic [63:0]            in_addr_i,
     input  logic [31:0]            in_rdata_i,

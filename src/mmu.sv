@@ -74,6 +74,7 @@ module mmu #(
     // assignments necessary to use interfaces here
     // only done for the few signals of the instruction interface
     logic [63:0] fetch_paddr;
+
     logic  fetch_req;
     assign instr_if_data_req_o       = fetch_req;
     assign instr_if_address_o        = fetch_paddr;

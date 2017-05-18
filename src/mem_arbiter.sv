@@ -46,13 +46,13 @@ module mem_arbiter #(
 );
 
     localparam DATA_WIDTH = $clog2(NR_PORTS);
-    logic full_o;
-    logic empty_o;
+    logic                  full_o;
+    logic                  empty_o;
     logic [DATA_WIDTH-1:0] data_i;
-    logic push_i;
+    logic                  push_i;
     logic [DATA_WIDTH-1:0] data_o;
-    logic pop_i;
-    logic single_element_o;
+    logic                  pop_i;
+    logic                  single_element_o;
     // essentially wait for the queue to be empty
     // or we just got a grant -> this means we issued a memory request in this cycle
     // although we are ready if we only got a single element in the queue and an rvalid

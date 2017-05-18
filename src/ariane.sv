@@ -54,6 +54,7 @@ module ariane
         output logic                           data_if_data_req_o,
         output logic                           data_if_data_we_o,
         output logic [7:0]                     data_if_data_be_o,
+        output logic [1:0]                     data_if_tag_status_o,
         input  logic                           data_if_data_gnt_i,
         input  logic                           data_if_data_rvalid_i,
         input  logic [63:0]                    data_if_data_rdata_i,

@@ -45,6 +45,7 @@ module core_tb;
         .data_if_data_req_o     ( data_if.data_req     ),
         .data_if_data_we_o      ( data_if.data_we      ),
         .data_if_data_be_o      ( data_if.data_be      ),
+        .data_if_tag_status_o   (                      ),
         .data_if_data_gnt_i     ( data_if.data_gnt     ),
         .data_if_data_rvalid_i  ( data_if.data_rvalid  ),
         .data_if_data_rdata_i   ( data_if.data_rdata   ),
