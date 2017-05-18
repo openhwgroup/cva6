@@ -56,7 +56,8 @@ module mem_arbiter #(
     output logic [NR_PORTS-1:0]            data_rvalid_o,
     output logic [NR_PORTS-1:0][63:0]      data_rdata_o
 );
-    localparam DATA_WIDTH = $clog2(NR_PORTS);
+    // one-hot encoded
+    localparam DATA_WIDTH = NR_PORTS;
     // registers
     enum logic [1:0]       {IDLE, WAIT_GNT, WAIT_TAG, WAIT_FLUSH} CS, NS;
     // remember the request port in case of a multi-cycle transaction
@@ -126,7 +127,7 @@ module mem_arbiter #(
                             // wait for the grant
                             if (data_gnt_i) begin
                                 // set the slave on which we are waiting
-                                in_data = i[DATA_WIDTH-1:0];
+                                in_data = 1'b1 << i[DATA_WIDTH-1:0];
                                 push = 1'b1;
                                 // we got a grant so we need to wait for the tag
                                 NS = WAIT_TAG;
@@ -227,18 +228,15 @@ module mem_arbiter #(
     // results, listening on the input signals of the slave port
     always_comb begin : slave_read_port
         pop = 1'b0;
-        // default assignment
+        // default assignment & one hot decoder
         for (int i = 0; i < NR_PORTS; i++) begin
-            data_rvalid_o[i] = 1'b0;
-            data_rdata_o[i]  = 64'b0;
+            data_rvalid_o[i] = (out_data[i] == 1'b1) ? data_rvalid_i : 1'b0;
+            data_rdata_o[i]  = data_rdata_i;
         end
         // if there is an entry in the queue -> we are waiting for a read/write to return
         // if there is a valid signal the FIFO should not be empty anyway
         if (data_rvalid_i) begin
-            // pass the read to the appropriate slave
-            pop                 = 1'b1;
-            data_rvalid_o[out_data] = data_rvalid_i;
-            data_rdata_o[out_data]  = data_rdata_i;
+            pop = 1'b1;
         end
     end
 
