@@ -268,7 +268,7 @@ module lsu #(
         lsu_ready_o          = 1'b1;
         // LSU result is valid
         // we need to give the valid result even to stores
-        lsu_valid_o          = 1'b0;
+        lsu_valid_o          = data_rvalid_o[1];
         // is the store valid e.g.: can we put it in the store buffer
         st_valid             = 1'b0;
         // as a default we are not requesting on the read interface
@@ -333,24 +333,20 @@ module lsu #(
                 if (enable_translation_i) begin
                     // translation from the previous cycle was valid
                     if (translation_valid_q) begin
+                        lsu_ready_o     = 1'b1;
                         // output the physical address
                         address_i[1]    = paddr_q;
-                        // wait for the rvalid
-                        if (data_rvalid_o[1]) begin
-                            lsu_ready_o     = 1'b1;
-                            lsu_valid_o     = 1'b1;
-                            // we can make a new request here
-                            if (lsu_valid_i)
-                                make_request = 1'b1;
-                        end
-                    end else begin
+                        // we can make a new request here
+                        if (lsu_valid_i)
+                            make_request = 1'b1;
+                    end else begin // TODO: Abort in case of access exception
                         data_tag_status_i[1] = `WAIT_TRANSLATION;
                     end
                 // we do not need address translation, we can simply wait for the rvalid
-                end else if (data_rvalid_o) begin
+                end else if (lsu_valid) begin
                     // we can make a new request here
-                    if (lsu_valid_i)
-                        make_request = 1'b1;
+                    make_request = 1'b1;
+                    lsu_ready_o  = 1'b1;
                 end
             end
             // we've got a flush request but have an outstanding rvalid, wait for it

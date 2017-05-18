@@ -144,8 +144,8 @@ module mem_arbiter #(
             // ----------------------------
             // Multi-cycle memory requests
             // ----------------------------
-            // do we have an outstanding request e.g.: a request which is waiting for a grant or an tag_valid
-            // here we need to wait for the tag
+            // do we have an outstanding request e.g.: a request which is waiting for a grant or a tag_valid
+            // here we need to wait for the grant
             WAIT_GNT: begin
                 // we can check for it since we only stay in this state if didn't yet receive a grant
                 if (data_gnt_i) begin
