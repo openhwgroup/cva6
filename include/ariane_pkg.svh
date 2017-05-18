@@ -8,6 +8,8 @@
  * Description: Contains all the necessary defines for Ariane
  *              in one package.
  */
+
+
 package ariane_pkg;
     // ---------------
     // Global Config
@@ -88,8 +90,8 @@ package ariane_pkg;
                                // LSU functions
                                LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
                              } fu_op;
-        // ---------------
-    // ID/EX/WB Stage
+    // ---------------
+    // IF/ID Stage
     // ---------------
     // store the decompressed instruction
     typedef struct packed {

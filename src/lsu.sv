@@ -73,9 +73,6 @@ module lsu #(
     output exception                 lsu_exception_o   // to WB, signal exception status LD/ST exception
 
 );
-    // tag status
-    enum logic [1:0] { WAIT_TRANSLATION, ABORT_TRANSLATION, VALID_TRANSLATION, NOT_IMPL } tag_status;
-
     mem_if ptw_if(clk_i);
     // byte enable based on operation to perform
     // data is misaligned
@@ -125,35 +122,37 @@ module lsu #(
     // ---------------
     logic [2:0][63:0] address_i;
     logic [2:0][63:0] data_wdata_i;
-    logic [2:0] data_req_i;
-    logic [2:0] data_we_i;
-    logic [2:0][7:0] data_be_i;
-    logic [2:0] data_gnt_o;
-    logic [2:0] data_rvalid_o;
+    logic [2:0]       data_req_i;
+    logic [2:0]       data_we_i;
+    logic [2:0][7:0]  data_be_i;
+    logic [2:0][1:0]  data_tag_status_i;
+    logic [2:0]       data_gnt_o;
+    logic [2:0]       data_rvalid_o;
     logic [2:0][63:0] data_rdata_o;
 
     // port 0 PTW, port 1 loads, port 2 stores
     mem_arbiter mem_arbiter_i (
         // to D$
-        .address_o     ( data_if_address_o     ),
-        .data_wdata_o  ( data_if_data_wdata_o  ),
-        .data_req_o    ( data_if_data_req_o    ),
-        .data_we_o     ( data_if_data_we_o     ),
-        .data_be_o     ( data_if_data_be_o     ),
-        .data_gnt_i    ( data_if_data_gnt_i    ),
-        .data_rvalid_i ( data_if_data_rvalid_i ),
-        .data_rdata_i  ( data_if_data_rdata_i  ),
+        .address_o         ( data_if_address_o     ),
+        .data_wdata_o      ( data_if_data_wdata_o  ),
+        .data_req_o        ( data_if_data_req_o    ),
+        .data_we_o         ( data_if_data_we_o     ),
+        .data_be_o         ( data_if_data_be_o     ),
+        .data_tag_status_o ( data_if_tag_status_o  ),
+        .data_gnt_i        ( data_if_data_gnt_i    ),
+        .data_rvalid_i     ( data_if_data_rvalid_i ),
+        .data_rdata_i      ( data_if_data_rdata_i  ),
 
         // from PTW, Load logic and store queue
-        .address_i     ( address_i             ),
-        .data_wdata_i  ( data_wdata_i          ),
-        .data_req_i    ( data_req_i            ),
-        .data_we_i     ( data_we_i             ),
-        .data_be_i     ( data_be_i             ),
-        .data_gnt_o    ( data_gnt_o            ),
-        .data_rvalid_o ( data_rvalid_o         ),
-        .data_rdata_o  ( data_rdata_o          ),
-        .flush_ready_o (                       ), // TODO: connect, wait for flush to be valid
+        .address_i         ( address_i             ),
+        .data_wdata_i      ( data_wdata_i          ),
+        .data_req_i        ( data_req_i            ),
+        .data_we_i         ( data_we_i             ),
+        .data_be_i         ( data_be_i             ),
+        .data_tag_status_i ( data_tag_status_i     ),
+        .data_gnt_o        ( data_gnt_o            ),
+        .data_rvalid_o     ( data_rvalid_o         ),
+        .data_rdata_o      ( data_rdata_o          ),
         .*
     );
 
