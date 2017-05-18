@@ -38,27 +38,29 @@ module mem_arbiter_tb;
     // assign data_gnt = data_gnt_driver & data_req;
 
     mem_arbiter dut (
-        .clk_i          ( clk                             ),
-        .rst_ni         ( rst_ni                          ),
-        .flush_ready_o  ( flush_ready_o                   ),
+        .clk_i             ( clk                             ),
+        .rst_ni            ( rst_ni                          ),
+        .flush_i           ( 1'b0                            ),
 
-        .address_o      ( slave.address                   ),
-        .data_wdata_o   ( slave.data_wdata                ),
-        .data_req_o     ( slave.data_req                  ),
-        .data_we_o      ( slave.data_we                   ),
-        .data_be_o      ( slave.data_be                   ),
-        .data_gnt_i     ( slave.data_req & slave.data_gnt ),
-        .data_rvalid_i  ( slave.data_rvalid               ),
-        .data_rdata_i   ( slave.data_rdata                ),
+        .address_o         ( slave.address                   ),
+        .data_wdata_o      ( slave.data_wdata                ),
+        .data_req_o        ( slave.data_req                  ),
+        .data_we_o         ( slave.data_we                   ),
+        .data_be_o         ( slave.data_be                   ),
+        .data_tag_status_o (                                 ),
+        .data_gnt_i        ( slave.data_req & slave.data_gnt ),
+        .data_rvalid_i     ( slave.data_rvalid               ),
+        .data_rdata_i      ( slave.data_rdata                ),
 
-        .address_i      ( {master[2].address,     master[1].address,     master[0].address}      ),
-        .data_wdata_i   ( {master[2].data_wdata,  master[1].data_wdata,  master[0].data_wdata}   ),
-        .data_req_i     ( {master[2].data_req,    master[1].data_req,    master[0].data_req}     ),
-        .data_we_i      ( {master[2].data_we,     master[1].data_we,     master[0].data_we}      ),
-        .data_be_i      ( {master[2].data_be,     master[1].data_be,     master[0].data_be}      ),
-        .data_gnt_o     ( {master[2].data_gnt,    master[1].data_gnt,    master[0].data_gnt}     ),
-        .data_rvalid_o  ( {master[2].data_rvalid, master[1].data_rvalid, master[0].data_rvalid}  ),
-        .data_rdata_o   ( {master[2].data_rdata,  master[1].data_rdata,  master[0].data_rdata}   )
+        .address_i         ( {master[2].address,     master[1].address,     master[0].address}      ),
+        .data_wdata_i      ( {master[2].data_wdata,  master[1].data_wdata,  master[0].data_wdata}   ),
+        .data_req_i        ( {master[2].data_req,    master[1].data_req,    master[0].data_req}     ),
+        .data_we_i         ( {master[2].data_we,     master[1].data_we,     master[0].data_we}      ),
+        .data_be_i         ( {master[2].data_be,     master[1].data_be,     master[0].data_be}      ),
+        .data_tag_status_i ( {2'b01,                 2'b01,                 2'b01            }      ),
+        .data_gnt_o        ( {master[2].data_gnt,    master[1].data_gnt,    master[0].data_gnt}     ),
+        .data_rvalid_o     ( {master[2].data_rvalid, master[1].data_rvalid, master[0].data_rvalid}  ),
+        .data_rdata_o      ( {master[2].data_rdata,  master[1].data_rdata,  master[0].data_rdata}   )
     );
 
     initial begin

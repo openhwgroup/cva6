@@ -51,7 +51,7 @@ module mem_arbiter #(
     input  logic [NR_PORTS-1:0]            data_req_i,
     input  logic [NR_PORTS-1:0]            data_we_i,
     input  logic [NR_PORTS-1:0][7:0]       data_be_i,
-    input  logic [1:0]                     data_tag_status_i,
+    input  logic [NR_PORTS-1:0][1:0]       data_tag_status_i,
     output logic [NR_PORTS-1:0]            data_gnt_o,
     output logic [NR_PORTS-1:0]            data_rvalid_o,
     output logic [NR_PORTS-1:0][63:0]      data_rdata_o
@@ -98,19 +98,13 @@ module mem_arbiter #(
 
     // addressing read and full write
     always_comb begin : read_req_write
-        automatic logic [DATA_WIDTH-1:0] request_index;
-        // pass through all signals from the correct slave port
-        address_o                 = address_i[request_index];
+        automatic logic [DATA_WIDTH-1:0] request_index = 0;
         data_req_o                = 1'b0;
-        data_wdata_o              = data_wdata_i[request_index];
-        data_be_o                 = data_be_i[request_index];
-        data_we_o                 = data_we_i[request_index];
-        data_tag_status_o         = data_tag_status_i[request_index];
-        data_gnt_o[request_index] = data_gnt_i;
 
         in_data                   = '{default: 0};
         push                      = 1'b0;
         request_port_n            = request_port_q;
+        NS                        = CS;
 
         for (int i = 0; i < NR_PORTS; i++)
             data_gnt_o[i] = 1'b0;
@@ -216,6 +210,14 @@ module mem_arbiter #(
             end
             default : /* default */;
         endcase
+        // pass through all signals from the correct slave port
+        address_o                 = address_i[request_index];
+        data_wdata_o              = data_wdata_i[request_index];
+        data_be_o                 = data_be_i[request_index];
+        data_we_o                 = data_we_i[request_index];
+        data_tag_status_o         = data_tag_status_i[request_index];
+        data_gnt_o[request_index] = data_gnt_i;
+
         // if we got a flush and we are not ready for the flush wait and for it and don't accept any incoming data
         // e.g.: jump to the flush wait state
         if (flush_i && !flush_ready)
