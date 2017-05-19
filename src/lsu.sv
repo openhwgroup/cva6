@@ -339,7 +339,7 @@ module lsu #(
                         // we can make a new request here
                         if (lsu_valid_i)
                             make_request = 1'b1;
-                    end else begin // TODO: Abort in case of access exception
+                    end else begin // TODO: Abort in case of access
                         data_tag_status_i[1] = `WAIT_TRANSLATION;
                     end
                 // we do not need address translation, we can simply wait for the rvalid

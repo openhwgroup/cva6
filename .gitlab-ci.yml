@@ -68,17 +68,17 @@ test_store_queue:
     paths:
       - covhtmlreport
 
-test_lsu:
-  stage: test
-  before_script:
-    - make build library=lsu_lib
-  script:
-    - make lsu library=lsu_lib
-    - vcover report lsu.ucdb
-    - vcover report -html lsu.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
+# test_lsu:
+#   stage: test
+#   before_script:
+#     - make build library=lsu_lib
+#   script:
+#     - make lsu library=lsu_lib
+#     - vcover report lsu.ucdb
+#     - vcover report -html lsu.ucdb
+#   artifacts:
+#     paths:
+#       - covhtmlreport
 
 
 pages:
