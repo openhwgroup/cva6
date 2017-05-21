@@ -81,7 +81,6 @@ module lsu #(
     output exception                 lsu_exception_o   // to WB, signal exception status LD/ST exception
 
 );
-    mem_if ptw_if(clk_i);
     // byte enable based on operation to perform
     // data is misaligned
     logic data_misaligned;
@@ -128,7 +127,7 @@ module lsu #(
     // ------------------------------
     // Address Generation Unit (AGU)
     // ------------------------------
-    assign vaddr_i = imm_i + operand_a_i;
+    assign vaddr_i = $signed(imm_i) + $signed(operand_a_i);
 
     // ---------------
     // Memory Arbiter
@@ -247,8 +246,7 @@ module lsu #(
     always_comb begin : address_checker
         page_offset_match = 1'b0;
         // check if the LSBs are identical and the entry is valid
-        if ((vaddr[11:3] == st_buffer_paddr[11:3]) & st_buffer_valid) begin
-            // TODO: implement propperly, this is overly pessimistic
+        if ((vaddr[11:3] == st_buffer_paddr[11:3]) && st_buffer_valid) begin
             page_offset_match = 1'b1;
         end
     end
