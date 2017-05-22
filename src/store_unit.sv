@@ -1,0 +1,84 @@
+import ariane_pkg::*;
+
+module store_unit (
+    input logic                      clk_i,    // Clock
+    input logic                      rst_ni,  // Asynchronous reset active low
+    // store unit input port
+    input logic [1:0]                operator_i,
+    input logic                      valid_i,
+    input logic [63:0]               vaddr_i,
+    input logic [7:0]                be_i,
+    input  logic                     commit_i,
+    // store unit output port
+    output logic                     valid_o,
+    output logic                     ready_o,
+    output logic [TRANS_ID_BITS-1:0] trans_id_o,
+    output logic [63:0]              result_o,
+    // MMU -> Address Translation
+    output logic                     translation_req_o, // request address translation
+    output logic                     vaddr_o,           // virtual address out
+    input  logic [63:0]              paddr_i,           // physical address in
+    input  logic                     translation_valid_i,
+    // address checker
+    input  logic [11:0]              page_offset_i,
+    output logic                     page_offset_matches_o,
+    // memory interface
+    output logic [63:0]              address_o,
+    output logic [63:0]              data_wdata_o,
+    output logic                     data_req_o,
+    output logic                     data_we_o,
+    output logic [7:0]               data_be_o,
+    output logic [1:0]               data_tag_status_o,
+    input  logic                     data_gnt_i,
+    input  logic                     data_rvalid_i
+);
+    assign result_o = 64'b0;
+
+    logic [63:0]             st_buffer_paddr;   // physical address for store
+    logic [63:0]             st_buffer_data;  // store buffer data out
+    logic [7:0]              st_buffer_be;
+    logic                    st_buffer_valid;
+    // store buffer control signals
+    logic        st_ready;
+    logic        st_valid;
+    // ---------------
+    // Store Queue
+    // ---------------
+    store_queue store_queue_i (
+        // store queue write port
+        .valid_i           ( st_valid            ),
+        .paddr_i           ( paddr_q             ),
+        .data_i            ( data                ),
+        .be_i              ( be                  ),
+        // store buffer in
+        .paddr_o           ( st_buffer_paddr     ),
+        .data_o            ( st_buffer_data      ),
+        .valid_o           ( st_buffer_valid     ),
+        .be_o              ( st_buffer_be        ),
+        .ready_o           ( st_ready            ),
+        .*
+    );
+    // ------------------
+    // Address Checker
+    // ------------------
+    // The load should return the data stored by the most recent store to the
+    // same physical address.  The most direct way to implement this is to
+    // maintain physical addresses in the store buffer.
+
+    // Of course, there are other micro-architectural techniques to accomplish
+    // the same thing: you can interlock and wait for the store buffer to
+    // drain if the load VA matches any store VA modulo the page size (i.e.
+    // bits 11:0).  As a special case, it is correct to bypass if the full VA
+    // matches, and no younger stores' VAs match in bits 11:0.
+    //
+    // checks if the requested load is in the store buffer
+    // page offsets are virtually and physically the same
+    always_comb begin : address_checker
+        page_offset_matches_o = 1'b0;
+        // check if the LSBs are identical and the entry is valid
+        if ((vaddr_i[11:3] == st_buffer_paddr[11:3]) && st_buffer_valid) begin
+            page_offset_matches_o = 1'b1;
+        end
+    end
+
+endmodule
