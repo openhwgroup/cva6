@@ -180,13 +180,16 @@ module lsu #(
     // Load Unit
     // ------------------
 
+    // ---------------------
+    // Result Sequentialize
+    // ---------------------
+
     // ------------------
-    // LSU Control (FSM)
+    // LSU Control
     // ------------------
     // is the operation a load or store or nothing of relevance for the LSU
     enum logic [1:0] { NONE, LD_OP, ST_OP } op;
-    // connect the load logic to the memory arbiter
-    // assign address_i[1]       = paddr_o;
+
     always_comb begin : lsu_control
 
     end
