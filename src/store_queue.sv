@@ -97,10 +97,10 @@ module store_queue (
             // we can issue this instruction
             // we can issue it as soon as the commit_i goes high or any number of cycles later
             // by looking at the is_speculative flag
-            if (commit_queue_q.valid & (~commit_queue_q.is_speculative | commit_i)) begin
+            if (commit_queue_q.valid && (~commit_queue_q.is_speculative || commit_i)) begin
                 data_req_o = 1'b1;
-                if (data_gnt_i) begin// advance to the next state if we received the grant
-                    // NS = WAIT_RVALID;
+                // advance to the next state if we received the grant
+                if (data_gnt_i) begin
                     // we can evict it from the commit buffer
                     commit_queue_n.valid = 1'b0;
                 end

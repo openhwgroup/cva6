@@ -100,18 +100,39 @@ module lsu #(
     logic [7:0]  be_i;
     assign vaddr_i = $signed(imm_i) + $signed(operand_a_i);
 
+    logic                     st_valid_i;
+    logic                     st_ready_o;
+    logic                     ld_valid_i;
+    logic                     ld_ready_o;
+    logic                     ld_translation_req;
+    logic                     st_translation_req;
+    logic [63:0]              ld_vaddr;
+    logic [63:0]              st_vaddr;
+    logic                     translation_req;
+    logic [63:0]              mmu_vaddr;
+
+    logic                     ld_valid;
+    logic [TRANS_ID_BITS-1:0] ld_trans_id;
+    logic [63:0]              ld_result;
+    logic                     st_valid;
+    logic [TRANS_ID_BITS-1:0] st_trans_id;
+    logic [63:0]              st_result;
+
+    logic [11:0]              page_offset;
+    logic                     page_offset_matches;
+
     // ---------------
     // Memory Arbiter
     // ---------------
-    logic [2:0][63:0] address_i;
-    logic [2:0][63:0] data_wdata_i;
-    logic [2:0]       data_req_i;
-    logic [2:0]       data_we_i;
-    logic [2:0][7:0]  data_be_i;
-    logic [2:0][1:0]  data_tag_status_i;
-    logic [2:0]       data_gnt_o;
-    logic [2:0]       data_rvalid_o;
-    logic [2:0][63:0] data_rdata_o;
+    logic [2:0][63:0]         address_i;
+    logic [2:0][63:0]         data_wdata_i;
+    logic [2:0]               data_req_i;
+    logic [2:0]               data_we_i;
+    logic [2:0][7:0]          data_be_i;
+    logic [2:0][1:0]          data_tag_status_i;
+    logic [2:0]               data_gnt_o;
+    logic [2:0]               data_rvalid_o;
+    logic [2:0][63:0]         data_rdata_o;
 
     // Port 0: PTW
     // Port 1: Load Unit
@@ -149,7 +170,7 @@ module lsu #(
         .ASID_WIDTH             ( ASID_WIDTH           )
     ) mmu_i (
         .lsu_req_i              ( translation_req      ),
-        .lsu_vaddr_i            (                      ),
+        .lsu_vaddr_i            ( mmu_vaddr            ),
         .lsu_valid_o            ( translation_valid    ),
         .lsu_paddr_o            ( paddr                ),
         // connecting PTW to D$ IF (aka mem arbiter
@@ -164,16 +185,6 @@ module lsu #(
         .data_if_data_rdata_i   ( data_rdata_o     [0] ),
         .*
     );
-    logic st_valid_i;
-    logic st_ready_o;
-
-    logic                     ld_valid;
-    logic [TRANS_ID_BITS-1:0] ld_trans_id;
-    logic [63:0]              ld_result;
-    logic                     st_valid;
-    logic [TRANS_ID_BITS-1:0] st_trans_id;
-    logic [63:0]              st_result;
-
     // ------------------
     // Store Unit
     // ------------------
@@ -189,13 +200,13 @@ module lsu #(
         .trans_id_o            ( st_trans_id          ),
         .result_o              ( st_result            ),
         // MMU port
-        .translation_req_o     (                      ),
-        .vaddr_o               (                      ),
-        .paddr_i               (                      ),
-        .translation_valid_i   (                      ),
+        .translation_req_o     ( st_translation_req   ),
+        .vaddr_o               ( st_vaddr             ),
+        .paddr_i               ( paddr                ),
+        .translation_valid_i   ( translation_valid    ),
         // Load Unit
-        .page_offset_i         (                      ),
-        .page_offset_matches_o (                      ),
+        .page_offset_i         ( page_offset          ),
+        .page_offset_matches_o ( page_offset_matches  ),
         // Mem Arbiter
         .address_o             ( address_i        [2] ),
         .data_wdata_o          ( data_wdata_i     [2] ),
@@ -212,43 +223,94 @@ module lsu #(
     // Load Unit
     // ------------------
 
+    logic vaddr_o;
+    logic [63:0] paddr_i;
+    logic translation_valid_i;
+
+    load_unit load_unit_i (
+        .operator_i            ( operator             ),
+        .trans_id_i            ( trans_id             ),
+        .valid_i               ( ld_valid_i           ),
+        .vaddr_i               ( vaddr                ),
+        .be_i                  ( be                   ),
+        .valid_o               ( ld_valid             ),
+        .ready_o               ( ld_ready_o           ),
+        .trans_id_o            ( ld_trans_id          ),
+        .result_o              ( ld_result            ),
+        .translation_req_o     ( ld_translation_req   ),
+        .vaddr_o               ( ld_vaddr             ),
+        .paddr_i               ( paddr                ),
+        .translation_valid_i   ( translation_valid    ),
+        .page_offset_o         ( page_offset          ),
+        .page_offset_matches_i ( page_offset_matches  ),
+        .address_o             ( address_i        [1] ),
+        .data_wdata_o          ( data_wdata_i     [1] ),
+        .data_req_o            ( data_req_i       [1] ),
+        .data_we_o             ( data_we_i        [1] ),
+        .data_be_o             ( data_be_i        [1] ),
+        .data_tag_status_o     ( data_tag_status_i[1] ),
+        .data_gnt_i            ( data_gnt_o       [1] ),
+        .data_rvalid_i         ( data_rvalid_o    [1] ),
+        .data_rdata_i          ( data_rdata_o     [1] ),
+        .*
+    );
+
     // ---------------------
     // Result Sequentialize
     // ---------------------
     lsu_arbiter lsu_arbiter_i (
-        .clk_i         ( clk_i          ),
-        .rst_ni        ( rst_ni         ),
-        .flush_i       ( flush_i        ),
-        .ld_valid_i    ( ld_valid       ),
-        .ld_trans_id_i ( ld_trans_id    ),
-        .ld_result_i   ( ld_result      ),
-        .st_valid_i    ( st_valid       ),
-        .st_trans_id_i ( st_trans_id    ),
-        .st_result_i   ( st_result      ),
-        .valid_o       ( lsu_valid_o    ),
-        .trans_id_o    ( lsu_trans_id_o ),
-        .result_o      ( lsu_result_o   )
+        .clk_i                ( clk_i                 ),
+        .rst_ni               ( rst_ni                ),
+        .flush_i              ( flush_i               ),
+        .ld_valid_i           ( ld_valid              ),
+        .ld_trans_id_i        ( ld_trans_id           ),
+        .ld_result_i          ( ld_result             ),
+        .st_valid_i           ( st_valid              ),
+        .st_trans_id_i        ( st_trans_id           ),
+        .st_result_i          ( st_result             ),
+        .valid_o              ( lsu_valid_o           ),
+        .trans_id_o           ( lsu_trans_id_o        ),
+        .result_o             ( lsu_result_o          )
     );
 
     // ------------------
     // LSU Control
     // ------------------
-    // is the operation a load or store or nothing of relevance for the LSU
-    enum logic [1:0] { NONE, LD_OP, ST_OP } op;
-
     always_comb begin : lsu_control
-
+        // the LSU is ready if both, stores and loads are ready because we do not know
+        // which of the two we are getting
+        lsu_ready_o = ld_ready_o && st_ready_o;
+        // "arbitrate" MMU access, there is only one request possible
+        translation_req = 1'b0;
+        mmu_vaddr       = 64'b0;
+        if (st_translation_req) begin
+            mmu_vaddr = st_vaddr;
+        end else if (ld_translation_req) begin
+            mmu_vaddr = ld_vaddr;
+        end
     end
+
+    enum logic {LD_OP, ST_OP} op;
 
     // determine whether this is a load or store
     always_comb begin : which_op
-        unique case (operator_i)
+
+        ld_valid_i = 1'b0;
+        st_valid_i = 1'b0;
+
+        unique case (operator)
             // all loads go here
-            LD, LW, LWU, LH, LHU, LB, LBU:  op = LD_OP;
+            LD, LW, LWU, LH, LHU, LB, LBU:  begin
+                ld_valid_i = 1'b1;
+                op         = LD_OP;
+            end
             // all stores go here
-            SD, SW, SH, SB:                 op = ST_OP;
+            SD, SW, SH, SB: begin
+                st_valid_i = 1'b1;
+                op         = ST_OP;
+            end
             // not relevant for the lsu
-            default:                        op = NONE;
+            default: ;
         endcase
     end
 

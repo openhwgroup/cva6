@@ -275,7 +275,7 @@ module load_unit (
     )
     fifo_i (
         .full_o           (                  ), // we can ignore the full signal, the FIFO will never overflow
-        .empty_o          ( empty  ), // we can ignore the empty signal, we don't care about it, we will never pop an empty FIFO
+        .empty_o          ( empty            ),
         .single_element_o (                  ), // we don't care about the single element either
 
         .data_i           ( in_data          ),
