@@ -18,14 +18,6 @@
 //
 import ariane_pkg::*;
 
-// ---------------
-// D$ Tag Status
-// ---------------
-`define WAIT_TRANSLATION  2'b00
-`define VALID_TRANSLATION 2'b01
-`define ABORT_TRANSLATION 2'b10
-`define NOT_IMPL          2'b11
-
 module lsu #(
     parameter int ASID_WIDTH = 1
     )(
@@ -181,10 +173,10 @@ module lsu #(
     logic                     st_valid;
     logic [TRANS_ID_BITS-1:0] st_trans_id;
     logic [63:0]              st_result;
+
     // ------------------
     // Store Unit
     // ------------------
-
     store_unit store_unit_i (
         .operator_i            ( operator             ),
         .trans_id_i            ( trans_id             ),
