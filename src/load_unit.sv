@@ -259,8 +259,10 @@ module load_unit (
     // latch physical address
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
+            CS      <= IDLE;
             paddr_q <= '0;
         end else begin
+            CS      <= NS;
             paddr_q <= paddr_n;
         end
     end

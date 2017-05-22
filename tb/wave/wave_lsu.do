@@ -1,8 +1,12 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate -expand -group LSU /lsu_tb/dut/*
-add wave -noupdate -expand -group mem_arbiter /lsu_tb/dut/mem_arbiter_i/*
-add wave -noupdate -group store_queue /lsu_tb/dut/store_queue_i/*
+add wave -noupdate -group lsu /lsu_tb/dut/*
+add wave -noupdate -group mem_arbiter /lsu_tb/dut/mem_arbiter_i/*
+add wave -noupdate -group store_unit /lsu_tb/dut/store_unit_i/*
+add wave -noupdate -group store_queue /lsu_tb/dut/store_unit_i/store_queue_i/*
+add wave -noupdate -group load_unit /lsu_tb/dut/load_unit_i/*
+add wave -noupdate -group fifo /lsu_tb/dut/load_unit_i/fifo_i/*
+
 add wave -noupdate -group mmu /lsu_tb/dut/mmu_i/*
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {454 ns} 0}

@@ -109,6 +109,7 @@ module lsu #(
     logic [63:0]              ld_vaddr;
     logic [63:0]              st_vaddr;
     logic                     translation_req;
+    logic                     translation_valid;
     logic [63:0]              mmu_vaddr;
     logic [63:0]              paddr;
 
@@ -280,9 +281,11 @@ module lsu #(
         translation_req = 1'b0;
         mmu_vaddr       = 64'b0;
         if (st_translation_req) begin
-            mmu_vaddr = st_vaddr;
+            translation_req = 1'b1;
+            mmu_vaddr       = st_vaddr;
         end else if (ld_translation_req) begin
-            mmu_vaddr = ld_vaddr;
+            translation_req = 1'b1;
+            mmu_vaddr       = ld_vaddr;
         end
     end
 
