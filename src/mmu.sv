@@ -45,6 +45,7 @@ module mmu #(
         // if we need to walk the page table we can't grant in the same cycle
         output logic                            lsu_valid_o, // translation is valid
         output logic [63:0]                     lsu_paddr_o, // translated address
+        output exception                        lsu_exception_o,
         // General control signals
         input priv_lvl_t                        priv_lvl_i,
         input logic                             flag_pum_i,
@@ -278,6 +279,8 @@ module mmu #(
         // lsu_paddr_o
         lsu_paddr_o = (enable_translation_i) ? {16'b0, dtlb_content} : lsu_vaddr_i;
         lsu_valid_o = lsu_req_i;
+        // TODO: Assign access exception
+        lsu_exception_o = 'b0;
     end
 
 endmodule

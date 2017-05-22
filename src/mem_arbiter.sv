@@ -154,7 +154,7 @@ module mem_arbiter #(
                 if (data_gnt_i) begin
                     // set the slave on which we are waiting
                     in_data = 1'b1 << request_port_q;
-                    push = 1'b1;
+                    push    = 1'b1;
                     // default is that we are waiting for the tag to be there
                     // if we are waiting for the tag we can't accept any new instructions
                     NS = WAIT_TAG;

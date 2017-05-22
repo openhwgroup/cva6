@@ -35,14 +35,18 @@ module store_unit (
     output logic                     ready_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
     output logic [63:0]              result_o,
+    output exception                 ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o, // request address translation
     output logic [63:0]              vaddr_o,           // virtual address out
     input  logic [63:0]              paddr_i,           // physical address in
     input  logic                     translation_valid_i,
+    input  exception                 ex_i,
     // address checker
     input  logic [11:0]              page_offset_i,
     output logic                     page_offset_matches_o,
+    // misaligned bypass
+    input  exception                 misaligned_ex_i,
     // memory interface
     output logic [63:0]              address_o,
     output logic [63:0]              data_wdata_o,
@@ -72,6 +76,7 @@ module store_unit (
         valid_o           = 1'b0;
         ready_o           = 1'b1;
         trans_id_o        = trans_id_i;
+        ex_o              = ex_i;
         st_valid          = 1'b0;
         // we got a valid store
         if (valid_i) begin
@@ -89,6 +94,23 @@ module store_unit (
             end else begin
                 ready_o = 1'b0;
             end
+            // -----------------
+            // Access Exception
+            // -----------------
+            // we got an address translation exception (access rights)
+            if (ex_i.valid) begin
+                // result is valid
+                valid_o  = 1'b1;
+                //  do not store this
+                st_valid = 1'b0;
+                // we are ready if we got this exception
+                ready_o  = 1'b1;
+            end
+        end
+        // misaligned exception bypass
+        if (misaligned_ex_i.valid) begin
+            ex_o = misaligned_ex_i;
+            valid_o = 1'b1;
         end
     end
 

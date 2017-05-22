@@ -26,14 +26,17 @@ module lsu_arbiter (
     input logic                      ld_valid_i,
     input logic [TRANS_ID_BITS-1:0]  ld_trans_id_i,
     input logic [63:0]               ld_result_i,
+    input exception                  ld_ex_i,
     // Store Port
     input logic                      st_valid_i,
     input logic [TRANS_ID_BITS-1:0]  st_trans_id_i,
     input logic [63:0]               st_result_i,
+    input exception                  st_ex_i,
     // Output Port
     output logic                     valid_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
-    output logic [63:0]              result_o
+    output logic [63:0]              result_o,
+    output exception                 ex_o
 );
     // this is a dual input FIFO which takes results from the load and store
     // paths of the LSU and sequentializes through the FIFO construct. If there is a valid output
@@ -50,11 +53,14 @@ module lsu_arbiter (
     struct packed {
         logic [TRANS_ID_BITS-1:0] trans_id;
         logic [63:0]              result;
+        exception                 ex;
     } mem_n[WIDTH-1:0], mem_q[WIDTH-1:0];
 
     // output last element of queue
     assign trans_id_o = mem_q[read_pointer_q].trans_id;
     assign result_o   = mem_q[read_pointer_q].result;
+    assign ex_o       = mem_q[read_pointer_q].ex;
+
     // if we are not empty we have a valid output
     assign valid_o    = (status_cnt_q != '0);
     // -------------------
@@ -72,13 +78,13 @@ module lsu_arbiter (
         // ------------
         // write port 1 - load unit
         if (ld_valid_i) begin
-            mem_n[write_pointer] = {ld_trans_id_i, ld_result_i};
+            mem_n[write_pointer] = {ld_trans_id_i, ld_result_i, ld_ex_i};
             write_pointer++;
             status_cnt++;
         end
         // write port 2 - store unit
         if (st_valid_i) begin
-            mem_n[write_pointer] = {st_trans_id_i, st_result_i};
+            mem_n[write_pointer] = {st_trans_id_i, st_result_i, st_ex_i};
             write_pointer++;
             status_cnt++;
         end

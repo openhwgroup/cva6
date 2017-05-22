@@ -29,23 +29,25 @@ import ariane_pkg::*;
 module load_unit (
     input  logic                     clk_i,    // Clock
     input  logic                     rst_ni,   // Asynchronous reset active low
-    input logic                      flush_i,
+    input  logic                     flush_i,
     // load unit input port
-    input fu_op                      operator_i,
-    input logic [TRANS_ID_BITS-1:0]  trans_id_i,
-    input logic                      valid_i,
-    input logic [63:0]               vaddr_i,
-    input logic [7:0]                be_i,
+    input  fu_op                     operator_i,
+    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
+    input  logic                     valid_i,
+    input  logic [63:0]              vaddr_i,
+    input  logic [7:0]               be_i,
     // load unit output port
     output logic                     valid_o,
     output logic                     ready_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
     output logic [63:0]              result_o,
+    output exception                 ex_o,
     // MMU -> Address Translation
-    output logic                     translation_req_o, // request address translation
-    output logic [63:0]              vaddr_o,           // virtual address out
-    input  logic [63:0]              paddr_i,           // physical address in
+    output logic                     translation_req_o,   // request address translation
+    output logic [63:0]              vaddr_o,             // virtual address out
+    input  logic [63:0]              paddr_i,             // physical address in
     input  logic                     translation_valid_i,
+    input  exception                 ex_i,
     // address checker
     output logic [11:0]              page_offset_o,
     input  logic                     page_offset_matches_i,
@@ -100,6 +102,7 @@ module load_unit (
         data_tag_status_o = `WAIT_TRANSLATION;
         push              = 1'b0;
         data_be_o         = be_i;
+        ex_o              = ex_i;
 
         case (CS)
             IDLE: begin
@@ -239,7 +242,18 @@ module load_unit (
             end
 
         endcase
-
+        // -----------------
+        // Access Exception
+        // -----------------
+        // we've got an exception
+        if (valid_i && ex_i.valid) begin
+            // clear the request
+            data_req_o  = 1'b0;
+            // we are ready
+            ready_o     = 1'b1;
+            // do not push this request
+            push        = 1'b0;
+        end
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in an extra stage
         if (flush_i && (!empty || data_rvalid_i)) begin
             NS = WAIT_FLUSH;
@@ -253,6 +267,10 @@ module load_unit (
         // we got an rvalid and are currently not flushing
         if (data_rvalid_i && CS != WAIT_FLUSH) begin
             pop     = 1'b1;
+            valid_o = 1'b1;
+        end
+        // pass through an exception
+        if (valid_i && ex_i.valid) begin
             valid_o = 1'b1;
         end
     end

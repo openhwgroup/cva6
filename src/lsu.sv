@@ -111,7 +111,8 @@ module lsu #(
     logic                     translation_req;
     logic                     translation_valid;
     logic [63:0]              mmu_vaddr;
-    logic [63:0]              paddr;
+    logic [63:0]              mmu_paddr;
+    exception                 mmu_exception;
 
     logic                     ld_valid;
     logic [TRANS_ID_BITS-1:0] ld_trans_id;
@@ -122,6 +123,10 @@ module lsu #(
 
     logic [11:0]              page_offset;
     logic                     page_offset_matches;
+
+    exception                 misaligned_exception;
+    exception                 ld_ex;
+    exception                 st_ex;
 
     // ---------------
     // Memory Arbiter
@@ -174,7 +179,8 @@ module lsu #(
         .lsu_req_i              ( translation_req      ),
         .lsu_vaddr_i            ( mmu_vaddr            ),
         .lsu_valid_o            ( translation_valid    ),
-        .lsu_paddr_o            ( paddr                ),
+        .lsu_paddr_o            ( mmu_paddr            ),
+        .lsu_exception_o        ( mmu_exception        ),
         // connecting PTW to D$ IF (aka mem arbiter
         .data_if_address_o      ( address_i        [0] ),
         .data_if_data_wdata_o   ( data_wdata_i     [0] ),
@@ -201,14 +207,18 @@ module lsu #(
         .ready_o               ( st_ready_o           ),
         .trans_id_o            ( st_trans_id          ),
         .result_o              ( st_result            ),
+        .ex_o                  ( st_ex                ),
         // MMU port
         .translation_req_o     ( st_translation_req   ),
         .vaddr_o               ( st_vaddr             ),
-        .paddr_i               ( paddr                ),
+        .paddr_i               ( mmu_paddr            ),
         .translation_valid_i   ( translation_valid    ),
+        .ex_i                  ( mmu_exception        ),
         // Load Unit
         .page_offset_i         ( page_offset          ),
         .page_offset_matches_o ( page_offset_matches  ),
+        // misaligned bypass
+        .misaligned_ex_i       ( misaligned_exception ),
         // Mem Arbiter
         .address_o             ( address_i        [2] ),
         .data_wdata_o          ( data_wdata_i     [2] ),
@@ -234,10 +244,14 @@ module lsu #(
         .ready_o               ( ld_ready_o           ),
         .trans_id_o            ( ld_trans_id          ),
         .result_o              ( ld_result            ),
+        .ex_o                  ( ld_ex                ),
+        // MMU port
         .translation_req_o     ( ld_translation_req   ),
         .vaddr_o               ( ld_vaddr             ),
-        .paddr_i               ( paddr                ),
+        .paddr_i               ( mmu_paddr            ),
         .translation_valid_i   ( translation_valid    ),
+        .ex_i                  ( mmu_exception        ),
+        // to store unit
         .page_offset_o         ( page_offset          ),
         .page_offset_matches_i ( page_offset_matches  ),
         .address_o             ( address_i        [1] ),
@@ -262,12 +276,17 @@ module lsu #(
         .ld_valid_i           ( ld_valid              ),
         .ld_trans_id_i        ( ld_trans_id           ),
         .ld_result_i          ( ld_result             ),
+        .ld_ex_i              ( ld_ex                 ),
+
         .st_valid_i           ( st_valid              ),
         .st_trans_id_i        ( st_trans_id           ),
         .st_result_i          ( st_result             ),
+        .st_ex_i              ( st_ex                 ),
+
         .valid_o              ( lsu_valid_o           ),
         .trans_id_o           ( lsu_trans_id_o        ),
-        .result_o             ( lsu_result_o          )
+        .result_o             ( lsu_result_o          ),
+        .ex_o                 ( lsu_exception_o       )
     );
 
     // ------------------
@@ -278,8 +297,9 @@ module lsu #(
         // which of the two we are getting
         lsu_ready_o = ld_ready_o && st_ready_o;
         // "arbitrate" MMU access, there is only one request possible
-        translation_req = 1'b0;
-        mmu_vaddr       = 64'b0;
+        translation_req     = 1'b0;
+        mmu_vaddr           = 64'b0;
+        // this arbitrates access to the MMU
         if (st_translation_req) begin
             translation_req = 1'b1;
             mmu_vaddr       = st_vaddr;
@@ -297,20 +317,25 @@ module lsu #(
         ld_valid_i = 1'b0;
         st_valid_i = 1'b0;
 
-        unique case (operator)
-            // all loads go here
-            LD, LW, LWU, LH, LHU, LB, LBU:  begin
-                ld_valid_i = lsu_valid_i;
-                op         = LD_OP;
-            end
-            // all stores go here
-            SD, SW, SH, SB: begin
-                st_valid_i = lsu_valid_i;
-                op         = ST_OP;
-            end
-            // not relevant for the lsu
-            default: ;
-        endcase
+        // only activate one of the units if we didn't got an misaligned exception
+        // we can directly output an misaligned exception and do not need to process it any further
+        if (!data_misaligned) begin
+            // check the operator to activate the right functional unit accordingly
+            unique case (operator)
+                // all loads go here
+                LD, LW, LWU, LH, LHU, LB, LBU:  begin
+                    ld_valid_i = lsu_valid_i;
+                    op         = LD_OP;
+                end
+                // all stores go here
+                SD, SW, SH, SB: begin
+                    st_valid_i = lsu_valid_i;
+                    op         = ST_OP;
+                end
+                // not relevant for the LSU
+                default: ;
+            endcase
+        end
     end
 
 
@@ -361,51 +386,57 @@ module lsu #(
         endcase
     end
 
-    // ------------------
-    // Exception Control
-    // ------------------
+    // ------------------------
+    // Misaligned Exception
+    // ------------------------
     // misaligned detector
-    // page fault, privilege exception
     // we can detect a misaligned exception immediately
+    // the misaligned exception is passed to the store buffer as a bypass
+    // just a hack to get to the LSU arbiter
     always_comb begin : data_misaligned_detection
-        data_misaligned = 1'b0;
 
-        if(lsu_valid_i) begin
-          case (operator_i)
-            LD, SD: begin // double word
-              if(vaddr_i[2:0] != 3'b000)
-                data_misaligned = 1'b1;
-            end
-
-            LW, LWU, SW: begin // word
-              if(vaddr_i[2] == 1'b1 && vaddr_i[2:0] != 3'b100)
-                data_misaligned = 1'b1;
-            end
-
-            LH, LHU, SH: begin // half word
-              if(vaddr_i[2:0] == 3'b111)
-                data_misaligned = 1'b1;
-            end  // byte -> is always aligned
-            default:;
-          endcase
-        end
-    end
-
-    always_comb begin : exception_control
-        lsu_exception_o = {
+        misaligned_exception = {
             64'b0,
             64'b0,
             1'b0
         };
+
+        data_misaligned = 1'b0;
+
+        if(lsu_valid_i) begin
+            case (operator_i)
+                // double word
+                LD, SD: begin
+                    if (vaddr_i[2:0] != 3'b000)
+                        data_misaligned = 1'b1;
+                end
+                // word
+                LW, LWU, SW: begin
+                    if (vaddr_i[2] == 1'b1 && vaddr_i[2:0] != 3'b100)
+                        data_misaligned = 1'b1;
+                end
+
+                // half word
+                LH, LHU, SH: begin
+                    if (vaddr_i[2:0] == 3'b111)
+                        data_misaligned = 1'b1;
+                end
+                // byte -> is always aligned
+                default:;
+            endcase
+        end
+
         if (data_misaligned) begin
+
             if (op == LD_OP) begin
-                lsu_exception_o = {
+                misaligned_exception = {
                     64'b0,
                     LD_ADDR_MISALIGNED,
                     1'b1
                 };
+
             end else if (op == ST_OP) begin
-                lsu_exception_o = {
+                misaligned_exception = {
                     64'b0,
                     ST_ADDR_MISALIGNED,
                     1'b1
