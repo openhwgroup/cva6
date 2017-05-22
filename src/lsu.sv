@@ -157,9 +157,9 @@ module lsu #(
         .ASID_WIDTH             ( ASID_WIDTH           )
     ) mmu_i (
         .lsu_req_i              ( translation_req      ),
-        .lsu_vaddr_i            ( vaddr                ),
-        .lsu_valid_o            ( translation_valid_n  ),
-        .lsu_paddr_o            ( paddr_n              ),
+        .lsu_vaddr_i            (                      ),
+        .lsu_valid_o            ( translation_valid    ),
+        .lsu_paddr_o            ( paddr                ),
         // connecting PTW to D$ IF (aka mem arbiter
         .data_if_address_o      ( address_i        [0] ),
         .data_if_data_wdata_o   ( data_wdata_i     [0] ),
@@ -172,9 +172,49 @@ module lsu #(
         .data_if_data_rdata_i   ( data_rdata_o     [0] ),
         .*
     );
+    logic st_valid_i;
+    logic st_ready_o;
+
+    logic                     ld_valid;
+    logic [TRANS_ID_BITS-1:0] ld_trans_id;
+    logic [63:0]              ld_result;
+    logic                     st_valid;
+    logic [TRANS_ID_BITS-1:0] st_trans_id;
+    logic [63:0]              st_result;
     // ------------------
     // Store Unit
     // ------------------
+
+    store_unit store_unit_i (
+        .operator_i            ( operator             ),
+        .trans_id_i            ( trans_id             ),
+        .valid_i               ( st_valid_i           ),
+        .vaddr_i               ( vaddr                ),
+        .be_i                  ( be                   ),
+        .data_i                ( data                 ),
+        .valid_o               ( st_valid             ),
+        .ready_o               ( st_ready_o           ),
+        .trans_id_o            ( st_trans_id          ),
+        .result_o              ( st_result            ),
+        // MMU port
+        .translation_req_o     (                      ),
+        .vaddr_o               (                      ),
+        .paddr_i               (                      ),
+        .translation_valid_i   (                      ),
+        // Load Unit
+        .page_offset_i         (                      ),
+        .page_offset_matches_o (                      ),
+        // Mem Arbiter
+        .address_o             ( address_i        [2] ),
+        .data_wdata_o          ( data_wdata_i     [2] ),
+        .data_req_o            ( data_req_i       [2] ),
+        .data_we_o             ( data_we_i        [2] ),
+        .data_be_o             ( data_be_i        [2] ),
+        .data_tag_status_o     ( data_tag_status_i[2] ),
+        .data_gnt_i            ( data_gnt_o       [2] ),
+        .data_rvalid_i         ( data_rvalid_o    [2] ),
+        .*
+    );
 
     // ------------------
     // Load Unit
@@ -183,13 +223,6 @@ module lsu #(
     // ---------------------
     // Result Sequentialize
     // ---------------------
-
-    logic ld_valid_i;
-    logic [TRANS_ID_BITS-1:0] ld_trans_id;
-    logic [63:0] ld_result;
-    logic st_valid;
-    logic [TRANS_ID_BITS-1:0] st_trans_id;
-    logic [63:0] st_result;
     lsu_arbiter lsu_arbiter_i (
         .clk_i         ( clk_i          ),
         .rst_ni        ( rst_ni         ),

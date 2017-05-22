@@ -21,11 +21,14 @@ import ariane_pkg::*;
 module store_unit (
     input logic                      clk_i,    // Clock
     input logic                      rst_ni,  // Asynchronous reset active low
+    input logic                      flush_i,
     // store unit input port
-    input logic [1:0]                operator_i,
-    input logic                      valid_i,
-    input logic [63:0]               vaddr_i,
-    input logic [7:0]                be_i,
+    input  fu_op                     operator_i,
+    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
+    input  logic                     valid_i,
+    input  logic [63:0]              vaddr_i,
+    input  logic [7:0]               be_i,
+    input  logic [63:0]              data_i,
     input  logic                     commit_i,
     // store unit output port
     output logic                     valid_o,
@@ -59,15 +62,42 @@ module store_unit (
     // store buffer control signals
     logic                    st_ready;
     logic                    st_valid;
+
+    assign vaddr_o = vaddr_i;
+    // ---------------
+    // Store Control
+    // ---------------
+    always_comb begin : store_control
+        translation_req_o = 1'b0;
+        valid_o           = 1'b0;
+        ready_o           = 1'b1;
+        trans_id_o        = trans_id_i;
+        st_valid          = 1'b0;
+        // we got a valid store
+        if (valid_i) begin
+            // first do address translation, we need to do it in the first cycle since we want to share the MMU
+            // between the load and the store unit. But we only know that when a new request arrives that we are not using
+            // it at the same time.
+            translation_req_o = 1'b1;
+            // check if translation was valid and we have space in the store buffer
+            // otherwise simply stall
+            if (translation_valid_i && st_ready) begin
+                valid_o  = 1'b0;
+                // post this store to the store buffer
+                st_valid = 1'b1;
+            // translation was not successful - stall here
+            end else begin
+                ready_o = 1'b0;
+            end
+        end
+    end
+
     // ---------------
     // Store Queue
     // ---------------
     store_queue store_queue_i (
         // store queue write port
         .valid_i           ( st_valid            ),
-        .paddr_i           ( paddr_q             ),
-        .data_i            ( data                ),
-        .be_i              ( be                  ),
         // store buffer in
         .paddr_o           ( st_buffer_paddr     ),
         .data_o            ( st_buffer_data      ),
