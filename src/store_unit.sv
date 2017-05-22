@@ -82,7 +82,7 @@ module store_unit (
             // check if translation was valid and we have space in the store buffer
             // otherwise simply stall
             if (translation_valid_i && st_ready) begin
-                valid_o  = 1'b0;
+                valid_o  = 1'b1;
                 // post this store to the store buffer
                 st_valid = 1'b1;
             // translation was not successful - stall here

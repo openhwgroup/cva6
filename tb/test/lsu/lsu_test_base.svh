@@ -57,7 +57,7 @@ class lsu_test_base extends uvm_test;
         m_mem_if_cfg = mem_if_agent_config::type_id::create("m_mem_if_cfg");
         m_env_cfg.m_mem_if_agent_config = m_mem_if_cfg;
         // make it a slave agent
-        m_env_cfg.m_mem_if_agent_config.mem_if_config = SLAVE;
+        m_env_cfg.m_mem_if_agent_config.mem_if_config = SLAVE_REPLAY;
         // create lsu agent configuration
         m_lsu_if_cfg = lsu_if_agent_config::type_id::create("m_lsu_if_cfg");
         m_env_cfg.m_lsu_if_agent_config = m_lsu_if_cfg;

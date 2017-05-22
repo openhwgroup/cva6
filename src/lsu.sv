@@ -300,12 +300,12 @@ module lsu #(
         unique case (operator)
             // all loads go here
             LD, LW, LWU, LH, LHU, LB, LBU:  begin
-                ld_valid_i = 1'b1;
+                ld_valid_i = lsu_valid_i;
                 op         = LD_OP;
             end
             // all stores go here
             SD, SW, SH, SB: begin
-                st_valid_i = 1'b1;
+                st_valid_i = lsu_valid_i;
                 op         = ST_OP;
             end
             // not relevant for the lsu
@@ -439,7 +439,6 @@ module lsu #(
         operator_n  = operator_q;
         trans_id_n  = trans_id_q;
         be_n        = be_q;
-        stall_n     = 1'b1;
         // get new input data
         if (lsu_valid_i) begin
              vaddr_n     = vaddr_i;
@@ -447,7 +446,12 @@ module lsu #(
              operator_n  = operator_i;
              trans_id_n  = trans_id_i;
              be_n        = be_i;
-             stall_n     = 1'b0;
+        end
+
+        if (lsu_ready_o) begin
+            stall_n     = 1'b0;
+        end else begin
+            stall_n     = 1'b1;
         end
     end
 

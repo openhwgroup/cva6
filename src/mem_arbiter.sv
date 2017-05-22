@@ -109,6 +109,7 @@ module mem_arbiter #(
 
         for (int i = 0; i < NR_PORTS; i++)
             data_gnt_o[i] = 1'b0;
+
         case (CS)
             // ----------------------------
             // Single-cycle memory requests
@@ -151,6 +152,9 @@ module mem_arbiter #(
                 data_req_o = data_req_i[request_port_q];
                 // we can check for it since we only stay in this state if didn't yet receive a grant
                 if (data_gnt_i) begin
+                    // set the slave on which we are waiting
+                    in_data = 1'b1 << request_port_q;
+                    push = 1'b1;
                     // default is that we are waiting for the tag to be there
                     // if we are waiting for the tag we can't accept any new instructions
                     NS = WAIT_TAG;
