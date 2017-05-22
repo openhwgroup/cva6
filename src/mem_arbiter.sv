@@ -99,7 +99,7 @@ module mem_arbiter #(
 
     // addressing read and full write
     always_comb begin : read_req_write
-        automatic logic [DATA_WIDTH-1:0] request_index = 0;
+        automatic logic [DATA_WIDTH-1:0] request_index = request_port_q;
         data_req_o                = 1'b0;
 
         in_data                   = '{default: 0};
@@ -147,6 +147,8 @@ module mem_arbiter #(
             // do we have an outstanding request e.g.: a request which is waiting for a grant or a tag_valid
             // here we need to wait for the grant
             WAIT_GNT: begin
+                // keep the request stable
+                data_req_o = data_req_i[request_port_q];
                 // we can check for it since we only stay in this state if didn't yet receive a grant
                 if (data_gnt_i) begin
                     // default is that we are waiting for the tag to be there

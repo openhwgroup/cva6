@@ -441,7 +441,7 @@ module lsu #(
         be_n        = be_q;
         stall_n     = 1'b1;
         // get new input data
-        if (lsu_ready_o) begin
+        if (lsu_valid_i) begin
              vaddr_n     = vaddr_i;
              data_n      = operand_b_i;
              operator_n  = operator_i;

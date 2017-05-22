@@ -82,6 +82,11 @@ module load_unit (
     // this is a read-only interface so set the write enable to 0
     assign data_we_o = 1'b0;
     assign in_data = {trans_id_i, vaddr_i[2:0], operator_i};
+    // output address
+    // we can now output the lower 12 bit as the index to the cache
+    assign address_o [11:0] = vaddr_i[11:0];
+    // translation from last cycle
+    assign address_o[63:12] =  paddr_q[63:12];
     // ---------------
     // Load Control
     // ---------------
@@ -90,7 +95,6 @@ module load_unit (
         NS                = CS;
         paddr_n           = paddr_q;
         translation_req_o = 1'b0;
-        address_o         = 64'b0;
         ready_o           = 1'b1;
         data_req_o        = 1'b0;
         data_tag_status_o = `WAIT_TRANSLATION;
@@ -101,14 +105,13 @@ module load_unit (
             IDLE: begin
                 // we've got a new load request
                 if (valid_i) begin
+                    // start the translation process even though we do not know if the addresses match
+                    // this should ease timing
+                    translation_req_o = 1'b1;
                     // check if the page offset matches with a store, if it does then stall and wait
                     if (!page_offset_matches_i) begin
                         // make a load request to memory
                         data_req_o        = 1'b1;
-                        // we can now output the lower 12 bit as the index to the cache
-                        address_o[11:0]   = vaddr_i[11:0];
-                        // page offset doesn't match so we can start a new translation request
-                        translation_req_o = 1'b1;
                         // the translation request we got is valid
                         if (translation_valid_i) begin
                             // save the physical address for the next cycle
@@ -148,7 +151,6 @@ module load_unit (
                     // if the request is still here, do the load
                     if (valid_i) begin
 
-                        address_o  = vaddr_i[11:0];
                         data_req_o = 1'b1;
                         paddr_n    = paddr_i;
 
@@ -172,8 +174,6 @@ module load_unit (
                 ready_o = 1'b0;
                 // keep the request up
                 data_req_o = 1'b1;
-                // keep the index address valid
-                address_o  = vaddr_i[11:0];
                 // we finally got a data grant
                 if (data_gnt_i) begin
                     // so we send the tag in the next cycle
@@ -190,35 +190,39 @@ module load_unit (
                 ready_o = 1'b1;
                 // if we are sending our tag we are able to process a new request
                 data_tag_status_o = `VALID_TRANSLATION;
-                // translation from last cycle
-                address_o[63:12]  =  paddr_q[63:12];
                 // -------------
                 // New Request
                 // -------------
                 // we can make a new request if we got one
                 if (valid_i) begin
-                    address_o [11:0] = vaddr_i[11:0];
                     // do another address translation
                     translation_req_o = 1'b1;
-                    // the translation request we got is valid
-                    if (translation_valid_i) begin
-                        // save the physical address for the next cycle
-                        paddr_n = paddr_i;
-                        // we got no data grant so wait for the grant before sending the tag
-                        if (!data_gnt_i) begin
-                            NS = WAIT_GNT;
-                            ready_o = 1'b0;
-                        end else begin
-                            // put the request in the queue
-                            push    = 1'b1;
-                            // we got a grant so we can send the tag in the next cycle
-                            NS = SEND_TAG;
-                        end
-                    // we got a TLB miss
+                        if(!page_offset_matches_i) begin
+                            // make a load request to memory
+                            data_req_o        = 1'b1;
+                            // the translation request we got is valid
+                            if (translation_valid_i) begin
+                                // save the physical address for the next cycle
+                                paddr_n = paddr_i;
+                                // we got no data grant so wait for the grant before sending the tag
+                                if (!data_gnt_i) begin
+                                    NS = WAIT_GNT;
+                                    ready_o = 1'b0;
+                                end else begin
+                                    // put the request in the queue
+                                    push    = 1'b1;
+                                    // we got a grant so we can send the tag in the next cycle
+                                    NS = SEND_TAG;
+                                end
+                            // we got a TLB miss
+                            end else begin
+                                // we need to abort the translation and let the PTW walker fix the TLB miss
+                                NS = ABORT_TRANSLATION;
+                                ready_o = 1'b0;
+                            end
+                    // page offset mis-match -> go back to idle
                     end else begin
-                        // we need to abort the translation and let the PTW walker fix the TLB miss
-                        NS = ABORT_TRANSLATION;
-                        ready_o = 1'b0;
+                        NS = IDLE;
                     end
                 end else begin
                     NS = IDLE;
