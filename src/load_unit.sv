@@ -31,7 +31,7 @@ module load_unit (
     input  logic                     rst_ni,   // Asynchronous reset active low
     input logic                      flush_i,
     // load unit input port
-    input logic [1:0]                operator_i,
+    input fu_op                      operator_i,
     input logic [TRANS_ID_BITS-1:0]  trans_id_i,
     input logic                      valid_i,
     input logic [63:0]               vaddr_i,
@@ -43,7 +43,7 @@ module load_unit (
     output logic [63:0]              result_o,
     // MMU -> Address Translation
     output logic                     translation_req_o, // request address translation
-    output logic                     vaddr_o,           // virtual address out
+    output logic [63:0]              vaddr_o,           // virtual address out
     input  logic [63:0]              paddr_i,           // physical address in
     input  logic                     translation_valid_i,
     // address checker

@@ -37,7 +37,7 @@ module store_unit (
     output logic [63:0]              result_o,
     // MMU -> Address Translation
     output logic                     translation_req_o, // request address translation
-    output logic                     vaddr_o,           // virtual address out
+    output logic [63:0]              vaddr_o,           // virtual address out
     input  logic [63:0]              paddr_i,           // physical address in
     input  logic                     translation_valid_i,
     // address checker

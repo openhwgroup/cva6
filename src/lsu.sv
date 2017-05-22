@@ -110,6 +110,7 @@ module lsu #(
     logic [63:0]              st_vaddr;
     logic                     translation_req;
     logic [63:0]              mmu_vaddr;
+    logic [63:0]              paddr;
 
     logic                     ld_valid;
     logic [TRANS_ID_BITS-1:0] ld_trans_id;
@@ -222,11 +223,6 @@ module lsu #(
     // ------------------
     // Load Unit
     // ------------------
-
-    logic vaddr_o;
-    logic [63:0] paddr_i;
-    logic translation_valid_i;
-
     load_unit load_unit_i (
         .operator_i            ( operator             ),
         .trans_id_i            ( trans_id             ),
