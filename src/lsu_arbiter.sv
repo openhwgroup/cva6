@@ -24,20 +24,91 @@ module lsu_arbiter (
     input  logic                     flush_i,
     // Load Port
     input logic                      ld_valid_i,
-    input logic                      ld_ready_i,
     input logic [TRANS_ID_BITS-1:0]  ld_trans_id_i,
     input logic [63:0]               ld_result_i,
     // Store Port
     input logic                      st_valid_i,
-    input logic                      st_ready_i,
     input logic [TRANS_ID_BITS-1:0]  st_trans_id_i,
     input logic [63:0]               st_result_i,
     // Output Port
     output logic                     valid_o,
-    output logic                     ready_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
     output logic [63:0]              result_o
 );
+    // this is a dual input FIFO which takes results from the load and store
+    // paths of the LSU and sequentializes through the FIFO construct. If there is a valid output
+    // it unconditionally posts the result on its output ports and expects it to be consumed.
 
+    // 4 entries is enough to unconditionally post loads and stores since we can only have two outstanding loads
+    localparam int WIDTH = 4;
+
+    // queue pointer
+    logic [$clog2(WIDTH)-1:0] read_pointer_n,  read_pointer_q;
+    logic [$clog2(WIDTH)-1:0] write_pointer_n, write_pointer_q;
+    logic [$clog2(WIDTH)-1:0] status_cnt_n,    status_cnt_q;
+
+    struct packed {
+        logic [TRANS_ID_BITS-1:0] trans_id;
+        logic [63:0]              result;
+    } mem_n[WIDTH-1:0], mem_q[WIDTH-1:0];
+
+    // output last element of queue
+    assign trans_id_o = mem_q[read_pointer_q].trans_id;
+    assign result_o   = mem_q[read_pointer_q].result;
+    // if we are not empty we have a valid output
+    assign valid_o    = (status_cnt_q != '0);
+    // -------------------
+    // Read-Write Process
+    // -------------------
+    always_comb begin : read_write_fifo
+        automatic logic [$clog2(WIDTH)-1:0] status_cnt    = status_cnt_q;
+        automatic logic [$clog2(WIDTH)-1:0] write_pointer = write_pointer_q;
+
+        // default assignments
+        mem_n           = mem_q;
+        read_pointer_n  = read_pointer_q;
+        // ------------
+        // Write Port
+        // ------------
+        // write port 1 - load unit
+        if (ld_valid_i) begin
+            mem_n[write_pointer] = {ld_trans_id_i, ld_result_i};
+            write_pointer++;
+            status_cnt++;
+        end
+        // write port 2 - store unit
+        if (st_valid_i) begin
+            mem_n[write_pointer] = {st_trans_id_i, st_result_i};
+            write_pointer++;
+            status_cnt++;
+        end
+        // ------------
+        // Read Port
+        // ------------
+        // if the last element in the queue was valid we can push it out and make space for a new element
+        if (valid_o) begin
+            read_pointer_n = read_pointer_q + 1;
+            status_cnt--;
+        end
+
+        // update status count
+        status_cnt_n    = status_cnt;
+        // update write pointer
+        write_pointer_n = write_pointer;
+    end
+    // sequential process
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            mem_q           <= '{default: 0};
+            read_pointer_q  <= '0;
+            write_pointer_q <= '0;
+            status_cnt_q    <= '0;
+        end else begin
+            mem_q           <= mem_n;
+            read_pointer_q  <= read_pointer_n;
+            write_pointer_q <= write_pointer_n;
+            status_cnt_q    <= status_cnt_n;
+        end
+    end
 
 endmodule

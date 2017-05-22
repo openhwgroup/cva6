@@ -15,12 +15,12 @@
 // SolderPad open hardware license in the context of the PULP platform
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
-//
+
 import ariane_pkg::*;
 
 module load_unit (
     input  logic                     clk_i,    // Clock
-    input  logic                     rst_ni,  // Asynchronous reset active low
+    input  logic                     rst_ni,   // Asynchronous reset active low
     // load unit input port
     input logic [1:0]                operator_i,
     input logic                      valid_i,

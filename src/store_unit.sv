@@ -57,8 +57,8 @@ module store_unit (
     logic [7:0]              st_buffer_be;
     logic                    st_buffer_valid;
     // store buffer control signals
-    logic        st_ready;
-    logic        st_valid;
+    logic                    st_ready;
+    logic                    st_valid;
     // ---------------
     // Store Queue
     // ---------------
