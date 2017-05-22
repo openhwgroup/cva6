@@ -184,6 +184,27 @@ module lsu #(
     // Result Sequentialize
     // ---------------------
 
+    logic ld_valid_i;
+    logic [TRANS_ID_BITS-1:0] ld_trans_id;
+    logic [63:0] ld_result;
+    logic st_valid;
+    logic [TRANS_ID_BITS-1:0] st_trans_id;
+    logic [63:0] st_result;
+    lsu_arbiter lsu_arbiter_i (
+        .clk_i         ( clk_i          ),
+        .rst_ni        ( rst_ni         ),
+        .flush_i       ( flush_i        ),
+        .ld_valid_i    ( ld_valid       ),
+        .ld_trans_id_i ( ld_trans_id    ),
+        .ld_result_i   ( ld_result      ),
+        .st_valid_i    ( st_valid       ),
+        .st_trans_id_i ( st_trans_id    ),
+        .st_result_i   ( st_result      ),
+        .valid_o       ( lsu_valid_o    ),
+        .trans_id_o    ( lsu_trans_id_o ),
+        .result_o      ( lsu_result_o   )
+    );
+
     // ------------------
     // LSU Control
     // ------------------

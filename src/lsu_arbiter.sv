@@ -95,6 +95,15 @@ module lsu_arbiter (
         status_cnt_n    = status_cnt;
         // update write pointer
         write_pointer_n = write_pointer;
+
+        // ------------
+        // Flush
+        // ------------
+        if (flush_i) begin
+            status_cnt_n    = '0;
+            write_pointer_n = '0;
+            read_pointer_n  = '0;
+        end
     end
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
