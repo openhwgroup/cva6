@@ -21,6 +21,44 @@ module core_tb;
     debug_if debug_if();
     core_if core_if(clk_i);
 
+
+    logic [63:0] instr_if_address;
+    logic        instr_if_data_req;
+    logic [3:0]  instr_if_data_be;
+    logic        instr_if_data_gnt;
+    logic        instr_if_data_rvalid;
+    logic [31:0] instr_if_data_rdata;
+
+    logic [63:0] data_if_address_i;
+    logic [63:0] data_if_data_wdata_i;
+    logic        data_if_data_req_i;
+    logic        data_if_data_we_i;
+    logic [7:0]  data_if_data_be_i;
+    logic [1:0]  data_if_tag_status_i;
+    logic        data_if_data_gnt_o;
+    logic        data_if_data_rvalid_o;
+    logic [63:0] data_if_data_rdata_o;
+
+    core_mem core_mem_i (
+        .clk_i                   ( clk_i                  ),
+        .rst_ni                  ( rst_ni                 ),
+        .instr_if_address_i      ( instr_if_address       ),
+        .instr_if_data_req_i     ( instr_if_data_req      ),
+        .instr_if_data_be_i      ( instr_if_data_be       ),
+        .instr_if_data_gnt_o     ( instr_if_data_gnt      ),
+        .instr_if_data_rvalid_o  ( instr_if_data_rvalid   ),
+        .instr_if_data_rdata_o   ( instr_if_data_rdata    ),
+        .data_if_address_i       ( data_if_address_i      ),
+        .data_if_data_wdata_i    ( data_if_data_wdata_i   ),
+        .data_if_data_req_i      ( data_if_data_req_i     ),
+        .data_if_data_we_i       ( data_if_data_we_i      ),
+        .data_if_data_be_i       ( data_if_data_be_i      ),
+        .data_if_tag_status_i    ( data_if_tag_status_i   ),
+        .data_if_data_gnt_o      ( data_if_data_gnt_o     ),
+        .data_if_data_rvalid_o   ( data_if_data_rvalid_o  ),
+        .data_if_data_rdata_o    ( data_if_data_rdata_o   )
+    );
+
     ariane dut (
         .clk_i                  ( clk_i                ),
         .rst_ni                 ( rst_ni               ),
@@ -33,12 +71,12 @@ module core_tb;
         .core_id_i              ( core_if.core_id      ),
         .cluster_id_i           ( core_if.cluster_id   ),
 
-        .instr_if_address_o     ( instr_if.address     ),
-        .instr_if_data_req_o    ( instr_if.data_req    ),
-        .instr_if_data_be_o     ( instr_if.data_be[3:0]     ),
-        .instr_if_data_gnt_i    ( instr_if.data_gnt & instr_if.data_req   ),
-        .instr_if_data_rvalid_i ( instr_if.data_rvalid ),
-        .instr_if_data_rdata_i  ( instr_if.data_rdata[31:0]  ),
+        .instr_if_address_o     ( instr_if_address     ),
+        .instr_if_data_req_o    ( instr_if_data_req    ),
+        .instr_if_data_be_o     ( instr_if_data_be     ),
+        .instr_if_data_gnt_i    ( instr_if_data_gnt    ),
+        .instr_if_data_rvalid_i ( instr_if_data_rvalid ),
+        .instr_if_data_rdata_i  ( instr_if_data_rdata  ),
 
         .data_if_address_o      ( data_if.address      ),
         .data_if_data_wdata_o   ( data_if.data_wdata   ),
@@ -79,6 +117,19 @@ module core_tb;
             #10ns clk_i = ~clk_i;
     end
 
+    task preload_memories();
+        logic [7:0] rmem [0:1024];
+
+        $display("Reading memory");
+        $readmemh("test/add_test.v", rmem, 0);
+
+        for (int i = 0; i < 1024/8; i++) begin
+            for (int j = 0; j < 8; j++)
+                core_mem_i.ram_i.mem[i][j] = rmem[i*8 + j];
+        end
+
+    endtask : preload_memories
+
     program testbench (core_if core_if, mem_if instr_if);
         initial begin
             uvm_config_db #(virtual core_if)::set(null, "uvm_test_top", "core_if", core_if);
@@ -88,53 +139,10 @@ module core_tb;
             // Start UVM test
             run_test();
         end
-        // logic [7:0] imem [400];
-        // logic [63:0] address [$];
-        // logic [63:0] addr;
-        // // instruction memory
-        // initial begin
-        //     // read mem file
-        //     $readmemh("add_test.v", imem, 64'b0);
-        //     $display("Read instruction memory file");
-        //     instr_if.mck.data_rdata  <= 32'b0;
-        //     // apply stimuli for instruction interface
-        //     forever begin
-        //         // instr_if.mck.data_rvalid <= 1'b0;
-        //         // instr_if.mck.data_gnt    <= 1'b0;
 
-        //         @(instr_if.mck)
-        //         instr_if.mck.data_rvalid <= 1'b0;
-        //             fork
-        //                 imem_read: begin
-        //                     // instr_if.mck.data_rvalid <= 1'b0;
-        //                     if (instr_if.data_req) begin
-        //                         address.push_back(instr_if.mck.address);
-        //                     end
-        //                 end
-
-        //                 imem_write: begin
-        //                     if (address.size() != 0) begin
-        //                         instr_if.mck.data_rvalid <= 1'b1;
-        //                         addr = address.pop_front();
-        //                         instr_if.mck.data_rdata  <= {
-        //                             imem[$unsigned(addr + 3)],
-        //                             imem[$unsigned(addr + 2)],
-        //                             imem[$unsigned(addr + 1)],
-        //                             imem[$unsigned(addr + 0)]
-        //                             };
-        //                         $display("Address: %0h, Data: %0h", addr, {
-        //                             imem[$unsigned(addr + 3)],
-        //                             imem[$unsigned(addr + 2)],
-        //                             imem[$unsigned(addr + 1)],
-        //                             imem[$unsigned(addr + 0)]
-        //                             });
-        //                     end else
-        //                         instr_if.mck.data_rvalid <= 1'b0;
-        //                 end
-        //             join_none
-
-        //     end
-        // end
+        initial begin
+            preload_memories();
+        end
     endprogram
 
     testbench tb(core_if, instr_if);

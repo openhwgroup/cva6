@@ -63,11 +63,13 @@ build-agents: ${agents}
 build-interfaces: ${interfaces}
 	vlog${questa_version} ${compile_flag} -work ${library}  -incr ${interfaces} ${list_incdir} -suppress 2583
 
-# Run the specified test case
 sim:
-	# vsim${questa_version} ${top_level}_optimized -c -do "run -a"
 	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} -coverage -classdebug -do "do tb/wave/wave_core.do"
 
+simc:
+	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} -coverage -classdebug -do "do tb/wave/wave_core.do"
+
+# Run the specified test case
 $(tests):
 	# Optimize top level
 	vopt${questa_version} -work ${library} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis

@@ -10,7 +10,7 @@ add wave -noupdate -group id_stage -group issue_read_operands /core_tb/dut/id_st
 add wave -noupdate -group id_stage /core_tb/dut/id_stage_i/*
 add wave -noupdate -group ex_stage -group ALU /core_tb/dut/ex_stage_i/alu_i/*
 add wave -noupdate -group ex_stage -group lsu /core_tb/dut/ex_stage_i/lsu_i/*
-add wave -noupdate -group ex_stage -group branch_engine /core_tb/dut/ex_stage_i/branch_engine_i/*
+add wave -noupdate -group ex_stage -group branch_unit /core_tb/dut/ex_stage_i/branch_unit_i/*
 add wave -noupdate -group ex_stage -expand -group csr_buffer /core_tb/dut/ex_stage_i/csr_buffer_i/*
 add wave -noupdate -group ex_stage /core_tb/dut/ex_stage_i/*
 add wave -noupdate -group commit_stage /core_tb/dut/commit_stage_i/*
