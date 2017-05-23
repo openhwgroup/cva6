@@ -78,15 +78,15 @@ module fifo #(
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            read_pointer_q  <= '{default: 0};
-            write_pointer_q <= '{default: 0};
-            status_cnt_q    <= '{default: 0};
-            mem_q           <= '{default: 0};
+            read_pointer_q  <= '0;
+            write_pointer_q <= '0;
+            status_cnt_q    <= '0;
+            mem_q           <= '0;
         end else if (flush_i) begin
-            read_pointer_q  <= '{default: 0};
-            write_pointer_q <= '{default: 0};
-            status_cnt_q    <= '{default: 0};
-            mem_q           <= '{default: 0};
+            read_pointer_q  <= '0;
+            write_pointer_q <= '0;
+            status_cnt_q    <= '0;
+            mem_q           <= '0;
         end else begin
             read_pointer_q  <= read_pointer_n;
             write_pointer_q <= write_pointer_n;

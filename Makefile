@@ -24,7 +24,7 @@ sequences =  $(wildcard tb/sequences/*/*.sv)
 test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv) $(wildcard tb/test/*/*_pkg.sv)
 
 # this list contains the standalone components
-src = $(wildcard src/*.sv)
+src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv)
 # look for testbenches
 tbs = $(wildcard tb/*_tb.sv)
 
