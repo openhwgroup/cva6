@@ -93,7 +93,21 @@ If an exception was signaled by the WB stage, the LSU kills all entries in its s
 
 The LSU of the core takes care of accessing the data memory. Load and stores on words (32 bit), half words (16 bit) and bytes (8 bit) are supported.
 
-## Protocol
+## D$ Interface
+
+|   **Signal**  | **Width (bit)** | **Direction** | **Description** |
+|---------------|-----------------|---------------|-----------------|
+| address_index |              12 | Out           |                 |
+| address_tag   |              44 | Out           |                 |
+| data_wdata    |              64 | Out           |                 |
+| data_req      |               1 | Out           |                 |
+| data_we       |               1 | Out           |                 |
+| data_be       |               8 | Out           |                 |
+| kill_req      |               1 | Out           |                 |
+| data_gnt      |               1 | In            |                 |
+| data_rvalid   |               1 | In            |                 |
+| data_rdata    |              64 | In            |                 |
+
 
 The protocol that is used by the LSU to communicate with a memory works as follows:
 
