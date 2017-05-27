@@ -39,55 +39,13 @@ It is possible that a TLB or cache miss occurred. If this is the case the IF sta
 
 The instruction queue is part of the IF stage. Its purpose is to decouple the instruction fetch unit as much as possible from the rest of the pipeline.
 
-### Interface
-
-|      **Signal**     | **Direction** |                                         **Description**                                         |         **Category**        |
-|---------------------|---------------|-------------------------------------------------------------------------------------------------|-----------------------------|
-| epc_i               | Input         | EPC from CSR registers, depending on the privilege level the epc points to a different address. | CSR Regs                    |
-| ecall_i             | Input         | Ecall request from WB                                                                           | Commit                      |
-| epc_commit_i        | Input         | EPC Commit                                                                                      | Commit                      |
-| epc_commit_valid_i  | Input         | EPC from Commit is valid                                                                        | Commit                      |
-| flush_s1_i          | Input         | Flush PC Gen stage                                                                              | Control                     |
-| flush_s2_i          | Input         | Flush fetch stage                                                                               | Control                     |
-| bp_pc_i             | Input         | Branch prediction PC, from EX stage                                                             | EX -- Update BP/take branch |
-| bp_misspredict_i    | Input         | Branch was misspredicted                                                                        | EX -- Update BP/take branch |
-| bp_target_address_i | Input         | Target address of miss-predicted  jump                                                          | EX -- Update BP/take branch |
-| instr_req_o         | Output        | Request to ICache                                                                               | ICache                      |
-| instr_addr_o        | Output        | Instruction address                                                                             | ICache                      |
-| instr_rdata_i       | Input         | Instruction data in                                                                             | ICache                      |
-| dbg_addr_i          | Input         | Fetch address from debug                                                                        | Debug                       |
-| instr_valid_o       | Output        | Instruction is valid                                                                            | To ID                       |
-| instr_rdata_o       | Output        | Instruction                                                                                     | To ID                       |
-| pc_o                | Output        | PC of instruction                                                                               | To ID                       |
-| is_spec_branch_o    | Output        | Is a speculative branch instruction                                                             | To ID                       |
-| spec_branch_pc_o    | Output        | Speculated branch target                                                                        | To ID                       |
-| busy_o              | Output        | If is busy                                                                                      | To ID                       |
-| ready_i             | Input         | ID is ready                                                                                     | From ID                     |
-
 ## Instruction Decode (ID)
 
 The ID stage contains the instruction decode logic (including the planned compressed decoder) as well as the register files (CSR, floating point and regular register file). The decoded instruction is committed to the scoreboard. The scoreboard decides which instruction it can issues next to the execute stage.
 
 ### Decoder
 
-The decoder's purpose is to expand the 32 bit incoming instruction stream to set the right values in the scoreboard, e.g.: which functional unit to activate, setting wright path and reading the destination, src1 and src2 register.
-
-|   **Signal**   | **Direction** |                              **Description**                              |  **Category** |
-|----------------|---------------|---------------------------------------------------------------------------|---------------|
-| instr_i        | Input         | 32 bit instruction to decode                                              | From IF       |
-| illegal_insn_o | Output        | decoded an illegal instruction                                            | Exception     |
-| ebrk_insn_o    | Output        | Ebreak instruction encountered                                            | Exception     |
-| mret_insn_o    | Output        | return from machine exception instruction encountered, as a hint to IF    | Exception     |
-| sret_insn_o    | Output        | return from supervisor exception instruction encountered, as a hint to IF | Exception     |
-| uret_insn_o    | Output        | return from user exception instruction encountered, as a hint to IF       | Exception     |
-| ecall_insn_o   | Output        | environment call instruction encountered, as a hint to IF                 | Exception     |
-| fu_o           | Output        | Which functional unit the scoreboard needs to activate                    | To scoreboard |
-| op_o           | Output        | Operation the FU should perform                                           | To scoreboard |
-| rd_o           | Output        | Destination register                                                      | To scoreboard |
-| rs1_o          | Output        | Source register 1                                                         | To scoreboard |
-| rs2_o          | Output        | Source register 2                                                         | To scoreboard |
-| wfi_o          | Output        | Wait for interrupt                                                        | To IF         |
-
+The decoder's purpose is to expand the 32 bit incoming instruction stream to set the right values in the scoreboard, e.g.: which functional unit to activate, setting wright path and reading the destination, *src1* and *src2* register.
 
 The current privilege level is not checked in the decoder since there could be an operation in progress that sets the privilege level to the appropriate level.
 ### Scoreboard
@@ -121,30 +79,6 @@ The scoreboard also contains all exception information which occurred during exe
 
 If an exception already occurred in IF or ID the corresponding instruction is not executed anymore. Additionally a valid exception is never overwritten. For example an instruction fetch access fault is never overwritten by a load store access fault.
 
-#### Interface
-
-|       **Signal**      | **Direction** |                                  **Description**                                  |      **Category**      |
-|-----------------------|---------------|-----------------------------------------------------------------------------------|------------------------|
-| flush_i               | Input         | Flush Scoreboard                                                                  | Control                |
-| full_o                | Output        | Scoreboard is full                                                                | Control                |
-| rd_clobber_o          | Output        | Used destination registers, includes the FU that is going to write this register  | To issue/read operands |
-| rs1_i                 | Input         | Check the scoreboard for a valid register at that address                         | From read operands     |
-| rs2_i                 | Input         | Check the scoreboard for a valid register at that address                         | From read operands     |
-| rs1_o                 | Output        | Data for rs1                                                                      | To read operands       |
-| rs1_valid_o           | Output        | Data for rs1 is valid                                                             | To read operands       |
-| rs2_o                 | Output        | Data for rs2                                                                      | To read operands       |
-| rs2_valid_o           | Output        | Data for rs2 is valid                                                             | To read operands       |
-| commit_instr_o        | Output        | Instruction to commit                                                             | To WB stage            |
-| commit_ack_i          | Input         | Commit unit acknowledges instruction, it mus immediately begin with processing it | To WB stage            |
-| decoded_instr_i       | Input         | Decoded instruction entering scoreboard                                           | From ID                |
-| decoded_instr_valid_i | Input         | Decoded instruction entering scoreboard is valid                                  | From ID                |
-| issue_instr_o         | Output        | Instruction to issue stage                                                        | To Issue               |
-| issue_instr_valid_o   | Output        | Instruction to issue stage is valid                                               | To Issue               |
-| issue_ack_i           | Input         | Issue stage is acknowledging instruction, it must immediately begin processing    | From Issue             |
-| pc_i                  | Input         | PC at which to write back the data                                                | From WB                |
-| wdata_i               | Input         | Write data from WB                                                                | From WB                |
-| wb_valid_i            | Input         | Data from WB stage is valid                                                       | From WB                |
-
 ### Issue
 
 The issue stage itself is not a real stage in the sense that it is pipelined, it is still part of the decode stage. The purpose of the issue stage is to find out whether we can issue the current top of the scoreboard to one of the functional units. It therefore takes into account whether the any other FU has or is going to write the destination register of the current instruction and whether or not the necessary functional unit is currently busy. If the FU is not busy and there are no dependencies we can issue the instruction to the execute stage.
@@ -152,32 +86,6 @@ The issue stage itself is not a real stage in the sense that it is pipelined, it
 
 ### Compressed Decoder
 The compressed decoders purpose is to expand a compressed instruction (16 bit) to its 32 bit equivalent.
-
-
-### Interface
-
-|     **Signal**    | **Direction** |                                             **Description**                                             |     **Category**    |
-|-------------------|---------------|---------------------------------------------------------------------------------------------------------|---------------------|
-| flush_i           | Input         | Flush ID, there was an architectural state change that needs to invalidate the whole buffer | From controller     |
-| ready_o           | Output        | The scoreboard is ready to accept new instructions.                                                     | To ID               |
-| valid_i           | Input         | The instruction is valid                                                                                | From ID             |
-| imm_i             | Input         | Immediate field in                                                                                      | From ID             |
-| rs1_i             | Input         | Source register 1                                                                                       | From ID             |
-| rs2_i             | Input         | Source register 2                                                                                       | From ID             |
-| rd_i              | Input         | Destination register                                                                                    | From ID             |
-| fu_i              | Input         | Functional unit needed                                                                                  | From ID             |
-| op_i              | Input         | Operation to perform                                                                                    | From ID             |
-| exception_i       | Input         | Exception                                                                                               | From ID             |
-| exception_valid_i | Input         | Exception is valid                                                                                      | From ID             |
-| epc_i             | Input         | Exception PC                                                                                            | From ID             |
-| FU_ALU_o          | Output        | Signals to ALU e.g.: operation to perform etc.                                                          | To ALU              |
-| FU_ALU_i          | Input         | Signals from ALU e.g.: finished operation, result                                                       | From ALU            |
-| FU_MULT_o         | Output        | Signals to Multiplier                                                                                   | To Mult             |
-| FU_MULT_i         | Input         | Signals from Multiplier                                                                                 | From Mult           |
-| FU_LSU_o          | Output        | Signals to LSU                                                                                          | To LSU              |
-| FU_LSU_i          | Input         | Signals from LSU                                                                                        | From LSU            |
-| Regfile           | Inout         | Signals from and to register file                                                                       | From/To regfile     |
-| CSR               | Inout         | Signals from and to CSR register file                                                                   | From/To CSR regfile |
 
 
 ## Execute Stage (EX)
@@ -193,18 +101,6 @@ The read operands stage is still part of the scoreboard but conceptually lies at
 The scoreboard and forwarding are mutually exclusive. The selection logic is a classical priority selection giving precedence to results form the scoreboard/FU over the register file.
 
 To obtain the right register value we need to poll the scoreboard for both source operands.
-
-### Interface
-
-| **Signal** | **Direction** |                  **Description**                  | **Category** |
-|------------|---------------|---------------------------------------------------|--------------|
-| flush_i    | Input         | Flush ex stage                                    | CSR Regs     |
-| FU_ALU_i   | Input         | Signals to ALU e.g.: operation to perform etc.    | To ALU       |
-| FU_ALU_o   | Output        | Signals from ALU e.g.: finished operation, result | From ALU     |
-| FU_MULT_i  | Input         | Signals to Multiplier                             | To Mult      |
-| FU_MULT_o  | Output        | Signals from Multiplier                           | From Mult    |
-| FU_LSU_i   | Input         | Signals to LSU                                    | To LSU       |
-| FU_LSU_o   | Output        | Signals from LSU                                  | From LSU     |
 
 ### Write-Back
 
@@ -259,52 +155,7 @@ And the following machine mode CSR registers:
 
 We need to be careful when altering some of the register. Some of those registers would potentially lead to different behavior (e.g.: mstatus by enabling address translation).
 
-### Interface
-
-|   **Signal**   | **Direction** |               **Description**                |       **Category**       |
-|----------------|---------------|----------------------------------------------|--------------------------|
-| flush_i        | Input         | Flush WB stage                               | CSR Regs                 |
-| instr_commit_i | Input         | Instruction to commit                        | From Scoreboard/ID Stage |
-| CSR Regs       | Output        | Interface to CSR registers                   | To CSR Registers         |
-| Regfile        | Output        | Interface to the architectural register file | To regfile               |
-| Exception      | Output        | Exception occured                            | To PC gen                |
-
-
 ## MMU
-
-|      **Signal**      | **Direction** |                                     **Description**                                      |
-| -------------------- | ------------- | ---------------------------------------------------------------------------------------- |
-| enable_translation_i | Input         | Enables translation, coming from CSR file.                                               |
-| ireq_o               | Output        |                                                                                          |
-| ivalid_i             | Output        |                                                                                          |
-| ierr_i               | Input         |                                                                                          |
-| ipaddr_o             | Output        | Physical address out                                                                     |
-| fetch_req_i          | Input         | Fetch request in                                                                         |
-| fetch_gnt_o          | Output        | Fetch request granted                                                                    |
-| fetch_valid_o        | Output        | The output is valid                                                                      |
-| fetch_err_o          | Output        | Fetch error                                                                              |
-| fetch_vaddr_i        | Input         | Virtual address in                                                                       |
-| dreq_o               | Output        | Request to data memory                                                                   |
-| dgnt_i               | Input         | Grant from data memory                                                                   |
-| dvalid_i             | Input         | Data from data memory is valid                                                           |
-| dwe_o                | Output        | Write enable to data memory                                                              |
-| dbe_o                | Output        | Byte enable to data memory                                                               |
-| dpaddr_o             | Output        | Physical address to data memory                                                          |
-| ddata_i              | Input         | Data from data memory                                                                    |
-| lsu_req_i            | Input         | Request from LSU                                                                         |
-| lsu_gnt_o            | Output        | Request granted to LSU                                                                   |
-| lsu_valid_o          | Output        | Data to LSU is valid                                                                     |
-| lsu_we_i             | Input         | Write enable from LSU                                                                    |
-| lsu_err_o            | Output        | Error to LSU                                                                             |
-| lsu_be_i             | Input         | Byte enable from LSU                                                                     |
-| lsu_vaddr_i          | Input         | Virtual address from LSU                                                                 |
-| priv_lvl_i           | Input         | Current Privilige Level                                                                  |
-| flag_pum_i           | Input         | PUM (Protected User Mode) Flag, prevents S-mode code to alter user mode code -- from CSR |
-| flag_mxr_i           | Input         | MXR (Make eXecutable Readable), makes it possible to read executable only pages          |
-| pd_ppn_i             | Input         | Physical page number                                                                     |
-| asid_i               | Input         | ASID (address space identifier)                                                          |
-| flush_tlb_i          | Input         | Flush TLB                                                                                |
-| lsu_ready_wb_i       | Input         | LSU is ready to accept new data                                                          |
 
 
 ## LSU
@@ -333,6 +184,7 @@ The store queue works with physical addresses only. At the time when they are co
     input  logic [BE_WIDTH-1:0]                           data_be_i,
     input  logic                                          data_we_i,
     input  logic [ADDR_WIDTH-1:0]                         data_add_i,
+    input  logic                                          data_abort_i,
     input  logic [ID_WIDTH-1:0]                           data_ID_i,
     output logic                                          data_gnt_o,
 

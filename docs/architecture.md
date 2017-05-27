@@ -14,33 +14,14 @@ Because the scoreboard is in full control over the functional units it also cont
 4. **Write Back**: Once the scoreboard is aware that the functional unit has completed execution, it commits the result in-order to either the architectural register file, CSR register file, floating point register file or data memory. If there are no structural dependencies on the write path the scoreboard can write more than one result at a time.
 
 The scoreboard maintains a connection to each functional unit and each architectural state holding element. For Ariane there is the plan to include the following FUs: ALU, Multiplier and LSU. If it should turn out to be necessary additional ALUs or multipliers can be easily added.
-TODO: Detailed Bookkeeping
+
+**TODO: Detailed Bookkeeping**
 
 > While it will be possible that the execute stage houses more than one ALU or multiplier, this is not going to be the case for the load store unit (LSU). The current assumption will be, that the LSU is like any other functional unit (using a variable amount of cycles to perform its operation), but it should also be in full control over the data memories state. It therefore takes a special role in the whole design.
 
-The scoreboard has the following entries:
-
-|            **Name**           | **Abbr.** |                                           **Description**                                           |
-|-------------------------------|-----------|-----------------------------------------------------------------------------------------------------|
-| Program Counter               | PC        | Program counter of instruction                                                                      |
-| Functional Unit               | FU        | Which type of  functional unit this instruction is going to need                                    |
-| Operation                     | OP        | Which operation the functional unit is going to perform on it                                       |
-| Destination Register          | RD        | Destination register address of instruction                                                         |
-| Value of destination register | VAL(RD)   | Result written by the functional unit. The result in here is valid only if the finished bit is set. |
-| Immediate                     | IMM       | Immediate Field                                                                                     |
-| Source Register 1             | RS1       | First source registers address of instruction                                                       |
-| FU Result RS 1                | FURS1     | Which functional unit the RS1 is coming from                                                        |
-| FU Result RS 1 Ready          | FURS1R    | RS1 is ready                                                                                        |
-| Source Register 2             | RS2       | Second source registers address of instruction                                                      |
-| FU Result RS 2                | FURS2     | Which functional unit the RS1 is coming from                                                        |
-| FU Result RS 2 Ready          | FURS2R    | RS2 is ready                                                                                        |
-| In Flight                     | IF        | Set to one if the instruction is currently being processed                                          |
-| Valid                         | VALID     | The instruction has been executed and the result is valid                                           |
-| Exception Valid               | ISEXCPT   | Set if an exception occurred.                                                                       |
-| Exception Cause               | ECAUSE    | Exception cause as listed in privileged specification                                               |
-
 Register addresses can be of type: CSR, Regfile (x0,.., x31), None (immediate), current PC
-TODO: Register Encoding, OP encoding
+
+**TODO: Register Encoding, OP encoding**
 
 
 ### Exception Propagation
@@ -71,7 +52,14 @@ The FU are not supposed to have inter-unit dependencies for the moment, e.g.: ev
 
 Refer to the [timing diagram](timing_diagrams/#functional-unit) section for further detail.
 
-TODO: Details about comparisons and branches.
+### Branches
+
+Branches are handled by the branch unit in co-operation with the ALU. It is a little bit specially in the sense that it does not have a write back port to the scoreboard. Actually, the only thing the branch unit writes is PC + 4 (or + 2 in the compressed case) to the destination register. To save write back ports the ALU does this addition and the write back port of the ALU is used to write back to register *rd*. In summary, what this means is - branch instructions (including jumps) are another form of ALU instruction. They can only be performed if the ALU is ready (as the current ALU is single cycle this means always). Furthermore the exception write back port of the ALU is used to signal mis-aligned branch target exceptions (e.g.: an exception which occurs if the branch target is not aligned to a half-word boundary).
+
+The branch unit maintains two more connections to different parts of the processor:
+
+1. The issue and read operand stage: The issue stage will block if it issued a branch instruction which is currently not resolved. Therefore the branch unit will signal the issue and read operand stage that it just resolved a branch. This is only done if it was indeed a branch and not an instruction where branch-prediction just thought it was a branch.
+2. To the PCGEN stage where it signals whether this instruction was a branch, a taken and mis-predicted branch, a un-taken and mis-predicted branch, a taken and correctly predicted branch or an un-taken and correctly predicted branch. If it was a mis-predict the front-end (everything from issue to PCGEN) of the processor is flushed and PCGEN starts re-fetching from the newly calculated PC (which is correct).
 
 ### LSU
 
@@ -88,39 +76,22 @@ Currently the idea is to not speculate past branches or jumps. So the issue wind
 If the scoreboard encounters a branch it does not accept new instructions from ID. Executes the branch instruction. In the next cycle the speculated pc is compared to the calculated PC. If they match the scoreboard starts to issue instructions again. If not, a miss-predict is signaled and all fetched instructions are killed prior to the execute stage. The pipeline fills from the new address. Branch prediction data structures are updated accordingly.
 
 ## Load Store Unit
-The load store unit is similar to every other functional unit. In addition, it has to manage the interface to the data memory. In particular, it houses the DTLB (Data Translation Lookaside Buffer) and the page table walker (PTW). It arbitrates the access to data memory, giving precedence to PTW lookups. This is done in order to unstall TLB misses as soon as possible.
+The load store unit is similar to every other functional unit. In addition, it has to manage the interface to the data memory. In particular, it houses the DTLB (Data Translation Lookaside Buffer) and the page table walker (PTW). It arbitrates the access to data memory, giving precedence to PTW lookups. This is done in order to un-stall TLB misses as soon as possible. A high level block diagram of the LSU can be found here:
 
-The load store unit can issue load request immediately while stores need to be kept back as long as the scoreboard does not issue a commit signal. Therefore, upon a load, the LSU also needs to check its SAQ for potential data words. Should it find uncommitted data it stalls, since it can’t satisfy the current request. This means:
+![LSU Block Diagram](fig/lsu_blockdiagram.png)
+
+The LSU can issue load request immediately while stores need to be kept back as long as the scoreboard does not issue a commit signal: This is done because the whole processor is designed to only have a single commit point (the commit stage). Because issuing loads to the memory hierarchy does not have any semantic side effects the LSU can issue them immediately. Totally in contrast to the nature of a store: Stores alter the architectural state and are therefore placed in a store buffer only to be committed in a later step by the commit stage. Sometimes this is also called **posted-store** because the store request is posted to the store queue and waiting for entering the memory hierarchy as soon as the commit signal goes high and the memory interface is not in use.
+
+Therefore, upon a load, the LSU also needs to check its SAQ for potential data words. Should it find uncommitted data it stalls, since it can’t satisfy the current request. This means:
 
 - Two loads to the same address are allowed. They will return in issue order.
 - Two stores to the same address are allowed. They are issued in-order by the scoreboard and stored in the SAQ as long as the scoreboard didn’t give the grant to commit them.
 - A store followed by a load to the same address can only be satisfied if the store has already been committed (marked as committed in the SAQ). Otherwise the LSU stalls until the scoreboard commits the instruction. We cannot guarantee that the store will eventually be committed (e.g.: an exception occurred).
 
-For the moment being, the LSU does not handle misaligned accesses (e.g.: access which are not aligned at a 64bit boundary). It simply issues a misaligned exception and lets the exception handler resolve the LD/ST. Furthermore, it can issue a load access exception.
+For the moment being, the LSU does not handle misaligned accesses (e.g.: access which are not aligned at a 64 bit boundary). It simply issues a misaligned exception and lets the exception handler resolve the LD/ST. Furthermore, it can issue a load access exception.
 If an exception was signaled by the WB stage, the LSU kills all entries in its store queue except those that have been marked as committed.
 
 The LSU of the core takes care of accessing the data memory. Load and stores on words (32 bit), half words (16 bit) and bytes (8 bit) are supported.
-Table 3 describes the signals that are used by the LSU.
-
-|    **Signal**   | **Direction** |                                                    **Description**                                                     |
-|-----------------|---------------|------------------------------------------------------------------------------------------------------------------------|
-| data_req_o      | Output        | Request ready, must stay high until data_gnt_i is high for one cycle                                                   |
-| data_addr_o     | Output        | Address                                                                                                                |
-| data_we_o       | Output        | Write Enable, high for writes, low for reads. Sent together with data_req_o                                            |
-| data_be_o       | Output        | Byte Enable. Is set for the bytes to write/read, sent together with data_req_o                                         |
-| data_wdata_o    | Output        | Data to be written to memory, sent together with data_req_o                                                            |
-| data_rdata_i    | Input         | Data read from memory                                                                                                  |
-| data_rvalid_i   | Input         | data_rdata_is holds valid data when data_rvalid_i is high. This signal will be high for exactly one cycle per request. |
-| data_gnt_i      | Input         | The other side accepted the request. data_addr_o may change in the next cycle                                          |
-| operator_i      | Input         | Operation to perform e.g.: LD/SD/...                                                                                   |
-| operand_a_i     | Input         | Operand a in from scoreboard/issue                                                                                     |
-| operand_b_i     | Input         | Operand b in from scoreboard/issue                                                                                     |
-| lsu_ready_o     | Output        | LSU is ready e.g. not busy and can accept new instructions                                                             |
-| lsu_valid_i     | Input         | LSU is requested to perform the instruction given in operator_i                                                        |
-| lsu_trans_id_i  | Input         | Transaction ID needed for the correct writeback                                                                        |
-| lsu_trans_id_o  | Output        | Output to writeback for which it acknowledges the corresponding transaction                                            |
-| lsu_valid_o     | Output        | Output of LSU is valid                                                                                                 |
-| lsu_exception_o | Output        | To writeback, an exception has occured for the following instruction                                                   |
 
 ## Protocol
 

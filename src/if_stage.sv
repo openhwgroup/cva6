@@ -19,16 +19,17 @@
 import ariane_pkg::*;
 
 module if_stage (
-    input  logic                   clk_i,       // Clock
-    input  logic                   rst_ni,      // Asynchronous reset active low
+    input  logic                   clk_i,               // Clock
+    input  logic                   rst_ni,              // Asynchronous reset active low
     // control signals
     input  logic                   flush_i,
-    output logic                   if_busy_o,   // is the IF stage busy fetching instructions?
-    input  logic                   id_ready_i,
+    output logic                   if_busy_o,           // is the IF stage busy fetching instructions?
+    input  logic                   id_ready_i,          // ID stage is ready
     // fetch direction from PC Gen
-    input  logic [63:0]            fetch_address_i,
-    input  logic                   fetch_valid_i,
-    input  branchpredict_sbe       branch_predict_i,
+    input  logic [63:0]            fetch_address_i,     // address to fetch from
+    input  logic                   fetch_valid_i,       // the fetch address is valid
+    input  branchpredict_sbe       branch_predict_i,    // branch prediction structure we get from the PC Gen stage and we
+                                                        // we need to pass it on to all the further stages (until ex)
     // instruction cache interface
     output logic                   instr_req_o,
     output logic [63:0]            instr_addr_o,
@@ -36,24 +37,21 @@ module if_stage (
     input  logic                   instr_rvalid_i,
     input  logic [31:0]            instr_rdata_i,
     // Output of IF Pipeline stage
-    output fetch_entry             fetch_entry_o,
-    output logic                   fetch_entry_valid_i,      // instruction in IF/ID pipeline is valid
-    input  logic                   instr_ack_i,
-    output exception               ex_o
+    output fetch_entry             fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
+    output logic                   fetch_entry_valid_i, // instruction in IF is valid
+    input  logic                   instr_ack_i,         // ID acknowledged this instruction
+    output exception               ex_o                 // pass on if an fetch-exception happened
 );
-    logic              prefetch_busy;
 
     // Pre-fetch buffer, caches a fixed number of instructions
     prefetch_buffer prefetch_buffer_i (
 
-        .ready_i           ( instr_ack_i                 ),
-        .valid_o           ( fetch_entry_valid_i         ),
+        .ready_i           ( instr_ack_i           ),
+        .valid_o           ( fetch_entry_valid_i   ),
         // Prefetch Buffer Status
-        .busy_o            ( prefetch_busy               ),
+        .busy_o            (  if_busy_o            ),
         .*
     );
-
-    assign if_busy_o             = prefetch_busy;
 
     // --------------------------------------------------------------
     // IF-ID pipeline registers, frozen when the ID stage is stalled
@@ -64,7 +62,7 @@ module if_stage (
         end else begin
             ex_o.cause              <= 64'b0; // TODO: Output exception
             ex_o.tval               <= 64'b0; // TODO: Output exception
-            ex_o.valid              <= 1'b0; //illegal_compressed_instr;  // TODO: Output exception
+            ex_o.valid              <= 1'b0;  //illegal_compressed_instr;  // TODO: Output exception
         end
     end
     //-------------
