@@ -28,6 +28,8 @@ class store_queue_env extends uvm_env;
 
     store_queue_if_sequencer m_store_queue_if_sequencer;
     store_queue_env_config m_cfg;
+
+    store_queue_scoreboard m_scoreboard;
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -57,10 +59,14 @@ class store_queue_env extends uvm_env;
 
         // Get sequencer
         m_store_queue_if_sequencer = store_queue_if_sequencer::type_id::create("m_store_queue_if_sequencer", this);
-
+        // instantiate scoreboard
+        m_scoreboard = store_queue_scoreboard::type_id::create("m_scoreboard", this);
     endfunction:build_phase
 
     function void connect_phase(uvm_phase phase);
         m_store_queue_if_sequencer = m_store_queue_if_agent.m_sequencer;
+        m_store_queue_if_agent.m_monitor.m_ap.connect(m_scoreboard.store_queue_item_export);
+        m_dcache_if_agent.m_monitor.m_ap.connect(m_scoreboard.dcache_item_export);
+
     endfunction: connect_phase
 endclass : store_queue_env

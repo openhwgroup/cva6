@@ -52,11 +52,19 @@ class store_queue_if_monitor extends uvm_component;
     task run_phase(uvm_phase phase);
 
         store_queue_if_seq_item cmd =  store_queue_if_seq_item::type_id::create("cmd");
-        store_queue_if_seq_item cloned_item;
 
+        forever begin
+            store_queue_if_seq_item cloned_item;
+            // a new store item request has arrived
+            @(m_vif.pck iff (m_vif.pck.store_valid && m_vif.pck.ready));
+            // $display("%t, %0h", $time(), m_vif.pck.store_paddr);
+            cmd.address = m_vif.pck.store_paddr;
+            cmd.data    = m_vif.pck.store_data;
+            cmd.be      = m_vif.pck.store_be;
 
-        $cast(cloned_item, cmd.clone());
-        m_ap.write(cloned_item);
+            $cast(cloned_item, cmd.clone());
+            m_ap.write(cloned_item);
+        end
 
     endtask : run_phase
 endclass : store_queue_if_monitor

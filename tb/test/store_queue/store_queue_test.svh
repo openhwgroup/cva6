@@ -32,13 +32,18 @@ class store_queue_test extends store_queue_test_base;
     endfunction
 
     task run_phase(uvm_phase phase);
+        uvm_objection objection;
+
         phase.raise_objection(this, "store_queue_test");
+        #200ns;
         super.run_phase(phase);
 
         store_queue = new("store_queue");
         // Start sequence here
         store_queue.start(sequencer_h);
-        #100ns;
+
+        objection = phase.get_objection();
+        objection.set_drain_time(this, 100ns );
 
         phase.drop_objection(this, "store_queue_test");
     endtask

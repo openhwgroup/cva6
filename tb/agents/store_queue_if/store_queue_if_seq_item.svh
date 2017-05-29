@@ -43,8 +43,9 @@ class store_queue_if_seq_item extends uvm_sequence_item;
         end
         super.do_copy(rhs);
         // Copy over data members:
-        // e.g.:
-        // operator = rhs_.operator;
+        address = rhs_.address;
+        data    = rhs_.data;
+        be      = rhs_.be;
 
     endfunction:do_copy
 

@@ -20,6 +20,8 @@ package store_queue_env_pkg;
     // Testbench related imports
     import store_queue_if_agent_pkg::*;
     import dcache_if_agent_pkg::*;
+    // Include scoreboard
+    `include "store_queue_scoreboard.svh"
     // Includes for the config for the environment
     `include "store_queue_env_config.svh"
     // Includes the environment

@@ -58,10 +58,10 @@ class store_queue_if_driver extends uvm_driver #(store_queue_if_seq_item);
                         seq_item_port.item_done();
                         // fork off a commit task
                         // commit a couple of cycles later
+                        @(m_vif.mck iff m_vif.pck.valid)
                         fork
                             commit_block: begin
                                 sem.get(1);
-                                @(m_vif.mck)
                                 m_vif.mck.commit <= 1'b1;
                                 @(m_vif.mck)
                                 m_vif.mck.commit <= 1'b0;

@@ -39,7 +39,7 @@ module store_queue_tb;
         .be_o             ( store_queue.check_be         ),
         .commit_i         ( store_queue.commit           ),
         .ready_o          ( store_queue.ready            ),
-        .valid_i          ( store_queue.store_valid & store_queue.ready ),
+        .valid_i          ( store_queue.store_valid && store_queue.ready ),
         .paddr_i          ( store_queue.store_paddr      ),
         .data_i           ( store_queue.store_data       ),
         .be_i             ( store_queue.store_be         ),
@@ -52,7 +52,7 @@ module store_queue_tb;
         .data_be_o        ( slave.data_be                ),
         .kill_req_o       ( slave.kill_req               ),
         .tag_valid_o      ( slave.tag_valid              ),
-        .data_gnt_i       ( slave.data_gnt               ),
+        .data_gnt_i       ( slave.data_gnt & slave.data_req       ),
         .data_rvalid_i    ( slave.data_rvalid            )
     );
 
