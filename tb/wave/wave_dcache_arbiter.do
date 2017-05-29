@@ -1,8 +1,7 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /mem_arbiter_tb/dut/*
-
-add wave -noupdate -group FIFO /mem_arbiter_tb/dut/fifo_i/*
+add wave -noupdate /dcache_arbiter_tb/dut/*
+add wave -noupdate -group FIFO /dcache_arbiter_tb/dut/fifo_i/*
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {421 ns} 0}
 quietly wave cursor active 1
