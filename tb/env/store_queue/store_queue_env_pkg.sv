@@ -19,6 +19,7 @@ package store_queue_env_pkg;
     `include "uvm_macros.svh"
     // Testbench related imports
     import store_queue_if_agent_pkg::*;
+    import dcache_if_agent_pkg::*;
     // Includes for the config for the environment
     `include "store_queue_env_config.svh"
     // Includes the environment

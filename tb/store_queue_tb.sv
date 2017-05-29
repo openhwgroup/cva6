@@ -19,12 +19,14 @@
 //
 
 module store_queue_tb;
+    import uvm_pkg::*;
+    import store_queue_lib_pkg::*;
+
     logic rst_ni, clk;
     logic store_valid;
     logic slave_data_gnt;
 
-    dcache_if slave(clk);
-
+    dcache_if      slave(clk);
     store_queue_if store_queue(clk);
 
     store_queue dut (
@@ -76,8 +78,15 @@ module store_queue_tb;
     end
 
     program testbench (dcache_if slave, store_queue_if store_queue);
-
-
+        initial begin
+            // register the interfaces
+            uvm_config_db #(virtual store_queue_if)::set(null, "uvm_test_top", "store_queue_if", store_queue);
+            uvm_config_db #(virtual dcache_if)::set(null, "uvm_test_top", "dcache_if", slave);
+            // print the topology
+            uvm_top.enable_print_topology = 1;
+            // Start UVM test
+            run_test();
+        end
     endprogram
 
     testbench tb(slave, store_queue);

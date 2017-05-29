@@ -18,8 +18,10 @@ package store_queue_lib_pkg;
     // Standard UVM import & include:
     import uvm_pkg::*;
     `include "uvm_macros.svh"
-    // Import the memory interface agent
+    // Import the store queue interface agent
     import store_queue_if_agent_pkg::*;
+    // Import the DCache interface agent
+    import dcache_if_agent_pkg::*;
     // ------------------------------------------------
     // Environment which will be instantiated
     // ------------------------------------------------

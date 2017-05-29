@@ -38,6 +38,7 @@ class store_queue_test_base extends uvm_test;
     // ---------------------
     // functional unit interface
     store_queue_if_agent_config m_store_queue_if_cfg;
+    dcache_if_agent_config m_dcache_if_cfg;
 
     //------------------------------------------
     // Methods
@@ -57,12 +58,21 @@ class store_queue_test_base extends uvm_test;
         // create agent store_queue_if configuration
         m_store_queue_if_cfg = store_queue_if_agent_config::type_id::create("m_store_queue_if_cfg");
         m_env_cfg.m_store_queue_if_agent_config = m_store_queue_if_cfg;
+
+        m_dcache_if_cfg = dcache_if_agent_config::type_id::create("m_dcache_if_cfg");
+        m_env_cfg.m_dcache_if_agent_config = m_dcache_if_cfg;
+
         // get store_queue_if virtual interfaces
         // get master interface DB
         if (!uvm_config_db #(virtual store_queue_if)::get(this, "", "store_queue_if", m_store_queue_if_cfg.m_vif))
             `uvm_fatal("VIF CONFIG", "Cannot get() interface store_queue_if from uvm_config_db. Have you set() it?")
         m_env_cfg.m_store_queue_if = m_store_queue_if_cfg.m_vif;
 
+        if (!uvm_config_db #(virtual dcache_if)::get(this, "", "dcache_if", m_dcache_if_cfg.m_vif))
+            `uvm_fatal("VIF CONFIG", "Cannot get() interface dcache_if from uvm_config_db. Have you set() it?")
+        m_env_cfg.m_dcache_if = m_dcache_if_cfg.m_vif;
+        // configure as SLAVE in replay mode
+        m_env_cfg.m_dcache_if_agent_config.dcache_if_config = SLAVE_REPLAY;
 
         // create environment
         uvm_config_db #(store_queue_env_config)::set(this, "*", "store_queue_env_config", m_env_cfg);
