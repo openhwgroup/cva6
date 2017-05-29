@@ -1,6 +1,6 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 24.4.2017
-// Description: Arbitrates the memory ports
+// Description: Arbitrates the dcache ports
 //
 //
 // Copyright (C) 2017 ETH Zurich, University of Bologna
@@ -66,6 +66,7 @@ module dcache_arbiter #(
     logic [DATA_WIDTH-1:0] out_data;
     logic                  pop;
 
+    // FIFO to keep track of the responses
     fifo #(
         .dtype            ( logic [DATA_WIDTH-1:0] ),
         .DEPTH            ( 4                      )
@@ -74,6 +75,7 @@ module dcache_arbiter #(
         .rst_ni           ( rst_ni                 ),
         .single_element_o ( single_element         ),
         // the flush is accomplished implicitly by waiting for the queue to be drained before accepting any new request
+        // it is the responsibility of the attached units to make sure it handles any outstanding responses
         .flush_i          ( 1'b0                   ),
         .full_o           ( full                   ),
         .empty_o          ( empty                  ),
