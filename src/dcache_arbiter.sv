@@ -25,7 +25,6 @@ module dcache_arbiter #(
     (
     input  logic                           clk_i,          // Clock
     input  logic                           rst_ni,         // Asynchronous reset active low
-    input  logic                           flush_i,
     // slave port
     output logic [11:0]                    address_index_o,
     output logic [43:0]                    address_tag_o,
@@ -53,8 +52,6 @@ module dcache_arbiter #(
 );
     // one-hot encoded
     localparam DATA_WIDTH = NR_PORTS;
-    // registers
-    enum logic {IDLE, WAIT_FLUSH} CS, NS;
     // remember the request port in case of a multi-cycle transaction
     logic [DATA_WIDTH-1:0] request_port_n, request_port_q;
     // local ports
@@ -68,12 +65,6 @@ module dcache_arbiter #(
     // FIFO output port
     logic [DATA_WIDTH-1:0] out_data;
     logic                  pop;
-    logic                  flush_ready;
-    // essentially wait for the queue to be empty
-    // or we just got a grant -> this means we issued a memory request in this cycle
-    // although we are ready if we only got a single element in the queue and an rvalid
-    // which means we are getting this element back in this cycle
-    assign flush_ready = (empty & ~(|data_gnt_i)) | (single_element & data_rvalid_i);
 
     fifo #(
         .dtype            ( logic [DATA_WIDTH-1:0] ),
@@ -96,51 +87,36 @@ module dcache_arbiter #(
     always_comb begin : read_req_write
         automatic logic [DATA_WIDTH-1:0] request_index = request_port_q;
         data_req_o                = 1'b0;
-
         in_data                   = '{default: 0};
         push                      = 1'b0;
         request_port_n            = request_port_q;
-        NS                        = CS;
 
         for (int i = 0; i < NR_PORTS; i++)
             data_gnt_o[i] = 1'b0;
 
-        case (CS)
-            // ----------------------------
-            // Single-cycle memory requests
-            // ----------------------------
-            IDLE: begin
-                // only go for a new request if we can wait for the valid e.g.: we have enough space in the buffer
-                if (~full) begin
-                    for (int unsigned i = 0; i < NR_PORTS; i++) begin
-                        if (data_req_i[i] == 1'b1) begin
-                            data_req_o        = data_req_i[i];
-                            // save the request port for future states
-                            request_port_n    = i;
-                            request_index     = i;
-                            // wait for the grant
-                            if (data_gnt_i) begin
-                                // set the slave on which we are waiting
-                                in_data = 1'b1 << i[DATA_WIDTH-1:0];
-                                push = 1'b1;
-                            end
-
-                            break; // break here as this is a priority select
-                        end
+        // ----------------------------
+        // Single-cycle memory requests
+        // ----------------------------
+        // only go for a new request if we can wait for the valid e.g.: we have enough space in the buffer
+        if (~full) begin
+            for (int unsigned i = 0; i < NR_PORTS; i++) begin
+                if (data_req_i[i] == 1'b1) begin
+                    data_req_o        = data_req_i[i];
+                    // save the request port for future states
+                    request_port_n    = i;
+                    request_index     = i;
+                    // wait for the grant
+                    if (data_gnt_i) begin
+                        // set the slave on which we are waiting
+                        in_data = 1'b1 << i[DATA_WIDTH-1:0];
+                        push = 1'b1;
                     end
+
+                    break; // break here as this is a priority select
                 end
             end
-            // ----------------------------
-            // Flush logic
-            // ----------------------------
-            // here we are waiting for the FIFO to drain until we are ready to accept new requests
-            WAIT_FLUSH: begin
-                // if the flush has finished go to IDLE
-                if (flush_ready)
-                    NS = IDLE;
-            end
-            default : /* default */;
-        endcase
+        end
+
         // pass through all signals from the correct slave port
         address_index_o           = address_index_i[request_index];
         data_wdata_o              = data_wdata_i[request_index];
@@ -151,11 +127,6 @@ module dcache_arbiter #(
         address_tag_o             = address_tag_i[request_port_q];
         kill_req_o                = kill_req_i[request_port_q];
         tag_valid_o               = tag_valid_i[request_port_q];
-
-        // if we got a flush and we are not ready for the flush wait and for it and don't accept any incoming data
-        // e.g.: jump to the flush wait state
-        if (flush_i && !flush_ready)
-                NS = WAIT_FLUSH;
     end
 
     // ------------
@@ -183,11 +154,9 @@ module dcache_arbiter #(
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            CS             <= IDLE;
+        if (~rst_ni) begin
             request_port_q <= 1'b0;
         end else begin
-            CS             <= NS;
             request_port_q <= request_port_n;
         end
     end

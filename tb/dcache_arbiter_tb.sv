@@ -40,7 +40,6 @@ module dcache_arbiter_tb;
     dcache_arbiter dut (
         .clk_i             ( clk                             ),
         .rst_ni            ( rst_ni                          ),
-        .flush_i           ( 1'b0                            ),
 
         .address_index_o   ( slave.address_index             ),
         .address_tag_o     ( slave.address_tag               ),
