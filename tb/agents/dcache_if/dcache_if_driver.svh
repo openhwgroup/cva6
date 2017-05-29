@@ -73,16 +73,17 @@ class dcache_if_driver extends uvm_driver #(dcache_if_seq_item);
                                 if (m_vif.pck.data_gnt && m_vif.mck.data_req) begin
                                     // push the low portion of the address a.k.a. the index
                                     address_index.push_back(m_vif.mck.address_index);
-                                    lock.get(1);
                                     // wait a couple of cycles, but at least one
                                     @(m_vif.mck);
                                     // in this cycle the tag is ready
                                     address_tag.push_back(m_vif.mck.address_tag);
+                                    lock.get(1);
                                     // randomize rvalid here
-                                    repeat ($urandom_range(0,2)) @(m_vif.mck);
+                                    repeat ($urandom_range(1,2)) @(m_vif.mck);
                                     m_vif.mck.data_rvalid <= 1'b1;
                                     // compose the address
                                     address_out = {address_tag.pop_front(), address_index.pop_front()};
+                                    m_vif.mck.data_rdata <= address_out;
                                     // put back the lock
                                     lock.put(1);
                                 end else
@@ -114,30 +115,30 @@ class dcache_if_driver extends uvm_driver #(dcache_if_seq_item);
             m_vif.sck.data_wdata      <= 64'b0;
             // request read or write
             // we don't care about results at this point
-            forever begin
-                seq_item_port.get_next_item(cmd);
-                    // do begin
-                m_vif.sck.data_req      <= 1'b1;
-                m_vif.sck.address_index <= cmd.address[11:0];
-                m_vif.sck.data_be       <= cmd.be;
-                m_vif.sck.data_we       <= (cmd.mode == READ) ? 1'b0 : 1'b1;
-                m_vif.sck.data_wdata    <= cmd.data;
+            fork
+                forever begin
+                    seq_item_port.get_next_item(cmd);
+                        // do begin
+                    m_vif.sck.data_req      <= 1'b1;
+                    m_vif.sck.address_index <= cmd.address[11:0];
+                    m_vif.sck.data_be       <= cmd.be;
+                    m_vif.sck.data_we       <= (cmd.mode == READ) ? 1'b0 : 1'b1;
+                    m_vif.sck.data_wdata    <= cmd.data;
 
-                @(m_vif.sck iff m_vif.sck.data_gnt);
-                m_vif.sck.address_tag   <= cmd.address[43:12];
-                m_vif.sck.tag_valid     <= 1'b1;
-                m_vif.sck.data_req      <= 1'b0;
+                    @(m_vif.sck iff m_vif.sck.data_gnt);
+                    m_vif.sck.address_tag   <= cmd.address[43:12];
+                    m_vif.sck.data_req      <= 1'b0;
+                    // delay the next request
+                    repeat (cmd.requestDelay) @(m_vif.sck);
 
-                // delay the next request
-                // if there is delay, wait one clock cycle and set the tag valid back to zero
-                if (cmd.requestDelay != 0) begin
-                    @(m_vif.sck);
-                    m_vif.sck.tag_valid <= 1'b0;
+                    seq_item_port.item_done();
                 end
-                repeat (cmd.requestDelay-1) @(m_vif.sck);
 
-                seq_item_port.item_done();
-            end
+                forever begin
+                    @(m_vif.sck);
+                    m_vif.sck.tag_valid <= m_vif.sck.data_gnt;
+                end
+            join_none
         end
 
         seq_item_port.get_next_item(cmd);

@@ -38,6 +38,8 @@ class mem_arbiter_scoreboard extends uvm_scoreboard;
         if (~seq_item.isSlaveAnswer) begin
             if (seq_item.address !== seq_item.data) begin
                 `uvm_error( "DCache Arbiter Scoreboard",  $sformatf("Got: %0h Expected: %0h", seq_item.address, seq_item.data) )
+            end else begin
+                // `uvm_info( "DCache Arbiter Scoreboard",  $sformatf("Got: %0h Expected: %0h", seq_item.address, seq_item.data), UVM_LOW)
             end
             master_answer_cnt++;
         end else begin
