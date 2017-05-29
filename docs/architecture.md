@@ -95,20 +95,22 @@ The LSU of the core takes care of accessing the data memory. Load and stores on 
 
 ## D$ Interface
 
-|   **Signal**  | **Width (bit)** | **Direction** | **Description** |
-|---------------|-----------------|---------------|-----------------|
-| address_index |              12 | Out           |                 |
-| address_tag   |              44 | Out           |                 |
-| data_wdata    |              64 | Out           |                 |
-| data_req      |               1 | Out           |                 |
-| data_we       |               1 | Out           |                 |
-| data_be       |               8 | Out           |                 |
-| kill_req      |               1 | Out           |                 |
-| data_gnt      |               1 | In            |                 |
-| data_rvalid   |               1 | In            |                 |
-| data_rdata    |              64 | In            |                 |
+|   **Signal**  | **Width (bit)** | **Direction** |                                                                                **Description**                                                                                 |
+|---------------|-----------------|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| address_index |              12 | Out           | Index into cache (send in cycle 0)                                                                                                                                             |
+| address_tag   |              44 | Out           | Tag of cache (send in cycle 1:$)                                                                                                                                               |
+| data_wdata    |              64 | Out           | Data to write into cache                                                                                                                                                       |
+| data_req      |               1 | Out           | Requesting a new transfer                                                                                                                                                      |
+| data_we       |               1 | Out           | This transfer is a write                                                                                                                                                       |
+| data_be       |               8 | Out           | Byte enable for the write transfer                                                                                                                                             |
+| tag_valid     |               1 | Out           | Tag is valid                                                                                                                                                                   |
+| kill_req      |               1 | Out           | Kill the outstanding request                                                                                                                                                   |
+| data_gnt      |               1 | In            | The request was granted, the sender can assume that it is safe to change the index, byte enable and write enable flag                                                          |
+| data_rvalid   |               1 | In            | Returned data is valid, the sender can now change the tag and tag request signals. Rvalid is also asserted for a write, in that case it just means that the tag can be changed |
+| data_rdata    |              64 | In            | Read data, this data is valid if the rvalid flag is asserted                                                                                                                   |
 
 
-The protocol that is used by the LSU to communicate with a memory works as follows:
 
-The LSU provides a valid address in data_addr_o and sets data_req_o high. The memory then answers with a data_gnt_i set high as soon as it is ready to serve the request. This may happen in the same cycle as the request was sent or any number of cycles later. After a grant was received, the address may be changed in the next cycle by the LSU. In addition, the data_wdata_o, data_we_o and data_be_o signals may be changed as it is assumed that the memory has already processed and stored that information. After receiving a grant, the memory answers with a data_rvalid_i set high if data_rdata_i is valid. This may happen one or more cycles after the grant has been received. Note that data_rvalid_i must also be set when a write was performed, although the data_rdata_i has no meaning in this case. Check the [timing diagrams](timing_diagrams/#memory-interface) for further details.
+The protocol that is used by the LSU to communicate with a cache works as follows:
+
+The LSU provides a valid index in *address_index* and sets *data_req* high. The memory then answers with a *data_gnt* set high as soon as it is ready to serve the request. This may happen in the same cycle as the request was sent or any number of cycles later. After a grant was received, the index may be changed in the next cycle by the LSU. In addition, the *data_wdata*, *data_we* and *data_be* signals may be changed as it is assumed that the memory has already processed and stored that information. After receiving a grant, the LSU provides the tag information by setting the *address_tag* and asserting the *tag_valid* signal. The memory answers with a *data_rvalid* set high if *data_rdata* is valid. The tag information may only be changed after the cache answered with *data_rvalid*. The cache can combinatorially use the tag address and tag signals (e.g.: doing tag comparison with it). This process may happen one or more cycles after the grant has been received. Note that *data_rvalid* must also be set when a write was performed, although the *data_rdata* has no meaning in this case. Check the [timing diagrams](timing_diagrams/#memory-interface) for further details.
