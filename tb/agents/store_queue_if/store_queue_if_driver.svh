@@ -32,10 +32,49 @@ class store_queue_if_driver extends uvm_driver #(store_queue_if_seq_item);
     endfunction
 
     task run_phase(uvm_phase phase);
+        semaphore sem = new(1);
         store_queue_if_seq_item cmd;
-        seq_item_port.get_next_item(cmd);
+        // reset assignment
+        m_vif.mck.store_paddr <= 'b0;
+        m_vif.mck.store_data  <= 'b0;
+        m_vif.mck.store_be    <= 'b0;
+        m_vif.mck.commit      <= 1'b0;
+        m_vif.mck.store_valid <= 1'b0;
+        m_vif.mck.flush       <= 1'b0;
+        fork
+            put_data: begin
+                forever begin
 
-        seq_item_port.item_done();
+                    @(m_vif.mck);
+                    // make a new store request
+                    if (m_vif.mck.ready) begin
+                        seq_item_port.get_next_item(cmd);
+
+                        m_vif.mck.store_paddr <= cmd.address;
+                        m_vif.mck.store_data  <= cmd.data;
+                        m_vif.mck.store_be    <= cmd.be;
+                        m_vif.mck.store_valid <= 1'b1;
+
+                        seq_item_port.item_done();
+                        // fork off a commit task
+                        // commit a couple of cycles later
+                        fork
+                            commit_block: begin
+                                sem.get(1);
+                                @(m_vif.mck)
+                                m_vif.mck.commit <= 1'b1;
+                                @(m_vif.mck)
+                                m_vif.mck.commit <= 1'b0;
+                                sem.put(1);
+                            end
+                        join_none
+                    end else begin
+                        m_vif.mck.store_valid <= 1'b0;
+                    end
+                end
+            end
+        join_none
+
     endtask : run_phase
 
     function void build_phase(uvm_phase phase);

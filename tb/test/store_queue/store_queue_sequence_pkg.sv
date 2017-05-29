@@ -17,9 +17,10 @@
 package store_queue_sequence_pkg;
 
     import store_queue_if_agent_pkg::*;
+    import dcache_if_agent_pkg::*;
     import uvm_pkg::*;
 
     `include "uvm_macros.svh"
-    // Include your sequences here e.g.:
-    // `include "fibonacci_sequence.svh"
+    `include "store_queue_sequence.svh"
+
 endpackage

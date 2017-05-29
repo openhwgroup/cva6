@@ -39,7 +39,7 @@ module store_queue_tb;
         .be_o             ( store_queue.check_be         ),
         .commit_i         ( store_queue.commit           ),
         .ready_o          ( store_queue.ready            ),
-        .valid_i          ( store_queue.store_valid      ),
+        .valid_i          ( store_queue.store_valid & store_queue.ready ),
         .paddr_i          ( store_queue.store_paddr      ),
         .data_i           ( store_queue.store_data       ),
         .be_i             ( store_queue.store_be         ),
@@ -65,16 +65,6 @@ module store_queue_tb;
         rst_ni = 1'b1;
         forever
             #10ns clk = ~clk;
-    end
-
-    // // combinatorial signals
-    // assign store_queue.store_valid = store_valid & store_queue.ready;
-    // assign slave.data_gnt = slave_data_gnt;
-
-    // simulator stopper, this is suboptimal better go for coverage
-    initial begin
-        #1000000ns
-        $stop;
     end
 
     program testbench (dcache_if slave, store_queue_if store_queue);

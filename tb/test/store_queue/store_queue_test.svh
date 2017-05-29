@@ -17,8 +17,7 @@
 class store_queue_test extends store_queue_test_base;
     // UVM Factory Registration Macro
     `uvm_component_utils(store_queue_test)
-    // TODO: declare sequence here
-    // store_queue_sequence store_queue;
+    store_queue_sequence store_queue;
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -34,13 +33,11 @@ class store_queue_test extends store_queue_test_base;
 
     task run_phase(uvm_phase phase);
         phase.raise_objection(this, "store_queue_test");
-        //fibonacci_sequence fibonacci;
         super.run_phase(phase);
 
-        // store_queue = new("store_queue");
-        // TODO: Start sequence here
-        // store_queue.start(sequencer_h);
-        // Testlogic goes here
+        store_queue = new("store_queue");
+        // Start sequence here
+        store_queue.start(sequencer_h);
         #100ns;
 
         phase.drop_objection(this, "store_queue_test");
