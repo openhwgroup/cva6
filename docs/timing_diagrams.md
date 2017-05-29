@@ -23,18 +23,18 @@ Basic D$ Memory Request:
 D$ Miss followed by another request (a hit in that case):
 <script type="WaveDrom">
 {signal: [
-  {name: 'clk',         wave: 'P....|.........'},
-  {name: 'data_index',  wave: 'x.234|....x....', data: ['index', 'index', 'index']},
-  {name: 'data_tag',    wave: 'x..2x|....34x..', data: ['tag', 'tag', 'tag']},
-  {name: 'data_wdata',  wave: 'x.234|....x....', data: ['data', 'data', 'data']},
-  {name: 'data_req',    wave: '0.1..|....0....'},
-  {name: 'data_gnt',    wave: '0.1.0|...10....'},
-  {name: 'tag_valid',   wave: '0..10|....1.0..'},
-  {name: 'kill_req',    wave: '0....|.........'},
-  {name: 'data_rvalid', wave: '0....|...1..0..'},
-  {name: 'data_rdata',  wave: 'x....|...234x..', data: ['rdata', 'rdata', 'rdata']},
-  {name: 'data_we',     wave: 'x.234|....x....', data: ['we', 'we', 'we']},
-  {name: 'data_be',     wave: 'x.234|....x....', data: ['be', 'be', 'be']}
+  {name: 'clk',         wave: 'P.....|.........'},
+  {name: 'data_index',  wave: 'x.234.|....x....', data: ['index', 'index', 'index']},
+  {name: 'data_tag',    wave: 'x..23x|....4x...', data: ['tag', 'tag', 'tag']},
+  {name: 'data_wdata',  wave: 'x.234.|....x....', data: ['data', 'data', 'data']},
+  {name: 'data_req',    wave: '0.1...|....0....'},
+  {name: 'data_gnt',    wave: '0.1.0.|...10....'},
+  {name: 'tag_valid',   wave: '0..1.0|0...10...'},
+  {name: 'kill_req',    wave: '0.....|.........'},
+  {name: 'data_rvalid', wave: '0.....|..1..0...'},
+  {name: 'data_rdata',  wave: 'x.....|..234x...', data: ['rdata', 'rdata', 'rdata']},
+  {name: 'data_we',     wave: 'x.234.|....x....', data: ['we', 'we', 'we']},
+  {name: 'data_be',     wave: 'x.234.|....x....', data: ['be', 'be', 'be']}
 ]}
 </script>
 
