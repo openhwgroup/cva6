@@ -33,6 +33,91 @@ class dcache_if_driver extends uvm_driver #(dcache_if_seq_item);
 
     task run_phase(uvm_phase phase);
         dcache_if_seq_item cmd;
+
+        // --------------
+        // Slave Port
+        // --------------
+        // this driver is configured as a SLAVE
+        if (m_cfg.dcache_if_config inside {SLAVE, SLAVE_REPLAY, SLAVE_NO_RANDOM}) begin
+            // grant process is combinatorial
+            fork
+                slave_gnt: begin
+                    m_vif.mck.data_gnt <= 1'b1;
+                    // we don't to give random grants
+                    // instead we always grant immediately
+                    if (m_cfg.dcache_if_config != SLAVE_NO_RANDOM) begin
+                        forever begin
+                            // randomize grant delay - the grant may come in the same clock cycle
+                            repeat ($urandom_range(0,3)) @(m_vif.mck);
+                            m_vif.mck.data_gnt <= 1'b1;
+                            repeat ($urandom_range(0,3)) @(m_vif.mck);
+                            m_vif.mck.data_gnt <= 1'b0;
+                        end
+                    end
+                end
+                slave_serve: begin
+                    m_vif.mck.data_rdata  <= 32'b0;
+                    // apply stimuli for instruction interface
+                    forever begin
+                        @(m_vif.mck)
+                        m_vif.mck.data_rvalid <= 1'b0;
+                        fork
+                            // replay interface
+                            mem_read: begin
+
+                            end
+                            mem_write: begin
+
+                            end
+                        join_none
+                    end
+                end
+            join_none
+
+        // although no other option exist lets be specific about its purpose
+        // -> this is a master interface
+        // --------------
+        // Master Port
+        // --------------
+        end else if (m_cfg.dcache_if_config == MASTER) begin
+            // request a read
+            // initial statements, sane resets
+            m_vif.sck.data_req        <= 1'b0;
+            m_vif.sck.address_index   <= 12'b0;
+            m_vif.sck.address_tag     <= 44'b0;
+            m_vif.sck.data_be         <= 7'b0;
+            m_vif.sck.data_we         <= 1'b0;
+            m_vif.sck.tag_valid       <= 1'b0;
+            m_vif.sck.kill_req        <= 1'b0;
+            m_vif.sck.data_wdata      <= 64'b0;
+            // request read or write
+            // we don't care about results at this point
+            forever begin
+                seq_item_port.get_next_item(cmd);
+                    // do begin
+                m_vif.sck.data_req      <= 1'b1;
+                m_vif.sck.address_index <= cmd.address[11:0];
+                m_vif.sck.data_be       <= cmd.be;
+                m_vif.sck.data_we       <= (cmd.mode == READ) ? 1'b0 : 1'b1;
+                m_vif.sck.data_wdata    <= cmd.data;
+
+                @(m_vif.sck iff m_vif.sck.data_gnt);
+                m_vif.sck.address_tag   <= cmd.address[43:12];
+                m_vif.sck.tag_valid     <= 1'b1;
+                m_vif.sck.data_req      <= 1'b0;
+
+                // delay the next request
+                // if there is delay, wait one clock cycle and set the tag valid back to zero
+                if (cmd.requestDelay != 0) begin
+                    @(m_vif.sck);
+                    m_vif.sck.tag_valid <= 1'b0;
+                end
+                repeat (cmd.requestDelay-1) @(m_vif.sck);
+
+                seq_item_port.item_done();
+            end
+        end
+
         seq_item_port.get_next_item(cmd);
 
         seq_item_port.item_done();

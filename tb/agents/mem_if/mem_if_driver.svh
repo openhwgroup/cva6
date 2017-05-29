@@ -88,7 +88,7 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
                                     // $display("Time: %t, Pushing", $time);
                                     address.push_back(fu.mck.address);
                                     if (address.size() != 0) begin
-                                        // we an wait a couple of cycles here
+                                        // we can wait a couple of cycles here
                                         // but at least one
                                         lock.get(1);
                                         // we give the rvalid in the next cycle if didn't request randomization

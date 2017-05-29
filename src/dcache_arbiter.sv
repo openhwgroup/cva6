@@ -19,15 +19,6 @@
 //
 import ariane_pkg::*;
 
-// ---------------
-// D$ Tag Status
-// ---------------
-`define WAIT_TRANSLATION  2'b00
-`define VALID_TRANSLATION 2'b01
-`define ABORT_TRANSLATION 2'b10
-`define NOT_IMPL          2'b11
-
-
 module dcache_arbiter #(
         parameter int NR_PORTS = 3
     )
