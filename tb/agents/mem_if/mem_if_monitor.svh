@@ -59,7 +59,7 @@ class mem_if_monitor extends uvm_component;
             // detect a request
             forever begin
                 // wait until detecting a valid request -> store be and address
-                @(fu.pck iff (fu.pck.data_gnt & fu.pck.data_req));
+                @(fu.pck iff (fu.pck.data_gnt && fu.pck.data_req));
                 // if (m_cfg.mem_if_config == MASTER)
                 // $display("Pushing Address: %0h", fu.pck.address);
                 address.push_back(fu.pck.address);
