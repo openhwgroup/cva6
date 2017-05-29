@@ -22,7 +22,9 @@ class store_queue_if_seq_item extends uvm_sequence_item;
     //------------------------------------------
     // Data Members (Outputs rand, inputs non-rand)
     //------------------------------------------
-    // TODO: set data members
+    rand logic [63:0] address;
+    rand logic [63:0] data;
+    rand logic [7:0]  be;
 
     //------------------------------------------
     // Methods
@@ -53,8 +55,8 @@ class store_queue_if_seq_item extends uvm_sequence_item;
           `uvm_error("do_copy", "cast of rhs object failed")
           return 0;
         end
-        // TODO
-        return super.do_compare(rhs, comparer); // && operator == rhs_.operator
+
+        return super.do_compare(rhs, comparer) && rhs_.address == address && rhs_.data == data && rhs_.be == be;
 
     endfunction:do_compare
 
@@ -63,8 +65,7 @@ class store_queue_if_seq_item extends uvm_sequence_item;
 
         $sformat(s, "%s\n", super.convert2string());
         // Convert to string function reusing s:
-        // TODO
-        // $sformat(s, "%s\n operator\n", s, operator);
+        $sformat(s, "Address: %0h, Data: %0h, BE: %0h", this.address, this.data, this.be);
         return s;
 
     endfunction:convert2string
@@ -82,8 +83,9 @@ class store_queue_if_seq_item extends uvm_sequence_item;
         super.do_record(recorder);
 
         // Use the record macros to record the item fields:
-        // TODO
-        // `uvm_record_field("operator", operator)
+        `uvm_record_field("address", address)
+        `uvm_record_field("data", data)
+        `uvm_record_field("be", be)
     endfunction:do_record
 
 endclass : store_queue_if_seq_item
