@@ -33,6 +33,11 @@ class dcache_if_driver extends uvm_driver #(dcache_if_seq_item);
 
     task run_phase(uvm_phase phase);
         dcache_if_seq_item cmd;
+        logic [11:0] address_index [$];
+        logic [43:0] address_tag   [$];
+        logic [55:0] address_out;
+
+        semaphore lock = new(1);
 
         // --------------
         // Slave Port
@@ -64,7 +69,24 @@ class dcache_if_driver extends uvm_driver #(dcache_if_seq_item);
                         fork
                             // replay interface
                             mem_read: begin
-
+                                // we've got a new request
+                                if (m_vif.pck.data_gnt && m_vif.mck.data_req) begin
+                                    // push the low portion of the address a.k.a. the index
+                                    address_index.push_back(m_vif.mck.address_index);
+                                    lock.get(1);
+                                    // wait a couple of cycles, but at least one
+                                    @(m_vif.mck);
+                                    // in this cycle the tag is ready
+                                    address_tag.push_back(m_vif.mck.address_tag);
+                                    // randomize rvalid here
+                                    repeat ($urandom_range(0,2)) @(m_vif.mck);
+                                    m_vif.mck.data_rvalid <= 1'b1;
+                                    // compose the address
+                                    address_out = {address_tag.pop_front(), address_index.pop_front()};
+                                    // put back the lock
+                                    lock.put(1);
+                                end else
+                                    m_vif.mck.data_rvalid <= 1'b0;
                             end
                             mem_write: begin
 

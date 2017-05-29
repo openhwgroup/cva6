@@ -48,9 +48,7 @@ class mem_if_driver extends uvm_driver #(mem_if_seq_item);
 
             logic [63:0] address [$];
             logic [63:0] addr;
-            logic slave_data_gnt;
             semaphore lock = new(1);
-            slave_data_gnt = 1'b1;
 
             // we serve all requests from the memory file we store in our configuration object
             // read memory file
