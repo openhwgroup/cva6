@@ -1,44 +1,72 @@
 # Timing Diagrams
 
-## Memory Interface
+## D$ Interface
 
-Basic Memory Request:
+Basic D$ Memory Request:
 <script type="WaveDrom">
 {signal: [
   {name: 'clk',         wave: 'P..........'},
-  {name: 'data_addr',   wave: 'x..2..x....', data: ['address']},
+  {name: 'data_index',  wave: 'x..2..x....', data: ['index']},
+  {name: 'data_tag',    wave: 'x.....2x...', data: ['tag']},
   {name: 'data_wdata',  wave: 'x..2..x....', data: ['wdata']},
   {name: 'data_req',    wave: '0..1..0....'},
   {name: 'data_gnt',    wave: '0....10....'},
-  {name: 'data_rvalid', wave: '0.....1.0..'},
-  {name: 'data_rdata',  wave: 'x.....2.x..', data: ['rdata']},
+  {name: 'tag_valid',   wave: '0.....10...'},
+  {name: 'kill_req',    wave: '0..........'},
+  {name: 'data_rvalid', wave: '0.....10...'},
+  {name: 'data_rdata',  wave: 'x.....2x...', data: ['rdata']},
   {name: 'data_we',     wave: 'x..2..x....', data: ['we']},
   {name: 'data_be',     wave: 'x..2..x....', data: ['be']}
 ]}
 </script>
 
-Slow memory response:
+D$ Miss followed by another request (a hit in that case):
 <script type="WaveDrom">
 {signal: [
   {name: 'clk',         wave: 'P....|.........'},
-  {name: 'data_addr',   wave: 'x..2.|....x....', data: ['address']},
+  {name: 'data_index',  wave: 'x.234|....x....', data: ['index', 'index', 'index']},
+  {name: 'data_tag',    wave: 'x..2x|....34x..', data: ['tag', 'tag', 'tag']},
+  {name: 'data_wdata',  wave: 'x.234|....x....', data: ['data', 'data', 'data']},
+  {name: 'data_req',    wave: '0.1..|....0....'},
+  {name: 'data_gnt',    wave: '0.1.0|...10....'},
+  {name: 'tag_valid',   wave: '0..10|....1.0..'},
+  {name: 'kill_req',    wave: '0....|.........'},
+  {name: 'data_rvalid', wave: '0....|...1..0..'},
+  {name: 'data_rdata',  wave: 'x....|...234x..', data: ['rdata', 'rdata', 'rdata']},
+  {name: 'data_we',     wave: 'x.234|....x....', data: ['we', 'we', 'we']},
+  {name: 'data_be',     wave: 'x.234|....x....', data: ['be', 'be', 'be']}
+]}
+</script>
+
+Slow D$ response:
+<script type="WaveDrom">
+{signal: [
+  {name: 'clk',         wave: 'P....|.........'},
+  {name: 'data_index',  wave: 'x..2.|....x....', data: ['index']},
+  {name: 'data_tag',    wave: 'x....|....2x...', data: ['tag']},
   {name: 'data_wdata',  wave: 'x..2.|....x....', data: ['wdata']},
   {name: 'data_req',    wave: '0..1.|....0....'},
   {name: 'data_gnt',    wave: '0....|...10....'},
-  {name: 'data_rvalid', wave: '0....|......1.0'},
-  {name: 'data_rdata',  wave: 'x....|......2.x', data: ['rdata']},
+  {name: 'tag_valid',   wave: '0....|....10...'},
+  {name: 'kill_req',    wave: '0....|.........'},
+  {name: 'data_rvalid', wave: '0....|......10.'},
+  {name: 'data_rdata',  wave: 'x....|......2x.', data: ['rdata']},
   {name: 'data_we',     wave: 'x..2.|....x....', data: ['we']},
   {name: 'data_be',     wave: 'x..2.|....x....', data: ['be']}
 ]}
 </script>
-Fast back to back memory response:
+
+Fast back to back D$ response:
 <script type="WaveDrom">
 {signal: [
   {name: 'clk',         wave: 'P........'},
-  {name: 'data_addr',   wave: 'x..2345x.', data: ['a1', 'a2', 'a3', 'a4']},
+  {name: 'data_index',  wave: 'x..2345x.', data: ['a1', 'a2', 'a3', 'a4']},
+  {name: 'data_tag',    wave: 'x...2345x', data: ['a1', 'a2', 'a3', 'a4']},
   {name: 'data_wdata',  wave: 'x..2345x.', data: ['w1', 'w2', 'w3', 'w4']},
   {name: 'data_req',    wave: '0..1...0.'},
   {name: 'data_gnt',    wave: '0..1...0.'},
+  {name: 'tag_valid',   wave: '0...1...0'},
+  {name: 'kill_req',    wave: '0........'},
   {name: 'data_rvalid', wave: '0...1...0'},
   {name: 'data_rdata',  wave: 'x...2345x', data: ['r1', 'r2', 'r3', 'r4']},
   {name: 'data_we',     wave: 'x..2345x.', data: ['we1', 'we2', 'we3', 'we4']},
@@ -46,7 +74,25 @@ Fast back to back memory response:
 ]}
 </script>
 
-## LSU
+Aborted D$ request (with a new back to back request):
+<script type="WaveDrom">
+{signal: [
+  {name: 'clk',         wave: 'P..........'},
+  {name: 'data_index',  wave: 'x..2..3x...', data: ['index', 'index']},
+  {name: 'data_tag',    wave: 'x......3x..', data: ['tag']},
+  {name: 'data_wdata',  wave: 'x..2..x....', data: ['wdata']},
+  {name: 'data_req',    wave: '0..1...0...'},
+  {name: 'data_gnt',    wave: '0....1.0...'},
+  {name: 'tag_valid',   wave: '0.....1.0..'},
+  {name: 'kill_req',    wave: '0.....10...'},
+  {name: 'data_rvalid', wave: '0.....1.0..'},
+  {name: 'data_rdata',  wave: 'x......3x..', data: ['rdata']},
+  {name: 'data_we',     wave: 'x..2..3x...', data: ['we', 'we']},
+  {name: 'data_be',     wave: 'x..2..3x...', data: ['be', 'be']}
+]}
+</script>
+
+<!-- ## LSU
 
 - **Multicycle D$ access**: Making the path to the cache a multicycle path. This will give enough headroom for the memories to propagate their output.
 
@@ -109,7 +155,7 @@ Fast back to back memory response:
   {name: 'data_we',             wave: '0..10..10.....'},
   {name: 'data_be',             wave: 'x..23x.4x.5x..', data: ['be1', 'be2', 'be3', 'be4']}
 ]}
-</script>
+</script> -->
 
 ## Functional Unit
 <script type="WaveDrom">
