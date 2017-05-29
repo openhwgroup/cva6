@@ -38,24 +38,30 @@ module store_queue (
     input  logic [63:0]  paddr_i,  // physical address of store which needs to be placed in the queue
     input  logic [63:0]  data_i,   // data which is placed in the queue
     input  logic [7:0]   be_i,     // byte enable in
-
     // D$ interface
-    output logic [63:0]  address_o,
+    output logic [11:0]  address_index_o,
+    output logic [43:0]  address_tag_o,
     output logic [63:0]  data_wdata_o,
     output logic         data_req_o,
     output logic         data_we_o,
     output logic [7:0]   data_be_o,
-    output logic [1:0]   data_tag_status_o,
+    output logic         kill_req_o,
+    output logic         tag_valid_o,
     input  logic         data_gnt_i,
     input  logic         data_rvalid_i
     );
+    // we need to keep the tag portion of the address for a cycle later
+    logic [43:0] address_tag_n, address_tag_q;
+    logic        tag_valid_n, tag_valid_q;
 
     // the store queue has two parts:
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
     // For simplicity reasons we just keep those two elements and not one real queue
     // should it turn out that this bottlenecks we can still increase the capacity here
-    // potentially at the cost of increased area.
+    // at the cost of increased area and worse timing since we need to check all addresses which are committed for
+    // potential aliasing.
+    //
     // In the current implementation this is represented by a single entry and
     // differentiated by the is_speculative flag.
 
@@ -73,11 +79,17 @@ module store_queue (
     assign be_o              = commit_queue_q.be;
     assign valid_o           = commit_queue_q.valid;
 
-    // those signals can directly be output to the memory if
-    assign address_o         = commit_queue_q.address;
+    // those signals can directly be output to the memory
+    assign address_index_o   = commit_queue_q.address[11:0];
+    // if we got a new request we already saved the tag from the previous cycle
+    assign address_tag_o     = address_tag_q;
     assign data_wdata_o      = commit_queue_q.data;
     assign data_be_o         = commit_queue_q.be;
-    assign data_tag_status_o = 2'b01; // the tag is always ready since we are using physical addresses
+    assign tag_valid_o       = tag_valid_q;
+    // we will never kill a request in the store buffer since we already know that the translation is valid
+    // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
+    assign kill_req_o        = 1'b0;
+
     // memory interface
     always_comb begin : store_if
         // if there is no commit pending and the uncommitted queue is empty as well we can accept the request
@@ -86,7 +98,9 @@ module store_queue (
         automatic logic ready = ~commit_queue_q.valid | data_gnt_i;
         ready_o               =  ready & ~flush_i;
 
+        address_tag_n  = address_tag_q;
         commit_queue_n = commit_queue_q;
+        tag_valid_n    = 1'b0;
 
         data_we_o    = 1'b1; // we will always write in the store queue
         data_req_o   = 1'b0;
@@ -99,10 +113,13 @@ module store_queue (
             // by looking at the is_speculative flag
             if (commit_queue_q.valid && (~commit_queue_q.is_speculative || commit_i)) begin
                 data_req_o = 1'b1;
-                // advance to the next state if we received the grant
                 if (data_gnt_i) begin
                     // we can evict it from the commit buffer
                     commit_queue_n.valid = 1'b0;
+                    // save the tag portion
+                    address_tag_n        = commit_queue_q.address[55:12];
+                    // signal a valid tag the cycle afterwards
+                    tag_valid_n          = 1'b1;
                 end
             end
             // we ignore the rvalid signal for now as we assume that the store
@@ -135,9 +152,13 @@ module store_queue (
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
         if(~rst_ni) begin
-           commit_queue_q  <= '{default: 0};
+            address_tag_q  <= 'b0;
+            tag_valid_q    <= 1'b0;
+            commit_queue_q <= '{default: 0};
         end else begin
             commit_queue_q <= commit_queue_n;
+            tag_valid_q    <= tag_valid_n;
+            address_tag_q  <= address_tag_n;
         end
      end
     `ifndef SYNTHESIS

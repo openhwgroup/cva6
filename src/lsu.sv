@@ -59,13 +59,15 @@ module lsu #(
     input  logic                     instr_if_data_gnt_i,
     input  logic                     instr_if_data_rvalid_i,
     input  logic [31:0]              instr_if_data_rdata_i,
-    // Data memory/cache
-    output logic [63:0]              data_if_address_o,
+    // Data cache
+    output logic [11:0]              data_if_address_index_o,
+    output logic [43:0]              data_if_address_tag_o,
     output logic [63:0]              data_if_data_wdata_o,
     output logic                     data_if_data_req_o,
     output logic                     data_if_data_we_o,
     output logic [7:0]               data_if_data_be_o,
-    output logic [1:0]               data_if_tag_status_o,
+    output logic                     data_if_kill_req_o,
+    output logic                     data_if_tag_valid_o,
     input  logic                     data_if_data_gnt_i,
     input  logic                     data_if_data_rvalid_i,
     input  logic [63:0]              data_if_data_rdata_i,
@@ -131,40 +133,47 @@ module lsu #(
     // ---------------
     // Memory Arbiter
     // ---------------
-    logic [2:0][63:0]         address_i;
+    logic [2:0][11:0]         address_index_i;
+    logic [2:0][43:0]         address_tag_i;
     logic [2:0][63:0]         data_wdata_i;
     logic [2:0]               data_req_i;
     logic [2:0]               data_we_i;
+    logic [2:0]               kill_req_i;
+    logic [2:0]               tag_valid_i;
     logic [2:0][7:0]          data_be_i;
-    logic [2:0][1:0]          data_tag_status_i;
     logic [2:0]               data_gnt_o;
     logic [2:0]               data_rvalid_o;
     logic [2:0][63:0]         data_rdata_o;
 
+    // decreasing priority
     // Port 0: PTW
     // Port 1: Load Unit
     // Port 2: Store Unit
-    mem_arbiter mem_arbiter_i (
+    dcache_arbiter dcache_arbiter_i (
         // to D$
-        .address_o         ( data_if_address_o     ),
-        .data_wdata_o      ( data_if_data_wdata_o  ),
-        .data_req_o        ( data_if_data_req_o    ),
-        .data_we_o         ( data_if_data_we_o     ),
-        .data_be_o         ( data_if_data_be_o     ),
-        .data_tag_status_o ( data_if_tag_status_o  ),
-        .data_gnt_i        ( data_if_data_gnt_i    ),
-        .data_rvalid_i     ( data_if_data_rvalid_i ),
-        .data_rdata_i      ( data_if_data_rdata_i  ),
+        .address_index_o   ( data_if_address_index_o ),
+        .address_tag_o     ( data_if_address_tag_o   ),
+        .data_wdata_o      ( data_if_data_wdata_o    ),
+        .data_req_o        ( data_if_data_req_o      ),
+        .data_we_o         ( data_if_data_we_o       ),
+        .data_be_o         ( data_if_data_be_o       ),
+        .kill_req_o        ( data_if_kill_req_o      ),
+        .tag_valid_o       ( data_if_tag_valid_o     ),
+        .data_gnt_i        ( data_if_data_gnt_i      ),
+        .data_rvalid_i     ( data_if_data_rvalid_i   ),
+        .data_rdata_i      ( data_if_data_rdata_i    ),
         // from PTW, Load Unit and Store Unit
-        .address_i         ( address_i             ),
-        .data_wdata_i      ( data_wdata_i          ),
-        .data_req_i        ( data_req_i            ),
-        .data_we_i         ( data_we_i             ),
-        .data_be_i         ( data_be_i             ),
-        .data_tag_status_i ( data_tag_status_i     ),
-        .data_gnt_o        ( data_gnt_o            ),
-        .data_rvalid_o     ( data_rvalid_o         ),
-        .data_rdata_o      ( data_rdata_o          ),
+        .address_index_i   ( address_index_i         ),
+        .address_tag_i     ( address_tag_i           ),
+        .data_wdata_i      ( data_wdata_i            ),
+        .data_req_i        ( data_req_i              ),
+        .data_we_i         ( data_we_i               ),
+        .data_be_i         ( data_be_i               ),
+        .kill_req_i        ( kill_req_i              ),
+        .tag_valid_i       ( tag_valid_i             ),
+        .data_gnt_o        ( data_gnt_o              ),
+        .data_rvalid_o     ( data_rvalid_o           ),
+        .data_rdata_o      ( data_rdata_o            ),
         .*
     );
 
@@ -182,15 +191,17 @@ module lsu #(
         .lsu_paddr_o            ( mmu_paddr            ),
         .lsu_exception_o        ( mmu_exception        ),
         // connecting PTW to D$ IF (aka mem arbiter
-        .data_if_address_o      ( address_i        [0] ),
-        .data_if_data_wdata_o   ( data_wdata_i     [0] ),
-        .data_if_data_req_o     ( data_req_i       [0] ),
-        .data_if_data_we_o      ( data_we_i        [0] ),
-        .data_if_data_be_o      ( data_be_i        [0] ),
-        .data_if_tag_status_o   ( data_tag_status_i[0] ),
-        .data_if_data_gnt_i     ( data_gnt_o       [0] ),
-        .data_if_data_rvalid_i  ( data_rvalid_o    [0] ),
-        .data_if_data_rdata_i   ( data_rdata_o     [0] ),
+        .data_if_address_index_o ( address_index_i  [0] ),
+        .data_if_address_tag_o   ( address_tag_i    [0] ),
+        .data_if_data_wdata_o    ( data_wdata_i     [0] ),
+        .data_if_data_req_o      ( data_req_i       [0] ),
+        .data_if_data_we_o       ( data_we_i        [0] ),
+        .data_if_data_be_o       ( data_be_i        [0] ),
+        .data_if_kill_req_o      ( kill_req_i       [0] ),
+        .data_if_tag_valid_o     ( tag_valid_i      [0] ),
+        .data_if_data_gnt_i      ( data_gnt_o       [0] ),
+        .data_if_data_rvalid_i   ( data_rvalid_o    [0] ),
+        .data_if_data_rdata_i    ( data_rdata_o     [0] ),
         .*
     );
     // ------------------
@@ -219,13 +230,15 @@ module lsu #(
         .page_offset_matches_o ( page_offset_matches  ),
         // misaligned bypass
         .misaligned_ex_i       ( misaligned_exception ),
-        // Mem Arbiter
-        .address_o             ( address_i        [2] ),
+        // to memory arbiter
+        .address_index_o       ( address_index_i  [2] ),
+        .address_tag_o         ( address_tag_i    [2] ),
         .data_wdata_o          ( data_wdata_i     [2] ),
         .data_req_o            ( data_req_i       [2] ),
         .data_we_o             ( data_we_i        [2] ),
         .data_be_o             ( data_be_i        [2] ),
-        .data_tag_status_o     ( data_tag_status_i[2] ),
+        .kill_req_o            ( kill_req_i       [2] ),
+        .tag_valid_o           ( tag_valid_i      [2] ),
         .data_gnt_i            ( data_gnt_o       [2] ),
         .data_rvalid_i         ( data_rvalid_o    [2] ),
         .*
@@ -254,12 +267,15 @@ module lsu #(
         // to store unit
         .page_offset_o         ( page_offset          ),
         .page_offset_matches_i ( page_offset_matches  ),
-        .address_o             ( address_i        [1] ),
+        // to memory arbiter
+        .address_index_o       ( address_index_i  [1] ),
+        .address_tag_o         ( address_tag_i    [1] ),
         .data_wdata_o          ( data_wdata_i     [1] ),
         .data_req_o            ( data_req_i       [1] ),
         .data_we_o             ( data_we_i        [1] ),
         .data_be_o             ( data_be_i        [1] ),
-        .data_tag_status_o     ( data_tag_status_i[1] ),
+        .kill_req_o            ( kill_req_i       [1] ),
+        .tag_valid_o           ( tag_valid_i      [1] ),
         .data_gnt_i            ( data_gnt_o       [1] ),
         .data_rvalid_i         ( data_rvalid_o    [1] ),
         .data_rdata_i          ( data_rdata_o     [1] ),

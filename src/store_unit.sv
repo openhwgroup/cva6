@@ -47,13 +47,15 @@ module store_unit (
     output logic                     page_offset_matches_o,
     // misaligned bypass
     input  exception                 misaligned_ex_i,
-    // memory interface
-    output logic [63:0]              address_o,
+    // D$ interface
+    output logic [11:0]              address_index_o,
+    output logic [43:0]              address_tag_o,
     output logic [63:0]              data_wdata_o,
     output logic                     data_req_o,
     output logic                     data_we_o,
     output logic [7:0]               data_be_o,
-    output logic [1:0]               data_tag_status_o,
+    output logic                     kill_req_o,
+    output logic                     tag_valid_o,
     input  logic                     data_gnt_i,
     input  logic                     data_rvalid_i
 );

@@ -40,16 +40,16 @@ module core_mem (
     output logic [63:0]              data_if_data_rdata_o
 );
     // we always grant the access
-    assign instr_if_data_gnt_o = instr_if_data_req_i;
     localparam ADDRESS_WIDTH = 11;
 
     logic [ADDRESS_WIDTH-1:0] instr_address;
+    logic [ADDRESS_WIDTH-1:0] data_address;
     logic [2:0]               instr_address_offset_q;
+    logic [63:0]              instr_data;
 
-    assign instr_address = instr_if_address_i[ADDRESS_WIDTH-1+3:3];
 
-    logic  [63:0] instr_data;
-
+    assign instr_if_data_gnt_o   = instr_if_data_req_i;
+    assign instr_address         = instr_if_address_i[ADDRESS_WIDTH-1+3:3];
     assign instr_if_data_rdata_o = (instr_address_offset_q[2]) ? instr_data[63:32] : instr_data[31:0];
 
     dp_ram  #(
@@ -63,12 +63,13 @@ module core_mem (
         .rdata_a_o  ( instr_data           ),
         .we_a_i     ( 1'b0                 ), // r/o interface
         .be_a_i     (                      ),
+        // data RAM
         .en_b_i     ( ),
         .addr_b_i   ( ),
         .wdata_b_i  ( ),
         .rdata_b_o  ( ),
-        .we_b_i     ( ),
-        .be_b_i     ( )
+        .we_b_i     ( data_if_data_we_i ),
+        .be_b_i     ( data_if_data_be_i )
     );
 
 

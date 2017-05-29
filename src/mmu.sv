@@ -23,8 +23,8 @@ import ariane_pkg::*;
 
 module mmu #(
       parameter int INSTR_TLB_ENTRIES = 4,
-      parameter int DATA_TLB_ENTRIES = 4,
-      parameter int ASID_WIDTH = 1
+      parameter int DATA_TLB_ENTRIES  = 4,
+      parameter int ASID_WIDTH        = 1
     )
     (
         input logic                             clk_i,
@@ -63,12 +63,14 @@ module mmu #(
         input  logic                            instr_if_data_rvalid_i,
         input  logic [31:0]                     instr_if_data_rdata_i,
         // Data memory/cache
-        output logic [63:0]                     data_if_address_o,
+        output logic [11:0]                     data_if_address_index_o,
+        output logic [43:0]                     data_if_address_tag_o,
         output logic [63:0]                     data_if_data_wdata_o,
         output logic                            data_if_data_req_o,
         output logic                            data_if_data_we_o,
         output logic [7:0]                      data_if_data_be_o,
-        output logic [1:0]                      data_if_tag_status_o,
+        output logic                            data_if_kill_req_o,
+        output logic                            data_if_tag_valid_o,
         input  logic                            data_if_data_gnt_i,
         input  logic                            data_if_data_rvalid_i,
         input  logic [63:0]                     data_if_data_rdata_i
@@ -169,15 +171,15 @@ module mmu #(
         .ptw_error_o            ( ptw_error             ),
         .enable_translation_i   ( enable_translation_i  ),
 
-        .address_o              ( data_if_address_o     ),
-        .data_wdata_o           ( data_if_data_wdata_o  ),
-        .data_req_o             ( data_if_data_req_o    ),
-        .data_we_o              ( data_if_data_we_o     ),
-        .data_be_o              ( data_if_data_be_o     ),
-        .data_tag_status_o      ( data_if_tag_status_o  ),
-        .data_gnt_i             ( data_if_data_gnt_i    ),
-        .data_rvalid_i          ( data_if_data_rvalid_i ),
-        .data_rdata_i           ( data_if_data_rdata_i  ),
+        .address_o              (  ), // TODO
+        .data_wdata_o           (  ), // TODO
+        .data_req_o             (  ), // TODO
+        .data_we_o              (  ), // TODO
+        .data_be_o              (  ), // TODO
+        .data_tag_status_o      (  ), // TODO
+        .data_gnt_i             (  ), // TODO
+        .data_rvalid_i          (  ), // TODO
+        .data_rdata_i           (  ), // TODO
 
         .itlb_update_o          ( itlb_update           ),
         .dtlb_update_o          ( dtlb_update           ),

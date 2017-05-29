@@ -47,48 +47,57 @@ module load_unit (
     output logic [63:0]              vaddr_o,             // virtual address out
     input  logic [63:0]              paddr_i,             // physical address in
     input  logic                     translation_valid_i,
-    input  exception                 ex_i,
+    input  exception                 ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
     // address checker
     output logic [11:0]              page_offset_o,
     input  logic                     page_offset_matches_i,
-    // memory interface
-    output logic [63:0]              address_o,
+    // D$ interface
+    output logic [11:0]              address_index_o,
+    output logic [43:0]              address_tag_o,
     output logic [63:0]              data_wdata_o,
     output logic                     data_req_o,
     output logic                     data_we_o,
     output logic [7:0]               data_be_o,
-    output logic [1:0]               data_tag_status_o,
+    output logic                     kill_req_o,
+    output logic                     tag_valid_o,
     input  logic                     data_gnt_i,
     input  logic                     data_rvalid_i,
     input  logic [63:0]              data_rdata_i
 );
     enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, ABORT_TRANSLATION, WAIT_FLUSH} NS, CS;
-
+    // in order to decouple the response interface from the request interface we need a
+    // a queue which can hold all outstanding memory requests
     typedef struct packed {
         logic [TRANS_ID_BITS-1:0] trans_id;
         logic [2:0]               address_offset;
         fu_t                      operator;
     } rvalid_entry_t;
 
+    // queue control signal
     rvalid_entry_t in_data;
     logic          push;
     rvalid_entry_t out_data;
     logic          pop;
     logic          empty;
-
+    // register to save the physical address after address translation
+    // going directly to memory with this address will not work in-terms of timing (e.g.: the path to the memory
+    // is already super-critical with the address checker and memory arbiter on it).
     logic [63:0] paddr_n, paddr_q;
-    // page offset is defined as the lower 12 bits
+    // page offset is defined as the lower 12 bits, feed through for address checker
     assign page_offset_o = vaddr_i[11:0];
-    // feed-through the virtual address
+    // feed-through the virtual address for VA translation
     assign vaddr_o = vaddr_i;
     // this is a read-only interface so set the write enable to 0
     assign data_we_o = 1'b0;
+    // compose the queue data, control is handled in the FSM
     assign in_data = {trans_id_i, vaddr_i[2:0], operator_i};
+
     // output address
     // we can now output the lower 12 bit as the index to the cache
-    assign address_o [11:0] = vaddr_i[11:0];
-    // translation from last cycle
-    assign address_o[63:12] =  paddr_q[63:12];
+    assign address_index_o = vaddr_i[11:0];
+    // translation from last cycle, again: control is handled in the FSM
+    assign address_tag_o   = paddr_q[55:12];
+
     // ---------------
     // Load Control
     // ---------------
@@ -99,7 +108,9 @@ module load_unit (
         translation_req_o = 1'b0;
         ready_o           = 1'b1;
         data_req_o        = 1'b0;
-        data_tag_status_o = `WAIT_TRANSLATION;
+        // tag control
+        kill_req_o        = 1'b0;
+        tag_valid_o       = 1'b0;
         push              = 1'b0;
         data_be_o         = be_i;
         ex_o              = ex_i;
@@ -141,16 +152,20 @@ module load_unit (
                     end
                 end
             end
-            // we are here because of a TLB miss
+            // we are here because of a TLB miss, we need to abort the current request and give way for the
+            // PTW walker to satisfy the TLB miss
             ABORT_TRANSLATION: begin
                 // we are not ready here
                 ready_o = 1'b0;
                 // send an abort signal
-                data_tag_status_o = `ABORT_TRANSLATION;
+                tag_valid_o = 1'b1;
+                kill_req_o  = 1'b1;
                 // wait for the translation to become valid and redo the request
                 if (translation_valid_i) begin
                     // we have a valid translation so tell the cache it should wait for it on the next cycle
-                    data_tag_status_o = `WAIT_TRANSLATION;
+                    // reset the the kill request
+                    tag_valid_o = 1'b0;
+                    kill_req_o  = 1'b0;
                     // if the request is still here, do the load
                     if (valid_i) begin
 
@@ -190,9 +205,10 @@ module load_unit (
             end
 
             SEND_TAG: begin
-                ready_o = 1'b1;
+                ready_o     = 1'b1;
+                // tell the cache that this tag is valid
+                tag_valid_o = 1'b1;
                 // if we are sending our tag we are able to process a new request
-                data_tag_status_o = `VALID_TRANSLATION;
                 // -------------
                 // New Request
                 // -------------

@@ -56,29 +56,29 @@ test_mem_arbiter:
     paths:
       - covhtmlreport
 
-test_store_queue:
-  stage: test
-  before_script:
-    - make build library=store_queue_lib
-  script:
-    - make store_queue library=store_queue_lib
-    - vcover report store_queue.ucdb
-    - vcover report -html store_queue.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
+# test_store_queue:
+#   stage: test
+#   before_script:
+#     - make build library=store_queue_lib
+#   script:
+#     - make store_queue library=store_queue_lib
+#     - vcover report store_queue.ucdb
+#     - vcover report -html store_queue.ucdb
+#   artifacts:
+#     paths:
+#       - covhtmlreport
 
-test_lsu:
-  stage: test
-  before_script:
-    - make build library=lsu_lib
-  script:
-    - make lsu library=lsu_lib
-    - vcover report lsu.ucdb
-    - vcover report -html lsu.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
+# test_lsu:
+#   stage: test
+#   before_script:
+#     - make build library=lsu_lib
+#   script:
+#     - make lsu library=lsu_lib
+#     - vcover report lsu.ucdb
+#     - vcover report -html lsu.ucdb
+#   artifacts:
+#     paths:
+#       - covhtmlreport
 
 
 pages:

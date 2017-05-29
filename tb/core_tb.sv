@@ -60,50 +60,52 @@ module core_tb;
     );
 
     ariane dut (
-        .clk_i                  ( clk_i                ),
-        .rst_ni                 ( rst_ni               ),
-        .clock_en_i             ( core_if.clock_en     ),
-        .test_en_i              ( core_if.test_en      ),
-        .fetch_enable_i         ( core_if.fetch_enable ),
-        .core_busy_o            ( core_if.core_busy    ),
-        .ext_perf_counters_i    (                      ),
-        .boot_addr_i            ( core_if.boot_addr    ),
-        .core_id_i              ( core_if.core_id      ),
-        .cluster_id_i           ( core_if.cluster_id   ),
+        .clk_i                   ( clk_i                ),
+        .rst_ni                  ( rst_ni               ),
+        .clock_en_i              ( core_if.clock_en     ),
+        .test_en_i               ( core_if.test_en      ),
+        .fetch_enable_i          ( core_if.fetch_enable ),
+        .core_busy_o             ( core_if.core_busy    ),
+        .ext_perf_counters_i     (                      ),
+        .boot_addr_i             ( core_if.boot_addr    ),
+        .core_id_i               ( core_if.core_id      ),
+        .cluster_id_i            ( core_if.cluster_id   ),
 
-        .instr_if_address_o     ( instr_if_address     ),
-        .instr_if_data_req_o    ( instr_if_data_req    ),
-        .instr_if_data_be_o     ( instr_if_data_be     ),
-        .instr_if_data_gnt_i    ( instr_if_data_gnt    ),
-        .instr_if_data_rvalid_i ( instr_if_data_rvalid ),
-        .instr_if_data_rdata_i  ( instr_if_data_rdata  ),
+        .instr_if_address_o      ( instr_if_address     ),
+        .instr_if_data_req_o     ( instr_if_data_req    ),
+        .instr_if_data_be_o      ( instr_if_data_be     ),
+        .instr_if_data_gnt_i     ( instr_if_data_gnt    ),
+        .instr_if_data_rvalid_i  ( instr_if_data_rvalid ),
+        .instr_if_data_rdata_i   ( instr_if_data_rdata  ),
 
-        .data_if_address_o      ( data_if.address      ),
-        .data_if_data_wdata_o   ( data_if.data_wdata   ),
-        .data_if_data_req_o     ( data_if.data_req     ),
-        .data_if_data_we_o      ( data_if.data_we      ),
-        .data_if_data_be_o      ( data_if.data_be      ),
-        .data_if_tag_status_o   (                      ),
-        .data_if_data_gnt_i     ( data_if.data_gnt     ),
-        .data_if_data_rvalid_i  ( data_if.data_rvalid  ),
-        .data_if_data_rdata_i   ( data_if.data_rdata   ),
+        .data_if_address_index_o (                      ),
+        .data_if_address_tag_o   (                      ),
+        .data_if_data_wdata_o    ( data_if.data_wdata   ),
+        .data_if_data_req_o      ( data_if.data_req     ),
+        .data_if_data_we_o       ( data_if.data_we      ),
+        .data_if_data_be_o       ( data_if.data_be      ),
+        .data_if_kill_req_o      (                      ),
+        .data_if_tag_valid_o     (                      ),
+        .data_if_data_gnt_i      ( data_if.data_gnt     ),
+        .data_if_data_rvalid_i   ( data_if.data_rvalid  ),
+        .data_if_data_rdata_i    ( data_if.data_rdata   ),
 
-        .irq_i                  ( core_if.irq          ),
-        .irq_id_i               ( core_if.irq_id       ),
-        .irq_ack_o              ( core_if.irq_ack      ),
-        .irq_sec_i              ( core_if.irq_sec      ),
-        .sec_lvl_o              ( core_if.sec_lvl      ),
+        .irq_i                   ( core_if.irq          ),
+        .irq_id_i                ( core_if.irq_id       ),
+        .irq_ack_o               ( core_if.irq_ack      ),
+        .irq_sec_i               ( core_if.irq_sec      ),
+        .sec_lvl_o               ( core_if.sec_lvl      ),
 
-        .debug_req_i            (                      ),
-        .debug_gnt_o            (                      ),
-        .debug_rvalid_o         (                      ),
-        .debug_addr_i           (                      ),
-        .debug_we_i             (                      ),
-        .debug_wdata_i          (                      ),
-        .debug_rdata_o          (                      ),
-        .debug_halted_o         (                      ),
-        .debug_halt_i           (                      ),
-        .debug_resume_i         (                      )
+        .debug_req_i             (                      ),
+        .debug_gnt_o             (                      ),
+        .debug_rvalid_o          (                      ),
+        .debug_addr_i            (                      ),
+        .debug_we_i              (                      ),
+        .debug_wdata_i           (                      ),
+        .debug_rdata_o           (                      ),
+        .debug_halted_o          (                      ),
+        .debug_halt_i            (                      ),
+        .debug_resume_i          (                      )
     );
 
     // clock process
@@ -123,6 +125,7 @@ module core_tb;
         $display("Reading memory");
         $readmemh("test/add_test.v", rmem, 0);
 
+        // copy bitwise from verilog file
         for (int i = 0; i < 1024/8; i++) begin
             for (int j = 0; j < 8; j++)
                 core_mem_i.ram_i.mem[i][j] = rmem[i*8 + j];
