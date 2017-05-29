@@ -18,7 +18,7 @@ class mem_arbiter_scoreboard extends uvm_scoreboard;
     `uvm_component_utils(mem_arbiter_scoreboard);
     int slave_answer_cnt, master_answer_cnt;
 
-    uvm_analysis_imp #(mem_if_seq_item, mem_arbiter_scoreboard) item_export;
+    uvm_analysis_imp #(dcache_if_seq_item, mem_arbiter_scoreboard) item_export;
 
     function new(string name, uvm_component parent);
         super.new(name, parent);
@@ -31,13 +31,13 @@ class mem_arbiter_scoreboard extends uvm_scoreboard;
         master_answer_cnt = 0;
     endfunction : build_phase
 
-    virtual function void write (mem_if_seq_item seq_item);
+    virtual function void write (dcache_if_seq_item seq_item);
         // $display("%s", seq_item.convert2string());
         // the answer is from a master
         // the address and data should be the same when we use the replay system
         if (~seq_item.isSlaveAnswer) begin
             if (seq_item.address !== seq_item.data) begin
-                `uvm_error( "Mem Arbiter Scoreboard",  $sformatf("Got: %0h Expected: %0h", seq_item.address, seq_item.data) )
+                `uvm_error( "DCache Arbiter Scoreboard",  $sformatf("Got: %0h Expected: %0h", seq_item.address, seq_item.data) )
             end
             master_answer_cnt++;
         end else begin
@@ -50,9 +50,9 @@ class mem_arbiter_scoreboard extends uvm_scoreboard;
     virtual function void extract_phase( uvm_phase phase );
         super.extract_phase(phase);
         if (master_answer_cnt !== slave_answer_cnt) begin
-            `uvm_error("Mem Arbiter Scoreboard", $sformatf("Mismatch in overall result count. Expected: %d Got: %d", slave_answer_cnt, master_answer_cnt))
+            `uvm_error("DCache Arbiter Scoreboard", $sformatf("Mismatch in overall result count. Expected: %d Got: %d", slave_answer_cnt, master_answer_cnt))
         end else
-            `uvm_info("Mem Arbiter Scoreboard", $sformatf("Overall result count: Expected: %d Got: %d", slave_answer_cnt, master_answer_cnt), UVM_LOW)
+            `uvm_info("DCache Arbiter Scoreboard", $sformatf("Overall result count: Expected: %d Got: %d", slave_answer_cnt, master_answer_cnt), UVM_LOW)
     endfunction : extract_phase
 
 endclass : mem_arbiter_scoreboard

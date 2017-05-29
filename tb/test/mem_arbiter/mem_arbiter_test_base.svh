@@ -30,15 +30,15 @@ class mem_arbiter_test_base extends uvm_test;
     mem_arbiter_env_config m_env_cfg;
     // environment
     mem_arbiter_env m_env;
-    mem_if_sequencer sequencer_h[3];
+    dcache_if_sequencer sequencer_h[3];
 
     // reset_sequence reset;
     // ---------------------
     // Agent configuration
     // ---------------------
     // functional unit interface
-    mem_if_agent_config m_cfg_slave;
-    mem_if_agent_config m_cfg_masters[3];
+    dcache_if_agent_config m_cfg_slave;
+    dcache_if_agent_config m_cfg_masters[3];
 
     //------------------------------------------
     // Methods
@@ -55,39 +55,39 @@ class mem_arbiter_test_base extends uvm_test;
         m_env_cfg = mem_arbiter_env_config::type_id::create("m_env_cfg");
         // create agent configurations and assign interfaces
         // create a slave configuration
-        m_cfg_slave = mem_if_agent_config::type_id::create("m_cfg_slave");
-        m_env_cfg.m_mem_if_slave_agent = m_cfg_slave;
-        m_env_cfg.m_mem_if_slave_agent.mem_if_config = SLAVE_REPLAY;
+        m_cfg_slave = dcache_if_agent_config::type_id::create("m_cfg_slave");
+        m_env_cfg.m_dcache_if_slave_agent = m_cfg_slave;
+        m_env_cfg.m_dcache_if_slave_agent.dcache_if_config = SLAVE_REPLAY;
 
         // create agent memory master configuration
-        m_cfg_masters[0] = mem_if_agent_config::type_id::create("m_cfg_master0");
-        m_env_cfg.m_mem_if_master_agents[0] = m_cfg_masters[0];
-        m_env_cfg.m_mem_if_master_agents[0].mem_if_config = MASTER;
+        m_cfg_masters[0] = dcache_if_agent_config::type_id::create("m_cfg_master0");
+        m_env_cfg.m_dcache_if_master_agents[0] = m_cfg_masters[0];
+        m_env_cfg.m_dcache_if_master_agents[0].dcache_if_config = MASTER;
 
-        m_cfg_masters[1] = mem_if_agent_config::type_id::create("m_cfg_master1");
-        m_env_cfg.m_mem_if_master_agents[1] = m_cfg_masters[1];
-        m_env_cfg.m_mem_if_master_agents[1].mem_if_config = MASTER;
+        m_cfg_masters[1] = dcache_if_agent_config::type_id::create("m_cfg_master1");
+        m_env_cfg.m_dcache_if_master_agents[1] = m_cfg_masters[1];
+        m_env_cfg.m_dcache_if_master_agents[1].dcache_if_config = MASTER;
 
-        m_cfg_masters[2] = mem_if_agent_config::type_id::create("m_cfg_master2");
-        m_env_cfg.m_mem_if_master_agents[2] = m_cfg_masters[2];
-        m_env_cfg.m_mem_if_master_agents[2].mem_if_config = MASTER;
+        m_cfg_masters[2] = dcache_if_agent_config::type_id::create("m_cfg_master2");
+        m_env_cfg.m_dcache_if_master_agents[2] = m_cfg_masters[2];
+        m_env_cfg.m_dcache_if_master_agents[2].dcache_if_config = MASTER;
         // Get Virtual Interfaces
         // get master interface DB
-        if (!uvm_config_db #(virtual mem_if)::get(this, "", "mem_if_slave", m_cfg_slave.fu))
-            `uvm_fatal("VIF CONFIG", "Cannot get() interface mem_if from uvm_config_db. Have you set() it?")
-        m_env_cfg.m_mem_if_slave = m_cfg_slave.fu;
+        if (!uvm_config_db #(virtual dcache_if)::get(this, "", "dcache_if_slave", m_cfg_slave.m_vif))
+            `uvm_fatal("VIF CONFIG", "Cannot get() interface dcache_if from uvm_config_db. Have you set() it?")
+        m_env_cfg.m_dcache_if_slave = m_cfg_slave.m_vif;
 
-        if (!uvm_config_db #(virtual mem_if)::get(this, "", "mem_if_master0", m_cfg_masters[0].fu))
-            `uvm_fatal("VIF CONFIG", "Cannot get() interface mem_if from uvm_config_db. Have you set() it?")
-        m_env_cfg.m_mem_if_masters[0] = m_cfg_slave.fu;
+        if (!uvm_config_db #(virtual dcache_if)::get(this, "", "dcache_if_master0", m_cfg_masters[0].m_vif))
+            `uvm_fatal("VIF CONFIG", "Cannot get() interface dcache_if from uvm_config_db. Have you set() it?")
+        m_env_cfg.m_dcache_if_masters[0] = m_cfg_slave.m_vif;
 
-        if (!uvm_config_db #(virtual mem_if)::get(this, "", "mem_if_master1", m_cfg_masters[1].fu))
-            `uvm_fatal("VIF CONFIG", "Cannot get() interface mem_if from uvm_config_db. Have you set() it?")
-        m_env_cfg.m_mem_if_masters[1] = m_cfg_slave.fu;
+        if (!uvm_config_db #(virtual dcache_if)::get(this, "", "dcache_if_master1", m_cfg_masters[1].m_vif))
+            `uvm_fatal("VIF CONFIG", "Cannot get() interface dcache_if from uvm_config_db. Have you set() it?")
+        m_env_cfg.m_dcache_if_masters[1] = m_cfg_slave.m_vif;
 
-        if (!uvm_config_db #(virtual mem_if)::get(this, "", "mem_if_master2", m_cfg_masters[2].fu))
-            `uvm_fatal("VIF CONFIG", "Cannot get() interface mem_if from uvm_config_db. Have you set() it?")
-        m_env_cfg.m_mem_if_masters[2] = m_cfg_slave.fu;
+        if (!uvm_config_db #(virtual dcache_if)::get(this, "", "dcache_if_master2", m_cfg_masters[2].m_vif))
+            `uvm_fatal("VIF CONFIG", "Cannot get() interface dcache_if from uvm_config_db. Have you set() it?")
+        m_env_cfg.m_dcache_if_masters[2] = m_cfg_slave.m_vif;
 
         // create environment
         uvm_config_db #(mem_arbiter_env_config)::set(this, "*", "mem_arbiter_env_config", m_env_cfg);
@@ -96,9 +96,9 @@ class mem_arbiter_test_base extends uvm_test;
     endfunction
 
     function void end_of_elaboration_phase(uvm_phase phase);
-        sequencer_h[0] = m_env.m_mem_if_sequencers[0];
-        sequencer_h[1] = m_env.m_mem_if_sequencers[1];
-        sequencer_h[2] = m_env.m_mem_if_sequencers[2];
+        sequencer_h[0] = m_env.m_dcache_if_sequencers[0];
+        sequencer_h[1] = m_env.m_dcache_if_sequencers[1];
+        sequencer_h[2] = m_env.m_dcache_if_sequencers[2];
     endfunction
 
     task run_phase(uvm_phase phase);

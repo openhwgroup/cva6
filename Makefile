@@ -11,7 +11,7 @@ test_top_level = core_tb
 # utility modules
 util = $(wildcard src/util/*.sv)
 # test targets
-tests = alu scoreboard fifo mem_arbiter store_queue lsu core fetch_fifo
+tests = alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
 # UVM agents
 agents = include/ariane_pkg.svh $(wildcard tb/agents/*/*.sv)
 # path to interfaces

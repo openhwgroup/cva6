@@ -18,7 +18,7 @@
 // University of Bologna.
 //
 
-module mem_arbiter_tb;
+module dcache_arbiter_tb;
 
     import uvm_pkg::*;
     // import the main test class
@@ -81,14 +81,14 @@ module mem_arbiter_tb;
     program testbench (dcache_if master[3], dcache_if slave);
         initial begin
             // register the memory interface
-            // uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if_slave", slave);
-            // uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if_master0", master[0]);
-            // uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if_master1", master[1]);
-            // uvm_config_db #(virtual mem_if)::set(null, "uvm_test_top", "mem_if_master2", master[2]);
+            uvm_config_db #(virtual dcache_if)::set(null, "uvm_test_top", "dcache_if_slave", slave);
+            uvm_config_db #(virtual dcache_if)::set(null, "uvm_test_top", "dcache_if_master0", master[0]);
+            uvm_config_db #(virtual dcache_if)::set(null, "uvm_test_top", "dcache_if_master1", master[1]);
+            uvm_config_db #(virtual dcache_if)::set(null, "uvm_test_top", "dcache_if_master2", master[2]);
             // print the topology
             uvm_top.enable_print_topology = 1;
             // Start UVM test
-            // run_test();
+            run_test();
         end
     endprogram
 

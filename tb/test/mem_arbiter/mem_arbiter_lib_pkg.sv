@@ -19,7 +19,7 @@ package mem_arbiter_lib_pkg;
     import uvm_pkg::*;
     `include "uvm_macros.svh"
     // Import the memory interface agent
-    import mem_if_agent_pkg::*;
+    import dcache_if_agent_pkg::*;
     // ------------------------------------------------
     // Environment which will be instantiated
     // ------------------------------------------------
@@ -36,6 +36,6 @@ package mem_arbiter_lib_pkg;
     // -------------------
     // Child test classes
     // -------------------
-    `include "mem_arbiter_test.svh"
+    `include "dcache_arbiter_test.svh"
 
 endpackage

@@ -44,29 +44,29 @@ test_scoreboard:
     paths:
       - covhtmlreport
 
-test_mem_arbiter:
+test_dcache_arbiter:
   stage: test
   before_script:
-    - make build library=mem_arbiter_lib
+    - make build library=dcache_arbiter_lib
   script:
-    - make mem_arbiter library=mem_arbiter_lib
-    - vcover report mem_arbiter.ucdb
-    - vcover report -html mem_arbiter.ucdb
+    - make dcache_arbiter library=dcache_arbiter_lib
+    - vcover report dcache_arbiter.ucdb
+    - vcover report -html dcache_arbiter.ucdb
   artifacts:
     paths:
       - covhtmlreport
 
-# test_store_queue:
-#   stage: test
-#   before_script:
-#     - make build library=store_queue_lib
-#   script:
-#     - make store_queue library=store_queue_lib
-#     - vcover report store_queue.ucdb
-#     - vcover report -html store_queue.ucdb
-#   artifacts:
-#     paths:
-#       - covhtmlreport
+test_store_queue:
+  stage: test
+  before_script:
+    - make build library=store_queue_lib
+  script:
+    - make store_queue library=store_queue_lib
+    - vcover report store_queue.ucdb
+    - vcover report -html store_queue.ucdb
+  artifacts:
+    paths:
+      - covhtmlreport
 
 # test_lsu:
 #   stage: test

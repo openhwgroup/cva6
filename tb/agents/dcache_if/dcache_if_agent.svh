@@ -38,6 +38,9 @@ class dcache_if_agent extends uvm_component;
     endfunction : new
 
     function void build_phase(uvm_phase phase);
+
+        uvm_config_db #(int)::dump();
+
         if (!uvm_config_db #(dcache_if_agent_config)::get(this, "", "dcache_if_agent_config", m_cfg) )
          `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration dcache_if_agent_config from uvm_config_db. Have you set() it?")
 

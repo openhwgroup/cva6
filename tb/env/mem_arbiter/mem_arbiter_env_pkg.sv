@@ -18,7 +18,7 @@ package mem_arbiter_env_pkg;
     import uvm_pkg::*;
     `include "uvm_macros.svh"
     // Testbench related imports
-    import mem_if_agent_pkg::*;
+    import dcache_if_agent_pkg::*;
     // Include the scoreboard
     `include "mem_arbiter_scoreboard.svh"
     // Includes for the config for the environment

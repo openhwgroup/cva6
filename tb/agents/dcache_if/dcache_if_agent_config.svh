@@ -20,6 +20,8 @@ class dcache_if_agent_config extends uvm_object;
 
     // Virtual Interface
     virtual dcache_if m_vif;
+    // Is this a master or a slave interface
+    dcache_if_config_t dcache_if_config;
     //------------------------------------------
     // Data Members
     //------------------------------------------

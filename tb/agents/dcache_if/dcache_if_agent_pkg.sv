@@ -14,6 +14,20 @@
 // University of Bologna.
 
 package dcache_if_agent_pkg;
+    // configure the slave memory interface
+    // 1. either as a slave with random grant response
+    // 2. as a master interface making random data requests
+    // 3. as a slave with no grant randomization
+    // 4. replay data
+    typedef enum {
+        SLAVE, SLAVE_REPLAY, SLAVE_NO_RANDOM, MASTER
+    } dcache_if_config_t;
+
+    // Mode of request either read or write
+    typedef enum {
+        READ, WRITE
+    } mode_t;
+
     // UVM Import
     import uvm_pkg::*;
     `include "uvm_macros.svh"

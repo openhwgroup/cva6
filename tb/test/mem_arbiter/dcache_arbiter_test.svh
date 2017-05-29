@@ -14,16 +14,16 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 
-class mem_arbiter_test extends mem_arbiter_test_base;
+class dcache_arbiter_test extends mem_arbiter_test_base;
     // UVM Factory Registration Macro
-    `uvm_component_utils(mem_arbiter_test)
+    `uvm_component_utils(dcache_arbiter_test)
     mem_arbiter_sequence mem_arbiter_sequences[3];
     //------------------------------------------
     // Methods
     //------------------------------------------
 
     // Standard UVM Methods:
-    function new(string name = "mem_arbiter_test", uvm_component parent = null);
+    function new(string name = "dcache_arbiter_test", uvm_component parent = null);
         super.new(name, parent);
     endfunction
 
@@ -39,7 +39,7 @@ class mem_arbiter_test extends mem_arbiter_test_base;
 
     task run_phase(uvm_phase phase);
         uvm_objection objection;
-        phase.raise_objection(this, "mem_arbiter_test");
+        phase.raise_objection(this, "dcache_arbiter_test");
         #200ns;
         super.run_phase(phase);
         // fork three sequencers and wait for all of them to finish
@@ -53,8 +53,8 @@ class mem_arbiter_test extends mem_arbiter_test_base;
         // drain time until the objection gets dropped
         objection = phase.get_objection();
         objection.set_drain_time(this, 100ns );
-        phase.drop_objection(this, "mem_arbiter_test");
+        phase.drop_objection(this, "dcache_arbiter_test");
     endtask
 
 
-endclass : mem_arbiter_test
+endclass : dcache_arbiter_test

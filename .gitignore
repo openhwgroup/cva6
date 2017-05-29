@@ -5,3 +5,6 @@ work/*
 transcript
 *.ini
 *.wlf
+.moore
+*.vstf
+wlft*

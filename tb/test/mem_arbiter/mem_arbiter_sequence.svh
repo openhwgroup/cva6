@@ -14,7 +14,7 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 
-class mem_arbiter_sequence extends mem_if_sequence;
+class mem_arbiter_sequence extends dcache_if_sequence;
 
    `uvm_object_utils(mem_arbiter_sequence);
 
@@ -23,10 +23,10 @@ class mem_arbiter_sequence extends mem_if_sequence;
    endfunction : new
 
    task body();
-      mem_if_seq_item command;
+      dcache_if_seq_item command;
 
-      command = mem_if_seq_item::type_id::create("command");
-      `uvm_info("Mem Arbiter Sequence", "Starting mem_arbiter sequence", UVM_LOW)
+      command = dcache_if_seq_item::type_id::create("command");
+      `uvm_info("DCache Arbiter Sequence", "Starting mem_arbiter sequence", UVM_LOW)
 
       for(int i = 0; i <= 100; i++) begin
           start_item(command);
@@ -35,6 +35,6 @@ class mem_arbiter_sequence extends mem_if_sequence;
 
           finish_item(command);
       end
-      `uvm_info("Mem Arbiter Sequence", "Finished mem_arbiter sequence", UVM_LOW)
+      `uvm_info("DCache Arbiter Sequence", "Finished mem_arbiter sequence", UVM_LOW)
    endtask : body
 endclass : mem_arbiter_sequence
