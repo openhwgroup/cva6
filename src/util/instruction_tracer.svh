@@ -17,12 +17,6 @@
 // University of Bologna.
 //
 
-// keep the instruction and scoreboard entry together
-typedef struct {
-    fetch_entry         fetch_entry;
-    scoreboard_entry    sbe;
-} issue_entry;
-
 class instruction_tracer;
 
     // interface to the core
@@ -30,9 +24,13 @@ class instruction_tracer;
     // keep the decoded instructions in a queue
     fetch_entry decode_queue [$];
     // keep the issued instructions in a queue
-    issue_entry issue_queue [$];
+    fetch_entry issue_queue [$];
+    // issue scoreboard entries
+    scoreboard_entry issue_sbe_queue [$];
+    scoreboard_entry issue_sbe;
+
     // shadow copy of the register file
-    logic [63:0] reg_file [31];
+    logic [63:0] reg_file [32];
     // 64 bit clock tick count
     longint unsigned clk_ticks;
 
@@ -41,8 +39,11 @@ class instruction_tracer;
     endfunction : new
 
     task trace();
-        fetch_entry decode_instruction;
-        issue_entry issue_instruction;
+        fetch_entry decode_instruction, issue_instruction, issue_commit_instruction;
+        scoreboard_entry commit_instruction;
+
+        // initialize register 0
+        reg_file [0] = 0;
 
         forever begin
             // new cycle, we are only interested if reset is de-asserted
@@ -58,17 +59,22 @@ class instruction_tracer;
                 decode_instruction = fetch_entry'(tracer_if.pck.fetch);
                 decode_queue.push_back(decode_instruction);
             end
+
             // -------------------
             // Instruction Issue
             // -------------------
             // we got a new issue ack, so put the element from the decode queue to
             // the issue queue
             if (tracer_if.pck.issue_ack) begin
-                issue_instruction.fetch_entry = decode_queue.pop_front();
-                issue_instruction.sbe = scoreboard_entry'(tracer_if.pck.issue_sbe);
+                issue_instruction = decode_queue.pop_front();
                 issue_queue.push_back(issue_instruction);
-                printInstr(issue_instruction.sbe.pc, issue_instruction.fetch_entry.instruction);
+                issue_sbe_queue.push_back(scoreboard_entry'(tracer_if.pck.issue_sbe));
             end
+
+            // -----------------
+            // Physical Address
+            // -----------------
+
             // -----------
             // Write Back
             // -----------
@@ -82,8 +88,11 @@ class instruction_tracer;
             // --------------
             // we are committing an instruction
             if (tracer_if.pck.commit_ack) begin
-                // printInstr(issue_instruction.instruction);
-                // $display("Committing: %0h", tracer_if.pck.commit_instr);
+                commit_instruction = scoreboard_entry'(tracer_if.pck.commit_instr);
+                issue_commit_instruction = issue_queue.pop_front();
+                issue_sbe = issue_sbe_queue.pop_front();
+                // the scoreboards issue entry still contains the immediate value as a result
+                printInstr(issue_sbe, issue_commit_instruction.instruction, tracer_if.pck.wdata);
             end
 
             // --------------
@@ -112,12 +121,15 @@ class instruction_tracer;
         this.flushDecode();
         for (int i = 0; i < issue_queue.size(); i++) begin
             issue_queue.delete(i);
+            // by definition they must have the same size
+            issue_sbe_queue.delete(i);
         end
     endfunction;
 
-    function void printInstr(logic [63:0] pc, logic [63:0] instr);
-        instruction_trace_item iti = new;
-        $display("Time: %t Cycle: %d PC: %h Instruction: %s Instr: %0h", $time(), clk_ticks, pc, iti.printInstr(instr), instr);
+    function void printInstr(scoreboard_entry sbe, logic [63:0] instr, logic [63:0] result);
+        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result);
+        $display(iti.printInstr());
+        // $display("Time: %t Cycle: %d PC: %h Instruction: %s", $time(), clk_ticks, sbe.pc, iti.printInstr());
 
     endfunction;
 

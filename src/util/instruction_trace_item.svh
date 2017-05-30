@@ -1,19 +1,49 @@
+// Author: Florian Zaruba, ETH Zurich - Andreas Traber, ACP
+// Date: 30.05.2017
+// Description: Instruction tracer single instruction item
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
+//
+// This code is under development and not yet released to the public.
+// Until it is released, the code is under the copyright of ETH Zurich and
+// the University of Bologna, and may contain confidential and/or unpublished
+// work. Any reuse/redistribution is strictly forbidden without written
+// permission from ETH Zurich.
+//
+// Bug fixes and contributions will eventually be released under the
+// SolderPad open hardware license in the context of the PULP platform
+// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+// University of Bologna.
+//
 class instruction_trace_item;
-    time         simtime;
-    integer      cycles;
-    logic [31:0] pc;
-    logic [31:0] instr;
-    string       str;
+    // keep a couple of general purpose information inside this instruction item
+    time               simtime;
+    longint unsigned   cycle;
+    scoreboard_entry   sbe;
+    logic [31:0]       pc;
+    logic [31:0]       instr;
+    logic [63:0]       reg_file [32];
+    logic [4:0]        read_regs [$];
+    logic [4:0]        result_regs [$];
+    logic [63:0]       result;
 
-    function new ();
-
+    // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
+    function new (time simtime, longint unsigned cycle, scoreboard_entry sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result);
+        this.simtime  = simtime;
+        this.cycle    = cycle;
+        this.pc       = sbe.pc;
+        this.sbe      = sbe;
+        this.instr    = instr;
+        this.reg_file = reg_file;
+        this.result   = result;
     endfunction
 
     function string regAddrToStr(logic [5:0] addr);
-          return $sformatf("x%0d", addr);
+          return $sformatf("x%0d:", addr);
     endfunction
 
-    function string printInstr(logic [63:0] instr);
+    function string printInstr();
         string s;
 
         casex (instr)
@@ -55,7 +85,7 @@ class instruction_trace_item;
             // FENCE
             INSTR_FENCE:               s = this.printMnemonic("fence");
             INSTR_FENCEI:              s = this.printMnemonic("fencei");
-            // SYSTEM (CSR man         ipulation)
+            // SYSTEM (CSR manipulation)
             INSTR_CSRRW:               s = this.printCSRInstr("csrrw");
             INSTR_CSRRS:               s = this.printCSRInstr("csrrs");
             INSTR_CSRRC:               s = this.printCSRInstr("csrrc");
@@ -67,29 +97,31 @@ class instruction_trace_item;
             INSTR_EBREAK:              s = this.printMnemonic("ebreak");
             INSTR_ERET:                s = this.printMnemonic("eret");
             INSTR_WFI:                 s = this.printMnemonic("wfi");
-            // opcodes with custom decoding
-            {25'b?, OPCODE_LOAD}:      s = this.printLoadInstr();
-            {25'b?, OPCODE_STORE}:     s = this.printStoreInstr();
+            // loads and stores
+            INSTR_LOAD:                s = this.printLoadInstr();
+            INSTR_STORE:               s = this.printStoreInstr();
             default:                   s = this.printMnemonic("INVALID");
         endcase
 
+
+        s = $sformatf("%t %15d %h %h %-36s", simtime,
+                                             cycle,
+                                             sbe.pc,
+                                             instr,
+                                             s);
+
+        foreach (result_regs[i]) begin
+            if (result_regs[i] != 0)
+                s = $sformatf(s, " %-4s%16x", regAddrToStr(result_regs[i]), this.result);
+        end
+
+
+        foreach (read_regs[i]) begin
+            if (read_regs[i] != 0)
+                s = $sformatf(s, " %-4s%16x", regAddrToStr(read_regs[i]), reg_file[read_regs[i]]);
+        end
+
         return s;
-        // $fwrite(f, "%t %15d %h %h %-36s", simtime,
-        //                                   cycles,
-        //                                   pc,
-        //                                   instr,
-        //                                   str);
-
-        // foreach(regs_write[i]) begin
-        //   if (regs_write[i].addr != 0)
-        //     $fwrite(f, " %s=%08x", regAddrToStr(regs_write[i].addr), regs_write[i].value);
-        // end
-
-        // foreach(regs_read[i]) begin
-        //   if (regs_read[i].addr != 0)
-        //     $fwrite(f, " %s:%08x", regAddrToStr(regs_read[i].addr), regs_read[i].value);
-        // end
-
         // if (mem_access.size() > 0) begin
         //   mem_acc = mem_access.pop_front();
 
@@ -104,165 +136,100 @@ class instruction_trace_item;
     endfunction // printMnemonic
 
     function string printRInstr(input string mnemonic);
-        // return $sformatf("%-16s x%0d, x%0d, x%0d", mnemonic, rd, rs1, rs2);
-        return mnemonic;
+
+        result_regs.push_back(sbe.rd);
+        read_regs.push_back(sbe.rs1);
+        read_regs.push_back(sbe.rs2);
+
+        return $sformatf("%-16s x%0d, x%0d, x%0d", mnemonic, sbe.rd, sbe.rs1, sbe.rs2);
     endfunction // printRInstr
 
     function string printIInstr(input string mnemonic);
-      // begin
-      //   regs_read.push_back('{rs1, rs1_value});
-      //   regs_write.push_back('{rd, 'x});
-      //   str = $sformatf("%-16s x%0d, x%0d, %0d", mnemonic, rd, rs1, $signed(imm_i_type));
-      // end
-      return mnemonic;
+
+        result_regs.push_back(sbe.rd);
+        read_regs.push_back(sbe.rs1);
+
+        return $sformatf("%-16s x%0d, x%0d, %0d", mnemonic, sbe.rd, sbe.rs1, $signed(sbe.result));
     endfunction // printIInstr
 
     function string printIuInstr(input string mnemonic);
-      // begin
-      //   regs_read.push_back('{rs1, rs1_value});
-      //   regs_write.push_back('{rd, 'x});
-      //   str = $sformatf("%-16s x%0d, x%0d, 0x%0x", mnemonic, rd, rs1, imm_i_type);
-      // end
-      return mnemonic;
+
+        result_regs.push_back(sbe.rd);
+        read_regs.push_back(sbe.rs1);
+
+        return $sformatf("%-16s x%0d, x%0d, 0x%0x", mnemonic, sbe.rd, sbe.rs1, sbe.result);
     endfunction // printIuInstr
 
     function string printSBInstr(input string mnemonic);
-      // begin
-      //   regs_read.push_back('{rs1, rs1_value});
-      //   regs_write.push_back('{rd, 'x});
-      //   str = $sformatf("%-16s x%0d, x%0d, 0x%0x", mnemonic, rd, rs1, imm_i_type);
-      // end
-      return mnemonic;
+
+        result_regs.push_back(sbe.rd);
+        read_regs.push_back(sbe.rs1);
+
+        return $sformatf("%-16s x%0d, x%0d, 0x%0x", mnemonic, sbe.rd, sbe.rs1, sbe.result);
     endfunction // printIuInstr
 
     function string printUInstr(input string mnemonic);
-      // begin
-      //   regs_write.push_back('{rd, 'x});
-      //   str = $sformatf("%-16s x%0d, 0x%0h", mnemonic, rd, {imm_u_type[31:12], 12'h000});
-      // end
-      return mnemonic;
+
+        result_regs.push_back(sbe.rd);
+
+        return $sformatf("%-16s x%0d, 0x%0h", mnemonic, sbe.rd, sbe.result);
     endfunction // printUInstr
 
     function string printUJInstr(input string mnemonic);
-      // begin
-      //   regs_write.push_back('{rd, 'x});
-      //   str =  $sformatf("%-16s x%0d, %0d", mnemonic, rd, $signed(imm_uj_type));
-      // end
-      return mnemonic;
+
+        result_regs.push_back(sbe.rd);
+
+        return $sformatf("%-16s x%0d, %0d", mnemonic, sbe.rd, $signed(sbe.result));
     endfunction // printUJInstr
 
     function string printCSRInstr(input string mnemonic);
-      // logic [11:0] csr;
-      // begin
-      //   csr = instr[31:20];
 
-      //   regs_write.push_back('{rd, 'x});
+        result_regs.push_back(sbe.rd);
+        read_regs.push_back(sbe.rs1);
 
-      //   if (instr[14] == 1'b0) begin
-      //     regs_read.push_back('{rs1, rs1_value});
-      //     str = $sformatf("%-16s x%0d, x%0d, 0x%h", mnemonic, rd, rs1, csr);
-      //   end else begin
-      //     str = $sformatf("%-16s x%0d, 0x%h, 0x%h", mnemonic, rd, imm_z_type, csr);
-      //   end
-      // end
-      return mnemonic;
+        if (instr[14] == 1'b0) begin
+          return $sformatf("%-16s x%0d, x%0d, 0x%h", mnemonic, sbe.rd, sbe.rs1, sbe.result[11:0]);
+        end else begin
+          return $sformatf("%-16s x%0d, 0x%h, 0x%h", mnemonic, sbe.rd, sbe.rs1, sbe.result[11:0]);
+        end
     endfunction // printCSRInstr
 
     function string printLoadInstr();
-      // string mnemonic;
-      // logic [2:0] size;
-      // begin
-      //   // detect reg-reg load and find size
-      //   size = instr[14:12];
-      //   if (instr[14:12] == 3'b111)
-      //     size = instr[30:28];
+      string mnemonic;
 
-      //   case (size)
-      //     3'b000: mnemonic = "lb";
-      //     3'b001: mnemonic = "lh";
-      //     3'b010: mnemonic = "lw";
-      //     3'b100: mnemonic = "lbu";
-      //     3'b101: mnemonic = "lhu";
-      //     3'b110: mnemonic = "p.elw";
-      //     3'b011,
-      //     3'b111: begin
-      //       printMnemonic("INVALID");
-      //       return;
-      //     end
-      //   endcase
+        case (instr[14:12])
+          3'b000: mnemonic = "lb";
+          3'b001: mnemonic = "lh";
+          3'b010: mnemonic = "lw";
+          3'b100: mnemonic = "lbu";
+          3'b101: mnemonic = "lhu";
+          3'b110: mnemonic = "lwu";
+          3'b011: mnemonic = "ld";
+          default: return printMnemonic("INVALID");
+        endcase
 
-      //   regs_write.push_back('{rd, 'x});
+        result_regs.push_back(sbe.rd);
+        read_regs.push_back(sbe.rs1);
 
-      //   if (instr[14:12] != 3'b111) begin
-      //     // regular load
-      //     if (instr[6:0] != OPCODE_LOAD_POST) begin
-      //       regs_read.push_back('{rs1, rs1_value});
-      //       str = $sformatf("%-16s x%0d, %0d(x%0d)", mnemonic, rd, $signed(imm_i_type), rs1);
-      //     end else begin
-      //       regs_read.push_back('{rs1, rs1_value});
-      //       regs_write.push_back('{rs1, 'x});
-      //       str = $sformatf("p.%-14s x%0d, %0d(x%0d!)", mnemonic, rd, $signed(imm_i_type), rs1);
-      //     end
-      //   end else begin
-      //     // reg-reg load
-      //     if (instr[6:0] != OPCODE_LOAD_POST) begin
-      //       regs_read.push_back('{rs2, rs2_value});
-      //       regs_read.push_back('{rs1, rs1_value});
-      //       str = $sformatf("%-16s x%0d, x%0d(x%0d)", mnemonic, rd, rs2, rs1);
-      //     end else begin
-      //       regs_read.push_back('{rs2, rs2_value});
-      //       regs_read.push_back('{rs1, rs1_value});
-      //       regs_write.push_back('{rs1, 'x});
-      //       str = $sformatf("p.%-14s x%0d, x%0d(x%0d!)", mnemonic, rd, rs2, rs1);
-      //     end
-      //   end
-      // end
-      return "";
+        return $sformatf("%-16s x%0d, %0d(x%0d)", mnemonic, sbe.rd, $signed(sbe.result), sbe.rs1);
     endfunction
 
     function string printStoreInstr();
-      // string mnemonic;
-      // begin
+      string mnemonic;
 
-      //   case (instr[13:12])
-      //     2'b00:  mnemonic = "sb";
-      //     2'b01:  mnemonic = "sh";
-      //     2'b10:  mnemonic = "sw";
-      //     2'b11: begin
-      //       printMnemonic("INVALID");
-      //       return;
-      //     end
-      //   endcase
+        case (instr[14:12])
+          3'b000:  mnemonic = "sb";
+          3'b001:  mnemonic = "sh";
+          3'b010:  mnemonic = "sw";
+          3'b011:  mnemonic = "sd";
+          default: return printMnemonic("INVALID");
+        endcase
 
-      //   if (instr[14] == 1'b0) begin
-      //     // regular store
-      //     if (instr[6:0] != OPCODE_STORE_POST) begin
-      //       regs_read.push_back('{rs2, rs2_value});
-      //       regs_read.push_back('{rs1, rs1_value});
-      //       str = $sformatf("%-16s x%0d, %0d(x%0d)", mnemonic, rs2, $signed(imm_s_type), rs1);
-      //     end else begin
-      //       regs_read.push_back('{rs2, rs2_value});
-      //       regs_read.push_back('{rs1, rs1_value});
-      //       regs_write.push_back('{rs1, 'x});
-      //       str = $sformatf("p.%-14s x%0d, %0d(x%0d!)", mnemonic, rs2, $signed(imm_s_type), rs1);
-      //     end
-      //   end else begin
-      //     // reg-reg store
-      //     if (instr[6:0] != OPCODE_STORE_POST) begin
-      //       regs_read.push_back('{rs2, rs2_value});
-      //       regs_read.push_back('{rs3, rs3_value});
-      //       regs_read.push_back('{rs1, rs1_value});
-      //       str = $sformatf("p.%-14s x%0d, x%0d(x%0d)", mnemonic, rs2, rs3, rs1);
-      //     end else begin
-      //       regs_read.push_back('{rs2, rs2_value});
-      //       regs_read.push_back('{rs3, rs3_value});
-      //       regs_read.push_back('{rs1, rs1_value});
-      //       regs_write.push_back('{rs1, 'x});
-      //       str = $sformatf("p.%-14s x%0d, x%0d(x%0d!)", mnemonic, rs2, rs3, rs1);
-      //     end
-      //   end
-      // end
-      return "";
+        read_regs.push_back(sbe.rs1);
+        read_regs.push_back(sbe.rs2);
+
+        return $sformatf("%-16s x%0d, %0d(x%0d)", mnemonic, sbe.rs2, $signed(sbe.result), sbe.rs1);
+
     endfunction // printSInstr
 
     function string printMulInstr();

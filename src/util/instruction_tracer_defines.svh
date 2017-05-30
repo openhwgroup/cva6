@@ -71,3 +71,7 @@ parameter INSTR_DIV      =  { 7'b0000001, 10'b?, 3'b100, 5'b?, OPCODE_OP };
 parameter INSTR_DIVU     =  { 7'b0000001, 10'b?, 3'b101, 5'b?, OPCODE_OP };
 parameter INSTR_REM      =  { 7'b0000001, 10'b?, 3'b110, 5'b?, OPCODE_OP };
 parameter INSTR_REMU     =  { 7'b0000001, 10'b?, 3'b111, 5'b?, OPCODE_OP };
+
+// Load/Stores
+parameter INSTR_LOAD     =  {25'b?, OPCODE_LOAD};
+parameter INSTR_STORE    =  {25'b?, OPCODE_STORE};
