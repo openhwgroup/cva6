@@ -35,6 +35,8 @@ class store_queue_scoreboard extends uvm_scoreboard;
     virtual function void write (uvm_sequence_item seq_item);
         // variables to hold the casts
         store_queue_if_seq_item casted_store_queue = new;
+        store_queue_if_seq_item store_queue_item;
+
         dcache_if_seq_item casted_dcache = new;
 
 
@@ -50,10 +52,14 @@ class store_queue_scoreboard extends uvm_scoreboard;
         if (seq_item.get_type_name() == "dcache_if_seq_item") begin
             // cast dcache variable
             $cast(casted_dcache, seq_item.clone());
-
-            $display("%s", store_queue_items.pop_front().convert2string());
-            $display("%s", casted_dcache.convert2string());
-
+            // get the latest store queue item
+            store_queue_item = store_queue_items.pop_front();
+            // match it with the expected result from the store queue side
+            if (store_queue_item.address != casted_dcache.address ||
+                store_queue_item.data != casted_dcache.wdata ||
+                store_queue_item.be != casted_dcache.be) begin
+                `uvm_error("Store Queue Scoreboard", $sformatf("Mismatch. Expected: %s Got: %s", store_queue_item.convert2string(), casted_dcache.convert2string()));
+            end
         end
     endfunction
 

@@ -66,7 +66,7 @@ class store_queue_if_seq_item extends uvm_sequence_item;
 
         $sformat(s, "%s\n", super.convert2string());
         // Convert to string function reusing s:
-        $sformat(s, "Address: %0h, Data: %0h, BE: %0h", this.address, this.data, this.be);
+        $sformat(s, "Address: %0h\nData: %0h\nBE: %0h", this.address, this.data, this.be);
         return s;
 
     endfunction:convert2string

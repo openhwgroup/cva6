@@ -58,8 +58,8 @@ class dcache_if_monitor extends uvm_component;
 
         string if_type = this.get_full_name();//(m_cfg.dcache_if_config inside {SLAVE, SLAVE_REPLAY, SLAVE_NO_RANDOM}) ? "[SLAVE]" : "[MASTER]";
         logic [11:0] address_index [$];
-        logic [44:0] address;
-        logic[7:0]   be [$];
+        logic [7:0]  be [$];
+        logic [63:0] wdata [$];
 
         dcache_if_seq_item cmd =  dcache_if_seq_item::type_id::create("cmd");
         // Monitor process
@@ -73,6 +73,7 @@ class dcache_if_monitor extends uvm_component;
                     // $display("%s: %t, Putting index: %0h", if_type, $time(), m_vif.pck.address_index);
                     address_index.push_back(m_vif.pck.address_index);
                     be.push_back(m_vif.pck.data_be);
+                    wdata.push_back(m_vif.pck.data_wdata);
                 end
             end
 
@@ -103,7 +104,8 @@ class dcache_if_monitor extends uvm_component;
                     // blocking get, wait for both to be ready
                     data_mbx.get(cmd.data);
                     address_mbx.get(cmd.address);
-                    cmd.be      = be.pop_front();
+                    cmd.be    = be.pop_front();
+                    cmd.wdata = wdata.pop_front();
                     // $display("%s: %t, Popping %0h from MBX", if_type, $time(), cmd.address);
                     // was this from a master or slave agent monitor?
                     cmd.isSlaveAnswer = (m_cfg.dcache_if_config inside {SLAVE, SLAVE_REPLAY, SLAVE_NO_RANDOM}) ? 1'b1 : 1'b0;

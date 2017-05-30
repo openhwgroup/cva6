@@ -58,7 +58,7 @@ class store_queue_if_monitor extends uvm_component;
             // a new store item request has arrived
             @(m_vif.pck iff (m_vif.pck.store_valid && m_vif.pck.ready));
             // $display("%t, %0h", $time(), m_vif.pck.store_paddr);
-            cmd.address = m_vif.pck.store_paddr;
+            cmd.address = m_vif.pck.store_paddr[55:0];
             cmd.data    = m_vif.pck.store_data;
             cmd.be      = m_vif.pck.store_be;
 

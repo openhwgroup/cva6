@@ -24,6 +24,7 @@ class dcache_if_seq_item extends uvm_sequence_item;
     //------------------------------------------
     rand logic [63:0] address;
     rand logic [63:0] data;
+    rand logic [63:0] wdata;
     rand logic [7:0]  be;
     rand int requestDelay;
     mode_t mode;
@@ -54,6 +55,7 @@ class dcache_if_seq_item extends uvm_sequence_item;
         data = rhs_.data;
         be = rhs_.be;
         mode = rhs_.mode;
+        wdata = rhs_.wdata;
         isSlaveAnswer = rhs_.isSlaveAnswer;
     endfunction : do_copy
 
@@ -69,14 +71,15 @@ class dcache_if_seq_item extends uvm_sequence_item;
         && address == rhs_.address
         && data == rhs_.data
         && be == rhs_.be
-        && mode == rhs_.mode;
+        && mode == rhs_.mode
+        && wdata == rhs_.wdata;
     endfunction : do_compare
 
     function string convert2string();
         string s;
 
         $sformat(s, "%s\n", super.convert2string());
-        $sformat(s, "%s\nMode: %s\nAddress: %0h\nData: %0h\nBE: %0h \nisSlaveAnswer: %h", s, mode.name, address, data, be, isSlaveAnswer);
+        $sformat(s, "%s\nMode: %s\nAddress: %0h\nData: %0h\nBE: %0h\nwdata: %0h\nisSlaveAnswer: %h", s, mode.name, address, data, be, wdata, isSlaveAnswer);
         return s;
 
     endfunction:convert2string
@@ -94,10 +97,11 @@ class dcache_if_seq_item extends uvm_sequence_item;
         super.do_record(recorder);
 
         // Use the record macros to record the item fields:
-        `uvm_record_field("Mode", mode)
-        `uvm_record_field("Address", address)
-        `uvm_record_field("Data", data)
-        `uvm_record_field("BE", be)
+        `uvm_record_field("mode", mode)
+        `uvm_record_field("address", address)
+        `uvm_record_field("data", data)
+        `uvm_record_field("be", be)
+        `uvm_record_field("wdate", be)
     endfunction:do_record
 
 endclass : dcache_if_seq_item
