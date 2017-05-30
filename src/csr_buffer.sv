@@ -49,7 +49,8 @@ module csr_buffer (
 
     // control logic, scoreboard signals
     assign csr_trans_id_o = trans_id_i;
-    assign csr_valid_o    = csr_reg_q.valid | csr_valid_i;
+    // CSR instructions for this post buffer are single cycle
+    assign csr_valid_o    = csr_valid_i;
     assign csr_result_o   = operand_a_i;
     assign csr_ready_o    = (csr_reg_q.valid && ~commit_i) ? 1'b0 : 1'b1;
     assign csr_addr_o     = csr_reg_q.csr_address;

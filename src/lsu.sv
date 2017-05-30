@@ -191,17 +191,17 @@ module lsu #(
         .lsu_paddr_o            ( mmu_paddr            ),
         .lsu_exception_o        ( mmu_exception        ),
         // connecting PTW to D$ IF (aka mem arbiter
-        .data_if_address_index_o ( address_index_i  [0] ),
-        .data_if_address_tag_o   ( address_tag_i    [0] ),
-        .data_if_data_wdata_o    ( data_wdata_i     [0] ),
-        .data_if_data_req_o      ( data_req_i       [0] ),
-        .data_if_data_we_o       ( data_we_i        [0] ),
-        .data_if_data_be_o       ( data_be_i        [0] ),
-        .data_if_kill_req_o      ( kill_req_i       [0] ),
-        .data_if_tag_valid_o     ( tag_valid_i      [0] ),
-        .data_if_data_gnt_i      ( data_gnt_o       [0] ),
-        .data_if_data_rvalid_i   ( data_rvalid_o    [0] ),
-        .data_if_data_rdata_i    ( data_rdata_o     [0] ),
+        .address_index_o ( address_index_i  [0] ),
+        .address_tag_o   ( address_tag_i    [0] ),
+        .data_wdata_o    ( data_wdata_i     [0] ),
+        .data_req_o      ( data_req_i       [0] ),
+        .data_we_o       ( data_we_i        [0] ),
+        .data_be_o       ( data_be_i        [0] ),
+        .kill_req_o      ( kill_req_i       [0] ),
+        .tag_valid_o     ( tag_valid_i      [0] ),
+        .data_gnt_i      ( data_gnt_o       [0] ),
+        .data_rvalid_i   ( data_rvalid_o    [0] ),
+        .data_rdata_i    ( data_rdata_o     [0] ),
         .*
     );
     // ------------------
@@ -340,12 +340,12 @@ module lsu #(
             unique case (operator)
                 // all loads go here
                 LD, LW, LWU, LH, LHU, LB, LBU:  begin
-                    ld_valid_i = lsu_valid_i;
+                    ld_valid_i = 1'b1;
                     op         = LD_OP;
                 end
                 // all stores go here
                 SD, SW, SH, SB: begin
-                    st_valid_i = lsu_valid_i;
+                    st_valid_i = 1'b1;
                     op         = ST_OP;
                 end
                 // not relevant for the LSU

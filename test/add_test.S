@@ -12,6 +12,11 @@
     csrw mstatus, x7
     add  x9, x7, x8
     csrr x1, mstatus
+    addi x7, x0, 256
+    lui  x8, 0xDEAD
+    sd   x8, 0(x7)
+    add  x6, x4, x5
+    ld   x9, 0(x7)
     nop
 L0: jal x0, L1
     nop

@@ -40,7 +40,7 @@ module dp_ram
         if (en_a_i && we_a_i) begin
             for (int i = 0; i < DATA_WIDTH/8; i++) begin
                 if (be_a_i[i])
-                    mem[addr_a_i][i] <= wdata_a_i[i +: 8];
+                    mem[addr_a_i][i] <= wdata_a_i[i*8 +: 8];
             end
         end
 
@@ -49,11 +49,11 @@ module dp_ram
         if (en_b_i && we_b_i) begin
             for (int i = 0; i < DATA_WIDTH/8; i++) begin
                 if (be_b_i[i])
-                    mem[addr_b_i][i] <= wdata_b_i[i +: 8];
+                    mem[addr_b_i][i] <= wdata_b_i[i*8 +: 8];
             end
         end
     end
-    // output port two combinatorially since we need to mimic a cache interface
+    // output port 2: combinatorially since we need to mimic a cache interface
     assign rdata_b_o = mem[addr_b_i];
 
 endmodule

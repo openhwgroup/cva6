@@ -62,7 +62,7 @@ module load_unit (
     typedef struct packed {
         logic [TRANS_ID_BITS-1:0] trans_id;
         logic [2:0]               address_offset;
-        fu_t                      operator;
+        fu_op                     operator;
     } rvalid_entry_t;
 
     // queue control signal

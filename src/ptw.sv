@@ -34,12 +34,14 @@ module ptw #(
     output logic                    ptw_error_o, // set when an error occured
     input  logic                    enable_translation_i,
     // memory port
-    output logic [63:0]             address_o,
+    output logic [11:0]             address_index_o,
+    output logic [43:0]             address_tag_o,
     output logic [63:0]             data_wdata_o,
     output logic                    data_req_o,
     output logic                    data_we_o,
     output logic [7:0]              data_be_o,
-    output logic [1:0]              data_tag_status_o,
+    output logic                    kill_req_o,
+    output logic                    tag_valid_o,
     input  logic                    data_gnt_i,
     input  logic                    data_rvalid_i,
     input  logic [63:0]             data_rdata_i,
@@ -97,7 +99,14 @@ module ptw #(
     // 4 byte aligned physical pointer
     logic[45:0] ptw_pptr_q, ptw_pptr_n;
     // directly output the correct physical address
-    assign address_o = {ptw_pptr_q, 4'b0};
+    // ------
+    // TODO
+    // -------
+    // assign address_o = {ptw_pptr_q, 4'b0}; TODO
+    assign address_index_o = '0;
+    assign address_tag_o   = '0;
+    assign tag_valid_o     = '0;
+    assign kill_req_o      = '0;
     // update the correct page table level
     assign update_is_2M_o = (ptw_lvl_q == LVL2);
     assign update_is_1G_o = (ptw_lvl_q == LVL1);

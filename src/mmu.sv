@@ -63,17 +63,17 @@ module mmu #(
         input  logic                            instr_if_data_rvalid_i,
         input  logic [31:0]                     instr_if_data_rdata_i,
         // Data memory/cache
-        output logic [11:0]                     data_if_address_index_o,
-        output logic [43:0]                     data_if_address_tag_o,
-        output logic [63:0]                     data_if_data_wdata_o,
-        output logic                            data_if_data_req_o,
-        output logic                            data_if_data_we_o,
-        output logic [7:0]                      data_if_data_be_o,
-        output logic                            data_if_kill_req_o,
-        output logic                            data_if_tag_valid_o,
-        input  logic                            data_if_data_gnt_i,
-        input  logic                            data_if_data_rvalid_i,
-        input  logic [63:0]                     data_if_data_rdata_i
+        output logic [11:0]                     address_index_o,
+        output logic [43:0]                     address_tag_o,
+        output logic [63:0]                     data_wdata_o,
+        output logic                            data_req_o,
+        output logic                            data_we_o,
+        output logic [7:0]                      data_be_o,
+        output logic                            kill_req_o,
+        output logic                            tag_valid_o,
+        input  logic                            data_gnt_i,
+        input  logic                            data_rvalid_i,
+        input  logic [63:0]                     data_rdata_i
 );
     // assignments necessary to use interfaces here
     // only done for the few signals of the instruction interface
@@ -170,16 +170,6 @@ module mmu #(
         .walking_instr_o        ( walking_instr         ),
         .ptw_error_o            ( ptw_error             ),
         .enable_translation_i   ( enable_translation_i  ),
-
-        .address_o              (  ), // TODO
-        .data_wdata_o           (  ), // TODO
-        .data_req_o             (  ), // TODO
-        .data_we_o              (  ), // TODO
-        .data_be_o              (  ), // TODO
-        .data_tag_status_o      (  ), // TODO
-        .data_gnt_i             (  ), // TODO
-        .data_rvalid_i          (  ), // TODO
-        .data_rdata_i           (  ), // TODO
 
         .itlb_update_o          ( itlb_update           ),
         .dtlb_update_o          ( dtlb_update           ),
