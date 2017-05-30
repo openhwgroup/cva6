@@ -212,6 +212,7 @@ module ariane
     assign flush = 1'b0;
 
     assign halt_if = 1'b0;
+
     // --------------
     // NPC Generation
     // --------------
@@ -251,6 +252,7 @@ module ariane
         .ex_o                  ( exception_if_id                ),
         .*
     );
+
     // ---------
     // ID
     // ---------
@@ -308,6 +310,7 @@ module ariane
         .commit_ack_i               ( commit_ack_commit_id                     ),
         .*
     );
+
     // ---------
     // EX
     // ---------
@@ -368,6 +371,7 @@ module ariane
         .mult_valid_i           ( mult_valid_id_ex           ),
         .*
     );
+
     // ---------
     // Commit
     // ---------
@@ -388,6 +392,7 @@ module ariane
         .irq_enable_i        ( irq_enable_csr_commit      ),
         .*
     );
+
     // ---------
     // CSR
     // ---------
@@ -415,10 +420,12 @@ module ariane
         .asid_o               ( asid_csr_ex                     ),
         .*
     );
+
     // ------------
     // Controller
     // ------------
     logic flush_commit_i;
+    logic flush_controller_ex;
 
     controller controller_i (
         .flush_bp_o             (                               ),
@@ -426,7 +433,7 @@ module ariane
         .flush_unissued_instr_o ( flush_unissued_instr_ctrl_id  ),
         .flush_if_o             ( flush_ctrl_if                 ),
         .flush_id_o             (                               ),
-        .flush_ex_o             (                               ),
+        .flush_ex_o             ( flush_controller_ex           ),
 
         .flush_ready_lsu_i      (                               ),
         .flush_commit_i         ( flush_commit_i                ),
@@ -434,21 +441,31 @@ module ariane
         .resolved_branch_i      ( resolved_branch               ),
         .*
     );
+
     // -------------------
     // Instruction Tracer
     // -------------------
     `ifndef SYNTHESIS
     instruction_tracer_if tracer_if (clk_i);
     // assign instruction tracer interface
+    // control signals
     assign tracer_if.rstn = rst_ni;
-    assign tracer_if.commit_instr = commit_instr_id_commit;
-    assign tracer_if.commit_ack   = commit_ack_commit_id;
+    assign tracer_if.flush_unissued = flush_unissued_instr_ctrl_id;
+    assign tracer_if.flush          = flush_controller_ex;
+    // fetch
     assign tracer_if.fetch        = fetch_entry_if_id;
     assign tracer_if.fetch_valid  = fetch_valid_if_id;
     assign tracer_if.fetch_ack    = decode_ack_id_if;
+    // Issue
+    assign tracer_if.issue_ack    = id_stage_i.scoreboard_i.issue_ack_i;
+    assign tracer_if.issue_sbe    = id_stage_i.scoreboard_i.issue_instr_o;
+    // write-back
     assign tracer_if.waddr        = waddr_a_commit_id;
     assign tracer_if.wdata        = wdata_a_commit_id;
     assign tracer_if.we           = we_a_commit_id;
+    // commit
+    assign tracer_if.commit_instr = commit_instr_id_commit;
+    assign tracer_if.commit_ack   = commit_ack_commit_id;
 
     program instr_tracer (instruction_tracer_if tracer_if);
         instruction_tracer it = new (tracer_if);

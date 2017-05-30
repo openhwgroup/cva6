@@ -23,25 +23,26 @@ interface instruction_tracer_if (
         input clk
     );
     logic            rstn;
-    logic            flush_issue;
+    logic            flush_unissued;
     logic            flush;
-    // decode
+    // Decode
     fetch_entry      fetch;
     logic            fetch_valid;
     logic            fetch_ack;
-
+    // Issue stage
+    logic            issue_ack; // issue acknowledged
+    scoreboard_entry issue_sbe; // issue scoreboard entry
     // WB stage
     logic [4:0]      waddr;
     logic [63:0]     wdata;
     logic            we;
-
     // commit stage
     scoreboard_entry commit_instr; // commit instruction
     logic            commit_ack;
 
     // the tracer just has a passive interface we do not drive anything with it
     clocking pck @(posedge clk);
-        input rstn, flush, fetch, fetch_valid, fetch_ack, waddr, wdata, we, commit_instr, commit_ack;
+        input rstn, flush_unissued, flush, fetch, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr, wdata, we, commit_instr, commit_ack;
     endclocking
 
 endinterface

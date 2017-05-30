@@ -16,7 +16,10 @@
     lui  x8, 0xDEAD
     sd   x8, 0(x7)
     add  x6, x4, x5
+    add  x15, x4, x5
     ld   x9, 0(x7)
+    add  x15, x4, x5
+    add  x14, x4, x5
     nop
 L0: jal x0, L1
     nop
