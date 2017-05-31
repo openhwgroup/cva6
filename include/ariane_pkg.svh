@@ -223,9 +223,9 @@ package ariane_pkg;
     localparam LD_ACCESS_FAULT       = 64'h5;
     localparam ST_ADDR_MISALIGNED    = 64'h6;
     localparam ST_ACCESS_FAULT       = 64'h7;
-    localparam ENV_CALL_UMODE        = 64'h8;
-    localparam ENV_CALL_SMODE        = 64'h9;
-    localparam ENV_CALL_MMODE        = 64'hB;
+    localparam ENV_CALL_UMODE        = 64'h8; // environment call from user mode
+    localparam ENV_CALL_SMODE        = 64'h9; // environment call from supvervisor mode
+    localparam ENV_CALL_MMODE        = 64'hB; // environment call from machine mode
 
     typedef enum logic [11:0] {
         CSR_SSTATUS   = 12'h100,

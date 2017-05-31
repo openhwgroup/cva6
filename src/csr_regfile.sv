@@ -165,6 +165,7 @@ module csr_regfile #(
     // CSR Write and update logic
     // ---------------------------
     always_comb begin : csr_update
+        flush_o    = 1'b0;
         update_access_exception = 1'b0;
 
         priv_lvl_n = priv_lvl_q;
@@ -233,6 +234,8 @@ module csr_regfile #(
                     CSR_MTVAL:              mtval_n     = csr_wdata;
                     default: update_access_exception = 1'b1;
                 endcase
+                // TODO: this is unnecessary
+                flush_o = 1'b1;
             end else begin
                 update_access_exception = 1'b1;
             end

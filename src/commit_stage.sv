@@ -19,8 +19,8 @@
 import ariane_pkg::*;
 
 module commit_stage (
-    input logic                 clk_i,      // Clock
-    input logic                 rst_ni,     // Asynchronous reset active low
+    input logic                 clk_i,       // Clock
+    input logic                 rst_ni,      // Asynchronous reset active low
 
     output exception            exception_o, // take exception to controller
 
@@ -39,9 +39,9 @@ module commit_stage (
     output logic [63:0]         csr_wdata_o,
     input  logic [63:0]         csr_rdata_i,
     input  exception            csr_exception_i,
-    // to ex
-    output logic                commit_lsu_o,
-    output logic                commit_csr_o,
+    // commit signals to ex
+    output logic                commit_lsu_o, // commit the pending store
+    output logic                commit_csr_o, // commit the pending CSR instruction
     // general control signal
     input  logic [4:0]          irq_enable_i
 );

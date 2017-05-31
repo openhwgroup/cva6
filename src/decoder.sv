@@ -18,10 +18,15 @@ module decoder (
     input  logic [31:0]      instruction_i,           // instruction from IF
     input  branchpredict_sbe branch_predict_i,
     input  exception         ex_i,                    // if an exception occured in if
+    input  priv_lvl_t        priv_lvl_i,              // current privilege level
     output scoreboard_entry  instruction_o,           // scoreboard entry to scoreboard
     output logic             is_control_flow_instr_o  // this instruction will change the control flow
 );
     logic illegal_instr;
+    // this instruction is an environment call (ecall), it is handled like an exception
+    logic ecall;
+    // this instruction is a software break-point
+    logic ebreak;
     instruction instr;
     assign instr = instruction'(instruction_i);
     // --------------------
@@ -60,6 +65,8 @@ module decoder (
         instruction_o.is_compressed = is_compressed_i;
         instruction_o.use_zimm      = 1'b0;
         instruction_o.bp            = branch_predict_i;
+        ecall                       = 1'b0;
+        ebreak                      = 1'b0;
 
         if (~ex_i.valid) begin
             case (instr.rtype.opcode)
@@ -70,10 +77,32 @@ module decoder (
 
                     unique case (instr.itype.funct3)
                         3'b000: begin
-                            // TODO:
-                            // ECALL, EBREAK, SFEBCE.VM
-                            // MRET/SRET/URET, WFI
-                            illegal_instr = 1'b1;
+                            case (instr.itype.imm)
+                                // ECALL
+                                12'b0: ecall  = 1'b1;
+                                // EBREAK:
+                                12'b1: ebreak = 1'b1;
+
+                                // URET
+                                // 12'b10: ;
+
+                                // SRET
+                                // 12'b100000010:;
+
+                                // MRET
+                                // 12'b1100000010:;
+
+                                // WFI
+                                // 12'b1_0000_0101:;
+                                // SFENCE.VMA
+                                default: begin
+                                    // if (instr.itype.imm[11:5] == 7'b1001) begin
+                                    //
+                                    // end else begin
+                                        illegal_instr = 1'b1;
+                                    // end
+                                end
+                            endcase
                         end
                         // atomically swaps values in the CSR and integer register
                         3'b001: begin// CSRRW
@@ -408,15 +437,24 @@ module decoder (
         instruction_o.valid   = 1'b0;
         // look if we didn't already get an exception in any previous
         // stage - we should not overwrite it as we retain order regarding the exception
-        if (~ex_i.valid && illegal_instr) begin
+        if (~ex_i.valid) begin
             // instructions which will throw an exception are marked as valid
             // e.g.: they can be committed anytime and do not need to wait for any functional unit
-            instruction_o.valid    = 1'b1;
-            instruction_o.ex.valid = 1'b1;
-            // we decoded an illegal exception here
-            instruction_o.ex.cause = ILLEGAL_INSTR;
-            // if we decoded an illegal instruction save the faulting instruction to tval
-            instruction_o.ex.tval  = instruction_i;
+            if (illegal_instr) begin
+                instruction_o.valid    = 1'b1;
+                instruction_o.ex.valid = 1'b1;
+                // we decoded an illegal exception here
+                instruction_o.ex.cause = ILLEGAL_INSTR;
+                // if we decoded an illegal instruction save the faulting instruction to tval
+                instruction_o.ex.tval  = instruction_i;
+            // we got an ecall, set the correct cause depending on the current privilege level
+            end else if (ecall) begin
+                case (priv_lvl_i) begin
+
+                endcase
+            end else if (ebreak) begin
+
+            end
         end
     end
 endmodule

@@ -35,6 +35,8 @@ module id_stage #(
     input  logic                                     fetch_entry_valid_i,
     output logic                                     decoded_instr_ack_o,
     input  exception                                 ex_if_i,       // we already got an exception in IF
+    // from CSR file
+    input  priv_lvl_t                                priv_lvl_i,              // current privilege level
 
     output logic                                     ready_o,    // id is ready
     output fu_op                                     operator_o,
