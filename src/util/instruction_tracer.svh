@@ -68,6 +68,7 @@ class instruction_tracer;
             if (tracer_if.pck.issue_ack) begin
                 issue_instruction = decode_queue.pop_front();
                 issue_queue.push_back(issue_instruction);
+                // also save the scoreboard entry to a separate issue queue
                 issue_sbe_queue.push_back(scoreboard_entry'(tracer_if.pck.issue_sbe));
             end
 
@@ -111,19 +112,15 @@ class instruction_tracer;
     endtask
     // flush all decoded instructions
     function void flushDecode ();
-        for (int i = 0; i < decode_queue.size(); i++) begin
-            decode_queue.delete(i);
-        end
+        decode_queue = {};
     endfunction;
 
     // flush everything, we took an exception/interrupt
     function void flush ();
         this.flushDecode();
-        for (int i = 0; i < issue_queue.size(); i++) begin
-            issue_queue.delete(i);
-            // by definition they must have the same size
-            issue_sbe_queue.delete(i);
-        end
+        // clear all elements in the queue
+        issue_queue = {};
+        issue_sbe_queue = {};
     endfunction;
 
     function void printInstr(scoreboard_entry sbe, logic [63:0] instr, logic [63:0] result);

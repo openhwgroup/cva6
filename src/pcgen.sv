@@ -117,6 +117,9 @@ module pcgen (
         // On a pipeline flush start fetching from the next address
         // of the instruction in the commit stage
         if (flush_i) begin
+            // we came here from a flush request of a CSR instruction,
+            // as CSR instructions do not exist in a compressed form
+            // we can unconditionally do PC + 4 here
             npc_n = pc_commit_i + 64'h4;
         end
 

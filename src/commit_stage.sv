@@ -91,8 +91,14 @@ module commit_stage (
                     csr_wdata_o  = commit_instr_i.result;
                 end
             end
-        end else begin // we got an exception from the instruction
-            exception = 1'b1;
+        // we got an exception from the instruction
+        end else begin
+            // lets tell the exception handling block further down to do proper exception handling
+            exception    = 1'b1;
+            // and also acknowledge the instruction, this is mainly done for the instruction tracer
+            // as it will listen on the instruction ack signal. For the overall result it does not make any
+            // difference as the whole pipeline is going to be flushed anyway.
+            commit_ack_o = 1'b1;
         end
     end
 
