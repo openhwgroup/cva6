@@ -29,7 +29,6 @@ module id_stage #(
 
     input  logic                                     flush_i,
     input  logic                                     flush_unissued_instr_i,
-    input  logic                                     flush_scoreboard_i,
     // from IF
     input  fetch_entry                               fetch_entry_i,
     input  logic                                     fetch_entry_valid_i,
@@ -153,7 +152,6 @@ module id_stage #(
     scoreboard_i
     (
         .full_o                ( full                     ),
-        .flush_i               ( flush_scoreboard_i       ),
         .rd_clobber_o          ( rd_clobber_sb_iro        ),
         .rs1_i                 ( rs1_iro_sb               ),
         .rs1_o                 ( rs1_sb_iro               ),

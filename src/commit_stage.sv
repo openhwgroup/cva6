@@ -33,8 +33,9 @@ module commit_stage (
     output  logic[63:0]         wdata_a_o,
     output  logic               we_a_o,
 
-    // to/from CSR file
+    // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
     output logic [63:0]         pc_o,
+    // to/from CSR file
     output fu_op                csr_op_o,
     output logic [63:0]         csr_wdata_o,
     input  logic [63:0]         csr_rdata_i,
@@ -90,7 +91,7 @@ module commit_stage (
                     csr_wdata_o  = commit_instr_i.result;
                 end
             end
-        end else begin // we got an exception either from the instruction directly or from the CS regfile
+        end else begin // we got an exception from the instruction
             exception = 1'b1;
         end
     end
@@ -130,9 +131,9 @@ module commit_stage (
                     LD_ACCESS_FAULT:       cause = "Load Access Fault";
                     ST_ADDR_MISALIGNED:    cause = "Store Address Misaligned";
                     ST_ACCESS_FAULT:       cause = "Store Access Fault";
-                    ENV_CALL_UMODE:        cause = "Environment Call UMode";
-                    ENV_CALL_SMODE:        cause = "Environment Call SMode";
-                    ENV_CALL_MMODE:        cause = "Environment Call MMode";
+                    ENV_CALL_UMODE:        cause = "Environment Call User Mode";
+                    ENV_CALL_SMODE:        cause = "Environment Call Supervisor Mode";
+                    ENV_CALL_MMODE:        cause = "Environment Call Machine Mode";
                 endcase
             $display("Exception @%t, PC: %0h, TVal: %0h, Cause: %s", $time, commit_instr_i.pc, exception_o.tval, cause);
             end

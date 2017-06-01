@@ -279,7 +279,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : sequential
             mem_q[i] <= {$bits(scoreboard_entry){1'b0}};
         end
     end else if (flush_i) begin // reset pointers on flush
-        // flush signal, e.g.: flush everything we need to backtrack after an exception
+        // flush signal, e.g.: flush everything we need to backtrack after an exception or a CSR instruction
         issue_pointer_q   <= '{default: 0};
         commit_pointer_q  <= '{default: 0};
         top_pointer_q     <= '{default: 0};

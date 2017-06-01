@@ -23,8 +23,9 @@ module pcgen (
     input  logic             clk_i,              // Clock
     input  logic             rst_ni,             // Asynchronous reset active low
     // control signals
+    input  logic             flush_i,            // flush request for PCGEN
+    input  logic             flush_bp_i,         // flush branch prediction
     input  logic             fetch_enable_i,
-    input  logic             flush_i,
     input  logic             if_ready_i,
     input  branchpredict     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
     // to IF
@@ -33,6 +34,8 @@ module pcgen (
     output branchpredict_sbe branch_predict_o,   // pass on the information if this is speculative
     // global input
     input  logic [63:0]      boot_addr_i,
+    // from commit
+    input  logic [63:0]      pc_commit_i,        // PC of instruction in commit stage
     // CSR input
     input  logic [63:0]      epc_i,              // return from exception
     input  logic [63:0]      trap_vector_base_i, // base of trap vector
@@ -51,6 +54,7 @@ module pcgen (
     btb_i
     (
         // Use the PC from last cycle to perform branch lookup for the current cycle
+        .flush_i                 ( flush_bp_i              ),
         .vpc_i                   ( npc_q                   ),
         .branch_predict_i        ( resolved_branch_i       ), // update port
         .branch_predict_o        ( branch_predict_btb      ), // read port
@@ -67,31 +71,54 @@ module pcgen (
     // 5. Boot address
     always_comb begin : npc_select
         branch_predict_o = branch_predict_btb;
-        fetch_valid_o = 1'b1;
+        fetch_valid_o    = 1'b1;
 
+        // -------------------------------
         // 0. Default assignment
+        // -------------------------------
         // default is a consecutive PC
         if (if_ready_i && fetch_enable_i)
             npc_n       = {npc_q[62:2], 2'b0}  + 64'h4;
         else // or keep the PC stable if IF is not ready
             npc_n       =  npc_q;
-        // 4. Predict taken
+
+        // -------------------------------
+        // 1. Predict taken
+        // -------------------------------
         if (branch_predict_btb.valid && branch_predict_btb.predict_taken) begin
             npc_n = branch_predict_btb.predict_address;
         end
-        // 1.Debug
+        // -------------------------------
+        // 2. Debug
+        // -------------------------------
+
+        // -------------------------------
         // 3. Control flow change request
+        // -------------------------------
         if (resolved_branch_i.is_mispredict) begin
             // we already got the correct target address
             npc_n    = resolved_branch_i.target_address;
         end
-        // 2. Exception
+
+        // -------------------------------
+        // 4. Exception
+        // -------------------------------
         if (ex_i.valid) begin
             npc_n                 = trap_vector_base_i;
             branch_predict_o.valid = 1'b0;
         end
 
-        // 3. Return from exception
+        // -------------------------------
+        // 5. Return from exception
+        // -------------------------------
+        // -------------------------------
+        // 6. Pipeline Flush
+        // -------------------------------
+        // On a pipeline flush start fetching from the next address
+        // of the instruction in the commit stage
+        if (flush_i) begin
+            npc_n = pc_commit_i + 64'h4;
+        end
 
         // fetch enable
         if (!fetch_enable_i) begin

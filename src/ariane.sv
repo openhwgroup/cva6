@@ -85,11 +85,10 @@ module ariane
     // Signals connecting more than one module
     // ------------------------------------------
     priv_lvl_t                priv_lvl;
-    logic                     flush;
     logic                     fetch_enable;
-    logic                     halt_if;
     exception                 ex_commit; // exception from commit stage
     branchpredict             resolved_branch;
+    logic [63:0]              pc_commit;
     // --------------
     // PCGEN <-> IF
     // --------------
@@ -98,7 +97,7 @@ module ariane
     logic                     if_ready_if_pcgen;
     logic                     fetch_valid_pcgen_if;
     // --------------
-    // PCGEN <-> EX
+    // PCGEN <-> COMMIT
     // --------------
     // --------------
     // PCGEN <-> CSR
@@ -193,7 +192,6 @@ module ariane
     fu_op                     csr_op_commit_csr;
     logic [63:0]              csr_wdata_commit_csr;
     logic [63:0]              csr_rdata_csr_commit;
-    logic [63:0]              pc_commit_csr;
     logic [4:0]               irq_enable_csr_commit;
     exception                 csr_exception_csr_commit;
     // --------------
@@ -201,33 +199,33 @@ module ariane
     // --------------
 
     // * -> CTRL
+    logic                     flush_bp_ctrl_pcgen;
+    logic                     flush_ctrl_pcgen;
     logic                     flush_csr_ctrl;
     logic                     flush_unissued_instr_ctrl_id;
-    logic                     flush_scoreboard_ctrl_id;
     logic                     flush_ctrl_if;
     logic                     flush_ctrl_id;
-    logic                     flush_controller_ex;
+    logic                     flush_ctrl_ex;
 
 
     // TODO: Preliminary signal assignments
     logic flush_tlb;
     assign flush_tlb = 1'b0;
-    assign flush = 1'b0;
-
-    assign halt_if = 1'b0;
 
     // --------------
     // NPC Generation
     // --------------
     pcgen pcgen_i (
         .fetch_enable_i     ( fetch_enable                   ),
-        .flush_i            ( flush                          ),
+        .flush_i            ( flush_ctrl_pcgen               ),
+        .flush_bp_i         ( flush_bp_ctrl_pcgen            ),
         .if_ready_i         ( ~if_ready_if_pcgen             ),
         .resolved_branch_i  ( resolved_branch                ),
         .fetch_address_o    ( fetch_address_pcgen_if         ),
         .fetch_valid_o      ( fetch_valid_pcgen_if           ),
         .branch_predict_o   ( branch_predict_pcgen_if        ),
         .boot_addr_i        ( boot_addr_i                    ),
+        .pc_commit_i        ( pc_commit                      ),
         .epc_i              ( epc_commit_pcgen               ),
         .trap_vector_base_i ( trap_vector_base_commit_pcgen  ),
         .ex_i               ( ex_commit                      ),
@@ -261,14 +259,13 @@ module ariane
     // ---------
     id_stage
     #(
-        .NR_ENTRIES          ( NR_SB_ENTRIES                ),
-        .NR_WB_PORTS         ( NR_WB_PORTS                  )
+        .NR_ENTRIES                 ( NR_SB_ENTRIES                            ),
+        .NR_WB_PORTS                ( NR_WB_PORTS                              )
     )
     id_stage_i (
         .test_en_i                  ( test_en_i                                ),
-        .flush_i                    ( flush                                    ),
+        .flush_i                    ( flush_ctrl_id                            ),
         .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id             ),
-        .flush_scoreboard_i         ( flush_scoreboard_ctrl_id                 ),
         .fetch_entry_i              ( fetch_entry_if_id                        ),
         .fetch_entry_valid_i        ( fetch_valid_if_id                        ),
         .decoded_instr_ack_o        ( decode_ack_id_if                         ),
@@ -319,7 +316,7 @@ module ariane
     // EX
     // ---------
     ex_stage ex_stage_i (
-        .flush_i                ( flush                      ),
+        .flush_i                ( flush_ctrl_ex              ),
         .operator_i             ( operator_id_ex             ),
         .operand_a_i            ( operand_a_id_ex            ),
         .operand_b_i            ( operand_b_id_ex            ),
@@ -388,7 +385,7 @@ module ariane
         .we_a_o              ( we_a_commit_id             ),
         .commit_lsu_o        ( lsu_commit_commit_ex       ),
         .commit_csr_o        ( csr_commit_commit_ex       ),
-        .pc_o                ( pc_commit_csr              ),
+        .pc_o                ( pc_commit                  ),
         .csr_op_o            ( csr_op_commit_csr          ),
         .csr_wdata_o         ( csr_wdata_commit_csr       ),
         .csr_rdata_i         ( csr_rdata_csr_commit       ),
@@ -410,7 +407,7 @@ module ariane
         .csr_addr_i           ( csr_addr_ex_csr                 ),
         .csr_wdata_i          ( csr_wdata_commit_csr            ),
         .csr_rdata_o          ( csr_rdata_csr_commit            ),
-        .pc_i                 ( pc_commit_csr                   ),
+        .pc_i                 ( pc_commit                       ),
         .csr_exception_o      ( csr_exception_csr_commit        ),
         .irq_enable_o         (                                 ),
         .epc_o                ( epc_commit_pcgen                ),
@@ -429,12 +426,12 @@ module ariane
     // Controller
     // ------------
     controller controller_i (
-        .flush_bp_o             (                               ),
-        .flush_scoreboard_o     ( flush_scoreboard_ctrl_id      ),
+        .flush_bp_o             ( flush_bp_ctrl_pcgen           ),
+        .flush_pcgen_o          ( flush_ctrl_pcgen              ),
         .flush_unissued_instr_o ( flush_unissued_instr_ctrl_id  ),
         .flush_if_o             ( flush_ctrl_if                 ),
         .flush_id_o             ( flush_ctrl_id                 ),
-        .flush_ex_o             ( flush_controller_ex           ),
+        .flush_ex_o             ( flush_ctrl_ex                 ),
 
         .ex_i                   ( ex_commit                     ),
         .flush_csr_i            ( flush_csr_ctrl                ),
@@ -451,7 +448,7 @@ module ariane
     // control signals
     assign tracer_if.rstn           = rst_ni;
     assign tracer_if.flush_unissued = flush_unissued_instr_ctrl_id;
-    assign tracer_if.flush          = flush_controller_ex;
+    assign tracer_if.flush          = flush_ctrl_ex;
     // fetch
     assign tracer_if.fetch          = fetch_entry_if_id;
     assign tracer_if.fetch_valid    = fetch_valid_if_id;

@@ -24,9 +24,9 @@ module controller (
     input  logic            rst_ni,   // Asynchronous reset active low
 
     output logic            flush_bp_o,             // flush branch prediction data structures
+    output logic            flush_pcgen_o,          // flush PC Generation Stage
     output logic            flush_if_o,             // flush the IF stage
     output logic            flush_unissued_instr_o, // flush un-issued instructions of the scoreboard
-    output logic            flush_scoreboard_o,     // flush the whole scoreboard
     output logic            flush_id_o,             // flush ID stage
     output logic            flush_ex_o,             // flush EX stage
 
@@ -41,9 +41,9 @@ module controller (
     // Flush CTRL
     // ------------
     always_comb begin : flush_ctrl
+        flush_pcgen_o          = 1'b0;
         flush_if_o             = 1'b0;
         flush_unissued_instr_o = 1'b0;
-        flush_scoreboard_o     = 1'b0;
         flush_id_o             = 1'b0;
         flush_ex_o             = 1'b0;
 
@@ -62,8 +62,9 @@ module controller (
         // Exception
         // ------------
         if (ex_i.valid) begin
+            // don't flush pcgen as we want to take the exception
+            flush_pcgen_o          = 1'b0;
             flush_if_o             = 1'b1;
-            flush_scoreboard_o     = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
         end
@@ -72,8 +73,8 @@ module controller (
         // CSR instruction with side-effect
         // ---------------------------------
         if (flush_csr_i) begin
+            flush_pcgen_o          = 1'b1;
             flush_if_o             = 1'b1;
-            flush_scoreboard_o     = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
         end

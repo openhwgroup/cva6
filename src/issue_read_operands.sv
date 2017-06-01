@@ -253,15 +253,15 @@ module issue_read_operands (
             end
         endcase
     end
-    // FU select
+    // FU select, assert the correct valid out signal (in the next cycle)
     always_comb begin : unit_valid
         alu_valid_n    = 1'b0;
         lsu_valid_n    = 1'b0;
         mult_valid_n   = 1'b0;
         csr_valid_n    = 1'b0;
         branch_valid_n = 1'b0;
-        // Exception pass through
-        // if an exception has occurred simply pass it through
+        // Exception pass through:
+        // If an exception has occurred simply pass it through
         // we do not want to issue this instruction
         if (~issue_instr_i.ex.valid && issue_instr_valid_i && issue_ack_o) begin
             case (issue_instr_i.fu)
@@ -282,8 +282,20 @@ module issue_read_operands (
                 end
             endcase
         end
+        // if we got a flush request, de-assert the valid flag, otherwise we will start this
+        // functional unit with the wrong inputs
+        if (flush_i) begin
+            alu_valid_n    = 1'b0;
+            lsu_valid_n    = 1'b0;
+            mult_valid_n   = 1'b0;
+            csr_valid_n    = 1'b0;
+            branch_valid_n = 1'b0;
+        end
     end
 
+    // ----------------------
+    // Integer Register File
+    // ----------------------
     regfile #(
         .DATA_WIDTH     ( 64                  )
     )
@@ -304,7 +316,9 @@ module issue_read_operands (
         .we_a_i         ( we_a_i              )
     );
 
-    // Registers
+    // ----------------------
+    // Registers (ID <-> EX)
+    // ----------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
             operand_a_q           <= '{default: 0};

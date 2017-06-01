@@ -50,11 +50,10 @@ module if_stage (
     logic [63:0]      instr_addr_q;
     logic             fifo_valid;
     logic             fifo_ready;
-    logic             fifo_clear;
     branchpredict_sbe branchpredict_q;
 
     //---------------------------------
-    // Prefetch buffer status
+    // Pre-fetch buffer status
     //---------------------------------
     // we are busy if we are either waiting for a grant
     // or if the FIFO is full
