@@ -71,7 +71,7 @@ module csr_regfile #(
     // CSR Registers
     // ----------------
     // privilege level register
-    priv_lvl_t   priv_lvl_n, priv_lvl_q, prev_priv_lvl_n, prev_priv_lvl_q;
+    priv_lvl_t   priv_lvl_n, priv_lvl_q;
 
     typedef struct packed {
         logic         sd;     // signal dirty - read-only - hardwired zero
@@ -220,13 +220,21 @@ module csr_regfile #(
                         mstatus_n.fs   = 2'b0;
                         mstatus_n.upie = 1'b0;
                         mstatus_n.uie  = 1'b0;
+                        // if the SIE was set also set the MIE as interrupts for
+                        // higher privilege levels are always set, 1.10 p.20
+                        if (csr_wdata[1])
+                            mstatus_n.mie = 1'b1;
+                        // if the MIE was cleared, also clear SIE since interrupts
+                        // for lower privilege levels are always disabled, 1.10 p.20
+                        if (!csr_wdata[3])
+                            mstatus_n.sie = 1'b0;
                     end
                     // machine exception delegation register
                     // 0 - 12 exceptions supported
-                    CSR_MEDELEG:            medeleg_n   = csr_wdata & (~64'hBFF);
+                    CSR_MEDELEG:            medeleg_n   = csr_wdata & 64'hBFF;
                     // machine interrupt delegation register
                     // we do not support user interrupt delegation
-                    CSR_MIDELEG:            mideleg_n   = csr_wdata & (~64'hAAA);
+                    CSR_MIDELEG:            mideleg_n   = csr_wdata & 64'hAAA;
 
                     // mask the register so that user interrupts can never be set
                     CSR_MIE:                mie_n       = csr_wdata & (~64'h111);
@@ -245,16 +253,23 @@ module csr_regfile #(
                 update_access_exception = 1'b1;
             end
         end
+
+        // -----------------------
+        // Manage Exception Stack
+        // -----------------------
         // update exception CSRs
         // we got an exception update cause, pc and stval register
+        // Exception is taken
         if (ex_i.valid) begin
             automatic priv_lvl_t trap_to_priv_lvl = PRIV_LVL_M;
             // figure out where to trap to
-            // a m-mode trap might be delegated
+            // a m-mode trap might be delegated if we are taking it in S mode
             // first figure out if this was an exception or an interrupt e.g.: look at bit 63
             if ((ex_i.cause[63] && mideleg_q[ex_i.cause[62:0]]) ||
-                (~ex_i.cause[63] && mideleg_q[ex_i.cause[62:0]])) begin
-                trap_to_priv_lvl = PRIV_LVL_S;
+                (~ex_i.cause[63] && medeleg_q[ex_i.cause[62:0]])) begin
+                // traps never transition from a more-privileged mode to a less privileged mode
+                // so if we are already in M mode, stay there
+                trap_to_priv_lvl = (priv_lvl_q == PRIV_LVL_M) ? PRIV_LVL_M : PRIV_LVL_S;
             end
 
             // trap to supervisor mode
@@ -262,6 +277,7 @@ module csr_regfile #(
                 // update sstatus
                 mstatus_n.sie  = 1'b0;
                 mstatus_n.spie = mstatus_q.sie;
+                // this can either be user or supervisor mode
                 mstatus_n.spp  = logic'(priv_lvl_q);
                 // set cause
                 scause_n = ex_i.cause;
@@ -272,16 +288,40 @@ module csr_regfile #(
             // trap to machine mode
             end else begin
                 // update mstatus
+                // clear enable flags for all lower privilege levels
+                // but as m is already the highest -> clear everything
                 mstatus_n.mie  = 1'b0;
-                mstatus_n.mpie = mstatus_q.sie;
+                mstatus_n.sie  = 1'b0;
+                mstatus_n.mpie = mstatus_q.mie;
+                // save the previous privilege mode
                 mstatus_n.mpp  = priv_lvl_q;
-                mcause_n = ex_i.cause;
+                mcause_n       = ex_i.cause;
                 // set epc
-                mepc_n = pc_i;
+                mepc_n         = pc_i;
                 // set mtval or stval
-                mtval_n = ex_i.tval;
+                mtval_n        = ex_i.tval;
             end
+
             priv_lvl_n = trap_to_priv_lvl;
+        end
+        // return from exception
+        if (mret) begin
+            // return to the previous privilege level and restore all enable flags
+            // get the previous machine interrupt enable flag
+            mstatus_n.mie = mstatus_q.mpie;
+            // restore the previous privilege level
+            priv_lvl_n    = mstatus_q.mpp;
+            // set mpp to user mode
+            mstatus_n.mpp = PRIV_LVL_U;
+        end
+
+        if (sret) begin
+            // return the previous supervisor interrupt enable flag
+            mstatus_n.sie = mstatus_n.spie;
+            // restore the previous privilege level
+            priv_lvl_n    = priv_lvl_t'({1'b0, mstatus_n.spp});
+            // set spp to user mode
+            mstatus_n.spp = logic'(PRIV_LVL_U);
         end
     end
     // ---------------------------
@@ -371,7 +411,6 @@ module csr_regfile #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             priv_lvl_q      <= PRIV_LVL_M;
-            prev_priv_lvl_q <= PRIV_LVL_M;
             // machine mode registers
             mstatus_q       <= 64'b0;
             mtvec_q         <= {boot_addr_i[63:2], 2'b0}; // set to boot address + direct mode
@@ -392,7 +431,6 @@ module csr_regfile #(
             satp_q          <= 64'b0;
         end else begin
             priv_lvl_q      <= priv_lvl_n;
-            prev_priv_lvl_q <= priv_lvl_q;
             // machine mode registers
             mstatus_q       <= mstatus_n;
             mtvec_q         <= mtvec_n;
