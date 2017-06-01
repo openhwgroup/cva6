@@ -22,8 +22,8 @@ import ariane_pkg::*;
 module csr_regfile #(
     parameter int ASID_WIDTH = 1
     )(
-    input  logic                  clk_i,    // Clock
-    input  logic                  rst_ni,   // Asynchronous reset active low
+    input  logic                  clk_i,            // Clock
+    input  logic                  rst_ni,           // Asynchronous reset active low
     // send a flush request out if a CSR with a side effect has changed
     output logic                  flush_o,
     // Core and Cluster ID
@@ -44,6 +44,7 @@ module csr_regfile #(
     // Interrupts/Exceptions
     output logic  [3:0]           irq_enable_o,
     output logic  [63:0]          epc_o,
+    output logic                  eret_o,           // return from exception
     output logic  [63:0]          trap_vector_base_o,
     output priv_lvl_t             priv_lvl_o,
     // MMU
@@ -56,7 +57,10 @@ module csr_regfile #(
     // Performance Counter
 );
 
-    csr_t csr_addr;
+    logic  mret;  // return from M-mode exception
+    logic  sret;  // return from S-mode exception
+
+    csr_t  csr_addr;
     assign csr_addr = csr_t'(csr_addr_i);
 
     // internal signal to keep track of access exceptions
@@ -68,6 +72,7 @@ module csr_regfile #(
     // ----------------
     // privilege level register
     priv_lvl_t   priv_lvl_n, priv_lvl_q, prev_priv_lvl_n, prev_priv_lvl_q;
+
     typedef struct packed {
         logic         sd;     // signal dirty - read-only - hardwired zero
         logic [62:36] wpri4;  // writes preserved reads ignored
@@ -283,14 +288,30 @@ module csr_regfile #(
     // CSR OP Select Logic
     // ---------------------------
     always_comb begin : csr_op_logic
+
         csr_wdata = csr_wdata_i;
         csr_we    = 1'b1;
         csr_read  = 1'b1;
+        mret      = 1'b0;
+        sret      = 1'b0;
+
         unique case (csr_op_i)
             CSR_WRITE: csr_wdata = csr_wdata_i;
             CSR_SET:   csr_wdata = csr_wdata_i | csr_rdata;
             CSR_CLEAR: csr_wdata = (~csr_wdata_i) & csr_rdata;
-            CSR_READ:  csr_we   = 1'b0;
+            CSR_READ:  csr_we    = 1'b0;
+            SRET: begin
+                // the return should not have any write or read side-effects
+                csr_we   = 1'b0;
+                csr_read = 1'b0;
+                sret     = 1'b0; // signal a return from supervisor mode
+            end
+            MRET: begin
+                // the return should not have any write or read side-effects
+                csr_we   = 1'b0;
+                csr_read = 1'b0;
+                mret     = 1'b1; // signal a return from machine mode
+            end
             default: begin
                 csr_we   = 1'b0;
                 csr_read = 1'b0;
@@ -315,14 +336,14 @@ module csr_regfile #(
     // -------------------
     // Output Assignments
     // -------------------
-    assign csr_rdata_o = csr_rdata;
-    assign priv_lvl_o  = priv_lvl_q;
+    assign csr_rdata_o          = csr_rdata;
+    assign priv_lvl_o           = priv_lvl_q;
     // MMU outputs
-    assign pd_ppn_o    = satp_q.ppn;
-    assign asid_o      = satp_q.asid[ASID_WIDTH-1:0];
-    assign flag_pum_o  = mstatus_q.sum;
+    assign pd_ppn_o             = satp_q.ppn;
+    assign asid_o               = satp_q.asid[ASID_WIDTH-1:0];
+    assign flag_pum_o           = mstatus_q.sum;
     assign enable_translation_o = mstatus_q.tvm;
-    assign flag_mxr_o  = mstatus_q.mxr;
+    assign flag_mxr_o           = mstatus_q.mxr;
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
@@ -332,8 +353,10 @@ module csr_regfile #(
         if (priv_lvl_q == PRIV_LVL_S) begin
             trap_vector_base_o = stvec_q;
         end
-        if (prev_priv_lvl_q == PRIV_LVL_S) begin
-            epc_o              = sepc_q;
+
+        // we are returning from supervisor mode, so take the sepc register
+        if (sret) begin
+            epc_o          = sepc_q;
         end
 
         for (int i = 0; i < 4; i++) begin

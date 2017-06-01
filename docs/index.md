@@ -11,7 +11,7 @@ The instruction RAM has (or L1 instruction cache) an access latency of 1 cycle o
 
 ## Planned Limitations
 
-Ariane is not going to support floating points and atomic operations.
+Ariane is not going to support floating points and atomic operations. No user mode interrupts are supported as well.
 
 ## Instructions
 

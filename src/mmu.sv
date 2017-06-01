@@ -40,6 +40,7 @@ module mmu #(
         // LSU interface
         // this is a more minimalistic interface because the actual addressing logic is handled
         // in the LSU as we distinguish load and stores, what we do here is simple address translation
+        input  exception                        misaligned_ex_i,
         input  logic                            lsu_req_i,
         input  logic [63:0]                     lsu_vaddr_i,
         // if we need to walk the page table we can't grant in the same cycle
@@ -272,7 +273,7 @@ module mmu #(
         lsu_paddr_o = (enable_translation_i) ? {16'b0, dtlb_content} : lsu_vaddr_i;
         lsu_valid_o = lsu_req_i;
         // TODO: Assign access exception
-        lsu_exception_o = 'b0;
+        lsu_exception_o = misaligned_ex_i;
     end
 
 endmodule

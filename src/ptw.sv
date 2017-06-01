@@ -72,7 +72,6 @@ module ptw #(
 
     pte_t ptw_pte_i;
     assign ptw_pte_i = pte_t'(data_rdata_i);
-    assign data_tag_status_o = 2'b01;
 
     enum logic[1:0] {
       PTW_READY,

@@ -37,7 +37,8 @@ module pcgen (
     // from commit
     input  logic [63:0]      pc_commit_i,        // PC of instruction in commit stage
     // CSR input
-    input  logic [63:0]      epc_i,              // return from exception
+    input  logic [63:0]      epc_i,              // exception PC which we need to return to
+    input  logic             eret_i,             // return from exception
     input  logic [63:0]      trap_vector_base_i, // base of trap vector
     input  exception         ex_i                // exception in - from commit
 );
@@ -111,6 +112,10 @@ module pcgen (
         // -------------------------------
         // 5. Return from exception
         // -------------------------------
+        if (eret_i) begin
+            npc_n = epc_i;
+        end
+
         // -------------------------------
         // 6. Pipeline Flush
         // -------------------------------

@@ -185,23 +185,25 @@ module lsu #(
         .DATA_TLB_ENTRIES       ( 16                   ),
         .ASID_WIDTH             ( ASID_WIDTH           )
     ) mmu_i (
+            // misaligned bypass
+        .misaligned_ex_i        ( misaligned_exception ),
         .lsu_req_i              ( translation_req      ),
         .lsu_vaddr_i            ( mmu_vaddr            ),
         .lsu_valid_o            ( translation_valid    ),
         .lsu_paddr_o            ( mmu_paddr            ),
         .lsu_exception_o        ( mmu_exception        ),
         // connecting PTW to D$ IF (aka mem arbiter
-        .address_index_o ( address_index_i  [0] ),
-        .address_tag_o   ( address_tag_i    [0] ),
-        .data_wdata_o    ( data_wdata_i     [0] ),
-        .data_req_o      ( data_req_i       [0] ),
-        .data_we_o       ( data_we_i        [0] ),
-        .data_be_o       ( data_be_i        [0] ),
-        .kill_req_o      ( kill_req_i       [0] ),
-        .tag_valid_o     ( tag_valid_i      [0] ),
-        .data_gnt_i      ( data_gnt_o       [0] ),
-        .data_rvalid_i   ( data_rvalid_o    [0] ),
-        .data_rdata_i    ( data_rdata_o     [0] ),
+        .address_index_o        ( address_index_i  [0] ),
+        .address_tag_o          ( address_tag_i    [0] ),
+        .data_wdata_o           ( data_wdata_i     [0] ),
+        .data_req_o             ( data_req_i       [0] ),
+        .data_we_o              ( data_we_i        [0] ),
+        .data_be_o              ( data_be_i        [0] ),
+        .kill_req_o             ( kill_req_i       [0] ),
+        .tag_valid_o            ( tag_valid_i      [0] ),
+        .data_gnt_i             ( data_gnt_o       [0] ),
+        .data_rvalid_i          ( data_rvalid_o    [0] ),
+        .data_rdata_i           ( data_rdata_o     [0] ),
         .*
     );
     // ------------------
@@ -228,8 +230,6 @@ module lsu #(
         // Load Unit
         .page_offset_i         ( page_offset          ),
         .page_offset_matches_o ( page_offset_matches  ),
-        // misaligned bypass
-        .misaligned_ex_i       ( misaligned_exception ),
         // to memory arbiter
         .address_index_o       ( address_index_i  [2] ),
         .address_tag_o         ( address_tag_i    [2] ),

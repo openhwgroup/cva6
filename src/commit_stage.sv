@@ -102,8 +102,6 @@ module commit_stage (
         end
     end
 
-    // privilege check
-
     // ----------------
     // Exception Logic
     // ----------------

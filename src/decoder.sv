@@ -77,27 +77,38 @@ module decoder (
 
                     unique case (instr.itype.funct3)
                         3'b000: begin
+                            // check if the RD and and RS1 fields are zero, this may be reset for the SENCE.VMA instruction
+                            if (instr.itype.rs1 != '0 || instr.itype.rd != '0)
+                                illegal_instr = 1'b1;
                             // decode the immiediate field
                             case (instr.itype.imm)
                                 // ECALL
                                 12'b0: ecall  = 1'b1;
                                 // EBREAK:
                                 12'b1: ebreak = 1'b1;
-
-                                // URET
-                                // 12'b10: ;
-
                                 // SRET
-                                // 12'b100000010:;
-
+                                12'b100000010: begin
+                                    instruction_o.op = SRET;
+                                    // check privilege level, SRET can only be executed in S and M mode
+                                    // we'll just decode an illegal instruction if we are in the wrong privilege level
+                                    if (priv_lvl_i == PRIV_LVL_U)
+                                        illegal_instr = 1'b1;
+                                end
                                 // MRET
-                                // 12'b1100000010:;
-
+                                12'b1100000010: begin
+                                    instruction_o.op = MRET;
+                                    // check privilege level, MRET can only be executed in M mode
+                                    // otherwise we decode an illegal instruction
+                                    if (priv_lvl_i inside {PRIV_LVL_U, PRIV_LVL_S})
+                                        illegal_instr = 1'b1;
+                                end
                                 // WFI
                                 // 12'b1_0000_0101:;
                                 // SFENCE.VMA
                                 default: begin
                                     // if (instr.itype.imm[11:5] == 7'b1001) begin
+                                    // ToDO: Reset illegal instruction here, this is the only type
+                                    // of instruction which needs those kind of fields
                                     //
                                     // end else begin
                                         illegal_instr = 1'b1;

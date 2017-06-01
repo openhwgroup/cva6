@@ -45,8 +45,6 @@ module store_unit (
     // address checker
     input  logic [11:0]              page_offset_i,
     output logic                     page_offset_matches_o,
-    // misaligned bypass
-    input  exception                 misaligned_ex_i,
     // D$ interface
     output logic [11:0]              address_index_o,
     output logic [43:0]              address_tag_o,
@@ -108,11 +106,6 @@ module store_unit (
                 // we are ready if we got this exception
                 ready_o  = 1'b1;
             end
-        end
-        // misaligned exception bypass
-        if (misaligned_ex_i.valid) begin
-            ex_o = misaligned_ex_i;
-            valid_o = 1'b1;
         end
     end
 

@@ -86,7 +86,7 @@ package ariane_pkg;
                                // set lower than operations
                                SLTS, SLTU,
                                // CSR functions
-                               MRET, SRET, URET, ECALL, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
+                               MRET, SRET, ECALL, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
                                // LSU functions
                                LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
                              } fu_op;
@@ -224,7 +224,7 @@ package ariane_pkg;
     localparam ST_ADDR_MISALIGNED    = 64'h6;
     localparam ST_ACCESS_FAULT       = 64'h7;
     localparam ENV_CALL_UMODE        = 64'h8; // environment call from user mode
-    localparam ENV_CALL_SMODE        = 64'h9; // environment call from supvervisor mode
+    localparam ENV_CALL_SMODE        = 64'h9; // environment call from supervisor mode
     localparam ENV_CALL_MMODE        = 64'hB; // environment call from machine mode
 
     typedef enum logic [11:0] {
