@@ -77,6 +77,7 @@ module decoder (
 
                     unique case (instr.itype.funct3)
                         3'b000: begin
+                            // decode the immiediate field
                             case (instr.itype.imm)
                                 // ECALL
                                 12'b0: ecall  = 1'b1;
@@ -449,11 +450,24 @@ module decoder (
                 instruction_o.ex.tval  = instruction_i;
             // we got an ecall, set the correct cause depending on the current privilege level
             end else if (ecall) begin
-                case (priv_lvl_i) begin
-
+                // this instruction has already executed
+                instruction_o.valid    = 1'b1;
+                // this exception is valid
+                instruction_o.ex.valid = 1'b1;
+                // depending on the privilege mode, set the appropriate cause
+                case (priv_lvl_i)
+                    PRIV_LVL_M: instruction_o.ex.cause = ENV_CALL_MMODE;
+                    PRIV_LVL_S: instruction_o.ex.cause = ENV_CALL_SMODE;
+                    PRIV_LVL_U: instruction_o.ex.cause = ENV_CALL_UMODE;
+                    default:; // this should not happen
                 endcase
             end else if (ebreak) begin
-
+                // this instruction has already executed
+                instruction_o.valid    = 1'b1;
+                // this exception is valid
+                instruction_o.ex.valid = 1'b1;
+                // set breakpoint cause
+                instruction_o.ex.cause = BREAKPOINT;
             end
         end
     end

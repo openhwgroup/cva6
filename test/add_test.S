@@ -21,6 +21,9 @@
     add  x15, x4, x5
     add  x14, x4, x5
     nop
+    nop
+    nop
+    ecall
 L0: jal x0, L1
     nop
     nop
