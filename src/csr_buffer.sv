@@ -52,13 +52,16 @@ module csr_buffer (
     // CSR instructions for this post buffer are single cycle
     assign csr_valid_o    = csr_valid_i;
     assign csr_result_o   = operand_a_i;
-    assign csr_ready_o    = (csr_reg_q.valid && ~commit_i) ? 1'b0 : 1'b1;
     assign csr_addr_o     = csr_reg_q.csr_address;
 
     // write logic
     always_comb begin : write
-        csr_reg_n = csr_reg_q;
-
+        csr_reg_n  = csr_reg_q;
+        // by default we are ready
+        csr_ready_o = 1'b1;
+        // if we have a valid uncomiited csr req or are just getting one WITHOUT a commit in, we are not ready
+        if ((csr_reg_q.valid || csr_valid_i) && ~commit_i)
+            csr_ready_o = 1'b0;
         // if we got a valid from the scoreboard
         // store the CSR address
         if (csr_valid_i) begin
