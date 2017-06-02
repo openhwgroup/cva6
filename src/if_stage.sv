@@ -219,7 +219,7 @@ module if_stage (
     //-------------
     // Registers
     //-------------
-    always_ff @(posedge clk_i, negedge rst_ni) begin : IF_ID_PIPE_REGISTERS
+    always_ff @(posedge clk_i, negedge rst_ni) begin
       if (~rst_ni) begin
             CS              <= IDLE;
             instr_addr_q    <= '0;
