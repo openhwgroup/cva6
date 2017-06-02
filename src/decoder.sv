@@ -291,7 +291,7 @@ module decoder (
                 end
 
                 OPCODE_STORE: begin
-                    instruction_o.fu  = LSU;
+                    instruction_o.fu  = STORE;
                     imm_select = SIMM;
                     instruction_o.rs1  = instr.stype.rs1;
                     instruction_o.rs2  = instr.stype.rs2;
@@ -311,7 +311,7 @@ module decoder (
                 end
 
                 OPCODE_LOAD: begin
-                    instruction_o.fu  = LSU;
+                    instruction_o.fu  = LOAD;
                     imm_select = IIMM;
                     instruction_o.rs1 = instr.itype.rs1;
                     instruction_o.rd  = instr.itype.rd;

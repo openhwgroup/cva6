@@ -25,6 +25,7 @@ module lsu #(
     input  logic                     rst_ni,
     input  logic                     flush_i,
 
+    input  fu_t                      fu_i,
     input  fu_op                     operator_i,
     input  logic [63:0]              operand_a_i,
     input  logic [63:0]              operand_b_i,
@@ -85,11 +86,13 @@ module lsu #(
     logic [63:0]              vaddr;
     logic [63:0]              data;
     logic [7:0]               be;
+    fu_t                      fu;
     fu_op                     operator;
     logic [TRANS_ID_BITS-1:0] trans_id;
     // registered address in case of a necessary stall
     logic [63:0]              vaddr_n,    vaddr_q;
     logic [63:0]              data_n,     data_q;
+    fu_t                      fu_n,       fu_q;
     fu_op                     operator_n, operator_q;
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     logic [7:0]               be_n,       be_q;
@@ -100,6 +103,7 @@ module lsu #(
     // virtual address as calculated by the AGU in the first cycle
     logic [63:0] vaddr_i;
     logic [7:0]  be_i;
+
     assign vaddr_i = $signed(imm_i) + $signed(operand_a_i);
 
     logic                     st_valid_i;
@@ -325,8 +329,6 @@ module lsu #(
         end
     end
 
-    enum logic {LD_OP, ST_OP} op;
-
     // determine whether this is a load or store
     always_comb begin : which_op
 
@@ -334,20 +336,14 @@ module lsu #(
         st_valid_i = 1'b0;
 
         // only activate one of the units if we didn't got an misaligned exception
-        // we can directly output an misaligned exception and do not need to process it any further
+        // we can directly output a misaligned exception and do not need to process it any further
         if (!data_misaligned) begin
             // check the operator to activate the right functional unit accordingly
-            unique case (operator)
+            unique case (fu)
                 // all loads go here
-                LD, LW, LWU, LH, LHU, LB, LBU:  begin
-                    ld_valid_i = 1'b1;
-                    op         = LD_OP;
-                end
+                LOAD:  ld_valid_i = 1'b1;
                 // all stores go here
-                SD, SW, SH, SB: begin
-                    st_valid_i = 1'b1;
-                    op         = ST_OP;
-                end
+                STORE: st_valid_i = 1'b1;
                 // not relevant for the LSU
                 default: ;
             endcase
@@ -444,14 +440,14 @@ module lsu #(
 
         if (data_misaligned) begin
 
-            if (op == LD_OP) begin
+            if (fu == LOAD) begin
                 misaligned_exception = {
                     64'b0,
                     LD_ADDR_MISALIGNED,
                     1'b1
                 };
 
-            end else if (op == ST_OP) begin
+            end else if (fu == STORE) begin
                 misaligned_exception = {
                     64'b0,
                     ST_ADDR_MISALIGNED,
@@ -468,12 +464,14 @@ module lsu #(
         if (stall_q) begin
             vaddr     = vaddr_q;
             data      = data_q;
+            fu        = fu_q;
             operator  = operator_q;
             trans_id  = trans_id_q;
             be        = be_q;
         end else begin // otherwise bypass them
             vaddr     = vaddr_i;
             data      = operand_b_i;
+            fu        = fu_i;
             operator  = operator_i;
             trans_id  = trans_id_i;
             be        = be_i;
@@ -483,6 +481,7 @@ module lsu #(
     always_comb begin : register_stage
         vaddr_n     = vaddr_q;
         data_n      = data_q;
+        fu_n        = fu_q;
         operator_n  = operator_q;
         trans_id_n  = trans_id_q;
         be_n        = be_q;
@@ -490,6 +489,7 @@ module lsu #(
         if (lsu_valid_i) begin
              vaddr_n     = vaddr_i;
              data_n      = operand_b_i;
+             fu_n        = fu_i;
              operator_n  = operator_i;
              trans_id_n  = trans_id_i;
              be_n        = be_i;
@@ -508,6 +508,7 @@ module lsu #(
             // 1st LSU stage
             vaddr_q             <= 64'b0;
             data_q              <= 64'b0;
+            fu_q                <= NONE;
             operator_q          <= ADD;
             trans_id_q          <= '{default: 0};
             be_q                <= 8'b0;
@@ -516,6 +517,7 @@ module lsu #(
             // 1st LSU stage
             vaddr_q             <= vaddr_n;
             data_q              <= data_n;
+            fu_q                <= fu_n;
             operator_q          <= operator_n;
             trans_id_q          <= trans_id_n;
             be_q                <= be_n;

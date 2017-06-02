@@ -65,7 +65,7 @@ package ariane_pkg;
     } branchpredict_sbe;
 
     typedef enum logic[3:0] {
-        NONE, LSU, ALU, CTRL_FLOW, MULT, CSR
+        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;

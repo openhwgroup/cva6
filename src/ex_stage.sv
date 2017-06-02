@@ -26,6 +26,7 @@ module ex_stage #(
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,
 
+    input  fu_t                                    fu_i,
     input  fu_op                                   operator_i,
     input  logic [63:0]                            operand_a_i,
     input  logic [63:0]                            operand_b_i,

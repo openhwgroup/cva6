@@ -39,6 +39,7 @@ module issue_read_operands (
     // get clobber input
     input  fu_t [31:0]                             rd_clobber_i,
     // To FU, just single issue for now
+    output fu_t                                    fu_o,
     output fu_op                                   operator_o,
     output logic [63:0]                            operand_a_o,
     output logic [63:0]                            operand_b_o,
@@ -84,7 +85,8 @@ module issue_read_operands (
     logic branch_valid_n, branch_valid_q;
 
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
-    fu_op operator_n, operator_q;
+    fu_op operator_n, operator_q; // operation to perform
+    fu_t  fu_n,       fu_q; // functional unit to use
 
     // forwarding signals
     logic forward_rs1, forward_rs2;
@@ -92,6 +94,7 @@ module issue_read_operands (
     assign operand_a_o    = operand_a_q;
     assign operand_b_o    = operand_b_q;
     assign operand_c_o    = operand_c_q;
+    assign fu_o           = fu_q;
     assign operator_o     = operator_q;
     assign alu_valid_o    = alu_valid_q;
     assign branch_valid_o = branch_valid_q;
@@ -150,7 +153,7 @@ module issue_read_operands (
                 fu_busy = ~alu_ready_i;
             MULT:
                 fu_busy = ~mult_ready_i;
-            LSU:
+            LOAD, STORE:
                 fu_busy = ~lsu_ready_i;
             CSR:
                 fu_busy = ~csr_ready_i;
@@ -203,8 +206,8 @@ module issue_read_operands (
         // immediates are the third operands in the store case
         imm_n      = issue_instr_i.result;
         trans_id_n = issue_instr_i.trans_id;
+        fu_n       = issue_instr_i.fu;
         operator_n = issue_instr_i.op;
-
         // or should we forward
         if (forward_rs1) begin
             operand_a_n  = rs1_i;
@@ -225,7 +228,7 @@ module issue_read_operands (
             operand_a_n = {52'b0, issue_instr_i.rs1};
         end
         // or is it an immediate (including PC), this is not the case for a store
-        if (issue_instr_i.use_imm && ~(issue_instr_i.op inside {SD, SW, SH, SB})) begin
+        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE)) begin
             operand_b_n = issue_instr_i.result;
         end
         // special assignments in the JAL and JALR case
@@ -269,7 +272,7 @@ module issue_read_operands (
                     alu_valid_n  = 1'b1;
                 MULT:
                     mult_valid_n = 1'b1;
-                LSU:
+                LOAD, STORE:
                     lsu_valid_n  = 1'b1;
                 CSR:
                     csr_valid_n  = 1'b1;
@@ -330,6 +333,7 @@ module issue_read_operands (
             mult_valid_q          <= 1'b0;
             lsu_valid_q           <= 1'b0;
             csr_valid_q           <= 1'b0;
+            fu_q                  <= NONE;
             operator_q            <= ADD;
             trans_id_q            <= 5'b0;
             pc_o                  <= 64'b0;
@@ -345,6 +349,7 @@ module issue_read_operands (
             mult_valid_q          <= mult_valid_n;
             lsu_valid_q           <= lsu_valid_n;
             csr_valid_q           <= csr_valid_n;
+            fu_q                  <= fu_n;
             operator_q            <= operator_n;
             trans_id_q            <= trans_id_n;
             pc_o                  <= issue_instr_i.pc;

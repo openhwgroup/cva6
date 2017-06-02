@@ -76,7 +76,7 @@ module commit_stage (
                 we_a_o       = 1'b1;
                 commit_ack_o = 1'b1;
                 // check whether the instruction we retire was a store
-                if (commit_instr_i.op inside {SD, SW, SH, SB}) begin
+                if (commit_instr_i.fu == STORE) begin
                     commit_lsu_o = 1'b1;
                 end
                 // ---------

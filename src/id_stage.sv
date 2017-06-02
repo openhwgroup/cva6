@@ -38,6 +38,7 @@ module id_stage #(
     input  priv_lvl_t                                priv_lvl_i,              // current privilege level
 
     output logic                                     ready_o,    // id is ready
+    output fu_t                                      fu_o,
     output fu_op                                     operator_o,
     output logic [63:0]                              operand_a_o,
     output logic [63:0]                              operand_b_o,

@@ -118,6 +118,7 @@ module ariane
     // --------------
     logic [63:0]              imm_id_ex;
     logic [TRANS_ID_BITS-1:0] trans_id_id_ex;
+    fu_t                      fu_id_ex;
     fu_op                     operator_id_ex;
     logic [63:0]              operand_a_id_ex;
     logic [63:0]              operand_b_id_ex;
@@ -275,6 +276,7 @@ module ariane
         .ready_o                    ( ready_id_if                              ),
         .priv_lvl_i                 ( priv_lvl                                 ),
         // Functional Units
+        .fu_o                       ( fu_id_ex                                 ),
         .operator_o                 ( operator_id_ex                           ),
         .operand_a_o                ( operand_a_id_ex                          ),
         .operand_b_o                ( operand_b_id_ex                          ),
@@ -319,6 +321,7 @@ module ariane
     // ---------
     ex_stage ex_stage_i (
         .flush_i                ( flush_ctrl_ex              ),
+        .fu_i                   ( fu_id_ex                   ),
         .operator_i             ( operator_id_ex             ),
         .operand_a_i            ( operand_a_id_ex            ),
         .operand_b_i            ( operand_b_id_ex            ),
