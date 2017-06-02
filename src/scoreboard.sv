@@ -189,6 +189,30 @@ module scoreboard #(
                 end
             end
         end
+
+        // -----------
+        // Forwarding
+        // -----------
+        // provide a direct combinational path from WB a.k.a forwarding
+        // make sure that we are not forwarding a result that got an exception
+        for (int j = 0; j < NR_WB_PORTS; j++) begin
+            if (mem_q[trans_id_i[j]].sbe.rd == rs1_i && wb_valid_i[j] && ~ex_i[j].valid) begin
+                rs1_o = wdata_i[j];
+                rs1_valid_o = wb_valid_i[j];
+                break;
+            end
+            if (mem_q[trans_id_i[j]].sbe.rd == rs2_i && wb_valid_i[j] && ~ex_i[j].valid) begin
+                rs2_o = wdata_i[j];
+                rs2_valid_o = wb_valid_i[j];
+                break;
+            end
+        end
+
+        // make sure we didn't read the zero register
+        if (rs1_i == '0)
+            rs1_valid_o = 1'b0;
+        if (rs2_i == '0)
+            rs2_valid_o = 1'b0;
     end
 
     // sequential process
