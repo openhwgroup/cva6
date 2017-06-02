@@ -82,6 +82,8 @@ module pcgen (
             npc_n       = {npc_q[62:2], 2'b0}  + 64'h4;
         else // or keep the PC stable if IF is not ready
             npc_n       =  npc_q;
+        // we only need to stall the consecutive case since in any other case we will flush at least
+        // the front-end which means that the IF stage will always be ready to accept a new request
 
         // -------------------------------
         // 1. Predict taken

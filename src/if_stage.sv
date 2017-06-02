@@ -57,7 +57,7 @@ module if_stage (
     //---------------------------------
     // we are busy if we are either waiting for a grant
     // or if the FIFO is full
-    assign if_busy_o = ((CS == WAIT_GNT || CS == WAIT_ABORTED) && !instr_req_o) || !fifo_ready;
+    assign if_busy_o = ((CS == WAIT_GNT) && !instr_req_o) || !fifo_ready;
     assign fetch_address = {fetch_address_i[63:2], 2'b0};
 
     //---------------------------------
@@ -105,7 +105,9 @@ module if_stage (
                         else
                             NS = WAIT_RVALID;
                     else begin //~> got a request but no grant
-                        NS = WAIT_GNT;
+                        // if we flush we want to stay in the IDLE state
+                        if (!flush_i)
+                            NS = WAIT_GNT;
                     end
                 end
             end // case: IDLE
@@ -115,14 +117,19 @@ module if_stage (
                 instr_addr_o = {instr_addr_q[63:2], 2'b0};
                 instr_req_o  = 1'b1;
 
-                if(instr_gnt_i)
+                if(instr_gnt_i) begin
                     // we have one outstanding rvalid: wait for it
                     if (flush_i)
                         NS = WAIT_ABORTED;
                     else
                         NS = WAIT_RVALID;
-                else
-                    NS = WAIT_GNT;
+                end else begin
+                    // if we got a flush request we can safely return to IDLE
+                    if (flush_i)
+                        NS = IDLE;
+                    else
+                        NS = WAIT_GNT;
+                end
             end // case: WAIT_GNT
 
               // we wait for rvalid, after that we are ready to serve a new request
@@ -144,7 +151,10 @@ module if_stage (
                             else
                                 NS = WAIT_RVALID;
                         end else begin
-                          NS = WAIT_GNT;
+                            if (!flush_i)
+                                NS = WAIT_GNT; // lets wait for the grant
+                            else // we didn't get a grant yet so go back to IDLE
+                                NS = IDLE;
                         end
                     end
                 end else begin
@@ -156,20 +166,27 @@ module if_stage (
                     // just wait for rvalid and go back to IDLE, no new request
                     if (instr_rvalid_i) begin
                       // if we are receiving a data item during a flush ignore it
-                      fifo_valid = 1'b1;
-                      NS         = IDLE;
+                        if (flush_i)
+                            fifo_valid = 1'b0;
+                        else
+                            fifo_valid = 1'b1;
+                        // in any case we can go back to IDLE safely
+                        NS = IDLE;
                     end
                 end
 
             end // case: WAIT_RVALID
 
-            // our last request was aborted, but we didn't yet get a rvalid and
-            // there was no new request sent yet we assume that req_i is set to high
+            // our last request was aborted, but we didn't yet get a rvalid
             WAIT_ABORTED: begin
-                instr_addr_o = {fetch_address_i[63:2], 2'b0};
-                if (instr_rvalid_i) begin
-                    // we are aborting this instruction so don't tell the FIFO it is valid
-                    fifo_valid   = 1'b0;
+                // we can do a new request here, we won't get a grant until the rvalid came back for the
+                // request we sent to end in here
+                instr_addr_o = fetch_address;
+                // we are aborting this instruction so don't tell the FIFO it is valid
+                fifo_valid   = 1'b0;
+                // check if the fetch is valid before making a new request
+                if (fetch_valid_i) begin
+
                     instr_req_o  = 1'b1;
 
                     if (instr_gnt_i) begin
@@ -179,8 +196,16 @@ module if_stage (
                         else
                             NS = WAIT_RVALID;
                     end else begin
-                        NS = WAIT_GNT;
+                        // only if we are not flushing again leave the state
+                        if (!flush_i)
+                            NS = WAIT_GNT;
                     end
+                end else begin
+                    if (instr_rvalid_i) begin
+                        // we didn't make a new request but got the rvalid we where waiting for, go back to IDLE
+                        NS = IDLE;
+                    end
+                    // otherwise wait in this state for the rvalid
                 end
             end
 
