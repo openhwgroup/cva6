@@ -123,10 +123,10 @@ module core_tb;
     end
 
     task preload_memories();
-        logic [7:0] rmem [0:1024];
+        logic [7:0] rmem [0:16384];
 
         $display("Reading memory");
-        $readmemh("test/add_test.v", rmem, 0);
+        $readmemh("test/rv64ui-p-add.v", rmem);
 
         // copy bitwise from verilog file
         for (int i = 0; i < 1024/8; i++) begin

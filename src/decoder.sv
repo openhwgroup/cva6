@@ -33,7 +33,7 @@ module decoder (
     // Immediate select
     // --------------------
     enum logic[3:0] {
-        NOIMM, PCIMM, IIMM, SIMM, BIMM, UIMM, JIMM
+        NOIMM, PCIMM, IIMM, SIMM, SBIMM, BIMM, UIMM, JIMM
     } imm_select;
 
     logic [63:0] imm_i_type;
@@ -172,7 +172,8 @@ module decoder (
 
                 OPCODE_FENCE: begin
                     // TODO: Implement
-                    // FENCE, FENCE.I,
+                    // FENCE, FENCE.I
+                    illegal_instr = 1'b1;
                 end
 
                 // --------------------------
@@ -338,9 +339,11 @@ module decoder (
                 end
 
                 OPCODE_BRANCH: begin
-                    // TODO: Implement
-                    imm_select              = BIMM;
+                    imm_select              = SBIMM;
                     instruction_o.fu        = CTRL_FLOW;
+                    instruction_o.rs1       = instr.stype.rs1;
+                    instruction_o.rs2       = instr.stype.rs2;
+
                     is_control_flow_instr_o = 1'b1;
 
                     case (instr.stype.funct3)
@@ -420,6 +423,10 @@ module decoder (
             end
             SIMM: begin
                 instruction_o.result = imm_s_type;
+                instruction_o.use_imm = 1'b1;
+            end
+            SBIMM: begin
+                instruction_o.result = imm_sb_type;
                 instruction_o.use_imm = 1'b1;
             end
             BIMM: begin

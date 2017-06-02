@@ -357,6 +357,14 @@ module issue_read_operands (
             branch_predict_o      <= issue_instr_i.bp;
         end
     end
+
+    `ifndef SYNTHESIS
+    `ifndef verilator
+     assert property (
+        @(posedge clk_i) (alu_valid_q || lsu_valid_q || csr_valid_q) |-> (!$isunknown(operand_a_q) && !$isunknown(operand_b_q)))
+        else $error ("Got unknown value in one of the operands");
+    `endif
+    `endif
 endmodule
 
 

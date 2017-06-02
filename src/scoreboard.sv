@@ -191,23 +191,34 @@ always_comb begin : push_instruction_and_wb
     end
 
     // write back:
-    // look for the intruction with the given transaction ID and write the result data back
+    // look for the instruction with the given transaction ID and write the result data back
     // also set the valid bit
     for (int j = 0; j < NR_WB_PORTS; j++) begin
         if (wb_valid_i[j]) begin
-            for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
-                if (mem_q[i].trans_id == trans_id_i[j]) begin
-                    mem_n[i].valid  = 1'b1;
-                    mem_n[i].result = wdata_i[j];
-                    mem_n[i].ex     = ex_i[j];
-                end
-            end
+            mem_n[trans_id_i[j]].valid  = 1'b1;
+            mem_n[trans_id_i[j]].result = wdata_i[j];
+            mem_n[trans_id_i[j]].ex     = ex_i[j];
         end
     end
     // flush all instructions which are not issued, e.g. set the top pointer back to the issue pointer
     // -> everything we decoded so far was garbage
     if (flush_unissued_instr_i) begin
         top_pointer_n = issue_pointer_q;
+        // also clear the valid flag for those instructions as it can be that we already got the valid
+        // flag set because of an exception
+        for (int i = 0; i < NR_ENTRIES; i++) begin
+            // pointer has overflowed
+            if (top_pointer_q < issue_pointer_q) begin
+                if (i <= top_pointer_q || i >+ issue_pointer_q)
+                    mem_n[i].valid    = 1'b0;
+                    // also clear exception signal
+                    mem_n[i].ex.valid = 1'b0;
+            end else begin
+                if (i >= issue_pointer_q && i <= top_pointer_q)
+                    mem_n[i].valid    = 1'b0;
+                    mem_n[i].ex.valid = 1'b0;
+            end
+        end
     end
 end
 

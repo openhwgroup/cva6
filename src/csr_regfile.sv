@@ -262,6 +262,7 @@ module csr_regfile #(
         // Exception is taken
         if (ex_i.valid) begin
             automatic priv_lvl_t trap_to_priv_lvl = PRIV_LVL_M;
+            eret_o = 1'b0;
             // figure out where to trap to
             // a m-mode trap might be delegated if we are taking it in S mode
             // first figure out if this was an exception or an interrupt e.g.: look at bit 63
@@ -306,6 +307,8 @@ module csr_regfile #(
         end
         // return from exception
         if (mret) begin
+            // return from exception, IF doesn't care from where we are returning
+            eret_o = 1'b1;
             // return to the previous privilege level and restore all enable flags
             // get the previous machine interrupt enable flag
             mstatus_n.mie = mstatus_q.mpie;
@@ -316,6 +319,8 @@ module csr_regfile #(
         end
 
         if (sret) begin
+            // return from exception, IF doesn't care from where we are returning
+            eret_o = 1'b1;
             // return the previous supervisor interrupt enable flag
             mstatus_n.sie = mstatus_n.spie;
             // restore the previous privilege level

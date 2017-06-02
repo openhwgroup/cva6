@@ -38,9 +38,20 @@ class instruction_trace_item;
         this.reg_file = reg_file;
         this.result   = result;
     endfunction
-
+    // convert register address to ABI compatible form
     function string regAddrToStr(logic [5:0] addr);
-          return $sformatf("x%0d:", addr);
+        case (addr)
+            0: return "x0";
+            1: return "ra";
+            2: return "sp";
+            3: return "gp";
+            4: return "tp";
+            5, 6, 7: return $sformatf("t%0d", (addr - 5));
+            8, 9: return $sformatf("s%0d", (addr - 8));
+            10, 11, 12, 13, 14, 15, 16, 17: return $sformatf("a%0d", (addr-10));
+            28, 29, 30, 31: return $sformatf("t%0d", (addr-25));
+            default: return $sformatf("s%0d", (addr - 16));
+        endcase
     endfunction
 
     function string printInstr();
@@ -112,13 +123,13 @@ class instruction_trace_item;
 
         foreach (result_regs[i]) begin
             if (result_regs[i] != 0)
-                s = $sformatf(s, " %-4s%16x", regAddrToStr(result_regs[i]), this.result);
+                s = $sformatf(s, " %-4s:%16x", regAddrToStr(result_regs[i]), this.result);
         end
 
 
         foreach (read_regs[i]) begin
             if (read_regs[i] != 0)
-                s = $sformatf(s, " %-4s%16x", regAddrToStr(read_regs[i]), reg_file[read_regs[i]]);
+                s = $sformatf(s, " %-4s:%16x", regAddrToStr(read_regs[i]), reg_file[read_regs[i]]);
         end
 
         return s;
@@ -141,7 +152,7 @@ class instruction_trace_item;
         read_regs.push_back(sbe.rs1);
         read_regs.push_back(sbe.rs2);
 
-        return $sformatf("%-16s x%0d, x%0d, x%0d", mnemonic, sbe.rd, sbe.rs1, sbe.rs2);
+        return $sformatf("%-16s %s, %s, %s", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), regAddrToStr(sbe.rs2));
     endfunction // printRInstr
 
     function string printIInstr(input string mnemonic);
@@ -149,7 +160,7 @@ class instruction_trace_item;
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
 
-        return $sformatf("%-16s x%0d, x%0d, %0d", mnemonic, sbe.rd, sbe.rs1, $signed(sbe.result));
+        return $sformatf("%-16s %s, %s, %0d", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), $signed(sbe.result));
     endfunction // printIInstr
 
     function string printIuInstr(input string mnemonic);
@@ -165,7 +176,7 @@ class instruction_trace_item;
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
 
-        return $sformatf("%-16s x%0d, x%0d, 0x%0x", mnemonic, sbe.rd, sbe.rs1, sbe.result);
+        return $sformatf("%-16s %s, %s, 0x%0x", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), sbe.result);
     endfunction // printIuInstr
 
     function string printUInstr(input string mnemonic);
