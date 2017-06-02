@@ -200,6 +200,9 @@ always_comb begin : push_instruction_and_wb
             mem_n[trans_id_i[j]].ex     = ex_i[j];
         end
     end
+    // ------------------------------
+    // Flush un-issued instructions
+    // ------------------------------
     // flush all instructions which are not issued, e.g. set the top pointer back to the issue pointer
     // -> everything we decoded so far was garbage
     if (flush_unissued_instr_i) begin

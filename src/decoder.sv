@@ -382,6 +382,7 @@ module decoder (
                     instruction_o.fu     = ALU;
                     imm_select           = UIMM;
                     instruction_o.use_pc = 1'b1;
+                    instruction_o.rd     = instr.utype.rd;
                 end
 
                 OPCODE_LUI: begin
