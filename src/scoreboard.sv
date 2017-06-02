@@ -205,4 +205,62 @@ module scoreboard #(
             issue_pointer_q  <= issue_pointer_n;
         end
     end
+    `ifndef SYNTHESIS
+    `ifndef verilator
+    initial begin
+        assert (NR_ENTRIES == 2**$clog2(NR_ENTRIES)) else $fatal("Scoreboard size needs to be a power of two.");
+    end
+
+    // assert that zero is never set
+    assert property (
+        @(posedge clk_i) rst_ni |-> (rd_clobber_o[0] == NONE))
+        else $error ("RD 0 should not bet set");
+    // assert that we never acknowledge a commit if the instruction is not valid
+    assert property (
+        @(posedge clk_i) (rst_ni && commit_ack_i |-> commit_instr_o.valid))
+        else $error ("Commit acknowledged but instruction is not valid");
+    // assert that we never give an issue ack signal if the instruction is not valid
+    assert property (
+        @(posedge clk_i) (rst_ni && issue_ack_i |-> issue_instr_valid_o))
+        else $error ("Issue acknowledged but instruction is not valid");
+
+    // there should never be more than one instruction writing the same destination register (except x0)
+    // assert strict pointer ordering
+
+    // print scoreboard
+    // initial begin
+    //         automatic string pointer = "";
+    //         static integer f = $fopen("scoreboard.txt", "w");
+
+    //         forever begin
+    //             wait(rst_ni == 1'b1);
+    //             @(posedge clk_i)
+    //             $fwrite(f, $time);
+    //             $fwrite(f, "\n");
+    //             $fwrite(f, "._________________________.\n");
+    //             for (int i = 0; i < NR_ENTRIES; i++) begin
+    //                 if (i == commit_pointer_q && i == issue_pointer_q && i == top_pointer_q)
+    //                     pointer = " <- top, issue, commit pointer";
+    //                 else if (i == commit_pointer_q && i == issue_pointer_q)
+    //                     pointer = " <- issue, commit pointer";
+    //                 else if (i == top_pointer_q && i == issue_pointer_q)
+    //                     pointer = " <- top, issue pointer";
+    //                 else if (i == top_pointer_q && i == commit_pointer_q)
+    //                     pointer = " <- top, commit pointer";
+    //                 else if (i == top_pointer_q)
+    //                     pointer = " <- top pointer";
+    //                 else if (i == commit_pointer_q)
+    //                     pointer = " <- commit pointer";
+    //                 else if (i == issue_pointer_q)
+    //                     pointer = " <- issue pointer";
+    //                 else
+    //                     pointer = "";
+    //                 $fwrite(f, "|_________________________| %s\n", pointer);
+    //             end
+    //              $fwrite(f, "\n");
+    //         end
+    //         $fclose(f);
+    // end
+    `endif
+    `endif
 endmodule
