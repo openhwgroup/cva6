@@ -30,9 +30,10 @@ module controller (
     output logic            flush_id_o,             // flush ID stage
     output logic            flush_ex_o,             // flush EX stage
 
-    input  exception        ex_i,               // we got an exception, flush the pipeline
-    input  branchpredict    resolved_branch_i,  // we got a resolved branch, check if we need to flush the front-end
-    input  logic            flush_csr_i         // we got an instruction which altered the CSR, flush the pipeline
+    input  logic            eret_i,                 // return from exception
+    input  exception        ex_i,                   // we got an exception, flush the pipeline
+    input  branchpredict    resolved_branch_i,      // we got a resolved branch, check if we need to flush the front-end
+    input  logic            flush_csr_i             // we got an instruction which altered the CSR, flush the pipeline
 );
     // flush branch prediction
     assign flush_bp_o = 1'b0;
@@ -62,7 +63,8 @@ module controller (
         // Exception
         // ------------
         if (ex_i.valid) begin
-            // don't flush pcgen as we want to take the exception
+            // don't flush pcgen as we want to take the exception, flush pcgen is not a flush signal
+            // for the PC GEN stage but instead tells it to take the PC we gave it
             flush_pcgen_o          = 1'b0;
             flush_if_o             = 1'b1;
             flush_id_o             = 1'b1;
@@ -74,6 +76,17 @@ module controller (
         // ---------------------------------
         if (flush_csr_i) begin
             flush_pcgen_o          = 1'b1;
+            flush_if_o             = 1'b1;
+            flush_id_o             = 1'b1;
+            flush_ex_o             = 1'b1;
+        end
+
+        // ----------------------
+        // Return from exception
+        // ----------------------
+        if (eret_i) begin
+            // don't flush pcgen as we want to take the exception
+            flush_pcgen_o          = 1'b0;
             flush_if_o             = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;

@@ -89,6 +89,7 @@ module ariane
     exception                 ex_commit; // exception from commit stage
     branchpredict             resolved_branch;
     logic [63:0]              pc_commit;
+    logic                     eret;
     // --------------
     // PCGEN <-> IF
     // --------------
@@ -104,7 +105,6 @@ module ariane
     // --------------
     logic [63:0]              trap_vector_base_commit_pcgen;
     logic [63:0]              epc_commit_pcgen;
-    logic                     eret_commit_pcgen;
     // --------------
     // IF <-> ID
     // --------------
@@ -234,7 +234,7 @@ module ariane
         .boot_addr_i        ( boot_addr_i                    ),
         .pc_commit_i        ( pc_commit                      ),
         .epc_i              ( epc_commit_pcgen               ),
-        .eret_i             ( eret_commit_pcgen              ),
+        .eret_i             ( eret              ),
         .trap_vector_base_i ( trap_vector_base_commit_pcgen  ),
         .ex_i               ( ex_commit                      ),
         .*
@@ -425,7 +425,7 @@ module ariane
         .csr_exception_o      ( csr_exception_csr_commit        ),
         .irq_enable_o         (                                 ),
         .epc_o                ( epc_commit_pcgen                ),
-        .eret_o               ( eret_commit_pcgen               ),
+        .eret_o               ( eret               ),
         .trap_vector_base_o   ( trap_vector_base_commit_pcgen   ),
         .priv_lvl_o           ( priv_lvl                        ),
 
@@ -448,6 +448,7 @@ module ariane
         .flush_id_o             ( flush_ctrl_id                 ),
         .flush_ex_o             ( flush_ctrl_ex                 ),
 
+        .eret_i                 ( eret                          ),
         .ex_i                   ( ex_commit                     ),
         .flush_csr_i            ( flush_csr_ctrl                ),
         .resolved_branch_i      ( resolved_branch               ),
