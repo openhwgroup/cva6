@@ -148,7 +148,8 @@ class instruction_trace_item;
             // SYSTEM (others)
             INSTR_ECALL:               s = this.printMnemonic("ecall");
             INSTR_EBREAK:              s = this.printMnemonic("ebreak");
-            INSTR_ERET:                s = this.printMnemonic("eret");
+            INSTR_MRET:                s = this.printMnemonic("mret");
+            INSTR_SRET:                s = this.printMnemonic("sret");
             INSTR_WFI:                 s = this.printMnemonic("wfi");
             // loads and stores
             INSTR_LOAD:                s = this.printLoadInstr();
