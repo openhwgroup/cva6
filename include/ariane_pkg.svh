@@ -51,6 +51,7 @@ package ariane_pkg;
         logic        is_lower_16;     // branch instruction is compressed and resides
                                       // in the lower 16 bit of the word
         logic        valid;           // prediction with all its values is valid
+        logic        clear;           // invalidate this entry
     } branchpredict;
 
     // branchpredict scoreboard entry

@@ -129,7 +129,7 @@ module core_tb;
         $readmemh("test/rv64ui-p-add.v", rmem);
 
         // copy bitwise from verilog file
-        for (int i = 0; i < 1024/8; i++) begin
+        for (int i = 0; i < 16384/8; i++) begin
             for (int j = 0; j < 8; j++)
                 core_mem_i.ram_i.mem[i][j] = rmem[i*8 + j];
         end

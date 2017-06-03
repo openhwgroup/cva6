@@ -71,12 +71,13 @@ module branch_unit (
     // here we handle the various possibilities of mis-predicts
     always_comb begin : mispredict_handler
         target_address                   = 64'b0;
-        resolved_branch_o.pc             = 64'b0;
+        resolved_branch_o.pc             = pc_i;
         resolved_branch_o.target_address = 64'b0;
         resolved_branch_o.is_taken       = 1'b0;
         resolved_branch_o.valid          = branch_valid_i;
         resolved_branch_o.is_mispredict  = 1'b0;
         resolved_branch_o.is_lower_16    = 1'b0;
+        resolved_branch_o.clear          = 1'b0;
         resolve_branch_o                 = 1'b0;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
         next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
@@ -128,6 +129,9 @@ module branch_unit (
             // re-set the branch to the next PC
             resolved_branch_o.is_mispredict  = 1'b1;
             resolved_branch_o.target_address = next_pc;
+            // clear this entry so that we are not constantly mis-predicting
+            resolved_branch_o.clear          = 1'b1;
+            resolved_branch_o.valid          = 1'b1;
         end
     end
     // use ALU exception signal for storing instruction fetch exceptions if
