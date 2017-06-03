@@ -19,14 +19,14 @@ package ariane_pkg;
                                                       // to uniquely identify the entry in the scoreboard
     localparam NR_WB_PORTS   = 4;
     localparam ASID_WIDTH    = 1;
-    localparam ISA_CODE      = (1 <<  2)  // C - Compressed extension
-                             | (1 <<  8)  // I - RV32I/64I/128I base ISA
-                             | (1 << 12)  // M - Integer Multiply/Divide extension
-                             | (0 << 13)  // N - User level interrupts supported
-                             | (1 << 18)  // S - Supervisor mode implemented
-                             | (1 << 20)  // U - User mode implemented
-                             | (0 << 23)  // X - Non-standard extensions present
-                             | (2 << 62); // RV64
+    localparam logic [63:0] ISA_CODE = (1 <<  2)  // C - Compressed extension
+                                     | (1 <<  8)  // I - RV32I/64I/128I base ISA
+                                     | (1 << 12)  // M - Integer Multiply/Divide extension
+                                     | (0 << 13)  // N - User level interrupts supported
+                                     | (1 << 18)  // S - Supervisor mode implemented
+                                     | (1 << 20)  // U - User mode implemented
+                                     | (0 << 23)  // X - Non-standard extensions present
+                                     | (1 << 63); // RV64
 
     // ---------------
     // Fetch Stage
