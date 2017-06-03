@@ -106,13 +106,18 @@ module branch_unit (
             // we've detected a branch in ID with the following parameters
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
             if (target_address[0] == 1'b0) begin
-                // TODO in case of branch which is not taken it is not necessary to check for the address
-                if (target_address != branch_predict_i.predict_address     // we mis-predicted the address of the branch
-                    || branch_predict_i.predict_taken != comparison_result // we mis-predicted the outcome of the branch
-                    || branch_predict_i.valid == 1'b0                      // this means branch-prediction thought it was no
-                                                                           // branch but in reality it was one
-                    ) begin
-                    resolved_branch_o.is_mispredict  = 1'b1;
+                // we've got a valid branch prediction
+                if (branch_predict_i.valid) begin
+                    // if the address or the outcome don't match we've got a mis-predict
+                    if (target_address != branch_predict_i.predict_address || branch_predict_i.predict_taken != comparison_result) begin
+                        resolved_branch_o.is_mispredict  = 1'b1;
+                    end
+                // branch-prediction didn't do anything (e.g.: it fetched PC + 2/4), so if this branch is taken
+                // we also have a mis-predict
+                end else begin
+                    if (comparison_result) begin
+                        resolved_branch_o.is_mispredict = 1'b1;
+                    end
                 end
             end
             // to resolve the branch in ID -> only do this if this was indeed a branch (hence vald_i is asserted)
