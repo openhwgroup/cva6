@@ -20,16 +20,22 @@
 parameter INSTR_LUI       = { 25'b?, OPCODE_LUI };
 parameter INSTR_AUIPC     = { 25'b?, OPCODE_AUIPC };
 parameter INSTR_JAL       = { 25'b?, OPCODE_JAL };
+parameter INSTR_J         = { 20'b?, 5'b0, OPCODE_JAL };
 parameter INSTR_JALR      = { 17'b?, 3'b000, 5'b?, OPCODE_JALR };
 // BRANCH
-parameter INSTR_BEQ      =  { 17'b?, 3'b000, 5'b?, OPCODE_BRANCH };
-parameter INSTR_BNE      =  { 17'b?, 3'b001, 5'b?, OPCODE_BRANCH };
-parameter INSTR_BLT      =  { 17'b?, 3'b100, 5'b?, OPCODE_BRANCH };
-parameter INSTR_BGE      =  { 17'b?, 3'b101, 5'b?, OPCODE_BRANCH };
-parameter INSTR_BLTU     =  { 17'b?, 3'b110, 5'b?, OPCODE_BRANCH };
-parameter INSTR_BGEU     =  { 17'b?, 3'b111, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BEQZ     =  { 7'b?, 5'b0, 5'b?, 3'b000, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BEQ      =  { 7'b?, 5'b?, 5'b?, 3'b000, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BNEZ     =  { 7'b?, 5'b0, 5'b?, 3'b001, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BNE      =  { 7'b?, 5'b?, 5'b?, 3'b001, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BLTZ     =  { 7'b?, 5'b0, 5'b?, 3'b100, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BLT      =  { 7'b?, 5'b?, 5'b?, 3'b100, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BGEZ     =  { 7'b?, 5'b0, 5'b?, 3'b101, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BGE      =  { 7'b?, 5'b?, 5'b?, 3'b101, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BLTU     =  { 7'b?, 5'b?, 5'b?, 3'b110, 5'b?, OPCODE_BRANCH };
+parameter INSTR_BGEU     =  { 7'b?, 5'b?, 5'b?, 3'b111, 5'b?, OPCODE_BRANCH };
 
 // OPIMM
+parameter INSTR_LI       =  { 12'b?, 5'b0, 3'b000, 5'b?, OPCODE_OPIMM };
 parameter INSTR_ADDI     =  { 17'b?, 3'b000, 5'b?, OPCODE_OPIMM };
 parameter INSTR_SLTI     =  { 17'b?, 3'b010, 5'b?, OPCODE_OPIMM };
 parameter INSTR_SLTIU    =  { 17'b?, 3'b011, 5'b?, OPCODE_OPIMM };
@@ -54,12 +60,18 @@ parameter INSTR_AND      =  { 7'b0000000, 10'b?, 3'b111, 5'b?, OPCODE_OP };
 parameter INSTR_FENCE    =  { 4'b0, 8'b?, 13'b0, OPCODE_FENCE };
 parameter INSTR_FENCEI   =  { 17'b0, 3'b001, 5'b0, OPCODE_FENCE };
 // SYSTEM
-parameter INSTR_CSRRW    =  { 17'b?, 3'b001, 5'b?, OPCODE_SYSTEM };
-parameter INSTR_CSRRS    =  { 17'b?, 3'b010, 5'b?, OPCODE_SYSTEM };
-parameter INSTR_CSRRC    =  { 17'b?, 3'b011, 5'b?, OPCODE_SYSTEM };
+parameter INSTR_CSRW     =  { 12'b?, 5'b?, 3'b001, 5'b0, OPCODE_SYSTEM };
+parameter INSTR_CSRRW    =  { 12'b?, 5'b?, 3'b001, 5'b?, OPCODE_SYSTEM };
+parameter INSTR_CSRR     =  { 12'b?, 5'b0, 3'b010, 5'b?, OPCODE_SYSTEM };
+parameter INSTR_CSRRS    =  { 12'b?, 5'b?, 3'b010, 5'b?, OPCODE_SYSTEM };
+parameter INSTR_CSRS     =  { 12'b?, 5'b?, 3'b010, 5'b0, OPCODE_SYSTEM };
+parameter INSTR_CSRRC    =  { 12'b?, 5'b?, 3'b011, 5'b?, OPCODE_SYSTEM };
+parameter INSTR_CSRC     =  { 12'b?, 5'b?, 3'b011, 5'b0, OPCODE_SYSTEM };
+
 parameter INSTR_CSRRWI   =  { 17'b?, 3'b101, 5'b?, OPCODE_SYSTEM };
 parameter INSTR_CSRRSI   =  { 17'b?, 3'b110, 5'b?, OPCODE_SYSTEM };
 parameter INSTR_CSRRCI   =  { 17'b?, 3'b111, 5'b?, OPCODE_SYSTEM };
+
 parameter INSTR_ECALL    =  { 12'b000000000000, 13'b0, OPCODE_SYSTEM };
 parameter INSTR_EBREAK   =  { 12'b000000000001, 13'b0, OPCODE_SYSTEM };
 parameter INSTR_ERET     =  { 12'b000100000000, 13'b0, OPCODE_SYSTEM };

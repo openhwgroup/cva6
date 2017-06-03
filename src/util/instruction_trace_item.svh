@@ -54,6 +54,37 @@ class instruction_trace_item;
         endcase
     endfunction
 
+    function string csrAddrToStr(logic [11:0] addr);
+        case (addr)
+            CSR_SSTATUS:    return "sstatus";
+            CSR_SIE:        return "sie";
+            CSR_STVEC:      return "stvec";
+            CSR_SSCRATCH:   return "sscratch";
+            CSR_SEPC:       return "sepc";
+            CSR_SCAUSE:     return "scause";
+            CSR_STVAL:      return "stval";
+            CSR_SIP:        return "sip";
+            CSR_SATP:       return "satp";
+
+            CSR_MSTATUS:    return "mstatus";
+            CSR_MISA:       return "misa";
+            CSR_MEDELEG:    return "medeleg";
+            CSR_MIDELEG:    return "mideleg";
+            CSR_MIE:        return "mie";
+            CSR_MTVEC:      return "mtvec";
+            CSR_MSCRATCH:   return "mscratch";
+            CSR_MEPC:       return "mepc";
+            CSR_MCAUSE:     return "mcause";
+            CSR_MTVAL:      return "mtval";
+            CSR_MIP:        return "mip";
+            CSR_MVENDORID:  return "mvendorid";
+            CSR_MARCHID:    return "marchid";
+            CSR_MIMPID:     return "mimpid";
+            CSR_MHARTID:    return "mhartid";
+            default:        return $sformatf("%0h", addr);
+        endcase
+    endfunction
+
     function string printInstr();
         string s;
 
@@ -63,16 +94,22 @@ class instruction_trace_item;
             // Regular opcodes
             INSTR_LUI:                 s = this.printUInstr("lui");
             INSTR_AUIPC:               s = this.printUInstr("auipc");
+            INSTR_J:                   s = this.printUJInstr("j");
             INSTR_JAL:                 s = this.printUJInstr("jal");
             INSTR_JALR:                s = this.printIInstr("jalr");
             // BRANCH
+            INSTR_BEQZ:                s = this.printSBInstr("beqz");
             INSTR_BEQ:                 s = this.printSBInstr("beq");
+            INSTR_BNEZ:                s = this.printSBInstr("bnez");
             INSTR_BNE:                 s = this.printSBInstr("bne");
+            INSTR_BLTZ:                s = this.printSBInstr("bltz");
             INSTR_BLT:                 s = this.printSBInstr("blt");
+            INSTR_BGEZ:                s = this.printSBInstr("bgez");
             INSTR_BGE:                 s = this.printSBInstr("bge");
             INSTR_BLTU:                s = this.printSBInstr("bltu");
             INSTR_BGEU:                s = this.printSBInstr("bgeu");
             // OPIMM
+            INSTR_LI:                  s = this.printIInstr("li");
             INSTR_ADDI:                s = this.printIInstr("addi");
             INSTR_SLTI:                s = this.printIInstr("slti");
             INSTR_SLTIU:               s = this.printIInstr("sltiu");
@@ -97,9 +134,14 @@ class instruction_trace_item;
             INSTR_FENCE:               s = this.printMnemonic("fence");
             INSTR_FENCEI:              s = this.printMnemonic("fencei");
             // SYSTEM (CSR manipulation)
+            INSTR_CSRW:                s = this.printCSRInstr("csrw");
             INSTR_CSRRW:               s = this.printCSRInstr("csrrw");
+            INSTR_CSRR:                s = this.printCSRInstr("csrr");
             INSTR_CSRRS:               s = this.printCSRInstr("csrrs");
+            INSTR_CSRS:                s = this.printCSRInstr("csrs");
             INSTR_CSRRC:               s = this.printCSRInstr("csrrc");
+            INSTR_CSRC:                s = this.printCSRInstr("csrc");
+
             INSTR_CSRRWI:              s = this.printCSRInstr("csrrwi");
             INSTR_CSRRSI:              s = this.printCSRInstr("csrrsi");
             INSTR_CSRRCI:              s = this.printCSRInstr("csrrci");
@@ -160,6 +202,9 @@ class instruction_trace_item;
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
 
+        if (sbe.rs1 == 0)
+            return $sformatf("%-16s %s, %0d", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result));
+
         return $sformatf("%-16s %s, %s, %0d", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), $signed(sbe.result));
     endfunction // printIInstr
 
@@ -168,40 +213,48 @@ class instruction_trace_item;
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
 
-        return $sformatf("%-16s x%0d, x%0d, 0x%0x", mnemonic, sbe.rd, sbe.rs1, sbe.result);
+        return $sformatf("%-16s %s, %s, 0x%0x", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), sbe.result);
     endfunction // printIuInstr
 
     function string printSBInstr(input string mnemonic);
 
-        result_regs.push_back(sbe.rd);
-        read_regs.push_back(sbe.rs1);
+        result_regs.push_back(sbe.rs1);
+        read_regs.push_back(sbe.rs2);
 
-        return $sformatf("%-16s %s, %s, 0x%0x", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), sbe.result);
+        if (sbe.rs2 == 0)
+            return $sformatf("%-16s %s, pc + %0d", mnemonic, regAddrToStr(sbe.rs1), $signed(sbe.result));
+        else
+            return $sformatf("%-16s %s, %s, pc + %0d", mnemonic, regAddrToStr(sbe.rs1), regAddrToStr(sbe.rs2), $signed(sbe.result));
     endfunction // printIuInstr
 
     function string printUInstr(input string mnemonic);
 
         result_regs.push_back(sbe.rd);
 
-        return $sformatf("%-16s x%0d, 0x%0h", mnemonic, sbe.rd, sbe.result);
+        return $sformatf("%-16s %s, 0x%0h", mnemonic, regAddrToStr(sbe.rd), sbe.result[31:12]);
     endfunction // printUInstr
 
     function string printUJInstr(input string mnemonic);
 
         result_regs.push_back(sbe.rd);
-
-        return $sformatf("%-16s x%0d, %0d", mnemonic, sbe.rd, $signed(sbe.result));
+        // jump instruction
+        if (sbe.rd == 0)
+            return $sformatf("%-16s pc + %0d", mnemonic, $signed(sbe.result));
+        else
+            return $sformatf("%-16s %s, pc + %0d", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result));
     endfunction // printUJInstr
 
     function string printCSRInstr(input string mnemonic);
 
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
-
-        if (instr[14] == 1'b0) begin
-          return $sformatf("%-16s x%0d, x%0d, 0x%h", mnemonic, sbe.rd, sbe.rs1, sbe.result[11:0]);
-        end else begin
-          return $sformatf("%-16s x%0d, 0x%h, 0x%h", mnemonic, sbe.rd, sbe.rs1, sbe.result[11:0]);
+        if (sbe.rd != 0 && sbe.rs1 != 0) begin
+              return $sformatf("%-16s %s, %s, %s", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), csrAddrToStr(sbe.result[11:0]));
+        // don't display instructions which write to zero
+        end else if (sbe.rd == 0) begin
+              return $sformatf("%-16s %s, %s", mnemonic, regAddrToStr(sbe.rs1), csrAddrToStr(sbe.result[11:0]));
+        end else if (sbe.rs1 == 0) begin
+            return $sformatf("%-16s %s, %s", mnemonic, regAddrToStr(sbe.rd), csrAddrToStr(sbe.result[11:0]));
         end
     endfunction // printCSRInstr
 
