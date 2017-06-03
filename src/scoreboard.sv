@@ -78,6 +78,7 @@ module scoreboard #(
 
     // the issue queue is full don't issue any new instructions
     assign issue_full = (issue_cnt_q == NR_ENTRIES);
+    assign full_o     = issue_full;
     // output commit instruction directly
     assign commit_instr_o = mem_q[commit_pointer_q].sbe;
 

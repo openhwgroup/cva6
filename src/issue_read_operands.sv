@@ -179,8 +179,10 @@ module issue_read_operands (
         // 1. check if the source registers are clobberd
         // 2. poll the scoreboard
         if (~issue_instr_i.use_zimm && rd_clobber_i[issue_instr_i.rs1] != NONE) begin
+            // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
+            // be fetched through the register file since they can't be forwarded
             // the operand is available, forward it
-            if (rs1_valid_i)
+            if (rs1_valid_i && rd_clobber_i[issue_instr_i.rs1] != CSR)
                 forward_rs1 = 1'b1;
             else // the operand is not available -> stall
                 stall = 1'b1;
@@ -189,7 +191,7 @@ module issue_read_operands (
 
         if (rd_clobber_i[issue_instr_i.rs2] != NONE) begin
             // the operand is available, forward it
-            if (rs2_valid_i)
+            if (rs2_valid_i && rd_clobber_i[issue_instr_i.rs2] != CSR)
                 forward_rs2 = 1'b1;
             else // the operand is not available -> stall
                 stall = 1'b1;
@@ -228,30 +230,6 @@ module issue_read_operands (
         if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW)) begin
             operand_b_n = issue_instr_i.result;
         end
-        // // special assignments in the JAL and JALR case
-        // case (issue_instr_i.op)
-        //     // re-write the operator since
-        //     // we need the ALU for addition
-        //     JAL: begin
-        //         operator_n  = ADD;
-        //         // output 4 as operand b as we
-        //         // need to save PC + 4 or in case of a compressed instruction PC + 4
-        //         operand_b_n = (issue_instr_i.is_compressed) ? 64'h2 : 64'h4;
-        //     end
-
-        //     JALR: begin
-        //         operator_n  = ADD;
-        //         // output 4 as operand b as we
-        //         // need to save PC + 4 or in case of a compressed instruction PC + 4
-        //         operand_b_n = (issue_instr_i.is_compressed) ? 64'h2 : 64'h4;
-        //         // get RS1 as operand C
-        //         operand_c_n = operand_a_regfile;
-        //         // forward rs1
-        //         if (forward_rs1) begin
-        //             operand_c_n  = rs1_i;
-        //         end
-        //     end
-        // endcase
     end
     // FU select, assert the correct valid out signal (in the next cycle)
     always_comb begin : unit_valid
