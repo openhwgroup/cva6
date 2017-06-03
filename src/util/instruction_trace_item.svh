@@ -119,6 +119,11 @@ class instruction_trace_item;
             INSTR_SLLI:                s = this.printIuInstr("slli");
             INSTR_SRLI:                s = this.printIuInstr("srli");
             INSTR_SRAI:                s = this.printIuInstr("srai");
+            // OPIMM32
+            INSTR_ADDIW:               s = this.printIInstr("addiw");
+            INSTR_SLLIW:               s = this.printIuInstr("slliw");
+            INSTR_SRLIW:               s = this.printIuInstr("srliw");
+            INSTR_SRAIW:               s = this.printIuInstr("sraiw");
             // OP
             INSTR_ADD:                 s = this.printRInstr("add");
             INSTR_SUB:                 s = this.printRInstr("sub");
@@ -130,6 +135,12 @@ class instruction_trace_item;
             INSTR_SRA:                 s = this.printRInstr("sra");
             INSTR_OR:                  s = this.printRInstr("or");
             INSTR_AND:                 s = this.printRInstr("and");
+            // OP32
+            INSTR_ADDW:                s = this.printRInstr("addw");
+            INSTR_SUBW:                s = this.printRInstr("subw");
+            INSTR_SLLW:                s = this.printRInstr("sllw");
+            INSTR_SRLW:                s = this.printRInstr("srlw");
+            INSTR_SRAW:                s = this.printRInstr("sraw");
             // FENCE
             INSTR_FENCE:               s = this.printMnemonic("fence");
             INSTR_FENCEI:              s = this.printMnemonic("fencei");

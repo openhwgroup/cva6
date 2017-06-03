@@ -45,6 +45,13 @@ parameter INSTR_ANDI     =  { 17'b?, 3'b111, 5'b?, OPCODE_OPIMM };
 parameter INSTR_SLLI     =  { 7'b0000000, 10'b?, 3'b001, 5'b?, OPCODE_OPIMM };
 parameter INSTR_SRLI     =  { 7'b0000000, 10'b?, 3'b101, 5'b?, OPCODE_OPIMM };
 parameter INSTR_SRAI     =  { 7'b0100000, 10'b?, 3'b101, 5'b?, OPCODE_OPIMM };
+
+// OPIMM32
+parameter INSTR_ADDIW    =  { 17'b?, 3'b000, 5'b?, OPCODE_OPIMM32 };
+parameter INSTR_SLLIW    =  { 7'b0000000, 10'b?, 3'b001, 5'b?, OPCODE_OPIMM32 };
+parameter INSTR_SRLIW    =  { 7'b0000000, 10'b?, 3'b101, 5'b?, OPCODE_OPIMM32 };
+parameter INSTR_SRAIW    =  { 7'b0100000, 10'b?, 3'b101, 5'b?, OPCODE_OPIMM32 };
+
 // OP
 parameter INSTR_ADD      =  { 7'b0000000, 10'b?, 3'b000, 5'b?, OPCODE_OP };
 parameter INSTR_SUB      =  { 7'b0100000, 10'b?, 3'b000, 5'b?, OPCODE_OP };
@@ -56,6 +63,14 @@ parameter INSTR_SRL      =  { 7'b0000000, 10'b?, 3'b101, 5'b?, OPCODE_OP };
 parameter INSTR_SRA      =  { 7'b0100000, 10'b?, 3'b101, 5'b?, OPCODE_OP };
 parameter INSTR_OR       =  { 7'b0000000, 10'b?, 3'b110, 5'b?, OPCODE_OP };
 parameter INSTR_AND      =  { 7'b0000000, 10'b?, 3'b111, 5'b?, OPCODE_OP };
+
+// OP32
+parameter INSTR_ADDW     =  { 7'b0000000, 10'b?, 3'b000, 5'b?, OPCODE_OP32 };
+parameter INSTR_SUBW     =  { 7'b0100000, 10'b?, 3'b000, 5'b?, OPCODE_OP32 };
+parameter INSTR_SLLW     =  { 7'b0000000, 10'b?, 3'b001, 5'b?, OPCODE_OP32 };
+parameter INSTR_SRLW     =  { 7'b0000000, 10'b?, 3'b101, 5'b?, OPCODE_OP32 };
+parameter INSTR_SRAW     =  { 7'b0100000, 10'b?, 3'b101, 5'b?, OPCODE_OP32 };
+
 // FENCE
 parameter INSTR_FENCE    =  { 4'b0, 8'b?, 13'b0, OPCODE_FENCE };
 parameter INSTR_FENCEI   =  { 17'b0, 3'b001, 5'b0, OPCODE_FENCE };
