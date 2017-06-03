@@ -30,7 +30,6 @@ module ex_stage #(
     input  fu_op                                   operator_i,
     input  logic [63:0]                            operand_a_i,
     input  logic [63:0]                            operand_b_i,
-    input  logic [63:0]                            operand_c_i,
     input  logic [63:0]                            imm_i,
     input  logic [TRANS_ID_BITS-1:0]               trans_id_i,
     input  logic [63:0]                            pc_i,                  // PC of current instruction
@@ -44,8 +43,14 @@ module ex_stage #(
     output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
     output exception                               alu_exception_o,
     // Branches and Jumps
+    output logic                                   branch_ready_o,
     input  logic                                   branch_valid_i,        // we are using the branch unit
+    output logic                                   branch_valid_o,        // the calculated branch target is valid
+    output logic [63:0]                            branch_result_o,       // branch target address out
     input  branchpredict_sbe                       branch_predict_i,      // branch prediction in
+    output logic [TRANS_ID_BITS-1:0]               branch_trans_id_o,
+    output exception                               branch_exception_o,    // branch unit detected an exception
+
     output branchpredict                           resolved_branch_o,     // the branch engine uses the write back from the ALU
     output logic                                   resolve_branch_o,      // to ID signaling that we resolved the branch
     // LSU
@@ -116,8 +121,6 @@ module ex_stage #(
     // --------------------
     branch_unit branch_unit_i (
         .fu_valid_i          ( alu_valid_i | lsu_valid_i | csr_valid_i ), // any functional unit is valid, check that there is no accidental mis-predict
-        .valid_i             ( branch_valid_i                          ),
-        .branch_ex_o         ( alu_exception_o                         ), // we use the ALU exception WB for the branch exception
         .*
     );
 

@@ -43,7 +43,6 @@ module issue_read_operands (
     output fu_op                                   operator_o,
     output logic [63:0]                            operand_a_o,
     output logic [63:0]                            operand_b_o,
-    output logic [63:0]                            operand_c_o,
     output logic [63:0]                            imm_o,           // output immediate for the LSU
     output logic [TRANS_ID_BITS-1:0]               trans_id_o,
     output logic [63:0]                            pc_o,
@@ -52,6 +51,7 @@ module issue_read_operands (
     input  logic                                   alu_ready_i,      // FU is ready
     output logic                                   alu_valid_o,      // Output is valid
     // Branches and Jumps
+    input  logic                                   branch_ready_i,
     output logic                                   branch_valid_o,   // this is a valid branch instruction
     output branchpredict_sbe                       branch_predict_o,
     // LSU
@@ -75,7 +75,6 @@ module issue_read_operands (
     // output flipflop (ID <-> EX)
     logic [63:0] operand_a_n, operand_a_q,
                  operand_b_n, operand_b_q,
-                 operand_c_n, operand_c_q,
                  imm_n, imm_q;
 
     logic alu_valid_n,    alu_valid_q;
@@ -93,7 +92,6 @@ module issue_read_operands (
     // ID <-> EX registers
     assign operand_a_o    = operand_a_q;
     assign operand_b_o    = operand_b_q;
-    assign operand_c_o    = operand_c_q;
     assign fu_o           = fu_q;
     assign operator_o     = operator_q;
     assign alu_valid_o    = alu_valid_q;
@@ -148,9 +146,10 @@ module issue_read_operands (
         unique case (issue_instr_i.fu)
             NONE:
                 fu_busy = 1'b0;
-            ALU, CTRL_FLOW: // control flow instruction also need the ALU
-                            // and they are always ready if the ALU is ready
+            ALU:
                 fu_busy = ~alu_ready_i;
+            CTRL_FLOW:
+                fu_busy = ~branch_ready_i;
             MULT:
                 fu_busy = ~mult_ready_i;
             LOAD, STORE:
@@ -201,8 +200,6 @@ module issue_read_operands (
         // default is regfile
         operand_a_n = operand_a_regfile;
         operand_b_n = operand_b_regfile;
-        // set PC as default operand c
-        operand_c_n = issue_instr_i.pc;
         // immediates are the third operands in the store case
         imm_n      = issue_instr_i.result;
         trans_id_n = issue_instr_i.trans_id;
@@ -227,34 +224,34 @@ module issue_read_operands (
             // zero extend operand a
             operand_a_n = {52'b0, issue_instr_i.rs1};
         end
-        // or is it an immediate (including PC), this is not the case for a store
-        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE)) begin
+        // or is it an immediate (including PC), this is not the case for a store and control flow instructions
+        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW)) begin
             operand_b_n = issue_instr_i.result;
         end
-        // special assignments in the JAL and JALR case
-        case (issue_instr_i.op)
-            // re-write the operator since
-            // we need the ALU for addition
-            JAL: begin
-                operator_n  = ADD;
-                // output 4 as operand b as we
-                // need to save PC + 4 or in case of a compressed instruction PC + 4
-                operand_b_n = (issue_instr_i.is_compressed) ? 64'h2 : 64'h4;
-            end
+        // // special assignments in the JAL and JALR case
+        // case (issue_instr_i.op)
+        //     // re-write the operator since
+        //     // we need the ALU for addition
+        //     JAL: begin
+        //         operator_n  = ADD;
+        //         // output 4 as operand b as we
+        //         // need to save PC + 4 or in case of a compressed instruction PC + 4
+        //         operand_b_n = (issue_instr_i.is_compressed) ? 64'h2 : 64'h4;
+        //     end
 
-            JALR: begin
-                operator_n  = ADD;
-                // output 4 as operand b as we
-                // need to save PC + 4 or in case of a compressed instruction PC + 4
-                operand_b_n = (issue_instr_i.is_compressed) ? 64'h2 : 64'h4;
-                // get RS1 as operand C
-                operand_c_n = operand_a_regfile;
-                // forward rs1
-                if (forward_rs1) begin
-                    operand_c_n  = rs1_i;
-                end
-            end
-        endcase
+        //     JALR: begin
+        //         operator_n  = ADD;
+        //         // output 4 as operand b as we
+        //         // need to save PC + 4 or in case of a compressed instruction PC + 4
+        //         operand_b_n = (issue_instr_i.is_compressed) ? 64'h2 : 64'h4;
+        //         // get RS1 as operand C
+        //         operand_c_n = operand_a_regfile;
+        //         // forward rs1
+        //         if (forward_rs1) begin
+        //             operand_c_n  = rs1_i;
+        //         end
+        //     end
+        // endcase
     end
     // FU select, assert the correct valid out signal (in the next cycle)
     always_comb begin : unit_valid
@@ -269,20 +266,16 @@ module issue_read_operands (
         if (~issue_instr_i.ex.valid && issue_instr_valid_i && issue_ack_o) begin
             case (issue_instr_i.fu)
                 ALU:
-                    alu_valid_n  = 1'b1;
-                MULT:
-                    mult_valid_n = 1'b1;
-                LOAD, STORE:
-                    lsu_valid_n  = 1'b1;
-                CSR:
-                    csr_valid_n  = 1'b1;
-                CTRL_FLOW: begin
                     alu_valid_n    = 1'b1;
+                CTRL_FLOW:
                     branch_valid_n = 1'b1;
-                end
-                default: begin
-
-                end
+                MULT:
+                    mult_valid_n   = 1'b1;
+                LOAD, STORE:
+                    lsu_valid_n    = 1'b1;
+                CSR:
+                    csr_valid_n    = 1'b1;
+                default:;
             endcase
         end
         // if we got a flush request, de-assert the valid flag, otherwise we will start this
@@ -326,7 +319,6 @@ module issue_read_operands (
         if(~rst_ni) begin
             operand_a_q           <= '{default: 0};
             operand_b_q           <= '{default: 0};
-            operand_c_q           <= '{default: 0};
             imm_q                 <= 64'b0;
             alu_valid_q           <= 1'b0;
             branch_valid_q        <= 1'b0;
@@ -342,7 +334,6 @@ module issue_read_operands (
         end else begin
             operand_a_q           <= operand_a_n;
             operand_b_q           <= operand_b_n;
-            operand_c_q           <= operand_c_n;
             imm_q                 <= imm_n;
             alu_valid_q           <= alu_valid_n;
             branch_valid_q        <= branch_valid_n;

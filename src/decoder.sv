@@ -362,18 +362,14 @@ module decoder (
                 // Jump and link register
                 OPCODE_JALR: begin
                     instruction_o.fu        = CTRL_FLOW;
-                    instruction_o.op        = JALR;
                     imm_select              = UIMM;
-                    instruction_o.use_pc    = 1'b1;
                     instruction_o.rd        = instr.itype.rd;
                     is_control_flow_instr_o = 1'b1;
                 end
                 // Jump and link
                 OPCODE_JAL: begin
                     instruction_o.fu        = CTRL_FLOW;
-                    instruction_o.op        = JAL;
                     imm_select              = JIMM;
-                    instruction_o.use_pc    = 1'b1;
                     instruction_o.rd        = instr.utype.rd;
                     is_control_flow_instr_o = 1'b1;
                 end

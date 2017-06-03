@@ -42,7 +42,6 @@ module id_stage #(
     output fu_op                                     operator_o,
     output logic [63:0]                              operand_a_o,
     output logic [63:0]                              operand_b_o,
-    output logic [63:0]                              operand_c_o,
     output logic [63:0]                              imm_o,
     output logic [TRANS_ID_BITS-1:0]                 trans_id_o,
     output logic [63:0]                              pc_o,
@@ -50,16 +49,18 @@ module id_stage #(
 
     input  logic                                     alu_ready_i,
     output logic                                     alu_valid_o,
-    output logic                                     branch_valid_o, // use branch prediction unit
     // ex just resolved our predicted branch, we are ready to accept new requests
     input  logic                                     resolve_branch_i,
 
     input  logic                                     lsu_ready_i,
     output logic                                     lsu_valid_o,
+    // branch prediction
+    input  logic                                     branch_ready_i,
+    output logic                                     branch_valid_o, // use branch prediction unit
+    output branchpredict_sbe                         branch_predict_o,
 
     input  logic                                     mult_ready_i,
     output logic                                     mult_valid_o,    // Branch predict Out
-    output branchpredict_sbe                         branch_predict_o,
 
     input  logic                                     csr_ready_i,
     output logic                                     csr_valid_o,

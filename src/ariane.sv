@@ -122,7 +122,6 @@ module ariane
     fu_op                     operator_id_ex;
     logic [63:0]              operand_a_id_ex;
     logic [63:0]              operand_b_id_ex;
-    logic [63:0]              operand_c_id_ex;
     logic [63:0]              pc_id_ex;
     logic                     is_compressed_instr_id_ex;
     // ALU
@@ -133,7 +132,13 @@ module ariane
     logic [63:0]              alu_result_ex_id;
     exception                 alu_exception_ex_id;
     // Branches and Jumps
+    logic                     branch_ready_ex_id;
+    logic [TRANS_ID_BITS-1:0] branch_trans_id_ex_id;
+    logic [63:0]              branch_result_ex_id;
+    exception                 branch_exception_ex_id;
+    logic                     branch_valid_ex_id;
     logic                     branch_valid_id_ex;
+
     branchpredict_sbe         branch_predict_id_ex;
     logic                     resolve_branch_ex_id;
     // LSU
@@ -280,7 +285,6 @@ module ariane
         .operator_o                 ( operator_id_ex                           ),
         .operand_a_o                ( operand_a_id_ex                          ),
         .operand_b_o                ( operand_b_id_ex                          ),
-        .operand_c_o                ( operand_c_id_ex                          ),
         .imm_o                      ( imm_id_ex                                ),
         .trans_id_o                 ( trans_id_id_ex                           ),
         .pc_o                       ( pc_id_ex                                 ),
@@ -289,6 +293,7 @@ module ariane
         .alu_ready_i                ( alu_ready_ex_id                          ),
         .alu_valid_o                ( alu_valid_id_ex                          ),
         // Branches and Jumps
+        .branch_ready_i             ( branch_ready_ex_id                       ),
         .branch_valid_o             ( branch_valid_id_ex                       ), // branch is valid
         .branch_predict_o           ( branch_predict_id_ex                     ), // branch predict to ex
         .resolve_branch_i           ( resolve_branch_ex_id                     ), // in order to resolve the branch
@@ -302,10 +307,10 @@ module ariane
         .csr_ready_i                ( csr_ready_ex_id                          ),
         .csr_valid_o                ( csr_valid_id_ex                          ),
 
-        .trans_id_i                 ( {alu_trans_id_ex_id,  lsu_trans_id_ex_id,  csr_trans_id_ex_id       }),
-        .wdata_i                    ( {alu_result_ex_id,    lsu_result_ex_id,    csr_result_ex_id         }),
-        .ex_ex_i                    ( {alu_exception_ex_id, lsu_exception_ex_id, {$bits(exception){1'b0}} }),
-        .wb_valid_i                 ( {alu_valid_ex_id,     lsu_valid_ex_id,     csr_valid_ex_id          }),
+        .trans_id_i                 ( {alu_trans_id_ex_id,       lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id       }),
+        .wdata_i                    ( {alu_result_ex_id,         lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id         }),
+        .ex_ex_i                    ( {{$bits(exception){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception){1'b0}} }),
+        .wb_valid_i                 ( {alu_valid_ex_id,          lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id          }),
 
         .waddr_a_i                  ( waddr_a_commit_id                        ),
         .wdata_a_i                  ( wdata_a_commit_id                        ),
@@ -325,7 +330,6 @@ module ariane
         .operator_i             ( operator_id_ex             ),
         .operand_a_i            ( operand_a_id_ex            ),
         .operand_b_i            ( operand_b_id_ex            ),
-        .operand_c_i            ( operand_c_id_ex            ),
         .imm_i                  ( imm_id_ex                  ),
         .trans_id_i             ( trans_id_id_ex             ),
         .pc_i                   ( pc_id_ex                   ),
@@ -336,9 +340,14 @@ module ariane
         .alu_result_o           ( alu_result_ex_id           ),
         .alu_trans_id_o         ( alu_trans_id_ex_id         ),
         .alu_valid_o            ( alu_valid_ex_id            ),
-        .alu_exception_o        ( alu_exception_ex_id        ),
+        .alu_exception_o        (                            ),
         // Branches and Jumps
+        .branch_ready_o         ( branch_ready_ex_id         ),
+        .branch_valid_o         ( branch_valid_ex_id         ),
         .branch_valid_i         ( branch_valid_id_ex         ),
+        .branch_trans_id_o      ( branch_trans_id_ex_id      ),
+        .branch_result_o        ( branch_result_ex_id        ),
+        .branch_exception_o     ( branch_exception_ex_id     ),
         .branch_predict_i       ( branch_predict_id_ex       ), // branch predict to ex
         .resolved_branch_o      ( resolved_branch            ),
         .resolve_branch_o       ( resolve_branch_ex_id       ),

@@ -20,26 +20,34 @@
 import ariane_pkg::*;
 
 module branch_unit (
-    input  fu_op             operator_i,
-    input  logic [63:0]      operand_a_i,
-    input  logic [63:0]      operand_b_i,
-    input  logic [63:0]      operand_c_i,
-    input  logic [63:0]      imm_i,
-    input  logic [63:0]      pc_i,
-    input  logic             is_compressed_instr_i,
-    input  logic             fu_valid_i, // any functional unit is valid, check that there is no accidental mis-predict
-    input  logic             valid_i,
+    input  logic [TRANS_ID_BITS-1:0]  trans_id_i,
+    input  fu_op                      operator_i,             // comparison operation to perform
+    input  logic [63:0]               operand_a_i,            // contains content of RS 1
+    input  logic [63:0]               operand_b_i,            // contains content of RS 2
+    input  logic [63:0]               imm_i,                  // immediate to add to PC
+    input  logic [63:0]               pc_i,                   // PC of instruction
+    input  logic                      is_compressed_instr_i,
+    input  logic                      fu_valid_i,             // any functional unit is valid, check that there is no accidental mis-predict
+    input  logic                      branch_valid_i,
+    output logic                      branch_ready_o,
+    output logic                      branch_valid_o,
+    output logic [63:0]               branch_result_o,
+    output logic [TRANS_ID_BITS-1:0]  branch_trans_id_o,
 
-    input  branchpredict_sbe branch_predict_i,       // this is the address we predicted
-    output branchpredict     resolved_branch_o,      // this is the actual address we are targeting
-    output logic             resolve_branch_o,       // to ID to clear that we resolved the branch and we can
-                                                     // accept new entries to the scoreboard
-    output exception         branch_ex_o             // branch exception out
+    input  branchpredict_sbe          branch_predict_i,       // this is the address we predicted
+    output branchpredict              resolved_branch_o,      // this is the actual address we are targeting
+    output logic                      resolve_branch_o,       // to ID to clear that we resolved the branch and we can
+                                                              // accept new entries to the scoreboard
+    output exception                  branch_exception_o      // branch exception out
 );
     logic [63:0] target_address;
     logic [63:0] next_pc;
     logic        comparison_result; // result of comparison
     logic        sgn;               // sign extend
+    // branches are single cycle at the moment, feed-through the control signals
+    assign branch_trans_id_o = trans_id_i;
+    assign branch_valid_o    = branch_valid_i;
+    assign branch_ready_o    = 1'b1; // we are always ready
 
     always_comb begin : branch_resolve
         // by default e.g.: when this is a jump, the branch is taken
@@ -66,16 +74,18 @@ module branch_unit (
         resolved_branch_o.pc             = 64'b0;
         resolved_branch_o.target_address = 64'b0;
         resolved_branch_o.is_taken       = 1'b0;
-        resolved_branch_o.valid          = valid_i;
+        resolved_branch_o.valid          = branch_valid_i;
         resolved_branch_o.is_mispredict  = 1'b0;
         resolved_branch_o.is_lower_16    = 1'b0;
         resolve_branch_o                 = 1'b0;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
         next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
-        target_address                   = $unsigned($signed(operand_c_i) + $signed(imm_i));
+        target_address                   = $unsigned($signed(pc_i) + $signed(imm_i));
+        // if we need to put the branch target address in a destination register, output it here to WB
+        branch_result_o                  = target_address;
 
-        if (valid_i) begin
+        if (branch_valid_i) begin
             // save PC - we need this to get the target row in the branch target buffer
             // we play this trick with the branch instruction which wraps a byte boundary:
             //  |---------- Place the prediction on this PC
@@ -118,11 +128,11 @@ module branch_unit (
     // use ALU exception signal for storing instruction fetch exceptions if
     // the target address is not aligned to a 2 byte boundary
     always_comb begin : exception_handling
-        branch_ex_o.cause = INSTR_ADDR_MISALIGNED;
-        branch_ex_o.valid = 1'b0;
-        branch_ex_o.tval  = pc_i;
+        branch_exception_o.cause = INSTR_ADDR_MISALIGNED;
+        branch_exception_o.valid = 1'b0;
+        branch_exception_o.tval  = pc_i;
         // only throw exception if this is indeed a branch
-        if (valid_i && target_address[0] != 1'b0)
-            branch_ex_o.valid = 1'b1;
+        if (branch_valid_i && target_address[0] != 1'b0)
+            branch_exception_o.valid = 1'b1;
     end
 endmodule
