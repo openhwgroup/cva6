@@ -20,20 +20,20 @@
 import ariane_pkg::*;
 
 module controller (
-    input  logic            clk_i,    // Clock
-    input  logic            rst_ni,   // Asynchronous reset active low
+    input  logic            clk_i,                  // Clock
+    input  logic            rst_ni,                 // Asynchronous reset active low
 
-    output logic            flush_bp_o,             // flush branch prediction data structures
-    output logic            flush_pcgen_o,          // flush PC Generation Stage
-    output logic            flush_if_o,             // flush the IF stage
-    output logic            flush_unissued_instr_o, // flush un-issued instructions of the scoreboard
-    output logic            flush_id_o,             // flush ID stage
-    output logic            flush_ex_o,             // flush EX stage
+    output logic            flush_bp_o,             // Flush branch prediction data structures
+    output logic            flush_pcgen_o,          // Flush PC Generation Stage
+    output logic            flush_if_o,             // Flush the IF stage
+    output logic            flush_unissued_instr_o, // Flush un-issued instructions of the scoreboard
+    output logic            flush_id_o,             // Flush ID stage
+    output logic            flush_ex_o,             // Flush EX stage
 
-    input  logic            eret_i,                 // return from exception
-    input  exception        ex_i,                   // we got an exception, flush the pipeline
-    input  branchpredict    resolved_branch_i,      // we got a resolved branch, check if we need to flush the front-end
-    input  logic            flush_csr_i             // we got an instruction which altered the CSR, flush the pipeline
+    input  logic            eret_i,                 // Return from exception
+    input  exception        ex_i,                   // We got an exception, flush the pipeline
+    input  branchpredict    resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
+    input  logic            flush_csr_i             // We got an instruction which altered the CSR, flush the pipeline
 );
     // flush branch prediction
     assign flush_bp_o = 1'b0;

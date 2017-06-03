@@ -24,32 +24,32 @@ module csr_regfile #(
     )(
     input  logic                  clk_i,            // Clock
     input  logic                  rst_ni,           // Asynchronous reset active low
-    // send a flush request out if a CSR with a side effect has changed
+    // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
     // Core and Cluster ID
-    input  logic  [3:0]           core_id_i,
-    input  logic  [5:0]           cluster_id_i,
-    input  logic  [63:0]          boot_addr_i,
+    input  logic  [3:0]           core_id_i,            // Core ID is considered static
+    input  logic  [5:0]           cluster_id_i,         // Cluster ID is considered static
+    input  logic  [63:0]          boot_addr_i,          // Address from which to start booting, mtvec is set to the same address
     // we are taking an exception
-    input exception               ex_i,
+    input exception               ex_i,                 // We've got an exception from the commit stage, take its
 
-    input  fu_op                  csr_op_i,
-    input  logic  [11:0]          csr_addr_i,
-    input  logic  [63:0]          csr_wdata_i,
-    output logic  [63:0]          csr_rdata_o,
-    input  logic  [63:0]          pc_i,             // PC of instruction accessing the CSR
-    output exception              csr_exception_o,  // attempts to access a CSR without appropriate privilege
-                                                    // level or to write  a read-only register also
-                                                    // raises illegal instruction exceptions.
+    input  fu_op                  csr_op_i,             // Operation to perform on the CSR file
+    input  logic  [11:0]          csr_addr_i,           // Address of the register to read/write
+    input  logic  [63:0]          csr_wdata_i,          // Write data in
+    output logic  [63:0]          csr_rdata_o,          // Read data out
+    input  logic  [63:0]          pc_i,                 // PC of instruction accessing the CSR
+    output exception              csr_exception_o,      // attempts to access a CSR without appropriate privilege
+                                                        // level or to write  a read-only register also
+                                                        // raises illegal instruction exceptions.
     // Interrupts/Exceptions
-    output logic  [3:0]           irq_enable_o,
-    output logic  [63:0]          epc_o,
-    output logic                  eret_o,           // return from exception
-    output logic  [63:0]          trap_vector_base_o,
-    output priv_lvl_t             priv_lvl_o,
+    output logic  [3:0]           irq_enable_o,         // Directly output the interrupt enable flag
+    output logic  [63:0]          epc_o,                // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
+    output logic                  eret_o,               // Return from exception, set the PC of epc_o
+    output logic  [63:0]          trap_vector_base_o,   // Output base of exception vector, correct CSR is output (mtvec, stvec)
+    output priv_lvl_t             priv_lvl_o,           // Current privilege level the CPU is in
     // MMU
-    output logic                  enable_translation_o,
-    output logic                  flag_pum_o,
+    output logic                  enable_translation_o, // Enable VA translation
+    output logic                  flag_pum_o,           // TODO: this is called SUM now
     output logic                  flag_mxr_o,
     // input logic flag_mprv_i,
     output logic [37:0]           pd_ppn_o,
