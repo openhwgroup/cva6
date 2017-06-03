@@ -72,6 +72,9 @@ module csr_buffer (
         if (commit_i && ~csr_valid_i) begin
             csr_reg_n.valid       = 1'b0;
         end
+        // clear the buffer if we flushed
+        if (flush_i)
+            csr_reg_n.valid       = 1'b0;
     end
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin

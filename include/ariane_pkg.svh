@@ -228,6 +228,9 @@ package ariane_pkg;
     localparam ENV_CALL_SMODE        = 64'h9; // environment call from supervisor mode
     localparam ENV_CALL_MMODE        = 64'hB; // environment call from machine mode
 
+    // -----
+    // CSRs
+    // -----
     typedef enum logic [11:0] {
         CSR_SSTATUS   = 12'h100,
         CSR_SIE       = 12'h104,
@@ -256,7 +259,7 @@ package ariane_pkg;
         CSR_MHARTID   = 12'hF14
     } csr_reg_t;
 
-    // decoded csr address
+    // decoded CSR address
     typedef struct packed {
         logic [1:0]  rw;
         priv_lvl_t   priv_lvl;

@@ -173,7 +173,12 @@ module decoder (
                 OPCODE_FENCE: begin
                     // TODO: Implement
                     // FENCE, FENCE.I
-                    illegal_instr = 1'b1;
+                    // Implement as NOP
+                    instruction_o.fu  = ALU;
+                    instruction_o.op  = ADD;
+                    instruction_o.rs1 = '0;
+                    instruction_o.rs2 = '0;
+                    instruction_o.rd  = '0;
                 end
 
                 // --------------------------
