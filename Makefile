@@ -11,9 +11,9 @@ test_top_level = core_tb
 # Ariane PKG
 ariane_pkg = include/ariane_pkg.svh
 # utility modules
-util = $(wildcard src/util/*.sv)
+util = $(wildcard src/util/*.sv*)
 # test targets
-tests = alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
+tests = alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo core
 # UVM agents
 agents = $(wildcard tb/agents/*/*.sv*)
 # path to interfaces
@@ -53,7 +53,7 @@ build: $(library) $(library)/.build-agents $(library)/.build-interfaces $(librar
 
 # src files
 $(library)/.build-srcs: $(util) $(src)
-	vlog$(questa_version) $(compile_flag) -work $(library) $(util) $(list_incdir) -suppress 2583
+	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
 	# Compile agents, interfaces and environments
 	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(src) $(list_incdir) -suppress 2583
@@ -98,7 +98,7 @@ $(tests): build
 	vopt${questa_version} -work ${library} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
 	# vsim${questa_version} $@_tb_optimized
 	# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
-	vsim${questa_version} +UVM_TESTNAME=$@_test +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" ${library}.$@_tb_optimized
+	vsim${questa_version} +UVM_TESTNAME=$@_test +ASMTEST=test/rv64ui-p-add +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" ${library}.$@_tb_optimized
 
 build-moore:
 	[ ! -e .moore ] || rm .moore

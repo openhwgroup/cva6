@@ -25,16 +25,16 @@ class core_sequence extends core_if_sequence;
     task body();
         core_if_seq_item command;
 
-        command = core_if_seq_item::type_id::create("command");
-        `uvm_info("Core Sequence", "Starting Core Test", UVM_LOW)
+        // command = core_if_seq_item::type_id::create("command");
+        // `uvm_info("Core Sequence", "Starting Core Test", UVM_LOW)
 
-        for(int i = 0; i <= 100; i++) begin
-            start_item(command);
+        // for(int i = 0; i <= 100; i++) begin
+        //     start_item(command);
 
-            void'(command.randomize());
+        //     void'(command.randomize());
 
-            finish_item(command);
-        end
-        `uvm_info("Core Sequence", "Finished Core Test", UVM_LOW)
+        //     finish_item(command);
+        // end
+        // `uvm_info("Core Sequence", "Finished Core Test", UVM_LOW)
     endtask : body
 endclass : core_sequence

@@ -157,7 +157,7 @@ module dcache_arbiter #(
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            request_port_q <= 1'b0;
+            request_port_q <= 'b0;
         end else begin
             request_port_q <= request_port_n;
         end

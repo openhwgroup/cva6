@@ -42,16 +42,20 @@ class dcache_if_agent extends uvm_component;
         if (!uvm_config_db #(dcache_if_agent_config)::get(this, "", "dcache_if_agent_config", m_cfg) )
          `uvm_fatal("CONFIG_LOAD", "Cannot get() configuration dcache_if_agent_config from uvm_config_db. Have you set() it?")
 
-        m_driver = dcache_if_driver::type_id::create("m_driver", this);
+        if (m_cfg.active == UVM_ACTIVE)
+            m_driver = dcache_if_driver::type_id::create("m_driver", this);
+
         m_sequencer = dcache_if_sequencer::type_id::create("m_sequencer", this);
         m_monitor = dcache_if_monitor::type_id::create("m_monitor", this);
     endfunction : build_phase
 
     function void connect_phase(uvm_phase phase);
 
-        m_driver.seq_item_port.connect(m_sequencer.seq_item_export);
+        if (m_cfg.active == UVM_ACTIVE) begin
+            m_driver.seq_item_port.connect(m_sequencer.seq_item_export);
+            m_driver.m_cfg = m_cfg;
+        end
         // m_monitor.ap.connect(m_cov_monitor.analysis_port)
-        m_driver.m_cfg = m_cfg;
         m_monitor.m_cfg = m_cfg;
 
     endfunction: connect_phase

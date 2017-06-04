@@ -1,6 +1,3 @@
 [submodule "uvm-scaffold"]
 	path = uvm-scaffold
 	url = git@iis-git.ee.ethz.ch:floce/uvm-scaffold.git
-[submodule "lib/riscv-fesvr"]
-	path = lib/riscv-fesvr
-	url = git@iis-git.ee.ethz.ch:floce/riscv-fesvr.git

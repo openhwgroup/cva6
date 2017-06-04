@@ -290,7 +290,7 @@ class instruction_trace_item;
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
 
-        return $sformatf("%-16s x%0d, %0d(x%0d)", mnemonic, sbe.rd, $signed(sbe.result), sbe.rs1);
+        return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result), regAddrToStr(sbe.rs1));
     endfunction
 
     function string printStoreInstr();
@@ -307,7 +307,7 @@ class instruction_trace_item;
         read_regs.push_back(sbe.rs1);
         read_regs.push_back(sbe.rs2);
 
-        return $sformatf("%-16s x%0d, %0d(x%0d)", mnemonic, sbe.rs2, $signed(sbe.result), sbe.rs1);
+        return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rs2), $signed(sbe.result), regAddrToStr(sbe.rs1));
 
     endfunction // printSInstr
 

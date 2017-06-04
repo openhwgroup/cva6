@@ -38,7 +38,7 @@ class core_test_base extends uvm_test;
     // ---------------------
     // functional unit interface
     core_if_agent_config m_core_if_cfg;
-    mem_if_agent_config  m_instr_mem_if_cfg;
+    dcache_if_agent_config  m_dcache_if_cfg;
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -58,21 +58,20 @@ class core_test_base extends uvm_test;
         m_core_if_cfg = core_if_agent_config::type_id::create("m_core_if_cfg");
         m_env_cfg.m_core_if_agent_config = m_core_if_cfg;
 
-        m_instr_mem_if_cfg = mem_if_agent_config::type_id::create("m_instr_mem_if_cfg");
+        m_dcache_if_cfg = dcache_if_agent_config::type_id::create("m_dcache_if_cfg");
         // configure the instruction interface as a slave device
-        m_instr_mem_if_cfg.mem_if_config = SLAVE_NO_RANDOM;
-        m_env_cfg.m_instr_if_agent_config = m_instr_mem_if_cfg;
+        m_dcache_if_cfg.dcache_if_config = SLAVE_NO_RANDOM;
+        m_dcache_if_cfg.active = UVM_PASSIVE;
+        m_env_cfg.m_dcache_if_agent_config = m_dcache_if_cfg;
         // get core_if virtual interfaces
         // get master interface DB
         if (!uvm_config_db #(virtual core_if)::get(this, "", "core_if", m_core_if_cfg.m_vif))
             `uvm_fatal("VIF CONFIG", "Cannot get() interface core_if from uvm_config_db. Have you set() it?")
         m_env_cfg.m_core_if = m_core_if_cfg.m_vif;
 
-        uvm_config_db #(int)::dump();
-
-        if (!uvm_config_db #(virtual mem_if)::get(this, "", "instr_mem_if", m_instr_mem_if_cfg.fu))
-            `uvm_fatal("VIF CONFIG", "Cannot get() interface mem_if from uvm_config_db. Have you set() it?")
-        m_env_cfg.m_instr_mem_if = m_instr_mem_if_cfg.fu;
+        if (!uvm_config_db #(virtual dcache_if)::get(this, "", "dcache_if", m_dcache_if_cfg.m_vif))
+            `uvm_fatal("VIF CONFIG", "Cannot get() interface dcache_if from uvm_config_db. Have you set() it?")
+        m_env_cfg.m_dcache_if = m_dcache_if_cfg.m_vif;
 
         // create environment
         uvm_config_db #(core_env_config)::set(this, "*", "core_env_config", m_env_cfg);

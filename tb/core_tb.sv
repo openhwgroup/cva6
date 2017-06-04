@@ -22,7 +22,7 @@ module core_tb;
 
     debug_if debug_if();
     core_if core_if (clk_i);
-    mem_if instr_if (clk_i);
+    dcache_if dcache_if (clk_i);
 
     logic [63:0] instr_if_address;
     logic        instr_if_data_req;
@@ -42,6 +42,19 @@ module core_tb;
     logic        data_if_data_gnt_o;
     logic        data_if_data_rvalid_o;
     logic [63:0] data_if_data_rdata_o;
+
+    // connect D$ interface
+    assign dcache_if.address_index = data_if_address_index_i;
+    assign dcache_if.address_tag   = data_if_address_tag_i;
+    assign dcache_if.data_wdata    = data_if_data_wdata_i;
+    assign dcache_if.data_req      = data_if_data_req_i;
+    assign dcache_if.data_we       = data_if_data_we_i;
+    assign dcache_if.data_be       = data_if_data_be_i;
+    assign dcache_if.kill_req      = data_if_kill_req_i;
+    assign dcache_if.tag_valid     = data_if_tag_valid_i;
+    assign dcache_if.data_gnt      = data_if_data_gnt_o;
+    assign dcache_if.data_rvalid   = data_if_data_rvalid_o;
+    assign dcache_if.data_rdata    = data_if_data_rdata_o;
 
     core_mem core_mem_i (
         .clk_i                   ( clk_i                   ),
@@ -133,28 +146,30 @@ module core_tb;
         string file;
         // offset the temporary RAM
         logic [7:0] rmem [`DRAM_BASE + 0:`DRAM_BASE + 16384];
-
+        // get the file name from a command line plus arg
         void'(uvcl.get_arg_value("+ASMTEST=",file));
 
         $display("Pre-loading memory from file: %s\n", file);
         // read elf file (DPI call)
         void'(read_elf(file));
+        // we are interested in the .tohost ELF symbol in-order to observe end of test signals
         address = get_symbol_address("tohost");
-
+        // get the objdump verilog file to load our memorys
         $readmemh({file, ".v"}, rmem);
-
         // copy bitwise from verilog file
         for (int i = 0; i < 16384/8; i++) begin
             for (int j = 0; j < 8; j++)
                 core_mem_i.ram_i.mem[i][j] = rmem[`DRAM_BASE + i*8 + j];
         end
+        // pass tohost address to UVM resource DB
+        uvm_config_db #(longint unsigned)::set(null, "uvm_test_top.m_env.m_eoc", "tohost", address);
 
     endtask : preload_memories
 
-    program testbench (core_if core_if, mem_if instr_if);
+    program testbench (core_if core_if, dcache_if dcache_if);
         initial begin
             uvm_config_db #(virtual core_if)::set(null, "uvm_test_top", "core_if", core_if);
-            uvm_config_db #(virtual mem_if )::set(null, "uvm_test_top", "instr_mem_if", instr_if);
+            uvm_config_db #(virtual dcache_if )::set(null, "uvm_test_top", "dcache_if", dcache_if);
             // print the topology
             // uvm_top.enable_print_topology = 1;
             // Start UVM test
@@ -166,5 +181,5 @@ module core_tb;
         end
     endprogram
 
-    testbench tb(core_if, instr_if);
+    testbench tb(core_if, dcache_if);
 endmodule

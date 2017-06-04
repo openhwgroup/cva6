@@ -17,12 +17,12 @@
 class core_test extends core_test_base;
     // UVM Factory Registration Macro
     `uvm_component_utils(core_test)
-    // TODO: declare sequence here
     // core_sequence core;
     //------------------------------------------
     // Methods
     //------------------------------------------
-
+    // analysis port
+    core_eoc m_eoc;
     // Standard UVM Methods:
     function new(string name = "core_test", uvm_component parent = null);
         super.new(name, parent);
@@ -33,17 +33,7 @@ class core_test extends core_test_base;
     endfunction
 
     task run_phase(uvm_phase phase);
-        phase.raise_objection(this, "core_test");
-        //fibonacci_sequence fibonacci;
         super.run_phase(phase);
-
-        // core = new("core");
-        // TODO: Start sequence here
-        // core.start(sequencer_h);
-        // Testlogic goes here
-        #100ns;
-
-        phase.drop_objection(this, "core_test");
     endtask
 
 
