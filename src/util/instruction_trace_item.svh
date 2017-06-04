@@ -153,8 +153,11 @@ class instruction_trace_item;
             INSTR_CSRRC:               s = this.printCSRInstr("csrrc");
             INSTR_CSRC:                s = this.printCSRInstr("csrc");
 
+            INSTR_CSRWI:               s = this.printCSRInstr("csrwi");
             INSTR_CSRRWI:              s = this.printCSRInstr("csrrwi");
+            INSTR_CSRSI:               s = this.printCSRInstr("csrsi");
             INSTR_CSRRSI:              s = this.printCSRInstr("csrrsi");
+            INSTR_CSRCI:               s = this.printCSRInstr("csrci");
             INSTR_CSRRCI:              s = this.printCSRInstr("csrrci");
             // SYSTEM (others)
             INSTR_ECALL:               s = this.printMnemonic("ecall");

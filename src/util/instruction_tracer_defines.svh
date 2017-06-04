@@ -83,8 +83,11 @@ parameter INSTR_CSRS     =  { 12'b?, 5'b?, 3'b010, 5'b0, OPCODE_SYSTEM };
 parameter INSTR_CSRRC    =  { 12'b?, 5'b?, 3'b011, 5'b?, OPCODE_SYSTEM };
 parameter INSTR_CSRC     =  { 12'b?, 5'b?, 3'b011, 5'b0, OPCODE_SYSTEM };
 
+parameter INSTR_CSRWI    =  { 17'b?, 3'b101, 5'b0, OPCODE_SYSTEM };
 parameter INSTR_CSRRWI   =  { 17'b?, 3'b101, 5'b?, OPCODE_SYSTEM };
+parameter INSTR_CSRSI    =  { 17'b?, 3'b110, 5'b0, OPCODE_SYSTEM };
 parameter INSTR_CSRRSI   =  { 17'b?, 3'b110, 5'b?, OPCODE_SYSTEM };
+parameter INSTR_CSRCI    =  { 17'b?, 3'b111, 5'b0, OPCODE_SYSTEM };
 parameter INSTR_CSRRCI   =  { 17'b?, 3'b111, 5'b?, OPCODE_SYSTEM };
 
 parameter INSTR_ECALL    =  { 12'b000000000000, 13'b0, OPCODE_SYSTEM };
