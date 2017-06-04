@@ -195,7 +195,7 @@ module csr_regfile #(
 
         // check for correct access rights and that we are writing
         if(csr_we) begin
-            if (((priv_lvl_q & csr_addr.csr_decode.priv_lvl) == csr_addr.csr_decode.priv_lvl)) begin
+            if ((priv_lvl_t'(priv_lvl_q & csr_addr.csr_decode.priv_lvl) == csr_addr.csr_decode.priv_lvl)) begin
                 case (csr_addr.address)
                     // sstatus is a subset of mstatus - mask it accordingly
                     CSR_SSTATUS:            mstatus_n    = csr_wdata & 64'h3fffe1fee;

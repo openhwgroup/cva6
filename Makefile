@@ -34,7 +34,7 @@ incdir = ./includes
 test_case = core_test
 # QuestaSim Version
 questa_version = -10.5c
-compile_flag = +cover=bcfst+/dut
+compile_flag = +cover=bcfst+/dut -lint -incr -64 -nologo
 # Moore binary
 moore = ~fschuiki/bin/moore
 # Iterate over all include directories and write them with +incdir+ prefixed
@@ -49,27 +49,27 @@ $(library):
 # Build the TB and module using QuestaSim
 build: $(library) build-agents build-interfaces
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
-	vlog${questa_version} ${compile_flag} -work ${library} -incr ${util} ${list_incdir} -suppress 2583
+	vlog${questa_version} ${compile_flag} -work ${library} ${util} -mfcu -cuname util ${list_incdir} -suppress 2583
 	# Compile agents, interfaces and environments
-	vlog${questa_version} ${compile_flag} -work ${library}  -incr ${envs} ${sequences} ${test_pkg} ${list_incdir} -suppress 2583
+	vlog${questa_version} ${compile_flag} -work ${library} ${envs} ${sequences} ${test_pkg} ${list_incdir} -suppress 2583
 	# Compile source files
-	vlog${questa_version} ${compile_flag} -work ${library}  -incr ${src} ${tbs}  ${list_incdir} -suppress 2583
+	vlog${questa_version} ${compile_flag} -work ${library} -pedanticerrors ${src} ${tbs}  ${list_incdir} -suppress 2583
 	# Compile top level with DPI headers
 	vlog -sv tb/core_tb.sv tb/dpi/elfdpi.cc -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
 	# Optimize top level
 	vopt${questa_version} ${compile_flag} -work ${library}  ${test_top_level} -o ${test_top_level}_optimized +acc -check_synthesis
 
 build-agents: ${agents}
-	vlog${questa_version} ${compile_flag} -work ${library} -incr ${agents} ${list_incdir} -suppress 2583
+	vlog${questa_version} ${compile_flag} -work ${library} ${agents} ${list_incdir} -suppress 2583
 
 build-interfaces: ${interfaces}
-	vlog${questa_version} ${compile_flag} -work ${library}  -incr ${interfaces} ${list_incdir} -suppress 2583
+	vlog${questa_version} ${compile_flag} -work ${library} ${interfaces} ${list_incdir} -suppress 2583
 
 sim:
 	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 simc:
-	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=test/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 # Run the specified test case
 $(tests):

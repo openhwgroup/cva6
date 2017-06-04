@@ -34,7 +34,7 @@ void* read_elf(const char* fn) {
   // check that this is an elf file
   assert(size >= sizeof(Elf64_Ehdr));
   const Elf64_Ehdr* eh64 = (const Elf64_Ehdr*)buf;
-  assert(IS_ELF32(*eh64) || IS_ELF64(*eh64));
+  assert(IS_ELF32(*eh64) || IS_ELF64(*eh64) && "This file is not a valid ELF file");
 
   #define LOAD_ELF(ehdr_t, phdr_t, shdr_t, sym_t) do { \
     ehdr_t* eh = (ehdr_t*)buf; \

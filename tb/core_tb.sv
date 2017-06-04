@@ -8,6 +8,8 @@
 
 import ariane_pkg::*;
 
+`define DRAM_BASE 64'h80000000
+
 module core_tb;
     import "DPI-C" function chandle read_elf(string fn);
     import "DPI-C" function longint unsigned get_symbol_address(string sym);
@@ -125,19 +127,26 @@ module core_tb;
     end
 
     task preload_memories();
+        static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
+        string plus_args [$];
         longint unsigned address;
-        logic [7:0] rmem [0:16384];
+        string file;
+        // offset the temporary RAM
+        logic [7:0] rmem [`DRAM_BASE + 0:`DRAM_BASE + 16384];
 
-        void'(read_elf("/home/zarubaf/ariane/sourcecode/test/rv64ui-p-add"));
+        void'(uvcl.get_arg_value("+ASMTEST=",file));
+
+        $display("Pre-loading memory from file: %s\n", file);
+        // read elf file (DPI call)
+        void'(read_elf(file));
         address = get_symbol_address("tohost");
-        $display("tohost: %0h\n", address);
 
-        $readmemh("test/rv64ui-p-add.v", rmem);
+        $readmemh({file, ".v"}, rmem);
 
         // copy bitwise from verilog file
         for (int i = 0; i < 16384/8; i++) begin
             for (int j = 0; j < 8; j++)
-                core_mem_i.ram_i.mem[i][j] = rmem[i*8 + j];
+                core_mem_i.ram_i.mem[i][j] = rmem[`DRAM_BASE + i*8 + j];
         end
 
     endtask : preload_memories
