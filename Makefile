@@ -8,21 +8,24 @@ library = work
 top_level = core_tb
 test_top_level = core_tb
 
+# Ariane PKG
+ariane_pkg = include/ariane_pkg.svh
 # utility modules
 util = $(wildcard src/util/*.sv)
 # test targets
 tests = alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
 # UVM agents
-agents = include/ariane_pkg.svh $(wildcard tb/agents/*/*.sv)
+agents = $(wildcard tb/agents/*/*.sv*)
 # path to interfaces
 interfaces = $(wildcard include/*.svh)
 # UVM environments
-envs = $(wildcard tb/env/*/*.sv)
+envs = $(wildcard tb/env/*/*.sv*)
 # UVM Sequences
-sequences =  $(wildcard tb/sequences/*/*.sv)
+sequences =  $(wildcard tb/sequences/*/*.sv*)
 # Test packages
-test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv) $(wildcard tb/test/*/*_pkg.sv)
-
+test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.sv*)
+# DPI
+dpi = $(wildcard tb/dpi/*)
 # this list contains the standalone components
 src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv)
 # look for testbenches
@@ -42,37 +45,55 @@ moore = ~fschuiki/bin/moore
 list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
 # create library if not exists
 
+# # Build the TB and module using QuestaSim
+build: $(library) $(library)/.build-agents $(library)/.build-interfaces $(library)/.build-components \
+		$(library)/.build-srcs $(library)/.build-tb
+		# Optimize top level
+	vopt$(questa_version) $(compile_flag) -work $(library)  $(test_top_level) -o $(test_top_level)_optimized +acc -check_synthesis
+
+# src files
+$(library)/.build-srcs: $(util) $(src)
+	vlog$(questa_version) $(compile_flag) -work $(library) $(util) $(list_incdir) -suppress 2583
+	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
+	# Compile agents, interfaces and environments
+	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(src) $(list_incdir) -suppress 2583
+	touch $(library)/.build-srcs
+
+# build TBs
+$(library)/.build-tb: $(dpi) $(tbs)
+	# Compile top level with DPI headers
+	vlog -sv $(tbs) $(filter %.c %.cc, $(dpi)) -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
+	touch $(library)/.build-tb
+
+
+# Compile Sequences and Tests
+$(library)/.build-components: $(envs) $(sequences) $(test_pkg)
+	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(envs)) $(filter %.sv,$(sequences)) \
+													$(filter %.sv,$(test_pkg)) ${list_incdir} -suppress 2583
+	touch $(library)/.build-components
+
+# Compile Agents
+$(library)/.build-agents: $(agents) $(ariane_pkg)
+	vlog$(questa_version) $(compile_flag) -work $(library) $(ariane_pkg) $(filter %.sv,$(agents)) $(list_incdir) -suppress 2583
+	touch $(library)/.build-agents
+
+# Compile Interfaces
+$(library)/.build-interfaces: $(interfaces)
+	vlog$(questa_version) $(compile_flag) -work $(library) $(interfaces) $(list_incdir) -suppress 2583
+	touch $(library)/.build-interfaces
+
 $(library):
 	# Create the library
 	vlib${questa_version} ${library}
 
-# Build the TB and module using QuestaSim
-build: $(library) build-agents build-interfaces
-	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
-	vlog${questa_version} ${compile_flag} -work ${library} ${util} -mfcu -cuname util ${list_incdir} -suppress 2583
-	# Compile agents, interfaces and environments
-	vlog${questa_version} ${compile_flag} -work ${library} ${envs} ${sequences} ${test_pkg} ${list_incdir} -suppress 2583
-	# Compile source files
-	vlog${questa_version} ${compile_flag} -work ${library} -pedanticerrors ${src} ${tbs}  ${list_incdir} -suppress 2583
-	# Compile top level with DPI headers
-	vlog -sv tb/core_tb.sv tb/dpi/elfdpi.cc -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
-	# Optimize top level
-	vopt${questa_version} ${compile_flag} -work ${library}  ${test_top_level} -o ${test_top_level}_optimized +acc -check_synthesis
-
-build-agents: ${agents}
-	vlog${questa_version} ${compile_flag} -work ${library} ${agents} ${list_incdir} -suppress 2583
-
-build-interfaces: ${interfaces}
-	vlog${questa_version} ${compile_flag} -work ${library} ${interfaces} ${list_incdir} -suppress 2583
-
-sim:
+sim: build
 	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} -coverage -classdebug -do "do tb/wave/wave_core.do"
 
-simc:
+simc: build
 	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=test/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 # Run the specified test case
-$(tests):
+$(tests): build
 	# Optimize top level
 	vopt${questa_version} -work ${library} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
 	# vsim${questa_version} $@_tb_optimized
