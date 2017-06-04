@@ -68,6 +68,18 @@ test_store_queue:
     paths:
       - covhtmlreport
 
+test_core:
+  stage: test
+  before_script:
+    - make build library=core_lib
+  script:
+    - make core library=core_lib
+    - vcover report core.ucdb
+    - vcover report -html core.ucdb
+  artifacts:
+    paths:
+      - covhtmlreport
+
 # test_lsu:
 #   stage: test
 #   before_script:
