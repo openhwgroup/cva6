@@ -62,7 +62,7 @@ $(library)/.build-srcs: $(util) $(src)
 # build TBs
 $(library)/.build-tb: $(dpi) $(tbs)
 	# Compile top level with DPI headers
-	vlog -sv $(tbs) $(filter %.c %.cc, $(dpi)) -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
+	vlog -sv $(tbs) -work $(library) $(filter %.c %.cc, $(dpi)) -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
 	touch $(library)/.build-tb
 
 
