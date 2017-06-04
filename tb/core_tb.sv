@@ -9,6 +9,8 @@
 import ariane_pkg::*;
 
 module core_tb;
+    import "DPI-C" function chandle read_elf(string fn);
+    import "DPI-C" function longint unsigned get_symbol_address(string sym);
 
     import uvm_pkg::*;
     import core_lib_pkg::*;
@@ -123,9 +125,13 @@ module core_tb;
     end
 
     task preload_memories();
+        longint unsigned address;
         logic [7:0] rmem [0:16384];
 
-        $display("Reading memory");
+        void'(read_elf("/home/zarubaf/ariane/sourcecode/test/rv64ui-p-add"));
+        address = get_symbol_address("tohost");
+        $display("tohost: %0h\n", address);
+
         $readmemh("test/rv64ui-p-add.v", rmem);
 
         // copy bitwise from verilog file

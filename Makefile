@@ -54,6 +54,8 @@ build: $(library) build-agents build-interfaces
 	vlog${questa_version} ${compile_flag} -work ${library}  -incr ${envs} ${sequences} ${test_pkg} ${list_incdir} -suppress 2583
 	# Compile source files
 	vlog${questa_version} ${compile_flag} -work ${library}  -incr ${src} ${tbs}  ${list_incdir} -suppress 2583
+	# Compile top level with DPI headers
+	vlog -sv tb/core_tb.sv tb/dpi/elfdpi.cc -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
 	# Optimize top level
 	vopt${questa_version} ${compile_flag} -work ${library}  ${test_top_level} -o ${test_top_level}_optimized +acc -check_synthesis
 
