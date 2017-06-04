@@ -14,6 +14,10 @@ Checkout the repository and initialize all submodules
 git checkout git@iis-git.ee.ethz.ch:floce/ariane.git
 git submodule update --init --recursive
 ```
+Build the RISC-V front-end server (fesvr) which contains utility functions to read and load ELF files.
+```
+make build-fesvr
+```
 
 Build Ariane by using the Makefile:
 ```

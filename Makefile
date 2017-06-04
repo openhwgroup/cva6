@@ -82,6 +82,8 @@ build-moore:
 	# $(moore) compile src/fifo.sv
 	$(foreach src_file, $(src), $(moore) compile $(src_file);)
 
+build-fesvr:
+	cd lib/riscv-fesvr && mkdir -p build && cd build && ../configure && make
 # User Verilator to lint the target
 lint:
 	verilator ${src} --lint-only \
