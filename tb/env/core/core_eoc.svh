@@ -40,14 +40,6 @@ class core_eoc extends uvm_component;
         item_export  = new("item_export", this);
     endfunction
 
-  // if (cmd.payload() & 1) // test pass/fail
-  // {
-  //   htif->exitcode = cmd.payload();
-  //   if (htif->exit_code())
-  //     std::cerr << "*** FAILED *** (tohost = " << htif->exit_code() << ")" << std::endl;
-  //   return;
-  // }
-
     function void write (dcache_if_seq_item seq_item);
 
         if (seq_item.address == tohost) begin

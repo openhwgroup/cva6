@@ -87,7 +87,7 @@ $(library):
 	vlib${questa_version} ${library}
 
 sim: build
-	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=test/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 simc: build
 	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=test/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"

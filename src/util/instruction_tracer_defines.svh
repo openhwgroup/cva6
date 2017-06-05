@@ -42,9 +42,9 @@ parameter INSTR_SLTIU    =  { 17'b?, 3'b011, 5'b?, OPCODE_OPIMM };
 parameter INSTR_XORI     =  { 17'b?, 3'b100, 5'b?, OPCODE_OPIMM };
 parameter INSTR_ORI      =  { 17'b?, 3'b110, 5'b?, OPCODE_OPIMM };
 parameter INSTR_ANDI     =  { 17'b?, 3'b111, 5'b?, OPCODE_OPIMM };
-parameter INSTR_SLLI     =  { 7'b0000000, 10'b?, 3'b001, 5'b?, OPCODE_OPIMM };
-parameter INSTR_SRLI     =  { 7'b0000000, 10'b?, 3'b101, 5'b?, OPCODE_OPIMM };
-parameter INSTR_SRAI     =  { 7'b0100000, 10'b?, 3'b101, 5'b?, OPCODE_OPIMM };
+parameter INSTR_SLLI     =  { 6'b000000, 11'b?, 3'b001, 5'b?, OPCODE_OPIMM };
+parameter INSTR_SRLI     =  { 6'b000000, 11'b?, 3'b101, 5'b?, OPCODE_OPIMM };
+parameter INSTR_SRAI     =  { 6'b010000, 11'b?, 3'b101, 5'b?, OPCODE_OPIMM };
 
 // OPIMM32
 parameter INSTR_ADDIW    =  { 17'b?, 3'b000, 5'b?, OPCODE_OPIMM32 };

@@ -7,15 +7,7 @@ ASFLAGS = -c
 CFLAGS  =
 LDFLAGS =
 
-TESTS = add_test
+TESTS = rv64ui-p-add rv64ui-p-addi
 
-.S.o:
-	$(CC) $(ASFLAGS) -o $@ $<
-
-
-# .c.o:
-# 	$(CC) $(CFLAGS) -o $@ -c $<
-# .v: .S.o
-
-$(TESTS): $(TESTS).o
-	$(OBJCOPY)  -O verilog -I elf64-little $< $@.v
+$(TESTS).v: $(TESTS)
+	$(OBJCOPY)  -O verilog -I elf64-little $< $<.v

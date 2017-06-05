@@ -113,9 +113,9 @@ module issue_read_operands (
         // check that we didn't stall, that the instruction we got is valid
         // and that the functional unit we need is not busy
         if (issue_instr_valid_i) begin
+            // check that the corresponding functional unit is not busy
             if (~stall && ~fu_busy) begin
-                // check that the corresponding functional unit is not busy
-                // no other instruction has the same destination register -> fetch the instruction
+                // no other instruction has the same destination register -> issue the instruction
                 if (rd_clobber_i[issue_instr_i.rd] == NONE) begin
                     issue_ack_o = 1'b1;
                 end
