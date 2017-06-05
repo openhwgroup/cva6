@@ -36,3 +36,21 @@ make dcache_arbiter
 # Contributing
 
 Check out the [contribution guide](CONTRIBUTING.md)
+
+# Test Overview
+
+| **Test Name** |     **P/F/U**      | **Test Name** | **P/F/U** |
+|---------------|--------------------|---------------|-----------|
+| add           | :white_check_mark: |               |           |
+| addi          | :white_check_mark: |               |           |
+| addiw         | :white_check_mark: |               |           |
+| addw          | :white_check_mark: |               |           |
+| and           | :white_check_mark: |               |           |
+| andi          | :white_check_mark: |               |           |
+| auipc         | :white_check_mark: |               |           |
+| beq           | :white_check_mark: |               |           |
+| bge           | :white_check_mark: |               |           |
+| bgeu          | :white_check_mark: |               |           |
+| blt           | :white_check_mark: |               |           |
+| bltu          | :white_check_mark: |               |           |
+| bne           | :white_check_mark: |               |           |

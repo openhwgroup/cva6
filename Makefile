@@ -33,7 +33,7 @@ tbs = $(wildcard tb/*_tb.sv)
 # RISCV-tests path
 riscv-test-dir = riscv-tests/isa
 riscv-tests = rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and rv64ui-p-auipc \
-				rv64ui-p-beq rv64ui-p-bge rv64ui-p-bgeu
+				rv64ui-p-beq rv64ui-p-bge rv64ui-p-bgeu rv64ui-p-andi rv64ui-p-blt rv64ui-p-bltu rv64ui-p-bne
 
 riscv-test = rv64ui-p-add
 # Search here for include files (e.g.: non-standalone components)
