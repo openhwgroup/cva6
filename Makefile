@@ -32,7 +32,8 @@ src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv)
 tbs = $(wildcard tb/*_tb.sv)
 # RISCV-tests path
 riscv-test-dir = riscv-tests/isa
-riscv-tests = rv64ui-p-add rv64ui-p-addi rv64ui-p-slli
+riscv-tests = rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and
+riscv-test = rv64ui-p-add
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
 # Test case to run
@@ -89,10 +90,10 @@ $(library):
 	vlib${questa_version} ${library}
 
 sim: build
-	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=$(riscv-test-dir)/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=$(riscv-test-dir)/$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 simc: build
-	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=$(riscv-test-dir)/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=$(riscv-test-dir)/$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 run-asm-tests: build
 	$(foreach test, $(riscv-tests), vsim$(questa_version) +UVM_TESTNAME=$(test_case) +ASMTEST=$(riscv-test-dir)/$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $(library).$(test_top_level)_optimized;)
@@ -103,7 +104,7 @@ $(tests): build
 	vopt${questa_version} -work ${library} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
 	# vsim${questa_version} $@_tb_optimized
 	# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
-	vsim${questa_version} +UVM_TESTNAME=$@_test +ASMTEST=$(riscv-test-dir)/rv64ui-p-add +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" ${library}.$@_tb_optimized
+	vsim${questa_version} +UVM_TESTNAME=$@_test +ASMTEST=$(riscv-test-dir)/$(riscv-test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" ${library}.$@_tb_optimized
 
 build-moore:
 	[ ! -e .moore ] || rm .moore
@@ -119,7 +120,4 @@ lint:
 	${list_incdir}
 
 clean:
-	rm -rf work/ *.ucdb
-
-.PHONY:
-	build lint build-moore
+	rm -rf work
