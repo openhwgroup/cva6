@@ -375,7 +375,7 @@ module csr_regfile #(
         // throw an illegal instruction exception
         if (update_access_exception || read_access_exception) begin
             csr_exception_o = {
-                pc_i, ILLEGAL_INSTR, 1'b1
+                ILLEGAL_INSTR, pc_i, 1'b1 // TODO: Instead of PC the instruction bits should be here
             };
         end
     end

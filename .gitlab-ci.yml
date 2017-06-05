@@ -71,6 +71,7 @@ test_store_queue:
 test_core:
   stage: test
   before_script:
+    - git submodule update --init --recursive
     - make build-tests
     - make build library=core_lib
   script:
