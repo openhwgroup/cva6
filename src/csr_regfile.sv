@@ -248,7 +248,7 @@ module csr_regfile #(
                     CSR_MTVAL:              mtval_n     = csr_wdata;
                     default: update_access_exception = 1'b1;
                 endcase
-                // TODO: this is unnecessary
+                // so we wrote something, TODO: this can be finer grained (e.g.: did it have side effects?)
                 flush_o = 1'b1;
             end else begin
                 update_access_exception = 1'b1;
@@ -263,6 +263,8 @@ module csr_regfile #(
         // Exception is taken
         if (ex_i.valid) begin
             automatic priv_lvl_t trap_to_priv_lvl = PRIV_LVL_M;
+            // do not flush, flush is reserved for CSR writes with side effects
+            flush_o   = 1'b0;
             // figure out where to trap to
             // a m-mode trap might be delegated if we are taking it in S mode
             // first figure out if this was an exception or an interrupt e.g.: look at bit 63

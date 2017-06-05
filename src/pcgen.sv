@@ -107,7 +107,7 @@ module pcgen (
         // 4. Exception
         // -------------------------------
         if (ex_i.valid) begin
-            npc_n                 = trap_vector_base_i;
+            npc_n                  = trap_vector_base_i;
             branch_predict_o.valid = 1'b0;
         end
 
