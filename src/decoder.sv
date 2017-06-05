@@ -459,6 +459,9 @@ module decoder (
         // look if we didn't already get an exception in any previous
         // stage - we should not overwrite it as we retain order regarding the exception
         if (~ex_i.valid) begin
+            // if we didn't already get an exception save the instruction here as we may need it
+            // in the commit stage if we got a access exception to one of the CSR registers
+            instruction_o.ex.tval  = instruction_i;
             // instructions which will throw an exception are marked as valid
             // e.g.: they can be committed anytime and do not need to wait for any functional unit
             if (illegal_instr) begin
@@ -466,8 +469,6 @@ module decoder (
                 instruction_o.ex.valid = 1'b1;
                 // we decoded an illegal exception here
                 instruction_o.ex.cause = ILLEGAL_INSTR;
-                // if we decoded an illegal instruction save the faulting instruction to tval
-                instruction_o.ex.tval  = instruction_i;
             // we got an ecall, set the correct cause depending on the current privilege level
             end else if (ecall) begin
                 // this instruction has already executed

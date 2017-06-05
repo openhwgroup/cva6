@@ -376,9 +376,10 @@ module csr_regfile #(
         // we got an exception in one of the processes above
         // throw an illegal instruction exception
         if (update_access_exception || read_access_exception) begin
-            csr_exception_o = {
-                ILLEGAL_INSTR, pc_i, 1'b1 // TODO: Instead of PC the instruction bits should be here
-            };
+            csr_exception_o.cause = ILLEGAL_INSTR;
+            // we don't set the tval field as this will be set by the commit stage
+            // this spares the extra wiring from commit to CSR and back to commit
+            csr_exception_o.valid = 1'b1;
         end
     end
     // -------------------

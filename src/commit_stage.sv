@@ -112,7 +112,11 @@ module commit_stage (
         exception_o.tval  = 64'b0;
         // check for CSR exception
         if (csr_exception_i.valid) begin
-            exception_o = csr_exception_i;
+            exception_o      = csr_exception_i;
+            // if no earlier exception happened the commit instruction will still contain
+            // the instruction data from the ID stage. If a earlier exception happened we don't care
+            // as we will overwrite it anyway in the next IF bl
+            exception_o.tval = commit_instr_i.ex.tval;
         end
         // but we give precedence to exceptions which happened earlier
         if (commit_instr_i.ex.valid) begin
