@@ -122,9 +122,9 @@ module csr_regfile #(
         logic [3:0]  mode;
         logic [15:0] asid;
         logic [43:0] ppn;
-    } sapt_t;
+    } satp_t;
 
-    sapt_t satp_q, satp_n;
+    satp_t satp_q, satp_n;
 
 
     // ----------------
@@ -209,7 +209,7 @@ module csr_regfile #(
                     CSR_SCAUSE:             scause_n    = csr_wdata;
                     CSR_STVAL:              stval_n     = csr_wdata;
                     // supervisor address translation and protection
-                    CSR_SATP:               satp_n      = sapt_t'(csr_wdata);
+                    CSR_SATP:               satp_n      = satp_t'(csr_wdata);
 
                     CSR_MSTATUS: begin
                         mstatus_n      = csr_wdata;

@@ -32,7 +32,8 @@ src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv)
 tbs = $(wildcard tb/*_tb.sv)
 # RISCV-tests path
 riscv-test-dir = riscv-tests/isa
-riscv-tests = rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and
+riscv-tests = rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and rv64ui-p-auipc \
+				rv64ui-p-beq rv64ui-p-bge rv64ui-p-bgeu \
 riscv-test = rv64ui-p-add
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
@@ -40,7 +41,7 @@ incdir = ./includes
 test_case = core_test
 # QuestaSim Version
 questa_version = -10.5c
-compile_flag = +cover=bcfst+/dut -incr -64 -nologo
+compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet
 # Moore binary
 moore = ~fschuiki/bin/moore
 # Iterate over all include directories and write them with +incdir+ prefixed
@@ -120,4 +121,7 @@ lint:
 	${list_incdir}
 
 clean:
-	rm -rf work
+	rm -rf work/ *.ucdb
+
+.PHONY:
+	build lint build-moore

@@ -61,10 +61,10 @@ module branch_unit (
             sgn = 1'b0;
         // get the right comparison result
         case (operator_i)
-            EQ:  comparison_result = operand_a_i == operand_b_i;
-            NE:  comparison_result = operand_a_i != operand_b_i;
-            LTS: comparison_result = ($signed({sgn & operand_a_i[63], operand_a_i})   <  $signed({sgn & operand_b_i[63], operand_b_i}));
-            GES: comparison_result = ($signed({sgn & operand_a_i[63], operand_a_i})  >=  $signed({sgn & operand_b_i[63], operand_b_i}));
+            EQ:       comparison_result = operand_a_i == operand_b_i;
+            NE:       comparison_result = operand_a_i != operand_b_i;
+            LTS, LTU: comparison_result = ($signed({sgn & operand_a_i[63], operand_a_i})   <  $signed({sgn & operand_b_i[63], operand_b_i}));
+            GES, GEU: comparison_result = ($signed({sgn & operand_a_i[63], operand_a_i})  >=  $signed({sgn & operand_b_i[63], operand_b_i}));
             default: comparison_result = 1'b1;
         endcase
     end

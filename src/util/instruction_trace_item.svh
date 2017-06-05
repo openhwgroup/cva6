@@ -233,7 +233,7 @@ class instruction_trace_item;
 
     function string printSBInstr(input string mnemonic);
 
-        result_regs.push_back(sbe.rs1);
+        read_regs.push_back(sbe.rs1);
         read_regs.push_back(sbe.rs2);
 
         if (sbe.rs2 == 0)
