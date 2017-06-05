@@ -116,7 +116,9 @@ module issue_read_operands (
             // check that the corresponding functional unit is not busy
             if (~stall && ~fu_busy) begin
                 // no other instruction has the same destination register -> issue the instruction
-                if (rd_clobber_i[issue_instr_i.rd] == NONE) begin
+                // or the instruction uses the same functional unit -> the write back is implicitly
+                // sequentialized (by the structural hazard)
+                if (rd_clobber_i[issue_instr_i.rd] == NONE || rd_clobber_i[issue_instr_i.rd] == issue_instr_i.fu) begin
                     issue_ack_o = 1'b1;
                 end
                 // or check that the target destination register will be written in this cycle by the
