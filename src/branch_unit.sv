@@ -70,6 +70,9 @@ module branch_unit (
     end
     // here we handle the various possibilities of mis-predicts
     always_comb begin : mispredict_handler
+        // set the jump base, for JALR we need to look at the register, for all other control flow instructions we can take the current PC
+        automatic logic [63:0] jump_base = (operator_i == JALR) ? operand_a_i : pc_i;
+
         target_address                   = 64'b0;
         resolved_branch_o.pc             = pc_i;
         resolved_branch_o.target_address = 64'b0;
@@ -82,9 +85,9 @@ module branch_unit (
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
         next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
-        target_address                   = $unsigned($signed(pc_i) + $signed(imm_i));
+        target_address                   = $unsigned($signed(jump_base) + $signed(imm_i));
         // if we need to put the branch target address in a destination register, output it here to WB
-        branch_result_o                  = target_address;
+        branch_result_o                  = next_pc;
 
         if (branch_valid_i) begin
             // save PC - we need this to get the target row in the branch target buffer

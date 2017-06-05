@@ -83,7 +83,7 @@ package ariane_pkg;
                                // comparisons
                                LTS, LTU, GES, GEU, EQ, NE,
                                // jumps
-                               JAL, JALR,
+                               JALR,
                                // set lower than operations
                                SLTS, SLTU,
                                // CSR functions

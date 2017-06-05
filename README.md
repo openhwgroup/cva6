@@ -55,7 +55,7 @@ Check out the [contribution guide](CONTRIBUTING.md)
 | bltu          | :white_check_mark:   | sd            | :white_large_square: | sraw          | :white_large_square: |
 | bne           | :white_check_mark:   | sh            | :white_large_square: | srl           | :white_large_square: |
 | sub           | :white_large_square: | simple        | :white_check_mark:   | srli          |                      |
-| subw          | :white_large_square: |               |                      | srliw         |                      |
-| sw            | :white_large_square: |               |                      | srlw          |                      |
+| subw          | :white_large_square: | jal           | :white_check_mark:   | srliw         |                      |
+| sw            | :white_large_square: | jalr          | :white_check_mark:   | srlw          |                      |
 | xor           | :white_large_square: |               |                      |               |                      |
 | xori          | :white_large_square: |               |                      |               |                      |
