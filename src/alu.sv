@@ -133,19 +133,17 @@ module alu
     // ------------
     // Comparisons
     // ------------
-    logic is_greater_equal;  // handles both signed and unsigned forms
-    logic cmp_signed;
+    logic less;  // handles both signed and unsigned forms
+
 
     always_comb begin
-        cmp_signed = 1'b0;
+        logic sgn;
+        sgn = 1'b0;
 
         if (operator_i == SLTS)
-            cmp_signed = 1'b1;
-        // Is greater equal
-        if ((operand_a_i[63] ^ operand_b_i[63]) == 0)
-            is_greater_equal = (adder_result[63] == 0);
-        else
-            is_greater_equal = operand_a_i[63] ^ (cmp_signed);
+            sgn = 1'b1;
+
+        less = ($signed({sgn & operand_a_i[63], operand_a_i})  <  $signed({sgn & operand_b_i[63], operand_b_i}));
     end
 
     // -----------
@@ -172,7 +170,7 @@ module alu
             SRLW, SRAW: result_o = {{32{shift_result32[31]}}, shift_result32[31:0]};
 
             // Comparison Operations
-            SLTS,  SLTU: result_o = {63'b0, (~is_greater_equal)};
+            SLTS,  SLTU: result_o = {63'b0, less};
 
             default: ; // default case to suppress unique warning
         endcase
