@@ -13,7 +13,7 @@ ariane_pkg = include/ariane_pkg.svh
 # utility modules
 util = $(wildcard src/util/*.sv*)
 # test targets
-tests = alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo core
+tests = alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
 # UVM agents
 agents = $(wildcard tb/agents/*/*.sv*)
 # path to interfaces
@@ -30,20 +30,22 @@ dpi = $(wildcard tb/dpi/*)
 src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv)
 # look for testbenches
 tbs = $(wildcard tb/*_tb.sv)
-
+# RISCV-tests path
+riscv-test-dir = riscv-tests/isa
+riscv-tests = rv64ui-p-add rv64ui-p-addi rv64ui-p-slli
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
 # Test case to run
 test_case = core_test
 # QuestaSim Version
 questa_version = -10.5c
-compile_flag = +cover=bcfst+/dut -lint -incr -64 -nologo
+compile_flag = +cover=bcfst+/dut -incr -64 -nologo
 # Moore binary
 moore = ~fschuiki/bin/moore
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
-# create library if not exists
+# create library if it doesn't exist
 
 # # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-agents $(library)/.build-interfaces $(library)/.build-components \
@@ -87,10 +89,13 @@ $(library):
 	vlib${questa_version} ${library}
 
 sim: build
-	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=test/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=$(riscv-test-dir)/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 simc: build
-	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=test/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=$(riscv-test-dir)/rv64ui-p-add -coverage -classdebug -do "do tb/wave/wave_core.do"
+
+run-asm-tests: build
+	$(foreach test, $(riscv-tests), vsim$(questa_version) +UVM_TESTNAME=$(test_case) +ASMTEST=$(riscv-test-dir)/$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $(library).$(test_top_level)_optimized;)
 
 # Run the specified test case
 $(tests): build
@@ -102,11 +107,12 @@ $(tests): build
 
 build-moore:
 	[ ! -e .moore ] || rm .moore
-	# $(moore) compile src/fifo.sv
 	$(foreach src_file, $(src), $(moore) compile $(src_file);)
 
-build-fesvr:
-	cd lib/riscv-fesvr && mkdir -p build && cd build && ../configure && make
+# build the RISC-V tests
+build-tests:
+	cd riscv-tests && autoconf && ./configure --prefix=/home/zarubaf/riscv && make -j8
+
 # User Verilator to lint the target
 lint:
 	verilator ${src} --lint-only \

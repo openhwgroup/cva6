@@ -266,8 +266,9 @@ module csr_regfile #(
             // figure out where to trap to
             // a m-mode trap might be delegated if we are taking it in S mode
             // first figure out if this was an exception or an interrupt e.g.: look at bit 63
-            if ((ex_i.cause[63] && mideleg_q[ex_i.cause[62:0]]) ||
-                (~ex_i.cause[63] && medeleg_q[ex_i.cause[62:0]])) begin
+            // the cause register can only be 6 bits long (as we only support 64 exceptions)
+            if ((ex_i.cause[63] && mideleg_q[ex_i.cause[5:0]]) ||
+                (~ex_i.cause[63] && medeleg_q[ex_i.cause[5:0]])) begin
                 // traps never transition from a more-privileged mode to a less privileged mode
                 // so if we are already in M mode, stay there
                 trap_to_priv_lvl = (priv_lvl_q == PRIV_LVL_M) ? PRIV_LVL_M : PRIV_LVL_S;
