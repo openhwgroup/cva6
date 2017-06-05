@@ -1,6 +1,3 @@
 [submodule "uvm-scaffold"]
 	path = uvm-scaffold
 	url = git@iis-git.ee.ethz.ch:floce/uvm-scaffold.git
-[submodule "test/riscv-tests"]
-	path = test/riscv-tests
-	url = https://github.com/riscv/riscv-tests.git
