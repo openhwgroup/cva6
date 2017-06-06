@@ -334,7 +334,7 @@ module decoder (
                         3'b101:
                             instruction_o.op  = LHU;
                         3'b110:
-                            instruction_o.op  = LW;
+                            instruction_o.op  = LWU;
                         3'b011:
                             instruction_o.op  = LD;
                         default:

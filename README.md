@@ -43,14 +43,14 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 | **Test Name** |      **P/F/U**       | **Test Name** |      **P/F/U**       | **Test Name** |     **P/F/U**      |
 |---------------|----------------------|---------------|----------------------|---------------|--------------------|
-| add           | :white_check_mark:   | lb            | :x:                  | sll           | :white_check_mark: |
-| addi          | :white_check_mark:   | lbu           | :white_large_square: | slli          | :white_check_mark: |
-| addiw         | :white_check_mark:   | ld            | :white_large_square: | slliw         | :white_check_mark: |
-| addw          | :white_check_mark:   | lh            | :white_large_square: | sllw          | :white_check_mark: |
-| and           | :white_check_mark:   | lhu           | :white_large_square: | slt           | :white_check_mark: |
-| andi          | :white_check_mark:   | lui           | :white_large_square: | slti          | :white_check_mark: |
-| auipc         | :white_check_mark:   | lw            | :white_large_square: | sltiu         | :white_check_mark: |
-| beq           | :white_check_mark:   | lwu           | :white_large_square: | sltu          | :white_check_mark: |
+| add           | :white_check_mark:   | lb            | :white_check_mark:   | sll           | :white_check_mark: |
+| addi          | :white_check_mark:   | lbu           | :white_check_mark:   | slli          | :white_check_mark: |
+| addiw         | :white_check_mark:   | ld            | :white_check_mark:   | slliw         | :white_check_mark: |
+| addw          | :white_check_mark:   | lh            | :white_check_mark:   | sllw          | :white_check_mark: |
+| and           | :white_check_mark:   | lhu           | :white_check_mark:   | slt           | :white_check_mark: |
+| andi          | :white_check_mark:   | lui           | :white_check_mark:   | slti          | :white_check_mark: |
+| auipc         | :white_check_mark:   | lw            | :white_check_mark:   | sltiu         | :white_check_mark: |
+| beq           | :white_check_mark:   | lwu           | :white_check_mark:   | sltu          | :white_check_mark: |
 | bge           | :white_check_mark:   | or            | :white_check_mark:   | sra           | :white_check_mark: |
 | bgeu          | :white_check_mark:   | ori           | :white_check_mark:   | srai          | :white_check_mark: |
 | blt           | :white_check_mark:   | sb            | :white_large_square: | sraiw         | :white_check_mark: |

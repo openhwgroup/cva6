@@ -341,9 +341,9 @@ module lsu #(
             // check the operator to activate the right functional unit accordingly
             unique case (fu)
                 // all loads go here
-                LOAD:  ld_valid_i = 1'b1;
+                LOAD:  ld_valid_i = lsu_valid_i;
                 // all stores go here
-                STORE: st_valid_i = 1'b1;
+                STORE: st_valid_i = lsu_valid_i;
                 // not relevant for the LSU
                 default: ;
             endcase
