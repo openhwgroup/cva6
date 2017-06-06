@@ -56,7 +56,7 @@ module load_unit (
     input  logic                     data_rvalid_i,
     input  logic [63:0]              data_rdata_i
 );
-    enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, ABORT_TRANSLATION, WAIT_FLUSH} NS, CS;
+    enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, ABORT_TRANSLATION, WAIT_FLUSH} NS, CS;
     // in order to decouple the response interface from the request interface we need a
     // a queue which can hold all outstanding memory requests
     typedef struct packed {
@@ -140,6 +140,41 @@ module load_unit (
                         end
                     end else begin
                         // stall and wait for the store-buffer to drain
+                        ready_o = 1'b0;
+                        // wait for the store buffer to train and the page offset to not match anymore
+                        NS = WAIT_PAGE_OFFSET;
+                    end
+                end
+            end
+            // wait here for the page offset to not match anymore
+            WAIT_PAGE_OFFSET: begin
+                // we are definitely not ready to accept a new request
+                // we need unique access to the LSU
+                ready_o = 1'b0;
+                translation_req_o = 1'b1;
+
+                // we make a new request as soon as the page offset does not match anymore
+                // essentially the same part as above
+                if (!page_offset_matches_i) begin
+                    // make a load request to memory
+                    data_req_o        = 1'b1;
+                    // the translation request we got is valid
+                    if (translation_valid_i) begin
+                        // save the physical address for the next cycle
+                        paddr_n = paddr_i;
+                        // we got no data grant so wait for the grant before sending the tag
+                        if (!data_gnt_i) begin
+                            NS = WAIT_GNT;
+                        end else begin
+                            // put the request in the queue
+                            push    = 1'b1;
+                            // we got a grant so we can send the tag in the next cycle
+                            NS = SEND_TAG;
+                        end
+                    // we got a TLB miss
+                    end else begin
+                        // we need to abort the translation and let the PTW walker fix the TLB miss
+                        NS = ABORT_TRANSLATION;
                         ready_o = 1'b0;
                     end
                 end
@@ -262,9 +297,11 @@ module load_unit (
             // do not push this request
             push        = 1'b0;
         end
-        // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in an extra stage
+        // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
         if (flush_i && (!empty || data_rvalid_i)) begin
             NS = WAIT_FLUSH;
+        end else if (flush_i) begin
+            NS = IDLE;
         end
     end
 

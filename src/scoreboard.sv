@@ -128,7 +128,7 @@ module scoreboard #(
                 mem_n[trans_id_i[i]].sbe.result = wdata_i[i];
                 // write the exception back if it is valid
                 if (ex_i[i].valid)
-                    mem_n[trans_id_i[i]].sbe.ex     = ex_i[i];
+                    mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
             end
         end
 

@@ -59,8 +59,9 @@ module store_unit (
 );
     assign result_o = 64'b0;
 
-    logic [63:0]             st_buffer_paddr;   // physical address for store
-    logic [63:0]             st_buffer_data;  // store buffer data out
+    logic [63:0]             st_buffer_paddr;  // physical address for store
+    logic [63:0]             st_buffer_data;   // store buffer data out
+    logic [63:0]             st_data;          // aligned data to store buffer
     logic [7:0]              st_buffer_be;
     logic                    st_buffer_valid;
     // store buffer control signals
@@ -108,13 +109,30 @@ module store_unit (
             end
         end
     end
-
+    // -----------
+    // Re-aligner
+    // -----------
+    // re-align the write data to comply with the address offset
+    always_comb begin
+        st_data = data_i;
+        case (vaddr_i[2:0])
+            3'b000: st_data = data_i;
+            3'b001: st_data = {data_i[55:0], data_i[63:56]};
+            3'b010: st_data = {data_i[47:0], data_i[63:48]};
+            3'b011: st_data = {data_i[39:0], data_i[63:40]};
+            3'b100: st_data = {data_i[31:0], data_i[63:32]};
+            3'b101: st_data = {data_i[23:0], data_i[63:24]};
+            3'b110: st_data = {data_i[15:0], data_i[63:16]};
+            3'b111: st_data = {data_i[7:0],  data_i[63:8]};
+        endcase
+    end
     // ---------------
     // Store Queue
     // ---------------
     store_queue store_queue_i (
         // store queue write port
         .valid_i           ( st_valid            ),
+        .data_i            ( st_data             ),
         // store buffer in
         .paddr_o           ( st_buffer_paddr     ),
         .data_o            ( st_buffer_data      ),

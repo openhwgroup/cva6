@@ -41,23 +41,23 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 # Test Overview
 
-| **Test Name** |      **P/F/U**       | **Test Name** |      **P/F/U**       | **Test Name** |     **P/F/U**      |
-|---------------|----------------------|---------------|----------------------|---------------|--------------------|
-| add           | :white_check_mark:   | lb            | :white_check_mark:   | sll           | :white_check_mark: |
-| addi          | :white_check_mark:   | lbu           | :white_check_mark:   | slli          | :white_check_mark: |
-| addiw         | :white_check_mark:   | ld            | :white_check_mark:   | slliw         | :white_check_mark: |
-| addw          | :white_check_mark:   | lh            | :white_check_mark:   | sllw          | :white_check_mark: |
-| and           | :white_check_mark:   | lhu           | :white_check_mark:   | slt           | :white_check_mark: |
-| andi          | :white_check_mark:   | lui           | :white_check_mark:   | slti          | :white_check_mark: |
-| auipc         | :white_check_mark:   | lw            | :white_check_mark:   | sltiu         | :white_check_mark: |
-| beq           | :white_check_mark:   | lwu           | :white_check_mark:   | sltu          | :white_check_mark: |
-| bge           | :white_check_mark:   | or            | :white_check_mark:   | sra           | :white_check_mark: |
-| bgeu          | :white_check_mark:   | ori           | :white_check_mark:   | srai          | :white_check_mark: |
-| blt           | :white_check_mark:   | sb            | :white_large_square: | sraiw         | :white_check_mark: |
-| bltu          | :white_check_mark:   | sd            | :white_large_square: | sraw          | :white_check_mark: |
-| bne           | :white_check_mark:   | sh            | :white_large_square: | srl           | :white_check_mark: |
-| sub           | :white_check_mark:   | simple        | :white_check_mark:   | srli          | :white_check_mark: |
-| subw          | :white_check_mark:   | jal           | :white_check_mark:   | srliw         | :white_check_mark: |
-| sw            | :white_large_square: | jalr          | :white_check_mark:   | srlw          | :white_check_mark: |
-| xor           | :white_check_mark:   |               |                      |               |                    |
-| xori          | :white_check_mark:   |               |                      |               |                    |
+| **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      |
+|---------------|--------------------|---------------|--------------------|---------------|--------------------|
+| add           | :white_check_mark: | lb            | :white_check_mark: | sll           | :white_check_mark: |
+| addi          | :white_check_mark: | lbu           | :white_check_mark: | slli          | :white_check_mark: |
+| addiw         | :white_check_mark: | ld            | :white_check_mark: | slliw         | :white_check_mark: |
+| addw          | :white_check_mark: | lh            | :white_check_mark: | sllw          | :white_check_mark: |
+| and           | :white_check_mark: | lhu           | :white_check_mark: | slt           | :white_check_mark: |
+| andi          | :white_check_mark: | lui           | :white_check_mark: | slti          | :white_check_mark: |
+| auipc         | :white_check_mark: | lw            | :white_check_mark: | sltiu         | :white_check_mark: |
+| beq           | :white_check_mark: | lwu           | :white_check_mark: | sltu          | :white_check_mark: |
+| bge           | :white_check_mark: | or            | :white_check_mark: | sra           | :white_check_mark: |
+| bgeu          | :white_check_mark: | ori           | :white_check_mark: | srai          | :white_check_mark: |
+| blt           | :white_check_mark: | sb            | :white_check_mark: | sraiw         | :white_check_mark: |
+| bltu          | :white_check_mark: | sd            | :white_check_mark: | sraw          | :white_check_mark: |
+| bne           | :white_check_mark: | sh            | :white_check_mark: | srl           | :white_check_mark: |
+| sub           | :white_check_mark: | simple        | :white_check_mark: | srli          | :white_check_mark: |
+| subw          | :white_check_mark: | jal           | :white_check_mark: | srliw         | :white_check_mark: |
+| sw            | :white_check_mark: | jalr          | :white_check_mark: | srlw          | :white_check_mark: |
+| xor           | :white_check_mark: |               |                    |               |                    |
+| xori          | :white_check_mark: |               |                    |               |                    |
