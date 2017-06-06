@@ -262,14 +262,25 @@ class instruction_trace_item;
     function string printCSRInstr(input string mnemonic);
 
         result_regs.push_back(sbe.rd);
+        if (instr[14] == 0) begin
         read_regs.push_back(sbe.rs1);
-        if (sbe.rd != 0 && sbe.rs1 != 0) begin
-              return $sformatf("%-16s %s, %s, %s", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), csrAddrToStr(sbe.result[11:0]));
-        // don't display instructions which write to zero
-        end else if (sbe.rd == 0) begin
-              return $sformatf("%-16s %s, %s", mnemonic, regAddrToStr(sbe.rs1), csrAddrToStr(sbe.result[11:0]));
-        end else if (sbe.rs1 == 0) begin
-            return $sformatf("%-16s %s, %s", mnemonic, regAddrToStr(sbe.rd), csrAddrToStr(sbe.result[11:0]));
+            if (sbe.rd != 0 && sbe.rs1 != 0) begin
+                  return $sformatf("%-16s %s, %s, %s", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), csrAddrToStr(sbe.result[11:0]));
+            // don't display instructions which write to zero
+            end else if (sbe.rd == 0) begin
+                  return $sformatf("%-16s %s, %s", mnemonic, regAddrToStr(sbe.rs1), csrAddrToStr(sbe.result[11:0]));
+            end else if (sbe.rs1 == 0) begin
+                return $sformatf("%-16s %s, %s", mnemonic, regAddrToStr(sbe.rd), csrAddrToStr(sbe.result[11:0]));
+            end
+        end else begin
+            if (sbe.rd != 0 && sbe.rs1 != 0) begin
+                  return $sformatf("%-16s %s, %d, %s", mnemonic, regAddrToStr(sbe.rd), $unsigned(sbe.rs1), csrAddrToStr(sbe.result[11:0]));
+            // don't display instructions which write to zero
+            end else if (sbe.rd == 0) begin
+                  return $sformatf("%-16s %d, %s", mnemonic, $unsigned(sbe.rs1), csrAddrToStr(sbe.result[11:0]));
+            end else if (sbe.rs1 == 0) begin
+                return $sformatf("%-16s %s, %s", mnemonic, regAddrToStr(sbe.rd), csrAddrToStr(sbe.result[11:0]));
+            end
         end
     endfunction // printCSRInstr
 

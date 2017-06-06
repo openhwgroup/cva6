@@ -213,8 +213,8 @@ module csr_regfile #(
 
                     CSR_MSTATUS: begin
                         mstatus_n      = csr_wdata;
-                        mstatus_n.sxl  = 2'b0;
-                        mstatus_n.uxl  = 2'b0;
+                        mstatus_n.sxl  = 2'b10;
+                        mstatus_n.uxl  = 2'b10;
                         // hardwired zero registers
                         mstatus_n.sd   = 1'b0;
                         mstatus_n.xs   = 2'b0;
@@ -308,28 +308,36 @@ module csr_regfile #(
 
             priv_lvl_n = trap_to_priv_lvl;
         end
-        // return from exception
+        // -----------------------
+        // Return from Exception
+        // -----------------------
+        // When executing an xRET instruction, supposing xPP holds the value y, xIE is set to xPIE; the privilege
+        // mode is changed to y; xPIE is set to 1; and xPP is set to U
         if (mret) begin
             // return from exception, IF doesn't care from where we are returning
             eret_o = 1'b1;
             // return to the previous privilege level and restore all enable flags
             // get the previous machine interrupt enable flag
-            mstatus_n.mie = mstatus_q.mpie;
+            mstatus_n.mie  = mstatus_q.mpie;
             // restore the previous privilege level
-            priv_lvl_n    = mstatus_q.mpp;
+            priv_lvl_n     = mstatus_q.mpp;
             // set mpp to user mode
-            mstatus_n.mpp = PRIV_LVL_U;
+            mstatus_n.mpp  = PRIV_LVL_U;
+            // set mpie to 1
+            mstatus_n.mpie = 1'b1;
         end
 
         if (sret) begin
             // return from exception, IF doesn't care from where we are returning
             eret_o = 1'b1;
             // return the previous supervisor interrupt enable flag
-            mstatus_n.sie = mstatus_n.spie;
+            mstatus_n.sie  = mstatus_n.spie;
             // restore the previous privilege level
-            priv_lvl_n    = priv_lvl_t'({1'b0, mstatus_n.spp});
+            priv_lvl_n     = priv_lvl_t'({1'b0, mstatus_n.spp});
             // set spp to user mode
-            mstatus_n.spp = logic'(PRIV_LVL_U);
+            mstatus_n.spp  = logic'(PRIV_LVL_U);
+            // set spie to 1
+            mstatus_n.spie = 1'b1;
         end
     end
     // ---------------------------

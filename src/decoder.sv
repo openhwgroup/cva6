@@ -137,17 +137,17 @@ module decoder (
                             if (instr.itype.rs1 == 5'b0)
                                 instruction_o.op = CSR_READ;
                             else
-                                instruction_o.op = CSR_SET;
+                                instruction_o.op = CSR_CLEAR;
                         end
                         // use zimm and iimm
                         3'b101: begin// CSRRWI
-                            instruction_o.rs1 = 5'b0;
+                            instruction_o.rs1 = instr.itype.rs1;
                             imm_select = IIMM;
                             instruction_o.use_zimm = 1'b1;
                             instruction_o.op = CSR_WRITE;
                         end
                         3'b110: begin// CSRRSI
-                            instruction_o.rs1 = 5'b0;
+                            instruction_o.rs1 = instr.itype.rs1;
                             imm_select = IIMM;
                             instruction_o.use_zimm = 1'b1;
                             // this is just a read
@@ -157,7 +157,7 @@ module decoder (
                                 instruction_o.op = CSR_SET;
                         end
                         3'b111: begin// CSRRCI
-                            instruction_o.rs1 = 5'b0;
+                            instruction_o.rs1 = instr.itype.rs1;
                             imm_select = IIMM;
                             instruction_o.use_zimm = 1'b1;
                             // this is just a read
