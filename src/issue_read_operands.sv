@@ -67,6 +67,10 @@ module issue_read_operands (
     input  logic [4:0]                             waddr_a_i,
     input  logic [63:0]                            wdata_a_i,
     input  logic                                   we_a_i
+    // committing instruction instruction
+    // from scoreboard
+    // input  scoreboard_entry     commit_instr_i,
+    // output logic                commit_ack_o
 );
     logic stall;   // stall signal, we do not want to fetch any more entries
     logic fu_busy; // functional unit is busy
@@ -115,10 +119,11 @@ module issue_read_operands (
         if (issue_instr_valid_i) begin
             // check that the corresponding functional unit is not busy
             if (~stall && ~fu_busy) begin
+                // -----------------------------------------
+                // WAW - Write After Write Dependency Check
+                // -----------------------------------------
                 // no other instruction has the same destination register -> issue the instruction
-                // or the instruction uses the same functional unit -> the write back is implicitly
-                // sequentialized (by the structural hazard)
-                if (rd_clobber_i[issue_instr_i.rd] == NONE || rd_clobber_i[issue_instr_i.rd] == issue_instr_i.fu) begin
+                if (rd_clobber_i[issue_instr_i.rd] == NONE) begin
                     issue_ack_o = 1'b1;
                 end
                 // or check that the target destination register will be written in this cycle by the
@@ -176,7 +181,7 @@ module issue_read_operands (
         // poll the scoreboard for those values
         rs1_o = issue_instr_i.rs1;
         rs2_o = issue_instr_i.rs2;
-        // 0. check that we are not using the zimm type in rs1
+        // 0. check that we are not using the zimm type in RS1
         //    as this is an immediate we do not have to wait on anything here
         // 1. check if the source registers are clobberd
         // 2. poll the scoreboard
