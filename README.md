@@ -8,15 +8,12 @@
 For detailed documentation refer to the [online documentation](http://www.be4web.net/ariane/) (Login: `zarubaf` Password: `zaruba`).
 
 ## Getting Started
+Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools).
 
 Checkout the repository and initialize all submodules
 ```
 git checkout git@iis-git.ee.ethz.ch:floce/ariane.git
 git submodule update --init --recursive
-```
-Build the RISC-V front-end server (fesvr) which contains utility functions to read and load ELF files.
-```
-make build-fesvr
 ```
 
 Build Ariane by using the Makefile:
@@ -28,6 +25,11 @@ Start the simulation using Modelsim:
 ```
 make sim
 ```
+To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the riscv-tests isa folder:
+```
+make sim riscv-test=rv64ui-p-sraw
+```
+If you call `simc` instead of `sim` it will run without the GUI.
 
 Or start any of the unit tests by:
 ```
