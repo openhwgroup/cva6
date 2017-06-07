@@ -29,6 +29,7 @@ module ariane
     (
         input  logic                           clk_i,
         input  logic                           rst_ni,
+        input  logic                           rtc_i,
         input  logic                           clock_en_i,    // enable clock, otherwise it is gated
         input  logic                           test_en_i,     // enable all clock gates for testing
 
@@ -90,6 +91,8 @@ module ariane
     branchpredict             resolved_branch;
     logic [63:0]              pc_commit;
     logic                     eret;
+    logic                     commit_ack;
+
     // --------------
     // PCGEN <-> IF
     // --------------
@@ -168,7 +171,6 @@ module ariane
     // ID <-> COMMIT
     // --------------
     scoreboard_entry          commit_instr_id_commit;
-    logic                     commit_ack_commit_id;
     // --------------
     // COMMIT <-> ID
     // --------------
@@ -317,7 +319,7 @@ module ariane
         .we_a_i                     ( we_a_commit_id                           ),
 
         .commit_instr_o             ( commit_instr_id_commit                   ),
-        .commit_ack_i               ( commit_ack_commit_id                     ),
+        .commit_ack_i               ( commit_ack                               ),
         .*
     );
 
@@ -393,7 +395,7 @@ module ariane
     commit_stage commit_stage_i (
         .exception_o         ( ex_commit              ),
         .commit_instr_i      ( commit_instr_id_commit     ),
-        .commit_ack_o        ( commit_ack_commit_id       ),
+        .commit_ack_o        ( commit_ack                 ),
         .waddr_a_o           ( waddr_a_commit_id          ),
         .wdata_a_o           ( wdata_a_commit_id          ),
         .we_a_o              ( we_a_commit_id             ),
@@ -416,6 +418,7 @@ module ariane
     )
     csr_regfile_i (
         .flush_o              ( flush_csr_ctrl                  ),
+        .commit_ack_i         ( commit_ack                      ),
         .ex_i                 ( ex_commit                       ),
         .csr_op_i             ( csr_op_commit_csr               ),
         .csr_addr_i           ( csr_addr_ex_csr                 ),
@@ -478,7 +481,7 @@ module ariane
     assign tracer_if.we             = we_a_commit_id;
     // commit
     assign tracer_if.commit_instr   = commit_instr_id_commit;
-    assign tracer_if.commit_ack     = commit_ack_commit_id;
+    assign tracer_if.commit_ack     = commit_ack;
 
     program instr_tracer (instruction_tracer_if tracer_if);
         instruction_tracer it = new (tracer_if);

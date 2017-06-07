@@ -41,6 +41,8 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 # Test Overview
 
+## User Mode Integer Tests
+
 | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      |
 |---------------|--------------------|---------------|--------------------|---------------|--------------------|
 | add           | :white_check_mark: | lb            | :white_check_mark: | sll           | :white_check_mark: |
@@ -61,3 +63,11 @@ Check out the [contribution guide](CONTRIBUTING.md)
 | sw            | :white_check_mark: | jalr          | :white_check_mark: | srlw          | :white_check_mark: |
 | xor           | :white_check_mark: |               |                    |               |                    |
 | xori          | :white_check_mark: |               |                    |               |                    |
+
+## Machine Mode Tests
+
+| **Test Name** |      **P/F/U**       | **Test Name** |      **P/F/U**       | **Test Name** |      **P/F/U**       |
+|---------------|----------------------|---------------|----------------------|---------------|----------------------|
+| csr           | :white_check_mark:   | illegal       | :white_large_square: | mcsr          | :white_check_mark:   |
+| breakpoint    | :white_large_square: | ma_addr       | :white_large_square: | ma_fetch      | :white_large_square: |
+| sbreak        | :white_large_square: | scall         | :white_large_square: |               |                      |

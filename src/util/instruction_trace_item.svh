@@ -81,6 +81,10 @@ class instruction_trace_item;
             CSR_MARCHID:    return "marchid";
             CSR_MIMPID:     return "mimpid";
             CSR_MHARTID:    return "mhartid";
+            CSR_CYCLE:      return "cycle";
+            CSR_TIME:       return "time";
+            CSR_INSTRET:    return "instret";
+
             default:        return $sformatf("%0h", addr);
         endcase
     endfunction

@@ -256,7 +256,11 @@ package ariane_pkg;
         CSR_MVENDORID = 12'hF11,
         CSR_MARCHID   = 12'hF12,
         CSR_MIMPID    = 12'hF13,
-        CSR_MHARTID   = 12'hF14
+        CSR_MHARTID   = 12'hF14,
+        // Counters and Timers
+        CSR_CYCLE     = 12'hC00,
+        CSR_TIME      = 12'hC01,
+        CSR_INSTRET   = 12'hC02
     } csr_reg_t;
 
     // decoded CSR address

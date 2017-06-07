@@ -76,13 +76,6 @@ class instruction_tracer;
             // Physical Address
             // -----------------
 
-            // -----------
-            // Write Back
-            // -----------
-            // update shadow reg file here
-            if (tracer_if.pck.we && tracer_if.pck.waddr != 5'b0) begin
-                reg_file[tracer_if.pck.waddr] = tracer_if.pck.wdata;
-            end
 
             // --------------
             //  Commit
@@ -93,7 +86,19 @@ class instruction_tracer;
                 issue_commit_instruction = issue_queue.pop_front();
                 issue_sbe = issue_sbe_queue.pop_front();
                 // the scoreboards issue entry still contains the immediate value as a result
-                printInstr(issue_sbe, issue_commit_instruction.instruction, tracer_if.pck.wdata);
+                // check if the write back is valid, if not we need to source the result from the register file
+                if (tracer_if.pck.we)
+                    printInstr(issue_sbe, issue_commit_instruction.instruction, tracer_if.pck.wdata);
+                else
+                    printInstr(issue_sbe, issue_commit_instruction.instruction, reg_file[commit_instruction.rd]);
+            end
+
+            // ----------------------
+            // Commit Registers
+            // ----------------------
+            // update shadow reg file here
+            if (tracer_if.pck.we && tracer_if.pck.waddr != 5'b0) begin
+                reg_file[tracer_if.pck.waddr] = tracer_if.pck.wdata;
             end
 
             // --------------

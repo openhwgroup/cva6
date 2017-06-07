@@ -22,10 +22,13 @@ import ariane_pkg::*;
 module csr_regfile #(
     parameter int ASID_WIDTH = 1
     )(
-    input  logic                  clk_i,            // Clock
-    input  logic                  rst_ni,           // Asynchronous reset active low
+    input  logic                  clk_i,                // Clock
+    input  logic                  rtc_i,                // Real Time clock in
+    input  logic                  rst_ni,               // Asynchronous reset active low
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
+    // commit acknowledge
+    input  logic                  commit_ack_i,         // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
     input  logic  [3:0]           core_id_i,            // Core ID is considered static
     input  logic  [5:0]           cluster_id_i,         // Cluster ID is considered static
@@ -118,6 +121,10 @@ module csr_regfile #(
     logic [63:0] scause_q,   scause_n;
     logic [63:0] stval_q,    stval_n;
 
+    logic [63:0] cycle_q,   cycle_n;
+    logic [63:0] time_q,    time_n;
+    logic [63:0] instret_q, instret_n;
+
     typedef struct packed {
         logic [3:0]  mode;
         logic [15:0] asid;
@@ -162,6 +169,10 @@ module csr_regfile #(
                 CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
                 CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
                 CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
+                // Counters and Timers
+                CSR_CYCLE:              csr_rdata = cycle_q;
+                CSR_TIME:               csr_rdata = time_q;
+                CSR_INSTRET:            csr_rdata = instret_q;
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -195,64 +206,60 @@ module csr_regfile #(
 
         // check for correct access rights and that we are writing
         if(csr_we) begin
-            if ((priv_lvl_t'(priv_lvl_q & csr_addr.csr_decode.priv_lvl) == csr_addr.csr_decode.priv_lvl)) begin
-                case (csr_addr.address)
-                    // sstatus is a subset of mstatus - mask it accordingly
-                    CSR_SSTATUS:            mstatus_n    = csr_wdata & 64'h3fffe1fee;
-                    // even machine mode interrupts can be visible and set-able to supervisor
-                    // if the corresponding bit in mideleg is set
-                    CSR_SIE:                mie_n       = csr_wdata & (~64'h111) & mideleg_q;
-                    CSR_SIP:                mip_n       = csr_wdata & (~64'h111) & mideleg_q;
-                    CSR_STVEC:              stvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
-                    CSR_SSCRATCH:           sscratch_n  = csr_wdata;
-                    CSR_SEPC:               sepc_n      = {csr_wdata[63:1], 1'b0};
-                    CSR_SCAUSE:             scause_n    = csr_wdata;
-                    CSR_STVAL:              stval_n     = csr_wdata;
-                    // supervisor address translation and protection
-                    CSR_SATP:               satp_n      = satp_t'(csr_wdata);
+            case (csr_addr.address)
+                // sstatus is a subset of mstatus - mask it accordingly
+                CSR_SSTATUS:            mstatus_n    = csr_wdata & 64'h3fffe1fee;
+                // even machine mode interrupts can be visible and set-able to supervisor
+                // if the corresponding bit in mideleg is set
+                CSR_SIE:                mie_n       = csr_wdata & (~64'h111) & mideleg_q;
+                CSR_SIP:                mip_n       = csr_wdata & (~64'h111) & mideleg_q;
+                CSR_STVEC:              stvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                CSR_SSCRATCH:           sscratch_n  = csr_wdata;
+                CSR_SEPC:               sepc_n      = {csr_wdata[63:1], 1'b0};
+                CSR_SCAUSE:             scause_n    = csr_wdata;
+                CSR_STVAL:              stval_n     = csr_wdata;
+                // supervisor address translation and protection
+                CSR_SATP:               satp_n      = satp_t'(csr_wdata);
 
-                    CSR_MSTATUS: begin
-                        mstatus_n      = csr_wdata;
-                        mstatus_n.sxl  = 2'b10;
-                        mstatus_n.uxl  = 2'b10;
-                        // hardwired zero registers
-                        mstatus_n.sd   = 1'b0;
-                        mstatus_n.xs   = 2'b0;
-                        mstatus_n.fs   = 2'b0;
-                        mstatus_n.upie = 1'b0;
-                        mstatus_n.uie  = 1'b0;
-                        // if the SIE was set also set the MIE as interrupts for
-                        // higher privilege levels are always set, 1.10 p.20
-                        if (csr_wdata[1])
-                            mstatus_n.mie = 1'b1;
-                        // if the MIE was cleared, also clear SIE since interrupts
-                        // for lower privilege levels are always disabled, 1.10 p.20
-                        if (!csr_wdata[3])
-                            mstatus_n.sie = 1'b0;
-                    end
-                    // machine exception delegation register
-                    // 0 - 12 exceptions supported
-                    CSR_MEDELEG:            medeleg_n   = csr_wdata & 64'hBFF;
-                    // machine interrupt delegation register
-                    // we do not support user interrupt delegation
-                    CSR_MIDELEG:            mideleg_n   = csr_wdata & 64'hAAA;
+                CSR_MSTATUS: begin
+                    mstatus_n      = csr_wdata;
+                    mstatus_n.sxl  = 2'b10;
+                    mstatus_n.uxl  = 2'b10;
+                    // hardwired zero registers
+                    mstatus_n.sd   = 1'b0;
+                    mstatus_n.xs   = 2'b0;
+                    mstatus_n.fs   = 2'b0;
+                    mstatus_n.upie = 1'b0;
+                    mstatus_n.uie  = 1'b0;
+                    // if the SIE was set also set the MIE as interrupts for
+                    // higher privilege levels are always set, 1.10 p.20
+                    if (csr_wdata[1])
+                        mstatus_n.mie = 1'b1;
+                    // if the MIE was cleared, also clear SIE since interrupts
+                    // for lower privilege levels are always disabled, 1.10 p.20
+                    if (!csr_wdata[3])
+                        mstatus_n.sie = 1'b0;
+                end
+                // machine exception delegation register
+                // 0 - 12 exceptions supported
+                CSR_MEDELEG:            medeleg_n   = csr_wdata & 64'hBFF;
+                // machine interrupt delegation register
+                // we do not support user interrupt delegation
+                CSR_MIDELEG:            mideleg_n   = csr_wdata & 64'hAAA;
 
-                    // mask the register so that user interrupts can never be set
-                    CSR_MIE:                mie_n       = csr_wdata & (~64'h111);
-                    CSR_MIP:                mip_n       = csr_wdata & (~64'h111);
+                // mask the register so that user interrupts can never be set
+                CSR_MIE:                mie_n       = csr_wdata & (~64'h111);
+                CSR_MIP:                mip_n       = csr_wdata & (~64'h111);
 
-                    CSR_MTVEC:              mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
-                    CSR_MSCRATCH:           mscratch_n  = csr_wdata;
-                    CSR_MEPC:               mepc_n      = {csr_wdata[63:1], 1'b0};
-                    CSR_MCAUSE:             mcause_n    = csr_wdata;
-                    CSR_MTVAL:              mtval_n     = csr_wdata;
-                    default: update_access_exception = 1'b1;
-                endcase
-                // so we wrote something, TODO: this can be finer grained (e.g.: did it have side effects?)
-                flush_o = 1'b1;
-            end else begin
-                update_access_exception = 1'b1;
-            end
+                CSR_MTVEC:              mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                CSR_MSCRATCH:           mscratch_n  = csr_wdata;
+                CSR_MEPC:               mepc_n      = {csr_wdata[63:1], 1'b0};
+                CSR_MCAUSE:             mcause_n    = csr_wdata;
+                CSR_MTVAL:              mtval_n     = csr_wdata;
+                default: update_access_exception = 1'b1;
+            endcase
+            // so we wrote something, TODO: this can be finer grained (e.g.: did it have side effects?)
+            flush_o = 1'b1;
         end
 
         // -----------------------
@@ -340,6 +347,22 @@ module csr_regfile #(
             mstatus_n.spie = 1'b1;
         end
     end
+
+    // --------------------
+    // Timers and Counters
+    // --------------------
+    always_comb begin : timers_counters
+        instret_n = instret_q;
+        // just increment the cycle count
+        cycle_n = cycle_q + 1'b1;
+        // increment time
+        time_n = time_q + 1'b1;
+        // increase instruction retired counter
+        if (commit_ack_i) begin
+            instret_n = instret_q + 1'b1;
+        end
+    end
+
     // ---------------------------
     // CSR OP Select Logic
     // ---------------------------
@@ -381,6 +404,16 @@ module csr_regfile #(
         csr_exception_o = {
             64'b0, 64'b0, 1'b0
         };
+        // -----------------
+        // Privilege Check
+        // -----------------
+        // if we are reading or writing, check for the correct privilege level
+        if (csr_we || csr_read) begin
+            if ((priv_lvl_t'(priv_lvl_q & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
+                csr_exception_o.cause = ILLEGAL_INSTR;
+                csr_exception_o.valid = 1'b1;
+            end
+        end
         // we got an exception in one of the processes above
         // throw an illegal instruction exception
         if (update_access_exception || read_access_exception) begin
@@ -446,6 +479,9 @@ module csr_regfile #(
             sscratch_q      <= 64'b0;
             stval_q         <= 64'b0;
             satp_q          <= 64'b0;
+            // timer and counters
+            cycle_q         <= 64'b0;
+            instret_q       <= 64'b0;
         end else begin
             priv_lvl_q      <= priv_lvl_n;
             // machine mode registers
@@ -466,6 +502,18 @@ module csr_regfile #(
             sscratch_q      <= sscratch_n;
             stval_q         <= stval_n;
             satp_q          <= satp_n;
+            // timer and counters
+            cycle_q         <= cycle_n;
+            instret_q       <= instret_n;
         end
+    end
+
+    // RTC - Time Base
+    always_ff @(posedge rtc_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            time_q          <= 64'b0;
+       end else begin
+            time_q          <= time_n;
+       end
     end
 endmodule

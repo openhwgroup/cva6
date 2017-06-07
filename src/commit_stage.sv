@@ -50,8 +50,6 @@ module commit_stage (
     assign waddr_a_o = commit_instr_i.rd;
     assign pc_o      = commit_instr_i.pc;
 
-    logic exception;
-
     // -------------------
     // Commit Instruction
     // -------------------
@@ -62,43 +60,41 @@ module commit_stage (
         we_a_o       = 1'b0;
         commit_lsu_o = 1'b0;
         commit_csr_o = 1'b0;
-        exception    = 1'b0;
         wdata_a_o    = commit_instr_i.result;
         csr_op_o     = ADD; // this corresponds to a CSR NOP
         csr_wdata_o  = 64'b0;
 
         // we will not commit the instruction if we took an exception
-        if (~commit_instr_i.ex.valid) begin
-            if (commit_instr_i.valid) begin
-                // we can definitely write the register file
-                // if the instruction is not committing anything the destination
-                // register will be the all zero register.
-                we_a_o       = 1'b1;
-                commit_ack_o = 1'b1;
-                // check whether the instruction we retire was a store
-                if (commit_instr_i.fu == STORE) begin
-                    commit_lsu_o = 1'b1;
-                end
-                // ---------
-                // CSR Logic
-                // ---------
-                // check whether the instruction we retire was a CSR instruction
-                if (commit_instr_i.fu == CSR) begin
-                    // write the CSR file
-                    commit_csr_o = 1'b1;
-                    wdata_a_o    = csr_rdata_i;
-                    csr_op_o     = commit_instr_i.op;
-                    csr_wdata_o  = commit_instr_i.result;
-                end
-            end
-        // we got an exception from the instruction
-        end else begin
-            // lets tell the exception handling block further down to do proper exception handling
-            exception    = 1'b1;
+        if (commit_instr_i.valid) begin
+            // register will be the all zero register.
             // and also acknowledge the instruction, this is mainly done for the instruction tracer
             // as it will listen on the instruction ack signal. For the overall result it does not make any
             // difference as the whole pipeline is going to be flushed anyway.
+            if (~exception_o.valid) begin
+                // we can definitely write the register file
+                // if the instruction is not committing anything the destination
+                we_a_o       = 1'b1;
+
+                // do not commit the instruction if we got an exception since the store buffer will be cleared
+                // by the subsequent flush triggered by an exception
+                if (commit_instr_i.fu == STORE) begin
+                    commit_lsu_o = 1'b1;
+                end
+            end
+
             commit_ack_o = 1'b1;
+            // check whether the instruction we retire was a store
+            // ---------
+            // CSR Logic
+            // ---------
+            // check whether the instruction we retire was a CSR instruction
+            if (commit_instr_i.fu == CSR) begin
+                // write the CSR file
+                commit_csr_o = 1'b1;
+                wdata_a_o    = csr_rdata_i;
+                csr_op_o     = commit_instr_i.op;
+                csr_wdata_o  = commit_instr_i.result;
+            end
         end
     end
 

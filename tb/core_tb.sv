@@ -19,6 +19,7 @@ module core_tb;
 
     logic clk_i;
     logic rst_ni;
+    logic rtc_i;
 
     debug_if debug_if();
     core_if core_if (clk_i);
@@ -82,6 +83,7 @@ module core_tb;
     ariane dut (
         .clk_i                   ( clk_i                    ),
         .rst_ni                  ( rst_ni                   ),
+        .rtc_i                   ( rtc_i                    ),
         .clock_en_i              ( core_if.clock_en         ),
         .test_en_i               ( core_if.test_en          ),
         .fetch_enable_i          ( core_if.fetch_enable     ),
@@ -128,7 +130,7 @@ module core_tb;
         .debug_resume_i          (                          )
     );
 
-    // clock process
+    // Clock process
     initial begin
         clk_i = 1'b0;
         rst_ni = 1'b0;
@@ -137,6 +139,12 @@ module core_tb;
         rst_ni = 1'b1;
         forever
             #10ns clk_i = ~clk_i;
+    end
+    // Real Time Clock
+    initial begin
+        rtc_i = 1'b0;
+        forever
+            #15.258us rtc_i = ~rtc_i;
     end
 
     task preload_memories();
