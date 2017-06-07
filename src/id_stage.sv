@@ -141,6 +141,7 @@ module id_stage #(
         .is_compressed_i         ( fetch_entry_i.is_compressed   ),
         .instruction_i           ( fetch_entry_i.instruction     ),
         .branch_predict_i        ( fetch_entry_i.branch_predict  ),
+        .is_illegal_i            ( fetch_entry_i.is_illegal      ),
         .ex_i                    ( ex_if_i                       ),
         .instruction_o           ( decoded_instr_dc_sb           ),
         .is_control_flow_instr_o ( is_control_flow_instr         ),

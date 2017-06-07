@@ -15,6 +15,7 @@ module decoder (
     input  logic             rst_ni,                  // Asynchronous reset active low
     input  logic [63:0]      pc_i,                    // PC from IF
     input  logic             is_compressed_i,         // is a compressed instruction
+    input  logic             is_illegal_i,            // illegal compressed instruction
     input  logic [31:0]      instruction_i,           // instruction from IF
     input  branchpredict_sbe branch_predict_i,
     input  exception         ex_i,                    // if an exception occured in if
@@ -452,9 +453,9 @@ module decoder (
         endcase
     end
 
-    // --------------------------------
+    // ---------------------
     // Exception handling
-    // --------------------------------
+    // ---------------------
     always_comb begin : exception_handling
         instruction_o.ex      = ex_i;
         instruction_o.valid   = 1'b0;
@@ -466,7 +467,9 @@ module decoder (
             instruction_o.ex.tval  = instruction_i;
             // instructions which will throw an exception are marked as valid
             // e.g.: they can be committed anytime and do not need to wait for any functional unit
-            if (illegal_instr) begin
+            // check here if we decoded an invalid instruction or if the compressed decoder already decoded
+            // a invalid instruction
+            if (illegal_instr || is_illegal_i) begin
                 instruction_o.valid    = 1'b1;
                 instruction_o.ex.valid = 1'b1;
                 // we decoded an illegal exception here

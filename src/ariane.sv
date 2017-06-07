@@ -62,7 +62,7 @@ module ariane
         input  logic                           data_if_data_rvalid_i,
         input  logic [63:0]                    data_if_data_rdata_i,
         // Interrupt inputs
-        input  logic                           irq_i,                 // level sensitive IR lines
+        input  logic [1:0]                     irq_i,                 // level sensitive IR lines
         input  logic [4:0]                     irq_id_i,
         output logic                           irq_ack_o,
         input  logic                           irq_sec_i,
@@ -201,7 +201,6 @@ module ariane
     fu_op                     csr_op_commit_csr;
     logic [63:0]              csr_wdata_commit_csr;
     logic [63:0]              csr_rdata_csr_commit;
-    logic [4:0]               irq_enable_csr_commit;
     exception                 csr_exception_csr_commit;
     // --------------
     // EX <-> CSR
@@ -220,7 +219,7 @@ module ariane
     // TODO: Preliminary signal assignments
     logic flush_tlb;
     assign flush_tlb = 1'b0;
-
+    assign sec_lvl_o = priv_lvl;
     // --------------
     // NPC Generation
     // --------------
@@ -406,7 +405,6 @@ module ariane
         .csr_wdata_o         ( csr_wdata_commit_csr       ),
         .csr_rdata_i         ( csr_rdata_csr_commit       ),
         .csr_exception_i     ( csr_exception_csr_commit   ),
-        .irq_enable_i        ( irq_enable_csr_commit      ),
         .*
     );
 
@@ -426,9 +424,8 @@ module ariane
         .csr_rdata_o          ( csr_rdata_csr_commit            ),
         .pc_i                 ( pc_commit                       ),
         .csr_exception_o      ( csr_exception_csr_commit        ),
-        .irq_enable_o         (                                 ),
         .epc_o                ( epc_commit_pcgen                ),
-        .eret_o               ( eret               ),
+        .eret_o               ( eret                            ),
         .trap_vector_base_o   ( trap_vector_base_commit_pcgen   ),
         .priv_lvl_o           ( priv_lvl                        ),
 

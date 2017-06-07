@@ -19,10 +19,10 @@
 import ariane_pkg::*;
 
 module commit_stage (
-    input logic                 clk_i,       // Clock
-    input logic                 rst_ni,      // Asynchronous reset active low
+    input logic                 clk_i,         // Clock
+    input logic                 rst_ni,        // Asynchronous reset active low
 
-    output exception            exception_o, // take exception to controller
+    output exception            exception_o,   // take exception to controller
 
     // from scoreboard
     input  scoreboard_entry     commit_instr_i,
@@ -41,10 +41,8 @@ module commit_stage (
     input  logic [63:0]         csr_rdata_i,
     input  exception            csr_exception_i,
     // commit signals to ex
-    output logic                commit_lsu_o, // commit the pending store
-    output logic                commit_csr_o, // commit the pending CSR instruction
-    // general control signal
-    input  logic [4:0]          irq_enable_i
+    output logic                commit_lsu_o,   // commit the pending store
+    output logic                commit_csr_o    // commit the pending CSR instruction
 );
 
     assign waddr_a_o = commit_instr_i.rd;
@@ -98,16 +96,19 @@ module commit_stage (
         end
     end
 
-    // ----------------
-    // Exception Logic
-    // ----------------
+    // -----------------------------
+    // Exception & Interrupt Logic
+    // -----------------------------
     // here we know for sure that we are taking the exception
     always_comb begin : exception_handling
+        // Multiple simultaneous interrupts and traps at the same privilege level are handled in the following decreasing
+        // priority order: external interrupts, software interrupts, timer interrupts, then finally any synchronous traps. (1.10 p.30)
+        // interrupts are correctly prioritized in the CSR reg file, exceptions are prioritized here
         exception_o.valid = 1'b0;
         exception_o.cause = 64'b0;
         exception_o.tval  = 64'b0;
         // check for CSR exception
-        if (csr_exception_i.valid) begin
+        if (csr_exception_i.valid && ~csr_exception_i.cause[63]) begin
             exception_o      = csr_exception_i;
             // if no earlier exception happened the commit instruction will still contain
             // the instruction data from the ID stage. If a earlier exception happened we don't care
@@ -118,8 +119,13 @@ module commit_stage (
         if (commit_instr_i.ex.valid) begin
             exception_o = commit_instr_i.ex;
         end
-
+        // check for CSR interrupts (e.g.: normal interrupts they get triggered here)
+        if (csr_exception_i.valid && csr_exception_i.cause[63]) begin
+            exception_o = csr_exception_i;
+            exception_o.tval = commit_instr_i.ex.tval;
+        end
     end
+
     `ifndef SYNTHESIS
         always_ff @(posedge clk_i) begin : exception_displayer
             string cause;
@@ -138,6 +144,7 @@ module commit_stage (
                     ENV_CALL_UMODE:        cause = "Environment Call User Mode";
                     ENV_CALL_SMODE:        cause = "Environment Call Supervisor Mode";
                     ENV_CALL_MMODE:        cause = "Environment Call Machine Mode";
+                    default: cause = "Interrupt";
                 endcase
             $display("Exception @%t, PC: %0h, TVal: %0h, Cause: %s", $time, commit_instr_i.pc, exception_o.tval, cause);
             end

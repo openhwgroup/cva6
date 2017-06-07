@@ -112,7 +112,7 @@ module core_tb;
         .data_if_data_rvalid_i   ( data_if_data_rvalid_o    ),
         .data_if_data_rdata_i    ( data_if_data_rdata_o     ),
 
-        .irq_i                   ( core_if.irq              ),
+        .irq_i                   ( {core_if.irq, core_if.irq}              ),
         .irq_id_i                ( core_if.irq_id           ),
         .irq_ack_o               ( core_if.irq_ack          ),
         .irq_sec_i               ( core_if.irq_sec          ),
