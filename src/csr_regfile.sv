@@ -407,12 +407,14 @@ module csr_regfile #(
         endcase
     end
 
+    logic interrupt_global_enable;
     // --------------------------------------
     // Exception Control & Interrupt Control
     // --------------------------------------
-
     always_comb begin : exception_ctrl
         automatic logic [63:0] interrupt_cause = '0;
+        logic                  interrupt_global_enable;
+
         csr_exception_o = {
             64'b0, 64'b0, 1'b0
         };
@@ -445,8 +447,8 @@ module csr_regfile #(
         // An interrupt i will be taken if bit i is set in both mip and mie, and if interrupts are globally enabled.
         // By default, M-mode interrupts are globally enabled if the hart’s current privilege mode  is less
         // than M, or if the current privilege mode is M and the MIE bit in the mstatus register is set.
-        // override with higher privilege level interrupts
-         if (mstatus_q.mie && priv_lvl_q == PRIV_LVL_M || priv_lvl_q inside {PRIV_LVL_S, PRIV_LVL_U}) begin
+        interrupt_global_enable = mstatus_q.mie && priv_lvl_q == PRIV_LVL_M || priv_lvl_q inside {PRIV_LVL_S, PRIV_LVL_U};
+        if (interrupt_cause[63] && interrupt_global_enable) begin
             // we can set the cause here
             csr_exception_o.cause = (1 << 63) | interrupt_cause;
             // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
