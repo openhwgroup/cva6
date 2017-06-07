@@ -86,6 +86,9 @@ module branch_unit (
         next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
         target_address                   = $unsigned($signed(jump_base) + $signed(imm_i));
+        // on a JALR we are supposed to reset the LSB to 0 (according to the specification)
+        if (operator_i == JALR)
+            target_address[0] = 1'b0;
         // if we need to put the branch target address in a destination register, output it here to WB
         branch_result_o                  = next_pc;
 
