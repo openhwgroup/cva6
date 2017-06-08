@@ -505,7 +505,7 @@ module csr_regfile #(
     assign pd_ppn_o             = satp_q.ppn;
     assign asid_o               = satp_q.asid[ASID_WIDTH-1:0];
     assign flag_pum_o           = mstatus_q.sum;
-    assign enable_translation_o = mstatus_q.tvm;
+    assign enable_translation_o = (satp_q.mode == 4'h8) ? 1'b1 : 1'b0;
     assign flag_mxr_o           = mstatus_q.mxr;
     assign tvm_o                = mstatus_q.tvm;
     assign tw_o                 = mstatus_q.tw;
