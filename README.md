@@ -64,6 +64,12 @@ Check out the [contribution guide](CONTRIBUTING.md)
 | xor           | :white_check_mark: |               |                    |               |                    |
 | xori          | :white_check_mark: |               |                    |               |                    |
 
+## Compressed Instruction Tests
+
+| **Test Name** | **P/F/U** | **Test Name** | **P/F/U** | **Test Name** | **P/F/U** |
+|---------------|-----------|---------------|-----------|---------------|-----------|
+| rvc           | :x:       |               |           |               |           |
+
 ## Machine Mode Tests
 
 | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      |
@@ -74,9 +80,10 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 ## Supervisor Mode Tests
 
-| **Test Name** |      **P/F/U**       | **Test Name** |      **P/F/U**       | **Test Name** |      **P/F/U**       |
-|---------------|----------------------|---------------|----------------------|---------------|----------------------|
-| csr           | :white_check_mark:   | dirty         | :white_large_square: | ma_fetch      | :white_large_square: |
-| sbreak        | :white_large_square: | scall         | :white_large_square: | wfi           | :white_large_square: |
+| **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      |
+|---------------|--------------------|---------------|--------------------|---------------|--------------------|
+| csr           | :white_check_mark: | dirty         | :x:                | ma_fetch      | :white_check_mark: |
+| sbreak        | :white_check_mark: | scall         | :white_check_mark: | wfi           | :white_check_mark: |
+
 
 
