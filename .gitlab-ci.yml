@@ -76,8 +76,8 @@ test_core_asm:
     - make build library=core_lib
   script:
     - make run-asm-tests library=core_lib
-    - vcover report core.ucdb
-    - vcover report -html core.ucdb
+    - vcover report run-asm-tests.ucdb
+    - vcover report -html run-asm-tests.ucdb
   artifacts:
     paths:
       - covhtmlreport

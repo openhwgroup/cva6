@@ -66,8 +66,8 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 ## Machine Mode Tests
 
-| **Test Name** |      **P/F/U**       | **Test Name** |      **P/F/U**       | **Test Name** |     **P/F/U**      |
-|---------------|----------------------|---------------|----------------------|---------------|--------------------|
-| csr           | :white_check_mark:   | illegal       | :white_check_mark:   | mcsr          | :white_check_mark: |
-| breakpoint    | :white_large_square: | ma_addr       | :white_check_mark:   | ma_fetch      | :white_check_mark: |
-| sbreak        | :white_large_square: | scall         | :white_large_square: |               |                    |
+| **Test Name** |      **P/F/U**       | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      |
+|---------------|----------------------|---------------|--------------------|---------------|--------------------|
+| csr           | :white_check_mark:   | illegal       | :white_check_mark: | mcsr          | :white_check_mark: |
+| breakpoint    | :white_large_square: | ma_addr       | :white_check_mark: | ma_fetch      | :white_check_mark: |
+| sbreak        | :white_check_mark:   | scall         | :white_check_mark: |               |                    |
