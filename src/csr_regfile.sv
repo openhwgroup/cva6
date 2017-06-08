@@ -223,8 +223,8 @@ module csr_regfile #(
                 CSR_SSTATUS:            mstatus_n    = csr_wdata & 64'h3fffe1fee;
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
-                CSR_SIE:                mie_n       = csr_wdata & 64'hAAA & mideleg_q; // we only support supervisor and m-mode interrupts
-                CSR_SIP:                mip_n       = csr_wdata & 64'h22 & mideleg_q;  // only SSIP, STIP are write-able
+                CSR_SIE:                mie_n       = csr_wdata & 64'hBBB & mideleg_q; // we only support supervisor and m-mode interrupts
+                CSR_SIP:                mip_n       = csr_wdata & 64'h33 & mideleg_q;  // only SSIP, STIP are write-able
                 CSR_STVEC:              stvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                 CSR_SSCRATCH:           sscratch_n  = csr_wdata;
                 CSR_SEPC:               sepc_n      = {csr_wdata[63:1], 1'b0};
@@ -262,11 +262,11 @@ module csr_regfile #(
                 CSR_MEDELEG:            medeleg_n   = csr_wdata & 64'hBFF;
                 // machine interrupt delegation register
                 // we do not support user interrupt delegation
-                CSR_MIDELEG:            mideleg_n   = csr_wdata & 64'hAAA;
+                CSR_MIDELEG:            mideleg_n   = csr_wdata & 64'hBBB;
 
                 // mask the register so that user interrupts can never be set
-                CSR_MIE:                mie_n       = csr_wdata & 64'hAAA; // we only support supervisor and m-mode interrupts
-                CSR_MIP:                mip_n       = csr_wdata & 64'h22;  // only SSIP, STIP are write-able
+                CSR_MIE:                mie_n       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
+                CSR_MIP:                mip_n       = csr_wdata & 64'h33;  // only USIP, SSIP, UTIP, STIP are write-able
 
                 CSR_MTVEC:              mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                 CSR_MSCRATCH:           mscratch_n  = csr_wdata;
