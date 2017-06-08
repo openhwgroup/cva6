@@ -66,9 +66,9 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 ## Compressed Instruction Tests
 
-| **Test Name** | **P/F/U** | **Test Name** | **P/F/U** | **Test Name** | **P/F/U** |
-|---------------|-----------|---------------|-----------|---------------|-----------|
-| rvc           | :x:       |               |           |               |           |
+| **Test Name** |     **P/F/U**      | **Test Name** | **P/F/U** | **Test Name** | **P/F/U** |
+|---------------|--------------------|---------------|-----------|---------------|-----------|
+| rvc           | :white_check_mark: |               |           |               |           |
 
 ## Machine Mode Tests
 
