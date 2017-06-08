@@ -57,7 +57,11 @@ module csr_regfile #(
     output logic [37:0]           pd_ppn_o,
     output logic [ASID_WIDTH-1:0] asid_o,
     // external interrupts
-    input  logic [1:0]            irq_i          // interrupt in
+    input  logic [1:0]            irq_i,                // external interrupt in
+    // Visualization Support
+    output logic                  tvm_o,                // trap virtual memory
+    output logic                  tw_o,                 // timeout wait
+    output logic                  tsr_o                 // trap sret
     // Performance Counter
 );
 
@@ -154,7 +158,13 @@ module csr_regfile #(
                 CSR_SEPC:               csr_rdata = sepc_q;
                 CSR_SCAUSE:             csr_rdata = scause_q;
                 CSR_STVAL:              csr_rdata = stval_q;
-                CSR_SATP:               csr_rdata = satp_q;
+                CSR_SATP: begin
+                    // intercept reads to SATP if in S-Mode and TVM is enabled
+                    if (priv_lvl_q == PRIV_LVL_S && mstatus_q.tvm)
+                        read_access_exception = 1'b1;
+                    else
+                        csr_rdata = satp_q;
+                end
 
                 CSR_MSTATUS:            csr_rdata = mstatus_q;
                 CSR_MISA:               csr_rdata = ISA_CODE;
@@ -221,8 +231,13 @@ module csr_regfile #(
                 CSR_SCAUSE:             scause_n    = csr_wdata;
                 CSR_STVAL:              stval_n     = csr_wdata;
                 // supervisor address translation and protection
-                CSR_SATP:               satp_n      = satp_t'(csr_wdata);
-
+                CSR_SATP: begin
+                    // intercept SATP writes if in S-Mode and TVM is enabled
+                    if (priv_lvl_q == PRIV_LVL_S && mstatus_q.tvm)
+                        update_access_exception = 1'b1;
+                    else
+                        satp_n = satp_t'(csr_wdata);
+                end
                 CSR_MSTATUS: begin
                     mstatus_n      = csr_wdata;
                     mstatus_n.sxl  = 2'b10;
@@ -413,7 +428,6 @@ module csr_regfile #(
     // --------------------------------------
     always_comb begin : exception_ctrl
         automatic logic [63:0] interrupt_cause = '0;
-        logic                  interrupt_global_enable;
 
         csr_exception_o = {
             64'b0, 64'b0, 1'b0
@@ -426,35 +440,35 @@ module csr_regfile #(
         // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
         // for two privilege levels: Supervisor and Machine Mode
         // Supervisor Timer Interrupt
-        if (mie_q[S_TIMER_INTERRUPT] && mip_q[S_TIMER_INTERRUPT])
+        if (mie_q[S_TIMER_INTERRUPT[5:0]] && mip_q[S_TIMER_INTERRUPT[5:0]])
             interrupt_cause = S_TIMER_INTERRUPT;
         // Supervisor Software Interrupt
-        if (mie_q[S_SW_INTERRUPT] && mip_q[S_SW_INTERRUPT])
+        if (mie_q[S_SW_INTERRUPT[5:0]] && mip_q[S_SW_INTERRUPT[5:0]])
             interrupt_cause = S_SW_INTERRUPT;
         // Supervisor External Interrupt
-        if (mie_q[S_EXT_INTERRUPT] && mip_q[S_EXT_INTERRUPT])
+        if (mie_q[S_EXT_INTERRUPT[5:0]] && mip_q[S_EXT_INTERRUPT[5:0]])
             interrupt_cause = S_EXT_INTERRUPT;
         // Machine Timer Interrupt
-        if (mip_q[M_TIMER_INTERRUPT] && mie_q[M_TIMER_INTERRUPT])
+        if (mip_q[M_TIMER_INTERRUPT[5:0]] && mie_q[M_TIMER_INTERRUPT[5:0]])
             interrupt_cause = M_TIMER_INTERRUPT;
         // Machine Mode Software Interrupt
-        if (mip_q[M_SW_INTERRUPT] && mie_q[M_SW_INTERRUPT])
+        if (mip_q[M_SW_INTERRUPT[5:0]] && mie_q[M_SW_INTERRUPT[5:0]])
             interrupt_cause = M_SW_INTERRUPT;
         // Machine Mode External Interrupt
-        if (mip_q[M_EXT_INTERRUPT] && mie_q[M_EXT_INTERRUPT])
+        if (mip_q[M_EXT_INTERRUPT[5:0]] && mie_q[M_EXT_INTERRUPT[5:0]])
             interrupt_cause = M_EXT_INTERRUPT;
 
         // An interrupt i will be taken if bit i is set in both mip and mie, and if interrupts are globally enabled.
         // By default, M-mode interrupts are globally enabled if the hart’s current privilege mode  is less
         // than M, or if the current privilege mode is M and the MIE bit in the mstatus register is set.
-        interrupt_global_enable = mstatus_q.mie && priv_lvl_q == PRIV_LVL_M || priv_lvl_q inside {PRIV_LVL_S, PRIV_LVL_U};
+        interrupt_global_enable = (mstatus_q.mie && (priv_lvl_q == PRIV_LVL_M)) || (priv_lvl_q inside {PRIV_LVL_S, PRIV_LVL_U});
         if (interrupt_cause[63] && interrupt_global_enable) begin
             // we can set the cause here
-            csr_exception_o.cause = (1 << 63) | interrupt_cause;
+            csr_exception_o.cause = interrupt_cause;
             // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
             // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
             // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
-            if (mideleg_q[interrupt_cause]) begin
+            if (mideleg_q[interrupt_cause[5:0]]) begin
                 if ((mstatus_q.sie && priv_lvl_q == PRIV_LVL_S) || priv_lvl_q == PRIV_LVL_U)
                     csr_exception_o.valid = 1'b1;
             end else begin
@@ -493,6 +507,9 @@ module csr_regfile #(
     assign flag_pum_o           = mstatus_q.sum;
     assign enable_translation_o = mstatus_q.tvm;
     assign flag_mxr_o           = mstatus_q.mxr;
+    assign tvm_o                = mstatus_q.tvm;
+    assign tw_o                 = mstatus_q.tw;
+    assign tsr_o                = mstatus_q.tsr;
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output

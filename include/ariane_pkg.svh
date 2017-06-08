@@ -87,7 +87,7 @@ package ariane_pkg;
                                // set lower than operations
                                SLTS, SLTU,
                                // CSR functions
-                               MRET, SRET, ECALL, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
+                               MRET, SRET, ECALL, WFI, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
                                // LSU functions
                                LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
                              } fu_op;
@@ -147,7 +147,7 @@ package ariane_pkg;
     } itype_t;
 
     typedef struct packed {
-        logic [31:25] imm1;
+        logic [31:25] imm;
         logic [24:20] rs2;
         logic [19:15] rs1;
         logic [14:12] funct3;
@@ -228,12 +228,12 @@ package ariane_pkg;
     localparam logic[63:0] ENV_CALL_SMODE        = 64'h9; // environment call from supervisor mode
     localparam logic[63:0] ENV_CALL_MMODE        = 64'hB; // environment call from machine mode
 
-    localparam logic[63:0] S_SW_INTERRUPT        = 64'h1;
-    localparam logic[63:0] M_SW_INTERRUPT        = 64'h3;
-    localparam logic[63:0] S_TIMER_INTERRUPT     = 64'h5;
-    localparam logic[63:0] M_TIMER_INTERRUPT     = 64'h7;
-    localparam logic[63:0] S_EXT_INTERRUPT       = 64'h9;
-    localparam logic[63:0] M_EXT_INTERRUPT       = 64'hB;
+    localparam logic[63:0] S_SW_INTERRUPT        = (1 << 63) | 64'h1;
+    localparam logic[63:0] M_SW_INTERRUPT        = (1 << 63) | 64'h3;
+    localparam logic[63:0] S_TIMER_INTERRUPT     = (1 << 63) | 64'h5;
+    localparam logic[63:0] M_TIMER_INTERRUPT     = (1 << 63) | 64'h7;
+    localparam logic[63:0] S_EXT_INTERRUPT       = (1 << 63) | 64'h9;
+    localparam logic[63:0] M_EXT_INTERRUPT       = (1 << 63) | 64'hB;
     // -----
     // CSRs
     // -----

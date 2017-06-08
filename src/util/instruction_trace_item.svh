@@ -169,6 +169,7 @@ class instruction_trace_item;
             INSTR_MRET:                s = this.printMnemonic("mret");
             INSTR_SRET:                s = this.printMnemonic("sret");
             INSTR_WFI:                 s = this.printMnemonic("wfi");
+            INSTR_SFENCE:              s = this.printMnemonic("sfence.vma");
             // loads and stores
             INSTR_LOAD:                s = this.printLoadInstr();
             INSTR_STORE:               s = this.printStoreInstr();

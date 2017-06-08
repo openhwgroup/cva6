@@ -163,10 +163,10 @@ module ariane
     // --------------
     // EX <-> COMMIT
     // --------------
-    // LSU Commit
-    logic                     csr_commit_commit_ex;
-    logic                     lsu_commit_commit_ex;
     // CSR Commit
+    logic                     csr_commit_commit_ex;
+    // LSU Commit
+    logic                     lsu_commit_commit_ex;
     // --------------
     // ID <-> COMMIT
     // --------------
@@ -187,7 +187,7 @@ module ariane
     logic                     fetch_err_ex_if;
     logic [63:0]              fetch_vaddr_if_ex;
     // --------------
-    // EX <-> CSR
+    // CSR <-> *
     // --------------
     logic                     enable_translation_csr_ex;
     logic                     flag_pum_csr_ex;
@@ -195,18 +195,16 @@ module ariane
     logic [37:0]              pd_ppn_csr_ex;
     logic [0:0]               asid_csr_ex;
     logic [11:0]              csr_addr_ex_csr;
-    // --------------
-    // COMMIT <-> CSR
-    // --------------
     fu_op                     csr_op_commit_csr;
     logic [63:0]              csr_wdata_commit_csr;
     logic [63:0]              csr_rdata_csr_commit;
     exception                 csr_exception_csr_commit;
+    logic                     tvm_csr_id;
+    logic                     tw_csr_id;
+    logic                     tsr_csr_id;
     // --------------
-    // EX <-> CSR
+    // CTRL <-> *
     // --------------
-
-    // * -> CTRL
     logic                     flush_bp_ctrl_pcgen;
     logic                     flush_ctrl_pcgen;
     logic                     flush_csr_ctrl;
@@ -281,6 +279,9 @@ module ariane
         .ex_if_i                    ( exception_if_id                          ), // exception from if
         .ready_o                    ( ready_id_if                              ),
         .priv_lvl_i                 ( priv_lvl                                 ),
+        .tvm_i                      ( tvm_csr_id                               ),
+        .tw_i                       ( tw_csr_id                                ),
+        .tsr_i                      ( tsr_csr_id                               ),
         // Functional Units
         .fu_o                       ( fu_id_ex                                 ),
         .operator_o                 ( operator_id_ex                           ),
@@ -434,6 +435,9 @@ module ariane
         .flag_mxr_o           ( flag_mxr_csr_ex                 ),
         .pd_ppn_o             ( pd_ppn_csr_ex                   ),
         .asid_o               ( asid_csr_ex                     ),
+        .tvm_o                ( tvm_csr_id                      ),
+        .tw_o                 ( tw_csr_id                       ),
+        .tsr_o                ( tsr_csr_id                      ),
         .*
     );
 

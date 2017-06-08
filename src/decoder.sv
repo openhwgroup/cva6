@@ -19,7 +19,11 @@ module decoder (
     input  logic [31:0]      instruction_i,           // instruction from IF
     input  branchpredict_sbe branch_predict_i,
     input  exception         ex_i,                    // if an exception occured in if
+    // From CSR
     input  priv_lvl_t        priv_lvl_i,              // current privilege level
+    input  logic             tvm_i,                   // trap virtual memory
+    input  logic             tw_i,                    // timeout wait
+    input  logic             tsr_i,                   // trap sret
     output scoreboard_entry  instruction_o,           // scoreboard entry to scoreboard
     output logic             is_control_flow_instr_o  // this instruction will change the control flow
 );
@@ -94,6 +98,9 @@ module decoder (
                                     // we'll just decode an illegal instruction if we are in the wrong privilege level
                                     if (priv_lvl_i == PRIV_LVL_U)
                                         illegal_instr = 1'b1;
+                                    // if we are in S-Mode and Trap SRET (tsr) is set -> trap on illegal instruction
+                                    if (priv_lvl_i == PRIV_LVL_S && tsr_i)
+                                        illegal_instr = 1'b1;
                                 end
                                 // MRET
                                 12'b1100000010: begin
@@ -104,16 +111,23 @@ module decoder (
                                         illegal_instr = 1'b1;
                                 end
                                 // WFI
-                                // 12'b1_0000_0101:;
+                                12'b1_0000_0101: begin
+                                    instruction_o.op = WFI;
+                                    // if timeout wait is set, trap on an illegal instruction in S Mode
+                                    // (after 0 cycles timeout)
+                                    if (priv_lvl_i == PRIV_LVL_S && tw_i)
+                                        illegal_instr = 1'b1;
+                                end
                                 // SFENCE.VMA
                                 default: begin
-                                    // if (instr.itype.imm[11:5] == 7'b1001) begin
-                                    // ToDO: Reset illegal instruction here, this is the only type
-                                    // of instruction which needs those kind of fields
-                                    //
-                                    // end else begin
-                                        illegal_instr = 1'b1;
-                                    // end
+                                    if (instr.instr[31:25] == 7'b1001) begin
+                                        // Reset illegal instruction here, this is the only type
+                                        // of instruction which needs those kind of fields
+                                        illegal_instr = 1'b0;
+                                        // check TVM flag and intercept SFENCE.VMA call if necessary
+                                        if (priv_lvl_i == PRIV_LVL_S && tvm_i)
+                                            illegal_instr = 1'b1;
+                                    end
                                 end
                             endcase
                         end
