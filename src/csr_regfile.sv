@@ -259,7 +259,7 @@ module csr_regfile #(
                 end
                 // machine exception delegation register
                 // 0 - 12 exceptions supported
-                CSR_MEDELEG:            medeleg_n   = csr_wdata & 64'hBFF;
+                CSR_MEDELEG:            medeleg_n   = csr_wdata & 64'hF7FF;
                 // machine interrupt delegation register
                 // we do not support user interrupt delegation
                 CSR_MIDELEG:            mideleg_n   = csr_wdata & 64'hBBB;
@@ -315,11 +315,11 @@ module csr_regfile #(
                 // this can either be user or supervisor mode
                 mstatus_n.spp  = logic'(priv_lvl_q);
                 // set cause
-                scause_n = ex_i.cause;
+                scause_n       = ex_i.cause;
                 // set epc
-                sepc_n = pc_i;
+                sepc_n         = pc_i;
                 // set mtval or stval
-                stval_n = ex_i.tval;
+                stval_n        = ex_i.tval;
             // trap to machine mode
             end else begin
                 // update mstatus
