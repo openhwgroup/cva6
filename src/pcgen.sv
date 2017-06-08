@@ -82,13 +82,14 @@ module pcgen (
             npc_n       = {npc_q[62:2], 2'b0}  + 64'h4;
         else // or keep the PC stable if IF is not ready
             npc_n       =  npc_q;
-        // we only need to stall the consecutive case since in any other case we will flush at least
+        // we only need to stall the consecutive and predicted case since in any other case we will flush at least
         // the front-end which means that the IF stage will always be ready to accept a new request
 
         // -------------------------------
         // 1. Predict taken
         // -------------------------------
-        if (branch_predict_btb.valid && branch_predict_btb.predict_taken) begin
+        // only predict if the IF stage is ready, otherwise we might take the predicted PC away which will end in a endless loop
+        if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken) begin
             npc_n = branch_predict_btb.predict_address;
         end
         // -------------------------------
