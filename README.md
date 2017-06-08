@@ -69,5 +69,5 @@ Check out the [contribution guide](CONTRIBUTING.md)
 | **Test Name** |      **P/F/U**       | **Test Name** |      **P/F/U**       | **Test Name** |      **P/F/U**       |
 |---------------|----------------------|---------------|----------------------|---------------|----------------------|
 | csr           | :white_check_mark:   | illegal       | :white_check_mark:   | mcsr          | :white_check_mark:   |
-| breakpoint    | :white_large_square: | ma_addr       | :white_large_square: | ma_fetch      | :white_large_square: |
+| breakpoint    | :white_large_square: | ma_addr       | :white_check_mark:   | ma_fetch      | :white_large_square: |
 | sbreak        | :white_large_square: | scall         | :white_large_square: |               |                      |

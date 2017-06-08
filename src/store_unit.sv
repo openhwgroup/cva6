@@ -102,7 +102,7 @@ module store_unit (
             if (ex_i.valid) begin
                 // result is valid
                 valid_o  = 1'b1;
-                //  do not store this
+                // do not store this
                 st_valid = 1'b0;
                 // we are ready if we got this exception
                 ready_o  = 1'b1;

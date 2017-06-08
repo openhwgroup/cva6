@@ -296,6 +296,8 @@ module load_unit (
             ready_o     = 1'b1;
             // do not push this request
             push        = 1'b0;
+            // reset state machine
+            NS = IDLE;
         end
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
         if (flush_i && (!empty || data_rvalid_i)) begin
@@ -309,6 +311,9 @@ module load_unit (
     always_comb begin : rvalid_output
         pop     = 1'b0;
         valid_o = 1'b0;
+        // output the queue data directly, the valid signal is set corresponding to the process above
+        trans_id_o = out_data.trans_id;
+
         // we got an rvalid and are currently not flushing
         if (data_rvalid_i && CS != WAIT_FLUSH) begin
             pop     = 1'b1;
@@ -316,12 +321,13 @@ module load_unit (
         end
         // pass through an exception
         if (valid_i && ex_i.valid) begin
-            valid_o = 1'b1;
+            valid_o    = 1'b1;
+            // in case of an exception we can use the current trans_id since we either stalled
+            // or we are taking the exception in the first cycle
+            trans_id_o = trans_id_i;
         end
     end
 
-    // output the queue data directly, the valid signal is set corresponding to the process above
-    assign trans_id_o = out_data.trans_id;
 
     // latch physical address
     always_ff @(posedge clk_i or negedge rst_ni) begin

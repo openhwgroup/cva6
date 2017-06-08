@@ -335,19 +335,15 @@ module lsu #(
         ld_valid_i = 1'b0;
         st_valid_i = 1'b0;
 
-        // only activate one of the units if we didn't got an misaligned exception
-        // we can directly output a misaligned exception and do not need to process it any further
-        if (!data_misaligned) begin
-            // check the operator to activate the right functional unit accordingly
-            unique case (fu)
-                // all loads go here
-                LOAD:  ld_valid_i = lsu_valid_i;
-                // all stores go here
-                STORE: st_valid_i = lsu_valid_i;
-                // not relevant for the LSU
-                default: ;
-            endcase
-        end
+        // check the operator to activate the right functional unit accordingly
+        unique case (fu)
+            // all loads go here
+            LOAD:  ld_valid_i = lsu_valid_i;
+            // all stores go here
+            STORE: st_valid_i = lsu_valid_i;
+            // not relevant for the LSU
+            default: ;
+        endcase
     end
 
 
@@ -424,13 +420,13 @@ module lsu #(
                 end
                 // word
                 LW, LWU, SW: begin
-                    if (vaddr_i[2] == 1'b1 && vaddr_i[2:0] != 3'b100)
+                    if (vaddr_i[1:0] != 1'b00)
                         data_misaligned = 1'b1;
                 end
 
                 // half word
                 LH, LHU, SH: begin
-                    if (vaddr_i[2:0] == 3'b111)
+                    if (vaddr_i[0] != 1'b0)
                         data_misaligned = 1'b1;
                 end
                 // byte -> is always aligned
@@ -442,15 +438,15 @@ module lsu #(
 
             if (fu == LOAD) begin
                 misaligned_exception = {
-                    64'b0,
                     LD_ADDR_MISALIGNED,
+                    vaddr,
                     1'b1
                 };
 
             end else if (fu == STORE) begin
                 misaligned_exception = {
-                    64'b0,
                     ST_ADDR_MISALIGNED,
+                    vaddr,
                     1'b1
                 };
             end
