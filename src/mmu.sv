@@ -210,6 +210,7 @@ module mmu #(
         fetch_gnt_o                   = instr_if_data_gnt_i;
         fetch_err_o                   = 1'b0;
         ierr_valid_n                  = 1'b0;
+        fetch_ex_o                    = '{default: 0};
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
