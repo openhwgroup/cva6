@@ -185,13 +185,13 @@ class instruction_trace_item;
 
         foreach (result_regs[i]) begin
             if (result_regs[i] != 0)
-                s = $sformatf(s, " %-4s:%16x", regAddrToStr(result_regs[i]), this.result);
+                s = $sformatf("%s %-4s:%16x", s, regAddrToStr(result_regs[i]), this.result);
         end
 
 
         foreach (read_regs[i]) begin
             if (read_regs[i] != 0)
-                s = $sformatf(s, " %-4s:%16x", regAddrToStr(read_regs[i]), reg_file[read_regs[i]]);
+                s = $sformatf("%s %-4s:%16x", s, regAddrToStr(read_regs[i]), reg_file[read_regs[i]]);
         end
 
         return s;

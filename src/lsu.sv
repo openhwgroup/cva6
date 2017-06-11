@@ -421,7 +421,7 @@ module lsu #(
                 end
                 // word
                 LW, LWU, SW: begin
-                    if (vaddr_i[1:0] != 1'b00)
+                    if (vaddr_i[1:0] != 2'b00)
                         data_misaligned = 1'b1;
                 end
 
@@ -455,7 +455,7 @@ module lsu #(
     end
 
     // this process selects the input based on the current state of the LSU
-    // it can either be feedthrough from the issue stage or from the internal register
+    // it can either be feed-through from the issue stage or from the internal registers
     always_comb begin : input_select
         // if we are stalling use the values we saved
         if (stall_q) begin
