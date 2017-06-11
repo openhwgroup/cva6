@@ -51,8 +51,8 @@ incdir = ./includes
 # Test case to run
 test_case = core_test
 # QuestaSim Version
-questa_version = -10.5c
-compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet
+questa_version = -10.6
+compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262
 # Moore binary
 moore = ~fschuiki/bin/moore
 # Iterate over all include directories and write them with +incdir+ prefixed
@@ -77,7 +77,7 @@ $(library)/.build-srcs: $(util) $(src)
 # build TBs
 $(library)/.build-tb: $(dpi) $(tbs)
 	# Compile top level with DPI headers
-	vlog -sv $(tbs) -work $(library) $(filter %.c %.cc, $(dpi)) -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
+	vlog$(questa_version) -sv $(tbs) -work $(library) $(filter %.c %.cc, $(dpi)) -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
 	touch $(library)/.build-tb
 
 
@@ -136,3 +136,5 @@ clean:
 
 .PHONY:
 	build lint build-moore
+
+	# make CC=/usr/pack/modelsim-10.6-kgf/questasim/gcc-5.3.0-linux_x86_64/bin/gcc CXX=/usr/pack/modelsim-10.6-kgf/questasim/gcc-5.3.0-linux_x86_64/bin/g++ -j20

@@ -52,10 +52,10 @@ module fetch_fifo
     logic [31:0] decompressed_instruction [2];
     logic        is_illegal [2];
 
-    fetch_entry mem_n[DEPTH-1:0], mem_q[DEPTH-1:0];
-    logic [$clog2(DEPTH)-1:0]     read_pointer_n, read_pointer_q;
-    logic [$clog2(DEPTH)-1:0]     write_pointer_n, write_pointer_q;
-    logic [$clog2(DEPTH)-1:0]     status_cnt_n,    status_cnt_q; // this integer will be truncated by the synthesis tool
+    fetch_entry                   mem_n[DEPTH-1:0], mem_q[DEPTH-1:0];
+    logic [$clog2(DEPTH)-1:0]     read_pointer_n,   read_pointer_q;
+    logic [$clog2(DEPTH)-1:0]     write_pointer_n,  write_pointer_q;
+    logic [$clog2(DEPTH)-1:0]     status_cnt_n,     status_cnt_q; // this integer will be truncated by the synthesis tool
 
     // status signals
     logic full, empty;
