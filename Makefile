@@ -128,8 +128,8 @@ build-tests:
 
 # User Verilator to lint the target
 lint:
-	verilator ${src} --lint-only \
-	${list_incdir}
+	verilator $(ariane_pkg) $(src) --lint-only \
+	$(list_incdir) --top-module ariane
 
 clean:
 	rm -rf work/ *.ucdb

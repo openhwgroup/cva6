@@ -36,7 +36,8 @@ module mmu #(
         output logic                            fetch_valid_o,
         output logic                            fetch_err_o,
         input  logic [63:0]                     fetch_vaddr_i,
-        output logic [31:0]                     fetch_rdata_o, // pass-through because of interfaces
+        output logic [31:0]                     fetch_rdata_o,  // pass-through because of interfaces
+        output exception                        fetch_ex_o,     // write-back fetch exceptions (e.g.: bus faults, page faults, etc.)
         // LSU interface
         // this is a more minimalistic interface because the actual addressing logic is handled
         // in the LSU as we distinguish load and stores, what we do here is simple address translation

@@ -36,11 +36,11 @@ module if_stage (
     input  logic                   instr_gnt_i,
     input  logic                   instr_rvalid_i,
     input  logic [31:0]            instr_rdata_i,
+    input  exception               instr_ex_i,          // Instruction fetch exception, valid if rvalid is one
     // Output of IF Pipeline stage
     output fetch_entry             fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
     output logic                   fetch_entry_valid_i, // instruction in IF is valid
-    input  logic                   instr_ack_i,         // ID acknowledged this instruction
-    output exception               ex_o                 // pass on if an fetch-exception happened
+    input  logic                   instr_ack_i          // ID acknowledged this instruction
 );
 
     enum logic [1:0] {IDLE, WAIT_GNT, WAIT_RVALID, WAIT_ABORTED } CS, NS;
@@ -66,6 +66,7 @@ module if_stage (
     //---------------------------------
     fetch_fifo fetch_fifo_i (
         .branch_predict_i      ( branchpredict_q     ),
+        .ex_i                  ( instr_ex_i          ),
         .in_addr_i             ( instr_addr_q        ),
         .in_rdata_i            ( instr_rdata_i       ),
         .in_valid_i            ( fifo_valid          ),
@@ -224,16 +225,12 @@ module if_stage (
             CS              <= IDLE;
             instr_addr_q    <= '0;
             branchpredict_q <= '{default: 0};
-            ex_o            <= '{default: 0};
         end else begin
             CS              <= NS;
             if (addr_valid) begin
               instr_addr_q    <= fetch_address_i;
               branchpredict_q <= branch_predict_i;
             end
-            ex_o.cause              <= 64'b0; // TODO: Output exception
-            ex_o.tval               <= 64'b0; // TODO: Output exception
-            ex_o.valid              <= 1'b0;  //illegal_compressed_instr;  // TODO: Output exception
         end
     end
     //-------------

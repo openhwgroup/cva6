@@ -18,8 +18,10 @@
 // University of Bologna.
 //
 import ariane_pkg::*;
+`ifndef verilator
 `ifndef SYNTHESIS
 import instruction_tracer_pkg::*;
+`endif
 `endif
 
 module ariane
@@ -184,6 +186,7 @@ module ariane
     logic                     fetch_gnt_ex_if;
     logic                     fetch_valid_ex_if;
     logic [31:0]              fetch_rdata_ex_if;
+    exception                 fetch_ex_ex_if;
     logic                     fetch_err_ex_if;
     logic [63:0]              fetch_vaddr_if_ex;
     // --------------
@@ -253,11 +256,11 @@ module ariane
         .instr_gnt_i           ( fetch_gnt_ex_if                ),
         .instr_rvalid_i        ( fetch_valid_ex_if              ),
         .instr_rdata_i         ( fetch_rdata_ex_if              ),
+        .instr_ex_i            ( fetch_ex_ex_if                 ), // fetch exception
 
         .fetch_entry_o         ( fetch_entry_if_id              ),
         .fetch_entry_valid_i   ( fetch_valid_if_id              ),
         .instr_ack_i           ( decode_ack_id_if               ),
-        .ex_o                  ( exception_if_id                ),
         .*
     );
 
@@ -276,7 +279,6 @@ module ariane
         .fetch_entry_i              ( fetch_entry_if_id                        ),
         .fetch_entry_valid_i        ( fetch_valid_if_id                        ),
         .decoded_instr_ack_o        ( decode_ack_id_if                         ),
-        .ex_if_i                    ( exception_if_id                          ), // exception from if
         .ready_o                    ( ready_id_if                              ),
         .priv_lvl_i                 ( priv_lvl                                 ),
         .tvm_i                      ( tvm_csr_id                               ),
@@ -377,6 +379,7 @@ module ariane
         .fetch_err_o            ( fetch_err_ex_if            ),
         .fetch_vaddr_i          ( fetch_vaddr_if_ex          ),
         .fetch_rdata_o          ( fetch_rdata_ex_if          ),
+        .fetch_ex_o             ( fetch_ex_ex_if             ), // fetch exception to IF
         .priv_lvl_i             ( priv_lvl                   ), // from CSR
         .flag_pum_i             ( flag_pum_csr_ex            ), // from CSR
         .flag_mxr_i             ( flag_mxr_csr_ex            ), // from CSR
@@ -463,6 +466,7 @@ module ariane
     // Instruction Tracer
     // -------------------
     `ifndef SYNTHESIS
+    `ifndef verilator
     instruction_tracer_if tracer_if (clk_i);
     // assign instruction tracer interface
     // control signals
@@ -493,6 +497,7 @@ module ariane
     endprogram
 
     instr_tracer instr_tracer_i (tracer_if);
+    `endif
     `endif
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

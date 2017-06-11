@@ -96,11 +96,12 @@ package ariane_pkg;
     // ---------------
     // store the decompressed instruction
     typedef struct packed {
-        branchpredict_sbe branch_predict;
-        logic [63:0]      address;
-        logic [31:0]      instruction;
-        logic             is_compressed;
-        logic             is_illegal;
+        branchpredict_sbe branch_predict;       // this field contains branch prediction information regarding the forward branch path
+        exception         ex;                   // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
+        logic [63:0]      address;              // the address of the instructions from below
+        logic [31:0]      instruction;          // instruction word
+        logic             is_compressed;        // bit indicating whether this instruction was previously compressed (e.g.: 16 bit)
+        logic             is_illegal;           // bit indicating whether the instruction was an illegal compressed instructions
     } fetch_entry;
 
     // ---------------
