@@ -152,8 +152,9 @@ module core_tb;
         string plus_args [$];
         longint unsigned address;
         string file;
+        string test;
         // offset the temporary RAM
-        logic [7:0] rmem [`DRAM_BASE + 0:`DRAM_BASE + 16384];
+        logic [7:0] rmem [`DRAM_BASE:`DRAM_BASE + 16384];
         // get the file name from a command line plus arg
         void'(uvcl.get_arg_value("+ASMTEST=",file));
 
@@ -162,7 +163,6 @@ module core_tb;
         void'(read_elf(file));
         // we are interested in the .tohost ELF symbol in-order to observe end of test signals
         address = get_symbol_address("tohost");
-        $display("tohost address: %0h\n", address);
         // get the objdump verilog file to load our memorys
         $readmemh({file, ".v"}, rmem);
         // copy bitwise from verilog file
