@@ -29,6 +29,7 @@ module fetch_fifo
     // that we have two compressed instruction (or one compressed instruction and one unaligned instruction) so we
     // only predict on one entry and discard (or keep) the other depending on its position and prediction.
     input  branchpredict_sbe       branch_predict_i,
+    input  exception               ex_i,              // fetch exception in
     input  logic [63:0]            in_addr_i,
     input  logic [31:0]            in_rdata_i,
     input  logic                   in_valid_i,
@@ -43,6 +44,7 @@ module fetch_fifo
 
     // input registers - bounding the path from memory
     branchpredict_sbe       branch_predict_n, branch_predict_q;
+    exception               ex_n,             ex_q;
     logic [63:0]            in_addr_n,        in_addr_q;
     logic [31:0]            in_rdata_n,       in_rdata_q;
     logic                   in_valid_n,       in_valid_q;
@@ -84,12 +86,14 @@ module fetch_fifo
             in_rdata_n          = in_rdata_i;
             in_valid_n          = in_valid_i;
             branch_predict_n    = branch_predict_i;
+            ex_n                = ex_i;
         // otherwise stall
         end else begin
             in_addr_n           = in_addr_q;
             in_rdata_n          = in_rdata_q;
             in_valid_n          = in_valid_q;
             branch_predict_n    = branch_predict_q;
+            ex_n                = ex_q;
         end
         // flush the input registers
         if (flush_i) begin
@@ -140,7 +144,7 @@ module fetch_fifo
                     if (in_rdata_q[1:0] != 2'b11) begin
                         // it is compressed
                         mem_n[write_pointer_q]    = {
-                            branch_predict_q, in_addr_q, decompressed_instruction[0], 1'b1, is_illegal[0]
+                            branch_predict_q, ex_q, in_addr_q, decompressed_instruction[0], 1'b1, is_illegal[0]
                         };
 
                         status_cnt++;
@@ -155,7 +159,7 @@ module fetch_fifo
                         if (in_rdata_q[17:16] != 2'b11 && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
 
                             mem_n[write_pointer_q + 1'b1]    = {
-                                branch_predict_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
+                                branch_predict_q, ex_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
                             };
 
                             status_cnt++;
@@ -181,7 +185,7 @@ module fetch_fifo
                         // | instruction [31:0]  |
                         // |______________________
                         mem_n[write_pointer_q]    = {
-                            branch_predict_q, in_addr_q, in_rdata_q, 1'b0, 1'b0
+                            branch_predict_q, ex_q, in_addr_q, in_rdata_q, 1'b0, 1'b0
                         };
                         status_cnt++;
                         write_pointer++;
@@ -192,7 +196,7 @@ module fetch_fifo
                 if (in_valid_q && unaligned_q) begin
 
                     mem_n[write_pointer_q]    = {
-                        branch_predict_q, unaligned_address_q, {in_rdata_q[15:0], unaligned_instr_q}, 1'b0, 1'b0
+                        branch_predict_q, ex_q, unaligned_address_q, {in_rdata_q[15:0], unaligned_instr_q}, 1'b0, 1'b0
                     };
 
                     status_cnt++;
@@ -206,7 +210,7 @@ module fetch_fifo
                     // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
                     if (in_rdata_q[17:16] != 2'b11  && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
                         mem_n[write_pointer_q + 1'b1] = {
-                            branch_predict_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
+                            branch_predict_q, ex_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
                         };
 
                         status_cnt++;
@@ -240,7 +244,7 @@ module fetch_fifo
                 if (in_rdata_q[17:16] != 2'b11) begin
                     // it is compressed
                     mem_n[write_pointer_q]    = {
-                        branch_predict_q, in_addr_q, decompressed_instruction[1], 1'b1, is_illegal[1]
+                        branch_predict_q, ex_q, in_addr_q, decompressed_instruction[1], 1'b1, is_illegal[1]
                     };
 
                     status_cnt++;
@@ -296,6 +300,7 @@ module fetch_fifo
             in_rdata_q                <= 32'b0;
             in_valid_q                <= 1'b0;
             branch_predict_q          <= '{default: 0};
+            ex_q                      <= '{default: 0};
         end else begin
             status_cnt_q              <= status_cnt_n;
             mem_q                     <= mem_n;
@@ -309,6 +314,7 @@ module fetch_fifo
             in_rdata_q                <= in_rdata_n;
             in_valid_q                <= in_valid_n;
             branch_predict_q          <= branch_predict_n;
+            ex_q                      <= ex_n;
         end
     end
 

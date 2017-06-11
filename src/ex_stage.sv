@@ -77,6 +77,7 @@ module ex_stage #(
     output logic                                   fetch_err_o,
     input  logic [63:0]                            fetch_vaddr_i,
     output logic [31:0]                            fetch_rdata_o,
+    output exception                               fetch_ex_o,
     input  priv_lvl_t                              priv_lvl_i,
     input  logic                                   flag_pum_i,
     input  logic                                   flag_mxr_i,

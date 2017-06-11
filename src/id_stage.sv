@@ -33,7 +33,6 @@ module id_stage #(
     input  fetch_entry                               fetch_entry_i,
     input  logic                                     fetch_entry_valid_i,
     output logic                                     decoded_instr_ack_o,
-    input  exception                                 ex_if_i,       // we already got an exception in IF
     // from CSR file
     input  priv_lvl_t                                priv_lvl_i,              // current privilege level
     input  logic                                     tvm_i,
@@ -99,9 +98,6 @@ module id_stage #(
     logic            issue_instr_valid_sb_iro;
     logic            issue_ack_iro_sb;
     // ---------------------------------------------------
-    // Compressed Decoder <-> Decoder
-    // ---------------------------------------------------
-    // ---------------------------------------------------
     // Decoder (DC) <-> Scoreboard (SB)
     // ---------------------------------------------------
     scoreboard_entry decoded_instr_dc_sb;
@@ -110,9 +106,9 @@ module id_stage #(
     // ---------------------------------------------------
     logic is_control_flow_instr;
 
-    // -----------------
-    // Branch logic
-    // -----------------
+    // ---------------------------------------------------
+    // Branch (resolve) logic
+    // ---------------------------------------------------
     // This should basically prevent the scoreboard from accepting
     // instructions past a branch. We need to resolve the branch beforehand.
     // This limitation is in place to ease the backtracking of mis-predicted branches as they
@@ -145,7 +141,7 @@ module id_stage #(
         .instruction_i           ( fetch_entry_i.instruction     ),
         .branch_predict_i        ( fetch_entry_i.branch_predict  ),
         .is_illegal_i            ( fetch_entry_i.is_illegal      ),
-        .ex_i                    ( ex_if_i                       ),
+        .ex_i                    ( fetch_entry_i.ex              ),
         .instruction_o           ( decoded_instr_dc_sb           ),
         .is_control_flow_instr_o ( is_control_flow_instr         ),
         .*
