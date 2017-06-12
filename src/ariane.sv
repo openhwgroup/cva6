@@ -193,8 +193,8 @@ module ariane
     // CSR <-> *
     // --------------
     logic                     enable_translation_csr_ex;
-    logic                     flag_pum_csr_ex;
-    logic                     flag_mxr_csr_ex;
+    logic                     sum_csr_ex;
+    logic                     mxr_csr_ex;
     logic [37:0]              pd_ppn_csr_ex;
     logic [0:0]               asid_csr_ex;
     logic [11:0]              csr_addr_ex_csr;
@@ -381,8 +381,8 @@ module ariane
         .fetch_rdata_o          ( fetch_rdata_ex_if          ),
         .fetch_ex_o             ( fetch_ex_ex_if             ), // fetch exception to IF
         .priv_lvl_i             ( priv_lvl                   ), // from CSR
-        .flag_pum_i             ( flag_pum_csr_ex            ), // from CSR
-        .flag_mxr_i             ( flag_mxr_csr_ex            ), // from CSR
+        .sum_i                  ( sum_csr_ex                 ), // from CSR
+        .mxr_i                  ( mxr_csr_ex                 ), // from CSR
         .pd_ppn_i               ( pd_ppn_csr_ex              ), // from CSR
         .asid_i                 ( asid_csr_ex                ), // from CSR
         .flush_tlb_i            ( flush_tlb                  ),
@@ -434,8 +434,8 @@ module ariane
         .priv_lvl_o           ( priv_lvl                        ),
 
         .enable_translation_o ( enable_translation_csr_ex       ),
-        .flag_pum_o           ( flag_pum_csr_ex                 ),
-        .flag_mxr_o           ( flag_mxr_csr_ex                 ),
+        .sum_o                ( sum_csr_ex                      ),
+        .mxr_o                ( mxr_csr_ex                      ),
         .pd_ppn_o             ( pd_ppn_csr_ex                   ),
         .asid_o               ( asid_csr_ex                     ),
         .tvm_o                ( tvm_csr_id                      ),
