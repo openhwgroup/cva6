@@ -66,7 +66,7 @@ module ptw #(
     input  logic [63:0]             dtlb_vaddr_i,
     // from CSR file
     input  logic [37:0]             pd_ppn_i, // ppn from sptbr
-    input  logic                    flag_mxr_i
+    input  logic                    mxr_i
 
 );
 
@@ -219,7 +219,7 @@ module ptw #(
                                 // writeable, we can directly raise an error. This saves the 'r'
                                 // bits in the TLB otherwise needed for access right checks and
                                 // doesn't put a useless entry into the TLB.
-                                if (  (~ptw_pte_i.r & ~(ptw_pte_i.x & flag_mxr_i))
+                                if (  (~ptw_pte_i.r & ~(ptw_pte_i.x & mxr_i))
                                     | (~ptw_pte_i.w)) begin
                                   ptw_state_n   = PTW_PROPAGATE_ERROR;
                                 end else begin
