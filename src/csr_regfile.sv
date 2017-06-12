@@ -193,7 +193,7 @@ module csr_regfile #(
     // CSR Write and update logic
     // ---------------------------
     always_comb begin : csr_update
-        automatic satp_t sapt   = sapt_q;
+        automatic satp_t sapt   = satp_q;
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
         update_access_exception = 1'b0;
@@ -239,7 +239,7 @@ module csr_regfile #(
                     else begin
                         sapt      = satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-                        sapt.asid = {ASID_WIDTH'{1'b1}};
+                        sapt.asid = sapt.asid & {{(16-ASID_WIDTH){1'b0}}, {ASID_WIDTH{1'b1}}};
                         satp_n    = sapt;
                     end
                 end
