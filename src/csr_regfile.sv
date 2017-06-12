@@ -193,28 +193,29 @@ module csr_regfile #(
     // CSR Write and update logic
     // ---------------------------
     always_comb begin : csr_update
-        eret_o     = 1'b0;
-        flush_o    = 1'b0;
+        automatic satp_t sapt   = sapt_q;
+        eret_o                  = 1'b0;
+        flush_o                 = 1'b0;
         update_access_exception = 1'b0;
 
-        priv_lvl_n = priv_lvl_q;
-        mstatus_n  = mstatus_q;
-        mtvec_n    = mtvec_q;
-        medeleg_n  = medeleg_q;
-        mideleg_n  = mideleg_q;
-        mip_n      = mip_q;
-        mie_n      = mie_q;
-        mepc_n     = mepc_q;
-        mcause_n   = mcause_q;
-        mscratch_n = mscratch_q;
-        mtval_n    = mtval_q;
+        priv_lvl_n              = priv_lvl_q;
+        mstatus_n               = mstatus_q;
+        mtvec_n                 = mtvec_q;
+        medeleg_n               = medeleg_q;
+        mideleg_n               = mideleg_q;
+        mip_n                   = mip_q;
+        mie_n                   = mie_q;
+        mepc_n                  = mepc_q;
+        mcause_n                = mcause_q;
+        mscratch_n              = mscratch_q;
+        mtval_n                 = mtval_q;
 
-        sepc_n     = sepc_q;
-        scause_n   = scause_q;
-        stvec_n    = stvec_q;
-        sscratch_n = sscratch_q;
-        stval_n    = stval_q;
-        satp_n     = satp_q;
+        sepc_n                  = sepc_q;
+        scause_n                = scause_q;
+        stvec_n                 = stvec_q;
+        sscratch_n              = sscratch_q;
+        stval_n                 = stval_q;
+        satp_n                  = satp_q;
 
         // check for correct access rights and that we are writing
         if(csr_we) begin
@@ -235,8 +236,12 @@ module csr_regfile #(
                     // intercept SATP writes if in S-Mode and TVM is enabled
                     if (priv_lvl_q == PRIV_LVL_S && mstatus_q.tvm)
                         update_access_exception = 1'b1;
-                    else
-                        satp_n = satp_t'(csr_wdata);
+                    else begin
+                        sapt      = satp_t'(csr_wdata);
+                        // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
+                        sapt.asid = {ASID_WIDTH'{1'b1}};
+                        satp_n    = sapt;
+                    end
                 end
                 CSR_MSTATUS: begin
                     mstatus_n      = csr_wdata;
@@ -505,7 +510,8 @@ module csr_regfile #(
     assign pd_ppn_o             = satp_q.ppn;
     assign asid_o               = satp_q.asid[ASID_WIDTH-1:0];
     assign sum_o                = mstatus_q.sum;
-    assign enable_translation_o = (satp_q.mode == 4'h8) ? 1'b1 : 1'b0;
+    // we support bare memory addressing and SV39
+    assign enable_translation_o = (satp_q.mode == 4'h8 && priv_lvl_q != PRIV_LVL_M) ? 1'b1 : 1'b0;
     assign mxr_o                = mstatus_q.mxr;
     assign tvm_o                = mstatus_q.tvm;
     assign tw_o                 = mstatus_q.tw;
