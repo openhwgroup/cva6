@@ -51,8 +51,8 @@ module csr_regfile #(
     output priv_lvl_t             priv_lvl_o,           // Current privilege level the CPU is in
     // MMU
     output logic                  enable_translation_o, // Enable VA translation
-    output logic                  flag_pum_o,           // TODO: this is called SUM now
-    output logic                  flag_mxr_o,
+    output logic                  sum_o,
+    output logic                  mxr_o,
     // input logic flag_mprv_i,
     output logic [37:0]           pd_ppn_o,
     output logic [ASID_WIDTH-1:0] asid_o,
@@ -504,9 +504,9 @@ module csr_regfile #(
     // MMU outputs
     assign pd_ppn_o             = satp_q.ppn;
     assign asid_o               = satp_q.asid[ASID_WIDTH-1:0];
-    assign flag_pum_o           = mstatus_q.sum;
+    assign sum_o                = mstatus_q.sum;
     assign enable_translation_o = (satp_q.mode == 4'h8) ? 1'b1 : 1'b0;
-    assign flag_mxr_o           = mstatus_q.mxr;
+    assign mxr_o                = mstatus_q.mxr;
     assign tvm_o                = mstatus_q.tvm;
     assign tw_o                 = mstatus_q.tw;
     assign tsr_o                = mstatus_q.tsr;

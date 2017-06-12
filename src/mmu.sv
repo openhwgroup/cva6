@@ -50,8 +50,8 @@ module mmu #(
         output exception                        lsu_exception_o,
         // General control signals
         input priv_lvl_t                        priv_lvl_i,
-        input logic                             flag_pum_i,
-        input logic                             flag_mxr_i,
+        input logic                             sum_i,
+        input logic                             mxr_i,
         // input logic flag_mprv_i,
         input logic [37:0]                      pd_ppn_i,
         input logic [ASID_WIDTH-1:0]            asid_i,
@@ -196,7 +196,7 @@ module mmu #(
     assign dtlb_lu_access = lsu_req_i;
     assign iaccess_err = fetch_req_i & (
                      ((priv_lvl_i == PRIV_LVL_U) & ~itlb_content.u)
-                   | (flag_pum_i & (priv_lvl_i == PRIV_LVL_S) & itlb_content.u)
+                   | (sum_i & (priv_lvl_i == PRIV_LVL_S) & itlb_content.u)
                    );
 
     //-----------------------
