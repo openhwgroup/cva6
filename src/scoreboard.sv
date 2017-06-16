@@ -113,7 +113,9 @@ module scoreboard #(
         // Write Back
         // ------------
         for (int i = 0; i < NR_WB_PORTS; i++) begin
-            if (wb_valid_i[i]) begin
+            // check if this instruction was issued (e.g.: it could happen after a flush that there is still
+            // something in the pipeline e.g. an incomplete memory operation)
+            if (wb_valid_i[i] && mem_n[trans_id_i[i]].issued) begin
                 mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
                 mem_n[trans_id_i[i]].sbe.result = wdata_i[i];
                 // write the exception back if it is valid
