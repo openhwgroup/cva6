@@ -412,7 +412,7 @@ module csr_regfile #(
                 // the return should not have any write or read side-effects
                 csr_we   = 1'b0;
                 csr_read = 1'b0;
-                sret     = 1'b0; // signal a return from supervisor mode
+                sret     = 1'b1; // signal a return from supervisor mode
             end
             MRET: begin
                 // the return should not have any write or read side-effects
