@@ -109,16 +109,6 @@ module scoreboard #(
             issue_pointer_n = issue_pointer_q + 1'b1;
         end
 
-        // we've got an acknowledge from commit
-        if (commit_ack_i) begin
-            // decrease the issue counter
-            issue_cnt--;
-            // this instruction is no longer in issue e.g.: it is considered finished
-            mem_n[commit_pointer_q].issued    = 1'b0;
-            mem_n[commit_pointer_q].sbe.valid = 1'b0;
-            // advance commit pointer
-            commit_pointer_n = commit_pointer_n + 1'b1;
-        end
         // ------------
         // Write Back
         // ------------
@@ -132,6 +122,19 @@ module scoreboard #(
             end
         end
 
+        // ------------
+        // Commit Port
+        // ------------
+        // we've got an acknowledge from commit
+        if (commit_ack_i) begin
+            // decrease the issue counter
+            issue_cnt--;
+            // this instruction is no longer in issue e.g.: it is considered finished
+            mem_n[commit_pointer_q].issued    = 1'b0;
+            mem_n[commit_pointer_q].sbe.valid = 1'b0;
+            // advance commit pointer
+            commit_pointer_n = commit_pointer_n + 1'b1;
+        end
         // ------
         // Flush
         // ------

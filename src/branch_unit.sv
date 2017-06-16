@@ -115,8 +115,12 @@ module branch_unit (
             if (target_address[0] == 1'b0) begin
                 // we've got a valid branch prediction
                 if (branch_predict_i.valid) begin
-                    // if the address or the outcome don't match we've got a mis-predict
-                    if (target_address != branch_predict_i.predict_address || branch_predict_i.predict_taken != comparison_result) begin
+                    // if the outcome doesn't match we've got a mis-predict
+                    if (branch_predict_i.predict_taken != comparison_result) begin
+                        resolved_branch_o.is_mispredict  = 1'b1;
+                    end
+                    // check if the address of the predict taken branch is correct
+                    if (branch_predict_i.predict_taken && target_address != branch_predict_i.predict_address) begin
                         resolved_branch_o.is_mispredict  = 1'b1;
                     end
                 // branch-prediction didn't do anything (e.g.: it fetched PC + 2/4), so if this branch is taken
