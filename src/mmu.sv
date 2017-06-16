@@ -34,7 +34,6 @@ module mmu #(
         input  logic                            fetch_req_i,
         output logic                            fetch_gnt_o,
         output logic                            fetch_valid_o,
-        output logic                            fetch_err_o,
         input  logic [63:0]                     fetch_vaddr_i,
         output logic [31:0]                     fetch_rdata_o,  // pass-through because of interfaces
         output exception                        fetch_ex_o,     // write-back fetch exceptions (e.g.: bus faults, page faults, etc.)
@@ -53,7 +52,7 @@ module mmu #(
         input logic                             sum_i,
         input logic                             mxr_i,
         // input logic flag_mprv_i,
-        input logic [37:0]                      pd_ppn_i,
+        input logic [43:0]                      satp_ppn_i,
         input logic [ASID_WIDTH-1:0]            asid_i,
         input logic                             flush_tlb_i,
         // Memory interfaces
@@ -81,8 +80,6 @@ module mmu #(
     // only done for the few signals of the instruction interface
     logic [63:0] fetch_paddr;
 
-    logic  fetch_req;
-    assign instr_if_data_req_o       = fetch_req;
     assign instr_if_address_o        = fetch_paddr;
     assign fetch_rdata_o             = instr_if_data_rdata_i;
     // instruction error
@@ -194,10 +191,8 @@ module mmu #(
 
     assign itlb_lu_access = fetch_req_i;
     assign dtlb_lu_access = lsu_req_i;
-    assign iaccess_err = fetch_req_i & (
-                     ((priv_lvl_i == PRIV_LVL_U) & ~itlb_content.u)
-                   | (sum_i & (priv_lvl_i == PRIV_LVL_S) & itlb_content.u)
-                   );
+    assign iaccess_err = fetch_req_i & (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
+                   || (sum_i && (priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
     //-----------------------
     // Instruction interface
@@ -205,19 +200,17 @@ module mmu #(
     always_comb begin : instr_interface
         // MMU disabled: just pass through
         automatic logic fetch_valid   = instr_if_data_rvalid_i;
-        fetch_req                     = fetch_req_i;
+        instr_if_data_req_o           = fetch_req_i;
         fetch_paddr                   = fetch_vaddr_i;
         fetch_gnt_o                   = instr_if_data_gnt_i;
-        fetch_err_o                   = 1'b0;
         ierr_valid_n                  = 1'b0;
-        fetch_ex_o                    = '{default: 0};
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to itlb miss and raises
         // an error.
         if (enable_translation_i) begin
-            fetch_req = 1'b0;
+            instr_if_data_req_o = 1'b0;
             /* verilator lint_off WIDTH */
             fetch_paddr = {itlb_content.ppn, fetch_vaddr_i[11:0]};
             /* verilator lint_on WIDTH */
@@ -233,25 +226,31 @@ module mmu #(
 
             // TODO the following two ifs should be mutually exclusive
             if (itlb_lu_hit) begin
-              fetch_req = fetch_req_i;
+              instr_if_data_req_o = fetch_req_i;
+
               if (iaccess_err) begin
                 // Play through an instruction fetch with error signaled with rvalid
-                fetch_req    = 1'b0;
-                fetch_gnt_o  = 1'b1;  // immediate grant
+                instr_if_data_req_o    = 1'b0;
+                fetch_gnt_o            = 1'b1;  // immediate grant
                 //fetch_valid = 1'b0; NOTE: valid from previous fetch: pass through
                 // NOTE: back-to-back transfers: We only get a request if previous
                 //       transfer is completed, or completes in this cycle)
                 ierr_valid_n = 1'b1; // valid signaled in next cycle
               end
             end
-            if (ptw_active & walking_instr) begin
+            if (ptw_active && walking_instr) begin
               // On error pass through fetch with error signaled with valid
               fetch_gnt_o  = ptw_error;
               ierr_valid_n = ptw_error; // signal valid/error on next cycle
             end
         end
-        fetch_err_o = ierr_valid_q;
         fetch_valid_o = fetch_valid || ierr_valid_q;
+    end
+    // ----------------------------
+    // Instruction Fetch Exception
+    // ----------------------------
+    always_comb begin : fetch_exception
+        fetch_ex_o                    = '{default: 0};
     end
 
     // registers

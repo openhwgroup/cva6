@@ -187,7 +187,6 @@ module ariane
     logic                     fetch_valid_ex_if;
     logic [31:0]              fetch_rdata_ex_if;
     exception                 fetch_ex_ex_if;
-    logic                     fetch_err_ex_if;
     logic [63:0]              fetch_vaddr_if_ex;
     // --------------
     // CSR <-> *
@@ -195,7 +194,7 @@ module ariane
     logic                     enable_translation_csr_ex;
     logic                     sum_csr_ex;
     logic                     mxr_csr_ex;
-    logic [37:0]              pd_ppn_csr_ex;
+    logic [43:0]              satp_ppn_csr_ex;
     logic [0:0]               asid_csr_ex;
     logic [11:0]              csr_addr_ex_csr;
     fu_op                     csr_op_commit_csr;
@@ -376,14 +375,13 @@ module ariane
         .fetch_req_i            ( fetch_req_if_ex            ),
         .fetch_gnt_o            ( fetch_gnt_ex_if            ),
         .fetch_valid_o          ( fetch_valid_ex_if          ),
-        .fetch_err_o            ( fetch_err_ex_if            ),
         .fetch_vaddr_i          ( fetch_vaddr_if_ex          ),
         .fetch_rdata_o          ( fetch_rdata_ex_if          ),
         .fetch_ex_o             ( fetch_ex_ex_if             ), // fetch exception to IF
         .priv_lvl_i             ( priv_lvl                   ), // from CSR
         .sum_i                  ( sum_csr_ex                 ), // from CSR
         .mxr_i                  ( mxr_csr_ex                 ), // from CSR
-        .pd_ppn_i               ( pd_ppn_csr_ex              ), // from CSR
+        .satp_ppn_i             ( satp_ppn_csr_ex            ), // from CSR
         .asid_i                 ( asid_csr_ex                ), // from CSR
         .flush_tlb_i            ( flush_tlb                  ),
 
@@ -436,7 +434,7 @@ module ariane
         .enable_translation_o ( enable_translation_csr_ex       ),
         .sum_o                ( sum_csr_ex                      ),
         .mxr_o                ( mxr_csr_ex                      ),
-        .pd_ppn_o             ( pd_ppn_csr_ex                   ),
+        .satp_ppn_o           ( satp_ppn_csr_ex                 ),
         .asid_o               ( asid_csr_ex                     ),
         .tvm_o                ( tvm_csr_id                      ),
         .tw_o                 ( tw_csr_id                       ),

@@ -65,13 +65,13 @@ module ptw #(
     input  logic                    dtlb_miss_i,
     input  logic [63:0]             dtlb_vaddr_i,
     // from CSR file
-    input  logic [37:0]             pd_ppn_i, // ppn from sptbr
+    input  logic [43:0]             satp_ppn_i, // ppn from satp
     input  logic                    mxr_i
 
 );
 
-    pte_t ptw_pte_i;
-    assign ptw_pte_i = pte_t'(data_rdata_i);
+    pte_t pte;
+    assign pte = pte_t'(data_rdata_i);
 
     enum logic[1:0] {
       PTW_READY,
@@ -86,7 +86,10 @@ module ptw #(
     } ptw_lvl_q, ptw_lvl_n;
 
     // is this an instruction page table walk?
-    logic is_instr_ptw_q, is_instr_ptw_n;
+    logic is_instr_ptw_q,   is_instr_ptw_n;
+    logic global_mapping_q, global_mapping_n;
+    // latched tag signal
+    logic tag_valid_n,    tag_valid_q;
 
     assign ptw_active_o    = (ptw_state_q != PTW_READY);
     assign walking_instr_o = is_instr_ptw_q;
@@ -96,24 +99,27 @@ module ptw #(
     // register the VPN we need to walk
     logic [26:0] tlb_update_vpn_q, tlb_update_vpn_n;
     // 4 byte aligned physical pointer
-    logic[45:0] ptw_pptr_q, ptw_pptr_n;
+    logic[55:0] ptw_pptr_q,        ptw_pptr_n;
     // directly output the correct physical address
     // ------
     // TODO
     // -------
     // assign address_o = {ptw_pptr_q, 4'b0}; TODO
-    assign address_index_o = '0;
-    assign address_tag_o   = '0;
-    assign tag_valid_o     = '0;
+    assign address_index_o = ptw_pptr_q[11:0];
+    assign address_tag_o   = ptw_pptr_q[55:12];
+    // we are never going to kill this request
     assign kill_req_o      = '0;
+    // we are never going to write with the HPTW
+    assign data_wdata_o    = 64'b0;
     // update the correct page table level
     assign update_is_2M_o = (ptw_lvl_q == LVL2);
     assign update_is_1G_o = (ptw_lvl_q == LVL1);
     // output the correct VPN and ASID
     assign update_vpn_o  = tlb_update_vpn_q;
     assign update_asid_o = tlb_update_asid_q;
-
-    assign update_content_o = ptw_pte_i;
+    // set the global mapping bit
+    assign update_content_o = pte || (global_mapping_q << 5);
+    assign tag_valid_o      = tag_valid_q;
 
     //-------------------
     // Page table walker
@@ -141,10 +147,10 @@ module ptw #(
     always_comb begin : ptw
         // default assignments
         // PTW memory interface
+        tag_valid_n       = 1'b0;
         data_req_o        = 1'b0;
         data_be_o         = 8'hFF;
         data_we_o         = 1'b0;
-        data_wdata_o      = 64'b0;
         ptw_error_o       = 1'b0;
         itlb_update_o     = 1'b0;
         dtlb_update_o     = 1'b0;
@@ -152,6 +158,7 @@ module ptw #(
         ptw_lvl_n         = ptw_lvl_q;
         ptw_pptr_n        = ptw_pptr_q;
         ptw_state_n       = ptw_state_q;
+        global_mapping_n  = global_mapping_q;
         // input registers
         tlb_update_asid_n = tlb_update_asid_q;
         tlb_update_vpn_n  = tlb_update_vpn_q;
@@ -159,16 +166,17 @@ module ptw #(
         unique case (ptw_state_q)
 
             PTW_READY: begin
+                global_mapping_n = 1'b0;
                 // if we got an ITLB miss
                 if (enable_translation_i & itlb_access_i & itlb_miss_i & ~dtlb_access_i) begin
-                    ptw_pptr_n          = {pd_ppn_i, itlb_vaddr_i[38:30]};
+                    ptw_pptr_n          = {satp_ppn_i, itlb_vaddr_i[38:30], 3'b0};
                     is_instr_ptw_n      = 1'b1;
                     tlb_update_asid_n   = asid_i;
                     tlb_update_vpn_n    = itlb_vaddr_i[38:12];
                     ptw_state_n         = PTW_WAIT_GRANT;
-                // we got a DTLB miss
+                // we got an DTLB miss
                 end else if (enable_translation_i & dtlb_access_i & dtlb_miss_i) begin
-                    ptw_pptr_n          = {pd_ppn_i, dtlb_vaddr_i[38:30]};
+                    ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
                     is_instr_ptw_n      = 1'b0;
                     tlb_update_asid_n   = asid_i;
                     tlb_update_vpn_n    = dtlb_vaddr_i[38:12];
@@ -181,6 +189,8 @@ module ptw #(
                 data_req_o = 1'b1;
                 // wait for the grant
                 if (data_gnt_i) begin
+                    // send the tag valid signal one cycle later
+                    tag_valid_n = 1'b1;
                     ptw_state_n = PTW_PTE_LOOKUP;
                 end
                 // we could potentially error out here
@@ -189,61 +199,77 @@ module ptw #(
             PTW_PTE_LOOKUP: begin
                 // we wait for the valid signal
                 if (data_rvalid_i) begin
+                    // check if the global mapping bit is set
+                    if (pte.g)
+                        global_mapping_n = 1'b1;
+                    // depending on the current level send the right address
                     if (ptw_lvl_q == LVL2)
-                        ptw_pptr_n = {ptw_pte_i.ppn[17:9], tlb_update_vpn_q[17:9]};
+                        ptw_pptr_n = {pte.ppn, tlb_update_vpn_q[17:9], 3'b0};
                     if (ptw_lvl_q == LVL3)
-                        ptw_pptr_n = {ptw_pte_i.ppn[8:0], tlb_update_vpn_q[8:0]};
+                        ptw_pptr_n = {pte.ppn, tlb_update_vpn_q[8:0], 3'b0};
 
-                    // it is an invalid PTE
-                    if (~ptw_pte_i.v | (~ptw_pte_i.r & ptw_pte_i.w)) begin
+                    // -------------
+                    // Invalid PTE
+                    // -------------
+                    // If pte.v = 0, or if pte.r = 0 and pte.w = 1, stop and raise a page-fault exception.
+                    if (!pte.v || (!pte.r && pte.w))
                         ptw_state_n = PTW_PROPAGATE_ERROR;
-                    end else begin
+                    // -----------
+                    // Valid PTE
+                    // -----------
+                    else begin
                         ptw_state_n = PTW_READY;
                         // it is a valid PTE
-                        if (ptw_pte_i.r | ptw_pte_i.x) begin
-                            // Valid translation found (either 4M or 4K entry)
+                        // if pte.r = 1 or pte.x = 1 it is a valid PTE
+                        if (pte.r || pte.x) begin
+                            // Valid translation found (either 1G, 2M or 4K entry)
                             if (is_instr_ptw_q) begin
-                                // Update instruction-TLB
+                                // ------------
+                                // Update ITLB
+                                // ------------
                                 // If page is not executable, we can directly raise an error. This
                                 // saves the 'x' bits in the ITLB otherwise needed for access
                                 // right checks and doesn't put a useless entry into the TLB.
-                                if (~ptw_pte_i.x) begin
+                                if (~pte.x)
                                   ptw_state_n = PTW_PROPAGATE_ERROR;
-                                end else begin
+                                else
                                   itlb_update_o = 1'b1;
-                                end
+
                             end else begin
-                                // Update data-TLB
+                                // ------------
+                                // Update DTLB
+                                // ------------
                                 // If page is not readable (there are no write-only pages), or the
                                 // access that triggered the PTW is a write, but the page is not
-                                // writeable, we can directly raise an error. This saves the 'r'
+                                // write-able, we can directly raise an error. This saves the 'r'
                                 // bits in the TLB otherwise needed for access right checks and
                                 // doesn't put a useless entry into the TLB.
-                                if (  (~ptw_pte_i.r & ~(ptw_pte_i.x & mxr_i))
-                                    | (~ptw_pte_i.w)) begin
+                                if ((~pte.r && ~(pte.x && mxr_i)) || (~pte.w)) begin
                                   ptw_state_n   = PTW_PROPAGATE_ERROR;
                                 end else begin
                                   dtlb_update_o = 1'b1;
                                 end
                             end
+                        // this is a pointer to the next TLB level
+                        end else begin
+                            // pointer to next level of page table
+                            if (ptw_lvl_q == LVL1)
+                                ptw_lvl_n = LVL2;
+
+                            if (ptw_lvl_q == LVL2)
+                                ptw_lvl_n = LVL3;
+
+                            ptw_state_n = PTW_WAIT_GRANT;
+
+                            if (ptw_lvl_q == LVL3) begin
+                              // Should already be the last level page table => Error
+                              ptw_lvl_n   = LVL3;
+                              ptw_state_n = PTW_PROPAGATE_ERROR;
+                            end
                         end
                     end
-                    // ~data_rvalid_i
-                end else begin
-                    // Pointer to next level of page table
-                    if (ptw_lvl_q == LVL1)
-                        ptw_lvl_n = LVL2;
-                    if (ptw_lvl_q == LVL2)
-                        ptw_lvl_n = LVL3;
-
-                    ptw_state_n = PTW_WAIT_GRANT;
-
-                    if (ptw_lvl_q == LVL3) begin
-                      // Should already be the last level page table => Error
-                      ptw_lvl_n   = LVL3;
-                      ptw_state_n = PTW_PROPAGATE_ERROR;
-                    end
                 end
+                // we've got a data grant so tell the cache that the tag is valid
             end
             // TODO: propagate error
             PTW_PROPAGATE_ERROR: begin
@@ -261,16 +287,20 @@ module ptw #(
             ptw_state_q        <= PTW_READY;
             is_instr_ptw_q     <= 1'b0;
             ptw_lvl_q          <= LVL1;
+            tag_valid_q        <= 1'b0;
             tlb_update_asid_q  <= '{default: 0};
             tlb_update_vpn_q   <= '{default: 0};
             ptw_pptr_q         <= '{default: 0};
+            global_mapping_q   <= 1'b0;
         end else begin
             ptw_state_q        <= ptw_state_n;
             ptw_pptr_q         <= ptw_pptr_n;
             is_instr_ptw_q     <= is_instr_ptw_n;
             ptw_lvl_q          <= ptw_lvl_n;
+            tag_valid_q        <= tag_valid_n;
             tlb_update_asid_q  <= tlb_update_asid_n;
             tlb_update_vpn_q   <= tlb_update_vpn_n;
+            global_mapping_q   <= global_mapping_n;
         end
     end
 
