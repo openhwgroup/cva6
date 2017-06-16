@@ -43,7 +43,6 @@ module lsu #(
     input  logic                     fetch_req_i,              // Instruction fetch interface
     output logic                     fetch_gnt_o,              // Instruction fetch interface
     output logic                     fetch_valid_o,            // Instruction fetch interface
-    output logic                     fetch_err_o,              // Instruction fetch interface
     input  logic [63:0]              fetch_vaddr_i,            // Instruction fetch interface
     output logic [31:0]              fetch_rdata_o,            // Instruction fetch interface
     output exception                 fetch_ex_o,               // Instruction fetch interface
@@ -51,7 +50,7 @@ module lsu #(
     input  priv_lvl_t                priv_lvl_i,               // From CSR register file
     input  logic                     sum_i,                    // From CSR register file
     input  logic                     mxr_i,                    // From CSR register file
-    input  logic [37:0]              pd_ppn_i,                 // From CSR register file
+    input  logic [43:0]              satp_ppn_i,               // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
     input  logic                     flush_tlb_i,
      // Instruction memory/cache

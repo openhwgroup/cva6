@@ -54,7 +54,7 @@ module csr_regfile #(
     output logic                  sum_o,
     output logic                  mxr_o,
     // input logic flag_mprv_i,
-    output logic [37:0]           pd_ppn_o,
+    output logic [43:0]           satp_ppn_o,
     output logic [ASID_WIDTH-1:0] asid_o,
     // external interrupts
     input  logic [1:0]            irq_i,                // external interrupt in
@@ -507,7 +507,7 @@ module csr_regfile #(
     assign csr_rdata_o          = csr_rdata;
     assign priv_lvl_o           = priv_lvl_q;
     // MMU outputs
-    assign pd_ppn_o             = satp_q.ppn;
+    assign satp_ppn_o           = satp_q.ppn;
     assign asid_o               = satp_q.asid[ASID_WIDTH-1:0];
     assign sum_o                = mstatus_q.sum;
     // we support bare memory addressing and SV39
