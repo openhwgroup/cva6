@@ -84,6 +84,7 @@ module lsu #(
     // --------------------------------------
     // those are the signals which are always correct
     // e.g.: they keep the value in the stall case
+    logic                     valid;
     logic [63:0]              vaddr;
     logic [63:0]              data;
     logic [7:0]               be;
@@ -91,6 +92,7 @@ module lsu #(
     fu_op                     operator;
     logic [TRANS_ID_BITS-1:0] trans_id;
     // registered address in case of a necessary stall
+    logic                     valid_n,    valid_q;
     logic [63:0]              vaddr_n,    vaddr_q;
     logic [63:0]              data_n,     data_q;
     fu_t                      fu_n,       fu_q;
@@ -339,9 +341,9 @@ module lsu #(
         // check the operator to activate the right functional unit accordingly
         unique case (fu)
             // all loads go here
-            LOAD:  ld_valid_i = lsu_valid_i;
+            LOAD:  ld_valid_i = valid;
             // all stores go here
-            STORE: st_valid_i = lsu_valid_i;
+            STORE: st_valid_i = valid;
             // not relevant for the LSU
             default: ;
         endcase
@@ -459,6 +461,7 @@ module lsu #(
     always_comb begin : input_select
         // if we are stalling use the values we saved
         if (stall_q) begin
+            valid     = valid_q;
             vaddr     = vaddr_q;
             data      = data_q;
             fu        = fu_q;
@@ -466,6 +469,7 @@ module lsu #(
             trans_id  = trans_id_q;
             be        = be_q;
         end else begin // otherwise bypass them
+            valid     = lsu_valid_i;
             vaddr     = vaddr_i;
             data      = operand_b_i;
             fu        = fu_i;
@@ -476,6 +480,7 @@ module lsu #(
     end
     // 1st register stage
     always_comb begin : register_stage
+        valid_n     = valid_q;
         vaddr_n     = vaddr_q;
         data_n      = data_q;
         fu_n        = fu_q;
@@ -484,12 +489,13 @@ module lsu #(
         be_n        = be_q;
         // get new input data
         if (lsu_valid_i) begin
-             vaddr_n     = vaddr_i;
-             data_n      = operand_b_i;
-             fu_n        = fu_i;
-             operator_n  = operator_i;
-             trans_id_n  = trans_id_i;
-             be_n        = be_i;
+            valid_n     = lsu_valid_i;
+            vaddr_n     = vaddr_i;
+            data_n      = operand_b_i;
+            fu_n        = fu_i;
+            operator_n  = operator_i;
+            trans_id_n  = trans_id_i;
+            be_n        = be_i;
         end
 
         if (lsu_ready_o) begin
@@ -503,6 +509,7 @@ module lsu #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             // 1st LSU stage
+            valid_q             <= 1'b0;
             vaddr_q             <= 64'b0;
             data_q              <= 64'b0;
             fu_q                <= NONE;
@@ -512,6 +519,7 @@ module lsu #(
             stall_q             <= 1'b0;
         end else begin
             // 1st LSU stage
+            valid_q             <= valid_n;
             vaddr_q             <= vaddr_n;
             data_q              <= data_n;
             fu_q                <= fu_n;
