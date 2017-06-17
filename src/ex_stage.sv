@@ -61,6 +61,8 @@ module ex_stage #(
     output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
     input  logic                                   lsu_commit_i,
     output exception                               lsu_exception_o,
+    output logic                                   no_st_pending_o,
+
     // CSR
     output logic                                   csr_ready_o,
     input  logic                                   csr_valid_i,
@@ -71,6 +73,7 @@ module ex_stage #(
     input  logic                                   csr_commit_i,
     // memory management
     input  logic                                   enable_translation_i,
+    input  logic                                   flush_tlb_i,
     input  logic                                   fetch_req_i,
     output logic                                   fetch_gnt_o,
     output logic                                   fetch_valid_o,
@@ -83,7 +86,6 @@ module ex_stage #(
     input  logic                                   mxr_i,
     input  logic [43:0]                            satp_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
-    input  logic                                   flush_tlb_i,
 
     output logic [63:0]                            instr_if_address_o,
     output logic                                   instr_if_data_req_o,

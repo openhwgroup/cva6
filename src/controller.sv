@@ -29,11 +29,13 @@ module controller (
     output logic            flush_unissued_instr_o, // Flush un-issued instructions of the scoreboard
     output logic            flush_id_o,             // Flush ID stage
     output logic            flush_ex_o,             // Flush EX stage
+    output logic            flush_tlb_o,            // Flush TLBs
 
     input  logic            eret_i,                 // Return from exception
     input  exception        ex_i,                   // We got an exception, flush the pipeline
     input  branchpredict    resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
-    input  logic            flush_csr_i             // We got an instruction which altered the CSR, flush the pipeline
+    input  logic            flush_csr_i,            // We got an instruction which altered the CSR, flush the pipeline
+    input  logic            sfence_vma_i            // We got an instruction to flush the TLBs and pipeline
 );
     // flush branch prediction
     assign flush_bp_o = 1'b0;
@@ -47,6 +49,7 @@ module controller (
         flush_unissued_instr_o = 1'b0;
         flush_id_o             = 1'b0;
         flush_ex_o             = 1'b0;
+        flush_tlb_o            = 1'b0;
 
         // ------------
         // Mis-predict
@@ -59,16 +62,15 @@ module controller (
             flush_if_o             = 1'b1;
         end
 
-        // ------------
-        // Exception
-        // ------------
-        if (ex_i.valid) begin
-            // don't flush pcgen as we want to take the exception, flush pcgen is not a flush signal
-            // for the PC GEN stage but instead tells it to take the PC we gave it
-            flush_pcgen_o          = 1'b0;
+        // ----------------------
+        // SFENCE.VMA
+        // ----------------------
+        if (sfence_vma_i) begin
+            flush_pcgen_o          = 1'b1;
             flush_if_o             = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
+            flush_tlb_o            = 1'b1;
         end
 
         // ---------------------------------
@@ -76,6 +78,18 @@ module controller (
         // ---------------------------------
         if (flush_csr_i) begin
             flush_pcgen_o          = 1'b1;
+            flush_if_o             = 1'b1;
+            flush_id_o             = 1'b1;
+            flush_ex_o             = 1'b1;
+        end
+
+        // ------------
+        // Exception
+        // ------------
+        if (ex_i.valid) begin
+            // don't flush pcgen as we want to take the exception, flush pcgen is not a flush signal
+            // for the PC GEN stage but instead tells it to take the PC we gave it
+            flush_pcgen_o          = 1'b0;
             flush_if_o             = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;

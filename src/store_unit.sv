@@ -22,6 +22,7 @@ module store_unit (
     input logic                      clk_i,    // Clock
     input logic                      rst_ni,  // Asynchronous reset active low
     input logic                      flush_i,
+    output logic                     no_st_pending_o,
     // store unit input port
     input  fu_op                     operator_i,
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,

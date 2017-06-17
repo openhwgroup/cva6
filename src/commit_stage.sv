@@ -41,8 +41,10 @@ module commit_stage (
     input  logic [63:0]         csr_rdata_i,
     input  exception            csr_exception_i,
     // commit signals to ex
-    output logic                commit_lsu_o,   // commit the pending store
-    output logic                commit_csr_o    // commit the pending CSR instruction
+    output logic                commit_lsu_o,    // commit the pending store
+    input  logic                no_st_pending_i, // there is no store pending
+    output logic                commit_csr_o,    // commit the pending CSR instruction
+    output logic                sfence_vma_o     // flush TLBs and pipeline
 );
 
     assign waddr_a_o = commit_instr_i.rd;
@@ -61,6 +63,7 @@ module commit_stage (
         wdata_a_o    = commit_instr_i.result;
         csr_op_o     = ADD; // this corresponds to a CSR NOP
         csr_wdata_o  = 64'b0;
+        sfence_vma_o = 1'b0;
 
         // we will not commit the instruction if we took an exception
         if (commit_instr_i.valid) begin
@@ -68,11 +71,12 @@ module commit_stage (
             // and also acknowledge the instruction, this is mainly done for the instruction tracer
             // as it will listen on the instruction ack signal. For the overall result it does not make any
             // difference as the whole pipeline is going to be flushed anyway.
-            if (~exception_o.valid) begin
+            if (!exception_o.valid) begin
                 // we can definitely write the register file
                 // if the instruction is not committing anything the destination
                 we_a_o       = 1'b1;
 
+                // check whether the instruction we retire was a store
                 // do not commit the instruction if we got an exception since the store buffer will be cleared
                 // by the subsequent flush triggered by an exception
                 if (commit_instr_i.fu == STORE) begin
@@ -81,7 +85,6 @@ module commit_stage (
             end
 
             commit_ack_o = 1'b1;
-            // check whether the instruction we retire was a store
             // ---------
             // CSR Logic
             // ---------
@@ -92,6 +95,19 @@ module commit_stage (
                 wdata_a_o    = csr_rdata_i;
                 csr_op_o     = commit_instr_i.op;
                 csr_wdata_o  = commit_instr_i.result;
+            end
+            // ------------------
+            // SFENCE.VMA Logic
+            // ------------------
+            // check if this instruction was a SFENCE_VMA
+            if (commit_instr_i.op == SFENCE_VMA) begin
+                // no store pending so we can flush the TLBs and pipeline
+                if (no_st_pending_i) begin
+                    sfence_vma_o = 1'b1;
+                // wait for the store buffer to drain until flushing the pipeline
+                end else begin
+                    commit_ack_o = 1'b0;
+                end
             end
         end
     end
@@ -108,7 +124,7 @@ module commit_stage (
         exception_o.cause = 64'b0;
         exception_o.tval  = 64'b0;
         // check for CSR exception
-        if (csr_exception_i.valid && ~csr_exception_i.cause[63]) begin
+        if (csr_exception_i.valid && !csr_exception_i.cause[63]) begin
             exception_o      = csr_exception_i;
             // if no earlier exception happened the commit instruction will still contain
             // the instruction data from the ID stage. If a earlier exception happened we don't care
@@ -119,7 +135,8 @@ module commit_stage (
         if (commit_instr_i.ex.valid) begin
             exception_o = commit_instr_i.ex;
         end
-        // check for CSR interrupts (e.g.: normal interrupts they get triggered here)
+        // check for CSR interrupts (e.g.: normal interrupts which get triggered here)
+        // by putting interrupts here we give them precedence over any other exception
         if (csr_exception_i.valid && csr_exception_i.cause[63]) begin
             exception_o = csr_exception_i;
             exception_o.tval = commit_instr_i.ex.tval;

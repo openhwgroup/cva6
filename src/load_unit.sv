@@ -135,7 +135,7 @@ module load_unit (
                         // we got a TLB miss
                         end else begin
                             // we need to abort the translation and let the PTW walker fix the TLB miss
-                            NS = ABORT_TRANSLATION;
+                            NS      = ABORT_TRANSLATION;
                             ready_o = 1'b0;
                         end
                     end else begin
@@ -174,7 +174,7 @@ module load_unit (
                     // we got a TLB miss
                     end else begin
                         // we need to abort the translation and let the PTW walker fix the TLB miss
-                        NS = ABORT_TRANSLATION;
+                        NS      = ABORT_TRANSLATION;
                         ready_o = 1'b0;
                     end
                 end
@@ -182,8 +182,11 @@ module load_unit (
             // we are here because of a TLB miss, we need to abort the current request and give way for the
             // PTW walker to satisfy the TLB miss
             ABORT_TRANSLATION: begin
+                // keep the translation request hight to tell the PTW that we want this
+                // translation
+                translation_req_o = 1'b1;
                 // we are not ready here
-                ready_o = 1'b0;
+                ready_o     = 1'b0;
                 // send an abort signal
                 tag_valid_o = 1'b1;
                 kill_req_o  = 1'b1;
