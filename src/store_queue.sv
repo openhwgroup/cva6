@@ -143,8 +143,8 @@ module store_queue (
         end
 
         // when we flush evict the speculative store
-        if (flush_i & commit_queue_q.is_speculative) begin
-            commit_queue_n.valid          = 1'b0;
+        if (flush_i && commit_queue_q.is_speculative) begin
+            commit_queue_n.valid = 1'b0;
         end
 
     end

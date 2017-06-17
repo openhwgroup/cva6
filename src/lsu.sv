@@ -504,6 +504,9 @@ module lsu #(
         end else begin
             stall_n     = 1'b1;
         end
+        // if we flush we can safely un-stall
+        if (flush_i)
+            stall_n     = 1'b0;
     end
 
     // registers
