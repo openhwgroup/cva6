@@ -33,6 +33,7 @@ class instruction_tracer;
     logic [63:0] reg_file [32];
     // 64 bit clock tick count
     longint unsigned clk_ticks;
+    int f;
     // address mapping
     // contains mappings of the form vaddr <-> paddr
     struct {
@@ -42,6 +43,7 @@ class instruction_tracer;
 
     function new(virtual instruction_tracer_if tracer_if);
         this.tracer_if = tracer_if;
+        f = $fopen("output.txt","w");
     endfunction : new
 
     task trace();
@@ -161,8 +163,9 @@ class instruction_tracer;
     function void printInstr(scoreboard_entry sbe, logic [63:0] instr, logic [63:0] result, logic [63:0] vaddr, logic [63:0] paddr);
         instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, vaddr, paddr);
         // print instruction to console
-        $display(iti.printInstr());
-
+        string print_instr = iti.printInstr();
+        $display(print_instr);
+        $fwrite(this.f, {print_instr, "\n"});
     endfunction;
 
 endclass : instruction_tracer

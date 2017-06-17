@@ -186,10 +186,10 @@ module load_unit (
                 // translation
                 translation_req_o = 1'b1;
                 // we are not ready here
-                ready_o     = 1'b0;
+                ready_o           = 1'b0;
                 // send an abort signal
-                tag_valid_o = 1'b1;
-                kill_req_o  = 1'b1;
+                tag_valid_o       = 1'b1;
+                kill_req_o        = 1'b1;
                 // wait for the translation to become valid and redo the request
                 if (translation_valid_i) begin
                     // we have a valid translation so tell the cache it should wait for it on the next cycle
@@ -317,8 +317,8 @@ module load_unit (
         // output the queue data directly, the valid signal is set corresponding to the process above
         trans_id_o = out_data.trans_id;
 
-        // we got an rvalid and are currently not flushing
-        if (data_rvalid_i && CS != WAIT_FLUSH) begin
+        // we got an rvalid and are currently not flushing and not aborting the request
+        if (data_rvalid_i && CS != WAIT_FLUSH && !kill_req_o) begin
             pop     = 1'b1;
             valid_o = 1'b1;
         end

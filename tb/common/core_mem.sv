@@ -48,11 +48,12 @@ module core_mem (
     logic [2:0]               instr_address_offset_q;
     logic [63:0]              instr_data;
     // D$ Mock
-    logic req, we;
-    logic [7:0] be;
-    logic [11:0] index;
-    logic [63:0] wdata;
-    logic [55:0] data_address;
+    logic                     req, we;
+    logic [7:0]               be;
+    logic [11:0]              index;
+    logic [63:0]              wdata;
+    logic [55:0]              data_address;
+
     assign data_address = {data_if_address_tag_i, index[11:3]};
 
     // we always grant the request
@@ -76,7 +77,7 @@ module core_mem (
         .en_b_i        ( req                             ),
         .addr_b_i      ( data_address[ADDRESS_WIDTH-1:0] ),
         .wdata_b_i     ( wdata                           ),
-        .rdata_b_o     ( data_if_data_rdata_o),
+        .rdata_b_o     ( data_if_data_rdata_o            ),
         .we_b_i        ( we                              ),
         .be_b_i        ( be                              )
     );
