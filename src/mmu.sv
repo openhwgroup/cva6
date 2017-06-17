@@ -78,32 +78,26 @@ module mmu #(
         input  logic                            data_rvalid_i,
         input  logic [63:0]                     data_rdata_i
 );
-    // assignments necessary to use interfaces here
-    // only done for the few signals of the instruction interface
-    logic [63:0] fetch_paddr;
-
-    assign instr_if_address_o        = fetch_paddr;
-    assign fetch_rdata_o             = instr_if_data_rdata_i;
     // instruction error
     // instruction error valid signal and exception, delayed one cycle
     logic     ierr_valid_q, ierr_valid_n;
     exception fetch_ex_q,   fetch_ex_n;
 
-    logic iaccess_err;
-    logic ptw_active;
-    logic walking_instr;
-    logic ptw_error;
+    logic iaccess_err;   // insufficient privilege to access this instruction page
+    logic daccess_err;   // insufficient privilege to access this data page
+    logic ptw_active;    // PTW is currently walking a page table
+    logic walking_instr; // PTW is walking because of an ITLB miss
+    logic ptw_error;     // PTW threw an exception
 
-    logic update_is_2M;
-    logic update_is_1G;
+    logic        update_is_2M;
+    logic        update_is_1G;
     logic [26:0] update_vpn;
-    logic [0:0] update_asid;
-    pte_t update_content;
+    logic [0:0]  update_asid;
+    pte_t        update_content;
 
     logic itlb_update;
     logic itlb_lu_access;
     pte_t itlb_content;
-
     logic itlb_is_2M;
     logic itlb_is_1G;
     logic itlb_lu_hit;
@@ -111,10 +105,15 @@ module mmu #(
     logic dtlb_update;
     logic dtlb_lu_access;
     pte_t dtlb_content;
-
     logic dtlb_is_2M;
     logic dtlb_is_1G;
     logic dtlb_lu_hit;
+
+    // Assignments
+    assign itlb_lu_access = fetch_req_i;
+    assign dtlb_lu_access = lsu_req_i;
+    assign fetch_rdata_o  = instr_if_data_rdata_i;
+    assign fetch_ex_o     = fetch_ex_q;
 
     tlb #(
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
@@ -194,12 +193,6 @@ module mmu #(
         .*
      );
 
-    assign itlb_lu_access = fetch_req_i;
-    assign dtlb_lu_access = lsu_req_i;
-    // Check whether we are allowed to access this memory region from a fetch perspective
-    assign iaccess_err    = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
-                                         || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
-
     //-----------------------
     // Instruction Interface
     //-----------------------
@@ -208,13 +201,16 @@ module mmu #(
     always_comb begin : instr_interface
         // MMU disabled: just pass through
         instr_if_data_req_o = fetch_req_i;
-        fetch_paddr         = fetch_vaddr_i; // play through in case we disabled address translation
+        instr_if_address_o  = fetch_vaddr_i; // play through in case we disabled address translation
         fetch_gnt_o         = instr_if_data_gnt_i;
         // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
         fetch_ex_n          = '0;
         ierr_valid_n        = 1'b0; // we keep a separate valid signal in case of an error
+        // Check whether we are allowed to access this memory region from a fetch perspective
+        iaccess_err    = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
+                                      || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
@@ -224,14 +220,14 @@ module mmu #(
             instr_if_data_req_o = 1'b0;
 
             // 4K page
-            fetch_paddr         = {itlb_content.ppn, fetch_vaddr_i[11:0]};
+            instr_if_address_o = {itlb_content.ppn, fetch_vaddr_i[11:0]};
             // Mega page
             if (itlb_is_2M) begin
-              fetch_paddr[20:12] = fetch_vaddr_i[20:12];
+              instr_if_address_o[20:12] = fetch_vaddr_i[20:12];
             end
             // Giga page
             if (itlb_is_1G) begin
-                fetch_paddr[29:12] = fetch_vaddr_i[29:12];
+                instr_if_address_o[29:12] = fetch_vaddr_i[29:12];
             end
 
             // ---------
@@ -249,7 +245,7 @@ module mmu #(
                 // throw a page fault
                 fetch_ex_n          = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
               end
-            end
+            end else
             // ---------
             // ITLB Miss
             // ---------
@@ -270,15 +266,60 @@ module mmu #(
     //-----------------------
     // The data interface is simpler and only consists of a request/response interface
     always_comb begin : data_interface
-        // stub
-        // lsu_req_i
-        // lsu_vaddr_i
-        // lsu_valid_o
-        // lsu_paddr_o
-        lsu_paddr_o = (enable_translation_i) ? {16'b0, dtlb_content} : lsu_vaddr_i;
-        lsu_valid_o = lsu_req_i;
-        // TODO: Assign access exception
+        lsu_paddr_o     = lsu_vaddr_i;
+        lsu_valid_o     = lsu_req_i;
         lsu_exception_o = misaligned_ex_i;
+        // Check if the User flag is set, then we may only access it in supervisor mode
+        // if SUM is enabled
+        daccess_err     = (ld_st_priv_lvl_i == PRIV_LVL_S && !sum_i && dtlb_content.u) || // SUM is not set and we are trying to access a user page in supervisor mode
+                          (ld_st_priv_lvl_i == PRIV_LVL_U && !dtlb_content.u);            // this is not a user page but we are in user mode and trying to access it
+        // translation is enabled and no misaligned exception occurred
+        if (enable_translation_i && !misaligned_ex_i.valid) begin
+            // 4K page
+            lsu_paddr_o = {dtlb_content.ppn, lsu_vaddr_i[11:0]};
+            // Mega page
+            if (dtlb_is_2M) begin
+              lsu_paddr_o[20:12] = lsu_vaddr_i[20:12];
+            end
+            // Giga page
+            if (dtlb_is_1G) begin
+                lsu_paddr_o[29:12] = lsu_vaddr_i[29:12];
+            end
+            // ---------
+            // DTLB Hit
+            // --------
+            if (dtlb_lu_hit && lsu_req_i) begin
+                // this is a store
+                if (lsu_is_store_i) begin
+                    // check if the page is write-able and we are not violating privileges
+                    if (dtlb_content.w || daccess_err) begin
+                        lsu_exception_o = {ST_ACCESS_FAULT, lsu_vaddr_i, 1'b1};
+                    end
+                // this is a load, check for sufficient access privileges
+                end else if (daccess_err) begin
+                    lsu_exception_o = {LD_ACCESS_FAULT, lsu_vaddr_i, 1'b1};
+                end
+            end else
+            // ---------
+            // DTLB Miss
+            // ---------
+            // watch out for exception
+            if (ptw_active && !walking_instr) begin
+                // when we walk a page table the output is not ready
+                lsu_valid_o = 1'b0;
+                // page table walker threw an exception
+                if (ptw_error) begin
+                    // an error makes the translation valid
+                    lsu_valid_o = 1'b1;
+                    // the page table walker can only throw page faults
+                    if (lsu_is_store_i) begin
+                        lsu_exception_o = {STORE_PAGE_FAULT, lsu_vaddr_i, 1'b1};
+                    end else begin
+                        lsu_exception_o = {LOAD_PAGE_FAULT, lsu_vaddr_i, 1'b1};
+                    end
+                end
+            end
+        end
     end
     // ----------
     // Registers

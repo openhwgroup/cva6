@@ -21,7 +21,7 @@ add wave -noupdate -group ex_stage -group lsu -group load_unit /core_tb/dut/ex_s
 add wave -noupdate -group ex_stage -group lsu -group load_unit -group fifo /core_tb/dut/ex_stage_i/lsu_i/load_unit_i/fifo_i/*
 add wave -noupdate -group ex_stage -group lsu -group lsu_arbiter /core_tb/dut/ex_stage_i/lsu_i/lsu_arbiter_i/*
 add wave -noupdate -group ex_stage -group branch_unit /core_tb/dut/ex_stage_i/branch_unit_i/*
-add wave -noupdate -group ex_stage -expand -group csr_buffer /core_tb/dut/ex_stage_i/csr_buffer_i/*
+add wave -noupdate -group ex_stage -group csr_buffer /core_tb/dut/ex_stage_i/csr_buffer_i/*
 add wave -noupdate -group ex_stage /core_tb/dut/ex_stage_i/*
 add wave -noupdate -group commit_stage /core_tb/dut/commit_stage_i/*
 add wave -noupdate -group csr_file /core_tb/dut/csr_regfile_i/*

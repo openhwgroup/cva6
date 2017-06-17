@@ -164,7 +164,7 @@ module ptw #(
         tlb_update_asid_n = tlb_update_asid_q;
         tlb_update_vpn_n  = tlb_update_vpn_q;
 
-        unique case (ptw_state_q)
+        case (ptw_state_q)
 
             PTW_READY: begin
                 global_mapping_n = 1'b0;
@@ -278,14 +278,12 @@ module ptw #(
                 end
                 // we've got a data grant so tell the cache that the tag is valid
             end
-            // TODO: propagate error
+            // Propagate error to MMU/LSU
             PTW_PROPAGATE_ERROR: begin
                 ptw_state_n = PTW_READY;
                 ptw_error_o = 1'b1;
             end
-
-
-        endcase // ptw_state_q
+        endcase
     end
 
     // sequential process
