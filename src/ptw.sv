@@ -53,7 +53,7 @@ module ptw #(
 
     output logic                    update_is_2M_o,
     output logic                    update_is_1G_o,
-    output logic [26:0]             update_vpn_o,
+    output logic [38:0]             update_vaddr_o,
     output logic [ASID_WIDTH-1:0]   update_asid_o,
     input  logic [ASID_WIDTH-1:0]   asid_i,
     // from TLBs
@@ -90,22 +90,19 @@ module ptw #(
     logic is_instr_ptw_q,   is_instr_ptw_n;
     logic global_mapping_q, global_mapping_n;
     // latched tag signal
-    logic tag_valid_n,    tag_valid_q;
+    logic tag_valid_n,      tag_valid_q;
+    // register the ASID
+    logic [ASID_WIDTH-1:0]  tlb_update_asid_q, tlb_update_asid_n;
+    // register the VPN we need to walk, SV39 defines a 39 bit virtual address
+    logic [38:0] vaddr_q,   vaddr_n;
+    // 4 byte aligned physical pointer
+    logic[55:0] ptw_pptr_q, ptw_pptr_n;
 
+    // Assignments
+    assign update_vaddr_o  = vaddr_q;
     assign ptw_active_o    = (ptw_state_q != PTW_READY);
     assign walking_instr_o = is_instr_ptw_q;
-
-    // register the ASID
-    logic [ASID_WIDTH-1:0] tlb_update_asid_q, tlb_update_asid_n;
-    // register the VPN we need to walk
-    logic [26:0] tlb_update_vpn_q, tlb_update_vpn_n;
-    // 4 byte aligned physical pointer
-    logic[55:0] ptw_pptr_q,        ptw_pptr_n;
     // directly output the correct physical address
-    // ------
-    // TODO
-    // -------
-    // assign address_o = {ptw_pptr_q, 4'b0}; TODO
     assign address_index_o = ptw_pptr_q[11:0];
     assign address_tag_o   = ptw_pptr_q[55:12];
     // we are never going to kill this request
@@ -115,8 +112,7 @@ module ptw #(
     // update the correct page table level
     assign update_is_2M_o = (ptw_lvl_q == LVL2);
     assign update_is_1G_o = (ptw_lvl_q == LVL1);
-    // output the correct VPN and ASID
-    assign update_vpn_o  = tlb_update_vpn_q;
+    // output the correct ASID
     assign update_asid_o = tlb_update_asid_q;
     // set the global mapping bit
     assign update_content_o = pte || (global_mapping_q << 5);
@@ -162,25 +158,28 @@ module ptw #(
         global_mapping_n  = global_mapping_q;
         // input registers
         tlb_update_asid_n = tlb_update_asid_q;
-        tlb_update_vpn_n  = tlb_update_vpn_q;
+        vaddr_n  = vaddr_q;
+
 
         case (ptw_state_q)
 
             PTW_READY: begin
+                // by default we start with the top-most page table
+                ptw_lvl_n         = LVL1;
                 global_mapping_n = 1'b0;
                 // if we got an ITLB miss
                 if (enable_translation_i & itlb_access_i & itlb_miss_i & ~dtlb_access_i) begin
                     ptw_pptr_n          = {satp_ppn_i, itlb_vaddr_i[38:30], 3'b0};
                     is_instr_ptw_n      = 1'b1;
                     tlb_update_asid_n   = asid_i;
-                    tlb_update_vpn_n    = itlb_vaddr_i[38:12];
+                    vaddr_n             = itlb_vaddr_i;
                     ptw_state_n         = PTW_WAIT_GRANT;
                 // we got an DTLB miss
                 end else if (enable_translation_i & dtlb_access_i & dtlb_miss_i) begin
                     ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
                     is_instr_ptw_n      = 1'b0;
                     tlb_update_asid_n   = asid_i;
-                    tlb_update_vpn_n    = dtlb_vaddr_i[38:12];
+                    vaddr_n             = dtlb_vaddr_i;
                     ptw_state_n         = PTW_WAIT_GRANT;
                 end
             end
@@ -188,6 +187,14 @@ module ptw #(
             PTW_WAIT_GRANT: begin
                 // send a request out
                 data_req_o = 1'b1;
+
+                // depending on the current level send the right address
+                if (ptw_lvl_q == LVL2)
+                    ptw_pptr_n = {pte.ppn, vaddr_q[29:21], 3'b0};
+
+                if (ptw_lvl_q == LVL3)
+                    ptw_pptr_n = {pte.ppn, vaddr_q[20:12], 3'b0};
+
                 // wait for the grant
                 if (data_gnt_i) begin
                     // send the tag valid signal one cycle later
@@ -202,11 +209,6 @@ module ptw #(
                     // check if the global mapping bit is set
                     if (pte.g)
                         global_mapping_n = 1'b1;
-                    // depending on the current level send the right address
-                    if (ptw_lvl_q == LVL2)
-                        ptw_pptr_n = {pte.ppn, tlb_update_vpn_q[17:9], 3'b0};
-                    if (ptw_lvl_q == LVL3)
-                        ptw_pptr_n = {pte.ppn, tlb_update_vpn_q[8:0], 3'b0};
 
                     // -------------
                     // Invalid PTE
@@ -294,7 +296,7 @@ module ptw #(
             ptw_lvl_q          <= LVL1;
             tag_valid_q        <= 1'b0;
             tlb_update_asid_q  <= '{default: 0};
-            tlb_update_vpn_q   <= '{default: 0};
+            vaddr_q            <= '0;
             ptw_pptr_q         <= '{default: 0};
             global_mapping_q   <= 1'b0;
         end else begin
@@ -304,7 +306,7 @@ module ptw #(
             ptw_lvl_q          <= ptw_lvl_n;
             tag_valid_q        <= tag_valid_n;
             tlb_update_asid_q  <= tlb_update_asid_n;
-            tlb_update_vpn_q   <= tlb_update_vpn_n;
+            vaddr_q            <= vaddr_n;
             global_mapping_q   <= global_mapping_n;
         end
     end

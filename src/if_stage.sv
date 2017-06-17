@@ -57,7 +57,7 @@ module if_stage (
     //---------------------------------
     // we are busy if we are either waiting for a grant
     // or if the FIFO is full
-    assign if_busy_o = ((CS == WAIT_GNT) && !instr_req_o) || !fifo_ready;
+    assign if_busy_o = (CS == WAIT_GNT) || !fifo_ready;
     assign fetch_address = {fetch_address_i[63:2], 2'b0};
 
     //---------------------------------
@@ -86,6 +86,7 @@ module if_stage (
         instr_addr_o  = fetch_address;
         fifo_valid    = 1'b0;
         NS            = CS;
+        addr_valid    = 1'b0;
 
         unique case(CS)
             // default state, not waiting for requested data
@@ -99,7 +100,7 @@ module if_stage (
                     addr_valid  = 1'b1;
 
 
-                    if(instr_gnt_i) //~>  granted request
+                    if (instr_gnt_i) //~>  granted request
                         // we have one outstanding rvalid: wait for it
                         if (flush_i)
                             NS = WAIT_ABORTED;
@@ -183,6 +184,7 @@ module if_stage (
                 // we can do a new request here, we won't get a grant until the rvalid came back for the
                 // request we sent to end in here
                 instr_addr_o = fetch_address;
+                addr_valid   = 1'b1;
                 // we are aborting this instruction so don't tell the FIFO it is valid
                 fifo_valid   = 1'b0;
                 // check if the fetch is valid before making a new request
