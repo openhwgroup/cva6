@@ -182,7 +182,7 @@ class instruction_trace_item;
         endcase
 
 
-        s = $sformatf("%t %15d %h %h %-36s", simtime,
+        s = $sformatf("%10t %10d %h %h %-36s", simtime,
                                              cycle,
                                              sbe.pc,
                                              instr,
@@ -198,7 +198,7 @@ class instruction_trace_item;
             if (read_regs[i] != 0)
                 s = $sformatf("%s %-4s:%16x", s, regAddrToStr(read_regs[i]), reg_file[read_regs[i]]);
         end
-
+        // if we got a physical address also display address translation
         foreach (paddr_queue[i]) begin
            s = $sformatf("%s VA: %x PA: %x", s, this.vaddr, paddr_queue[i]);
         end
