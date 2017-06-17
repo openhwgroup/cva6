@@ -169,6 +169,7 @@ module ariane
     logic                     csr_commit_commit_ex;
     // LSU Commit
     logic                     lsu_commit_commit_ex;
+    logic                     no_st_pending_ex_commit;
     // --------------
     // ID <-> COMMIT
     // --------------
@@ -215,30 +216,28 @@ module ariane
     logic                     flush_ctrl_if;
     logic                     flush_ctrl_id;
     logic                     flush_ctrl_ex;
+    logic                     flush_tlb_ctrl_ex;
+    logic                     sfence_vma_commit_controller;
 
-
-    // TODO: Preliminary signal assignments
-    logic flush_tlb;
-    assign flush_tlb = 1'b0;
     assign sec_lvl_o = priv_lvl;
     // --------------
     // NPC Generation
     // --------------
     pcgen pcgen_i (
-        .fetch_enable_i     ( fetch_enable                   ),
-        .flush_i            ( flush_ctrl_pcgen               ),
-        .flush_bp_i         ( flush_bp_ctrl_pcgen            ),
-        .if_ready_i         ( ~if_ready_if_pcgen             ),
-        .resolved_branch_i  ( resolved_branch                ),
-        .fetch_address_o    ( fetch_address_pcgen_if         ),
-        .fetch_valid_o      ( fetch_valid_pcgen_if           ),
-        .branch_predict_o   ( branch_predict_pcgen_if        ),
-        .boot_addr_i        ( boot_addr_i                    ),
-        .pc_commit_i        ( pc_commit                      ),
-        .epc_i              ( epc_commit_pcgen               ),
-        .eret_i             ( eret              ),
-        .trap_vector_base_i ( trap_vector_base_commit_pcgen  ),
-        .ex_i               ( ex_commit                      ),
+        .fetch_enable_i        ( fetch_enable                   ),
+        .flush_i               ( flush_ctrl_pcgen               ),
+        .flush_bp_i            ( flush_bp_ctrl_pcgen            ),
+        .if_ready_i            ( ~if_ready_if_pcgen             ),
+        .resolved_branch_i     ( resolved_branch                ),
+        .fetch_address_o       ( fetch_address_pcgen_if         ),
+        .fetch_valid_o         ( fetch_valid_pcgen_if           ),
+        .branch_predict_o      ( branch_predict_pcgen_if        ),
+        .boot_addr_i           ( boot_addr_i                    ),
+        .pc_commit_i           ( pc_commit                      ),
+        .epc_i                 ( epc_commit_pcgen               ),
+        .eret_i                ( eret              ),
+        .trap_vector_base_i    ( trap_vector_base_commit_pcgen  ),
+        .ex_i                  ( ex_commit                      ),
         .*
     );
     // ---------
@@ -363,6 +362,8 @@ module ariane
         .lsu_valid_o            ( lsu_valid_ex_id            ),
         .lsu_commit_i           ( lsu_commit_commit_ex       ), // from commit
         .lsu_exception_o        ( lsu_exception_ex_id        ),
+        .no_st_pending_o        ( no_st_pending_ex_commit    ),
+
         // CSR
         .csr_ready_o            ( csr_ready_ex_id            ),
         .csr_valid_i            ( csr_valid_id_ex            ),
@@ -373,6 +374,7 @@ module ariane
         .csr_commit_i           ( csr_commit_commit_ex       ), // from commit
         // Memory Management
         .enable_translation_i   ( enable_translation_csr_ex  ), // from CSR
+        .flush_tlb_i            ( flush_tlb_ctrl_ex          ),
         .fetch_req_i            ( fetch_req_if_ex            ),
         .fetch_gnt_o            ( fetch_gnt_ex_if            ),
         .fetch_valid_o          ( fetch_valid_ex_if          ),
@@ -385,7 +387,6 @@ module ariane
         .mxr_i                  ( mxr_csr_ex                 ), // from CSR
         .satp_ppn_i             ( satp_ppn_csr_ex            ), // from CSR
         .asid_i                 ( asid_csr_ex                ), // from CSR
-        .flush_tlb_i            ( flush_tlb                  ),
 
         .mult_ready_o           ( mult_ready_ex_id           ),
         .mult_valid_i           ( mult_valid_id_ex           ),
@@ -396,19 +397,21 @@ module ariane
     // Commit
     // ---------
     commit_stage commit_stage_i (
-        .exception_o         ( ex_commit              ),
-        .commit_instr_i      ( commit_instr_id_commit     ),
-        .commit_ack_o        ( commit_ack                 ),
-        .waddr_a_o           ( waddr_a_commit_id          ),
-        .wdata_a_o           ( wdata_a_commit_id          ),
-        .we_a_o              ( we_a_commit_id             ),
-        .commit_lsu_o        ( lsu_commit_commit_ex       ),
-        .commit_csr_o        ( csr_commit_commit_ex       ),
-        .pc_o                ( pc_commit                  ),
-        .csr_op_o            ( csr_op_commit_csr          ),
-        .csr_wdata_o         ( csr_wdata_commit_csr       ),
-        .csr_rdata_i         ( csr_rdata_csr_commit       ),
-        .csr_exception_i     ( csr_exception_csr_commit   ),
+        .exception_o         ( ex_commit                    ),
+        .commit_instr_i      ( commit_instr_id_commit       ),
+        .commit_ack_o        ( commit_ack                   ),
+        .no_st_pending_i     ( no_st_pending_ex_commit      ),
+        .waddr_a_o           ( waddr_a_commit_id            ),
+        .wdata_a_o           ( wdata_a_commit_id            ),
+        .we_a_o              ( we_a_commit_id               ),
+        .commit_lsu_o        ( lsu_commit_commit_ex         ),
+        .commit_csr_o        ( csr_commit_commit_ex         ),
+        .pc_o                ( pc_commit                    ),
+        .csr_op_o            ( csr_op_commit_csr            ),
+        .csr_wdata_o         ( csr_wdata_commit_csr         ),
+        .csr_rdata_i         ( csr_rdata_csr_commit         ),
+        .csr_exception_i     ( csr_exception_csr_commit     ),
+        .sfence_vma_o        ( sfence_vma_commit_controller ),
         .*
     );
 
@@ -448,17 +451,20 @@ module ariane
     // Controller
     // ------------
     controller controller_i (
+        // flush ports
         .flush_bp_o             ( flush_bp_ctrl_pcgen           ),
         .flush_pcgen_o          ( flush_ctrl_pcgen              ),
         .flush_unissued_instr_o ( flush_unissued_instr_ctrl_id  ),
         .flush_if_o             ( flush_ctrl_if                 ),
         .flush_id_o             ( flush_ctrl_id                 ),
         .flush_ex_o             ( flush_ctrl_ex                 ),
-
+        .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
+        // control ports
         .eret_i                 ( eret                          ),
         .ex_i                   ( ex_commit                     ),
         .flush_csr_i            ( flush_csr_ctrl                ),
         .resolved_branch_i      ( resolved_branch               ),
+        .sfence_vma_i           ( sfence_vma_commit_controller  ),
         .*
     );
 

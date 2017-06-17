@@ -24,6 +24,7 @@ module lsu #(
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,
+    output logic                     no_st_pending_o,
 
     input  fu_t                      fu_i,
     input  fu_op                     operator_i,

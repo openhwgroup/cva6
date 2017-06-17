@@ -19,25 +19,26 @@
 //
 
 module store_queue (
-    input logic          clk_i,    // Clock
-    input logic          rst_ni,   // Asynchronous reset active low
-    input logic          flush_i,  // if we flush we need to pause the transactions on the memory
-                                   // otherwise we will run in a deadlock with the memory arbiter
+    input logic          clk_i,           // Clock
+    input logic          rst_ni,          // Asynchronous reset active low
+    input logic          flush_i,         // if we flush we need to pause the transactions on the memory
+                                          // otherwise we will run in a deadlock with the memory arbiter
+    output logic         no_st_pending_o, // non-speculative queue is empty (e.g.: everything is committed to the memory hierarchy)
 
-    output logic [63:0]  paddr_o,   // physical address of the valid store
-    output logic [63:0]  data_o,    // data at the given address
-    output logic         valid_o,   // committed data is valid
-    output logic [7:0]   be_o,      // byte enable set
+    output logic [63:0]  paddr_o,         // physical address of the valid store
+    output logic [63:0]  data_o,          // data at the given address
+    output logic         valid_o,         // committed data is valid
+    output logic [7:0]   be_o,            // byte enable set
 
-    input  logic         commit_i, // commit the instruction which was placed there most recently
+    input  logic         commit_i,        // commit the instruction which was placed there most recently
+    output logic         ready_o,         // the store queue is ready to accept a new request
+                                          // it is only ready if it can unconditionally commit the instruction, e.g.:
+                                          // the commit buffer needs to be empty
+    input  logic         valid_i,         // this is a valid store
+    input  logic [63:0]  paddr_i,         // physical address of store which needs to be placed in the queue
+    input  logic [63:0]  data_i,          // data which is placed in the queue
+    input  logic [7:0]   be_i,            // byte enable in
 
-    output logic         ready_o,  // the store queue is ready to accept a new request
-                                   // it is only ready if it can unconditionally commit the instruction, e.g.:
-                                   // the commit buffer needs to be empty
-    input  logic         valid_i,  // this is a valid store
-    input  logic [63:0]  paddr_i,  // physical address of store which needs to be placed in the queue
-    input  logic [63:0]  data_i,   // data which is placed in the queue
-    input  logic [7:0]   be_i,     // byte enable in
     // D$ interface
     output logic [11:0]  address_index_o,
     output logic [43:0]  address_tag_o,
@@ -73,45 +74,48 @@ module store_queue (
         logic        is_speculative; // set if the entry isn't committed yet
     } commit_queue_n, commit_queue_q;
 
-    // we can directly output the commit entry since we just have one element in this "queue"
-    assign paddr_o           = commit_queue_q.address;
-    assign data_o            = commit_queue_q.data;
-    assign be_o              = commit_queue_q.be;
-    assign valid_o           = commit_queue_q.valid;
+    // we can directly output the commit entry since we have just one element in the "queue"
+    assign paddr_o         = commit_queue_q.address;
+    assign data_o          = commit_queue_q.data;
+    assign be_o            = commit_queue_q.be;
+    assign valid_o         = commit_queue_q.valid;
 
     // those signals can directly be output to the memory
-    assign address_index_o   = commit_queue_q.address[11:0];
+    assign address_index_o = commit_queue_q.address[11:0];
     // if we got a new request we already saved the tag from the previous cycle
-    assign address_tag_o     = address_tag_q;
-    assign data_wdata_o      = commit_queue_q.data;
-    assign data_be_o         = commit_queue_q.be;
-    assign tag_valid_o       = tag_valid_q;
+    assign address_tag_o   = address_tag_q;
+    assign data_wdata_o    = commit_queue_q.data;
+    assign data_be_o       = commit_queue_q.be;
+    assign tag_valid_o     = tag_valid_q;
     // we will never kill a request in the store buffer since we already know that the translation is valid
     // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
-    assign kill_req_o        = 1'b0;
+    assign kill_req_o      = 1'b0;
+    // no store is pending if we don't have any uncommitted data, e.g.: the queue is either not valid or the entry is
+    // speculative (it can be flushed)
+    assign no_st_pending_o = !commit_queue_q.valid || commit_queue_q.is_speculative;
 
     // memory interface
     always_comb begin : store_if
         // if there is no commit pending and the uncommitted queue is empty as well we can accept the request
         // if we got a grant this implies that the value was not speculative anymore and that we
         // do not need to save the values anymore since the memory already processed them
-        automatic logic ready = ~commit_queue_q.valid | data_gnt_i;
-        ready_o               =  ready & ~flush_i;
+        automatic logic ready = !commit_queue_q.valid || data_gnt_i;
+        ready_o               =  ready && !flush_i;
 
         address_tag_n  = address_tag_q;
         commit_queue_n = commit_queue_q;
         tag_valid_n    = 1'b0;
 
-        data_we_o    = 1'b1; // we will always write in the store queue
-        data_req_o   = 1'b0;
+        data_we_o      = 1'b1; // we will always write in the store queue
+        data_req_o     = 1'b0;
 
         // there should be no commit when we are flushing
-        if (~flush_i) begin
+        if (!flush_i) begin
             // if the entry in the commit queue is valid and not speculative anymore
             // we can issue this instruction
             // we can issue it as soon as the commit_i goes high or any number of cycles later
             // by looking at the is_speculative flag
-            if (commit_queue_q.valid && (~commit_queue_q.is_speculative || commit_i)) begin
+            if (commit_queue_q.valid && (!commit_queue_q.is_speculative || commit_i)) begin
                 data_req_o = 1'b1;
                 if (data_gnt_i) begin
                     // we can evict it from the commit buffer
@@ -134,7 +138,7 @@ module store_queue (
 
         // LSU interface
         // we are ready to accept a new entry and the input data is valid
-        if (ready & valid_i) begin
+        if (ready && valid_i) begin
             commit_queue_n.address        = paddr_i;
             commit_queue_n.data           = data_i;
             commit_queue_n.be             = be_i;
@@ -166,7 +170,7 @@ module store_queue (
     // assert that commit is never set when we are flushing this would be counter intuitive
     // as flush and commit is decided in the same stage
     assert property (
-        @(posedge clk_i) rst_ni & flush_i |-> ~commit_i)
+        @(posedge clk_i) rst_ni && flush_i |-> !commit_i)
         else $error ("You are trying to commit and flush in the same cycle");
     `endif
     `endif

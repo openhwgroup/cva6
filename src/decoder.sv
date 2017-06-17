@@ -87,9 +87,9 @@ module decoder (
                                 illegal_instr = 1'b1;
                             // decode the immiediate field
                             case (instr.itype.imm)
-                                // ECALL
+                                // ECALL -> inject exception
                                 12'b0: ecall  = 1'b1;
-                                // EBREAK:
+                                // EBREAK -> inject exception
                                 12'b1: ebreak = 1'b1;
                                 // SRET
                                 12'b100000010: begin
@@ -123,7 +123,8 @@ module decoder (
                                     if (instr.instr[31:25] == 7'b1001) begin
                                         // Reset illegal instruction here, this is the only type
                                         // of instruction which needs those kind of fields
-                                        illegal_instr = 1'b0;
+                                        illegal_instr    = 1'b0;
+                                        instruction_o.op = SFENCE_VMA;
                                         // check TVM flag and intercept SFENCE.VMA call if necessary
                                         if (priv_lvl_i == PRIV_LVL_S && tvm_i)
                                             illegal_instr = 1'b1;
