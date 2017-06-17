@@ -91,7 +91,7 @@ module mmu #(
 
     logic        update_is_2M;
     logic        update_is_1G;
-    logic [26:0] update_vpn;
+    logic [38:0] update_vaddr;
     logic [0:0]  update_asid;
     pte_t        update_content;
 
@@ -124,7 +124,7 @@ module mmu #(
         .flush_i          ( flush_tlb_i                ),
         .update_is_2M_i   ( update_is_2M               ),
         .update_is_1G_i   ( update_is_1G               ),
-        .update_vpn_i     ( update_vpn                 ),
+        .update_vpn_i     ( update_vaddr[38:12]        ),
         .update_asid_i    ( update_asid                ),
         .update_content_i ( update_content             ),
         .update_tlb_i     ( itlb_update                ),
@@ -147,7 +147,7 @@ module mmu #(
         .flush_i          ( flush_tlb_i                 ),
         .update_is_2M_i   ( update_is_2M                ),
         .update_is_1G_i   ( update_is_1G                ),
-        .update_vpn_i     ( update_vpn                  ),
+        .update_vpn_i     ( update_vaddr[38:12]         ),
         .update_asid_i    ( update_asid                 ),
         .update_content_i ( update_content              ),
         .update_tlb_i     ( dtlb_update                 ),
@@ -179,7 +179,7 @@ module mmu #(
         .update_content_o       ( update_content        ),
         .update_is_2M_o         ( update_is_2M          ),
         .update_is_1G_o         ( update_is_1G          ),
-        .update_vpn_o           ( update_vpn            ),
+        .update_vaddr_o         ( update_vaddr          ),
         .update_asid_o          ( update_asid           ),
 
         .itlb_access_i          ( itlb_lu_access        ),
@@ -243,7 +243,7 @@ module mmu #(
                 fetch_gnt_o         = 1'b1;
                 ierr_valid_n        = 1'b1;
                 // throw a page fault
-                fetch_ex_n          = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+                fetch_ex_n          = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
               end
             end else
             // ---------
@@ -254,7 +254,7 @@ module mmu #(
               // on an error pass through fetch with an error signaled
               fetch_gnt_o  = ptw_error;
               ierr_valid_n = ptw_error; // signal valid/error on next cycle
-              fetch_ex_n   = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
+              fetch_ex_n   = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
         end
         // the fetch is valid if we either got an error in the previous cycle or the I$ gave us a valid signal.
@@ -313,9 +313,9 @@ module mmu #(
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
                     if (lsu_is_store_i) begin
-                        lsu_exception_o = {STORE_PAGE_FAULT, lsu_vaddr_i, 1'b1};
+                        lsu_exception_o = {STORE_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
                     end else begin
-                        lsu_exception_o = {LOAD_PAGE_FAULT, lsu_vaddr_i, 1'b1};
+                        lsu_exception_o = {LOAD_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
                     end
                 end
             end

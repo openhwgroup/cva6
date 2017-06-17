@@ -149,7 +149,7 @@ module commit_stage (
                     STORE_PAGE_FAULT:      cause = "Store Page Fault";
                     default: cause = "Interrupt";
                 endcase
-            $display("Exception @%t, PC: %0h, TVal: %0h, Cause: %s", $time, commit_instr_i.pc, exception_o.tval, cause);
+            $display("Exception @%t, PC: %h, TVal: %h, Cause: %s", $time, commit_instr_i.pc, exception_o.tval, cause);
             end
         end
     `endif
