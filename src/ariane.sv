@@ -192,6 +192,7 @@ module ariane
     // CSR <-> *
     // --------------
     logic                     enable_translation_csr_ex;
+    priv_lvl_t                ld_st_priv_lvl_csr_ex;
     logic                     sum_csr_ex;
     logic                     mxr_csr_ex;
     logic [43:0]              satp_ppn_csr_ex;

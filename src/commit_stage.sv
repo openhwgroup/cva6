@@ -144,6 +144,9 @@ module commit_stage (
                     ENV_CALL_UMODE:        cause = "Environment Call User Mode";
                     ENV_CALL_SMODE:        cause = "Environment Call Supervisor Mode";
                     ENV_CALL_MMODE:        cause = "Environment Call Machine Mode";
+                    INSTR_PAGE_FAULT:      cause = "Instruction Page Fault";
+                    LOAD_PAGE_FAULT:       cause = "Load Page Fault";
+                    STORE_PAGE_FAULT:      cause = "Store Page Fault";
                     default: cause = "Interrupt";
                 endcase
             $display("Exception @%t, PC: %0h, TVal: %0h, Cause: %s", $time, commit_instr_i.pc, exception_o.tval, cause);

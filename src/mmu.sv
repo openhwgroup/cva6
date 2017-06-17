@@ -207,14 +207,14 @@ module mmu #(
     // Exceptions are always signaled together with the fetch_valid_o signal
     always_comb begin : instr_interface
         // MMU disabled: just pass through
-        instr_if_data_req_o           = fetch_req_i;
-        fetch_paddr                   = fetch_vaddr_i; // play through in case we disabled address translation
-        fetch_gnt_o                   = instr_if_data_gnt_i;
-        // two potential error sources:
+        instr_if_data_req_o = fetch_req_i;
+        fetch_paddr         = fetch_vaddr_i; // play through in case we disabled address translation
+        fetch_gnt_o         = instr_if_data_gnt_i;
+        // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
-        fetch_ex_n                    = '0;
-        ierr_valid_n                  = 1'b0;
+        fetch_ex_n          = '0;
+        ierr_valid_n        = 1'b0; // we keep a separate valid signal in case of an error
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
@@ -222,18 +222,17 @@ module mmu #(
         // an error.
         if (enable_translation_i) begin
             instr_if_data_req_o = 1'b0;
+
             // 4K page
             fetch_paddr         = {itlb_content.ppn, fetch_vaddr_i[11:0]};
-            // this is a mega page
+            // Mega page
             if (itlb_is_2M) begin
               fetch_paddr[20:12] = fetch_vaddr_i[20:12];
             end
-            // this is a giga page
+            // Giga page
             if (itlb_is_1G) begin
                 fetch_paddr[29:12] = fetch_vaddr_i[29:12];
             end
-
-            fetch_gnt_o = instr_if_data_gnt_i;
 
             // ---------
             // ITLB Hit
@@ -265,9 +264,11 @@ module mmu #(
         // the fetch is valid if we either got an error in the previous cycle or the I$ gave us a valid signal.
         fetch_valid_o = instr_if_data_rvalid_i || ierr_valid_q;
     end
+
     //-----------------------
-    // Data interface
+    // Data Interface
     //-----------------------
+    // The data interface is simpler and only consists of a request/response interface
     always_comb begin : data_interface
         // stub
         // lsu_req_i
