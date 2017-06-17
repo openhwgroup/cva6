@@ -291,7 +291,7 @@ module mmu #(
                 // this is a store
                 if (lsu_is_store_i) begin
                     // check if the page is write-able and we are not violating privileges
-                    if (dtlb_content.w || daccess_err) begin
+                    if (!dtlb_content.w || daccess_err) begin
                         lsu_exception_o = {ST_ACCESS_FAULT, lsu_vaddr_i, 1'b1};
                     end
                 // this is a load, check for sufficient access privileges
