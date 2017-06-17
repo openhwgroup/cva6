@@ -27,9 +27,12 @@ class instruction_trace_item;
     logic [4:0]        read_regs [$];
     logic [4:0]        result_regs [$];
     logic [63:0]       result;
-
+    logic [63:0]       paddr;
+    logic [63:0]       paddr_queue [$];
+    logic [63:0]       vaddr;
+    logic [63:0]       vaddr_queue [$];
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, scoreboard_entry sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] vaddr, logic [63:0] paddr);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -37,6 +40,8 @@ class instruction_trace_item;
         this.instr    = instr;
         this.reg_file = reg_file;
         this.result   = result;
+        this.vaddr    = vaddr;
+        this.paddr    = paddr;
     endfunction
     // convert register address to ABI compatible form
     function string regAddrToStr(logic [5:0] addr);
@@ -147,7 +152,7 @@ class instruction_trace_item;
             INSTR_SRAW:                s = this.printRInstr("sraw");
             // FENCE
             INSTR_FENCE:               s = this.printMnemonic("fence");
-            INSTR_FENCEI:              s = this.printMnemonic("fencei");
+            INSTR_FENCEI:              s = this.printMnemonic("fence.i");
             // SYSTEM (CSR manipulation)
             INSTR_CSRW:                s = this.printCSRInstr("csrw");
             INSTR_CSRRW:               s = this.printCSRInstr("csrrw");
@@ -194,14 +199,11 @@ class instruction_trace_item;
                 s = $sformatf("%s %-4s:%16x", s, regAddrToStr(read_regs[i]), reg_file[read_regs[i]]);
         end
 
+        foreach (paddr_queue[i]) begin
+           s = $sformatf("%s VA: %x PA: %x", s, this.vaddr, paddr_queue[i]);
+        end
+
         return s;
-        // if (mem_access.size() > 0) begin
-        //   mem_acc = mem_access.pop_front();
-
-        //   $fwrite(f, "  PA:%08x", mem_acc.addr);
-        // end
-
-        // $fwrite(f, "\n");
     endfunction
 
     function string printMnemonic(input string mnemonic);
@@ -305,7 +307,7 @@ class instruction_trace_item;
 
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
-
+        paddr_queue.push_back(paddr);
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result), regAddrToStr(sbe.rs1));
     endfunction
 
@@ -322,6 +324,7 @@ class instruction_trace_item;
 
         read_regs.push_back(sbe.rs1);
         read_regs.push_back(sbe.rs2);
+        paddr_queue.push_back(paddr);
 
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rs2), $signed(sbe.result), regAddrToStr(sbe.rs1));
 

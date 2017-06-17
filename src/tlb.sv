@@ -119,10 +119,10 @@ module tlb #(
             end else if (update_tlb_i & replace_en[i]) begin
                 // update tag array
                 tags_n[i] = '{
-                    asid: update_asid_i,
-                    vpn2: update_vpn_i [26:18],
-                    vpn1: update_vpn_i [17:9],
-                    vpn0: update_vpn_i [8:0],
+                    asid:  update_asid_i,
+                    vpn2:  update_vpn_i [26:18],
+                    vpn1:  update_vpn_i [17:9],
+                    vpn0:  update_vpn_i [8:0],
                     is_1G: update_is_1G_i,
                     is_2M: update_is_2M_i,
                     valid: 1'b1

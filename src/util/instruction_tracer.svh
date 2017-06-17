@@ -33,6 +33,12 @@ class instruction_tracer;
     logic [63:0] reg_file [32];
     // 64 bit clock tick count
     longint unsigned clk_ticks;
+    // address mapping
+    // contains mappings of the form vaddr <-> paddr
+    struct {
+        logic [63:0] vaddr;
+        logic [63:0] paddr;
+    } store_mapping[$], load_mapping[$], address_mapping;
 
     function new(virtual instruction_tracer_if tracer_if);
         this.tracer_if = tracer_if;
@@ -59,7 +65,6 @@ class instruction_tracer;
                 decode_instruction = fetch_entry'(tracer_if.pck.fetch);
                 decode_queue.push_back(decode_instruction);
             end
-
             // -------------------
             // Instruction Issue
             // -------------------
@@ -72,10 +77,26 @@ class instruction_tracer;
                 issue_sbe_queue.push_back(scoreboard_entry'(tracer_if.pck.issue_sbe));
             end
 
-            // -----------------
-            // Physical Address
-            // -----------------
-
+            // --------------------
+            // Address Translation
+            // --------------------
+            if (tracer_if.pck.translation_valid) begin
+                // put it in the store mapping queue if it is a store
+                if (tracer_if.pck.is_store && tracer_if.pck.st_ready) begin
+                    // $display("Putting Store Mapping %0h \n", tracer_if.pck.vaddr);
+                    store_mapping.push_back('{
+                        vaddr: tracer_if.pck.vaddr,
+                        paddr: tracer_if.pck.paddr
+                    });
+                // or else put it in the load mapping
+                end else if (tracer_if.pck.ld_ready) begin
+                    // $display("Putting Load Mapping %0h \n", tracer_if.pck.vaddr);
+                    load_mapping.push_back('{
+                        vaddr: tracer_if.pck.vaddr,
+                        paddr: tracer_if.pck.paddr
+                    });
+                end
+            end
 
             // --------------
             //  Commit
@@ -85,12 +106,18 @@ class instruction_tracer;
                 commit_instruction = scoreboard_entry'(tracer_if.pck.commit_instr);
                 issue_commit_instruction = issue_queue.pop_front();
                 issue_sbe = issue_sbe_queue.pop_front();
+                // check if the instruction retiring is a load or store, get the physical address accordingly
+                if (tracer_if.pck.commit_instr.fu == LOAD)
+                    address_mapping = load_mapping.pop_front();
+                else if (tracer_if.pck.commit_instr.fu == STORE)
+                    address_mapping = store_mapping.pop_front();
                 // the scoreboards issue entry still contains the immediate value as a result
                 // check if the write back is valid, if not we need to source the result from the register file
+                // as the most recent version of this register will be there.
                 if (tracer_if.pck.we)
-                    printInstr(issue_sbe, issue_commit_instruction.instruction, tracer_if.pck.wdata);
+                    printInstr(issue_sbe, issue_commit_instruction.instruction, tracer_if.pck.wdata, address_mapping.vaddr, address_mapping.paddr);
                 else
-                    printInstr(issue_sbe, issue_commit_instruction.instruction, reg_file[commit_instruction.rd]);
+                    printInstr(issue_sbe, issue_commit_instruction.instruction, reg_file[commit_instruction.rd], address_mapping.vaddr, address_mapping.paddr);
             end
 
             // ----------------------
@@ -124,14 +151,17 @@ class instruction_tracer;
     function void flush ();
         this.flushDecode();
         // clear all elements in the queue
-        issue_queue = {};
+        issue_queue     = {};
         issue_sbe_queue = {};
+        // also clear mappings
+        store_mapping   = {};
+        load_mapping    = {};
     endfunction;
 
-    function void printInstr(scoreboard_entry sbe, logic [63:0] instr, logic [63:0] result);
-        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result);
+    function void printInstr(scoreboard_entry sbe, logic [63:0] instr, logic [63:0] result, logic [63:0] vaddr, logic [63:0] paddr);
+        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, vaddr, paddr);
+        // print instruction to console
         $display(iti.printInstr());
-        // $display("Time: %t Cycle: %d PC: %h Instruction: %s", $time(), clk_ticks, sbe.pc, iti.printInstr());
 
     endfunction;
 

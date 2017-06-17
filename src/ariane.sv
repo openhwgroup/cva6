@@ -397,21 +397,21 @@ module ariane
     // Commit
     // ---------
     commit_stage commit_stage_i (
-        .exception_o         ( ex_commit                    ),
-        .commit_instr_i      ( commit_instr_id_commit       ),
-        .commit_ack_o        ( commit_ack                   ),
-        .no_st_pending_i     ( no_st_pending_ex_commit      ),
-        .waddr_a_o           ( waddr_a_commit_id            ),
-        .wdata_a_o           ( wdata_a_commit_id            ),
-        .we_a_o              ( we_a_commit_id               ),
-        .commit_lsu_o        ( lsu_commit_commit_ex         ),
-        .commit_csr_o        ( csr_commit_commit_ex         ),
-        .pc_o                ( pc_commit                    ),
-        .csr_op_o            ( csr_op_commit_csr            ),
-        .csr_wdata_o         ( csr_wdata_commit_csr         ),
-        .csr_rdata_i         ( csr_rdata_csr_commit         ),
-        .csr_exception_i     ( csr_exception_csr_commit     ),
-        .sfence_vma_o        ( sfence_vma_commit_controller ),
+        .exception_o            ( ex_commit                     ),
+        .commit_instr_i         ( commit_instr_id_commit        ),
+        .commit_ack_o           ( commit_ack                    ),
+        .no_st_pending_i        ( no_st_pending_ex_commit       ),
+        .waddr_a_o              ( waddr_a_commit_id             ),
+        .wdata_a_o              ( wdata_a_commit_id             ),
+        .we_a_o                 ( we_a_commit_id                ),
+        .commit_lsu_o           ( lsu_commit_commit_ex          ),
+        .commit_csr_o           ( csr_commit_commit_ex          ),
+        .pc_o                   ( pc_commit                     ),
+        .csr_op_o               ( csr_op_commit_csr             ),
+        .csr_wdata_o            ( csr_wdata_commit_csr          ),
+        .csr_rdata_i            ( csr_rdata_csr_commit          ),
+        .csr_exception_i        ( csr_exception_csr_commit      ),
+        .sfence_vma_o           ( sfence_vma_commit_controller  ),
         .*
     );
 
@@ -419,31 +419,31 @@ module ariane
     // CSR
     // ---------
     csr_regfile #(
-        .ASID_WIDTH           ( ASID_WIDTH                      )
+        .ASID_WIDTH             ( ASID_WIDTH                    )
     )
     csr_regfile_i (
-        .flush_o              ( flush_csr_ctrl                  ),
-        .commit_ack_i         ( commit_ack                      ),
-        .ex_i                 ( ex_commit                       ),
-        .csr_op_i             ( csr_op_commit_csr               ),
-        .csr_addr_i           ( csr_addr_ex_csr                 ),
-        .csr_wdata_i          ( csr_wdata_commit_csr            ),
-        .csr_rdata_o          ( csr_rdata_csr_commit            ),
-        .pc_i                 ( pc_commit                       ),
-        .csr_exception_o      ( csr_exception_csr_commit        ),
-        .epc_o                ( epc_commit_pcgen                ),
-        .eret_o               ( eret                            ),
-        .trap_vector_base_o   ( trap_vector_base_commit_pcgen   ),
-        .priv_lvl_o           ( priv_lvl                        ),
-        .ld_st_priv_lvl_o     ( ld_st_priv_lvl_csr_ex           ),
-        .enable_translation_o ( enable_translation_csr_ex       ),
-        .sum_o                ( sum_csr_ex                      ),
-        .mxr_o                ( mxr_csr_ex                      ),
-        .satp_ppn_o           ( satp_ppn_csr_ex                 ),
-        .asid_o               ( asid_csr_ex                     ),
-        .tvm_o                ( tvm_csr_id                      ),
-        .tw_o                 ( tw_csr_id                       ),
-        .tsr_o                ( tsr_csr_id                      ),
+        .flush_o                ( flush_csr_ctrl                ),
+        .commit_ack_i           ( commit_ack                    ),
+        .ex_i                   ( ex_commit                     ),
+        .csr_op_i               ( csr_op_commit_csr             ),
+        .csr_addr_i             ( csr_addr_ex_csr               ),
+        .csr_wdata_i            ( csr_wdata_commit_csr          ),
+        .csr_rdata_o            ( csr_rdata_csr_commit          ),
+        .pc_i                   ( pc_commit                     ),
+        .csr_exception_o        ( csr_exception_csr_commit      ),
+        .epc_o                  ( epc_commit_pcgen              ),
+        .eret_o                 ( eret                          ),
+        .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
+        .priv_lvl_o             ( priv_lvl                      ),
+        .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
+        .enable_translation_o   ( enable_translation_csr_ex     ),
+        .sum_o                  ( sum_csr_ex                    ),
+        .mxr_o                  ( mxr_csr_ex                    ),
+        .satp_ppn_o             ( satp_ppn_csr_ex               ),
+        .asid_o                 ( asid_csr_ex                   ),
+        .tvm_o                  ( tvm_csr_id                    ),
+        .tw_o                   ( tw_csr_id                     ),
+        .tsr_o                  ( tsr_csr_id                    ),
         .*
     );
 
@@ -476,23 +476,30 @@ module ariane
     instruction_tracer_if tracer_if (clk_i);
     // assign instruction tracer interface
     // control signals
-    assign tracer_if.rstn           = rst_ni;
-    assign tracer_if.flush_unissued = flush_unissued_instr_ctrl_id;
-    assign tracer_if.flush          = flush_ctrl_ex;
+    assign tracer_if.rstn              = rst_ni;
+    assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
+    assign tracer_if.flush             = flush_ctrl_ex;
     // fetch
-    assign tracer_if.fetch          = fetch_entry_if_id;
-    assign tracer_if.fetch_valid    = fetch_valid_if_id;
-    assign tracer_if.fetch_ack      = decode_ack_id_if;
+    assign tracer_if.fetch             = fetch_entry_if_id;
+    assign tracer_if.fetch_valid       = fetch_valid_if_id;
+    assign tracer_if.fetch_ack         = decode_ack_id_if;
     // Issue
-    assign tracer_if.issue_ack      = id_stage_i.scoreboard_i.issue_ack_i;
-    assign tracer_if.issue_sbe      = id_stage_i.scoreboard_i.issue_instr_o;
+    assign tracer_if.issue_ack         = id_stage_i.scoreboard_i.issue_ack_i;
+    assign tracer_if.issue_sbe         = id_stage_i.scoreboard_i.issue_instr_o;
     // write-back
-    assign tracer_if.waddr          = waddr_a_commit_id;
-    assign tracer_if.wdata          = wdata_a_commit_id;
-    assign tracer_if.we             = we_a_commit_id;
+    assign tracer_if.waddr             = waddr_a_commit_id;
+    assign tracer_if.wdata             = wdata_a_commit_id;
+    assign tracer_if.we                = we_a_commit_id;
     // commit
-    assign tracer_if.commit_instr   = commit_instr_id_commit;
-    assign tracer_if.commit_ack     = commit_ack;
+    assign tracer_if.commit_instr      = commit_instr_id_commit;
+    assign tracer_if.commit_ack        = commit_ack;
+    // address translation
+    assign tracer_if.translation_valid = ex_stage_i.lsu_i.mmu_i.lsu_valid_o;
+    assign tracer_if.vaddr             = ex_stage_i.lsu_i.mmu_i.lsu_vaddr_i;
+    assign tracer_if.paddr             = ex_stage_i.lsu_i.mmu_i.lsu_paddr_o;
+    assign tracer_if.is_store          = ex_stage_i.lsu_i.mmu_i.lsu_is_store_i;
+    assign tracer_if.st_ready          = ex_stage_i.lsu_i.store_unit_i.ready_o;
+    assign tracer_if.ld_ready          = ex_stage_i.lsu_i.load_unit_i.ready_o;
 
     program instr_tracer (instruction_tracer_if tracer_if);
         instruction_tracer it = new (tracer_if);
