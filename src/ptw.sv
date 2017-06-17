@@ -75,11 +75,11 @@ module ptw #(
     assign pte = pte_t'(data_rdata_i);
 
     enum logic[1:0] {
-      PTW_READY,
-      PTW_WAIT_GRANT,
-      PTW_PTE_LOOKUP,
-      PTW_PROPAGATE_ERROR
-    } ptw_state_q, ptw_state_n;
+      IDLE,
+      WAIT_GRANT,
+      PTE_LOOKUP,
+      PROPAGATE_ERROR
+    } CS, NS;
 
     // SV39 defines three levels of page tables
     enum logic [1:0] {
@@ -100,7 +100,7 @@ module ptw #(
 
     // Assignments
     assign update_vaddr_o  = vaddr_q;
-    assign ptw_active_o    = (ptw_state_q != PTW_READY);
+    assign ptw_active_o    = (CS != IDLE);
     assign walking_instr_o = is_instr_ptw_q;
     // directly output the correct physical address
     assign address_index_o = ptw_pptr_q[11:0];
@@ -154,18 +154,18 @@ module ptw #(
         is_instr_ptw_n    = is_instr_ptw_q;
         ptw_lvl_n         = ptw_lvl_q;
         ptw_pptr_n        = ptw_pptr_q;
-        ptw_state_n       = ptw_state_q;
+        NS                = CS;
         global_mapping_n  = global_mapping_q;
         // input registers
         tlb_update_asid_n = tlb_update_asid_q;
         vaddr_n  = vaddr_q;
 
 
-        case (ptw_state_q)
+        case (CS)
 
-            PTW_READY: begin
+            IDLE: begin
                 // by default we start with the top-most page table
-                ptw_lvl_n         = LVL1;
+                ptw_lvl_n        = LVL1;
                 global_mapping_n = 1'b0;
                 // if we got an ITLB miss
                 if (enable_translation_i & itlb_access_i & itlb_miss_i & ~dtlb_access_i) begin
@@ -173,18 +173,18 @@ module ptw #(
                     is_instr_ptw_n      = 1'b1;
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = itlb_vaddr_i;
-                    ptw_state_n         = PTW_WAIT_GRANT;
+                    NS                  = WAIT_GRANT;
                 // we got an DTLB miss
                 end else if (enable_translation_i & dtlb_access_i & dtlb_miss_i) begin
                     ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
                     is_instr_ptw_n      = 1'b0;
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = dtlb_vaddr_i;
-                    ptw_state_n         = PTW_WAIT_GRANT;
+                    NS                  = WAIT_GRANT;
                 end
             end
 
-            PTW_WAIT_GRANT: begin
+            WAIT_GRANT: begin
                 // send a request out
                 data_req_o = 1'b1;
 
@@ -195,15 +195,15 @@ module ptw #(
                 if (ptw_lvl_q == LVL3)
                     ptw_pptr_n = {pte.ppn, vaddr_q[20:12], 3'b0};
 
-                // wait for the grant
+                // wait for the WAIT_GRANT
                 if (data_gnt_i) begin
                     // send the tag valid signal one cycle later
                     tag_valid_n = 1'b1;
-                    ptw_state_n = PTW_PTE_LOOKUP;
+                    NS          = PTE_LOOKUP;
                 end
             end
 
-            PTW_PTE_LOOKUP: begin
+            PTE_LOOKUP: begin
                 // we wait for the valid signal
                 if (data_rvalid_i) begin
                     // check if the global mapping bit is set
@@ -215,12 +215,12 @@ module ptw #(
                     // -------------
                     // If pte.v = 0, or if pte.r = 0 and pte.w = 1, stop and raise a page-fault exception.
                     if (!pte.v || (!pte.r && pte.w))
-                        ptw_state_n = PTW_PROPAGATE_ERROR;
+                        NS = PROPAGATE_ERROR;
                     // -----------
                     // Valid PTE
                     // -----------
                     else begin
-                        ptw_state_n = PTW_READY;
+                        NS = IDLE;
                         // it is a valid PTE
                         // if pte.r = 1 or pte.x = 1 it is a valid PTE
                         if (pte.r || pte.x) begin
@@ -233,7 +233,7 @@ module ptw #(
                                 // doesn't put a useless entry into the TLB. The same idea applies
                                 // to the access flag since we let the access flag be managed by SW.
                                 if (!pte.x || !pte.a)
-                                  ptw_state_n = PTW_PROPAGATE_ERROR;
+                                  NS = PROPAGATE_ERROR;
                                 else
                                   itlb_update_o = 1'b1;
 
@@ -249,14 +249,14 @@ module ptw #(
                                 if (pte.a && (pte.r || (pte.x && mxr_i))) begin
                                   dtlb_update_o = 1'b1;
                                 end else begin
-                                  ptw_state_n   = PTW_PROPAGATE_ERROR;
+                                  NS   = PROPAGATE_ERROR;
                                 end
                                 // Request is a store: perform some additional checks
                                 // If the request was a store and the page is not write-able, raise an error
                                 // the same applies if the dirty flag is not set
                                 if (lsu_is_store_i && (!pte.w || !pte.d)) begin
                                     dtlb_update_o = 1'b0;
-                                    ptw_state_n   = PTW_PROPAGATE_ERROR;
+                                    NS   = PROPAGATE_ERROR;
                                 end
                             end
                         // this is a pointer to the next TLB level
@@ -268,30 +268,38 @@ module ptw #(
                             if (ptw_lvl_q == LVL2)
                                 ptw_lvl_n = LVL3;
 
-                            ptw_state_n = PTW_WAIT_GRANT;
+                            NS = WAIT_GRANT;
 
                             if (ptw_lvl_q == LVL3) begin
                               // Should already be the last level page table => Error
                               ptw_lvl_n   = LVL3;
-                              ptw_state_n = PTW_PROPAGATE_ERROR;
+                              NS = PROPAGATE_ERROR;
                             end
                         end
                     end
                 end
-                // we've got a data grant so tell the cache that the tag is valid
+                // we've got a data WAIT_GRANT so tell the cache that the tag is valid
             end
             // Propagate error to MMU/LSU
-            PTW_PROPAGATE_ERROR: begin
-                ptw_state_n = PTW_READY;
+            PROPAGATE_ERROR: begin
+                NS = IDLE;
                 ptw_error_o = 1'b1;
             end
         endcase
+        // -------
+        // Flush
+        // -------
+        // check if we are walking a store, if not than go back to IDLE because
+        // all other operations are speculative
+        if (flush_i && !lsu_is_store_i) begin
+            NS = IDLE;
+        end
     end
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            ptw_state_q        <= PTW_READY;
+            CS        <= IDLE;
             is_instr_ptw_q     <= 1'b0;
             ptw_lvl_q          <= LVL1;
             tag_valid_q        <= 1'b0;
@@ -300,7 +308,7 @@ module ptw #(
             ptw_pptr_q         <= '{default: 0};
             global_mapping_q   <= 1'b0;
         end else begin
-            ptw_state_q        <= ptw_state_n;
+            CS        <= NS;
             ptw_pptr_q         <= ptw_pptr_n;
             is_instr_ptw_q     <= is_instr_ptw_n;
             ptw_lvl_q          <= ptw_lvl_n;
