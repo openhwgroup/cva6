@@ -85,14 +85,12 @@ class instruction_tracer;
             if (tracer_if.pck.translation_valid) begin
                 // put it in the store mapping queue if it is a store
                 if (tracer_if.pck.is_store && tracer_if.pck.st_ready) begin
-                    // $display("Putting Store Mapping %0h \n", tracer_if.pck.vaddr);
                     store_mapping.push_back('{
                         vaddr: tracer_if.pck.vaddr,
                         paddr: tracer_if.pck.paddr
                     });
                 // or else put it in the load mapping
-                end else if (tracer_if.pck.ld_ready) begin
-                    // $display("Putting Load Mapping %0h \n", tracer_if.pck.vaddr);
+                end else if (!tracer_if.pck.is_store && tracer_if.pck.ld_ready) begin
                     load_mapping.push_back('{
                         vaddr: tracer_if.pck.vaddr,
                         paddr: tracer_if.pck.paddr
@@ -122,6 +120,13 @@ class instruction_tracer;
                     printInstr(issue_sbe, issue_commit_instruction.instruction, reg_file[commit_instruction.rd], address_mapping.vaddr, address_mapping.paddr);
             end
 
+            // --------------
+            // Exceptions
+            // --------------
+            if (tracer_if.pck.exception.valid) begin
+                // print exception
+                printException(tracer_if.pck.commit_instr.pc, tracer_if.pck.exception.cause, tracer_if.pck.exception.tval);
+            end
             // ----------------------
             // Commit Registers
             // ----------------------
@@ -167,5 +172,12 @@ class instruction_tracer;
         $display(print_instr);
         $fwrite(this.f, {print_instr, "\n"});
     endfunction;
+
+    function void printException(logic [63:0] pc, logic [63:0] cause, logic [63:0] tval);
+        exception_trace_item eti = new (pc, cause, tval);
+        string print_ex = eti.printException();
+        $display(print_ex);
+        $fwrite(this.f, {print_ex, "\n"});
+    endfunction
 
 endclass : instruction_tracer

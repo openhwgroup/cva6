@@ -500,6 +500,8 @@ module ariane
     assign tracer_if.is_store          = ex_stage_i.lsu_i.mmu_i.lsu_is_store_i;
     assign tracer_if.st_ready          = ex_stage_i.lsu_i.store_unit_i.ready_o;
     assign tracer_if.ld_ready          = ex_stage_i.lsu_i.load_unit_i.ready_o;
+    // exceptions
+    assign tracer_if.exception         = commit_stage_i.exception_o;
 
     program instr_tracer (instruction_tracer_if tracer_if);
         instruction_tracer it = new (tracer_if);

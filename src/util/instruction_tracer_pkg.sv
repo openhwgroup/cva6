@@ -21,5 +21,6 @@ package instruction_tracer_pkg;
 
     `include "instruction_tracer_defines.svh"
     `include "instruction_trace_item.svh"
+    `include "exception_trace_item.svh"
     `include "instruction_tracer.svh"
 endpackage

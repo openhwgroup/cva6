@@ -46,10 +46,12 @@ interface instruction_tracer_if (
     logic            is_store;
     logic            st_ready;
     logic            ld_ready;
+    // exceptions
+    exception        exception;
     // the tracer just has a passive interface we do not drive anything with it
     clocking pck @(posedge clk);
         input rstn, flush_unissued, flush, fetch, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr,
-              wdata, we, commit_instr, commit_ack, translation_valid, vaddr, paddr, is_store, st_ready, ld_ready;
+              wdata, we, commit_instr, commit_ack, translation_valid, vaddr, paddr, is_store, st_ready, ld_ready, exception;
     endclocking
 
 endinterface
