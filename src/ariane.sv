@@ -370,7 +370,7 @@ module ariane
         .csr_valid_o            ( csr_valid_ex_id            ),
         .csr_addr_o             ( csr_addr_ex_csr            ),
         .csr_commit_i           ( csr_commit_commit_ex       ), // from commit
-        // memory management
+        // Memory Management
         .enable_translation_i   ( enable_translation_csr_ex  ), // from CSR
         .fetch_req_i            ( fetch_req_if_ex            ),
         .fetch_gnt_o            ( fetch_gnt_ex_if            ),
@@ -379,6 +379,7 @@ module ariane
         .fetch_rdata_o          ( fetch_rdata_ex_if          ),
         .fetch_ex_o             ( fetch_ex_ex_if             ), // fetch exception to IF
         .priv_lvl_i             ( priv_lvl                   ), // from CSR
+        .ld_st_priv_lvl_i       ( ld_st_priv_lvl_csr_ex      ), // from CSR
         .sum_i                  ( sum_csr_ex                 ), // from CSR
         .mxr_i                  ( mxr_csr_ex                 ), // from CSR
         .satp_ppn_i             ( satp_ppn_csr_ex            ), // from CSR
@@ -430,7 +431,7 @@ module ariane
         .eret_o               ( eret                            ),
         .trap_vector_base_o   ( trap_vector_base_commit_pcgen   ),
         .priv_lvl_o           ( priv_lvl                        ),
-
+        .ld_st_priv_lvl_o     ( ld_st_priv_lvl_csr_ex           ),
         .enable_translation_o ( enable_translation_csr_ex       ),
         .sum_o                ( sum_csr_ex                      ),
         .mxr_o                ( mxr_csr_ex                      ),

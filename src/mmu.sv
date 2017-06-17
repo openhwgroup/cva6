@@ -41,14 +41,16 @@ module mmu #(
         // this is a more minimalistic interface because the actual addressing logic is handled
         // in the LSU as we distinguish load and stores, what we do here is simple address translation
         input  exception                        misaligned_ex_i,
-        input  logic                            lsu_req_i,
-        input  logic [63:0]                     lsu_vaddr_i,
+        input  logic                            lsu_req_i,        // request address translation
+        input  logic [63:0]                     lsu_vaddr_i,      // virtual address in
+        input  logic                            lsu_is_store_i,   // the translation is requested by a store
         // if we need to walk the page table we can't grant in the same cycle
-        output logic                            lsu_valid_o, // translation is valid
-        output logic [63:0]                     lsu_paddr_o, // translated address
-        output exception                        lsu_exception_o,
+        output logic                            lsu_valid_o,      // translation is valid
+        output logic [63:0]                     lsu_paddr_o,      // translated address
+        output exception                        lsu_exception_o,  // address translation threw an exception
         // General control signals
         input priv_lvl_t                        priv_lvl_i,
+        input priv_lvl_t                        ld_st_priv_lvl_i,
         input logic                             sum_i,
         input logic                             mxr_i,
         // input logic flag_mprv_i,
@@ -83,7 +85,10 @@ module mmu #(
     assign instr_if_address_o        = fetch_paddr;
     assign fetch_rdata_o             = instr_if_data_rdata_i;
     // instruction error
-    logic ierr_valid_q, ierr_valid_n;
+    // instruction error valid signal and exception, delayed one cycle
+    logic     ierr_valid_q, ierr_valid_n;
+    exception fetch_ex_q,   fetch_ex_n;
+
     logic iaccess_err;
     logic ptw_active;
     logic walking_instr;
@@ -191,77 +196,75 @@ module mmu #(
 
     assign itlb_lu_access = fetch_req_i;
     assign dtlb_lu_access = lsu_req_i;
-    assign iaccess_err = fetch_req_i & (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
-                   || (sum_i && (priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
+    // Check whether we are allowed to access this memory region from a fetch perspective
+    assign iaccess_err    = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
+                                         || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
     //-----------------------
-    // Instruction interface
+    // Instruction Interface
     //-----------------------
+    // This is a full memory interface, e.g.: it handles all signals to the I$
+    // Exceptions are always signaled together with the fetch_valid_o signal
     always_comb begin : instr_interface
         // MMU disabled: just pass through
-        automatic logic fetch_valid   = instr_if_data_rvalid_i;
         instr_if_data_req_o           = fetch_req_i;
-        fetch_paddr                   = fetch_vaddr_i;
+        fetch_paddr                   = fetch_vaddr_i; // play through in case we disabled address translation
         fetch_gnt_o                   = instr_if_data_gnt_i;
+        // two potential error sources:
+        // 1. HPTW threw an exception -> signal with a page fault exception
+        // 2. We got an access error because of insufficient permissions -> throw an access exception
+        fetch_ex_n                    = '0;
         ierr_valid_n                  = 1'b0;
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
-        // AXI decode error), or when PTW performs walk due to itlb miss and raises
+        // AXI decode error), or when PTW performs walk due to ITLB miss and raises
         // an error.
         if (enable_translation_i) begin
             instr_if_data_req_o = 1'b0;
-            /* verilator lint_off WIDTH */
-            fetch_paddr = {itlb_content.ppn, fetch_vaddr_i[11:0]};
-            /* verilator lint_on WIDTH */
+            // 4K page
+            fetch_paddr         = {itlb_content.ppn, fetch_vaddr_i[11:0]};
+            // this is a mega page
             if (itlb_is_2M) begin
               fetch_paddr[20:12] = fetch_vaddr_i[20:12];
             end
-
+            // this is a giga page
             if (itlb_is_1G) begin
                 fetch_paddr[29:12] = fetch_vaddr_i[29:12];
             end
 
             fetch_gnt_o = instr_if_data_gnt_i;
 
-            // TODO the following two ifs should be mutually exclusive
+            // ---------
+            // ITLB Hit
+            // --------
+            // if we hit the ITLB output the request signal immediately
             if (itlb_lu_hit) begin
               instr_if_data_req_o = fetch_req_i;
-
+              // we got an access error
               if (iaccess_err) begin
-                // Play through an instruction fetch with error signaled with rvalid
-                instr_if_data_req_o    = 1'b0;
-                fetch_gnt_o            = 1'b1;  // immediate grant
-                //fetch_valid = 1'b0; NOTE: valid from previous fetch: pass through
-                // NOTE: back-to-back transfers: We only get a request if previous
-                //       transfer is completed, or completes in this cycle)
-                ierr_valid_n = 1'b1; // valid signaled in next cycle
+                // immediately grant a fetch which threw an exception, and stop the request from happening
+                instr_if_data_req_o = 1'b0;
+                fetch_gnt_o         = 1'b1;
+                ierr_valid_n        = 1'b1;
+                // throw a page fault
+                fetch_ex_n          = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
               end
             end
+            // ---------
+            // ITLB Miss
+            // ---------
+            // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
-              // On error pass through fetch with error signaled with valid
+              // on an error pass through fetch with an error signaled
               fetch_gnt_o  = ptw_error;
               ierr_valid_n = ptw_error; // signal valid/error on next cycle
+              fetch_ex_n   = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
             end
         end
-        fetch_valid_o = fetch_valid || ierr_valid_q;
+        // the fetch is valid if we either got an error in the previous cycle or the I$ gave us a valid signal.
+        fetch_valid_o = instr_if_data_rvalid_i || ierr_valid_q;
     end
-    // ----------------------------
-    // Instruction Fetch Exception
-    // ----------------------------
-    always_comb begin : fetch_exception
-        fetch_ex_o                    = '{default: 0};
-    end
-
-    // registers
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            ierr_valid_q <= 1'b0;
-        end else begin
-            ierr_valid_q <= ierr_valid_n;
-        end
-    end
-
     //-----------------------
     // Data interface
     //-----------------------
@@ -276,5 +279,16 @@ module mmu #(
         // TODO: Assign access exception
         lsu_exception_o = misaligned_ex_i;
     end
-
+    // ----------
+    // Registers
+    // ----------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            ierr_valid_q <= 1'b0;
+            fetch_ex_q   <= '0;
+        end else begin
+            ierr_valid_q <= ierr_valid_n;
+            fetch_ex_q   <= fetch_ex_n;
+        end
+    end
 endmodule

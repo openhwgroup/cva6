@@ -78,6 +78,7 @@ module ex_stage #(
     output logic [31:0]                            fetch_rdata_o,
     output exception                               fetch_ex_o,
     input  priv_lvl_t                              priv_lvl_i,
+    input  priv_lvl_t                              ld_st_priv_lvl_i,
     input  logic                                   sum_i,
     input  logic                                   mxr_i,
     input  logic [43:0]                            satp_ppn_i,

@@ -24,16 +24,17 @@ module ptw #(
         parameter int ASID_WIDTH = 1
     )
     (
-    input  logic                    clk_i,    // Clock
-    input  logic                    rst_ni,   // Asynchronous reset active low
-    input  logic                    flush_i,  // flush everything, we need to do this because
-                                              // actually everything we do is speculative at this stage
-                                              // e.g.: there could be a CSR instruction that changes everything
+    input  logic                    clk_i,                 // Clock
+    input  logic                    rst_ni,                // Asynchronous reset active low
+    input  logic                    flush_i,               // flush everything, we need to do this because
+                                                           // actually everything we do is speculative at this stage
+                                                           // e.g.: there could be a CSR instruction that changes everything
     output logic                    ptw_active_o,
-    output logic                    walking_instr_o, // set when walking for TLB
-    output logic                    ptw_error_o, // set when an error occured
-    input  logic                    enable_translation_i,
-    // memory port
+    output logic                    walking_instr_o,       // set when walking for TLB
+    output logic                    ptw_error_o,           // set when an error occurred
+    input  logic                    enable_translation_i,  // CSRs indicate to enable SV39
+    input  logic                    lsu_is_store_i,        // this translation was triggered by a store
+    // PTW Memory Port
     output logic [11:0]             address_index_o,
     output logic [43:0]             address_tag_o,
     output logic [63:0]             data_wdata_o,
@@ -193,7 +194,6 @@ module ptw #(
                     tag_valid_n = 1'b1;
                     ptw_state_n = PTW_PTE_LOOKUP;
                 end
-                // we could potentially error out here
             end
 
             PTW_PTE_LOOKUP: begin
@@ -228,9 +228,9 @@ module ptw #(
                                 // Update ITLB
                                 // ------------
                                 // If page is not executable, we can directly raise an error. This
-                                // saves the 'x' bits in the ITLB otherwise needed for access
-                                // right checks and doesn't put a useless entry into the TLB.
-                                if (~pte.x)
+                                // doesn't put a useless entry into the TLB. The same idea applies
+                                // to the access flag since we let the access flag be managed by SW.
+                                if (!pte.x || !pte.a)
                                   ptw_state_n = PTW_PROPAGATE_ERROR;
                                 else
                                   itlb_update_o = 1'b1;
@@ -239,15 +239,22 @@ module ptw #(
                                 // ------------
                                 // Update DTLB
                                 // ------------
-                                // If page is not readable (there are no write-only pages), or the
-                                // access that triggered the PTW is a write, but the page is not
-                                // write-able, we can directly raise an error. This saves the 'r'
-                                // bits in the TLB otherwise needed for access right checks and
-                                // doesn't put a useless entry into the TLB.
-                                if ((~pte.r && ~(pte.x && mxr_i)) || (~pte.w)) begin
-                                  ptw_state_n   = PTW_PROPAGATE_ERROR;
-                                end else begin
+                                // Check if the access flag has been set, otherwise throw a page-fault
+                                // and let the software handle those bits.
+                                // If page is not readable (there are no write-only pages)
+                                // we can directly raise an error. This doesn't put a useless
+                                // entry into the TLB.
+                                if (pte.a && (pte.r || (pte.x && mxr_i))) begin
                                   dtlb_update_o = 1'b1;
+                                end else begin
+                                  ptw_state_n   = PTW_PROPAGATE_ERROR;
+                                end
+                                // Request is a store: perform some additional checks
+                                // If the request was a store and the page is not write-able, raise an error
+                                // the same applies if the dirty flag is not set
+                                if (lsu_is_store_i && (!pte.w || !pte.d)) begin
+                                    dtlb_update_o = 1'b0;
+                                    ptw_state_n   = PTW_PROPAGATE_ERROR;
                                 end
                             end
                         // this is a pointer to the next TLB level

@@ -48,6 +48,7 @@ module lsu #(
     output exception                 fetch_ex_o,               // Instruction fetch interface
 
     input  priv_lvl_t                priv_lvl_i,               // From CSR register file
+    input  priv_lvl_t                ld_st_priv_lvl_i,         // From CSR register file
     input  logic                     sum_i,                    // From CSR register file
     input  logic                     mxr_i,                    // From CSR register file
     input  logic [43:0]              satp_ppn_i,               // From CSR register file
@@ -193,6 +194,7 @@ module lsu #(
     ) mmu_i (
             // misaligned bypass
         .misaligned_ex_i        ( misaligned_exception ),
+        .lsu_is_store_i         ( st_translation_req   ),
         .lsu_req_i              ( translation_req      ),
         .lsu_vaddr_i            ( mmu_vaddr            ),
         .lsu_valid_o            ( translation_valid    ),
