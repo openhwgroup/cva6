@@ -74,10 +74,11 @@ module ptw #(
     pte_t pte;
     assign pte = pte_t'(data_rdata_i);
 
-    enum logic[1:0] {
+    enum logic[2:0] {
       IDLE,
       WAIT_GRANT,
       PTE_LOOKUP,
+      WAIT_RVALID,
       PROPAGATE_ERROR
     } CS, NS;
 
@@ -115,7 +116,7 @@ module ptw #(
     // output the correct ASID
     assign update_asid_o = tlb_update_asid_q;
     // set the global mapping bit
-    assign update_content_o = pte || (global_mapping_q << 5);
+    assign update_content_o = pte | (global_mapping_q << 5);
     assign tag_valid_o      = tag_valid_q;
 
     //-------------------
@@ -167,6 +168,7 @@ module ptw #(
                 // by default we start with the top-most page table
                 ptw_lvl_n        = LVL1;
                 global_mapping_n = 1'b0;
+                is_instr_ptw_n   = 1'b0;
                 // if we got an ITLB miss
                 if (enable_translation_i & itlb_access_i & itlb_miss_i & ~dtlb_access_i) begin
                     ptw_pptr_n          = {satp_ppn_i, itlb_vaddr_i[38:30], 3'b0};
@@ -177,7 +179,6 @@ module ptw #(
                 // we got an DTLB miss
                 end else if (enable_translation_i & dtlb_access_i & dtlb_miss_i) begin
                     ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
-                    is_instr_ptw_n      = 1'b0;
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = dtlb_vaddr_i;
                     NS                  = WAIT_GRANT;
@@ -187,14 +188,6 @@ module ptw #(
             WAIT_GRANT: begin
                 // send a request out
                 data_req_o = 1'b1;
-
-                // depending on the current level send the right address
-                if (ptw_lvl_q == LVL2)
-                    ptw_pptr_n = {pte.ppn, vaddr_q[29:21], 3'b0};
-
-                if (ptw_lvl_q == LVL3)
-                    ptw_pptr_n = {pte.ppn, vaddr_q[20:12], 3'b0};
-
                 // wait for the WAIT_GRANT
                 if (data_gnt_i) begin
                     // send the tag valid signal one cycle later
@@ -206,6 +199,7 @@ module ptw #(
             PTE_LOOKUP: begin
                 // we wait for the valid signal
                 if (data_rvalid_i) begin
+
                     // check if the global mapping bit is set
                     if (pte.g)
                         global_mapping_n = 1'b1;
@@ -262,11 +256,17 @@ module ptw #(
                         // this is a pointer to the next TLB level
                         end else begin
                             // pointer to next level of page table
-                            if (ptw_lvl_q == LVL1)
-                                ptw_lvl_n = LVL2;
+                            if (ptw_lvl_q == LVL1) begin
+                                // we are in the second level now
+                                ptw_lvl_n  = LVL2;
+                                ptw_pptr_n = {pte.ppn, vaddr_q[29:21], 3'b0};
+                            end
 
-                            if (ptw_lvl_q == LVL2)
-                                ptw_lvl_n = LVL3;
+                            if (ptw_lvl_q == LVL2) begin
+                                // here we received a pointer to the third level
+                                ptw_lvl_n  = LVL3;
+                                ptw_pptr_n = {pte.ppn, vaddr_q[20:12], 3'b0};
+                            end
 
                             NS = WAIT_GRANT;
 
@@ -285,21 +285,33 @@ module ptw #(
                 NS = IDLE;
                 ptw_error_o = 1'b1;
             end
+            // wait for the rvalid before going back to IDLE
+            WAIT_RVALID: begin
+                if (data_rvalid_i)
+                    NS = IDLE;
+            end
         endcase
         // -------
         // Flush
         // -------
-        // check if we are walking a store, if not than go back to IDLE because
-        // all other operations are speculative
-        if (flush_i && !lsu_is_store_i) begin
-            NS = IDLE;
+        // should we have flushed before we got an rvalid, wait for it until going back to IDLE
+        if (flush_i) begin
+            // check if we are walking a store, if not than go back to IDLE because
+            // all other operations are speculative
+            if ((CS == WAIT_GRANT) && data_gnt_i)
+                NS = WAIT_RVALID;
+            // keep the state if we are serving a store
+            else if (flush_i && lsu_is_store_i)
+                NS = CS;
+            else
+                NS = IDLE;
         end
     end
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            CS        <= IDLE;
+            CS                 <= IDLE;
             is_instr_ptw_q     <= 1'b0;
             ptw_lvl_q          <= LVL1;
             tag_valid_q        <= 1'b0;
@@ -308,7 +320,7 @@ module ptw #(
             ptw_pptr_q         <= '{default: 0};
             global_mapping_q   <= 1'b0;
         end else begin
-            CS        <= NS;
+            CS                 <= NS;
             ptw_pptr_q         <= ptw_pptr_n;
             is_instr_ptw_q     <= is_instr_ptw_n;
             ptw_lvl_q          <= ptw_lvl_n;
