@@ -51,6 +51,7 @@ module csr_regfile #(
     output priv_lvl_t             priv_lvl_o,           // Current privilege level the CPU is in
     // MMU
     output logic                  enable_translation_o, // Enable VA translation
+    output priv_lvl_t             ld_st_priv_lvl_o,     // Privilege level at which load and stores should happen
     output logic                  sum_o,
     output logic                  mxr_o,
     // input logic flag_mprv_i,
@@ -76,6 +77,12 @@ module csr_regfile #(
     logic        csr_we, csr_read;
     logic [63:0] csr_wdata, csr_rdata;
     priv_lvl_t trap_to_priv_lvl;
+
+    // ----------------------
+    // LD/ST Privilege Level
+    // ----------------------
+    assign ld_st_priv_lvl_o = (mstatus_q.mprv) ? mstatus_q.mpp : priv_lvl_o;
+
     // ----------------
     // CSR Registers
     // ----------------
