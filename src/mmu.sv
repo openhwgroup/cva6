@@ -29,6 +29,7 @@ module mmu #(
     (
         input logic                             clk_i,
         input logic                             rst_ni,
+        input logic                             flush_i,
         input logic                             enable_translation_i,
         // IF interface
         input  logic                            fetch_req_i,
@@ -168,7 +169,6 @@ module mmu #(
     (
         .clk_i                  ( clk_i                 ),
         .rst_ni                 ( rst_ni                ),
-        .flush_i                ( flush_tlb_i           ),
         .ptw_active_o           ( ptw_active            ),
         .walking_instr_o        ( walking_instr         ),
         .ptw_error_o            ( ptw_error             ),
@@ -189,7 +189,6 @@ module mmu #(
         .dtlb_access_i          ( dtlb_lu_access        ),
         .dtlb_miss_i            ( ~dtlb_lu_hit          ),
         .dtlb_vaddr_i           ( lsu_vaddr_i           ),
-
         .*
      );
 
@@ -251,10 +250,10 @@ module mmu #(
             // ---------
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
-              // on an error pass through fetch with an error signaled
-              fetch_gnt_o  = ptw_error;
-              ierr_valid_n = ptw_error; // signal valid/error on next cycle
-              fetch_ex_n   = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                // on an error pass through fetch with an error signaled
+                fetch_gnt_o  = ptw_error;
+                ierr_valid_n = ptw_error; // signal valid/error on next cycle
+                fetch_ex_n   = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
         end
         // the fetch is valid if we either got an error in the previous cycle or the I$ gave us a valid signal.
