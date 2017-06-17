@@ -205,11 +205,11 @@ module mmu #(
         // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
-        fetch_ex_n          = '0;
-        ierr_valid_n        = 1'b0; // we keep a separate valid signal in case of an error
+        fetch_ex_n    = '0;
+        ierr_valid_n  = 1'b0; // we keep a separate valid signal in case of an error
         // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err    = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
-                                      || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
+        iaccess_err   = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
+                                     || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
@@ -274,6 +274,7 @@ module mmu #(
                           (ld_st_priv_lvl_i == PRIV_LVL_U && !dtlb_content.u);            // this is not a user page but we are in user mode and trying to access it
         // translation is enabled and no misaligned exception occurred
         if (enable_translation_i && !misaligned_ex_i.valid) begin
+            lsu_valid_o = 1'b0;
             // 4K page
             lsu_paddr_o = {dtlb_content.ppn, lsu_vaddr_i[11:0]};
             // Mega page
@@ -288,6 +289,7 @@ module mmu #(
             // DTLB Hit
             // --------
             if (dtlb_lu_hit && lsu_req_i) begin
+                lsu_valid_o = 1'b1;
                 // this is a store
                 if (lsu_is_store_i) begin
                     // check if the page is write-able and we are not violating privileges
@@ -304,8 +306,6 @@ module mmu #(
             // ---------
             // watch out for exception
             if (ptw_active && !walking_instr) begin
-                // when we walk a page table the output is not ready
-                lsu_valid_o = 1'b0;
                 // page table walker threw an exception
                 if (ptw_error) begin
                     // an error makes the translation valid
