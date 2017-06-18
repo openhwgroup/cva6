@@ -1,7 +1,7 @@
-// Author: David Schaffenrath, TU Graz - Florian Zaruba, ETH Zurich
+// Author: Florian Zaruba, ETH Zurich
+// Author: David Schaffenrath, TU Graz
 // Date: 24.4.2017
 // Description: Hardware-PTW
-//
 //
 // Copyright (C) 2017 ETH Zurich, University of Bologna
 // All rights reserved.
@@ -310,7 +310,7 @@ module ptw #(
         // -------
         // should we have flushed before we got an rvalid, wait for it until going back to IDLE
         if (flush_i) begin
-            // check if we are walking a store, if not than go back to IDLE because
+            // check if we are walking a store, if not then go back to IDLE because
             // all other operations are speculative
             if ((CS == WAIT_GRANT) && data_gnt_i)
                 NS = WAIT_RVALID;

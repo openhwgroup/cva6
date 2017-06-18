@@ -1,4 +1,5 @@
-// Author: David Schaffenrath, TU Graz - Florian Zaruba, ETH Zurich
+// Author: David Schaffenrath, TU Graz
+// Author: Florian Zaruba, ETH Zurich
 // Date: 21.4.2017
 // Description: Transaction Lookaside Buffer, SV39
 //              fully set-associative
@@ -21,7 +22,7 @@ import ariane_pkg::*;
 
 module tlb #(
       parameter int unsigned TLB_ENTRIES = 4,
-      parameter int unsigned ASID_WIDTH = 1
+      parameter int unsigned ASID_WIDTH  = 1
   )
   (
     input logic                     clk_i,    // Clock

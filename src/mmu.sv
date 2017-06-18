@@ -1,8 +1,8 @@
-// Author: Florian Zaruba, ETH Zurich / David Schaffenrath, TU Graz
+// Author: Florian Zaruba, ETH Zurich
 // Date: 19/04/2017
 // Description: Memory Management Unit for Ariane, contains TLB and
 //              address translation unit. SV39 as defined in RISC-V
-//              privilege specification 1.9
+//              privilege specification 1.11-WIP
 //
 // Copyright (C) 2017 ETH Zurich, University of Bologna
 // All rights reserved.
