@@ -114,9 +114,9 @@ class instruction_tracer;
                 // the scoreboards issue entry still contains the immediate value as a result
                 // check if the write back is valid, if not we need to source the result from the register file
                 // as the most recent version of this register will be there.
-                if (tracer_if.pck.we)
+                if (tracer_if.pck.we) begin
                     printInstr(issue_sbe, issue_commit_instruction.instruction, tracer_if.pck.wdata, address_mapping.vaddr, address_mapping.paddr);
-                else
+                end else
                     printInstr(issue_sbe, issue_commit_instruction.instruction, reg_file[commit_instruction.rd], address_mapping.vaddr, address_mapping.paddr);
             end
 

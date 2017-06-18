@@ -64,7 +64,12 @@ typedef struct {
 DPI_LINK_DECL DPI_DLLESPEC
 uint64_t
 get_symbol_address(
-    const char* sym);
+    const char* symb);
+
+DPI_LINK_DECL DPI_DLLESPEC
+uint64_t
+get_symbol_size(
+    const char* symb);
 
 DPI_LINK_DECL DPI_DLLESPEC
 void*

@@ -12,7 +12,8 @@ import ariane_pkg::*;
 
 module core_tb;
     import "DPI-C" function chandle read_elf(string fn);
-    import "DPI-C" function longint unsigned get_symbol_address(string sym);
+    import "DPI-C" function longint unsigned get_symbol_address(string symb);
+    import "DPI-C" function longint unsigned get_symbol_size(string symb);
 
     import uvm_pkg::*;
     import core_lib_pkg::*;
@@ -150,7 +151,11 @@ module core_tb;
     task preload_memories();
         static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
         string plus_args [$];
+
         longint unsigned address;
+        longint unsigned bss_address;
+        longint unsigned bss_size;
+
         string file;
         string test;
         // offset the temporary RAM
@@ -162,13 +167,21 @@ module core_tb;
         // read elf file (DPI call)
         void'(read_elf(file));
         // we are interested in the .tohost ELF symbol in-order to observe end of test signals
-        address = get_symbol_address("tohost");
+        address = get_symbol_address(".tohost");
         // get the objdump verilog file to load our memorys
         $readmemh({file, ".v"}, rmem);
         // copy bitwise from verilog file
         for (int i = 0; i < 16384/8; i++) begin
             for (int j = 0; j < 8; j++)
                 core_mem_i.ram_i.mem[i][j] = rmem[`DRAM_BASE + i*8 + j];
+        end
+        // initialize .bss
+        bss_address = get_symbol_address(".bss");
+        bss_size    = get_symbol_size(".bss");
+        $display("Symbol Address: %x, Symbol Size: %x, Address: %x", ((bss_address - `DRAM_BASE) >> 3), bss_size, address);
+        // the section should be aligned on a double word boundary
+        for (int i = 0; i < bss_size/8; i++) begin
+                core_mem_i.ram_i.mem[((bss_address - `DRAM_BASE) >> 3) + i] = 64'b0;
         end
         // pass tohost address to UVM resource DB
         uvm_config_db #(longint unsigned)::set(null, "uvm_test_top.m_env.m_eoc", "tohost", address);
