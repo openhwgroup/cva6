@@ -82,7 +82,7 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      |
 |---------------|--------------------|---------------|--------------------|---------------|--------------------|
-| csr           | :white_check_mark: | dirty         | :x:                | ma_fetch      | :white_check_mark: |
+| csr           | :white_check_mark: | dirty         | :white_check_mark: | ma_fetch      | :white_check_mark: |
 | sbreak        | :white_check_mark: | scall         | :white_check_mark: | wfi           | :white_check_mark: |
 
 

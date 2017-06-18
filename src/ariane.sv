@@ -193,6 +193,7 @@ module ariane
     // CSR <-> *
     // --------------
     logic                     enable_translation_csr_ex;
+    logic                     en_ld_st_translation_csr_ex;
     priv_lvl_t                ld_st_priv_lvl_csr_ex;
     logic                     sum_csr_ex;
     logic                     mxr_csr_ex;
@@ -328,68 +329,69 @@ module ariane
     // EX
     // ---------
     ex_stage ex_stage_i (
-        .flush_i                ( flush_ctrl_ex              ),
-        .fu_i                   ( fu_id_ex                   ),
-        .operator_i             ( operator_id_ex             ),
-        .operand_a_i            ( operand_a_id_ex            ),
-        .operand_b_i            ( operand_b_id_ex            ),
-        .imm_i                  ( imm_id_ex                  ),
-        .trans_id_i             ( trans_id_id_ex             ),
-        .pc_i                   ( pc_id_ex                   ),
-        .is_compressed_instr_i  ( is_compressed_instr_id_ex  ),
+        .flush_i                ( flush_ctrl_ex               ),
+        .fu_i                   ( fu_id_ex                    ),
+        .operator_i             ( operator_id_ex              ),
+        .operand_a_i            ( operand_a_id_ex             ),
+        .operand_b_i            ( operand_b_id_ex             ),
+        .imm_i                  ( imm_id_ex                   ),
+        .trans_id_i             ( trans_id_id_ex              ),
+        .pc_i                   ( pc_id_ex                    ),
+        .is_compressed_instr_i  ( is_compressed_instr_id_ex   ),
         // ALU
-        .alu_ready_o            ( alu_ready_ex_id            ),
-        .alu_valid_i            ( alu_valid_id_ex            ),
-        .alu_result_o           ( alu_result_ex_id           ),
-        .alu_trans_id_o         ( alu_trans_id_ex_id         ),
-        .alu_valid_o            ( alu_valid_ex_id            ),
-        .alu_exception_o        (                            ),
+        .alu_ready_o            ( alu_ready_ex_id             ),
+        .alu_valid_i            ( alu_valid_id_ex             ),
+        .alu_result_o           ( alu_result_ex_id            ),
+        .alu_trans_id_o         ( alu_trans_id_ex_id          ),
+        .alu_valid_o            ( alu_valid_ex_id             ),
+        .alu_exception_o        (                             ),
         // Branches and Jumps
-        .branch_ready_o         ( branch_ready_ex_id         ),
-        .branch_valid_o         ( branch_valid_ex_id         ),
-        .branch_valid_i         ( branch_valid_id_ex         ),
-        .branch_trans_id_o      ( branch_trans_id_ex_id      ),
-        .branch_result_o        ( branch_result_ex_id        ),
-        .branch_exception_o     ( branch_exception_ex_id     ),
-        .branch_predict_i       ( branch_predict_id_ex       ), // branch predict to ex
-        .resolved_branch_o      ( resolved_branch            ),
-        .resolve_branch_o       ( resolve_branch_ex_id       ),
+        .branch_ready_o         ( branch_ready_ex_id          ),
+        .branch_valid_o         ( branch_valid_ex_id          ),
+        .branch_valid_i         ( branch_valid_id_ex          ),
+        .branch_trans_id_o      ( branch_trans_id_ex_id       ),
+        .branch_result_o        ( branch_result_ex_id         ),
+        .branch_exception_o     ( branch_exception_ex_id      ),
+        .branch_predict_i       ( branch_predict_id_ex        ), // branch predict to ex
+        .resolved_branch_o      ( resolved_branch             ),
+        .resolve_branch_o       ( resolve_branch_ex_id        ),
         // LSU
-        .lsu_ready_o            ( lsu_ready_ex_id            ),
-        .lsu_valid_i            ( lsu_valid_id_ex            ),
-        .lsu_result_o           ( lsu_result_ex_id           ),
-        .lsu_trans_id_o         ( lsu_trans_id_ex_id         ),
-        .lsu_valid_o            ( lsu_valid_ex_id            ),
-        .lsu_commit_i           ( lsu_commit_commit_ex       ), // from commit
-        .lsu_exception_o        ( lsu_exception_ex_id        ),
-        .no_st_pending_o        ( no_st_pending_ex_commit    ),
+        .lsu_ready_o            ( lsu_ready_ex_id             ),
+        .lsu_valid_i            ( lsu_valid_id_ex             ),
+        .lsu_result_o           ( lsu_result_ex_id            ),
+        .lsu_trans_id_o         ( lsu_trans_id_ex_id          ),
+        .lsu_valid_o            ( lsu_valid_ex_id             ),
+        .lsu_commit_i           ( lsu_commit_commit_ex        ), // from commit
+        .lsu_exception_o        ( lsu_exception_ex_id         ),
+        .no_st_pending_o        ( no_st_pending_ex_commit     ),
 
         // CSR
-        .csr_ready_o            ( csr_ready_ex_id            ),
-        .csr_valid_i            ( csr_valid_id_ex            ),
-        .csr_trans_id_o         ( csr_trans_id_ex_id         ),
-        .csr_result_o           ( csr_result_ex_id           ),
-        .csr_valid_o            ( csr_valid_ex_id            ),
-        .csr_addr_o             ( csr_addr_ex_csr            ),
-        .csr_commit_i           ( csr_commit_commit_ex       ), // from commit
+        .csr_ready_o            ( csr_ready_ex_id             ),
+        .csr_valid_i            ( csr_valid_id_ex             ),
+        .csr_trans_id_o         ( csr_trans_id_ex_id          ),
+        .csr_result_o           ( csr_result_ex_id            ),
+        .csr_valid_o            ( csr_valid_ex_id             ),
+        .csr_addr_o             ( csr_addr_ex_csr             ),
+        .csr_commit_i           ( csr_commit_commit_ex        ), // from commit
         // Memory Management
-        .enable_translation_i   ( enable_translation_csr_ex  ), // from CSR
-        .flush_tlb_i            ( flush_tlb_ctrl_ex          ),
-        .fetch_req_i            ( fetch_req_if_ex            ),
-        .fetch_gnt_o            ( fetch_gnt_ex_if            ),
-        .fetch_valid_o          ( fetch_valid_ex_if          ),
-        .fetch_vaddr_i          ( fetch_vaddr_if_ex          ),
-        .fetch_rdata_o          ( fetch_rdata_ex_if          ),
-        .fetch_ex_o             ( fetch_ex_ex_if             ), // fetch exception to IF
-        .priv_lvl_i             ( priv_lvl                   ), // from CSR
-        .ld_st_priv_lvl_i       ( ld_st_priv_lvl_csr_ex      ), // from CSR
-        .sum_i                  ( sum_csr_ex                 ), // from CSR
-        .mxr_i                  ( mxr_csr_ex                 ), // from CSR
-        .satp_ppn_i             ( satp_ppn_csr_ex            ), // from CSR
-        .asid_i                 ( asid_csr_ex                ), // from CSR
+        .enable_translation_i   ( enable_translation_csr_ex   ), // from CSR
+        .en_ld_st_translation_i ( en_ld_st_translation_csr_ex ),
+        .flush_tlb_i            ( flush_tlb_ctrl_ex           ),
+        .fetch_req_i            ( fetch_req_if_ex             ),
+        .fetch_gnt_o            ( fetch_gnt_ex_if             ),
+        .fetch_valid_o          ( fetch_valid_ex_if           ),
+        .fetch_vaddr_i          ( fetch_vaddr_if_ex           ),
+        .fetch_rdata_o          ( fetch_rdata_ex_if           ),
+        .fetch_ex_o             ( fetch_ex_ex_if              ), // fetch exception to IF
+        .priv_lvl_i             ( priv_lvl                    ), // from CSR
+        .ld_st_priv_lvl_i       ( ld_st_priv_lvl_csr_ex       ), // from CSR
+        .sum_i                  ( sum_csr_ex                  ), // from CSR
+        .mxr_i                  ( mxr_csr_ex                  ), // from CSR
+        .satp_ppn_i             ( satp_ppn_csr_ex             ), // from CSR
+        .asid_i                 ( asid_csr_ex                 ), // from CSR
 
-        .mult_ready_o           ( mult_ready_ex_id           ),
-        .mult_valid_i           ( mult_valid_id_ex           ),
+        .mult_ready_o           ( mult_ready_ex_id            ),
+        .mult_valid_i           ( mult_valid_id_ex            ),
         .*
     );
 
@@ -436,7 +438,8 @@ module ariane
         .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
         .priv_lvl_o             ( priv_lvl                      ),
         .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
-        .enable_translation_o   ( enable_translation_csr_ex     ),
+        .en_translation_o       ( enable_translation_csr_ex     ),
+        .en_ld_st_translation_o ( en_ld_st_translation_csr_ex   ),
         .sum_o                  ( sum_csr_ex                    ),
         .mxr_o                  ( mxr_csr_ex                    ),
         .satp_ppn_o             ( satp_ppn_csr_ex               ),
@@ -508,6 +511,10 @@ module ariane
 
         initial begin
             it.trace();
+        end
+
+        final begin
+            it.close();
         end
     endprogram
 

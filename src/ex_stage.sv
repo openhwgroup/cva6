@@ -73,6 +73,7 @@ module ex_stage #(
     input  logic                                   csr_commit_i,
     // memory management
     input  logic                                   enable_translation_i,
+    input  logic                                   en_ld_st_translation_i,
     input  logic                                   flush_tlb_i,
     input  logic                                   fetch_req_i,
     output logic                                   fetch_gnt_o,

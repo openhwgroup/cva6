@@ -180,4 +180,8 @@ class instruction_tracer;
         $fwrite(this.f, {print_ex, "\n"});
     endfunction
 
+    function void close();
+        $fclose(this.f);
+    endfunction
+
 endclass : instruction_tracer

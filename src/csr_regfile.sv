@@ -22,47 +22,47 @@ import ariane_pkg::*;
 module csr_regfile #(
     parameter int ASID_WIDTH = 1
     )(
-    input  logic                  clk_i,                // Clock
-    input  logic                  rtc_i,                // Real Time clock in
-    input  logic                  rst_ni,               // Asynchronous reset active low
+    input  logic                  clk_i,                      // Clock
+    input  logic                  rtc_i,                      // Real Time clock in
+    input  logic                  rst_ni,                     // Asynchronous reset active low
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
     // commit acknowledge
-    input  logic                  commit_ack_i,         // Commit acknowledged a instruction -> increase instret CSR
+    input  logic                  commit_ack_i,               // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
-    input  logic  [3:0]           core_id_i,            // Core ID is considered static
-    input  logic  [5:0]           cluster_id_i,         // Cluster ID is considered static
-    input  logic  [63:0]          boot_addr_i,          // Address from which to start booting, mtvec is set to the same address
+    input  logic  [3:0]           core_id_i,                  // Core ID is considered static
+    input  logic  [5:0]           cluster_id_i,               // Cluster ID is considered static
+    input  logic  [63:0]          boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
     // we are taking an exception
-    input exception               ex_i,                 // We've got an exception from the commit stage, take its
+    input exception               ex_i,                       // We've got an exception from the commit stage, take its
 
-    input  fu_op                  csr_op_i,             // Operation to perform on the CSR file
-    input  logic  [11:0]          csr_addr_i,           // Address of the register to read/write
-    input  logic  [63:0]          csr_wdata_i,          // Write data in
-    output logic  [63:0]          csr_rdata_o,          // Read data out
-    input  logic  [63:0]          pc_i,                 // PC of instruction accessing the CSR
-    output exception              csr_exception_o,      // attempts to access a CSR without appropriate privilege
-                                                        // level or to write  a read-only register also
-                                                        // raises illegal instruction exceptions.
+    input  fu_op                  csr_op_i,                   // Operation to perform on the CSR file
+    input  logic  [11:0]          csr_addr_i,                 // Address of the register to read/write
+    input  logic  [63:0]          csr_wdata_i,                // Write data in
+    output logic  [63:0]          csr_rdata_o,                // Read data out
+    input  logic  [63:0]          pc_i,                       // PC of instruction accessing the CSR
+    output exception              csr_exception_o,            // attempts to access a CSR without appropriate privilege
+                                                              // level or to write  a read-only register also
+                                                              // raises illegal instruction exceptions.
     // Interrupts/Exceptions
-    output logic  [63:0]          epc_o,                // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
-    output logic                  eret_o,               // Return from exception, set the PC of epc_o
-    output logic  [63:0]          trap_vector_base_o,   // Output base of exception vector, correct CSR is output (mtvec, stvec)
-    output priv_lvl_t             priv_lvl_o,           // Current privilege level the CPU is in
+    output logic  [63:0]          epc_o,                      // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
+    output logic                  eret_o,                     // Return from exception, set the PC of epc_o
+    output logic  [63:0]          trap_vector_base_o,         // Output base of exception vector, correct CSR is output (mtvec, stvec)
+    output priv_lvl_t             priv_lvl_o,                 // Current privilege level the CPU is in
     // MMU
-    output logic                  enable_translation_o, // Enable VA translation
-    output priv_lvl_t             ld_st_priv_lvl_o,     // Privilege level at which load and stores should happen
+    output logic                  en_translation_o,           // enable VA translation
+    output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
+    output priv_lvl_t             ld_st_priv_lvl_o,           // Privilege level at which load and stores should happen
     output logic                  sum_o,
     output logic                  mxr_o,
-    // input logic flag_mprv_i,
     output logic [43:0]           satp_ppn_o,
     output logic [ASID_WIDTH-1:0] asid_o,
     // external interrupts
-    input  logic [1:0]            irq_i,                // external interrupt in
+    input  logic [1:0]            irq_i,                      // external interrupt in
     // Visualization Support
-    output logic                  tvm_o,                // trap virtual memory
-    output logic                  tw_o,                 // timeout wait
-    output logic                  tsr_o                 // trap sret
+    output logic                  tvm_o,                      // trap virtual memory
+    output logic                  tw_o,                       // timeout wait
+    output logic                  tsr_o                       // trap sret
     // Performance Counter
 );
 
@@ -76,13 +76,14 @@ module csr_regfile #(
     logic        read_access_exception, update_access_exception;
     logic        csr_we, csr_read;
     logic [63:0] csr_wdata, csr_rdata;
-    priv_lvl_t trap_to_priv_lvl;
-
+    priv_lvl_t   trap_to_priv_lvl;
+    // register for enabling load store address translation, this is critical, hence the register
+    logic        en_ld_st_translation_n, en_ld_st_translation_q;
     // ----------------------
     // LD/ST Privilege Level
     // ----------------------
     assign ld_st_priv_lvl_o = (mstatus_q.mprv) ? mstatus_q.mpp : priv_lvl_o;
-
+    assign en_ld_st_translation_o = en_ld_st_translation_q;
     // ----------------
     // CSR Registers
     // ----------------
@@ -223,12 +224,13 @@ module csr_regfile #(
         sscratch_n              = sscratch_q;
         stval_n                 = stval_q;
         satp_n                  = satp_q;
+        en_ld_st_translation_n  = en_ld_st_translation_q;
 
         // check for correct access rights and that we are writing
         if(csr_we) begin
             case (csr_addr.address)
                 // sstatus is a subset of mstatus - mask it accordingly
-                CSR_SSTATUS:            mstatus_n    = csr_wdata & 64'h3fffe1fee;
+                CSR_SSTATUS:            mstatus_n   = csr_wdata & 64'h3fffe1fee;
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
                 CSR_SIE:                mie_n       = csr_wdata & 64'hBBB & mideleg_q; // we only support supervisor and m-mode interrupts
@@ -260,7 +262,7 @@ module csr_regfile #(
                     mstatus_n.fs   = 2'b0;
                     mstatus_n.upie = 1'b0;
                     mstatus_n.uie  = 1'b0;
-                    // if the SIE was set also set the MIE as interrupts for
+                    // if the SIE was set also set the MIE, as interrupts for
                     // higher privilege levels are always set, 1.10 p.20
                     if (csr_wdata[1])
                         mstatus_n.mie = 1'b1;
@@ -270,13 +272,13 @@ module csr_regfile #(
                         mstatus_n.sie = 1'b0;
                 end
                 // machine exception delegation register
-                // 0 - 12 exceptions supported
+                // 0 - 15 exceptions supported
                 CSR_MEDELEG:            medeleg_n   = csr_wdata & 64'hF7FF;
                 // machine interrupt delegation register
                 // we do not support user interrupt delegation
                 CSR_MIDELEG:            mideleg_n   = csr_wdata & 64'hBBB;
 
-                // mask the register so that user interrupts can never be set
+                // mask the register so that unsupported interrupts can never be set
                 CSR_MIE:                mie_n       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
                 CSR_MIP:                mip_n       = csr_wdata & 64'h33;  // only USIP, SSIP, UTIP, STIP are write-able
 
@@ -287,7 +289,7 @@ module csr_regfile #(
                 CSR_MTVAL:              mtval_n     = csr_wdata;
                 default: update_access_exception = 1'b1;
             endcase
-            // so we wrote something, TODO: this can be finer grained (e.g.: did it have side effects?)
+            // so we wrote something, TODO: this can be more fine grained (e.g.: did it have side effects?)
             flush_o = 1'b1;
         end
         // ---------------------
@@ -296,15 +298,15 @@ module csr_regfile #(
         // Machine Mode External Interrupt Pending
         mip_n[11] = mip_q[11] & irq_i[0];
         // Supervisor Mode External Interrupt Pending
-        mip_n[9] = mip_q[9] & irq_i[0];
+        mip_n[9] = mip_q[9] & irq_i[1];
 
         // -----------------------
         // Manage Exception Stack
         // -----------------------
         // update exception CSRs
         // we got an exception update cause, pc and stval register
-        // Exception is taken
         trap_to_priv_lvl = PRIV_LVL_M;
+        // Exception is taken
         if (ex_i.valid) begin
             // do not flush, flush is reserved for CSR writes with side effects
             flush_o   = 1'b0;
@@ -351,6 +353,15 @@ module csr_regfile #(
 
             priv_lvl_n = trap_to_priv_lvl;
         end
+        // ------------------------------
+        // MPRV - Modify Privilege Level
+        // ------------------------------
+        // Set the address translation at which the load and stores should occur
+        // we can use the previous values since changing the address translation will always involve a pipeline flush
+        if (mstatus_q.mprv && satp_q.mode == 4'h8 && (mstatus_q.mpp != PRIV_LVL_M))
+            en_ld_st_translation_n = 1'b1;
+        else // otherwise we go with the regular settings
+            en_ld_st_translation_n = en_translation_o;
         // -----------------------
         // Return from Exception
         // -----------------------
@@ -511,18 +522,18 @@ module csr_regfile #(
     // -------------------
     // Output Assignments
     // -------------------
-    assign csr_rdata_o          = csr_rdata;
-    assign priv_lvl_o           = priv_lvl_q;
+    assign csr_rdata_o      = csr_rdata;
+    assign priv_lvl_o       = priv_lvl_q;
     // MMU outputs
-    assign satp_ppn_o           = satp_q.ppn;
-    assign asid_o               = satp_q.asid[ASID_WIDTH-1:0];
-    assign sum_o                = mstatus_q.sum;
+    assign satp_ppn_o       = satp_q.ppn;
+    assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
+    assign sum_o            = mstatus_q.sum;
     // we support bare memory addressing and SV39
-    assign enable_translation_o = (satp_q.mode == 4'h8 && priv_lvl_q != PRIV_LVL_M) ? 1'b1 : 1'b0;
-    assign mxr_o                = mstatus_q.mxr;
-    assign tvm_o                = mstatus_q.tvm;
-    assign tw_o                 = mstatus_q.tw;
-    assign tsr_o                = mstatus_q.tsr;
+    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_q != PRIV_LVL_M) ? 1'b1 : 1'b0;
+    assign mxr_o            = mstatus_q.mxr;
+    assign tvm_o            = mstatus_q.tvm;
+    assign tw_o             = mstatus_q.tw;
+    assign tsr_o            = mstatus_q.tsr;
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
@@ -570,6 +581,8 @@ module csr_regfile #(
             // timer and counters
             cycle_q         <= 64'b0;
             instret_q       <= 64'b0;
+            // aux registers
+            en_ld_st_translation_q <= 1'b0;
         end else begin
             priv_lvl_q      <= priv_lvl_n;
             // machine mode registers
@@ -593,6 +606,8 @@ module csr_regfile #(
             // timer and counters
             cycle_q         <= cycle_n;
             instret_q       <= instret_n;
+            // aux registers
+            en_ld_st_translation_q <= en_ld_st_translation_n;
         end
     end
 

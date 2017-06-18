@@ -40,7 +40,7 @@ module lsu #(
     input  logic                     commit_i,                 // commit the pending store
 
     input  logic                     enable_translation_i,     // enable virtual memory translation
-
+    input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores
     input  logic                     fetch_req_i,              // Instruction fetch interface
     output logic                     fetch_gnt_o,              // Instruction fetch interface
     output logic                     fetch_valid_o,            // Instruction fetch interface

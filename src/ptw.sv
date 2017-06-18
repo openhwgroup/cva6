@@ -24,16 +24,18 @@ module ptw #(
         parameter int ASID_WIDTH = 1
     )
     (
-    input  logic                    clk_i,                 // Clock
-    input  logic                    rst_ni,                // Asynchronous reset active low
-    input  logic                    flush_i,               // flush everything, we need to do this because
-                                                           // actually everything we do is speculative at this stage
-                                                           // e.g.: there could be a CSR instruction that changes everything
+    input  logic                    clk_i,                  // Clock
+    input  logic                    rst_ni,                 // Asynchronous reset active low
+    input  logic                    flush_i,                // flush everything, we need to do this because
+                                                            // actually everything we do is speculative at this stage
+                                                            // e.g.: there could be a CSR instruction that changes everything
     output logic                    ptw_active_o,
-    output logic                    walking_instr_o,       // set when walking for TLB
-    output logic                    ptw_error_o,           // set when an error occurred
-    input  logic                    enable_translation_i,  // CSRs indicate to enable SV39
-    input  logic                    lsu_is_store_i,        // this translation was triggered by a store
+    output logic                    walking_instr_o,        // set when walking for TLB
+    output logic                    ptw_error_o,            // set when an error occurred
+    input  logic                    enable_translation_i,   // CSRs indicate to enable SV39
+    input  logic                    en_ld_st_translation_i, // enable virtual memory translation for load/stores
+
+    input  logic                    lsu_is_store_i,         // this translation was triggered by a store
     // PTW Memory Port
     output logic [11:0]             address_index_o,
     output logic [43:0]             address_tag_o,
@@ -177,7 +179,7 @@ module ptw #(
                     vaddr_n             = itlb_vaddr_i;
                     NS                  = WAIT_GRANT;
                 // we got an DTLB miss
-                end else if (enable_translation_i & dtlb_access_i & dtlb_miss_i) begin
+                end else if (en_ld_st_translation_i & dtlb_access_i & dtlb_miss_i) begin
                     ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = dtlb_vaddr_i;
@@ -252,6 +254,18 @@ module ptw #(
                                     dtlb_update_o = 1'b0;
                                     NS   = PROPAGATE_ERROR;
                                 end
+                            end
+                            // check if the ppn is correctly aligned:
+                            // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
+                            // exception.
+                            if (ptw_lvl_q == LVL1 && pte.ppn[17:0] != '0) begin
+                                NS = PROPAGATE_ERROR;
+                                dtlb_update_o = 1'b0;
+                                itlb_update_o = 1'b0;
+                            end else if (ptw_lvl_q == LVL2 && pte.ppn[8:0] != '0) begin
+                                NS = PROPAGATE_ERROR;
+                                dtlb_update_o = 1'b0;
+                                itlb_update_o = 1'b0;
                             end
                         // this is a pointer to the next TLB level
                         end else begin

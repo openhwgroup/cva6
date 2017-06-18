@@ -27,10 +27,12 @@ module mmu #(
       parameter int ASID_WIDTH        = 1
     )
     (
-        input logic                             clk_i,
-        input logic                             rst_ni,
-        input logic                             flush_i,
-        input logic                             enable_translation_i,
+        input  logic                            clk_i,
+        input  logic                            rst_ni,
+        input  logic                            flush_i,
+        input  logic                            enable_translation_i,
+        input  logic                            en_ld_st_translation_i,   // enable virtual memory translation for load/stores
+
         // IF interface
         input  logic                            fetch_req_i,
         output logic                            fetch_gnt_o,
@@ -273,7 +275,7 @@ module mmu #(
         daccess_err     = (ld_st_priv_lvl_i == PRIV_LVL_S && !sum_i && dtlb_content.u) || // SUM is not set and we are trying to access a user page in supervisor mode
                           (ld_st_priv_lvl_i == PRIV_LVL_U && !dtlb_content.u);            // this is not a user page but we are in user mode and trying to access it
         // translation is enabled and no misaligned exception occurred
-        if (enable_translation_i && !misaligned_ex_i.valid) begin
+        if (en_ld_st_translation_i && !misaligned_ex_i.valid) begin
             lsu_valid_o = 1'b0;
             // 4K page
             lsu_paddr_o = {dtlb_content.ppn, lsu_vaddr_i[11:0]};
@@ -296,6 +298,10 @@ module mmu #(
                     if (!dtlb_content.w || daccess_err) begin
                         lsu_exception_o = {ST_ACCESS_FAULT, lsu_vaddr_i, 1'b1};
                     end
+                    // check if the dirty flag is set
+                    if (!dtlb_content.d) begin
+                        lsu_exception_o = {STORE_PAGE_FAULT, lsu_vaddr_i, 1'b1};
+                    end
                 // this is a load, check for sufficient access privileges
                 end else if (daccess_err) begin
                     lsu_exception_o = {LD_ACCESS_FAULT, lsu_vaddr_i, 1'b1};
@@ -304,7 +310,7 @@ module mmu #(
             // ---------
             // DTLB Miss
             // ---------
-            // watch out for exception
+            // watch out for exceptions
             if (ptw_active && !walking_instr) begin
                 // page table walker threw an exception
                 if (ptw_error) begin
