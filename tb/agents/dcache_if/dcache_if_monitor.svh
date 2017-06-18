@@ -57,7 +57,8 @@ class dcache_if_monitor extends uvm_component;
     task run_phase(uvm_phase phase);
 
         string if_type = this.get_full_name();//(m_cfg.dcache_if_config inside {SLAVE, SLAVE_REPLAY, SLAVE_NO_RANDOM}) ? "[SLAVE]" : "[MASTER]";
-        logic [11:0] address_index [$];
+        mailbox address_index = new();
+        logic [11:0] index;
         logic [7:0]  be [$];
         logic [63:0] wdata [$];
 
@@ -70,8 +71,7 @@ class dcache_if_monitor extends uvm_component;
                 forever begin
                     @(m_vif.pck iff (m_vif.pck.data_gnt && m_vif.pck.data_req));
                     // save tag and byte enable
-                    // $display("%s: %t, Putting index: %0h", if_type, $time(), m_vif.pck.address_index);
-                    address_index.push_back(m_vif.pck.address_index);
+                    address_index.put(m_vif.pck.address_index);
                     be.push_back(m_vif.pck.data_be);
                     wdata.push_back(m_vif.pck.data_wdata);
                 end
@@ -81,18 +81,22 @@ class dcache_if_monitor extends uvm_component;
             // detect a valid tag and save it
             tag_valid: begin
                 forever begin
-                    @(m_vif.pck iff m_vif.pck.tag_valid);
+                    address_index.get(index);
+                    @(m_vif.pck);
                     // save tag for later use
-                    address_mbx.put({m_vif.pck.address_tag, address_index.pop_front()});
-
-                    // $display("%s: %t, Putting Tag %0h, Queue Size: %d", if_type, $time(), m_vif.pck.address_tag, address_mbx.num());
+                    if (!m_vif.pck.kill_req)
+                        address_mbx.put({m_vif.pck.address_tag, index});
+                    else begin // remove the index if the request has been aborted
+                       void'(be.pop_front());
+                       void'(wdata.pop_front());
+                    end
                 end
             end
 
             // 3. thread wait for valid data
             read_valid: begin
                 forever begin
-                    @(m_vif.pck iff m_vif.pck.data_rvalid);
+                    @(m_vif.pck iff m_vif.pck.data_rvalid && !m_vif.pck.kill_req);
                     data_mbx.put(m_vif.pck.data_rdata);
                 end
             end
@@ -100,13 +104,11 @@ class dcache_if_monitor extends uvm_component;
             respsonese_gen: begin
                 forever begin
                     dcache_if_seq_item cloned_item;
-
                     // blocking get, wait for both to be ready
                     data_mbx.get(cmd.data);
                     address_mbx.get(cmd.address);
                     cmd.be    = be.pop_front();
                     cmd.wdata = wdata.pop_front();
-                    // $display("%s: %t, Popping %0h from MBX", if_type, $time(), cmd.address);
                     // was this from a master or slave agent monitor?
                     cmd.isSlaveAnswer = (m_cfg.dcache_if_config inside {SLAVE, SLAVE_REPLAY, SLAVE_NO_RANDOM}) ? 1'b1 : 1'b0;
                     $cast(cloned_item, cmd.clone());
