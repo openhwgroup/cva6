@@ -217,27 +217,27 @@ package ariane_pkg;
     // ----------------------
     // Exception Cause Codes
     // ----------------------
-    localparam logic [63:0] INSTR_ADDR_MISALIGNED = 64'd0;
-    localparam logic [63:0] INSTR_ACCESS_FAULT    = 64'd1;
-    localparam logic [63:0] ILLEGAL_INSTR         = 64'd2;
-    localparam logic [63:0] BREAKPOINT            = 64'd3;
-    localparam logic [63:0] LD_ADDR_MISALIGNED    = 64'd4;
-    localparam logic [63:0] LD_ACCESS_FAULT       = 64'd5;
-    localparam logic [63:0] ST_ADDR_MISALIGNED    = 64'd6;
-    localparam logic [63:0] ST_ACCESS_FAULT       = 64'd7;
-    localparam logic [63:0] ENV_CALL_UMODE        = 64'd8;  // environment call from user mode
-    localparam logic [63:0] ENV_CALL_SMODE        = 64'd9;  // environment call from supervisor mode
-    localparam logic [63:0] ENV_CALL_MMODE        = 64'd11; // environment call from machine mode
-    localparam logic [63:0] INSTR_PAGE_FAULT      = 64'd12; // Instruction page fault
-    localparam logic [63:0] LOAD_PAGE_FAULT       = 64'd13; // Load page fault
-    localparam logic [63:0] STORE_PAGE_FAULT      = 64'd15; // Store page fault
+    localparam logic [63:0] INSTR_ADDR_MISALIGNED = 0;
+    localparam logic [63:0] INSTR_ACCESS_FAULT    = 1;
+    localparam logic [63:0] ILLEGAL_INSTR         = 2;
+    localparam logic [63:0] BREAKPOINT            = 3;
+    localparam logic [63:0] LD_ADDR_MISALIGNED    = 4;
+    localparam logic [63:0] LD_ACCESS_FAULT       = 5;
+    localparam logic [63:0] ST_ADDR_MISALIGNED    = 6;
+    localparam logic [63:0] ST_ACCESS_FAULT       = 7;
+    localparam logic [63:0] ENV_CALL_UMODE        = 8;  // environment call from user mode
+    localparam logic [63:0] ENV_CALL_SMODE        = 9;  // environment call from supervisor mode
+    localparam logic [63:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
+    localparam logic [63:0] INSTR_PAGE_FAULT      = 12; // Instruction page fault
+    localparam logic [63:0] LOAD_PAGE_FAULT       = 13; // Load page fault
+    localparam logic [63:0] STORE_PAGE_FAULT      = 15; // Store page fault
 
-    localparam logic [63:0] S_SW_INTERRUPT        = (1 << 63) | 64'd1;
-    localparam logic [63:0] M_SW_INTERRUPT        = (1 << 63) | 64'd3;
-    localparam logic [63:0] S_TIMER_INTERRUPT     = (1 << 63) | 64'd5;
-    localparam logic [63:0] M_TIMER_INTERRUPT     = (1 << 63) | 64'd7;
-    localparam logic [63:0] S_EXT_INTERRUPT       = (1 << 63) | 64'd9;
-    localparam logic [63:0] M_EXT_INTERRUPT       = (1 << 63) | 64'd11;
+    localparam logic [63:0] S_SW_INTERRUPT        = (1 << 63) | 1;
+    localparam logic [63:0] M_SW_INTERRUPT        = (1 << 63) | 3;
+    localparam logic [63:0] S_TIMER_INTERRUPT     = (1 << 63) | 5;
+    localparam logic [63:0] M_TIMER_INTERRUPT     = (1 << 63) | 7;
+    localparam logic [63:0] S_EXT_INTERRUPT       = (1 << 63) | 9;
+    localparam logic [63:0] M_EXT_INTERRUPT       = (1 << 63) | 11;
     // -----
     // CSRs
     // -----

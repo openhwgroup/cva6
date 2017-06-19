@@ -40,7 +40,7 @@ module fetch_fifo
     input  logic                   out_ready_i
 );
 
-    localparam DEPTH = 8; // must be a power of two
+    localparam int unsigned DEPTH = 8; // must be a power of two
 
     // input registers - bounding the path from memory
     branchpredict_sbe       branch_predict_n, branch_predict_q;

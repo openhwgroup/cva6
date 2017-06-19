@@ -108,7 +108,7 @@ module lsu #(
     logic [63:0] vaddr_i;
     logic [7:0]  be_i;
 
-    assign vaddr_i = $signed(imm_i) + $signed(operand_a_i);
+    assign vaddr_i = $unsigned($signed(imm_i) + $signed(operand_a_i));
 
     logic                     st_valid_i;
     logic                     st_ready_o;

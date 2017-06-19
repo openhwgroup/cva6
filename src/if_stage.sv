@@ -88,7 +88,7 @@ module if_stage (
         NS            = CS;
         addr_valid    = 1'b0;
 
-        unique case(CS)
+        case(CS)
             // default state, not waiting for requested data
             IDLE: begin
                 instr_addr_o = fetch_address;
@@ -210,11 +210,6 @@ module if_stage (
                     end
                     // otherwise wait in this state for the rvalid
                 end
-            end
-
-            default: begin
-                NS          = IDLE;
-                instr_req_o = 1'b0;
             end
         endcase
     end

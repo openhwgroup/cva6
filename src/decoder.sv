@@ -276,8 +276,6 @@ module decoder (
                         else
                           illegal_instr = 1'b1;
                       end
-
-                      default: illegal_instr = 1'b1;
                     endcase
                 end
 

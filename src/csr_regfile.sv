@@ -79,11 +79,7 @@ module csr_regfile #(
     priv_lvl_t   trap_to_priv_lvl;
     // register for enabling load store address translation, this is critical, hence the register
     logic        en_ld_st_translation_n, en_ld_st_translation_q;
-    // ----------------------
-    // LD/ST Privilege Level
-    // ----------------------
-    assign ld_st_priv_lvl_o = (mstatus_q.mprv) ? mstatus_q.mpp : priv_lvl_o;
-    assign en_ld_st_translation_o = en_ld_st_translation_q;
+
     // ----------------
     // CSR Registers
     // ----------------
@@ -362,6 +358,9 @@ module csr_regfile #(
             en_ld_st_translation_n = 1'b1;
         else // otherwise we go with the regular settings
             en_ld_st_translation_n = en_translation_o;
+
+        ld_st_priv_lvl_o = (mstatus_q.mprv) ? mstatus_q.mpp : priv_lvl_o;
+        en_ld_st_translation_o = en_ld_st_translation_q;
         // -----------------------
         // Return from Exception
         // -----------------------

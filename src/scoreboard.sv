@@ -21,8 +21,8 @@
 import ariane_pkg::*;
 
 module scoreboard #(
-    parameter int  NR_ENTRIES  = 8,
-    parameter int  NR_WB_PORTS = 1
+    parameter int unsigned NR_ENTRIES  = 8,
+    parameter int unsigned NR_WB_PORTS = 1
     )
     (
     input  logic                                      clk_i,    // Clock
@@ -63,7 +63,7 @@ module scoreboard #(
     input exception [NR_WB_PORTS-1:0]                 ex_i,        // exception from a functional unit (e.g.: ld/st exception, divide by zero)
     input logic [NR_WB_PORTS-1:0]                     wb_valid_i   // data in is valid
 );
-    localparam BITS_ENTRIES      = $clog2(NR_ENTRIES);
+    localparam int unsigned BITS_ENTRIES      = $clog2(NR_ENTRIES);
 
     // this is the FIFO struct of the issue queue
     struct packed {
@@ -112,7 +112,7 @@ module scoreboard #(
         // ------------
         // Write Back
         // ------------
-        for (int i = 0; i < NR_WB_PORTS; i++) begin
+        for (int unsigned i = 0; i < NR_WB_PORTS; i++) begin
             // check if this instruction was issued (e.g.: it could happen after a flush that there is still
             // something in the pipeline e.g. an incomplete memory operation)
             if (wb_valid_i[i] && mem_n[trans_id_i[i]].issued) begin
@@ -141,7 +141,7 @@ module scoreboard #(
         // Flush
         // ------
         if (flush_i) begin
-            for (int i = 0; i < NR_ENTRIES; i++) begin
+            for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
                 // set all valid flags for all entries to zero
                 mem_n[i].issued       = 1'b0;
                 mem_n[i].sbe.valid    = 1'b0;
@@ -163,7 +163,7 @@ module scoreboard #(
     always_comb begin : clobber_output
         rd_clobber_o = '{default: NONE};
         // check for all valid entries and set the clobber register accordingly
-        for (int i = 0; i < NR_ENTRIES; i++) begin
+        for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (mem_q[i].issued) begin
                 // output the functional unit which is going to clobber this register
                 rd_clobber_o[mem_q[i].sbe.rd] = mem_q[i].sbe.fu;
@@ -183,7 +183,7 @@ module scoreboard #(
         rs1_valid_o = 1'b0;
         rs2_valid_o = 1'b0;
 
-        for (int i = 0; i < NR_ENTRIES; i++) begin
+        for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             // only consider this entry if it is valid
             if (mem_q[i].issued) begin
                 // look at the appropriate fields and look whether there was an
@@ -203,7 +203,7 @@ module scoreboard #(
         // -----------
         // provide a direct combinational path from WB a.k.a forwarding
         // make sure that we are not forwarding a result that got an exception
-        for (int j = 0; j < NR_WB_PORTS; j++) begin
+        for (int unsigned j = 0; j < NR_WB_PORTS; j++) begin
             if (mem_q[trans_id_i[j]].sbe.rd == rs1_i && wb_valid_i[j] && ~ex_i[j].valid) begin
                 rs1_o = wdata_i[j];
                 rs1_valid_o = wb_valid_i[j];
