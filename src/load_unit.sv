@@ -63,6 +63,7 @@ module load_unit (
         logic [TRANS_ID_BITS-1:0] trans_id;
         logic [2:0]               address_offset;
         fu_op                     operator;
+        exception                 ex;
     } rvalid_entry_t;
 
     // queue control signal
@@ -82,7 +83,7 @@ module load_unit (
     // this is a read-only interface so set the write enable to 0
     assign data_we_o = 1'b0;
     // compose the queue data, control is handled in the FSM
-    assign in_data = {trans_id_i, vaddr_i[2:0], operator_i};
+    assign in_data = {trans_id_i, vaddr_i[2:0], operator_i, ex_i};
 
     // output address
     // we can now output the lower 12 bit as the index to the cache
@@ -105,7 +106,6 @@ module load_unit (
         tag_valid_o       = 1'b0;
         push              = 1'b0;
         data_be_o         = be_i;
-        ex_o              = ex_i;
 
         case (CS)
             IDLE: begin
@@ -150,10 +150,8 @@ module load_unit (
                     // we've got an exception
                     // we got an exception so abort the request in the next cycle
                     // we handle this with an extra cycle since any other way would imply a critical
-                    // path from exceptions to memory
+                    // path from any exception to memory (because we would make another request)
                     if (ex_i.valid) begin
-                        // do not push this request
-                        push    = 1'b0;
                         ready_o = 1'b0;
                         NS      = ABORT_TRANSACTION;
                     end
@@ -162,9 +160,11 @@ module load_unit (
 
             // abort the previous transaction without sending a new one
             ABORT_TRANSACTION: begin
-                ready_o    = 1'b0;
-                kill_req_o = 1'b1;
-                NS         = IDLE;
+                ready_o     = 1'b0;
+                // send an abort signal
+                tag_valid_o = 1'b1;
+                kill_req_o  = 1'b1;
+                NS          = IDLE;
             end
 
             // wait here for the page offset to not match anymore
@@ -172,32 +172,10 @@ module load_unit (
                 // we are definitely not ready to accept a new request
                 // we need unique access to the LSU
                 ready_o = 1'b0;
-                translation_req_o = 1'b1;
 
                 // we make a new request as soon as the page offset does not match anymore
-                // essentially the same part as above
                 if (!page_offset_matches_i) begin
-                    // make a load request to memory
-                    data_req_o        = 1'b1;
-                    // the translation request we got is valid
-                    if (translation_valid_i) begin
-                        // save the physical address for the next cycle
-                        paddr_n = paddr_i;
-                        // we got no data grant so wait for the grant before sending the tag
-                        if (!data_gnt_i) begin
-                            NS = WAIT_GNT;
-                        end else begin
-                            // put the request in the queue
-                            push    = 1'b1;
-                            // we got a grant so we can send the tag in the next cycle
-                            NS = SEND_TAG;
-                        end
-                    // we got a TLB miss
-                    end else begin
-                        // we need to abort the translation and let the PTW walker fix the TLB miss
-                        NS      = WAIT_TRANSLATION;
-                        ready_o = 1'b0;
-                    end
+                    NS = IDLE;
                 end
             end
             // we are here because of a TLB miss, we need to abort the current request and give way for the
@@ -303,23 +281,17 @@ module load_unit (
         valid_o = 1'b0;
         // output the queue data directly, the valid signal is set corresponding to the process above
         trans_id_o = out_data.trans_id;
-
+        // output any exception which might have occurred
+        ex_o       = out_data.ex;
         // we got an rvalid and are currently not flushing and not aborting the request
-        if (data_rvalid_i && CS != WAIT_FLUSH && !kill_req_o) begin
+        if (data_rvalid_i && CS != WAIT_FLUSH) begin
             pop     = 1'b1;
             valid_o = 1'b1;
-        end
-        // pass through an exception
-        if (valid_i && ex_i.valid) begin
-            valid_o    = 1'b1;
-            // in case of an exception we can use the current trans_id since we either stalled
-            // or we are taking the exception in the first cycle
-            trans_id_o = trans_id_i;
         end
     end
 
 
-    // latch physical address
+    // latch physical address for the tag cycle (one cycle after applying the index)
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             CS      <= IDLE;
