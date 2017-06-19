@@ -120,6 +120,8 @@ module lsu #(
     logic [63:0]              st_vaddr;
     logic                     translation_req;
     logic                     translation_valid;
+    logic                     translation_valid_st;
+    logic                     translation_valid_ld;
     logic [63:0]              mmu_vaddr;
     logic [63:0]              mmu_paddr;
     exception                 mmu_exception;
@@ -234,7 +236,7 @@ module lsu #(
         .translation_req_o     ( st_translation_req   ),
         .vaddr_o               ( st_vaddr             ),
         .paddr_i               ( mmu_paddr            ),
-        .translation_valid_i   ( translation_valid    ),
+        .translation_valid_i   ( translation_valid_st ),
         .ex_i                  ( mmu_exception        ),
         // Load Unit
         .page_offset_i         ( page_offset          ),
@@ -271,7 +273,7 @@ module lsu #(
         .translation_req_o     ( ld_translation_req   ),
         .vaddr_o               ( ld_vaddr             ),
         .paddr_i               ( mmu_paddr            ),
-        .translation_valid_i   ( translation_valid    ),
+        .translation_valid_i   ( translation_valid_ld ),
         .ex_i                  ( mmu_exception        ),
         // to store unit
         .page_offset_o         ( page_offset          ),
@@ -321,16 +323,21 @@ module lsu #(
         // the LSU is ready if both, stores and loads are ready because we do not know
         // which of the two we are getting
         lsu_ready_o = ld_ready_o && st_ready_o;
-        // "arbitrate" MMU access, there is only one request possible
-        translation_req     = 1'b0;
-        mmu_vaddr           = 64'b0;
+        // "arbitrate" MMU access
+        translation_req      = 1'b0;
+        mmu_vaddr            = 64'b0;
+        translation_valid_st = 1'b0;
+        translation_valid_ld = 1'b0;
+
         // this arbitrates access to the MMU
         if (st_translation_req) begin
-            translation_req = 1'b1;
-            mmu_vaddr       = st_vaddr;
+            translation_req      = 1'b1;
+            mmu_vaddr            = st_vaddr;
+            translation_valid_st = translation_valid;
         end else if (ld_translation_req) begin
-            translation_req = 1'b1;
-            mmu_vaddr       = ld_vaddr;
+            translation_req      = 1'b1;
+            mmu_vaddr            = ld_vaddr;
+            translation_valid_ld = translation_valid;
         end
     end
 

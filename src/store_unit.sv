@@ -69,7 +69,13 @@ module store_unit (
     logic                    st_ready;
     logic                    st_valid;
 
-    assign vaddr_o = vaddr_i;
+    // vaddr and valid signal one cycle later
+    logic [63:0]              vaddr_n, vaddr_q;
+    logic                     valid_n, valid_q;
+    logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
+
+    assign vaddr_o    = vaddr_q;
+    assign trans_id_o = trans_id_q;
     // ---------------
     // Store Control
     // ---------------
@@ -77,11 +83,10 @@ module store_unit (
         translation_req_o = 1'b0;
         valid_o           = 1'b0;
         ready_o           = 1'b1;
-        trans_id_o        = trans_id_i;
         ex_o              = ex_i;
         st_valid          = 1'b0;
         // we got a valid store
-        if (valid_i) begin
+        if (valid_q) begin
             // first do address translation, we need to do it in the first cycle since we want to share the MMU
             // between the load and the store unit. But we only know that when a new request arrives that we are not using
             // it at the same time.
@@ -92,19 +97,43 @@ module store_unit (
                 valid_o  = 1'b1;
                 // post this store to the store buffer
                 st_valid = 1'b1;
+                // -----------------
+                // Access Exception
+                // -----------------
+                // we got an address translation exception (access rights)
+                // this will also assert the translation valid
+                if (ex_i.valid) begin
+                    // the only difference is that we do not want to store this request
+                    st_valid = 1'b0;
+                end
             // translation was not successful - stall here
             end else begin
                 ready_o = 1'b0;
             end
-            // -----------------
-            // Access Exception
-            // -----------------
-            // we got an address translation exception (access rights)
-            // this will also assert the translation valid
-            if (ex_i.valid) begin
-                // the only difference is that we do not want to store this request
-                st_valid = 1'b0;
-            end
+        end
+    end
+    // Store 2nd register stage
+    always_comb begin
+        vaddr_n    = vaddr_q;
+        valid_n    = valid_q;
+        trans_id_n = trans_id_n;
+
+        if (ready_o) begin
+            vaddr_n    = vaddr_i;
+            valid_n    = valid_i;
+            trans_id_n = trans_id_i;
+        end
+    end
+    // Sequential Process for 2nd register stage
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            vaddr_q    <= '0;
+            valid_q    <= 1'b0;
+            trans_id_q <= '0;
+        end else begin
+            vaddr_q    <= vaddr_n;
+            valid_q    <= valid_n;
+            trans_id_q <= trans_id_n;
         end
     end
     // -----------
