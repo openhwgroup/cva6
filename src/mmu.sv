@@ -224,7 +224,7 @@ module mmu #(
             instr_if_address_o = {itlb_content.ppn, fetch_vaddr_i[11:0]};
             // Mega page
             if (itlb_is_2M) begin
-              instr_if_address_o[20:12] = fetch_vaddr_i[20:12];
+                instr_if_address_o[20:12] = fetch_vaddr_i[20:12];
             end
             // Giga page
             if (itlb_is_1G) begin
@@ -236,16 +236,16 @@ module mmu #(
             // --------
             // if we hit the ITLB output the request signal immediately
             if (itlb_lu_hit) begin
-              instr_if_data_req_o = fetch_req_i;
-              // we got an access error
-              if (iaccess_err) begin
-                // immediately grant a fetch which threw an exception, and stop the request from happening
-                instr_if_data_req_o = 1'b0;
-                fetch_gnt_o         = 1'b1;
-                ierr_valid_n        = 1'b1;
-                // throw a page fault
-                fetch_ex_n          = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
-              end
+                instr_if_data_req_o = fetch_req_i;
+                // we got an access error
+                if (iaccess_err) begin
+                  // immediately grant a fetch which threw an exception, and stop the request from happening
+                  instr_if_data_req_o = 1'b0;
+                  fetch_gnt_o         = 1'b1;
+                  ierr_valid_n        = 1'b1;
+                  // throw a page fault
+                  fetch_ex_n          = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
+                end
             end else
             // ---------
             // ITLB Miss

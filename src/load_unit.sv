@@ -128,9 +128,19 @@ module load_unit (
                                 ready_o = 1'b0;
                             end else begin
                                 // put the request in the queue
-                                push    = 1'b1;
+                                push = 1'b1;
                                 // we got a grant so we can send the tag in the next cycle
                                 NS = SEND_TAG;
+                                // -----------------
+                                // Access Exception
+                                // -----------------
+                                // we've got an exception
+                                // we got an exception so abort the request in the next cycle
+                                // this is like a normal memory request but without the extra checks which
+                                // would normally occur in SEND_TAG.
+                                if (ex_i.valid) begin
+                                    NS = ABORT_TRANSACTION;
+                                end
                             end
                         // we got a TLB miss
                         end else begin
@@ -144,27 +154,57 @@ module load_unit (
                         // wait for the store buffer to train and the page offset to not match anymore
                         NS = WAIT_PAGE_OFFSET;
                     end
-                    // -----------------
-                    // Access Exception
-                    // -----------------
-                    // we've got an exception
-                    // we got an exception so abort the request in the next cycle
-                    // we handle this with an extra cycle since any other way would imply a critical
-                    // path from any exception to memory (because we would make another request)
-                    if (ex_i.valid) begin
-                        ready_o = 1'b0;
-                        NS      = ABORT_TRANSACTION;
-                    end
                 end
             end
 
-            // abort the previous transaction without sending a new one
+            // abort the current load and send a new one
             ABORT_TRANSACTION: begin
-                ready_o     = 1'b0;
                 // send an abort signal
                 tag_valid_o = 1'b1;
                 kill_req_o  = 1'b1;
-                NS          = IDLE;
+                // -------------
+                // New Request
+                // -------------
+                // we can make a new request if we got one
+                if (valid_i) begin
+                    // do another address translation
+                    translation_req_o = 1'b1;
+                        if(!page_offset_matches_i) begin
+                            // make a load request to memory
+                            data_req_o = 1'b1;
+                            // the translation request we got is valid
+                            if (translation_valid_i) begin
+                                // save the physical address for the next cycle
+                                paddr_n = paddr_i;
+                                // we got no data grant so wait for the grant before sending the tag
+                                if (!data_gnt_i) begin
+                                    NS = WAIT_GNT;
+                                    ready_o = 1'b0;
+                                end else begin
+                                    // put the request in the queue
+                                    push = 1'b1;
+                                    // we got a grant so we can send the tag in the next cycle
+                                    NS = SEND_TAG;
+                                    // got an exception and we already sent a transaction so abort it
+                                    if (ex_i.valid) begin
+                                        NS = ABORT_TRANSACTION;
+                                    end
+                                end
+                            // we got a TLB miss
+                            end else begin
+                                // we need to abort the translation and let the PTW walker fix the TLB miss
+                                NS = WAIT_TRANSLATION;
+                                ready_o = 1'b0;
+                            end
+                    // page offset mis-match -> go back to idle
+                    end else begin
+                        NS = IDLE;
+                    end
+
+                // otherwise go back to idle
+                end else begin
+                    NS = IDLE;
+                end
             end
 
             // wait here for the page offset to not match anymore
@@ -226,7 +266,7 @@ module load_unit (
                     translation_req_o = 1'b1;
                         if(!page_offset_matches_i) begin
                             // make a load request to memory
-                            data_req_o        = 1'b1;
+                            data_req_o = 1'b1;
                             // the translation request we got is valid
                             if (translation_valid_i) begin
                                 // save the physical address for the next cycle
@@ -237,9 +277,13 @@ module load_unit (
                                     ready_o = 1'b0;
                                 end else begin
                                     // put the request in the queue
-                                    push    = 1'b1;
-                                    // we got a grant so we can send the tag in the next cycle
+                                    push = 1'b1;
+                                    // got an exception and we already sent a transaction so abort it
                                     NS = SEND_TAG;
+                                    // got an exception
+                                    if (ex_i.valid) begin
+                                        NS = ABORT_TRANSACTION;
+                                    end
                                 end
                             // we got a TLB miss
                             end else begin
