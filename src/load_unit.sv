@@ -56,7 +56,7 @@ module load_unit (
     input  logic                     data_rvalid_i,
     input  logic [63:0]              data_rdata_i
 );
-    enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, ABORT_TRANSLATION, WAIT_FLUSH} NS, CS;
+    enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, WAIT_TRANSLATION, ABORT_TRANSACTION, WAIT_FLUSH} NS, CS;
     // in order to decouple the response interface from the request interface we need a
     // a queue which can hold all outstanding memory requests
     typedef struct packed {
@@ -117,7 +117,7 @@ module load_unit (
                     // check if the page offset matches with a store, if it does then stall and wait
                     if (!page_offset_matches_i) begin
                         // make a load request to memory
-                        data_req_o        = 1'b1;
+                        data_req_o = 1'b1;
                         // the translation request we got is valid
                         if (translation_valid_i) begin
                             // save the physical address for the next cycle
@@ -135,7 +135,7 @@ module load_unit (
                         // we got a TLB miss
                         end else begin
                             // we need to abort the translation and let the PTW walker fix the TLB miss
-                            NS      = ABORT_TRANSLATION;
+                            NS      = WAIT_TRANSLATION;
                             ready_o = 1'b0;
                         end
                     end else begin
@@ -144,8 +144,29 @@ module load_unit (
                         // wait for the store buffer to train and the page offset to not match anymore
                         NS = WAIT_PAGE_OFFSET;
                     end
+                    // -----------------
+                    // Access Exception
+                    // -----------------
+                    // we've got an exception
+                    // we got an exception so abort the request in the next cycle
+                    // we handle this with an extra cycle since any other way would imply a critical
+                    // path from exceptions to memory
+                    if (ex_i.valid) begin
+                        // do not push this request
+                        push    = 1'b0;
+                        ready_o = 1'b0;
+                        NS      = ABORT_TRANSACTION;
+                    end
                 end
             end
+
+            // abort the previous transaction without sending a new one
+            ABORT_TRANSACTION: begin
+                ready_o    = 1'b0;
+                kill_req_o = 1'b1;
+                NS         = IDLE;
+            end
+
             // wait here for the page offset to not match anymore
             WAIT_PAGE_OFFSET: begin
                 // we are definitely not ready to accept a new request
@@ -174,14 +195,14 @@ module load_unit (
                     // we got a TLB miss
                     end else begin
                         // we need to abort the translation and let the PTW walker fix the TLB miss
-                        NS      = ABORT_TRANSLATION;
+                        NS      = WAIT_TRANSLATION;
                         ready_o = 1'b0;
                     end
                 end
             end
             // we are here because of a TLB miss, we need to abort the current request and give way for the
             // PTW walker to satisfy the TLB miss
-            ABORT_TRANSLATION: begin
+            WAIT_TRANSLATION: begin
                 // keep the translation request hight to tell the PTW that we want this
                 // translation
                 translation_req_o = 1'b1;
@@ -190,30 +211,9 @@ module load_unit (
                 // send an abort signal
                 tag_valid_o       = 1'b1;
                 kill_req_o        = 1'b1;
-                // wait for the translation to become valid and redo the request
+                // wait for the translation to become valid and redo the request by going back to idle
                 if (translation_valid_i) begin
-                    // we have a valid translation so tell the cache it should wait for it on the next cycle
-                    // reset the the kill request
-                    tag_valid_o = 1'b0;
-                    kill_req_o  = 1'b0;
-                    // if the request is still here, do the load
-                    if (valid_i) begin
-
-                        data_req_o = 1'b1;
-                        paddr_n    = paddr_i;
-
-                        if (!data_gnt_i) begin
-                            NS = WAIT_GNT;
-                            ready_o = 1'b0;
-                        end else begin
-                            // here we are ready to accept a new request
-                            ready_o = 1'b1;
-                            // put the request in the queue
-                            push    = 1'b1;
-                            // we got a grant so we can send the tag in the next cycle
-                            NS = SEND_TAG;
-                        end
-                    end
+                    NS = IDLE;
                 end
             end
 
@@ -266,7 +266,7 @@ module load_unit (
                             // we got a TLB miss
                             end else begin
                                 // we need to abort the translation and let the PTW walker fix the TLB miss
-                                NS = ABORT_TRANSLATION;
+                                NS = WAIT_TRANSLATION;
                                 ready_o = 1'b0;
                             end
                     // page offset mis-match -> go back to idle
@@ -288,20 +288,7 @@ module load_unit (
             end
 
         endcase
-        // -----------------
-        // Access Exception
-        // -----------------
-        // we've got an exception
-        if (valid_i && ex_i.valid) begin
-            // clear the request
-            data_req_o  = 1'b0;
-            // we are ready
-            ready_o     = 1'b1;
-            // do not push this request
-            push        = 1'b0;
-            // reset state machine
-            NS = IDLE;
-        end
+
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
         if (flush_i && (!empty || data_rvalid_i)) begin
             NS = WAIT_FLUSH;

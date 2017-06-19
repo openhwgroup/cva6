@@ -108,14 +108,14 @@ module dcache_arbiter #(
                     request_port_n    = i;
                     request_index     = i;
                     // wait for the grant
-                    if (data_gnt_i) begin
-                        // set the slave on which we are waiting
-                        in_data = 1'b1 << i[DATA_WIDTH-1:0];
-                        push = 1'b1;
-                    end
-
+                    // set the slave on which we are waiting
+                    in_data = 1'b1 << i[DATA_WIDTH-1:0];
                     break; // break here as this is a priority select
                 end
+            end
+            // only if we got a grant save it to the queue
+            if (data_gnt_i) begin
+                push = 1'b1;
             end
         end
 

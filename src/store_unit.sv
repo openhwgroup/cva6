@@ -100,13 +100,10 @@ module store_unit (
             // Access Exception
             // -----------------
             // we got an address translation exception (access rights)
+            // this will also assert the translation valid
             if (ex_i.valid) begin
-                // result is valid
-                valid_o  = 1'b1;
-                // do not store this
+                // the only difference is that we do not want to store this request
                 st_valid = 1'b0;
-                // we are ready if we got this exception
-                ready_o  = 1'b1;
             end
         end
     end
