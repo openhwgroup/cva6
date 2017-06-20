@@ -60,97 +60,92 @@ module store_unit (
 );
     assign result_o = 64'b0;
 
+    enum logic {IDLE, TRANSLATE} CS, NS;
+
     logic [63:0]             st_buffer_paddr;  // physical address for store
     logic [63:0]             st_buffer_data;   // store buffer data out
     logic [63:0]             st_data;          // aligned data to store buffer
-    logic [7:0]              st_buffer_be;
     logic                    st_buffer_valid;
     // store buffer control signals
     logic                    st_ready;
     logic                    st_valid;
 
-    // vaddr and valid signal one cycle later
-    logic [63:0]              vaddr_n, vaddr_q;
-    logic                     valid_n, valid_q;
-    logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
+    // keep the data and the byte enable for the second cycle (after address translation)
+    logic [63:0]             st_data_q, st_data_n;
+    logic [7:0]              st_be_n,   st_be_q;
 
-    assign vaddr_o    = vaddr_q;
-    assign trans_id_o = trans_id_q;
-    // ---------------
-    // Store Control
-    // ---------------
+    assign vaddr_o = vaddr_i;
+
     always_comb begin : store_control
         translation_req_o = 1'b0;
-        valid_o           = 1'b0;
         ready_o           = 1'b1;
-        ex_o              = ex_i;
+        valid_o           = 1'b0;
         st_valid          = 1'b0;
-        // we got a valid store
-        if (valid_q) begin
-            // first do address translation, we need to do it in the first cycle since we want to share the MMU
-            // between the load and the store unit. But we only know that when a new request arrives that we are not using
-            // it at the same time.
-            translation_req_o = 1'b1;
-            // check if translation was valid and we have space in the store buffer
-            // otherwise simply stall
-            if (translation_valid_i && st_ready) begin
-                valid_o  = 1'b1;
-                // post this store to the store buffer
-                st_valid = 1'b1;
-                // -----------------
-                // Access Exception
-                // -----------------
-                // we got an address translation exception (access rights)
-                // this will also assert the translation valid
-                if (ex_i.valid) begin
-                    // the only difference is that we do not want to store this request
-                    st_valid = 1'b0;
-                end
-            // translation was not successful - stall here
-            end else begin
-                ready_o = 1'b0;
-            end
-        end
-    end
-    // Store 2nd register stage
-    always_comb begin
-        vaddr_n    = vaddr_q;
-        valid_n    = valid_q;
-        trans_id_n = trans_id_n;
+        ex_o              = ex_i;
+        trans_id_o        = trans_id_i;
 
-        if (ready_o) begin
-            vaddr_n    = vaddr_i;
-            valid_n    = valid_i;
-            trans_id_n = trans_id_i;
-        end
+        case (CS)
+            // we got a valid store
+            IDLE: begin
+                if (valid_i) begin
+                    // first do address translation, we need to do it in the first cycle since we want to share the MMU
+                    // between the load and the store unit. But we only know that when a new request arrives that we are not using
+                    // it at the same time.
+                    translation_req_o = 1'b1;
+                end
+            end
+
+            TRANSLATE: begin
+                // check if translation was valid and we have space in the store buffer
+                // otherwise simply stall
+                if (translation_valid_i && st_ready) begin
+                    valid_o  = 1'b1;
+                    // post this store to the store buffer
+                    st_valid = 1'b1;
+                    // -----------------
+                    // Access Exception
+                    // -----------------
+                    // we got an address translation exception (access rights)
+                    // this will also assert the translation valid
+                    if (ex_i.valid) begin
+                        // the only difference is that we do not want to store this request
+                        st_valid = 1'b0;
+                    end
+                    // we have another request
+                    if (valid_i) begin
+                        translation_req_o = 1'b1;
+                    // go back to idle
+                    end else begin
+                        NS = IDLE;
+                    end
+                end else begin
+                    // keep on translating
+                    translation_req_o = 1'b1;
+                    ready_o           = 1'b0;
+                end
+            end
+        endcase
+
+        if (flush_i)
+            NS = IDLE;
     end
-    // Sequential Process for 2nd register stage
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            vaddr_q    <= '0;
-            valid_q    <= 1'b0;
-            trans_id_q <= '0;
-        end else begin
-            vaddr_q    <= vaddr_n;
-            valid_q    <= valid_n;
-            trans_id_q <= trans_id_n;
-        end
-    end
+
     // -----------
     // Re-aligner
     // -----------
     // re-align the write data to comply with the address offset
     always_comb begin
-        st_data = data_i;
+        st_be_n   = be_i;
+        st_data_n = data_i;
         case (vaddr_i[2:0])
-            3'b000: st_data = data_i;
-            3'b001: st_data = {data_i[55:0], data_i[63:56]};
-            3'b010: st_data = {data_i[47:0], data_i[63:48]};
-            3'b011: st_data = {data_i[39:0], data_i[63:40]};
-            3'b100: st_data = {data_i[31:0], data_i[63:32]};
-            3'b101: st_data = {data_i[23:0], data_i[63:24]};
-            3'b110: st_data = {data_i[15:0], data_i[63:16]};
-            3'b111: st_data = {data_i[7:0],  data_i[63:8]};
+            3'b000: st_data_n = data_i;
+            3'b001: st_data_n = {data_i[55:0], data_i[63:56]};
+            3'b010: st_data_n = {data_i[47:0], data_i[63:48]};
+            3'b011: st_data_n = {data_i[39:0], data_i[63:40]};
+            3'b100: st_data_n = {data_i[31:0], data_i[63:32]};
+            3'b101: st_data_n = {data_i[23:0], data_i[63:24]};
+            3'b110: st_data_n = {data_i[15:0], data_i[63:16]};
+            3'b111: st_data_n = {data_i[7:0],  data_i[63:8]};
         endcase
     end
     // ---------------
@@ -159,15 +154,27 @@ module store_unit (
     store_queue store_queue_i (
         // store queue write port
         .valid_i           ( st_valid            ),
-        .data_i            ( st_data             ),
+        .data_i            ( st_data_q           ),
         // store buffer in
         .paddr_o           ( st_buffer_paddr     ),
         .data_o            ( st_buffer_data      ),
         .valid_o           ( st_buffer_valid     ),
-        .be_o              ( st_buffer_be        ),
+        .be_o              ( st_be_q             ),
         .ready_o           ( st_ready            ),
         .*
     );
+    // ---------------
+    // Registers
+    // ---------------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            st_be_q   <= '0;
+            st_data_q <= '0;
+        end else begin
+            st_be_q   <= st_be_n;
+            st_data_q <= st_data_n;
+        end
+    end
     // ------------------
     // Address Checker
     // ------------------

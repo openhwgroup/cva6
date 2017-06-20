@@ -261,52 +261,85 @@ module mmu #(
         // the fetch is valid if we either got an error in the previous cycle or the I$ gave us a valid signal.
         fetch_valid_o = instr_if_data_rvalid_i || ierr_valid_q;
     end
+    // ----------
+    // Registers
+    // ----------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            ierr_valid_q <= 1'b0;
+            fetch_ex_q   <= '0;
+        end else begin
+            ierr_valid_q <= ierr_valid_n;
+            fetch_ex_q   <= fetch_ex_n;
+        end
+    end
 
     //-----------------------
     // Data Interface
     //-----------------------
+    logic [63:0] lsu_vaddr_n,     lsu_vaddr_q;
+    pte_t        dtlb_pte_n,      dtlb_pte_q;
+    exception    misaligned_ex_n, misaligned_ex_q;
+    logic        lsu_req_n,       lsu_req_q;
+    logic        lsu_is_store_n,  lsu_is_store_q;
+    logic        dtlb_hit_n,      dtlb_hit_q;
+    logic        dtlb_is_2M_n,    dtlb_is_2M_q;
+    logic        dtlb_is_1G_n,    dtlb_is_1G_q;
+
     // The data interface is simpler and only consists of a request/response interface
     always_comb begin : data_interface
-        lsu_paddr_o     = lsu_vaddr_i;
-        lsu_valid_o     = lsu_req_i;
-        lsu_exception_o = misaligned_ex_i;
+        // save request and DTLB response
+        lsu_vaddr_n     = lsu_vaddr_i;
+        lsu_req_n       = lsu_req_i;
+        misaligned_ex_n = misaligned_ex_i;
+        dtlb_pte_n      = dtlb_content;
+        dtlb_hit_n      = dtlb_lu_hit;
+        lsu_is_store_n  = lsu_is_store_i;
+        dtlb_is_2M_n    = dtlb_is_2M;
+        dtlb_is_1G_n    = dtlb_is_1G;
+
+        lsu_paddr_o     = lsu_vaddr_q;
+        lsu_valid_o     = lsu_req_q;
+        lsu_exception_o = misaligned_ex_q;
+
         // Check if the User flag is set, then we may only access it in supervisor mode
         // if SUM is enabled
-        daccess_err     = (ld_st_priv_lvl_i == PRIV_LVL_S && !sum_i && dtlb_content.u) || // SUM is not set and we are trying to access a user page in supervisor mode
-                          (ld_st_priv_lvl_i == PRIV_LVL_U && !dtlb_content.u);            // this is not a user page but we are in user mode and trying to access it
+        daccess_err = (ld_st_priv_lvl_i == PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
+                      (ld_st_priv_lvl_i == PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
         // translation is enabled and no misaligned exception occurred
-        if (en_ld_st_translation_i && !misaligned_ex_i.valid) begin
+        if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
             lsu_valid_o = 1'b0;
             // 4K page
-            lsu_paddr_o = {dtlb_content.ppn, lsu_vaddr_i[11:0]};
+            lsu_paddr_o = {dtlb_pte_q.ppn, lsu_vaddr_q[11:0]};
             // Mega page
-            if (dtlb_is_2M) begin
-              lsu_paddr_o[20:12] = lsu_vaddr_i[20:12];
+            if (dtlb_is_2M_q) begin
+              lsu_paddr_o[20:12] = lsu_vaddr_q[20:12];
             end
             // Giga page
-            if (dtlb_is_1G) begin
-                lsu_paddr_o[29:12] = lsu_vaddr_i[29:12];
+            if (dtlb_is_1G_q) begin
+                lsu_paddr_o[29:12] = lsu_vaddr_q[29:12];
             end
             // ---------
             // DTLB Hit
             // --------
-            if (dtlb_lu_hit && lsu_req_i) begin
+            if (dtlb_hit_q && lsu_req_q) begin
                 lsu_valid_o = 1'b1;
                 // this is a store
-                if (lsu_is_store_i) begin
+                if (lsu_is_store_q) begin
                     // check if the page is write-able and we are not violating privileges
-                    if (!dtlb_content.w || daccess_err) begin
-                        lsu_exception_o = {ST_ACCESS_FAULT, lsu_vaddr_i, 1'b1};
+                    if (!dtlb_pte_q.w || daccess_err) begin
+                        lsu_exception_o = {ST_ACCESS_FAULT, lsu_vaddr_q, 1'b1};
                     end
                     // check if the dirty flag is set
-                    if (!dtlb_content.d) begin
-                        lsu_exception_o = {STORE_PAGE_FAULT, lsu_vaddr_i, 1'b1};
+                    if (!dtlb_pte_q.d) begin
+                        lsu_exception_o = {STORE_PAGE_FAULT, lsu_vaddr_q, 1'b1};
                     end
                 // this is a load, check for sufficient access privileges
                 end else if (daccess_err) begin
-                    lsu_exception_o = {LD_ACCESS_FAULT, lsu_vaddr_i, 1'b1};
+                    lsu_exception_o = {LD_ACCESS_FAULT, lsu_vaddr_q, 1'b1};
                 end
             end else
+
             // ---------
             // DTLB Miss
             // ---------
@@ -317,7 +350,7 @@ module mmu #(
                     // an error makes the translation valid
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
-                    if (lsu_is_store_i) begin
+                    if (lsu_is_store_q) begin
                         lsu_exception_o = {STORE_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
                     end else begin
                         lsu_exception_o = {LOAD_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
@@ -331,11 +364,23 @@ module mmu #(
     // ----------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            ierr_valid_q <= 1'b0;
-            fetch_ex_q   <= '0;
+            lsu_vaddr_q      <= '0;
+            lsu_req_q        <= '0;
+            misaligned_ex_q  <= '0;
+            dtlb_pte_q       <= '0;
+            dtlb_hit_q       <= '0;
+            lsu_is_store_q   <= '0;
+            dtlb_is_2M_q     <= '0;
+            dtlb_is_1G_q     <= '0;
         end else begin
-            ierr_valid_q <= ierr_valid_n;
-            fetch_ex_q   <= fetch_ex_n;
+            lsu_vaddr_q      <=  lsu_vaddr_n;
+            lsu_req_q        <=  lsu_req_n;
+            misaligned_ex_q  <=  misaligned_ex_n;
+            dtlb_pte_q       <=  dtlb_pte_n;
+            dtlb_hit_q       <=  dtlb_hit_n;
+            lsu_is_store_q   <=  lsu_is_store_n;
+            dtlb_is_2M_q     <=  dtlb_is_2M_n;
+            dtlb_is_1G_q     <=  dtlb_is_1G_n;
         end
     end
 endmodule

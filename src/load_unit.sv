@@ -89,7 +89,7 @@ module load_unit (
     // we can now output the lower 12 bit as the index to the cache
     assign address_index_o = vaddr_i[11:0];
     // translation from last cycle, again: control is handled in the FSM
-    assign address_tag_o   = paddr_q[55:12];
+    assign address_tag_o   = paddr_i[55:12];
 
     // ---------------
     // Load Control
@@ -118,92 +118,19 @@ module load_unit (
                     if (!page_offset_matches_i) begin
                         // make a load request to memory
                         data_req_o = 1'b1;
-                        // the translation request we got is valid
-                        if (translation_valid_i) begin
-                            // save the physical address for the next cycle
-                            paddr_n = paddr_i;
-                            // we got no data grant so wait for the grant before sending the tag
-                            if (!data_gnt_i) begin
-                                NS = WAIT_GNT;
-                                ready_o = 1'b0;
-                            end else begin
-                                // put the request in the queue
-                                push = 1'b1;
-                                // we got a grant so we can send the tag in the next cycle
-                                NS = SEND_TAG;
-                                // -----------------
-                                // Access Exception
-                                // -----------------
-                                // we've got an exception
-                                // we got an exception so abort the request in the next cycle
-                                // this is like a normal memory request but without the extra checks which
-                                // would normally occur in SEND_TAG.
-                                if (ex_i.valid) begin
-                                    NS = ABORT_TRANSACTION;
-                                end
-                            end
-                        // we got a TLB miss
+                        // we got no data grant so wait for the grant before sending the tag
+                        if (!data_gnt_i) begin
+                            NS = WAIT_GNT;
                         end else begin
-                            // we need to abort the translation and let the PTW walker fix the TLB miss
-                            NS      = WAIT_TRANSLATION;
-                            ready_o = 1'b0;
+                            // put the request in the queue
+                            push = 1'b1;
+                            // we got a grant so we can send the tag in the next cycle
+                            NS = SEND_TAG;
                         end
                     end else begin
-                        // stall and wait for the store-buffer to drain
-                        ready_o = 1'b0;
                         // wait for the store buffer to train and the page offset to not match anymore
                         NS = WAIT_PAGE_OFFSET;
                     end
-                end
-            end
-
-            // abort the current load and send a new one
-            ABORT_TRANSACTION: begin
-                // send an abort signal
-                tag_valid_o = 1'b1;
-                kill_req_o  = 1'b1;
-                // -------------
-                // New Request
-                // -------------
-                // we can make a new request if we got one
-                if (valid_i) begin
-                    // do another address translation
-                    translation_req_o = 1'b1;
-                        if(!page_offset_matches_i) begin
-                            // make a load request to memory
-                            data_req_o = 1'b1;
-                            // the translation request we got is valid
-                            if (translation_valid_i) begin
-                                // save the physical address for the next cycle
-                                paddr_n = paddr_i;
-                                // we got no data grant so wait for the grant before sending the tag
-                                if (!data_gnt_i) begin
-                                    NS = WAIT_GNT;
-                                    ready_o = 1'b0;
-                                end else begin
-                                    // put the request in the queue
-                                    push = 1'b1;
-                                    // we got a grant so we can send the tag in the next cycle
-                                    NS = SEND_TAG;
-                                    // got an exception and we already sent a transaction so abort it
-                                    if (ex_i.valid) begin
-                                        NS = ABORT_TRANSACTION;
-                                    end
-                                end
-                            // we got a TLB miss
-                            end else begin
-                                // we need to abort the translation and let the PTW walker fix the TLB miss
-                                NS = WAIT_TRANSLATION;
-                                ready_o = 1'b0;
-                            end
-                    // page offset mis-match -> go back to idle
-                    end else begin
-                        NS = IDLE;
-                    end
-
-                // otherwise go back to idle
-                end else begin
-                    NS = IDLE;
                 end
             end
 
@@ -246,57 +173,51 @@ module load_unit (
                     NS = SEND_TAG;
                     // we store this grant in our queue
                     push = 1'b1;
-                    // plus: we can accept a new request
-                    ready_o = 1'b1;
                 end
                 // otherwise we keep waiting on our grant
             end
 
             SEND_TAG: begin
                 ready_o     = 1'b1;
-                // tell the cache that this tag is valid
-                tag_valid_o = 1'b1;
-                // if we are sending our tag we are able to process a new request
-                // -------------
-                // New Request
-                // -------------
-                // we can make a new request if we got one
-                if (valid_i) begin
-                    // do another address translation
-                    translation_req_o = 1'b1;
-                        if(!page_offset_matches_i) begin
+                // check if the translation is valid
+                if (translation_valid_i) begin
+                    tag_valid_o = 1'b1;
+                    // check for an exception which could have occurred
+                    if (ex_i.valid) begin
+                        // if we got one lets abort this request
+                        kill_req_o = 1'b1;
+                    end
+
+                    // we can make a new request here if we got one
+                    if (valid_i) begin
+                        // start the translation process even though we do not know if the addresses match
+                        // this should ease timing
+                        translation_req_o = 1'b1;
+                        // check if the page offset matches with a store, if it does then stall and wait
+                        if (!page_offset_matches_i) begin
                             // make a load request to memory
                             data_req_o = 1'b1;
-                            // the translation request we got is valid
-                            if (translation_valid_i) begin
-                                // save the physical address for the next cycle
-                                paddr_n = paddr_i;
-                                // we got no data grant so wait for the grant before sending the tag
-                                if (!data_gnt_i) begin
-                                    NS = WAIT_GNT;
-                                    ready_o = 1'b0;
-                                end else begin
-                                    // put the request in the queue
-                                    push = 1'b1;
-                                    // got an exception and we already sent a transaction so abort it
-                                    NS = SEND_TAG;
-                                    // got an exception
-                                    if (ex_i.valid) begin
-                                        NS = ABORT_TRANSACTION;
-                                    end
-                                end
-                            // we got a TLB miss
+                            // we got no data grant so wait for the grant before sending the tag
+                            if (!data_gnt_i) begin
+                                NS = WAIT_GNT;
                             end else begin
-                                // we need to abort the translation and let the PTW walker fix the TLB miss
-                                NS = WAIT_TRANSLATION;
-                                ready_o = 1'b0;
+                                // put the request in the queue
+                                push = 1'b1;
+                                // we got a grant so we can send the tag in the next cycle
+                                NS = SEND_TAG;
                             end
-                    // page offset mis-match -> go back to idle
-                    end else begin
-                        NS = IDLE;
+                        end else begin
+                            // wait for the store buffer to train and the page offset to not match anymore
+                            NS = WAIT_PAGE_OFFSET;
+                        end
                     end
+                // we didn't yet receive a valid translation, the only case where this could happen
+                // is on a TLB miss, therefore kill the transaction and give way for the PTW on the D$
                 end else begin
-                    NS = IDLE;
+                    // lets keep translating
+                    translation_req_o = 1'b1;
+                    ready_o           = 1'b0;
+                    NS = WAIT_TRANSLATION;
                 end
             end
 
@@ -304,7 +225,6 @@ module load_unit (
                 ready_o = 1'b0;
                 // we got all outstanding requests
                 if (empty) begin
-                    ready_o = 1'b1;
                     NS = IDLE;
                 end
             end

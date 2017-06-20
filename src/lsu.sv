@@ -100,7 +100,6 @@ module lsu #(
     fu_op                     operator_n, operator_q;
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     logic [7:0]               be_n,       be_q;
-    logic                     stall_n,    stall_q;
     // ------------------------------
     // Address Generation Unit (AGU)
     // ------------------------------
@@ -331,11 +330,11 @@ module lsu #(
 
         // this arbitrates access to the MMU
         if (st_translation_req) begin
-            translation_req      = 1'b1;
+            translation_req      = st_translation_req;
             mmu_vaddr            = st_vaddr;
             translation_valid_st = translation_valid;
-        end else if (ld_translation_req) begin
-            translation_req      = 1'b1;
+        end else begin
+            translation_req      = ld_translation_req;
             mmu_vaddr            = ld_vaddr;
             translation_valid_ld = translation_valid;
         end
@@ -469,7 +468,7 @@ module lsu #(
     // it can either be feed-through from the issue stage or from the internal registers
     always_comb begin : input_select
         // if we are stalling use the values we saved
-        if (stall_q) begin
+        if (lsu_ready_o) begin
             valid     = valid_q;
             vaddr     = vaddr_q;
             data      = data_q;
@@ -506,15 +505,6 @@ module lsu #(
             trans_id_n  = trans_id_i;
             be_n        = be_i;
         end
-
-        if (lsu_ready_o) begin
-            stall_n     = 1'b0;
-        end else begin
-            stall_n     = 1'b1;
-        end
-        // if we flush we can safely un-stall
-        if (flush_i)
-            stall_n     = 1'b0;
     end
 
     // registers
@@ -528,7 +518,6 @@ module lsu #(
             operator_q          <= ADD;
             trans_id_q          <= '{default: 0};
             be_q                <= 8'b0;
-            stall_q             <= 1'b0;
         end else begin
             // 1st LSU stage
             valid_q             <= valid_n;
@@ -538,7 +527,6 @@ module lsu #(
             operator_q          <= operator_n;
             trans_id_q          <= trans_id_n;
             be_q                <= be_n;
-            stall_q             <= stall_n;
         end
     end
 
