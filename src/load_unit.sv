@@ -146,7 +146,7 @@ module load_unit (
 
                 // we make a new request as soon as the page offset does not match anymore
                 if (!page_offset_matches_i) begin
-                    NS = IDLE;
+                    NS = WAIT_GNT;
                 end
             end
 

@@ -488,14 +488,6 @@ module lsu #(
     always_comb begin : input_select
         // if we are stalling use the values we saved
         if (lsu_ready_o) begin
-            valid     = valid_q;
-            vaddr     = vaddr_q;
-            data      = data_q;
-            fu        = fu_q;
-            operator  = operator_q;
-            trans_id  = trans_id_q;
-            be        = be_q;
-        end else begin // otherwise bypass them
             valid     = lsu_valid_i;
             vaddr     = vaddr_i;
             data      = operand_b_i;
@@ -503,6 +495,14 @@ module lsu #(
             operator  = operator_i;
             trans_id  = trans_id_i;
             be        = be_i;
+        end else begin // otherwise bypass them
+            valid     = valid_q;
+            vaddr     = vaddr_q;
+            data      = data_q;
+            fu        = fu_q;
+            operator  = operator_q;
+            trans_id  = trans_id_q;
+            be        = be_q;
         end
     end
     // 1st register stage

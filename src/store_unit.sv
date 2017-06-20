@@ -238,6 +238,10 @@ module store_unit (
         if ((vaddr_i[11:3] == st_buffer_paddr[11:3]) && st_buffer_valid) begin
             page_offset_matches_o = 1'b1;
         end
+
+        if ((vaddr_i[11:3] == paddr_i[11:3]) && (CS == VALID_STORE)) begin
+            page_offset_matches_o = 1'b1;
+        end
     end
 
 endmodule

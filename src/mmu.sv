@@ -48,10 +48,12 @@ module mmu #(
         input  logic [63:0]                     lsu_vaddr_i,      // virtual address in
         input  logic                            lsu_is_store_i,   // the translation is requested by a store
         // if we need to walk the page table we can't grant in the same cycle
+        // Cycle 0
+        output logic                            lsu_dtlb_hit_o,   // sent in the same cycle as the request if translation hits in the DTLB
+        // Cycle 1
         output logic                            lsu_valid_o,      // translation is valid
         output logic [63:0]                     lsu_paddr_o,      // translated address
         output exception                        lsu_exception_o,  // address translation threw an exception
-        output logic                            lsu_dtlb_hit_o,   // send in the same cycle as the request if translation hits in the DTLB
         // General control signals
         input priv_lvl_t                        priv_lvl_i,
         input priv_lvl_t                        ld_st_priv_lvl_i,
