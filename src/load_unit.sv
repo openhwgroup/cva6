@@ -57,7 +57,7 @@ module load_unit (
     input  logic                     data_rvalid_i,
     input  logic [63:0]              data_rdata_i
 );
-    enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, WAIT_TRANSLATION, ABORT_TRANSACTION, WAIT_FLUSH} NS, CS;
+    enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, ABORT_TRANSACTION, WAIT_FLUSH} NS, CS;
     // in order to decouple the response interface from the request interface we need a
     // a queue which can hold all outstanding memory requests
     typedef struct packed {
@@ -230,10 +230,8 @@ module load_unit (
         endcase
 
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
-        if (flush_i && (!empty || data_rvalid_i)) begin
+        if (flush_i) begin
             NS = WAIT_FLUSH;
-        end else if (flush_i) begin
-            NS = IDLE;
         end
     end
 

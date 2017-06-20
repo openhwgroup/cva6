@@ -164,7 +164,6 @@ module fetch_fifo
 
                             status_cnt++;
                             write_pointer++;
-                            // $display("Instruction: [ c  | c  ] @ %t", $time);
                         // or is it an unaligned 32 bit instruction like
                         // ____________________________________________________
                         // |instr [15:0] | instr [31:16] | compressed 1[15:0] |
@@ -198,6 +197,12 @@ module fetch_fifo
                     mem_n[write_pointer_q]    = {
                         branch_predict_q, ex_q, unaligned_address_q, {in_rdata_q[15:0], unaligned_instr_q}, 1'b0, 1'b0
                     };
+                    // // check if we predicted on the unaligned instruction part
+                    // if (!branch_predict_q.is_lower_16) begin
+                    //     // only output branch prediction here if we indeed meant it, e.g.: null it if it is not on the
+                    //     // lower 16 bit. Because then it would be valid for the upper part
+                    //     mem_n[write_pointer_q].branch_predict.valid = 1'b0;
+                    // end
 
                     status_cnt++;
                     write_pointer++;
@@ -217,7 +222,6 @@ module fetch_fifo
                         write_pointer++;
                         // unaligned access served
                         unaligned_n = 1'b0;
-                        // $display("Instruction: [ c  | i1 ] @ %t", $time);
                     // or is it an unaligned 32 bit instruction like
                     // ____________________________________________________
                     // |instr [15:0] | instr [31:16] | compressed 1[15:0] |

@@ -111,7 +111,8 @@ module store_unit (
             VALID_STORE: begin
                 valid_o  = 1'b1;
                 // post this store to the store buffer
-                st_valid = 1'b1;
+                if (!flush_i)
+                    st_valid = 1'b1;
                 // -----------------
                 // Access Exception
                 // -----------------
