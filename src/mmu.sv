@@ -51,6 +51,7 @@ module mmu #(
         output logic                            lsu_valid_o,      // translation is valid
         output logic [63:0]                     lsu_paddr_o,      // translated address
         output exception                        lsu_exception_o,  // address translation threw an exception
+        output logic                            lsu_dtlb_hit_o,   // send in the same cycle as the request if translation hits in the DTLB
         // General control signals
         input priv_lvl_t                        priv_lvl_i,
         input priv_lvl_t                        ld_st_priv_lvl_i,
@@ -285,6 +286,9 @@ module mmu #(
     logic        dtlb_hit_n,      dtlb_hit_q;
     logic        dtlb_is_2M_n,    dtlb_is_2M_q;
     logic        dtlb_is_1G_n,    dtlb_is_1G_q;
+
+    // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
+    assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit :  1'b1;
 
     // The data interface is simpler and only consists of a request/response interface
     always_comb begin : data_interface

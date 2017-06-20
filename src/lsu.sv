@@ -124,6 +124,7 @@ module lsu #(
     logic [63:0]              mmu_vaddr;
     logic [63:0]              mmu_paddr;
     exception                 mmu_exception;
+    logic                     dtlb_hit;
 
     logic                     ld_valid;
     logic [TRANS_ID_BITS-1:0] ld_trans_id;
@@ -202,6 +203,7 @@ module lsu #(
         .lsu_valid_o            ( translation_valid    ),
         .lsu_paddr_o            ( mmu_paddr            ),
         .lsu_exception_o        ( mmu_exception        ),
+        .lsu_dtlb_hit_o         ( dtlb_hit             ), // send in the same cycle as the request
         // connecting PTW to D$ IF (aka mem arbiter
         .address_index_o        ( address_index_i  [0] ),
         .address_tag_o          ( address_tag_i    [0] ),
@@ -237,6 +239,7 @@ module lsu #(
         .paddr_i               ( mmu_paddr            ),
         .translation_valid_i   ( translation_valid_st ),
         .ex_i                  ( mmu_exception        ),
+        .dtlb_hit_i            ( dtlb_hit             ),
         // Load Unit
         .page_offset_i         ( page_offset          ),
         .page_offset_matches_o ( page_offset_matches  ),
@@ -274,6 +277,7 @@ module lsu #(
         .paddr_i               ( mmu_paddr            ),
         .translation_valid_i   ( translation_valid_ld ),
         .ex_i                  ( mmu_exception        ),
+        .dtlb_hit_i            ( dtlb_hit             ),
         // to store unit
         .page_offset_o         ( page_offset          ),
         .page_offset_matches_i ( page_offset_matches  ),
@@ -323,21 +327,21 @@ module lsu #(
         // which of the two we are getting
         lsu_ready_o = ld_ready_o && st_ready_o;
         // "arbitrate" MMU access
-        translation_req      = 1'b0;
-        mmu_vaddr            = 64'b0;
-        translation_valid_st = 1'b0;
-        translation_valid_ld = 1'b0;
+        // translation_req      = 1'b0;
+        // mmu_vaddr            = 64'b0;
+        // translation_valid_st = 1'b0;
+        // translation_valid_ld = 1'b0;
 
-        // this arbitrates access to the MMU
-        if (st_translation_req) begin
-            translation_req      = st_translation_req;
-            mmu_vaddr            = st_vaddr;
-            translation_valid_st = translation_valid;
-        end else begin
-            translation_req      = ld_translation_req;
-            mmu_vaddr            = ld_vaddr;
-            translation_valid_ld = translation_valid;
-        end
+        // // this arbitrates access to the MMU
+        // if (ld_translation_req) begin
+        //     translation_req      = ld_translation_req;
+        //     mmu_vaddr            = ld_vaddr;
+        //     translation_valid_ld = translation_valid;
+        // end else begin
+        //     translation_req      = st_translation_req;
+        //     mmu_vaddr            = st_vaddr;
+        //     translation_valid_st = translation_valid;
+        // end
     end
 
     // determine whether this is a load or store
@@ -346,12 +350,27 @@ module lsu #(
         ld_valid_i = 1'b0;
         st_valid_i = 1'b0;
 
+        translation_req      = 1'b0;
+        mmu_vaddr            = 64'b0;
+        translation_valid_st = 1'b0;
+        translation_valid_ld = 1'b0;
+
         // check the operator to activate the right functional unit accordingly
         unique case (fu)
             // all loads go here
-            LOAD:  ld_valid_i = valid;
+            LOAD:  begin
+                ld_valid_i           = valid;
+                translation_req      = ld_translation_req;
+                mmu_vaddr            = ld_vaddr;
+                translation_valid_ld = translation_valid;
+            end
             // all stores go here
-            STORE: st_valid_i = valid;
+            STORE: begin
+                st_valid_i           = valid;
+                translation_req      = st_translation_req;
+                mmu_vaddr            = st_vaddr;
+                translation_valid_st = translation_valid;
+            end
             // not relevant for the LSU
             default: ;
         endcase
@@ -496,7 +515,7 @@ module lsu #(
         trans_id_n  = trans_id_q;
         be_n        = be_q;
         // get new input data
-        if (lsu_valid_i) begin
+        if (lsu_ready_o) begin
             valid_n     = lsu_valid_i;
             vaddr_n     = vaddr_i;
             data_n      = operand_b_i;

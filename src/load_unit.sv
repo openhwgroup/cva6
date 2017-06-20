@@ -40,6 +40,7 @@ module load_unit (
     input  logic [63:0]              paddr_i,             // physical address in
     input  logic                     translation_valid_i,
     input  exception                 ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
+    input  logic                     dtlb_hit_i,         // hit on the dtlb, send in the same cycle as the request
     // address checker
     output logic [11:0]              page_offset_o,
     input  logic                     page_offset_matches_i,
@@ -94,7 +95,7 @@ module load_unit (
     // ---------------
     // Load Control
     // ---------------
-    always_comb begin : load_controll
+    always_comb begin : load_control
         // default assignments
         NS                = CS;
         paddr_n           = paddr_q;
@@ -124,8 +125,11 @@ module load_unit (
                         end else begin
                             // put the request in the queue
                             push = 1'b1;
-                            // we got a grant so we can send the tag in the next cycle
-                            NS = SEND_TAG;
+                            if (dtlb_hit_i)
+                                // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                                NS = SEND_TAG;
+                            else
+                                NS = ABORT_TRANSACTION;
                         end
                     end else begin
                         // wait for the store buffer to train and the page offset to not match anymore
@@ -145,24 +149,21 @@ module load_unit (
                     NS = IDLE;
                 end
             end
+
+            // abort the previous request - free the D$ arbiter
             // we are here because of a TLB miss, we need to abort the current request and give way for the
             // PTW walker to satisfy the TLB miss
-            WAIT_TRANSLATION: begin
-                // keep the translation request hight to tell the PTW that we want this
-                // translation
-                translation_req_o = 1'b1;
-                // we are not ready here
-                ready_o           = 1'b0;
-                // send an abort signal
-                tag_valid_o       = 1'b1;
-                kill_req_o        = 1'b1;
-                // wait for the translation to become valid and redo the request by going back to idle
-                if (translation_valid_i) begin
-                    NS = IDLE;
-                end
+            ABORT_TRANSACTION: begin
+                ready_o     = 1'b0;
+                kill_req_o  = 1'b1;
+                tag_valid_o = 1'b1;
+                // redo the request by going back to the wait gnt state
+                NS          = WAIT_GNT;
             end
 
             WAIT_GNT: begin
+                // keep the translation request up
+                translation_req_o = 1'b1;
                 // we are waiting for the grant so we are not ready to accept anything new
                 ready_o = 1'b0;
                 // keep the request up
@@ -170,54 +171,51 @@ module load_unit (
                 // we finally got a data grant
                 if (data_gnt_i) begin
                     // so we send the tag in the next cycle
-                    NS = SEND_TAG;
+                    if (dtlb_hit_i)
+                        NS = SEND_TAG;
+                    else // should we not have hit on the TLB abort this transaction an retry later
+                        NS = ABORT_TRANSACTION;
                     // we store this grant in our queue
                     push = 1'b1;
                 end
                 // otherwise we keep waiting on our grant
             end
-
+            // we know for sure that the tag we want to send is valid
             SEND_TAG: begin
-                ready_o     = 1'b1;
-                // check if the translation is valid
-                if (translation_valid_i) begin
-                    tag_valid_o = 1'b1;
-                    // check for an exception which could have occurred
-                    if (ex_i.valid) begin
-                        // if we got one lets abort this request
-                        kill_req_o = 1'b1;
-                    end
+                tag_valid_o = 1'b1;
 
-                    // we can make a new request here if we got one
-                    if (valid_i) begin
-                        // start the translation process even though we do not know if the addresses match
-                        // this should ease timing
-                        translation_req_o = 1'b1;
-                        // check if the page offset matches with a store, if it does then stall and wait
-                        if (!page_offset_matches_i) begin
-                            // make a load request to memory
-                            data_req_o = 1'b1;
-                            // we got no data grant so wait for the grant before sending the tag
-                            if (!data_gnt_i) begin
-                                NS = WAIT_GNT;
-                            end else begin
-                                // put the request in the queue
-                                push = 1'b1;
-                                // we got a grant so we can send the tag in the next cycle
-                                NS = SEND_TAG;
-                            end
-                        end else begin
-                            // wait for the store buffer to train and the page offset to not match anymore
-                            NS = WAIT_PAGE_OFFSET;
-                        end
-                    end
-                // we didn't yet receive a valid translation, the only case where this could happen
-                // is on a TLB miss, therefore kill the transaction and give way for the PTW on the D$
-                end else begin
-                    // lets keep translating
+                // check for an exception which could have occurred
+                if (ex_i.valid) begin
+                    // if we got one lets abort this request
+                    kill_req_o = 1'b1;
+                end
+
+                // we can make a new request here if we got one
+                if (valid_i) begin
+                    // start the translation process even though we do not know if the addresses match
+                    // this should ease timing
                     translation_req_o = 1'b1;
-                    ready_o           = 1'b0;
-                    NS = WAIT_TRANSLATION;
+                    // check if the page offset matches with a store, if it does then stall and wait
+                    if (!page_offset_matches_i) begin
+                        // make a load request to memory
+                        data_req_o = 1'b1;
+                        // we got no data grant so wait for the grant before sending the tag
+                        if (!data_gnt_i) begin
+                            NS = WAIT_GNT;
+                        end else begin
+                            // put the request in the queue
+                            push = 1'b1;
+                            // we got a grant so we can send the tag in the next cycle
+                            if (dtlb_hit_i)
+                                // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
+                                NS = SEND_TAG;
+                            else // we missed on the TLB -> wait for the translation
+                                NS = ABORT_TRANSACTION;
+                        end
+                    end else begin
+                        // wait for the store buffer to train and the page offset to not match anymore
+                        NS = WAIT_PAGE_OFFSET;
+                    end
                 end
             end
 

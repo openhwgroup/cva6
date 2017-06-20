@@ -87,7 +87,7 @@ module scoreboard #(
         issue_instr_o          = decoded_instr_i;
         // make sure we assign the correct trans ID
         issue_instr_o.trans_id = issue_pointer_q;
-        issue_instr_valid_o    = ~issue_full && decoded_instr_valid_i;
+        issue_instr_valid_o    = ~issue_full && decoded_instr_valid_i && !flush_unissued_instr_i;
         decoded_instr_ack_o    = issue_ack_i;
     end
     // maintain a FIFO with issued instructions
@@ -99,11 +99,11 @@ module scoreboard #(
         commit_pointer_n = commit_pointer_q;
         issue_pointer_n  = issue_pointer_q;
 
-        // the decoded instruction we put in there is valid (1st bit)
-        mem_n[issue_pointer_q] = {1'b0, decoded_instr_i};
 
         // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
         if (issue_ack_i) begin
+            // the decoded instruction we put in there is valid (1st bit)
+            mem_n[issue_pointer_q] = {1'b1, decoded_instr_i};
             // increase the issue counter
             issue_cnt++;
             mem_n[issue_pointer_q].issued = 1'b1;

@@ -43,6 +43,7 @@ module store_unit (
     input  logic [63:0]              paddr_i,           // physical address in
     input  logic                     translation_valid_i,
     input  exception                 ex_i,
+    input  logic                     dtlb_hit_i,       // will be one in the same cycle translation_req was asserted if it hits
     // address checker
     input  logic [11:0]              page_offset_i,
     output logic                     page_offset_matches_o,
@@ -60,10 +61,9 @@ module store_unit (
 );
     assign result_o = 64'b0;
 
-    enum logic {IDLE, TRANSLATE} CS, NS;
+    enum logic [1:0] {IDLE, VALID_STORE, WAIT_TRANSLATION, WAIT_STORE_READY} NS, CS;
 
     logic [63:0]             st_buffer_paddr;  // physical address for store
-    logic [63:0]             st_buffer_data;   // store buffer data out
     logic [63:0]             st_data;          // aligned data to store buffer
     logic                    st_buffer_valid;
     // store buffer control signals
@@ -71,10 +71,13 @@ module store_unit (
     logic                    st_valid;
 
     // keep the data and the byte enable for the second cycle (after address translation)
-    logic [63:0]             st_data_q, st_data_n;
-    logic [7:0]              st_be_n,   st_be_q;
+    logic [63:0]              st_data_n, st_data_q;
+    logic [7:0]               st_be_n,   st_be_q;
+    logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
-    assign vaddr_o = vaddr_i;
+    // output assignments
+    assign vaddr_o    = vaddr_i; // virtual address
+    assign trans_id_o = trans_id_q; // transaction id from previous cycle
 
     always_comb begin : store_control
         translation_req_o = 1'b0;
@@ -82,46 +85,80 @@ module store_unit (
         valid_o           = 1'b0;
         st_valid          = 1'b0;
         ex_o              = ex_i;
-        trans_id_o        = trans_id_i;
+        trans_id_n        = trans_id_i;
+        NS                = CS;
 
         case (CS)
             // we got a valid store
             IDLE: begin
                 if (valid_i) begin
-                    // first do address translation, we need to do it in the first cycle since we want to share the MMU
-                    // between the load and the store unit. But we only know that when a new request arrives that we are not using
-                    // it at the same time.
+
+                    NS                = VALID_STORE;
                     translation_req_o = 1'b1;
+
+                    // check if translation was valid and we have space in the store buffer
+                    // otherwise simply stall
+                    if (!dtlb_hit_i) begin
+                        NS = WAIT_TRANSLATION;
+                    end
+
+                    if (!st_ready) begin
+                        NS = WAIT_STORE_READY;
+                    end
                 end
             end
 
-            TRANSLATE: begin
-                // check if translation was valid and we have space in the store buffer
-                // otherwise simply stall
-                if (translation_valid_i && st_ready) begin
-                    valid_o  = 1'b1;
-                    // post this store to the store buffer
-                    st_valid = 1'b1;
-                    // -----------------
-                    // Access Exception
-                    // -----------------
-                    // we got an address translation exception (access rights)
-                    // this will also assert the translation valid
-                    if (ex_i.valid) begin
-                        // the only difference is that we do not want to store this request
-                        st_valid = 1'b0;
-                    end
-                    // we have another request
-                    if (valid_i) begin
-                        translation_req_o = 1'b1;
-                    // go back to idle
-                    end else begin
-                        NS = IDLE;
-                    end
-                end else begin
-                    // keep on translating
+            VALID_STORE: begin
+                valid_o  = 1'b1;
+                // post this store to the store buffer
+                st_valid = 1'b1;
+                // -----------------
+                // Access Exception
+                // -----------------
+                // we got an address translation exception (access rights)
+                // this will also assert the translation valid
+                if (ex_i.valid) begin
+                    // the only difference is that we do not want to store this request
+                    st_valid = 1'b0;
+                end
+                // we have another request
+                if (valid_i) begin
+
                     translation_req_o = 1'b1;
-                    ready_o           = 1'b0;
+
+                    if (!dtlb_hit_i) begin
+                        NS = WAIT_TRANSLATION;
+                    end
+
+                    if (!st_ready) begin
+                        NS = WAIT_STORE_READY;
+                    end
+                // if we do not have another request go back to idle
+                end else begin
+                    NS = IDLE;
+                end
+            end
+
+            // the store queue is currently full
+            WAIT_STORE_READY: begin
+                ready_o           = 1'b0;
+                // keep the translation request high
+                translation_req_o = 1'b1;
+
+                if (st_ready && dtlb_hit_i) begin
+                    NS = VALID_STORE;
+                end
+            end
+
+            // we didn't receive a valid translation, wait for one
+            // but we know that the store queue is not full as we could only have landed here if
+            // it wasn't full
+            WAIT_TRANSLATION: begin
+                ready_o = 1'b0;
+                translation_req_o = 1'b1;
+
+                if (dtlb_hit_i) begin
+                    NS = VALID_STORE;
                 end
             end
         endcase
@@ -155,11 +192,12 @@ module store_unit (
         // store queue write port
         .valid_i           ( st_valid            ),
         .data_i            ( st_data_q           ),
-        // store buffer in
+        .be_i              ( st_be_q             ),
+        // store buffer out
         .paddr_o           ( st_buffer_paddr     ),
-        .data_o            ( st_buffer_data      ),
+        .data_o            (                     ),
         .valid_o           ( st_buffer_valid     ),
-        .be_o              ( st_be_q             ),
+        .be_o              (                     ),
         .ready_o           ( st_ready            ),
         .*
     );
@@ -168,11 +206,15 @@ module store_unit (
     // ---------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            st_be_q   <= '0;
-            st_data_q <= '0;
+            CS         <= IDLE;
+            st_be_q    <= '0;
+            st_data_q  <= '0;
+            trans_id_q <= '0;
         end else begin
-            st_be_q   <= st_be_n;
-            st_data_q <= st_data_n;
+            CS         <= NS;
+            st_be_q    <= st_be_n;
+            st_data_q  <= st_data_n;
+            trans_id_q <= trans_id_n;
         end
     end
     // ------------------
