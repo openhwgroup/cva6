@@ -46,11 +46,12 @@ module btb #(
 
     logic [$clog2(NR_ENTRIES)-1:0]          index, update_pc;
     logic [BITS_SATURATION_COUNTER-1:0]     saturation_counter;
-
+    // branch-predict input register
+    branchpredict                           branch_predict_q;
     // get actual index positions
     // we ignore the 0th bit since all instructions are aligned on
     // a half word boundary
-    assign update_pc = branch_predict_i.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
+    assign update_pc = branch_predict_q.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
     assign index     = vpc_i[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
 
     // we combinatorially predict the branch and the target address
@@ -64,32 +65,32 @@ module btb #(
         btb_n              = btb_q;
         saturation_counter = btb_q[update_pc].saturation_counter;
 
-        if (branch_predict_i.valid) begin
+        if (branch_predict_q.valid) begin
             btb_n[update_pc].valid = 1'b1;
             // update saturation counter
             // first check if counter is already saturated in the positive regime e.g.: branch taken
             if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}}) begin
                 // we can safely decrease it
-                if (~branch_predict_i.is_taken)
+                if (~branch_predict_q.is_taken)
                     btb_n[update_pc].saturation_counter = saturation_counter - 1;
             // then check if it saturated in the negative regime e.g.: branch not taken
             end else if (saturation_counter == {BITS_SATURATION_COUNTER{1'b0}}) begin
                 // we can safely increase it
-                if (branch_predict_i.is_taken)
+                if (branch_predict_q.is_taken)
                     btb_n[update_pc].saturation_counter = saturation_counter + 1;
             end else begin // otherwise we are not in any boundaries and can decrease or increase it
-                if (branch_predict_i.is_taken)
+                if (branch_predict_q.is_taken)
                     btb_n[update_pc].saturation_counter = saturation_counter + 1;
                 else
                     btb_n[update_pc].saturation_counter = saturation_counter - 1;
             end
             // the target address is simply updated
-            btb_n[update_pc].target_address = branch_predict_i.target_address;
+            btb_n[update_pc].target_address = branch_predict_q.target_address;
             // as is the information whether this was a compressed branch
-            btb_n[update_pc].is_lower_16    = branch_predict_i.is_lower_16;
+            btb_n[update_pc].is_lower_16    = branch_predict_q.is_lower_16;
             // check if we should invalidate this entry, this happens in case we predicted a branch
             // where actually none-is (aliasing)
-            if (branch_predict_i.clear) begin
+            if (branch_predict_q.clear) begin
                 btb_n[update_pc].valid = 1'b0;
             end
         end
@@ -101,6 +102,8 @@ module btb #(
             // Bias the branches to be taken upon first arrival
             for (int i = 0; i < NR_ENTRIES; i++)
                 btb_q[i] <= '{1'b0, 64'b0, 2'b10, 1'b0};
+
+            branch_predict_q <= '0;
         end else begin
             // evict all entries
             if (flush_i) begin
@@ -111,6 +114,7 @@ module btb #(
             end else begin
                 btb_q <=  btb_n;
             end
+            branch_predict_q <= branch_predict_i;
         end
     end
 endmodule

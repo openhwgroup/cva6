@@ -40,7 +40,7 @@ module load_unit (
     input  logic [63:0]              paddr_i,             // physical address in
     input  logic                     translation_valid_i,
     input  exception                 ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
-    input  logic                     dtlb_hit_i,         // hit on the dtlb, send in the same cycle as the request
+    input  logic                     dtlb_hit_i,          // hit on the dtlb, send in the same cycle as the request
     // address checker
     output logic [11:0]              page_offset_o,
     input  logic                     page_offset_matches_i,
