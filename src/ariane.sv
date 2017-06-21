@@ -247,7 +247,6 @@ module ariane
     if_stage if_stage_i (
         .flush_i               ( flush_ctrl_if                  ),
         .if_busy_o             ( if_ready_if_pcgen              ),
-        .id_ready_i            ( ready_id_if                    ),
         .fetch_address_i       ( fetch_address_pcgen_if         ),
         .fetch_valid_i         ( fetch_valid_pcgen_if           ),
         .branch_predict_i      ( branch_predict_pcgen_if        ),
@@ -279,7 +278,6 @@ module ariane
         .fetch_entry_i              ( fetch_entry_if_id                        ),
         .fetch_entry_valid_i        ( fetch_valid_if_id                        ),
         .decoded_instr_ack_o        ( decode_ack_id_if                         ),
-        .ready_o                    ( ready_id_if                              ),
         .priv_lvl_i                 ( priv_lvl                                 ),
         .tvm_i                      ( tvm_csr_id                               ),
         .tw_i                       ( tw_csr_id                                ),

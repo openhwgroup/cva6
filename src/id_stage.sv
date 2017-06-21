@@ -39,7 +39,6 @@ module id_stage #(
     input  logic                                     tw_i,
     input  logic                                     tsr_i,
 
-    output logic                                     ready_o,    // id is ready
     output fu_t                                      fu_o,
     output fu_op                                     operator_o,
     output logic [63:0]                              operand_a_o,
@@ -84,6 +83,7 @@ module id_stage #(
     // Global signals
     // ---------------------------------------------------
     logic full;
+    logic decode_instr_ack;
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (iro)
     // ---------------------------------------------------
@@ -133,7 +133,7 @@ module id_stage #(
     end
     // we are ready if we are not full and don't have any unresolved branches, but it can be
     // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i.valid == 1)
-    assign ready_o           = ~full && (~unresolved_branch_q || resolve_branch_i);
+    assign decoded_instr_ack_o = decode_instr_ack && !unresolved_branch_q;
 
     decoder decoder_i (
         .pc_i                    ( fetch_entry_i.address         ),
@@ -163,6 +163,7 @@ module id_stage #(
         .rs2_valid_o           ( rs2_valid_iro_sb         ),
         .commit_instr_o        ( commit_instr_o           ),
         .commit_ack_i          ( commit_ack_i             ),
+        .decoded_instr_ack_o   ( decode_instr_ack         ),
         .decoded_instr_i       ( decoded_instr_dc_sb      ),
         .decoded_instr_valid_i ( fetch_entry_valid_i      ),
         .issue_instr_o         ( issue_instr_sb_iro       ),

@@ -24,7 +24,6 @@ module if_stage (
     // control signals
     input  logic                   flush_i,
     output logic                   if_busy_o,           // is the IF stage busy fetching instructions?
-    input  logic                   id_ready_i,          // ID stage is ready
     // fetch direction from PC Gen
     input  logic [63:0]            fetch_address_i,     // address to fetch from
     input  logic                   fetch_valid_i,       // the fetch address is valid

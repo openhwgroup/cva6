@@ -87,7 +87,7 @@ module scoreboard #(
         issue_instr_o          = decoded_instr_i;
         // make sure we assign the correct trans ID
         issue_instr_o.trans_id = issue_pointer_q;
-        issue_instr_valid_o    = ~issue_full && decoded_instr_valid_i && !flush_unissued_instr_i;
+        issue_instr_valid_o    = !issue_full && decoded_instr_valid_i;
         decoded_instr_ack_o    = issue_ack_i;
     end
     // maintain a FIFO with issued instructions
