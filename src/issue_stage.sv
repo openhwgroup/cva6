@@ -107,8 +107,14 @@ module issue_stage #(
         if (resolve_branch_i) begin
             unresolved_branch_n = 1'b0;
         end
-        // if the instruction is valid and it is a control flow instruction
-        if (decoded_instr_valid_i && is_ctrl_flow_i) begin
+        // if the instruction is valid, it is a control flow instruction and the issue stage acknowledged its dispatch
+        // set the unresolved branch flag
+        if (issue_ack_iro_sb && decoded_instr_valid_i && is_ctrl_flow_i) begin
+            unresolved_branch_n = 1'b1;
+        end
+        // if we predicted a taken branch this means that we need to stall issue for one cycle to resolve the
+        // branch, otherwise we might issue a wrong instruction
+        if (issue_ack_iro_sb && decoded_instr_i.bp.valid && decoded_instr_i.bp.predict_taken) begin
             unresolved_branch_n = 1'b1;
         end
         // if we are requested to flush also flush the unresolved branch flag because either the flush

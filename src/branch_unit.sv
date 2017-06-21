@@ -131,17 +131,18 @@ module branch_unit (
                     end
                 end
             end
-            // to resolve the branch in ID -> only do this if this was indeed a branch (hence vald_i is asserted)
+            // to resolve the branch in ID
             resolve_branch_o = 1'b1;
         // the other case would be that this instruction was no branch but branch prediction thought that it was one
         // this is essentially also a mis-predict
-        end else if (fu_valid_i && branch_predict_i.valid) begin
+        end else if (fu_valid_i && branch_predict_i.valid && branch_predict_i.predict_taken) begin
             // re-set the branch to the next PC
             resolved_branch_o.is_mispredict  = 1'b1;
             resolved_branch_o.target_address = next_pc;
             // clear this entry so that we are not constantly mis-predicting
             resolved_branch_o.clear          = 1'b1;
             resolved_branch_o.valid          = 1'b1;
+            resolve_branch_o                 = 1'b1;
         end
     end
     // use ALU exception signal for storing instruction fetch exceptions if

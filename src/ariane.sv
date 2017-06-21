@@ -303,7 +303,7 @@ module ariane
         .NR_WB_PORTS                ( NR_WB_PORTS                     )
     )
     issue_stage_i (
-        .flush_unissued_instr_i     ( flush_unissued_instr_i                   ),
+        .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id             ),
         .flush_i                    ( flush_ctrl_id                            ),
 
         .decoded_instr_i            ( issue_entry_id_issue                     ),

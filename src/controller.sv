@@ -68,6 +68,7 @@ module controller (
         if (sfence_vma_i) begin
             flush_pcgen_o          = 1'b1;
             flush_if_o             = 1'b1;
+            flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
             flush_tlb_o            = 1'b1;
@@ -79,6 +80,7 @@ module controller (
         if (flush_csr_i) begin
             flush_pcgen_o          = 1'b1;
             flush_if_o             = 1'b1;
+            flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
         end
@@ -91,6 +93,7 @@ module controller (
             // for the PC GEN stage but instead tells it to take the PC we gave it
             flush_pcgen_o          = 1'b0;
             flush_if_o             = 1'b1;
+            flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
         end
@@ -102,6 +105,7 @@ module controller (
             // don't flush pcgen as we want to take the exception
             flush_pcgen_o          = 1'b0;
             flush_if_o             = 1'b1;
+            flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
         end

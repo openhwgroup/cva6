@@ -88,8 +88,8 @@ module scoreboard #(
         issue_instr_o.trans_id = issue_pointer_q;
         // we are ready if we are not full and don't have any unresolved branches, but it can be
         // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
-        issue_instr_valid_o    = decoded_instr_valid_i && !unresolved_branch_i && !issue_full;
-        decoded_instr_ack_o    = issue_ack_i;
+        issue_instr_valid_o    = decoded_instr_valid_i && !unresolved_branch_i;
+        decoded_instr_ack_o    = issue_ack_i && !issue_full;
     end
 
     // maintain a FIFO with issued instructions
@@ -102,7 +102,7 @@ module scoreboard #(
         issue_pointer_n  = issue_pointer_q;
 
         // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
-        if (issue_instr_valid_o) begin
+        if (decoded_instr_valid_i && decoded_instr_ack_o) begin
             // the decoded instruction we put in there is valid (1st bit)
             // increase the issue counter
             issue_cnt++;
