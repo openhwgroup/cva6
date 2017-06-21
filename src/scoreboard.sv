@@ -27,9 +27,8 @@ module scoreboard #(
     (
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
-    output logic                                      full_o,   // We can't take anymore data
     input  logic                                      flush_i,  // flush whole scoreboard
-    input  logic                                      flush_unissued_instr_i,
+    input  logic                                      unresolved_branch_i, // we have an unresolved branch
     // list of clobbered registers to issue stage
     output fu_t [31:0]                                rd_clobber_o,
 
@@ -78,7 +77,7 @@ module scoreboard #(
 
     // the issue queue is full don't issue any new instructions
     assign issue_full = (issue_cnt_q == NR_ENTRIES-1);
-    assign full_o     = issue_full;
+
     // output commit instruction directly
     assign commit_instr_o = mem_q[commit_pointer_q].sbe;
 
@@ -87,7 +86,9 @@ module scoreboard #(
         issue_instr_o          = decoded_instr_i;
         // make sure we assign the correct trans ID
         issue_instr_o.trans_id = issue_pointer_q;
-        issue_instr_valid_o    = decoded_instr_valid_i;
+        // we are ready if we are not full and don't have any unresolved branches, but it can be
+        // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
+        issue_instr_valid_o    = decoded_instr_valid_i && !unresolved_branch_i && !issue_full;
         decoded_instr_ack_o    = issue_ack_i;
     end
 
@@ -101,7 +102,7 @@ module scoreboard #(
         issue_pointer_n  = issue_pointer_q;
 
         // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
-        if (issue_ack_i) begin
+        if (issue_instr_valid_o) begin
             // the decoded instruction we put in there is valid (1st bit)
             // increase the issue counter
             issue_cnt++;

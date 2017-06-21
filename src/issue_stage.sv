@@ -77,12 +77,6 @@ module issue_stage #(
     output scoreboard_entry                          commit_instr_o,
     input  logic                                     commit_ack_i
 );
-
-    // ---------------------------------------------------
-    // Global signals
-    // ---------------------------------------------------
-    logic full;
-    logic decoded_instr_ack;
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (IRO)
     // ---------------------------------------------------
@@ -123,9 +117,6 @@ module issue_stage #(
             unresolved_branch_n = 1'b0;
         end
     end
-    // we are ready if we are not full and don't have any unresolved branches, but it can be
-    // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
-    assign decoded_instr_ack_o = ~full && (~unresolved_branch_q) && decoded_instr_ack;
 
     issue_read_operands issue_read_operands_i  (
         .flush_i             ( flush_unissued_instr_i     ),
@@ -148,7 +139,7 @@ module issue_stage #(
     )
     scoreboard_i
     (
-        .full_o                ( full                     ),
+        .unresolved_branch_i   ( unresolved_branch_q      ),
         .rd_clobber_o          ( rd_clobber_sb_iro        ),
         .rs1_i                 ( rs1_iro_sb               ),
         .rs1_o                 ( rs1_sb_iro               ),
@@ -156,8 +147,6 @@ module issue_stage #(
         .rs2_i                 ( rs2_iro_sb               ),
         .rs2_o                 ( rs2_sb_iro               ),
         .rs2_valid_o           ( rs2_valid_iro_sb         ),
-
-        .decoded_instr_ack_o   ( decoded_instr_ack        ),
 
         .issue_instr_o         ( issue_instr_sb_iro       ),
         .issue_instr_valid_o   ( issue_instr_valid_sb_iro ),

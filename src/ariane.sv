@@ -276,7 +276,7 @@ module ariane
     // ID
     // ---------
     id_stage id_stage_i (
-        .flush_i                    ( flush_ctrl_id                   ),
+        .flush_i                    ( flush_ctrl_if                   ),
         .fetch_entry_i              ( fetch_entry_if_id               ),
         .fetch_entry_valid_i        ( fetch_valid_if_id               ),
         .decoded_instr_ack_o        ( decode_ack_id_if                ),
