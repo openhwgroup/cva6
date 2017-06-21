@@ -143,7 +143,7 @@ module fetch_fifo
                     // check if the instruction is compressed
                     if (in_rdata_q[1:0] != 2'b11) begin
                         // it is compressed
-                        mem_n[write_pointer_q] = {
+                        mem_n[write_pointer_q]    = {
                             branch_predict_q, ex_q, in_addr_q, decompressed_instruction[0], 1'b1, is_illegal[0]
                         };
 
@@ -158,7 +158,7 @@ module fetch_fifo
                         // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
                         if (in_rdata_q[17:16] != 2'b11 && !(branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16)) begin
 
-                            mem_n[write_pointer_q + 1'b1] = {
+                            mem_n[write_pointer_q + 1'b1]    = {
                                 branch_predict_q, ex_q, {in_addr_q[63:2], 2'b10}, decompressed_instruction[1], 1'b1, is_illegal[1]
                             };
 
@@ -195,12 +195,6 @@ module fetch_fifo
                     mem_n[write_pointer_q]    = {
                         branch_predict_q, ex_q, unaligned_address_q, {in_rdata_q[15:0], unaligned_instr_q}, 1'b0, 1'b0
                     };
-                    // // check if we predicted on the unaligned instruction part
-                    // if (!branch_predict_q.is_lower_16) begin
-                    //     // only output branch prediction here if we indeed meant it, e.g.: null it if it is not on the
-                    //     // lower 16 bit. Because then it would be valid for the upper part
-                    //     mem_n[write_pointer_q].branch_predict.valid = 1'b0;
-                    // end
 
                     status_cnt++;
                     write_pointer++;
