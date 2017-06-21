@@ -57,7 +57,7 @@ module load_unit (
     input  logic                     data_rvalid_i,
     input  logic [63:0]              data_rdata_i
 );
-    enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, ABORT_TRANSACTION, WAIT_FLUSH} NS, CS;
+    enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, ABORT_TRANSACTION, WAIT_TRANSLATION, WAIT_FLUSH} NS, CS;
     // in order to decouple the response interface from the request interface we need a
     // a queue which can hold all outstanding memory requests
     typedef struct packed {
@@ -107,6 +107,8 @@ module load_unit (
         tag_valid_o       = 1'b0;
         push              = 1'b0;
         data_be_o         = be_i;
+
+        ex_o              = ex_i;
 
         case (CS)
             IDLE: begin
@@ -158,7 +160,15 @@ module load_unit (
                 kill_req_o  = 1'b1;
                 tag_valid_o = 1'b1;
                 // redo the request by going back to the wait gnt state
-                NS          = WAIT_GNT;
+                NS          = WAIT_TRANSLATION;
+            end
+
+            WAIT_TRANSLATION: begin
+                ready_o           = 1'b0;
+                translation_req_o = 1'b1;
+                // we've got a hit and we can continue with the request process
+                if (dtlb_hit_i)
+                    NS = WAIT_GNT;
             end
 
             WAIT_GNT: begin
@@ -184,18 +194,12 @@ module load_unit (
             SEND_TAG: begin
                 tag_valid_o = 1'b1;
 
-                // check for an exception which could have occurred
-                if (ex_i.valid) begin
-                    // if we got one lets abort this request
-                    kill_req_o = 1'b1;
-                end
-
                 // we can make a new request here if we got one
                 if (valid_i) begin
                     // start the translation process even though we do not know if the addresses match
                     // this should ease timing
                     translation_req_o = 1'b1;
-                    // check if the page offset matches with a store, if it does then stall and wait
+                    // check if the page offset matches with a store, if it does stall and wait
                     if (!page_offset_matches_i) begin
                         // make a load request to memory
                         data_req_o = 1'b1;
@@ -220,15 +224,27 @@ module load_unit (
             end
 
             WAIT_FLUSH: begin
-                ready_o = 1'b0;
-                // we got all outstanding requests
+                ready_o     = 1'b0;
+                // the D$ arbiter will take care of presenting this to the memory only in case we
+                // have an outstanding request
+                kill_req_o  = 1'b1;
+                tag_valid_o = 1'b1;
+                // we've got all outstanding requests
                 if (empty) begin
                     NS = IDLE;
                 end
             end
 
         endcase
-
+        // we got an exception
+        if (ex_i) begin
+            // the next state will be the idle state
+            NS = IDLE;
+            // or in case we began a transaction which we need to abort
+            if (CS != IDLE) begin
+                NS = WAIT_FLUSH;
+            end
+        end
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
         if (flush_i) begin
             NS = WAIT_FLUSH;
@@ -241,13 +257,18 @@ module load_unit (
         valid_o = 1'b0;
         // output the queue data directly, the valid signal is set corresponding to the process above
         trans_id_o = out_data.trans_id;
-        // output any exception which might have occurred
-        ex_o       = out_data.ex;
         // we got an rvalid and are currently not flushing and not aborting the request
         if (data_rvalid_i && CS != WAIT_FLUSH) begin
             pop     = 1'b1;
+            // we killed the request so don't give a valid signal yet
+            if (!kill_req_o)
+                valid_o = 1'b1;
+        end
+        // in case of an exception we can directly output the result, we don't care about any of the values
+        if (ex_i) begin
             valid_o = 1'b1;
         end
+
     end
 
 
@@ -263,7 +284,7 @@ module load_unit (
     end
 
     // --------------
-    // Rvalid FIFO
+    // rvalid FIFO
     // --------------
     // we can have two outstanding requests, hence we need to elements in the FIFO
     fifo #(

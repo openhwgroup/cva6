@@ -65,11 +65,13 @@ module pcgen (
     // Next PC
     // -------------------
     // next PC (NPC) can come from:
-    // 1. Exception
-    // 2. Return from exception
-    // 3. Predicted branch
-    // 4. Debug
-    // 5. Boot address
+    // 0. Default assignment
+    // 1. Branch Predict taken
+    // 2. Debug
+    // 3. Control flow change request
+    // 4. Exception
+    // 5. Return from exception
+    // 6. Pipeline Flush because of CSR side effects
     always_comb begin : npc_select
         branch_predict_o = branch_predict_btb;
         fetch_valid_o    = 1'b1;
@@ -119,9 +121,9 @@ module pcgen (
             npc_n = epc_i;
         end
 
-        // -------------------------------
-        // 6. Pipeline Flush
-        // -------------------------------
+        // -----------------------------------------------
+        // 6. Pipeline Flush because of CSR side effects
+        // -----------------------------------------------
         // On a pipeline flush start fetching from the next address
         // of the instruction in the commit stage
         if (flush_i) begin

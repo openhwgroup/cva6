@@ -175,7 +175,6 @@ module fetch_fifo
                             unaligned_n = 1'b1;
                             // save the address as well
                             unaligned_address_n = {in_addr_q[63:2], 2'b10};
-                            // $display("Instruction: [ i0 | c  ] @ %t", $time);
                             // this does not consume space in the FIFO
                         end
                     end else begin
@@ -188,7 +187,6 @@ module fetch_fifo
                         };
                         status_cnt++;
                         write_pointer++;
-                        // $display("Instruction: [    i    ] @ %t", $time);
                     end
                 end
                 // we have an outstanding unaligned instruction
@@ -233,7 +231,6 @@ module fetch_fifo
                         unaligned_n = 1'b1;
                         // save the address as well
                         unaligned_address_n = {in_addr_q[63:2], 2'b10};
-                        // $display("Instruction: [ i0 | i1 ] @ %t", $time);
                         // this does not consume space in the FIFO
                     // we've got a predicted taken branch we need to clear the unaligned flag if it was decoded as a lower 16 instruction
                     end else if (branch_predict_q.valid && branch_predict_q.predict_taken && branch_predict_q.is_lower_16) begin

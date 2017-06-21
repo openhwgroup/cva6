@@ -282,7 +282,7 @@ module csr_regfile #(
                     mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                     // we are in vector mode, this implementation requires the additional
                     // alignment constraint of 64 * 4 bytes
-                    if (mtvec_q[0] || csr_wdata[0])
+                    if (csr_wdata[0])
                         mtvec_n = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
                 end
                 CSR_MSCRATCH:           mscratch_n  = csr_wdata;

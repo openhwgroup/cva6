@@ -113,15 +113,7 @@ module store_unit (
                 // post this store to the store buffer
                 if (!flush_i)
                     st_valid = 1'b1;
-                // -----------------
-                // Access Exception
-                // -----------------
-                // we got an address translation exception (access rights)
-                // this will also assert the translation valid
-                if (ex_i.valid) begin
-                    // the only difference is that we do not want to store this request
-                    st_valid = 1'b0;
-                end
+
                 // we have another request
                 if (valid_i) begin
 
@@ -163,6 +155,17 @@ module store_unit (
                 end
             end
         endcase
+
+        // -----------------
+        // Access Exception
+        // -----------------
+        // we got an address translation exception (access rights, misaligned or page fault)
+        if (ex_i.valid) begin
+            // the only difference is that we do not want to store this request
+            st_valid = 1'b0;
+            NS       = IDLE;
+            valid_o  = 1'b1;
+        end
 
         if (flush_i)
             NS = IDLE;
