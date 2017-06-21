@@ -3,9 +3,9 @@ add wave -noupdate -group pcgen_stage -group btb /core_tb/dut/pcgen_i/btb_i/*
 add wave -noupdate -group pcgen_stage /core_tb/dut/pcgen_i/*
 add wave -noupdate -group if_stage -group fetch_fifo /core_tb/dut/if_stage_i/fetch_fifo_i/*
 add wave -noupdate -group if_stage /core_tb/dut/if_stage_i/*
-add wave -noupdate -group id_stage -group scoreboard /core_tb/dut/id_stage_i/scoreboard_i/*
 add wave -noupdate -group id_stage -group decoder /core_tb/dut/id_stage_i/decoder_i/*
-add wave -noupdate -group id_stage -group issue_read_operands /core_tb/dut/id_stage_i/issue_read_operands_i/*
+add wave -noupdate -group issue_stage -group scoreboard /core_tb/dut/issue_stage_i/scoreboard_i/*
+add wave -noupdate -group issue_stage -group issue_read_operands /core_tb/dut/issue_stage_i/issue_read_operands_i/*
 add wave -noupdate -group id_stage /core_tb/dut/id_stage_i/*
 add wave -noupdate -group ex_stage -group alu /core_tb/dut/ex_stage_i/alu_i/*
 add wave -noupdate -group ex_stage -group lsu -group mmu /core_tb/dut/ex_stage_i/lsu_i/mmu_i/*

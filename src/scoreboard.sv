@@ -76,13 +76,6 @@ module scoreboard #(
     logic [$clog2(NR_ENTRIES)-1:0] commit_pointer_n, commit_pointer_q;
     logic                          issue_full;
 
-    struct packed {
-        logic            valid;
-        scoreboard_entry sbe;
-    } decoded_instr_n, decoded_instr_q;
-
-    logic decoded_instr_ack;
-
     // the issue queue is full don't issue any new instructions
     assign issue_full = (issue_cnt_q == NR_ENTRIES-1);
     assign full_o     = issue_full;
@@ -91,29 +84,13 @@ module scoreboard #(
 
     // an instruction is ready for issue if we have place in the issue FIFO and it the decoder says it is valid
     always_comb begin
-        issue_instr_o          = decoded_instr_q;
+        issue_instr_o          = decoded_instr_i;
         // make sure we assign the correct trans ID
         issue_instr_o.trans_id = issue_pointer_q;
-        issue_instr_valid_o    = decoded_instr_q.valid;
-        decoded_instr_ack_o    = decoded_instr_ack;
+        issue_instr_valid_o    = decoded_instr_valid_i;
+        decoded_instr_ack_o    = issue_ack_i;
     end
-    always_comb begin : decode_if
-        decoded_instr_ack = 1'b0;
-        decoded_instr_n  = decoded_instr_q;
 
-        if (issue_ack_i)
-            decoded_instr_n.valid = 1'b0;
-
-        if (!decoded_instr_q.valid && decoded_instr_valid_i) begin
-            decoded_instr_ack = 1'b1;
-            decoded_instr_n   = {1'b1, decoded_instr_i};
-        end
-
-        if (decoded_instr_q.valid && !issue_full && issue_ack_i) begin
-            decoded_instr_ack = 1'b1;
-            decoded_instr_n   = {1'b1, decoded_instr_i};
-        end
-    end
     // maintain a FIFO with issued instructions
     // keep track of all issued instructions
     always_comb begin : issue_fifo
@@ -254,13 +231,11 @@ module scoreboard #(
             issue_cnt_q      <= '0;
             commit_pointer_q <= '0;
             issue_pointer_q  <= '0;
-            decoded_instr_q  <= '0;
         end else begin
             mem_q            <= mem_n;
             issue_cnt_q      <= issue_cnt_n;
             commit_pointer_q <= commit_pointer_n;
             issue_pointer_q  <= issue_pointer_n;
-            decoded_instr_q  <= decoded_instr_n;
         end
     end
     `ifndef SYNTHESIS

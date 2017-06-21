@@ -118,8 +118,17 @@ module ariane
     logic                     fetch_valid_if_id;
     logic                     decode_ack_id_if;
     exception                 exception_if_id;
+
     // --------------
-    // ID <-> EX
+    // ID <-> ISSUE
+    // --------------
+    scoreboard_entry          issue_entry_id_issue;
+    logic                     issue_entry_valid_id_issue;
+    logic                     is_ctrl_fow_id_issue;
+    logic                     issue_instr_issue_id;
+
+    // --------------
+    // ISSUE <-> EX
     // --------------
     logic [63:0]              imm_id_ex;
     logic [TRANS_ID_BITS-1:0] trans_id_id_ex;
@@ -266,22 +275,42 @@ module ariane
     // ---------
     // ID
     // ---------
-    id_stage
+    id_stage id_stage_i (
+        .flush_i                    ( flush_ctrl_id                   ),
+        .fetch_entry_i              ( fetch_entry_if_id               ),
+        .fetch_entry_valid_i        ( fetch_valid_if_id               ),
+        .decoded_instr_ack_o        ( decode_ack_id_if                ),
+
+        .issue_entry_o              ( issue_entry_id_issue            ),
+        .issue_entry_valid_o        ( issue_entry_valid_id_issue      ),
+        .is_ctrl_flow_o             ( is_ctrl_fow_id_issue            ),
+        .issue_instr_ack_i          ( issue_instr_issue_id            ),
+
+        .priv_lvl_i                 ( priv_lvl                        ),
+        .tvm_i                      ( tvm_csr_id                      ),
+        .tw_i                       ( tw_csr_id                       ),
+        .tsr_i                      ( tsr_csr_id                      ),
+
+        .*
+    );
+
+    // ---------
+    // Issue
+    // ---------
+    issue_stage
     #(
-        .NR_ENTRIES                 ( NR_SB_ENTRIES                            ),
-        .NR_WB_PORTS                ( NR_WB_PORTS                              )
+        .NR_ENTRIES                 ( NR_SB_ENTRIES                   ),
+        .NR_WB_PORTS                ( NR_WB_PORTS                     )
     )
-    id_stage_i (
-        .test_en_i                  ( test_en_i                                ),
+    issue_stage_i (
+        .flush_unissued_instr_i     ( flush_unissued_instr_i                   ),
         .flush_i                    ( flush_ctrl_id                            ),
-        .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id             ),
-        .fetch_entry_i              ( fetch_entry_if_id                        ),
-        .fetch_entry_valid_i        ( fetch_valid_if_id                        ),
-        .decoded_instr_ack_o        ( decode_ack_id_if                         ),
-        .priv_lvl_i                 ( priv_lvl                                 ),
-        .tvm_i                      ( tvm_csr_id                               ),
-        .tw_i                       ( tw_csr_id                                ),
-        .tsr_i                      ( tsr_csr_id                               ),
+
+        .decoded_instr_i            ( issue_entry_id_issue                     ),
+        .decoded_instr_valid_i      ( issue_entry_valid_id_issue               ),
+        .is_ctrl_flow_i             ( is_ctrl_fow_id_issue                     ),
+        .decoded_instr_ack_o        ( issue_instr_issue_id                     ),
+
         // Functional Units
         .fu_o                       ( fu_id_ex                                 ),
         .operator_o                 ( operator_id_ex                           ),
@@ -485,8 +514,8 @@ module ariane
     assign tracer_if.fetch_valid       = fetch_valid_if_id;
     assign tracer_if.fetch_ack         = decode_ack_id_if;
     // Issue
-    assign tracer_if.issue_ack         = id_stage_i.scoreboard_i.issue_ack_i;
-    assign tracer_if.issue_sbe         = id_stage_i.scoreboard_i.issue_instr_o;
+    assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
+    assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;
     // write-back
     assign tracer_if.waddr             = waddr_a_commit_id;
     assign tracer_if.wdata             = wdata_a_commit_id;
