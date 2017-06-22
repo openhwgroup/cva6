@@ -60,23 +60,12 @@ module load_unit (
     enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, ABORT_TRANSACTION, WAIT_TRANSLATION, WAIT_FLUSH} NS, CS;
     // in order to decouple the response interface from the request interface we need a
     // a queue which can hold all outstanding memory requests
-    typedef struct packed {
+    struct packed {
         logic [TRANS_ID_BITS-1:0] trans_id;
         logic [2:0]               address_offset;
         fu_op                     operator;
-        exception                 ex;
-    } rvalid_entry_t;
+    } load_data_n, load_data_q, in_data;
 
-    // queue control signal
-    rvalid_entry_t in_data;
-    logic          push;
-    rvalid_entry_t out_data;
-    logic          pop;
-    logic          empty;
-    // register to save the physical address after address translation
-    // going directly to memory with this address will not work in-terms of timing (e.g.: the path to the memory
-    // is already super-critical with the address checker and memory arbiter on it).
-    logic [63:0] paddr_n, paddr_q;
     // page offset is defined as the lower 12 bits, feed through for address checker
     assign page_offset_o = vaddr_i[11:0];
     // feed-through the virtual address for VA translation
@@ -84,13 +73,14 @@ module load_unit (
     // this is a read-only interface so set the write enable to 0
     assign data_we_o = 1'b0;
     // compose the queue data, control is handled in the FSM
-    assign in_data = {trans_id_i, vaddr_i[2:0], operator_i, ex_i};
-
+    assign in_data = {trans_id_i, vaddr_i[2:0], operator_i};
     // output address
     // we can now output the lower 12 bit as the index to the cache
     assign address_index_o = vaddr_i[11:0];
     // translation from last cycle, again: control is handled in the FSM
     assign address_tag_o   = paddr_i[55:12];
+    // directly output an exception
+    assign ex_o = ex_i;
 
     // ---------------
     // Load Control
@@ -98,17 +88,14 @@ module load_unit (
     always_comb begin : load_control
         // default assignments
         NS                = CS;
-        paddr_n           = paddr_q;
+        load_data_n       = in_data;
         translation_req_o = 1'b0;
         ready_o           = 1'b1;
         data_req_o        = 1'b0;
         // tag control
         kill_req_o        = 1'b0;
         tag_valid_o       = 1'b0;
-        push              = 1'b0;
         data_be_o         = be_i;
-
-        ex_o              = ex_i;
 
         case (CS)
             IDLE: begin
@@ -125,8 +112,6 @@ module load_unit (
                         if (!data_gnt_i) begin
                             NS = WAIT_GNT;
                         end else begin
-                            // put the request in the queue
-                            push = 1'b1;
                             if (dtlb_hit_i)
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 NS = SEND_TAG;
@@ -185,15 +170,12 @@ module load_unit (
                         NS = SEND_TAG;
                     else // should we not have hit on the TLB abort this transaction an retry later
                         NS = ABORT_TRANSACTION;
-                    // we store this grant in our queue
-                    push = 1'b1;
                 end
                 // otherwise we keep waiting on our grant
             end
             // we know for sure that the tag we want to send is valid
             SEND_TAG: begin
                 tag_valid_o = 1'b1;
-
                 // we can make a new request here if we got one
                 if (valid_i) begin
                     // start the translation process even though we do not know if the addresses match
@@ -207,8 +189,6 @@ module load_unit (
                         if (!data_gnt_i) begin
                             NS = WAIT_GNT;
                         end else begin
-                            // put the request in the queue
-                            push = 1'b1;
                             // we got a grant so we can send the tag in the next cycle
                             if (dtlb_hit_i)
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
@@ -221,6 +201,14 @@ module load_unit (
                         NS = WAIT_PAGE_OFFSET;
                     end
                 end
+                // ----------
+                // Exception
+                // ----------
+                // if we got an exception we need to kill the request immediately
+                if (ex_i.valid) begin
+                    kill_req_o = 1'b1;
+                    NS = IDLE;
+                end
             end
 
             WAIT_FLUSH: begin
@@ -229,21 +217,15 @@ module load_unit (
                 // have an outstanding request
                 kill_req_o  = 1'b1;
                 tag_valid_o = 1'b1;
-                // we've got all outstanding requests
-                if (empty) begin
-                    NS = IDLE;
-                end
+                // we've killed the current request so we can go back to idle
+                NS = IDLE;
             end
 
         endcase
         // we got an exception
-        if (ex_i) begin
+        if (ex_i.valid) begin
             // the next state will be the idle state
             NS = IDLE;
-            // or in case we began a transaction which we need to abort
-            if (CS != IDLE) begin
-                NS = WAIT_FLUSH;
-            end
         end
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
         if (flush_i) begin
@@ -253,55 +235,26 @@ module load_unit (
 
     // decoupled rvalid process
     always_comb begin : rvalid_output
-        pop     = 1'b0;
         valid_o = 1'b0;
         // output the queue data directly, the valid signal is set corresponding to the process above
-        trans_id_o = out_data.trans_id;
+        trans_id_o = load_data_q.trans_id;
         // we got an rvalid and are currently not flushing and not aborting the request
         if (data_rvalid_i && CS != WAIT_FLUSH) begin
-            pop     = 1'b1;
-            // we killed the request so don't give a valid signal yet
-            if (!kill_req_o)
-                valid_o = 1'b1;
-        end
-        // in case of an exception we can directly output the result, we don't care about any of the values
-        if (ex_i) begin
             valid_o = 1'b1;
         end
-
     end
 
 
     // latch physical address for the tag cycle (one cycle after applying the index)
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            CS      <= IDLE;
-            paddr_q <= '0;
+            CS          <= IDLE;
+            load_data_q <= '0;
         end else begin
-            CS      <= NS;
-            paddr_q <= paddr_n;
+            CS          <= NS;
+            load_data_q <= load_data_n;
         end
     end
-
-    // --------------
-    // rvalid FIFO
-    // --------------
-    // we can have two outstanding requests, hence we need to elements in the FIFO
-    fifo #(
-        .dtype            ( rvalid_entry_t   ),
-        .DEPTH            ( 2                )
-    )
-    fifo_i (
-        .full_o           (                  ), // we can ignore the full signal, the FIFO will never overflow
-        .empty_o          ( empty            ),
-        .single_element_o (                  ), // we don't care about the single element either
-
-        .data_i           ( in_data          ),
-        .push_i           ( push             ),
-        .data_o           ( out_data         ),
-        .pop_i            ( pop              ),
-        .*
-    );
 
     // ---------------
     // Sign Extend
@@ -318,43 +271,43 @@ module load_unit (
 
       // sign extension for words
     always_comb begin : sign_extend_word
-        case (out_data.address_offset)
-            default: rdata_w_ext = (out_data.operator == LW) ? {{32{data_rdata_i[31]}}, data_rdata_i[31:0]}  : {32'h0, data_rdata_i[31:0]};
-            3'b001:  rdata_w_ext = (out_data.operator == LW) ? {{32{data_rdata_i[39]}}, data_rdata_i[39:8]}  : {32'h0, data_rdata_i[39:8]};
-            3'b010:  rdata_w_ext = (out_data.operator == LW) ? {{32{data_rdata_i[47]}}, data_rdata_i[47:16]} : {32'h0, data_rdata_i[47:16]};
-            3'b011:  rdata_w_ext = (out_data.operator == LW) ? {{32{data_rdata_i[55]}}, data_rdata_i[55:24]} : {32'h0, data_rdata_i[55:24]};
-            3'b100:  rdata_w_ext = (out_data.operator == LW) ? {{32{data_rdata_i[63]}}, data_rdata_i[63:32]} : {32'h0, data_rdata_i[63:32]};
+        case (load_data_q.address_offset)
+            default: rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[31]}}, data_rdata_i[31:0]}  : {32'h0, data_rdata_i[31:0]};
+            3'b001:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[39]}}, data_rdata_i[39:8]}  : {32'h0, data_rdata_i[39:8]};
+            3'b010:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[47]}}, data_rdata_i[47:16]} : {32'h0, data_rdata_i[47:16]};
+            3'b011:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[55]}}, data_rdata_i[55:24]} : {32'h0, data_rdata_i[55:24]};
+            3'b100:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[63]}}, data_rdata_i[63:32]} : {32'h0, data_rdata_i[63:32]};
         endcase
     end
 
     // sign extension for half words
     always_comb begin : sign_extend_half_word
-        case (out_data.address_offset)
-            default: rdata_h_ext = (out_data.operator == LH) ? {{48{data_rdata_i[15]}}, data_rdata_i[15:0]}  : {48'h0, data_rdata_i[15:0]};
-            3'b001:  rdata_h_ext = (out_data.operator == LH) ? {{48{data_rdata_i[23]}}, data_rdata_i[23:8]}  : {48'h0, data_rdata_i[23:8]};
-            3'b010:  rdata_h_ext = (out_data.operator == LH) ? {{48{data_rdata_i[31]}}, data_rdata_i[31:16]} : {48'h0, data_rdata_i[31:16]};
-            3'b011:  rdata_h_ext = (out_data.operator == LH) ? {{48{data_rdata_i[39]}}, data_rdata_i[39:24]} : {48'h0, data_rdata_i[39:24]};
-            3'b100:  rdata_h_ext = (out_data.operator == LH) ? {{48{data_rdata_i[47]}}, data_rdata_i[47:32]} : {48'h0, data_rdata_i[47:32]};
-            3'b101:  rdata_h_ext = (out_data.operator == LH) ? {{48{data_rdata_i[55]}}, data_rdata_i[55:40]} : {48'h0, data_rdata_i[55:40]};
-            3'b110:  rdata_h_ext = (out_data.operator == LH) ? {{48{data_rdata_i[63]}}, data_rdata_i[63:48]} : {48'h0, data_rdata_i[63:48]};
+        case (load_data_q.address_offset)
+            default: rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[15]}}, data_rdata_i[15:0]}  : {48'h0, data_rdata_i[15:0]};
+            3'b001:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[23]}}, data_rdata_i[23:8]}  : {48'h0, data_rdata_i[23:8]};
+            3'b010:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[31]}}, data_rdata_i[31:16]} : {48'h0, data_rdata_i[31:16]};
+            3'b011:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[39]}}, data_rdata_i[39:24]} : {48'h0, data_rdata_i[39:24]};
+            3'b100:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[47]}}, data_rdata_i[47:32]} : {48'h0, data_rdata_i[47:32]};
+            3'b101:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[55]}}, data_rdata_i[55:40]} : {48'h0, data_rdata_i[55:40]};
+            3'b110:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[63]}}, data_rdata_i[63:48]} : {48'h0, data_rdata_i[63:48]};
         endcase
     end
 
     always_comb begin : sign_extend_byte
-        case (out_data.address_offset)
-            default: rdata_b_ext = (out_data.operator == LB) ? {{56{data_rdata_i[7]}},  data_rdata_i[7:0]}   : {56'h0, data_rdata_i[7:0]};
-            3'b001:  rdata_b_ext = (out_data.operator == LB) ? {{56{data_rdata_i[15]}}, data_rdata_i[15:8]}  : {56'h0, data_rdata_i[15:8]};
-            3'b010:  rdata_b_ext = (out_data.operator == LB) ? {{56{data_rdata_i[23]}}, data_rdata_i[23:16]} : {56'h0, data_rdata_i[23:16]};
-            3'b011:  rdata_b_ext = (out_data.operator == LB) ? {{56{data_rdata_i[31]}}, data_rdata_i[31:24]} : {56'h0, data_rdata_i[31:24]};
-            3'b100:  rdata_b_ext = (out_data.operator == LB) ? {{56{data_rdata_i[39]}}, data_rdata_i[39:32]} : {56'h0, data_rdata_i[39:32]};
-            3'b101:  rdata_b_ext = (out_data.operator == LB) ? {{56{data_rdata_i[47]}}, data_rdata_i[47:40]} : {56'h0, data_rdata_i[47:40]};
-            3'b110:  rdata_b_ext = (out_data.operator == LB) ? {{56{data_rdata_i[55]}}, data_rdata_i[55:48]} : {56'h0, data_rdata_i[55:48]};
-            3'b111:  rdata_b_ext = (out_data.operator == LB) ? {{56{data_rdata_i[63]}}, data_rdata_i[63:56]} : {56'h0, data_rdata_i[63:56]};
+        case (load_data_q.address_offset)
+            default: rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[7]}},  data_rdata_i[7:0]}   : {56'h0, data_rdata_i[7:0]};
+            3'b001:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[15]}}, data_rdata_i[15:8]}  : {56'h0, data_rdata_i[15:8]};
+            3'b010:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[23]}}, data_rdata_i[23:16]} : {56'h0, data_rdata_i[23:16]};
+            3'b011:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[31]}}, data_rdata_i[31:24]} : {56'h0, data_rdata_i[31:24]};
+            3'b100:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[39]}}, data_rdata_i[39:32]} : {56'h0, data_rdata_i[39:32]};
+            3'b101:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[47]}}, data_rdata_i[47:40]} : {56'h0, data_rdata_i[47:40]};
+            3'b110:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[55]}}, data_rdata_i[55:48]} : {56'h0, data_rdata_i[55:48]};
+            3'b111:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[63]}}, data_rdata_i[63:56]} : {56'h0, data_rdata_i[63:56]};
         endcase
     end
 
     always_comb begin
-        case (out_data.operator)
+        case (load_data_q.operator)
             LW, LWU:       result_o = rdata_w_ext;
             LH, LHU:       result_o = rdata_h_ext;
             LB, LBU:       result_o = rdata_b_ext;
