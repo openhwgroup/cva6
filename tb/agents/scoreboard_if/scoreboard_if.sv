@@ -13,7 +13,6 @@
 import ariane_pkg::*;
 
 interface scoreboard_if #(parameter int NR_WB_PORTS = 1)(input clk);
-    wire                                          full;
     wire                                          flush;
     wire [31:0][$bits(fu_t)-1:0]                  rd_clobber;
     wire [4:0]                                    rs1_address;
@@ -26,6 +25,7 @@ interface scoreboard_if #(parameter int NR_WB_PORTS = 1)(input clk);
     wire                                          commit_ack;
     scoreboard_entry                              decoded_instr;
     wire                                          decoded_instr_valid;
+    wire                                          decoded_instr_ack;
     scoreboard_entry                              issue_instr;
     wire                                          issue_instr_valid;
     wire                                          issue_ack;
@@ -38,12 +38,12 @@ interface scoreboard_if #(parameter int NR_WB_PORTS = 1)(input clk);
     clocking mck @(posedge clk);
         default input #1 output #5; // save timing
         output   flush, rs1_address, rs2_address, commit_ack, decoded_instr, decoded_instr_valid, issue_ack, trans_id, wdata, ex, wb_valid;
-        input    full, rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commit_instr, issue_instr, issue_instr_valid;
+        input    rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commit_instr, issue_instr, issue_instr_valid, decoded_instr_ack;
     endclocking
     // Scoreboard interface configured in passive mode (-> monitor)
     clocking pck @(posedge clk);
         input flush, rs1_address, rs2_address, commit_ack, decoded_instr, decoded_instr_valid, issue_ack, trans_id, wdata, ex, wb_valid,
-              full, rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commit_instr, issue_instr, issue_instr_valid;
+              rd_clobber, rs1, rs1_valid, rs2, rs2_valid, commit_instr, issue_instr, issue_instr_valid, decoded_instr_ack;
     endclocking
 
     modport master  (clocking mck);
