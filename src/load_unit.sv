@@ -38,7 +38,6 @@ module load_unit (
     output logic                     translation_req_o,   // request address translation
     output logic [63:0]              vaddr_o,             // virtual address out
     input  logic [63:0]              paddr_i,             // physical address in
-    input  logic                     translation_valid_i,
     input  exception                 ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
     input  logic                     dtlb_hit_i,          // hit on the dtlb, send in the same cycle as the request
     // address checker
@@ -240,8 +239,14 @@ module load_unit (
         trans_id_o = load_data_q.trans_id;
         // we got an rvalid and are currently not flushing and not aborting the request
         if (data_rvalid_i && CS != WAIT_FLUSH) begin
-            valid_o = 1'b1;
+            // we killed the request
+            if(!kill_req_o)
+                valid_o = 1'b1;
+            // the output is also valid if we got an exception
+            if (ex_i.valid)
+                valid_o = 1'b1;
         end
+
     end
 
 

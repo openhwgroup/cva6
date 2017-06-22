@@ -119,8 +119,6 @@ module lsu #(
     logic [63:0]              st_vaddr;
     logic                     translation_req;
     logic                     translation_valid;
-    logic                     translation_valid_st;
-    logic                     translation_valid_ld;
     logic [63:0]              mmu_vaddr;
     logic [63:0]              mmu_paddr;
     exception                 mmu_exception;
@@ -237,7 +235,6 @@ module lsu #(
         .translation_req_o     ( st_translation_req   ),
         .vaddr_o               ( st_vaddr             ),
         .paddr_i               ( mmu_paddr            ),
-        .translation_valid_i   ( translation_valid_st ),
         .ex_i                  ( mmu_exception        ),
         .dtlb_hit_i            ( dtlb_hit             ),
         // Load Unit
@@ -275,7 +272,6 @@ module lsu #(
         .translation_req_o     ( ld_translation_req   ),
         .vaddr_o               ( ld_vaddr             ),
         .paddr_i               ( mmu_paddr            ),
-        .translation_valid_i   ( translation_valid_ld ),
         .ex_i                  ( mmu_exception        ),
         .dtlb_hit_i            ( dtlb_hit             ),
         // to store unit
@@ -326,22 +322,6 @@ module lsu #(
         // the LSU is ready if both, stores and loads are ready because we do not know
         // which of the two we are getting
         lsu_ready_o = ld_ready_o && st_ready_o;
-        // "arbitrate" MMU access
-        // translation_req      = 1'b0;
-        // mmu_vaddr            = 64'b0;
-        // translation_valid_st = 1'b0;
-        // translation_valid_ld = 1'b0;
-
-        // // this arbitrates access to the MMU
-        // if (ld_translation_req) begin
-        //     translation_req      = ld_translation_req;
-        //     mmu_vaddr            = ld_vaddr;
-        //     translation_valid_ld = translation_valid;
-        // end else begin
-        //     translation_req      = st_translation_req;
-        //     mmu_vaddr            = st_vaddr;
-        //     translation_valid_st = translation_valid;
-        // end
     end
 
     // determine whether this is a load or store
@@ -352,8 +332,6 @@ module lsu #(
 
         translation_req      = 1'b0;
         mmu_vaddr            = 64'b0;
-        translation_valid_st = 1'b0;
-        translation_valid_ld = 1'b0;
 
         // check the operator to activate the right functional unit accordingly
         unique case (fu)
@@ -362,14 +340,12 @@ module lsu #(
                 ld_valid_i           = valid;
                 translation_req      = ld_translation_req;
                 mmu_vaddr            = ld_vaddr;
-                translation_valid_ld = translation_valid;
             end
             // all stores go here
             STORE: begin
                 st_valid_i           = valid;
                 translation_req      = st_translation_req;
                 mmu_vaddr            = st_vaddr;
-                translation_valid_st = translation_valid;
             end
             // not relevant for the LSU
             default: ;

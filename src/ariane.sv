@@ -524,11 +524,11 @@ module ariane
     assign tracer_if.commit_instr      = commit_instr_id_commit;
     assign tracer_if.commit_ack        = commit_ack;
     // address translation
-    // assign tracer_if.vaddress_valid    = ex_stage_i.lsu_i.mmu_i.lsu_valid_o
+    assign tracer_if.lsu_valid         = ex_stage_i.lsu_i.lsu_valid_i;
     assign tracer_if.translation_valid = ex_stage_i.lsu_i.mmu_i.lsu_valid_o;
-    assign tracer_if.vaddr             = ex_stage_i.lsu_i.mmu_i.lsu_vaddr_i;
+    assign tracer_if.vaddr             = ex_stage_i.lsu_i.vaddr_i;
     assign tracer_if.paddr             = ex_stage_i.lsu_i.mmu_i.lsu_paddr_o;
-    assign tracer_if.is_store          = ex_stage_i.lsu_i.mmu_i.lsu_is_store_i;
+    assign tracer_if.is_store          = ex_stage_i.lsu_i.mmu_i.lsu_is_store_i; // was this translation a store
     assign tracer_if.st_ready          = ex_stage_i.lsu_i.store_unit_i.ready_o;
     assign tracer_if.ld_ready          = ex_stage_i.lsu_i.load_unit_i.ready_o;
     // exceptions

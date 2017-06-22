@@ -24,7 +24,6 @@ add wave -noupdate -group ex_stage -group lsu -group mem_arbiter -group arbiter_
 add wave -noupdate -group ex_stage -group lsu -group store_unit /core_tb/dut/ex_stage_i/lsu_i/store_unit_i/*
 add wave -noupdate -group ex_stage -group lsu -group store_unit -group store_queue /core_tb/dut/ex_stage_i/lsu_i/store_unit_i/store_queue_i/*
 add wave -noupdate -group ex_stage -group lsu -group load_unit /core_tb/dut/ex_stage_i/lsu_i/load_unit_i/*
-add wave -noupdate -group ex_stage -group lsu -group load_unit -group fifo /core_tb/dut/ex_stage_i/lsu_i/load_unit_i/fifo_i/*
 add wave -noupdate -group ex_stage -group lsu -group lsu_arbiter /core_tb/dut/ex_stage_i/lsu_i/lsu_arbiter_i/*
 add wave -noupdate -group ex_stage -group branch_unit /core_tb/dut/ex_stage_i/branch_unit_i/*
 add wave -noupdate -group ex_stage -group csr_buffer /core_tb/dut/ex_stage_i/csr_buffer_i/*

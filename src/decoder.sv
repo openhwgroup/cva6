@@ -96,11 +96,17 @@ module decoder (
                                     instruction_o.op = SRET;
                                     // check privilege level, SRET can only be executed in S and M mode
                                     // we'll just decode an illegal instruction if we are in the wrong privilege level
-                                    if (priv_lvl_i == PRIV_LVL_U)
+                                    if (priv_lvl_i == PRIV_LVL_U) begin
                                         illegal_instr = 1'b1;
+                                        //  do not change privilege level if this is an illegal instruction
+                                        instruction_o.op = ADD;
+                                    end
                                     // if we are in S-Mode and Trap SRET (tsr) is set -> trap on illegal instruction
-                                    if (priv_lvl_i == PRIV_LVL_S && tsr_i)
+                                    if (priv_lvl_i == PRIV_LVL_S && tsr_i) begin
                                         illegal_instr = 1'b1;
+                                        //  do not change privilege level if this is an illegal instruction
+                                       instruction_o.op = ADD;
+                                    end
                                 end
                                 // MRET
                                 12'b1100000010: begin

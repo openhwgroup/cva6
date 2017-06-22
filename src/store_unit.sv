@@ -41,7 +41,6 @@ module store_unit (
     output logic                     translation_req_o, // request address translation
     output logic [63:0]              vaddr_o,           // virtual address out
     input  logic [63:0]              paddr_i,           // physical address in
-    input  logic                     translation_valid_i,
     input  exception                 ex_i,
     input  logic                     dtlb_hit_i,       // will be one in the same cycle translation_req was asserted if it hits
     // address checker
@@ -160,7 +159,7 @@ module store_unit (
         // Access Exception
         // -----------------
         // we got an address translation exception (access rights, misaligned or page fault)
-        if (ex_i.valid) begin
+        if (ex_i.valid && (CS != IDLE)) begin
             // the only difference is that we do not want to store this request
             st_valid = 1'b0;
             NS       = IDLE;

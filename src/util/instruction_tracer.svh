@@ -82,7 +82,8 @@ class instruction_tracer;
             // --------------------
             // Address Translation
             // --------------------
-            if (tracer_if.pck.translation_valid) begin
+            // we've got a LSU request
+            if (tracer_if.pck.lsu_valid) begin
                 // put it in the store mapping queue if it is a store
                 if (tracer_if.pck.is_store && tracer_if.pck.st_ready) begin
                     store_mapping.push_back('{
@@ -96,6 +97,22 @@ class instruction_tracer;
                         paddr: tracer_if.pck.paddr
                     });
                 end
+            end
+
+            if (tracer_if.pck.translation_valid) begin
+                // put it in the store mapping queue if it is a store
+                // if (tracer_if.pck.is_store && tracer_if.pck.st_ready) begin
+                //     store_mapping.push_back('{
+                //         vaddr: tracer_if.pck.vaddr,
+                //         paddr: tracer_if.pck.paddr
+                //     });
+                // // or else put it in the load mapping
+                // end else if (!tracer_if.pck.is_store && tracer_if.pck.ld_ready) begin
+                //     load_mapping.push_back('{
+                //         vaddr: tracer_if.pck.vaddr,
+                //         paddr: tracer_if.pck.paddr
+                //     });
+                // end
             end
 
             // --------------
