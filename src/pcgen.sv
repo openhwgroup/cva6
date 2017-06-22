@@ -91,7 +91,9 @@ module pcgen (
         // 1. Predict taken
         // -------------------------------
         // only predict if the IF stage is ready, otherwise we might take the predicted PC away which will end in a endless loop
-        if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken) begin
+        // also check if we fetched on a half word (npc_q[1] == 1), it might be the case that we need the next 16 byte of the following instruction
+        // prediction could potentially prevent us from getting them
+        if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken && !npc_q[1]) begin
             npc_n = branch_predict_btb.predict_address;
         end
         // -------------------------------
