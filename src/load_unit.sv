@@ -23,10 +23,8 @@ module load_unit (
     input  logic                     rst_ni,   // Asynchronous reset active low
     input  logic                     flush_i,
     // load unit input port
-    input  fu_op                     operator_i,
-    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     input  logic                     valid_i,
-    input  logic [63:0]              vaddr_i,
+    input  lsu_ctrl_t                lsu_ctrl_i,
     input  logic [7:0]               be_i,
     // load unit output port
     output logic                     valid_o,
@@ -66,16 +64,16 @@ module load_unit (
     } load_data_n, load_data_q, in_data;
 
     // page offset is defined as the lower 12 bits, feed through for address checker
-    assign page_offset_o = vaddr_i[11:0];
+    assign page_offset_o = lsu_ctrl_i.vaddr[11:0];
     // feed-through the virtual address for VA translation
-    assign vaddr_o = vaddr_i;
+    assign vaddr_o = lsu_ctrl_i.vaddr;
     // this is a read-only interface so set the write enable to 0
     assign data_we_o = 1'b0;
     // compose the queue data, control is handled in the FSM
-    assign in_data = {trans_id_i, vaddr_i[2:0], operator_i};
+    assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.operator};
     // output address
     // we can now output the lower 12 bit as the index to the cache
-    assign address_index_o = vaddr_i[11:0];
+    assign address_index_o = lsu_ctrl_i.vaddr[11:0];
     // translation from last cycle, again: control is handled in the FSM
     assign address_tag_o   = paddr_i[55:12];
     // directly output an exception
@@ -94,7 +92,7 @@ module load_unit (
         // tag control
         kill_req_o        = 1'b0;
         tag_valid_o       = 1'b0;
-        data_be_o         = be_i;
+        data_be_o         = lsu_ctrl_i.be;
 
         case (CS)
             IDLE: begin

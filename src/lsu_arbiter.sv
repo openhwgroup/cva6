@@ -43,7 +43,7 @@ module lsu_arbiter (
     // it unconditionally posts the result on its output ports and expects it to be consumed.
 
     // 4 entries is enough to unconditionally post loads and stores since we can only have two outstanding loads
-    localparam int WIDTH = 2;
+    localparam int WIDTH = 4;
 
     // queue pointer
     logic [$clog2(WIDTH)-1:0] read_pointer_n,  read_pointer_q;

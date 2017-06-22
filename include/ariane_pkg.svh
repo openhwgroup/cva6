@@ -91,6 +91,16 @@ package ariane_pkg;
                                // LSU functions
                                LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
                              } fu_op;
+
+    typedef struct packed {
+        logic                     valid;
+        logic [63:0]              vaddr;
+        logic [63:0]              data;
+        logic [7:0]               be;
+        fu_t                      fu;
+        fu_op                     operator;
+        logic [TRANS_ID_BITS-1:0] trans_id;
+    } lsu_ctrl_t;
     // ---------------
     // IF/ID Stage
     // ---------------

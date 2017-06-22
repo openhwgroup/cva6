@@ -24,12 +24,8 @@ module store_unit (
     input logic                      flush_i,
     output logic                     no_st_pending_o,
     // store unit input port
-    input  fu_op                     operator_i,
-    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     input  logic                     valid_i,
-    input  logic [63:0]              vaddr_i,
-    input  logic [7:0]               be_i,
-    input  logic [63:0]              data_i,
+    input  lsu_ctrl_t                lsu_ctrl_i,
     input  logic                     commit_i,
     // store unit output port
     output logic                     valid_o,
@@ -75,7 +71,7 @@ module store_unit (
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
     // output assignments
-    assign vaddr_o    = vaddr_i; // virtual address
+    assign vaddr_o    = lsu_ctrl_i.vaddr; // virtual address
     assign trans_id_o = trans_id_q; // transaction id from previous cycle
 
     always_comb begin : store_control
@@ -84,7 +80,7 @@ module store_unit (
         valid_o           = 1'b0;
         st_valid          = 1'b0;
         ex_o              = ex_i;
-        trans_id_n        = trans_id_i;
+        trans_id_n        = lsu_ctrl_i.trans_id;
         NS                = CS;
 
         case (CS)
@@ -175,17 +171,17 @@ module store_unit (
     // -----------
     // re-align the write data to comply with the address offset
     always_comb begin
-        st_be_n   = be_i;
-        st_data_n = data_i;
-        case (vaddr_i[2:0])
-            3'b000: st_data_n = data_i;
-            3'b001: st_data_n = {data_i[55:0], data_i[63:56]};
-            3'b010: st_data_n = {data_i[47:0], data_i[63:48]};
-            3'b011: st_data_n = {data_i[39:0], data_i[63:40]};
-            3'b100: st_data_n = {data_i[31:0], data_i[63:32]};
-            3'b101: st_data_n = {data_i[23:0], data_i[63:24]};
-            3'b110: st_data_n = {data_i[15:0], data_i[63:16]};
-            3'b111: st_data_n = {data_i[7:0],  data_i[63:8]};
+        st_be_n   = lsu_ctrl_i.be;
+        st_data_n = lsu_ctrl_i.data;
+        case (lsu_ctrl_i.vaddr[2:0])
+            3'b000: st_data_n = lsu_ctrl_i.data;
+            3'b001: st_data_n = {lsu_ctrl_i.data[55:0], lsu_ctrl_i.data[63:56]};
+            3'b010: st_data_n = {lsu_ctrl_i.data[47:0], lsu_ctrl_i.data[63:48]};
+            3'b011: st_data_n = {lsu_ctrl_i.data[39:0], lsu_ctrl_i.data[63:40]};
+            3'b100: st_data_n = {lsu_ctrl_i.data[31:0], lsu_ctrl_i.data[63:32]};
+            3'b101: st_data_n = {lsu_ctrl_i.data[23:0], lsu_ctrl_i.data[63:24]};
+            3'b110: st_data_n = {lsu_ctrl_i.data[15:0], lsu_ctrl_i.data[63:16]};
+            3'b111: st_data_n = {lsu_ctrl_i.data[7:0],  lsu_ctrl_i.data[63:8]};
         endcase
     end
     // ---------------
@@ -238,11 +234,11 @@ module store_unit (
     always_comb begin : address_checker
         page_offset_matches_o = 1'b0;
         // check if the LSBs are identical and the entry is valid
-        if ((vaddr_i[11:3] == st_buffer_paddr[11:3]) && st_buffer_valid) begin
+        if ((lsu_ctrl_i.vaddr[11:3] == st_buffer_paddr[11:3]) && st_buffer_valid) begin
             page_offset_matches_o = 1'b1;
         end
 
-        if ((vaddr_i[11:3] == paddr_i[11:3]) && (CS == VALID_STORE)) begin
+        if ((lsu_ctrl_i.vaddr[11:3] == paddr_i[11:3]) && (CS == VALID_STORE)) begin
             page_offset_matches_o = 1'b1;
         end
     end

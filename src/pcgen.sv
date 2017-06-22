@@ -81,9 +81,9 @@ module pcgen (
         // -------------------------------
         // default is a consecutive PC
         if (if_ready_i && fetch_enable_i)
-            npc_n       = {npc_q[63:2], 2'b0}  + 64'h4;
+            npc_n = {npc_q[63:2], 2'b0}  + 64'h4;
         else // or keep the PC stable if IF is not ready
-            npc_n       =  npc_q;
+            npc_n =  npc_q;
         // we only need to stall the consecutive and predicted case since in any other case we will flush at least
         // the front-end which means that the IF stage will always be ready to accept a new request
 
@@ -105,7 +105,7 @@ module pcgen (
         // -------------------------------
         if (resolved_branch_i.is_mispredict) begin
             // we already got the correct target address
-            npc_n    = resolved_branch_i.target_address;
+            npc_n = resolved_branch_i.target_address;
         end
 
         // -------------------------------

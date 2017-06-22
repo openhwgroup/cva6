@@ -48,6 +48,7 @@ module btb #(
     logic [BITS_SATURATION_COUNTER-1:0]     saturation_counter;
     // branch-predict input register
     branchpredict                           branch_predict_q;
+
     // get actual index positions
     // we ignore the 0th bit since all instructions are aligned on
     // a half word boundary

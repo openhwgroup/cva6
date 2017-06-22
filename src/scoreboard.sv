@@ -88,7 +88,7 @@ module scoreboard #(
         issue_instr_o.trans_id = issue_pointer_q;
         // we are ready if we are not full and don't have any unresolved branches, but it can be
         // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
-        issue_instr_valid_o    = decoded_instr_valid_i && !unresolved_branch_i;
+        issue_instr_valid_o    = decoded_instr_valid_i && !unresolved_branch_i && !issue_full;
         decoded_instr_ack_o    = issue_ack_i && !issue_full;
     end
 
