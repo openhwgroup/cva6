@@ -76,14 +76,11 @@ module id_stage (
 
         if (issue_instr_ack_i)
             issue_n.valid = 1'b0;
-        // if we have a space in the register and the fetch is valid, go get it
-        if (!issue_q.valid && fetch_entry_valid_i) begin
-            decoded_instr_ack_o = 1'b1;
-            issue_n = { 1'b1, decoded_instruction, is_control_flow_instr};
-        end
 
-        // we have something in the register but issue stage already acknowledged
-        if (issue_q.valid && issue_instr_ack_i) begin
+        // if we have a space in the register and the fetch is valid, go get it
+        // or the issue stage is currently acknowledging an instruction, which means that we will have space
+        // for a new instruction
+        if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i) begin
             decoded_instr_ack_o = 1'b1;
             issue_n = { 1'b1, decoded_instruction, is_control_flow_instr};
         end
