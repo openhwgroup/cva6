@@ -86,14 +86,14 @@ module mmu #(
 );
     // instruction error
     // instruction error valid signal and exception, delayed one cycle
-    logic     ierr_valid_q, ierr_valid_n;
-    exception fetch_ex_q,   fetch_ex_n;
+    logic        ierr_valid_q, ierr_valid_n;
+    exception    fetch_ex_q,   fetch_ex_n;
 
-    logic iaccess_err;   // insufficient privilege to access this instruction page
-    logic daccess_err;   // insufficient privilege to access this data page
-    logic ptw_active;    // PTW is currently walking a page table
-    logic walking_instr; // PTW is walking because of an ITLB miss
-    logic ptw_error;     // PTW threw an exception
+    logic        iaccess_err;   // insufficient privilege to access this instruction page
+    logic        daccess_err;   // insufficient privilege to access this data page
+    logic        ptw_active;    // PTW is currently walking a page table
+    logic        walking_instr; // PTW is walking because of an ITLB miss
+    logic        ptw_error;     // PTW threw an exception
 
     logic        update_is_2M;
     logic        update_is_1G;
@@ -101,19 +101,19 @@ module mmu #(
     logic [0:0]  update_asid;
     pte_t        update_content;
 
-    logic itlb_update;
-    logic itlb_lu_access;
-    pte_t itlb_content;
-    logic itlb_is_2M;
-    logic itlb_is_1G;
-    logic itlb_lu_hit;
+    logic        itlb_update;
+    logic        itlb_lu_access;
+    pte_t        itlb_content;
+    logic        itlb_is_2M;
+    logic        itlb_is_1G;
+    logic        itlb_lu_hit;
 
-    logic dtlb_update;
-    logic dtlb_lu_access;
-    pte_t dtlb_content;
-    logic dtlb_is_2M;
-    logic dtlb_is_1G;
-    logic dtlb_lu_hit;
+    logic        dtlb_update;
+    logic        dtlb_lu_access;
+    pte_t        dtlb_content;
+    logic        dtlb_is_2M;
+    logic        dtlb_is_1G;
+    logic        dtlb_lu_hit;
 
     // Assignments
     assign itlb_lu_access = fetch_req_i;

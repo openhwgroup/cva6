@@ -14,7 +14,7 @@ package ariane_pkg;
     // ---------------
     // Global Config
     // ---------------
-    localparam NR_SB_ENTRIES = 4; // number of scoreboard entries
+    localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
     localparam NR_WB_PORTS   = 4;

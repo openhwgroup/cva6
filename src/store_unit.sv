@@ -26,6 +26,7 @@ module store_unit (
     // store unit input port
     input  logic                     valid_i,
     input  lsu_ctrl_t                lsu_ctrl_i,
+    output logic                     pop_st_o,
     input  logic                     commit_i,
     // store unit output port
     output logic                     valid_o,
@@ -79,6 +80,7 @@ module store_unit (
         ready_o           = 1'b1;
         valid_o           = 1'b0;
         st_valid          = 1'b0;
+        pop_st_o          = 1'b0;
         ex_o              = ex_i;
         trans_id_n        = lsu_ctrl_i.trans_id;
         NS                = CS;
@@ -104,27 +106,31 @@ module store_unit (
             end
 
             VALID_STORE: begin
+                ready_o = 1'b0;
                 valid_o  = 1'b1;
                 // post this store to the store buffer
                 if (!flush_i)
                     st_valid = 1'b1;
 
-                // we have another request
-                if (valid_i) begin
+                pop_st_o          = 1'b1;
 
-                    translation_req_o = 1'b1;
+                // // we have another request
+                // if (valid_i) begin
 
-                    if (!dtlb_hit_i) begin
-                        NS = WAIT_TRANSLATION;
-                    end
+                //     translation_req_o = 1'b1;
 
-                    if (!st_ready) begin
-                        NS = WAIT_STORE_READY;
-                    end
-                // if we do not have another request go back to idle
-                end else begin
-                    NS = IDLE;
-                end
+                //     if (!dtlb_hit_i) begin
+                //         NS = WAIT_TRANSLATION;
+                //     end
+
+                //     if (!st_ready) begin
+                //         NS = WAIT_STORE_READY;
+                //     end
+                // // if we do not have another request go back to idle
+                // end else begin
+                //     NS = IDLE;
+                // end
+                NS = IDLE;
             end
 
             // the store queue is currently full

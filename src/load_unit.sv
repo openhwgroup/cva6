@@ -25,7 +25,7 @@ module load_unit (
     // load unit input port
     input  logic                     valid_i,
     input  lsu_ctrl_t                lsu_ctrl_i,
-    input  logic [7:0]               be_i,
+    output logic                     pop_ld_o,
     // load unit output port
     output logic                     valid_o,
     output logic                     ready_o,
@@ -93,6 +93,7 @@ module load_unit (
         kill_req_o        = 1'b0;
         tag_valid_o       = 1'b0;
         data_be_o         = lsu_ctrl_i.be;
+        pop_ld_o          = 1'b0;
 
         case (CS)
             IDLE: begin
@@ -109,10 +110,11 @@ module load_unit (
                         if (!data_gnt_i) begin
                             NS = WAIT_GNT;
                         end else begin
-                            if (dtlb_hit_i)
+                            if (dtlb_hit_i) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 NS = SEND_TAG;
-                            else
+                                pop_ld_o = 1'b1;
+                            end else
                                 NS = ABORT_TRANSACTION;
                         end
                     end else begin
@@ -163,9 +165,10 @@ module load_unit (
                 // we finally got a data grant
                 if (data_gnt_i) begin
                     // so we send the tag in the next cycle
-                    if (dtlb_hit_i)
+                    if (dtlb_hit_i) begin
                         NS = SEND_TAG;
-                    else // should we not have hit on the TLB abort this transaction an retry later
+                        pop_ld_o = 1'b1;
+                    end else // should we not have hit on the TLB abort this transaction an retry later
                         NS = ABORT_TRANSACTION;
                 end
                 // otherwise we keep waiting on our grant
@@ -187,10 +190,11 @@ module load_unit (
                             NS = WAIT_GNT;
                         end else begin
                             // we got a grant so we can send the tag in the next cycle
-                            if (dtlb_hit_i)
+                            if (dtlb_hit_i) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
                                 NS = SEND_TAG;
-                            else // we missed on the TLB -> wait for the translation
+                                pop_ld_o = 1'b1;
+                            end else // we missed on the TLB -> wait for the translation
                                 NS = ABORT_TRANSACTION;
                         end
                     end else begin

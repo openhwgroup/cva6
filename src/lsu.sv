@@ -87,8 +87,10 @@ module lsu #(
     // e.g.: they keep the value in the stall case
     lsu_ctrl_t lsu_ctrl;
 
-    // registered address in case of a necessary stall
-    lsu_ctrl_t lsu_ctrl_n, lsu_ctrl_q, lsu_ctrl_nn, lsu_ctrl_qq;
+    logic      lsu_ctrl_full;
+    lsu_ctrl_t lsu_ctrl_o;
+    logic      pop_st;
+    logic      pop_ld;
 
     // Address Generation Unit (AGU)
     // ------------------------------
@@ -211,6 +213,7 @@ module lsu #(
     store_unit store_unit_i (
         .valid_i               ( st_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
+        .pop_st_o              ( pop_st               ),
 
         .valid_o               ( st_valid             ),
         .ready_o               ( st_ready_o           ),
@@ -246,6 +249,7 @@ module lsu #(
     load_unit load_unit_i (
         .valid_i               ( ld_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
+        .pop_ld_o              ( pop_ld               ),
 
         .valid_o               ( ld_valid             ),
         .ready_o               ( ld_ready_o           ),
@@ -298,16 +302,6 @@ module lsu #(
         .result_o             ( lsu_result_o          ),
         .ex_o                 ( lsu_exception_o       )
     );
-
-    // ------------------
-    // LSU Control
-    // ------------------
-    always_comb begin : lsu_control
-        // the LSU is ready if both, stores and loads are ready because we do not know
-        // which unit we need for the instruction we get
-        // additionally it might be the case that we still have one instruction in the buffer, check for that
-        lsu_ready_o = ld_ready_o && st_ready_o && !lsu_ctrl_qq.valid;
-    end
 
     // determine whether this is a load or store
     always_comb begin : which_op
@@ -443,57 +437,35 @@ module lsu #(
             end
         end
     end
+
     // ------------------
-    // Input Select
+    // LSU Control
     // ------------------
-    // this process selects the input based on the current state of the LSU
-    // it can either be feed-through from the issue stage or from the internal registers
-    always_comb begin : input_select
-        // if we are stalling use the values we saved
-        if (lsu_ctrl_qq.valid && ld_ready_o && st_ready_o) begin
-            lsu_ctrl = lsu_ctrl_qq;
-        end else if (lsu_ready_o) begin
-            lsu_ctrl = {lsu_valid_i, vaddr_i, operand_b_i, be_i, fu_i, operator_i, trans_id_i};
-        end else begin // otherwise bypass them
-            lsu_ctrl = lsu_ctrl_q;
-        end
-    end
-    // 1st register stage
-    always_comb begin : register_stage
-        lsu_ctrl_n  = lsu_ctrl_q;
-        lsu_ctrl_nn = lsu_ctrl_qq;
-        // if we are not ready it might be the case that we get another request from the issue stage
-        if (!lsu_ready_o && lsu_valid_i) begin
-            lsu_ctrl_nn = {lsu_valid_i, vaddr_i, operand_b_i, be_i, fu_i, operator_i, trans_id_i};
-        end
-        // if both units are ready, invalidate the buffer flag
-        if (ld_ready_o && st_ready_o) begin
-            lsu_ctrl_nn.valid = 1'b0;
-        end
-        // get new input data
-        if (lsu_ready_o) begin
-            lsu_ctrl_n = {lsu_valid_i, vaddr_i, operand_b_i, be_i, fu_i, operator_i, trans_id_i};
-        end
+    // The LSU consists of two independent block which share a common address translation block.
+    // The one block is the load unit, the other one is the store unit. They will signal their readiness
+    // with separate signals. If they are not ready the LSU control should keep the last applied signals stable.
+    // Furthermore it can be the case that another request for one of the two store units arrives in which case
+    // the LSU controll should sample it and store it for later application to the units. It does so, by storing it in a
+    // two element FIFO.
 
-        if (flush_i) begin
-            lsu_ctrl_nn.valid = 1'b0;
-            lsu_ctrl_n.valid  = 1'b0;
-        end
-    end
+    // new data arrives here
+    lsu_ctrl_t lsu_req_i;
 
-    // registers
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            // 1st LSU stage
-            lsu_ctrl_q  <= '0;
-            lsu_ctrl_qq <= '0;
-        end else begin
-            // 1st LSU stage
-            lsu_ctrl_q  <= lsu_ctrl_n;
-            lsu_ctrl_qq <= lsu_ctrl_nn;
-        end
-    end
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, operand_b_i, be_i, fu_i, operator_i, trans_id_i};
 
+    lsu_bypass lsu_bypass_i (
+        .lsu_req_i          ( lsu_req_i ),
+        .lus_req_valid_i    ( lsu_valid_i ),
+        .pop_ld_i           ( pop_ld ),
+        .pop_st_i           ( pop_st ),
+
+        .ld_ready_i         ( ld_ready_o ),
+        .st_ready_i         ( st_ready_o),
+
+        .lsu_ctrl_o          ( lsu_ctrl ),
+        .ready_o            (  lsu_ready_o ),
+        .*
+    );
     // ------------
     // Assertions
     // ------------
@@ -527,3 +499,97 @@ module lsu #(
     `endif
     `endif
 endmodule
+
+module lsu_bypass (
+    input logic      clk_i,
+    input logic      rst_ni,
+    input logic      flush_i,
+
+    input lsu_ctrl_t lsu_req_i,
+    input logic      lus_req_valid_i,
+    input logic      pop_ld_i,
+    input logic      pop_st_i,
+
+    input logic      ld_ready_i,
+    input logic      st_ready_i,
+
+    output lsu_ctrl_t lsu_ctrl_o,
+    output logic      ready_o
+    );
+
+    lsu_ctrl_t [1:0] mem_n, mem_q;
+    logic read_pointer_n, read_pointer_q;
+    logic write_pointer_n, write_pointer_q;
+    int status_cnt_n, status_cnt_q;
+
+    logic  empty;
+    assign empty = (status_cnt_q == 0);
+    assign ready_o = empty;
+
+    always_comb begin
+        automatic int status_cnt = status_cnt_q;
+        automatic logic write_pointer = write_pointer_q;
+        automatic logic read_pointer = read_pointer_q;
+
+        mem_n = mem_q;
+        // we've got a valid LSU request
+        if (lus_req_valid_i) begin
+            mem_n[write_pointer_q] = lsu_req_i;
+            write_pointer++;
+            status_cnt++;
+        end
+
+        if (pop_ld_i) begin
+            // invalidate the result
+            mem_n[read_pointer_q].valid = 1'b0;
+            read_pointer++;
+            status_cnt--;
+        end
+
+        if (pop_st_i) begin
+            // invalidate the result
+            mem_n[read_pointer_q].valid = 1'b0;
+            read_pointer++;
+            status_cnt--;
+        end
+
+        if (pop_st_i && pop_ld_i)
+            mem_n = '{default: 0};
+
+        if (flush_i) begin
+            status_cnt = '0;
+            write_pointer = '0;
+            read_pointer = '0;
+            mem_n = '{default: 0};
+        end
+        // default assignments
+        read_pointer_n  = read_pointer;
+        write_pointer_n = write_pointer;
+        status_cnt_n    = status_cnt;
+    end
+
+    // output assignment
+    always_comb begin : output_assignments
+        if (empty) begin
+            lsu_ctrl_o = lsu_req_i;
+        end else begin
+            lsu_ctrl_o = mem_q[read_pointer_q];
+        end
+    end
+
+    // registers
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            mem_q           <= '{default: 0};
+            status_cnt_q    <= '0;
+            write_pointer_q <= '0;
+            read_pointer_q  <= '0;
+        end else begin
+            mem_q           <= mem_n;
+            status_cnt_q    <= status_cnt_n;
+            write_pointer_q <= write_pointer_n;
+            read_pointer_q  <= read_pointer_n;
+        end
+    end
+endmodule
+

@@ -21,7 +21,7 @@
 import ariane_pkg::*;
 
 module issue_stage #(
-        parameter int  NR_ENTRIES = 4,
+        parameter int  NR_ENTRIES = 8,
         parameter int  NR_WB_PORTS = 4
     )(
     input  logic                                     clk_i,     // Clock
