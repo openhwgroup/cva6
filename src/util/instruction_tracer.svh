@@ -91,7 +91,7 @@ class instruction_tracer;
             // Address Translation
             // --------------------
             // we've got a valid translation
-            if (tracer_if.pck.translation_valid) begin
+            if (tracer_if.pck.translation_req && tracer_if.pck.translation_valid) begin
                 // put it in the store mapping queue if it is a store
                 if (tracer_if.pck.is_store && tracer_if.pck.st_ready) begin
 

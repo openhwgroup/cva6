@@ -527,6 +527,7 @@ module ariane
     assign tracer_if.lsu_valid         = ex_stage_i.lsu_i.lsu_valid_i;
     assign tracer_if.vaddr             = ex_stage_i.lsu_i.vaddr_i;
     // MMU
+    assign tracer_if.translation_req   = ex_stage_i.lsu_i.mmu_i.lsu_req_i;
     assign tracer_if.translation_valid = ex_stage_i.lsu_i.mmu_i.lsu_dtlb_hit_o;
     assign tracer_if.pte               = ex_stage_i.lsu_i.mmu_i.dtlb_content;
     assign tracer_if.is_2M             = ex_stage_i.lsu_i.mmu_i.dtlb_is_2M;
