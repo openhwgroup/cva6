@@ -49,8 +49,8 @@ module pcgen (
     assign fetch_address_o = npc_q;
 
     btb #(
-        .NR_ENTRIES(64),
-        .BITS_SATURATION_COUNTER(2)
+        .NR_ENTRIES              ( BTB_ENTRIES             ),
+        .BITS_SATURATION_COUNTER ( BITS_SATURATION_COUNTER )
     )
     btb_i
     (

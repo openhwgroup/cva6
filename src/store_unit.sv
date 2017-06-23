@@ -59,9 +59,6 @@ module store_unit (
 
     enum logic [1:0] {IDLE, VALID_STORE, WAIT_TRANSLATION, WAIT_STORE_READY} NS, CS;
 
-    logic [63:0]             st_buffer_paddr;  // physical address for store
-    logic [63:0]             st_data;          // aligned data to store buffer
-    logic                    st_buffer_valid;
     // store buffer control signals
     logic                    st_ready;
     logic                    st_valid;
@@ -199,10 +196,6 @@ module store_unit (
         .data_i            ( st_data_q           ),
         .be_i              ( st_be_q             ),
         // store buffer out
-        .paddr_o           ( st_buffer_paddr     ),
-        .data_o            (                     ),
-        .valid_o           ( st_buffer_valid     ),
-        .be_o              (                     ),
         .ready_o           ( st_ready            ),
         .*
     );
@@ -220,32 +213,6 @@ module store_unit (
             st_be_q    <= st_be_n;
             st_data_q  <= st_data_n;
             trans_id_q <= trans_id_n;
-        end
-    end
-    // ------------------
-    // Address Checker
-    // ------------------
-    // The load should return the data stored by the most recent store to the
-    // same physical address.  The most direct way to implement this is to
-    // maintain physical addresses in the store buffer.
-
-    // Of course, there are other micro-architectural techniques to accomplish
-    // the same thing: you can interlock and wait for the store buffer to
-    // drain if the load VA matches any store VA modulo the page size (i.e.
-    // bits 11:0).  As a special case, it is correct to bypass if the full VA
-    // matches, and no younger stores' VAs match in bits 11:0.
-    //
-    // checks if the requested load is in the store buffer
-    // page offsets are virtually and physically the same
-    always_comb begin : address_checker
-        page_offset_matches_o = 1'b0;
-        // check if the LSBs are identical and the entry is valid
-        if ((lsu_ctrl_i.vaddr[11:3] == st_buffer_paddr[11:3]) && st_buffer_valid) begin
-            page_offset_matches_o = 1'b1;
-        end
-
-        if ((lsu_ctrl_i.vaddr[11:3] == paddr_i[11:3]) && (CS == VALID_STORE)) begin
-            page_offset_matches_o = 1'b1;
         end
     end
 

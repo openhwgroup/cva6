@@ -441,29 +441,22 @@ module lsu #(
     // ------------------
     // LSU Control
     // ------------------
-    // The LSU consists of two independent block which share a common address translation block.
-    // The one block is the load unit, the other one is the store unit. They will signal their readiness
-    // with separate signals. If they are not ready the LSU control should keep the last applied signals stable.
-    // Furthermore it can be the case that another request for one of the two store units arrives in which case
-    // the LSU controll should sample it and store it for later application to the units. It does so, by storing it in a
-    // two element FIFO.
-
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
     assign lsu_req_i = {lsu_valid_i, vaddr_i, operand_b_i, be_i, fu_i, operator_i, trans_id_i};
 
     lsu_bypass lsu_bypass_i (
-        .lsu_req_i          ( lsu_req_i ),
+        .lsu_req_i          ( lsu_req_i   ),
         .lus_req_valid_i    ( lsu_valid_i ),
-        .pop_ld_i           ( pop_ld ),
-        .pop_st_i           ( pop_st ),
+        .pop_ld_i           ( pop_ld      ),
+        .pop_st_i           ( pop_st      ),
 
-        .ld_ready_i         ( ld_ready_o ),
-        .st_ready_i         ( st_ready_o),
+        .ld_ready_i         ( ld_ready_o  ),
+        .st_ready_i         ( st_ready_o  ),
 
-        .lsu_ctrl_o          ( lsu_ctrl ),
-        .ready_o            (  lsu_ready_o ),
+        .lsu_ctrl_o         ( lsu_ctrl    ),
+        .ready_o            ( lsu_ready_o ),
         .*
     );
     // ------------
@@ -500,6 +493,15 @@ module lsu #(
     `endif
 endmodule
 
+// ------------------
+// LSU Control
+// ------------------
+// The LSU consists of two independent block which share a common address translation block.
+// The one block is the load unit, the other one is the store unit. They will signal their readiness
+// with separate signals. If they are not ready the LSU control should keep the last applied signals stable.
+// Furthermore it can be the case that another request for one of the two store units arrives in which case
+// the LSU controll should sample it and store it for later application to the units. It does so, by storing it in a
+// two element FIFO.
 module lsu_bypass (
     input logic      clk_i,
     input logic      rst_ni,
