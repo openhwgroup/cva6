@@ -522,14 +522,14 @@ module lsu_bypass (
     lsu_ctrl_t [1:0] mem_n, mem_q;
     logic read_pointer_n, read_pointer_q;
     logic write_pointer_n, write_pointer_q;
-    int status_cnt_n, status_cnt_q;
+    logic [1:0] status_cnt_n, status_cnt_q;
 
     logic  empty;
     assign empty = (status_cnt_q == 0);
     assign ready_o = empty;
 
     always_comb begin
-        automatic int status_cnt = status_cnt_q;
+        automatic logic [1:0] status_cnt = status_cnt_q;
         automatic logic write_pointer = write_pointer_q;
         automatic logic read_pointer = read_pointer_q;
 

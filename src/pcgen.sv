@@ -44,6 +44,7 @@ module pcgen (
 );
 
     logic [63:0]      npc_n, npc_q;
+    // the PC was set to a new region by a higher priority input (e.g.: exception, debug, ctrl return from exception)
     logic             set_pc_n, set_pc_q;
     branchpredict_sbe branch_predict_btb;
     // branch-predict input register -> this path is critical
@@ -74,21 +75,32 @@ module pcgen (
     // 5. Return from exception
     // 6. Pipeline Flush because of CSR side effects
     always_comb begin : npc_select
-        // set fetch address
-        fetch_address_o  = npc_q;
+        automatic logic [63:0] fetch_address = npc_q;
+
         branch_predict_o = branch_predict_btb;
         fetch_valid_o    = 1'b1;
         // this tells us whether it is a consecutive PC or a completely new PC
         set_pc_n         = 1'b0;
 
         // -------------------------------
+        // 3. Control flow change request
+        // -------------------------------
+        // check if had a mis-predict the cycle earlier and if we can reset the PC (e.g.: it was a predicted or consecutive PC
+        // which was set a cycle earlier)
+        if (resolved_branch_q.is_mispredict && !set_pc_q) begin
+            // we already got the correct target address
+            fetch_address = resolved_branch_q.target_address;
+        end
+
+        // -------------------------------
         // 0. Default assignment
         // -------------------------------
         // default is a consecutive PC
         if (if_ready_i && fetch_enable_i)
-            npc_n = {npc_q[63:2], 2'b0}  + 64'h4;
+            // but operate on the current fetch address
+            npc_n = {fetch_address[63:2], 2'b0}  + 64'h4;
         else // or keep the PC stable if IF is not ready
-            npc_n =  npc_q;
+            npc_n = npc_q;
         // we only need to stall the consecutive and predicted case since in any other case we will flush at least
         // the front-end which means that the IF stage will always be ready to accept a new request
 
@@ -106,29 +118,19 @@ module pcgen (
         // -------------------------------
 
         // -------------------------------
-        // 3. Control flow change request
-        // -------------------------------
-        // check if had a mis-predict the cycle earlier and if we can reset the PC (e.g.: it was a predicted or consecutive PC
-        // which was set a cycle earlier)
-        if (resolved_branch_q.is_mispredict && !set_pc_q) begin
-            // we already got the correct target address
-            fetch_address_o = resolved_branch_q.target_address;
-        end
-
-        // -------------------------------
         // 4. Exception
         // -------------------------------
         if (ex_i.valid) begin
             npc_n                  = trap_vector_base_i;
             branch_predict_o.valid = 1'b0;
-            set_pc_n = 1'b1;
+            set_pc_n               = 1'b1;
         end
 
         // -------------------------------
         // 5. Return from exception
         // -------------------------------
         if (eret_i) begin
-            npc_n = epc_i;
+            npc_n    = epc_i;
             set_pc_n = 1'b1;
         end
 
@@ -141,7 +143,7 @@ module pcgen (
             // we came here from a flush request of a CSR instruction,
             // as CSR instructions do not exist in a compressed form
             // we can unconditionally do PC + 4 here
-            npc_n = pc_commit_i + 64'h4;
+            npc_n    = pc_commit_i + 64'h4;
             set_pc_n = 1'b1;
         end
 
@@ -149,6 +151,10 @@ module pcgen (
         if (!fetch_enable_i) begin
             fetch_valid_o = 1'b0;
         end
+
+        // set fetch address
+        fetch_address_o  = fetch_address;
+
     end
     // -------------------
     // Sequential Process
