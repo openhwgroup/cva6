@@ -41,9 +41,13 @@ interface instruction_tracer_if (
     logic            commit_ack;
     // address translation
     logic            lsu_valid;
+    // mmu
     logic            translation_valid;
     logic [63:0]     vaddr;
-    logic [63:0]     paddr;
+    pte_t            pte;
+    logic            is_2M;
+    logic            is_1G;
+    // lsu
     logic            is_store;
     logic            st_ready;
     logic            ld_ready;
@@ -51,8 +55,8 @@ interface instruction_tracer_if (
     exception        exception;
     // the tracer just has a passive interface we do not drive anything with it
     clocking pck @(posedge clk);
-        input rstn, flush_unissued, flush, fetch, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr, lsu_valid,
-              wdata, we, commit_instr, commit_ack, translation_valid, vaddr, paddr, is_store, st_ready, ld_ready, exception;
+        input rstn, flush_unissued, flush, fetch, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr, lsu_valid, pte, is_2M, is_1G,
+              wdata, we, commit_instr, commit_ack, translation_valid, vaddr, is_store, st_ready, ld_ready, exception;
     endclocking
 
 endinterface

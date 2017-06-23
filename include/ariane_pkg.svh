@@ -208,8 +208,9 @@ package ariane_pkg;
 
     // memory management, pte
     typedef struct packed {
-        logic[37:0] ppn;
-        logic[1:0] sw_reserved;
+        logic [9:0]  reserved;
+        logic [43:0] ppn;
+        logic [1:0]  rsw;
         logic d;
         logic a;
         logic g;

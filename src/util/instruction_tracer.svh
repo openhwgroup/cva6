@@ -42,9 +42,17 @@ class instruction_tracer;
     } store_mapping[$], load_mapping[$], address_mapping;
 
     function new(virtual instruction_tracer_if tracer_if);
+
         this.tracer_if = tracer_if;
-        f = $fopen("output.txt","w");
     endfunction : new
+
+    function void create_file(logic [5:0] cluster_id, logic [3:0] core_id);
+        string fn;
+        $sformat(fn, "trace_core_%h_%h.log", cluster_id, core_id);
+        $display("[TRACER] Output filename is: %s", fn);
+
+        this.f = $fopen(fn,"w");
+    endfunction : create_file
 
     task trace();
         fetch_entry decode_instruction, issue_instruction, issue_commit_instruction;
@@ -82,37 +90,22 @@ class instruction_tracer;
             // --------------------
             // Address Translation
             // --------------------
-            // we've got a LSU request
-            if (tracer_if.pck.lsu_valid) begin
+            // we've got a valid translation
+            if (tracer_if.pck.translation_valid) begin
                 // put it in the store mapping queue if it is a store
                 if (tracer_if.pck.is_store && tracer_if.pck.st_ready) begin
+
                     store_mapping.push_back('{
                         vaddr: tracer_if.pck.vaddr,
-                        paddr: tracer_if.pck.paddr
+                        paddr: get_paddr(tracer_if.pck.vaddr, tracer_if.pck.pte, tracer_if.pck.is_2M, tracer_if.pck.is_1G)
                     });
                 // or else put it in the load mapping
                 end else if (!tracer_if.pck.is_store && tracer_if.pck.ld_ready) begin
                     load_mapping.push_back('{
                         vaddr: tracer_if.pck.vaddr,
-                        paddr: tracer_if.pck.paddr
+                        paddr: get_paddr(tracer_if.pck.vaddr, tracer_if.pck.pte, tracer_if.pck.is_2M, tracer_if.pck.is_1G)
                     });
                 end
-            end
-
-            if (tracer_if.pck.translation_valid) begin
-                // put it in the store mapping queue if it is a store
-                // if (tracer_if.pck.is_store && tracer_if.pck.st_ready) begin
-                //     store_mapping.push_back('{
-                //         vaddr: tracer_if.pck.vaddr,
-                //         paddr: tracer_if.pck.paddr
-                //     });
-                // // or else put it in the load mapping
-                // end else if (!tracer_if.pck.is_store && tracer_if.pck.ld_ready) begin
-                //     load_mapping.push_back('{
-                //         vaddr: tracer_if.pck.vaddr,
-                //         paddr: tracer_if.pck.paddr
-                //     });
-                // end
             end
 
             // --------------
@@ -166,6 +159,18 @@ class instruction_tracer;
         end
 
     endtask
+    // Calculate the physical address given the values retrieved from the TLB
+    function logic [63:0] get_paddr (logic [63:0] vaddr, pte_t pte, logic is_2M, logic is_1G);
+
+        if (is_2M)
+            return {pte.ppn[43:9], vaddr[20:0]};
+        if (is_2M)
+            return {pte.ppn[43:18], vaddr[29:0]};
+
+        return {pte.ppn, vaddr[11:0]};
+
+    endfunction;
+
     // flush all decoded instructions
     function void flushDecode ();
         decode_queue = {};
