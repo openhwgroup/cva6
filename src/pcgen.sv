@@ -44,9 +44,10 @@ module pcgen (
 );
 
     logic [63:0]      npc_n, npc_q;
+    logic             set_pc_n, set_pc_q;
     branchpredict_sbe branch_predict_btb;
-
-    assign fetch_address_o = npc_q;
+    // branch-predict input register -> this path is critical
+    branchpredict                           resolved_branch_q;
 
     btb #(
         .NR_ENTRIES              ( BTB_ENTRIES             ),
@@ -57,7 +58,7 @@ module pcgen (
         // Use the PC from last cycle to perform branch lookup for the current cycle
         .flush_i                 ( flush_bp_i              ),
         .vpc_i                   ( npc_q                   ),
-        .branch_predict_i        ( resolved_branch_i       ), // update port
+        .branch_predict_i        ( resolved_branch_q       ), // update port
         .branch_predict_o        ( branch_predict_btb      ), // read port
         .*
     );
@@ -73,8 +74,12 @@ module pcgen (
     // 5. Return from exception
     // 6. Pipeline Flush because of CSR side effects
     always_comb begin : npc_select
+        // set fetch address
+        fetch_address_o  = npc_q;
         branch_predict_o = branch_predict_btb;
         fetch_valid_o    = 1'b1;
+        // this tells us whether it is a consecutive PC or a completely new PC
+        set_pc_n         = 1'b0;
 
         // -------------------------------
         // 0. Default assignment
@@ -103,9 +108,11 @@ module pcgen (
         // -------------------------------
         // 3. Control flow change request
         // -------------------------------
-        if (resolved_branch_i.is_mispredict) begin
+        // check if had a mis-predict the cycle earlier and if we can reset the PC (e.g.: it was a predicted or consecutive PC
+        // which was set a cycle earlier)
+        if (resolved_branch_q.is_mispredict && !set_pc_q) begin
             // we already got the correct target address
-            npc_n = resolved_branch_i.target_address;
+            fetch_address_o = resolved_branch_q.target_address;
         end
 
         // -------------------------------
@@ -114,6 +121,7 @@ module pcgen (
         if (ex_i.valid) begin
             npc_n                  = trap_vector_base_i;
             branch_predict_o.valid = 1'b0;
+            set_pc_n = 1'b1;
         end
 
         // -------------------------------
@@ -121,6 +129,7 @@ module pcgen (
         // -------------------------------
         if (eret_i) begin
             npc_n = epc_i;
+            set_pc_n = 1'b1;
         end
 
         // -----------------------------------------------
@@ -133,6 +142,7 @@ module pcgen (
             // as CSR instructions do not exist in a compressed form
             // we can unconditionally do PC + 4 here
             npc_n = pc_commit_i + 64'h4;
+            set_pc_n = 1'b1;
         end
 
         // fetch enable
@@ -146,9 +156,13 @@ module pcgen (
     // PCGEN -> IF Pipeline Stage
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-           npc_q       <= boot_addr_i;
+           npc_q             <= boot_addr_i;
+           set_pc_q          <= 1'b0;
+           resolved_branch_q <= '0;
         end else begin
-           npc_q       <= npc_n;
+           npc_q             <= npc_n;
+           set_pc_q          <= set_pc_n;
+           resolved_branch_q <= resolved_branch_i;
         end
     end
 
