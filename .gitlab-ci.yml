@@ -14,8 +14,8 @@ test_alu:
     - make build library=alu_lib
   script:
     - make alu library=alu_lib
-    - vcover report alu.ucdb
-    - vcover report -html alu.ucdb
+    - vcover-10.6 report alu.ucdb
+    - vcover-10.6 report -html alu.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -26,8 +26,8 @@ test_fifo:
     - make build library=fifo_lib
   script:
     - make fifo library=fifo_lib
-    - vcover report fifo.ucdb
-    - vcover report -html fifo.ucdb
+    - vcover-10.6 report fifo.ucdb
+    - vcover-10.6 report -html fifo.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -38,8 +38,8 @@ test_scoreboard:
     - make build library=scoreboard_lib
   script:
     - make scoreboard library=scoreboard_lib
-    - vcover report scoreboard.ucdb
-    - vcover report -html scoreboard.ucdb
+    - vcover-10.6 report scoreboard.ucdb
+    - vcover-10.6 report -html scoreboard.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -50,8 +50,8 @@ test_dcache_arbiter:
     - make build library=dcache_arbiter_lib
   script:
     - make dcache_arbiter library=dcache_arbiter_lib
-    - vcover report dcache_arbiter.ucdb
-    - vcover report -html dcache_arbiter.ucdb
+    - vcover-10.6 report dcache_arbiter.ucdb
+    - vcover-10.6 report -html dcache_arbiter.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -62,8 +62,8 @@ test_store_queue:
     - make build library=store_queue_lib
   script:
     - make store_queue library=store_queue_lib
-    - vcover report store_queue.ucdb
-    - vcover report -html store_queue.ucdb
+    - vcover-10.6 report store_queue.ucdb
+    - vcover-10.6 report -html store_queue.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -76,8 +76,8 @@ test_core_asm:
     - make build library=core_lib
   script:
     - make run-asm-tests library=core_lib
-    - vcover report run-asm-tests.ucdb
-    - vcover report -html run-asm-tests.ucdb
+    - vcover-10.6 report run-asm-tests.ucdb
+    - vcover-10.6 report -html run-asm-tests.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -88,8 +88,8 @@ test_core_asm:
 #     - make build library=lsu_lib
 #   script:
 #     - make lsu library=lsu_lib
-#     - vcover report lsu.ucdb
-#     - vcover report -html lsu.ucdb
+#     - vcover-10.6 report lsu.ucdb
+#     - vcover-10.6 report -html lsu.ucdb
 #   artifacts:
 #     paths:
 #       - covhtmlreport

@@ -1,5 +1,5 @@
-[![build status](https://iis-git.ee.ethz.ch/floce/ariane/badges/initial-dev/build.svg)](https://iis-git.ee.ethz.ch/floce/ariane/commits/initial-dev)
-[![coverage report](https://iis-git.ee.ethz.ch/floce/ariane/badges/initial-dev/coverage.svg)](https://iis-git.ee.ethz.ch/floce/ariane/commits/initial-dev)
+[![build status](https://iis-git.ee.ethz.ch/floce/ariane/badges/master/build.svg)](https://iis-git.ee.ethz.ch/floce/ariane/commits/master)
+[![coverage report](https://iis-git.ee.ethz.ch/floce/ariane/badges/master/coverage.svg)](https://iis-git.ee.ethz.ch/floce/ariane/commits/master)
 
 # Ariane RISC-V CPU
 
