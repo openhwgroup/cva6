@@ -30,30 +30,30 @@ module store_queue_tb;
     store_queue_if store_queue(clk);
 
     store_queue dut (
-        .clk_i            ( clk                          ),
-        .rst_ni           ( rst_ni                       ),
-        .flush_i          ( store_queue.flush            ),
-        .paddr_o          ( store_queue.check_paddr      ),
-        .data_o           ( store_queue.check_data       ),
-        .valid_o          ( store_queue.valid            ),
-        .be_o             ( store_queue.check_be         ),
-        .commit_i         ( store_queue.commit           ),
-        .ready_o          ( store_queue.ready            ),
-        .valid_i          ( store_queue.store_valid && store_queue.ready ),
-        .paddr_i          ( store_queue.store_paddr      ),
-        .data_i           ( store_queue.store_data       ),
-        .be_i             ( store_queue.store_be         ),
+        .clk_i                 ( clk                                          ),
+        .rst_ni                ( rst_ni                                       ),
+        .flush_i               ( store_queue.flush                            ),
 
-        .address_index_o  ( slave.address_index          ),
-        .address_tag_o    ( slave.address_tag            ),
-        .data_wdata_o     ( slave.data_wdata             ),
-        .data_req_o       ( slave.data_req               ),
-        .data_we_o        ( slave.data_we                ),
-        .data_be_o        ( slave.data_be                ),
-        .kill_req_o       ( slave.kill_req               ),
-        .tag_valid_o      ( slave.tag_valid              ),
-        .data_gnt_i       ( slave.data_gnt & slave.data_req       ),
-        .data_rvalid_i    ( slave.data_rvalid            )
+        .no_st_pending_o       (),
+        .page_offset_i         ( store_queue.page_offset                      ),
+        .page_offset_matches_o ( store_queue.page_offset_matches              ),
+        .commit_i              ( store_queue.commit                           ),
+        .ready_o               ( store_queue.ready                            ),
+        .valid_i               ( store_queue.store_valid && store_queue.ready ),
+        .paddr_i               ( store_queue.store_paddr                      ),
+        .data_i                ( store_queue.store_data                       ),
+        .be_i                  ( store_queue.store_be                         ),
+
+        .address_index_o       ( slave.address_index                          ),
+        .address_tag_o         ( slave.address_tag                            ),
+        .data_wdata_o          ( slave.data_wdata                             ),
+        .data_req_o            ( slave.data_req                               ),
+        .data_we_o             ( slave.data_we                                ),
+        .data_be_o             ( slave.data_be                                ),
+        .kill_req_o            ( slave.kill_req                               ),
+        .tag_valid_o           ( slave.tag_valid                              ),
+        .data_gnt_i            ( slave.data_gnt & slave.data_req              ),
+        .data_rvalid_i         ( slave.data_rvalid                            )
     );
 
     initial begin

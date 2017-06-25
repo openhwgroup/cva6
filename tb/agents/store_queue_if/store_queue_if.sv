@@ -29,10 +29,9 @@ interface store_queue_if
     );
 
    wire                     flush;
-   wire [ADDRESS_SIZE-1:0]  check_paddr;
-   wire [DATA_WIDTH-1:0]    check_data;
-   wire                     valid;
-   wire [DATA_WIDTH/8-1:0]  check_be;
+   wire                     no_st_pending;
+   wire [11:0]              page_offset;
+   wire                     page_offset_matches;
    wire                     commit;
    wire                     ready;
    wire                     store_valid;
@@ -41,14 +40,15 @@ interface store_queue_if
    wire [DATA_WIDTH/8-1:0]  store_be;
 
    clocking mck @(posedge clk);
-        output  flush, commit, valid, store_paddr, store_data, store_be, store_valid;
-        input  check_paddr, check_data, check_be, ready;
+        output flush, commit, store_valid, page_offset, store_paddr, store_data, store_be;
+        input  ready, page_offset_matches, no_st_pending;
 
    endclocking
 
 
    clocking pck @(posedge clk);
-     input  flush, check_paddr, check_data, valid, check_be, commit, ready, store_valid, store_paddr, store_data, store_be;
+     input flush, commit, ready, page_offset, page_offset_matches, store_valid, store_paddr,
+            store_data, store_be, no_st_pending;
    endclocking
 
 endinterface
