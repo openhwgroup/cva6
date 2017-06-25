@@ -20,7 +20,7 @@ package ariane_pkg;
                                                       // to uniquely identify the entry in the scoreboard
     localparam NR_WB_PORTS   = 4;
     localparam ASID_WIDTH    = 1;
-    localparam BTB_ENTRIES   = 64;
+    localparam BTB_ENTRIES   = 8;
     localparam BITS_SATURATION_COUNTER = 2;
 
     localparam logic [63:0] ISA_CODE = (1 <<  2)  // C - Compressed extension
