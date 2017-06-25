@@ -82,6 +82,8 @@ module pcgen (
         // this tells us whether it is a consecutive PC or a completely new PC
         set_pc_n         = 1'b0;
 
+        // keep the PC stable if IF by default
+        npc_n            = npc_q;
         // -------------------------------
         // 3. Control flow change request
         // -------------------------------
@@ -99,8 +101,8 @@ module pcgen (
         if (if_ready_i && fetch_enable_i)
             // but operate on the current fetch address
             npc_n = {fetch_address[63:2], 2'b0}  + 64'h4;
-        else // or keep the PC stable if IF is not ready
-            npc_n = npc_q;
+
+
         // we only need to stall the consecutive and predicted case since in any other case we will flush at least
         // the front-end which means that the IF stage will always be ready to accept a new request
 
@@ -110,7 +112,7 @@ module pcgen (
         // only predict if the IF stage is ready, otherwise we might take the predicted PC away which will end in a endless loop
         // also check if we fetched on a half word (npc_q[1] == 1), it might be the case that we need the next 16 byte of the following instruction
         // prediction could potentially prevent us from getting them
-        if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken && !npc_q[1]) begin
+        if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken && !fetch_address[1]) begin
             npc_n = branch_predict_btb.predict_address;
         end
         // -------------------------------

@@ -19,16 +19,16 @@
 //
 
 import ariane_pkg::*;
+import uvm_pkg::*;
+import core_lib_pkg::*;
 
 `define DRAM_BASE 64'h80000000
+
 
 module core_tb;
     import "DPI-C" function chandle read_elf(string fn);
     import "DPI-C" function longint unsigned get_symbol_address(string symb);
     import "DPI-C" function longint unsigned get_symbol_size(string symb);
-
-    import uvm_pkg::*;
-    import core_lib_pkg::*;
 
     logic clk_i;
     logic rst_ni;
@@ -190,7 +190,8 @@ module core_tb;
         // initialize .bss
         bss_address = get_symbol_address(".bss");
         bss_size    = get_symbol_size(".bss");
-        $display("Symbol Address: %x, Symbol Size: %x, Address: %x", ((bss_address - `DRAM_BASE) >> 3), bss_size, address);
+        // `uvm_info("Core Test",  $sformatf(".bss address: %x, .bss size: %x, .tohost address: %x", ((bss_address - `DRAM_BASE) >> 3), bss_size, address), UVM_LOW)
+
         // the section should be aligned on a double word boundary
         for (int i = 0; i < bss_size/8; i++) begin
                 core_mem_i.ram_i.mem[((bss_address - `DRAM_BASE) >> 3) + i] = 64'b0;
