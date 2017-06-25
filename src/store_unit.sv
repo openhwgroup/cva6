@@ -89,7 +89,7 @@ module store_unit (
 
                     NS = VALID_STORE;
                     translation_req_o = 1'b1;
-                        pop_st_o = 1'b1;
+                    pop_st_o = 1'b1;
                     // check if translation was valid and we have space in the store buffer
                     // otherwise simply stall
                     if (!dtlb_hit_i) begin

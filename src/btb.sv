@@ -34,6 +34,9 @@ module btb #(
 );
     // number of bits which are not used for indexing
     localparam OFFSET = 2;
+    localparam ANTIALIAS_BITS = 8;
+    // number of bits we should use for prediction
+    localparam PREDICTION_BITS = $clog2(NR_ENTRIES) + OFFSET;
 
     // typedef for all branch target entries
     // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
@@ -42,30 +45,39 @@ module btb #(
         logic [63:0]                            target_address;
         logic [BITS_SATURATION_COUNTER-1:0]     saturation_counter;
         logic                                   is_lower_16;
+        logic [ANTIALIAS_BITS-1:0]              anti_alias; // store some more PC information to prevent aliasing
     } btb_n [NR_ENTRIES-1:0], btb_q [NR_ENTRIES-1:0];
 
     logic [$clog2(NR_ENTRIES)-1:0]          index, update_pc;
+    logic [ANTIALIAS_BITS-1:0]              anti_alias_index, anti_alias_update_pc;
     logic [BITS_SATURATION_COUNTER-1:0]     saturation_counter;
 
     // get actual index positions
     // we ignore the 0th bit since all instructions are aligned on
     // a half word boundary
-    assign update_pc = branch_predict_i.pc[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
-    assign index     = vpc_i[$clog2(NR_ENTRIES) + OFFSET - 1:OFFSET];
+    assign update_pc = branch_predict_i.pc[PREDICTION_BITS - 1:OFFSET];
+    assign index     = vpc_i[PREDICTION_BITS - 1:OFFSET];
+    // anti-alias portion of PCs
+    assign anti_alias_update_pc = branch_predict_i.pc[PREDICTION_BITS + ANTIALIAS_BITS - 1:PREDICTION_BITS];
+    assign anti_alias_index = vpc_i[PREDICTION_BITS + ANTIALIAS_BITS - 1:PREDICTION_BITS];
 
     // we combinatorially predict the branch and the target address
-    assign branch_predict_o.valid           = btb_q[index].valid;
+    // check if we are potentially aliasing
+    assign branch_predict_o.valid           = (btb_q[index].anti_alias == anti_alias_index) ? btb_q[index].valid :  1'b0;
     assign branch_predict_o.predict_taken   = btb_q[index].saturation_counter[BITS_SATURATION_COUNTER-1];
     assign branch_predict_o.predict_address = btb_q[index].target_address;
     assign branch_predict_o.is_lower_16     = btb_q[index].is_lower_16;
-
+    // -------------------------
+    // Update Branch Prediction
+    // -------------------------
     // update on a mis-predict
     always_comb begin : update_branch_predict
         btb_n              = btb_q;
         saturation_counter = btb_q[update_pc].saturation_counter;
-
         if (branch_predict_i.valid) begin
+
             btb_n[update_pc].valid = 1'b1;
+            btb_n[update_pc].anti_alias = anti_alias_update_pc;
             // update saturation counter
             // first check if counter is already saturated in the positive regime e.g.: branch taken
             if (saturation_counter == {BITS_SATURATION_COUNTER{1'b1}}) begin
@@ -100,7 +112,9 @@ module btb #(
         if(~rst_ni) begin
             // Bias the branches to be taken upon first arrival
             for (int i = 0; i < NR_ENTRIES; i++)
-                btb_q[i] <= '{1'b0, 64'b0, 2'b10, 1'b0};
+                btb_q[i] <= '{default: 0};
+                for (int unsigned i = 0; i < NR_ENTRIES; i++)
+                    btb_q[i].saturation_counter <= 2'b0;
         end else begin
             // evict all entries
             if (flush_i) begin
