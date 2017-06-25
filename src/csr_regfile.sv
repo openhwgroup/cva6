@@ -226,7 +226,11 @@ module csr_regfile #(
         if(csr_we) begin
             case (csr_addr.address)
                 // sstatus is a subset of mstatus - mask it accordingly
-                CSR_SSTATUS:            mstatus_n   = csr_wdata & 64'h3fffe1fee;
+                CSR_SSTATUS: begin
+                    mstatus_n   = csr_wdata & 64'h3fffe1fee;
+                    // this instruction has side-effects
+                    flush_o = 1'b1;
+                end
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
                 CSR_SIE:                mie_n       = csr_wdata & 64'hBBB & mideleg_q; // we only support supervisor and m-mode interrupts
@@ -247,7 +251,11 @@ module csr_regfile #(
                         sapt.asid = sapt.asid & {{(16-ASID_WIDTH){1'b0}}, {ASID_WIDTH{1'b1}}};
                         satp_n    = sapt;
                     end
+                    // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
+                    // the next instruction by executing a flush
+                    flush_o = 1'b1;
                 end
+
                 CSR_MSTATUS: begin
                     mstatus_n      = csr_wdata;
                     mstatus_n.sxl  = 2'b10;
@@ -266,6 +274,8 @@ module csr_regfile #(
                     // for lower privilege levels are always disabled, 1.10 p.20
                     if (!csr_wdata[3])
                         mstatus_n.sie = 1'b0;
+                    // this register has side-effects on other registers, flush the pipeline
+                    flush_o = 1'b1;
                 end
                 // machine exception delegation register
                 // 0 - 15 exceptions supported
@@ -291,8 +301,6 @@ module csr_regfile #(
                 CSR_MTVAL:              mtval_n     = csr_wdata;
                 default: update_access_exception = 1'b1;
             endcase
-            // so we wrote something, TODO: this can be more fine grained (e.g.: did it have side effects?)
-            flush_o = 1'b1;
         end
         // ---------------------
         // External Interrupts
