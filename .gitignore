@@ -8,3 +8,5 @@ transcript
 .moore
 *.vstf
 wlft*
+*nfs*
+src/moore.sv
