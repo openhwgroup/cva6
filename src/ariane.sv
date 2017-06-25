@@ -524,18 +524,13 @@ module ariane
     assign tracer_if.commit_instr      = commit_instr_id_commit;
     assign tracer_if.commit_ack        = commit_ack;
     // address translation
-    assign tracer_if.lsu_valid         = ex_stage_i.lsu_i.lsu_valid_i;
-    assign tracer_if.vaddr             = ex_stage_i.lsu_i.vaddr_i;
-    // MMU
-    assign tracer_if.translation_req   = ex_stage_i.lsu_i.mmu_i.lsu_req_i;
-    assign tracer_if.translation_valid = ex_stage_i.lsu_i.mmu_i.lsu_dtlb_hit_o;
-    assign tracer_if.pte               = ex_stage_i.lsu_i.mmu_i.dtlb_content;
-    assign tracer_if.is_2M             = ex_stage_i.lsu_i.mmu_i.dtlb_is_2M;
-    assign tracer_if.is_1G             = ex_stage_i.lsu_i.mmu_i.dtlb_is_1G;
-
-    assign tracer_if.is_store          = ex_stage_i.lsu_i.mmu_i.lsu_is_store_i; // was this translation a store
-    assign tracer_if.st_ready          = ex_stage_i.lsu_i.store_unit_i.ready_o;
-    assign tracer_if.ld_ready          = ex_stage_i.lsu_i.load_unit_i.ready_o;
+    // stores
+    assign tracer_if.st_valid          = ex_stage_i.lsu_i.store_unit_i.store_buffer_i.valid_i;
+    assign tracer_if.st_paddr          = ex_stage_i.lsu_i.store_unit_i.store_buffer_i.paddr_i;
+    // loads
+    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.load_unit_i.tag_valid_o;
+    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.load_unit_i.kill_req_o;
+    assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.load_unit_i.paddr_i;
     // exceptions
     assign tracer_if.exception         = commit_stage_i.exception_o;
 

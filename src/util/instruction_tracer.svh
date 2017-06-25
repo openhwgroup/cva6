@@ -87,7 +87,13 @@ class instruction_tracer;
             // --------------------
             // Address Translation
             // --------------------
+            if (tracer_if.pck.st_valid) begin
+                store_mapping.push_back(tracer_if.pck.st_paddr);
+            end
 
+            if (tracer_if.pck.ld_valid && !tracer_if.pck.ld_kill) begin
+                load_mapping.push_back(tracer_if.pck.ld_paddr);
+            end
             // --------------
             //  Commit
             // --------------

@@ -176,6 +176,7 @@ module load_unit (
             // we know for sure that the tag we want to send is valid
             SEND_TAG: begin
                 tag_valid_o = 1'b1;
+                NS = IDLE;
                 // we can make a new request here if we got one
                 if (valid_i) begin
                     // start the translation process even though we do not know if the addresses match
@@ -208,7 +209,6 @@ module load_unit (
                 // if we got an exception we need to kill the request immediately
                 if (ex_i.valid) begin
                     kill_req_o = 1'b1;
-                    NS = IDLE;
                 end
             end
 

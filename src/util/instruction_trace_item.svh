@@ -198,7 +198,11 @@ class instruction_trace_item;
         end
         casex (instr)
             // check of the instrction was a load or store
-            INSTR_LOAD, INSTR_STORE: begin
+            INSTR_STORE: begin
+                logic [63:0] vaddress = reg_file[read_regs[1]] + this.imm;
+                s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
+            end
+            INSTR_LOAD: begin
                 logic [63:0] vaddress = reg_file[read_regs[0]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
@@ -305,8 +309,8 @@ class instruction_trace_item;
           default: return printMnemonic("INVALID");
         endcase
 
-        read_regs.push_back(sbe.rs1);
         result_regs.push_back(sbe.rd);
+        read_regs.push_back(sbe.rs1);
         // save the immediate for calculating the virtual address
         this.imm = sbe.result;
 
@@ -324,8 +328,8 @@ class instruction_trace_item;
           default: return printMnemonic("INVALID");
         endcase
 
-        read_regs.push_back(sbe.rs1);
         read_regs.push_back(sbe.rs2);
+        read_regs.push_back(sbe.rs1);
         // save the immediate for calculating the virtual address
         this.imm = sbe.result;
 
