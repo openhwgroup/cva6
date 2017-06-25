@@ -190,7 +190,7 @@ module store_unit (
     // ---------------
     // Store Queue
     // ---------------
-    store_queue store_queue_i (
+    store_buffer store_buffer_i (
         // store queue write port
         .valid_i           ( st_valid            ),
         .data_i            ( st_data_q           ),

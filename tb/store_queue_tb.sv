@@ -29,7 +29,7 @@ module store_queue_tb;
     dcache_if      slave(clk);
     store_queue_if store_queue(clk);
 
-    store_queue dut (
+    store_buffer dut (
         .clk_i                 ( clk                                          ),
         .rst_ni                ( rst_ni                                       ),
         .flush_i               ( store_queue.flush                            ),
