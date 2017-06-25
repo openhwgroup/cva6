@@ -24,7 +24,6 @@ module if_stage (
     // control signals
     input  logic                   flush_i,
     output logic                   if_busy_o,           // is the IF stage busy fetching instructions?
-    input  logic                   id_ready_i,          // ID stage is ready
     // fetch direction from PC Gen
     input  logic [63:0]            fetch_address_i,     // address to fetch from
     input  logic                   fetch_valid_i,       // the fetch address is valid
@@ -88,7 +87,7 @@ module if_stage (
         NS            = CS;
         addr_valid    = 1'b0;
 
-        unique case(CS)
+        case(CS)
             // default state, not waiting for requested data
             IDLE: begin
                 instr_addr_o = fetch_address;
@@ -210,11 +209,6 @@ module if_stage (
                     end
                     // otherwise wait in this state for the rvalid
                 end
-            end
-
-            default: begin
-                NS          = IDLE;
-                instr_req_o = 1'b0;
             end
         endcase
     end

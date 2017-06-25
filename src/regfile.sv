@@ -147,9 +147,7 @@ module regfile
     mem[0] = '0;
 
     for (int unsigned k = 1; k < NUM_WORDS; k++) begin : w_WordIter
-        if (~rst_n)
-            mem[k] = '0;
-        else if (mem_clocks[k] == 1'b1)
+        if (mem_clocks[k] == 1'b1)
             mem[k] = wdata_a_q;
     end
   end

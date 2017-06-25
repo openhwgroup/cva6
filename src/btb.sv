@@ -111,6 +111,7 @@ module btb #(
             end else begin
                 btb_q <=  btb_n;
             end
+
         end
     end
 endmodule

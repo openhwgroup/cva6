@@ -26,13 +26,12 @@ class instruction_trace_item;
     logic [63:0]       reg_file [32];
     logic [4:0]        read_regs [$];
     logic [4:0]        result_regs [$];
+    logic [63:0]       imm;
     logic [63:0]       result;
     logic [63:0]       paddr;
-    logic [63:0]       paddr_queue [$];
-    logic [63:0]       vaddr;
-    logic [63:0]       vaddr_queue [$];
+
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, scoreboard_entry sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] vaddr, logic [63:0] paddr);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -40,7 +39,6 @@ class instruction_trace_item;
         this.instr    = instr;
         this.reg_file = reg_file;
         this.result   = result;
-        this.vaddr    = vaddr;
         this.paddr    = paddr;
     endfunction
     // convert register address to ABI compatible form
@@ -198,11 +196,17 @@ class instruction_trace_item;
             if (read_regs[i] != 0)
                 s = $sformatf("%s %-4s:%16x", s, regAddrToStr(read_regs[i]), reg_file[read_regs[i]]);
         end
-        // if we got a physical address also display address translation
-        foreach (paddr_queue[i]) begin
-           s = $sformatf("%s VA: %x PA: %x", s, this.vaddr, paddr_queue[i]);
-        end
-
+        casex (instr)
+            // check of the instrction was a load or store
+            INSTR_STORE: begin
+                logic [63:0] vaddress = reg_file[read_regs[1]] + this.imm;
+                s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
+            end
+            INSTR_LOAD: begin
+                logic [63:0] vaddress = reg_file[read_regs[0]] + this.imm;
+                s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
+            end
+        endcase
         return s;
     endfunction
 
@@ -307,7 +311,9 @@ class instruction_trace_item;
 
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
-        paddr_queue.push_back(paddr);
+        // save the immediate for calculating the virtual address
+        this.imm = sbe.result;
+
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result), regAddrToStr(sbe.rs1));
     endfunction
 
@@ -322,9 +328,10 @@ class instruction_trace_item;
           default: return printMnemonic("INVALID");
         endcase
 
-        read_regs.push_back(sbe.rs1);
         read_regs.push_back(sbe.rs2);
-        paddr_queue.push_back(paddr);
+        read_regs.push_back(sbe.rs1);
+        // save the immediate for calculating the virtual address
+        this.imm = sbe.result;
 
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rs2), $signed(sbe.result), regAddrToStr(sbe.rs1));
 

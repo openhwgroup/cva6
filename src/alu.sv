@@ -123,9 +123,9 @@ module alu
     assign shift_op_a_64 = { shift_arithmetic & shift_op_a[63], shift_op_a};
     assign shift_op_a_32 = { shift_arithmetic & shift_op_a[31], shift_op_a32};
 
-    assign shift_right_result     = $signed(shift_op_a_64) >>> shift_amt[5:0];
+    assign shift_right_result     = $unsigned($signed(shift_op_a_64) >>> shift_amt[5:0]);
 
-    assign shift_right_result32   = $signed(shift_op_a_32) >>> shift_amt[4:0];
+    assign shift_right_result32   = $unsigned($signed(shift_op_a_32) >>> shift_amt[4:0]);
     // bit reverse the shift_right_result for left shifts
     genvar j;
     generate

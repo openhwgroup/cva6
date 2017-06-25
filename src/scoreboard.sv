@@ -21,15 +21,14 @@
 import ariane_pkg::*;
 
 module scoreboard #(
-    parameter int  NR_ENTRIES  = 8,
-    parameter int  NR_WB_PORTS = 1
+    parameter int unsigned NR_ENTRIES  = 8,
+    parameter int unsigned NR_WB_PORTS = 1
     )
     (
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
-    output logic                                      full_o,   // We can't take anymore data
     input  logic                                      flush_i,  // flush whole scoreboard
-    input  logic                                      flush_unissued_instr_i,
+    input  logic                                      unresolved_branch_i, // we have an unresolved branch
     // list of clobbered registers to issue stage
     output fu_t [31:0]                                rd_clobber_o,
 
@@ -63,7 +62,7 @@ module scoreboard #(
     input exception [NR_WB_PORTS-1:0]                 ex_i,        // exception from a functional unit (e.g.: ld/st exception, divide by zero)
     input logic [NR_WB_PORTS-1:0]                     wb_valid_i   // data in is valid
 );
-    localparam BITS_ENTRIES      = $clog2(NR_ENTRIES);
+    localparam int unsigned BITS_ENTRIES      = $clog2(NR_ENTRIES);
 
     // this is the FIFO struct of the issue queue
     struct packed {
@@ -78,7 +77,7 @@ module scoreboard #(
 
     // the issue queue is full don't issue any new instructions
     assign issue_full = (issue_cnt_q == NR_ENTRIES-1);
-    assign full_o     = issue_full;
+
     // output commit instruction directly
     assign commit_instr_o = mem_q[commit_pointer_q].sbe;
 
@@ -87,9 +86,12 @@ module scoreboard #(
         issue_instr_o          = decoded_instr_i;
         // make sure we assign the correct trans ID
         issue_instr_o.trans_id = issue_pointer_q;
-        issue_instr_valid_o    = ~issue_full && decoded_instr_valid_i && !flush_unissued_instr_i;
-        decoded_instr_ack_o    = issue_ack_i;
+        // we are ready if we are not full and don't have any unresolved branches, but it can be
+        // the case that we have an unresolved branch which is cleared in that cycle (resolved_branch_i == 1)
+        issue_instr_valid_o    = decoded_instr_valid_i && !unresolved_branch_i && !issue_full;
+        decoded_instr_ack_o    = issue_ack_i && !issue_full;
     end
+
     // maintain a FIFO with issued instructions
     // keep track of all issued instructions
     always_comb begin : issue_fifo
@@ -99,11 +101,11 @@ module scoreboard #(
         commit_pointer_n = commit_pointer_q;
         issue_pointer_n  = issue_pointer_q;
 
-        // if we got a acknowledge from the FIFO, put this scoreboard entry in the queue
-        if (issue_ack_i) begin
+        // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
+        if (decoded_instr_valid_i && decoded_instr_ack_o) begin
+            // the decoded instruction we put in there is valid (1st bit)
             // increase the issue counter
             issue_cnt++;
-            // the decoded instruction we put in there is valid (1st bit)
             mem_n[issue_pointer_q] = {1'b1, decoded_instr_i};
             // advance issue pointer
             issue_pointer_n = issue_pointer_q + 1'b1;
@@ -112,7 +114,7 @@ module scoreboard #(
         // ------------
         // Write Back
         // ------------
-        for (int i = 0; i < NR_WB_PORTS; i++) begin
+        for (int unsigned i = 0; i < NR_WB_PORTS; i++) begin
             // check if this instruction was issued (e.g.: it could happen after a flush that there is still
             // something in the pipeline e.g. an incomplete memory operation)
             if (wb_valid_i[i] && mem_n[trans_id_i[i]].issued) begin
@@ -141,7 +143,7 @@ module scoreboard #(
         // Flush
         // ------
         if (flush_i) begin
-            for (int i = 0; i < NR_ENTRIES; i++) begin
+            for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
                 // set all valid flags for all entries to zero
                 mem_n[i].issued       = 1'b0;
                 mem_n[i].sbe.valid    = 1'b0;
@@ -163,7 +165,7 @@ module scoreboard #(
     always_comb begin : clobber_output
         rd_clobber_o = '{default: NONE};
         // check for all valid entries and set the clobber register accordingly
-        for (int i = 0; i < NR_ENTRIES; i++) begin
+        for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (mem_q[i].issued) begin
                 // output the functional unit which is going to clobber this register
                 rd_clobber_o[mem_q[i].sbe.rd] = mem_q[i].sbe.fu;
@@ -183,7 +185,7 @@ module scoreboard #(
         rs1_valid_o = 1'b0;
         rs2_valid_o = 1'b0;
 
-        for (int i = 0; i < NR_ENTRIES; i++) begin
+        for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             // only consider this entry if it is valid
             if (mem_q[i].issued) begin
                 // look at the appropriate fields and look whether there was an
@@ -203,7 +205,7 @@ module scoreboard #(
         // -----------
         // provide a direct combinational path from WB a.k.a forwarding
         // make sure that we are not forwarding a result that got an exception
-        for (int j = 0; j < NR_WB_PORTS; j++) begin
+        for (int unsigned j = 0; j < NR_WB_PORTS; j++) begin
             if (mem_q[trans_id_i[j]].sbe.rd == rs1_i && wb_valid_i[j] && ~ex_i[j].valid) begin
                 rs1_o = wdata_i[j];
                 rs1_valid_o = wb_valid_i[j];
@@ -231,7 +233,7 @@ module scoreboard #(
             commit_pointer_q <= '0;
             issue_pointer_q  <= '0;
         end else begin
-            mem_q <= mem_n;
+            mem_q            <= mem_n;
             issue_cnt_q      <= issue_cnt_n;
             commit_pointer_q <= commit_pointer_n;
             issue_pointer_q  <= issue_pointer_n;

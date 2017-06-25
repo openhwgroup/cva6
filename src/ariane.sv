@@ -118,8 +118,17 @@ module ariane
     logic                     fetch_valid_if_id;
     logic                     decode_ack_id_if;
     exception                 exception_if_id;
+
     // --------------
-    // ID <-> EX
+    // ID <-> ISSUE
+    // --------------
+    scoreboard_entry          issue_entry_id_issue;
+    logic                     issue_entry_valid_id_issue;
+    logic                     is_ctrl_fow_id_issue;
+    logic                     issue_instr_issue_id;
+
+    // --------------
+    // ISSUE <-> EX
     // --------------
     logic [63:0]              imm_id_ex;
     logic [TRANS_ID_BITS-1:0] trans_id_id_ex;
@@ -247,7 +256,6 @@ module ariane
     if_stage if_stage_i (
         .flush_i               ( flush_ctrl_if                  ),
         .if_busy_o             ( if_ready_if_pcgen              ),
-        .id_ready_i            ( ready_id_if                    ),
         .fetch_address_i       ( fetch_address_pcgen_if         ),
         .fetch_valid_i         ( fetch_valid_pcgen_if           ),
         .branch_predict_i      ( branch_predict_pcgen_if        ),
@@ -267,23 +275,42 @@ module ariane
     // ---------
     // ID
     // ---------
-    id_stage
+    id_stage id_stage_i (
+        .flush_i                    ( flush_ctrl_if                   ),
+        .fetch_entry_i              ( fetch_entry_if_id               ),
+        .fetch_entry_valid_i        ( fetch_valid_if_id               ),
+        .decoded_instr_ack_o        ( decode_ack_id_if                ),
+
+        .issue_entry_o              ( issue_entry_id_issue            ),
+        .issue_entry_valid_o        ( issue_entry_valid_id_issue      ),
+        .is_ctrl_flow_o             ( is_ctrl_fow_id_issue            ),
+        .issue_instr_ack_i          ( issue_instr_issue_id            ),
+
+        .priv_lvl_i                 ( priv_lvl                        ),
+        .tvm_i                      ( tvm_csr_id                      ),
+        .tw_i                       ( tw_csr_id                       ),
+        .tsr_i                      ( tsr_csr_id                      ),
+
+        .*
+    );
+
+    // ---------
+    // Issue
+    // ---------
+    issue_stage
     #(
-        .NR_ENTRIES                 ( NR_SB_ENTRIES                            ),
-        .NR_WB_PORTS                ( NR_WB_PORTS                              )
+        .NR_ENTRIES                 ( NR_SB_ENTRIES                   ),
+        .NR_WB_PORTS                ( NR_WB_PORTS                     )
     )
-    id_stage_i (
-        .test_en_i                  ( test_en_i                                ),
-        .flush_i                    ( flush_ctrl_id                            ),
+    issue_stage_i (
         .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id             ),
-        .fetch_entry_i              ( fetch_entry_if_id                        ),
-        .fetch_entry_valid_i        ( fetch_valid_if_id                        ),
-        .decoded_instr_ack_o        ( decode_ack_id_if                         ),
-        .ready_o                    ( ready_id_if                              ),
-        .priv_lvl_i                 ( priv_lvl                                 ),
-        .tvm_i                      ( tvm_csr_id                               ),
-        .tw_i                       ( tw_csr_id                                ),
-        .tsr_i                      ( tsr_csr_id                               ),
+        .flush_i                    ( flush_ctrl_id                            ),
+
+        .decoded_instr_i            ( issue_entry_id_issue                     ),
+        .decoded_instr_valid_i      ( issue_entry_valid_id_issue               ),
+        .is_ctrl_flow_i             ( is_ctrl_fow_id_issue                     ),
+        .decoded_instr_ack_o        ( issue_instr_issue_id                     ),
+
         // Functional Units
         .fu_o                       ( fu_id_ex                                 ),
         .operator_o                 ( operator_id_ex                           ),
@@ -487,8 +514,8 @@ module ariane
     assign tracer_if.fetch_valid       = fetch_valid_if_id;
     assign tracer_if.fetch_ack         = decode_ack_id_if;
     // Issue
-    assign tracer_if.issue_ack         = id_stage_i.scoreboard_i.issue_ack_i;
-    assign tracer_if.issue_sbe         = id_stage_i.scoreboard_i.issue_instr_o;
+    assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
+    assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;
     // write-back
     assign tracer_if.waddr             = waddr_a_commit_id;
     assign tracer_if.wdata             = wdata_a_commit_id;
@@ -497,12 +524,13 @@ module ariane
     assign tracer_if.commit_instr      = commit_instr_id_commit;
     assign tracer_if.commit_ack        = commit_ack;
     // address translation
-    assign tracer_if.translation_valid = ex_stage_i.lsu_i.mmu_i.lsu_valid_o;
-    assign tracer_if.vaddr             = ex_stage_i.lsu_i.mmu_i.lsu_vaddr_i;
-    assign tracer_if.paddr             = ex_stage_i.lsu_i.mmu_i.lsu_paddr_o;
-    assign tracer_if.is_store          = ex_stage_i.lsu_i.mmu_i.lsu_is_store_i;
-    assign tracer_if.st_ready          = ex_stage_i.lsu_i.store_unit_i.ready_o;
-    assign tracer_if.ld_ready          = ex_stage_i.lsu_i.load_unit_i.ready_o;
+    // stores
+    assign tracer_if.st_valid          = ex_stage_i.lsu_i.store_unit_i.store_buffer_i.valid_i;
+    assign tracer_if.st_paddr          = ex_stage_i.lsu_i.store_unit_i.store_buffer_i.paddr_i;
+    // loads
+    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.load_unit_i.tag_valid_o;
+    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.load_unit_i.kill_req_o;
+    assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.load_unit_i.paddr_i;
     // exceptions
     assign tracer_if.exception         = commit_stage_i.exception_o;
 
@@ -510,6 +538,8 @@ module ariane
         instruction_tracer it = new (tracer_if);
 
         initial begin
+            #15ns;
+            it.create_file(cluster_id_i, core_id_i);
             it.trace();
         end
 

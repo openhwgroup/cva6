@@ -39,19 +39,23 @@ interface instruction_tracer_if (
     // commit stage
     scoreboard_entry commit_instr; // commit instruction
     logic            commit_ack;
+
     // address translation
-    logic            translation_valid;
-    logic [63:0]     vaddr;
-    logic [63:0]     paddr;
-    logic            is_store;
-    logic            st_ready;
-    logic            ld_ready;
+    // stores
+    logic           st_valid;
+    logic [63:0]    st_paddr;
+    // loads
+    logic           ld_valid;
+    logic           ld_kill;
+    logic [63:0]    ld_paddr;
+
     // exceptions
     exception        exception;
     // the tracer just has a passive interface we do not drive anything with it
     clocking pck @(posedge clk);
         input rstn, flush_unissued, flush, fetch, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr,
-              wdata, we, commit_instr, commit_ack, translation_valid, vaddr, paddr, is_store, st_ready, ld_ready, exception;
+              st_valid, st_paddr, ld_valid, ld_kill, ld_paddr,
+              wdata, we, commit_instr, commit_ack, exception;
     endclocking
 
 endinterface

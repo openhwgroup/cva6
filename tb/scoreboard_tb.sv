@@ -19,33 +19,37 @@ module scoreboard_tb;
     scoreboard_if #(.NR_WB_PORTS(1) ) scoreboard_if (clk);
 
     scoreboard #(
-        .NR_WB_PORTS          ( 1                                 ),
-        .NR_ENTRIES           ( NR_SB_ENTRIES                     )
+        .NR_WB_PORTS           ( 1                                 ),
+        .NR_ENTRIES            ( NR_SB_ENTRIES                     )
     )
     dut
     (
-        .clk_i                ( clk                               ),
-        .rst_ni               ( rst_ni                            ),
-        .full_o               ( scoreboard_if.full                ),
-        .flush_i              ( scoreboard_if.flush               ),
-        .rd_clobber_o         ( scoreboard_if.rd_clobber          ),
-        .rs1_i                ( scoreboard_if.rs1_address         ),
-        .rs1_o                ( scoreboard_if.rs1                 ),
-        .rs1_valid_o          ( scoreboard_if.rs1_valid           ),
-        .rs2_i                ( scoreboard_if.rs2_address         ),
-        .rs2_o                ( scoreboard_if.rs2                 ),
-        .rs2_valid_o          ( scoreboard_if.rs2_valid           ),
-        .commit_instr_o       ( scoreboard_if.commit_instr        ),
-        .commit_ack_i         ( scoreboard_if.commit_ack          ),
-        .decoded_instr_i      ( scoreboard_if.decoded_instr       ),
-        .decoded_instr_valid_i( scoreboard_if.decoded_instr_valid ),
-        .issue_instr_o        ( scoreboard_if.issue_instr         ),
-        .issue_instr_valid_o  ( scoreboard_if.issue_instr_valid   ),
-        .issue_ack_i          ( scoreboard_if.issue_ack           ),
-        .trans_id_i           ( scoreboard_if.trans_id            ),
-        .wdata_i              ( scoreboard_if.wdata               ),
-        .ex_i                 ( scoreboard_if.ex                  ),
-        .wb_valid_i           ( scoreboard_if.wb_valid            )
+        .clk_i                 ( clk                               ),
+        .rst_ni                ( rst_ni                            ),
+        .flush_i               ( scoreboard_if.flush               ),
+        .rd_clobber_o          ( scoreboard_if.rd_clobber          ),
+        .rs1_i                 ( scoreboard_if.rs1_address         ),
+        .rs1_o                 ( scoreboard_if.rs1                 ),
+        .rs1_valid_o           ( scoreboard_if.rs1_valid           ),
+        .rs2_i                 ( scoreboard_if.rs2_address         ),
+        .rs2_o                 ( scoreboard_if.rs2                 ),
+        .rs2_valid_o           ( scoreboard_if.rs2_valid           ),
+
+        .commit_instr_o        ( scoreboard_if.commit_instr        ),
+        .commit_ack_i          ( scoreboard_if.commit_ack          ),
+
+        .decoded_instr_i       ( scoreboard_if.decoded_instr       ),
+        .decoded_instr_valid_i ( scoreboard_if.decoded_instr_valid ),
+        .decoded_instr_ack_o   ( scoreboard_if.decoded_instr_ack   ),
+
+        .issue_instr_o         ( scoreboard_if.issue_instr         ),
+        .issue_instr_valid_o   ( scoreboard_if.issue_instr_valid   ),
+        .issue_ack_i           ( scoreboard_if.issue_ack           ),
+
+        .trans_id_i            ( scoreboard_if.trans_id            ),
+        .wdata_i               ( scoreboard_if.wdata               ),
+        .ex_i                  ( scoreboard_if.ex                  ),
+        .wb_valid_i            ( scoreboard_if.wb_valid            )
     );
 
     initial begin
@@ -86,13 +90,10 @@ module scoreboard_tb;
 
                 @(scoreboard_if.mck);
                 // if we are not full load another instruction
-                if (scoreboard_if.full == 1'b0) begin
                     scoreboard_if.mck.decoded_instr       <= Scoreboard::randomize_scoreboard();
                     scoreboard_if.mck.decoded_instr_valid <= 1'b1;
-                end else begin
+                @(scoreboard_if.mck iff scoreboard_if.mck.decoded_instr_ack == 1'b1)
                     scoreboard_if.mck.decoded_instr_valid <= 1'b0;
-                end
-
             end
         end
 

@@ -79,11 +79,7 @@ module csr_regfile #(
     priv_lvl_t   trap_to_priv_lvl;
     // register for enabling load store address translation, this is critical, hence the register
     logic        en_ld_st_translation_n, en_ld_st_translation_q;
-    // ----------------------
-    // LD/ST Privilege Level
-    // ----------------------
-    assign ld_st_priv_lvl_o = (mstatus_q.mprv) ? mstatus_q.mpp : priv_lvl_o;
-    assign en_ld_st_translation_o = en_ld_st_translation_q;
+
     // ----------------
     // CSR Registers
     // ----------------
@@ -282,7 +278,13 @@ module csr_regfile #(
                 CSR_MIE:                mie_n       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
                 CSR_MIP:                mip_n       = csr_wdata & 64'h33;  // only USIP, SSIP, UTIP, STIP are write-able
 
-                CSR_MTVEC:              mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                CSR_MTVEC: begin
+                    mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                    // we are in vector mode, this implementation requires the additional
+                    // alignment constraint of 64 * 4 bytes
+                    if (csr_wdata[0])
+                        mtvec_n = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
+                end
                 CSR_MSCRATCH:           mscratch_n  = csr_wdata;
                 CSR_MEPC:               mepc_n      = {csr_wdata[63:1], 1'b0};
                 CSR_MCAUSE:             mcause_n    = csr_wdata;
@@ -338,7 +340,7 @@ module csr_regfile #(
             end else begin
                 // update mstatus
                 // clear enable flags for all lower privilege levels
-                // but as m is already the highest -> clear everything
+                // but as M is already the highest -> clear everything
                 mstatus_n.mie  = 1'b0;
                 mstatus_n.sie  = 1'b0;
                 mstatus_n.mpie = mstatus_q.mie;
@@ -362,6 +364,9 @@ module csr_regfile #(
             en_ld_st_translation_n = 1'b1;
         else // otherwise we go with the regular settings
             en_ld_st_translation_n = en_translation_o;
+
+        ld_st_priv_lvl_o = (mstatus_q.mprv) ? mstatus_q.mpp : priv_lvl_o;
+        en_ld_st_translation_o = en_ld_st_translation_q;
         // -----------------------
         // Return from Exception
         // -----------------------
@@ -537,75 +542,76 @@ module csr_regfile #(
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
-        automatic logic [63:0] base = {mtvec_q[63:2], 2'b0};
-        epc_o                       = mepc_q;
+        trap_vector_base_o = {mtvec_q[63:2], 2'b0};
         // output user mode stvec
         if (trap_to_priv_lvl == PRIV_LVL_S) begin
-            base = {stvec_q[63:2], 2'b0};
+            trap_vector_base_o = {stvec_q[63:2], 2'b0};
         end
 
-        // check if we are in vectored mode, if yes then do BASE + 4*cause
+        // check if we are in vectored mode, if yes then do BASE + 4 * cause
+        // we are imposing an additional alignment-constraint of 64 * 4 bytes since
+        // we want to spare the costly addition
         if ((mtvec_q[0] || stvec_q[0]) && csr_exception_o.cause[63]) begin
-            base = base + (csr_exception_o.cause[62:0] << 2);
+            trap_vector_base_o[7:2] = csr_exception_o.cause[5:0];
         end
 
+        epc_o = mepc_q;
         // we are returning from supervisor mode, so take the sepc register
         if (sret) begin
-            epc_o          = sepc_q;
+            epc_o = sepc_q;
         end
-        trap_vector_base_o = base;
     end
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            priv_lvl_q      <= PRIV_LVL_M;
+            priv_lvl_q             <= PRIV_LVL_M;
             // machine mode registers
-            mstatus_q       <= 64'b0;
-            mtvec_q         <= {boot_addr_i[63:2], 2'b0}; // set to boot address + direct mode
-            medeleg_q       <= 64'b0;
-            mideleg_q       <= 64'b0;
-            mip_q           <= 64'b0;
-            mie_q           <= 64'b0;
-            mepc_q          <= 64'b0;
-            mcause_q        <= 64'b0;
-            mscratch_q      <= 64'b0;
-            mtval_q         <= 64'b0;
+            mstatus_q              <= 64'b0;
+            mtvec_q                <= {boot_addr_i[63:2], 2'b0}; // set to boot address + direct mode
+            medeleg_q              <= 64'b0;
+            mideleg_q              <= 64'b0;
+            mip_q                  <= 64'b0;
+            mie_q                  <= 64'b0;
+            mepc_q                 <= 64'b0;
+            mcause_q               <= 64'b0;
+            mscratch_q             <= 64'b0;
+            mtval_q                <= 64'b0;
             // supervisor mode registers
-            sepc_q          <= 64'b0;
-            scause_q        <= 64'b0;
-            stvec_q         <= 64'b0;
-            sscratch_q      <= 64'b0;
-            stval_q         <= 64'b0;
-            satp_q          <= 64'b0;
+            sepc_q                 <= 64'b0;
+            scause_q               <= 64'b0;
+            stvec_q                <= 64'b0;
+            sscratch_q             <= 64'b0;
+            stval_q                <= 64'b0;
+            satp_q                 <= 64'b0;
             // timer and counters
-            cycle_q         <= 64'b0;
-            instret_q       <= 64'b0;
+            cycle_q                <= 64'b0;
+            instret_q              <= 64'b0;
             // aux registers
             en_ld_st_translation_q <= 1'b0;
         end else begin
-            priv_lvl_q      <= priv_lvl_n;
+            priv_lvl_q             <= priv_lvl_n;
             // machine mode registers
-            mstatus_q       <= mstatus_n;
-            mtvec_q         <= mtvec_n;
-            medeleg_q       <= medeleg_n;
-            mideleg_q       <= mideleg_n;
-            mip_q           <= mip_n;
-            mie_q           <= mie_n;
-            mepc_q          <= mepc_n;
-            mcause_q        <= mcause_n;
-            mscratch_q      <= mscratch_n;
-            mtval_q         <= mtval_n;
+            mstatus_q              <= mstatus_n;
+            mtvec_q                <= mtvec_n;
+            medeleg_q              <= medeleg_n;
+            mideleg_q              <= mideleg_n;
+            mip_q                  <= mip_n;
+            mie_q                  <= mie_n;
+            mepc_q                 <= mepc_n;
+            mcause_q               <= mcause_n;
+            mscratch_q             <= mscratch_n;
+            mtval_q                <= mtval_n;
             // supervisor mode registers
-            sepc_q          <= sepc_n;
-            scause_q        <= scause_n;
-            stvec_q         <= stvec_n;
-            sscratch_q      <= sscratch_n;
-            stval_q         <= stval_n;
-            satp_q          <= satp_n;
+            sepc_q                 <= sepc_n;
+            scause_q               <= scause_n;
+            stvec_q                <= stvec_n;
+            sscratch_q             <= sscratch_n;
+            stval_q                <= stval_n;
+            satp_q                 <= satp_n;
             // timer and counters
-            cycle_q         <= cycle_n;
-            instret_q       <= instret_n;
+            cycle_q                <= cycle_n;
+            instret_q              <= instret_n;
             // aux registers
             en_ld_st_translation_q <= en_ld_st_translation_n;
         end

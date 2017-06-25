@@ -44,20 +44,22 @@ module pcgen (
 );
 
     logic [63:0]      npc_n, npc_q;
+    // the PC was set to a new region by a higher priority input (e.g.: exception, debug, ctrl return from exception)
+    logic             set_pc_n, set_pc_q;
     branchpredict_sbe branch_predict_btb;
-
-    assign fetch_address_o = npc_q;
+    // branch-predict input register -> this path is critical
+    branchpredict                           resolved_branch_q;
 
     btb #(
-        .NR_ENTRIES(4096),
-        .BITS_SATURATION_COUNTER(2)
+        .NR_ENTRIES              ( BTB_ENTRIES             ),
+        .BITS_SATURATION_COUNTER ( BITS_SATURATION_COUNTER )
     )
     btb_i
     (
         // Use the PC from last cycle to perform branch lookup for the current cycle
         .flush_i                 ( flush_bp_i              ),
         .vpc_i                   ( npc_q                   ),
-        .branch_predict_i        ( resolved_branch_i       ), // update port
+        .branch_predict_i        ( resolved_branch_q       ), // update port
         .branch_predict_o        ( branch_predict_btb      ), // read port
         .*
     );
@@ -65,23 +67,42 @@ module pcgen (
     // Next PC
     // -------------------
     // next PC (NPC) can come from:
-    // 1. Exception
-    // 2. Return from exception
-    // 3. Predicted branch
-    // 4. Debug
-    // 5. Boot address
+    // 0. Default assignment
+    // 1. Branch Predict taken
+    // 2. Debug
+    // 3. Control flow change request
+    // 4. Exception
+    // 5. Return from exception
+    // 6. Pipeline Flush because of CSR side effects
     always_comb begin : npc_select
+        automatic logic [63:0] fetch_address = npc_q;
+
         branch_predict_o = branch_predict_btb;
         fetch_valid_o    = 1'b1;
+        // this tells us whether it is a consecutive PC or a completely new PC
+        set_pc_n         = 1'b0;
+
+        // keep the PC stable if IF by default
+        npc_n            = npc_q;
+        // -------------------------------
+        // 3. Control flow change request
+        // -------------------------------
+        // check if had a mis-predict the cycle earlier and if we can reset the PC (e.g.: it was a predicted or consecutive PC
+        // which was set a cycle earlier)
+        if (resolved_branch_q.is_mispredict && !set_pc_q) begin
+            // we already got the correct target address
+            fetch_address = resolved_branch_q.target_address;
+        end
 
         // -------------------------------
         // 0. Default assignment
         // -------------------------------
         // default is a consecutive PC
         if (if_ready_i && fetch_enable_i)
-            npc_n       = {npc_q[63:2], 2'b0}  + 64'h4;
-        else // or keep the PC stable if IF is not ready
-            npc_n       =  npc_q;
+            // but operate on the current fetch address
+            npc_n = {fetch_address[63:2], 2'b0}  + 64'h4;
+
+
         // we only need to stall the consecutive and predicted case since in any other case we will flush at least
         // the front-end which means that the IF stage will always be ready to accept a new request
 
@@ -89,7 +110,9 @@ module pcgen (
         // 1. Predict taken
         // -------------------------------
         // only predict if the IF stage is ready, otherwise we might take the predicted PC away which will end in a endless loop
-        if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken) begin
+        // also check if we fetched on a half word (npc_q[1] == 1), it might be the case that we need the next 16 byte of the following instruction
+        // prediction could potentially prevent us from getting them
+        if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken && !fetch_address[1]) begin
             npc_n = branch_predict_btb.predict_address;
         end
         // -------------------------------
@@ -97,44 +120,43 @@ module pcgen (
         // -------------------------------
 
         // -------------------------------
-        // 3. Control flow change request
-        // -------------------------------
-        if (resolved_branch_i.is_mispredict) begin
-            // we already got the correct target address
-            npc_n    = resolved_branch_i.target_address;
-        end
-
-        // -------------------------------
         // 4. Exception
         // -------------------------------
         if (ex_i.valid) begin
             npc_n                  = trap_vector_base_i;
             branch_predict_o.valid = 1'b0;
+            set_pc_n               = 1'b1;
         end
 
         // -------------------------------
         // 5. Return from exception
         // -------------------------------
         if (eret_i) begin
-            npc_n = epc_i;
+            npc_n    = epc_i;
+            set_pc_n = 1'b1;
         end
 
-        // -------------------------------
-        // 6. Pipeline Flush
-        // -------------------------------
+        // -----------------------------------------------
+        // 6. Pipeline Flush because of CSR side effects
+        // -----------------------------------------------
         // On a pipeline flush start fetching from the next address
         // of the instruction in the commit stage
         if (flush_i) begin
             // we came here from a flush request of a CSR instruction,
             // as CSR instructions do not exist in a compressed form
             // we can unconditionally do PC + 4 here
-            npc_n = pc_commit_i + 64'h4;
+            npc_n    = pc_commit_i + 64'h4;
+            set_pc_n = 1'b1;
         end
 
         // fetch enable
         if (!fetch_enable_i) begin
             fetch_valid_o = 1'b0;
         end
+
+        // set fetch address
+        fetch_address_o  = fetch_address;
+
     end
     // -------------------
     // Sequential Process
@@ -142,9 +164,13 @@ module pcgen (
     // PCGEN -> IF Pipeline Stage
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-           npc_q       <= boot_addr_i;
+           npc_q             <= boot_addr_i;
+           set_pc_q          <= 1'b0;
+           resolved_branch_q <= '0;
         end else begin
-           npc_q       <= npc_n;
+           npc_q             <= npc_n;
+           set_pc_q          <= set_pc_n;
+           resolved_branch_q <= resolved_branch_i;
         end
     end
 

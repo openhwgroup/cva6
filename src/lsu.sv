@@ -85,30 +85,20 @@ module lsu #(
     // --------------------------------------
     // those are the signals which are always correct
     // e.g.: they keep the value in the stall case
-    logic                     valid;
-    logic [63:0]              vaddr;
-    logic [63:0]              data;
-    logic [7:0]               be;
-    fu_t                      fu;
-    fu_op                     operator;
-    logic [TRANS_ID_BITS-1:0] trans_id;
-    // registered address in case of a necessary stall
-    logic                     valid_n,    valid_q;
-    logic [63:0]              vaddr_n,    vaddr_q;
-    logic [63:0]              data_n,     data_q;
-    fu_t                      fu_n,       fu_q;
-    fu_op                     operator_n, operator_q;
-    logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
-    logic [7:0]               be_n,       be_q;
-    logic                     stall_n,    stall_q;
-    // ------------------------------
+    lsu_ctrl_t lsu_ctrl;
+
+    logic      lsu_ctrl_full;
+    lsu_ctrl_t lsu_ctrl_o;
+    logic      pop_st;
+    logic      pop_ld;
+
     // Address Generation Unit (AGU)
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
     logic [63:0] vaddr_i;
     logic [7:0]  be_i;
 
-    assign vaddr_i = $signed(imm_i) + $signed(operand_a_i);
+    assign vaddr_i = $unsigned($signed(imm_i) + $signed(operand_a_i));
 
     logic                     st_valid_i;
     logic                     st_ready_o;
@@ -123,6 +113,7 @@ module lsu #(
     logic [63:0]              mmu_vaddr;
     logic [63:0]              mmu_paddr;
     exception                 mmu_exception;
+    logic                     dtlb_hit;
 
     logic                     ld_valid;
     logic [TRANS_ID_BITS-1:0] ld_trans_id;
@@ -201,6 +192,7 @@ module lsu #(
         .lsu_valid_o            ( translation_valid    ),
         .lsu_paddr_o            ( mmu_paddr            ),
         .lsu_exception_o        ( mmu_exception        ),
+        .lsu_dtlb_hit_o         ( dtlb_hit             ), // send in the same cycle as the request
         // connecting PTW to D$ IF (aka mem arbiter
         .address_index_o        ( address_index_i  [0] ),
         .address_tag_o          ( address_tag_i    [0] ),
@@ -219,12 +211,10 @@ module lsu #(
     // Store Unit
     // ------------------
     store_unit store_unit_i (
-        .operator_i            ( operator             ),
-        .trans_id_i            ( trans_id             ),
         .valid_i               ( st_valid_i           ),
-        .vaddr_i               ( vaddr                ),
-        .be_i                  ( be                   ),
-        .data_i                ( data                 ),
+        .lsu_ctrl_i            ( lsu_ctrl             ),
+        .pop_st_o              ( pop_st               ),
+
         .valid_o               ( st_valid             ),
         .ready_o               ( st_ready_o           ),
         .trans_id_o            ( st_trans_id          ),
@@ -234,8 +224,8 @@ module lsu #(
         .translation_req_o     ( st_translation_req   ),
         .vaddr_o               ( st_vaddr             ),
         .paddr_i               ( mmu_paddr            ),
-        .translation_valid_i   ( translation_valid    ),
         .ex_i                  ( mmu_exception        ),
+        .dtlb_hit_i            ( dtlb_hit             ),
         // Load Unit
         .page_offset_i         ( page_offset          ),
         .page_offset_matches_o ( page_offset_matches  ),
@@ -257,11 +247,10 @@ module lsu #(
     // Load Unit
     // ------------------
     load_unit load_unit_i (
-        .operator_i            ( operator             ),
-        .trans_id_i            ( trans_id             ),
         .valid_i               ( ld_valid_i           ),
-        .vaddr_i               ( vaddr                ),
-        .be_i                  ( be                   ),
+        .lsu_ctrl_i            ( lsu_ctrl             ),
+        .pop_ld_o              ( pop_ld               ),
+
         .valid_o               ( ld_valid             ),
         .ready_o               ( ld_ready_o           ),
         .trans_id_o            ( ld_trans_id          ),
@@ -271,8 +260,8 @@ module lsu #(
         .translation_req_o     ( ld_translation_req   ),
         .vaddr_o               ( ld_vaddr             ),
         .paddr_i               ( mmu_paddr            ),
-        .translation_valid_i   ( translation_valid    ),
         .ex_i                  ( mmu_exception        ),
+        .dtlb_hit_i            ( dtlb_hit             ),
         // to store unit
         .page_offset_o         ( page_offset          ),
         .page_offset_matches_i ( page_offset_matches  ),
@@ -314,38 +303,29 @@ module lsu #(
         .ex_o                 ( lsu_exception_o       )
     );
 
-    // ------------------
-    // LSU Control
-    // ------------------
-    always_comb begin : lsu_control
-        // the LSU is ready if both, stores and loads are ready because we do not know
-        // which of the two we are getting
-        lsu_ready_o = ld_ready_o && st_ready_o;
-        // "arbitrate" MMU access, there is only one request possible
-        translation_req     = 1'b0;
-        mmu_vaddr           = 64'b0;
-        // this arbitrates access to the MMU
-        if (st_translation_req) begin
-            translation_req = 1'b1;
-            mmu_vaddr       = st_vaddr;
-        end else if (ld_translation_req) begin
-            translation_req = 1'b1;
-            mmu_vaddr       = ld_vaddr;
-        end
-    end
-
     // determine whether this is a load or store
     always_comb begin : which_op
 
         ld_valid_i = 1'b0;
         st_valid_i = 1'b0;
 
+        translation_req      = 1'b0;
+        mmu_vaddr            = 64'b0;
+
         // check the operator to activate the right functional unit accordingly
-        unique case (fu)
+        unique case (lsu_ctrl.fu)
             // all loads go here
-            LOAD:  ld_valid_i = valid;
+            LOAD:  begin
+                ld_valid_i           = lsu_ctrl.valid;
+                translation_req      = ld_translation_req;
+                mmu_vaddr            = ld_vaddr;
+            end
             // all stores go here
-            STORE: st_valid_i = valid;
+            STORE: begin
+                st_valid_i           = lsu_ctrl.valid;
+                translation_req      = st_translation_req;
+                mmu_vaddr            = st_vaddr;
+            end
             // not relevant for the LSU
             default: ;
         endcase
@@ -441,100 +421,44 @@ module lsu #(
 
         if (data_misaligned) begin
 
-            if (fu == LOAD) begin
+            if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
                     LD_ADDR_MISALIGNED,
-                    vaddr,
+                    lsu_ctrl.vaddr,
                     1'b1
                 };
 
-            end else if (fu == STORE) begin
+            end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
                     ST_ADDR_MISALIGNED,
-                    vaddr,
+                    lsu_ctrl.vaddr,
                     1'b1
                 };
             end
         end
     end
 
-    // this process selects the input based on the current state of the LSU
-    // it can either be feed-through from the issue stage or from the internal registers
-    always_comb begin : input_select
-        // if we are stalling use the values we saved
-        if (stall_q) begin
-            valid     = valid_q;
-            vaddr     = vaddr_q;
-            data      = data_q;
-            fu        = fu_q;
-            operator  = operator_q;
-            trans_id  = trans_id_q;
-            be        = be_q;
-        end else begin // otherwise bypass them
-            valid     = lsu_valid_i;
-            vaddr     = vaddr_i;
-            data      = operand_b_i;
-            fu        = fu_i;
-            operator  = operator_i;
-            trans_id  = trans_id_i;
-            be        = be_i;
-        end
-    end
-    // 1st register stage
-    always_comb begin : register_stage
-        valid_n     = valid_q;
-        vaddr_n     = vaddr_q;
-        data_n      = data_q;
-        fu_n        = fu_q;
-        operator_n  = operator_q;
-        trans_id_n  = trans_id_q;
-        be_n        = be_q;
-        // get new input data
-        if (lsu_valid_i) begin
-            valid_n     = lsu_valid_i;
-            vaddr_n     = vaddr_i;
-            data_n      = operand_b_i;
-            fu_n        = fu_i;
-            operator_n  = operator_i;
-            trans_id_n  = trans_id_i;
-            be_n        = be_i;
-        end
+    // ------------------
+    // LSU Control
+    // ------------------
+    // new data arrives here
+    lsu_ctrl_t lsu_req_i;
 
-        if (lsu_ready_o) begin
-            stall_n     = 1'b0;
-        end else begin
-            stall_n     = 1'b1;
-        end
-        // if we flush we can safely un-stall
-        if (flush_i)
-            stall_n     = 1'b0;
-    end
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, operand_b_i, be_i, fu_i, operator_i, trans_id_i};
 
-    // registers
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            // 1st LSU stage
-            valid_q             <= 1'b0;
-            vaddr_q             <= 64'b0;
-            data_q              <= 64'b0;
-            fu_q                <= NONE;
-            operator_q          <= ADD;
-            trans_id_q          <= '{default: 0};
-            be_q                <= 8'b0;
-            stall_q             <= 1'b0;
-        end else begin
-            // 1st LSU stage
-            valid_q             <= valid_n;
-            vaddr_q             <= vaddr_n;
-            data_q              <= data_n;
-            fu_q                <= fu_n;
-            operator_q          <= operator_n;
-            trans_id_q          <= trans_id_n;
-            be_q                <= be_n;
-            stall_q             <= stall_n;
-        end
-    end
+    lsu_bypass lsu_bypass_i (
+        .lsu_req_i          ( lsu_req_i   ),
+        .lus_req_valid_i    ( lsu_valid_i ),
+        .pop_ld_i           ( pop_ld      ),
+        .pop_st_i           ( pop_st      ),
 
+        .ld_ready_i         ( ld_ready_o  ),
+        .st_ready_i         ( st_ready_o  ),
+
+        .lsu_ctrl_o         ( lsu_ctrl    ),
+        .ready_o            ( lsu_ready_o ),
+        .*
+    );
     // ------------
     // Assertions
     // ------------
@@ -568,3 +492,106 @@ module lsu #(
     `endif
     `endif
 endmodule
+
+// ------------------
+// LSU Control
+// ------------------
+// The LSU consists of two independent block which share a common address translation block.
+// The one block is the load unit, the other one is the store unit. They will signal their readiness
+// with separate signals. If they are not ready the LSU control should keep the last applied signals stable.
+// Furthermore it can be the case that another request for one of the two store units arrives in which case
+// the LSU controll should sample it and store it for later application to the units. It does so, by storing it in a
+// two element FIFO.
+module lsu_bypass (
+    input logic      clk_i,
+    input logic      rst_ni,
+    input logic      flush_i,
+
+    input lsu_ctrl_t lsu_req_i,
+    input logic      lus_req_valid_i,
+    input logic      pop_ld_i,
+    input logic      pop_st_i,
+
+    input logic      ld_ready_i,
+    input logic      st_ready_i,
+
+    output lsu_ctrl_t lsu_ctrl_o,
+    output logic      ready_o
+    );
+
+    lsu_ctrl_t [1:0] mem_n, mem_q;
+    logic read_pointer_n, read_pointer_q;
+    logic write_pointer_n, write_pointer_q;
+    logic [1:0] status_cnt_n, status_cnt_q;
+
+    logic  empty;
+    assign empty = (status_cnt_q == 0);
+    assign ready_o = empty;
+
+    always_comb begin
+        automatic logic [1:0] status_cnt = status_cnt_q;
+        automatic logic write_pointer = write_pointer_q;
+        automatic logic read_pointer = read_pointer_q;
+
+        mem_n = mem_q;
+        // we've got a valid LSU request
+        if (lus_req_valid_i) begin
+            mem_n[write_pointer_q] = lsu_req_i;
+            write_pointer++;
+            status_cnt++;
+        end
+
+        if (pop_ld_i) begin
+            // invalidate the result
+            mem_n[read_pointer_q].valid = 1'b0;
+            read_pointer++;
+            status_cnt--;
+        end
+
+        if (pop_st_i) begin
+            // invalidate the result
+            mem_n[read_pointer_q].valid = 1'b0;
+            read_pointer++;
+            status_cnt--;
+        end
+
+        if (pop_st_i && pop_ld_i)
+            mem_n = '{default: 0};
+
+        if (flush_i) begin
+            status_cnt = '0;
+            write_pointer = '0;
+            read_pointer = '0;
+            mem_n = '{default: 0};
+        end
+        // default assignments
+        read_pointer_n  = read_pointer;
+        write_pointer_n = write_pointer;
+        status_cnt_n    = status_cnt;
+    end
+
+    // output assignment
+    always_comb begin : output_assignments
+        if (empty) begin
+            lsu_ctrl_o = lsu_req_i;
+        end else begin
+            lsu_ctrl_o = mem_q[read_pointer_q];
+        end
+    end
+
+    // registers
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            mem_q           <= '{default: 0};
+            status_cnt_q    <= '0;
+            write_pointer_q <= '0;
+            read_pointer_q  <= '0;
+        end else begin
+            mem_q           <= mem_n;
+            status_cnt_q    <= status_cnt_n;
+            write_pointer_q <= write_pointer_n;
+            read_pointer_q  <= read_pointer_n;
+        end
+    end
+endmodule
+

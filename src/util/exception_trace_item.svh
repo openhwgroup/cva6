@@ -38,7 +38,7 @@ class exception_trace_item;
             INSTR_PAGE_FAULT:      this.cause = "Instruction Page Fault";
             LOAD_PAGE_FAULT:       this.cause = "Load Page Fault";
             STORE_PAGE_FAULT:      this.cause = "Store Page Fault";
-            default: cause = "Interrupt";
+            default: this.cause = "Interrupt";
         endcase
 
         this.tval = tval;

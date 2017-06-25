@@ -1,3 +1,4 @@
+
 /* File:   ariane_pkg.svh
  * Author: Florian Zaruba <zarubaf@ethz.ch>
  * Date:   8.4.2017
@@ -14,11 +15,14 @@ package ariane_pkg;
     // ---------------
     // Global Config
     // ---------------
-    localparam NR_SB_ENTRIES = 4; // number of scoreboard entries
+    localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
     localparam NR_WB_PORTS   = 4;
     localparam ASID_WIDTH    = 1;
+    localparam BTB_ENTRIES   = 64;
+    localparam BITS_SATURATION_COUNTER = 2;
+
     localparam logic [63:0] ISA_CODE = (1 <<  2)  // C - Compressed extension
                                      | (1 <<  8)  // I - RV32I/64I/128I base ISA
                                      | (1 << 12)  // M - Integer Multiply/Divide extension
@@ -91,6 +95,16 @@ package ariane_pkg;
                                // LSU functions
                                LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
                              } fu_op;
+
+    typedef struct packed {
+        logic                     valid;
+        logic [63:0]              vaddr;
+        logic [63:0]              data;
+        logic [7:0]               be;
+        fu_t                      fu;
+        fu_op                     operator;
+        logic [TRANS_ID_BITS-1:0] trans_id;
+    } lsu_ctrl_t;
     // ---------------
     // IF/ID Stage
     // ---------------
@@ -198,8 +212,9 @@ package ariane_pkg;
 
     // memory management, pte
     typedef struct packed {
-        logic[37:0] ppn;
-        logic[1:0] sw_reserved;
+        logic [9:0]  reserved;
+        logic [43:0] ppn;
+        logic [1:0]  rsw;
         logic d;
         logic a;
         logic g;
@@ -217,27 +232,27 @@ package ariane_pkg;
     // ----------------------
     // Exception Cause Codes
     // ----------------------
-    localparam logic [63:0] INSTR_ADDR_MISALIGNED = 64'd0;
-    localparam logic [63:0] INSTR_ACCESS_FAULT    = 64'd1;
-    localparam logic [63:0] ILLEGAL_INSTR         = 64'd2;
-    localparam logic [63:0] BREAKPOINT            = 64'd3;
-    localparam logic [63:0] LD_ADDR_MISALIGNED    = 64'd4;
-    localparam logic [63:0] LD_ACCESS_FAULT       = 64'd5;
-    localparam logic [63:0] ST_ADDR_MISALIGNED    = 64'd6;
-    localparam logic [63:0] ST_ACCESS_FAULT       = 64'd7;
-    localparam logic [63:0] ENV_CALL_UMODE        = 64'd8;  // environment call from user mode
-    localparam logic [63:0] ENV_CALL_SMODE        = 64'd9;  // environment call from supervisor mode
-    localparam logic [63:0] ENV_CALL_MMODE        = 64'd11; // environment call from machine mode
-    localparam logic [63:0] INSTR_PAGE_FAULT      = 64'd12; // Instruction page fault
-    localparam logic [63:0] LOAD_PAGE_FAULT       = 64'd13; // Load page fault
-    localparam logic [63:0] STORE_PAGE_FAULT      = 64'd15; // Store page fault
+    localparam logic [63:0] INSTR_ADDR_MISALIGNED = 0;
+    localparam logic [63:0] INSTR_ACCESS_FAULT    = 1;
+    localparam logic [63:0] ILLEGAL_INSTR         = 2;
+    localparam logic [63:0] BREAKPOINT            = 3;
+    localparam logic [63:0] LD_ADDR_MISALIGNED    = 4;
+    localparam logic [63:0] LD_ACCESS_FAULT       = 5;
+    localparam logic [63:0] ST_ADDR_MISALIGNED    = 6;
+    localparam logic [63:0] ST_ACCESS_FAULT       = 7;
+    localparam logic [63:0] ENV_CALL_UMODE        = 8;  // environment call from user mode
+    localparam logic [63:0] ENV_CALL_SMODE        = 9;  // environment call from supervisor mode
+    localparam logic [63:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
+    localparam logic [63:0] INSTR_PAGE_FAULT      = 12; // Instruction page fault
+    localparam logic [63:0] LOAD_PAGE_FAULT       = 13; // Load page fault
+    localparam logic [63:0] STORE_PAGE_FAULT      = 15; // Store page fault
 
-    localparam logic [63:0] S_SW_INTERRUPT        = (1 << 63) | 64'd1;
-    localparam logic [63:0] M_SW_INTERRUPT        = (1 << 63) | 64'd3;
-    localparam logic [63:0] S_TIMER_INTERRUPT     = (1 << 63) | 64'd5;
-    localparam logic [63:0] M_TIMER_INTERRUPT     = (1 << 63) | 64'd7;
-    localparam logic [63:0] S_EXT_INTERRUPT       = (1 << 63) | 64'd9;
-    localparam logic [63:0] M_EXT_INTERRUPT       = (1 << 63) | 64'd11;
+    localparam logic [63:0] S_SW_INTERRUPT        = (1 << 63) | 1;
+    localparam logic [63:0] M_SW_INTERRUPT        = (1 << 63) | 3;
+    localparam logic [63:0] S_TIMER_INTERRUPT     = (1 << 63) | 5;
+    localparam logic [63:0] M_TIMER_INTERRUPT     = (1 << 63) | 7;
+    localparam logic [63:0] S_EXT_INTERRUPT       = (1 << 63) | 9;
+    localparam logic [63:0] M_EXT_INTERRUPT       = (1 << 63) | 11;
     // -----
     // CSRs
     // -----

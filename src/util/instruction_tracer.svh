@@ -36,15 +36,20 @@ class instruction_tracer;
     int f;
     // address mapping
     // contains mappings of the form vaddr <-> paddr
-    struct {
-        logic [63:0] vaddr;
-        logic [63:0] paddr;
-    } store_mapping[$], load_mapping[$], address_mapping;
+    logic [63:0] store_mapping[$], load_mapping[$], address_mapping;
 
     function new(virtual instruction_tracer_if tracer_if);
+
         this.tracer_if = tracer_if;
-        f = $fopen("output.txt","w");
     endfunction : new
+
+    function void create_file(logic [5:0] cluster_id, logic [3:0] core_id);
+        string fn;
+        $sformat(fn, "trace_core_%h_%h.log", cluster_id, core_id);
+        $display("[TRACER] Output filename is: %s", fn);
+
+        this.f = $fopen(fn,"w");
+    endfunction : create_file
 
     task trace();
         fetch_entry decode_instruction, issue_instruction, issue_commit_instruction;
@@ -82,22 +87,13 @@ class instruction_tracer;
             // --------------------
             // Address Translation
             // --------------------
-            if (tracer_if.pck.translation_valid) begin
-                // put it in the store mapping queue if it is a store
-                if (tracer_if.pck.is_store && tracer_if.pck.st_ready) begin
-                    store_mapping.push_back('{
-                        vaddr: tracer_if.pck.vaddr,
-                        paddr: tracer_if.pck.paddr
-                    });
-                // or else put it in the load mapping
-                end else if (!tracer_if.pck.is_store && tracer_if.pck.ld_ready) begin
-                    load_mapping.push_back('{
-                        vaddr: tracer_if.pck.vaddr,
-                        paddr: tracer_if.pck.paddr
-                    });
-                end
+            if (tracer_if.pck.st_valid) begin
+                store_mapping.push_back(tracer_if.pck.st_paddr);
             end
 
+            if (tracer_if.pck.ld_valid && !tracer_if.pck.ld_kill) begin
+                load_mapping.push_back(tracer_if.pck.ld_paddr);
+            end
             // --------------
             //  Commit
             // --------------
@@ -115,9 +111,9 @@ class instruction_tracer;
                 // check if the write back is valid, if not we need to source the result from the register file
                 // as the most recent version of this register will be there.
                 if (tracer_if.pck.we) begin
-                    printInstr(issue_sbe, issue_commit_instruction.instruction, tracer_if.pck.wdata, address_mapping.vaddr, address_mapping.paddr);
+                    printInstr(issue_sbe, issue_commit_instruction.instruction, tracer_if.pck.wdata, address_mapping);
                 end else
-                    printInstr(issue_sbe, issue_commit_instruction.instruction, reg_file[commit_instruction.rd], address_mapping.vaddr, address_mapping.paddr);
+                    printInstr(issue_sbe, issue_commit_instruction.instruction, reg_file[commit_instruction.rd], address_mapping);
             end
 
             // --------------
@@ -149,6 +145,7 @@ class instruction_tracer;
         end
 
     endtask
+
     // flush all decoded instructions
     function void flushDecode ();
         decode_queue = {};
@@ -165,8 +162,8 @@ class instruction_tracer;
         load_mapping    = {};
     endfunction;
 
-    function void printInstr(scoreboard_entry sbe, logic [63:0] instr, logic [63:0] result, logic [63:0] vaddr, logic [63:0] paddr);
-        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, vaddr, paddr);
+    function void printInstr(scoreboard_entry sbe, logic [63:0] instr, logic [63:0] result, logic [63:0] paddr);
+        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr);
         // print instruction to console
         string print_instr = iti.printInstr();
         $display(print_instr);

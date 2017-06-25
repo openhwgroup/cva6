@@ -18,17 +18,15 @@
 // University of Bologna.
 //
 
-module store_queue (
+module store_buffer (
     input logic          clk_i,           // Clock
     input logic          rst_ni,          // Asynchronous reset active low
     input logic          flush_i,         // if we flush we need to pause the transactions on the memory
                                           // otherwise we will run in a deadlock with the memory arbiter
     output logic         no_st_pending_o, // non-speculative queue is empty (e.g.: everything is committed to the memory hierarchy)
 
-    output logic [63:0]  paddr_o,         // physical address of the valid store
-    output logic [63:0]  data_o,          // data at the given address
-    output logic         valid_o,         // committed data is valid
-    output logic [7:0]   be_o,            // byte enable set
+    input  logic [11:0]  page_offset_i,
+    output logic         page_offset_matches_o,
 
     input  logic         commit_i,        // commit the instruction which was placed there most recently
     output logic         ready_o,         // the store queue is ready to accept a new request
@@ -73,12 +71,6 @@ module store_queue (
         logic        valid;          // entry is valid
         logic        is_speculative; // set if the entry isn't committed yet
     } commit_queue_n, commit_queue_q;
-
-    // we can directly output the commit entry since we have just one element in the "queue"
-    assign paddr_o         = commit_queue_q.address;
-    assign data_o          = commit_queue_q.data;
-    assign be_o            = commit_queue_q.be;
-    assign valid_o         = commit_queue_q.valid;
 
     // those signals can directly be output to the memory
     assign address_index_o = commit_queue_q.address[11:0];
@@ -152,6 +144,34 @@ module store_queue (
         end
 
     end
+
+    // ------------------
+    // Address Checker
+    // ------------------
+    // The load should return the data stored by the most recent store to the
+    // same physical address.  The most direct way to implement this is to
+    // maintain physical addresses in the store buffer.
+
+    // Of course, there are other micro-architectural techniques to accomplish
+    // the same thing: you can interlock and wait for the store buffer to
+    // drain if the load VA matches any store VA modulo the page size (i.e.
+    // bits 11:0).  As a special case, it is correct to bypass if the full VA
+    // matches, and no younger stores' VAs match in bits 11:0.
+    //
+    // checks if the requested load is in the store buffer
+    // page offsets are virtually and physically the same
+    always_comb begin : address_checker
+        page_offset_matches_o = 1'b0;
+        // check if the LSBs are identical and the entry is valid
+        if ((page_offset_i[11:3] == commit_queue_q.address[11:3]) && commit_queue_q.valid) begin
+            page_offset_matches_o = 1'b1;
+        end
+
+        if ((page_offset_i[11:3] == paddr_i[11:3]) && valid_i) begin
+            page_offset_matches_o = 1'b1;
+        end
+    end
+
 
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_

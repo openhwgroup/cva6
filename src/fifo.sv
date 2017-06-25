@@ -68,6 +68,7 @@ module fifo #(
             // but increment the read pointer...
             read_pointer_n = read_pointer_q + 1;
             // ... and decrement the overall count
+            mem_n[read_pointer_q] = '0;
             status_cnt_n   = status_cnt_q - 1;
         end
         // keep the count pointer stable if we push and pop at the same time

@@ -74,7 +74,6 @@ module branch_unit (
         automatic logic [63:0] jump_base = (operator_i == JALR) ? operand_a_i : pc_i;
 
         target_address                   = 64'b0;
-        resolved_branch_o.pc             = pc_i;
         resolved_branch_o.target_address = 64'b0;
         resolved_branch_o.is_taken       = 1'b0;
         resolved_branch_o.valid          = branch_valid_i;
@@ -92,17 +91,18 @@ module branch_unit (
         // if we need to put the branch target address in a destination register, output it here to WB
         branch_result_o                  = next_pc;
 
+        // save PC - we need this to get the target row in the branch target buffer
+        // we play this trick with the branch instruction which wraps a byte boundary:
+        //  |---------- Place the prediction on this PC
+        // \/
+        // ____________________________________________________
+        // |branch [15:0] | branch[31:16] | compressed 1[15:0] |
+        // |____________________________________________________
+        // This will relief the pre-fetcher to re-fetch partially fetched unaligned branch instructions e.g.:
+        // we don't have a back arch between the pre-fetcher and decoder/instruction FIFO.
+        resolved_branch_o.pc = (is_compressed_instr_i || pc_i[1] == 1'b0) ? pc_i : ({pc_i[63:2], 2'b0} + 64'h4);
+
         if (branch_valid_i) begin
-            // save PC - we need this to get the target row in the branch target buffer
-            // we play this trick with the branch instruction which wraps a byte boundary:
-            //  |---------- Place the prediction on this PC
-            // \/
-            // ____________________________________________________
-            // |branch [15:0] | branch[31:16] | compressed 1[15:0] |
-            // |____________________________________________________
-            // This will relief the prefetcher to re-fetch partially fetched unaligned branch instructions e.g.:
-            // we don't have a back arch between prefetcher and decoder/instruction FIFO.
-            resolved_branch_o.pc = (is_compressed_instr_i || pc_i[1] == 1'b0) ? pc_i : ({pc_i[63:2], 2'b0} + 64'h4);
             // save if the branch instruction was in the lower 16 bit of the instruction word
             // the first case is a compressed instruction which is in slot 0
             // the other case is a misaligned uncompressed instruction which we only predict in the next cycle (see notes above)
@@ -131,17 +131,18 @@ module branch_unit (
                     end
                 end
             end
-            // to resolve the branch in ID -> only do this if this was indeed a branch (hence vald_i is asserted)
+            // to resolve the branch in ID
             resolve_branch_o = 1'b1;
         // the other case would be that this instruction was no branch but branch prediction thought that it was one
         // this is essentially also a mis-predict
-        end else if (fu_valid_i && branch_predict_i.valid) begin
+        end else if (fu_valid_i && branch_predict_i.valid && branch_predict_i.predict_taken) begin
             // re-set the branch to the next PC
             resolved_branch_o.is_mispredict  = 1'b1;
             resolved_branch_o.target_address = next_pc;
             // clear this entry so that we are not constantly mis-predicting
             resolved_branch_o.clear          = 1'b1;
             resolved_branch_o.valid          = 1'b1;
+            resolve_branch_o                 = 1'b1;
         end
     end
     // use ALU exception signal for storing instruction fetch exceptions if
