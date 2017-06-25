@@ -87,47 +87,50 @@ module store_unit (
             IDLE: begin
                 if (valid_i) begin
 
-                    NS                = VALID_STORE;
+                    NS = VALID_STORE;
                     translation_req_o = 1'b1;
-
+                        pop_st_o = 1'b1;
                     // check if translation was valid and we have space in the store buffer
                     // otherwise simply stall
                     if (!dtlb_hit_i) begin
                         NS = WAIT_TRANSLATION;
+                        pop_st_o = 1'b0;
                     end
 
                     if (!st_ready) begin
                         NS = WAIT_STORE_READY;
+                        pop_st_o = 1'b0;
                     end
                 end
             end
 
             VALID_STORE: begin
-                ready_o = 1'b0;
+                // ready_o = 1'b0;
                 valid_o  = 1'b1;
-                // post this store to the store buffer
+                // post this store to the store buffer if we are not flushing
                 if (!flush_i)
                     st_valid = 1'b1;
 
-                pop_st_o          = 1'b1;
+                // we have another request
+                if (valid_i) begin
 
-                // // we have another request
-                // if (valid_i) begin
+                    translation_req_o = 1'b1;
+                    NS = VALID_STORE;
+                        pop_st_o = 1'b1;
 
-                //     translation_req_o = 1'b1;
+                    if (!dtlb_hit_i) begin
+                        NS = WAIT_TRANSLATION;
+                        pop_st_o = 1'b0;
+                    end
 
-                //     if (!dtlb_hit_i) begin
-                //         NS = WAIT_TRANSLATION;
-                //     end
-
-                //     if (!st_ready) begin
-                //         NS = WAIT_STORE_READY;
-                //     end
-                // // if we do not have another request go back to idle
-                // end else begin
-                //     NS = IDLE;
-                // end
-                NS = IDLE;
+                    if (!st_ready) begin
+                        pop_st_o = 1'b0;
+                        NS = WAIT_STORE_READY;
+                    end
+                // if we do not have another request go back to idle
+                end else begin
+                    NS = IDLE;
+                end
             end
 
             // the store queue is currently full
@@ -137,7 +140,7 @@ module store_unit (
                 translation_req_o = 1'b1;
 
                 if (st_ready && dtlb_hit_i) begin
-                    NS = VALID_STORE;
+                    NS = IDLE;
                 end
             end
 
@@ -149,7 +152,7 @@ module store_unit (
                 translation_req_o = 1'b1;
 
                 if (dtlb_hit_i) begin
-                    NS = VALID_STORE;
+                    NS = IDLE;
                 end
             end
         endcase
