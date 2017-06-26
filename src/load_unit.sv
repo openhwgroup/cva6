@@ -248,6 +248,10 @@ module load_unit (
             if (ex_i.valid)
                 valid_o = 1'b1;
         end
+        // an exception occurred during translation
+        if (CS == WAIT_TRANSLATION && ex_i.valid) begin
+            valid_o = 1'b1;
+        end
 
     end
 

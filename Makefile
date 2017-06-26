@@ -44,7 +44,7 @@ riscv-tests = rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-a
 				rv64mi-p-ma_addr rv64mi-p-ma_fetch rv64mi-p-sbreak rv64mi-p-scall \
 				rv64si-p-csr rv64si-p-ma_fetch rv64si-p-scall rv64si-p-wfi rv64si-p-sbreak \
 				rv64si-p-dirty rv64uc-p-rvc \
-				rv64ui-v-sll
+				rv64ui-v-sll rv64ui-v-srl rv64ui-v-sd
 
 
 riscv-test = rv64ui-p-add
