@@ -171,7 +171,7 @@ module core_tb;
         string file;
         string test;
         // offset the temporary RAM
-        logic [7:0] rmem [`DRAM_BASE:`DRAM_BASE + 16384];
+        logic [7:0] rmem [`DRAM_BASE:`DRAM_BASE + 32768];
         // get the file name from a command line plus arg
         void'(uvcl.get_arg_value("+ASMTEST=",file));
 
@@ -183,7 +183,7 @@ module core_tb;
         // get the objdump verilog file to load our memorys
         $readmemh({file, ".v"}, rmem);
         // copy bitwise from verilog file
-        for (int i = 0; i < 16384/8; i++) begin
+        for (int i = 0; i < 32768/8; i++) begin
             for (int j = 0; j < 8; j++)
                 core_mem_i.ram_i.mem[i][j] = rmem[`DRAM_BASE + i*8 + j];
         end
