@@ -4,3 +4,6 @@
 [submodule "riscv-tests"]
 	path = riscv-tests
 	url = git@iis-git.ee.ethz.ch:floce/riscv-tests.git
+[submodule "riscv-torture"]
+	path = riscv-torture
+	url = git@iis-git.ee.ethz.ch:floce/riscv-torture.git
