@@ -43,7 +43,7 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 ## User Mode Integer Tests
 
-| **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      | **Test Name** |     **P/F/U**      |
+| **Test Name** |      **P/V**       | **Test Name** |      **P/V**       | **Test Name** |      **P/V**       |
 |---------------|--------------------|---------------|--------------------|---------------|--------------------|
 | add           | :white_check_mark: | lb            | :white_check_mark: | sll           | :white_check_mark: |
 | addi          | :white_check_mark: | lbu           | :white_check_mark: | slli          | :white_check_mark: |
@@ -57,7 +57,7 @@ Check out the [contribution guide](CONTRIBUTING.md)
 | bgeu          | :white_check_mark: | ori           | :white_check_mark: | srai          | :white_check_mark: |
 | blt           | :white_check_mark: | sb            | :white_check_mark: | sraiw         | :white_check_mark: |
 | bltu          | :white_check_mark: | sd            | :white_check_mark: | sraw          | :white_check_mark: |
-| bne           | :white_check_mark: | sh            | :white_check_mark: | srl           | :white_check_mark: |
+| bne           | :white_check_mark: | sh            | :white_check_mark: | srl           | :white_check_mark: :white_check_mark:|
 | sub           | :white_check_mark: | simple        | :white_check_mark: | srli          | :white_check_mark: |
 | subw          | :white_check_mark: | jal           | :white_check_mark: | srliw         | :white_check_mark: |
 | sw            | :white_check_mark: | jalr          | :white_check_mark: | srlw          | :white_check_mark: |
@@ -66,9 +66,9 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 ## Compressed Instruction Tests
 
-| **Test Name** |     **P/F/U**      | **Test Name** | **P/F/U** | **Test Name** | **P/F/U** |
-|---------------|--------------------|---------------|-----------|---------------|-----------|
-| rvc           | :white_check_mark: |               |           |               |           |
+| **Test Name** |      **P/V**       | **Test Name** | **P/V** | **Test Name** | **P/V** |
+|---------------|--------------------|---------------|---------|---------------|---------|
+| rvc           | :white_check_mark: |               |         |               |         |
 
 ## Machine Mode Tests
 

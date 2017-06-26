@@ -185,6 +185,8 @@ module csr_regfile #(
                 CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
                 CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
                 CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
+                CSR_MCYCLE:             csr_rdata = cycle_q;
+                CSR_MINSTRET:           csr_rdata = instret_q;
                 // Counters and Timers
                 CSR_CYCLE:              csr_rdata = cycle_q;
                 CSR_TIME:               csr_rdata = time_q;
@@ -289,6 +291,8 @@ module csr_regfile #(
                 CSR_MEPC:               mepc_n      = {csr_wdata[63:1], 1'b0};
                 CSR_MCAUSE:             mcause_n    = csr_wdata;
                 CSR_MTVAL:              mtval_n     = csr_wdata;
+                CSR_MCYCLE:             cycle_n     = csr_wdata;
+                CSR_MINSTRET:           instret_n   = csr_wdata;
                 default: update_access_exception = 1'b1;
             endcase
             // so we wrote something, TODO: this can be more fine grained (e.g.: did it have side effects?)
@@ -398,12 +402,10 @@ module csr_regfile #(
             // set spie to 1
             mstatus_n.spie = 1'b1;
         end
-    end
 
-    // --------------------
-    // Timers and Counters
-    // --------------------
-    always_comb begin : timers_counters
+        // --------------------
+        // Timers and Counters
+        // --------------------
         instret_n = instret_q;
         // just increment the cycle count
         cycle_n = cycle_q + 1'b1;

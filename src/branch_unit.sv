@@ -93,7 +93,7 @@ module branch_unit (
 
         // save PC - we need this to get the target row in the branch target buffer
         // we play this trick with the branch instruction which wraps a byte boundary:
-        //  |---------- Place the prediction on this PC
+        //  /---------- Place the prediction on this PC
         // \/
         // ____________________________________________________
         // |branch [15:0] | branch[31:16] | compressed 1[15:0] |

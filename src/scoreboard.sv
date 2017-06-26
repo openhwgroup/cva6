@@ -233,10 +233,10 @@ module scoreboard #(
             commit_pointer_q <= '0;
             issue_pointer_q  <= '0;
         end else begin
-            mem_q            <= mem_n;
             issue_cnt_q      <= issue_cnt_n;
-            commit_pointer_q <= commit_pointer_n;
             issue_pointer_q  <= issue_pointer_n;
+            mem_q            <= mem_n;
+            commit_pointer_q <= commit_pointer_n;
         end
     end
     `ifndef SYNTHESIS

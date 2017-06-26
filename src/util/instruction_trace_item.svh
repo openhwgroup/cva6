@@ -84,6 +84,9 @@ class instruction_trace_item;
             CSR_MARCHID:    return "marchid";
             CSR_MIMPID:     return "mimpid";
             CSR_MHARTID:    return "mhartid";
+            CSR_MCYCLE:     return "mcycle";
+            CSR_MINSTRET:   return "minstret";
+
             CSR_CYCLE:      return "cycle";
             CSR_TIME:       return "time";
             CSR_INSTRET:    return "instret";
