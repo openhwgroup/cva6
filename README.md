@@ -45,29 +45,29 @@ Check out the [contribution guide](CONTRIBUTING.md)
 
 | **Test Name** |                 **P/V**                 | **Test Name** |                 **P/V**                 | **Test Name** |                 **P/V**                 |
 |---------------|-----------------------------------------|---------------|-----------------------------------------|---------------|-----------------------------------------|
-| add           | :white_check_mark: :white_large_square: | lb            | :white_check_mark: :white_large_square: | sll           | :white_check_mark: :white_check_mark:   |
-| addi          | :white_check_mark: :white_large_square: | lbu           | :white_check_mark: :white_large_square: | slli          | :white_check_mark: :white_large_square: |
-| addiw         | :white_check_mark: :white_large_square: | ld            | :white_check_mark: :white_check_mark:   | slliw         | :white_check_mark: :white_large_square: |
-| addw          | :white_check_mark: :white_large_square: | lh            | :white_check_mark: :white_large_square: | sllw          | :white_check_mark: :white_large_square: |
-| and           | :white_check_mark: :white_large_square: | lhu           | :white_check_mark: :white_large_square: | slt           | :white_check_mark: :white_large_square: |
-| andi          | :white_check_mark: :white_large_square: | lui           | :white_check_mark: :white_large_square: | slti          | :white_check_mark: :white_large_square: |
-| auipc         | :white_check_mark: :white_large_square: | lw            | :white_check_mark: :white_large_square: | sltiu         | :white_check_mark: :white_large_square: |
-| beq           | :white_check_mark: :white_large_square: | lwu           | :white_check_mark: :white_large_square: | sltu          | :white_check_mark: :white_large_square: |
-| bge           | :white_check_mark: :white_large_square: | or            | :white_check_mark: :white_large_square: | sra           | :white_check_mark: :white_large_square: |
-| bgeu          | :white_check_mark: :white_large_square: | ori           | :white_check_mark: :white_large_square: | srai          | :white_check_mark: :white_large_square: |
-| blt           | :white_check_mark: :white_large_square: | sb            | :white_check_mark: :white_large_square: | sraiw         | :white_check_mark: :white_large_square: |
-| bltu          | :white_check_mark: :white_large_square: | sd            | :white_check_mark: :white_check_mark:   | sraw          | :white_check_mark: :white_large_square: |
-| bne           | :white_check_mark: :white_large_square: | sh            | :white_check_mark: :white_large_square: | srl           | :white_check_mark: :white_check_mark:   |
-| sub           | :white_check_mark: :white_large_square: | simple        | :white_check_mark: :white_large_square: | srli          | :white_check_mark: :white_large_square: |
-| subw          | :white_check_mark: :white_large_square: | jal           | :white_check_mark: :white_large_square: | srliw         | :white_check_mark: :white_large_square: |
-| sw            | :white_check_mark: :white_large_square: | jalr          | :white_check_mark: :white_large_square: | srlw          | :white_check_mark: :white_large_square: |
+| add           | :white_check_mark: :white_check_mark:   | lb            | :white_check_mark: :white_large_square: | sll           | :white_check_mark: :white_check_mark:   |
+| addi          | :white_check_mark: :white_check_mark:   | lbu           | :white_check_mark: :white_large_square: | slli          | :white_check_mark: :white_large_square: |
+| addiw         | :white_check_mark: :white_check_mark:   | ld            | :white_check_mark: :white_check_mark:   | slliw         | :white_check_mark: :white_large_square: |
+| addw          | :white_check_mark: :white_check_mark:   | lh            | :white_check_mark: :white_large_square: | sllw          | :white_check_mark: :white_large_square: |
+| and           | :white_check_mark: :white_check_mark:   | lhu           | :white_check_mark: :white_large_square: | slt           | :white_check_mark: :white_large_square: |
+| andi          | :white_check_mark: :white_check_mark:   | lui           | :white_check_mark: :white_large_square: | slti          | :white_check_mark: :white_large_square: |
+| auipc         | :white_check_mark: :white_check_mark:   | lw            | :white_check_mark: :white_large_square: | sltiu         | :white_check_mark: :white_large_square: |
+| beq           | :white_check_mark: :white_check_mark:   | lwu           | :white_check_mark: :white_large_square: | sltu          | :white_check_mark: :white_large_square: |
+| bge           | :white_check_mark: :white_check_mark:   | or            | :white_check_mark: :white_check_mark:   | sra           | :white_check_mark: :white_large_square: |
+| bgeu          | :white_check_mark: :white_check_mark:   | ori           | :white_check_mark: :white_check_mark:   | srai          | :white_check_mark: :white_large_square: |
+| blt           | :white_check_mark: :white_check_mark:   | sb            | :white_check_mark: :white_large_square: | sraiw         | :white_check_mark: :white_large_square: |
+| bltu          | :white_check_mark: :white_check_mark:   | sd            | :white_check_mark: :white_check_mark:   | sraw          | :white_check_mark: :white_large_square: |
+| bne           | :white_check_mark: :white_check_mark:   | sh            | :white_check_mark: :white_large_square: | srl           | :white_check_mark: :white_check_mark:   |
+| sub           | :white_check_mark: :white_check_mark:   | simple        | :white_check_mark: :white_check_mark:   | srli          | :white_check_mark: :white_large_square: |
+| subw          | :white_check_mark: :white_check_mark:   | jal           | :white_check_mark: :white_check_mark:   | srliw         | :white_check_mark: :white_large_square: |
+| sw            | :white_check_mark: :white_large_square: | jalr          | :white_check_mark: :white_check_mark:   | srlw          | :white_check_mark: :white_large_square: |
 | xor           | :white_check_mark: :white_large_square: |               |                                         |               |                                         |
 | xori          | :white_check_mark: :white_large_square: |               |                                         |               |                                         |
 
 ## Compressed Instruction Tests
 
-| **Test Name** |                **P/V**                 | **Test Name** | **P/V** | **Test Name** | **P/V** |
-|---------------|----------------------------------------|---------------|---------|---------------|---------|
+| **Test Name** |                 **P/V**                 | **Test Name** | **P/V** | **Test Name** | **P/V** |
+|---------------|-----------------------------------------|---------------|---------|---------------|---------|
 | rvc           | :white_check_mark: :white_large_square: |               |         |               |         |
 
 ## Machine Mode Tests
