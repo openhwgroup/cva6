@@ -1,0 +1,8 @@
+#!/bin/sh
+# make the verilog first
+cd output && make
+cd ../..
+# start the simulation
+vsim-10.6 -c -lib work core_tb_optimized +UVM_TESTNAME=core_test $2 +ASMTEST=riscv-torture/$3 -coverage -classdebug -do "run -a"
+# move the signature file to the appropriate place
+mv test.ariane.sig riscv-torture/output/test.rtlsim.sig
