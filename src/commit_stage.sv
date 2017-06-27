@@ -19,8 +19,10 @@
 import ariane_pkg::*;
 
 module commit_stage (
-    input logic                 clk_i,         // Clock
-    input logic                 rst_ni,        // Asynchronous reset active low
+    input  logic                clk_i,         // Clock
+    input  logic                rst_ni,        // Asynchronous reset active low
+
+    input  logic                halt_i,        // request to halt the core
 
     output exception            exception_o,   // take exception to controller
 
@@ -66,7 +68,8 @@ module commit_stage (
         sfence_vma_o = 1'b0;
 
         // we will not commit the instruction if we took an exception
-        if (commit_instr_i.valid) begin
+        // but we do not commit the instruction if we requested a halt
+        if (commit_instr_i.valid && !halt_i) begin
             // register will be the all zero register.
             // and also acknowledge the instruction, this is mainly done for the instruction tracer
             // as it will listen on the instruction ack signal. For the overall result it does not make any

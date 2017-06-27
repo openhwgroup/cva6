@@ -121,8 +121,15 @@ module decoder (
                                     instruction_o.op = WFI;
                                     // if timeout wait is set, trap on an illegal instruction in S Mode
                                     // (after 0 cycles timeout)
-                                    if (priv_lvl_i == PRIV_LVL_S && tw_i)
+                                    if (priv_lvl_i == PRIV_LVL_S && tw_i) begin
                                         illegal_instr = 1'b1;
+                                        instruction_o.op = ADD;
+                                    end
+                                    // we don't support U mode interrupts so WFI is illegal in this context
+                                    if (priv_lvl_i == PRIV_LVL_U) begin
+                                        illegal_instr = 1'b1;
+                                        instruction_o.op = ADD;
+                                    end
                                 end
                                 // SFENCE.VMA
                                 default: begin

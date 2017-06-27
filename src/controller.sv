@@ -31,6 +31,9 @@ module controller (
     output logic            flush_ex_o,             // Flush EX stage
     output logic            flush_tlb_o,            // Flush TLBs
 
+    input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
+    input  logic            halt_debug_i,           // Halt request from debug
+    output logic            halt_o,                 // Halt signal to commit stage
     input  logic            eret_i,                 // Return from exception
     input  exception        ex_i,                   // We got an exception, flush the pipeline
     input  branchpredict    resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
@@ -111,5 +114,11 @@ module controller (
         end
 
     end
-    // flush on exception
+
+    // ----------------------
+    // Halt Logic
+    // ----------------------
+    always_comb begin
+        halt_o = halt_debug_i || halt_csr_i;
+    end
 endmodule

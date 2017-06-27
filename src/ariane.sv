@@ -228,6 +228,9 @@ module ariane
     logic                     flush_ctrl_ex;
     logic                     flush_tlb_ctrl_ex;
     logic                     sfence_vma_commit_controller;
+    logic                     halt_ctrl_commit;
+    logic                     halt_debug_ctrl;
+    logic                     halt_csr_ctrl;
 
     assign sec_lvl_o = priv_lvl;
     // --------------
@@ -426,6 +429,7 @@ module ariane
     // Commit
     // ---------
     commit_stage commit_stage_i (
+        .halt_i                 ( halt_ctrl_commit              ),
         .exception_o            ( ex_commit                     ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
@@ -452,6 +456,7 @@ module ariane
     )
     csr_regfile_i (
         .flush_o                ( flush_csr_ctrl                ),
+        .halt_csr_o             ( halt_csr_ctrl                 ),
         .commit_ack_i           ( commit_ack                    ),
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),
@@ -489,6 +494,10 @@ module ariane
         .flush_id_o             ( flush_ctrl_id                 ),
         .flush_ex_o             ( flush_ctrl_ex                 ),
         .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
+
+        .halt_csr_i             ( halt_csr_ctrl                 ),
+        .halt_debug_i           ( 1'b0                          ),
+        .halt_o                 ( halt_ctrl_commit              ),
         // control ports
         .eret_i                 ( eret                          ),
         .ex_i                   ( ex_commit                     ),

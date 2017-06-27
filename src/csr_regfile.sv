@@ -27,6 +27,7 @@ module csr_regfile #(
     input  logic                  rst_ni,                     // Asynchronous reset active low
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
+    output logic                  halt_csr_o,                 // halt requested
     // commit acknowledge
     input  logic                  commit_ack_i,               // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
@@ -131,9 +132,11 @@ module csr_regfile #(
     logic [63:0] scause_q,   scause_n;
     logic [63:0] stval_q,    stval_n;
 
-    logic [63:0] cycle_q,   cycle_n;
-    logic [63:0] time_q,    time_n;
-    logic [63:0] instret_q, instret_n;
+    logic        wfi_n,      wfi_q;
+
+    logic [63:0] cycle_q,    cycle_n;
+    logic [63:0] time_q,     time_n;
+    logic [63:0] instret_q,  instret_n;
 
     typedef struct packed {
         logic [3:0]  mode;
@@ -466,6 +469,8 @@ module csr_regfile #(
     // --------------------------------------
     always_comb begin : exception_ctrl
         automatic logic [63:0] interrupt_cause = '0;
+        // wait for interrupt register
+        wfi_n = wfi_q;
 
         csr_exception_o = {
             64'b0, 64'b0, 1'b0
@@ -532,6 +537,17 @@ module csr_regfile #(
             // this spares the extra wiring from commit to CSR and back to commit
             csr_exception_o.valid = 1'b1;
         end
+
+        // -------------------
+        // Wait for Interrupt
+        // -------------------
+        // if there is any interrupt pending un-stall the core
+        if (|mip_q) begin
+            wfi_n = 1'b0;
+        // or alternatively if there is no exception pending, wait here for the interrupt
+        end else if (csr_op_i == WFI && !ex_i.valid) begin
+            wfi_n = 1'b1;
+        end
     end
 
     // -------------------
@@ -549,6 +565,7 @@ module csr_regfile #(
     assign tvm_o            = mstatus_q.tvm;
     assign tw_o             = mstatus_q.tw;
     assign tsr_o            = mstatus_q.tsr;
+    assign halt_csr_o       = wfi_q;
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
@@ -599,6 +616,8 @@ module csr_regfile #(
             instret_q              <= 64'b0;
             // aux registers
             en_ld_st_translation_q <= 1'b0;
+            // wait for interrupt
+            wfi_q                  <= 1'b0;
         end else begin
             priv_lvl_q             <= priv_lvl_n;
             // machine mode registers
@@ -624,6 +643,8 @@ module csr_regfile #(
             instret_q              <= instret_n;
             // aux registers
             en_ld_st_translation_q <= en_ld_st_translation_n;
+            // wait for interrupt
+            wfi_q                  <= wfi_n;
         end
     end
 
