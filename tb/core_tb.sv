@@ -27,8 +27,9 @@ import core_lib_pkg::*;
 
 module core_tb;
     import "DPI-C" function chandle read_elf(string fn);
+    import "DPI-C" function longint unsigned get_section_address(string symb);
+    import "DPI-C" function longint unsigned get_section_size(string symb);
     import "DPI-C" function longint unsigned get_symbol_address(string symb);
-    import "DPI-C" function longint unsigned get_symbol_size(string symb);
 
     logic clk_i;
     logic rst_ni;
@@ -167,6 +168,7 @@ module core_tb;
         longint unsigned address;
         longint unsigned bss_address;
         longint unsigned bss_size;
+        longint unsigned begin_signature_address;
 
         string file;
         string test;
@@ -179,7 +181,7 @@ module core_tb;
         // read elf file (DPI call)
         void'(read_elf(file));
         // we are interested in the .tohost ELF symbol in-order to observe end of test signals
-        address = get_symbol_address(".tohost");
+        address = get_section_address(".tohost");
         // get the objdump verilog file to load our memorys
         $readmemh({file, ".v"}, rmem);
         // copy bitwise from verilog file
@@ -188,9 +190,11 @@ module core_tb;
                 core_mem_i.ram_i.mem[i][j] = rmem[`DRAM_BASE + i*8 + j];
         end
         // initialize .bss
-        bss_address = get_symbol_address(".bss");
-        bss_size    = get_symbol_size(".bss");
-        // `uvm_info("Core Test",  $sformatf(".bss address: %x, .bss size: %x, .tohost address: %x", ((bss_address - `DRAM_BASE) >> 3), bss_size, address), UVM_LOW)
+        bss_address = get_section_address(".bss");
+        bss_size    = get_section_size(".bss");
+        begin_signature_address = get_symbol_address("begin_signature");
+
+        $display("begin_signature: %x, .bss address: %x, .bss size: %x, .tohost address: %x", begin_signature_address, bss_address, bss_size, address);
 
         // the section should be aligned on a double word boundary
         for (int i = 0; i < bss_size/8; i++) begin
