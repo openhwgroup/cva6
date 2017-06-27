@@ -31,9 +31,14 @@ module core_tb;
     import "DPI-C" function longint unsigned get_section_size(string symb);
     import "DPI-C" function longint unsigned get_symbol_address(string symb);
 
+    static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
+
     logic clk_i;
     logic rst_ni;
     logic rtc_i;
+
+    longint unsigned cycles;
+    longint unsigned max_cycles;
 
     debug_if debug_if();
     core_if core_if (clk_i);
@@ -72,76 +77,76 @@ module core_tb;
     assign dcache_if.data_rdata    = data_if_data_rdata_o;
 
     core_mem core_mem_i (
-        .clk_i                   ( clk_i                   ),
-        .rst_ni                  ( rst_ni                  ),
-        .instr_if_address_i      ( instr_if_address        ),
-        .instr_if_data_req_i     ( instr_if_data_req       ),
-        .instr_if_data_be_i      ( instr_if_data_be        ),
-        .instr_if_data_gnt_o     ( instr_if_data_gnt       ),
-        .instr_if_data_rvalid_o  ( instr_if_data_rvalid    ),
-        .instr_if_data_rdata_o   ( instr_if_data_rdata     ),
+        .clk_i                   ( clk_i                        ),
+        .rst_ni                  ( rst_ni                       ),
+        .instr_if_address_i      ( instr_if_address             ),
+        .instr_if_data_req_i     ( instr_if_data_req            ),
+        .instr_if_data_be_i      ( instr_if_data_be             ),
+        .instr_if_data_gnt_o     ( instr_if_data_gnt            ),
+        .instr_if_data_rvalid_o  ( instr_if_data_rvalid         ),
+        .instr_if_data_rdata_o   ( instr_if_data_rdata          ),
 
-        .data_if_address_index_i ( data_if_address_index_i ),
-        .data_if_address_tag_i   ( data_if_address_tag_i   ),
-        .data_if_data_wdata_i    ( data_if_data_wdata_i    ),
-        .data_if_data_req_i      ( data_if_data_req_i      ),
-        .data_if_data_we_i       ( data_if_data_we_i       ),
-        .data_if_data_be_i       ( data_if_data_be_i       ),
-        .data_if_kill_req_i      ( data_if_kill_req_i      ),
-        .data_if_tag_valid_i     ( data_if_tag_valid_i     ),
-        .data_if_data_gnt_o      ( data_if_data_gnt_o      ),
-        .data_if_data_rvalid_o   ( data_if_data_rvalid_o   ),
-        .data_if_data_rdata_o    ( data_if_data_rdata_o    )
+        .data_if_address_index_i ( data_if_address_index_i      ),
+        .data_if_address_tag_i   ( data_if_address_tag_i        ),
+        .data_if_data_wdata_i    ( data_if_data_wdata_i         ),
+        .data_if_data_req_i      ( data_if_data_req_i           ),
+        .data_if_data_we_i       ( data_if_data_we_i            ),
+        .data_if_data_be_i       ( data_if_data_be_i            ),
+        .data_if_kill_req_i      ( data_if_kill_req_i           ),
+        .data_if_tag_valid_i     ( data_if_tag_valid_i          ),
+        .data_if_data_gnt_o      ( data_if_data_gnt_o           ),
+        .data_if_data_rvalid_o   ( data_if_data_rvalid_o        ),
+        .data_if_data_rdata_o    ( data_if_data_rdata_o         )
     );
 
     ariane dut (
-        .clk_i                   ( clk_i                    ),
-        .rst_ni                  ( rst_ni                   ),
-        .rtc_i                   ( rtc_i                    ),
-        .clock_en_i              ( core_if.clock_en         ),
-        .test_en_i               ( core_if.test_en          ),
-        .fetch_enable_i          ( core_if.fetch_enable     ),
-        .core_busy_o             ( core_if.core_busy        ),
-        .ext_perf_counters_i     (                          ),
-        .boot_addr_i             ( core_if.boot_addr        ),
-        .core_id_i               ( core_if.core_id          ),
-        .cluster_id_i            ( core_if.cluster_id       ),
+        .clk_i                   ( clk_i                        ),
+        .rst_ni                  ( rst_ni                       ),
+        .rtc_i                   ( rtc_i                        ),
+        .clock_en_i              ( core_if.clock_en             ),
+        .test_en_i               ( core_if.test_en              ),
+        .fetch_enable_i          ( core_if.fetch_enable         ),
+        .core_busy_o             ( core_if.core_busy            ),
+        .ext_perf_counters_i     (                              ),
+        .boot_addr_i             ( core_if.boot_addr            ),
+        .core_id_i               ( core_if.core_id              ),
+        .cluster_id_i            ( core_if.cluster_id           ),
 
-        .instr_if_address_o      ( instr_if_address         ),
-        .instr_if_data_req_o     ( instr_if_data_req        ),
-        .instr_if_data_be_o      ( instr_if_data_be         ),
-        .instr_if_data_gnt_i     ( instr_if_data_gnt        ),
-        .instr_if_data_rvalid_i  ( instr_if_data_rvalid     ),
-        .instr_if_data_rdata_i   ( instr_if_data_rdata      ),
+        .instr_if_address_o      ( instr_if_address             ),
+        .instr_if_data_req_o     ( instr_if_data_req            ),
+        .instr_if_data_be_o      ( instr_if_data_be             ),
+        .instr_if_data_gnt_i     ( instr_if_data_gnt            ),
+        .instr_if_data_rvalid_i  ( instr_if_data_rvalid         ),
+        .instr_if_data_rdata_i   ( instr_if_data_rdata          ),
 
-        .data_if_address_index_o ( data_if_address_index_i  ),
-        .data_if_address_tag_o   ( data_if_address_tag_i    ),
-        .data_if_data_wdata_o    ( data_if_data_wdata_i     ),
-        .data_if_data_req_o      ( data_if_data_req_i       ),
-        .data_if_data_we_o       ( data_if_data_we_i        ),
-        .data_if_data_be_o       ( data_if_data_be_i        ),
-        .data_if_kill_req_o      ( data_if_kill_req_i       ),
-        .data_if_tag_valid_o     ( data_if_tag_valid_i      ),
-        .data_if_data_gnt_i      ( data_if_data_gnt_o       ),
-        .data_if_data_rvalid_i   ( data_if_data_rvalid_o    ),
-        .data_if_data_rdata_i    ( data_if_data_rdata_o     ),
+        .data_if_address_index_o ( data_if_address_index_i      ),
+        .data_if_address_tag_o   ( data_if_address_tag_i        ),
+        .data_if_data_wdata_o    ( data_if_data_wdata_i         ),
+        .data_if_data_req_o      ( data_if_data_req_i           ),
+        .data_if_data_we_o       ( data_if_data_we_i            ),
+        .data_if_data_be_o       ( data_if_data_be_i            ),
+        .data_if_kill_req_o      ( data_if_kill_req_i           ),
+        .data_if_tag_valid_o     ( data_if_tag_valid_i          ),
+        .data_if_data_gnt_i      ( data_if_data_gnt_o           ),
+        .data_if_data_rvalid_i   ( data_if_data_rvalid_o        ),
+        .data_if_data_rdata_i    ( data_if_data_rdata_o         ),
 
-        .irq_i                   ( {core_if.irq, core_if.irq}              ),
-        .irq_id_i                ( core_if.irq_id           ),
-        .irq_ack_o               ( core_if.irq_ack          ),
-        .irq_sec_i               ( core_if.irq_sec          ),
-        .sec_lvl_o               ( core_if.sec_lvl          ),
+        .irq_i                   ( {core_if.irq, core_if.irq}   ),
+        .irq_id_i                ( core_if.irq_id               ),
+        .irq_ack_o               ( core_if.irq_ack              ),
+        .irq_sec_i               ( core_if.irq_sec              ),
+        .sec_lvl_o               ( core_if.sec_lvl              ),
 
-        .debug_req_i             (                          ),
-        .debug_gnt_o             (                          ),
-        .debug_rvalid_o          (                          ),
-        .debug_addr_i            (                          ),
-        .debug_we_i              (                          ),
-        .debug_wdata_i           (                          ),
-        .debug_rdata_o           (                          ),
-        .debug_halted_o          (                          ),
-        .debug_halt_i            (                          ),
-        .debug_resume_i          (                          )
+        .debug_req_i             (                              ),
+        .debug_gnt_o             (                              ),
+        .debug_rvalid_o          (                              ),
+        .debug_addr_i            (                              ),
+        .debug_we_i              (                              ),
+        .debug_wdata_i           (                              ),
+        .debug_rdata_o           (                              ),
+        .debug_halted_o          (                              ),
+        .debug_halt_i            (                              ),
+        .debug_resume_i          (                              )
     );
 
     // Clock process
@@ -151,8 +156,15 @@ module core_tb;
         repeat(8)
             #10ns clk_i = ~clk_i;
         rst_ni = 1'b1;
-        forever
-            #10ns clk_i = ~clk_i;
+        forever begin
+            #10ns clk_i = 1'b1;
+            #10ns clk_i = 1'b0;
+
+            if (cycles > max_cycles)
+                $fatal(1, "Simulation reached maximum cycle count of %d", max_cycles);
+
+            cycles++;
+        end
     end
     // Real Time Clock
     initial begin
@@ -162,13 +174,10 @@ module core_tb;
     end
 
     task preload_memories();
-        static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
         string plus_args [$];
 
-        longint unsigned address;
         longint unsigned bss_address;
         longint unsigned bss_size;
-        longint unsigned begin_signature_address;
 
         string file;
         string file_name;
@@ -176,6 +185,7 @@ module core_tb;
         string test;
         // offset the temporary RAM
         logic [7:0] rmem [`DRAM_BASE:`DRAM_BASE + 32768];
+
         // get the file name from a command line plus arg
         void'(uvcl.get_arg_value("+BASEDIR=", base_dir));
         void'(uvcl.get_arg_value("+ASMTEST=", file_name));
@@ -185,8 +195,7 @@ module core_tb;
         $display("Pre-loading memory from file: %s\n", file);
         // read elf file (DPI call)
         void'(read_elf(file));
-        // we are interested in the .tohost ELF symbol in-order to observe end of test signals
-        address = get_section_address(".tohost");
+
         // get the objdump verilog file to load our memorys
         $readmemh({file, ".v"}, rmem);
         // copy bitwise from verilog file
@@ -197,32 +206,40 @@ module core_tb;
         // initialize .bss
         bss_address = get_section_address(".bss");
         bss_size    = get_section_size(".bss");
-        begin_signature_address = get_symbol_address("begin_signature");
-
-        $display("begin_signature: %x, end_signature %x, .bss address: %x, .bss size: %x, .tohost address: %x",get_symbol_address("end_signature"), begin_signature_address, bss_address, bss_size, address);
 
         // the section should be aligned on a double word boundary
         for (int i = 0; i < bss_size/8; i++) begin
                 core_mem_i.ram_i.mem[((bss_address - `DRAM_BASE) >> 3) + i] = 64'b0;
         end
-        // pass tohost address to UVM resource DB
-        uvm_config_db #(longint unsigned)::set(null, "uvm_test_top.m_env.m_eoc", "tohost", address);
-        uvm_config_db #(longint unsigned)::set(null, "uvm_test_top.m_env.m_eoc", "begin_signature", ((begin_signature_address -`DRAM_BASE) >> 3));
 
     endtask : preload_memories
 
     program testbench (core_if core_if, dcache_if dcache_if);
-        initial begin
-            uvm_config_db #(virtual core_if)::set(null, "uvm_test_top", "core_if", core_if);
-            uvm_config_db #(virtual dcache_if )::set(null, "uvm_test_top", "dcache_if", dcache_if);
-            // print the topology
-            // uvm_top.enable_print_topology = 1;
-            // Start UVM test
-            run_test();
-        end
-
+        longint unsigned begin_signature_address;
+        longint unsigned tohost_address;
+        string max_cycle_string;
         initial begin
             preload_memories();
+
+            uvm_config_db #(virtual core_if)::set(null, "uvm_test_top", "core_if", core_if);
+            uvm_config_db #(virtual dcache_if )::set(null, "uvm_test_top", "dcache_if", dcache_if);
+
+            // we are interested in the .tohost ELF symbol in-order to observe end of test signals
+            tohost_address = get_section_address(".tohost");
+            begin_signature_address = get_symbol_address("begin_signature");
+            // pass tohost address to UVM resource DB
+            uvm_config_db #(longint unsigned)::set(null, "uvm_test_top.m_env.m_eoc", "tohost", tohost_address);
+            uvm_config_db #(longint unsigned)::set(null, "uvm_test_top.m_env.m_eoc", "begin_signature", ((begin_signature_address -`DRAM_BASE) >> 3));
+            // print the topology
+            // uvm_top.enable_print_topology = 1;
+            // get the maximum cycle count the simulation is allowed to run
+            if (uvcl.get_arg_value("+max-cycles=", max_cycle_string) == 0) begin
+                max_cycles = {64{1'b1}};
+            end else begin
+                max_cycles = max_cycle_string.atoi();
+            end
+            // Start UVM test
+            run_test();
         end
     endprogram
 

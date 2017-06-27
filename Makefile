@@ -56,6 +56,8 @@ riscv-tests =  rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-
 riscv-test = rv64ui-p-add
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
+# Maximum amount of cycles for a successful simulation run
+max_cycles = 10000000
 # Test case to run
 test_case = core_test
 # QuestaSim Version
@@ -113,10 +115,10 @@ sim: build
 	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 simc: build
-	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +signature=output/test.rtlsim.sig +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 run-asm-tests: build
-	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +UVM_TESTNAME=$(test_case) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $(library).$(test_top_level)_optimized;)
+	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $(library).$(test_top_level)_optimized;)
 
 # Run the specified test case
 $(tests): build
