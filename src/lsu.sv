@@ -87,8 +87,6 @@ module lsu #(
     // e.g.: they keep the value in the stall case
     lsu_ctrl_t lsu_ctrl;
 
-    logic      lsu_ctrl_full;
-    lsu_ctrl_t lsu_ctrl_o;
     logic      pop_st;
     logic      pop_ld;
 

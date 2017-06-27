@@ -177,7 +177,7 @@ module dcache_arbiter #(
         else begin $error("There was a grant without a request."); $stop(); end
     // assert that the address does not contain X when request is sent
     assert property ( @(posedge clk_i) (data_req_o) |-> (!$isunknown(address_index_o)) )
-      else begin $error("address contains X when request is set"); $stop(); end
+      else begin $info("address contains X when request is set"); end
 
     // there should be no rvalid when we are in IDLE
     // assert property (
