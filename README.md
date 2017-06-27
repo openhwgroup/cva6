@@ -7,7 +7,7 @@
 
 For detailed documentation refer to the [online documentation](http://www.be4web.net/ariane/) (Login: `zarubaf` Password: `zaruba`).
 
-## Getting Started
+## <a name="getting_started"></a>Getting Started
 Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools).
 
 Checkout the repository and initialize all submodules
@@ -35,6 +35,21 @@ Or start any of the unit tests by:
 ```
 make dcache_arbiter
 ```
+### Randomized Constrained Testing with Torture
+
+Ariane's core testbench is fully compatible with the randomized constrained testing framework called Torture. To start testing Ariane all you need is to step into the `riscv-torture/` folder and issue:
+```
+make rgentest
+```
+Which will produce a single randomized program, runs it on Spike (see [Getting Started](#getting_started)) and on the RTL simulator (QuestaSim) by calling `ariane-run-torture`.
+
+Torture's overnight tests work the same way, just call
+```
+make rnight
+```
+
+C (a.k.a. Verilator) tests are currently not supported.
+
 # Contributing
 
 Check out the [contribution guide](CONTRIBUTING.md)
