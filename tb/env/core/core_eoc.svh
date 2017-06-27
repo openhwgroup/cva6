@@ -18,9 +18,10 @@ class core_eoc extends uvm_component;
     // UVM Factory Registration Macro
     `uvm_component_utils(core_eoc)
     longint unsigned tohost;
+    longint unsigned begin_signature;
     logic got_write = 1'b0;
     int exit_code = 0;
-
+    int f;
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -36,6 +37,10 @@ class core_eoc extends uvm_component;
 
         if (!uvm_config_db #(longint unsigned)::get(this, "", "tohost", tohost))
             `uvm_fatal("VIF CONFIG", "Cannot get() interface core_if from uvm_config_db. Have you set() it?")
+
+        if (!uvm_config_db #(longint unsigned)::get(this, "", "begin_signature", begin_signature))
+            `uvm_fatal("VIF CONFIG", "Cannot get() interface core_if from uvm_config_db. Have you set() it?")
+
         // create the analysis export
         item_export  = new("item_export", this);
     endfunction
@@ -62,5 +67,17 @@ class core_eoc extends uvm_component;
         phase.drop_objection(this, "core_eoc");
     endtask
 
+    virtual function void extract_phase( uvm_phase phase );
+        super.extract_phase(phase);
+        // Dump Signature
+        if (this.begin_signature != '0) begin
+            this.f = $fopen("test.ariane.sig" ,"w");
+            // extract 256 byte + 1024 byte memory dump starting from begin_signature symbol
+            for (int i = this.begin_signature; i < this.begin_signature + 162; i += 2)
+                $fwrite(this.f, "%x%x\n", $root.core_tb.core_mem_i.ram_i.mem[i + 1], $root.core_tb.core_mem_i.ram_i.mem[i]);
+
+            $fclose(this.f);
+        end
+    endfunction
 
 endclass : core_eoc

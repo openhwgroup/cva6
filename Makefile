@@ -60,7 +60,7 @@ incdir = ./includes
 test_case = core_test
 # QuestaSim Version
 questa_version = -10.6
-compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262
+compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
 # Moore binary
 moore = ~fschuiki/bin/moore
 # Iterate over all include directories and write them with +incdir+ prefixed

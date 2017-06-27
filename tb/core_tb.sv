@@ -194,7 +194,7 @@ module core_tb;
         bss_size    = get_section_size(".bss");
         begin_signature_address = get_symbol_address("begin_signature");
 
-        $display("begin_signature: %x, .bss address: %x, .bss size: %x, .tohost address: %x", begin_signature_address, bss_address, bss_size, address);
+        $display("begin_signature: %x, end_signature %x, .bss address: %x, .bss size: %x, .tohost address: %x",get_symbol_address("end_signature"), begin_signature_address, bss_address, bss_size, address);
 
         // the section should be aligned on a double word boundary
         for (int i = 0; i < bss_size/8; i++) begin
@@ -202,6 +202,7 @@ module core_tb;
         end
         // pass tohost address to UVM resource DB
         uvm_config_db #(longint unsigned)::set(null, "uvm_test_top.m_env.m_eoc", "tohost", address);
+        uvm_config_db #(longint unsigned)::set(null, "uvm_test_top.m_env.m_eoc", "begin_signature", ((begin_signature_address -`DRAM_BASE) >> 3));
 
     endtask : preload_memories
 
