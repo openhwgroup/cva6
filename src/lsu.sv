@@ -400,12 +400,12 @@ module lsu #(
             case (operator_i)
                 // double word
                 LD, SD: begin
-                    if (vaddr_i[2:0] != 3'b000)
+                    if (lsu_ctrl.vaddr[2:0] != 3'b000)
                         data_misaligned = 1'b1;
                 end
                 // word
                 LW, LWU, SW: begin
-                    if (vaddr_i[1:0] != 2'b00)
+                    if (lsu_ctrl.vaddr[1:0] != 2'b00)
                         data_misaligned = 1'b1;
                 end
 
@@ -431,6 +431,25 @@ module lsu #(
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
                     ST_ADDR_MISALIGNED,
+                    lsu_ctrl.vaddr,
+                    1'b1
+                };
+            end
+        end
+
+        // check that all bits in the address >= 39 are equal
+        if (!((&lsu_ctrl.vaddr[63:39]) == 1'b1 || (|lsu_ctrl.vaddr[63:39]) == 1'b0)) begin
+
+            if (lsu_ctrl.fu == LOAD) begin
+                misaligned_exception = {
+                    LOAD_PAGE_FAULT,
+                    lsu_ctrl.vaddr,
+                    1'b1
+                };
+
+            end else if (lsu_ctrl.fu == STORE) begin
+                misaligned_exception = {
+                    STORE_PAGE_FAULT,
                     lsu_ctrl.vaddr,
                     1'b1
                 };

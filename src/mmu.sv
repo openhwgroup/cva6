@@ -216,6 +216,9 @@ module mmu #(
         iaccess_err   = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
                                      || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
+        if (!((&fetch_vaddr_i[63:39]) == 1'b1 || (|fetch_vaddr_i[63:39]) == 1'b0)) begin
+            fetch_ex_n = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+        end
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
