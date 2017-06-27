@@ -110,13 +110,13 @@ $(library):
 	vlib${questa_version} ${library}
 
 sim: build
-	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=$(riscv-test-dir)/$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 simc: build
-	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +ASMTEST=$(riscv-test-dir)/$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +signature=output/test.rtlsim.sig +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 run-asm-tests: build
-	$(foreach test, $(riscv-tests), vsim$(questa_version) +UVM_TESTNAME=$(test_case) +ASMTEST=$(riscv-test-dir)/$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $(library).$(test_top_level)_optimized;)
+	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +UVM_TESTNAME=$(test_case) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $(library).$(test_top_level)_optimized;)
 
 # Run the specified test case
 $(tests): build

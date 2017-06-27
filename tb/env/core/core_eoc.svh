@@ -22,6 +22,11 @@ class core_eoc extends uvm_component;
     logic got_write = 1'b0;
     int exit_code = 0;
     int f;
+    string sig_dump_name;
+    string base_dir;
+    // get the command line processor for parsing the plus args
+    static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
+
     //------------------------------------------
     // Methods
     //------------------------------------------
@@ -35,6 +40,15 @@ class core_eoc extends uvm_component;
     function void build_phase(uvm_phase phase);
         super.build_phase(phase);
 
+        // get the signature dump file name
+        void'(uvcl.get_arg_value("+BASEDIR=", base_dir));
+        // check if the argument was supplied
+        if(uvcl.get_arg_value("+signature=", sig_dump_name) == 0) begin
+            sig_dump_name = "test.ariane.sig";
+        end
+
+        sig_dump_name = {base_dir, "/", sig_dump_name};
+
         if (!uvm_config_db #(longint unsigned)::get(this, "", "tohost", tohost))
             `uvm_fatal("VIF CONFIG", "Cannot get() interface core_if from uvm_config_db. Have you set() it?")
 
@@ -47,6 +61,7 @@ class core_eoc extends uvm_component;
 
     function void write (dcache_if_seq_item seq_item);
 
+        // get the tohost value -> for details see the riscv-fesvr implementation
         if (seq_item.address == tohost) begin
             exit_code = seq_item.wdata >> 1;
             if (exit_code)
@@ -71,8 +86,8 @@ class core_eoc extends uvm_component;
         super.extract_phase(phase);
         // Dump Signature
         if (this.begin_signature != '0) begin
-            this.f = $fopen("test.ariane.sig" ,"w");
-            // extract 256 byte + 1024 byte memory dump starting from begin_signature symbol
+            this.f = $fopen(sig_dump_name, "w");
+            // extract 256 byte register dump + 1024 byte memory dump starting from begin_signature symbol
             for (int i = this.begin_signature; i < this.begin_signature + 162; i += 2)
                 $fwrite(this.f, "%x%x\n", $root.core_tb.core_mem_i.ram_i.mem[i + 1], $root.core_tb.core_mem_i.ram_i.mem[i]);
 

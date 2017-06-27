@@ -171,11 +171,16 @@ module core_tb;
         longint unsigned begin_signature_address;
 
         string file;
+        string file_name;
+        string base_dir;
         string test;
         // offset the temporary RAM
         logic [7:0] rmem [`DRAM_BASE:`DRAM_BASE + 32768];
         // get the file name from a command line plus arg
-        void'(uvcl.get_arg_value("+ASMTEST=",file));
+        void'(uvcl.get_arg_value("+BASEDIR=", base_dir));
+        void'(uvcl.get_arg_value("+ASMTEST=", file_name));
+
+        file = {base_dir, "/", file_name};
 
         $display("Pre-loading memory from file: %s\n", file);
         // read elf file (DPI call)

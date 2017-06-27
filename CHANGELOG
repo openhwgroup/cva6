@@ -1,3 +1,5 @@
+v 0.2.1
+    - Add support for Torture test framework
 v 0.2.0
     - Virtual memory support according to riscv privilege specification 1.11
     - IPC improvements
