@@ -1,3 +1,5 @@
+v 0.3.0
+    - New fetch interface, smaller and ready for macro-op fusion and dual-issue
 v 0.2.1
     - Add support for Torture test framework
 v 0.2.0

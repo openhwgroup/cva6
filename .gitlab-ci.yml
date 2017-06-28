@@ -105,8 +105,8 @@ pages:
   script:
     - mkdir public
     - mkdocs build -d public
-    - mv covhtmlreport/ public/
-    - lftp -e "mirror -R public . ; quit;" -u $FTP_USER,$FTP_PASSWORD $FTP_HOST
+    # - mv covhtmlreport/ public/
+    # - lftp -e "mirror -R public . ; quit;" -u $FTP_USER,$FTP_PASSWORD $FTP_HOST
   artifacts:
     paths:
       - site
