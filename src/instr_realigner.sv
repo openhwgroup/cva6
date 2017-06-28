@@ -1,6 +1,6 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 14.05.2017
-// Description: Re-aligns compressed instruction
+// Description: Emits and re-aligns compressed and unaligned instructions
 //
 // Copyright (C) 2017 ETH Zurich, University of Bologna
 // All rights reserved.
@@ -36,7 +36,7 @@ module instr_realigner (
     // Registers
     // ----------
     // the last instruction was unaligned
-    logic         unaligned_n,        unaligned_q;
+    logic        unaligned_n,        unaligned_q;
     // save the unaligned part of the instruction to this ff
     logic [15:0] unaligned_instr_n,   unaligned_instr_q;
     // the previous instruction was compressed

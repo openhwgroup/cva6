@@ -48,27 +48,32 @@ module id_stage (
 
     } issue_n, issue_q;
 
-    logic            is_control_flow_instr;
-    scoreboard_entry decoded_instruction;
+    logic                is_control_flow_instr;
+    scoreboard_entry     decoded_instruction;
 
-    fetch_entry      fetch_entry;
-    logic            is_illegal;
-    logic            [31:0] instruction;
-    logic            is_compressed;
-    logic            fetch_ack_i;
-    logic            fetch_entry_valid;
+    fetch_entry          fetch_entry;
+    logic                is_illegal;
+    logic                [31:0] instruction;
+    logic                is_compressed;
+    logic                fetch_ack_i;
+    logic                fetch_entry_valid;
 
+    // ---------------------------------------------------------
+    // 1. Re-align instructions
+    // ---------------------------------------------------------
     instr_realigner instr_realigner_i (
-        .fetch_entry_0_i         ( fetch_entry_i                ),
-        .fetch_entry_valid_0_i   ( fetch_entry_valid_i          ),
-        .fetch_ack_0_o           ( decoded_instr_ack_o          ),
+        .fetch_entry_0_i         ( fetch_entry_i               ),
+        .fetch_entry_valid_0_i   ( fetch_entry_valid_i         ),
+        .fetch_ack_0_o           ( decoded_instr_ack_o         ),
 
-        .fetch_entry_o           ( fetch_entry                  ),
-        .fetch_entry_valid_o     ( fetch_entry_valid            ),
-        .fetch_ack_i             ( fetch_ack_i                  ),
+        .fetch_entry_o           ( fetch_entry                 ),
+        .fetch_entry_valid_o     ( fetch_entry_valid           ),
+        .fetch_ack_i             ( fetch_ack_i                 ),
         .*
     );
-
+    // ---------------------------------------------------------
+    // 2. Check if they are compressed and expand in case they are
+    // ---------------------------------------------------------
     compressed_decoder compressed_decoder_i (
         .instr_i                 ( fetch_entry.instruction     ),
         .instr_o                 ( instruction                 ),
@@ -76,7 +81,9 @@ module id_stage (
         .is_compressed_o         ( is_compressed               )
 
     );
-
+    // ---------------------------------------------------------
+    // 3. Decode and emit instruction to issue stage
+    // ---------------------------------------------------------
     decoder decoder_i (
         .pc_i                    ( fetch_entry.address         ),
         .is_compressed_i         ( is_compressed               ),
@@ -90,16 +97,17 @@ module id_stage (
     );
 
     // ------------------
-    // Output Registers
+    // Pipeline Register
     // ------------------
     assign issue_entry_o = issue_q.sbe;
     assign issue_entry_valid_o = issue_q.valid;
     assign is_ctrl_flow_o = issue_q.is_ctrl_flow;
 
     always_comb begin
-        issue_n             = issue_q;
+        issue_n     = issue_q;
         fetch_ack_i = 1'b0;
 
+        // Clear the valid flag if issue has acknowledged the instruction
         if (issue_instr_ack_i)
             issue_n.valid = 1'b0;
 
@@ -108,10 +116,10 @@ module id_stage (
         // for a new instruction
         if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid) begin
             fetch_ack_i = 1'b1;
-            issue_n = { 1'b1, decoded_instruction, is_control_flow_instr};
+            issue_n = {1'b1, decoded_instruction, is_control_flow_instr};
         end
 
-        // invalidate on a flush
+        // invalidate the pipeline register on a flush
         if (flush_i)
             issue_n.valid = 1'b0;
     end

@@ -380,10 +380,9 @@ module lsu #(
     // ------------------------
     // Misaligned Exception
     // ------------------------
-    // misaligned detector
     // we can detect a misaligned exception immediately
-    // the misaligned exception is passed to the store buffer as a bypass
-    // just a hack to get to the LSU arbiter
+    // the misaligned exception is passed to the functional unit via the MMU, which in case
+    // can augment the exception if other memory related exceptions like a page fault or access errors
     always_comb begin : data_misaligned_detection
 
         misaligned_exception = {
@@ -480,32 +479,9 @@ module lsu #(
     // Assertions
     // ------------
 
-    // // make sure there is no new request when the old one is not yet completely done
-    // // i.e. it should not be possible to get a grant without an rvalid for the
-    // // last request
     `ifndef SYNTHESIS
     `ifndef VERILATOR
-    // assert property (
-    //   @(posedge clk) ((CS == WAIT_RVALID) && (data_gnt_i == 1'b1)) |-> (data_rvalid_i == 1'b1) )
-    //   else begin $error("data grant without rvalid"); $stop(); end
-
-    // // there should be no rvalid when we are in IDLE
-    // assert property (
-    //   @(posedge clk) (CS == IDLE) |-> (data_rvalid_i == 1'b0) )
-    //   else begin $error("Received rvalid while in IDLE state"); $stop(); end
-
-    // // assert that errors are only sent at the same time as grant or rvalid
-    // assert property ( @(posedge clk) (data_err_i) |-> (data_gnt_i || data_rvalid_i) )
-    //   else begin $error("Error without data grant or rvalid"); $stop(); end
-
-    // assert that errors are only sent at the same time as grant or rvalid
-    // assert that we only get a valid in if we said that we are ready
-    // assert property ( @(posedge clk_i) lsu_valid_i |->  lsu_ready_o)
-    //   else begin $error("[LSU] We got a valid but didn't say we were ready."); $stop(); end
-
-    // // assert that the address does not contain X when request is sent
-    // assert property ( @(posedge clk) (data_req_o) |-> (!$isunknown(data_addr_o)) )
-    //   else begin $error("address contains X when request is set"); $stop(); end
+    // TODO
     `endif
     `endif
 endmodule

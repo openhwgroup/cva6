@@ -1,6 +1,7 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 21.05.2017
-// Description: Issue stage dispatches instructions to the FUs
+// Description: Issue stage dispatches instructions to the FUs and keeps track of them
+//              in a scoreboard like data-structure.
 //
 //
 // Copyright (C) 2017 ETH Zurich, University of Bologna
@@ -30,7 +31,7 @@ module issue_stage #(
 
     input  logic                                     flush_unissued_instr_i,
     input  logic                                     flush_i,
-    // from ID
+    // from ISSUE
     input  scoreboard_entry                          decoded_instr_i,
     input  logic                                     decoded_instr_valid_i,
     input  logic                                     is_ctrl_flow_i,
@@ -123,44 +124,48 @@ module issue_stage #(
             unresolved_branch_n = 1'b0;
         end
     end
-
+    // ---------------------------------------------------------
+    // 1. Issue instruction and read operand
+    // ---------------------------------------------------------
     issue_read_operands issue_read_operands_i  (
-        .flush_i             ( flush_unissued_instr_i     ),
-        .issue_instr_i       ( issue_instr_sb_iro         ),
-        .issue_instr_valid_i ( issue_instr_valid_sb_iro   ),
-        .issue_ack_o         ( issue_ack_iro_sb           ),
-        .rs1_o               ( rs1_iro_sb                 ),
-        .rs1_i               ( rs1_sb_iro                 ),
-        .rs1_valid_i         ( rs1_valid_sb_iro           ),
-        .rs2_o               ( rs2_iro_sb                 ),
-        .rs2_i               ( rs2_sb_iro                 ),
-        .rs2_valid_i         ( rs2_valid_iro_sb           ),
-        .rd_clobber_i        ( rd_clobber_sb_iro          ),
+        .flush_i             ( flush_unissued_instr_i          ),
+        .issue_instr_i       ( issue_instr_sb_iro              ),
+        .issue_instr_valid_i ( issue_instr_valid_sb_iro        ),
+        .issue_ack_o         ( issue_ack_iro_sb                ),
+        .rs1_o               ( rs1_iro_sb                      ),
+        .rs1_i               ( rs1_sb_iro                      ),
+        .rs1_valid_i         ( rs1_valid_sb_iro                ),
+        .rs2_o               ( rs2_iro_sb                      ),
+        .rs2_i               ( rs2_sb_iro                      ),
+        .rs2_valid_i         ( rs2_valid_iro_sb                ),
+        .rd_clobber_i        ( rd_clobber_sb_iro               ),
         .*
     );
-
+    // ---------------------------------------------------------
+    // 2. Manage issued instructions in a scoreboard
+    // ---------------------------------------------------------
     scoreboard  #(
-        .NR_ENTRIES            ( NR_ENTRIES               ),
-        .NR_WB_PORTS           ( NR_WB_PORTS              )
+        .NR_ENTRIES            ( NR_ENTRIES                     ),
+        .NR_WB_PORTS           ( NR_WB_PORTS                    )
     )
     scoreboard_i
     (
-        .unresolved_branch_i   ( unresolved_branch_q      ),
-        .rd_clobber_o          ( rd_clobber_sb_iro        ),
-        .rs1_i                 ( rs1_iro_sb               ),
-        .rs1_o                 ( rs1_sb_iro               ),
-        .rs1_valid_o           ( rs1_valid_sb_iro         ),
-        .rs2_i                 ( rs2_iro_sb               ),
-        .rs2_o                 ( rs2_sb_iro               ),
-        .rs2_valid_o           ( rs2_valid_iro_sb         ),
+        .unresolved_branch_i   ( unresolved_branch_q            ),
+        .rd_clobber_o          ( rd_clobber_sb_iro              ),
+        .rs1_i                 ( rs1_iro_sb                     ),
+        .rs1_o                 ( rs1_sb_iro                     ),
+        .rs1_valid_o           ( rs1_valid_sb_iro               ),
+        .rs2_i                 ( rs2_iro_sb                     ),
+        .rs2_o                 ( rs2_sb_iro                     ),
+        .rs2_valid_o           ( rs2_valid_iro_sb               ),
 
-        .issue_instr_o         ( issue_instr_sb_iro       ),
-        .issue_instr_valid_o   ( issue_instr_valid_sb_iro ),
-        .issue_ack_i           ( issue_ack_iro_sb         ),
+        .issue_instr_o         ( issue_instr_sb_iro             ),
+        .issue_instr_valid_o   ( issue_instr_valid_sb_iro       ),
+        .issue_ack_i           ( issue_ack_iro_sb               ),
 
-        .trans_id_i            ( trans_id_i               ),
-        .wdata_i               ( wdata_i                  ),
-        .ex_i                  ( ex_ex_i                  ),
+        .trans_id_i            ( trans_id_i                     ),
+        .wdata_i               ( wdata_i                        ),
+        .ex_i                  ( ex_ex_i                        ),
         .*
     );
 
