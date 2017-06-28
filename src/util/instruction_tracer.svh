@@ -22,9 +22,9 @@ class instruction_tracer;
     // interface to the core
     virtual instruction_tracer_if tracer_if;
     // keep the decoded instructions in a queue
-    fetch_entry decode_queue [$];
+    logic [31:0] decode_queue [$];
     // keep the issued instructions in a queue
-    fetch_entry issue_queue [$];
+    logic [31:0] issue_queue [$];
     // issue scoreboard entries
     scoreboard_entry issue_sbe_queue [$];
     scoreboard_entry issue_sbe;
@@ -52,7 +52,7 @@ class instruction_tracer;
     endfunction : create_file
 
     task trace();
-        fetch_entry decode_instruction, issue_instruction, issue_commit_instruction;
+        logic [31:0] decode_instruction, issue_instruction, issue_commit_instruction;
         scoreboard_entry commit_instruction;
 
         // initialize register 0
@@ -69,7 +69,7 @@ class instruction_tracer;
             // -------------------
             // we are decoding an instruction
             if (tracer_if.pck.fetch_valid && tracer_if.pck.fetch_ack) begin
-                decode_instruction = fetch_entry'(tracer_if.pck.fetch);
+                decode_instruction = tracer_if.pck.instruction;
                 decode_queue.push_back(decode_instruction);
             end
             // -------------------
@@ -111,9 +111,9 @@ class instruction_tracer;
                 // check if the write back is valid, if not we need to source the result from the register file
                 // as the most recent version of this register will be there.
                 if (tracer_if.pck.we) begin
-                    printInstr(issue_sbe, issue_commit_instruction.instruction, tracer_if.pck.wdata, address_mapping);
+                    printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata, address_mapping);
                 end else
-                    printInstr(issue_sbe, issue_commit_instruction.instruction, reg_file[commit_instruction.rd], address_mapping);
+                    printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping);
             end
 
             // --------------
@@ -162,7 +162,7 @@ class instruction_tracer;
         load_mapping    = {};
     endfunction;
 
-    function void printInstr(scoreboard_entry sbe, logic [63:0] instr, logic [63:0] result, logic [63:0] paddr);
+    function void printInstr(scoreboard_entry sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr);
         instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr);
         // print instruction to console
         string print_instr = iti.printInstr();

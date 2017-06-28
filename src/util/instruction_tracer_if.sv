@@ -26,7 +26,7 @@ interface instruction_tracer_if (
     logic            flush_unissued;
     logic            flush;
     // Decode
-    fetch_entry      fetch;
+    logic [31:0]     instruction;
     logic            fetch_valid;
     logic            fetch_ack;
     // Issue stage
@@ -53,7 +53,7 @@ interface instruction_tracer_if (
     exception        exception;
     // the tracer just has a passive interface we do not drive anything with it
     clocking pck @(posedge clk);
-        input rstn, flush_unissued, flush, fetch, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr,
+        input rstn, flush_unissued, flush, instruction, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr,
               st_valid, st_paddr, ld_valid, ld_kill, ld_paddr,
               wdata, we, commit_instr, commit_ack, exception;
     endclocking

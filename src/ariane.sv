@@ -248,7 +248,7 @@ module ariane
         .boot_addr_i           ( boot_addr_i                    ),
         .pc_commit_i           ( pc_commit                      ),
         .epc_i                 ( epc_commit_pcgen               ),
-        .eret_i                ( eret              ),
+        .eret_i                ( eret                           ),
         .trap_vector_base_i    ( trap_vector_base_commit_pcgen  ),
         .ex_i                  ( ex_commit                      ),
         .*
@@ -269,9 +269,14 @@ module ariane
         .instr_rdata_i         ( fetch_rdata_ex_if              ),
         .instr_ex_i            ( fetch_ex_ex_if                 ), // fetch exception
 
-        .fetch_entry_o         ( fetch_entry_if_id              ),
-        .fetch_entry_valid_i   ( fetch_valid_if_id              ),
-        .instr_ack_i           ( decode_ack_id_if               ),
+        .fetch_entry_0_o       ( fetch_entry_if_id              ),
+        .fetch_entry_valid_0_o ( fetch_valid_if_id              ),
+        .fetch_ack_0_i         ( decode_ack_id_if               ),
+
+        // Reserved for future use
+        .fetch_entry_1_o       (                                ),
+        .fetch_entry_valid_1_o (                                ),
+        .fetch_ack_1_i         (                                ),
         .*
     );
 
@@ -280,6 +285,7 @@ module ariane
     // ---------
     id_stage id_stage_i (
         .flush_i                    ( flush_ctrl_if                   ),
+
         .fetch_entry_i              ( fetch_entry_if_id               ),
         .fetch_entry_valid_i        ( fetch_valid_if_id               ),
         .decoded_instr_ack_o        ( decode_ack_id_if                ),
@@ -519,9 +525,9 @@ module ariane
     assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
     assign tracer_if.flush             = flush_ctrl_ex;
     // fetch
-    assign tracer_if.fetch             = fetch_entry_if_id;
-    assign tracer_if.fetch_valid       = fetch_valid_if_id;
-    assign tracer_if.fetch_ack         = decode_ack_id_if;
+    assign tracer_if.instruction       = id_stage_i.compressed_decoder_i.instr_o;
+    assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
+    assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
     // Issue
     assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
     assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;
