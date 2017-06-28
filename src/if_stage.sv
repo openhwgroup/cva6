@@ -29,17 +29,22 @@ module if_stage (
     input  logic                   fetch_valid_i,       // the fetch address is valid
     input  branchpredict_sbe       branch_predict_i,    // branch prediction structure we get from the PC Gen stage and we
                                                         // we need to pass it on to all the further stages (until ex)
-    // instruction cache interface
+    // I$ Interface
     output logic                   instr_req_o,
     output logic [63:0]            instr_addr_o,
     input  logic                   instr_gnt_i,
     input  logic                   instr_rvalid_i,
     input  logic [31:0]            instr_rdata_i,
     input  exception               instr_ex_i,          // Instruction fetch exception, valid if rvalid is one
-    // Output of IF Pipeline stage
-    output fetch_entry             fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
-    output logic                   fetch_entry_valid_i, // instruction in IF is valid
-    input  logic                   instr_ack_i          // ID acknowledged this instruction
+    // Output of IF Pipeline stage -> Dual Port Fetch FIFO
+    // output port 0
+    output fetch_entry             fetch_entry_0_o,       // fetch entry containing all relevant data for the ID stage
+    output logic                   fetch_entry_valid_0_o, // instruction in IF is valid
+    input  logic                   fetch_ack_0_i,         // ID acknowledged this instruction
+    // output port 1
+    output fetch_entry             fetch_entry_1_o,       // fetch entry containing all relevant data for the ID stage
+    output logic                   fetch_entry_valid_1_o, // instruction in IF is valid
+    input  logic                   fetch_ack_1_i          // ID acknowledged this instruction
 );
 
     enum logic [1:0] {IDLE, WAIT_GNT, WAIT_RVALID, WAIT_ABORTED } CS, NS;
@@ -70,9 +75,6 @@ module if_stage (
         .in_rdata_i            ( instr_rdata_i       ),
         .in_valid_i            ( fifo_valid          ),
         .in_ready_o            ( fifo_ready          ),
-
-        .out_valid_o           ( fetch_entry_valid_i ),
-        .out_ready_i           ( instr_ack_i         ),
         .*
     );
 

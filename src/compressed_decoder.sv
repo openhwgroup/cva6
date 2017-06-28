@@ -27,9 +27,10 @@ import ariane_pkg::*;
 
 module compressed_decoder
 (
-  input  logic [15:0] instr_i,
+  input  logic [31:0] instr_i,
   output logic [31:0] instr_o,
-  output logic        illegal_instr_o
+  output logic        illegal_instr_o,
+  output logic        is_compressed_o
 );
 
     // -------------------
@@ -38,6 +39,8 @@ module compressed_decoder
     always_comb begin
         illegal_instr_o = 1'b0;
         instr_o         = '0;
+        is_compressed_o = 1'b1;
+        instr_o         = instr_i;
 
         unique case (instr_i[1:0])
             // C0
@@ -247,7 +250,8 @@ module compressed_decoder
                 endcase
             end
 
-            default: ;
+            // normal instruction
+            default: is_compressed_o = 1'b0;
         endcase
     end
 endmodule

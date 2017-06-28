@@ -248,7 +248,7 @@ module ariane
         .boot_addr_i           ( boot_addr_i                    ),
         .pc_commit_i           ( pc_commit                      ),
         .epc_i                 ( epc_commit_pcgen               ),
-        .eret_i                ( eret              ),
+        .eret_i                ( eret                           ),
         .trap_vector_base_i    ( trap_vector_base_commit_pcgen  ),
         .ex_i                  ( ex_commit                      ),
         .*
@@ -269,9 +269,13 @@ module ariane
         .instr_rdata_i         ( fetch_rdata_ex_if              ),
         .instr_ex_i            ( fetch_ex_ex_if                 ), // fetch exception
 
-        .fetch_entry_o         ( fetch_entry_if_id              ),
-        .fetch_entry_valid_i   ( fetch_valid_if_id              ),
-        .instr_ack_i           ( decode_ack_id_if               ),
+        .fetch_entry_0_o       ( fetch_entry_if_id              ),
+        .fetch_entry_valid_0_o ( fetch_valid_if_id              ),
+        .fetch_ack_0_i         ( decode_ack_id_if               ),
+
+        .fetch_entry_1_o       (),
+        .fetch_entry_valid_1_o (),
+        .fetch_ack_1_i         (),
         .*
     );
 
@@ -280,6 +284,7 @@ module ariane
     // ---------
     id_stage id_stage_i (
         .flush_i                    ( flush_ctrl_if                   ),
+
         .fetch_entry_i              ( fetch_entry_if_id               ),
         .fetch_entry_valid_i        ( fetch_valid_if_id               ),
         .decoded_instr_ack_o        ( decode_ack_id_if                ),

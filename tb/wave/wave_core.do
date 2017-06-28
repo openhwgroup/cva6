@@ -7,6 +7,8 @@ add wave -noupdate -group if_stage -group fetch_fifo /core_tb/dut/if_stage_i/fet
 add wave -noupdate -group if_stage /core_tb/dut/if_stage_i/*
 
 add wave -noupdate -group id_stage -group decoder /core_tb/dut/id_stage_i/decoder_i/*
+add wave -noupdate -group id_stage -group compressed_decoder /core_tb/dut/id_stage_i/compressed_decoder_i/*
+add wave -noupdate -group id_stage -group instr_realigner /core_tb/dut/id_stage_i/instr_realigner_i/*
 add wave -noupdate -group id_stage /core_tb/dut/id_stage_i/*
 
 add wave -noupdate -group issue_stage -group scoreboard /core_tb/dut/issue_stage_i/scoreboard_i/*
