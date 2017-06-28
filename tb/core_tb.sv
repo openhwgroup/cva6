@@ -184,7 +184,7 @@ module core_tb;
         string base_dir;
         string test;
         // offset the temporary RAM
-        logic [7:0] rmem [`DRAM_BASE:`DRAM_BASE + 32768];
+        logic [63:0] rmem [16384];
 
         // get the file name from a command line plus arg
         void'(uvcl.get_arg_value("+BASEDIR=", base_dir));
@@ -197,19 +197,10 @@ module core_tb;
         void'(read_elf(file));
 
         // get the objdump verilog file to load our memorys
-        $readmemh({file, ".v"}, rmem);
-        // copy bitwise from verilog file
-        for (int i = 0; i < 32768/8; i++) begin
-            for (int j = 0; j < 8; j++)
-                core_mem_i.ram_i.mem[i][j] = rmem[`DRAM_BASE + i*8 + j];
-        end
-        // initialize .bss
-        bss_address = get_section_address(".bss");
-        bss_size    = get_section_size(".bss");
-
-        // the section should be aligned on a double word boundary
-        for (int i = 0; i < bss_size/8; i++) begin
-                core_mem_i.ram_i.mem[((bss_address - `DRAM_BASE) >> 3) + i] = 64'b0;
+        $readmemh({file, ".hex"}, rmem);
+        // copy double-wordwise from verilog file
+        for (int i = 0; i < 16384; i++) begin
+            core_mem_i.ram_i.mem[i] = rmem[i];
         end
 
     endtask : preload_memories
