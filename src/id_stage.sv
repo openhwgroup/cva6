@@ -48,18 +48,44 @@ module id_stage (
 
     } issue_n, issue_q;
 
-    logic is_control_flow_instr;
+    logic            is_control_flow_instr;
     scoreboard_entry decoded_instruction;
 
+    fetch_entry      fetch_entry;
+    logic            is_illegal;
+    logic            [31:0] instruction;
+    logic            is_compressed;
+    logic            fetch_ack_i;
+    logic            fetch_entry_valid;
+
+    instr_realigner instr_realigner_i (
+        .fetch_entry_0_i         ( fetch_entry_i                ),
+        .fetch_entry_valid_0_i   ( fetch_entry_valid_i          ),
+        .fetch_ack_0_o           ( decoded_instr_ack_o          ),
+
+        .fetch_entry_o           ( fetch_entry                  ),
+        .fetch_entry_valid_o     ( fetch_entry_valid            ),
+        .fetch_ack_i             ( fetch_ack_i                  ),
+        .*
+    );
+
+    compressed_decoder compressed_decoder_i (
+        .instr_i                 ( fetch_entry.instruction     ),
+        .instr_o                 ( instruction                 ),
+        .illegal_instr_o         ( is_illegal                  ),
+        .is_compressed_o         ( is_compressed               )
+
+    );
+
     decoder decoder_i (
-        .pc_i                    ( fetch_entry_i.address         ),
-        .is_compressed_i         ( fetch_entry_i.is_compressed   ),
-        .instruction_i           ( fetch_entry_i.instruction     ),
-        .branch_predict_i        ( fetch_entry_i.branch_predict  ),
-        .is_illegal_i            ( fetch_entry_i.is_illegal      ),
-        .ex_i                    ( fetch_entry_i.ex              ),
-        .instruction_o           ( decoded_instruction           ),
-        .is_control_flow_instr_o ( is_control_flow_instr         ),
+        .pc_i                    ( fetch_entry.address         ),
+        .is_compressed_i         ( is_compressed               ),
+        .instruction_i           ( instruction                 ),
+        .branch_predict_i        ( fetch_entry.branch_predict  ),
+        .is_illegal_i            ( is_illegal                  ),
+        .ex_i                    ( fetch_entry.ex              ),
+        .instruction_o           ( decoded_instruction         ),
+        .is_control_flow_instr_o ( is_control_flow_instr       ),
         .*
     );
 
@@ -72,7 +98,7 @@ module id_stage (
 
     always_comb begin
         issue_n             = issue_q;
-        decoded_instr_ack_o = 1'b0;
+        fetch_ack_i = 1'b0;
 
         if (issue_instr_ack_i)
             issue_n.valid = 1'b0;
@@ -80,8 +106,8 @@ module id_stage (
         // if we have a space in the register and the fetch is valid, go get it
         // or the issue stage is currently acknowledging an instruction, which means that we will have space
         // for a new instruction
-        if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i) begin
-            decoded_instr_ack_o = 1'b1;
+        if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid) begin
+            fetch_ack_i = 1'b1;
             issue_n = { 1'b1, decoded_instruction, is_control_flow_instr};
         end
 
