@@ -51,12 +51,12 @@ module id_stage (
     logic            is_control_flow_instr;
     scoreboard_entry decoded_instruction;
 
-
     fetch_entry      fetch_entry;
     logic            is_illegal;
     logic            [31:0] instruction;
     logic            is_compressed;
     logic            fetch_ack_i;
+    logic            fetch_entry_valid;
 
     instr_realigner instr_realigner_i (
         .fetch_entry_0_i         ( fetch_entry_i                ),
@@ -64,7 +64,7 @@ module id_stage (
         .fetch_ack_0_o           ( decoded_instr_ack_o          ),
 
         .fetch_entry_o           ( fetch_entry                  ),
-        .fetch_entry_valid_o     ( fetch_entry_valid_o          ),
+        .fetch_entry_valid_o     ( fetch_entry_valid            ),
         .fetch_ack_i             ( fetch_ack_i                  ),
         .*
     );
@@ -106,7 +106,7 @@ module id_stage (
         // if we have a space in the register and the fetch is valid, go get it
         // or the issue stage is currently acknowledging an instruction, which means that we will have space
         // for a new instruction
-        if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid_i) begin
+        if ((!issue_q.valid || issue_instr_ack_i) && fetch_entry_valid) begin
             fetch_ack_i = 1'b1;
             issue_n = { 1'b1, decoded_instruction, is_control_flow_instr};
         end

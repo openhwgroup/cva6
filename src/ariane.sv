@@ -273,9 +273,10 @@ module ariane
         .fetch_entry_valid_0_o ( fetch_valid_if_id              ),
         .fetch_ack_0_i         ( decode_ack_id_if               ),
 
-        .fetch_entry_1_o       (),
-        .fetch_entry_valid_1_o (),
-        .fetch_ack_1_i         (),
+        // Reserved for future use
+        .fetch_entry_1_o       (                                ),
+        .fetch_entry_valid_1_o (                                ),
+        .fetch_ack_1_i         (                                ),
         .*
     );
 
@@ -524,9 +525,9 @@ module ariane
     assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
     assign tracer_if.flush             = flush_ctrl_ex;
     // fetch
-    assign tracer_if.fetch             = fetch_entry_if_id;
-    assign tracer_if.fetch_valid       = fetch_valid_if_id;
-    assign tracer_if.fetch_ack         = decode_ack_id_if;
+    assign tracer_if.instruction       = id_stage_i.compressed_decoder_i.instr_o;
+    assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
+    assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
     // Issue
     assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
     assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;

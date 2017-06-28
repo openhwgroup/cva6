@@ -32,13 +32,19 @@ module instr_realigner (
     output logic                   fetch_entry_valid_o,
     input  logic                   fetch_ack_i
 );
-
+    // ----------
+    // Registers
+    // ----------
     // the last instruction was unaligned
-    logic unaligned_n, unaligned_q;
+    logic         unaligned_n,        unaligned_q;
     // save the unaligned part of the instruction to this ff
-    logic [15:0] unaligned_instr_n, unaligned_instr_q;
+    logic [15:0] unaligned_instr_n,   unaligned_instr_q;
     // the previous instruction was compressed
-    logic compressed_n, compressed_q;
+    logic        compressed_n,        compressed_q;
+    // register to save the unaligned address
+    logic [63:0] unaligned_address_n, unaligned_address_q;
+    // get the next instruction, needed on a unaligned access
+    logic jump_unaligned_half_word;
 
     // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
     // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
@@ -46,17 +52,22 @@ module instr_realigner (
     assign kill_upper_16_bit = fetch_entry_0_i.branch_predict.valid &&
                                fetch_entry_0_i.branch_predict.predict_taken &&
                                fetch_entry_0_i.branch_predict.is_lower_16;
-
+    // ----------
+    // Registers
+    // ----------
     always_comb begin : realign_instr
 
-        unaligned_n         = unaligned_q;
-        unaligned_instr_n   = unaligned_instr_q;
-        compressed_n        = compressed_q;
+        unaligned_n          = unaligned_q;
+        unaligned_instr_n    = unaligned_instr_q;
+        compressed_n         = compressed_q;
+        unaligned_address_n  = unaligned_address_q;
 
         // directly output this instruction. adoptions are made throughout the process
-        fetch_entry_o       = fetch_entry_0_i;
-        fetch_entry_valid_o = fetch_entry_valid_0_i;
-        fetch_ack_0_o       = fetch_ack_i;
+        fetch_entry_o        = fetch_entry_0_i;
+        fetch_entry_valid_o  = fetch_entry_valid_0_i;
+        fetch_ack_0_o        = fetch_ack_i;
+        // we just jumped to a half word and encountered an unaligned 32-bit instruction
+        jump_unaligned_half_word = 1'b0;
         // ---------------------------------
         // Input port & Instruction Aligner
         // ---------------------------------
@@ -95,6 +106,8 @@ module instr_realigner (
                             end else begin
                                 // save the lower 16 bit
                                 unaligned_instr_n = fetch_entry_0_i.instruction[31:16];
+                                // save the address
+                                unaligned_address_n = {fetch_entry_0_i.address[63:2], 2'b10};
                                 // and that it was unaligned
                                 unaligned_n = 1'b1;
                                 // this does not consume space in the FIFO
@@ -110,9 +123,11 @@ module instr_realigner (
                 // we have an outstanding unaligned instruction
                 else if (unaligned_q) begin
 
-                    fetch_entry_o.address = {fetch_entry_0_i.address, 2'b10};
+
+                    fetch_entry_o.address = unaligned_address_q;
                     fetch_entry_o.instruction = {fetch_entry_0_i.instruction[15:0], unaligned_instr_q};
 
+                    // again should we look at the upper bits?
                     if (!kill_upper_16_bit) begin
                         // whats up with the other upper 16 bit of this instruction
                         // is the second instruction also compressed, like:
@@ -135,6 +150,8 @@ module instr_realigner (
                         end else if (!kill_upper_16_bit) begin
                             // save the lower 16 bit
                             unaligned_instr_n = fetch_entry_0_i.instruction[31:16];
+                            // save the address
+                            unaligned_address_n = {fetch_entry_0_i.address[63:2], 2'b10};
                             // and that it was unaligned
                             unaligned_n = 1'b1;
                         end
@@ -163,22 +180,40 @@ module instr_realigner (
                     unaligned_instr_n = fetch_entry_0_i.instruction[31:16];
                     // and that it was unaligned
                     unaligned_n = 1'b1;
+                    // save the address
+                    unaligned_address_n = {fetch_entry_0_i.address[63:2], 2'b10};
+                    // we need to wait for the second instruction
+                    fetch_entry_valid_o = 1'b0;
+                    // so get it by acknowledging this instruction
+                    fetch_ack_0_o = 1'b1;
+                    // we got to an unaligned instruction -> get the next entry to full-fill the need
+                    jump_unaligned_half_word = 1'b1;
                 end
                 // there can never be a whole 32 bit instruction on a half word access
             end
-        end else
+        end
         // ----------------------------
         // Next compressed instruction
         // ----------------------------
         // we are serving the second part of an instruction which was also compressed
-        if (fetch_entry_valid_0_i) begin
-            compressed_n = 1'b0;
+        if (compressed_q) begin
+            fetch_ack_0_o = fetch_ack_i;
+            compressed_n  = 1'b0;
             fetch_entry_o.instruction = {16'b0, fetch_entry_0_i.instruction[31:16]};
-            fetch_entry_o.address = {fetch_entry_0_i.address, 2'b10};
+            fetch_entry_o.address = {fetch_entry_0_i.address[63:2], 2'b10};
+            fetch_entry_valid_o = 1'b1;
+        end
+
+        // if we didn't get an acknowledge keep the registers stable
+        if (!fetch_ack_i && !jump_unaligned_half_word) begin
+            unaligned_n         = unaligned_q;
+            unaligned_instr_n   = unaligned_instr_q;
+            compressed_n        = compressed_q;
+            unaligned_address_n = unaligned_address_q;
         end
 
         if (flush_i) begin
-            // clear the unaligned instruction
+            // clear the unaligned and compressed instruction
             unaligned_n  = 1'b0;
             compressed_n = 1'b0;
         end
@@ -191,10 +226,12 @@ module instr_realigner (
         if (~rst_ni) begin
             unaligned_q         <= 1'b0;
             unaligned_instr_q   <= 16'b0;
+            unaligned_address_q <= 64'b0;
             compressed_q        <= 1'b0;
         end else begin
             unaligned_q         <= unaligned_n;
             unaligned_instr_q   <= unaligned_instr_n;
+            unaligned_address_q <= unaligned_address_n;
             compressed_q        <= compressed_n;
         end
     end
