@@ -102,10 +102,10 @@ module instr_realigner (
                         end
                     end
                 end
-                    // this is a full 32 bit instruction like
-                    // _______________________
-                    // | instruction [31:0]  |
-                    // |______________________
+                // this is a full 32 bit instruction like
+                // _______________________
+                // | instruction [31:0]  |
+                // |______________________
 
                 // we have an outstanding unaligned instruction
                 else if (unaligned_q) begin
@@ -166,8 +166,7 @@ module instr_realigner (
                 end
                 // there can never be a whole 32 bit instruction on a half word access
             end
-        end
-
+        end else
         // ----------------------------
         // Next compressed instruction
         // ----------------------------

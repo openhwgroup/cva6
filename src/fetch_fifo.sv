@@ -55,7 +55,7 @@ module fetch_fifo
     logic [$clog2(DEPTH)-1:0]     write_pointer_n,  write_pointer_q;
     logic [$clog2(DEPTH)-1:0]     status_cnt_n,     status_cnt_q; // this integer will be truncated by the synthesis tool
 
-    assign in_ready_o = !(status_cnt_q == DEPTH-2);
+    assign in_ready_o = (status_cnt_q < DEPTH-2);
     assign full = (status_cnt_q == DEPTH);
     assign empty = (status_cnt_q == '0);
 
