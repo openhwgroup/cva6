@@ -172,7 +172,7 @@ module instr_realigner (
                 // this is a compressed instruction
                 if (fetch_entry_0_i.instruction[17:16] != 2'b11) begin
                     // it is compressed
-                    fetch_entry_o.instruction = {15'b0, fetch_entry_0_i.instruction[15:0]};
+                    fetch_entry_o.instruction = {15'b0, fetch_entry_0_i.instruction[31:16]};
 
                 // this is the first part of a 32 bit unaligned instruction
                 end else begin
