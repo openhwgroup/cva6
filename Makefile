@@ -52,7 +52,9 @@ riscv-tests =  rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-
 			   rv64ui-v-sraiw rv64ui-v-sraw rv64ui-v-srl rv64ui-v-srli rv64ui-v-srliw rv64ui-v-srlw \
 			   rv64ui-v-lb rv64ui-v-lbu rv64ui-v-ld rv64ui-v-lh rv64ui-v-lhu rv64ui-v-lui
 
-
+# failed test directory
+failed-tests =  $(wildcard failedtests/*.S)
+# preset which runs a single test
 riscv-test = rv64ui-p-add
 # Search here for include files (e.g.: non-standalone components)
 incdir = ./includes
@@ -112,13 +114,23 @@ $(library):
 	vlib${questa_version} ${library}
 
 sim: build
-	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
+	+ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 simc: build
-	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
+	 +BASEDIR=$(riscv-test-dir) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 run-asm-tests: build
-	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" $(library).$(test_top_level)_optimized;)
+	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles)
+		+UVM_TESTNAME=$(test_case) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
+		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS \
+		-concise]" $(library).$(test_top_level)_optimized;)
+
+run-failed-tests: build
+	cd failedtests && make
+	$(foreach test, $(failed-tests:.S=), vsim$(questa_version) -c -lib ${library} $(top_level)_optimized \
+		+max-cycles=$(max_cycles) +UVM_TESTNAME=$(test) +BASEDIR=. +ASMTEST=$(test))
 
 # Run the specified test case
 $(tests): build
