@@ -550,7 +550,7 @@ module ariane
     assign tracer_if.exception         = commit_stage_i.exception_o;
 
     program instr_tracer (instruction_tracer_if tracer_if);
-        instruction_tracer it = new (tracer_if);
+        instruction_tracer it = new (tracer_if, 1'b0);
 
         initial begin
             #15ns;

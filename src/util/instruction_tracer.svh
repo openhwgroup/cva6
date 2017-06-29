@@ -18,7 +18,6 @@
 //
 
 class instruction_tracer;
-
     // interface to the core
     virtual instruction_tracer_if tracer_if;
     // keep the decoded instructions in a queue
@@ -36,11 +35,18 @@ class instruction_tracer;
     int f;
     // address mapping
     // contains mappings of the form vaddr <-> paddr
+    // should it print the instructions to the console
+    logic display_instructions;
     logic [63:0] store_mapping[$], load_mapping[$], address_mapping;
 
-    function new(virtual instruction_tracer_if tracer_if);
+    static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
+
+
+    function new(virtual instruction_tracer_if tracer_if, logic display_instructions);
 
         this.tracer_if = tracer_if;
+        this.display_instructions = display_instructions;
+
     endfunction : new
 
     function void create_file(logic [5:0] cluster_id, logic [3:0] core_id);
@@ -166,7 +172,7 @@ class instruction_tracer;
         instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr);
         // print instruction to console
         string print_instr = iti.printInstr();
-        $display(print_instr);
+        `uvm_info( "Tracer",  print_instr, UVM_HIGH)
         $fwrite(this.f, {print_instr, "\n"});
     endfunction;
 

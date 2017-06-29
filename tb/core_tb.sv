@@ -37,6 +37,8 @@ module core_tb;
     logic rst_ni;
     logic rtc_i;
 
+    logic display_instr;
+
     longint unsigned cycles;
     longint unsigned max_cycles;
 

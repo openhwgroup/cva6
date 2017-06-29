@@ -18,7 +18,8 @@
 //
 package instruction_tracer_pkg;
     import ariane_pkg::*;
-
+    import uvm_pkg::*;
+    `include "uvm_macros.svh"
     `include "instruction_tracer_defines.svh"
     `include "instruction_trace_item.svh"
     `include "exception_trace_item.svh"
