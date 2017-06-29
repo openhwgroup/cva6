@@ -33,6 +33,8 @@ module core_tb;
 
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
+    localparam int unsigned CLOCK_PERIOD = 20ns;
+
     logic clk_i;
     logic rst_ni;
     logic rtc_i;
@@ -156,11 +158,11 @@ module core_tb;
         clk_i = 1'b0;
         rst_ni = 1'b0;
         repeat(8)
-            #10ns clk_i = ~clk_i;
+            #(CLOCK_PERIOD/2) clk_i = ~clk_i;
         rst_ni = 1'b1;
         forever begin
-            #10ns clk_i = 1'b1;
-            #10ns clk_i = 1'b0;
+            #(CLOCK_PERIOD/2) clk_i = 1'b1;
+            #(CLOCK_PERIOD/2) clk_i = 1'b0;
 
             if (cycles > max_cycles)
                 $fatal(1, "Simulation reached maximum cycle count of %d", max_cycles);

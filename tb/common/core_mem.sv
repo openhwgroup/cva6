@@ -47,6 +47,7 @@ module core_mem (
     logic [ADDRESS_WIDTH-1:0] instr_address;
     logic [2:0]               instr_address_offset_q;
     logic [63:0]              instr_data;
+    logic                     delayed_instr_request;
     // D$ Mock
     logic                     req, we;
     logic [7:0]               be;
@@ -56,8 +57,9 @@ module core_mem (
 
     assign data_address = {data_if_address_tag_i, index[11:3]};
 
+    assign #($urandom_range(0,40)) delayed_instr_request = instr_if_data_req_i;
     // we always grant the request
-    assign instr_if_data_gnt_o   = instr_if_data_req_i;
+    assign instr_if_data_gnt_o   = delayed_instr_request;
     assign instr_address         = instr_if_address_i[ADDRESS_WIDTH-1+3:3];
     // this is necessary as the interface to the dual port memory is 64 bit, but the fetch interface of the core is 32 bit
     assign instr_if_data_rdata_o = (instr_address_offset_q[2]) ? instr_data[63:32] : instr_data[31:0];
