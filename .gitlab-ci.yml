@@ -15,7 +15,6 @@ test_alu:
   script:
     - make alu library=alu_lib
     - vcover-10.6 report alu.ucdb
-    - vcover-10.6 report -html alu.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -27,7 +26,6 @@ test_fifo:
   script:
     - make fifo library=fifo_lib
     - vcover-10.6 report fifo.ucdb
-    - vcover-10.6 report -html fifo.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -39,7 +37,6 @@ test_scoreboard:
   script:
     - make scoreboard library=scoreboard_lib
     - vcover-10.6 report scoreboard.ucdb
-    - vcover-10.6 report -html scoreboard.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -51,7 +48,6 @@ test_dcache_arbiter:
   script:
     - make dcache_arbiter library=dcache_arbiter_lib
     - vcover-10.6 report dcache_arbiter.ucdb
-    - vcover-10.6 report -html dcache_arbiter.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -63,7 +59,6 @@ test_store_queue:
   script:
     - make store_queue library=store_queue_lib
     - vcover-10.6 report store_queue.ucdb
-    - vcover-10.6 report -html store_queue.ucdb
   artifacts:
     paths:
       - covhtmlreport
@@ -77,7 +72,18 @@ test_core_asm:
   script:
     - make run-asm-tests library=core_lib
     - vcover-10.6 report run-asm-tests.ucdb
-    - vcover-10.6 report -html run-asm-tests.ucdb
+  artifacts:
+    paths:
+      - covhtmlreport
+
+test_failed_tests:
+  stage: test
+  before_script:
+    - git submodule update --init --recursive
+    - make build library=failed_tests_lib
+  script:
+    - make run-failed-tests library=failed_tests_lib
+    - vcover-10.6 report run-failed-tests.ucdb
   artifacts:
     paths:
       - covhtmlreport
