@@ -15,9 +15,6 @@ test_alu:
   script:
     - make alu library=alu_lib
     - vcover-10.6 report alu.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
 
 test_fifo:
   stage: test
@@ -26,9 +23,6 @@ test_fifo:
   script:
     - make fifo library=fifo_lib
     - vcover-10.6 report fifo.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
 
 test_scoreboard:
   stage: test
@@ -37,9 +31,6 @@ test_scoreboard:
   script:
     - make scoreboard library=scoreboard_lib
     - vcover-10.6 report scoreboard.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
 
 test_dcache_arbiter:
   stage: test
@@ -48,9 +39,6 @@ test_dcache_arbiter:
   script:
     - make dcache_arbiter library=dcache_arbiter_lib
     - vcover-10.6 report dcache_arbiter.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
 
 test_store_queue:
   stage: test
@@ -59,9 +47,6 @@ test_store_queue:
   script:
     - make store_queue library=store_queue_lib
     - vcover-10.6 report store_queue.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
 
 test_core_asm:
   stage: test
@@ -72,9 +57,18 @@ test_core_asm:
   script:
     - make run-asm-tests library=core_lib
     - vcover-10.6 report run-asm-tests.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
+
+# test with the randomized memory interfaces
+test_core_asm_rand:
+  stage: test
+  before_script:
+    - git submodule update --init --recursive
+    - make build-tests
+    - make build library=core_rand_lib
+  script:
+    # same as above but pass the rand_mem_if flag
+    - make run-asm-tests library=core_rand_lib uvm-flags=+rand_mem_if
+    - vcover-10.6 report run-asm-rand-tests.ucdb
 
 test_failed_tests:
   stage: test
@@ -84,9 +78,6 @@ test_failed_tests:
   script:
     - make run-failed-tests library=failed_tests_lib
     - vcover-10.6 report run-failed-tests.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
 
 # test_lsu:
 #   stage: test
@@ -104,10 +95,7 @@ test_failed_tests:
 pages:
   stage: deploy
   dependencies:
-    - test_alu
-    - test_fifo
-    - test_scoreboard
-    - test_dcache_arbiter
+    - build_rtl
   script:
     - mkdir public
     - mkdocs build -d public

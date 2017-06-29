@@ -67,6 +67,7 @@ questa_version = -10.6
 compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
 # Moore binary
 moore = ~fschuiki/bin/moore
+uvm-flags =
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
@@ -115,15 +116,15 @@ $(library):
 
 sim: build
 	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
-	+ASMTEST=$(riscv-test)  +UVM_VERBOSITY=HIGH -coverage -classdebug -do "do tb/wave/wave_core.do"
+	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 simc: build
 	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	 +BASEDIR=$(riscv-test-dir) +UVM_VERBOSITY=HIGH  +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
+	 +BASEDIR=$(riscv-test-dir) +UVM_VERBOSITY=HIGH  $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 run-asm-tests: build
 	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
-		+UVM_TESTNAME=$(test_case) +UVM_VERBOSITY=LOW +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c +UVM_VERBOSITY=LOW\
+		+UVM_TESTNAME=$(test_case) +UVM_VERBOSITY=LOW  $(uvm-flags) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c +UVM_VERBOSITY=LOW\
 		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
 		$(library).$(test_top_level)_optimized;)
 
@@ -132,7 +133,7 @@ run-failed-tests: build
 	cd failedtests && make
 	# run the RTL simulation
 	$(foreach test, $(failed-tests:.S=), vsim$(questa_version) +BASEDIR=. +max-cycles=$(max_cycles) \
-		+UVM_TESTNAME=$(test_case) +ASMTEST=$(test) +signature=$(test).rtlsim.sig +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
+		+UVM_TESTNAME=$(test_case)  $(uvm-flags) +ASMTEST=$(test) +signature=$(test).rtlsim.sig +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
 		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
 		$(library).$(test_top_level)_optimized;)
 	# run it on spike

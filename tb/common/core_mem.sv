@@ -57,7 +57,7 @@ module core_mem (
 
     assign data_address = {data_if_address_tag_i, index[11:3]};
 
-    assign #($urandom_range(0,40)) delayed_instr_request = instr_if_data_req_i;
+    assign delayed_instr_request = instr_if_data_req_i;
     // we always grant the request
     assign instr_if_data_gnt_o   = delayed_instr_request;
     assign instr_address         = instr_if_address_i[ADDRESS_WIDTH-1+3:3];

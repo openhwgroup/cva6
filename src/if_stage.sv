@@ -61,7 +61,8 @@ module if_stage (
     //---------------------------------
     // we are busy if we are either waiting for a grant
     // or if the FIFO is full
-    assign if_busy_o = (CS == WAIT_GNT) || !fifo_ready;
+    // or if we are waiting for a rvalid and we didn't receive one yet
+    assign if_busy_o = (CS == WAIT_GNT) || !fifo_ready || (CS == WAIT_RVALID && !instr_rvalid_i);
     assign fetch_address = {fetch_address_i[63:2], 2'b0};
 
     //---------------------------------
@@ -138,6 +139,10 @@ module if_stage (
               // we wait for rvalid, after that we are ready to serve a new request
             WAIT_RVALID: begin
                 instr_addr_o = fetch_address;
+
+                // we are waiting for a rvalid and in case we don't receive one, wait in the aborted state if we flushed
+                if (flush_i)
+                    NS = WAIT_ABORTED;
                 // prepare for next request
                 if (fifo_ready && fetch_valid_i) begin
                     // wait for the valid signal
@@ -147,7 +152,7 @@ module if_stage (
                         addr_valid  = 1'b1;
 
                         if (instr_gnt_i) begin
-                        // we have one outstanding rvalid: wait for it
+                            // we have one outstanding rvalid -> wait for it
                             // if we are receiving a data item during a flush ignore it
                             if (flush_i)
                                 NS = WAIT_ABORTED;
@@ -220,11 +225,11 @@ module if_stage (
     //-------------
     always_ff @(posedge clk_i, negedge rst_ni) begin
       if (~rst_ni) begin
-            CS              <= IDLE;
-            instr_addr_q    <= '0;
-            branchpredict_q <= '{default: 0};
+            CS                <= IDLE;
+            instr_addr_q      <= '0;
+            branchpredict_q   <= '{default: 0};
         end else begin
-            CS              <= NS;
+            CS                <= NS;
             if (addr_valid) begin
               instr_addr_q    <= fetch_address_i;
               branchpredict_q <= branch_predict_i;
