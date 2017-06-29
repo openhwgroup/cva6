@@ -124,7 +124,7 @@ simc: build
 
 run-asm-tests: build
 	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
-		+UVM_TESTNAME=$(test_case) +UVM_VERBOSITY=LOW  $(uvm-flags) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c +UVM_VERBOSITY=LOW\
+		+UVM_TESTNAME=$(test_case) $(uvm-flags) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
 		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
 		$(library).$(test_top_level)_optimized;)
 

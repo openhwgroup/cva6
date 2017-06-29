@@ -24,6 +24,7 @@ import core_lib_pkg::*;
 
 `define DRAM_BASE 64'h80000000
 
+`include "uvm_macros.svh"
 
 module core_tb;
     import "DPI-C" function chandle read_elf(string fn);
@@ -230,7 +231,7 @@ module core_tb;
 
         file = {base_dir, "/", file_name};
 
-        $display("Pre-loading memory from file: %s\n", file);
+        `uvm_info("Program Loader", $sformatf("Pre-loading memory from file: %s\n", file), UVM_LOW);
         // read elf file (DPI call)
         void'(read_elf(file));
 
