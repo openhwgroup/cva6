@@ -36,7 +36,7 @@ module instr_realigner (
     // Registers
     // ----------
     // the last instruction was unaligned
-    logic        unaligned_n,        unaligned_q;
+    logic        unaligned_n,         unaligned_q;
     // save the unaligned part of the instruction to this ff
     logic [15:0] unaligned_instr_n,   unaligned_instr_q;
     // the previous instruction was compressed

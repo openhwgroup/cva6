@@ -393,8 +393,8 @@ module lsu #(
 
         data_misaligned = 1'b0;
 
-        if(lsu_valid_i) begin
-            case (operator_i)
+        if(lsu_ctrl.valid) begin
+            case (lsu_ctrl.operator)
                 // double word
                 LD, SD: begin
                     if (lsu_ctrl.vaddr[2:0] != 3'b000)
@@ -408,7 +408,7 @@ module lsu #(
 
                 // half word
                 LH, LHU, SH: begin
-                    if (vaddr_i[0] != 1'b0)
+                    if (lsu_ctrl.vaddr[0] != 1'b0)
                         data_misaligned = 1'b1;
                 end
                 // byte -> is always aligned
