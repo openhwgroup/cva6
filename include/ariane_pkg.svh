@@ -302,4 +302,18 @@ package ariane_pkg;
         csr_addr_t  csr_decode;
     } csr_t;
 
+    // ----------------------
+    // Debug Unit
+    // ----------------------
+
+    typedef struct packed {
+        logic        halt;          // core is halted
+        logic        sste;          // single step enable
+        logic        ssth;          // single step hit
+        logic        sleep;         // core is sleeping
+        logic [63:0] ie;            // enable interrupt/exception
+        logic [63:0] cause;         // cause of encountered exception or interrupt
+        logic [63:0] npc;           // next PC
+        logic [63:0] ppc;           // previous PC
+    } debug_reg_t;
 endpackage
