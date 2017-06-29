@@ -136,9 +136,9 @@ run-failed-tests: build
 		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
 		$(library).$(test_top_level)_optimized;)
 	# run it on spike
-	$(foreach test, $(failed-tests:.S=), spike +signature=$(test).spike.sig $(test))
+	$(foreach test, $(failed-tests:.S=), spike +signature=$(test).spike.sig $(test);)
 	# diff the results
-	$(foreach test, $(failed-tests:.S=), diff $(test).spike.sig $(test).rtlsim.sig)
+	$(foreach test, $(failed-tests:.S=), diff $(test).spike.sig $(test).rtlsim.sig;)
 
 # Run the specified test case
 $(tests): build
