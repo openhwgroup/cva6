@@ -200,14 +200,24 @@ module decoder (
                 end
 
                 OPCODE_FENCE: begin
+                    // FENCE.I
+                    if (instr.itype.funct3 == 3'b001) begin
+                        instruction_o.fu  = CSR;
+                        instruction_o.op  = FENCE_I;
+                        instruction_o.rs1 = '0;
+                        instruction_o.rs2 = '0;
+                        instruction_o.rd  = '0;
+
+                    // FENCE
                     // TODO: Implement
-                    // FENCE, FENCE.I
-                    // Implement as NOP
-                    instruction_o.fu  = ALU;
-                    instruction_o.op  = ADD;
-                    instruction_o.rs1 = '0;
-                    instruction_o.rs2 = '0;
-                    instruction_o.rd  = '0;
+                    end else begin
+                    // Currently implemented as NOP
+                        instruction_o.fu  = ALU;
+                        instruction_o.op  = ADD;
+                        instruction_o.rs1 = '0;
+                        instruction_o.rs2 = '0;
+                        instruction_o.rd  = '0;
+                    end
                 end
 
                 // --------------------------

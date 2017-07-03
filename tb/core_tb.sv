@@ -146,6 +146,7 @@ module core_tb;
         .test_en_i               ( core_if.test_en              ),
         .fetch_enable_i          ( core_if.fetch_enable         ),
         .core_busy_o             ( core_if.core_busy            ),
+        .flush_icache_o          (                              ),
         .ext_perf_counters_i     (                              ),
         .boot_addr_i             ( core_if.boot_addr            ),
         .core_id_i               ( core_if.core_id              ),

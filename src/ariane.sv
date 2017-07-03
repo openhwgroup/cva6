@@ -35,6 +35,7 @@ module ariane
         input  logic                           clock_en_i,    // enable clock, otherwise it is gated
         input  logic                           test_en_i,     // enable all clock gates for testing
 
+        output logic                           flush_icache_o, // request to flush icache
         // CPU Control Signals
         input  logic                           fetch_enable_i,
         output logic                           core_busy_o,
@@ -227,6 +228,7 @@ module ariane
     logic                     flush_ctrl_id;
     logic                     flush_ctrl_ex;
     logic                     flush_tlb_ctrl_ex;
+    logic                     fence_i_commit_controller;
     logic                     sfence_vma_commit_controller;
     logic                     halt_ctrl_commit;
     logic                     halt_debug_ctrl;
@@ -450,6 +452,7 @@ module ariane
         .csr_wdata_o            ( csr_wdata_commit_csr          ),
         .csr_rdata_i            ( csr_rdata_csr_commit          ),
         .csr_exception_i        ( csr_exception_csr_commit      ),
+        .fence_i_o              ( fence_i_commit_controller     ),
         .sfence_vma_o           ( sfence_vma_commit_controller  ),
         .*
     );
@@ -509,7 +512,9 @@ module ariane
         .ex_i                   ( ex_commit                     ),
         .flush_csr_i            ( flush_csr_ctrl                ),
         .resolved_branch_i      ( resolved_branch               ),
+        .fence_i_i              ( fence_i_commit_controller     ),
         .sfence_vma_i           ( sfence_vma_commit_controller  ),
+
         .*
     );
 

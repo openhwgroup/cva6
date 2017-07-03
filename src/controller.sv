@@ -29,6 +29,7 @@ module controller (
     output logic            flush_unissued_instr_o, // Flush un-issued instructions of the scoreboard
     output logic            flush_id_o,             // Flush ID stage
     output logic            flush_ex_o,             // Flush EX stage
+    output logic            flush_icache_o,         // Flush ICache
     output logic            flush_tlb_o,            // Flush TLBs
 
     input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
@@ -38,6 +39,7 @@ module controller (
     input  exception        ex_i,                   // We got an exception, flush the pipeline
     input  branchpredict    resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
     input  logic            flush_csr_i,            // We got an instruction which altered the CSR, flush the pipeline
+    input  logic            fence_i_i,              // fence.i in
     input  logic            sfence_vma_i            // We got an instruction to flush the TLBs and pipeline
 );
     // flush branch prediction
@@ -65,6 +67,21 @@ module controller (
             flush_if_o             = 1'b1;
         end
 
+        // ----------------------
+        // FENCE
+        // ----------------------
+
+        // ----------------------
+        // FENCE.I
+        // ----------------------
+        if (fence_i_i) begin
+            flush_pcgen_o          = 1'b1;
+            flush_if_o             = 1'b1;
+            flush_unissued_instr_o = 1'b1;
+            flush_id_o             = 1'b1;
+            flush_ex_o             = 1'b1;
+            flush_icache_o         = 1'b1;
+        end
         // ----------------------
         // SFENCE.VMA
         // ----------------------
