@@ -92,7 +92,7 @@ module store_buffer (
 
     // no store is pending if we don't have any uncommitted data, e.g.: the queue is either not valid or the entry is
     // speculative (it can be flushed)
-    assign no_st_pending_o = (!commit_queue_q[commit_pointer_q].valid || commit_queue_q[commit_pointer_q].is_speculative);
+    assign no_st_pending_o = ((!commit_queue_q[read_pointer_q].valid) || commit_queue_q[read_pointer_q].is_speculative);
 
     assign data_we_o  = 1'b1; // we will always write in the store queue
     // memory interface

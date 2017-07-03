@@ -216,8 +216,11 @@ module mmu #(
         iaccess_err   = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
                                      || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
+        // check that the upper-most bits (63-39) are the same, otherwise throw a page fault exception...
         if (!((&fetch_vaddr_i[63:39]) == 1'b1 || (|fetch_vaddr_i[63:39]) == 1'b0)) begin
-            fetch_ex_n = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+            fetch_ex_n   = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+            ierr_valid_n = 1'b1;
+            fetch_gnt_o  = 1'b1;
         end
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
@@ -298,18 +301,20 @@ module mmu #(
     // The data interface is simpler and only consists of a request/response interface
     always_comb begin : data_interface
         // save request and DTLB response
-        lsu_vaddr_n     = lsu_vaddr_i;
-        lsu_req_n       = lsu_req_i;
-        misaligned_ex_n = misaligned_ex_i;
-        dtlb_pte_n      = dtlb_content;
-        dtlb_hit_n      = dtlb_lu_hit;
-        lsu_is_store_n  = lsu_is_store_i;
-        dtlb_is_2M_n    = dtlb_is_2M;
-        dtlb_is_1G_n    = dtlb_is_1G;
+        lsu_vaddr_n           = lsu_vaddr_i;
+        lsu_req_n             = lsu_req_i;
+        misaligned_ex_n       = misaligned_ex_i;
+        dtlb_pte_n            = dtlb_content;
+        dtlb_hit_n            = dtlb_lu_hit;
+        lsu_is_store_n        = lsu_is_store_i;
+        dtlb_is_2M_n          = dtlb_is_2M;
+        dtlb_is_1G_n          = dtlb_is_1G;
 
-        lsu_paddr_o     = lsu_vaddr_q;
-        lsu_valid_o     = lsu_req_q;
-        lsu_exception_o = misaligned_ex_q;
+        lsu_paddr_o           = lsu_vaddr_q;
+        lsu_valid_o           = lsu_req_q;
+        lsu_exception_o       = misaligned_ex_q;
+        // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
+        misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
 
         // Check if the User flag is set, then we may only access it in supervisor mode
         // if SUM is enabled
