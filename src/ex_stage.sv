@@ -79,7 +79,7 @@ module ex_stage #(
     output logic                                   fetch_gnt_o,
     output logic                                   fetch_valid_o,
     input  logic [63:0]                            fetch_vaddr_i,
-    output logic [31:0]                            fetch_rdata_o,
+    output logic [63:0]                            fetch_rdata_o,
     output exception                               fetch_ex_o,
     input  priv_lvl_t                              priv_lvl_i,
     input  priv_lvl_t                              ld_st_priv_lvl_i,
@@ -93,7 +93,7 @@ module ex_stage #(
     output logic [3:0]                             instr_if_data_be_o,
     input  logic                                   instr_if_data_gnt_i,
     input  logic                                   instr_if_data_rvalid_i,
-    input  logic [31:0]                            instr_if_data_rdata_i,
+    input  logic [63:0]                            instr_if_data_rdata_i,
 
     output logic [11:0]                            data_if_address_index_o,
     output logic [43:0]                            data_if_address_tag_o,

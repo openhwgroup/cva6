@@ -54,7 +54,7 @@ module core_tb;
     logic [3:0]  instr_if_data_be;
     logic        instr_if_data_gnt;
     logic        instr_if_data_rvalid;
-    logic [31:0] instr_if_data_rdata;
+    logic [63:0] instr_if_data_rdata;
 
     logic [11:0] data_if_address_index_i;
     logic [43:0] data_if_address_tag_i;

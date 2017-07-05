@@ -51,7 +51,7 @@ module ariane
         output logic [3:0]                     instr_if_data_be_o,
         input  logic                           instr_if_data_gnt_i,
         input  logic                           instr_if_data_rvalid_i,
-        input  logic [31:0]                    instr_if_data_rdata_i,
+        input  logic [63:0]                    instr_if_data_rdata_i,
         // Data memory interface
         output logic [11:0]                    data_if_address_index_o,
         output logic [43:0]                    data_if_address_tag_o,
@@ -196,7 +196,7 @@ module ariane
     logic                     fetch_req_if_ex;
     logic                     fetch_gnt_ex_if;
     logic                     fetch_valid_ex_if;
-    logic [31:0]              fetch_rdata_ex_if;
+    logic [63:0]              fetch_rdata_ex_if;
     exception                 fetch_ex_ex_if;
     logic [63:0]              fetch_vaddr_if_ex;
     // --------------

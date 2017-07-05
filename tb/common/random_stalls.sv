@@ -26,8 +26,8 @@ module random_stalls
     input  logic [63:0]  core_addr_i,
     input  logic         core_we_i,
     input  logic [ 3:0]  core_be_i,
-    input  logic [31:0]  core_wdata_i,
-    output logic [31:0]  core_rdata_o,
+    input  logic [63:0]  core_wdata_i,
+    output logic [63:0]  core_rdata_o,
     output logic         core_rvalid_o,
 
     output logic         data_req_o,
@@ -35,8 +35,8 @@ module random_stalls
     output logic [63:0]  data_addr_o,
     output logic         data_we_o,
     output logic [ 3:0]  data_be_o,
-    output logic [31:0]  data_wdata_o,
-    input  logic [31:0]  data_rdata_i,
+    output logic [63:0]  data_wdata_o,
+    input  logic [63:0]  data_rdata_i,
     input  logic         data_rvalid_i
   );
 
@@ -50,8 +50,8 @@ module random_stalls
     logic [63:0] addr;
     logic        we;
     logic [ 3:0] be;
-    logic [31:0] wdata;
-    logic [31:0] rdata;
+    logic [63:0] wdata;
+    logic [63:0] rdata;
   } stall_mem_t;
 
   mailbox   core_reqs          = new (4);

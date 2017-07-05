@@ -32,7 +32,7 @@ module fetch_fifo
     input  branchpredict_sbe       branch_predict_i,
     input  exception               ex_i,              // fetch exception in
     input  logic [63:0]            in_addr_i,
-    input  logic [31:0]            in_rdata_i,
+    input  logic [63:0]            in_rdata_i,
     input  logic                   in_valid_i,
     output logic                   in_ready_o,
     // Dual Port Fetch FIFO
@@ -59,6 +59,20 @@ module fetch_fifo
     assign full = (status_cnt_q == DEPTH);
     assign empty = (status_cnt_q == '0);
 
+    // -------------
+    // Downsize
+    // -------------
+    logic [31:0] in_rdata;
+    // downsize from 64 bit to 32 bit, simply ignore half of the incoming data
+    always_comb begin : downsize
+        // take the upper half
+        if (in_addr_i[2])
+            in_rdata = in_rdata_i[63:32];
+        // take the lower half of the instruction
+        else
+            in_rdata = in_rdata_i[31:0];
+    end
+
     always_comb begin : fetch_fifo_logic
         // counter
         automatic logic [$clog2(DEPTH)-1:0] status_cnt    = status_cnt_q;
@@ -73,7 +87,7 @@ module fetch_fifo
         if (in_valid_i) begin
             status_cnt++;
             // new input data
-            mem_n[write_pointer_q] = {in_addr_i, in_rdata_i, branch_predict_i, ex_i};
+            mem_n[write_pointer_q] = {in_addr_i, in_rdata, branch_predict_i, ex_i};
             write_pointer++;
         end
 

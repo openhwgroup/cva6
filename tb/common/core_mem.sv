@@ -27,7 +27,7 @@ module core_mem (
     input  logic [3:0]               instr_if_data_be_i,
     output logic                     instr_if_data_gnt_o,
     output logic                     instr_if_data_rvalid_o,
-    output logic [31:0]              instr_if_data_rdata_o,
+    output logic [63:0]              instr_if_data_rdata_o,
     // Data memory/cache
     input  logic [11:0]              data_if_address_index_i,
     input  logic [43:0]              data_if_address_tag_i,
@@ -45,9 +45,6 @@ module core_mem (
     localparam ADDRESS_WIDTH = 16;
 
     logic [ADDRESS_WIDTH-1:0] instr_address;
-    logic [2:0]               instr_address_offset_q;
-    logic [63:0]              instr_data;
-    logic                     delayed_instr_request;
     // D$ Mock
     logic                     req, we;
     logic [7:0]               be;
@@ -56,13 +53,9 @@ module core_mem (
     logic [55:0]              data_address;
 
     assign data_address = {data_if_address_tag_i, index[11:3]};
-
-    assign delayed_instr_request = instr_if_data_req_i;
     // we always grant the request
-    assign instr_if_data_gnt_o   = delayed_instr_request;
+    assign instr_if_data_gnt_o   = instr_if_data_req_i;
     assign instr_address         = instr_if_address_i[ADDRESS_WIDTH-1+3:3];
-    // this is necessary as the interface to the dual port memory is 64 bit, but the fetch interface of the core is 32 bit
-    assign instr_if_data_rdata_o = (instr_address_offset_q[2]) ? instr_data[63:32] : instr_data[31:0];
 
     dp_ram  #(
         .ADDR_WIDTH    ( ADDRESS_WIDTH                   ),
@@ -72,7 +65,7 @@ module core_mem (
         .en_a_i        ( 1'b1                            ),
         .addr_a_i      ( instr_address                   ),
         .wdata_a_i     (                                 ), // not connected
-        .rdata_a_o     ( instr_data                      ),
+        .rdata_a_o     ( instr_if_data_rdata_o           ),
         .we_a_i        ( 1'b0                            ), // r/o interface
         .be_a_i        (                                 ),
         // data RAM
@@ -111,10 +104,8 @@ module core_mem (
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
         if(~rst_ni) begin
             instr_if_data_rvalid_o <= 1'b0;
-            instr_address_offset_q <= 'b0;
         end else begin
             instr_if_data_rvalid_o <= instr_if_data_req_i;
-            instr_address_offset_q <= instr_if_address_i[2:0];
         end
     end
 endmodule

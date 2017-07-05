@@ -34,7 +34,7 @@ module if_stage (
     output logic [63:0]            instr_addr_o,
     input  logic                   instr_gnt_i,
     input  logic                   instr_rvalid_i,
-    input  logic [31:0]            instr_rdata_i,
+    input  logic [63:0]            instr_rdata_i,
     input  exception               instr_ex_i,          // Instruction fetch exception, valid if rvalid is one
     // Output of IF Pipeline stage -> Dual Port Fetch FIFO
     // output port 0

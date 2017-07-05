@@ -45,7 +45,7 @@ module lsu #(
     output logic                     fetch_gnt_o,              // Instruction fetch interface
     output logic                     fetch_valid_o,            // Instruction fetch interface
     input  logic [63:0]              fetch_vaddr_i,            // Instruction fetch interface
-    output logic [31:0]              fetch_rdata_o,            // Instruction fetch interface
+    output logic [63:0]              fetch_rdata_o,            // Instruction fetch interface
     output exception                 fetch_ex_o,               // Instruction fetch interface
 
     input  priv_lvl_t                priv_lvl_i,               // From CSR register file
@@ -61,7 +61,7 @@ module lsu #(
     output logic [3:0]               instr_if_data_be_o,
     input  logic                     instr_if_data_gnt_i,
     input  logic                     instr_if_data_rvalid_i,
-    input  logic [31:0]              instr_if_data_rdata_i,
+    input  logic [63:0]              instr_if_data_rdata_i,
     // Data cache
     output logic [11:0]              data_if_address_index_o,
     output logic [43:0]              data_if_address_tag_o,
