@@ -3,13 +3,15 @@
 ## Coding Style
 
 - Keep the files tidy. No superfluous line breaks, align ports on a common boundary.
+- Don't use tabs, use spaces.
+- Use 4 spaces to open a new indentation level.
 - All signal and module names should be lower case with underscores as whitespace replacements (e.g.: `fetch_busy`).
 - Instantiation of modules should be postfix with `_i`, e.g.: `prefetcher_i`
 - For port definitions keep a post-fix direction (`_o`, `_i`).
 - For active low signals put an additional (`_no`, `_ni`).
 - Denote output of ff with `_q` and the input with `_n`.
 - Name dedicated signals wiring `module A` (output) with `module B` (input) `signal_a_b`
-- Do not use CamelCase
+- Do not use CamelCase!
 - Do not put overly large comment headers. Nevertheless, try to structure your HDL code, e.g.:
 ```
   // ------------------------------------
