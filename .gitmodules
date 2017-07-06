@@ -7,3 +7,6 @@
 [submodule "riscv-torture"]
 	path = riscv-torture
 	url = git@iis-git.ee.ethz.ch:floce/riscv-torture.git
+[submodule "tb"]
+	path = tb
+	url = git@iis-git.ee.ethz.ch:floce/uvm-components.git
