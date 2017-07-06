@@ -1,12 +1,12 @@
 [submodule "uvm-scaffold"]
 	path = uvm-scaffold
-	url = git@iis-git.ee.ethz.ch:floce/uvm-scaffold.git
+	url = ../uvm-scaffold.git
 [submodule "riscv-tests"]
 	path = riscv-tests
-	url = git@iis-git.ee.ethz.ch:floce/riscv-tests.git
+	url = ../riscv-tests.git
 [submodule "riscv-torture"]
 	path = riscv-torture
-	url = git@iis-git.ee.ethz.ch:floce/riscv-torture.git
+	url = ../riscv-torture.git
 [submodule "tb"]
 	path = tb
-	url = git@iis-git.ee.ethz.ch:floce/uvm-components.git
+	url = ../uvm-components.git
