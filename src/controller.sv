@@ -55,7 +55,7 @@ module controller (
         flush_id_o             = 1'b0;
         flush_ex_o             = 1'b0;
         flush_tlb_o            = 1'b0;
-
+        flush_icache_o         = 1'b0;
         // ------------
         // Mis-predict
         // ------------
