@@ -282,6 +282,8 @@ module csr_regfile #(
                     // this register has side-effects on other registers, flush the pipeline
                     flush_o = 1'b1;
                 end
+                // MISA is WARL (Write Any Value, Reads Legal Value)
+                CSR_MISA:;
                 // machine exception delegation register
                 // 0 - 15 exceptions supported
                 CSR_MEDELEG:            medeleg_n   = csr_wdata & 64'hF7FF;
