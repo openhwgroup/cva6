@@ -158,7 +158,7 @@ build-moore:
 
 # build the RISC-V tests
 build-tests:
-	cd riscv-tests && autoconf && ./configure --prefix=/home/zarubaf/riscv && make -j8
+	cd riscv-tests && autoconf && ./configure --prefix=/home/zarubaf/riscv && make isa -j8
 
 # User Verilator to lint the target
 lint:
