@@ -51,8 +51,8 @@ class instruction_trace_item;
             4: return "tp";
             5, 6, 7: return $sformatf("t%0d", (addr - 5));
             8, 9: return $sformatf("s%0d", (addr - 8));
-            10, 11, 12, 13, 14, 15, 16, 17: return $sformatf("a%0d", (addr-10));
-            28, 29, 30, 31: return $sformatf("t%0d", (addr-25));
+            10, 11, 12, 13, 14, 15, 16, 17: return $sformatf("a%0d", (addr - 10));
+            28, 29, 30, 31: return $sformatf("t%0d", (addr - 25));
             default: return $sformatf("s%0d", (addr - 16));
         endcase
     endfunction

@@ -18,26 +18,30 @@
 //
 class exception_trace_item;
     // contains a human readable form of the cause value
-    string       cause;
+    string       cause_s;
+    logic [63:0] cause;
     logic [63:0] tval;
     logic [63:0] pc;
 
     function new (logic [63:0] pc, logic [63:0] cause, logic [63:0] tval);
+
+        this.cause = cause;
+
         case (cause)
-            INSTR_ADDR_MISALIGNED: this.cause = "Instruction Address Misaligned";
-            INSTR_ACCESS_FAULT:    this.cause = "Instruction Access Fault";
-            ILLEGAL_INSTR:         this.cause = "Illegal Instruction";
-            BREAKPOINT:            this.cause = "Breakpoint";
-            LD_ADDR_MISALIGNED:    this.cause = "Load Address Misaligned";
-            LD_ACCESS_FAULT:       this.cause = "Load Access Fault";
-            ST_ADDR_MISALIGNED:    this.cause = "Store Address Misaligned";
-            ST_ACCESS_FAULT:       this.cause = "Store Access Fault";
-            ENV_CALL_UMODE:        this.cause = "Environment Call User Mode";
-            ENV_CALL_SMODE:        this.cause = "Environment Call Supervisor Mode";
-            ENV_CALL_MMODE:        this.cause = "Environment Call Machine Mode";
-            INSTR_PAGE_FAULT:      this.cause = "Instruction Page Fault";
-            LOAD_PAGE_FAULT:       this.cause = "Load Page Fault";
-            STORE_PAGE_FAULT:      this.cause = "Store Page Fault";
+            INSTR_ADDR_MISALIGNED: this.cause_s = "Instruction Address Misaligned";
+            INSTR_ACCESS_FAULT:    this.cause_s = "Instruction Access Fault";
+            ILLEGAL_INSTR:         this.cause_s = "Illegal Instruction";
+            BREAKPOINT:            this.cause_s = "Breakpoint";
+            LD_ADDR_MISALIGNED:    this.cause_s = "Load Address Misaligned";
+            LD_ACCESS_FAULT:       this.cause_s = "Load Access Fault";
+            ST_ADDR_MISALIGNED:    this.cause_s = "Store Address Misaligned";
+            ST_ACCESS_FAULT:       this.cause_s = "Store Access Fault";
+            ENV_CALL_UMODE:        this.cause_s = "Environment Call User Mode";
+            ENV_CALL_SMODE:        this.cause_s = "Environment Call Supervisor Mode";
+            ENV_CALL_MMODE:        this.cause_s = "Environment Call Machine Mode";
+            INSTR_PAGE_FAULT:      this.cause_s = "Instruction Page Fault";
+            LOAD_PAGE_FAULT:       this.cause_s = "Load Page Fault";
+            STORE_PAGE_FAULT:      this.cause_s = "Store Page Fault";
             default: this.cause = "Interrupt";
         endcase
 
@@ -47,7 +51,10 @@ class exception_trace_item;
 
     function string printException();
         string s;
-        s = $sformatf("Exception @%10t, PC: %h, Cause: %s\n\t\t\t\ttval: %h,", $time, this.pc, this.cause, this.tval);
+        s = $sformatf("Exception @%10t, PC: %h, Cause: %s", $time, this.pc, this.cause_s);
+        // write out tval if it wasn't an environment call, in that case the tval field has no meaning
+        if (!(this.cause inside {ENV_CALL_MMODE, ENV_CALL_SMODE, ENV_CALL_UMODE}))
+            s = $sformatf("%s, \n\t\t\t\ttval: %h", s, this.tval);
         return s;
     endfunction
 

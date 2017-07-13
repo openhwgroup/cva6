@@ -179,7 +179,7 @@ class instruction_tracer;
     function void printException(logic [63:0] pc, logic [63:0] cause, logic [63:0] tval);
         exception_trace_item eti = new (pc, cause, tval);
         string print_ex = eti.printException();
-        $display(print_ex);
+        `uvm_info( "Tracer",  print_ex, UVM_HIGH)
         $fwrite(this.f, {print_ex, "\n"});
     endfunction
 
