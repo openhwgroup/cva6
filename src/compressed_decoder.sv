@@ -127,8 +127,9 @@ module compressed_decoder
                           2'b01: begin
                               // 00: c.srli -> srli rd, rd, shamt
                               // 01: c.srai -> srai rd, rd, shamt
-                              instr_o = {1'b0, instr_i[10], 5'b0, instr_i[6:2], 2'b01, instr_i[9:7], 3'b101, 2'b01, instr_i[9:7], OPCODE_OPIMM};
-                              if (instr_i[6:2] == 5'b0) illegal_instr_o = 1'b1;
+                              instr_o = {1'b0, instr_i[10], 4'b0, instr_i[12], instr_i[6:2], 2'b01, instr_i[9:7], 3'b101, 2'b01, instr_i[9:7], OPCODE_OPIMM};
+                              // shamt field must be non-zero
+                              if ({instr_i[12], instr_i[6:2]} == 6'b0) illegal_instr_o = 1'b1;
                           end
 
                           2'b10: begin
@@ -192,9 +193,9 @@ module compressed_decoder
                 unique case (instr_i[15:13])
                     3'b000: begin
                         // c.slli -> slli rd, rd, shamt
-                        instr_o = {7'b0, instr_i[6:2], instr_i[11:7], 3'b001, instr_i[11:7], OPCODE_OPIMM};
+                        instr_o = {6'b0, instr_i[12], instr_i[6:2], instr_i[11:7], 3'b001, instr_i[11:7], OPCODE_OPIMM};
                         if (instr_i[11:7] == 5'b0)  illegal_instr_o = 1'b1; // register not x0
-                        if (instr_i[6:2]  == 5'b0)  illegal_instr_o = 1'b1; // shift amount must be non zero
+                        if ({instr_i[12], instr_i[6:2]}  == 6'b0)  illegal_instr_o = 1'b1; // shift amount must be non zero
                     end
 
                     3'b010: begin
