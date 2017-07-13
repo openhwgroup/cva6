@@ -172,14 +172,14 @@ class instruction_tracer;
         instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr);
         // print instruction to console
         string print_instr = iti.printInstr();
-        `uvm_info( "Tracer",  print_instr, UVM_HIGH)
+        uvm_report_info( "Tracer",  print_instr, UVM_HIGH);
         $fwrite(this.f, {print_instr, "\n"});
     endfunction;
 
     function void printException(logic [63:0] pc, logic [63:0] cause, logic [63:0] tval);
         exception_trace_item eti = new (pc, cause, tval);
         string print_ex = eti.printException();
-        `uvm_info( "Tracer",  print_ex, UVM_HIGH)
+        uvm_report_info( "Tracer",  print_ex, UVM_HIGH);
         $fwrite(this.f, {print_ex, "\n"});
     endfunction
 

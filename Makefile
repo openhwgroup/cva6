@@ -67,7 +67,7 @@ questa_version = -10.6
 compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
 # Moore binary
 moore = ~fschuiki/bin/moore
-uvm-flags =
+uvm-flags = +UVM_NO_RELNOTES
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
@@ -120,7 +120,7 @@ sim: build
 
 simc: build
 	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	 +BASEDIR=$(riscv-test-dir) +UVM_VERBOSITY=HIGH  $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
+	 +BASEDIR=$(riscv-test-dir) +UVM_VERBOSITY=LOW  $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug
 
 run-asm-tests: build
 	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
