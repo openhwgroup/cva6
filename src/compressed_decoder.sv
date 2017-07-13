@@ -253,5 +253,10 @@ module compressed_decoder
             // normal instruction
             default: is_compressed_o = 1'b0;
         endcase
+
+        // Check if the instruction was illegal, if it was then output the offending instruction (zero-extended)
+        if (illegal_instr_o && is_compressed_o) begin
+            instr_o = instr_i;
+        end
     end
 endmodule
