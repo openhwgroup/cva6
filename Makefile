@@ -71,6 +71,9 @@ uvm-flags = +UVM_NO_RELNOTES
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
+# Device Tree Compiler
+DTC = dtc
+
 # create library if it doesn't exist
 
 # # Build the TB and module using QuestaSim
@@ -114,11 +117,11 @@ $(library):
 	# Create the library
 	vlib${questa_version} ${library}
 
-sim: build
+sim: build ariane_tb.dtb
 	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
 	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -do "do tb/wave/wave_core.do"
 
-simc: build
+simc: build ariane_tb.dtb
 	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	 +BASEDIR=$(riscv-test-dir) +UVM_VERBOSITY=LOW  $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug
 
@@ -159,6 +162,10 @@ build-moore:
 # build the RISC-V tests
 build-tests:
 	cd riscv-tests && autoconf && ./configure --prefix=/home/zarubaf/riscv && make isa -j8
+
+# Compile device tree
+ariane_tb.dtb:  ariane_tb.dts
+	$(DTC) -I dts -O dtb ariane_tb.dts > ariane_tb.dtb
 
 # User Verilator to lint the target
 lint:

@@ -6,8 +6,6 @@ root = true
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
-indent_style = space
-indent_size = 4
 max_line_length = off
 # 4 space indentation
 [*.{sv, svh, v, vhd}]
