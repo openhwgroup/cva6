@@ -227,7 +227,7 @@ module csr_regfile #(
         en_ld_st_translation_n  = en_ld_st_translation_q;
 
         // check for correct access rights and that we are writing
-        if(csr_we) begin
+        if (csr_we) begin
             case (csr_addr.address)
                 // sstatus is a subset of mstatus - mask it accordingly
                 CSR_SSTATUS: begin
@@ -270,15 +270,15 @@ module csr_regfile #(
                     mstatus_n.fs   = 2'b0;
                     mstatus_n.upie = 1'b0;
                     mstatus_n.uie  = 1'b0;
-                    // if the SIE was set also set the MIE, as interrupts for
-                    // higher privilege levels are always set, 1.10 p.20
-                    if (csr_wdata[1])
-                        mstatus_n.mie = 1'b1;
-                    // if the MIE was cleared, also clear SIE since interrupts
-                    // for lower privilege levels are always disabled, 1.10 p.20
-                    if (!csr_wdata[3])
-                        mstatus_n.sie = 1'b0;
-                    // this register has side-effects on other registers, flush the pipeline
+                    // // if the SIE was set also set the MIE, as interrupts for
+                    // // higher privilege levels are always set, 1.10 p.20
+                    // if (csr_wdata[1])
+                    //     mstatus_n.mie = 1'b1;
+                    // // if the MIE was cleared, also clear SIE since interrupts
+                    // // for lower privilege levels are always disabled, 1.10 p.20
+                    // if (!csr_wdata[3])
+                    //     mstatus_n.sie = 1'b0;
+                    // // this register has side-effects on other registers, flush the pipeline
                     flush_o = 1'b1;
                 end
                 // MISA is WARL (Write Any Value, Reads Legal Value)
