@@ -117,9 +117,9 @@ class instruction_tracer;
                 // check if the write back is valid, if not we need to source the result from the register file
                 // as the most recent version of this register will be there.
                 if (tracer_if.pck.we) begin
-                    printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata, address_mapping, tracer_if.priv_lvl);
+                    printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata, address_mapping, tracer_if.pck.priv_lvl);
                 end else
-                    printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.priv_lvl);
+                    printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl);
             end
 
             // --------------
