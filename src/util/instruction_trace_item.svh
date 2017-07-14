@@ -29,9 +29,10 @@ class instruction_trace_item;
     logic [63:0]       imm;
     logic [63:0]       result;
     logic [63:0]       paddr;
+    string             priv_lvl;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, scoreboard_entry sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -40,6 +41,7 @@ class instruction_trace_item;
         this.reg_file = reg_file;
         this.result   = result;
         this.paddr    = paddr;
+        this.priv_lvl = getPrivLevel(priv_lvl);
     endfunction
     // convert register address to ABI compatible form
     function string regAddrToStr(logic [5:0] addr);
@@ -183,8 +185,9 @@ class instruction_trace_item;
         endcase
 
 
-        s = $sformatf("%10t %10d %h %h %-36s", simtime,
+        s = $sformatf("%10t %10d %s %h %h %-36s", simtime,
                                              cycle,
+                                             priv_lvl,
                                              sbe.pc,
                                              instr,
                                              s);
@@ -211,7 +214,16 @@ class instruction_trace_item;
             end
         endcase
         return s;
-    endfunction
+    endfunction : printInstr
+
+    // Return the current privilege level as a string
+    function string getPrivLevel(input priv_lvl_t priv_lvl);
+        case (priv_lvl)
+            PRIV_LVL_M: return "M";
+            PRIV_LVL_S: return "S";
+            PRIV_LVL_U: return "U";
+        endcase
+    endfunction : getPrivLevel
 
     function string printMnemonic(input string mnemonic);
         return mnemonic;

@@ -117,9 +117,9 @@ class instruction_tracer;
                 // check if the write back is valid, if not we need to source the result from the register file
                 // as the most recent version of this register will be there.
                 if (tracer_if.pck.we) begin
-                    printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata, address_mapping);
+                    printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata, address_mapping, tracer_if.priv_lvl);
                 end else
-                    printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping);
+                    printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.priv_lvl);
             end
 
             // --------------
@@ -168,8 +168,8 @@ class instruction_tracer;
         load_mapping    = {};
     endfunction;
 
-    function void printInstr(scoreboard_entry sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr);
-        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr);
+    function void printInstr(scoreboard_entry sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
+        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr, priv_lvl);
         // print instruction to console
         string print_instr = iti.printInstr();
         uvm_report_info( "Tracer",  print_instr, UVM_HIGH);

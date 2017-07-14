@@ -51,6 +51,8 @@ interface instruction_tracer_if (
 
     // exceptions
     exception        exception;
+    // current privilege level
+    priv_lvl_t      priv_lvl;
     // the tracer just has a passive interface we do not drive anything with it
     clocking pck @(posedge clk);
         input rstn, flush_unissued, flush, instruction, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr,

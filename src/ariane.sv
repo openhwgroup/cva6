@@ -553,6 +553,8 @@ module ariane
     assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.load_unit_i.paddr_i;
     // exceptions
     assign tracer_if.exception         = commit_stage_i.exception_o;
+    // assign current privilege level
+    assign tracer_if.priv_lvl          = priv_lvl;
 
     program instr_tracer (instruction_tracer_if tracer_if);
         instruction_tracer it = new (tracer_if, 1'b0);
