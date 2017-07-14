@@ -23,8 +23,8 @@ module csr_regfile #(
     parameter int ASID_WIDTH = 1
     )(
     input  logic                  clk_i,                      // Clock
-    input  logic                  rtc_i,                      // Real Time clock in
     input  logic                  rst_ni,                     // Asynchronous reset active low
+    input  logic [63:0]           time_i,                     // Platform Timer
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
     output logic                  halt_csr_o,                 // halt requested
@@ -135,7 +135,6 @@ module csr_regfile #(
     logic        wfi_n,      wfi_q;
 
     logic [63:0] cycle_q,    cycle_n;
-    logic [63:0] time_q,     time_n;
     logic [63:0] instret_q,  instret_n;
 
     typedef struct packed {
@@ -192,7 +191,7 @@ module csr_regfile #(
                 CSR_MINSTRET:           csr_rdata = instret_q;
                 // Counters and Timers
                 CSR_CYCLE:              csr_rdata = cycle_q;
-                CSR_TIME:               csr_rdata = time_q;
+                CSR_TIME:               csr_rdata = time_i;
                 CSR_INSTRET:            csr_rdata = instret_q;
                 default: read_access_exception = 1'b1;
             endcase
@@ -417,13 +416,11 @@ module csr_regfile #(
         end
 
         // --------------------
-        // Timers and Counters
+        // Counters
         // --------------------
         instret_n = instret_q;
         // just increment the cycle count
         cycle_n = cycle_q + 1'b1;
-        // increment time
-        time_n = time_q + 1'b1;
         // increase instruction retired counter
         if (commit_ack_i) begin
             instret_n = instret_q + 1'b1;
@@ -648,14 +645,5 @@ module csr_regfile #(
             // wait for interrupt
             wfi_q                  <= wfi_n;
         end
-    end
-
-    // RTC - Time Base
-    always_ff @(posedge rtc_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            time_q          <= 64'b0;
-       end else begin
-            time_q          <= time_n;
-       end
     end
 endmodule

@@ -123,7 +123,7 @@ sim: build ariane_tb.dtb
 
 simc: build ariane_tb.dtb
 	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	 +BASEDIR=$(riscv-test-dir) +UVM_VERBOSITY=LOW  $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug
+	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug
 
 run-asm-tests: build
 	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
