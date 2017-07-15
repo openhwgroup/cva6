@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Core completed its first full Linux boot
 - Changelog design, adhering to a common [standard](http://keepachangelog.com/en/1.0.0/)
 
-## 0.2.0 - 2017-06-28
+## [0.2.0] - 2017-06-28
 ### Added
 - Virtual memory support according to RISC-V privilege specification 1.11 (WIP)
 - Add support for Torture test framework
@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Timing improvements
 - New fetch interface, smaller and ready for macro-op fusion and dual-issue
 
-## 0.1.0 - 2017-06-21
+## [0.1.0] - 2017-06-21
 ### Added
 - Initial development, getting to a stable point
 
