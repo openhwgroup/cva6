@@ -1,3 +1,9 @@
+v 0.4.0
+    - Bugfixes in compressed decoder (legal shifts where throwing an illegal instruction although they where legal)
+    - Added support for device tree in testbench
+    - Increase memory size to 16 MB in-order to simulate a full Linux boot
+    - Re-worked timer facilities in the CSR section, moved to a platform RTC
+    - Core completed its first full Linux boot
 v 0.3.0
     - New fetch interface, smaller and ready for macro-op fusion and dual-issue
 v 0.2.1
