@@ -1,7 +1,7 @@
 // Author: David Schaffenrath, TU Graz
 // Author: Florian Zaruba, ETH Zurich
 // Date: 21.4.2017
-// Description: Transaction Lookaside Buffer, SV39
+// Description: Translation Lookaside Buffer, SV39
 //              fully set-associative
 //
 // Copyright (C) 2017 ETH Zurich, University of Bologna

@@ -1,5 +1,5 @@
-// Author: Florian Zaruba, ETH Zurich
 // Author: David Schaffenrath, TU Graz
+// Author: Florian Zaruba, ETH Zurich
 // Date: 24.4.2017
 // Description: Hardware-PTW
 //
