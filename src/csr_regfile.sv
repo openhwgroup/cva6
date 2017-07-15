@@ -160,6 +160,7 @@ module csr_regfile #(
                 CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 CSR_SIP:                csr_rdata = mip_q & mideleg_q;
                 CSR_STVEC:              csr_rdata = stvec_q;
+                CSR_SCOUNTEREN:         csr_rdata = 64'b0; // not implemented
                 CSR_SSCRATCH:           csr_rdata = sscratch_q;
                 CSR_SEPC:               csr_rdata = sepc_q;
                 CSR_SCAUSE:             csr_rdata = scause_q;
@@ -179,6 +180,7 @@ module csr_regfile #(
                 CSR_MIP:                csr_rdata = mip_q;
                 CSR_MIE:                csr_rdata = mie_q;
                 CSR_MTVEC:              csr_rdata = mtvec_q;
+                CSR_MCOUNTEREN:         csr_rdata = 64'b0; // not implemented
                 CSR_MSCRATCH:           csr_rdata = mscratch_q;
                 CSR_MEPC:               csr_rdata = mepc_q;
                 CSR_MCAUSE:             csr_rdata = mcause_q;
@@ -239,6 +241,7 @@ module csr_regfile #(
                 // if the corresponding bit in mideleg is set
                 CSR_SIE:                mie_n       = csr_wdata & 64'hBBB & mideleg_q; // we only support supervisor and m-mode interrupts
                 CSR_SIP:                mip_n       = csr_wdata & 64'h33 & mideleg_q;  // only SSIP, STIP are write-able
+                CSR_SCOUNTEREN:;
                 CSR_STVEC:              stvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                 CSR_SSCRATCH:           sscratch_n  = csr_wdata;
                 CSR_SEPC:               sepc_n      = {csr_wdata[63:1], 1'b0};
@@ -293,6 +296,7 @@ module csr_regfile #(
                     if (csr_wdata[0])
                         mtvec_n = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
                 end
+                CSR_MCOUNTEREN:;
                 CSR_MSCRATCH:           mscratch_n  = csr_wdata;
                 CSR_MEPC:               mepc_n      = {csr_wdata[63:1], 1'b0};
                 CSR_MCAUSE:             mcause_n    = csr_wdata;
