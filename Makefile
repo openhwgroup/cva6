@@ -9,7 +9,7 @@ top_level = core_tb
 test_top_level = core_tb
 
 # Ariane PKG
-ariane_pkg = include/ariane_pkg.svh
+ariane_pkg = include/ariane_pkg.sv
 # utility modules
 util = $(wildcard src/util/*.sv*)
 # test targets
