@@ -32,10 +32,29 @@ ariane:
     src/mult.sv,
     src/pcgen_stage.sv,
     src/ptw.sv,
-    src/regfile.sv,
     src/scoreboard.sv,
     src/store_buffer.sv,
     src/store_unit.sv,
     src/tlb.sv
     ]
+riscv_regfile_rtl:
+  targets: [
+    rtl,
+  ]
+  incdirs: [
+    include,
+  ]
+  files: [
+    src/regfile.sv,
+  ]
 
+riscv_regfile_fpga:
+  targets: [
+    xilinx,
+  ]
+  incdirs: [
+    include,
+  ]
+  files: [
+    src/regfile_ff.sv,
+  ]
