@@ -40,7 +40,7 @@ module pcgen (
     input  logic [63:0]      epc_i,              // exception PC which we need to return to
     input  logic             eret_i,             // return from exception
     input  logic [63:0]      trap_vector_base_i, // base of trap vector
-    input  exception         ex_i                // exception in - from commit
+    input  exception         ex_valid_i          // exception is valid - from commit
 );
 
     logic [63:0]      npc_n, npc_q;
@@ -122,7 +122,7 @@ module pcgen (
         // -------------------------------
         // 4. Exception
         // -------------------------------
-        if (ex_i.valid) begin
+        if (ex_valid_i) begin
             npc_n                  = trap_vector_base_i;
             branch_predict_o.valid = 1'b0;
             set_pc_n               = 1'b1;

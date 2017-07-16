@@ -30,7 +30,6 @@ module store_unit (
     input  logic                     commit_i,
     // store unit output port
     output logic                     valid_o,
-    output logic                     ready_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
     output logic [63:0]              result_o,
     output exception                 ex_o,
@@ -74,7 +73,6 @@ module store_unit (
 
     always_comb begin : store_control
         translation_req_o = 1'b0;
-        ready_o           = 1'b1;
         valid_o           = 1'b0;
         st_valid          = 1'b0;
         pop_st_o          = 1'b0;
@@ -105,7 +103,6 @@ module store_unit (
             end
 
             VALID_STORE: begin
-                // ready_o = 1'b0;
                 valid_o  = 1'b1;
                 // post this store to the store buffer if we are not flushing
                 if (!flush_i)
@@ -135,7 +132,6 @@ module store_unit (
 
             // the store queue is currently full
             WAIT_STORE_READY: begin
-                ready_o           = 1'b0;
                 // keep the translation request high
                 translation_req_o = 1'b1;
 
@@ -148,7 +144,6 @@ module store_unit (
             // but we know that the store queue is not full as we could only have landed here if
             // it wasn't full
             WAIT_TRANSLATION: begin
-                ready_o = 1'b0;
                 translation_req_o = 1'b1;
 
                 if (dtlb_hit_i) begin

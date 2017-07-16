@@ -99,9 +99,7 @@ module lsu #(
     assign vaddr_i = $unsigned($signed(imm_i) + $signed(operand_a_i));
 
     logic                     st_valid_i;
-    logic                     st_ready_o;
     logic                     ld_valid_i;
-    logic                     ld_ready_o;
     logic                     ld_translation_req;
     logic                     st_translation_req;
     logic [63:0]              ld_vaddr;
@@ -214,7 +212,6 @@ module lsu #(
         .pop_st_o              ( pop_st               ),
 
         .valid_o               ( st_valid             ),
-        .ready_o               ( st_ready_o           ),
         .trans_id_o            ( st_trans_id          ),
         .result_o              ( st_result            ),
         .ex_o                  ( st_ex                ),
@@ -250,7 +247,6 @@ module lsu #(
         .pop_ld_o              ( pop_ld               ),
 
         .valid_o               ( ld_valid             ),
-        .ready_o               ( ld_ready_o           ),
         .trans_id_o            ( ld_trans_id          ),
         .result_o              ( ld_result            ),
         .ex_o                  ( ld_ex                ),
@@ -468,9 +464,6 @@ module lsu #(
         .pop_ld_i           ( pop_ld      ),
         .pop_st_i           ( pop_st      ),
 
-        .ld_ready_i         ( ld_ready_o  ),
-        .st_ready_i         ( st_ready_o  ),
-
         .lsu_ctrl_o         ( lsu_ctrl    ),
         .ready_o            ( lsu_ready_o ),
         .*
@@ -496,17 +489,14 @@ endmodule
 // the LSU controll should sample it and store it for later application to the units. It does so, by storing it in a
 // two element FIFO.
 module lsu_bypass (
-    input logic      clk_i,
-    input logic      rst_ni,
-    input logic      flush_i,
+    input  logic      clk_i,
+    input  logic      rst_ni,
+    input  logic      flush_i,
 
-    input lsu_ctrl_t lsu_req_i,
-    input logic      lus_req_valid_i,
-    input logic      pop_ld_i,
-    input logic      pop_st_i,
-
-    input logic      ld_ready_i,
-    input logic      st_ready_i,
+    input  lsu_ctrl_t lsu_req_i,
+    input  logic      lus_req_valid_i,
+    input  logic      pop_ld_i,
+    input  logic      pop_st_i,
 
     output lsu_ctrl_t lsu_ctrl_o,
     output logic      ready_o

@@ -11,8 +11,6 @@
 import ariane_pkg::*;
 
 module decoder (
-    input  logic             clk_i,                   // Clock
-    input  logic             rst_ni,                  // Asynchronous reset active low
     input  logic [63:0]      pc_i,                    // PC from IF
     input  logic             is_compressed_i,         // is a compressed instruction
     input  logic             is_illegal_i,            // illegal compressed instruction

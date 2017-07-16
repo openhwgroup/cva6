@@ -28,7 +28,6 @@ module load_unit (
     output logic                     pop_ld_o,
     // load unit output port
     output logic                     valid_o,
-    output logic                     ready_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
     output logic [63:0]              result_o,
     output exception                 ex_o,
@@ -87,7 +86,6 @@ module load_unit (
         NS                = CS;
         load_data_n       = in_data;
         translation_req_o = 1'b0;
-        ready_o           = 1'b1;
         data_req_o        = 1'b0;
         // tag control
         kill_req_o        = 1'b0;
@@ -126,10 +124,6 @@ module load_unit (
 
             // wait here for the page offset to not match anymore
             WAIT_PAGE_OFFSET: begin
-                // we are definitely not ready to accept a new request
-                // we need unique access to the LSU
-                ready_o = 1'b0;
-
                 // we make a new request as soon as the page offset does not match anymore
                 if (!page_offset_matches_i) begin
                     NS = WAIT_GNT;
@@ -140,7 +134,6 @@ module load_unit (
             // we are here because of a TLB miss, we need to abort the current request and give way for the
             // PTW walker to satisfy the TLB miss
             ABORT_TRANSACTION: begin
-                ready_o     = 1'b0;
                 kill_req_o  = 1'b1;
                 tag_valid_o = 1'b1;
                 // redo the request by going back to the wait gnt state
@@ -148,7 +141,6 @@ module load_unit (
             end
 
             WAIT_TRANSLATION: begin
-                ready_o           = 1'b0;
                 translation_req_o = 1'b1;
                 // we've got a hit and we can continue with the request process
                 if (dtlb_hit_i)
@@ -158,8 +150,6 @@ module load_unit (
             WAIT_GNT: begin
                 // keep the translation request up
                 translation_req_o = 1'b1;
-                // we are waiting for the grant so we are not ready to accept anything new
-                ready_o = 1'b0;
                 // keep the request up
                 data_req_o = 1'b1;
                 // we finally got a data grant
@@ -213,7 +203,6 @@ module load_unit (
             end
 
             WAIT_FLUSH: begin
-                ready_o     = 1'b0;
                 // the D$ arbiter will take care of presenting this to the memory only in case we
                 // have an outstanding request
                 kill_req_o  = 1'b1;
