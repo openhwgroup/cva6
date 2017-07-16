@@ -20,9 +20,6 @@
 import ariane_pkg::*;
 
 module controller (
-    input  logic            clk_i,                  // Clock
-    input  logic            rst_ni,                 // Asynchronous reset active low
-
     output logic            flush_bp_o,             // Flush branch prediction data structures
     output logic            flush_pcgen_o,          // Flush PC Generation Stage
     output logic            flush_if_o,             // Flush the IF stage

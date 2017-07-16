@@ -254,7 +254,7 @@ module ariane
         .epc_i                 ( epc_commit_pcgen               ),
         .eret_i                ( eret                           ),
         .trap_vector_base_i    ( trap_vector_base_commit_pcgen  ),
-        .ex_i                  ( ex_commit.valid                ),
+        .ex_valid_i            ( ex_commit.valid                ),
         .*
     );
     // ---------

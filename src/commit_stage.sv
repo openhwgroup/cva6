@@ -19,9 +19,6 @@
 import ariane_pkg::*;
 
 module commit_stage (
-    input  logic                clk_i,         // Clock
-    input  logic                rst_ni,        // Asynchronous reset active low
-
     input  logic                halt_i,        // request to halt the core
 
     output exception            exception_o,   // take exception to controller
