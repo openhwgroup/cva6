@@ -25,6 +25,8 @@ module csr_regfile #(
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
     input  logic [63:0]           time_i,                     // Platform Timer
+    input  logic                  time_irq_i,                 // Timer threw an interrupt
+
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
     output logic                  halt_csr_o,                 // halt requested
@@ -313,6 +315,8 @@ module csr_regfile #(
         mip_n[11] = mip_q[11] & irq_i[0];
         // Supervisor Mode External Interrupt Pending
         mip_n[9] = mip_q[9] & irq_i[1];
+        // Timer interrupt pending, coming from platform timer
+        mip_n[7] = time_irq_i;
 
         // -----------------------
         // Manage Exception Stack

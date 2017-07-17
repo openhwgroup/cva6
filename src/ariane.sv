@@ -33,7 +33,6 @@ module ariane
     (
         input  logic                           clk_i,
         input  logic                           rst_ni,
-        input  logic [63:0]                    time_i,
         input  logic                           clock_en_i,    // enable clock, otherwise it is gated
         input  logic                           test_en_i,     // enable all clock gates for testing
 
@@ -72,6 +71,9 @@ module ariane
         output logic                           irq_ack_o,
         input  logic                           irq_sec_i,
         output logic                           sec_lvl_o,
+        // Timer facilities
+        input  logic [63:0]                    time_i,        // global time (most probably coming from an RTC)
+        input  logic                           time_irq_i,    // timer interrupt in
 
         // Debug Interface
         input  logic                           debug_req_i,
