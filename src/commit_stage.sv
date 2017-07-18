@@ -154,5 +154,9 @@ module commit_stage (
             exception_o = csr_exception_i;
             exception_o.tval = commit_instr_i.ex.tval;
         end
+        // If we halted the processor don't take any exceptions
+        if (halt_i) begin
+            exception_o.valid = 1'b0;
+        end
     end
 endmodule
