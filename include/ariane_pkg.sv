@@ -306,18 +306,7 @@ package ariane_pkg;
     // Debug Unit
     // ----------------------
 
-    typedef struct packed {
-        logic        halt;          // core is halted
-        logic        sste;          // single step enable
-        logic        ssth;          // single step hit
-        logic        sleep;         // core is sleeping
-        logic [63:0] ie;            // enable interrupt/exception
-        logic [63:0] cause;         // cause of encountered exception or interrupt
-        logic [63:0] npc;           // next PC
-        logic [63:0] ppc;           // previous PC
-    } debug_reg_t;
-
-    typedef enmu logic [14:0] {
+    typedef enum logic [14:0] {
         DBG_CTRL     = 15'h0,
         DBG_HIT      = 15'h4,
         DBG_IE       = 15'h8,
@@ -338,6 +327,8 @@ package ariane_pkg;
         DBG_BPDATA6  = 15'h74,
         DBG_BPCTRL7  = 15'h78,
         DBG_BPDATA7  = 15'h7C,
+        DBG_GPR      = 15'h4xx,
+        DBG_CSR      = 15'h5xx,
         DBG_NPC      = 15'h2000,
         DBG_PPC      = 15'h2004
     } debug_reg_t;

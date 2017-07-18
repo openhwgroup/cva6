@@ -98,14 +98,22 @@ module debug_unit (
             // we can immediately grant the request
             debug_gnt_o = 1'b1;
             // decode debug address
-            case (debug_addr_i)
+            casex (debug_addr_i)
                 DBG_CTRL:  rdata_n = {32'b0, 15'b0, (CS == HALTED), 15'b0, (CS == SINGLE_STEP)};
-                DBG_HIT:   rdata_n = {63'b0, sshit};
+                DBG_HIT:   rdata_n = {64'b0};
                 DBG_IE:    rdata_n = dbg_ie_q;
                 DBG_CAUSE: rdata_n = dbg_cause_q;
                 DBG_NPC:   rdata_n = commit_instr_i.pc;
                 DBG_PPC:   rdata_n = ppc_q;
+                DBG_GPR: begin
+
+                end
+
+                DBG_CSR: begin
+
+                end
             endcase
+
         // ----------
         // Write
         // ----------
@@ -121,9 +129,16 @@ module debug_unit (
                     // enable/disable single step
                     ss_req = debug_wdata_i[0];
                     ss_resume_req = ~debug_wdata_i[0];
+                end
                 DBG_HIT:
                 DBG_IE:     dbg_ie_n = debug_wdata_i;
                 DBG_CAUSE:  dbg_cause_n = debug_wdata_i;
+                DBG_GPR: begin
+
+                end
+
+                DBG_CSR: begin
+
                 end
             endcase
         end
