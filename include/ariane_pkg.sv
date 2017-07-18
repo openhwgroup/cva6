@@ -316,4 +316,29 @@ package ariane_pkg;
         logic [63:0] npc;           // next PC
         logic [63:0] ppc;           // previous PC
     } debug_reg_t;
+
+    typedef enmu logic [14:0] {
+        DBG_CTRL     = 15'h0,
+        DBG_HIT      = 15'h4,
+        DBG_IE       = 15'h8,
+        DBG_CAUSE    = 15'hC,
+        DBG_BPCTRL0  = 15'h40,
+        DBG_BPDATA0  = 15'h44,
+        DBG_BPCTRL1  = 15'h48,
+        DBG_BPDATA1  = 15'h4C,
+        DBG_BPCTRL2  = 15'h50,
+        DBG_BPDATA2  = 15'h54,
+        DBG_BPCTRL3  = 15'h58,
+        DBG_BPDATA3  = 15'h5C,
+        DBG_BPCTRL4  = 15'h60,
+        DBG_BPDATA4  = 15'h64,
+        DBG_BPCTRL5  = 15'h68,
+        DBG_BPDATA5  = 15'h6C,
+        DBG_BPCTRL6  = 15'h70,
+        DBG_BPDATA6  = 15'h74,
+        DBG_BPCTRL7  = 15'h78,
+        DBG_BPDATA7  = 15'h7C,
+        DBG_NPC      = 15'h2000,
+        DBG_PPC      = 15'h2004
+    } debug_reg_t;
 endpackage
