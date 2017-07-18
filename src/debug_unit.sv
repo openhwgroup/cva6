@@ -27,6 +27,18 @@ module debug_unit (
     input  logic                commit_ack_i,
     input  exception            ex_i,           // instruction caused an exception
     output logic                halt_o,         // halt the hart
+    // GPR interface
+    output logic                debug_gpr_req_o,
+    output logic [4:0]          debug_gpr_addr_o,
+    output logic                debug_gpr_we_o,
+    output logic [63:0]         debug_gpr_wdata_o,
+    input  logic [63:0]         debug_gpr_rdata_i,
+    // CSR interface
+    output logic                debug_csr_req_o,
+    output logic [11:0]          debug_csr_addr_o,
+    output logic                debug_csr_we_o,
+    output logic [63:0]         debug_csr_wdata_o,
+    input  logic [63:0]         debug_csr_rdata_i,
     // External Debug Interface
     input  logic                debug_req_i,
     output logic                debug_gnt_o,
@@ -40,9 +52,7 @@ module debug_unit (
     input  logic                debug_resume_i
 
 );
-    // select debug register source/destination
-    enum logic [2:0] {RD_NONE, RD_CSR, RD_GPR, RD_DBGA, RD_DBGS} rdata_sel_q, rdata_sel_n;
-
+    // Debugger State
     enum logic [1:0] {RUNNING, HALT_REQ, SINGLE_STEP, HALTED} CS, NS;
 
     // debug interface registers, we need to give the read data back one cycle later along with the rvalid flag
@@ -65,7 +75,7 @@ module debug_unit (
     assign debug_rvalid_o = rvalid_q;
     assign debug_rdata_o  = rdata_q;
 
-
+    assign debug_halted_o = (CS == HALTED);
     // |    Address    |       Name      |                             Description                             |
     // |---------------|-----------------|---------------------------------------------------------------------|
     // | 0x0000-0x007F | Debug Registers | Always accessible, even when the core is running                    |
@@ -75,8 +85,6 @@ module debug_unit (
     // | 0x4000-0x7FFF | CSR             | Control and Status Registers. Only accessible if the core is halted |
 
     always_comb begin : debug_ctrl
-        rdata_sel_n   = RD_NONE;
-
         debug_gnt_o   = 1'b0;
         rdata_n       = 'b0;
         rvalid_n      = 1'b0;
@@ -89,6 +97,16 @@ module debug_unit (
         // debug registers
         dbg_ie_n      = dbg_ie_q;
         dbg_cause_n   = dbg_cause_q;
+        // GPR defaults
+        debug_gpr_req_o     = 1'b0;
+        debug_gpr_addr_o    = debug_addr_i[6:2];
+        debug_gpr_we_o      = 1'b0;
+        debug_gpr_wdata_o   = 64'b0;
+        // CSR defaults
+        debug_csr_req_o     = 1'b0;
+        debug_csr_addr_o    = debug_addr_i[13:2];
+        debug_csr_we_o      = 1'b0;
+        debug_csr_wdata_o   = 64'b0;
 
         // ----------
         // Read
@@ -99,18 +117,25 @@ module debug_unit (
             debug_gnt_o = 1'b1;
             // decode debug address
             casex (debug_addr_i)
-                DBG_CTRL:  rdata_n = {32'b0, 15'b0, (CS == HALTED), 15'b0, (CS == SINGLE_STEP)};
+                DBG_CTRL:  rdata_n = {32'b0, 15'b0, (debug_halted_o), 15'b0, (CS == SINGLE_STEP)};
                 DBG_HIT:   rdata_n = {64'b0};
                 DBG_IE:    rdata_n = dbg_ie_q;
                 DBG_CAUSE: rdata_n = dbg_cause_q;
                 DBG_NPC:   rdata_n = commit_instr_i.pc;
                 DBG_PPC:   rdata_n = ppc_q;
-                DBG_GPR: begin
 
+                DBG_GPR: begin
+                    if (debug_halted_o) begin
+                        debug_gpr_req_o = 1'b1;
+                        rdata_n = debug_gpr_rdata_i;
+                    end
                 end
 
                 DBG_CSR: begin
-
+                    if (debug_halted_o) begin
+                        debug_csr_req_o = 1'b1;
+                        rdata_n = debug_csr_rdata_i;
+                    end
                 end
             endcase
 
@@ -133,12 +158,21 @@ module debug_unit (
                 DBG_HIT:
                 DBG_IE:     dbg_ie_n = debug_wdata_i;
                 DBG_CAUSE:  dbg_cause_n = debug_wdata_i;
-                DBG_GPR: begin
 
+                DBG_GPR: begin
+                    if (debug_halted_o) begin
+                        debug_gpr_req_o = 1'b1;
+                        debug_gpr_we_o = 1'b1;
+                        debug_gpr_wdata_o = debug_wdata_i;
+                    end
                 end
 
                 DBG_CSR: begin
-
+                    if (debug_halted_o) begin
+                        debug_csr_req_o = 1'b1;
+                        debug_csr_we_o = 1'b1;
+                        debug_csr_wdata_o = debug_wdata_i;
+                    end
                 end
             endcase
         end
@@ -166,7 +200,7 @@ module debug_unit (
             // CPU is running normally
             RUNNING: begin
                 // external debugger requested to halt the CPU
-                if (halt_req) begin
+                if (halt_req || debug_halt_i) begin
                     NS = HALT_REQ;
                 end
 
@@ -190,7 +224,7 @@ module debug_unit (
             // CPU is halted, we are in debug mode
             HALTED: begin
                 halt_o = 1'b1;
-                if (resume_req)
+                if (resume_req || debug_resume_i)
                     NS = RUNNING;
             end
 
