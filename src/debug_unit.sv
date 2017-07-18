@@ -35,7 +35,7 @@ module debug_unit (
     input  logic [63:0]         debug_gpr_rdata_i,
     // CSR interface
     output logic                debug_csr_req_o,
-    output logic [11:0]          debug_csr_addr_o,
+    output logic [11:0]         debug_csr_addr_o,
     output logic                debug_csr_we_o,
     output logic [63:0]         debug_csr_wdata_o,
     input  logic [63:0]         debug_csr_rdata_i,
@@ -67,10 +67,12 @@ module debug_unit (
     logic [63:0] dbg_ie_n, dbg_ie_q;
     // cause register which caused transfer to debug mode
     logic [63:0] dbg_cause_n, dbg_cause_q;
-
+    // single step mode
+    logic dbg_ss_n, dbg_ss_q;
+    logic dbg_ssth_n, dbg_ssth_q;
     // change debug mode
     logic halt_req, resume_req;
-    logic ss_req, ss_resume_req; // request single step and resume execution from single step
+    logic stepped_single;
 
     assign debug_rvalid_o = rvalid_q;
     assign debug_rdata_o  = rdata_q;
@@ -90,13 +92,13 @@ module debug_unit (
         rvalid_n      = 1'b0;
 
         halt_req      = 1'b0;
-        ss_req        = 1'b0;
-        ss_resume_req = 1'b0;
         // update the previous PC if got a valid commit
         ppc_n         = (commit_ack_i) ? commit_instr_i.pc : ppc_q;
         // debug registers
         dbg_ie_n      = dbg_ie_q;
         dbg_cause_n   = dbg_cause_q;
+        dbg_ss_n      = dbg_ss_q;
+        dbg_ssth_n    = dbg_ssth_q;
         // GPR defaults
         debug_gpr_req_o     = 1'b0;
         debug_gpr_addr_o    = debug_addr_i[6:2];
@@ -107,6 +109,9 @@ module debug_unit (
         debug_csr_addr_o    = debug_addr_i[13:2];
         debug_csr_we_o      = 1'b0;
         debug_csr_wdata_o   = 64'b0;
+        // we did one single step, set the sticky bit
+        if (stepped_single)
+            dbg_ssth_n = 1'b1;
 
         // ----------
         // Read
@@ -117,8 +122,8 @@ module debug_unit (
             debug_gnt_o = 1'b1;
             // decode debug address
             casex (debug_addr_i)
-                DBG_CTRL:  rdata_n = {32'b0, 15'b0, (debug_halted_o), 15'b0, (CS == SINGLE_STEP)};
-                DBG_HIT:   rdata_n = {64'b0};
+                DBG_CTRL:  rdata_n = {32'b0, 15'b0, debug_halted_o, 15'b0, dbg_ss_q};
+                DBG_HIT:   rdata_n = {63'b0, dbg_ssth_q};
                 DBG_IE:    rdata_n = dbg_ie_q;
                 DBG_CAUSE: rdata_n = dbg_cause_q;
                 DBG_NPC:   rdata_n = commit_instr_i.pc;
@@ -152,10 +157,9 @@ module debug_unit (
                     halt_req = debug_wdata_i[16];
                     resume_req = ~debug_wdata_i[16];
                     // enable/disable single step
-                    ss_req = debug_wdata_i[0];
-                    ss_resume_req = ~debug_wdata_i[0];
+                    dbg_ss_n = debug_wdata_i[0];
                 end
-                DBG_HIT:
+                DBG_HIT:    dbg_ssth_n = debug_wdata_i[0];
                 DBG_IE:     dbg_ie_n = debug_wdata_i;
                 DBG_CAUSE:  dbg_cause_n = debug_wdata_i;
 
@@ -177,7 +181,7 @@ module debug_unit (
             endcase
         end
 
-        // if an exception occurred and it is enabled to trigger debug mode, halt the processor
+        // if an exception occurred and it is enabled to trigger debug mode, halt the processor and enter debug mode
         if (ex_i.valid && (|(ex_i.cause & dbg_ie_q)) == 1'b1) begin
             halt_req = 1'b1;
             // save the cause why we entered the exception
@@ -196,6 +200,7 @@ module debug_unit (
         NS = CS;
         // do not halt by default
         halt_o = 1'b0;
+        stepped_single = 1'b0;
         case (CS)
             // CPU is running normally
             RUNNING: begin
@@ -206,26 +211,34 @@ module debug_unit (
 
             end
             // a halt was requested, we wait here until we get the next valid instruction
-            // in order to properly populate the npc and ppc counters
+            // in order to properly populate the NPC and PPC registers
             HALT_REQ: begin
                 // we've got a valid instruction in the commit stage so we can proceed to the halted state
                 if (commit_instr_i.valid) begin
                     NS = HALTED;
+                    halt_o = 1'b1;
                 end
             end
             // we are in single step mode
             SINGLE_STEP: begin
-                // resume from single steps
-                if (ss_resume_req) begin
-                    NS = RUNNING;
+                // wait until the processor has acknowledge the instruction in the commit stage
+                if (commit_ack_i) begin
+                    // then halt again
+                    NS = HALT_REQ;
+                    // we did one single step assert the flag so that we can set the sticky bit
+                    stepped_single = 1'b1;
                 end
             end
-
             // CPU is halted, we are in debug mode
             HALTED: begin
                 halt_o = 1'b1;
                 if (resume_req || debug_resume_i)
                     NS = RUNNING;
+
+                // resume from single step, check if single stepping is enabled and if the sticky bit is cleared
+                if (dbg_ss_q && !dbg_ssth_q) begin
+                    NS = SINGLE_STEP;
+                end
             end
 
         endcase
