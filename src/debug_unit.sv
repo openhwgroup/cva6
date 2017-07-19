@@ -231,9 +231,9 @@ module debug_unit (
         // check all possible breakpoints
         for (logic [7:0] i = 0; i < 8; i++) begin
             // check if a breakpoint is triggering, therefore check if it is enabled
-            if (dbg_hwbp_ctrl_q[1]) begin
+            if (dbg_hwbp_ctrl_q[i][0]) begin
                 // check if the PC is matching and the processor is currently retiring the instruction
-                if (commit_instr_i.pc == dbg_hwbp_data_q && commit_ack_i) begin
+                if (commit_instr_i.pc == dbg_hwbp_data_q[i] && commit_ack_i) begin
                     halt_req = 1'b1;
                     dbg_hit_n[15:8] = i;
                 end
