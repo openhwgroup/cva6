@@ -40,7 +40,10 @@ module pcgen_stage (
     input  logic [63:0]      epc_i,              // exception PC which we need to return to
     input  logic             eret_i,             // return from exception
     input  logic [63:0]      trap_vector_base_i, // base of trap vector
-    input  exception         ex_valid_i          // exception is valid - from commit
+    input  logic             ex_valid_i,         // exception is valid - from commit
+    // Debug
+    input  logic [63:0]      debug_pc_i,         // PC from debug stage
+    input  logic             debug_set_pc_i      // Set PC request from debug
 );
 
     logic [63:0]      npc_n, npc_q;
@@ -118,6 +121,8 @@ module pcgen_stage (
         // -------------------------------
         // 2. Debug
         // -------------------------------
+        if (debug_set_pc_i)
+            npc_n = debug_pc_i;
 
         // -------------------------------
         // 4. Exception

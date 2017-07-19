@@ -31,6 +31,12 @@ module issue_stage #(
 
     input  logic                                     flush_unissued_instr_i,
     input  logic                                     flush_i,
+    // from Debug
+    input  logic                                     debug_gpr_req_i,
+    input  logic [4:0]                               debug_gpr_addr_i,
+    input  logic                                     debug_gpr_we_i,
+    input  logic [63:0]                              debug_gpr_wdata_i,
+    output logic [63:0]                              debug_gpr_rdata_o,
     // from ISSUE
     input  scoreboard_entry                          decoded_instr_i,
     input  logic                                     decoded_instr_valid_i,
