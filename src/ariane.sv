@@ -241,7 +241,7 @@ module ariane
     // Debug <-> *
     // --------------
     logic [63:0]              pc_debug_pcgen;
-    logic                     set_pc_debug_pcgen;
+    logic                     set_pc_debug;
 
     logic                     gpr_req_debug_issue;
     logic [4:0]               gpr_addr_debug_issue;
@@ -275,7 +275,7 @@ module ariane
         .trap_vector_base_i    ( trap_vector_base_commit_pcgen  ),
         .ex_valid_i            ( ex_commit.valid                ),
         .debug_pc_i            ( pc_debug_pcgen                 ),
-        .debug_set_pc_i        ( set_pc_debug_pcgen             ),
+        .debug_set_pc_i        ( set_pc_debug                   ),
         .*
     );
     // ---------
@@ -331,58 +331,62 @@ module ariane
     // ---------
     // Issue
     // ---------
-    issue_stage
-    #(
+    issue_stage #(
         .NR_ENTRIES                 ( NR_SB_ENTRIES                   ),
         .NR_WB_PORTS                ( NR_WB_PORTS                     )
-    )
-    issue_stage_i (
-        .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id             ),
-        .flush_i                    ( flush_ctrl_id                            ),
+    ) issue_stage_i (
+        .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id    ),
+        .flush_i                    ( flush_ctrl_id                   ),
+        // Debug
+        .debug_gpr_req_i            ( gpr_req_debug_issue             ),
+        .debug_gpr_addr_i           ( gpr_addr_debug_issue            ),
+        .debug_gpr_we_i             ( gpr_we_debug_issue              ),
+        .debug_gpr_wdata_i          ( gpr_wdata_debug_issue           ),
+        .debug_gpr_rdata_o          ( gpr_rdata_debug_issue           ),
 
-        .decoded_instr_i            ( issue_entry_id_issue                     ),
-        .decoded_instr_valid_i      ( issue_entry_valid_id_issue               ),
-        .is_ctrl_flow_i             ( is_ctrl_fow_id_issue                     ),
-        .decoded_instr_ack_o        ( issue_instr_issue_id                     ),
+        .decoded_instr_i            ( issue_entry_id_issue            ),
+        .decoded_instr_valid_i      ( issue_entry_valid_id_issue      ),
+        .is_ctrl_flow_i             ( is_ctrl_fow_id_issue            ),
+        .decoded_instr_ack_o        ( issue_instr_issue_id            ),
 
         // Functional Units
-        .fu_o                       ( fu_id_ex                                 ),
-        .operator_o                 ( operator_id_ex                           ),
-        .operand_a_o                ( operand_a_id_ex                          ),
-        .operand_b_o                ( operand_b_id_ex                          ),
-        .imm_o                      ( imm_id_ex                                ),
-        .trans_id_o                 ( trans_id_id_ex                           ),
-        .pc_o                       ( pc_id_ex                                 ),
-        .is_compressed_instr_o      ( is_compressed_instr_id_ex                ),
+        .fu_o                       ( fu_id_ex                        ),
+        .operator_o                 ( operator_id_ex                  ),
+        .operand_a_o                ( operand_a_id_ex                 ),
+        .operand_b_o                ( operand_b_id_ex                 ),
+        .imm_o                      ( imm_id_ex                       ),
+        .trans_id_o                 ( trans_id_id_ex                  ),
+        .pc_o                       ( pc_id_ex                        ),
+        .is_compressed_instr_o      ( is_compressed_instr_id_ex       ),
         // ALU
-        .alu_ready_i                ( alu_ready_ex_id                          ),
-        .alu_valid_o                ( alu_valid_id_ex                          ),
+        .alu_ready_i                ( alu_ready_ex_id                 ),
+        .alu_valid_o                ( alu_valid_id_ex                 ),
         // Branches and Jumps
-        .branch_ready_i             ( branch_ready_ex_id                       ),
-        .branch_valid_o             ( branch_valid_id_ex                       ), // branch is valid
-        .branch_predict_o           ( branch_predict_id_ex                     ), // branch predict to ex
-        .resolve_branch_i           ( resolve_branch_ex_id                     ), // in order to resolve the branch
+        .branch_ready_i             ( branch_ready_ex_id              ),
+        .branch_valid_o             ( branch_valid_id_ex              ), // branch is valid
+        .branch_predict_o           ( branch_predict_id_ex            ), // branch predict to ex
+        .resolve_branch_i           ( resolve_branch_ex_id            ), // in order to resolve the branch
         // LSU
-        .lsu_ready_i                ( lsu_ready_ex_id                          ),
-        .lsu_valid_o                ( lsu_valid_id_ex                          ),
+        .lsu_ready_i                ( lsu_ready_ex_id                 ),
+        .lsu_valid_o                ( lsu_valid_id_ex                 ),
         // Multiplier
-        .mult_ready_i               ( mult_ready_ex_id                         ),
-        .mult_valid_o               ( mult_valid_id_ex                         ),
+        .mult_ready_i               ( mult_ready_ex_id                ),
+        .mult_valid_o               ( mult_valid_id_ex                ),
         // CSR
-        .csr_ready_i                ( csr_ready_ex_id                          ),
-        .csr_valid_o                ( csr_valid_id_ex                          ),
+        .csr_ready_i                ( csr_ready_ex_id                 ),
+        .csr_valid_o                ( csr_valid_id_ex                 ),
 
         .trans_id_i                 ( {alu_trans_id_ex_id,       lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id       }),
         .wdata_i                    ( {alu_result_ex_id,         lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id         }),
         .ex_ex_i                    ( {{$bits(exception){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception){1'b0}} }),
         .wb_valid_i                 ( {alu_valid_ex_id,          lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id          }),
 
-        .waddr_a_i                  ( waddr_a_commit_id                        ),
-        .wdata_a_i                  ( wdata_a_commit_id                        ),
-        .we_a_i                     ( we_a_commit_id                           ),
+        .waddr_a_i                  ( waddr_a_commit_id               ),
+        .wdata_a_i                  ( wdata_a_commit_id               ),
+        .we_a_i                     ( we_a_commit_id                  ),
 
-        .commit_instr_o             ( commit_instr_id_commit                   ),
-        .commit_ack_i               ( commit_ack                               ),
+        .commit_instr_o             ( commit_instr_id_commit          ),
+        .commit_ack_i               ( commit_ack                      ),
         .*
     );
 
@@ -529,6 +533,7 @@ module ariane
 
         .halt_csr_i             ( halt_csr_ctrl                 ),
         .halt_debug_i           ( halt_debug_ctrl               ),
+        .debug_set_pc_i         ( set_pc_debug                  ),
         .halt_o                 ( halt_ctrl_commit              ),
         // control ports
         .eret_i                 ( eret                          ),
@@ -540,6 +545,7 @@ module ariane
 
         .*
     );
+
     // ------------
     // Debug
     // ------------
@@ -550,7 +556,7 @@ module ariane
         .halt_o            ( halt_debug_ctrl           ),
 
         .debug_pc_o        ( pc_debug_pcgen            ),
-        .debug_set_pc_o    ( debug_set_pc_o            ),
+        .debug_set_pc_o    ( set_pc_debug              ),
 
         .debug_gpr_req_o   ( gpr_req_debug_issue       ),
         .debug_gpr_addr_o  ( gpr_addr_debug_issue      ),

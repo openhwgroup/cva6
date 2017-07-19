@@ -31,6 +31,7 @@ module controller (
 
     input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
     input  logic            halt_debug_i,           // Halt request from debug
+    input  logic            debug_set_pc_i,         // Debug wants to set the PC
     output logic            halt_o,                 // Halt signal to commit stage
     input  logic            eret_i,                 // Return from exception
     input  logic            ex_valid_i,             // We got an exception, flush the pipeline
@@ -64,13 +65,13 @@ module controller (
             flush_if_o             = 1'b1;
         end
 
-        // ----------------------
+        // ---------------------------------
         // FENCE
-        // ----------------------
+        // ---------------------------------
 
-        // ----------------------
+        // ---------------------------------
         // FENCE.I
-        // ----------------------
+        // ---------------------------------
         if (fence_i_i) begin
             flush_pcgen_o          = 1'b1;
             flush_if_o             = 1'b1;
@@ -79,9 +80,9 @@ module controller (
             flush_ex_o             = 1'b1;
             flush_icache_o         = 1'b1;
         end
-        // ----------------------
+        // ---------------------------------
         // SFENCE.VMA
-        // ----------------------
+        // ---------------------------------
         if (sfence_vma_i) begin
             flush_pcgen_o          = 1'b1;
             flush_if_o             = 1'b1;
@@ -102,10 +103,12 @@ module controller (
             flush_ex_o             = 1'b1;
         end
 
-        // ------------
-        // Exception
-        // ------------
-        if (ex_valid_i) begin
+        // ---------------------------------
+        // 1. Exception
+        // 2. Return from exception
+        // 3. Debug
+        // ---------------------------------
+        if (ex_valid_i || eret_i || debug_set_pc_i) begin
             // don't flush pcgen as we want to take the exception, flush pcgen is not a flush signal
             // for the PC GEN stage but instead tells it to take the PC we gave it
             flush_pcgen_o          = 1'b0;
@@ -114,19 +117,6 @@ module controller (
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
         end
-
-        // ----------------------
-        // Return from exception
-        // ----------------------
-        if (eret_i) begin
-            // don't flush pcgen as we want to take the exception
-            flush_pcgen_o          = 1'b0;
-            flush_if_o             = 1'b1;
-            flush_unissued_instr_o = 1'b1;
-            flush_id_o             = 1'b1;
-            flush_ex_o             = 1'b1;
-        end
-
     end
 
     // ----------------------
