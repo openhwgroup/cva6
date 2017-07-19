@@ -493,6 +493,11 @@ module ariane
     csr_regfile_i (
         .flush_o                ( flush_csr_ctrl                ),
         .halt_csr_o             ( halt_csr_ctrl                 ),
+        .debug_csr_req_i        ( csr_req_debug_csr             ),
+        .debug_csr_addr_i       ( csr_addr_debug_csr            ),
+        .debug_csr_we_i         ( csr_we_debug_csr              ),
+        .debug_csr_wdata_i      ( csr_wdata_debug_csr           ),
+        .debug_csr_rdata_o      ( csr_rdata_debug_csr           ),
         .commit_ack_i           ( commit_ack                    ),
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),

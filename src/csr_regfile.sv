@@ -21,7 +21,7 @@ import ariane_pkg::*;
 
 module csr_regfile #(
     parameter int ASID_WIDTH = 1
-    )(
+)(
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
     input  logic [63:0]           time_i,                     // Platform Timer
@@ -30,6 +30,12 @@ module csr_regfile #(
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
     output logic                  halt_csr_o,                 // halt requested
+    // Debug CSR Port
+    input  logic                  debug_csr_req_i,            // Request from debug to read the CSR regfile
+    input  logic [11:0]           debug_csr_addr_i,           // Address of CSR
+    input  logic                  debug_csr_we_i,             // Is it a read or write?
+    input  logic [63:0]           debug_csr_wdata_i,          // Data to write
+    output logic [63:0]           debug_csr_rdata_o,          // Read data
     // commit acknowledge
     input  logic                  commit_ack_i,               // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
@@ -68,13 +74,6 @@ module csr_regfile #(
     output logic                  tsr_o                       // trap sret
     // Performance Counter
 );
-
-    logic  mret;  // return from M-mode exception
-    logic  sret;  // return from S-mode exception
-
-    csr_t  csr_addr;
-    assign csr_addr = csr_t'(csr_addr_i);
-
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception;
     logic        csr_we, csr_read;
@@ -82,6 +81,18 @@ module csr_regfile #(
     priv_lvl_t   trap_to_priv_lvl;
     // register for enabling load store address translation, this is critical, hence the register
     logic        en_ld_st_translation_n, en_ld_st_translation_q;
+
+    logic  mret;  // return from M-mode exception
+    logic  sret;  // return from S-mode exception
+
+    csr_t  csr_addr;
+    // ----------------
+    // Assignments
+    // ----------------
+    // Debug MUX
+    assign csr_addr = csr_t'(((debug_csr_req_i) ? debug_csr_addr_i : csr_addr_i));
+    // Output the read data directly
+    assign debug_csr_rdata_o = csr_rdata;
 
     // ----------------
     // CSR Registers
@@ -431,7 +442,6 @@ module csr_regfile #(
     // CSR OP Select Logic
     // ---------------------------
     always_comb begin : csr_op_logic
-
         csr_wdata = csr_wdata_i;
         csr_we    = 1'b1;
         csr_read  = 1'b1;
@@ -460,6 +470,16 @@ module csr_regfile #(
                 csr_read = 1'b0;
             end
         endcase
+        // ------------------------------
+        // Debug Multiplexer (Priority)
+        // ------------------------------
+        if (debug_csr_req_i) begin
+            // Use the data supplied by the debug unit
+            csr_wdata = debug_csr_wdata_i;
+            csr_we    = debug_csr_we_i;
+            csr_read  = ~debug_csr_we_i;
+        end
+
     end
 
     logic interrupt_global_enable;
