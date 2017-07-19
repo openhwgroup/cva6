@@ -101,8 +101,9 @@ module debug_unit (
         rvalid_n        = 1'b0;
 
         halt_req        = 1'b0;
+        resume_req      = 1'b0;
         // update the previous PC if got a valid commit
-        dbg_ppc_n           = (commit_ack_i) ? commit_instr_i.pc : dbg_ppc_q;
+        dbg_ppc_n       = (commit_ack_i) ? commit_instr_i.pc : dbg_ppc_q;
         // debug registers
         dbg_ie_n        = dbg_ie_q;
         dbg_cause_n     = dbg_cause_q;
@@ -141,10 +142,6 @@ module debug_unit (
                 DBG_HIT:    rdata_n = {63'b0, dbg_hit_q};
                 DBG_IE:     rdata_n = dbg_ie_q;
                 DBG_CAUSE:  rdata_n = dbg_cause_q;
-                // all breakpoints are implemented
-                DBG_BPCTRL: rdata_n = {57'b0, dbg_hwbp_ctrl_q[debug_addr_i[5:3]], 2'b0, 1'b1};
-                DBG_BPDATA: rdata_n = dbg_hwbp_data_q[debug_addr_i[5:3]];
-
                 DBG_NPC: begin
                     if (debug_halted_o)
                         rdata_n = commit_instr_i.pc;
@@ -154,6 +151,10 @@ module debug_unit (
                     if (debug_halted_o)
                         rdata_n = dbg_ppc_q;
                 end
+                // all breakpoints are implemented
+                DBG_BPCTRL: rdata_n = {57'b0, dbg_hwbp_ctrl_q[debug_addr_i[5:3]], 2'b0, 1'b1};
+                DBG_BPDATA: rdata_n = dbg_hwbp_data_q[debug_addr_i[5:3]];
+
 
                 DBG_GPR: begin
                     if (debug_halted_o) begin
@@ -189,17 +190,20 @@ module debug_unit (
                 DBG_IE:     dbg_ie_n    = debug_wdata_i;
                 DBG_CAUSE:  dbg_cause_n = debug_wdata_i;
 
+                DBG_NPC: begin
+                    if (debug_halted_o) begin
+                        // Change CTRL Flow to debug PC
+                        debug_pc_o = debug_wdata_i;
+                        debug_set_pc_o = 1'b1;
+                    end
+                end
+                // PPC is read-only
+                DBG_PPC:;
+
                 // Only triggering on instruction fetch is allowed at the moment
                 DBG_BPCTRL: dbg_hwbp_ctrl_n[debug_addr_i[5:3]] = {3'b0, debug_wdata_i[1]};
                 DBG_BPDATA: dbg_hwbp_data_n[debug_addr_i[5:3]] = debug_wdata_i;
 
-                DBG_NPC: begin
-                    // Change CTRL Flow to debug PC
-                    debug_pc_o = debug_wdata_i;
-                    debug_set_pc_o = 1'b1;
-                end
-                // PPC is read-only
-                DBG_PPC:;
 
                 DBG_GPR: begin
                     if (debug_halted_o) begin
@@ -263,10 +267,10 @@ module debug_unit (
             // a halt was requested, we wait here until we get the next valid instruction
             // in order to properly populate the NPC and PPC registers
             HALT_REQ: begin
+                halt_o = 1'b1;
                 // we've got a valid instruction in the commit stage so we can proceed to the halted state
                 if (commit_instr_i.valid) begin
                     NS = HALTED;
-                    halt_o = 1'b1;
                 end
             end
             // we are in single step mode
@@ -326,7 +330,8 @@ module debug_unit (
     //--------------
     // Assertions
     //--------------
-
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
     // check that no registers are accessed when we are not in debug mode
     assert property (
       @(posedge clk_i) (debug_req_i) |-> ((debug_halted_o == 1'b1) ||
@@ -338,5 +343,6 @@ module debug_unit (
     // check that all accesses are word-aligned
     assert property (
       @(posedge clk_i) (debug_req_i) |-> (debug_addr_i[1:0] == 2'b00) );
-
+    `endif
+    `endif
 endmodule
