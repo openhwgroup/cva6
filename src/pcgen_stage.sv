@@ -19,7 +19,7 @@
 
 import ariane_pkg::*;
 
-module pcgen (
+module pcgen_stage (
     input  logic             clk_i,              // Clock
     input  logic             rst_ni,             // Asynchronous reset active low
     // control signals

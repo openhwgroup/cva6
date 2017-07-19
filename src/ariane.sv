@@ -259,7 +259,7 @@ module ariane
     // --------------
     // NPC Generation
     // --------------
-    pcgen pcgen_i (
+    pcgen_stage pcgen_stage_i (
         .fetch_enable_i        ( fetch_enable                   ),
         .flush_i               ( flush_ctrl_pcgen               ),
         .flush_bp_i            ( flush_bp_ctrl_pcgen            ),
