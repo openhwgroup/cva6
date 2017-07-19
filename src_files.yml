@@ -35,7 +35,8 @@ ariane:
     src/scoreboard.sv,
     src/store_buffer.sv,
     src/store_unit.sv,
-    src/tlb.sv
+    src/tlb.sv,
+    src/debug_unit.sv,
     ]
 riscv_regfile_rtl:
   targets: [
