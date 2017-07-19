@@ -237,6 +237,23 @@ module ariane
     logic                     halt_ctrl_commit;
     logic                     halt_debug_ctrl;
     logic                     halt_csr_ctrl;
+    // --------------
+    // Debug <-> *
+    // --------------
+    logic [63:0]              pc_debug_pcgen;
+    logic                     set_pc_debug_pcgen;
+
+    logic                     gpr_req_debug_issue;
+    logic [4:0]               gpr_addr_debug_issue;
+    logic                     gpr_we_debug_issue;
+    logic [63:0]              gpr_wdata_debug_issue;
+    logic [63:0]              gpr_rdata_debug_issue;
+
+    logic                     csr_req_debug_csr;
+    logic [11:0]              csr_addr_debug_csr;
+    logic                     csr_we_debug_csr;
+    logic [63:0]              csr_wdata_debug_csr;
+    logic [63:0]              csr_rdata_debug_csr;
 
     assign sec_lvl_o = priv_lvl;
     // --------------
@@ -257,6 +274,8 @@ module ariane
         .eret_i                ( eret                           ),
         .trap_vector_base_i    ( trap_vector_base_commit_pcgen  ),
         .ex_valid_i            ( ex_commit.valid                ),
+        .debug_pc_i            ( pc_debug_pcgen                 ),
+        .debug_set_pc_i        ( set_pc_debug_pcgen             ),
         .*
     );
     // ---------
@@ -509,7 +528,7 @@ module ariane
         .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
 
         .halt_csr_i             ( halt_csr_ctrl                 ),
-        .halt_debug_i           ( 1'b0                          ),
+        .halt_debug_i           ( halt_debug_ctrl               ),
         .halt_o                 ( halt_ctrl_commit              ),
         // control ports
         .eret_i                 ( eret                          ),
@@ -518,6 +537,32 @@ module ariane
         .resolved_branch_i      ( resolved_branch               ),
         .fence_i_i              ( fence_i_commit_controller     ),
         .sfence_vma_i           ( sfence_vma_commit_controller  ),
+
+        .*
+    );
+    // ------------
+    // Debug
+    // ------------
+    debug_unit debug_unit_i (
+        .commit_instr_i    ( commit_instr_id_commit    ),
+        .commit_ack_i      ( commit_ack                ),
+        .ex_i              ( ex_commit                 ),
+        .halt_o            ( halt_debug_ctrl           ),
+
+        .debug_pc_o        ( pc_debug_pcgen            ),
+        .debug_set_pc_o    ( debug_set_pc_o            ),
+
+        .debug_gpr_req_o   ( gpr_req_debug_issue       ),
+        .debug_gpr_addr_o  ( gpr_addr_debug_issue      ),
+        .debug_gpr_we_o    ( gpr_we_debug_issue        ),
+        .debug_gpr_wdata_o ( gpr_wdata_debug_issue     ),
+        .debug_gpr_rdata_i ( gpr_rdata_debug_issue     ),
+
+        .debug_csr_req_o   ( csr_req_debug_csr         ),
+        .debug_csr_addr_o  ( csr_addr_debug_csr        ),
+        .debug_csr_we_o    ( csr_we_debug_csr          ),
+        .debug_csr_wdata_o ( csr_wdata_debug_csr       ),
+        .debug_csr_rdata_i ( csr_rdata_debug_csr       ),
 
         .*
     );
