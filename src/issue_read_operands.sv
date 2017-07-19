@@ -25,6 +25,12 @@ module issue_read_operands (
     input  logic                                   test_en_i,
     // flush
     input  logic                                   flush_i,
+    // coming from Debug
+    input  logic                                   debug_gpr_req_i,
+    input  logic [4:0]                             debug_gpr_addr_i,
+    input  logic                                   debug_gpr_we_i,
+    input  logic [63:0]                            debug_gpr_wdata_i,
+    output logic [63:0]                            debug_gpr_rdata_o,
     // coming from scoreboard
     input  scoreboard_entry                        issue_instr_i,
     input  logic                                   issue_instr_valid_i,
@@ -274,6 +280,31 @@ module issue_read_operands (
         end
     end
 
+    // --------------------
+    // Debug Multiplexers
+    // --------------------
+    logic [4:0]  raddr_a, waddr;
+    logic [63:0] wdata;
+    logic        we;
+
+    always_comb begin
+        // get the address from the issue stage by default
+        // read port
+        debug_gpr_rdata_o = operand_a_regfile;
+        raddr_a           = issue_instr_i.rs1;
+        // write port
+        waddr             = waddr_a_i;
+        wdata             = wdata_a_i;
+        we                = we_a_i;
+        // we've got a debug request in
+        if (debug_gpr_req_i) begin
+            raddr_a = debug_gpr_addr_i;
+            waddr   = debug_gpr_addr_i;
+            wdata   = debug_gpr_wdata_i;
+            we      = debug_gpr_we_i;
+        end
+    end
+
     // ----------------------
     // Integer Register File
     // ----------------------
@@ -286,15 +317,15 @@ module issue_read_operands (
         .rst_n          ( rst_ni              ),
         .test_en_i      ( test_en_i           ),
 
-        .raddr_a_i      ( issue_instr_i.rs1   ),
+        .raddr_a_i      ( raddr_a             ),
         .rdata_a_o      ( operand_a_regfile   ),
 
         .raddr_b_i      ( issue_instr_i.rs2   ),
         .rdata_b_o      ( operand_b_regfile   ),
 
-        .waddr_a_i      ( waddr_a_i           ),
-        .wdata_a_i      ( wdata_a_i           ),
-        .we_a_i         ( we_a_i              )
+        .waddr_a_i      ( waddr               ),
+        .wdata_a_i      ( wdata               ),
+        .we_a_i         ( we                  )
     );
 
     // ----------------------
