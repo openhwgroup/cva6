@@ -213,8 +213,10 @@ module load_unit (
 
         endcase
 
-        // save the load data for later usage
-        if (pop_ld_o) begin
+        // save the load data for later usage, two possible situation where we need to latch the load data
+        // 1. If we get a new request
+        // 2. If we get an exception
+        if (pop_ld_o || ex_i.valid) begin
             load_data_n = in_data;
         end
 

@@ -125,13 +125,13 @@ simc: build ariane_tb.dtb
 	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug
 
-run-asm-tests: build
+run-asm-tests: build ariane_tb.dtb
 	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
 		+UVM_TESTNAME=$(test_case) $(uvm-flags) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
 		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
 		$(library).$(test_top_level)_optimized;)
 
-run-failed-tests: build
+run-failed-tests: build ariane_tb.dtb
 	# make the tests
 	cd failedtests && make
 	# run the RTL simulation
@@ -145,7 +145,7 @@ run-failed-tests: build
 	$(foreach test, $(failed-tests:.S=), diff $(test).spike.sig $(test).rtlsim.sig;)
 
 # Run the specified test case
-$(tests): build
+$(tests): build ariane_tb.dtb
 	# Optimize top level
 	vopt${questa_version} -work ${library} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
 	# vsim${questa_version} $@_tb_optimized
