@@ -93,7 +93,11 @@ package ariane_pkg;
                                // CSR functions
                                MRET, SRET, ECALL, WFI, FENCE_I, SFENCE_VMA, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
                                // LSU functions
-                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
+                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU,
+                               // Multiplications
+                               MUL, MULH, MULHU, MULHSU, MULW,
+                               // Divisions
+                               DIV, DIVU, REM, REMU, DIV, DIVU, DIVW, DIVWU, REM, REMU, REMW, REMWU
                              } fu_op;
 
     typedef struct packed {
