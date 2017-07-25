@@ -84,7 +84,7 @@ module load_unit (
     always_comb begin : load_control
         // default assignments
         NS                = CS;
-        load_data_n       = in_data;
+        load_data_n       = load_data_q;
         translation_req_o = 1'b0;
         data_req_o        = 1'b0;
         // tag control
@@ -212,11 +212,18 @@ module load_unit (
             end
 
         endcase
+
+        // save the load data for later usage
+        if (pop_ld_o) begin
+            load_data_n = in_data;
+        end
+
         // we got an exception
         if (ex_i.valid) begin
             // the next state will be the idle state
             NS = IDLE;
         end
+
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
         if (flush_i) begin
             NS = WAIT_FLUSH;
