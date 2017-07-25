@@ -36,8 +36,8 @@ module alu
     output logic                     alu_ready_o,
     output logic [TRANS_ID_BITS-1:0] alu_trans_id_o
 );
-    // ALU is a single cycle instructions, hence it is always ready
 
+    // ALU is a single cycle instructions, hence it is always ready
     assign alu_ready_o    = 1'b1;
     assign alu_valid_o    = alu_valid_i;
     assign alu_trans_id_o = trans_id_i;
