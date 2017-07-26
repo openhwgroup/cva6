@@ -1,3 +1,4 @@
+// Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 // Author: Pasquale Davide Schiavone <pschiavo@iis.ee.ethz.ch>
 //
 // Date: 05.06.2017
@@ -40,6 +41,11 @@ module mult
     // Mock Multiplier
     // ----------------
     `ifndef SYNTHESIS
+
+    function automatic logic [63:0] sign_extend (logic [31:0] operand);
+        return {{32{operand[31]}}, operand[31:0]};
+    endfunction
+
     assign mult_valid_o = mult_valid_i;
     assign mult_trans_id_o = trans_id_i;
     assign mult_ready_o = 1'b1;
@@ -67,28 +73,76 @@ module mult
             end
 
             MULHSU: begin
-                mult_result = $signed(operand_a_i) * $unsigned(operand_b_i);
+                mult_result = $signed({operand_a_i[63], operand_a_i}) * $signed({1'b0, operand_b_i});
                 result_o = mult_result[127:64];
             end
 
-            MULW:;
+            MULW: begin
+                mult_result[63:0] = $signed(operand_a_i[31:0]) * $signed(operand_b_i[31:0]);
+                // sign extend the result
+                result_o = sign_extend(mult_result[31:0]);
+            end
 
             // Divisions
-            DIV:;
+            DIV: begin
+                result_o = $signed(operand_a_i) / $signed(operand_b_i);
+                // division by zero
+                // set all bits
+                if (operand_b_i == '0)
+                    result_o = -1;
+            end
 
-            DIVU:;
+            DIVU: begin
+                result_o = operand_a_i / operand_b_i;
+                // division by zero
+                // set all bits
+                if (operand_b_i == '0)
+                    result_o = -1;
+            end
 
-            DIVW:;
+            DIVW: begin
+                result_o = sign_extend($signed(operand_a_i[31:0]) / $signed(operand_b_i[31:0]));
+                // division by zero
+                // set all bits
+                if (operand_b_i == '0)
+                    result_o = -1;
+            end
 
-            DIVUW:;
+            DIVUW: begin
+                result_o = sign_extend(operand_a_i[31:0] / operand_b_i[31:0]);
+                // division by zero
+                // set all bits
+                if (operand_b_i == '0)
+                    result_o = -1;
+            end
 
-            REM:;
+            REM: begin
+                result_o = $signed(operand_a_i) % $signed(operand_b_i);
+                // division by zero
+                if (operand_b_i == '0)
+                    result_o = operand_a_i;
+            end
 
-            REMU:;
+            REMU: begin
+                result_o = operand_a_i % operand_b_i;
+                // division by zero
+                if (operand_b_i == '0)
+                    result_o = operand_a_i;
+            end
 
-            REMW:;
+            REMW: begin
+                result_o = sign_extend($signed(operand_a_i[31:0]) % $signed(operand_b_i[31:0]));
+                // division by zero
+                if (operand_b_i == '0)
+                    result_o = operand_a_i;
+            end
 
-            REMUW:;
+            REMUW: begin
+                result_o = sign_extend(operand_a_i[31:0] % operand_b_i[31:0]);
+                // division by zero
+                if (operand_b_i == '0)
+                    result_o = operand_a_i;
+            end
         endcase
     end
     `endif
