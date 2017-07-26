@@ -121,9 +121,10 @@ module pcgen_stage (
         // -------------------------------
         // 2. Debug
         // -------------------------------
-        if (debug_set_pc_i)
+        if (debug_set_pc_i) begin
             npc_n = debug_pc_i;
-
+            set_pc_n = 1'b1;
+        end
         // -------------------------------
         // 4. Exception
         // -------------------------------
