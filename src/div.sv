@@ -20,7 +20,7 @@
 //
 module div (
     input logic clk_i,    // Clock
-    input logic rst_ni,   // Asynchronous reset active low
+    input logic rst_ni   // Asynchronous reset active low
 
 );
 
