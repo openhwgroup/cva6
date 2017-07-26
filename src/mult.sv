@@ -50,38 +50,43 @@ module mult
     assign mult_trans_id_o = trans_id_i;
     assign mult_ready_o = 1'b1;
 
+    // sign extend operand a and b
+    logic sign_a, sign_b;
+    logic [127:0] mult_result;
+    logic [63:0]  mult_result_w;
+
+    assign mult_result   = $signed({operand_a_i[63] & sign_a, operand_a_i}) * $signed({operand_b_i[63] & sign_b, operand_b_i});
+    assign mult_result_w = $signed({operand_a_i[31] & sign_a, operand_a_i[31:0]}) * $signed({operand_b_i[31] & sign_b, operand_b_i[31:0]});
+
     always_comb begin : mul_div
-        automatic logic [127:0] mult_result;
+
+        // perform multiplication
 
         result_o = '0;
+        sign_a = 1'b0;
+        sign_b = 1'b0;
 
         case (operator_i)
             // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
-            MUL: begin
-                mult_result = operand_a_i * operand_b_i;
+            MUL:
                 result_o = mult_result[63:0];
-            end
 
             MULH: begin
-                mult_result = $signed(operand_a_i) * $signed(operand_b_i);
+                sign_a   = 1'b1;
+                sign_b   = 1'b1;
                 result_o = mult_result[127:64];
             end
 
-            MULHU: begin
-                mult_result = operand_a_i * operand_b_i;
+            MULHU:
                 result_o = mult_result[127:64];
-            end
 
             MULHSU: begin
-                mult_result = $signed({operand_a_i[63], operand_a_i}) * $signed({1'b0, operand_b_i});
+                sign_a   = 1'b1;
                 result_o = mult_result[127:64];
             end
 
-            MULW: begin
-                mult_result[63:0] = $signed(operand_a_i[31:0]) * $signed(operand_b_i[31:0]);
-                // sign extend the result
-                result_o = sign_extend(mult_result[31:0]);
-            end
+            MULW:
+                result_o = sign_extend(mult_result_w[31:0]);
 
             // Divisions
             DIV: begin
