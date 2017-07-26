@@ -257,7 +257,7 @@ module decoder (
                 // 32bit Reg-Reg Operations
                 // --------------------------
                 OPCODE_OP32: begin
-                    instruction_o.fu  = ALU;
+                    instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
                     instruction_o.rs1 = instr.rtype.rs1;
                     instruction_o.rs2 = instr.rtype.rs2;
                     instruction_o.rd  = instr.rtype.rd;
