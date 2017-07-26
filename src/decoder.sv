@@ -273,6 +273,7 @@ module decoder (
                         // Multiplications
                         {7'b000_0001, 3'b000}: instruction_o.op = MULW;
                         {7'b000_0001, 3'b100}: instruction_o.op = DIVW;
+                        {7'b000_0001, 3'b101}: instruction_o.op = DIVUW;
                         {7'b000_0001, 3'b110}: instruction_o.op = REMW;
                         {7'b000_0001, 3'b111}: instruction_o.op = REMUW;
 

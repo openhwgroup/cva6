@@ -62,7 +62,6 @@ module ex_stage #(
     input  logic                                   lsu_commit_i,
     output exception                               lsu_exception_o,
     output logic                                   no_st_pending_o,
-
     // CSR
     output logic                                   csr_ready_o,
     input  logic                                   csr_valid_i,
@@ -71,7 +70,14 @@ module ex_stage #(
     output logic                                   csr_valid_o,
     output logic [11:0]                            csr_addr_o,
     input  logic                                   csr_commit_i,
-    // memory management
+    // MULT
+    output logic                                   mult_ready_o,      // FU is ready
+    input  logic                                   mult_valid_i,      // Output is valid
+    output logic [TRANS_ID_BITS-1:0]               mult_trans_id_o,
+    output logic [63:0]                            mult_result_o,
+    output logic                                   mult_valid_o,
+
+    // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
     input  logic                                   flush_tlb_i,
@@ -105,11 +111,7 @@ module ex_stage #(
     output logic                                   data_if_tag_valid_o,
     input  logic                                   data_if_data_gnt_i,
     input  logic                                   data_if_data_rvalid_i,
-    input  logic [63:0]                            data_if_data_rdata_i,
-
-    // MULT
-    output logic                                   mult_ready_o,      // FU is ready
-    input  logic                                   mult_valid_i       // Output is valid
+    input  logic [63:0]                            data_if_data_rdata_i
 );
 
     // -----

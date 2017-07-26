@@ -170,6 +170,9 @@ module ariane
     // MULT
     logic                     mult_ready_ex_id;
     logic                     mult_valid_id_ex;
+    logic [TRANS_ID_BITS-1:0] mult_trans_id_ex_id;
+    logic [63:0]              mult_result_ex_id;
+    logic                     mult_valid_ex_id;
     // CSR
     logic                     csr_ready_ex_id;
     logic                     csr_valid_id_ex;
@@ -376,10 +379,10 @@ module ariane
         .csr_ready_i                ( csr_ready_ex_id                 ),
         .csr_valid_o                ( csr_valid_id_ex                 ),
 
-        .trans_id_i                 ( {alu_trans_id_ex_id,       lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id       }),
-        .wdata_i                    ( {alu_result_ex_id,         lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id         }),
-        .ex_ex_i                    ( {{$bits(exception){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception){1'b0}} }),
-        .wb_valid_i                 ( {alu_valid_ex_id,          lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id          }),
+        .trans_id_i                 ( {alu_trans_id_ex_id,       lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id,       mult_trans_id_ex_id       }),
+        .wdata_i                    ( {alu_result_ex_id,         lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,         mult_result_ex_id         }),
+        .ex_ex_i                    ( {{$bits(exception){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception){1'b0}}, {$bits(exception){1'b0}} }),
+        .wb_valid_i                 ( {alu_valid_ex_id,          lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id,          mult_valid_ex_id          }),
 
         .waddr_a_i                  ( waddr_a_commit_id               ),
         .wdata_a_i                  ( wdata_a_commit_id               ),
@@ -457,6 +460,9 @@ module ariane
 
         .mult_ready_o           ( mult_ready_ex_id            ),
         .mult_valid_i           ( mult_valid_id_ex            ),
+        .mult_trans_id_o        ( mult_trans_id_ex_id         ),
+        .mult_result_o          ( mult_result_ex_id           ),
+        .mult_valid_o           ( mult_valid_ex_id            ),
         .*
     );
 

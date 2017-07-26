@@ -31,7 +31,6 @@ module mult
     input  logic [63:0]              operand_a_i,
     input  logic [63:0]              operand_b_i,
     output logic [63:0]              result_o,
-    output logic [63:0]              result_o,
     output logic                     mult_valid_o,
     output logic                     mult_ready_o,
     output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
