@@ -35,6 +35,52 @@ module mult
     output logic                     mult_ready_o,
     output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
+
+    // ----------------
+    // Mock Multiplier
+    // ----------------
+    assign mult_valid_o = mult_valid_i;
+    assign mult_trans_id_o = trans_id_i;
+    assign mult_ready_o = 1'b1;
+
+    always_comb begin : mul_div
+        automatic logic [127:0] mult_result;
+
+        result_o = '0;
+
+        case (operator_i)
+            // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
+            MUL: begin
+                mult_result = operand_a_i * operand_b_i;
+                result_o = mult_result[63:0];
+            end
+
+            MULH:;
+
+            MULHU:;
+
+            MULHSU:;
+
+            MULW:;
+
+            // Divisions
+            DIV:;
+
+            DIVU:;
+
+            DIVW:;
+
+            DIVUW:;
+
+            REM:;
+
+            REMU:;
+
+            REMW:;
+
+            REMUW:;
+        endcase
+    end
     // // MUL and MULH is a two cycle instructions
     // logic signed [63:0]  result_mult;
     // logic signed [63:0]  result_multh;

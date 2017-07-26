@@ -134,6 +134,10 @@ module ex_stage #(
     // Multiplication
     // ----------------
     // TODO
+    mult mult_i (
+        .result_o ( mult_result_o ),
+        .*
+    );
 
     // ----------------
     // Load-Store Unit
