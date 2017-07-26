@@ -179,6 +179,7 @@ module store_buffer (
         page_offset_matches_o = 1'b0;
         // check if the LSBs are identical and the entry is valid
         for (int unsigned i = 0; i < DEPTH; i++) begin
+            // Check if the page offset matches and whether the entry is valid
             if ((page_offset_i[11:3] == commit_queue_q[i].address[11:3]) && commit_queue_q[i].valid) begin
                 page_offset_matches_o = 1'b1;
                 break;

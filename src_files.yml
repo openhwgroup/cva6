@@ -41,6 +41,7 @@ ariane:
 riscv_regfile_rtl:
   targets: [
     rtl,
+    gf22,
   ]
   incdirs: [
     include,
