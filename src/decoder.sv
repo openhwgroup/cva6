@@ -222,22 +222,31 @@ module decoder (
                 // Reg-Reg Operations
                 // --------------------------
                 OPCODE_OP: begin
-                    instruction_o.fu  = ALU;
+                    instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
                     instruction_o.rs1 = instr.rtype.rs1;
                     instruction_o.rs2 = instr.rtype.rs2;
                     instruction_o.rd  = instr.rtype.rd;
 
                     unique case ({instr.rtype.funct7, instr.rtype.funct3})
-                        {6'b00_0000, 3'b000}: instruction_o.op = ADD;   // Add
-                        {6'b10_0000, 3'b000}: instruction_o.op = SUB;   // Sub
-                        {6'b00_0000, 3'b010}: instruction_o.op = SLTS;  // Set Lower Than
-                        {6'b00_0000, 3'b011}: instruction_o.op = SLTU;  // Set Lower Than Unsigned
-                        {6'b00_0000, 3'b100}: instruction_o.op = XORL;  // Xor
-                        {6'b00_0000, 3'b110}: instruction_o.op = ORL;   // Or
-                        {6'b00_0000, 3'b111}: instruction_o.op = ANDL;  // And
-                        {6'b00_0000, 3'b001}: instruction_o.op = SLL;   // Shift Left Logical
-                        {6'b00_0000, 3'b101}: instruction_o.op = SRL;   // Shift Right Logical
-                        {6'b10_0000, 3'b101}: instruction_o.op = SRA;   // Shift Right Arithmetic
+                        {7'b000_0000, 3'b000}: instruction_o.op = ADD;   // Add
+                        {7'b010_0000, 3'b000}: instruction_o.op = SUB;   // Sub
+                        {7'b000_0000, 3'b010}: instruction_o.op = SLTS;  // Set Lower Than
+                        {7'b000_0000, 3'b011}: instruction_o.op = SLTU;  // Set Lower Than Unsigned
+                        {7'b000_0000, 3'b100}: instruction_o.op = XORL;  // Xor
+                        {7'b000_0000, 3'b110}: instruction_o.op = ORL;   // Or
+                        {7'b000_0000, 3'b111}: instruction_o.op = ANDL;  // And
+                        {7'b000_0000, 3'b001}: instruction_o.op = SLL;   // Shift Left Logical
+                        {7'b000_0000, 3'b101}: instruction_o.op = SRL;   // Shift Right Logical
+                        {7'b010_0000, 3'b101}: instruction_o.op = SRA;   // Shift Right Arithmetic
+                        // Multiplications
+                        {7'b000_0001, 3'b000}: instruction_o.op = MUL;
+                        {7'b000_0001, 3'b001}: instruction_o.op = MULH;
+                        {7'b000_0001, 3'b010}: instruction_o.op = MULHSU;
+                        {7'b000_0001, 3'b011}: instruction_o.op = MULHU;
+                        {7'b000_0001, 3'b100}: instruction_o.op = DIV;
+                        {7'b000_0001, 3'b101}: instruction_o.op = DIVU;
+                        {7'b000_0001, 3'b110}: instruction_o.op = REM;
+                        {7'b000_0001, 3'b111}: instruction_o.op = REMU;
                         default: begin
                             illegal_instr = 1'b1;
                         end
@@ -256,12 +265,16 @@ module decoder (
                     if (~instr.instr[28])
                       unique case ({instr.rtype.funct7, instr.rtype.funct3})
 
-                        {6'b00_0000, 3'b000}: instruction_o.op = ADDW; // addw
-                        {6'b10_0000, 3'b000}: instruction_o.op = SUBW; // subw
-                        {6'b00_0000, 3'b001}: instruction_o.op = SLLW; // sllw
-                        {6'b00_0000, 3'b101}: instruction_o.op = SRLW; // srlw
-                        {6'b10_0000, 3'b101}: instruction_o.op = SRAW; // sraw
-                        // multiplications
+                        {7'b000_0000, 3'b000}: instruction_o.op = ADDW; // addw
+                        {7'b010_0000, 3'b000}: instruction_o.op = SUBW; // subw
+                        {7'b000_0000, 3'b001}: instruction_o.op = SLLW; // sllw
+                        {7'b000_0000, 3'b101}: instruction_o.op = SRLW; // srlw
+                        {7'b010_0000, 3'b101}: instruction_o.op = SRAW; // sraw
+                        // Multiplications
+                        {7'b000_0001, 3'b000}: instruction_o.op = MULW;
+                        {7'b000_0001, 3'b100}: instruction_o.op = DIVW;
+                        {7'b000_0001, 3'b110}: instruction_o.op = REMW;
+                        {7'b000_0001, 3'b111}: instruction_o.op = REMUW;
 
                         default: illegal_instr = 1'b1;
                       endcase
