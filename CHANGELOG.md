@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+- Support for M Extension (mul, div and reminder)
+### Changed
+
 ## 0.3.0
 ### Added
 - Added support for device tree in Ariane's testbench

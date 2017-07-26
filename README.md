@@ -108,4 +108,4 @@ Check out the [contribution guide](CONTRIBUTING.md)
 | divw          | :white_check_mark: :white_check_mark: | mul           | :white_check_mark: :white_check_mark: | div           | :white_check_mark: :white_check_mark: |
 | divuw         | :white_check_mark: :white_check_mark: | mulh          | :white_check_mark: :white_check_mark: | divu          | :white_check_mark: :white_check_mark: |
 | remw          | :white_check_mark: :white_check_mark: | mulhsu        | :white_check_mark: :white_check_mark: | rem           | :white_check_mark: :white_check_mark: |
-| remu          |                                       |               |                                       |               |                                       |
+| remu          | :white_check_mark: :white_check_mark: |               |                                       |               |                                       |
