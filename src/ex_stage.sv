@@ -126,7 +126,7 @@ module ex_stage #(
     // Branch Engine
     // --------------------
     branch_unit branch_unit_i (
-        .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i ), // any functional unit is valid, check that there is no accidental mis-predict
+        .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i), // any functional unit is valid, check that there is no accidental mis-predict
         .*
     );
 
