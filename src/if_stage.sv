@@ -59,10 +59,11 @@ module if_stage (
     // Control signals
     address_fifo_t    push_data, pop_data;
     logic             fifo_valid, fifo_ready;
-    logic             pop_empty, empty; // pop the address queue in case of a flush, empty signal
+    logic             pop_empty; // pop the address queue in case of a flush, empty signal
+    logic             empty, full;
 
     // we are busy if we are either waiting for a grant or if the FIFO is full
-    assign if_busy_o = (CS == WAIT_GNT) || !fifo_ready || (CS == WAIT_ABORTED_REQUEST);
+    assign if_busy_o = (CS == WAIT_GNT) || !fifo_ready || (CS == WAIT_ABORTED_REQUEST) || full;
     assign fetch_address = {fetch_address_i[63:2], 2'b0};
 
     // --------------------------------------------------
@@ -182,17 +183,16 @@ module if_stage (
     // ---------------------------------
 
     fifo #(
-        .dtype            ( address_fifo_t      ),
-        // we can only have two in-flight instructions:
-        .DEPTH            ( 2                   )
+        .dtype            ( address_fifo_t          ),
+        .DEPTH            ( 2                       )  // right now we support two outstanding transactions
     ) i_fifo (
-        .flush_i          ( 1'b0 ), // do not flush, we need to keep track of all outstanding rvalids
-        .full_o           ( ), // This queue should not underflow...
-        .empty_o          ( empty ), // .. or overflow
-        .single_element_o ( ), // isn't needed here
-        .data_i           ( push_data   ),
-        .push_i           ( instr_gnt_i ), // if we got a grant push the address and data
-        .data_o           ( pop_data    ),
+        .flush_i          ( 1'b0                    ), // do not flush, we need to keep track of all outstanding rvalids
+        .full_o           ( full                    ), // the address buffer is full
+        .empty_o          ( empty                   ), // .. or overflow
+        .single_element_o (                         ), // isn't needed here
+        .data_i           ( push_data               ),
+        .push_i           ( instr_gnt_i             ), // if we got a grant push the address and data
+        .data_o           ( pop_data                ),
         .pop_i            ( fifo_valid || pop_empty ), // pop the data if we say that the fetch is valid
         .*
     );
