@@ -25,16 +25,16 @@ module fetch_fifo
     input  logic                   rst_ni,
     // control signals
     input  logic                   flush_i,    // clears the contents of the FIFO -> quasi reset
-    // branch prediction at in_addr_i address, as this is an address and not PC it can be the case
+    // branch prediction at addr_i address, as this is an address and not PC it can be the case
     // that we have two compressed instruction (or one compressed instruction and one unaligned instruction) so we
     // only predict on one entry and discard (or keep) the other depending on its position and prediction.
     // input port
     input  branchpredict_sbe       branch_predict_i,
     input  exception               ex_i,              // fetch exception in
-    input  logic [63:0]            in_addr_i,
-    input  logic [63:0]            in_rdata_i,
-    input  logic                   in_valid_i,
-    output logic                   in_ready_o,
+    input  logic [63:0]            addr_i,
+    input  logic [63:0]            rdata_i,
+    input  logic                   valid_i,
+    output logic                   ready_o,
     // Dual Port Fetch FIFO
     // output port 0
     output fetch_entry             fetch_entry_0_o,
@@ -55,7 +55,7 @@ module fetch_fifo
     logic [$clog2(DEPTH)-1:0]     write_pointer_n,  write_pointer_q;
     logic [$clog2(DEPTH)-1:0]     status_cnt_n,     status_cnt_q; // this integer will be truncated by the synthesis tool
 
-    assign in_ready_o = (status_cnt_q < DEPTH-2);
+    assign ready_o = (status_cnt_q < DEPTH-2);
     assign full = (status_cnt_q == DEPTH);
     assign empty = (status_cnt_q == '0);
 
@@ -66,11 +66,11 @@ module fetch_fifo
     // downsize from 64 bit to 32 bit, simply ignore half of the incoming data
     always_comb begin : downsize
         // take the upper half
-        if (in_addr_i[2])
-            in_rdata = in_rdata_i[63:32];
+        if (addr_i[2])
+            in_rdata = rdata_i[63:32];
         // take the lower half of the instruction
         else
-            in_rdata = in_rdata_i[31:0];
+            in_rdata = rdata_i[31:0];
     end
 
     always_comb begin : fetch_fifo_logic
@@ -84,10 +84,10 @@ module fetch_fifo
         // -------------
         // Input Port
         // -------------
-        if (in_valid_i) begin
+        if (valid_i) begin
             status_cnt++;
             // new input data
-            mem_n[write_pointer_q] = {in_addr_i, in_rdata, branch_predict_i, ex_i};
+            mem_n[write_pointer_q] = {addr_i, in_rdata, branch_predict_i, ex_i};
             write_pointer++;
         end
 
@@ -146,7 +146,7 @@ module fetch_fifo
     // Make sure we don't overflow the queue
     assert property (@(posedge clk_i) ((full && !flush_i) |-> ##1 !empty)) else $error("Fetch FIFO Overflowed");
     assert property (@(posedge clk_i) (flush_i || (status_cnt_q - status_cnt_n) <= 2 || (status_cnt_q - status_cnt_n) >= -2)) else $error("Fetch FIFO over- or underflowed");
-    assert property (@(posedge clk_i) (in_valid_i |-> !full)) else $error("Got a valid signal, although the queue is not ready to accept a new request");
+    assert property (@(posedge clk_i) (valid_i |-> !full)) else $error("Got a valid signal, although the queue is not ready to accept a new request");
     `endif
     `endif
 endmodule
