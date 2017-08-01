@@ -65,7 +65,7 @@ module store_buffer (
         logic [63:0] data;
         logic [7:0]  be;
         logic        valid;     // this entry is valid, we need this for checking if the address offset matches
-    } speculative_queue_n [DEPTH-1], speculative_queue_q [DEPTH-1],
+    } speculative_queue_n [DEPTH-1:0], speculative_queue_q [DEPTH-1:0],
       commit_queue_n [DEPTH-1:0],    commit_queue_q [DEPTH-1:0];
 
     // keep a status count for both buffers
@@ -84,12 +84,13 @@ module store_buffer (
     always_comb begin : core_if
         automatic logic [DEPTH:0] speculative_status_cnt = speculative_status_cnt_q;
 
-        // we are ready if the speculative queue has a space left
-        ready_o =  !(speculative_status_cnt_q != DEPTH-1);
+        // we are ready if the speculative and the commit queue have a space left
+        ready_o =  (speculative_status_cnt_q < DEPTH) && (commit_status_cnt_q < DEPTH);
         // default assignments
         speculative_status_cnt_n    = speculative_status_cnt_q;
         speculative_read_pointer_n  = speculative_read_pointer_q;
         speculative_write_pointer_n = speculative_write_pointer_q;
+        speculative_queue_n         = speculative_queue_q;
         // LSU interface
         // we are ready to accept a new entry and the input data is valid
         if (ready_o && valid_i) begin
