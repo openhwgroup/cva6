@@ -486,8 +486,9 @@ endmodule
 // The one block is the load unit, the other one is the store unit. They will signal their readiness
 // with separate signals. If they are not ready the LSU control should keep the last applied signals stable.
 // Furthermore it can be the case that another request for one of the two store units arrives in which case
-// the LSU controll should sample it and store it for later application to the units. It does so, by storing it in a
-// two element FIFO.
+// the LSU control should sample it and store it for later application to the units. It does so, by storing it in a
+// two element FIFO. This is necessary as we only know very late in the cycle whether the load/store will succeed (address check,
+// TLB hit mainly). So we better unconditionally allow another request to arrive and store this request in case we need to.
 module lsu_bypass (
     input  logic      clk_i,
     input  logic      rst_ni,
