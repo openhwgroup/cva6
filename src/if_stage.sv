@@ -60,9 +60,16 @@ module if_stage (
     address_fifo_t    push_data, pop_data;
     logic             fifo_valid, fifo_ready;
     logic             pop_empty; // pop the address queue in case of a flush, empty signal
-    logic             empty, full;
+    // Address queue status signals
+    logic             empty, full, single_element;
 
-    // we are busy if we are either waiting for a grant or if the FIFO is full
+    // We are busy if:
+    // 1. we are either waiting for a grant
+    // 2. or if the FIFO is full
+    // 3. We are waiting for the current request to be aborted e.g.: we are waiting for the address queue to be empty
+    // 4. the address queue is full (then we can handle any transaction anymore which we will commit to the memory hierarchy)
+    // And all this is not true if we just flushed. That is the case that we unconditionally have to take the new PC on a flush
+    // as the PC Gen stage is expecting this.
     assign if_busy_o = ((CS == WAIT_GNT) || !fifo_ready || (CS == WAIT_ABORTED_REQUEST) || full) && (CS != WAIT_ABORTED);
     assign fetch_address = {fetch_address_i[63:2], 2'b0};
 
