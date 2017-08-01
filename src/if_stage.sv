@@ -54,7 +54,7 @@ module if_stage (
         branchpredict_sbe branchpredict;
     } address_fifo_t;
 
-    logic [63:0]      instr_addr_n, instr_addr_q;
+    logic [63:0]      instr_addr_n, instr_addr_q, fetch_address;
     branchpredict_sbe branchpredict_n, branchpredict_q;
     // Control signals
     address_fifo_t    push_data, pop_data;
@@ -63,12 +63,12 @@ module if_stage (
     logic             empty, full;
 
     // we are busy if we are either waiting for a grant or if the FIFO is full
-    assign if_busy_o = (CS == WAIT_GNT) || !fifo_ready || (CS == WAIT_ABORTED_REQUEST) || full;
+    assign if_busy_o = ((CS == WAIT_GNT) || !fifo_ready || (CS == WAIT_ABORTED_REQUEST) || full) && (CS != WAIT_ABORTED);
     assign fetch_address = {fetch_address_i[63:2], 2'b0};
 
     // --------------------------------------------------
-    // Instruction fetch FSM
-    // deals with instruction memory / instruction cache
+    // Instruction Fetch FSM
+    // Deals with Instruction Memory / Instruction Cache
     // --------------------------------------------------
     always_comb begin : instr_fetch_fsm
 
@@ -80,20 +80,14 @@ module if_stage (
         pop_empty     = instr_rvalid_i; // only pop the address queue
 
         // get new data by default
-        if (!if_busy_o) begin
-            branchpredict_n = branch_predict_i;
-            instr_addr_n    = fetch_address_i;
-        // if we are not ready, latch the current data
-        end else begin
-            branchpredict_n = branchpredict_q;
-            instr_addr_n    = instr_addr_q;
-        end
+        branchpredict_n = branch_predict_i;
+        instr_addr_n    = fetch_address_i;
 
         case (CS)
             // we are idling, and can accept a new request
             IDLE: begin
-                // check if we have space in the FIFO and we want to do a request
-                if (fifo_ready && fetch_valid_i) begin
+                // check if we have space in the FIFOs and we want to do a request
+                if (fifo_ready && fetch_valid_i && !full) begin
                     instr_req_o = 1'b1;
                     // did we get a grant?
                     if (instr_gnt_i)
@@ -110,6 +104,9 @@ module if_stage (
                 instr_addr_o = {instr_addr_q[63:2], 2'b0};
                 instr_req_o  = 1'b1;
 
+                branchpredict_n = branchpredict_q;
+                instr_addr_n    = instr_addr_q;
+
                 if (instr_gnt_i) begin
                     // push the old data
                     push_data = { instr_addr_q, branchpredict_q };
@@ -125,7 +122,8 @@ module if_stage (
                 instr_addr_o = fetch_address;
 
                 // prepare for next request, we've got one if the fetch_valid_i is high
-                if (fifo_ready && fetch_valid_i) begin
+                // we can take it if both queues have still places left to store the request
+                if (fifo_ready && fetch_valid_i && !full) begin
 
                     instr_req_o = 1'b1;
 
@@ -160,7 +158,10 @@ module if_stage (
             WAIT_ABORTED_REQUEST: begin
                 // abort the current rvalid, we don't want it anymore
                 fifo_valid = 1'b0;
-                // Here we wait for the queue to be empty, we do not make any requests
+                // save request data
+                branchpredict_n = branchpredict_q;
+                instr_addr_n    = instr_addr_q;
+                // Here we wait for the queue to be empty, we do not make any new requests
                 if (empty)
                     NS = WAIT_GNT;
             end
@@ -181,21 +182,21 @@ module if_stage (
     // ---------------------------------
     // Address and Branch-predict Queue
     // ---------------------------------
-
     fifo #(
         .dtype            ( address_fifo_t          ),
         .DEPTH            ( 2                       )  // right now we support two outstanding transactions
     ) i_fifo (
         .flush_i          ( 1'b0                    ), // do not flush, we need to keep track of all outstanding rvalids
         .full_o           ( full                    ), // the address buffer is full
-        .empty_o          ( empty                   ), // .. or overflow
+        .empty_o          ( empty                   ), // ...or empty
         .single_element_o (                         ), // isn't needed here
         .data_i           ( push_data               ),
         .push_i           ( instr_gnt_i             ), // if we got a grant push the address and data
-        .data_o           ( pop_data                ),
+        .data_o           ( pop_data                ), // data we send to the fetch_fifo, along with the instr data which comes from memory
         .pop_i            ( fifo_valid || pop_empty ), // pop the data if we say that the fetch is valid
         .*
     );
+
     // ---------------------------------
     // Fetch FIFO
     // consumes addresses and rdata
