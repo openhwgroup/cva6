@@ -60,8 +60,8 @@ module if_stage (
     address_fifo_t    push_data, pop_data;
     logic             fifo_valid, fifo_ready;
     logic             pop_empty; // pop the address queue in case of a flush, empty signal
-    logic             empty, full;
-
+    // Address queue status signals
+    logic             empty, full, single_element;
     // we are busy if we are either waiting for a grant or if the FIFO is full
     assign if_busy_o = ((CS == WAIT_GNT) || !fifo_ready || (CS == WAIT_ABORTED_REQUEST) || full) && (CS != WAIT_ABORTED);
     assign fetch_address = {fetch_address_i[63:2], 2'b0};
@@ -143,11 +143,14 @@ module if_stage (
             WAIT_ABORTED: begin
                 // abort the current rvalid, we don't want it anymore
                 fifo_valid = 1'b0;
-                // we've got a new fetch here, the fetch fifo is for sure empty as we just flushed it, but we still need to
-                // wait for the queue to be emptied
+                // we've got a new fetch here, the fetch FIFO is for sure empty as we just flushed it, but we still need to
+                // wait for the address queue to be emptied
                 if (fetch_valid_i && empty) begin
-                    instr_req_o = 1'b1;
-                    NS = WAIT_GNT;
+                    // re-do the request
+                    if (instr_gnt_i)
+                        NS = WAIT_RVALID;
+                    else
+                        NS = WAIT_GNT;
                 end else if (fetch_valid_i) // the fetch is valid but the queue is not empty wait for it
                     NS = WAIT_ABORTED_REQUEST;
                 else if (empty) // the fetch is not valid and the queue is empty we are back to normal operation
@@ -161,8 +164,8 @@ module if_stage (
                 // save request data
                 branchpredict_n = branchpredict_q;
                 instr_addr_n    = instr_addr_q;
-                // Here we wait for the queue to be empty, we do not make any new requests
-                if (empty)
+                // here we wait for the queue to be empty, we do not make any new requests
+                if (empty) // do the new request
                     NS = WAIT_GNT;
             end
         endcase
@@ -171,7 +174,9 @@ module if_stage (
         // -------------
         if (flush_i) begin
             // if the address queue is empty this case is simple: just go back to idle
-            if (empty)
+            // also if there is just a single element in the queue and we are commiting we can skip
+            // waiting for all rvalids as the queue will be empty in the next cycle anyway
+            if (empty && !(instr_req_o && instr_gnt_i))
                 NS = IDLE;
             // if it wasn't empty we need to wait for all outstanding rvalids until we can make any further requests
             else
@@ -189,7 +194,7 @@ module if_stage (
         .flush_i          ( 1'b0                    ), // do not flush, we need to keep track of all outstanding rvalids
         .full_o           ( full                    ), // the address buffer is full
         .empty_o          ( empty                   ), // ...or empty
-        .single_element_o (                         ), // isn't needed here
+        .single_element_o ( single_element          ), // just a single element in the queue
         .data_i           ( push_data               ),
         .push_i           ( instr_gnt_i             ), // if we got a grant push the address and data
         .data_o           ( pop_data                ), // data we send to the fetch_fifo, along with the instr data which comes from memory
