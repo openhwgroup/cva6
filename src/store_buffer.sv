@@ -29,6 +29,7 @@ module store_buffer (
     output logic         page_offset_matches_o,
 
     input  logic         commit_i,        // commit the instruction which was placed there most recently
+    output logic         commit_ready_o,  // commit queue is ready to accept another commit request
     output logic         ready_o,         // the store queue is ready to accept a new request
                                           // it is only ready if it can unconditionally commit the instruction, e.g.:
                                           // the commit buffer needs to be empty
@@ -49,8 +50,10 @@ module store_buffer (
     input  logic         data_gnt_i,
     input  logic         data_rvalid_i
     );
-    // depth of store-buffer
-    localparam int unsigned DEPTH = 4;
+    // depth of store-buffers
+    localparam int unsigned DEPTH_SPEC   = 4;
+    // allocate more space for the commit buffer to be on the save side
+    localparam int unsigned DEPTH_COMMIT = 4;
 
     // we need to keep the tag portion of the address for a cycle later
     logic [43:0] address_tag_n, address_tag_q;
@@ -65,34 +68,34 @@ module store_buffer (
         logic [63:0] data;
         logic [7:0]  be;
         logic        valid;     // this entry is valid, we need this for checking if the address offset matches
-    } speculative_queue_n [DEPTH-1], speculative_queue_q [DEPTH-1],
-      commit_queue_n [DEPTH-1:0],    commit_queue_q [DEPTH-1:0];
+    } speculative_queue_n [DEPTH_SPEC-1:0], speculative_queue_q [DEPTH_SPEC-1:0],
+      commit_queue_n [DEPTH_COMMIT-1:0],    commit_queue_q [DEPTH_COMMIT-1:0];
 
     // keep a status count for both buffers
-    logic [$clog2(DEPTH):0] speculative_status_cnt_n, speculative_status_cnt_q;
-    logic [$clog2(DEPTH):0] commit_status_cnt_n, commit_status_cnt_q;
+    logic [$clog2(DEPTH_SPEC):0] speculative_status_cnt_n, speculative_status_cnt_q;
+    logic [$clog2(DEPTH_COMMIT):0] commit_status_cnt_n, commit_status_cnt_q;
     // Speculative queue
-    logic [$clog2(DEPTH)-1:0] speculative_read_pointer_n,  speculative_read_pointer_q;
-    logic [$clog2(DEPTH)-1:0] speculative_write_pointer_n, speculative_write_pointer_q;
+    logic [$clog2(DEPTH_SPEC)-1:0] speculative_read_pointer_n,  speculative_read_pointer_q;
+    logic [$clog2(DEPTH_SPEC)-1:0] speculative_write_pointer_n, speculative_write_pointer_q;
     // Commit Queue
-    logic [$clog2(DEPTH)-1:0] commit_read_pointer_n,  commit_read_pointer_q;
-    logic [$clog2(DEPTH)-1:0] commit_write_pointer_n, commit_write_pointer_q;
+    logic [$clog2(DEPTH_COMMIT)-1:0] commit_read_pointer_n,  commit_read_pointer_q;
+    logic [$clog2(DEPTH_COMMIT)-1:0] commit_write_pointer_n, commit_write_pointer_q;
 
     // ----------------------------------------
     // Speculative Queue - Core Interface
     // ----------------------------------------
     always_comb begin : core_if
-        automatic logic [DEPTH:0] speculative_status_cnt = speculative_status_cnt_q;
+        automatic logic [DEPTH_SPEC:0] speculative_status_cnt = speculative_status_cnt_q;
 
-        // we are ready if the speculative queue has a space left
-        ready_o =  !(speculative_status_cnt_q != DEPTH-1);
+        // we are ready if the speculative and the commit queue have a space left
+        ready_o = speculative_status_cnt_q < (DEPTH_SPEC - 1);
         // default assignments
         speculative_status_cnt_n    = speculative_status_cnt_q;
         speculative_read_pointer_n  = speculative_read_pointer_q;
         speculative_write_pointer_n = speculative_write_pointer_q;
         // LSU interface
         // we are ready to accept a new entry and the input data is valid
-        if (ready_o && valid_i) begin
+        if (valid_i) begin
             speculative_queue_n[speculative_write_pointer_q].address = paddr_i;
             speculative_queue_n[speculative_write_pointer_q].data    = data_i;
             speculative_queue_n[speculative_write_pointer_q].be      = be_i;
@@ -115,9 +118,9 @@ module store_buffer (
         speculative_status_cnt_n = speculative_status_cnt;
 
         // when we flush evict the speculative stores
-        if (flush_i) begin
+        if (ready_o && flush_i) begin
             // reset all valid flags
-            for (int unsigned i = 0; i < DEPTH; i++)
+            for (int unsigned i = 0; i < DEPTH_SPEC; i++)
                 speculative_queue_n[i].valid = 1'b0;
 
             speculative_write_pointer_n = speculative_read_pointer_q;
@@ -140,7 +143,8 @@ module store_buffer (
     assign data_we_o  = 1'b1; // we will always write in the store queue
 
     always_comb begin : store_if
-        automatic logic [DEPTH:0] commit_status_cnt = commit_status_cnt_q;
+        automatic logic [DEPTH_COMMIT:0] commit_status_cnt = commit_status_cnt_q;
+        commit_ready_o = (commit_status_cnt_q < DEPTH_COMMIT);
         // no store is pending if we don't have any element in the commit queue e.g.: it is empty
         no_st_pending_o         = (commit_status_cnt_q == 0);
         // default assignments
@@ -200,12 +204,14 @@ module store_buffer (
     always_comb begin : address_checker
         page_offset_matches_o = 1'b0;
         // check if the LSBs are identical and the entry is valid
-        for (int unsigned i = 0; i < DEPTH; i++) begin
+        for (int unsigned i = 0; i < DEPTH_COMMIT; i++) begin
             // Check if the page offset matches and whether the entry is valid, for the commit queue
             if ((page_offset_i[11:3] == commit_queue_q[i].address[11:3]) && commit_queue_q[i].valid) begin
                 page_offset_matches_o = 1'b1;
                 break;
             end
+        end
+        for (int unsigned i = 0; i < DEPTH_SPEC; i++) begin
             // do the same for the speculative queue
             if ((page_offset_i[11:3] == speculative_queue_q[i].address[11:3]) && speculative_queue_q[i].valid) begin
                 page_offset_matches_o = 1'b1;
@@ -254,6 +260,10 @@ module store_buffer (
     assert property (
         @(posedge clk_i) rst_ni && flush_i |-> !commit_i)
         else $error ("You are trying to commit and flush in the same cycle");
+
+    assert property (
+        @(posedge clk_i) rst_ni && !ready_o |-> !valid_i)
+        else $error ("You are trying to push new data although the buffer is not ready");
     `endif
     `endif
 endmodule

@@ -41,6 +41,7 @@ module commit_stage (
     input  exception            csr_exception_i,
     // commit signals to ex
     output logic                commit_lsu_o,    // commit the pending store
+    input  logic                commit_lsu_ready_i,
     input  logic                no_st_pending_i, // there is no store pending
     output logic                commit_csr_o,    // commit the pending CSR instruction
     output logic                fence_i_o,       // flush icache and pipeline
@@ -71,6 +72,8 @@ module commit_stage (
         // we will not commit the instruction if we took an exception
         // but we do not commit the instruction if we requested a halt
         if (commit_instr_i.valid && !halt_i) begin
+
+            commit_ack_o = 1'b1;
             // register will be the all zero register.
             // and also acknowledge the instruction, this is mainly done for the instruction tracer
             // as it will listen on the instruction ack signal. For the overall result it does not make any
@@ -84,11 +87,13 @@ module commit_stage (
                 // do not commit the instruction if we got an exception since the store buffer will be cleared
                 // by the subsequent flush triggered by an exception
                 if (commit_instr_i.fu == STORE) begin
-                    commit_lsu_o = 1'b1;
+                    if (commit_lsu_ready_i)
+                        commit_lsu_o = 1'b1;
+                    else // if the LSU buffer is not ready - do not commit, wait
+                        commit_ack_o = 1'b0;
                 end
             end
 
-            commit_ack_o = 1'b1;
             // ---------
             // CSR Logic
             // ---------
