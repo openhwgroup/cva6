@@ -60,6 +60,7 @@ module ex_stage #(
     output logic [63:0]                            lsu_result_o,
     output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
     input  logic                                   lsu_commit_i,
+    output logic                                   lsu_commit_ready_o,    // commit queue is ready to accept another commit request
     output exception                               lsu_exception_o,
     output logic                                   no_st_pending_o,
     // CSR
@@ -144,7 +145,8 @@ module ex_stage #(
     // Load-Store Unit
     // ----------------
     lsu lsu_i (
-        .commit_i  ( lsu_commit_i ),
+        .commit_i       ( lsu_commit_i       ),
+        .commit_ready_o ( lsu_commit_ready_o ),
         .*
     );
 

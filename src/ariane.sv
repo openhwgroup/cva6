@@ -186,6 +186,7 @@ module ariane
     logic                     csr_commit_commit_ex;
     // LSU Commit
     logic                     lsu_commit_commit_ex;
+    logic                     lsu_commit_ready_ex_commit;
     logic                     no_st_pending_ex_commit;
     // --------------
     // ID <-> COMMIT
@@ -430,6 +431,7 @@ module ariane
         .lsu_trans_id_o         ( lsu_trans_id_ex_id          ),
         .lsu_valid_o            ( lsu_valid_ex_id             ),
         .lsu_commit_i           ( lsu_commit_commit_ex        ), // from commit
+        .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id         ),
         .no_st_pending_o        ( no_st_pending_ex_commit     ),
 
@@ -479,6 +481,7 @@ module ariane
         .wdata_a_o              ( wdata_a_commit_id             ),
         .we_a_o                 ( we_a_commit_id                ),
         .commit_lsu_o           ( lsu_commit_commit_ex          ),
+        .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
         .commit_csr_o           ( csr_commit_commit_ex          ),
         .pc_o                   ( pc_commit                     ),
         .csr_op_o               ( csr_op_commit_csr             ),

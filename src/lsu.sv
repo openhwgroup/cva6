@@ -38,6 +38,7 @@ module lsu #(
     output logic [63:0]              lsu_result_o,
     output logic                     lsu_valid_o,              // transaction id for which the output is the requested one
     input  logic                     commit_i,                 // commit the pending store
+    output logic                     commit_ready_o,           // commit queue is ready to accept another commit request
 
     input  logic                     enable_translation_i,     // enable virtual memory translation
     input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores

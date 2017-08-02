@@ -28,6 +28,8 @@ module store_unit (
     input  lsu_ctrl_t                lsu_ctrl_i,
     output logic                     pop_st_o,
     input  logic                     commit_i,
+    output logic                     commit_ready_o,
+
     // store unit output port
     output logic                     valid_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
