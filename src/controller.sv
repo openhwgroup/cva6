@@ -20,6 +20,8 @@
 import ariane_pkg::*;
 
 module controller (
+    input  logic            clk_i,
+    input  logic            rst_ni,
     output logic            flush_bp_o,             // Flush branch prediction data structures
     output logic            flush_pcgen_o,          // Flush PC Generation Stage
     output logic            flush_if_o,             // Flush the IF stage
@@ -27,6 +29,8 @@ module controller (
     output logic            flush_id_o,             // Flush ID stage
     output logic            flush_ex_o,             // Flush EX stage
     output logic            flush_icache_o,         // Flush ICache
+    output logic            flush_dcache_o,         // Flush DCache
+    input  logic            flush_dcache_ack_i,     // Acknowledge the whole DCache Flush
     output logic            flush_tlb_o,            // Flush TLBs
 
     input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
@@ -38,15 +42,19 @@ module controller (
     input  branchpredict    resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
     input  logic            flush_csr_i,            // We got an instruction which altered the CSR, flush the pipeline
     input  logic            fence_i_i,              // fence.i in
+    input  logic            fence_i,                // fence in
     input  logic            sfence_vma_i            // We got an instruction to flush the TLBs and pipeline
 );
     // flush branch prediction
     assign flush_bp_o = 1'b0;
-
+    // active fence - high if we are currently flushing the dcache
+    logic fence_active_n, fence_active_q;
+    logic flush_dcache;
     // ------------
     // Flush CTRL
     // ------------
     always_comb begin : flush_ctrl
+        fence_active_n         = fence_active_q;
         flush_pcgen_o          = 1'b0;
         flush_if_o             = 1'b0;
         flush_unissued_instr_o = 1'b0;
@@ -54,6 +62,7 @@ module controller (
         flush_ex_o             = 1'b0;
         flush_tlb_o            = 1'b0;
         flush_icache_o         = 1'b0;
+        flush_dcache           = 1'b0;
         // ------------
         // Mis-predict
         // ------------
@@ -68,6 +77,21 @@ module controller (
         // ---------------------------------
         // FENCE
         // ---------------------------------
+        if (fence_i) begin
+            fence_active_n         = 1'b1;
+            flush_dcache           = 1'b1;
+            // this can be seen as a CSR instruction with side-effect
+            flush_pcgen_o          = 1'b1;
+            flush_if_o             = 1'b1;
+            flush_unissued_instr_o = 1'b1;
+            flush_id_o             = 1'b1;
+            flush_ex_o             = 1'b1;
+        end
+
+        // wait for the acknowledge here
+        if (flush_dcache_ack_i && fence_active_q) begin
+            fence_active_n = 1'b0;
+        end
 
         // ---------------------------------
         // FENCE.I
@@ -80,6 +104,7 @@ module controller (
             flush_ex_o             = 1'b1;
             flush_icache_o         = 1'b1;
         end
+
         // ---------------------------------
         // SFENCE.VMA
         // ---------------------------------
@@ -123,6 +148,21 @@ module controller (
     // Halt Logic
     // ----------------------
     always_comb begin
-        halt_o = halt_debug_i || halt_csr_i;
+        // halt the core if the fence is active
+        halt_o = halt_debug_i || halt_csr_i || fence_active_q;
+    end
+
+    // ----------------------
+    // Registers
+    // ----------------------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            fence_active_q <= 1'b0;
+            flush_dcache_o <= 1'b0;
+        end else begin
+            fence_active_q <= fence_active_n;
+            // register on the flush signal, this signal might be critical
+            flush_dcache_o <= flush_dcache;
+        end
     end
 endmodule

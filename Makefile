@@ -65,7 +65,7 @@ max_cycles = 10000000
 # Test case to run
 test_case = core_test
 # QuestaSim Version
-questa_version = -10.6
+questa_version =
 compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
 # Moore binary
 moore = ~fschuiki/bin/moore

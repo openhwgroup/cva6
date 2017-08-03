@@ -44,7 +44,8 @@ module commit_stage (
     input  logic                commit_lsu_ready_i,
     input  logic                no_st_pending_i, // there is no store pending
     output logic                commit_csr_o,    // commit the pending CSR instruction
-    output logic                fence_i_o,        // flush icache and pipeline
+    output logic                fence_i_o,       // flush icache and pipeline
+    output logic                fence_o,         // flush dcache and pipeline
     output logic                sfence_vma_o     // flush TLBs and pipeline
 );
 
@@ -65,6 +66,7 @@ module commit_stage (
         csr_op_o     = ADD; // this corresponds to a CSR NOP
         csr_wdata_o  = 64'b0;
         fence_i_o    = 1'b0;
+        fence_o      = 1'b0;
         sfence_vma_o = 1'b0;
 
         // we will not commit the instruction if we took an exception
@@ -123,6 +125,14 @@ module commit_stage (
                 commit_ack_o = 1'b1;
                 // tell the controller to flush the I$
                 fence_i_o = 1'b1;
+            end
+            // ------------------
+            // FENCE Logic
+            // ------------------
+            if (commit_instr_i.op == FENCE) begin
+                commit_ack_o = 1'b1;
+                // tell the controller to flush the D$
+                fence_o = 1'b1;
             end
         end
     end
