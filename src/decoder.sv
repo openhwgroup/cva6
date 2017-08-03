@@ -205,13 +205,11 @@ module decoder (
                         instruction_o.rs1 = '0;
                         instruction_o.rs2 = '0;
                         instruction_o.rd  = '0;
-
                     // FENCE
-                    // TODO: Implement
                     end else begin
-                    // Currently implemented as NOP
-                        instruction_o.fu  = ALU;
-                        instruction_o.op  = ADD;
+                        // Currently implemented as a whole DCache flush boldly ignoring other things
+                        instruction_o.fu  = CSR;
+                        instruction_o.op  = FENCE;
                         instruction_o.rs1 = '0;
                         instruction_o.rs2 = '0;
                         instruction_o.rd  = '0;
