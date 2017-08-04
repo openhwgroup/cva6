@@ -87,6 +87,7 @@ module commit_stage (
                 // do not commit the instruction if we got an exception since the store buffer will be cleared
                 // by the subsequent flush triggered by an exception
                 if (commit_instr_i.fu == STORE) begin
+                    // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
                     if (commit_lsu_ready_i)
                         commit_lsu_o = 1'b1;
                     else // if the LSU buffer is not ready - do not commit, wait
