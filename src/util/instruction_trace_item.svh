@@ -149,12 +149,14 @@ class instruction_trace_item;
             INSTR_SRA:                 s = this.printRInstr("sra");
             INSTR_OR:                  s = this.printRInstr("or");
             INSTR_AND:                 s = this.printRInstr("and");
+            INSTR_MUL:                 s = this.printMulInstr(1'b0);
             // OP32
             INSTR_ADDW:                s = this.printRInstr("addw");
             INSTR_SUBW:                s = this.printRInstr("subw");
             INSTR_SLLW:                s = this.printRInstr("sllw");
             INSTR_SRLW:                s = this.printRInstr("srlw");
             INSTR_SRAW:                s = this.printRInstr("sraw");
+            INSTR_MULW:                s = this.printMulInstr(1'b1);
             // FENCE
             INSTR_FENCE:               s = this.printMnemonic("fence");
             INSTR_FENCEI:              s = this.printMnemonic("fence.i");
@@ -354,47 +356,24 @@ class instruction_trace_item;
 
     endfunction // printSInstr
 
-    function string printMulInstr();
-      // string mnemonic;
-      // string str_suf;
-      // string str_imm;
-      // string str_asm;
-      // begin
+    function string printMulInstr(logic is_op32);
+        string s = "";
 
-      //   // always read rs1 and rs2 and write rd
-      //   regs_read.push_back('{rs1, rs1_value});
-      //   regs_read.push_back('{rs2, rs2_value});
-      //   regs_write.push_back('{rd, 'x});
+        case (this.instr[14:12])
+            3'b000: s = "mul";
+            3'b001: s = "mulh";
+            3'b010: s = "mulhsu";
+            3'b011: s = "mulhu";
+            3'b100: s = "div";
+            3'b101: s = "divu";
+            3'b110: s = "rem";
+            3'b111: s = "remu";
+        endcase
+        // if it is a 32 bit instruction concatenate a w on it
+        if (is_op32)
+            s = {s, "w"};
 
-      //   if (instr[12])
-      //     regs_read.push_back('{rd, rs3_value});
+        return this.printRInstr(s);
 
-      //   case ({instr[31:30], instr[14]})
-      //     3'b000: str_suf = "u";
-      //     3'b001: str_suf = "uR";
-      //     3'b010: str_suf = "hhu";
-      //     3'b011: str_suf = "hhuR";
-      //     3'b100: str_suf = "s";
-      //     3'b101: str_suf = "sR";
-      //     3'b110: str_suf = "hhs";
-      //     3'b111: str_suf = "hhsR";
-      //   endcase
-
-      //   if (instr[12])
-      //     mnemonic = "p.mac";
-      //   else
-      //     mnemonic = "p.mul";
-
-      //   if (imm_s3_type[4:0] != 5'b00000)
-      //     str_asm = $sformatf("%s%sN", mnemonic, str_suf);
-      //   else
-      //     str_asm = $sformatf("%s%s", mnemonic, str_suf);
-
-      //   if (instr[29:25] != 5'b00000)
-      //     str = $sformatf("%-16s x%0d, x%0d, x%0d, %0d", str_asm, rd, rs1, rs2, $unsigned(imm_s3_type[4:0]));
-      //   else
-      //     str = $sformatf("%-16s x%0d, x%0d, x%0d", str_asm, rd, rs1, rs2);
-      // end
-      return "";
     endfunction
   endclass

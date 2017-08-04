@@ -93,6 +93,7 @@ module store_buffer (
         speculative_status_cnt_n    = speculative_status_cnt_q;
         speculative_read_pointer_n  = speculative_read_pointer_q;
         speculative_write_pointer_n = speculative_write_pointer_q;
+        speculative_queue_n         = speculative_queue_q;
         // LSU interface
         // we are ready to accept a new entry and the input data is valid
         if (valid_i) begin

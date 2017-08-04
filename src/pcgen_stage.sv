@@ -51,7 +51,7 @@ module pcgen_stage (
     logic             set_pc_n, set_pc_q;
     branchpredict_sbe branch_predict_btb;
     // branch-predict input register -> this path is critical
-    branchpredict                           resolved_branch_q;
+    branchpredict     resolved_branch_q;
 
     btb #(
         .NR_ENTRIES              ( BTB_ENTRIES             ),
