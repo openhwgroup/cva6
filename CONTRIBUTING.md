@@ -6,7 +6,7 @@
 - Don't use tabs, use spaces.
 - Use 4 spaces to open a new indentation level.
 - All signal and module names should be lower case with underscores as whitespace replacements (e.g.: `fetch_busy`).
-- Instantiation of modules should be postfix with `_i`, e.g.: `prefetcher_i`
+- Instantiation of modules should be prefix with `i_`, e.g.: `i_prefetcher`
 - For port definitions keep a post-fix direction (`_o`, `_i`).
 - For active low signals put an additional (`_no`, `_ni`).
 - Denote output of ff with `_q` and the input with `_n`.

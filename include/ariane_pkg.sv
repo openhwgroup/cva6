@@ -18,7 +18,7 @@ package ariane_pkg;
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
-    localparam NR_WB_PORTS   = 4;
+    localparam NR_WB_PORTS   = 5;
     localparam ASID_WIDTH    = 1;
     localparam BTB_ENTRIES   = 8;
     localparam BITS_SATURATION_COUNTER = 2;
@@ -93,7 +93,11 @@ package ariane_pkg;
                                // CSR functions
                                MRET, SRET, ECALL, WFI, FENCE, FENCE_I, SFENCE_VMA, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
                                // LSU functions
-                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU
+                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU,
+                               // Multiplications
+                               MUL, MULH, MULHU, MULHSU, MULW,
+                               // Divisions
+                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW
                              } fu_op;
 
     typedef struct packed {

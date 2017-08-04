@@ -100,5 +100,12 @@ Check out the [contribution guide](CONTRIBUTING.md)
 | csr           | :white_check_mark: | dirty         | :white_check_mark: | ma_fetch      | :white_check_mark: |
 | sbreak        | :white_check_mark: | scall         | :white_check_mark: | wfi           | :white_check_mark: |
 
+## Multiplication Instructions
 
-
+| **Test Name** |                **P/V**                | **Test Name** |                **P/V**                | **Test Name** |                **P/V**                |
+|---------------|---------------------------------------|---------------|---------------------------------------|---------------|---------------------------------------|
+| mulw          | :white_check_mark: :white_check_mark: | remuw         | :white_check_mark: :white_check_mark: | mulhu         | :white_check_mark: :white_check_mark: |
+| divw          | :white_check_mark: :white_check_mark: | mul           | :white_check_mark: :white_check_mark: | div           | :white_check_mark: :white_check_mark: |
+| divuw         | :white_check_mark: :white_check_mark: | mulh          | :white_check_mark: :white_check_mark: | divu          | :white_check_mark: :white_check_mark: |
+| remw          | :white_check_mark: :white_check_mark: | mulhsu        | :white_check_mark: :white_check_mark: | rem           | :white_check_mark: :white_check_mark: |
+| remu          | :white_check_mark: :white_check_mark: |               |                                       |               |                                       |

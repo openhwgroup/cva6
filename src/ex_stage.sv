@@ -60,9 +60,9 @@ module ex_stage #(
     output logic [63:0]                            lsu_result_o,
     output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
     input  logic                                   lsu_commit_i,
+    output logic                                   lsu_commit_ready_o,    // commit queue is ready to accept another commit request
     output exception                               lsu_exception_o,
     output logic                                   no_st_pending_o,
-
     // CSR
     output logic                                   csr_ready_o,
     input  logic                                   csr_valid_i,
@@ -71,7 +71,14 @@ module ex_stage #(
     output logic                                   csr_valid_o,
     output logic [11:0]                            csr_addr_o,
     input  logic                                   csr_commit_i,
-    // memory management
+    // MULT
+    output logic                                   mult_ready_o,      // FU is ready
+    input  logic                                   mult_valid_i,      // Output is valid
+    output logic [TRANS_ID_BITS-1:0]               mult_trans_id_o,
+    output logic [63:0]                            mult_result_o,
+    output logic                                   mult_valid_o,
+
+    // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
     input  logic                                   flush_tlb_i,
@@ -105,11 +112,7 @@ module ex_stage #(
     output logic                                   data_if_tag_valid_o,
     input  logic                                   data_if_data_gnt_i,
     input  logic                                   data_if_data_rvalid_i,
-    input  logic [63:0]                            data_if_data_rdata_i,
-
-    // MULT
-    output logic                                   mult_ready_o,      // FU is ready
-    input  logic                                   mult_valid_i       // Output is valid
+    input  logic [63:0]                            data_if_data_rdata_i
 );
 
     // -----
@@ -124,20 +127,26 @@ module ex_stage #(
     // Branch Engine
     // --------------------
     branch_unit branch_unit_i (
-        .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i ), // any functional unit is valid, check that there is no accidental mis-predict
+        .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i), // any functional unit is valid, check that there is no accidental mis-predict
         .*
     );
 
     // ----------------
     // Multiplication
     // ----------------
-    // TODO
+    `ifndef SYNTHESIS
+    mult mult_i (
+        .result_o ( mult_result_o ),
+        .*
+    );
+    `endif
 
     // ----------------
     // Load-Store Unit
     // ----------------
     lsu lsu_i (
-        .commit_i  ( lsu_commit_i ),
+        .commit_i       ( lsu_commit_i       ),
+        .commit_ready_o ( lsu_commit_ready_o ),
         .*
     );
 
