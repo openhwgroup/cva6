@@ -19,6 +19,7 @@
 import ariane_pkg::*;
 
 module commit_stage (
+    input  logic                clk_i,
     input  logic                halt_i,        // request to halt the core
 
     output exception            exception_o,   // take exception to controller
@@ -172,4 +173,15 @@ module commit_stage (
             exception_o.valid = 1'b0;
         end
     end
+        //-------------
+    // Assertions
+    //-------------
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
+        // there should never be a grant when there was no request
+        assert property (
+          @(posedge clk_i) (we_a_o) |-> !$isunknown(wdata_a_o[7:0]) )
+        else $warning("You are committing unknown values to the register file");
+    `endif
+    `endif
 endmodule
