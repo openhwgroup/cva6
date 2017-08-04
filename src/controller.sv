@@ -91,6 +91,9 @@ module controller (
         // wait for the acknowledge here
         if (flush_dcache_ack_i && fence_active_q) begin
             fence_active_n = 1'b0;
+        // keep the flush dcache signal high as long as we didn't get the acknowledge from the cache
+        end else if (fence_active_q) begin
+            flush_dcache = 1'b1;
         end
 
         // ---------------------------------
