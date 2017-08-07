@@ -241,7 +241,7 @@ module ariane
     logic                     fence_i_commit_controller;
     logic                     fence_commit_controller;
     logic                     sfence_vma_commit_controller;
-    logic                     halt_ctrl_commit;
+    logic                     halt_ctrl;
     logic                     halt_debug_ctrl;
     logic                     halt_csr_ctrl;
     // --------------
@@ -290,6 +290,7 @@ module ariane
     // ---------
     if_stage if_stage_i (
         .flush_i               ( flush_ctrl_if                  ),
+        .halt_i                ( halt_ctrl                      ),
         .if_busy_o             ( if_ready_if_pcgen              ),
         .fetch_address_i       ( fetch_address_pcgen_if         ),
         .fetch_valid_i         ( fetch_valid_pcgen_if           ),
@@ -475,7 +476,7 @@ module ariane
     // Commit
     // ---------
     commit_stage commit_stage_i (
-        .halt_i                 ( halt_ctrl_commit              ),
+        .halt_i                 ( halt_ctrl                     ),
         .exception_o            ( ex_commit                     ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
@@ -552,7 +553,7 @@ module ariane
         .halt_csr_i             ( halt_csr_ctrl                 ),
         .halt_debug_i           ( halt_debug_ctrl               ),
         .debug_set_pc_i         ( set_pc_debug                  ),
-        .halt_o                 ( halt_ctrl_commit              ),
+        .halt_o                 ( halt_ctrl                     ),
         // control ports
         .eret_i                 ( eret                          ),
         .ex_valid_i             ( ex_commit.valid               ),

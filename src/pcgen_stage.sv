@@ -118,6 +118,7 @@ module pcgen_stage (
         if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken && !fetch_address[1]) begin
             npc_n = branch_predict_btb.predict_address;
         end
+
         // -------------------------------
         // 2. Debug
         // -------------------------------
@@ -125,6 +126,7 @@ module pcgen_stage (
             npc_n = debug_pc_i;
             set_pc_n = 1'b1;
         end
+
         // -------------------------------
         // 4. Exception
         // -------------------------------
@@ -164,6 +166,7 @@ module pcgen_stage (
         fetch_address_o  = fetch_address;
 
     end
+
     // -------------------
     // Sequential Process
     // -------------------

@@ -78,22 +78,15 @@ module controller (
         // FENCE
         // ---------------------------------
         if (fence_i) begin
-            fence_active_n         = 1'b1;
-            flush_dcache           = 1'b1;
             // this can be seen as a CSR instruction with side-effect
             flush_pcgen_o          = 1'b1;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-        end
 
-        // wait for the acknowledge here
-        if (flush_dcache_ack_i && fence_active_q) begin
-            fence_active_n = 1'b0;
-        // keep the flush dcache signal high as long as we didn't get the acknowledge from the cache
-        end else if (fence_active_q) begin
-            flush_dcache = 1'b1;
+            flush_dcache           = 1'b1;
+            fence_active_n         = 1'b1;
         end
 
         // ---------------------------------
@@ -106,6 +99,17 @@ module controller (
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
             flush_icache_o         = 1'b1;
+
+            flush_dcache           = 1'b1;
+            fence_active_n         = 1'b1;
+        end
+
+        // wait for the acknowledge here
+        if (flush_dcache_ack_i && fence_active_q) begin
+            fence_active_n = 1'b0;
+        // keep the flush dcache signal high as long as we didn't get the acknowledge from the cache
+        end else if (fence_active_q) begin
+            flush_dcache = 1'b1;
         end
 
         // ---------------------------------
@@ -137,8 +141,8 @@ module controller (
         // 3. Debug
         // ---------------------------------
         if (ex_valid_i || eret_i || debug_set_pc_i) begin
-            // don't flush pcgen as we want to take the exception, flush pcgen is not a flush signal
-            // for the PC GEN stage but instead tells it to take the PC we gave it
+            // don't flush pcgen as we want to take the exception: Flush PCGen is not a flush signal
+            // for the PC Gen stage but instead tells it to take the PC we gave it
             flush_pcgen_o          = 1'b0;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;

@@ -24,6 +24,7 @@ module if_stage (
     // control signals
     input  logic                   flush_i,
     output logic                   if_busy_o,           // is the IF stage busy fetching instructions?
+    input  logic                   halt_i,
     // fetch direction from PC Gen
     input  logic [63:0]            fetch_address_i,     // address to fetch from
     input  logic                   fetch_valid_i,       // the fetch address is valid
@@ -189,6 +190,17 @@ module if_stage (
             else
                 NS = WAIT_ABORTED;
         end
+
+        // -------------
+        // Halt
+        // -------------
+        // halt the instruction interface if we halt the core:
+        // the idea behind this is mainly in the case of an fence.i. For that instruction we need to flush both private caches
+        // now it could be the case that the icache flush finishes earlier than the dcache flush (most likely even). In that case
+        // a fetch can return stale data so we need to wait for the dcache flush to finish before making any new request.
+        // The solution is to check if the core is halted and in that case do not make any new request.
+        if (halt_i)
+            instr_req_o = 1'b0;
     end
 
     // ---------------------------------

@@ -123,6 +123,8 @@ module commit_stage (
             // ------------------
             // FENCE.I Logic
             // ------------------
+            // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
+            // and the private dcache. This is the most expensive instruction.
             if (commit_instr_i.op == FENCE_I) begin
                 commit_ack_o = 1'b1;
                 // tell the controller to flush the I$
