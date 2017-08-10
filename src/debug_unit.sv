@@ -27,6 +27,7 @@ module debug_unit (
     input  logic                commit_ack_i,
     input  exception            ex_i,           // instruction caused an exception
     output logic                halt_o,         // halt the hart
+    input  logic                fetch_enable_i, // fetch enable signal
     // GPR interface
     output logic                debug_gpr_req_o,
     output logic [4:0]          debug_gpr_addr_o,
@@ -98,7 +99,7 @@ module debug_unit (
     always_comb begin : debug_ctrl
         debug_gnt_o     = 1'b0;
         rdata_n         = 'b0;
-        rvalid_n        = 1'b0;
+        rvalid_n        = debug_req_i;
 
         halt_req        = 1'b0;
         resume_req      = 1'b0;
@@ -269,7 +270,7 @@ module debug_unit (
             HALT_REQ: begin
                 halt_o = 1'b1;
                 // we've got a valid instruction in the commit stage so we can proceed to the halted state
-                if (commit_instr_i.valid) begin
+                if (commit_instr_i.valid || !fetch_enable_i) begin
                     NS = HALTED;
                 end
             end
@@ -335,10 +336,10 @@ module debug_unit (
     // check that no registers are accessed when we are not in debug mode
     assert property (
       @(posedge clk_i) (debug_req_i) |-> ((debug_halted_o == 1'b1) ||
-                                        ((debug_addr_i[14] != 1'b1) &&
-                                         (debug_addr_i[13:7] != 5'b0_1001)  &&
-                                         (debug_addr_i[13:7] != 5'b0_1000)) ) )
-      else $warning("Trying to access internal debug registers while core is not stalled");
+                                         ((debug_addr_i[14] != 1'b1) &&
+                                          (debug_addr_i[13:7] != 5'b0_1001)  &&
+                                          (debug_addr_i[13:7] != 5'b0_1000)) ) )
+      else $warning("Trying to access internal debug registers while core is not halted");
 
     // check that all accesses are word-aligned
     assert property (

@@ -574,6 +574,7 @@ module ariane
         .commit_ack_i      ( commit_ack                ),
         .ex_i              ( ex_commit                 ),
         .halt_o            ( halt_debug_ctrl           ),
+        .fetch_enable_i    ( fetch_enable              ),
 
         .debug_pc_o        ( pc_debug_pcgen            ),
         .debug_set_pc_o    ( set_pc_debug              ),
