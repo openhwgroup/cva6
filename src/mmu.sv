@@ -217,7 +217,7 @@ module mmu #(
                                      || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
         // check that the upper-most bits (63-39) are the same, otherwise throw a page fault exception...
-        if (!((&fetch_vaddr_i[63:39]) == 1'b1 || (|fetch_vaddr_i[63:39]) == 1'b0)) begin
+        if (fetch_req_i && !((&fetch_vaddr_i[63:39]) == 1'b1 || (|fetch_vaddr_i[63:39]) == 1'b0)) begin
             fetch_ex_n   = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
             ierr_valid_n = 1'b1;
             fetch_gnt_o  = 1'b1;

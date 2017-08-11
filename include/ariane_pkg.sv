@@ -315,12 +315,12 @@ package ariane_pkg;
         DBG_HIT      = 15'h4,
         DBG_IE       = 15'h8,
         DBG_CAUSE    = 15'hC,
-        DBG_BPCTRL   = 15'b????000,
-        DBG_BPDATA   = 15'b?????00,
+        DBG_NPC      = 15'h2000,
+        DBG_PPC      = 15'h2004,
         DBG_GPR      = 15'h4??,
         DBG_CSR      = 15'h5??,
-        DBG_NPC      = 15'h2000,
-        DBG_PPC      = 15'h2004
+        DBG_BPCTRL   = 15'b????000,
+        DBG_BPDATA   = 15'b?????00
     } debug_reg_t;
 
 endpackage

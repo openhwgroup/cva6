@@ -152,10 +152,6 @@ module debug_unit (
                     if (debug_halted_o)
                         rdata_n = dbg_ppc_q;
                 end
-                // all breakpoints are implemented
-                DBG_BPCTRL: rdata_n = {57'b0, dbg_hwbp_ctrl_q[debug_addr_i[5:3]], 2'b0, 1'b1};
-                DBG_BPDATA: rdata_n = dbg_hwbp_data_q[debug_addr_i[5:3]];
-
 
                 DBG_GPR: begin
                     if (debug_halted_o) begin
@@ -170,6 +166,10 @@ module debug_unit (
                         rdata_n = debug_csr_rdata_i;
                     end
                 end
+
+                // all breakpoints are implemented
+                DBG_BPCTRL: rdata_n = {57'b0, dbg_hwbp_ctrl_q[debug_addr_i[5:3]], 2'b0, 1'b1};
+                DBG_BPDATA: rdata_n = dbg_hwbp_data_q[debug_addr_i[5:3]];
             endcase
 
         // ----------
@@ -198,13 +198,9 @@ module debug_unit (
                         debug_set_pc_o = 1'b1;
                     end
                 end
+
                 // PPC is read-only
                 DBG_PPC:;
-
-                // Only triggering on instruction fetch is allowed at the moment
-                DBG_BPCTRL: dbg_hwbp_ctrl_n[debug_addr_i[5:3]] = {3'b0, debug_wdata_i[1]};
-                DBG_BPDATA: dbg_hwbp_data_n[debug_addr_i[5:3]] = debug_wdata_i;
-
 
                 DBG_GPR: begin
                     if (debug_halted_o) begin
@@ -221,6 +217,10 @@ module debug_unit (
                         debug_csr_wdata_o = debug_wdata_i;
                     end
                 end
+
+                // Only triggering on instruction fetch is allowed at the moment
+                DBG_BPCTRL: dbg_hwbp_ctrl_n[debug_addr_i[5:3]] = {3'b0, debug_wdata_i[1]};
+                DBG_BPDATA: dbg_hwbp_data_n[debug_addr_i[5:3]] = debug_wdata_i;
             endcase
         end
 
