@@ -310,17 +310,27 @@ package ariane_pkg;
     // Debug Unit
     // ----------------------
 
-    typedef enum logic [14:0] {
-        DBG_CTRL     = 15'h0,
-        DBG_HIT      = 15'h4,
-        DBG_IE       = 15'h8,
-        DBG_CAUSE    = 15'hC,
-        DBG_NPC      = 15'h2000,
-        DBG_PPC      = 15'h2004,
-        DBG_GPR      = 15'h4??,
-        DBG_CSR      = 15'h5??,
-        DBG_BPCTRL   = 15'b????000,
-        DBG_BPDATA   = 15'b?????00
+    typedef enum logic [15:0] {
+        DBG_CTRL     = 16'h0,
+        DBG_HIT      = 16'h8,
+        DBG_IE       = 16'hC,
+        DBG_CAUSE    = 16'h10,
+        DBG_NPC      = 16'h2000,
+        DBG_PPC      = 16'h2008,
+        DBG_GPR      = 16'h4??,
+
+        // CSRs 0x4000-0xBFFF
+        DBG_CSR_U0   = 16'h8???,
+        DBG_CSR_U1   = 16'h9???,
+        DBG_CSR_S0   = 16'hA???,
+        DBG_CSR_S1   = 16'hB???,
+        // DBG_CSR_H0   = 15'hC???,
+        // DBG_CSR_H1   = 15'hD???,
+        DBG_CSR_M0   = 16'hE???,
+        DBG_CSR_M1   = 16'hF???,
+
+        DBG_BPCTRL   = 16'b????000,
+        DBG_BPDATA   = 16'b?????00
     } debug_reg_t;
 
 endpackage

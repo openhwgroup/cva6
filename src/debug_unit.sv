@@ -48,7 +48,7 @@ module debug_unit (
     input  logic                debug_req_i,
     output logic                debug_gnt_o,
     output logic                debug_rvalid_o,
-    input  logic [14:0]         debug_addr_i,
+    input  logic [15:0]         debug_addr_i,
     input  logic                debug_we_i,
     input  logic [63:0]         debug_wdata_i,
     output logic [63:0]         debug_rdata_o,
@@ -61,10 +61,10 @@ module debug_unit (
     enum logic [1:0] {RUNNING, HALT_REQ, SINGLE_STEP, HALTED} CS, NS;
 
     // debug interface registers, we need to give the read data back one cycle later along with the rvalid flag
-    logic rvalid_n, rvalid_q;
-    logic rdata_n,  rdata_q;
+    logic        rvalid_n, rvalid_q;
+    logic [63:0] rdata_n,  rdata_q;
     // save previous PC
-    logic dbg_ppc_n, dbg_ppc_q;
+    logic [63:0] dbg_ppc_n, dbg_ppc_q;
     // ---------------
     // Debug Register
     // ---------------
@@ -91,35 +91,35 @@ module debug_unit (
 
     // |    Address    |       Name      |                             Description                             |
     // |---------------|-----------------|---------------------------------------------------------------------|
-    // | 0x0000-0x007F | Debug Registers | Always accessible, even when the core is running                    |
-    // | 0x0400-0x047F | GPR (x0-x31)    | General Purpose Registers. Only accessible if the core is halted.   |
+    // | 0x0000-0x00FF | Debug Registers | Always accessible, even when the core is running                    |
+    // | 0x0400-0x04FF | GPR (x0-x31)    | General Purpose Registers. Only accessible if the core is halted.   |
     // | 0x0500-0x05FF | FPR (f0-f31)    | Reserved. Not used in the Ariane.                                   |
     // | 0x2000-0x20FF | Debug Registers | Only accessible if the core is halted                               |
-    // | 0x4000-0x7FFF | CSR             | Control and Status Registers. Only accessible if the core is halted |
+    // | 0x4000-0xBFFF | CSR             | Control and Status Registers. Only accessible if the core is halted |
     always_comb begin : debug_ctrl
-        debug_gnt_o     = 1'b0;
-        rdata_n         = 'b0;
-        rvalid_n        = debug_req_i;
+        debug_gnt_o         = 1'b0;
+        rdata_n             = 'b0;
+        rvalid_n            = debug_req_i;
 
-        halt_req        = 1'b0;
-        resume_req      = 1'b0;
+        halt_req            = 1'b0;
+        resume_req          = 1'b0;
         // update the previous PC if got a valid commit
-        dbg_ppc_n       = (commit_ack_i) ? commit_instr_i.pc : dbg_ppc_q;
+        dbg_ppc_n           = (commit_ack_i) ? commit_instr_i.pc : dbg_ppc_q;
         // debug registers
-        dbg_ie_n        = dbg_ie_q;
-        dbg_cause_n     = dbg_cause_q;
-        dbg_ss_n        = dbg_ss_q;
-        dbg_hit_n       = dbg_hit_q;
-        dbg_hwbp_ctrl_n = dbg_hwbp_ctrl_q;
-        dbg_hwbp_data_n = dbg_hwbp_data_q;
+        dbg_ie_n            = dbg_ie_q;
+        dbg_cause_n         = dbg_cause_q;
+        dbg_ss_n            = dbg_ss_q;
+        dbg_hit_n           = dbg_hit_q;
+        dbg_hwbp_ctrl_n     = dbg_hwbp_ctrl_q;
+        dbg_hwbp_data_n     = dbg_hwbp_data_q;
         // GPR defaults
         debug_gpr_req_o     = 1'b0;
-        debug_gpr_addr_o    = debug_addr_i[6:2];
+        debug_gpr_addr_o    = debug_addr_i[7:3];
         debug_gpr_we_o      = 1'b0;
         debug_gpr_wdata_o   = 64'b0;
         // CSR defaults
         debug_csr_req_o     = 1'b0;
-        debug_csr_addr_o    = debug_addr_i[13:2];
+        debug_csr_addr_o    = debug_addr_i[14:3];
         debug_csr_we_o      = 1'b0;
         debug_csr_wdata_o   = 64'b0;
         // change ctrl flow
@@ -137,7 +137,7 @@ module debug_unit (
         if (debug_req_i && !debug_we_i) begin
             // we can immediately grant the request
             debug_gnt_o = 1'b1;
-            // decode debug address
+
             casez (debug_addr_i)
                 DBG_CTRL:   rdata_n = {32'b0, 15'b0, debug_halted_o, 15'b0, dbg_ss_q};
                 DBG_HIT:    rdata_n = {63'b0, dbg_hit_q};
@@ -160,7 +160,8 @@ module debug_unit (
                     end
                 end
 
-                DBG_CSR: begin
+                DBG_CSR_U0, DBG_CSR_S0, DBG_CSR_M0,
+                DBG_CSR_U1, DBG_CSR_S1, DBG_CSR_M1: begin
                     if (debug_halted_o) begin
                         debug_csr_req_o = 1'b1;
                         rdata_n = debug_csr_rdata_i;
@@ -210,7 +211,8 @@ module debug_unit (
                     end
                 end
 
-                DBG_CSR: begin
+                DBG_CSR_U0, DBG_CSR_S0, DBG_CSR_M0,
+                DBG_CSR_U1, DBG_CSR_S1, DBG_CSR_M1: begin
                     if (debug_halted_o) begin
                         debug_csr_req_o = 1'b1;
                         debug_csr_we_o = 1'b1;
@@ -336,14 +338,15 @@ module debug_unit (
     // check that no registers are accessed when we are not in debug mode
     assert property (
       @(posedge clk_i) (debug_req_i) |-> ((debug_halted_o == 1'b1) ||
-                                         ((debug_addr_i[14] != 1'b1) &&
+                                         ((debug_addr_i[15] != 1'b1) &&
+                                          (debug_addr_i[14] != 1'b1) &&
                                           (debug_addr_i[13:7] != 5'b0_1001)  &&
                                           (debug_addr_i[13:7] != 5'b0_1000)) ) )
       else $warning("Trying to access internal debug registers while core is not halted");
 
-    // check that all accesses are word-aligned
+    // check that all accesses are double word-aligned
     assert property (
-      @(posedge clk_i) (debug_req_i) |-> (debug_addr_i[1:0] == 2'b00) );
+      @(posedge clk_i) (debug_req_i) |-> (debug_addr_i[2:0] == 3'b00) );
     `endif
     `endif
 endmodule

@@ -81,7 +81,7 @@ module ariane
         input  logic                           debug_req_i,
         output logic                           debug_gnt_o,
         output logic                           debug_rvalid_o,
-        input  logic [14:0]                    debug_addr_i,
+        input  logic [15:0]                    debug_addr_i,
         input  logic                           debug_we_i,
         input  logic [63:0]                    debug_wdata_i,
         output logic [63:0]                    debug_rdata_o,
