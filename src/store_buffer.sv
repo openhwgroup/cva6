@@ -88,7 +88,7 @@ module store_buffer (
         automatic logic [DEPTH_SPEC:0] speculative_status_cnt = speculative_status_cnt_q;
 
         // we are ready if the speculative and the commit queue have a space left
-        ready_o = speculative_status_cnt_q < (DEPTH_SPEC - 1);
+        ready_o = (speculative_status_cnt_q < (DEPTH_SPEC - 1)) || commit_i;
         // default assignments
         speculative_status_cnt_n    = speculative_status_cnt_q;
         speculative_read_pointer_n  = speculative_read_pointer_q;
@@ -125,6 +125,8 @@ module store_buffer (
                 speculative_queue_n[i].valid = 1'b0;
 
             speculative_write_pointer_n = speculative_read_pointer_q;
+            // also reset the status count
+            speculative_status_cnt_n = 'b0;
         end
     end
 
@@ -260,11 +262,16 @@ module store_buffer (
     // as flush and commit is decided in the same stage
     assert property (
         @(posedge clk_i) rst_ni && flush_i |-> !commit_i)
-        else $error ("You are trying to commit and flush in the same cycle");
+        else $error ("[Commit Queue] You are trying to commit and flush in the same cycle");
 
     assert property (
-        @(posedge clk_i) rst_ni && !ready_o |-> !valid_i)
-        else $error ("You are trying to push new data although the buffer is not ready");
+        @(posedge clk_i) rst_ni && (speculative_status_cnt_q == DEPTH_SPEC) |-> !valid_i)
+        else $error ("[Speculative Queue] You are trying to push new data although the buffer is not ready");
+
+    assert property (
+        @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_SPEC) |-> !commit_i)
+        else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
+
     `endif
     `endif
 endmodule
