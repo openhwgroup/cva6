@@ -23,6 +23,8 @@ module debug_unit (
     input  logic                clk_i,          // Clock
     input  logic                rst_ni,         // Asynchronous reset active low
 
+    input  logic [63:0]         boot_addr_i,
+
     input  scoreboard_entry     commit_instr_i,
     input  logic                commit_ack_i,
     input  exception            ex_i,           // instruction caused an exception
@@ -65,6 +67,7 @@ module debug_unit (
     logic [63:0] rdata_n,  rdata_q;
     // save previous PC
     logic [63:0] dbg_ppc_n, dbg_ppc_q;
+    logic        reset_n, reset_q;
     // ---------------
     // Debug Register
     // ---------------
@@ -105,6 +108,8 @@ module debug_unit (
         resume_req          = 1'b0;
         // update the previous PC if got a valid commit
         dbg_ppc_n           = (commit_ack_i) ? commit_instr_i.pc : dbg_ppc_q;
+        // flag to indicate that we came from a reset state
+        reset_n             = (commit_ack_i) ? 1'b0 : reset_q;
         // debug registers
         dbg_ie_n            = dbg_ie_q;
         dbg_cause_n         = dbg_cause_q;
@@ -146,6 +151,9 @@ module debug_unit (
                 DBG_NPC: begin
                     if (debug_halted_o)
                         rdata_n = commit_instr_i.pc;
+                    // if we came from reset - output the boot address
+                    if (reset_q)
+                        rdata_n = boot_addr_i;
                 end
 
                 DBG_PPC: begin
@@ -309,6 +317,7 @@ module debug_unit (
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             CS              <= RUNNING;
+            reset_q         <= 1'b1;
             rdata_q         <= '0;
             rvalid_q        <= 1'b0;
             dbg_ppc_q       <= 64'b0;
@@ -320,6 +329,7 @@ module debug_unit (
             dbg_hit_q       <= 1'b0;
         end else begin
             CS              <= NS;
+            reset_q         <= reset_n;
             rdata_q         <= rdata_n;
             rvalid_q        <= rvalid_n;
             dbg_ppc_q       <= dbg_ppc_n;
