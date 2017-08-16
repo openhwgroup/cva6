@@ -231,6 +231,8 @@ module debug_unit (
             halt_req = 1'b1;
             // save the cause why we entered the exception
             dbg_cause_n = ex_i.cause;
+            // signal that we hit debug
+            dbg_hit_n = 1'b1;
         end
         // --------------------
         // HW Breakpoints
@@ -270,9 +272,9 @@ module debug_unit (
             // a halt was requested, we wait here until we get the next valid instruction
             // in order to properly populate the NPC and PPC registers
             HALT_REQ: begin
-                halt_o = 1'b1;
                 // we've got a valid instruction in the commit stage so we can proceed to the halted state
                 if (commit_instr_i.valid || !fetch_enable_i) begin
+                    halt_o = 1'b1;
                     NS = HALTED;
                 end
             end

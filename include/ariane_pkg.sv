@@ -313,8 +313,8 @@ package ariane_pkg;
     typedef enum logic [15:0] {
         DBG_CTRL     = 16'h0,
         DBG_HIT      = 16'h8,
-        DBG_IE       = 16'hC,
-        DBG_CAUSE    = 16'h10,
+        DBG_IE       = 16'h10,
+        DBG_CAUSE    = 16'h18,
         DBG_NPC      = 16'h2000,
         DBG_PPC      = 16'h2008,
         DBG_GPR      = 16'h4??,
