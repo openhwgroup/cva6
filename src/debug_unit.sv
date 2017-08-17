@@ -149,8 +149,14 @@ module debug_unit (
                 DBG_IE:     rdata_n = dbg_ie_q;
                 DBG_CAUSE:  rdata_n = dbg_cause_q;
                 DBG_NPC: begin
-                    if (debug_halted_o)
-                        rdata_n = commit_instr_i.pc;
+
+                    if (debug_halted_o) begin
+                        if (commit_instr_i.valid)
+                            rdata_n = commit_instr_i.pc;
+                        else
+                            rdata_n = 64'hdeadbeefdeadbeef;
+                        // TODO: Breakpoint
+                    end
                     // if we came from reset - output the boot address
                     if (reset_q)
                         rdata_n = boot_addr_i;
