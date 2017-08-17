@@ -109,7 +109,7 @@ module debug_unit (
         // update the previous PC if got a valid commit
         dbg_ppc_n           = (commit_ack_i) ? commit_instr_i.pc : dbg_ppc_q;
         // flag to indicate that we came from a reset state
-        reset_n             = (commit_ack_i) ? 1'b0 : reset_q;
+        reset_n             = (commit_instr_i.valid) ? 1'b0 : reset_q;
         // debug registers
         dbg_ie_n            = dbg_ie_q;
         dbg_cause_n         = dbg_cause_q;
@@ -302,10 +302,14 @@ module debug_unit (
                 if (resume_req || debug_resume_i)
                     NS = RUNNING;
 
-                // resume from single step, check if single stepping is enabled and if the sticky bit is cleared
-                if (dbg_ss_q && !dbg_hit_q) begin
+                // resume from single step, check if single stepping is enabled and if we exited debug mode
+                if (dbg_ss_q && resume_req) begin
                     NS = SINGLE_STEP;
                 end
+
+                // we are setting a new PC -> continue execution until the new PC reaches the commit stage
+                if (debug_set_pc_o)
+                    NS = HALT_REQ;
             end
 
         endcase
