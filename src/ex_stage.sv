@@ -134,10 +134,12 @@ module ex_stage #(
     // ----------------
     // Multiplication
     // ----------------
+    `ifdef MULT
     mult mult_i (
         .result_o ( mult_result_o ),
         .*
     );
+    `endif
 
     // ----------------
     // Load-Store Unit

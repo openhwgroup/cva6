@@ -40,8 +40,6 @@ module mult
     // ----------------
     // Mock Multiplier
     // ----------------
-    // `ifndef SYNTHESIS
-
     function automatic logic [63:0] sign_extend (logic [31:0] operand);
         return {{32{operand[31]}}, operand[31:0]};
     endfunction
@@ -150,5 +148,4 @@ module mult
             end
         endcase
     end
-    // `endif
 endmodule

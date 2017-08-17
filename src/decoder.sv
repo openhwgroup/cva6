@@ -237,6 +237,7 @@ module decoder (
                         {7'b000_0000, 3'b101}: instruction_o.op = SRL;   // Shift Right Logical
                         {7'b010_0000, 3'b101}: instruction_o.op = SRA;   // Shift Right Arithmetic
                         // Multiplications
+                        `ifdef MULT
                         {7'b000_0001, 3'b000}: instruction_o.op = MUL;
                         {7'b000_0001, 3'b001}: instruction_o.op = MULH;
                         {7'b000_0001, 3'b010}: instruction_o.op = MULHSU;
@@ -245,6 +246,7 @@ module decoder (
                         {7'b000_0001, 3'b101}: instruction_o.op = DIVU;
                         {7'b000_0001, 3'b110}: instruction_o.op = REM;
                         {7'b000_0001, 3'b111}: instruction_o.op = REMU;
+                        `endif
                         default: begin
                             illegal_instr = 1'b1;
                         end
@@ -269,12 +271,13 @@ module decoder (
                         {7'b000_0000, 3'b101}: instruction_o.op = SRLW; // srlw
                         {7'b010_0000, 3'b101}: instruction_o.op = SRAW; // sraw
                         // Multiplications
+                        `ifdef MULT
                         {7'b000_0001, 3'b000}: instruction_o.op = MULW;
                         {7'b000_0001, 3'b100}: instruction_o.op = DIVW;
                         {7'b000_0001, 3'b101}: instruction_o.op = DIVUW;
                         {7'b000_0001, 3'b110}: instruction_o.op = REMW;
                         {7'b000_0001, 3'b111}: instruction_o.op = REMUW;
-
+                        `endif
                         default: illegal_instr = 1'b1;
                       endcase
                 end
