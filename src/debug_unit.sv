@@ -75,6 +75,11 @@ module debug_unit (
     logic [63:0] dbg_ie_n, dbg_ie_q;
     // cause register which caused transfer to debug mode
     logic [63:0] dbg_cause_n, dbg_cause_q;
+    // causing debug instruction was compressed
+    logic        bp_is_compressed_n, bp_is_compressed_q;
+    // causing instruction was a breakpoint
+    logic        cause_is_bp_n, cause_is_bp_q;
+
     // single step mode
     logic dbg_ss_n, dbg_ss_q;
     logic [63:0] dbg_hit_n, dbg_hit_q;
@@ -106,13 +111,10 @@ module debug_unit (
 
         halt_req            = 1'b0;
         resume_req          = 1'b0;
-        // update the previous PC if got a valid commit
-        dbg_ppc_n           = (commit_ack_i) ? commit_instr_i.pc : dbg_ppc_q;
-        // flag to indicate that we came from a reset state
-        reset_n             = (commit_instr_i.valid) ? 1'b0 : reset_q;
         // debug registers
         dbg_ie_n            = dbg_ie_q;
         dbg_cause_n         = dbg_cause_q;
+
         dbg_ss_n            = dbg_ss_q;
         dbg_hit_n           = dbg_hit_q;
         dbg_hwbp_ctrl_n     = dbg_hwbp_ctrl_q;
@@ -131,7 +133,6 @@ module debug_unit (
         debug_pc_o          = 64'b0;
         debug_set_pc_o      = 1'b0;
 
-        // we did one single step, set the sticky bit
         if (stepped_single)
             dbg_hit_n = 1'b1;
 
@@ -155,6 +156,14 @@ module debug_unit (
                             rdata_n = commit_instr_i.pc;
                         else
                             rdata_n = 64'hdeadbeefdeadbeef;
+
+                        if (cause_is_bp_q)
+                            // if the cause is a breakpoint we trick the debugger in assuming the next instruction
+                            // is just a consecutive version of the causing instruction
+                            if (bp_is_compressed_q)
+                                rdata_n = dbg_ppc_q + 64'h2;
+                            else
+                                rdata_n = dbg_ppc_q + 64'h4;
                         // TODO: Breakpoint
                     end
                     // if we came from reset - output the boot address
@@ -174,8 +183,8 @@ module debug_unit (
                     end
                 end
 
-                DBG_CSR_U0, DBG_CSR_S0, DBG_CSR_M0,
-                DBG_CSR_U1, DBG_CSR_S1, DBG_CSR_M1: begin
+                DBG_CSR_U0, DBG_CSR_S0, DBG_CSR_H0, DBG_CSR_M0,
+                DBG_CSR_U1, DBG_CSR_S1, DBG_CSR_H1, DBG_CSR_M1: begin
                     if (debug_halted_o) begin
                         debug_csr_req_o = 1'b1;
                         rdata_n = debug_csr_rdata_i;
@@ -225,8 +234,8 @@ module debug_unit (
                     end
                 end
 
-                DBG_CSR_U0, DBG_CSR_S0, DBG_CSR_M0,
-                DBG_CSR_U1, DBG_CSR_S1, DBG_CSR_M1: begin
+                DBG_CSR_U0, DBG_CSR_S0, DBG_CSR_H0, DBG_CSR_M0,
+                DBG_CSR_U1, DBG_CSR_S1, DBG_CSR_H1, DBG_CSR_M1: begin
                     if (debug_halted_o) begin
                         debug_csr_req_o = 1'b1;
                         debug_csr_we_o = 1'b1;
@@ -239,9 +248,11 @@ module debug_unit (
                 DBG_BPDATA: dbg_hwbp_data_n[debug_addr_i[5:3]] = debug_wdata_i;
             endcase
         end
-
+        // ------------------------
+        // Debugger Signaling
+        // ------------------------
         // if an exception occurred and it is enabled to trigger debug mode, halt the processor and enter debug mode
-        if (ex_i.valid && (|(ex_i.cause & dbg_ie_q)) == 1'b1) begin
+        if (commit_ack_i && ex_i.valid && dbg_ie_q[ex_i.cause[5:0]]) begin
             halt_req = 1'b1;
             // save the cause why we entered the exception
             dbg_cause_n = ex_i.cause;
@@ -264,9 +275,24 @@ module debug_unit (
         end
     end
 
-    // --------------------
-    // Stall Control
-    // --------------------
+    // --------------------------------------
+    // Conditional Update (Debugger Status)
+    // --------------------------------------
+    always_comb begin
+        // update the previous PC if got a valid commit
+        dbg_ppc_n           = (commit_ack_i) ? commit_instr_i.pc : dbg_ppc_q;
+        // check if the committing instruction is a compressed instruction, else keep the stable
+        bp_is_compressed_n  = (commit_ack_i) ? commit_instr_i.is_compressed : bp_is_compressed_q;
+        // if the exception is valid and the cause was a breakpoint set this flag, otherwise clear it or keep it stable
+        cause_is_bp_n       = (commit_ack_i) ? (ex_i.valid && ex_i.cause == 64'h3) : cause_is_bp_q;
+        // flag to indicate that we came from a reset state
+        reset_n             = (commit_instr_i.valid) ? 1'b0 : reset_q;
+        // we did one single step, set the sticky bit
+    end
+
+    // --------------------------------------
+    // Run/Stall/Halt Control
+    // --------------------------------------
     always_comb begin
         NS = CS;
         // do not halt by default
@@ -326,29 +352,33 @@ module debug_unit (
     // --------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            CS              <= RUNNING;
-            reset_q         <= 1'b1;
-            rdata_q         <= '0;
-            rvalid_q        <= 1'b0;
-            dbg_ppc_q       <= 64'b0;
-            dbg_ie_q        <= 64'b0;
-            dbg_cause_q     <= 64'b0;
-            dbg_hwbp_ctrl_q <= '0;
-            dbg_hwbp_data_q <= '0;
-            dbg_ss_q        <= 1'b0;
-            dbg_hit_q       <= 1'b0;
+            CS                 <= RUNNING;
+            reset_q            <= 1'b1;
+            rdata_q            <= '0;
+            rvalid_q           <= 1'b0;
+            dbg_ppc_q          <= 64'b0;
+            dbg_ie_q           <= 64'b0;
+            dbg_cause_q        <= 64'b0;
+            dbg_hwbp_ctrl_q    <= '0;
+            dbg_hwbp_data_q    <= '0;
+            dbg_ss_q           <= 1'b0;
+            dbg_hit_q          <= 1'b0;
+            bp_is_compressed_q <= 1'b0;
+            cause_is_bp_q      <= 1'b0;
         end else begin
-            CS              <= NS;
-            reset_q         <= reset_n;
-            rdata_q         <= rdata_n;
-            rvalid_q        <= rvalid_n;
-            dbg_ppc_q       <= dbg_ppc_n;
-            dbg_ie_q        <= dbg_ie_n;
-            dbg_cause_q     <= dbg_cause_n;
-            dbg_ss_q        <= dbg_ss_n;
-            dbg_hit_q       <= dbg_hit_n;
-            dbg_hwbp_ctrl_q <= dbg_hwbp_ctrl_n;
-            dbg_hwbp_data_q <= dbg_hwbp_data_n;
+            CS                 <= NS;
+            reset_q            <= reset_n;
+            rdata_q            <= rdata_n;
+            rvalid_q           <= rvalid_n;
+            dbg_ppc_q          <= dbg_ppc_n;
+            dbg_ie_q           <= dbg_ie_n;
+            dbg_cause_q        <= dbg_cause_n;
+            dbg_ss_q           <= dbg_ss_n;
+            dbg_hit_q          <= dbg_hit_n;
+            dbg_hwbp_ctrl_q    <= dbg_hwbp_ctrl_n;
+            dbg_hwbp_data_q    <= dbg_hwbp_data_n;
+            bp_is_compressed_q <= bp_is_compressed_n;
+            cause_is_bp_q      <= cause_is_bp_n;
         end
     end
 

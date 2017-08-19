@@ -324,8 +324,8 @@ package ariane_pkg;
         DBG_CSR_U1   = 16'h9???,
         DBG_CSR_S0   = 16'hA???,
         DBG_CSR_S1   = 16'hB???,
-        // DBG_CSR_H0   = 15'hC???,
-        // DBG_CSR_H1   = 15'hD???,
+        DBG_CSR_H0   = 16'hC???,
+        DBG_CSR_H1   = 16'hD???,
         DBG_CSR_M0   = 16'hE???,
         DBG_CSR_M1   = 16'hF???,
 

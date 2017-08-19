@@ -184,7 +184,8 @@ class instruction_tracer;
     endfunction
 
     function void close();
-        $fclose(this.f);
+        if (f)
+            $fclose(this.f);
     endfunction
 
 endclass : instruction_tracer
