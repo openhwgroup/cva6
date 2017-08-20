@@ -57,7 +57,6 @@ module debug_unit (
     output logic                debug_halted_o,
     input  logic                debug_halt_i,
     input  logic                debug_resume_i
-
 );
     // Debugger State
     enum logic [1:0] {RUNNING, HALT_REQ, SINGLE_STEP, HALTED} CS, NS;
