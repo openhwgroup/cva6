@@ -249,6 +249,9 @@ module load_unit (
         // an exception occurred during translation
         if (CS == WAIT_TRANSLATION && ex_i.valid) begin
             valid_o = 1'b1;
+        // if we are waiting for the translation to finish do not give a valid signal
+        end else if (CS == WAIT_TRANSLATION) begin
+            valid_o = 1'b0;
         end
 
     end

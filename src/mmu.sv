@@ -87,7 +87,6 @@ module mmu #(
     // instruction error
     // instruction error valid signal and exception, delayed one cycle
     logic        ierr_valid_q, ierr_valid_n;
-    exception    fetch_ex_q,   fetch_ex_n;
 
     logic        iaccess_err;   // insufficient privilege to access this instruction page
     logic        daccess_err;   // insufficient privilege to access this data page
@@ -119,7 +118,6 @@ module mmu #(
     assign itlb_lu_access = fetch_req_i;
     assign dtlb_lu_access = lsu_req_i;
     assign fetch_rdata_o  = instr_if_data_rdata_i;
-    assign fetch_ex_o     = fetch_ex_q;
 
     tlb #(
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
@@ -200,6 +198,8 @@ module mmu #(
     //-----------------------
     // Instruction Interface
     //-----------------------
+    exception fetch_exception;
+
     // This is a full memory interface, e.g.: it handles all signals to the I$
     // Exceptions are always signaled together with the fetch_valid_o signal
     always_comb begin : instr_interface
@@ -210,15 +210,15 @@ module mmu #(
         // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
-        fetch_ex_n    = '0;
-        ierr_valid_n  = 1'b0; // we keep a separate valid signal in case of an error
+        fetch_exception      = '0;
+        ierr_valid_n         = 1'b0; // we keep a separate valid signal in case of an error
         // Check whether we are allowed to access this memory region from a fetch perspective
         iaccess_err   = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
                                      || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
         // check that the upper-most bits (63-39) are the same, otherwise throw a page fault exception...
         if (fetch_req_i && !((&fetch_vaddr_i[63:39]) == 1'b1 || (|fetch_vaddr_i[63:39]) == 1'b0)) begin
-            fetch_ex_n   = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+            fetch_exception = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
             ierr_valid_n = 1'b1;
             fetch_gnt_o  = 1'b1;
         end
@@ -253,7 +253,7 @@ module mmu #(
                   fetch_gnt_o         = 1'b1;
                   ierr_valid_n        = 1'b1;
                   // throw a page fault
-                  fetch_ex_n          = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
+                  fetch_exception     = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
                 end
             end else
             // ---------
@@ -264,22 +264,41 @@ module mmu #(
                 // on an error pass through fetch with an error signaled
                 fetch_gnt_o  = ptw_error;
                 ierr_valid_n = ptw_error; // signal valid/error on next cycle
-                fetch_ex_n   = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                fetch_exception = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
         end
         // the fetch is valid if we either got an error in the previous cycle or the I$ gave us a valid signal.
         fetch_valid_o = instr_if_data_rvalid_i || ierr_valid_q;
     end
+    // ---------------------------
+    // Fetch exception register
+    // ---------------------------
+    // We can have two oustanding transactions
+    fifo #(
+        .dtype ( exception                  ),
+        .DEPTH ( 2                          )
+    ) i_exception_fifo (
+        .clk_i            ( clk_i           ),
+        .rst_ni           ( rst_ni          ),
+        .flush_i          (                 ),
+        .full_o           (                 ),
+        .empty_o          (                 ),
+        .single_element_o (                 ),
+        .data_i           ( fetch_exception ),
+        .push_i           ( fetch_gnt_o     ),
+        .data_o           ( fetch_ex_o      ),
+        .pop_i            ( fetch_valid_o   ),
+        .*
+    );
+
     // ----------
     // Registers
     // ----------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
             ierr_valid_q <= 1'b0;
-            fetch_ex_q   <= '0;
         end else begin
             ierr_valid_q <= ierr_valid_n;
-            fetch_ex_q   <= fetch_ex_n;
         end
     end
 
