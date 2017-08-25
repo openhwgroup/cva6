@@ -366,10 +366,7 @@ module csr_regfile #(
             // trap to machine mode
             end else begin
                 // update mstatus
-                // clear enable flags for all lower privilege levels
-                // but as M is already the highest -> clear everything
                 mstatus_n.mie  = 1'b0;
-                mstatus_n.sie  = 1'b0;
                 mstatus_n.mpie = mstatus_q.mie;
                 // save the previous privilege mode
                 mstatus_n.mpp  = priv_lvl_q;
