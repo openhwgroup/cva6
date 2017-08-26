@@ -25,8 +25,8 @@ module store_buffer (
                                           // otherwise we will run in a deadlock with the memory arbiter
     output logic         no_st_pending_o, // non-speculative queue is empty (e.g.: everything is committed to the memory hierarchy)
 
-    input  logic [11:0]  page_offset_i,
-    output logic         page_offset_matches_o,
+    input  logic [11:0]  page_offset_i,         // check for the page offset (the last 12 bit if the current load matches them)
+    output logic         page_offset_matches_o, // the above input page offset matches -> let the store buffer drain
 
     input  logic         commit_i,        // commit the instruction which was placed there most recently
     output logic         commit_ready_o,  // commit queue is ready to accept another commit request
@@ -119,7 +119,7 @@ module store_buffer (
         speculative_status_cnt_n = speculative_status_cnt;
 
         // when we flush evict the speculative stores
-        if (ready_o && flush_i) begin
+        if (flush_i) begin
             // reset all valid flags
             for (int unsigned i = 0; i < DEPTH_SPEC; i++)
                 speculative_queue_n[i].valid = 1'b0;
@@ -260,15 +260,15 @@ module store_buffer (
     `ifndef verilator
     // assert that commit is never set when we are flushing this would be counter intuitive
     // as flush and commit is decided in the same stage
-    assert property (
+    commit_and_flush: assert property (
         @(posedge clk_i) rst_ni && flush_i |-> !commit_i)
         else $error ("[Commit Queue] You are trying to commit and flush in the same cycle");
 
-    assert property (
+    speculative_buffer_overflow: assert property (
         @(posedge clk_i) rst_ni && (speculative_status_cnt_q == DEPTH_SPEC) |-> !valid_i)
         else $error ("[Speculative Queue] You are trying to push new data although the buffer is not ready");
 
-    assert property (
+    commit_buffer_overflow: assert property (
         @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_SPEC) |-> !commit_i)
         else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
 
