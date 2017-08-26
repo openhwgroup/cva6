@@ -175,6 +175,9 @@ lint:
 	verilator $(ariane_pkg) $(src) --lint-only \
 	$(list_incdir) --top-module ariane
 
+verify:
+	qverify vlog -sv src/csr_regfile.sv
+
 clean:
 	rm -rf work/ *.ucdb
 
