@@ -93,8 +93,7 @@ module ptw #(
     logic is_instr_ptw_q,   is_instr_ptw_n;
     logic global_mapping_q, global_mapping_n;
     // latched tag signal
-    logic        tag_valid_n, tag_valid_q;
-    logic [43:0] tag_n,       tag_q;
+    logic tag_valid_n,      tag_valid_q;
     // register the ASID
     logic [ASID_WIDTH-1:0]  tlb_update_asid_q, tlb_update_asid_n;
     // register the VPN we need to walk, SV39 defines a 39 bit virtual address
@@ -106,21 +105,21 @@ module ptw #(
     assign update_vaddr_o  = vaddr_q;
     assign ptw_active_o    = (CS != IDLE);
     assign walking_instr_o = is_instr_ptw_q;
+    // directly output the correct physical address
+    assign address_index_o = ptw_pptr_q[11:0];
+    assign address_tag_o   = ptw_pptr_q[55:12];
     // we are never going to kill this request
     assign kill_req_o      = '0;
     // we are never going to write with the HPTW
     assign data_wdata_o    = 64'b0;
     // update the correct page table level
-    assign update_is_2M_o  = (ptw_lvl_q == LVL2);
-    assign update_is_1G_o  = (ptw_lvl_q == LVL1);
+    assign update_is_2M_o = (ptw_lvl_q == LVL2);
+    assign update_is_1G_o = (ptw_lvl_q == LVL1);
     // output the correct ASID
-    assign update_asid_o   = tlb_update_asid_q;
+    assign update_asid_o = tlb_update_asid_q;
     // set the global mapping bit
     assign update_content_o = pte | (global_mapping_q << 5);
     assign tag_valid_o      = tag_valid_q;
-    // directly output the correct physical address
-    assign address_index_o = ptw_pptr_q[11:0];
-    assign address_tag_o   = tag_q; // the tags comes one cycle later
 
     //-------------------
     // Page table walker
@@ -147,10 +146,8 @@ module ptw #(
     //      - pa.ppn[LEVELS-1:i] = pte.ppn[LEVELS-1:i].
     always_comb begin : ptw
         // default assignments
-        NS                = CS;
         // PTW memory interface
         tag_valid_n       = 1'b0;
-        tag_n             = tag_q;
         data_req_o        = 1'b0;
         data_be_o         = 8'hFF;
         data_we_o         = 1'b0;
@@ -160,10 +157,12 @@ module ptw #(
         is_instr_ptw_n    = is_instr_ptw_q;
         ptw_lvl_n         = ptw_lvl_q;
         ptw_pptr_n        = ptw_pptr_q;
+        NS                = CS;
         global_mapping_n  = global_mapping_q;
         // input registers
         tlb_update_asid_n = tlb_update_asid_q;
-        vaddr_n           = vaddr_q;
+        vaddr_n  = vaddr_q;
+
 
         case (CS)
 
@@ -193,9 +192,8 @@ module ptw #(
                 data_req_o = 1'b1;
                 // wait for the WAIT_GRANT
                 if (data_gnt_i) begin
-                    // send the tag and tag-valid signal one cycle later
+                    // send the tag valid signal one cycle later
                     tag_valid_n = 1'b1;
-                    tag_n       = ptw_pptr_q[55:12];
                     NS          = PTE_LOOKUP;
                 end
             end
@@ -334,17 +332,15 @@ module ptw #(
             tlb_update_asid_q  <= '{default: 0};
             vaddr_q            <= '0;
             ptw_pptr_q         <= '{default: 0};
-            tag_q              <= '0;
             global_mapping_q   <= 1'b0;
         end else begin
             CS                 <= NS;
+            ptw_pptr_q         <= ptw_pptr_n;
             is_instr_ptw_q     <= is_instr_ptw_n;
             ptw_lvl_q          <= ptw_lvl_n;
             tag_valid_q        <= tag_valid_n;
             tlb_update_asid_q  <= tlb_update_asid_n;
             vaddr_q            <= vaddr_n;
-            ptw_pptr_q         <= ptw_pptr_n;
-            tag_q              <= tag_n;
             global_mapping_q   <= global_mapping_n;
         end
     end
