@@ -20,34 +20,34 @@ import ariane_pkg::*;
 
 module commit_stage (
     input  logic                clk_i,
-    input  logic                halt_i,        // request to halt the core
+    input  logic                halt_i,             // request to halt the core
 
-    output exception            exception_o,   // take exception to controller
+    output exception            exception_o,        // take exception to controller
 
     // from scoreboard
-    input  scoreboard_entry     commit_instr_i,
-    output logic                commit_ack_o,
+    input  scoreboard_entry     commit_instr_i,     // the instruction we want to commit
+    output logic                commit_ack_o,       // acknowledge that we are indeed committing
 
     // to register file
-    output  logic[4:0]          waddr_a_o,
-    output  logic[63:0]         wdata_a_o,
-    output  logic               we_a_o,
+    output  logic[4:0]          waddr_a_o,          // register file write address
+    output  logic[63:0]         wdata_a_o,          // register file write data
+    output  logic               we_a_o,             // register file write enable
 
     // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
     output logic [63:0]         pc_o,
     // to/from CSR file
-    output fu_op                csr_op_o,
-    output logic [63:0]         csr_wdata_o,
-    input  logic [63:0]         csr_rdata_i,
-    input  exception            csr_exception_i,
+    output fu_op                csr_op_o,           // decoded CSR operation
+    output logic [63:0]         csr_wdata_o,        // data to write to CSR
+    input  logic [63:0]         csr_rdata_i,        // data to read from CSR
+    input  exception            csr_exception_i,    // exception or interrupt occurred in CSR stage (the same as commit)
     // commit signals to ex
-    output logic                commit_lsu_o,    // commit the pending store
-    input  logic                commit_lsu_ready_i,
-    input  logic                no_st_pending_i, // there is no store pending
-    output logic                commit_csr_o,    // commit the pending CSR instruction
-    output logic                fence_i_o,       // flush icache and pipeline
-    output logic                fence_o,         // flush dcache and pipeline
-    output logic                sfence_vma_o     // flush TLBs and pipeline
+    output logic                commit_lsu_o,       // commit the pending store
+    input  logic                commit_lsu_ready_i, // commit buffer of LSU is ready
+    input  logic                no_st_pending_i,    // there is no store pending
+    output logic                commit_csr_o,       // commit the pending CSR instruction
+    output logic                fence_i_o,          // flush I$ and pipeline
+    output logic                fence_o,            // flush D$ and pipeline
+    output logic                sfence_vma_o        // flush TLBs and pipeline
 );
 
     assign waddr_a_o = commit_instr_i.rd;
@@ -152,38 +152,41 @@ module commit_stage (
         exception_o.valid = 1'b0;
         exception_o.cause = 64'b0;
         exception_o.tval  = 64'b0;
-        // check for CSR exception
-        if (csr_exception_i.valid && !csr_exception_i.cause[63]) begin
-            exception_o      = csr_exception_i;
-            // if no earlier exception happened the commit instruction will still contain
-            // the instruction data from the ID stage. If a earlier exception happened we don't care
-            // as we will overwrite it anyway in the next IF bl
-            exception_o.tval = commit_instr_i.ex.tval;
-        end
-        // but we give precedence to exceptions which happened earlier
-        if (commit_instr_i.ex.valid) begin
-            exception_o = commit_instr_i.ex;
-        end
-        // check for CSR interrupts (e.g.: normal interrupts which get triggered here)
-        // by putting interrupts here we give them precedence over any other exception
-        if (csr_exception_i.valid && csr_exception_i.cause[63]) begin
-            exception_o = csr_exception_i;
-            exception_o.tval = commit_instr_i.ex.tval;
+        // we need a valid instruction in the commit stage, otherwise we might loose the PC in case of interrupts as they
+        // can happen anywhere in the execution flow and might just happen between two legal instructions - the PC would then
+        // be outdated. The solution here is to defer any exception/interrupt until we get a valid PC again (from where we cane
+        // resume execution afterwards).
+        if (commit_instr_i.valid) begin
+            // ------------------------
+            // check for CSR exception
+            // ------------------------
+            if (csr_exception_i.valid && !csr_exception_i.cause[63]) begin
+                exception_o      = csr_exception_i;
+                // if no earlier exception happened the commit instruction will still contain
+                // the instruction data from the ID stage. If a earlier exception happened we don't care
+                // as we will overwrite it anyway in the next IF bl
+                exception_o.tval = commit_instr_i.ex.tval;
+            end
+            // ------------------------
+            // Earlier Exceptions
+            // ------------------------
+            // but we give precedence to exceptions which happened earlier
+            if (commit_instr_i.ex.valid) begin
+                exception_o = commit_instr_i.ex;
+            end
+            // ------------------------
+            // Interrupts
+            // ------------------------
+            // check for CSR interrupts (e.g.: normal interrupts which get triggered here)
+            // by putting interrupts here we give them precedence over any other exception
+            if (csr_exception_i.valid && csr_exception_i.cause[63]) begin
+                exception_o = csr_exception_i;
+                exception_o.tval = commit_instr_i.ex.tval;
+            end
         end
         // If we halted the processor don't take any exceptions
         if (halt_i) begin
             exception_o.valid = 1'b0;
         end
     end
-        //-------------
-    // Assertions
-    //-------------
-    `ifndef SYNTHESIS
-    `ifndef VERILATOR
-        // there should never be a grant when there was no request
-        assert property (
-          @(posedge clk_i) (we_a_o) |-> !$isunknown(wdata_a_o[7:0]) )
-        else $warning("You are committing unknown values to the register file");
-    `endif
-    `endif
 endmodule

@@ -391,9 +391,9 @@ module csr_regfile #(
 
         ld_st_priv_lvl_o = (mstatus_q.mprv) ? mstatus_q.mpp : priv_lvl_o;
         en_ld_st_translation_o = en_ld_st_translation_q;
-        // -----------------------
-        // Return from Exception
-        // -----------------------
+        // ------------------------------
+        // Return from Environment
+        // ------------------------------
         // When executing an xRET instruction, supposing xPP holds the value y, xIE is set to xPIE; the privilege
         // mode is changed to y; xPIE is set to 1; and xPP is set to U
         if (mret) begin
@@ -663,4 +663,16 @@ module csr_regfile #(
             wfi_q                  <= wfi_n;
         end
     end
+
+    //-------------
+    // Assertions
+    //-------------
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
+        // check that eret and ex are never valid together
+        assert property (
+          @(posedge clk_i) !(eret_i && ex_valid_i))
+        else $warning("eret and exception should never be valid at the same time");
+    `endif
+    `endif
 endmodule

@@ -186,5 +186,4 @@ module pcgen_stage (
            resolved_branch_q <= resolved_branch_i;
         end
     end
-
 endmodule
