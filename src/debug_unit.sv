@@ -153,8 +153,6 @@ module debug_unit (
                     if (debug_halted_o) begin
                         if (commit_instr_i.valid)
                             rdata_n = commit_instr_i.pc;
-                        else
-                            rdata_n = 64'hdeadbeefdeadbeef;
 
                         if (cause_is_bp_q)
                             // if the cause is a breakpoint we trick the debugger in assuming the next instruction
@@ -163,8 +161,9 @@ module debug_unit (
                                 rdata_n = dbg_ppc_q + 64'h2;
                             else
                                 rdata_n = dbg_ppc_q + 64'h4;
-                        // TODO: Breakpoint
-                    end
+                    // we are not in debug mode - so just report what we know: the last valid PC
+                    end else
+                        rdata_n = dbg_ppc_q;
                     // if we came from reset - output the boot address
                     if (reset_q)
                         rdata_n = boot_addr_i;
