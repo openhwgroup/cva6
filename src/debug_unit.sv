@@ -250,7 +250,7 @@ module debug_unit (
         // Debugger Signaling
         // ------------------------
         // if an exception occurred and it is enabled to trigger debug mode, halt the processor and enter debug mode
-        if (commit_ack_i && ex_i.valid && dbg_ie_q[ex_i.cause[5:0]]) begin
+        if (commit_ack_i && ex_i.valid && dbg_ie_q[ex_i.cause[5:0]] && (ex_i.cause[63] == dbg_ie_q[63])) begin
             halt_req = 1'b1;
             // save the cause why we entered the exception
             dbg_cause_n = ex_i.cause;
