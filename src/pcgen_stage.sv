@@ -69,14 +69,15 @@ module pcgen_stage (
     // -------------------
     // Next PC
     // -------------------
-    // next PC (NPC) can come from:
+    // next PC (NPC) can come from (in order of precedence:
     // 0. Default assignment
     // 1. Branch Predict taken
-    // 2. Debug
-    // 3. Control flow change request
-    // 4. Exception
-    // 5. Return from exception
-    // 6. Pipeline Flush because of CSR side effects
+    // 2. Control flow change request
+    // 3. Return from environment call
+    // 4. Exception/Interrupt
+    // 5. Pipeline Flush because of CSR side effects
+    // 6. Debug
+    // Mis-predict handling is a little bit different
     always_comb begin : npc_select
         automatic logic [63:0] fetch_address = npc_q;
 
@@ -85,11 +86,11 @@ module pcgen_stage (
         // this tells us whether it is a consecutive PC or a completely new PC
         set_pc_n         = 1'b0;
 
+        // -------------------------------
+        // 2. Control flow change request
+        // -------------------------------
         // keep the PC stable if IF by default
         npc_n            = npc_q;
-        // -------------------------------
-        // 3. Control flow change request
-        // -------------------------------
         // check if had a mis-predict the cycle earlier and if we can reset the PC (e.g.: it was a predicted or consecutive PC
         // which was set a cycle earlier)
         if (resolved_branch_q.is_mispredict && !set_pc_q) begin
@@ -120,15 +121,16 @@ module pcgen_stage (
         end
 
         // -------------------------------
-        // 2. Debug
+        // 3. Return from environment call
         // -------------------------------
-        if (debug_set_pc_i) begin
-            npc_n = debug_pc_i;
-            set_pc_n = 1'b1;
+        if (eret_i) begin
+            npc_n                  = epc_i;
+            branch_predict_o.valid = 1'b0;
+            set_pc_n               = 1'b1;
         end
 
         // -------------------------------
-        // 4. Exception
+        // 4. Exception/Interrupt
         // -------------------------------
         if (ex_valid_i) begin
             npc_n                  = trap_vector_base_i;
@@ -136,16 +138,8 @@ module pcgen_stage (
             set_pc_n               = 1'b1;
         end
 
-        // -------------------------------
-        // 5. Return from exception
-        // -------------------------------
-        if (eret_i) begin
-            npc_n    = epc_i;
-            set_pc_n = 1'b1;
-        end
-
         // -----------------------------------------------
-        // 6. Pipeline Flush because of CSR side effects
+        // 5. Pipeline Flush because of CSR side effects
         // -----------------------------------------------
         // On a pipeline flush start fetching from the next address
         // of the instruction in the commit stage
@@ -154,6 +148,16 @@ module pcgen_stage (
             // as CSR instructions do not exist in a compressed form
             // we can unconditionally do PC + 4 here
             npc_n    = pc_commit_i + 64'h4;
+            set_pc_n = 1'b1;
+            branch_predict_o.valid = 1'b0;
+        end
+
+        // -------------------------------
+        // 6. Debug
+        // -------------------------------
+        if (debug_set_pc_i) begin
+            npc_n = debug_pc_i;
+            branch_predict_o.valid = 1'b0;
             set_pc_n = 1'b1;
         end
 
