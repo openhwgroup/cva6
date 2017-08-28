@@ -153,8 +153,6 @@ module debug_unit (
                     if (debug_halted_o) begin
                         if (commit_instr_i.valid)
                             rdata_n = commit_instr_i.pc;
-                        else
-                            rdata_n = 64'hdeadbeefdeadbeef;
 
                         if (cause_is_bp_q)
                             // if the cause is a breakpoint we trick the debugger in assuming the next instruction
@@ -163,8 +161,9 @@ module debug_unit (
                                 rdata_n = dbg_ppc_q + 64'h2;
                             else
                                 rdata_n = dbg_ppc_q + 64'h4;
-                        // TODO: Breakpoint
-                    end
+                    // we are not in debug mode - so just report what we know: the last valid PC
+                    end else
+                        rdata_n = dbg_ppc_q;
                     // if we came from reset - output the boot address
                     if (reset_q)
                         rdata_n = boot_addr_i;
@@ -251,7 +250,7 @@ module debug_unit (
         // Debugger Signaling
         // ------------------------
         // if an exception occurred and it is enabled to trigger debug mode, halt the processor and enter debug mode
-        if (commit_ack_i && ex_i.valid && dbg_ie_q[ex_i.cause[5:0]]) begin
+        if (commit_ack_i && ex_i.valid && dbg_ie_q[ex_i.cause[5:0]] && (ex_i.cause[63] == dbg_ie_q[63])) begin
             halt_req = 1'b1;
             // save the cause why we entered the exception
             dbg_cause_n = ex_i.cause;

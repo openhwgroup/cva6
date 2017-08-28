@@ -126,7 +126,7 @@ sim: build ariane_tb.dtb
 
 simc: build ariane_tb.dtb
 	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug
+	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
 run-asm-tests: build ariane_tb.dtb
 	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
@@ -174,6 +174,9 @@ ariane_tb.dtb:  ariane_tb.dts
 lint:
 	verilator $(ariane_pkg) $(src) --lint-only \
 	$(list_incdir) --top-module ariane
+
+verify:
+	qverify vlog -sv src/csr_regfile.sv
 
 clean:
 	rm -rf work/ *.ucdb

@@ -19,9 +19,9 @@
 import ariane_pkg::*;
 
 module store_unit (
-    input logic                      clk_i,    // Clock
-    input logic                      rst_ni,  // Asynchronous reset active low
-    input logic                      flush_i,
+    input  logic                     clk_i,    // Clock
+    input  logic                     rst_ni,  // Asynchronous reset active low
+    input  logic                     flush_i,
     output logic                     no_st_pending_o,
     // store unit input port
     input  logic                     valid_i,

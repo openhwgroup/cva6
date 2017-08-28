@@ -467,6 +467,11 @@ module csr_regfile #(
                 csr_read = 1'b0;
             end
         endcase
+        // if we are retiring an exception do not return from exception
+        if (ex_i.valid) begin
+            mret = 1'b0;
+            sret = 1'b0;
+        end
         // ------------------------------
         // Debug Multiplexer (Priority)
         // ------------------------------
@@ -671,8 +676,8 @@ module csr_regfile #(
     `ifndef VERILATOR
         // check that eret and ex are never valid together
         assert property (
-          @(posedge clk_i) !(eret_i && ex_valid_i))
-        else $warning("eret and exception should never be valid at the same time");
+          @(posedge clk_i) !(eret_o && ex_i.valid))
+        else begin $error("eret and exception should never be valid at the same time"); $stop(); end
     `endif
     `endif
 endmodule
