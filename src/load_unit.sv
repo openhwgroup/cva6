@@ -213,19 +213,17 @@ module load_unit (
 
         endcase
 
-        // save the load data for later usage, two possible situation where we need to latch the load data
-        // 1. If we get a new request
-        // 2. If we get an exception
-        if (pop_ld_o || ex_i.valid) begin
-            load_data_n = in_data;
-        end
-
         // we got an exception
-        if (ex_i.valid) begin
+        if (ex_i.valid && valid_i) begin
             // the next state will be the idle state
             NS = IDLE;
             // pop load
             pop_ld_o = 1'b1;
+        end
+
+        // save the load data for later usage
+        if (pop_ld_o) begin
+            load_data_n = in_data;
         end
 
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
@@ -249,10 +247,10 @@ module load_unit (
                 valid_o = 1'b1;
         end
         // an exception occurred during translation
-        if (ex_i.valid) begin
+        if (translation_req_o && ex_i.valid) begin
             valid_o = 1'b1;
         // if we are waiting for the translation to finish do not give a valid signal yet
-        end else if (CS == WAIT_TRANSLATION) begin
+        end else if (translation_req_o) begin
             valid_o = 1'b0;
         end
 
