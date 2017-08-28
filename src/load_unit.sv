@@ -224,6 +224,8 @@ module load_unit (
         if (ex_i.valid) begin
             // the next state will be the idle state
             NS = IDLE;
+            // pop load
+            pop_ld_o = 1'b1;
         end
 
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
@@ -247,9 +249,9 @@ module load_unit (
                 valid_o = 1'b1;
         end
         // an exception occurred during translation
-        if (CS == WAIT_TRANSLATION && ex_i.valid) begin
+        if (ex_i.valid) begin
             valid_o = 1'b1;
-        // if we are waiting for the translation to finish do not give a valid signal
+        // if we are waiting for the translation to finish do not give a valid signal yet
         end else if (CS == WAIT_TRANSLATION) begin
             valid_o = 1'b0;
         end
