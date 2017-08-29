@@ -32,6 +32,7 @@ module ptw #(
     output logic                    ptw_active_o,
     output logic                    walking_instr_o,        // set when walking for TLB
     output logic                    ptw_error_o,            // set when an error occurred
+    output logic [63:0]             faulting_address_o,     // the address which threw the page-fault exception
     input  logic                    enable_translation_i,   // CSRs indicate to enable SV39
     input  logic                    en_ld_st_translation_i, // enable virtual memory translation for load/stores
 
@@ -97,7 +98,7 @@ module ptw #(
     // register the ASID
     logic [ASID_WIDTH-1:0]  tlb_update_asid_q, tlb_update_asid_n;
     // register the VPN we need to walk, SV39 defines a 39 bit virtual address
-    logic [38:0] vaddr_q,   vaddr_n;
+    logic [63:0] vaddr_q,   vaddr_n;
     // 4 byte aligned physical pointer
     logic[55:0] ptw_pptr_q, ptw_pptr_n;
 
@@ -147,22 +148,22 @@ module ptw #(
     always_comb begin : ptw
         // default assignments
         // PTW memory interface
-        tag_valid_n       = 1'b0;
-        data_req_o        = 1'b0;
-        data_be_o         = 8'hFF;
-        data_we_o         = 1'b0;
-        ptw_error_o       = 1'b0;
-        itlb_update_o     = 1'b0;
-        dtlb_update_o     = 1'b0;
-        is_instr_ptw_n    = is_instr_ptw_q;
-        ptw_lvl_n         = ptw_lvl_q;
-        ptw_pptr_n        = ptw_pptr_q;
-        NS                = CS;
-        global_mapping_n  = global_mapping_q;
+        tag_valid_n        = 1'b0;
+        data_req_o         = 1'b0;
+        data_be_o          = 8'hFF;
+        data_we_o          = 1'b0;
+        ptw_error_o        = 1'b0;
+        itlb_update_o      = 1'b0;
+        dtlb_update_o      = 1'b0;
+        is_instr_ptw_n     = is_instr_ptw_q;
+        ptw_lvl_n          = ptw_lvl_q;
+        ptw_pptr_n         = ptw_pptr_q;
+        NS                 = CS;
+        global_mapping_n   = global_mapping_q;
         // input registers
-        tlb_update_asid_n = tlb_update_asid_q;
-        vaddr_n  = vaddr_q;
-
+        tlb_update_asid_n  = tlb_update_asid_q;
+        vaddr_n            = vaddr_q;
+        faulting_address_o = '0;
 
         case (CS)
 
@@ -297,7 +298,8 @@ module ptw #(
             // Propagate error to MMU/LSU
             PROPAGATE_ERROR: begin
                 NS = IDLE;
-                ptw_error_o = 1'b1;
+                ptw_error_o        = 1'b1;
+                faulting_address_o = vaddr_q;
             end
             // wait for the rvalid before going back to IDLE
             WAIT_RVALID: begin
@@ -305,6 +307,7 @@ module ptw #(
                     NS = IDLE;
             end
         endcase
+
         // -------
         // Flush
         // -------

@@ -93,6 +93,7 @@ module mmu #(
     logic        ptw_active;    // PTW is currently walking a page table
     logic        walking_instr; // PTW is walking because of an ITLB miss
     logic        ptw_error;     // PTW threw an exception
+    logic [63:0] faulting_address;
 
     logic        update_is_2M;
     logic        update_is_1G;
@@ -175,6 +176,7 @@ module mmu #(
         .ptw_active_o           ( ptw_active            ),
         .walking_instr_o        ( walking_instr         ),
         .ptw_error_o            ( ptw_error             ),
+        .faulting_address_o     ( faulting_address      ),
         .enable_translation_i   ( enable_translation_i  ),
 
         .itlb_update_o          ( itlb_update           ),
@@ -261,9 +263,14 @@ module mmu #(
             // ---------
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
-                // on an error pass through fetch with an error signaled
-                fetch_gnt_o  = ptw_error;
-                ierr_valid_n = ptw_error; // signal valid/error on next cycle
+                // check that the fetch address is equal with the faulting address as it could be that the page table walker
+                // has walked an instruction the instruction fetch stage is no longer interested in as we didn't give a grant
+                // we should not propagate back the exception when the request is no longer high
+                if (faulting_address == fetch_vaddr_i && fetch_req_i) begin
+                    // on an error pass through fetch with an error signaled
+                    fetch_gnt_o  = ptw_error;
+                    ierr_valid_n = ptw_error; // signal valid/error on next cycle
+                end
                 fetch_exception = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
         end
@@ -273,14 +280,14 @@ module mmu #(
     // ---------------------------
     // Fetch exception register
     // ---------------------------
-    // We can have two oustanding transactions
+    // We can have two outstanding transactions
     fifo #(
         .dtype ( exception                  ),
         .DEPTH ( 2                          )
     ) i_exception_fifo (
         .clk_i            ( clk_i           ),
         .rst_ni           ( rst_ni          ),
-        .flush_i          (                 ),
+        .flush_i          ( 1'b0            ),
         .full_o           (                 ),
         .empty_o          (                 ),
         .single_element_o (                 ),
