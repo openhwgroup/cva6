@@ -190,8 +190,11 @@ module debug_unit (
                 end
 
                 // all breakpoints are implemented
-                DBG_BPCTRL: rdata_n = {57'b0, dbg_hwbp_ctrl_q[debug_addr_i[5:3]], 2'b0, 1'b1};
-                DBG_BPDATA: rdata_n = dbg_hwbp_data_q[debug_addr_i[5:3]];
+                BP_CTRL0, BP_CTRL1, BP_CTRL2, BP_CTRL3, BP_CTRL4, BP_CTRL5, BP_CTRL6, BP_CTRL7:
+                    rdata_n = {57'b0, dbg_hwbp_ctrl_q[debug_addr_i[5:3]], 2'b0, 1'b1};
+
+                BP_DATA0, BP_DATA1, BP_DATA2, BP_DATA3, BP_DATA4, BP_DATA5, BP_DATA6, BP_DATA7:
+                    rdata_n = dbg_hwbp_data_q[debug_addr_i[5:3]];
             endcase
 
         // ----------
@@ -242,8 +245,11 @@ module debug_unit (
                 end
 
                 // Only triggering on instruction fetch is allowed at the moment
-                DBG_BPCTRL: dbg_hwbp_ctrl_n[debug_addr_i[5:3]] = {3'b0, debug_wdata_i[1]};
-                DBG_BPDATA: dbg_hwbp_data_n[debug_addr_i[5:3]] = debug_wdata_i;
+                BP_CTRL0, BP_CTRL1, BP_CTRL2, BP_CTRL3, BP_CTRL4, BP_CTRL5, BP_CTRL6, BP_CTRL7:
+                    dbg_hwbp_ctrl_n[debug_addr_i[5:3]] = {3'b0, debug_wdata_i[1]};
+
+                BP_DATA0, BP_DATA1, BP_DATA2, BP_DATA3, BP_DATA4, BP_DATA5, BP_DATA6, BP_DATA7:
+                    dbg_hwbp_data_n[debug_addr_i[5:3]] = debug_wdata_i;
             endcase
         end
         // ------------------------
