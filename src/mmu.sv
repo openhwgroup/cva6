@@ -201,7 +201,7 @@ module mmu #(
     // Instruction Interface
     //-----------------------
     exception fetch_exception;
-
+    logic exception_fifo_empty;
     // This is a full memory interface, e.g.: it handles all signals to the I$
     // Exceptions are always signaled together with the fetch_valid_o signal
     always_comb begin : instr_interface
@@ -250,12 +250,17 @@ module mmu #(
                 instr_if_data_req_o = fetch_req_i;
                 // we got an access error
                 if (iaccess_err) begin
-                  // immediately grant a fetch which threw an exception, and stop the request from happening
-                  instr_if_data_req_o = 1'b0;
-                  fetch_gnt_o         = 1'b1;
-                  ierr_valid_n        = 1'b1;
-                  // throw a page fault
-                  fetch_exception     = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
+                    // immediately grant a fetch which threw an exception, and stop the request from happening
+                    instr_if_data_req_o = 1'b0;
+                    // in case we hit the TLB with an exception we need to order the memory request e.g.
+                    // we need to wait until all outstanding request drained otherwise we get an out-of order result
+                    // which will be wrong
+                    if (exception_fifo_empty) begin
+                        fetch_gnt_o         = 1'b1;
+                        ierr_valid_n        = 1'b1;
+                    end
+                    // throw a page fault
+                    fetch_exception     = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
                 end
             end else
             // ---------
@@ -282,19 +287,19 @@ module mmu #(
     // ---------------------------
     // We can have two outstanding transactions
     fifo #(
-        .dtype ( exception                  ),
-        .DEPTH ( 2                          )
+        .dtype            ( exception            ),
+        .DEPTH            ( 2                    )
     ) i_exception_fifo (
-        .clk_i            ( clk_i           ),
-        .rst_ni           ( rst_ni          ),
-        .flush_i          ( 1'b0            ),
-        .full_o           (                 ),
-        .empty_o          (                 ),
-        .single_element_o (                 ),
-        .data_i           ( fetch_exception ),
-        .push_i           ( fetch_gnt_o     ),
-        .data_o           ( fetch_ex_o      ),
-        .pop_i            ( fetch_valid_o   ),
+        .clk_i            ( clk_i                ),
+        .rst_ni           ( rst_ni               ),
+        .flush_i          ( 1'b0                 ),
+        .full_o           (                      ),
+        .empty_o          ( exception_fifo_empty ),
+        .single_element_o (                      ),
+        .data_i           ( fetch_exception      ),
+        .push_i           ( fetch_gnt_o          ),
+        .data_o           ( fetch_ex_o           ),
+        .pop_i            ( fetch_valid_o        ),
         .*
     );
 
