@@ -67,7 +67,7 @@ module csr_regfile #(
     output logic [43:0]           satp_ppn_o,
     output logic [ASID_WIDTH-1:0] asid_o,
     // external interrupts
-    input  logic [1:0]            irq_i,                      // external interrupt in
+    input  logic                  irq_i,                      // external interrupt in
     // Visualization Support
     output logic                  tvm_o,                      // trap virtual memory
     output logic                  tw_o,                       // timeout wait
@@ -217,6 +217,9 @@ module csr_regfile #(
     // ---------------------------
     always_comb begin : csr_update
         automatic satp_t sapt   = satp_q;
+        // only USIP, SSIP, UTIP, STIP are write-able
+        automatic logic [63:0] mip = csr_wdata & 64'h33;
+
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
         update_access_exception = 1'b0;
@@ -252,8 +255,20 @@ module csr_regfile #(
                 end
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
-                CSR_SIE:                mie_n       = csr_wdata & 64'hBBB & mideleg_q; // we only support supervisor and m-mode interrupts
-                CSR_SIP:                mip_n       = csr_wdata & 64'h33 & mideleg_q;  // only SSIP, STIP are write-able
+                CSR_SIE: begin
+                    // the mideleg makes sure only delegate-able register (and therefore also only implemented registers)
+                    // are written
+                    for (int unsigned i = 0; i < 64; i++)
+                        if (mideleg_q[i])
+                            mie_n[i] = csr_wdata[i];
+                end
+
+                CSR_SIP: begin
+                    for (int unsigned i = 0; i < 64; i++)
+                        if (mideleg_q[i])
+                            mip_n[i] = mip[i];
+                end
+
                 CSR_SCOUNTEREN:;
                 CSR_STVEC:              stvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                 CSR_SSCRATCH:           sscratch_n  = csr_wdata;
@@ -300,7 +315,7 @@ module csr_regfile #(
 
                 // mask the register so that unsupported interrupts can never be set
                 CSR_MIE:                mie_n       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
-                CSR_MIP:                mip_n       = csr_wdata & 64'h33;  // only USIP, SSIP, UTIP, STIP are write-able
+                CSR_MIP:                mip_n       = mip;
 
                 CSR_MTVEC: begin
                     mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
@@ -323,9 +338,7 @@ module csr_regfile #(
         // External Interrupts
         // ---------------------
         // Machine Mode External Interrupt Pending
-        mip_n[11] = mip_q[11] & irq_i[0];
-        // Supervisor Mode External Interrupt Pending
-        mip_n[9] = mip_q[9] & irq_i[1];
+        mip_n[11] = mie_q[11] & irq_i;
         // Timer interrupt pending, coming from platform timer
         mip_n[7] = time_irq_i;
 
