@@ -313,13 +313,10 @@ module ptw #(
         // -------
         // should we have flushed before we got an rvalid, wait for it until going back to IDLE
         if (flush_i) begin
-            // check if we are walking a store, if not then go back to IDLE because
-            // all other operations are speculative
+            // on a flush check whether we are waiting for a grant, if so: wait for it
+            // if not go back to idle
             if ((CS == WAIT_GRANT) && data_gnt_i)
                 NS = WAIT_RVALID;
-            // keep the state if we are serving a store
-            else if (flush_i && lsu_is_store_i)
-                NS = CS;
             else
                 NS = IDLE;
         end
