@@ -160,6 +160,7 @@ module store_unit (
         // we got an address translation exception (access rights, misaligned or page fault)
         if (ex_i.valid && (CS != IDLE)) begin
             // the only difference is that we do not want to store this request
+            pop_st_o = 1'b1;
             st_valid = 1'b0;
             NS       = IDLE;
             valid_o  = 1'b1;

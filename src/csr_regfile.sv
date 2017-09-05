@@ -338,7 +338,9 @@ module csr_regfile #(
         // External Interrupts
         // ---------------------
         // Machine Mode External Interrupt Pending
-        mip_n[11] = mie_q[11] & irq_i;
+        // TODO: this is wrong for sure
+        mip_n[11] = 1'b0;
+        mip_n[9] = mie_q[9] & irq_i;
         // Timer interrupt pending, coming from platform timer
         mip_n[7] = time_irq_i;
 
