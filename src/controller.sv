@@ -45,8 +45,7 @@ module controller (
     input  logic            fence_i,                // fence in
     input  logic            sfence_vma_i            // We got an instruction to flush the TLBs and pipeline
 );
-    // flush branch prediction
-    assign flush_bp_o = 1'b0;
+
     // active fence - high if we are currently flushing the dcache
     logic fence_active_n, fence_active_q;
     logic flush_dcache;
@@ -63,6 +62,8 @@ module controller (
         flush_tlb_o            = 1'b0;
         flush_icache_o         = 1'b0;
         flush_dcache           = 1'b0;
+        flush_bp_o             = 1'b0; // flush branch prediction
+
         // ------------
         // Mis-predict
         // ------------
@@ -148,6 +149,12 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
+            // flush branch-prediction - it is difficult to say whether this actually looses performance or increases performance
+            // because of reduced mis-predicts. There is one case where flushing branch-prediction is absolutely necessary
+            // that is when trapping back to machine mode. As the core is making speculative accesses it can happen that it tries
+            // to load from an non-idempotent register where a read can have a side-effect. This can happen as the core can try to load
+            // from a user-mode address which is then not translated in machine-mode.
+            flush_bp_o             = 1'b1;
         end
     end
 
