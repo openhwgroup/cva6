@@ -217,12 +217,13 @@ module load_unit (
         if (ex_i.valid && valid_i) begin
             // the next state will be the idle state
             NS = IDLE;
-            // pop load
-            pop_ld_o = 1'b1;
+            // pop load - but only if we are not getting an rvalid in here - otherwise we will over-wright an incoming transaction
+            if (!data_rvalid_i)
+                pop_ld_o = 1'b1;
         end
 
-        // save the load data for later usage
-        if (pop_ld_o) begin
+        // save the load data for later usage -> we should not clutter the load_data register
+        if (pop_ld_o && !ex_i.valid) begin
             load_data_n = in_data;
         end
 
@@ -232,6 +233,9 @@ module load_unit (
         end
     end
 
+    // ---------------
+    // Retire Load
+    // ---------------
     // decoupled rvalid process
     always_comb begin : rvalid_output
         valid_o = 1'b0;
@@ -246,8 +250,12 @@ module load_unit (
             if (ex_i.valid)
                 valid_o = 1'b1;
         end
-        // an exception occurred during translation
-        if (valid_i && ex_i.valid) begin
+        // an exception occurred during translation (we need to check for the valid flag so because we could also get an
+        // exception from the store unit)
+        // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
+        // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another
+        // round in the load FSM
+        if (valid_i && ex_i.valid && !data_rvalid_i) begin
             valid_o    = 1'b1;
             trans_id_o = lsu_ctrl_i.trans_id;
         // if we are waiting for the translation to finish do not give a valid signal yet
@@ -282,7 +290,7 @@ module load_unit (
         rdata_d_ext = data_rdata_i[63:0];
     end
 
-      // sign extension for words
+    // sign extension for words
     always_comb begin : sign_extend_word
         case (load_data_q.address_offset)
             default: rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[31]}}, data_rdata_i[31:0]}  : {32'h0, data_rdata_i[31:0]};
@@ -306,6 +314,7 @@ module load_unit (
         endcase
     end
 
+    // sign extend byte
     always_comb begin : sign_extend_byte
         case (load_data_q.address_offset)
             default: rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[7]}},  data_rdata_i[7:0]}   : {56'h0, data_rdata_i[7:0]};
@@ -319,6 +328,7 @@ module load_unit (
         endcase
     end
 
+    // Result Mux
     always_comb begin
         case (load_data_q.operator)
             LW, LWU:       result_o = rdata_w_ext;
