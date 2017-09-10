@@ -42,7 +42,13 @@ class exception_trace_item;
             INSTR_PAGE_FAULT:      this.cause_s = "Instruction Page Fault";
             LOAD_PAGE_FAULT:       this.cause_s = "Load Page Fault";
             STORE_PAGE_FAULT:      this.cause_s = "Store Page Fault";
-            default: this.cause = "Interrupt";
+            S_SW_INTERRUPT:        this.cause_s = "Supervisor Software Interrupt";
+            M_SW_INTERRUPT:        this.cause_s = "Machine Software Interrupt";
+            S_TIMER_INTERRUPT:     this.cause_s = "Supervisor Timer Interrupt";
+            M_TIMER_INTERRUPT:     this.cause_s = "Machine Timer Interrupt";
+            S_EXT_INTERRUPT:       this.cause_s = "Supervisor External Interrupt";
+            M_EXT_INTERRUPT:       this.cause_s = "Machine External Interrupt";
+            default: this.cause_s = "Interrupt";
         endcase
 
         this.tval = tval;
@@ -52,8 +58,8 @@ class exception_trace_item;
     function string printException();
         string s;
         s = $sformatf("Exception @%10t, PC: %h, Cause: %s", $time, this.pc, this.cause_s);
-        // write out tval if it wasn't an environment call, in that case the tval field has no meaning
-        if (!(this.cause inside {ENV_CALL_MMODE, ENV_CALL_SMODE, ENV_CALL_UMODE}))
+        // write out tval if it wasn't an environment call or interrupt, in that case the tval field has no meaning
+        if (!(this.cause inside {ENV_CALL_MMODE, ENV_CALL_SMODE, ENV_CALL_UMODE, S_SW_INTERRUPT, M_SW_INTERRUPT, S_TIMER_INTERRUPT, M_TIMER_INTERRUPT, S_EXT_INTERRUPT, M_EXT_INTERRUPT}))
             s = $sformatf("%s, \n\t\t\t\ttval: %h", s, this.tval);
         return s;
     endfunction

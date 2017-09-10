@@ -260,7 +260,7 @@ module mmu #(
                         ierr_valid_n        = 1'b1;
                     end
                     // throw a page fault
-                    fetch_exception     = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
+                    fetch_exception = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
                 end
             end else
             // ---------
@@ -372,16 +372,14 @@ module mmu #(
                 // this is a store
                 if (lsu_is_store_q) begin
                     // check if the page is write-able and we are not violating privileges
-                    if (!dtlb_pte_q.w || daccess_err) begin
-                        lsu_exception_o = {ST_ACCESS_FAULT, lsu_vaddr_q, 1'b1};
-                    end
-                    // check if the dirty flag is set
-                    if (!dtlb_pte_q.d) begin
+                    // also check if the dirty flag is set
+                    if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
                         lsu_exception_o = {STORE_PAGE_FAULT, lsu_vaddr_q, 1'b1};
                     end
-                // this is a load, check for sufficient access privileges
+
+                // this is a load, check for sufficient access privileges - throw a page fault if necessary
                 end else if (daccess_err) begin
-                    lsu_exception_o = {LD_ACCESS_FAULT, lsu_vaddr_q, 1'b1};
+                    lsu_exception_o = {LOAD_PAGE_FAULT, lsu_vaddr_q, 1'b1};
                 end
             end else
 
