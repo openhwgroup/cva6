@@ -613,12 +613,12 @@ module ariane
     assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
     assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;
     // write-back
-    assign tracer_if.waddr             = waddr_commit_id[0];
-    assign tracer_if.wdata             = wdata_commit_id[0];
-    assign tracer_if.we                = we_commit_id[0];
+    assign tracer_if.waddr             = waddr_commit_id;
+    assign tracer_if.wdata             = wdata_commit_id;
+    assign tracer_if.we                = we_commit_id;
     // commit
-    assign tracer_if.commit_instr      = commit_instr_id_commit[0];
-    assign tracer_if.commit_ack        = commit_ack[0];
+    assign tracer_if.commit_instr      = commit_instr_id_commit;
+    assign tracer_if.commit_ack        = commit_ack;
     // address translation
     // stores
     assign tracer_if.st_valid          = ex_stage_i.lsu_i.store_unit_i.store_buffer_i.valid_i;

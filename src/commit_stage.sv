@@ -70,6 +70,7 @@ module commit_stage #(
         commit_lsu_o    = 1'b0;
         commit_csr_o    = 1'b0;
         wdata_o[0]      = commit_instr_i[0].result;
+        wdata_o[1]      = commit_instr_i[1].result;
         csr_op_o        = ADD; // this corresponds to a CSR NOP
         csr_wdata_o     = 64'b0;
         fence_i_o       = 1'b0;
@@ -143,6 +144,16 @@ module commit_stage #(
                 commit_ack_o[0] = 1'b1;
                 // tell the controller to flush the D$
                 fence_o = 1'b1;
+            end
+        end
+
+        // check if the second instruction can be committed as well and the first wasn't a CSR instruction
+        if (commit_ack_o[0] && commit_instr_i[1].valid && !halt_i && !(commit_instr_i[0].fu inside {CSR})) begin
+            // only if the first instruction didn't throw an exception and this instruction won't throw an exception
+            // and the operator is of type ALU, LOAD
+            if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT})) begin
+                we_o[1] = 1'b1;
+                commit_ack_o[1] = 1'b1;
             end
         end
     end
