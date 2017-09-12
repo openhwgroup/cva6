@@ -27,6 +27,7 @@ module scoreboard #(
     (
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
+    input  logic                                      flush_unissued_instr_i, // flush only un-issued instructions
     input  logic                                      flush_i,  // flush whole scoreboard
     input  logic                                      unresolved_branch_i, // we have an unresolved branch
     // list of clobbered registers to issue stage
@@ -102,7 +103,7 @@ module scoreboard #(
         issue_pointer_n  = issue_pointer_q;
 
         // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
-        if (decoded_instr_valid_i && decoded_instr_ack_o) begin
+        if (decoded_instr_valid_i && decoded_instr_ack_o && !flush_unissued_instr_i) begin
             // the decoded instruction we put in there is valid (1st bit)
             // increase the issue counter
             issue_cnt++;

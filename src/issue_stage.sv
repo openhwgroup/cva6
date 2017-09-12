@@ -156,7 +156,7 @@ module issue_stage #(
     )
     scoreboard_i
     (
-        .unresolved_branch_i   ( unresolved_branch_q            ),
+        .unresolved_branch_i   ( unresolved_branch_q && !resolve_branch_i  ),
         .rd_clobber_o          ( rd_clobber_sb_iro              ),
         .rs1_i                 ( rs1_iro_sb                     ),
         .rs1_o                 ( rs1_sb_iro                     ),
