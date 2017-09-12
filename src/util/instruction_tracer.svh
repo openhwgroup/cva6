@@ -83,7 +83,7 @@ class instruction_tracer;
             // -------------------
             // we got a new issue ack, so put the element from the decode queue to
             // the issue queue
-            if (tracer_if.pck.issue_ack) begin
+            if (tracer_if.pck.issue_ack && !tracer_if.pck.flush_unissued) begin
                 issue_instruction = decode_queue.pop_front();
                 issue_queue.push_back(issue_instruction);
                 // also save the scoreboard entry to a separate issue queue

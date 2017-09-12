@@ -67,6 +67,8 @@ module commit_stage #(
         commit_ack_o[1] = 1'b0;
 
         we_o[0]         = 1'b0;
+        we_o[1]         = 1'b0;
+
         commit_lsu_o    = 1'b0;
         commit_csr_o    = 1'b0;
         wdata_o[0]      = commit_instr_i[0].result;
