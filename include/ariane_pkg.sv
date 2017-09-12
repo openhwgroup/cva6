@@ -22,6 +22,7 @@ package ariane_pkg;
     localparam ASID_WIDTH    = 1;
     localparam BTB_ENTRIES   = 8;
     localparam BITS_SATURATION_COUNTER = 2;
+    localparam NR_COMMIT_PORTS = 2;
 
     localparam logic [63:0] ISA_CODE = (1 <<  2)  // C - Compressed extension
                                      | (1 <<  8)  // I - RV32I/64I/128I base ISA

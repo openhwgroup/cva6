@@ -22,8 +22,9 @@
 import ariane_pkg::*;
 
 module issue_stage #(
-        parameter int  NR_ENTRIES = 8,
-        parameter int  NR_WB_PORTS = 4
+        parameter int unsigned NR_ENTRIES = 8,
+        parameter int unsigned NR_WB_PORTS = 4,
+        parameter int unsigned NR_COMMIT_PORTS = 2
     )(
     input  logic                                     clk_i,     // Clock
     input  logic                                     rst_ni,    // Asynchronous reset active low
@@ -72,17 +73,17 @@ module issue_stage #(
 
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
-    input logic [NR_WB_PORTS-1:0][63:0]              wdata_i,
+    input logic [NR_WB_PORTS-1:0][63:0]              wbdata_i,
     input exception [NR_WB_PORTS-1:0]                ex_ex_i, // exception from execute stage
     input logic [NR_WB_PORTS-1:0]                    wb_valid_i,
 
-        // commit port
-    input  logic[4:0]                                waddr_a_i,
-    input  logic[63:0]                               wdata_a_i,
-    input  logic                                     we_a_i,
+    // commit port
+    input  logic [NR_COMMIT_PORTS-1:0][4:0]          waddr_i,
+    input  logic [NR_COMMIT_PORTS-1:0][63:0]         wdata_i,
+    input  logic [NR_COMMIT_PORTS-1:0]               we_i,
 
-    output scoreboard_entry                          commit_instr_o,
-    input  logic                                     commit_ack_i
+    output scoreboard_entry [NR_COMMIT_PORTS-1:0]    commit_instr_o,
+    input  logic            [NR_COMMIT_PORTS-1:0]    commit_ack_i
 );
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (IRO)
@@ -170,7 +171,7 @@ module issue_stage #(
         .issue_ack_i           ( issue_ack_iro_sb               ),
 
         .trans_id_i            ( trans_id_i                     ),
-        .wdata_i               ( wdata_i                        ),
+        .wbdata_i              ( wbdata_i                       ),
         .ex_i                  ( ex_ex_i                        ),
         .*
     );
