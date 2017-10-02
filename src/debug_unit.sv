@@ -311,15 +311,12 @@ module debug_unit (
                 // 1. external debugger requested to halt the CPU
                 // 2. cross-trigger requested a halt
                 // 3. a break-point hit
-                if (halt_req || debug_halt_i) begin
+                if (halt_req || debug_halt_i)
                     NS = HALT_REQ;
-                end
-
+                // 4. Hardware-breakpoint
                 // a hardware breakpoint can immediately be halted
-                if (halt_hw_bp && commit_instr_i.valid) begin
-                    halt_o = 1'b1;
-                    NS = HALTED;
-                end
+                if (halt_hw_bp && commit_instr_i.valid)
+                    NS = HALT_REQ;
 
             end
             // a halt was requested, we wait here until we get the next valid instruction
