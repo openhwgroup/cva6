@@ -52,8 +52,8 @@ module commit_stage #(
     output logic                                  sfence_vma_o        // flush TLBs and pipeline
 );
 
-    assign waddr_o[0] = commit_instr_i[0].rd;
-    assign waddr_o[1] = commit_instr_i[1].rd;
+    assign waddr_o[0] = commit_instr_i[0].rd[4:0];
+    assign waddr_o[1] = commit_instr_i[1].rd[4:0];
 
     assign pc_o       = commit_instr_i[0].pc;
 

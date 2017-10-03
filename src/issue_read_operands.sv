@@ -38,14 +38,14 @@ module issue_read_operands #(
     input  logic                                   issue_instr_valid_i,
     output logic                                   issue_ack_o,
     // lookup rd in scoreboard
-    output logic [4:0]                             rs1_o,
+    output logic [REG_ADDR_SIZE-1:0]               rs1_o,
     input  logic [63:0]                            rs1_i,
     input  logic                                   rs1_valid_i,
-    output logic [4:0]                             rs2_o,
+    output logic [REG_ADDR_SIZE-1:0]               rs2_o,
     input  logic [63:0]                            rs2_i,
     input  logic                                   rs2_valid_i,
     // get clobber input
-    input  fu_t [31:0]                             rd_clobber_i,
+    input  fu_t [2**REG_ADDR_SIZE:0]               rd_clobber_i,
     // To FU, just single issue for now
     output fu_t                                    fu_o,
     output fu_op                                   operator_o,

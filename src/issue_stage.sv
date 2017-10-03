@@ -95,10 +95,14 @@ module issue_stage #(
     logic [4:0]      rs2_iro_sb;
     logic [63:0]     rs2_sb_iro;
     logic            rs2_valid_iro_sb;
-    scoreboard_entry issue_instr_sb_iro;
-    logic            issue_instr_valid_sb_iro;
-    logic            issue_ack_iro_sb;
 
+    scoreboard_entry issue_instr_sb_rename;
+    logic            issue_instr_valid_sb_rename;
+    logic            issue_ack_rename_sb;
+
+    scoreboard_entry issue_instr_rename_iro;
+    logic            issue_instr_valid_rename_iro;
+    logic            issue_ack_iro_rename;
 
     // ---------------------------------------------------
     // Branch (resolve) logic
@@ -117,12 +121,12 @@ module issue_stage #(
         end
         // if the instruction is valid, it is a control flow instruction and the issue stage acknowledged its dispatch
         // set the unresolved branch flag
-        if (issue_ack_iro_sb && decoded_instr_valid_i && is_ctrl_flow_i) begin
+        if (issue_ack_iro_rename && decoded_instr_valid_i && is_ctrl_flow_i) begin
             unresolved_branch_n = 1'b1;
         end
         // if we predicted a taken branch this means that we need to stall issue for one cycle to resolve the
         // branch, otherwise we might issue a wrong instruction
-        if (issue_ack_iro_sb && decoded_instr_i.bp.valid && decoded_instr_i.bp.predict_taken) begin
+        if (issue_ack_iro_rename && decoded_instr_i.bp.valid && decoded_instr_i.bp.predict_taken) begin
             unresolved_branch_n = 1'b1;
         end
         // if we are requested to flush also flush the unresolved branch flag because either the flush
@@ -136,9 +140,9 @@ module issue_stage #(
     // ---------------------------------------------------------
     issue_read_operands issue_read_operands_i  (
         .flush_i             ( flush_unissued_instr_i          ),
-        .issue_instr_i       ( issue_instr_sb_iro              ),
-        .issue_instr_valid_i ( issue_instr_valid_sb_iro        ),
-        .issue_ack_o         ( issue_ack_iro_sb                ),
+        .issue_instr_i       ( issue_instr_rename_iro          ),
+        .issue_instr_valid_i ( issue_instr_valid_rename_iro    ),
+        .issue_ack_o         ( issue_ack_iro_rename            ),
         .rs1_o               ( rs1_iro_sb                      ),
         .rs1_i               ( rs1_sb_iro                      ),
         .rs1_valid_i         ( rs1_valid_sb_iro                ),
@@ -148,31 +152,46 @@ module issue_stage #(
         .rd_clobber_i        ( rd_clobber_sb_iro               ),
         .*
     );
+
     // ---------------------------------------------------------
-    // 2. Manage issued instructions in a scoreboard
+    // 2. Re-name
+    // ---------------------------------------------------------
+    re_name i_re_name (
+        .clk_i               ( clk_i               ),
+        .rst_ni              ( rst_ni              ),
+        .issue_instr_i       ( issue_instr_i       ),
+        .issue_instr_valid_i ( issue_instr_valid_i ),
+        .issue_ack_o         ( issue_ack_o         ),
+        .issue_instr_o       ( issue_instr_o       ),
+        .issue_instr_valid_o ( issue_instr_valid_o ),
+        .issue_ack_i         ( issue_ack_i         )
+    );
+
+    // ---------------------------------------------------------
+    // 3. Manage issued instructions in a scoreboard
     // ---------------------------------------------------------
     scoreboard  #(
-        .NR_ENTRIES            ( NR_ENTRIES                     ),
-        .NR_WB_PORTS           ( NR_WB_PORTS                    )
+        .NR_ENTRIES            ( NR_ENTRIES                                ),
+        .NR_WB_PORTS           ( NR_WB_PORTS                               )
     )
     scoreboard_i
     (
         .unresolved_branch_i   ( unresolved_branch_q && !resolve_branch_i  ),
-        .rd_clobber_o          ( rd_clobber_sb_iro              ),
-        .rs1_i                 ( rs1_iro_sb                     ),
-        .rs1_o                 ( rs1_sb_iro                     ),
-        .rs1_valid_o           ( rs1_valid_sb_iro               ),
-        .rs2_i                 ( rs2_iro_sb                     ),
-        .rs2_o                 ( rs2_sb_iro                     ),
-        .rs2_valid_o           ( rs2_valid_iro_sb               ),
+        .rd_clobber_o          ( rd_clobber_sb_iro                         ),
+        .rs1_i                 ( rs1_iro_sb                                ),
+        .rs1_o                 ( rs1_sb_iro                                ),
+        .rs1_valid_o           ( rs1_valid_sb_iro                          ),
+        .rs2_i                 ( rs2_iro_sb                                ),
+        .rs2_o                 ( rs2_sb_iro                                ),
+        .rs2_valid_o           ( rs2_valid_iro_sb                          ),
 
-        .issue_instr_o         ( issue_instr_sb_iro             ),
-        .issue_instr_valid_o   ( issue_instr_valid_sb_iro       ),
-        .issue_ack_i           ( issue_ack_iro_sb               ),
+        .issue_instr_o         ( issue_instr_sb_rename                     ),
+        .issue_instr_valid_o   ( issue_instr_valid_sb_rename               ),
+        .issue_ack_i           ( issue_ack_rename_sb                       ),
 
-        .trans_id_i            ( trans_id_i                     ),
-        .wbdata_i              ( wbdata_i                       ),
-        .ex_i                  ( ex_ex_i                        ),
+        .trans_id_i            ( trans_id_i                                ),
+        .wbdata_i              ( wbdata_i                                  ),
+        .ex_i                  ( ex_ex_i                                   ),
         .*
     );
 

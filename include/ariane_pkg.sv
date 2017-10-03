@@ -33,6 +33,9 @@ package ariane_pkg;
                                      | (0 << 23)  // X - Non-standard extensions present
                                      | (1 << 63); // RV64
 
+    // 32 registers + 1 bit for re-naming = 6
+    localparam REG_ADDR_SIZE = 6;
+
     // ---------------
     // Fetch Stage
     // ---------------
@@ -130,9 +133,9 @@ package ariane_pkg;
                                                  // with the transaction id in any case make the width more generic
         fu_t                      fu;            // functional unit to use
         fu_op                     op;            // operation to perform in each functional unit
-        logic [4:0]               rs1;           // register source address 1
-        logic [4:0]               rs2;           // register source address 2
-        logic [4:0]               rd;            // register destination address
+        logic [REG_ADDR_SIZE-1:0] rs1;           // register source address 1
+        logic [REG_ADDR_SIZE-1:0] rs2;           // register source address 2
+        logic [REG_ADDR_SIZE-1:0] rd;            // register destination address
         logic [63:0]              result;        // for unfinished instructions this field also holds the immediate
         logic                     valid;         // is the result valid
         logic                     use_imm;       // should we use the immediate as operand b?

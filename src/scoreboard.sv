@@ -32,14 +32,14 @@ module scoreboard #(
     input  logic                                      flush_i,  // flush whole scoreboard
     input  logic                                      unresolved_branch_i, // we have an unresolved branch
     // list of clobbered registers to issue stage
-    output fu_t [31:0]                                rd_clobber_o,
+    output fu_t [2**REG_ADDR_SIZE:0]                  rd_clobber_o,
 
     // regfile like interface to operand read stage
-    input  logic [4:0]                                rs1_i,
+    input  logic [REG_ADDR_SIZE-1:0]                  rs1_i,
     output logic [63:0]                               rs1_o,
     output logic                                      rs1_valid_o,
 
-    input  logic [4:0]                                rs2_i,
+    input  logic [REG_ADDR_SIZE-1:0]                  rs2_i,
     output logic [63:0]                               rs2_o,
     output logic                                      rs2_valid_o,
 
