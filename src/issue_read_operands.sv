@@ -294,7 +294,7 @@ module issue_read_operands #(
         // get the address from the issue stage by default
         // read port
         debug_gpr_rdata_o = operand_a_regfile;
-        raddr_a           = issue_instr_i.rs1;
+        raddr_a           = issue_instr_i.rs1[4:0];
         // write port
         waddr             = waddr_i[0];
         wdata             = wdata_i[0];
@@ -312,26 +312,26 @@ module issue_read_operands #(
     // Integer Register File
     // ----------------------
     regfile #(
-        .DATA_WIDTH     ( 64                  )
+        .DATA_WIDTH     ( 64                     )
     ) regfile_i (
         // Clock and Reset
-        .clk            ( clk_i               ),
-        .rst_n          ( rst_ni              ),
-        .test_en_i      ( test_en_i           ),
+        .clk            ( clk_i                  ),
+        .rst_n          ( rst_ni                 ),
+        .test_en_i      ( test_en_i              ),
 
-        .raddr_a_i      ( raddr_a             ),
-        .rdata_a_o      ( operand_a_regfile   ),
+        .raddr_a_i      ( raddr_a                ),
+        .rdata_a_o      ( operand_a_regfile      ),
 
-        .raddr_b_i      ( issue_instr_i.rs2   ),
-        .rdata_b_o      ( operand_b_regfile   ),
+        .raddr_b_i      ( issue_instr_i.rs2[4:0] ),
+        .rdata_b_o      ( operand_b_regfile      ),
 
-        .waddr_a_i      ( waddr               ),
-        .wdata_a_i      ( wdata               ),
-        .we_a_i         ( we                  ),
+        .waddr_a_i      ( waddr                  ),
+        .wdata_a_i      ( wdata                  ),
+        .we_a_i         ( we                     ),
 
-        .waddr_b_i      ( waddr_i[1]          ),
-        .wdata_b_i      ( wdata_i[1]          ),
-        .we_b_i         ( we_i[1]             )
+        .waddr_b_i      ( waddr_i[1]             ),
+        .wdata_b_i      ( wdata_i[1]             ),
+        .we_b_i         ( we_i[1]                )
     );
 
     // ----------------------

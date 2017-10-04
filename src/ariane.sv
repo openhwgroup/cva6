@@ -610,8 +610,8 @@ module ariane
     assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
     assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
     // Issue
-    assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
-    assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;
+    assign tracer_if.issue_ack         = issue_stage_i.i_scoreboard.issue_ack_i;
+    assign tracer_if.issue_sbe         = issue_stage_i.i_scoreboard.issue_instr_o;
     // write-back
     assign tracer_if.waddr             = waddr_commit_id;
     assign tracer_if.wdata             = wdata_commit_id;

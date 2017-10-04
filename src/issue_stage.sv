@@ -88,21 +88,23 @@ module issue_stage #(
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (IRO)
     // ---------------------------------------------------
-    fu_t  [31:0]     rd_clobber_sb_iro;
-    logic [4:0]      rs1_iro_sb;
-    logic [63:0]     rs1_sb_iro;
-    logic            rs1_valid_sb_iro;
-    logic [4:0]      rs2_iro_sb;
-    logic [63:0]     rs2_sb_iro;
-    logic            rs2_valid_iro_sb;
+    fu_t  [2**REG_ADDR_SIZE:0] rd_clobber_sb_iro;
 
-    scoreboard_entry issue_instr_sb_rename;
-    logic            issue_instr_valid_sb_rename;
-    logic            issue_ack_rename_sb;
+    logic [REG_ADDR_SIZE-1:0]  rs1_iro_sb;
+    logic [63:0]               rs1_sb_iro;
+    logic                      rs1_valid_sb_iro;
 
-    scoreboard_entry issue_instr_rename_iro;
-    logic            issue_instr_valid_rename_iro;
-    logic            issue_ack_iro_rename;
+    logic [REG_ADDR_SIZE-1:0]  rs2_iro_sb;
+    logic [63:0]               rs2_sb_iro;
+    logic                      rs2_valid_iro_sb;
+
+    scoreboard_entry           issue_instr_sb_rename;
+    logic                      issue_instr_valid_sb_rename;
+    logic                      issue_ack_rename_sb;
+
+    scoreboard_entry           issue_instr_rename_iro;
+    logic                      issue_instr_valid_rename_iro;
+    logic                      issue_ack_iro_rename;
 
     // ---------------------------------------------------
     // Branch (resolve) logic
@@ -138,7 +140,7 @@ module issue_stage #(
     // ---------------------------------------------------------
     // 1. Issue instruction and read operand
     // ---------------------------------------------------------
-    issue_read_operands issue_read_operands_i  (
+    issue_read_operands i_issue_read_operands  (
         .flush_i             ( flush_unissued_instr_i          ),
         .issue_instr_i       ( issue_instr_rename_iro          ),
         .issue_instr_valid_i ( issue_instr_valid_rename_iro    ),
@@ -157,14 +159,14 @@ module issue_stage #(
     // 2. Re-name
     // ---------------------------------------------------------
     re_name i_re_name (
-        .clk_i               ( clk_i               ),
-        .rst_ni              ( rst_ni              ),
-        .issue_instr_i       ( issue_instr_i       ),
-        .issue_instr_valid_i ( issue_instr_valid_i ),
-        .issue_ack_o         ( issue_ack_o         ),
-        .issue_instr_o       ( issue_instr_o       ),
-        .issue_instr_valid_o ( issue_instr_valid_o ),
-        .issue_ack_i         ( issue_ack_i         )
+        .clk_i               ( clk_i                        ),
+        .rst_ni              ( rst_ni                       ),
+        .issue_instr_i       ( issue_instr_sb_rename        ),
+        .issue_instr_valid_i ( issue_instr_valid_sb_rename  ),
+        .issue_ack_o         ( issue_ack_rename_sb          ),
+        .issue_instr_o       ( issue_instr_rename_iro       ),
+        .issue_instr_valid_o ( issue_instr_valid_rename_iro ),
+        .issue_ack_i         ( issue_ack_iro_rename         )
     );
 
     // ---------------------------------------------------------
@@ -174,7 +176,7 @@ module issue_stage #(
         .NR_ENTRIES            ( NR_ENTRIES                                ),
         .NR_WB_PORTS           ( NR_WB_PORTS                               )
     )
-    scoreboard_i
+    i_scoreboard
     (
         .unresolved_branch_i   ( unresolved_branch_q && !resolve_branch_i  ),
         .rd_clobber_o          ( rd_clobber_sb_iro                         ),
