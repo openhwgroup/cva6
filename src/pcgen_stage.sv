@@ -115,8 +115,16 @@ module pcgen_stage (
         // only predict if the IF stage is ready, otherwise we might take the predicted PC away which will end in a endless loop
         // also check if we fetched on a half word (npc_q[1] == 1), it might be the case that we need the next 16 byte of the following instruction
         // prediction could potentially prevent us from getting them
-        if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken && !fetch_address[1]) begin
-            npc_n = branch_predict_btb.predict_address;
+        if (if_ready_i && branch_predict_btb.valid && branch_predict_btb.predict_taken) begin
+            if (!fetch_address[1])
+                npc_n = branch_predict_btb.predict_address;
+            // invalidate branch-prediction as we need to correct a possible predicted (not-taken path)
+            // an example can be a prediction from the previous cycle to a mis-aligned instruction (0x..1e), we will need to
+            // potentially fetch another 16 byte at least and loose prediction on it example:
+            // 0x20002dda bltu             a5, a7, pc + -76 <- predicted
+            // 0x20002d8e bnez             a4, pc + 148     <- predicted as well (but kill prediction as the previous instruction could be 32 bit)
+            else
+                branch_predict_o.valid = 1'b0;
         end
 
         // -------------------------------
