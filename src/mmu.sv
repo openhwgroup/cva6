@@ -93,6 +93,7 @@ module mmu #(
     logic        ptw_active;    // PTW is currently walking a page table
     logic        walking_instr; // PTW is walking because of an ITLB miss
     logic        ptw_error;     // PTW threw an exception
+    logic [63:0] faulting_address;
 
     logic        update_is_2M;
     logic        update_is_1G;
@@ -175,6 +176,7 @@ module mmu #(
         .ptw_active_o           ( ptw_active            ),
         .walking_instr_o        ( walking_instr         ),
         .ptw_error_o            ( ptw_error             ),
+        .faulting_address_o     ( faulting_address      ),
         .enable_translation_i   ( enable_translation_i  ),
 
         .itlb_update_o          ( itlb_update           ),
@@ -199,7 +201,7 @@ module mmu #(
     // Instruction Interface
     //-----------------------
     exception fetch_exception;
-
+    logic exception_fifo_empty;
     // This is a full memory interface, e.g.: it handles all signals to the I$
     // Exceptions are always signaled together with the fetch_valid_o signal
     always_comb begin : instr_interface
@@ -248,12 +250,17 @@ module mmu #(
                 instr_if_data_req_o = fetch_req_i;
                 // we got an access error
                 if (iaccess_err) begin
-                  // immediately grant a fetch which threw an exception, and stop the request from happening
-                  instr_if_data_req_o = 1'b0;
-                  fetch_gnt_o         = 1'b1;
-                  ierr_valid_n        = 1'b1;
-                  // throw a page fault
-                  fetch_exception     = {INSTR_ACCESS_FAULT, fetch_vaddr_i, 1'b1};
+                    // immediately grant a fetch which threw an exception, and stop the request from happening
+                    instr_if_data_req_o = 1'b0;
+                    // in case we hit the TLB with an exception we need to order the memory request e.g.
+                    // we need to wait until all outstanding request drained otherwise we get an out-of order result
+                    // which will be wrong
+                    if (exception_fifo_empty) begin
+                        fetch_gnt_o         = 1'b1;
+                        ierr_valid_n        = 1'b1;
+                    end
+                    // throw a page fault
+                    fetch_exception = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
                 end
             end else
             // ---------
@@ -261,9 +268,14 @@ module mmu #(
             // ---------
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
-                // on an error pass through fetch with an error signaled
-                fetch_gnt_o  = ptw_error;
-                ierr_valid_n = ptw_error; // signal valid/error on next cycle
+                // check that the fetch address is equal with the faulting address as it could be that the page table walker
+                // has walked an instruction the instruction fetch stage is no longer interested in as we didn't give a grant
+                // we should not propagate back the exception when the request is no longer high
+                if (faulting_address == fetch_vaddr_i && fetch_req_i) begin
+                    // on an error pass through fetch with an error signaled
+                    fetch_gnt_o  = ptw_error;
+                    ierr_valid_n = ptw_error; // signal valid/error on next cycle
+                end
                 fetch_exception = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
         end
@@ -273,21 +285,21 @@ module mmu #(
     // ---------------------------
     // Fetch exception register
     // ---------------------------
-    // We can have two oustanding transactions
+    // We can have two outstanding transactions
     fifo #(
-        .dtype ( exception                  ),
-        .DEPTH ( 2                          )
+        .dtype            ( exception            ),
+        .DEPTH            ( 2                    )
     ) i_exception_fifo (
-        .clk_i            ( clk_i           ),
-        .rst_ni           ( rst_ni          ),
-        .flush_i          (                 ),
-        .full_o           (                 ),
-        .empty_o          (                 ),
-        .single_element_o (                 ),
-        .data_i           ( fetch_exception ),
-        .push_i           ( fetch_gnt_o     ),
-        .data_o           ( fetch_ex_o      ),
-        .pop_i            ( fetch_valid_o   ),
+        .clk_i            ( clk_i                ),
+        .rst_ni           ( rst_ni               ),
+        .flush_i          ( 1'b0                 ),
+        .full_o           (                      ),
+        .empty_o          ( exception_fifo_empty ),
+        .single_element_o (                      ),
+        .data_i           ( fetch_exception      ),
+        .push_i           ( fetch_gnt_o          ),
+        .data_o           ( fetch_ex_o           ),
+        .pop_i            ( fetch_valid_o        ),
         .*
     );
 
@@ -360,16 +372,14 @@ module mmu #(
                 // this is a store
                 if (lsu_is_store_q) begin
                     // check if the page is write-able and we are not violating privileges
-                    if (!dtlb_pte_q.w || daccess_err) begin
-                        lsu_exception_o = {ST_ACCESS_FAULT, lsu_vaddr_q, 1'b1};
-                    end
-                    // check if the dirty flag is set
-                    if (!dtlb_pte_q.d) begin
+                    // also check if the dirty flag is set
+                    if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
                         lsu_exception_o = {STORE_PAGE_FAULT, lsu_vaddr_q, 1'b1};
                     end
-                // this is a load, check for sufficient access privileges
+
+                // this is a load, check for sufficient access privileges - throw a page fault if necessary
                 end else if (daccess_err) begin
-                    lsu_exception_o = {LD_ACCESS_FAULT, lsu_vaddr_q, 1'b1};
+                    lsu_exception_o = {LOAD_PAGE_FAULT, lsu_vaddr_q, 1'b1};
                 end
             end else
 

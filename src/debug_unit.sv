@@ -85,6 +85,7 @@ module debug_unit (
     // hardware breakpoints
     logic [7:0][3:0]  dbg_hwbp_ctrl_n, dbg_hwbp_ctrl_q;
     logic [7:0][63:0] dbg_hwbp_data_n, dbg_hwbp_data_q;
+    logic             halt_hw_bp;
     // ----------------------
     // Debug Control Signals
     // ----------------------
@@ -148,13 +149,19 @@ module debug_unit (
                 DBG_HIT:    rdata_n = {63'b0, dbg_hit_q};
                 DBG_IE:     rdata_n = dbg_ie_q;
                 DBG_CAUSE:  rdata_n = dbg_cause_q;
+
+                // all breakpoints are implemented
+                BP_CTRL0, BP_CTRL1, BP_CTRL2, BP_CTRL3, BP_CTRL4, BP_CTRL5, BP_CTRL6, BP_CTRL7:
+                    rdata_n = {57'b0, dbg_hwbp_ctrl_q[debug_addr_i[6:4]], 2'b0, 1'b1};
+
+                BP_DATA0, BP_DATA1, BP_DATA2, BP_DATA3, BP_DATA4, BP_DATA5, BP_DATA6, BP_DATA7:
+                    rdata_n = dbg_hwbp_data_q[debug_addr_i[6:4]];
+
                 DBG_NPC: begin
 
                     if (debug_halted_o) begin
                         if (commit_instr_i.valid)
                             rdata_n = commit_instr_i.pc;
-                        else
-                            rdata_n = 64'hdeadbeefdeadbeef;
 
                         if (cause_is_bp_q)
                             // if the cause is a breakpoint we trick the debugger in assuming the next instruction
@@ -163,8 +170,9 @@ module debug_unit (
                                 rdata_n = dbg_ppc_q + 64'h2;
                             else
                                 rdata_n = dbg_ppc_q + 64'h4;
-                        // TODO: Breakpoint
-                    end
+                    // we are not in debug mode - so just report what we know: the last valid PC
+                    end else
+                        rdata_n = dbg_ppc_q;
                     // if we came from reset - output the boot address
                     if (reset_q)
                         rdata_n = boot_addr_i;
@@ -189,10 +197,6 @@ module debug_unit (
                         rdata_n = debug_csr_rdata_i;
                     end
                 end
-
-                // all breakpoints are implemented
-                DBG_BPCTRL: rdata_n = {57'b0, dbg_hwbp_ctrl_q[debug_addr_i[5:3]], 2'b0, 1'b1};
-                DBG_BPDATA: rdata_n = dbg_hwbp_data_q[debug_addr_i[5:3]];
             endcase
 
         // ----------
@@ -213,6 +217,13 @@ module debug_unit (
                 DBG_HIT:    dbg_hit_n   = {debug_wdata_i[15:8], debug_wdata_i[0]};
                 DBG_IE:     dbg_ie_n    = debug_wdata_i;
                 DBG_CAUSE:  dbg_cause_n = debug_wdata_i;
+
+                // Only triggering on instruction fetch is allowed at the moment
+                BP_CTRL0, BP_CTRL1, BP_CTRL2, BP_CTRL3, BP_CTRL4, BP_CTRL5, BP_CTRL6, BP_CTRL7:
+                    dbg_hwbp_ctrl_n[debug_addr_i[6:4]] = {3'b0, debug_wdata_i[1]};
+
+                BP_DATA0, BP_DATA1, BP_DATA2, BP_DATA3, BP_DATA4, BP_DATA5, BP_DATA6, BP_DATA7:
+                    dbg_hwbp_data_n[debug_addr_i[6:4]] = debug_wdata_i;
 
                 DBG_NPC: begin
                     if (debug_halted_o) begin
@@ -241,17 +252,13 @@ module debug_unit (
                         debug_csr_wdata_o = debug_wdata_i;
                     end
                 end
-
-                // Only triggering on instruction fetch is allowed at the moment
-                DBG_BPCTRL: dbg_hwbp_ctrl_n[debug_addr_i[5:3]] = {3'b0, debug_wdata_i[1]};
-                DBG_BPDATA: dbg_hwbp_data_n[debug_addr_i[5:3]] = debug_wdata_i;
             endcase
         end
         // ------------------------
         // Debugger Signaling
         // ------------------------
         // if an exception occurred and it is enabled to trigger debug mode, halt the processor and enter debug mode
-        if (commit_ack_i && ex_i.valid && dbg_ie_q[ex_i.cause[5:0]]) begin
+        if (commit_ack_i && ex_i.valid && dbg_ie_q[ex_i.cause[5:0]] && (ex_i.cause[63] == dbg_ie_q[63])) begin
             halt_req = 1'b1;
             // save the cause why we entered the exception
             dbg_cause_n = ex_i.cause;
@@ -261,13 +268,14 @@ module debug_unit (
         // --------------------
         // HW Breakpoints
         // --------------------
+        halt_hw_bp = 1'b0;
         // check all possible breakpoints
         for (logic [7:0] i = 0; i < 8; i++) begin
             // check if a breakpoint is triggering, therefore check if it is enabled
             if (dbg_hwbp_ctrl_q[i][0]) begin
                 // check if the PC is matching and the processor is currently retiring the instruction
-                if (commit_instr_i.pc == dbg_hwbp_data_q[i] && commit_ack_i) begin
-                    halt_req = 1'b1;
+                if (commit_instr_i.pc == dbg_hwbp_data_q[i]) begin
+                    halt_hw_bp      = 1'b1;
                     dbg_hit_n[15:8] = i;
                 end
             end
@@ -303,9 +311,12 @@ module debug_unit (
                 // 1. external debugger requested to halt the CPU
                 // 2. cross-trigger requested a halt
                 // 3. a break-point hit
-                if (halt_req || debug_halt_i) begin
+                if (halt_req || debug_halt_i)
                     NS = HALT_REQ;
-                end
+                // 4. Hardware-breakpoint
+                // a hardware breakpoint can immediately be halted
+                if (halt_hw_bp && commit_instr_i.valid)
+                    NS = HALT_REQ;
 
             end
             // a halt was requested, we wait here until we get the next valid instruction

@@ -507,7 +507,7 @@ module decoder (
     // ---------------------
     always_comb begin : exception_handling
         instruction_o.ex      = ex_i;
-        instruction_o.valid   = 1'b0;
+        instruction_o.valid   = ex_i.valid;
         // look if we didn't already get an exception in any previous
         // stage - we should not overwrite it as we retain order regarding the exception
         if (~ex_i.valid) begin

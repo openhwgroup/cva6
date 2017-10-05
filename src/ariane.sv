@@ -68,7 +68,7 @@ module ariane
         input  logic                           data_if_data_rvalid_i,
         input  logic [63:0]                    data_if_data_rdata_i,
         // Interrupt inputs
-        input  logic [1:0]                     irq_i,                 // level sensitive IR lines
+        input  logic                           irq_i,                 // level sensitive IR lines
         input  logic [4:0]                     irq_id_i,
         output logic                           irq_ack_o,
         input  logic                           irq_sec_i,

@@ -315,6 +315,24 @@ package ariane_pkg;
         DBG_HIT      = 16'h8,
         DBG_IE       = 16'h10,
         DBG_CAUSE    = 16'h18,
+
+        BP_CTRL0     = 16'h80,
+        BP_DATA0     = 16'h88,
+        BP_CTRL1     = 16'h90,
+        BP_DATA1     = 16'h98,
+        BP_CTRL2     = 16'hA0,
+        BP_DATA2     = 16'hA8,
+        BP_CTRL3     = 16'hB0,
+        BP_DATA3     = 16'hB8,
+        BP_CTRL4     = 16'hC0,
+        BP_DATA4     = 16'hC8,
+        BP_CTRL5     = 16'hD0,
+        BP_DATA5     = 16'hD8,
+        BP_CTRL6     = 16'hE0,
+        BP_DATA6     = 16'hE8,
+        BP_CTRL7     = 16'hF0,
+        BP_DATA7     = 16'hF8,
+
         DBG_NPC      = 16'h2000,
         DBG_PPC      = 16'h2008,
         DBG_GPR      = 16'h4??,
@@ -327,10 +345,7 @@ package ariane_pkg;
         DBG_CSR_H0   = 16'hC???,
         DBG_CSR_H1   = 16'hD???,
         DBG_CSR_M0   = 16'hE???,
-        DBG_CSR_M1   = 16'hF???,
-
-        DBG_BPCTRL   = 16'b????000,
-        DBG_BPDATA   = 16'b?????00
+        DBG_CSR_M1   = 16'hF???
     } debug_reg_t;
 
 endpackage

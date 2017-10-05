@@ -92,7 +92,7 @@ module branch_unit (
         branch_result_o                  = next_pc;
 
         // save PC - we need this to get the target row in the branch target buffer
-        // we play this trick with the branch instruction which wraps a byte boundary:
+        // we play this trick with the branch instruction which wraps a word boundary:
         //  /---------- Place the prediction on this PC
         // \/
         // ____________________________________________________

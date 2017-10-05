@@ -19,9 +19,9 @@
 import ariane_pkg::*;
 
 module store_unit (
-    input logic                      clk_i,    // Clock
-    input logic                      rst_ni,  // Asynchronous reset active low
-    input logic                      flush_i,
+    input  logic                     clk_i,    // Clock
+    input  logic                     rst_ni,  // Asynchronous reset active low
+    input  logic                     flush_i,
     output logic                     no_st_pending_o,
     // store unit input port
     input  logic                     valid_i,
@@ -160,6 +160,7 @@ module store_unit (
         // we got an address translation exception (access rights, misaligned or page fault)
         if (ex_i.valid && (CS != IDLE)) begin
             // the only difference is that we do not want to store this request
+            pop_st_o = 1'b1;
             st_valid = 1'b0;
             NS       = IDLE;
             valid_o  = 1'b1;
