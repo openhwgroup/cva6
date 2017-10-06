@@ -309,7 +309,6 @@ package ariane_pkg;
     // ----------------------
     // Debug Unit
     // ----------------------
-
     typedef enum logic [15:0] {
         DBG_CTRL     = 16'h0,
         DBG_HIT      = 16'h8,
@@ -348,4 +347,19 @@ package ariane_pkg;
         DBG_CSR_M1   = 16'hF???
     } debug_reg_t;
 
+    // ----------------------
+    // Performance Counters
+    // ----------------------
+    localparam logic [11:0] L1_ICACHE_MISS = 12'h0;     // L1 Instr Cache Miss
+    localparam logic [11:0] L1_DCACHE_MISS = 12'h1;     // L1 Data Cache Miss
+    localparam logic [11:0] ITLB_MISS      = 12'h2;     // ITLB Miss
+    localparam logic [11:0] DTLB_MISS      = 12'h3;     // DTLB Miss
+    localparam logic [11:0] LOAD           = 12'h4;     // Loads
+    localparam logic [11:0] STORE          = 12'h5;     // Stores
+    localparam logic [11:0] EXCEPTION      = 12'h6;     // Taken exceptions
+    localparam logic [11:0] EXCEPTION_RET  = 12'h7;     // Exception return
+    localparam logic [11:0] BRANCH_JUMP    = 12'h8;     // Software change of PC
+    localparam logic [11:0] CALL           = 12'h9;     // Procedure call
+    localparam logic [11:0] RET            = 12'hA;     // Procedure Return
+    localparam logic [11:0] MIS_PREDICT    = 12'hB;     // Branch mis-predicted
 endpackage
