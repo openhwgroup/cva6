@@ -95,6 +95,10 @@ module ex_stage #(
     input  logic [43:0]                            satp_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
 
+    // Performance counters
+    output output                                  itlb_miss_o,
+    output output                                  dtlb_miss_o,
+
     output logic [63:0]                            instr_if_address_o,
     output logic                                   instr_if_data_req_o,
     output logic [3:0]                             instr_if_data_be_o,

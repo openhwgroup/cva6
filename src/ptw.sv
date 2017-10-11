@@ -70,7 +70,10 @@ module ptw #(
     input  logic [63:0]             dtlb_vaddr_i,
     // from CSR file
     input  logic [43:0]             satp_ppn_i, // ppn from satp
-    input  logic                    mxr_i
+    input  logic                    mxr_i,
+    // Performance counters
+    output output                   itlb_miss_o,
+    output output                   dtlb_miss_o
 
 );
 
@@ -165,6 +168,9 @@ module ptw #(
         vaddr_n            = vaddr_q;
         faulting_address_o = '0;
 
+        itlb_miss_o        = 1'b0;
+        dtlb_miss_o        = 1'b0;
+
         case (CS)
 
             IDLE: begin
@@ -179,12 +185,14 @@ module ptw #(
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = itlb_vaddr_i;
                     NS                  = WAIT_GRANT;
+                    itlb_miss_o         = 1'b1;
                 // we got an DTLB miss
                 end else if (en_ld_st_translation_i & dtlb_access_i & dtlb_miss_i) begin
                     ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = dtlb_vaddr_i;
                     NS                  = WAIT_GRANT;
+                    dtlb_miss_o         = 1'b1;
                 end
             end
 

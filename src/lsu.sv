@@ -56,6 +56,9 @@ module lsu #(
     input  logic [43:0]              satp_ppn_i,               // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
     input  logic                     flush_tlb_i,
+    // Performance counters
+    output output                    itlb_miss_o,
+    output output                    dtlb_miss_o,
      // Instruction memory/cache
     output logic [63:0]              instr_if_address_o,
     output logic                     instr_if_data_req_o,

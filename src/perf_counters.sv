@@ -45,54 +45,64 @@ module perf_counters #(
     input  branchpredict   resolved_branch_i
 );
 
-    logic [4:0][63:0] perf_counter_n, perf_counter_q;
+    logic [4:0][63:0] perf_counter_d, perf_counter_q;
 
     always_comb begin : perf_counters
-        perf_counter_n = perf_counter_q;
+        perf_counter_d = perf_counter_q;
+        data_o = 'b0;
 
         // ------------------------------
         // Update Performance Counters
         // ------------------------------
         if (l1_icache_miss_i)
-            perf_counter_n[L1_ICACHE_MISS] = perf_counter_q[L1_ICACHE_MISS] + 1'b1;
+            perf_counter_d[L1_ICACHE_MISS] = perf_counter_q[L1_ICACHE_MISS] + 1'b1;
 
         if (l1_dcache_miss_i)
-            perf_counter_n[L1_DCACHE_MISS] = perf_counter_q[L1_DCACHE_MISS] + 1'b1;
+            perf_counter_d[L1_DCACHE_MISS] = perf_counter_q[L1_DCACHE_MISS] + 1'b1;
 
         if (itlb_miss_i)
-            perf_counter_n[ITLB_MISS] = perf_counter_q[ITLB_MISS] + 1'b1;
+            perf_counter_d[ITLB_MISS] = perf_counter_q[ITLB_MISS] + 1'b1;
 
         if (dtlb_miss_i)
-            perf_counter_n[DTLB_MISS] = perf_counter_q[DTLB_MISS] + 1'b1;
+            perf_counter_d[DTLB_MISS] = perf_counter_q[DTLB_MISS] + 1'b1;
 
         if (commit_ack_o) begin
             if (commit_instr_i.fu == LOAD)
-                perf_counter_n[LOAD] = perf_counter_q[LOAD] + 1'b1;
+                perf_counter_d[LOAD] = perf_counter_q[LOAD] + 1'b1;
 
             if (commit_instr_i.fu == STORE)
-                perf_counter_n[STORE] = perf_counter_q[STORE] + 1'b1;
+                perf_counter_d[STORE] = perf_counter_q[STORE] + 1'b1;
 
             // The standard software calling convention uses register x1 to hold the return address on a call
             if (commit_instr_i.op == JALR && commit_instr_i.rd == 'b1)
-                perf_counter_n[CALL] = perf_counter_q[CALL] + 1'b1;
+                perf_counter_d[CALL] = perf_counter_q[CALL] + 1'b1;
 
             // Return from call
             if (commit_instr_i.op == JALR && commit_instr_i.rs1 == 'b1)
 
             if (commit_instr_i.fu = CTRL_FLOW)
-                perf_counter_n[RET] = perf_counter_q[RET] + 1'b1;
+                perf_counter_d[RET] = perf_counter_q[RET] + 1'b1;
 
         end
 
         if (ex_i.valid)
-            perf_counter_n[EXCEPTION] = perf_counter_q[EXCEPTION] + 1'b1;
+            perf_counter_d[EXCEPTION] = perf_counter_q[EXCEPTION] + 1'b1;
 
         if (eret_i)
-            perf_counter_n[EXCEPTION_RET] = perf_counter_q[EXCEPTION_RET] + 1'b1;
+            perf_counter_d[EXCEPTION_RET] = perf_counter_q[EXCEPTION_RET] + 1'b1;
 
         if (resolved_branch_i.valid && resolved_branch_i.is_mispredict)
-            perf_counter_n[MIS_PREDICT] = perf_counter_q[MIS_PREDICT] + 1'b1;
+            perf_counter_d[MIS_PREDICT] = perf_counter_q[MIS_PREDICT] + 1'b1;
 
+        // Read Port
+        if (!we_i) begin
+            data_o = perf_counter_q[addr_i[2:0]];
+        // write port
+        end else begin
+            // on a write also output the current value
+            data_o = perf_counter_q[addr_i[2:0]];
+            perf_counter_d[addr_i[2:0]] = data_i;
+        end
     end
 
     // ----------------
@@ -102,7 +112,7 @@ module perf_counters #(
         if(~rst_ni) begin
            perf_counter_q <= {default: '0};
         end else begin
-           perf_counter_q <= perf_counter_n;
+           perf_counter_q <= perf_counter_d;
         end
     end
 

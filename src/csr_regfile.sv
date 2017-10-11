@@ -71,8 +71,12 @@ module csr_regfile #(
     // Visualization Support
     output logic                  tvm_o,                      // trap virtual memory
     output logic                  tw_o,                       // timeout wait
-    output logic                  tsr_o                       // trap sret
+    output logic                  tsr_o,                      // trap sret
     // Performance Counter
+    output logic  [11:0]          perf_addr_o,                // address to performance counter module
+    output logic  [63:0]          perf_data_o,                // write data to performance counter module
+    input  logic  [63:0]          perf_data_i,                // read data from performance counter module
+    output logic                  perf_we_o
 );
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception;
@@ -158,7 +162,6 @@ module csr_regfile #(
 
     satp_t satp_q, satp_d;
 
-
     // ----------------
     // CSR Read logic
     // ----------------
@@ -166,6 +169,9 @@ module csr_regfile #(
         // a read access exception can only occur if we attempt to read a CSR which does not exist
         read_access_exception = 1'b0;
         csr_rdata = 64'b0;
+        // feed through address of performance counter
+        perf_addr_o = csr_addr.address;
+
         if (csr_read) begin
             case (csr_addr.address)
 
@@ -208,6 +214,18 @@ module csr_regfile #(
                 CSR_CYCLE:              csr_rdata = cycle_q;
                 CSR_TIME:               csr_rdata = time_i;
                 CSR_INSTRET:            csr_rdata = instret_q;
+                CSR_L1_ICACHE_MISS,
+                CSR_L1_DCACHE_MISS,
+                CSR_ITLB_MISS,
+                CSR_DTLB_MISS,
+                CSR_LOAD,
+                CSR_STORE,
+                CSR_EXCEPTION,
+                CSR_EXCEPTION_RET,
+                CSR_BRANCH_JUMP,
+                CSR_CALL,
+                CSR_RET,
+                CSR_MIS_PREDICT:        csr_rdata = perf_data_i;
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -223,6 +241,8 @@ module csr_regfile #(
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
         update_access_exception = 1'b0;
+        perf_we_o               = 1'b0;
+        perf_data_o             = 'b0;
 
         priv_lvl_d              = priv_lvl_q;
         mstatus_d               = mstatus_q;
@@ -331,6 +351,21 @@ module csr_regfile #(
                 CSR_MTVAL:              mtval_d     = csr_wdata;
                 CSR_MCYCLE:             cycle_d     = csr_wdata;
                 CSR_MINSTRET:           instret_d   = csr_wdata;
+                CSR_L1_ICACHE_MISS,
+                CSR_L1_DCACHE_MISS,
+                CSR_ITLB_MISS,
+                CSR_DTLB_MISS,
+                CSR_LOAD,
+                CSR_STORE,
+                CSR_EXCEPTION,
+                CSR_EXCEPTION_RET,
+                CSR_BRANCH_JUMP,
+                CSR_CALL,
+                CSR_RET,
+                CSR_MIS_PREDICT: begin
+                                        perf_data_o = csr_wdata;
+                                        perf_we_o   = 1'b1;
+                end
                 default: update_access_exception = 1'b1;
             endcase
         end

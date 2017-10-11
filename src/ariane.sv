@@ -227,6 +227,15 @@ module ariane
     logic                     tvm_csr_id;
     logic                     tw_csr_id;
     logic                     tsr_csr_id;
+    // ----------------------------
+    // Performance Counters <-> *
+    // ----------------------------
+    logic [11:0]              addr_csr_perf;
+    logic [63:0]              data_csr_perf, data_perf_csr;
+    logic                     we_csr_perf;
+
+    logic                     itlb_miss_ex_perf;
+    logic                     dtlb_miss_ex_perf;
     // --------------
     // CTRL <-> *
     // --------------
@@ -438,7 +447,6 @@ module ariane
         .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id         ),
         .no_st_pending_o        ( no_st_pending_ex_commit     ),
-
         // CSR
         .csr_ready_o            ( csr_ready_ex_id             ),
         .csr_valid_i            ( csr_valid_id_ex             ),
@@ -447,6 +455,9 @@ module ariane
         .csr_valid_o            ( csr_valid_ex_id             ),
         .csr_addr_o             ( csr_addr_ex_csr             ),
         .csr_commit_i           ( csr_commit_commit_ex        ), // from commit
+        // Performance counters
+        .itlb_miss_o            ( itlb_miss_ex_perf           ),
+        .dtlb_miss_o            ( dtlb_miss_ex_perf           ),
         // Memory Management
         .enable_translation_i   ( enable_translation_csr_ex   ), // from CSR
         .en_ld_st_translation_i ( en_ld_st_translation_csr_ex ),
@@ -534,9 +545,35 @@ module ariane
         .tvm_o                  ( tvm_csr_id                    ),
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
+        .perf_addr_o            ( addr_csr_perf                 ),
+        .perf_data_o            ( data_csr_perf                 ),
+        .perf_data_i            ( data_perf_csr                 ),
+        .perf_we_o              ( we_csr_perf                   ),
         .*
     );
 
+
+    // ------------------------
+    // Performance Counters
+    // ------------------------
+    perf_counters i_perf_counters (
+        .addr_i            ( addr_i                 ),
+        .we_i              ( we_csr_perf            ),
+        .data_i            ( data_csr_perf          ),
+        .data_o            ( data_perf_csr          ),
+        .commit_instr_i    ( commit_instr_id_commit ),
+        .commit_ack_o      ( commit_ack             ),
+
+        .l1_icache_miss_i  ( 1'b0                   ),
+        .l1_dcache_miss_i  ( 1'b0                   ),
+        .itlb_miss_i       ( itlb_miss_ex_perf      ),
+        .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
+
+        .ex_i              ( ex_commit              ),
+        .eret_i            ( eret                   ),
+        .resolved_branch_i ( resolved_branch        ),
+        .*
+    );
     // ------------
     // Controller
     // ------------
