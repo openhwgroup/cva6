@@ -80,7 +80,7 @@ module csr_regfile #(
     logic [63:0] csr_wdata, csr_rdata;
     priv_lvl_t   trap_to_priv_lvl;
     // register for enabling load store address translation, this is critical, hence the register
-    logic        en_ld_st_translation_n, en_ld_st_translation_q;
+    logic        en_ld_st_translation_d, en_ld_st_translation_q;
 
     logic  mret;  // return from M-mode exception
     logic  sret;  // return from S-mode exception
@@ -98,7 +98,7 @@ module csr_regfile #(
     // CSR Registers
     // ----------------
     // privilege level register
-    priv_lvl_t   priv_lvl_n, priv_lvl_q;
+    priv_lvl_t   priv_lvl_d, priv_lvl_q;
 
     typedef struct packed {
         logic         sd;     // signal dirty - read-only - hardwired zero
@@ -127,28 +127,28 @@ module csr_regfile #(
         logic         uie;    // user interrupts enable - hardwired to zero
     } status_t;
 
-    status_t mstatus_q, mstatus_n;
+    status_t mstatus_q, mstatus_d;
 
-    logic [63:0] mtvec_q,    mtvec_n;
-    logic [63:0] medeleg_q,  medeleg_n;
-    logic [63:0] mideleg_q,  mideleg_n;
-    logic [63:0] mip_q,      mip_n;
-    logic [63:0] mie_q,      mie_n;
-    logic [63:0] mscratch_q, mscratch_n;
-    logic [63:0] mepc_q,     mepc_n;
-    logic [63:0] mcause_q,   mcause_n;
-    logic [63:0] mtval_q,    mtval_n;
+    logic [63:0] mtvec_q,    mtvec_d;
+    logic [63:0] medeleg_q,  medeleg_d;
+    logic [63:0] mideleg_q,  mideleg_d;
+    logic [63:0] mip_q,      mip_d;
+    logic [63:0] mie_q,      mie_d;
+    logic [63:0] mscratch_q, mscratch_d;
+    logic [63:0] mepc_q,     mepc_d;
+    logic [63:0] mcause_q,   mcause_d;
+    logic [63:0] mtval_q,    mtval_d;
 
-    logic [63:0] stvec_q,    stvec_n;
-    logic [63:0] sscratch_q, sscratch_n;
-    logic [63:0] sepc_q,     sepc_n;
-    logic [63:0] scause_q,   scause_n;
-    logic [63:0] stval_q,    stval_n;
+    logic [63:0] stvec_q,    stvec_d;
+    logic [63:0] sscratch_q, sscratch_d;
+    logic [63:0] sepc_q,     sepc_d;
+    logic [63:0] scause_q,   scause_d;
+    logic [63:0] stval_q,    stval_d;
 
-    logic        wfi_n,      wfi_q;
+    logic        wfi_d,      wfi_q;
 
-    logic [63:0] cycle_q,    cycle_n;
-    logic [63:0] instret_q,  instret_n;
+    logic [63:0] cycle_q,    cycle_d;
+    logic [63:0] instret_q,  instret_d;
 
     typedef struct packed {
         logic [3:0]  mode;
@@ -156,7 +156,7 @@ module csr_regfile #(
         logic [43:0] ppn;
     } satp_t;
 
-    satp_t satp_q, satp_n;
+    satp_t satp_q, satp_d;
 
 
     // ----------------
@@ -224,32 +224,32 @@ module csr_regfile #(
         flush_o                 = 1'b0;
         update_access_exception = 1'b0;
 
-        priv_lvl_n              = priv_lvl_q;
-        mstatus_n               = mstatus_q;
-        mtvec_n                 = mtvec_q;
-        medeleg_n               = medeleg_q;
-        mideleg_n               = mideleg_q;
-        mip_n                   = mip_q;
-        mie_n                   = mie_q;
-        mepc_n                  = mepc_q;
-        mcause_n                = mcause_q;
-        mscratch_n              = mscratch_q;
-        mtval_n                 = mtval_q;
+        priv_lvl_d              = priv_lvl_q;
+        mstatus_d               = mstatus_q;
+        mtvec_d                 = mtvec_q;
+        medeleg_d               = medeleg_q;
+        mideleg_d               = mideleg_q;
+        mip_d                   = mip_q;
+        mie_d                   = mie_q;
+        mepc_d                  = mepc_q;
+        mcause_d                = mcause_q;
+        mscratch_d              = mscratch_q;
+        mtval_d                 = mtval_q;
 
-        sepc_n                  = sepc_q;
-        scause_n                = scause_q;
-        stvec_n                 = stvec_q;
-        sscratch_n              = sscratch_q;
-        stval_n                 = stval_q;
-        satp_n                  = satp_q;
-        en_ld_st_translation_n  = en_ld_st_translation_q;
+        sepc_d                  = sepc_q;
+        scause_d                = scause_q;
+        stvec_d                 = stvec_q;
+        sscratch_d              = sscratch_q;
+        stval_d                 = stval_q;
+        satp_d                  = satp_q;
+        en_ld_st_translation_d  = en_ld_st_translation_q;
 
         // check for correct access rights and that we are writing
         if (csr_we) begin
             case (csr_addr.address)
                 // sstatus is a subset of mstatus - mask it accordingly
                 CSR_SSTATUS: begin
-                    mstatus_n   = csr_wdata & 64'h3fffe1fee;
+                    mstatus_d   = csr_wdata & 64'h3fffe1fee;
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
@@ -260,21 +260,21 @@ module csr_regfile #(
                     // are written
                     for (int unsigned i = 0; i < 64; i++)
                         if (mideleg_q[i])
-                            mie_n[i] = csr_wdata[i];
+                            mie_d[i] = csr_wdata[i];
                 end
 
                 CSR_SIP: begin
                     for (int unsigned i = 0; i < 64; i++)
                         if (mideleg_q[i])
-                            mip_n[i] = mip[i];
+                            mip_d[i] = mip[i];
                 end
 
                 CSR_SCOUNTEREN:;
-                CSR_STVEC:              stvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
-                CSR_SSCRATCH:           sscratch_n  = csr_wdata;
-                CSR_SEPC:               sepc_n      = {csr_wdata[63:1], 1'b0};
-                CSR_SCAUSE:             scause_n    = csr_wdata;
-                CSR_STVAL:              stval_n     = csr_wdata;
+                CSR_STVEC:              stvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                CSR_SSCRATCH:           sscratch_d  = csr_wdata;
+                CSR_SEPC:               sepc_d      = {csr_wdata[63:1], 1'b0};
+                CSR_SCAUSE:             scause_d    = csr_wdata;
+                CSR_STVAL:              stval_d     = csr_wdata;
                 // supervisor address translation and protection
                 CSR_SATP: begin
                     // intercept SATP writes if in S-Mode and TVM is enabled
@@ -284,7 +284,7 @@ module csr_regfile #(
                         sapt      = satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
                         sapt.asid = sapt.asid & {{(16-ASID_WIDTH){1'b0}}, {ASID_WIDTH{1'b1}}};
-                        satp_n    = sapt;
+                        satp_d    = sapt;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
@@ -292,15 +292,15 @@ module csr_regfile #(
                 end
 
                 CSR_MSTATUS: begin
-                    mstatus_n      = csr_wdata;
-                    mstatus_n.sxl  = 2'b10;
-                    mstatus_n.uxl  = 2'b10;
+                    mstatus_d      = csr_wdata;
+                    mstatus_d.sxl  = 2'b10;
+                    mstatus_d.uxl  = 2'b10;
                     // hardwired zero registers
-                    mstatus_n.sd   = 1'b0;
-                    mstatus_n.xs   = 2'b0;
-                    mstatus_n.fs   = 2'b0;
-                    mstatus_n.upie = 1'b0;
-                    mstatus_n.uie  = 1'b0;
+                    mstatus_d.sd   = 1'b0;
+                    mstatus_d.xs   = 2'b0;
+                    mstatus_d.fs   = 2'b0;
+                    mstatus_d.upie = 1'b0;
+                    mstatus_d.uie  = 1'b0;
                     // this register has side-effects on other registers, flush the pipeline
                     flush_o        = 1'b1;
                 end
@@ -308,29 +308,29 @@ module csr_regfile #(
                 CSR_MISA:;
                 // machine exception delegation register
                 // 0 - 15 exceptions supported
-                CSR_MEDELEG:            medeleg_n   = csr_wdata & 64'hF7FF;
+                CSR_MEDELEG:            medeleg_d   = csr_wdata & 64'hF7FF;
                 // machine interrupt delegation register
                 // we do not support user interrupt delegation
-                CSR_MIDELEG:            mideleg_n   = csr_wdata & 64'hBBB;
+                CSR_MIDELEG:            mideleg_d   = csr_wdata & 64'hBBB;
 
                 // mask the register so that unsupported interrupts can never be set
-                CSR_MIE:                mie_n       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
-                CSR_MIP:                mip_n       = mip;
+                CSR_MIE:                mie_d       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
+                CSR_MIP:                mip_d       = mip;
 
                 CSR_MTVEC: begin
-                    mtvec_n     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                    mtvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                     // we are in vector mode, this implementation requires the additional
                     // alignment constraint of 64 * 4 bytes
                     if (csr_wdata[0])
-                        mtvec_n = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
+                        mtvec_d = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
                 end
                 CSR_MCOUNTEREN:;
-                CSR_MSCRATCH:           mscratch_n  = csr_wdata;
-                CSR_MEPC:               mepc_n      = {csr_wdata[63:1], 1'b0};
-                CSR_MCAUSE:             mcause_n    = csr_wdata;
-                CSR_MTVAL:              mtval_n     = csr_wdata;
-                CSR_MCYCLE:             cycle_n     = csr_wdata;
-                CSR_MINSTRET:           instret_n   = csr_wdata;
+                CSR_MSCRATCH:           mscratch_d  = csr_wdata;
+                CSR_MEPC:               mepc_d      = {csr_wdata[63:1], 1'b0};
+                CSR_MCAUSE:             mcause_d    = csr_wdata;
+                CSR_MTVAL:              mtval_d     = csr_wdata;
+                CSR_MCYCLE:             cycle_d     = csr_wdata;
+                CSR_MINSTRET:           instret_d   = csr_wdata;
                 default: update_access_exception = 1'b1;
             endcase
         end
@@ -339,10 +339,10 @@ module csr_regfile #(
         // ---------------------
         // Machine Mode External Interrupt Pending
         // TODO: this is wrong for sure
-        mip_n[11] = 1'b0;
-        mip_n[9] = mie_q[9] & irq_i;
+        mip_d[11] = 1'b0;
+        mip_d[9] = mie_q[9] & irq_i;
         // Timer interrupt pending, coming from platform timer
-        mip_n[7] = time_irq_i;
+        mip_d[7] = time_irq_i;
 
         // -----------------------
         // Manage Exception Stack
@@ -368,31 +368,31 @@ module csr_regfile #(
             // trap to supervisor mode
             if (trap_to_priv_lvl == PRIV_LVL_S) begin
                 // update sstatus
-                mstatus_n.sie  = 1'b0;
-                mstatus_n.spie = mstatus_q.sie;
+                mstatus_d.sie  = 1'b0;
+                mstatus_d.spie = mstatus_q.sie;
                 // this can either be user or supervisor mode
-                mstatus_n.spp  = logic'(priv_lvl_q);
+                mstatus_d.spp  = logic'(priv_lvl_q);
                 // set cause
-                scause_n       = ex_i.cause;
+                scause_d       = ex_i.cause;
                 // set epc
-                sepc_n         = pc_i;
+                sepc_d         = pc_i;
                 // set mtval or stval
-                stval_n        = ex_i.tval;
+                stval_d        = ex_i.tval;
             // trap to machine mode
             end else begin
                 // update mstatus
-                mstatus_n.mie  = 1'b0;
-                mstatus_n.mpie = mstatus_q.mie;
+                mstatus_d.mie  = 1'b0;
+                mstatus_d.mpie = mstatus_q.mie;
                 // save the previous privilege mode
-                mstatus_n.mpp  = priv_lvl_q;
-                mcause_n       = ex_i.cause;
+                mstatus_d.mpp  = priv_lvl_q;
+                mcause_d       = ex_i.cause;
                 // set epc
-                mepc_n         = pc_i;
+                mepc_d         = pc_i;
                 // set mtval or stval
-                mtval_n        = ex_i.tval;
+                mtval_d        = ex_i.tval;
             end
 
-            priv_lvl_n = trap_to_priv_lvl;
+            priv_lvl_d = trap_to_priv_lvl;
         end
         // ------------------------------
         // MPRV - Modify Privilege Level
@@ -400,9 +400,9 @@ module csr_regfile #(
         // Set the address translation at which the load and stores should occur
         // we can use the previous values since changing the address translation will always involve a pipeline flush
         if (mstatus_q.mprv && satp_q.mode == 4'h8 && (mstatus_q.mpp != PRIV_LVL_M))
-            en_ld_st_translation_n = 1'b1;
+            en_ld_st_translation_d = 1'b1;
         else // otherwise we go with the regular settings
-            en_ld_st_translation_n = en_translation_o;
+            en_ld_st_translation_d = en_translation_o;
 
         ld_st_priv_lvl_o = (mstatus_q.mprv) ? mstatus_q.mpp : priv_lvl_o;
         en_ld_st_translation_o = en_ld_st_translation_q;
@@ -416,37 +416,37 @@ module csr_regfile #(
             eret_o = 1'b1;
             // return to the previous privilege level and restore all enable flags
             // get the previous machine interrupt enable flag
-            mstatus_n.mie  = mstatus_q.mpie;
+            mstatus_d.mie  = mstatus_q.mpie;
             // restore the previous privilege level
-            priv_lvl_n     = mstatus_q.mpp;
+            priv_lvl_d     = mstatus_q.mpp;
             // set mpp to user mode
-            mstatus_n.mpp  = PRIV_LVL_U;
+            mstatus_d.mpp  = PRIV_LVL_U;
             // set mpie to 1
-            mstatus_n.mpie = 1'b1;
+            mstatus_d.mpie = 1'b1;
         end
 
         if (sret) begin
             // return from exception, IF doesn't care from where we are returning
             eret_o = 1'b1;
             // return the previous supervisor interrupt enable flag
-            mstatus_n.sie  = mstatus_n.spie;
+            mstatus_d.sie  = mstatus_d.spie;
             // restore the previous privilege level
-            priv_lvl_n     = priv_lvl_t'({1'b0, mstatus_n.spp});
+            priv_lvl_d     = priv_lvl_t'({1'b0, mstatus_d.spp});
             // set spp to user mode
-            mstatus_n.spp  = logic'(PRIV_LVL_U);
+            mstatus_d.spp  = logic'(PRIV_LVL_U);
             // set spie to 1
-            mstatus_n.spie = 1'b1;
+            mstatus_d.spie = 1'b1;
         end
 
         // --------------------
         // Counters
         // --------------------
-        instret_n = instret_q;
+        instret_d = instret_q;
         // just increment the cycle count
-        cycle_n = cycle_q + 1'b1;
+        cycle_d = cycle_q + 1'b1;
         // increase instruction retired counter
         if (commit_ack_i) begin
-            instret_n = instret_q + 1'b1;
+            instret_d = instret_q + 1'b1;
         end
     end
 
@@ -506,7 +506,7 @@ module csr_regfile #(
     always_comb begin : exception_ctrl
         automatic logic [63:0] interrupt_cause = '0;
         // wait for interrupt register
-        wfi_n = wfi_q;
+        wfi_d = wfi_q;
 
         csr_exception_o = {
             64'b0, 64'b0, 1'b0
@@ -582,10 +582,10 @@ module csr_regfile #(
         // -------------------
         // if there is any interrupt pending un-stall the core
         if (|mip_q) begin
-            wfi_n = 1'b0;
+            wfi_d = 1'b0;
         // or alternatively if there is no exception pending, wait here for the interrupt
         end else if (csr_op_i.csr == WFI && !ex_i.valid) begin
-            wfi_n = 1'b1;
+            wfi_d = 1'b1;
         end
     end
 
@@ -658,32 +658,32 @@ module csr_regfile #(
             // wait for interrupt
             wfi_q                  <= 1'b0;
         end else begin
-            priv_lvl_q             <= priv_lvl_n;
+            priv_lvl_q             <= priv_lvl_d;
             // machine mode registers
-            mstatus_q              <= mstatus_n;
-            mtvec_q                <= mtvec_n;
-            medeleg_q              <= medeleg_n;
-            mideleg_q              <= mideleg_n;
-            mip_q                  <= mip_n;
-            mie_q                  <= mie_n;
-            mepc_q                 <= mepc_n;
-            mcause_q               <= mcause_n;
-            mscratch_q             <= mscratch_n;
-            mtval_q                <= mtval_n;
+            mstatus_q              <= mstatus_d;
+            mtvec_q                <= mtvec_d;
+            medeleg_q              <= medeleg_d;
+            mideleg_q              <= mideleg_d;
+            mip_q                  <= mip_d;
+            mie_q                  <= mie_d;
+            mepc_q                 <= mepc_d;
+            mcause_q               <= mcause_d;
+            mscratch_q             <= mscratch_d;
+            mtval_q                <= mtval_d;
             // supervisor mode registers
-            sepc_q                 <= sepc_n;
-            scause_q               <= scause_n;
-            stvec_q                <= stvec_n;
-            sscratch_q             <= sscratch_n;
-            stval_q                <= stval_n;
-            satp_q                 <= satp_n;
+            sepc_q                 <= sepc_d;
+            scause_q               <= scause_d;
+            stvec_q                <= stvec_d;
+            sscratch_q             <= sscratch_d;
+            stval_q                <= stval_d;
+            satp_q                 <= satp_d;
             // timer and counters
-            cycle_q                <= cycle_n;
-            instret_q              <= instret_n;
+            cycle_q                <= cycle_d;
+            instret_q              <= instret_d;
             // aux registers
-            en_ld_st_translation_q <= en_ld_st_translation_n;
+            en_ld_st_translation_q <= en_ld_st_translation_d;
             // wait for interrupt
-            wfi_q                  <= wfi_n;
+            wfi_q                  <= wfi_d;
         end
     end
 
