@@ -33,7 +33,6 @@ module ariane
     (
         input  logic                           clk_i,
         input  logic                           rst_ni,
-        input  logic                           clock_en_i,    // enable clock, otherwise it is gated
         input  logic                           test_en_i,     // enable all clock gates for testing
 
         output logic                           flush_icache_o, // request to flush icache
