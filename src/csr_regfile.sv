@@ -558,20 +558,23 @@ module csr_regfile #(
         // -----------------
         // Privilege Check
         // -----------------
-        // if we are reading or writing, check for the correct privilege level
-        if (csr_we || csr_read) begin
-            if ((priv_lvl_t'(priv_lvl_q & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
+        // only if this is not a CSR request from debug (debug has M privilege status)
+        if (!debug_csr_req_i) begin
+            // if we are reading or writing, check for the correct privilege level
+            if (csr_we || csr_read) begin
+                if ((priv_lvl_t'(priv_lvl_q & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
+                    csr_exception_o.cause = ILLEGAL_INSTR;
+                    csr_exception_o.valid = 1'b1;
+                end
+            end
+            // we got an exception in one of the processes above
+            // throw an illegal instruction exception
+            if (update_access_exception || read_access_exception) begin
                 csr_exception_o.cause = ILLEGAL_INSTR;
+                // we don't set the tval field as this will be set by the commit stage
+                // this spares the extra wiring from commit to CSR and back to commit
                 csr_exception_o.valid = 1'b1;
             end
-        end
-        // we got an exception in one of the processes above
-        // throw an illegal instruction exception
-        if (update_access_exception || read_access_exception) begin
-            csr_exception_o.cause = ILLEGAL_INSTR;
-            // we don't set the tval field as this will be set by the commit stage
-            // this spares the extra wiring from commit to CSR and back to commit
-            csr_exception_o.valid = 1'b1;
         end
 
         // -------------------
