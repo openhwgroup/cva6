@@ -130,6 +130,11 @@ module lsu #(
     logic [2:0]               data_gnt_o;
     logic [2:0]               data_rvalid_o;
     logic [2:0][63:0]         data_rdata_o;
+    amo_t [2:0]               amo_op_i;
+
+    assign amo_op_i[0] = AMO_NONE;
+    assign amo_op_i[2] = AMO_NONE;
+
     // decreasing priority
     // Port 0: PTW
     // Port 1: Load Unit
@@ -149,6 +154,10 @@ module lsu #(
         .data_gnt_o        ( data_gnt_o              ),
         .data_rvalid_o     ( data_rvalid_o           ),
         .data_rdata_o      ( data_rdata_o            ),
+        .amo_op_i          ( amo_op_i                ),
+        .amo_commit_i      (),
+        .amo_valid_o       (),
+        .amo_result_o      (),
         .*
     );
 
@@ -243,6 +252,7 @@ module lsu #(
         .address_index_o       ( address_index_i  [1] ),
         .address_tag_o         ( address_tag_i    [1] ),
         .data_wdata_o          ( data_wdata_i     [1] ),
+        .amo_op_o              ( amo_op_i         [1] ),
         .data_req_o            ( data_req_i       [1] ),
         .data_we_o             ( data_we_i        [1] ),
         .data_be_o             ( data_be_i        [1] ),
