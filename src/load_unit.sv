@@ -43,6 +43,7 @@ module load_unit (
     // D$ interface
     output logic [11:0]              address_index_o,
     output logic [43:0]              address_tag_o,
+    output amo_t                     amo_op_o,
     output logic [63:0]              data_wdata_o,
     output logic                     data_req_o,
     output logic                     data_we_o,
@@ -278,6 +279,41 @@ module load_unit (
     end
 
     // ---------------
+    // AMO Operation
+    // ---------------
+    always_comb begin : amo_op_select
+        amo_op_o = AMO_NONE;
+
+        if (lsu_ctrl_i.valid) begin
+            case (lsu_ctrl_i.operator.load)
+                AMO_LRW:    amo_op_o = AMO_LR;
+                AMO_LRD:    amo_op_o = AMO_LR;
+                AMO_SCW:    amo_op_o = AMO_SC;
+                AMO_SCD:    amo_op_o = AMO_SC;
+                AMO_SWAPW:  amo_op_o = AMO_SWAP;
+                AMO_ADDW:   amo_op_o = AMO_ADD;
+                AMO_ANDW:   amo_op_o = AMO_AND;
+                AMO_ORW:    amo_op_o = AMO_OR;
+                AMO_XORW:   amo_op_o = AMO_XOR;
+                AMO_MAXW:   amo_op_o = AMO_MAX;
+                AMO_MAXWU:  amo_op_o = AMO_MAXU;
+                AMO_MINW:   amo_op_o = AMO_MIN;
+                AMO_MINWU:  amo_op_o = AMO_MINU;
+                AMO_SWAPD:  amo_op_o = AMO_SWAP;
+                AMO_ADDD:   amo_op_o = AMO_ADD;
+                AMO_ANDD:   amo_op_o = AMO_AND;
+                AMO_ORD:    amo_op_o = AMO_OR;
+                AMO_XORD:   amo_op_o = AMO_XOR;
+                AMO_MAXD:   amo_op_o = AMO_MAX;
+                AMO_MAXDU:  amo_op_o = AMO_MAXU;
+                AMO_MIND:   amo_op_o = AMO_MIN;
+                AMO_MINDU:  amo_op_o = AMO_MINU;
+                default: amo_op_o = AMO_NONE;
+            endcase
+        end
+    end
+
+    // ---------------
     // Sign Extend
     // ---------------
     logic [63:0] rdata_d_ext; // sign extension for double words, actually only misaligned assembly
@@ -293,44 +329,44 @@ module load_unit (
     // sign extension for words
     always_comb begin : sign_extend_word
         case (load_data_q.address_offset)
-            default: rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[31]}}, data_rdata_i[31:0]}  : {32'h0, data_rdata_i[31:0]};
-            3'b001:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[39]}}, data_rdata_i[39:8]}  : {32'h0, data_rdata_i[39:8]};
-            3'b010:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[47]}}, data_rdata_i[47:16]} : {32'h0, data_rdata_i[47:16]};
-            3'b011:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[55]}}, data_rdata_i[55:24]} : {32'h0, data_rdata_i[55:24]};
-            3'b100:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[63]}}, data_rdata_i[63:32]} : {32'h0, data_rdata_i[63:32]};
+            default: rdata_w_ext = (load_data_q.operator.load inside {LW, AMO_LRW}) ? {{32{data_rdata_i[31]}}, data_rdata_i[31:0]}  : {32'h0, data_rdata_i[31:0]};
+            3'b001:  rdata_w_ext = (load_data_q.operator.load inside {LW, AMO_LRW}) ? {{32{data_rdata_i[39]}}, data_rdata_i[39:8]}  : {32'h0, data_rdata_i[39:8]};
+            3'b010:  rdata_w_ext = (load_data_q.operator.load inside {LW, AMO_LRW}) ? {{32{data_rdata_i[47]}}, data_rdata_i[47:16]} : {32'h0, data_rdata_i[47:16]};
+            3'b011:  rdata_w_ext = (load_data_q.operator.load inside {LW, AMO_LRW}) ? {{32{data_rdata_i[55]}}, data_rdata_i[55:24]} : {32'h0, data_rdata_i[55:24]};
+            3'b100:  rdata_w_ext = (load_data_q.operator.load inside {LW, AMO_LRW}) ? {{32{data_rdata_i[63]}}, data_rdata_i[63:32]} : {32'h0, data_rdata_i[63:32]};
         endcase
     end
 
     // sign extension for half words
     always_comb begin : sign_extend_half_word
         case (load_data_q.address_offset)
-            default: rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[15]}}, data_rdata_i[15:0]}  : {48'h0, data_rdata_i[15:0]};
-            3'b001:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[23]}}, data_rdata_i[23:8]}  : {48'h0, data_rdata_i[23:8]};
-            3'b010:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[31]}}, data_rdata_i[31:16]} : {48'h0, data_rdata_i[31:16]};
-            3'b011:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[39]}}, data_rdata_i[39:24]} : {48'h0, data_rdata_i[39:24]};
-            3'b100:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[47]}}, data_rdata_i[47:32]} : {48'h0, data_rdata_i[47:32]};
-            3'b101:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[55]}}, data_rdata_i[55:40]} : {48'h0, data_rdata_i[55:40]};
-            3'b110:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[63]}}, data_rdata_i[63:48]} : {48'h0, data_rdata_i[63:48]};
+            default: rdata_h_ext = (load_data_q.operator.load == LH) ? {{48{data_rdata_i[15]}}, data_rdata_i[15:0]}  : {48'h0, data_rdata_i[15:0]};
+            3'b001:  rdata_h_ext = (load_data_q.operator.load == LH) ? {{48{data_rdata_i[23]}}, data_rdata_i[23:8]}  : {48'h0, data_rdata_i[23:8]};
+            3'b010:  rdata_h_ext = (load_data_q.operator.load == LH) ? {{48{data_rdata_i[31]}}, data_rdata_i[31:16]} : {48'h0, data_rdata_i[31:16]};
+            3'b011:  rdata_h_ext = (load_data_q.operator.load == LH) ? {{48{data_rdata_i[39]}}, data_rdata_i[39:24]} : {48'h0, data_rdata_i[39:24]};
+            3'b100:  rdata_h_ext = (load_data_q.operator.load == LH) ? {{48{data_rdata_i[47]}}, data_rdata_i[47:32]} : {48'h0, data_rdata_i[47:32]};
+            3'b101:  rdata_h_ext = (load_data_q.operator.load == LH) ? {{48{data_rdata_i[55]}}, data_rdata_i[55:40]} : {48'h0, data_rdata_i[55:40]};
+            3'b110:  rdata_h_ext = (load_data_q.operator.load == LH) ? {{48{data_rdata_i[63]}}, data_rdata_i[63:48]} : {48'h0, data_rdata_i[63:48]};
         endcase
     end
 
     // sign extend byte
     always_comb begin : sign_extend_byte
         case (load_data_q.address_offset)
-            default: rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[7]}},  data_rdata_i[7:0]}   : {56'h0, data_rdata_i[7:0]};
-            3'b001:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[15]}}, data_rdata_i[15:8]}  : {56'h0, data_rdata_i[15:8]};
-            3'b010:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[23]}}, data_rdata_i[23:16]} : {56'h0, data_rdata_i[23:16]};
-            3'b011:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[31]}}, data_rdata_i[31:24]} : {56'h0, data_rdata_i[31:24]};
-            3'b100:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[39]}}, data_rdata_i[39:32]} : {56'h0, data_rdata_i[39:32]};
-            3'b101:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[47]}}, data_rdata_i[47:40]} : {56'h0, data_rdata_i[47:40]};
-            3'b110:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[55]}}, data_rdata_i[55:48]} : {56'h0, data_rdata_i[55:48]};
-            3'b111:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{data_rdata_i[63]}}, data_rdata_i[63:56]} : {56'h0, data_rdata_i[63:56]};
+            default: rdata_b_ext = (load_data_q.operator.load == LB) ? {{56{data_rdata_i[7]}},  data_rdata_i[7:0]}   : {56'h0, data_rdata_i[7:0]};
+            3'b001:  rdata_b_ext = (load_data_q.operator.load == LB) ? {{56{data_rdata_i[15]}}, data_rdata_i[15:8]}  : {56'h0, data_rdata_i[15:8]};
+            3'b010:  rdata_b_ext = (load_data_q.operator.load == LB) ? {{56{data_rdata_i[23]}}, data_rdata_i[23:16]} : {56'h0, data_rdata_i[23:16]};
+            3'b011:  rdata_b_ext = (load_data_q.operator.load == LB) ? {{56{data_rdata_i[31]}}, data_rdata_i[31:24]} : {56'h0, data_rdata_i[31:24]};
+            3'b100:  rdata_b_ext = (load_data_q.operator.load == LB) ? {{56{data_rdata_i[39]}}, data_rdata_i[39:32]} : {56'h0, data_rdata_i[39:32]};
+            3'b101:  rdata_b_ext = (load_data_q.operator.load == LB) ? {{56{data_rdata_i[47]}}, data_rdata_i[47:40]} : {56'h0, data_rdata_i[47:40]};
+            3'b110:  rdata_b_ext = (load_data_q.operator.load == LB) ? {{56{data_rdata_i[55]}}, data_rdata_i[55:48]} : {56'h0, data_rdata_i[55:48]};
+            3'b111:  rdata_b_ext = (load_data_q.operator.load == LB) ? {{56{data_rdata_i[63]}}, data_rdata_i[63:56]} : {56'h0, data_rdata_i[63:56]};
         endcase
     end
 
     // Result Mux
     always_comb begin
-        case (load_data_q.operator)
+        case (load_data_q.operator.load)
             LW, LWU:       result_o = rdata_w_ext;
             LH, LHU:       result_o = rdata_h_ext;
             LB, LBU:       result_o = rdata_b_ext;

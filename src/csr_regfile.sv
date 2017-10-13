@@ -584,7 +584,7 @@ module csr_regfile #(
         if (|mip_q) begin
             wfi_n = 1'b0;
         // or alternatively if there is no exception pending, wait here for the interrupt
-        end else if (csr_op_i == WFI && !ex_i.valid) begin
+        end else if (csr_op_i.csr == WFI && !ex_i.valid) begin
             wfi_n = 1'b1;
         end
     end
