@@ -6,13 +6,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-### Added
-- Support for M Extension (mul, div and reminder)
-### Changed
+### [0.4.0] - 2017-10-13
 
-## 0.3.0
+Linux booting on FPGA.
+
+### Added
+- Support for M Extension (mul, div and reminder) in simulation
+- Preliminary debug support
+- Added support for cache management instructions
+
+### Changed
+- Various bug fixes (branch-prediction, PTW and TLB problems, interrupt handling)
+- Fixed synthesis issues
+
+## [0.3.0] - 2017-07-15
 ### Added
 - Added support for device tree in Ariane's testbench
+
 ### Changed
 - Bugfixes in compressed decoder (legal shifts where throwing an illegal instruction although they where legal)
 - Increase memory size to 16 MB in-order to simulate a full Linux boot
