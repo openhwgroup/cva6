@@ -102,17 +102,7 @@ module ex_stage #(
     input  logic                                   instr_if_data_rvalid_i,
     input  logic [63:0]                            instr_if_data_rdata_i,
 
-    output logic [11:0]                            data_if_address_index_o,
-    output logic [43:0]                            data_if_address_tag_o,
-    output logic [63:0]                            data_if_data_wdata_o,
-    output logic                                   data_if_data_req_o,
-    output logic                                   data_if_data_we_o,
-    output logic [7:0]                             data_if_data_be_o,
-    output logic                                   data_if_kill_req_o,
-    output logic                                   data_if_tag_valid_o,
-    input  logic                                   data_if_data_gnt_i,
-    input  logic                                   data_if_data_rvalid_i,
-    input  logic [63:0]                            data_if_data_rdata_i
+    AXI_BUS.Master                                 data_if
 );
 
     // -----
@@ -147,6 +137,7 @@ module ex_stage #(
     lsu lsu_i (
         .commit_i       ( lsu_commit_i       ),
         .commit_ready_o ( lsu_commit_ready_o ),
+        .data_if        ( data_if            ),
         .*
     );
 
