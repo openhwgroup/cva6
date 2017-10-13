@@ -25,7 +25,6 @@ import instruction_tracer_pkg::*;
 `endif
 `endif
 
-
 module ariane
     #(
         parameter N_EXT_PERF_COUNTERS          = 0
@@ -55,17 +54,7 @@ module ariane
         input  logic                           instr_if_data_rvalid_i,
         input  logic [63:0]                    instr_if_data_rdata_i,
         // Data memory interface
-        output logic [11:0]                    data_if_address_index_o,
-        output logic [43:0]                    data_if_address_tag_o,
-        output logic [63:0]                    data_if_data_wdata_o,
-        output logic                           data_if_data_req_o,
-        output logic                           data_if_data_we_o,
-        output logic [7:0]                     data_if_data_be_o,
-        output logic                           data_if_kill_req_o,
-        output logic                           data_if_tag_valid_o,
-        input  logic                           data_if_data_gnt_i,
-        input  logic                           data_if_data_rvalid_i,
-        input  logic [63:0]                    data_if_data_rdata_i,
+        AXI_BUS.Master                         data_if,
         // Interrupt inputs
         input  logic                           irq_i,                 // level sensitive IR lines
         input  logic [4:0]                     irq_id_i,
@@ -468,6 +457,8 @@ module ariane
         .mult_trans_id_o        ( mult_trans_id_ex_id         ),
         .mult_result_o          ( mult_result_ex_id           ),
         .mult_valid_o           ( mult_valid_ex_id            ),
+
+        .data_if                ( data_if                     ),
         .*
     );
 
@@ -620,12 +611,12 @@ module ariane
     assign tracer_if.commit_ack        = commit_ack;
     // address translation
     // stores
-    assign tracer_if.st_valid          = ex_stage_i.lsu_i.store_unit_i.store_buffer_i.valid_i;
-    assign tracer_if.st_paddr          = ex_stage_i.lsu_i.store_unit_i.store_buffer_i.paddr_i;
+    assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
+    assign tracer_if.st_paddr          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
     // loads
-    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.load_unit_i.tag_valid_o;
-    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.load_unit_i.kill_req_o;
-    assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.load_unit_i.paddr_i;
+    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.tag_valid_o;
+    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.kill_req_o;
+    assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.i_load_unit.paddr_i;
     // exceptions
     assign tracer_if.exception         = commit_stage_i.exception_o;
     // assign current privilege level
