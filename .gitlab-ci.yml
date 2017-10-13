@@ -27,13 +27,13 @@ test_fifo:
     - make fifo library=fifo_lib
     - vcover-10.6 report fifo.ucdb
 
-test_scoreboard:
-  stage: test
-  before_script:
-    - make build library=scoreboard_lib
-  script:
-    - make scoreboard library=scoreboard_lib
-    - vcover-10.6 report scoreboard.ucdb
+# test_scoreboard:
+#   stage: test
+#   before_script:
+#     - make build library=scoreboard_lib
+#   script:
+#     - make scoreboard library=scoreboard_lib
+#     - vcover-10.6 report scoreboard.ucdb
 
 test_dcache_arbiter:
   stage: test
