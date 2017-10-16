@@ -35,6 +35,7 @@ module nb_dcache #(
     input  logic                           amo_commit_i, // commit atomic memory operation
     output logic                           amo_valid_o,  // we have a valid AMO result
     output logic [63:0]                    amo_result_o, // result of atomic memory operation
+    input  logic                           amo_flush_i,  // forget about AMO
     // Request ports
     input  logic [2:0][INDEX_WIDTH-1:0]    address_index_i,
     input  logic [2:0][TAG_WIDTH-1:0]      address_tag_i,

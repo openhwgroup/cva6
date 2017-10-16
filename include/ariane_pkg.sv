@@ -1,5 +1,5 @@
 
-/* File:   ariane_pkg.svh
+/* File:   ariane_pkg.sv
  * Author: Florian Zaruba <zarubaf@ethz.ch>
  * Date:   8.4.2017
  *

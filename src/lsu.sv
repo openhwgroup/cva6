@@ -132,6 +132,7 @@ module lsu #(
     logic [2:0][63:0]         data_rdata_o;
     amo_t [2:0]               amo_op_i;
 
+    // AMO operations always go through the load unit
     assign amo_op_i[0] = AMO_NONE;
     assign amo_op_i[2] = AMO_NONE;
 
@@ -139,7 +140,7 @@ module lsu #(
     // Port 0: PTW
     // Port 1: Load Unit
     // Port 2: Store Unit
-    nb_dcache i_nb_dcache (
+    nbdcache i_nbdcache (
         // to D$
         .data_if           ( data_if                 ),
         // from PTW, Load Unit and Store Unit

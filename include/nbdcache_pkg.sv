@@ -1,4 +1,4 @@
-/* File:   ariane_pkg.svh
+/* File:   nbdcache_pkh.sv
  * Author: Florian Zaruba <zarubaf@ethz.ch>
  * Date:   13.10.2017
  *
@@ -12,5 +12,12 @@
 package nbdcache_pkg;
 
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } req_t;
+    typedef enum logic { LOAD_MISS, STORE_MISS } miss_t;
+
+    typedef struct packed {
+        logic        valid;
+        miss_t       type;
+        logic [55:0] addr;
+    } mshr_t;
 
 endpackage
