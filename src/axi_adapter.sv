@@ -172,7 +172,7 @@ module axi_adapter #(
                 axi.aw_valid = 1'b1;
                 axi.aw_len   = 8'b0;
 
-                if (axi.aw_read)
+                if (axi.aw_ready)
                     state_d = WAIT_B_VALID;
 
             end
