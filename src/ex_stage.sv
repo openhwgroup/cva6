@@ -102,7 +102,8 @@ module ex_stage #(
     input  logic                                   instr_if_data_rvalid_i,
     input  logic [63:0]                            instr_if_data_rdata_i,
 
-    AXI_BUS.Master                                 data_if
+    AXI_BUS.Master                                 data_if,
+    AXI_BUS.Master                                 bypass_if
 );
 
     // -----
