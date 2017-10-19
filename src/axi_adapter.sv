@@ -35,7 +35,7 @@ module axi_adapter #(
     input  logic [AXI_ID_WIDTH-1:0]                     id_i,
     // read port
     output logic                                        valid_o,
-    output logic [(CACHE_LINE_WIDTH/64)-1:0]            rdata_o,
+    output logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]      rdata_o,
     output logic [AXI_ID_WIDTH-1:0]                     id_o,
     // critical word - read port
     output logic [63:0]                                 critical_word_o,
@@ -100,6 +100,7 @@ module axi_adapter #(
         // rdata_o   = axi.r_data;
         critical_word_o       = axi.r_data;
         critical_word_valid   = 1'b0;
+        rdata_o               = cache_line_q;
 
         state_d       = state_q;
         cnt_d         = cnt_q;

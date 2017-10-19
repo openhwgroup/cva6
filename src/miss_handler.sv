@@ -62,11 +62,11 @@ module miss_handler #(
         end
     endgenerate
 
-    logic                               gnt_bypass_fsm;
-    logic                               valid_bypass_fsm;
-    logic [(CACHE_LINE_WIDTH/64)-1:0]   data_bypass_fsm;
-    logic [$clog2(NR_PORTS)-1:0]        id_fsm_bypass;
-    logic [AXI_ID_WIDTH-1:0]            id_bypass_fsm;
+    logic                                     gnt_bypass_fsm;
+    logic                                     valid_bypass_fsm;
+    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]   data_bypass_fsm;
+    logic [$clog2(NR_PORTS)-1:0]              id_fsm_bypass;
+    logic [AXI_ID_WIDTH-1:0]                  id_bypass_fsm;
 
     miss_arbiter #(
             .NR_PORTS  ( NR_PORTS                             )
@@ -90,7 +90,7 @@ module miss_handler #(
         .data_be_o     ( req_fsm_bypass_be                    ),
         .data_gnt_i    ( gnt_bypass_fsm                       ),
         .data_rvalid_i ( valid_bypass_fsm                     ),
-        .data_rdata_i  ( data_bypass_fsm[63:0]                ),
+        .data_rdata_i  ( data_bypass_fsm[0]                   ),
         .*
     );
 

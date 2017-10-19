@@ -1,5 +1,5 @@
 
-/* File:   ariane_pkg.sv
+/* File:   ariane_pkg.svh
  * Author: Florian Zaruba <zarubaf@ethz.ch>
  * Date:   8.4.2017
  *
@@ -78,58 +78,31 @@ package ariane_pkg;
     // ---------------
     // EX Stage
     // ---------------
-    typedef enum logic [4:0] {
-        // basic ALU op
-        ADD, SUB, ADDW, SUBW,
-        // logic operations
-        XORL, ORL, ANDL,
-        // shifts
-        SRA, SRL, SLL, SRLW, SLLW, SRAW,
-        // set lower than operations
-        SLTS, SLTU
-    } alu_op_t;
-
-    typedef enum logic [4:0] {
-        // comparisons
-        LTS, LTU, GES, GEU, EQ, NE,
-        // jumps
-        JALR
-    } branch_op_t;
-
-    typedef enum logic [4:0] {
-        // CSR functions
-        MRET, SRET, ECALL, WFI, FENCE, FENCE_I, SFENCE_VMA, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR
-    } csr_op_t;
-
-    typedef enum logic [4:0] {
-        // LSU functions
-        LD, LW, LWU, LH, LHU, LB, LBU,
-        // Atomic Memory Operations
-        AMO_LRW, AMO_LRD, AMO_SCW, AMO_SCD,
-        AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW, AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW, AMO_MINWU,
-        AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD, AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND, AMO_MINDU
-    } load_op_t;
-
-    typedef enum logic [4:0] {
-        // store functions
-        SD, SW, SH, SB
-    } store_op_t;
-
-    typedef enum logic [4:0] {
-        // Multiplications
-        MUL, MULH, MULHU, MULHSU, MULW,
-        // Divisions
-        DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW
-    } mul_op_t;
-
-    typedef union packed {
-        alu_op_t    alu;
-        branch_op_t branch;
-        csr_op_t    csr;
-        load_op_t   load;
-        store_op_t  store;
-        mul_op_t    mul;
-    } fu_op;
+    typedef enum logic [6:0] { // basic ALU op
+                               ADD, SUB, ADDW, SUBW,
+                               // logic operations
+                               XORL, ORL, ANDL,
+                               // shifts
+                               SRA, SRL, SLL, SRLW, SLLW, SRAW,
+                               // comparisons
+                               LTS, LTU, GES, GEU, EQ, NE,
+                               // jumps
+                               JALR,
+                               // set lower than operations
+                               SLTS, SLTU,
+                               // CSR functions
+                               MRET, SRET, ECALL, WFI, FENCE, FENCE_I, SFENCE_VMA, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
+                               // LSU functions
+                               LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU,
+                               // Atomic Memory Operations
+                               AMO_LRW, AMO_LRD, AMO_SCW, AMO_SCD,
+                               AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW, AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW, AMO_MINWU,
+                               AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD, AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND, AMO_MINDU,
+                               // Multiplications
+                               MUL, MULH, MULHU, MULHSU, MULW,
+                               // Divisions
+                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW
+                             } fu_op;
 
     typedef struct packed {
         logic                     valid;

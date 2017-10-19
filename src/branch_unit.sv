@@ -57,10 +57,10 @@ module branch_unit (
         sgn = 1'b1;
         // if this is an unsigned operation clear the sign bit
         // this should ease data-path extraction
-        if (operator_i.branch inside {LTU, GEU})
+        if (operator_i inside {LTU, GEU})
             sgn = 1'b0;
         // get the right comparison result
-        case (operator_i.branch)
+        case (operator_i)
             EQ:       comparison_result = operand_a_i == operand_b_i;
             NE:       comparison_result = operand_a_i != operand_b_i;
             LTS, LTU: comparison_result = ($signed({sgn & operand_a_i[63], operand_a_i})   <  $signed({sgn & operand_b_i[63], operand_b_i}));
@@ -71,7 +71,7 @@ module branch_unit (
     // here we handle the various possibilities of mis-predicts
     always_comb begin : mispredict_handler
         // set the jump base, for JALR we need to look at the register, for all other control flow instructions we can take the current PC
-        automatic logic [63:0] jump_base = (operator_i.branch == JALR) ? operand_a_i : pc_i;
+        automatic logic [63:0] jump_base = (operator_i == JALR) ? operand_a_i : pc_i;
 
         target_address                   = 64'b0;
         resolved_branch_o.target_address = 64'b0;
@@ -86,7 +86,7 @@ module branch_unit (
         // calculate target address simple 64 bit addition
         target_address                   = $unsigned($signed(jump_base) + $signed(imm_i));
         // on a JALR we are supposed to reset the LSB to 0 (according to the specification)
-        if (operator_i.branch == JALR)
+        if (operator_i == JALR)
             target_address[0] = 1'b0;
         // if we need to put the branch target address in a destination register, output it here to WB
         branch_result_o                  = next_pc;
