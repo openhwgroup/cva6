@@ -108,9 +108,9 @@ module alu
 
     assign shift_amt = operand_b_i;
 
-    assign shift_left = (operator_i.alu == SLL) | (operator_i.alu == SLLW);
+    assign shift_left = (operator_i == SLL) | (operator_i == SLLW);
 
-    assign shift_arithmetic = (operator_i.alu == SRA) | (operator_i.alu == SRAW);
+    assign shift_arithmetic = (operator_i == SRA) | (operator_i == SRAW);
 
     // right shifts, we let the synthesizer optimize this
     logic [64:0] shift_op_a_64;
@@ -150,7 +150,7 @@ module alu
         logic sgn;
         sgn = 1'b0;
 
-        if (operator_i.alu == SLTS)
+        if (operator_i == SLTS)
             sgn = 1'b1;
 
         less = ($signed({sgn & operand_a_i[63], operand_a_i})  <  $signed({sgn & operand_b_i[63], operand_b_i}));
@@ -162,7 +162,7 @@ module alu
     always_comb begin
         result_o   = '0;
 
-        unique case (operator_i.alu)
+        unique case (operator_i)
             // Standard Operations
             ANDL:  result_o = operand_a_i & operand_b_i;
             ORL:   result_o = operand_a_i | operand_b_i;

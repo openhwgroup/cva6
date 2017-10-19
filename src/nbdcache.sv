@@ -126,7 +126,7 @@ module nbdcache #(
     // --------------
     // TODO: Re-work
     generate
-        for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : set_associativity
+        for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
             sram #(
                 .DATA_WIDTH ( CACHE_LINE_WIDTH ),
                 .NUM_WORDS  ( NUM_WORDS        )
