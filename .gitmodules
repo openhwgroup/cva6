@@ -10,3 +10,12 @@
 [submodule "tb"]
 	path = tb
 	url = ../uvm-components.git
+[submodule "src/axi_mem_if"]
+	path = src/axi_mem_if
+	url = git@iis-git.ee.ethz.ch:kerbin/axi_mem_if.git
+[submodule "src/axi2per"]
+	path = src/axi2per
+	url = git@iis-git.ee.ethz.ch:kerbin/axi2per.git
+[submodule "src/axi_slice"]
+	path = src/axi_slice
+	url = git@iis-git.ee.ethz.ch:pulp-open/axi_slice.git
