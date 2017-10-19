@@ -32,10 +32,6 @@ module miss_handler #(
     // AXI Adapter
     // request from FSM
 
-    // Hack as system verilog support in modelsim seems to be buggy here
-    miss_req_t [NR_PORTS-1:0] miss_req;
-
-    assign miss_req = miss_req_t'(miss_req_i);
 
     logic [NR_PORTS-1:0]        miss_req_valid;
     logic [NR_PORTS-1:0]        miss_req_bypass;
@@ -51,16 +47,21 @@ module miss_handler #(
     logic         req_fsm_bypass_we;
     logic [7:0]   req_fsm_bypass_be;
 
-    generate
-        for (genvar i = 0; i < NR_PORTS; i++) begin
-            assign miss_req_valid  [i]  = miss_req[i].valid;
-            assign miss_req_bypass [i]  = miss_req[i].bypass;
-            assign miss_req_addr   [i]  = miss_req[i].addr;
-            assign miss_req_wdata  [i]  = miss_req[i].wdata;
-            assign miss_req_we     [i]  = miss_req[i].we;
-            assign miss_req_be     [i]  = miss_req[i].be;
+    // Hack as system verilog support in modelsim seems to be buggy here
+    always_comb begin
+        automatic miss_req_t miss_req;
+
+        for (int unsigned i = 0; i < NR_PORTS; i++) begin
+            miss_req =  miss_req_t'(miss_req_i[i]);
+            miss_req_valid  [i]  = miss_req.valid;
+            miss_req_bypass [i]  = miss_req.bypass;
+            miss_req_addr   [i]  = miss_req.addr;
+            miss_req_wdata  [i]  = miss_req.wdata;
+            miss_req_we     [i]  = miss_req.we;
+            miss_req_be     [i]  = miss_req.be;
         end
-    endgenerate
+    end
+
 
     logic                                     gnt_bypass_fsm;
     logic                                     valid_bypass_fsm;
