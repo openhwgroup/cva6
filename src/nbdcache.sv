@@ -62,11 +62,11 @@ module nbdcache #(
     logic [2:0]                        miss_valid;
     logic [2:0][63:0]                  miss_data;
 
-    logic [SET_ASSOCIATIVITY-1:0]                       req;
-    logic [SET_ASSOCIATIVITY-1:0][INDEX_WIDTH-1:0]      adrr;
-    logic [SET_ASSOCIATIVITY-1:0][CACHE_LINE_WIDTH-1:0] tag;
-    logic [SET_ASSOCIATIVITY-1:0][TAG_WIDTH-1:0]        data;
-    logic [SET_ASSOCIATIVITY-1:0]                       we;
+    logic [2:0][SET_ASSOCIATIVITY-1:0]                       req;
+    logic [2:0][SET_ASSOCIATIVITY-1:0][INDEX_WIDTH-1:0]      adrr;
+    logic [2:0][SET_ASSOCIATIVITY-1:0][CACHE_LINE_WIDTH-1:0] tag;
+    logic [2:0][SET_ASSOCIATIVITY-1:0][TAG_WIDTH-1:0]        data;
+    logic [2:0][SET_ASSOCIATIVITY-1:0]                       we;
 
     // ------------------
     // Cache Controller
@@ -93,11 +93,11 @@ module nbdcache #(
                 .data_rdata_o         ( data_rdata_o    [i]  ),
                 .amo_op_i             ( amo_op_i        [i]  ),
 
-                .req_o                ( req                  ),
-                .adrr_o               ( adrr                 ),
-                .tag_i                ( tag                  ),
-                .data_i               ( data                 ),
-                .we_o                 ( we                   ),
+                .req_o                ( req             [i]  ),
+                .adrr_o               ( adrr            [i]  ),
+                .tag_i                ( tag             [i]  ),
+                .data_i               ( data            [i]  ),
+                .we_o                 ( we              [i]  ),
 
                 .miss_req_o           ( miss_req        [i]  ),
                 .miss_gnt_i           ( miss_gnt        [i]  ),
