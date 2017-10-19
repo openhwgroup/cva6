@@ -59,6 +59,7 @@ module cache_ctrl #(
         logic [TAG_WIDTH-1:0]   tag;
         logic [7:0]             be;
         logic                   we;
+        logic [63:0]            wdata;
         logic                   bypass;
     } mem_req_t;
 
@@ -90,7 +91,11 @@ module cache_ctrl #(
                         // grant this access
                         data_gnt_o = 1'b1;
                         // save index, be and we
-                        mem_req_d = { address_index_i, mem_req_q.tag, data_be_i, data_we_i, data_wdata_i, 1'b1};
+                        mem_req_d.index = address_index_i;
+                        mem_req_d.be = data_be_i;
+                        mem_req_d.we = data_we_i;
+                        mem_req_d.wdata = data_wdata_i;
+                        mem_req_d.bypass = 1'b1;
                     // ------------------
                     // Cache is enabled
                     // ------------------
@@ -117,21 +122,19 @@ module cache_ctrl #(
                 else begin
                     // save tag
                     mem_req_d.tag = address_tag_i;
-                    // make request to miss unit
-                    miss_req_o = { 1'b1, mem_req_d.bypass, address_tag_i, mem_req_q.index, mem_req_q.be, mem_req_q.we };
-                    // wait for the grant
-                    if (!miss_gnt_i)
-                        state_d = WAIT_REFILL_GNT;
-                    else
-                        state_d = WAIT_REFILL_VALID;
+                    state_d = WAIT_REFILL_GNT;
                 end
             end
 
             // ~> wait for grant from miss unit
             WAIT_REFILL_GNT: begin
 
-                miss_req_o = {1'b1, mem_req_q.bypass, mem_req_q.tag, mem_req_q.index, mem_req_q.be, mem_req_q.we };
-
+                miss_req_o.valid = 1'b1;
+                miss_req_o.bypass = mem_req_q.bypass;
+                miss_req_o.addr = { mem_req_q.tag, mem_req_q.index };
+                miss_req_o.be = mem_req_q.be;
+                miss_req_o.we = mem_req_q.we;
+                miss_req_o.wdata = mem_req_q.wdata;
                 // got a grant so go to valid
                 if (miss_gnt_i)
                     state_d = WAIT_REFILL_VALID;
