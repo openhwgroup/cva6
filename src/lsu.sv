@@ -63,6 +63,11 @@ module lsu #(
     input  logic                     instr_if_data_gnt_i,
     input  logic                     instr_if_data_rvalid_i,
     input  logic [63:0]              instr_if_data_rdata_i,
+
+    input  logic                     dcache_en_i,
+    input  logic                     flush_dcache_i,
+    output logic                     flush_dcache_ack_o,
+
     // Data cache refill port
     AXI_BUS.Master                   data_if,
     AXI_BUS.Master                   bypass_if,
@@ -143,8 +148,9 @@ module lsu #(
     // Port 2: Store Unit
     nbdcache i_nbdcache (
         // to D$
-        .data_if           ( data_if                 ),
-        .bypass_if         ( bypass_if               ),
+        .enable_i          ( dcache_en_i             ),
+        .flush_i           ( flush_dcache_i          ),
+        .flush_ack_o       ( flush_dcache_ack_o      ),
         // from PTW, Load Unit and Store Unit
         .address_index_i   ( address_index_i         ),
         .address_tag_i     ( address_tag_i           ),
@@ -158,11 +164,10 @@ module lsu #(
         .data_rvalid_o     ( data_rvalid_o           ),
         .data_rdata_o      ( data_rdata_o            ),
         .amo_op_i          ( amo_op_i                ),
-        .amo_commit_i      (      ),
-        .amo_valid_o       (      ),
-        .amo_result_o      (      ),
-        .amo_flush_i       ( 1'b0 ),
-        .enable_i          ( 1'b0 ),
+        .amo_commit_i      (                         ),
+        .amo_valid_o       (                         ),
+        .amo_result_o      (                         ),
+        .amo_flush_i       ( 1'b0                    ),
 
         .*
     );

@@ -35,8 +35,6 @@ module ariane
         input  logic                           test_en_i,     // enable all clock gates for testing
 
         output logic                           flush_icache_o, // request to flush icache
-        output logic                           flush_dcache_o,      // request to flush the dcache
-        input  logic                           flush_dcache_ack_i,  // dcache flushed successfully
         // CPU Control Signals
         input  logic                           fetch_enable_i,
         output logic                           core_busy_o,
@@ -216,6 +214,7 @@ module ariane
     logic                     tvm_csr_id;
     logic                     tw_csr_id;
     logic                     tsr_csr_id;
+    logic                     dcache_en_csr_nbdcache;
     // --------------
     // CTRL <-> *
     // --------------
@@ -233,6 +232,8 @@ module ariane
     logic                     halt_ctrl;
     logic                     halt_debug_ctrl;
     logic                     halt_csr_ctrl;
+    logic                     flush_dcache_ctrl_ex;
+    logic                     flush_dcache_ack_ex_ctrl;
     // --------------
     // Debug <-> *
     // --------------
@@ -384,6 +385,7 @@ module ariane
 
         .commit_instr_o             ( commit_instr_id_commit          ),
         .commit_ack_i               ( commit_ack                      ),
+
         .*
     );
 
@@ -459,7 +461,9 @@ module ariane
         .mult_result_o          ( mult_result_ex_id           ),
         .mult_valid_o           ( mult_valid_ex_id            ),
 
-        .data_if                ( data_if                     ),
+        .dcache_en_i            ( dcache_en_csr_nbdcache      ),
+        .flush_dcache_i         ( flush_dcache_ctrl_ex        ),
+        .flush_dcache_ack_o     ( flush_dcache_ack_ex_ctrl    ),
         .*
     );
 
@@ -525,6 +529,7 @@ module ariane
         .tvm_o                  ( tvm_csr_id                    ),
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
+        .dcache_en_o            ( dcache_en_csr_nbdcache        ),
         .*
     );
 
@@ -540,6 +545,8 @@ module ariane
         .flush_id_o             ( flush_ctrl_id                 ),
         .flush_ex_o             ( flush_ctrl_ex                 ),
         .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
+        .flush_dcache_o         ( flush_dcache_ctrl_ex          ),
+        .flush_dcache_ack_i     ( flush_dcache_ack_ex_ctrl      ),
 
         .halt_csr_i             ( halt_csr_ctrl                 ),
         .halt_debug_i           ( halt_debug_ctrl               ),
