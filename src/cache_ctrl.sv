@@ -36,24 +36,26 @@ module cache_ctrl #(
         input  amo_t                                               amo_op_i,
         // SRAM interface, read only
         output logic [SET_ASSOCIATIVITY-1:0]                       req_o,  // req is valid
-        output logic [SET_ASSOCIATIVITY-1:0][INDEX_WIDTH-1:0]      adrr_o, // address into cache array
-        input  logic [SET_ASSOCIATIVITY-1:0][CACHE_LINE_WIDTH-1:0] tag_i,
-        input  logic [SET_ASSOCIATIVITY-1:0][TAG_WIDTH-1:0]        data_i,
-        output logic [SET_ASSOCIATIVITY-1:0]                       we_o,
+        output logic  [INDEX_WIDTH-1:0]                            addr_o, // address into cache array
+        input  logic                                               gnt_i,
+        output cache_line_t                                        data_o,
+        output cl_be_t                                             be_o,
+        input  cache_line_t [SET_ASSOCIATIVITY-1:0]                data_i,
+        output logic                                               we_o,
         // Miss handling
         output miss_req_t                                          miss_req_o,
         // return
         input  logic                                               miss_gnt_i,
         input  logic                                               miss_valid_i,
-        input  logic [63:0]                                        miss_data_i,
+        input  logic [CACHE_LINE_WIDTH-1:0]                        miss_data_i,
         input  logic [63:0]                                        critical_word_i,
         input  logic                                               critical_word_valid_i,
 
         input  logic                                               bypass_gnt_i,
         input  logic                                               bypass_valid_i,
-        input  logic [63:0]                                        bypass_data_i,
+        input  logic [CACHE_LINE_WIDTH-1:0]                        bypass_data_i,
         // check MSHR for aliasing
-        output logic [63:0]                                        mshr_addr_o,
+        output logic [55:0]                                        mshr_addr_o,
         input  logic                                               mashr_addr_matches_i
 );
 
@@ -62,12 +64,12 @@ module cache_ctrl #(
     } state_d, state_q;
 
     typedef struct packed {
-        logic [INDEX_WIDTH-1:0] index;
-        logic [TAG_WIDTH-1:0]   tag;
-        logic [7:0]             be;
-        logic                   we;
-        logic [63:0]            wdata;
-        logic                   bypass;
+        logic [INDEX_WIDTH-1:0]         index;
+        logic [TAG_WIDTH-1:0]           tag;
+        logic [7:0]                     be;
+        logic                           we;
+        logic [CACHE_LINE_WIDTH-1:0]    wdata;
+        logic                           bypass;
     } mem_req_t;
 
     assign busy_o = (state_q != IDLE);
@@ -155,7 +157,7 @@ module cache_ctrl #(
             WAIT_REFILL_VALID: begin
                 // got a valid answer
                 if (bypass_valid_i) begin
-                    data_rdata_o = bypass_data_i;
+                    data_rdata_o = bypass_data_i[63:0];
                     data_rvalid_o = 1'b1;
                     state_d = IDLE;
                 end
