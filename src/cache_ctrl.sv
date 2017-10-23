@@ -34,14 +34,16 @@ module cache_ctrl #(
         output logic                                               data_rvalid_o,
         output logic [63:0]                                        data_rdata_o,
         input  amo_t                                               amo_op_i,
-        // SRAM interface, read only
+        // SRAM interface
         output logic [SET_ASSOCIATIVITY-1:0]                       req_o,  // req is valid
-        output logic  [INDEX_WIDTH-1:0]                            addr_o, // address into cache array
+        output logic [INDEX_WIDTH-1:0]                             addr_o, // address into cache array
         input  logic                                               gnt_i,
         output cache_line_t                                        data_o,
         output cl_be_t                                             be_o,
+        output logic [TAG_WIDTH-1:0]                               tag_o, //valid one cycle later
         input  cache_line_t [SET_ASSOCIATIVITY-1:0]                data_i,
         output logic                                               we_o,
+        input  logic [SET_ASSOCIATIVITY-1:0]                       hit_way_i,
         // Miss handling
         output miss_req_t                                          miss_req_o,
         // return
