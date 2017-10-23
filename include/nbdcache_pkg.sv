@@ -42,16 +42,17 @@ package nbdcache_pkg;
     } miss_req_t;
 
     typedef struct packed {
-        logic [TAG_WIDTH-1:0]        tag;
-        logic [CACHE_LINE_WIDTH-1:0] data;
-        logic [DIRTY_WIDTH/2-1:0]    valid;
-        logic [DIRTY_WIDTH/2-1:0]    dirty;
+        logic [TAG_WIDTH-1:0]        tag;    // tag array
+        logic [CACHE_LINE_WIDTH-1:0] data;   // data array
+        logic                        valid;  // state array
+        logic                        dirty;  // state array
     } cache_line_t;
 
     // cache line byte enable
     typedef struct packed {
-        logic [TAG_WIDTH-1:0]        tag;
-        logic [CACHE_LINE_WIDTH-1:0] data;
+        logic [TAG_WIDTH-1:0]        tag;   // byte enable into tag array
+        logic [CACHE_LINE_WIDTH-1:0] data;  // byte enable into data array
+        logic [DIRTY_WIDTH-1:0]      state; // byte enable into state array
     } cl_be_t;
 
 endpackage

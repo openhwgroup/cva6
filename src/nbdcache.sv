@@ -50,13 +50,20 @@ module nbdcache (
     // -------------------------------
     // Controller <-> Arbiter
     // -------------------------------
-    logic        [2:0][SET_ASSOCIATIVITY-1:0]                req;
-    logic        [2:0][INDEX_WIDTH-1:0]                      addr;
-    logic        [2:0]                                       gnt;
-    cache_line_t [2:0][SET_ASSOCIATIVITY-1:0]                rdata;
-    cache_line_t [2:0]                                       wdata;
-    logic        [2:0]                                       we;
-    cl_be_t      [2:0]                                       be;
+    // 1. Miss handler
+    // 2. PTW
+    // 3. Load Unit
+    // 4. Store unit
+    logic        [3:0][SET_ASSOCIATIVITY-1:0] req;
+    logic        [3:0][INDEX_WIDTH-1:0]       addr;
+    logic        [3:0]                        gnt;
+    cache_line_t [3:0][SET_ASSOCIATIVITY-1:0] rdata;
+    cache_line_t [3:0][TAG_WIDTH-1:0]         tag;
+
+    cache_line_t [3:0]                        wdata;
+    logic        [3:0]                        we;
+    cl_be_t      [3:0]                        be;
+    logic        [SET_ASSOCIATIVITY-1:0]      hit_way;
     // -------------------------------
     // Controller <-> Miss unit
     // -------------------------------
@@ -113,13 +120,14 @@ module nbdcache (
                 .req_o                 ( req             [i]  ),
                 .addr_o                ( addr            [i]  ),
                 .gnt_i                 ( gnt             [i]  ),
-                .data_i                ( rdata           [i]  ),
+                .data_i                ( rdata                ),
+                .tag_o                 ( tag             [i]  ),
                 .data_o                ( wdata           [i]  ),
                 .we_o                  ( we              [i]  ),
                 .be_o                  ( be              [i]  ),
+                .hit_way_i             ( hit_way              ),
 
                 .miss_req_o            ( miss_req        [i]  ),
-
                 .miss_gnt_i            ( miss_gnt        [i]  ),
                 .miss_valid_i          ( miss_valid      [i]  ),
                 .miss_data_i           ( miss_data       [i]  ),
@@ -129,8 +137,8 @@ module nbdcache (
                 .bypass_valid_i        ( bypass_valid    [i]  ),
                 .bypass_data_i         ( bypass_data     [i]  ),
 
-                .mshr_addr_o           (                      ), // TODO
-                .mashr_addr_matches_i  (                      ), // TODO
+                .mshr_addr_o           ( mshr_addr         [i] ), // TODO
+                .mashr_addr_matches_i  ( mshr_addr_matches [i] ), // TODO
                 .*
             );
         end
@@ -154,6 +162,13 @@ module nbdcache (
         .critical_word_valid_o  ( critical_word_valid  ),
         .mshr_addr_i            ( mshr_addr            ),
         .mashr_addr_matches_o   ( mshr_addr_matches    ),
+        .req_o                  ( req             [2]  ),
+        .addr_o                 ( addr            [2]  ),
+        .gnt_i                  ( gnt             [2]  ),
+        .data_o                 ( rdata                ),
+        .be_o                   ( wdata           [2]  ),
+        .data_i                 ( we              [2]  ),
+        .we_o                   ( be              [2]  ),
         .*
     );
 
@@ -194,42 +209,43 @@ module nbdcache (
     // ----------------
     // Dirty SRAM
     // ----------------
-    // sram #(
-    //     .DATA_WIDTH ( DIRTY_WIDTH ),
-    //     .NUM_WORDS  ( NUM_WORDS   )
-    // ) dirty_sram (
-    //     .clk_i   ( clk_i                              ),
-    //     .req_i   ( req_ram                            ),
-    //     .we_i    ( we_ram                             ),
-    //     .addr_i  ( addr_ram                           ),
-    //     .wdata_i ( {wdata_ram.dirty, wdata_ram.valid} ),
-    //     .be_i    (         ),
-    //     .rdata_o (         )
-    // );
+    sram #(
+        .DATA_WIDTH ( DIRTY_WIDTH ),
+        .NUM_WORDS  ( NUM_WORDS   )
+    ) dirty_sram (
+        .clk_i   ( clk_i                                                                            ),
+        .req_i   ( req_ram                                                                          ),
+        .we_i    ( we_ram                                                                           ),
+        .addr_i  ( addr_ram                                                                         ),
+        .wdata_i ( {wdata_ram[SET_ASSOCIATIVITY-1:0].dirty, wdata_ram[SET_ASSOCIATIVITY-1:0].valid} ),
+        .be_i    ( be_ram.state                                                                     ),
+        .rdata_o ( {rdata_ram[SET_ASSOCIATIVITY-1:0].dirty, rdata_ram[SET_ASSOCIATIVITY-1:0].valid} )
+    );
 
-    // ----------------
-    // SRAM Arbiter
-    // ----------------
+    // ------------------------------------------------
+    // Tag Comparison and memory arbitration
+    // ------------------------------------------------
+    tag_cmp #(
+        .NR_PORTS           ( 4                  ),
+        .ADDR_WIDTH         ( INDEX_WIDTH        ),
+        .SET_ASSOCIATIVITY  ( SET_ASSOCIATIVITY  )
+    ) i_tag_cmp (
+        .req_i              ( req         ),
+        .gnt_o              ( gnt         ),
+        .addr_i             ( addr        ),
+        .wdata_i            ( wdata       ),
+        .we_i               ( we          ),
+        .be_i               ( be          ),
+        .rdata_o            ( rdata       ),
+        .tag_i              ( tag         ),
+        .hit_way_o          ( hit_way     ),
 
-    sram_arbiter #(
-        .NR_PORTS           (   3                                   ),
-        .ADDR_WIDTH         (   INDEX_WIDTH                         ),
-        .SET_ASSOCIATIVITY  (   SET_ASSOCIATIVITY                   )
-    ) i_sram_arbiter (
-        .req_i              ( req                   ),
-        .gnt_o              ( gnt                   ),
-        .addr_i             ( addr                  ),
-        .wdata_i            ( wdata                 ),
-        .we_i               ( we                    ),
-        .be_i               ( be                    ),
-        .rdata_o            ( rdata                 ),
-
-        .req_o              ( req_ram                 ),
-        .addr_o             ( addr_ram                ),
-        .wdata_o            ( wdata_ram               ),
-        .we_o               ( we_ram                  ),
-        .be_o               ( be_ram                  ),
-        .rdata_i            ( rdata_ram               ),
+        .req_o              ( req_ram     ),
+        .addr_o             ( addr_ram    ),
+        .wdata_o            ( wdata_ram   ),
+        .we_o               ( we_ram      ),
+        .be_o               ( be_ram      ),
+        .rdata_i            ( rdata_ram   ),
         .*
     );
 
@@ -243,12 +259,13 @@ module nbdcache (
 endmodule
 
 // --------------
-// Memory Arbiter
+// Tag Compare
 // --------------
 //
 // Description: Arbitrates access to cache memories, simplified request grant protocol
+//              checks for hit or miss on cache
 //
-module sram_arbiter #(
+module tag_cmp #(
         parameter int unsigned NR_PORTS          = 3,
         parameter int unsigned ADDR_WIDTH        = 64,
         parameter type data_t                    = cache_line_t,
@@ -264,7 +281,10 @@ module sram_arbiter #(
         input  data_t [NR_PORTS-1:0]                         wdata_i,
         input  logic  [NR_PORTS-1:0]                         we_i,
         input  be_t   [NR_PORTS-1:0]                         be_i,
-        output data_t [NR_PORTS-1:0][SET_ASSOCIATIVITY-1:0]  rdata_o,
+        output data_t               [SET_ASSOCIATIVITY-1:0]  rdata_o,
+        input  logic  [NR_PORTS-1:0][TAG_WIDTH-1:0]          tag_i, // tag in - comes one cycle later
+        output logic                [SET_ASSOCIATIVITY-1:0]  hit_way_o, // we've got a hit on the corresponding way
+
 
         output logic                [SET_ASSOCIATIVITY-1:0]  req_o,
         output logic                [ADDR_WIDTH-1:0]         addr_o,
@@ -272,19 +292,19 @@ module sram_arbiter #(
         output logic                                         we_o,
         output be_t                                          be_o,
         input  data_t               [SET_ASSOCIATIVITY-1:0]  rdata_i
-
     );
 
     // if there is some request output it directly
     assign req_o = |req_i;
-
     // one hot encoded
     logic [NR_PORTS-1:0] id_d, id_q;
+
     always_comb begin
 
-        gnt_o = '0;
-        rdata_o = '0;
-        id_d = '0;
+        gnt_o     = '0;
+        rdata_o   = '0;
+        id_d      = '0;
+        hit_way_o = '0;
 
         // Request Side
         // priority select
@@ -301,10 +321,18 @@ module sram_arbiter #(
         end
 
         // Response Side
-        for (int unsigned i = 0; i < NR_PORTS; i++)
-            if (id_q[i])
+        for (int unsigned i = 0; i < NR_PORTS; i++) begin
+            if (id_q[i]) begin
                 rdata_o[i] = rdata_i;
-
+                // Tag compare
+                for (int unsigned j = 0; j < SET_ASSOCIATIVITY; j++) begin
+                    // compare tag and check validity
+                    if (rdata_i[j].tag == tag_i[i] && rdata_i[j].valid)
+                        hit_way_o[j] = 1'b1;
+                end
+            end
+        end
+        // assert that cache only hits on one way
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

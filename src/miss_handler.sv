@@ -19,13 +19,11 @@ module miss_handler #(
     input  logic                                        busy_i,       // dcache is busy with something
     // Bypass or miss
     input  logic [NR_PORTS-1:0][$bits(miss_req_t)-1:0]  miss_req_i,
-
     // Bypass handling
     output logic [NR_PORTS-1:0]                         bypass_gnt_o,
     output logic [NR_PORTS-1:0]                         bypass_valid_o,
     output logic [NR_PORTS-1:0][CACHE_LINE_WIDTH-1:0]   bypass_data_o,
     AXI_BUS.Master                                      bypass_if,
-
     // Miss handling (~> cacheline refill)
     output logic [NR_PORTS-1:0]                         miss_gnt_o,
     output logic [NR_PORTS-1:0]                         miss_valid_o,
@@ -36,8 +34,25 @@ module miss_handler #(
     AXI_BUS.Master                                      data_if,
 
     input  logic [NR_PORTS-1:0][55:0]                   mshr_addr_i,
-    output logic [NR_PORTS-1:0]                         mashr_addr_matches_o
+    output logic [NR_PORTS-1:0]                         mashr_addr_matches_o,
+    // Port to SRAMs, for refill and eviction
+    output logic  [SET_ASSOCIATIVITY-1:0]               req_o,
+    output logic  [INDEX_WIDTH-1:0]                     addr_o, // address into cache array
+    input  logic                                        gnt_i,
+    output cache_line_t                                 data_o,
+    output cl_be_t                                      be_o,
+    input  cache_line_t [SET_ASSOCIATIVITY-1:0]         data_i,
+    output logic                                        we_o
 );
+    // FSM states
+    enum logic [1:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY, WAIT_GNT_SRAM, HANDLE_MISS };
+    // Registers
+    mshr_t [NR_MSHR-1:0]                           mshr_d, mshr_q;
+    logic [INDEX_WIDTH-1:0]                        cnt_d, cnt_q;
+    logic [$clog2(SET_ASSOCIATIVITY)-1:0]          evict_way_d, evict_way_q;
+    // cache line to evict
+    cache_line_t                                   evict_cl_d, evict_cl_q;
+
     // Request from one FSM
     logic [NR_PORTS-1:0]                           miss_req_valid;
     logic [NR_PORTS-1:0]                           miss_req_bypass;
@@ -46,15 +61,40 @@ module miss_handler #(
     logic [NR_PORTS-1:0]                           miss_req_we;
     logic [NR_PORTS-1:0][CACHE_LINE_WIDTH/8-1:0]   miss_req_be;
 
-    mshr_t [NR_MSHR-1:0] mshr_d, mshr_q;
+    // Cache Line Refill <-> AXI
+    logic                                          req_fsm_miss_valid;
+    logic                                          req_fsm_miss_bypass;
+    logic [63:0]                                   req_fsm_miss_addr;
+    logic [CACHE_LINE_WIDTH-1:0]                   req_fsm_miss_wdata;
+    logic                                          req_fsm_miss_we;
+    logic [(CACHE_LINE_WIDTH/8)-1:0]               req_fsm_miss_be;
+    logic                                          gnt_miss_fsm;
+    logic                                          valid_miss_fsm;
+    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]        data_miss_fsm;
+
     // ------------------------------
     // Cache Management
     // ------------------------------
     always_comb begin : cache_management
-        // default assignment
-        mshr_d = mshr_q;
-        mashr_addr_matches_o = 'b0;
+        automatic logic [$clog2(EVICT_WAY)-1:0] evict_way;
 
+        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++)
+            evict_way = data_i[i].valid & data_i[i].dirty;
+
+        // default assignment
+        mashr_addr_matches_o = 'b0;
+        req_o = 1'b0;
+        addr_o = '0;
+        data_o = '0;
+        be_o = '0;
+        we_o = '0;
+        // to AXI refill
+        req_fsm_miss_valid  = 1'b0;
+        req_fsm_miss_bypass = 1'b0;
+        req_fsm_miss_addr   = '0;
+        req_fsm_miss_wdata  = '0;
+        req_fsm_miss_we     = 1'b0;
+        req_fsm_miss_be     = '0;
         // check MSHR for aliasing
         // check for each port
         for (int j = 0; j < NR_PORTS; j++) begin
@@ -69,6 +109,99 @@ module miss_handler #(
         // ----------------
         // Flush operation
         // ----------------
+        state_d      = state_q;
+        cnt_d        = cnt_q;
+        evict_way_d  = evict_way_q;
+        evict_cl_d   = evict_cl_q;
+        mshr_d       = mshr_q;
+
+        case (state_q)
+
+            IDLE: begin
+
+                // check if we want to flush and can flush e.g.: we are not busy anymore
+                if (flush_i && !busy_i) begin
+                    state_d = FLUSHING;
+                    cnt_d = '0;
+                end
+
+                // check if one of the state machines missed
+                for (int unsigned i = 0; i < NR_PORTS; i++) begin
+                    // here comes the refill portion of code
+                    if (miss_req.valid[i] && !miss_req.bypass) begin
+                        state_d = MISS;
+                        // save to MSHR
+                    end
+                end
+            end
+
+            FLUSHING: begin
+                addr_o = cnt_q;
+                req_o  = 1'b1;
+                // our request was granted
+                if (gnt_i) begin
+                    cnt_d = cnt_q + 1'b1;
+                    state_d = FLUSH;
+                end
+
+                if (cnt_q == INDEX_WIDTH)
+                    state_d = IDLE;
+            end
+
+            FLUSH: begin
+                // at least one of the cache lines is dirty
+                if (|evict_way) begin
+                    // evict cache line
+                    evict_way_d = evict_way;
+                    // check which entry to evict
+                    for (int unsigned i < SET_ASSOCIATIVITY; i++) begin
+                        if (evict_way_q[i]) begin
+                            // save the cacheline we want to evict
+                            evict_cl_d = data_i[i];
+                            break;
+                        end
+                    end
+                // not dirty ~> continue
+                end else begin
+                    addr_o = cnt_q;
+                    req_o = 1'b1;
+
+                    // got a grant so stay here
+                    if (gnt_i) begin
+                        cnt_d = cnt_q + 1'b1;
+                    // didn't get a grant so go back to flushing until we received a grant
+                    end else begin
+                        cnt_d = FLUSH;
+                    end
+                end
+            end
+
+            // evict a cache line from way saved in evict_way_q
+            EVICT_WAY: begin
+
+                req_fsm_miss_valid  = 1'b1;
+                req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q};
+                req_fsm_miss_be     = {{CACHE_LINE_WIDTH/8-1}{1'b1}};
+                req_fsm_miss_we     = 1'b1;
+                req_fsm_miss_wdata  = evict_cl_q.data;
+
+                // we've got a grant
+                if (gnt_miss_fsm) begin
+                    // write status array
+                    req_o = 1'b1;
+                    we_o = 1'b1;
+                    be_o.state = evict_way_q << 2;
+                    // go back to flushing
+                    state_d = FLUSHING;
+                end
+            end
+
+            WAIT_GNT_SRAM: begin
+                req_o = 1'b1;
+                if (gnt_i)
+                    state_d = FLUSHING;
+            end
+        endcase
     end
 
     // --------------------
@@ -76,9 +209,17 @@ module miss_handler #(
     // --------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-           mshr_q <= '0;
+            mshr_q       <= '0;
+            state_q      <= IDLE;
+            cnt_q        <= '0;
+            evict_way_q  <= '0;
+            evict_cl_q   <= '0;
         end else begin
-           mshr_q <= mshr_d;
+            mshr_q       <= mshr_d;
+            state_q      <= state_d;
+            cnt_q        <= cnt_d;
+            evict_way_q  <= evict_way_d;
+            evict_cl_q   <= evict_cl_d;
         end
     end
     // ----------------------
@@ -99,7 +240,7 @@ module miss_handler #(
     logic [AXI_ID_WIDTH-1:0]                  id_bypass_fsm;
 
     arbiter #(
-            .NR_PORTS          ( NR_PORTS                                                 ),
+            .NR_PORTS          ( NR_PORTS + 1                                             ),
             .DATA_WIDTH        ( CACHE_LINE_WIDTH                                         )
     ) i_bypass_arbiter (
         // Master Side
@@ -150,63 +291,23 @@ module miss_handler #(
     // ----------------------
     // Cache Line Arbiter
     // ----------------------
-    // Connection Arbiter <-> AXI
-    logic                                     req_fsm_miss_valid;
-    logic                                     req_fsm_miss_bypass;
-    logic [63:0]                              req_fsm_miss_addr;
-    logic [CACHE_LINE_WIDTH-1:0]              req_fsm_miss_wdata;
-    logic                                     req_fsm_miss_we;
-    logic [(CACHE_LINE_WIDTH/8)-1:0]          req_fsm_miss_be;
-    logic                                     gnt_miss_fsm;
-    logic                                     valid_miss_fsm;
-    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]   data_miss_fsm;
-    logic [$clog2(NR_PORTS)-1:0]              id_fsm_miss;
-    logic [AXI_ID_WIDTH-1:0]                  id_miss_fsm;
-
-    arbiter #(
-            .NR_PORTS        ( NR_PORTS                                              ),
-            .DATA_WIDTH      ( CACHE_LINE_WIDTH                                      )
-    ) i_miss_arbiter (
-        // Master Side
-        .data_req_i          ( miss_req_valid & ~miss_req_bpass                      ),
-        .address_i           ( miss_req_addr                                         ),
-        .data_wdata_i        ( miss_req_wdata                                        ),
-        .data_we_i           ( miss_req_we                                           ),
-        .data_be_i           ( miss_req_be                                           ),
-        .data_gnt_o          ( miss_gnt_o                                            ),
-        .data_rvalid_o       ( miss_valid_o                                          ),
-        .data_rdata_o        ( miss_data_o                                           ),
-        // Slave Side
-        .id_i                ( id_miss_fsm[$clog2(NR_PORTS)-1:0]                     ),
-        .id_o                ( id_fsm_miss                                           ),
-        .address_o           ( req_fsm_miss_addr                                     ),
-        .data_wdata_o        ( req_fsm_miss_wdata                                    ),
-        .data_req_o          ( req_fsm_miss_valid                                    ),
-        .data_we_o           ( req_fsm_miss_we                                       ),
-        .data_be_o           ( req_fsm_miss_be                                       ),
-        .data_gnt_i          ( gnt_miss_fsm                                          ),
-        .data_rvalid_i       ( valid_miss_fsm                                        ),
-        .data_rdata_i        ( data_miss_fsm                                         ),
-        .*
-    );
-
     axi_adapter #(
-        .CACHE_LINE_WIDTH    ( CACHE_LINE_WIDTH                                       ),
-        .AXI_ID_WIDTH        ( AXI_ID_WIDTH                                           ),
-        .AXI_USER_WIDTH      ( AXI_USER_WIDTH                                         )
+        .CACHE_LINE_WIDTH    ( CACHE_LINE_WIDTH   ),
+        .AXI_ID_WIDTH        ( AXI_ID_WIDTH       ),
+        .AXI_USER_WIDTH      ( AXI_USER_WIDTH     )
     ) i_miss_axi_adapter (
-        .req_i               ( req_fsm_miss_valid                                     ),
-        .type_i              ( CACHE_LINE_REQ                                         ),
-        .gnt_o               ( gnt_miss_fsm                                           ),
-        .addr_i              ( req_fsm_miss_addr                                      ),
-        .we_i                ( req_fsm_miss_we                                        ),
-        .wdata_i             ( req_fsm_miss_wdata                                     ),
-        .be_i                ( req_fsm_miss_be                                        ),
-        .id_i                ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_miss} ),
-        .valid_o             ( valid_miss_fsm                                         ),
-        .rdata_o             ( data_miss_fsm                                          ),
-        .id_o                ( id_miss_fsm                                            ),
-        .axi                 ( data_if                                                ),
+        .req_i               ( req_fsm_miss_valid ),
+        .type_i              ( CACHE_LINE_REQ     ),
+        .gnt_o               ( gnt_miss_fsm       ),
+        .addr_i              ( req_fsm_miss_addr  ),
+        .we_i                ( req_fsm_miss_we    ),
+        .wdata_i             ( req_fsm_miss_wdata ),
+        .be_i                ( req_fsm_miss_be    ),
+        .id_i                (                    ),
+        .valid_o             ( valid_miss_fsm     ),
+        .rdata_o             ( data_miss_fsm      ),
+        .id_o                (                    ),
+        .axi                 ( data_if            ),
         .*
     );
 
@@ -236,6 +337,12 @@ module miss_handler #(
 
 endmodule
 
+// --------------
+// AXI Arbiter
+// --------------s
+//
+// Description: Arbitrates access to AXI refill/bypass
+//
 module arbiter #(
         parameter int unsigned NR_PORTS   = 3,
         parameter int unsigned DATA_WIDTH = 256
@@ -319,19 +426,15 @@ module arbiter #(
     assert property ( @(posedge clk_i) (data_req_o) |-> (!$isunknown(address_o)) )
       else begin $error("address contains X when request is set"); $stop(); end
 
-    // there should be no rvalid when we are in IDLE
-    // assert property (
-    //   @(posedge clk) (CS == IDLE) |-> (data_rvalid_i == 1'b0) )
-    //   else begin $error("Received rvalid while in IDLE state"); $stop(); end
-
-    // assert that errors are only sent at the same time as grant or rvalid
-    // assert property ( @(posedge clk) (data_err_i) |-> (data_gnt_i || data_rvalid_i) )
-    //   else begin $error("Error without data grant or rvalid"); $stop(); end
-
     `endif
     `endif
 endmodule
-
+// --------------
+// AXI Adapter
+// --------------
+//
+// Description: Manages communication with the AXI Bus
+//
 module axi_adapter #(
     parameter int unsigned CACHE_LINE_WIDTH  = 256,
     parameter int unsigned AXI_ID_WIDTH      = 10,
