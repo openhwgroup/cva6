@@ -29,4 +29,5 @@ package nbdcache_pkg;
         logic [63:0]   wdata;
     } miss_req_t;
 
+    localparam int unsigned NR_MSHR = 1;
 endpackage

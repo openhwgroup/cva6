@@ -64,49 +64,67 @@ module nbdcache #(
     logic [2:0]                        miss_valid;
     logic [2:0][63:0]                  miss_data;
 
+    logic [2:0]                        bypass_gnt;
+    logic [2:0]                        bypass_valid;
+    logic [2:0][63:0]                  bypass_data;
+
     logic [2:0][SET_ASSOCIATIVITY-1:0]                       req;
     logic [2:0][SET_ASSOCIATIVITY-1:0][INDEX_WIDTH-1:0]      adrr;
     logic [2:0][SET_ASSOCIATIVITY-1:0][CACHE_LINE_WIDTH-1:0] tag;
     logic [2:0][SET_ASSOCIATIVITY-1:0][TAG_WIDTH-1:0]        data;
     logic [2:0][SET_ASSOCIATIVITY-1:0]                       we;
 
+    logic [2:0]       busy;
+    logic [2:0][55:0] mshr_addr;
+    logic [2:0]       mshr_addr_matches;
+
+    logic critical_word;
+    logic critical_word_valid;
     // ------------------
     // Cache Controller
     // ------------------
     generate
         for (genvar i = 0; i < 3; i++) begin : master_ports
             cache_ctrl  #(
-                .SET_ASSOCIATIVITY    ( SET_ASSOCIATIVITY    ),
-                .INDEX_WIDTH          ( INDEX_WIDTH          ),
-                .TAG_WIDTH            ( TAG_WIDTH            ),
-                .CACHE_LINE_WIDTH     ( CACHE_LINE_WIDTH     )
+                .SET_ASSOCIATIVITY     ( SET_ASSOCIATIVITY    ),
+                .INDEX_WIDTH           ( INDEX_WIDTH          ),
+                .TAG_WIDTH             ( TAG_WIDTH            ),
+                .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     )
             ) i_cache_ctrl (
-                .bypass_i             ( ~enable_i            ),
-                .address_index_i      ( address_index_i [i]  ),
-                .address_tag_i        ( address_tag_i   [i]  ),
-                .data_wdata_i         ( data_wdata_i    [i]  ),
-                .data_req_i           ( data_req_i      [i]  ),
-                .data_we_i            ( data_we_i       [i]  ),
-                .data_be_i            ( data_be_i       [i]  ),
-                .kill_req_i           ( kill_req_i      [i]  ),
-                .tag_valid_i          ( tag_valid_i     [i]  ),
-                .data_gnt_o           ( data_gnt_o      [i]  ),
-                .data_rvalid_o        ( data_rvalid_o   [i]  ),
-                .data_rdata_o         ( data_rdata_o    [i]  ),
-                .amo_op_i             ( amo_op_i        [i]  ),
+                .bypass_i              ( ~enable_i            ),
+                .busy_o                ( busy                 ),
+                .address_index_i       ( address_index_i [i]  ),
+                .address_tag_i         ( address_tag_i   [i]  ),
+                .data_wdata_i          ( data_wdata_i    [i]  ),
+                .data_req_i            ( data_req_i      [i]  ),
+                .data_we_i             ( data_we_i       [i]  ),
+                .data_be_i             ( data_be_i       [i]  ),
+                .kill_req_i            ( kill_req_i      [i]  ),
+                .tag_valid_i           ( tag_valid_i     [i]  ),
+                .data_gnt_o            ( data_gnt_o      [i]  ),
+                .data_rvalid_o         ( data_rvalid_o   [i]  ),
+                .data_rdata_o          ( data_rdata_o    [i]  ),
+                .amo_op_i              ( amo_op_i        [i]  ),
 
-                .req_o                ( req             [i]  ),
-                .adrr_o               ( adrr            [i]  ),
-                .tag_i                ( tag             [i]  ),
-                .data_i               ( data            [i]  ),
-                .we_o                 ( we              [i]  ),
+                .req_o                 ( req             [i]  ),
+                .adrr_o                ( adrr            [i]  ),
+                .tag_i                 ( tag             [i]  ),
+                .data_i                ( data            [i]  ),
+                .we_o                  ( we              [i]  ),
 
-                .miss_req_o           ( miss_req        [i]  ),
-                .miss_gnt_i           ( miss_gnt        [i]  ),
-                .miss_valid_i         ( miss_valid      [i]  ),
-                .miss_data_i          ( miss_data       [i]  ),
-                .mshr_addr_o          (                      ), // TODO
-                .mashr_addr_matches_i (                      ), // TODO
+                .miss_req_o            ( miss_req        [i]  ),
+
+                .miss_gnt_i            ( miss_gnt        [i]  ),
+                .miss_valid_i          ( miss_valid      [i]  ),
+                .miss_data_i           ( miss_data       [i]  ),
+                .critical_word_i       ( critical_word        ),
+                .critical_word_valid_i ( critical_word_valid  ),
+                .bypass_gnt_i          ( bypass_gnt      [i]  ),
+                .bypass_valid_i        ( bypass_valid    [i]  ),
+                .bypass_data_i         ( bypass_data     [i]  ),
+
+                .mshr_addr_o           (                      ), // TODO
+                .mashr_addr_matches_i  (                      ), // TODO
                 .*
             );
         end
@@ -115,11 +133,21 @@ module nbdcache #(
     // ------------------
     // Miss Handling Unit
     // ------------------
-    miss_handler i_miss_handler (
-        .miss_req_i   ( miss_req   ),
-        .miss_gnt_o   ( miss_gnt   ),
-        .miss_valid_o ( miss_valid ),
-        .miss_data_o  ( miss_data  ),
+    miss_handler #(
+        .NR_PORTS               ( 3                    )
+    ) i_miss_handler (
+        .busy_i                 ( |busy                ),
+        .miss_req_i             ( miss_req             ),
+        .miss_gnt_o             ( miss_gnt             ),
+        .miss_valid_o           ( miss_valid           ),
+        .miss_data_o            ( miss_data            ),
+        .bypass_gnt_o           ( bypass_gnt           ),
+        .bypass_valid_o         ( bypass_valid         ),
+        .bypass_data_o          ( bypass_data          ),
+        .critical_word_o        ( critical_word        ),
+        .critical_word_valid_o  ( critical_word_valid  ),
+        .mshr_addr_i            ( mshr_addr            ),
+        .mashr_addr_matches_o   ( mshr_addr_matches    ),
         .*
     );
 

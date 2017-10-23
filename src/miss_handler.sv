@@ -14,25 +14,30 @@ module miss_handler #(
 )(
     input  logic                                        clk_i,
     input  logic                                        rst_ni,
+    input  logic                                        flush_i,      // flush request
+    output logic                                        flush_ack_o,  // acknowledge successful flush
+    input  logic                                        busy_i,       // dcache is busy with something
+    // Bypass or miss
     input  logic [NR_PORTS-1:0][$bits(miss_req_t)-1:0]  miss_req_i,
+
+    // Bypass handling
+    output logic [NR_PORTS-1:0]                         bypass_gnt_o,
+    output logic [NR_PORTS-1:0]                         bypass_valid_o,
+    output logic [NR_PORTS-1:0][63:0]                   bypass_data_o,
+    AXI_BUS.Master                                      bypass_if,
+
+    // Miss handling (~> cacheline refill)
     output logic [NR_PORTS-1:0]                         miss_gnt_o,
     output logic [NR_PORTS-1:0]                         miss_valid_o,
     output logic [NR_PORTS-1:0][63:0]                   miss_data_o,
-    AXI_BUS.Master                                      bypass_if
-    // update cache
+    output logic [63:0]                                 critical_word_o,
+    output logic                                        critical_word_valid_o,
+    AXI_BUS.Master                                      data_if,
+
+    input  logic [NR_PORTS-1:0][63:0]                   mshr_addr_i,
+    output logic [NR_PORTS-1:0]                         mashr_addr_matches_o
 );
-
-    // ------------------
-    // Cacheline Refills
-    // ------------------
-
-    // ------------------
-    // Bypass
-    // ------------------
-    // AXI Adapter
-    // request from FSM
-
-
+    // Request from one FSM
     logic [NR_PORTS-1:0]        miss_req_valid;
     logic [NR_PORTS-1:0]        miss_req_bypass;
     logic [NR_PORTS-1:0][63:0]  miss_req_addr;
@@ -40,13 +45,170 @@ module miss_handler #(
     logic [NR_PORTS-1:0]        miss_req_we;
     logic [NR_PORTS-1:0][7:0]   miss_req_be;
 
-    logic         req_fsm_bypass_valid;
-    logic         req_fsm_bypass_bypass;
-    logic [63:0]  req_fsm_bypass_addr;
-    logic [63:0]  req_fsm_bypass_wdata;
-    logic         req_fsm_bypass_we;
-    logic [7:0]   req_fsm_bypass_be;
+    mshr_t [NR_MSHR-1:0] mshr_d, mshr_q;
+    // ------------------------------
+    // Cache Management
+    // ------------------------------
+    always_comb begin : cache_management
+        // default assignment
+        mshr_d = mshr_q;
+        mashr_addr_matches_o = 'b0;
 
+        // check MSHR for aliasing
+        // check for each port
+        for (int j = 0; j < NR_PORTS; j++) begin
+            // and the number of MSHR registers (i think one will be just the only sane choice here)
+            for (int i = 0; i < NR_MSHR; i++) begin
+                if (mshr_q[i].valid && mshr_addr_i[j] == mshr_q[i].addr) begin
+                    mashr_addr_matches_o[j] = 1'b1;
+                end
+            end
+        end
+
+        // ----------------
+        // Flush operation
+        // ----------------
+    end
+
+    // --------------------
+    // Sequential Process
+    // --------------------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+           mshr_q <= '0;
+        end else begin
+           mshr_q <= mshr_d;
+        end
+    end
+    // ----------------------
+    // Bypass Arbiter
+    // ----------------------
+    // Connection Arbiter <-> AXI
+    logic                                     req_fsm_bypass_valid;
+    logic                                     req_fsm_bypass_bypass;
+    logic [63:0]                              req_fsm_bypass_addr;
+    logic [63:0]                              req_fsm_bypass_wdata;
+    logic                                     req_fsm_bypass_we;
+    logic [7:0]                               req_fsm_bypass_be;
+    logic                                     gnt_bypass_fsm;
+    logic                                     valid_bypass_fsm;
+    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]   data_bypass_fsm;
+    logic [$clog2(NR_PORTS)-1:0]              id_fsm_bypass;
+    logic [AXI_ID_WIDTH-1:0]                  id_bypass_fsm;
+
+    arbiter #(
+            .NR_PORTS          ( NR_PORTS                                                 )
+    ) i_bypass_arbiter (
+        // Master Side
+        .data_req_i            ( miss_req_valid & miss_req_bypass                         ),
+        .address_i             ( miss_req_addr                                            ),
+        .data_wdata_i          ( miss_req_wdata                                           ),
+        .data_we_i             ( miss_req_we                                              ),
+        .data_be_i             ( miss_req_be                                              ),
+        .data_gnt_o            ( bypass_gnt_o                                             ),
+        .data_rvalid_o         ( bypass_valid_o                                           ),
+        .data_rdata_o          ( bypass_data_o                                            ),
+        // Slave Sid
+        .id_i                  ( id_bypass_fsm[$clog2(NR_PORTS)-1:0]                      ),
+        .id_o                  ( id_fsm_bypass                                            ),
+        .address_o             ( req_fsm_bypass_addr                                      ),
+        .data_wdata_o          ( req_fsm_bypass_wdata                                     ),
+        .data_req_o            ( req_fsm_bypass_valid                                     ),
+        .data_we_o             ( req_fsm_bypass_we                                        ),
+        .data_be_o             ( req_fsm_bypass_be                                        ),
+        .data_gnt_i            ( gnt_bypass_fsm                                           ),
+        .data_rvalid_i         ( valid_bypass_fsm                                         ),
+        .data_rdata_i          ( data_bypass_fsm[0]                                       ),
+        .*
+    );
+
+    axi_adapter #(
+        .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH                                         ),
+        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                                             ),
+        .AXI_USER_WIDTH        ( AXI_USER_WIDTH                                           )
+    ) i_bypass_axi_adapter (
+        .req_i                 ( req_fsm_bypass_valid                                     ),
+        .type_i                ( SINGLE_REQ                                               ),
+        .gnt_o                 ( gnt_bypass_fsm                                           ),
+        .addr_i                ( req_fsm_bypass_addr                                      ),
+        .we_i                  ( req_fsm_bypass_we                                        ),
+        .wdata_i               ( {{{CACHE_LINE_WIDTH-64}{1'b0}}, req_fsm_bypass_wdata}    ),
+        .be_i                  ( {{{CACHE_LINE_WIDTH/8-8}{1'b0}}, req_fsm_bypass_be}      ),
+        .id_i                  ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
+        .valid_o               ( valid_bypass_fsm                                         ),
+        .rdata_o               ( data_bypass_fsm                                          ),
+        .id_o                  ( id_bypass_fsm                                            ),
+        .critical_word_o       (                                                          ), // not used for single requests
+        .critical_word_valid_o (                                                          ), // not used for single requests
+        .axi                   ( bypass_if                                                ),
+        .*
+    );
+
+    // ----------------------
+    // Cache Line Arbiter
+    // ----------------------
+    // Connection Arbiter <-> AXI
+    logic                                     req_fsm_miss_valid;
+    logic                                     req_fsm_miss_bypass;
+    logic [63:0]                              req_fsm_miss_addr;
+    logic [CACHE_LINE_WIDTH-1:0]              req_fsm_miss_wdata;
+    logic                                     req_fsm_miss_we;
+    logic [(CACHE_LINE_WIDTH/8)-1:0]          req_fsm_miss_be;
+    logic                                     gnt_miss_fsm;
+    logic                                     valid_miss_fsm;
+    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]   data_miss_fsm;
+    logic [$clog2(NR_PORTS)-1:0]              id_fsm_miss;
+    logic [AXI_ID_WIDTH-1:0]                  id_miss_fsm;
+
+    arbiter #(
+            .NR_PORTS        ( NR_PORTS                                              )
+    ) i_miss_arbiter (
+        // Master Side
+        .data_req_i          ( miss_req_valid & ~miss_req_bpass                      ),
+        .address_i           ( miss_req_addr                                         ),
+        .data_wdata_i        ( miss_req_wdata                                        ),
+        .data_we_i           ( miss_req_we                                           ),
+        .data_be_i           ( miss_req_be                                           ),
+        .data_gnt_o          ( miss_gnt_o                                            ),
+        .data_rvalid_o       ( miss_valid_o                                          ),
+        .data_rdata_o        ( miss_data_o                                           ),
+        // Slave Side
+        .id_i                ( id_miss_fsm[$clog2(NR_PORTS)-1:0]                     ),
+        .id_o                ( id_fsm_miss                                           ),
+        .address_o           ( req_fsm_miss_addr                                     ),
+        .data_wdata_o        ( req_fsm_miss_wdata                                    ),
+        .data_req_o          ( req_fsm_miss_valid                                    ),
+        .data_we_o           ( req_fsm_miss_we                                       ),
+        .data_be_o           ( req_fsm_miss_be                                       ),
+        .data_gnt_i          ( gnt_miss_fsm                                          ),
+        .data_rvalid_i       ( valid_miss_fsm                                        ),
+        .data_rdata_i        ( data_miss_fsm                                         ),
+        .*
+    );
+
+    axi_adapter #(
+        .CACHE_LINE_WIDTH    ( CACHE_LINE_WIDTH                                       ),
+        .AXI_ID_WIDTH        ( AXI_ID_WIDTH                                           ),
+        .AXI_USER_WIDTH      ( AXI_USER_WIDTH                                         )
+    ) i_miss_axi_adapter (
+        .req_i               ( req_fsm_miss_valid                                     ),
+        .type_i              ( CACHE_LINE_REQ                                         ),
+        .gnt_o               ( gnt_miss_fsm                                           ),
+        .addr_i              ( req_fsm_miss_addr                                      ),
+        .we_i                ( req_fsm_miss_we                                        ),
+        .wdata_i             ( req_fsm_miss_wdata                                     ),
+        .be_i                ( req_fsm_miss_be                                        ),
+        .id_i                ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_miss} ),
+        .valid_o             ( valid_miss_fsm                                         ),
+        .rdata_o             ( data_miss_fsm                                          ),
+        .id_o                ( id_miss_fsm                                            ),
+        .axi                 ( data_if                                                ),
+        .*
+    );
+
+    // -----------------
+    // Struct Split
+    // -----------------
     // Hack as system verilog support in modelsim seems to be buggy here
     always_comb begin
         automatic miss_req_t miss_req;
@@ -62,64 +224,15 @@ module miss_handler #(
         end
     end
 
-
-    logic                                     gnt_bypass_fsm;
-    logic                                     valid_bypass_fsm;
-    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]   data_bypass_fsm;
-    logic [$clog2(NR_PORTS)-1:0]              id_fsm_bypass;
-    logic [AXI_ID_WIDTH-1:0]                  id_bypass_fsm;
-
-    miss_arbiter #(
-            .NR_PORTS  ( NR_PORTS                             )
-        ) i_bypass_arbiter (
-        // Master Side
-        .data_req_i    ( miss_req_valid & miss_req_bypass     ),
-        .address_i     ( miss_req_addr                        ),
-        .data_wdata_i  ( miss_req_wdata                       ),
-        .data_we_i     ( miss_req_we                          ),
-        .data_be_i     ( miss_req_be                          ),
-        .data_gnt_o    ( miss_gnt_o                           ),
-        .data_rvalid_o ( miss_valid_o                         ),
-        .data_rdata_o  ( miss_data_o                          ),
-        // Slave Side
-        .id_i          ( id_bypass_fsm[$clog2(NR_PORTS)-1:0]  ),
-        .id_o          ( id_fsm_bypass                        ),
-        .address_o     ( req_fsm_bypass_addr                  ),
-        .data_wdata_o  ( req_fsm_bypass_wdata                 ),
-        .data_req_o    ( req_fsm_bypass_valid                 ),
-        .data_we_o     ( req_fsm_bypass_we                    ),
-        .data_be_o     ( req_fsm_bypass_be                    ),
-        .data_gnt_i    ( gnt_bypass_fsm                       ),
-        .data_rvalid_i ( valid_bypass_fsm                     ),
-        .data_rdata_i  ( data_bypass_fsm[0]                   ),
-        .*
-    );
-
-    axi_adapter #(
-        .CACHE_LINE_WIDTH   ( CACHE_LINE_WIDTH ),
-        .AXI_ID_WIDTH       ( AXI_ID_WIDTH     ),
-        .AXI_USER_WIDTH     ( AXI_USER_WIDTH   )
-    ) i_bypass_axi_adapter (
-        .req_i               ( req_fsm_bypass_valid                                     ),
-        .type_i              ( SINGLE_REQ                                               ),
-        .gnt_o               ( gnt_bypass_fsm                                           ),
-        .addr_i              ( req_fsm_bypass_addr                                      ),
-        .we_i                ( req_fsm_bypass_we                                        ),
-        .wdata_i             ( {{{CACHE_LINE_WIDTH-64}{1'b0}}, req_fsm_bypass_wdata}    ),
-        .be_i                ( {{{CACHE_LINE_WIDTH/8-8}{1'b0}}, req_fsm_bypass_be}      ),
-        .id_i                ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
-        .valid_o             ( valid_bypass_fsm                                         ),
-        .rdata_o             ( data_bypass_fsm                                          ),
-        .id_o                ( id_bypass_fsm                                            ),
-        .critical_word_o     (                                                          ), // not used for single requests
-        .critical_word_valid (                                                          ), // not used for single requests
-        .axi                 ( bypass_if                                                ),
-        .*
-    );
+    `ifndef SYNTHESIS
+        initial begin
+            assert (AXI_ID_WIDTH >= $clog2(NR_PORTS)) else $fatal (1, "AXI ID Width needs to be larger than number of requestors");
+        end
+    `endif
 
 endmodule
 
-module miss_arbiter #(
+module arbiter #(
         parameter int unsigned NR_PORTS = 3
 )(
     input  logic                           clk_i,          // Clock
@@ -236,7 +349,7 @@ module axi_adapter #(
     output logic [AXI_ID_WIDTH-1:0]                     id_o,
     // critical word - read port
     output logic [63:0]                                 critical_word_o,
-    output logic                                        critical_word_valid,
+    output logic                                        critical_word_valid_o,
     // AXI port
     AXI_BUS.Master                                      axi
 );
@@ -296,9 +409,9 @@ module axi_adapter #(
         id_o          = axi.r_id;
 
         // rdata_o   = axi.r_data;
-        critical_word_o       = axi.r_data;
-        critical_word_valid   = 1'b0;
-        rdata_o               = cache_line_q;
+        critical_word_o         = axi.r_data;
+        critical_word_valid_o   = 1'b0;
+        rdata_o                 = cache_line_q;
 
         state_d       = state_q;
         cnt_d         = cnt_q;
@@ -465,8 +578,8 @@ module axi_adapter #(
                 if (axi.r_valid) begin
                     // this is the first word of a cacheline read
                     if (state_q == WAIT_R_VALID_MULTIPLE) begin
-                        critical_word_valid = 1'b1;
-                        critical_word_o     = axi.r_data;
+                        critical_word_valid_o = 1'b1;
+                        critical_word_o       = axi.r_data;
                     end
                     // this is the last read
                     if (axi.r_last) begin

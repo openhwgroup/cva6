@@ -20,6 +20,7 @@ module cache_ctrl #(
         input  logic                                               clk_i,     // Clock
         input  logic                                               rst_ni,    // Asynchronous reset active low
         input  logic                                               bypass_i,  // enable cache
+        output logic                                               busy_o,
         // Core request ports
         input  logic [INDEX_WIDTH-1:0]                             address_index_i,
         input  logic [TAG_WIDTH-1:0]                               address_tag_i,
@@ -45,6 +46,12 @@ module cache_ctrl #(
         input  logic                                               miss_gnt_i,
         input  logic                                               miss_valid_i,
         input  logic [63:0]                                        miss_data_i,
+        input  logic [63:0]                                        critical_word_i,
+        input  logic                                               critical_word_valid_i,
+
+        input  logic                                               bypass_gnt_i,
+        input  logic                                               bypass_valid_i,
+        input  logic [63:0]                                        bypass_data_i,
         // check MSHR for aliasing
         output logic [63:0]                                        mshr_addr_o,
         input  logic                                               mashr_addr_matches_i
@@ -63,6 +70,8 @@ module cache_ctrl #(
         logic                   bypass;
     } mem_req_t;
 
+    assign busy_o = (state_q != IDLE);
+
     mem_req_t mem_req_d, mem_req_q;
 
     // --------------
@@ -77,7 +86,7 @@ module cache_ctrl #(
         data_rvalid_o = 1'b0;
         data_rdata_o  = '0;
 
-        miss_req_o    = '0;
+        miss_req_o      = '0;
 
         case (state_q)
 
@@ -138,15 +147,15 @@ module cache_ctrl #(
                 miss_req_o.we = mem_req_q.we;
                 miss_req_o.wdata = mem_req_q.wdata;
                 // got a grant so go to valid
-                if (miss_gnt_i)
+                if (bypass_gnt_i)
                     state_d = WAIT_REFILL_VALID;
 
             end
 
             WAIT_REFILL_VALID: begin
                 // got a valid answer
-                if (miss_valid_i) begin
-                    data_rdata_o = miss_data_i;
+                if (bypass_valid_i) begin
+                    data_rdata_o = bypass_data_i;
                     data_rvalid_o = 1'b1;
                     state_d = IDLE;
                 end
