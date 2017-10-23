@@ -55,6 +55,7 @@ module axi_adapter #(
     logic [(CACHE_LINE_WIDTH/64)-1:0][63:0] cache_line_d, cache_line_q;
     // save the address for a read, as we allow for non-cacheline aligned accesses
     logic [$clog2(CACHE_LINE_WIDTH/64)-1:0]  addr_offset_d, addr_offset_q;
+    logic [AXI_ID_WIDTH-1:0]                 id_d, id_q;
 
     always_comb begin : axi_fsm
         // Default assignments
@@ -106,6 +107,7 @@ module axi_adapter #(
         cnt_d         = cnt_q;
         cache_line_d  = cache_line_q;
         addr_offset_d = addr_offset_q;
+        id_d          = id_q;
 
         case (state_q)
 
@@ -272,6 +274,8 @@ module axi_adapter #(
                     // this is the last read
                     if (axi.r_last) begin
                         state_d = COMPLETE_READ;
+                        // save id
+                        id_d = axi.r_id;
                     end
 
                     // save the word
@@ -285,6 +289,7 @@ module axi_adapter #(
             COMPLETE_READ: begin
                 valid_o = 1'b1;
                 state_d = IDLE;
+                id_o    = id_q;
             end
         endcase
     end
@@ -298,11 +303,13 @@ module axi_adapter #(
             cnt_q         <= '0;
             cache_line_q  <= '0;
             addr_offset_q <= '0;
+            id_q          <= '0;
         end else begin
             state_q       <= state_d;
             cnt_q         <= cnt_d;
             cache_line_q  <= cache_line_d;
             addr_offset_q <= addr_offset_d;
+            id_q          <= id_d;
         end
     end
 
