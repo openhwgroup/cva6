@@ -23,27 +23,28 @@ module miss_handler #(
     // Bypass handling
     output logic [NR_PORTS-1:0]                         bypass_gnt_o,
     output logic [NR_PORTS-1:0]                         bypass_valid_o,
-    output logic [NR_PORTS-1:0][63:0]                   bypass_data_o,
+    output logic [NR_PORTS-1:0][CACHE_LINE_WIDTH-1:0]   bypass_data_o,
     AXI_BUS.Master                                      bypass_if,
 
     // Miss handling (~> cacheline refill)
     output logic [NR_PORTS-1:0]                         miss_gnt_o,
     output logic [NR_PORTS-1:0]                         miss_valid_o,
-    output logic [NR_PORTS-1:0][63:0]                   miss_data_o,
+    output logic [NR_PORTS-1:0][CACHE_LINE_WIDTH-1:0]   miss_data_o,
+
     output logic [63:0]                                 critical_word_o,
     output logic                                        critical_word_valid_o,
     AXI_BUS.Master                                      data_if,
 
-    input  logic [NR_PORTS-1:0][63:0]                   mshr_addr_i,
+    input  logic [NR_PORTS-1:0][55:0]                   mshr_addr_i,
     output logic [NR_PORTS-1:0]                         mashr_addr_matches_o
 );
     // Request from one FSM
-    logic [NR_PORTS-1:0]        miss_req_valid;
-    logic [NR_PORTS-1:0]        miss_req_bypass;
-    logic [NR_PORTS-1:0][63:0]  miss_req_addr;
-    logic [NR_PORTS-1:0][63:0]  miss_req_wdata;
-    logic [NR_PORTS-1:0]        miss_req_we;
-    logic [NR_PORTS-1:0][7:0]   miss_req_be;
+    logic [NR_PORTS-1:0]                           miss_req_valid;
+    logic [NR_PORTS-1:0]                           miss_req_bypass;
+    logic [NR_PORTS-1:0][63:0]                     miss_req_addr;
+    logic [NR_PORTS-1:0][CACHE_LINE_WIDTH-1:0]     miss_req_wdata;
+    logic [NR_PORTS-1:0]                           miss_req_we;
+    logic [NR_PORTS-1:0][CACHE_LINE_WIDTH/8-1:0]   miss_req_be;
 
     mshr_t [NR_MSHR-1:0] mshr_d, mshr_q;
     // ------------------------------
@@ -87,9 +88,10 @@ module miss_handler #(
     logic                                     req_fsm_bypass_valid;
     logic                                     req_fsm_bypass_bypass;
     logic [63:0]                              req_fsm_bypass_addr;
-    logic [63:0]                              req_fsm_bypass_wdata;
+    logic [CACHE_LINE_WIDTH-1:0]              req_fsm_bypass_wdata;
     logic                                     req_fsm_bypass_we;
-    logic [7:0]                               req_fsm_bypass_be;
+    logic [(CACHE_LINE_WIDTH/8)-1:0]          req_fsm_bypass_be;
+
     logic                                     gnt_bypass_fsm;
     logic                                     valid_bypass_fsm;
     logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]   data_bypass_fsm;
@@ -97,7 +99,8 @@ module miss_handler #(
     logic [AXI_ID_WIDTH-1:0]                  id_bypass_fsm;
 
     arbiter #(
-            .NR_PORTS          ( NR_PORTS                                                 )
+            .NR_PORTS          ( NR_PORTS                                                 ),
+            .DATA_WIDTH        ( CACHE_LINE_WIDTH                                         )
     ) i_bypass_arbiter (
         // Master Side
         .data_req_i            ( miss_req_valid & miss_req_bypass                         ),
@@ -118,7 +121,7 @@ module miss_handler #(
         .data_be_o             ( req_fsm_bypass_be                                        ),
         .data_gnt_i            ( gnt_bypass_fsm                                           ),
         .data_rvalid_i         ( valid_bypass_fsm                                         ),
-        .data_rdata_i          ( data_bypass_fsm[0]                                       ),
+        .data_rdata_i          ( data_bypass_fsm                                          ),
         .*
     );
 
@@ -132,8 +135,8 @@ module miss_handler #(
         .gnt_o                 ( gnt_bypass_fsm                                           ),
         .addr_i                ( req_fsm_bypass_addr                                      ),
         .we_i                  ( req_fsm_bypass_we                                        ),
-        .wdata_i               ( {{{CACHE_LINE_WIDTH-64}{1'b0}}, req_fsm_bypass_wdata}    ),
-        .be_i                  ( {{{CACHE_LINE_WIDTH/8-8}{1'b0}}, req_fsm_bypass_be}      ),
+        .wdata_i               ( req_fsm_bypass_wdata                                     ),
+        .be_i                  ( req_fsm_bypass_be                                        ),
         .id_i                  ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
         .valid_o               ( valid_bypass_fsm                                         ),
         .rdata_o               ( data_bypass_fsm                                          ),
@@ -161,7 +164,8 @@ module miss_handler #(
     logic [AXI_ID_WIDTH-1:0]                  id_miss_fsm;
 
     arbiter #(
-            .NR_PORTS        ( NR_PORTS                                              )
+            .NR_PORTS        ( NR_PORTS                                              ),
+            .DATA_WIDTH      ( CACHE_LINE_WIDTH                                      )
     ) i_miss_arbiter (
         // Master Side
         .data_req_i          ( miss_req_valid & ~miss_req_bpass                      ),
@@ -233,30 +237,31 @@ module miss_handler #(
 endmodule
 
 module arbiter #(
-        parameter int unsigned NR_PORTS = 3
+        parameter int unsigned NR_PORTS   = 3,
+        parameter int unsigned DATA_WIDTH = 256
 )(
-    input  logic                           clk_i,          // Clock
-    input  logic                           rst_ni,         // Asynchronous reset active low
+    input  logic                                   clk_i,          // Clock
+    input  logic                                   rst_ni,         // Asynchronous reset active low
     // master ports
-    input  logic [NR_PORTS-1:0]            data_req_i,
-    input  logic [NR_PORTS-1:0][63:0]      address_i,
-    input  logic [NR_PORTS-1:0][63:0]      data_wdata_i,
-    input  logic [NR_PORTS-1:0]            data_we_i,
-    input  logic [NR_PORTS-1:0][7:0]       data_be_i,
-    output logic [NR_PORTS-1:0]            data_gnt_o,
-    output logic [NR_PORTS-1:0]            data_rvalid_o,
-    output logic [NR_PORTS-1:0][63:0]      data_rdata_o,
+    input  logic [NR_PORTS-1:0]                    data_req_i,
+    input  logic [NR_PORTS-1:0][63:0]              address_i,
+    input  logic [NR_PORTS-1:0][DATA_WIDTH-1:0]    data_wdata_i,
+    input  logic [NR_PORTS-1:0]                    data_we_i,
+    input  logic [NR_PORTS-1:0][DATA_WIDTH/8-1:0]  data_be_i,
+    output logic [NR_PORTS-1:0]                    data_gnt_o,
+    output logic [NR_PORTS-1:0]                    data_rvalid_o,
+    output logic [NR_PORTS-1:0][DATA_WIDTH-1:0]    data_rdata_o,
     // slave port
-    input  logic [$clog2(NR_PORTS)-1:0]    id_i,
-    output logic [$clog2(NR_PORTS)-1:0]    id_o,
-    output logic                           data_req_o,
-    output logic [63:0]                    address_o,
-    output logic [63:0]                    data_wdata_o,
-    output logic                           data_we_o,
-    output logic [7:0]                     data_be_o,
-    input  logic                           data_gnt_i,
-    input  logic                           data_rvalid_i,
-    input  logic [63:0]                    data_rdata_i
+    input  logic [$clog2(NR_PORTS)-1:0]            id_i,
+    output logic [$clog2(NR_PORTS)-1:0]            id_o,
+    output logic                                   data_req_o,
+    output logic [63:0]                            address_o,
+    output logic [DATA_WIDTH-1:0]                  data_wdata_o,
+    output logic                                   data_we_o,
+    output logic [DATA_WIDTH/8-1:0]                data_be_o,
+    input  logic                                   data_gnt_i,
+    input  logic                                   data_rvalid_i,
+    input  logic [DATA_WIDTH-1:0]                  data_rdata_i
 );
 
 

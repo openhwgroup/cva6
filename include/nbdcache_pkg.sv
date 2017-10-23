@@ -11,6 +11,18 @@
 
 package nbdcache_pkg;
 
+    localparam int unsigned INDEX_WIDTH       = 12;
+    localparam int unsigned TAG_WIDTH         = 44;
+    localparam int unsigned CACHE_LINE_WIDTH  = 256;
+    localparam int unsigned SET_ASSOCIATIVITY = 8;
+    localparam int unsigned AXI_ID_WIDTH      = 10;
+    localparam int unsigned AXI_USER_WIDTH    = 10;
+    localparam int unsigned NR_MSHR           = 1;
+
+    // Calculated params
+    localparam NUM_WORDS = 2**INDEX_WIDTH;
+    localparam DIRTY_WIDTH = (CACHE_LINE_WIDTH/64)*SET_ASSOCIATIVITY*2;
+
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } req_t;
     typedef enum logic { LOAD_MISS, STORE_MISS } miss_t;
 
@@ -21,13 +33,25 @@ package nbdcache_pkg;
     } mshr_t;
 
     typedef struct packed {
-        logic          valid;
-        logic          bypass;
-        logic [63:0]   addr;
-        logic [7:0]    be;
-        logic          we;
-        logic [63:0]   wdata;
+        logic                           valid;
+        logic                           bypass;
+        logic [63:0]                    addr;
+        logic [CACHE_LINE_WIDTH/8-1:0]  be;
+        logic                           we;
+        logic [CACHE_LINE_WIDTH-1:0]    wdata;
     } miss_req_t;
 
-    localparam int unsigned NR_MSHR = 1;
+    typedef struct packed {
+        logic [TAG_WIDTH-1:0]        tag;
+        logic [CACHE_LINE_WIDTH-1:0] data;
+        logic [DIRTY_WIDTH/2-1:0]    valid;
+        logic [DIRTY_WIDTH/2-1:0]    dirty;
+    } cache_line_t;
+
+    // cache line byte enable
+    typedef struct packed {
+        logic [TAG_WIDTH-1:0]        tag;
+        logic [CACHE_LINE_WIDTH-1:0] data;
+    } cl_be_t;
+
 endpackage
