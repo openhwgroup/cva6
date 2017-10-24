@@ -61,8 +61,8 @@ module cache_ctrl #(
         input  logic                                               mashr_addr_matches_i
 );
 
-    enum logic [2:0] {
-        IDLE, WAIT_TAG, WAIT_TAG_BYPASSED, WAIT_REFILL_VALID, WAIT_REFILL_GNT, WAIT_TAG_SAVED, WAIT_MSHR
+    enum logic [3:0] {
+        IDLE, WAIT_TAG, WAIT_TAG_BYPASSED, STORE_REQ, WAIT_REFILL_VALID, WAIT_REFILL_GNT, WAIT_TAG_SAVED, WAIT_MSHR, WAIT_CRITICAL_WORD
     } state_d, state_q;
 
     typedef struct packed {
@@ -128,7 +128,7 @@ module cache_ctrl #(
                     // ------------------
                     end else begin
                         // request the cache line
-                        reg_o = 'b1;
+                        req_o = 'b1;
                         addr_o = address_index_i;
                         // Wait that we have access on the memory array
                         if (gnt_i) begin
@@ -145,22 +145,22 @@ module cache_ctrl #(
             // cache enabled and waiting for tag
             WAIT_TAG, WAIT_TAG_SAVED: begin
                 // depending on where we come from
-                tag_o = (state_q == WAIT_TAG_SAVED) ? mem_req.tag :  address_tag_i;
+                tag_o = (state_q == WAIT_TAG_SAVED) ? mem_req_q.tag :  address_tag_i;
                 // check that the client really wants to do the request
                 if (!kill_req_i) begin
                     // HIT CASE
                     if (!hit_way_i) begin
-                        // we can request another cache-line
+                        // we can request another cache-line if this was a load
                         // make another request
-                        if (data_req_i) begin
-                            state_d = WAIT_TAG; // switch back to WAIT_TAG
+                        if (data_req_i && !mem_req_q.we) begin
+                            state_d          = WAIT_TAG; // switch back to WAIT_TAG
                             mem_req_d.index  = address_index_i;
                             mem_req_d.be     = data_be_i;
                             mem_req_d.we     = data_we_i;
                             mem_req_d.wdata  = data_wdata_i;
                             mem_req_d.bypass = 1'b0;
 
-                            reg_o      = 'b1;
+                            req_o      = 'b1;
                             addr_o     = address_index_i;
                             data_gnt_o = gnt_i;
 
@@ -168,14 +168,17 @@ module cache_ctrl #(
                                 state_d = IDLE;
                             end
 
-                        else
+                        end else begin
                             state_d = IDLE;
+                        end
+
                         // report data for a read
                         if (!mem_req_q.we) begin
                             data_rvalid_o = 1'b1;
                             data_rdata_o = data_i[hit_way_i].data[mem_req_q.tag[5:0] +: 64];
+                        // else this was a store so we need an extra step to handle it
                         end else begin
-                            state_d = STORE;
+                            state_d = STORE_REQ;
                             hit_way_d = hit_way_i;
                         end
 
@@ -198,7 +201,7 @@ module cache_ctrl #(
             end
 
             // ~> we are here as we need a second round of memory access for a store
-            STORE: begin
+            STORE_REQ: begin
                 // store data, write dirty bit
                 req_o = hit_way_q;
 
@@ -206,8 +209,8 @@ module cache_ctrl #(
                     if (hit_way_q[i])
                         be_o.state[i +: 2] = 2'b11;
 
-                be_o.data[mem_req.index[5:0] +: 64] = mem_req.be;
-                data_o.data[mem_req.index[5:0] +: 64] = mem_req.wdata;
+                be_o.data[mem_req_q.index[5:0] +: 64] = mem_req_q.be;
+                data_o.data[mem_req_q.index[5:0] +: 64] = mem_req_q.wdata;
                 // ~> change the state
                 data_o.dirty = 1'b1;
                 data_o.valid = 1'b1;
@@ -215,7 +218,7 @@ module cache_ctrl #(
                 // got a grant ~> this is finished now
                 if (gnt_i) begin
                     data_gnt_o = 1'b1;
-                    NS = IDLE;
+                    state_d = IDLE;
                 end
             end
 
@@ -260,9 +263,14 @@ module cache_ctrl #(
                 if (bypass_gnt_i)
                     state_d = WAIT_REFILL_VALID;
 
-                if (miss_gnt_i)
+                if (miss_gnt_i && !mem_req_q.we)
                     state_d = WAIT_CRITICAL_WORD;
+                else if (miss_gnt_i) begin
+                    state_d = IDLE;
+                    data_rvalid_o = 1'b1;
+                end
             end
+
             // ~> wait for critical word to arrive
             WAIT_CRITICAL_WORD: begin
 
@@ -277,7 +285,7 @@ module cache_ctrl #(
                         mem_req_d.we = data_we_i;
                         mem_req_d.wdata = data_wdata_i;
                         // request the cache line
-                        reg_o = 'b1;
+                        req_o = 'b1;
                         addr_o = address_index_i;
                         state_d = IDLE;
 

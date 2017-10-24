@@ -28,6 +28,7 @@ package nbdcache_pkg;
     typedef struct packed {
         logic [1:0]  id;     // id for which we handle the miss
         logic        valid;
+        logic        we;
         logic [55:0] addr;
     } mshr_t;
 
@@ -54,8 +55,9 @@ package nbdcache_pkg;
         logic [DIRTY_WIDTH-1:0]      state; // byte enable into state array
     } cl_be_t;
 
-    function logic [] oh_to_bin (logic [] in );
-        for (int unsigned i = 0; i < $size(in); i++) begin
+    // convert one hot to bin for -> needed for cache replacement
+    function logic [$clog2(SET_ASSOCIATIVITY)-1:0] one_hot_to_bin (logic [SET_ASSOCIATIVITY-1:0] in);
+        for (logic [$clog2(SET_ASSOCIATIVITY)-1:0] i = '0; i < SET_ASSOCIATIVITY; i++) begin
             if (in[i])
                 return i;
         end
