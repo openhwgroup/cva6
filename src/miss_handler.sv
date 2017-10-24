@@ -45,7 +45,8 @@ module miss_handler #(
     output logic                                        we_o
 );
     // FSM states
-    enum logic [1:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY, WAIT_GNT_SRAM, HANDLE_MISS };
+    enum logic [1:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY,EVICT_WAY_MISS, WAIT_GNT_SRAM, MISS,
+                       LOAD_CACHELINE, MISS, MISS_REPL };
     // Registers
     mshr_t [NR_MSHR-1:0]                           mshr_d, mshr_q;
     logic [INDEX_WIDTH-1:0]                        cnt_d, cnt_q;
@@ -72,14 +73,21 @@ module miss_handler #(
     logic                                          valid_miss_fsm;
     logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]        data_miss_fsm;
 
+    // Cache Management <-> LFSR
+    logic                                   lfsr_enable;
+    logic [SET_ASSOCIATIVITY-1]             lfsr_oh;
+    logic [$clog2(SET_ASSOCIATIVITY-1)-1:0] lfsr_bin;
+
     // ------------------------------
     // Cache Management
     // ------------------------------
     always_comb begin : cache_management
-        automatic logic [$clog2(EVICT_WAY)-1:0] evict_way;
+        automatic logic [$clog2(EVICT_WAY)-1:0] evict_way, valid_way;
 
-        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++)
+        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
             evict_way = data_i[i].valid & data_i[i].dirty;
+            valid_way = data_i[i].valid;
+        end
 
         // default assignment
         mashr_addr_matches_o = 'b0;
@@ -88,6 +96,8 @@ module miss_handler #(
         data_o = '0;
         be_o = '0;
         we_o = '0;
+
+        lfsr_enable = 1'b0;
         // to AXI refill
         req_fsm_miss_valid  = 1'b0;
         req_fsm_miss_bypass = 1'b0;
@@ -100,15 +110,15 @@ module miss_handler #(
         for (int j = 0; j < NR_PORTS; j++) begin
             // and the number of MSHR registers (i think one will be just the only sane choice here)
             for (int i = 0; i < NR_MSHR; i++) begin
-                if (mshr_q[i].valid && mshr_addr_i[j] == mshr_q[i].addr) begin
+                if (mshr_q[i].valid && mshr_addr_i[j][55:$clog2(CACHE_LINE_WIDTH)] == mshr_q[i].addr[55:$clog2(CACHE_LINE_WIDTH)]) begin
                     mashr_addr_matches_o[j] = 1'b1;
                 end
             end
         end
 
-        // ----------------
-        // Flush operation
-        // ----------------
+        // --------------------------------
+        // Flush and Miss operation
+        // --------------------------------
         state_d      = state_q;
         cnt_d        = cnt_q;
         evict_way_d  = evict_way_q;
@@ -128,10 +138,70 @@ module miss_handler #(
                 // check if one of the state machines missed
                 for (int unsigned i = 0; i < NR_PORTS; i++) begin
                     // here comes the refill portion of code
-                    if (miss_req.valid[i] && !miss_req.bypass) begin
+                    if (miss_req_valid[i] && !miss_req_bypass[i]) begin
                         state_d = MISS;
                         // save to MSHR
+                        mshr_d.valid = 1'b1;
+                        mshr_d.we = miss_req_we[i];
+                        mshr_d.id = i;
+                        break;
                     end
+                end
+            end
+
+            //  ~> we missed on the cache
+            MISS: begin
+                // 1. Check if there is an empty cache-line
+                // 2. If not -> evict one
+                req_o = 1'b1;
+                addr_o = miss_req_addr[mshr_q.id][INDEX_WIDTH-1:0];
+
+                if (gnt_i)
+                    state_d = MISS_REPL;
+            end
+
+            // ~> second miss cycle
+            MISS_REPL: begin
+                // if all are valid we need to evict one, pseudo random from LFSR
+                if (&valid_way) begin
+                    lfsr_enable = 1'b1;
+                    evict_way_d = lfsr_oh;
+                    // do we need to write back the cache line?
+                    if (data_i[lfsr_bin].dirty)
+                        state_d = EVICT_WAY_MISS;
+                    else
+                        state_d = LOAD_CACHELINE;
+                // we have at least one free way
+                end else begin
+                    for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
+                        // replace the first non valid cache line
+                        if (~valid_way[i])
+                            evict_way_d = 1'b1 << i;
+
+                        state_d = LOAD_CACHELINE;
+                    end
+                end
+            end
+
+            // ~> we can just load the cache-line, the way is store in evict_way_q
+            LOAD_CACHELINE: begin
+                req_fsm_miss_valid  = 1'b1;
+                req_fsm_miss_addr   = miss_req_addr[mshr_q.id];
+
+                if (gnt_miss_fsm) begin
+                    state_d = REPL_CACHELINE;
+                end
+            end
+            // ~> replace the cacheline
+            REPL_CACHELINE: begin
+                if (valid_miss_fsm) begin
+                    addr_o = miss_req_addr[mshr_q.id][INDEX_WIDTH-1:0];
+                    reg_o = evict_way_q;
+                    we_o  = 1'b1;
+                    be_o  = 'b1;
+                    data_o.tag = miss_req_addr[mshr_q.id][INDEX_WIDTH+TAG_WIDTH+1:INDEX_WIDTH];
+                    data_o.data = data_miss_fsm
+                    state_d = IDLE;
                 end
             end
 
@@ -153,14 +223,9 @@ module miss_handler #(
                 if (|evict_way) begin
                     // evict cache line
                     evict_way_d = evict_way;
-                    // check which entry to evict
-                    for (int unsigned i < SET_ASSOCIATIVITY; i++) begin
-                        if (evict_way_q[i]) begin
-                            // save the cacheline we want to evict
-                            evict_cl_d = data_i[i];
-                            break;
-                        end
-                    end
+                    evict_cl_d = data_i[one_hot_to_bin(evict_way)];
+
+                    state_d = EVICT_WAY;
                 // not dirty ~> continue
                 end else begin
                     addr_o = cnt_q;
@@ -177,7 +242,7 @@ module miss_handler #(
             end
 
             // evict a cache line from way saved in evict_way_q
-            EVICT_WAY: begin
+            EVICT_WAY, EVICT_WAY_MISS: begin
 
                 req_fsm_miss_valid  = 1'b1;
                 req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q};
@@ -189,18 +254,18 @@ module miss_handler #(
                 if (gnt_miss_fsm) begin
                     // write status array
                     req_o = 1'b1;
-                    we_o = 1'b1;
+                    we_o  = 1'b1;
                     be_o.state = evict_way_q << 2;
-                    // go back to flushing
-                    state_d = FLUSHING;
+
+                    if (EVICT_WAY_MISS)
+                        // go back to handling the miss
+                        state_d = MISS;
+                    else
+                        // go back to flushing
+                        state_d = FLUSHING;
                 end
             end
 
-            WAIT_GNT_SRAM: begin
-                req_o = 1'b1;
-                if (gnt_i)
-                    state_d = FLUSHING;
-            end
         endcase
     end
 
@@ -308,6 +373,18 @@ module miss_handler #(
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),
         .axi                 ( data_if            ),
+        .*
+    );
+
+    // -----------------
+    // Replacement LFSR
+    // -----------------
+    lfsr #(
+        .SET_ASSOCIATIVITY ( SET_ASSOCIATIVITY )
+    ) i_lfsr (
+        .en_i           ( lfsr_enable ),
+        .refill_way_oh  ( lfsr_oh     ),
+        .refill_way_bin ( lfsr_bin    ),
         .*
     );
 
@@ -684,7 +761,7 @@ module axi_adapter #(
                 axi.r_ready = 1'b1;
                 // this is the first read a.k.a the critical word
                 if (axi.r_valid) begin
-                    // this is the first word of a cacheline read
+                    // this is the first word of a cacheline read, e.g.: the word which was causing the miss
                     if (state_q == WAIT_R_VALID_MULTIPLE) begin
                         critical_word_valid_o = 1'b1;
                         critical_word_o       = axi.r_data;
@@ -717,7 +794,8 @@ module axi_adapter #(
     // ----------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            state_q       <= IDLE;
+            // start in flushing state and initialize the memory
+            state_q       <= FLUSHING;
             cnt_q         <= '0;
             cache_line_q  <= '0;
             addr_offset_q <= '0;
@@ -732,4 +810,54 @@ module axi_adapter #(
     end
 
 endmodule
->>>>>>> Add cache-line misses to miss handler [ci skip]
+
+// --------------
+// 8-bit LFSR
+// --------------
+//
+// Description: Shift register for way selection
+//
+module lfsr #(
+        parameter int unsigned SET_ASSOCIATIVITY = 8,
+        parameter logic [7:0]  SEED = 8'b0
+    )(
+        input  logic                                  clk_i,
+        input  logic                                  rst_ni,
+        input  logic                                  en_i,
+        output logic [SET_ASSOCIATIVITY-1:0]          refill_way_oh,
+        output logic [$clog2(SET_ASSOCIATIVITY)-1:0]  refill_way_bin
+    );
+
+    localparam int unsigned LOG_SET_ASSOCIATIVITY = $clog2(SET_ASSOCIATIVITY);
+
+    logic [7:0] shift_d, shift_q;
+
+    // output assignment
+    assign refill_way_oh[shift_q[LOG_SET_ASSOCIATIVITY-1:0]] = 1'b1;
+    assign refill_way_bin = shift_q;
+
+    always_comb begin
+        shift_d = shift_q;
+
+        automatic logic shift_in = !(shift_q[7] ^ shift_q[3] ^ shift_q[2] ^ shift_q[1]);
+
+        if (en_i)
+            shift_d = {shift_q[6:0], shift};
+
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
+        if(~rst_ni) begin
+            shift_q <= SEED;
+        end else begin
+            shift_q <= shift_d;
+        end
+    end
+
+    `ifndef SYNTHESIS
+        initial begin
+            assert (SET_ASSOCIATIVITY <= 8) else $fatal(1, "SET_ASSOCIATIVITY needs to be less than 8 because of the 8-bit LFSR");
+        end
+    `endif
+
+endmodule

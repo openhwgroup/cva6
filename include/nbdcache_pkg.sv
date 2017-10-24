@@ -24,11 +24,10 @@ package nbdcache_pkg;
     localparam DIRTY_WIDTH = (CACHE_LINE_WIDTH/64)*SET_ASSOCIATIVITY*2;
 
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } req_t;
-    typedef enum logic { LOAD_MISS, STORE_MISS } miss_t;
 
     typedef struct packed {
+        logic [1:0]  id;     // id for which we handle the miss
         logic        valid;
-        miss_t       req_type;
         logic [55:0] addr;
     } mshr_t;
 
@@ -54,5 +53,12 @@ package nbdcache_pkg;
         logic [CACHE_LINE_WIDTH-1:0] data;  // byte enable into data array
         logic [DIRTY_WIDTH-1:0]      state; // byte enable into state array
     } cl_be_t;
+
+    function logic [] oh_to_bin (logic [] in );
+        for (int unsigned i = 0; i < $size(in); i++) begin
+            if (in[i])
+                return i;
+        end
+    endfunction
 
 endpackage
