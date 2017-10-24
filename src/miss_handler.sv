@@ -45,10 +45,10 @@ module miss_handler #(
     output logic                                        we_o
 );
     // FSM states
-    enum logic [1:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY,EVICT_WAY_MISS, WAIT_GNT_SRAM, MISS,
-                       LOAD_CACHELINE, MISS, MISS_REPL };
+    enum logic [3:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY, EVICT_WAY_MISS, WAIT_GNT_SRAM, MISS,
+                       LOAD_CACHELINE, MISS_REPL, REPL_CACHELINE } state_d, state_q;
     // Registers
-    mshr_t [NR_MSHR-1:0]                           mshr_d, mshr_q;
+    mshr_t                                         mshr_d, mshr_q;
     logic [INDEX_WIDTH-1:0]                        cnt_d, cnt_q;
     logic [$clog2(SET_ASSOCIATIVITY)-1:0]          evict_way_d, evict_way_q;
     // cache line to evict
@@ -75,7 +75,7 @@ module miss_handler #(
 
     // Cache Management <-> LFSR
     logic                                   lfsr_enable;
-    logic [SET_ASSOCIATIVITY-1]             lfsr_oh;
+    logic [SET_ASSOCIATIVITY-1:0]           lfsr_oh;
     logic [$clog2(SET_ASSOCIATIVITY-1)-1:0] lfsr_bin;
 
     // ------------------------------
@@ -97,6 +97,8 @@ module miss_handler #(
         be_o = '0;
         we_o = '0;
 
+        miss_gnt_o = 1'b0;
+
         lfsr_enable = 1'b0;
         // to AXI refill
         req_fsm_miss_valid  = 1'b0;
@@ -106,13 +108,10 @@ module miss_handler #(
         req_fsm_miss_we     = 1'b0;
         req_fsm_miss_be     = '0;
         // check MSHR for aliasing
-        // check for each port
-        for (int j = 0; j < NR_PORTS; j++) begin
-            // and the number of MSHR registers (i think one will be just the only sane choice here)
-            for (int i = 0; i < NR_MSHR; i++) begin
-                if (mshr_q[i].valid && mshr_addr_i[j][55:$clog2(CACHE_LINE_WIDTH)] == mshr_q[i].addr[55:$clog2(CACHE_LINE_WIDTH)]) begin
-                    mashr_addr_matches_o[j] = 1'b1;
-                end
+        // and the number of MSHR registers (i think one will be just the only sane choice here)
+        for (int i = 0; i < NR_PORTS; i++) begin
+            if (mshr_q.valid && mshr_addr_i[i][55:$clog2(CACHE_LINE_WIDTH)] == mshr_q.addr[55:$clog2(CACHE_LINE_WIDTH)]) begin
+                mashr_addr_matches_o[i] = 1'b1;
             end
         end
 
@@ -192,16 +191,25 @@ module miss_handler #(
                     state_d = REPL_CACHELINE;
                 end
             end
+
             // ~> replace the cacheline
             REPL_CACHELINE: begin
                 if (valid_miss_fsm) begin
                     addr_o = miss_req_addr[mshr_q.id][INDEX_WIDTH-1:0];
-                    reg_o = evict_way_q;
+                    req_o = evict_way_q;
                     we_o  = 1'b1;
                     be_o  = 'b1;
                     data_o.tag = miss_req_addr[mshr_q.id][INDEX_WIDTH+TAG_WIDTH+1:INDEX_WIDTH];
-                    data_o.data = data_miss_fsm
+                    data_o.data = data_miss_fsm;
                     state_d = IDLE;
+                    miss_gnt_o = 1'b1;
+                    // is this a write?
+                    if (miss_req_we[mshr_q.id]) begin
+                        // Yes, so safe the updated data now
+                        data_o.data[miss_req_addr[mshr_q.id][$clog2(CACHE_LINE_WIDTH/8)-1:0] +: 64] = miss_req_wdata;
+                    end
+                    // reset MSHR
+                    mshr_d.valid = 1'b0;
                 end
             end
 
@@ -275,7 +283,7 @@ module miss_handler #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             mshr_q       <= '0;
-            state_q      <= IDLE;
+            state_q      <= FLUSHING;
             cnt_q        <= '0;
             evict_way_q  <= '0;
             evict_cl_q   <= '0;
@@ -795,7 +803,7 @@ module axi_adapter #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             // start in flushing state and initialize the memory
-            state_q       <= FLUSHING;
+            state_q       <= IDLE;
             cnt_q         <= '0;
             cache_line_q  <= '0;
             addr_offset_q <= '0;
@@ -832,18 +840,20 @@ module lfsr #(
 
     logic [7:0] shift_d, shift_q;
 
-    // output assignment
-    assign refill_way_oh[shift_q[LOG_SET_ASSOCIATIVITY-1:0]] = 1'b1;
-    assign refill_way_bin = shift_q;
 
     always_comb begin
-        shift_d = shift_q;
 
         automatic logic shift_in = !(shift_q[7] ^ shift_q[3] ^ shift_q[2] ^ shift_q[1]);
 
-        if (en_i)
-            shift_d = {shift_q[6:0], shift};
+        shift_d = shift_q;
 
+        if (en_i)
+            shift_d = {shift_q[6:0], shift_in};
+
+        // output assignment
+        refill_way_oh = 'b0;
+        refill_way_oh[shift_q[LOG_SET_ASSOCIATIVITY-1:0]] = 1'b1;
+        refill_way_bin = shift_q;
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_

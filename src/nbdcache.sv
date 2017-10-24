@@ -209,17 +209,27 @@ module nbdcache (
     // ----------------
     // Dirty SRAM
     // ----------------
+    logic [DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
+
+    generate
+        for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
+            assign dirty_wdata[i*2 +: 2] = {wdata_ram.dirty, wdata_ram.valid};
+            assign rdata_ram[i].valid = dirty_rdata[i*2];
+            assign rdata_ram[i].dirty = dirty_rdata[i*2+1];
+        end
+    endgenerate
+
     sram #(
         .DATA_WIDTH ( DIRTY_WIDTH ),
         .NUM_WORDS  ( NUM_WORDS   )
     ) dirty_sram (
-        .clk_i   ( clk_i                                                                            ),
-        .req_i   ( req_ram                                                                          ),
-        .we_i    ( we_ram                                                                           ),
-        .addr_i  ( addr_ram                                                                         ),
-        .wdata_i ( {wdata_ram[SET_ASSOCIATIVITY-1:0].dirty, wdata_ram[SET_ASSOCIATIVITY-1:0].valid} ),
-        .be_i    ( be_ram.state                                                                     ),
-        .rdata_o ( {rdata_ram[SET_ASSOCIATIVITY-1:0].dirty, rdata_ram[SET_ASSOCIATIVITY-1:0].valid} )
+        .clk_i   ( clk_i        ),
+        .req_i   ( req_ram      ),
+        .we_i    ( we_ram       ),
+        .addr_i  ( addr_ram     ),
+        .wdata_i ( dirty_wdata  ),
+        .be_i    ( be_ram.state ),
+        .rdata_o ( dirty_rdata  )
     );
 
     // ------------------------------------------------
@@ -332,7 +342,14 @@ module tag_cmp #(
                 end
             end
         end
+
+        `ifndef SYNTHESIS
+        `ifndef VERILATOR
         // assert that cache only hits on one way
+        assert property (
+          @(posedge clk_i) $onehot(hit_way_o)) else $warning("Hit should be one-hot encoded");
+        `endif
+        `endif
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
