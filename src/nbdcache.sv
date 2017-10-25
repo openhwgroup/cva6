@@ -59,8 +59,8 @@ module nbdcache (
     logic        [3:0][SET_ASSOCIATIVITY-1:0] req;
     logic        [3:0][INDEX_WIDTH-1:0]       addr;
     logic        [3:0]                        gnt;
-    cache_line_t [3:0][SET_ASSOCIATIVITY-1:0] rdata;
-    cache_line_t [3:0][TAG_WIDTH-1:0]         tag;
+    cache_line_t [SET_ASSOCIATIVITY-1:0]      rdata;
+    logic        [3:0][TAG_WIDTH-1:0]         tag;
 
     cache_line_t [3:0]                        wdata;
     logic        [3:0]                        we;
@@ -164,13 +164,13 @@ module nbdcache (
         .critical_word_valid_o  ( critical_word_valid  ),
         .mshr_addr_i            ( mshr_addr            ),
         .mashr_addr_matches_o   ( mshr_addr_matches    ),
-        .req_o                  ( req             [2]  ),
-        .addr_o                 ( addr            [2]  ),
-        .gnt_i                  ( gnt             [2]  ),
-        .data_o                 ( rdata                ),
-        .be_o                   ( wdata           [2]  ),
-        .data_i                 ( we              [2]  ),
-        .we_o                   ( be              [2]  ),
+        .req_o                  ( req             [3]  ),
+        .addr_o                 ( addr            [3]  ),
+        .gnt_i                  ( gnt             [3]  ),
+        .data_i                 ( rdata                ),
+        .be_o                   ( be              [3]  ),
+        .data_o                 ( wdata           [3]  ),
+        .we_o                   ( we              [3]  ),
         .*
     );
 
@@ -180,28 +180,28 @@ module nbdcache (
     generate
         for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
             sram #(
-                .DATA_WIDTH ( CACHE_LINE_WIDTH ),
-                .NUM_WORDS  ( NUM_WORDS        )
+                .DATA_WIDTH ( CACHE_LINE_WIDTH                  ),
+                .NUM_WORDS  ( NUM_WORDS                         )
             ) data_sram (
-                .req_i   ( req_ram [i]         ),
-                .we_i    ( we_ram              ),
-                .addr_i  ( addr_ram            ),
-                .wdata_i ( wdata_ram.data      ),
-                .be_i    ( be_ram.data         ),
-                .rdata_o ( rdata_ram[i].data   ),
+                .req_i   ( req_ram [i]                          ),
+                .we_i    ( we_ram                               ),
+                .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
+                .wdata_i ( wdata_ram.data                       ),
+                .be_i    ( be_ram.data                          ),
+                .rdata_o ( rdata_ram[i].data                    ),
                 .*
             );
 
             sram #(
-                .DATA_WIDTH ( TAG_WIDTH        ),
-                .NUM_WORDS  ( NUM_WORDS        )
+                .DATA_WIDTH ( TAG_WIDTH                         ),
+                .NUM_WORDS  ( NUM_WORDS                         )
             ) tag_sram (
-                .req_i   ( req_ram [i]         ),
-                .we_i    ( we_ram              ),
-                .addr_i  ( addr_ram            ),
-                .wdata_i ( wdata_ram.tag       ),
-                .be_i    ( be_ram.tag          ),
-                .rdata_o ( rdata_ram[i].tag    ),
+                .req_i   ( req_ram [i]                          ),
+                .we_i    ( we_ram                               ),
+                .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
+                .wdata_i ( wdata_ram.tag                        ),
+                .be_i    ( be_ram.tag                           ),
+                .rdata_o ( rdata_ram[i].tag                     ),
                 .*
             );
 
@@ -222,16 +222,16 @@ module nbdcache (
     endgenerate
 
     sram #(
-        .DATA_WIDTH ( DIRTY_WIDTH ),
-        .NUM_WORDS  ( NUM_WORDS   )
+        .DATA_WIDTH ( DIRTY_WIDTH                      ),
+        .NUM_WORDS  ( NUM_WORDS                        )
     ) dirty_sram (
-        .clk_i   ( clk_i        ),
-        .req_i   ( req_ram      ),
-        .we_i    ( we_ram       ),
-        .addr_i  ( addr_ram     ),
-        .wdata_i ( dirty_wdata  ),
-        .be_i    ( be_ram.state ),
-        .rdata_o ( dirty_rdata  )
+        .clk_i   ( clk_i                               ),
+        .req_i   ( |req_ram                            ),
+        .we_i    ( we_ram                              ),
+        .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET] ),
+        .wdata_i ( dirty_wdata                         ),
+        .be_i    ( be_ram.state                        ),
+        .rdata_o ( dirty_rdata                         )
     );
 
     // ------------------------------------------------

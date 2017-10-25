@@ -19,8 +19,9 @@ package nbdcache_pkg;
     localparam int unsigned AXI_USER_WIDTH    = 10;
     localparam int unsigned NR_MSHR           = 1;
 
-    // Calculated params
-    localparam NUM_WORDS = 2**INDEX_WIDTH;
+    // Calculated paramater
+    localparam BYTE_OFFSET = $clog2(CACHE_LINE_WIDTH/8);
+    localparam NUM_WORDS = 2**(INDEX_WIDTH-BYTE_OFFSET);
     localparam DIRTY_WIDTH = (CACHE_LINE_WIDTH/64)*SET_ASSOCIATIVITY*2;
 
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } req_t;

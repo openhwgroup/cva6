@@ -313,7 +313,7 @@ module miss_handler #(
     logic [AXI_ID_WIDTH-1:0]                  id_bypass_fsm;
 
     arbiter #(
-            .NR_PORTS          ( NR_PORTS + 1                                             ),
+            .NR_PORTS          ( NR_PORTS                                                ),
             .DATA_WIDTH        ( CACHE_LINE_WIDTH                                         )
     ) i_bypass_arbiter (
         // Master Side
