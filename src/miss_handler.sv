@@ -46,11 +46,11 @@ module miss_handler #(
 );
     // FSM states
     enum logic [3:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY, EVICT_WAY_MISS, WAIT_GNT_SRAM, MISS,
-                       LOAD_CACHELINE, MISS_REPL, REPL_CACHELINE } state_d, state_q;
+                       LOAD_CACHELINE, MISS_REPL, REPL_CACHELINE, INIT } state_d, state_q;
     // Registers
     mshr_t                                         mshr_d, mshr_q;
     logic [INDEX_WIDTH-1:0]                        cnt_d, cnt_q;
-    logic [$clog2(SET_ASSOCIATIVITY)-1:0]          evict_way_d, evict_way_q;
+    logic [SET_ASSOCIATIVITY-1:0]                  evict_way_d, evict_way_q;
     // cache line to evict
     cache_line_t                                   evict_cl_d, evict_cl_q;
 
@@ -107,6 +107,8 @@ module miss_handler #(
         req_fsm_miss_wdata  = '0;
         req_fsm_miss_we     = 1'b0;
         req_fsm_miss_be     = '0;
+
+        flush_ack_o         = 1'b0;
         // check MSHR for aliasing
         // and the number of MSHR registers (i think one will be just the only sane choice here)
         for (int i = 0; i < NR_PORTS; i++) begin
@@ -143,6 +145,7 @@ module miss_handler #(
                         mshr_d.valid = 1'b1;
                         mshr_d.we = miss_req_we[i];
                         mshr_d.id = i;
+                        mshr_d.addr = miss_req_addr[i][TAG_WIDTH+INDEX_WIDTH-1:0];
                         break;
                     end
                 end
@@ -153,10 +156,8 @@ module miss_handler #(
                 // 1. Check if there is an empty cache-line
                 // 2. If not -> evict one
                 req_o = 1'b1;
-                addr_o = miss_req_addr[mshr_q.id][INDEX_WIDTH-1:0];
-
-                if (gnt_i)
-                    state_d = MISS_REPL;
+                addr_o = mshr_q.addr[INDEX_WIDTH-1:0];
+                state_d = MISS_REPL;
             end
 
             // ~> second miss cycle
@@ -202,7 +203,7 @@ module miss_handler #(
                     data_o.tag = miss_req_addr[mshr_q.id][INDEX_WIDTH+TAG_WIDTH+1:INDEX_WIDTH];
                     data_o.data = data_miss_fsm;
                     state_d = IDLE;
-                    miss_gnt_o = 1'b1;
+                    miss_gnt_o[mshr_q.id] = 1'b1;
                     // is this a write?
                     if (miss_req_we[mshr_q.id]) begin
                         // Yes, so safe the updated data now
@@ -222,8 +223,10 @@ module miss_handler #(
                     state_d = FLUSH;
                 end
 
-                if (cnt_q == INDEX_WIDTH)
+                if (cnt_q == NUM_WORDS) begin
+                    flush_ack_o = 1'b1;
                     state_d = IDLE;
+                end
             end
 
             FLUSH: begin
@@ -274,6 +277,20 @@ module miss_handler #(
                 end
             end
 
+            INIT: begin
+                // initialize status array
+                addr_o = cnt_q;
+                req_o  = 1'b1;
+                we_o   = 1'b1;
+                data_o = 'b0;
+
+                cnt_d  = cnt_q + 1;
+
+                if (cnt_q == NUM_WORDS)
+                    state_d = IDLE;
+
+            end
+
         endcase
     end
 
@@ -283,7 +300,7 @@ module miss_handler #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             mshr_q       <= '0;
-            state_q      <= FLUSHING;
+            state_q      <= INIT;
             cnt_q        <= '0;
             evict_way_q  <= '0;
             evict_cl_q   <= '0;
@@ -300,7 +317,6 @@ module miss_handler #(
     // ----------------------
     // Connection Arbiter <-> AXI
     logic                                     req_fsm_bypass_valid;
-    logic                                     req_fsm_bypass_bypass;
     logic [63:0]                              req_fsm_bypass_addr;
     logic [CACHE_LINE_WIDTH-1:0]              req_fsm_bypass_wdata;
     logic                                     req_fsm_bypass_we;
@@ -376,7 +392,7 @@ module miss_handler #(
         .we_i                ( req_fsm_miss_we    ),
         .wdata_i             ( req_fsm_miss_wdata ),
         .be_i                ( req_fsm_miss_be    ),
-        .id_i                (                    ),
+        .id_i                ( '0                 ),
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),

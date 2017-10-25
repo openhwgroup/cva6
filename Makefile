@@ -27,7 +27,8 @@ test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.sv
 # DPI
 dpi = $(wildcard tb/dpi/*)
 # this list contains the standalone components
-src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv)
+src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv) \
+	  $(wildcard src/axi_node/*.sv)
 # look for testbenches
 tbs = $(wildcard tb/*_tb.sv)
 # RISCV-tests path

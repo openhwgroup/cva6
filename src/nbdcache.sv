@@ -119,14 +119,14 @@ module nbdcache (
                 .data_rdata_o          ( data_rdata_o    [i]  ),
                 .amo_op_i              ( amo_op_i        [i]  ),
 
-                .req_o                 ( req             [i]  ),
-                .addr_o                ( addr            [i]  ),
-                .gnt_i                 ( gnt             [i]  ),
+                .req_o                 ( req            [i+1] ),
+                .addr_o                ( addr           [i+1] ),
+                .gnt_i                 ( gnt            [i+1] ),
                 .data_i                ( rdata                ),
-                .tag_o                 ( tag             [i]  ),
-                .data_o                ( wdata           [i]  ),
-                .we_o                  ( we              [i]  ),
-                .be_o                  ( be              [i]  ),
+                .tag_o                 ( tag            [i+1] ),
+                .data_o                ( wdata          [i+1] ),
+                .we_o                  ( we             [i+1] ),
+                .be_o                  ( be             [i+1] ),
                 .hit_way_i             ( hit_way              ),
 
                 .miss_req_o            ( miss_req        [i]  ),
@@ -164,13 +164,13 @@ module nbdcache (
         .critical_word_valid_o  ( critical_word_valid  ),
         .mshr_addr_i            ( mshr_addr            ),
         .mashr_addr_matches_o   ( mshr_addr_matches    ),
-        .req_o                  ( req             [3]  ),
-        .addr_o                 ( addr            [3]  ),
-        .gnt_i                  ( gnt             [3]  ),
+        .req_o                  ( req             [0]  ),
+        .addr_o                 ( addr            [0]  ),
+        .gnt_i                  ( gnt             [0]  ),
         .data_i                 ( rdata                ),
-        .be_o                   ( be              [3]  ),
-        .data_o                 ( wdata           [3]  ),
-        .we_o                   ( we              [3]  ),
+        .be_o                   ( be              [0]  ),
+        .data_o                 ( wdata           [0]  ),
+        .we_o                   ( we              [0]  ),
         .*
     );
 
@@ -349,7 +349,7 @@ module tag_cmp #(
         `ifndef VERILATOR
         // assert that cache only hits on one way
         assert property (
-          @(posedge clk_i) $onehot(hit_way_o)) else $warning("Hit should be one-hot encoded");
+          @(posedge clk_i) $onehot0(hit_way_o)) else $warning("Hit should be one-hot encoded");
         `endif
         `endif
     end
