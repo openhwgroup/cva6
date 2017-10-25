@@ -19,3 +19,6 @@
 [submodule "src/axi_slice"]
 	path = src/axi_slice
 	url = git@iis-git.ee.ethz.ch:pulp-open/axi_slice.git
+[submodule "src/axi_node"]
+	path = src/axi_node
+	url = git@iis-git.ee.ethz.ch:kerbin/axi_node.git

@@ -112,6 +112,7 @@ module cache_ctrl #(
                 if (data_req_i) begin
                     // save index, be and we
                     mem_req_d.index = address_index_i;
+                    mem_req_d.tag   = address_tag_i;
                     mem_req_d.be = data_be_i;
                     mem_req_d.we = data_we_i;
                     mem_req_d.wdata = data_wdata_i;
@@ -145,11 +146,12 @@ module cache_ctrl #(
             // cache enabled and waiting for tag
             WAIT_TAG, WAIT_TAG_SAVED: begin
                 // depending on where we come from
-                tag_o = (state_q == WAIT_TAG_SAVED) ? mem_req_q.tag :  address_tag_i;
+                // For the store case the tag comes in the same cycle
+                tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  address_tag_i;
                 // check that the client really wants to do the request
                 if (!kill_req_i) begin
                     // HIT CASE
-                    if (!hit_way_i) begin
+                    if (|hit_way_i) begin
                         // we can request another cache-line if this was a load
                         // make another request
                         if (data_req_i && !mem_req_q.we) begin
@@ -158,6 +160,7 @@ module cache_ctrl #(
                             mem_req_d.be     = data_be_i;
                             mem_req_d.we     = data_we_i;
                             mem_req_d.wdata  = data_wdata_i;
+                            mem_req_d.tag   = address_tag_i;
                             mem_req_d.bypass = 1'b0;
 
                             req_o      = 'b1;
@@ -265,7 +268,7 @@ module cache_ctrl #(
                     state_d = WAIT_CRITICAL_WORD;
                 else if (miss_gnt_i) begin
                     state_d = IDLE;
-                    data_rvalid_o = 1'b1;
+                    data_gnt_o = 1'b1;
                 end
             end
 
@@ -282,6 +285,8 @@ module cache_ctrl #(
                         mem_req_d.be = data_be_i;
                         mem_req_d.we = data_we_i;
                         mem_req_d.wdata = data_wdata_i;
+                        mem_req_d.tag   = address_tag_i;
+
                         // request the cache line
                         req_o = 'b1;
                         addr_o = address_index_i;

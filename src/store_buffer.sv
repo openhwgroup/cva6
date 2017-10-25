@@ -55,10 +55,6 @@ module store_buffer (
     // allocate more space for the commit buffer to be on the save side
     localparam int unsigned DEPTH_COMMIT = 4;
 
-    // we need to keep the tag portion of the address for a cycle later
-    logic [43:0] address_tag_n, address_tag_q;
-    logic        tag_valid_n, tag_valid_q;
-
     // the store queue has two parts:
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
@@ -136,8 +132,8 @@ module store_buffer (
     // those signals can directly be output to the memory
     assign address_index_o = commit_queue_q[commit_read_pointer_q].address[11:0];
     // if we got a new request we already saved the tag from the previous cycle
-    assign address_tag_o   = address_tag_q;
-    assign tag_valid_o     = tag_valid_q;
+    assign address_tag_o   = commit_queue_q[commit_read_pointer_q].address[55:12];
+    assign tag_valid_o     = 1'b0;
     assign data_wdata_o    = commit_queue_q[commit_read_pointer_q].data;
     assign data_be_o       = commit_queue_q[commit_read_pointer_q].be;
     // we will never kill a request in the store buffer since we already know that the translation is valid
@@ -154,10 +150,8 @@ module store_buffer (
         commit_read_pointer_n   = commit_read_pointer_q;
         commit_write_pointer_n  = commit_write_pointer_q;
 
-        address_tag_n  = address_tag_q;
         commit_queue_n = commit_queue_q;
 
-        tag_valid_n    = 1'b0;
         data_req_o     = 1'b0;
 
         // there should be no commit when we are flushing
@@ -167,10 +161,6 @@ module store_buffer (
             if (data_gnt_i) begin
                 // we can evict it from the commit buffer
                 commit_queue_n[commit_read_pointer_q].valid = 1'b0;
-                // save the tag portion
-                address_tag_n = commit_queue_q[commit_read_pointer_q].address[55:12];
-                // signal a valid tag the cycle afterwards
-                tag_valid_n  = 1'b1;
                 // advance the read_pointer
                 commit_read_pointer_n = commit_read_pointer_q + 1'b1;
                 commit_status_cnt--;
@@ -231,9 +221,7 @@ module store_buffer (
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
         if(~rst_ni) begin
-            address_tag_q               <= 'b0;
-            tag_valid_q                 <= 1'b0;
-            // initialize the queues
+             // initialize the queues
             speculative_queue_q         <= '{default: 0};
             commit_queue_q              <= '{default: 0};
             commit_read_pointer_q       <= '0;
@@ -243,8 +231,6 @@ module store_buffer (
             speculative_write_pointer_q <= '0;
             speculative_status_cnt_q    <= '0;
         end else begin
-            address_tag_q               <= address_tag_n;
-            tag_valid_q                 <= tag_valid_n;
             speculative_queue_q         <= speculative_queue_n;
             commit_queue_q              <= commit_queue_n;
             commit_read_pointer_q       <= commit_read_pointer_n;
