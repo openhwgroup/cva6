@@ -7,10 +7,7 @@
 import nbdcache_pkg::*;
 
 module miss_handler #(
-    parameter int unsigned NR_PORTS          = 3,
-    parameter int unsigned CACHE_LINE_WIDTH  = 256,
-    parameter int unsigned AXI_ID_WIDTH      = 10,
-    parameter int unsigned AXI_USER_WIDTH    = 10
+    parameter int unsigned NR_PORTS = 3
 )(
     input  logic                                        clk_i,
     input  logic                                        rst_ni,
@@ -26,8 +23,6 @@ module miss_handler #(
     AXI_BUS.Master                                      bypass_if,
     // Miss handling (~> cacheline refill)
     output logic [NR_PORTS-1:0]                         miss_gnt_o,
-    output logic [NR_PORTS-1:0]                         miss_valid_o,
-    output logic [NR_PORTS-1:0][CACHE_LINE_WIDTH-1:0]   miss_data_o,
 
     output logic [63:0]                                 critical_word_o,
     output logic                                        critical_word_valid_o,
@@ -343,7 +338,7 @@ module miss_handler #(
 
     arbiter #(
             .NR_PORTS          ( NR_PORTS                                                ),
-            .DATA_WIDTH        ( CACHE_LINE_WIDTH                                         )
+            .DATA_WIDTH        ( CACHE_LINE_WIDTH                                        )
     ) i_bypass_arbiter (
         // Master Side
         .data_req_i            ( miss_req_valid & miss_req_bypass                         ),
@@ -368,11 +363,7 @@ module miss_handler #(
         .*
     );
 
-    axi_adapter #(
-        .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH                                         ),
-        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                                             ),
-        .AXI_USER_WIDTH        ( AXI_USER_WIDTH                                           )
-    ) i_bypass_axi_adapter (
+    axi_adapter i_bypass_axi_adapter (
         .req_i                 ( req_fsm_bypass_valid                                     ),
         .type_i                ( SINGLE_REQ                                               ),
         .gnt_o                 ( gnt_bypass_fsm                                           ),
@@ -393,11 +384,7 @@ module miss_handler #(
     // ----------------------
     // Cache Line Arbiter
     // ----------------------
-    axi_adapter #(
-        .CACHE_LINE_WIDTH    ( CACHE_LINE_WIDTH   ),
-        .AXI_ID_WIDTH        ( AXI_ID_WIDTH       ),
-        .AXI_USER_WIDTH      ( AXI_USER_WIDTH     )
-    ) i_miss_axi_adapter (
+    axi_adapter  i_miss_axi_adapter (
         .req_i               ( req_fsm_miss_valid ),
         .type_i              ( CACHE_LINE_REQ     ),
         .gnt_o               ( gnt_miss_fsm       ),
@@ -416,9 +403,7 @@ module miss_handler #(
     // -----------------
     // Replacement LFSR
     // -----------------
-    lfsr #(
-        .SET_ASSOCIATIVITY ( SET_ASSOCIATIVITY )
-    ) i_lfsr (
+    lfsr i_lfsr (
         .en_i           ( lfsr_enable ),
         .refill_way_oh  ( lfsr_oh     ),
         .refill_way_bin ( lfsr_bin    ),
@@ -549,11 +534,7 @@ endmodule
 //
 // Description: Manages communication with the AXI Bus
 //
-module axi_adapter #(
-    parameter int unsigned CACHE_LINE_WIDTH  = 256,
-    parameter int unsigned AXI_ID_WIDTH      = 10,
-    parameter int unsigned AXI_USER_WIDTH    = 10
-)(
+module axi_adapter (
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
 
@@ -859,7 +840,6 @@ endmodule
 // Description: Shift register for way selection
 //
 module lfsr #(
-        parameter int unsigned SET_ASSOCIATIVITY = 8,
         parameter logic [7:0]  SEED = 8'b0
     )(
         input  logic                                  clk_i,

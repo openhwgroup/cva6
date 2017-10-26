@@ -13,7 +13,7 @@ package nbdcache_pkg;
 
     localparam int unsigned INDEX_WIDTH       = 12;
     localparam int unsigned TAG_WIDTH         = 44;
-    localparam int unsigned CACHE_LINE_WIDTH  = 256;
+    localparam int unsigned CACHE_LINE_WIDTH  = 128;
     localparam int unsigned SET_ASSOCIATIVITY = 8;
     localparam int unsigned AXI_ID_WIDTH      = 10;
     localparam int unsigned AXI_USER_WIDTH    = 10;

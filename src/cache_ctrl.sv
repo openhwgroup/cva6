@@ -48,8 +48,6 @@ module cache_ctrl #(
         output miss_req_t                                          miss_req_o,
         // return
         input  logic                                               miss_gnt_i,
-        input  logic                                               miss_valid_i,
-        input  logic [CACHE_LINE_WIDTH-1:0]                        miss_data_i,
         input  logic [63:0]                                        critical_word_i,
         input  logic                                               critical_word_valid_i,
 
@@ -112,8 +110,8 @@ module cache_ctrl #(
                     // save index, be and we
                     mem_req_d.index = address_index_i;
                     mem_req_d.tag   = address_tag_i;
-                    mem_req_d.be = data_be_i;
-                    mem_req_d.we = data_we_i;
+                    mem_req_d.be    = data_be_i;
+                    mem_req_d.we    = data_we_i;
                     mem_req_d.wdata = data_wdata_i;
                     // TODO: Check for non-cache able accesses
 
@@ -179,7 +177,7 @@ module cache_ctrl #(
                         // report data for a read
                         if (!mem_req_q.we) begin
                             data_rvalid_o = 1'b1;
-                            data_rdata_o = data_i[one_hot_to_bin(hit_way_i)].data[mem_req_q.index[5:0] +: 8];
+                            data_rdata_o = data_i[one_hot_to_bin(hit_way_i)].data[mem_req_q.index[BYTE_OFFSET-1:0] +: 8];
                         // else this was a store so we need an extra step to handle it
                         end else begin
                             state_d = STORE_REQ;
@@ -207,7 +205,7 @@ module cache_ctrl #(
                     // -------------------------
                     // Check for cache-ability
                     // -------------------------
-                    if (|tag_o[TAG_WIDTH+INDEX_WIDTH-1:DECISION_BIT]) begin
+                    if (!(|tag_o[TAG_WIDTH-1:DECISION_BIT-INDEX_WIDTH])) begin
                         mem_req_d.tag = address_tag_i;
                         state_d = WAIT_REFILL_GNT;
                     end
@@ -222,8 +220,8 @@ module cache_ctrl #(
                 be_o.dirty = hit_way_q;
                 be_o.valid = hit_way_q;
 
-                be_o.data[mem_req_q.index[5:0] +: 64] = mem_req_q.be;
-                data_o.data[mem_req_q.index[5:0] +: 64] = mem_req_q.wdata;
+                be_o.data[mem_req_q.index[BYTE_OFFSET-1:0] +: 64] = mem_req_q.be;
+                data_o.data[mem_req_q.index[BYTE_OFFSET-1:0] +: 64] = mem_req_q.wdata;
                 // ~> change the state
                 data_o.dirty = 1'b1;
                 data_o.valid = 1'b1;
