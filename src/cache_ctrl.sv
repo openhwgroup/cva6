@@ -107,7 +107,6 @@ module cache_ctrl #(
         case (state_q)
 
             IDLE: begin
-
                 // a new request arrived
                 if (data_req_i) begin
                     // save index, be and we
@@ -150,7 +149,9 @@ module cache_ctrl #(
                 tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  address_tag_i;
                 // check that the client really wants to do the request
                 if (!kill_req_i) begin
+                    // ------------
                     // HIT CASE
+                    // ------------
                     if (|hit_way_i) begin
                         // we can request another cache-line if this was a load
                         // make another request
@@ -184,21 +185,31 @@ module cache_ctrl #(
                             state_d = STORE_REQ;
                             hit_way_d = hit_way_i;
                         end
-
+                    // ------------
                     // MISS CASE
+                    // ------------
                     end else begin
                         // also save tag
                         mem_req_d.tag = address_tag_i;
                         // make a miss request
                         state_d = WAIT_REFILL_GNT;
                     end
-                    // check MSHR
+                    // ---------------
+                    // Check MSHR
+                    // ---------------
                     mshr_addr_o = {address_tag_i, mem_req_q.index};
                     // we've got a match on MSHR
                     if (mashr_addr_matches_i) begin
                         state_d = WAIT_MSHR;
                         // save tag
                         mem_req_d.tag = address_tag_i;
+                    end
+                    // -------------------------
+                    // Check for cache-ability
+                    // -------------------------
+                    if (|tag_o[TAG_WIDTH+INDEX_WIDTH-1:DECISION_BIT]) begin
+                        mem_req_d.tag = address_tag_i;
+                        state_d = WAIT_REFILL_GNT;
                     end
                 end
             end
@@ -208,9 +219,8 @@ module cache_ctrl #(
                 // store data, write dirty bit
                 req_o = hit_way_q;
 
-                for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++)
-                    if (hit_way_q[i])
-                        be_o.state[i +: 2] = 2'b11;
+                be_o.dirty = hit_way_q;
+                be_o.valid = hit_way_q;
 
                 be_o.data[mem_req_q.index[5:0] +: 64] = mem_req_q.be;
                 data_o.data[mem_req_q.index[5:0] +: 64] = mem_req_q.wdata;
@@ -257,7 +267,7 @@ module cache_ctrl #(
 
                 miss_req_o.valid = 1'b1;
                 miss_req_o.bypass = mem_req_q.bypass;
-                miss_req_o.addr = { mem_req_q.tag, mem_req_q.index };
+                miss_req_o.addr = {mem_req_q.tag, mem_req_q.index};
                 miss_req_o.be = mem_req_q.be;
                 miss_req_o.we = mem_req_q.we;
                 miss_req_o.wdata = mem_req_q.wdata;
@@ -306,7 +316,7 @@ module cache_ctrl #(
                     end
                 end
             end
-
+            // ~> wait until the bypass request is valid
             WAIT_REFILL_VALID: begin
                 // got a valid answer
                 if (bypass_valid_i) begin

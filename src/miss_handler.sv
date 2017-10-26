@@ -203,7 +203,8 @@ module miss_handler #(
                     req_o        = evict_way_q;
                     we_o         = 1'b1;
                     be_o         = {{$bits(cl_be_t)}{1'b1}};
-                    be_o.state   = 2'h3 << one_hot_to_bin(evict_way_q);
+                    be_o.valid   = evict_way_q;
+                    be_o.dirty   = evict_way_q;
                     data_o.tag   = mshr_q.addr[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
                     data_o.data  = data_miss_fsm;
                     data_o.valid = 1'b1;
@@ -237,7 +238,7 @@ module miss_handler #(
                     state_d = EVICT_WAY;
                 // not dirty ~> continue
                 end else begin
-                    addr_o = cnt_q;
+                    addr_o = cnt_q << BYTE_OFFSET;
                     req_o = 1'b1;
                     cnt_d = cnt_q + 1'b1;
 
@@ -263,7 +264,7 @@ module miss_handler #(
                     // write status array
                     req_o = 1'b1;
                     we_o  = 1'b1;
-                    be_o.state = 2'h3 << one_hot_to_bin(evict_way_q);
+                    be_o.valid = evict_way_q;
 
                     if (EVICT_WAY_MISS)
                         // go back to handling the miss
@@ -276,11 +277,13 @@ module miss_handler #(
 
             INIT: begin
                 // initialize status array
-                addr_o = cnt_q;
+                addr_o = cnt_q << BYTE_OFFSET;
                 req_o  = 1'b1;
                 we_o   = 1'b1;
                 // only write the dirty array
-                be_o.state = {{DIRTY_WIDTH}{1'b1}};
+                be_o.dirty = {{SET_ASSOCIATIVITY}{1'b1}};
+                be_o.valid = {{SET_ASSOCIATIVITY}{1'b1}};
+
                 data_o = 'b0;
 
                 cnt_d  = cnt_q + 1;
