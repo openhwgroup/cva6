@@ -77,8 +77,6 @@ module nbdcache (
 
     logic [2:0][$bits(miss_req_t)-1:0] miss_req;
     logic [2:0]                        miss_gnt;
-    logic [2:0]                        miss_valid;
-    logic [2:0][CACHE_LINE_WIDTH-1:0]  miss_data;
 
     logic [2:0]                        bypass_gnt;
     logic [2:0]                        bypass_valid;
@@ -131,8 +129,6 @@ module nbdcache (
 
                 .miss_req_o            ( miss_req        [i]  ),
                 .miss_gnt_i            ( miss_gnt        [i]  ),
-                .miss_valid_i          ( miss_valid      [i]  ),
-                .miss_data_i           ( miss_data       [i]  ),
                 .critical_word_i       ( critical_word        ),
                 .critical_word_valid_i ( critical_word_valid  ),
                 .bypass_gnt_i          ( bypass_gnt      [i]  ),
@@ -155,8 +151,6 @@ module nbdcache (
         .busy_i                 ( |busy                ),
         .miss_req_i             ( miss_req             ),
         .miss_gnt_o             ( miss_gnt             ),
-        .miss_valid_o           ( miss_valid           ),
-        .miss_data_o            ( miss_data            ),
         .bypass_gnt_o           ( bypass_gnt           ),
         .bypass_valid_o         ( bypass_valid         ),
         .bypass_data_o          ( bypass_data          ),
