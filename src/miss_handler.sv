@@ -82,15 +82,14 @@ module miss_handler #(
     // Cache Management
     // ------------------------------
     always_comb begin : cache_management
-        automatic logic [$clog2(EVICT_WAY)-1:0] evict_way, valid_way;
+        automatic logic [SET_ASSOCIATIVITY-1:0] evict_way, valid_way;
 
         for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
-            evict_way = data_i[i].valid & data_i[i].dirty;
-            valid_way = data_i[i].valid;
+            evict_way[i] = data_i[i].valid & data_i[i].dirty;
+            valid_way[i] = data_i[i].valid;
         end
 
         // default assignment
-        mashr_addr_matches_o = 'b0;
         req_o = 1'b0;
         addr_o = '0;
         data_o = '0;
@@ -109,13 +108,6 @@ module miss_handler #(
         req_fsm_miss_be     = '0;
 
         flush_ack_o         = 1'b0;
-        // check MSHR for aliasing
-        // and the number of MSHR registers (i think one will be just the only sane choice here)
-        for (int i = 0; i < NR_PORTS; i++) begin
-            if (mshr_q.valid && mshr_addr_i[i][55:$clog2(CACHE_LINE_WIDTH)] == mshr_q.addr[55:$clog2(CACHE_LINE_WIDTH)]) begin
-                mashr_addr_matches_o[i] = 1'b1;
-            end
-        end
 
         // --------------------------------
         // Flush and Miss operation
@@ -131,7 +123,10 @@ module miss_handler #(
             IDLE: begin
 
                 // check if we want to flush and can flush e.g.: we are not busy anymore
+                // TODO: Check that the busy flag is indeed needed
                 if (flush_i && !busy_i) begin
+                    req_o = 1'b1;
+                    addr_o = '0;
                     state_d = FLUSHING;
                     cnt_d = '0;
                 end
@@ -140,12 +135,14 @@ module miss_handler #(
                 for (int unsigned i = 0; i < NR_PORTS; i++) begin
                     // here comes the refill portion of code
                     if (miss_req_valid[i] && !miss_req_bypass[i]) begin
-                        state_d = MISS;
+                        state_d      = MISS;
                         // save to MSHR
                         mshr_d.valid = 1'b1;
-                        mshr_d.we = miss_req_we[i];
-                        mshr_d.id = i;
-                        mshr_d.addr = miss_req_addr[i][TAG_WIDTH+INDEX_WIDTH-1:0];
+                        mshr_d.we    = miss_req_we[i];
+                        mshr_d.id    = i;
+                        mshr_d.addr  = miss_req_addr[i][TAG_WIDTH+INDEX_WIDTH-1:0];
+                        mshr_d.wdata = miss_req_wdata;
+                        mshr_d.be    = miss_req_be;
                         break;
                     end
                 end
@@ -175,61 +172,62 @@ module miss_handler #(
                 end else begin
                     for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
                         // replace the first non valid cache line
-                        if (~valid_way[i])
+                        if (~valid_way[i]) begin
                             evict_way_d = 1'b1 << i;
-
-                        state_d = LOAD_CACHELINE;
+                            break;
+                        end
                     end
+                    state_d = LOAD_CACHELINE;
                 end
             end
 
             // ~> we can just load the cache-line, the way is store in evict_way_q
             LOAD_CACHELINE: begin
                 req_fsm_miss_valid  = 1'b1;
-                req_fsm_miss_addr   = miss_req_addr[mshr_q.id];
+                req_fsm_miss_addr   = mshr_q.addr;
 
                 if (gnt_miss_fsm) begin
                     state_d = REPL_CACHELINE;
+                    miss_gnt_o[mshr_q.id] = 1'b1;
                 end
             end
 
             // ~> replace the cacheline
             REPL_CACHELINE: begin
+                // calculate cacheline offset
+                automatic logic [BYTE_OFFSET-1:0] cl_offset = mshr_q.addr[BYTE_OFFSET-1:0];
+                // we've got a valid response from refill unit
                 if (valid_miss_fsm) begin
-                    addr_o = miss_req_addr[mshr_q.id][INDEX_WIDTH-1:0];
-                    req_o = evict_way_q;
-                    we_o  = 1'b1;
-                    be_o  = 'b1;
-                    data_o.tag = miss_req_addr[mshr_q.id][INDEX_WIDTH+TAG_WIDTH+1:INDEX_WIDTH];
-                    data_o.data = data_miss_fsm;
-                    state_d = IDLE;
-                    miss_gnt_o[mshr_q.id] = 1'b1;
+
+                    addr_o       = mshr_q.addr[INDEX_WIDTH-1:0];
+                    req_o        = evict_way_q;
+                    we_o         = 1'b1;
+                    be_o         = {{$bits(cl_be_t)}{1'b1}};
+                    be_o.state   = 2'h3 << one_hot_to_bin(evict_way_q);
+                    data_o.tag   = mshr_q.addr[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
+                    data_o.data  = data_miss_fsm;
+                    data_o.valid = 1'b1;
+                    data_o.dirty = 1'b0;
+
                     // is this a write?
-                    if (miss_req_we[mshr_q.id]) begin
+                    if (mshr_q.we) begin
                         // Yes, so safe the updated data now
-                        data_o.data[miss_req_addr[mshr_q.id][$clog2(CACHE_LINE_WIDTH/8)-1:0] +: 64] = miss_req_wdata;
+                        for (int i = 0; i < 8; i++) begin
+                            // check if we really want to write the corresponding bute
+                            if (mshr_q.be[i])
+                                data_o.data[cl_offset + i] = mshr_q.wdata[i];
+                        end
+                        // its immediately dirty if we write
+                        data_o.dirty = 1'b1;
                     end
                     // reset MSHR
                     mshr_d.valid = 1'b0;
+                    // go back to idle
+                    state_d = IDLE;
                 end
             end
 
             FLUSHING: begin
-                addr_o = cnt_q;
-                req_o  = 1'b1;
-                // our request was granted
-                if (gnt_i) begin
-                    cnt_d = cnt_q + 1'b1;
-                    state_d = FLUSH;
-                end
-
-                if (cnt_q == NUM_WORDS) begin
-                    flush_ack_o = 1'b1;
-                    state_d = IDLE;
-                end
-            end
-
-            FLUSH: begin
                 // at least one of the cache lines is dirty
                 if (|evict_way) begin
                     // evict cache line
@@ -241,14 +239,13 @@ module miss_handler #(
                 end else begin
                     addr_o = cnt_q;
                     req_o = 1'b1;
+                    cnt_d = cnt_q + 1'b1;
 
-                    // got a grant so stay here
-                    if (gnt_i) begin
-                        cnt_d = cnt_q + 1'b1;
-                    // didn't get a grant so go back to flushing until we received a grant
-                    end else begin
-                        cnt_d = FLUSH;
-                    end
+                end
+
+                if (cnt_q == NUM_WORDS) begin
+                    flush_ack_o = 1'b1;
+                    state_d = IDLE;
                 end
             end
 
@@ -266,7 +263,7 @@ module miss_handler #(
                     // write status array
                     req_o = 1'b1;
                     we_o  = 1'b1;
-                    be_o.state = evict_way_q << 2;
+                    be_o.state = 2'h3 << one_hot_to_bin(evict_way_q);
 
                     if (EVICT_WAY_MISS)
                         // go back to handling the miss
@@ -282,6 +279,8 @@ module miss_handler #(
                 addr_o = cnt_q;
                 req_o  = 1'b1;
                 we_o   = 1'b1;
+                // only write the dirty array
+                be_o.state = {{DIRTY_WIDTH}{1'b1}};
                 data_o = 'b0;
 
                 cnt_d  = cnt_q + 1;
@@ -294,6 +293,17 @@ module miss_handler #(
         endcase
     end
 
+    // check MSHR for aliasing
+    always_comb begin
+
+        mashr_addr_matches_o = 'b0;
+
+        for (int i = 0; i < NR_PORTS; i++) begin
+            if (mshr_q.valid && mshr_addr_i[i][55:$clog2(CACHE_LINE_WIDTH)] == mshr_q.addr[55:$clog2(CACHE_LINE_WIDTH)]) begin
+                mashr_addr_matches_o[i] = 1'b1;
+            end
+        end
+    end
     // --------------------
     // Sequential Process
     // --------------------
@@ -562,7 +572,7 @@ module axi_adapter #(
     // AXI port
     AXI_BUS.Master                                      axi
 );
-    localparam BURST_SIZE = CACHE_LINE_WIDTH/64;
+    localparam BURST_SIZE = CACHE_LINE_WIDTH/64-1;
 
     enum logic [3:0] {
         IDLE, WAIT_B_VALID, WAIT_AW_READY, WAIT_LAST_W_READY, WAIT_LAST_W_READY_AW_READY, WAIT_AW_READY_BURST,
@@ -573,8 +583,8 @@ module axi_adapter #(
     logic [$clog2(CACHE_LINE_WIDTH/64)-1:0] cnt_d, cnt_q;
     logic [(CACHE_LINE_WIDTH/64)-1:0][63:0] cache_line_d, cache_line_q;
     // save the address for a read, as we allow for non-cacheline aligned accesses
-    logic [$clog2(CACHE_LINE_WIDTH/64)-1:0]  addr_offset_d, addr_offset_q;
-    logic [AXI_ID_WIDTH-1:0]                 id_d, id_q;
+    logic [$clog2(CACHE_LINE_WIDTH/64)-1:0] addr_offset_d, addr_offset_q;
+    logic [AXI_ID_WIDTH-1:0]                id_d, id_q;
 
     always_comb begin : axi_fsm
         // Default assignments
@@ -677,8 +687,8 @@ module axi_adapter #(
                         gnt_o = axi.ar_ready;
 
                         if (type_i != SINGLE_REQ) begin
-                            axi.ar_len = CACHE_LINE_WIDTH/64;
-                            cnt_d = CACHE_LINE_WIDTH/64 - 1;
+                            axi.ar_len = BURST_SIZE;
+                            cnt_d = BURST_SIZE;
                         end
 
                         if (axi.ar_ready) begin
@@ -786,7 +796,7 @@ module axi_adapter #(
                 // this is the first read a.k.a the critical word
                 if (axi.r_valid) begin
                     // this is the first word of a cacheline read, e.g.: the word which was causing the miss
-                    if (state_q == WAIT_R_VALID_MULTIPLE) begin
+                    if (state_q == WAIT_R_VALID_MULTIPLE && cnt_q == BURST_SIZE) begin
                         critical_word_valid_o = 1'b1;
                         critical_word_o       = axi.r_data;
                     end
@@ -798,10 +808,14 @@ module axi_adapter #(
                     end
 
                     // save the word
-                    if (state_q == WAIT_R_VALID_MULTIPLE)
-                        cache_line_d[addr_offset_q + cnt_q] = axi.r_data;
-                    else
+                    if (state_q == WAIT_R_VALID_MULTIPLE) begin
+                        cache_line_d[addr_offset_q + (BURST_SIZE-cnt_q)] = axi.r_data;
+
+                    end else
                         cache_line_d[0] = axi.r_data;
+
+                    // Decrease the counter
+                    cnt_d = cnt_q - 1;
                 end
             end
             // ~> read is complete

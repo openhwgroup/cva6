@@ -129,7 +129,7 @@ module cache_ctrl #(
                     // ------------------
                     end else begin
                         // request the cache line
-                        req_o = 'b1;
+                        req_o = {{SET_ASSOCIATIVITY}{1'b1}};
                         addr_o = address_index_i;
                         // Wait that we have access on the memory array
                         if (gnt_i) begin
@@ -160,10 +160,10 @@ module cache_ctrl #(
                             mem_req_d.be     = data_be_i;
                             mem_req_d.we     = data_we_i;
                             mem_req_d.wdata  = data_wdata_i;
-                            mem_req_d.tag   = address_tag_i;
+                            mem_req_d.tag    = address_tag_i;
                             mem_req_d.bypass = 1'b0;
 
-                            req_o      = 'b1;
+                            req_o      = {{SET_ASSOCIATIVITY}{1'b1}};
                             addr_o     = address_index_i;
                             data_gnt_o = gnt_i;
 
@@ -178,7 +178,7 @@ module cache_ctrl #(
                         // report data for a read
                         if (!mem_req_q.we) begin
                             data_rvalid_o = 1'b1;
-                            data_rdata_o = data_i[hit_way_i].data[mem_req_q.tag[5:0] +: 64];
+                            data_rdata_o = data_i[one_hot_to_bin(hit_way_i)].data[mem_req_q.index[5:0] +: 8];
                         // else this was a store so we need an extra step to handle it
                         end else begin
                             state_d = STORE_REQ;
@@ -230,7 +230,7 @@ module cache_ctrl #(
                 mshr_addr_o = {mem_req_q.tag, mem_req_q.index};
                 // we can start a new request
                 if (!mashr_addr_matches_i) begin
-                    req_o = 'b1;
+                    req_o = {{SET_ASSOCIATIVITY}{1'b1}};
                     addr_o = mem_req_q.index;
 
                     if (gnt_i)
@@ -290,7 +290,7 @@ module cache_ctrl #(
                         mem_req_d.tag   = address_tag_i;
 
                         // request the cache line
-                        req_o = 'b1;
+                        req_o = {{SET_ASSOCIATIVITY}{1'b1}};
                         addr_o = address_index_i;
                         state_d = IDLE;
 
