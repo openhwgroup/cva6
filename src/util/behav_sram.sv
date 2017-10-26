@@ -31,21 +31,19 @@ module sram #(
 );
     localparam ADDR_WIDTH = $clog2(NUM_WORDS);
 
-    logic [ADDR_WIDTH-1:0] ram [DATA_WIDTH-1:0];
+    logic [DATA_WIDTH-1:0] ram [NUM_WORDS-1:0];
     logic [ADDR_WIDTH-1:0] raddr_q;
 
     // 1. randomize array
     // 2. randomize output when no request is active
 
     always @(posedge clk_i) begin
-      if (req_i && !we_i) raddr_q <= addr_i;
-
-    end
-
-    always @(posedge clk_i) begin
-        if (we_i && req_i) begin
+        if (req_i) begin
+            if (!we_i)
+                raddr_q <= addr_i;
+            else
             for (int i = 0; i < DATA_WIDTH; i++)
-                if (be_i[i]) ram[addr_i][i] <= wdata_i;
+                if (be_i[i]) ram[addr_i][i] <= wdata_i[i];
         end
     end
 

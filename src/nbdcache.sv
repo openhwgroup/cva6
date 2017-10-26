@@ -172,6 +172,8 @@ module nbdcache (
         .*
     );
 
+    assign tag[0] = '0;
+
     // --------------
     // Memory Arrays
     // --------------
@@ -304,22 +306,21 @@ module tag_cmp #(
         input  data_t               [SET_ASSOCIATIVITY-1:0]  rdata_i
     );
 
-    // if there is some request output it directly
-    assign req_o = |req_i;
+    assign rdata_o = rdata_i;
     // one hot encoded
     logic [NR_PORTS-1:0] id_d, id_q;
 
     always_comb begin
 
         gnt_o     = '0;
-        rdata_o   = '0;
         id_d      = '0;
         hit_way_o = '0;
 
         // Request Side
         // priority select
         for (int unsigned i = 0; i < NR_PORTS; i++) begin
-            if (req_i[i]) begin
+            if (|req_i[i]) begin
+                req_o    = req_i[i];
                 id_d     = (1'b1 << i);
                 gnt_o[i] = 1'b1;
                 addr_o   = addr_i[i];
@@ -333,7 +334,6 @@ module tag_cmp #(
         // Response Side
         for (int unsigned i = 0; i < NR_PORTS; i++) begin
             if (id_q[i]) begin
-                rdata_o[i] = rdata_i;
                 // Tag compare
                 for (int unsigned j = 0; j < SET_ASSOCIATIVITY; j++) begin
                     // compare tag and check validity

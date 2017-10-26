@@ -22,15 +22,17 @@ package nbdcache_pkg;
     // Calculated parameter
     localparam BYTE_OFFSET = $clog2(CACHE_LINE_WIDTH/8);
     localparam NUM_WORDS = 2**(INDEX_WIDTH-BYTE_OFFSET);
-    localparam DIRTY_WIDTH = (CACHE_LINE_WIDTH/64)*SET_ASSOCIATIVITY*2;
+    localparam DIRTY_WIDTH = SET_ASSOCIATIVITY*2;
 
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } req_t;
 
     typedef struct packed {
-        logic [1:0]  id;     // id for which we handle the miss
-        logic        valid;
-        logic        we;
-        logic [55:0] addr;
+        logic [1:0]      id;     // id for which we handle the miss
+        logic            valid;
+        logic            we;
+        logic [55:0]     addr;
+        logic [2:0][7:0] wdata;
+        logic [7:0]      be;
     } mshr_t;
 
     typedef struct packed {
@@ -43,10 +45,10 @@ package nbdcache_pkg;
     } miss_req_t;
 
     typedef struct packed {
-        logic [TAG_WIDTH-1:0]        tag;    // tag array
-        logic [CACHE_LINE_WIDTH-1:0] data;   // data array
-        logic                        valid;  // state array
-        logic                        dirty;  // state array
+        logic [TAG_WIDTH-1:0]                tag;    // tag array
+        logic [CACHE_LINE_WIDTH/8-1:0][7:0]  data;   // data array
+        logic                                valid;  // state array
+        logic                                dirty;  // state array
     } cache_line_t;
 
     // cache line byte enable
