@@ -215,9 +215,10 @@ module nbdcache (
 
     generate
         for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
-            assign dirty_wdata[i*2 +: 2] = {wdata_ram.dirty, wdata_ram.valid};
-            assign rdata_ram[i].valid = dirty_rdata[i*2];
-            assign rdata_ram[i].dirty = dirty_rdata[i*2+1];
+            assign dirty_wdata[i]                     = wdata_ram.dirty;
+            assign dirty_wdata[SET_ASSOCIATIVITY + i] = wdata_ram.valid;
+            assign rdata_ram[i].valid                 = dirty_rdata[SET_ASSOCIATIVITY + i];
+            assign rdata_ram[i].dirty                 = dirty_rdata[i];
         end
     endgenerate
 
@@ -230,7 +231,7 @@ module nbdcache (
         .we_i    ( we_ram                              ),
         .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET] ),
         .wdata_i ( dirty_wdata                         ),
-        .be_i    ( be_ram.state                        ),
+        .be_i    ( {be_ram.valid, be_ram.dirty}        ),
         .rdata_o ( dirty_rdata                         )
     );
 
