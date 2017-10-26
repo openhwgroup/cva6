@@ -61,8 +61,8 @@ package nbdcache_pkg;
     } cl_be_t;
 
     // convert one hot to bin for -> needed for cache replacement
-    function logic [$clog2(SET_ASSOCIATIVITY)-1:0] one_hot_to_bin (logic [SET_ASSOCIATIVITY-1:0] in);
-        for (logic [$clog2(SET_ASSOCIATIVITY)-1:0] i = '0; i < SET_ASSOCIATIVITY; i++) begin
+    function automatic logic [$clog2(SET_ASSOCIATIVITY)-1:0] one_hot_to_bin (input logic [SET_ASSOCIATIVITY-1:0] in);
+        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
             if (in[i])
                 return i;
         end
