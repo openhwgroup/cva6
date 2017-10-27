@@ -72,7 +72,7 @@ package nbdcache_pkg;
         // one-hot return vector
         logic [SET_ASSOCIATIVITY-1:0] oh = '0;
         for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
-            if (valid_dirty) begin
+            if (valid_dirty[i]) begin
                 oh[i] = 1'b1;
                 return oh;
             end
