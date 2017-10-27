@@ -40,7 +40,7 @@ module miss_handler #(
     output logic                                        we_o
 );
     // FSM states
-    enum logic [3:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY, EVICT_WAY_MISS, WAIT_GNT_SRAM, MISS,
+    enum logic [3:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY_FLUSH, EVICT_WAY_MISS, WAIT_GNT_SRAM, MISS,
                        LOAD_CACHELINE, MISS_REPL, REPL_CACHELINE, INIT } state_d, state_q;
     // Registers
     mshr_t                                         mshr_d, mshr_q;
@@ -69,9 +69,9 @@ module miss_handler #(
     logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]        data_miss_fsm;
 
     // Cache Management <-> LFSR
-    logic                                   lfsr_enable;
-    logic [SET_ASSOCIATIVITY-1:0]           lfsr_oh;
-    logic [$clog2(SET_ASSOCIATIVITY-1)-1:0] lfsr_bin;
+    logic                                          lfsr_enable;
+    logic [SET_ASSOCIATIVITY-1:0]                  lfsr_oh;
+    logic [$clog2(SET_ASSOCIATIVITY-1)-1:0]        lfsr_bin;
 
     // ------------------------------
     // Cache Management
@@ -83,16 +83,18 @@ module miss_handler #(
             evict_way[i] = data_i[i].valid & data_i[i].dirty;
             valid_way[i] = data_i[i].valid;
         end
-
-        // default assignment
-        req_o = 1'b0;
+        // ----------------------
+        // Default Assignments
+        // ----------------------
+        // memory array
+        req_o  = 1'b0;
         addr_o = '0;
         data_o = '0;
-        be_o = '0;
-        we_o = '0;
-
+        be_o   = '0;
+        we_o   = '0;
+        // Cache controller
         miss_gnt_o = 1'b0;
-
+        // LFSR replacement unit
         lfsr_enable = 1'b0;
         // to AXI refill
         req_fsm_miss_valid  = 1'b0;
@@ -101,7 +103,7 @@ module miss_handler #(
         req_fsm_miss_wdata  = '0;
         req_fsm_miss_we     = 1'b0;
         req_fsm_miss_be     = '0;
-
+        // core
         flush_ack_o         = 1'b0;
 
         // --------------------------------
@@ -197,7 +199,7 @@ module miss_handler #(
                     addr_o       = mshr_q.addr[INDEX_WIDTH-1:0];
                     req_o        = evict_way_q;
                     we_o         = 1'b1;
-                    be_o         = {{$bits(cl_be_t)}{1'b1}};
+                    be_o         = '1;
                     be_o.valid   = evict_way_q;
                     be_o.dirty   = evict_way_q;
                     data_o.tag   = mshr_q.addr[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
@@ -230,7 +232,7 @@ module miss_handler #(
                     evict_way_d = evict_way;
                     evict_cl_d = data_i[one_hot_to_bin(evict_way)];
 
-                    state_d = EVICT_WAY;
+                    state_d = EVICT_WAY_FLUSH;
                 // not dirty ~> continue
                 end else begin
                     addr_o = cnt_q << BYTE_OFFSET;
@@ -245,12 +247,12 @@ module miss_handler #(
                 end
             end
 
-            // evict a cache line from way saved in evict_way_q
-            EVICT_WAY, EVICT_WAY_MISS: begin
+            // ~> evict a cache line from way saved in evict_way_q
+            EVICT_WAY_FLUSH, EVICT_WAY_MISS: begin
 
                 req_fsm_miss_valid  = 1'b1;
                 req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q};
-                req_fsm_miss_be     = {{CACHE_LINE_WIDTH/8-1}{1'b1}};
+                req_fsm_miss_be     = '1;
                 req_fsm_miss_we     = 1'b1;
                 req_fsm_miss_wdata  = evict_cl_q.data;
 
@@ -260,34 +262,27 @@ module miss_handler #(
                     req_o = 1'b1;
                     we_o  = 1'b1;
                     be_o.valid = evict_way_q;
-
-                    if (EVICT_WAY_MISS)
-                        // go back to handling the miss
-                        state_d = MISS;
-                    else
-                        // go back to flushing
-                        state_d = FLUSHING;
+                    be_o.dirty = evict_way_q;
+                    // go back to handling the miss or flushing, depending on where we came from
+                    state_d = (state_q == EVICT_WAY_MISS) ? MISS : FLUSHING;
                 end
             end
 
+            // ~> only called after initialization
             INIT: begin
                 // initialize status array
                 addr_o = cnt_q << BYTE_OFFSET;
                 req_o  = 1'b1;
                 we_o   = 1'b1;
                 // only write the dirty array
-                be_o.dirty = {{SET_ASSOCIATIVITY}{1'b1}};
-                be_o.valid = {{SET_ASSOCIATIVITY}{1'b1}};
-
-                data_o = 'b0;
-
-                cnt_d  = cnt_q + 1;
-
+                be_o.dirty = '1;
+                be_o.valid = '1;
+                data_o     = 'b0;
+                cnt_d      = cnt_q + 1;
+                // finished initialization
                 if (cnt_q == NUM_WORDS)
                     state_d = IDLE;
-
             end
-
         endcase
     end
 
