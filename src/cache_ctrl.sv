@@ -82,6 +82,11 @@ module cache_ctrl #(
     // Cache FSM
     // --------------
     always_comb begin : cache_ctrl_fsm
+        // incoming cache-line -> this is needed as synopsys is not supporting +: indexing in a multi-dimensional array
+        automatic logic [CACHE_LINE_WIDTH-1:0] cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
+        // cache-line offset -> multiple of 64
+        automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset = mem_req_q.index[BYTE_OFFSET-1:3] << 6;
+        automatic logic [$clog2(CACHE_LINE_WIDTH/8)-1:0] be_offset =  mem_req_q.index[BYTE_OFFSET-1:3] << 3;
         // default assignments
         state_d   = state_q;
         mem_req_d = mem_req_q;
@@ -142,10 +147,6 @@ module cache_ctrl #(
 
             // cache enabled and waiting for tag
             WAIT_TAG, WAIT_TAG_SAVED: begin
-                // incoming cache-line -> this is needed as synopsys is not supporting +: indexing in a multi-dimensional array
-                automatic logic [CACHE_LINE_WIDTH-1:0] cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
-                // cache-line offset -> multiple of 64
-                automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset = mem_req_q.index[BYTE_OFFSET-1:0] << 3;
                 // depending on where we come from
                 // For the store case the tag comes in the same cycle
                 tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  address_tag_i;
@@ -224,8 +225,8 @@ module cache_ctrl #(
                 be_o.dirty = hit_way_q;
                 be_o.valid = hit_way_q;
 
-                be_o.data[mem_req_q.index[BYTE_OFFSET-1:0] +: 64] = mem_req_q.be;
-                data_o.data[mem_req_q.index[BYTE_OFFSET-1:0] +: 64] = mem_req_q.wdata;
+                be_o.data[be_offset +: 8] = mem_req_q.be;
+                data_o.data[cl_offset +: 64] = mem_req_q.wdata;
                 // ~> change the state
                 data_o.dirty = 1'b1;
                 data_o.valid = 1'b1;

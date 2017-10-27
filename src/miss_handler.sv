@@ -192,7 +192,7 @@ module miss_handler #(
             // ~> replace the cacheline
             REPL_CACHELINE: begin
                 // calculate cacheline offset
-                automatic logic [BYTE_OFFSET-1:0] cl_offset = mshr_q.addr[BYTE_OFFSET-1:0];
+                automatic logic [BYTE_OFFSET-1:0] cl_offset = mshr_q.addr[BYTE_OFFSET-1:3] << 6;
                 // we've got a valid response from refill unit
                 if (valid_miss_fsm) begin
 
@@ -213,7 +213,7 @@ module miss_handler #(
                         for (int i = 0; i < 8; i++) begin
                             // check if we really want to write the corresponding bute
                             if (mshr_q.be[i])
-                                data_o.data[cl_offset + i] = mshr_q.wdata[i];
+                                data_o.data[(cl_offset + i*8) +: 8] = mshr_q.wdata[i];
                         end
                         // its immediately dirty if we write
                         data_o.dirty = 1'b1;
