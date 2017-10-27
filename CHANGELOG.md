@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### 1.0.0
+
+### Added
+
+- Non-blocking data cache
+- Two AXI interfaces on top level, one for bypassing and one for actual cache-able regions
+
+### Changed
+
+- Testbench: EOC component now listening on store interface only
+- Store interfaces has been simplified by removing the `valid` signal, a transaction is now considered finished as soon as the dcache gives the grant signal.
+
 ### 0.4.0 - 2017-10-13
 
 Linux booting on FPGA.
