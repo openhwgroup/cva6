@@ -142,8 +142,10 @@ module cache_ctrl #(
 
             // cache enabled and waiting for tag
             WAIT_TAG, WAIT_TAG_SAVED: begin
-                // incoming cache-line
+                // incoming cache-line -> this is needed as synopsys is not supporting +: indexing in a multi-dimensional array
                 automatic logic [CACHE_LINE_WIDTH-1:0] cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
+                // cache-line offset -> multiple of 64
+                automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset = mem_req_q.index[BYTE_OFFSET-1:0] << 3;
                 // depending on where we come from
                 // For the store case the tag comes in the same cycle
                 tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  address_tag_i;
@@ -179,7 +181,7 @@ module cache_ctrl #(
                         // report data for a read
                         if (!mem_req_q.we) begin
                             data_rvalid_o = 1'b1;
-                            data_rdata_o = cl_i[(mem_req_q.index[BYTE_OFFSET-1:0] << 4)+: 64];
+                            data_rdata_o = cl_i[cl_offset +: 64];
                         // else this was a store so we need an extra step to handle it
                         end else begin
                             state_d = STORE_REQ;
