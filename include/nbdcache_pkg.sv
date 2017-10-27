@@ -32,17 +32,17 @@ package nbdcache_pkg;
         logic            valid;
         logic            we;
         logic [55:0]     addr;
-        logic [2:0][7:0] wdata;
+        logic [7:0][7:0] wdata;
         logic [7:0]      be;
     } mshr_t;
 
     typedef struct packed {
-        logic                           valid;
-        logic                           bypass;
-        logic [63:0]                    addr;
-        logic [CACHE_LINE_WIDTH/8-1:0]  be;
-        logic                           we;
-        logic [CACHE_LINE_WIDTH-1:0]    wdata;
+        logic         valid;
+        logic         bypass;
+        logic [63:0]  addr;
+        logic [7:0]   be;
+        logic         we;
+        logic [63:0]  wdata;
     } miss_req_t;
 
     typedef struct packed {
@@ -67,5 +67,15 @@ package nbdcache_pkg;
                 return i;
         end
     endfunction
-
+    // get the first bit set, returns one hot value
+    function automatic logic [SET_ASSOCIATIVITY-1:0] get_victim_cl (input logic [SET_ASSOCIATIVITY-1:0] valid_dirty);
+        // one-hot return vector
+        logic [SET_ASSOCIATIVITY-1:0] oh = '0;
+        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
+            if (valid_dirty) begin
+                oh[i] = 1'b1;
+                return oh;
+            end
+        end
+    endfunction
 endpackage

@@ -53,7 +53,7 @@ module cache_ctrl #(
 
         input  logic                                               bypass_gnt_i,
         input  logic                                               bypass_valid_i,
-        input  logic [CACHE_LINE_WIDTH-1:0]                        bypass_data_i,
+        input  logic [63:0]                                        bypass_data_i,
         // check MSHR for aliasing
         output logic [55:0]                                        mshr_addr_o,
         input  logic                                               mashr_addr_matches_i
@@ -64,12 +64,12 @@ module cache_ctrl #(
     } state_d, state_q;
 
     typedef struct packed {
-        logic [INDEX_WIDTH-1:0]         index;
-        logic [TAG_WIDTH-1:0]           tag;
-        logic [7:0]                     be;
-        logic                           we;
-        logic [CACHE_LINE_WIDTH-1:0]    wdata;
-        logic                           bypass;
+        logic [INDEX_WIDTH-1:0] index;
+        logic [TAG_WIDTH-1:0]   tag;
+        logic [7:0]             be;
+        logic                   we;
+        logic [63:0]            wdata;
+        logic                   bypass;
     } mem_req_t;
 
     logic [SET_ASSOCIATIVITY-1:0] hit_way_d, hit_way_q;
@@ -221,11 +221,18 @@ module cache_ctrl #(
             STORE_REQ: begin
                 // store data, write dirty bit
                 req_o = hit_way_q;
+                addr_o = mem_req_q.index;
+                we_o  = 1'b1;
 
                 be_o.dirty = hit_way_q;
                 be_o.valid = hit_way_q;
 
-                be_o.data[be_offset +: 8] = mem_req_q.be;
+                // set the correct byte enable
+                for (int unsigned i = 0; i < 8; i++) begin
+                    if (mem_req_q.be[i])
+                        be_o.data[cl_offset +: 64] = '1;
+                end
+
                 data_o.data[cl_offset +: 64] = mem_req_q.wdata;
                 // ~> change the state
                 data_o.dirty = 1'b1;
@@ -321,7 +328,7 @@ module cache_ctrl #(
             WAIT_REFILL_VALID: begin
                 // got a valid answer
                 if (bypass_valid_i) begin
-                    data_rdata_o = bypass_data_i[63:0];
+                    data_rdata_o = bypass_data_i;
                     data_rvalid_o = 1'b1;
                     state_d = IDLE;
                 end

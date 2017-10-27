@@ -19,7 +19,7 @@ module miss_handler #(
     // Bypass handling
     output logic [NR_PORTS-1:0]                         bypass_gnt_o,
     output logic [NR_PORTS-1:0]                         bypass_valid_o,
-    output logic [NR_PORTS-1:0][CACHE_LINE_WIDTH-1:0]   bypass_data_o,
+    output logic [NR_PORTS-1:0][63:0]                   bypass_data_o,
     AXI_BUS.Master                                      bypass_if,
     // Miss handling (~> cacheline refill)
     output logic [NR_PORTS-1:0]                         miss_gnt_o,
@@ -40,38 +40,38 @@ module miss_handler #(
     output logic                                        we_o
 );
     // FSM states
-    enum logic [3:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY_FLUSH, EVICT_WAY_MISS, WAIT_GNT_SRAM, MISS,
+    enum logic [3:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY_FLUSH, FLUSH_INCR, EVICT_WAY_MISS, WAIT_GNT_SRAM, MISS,
                        LOAD_CACHELINE, MISS_REPL, REPL_CACHELINE, INIT } state_d, state_q;
     // Registers
-    mshr_t                                         mshr_d, mshr_q;
-    logic [INDEX_WIDTH-1:0]                        cnt_d, cnt_q;
-    logic [SET_ASSOCIATIVITY-1:0]                  evict_way_d, evict_way_q;
+    mshr_t                                  mshr_d, mshr_q;
+    logic [INDEX_WIDTH-1:0]                 cnt_d, cnt_q;
+    logic [SET_ASSOCIATIVITY-1:0]           evict_way_d, evict_way_q;
     // cache line to evict
-    cache_line_t                                   evict_cl_d, evict_cl_q;
+    cache_line_t                            evict_cl_d, evict_cl_q;
 
     // Request from one FSM
-    logic [NR_PORTS-1:0]                           miss_req_valid;
-    logic [NR_PORTS-1:0]                           miss_req_bypass;
-    logic [NR_PORTS-1:0][63:0]                     miss_req_addr;
-    logic [NR_PORTS-1:0][CACHE_LINE_WIDTH-1:0]     miss_req_wdata;
-    logic [NR_PORTS-1:0]                           miss_req_we;
-    logic [NR_PORTS-1:0][CACHE_LINE_WIDTH/8-1:0]   miss_req_be;
+    logic [NR_PORTS-1:0]                    miss_req_valid;
+    logic [NR_PORTS-1:0]                    miss_req_bypass;
+    logic [NR_PORTS-1:0][63:0]              miss_req_addr;
+    logic [NR_PORTS-1:0][63:0]              miss_req_wdata;
+    logic [NR_PORTS-1:0]                    miss_req_we;
+    logic [NR_PORTS-1:0][7:0]               miss_req_be;
 
     // Cache Line Refill <-> AXI
-    logic                                          req_fsm_miss_valid;
-    logic                                          req_fsm_miss_bypass;
-    logic [63:0]                                   req_fsm_miss_addr;
-    logic [CACHE_LINE_WIDTH-1:0]                   req_fsm_miss_wdata;
-    logic                                          req_fsm_miss_we;
-    logic [(CACHE_LINE_WIDTH/8)-1:0]               req_fsm_miss_be;
-    logic                                          gnt_miss_fsm;
-    logic                                          valid_miss_fsm;
-    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]        data_miss_fsm;
+    logic                                   req_fsm_miss_valid;
+    logic                                   req_fsm_miss_bypass;
+    logic [63:0]                            req_fsm_miss_addr;
+    logic [CACHE_LINE_WIDTH-1:0]            req_fsm_miss_wdata;
+    logic                                   req_fsm_miss_we;
+    logic [(CACHE_LINE_WIDTH/8)-1:0]        req_fsm_miss_be;
+    logic                                   gnt_miss_fsm;
+    logic                                   valid_miss_fsm;
+    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0] data_miss_fsm;
 
     // Cache Management <-> LFSR
-    logic                                          lfsr_enable;
-    logic [SET_ASSOCIATIVITY-1:0]                  lfsr_oh;
-    logic [$clog2(SET_ASSOCIATIVITY-1)-1:0]        lfsr_bin;
+    logic                                   lfsr_enable;
+    logic [SET_ASSOCIATIVITY-1:0]           lfsr_oh;
+    logic [$clog2(SET_ASSOCIATIVITY-1)-1:0] lfsr_bin;
 
     // ------------------------------
     // Cache Management
@@ -138,8 +138,8 @@ module miss_handler #(
                         mshr_d.we    = miss_req_we[i];
                         mshr_d.id    = i;
                         mshr_d.addr  = miss_req_addr[i][TAG_WIDTH+INDEX_WIDTH-1:0];
-                        mshr_d.wdata = miss_req_wdata;
-                        mshr_d.be    = miss_req_be;
+                        mshr_d.wdata = miss_req_wdata[i];
+                        mshr_d.be    = miss_req_be[i];
                         break;
                     end
                 end
@@ -161,19 +161,17 @@ module miss_handler #(
                     lfsr_enable = 1'b1;
                     evict_way_d = lfsr_oh;
                     // do we need to write back the cache line?
-                    if (data_i[lfsr_bin].dirty)
+                    if (data_i[lfsr_bin].dirty) begin
                         state_d = EVICT_WAY_MISS;
-                    else
+                        evict_cl_d.tag = data_i[lfsr_bin].tag;
+                        evict_cl_d.data = data_i[lfsr_bin].data;
+                        cnt_d = mshr_q.addr[INDEX_WIDTH-1:0];
+                    end else
                         state_d = LOAD_CACHELINE;
                 // we have at least one free way
                 end else begin
-                    for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
-                        // replace the first non valid cache line
-                        if (~valid_way[i]) begin
-                            evict_way_d = 1'b1 << i;
-                            break;
-                        end
-                    end
+                    // get victim cache-line by looking for the first non-valid bit
+                    evict_way_d = get_victim_cl(~valid_way);
                     state_d = LOAD_CACHELINE;
                 end
             end
@@ -211,7 +209,7 @@ module miss_handler #(
                     if (mshr_q.we) begin
                         // Yes, so safe the updated data now
                         for (int i = 0; i < 8; i++) begin
-                            // check if we really want to write the corresponding bute
+                            // check if we really want to write the corresponding byte
                             if (mshr_q.be[i])
                                 data_o.data[(cl_offset + i*8) +: 8] = mshr_q.wdata[i];
                         end
@@ -228,20 +226,20 @@ module miss_handler #(
             FLUSHING: begin
                 // at least one of the cache lines is dirty
                 if (|evict_way) begin
-                    // evict cache line
-                    evict_way_d = evict_way;
+                    // evict cache line, look for the first cache-line which is dirty
+                    evict_way_d = get_victim_cl(evict_way);
                     evict_cl_d = data_i[one_hot_to_bin(evict_way)];
 
                     state_d = EVICT_WAY_FLUSH;
                 // not dirty ~> continue
                 end else begin
-                    addr_o = cnt_q << BYTE_OFFSET;
-                    req_o = 1'b1;
-                    cnt_d = cnt_q + 1'b1;
+                    addr_o = cnt_q;
+                    req_o  = 1'b1;
+                    cnt_d  = cnt_q + (1'b1 << BYTE_OFFSET);
 
                 end
 
-                if (cnt_q == NUM_WORDS) begin
+                if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1) begin
                     flush_ack_o = 1'b1;
                     state_d = IDLE;
                 end
@@ -259,28 +257,34 @@ module miss_handler #(
                 // we've got a grant
                 if (gnt_miss_fsm) begin
                     // write status array
+                    addr_o = cnt_q;
                     req_o = 1'b1;
                     we_o  = 1'b1;
                     be_o.valid = evict_way_q;
                     be_o.dirty = evict_way_q;
                     // go back to handling the miss or flushing, depending on where we came from
-                    state_d = (state_q == EVICT_WAY_MISS) ? MISS : FLUSHING;
+                    state_d = (state_q == EVICT_WAY_MISS) ? MISS : FLUSH_INCR;
                 end
             end
-
+            // ~> make another request to check the same cache-line if there are still some valid entries
+            FLUSH_INCR: begin
+                req_o = '1;
+                addr_o = cnt_q;
+                state_d = FLUSHING;
+            end
             // ~> only called after initialization
             INIT: begin
                 // initialize status array
-                addr_o = cnt_q << BYTE_OFFSET;
+                addr_o = cnt_q;
                 req_o  = 1'b1;
                 we_o   = 1'b1;
                 // only write the dirty array
                 be_o.dirty = '1;
                 be_o.valid = '1;
                 data_o     = 'b0;
-                cnt_d      = cnt_q + 1;
+                cnt_d      = cnt_q + (1'b1 << BYTE_OFFSET);
                 // finished initialization
-                if (cnt_q == NUM_WORDS)
+                if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1)
                     state_d = IDLE;
             end
         endcase
@@ -315,25 +319,33 @@ module miss_handler #(
             evict_cl_q   <= evict_cl_d;
         end
     end
+
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
+    // assert that cache only hits on one way
+    assert property (
+      @(posedge clk_i) $onehot0(evict_way_q)) else $warning("Evict-way should be one-hot encoded");
+    `endif
+    `endif
     // ----------------------
     // Bypass Arbiter
     // ----------------------
     // Connection Arbiter <-> AXI
     logic                                     req_fsm_bypass_valid;
     logic [63:0]                              req_fsm_bypass_addr;
-    logic [CACHE_LINE_WIDTH-1:0]              req_fsm_bypass_wdata;
+    logic [63:0]              req_fsm_bypass_wdata;
     logic                                     req_fsm_bypass_we;
-    logic [(CACHE_LINE_WIDTH/8)-1:0]          req_fsm_bypass_be;
+    logic [7:0]          req_fsm_bypass_be;
 
     logic                                     gnt_bypass_fsm;
     logic                                     valid_bypass_fsm;
-    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]   data_bypass_fsm;
+    logic [63:0]   data_bypass_fsm;
     logic [$clog2(NR_PORTS)-1:0]              id_fsm_bypass;
     logic [AXI_ID_WIDTH-1:0]                  id_bypass_fsm;
 
     arbiter #(
-            .NR_PORTS          ( NR_PORTS                                                ),
-            .DATA_WIDTH        ( CACHE_LINE_WIDTH                                        )
+        .NR_PORTS          ( NR_PORTS                                                ),
+        .DATA_WIDTH        ( 64                                                      )
     ) i_bypass_arbiter (
         // Master Side
         .data_req_i            ( miss_req_valid & miss_req_bypass                         ),
@@ -358,7 +370,9 @@ module miss_handler #(
         .*
     );
 
-    axi_adapter i_bypass_axi_adapter (
+    axi_adapter #(
+        .DATA_WIDTH            ( 64                                                       )
+    ) i_bypass_axi_adapter (
         .req_i                 ( req_fsm_bypass_valid                                     ),
         .type_i                ( SINGLE_REQ                                               ),
         .gnt_o                 ( gnt_bypass_fsm                                           ),
@@ -379,7 +393,9 @@ module miss_handler #(
     // ----------------------
     // Cache Line Arbiter
     // ----------------------
-    axi_adapter  i_miss_axi_adapter (
+    axi_adapter  #(
+        .DATA_WIDTH          ( CACHE_LINE_WIDTH   )
+    ) i_miss_axi_adapter (
         .req_i               ( req_fsm_miss_valid ),
         .type_i              ( CACHE_LINE_REQ     ),
         .gnt_o               ( gnt_miss_fsm       ),
@@ -439,7 +455,7 @@ endmodule
 //
 module arbiter #(
         parameter int unsigned NR_PORTS   = 3,
-        parameter int unsigned DATA_WIDTH = 256
+        parameter int unsigned DATA_WIDTH = 64
 )(
     input  logic                                   clk_i,          // Clock
     input  logic                                   rst_ni,         // Asynchronous reset active low
@@ -529,7 +545,9 @@ endmodule
 //
 // Description: Manages communication with the AXI Bus
 //
-module axi_adapter (
+module axi_adapter #(
+        int unsigned DATA_WIDTH = 256
+    )(
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
 
@@ -538,12 +556,12 @@ module axi_adapter (
     output logic                                        gnt_o,
     input  logic [63:0]                                 addr_i,
     input  logic                                        we_i,
-    input  logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]      wdata_i,
-    input  logic [(CACHE_LINE_WIDTH/64)-1:0][7:0]       be_i,
+    input  logic [(DATA_WIDTH/64)-1:0][63:0]            wdata_i,
+    input  logic [(DATA_WIDTH/64)-1:0][7:0]             be_i,
     input  logic [AXI_ID_WIDTH-1:0]                     id_i,
     // read port
     output logic                                        valid_o,
-    output logic [(CACHE_LINE_WIDTH/64)-1:0][63:0]      rdata_o,
+    output logic [(DATA_WIDTH/64)-1:0][63:0]            rdata_o,
     output logic [AXI_ID_WIDTH-1:0]                     id_o,
     // critical word - read port
     output logic [63:0]                                 critical_word_o,
@@ -551,7 +569,8 @@ module axi_adapter (
     // AXI port
     AXI_BUS.Master                                      axi
 );
-    localparam BURST_SIZE = CACHE_LINE_WIDTH/64-1;
+    localparam BURST_SIZE = DATA_WIDTH/64-1;
+    localparam ADDR_INDEX = ($clog2(DATA_WIDTH/64) > 0) ? $clog2(DATA_WIDTH/64) : 1;
 
     enum logic [3:0] {
         IDLE, WAIT_B_VALID, WAIT_AW_READY, WAIT_LAST_W_READY, WAIT_LAST_W_READY_AW_READY, WAIT_AW_READY_BURST,
@@ -559,10 +578,10 @@ module axi_adapter (
     } state_q, state_d;
 
     // counter for AXI transfers
-    logic [$clog2(CACHE_LINE_WIDTH/64)-1:0] cnt_d, cnt_q;
-    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0] cache_line_d, cache_line_q;
+    logic [$clog2(DATA_WIDTH/64)-1:0] cnt_d, cnt_q;
+    logic [(DATA_WIDTH/64)-1:0][63:0] cache_line_d, cache_line_q;
     // save the address for a read, as we allow for non-cacheline aligned accesses
-    logic [$clog2(CACHE_LINE_WIDTH/64)-1:0] addr_offset_d, addr_offset_q;
+    logic [$clog2(DATA_WIDTH/64)-1:0] addr_offset_d, addr_offset_q;
     logic [AXI_ID_WIDTH-1:0]                id_d, id_q;
 
     always_comb begin : axi_fsm
@@ -672,7 +691,7 @@ module axi_adapter (
 
                         if (axi.ar_ready) begin
                             state_d = (type_i == SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
-                            addr_offset_d = addr_i[$clog2(CACHE_LINE_WIDTH/64)-1:0];
+                            addr_offset_d = addr_i[ADDR_INDEX-1:0];
                         end
                     end
                 end
@@ -698,7 +717,7 @@ module axi_adapter (
 
                 axi.aw_valid = 1'b1;
                 // we are here because we want to write a cache line
-                axi.aw_len   = CACHE_LINE_WIDTH/64;
+                axi.aw_len   = DATA_WIDTH/64;
                 // we got an aw_ready
                 case ({axi.aw_ready, axi.w_ready})
                     // we got an aw ready
@@ -729,7 +748,7 @@ module axi_adapter (
             // ~> all data has already been sent, we are only waiting for the aw_ready
             WAIT_AW_READY_BURST: begin
                 axi.aw_valid = 1'b1;
-                axi.aw_len   = CACHE_LINE_WIDTH/64;
+                axi.aw_len   = DATA_WIDTH/64;
 
                 if (axi.aw_ready) begin
                     state_d = WAIT_B_VALID;
