@@ -190,7 +190,7 @@ module miss_handler #(
             // ~> replace the cacheline
             REPL_CACHELINE: begin
                 // calculate cacheline offset
-                automatic logic [BYTE_OFFSET-1:0] cl_offset = mshr_q.addr[BYTE_OFFSET-1:3] << 6;
+                automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset = mshr_q.addr[BYTE_OFFSET-1:3] << 6;
                 // we've got a valid response from refill unit
                 if (valid_miss_fsm) begin
 
@@ -764,14 +764,15 @@ module axi_adapter #(
 
                 // this is the last write
                 axi.w_last  = (cnt_q == '0) ? 1'b1 : 1'b0;
-                gnt_o = (cnt_q == '0);
 
                 if (axi.w_ready) begin
                     // last write -> go to WAIT_B_VALID
-                    if (cnt_q == '0)
+                    if (cnt_q == '0) begin
                         state_d = WAIT_B_VALID;
-                    else
+                        gnt_o = (cnt_q == '0);
+                    end else begin
                         cnt_d = cnt_q - 1;
+                    end
                 end
             end
 

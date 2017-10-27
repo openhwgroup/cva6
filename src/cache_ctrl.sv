@@ -212,6 +212,7 @@ module cache_ctrl #(
                     // -------------------------
                     if (!(|tag_o[TAG_WIDTH-1:DECISION_BIT-INDEX_WIDTH])) begin
                         mem_req_d.tag = address_tag_i;
+                        mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
                     end
                 end
@@ -283,8 +284,10 @@ module cache_ctrl #(
                 miss_req_o.wdata = mem_req_q.wdata;
 
                 // got a grant so go to valid
-                if (bypass_gnt_i)
+                if (bypass_gnt_i) begin
                     state_d = WAIT_REFILL_VALID;
+                    data_gnt_o = 1'b1;
+                end
 
                 if (miss_gnt_i && !mem_req_q.we)
                     state_d = WAIT_CRITICAL_WORD;
