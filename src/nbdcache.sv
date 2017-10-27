@@ -80,7 +80,7 @@ module nbdcache (
 
     logic [2:0]                        bypass_gnt;
     logic [2:0]                        bypass_valid;
-    logic [2:0][CACHE_LINE_WIDTH-1:0]  bypass_data;
+    logic [2:0][63:0]                  bypass_data;
     // -------------------------------
     // Arbiter <-> Datram,
     // -------------------------------
