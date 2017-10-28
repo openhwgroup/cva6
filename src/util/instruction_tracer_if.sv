@@ -22,37 +22,37 @@ import ariane_pkg::*;
 interface instruction_tracer_if (
         input clk
     );
-    logic            rstn;
-    logic            flush_unissued;
-    logic            flush;
+    logic              rstn;
+    logic              flush_unissued;
+    logic              flush;
     // Decode
-    logic [31:0]     instruction;
-    logic            fetch_valid;
-    logic            fetch_ack;
+    logic [31:0]       instruction;
+    logic              fetch_valid;
+    logic              fetch_ack;
     // Issue stage
-    logic            issue_ack; // issue acknowledged
-    scoreboard_entry issue_sbe; // issue scoreboard entry
+    logic              issue_ack; // issue acknowledged
+    scoreboard_entry_t issue_sbe; // issue scoreboard entry
     // WB stage
-    logic [4:0]      waddr;
-    logic [63:0]     wdata;
-    logic            we;
+    logic [4:0]        waddr;
+    logic [63:0]       wdata;
+    logic              we;
     // commit stage
-    scoreboard_entry commit_instr; // commit instruction
-    logic            commit_ack;
+    scoreboard_entry_t commit_instr; // commit instruction
+    logic              commit_ack;
 
     // address translation
     // stores
-    logic           st_valid;
-    logic [63:0]    st_paddr;
+    logic              st_valid;
+    logic [63:0]       st_paddr;
     // loads
-    logic           ld_valid;
-    logic           ld_kill;
-    logic [63:0]    ld_paddr;
+    logic              ld_valid;
+    logic              ld_kill;
+    logic [63:0]       ld_paddr;
 
     // exceptions
-    exception        exception;
+    exception_t        exception;
     // current privilege level
-    priv_lvl_t       priv_lvl;
+    priv_lvl_t         priv_lvl;
     // the tracer just has a passive interface we do not drive anything with it
     clocking pck @(posedge clk);
         input rstn, flush_unissued, flush, instruction, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr,

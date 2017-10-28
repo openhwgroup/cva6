@@ -25,8 +25,8 @@ class instruction_tracer;
     // keep the issued instructions in a queue
     logic [31:0] issue_queue [$];
     // issue scoreboard entries
-    scoreboard_entry issue_sbe_queue [$];
-    scoreboard_entry issue_sbe;
+    scoreboard_entry_t issue_sbe_queue [$];
+    scoreboard_entry_t issue_sbe;
 
     // shadow copy of the register file
     logic [63:0] reg_file [32];
@@ -59,7 +59,7 @@ class instruction_tracer;
 
     task trace();
         logic [31:0] decode_instruction, issue_instruction, issue_commit_instruction;
-        scoreboard_entry commit_instruction;
+        scoreboard_entry_t commit_instruction;
 
         // initialize register 0
         reg_file [0] = 0;
@@ -87,7 +87,7 @@ class instruction_tracer;
                 issue_instruction = decode_queue.pop_front();
                 issue_queue.push_back(issue_instruction);
                 // also save the scoreboard entry to a separate issue queue
-                issue_sbe_queue.push_back(scoreboard_entry'(tracer_if.pck.issue_sbe));
+                issue_sbe_queue.push_back(scoreboard_entry_t'(tracer_if.pck.issue_sbe));
             end
 
             // --------------------
@@ -105,7 +105,7 @@ class instruction_tracer;
             // --------------
             // we are committing an instruction
             if (tracer_if.pck.commit_ack) begin
-                commit_instruction = scoreboard_entry'(tracer_if.pck.commit_instr);
+                commit_instruction = scoreboard_entry_t'(tracer_if.pck.commit_instr);
                 issue_commit_instruction = issue_queue.pop_front();
                 issue_sbe = issue_sbe_queue.pop_front();
                 // check if the instruction retiring is a load or store, get the physical address accordingly
@@ -168,7 +168,7 @@ class instruction_tracer;
         load_mapping    = {};
     endfunction;
 
-    function void printInstr(scoreboard_entry sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
+    function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
         instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr, priv_lvl);
         // print instruction to console
         string print_instr = iti.printInstr();

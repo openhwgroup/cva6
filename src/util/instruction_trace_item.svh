@@ -20,7 +20,7 @@ class instruction_trace_item;
     // keep a couple of general purpose information inside this instruction item
     time               simtime;
     longint unsigned   cycle;
-    scoreboard_entry   sbe;
+    scoreboard_entry_t sbe;
     logic [31:0]       pc;
     logic [31:0]       instr;
     logic [63:0]       reg_file [32];
@@ -32,7 +32,7 @@ class instruction_trace_item;
     string             priv_lvl;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, scoreboard_entry sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
