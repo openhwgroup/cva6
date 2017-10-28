@@ -215,6 +215,12 @@ module cache_ctrl #(
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
                     end
+                end else begin
+                    // we can potentially accept a new request -> I don't know how this works out timing vise
+                    // as this will chain some paths together...
+                    // For now this should not happen to frequently and we spare another cycle
+                    // go back to idle
+                    state_d = IDLE;
                 end
             end
 
