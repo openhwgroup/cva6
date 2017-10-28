@@ -71,7 +71,9 @@ module csr_regfile #(
     // Visualization Support
     output logic                  tvm_o,                      // trap virtual memory
     output logic                  tw_o,                       // timeout wait
-    output logic                  tsr_o                       // trap sret
+    output logic                  tsr_o,                      // trap sret
+    // Caches
+    output logic                  dcache_en_o                 // L1 DCache Enable
     // Performance Counter
 );
     // internal signal to keep track of access exceptions
@@ -144,6 +146,7 @@ module csr_regfile #(
     logic [63:0] sepc_q,     sepc_n;
     logic [63:0] scause_q,   scause_n;
     logic [63:0] stval_q,    stval_n;
+    logic [63:0] dcache_q,   dcache_n;
 
     logic        wfi_n,      wfi_q;
 
@@ -204,6 +207,7 @@ module csr_regfile #(
                 CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
                 CSR_MCYCLE:             csr_rdata = cycle_q;
                 CSR_MINSTRET:           csr_rdata = instret_q;
+                CSR_DCACHE:             csr_rdata = dcache_q;
                 // Counters and Timers
                 CSR_CYCLE:              csr_rdata = cycle_q;
                 CSR_TIME:               csr_rdata = time_i;
@@ -235,6 +239,7 @@ module csr_regfile #(
         mcause_n                = mcause_q;
         mscratch_n              = mscratch_q;
         mtval_n                 = mtval_q;
+        dcache_n                = dcache_q;
 
         sepc_n                  = sepc_q;
         scause_n                = scause_q;
@@ -331,6 +336,7 @@ module csr_regfile #(
                 CSR_MTVAL:              mtval_n     = csr_wdata;
                 CSR_MCYCLE:             cycle_n     = csr_wdata;
                 CSR_MINSTRET:           instret_n   = csr_wdata;
+                CSR_DCACHE:             dcache_n    = csr_wdata[0]; // enable bit
                 default: update_access_exception = 1'b1;
             endcase
         end
@@ -605,6 +611,7 @@ module csr_regfile #(
     assign tw_o             = mstatus_q.tw;
     assign tsr_o            = mstatus_q.tsr;
     assign halt_csr_o       = wfi_q;
+    assign dcache_en_o      = dcache_q[0];
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
@@ -643,6 +650,7 @@ module csr_regfile #(
             mcause_q               <= 64'b0;
             mscratch_q             <= 64'b0;
             mtval_q                <= 64'b0;
+            dcache_q               <= 64'b1;
             // supervisor mode registers
             sepc_q                 <= 64'b0;
             scause_q               <= 64'b0;
@@ -670,6 +678,7 @@ module csr_regfile #(
             mcause_q               <= mcause_n;
             mscratch_q             <= mscratch_n;
             mtval_q                <= mtval_n;
+            dcache_q               <= dcache_n;
             // supervisor mode registers
             sepc_q                 <= sepc_n;
             scause_q               <= scause_n;

@@ -300,10 +300,11 @@ package ariane_pkg;
         CSR_MHARTID    = 12'hF14,
         CSR_MCYCLE     = 12'hB00,
         CSR_MINSTRET   = 12'hB02,
+        CSR_DCACHE     = 12'h700,
         // Counters and Timers
-        CSR_CYCLE     = 12'hC00,
-        CSR_TIME      = 12'hC01,
-        CSR_INSTRET   = 12'hC02
+        CSR_CYCLE      = 12'hC00,
+        CSR_TIME       = 12'hC01,
+        CSR_INSTRET    = 12'hC02
     } csr_reg_t;
 
     // decoded CSR address

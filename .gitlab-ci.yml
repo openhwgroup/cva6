@@ -35,13 +35,13 @@ test_fifo:
 #     - make scoreboard library=scoreboard_lib
 #     - vcover-10.6 report scoreboard.ucdb
 
-test_dcache_arbiter:
-  stage: test
-  before_script:
-    - make build library=dcache_arbiter_lib
-  script:
-    - make dcache_arbiter library=dcache_arbiter_lib
-    - vcover-10.6 report dcache_arbiter.ucdb
+# test_dcache_arbiter:
+#   stage: test
+#   before_script:
+#     - make build library=dcache_arbiter_lib
+#   script:
+#     - make dcache_arbiter library=dcache_arbiter_lib
+#     - vcover-10.6 report dcache_arbiter.ucdb
 
 test_store_queue:
   stage: test

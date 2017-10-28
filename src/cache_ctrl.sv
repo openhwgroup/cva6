@@ -269,9 +269,11 @@ module cache_ctrl #(
             // its for sure a miss
             WAIT_TAG_BYPASSED: begin
                 // the request was killed
-                if (kill_req_i)
+                if (kill_req_i) begin
                     state_d = IDLE;
-                else begin
+                    // we need to ack the killing
+                    data_rvalid_o = 1'b1;
+                end else begin
                     // save tag
                     mem_req_d.tag = address_tag_i;
                     state_d = WAIT_REFILL_GNT;

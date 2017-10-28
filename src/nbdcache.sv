@@ -22,8 +22,10 @@ import nbdcache_pkg::*;
 module nbdcache (
     input  logic                           clk_i,    // Clock
     input  logic                           rst_ni,   // Asynchronous reset active low
-    // Cache control
+    // Cache management
     input  logic                           enable_i, // from CSR
+    input  logic                           flush_i,  // high until acknowledged
+    output logic                           flush_ack_o, // send a single cycle acknowledge signal when the cache is flushed
     // Cache AXI refill port
     AXI_BUS.Master                         data_if,
     AXI_BUS.Master                         bypass_if,

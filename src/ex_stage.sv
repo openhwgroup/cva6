@@ -102,6 +102,10 @@ module ex_stage #(
     input  logic                                   instr_if_data_rvalid_i,
     input  logic [63:0]                            instr_if_data_rdata_i,
 
+    // DCache interface
+    input  logic                                   dcache_en_i,
+    input  logic                                   flush_dcache_i,
+    output logic                                   flush_dcache_ack_o,
     AXI_BUS.Master                                 data_if,
     AXI_BUS.Master                                 bypass_if
 );
