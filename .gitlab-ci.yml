@@ -35,13 +35,6 @@ test_fifo:
 #     - make scoreboard library=scoreboard_lib
 #     - vcover-10.6 report scoreboard.ucdb
 
-# test_dcache_arbiter:
-#   stage: test
-#   before_script:
-#     - make build library=dcache_arbiter_lib
-#   script:
-#     - make dcache_arbiter library=dcache_arbiter_lib
-#     - vcover-10.6 report dcache_arbiter.ucdb
 
 test_store_queue:
   stage: test
@@ -73,14 +66,14 @@ test_core_asm:
 #     - make run-asm-tests library=core_rand_lib uvm-flags=+rand_mem_if
 #     - vcover-10.6 report run-asm-rand-tests.ucdb
 
-test_failed_tests:
-  stage: test
-  before_script:
-    - git submodule update --init --recursive
-    - make build library=failed_tests_lib
-  script:
-    - make run-failed-tests library=failed_tests_lib
-    - vcover-10.6 report run-failed-tests.ucdb
+# test_failed_tests:
+#   stage: test
+#   before_script:
+#     - git submodule update --init --recursive
+#     - make build library=failed_tests_lib
+#   script:
+#     - make run-failed-tests library=failed_tests_lib
+#     - vcover-10.6 report run-failed-tests.ucdb
 
 # test_lsu:
 #   stage: test
@@ -93,7 +86,6 @@ test_failed_tests:
 #   artifacts:
 #     paths:
 #       - covhtmlreport
-
 
 pages:
   stage: deploy
