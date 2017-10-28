@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Non-blocking data cache
 - Two AXI interfaces on top level, one for bypassing and one for actual cache-able regions
+- Performance Counters
 
 ### Changed
 

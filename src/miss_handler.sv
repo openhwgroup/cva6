@@ -13,6 +13,7 @@ module miss_handler #(
     input  logic                                        rst_ni,
     input  logic                                        flush_i,      // flush request
     output logic                                        flush_ack_o,  // acknowledge successful flush
+    output logic                                        miss_o,
     input  logic                                        busy_i,       // dcache is busy with something
     // Bypass or miss
     input  logic [NR_PORTS-1:0][$bits(miss_req_t)-1:0]  miss_req_i,
@@ -105,7 +106,7 @@ module miss_handler #(
         req_fsm_miss_be     = '0;
         // core
         flush_ack_o         = 1'b0;
-
+        miss_o              = 1'b0; // to performance counter
         // --------------------------------
         // Flush and Miss operation
         // --------------------------------
@@ -150,6 +151,7 @@ module miss_handler #(
                 req_o = 1'b1;
                 addr_o = mshr_q.addr[INDEX_WIDTH-1:0];
                 state_d = MISS_REPL;
+                miss_o = 1'b1;
             end
 
             // ~> second miss cycle

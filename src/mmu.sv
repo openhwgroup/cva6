@@ -63,6 +63,9 @@ module mmu #(
         input logic [43:0]                      satp_ppn_i,
         input logic [ASID_WIDTH-1:0]            asid_i,
         input logic                             flush_tlb_i,
+        // Performance counters
+        output logic                            itlb_miss_o,
+        output logic                            dtlb_miss_o,
         // Memory interfaces
         // Instruction memory/cache
         output logic [63:0]                     instr_if_address_o,
