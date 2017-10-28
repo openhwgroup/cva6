@@ -90,7 +90,14 @@ module regfile
     end
 
     // R0 is nil
+    `ifdef verilator
+    always_ff @(posedge clk, negedge rst_n)
+    begin
+      rf_reg[0] <= '0;
+    end
+    `else
     assign rf_reg[0] = '0;
+    `endif
 
   endgenerate
 
