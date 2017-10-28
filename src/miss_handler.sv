@@ -40,8 +40,8 @@ module miss_handler #(
     output logic                                        we_o
 );
     // FSM states
-    enum logic [3:0] { IDLE, FLUSHING, FLUSH, EVICT_WAY_FLUSH, FLUSH_INCR, EVICT_WAY_MISS, WAIT_GNT_SRAM, MISS,
-                       LOAD_CACHELINE, MISS_REPL, REPL_CACHELINE, INIT } state_d, state_q;
+    enum logic [3:0] { IDLE, FLUSHING, FLUSH, WB_CACHELINE_FLUSH, FLUSH_REQ_STATUS, WB_CACHELINE_MISS, WAIT_GNT_SRAM, MISS,
+                       REQ_CACHELINE, MISS_REPL, SAVE_CACHELINE, INIT } state_d, state_q;
     // Registers
     mshr_t                                  mshr_d, mshr_q;
     logic [INDEX_WIDTH-1:0]                 cnt_d, cnt_q;
@@ -122,9 +122,7 @@ module miss_handler #(
                 // check if we want to flush and can flush e.g.: we are not busy anymore
                 // TODO: Check that the busy flag is indeed needed
                 if (flush_i && !busy_i) begin
-                    req_o = 1'b1;
-                    addr_o = '0;
-                    state_d = FLUSHING;
+                    state_d = FLUSH_REQ_STATUS;
                     cnt_d = '0;
                 end
 
@@ -162,33 +160,33 @@ module miss_handler #(
                     evict_way_d = lfsr_oh;
                     // do we need to write back the cache line?
                     if (data_i[lfsr_bin].dirty) begin
-                        state_d = EVICT_WAY_MISS;
+                        state_d = WB_CACHELINE_MISS;
                         evict_cl_d.tag = data_i[lfsr_bin].tag;
                         evict_cl_d.data = data_i[lfsr_bin].data;
                         cnt_d = mshr_q.addr[INDEX_WIDTH-1:0];
                     end else
-                        state_d = LOAD_CACHELINE;
+                        state_d = REQ_CACHELINE;
                 // we have at least one free way
                 end else begin
                     // get victim cache-line by looking for the first non-valid bit
                     evict_way_d = get_victim_cl(~valid_way);
-                    state_d = LOAD_CACHELINE;
+                    state_d = REQ_CACHELINE;
                 end
             end
 
             // ~> we can just load the cache-line, the way is store in evict_way_q
-            LOAD_CACHELINE: begin
+            REQ_CACHELINE: begin
                 req_fsm_miss_valid  = 1'b1;
                 req_fsm_miss_addr   = mshr_q.addr;
 
                 if (gnt_miss_fsm) begin
-                    state_d = REPL_CACHELINE;
+                    state_d = SAVE_CACHELINE;
                     miss_gnt_o[mshr_q.id] = 1'b1;
                 end
             end
 
             // ~> replace the cacheline
-            REPL_CACHELINE: begin
+            SAVE_CACHELINE: begin
                 // calculate cacheline offset
                 automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset = mshr_q.addr[BYTE_OFFSET-1:3] << 6;
                 // we've got a valid response from refill unit
@@ -223,30 +221,11 @@ module miss_handler #(
                 end
             end
 
-            FLUSHING: begin
-                // at least one of the cache lines is dirty
-                if (|evict_way) begin
-                    // evict cache line, look for the first cache-line which is dirty
-                    evict_way_d = get_victim_cl(evict_way);
-                    evict_cl_d = data_i[one_hot_to_bin(evict_way)];
-
-                    state_d = EVICT_WAY_FLUSH;
-                // not dirty ~> continue
-                end else begin
-                    addr_o = cnt_q;
-                    req_o  = 1'b1;
-                    cnt_d  = cnt_q + (1'b1 << BYTE_OFFSET);
-
-                end
-
-                if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1) begin
-                    flush_ack_o = 1'b1;
-                    state_d = IDLE;
-                end
-            end
-
+            // ------------------------------
+            // Write Back Operation
+            // ------------------------------
             // ~> evict a cache line from way saved in evict_way_q
-            EVICT_WAY_FLUSH, EVICT_WAY_MISS: begin
+            WB_CACHELINE_FLUSH, WB_CACHELINE_MISS: begin
 
                 req_fsm_miss_valid  = 1'b1;
                 req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q};
@@ -257,22 +236,49 @@ module miss_handler #(
                 // we've got a grant
                 if (gnt_miss_fsm) begin
                     // write status array
-                    addr_o = cnt_q;
-                    req_o = 1'b1;
-                    we_o  = 1'b1;
+                    addr_o     = cnt_q;
+                    req_o      = 1'b1;
+                    we_o       = 1'b1;
+                    // invalidate
                     be_o.valid = evict_way_q;
                     be_o.dirty = evict_way_q;
                     // go back to handling the miss or flushing, depending on where we came from
-                    state_d = (state_q == EVICT_WAY_MISS) ? MISS : FLUSH_INCR;
+                    state_d = (state_q == WB_CACHELINE_MISS) ? MISS : FLUSH_REQ_STATUS;
                 end
             end
+
+            // ------------------------------
+            // Flushing & Initialization
+            // ------------------------------
             // ~> make another request to check the same cache-line if there are still some valid entries
-            FLUSH_INCR: begin
-                req_o = '1;
-                addr_o = cnt_q;
+            FLUSH_REQ_STATUS: begin
+                req_o   = '1;
+                addr_o  = cnt_q;
                 state_d = FLUSHING;
             end
-            // ~> only called after initialization
+
+            FLUSHING: begin
+                // this has priority
+                // at least one of the cache lines is dirty
+                if (|evict_way) begin
+                    // evict cache line, look for the first cache-line which is dirty
+                    evict_way_d = get_victim_cl(evict_way);
+                    evict_cl_d  = data_i[one_hot_to_bin(evict_way)];
+                    state_d     = WB_CACHELINE_FLUSH;
+                // not dirty ~> increment and continue
+                end else begin
+                    // increment and re-request
+                    cnt_d   = cnt_q + (1'b1 << BYTE_OFFSET);
+                    state_d = FLUSH_REQ_STATUS;
+                    // finished with flushing operation, go back to idle
+                    if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1) begin
+                        flush_ack_o = 1'b1;
+                        state_d     = IDLE;
+                    end
+                end
+            end
+
+            // ~> only called after reset
             INIT: begin
                 // initialize status array
                 addr_o = cnt_q;
@@ -581,8 +587,9 @@ module axi_adapter #(
     logic [$clog2(DATA_WIDTH/64)-1:0] cnt_d, cnt_q;
     logic [(DATA_WIDTH/64)-1:0][63:0] cache_line_d, cache_line_q;
     // save the address for a read, as we allow for non-cacheline aligned accesses
-    logic [$clog2(DATA_WIDTH/64)-1:0] addr_offset_d, addr_offset_q;
-    logic [AXI_ID_WIDTH-1:0]                id_d, id_q;
+    logic [(DATA_WIDTH/64)-1:0] addr_offset_d, addr_offset_q;
+    logic [AXI_ID_WIDTH-1:0]    id_d, id_q;
+    logic [ADDR_INDEX-1:0]      index;
 
     always_comb begin : axi_fsm
         // Default assignments
@@ -691,7 +698,7 @@ module axi_adapter #(
 
                         if (axi.ar_ready) begin
                             state_d = (type_i == SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
-                            addr_offset_d = addr_i[ADDR_INDEX-1:0];
+                            addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
                         end
                     end
                 end
@@ -790,6 +797,7 @@ module axi_adapter #(
 
             // ~> cacheline read, single read
             WAIT_R_VALID_MULTIPLE, WAIT_R_VALID: begin
+                index = addr_offset_q + (BURST_SIZE-cnt_q);
                 // reads are always wrapping here
                 axi.r_ready = 1'b1;
                 // this is the first read a.k.a the critical word
@@ -808,7 +816,7 @@ module axi_adapter #(
 
                     // save the word
                     if (state_q == WAIT_R_VALID_MULTIPLE) begin
-                        cache_line_d[addr_offset_q + (BURST_SIZE-cnt_q)] = axi.r_data;
+                        cache_line_d[index] = axi.r_data;
 
                     end else
                         cache_line_d[0] = axi.r_data;

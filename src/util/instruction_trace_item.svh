@@ -189,8 +189,14 @@ class instruction_trace_item;
         endcase
 
 
-        s = $sformatf("%10t %10d %s %h %h %-36s", simtime,
-                                             cycle,
+        // s = $sformatf("%10t %10d %s %h %h %-36s", simtime,
+        //                                      cycle,
+        //                                      priv_lvl,
+        //                                      sbe.pc,
+        //                                      instr,
+        //                                      s);
+
+        s = $sformatf("%s %h %h %-36s",
                                              priv_lvl,
                                              sbe.pc,
                                              instr,
