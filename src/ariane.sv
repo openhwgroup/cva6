@@ -95,8 +95,8 @@ module ariane
     // ------------------------------------------
     priv_lvl_t                priv_lvl;
     logic                     fetch_enable;
-    exception                 ex_commit; // exception from commit stage
-    branchpredict             resolved_branch;
+    exception_t               ex_commit; // exception from commit stage
+    branchpredict_t           resolved_branch;
     logic [63:0]              pc_commit;
     logic                     eret;
     logic                     commit_ack;
@@ -105,7 +105,7 @@ module ariane
     // PCGEN <-> IF
     // --------------
     logic [63:0]              fetch_address_pcgen_if;
-    branchpredict_sbe         branch_predict_pcgen_if;
+    branchpredict_sbe_t       branch_predict_pcgen_if;
     logic                     if_ready_if_pcgen;
     logic                     fetch_valid_pcgen_if;
     // --------------
@@ -119,16 +119,16 @@ module ariane
     // --------------
     // IF <-> ID
     // --------------
-    fetch_entry               fetch_entry_if_id;
+    fetch_entry_t             fetch_entry_if_id;
     logic                     ready_id_if;
     logic                     fetch_valid_if_id;
     logic                     decode_ack_id_if;
-    exception                 exception_if_id;
+    exception_t               exception_if_id;
 
     // --------------
     // ID <-> ISSUE
     // --------------
-    scoreboard_entry          issue_entry_id_issue;
+    scoreboard_entry_t        issue_entry_id_issue;
     logic                     issue_entry_valid_id_issue;
     logic                     is_ctrl_fow_id_issue;
     logic                     issue_instr_issue_id;
@@ -150,16 +150,16 @@ module ariane
     logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
     logic                     alu_valid_ex_id;
     logic [63:0]              alu_result_ex_id;
-    exception                 alu_exception_ex_id;
+    exception_t               alu_exception_ex_id;
     // Branches and Jumps
     logic                     branch_ready_ex_id;
     logic [TRANS_ID_BITS-1:0] branch_trans_id_ex_id;
     logic [63:0]              branch_result_ex_id;
-    exception                 branch_exception_ex_id;
+    exception_t               branch_exception_ex_id;
     logic                     branch_valid_ex_id;
     logic                     branch_valid_id_ex;
 
-    branchpredict_sbe         branch_predict_id_ex;
+    branchpredict_sbe_t       branch_predict_id_ex;
     logic                     resolve_branch_ex_id;
     // LSU
     logic [TRANS_ID_BITS-1:0] lsu_trans_id_ex_id;
@@ -167,7 +167,7 @@ module ariane
     logic [63:0]              lsu_result_ex_id;
     logic                     lsu_ready_ex_id;
     logic                     lsu_valid_ex_id;
-    exception                 lsu_exception_ex_id;
+    exception_t               lsu_exception_ex_id;
     // MULT
     logic                     mult_ready_ex_id;
     logic                     mult_valid_id_ex;
@@ -192,7 +192,7 @@ module ariane
     // --------------
     // ID <-> COMMIT
     // --------------
-    scoreboard_entry          commit_instr_id_commit;
+    scoreboard_entry_t        commit_instr_id_commit;
     // --------------
     // COMMIT <-> ID
     // --------------
@@ -206,7 +206,7 @@ module ariane
     logic                     fetch_gnt_ex_if;
     logic                     fetch_valid_ex_if;
     logic [63:0]              fetch_rdata_ex_if;
-    exception                 fetch_ex_ex_if;
+    exception_t               fetch_ex_ex_if;
     logic [63:0]              fetch_vaddr_if_ex;
     // --------------
     // CSR <-> *
@@ -222,7 +222,7 @@ module ariane
     fu_op                     csr_op_commit_csr;
     logic [63:0]              csr_wdata_commit_csr;
     logic [63:0]              csr_rdata_csr_commit;
-    exception                 csr_exception_csr_commit;
+    exception_t               csr_exception_csr_commit;
     logic                     tvm_csr_id;
     logic                     tw_csr_id;
     logic                     tsr_csr_id;
@@ -383,10 +383,10 @@ module ariane
         .csr_ready_i                ( csr_ready_ex_id                 ),
         .csr_valid_o                ( csr_valid_id_ex                 ),
 
-        .trans_id_i                 ( {alu_trans_id_ex_id,       lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id,       mult_trans_id_ex_id       }),
-        .wdata_i                    ( {alu_result_ex_id,         lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,         mult_result_ex_id         }),
-        .ex_ex_i                    ( {{$bits(exception){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception){1'b0}}, {$bits(exception){1'b0}} }),
-        .wb_valid_i                 ( {alu_valid_ex_id,          lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id,          mult_valid_ex_id          }),
+        .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id,         mult_trans_id_ex_id        }),
+        .wdata_i                    ( {alu_result_ex_id,           lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id          }),
+        .ex_ex_i                    ( {{$bits(exception_t){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}} }),
+        .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id,            mult_valid_ex_id           }),
 
         .waddr_a_i                  ( waddr_a_commit_id               ),
         .wdata_a_i                  ( wdata_a_commit_id               ),

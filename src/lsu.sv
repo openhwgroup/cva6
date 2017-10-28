@@ -47,7 +47,7 @@ module lsu #(
     output logic                     fetch_valid_o,            // Instruction fetch interface
     input  logic [63:0]              fetch_vaddr_i,            // Instruction fetch interface
     output logic [63:0]              fetch_rdata_o,            // Instruction fetch interface
-    output exception                 fetch_ex_o,               // Instruction fetch interface
+    output exception_t               fetch_ex_o,               // Instruction fetch interface
 
     input  priv_lvl_t                priv_lvl_i,               // From CSR register file
     input  priv_lvl_t                ld_st_priv_lvl_i,         // From CSR register file
@@ -76,7 +76,7 @@ module lsu #(
     input  logic                     data_if_data_rvalid_i,
     input  logic [63:0]              data_if_data_rdata_i,
 
-    output exception                 lsu_exception_o   // to WB, signal exception status LD/ST exception
+    output exception_t               lsu_exception_o   // to WB, signal exception status LD/ST exception
 
 );
     // data is misaligned
@@ -109,7 +109,7 @@ module lsu #(
     logic                     translation_valid;
     logic [63:0]              mmu_vaddr;
     logic [63:0]              mmu_paddr;
-    exception                 mmu_exception;
+    exception_t               mmu_exception;
     logic                     dtlb_hit;
 
     logic                     ld_valid;
@@ -122,9 +122,9 @@ module lsu #(
     logic [11:0]              page_offset;
     logic                     page_offset_matches;
 
-    exception                 misaligned_exception;
-    exception                 ld_ex;
-    exception                 st_ex;
+    exception_t               misaligned_exception;
+    exception_t               ld_ex;
+    exception_t               st_ex;
 
     // ---------------
     // Memory Arbiter

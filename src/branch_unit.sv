@@ -34,11 +34,11 @@ module branch_unit (
     output logic [63:0]               branch_result_o,
     output logic [TRANS_ID_BITS-1:0]  branch_trans_id_o,
 
-    input  branchpredict_sbe          branch_predict_i,       // this is the address we predicted
-    output branchpredict              resolved_branch_o,      // this is the actual address we are targeting
+    input  branchpredict_sbe_t        branch_predict_i,       // this is the address we predicted
+    output branchpredict_t            resolved_branch_o,      // this is the actual address we are targeting
     output logic                      resolve_branch_o,       // to ID to clear that we resolved the branch and we can
                                                               // accept new entries to the scoreboard
-    output exception                  branch_exception_o      // branch exception out
+    output exception_t                branch_exception_o      // branch exception out
 );
     logic [63:0] target_address;
     logic [63:0] next_pc;

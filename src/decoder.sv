@@ -11,27 +11,27 @@
 import ariane_pkg::*;
 
 module decoder (
-    input  logic [63:0]      pc_i,                    // PC from IF
-    input  logic             is_compressed_i,         // is a compressed instruction
-    input  logic             is_illegal_i,            // illegal compressed instruction
-    input  logic [31:0]      instruction_i,           // instruction from IF
-    input  branchpredict_sbe branch_predict_i,
-    input  exception         ex_i,                    // if an exception occured in if
+    input  logic [63:0]        pc_i,                    // PC from IF
+    input  logic               is_compressed_i,         // is a compressed instruction
+    input  logic               is_illegal_i,            // illegal compressed instruction
+    input  logic [31:0]        instruction_i,           // instruction from IF
+    input  branchpredict_sbe_t branch_predict_i,
+    input  exception_t         ex_i,                    // if an exception occured in if
     // From CSR
-    input  priv_lvl_t        priv_lvl_i,              // current privilege level
-    input  logic             tvm_i,                   // trap virtual memory
-    input  logic             tw_i,                    // timeout wait
-    input  logic             tsr_i,                   // trap sret
-    output scoreboard_entry  instruction_o,           // scoreboard entry to scoreboard
-    output logic             is_control_flow_instr_o  // this instruction will change the control flow
+    input  priv_lvl_t          priv_lvl_i,              // current privilege level
+    input  logic               tvm_i,                   // trap virtual memory
+    input  logic               tw_i,                    // timeout wait
+    input  logic               tsr_i,                   // trap sret
+    output scoreboard_entry_t  instruction_o,           // scoreboard entry to scoreboard
+    output logic               is_control_flow_instr_o  // this instruction will change the control flow
 );
     logic illegal_instr;
     // this instruction is an environment call (ecall), it is handled like an exception
     logic ecall;
     // this instruction is a software break-point
     logic ebreak;
-    instruction instr;
-    assign instr = instruction'(instruction_i);
+    instruction_t instr;
+    assign instr = instruction_t'(instruction_i);
     // --------------------
     // Immediate select
     // --------------------

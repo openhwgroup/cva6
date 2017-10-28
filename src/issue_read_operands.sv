@@ -32,7 +32,7 @@ module issue_read_operands (
     input  logic [63:0]                            debug_gpr_wdata_i,
     output logic [63:0]                            debug_gpr_rdata_o,
     // coming from scoreboard
-    input  scoreboard_entry                        issue_instr_i,
+    input  scoreboard_entry_t                      issue_instr_i,
     input  logic                                   issue_instr_valid_i,
     output logic                                   issue_ack_o,
     // lookup rd in scoreboard
@@ -59,7 +59,7 @@ module issue_read_operands (
     // Branches and Jumps
     input  logic                                   branch_ready_i,
     output logic                                   branch_valid_o,   // this is a valid branch instruction
-    output branchpredict_sbe                       branch_predict_o,
+    output branchpredict_sbe_t                     branch_predict_o,
     // LSU
     input  logic                                   lsu_ready_i,      // FU is ready
     output logic                                   lsu_valid_o,      // Output is valid

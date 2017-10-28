@@ -25,9 +25,9 @@ module debug_unit (
 
     input  logic [63:0]         boot_addr_i,
 
-    input  scoreboard_entry     commit_instr_i,
+    input  scoreboard_entry_t   commit_instr_i,
     input  logic                commit_ack_i,
-    input  exception            ex_i,           // instruction caused an exception
+    input  exception_t          ex_i,           // instruction caused an exception
     output logic                halt_o,         // halt the hart
     input  logic                fetch_enable_i, // fetch enable signal
     // GPR interface

@@ -22,10 +22,10 @@ module commit_stage (
     input  logic                clk_i,
     input  logic                halt_i,             // request to halt the core
 
-    output exception            exception_o,        // take exception to controller
+    output exception_t          exception_o,        // take exception to controller
 
     // from scoreboard
-    input  scoreboard_entry     commit_instr_i,     // the instruction we want to commit
+    input  scoreboard_entry_t   commit_instr_i,     // the instruction we want to commit
     output logic                commit_ack_o,       // acknowledge that we are indeed committing
 
     // to register file
@@ -39,7 +39,7 @@ module commit_stage (
     output fu_op                csr_op_o,           // decoded CSR operation
     output logic [63:0]         csr_wdata_o,        // data to write to CSR
     input  logic [63:0]         csr_rdata_i,        // data to read from CSR
-    input  exception            csr_exception_i,    // exception or interrupt occurred in CSR stage (the same as commit)
+    input  exception_t          csr_exception_i,    // exception or interrupt occurred in CSR stage (the same as commit)
     // commit signals to ex
     output logic                commit_lsu_o,       // commit the pending store
     input  logic                commit_lsu_ready_i, // commit buffer of LSU is ready

@@ -42,32 +42,32 @@ module scoreboard #(
     output logic                                      rs2_valid_o,
 
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
-    output scoreboard_entry                           commit_instr_o,
+    output scoreboard_entry_t                         commit_instr_o,
     input  logic                                      commit_ack_i,
 
     // instruction to put on top of scoreboard e.g.   : top pointer
     // we can always put this instruction to the to   p unless we signal with asserted full_o
-    input  scoreboard_entry                           decoded_instr_i,
+    input  scoreboard_entry_t                         decoded_instr_i,
     input  logic                                      decoded_instr_valid_i,
     output logic                                      decoded_instr_ack_o,
 
     // instruction to issue logic, if issue_instr_valid and issue_ready is asserted, advance the issue pointer
-    output scoreboard_entry                           issue_instr_o,
+    output scoreboard_entry_t                         issue_instr_o,
     output logic                                      issue_instr_valid_o,
     input  logic                                      issue_ack_i,
 
     // write-back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
     input logic [NR_WB_PORTS-1:0][63:0]               wdata_i,     // write data in
-    input exception [NR_WB_PORTS-1:0]                 ex_i,        // exception from a functional unit (e.g.: ld/st exception, divide by zero)
+    input exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception, divide by zero)
     input logic [NR_WB_PORTS-1:0]                     wb_valid_i   // data in is valid
 );
     localparam int unsigned BITS_ENTRIES      = $clog2(NR_ENTRIES);
 
     // this is the FIFO struct of the issue queue
     struct packed {
-        logic            issued; // this bit indicates whether we issued this instruction e.g.: if it is valid
-        scoreboard_entry sbe;    // this is the score board entry we will send to ex
+        logic              issued; // this bit indicates whether we issued this instruction e.g.: if it is valid
+        scoreboard_entry_t sbe;    // this is the score board entry we will send to ex
     } mem_q [NR_ENTRIES-1:0], mem_n [NR_ENTRIES-1:0];
 
     logic [$clog2(NR_ENTRIES)-1:0] issue_cnt_n,      issue_cnt_q;

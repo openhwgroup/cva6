@@ -20,38 +20,38 @@
 import ariane_pkg::*;
 
 module pcgen_stage (
-    input  logic             clk_i,              // Clock
-    input  logic             rst_ni,             // Asynchronous reset active low
+    input  logic               clk_i,              // Clock
+    input  logic               rst_ni,             // Asynchronous reset active low
     // control signals
-    input  logic             flush_i,            // flush request for PCGEN
-    input  logic             flush_bp_i,         // flush branch prediction
-    input  logic             fetch_enable_i,
-    input  logic             if_ready_i,
-    input  branchpredict     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
+    input  logic               flush_i,            // flush request for PCGEN
+    input  logic               flush_bp_i,         // flush branch prediction
+    input  logic               fetch_enable_i,
+    input  logic               if_ready_i,
+    input  branchpredict_t     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
     // to IF
-    output logic [63:0]      fetch_address_o,    // new PC (address because we do not distinguish instructions)
-    output logic             fetch_valid_o,      // the PC (address) is valid
-    output branchpredict_sbe branch_predict_o,   // pass on the information if this is speculative
+    output logic [63:0]        fetch_address_o,    // new PC (address because we do not distinguish instructions)
+    output logic               fetch_valid_o,      // the PC (address) is valid
+    output branchpredict_sbe_t branch_predict_o,   // pass on the information if this is speculative
     // global input
-    input  logic [63:0]      boot_addr_i,
+    input  logic [63:0]        boot_addr_i,
     // from commit
-    input  logic [63:0]      pc_commit_i,        // PC of instruction in commit stage
+    input  logic [63:0]        pc_commit_i,        // PC of instruction in commit stage
     // CSR input
-    input  logic [63:0]      epc_i,              // exception PC which we need to return to
-    input  logic             eret_i,             // return from exception
-    input  logic [63:0]      trap_vector_base_i, // base of trap vector
-    input  logic             ex_valid_i,         // exception is valid - from commit
+    input  logic [63:0]        epc_i,              // exception PC which we need to return to
+    input  logic               eret_i,             // return from exception
+    input  logic [63:0]        trap_vector_base_i, // base of trap vector
+    input  logic               ex_valid_i,         // exception is valid - from commit
     // Debug
-    input  logic [63:0]      debug_pc_i,         // PC from debug stage
-    input  logic             debug_set_pc_i      // Set PC request from debug
+    input  logic [63:0]        debug_pc_i,         // PC from debug stage
+    input  logic               debug_set_pc_i      // Set PC request from debug
 );
 
-    logic [63:0]      npc_n, npc_q;
+    logic [63:0]        npc_n, npc_q;
     // the PC was set to a new region by a higher priority input (e.g.: exception, debug, ctrl return from exception)
-    logic             set_pc_n, set_pc_q;
-    branchpredict_sbe branch_predict_btb;
+    logic               set_pc_n, set_pc_q;
+    branchpredict_sbe_t branch_predict_btb;
     // branch-predict input register -> this path is critical
-    branchpredict     resolved_branch_q;
+    branchpredict_t     resolved_branch_q;
 
     btb #(
         .NR_ENTRIES              ( BTB_ENTRIES             ),

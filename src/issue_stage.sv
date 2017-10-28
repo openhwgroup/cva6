@@ -38,7 +38,7 @@ module issue_stage #(
     input  logic [63:0]                              debug_gpr_wdata_i,
     output logic [63:0]                              debug_gpr_rdata_o,
     // from ISSUE
-    input  scoreboard_entry                          decoded_instr_i,
+    input  scoreboard_entry_t                        decoded_instr_i,
     input  logic                                     decoded_instr_valid_i,
     input  logic                                     is_ctrl_flow_i,
     output logic                                     decoded_instr_ack_o,
@@ -62,7 +62,7 @@ module issue_stage #(
     // branch prediction
     input  logic                                     branch_ready_i,
     output logic                                     branch_valid_o, // use branch prediction unit
-    output branchpredict_sbe                         branch_predict_o,
+    output branchpredict_sbe_t                       branch_predict_o,
 
     input  logic                                     mult_ready_i,
     output logic                                     mult_valid_o,    // Branch predict Out
@@ -73,7 +73,7 @@ module issue_stage #(
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
     input logic [NR_WB_PORTS-1:0][63:0]              wdata_i,
-    input exception [NR_WB_PORTS-1:0]                ex_ex_i, // exception from execute stage
+    input exception_t [NR_WB_PORTS-1:0]              ex_ex_i, // exception from execute stage
     input logic [NR_WB_PORTS-1:0]                    wb_valid_i,
 
         // commit port
@@ -81,22 +81,22 @@ module issue_stage #(
     input  logic[63:0]                               wdata_a_i,
     input  logic                                     we_a_i,
 
-    output scoreboard_entry                          commit_instr_o,
+    output scoreboard_entry_t                        commit_instr_o,
     input  logic                                     commit_ack_i
 );
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (IRO)
     // ---------------------------------------------------
-    fu_t  [31:0]     rd_clobber_sb_iro;
-    logic [4:0]      rs1_iro_sb;
-    logic [63:0]     rs1_sb_iro;
-    logic            rs1_valid_sb_iro;
-    logic [4:0]      rs2_iro_sb;
-    logic [63:0]     rs2_sb_iro;
-    logic            rs2_valid_iro_sb;
-    scoreboard_entry issue_instr_sb_iro;
-    logic            issue_instr_valid_sb_iro;
-    logic            issue_ack_iro_sb;
+    fu_t  [31:0]       rd_clobber_sb_iro;
+    logic [4:0]        rs1_iro_sb;
+    logic [63:0]       rs1_sb_iro;
+    logic              rs1_valid_sb_iro;
+    logic [4:0]        rs2_iro_sb;
+    logic [63:0]       rs2_sb_iro;
+    logic              rs2_valid_iro_sb;
+    scoreboard_entry_t issue_instr_sb_iro;
+    logic              issue_instr_valid_sb_iro;
+    logic              issue_ack_iro_sb;
 
 
     // ---------------------------------------------------

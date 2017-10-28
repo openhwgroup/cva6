@@ -39,11 +39,11 @@ module mmu #(
         output logic                            fetch_valid_o,
         input  logic [63:0]                     fetch_vaddr_i,
         output logic [63:0]                     fetch_rdata_o,  // pass-through because of interfaces
-        output exception                        fetch_ex_o,     // write-back fetch exceptions (e.g.: bus faults, page faults, etc.)
+        output exception_t                      fetch_ex_o,     // write-back fetch exceptions (e.g.: bus faults, page faults, etc.)
         // LSU interface
         // this is a more minimalistic interface because the actual addressing logic is handled
         // in the LSU as we distinguish load and stores, what we do here is simple address translation
-        input  exception                        misaligned_ex_i,
+        input  exception_t                      misaligned_ex_i,
         input  logic                            lsu_req_i,        // request address translation
         input  logic [63:0]                     lsu_vaddr_i,      // virtual address in
         input  logic                            lsu_is_store_i,   // the translation is requested by a store
@@ -53,7 +53,7 @@ module mmu #(
         // Cycle 1
         output logic                            lsu_valid_o,      // translation is valid
         output logic [63:0]                     lsu_paddr_o,      // translated address
-        output exception                        lsu_exception_o,  // address translation threw an exception
+        output exception_t                      lsu_exception_o,  // address translation threw an exception
         // General control signals
         input priv_lvl_t                        priv_lvl_i,
         input priv_lvl_t                        ld_st_priv_lvl_i,
@@ -200,7 +200,7 @@ module mmu #(
     //-----------------------
     // Instruction Interface
     //-----------------------
-    exception fetch_exception;
+    exception_t fetch_exception;
     logic exception_fifo_empty;
     // This is a full memory interface, e.g.: it handles all signals to the I$
     // Exceptions are always signaled together with the fetch_valid_o signal
@@ -287,7 +287,7 @@ module mmu #(
     // ---------------------------
     // We can have two outstanding transactions
     fifo #(
-        .dtype            ( exception            ),
+        .dtype            ( exception_t          ),
         .DEPTH            ( 2                    )
     ) i_exception_fifo (
         .clk_i            ( clk_i                ),
@@ -319,7 +319,7 @@ module mmu #(
     //-----------------------
     logic [63:0] lsu_vaddr_n,     lsu_vaddr_q;
     pte_t        dtlb_pte_n,      dtlb_pte_q;
-    exception    misaligned_ex_n, misaligned_ex_q;
+    exception_t  misaligned_ex_n, misaligned_ex_q;
     logic        lsu_req_n,       lsu_req_q;
     logic        lsu_is_store_n,  lsu_is_store_q;
     logic        dtlb_hit_n,      dtlb_hit_q;

@@ -43,14 +43,14 @@ module csr_regfile #(
     input  logic  [5:0]           cluster_id_i,               // Cluster ID is considered static
     input  logic  [63:0]          boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
     // we are taking an exception
-    input exception               ex_i,                       // We've got an exception from the commit stage, take its
+    input exception_t             ex_i,                       // We've got an exception from the commit stage, take its
 
     input  fu_op                  csr_op_i,                   // Operation to perform on the CSR file
     input  logic  [11:0]          csr_addr_i,                 // Address of the register to read/write
     input  logic  [63:0]          csr_wdata_i,                // Write data in
     output logic  [63:0]          csr_rdata_o,                // Read data out
     input  logic  [63:0]          pc_i,                       // PC of instruction accessing the CSR
-    output exception              csr_exception_o,            // attempts to access a CSR without appropriate privilege
+    output exception_t            csr_exception_o,            // attempts to access a CSR without appropriate privilege
                                                               // level or to write  a read-only register also
                                                               // raises illegal instruction exceptions.
     // Interrupts/Exceptions

@@ -42,7 +42,7 @@ package ariane_pkg;
          logic [63:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
                              // address of LD/ST fault
          logic        valid;
-    } exception;
+    } exception_t;
 
     // branch-predict
     // this is the struct we get back from ex stage and we will use it to update
@@ -56,7 +56,7 @@ package ariane_pkg;
                                       // in the lower 16 bit of the word
         logic        valid;           // prediction with all its values is valid
         logic        clear;           // invalidate this entry
-    } branchpredict;
+    } branchpredict_t;
 
     // branchpredict scoreboard entry
     // this is the struct which we will inject into the pipeline to guide the various
@@ -67,7 +67,7 @@ package ariane_pkg;
         logic        is_lower_16;     // branch instruction is compressed and resides
                                       // in the lower 16 bit of the word
         logic        valid;           // this is a valid hint
-    } branchpredict_sbe;
+    } branchpredict_sbe_t;
 
     typedef enum logic[3:0] {
         NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR
@@ -114,11 +114,11 @@ package ariane_pkg;
     // ---------------
     // store the decompressed instruction
     typedef struct packed {
-        logic [63:0]      address;              // the address of the instructions from below
-        logic [31:0]      instruction;          // instruction word
-        branchpredict_sbe branch_predict;       // this field contains branch prediction information regarding the forward branch path
-        exception         ex;                   // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
-    } fetch_entry;
+        logic [63:0]        address;              // the address of the instructions from below
+        logic [31:0]        instruction;          // instruction word
+        branchpredict_sbe_t branch_predict;       // this field contains branch prediction information regarding the forward branch path
+        exception_t         ex;                   // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
+    } fetch_entry_t;
 
     // ---------------
     // ID/EX/WB Stage
@@ -137,11 +137,11 @@ package ariane_pkg;
         logic                     use_imm;       // should we use the immediate as operand b?
         logic                     use_zimm;      // use zimm as operand a
         logic                     use_pc;        // set if we need to use the PC as operand a, PC from exception
-        exception                 ex;            // exception has occurred
-        branchpredict_sbe         bp;            // branch predict scoreboard data structure
+        exception_t               ex;            // exception has occurred
+        branchpredict_sbe_t       bp;            // branch predict scoreboard data structure
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2
-    } scoreboard_entry;
+    } scoreboard_entry_t;
 
     // --------------------
     // Instruction Types
@@ -184,7 +184,7 @@ package ariane_pkg;
         itype_t        itype;
         stype_t        stype;
         utype_t        utype;
-    } instruction;
+    } instruction_t;
 
     // --------------------
     // Opcodes

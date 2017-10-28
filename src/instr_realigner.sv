@@ -24,11 +24,11 @@ module instr_realigner (
     // control signals
     input  logic                   flush_i,
 
-    input  fetch_entry             fetch_entry_0_i,
+    input  fetch_entry_t           fetch_entry_0_i,
     input  logic                   fetch_entry_valid_0_i,
     output logic                   fetch_ack_0_o,
 
-    output fetch_entry             fetch_entry_o,
+    output fetch_entry_t           fetch_entry_o,
     output logic                   fetch_entry_valid_o,
     input  logic                   fetch_ack_i
 );

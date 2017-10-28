@@ -29,19 +29,19 @@ module fetch_fifo
     // that we have two compressed instruction (or one compressed instruction and one unaligned instruction) so we
     // only predict on one entry and discard (or keep) the other depending on its position and prediction.
     // input port
-    input  branchpredict_sbe       branch_predict_i,
-    input  exception               ex_i,              // fetch exception in
+    input  branchpredict_sbe_t     branch_predict_i,
+    input  exception_t             ex_i,              // fetch exception in
     input  logic [63:0]            addr_i,
     input  logic [63:0]            rdata_i,
     input  logic                   valid_i,
     output logic                   ready_o,
     // Dual Port Fetch FIFO
     // output port 0
-    output fetch_entry             fetch_entry_0_o,
+    output fetch_entry_t           fetch_entry_0_o,
     output logic                   fetch_entry_valid_0_o,
     input  logic                   fetch_ack_0_i,
     // output port 1
-    output fetch_entry             fetch_entry_1_o,
+    output fetch_entry_t           fetch_entry_1_o,
     output logic                   fetch_entry_valid_1_o,
     input  logic                   fetch_ack_1_i
 );
@@ -50,7 +50,7 @@ module fetch_fifo
     // status signals
     logic full, empty;
 
-    fetch_entry                   mem_n[DEPTH-1:0], mem_q[DEPTH-1:0];
+    fetch_entry_t                 mem_n[DEPTH-1:0], mem_q[DEPTH-1:0];
     logic [$clog2(DEPTH)-1:0]     read_pointer_n,   read_pointer_q;
     logic [$clog2(DEPTH)-1:0]     write_pointer_n,  write_pointer_q;
     logic [$clog2(DEPTH)-1:0]     status_cnt_n,     status_cnt_q; // this integer will be truncated by the synthesis tool

@@ -41,17 +41,17 @@ module ex_stage #(
     output logic                                   alu_valid_o,           // ALU result is valid
     output logic [63:0]                            alu_result_o,
     output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
-    output exception                               alu_exception_o,
+    output exception_t                             alu_exception_o,
     // Branches and Jumps
     output logic                                   branch_ready_o,
     input  logic                                   branch_valid_i,        // we are using the branch unit
     output logic                                   branch_valid_o,        // the calculated branch target is valid
     output logic [63:0]                            branch_result_o,       // branch target address out
-    input  branchpredict_sbe                       branch_predict_i,      // branch prediction in
+    input  branchpredict_sbe_t                     branch_predict_i,      // branch prediction in
     output logic [TRANS_ID_BITS-1:0]               branch_trans_id_o,
-    output exception                               branch_exception_o,    // branch unit detected an exception
+    output exception_t                             branch_exception_o,    // branch unit detected an exception
 
-    output branchpredict                           resolved_branch_o,     // the branch engine uses the write back from the ALU
+    output branchpredict_t                         resolved_branch_o,     // the branch engine uses the write back from the ALU
     output logic                                   resolve_branch_o,      // to ID signaling that we resolved the branch
     // LSU
     output logic                                   lsu_ready_o,           // FU is ready
@@ -61,7 +61,7 @@ module ex_stage #(
     output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
     input  logic                                   lsu_commit_i,
     output logic                                   lsu_commit_ready_o,    // commit queue is ready to accept another commit request
-    output exception                               lsu_exception_o,
+    output exception_t                             lsu_exception_o,
     output logic                                   no_st_pending_o,
     // CSR
     output logic                                   csr_ready_o,
@@ -87,7 +87,7 @@ module ex_stage #(
     output logic                                   fetch_valid_o,
     input  logic [63:0]                            fetch_vaddr_i,
     output logic [63:0]                            fetch_rdata_o,
-    output exception                               fetch_ex_o,
+    output exception_t                             fetch_ex_o,
     input  priv_lvl_t                              priv_lvl_i,
     input  priv_lvl_t                              ld_st_priv_lvl_i,
     input  logic                                   sum_i,

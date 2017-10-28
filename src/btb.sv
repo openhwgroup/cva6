@@ -23,14 +23,14 @@ module btb #(
     parameter int BITS_SATURATION_COUNTER = 2
     )
     (
-    input  logic             clk_i,                     // Clock
-    input  logic             rst_ni,                    // Asynchronous reset active low
-    input  logic             flush_i,                   // flush the btb
+    input  logic               clk_i,                     // Clock
+    input  logic               rst_ni,                    // Asynchronous reset active low
+    input  logic               flush_i,                   // flush the btb
 
-    input  logic [63:0]      vpc_i,                     // virtual PC from IF stage
-    input  branchpredict     branch_predict_i,          // a mis-predict happened -> update data structure
+    input  logic [63:0]        vpc_i,                     // virtual PC from IF stage
+    input  branchpredict_t     branch_predict_i,          // a mis-predict happened -> update data structure
 
-    output branchpredict_sbe branch_predict_o           // branch prediction for issuing to the pipeline
+    output branchpredict_sbe_t branch_predict_o           // branch prediction for issuing to the pipeline
 );
     // number of bits which are not used for indexing
     localparam OFFSET = 2;

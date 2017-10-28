@@ -28,7 +28,7 @@ module if_stage (
     // fetch direction from PC Gen
     input  logic [63:0]            fetch_address_i,     // address to fetch from
     input  logic                   fetch_valid_i,       // the fetch address is valid
-    input  branchpredict_sbe       branch_predict_i,    // branch prediction structure we get from the PC Gen stage and we
+    input  branchpredict_sbe_t     branch_predict_i,    // branch prediction structure we get from the PC Gen stage and we
                                                         // we need to pass it on to all the further stages (until ex)
     // I$ Interface
     output logic                   instr_req_o,
@@ -36,14 +36,14 @@ module if_stage (
     input  logic                   instr_gnt_i,
     input  logic                   instr_rvalid_i,
     input  logic [63:0]            instr_rdata_i,
-    input  exception               instr_ex_i,            // Instruction fetch exception, valid if rvalid is one
+    input  exception_t             instr_ex_i,            // Instruction fetch exception, valid if rvalid is one
     // Output of IF Pipeline stage -> Dual Port Fetch FIFO
     // output port 0
-    output fetch_entry             fetch_entry_0_o,       // fetch entry containing all relevant data for the ID stage
+    output fetch_entry_t           fetch_entry_0_o,       // fetch entry containing all relevant data for the ID stage
     output logic                   fetch_entry_valid_0_o, // instruction in IF is valid
     input  logic                   fetch_ack_0_i,         // ID acknowledged this instruction
     // output port 1
-    output fetch_entry             fetch_entry_1_o,       // fetch entry containing all relevant data for the ID stage
+    output fetch_entry_t           fetch_entry_1_o,       // fetch entry containing all relevant data for the ID stage
     output logic                   fetch_entry_valid_1_o, // instruction in IF is valid
     input  logic                   fetch_ack_1_i          // ID acknowledged this instruction
 );
@@ -51,18 +51,18 @@ module if_stage (
     enum logic [2:0] {IDLE, WAIT_GNT, WAIT_RVALID, WAIT_ABORTED, WAIT_ABORTED_REQUEST } CS, NS;
     // define a type where we can store address and branch-prediction information
     typedef struct packed {
-        logic [63:0]      address;
-        branchpredict_sbe branchpredict;
+        logic [63:0]        address;
+        branchpredict_sbe_t branchpredict;
     } address_fifo_t;
 
-    logic [63:0]      instr_addr_n, instr_addr_q, fetch_address;
-    branchpredict_sbe branchpredict_n, branchpredict_q;
+    logic [63:0]        instr_addr_n, instr_addr_q, fetch_address;
+    branchpredict_sbe_t branchpredict_n, branchpredict_q;
     // Control signals
-    address_fifo_t    push_data, pop_data;
-    logic             fifo_valid, fifo_ready;
-    logic             pop_empty; // pop the address queue in case of a flush, empty signal
+    address_fifo_t      push_data, pop_data;
+    logic               fifo_valid, fifo_ready;
+    logic               pop_empty; // pop the address queue in case of a flush, empty signal
     // Address queue status signals
-    logic             empty, full, single_element;
+    logic               empty, full, single_element;
 
     // We are busy if:
     // 1. we are either waiting for a grant

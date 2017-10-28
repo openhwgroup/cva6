@@ -25,12 +25,12 @@ module id_stage (
 
     input  logic                                     flush_i,
     // from IF
-    input  fetch_entry                               fetch_entry_i,
+    input  fetch_entry_t                             fetch_entry_i,
     input  logic                                     fetch_entry_valid_i,
     output logic                                     decoded_instr_ack_o, // acknowledge the instruction (fetch entry)
 
     // to ID
-    output scoreboard_entry                          issue_entry_o,       // a decoded instruction
+    output scoreboard_entry_t                        issue_entry_o,       // a decoded instruction
     output logic                                     issue_entry_valid_o, // issue entry is valid
     output logic                                     is_ctrl_flow_o,      // the instruction we issue is a ctrl flow instructions
     input  logic                                     issue_instr_ack_i,   // issue stage acknowledged sampling of instructions
@@ -43,15 +43,15 @@ module id_stage (
     // register stage
     struct packed {
         logic            valid;
-        scoreboard_entry sbe;
+        scoreboard_entry_t sbe;
         logic            is_ctrl_flow;
 
     } issue_n, issue_q;
 
     logic                is_control_flow_instr;
-    scoreboard_entry     decoded_instruction;
+    scoreboard_entry_t   decoded_instruction;
 
-    fetch_entry          fetch_entry;
+    fetch_entry_t        fetch_entry;
     logic                is_illegal;
     logic                [31:0] instruction;
     logic                is_compressed;

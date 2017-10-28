@@ -39,7 +39,7 @@ module controller (
     output logic            halt_o,                 // Halt signal to commit stage
     input  logic            eret_i,                 // Return from exception
     input  logic            ex_valid_i,             // We got an exception, flush the pipeline
-    input  branchpredict    resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
+    input  branchpredict_t  resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
     input  logic            flush_csr_i,            // We got an instruction which altered the CSR, flush the pipeline
     input  logic            fence_i_i,              // fence.i in
     input  logic            fence_i,                // fence in
