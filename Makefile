@@ -184,5 +184,3 @@ clean:
 
 .PHONY:
 	build lint build-moore
-
-	# make CC=/usr/pack/modelsim-10.6-kgf/questasim/gcc-5.3.0-linux_x86_64/bin/gcc CXX=/usr/pack/modelsim-10.6-kgf/questasim/gcc-5.3.0-linux_x86_64/bin/g++ -j20

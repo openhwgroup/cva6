@@ -221,6 +221,7 @@ module cache_ctrl #(
                     // For now this should not happen to frequently and we spare another cycle
                     // go back to idle
                     state_d = IDLE;
+                    data_rvalid_o = 1'b1;
                 end
             end
 
