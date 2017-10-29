@@ -348,4 +348,10 @@ package ariane_pkg;
         DBG_CSR_M1   = 16'hF???
     } debug_reg_t;
 
+    // ----------------------
+    // Arithmetic Functions
+    // ----------------------s
+    function automatic logic [63:0] sign_extend (logic [31:0] operand);
+        return {{32{operand[31]}}, operand[31:0]};
+    endfunction
 endpackage

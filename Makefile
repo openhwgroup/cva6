@@ -67,7 +67,7 @@ max_cycles = 10000000
 test_case = core_test
 # QuestaSim Version
 questa_version =
-compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
+compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive  +define+MULT
 # Moore binary
 moore = ~fschuiki/bin/moore
 uvm-flags = +UVM_NO_RELNOTES
