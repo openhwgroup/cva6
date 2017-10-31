@@ -204,8 +204,9 @@ module cache_ctrl #(
                     // we've got a match on MSHR
                     if (mashr_addr_matches_i) begin
                         state_d = WAIT_MSHR;
-                        // save tag
-                        mem_req_d.tag = address_tag_i;
+                        // save tag if we didn't already save it e.g.: we are not in in the Tag saved state
+                        if (state_q != WAIT_TAG_SAVED)
+                            mem_req_d.tag = address_tag_i;
                     end
                     // -------------------------
                     // Check for cache-ability
@@ -238,7 +239,7 @@ module cache_ctrl #(
                 // set the correct byte enable
                 for (int unsigned i = 0; i < 8; i++) begin
                     if (mem_req_q.be[i])
-                        be_o.data[cl_offset +: 64] = '1;
+                        be_o.data[cl_offset + i*8 +: 8] = '1;
                 end
 
                 data_o.data[cl_offset +: 64] = mem_req_q.wdata;
@@ -253,7 +254,7 @@ module cache_ctrl #(
                 end
             end
 
-            // we've got a match on MSHR ~> someone is serving a request
+            // we've got a match on MSHR ~> miss unit is serving a request
             WAIT_MSHR: begin
                 mshr_addr_o = {mem_req_q.tag, mem_req_q.index};
                 // we can start a new request

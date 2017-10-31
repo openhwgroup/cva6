@@ -304,7 +304,7 @@ module miss_handler #(
         mashr_addr_matches_o = 'b0;
 
         for (int i = 0; i < NR_PORTS; i++) begin
-            if (mshr_q.valid && mshr_addr_i[i][55:$clog2(CACHE_LINE_WIDTH)] == mshr_q.addr[55:$clog2(CACHE_LINE_WIDTH)]) begin
+            if (mshr_q.valid && mshr_addr_i[i][55:$clog2(CACHE_LINE_WIDTH/8)] == mshr_q.addr[55:$clog2(CACHE_LINE_WIDTH/8)]) begin
                 mashr_addr_matches_o[i] = 1'b1;
             end
         end
