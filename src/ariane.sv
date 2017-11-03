@@ -55,7 +55,7 @@ module ariane
         AXI_BUS.Master                         data_if,
         AXI_BUS.Master                         bypass_if,
         // Interrupt inputs
-        input  logic                           irq_i,                 // level sensitive IR lines
+        input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip
         input  logic [4:0]                     irq_id_i,
         output logic                           irq_ack_o,
         input  logic                           irq_sec_i,

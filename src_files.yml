@@ -40,6 +40,7 @@ ariane:
     src/nbdcache.sv,
     src/miss_handler.sv,
     src/cache_ctrl.sv,
+    src/perf_counters.sv,
     ]
 riscv_regfile_rtl:
   targets: [
@@ -51,6 +52,7 @@ riscv_regfile_rtl:
   ]
   files: [
     src/regfile.sv,
+    src/util/gf22_sram.sv,
   ]
 
 riscv_regfile_fpga:

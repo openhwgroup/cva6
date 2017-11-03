@@ -67,7 +67,7 @@ module csr_regfile #(
     output logic [43:0]           satp_ppn_o,
     output logic [ASID_WIDTH-1:0] asid_o,
     // external interrupts
-    input  logic                  irq_i,                      // external interrupt in
+    input  logic [1:0]            irq_i,                      // external interrupt in
     // Visualization Support
     output logic                  tvm_o,                      // trap virtual memory
     output logic                  tw_o,                       // timeout wait
@@ -383,7 +383,7 @@ module csr_regfile #(
         // Machine Mode External Interrupt Pending
         // TODO: this is wrong for sure
         mip_d[11] = 1'b0;
-        mip_d[9] = mie_q[9] & irq_i;
+        mip_d[9] = mie_q[9] & irq_i[0];
         // Timer interrupt pending, coming from platform timer
         mip_d[7] = time_irq_i;
 
