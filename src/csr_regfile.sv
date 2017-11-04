@@ -238,9 +238,11 @@ module csr_regfile #(
     // CSR Write and update logic
     // ---------------------------
     always_comb begin : csr_update
-        automatic satp_t sapt   = satp_q;
+        automatic satp_t sapt;
+        automatic logic [63:0] mip;
+        sapt = satp_q;
+        mip = csr_wdata & 64'h33;
         // only USIP, SSIP, UTIP, STIP are write-able
-        automatic logic [63:0] mip = csr_wdata & 64'h33;
 
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
@@ -546,7 +548,8 @@ module csr_regfile #(
     // Exception Control & Interrupt Control
     // --------------------------------------
     always_comb begin : exception_ctrl
-        automatic logic [63:0] interrupt_cause = '0;
+        automatic logic [63:0] interrupt_cause;
+        interrupt_cause = '0;
         // wait for interrupt register
         wfi_d = wfi_q;
 

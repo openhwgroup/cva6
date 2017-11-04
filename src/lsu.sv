@@ -520,9 +520,13 @@ module lsu_bypass (
     assign ready_o = empty;
 
     always_comb begin
-        automatic logic [1:0] status_cnt = status_cnt_q;
-        automatic logic write_pointer = write_pointer_q;
-        automatic logic read_pointer = read_pointer_q;
+        automatic logic [1:0] status_cnt;
+        automatic logic write_pointer;
+        automatic logic read_pointer;
+
+        status_cnt = status_cnt_q;
+        write_pointer = write_pointer_q;
+        read_pointer = read_pointer_q;
 
         mem_n = mem_q;
         // we've got a valid LSU request

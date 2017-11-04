@@ -409,7 +409,7 @@ module mmu #(
     // Registers
     // ----------
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             lsu_vaddr_q      <= '0;
             lsu_req_q        <= '0;
             misaligned_ex_q  <= '0;

@@ -11,7 +11,7 @@ test_top_level = core_tb
 # Ariane PKG
 ariane_pkg = include/ariane_pkg.sv include/nbdcache_pkg.sv
 # utility modules
-util = $(wildcard src/util/*.sv*)
+util = $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv
 # test targets
 tests = alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
 # UVM agents

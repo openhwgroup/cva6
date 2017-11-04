@@ -32,7 +32,6 @@ module sram #(
 
     generate
         if (NUM_WORDS == 256) begin
-
             if (DATA_WIDTH == 16) begin
                 IN22FDX_R1PH_NFHN_W00256B016M02C256 dirtyram (
                  .CLK           ( clk_i       ),
@@ -52,7 +51,10 @@ module sram #(
                 );
             end
 
-            if (NUM_WORDS == 44) begin
+            if (DATA_WIDTH == 44) begin
+                logic [45:0] rdata;
+                assign rdata_o = rdata[43:0];
+
                 IN22FDX_R1PH_NFHN_W00256B046M02C256 TAG_RAM  (
                     .CLK         ( clk_i           ),
                     .CEN         ( ~req_i          ),
@@ -66,7 +68,7 @@ module sram #(
                     .MA_WL       ( '0              ),
                     .MA_WRAS     ( '0              ),
                     .MA_WRASD    ( '0              ),
-                    .Q           ( rdata_o         ),
+                    .Q           ( rdata           ),
                     .OBSV_CTL    (                 )
                  );
             end

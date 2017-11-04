@@ -164,15 +164,16 @@ module tlb #(
         // default: begin /* No hit */ end
         // endcase
         for (int unsigned i = 0; i < TLB_ENTRIES; i++) begin
+            automatic int unsigned idx_base, shift, new_index;
             // we got a hit so update the pointer as it was least recently used
             if (lu_hit[i] & lu_access_i) begin
                 // Set the nodes to the values we would expect
                 for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
-                  automatic int unsigned idx_base = $unsigned((2**lvl)-1);
+                  idx_base = $unsigned((2**lvl)-1);
                   // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
-                  automatic int unsigned shift     = $clog2(TLB_ENTRIES) - lvl;
+                  shift = $clog2(TLB_ENTRIES) - lvl;
                   // to circumvent the 32 bit integer arithmetic assignment
-                  automatic int unsigned new_index =  ~((i >> (shift-1)) & 32'b1);
+                  new_index =  ~((i >> (shift-1)) & 32'b1);
                   plru_tree_n[idx_base + (i >> shift)] = new_index[0];
                 end
             end
@@ -192,15 +193,17 @@ module tlb #(
         // the corresponding bit of the entry's index, this is
         // the next entry to replace.
         for (int unsigned i = 0; i < TLB_ENTRIES; i += 1) begin
-            automatic logic en = 1'b1;
+            automatic logic en;
+            automatic int unsigned idx_base, shift, new_index;
+            en = 1'b1;
             for (int unsigned lvl = 0; lvl < $clog2(TLB_ENTRIES); lvl++) begin
-                automatic int unsigned idx_base = $unsigned((2**lvl)-1);
+                idx_base = $unsigned((2**lvl)-1);
                 // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
-                automatic int unsigned shift = $clog2(TLB_ENTRIES) - lvl;
+                shift = $clog2(TLB_ENTRIES) - lvl;
 
                 // en &= plru_tree_q[idx_base + (i>>shift)] == ((i >> (shift-1)) & 1'b1);
-                automatic int unsigned new_index =  (i >> (shift-1)) & 32'b1;
-                if(new_index[0]) begin
+                new_index =  (i >> (shift-1)) & 32'b1;
+                if (new_index[0]) begin
                   en &= plru_tree_q[idx_base + (i>>shift)];
                 end else begin
                   en &= ~plru_tree_q[idx_base + (i>>shift)];
@@ -239,7 +242,7 @@ module tlb #(
     // Just for checking
     function int countSetBits(logic[TLB_ENTRIES-1:0] vector);
       automatic int count = 0;
-      foreach(vector[idx]) begin
+      foreach (vector[idx]) begin
         count += vector[idx];
       end
       return count;
