@@ -671,21 +671,7 @@ module ariane
     // assign current privilege level
     assign tracer_if.priv_lvl          = priv_lvl;
 
-    program instr_tracer (instruction_tracer_if tracer_if);
-        instruction_tracer it = new (tracer_if, 1'b0);
-
-        initial begin
-            #15ns;
-            it.create_file(cluster_id_i, core_id_i);
-            it.trace();
-        end
-
-        final begin
-            it.close();
-        end
-    endprogram
-
-    instr_tracer instr_tracer_i (tracer_if);
+    instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
     `endif
     `endif
 
@@ -698,3 +684,23 @@ module ariane
     end
 
 endmodule // ariane
+
+program instr_tracer
+    (
+        instruction_tracer_if tracer_if,
+        input logic [5:0] cluster_id_i,
+        input logic [3:0] core_id_i
+    );
+
+    instruction_tracer it = new (tracer_if, 1'b0);
+
+    initial begin
+        #15ns;
+        it.create_file(cluster_id_i, core_id_i);
+        it.trace();
+    end
+
+    final begin
+        it.close();
+    end
+endprogram
