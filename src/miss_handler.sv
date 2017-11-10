@@ -236,7 +236,7 @@ module miss_handler #(
                 req_fsm_miss_we     = 1'b1;
                 req_fsm_miss_wdata  = evict_cl_q.data;
 
-                // we've got a grant
+                // we've got a grant --> this is timing critical, think about it
                 if (gnt_miss_fsm) begin
                     // write status array
                     addr_o     = cnt_q;
