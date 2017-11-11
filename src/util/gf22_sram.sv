@@ -40,7 +40,7 @@ module sram #(
                  .AW            ( addr_i[7:1] ),
                  .AC            ( addr_i[0]   ),
                  .D             ( wdata_i     ),
-                 .BW            ( ~be_i       ),
+                 .BW            ( be_i        ),
                  .T_LOGIC       ( 1'b0        ),
                  .MA_SAWL       ( '0          ),
                  .MA_WL         ( '0          ),

@@ -88,7 +88,7 @@ module miss_handler #(
         // Default Assignments
         // ----------------------
         // memory array
-        req_o  = 1'b0;
+        req_o  = '0;
         addr_o = '0;
         data_o = '0;
         be_o   = '0;
@@ -148,7 +148,7 @@ module miss_handler #(
             MISS: begin
                 // 1. Check if there is an empty cache-line
                 // 2. If not -> evict one
-                req_o = 1'b1;
+                req_o = '1;
                 addr_o = mshr_q.addr[INDEX_WIDTH-1:0];
                 state_d = MISS_REPL;
                 miss_o = 1'b1;
