@@ -135,7 +135,7 @@ module ex_stage #(
     // Multiplication
     // ----------------
     `ifdef MULT
-    mult mult_i (
+    mult i_mult (
         .result_o ( mult_result_o ),
         .*
     );

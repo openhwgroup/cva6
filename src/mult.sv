@@ -37,9 +37,9 @@ module mult (
 );
 
 
-    mul (
-        .*
-    );
+    // mul (
+    //     .*
+    // );
     // enum logic { IDLE, DIV } state_d, state_q;
 
     // // ----------------
@@ -159,25 +159,26 @@ module mult (
     //     endcase
     // end
 
-    // logic [63:0] div_result;
-
-    // serial_divider #(
-    //     .C_WIDTH    (64            ),
-    //     .C_LOG_WIDTH($clog2(64) + 1)
-    // ) i_div (
-    //     .Clk_CI       ( clk_i                ),
-    //     .Rst_RBI      ( rst_ni               ),
-    //     .OpA_DI       ( operand_a_i          ),
-    //     .OpB_DI       ( operand_b_i          ),
-    //     .OpBShift_DI  (                      ),
-    //     .OpBIsZero_SI ( (operand_b_i == '0)  ),
-    //     .OpBSign_SI   (                      ),
-    //     .OpCode_SI    (                      ),
-    //     .InVld_SI     (                      ),
-    //     .OutRdy_SI    (                      ),
-    //     .OutVld_SO    (                      ),
-    //     .Res_DO       (                      )
-    // );
+//divu
+    serial_divider #(
+        .C_WIDTH      ( 64                   ),
+        .C_LOG_WIDTH  ( $clog2(64) + 1       )
+    ) i_div (
+        .Clk_CI       ( clk_i                ),
+        .Rst_RBI      ( rst_ni               ),
+        .TransId_DI   ( trans_id_i           ),
+        .OpA_DI       ( operand_a_i          ),
+        .OpB_DI       ( operand_b_i          ),
+        .OpBShift_DI  ( 7'd64                ),
+        .OpBIsZero_SI ( (operand_b_i == '0)  ),
+        .OpBSign_SI   ( '0                   ), // gate this to 0 in case of unsigned ops
+        .OpCode_SI    ( '0                   ), // 0: udiv, 2: urem, 1: div, 3: rem
+        .InVld_SI     ( mult_valid_i         ),
+        .OutRdy_SI    ( 1'b1                 ),
+        .OutVld_SO    ( mult_valid_o         ),
+        .TransId_DO   ( mult_trans_id_o      ),
+        .Res_DO       ( result_o             )
+    );
 
     // // Registers
     // always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -207,32 +208,34 @@ module serial_divider #(
     parameter int unsigned C_WIDTH     = 32,
     parameter int unsigned C_LOG_WIDTH = 6
 ) (
-    input  logic                    Clk_CI,
-    input  logic                    Rst_RBI,
+    input  logic                      Clk_CI,
+    input  logic                      Rst_RBI,
     // input IF
-    input  logic [C_WIDTH-1:0]      OpA_DI,
-    input  logic [C_WIDTH-1:0]      OpB_DI,
-    input  logic [C_LOG_WIDTH-1:0]  OpBShift_DI,
-    input  logic                    OpBIsZero_SI,
+    input  logic [TRANS_ID_BITS-1:0]  TransId_DI,
+    input  logic [C_WIDTH-1:0]        OpA_DI,
+    input  logic [C_WIDTH-1:0]        OpB_DI,
+    input  logic [C_LOG_WIDTH-1:0]    OpBShift_DI,
+    input  logic                      OpBIsZero_SI,
     //
-    input  logic                    OpBSign_SI, // gate this to 0 in case of unsigned ops
-    input  logic [1:0]              OpCode_SI,  // 0: udiv, 2: urem, 1: div, 3: rem
+    input  logic                      OpBSign_SI, // gate this to 0 in case of unsigned ops
+    input  logic [1:0]                OpCode_SI,  // 0: udiv, 2: urem, 1: div, 3: rem
     // handshake
-    input  logic                    InVld_SI,
+    input  logic                      InVld_SI,
     // output IF
-    input  logic                    OutRdy_SI,
-    output logic                    OutVld_SO,
-    output logic [C_WIDTH-1:0]      Res_DO
+    input  logic                      OutRdy_SI,
+    output logic                      OutVld_SO,
+    output logic [TRANS_ID_BITS-1:0]  TransId_DO,
+    output logic [C_WIDTH-1:0]        Res_DO
 );
 
     ///////////////////////////////////////////////////////////////////////////////
     // signal declarations
     ///////////////////////////////////////////////////////////////////////////////
-
-    logic [C_WIDTH-1:0] ResReg_DP, ResReg_DN;
-    logic [C_WIDTH-1:0] ResReg_DP_rev;
-    logic [C_WIDTH-1:0] AReg_DP, AReg_DN;
-    logic [C_WIDTH-1:0] BReg_DP, BReg_DN;
+    logic [C_WIDTH-1:0]       ResReg_DP, ResReg_DN;
+    logic [C_WIDTH-1:0]       ResReg_DP_rev;
+    logic [C_WIDTH-1:0]       AReg_DP, AReg_DN;
+    logic [C_WIDTH-1:0]       BReg_DP, BReg_DN;
+    logic [TRANS_ID_BITS-1:0] TransId_DP, TransId_DN;
 
     logic RemSel_SN, RemSel_SP;
     logic CompInv_SN, CompInv_SP;
@@ -353,6 +356,10 @@ module serial_divider #(
     assign CompInv_SN = (LoadEn_S) ? OpBSign_SI   : CompInv_SP;
     assign ResInv_SN  = (LoadEn_S) ? (~OpBIsZero_SI | OpCode_SI[1]) & OpCode_SI[0] & (OpA_DI[$high(OpA_DI)] ^ OpBSign_SI) : ResInv_SP;
 
+    // transaction id
+    assign TransId_DN = (LoadEn_S) ? TransId_DI : TransId_DP;
+    assign TransId_DO = TransId_DP;
+
     assign AReg_DN   = (ARegEn_S)   ? AddOut_D : AReg_DP;
     assign BReg_DN   = (BRegEn_S)   ? BMux_D   : BReg_DP;
     assign ResReg_DN = (LoadEn_S)   ? '0       :
@@ -365,6 +372,7 @@ module serial_divider #(
             BReg_DP    <= '0;
             ResReg_DP  <= '0;
             Cnt_DP     <= '0;
+            TransId_DP <= '0;
             RemSel_SP  <= 1'b0;
             CompInv_SP <= 1'b0;
             ResInv_SP  <= 1'b0;
@@ -374,6 +382,7 @@ module serial_divider #(
             BReg_DP    <= BReg_DN;
             ResReg_DP  <= ResReg_DN;
             Cnt_DP     <= Cnt_DN;
+            TransId_DP <= TransId_DN;
             RemSel_SP  <= RemSel_SN;
             CompInv_SP <= CompInv_SN;
             ResInv_SP  <= ResInv_SN;
