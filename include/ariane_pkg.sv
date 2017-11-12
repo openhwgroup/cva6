@@ -394,7 +394,7 @@ package ariane_pkg;
     // ----------------------
     // Arithmetic Functions
     // ----------------------s
-    function automatic logic [63:0] sign_extend (logic [31:0] operand);
+    function automatic logic [63:0] sext32 (logic [31:0] operand);
         return {{32{operand[31]}}, operand[31:0]};
     endfunction
 endpackage

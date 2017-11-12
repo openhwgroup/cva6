@@ -36,178 +36,158 @@ module mult (
     output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
 
-
+    // ---------------------
+    // Multiplication
+    // ---------------------
     // mul (
     //     .*
     // );
-    // enum logic { IDLE, DIV } state_d, state_q;
 
-    // // ----------------
-    // // Mock Multiplier
-    // // ----------------
-    // assign mult_trans_id_o = trans_id_i;
-    // assign mult_ready_o    = 1'b1;
+    // ---------------------
+    // Division
+    // ---------------------
+    logic [5:0]  ff1_result; // holds the index of the last '1' (as the input operand is reversed)
+    logic        ff1_no_one; // no one was found by find first one
+    logic [63:0] ff1_input;  // input to find first one
+    logic [63:0] operand_b_rev, operand_b_rev_neg, operand_b_shift; // couple of different representations for the dividend
+    logic [6:0]  div_shift;            // amount of which to shift to left
+    logic        div_signed;           // should this operation be performed as a signed or unsigned division
+    logic        div_op_signed;        // actual sign signal depends on div_signed and the MSB of the word
+    logic [63:0] operand_b, operand_a; // input operands after input MUX (input silencing, word operations or full inputs)
+    logic [63:0] result;               // result before result mux
 
-    // // sign extend operand a and b
-    // logic sign_a, sign_b;
+    logic        word_op;                   // is it a word operation
+    logic        rem;                       // is it a reminder (or not a reminder e.g.: a division)
+    logic        word_op_d, word_op_q;  // save whether the operation was signed or not
 
-    // logic [1:0]   opcode_div;
+    // is this a signed operation?
+    assign div_signed = (operator_i inside {DIV, DIVW, REM, REMW}) ? 1'b1 : 1'b0;
+    // if this operation is signed look at the actual sign bit to determine whether we should perform signed or unsigned division
+    assign div_op_signed = div_signed & operand_b[63];
 
+    // reverse input operands
+    generate
+        for (genvar k = 0; k < 64; k++)
+            assign operand_b_rev[k] = operand_b[63-k];
+    endgenerate
+    // negated reverse input operand, used for signed divisions
+    assign operand_b_rev_neg = ~operand_b_rev;
+    assign ff1_input = (div_op_signed) ? operand_b_rev_neg : operand_b_rev;
 
-    // always_comb begin : mul_div
+    // prepare the input operands and control divider
+    always_comb begin
+        // silence the inputs
+        operand_a   = '0;
+        operand_b   = '0;
+        // control signals
+        word_op_d = word_op_q;
+        word_op     = 1'b0;
+        rem         = 1'b0;
 
-    //     // perform multiplication
+        // we've go a new division operation
+        if (mult_valid_i && operator_i inside {DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW}) begin
+            // is this a word operation?
+            if (operator_i inside {DIVW, DIVUW, REMW, REMUW}) begin
+                word_op = 1'b1;
+                // yes so check if we should sign extend this is only done for a signed operation
+                if (div_signed) begin
+                    operand_a = sext32(operand_a_i[31:0]);
+                    operand_b = sext32(operand_b_i[31:0]);
+                end else begin
+                    operand_a = {32'b0, operand_a_i[31:0]};
+                    operand_b = {32'b0, operand_b_i[31:0]};
+                end
 
-    //     result_o = '0;
-    //     sign_a   = 1'b0;
-    //     sign_b   = 1'b0;
-    //     state_d  = state_q;
+                // save whether we want sign extend the result or not, this is done for all word operations
+                word_op_d = 1'b1;
+            // regular operation
+            end else begin
+                // no sign extending is necessary as we are already using the full 64 bit
+                operand_a = operand_a_i;
+                operand_b = operand_b_i;
+            end
 
-    //     case (state_q)
-    //         // Unit is idle
-    //         IDLE: begin
-    //             // Operand select
-    //             case (operator_i)
-    //                 // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
-    //                 MUL:
-    //                     result_o = mult_result[63:0];
+            // is this a modulo?
+            if (operator_i inside {REM, REMU, REMW, REMUW}) begin
+                rem = 1'b1;
+            end
+        end
+    end
 
-    //                 MULH: begin
-    //                     sign_a   = 1'b1;
-    //                     sign_b   = 1'b1;
-    //                     result_o = mult_result[127:64];
-    //                 end
-
-    //                 MULHU:
-    //                     result_o = mult_result[127:64];
-
-    //                 MULHSU: begin
-    //                     sign_a   = 1'b1;
-    //                     result_o = mult_result[127:64];
-    //                 end
-
-    //                 MULW:
-    //                     result_o = sign_extend(mult_result[31:0]);
-
-    //                 // Divisions
-    //                 DIV: begin
-    //                     result_o = $signed(operand_a_i) / $signed(operand_b_i);
-    //                     // division by zero
-    //                     // set all bits
-    //                     if (operand_b_i == '0)
-    //                         result_o = -1;
-    //                 end
-
-    //                 DIVU: begin
-    //                     result_o = operand_a_i / operand_b_i;
-    //                     // division by zero
-    //                     // set all bits
-    //                     if (operand_b_i == '0)
-    //                         result_o = -1;
-    //                 end
-
-    //                 DIVW: begin
-    //                     result_o = sign_extend($signed(operand_a_i[31:0]) / $signed(operand_b_i[31:0]));
-    //                     // division by zero
-    //                     // set all bits
-    //                     if (operand_b_i == '0)
-    //                         result_o = -1;
-    //                 end
-
-    //                 DIVUW: begin
-    //                     result_o = sign_extend(operand_a_i[31:0] / operand_b_i[31:0]);
-    //                     // division by zero
-    //                     // set all bits
-    //                     if (operand_b_i == '0)
-    //                         result_o = -1;
-    //                 end
-
-    //                 REM: begin
-    //                     result_o = $signed(operand_a_i) % $signed(operand_b_i);
-    //                     // division by zero
-    //                     if (operand_b_i == '0)
-    //                         result_o = operand_a_i;
-    //                 end
-
-    //                 REMU: begin
-    //                     result_o = operand_a_i % operand_b_i;
-    //                     // division by zero
-    //                     if (operand_b_i == '0)
-    //                         result_o = operand_a_i;
-    //                 end
-
-    //                 REMW: begin
-    //                     result_o = sign_extend($signed(operand_a_i[31:0]) % $signed(operand_b_i[31:0]));
-    //                     // division by zero
-    //                     if (operand_b_i == '0)
-    //                         result_o = operand_a_i;
-    //                 end
-
-    //                 REMUW: begin
-    //                     result_o = sign_extend(operand_a_i[31:0] % operand_b_i[31:0]);
-    //                     // division by zero
-    //                     if (operand_b_i == '0)
-    //                         result_o = operand_a_i;
-    //                 end
-    //             endcase
-    //         end
-    //         // unit is dividing
-    //         DIV: begin
-
-
-    //         end
-    //     endcase
-    // end
-
-//divu
-    serial_divider #(
-        .C_WIDTH      ( 64                   ),
-        .C_LOG_WIDTH  ( $clog2(64) + 1       )
-    ) i_div (
-        .Clk_CI       ( clk_i                ),
-        .Rst_RBI      ( rst_ni               ),
-        .TransId_DI   ( trans_id_i           ),
-        .OpA_DI       ( operand_a_i          ),
-        .OpB_DI       ( operand_b_i          ),
-        .OpBShift_DI  ( 7'd64                ),
-        .OpBIsZero_SI ( (operand_b_i == '0)  ),
-        .OpBSign_SI   ( '0                   ), // gate this to 0 in case of unsigned ops
-        .OpCode_SI    ( '0                   ), // 0: udiv, 2: urem, 1: div, 3: rem
-        .InVld_SI     ( mult_valid_i         ),
-        .OutRdy_SI    ( 1'b1                 ),
-        .OutVld_SO    ( mult_valid_o         ),
-        .TransId_DO   ( mult_trans_id_o      ),
-        .Res_DO       ( result_o             )
+    // ---------------------
+    // Find First one
+    // ---------------------
+    // this unit is used to speed up the sequential division by shifting the dividend first
+    alu_ff #(
+        .LEN         ( 64         )
+    ) i_ff1 (
+        .in_i        ( ff1_input  ), // signed = operand_b_rev_neg, unsigned operand_b_rev
+        .first_one_o ( ff1_result ),
+        .no_ones_o   ( ff1_no_one )
     );
 
-    // // Registers
-    // always_ff @(posedge clk_i or negedge rst_ni) begin
-    //     if (~rst_ni) begin
-    //         state_q <= IDLE;
-    //     end else begin
-    //         state_q <= state_d;
-    //     end
-    // end
+    // if the dividend is all zero go for the full length
+    assign div_shift = ff1_no_one ? 7'd64 : ff1_result;
+    // prepare dividend by shifting
+    assign operand_b_shift = operand_b <<< div_shift;
+
+    // ---------------------
+    // Serial Divider
+    // ---------------------
+    serial_divider #(
+        .C_WIDTH      ( 64                ),
+        .C_LOG_WIDTH  ( $clog2(64) + 1    )
+    ) i_div (
+        .Clk_CI       ( clk_i             ),
+        .Rst_RBI      ( rst_ni            ),
+        .TransId_DI   ( trans_id_i        ),
+        .OpA_DI       ( operand_a         ),
+        .OpB_DI       ( operand_b_shift   ),
+        .OpBShift_DI  ( div_shift         ),
+        .OpBIsZero_SI ( ~(|operand_b)     ),
+        .OpBSign_SI   ( div_op_signed     ), // gate this to 0 in case of unsigned ops
+        .OpCode_SI    ( {rem, div_signed} ), // 00: udiv, 10: urem, 01: div, 11: rem
+        .InVld_SI     ( mult_valid_i      ),
+        .OutRdy_SO    ( mult_ready_o      ),
+        .OutRdy_SI    ( 1'b1              ),
+        .OutVld_SO    ( mult_valid_o      ),
+        .TransId_DO   ( mult_trans_id_o   ),
+        .Res_DO       ( result            )
+    );
+    // Result multiplexer
+    // if it was a signed word operation the bit will be set and the result will be sign extended accordingly
+    assign result_o = (word_op_q) ? sext32(result) : result;
+
+    // ---------------------
+    // Registers
+    // ---------------------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if(~rst_ni) begin
+            word_op_q <= ADD;
+        end else begin
+            word_op_q <= word_op_d;
+        end
+    end
 endmodule
 
-///////////////////////////////////////////////////////////////////////////////
-// File       : Simple Serial Divider
-// Ver        : 1.0
-// Date       : 15.03.2016
-///////////////////////////////////////////////////////////////////////////////
-//
-// Description: this is a simple serial divider for signed integers.
-//
-///////////////////////////////////////////////////////////////////////////////
-//
-// Authors    : Michael Schaffner (schaffner@iis.ee.ethz.ch)
-//              Andreas Traber    (atraber@iis.ee.ethz.ch)
-//
-///////////////////////////////////////////////////////////////////////////////
+/* File       : mult.sv
+ * Ver        : 1.0
+ * Date       : 15.03.2016
+ *
+ *
+ * Copyright (C) 2017 ETH Zurich, University of Bologna
+ *
+ * Description: this is a simple serial divider for signed integers.
+ *
+ *
+ * Authors    : Michael Schaffner (schaffner@iis.ee.ethz.ch)
+ *              Andreas Traber    (atraber@iis.ee.ethz.ch)
+ *
+ */
 module serial_divider #(
     parameter int unsigned C_WIDTH     = 32,
     parameter int unsigned C_LOG_WIDTH = 6
-) (
+)(
     input  logic                      Clk_CI,
     input  logic                      Rst_RBI,
     // input IF
@@ -222,19 +202,22 @@ module serial_divider #(
     // handshake
     input  logic                      InVld_SI,
     // output IF
+    output logic                      OutRdy_SO,
     input  logic                      OutRdy_SI,
     output logic                      OutVld_SO,
     output logic [TRANS_ID_BITS-1:0]  TransId_DO,
     output logic [C_WIDTH-1:0]        Res_DO
 );
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // signal declarations
-    ///////////////////////////////////////////////////////////////////////////////
+    // ----------------------------------
+    // Signal Declarations
+    // ----------------------------------
     logic [C_WIDTH-1:0]       ResReg_DP, ResReg_DN;
     logic [C_WIDTH-1:0]       ResReg_DP_rev;
     logic [C_WIDTH-1:0]       AReg_DP, AReg_DN;
     logic [C_WIDTH-1:0]       BReg_DP, BReg_DN;
+    logic                     OpBIsZero_SP, OpBIsZero_SN;
+
     logic [TRANS_ID_BITS-1:0] TransId_DP, TransId_DN;
 
     logic RemSel_SN, RemSel_SP;
@@ -255,10 +238,9 @@ module serial_divider #(
     enum logic [1:0] {IDLE, DIVIDE, FINISH} State_SN, State_SP;
 
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // datapath
-    ///////////////////////////////////////////////////////////////////////////////
-
+    // -----------------
+    // Datapath
+    // -----------------
     assign PmSel_S = LoadEn_S & ~(OpCode_SI[0] & (OpA_DI[$high(OpA_DI)] ^ OpBSign_SI));
 
     // muxes
@@ -274,31 +256,29 @@ module serial_divider #(
     assign Res_DO = (ResInv_SP) ? -$signed(OutMux_D) : OutMux_D;
 
     // main comparator
-    assign ABComp_S = ((AReg_DP == BReg_DP) | ((AReg_DP > BReg_DP) ^ CompInv_SP)) & ((|AReg_DP) | OpBIsZero_SI);
+    assign ABComp_S = ((AReg_DP == BReg_DP) | ((AReg_DP > BReg_DP) ^ CompInv_SP)) & ((|AReg_DP) | OpBIsZero_SP);
 
     // main adder
     assign AddTmp_D = (LoadEn_S) ? 0 : AReg_DP;
     assign AddOut_D = (PmSel_S)  ? AddTmp_D + AddMux_D : AddTmp_D - $signed(AddMux_D);
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // counter
-    ///////////////////////////////////////////////////////////////////////////////
-
+    // -----------------
+    // Counter
+    // -----------------
     assign Cnt_DN = (LoadEn_S)   ? OpBShift_DI :
         (~CntZero_S) ? Cnt_DP - 1  : Cnt_DP;
 
     assign CntZero_S = ~(|Cnt_DP);
 
-    ///////////////////////////////////////////////////////////////////////////////
+    // -----------------
     // FSM
-    ///////////////////////////////////////////////////////////////////////////////
-
-    always_comb
-        begin : p_fsm
+    // -----------------
+    always_comb begin : p_fsm
             // default
             State_SN       = State_SP;
 
             OutVld_SO      = 1'b0;
+            OutRdy_SO      = 1'b0;
 
             LoadEn_S       = 1'b0;
 
@@ -307,11 +287,11 @@ module serial_divider #(
             ResRegEn_S     = 1'b0;
 
             case (State_SP)
-                /////////////////////////////////
-                IDLE: begin
-                    OutVld_SO    = 1'b1;
 
+                IDLE: begin
+                    OutRdy_SO    = 1'b1;
                     if(InVld_SI) begin
+                        OutRdy_SO  = 1'b0;
                         OutVld_SO  = 1'b0;
                         ARegEn_S   = 1'b1;
                         BRegEn_S   = 1'b1;
@@ -319,7 +299,7 @@ module serial_divider #(
                         State_SN   = DIVIDE;
                     end
                 end
-                /////////////////////////////////
+
                 DIVIDE: begin
 
                     ARegEn_S     = ABComp_S;
@@ -332,7 +312,7 @@ module serial_divider #(
                         State_SN   = FINISH;
                     end
                 end
-                /////////////////////////////////
+
                 FINISH: begin
                     OutVld_SO = 1'b1;
 
@@ -340,21 +320,19 @@ module serial_divider #(
                         State_SN  = IDLE;
                     end
                 end
-                /////////////////////////////////
+
                 default : /* default */ ;
-                /////////////////////////////////
+
             endcase
         end
-
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // regs
-    ///////////////////////////////////////////////////////////////////////////////
-
+    // -----------------
+    //  Registers
+    // -----------------
     // get flags
-    assign RemSel_SN  = (LoadEn_S) ? OpCode_SI[1] : RemSel_SP;
-    assign CompInv_SN = (LoadEn_S) ? OpBSign_SI   : CompInv_SP;
-    assign ResInv_SN  = (LoadEn_S) ? (~OpBIsZero_SI | OpCode_SI[1]) & OpCode_SI[0] & (OpA_DI[$high(OpA_DI)] ^ OpBSign_SI) : ResInv_SP;
+    assign RemSel_SN    = (LoadEn_S) ? OpCode_SI[1] : RemSel_SP;
+    assign CompInv_SN   = (LoadEn_S) ? OpBSign_SI   : CompInv_SP;
+    assign OpBIsZero_SN = (LoadEn_S) ? OpBIsZero_SI : OpBIsZero_SP;
+    assign ResInv_SN    = (LoadEn_S) ? (~OpBIsZero_SI | OpCode_SI[1]) & OpCode_SI[0] & (OpA_DI[$high(OpA_DI)] ^ OpBSign_SI) : ResInv_SP;
 
     // transaction id
     assign TransId_DN = (LoadEn_S) ? TransId_DI : TransId_DP;
@@ -367,40 +345,44 @@ module serial_divider #(
 
     always_ff @(posedge Clk_CI or negedge Rst_RBI) begin : p_regs
         if (~Rst_RBI) begin
-            State_SP   <= IDLE;
-            AReg_DP    <= '0;
-            BReg_DP    <= '0;
-            ResReg_DP  <= '0;
-            Cnt_DP     <= '0;
-            TransId_DP <= '0;
-            RemSel_SP  <= 1'b0;
-            CompInv_SP <= 1'b0;
-            ResInv_SP  <= 1'b0;
+            State_SP     <= IDLE;
+            AReg_DP      <= '0;
+            BReg_DP      <= '0;
+            ResReg_DP    <= '0;
+            Cnt_DP       <= '0;
+            TransId_DP   <= '0;
+            RemSel_SP    <= 1'b0;
+            CompInv_SP   <= 1'b0;
+            ResInv_SP    <= 1'b0;
+            OpBIsZero_SP <= 1'b0;
         end else begin
-            State_SP   <= State_SN;
-            AReg_DP    <= AReg_DN;
-            BReg_DP    <= BReg_DN;
-            ResReg_DP  <= ResReg_DN;
-            Cnt_DP     <= Cnt_DN;
-            TransId_DP <= TransId_DN;
-            RemSel_SP  <= RemSel_SN;
-            CompInv_SP <= CompInv_SN;
-            ResInv_SP  <= ResInv_SN;
+            State_SP     <= State_SN;
+            AReg_DP      <= AReg_DN;
+            BReg_DP      <= BReg_DN;
+            ResReg_DP    <= ResReg_DN;
+            Cnt_DP       <= Cnt_DN;
+            TransId_DP   <= TransId_DN;
+            RemSel_SP    <= RemSel_SN;
+            CompInv_SP   <= CompInv_SN;
+            ResInv_SP    <= ResInv_SN;
+            OpBIsZero_SP <= OpBIsZero_SN;
         end
     end
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // assertions
-    ///////////////////////////////////////////////////////////////////////////////
-
+    // ------------
+    // Assertions
+    // ------------
     `ifndef SYNTHESIS
         initial begin : p_assertions
             assert (C_LOG_WIDTH == $clog2(C_WIDTH+1)) else $error("C_LOG_WIDTH must be $clog2(C_WIDTH+1)");
         end
     `endif
 
-endmodule // serDiv
+endmodule
 
+// --------------------------------------------------
+// Multiplication Unit with one pipeline register
+// --------------------------------------------------
 module mul (
     input  logic                     clk_i,
     input  logic                     rst_ni,
@@ -477,4 +459,71 @@ module mul (
             end
         end
     end
+endmodule
+
+// -----------------
+// Find First One
+// -----------------
+module alu_ff #(
+    parameter int unsigned LEN = 32
+)(
+    input  logic [LEN-1:0]         in_i,
+    output logic [$clog2(LEN)-1:0] first_one_o,
+    output logic                   no_ones_o
+);
+
+    localparam int unsigned NUM_LEVELS = $clog2(LEN);
+
+    logic [LEN-1:0] [NUM_LEVELS-1:0]           index_lut;
+    logic [2**NUM_LEVELS-1:0]                  sel_nodes;
+    logic [2**NUM_LEVELS-1:0] [NUM_LEVELS-1:0] index_nodes;
+
+    // ----------------------------
+    // Generate Tree Structure
+    // ----------------------------
+    generate
+        for (genvar j = 0; j < LEN; j++) begin
+            assign index_lut[j] = $unsigned(j);
+        end
+    endgenerate
+
+    generate
+        for (genvar level = 0; level < NUM_LEVELS; level++) begin
+
+            if (level < NUM_LEVELS-1) begin
+                for (genvar l = 0; l < 2**level; l++) begin
+                    assign sel_nodes[2**level-1+l]   = sel_nodes[2**(level+1)-1+l*2] | sel_nodes[2**(level+1)-1+l*2+1];
+                    assign index_nodes[2**level-1+l] = (sel_nodes[2**(level+1)-1+l*2] == 1'b1) ?
+                        index_nodes[2**(level+1)-1+l*2] : index_nodes[2**(level+1)-1+l*2+1];
+                end
+            end
+
+            if (level == NUM_LEVELS-1) begin
+                for (genvar k = 0; k < 2**level; k++) begin
+                    // if two successive indices are still in the vector...
+                    if (k * 2 < LEN) begin
+                        assign sel_nodes[2**level-1+k]   = in_i[k*2] | in_i[k*2+1];
+                        assign index_nodes[2**level-1+k] = (in_i[k*2] == 1'b1) ? index_lut[k*2] : index_lut[k*2+1];
+                    end
+                    // if only the first index is still in the vector...
+                    if (k * 2 == LEN) begin
+                        assign sel_nodes[2**level-1+k]   = in_i[k*2];
+                        assign index_nodes[2**level-1+k] = index_lut[k*2];
+                    end
+                    // if index is out of range
+                    if (k * 2 > LEN) begin
+                        assign sel_nodes[2**level-1+k]   = 1'b0;
+                        assign index_nodes[2**level-1+k] = '0;
+                    end
+                end
+            end
+        end
+    endgenerate
+
+    // --------------------
+    // Connect Output
+    // --------------------
+    assign first_one_o = index_nodes[0];
+    assign no_ones_o   = ~sel_nodes[0];
+
 endmodule
