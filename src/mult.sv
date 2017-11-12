@@ -35,13 +35,35 @@ module mult (
     output logic                     mult_ready_o,
     output logic [TRANS_ID_BITS-1:0] mult_trans_id_o
 );
+    logic                     mul_valid;
+    logic                     div_valid;
+    logic                     div_ready_i; // receiver of division result is able to accept the result
+    logic [TRANS_ID_BITS-1:0] mul_trans_id;
+    logic [TRANS_ID_BITS-1:0] div_trans_id;
+    logic [63:0]              mul_result;
+    logic [63:0]              div_result;
+
+    // ---------------------
+    // Output Arbitration
+    // ---------------------
+    // we give precedence to multiplication as the divider supports stalling and the multiplier is
+    // just a dumb pipelined multiplier
+    assign div_ready_i      = (mul_valid) ? 1'b0         : 1'b1;
+    assign mult_trans_id_o  = (mul_valid) ? mul_trans_id : div_trans_id;
+    assign result_o         = (mul_valid) ? mul_result   : div_result;
+    assign mult_valid_o     = div_valid | mul_valid;
+    // mult_ready_o = division as the multiplication will unconditionally be ready to accept new requests
 
     // ---------------------
     // Multiplication
     // ---------------------
-    // mul (
-    //     .*
-    // );
+    mul i_mul (
+        .result_o          ( mul_result   ),
+        .mult_valid_o      ( mul_valid    ),
+        .mult_trans_id_o   ( mul_trans_id ),
+        .mult_ready_o      (              ), // this unit is unconditionally ready
+        .*
+    );
 
     // ---------------------
     // Division
@@ -50,14 +72,14 @@ module mult (
     logic        ff1_no_one; // no one was found by find first one
     logic [63:0] ff1_input;  // input to find first one
     logic [63:0] operand_b_rev, operand_b_rev_neg, operand_b_shift; // couple of different representations for the dividend
-    logic [6:0]  div_shift;            // amount of which to shift to left
-    logic        div_signed;           // should this operation be performed as a signed or unsigned division
-    logic        div_op_signed;        // actual sign signal depends on div_signed and the MSB of the word
-    logic [63:0] operand_b, operand_a; // input operands after input MUX (input silencing, word operations or full inputs)
-    logic [63:0] result;               // result before result mux
+    logic [6:0]  div_shift;             // amount of which to shift to left
+    logic        div_signed;            // should this operation be performed as a signed or unsigned division
+    logic        div_op_signed;         // actual sign signal depends on div_signed and the MSB of the word
+    logic [63:0] operand_b, operand_a;  // input operands after input MUX (input silencing, word operations or full inputs)
+    logic [63:0] result;                // result before result mux
 
-    logic        word_op;                   // is it a word operation
-    logic        rem;                       // is it a reminder (or not a reminder e.g.: a division)
+    logic        word_op;               // is it a word operation
+    logic        rem;                   // is it a reminder (or not a reminder e.g.: a division)
     logic        word_op_d, word_op_q;  // save whether the operation was signed or not
 
     // is this a signed operation?
@@ -149,14 +171,14 @@ module mult (
         .OpCode_SI    ( {rem, div_signed} ), // 00: udiv, 10: urem, 01: div, 11: rem
         .InVld_SI     ( mult_valid_i      ),
         .OutRdy_SO    ( mult_ready_o      ),
-        .OutRdy_SI    ( 1'b1              ),
-        .OutVld_SO    ( mult_valid_o      ),
-        .TransId_DO   ( mult_trans_id_o   ),
+        .OutRdy_SI    ( div_ready_i       ),
+        .OutVld_SO    ( div_valid         ),
+        .TransId_DO   ( div_trans_id      ),
         .Res_DO       ( result            )
     );
     // Result multiplexer
     // if it was a signed word operation the bit will be set and the result will be sign extended accordingly
-    assign result_o = (word_op_q) ? sext32(result) : result;
+    assign div_result = (word_op_q) ? sext32(result) : result;
 
     // ---------------------
     // Registers
@@ -325,6 +347,7 @@ module serial_divider #(
 
             endcase
         end
+
     // -----------------
     //  Registers
     // -----------------
@@ -404,11 +427,13 @@ module mul (
     logic [63:0]                operand_b_q;
     fu_op                       operator_q;
     logic                       sign_a_q, sign_b_q;
+    logic                       mult_valid;
 
     // control signals
     assign mult_valid_o    = mult_valid_q;
     assign mult_trans_id_o = trans_id_q;
     assign mult_ready_o    = 1'b1;
+    assign mult_valid      = mult_valid_i & (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW});
     // datapath
     logic [127:0] mult_result;
     assign mult_result   = $signed({operand_a_q[63] & sign_a_q, operand_a_q}) * $signed({operand_b_q[63] & sign_b_q, operand_b_q});
@@ -421,7 +446,7 @@ module mul (
             MULH:   result_o = mult_result[127:64];
             MULHU:  result_o = mult_result[127:64];
             MULHSU: result_o = mult_result[127:64];
-            MULW:   result_o = sign_extend(mult_result[31:0]);
+            MULW:   result_o = sext32(mult_result[31:0]);
         endcase
     end
     // -----------------------
@@ -437,9 +462,9 @@ module mul (
             sign_a_q     <= '0;
             sign_b_q     <= '0;
         end else begin
-            mult_valid_q <= mult_valid_i;
+            mult_valid_q <= mult_valid;
             // Input silencing
-            if (mult_valid_i) begin
+            if (mult_valid) begin
                 trans_id_q   <= trans_id_i;
                 operand_a_q  <= operand_a_i;
                 operand_b_q  <= operand_b_i;
