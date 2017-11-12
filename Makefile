@@ -9,7 +9,7 @@ top_level = core_tb
 test_top_level = core_tb
 
 # Ariane PKG
-ariane_pkg = include/ariane_pkg.sv
+ariane_pkg = include/ariane_pkg.sv include/nbdcache_pkg.sv
 # utility modules
 util = $(wildcard src/util/*.sv*)
 # test targets
@@ -27,7 +27,8 @@ test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.sv
 # DPI
 dpi = $(wildcard tb/dpi/*)
 # this list contains the standalone components
-src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv)
+src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv) \
+	  $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/*.sv)
 # look for testbenches
 tbs = $(wildcard tb/*_tb.sv)
 # RISCV-tests path
@@ -50,7 +51,7 @@ riscv-tests =  rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-
 			   rv64ui-v-sraiw rv64ui-v-sraw rv64ui-v-srl rv64ui-v-srli rv64ui-v-srliw rv64ui-v-srlw  						 \
 			   rv64ui-v-lb rv64ui-v-lbu rv64ui-v-ld rv64ui-v-lh rv64ui-v-lhu rv64ui-v-lui
 
-			   # rv64um-p-mul rv64um-p-mulh rv64um-p-mulhsu rv64um-p-mulhu rv64um-p-div rv64um-p-divu rv64um-p-rem  		     \
+			   # rv64um-p-mul rv64um-p-mulh rv64um-p-mulhsu rv64um-p-mulhu rv64um-p-div rv64um-p-divu rv64um-p-rem  		 \
 			   # rv64um-p-remu rv64um-p-mulw rv64um-p-divw rv64um-p-divuw rv64um-p-remw rv64um-p-remuw 						 \
 			   # rv64um-v-mul rv64um-v-mulh rv64um-v-mulhsu rv64um-v-mulhu rv64um-v-div rv64um-v-divu rv64um-v-rem    		 \
 			   # rv64um-v-remu rv64um-v-mulw rv64um-v-divw rv64um-v-divuw rv64um-v-remw rv64um-v-remuw
@@ -66,7 +67,7 @@ max_cycles = 10000000
 # Test case to run
 test_case = core_test
 # QuestaSim Version
-questa_version =
+questa_version = -10.6b
 compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive  +define+MULT
 # Moore binary
 moore = ~fschuiki/bin/moore
@@ -74,8 +75,6 @@ uvm-flags = +UVM_NO_RELNOTES
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
-# Device Tree Compiler
-DTC = dtc
 
 # create library if it doesn't exist
 
@@ -120,21 +119,26 @@ $(library):
 	# Create the library
 	vlib${questa_version} ${library}
 
-sim: build ariane_tb.dtb
+sim: build
 	vsim${questa_version} -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
 	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -do "do tb/wave/wave_core.do"
 
-simc: build ariane_tb.dtb
+sim_nopt: build
+	vsim${questa_version} -novopt -lib ${library} ${top_level} +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
+	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -do "do tb/wave/wave_core.do"
+
+
+simc: build
 	vsim${questa_version} -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) -coverage -classdebug -do "do tb/wave/wave_core.do"
 
-run-asm-tests: build ariane_tb.dtb
+run-asm-tests: build
 	$(foreach test, $(riscv-tests), vsim$(questa_version) +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
 		+UVM_TESTNAME=$(test_case) $(uvm-flags) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
 		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
 		$(library).$(test_top_level)_optimized;)
 
-run-failed-tests: build ariane_tb.dtb
+run-failed-tests: build
 	# make the tests
 	cd failedtests && make
 	# run the RTL simulation
@@ -148,7 +152,7 @@ run-failed-tests: build ariane_tb.dtb
 	$(foreach test, $(failed-tests:.S=), diff $(test).spike.sig $(test).rtlsim.sig;)
 
 # Run the specified test case
-$(tests): build ariane_tb.dtb
+$(tests): build
 	# Optimize top level
 	vopt${questa_version} -work ${library} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
 	# vsim${questa_version} $@_tb_optimized
@@ -166,9 +170,6 @@ build-moore:
 build-tests:
 	cd riscv-tests && autoconf && ./configure --prefix=/home/zarubaf/riscv && make isa -j8
 
-# Compile device tree
-ariane_tb.dtb:  ariane_tb.dts
-	$(DTC) -I dts -O dtb ariane_tb.dts > ariane_tb.dtb
 
 # User Verilator to lint the target
 lint:
@@ -183,5 +184,3 @@ clean:
 
 .PHONY:
 	build lint build-moore
-
-	# make CC=/usr/pack/modelsim-10.6-kgf/questasim/gcc-5.3.0-linux_x86_64/bin/gcc CXX=/usr/pack/modelsim-10.6-kgf/questasim/gcc-5.3.0-linux_x86_64/bin/g++ -j20

@@ -43,6 +43,7 @@ module load_unit (
     // D$ interface
     output logic [11:0]              address_index_o,
     output logic [43:0]              address_tag_o,
+    output amo_t                     amo_op_o,
     output logic [63:0]              data_wdata_o,
     output logic                     data_req_o,
     output logic                     data_we_o,
@@ -274,6 +275,41 @@ module load_unit (
         end else begin
             CS          <= NS;
             load_data_q <= load_data_n;
+        end
+    end
+
+    // ---------------
+    // AMO Operation
+    // ---------------
+    always_comb begin : amo_op_select
+        amo_op_o = AMO_NONE;
+
+        if (lsu_ctrl_i.valid) begin
+            case (lsu_ctrl_i.operator)
+                AMO_LRW:    amo_op_o = AMO_LR;
+                AMO_LRD:    amo_op_o = AMO_LR;
+                AMO_SCW:    amo_op_o = AMO_SC;
+                AMO_SCD:    amo_op_o = AMO_SC;
+                AMO_SWAPW:  amo_op_o = AMO_SWAP;
+                AMO_ADDW:   amo_op_o = AMO_ADD;
+                AMO_ANDW:   amo_op_o = AMO_AND;
+                AMO_ORW:    amo_op_o = AMO_OR;
+                AMO_XORW:   amo_op_o = AMO_XOR;
+                AMO_MAXW:   amo_op_o = AMO_MAX;
+                AMO_MAXWU:  amo_op_o = AMO_MAXU;
+                AMO_MINW:   amo_op_o = AMO_MIN;
+                AMO_MINWU:  amo_op_o = AMO_MINU;
+                AMO_SWAPD:  amo_op_o = AMO_SWAP;
+                AMO_ADDD:   amo_op_o = AMO_ADD;
+                AMO_ANDD:   amo_op_o = AMO_AND;
+                AMO_ORD:    amo_op_o = AMO_OR;
+                AMO_XORD:   amo_op_o = AMO_XOR;
+                AMO_MAXD:   amo_op_o = AMO_MAX;
+                AMO_MAXDU:  amo_op_o = AMO_MAXU;
+                AMO_MIND:   amo_op_o = AMO_MIN;
+                AMO_MINDU:  amo_op_o = AMO_MINU;
+                default: amo_op_o = AMO_NONE;
+            endcase
         end
     end
 

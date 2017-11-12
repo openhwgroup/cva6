@@ -56,6 +56,10 @@ module lsu #(
     input  logic [43:0]              satp_ppn_i,               // From CSR register file
     input  logic [ASID_WIDTH-1:0]    asid_i,                   // From CSR register file
     input  logic                     flush_tlb_i,
+    // Performance counters
+    output logic                     itlb_miss_o,
+    output logic                     dtlb_miss_o,
+    output logic                     dcache_miss_o,
      // Instruction memory/cache
     output logic [63:0]              instr_if_address_o,
     output logic                     instr_if_data_req_o,
@@ -63,18 +67,13 @@ module lsu #(
     input  logic                     instr_if_data_gnt_i,
     input  logic                     instr_if_data_rvalid_i,
     input  logic [63:0]              instr_if_data_rdata_i,
-    // Data cache
-    output logic [11:0]              data_if_address_index_o,
-    output logic [43:0]              data_if_address_tag_o,
-    output logic [63:0]              data_if_data_wdata_o,
-    output logic                     data_if_data_req_o,
-    output logic                     data_if_data_we_o,
-    output logic [7:0]               data_if_data_be_o,
-    output logic                     data_if_kill_req_o,
-    output logic                     data_if_tag_valid_o,
-    input  logic                     data_if_data_gnt_i,
-    input  logic                     data_if_data_rvalid_i,
-    input  logic [63:0]              data_if_data_rdata_i,
+
+    input  logic                     dcache_en_i,
+    input  logic                     flush_dcache_i,
+    output logic                     flush_dcache_ack_o,
+    // Data cache refill port
+    AXI_BUS.Master                   data_if,
+    AXI_BUS.Master                   bypass_if,
 
     output exception_t               lsu_exception_o   // to WB, signal exception status LD/ST exception
 
@@ -126,9 +125,9 @@ module lsu #(
     exception_t               ld_ex;
     exception_t               st_ex;
 
-    // ---------------
-    // Memory Arbiter
-    // ---------------
+    // ------------
+    // NB Dcache
+    // ------------
     logic [2:0][11:0]         address_index_i;
     logic [2:0][43:0]         address_tag_i;
     logic [2:0][63:0]         data_wdata_i;
@@ -140,24 +139,23 @@ module lsu #(
     logic [2:0]               data_gnt_o;
     logic [2:0]               data_rvalid_o;
     logic [2:0][63:0]         data_rdata_o;
+    amo_t [2:0]               amo_op_i;
+
+    // AMO operations always go through the load unit
+    assign amo_op_i[0] = AMO_NONE;
+    assign amo_op_i[2] = AMO_NONE;
 
     // decreasing priority
     // Port 0: PTW
     // Port 1: Load Unit
     // Port 2: Store Unit
-    dcache_arbiter dcache_arbiter_i (
+    nbdcache i_nbdcache (
         // to D$
-        .address_index_o   ( data_if_address_index_o ),
-        .address_tag_o     ( data_if_address_tag_o   ),
-        .data_wdata_o      ( data_if_data_wdata_o    ),
-        .data_req_o        ( data_if_data_req_o      ),
-        .data_we_o         ( data_if_data_we_o       ),
-        .data_be_o         ( data_if_data_be_o       ),
-        .kill_req_o        ( data_if_kill_req_o      ),
-        .tag_valid_o       ( data_if_tag_valid_o     ),
-        .data_gnt_i        ( data_if_data_gnt_i      ),
-        .data_rvalid_i     ( data_if_data_rvalid_i   ),
-        .data_rdata_i      ( data_if_data_rdata_i    ),
+        .data_if           ( data_if                 ),
+        .bypass_if         ( bypass_if               ),
+        .enable_i          ( dcache_en_i             ),
+        .flush_i           ( flush_dcache_i          ),
+        .flush_ack_o       ( flush_dcache_ack_o      ),
         // from PTW, Load Unit and Store Unit
         .address_index_i   ( address_index_i         ),
         .address_tag_i     ( address_tag_i           ),
@@ -170,6 +168,13 @@ module lsu #(
         .data_gnt_o        ( data_gnt_o              ),
         .data_rvalid_o     ( data_rvalid_o           ),
         .data_rdata_o      ( data_rdata_o            ),
+        .amo_op_i          ( amo_op_i                ),
+
+        .amo_commit_i      (                         ),
+        .amo_valid_o       (                         ),
+        .amo_result_o      (                         ),
+        .amo_flush_i       ( 1'b0                    ),
+        .miss_o            ( dcache_miss_o           ),
         .*
     );
 
@@ -180,7 +185,7 @@ module lsu #(
         .INSTR_TLB_ENTRIES      ( 16                   ),
         .DATA_TLB_ENTRIES       ( 16                   ),
         .ASID_WIDTH             ( ASID_WIDTH           )
-    ) mmu_i (
+    ) i_mmu (
             // misaligned bypass
         .misaligned_ex_i        ( misaligned_exception ),
         .lsu_is_store_i         ( st_translation_req   ),
@@ -207,7 +212,7 @@ module lsu #(
     // ------------------
     // Store Unit
     // ------------------
-    store_unit store_unit_i (
+    store_unit i_store_unit (
         .valid_i               ( st_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
         .pop_st_o              ( pop_st               ),
@@ -242,7 +247,7 @@ module lsu #(
     // ------------------
     // Load Unit
     // ------------------
-    load_unit load_unit_i (
+    load_unit i_load_unit (
         .valid_i               ( ld_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
         .pop_ld_o              ( pop_ld               ),
@@ -264,6 +269,7 @@ module lsu #(
         .address_index_o       ( address_index_i  [1] ),
         .address_tag_o         ( address_tag_i    [1] ),
         .data_wdata_o          ( data_wdata_i     [1] ),
+        .amo_op_o              ( amo_op_i         [1] ),
         .data_req_o            ( data_req_i       [1] ),
         .data_we_o             ( data_we_i        [1] ),
         .data_be_o             ( data_be_i        [1] ),
@@ -278,7 +284,7 @@ module lsu #(
     // ---------------------
     // Result Sequentialize
     // ---------------------
-    lsu_arbiter lsu_arbiter_i (
+    lsu_arbiter i_lsu_arbiter (
         .clk_i                ( clk_i                 ),
         .rst_ni               ( rst_ni                ),
         .flush_i              ( flush_i               ),

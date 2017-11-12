@@ -95,6 +95,11 @@ module ex_stage #(
     input  logic [43:0]                            satp_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
 
+    // Performance counters
+    output logic                                   itlb_miss_o,
+    output logic                                   dtlb_miss_o,
+    output logic                                   dcache_miss_o,
+
     output logic [63:0]                            instr_if_address_o,
     output logic                                   instr_if_data_req_o,
     output logic [3:0]                             instr_if_data_be_o,
@@ -102,17 +107,12 @@ module ex_stage #(
     input  logic                                   instr_if_data_rvalid_i,
     input  logic [63:0]                            instr_if_data_rdata_i,
 
-    output logic [11:0]                            data_if_address_index_o,
-    output logic [43:0]                            data_if_address_tag_o,
-    output logic [63:0]                            data_if_data_wdata_o,
-    output logic                                   data_if_data_req_o,
-    output logic                                   data_if_data_we_o,
-    output logic [7:0]                             data_if_data_be_o,
-    output logic                                   data_if_kill_req_o,
-    output logic                                   data_if_tag_valid_o,
-    input  logic                                   data_if_data_gnt_i,
-    input  logic                                   data_if_data_rvalid_i,
-    input  logic [63:0]                            data_if_data_rdata_i
+    // DCache interface
+    input  logic                                   dcache_en_i,
+    input  logic                                   flush_dcache_i,
+    output logic                                   flush_dcache_ack_o,
+    AXI_BUS.Master                                 data_if,
+    AXI_BUS.Master                                 bypass_if
 );
 
     // -----
@@ -147,6 +147,7 @@ module ex_stage #(
     lsu lsu_i (
         .commit_i       ( lsu_commit_i       ),
         .commit_ready_o ( lsu_commit_ready_o ),
+        .data_if        ( data_if            ),
         .*
     );
 

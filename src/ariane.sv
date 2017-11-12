@@ -25,7 +25,6 @@ import instruction_tracer_pkg::*;
 `endif
 `endif
 
-
 module ariane
     #(
         parameter N_EXT_PERF_COUNTERS          = 0
@@ -36,8 +35,6 @@ module ariane
         input  logic                           test_en_i,     // enable all clock gates for testing
 
         output logic                           flush_icache_o, // request to flush icache
-        output logic                           flush_dcache_o,      // request to flush the dcache
-        input  logic                           flush_dcache_ack_i,  // dcache flushed successfully
         // CPU Control Signals
         input  logic                           fetch_enable_i,
         output logic                           core_busy_o,
@@ -55,17 +52,8 @@ module ariane
         input  logic                           instr_if_data_rvalid_i,
         input  logic [63:0]                    instr_if_data_rdata_i,
         // Data memory interface
-        output logic [11:0]                    data_if_address_index_o,
-        output logic [43:0]                    data_if_address_tag_o,
-        output logic [63:0]                    data_if_data_wdata_o,
-        output logic                           data_if_data_req_o,
-        output logic                           data_if_data_we_o,
-        output logic [7:0]                     data_if_data_be_o,
-        output logic                           data_if_kill_req_o,
-        output logic                           data_if_tag_valid_o,
-        input  logic                           data_if_data_gnt_i,
-        input  logic                           data_if_data_rvalid_i,
-        input  logic [63:0]                    data_if_data_rdata_i,
+        AXI_BUS.Master                         data_if,
+        AXI_BUS.Master                         bypass_if,
         // Interrupt inputs
         input  logic                           irq_i,                 // level sensitive IR lines
         input  logic [4:0]                     irq_id_i,
@@ -226,6 +214,17 @@ module ariane
     logic                     tvm_csr_id;
     logic                     tw_csr_id;
     logic                     tsr_csr_id;
+    logic                     dcache_en_csr_nbdcache;
+    // ----------------------------
+    // Performance Counters <-> *
+    // ----------------------------
+    logic [11:0]              addr_csr_perf;
+    logic [63:0]              data_csr_perf, data_perf_csr;
+    logic                     we_csr_perf;
+
+    logic                     itlb_miss_ex_perf;
+    logic                     dtlb_miss_ex_perf;
+    logic                     dcache_miss_ex_perf;
     // --------------
     // CTRL <-> *
     // --------------
@@ -243,6 +242,8 @@ module ariane
     logic                     halt_ctrl;
     logic                     halt_debug_ctrl;
     logic                     halt_csr_ctrl;
+    logic                     flush_dcache_ctrl_ex;
+    logic                     flush_dcache_ack_ex_ctrl;
     // --------------
     // Debug <-> *
     // --------------
@@ -394,6 +395,7 @@ module ariane
 
         .commit_instr_o             ( commit_instr_id_commit          ),
         .commit_ack_i               ( commit_ack                      ),
+
         .*
     );
 
@@ -437,7 +439,6 @@ module ariane
         .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id         ),
         .no_st_pending_o        ( no_st_pending_ex_commit     ),
-
         // CSR
         .csr_ready_o            ( csr_ready_ex_id             ),
         .csr_valid_i            ( csr_valid_id_ex             ),
@@ -446,6 +447,10 @@ module ariane
         .csr_valid_o            ( csr_valid_ex_id             ),
         .csr_addr_o             ( csr_addr_ex_csr             ),
         .csr_commit_i           ( csr_commit_commit_ex        ), // from commit
+        // Performance counters
+        .itlb_miss_o            ( itlb_miss_ex_perf           ),
+        .dtlb_miss_o            ( dtlb_miss_ex_perf           ),
+        .dcache_miss_o          ( dcache_miss_ex_perf         ),
         // Memory Management
         .enable_translation_i   ( enable_translation_csr_ex   ), // from CSR
         .en_ld_st_translation_i ( en_ld_st_translation_csr_ex ),
@@ -468,6 +473,12 @@ module ariane
         .mult_trans_id_o        ( mult_trans_id_ex_id         ),
         .mult_result_o          ( mult_result_ex_id           ),
         .mult_valid_o           ( mult_valid_ex_id            ),
+
+        .data_if                ( data_if                     ),
+        .dcache_en_i            ( dcache_en_csr_nbdcache      ),
+        .flush_dcache_i         ( flush_dcache_ctrl_ex        ),
+        .flush_dcache_ack_o     ( flush_dcache_ack_ex_ctrl    ),
+
         .*
     );
 
@@ -533,9 +544,36 @@ module ariane
         .tvm_o                  ( tvm_csr_id                    ),
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
+        .dcache_en_o            ( dcache_en_csr_nbdcache        ),
+        .perf_addr_o            ( addr_csr_perf                 ),
+        .perf_data_o            ( data_csr_perf                 ),
+        .perf_data_i            ( data_perf_csr                 ),
+        .perf_we_o              ( we_csr_perf                   ),
         .*
     );
 
+
+    // ------------------------
+    // Performance Counters
+    // ------------------------
+    perf_counters i_perf_counters (
+        .addr_i            ( addr_csr_perf          ),
+        .we_i              ( we_csr_perf            ),
+        .data_i            ( data_csr_perf          ),
+        .data_o            ( data_perf_csr          ),
+        .commit_instr_i    ( commit_instr_id_commit ),
+        .commit_ack_o      ( commit_ack             ),
+
+        .l1_icache_miss_i  ( 1'b0                   ),
+        .l1_dcache_miss_i  ( dcache_miss_ex_perf    ),
+        .itlb_miss_i       ( itlb_miss_ex_perf      ),
+        .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
+
+        .ex_i              ( ex_commit              ),
+        .eret_i            ( eret                   ),
+        .resolved_branch_i ( resolved_branch        ),
+        .*
+    );
     // ------------
     // Controller
     // ------------
@@ -548,6 +586,8 @@ module ariane
         .flush_id_o             ( flush_ctrl_id                 ),
         .flush_ex_o             ( flush_ctrl_ex                 ),
         .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
+        .flush_dcache_o         ( flush_dcache_ctrl_ex          ),
+        .flush_dcache_ack_i     ( flush_dcache_ack_ex_ctrl      ),
 
         .halt_csr_i             ( halt_csr_ctrl                 ),
         .halt_debug_i           ( halt_debug_ctrl               ),
@@ -620,12 +660,12 @@ module ariane
     assign tracer_if.commit_ack        = commit_ack;
     // address translation
     // stores
-    assign tracer_if.st_valid          = ex_stage_i.lsu_i.store_unit_i.store_buffer_i.valid_i;
-    assign tracer_if.st_paddr          = ex_stage_i.lsu_i.store_unit_i.store_buffer_i.paddr_i;
+    assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
+    assign tracer_if.st_paddr          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
     // loads
-    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.load_unit_i.tag_valid_o;
-    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.load_unit_i.kill_req_o;
-    assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.load_unit_i.paddr_i;
+    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.tag_valid_o;
+    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.kill_req_o;
+    assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.i_load_unit.paddr_i;
     // exceptions
     assign tracer_if.exception         = commit_stage_i.exception_o;
     // assign current privilege level

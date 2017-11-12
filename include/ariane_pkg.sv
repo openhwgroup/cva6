@@ -78,7 +78,7 @@ package ariane_pkg;
     // ---------------
     // EX Stage
     // ---------------
-    typedef enum logic [5:0] { // basic ALU op
+    typedef enum logic [6:0] { // basic ALU op
                                ADD, SUB, ADDW, SUBW,
                                // logic operations
                                XORL, ORL, ANDL,
@@ -94,6 +94,10 @@ package ariane_pkg;
                                MRET, SRET, ECALL, WFI, FENCE, FENCE_I, SFENCE_VMA, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
                                // LSU functions
                                LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU,
+                               // Atomic Memory Operations
+                               AMO_LRW, AMO_LRD, AMO_SCW, AMO_SCD,
+                               AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW, AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW, AMO_MINWU,
+                               AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD, AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND, AMO_MINDU,
                                // Multiplications
                                MUL, MULH, MULHU, MULHSU, MULW,
                                // Divisions
@@ -202,6 +206,14 @@ package ariane_pkg;
     localparam OPCODE_JAL       = 7'h6f;
     localparam OPCODE_AUIPC     = 7'h17;
     localparam OPCODE_LUI       = 7'h37;
+    localparam OPCODE_AMO       = 7'h2F;
+    // --------------------
+    // Atomics
+    // --------------------
+
+    typedef enum logic [3:0] {
+        AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND, AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
+    } amo_t;
 
     // --------------------
     // Privilege Spec
@@ -255,43 +267,75 @@ package ariane_pkg;
     localparam logic [63:0] M_TIMER_INTERRUPT     = (1 << 63) | 7;
     localparam logic [63:0] S_EXT_INTERRUPT       = (1 << 63) | 9;
     localparam logic [63:0] M_EXT_INTERRUPT       = (1 << 63) | 11;
+
+    // ----------------------
+    // Performance Counters
+    // ----------------------
+    localparam logic [11:0] PERF_L1_ICACHE_MISS = 12'h0;     // L1 Instr Cache Miss
+    localparam logic [11:0] PERF_L1_DCACHE_MISS = 12'h1;     // L1 Data Cache Miss
+    localparam logic [11:0] PERF_ITLB_MISS      = 12'h2;     // ITLB Miss
+    localparam logic [11:0] PERF_DTLB_MISS      = 12'h3;     // DTLB Miss
+    localparam logic [11:0] PERF_LOAD           = 12'h4;     // Loads
+    localparam logic [11:0] PERF_STORE          = 12'h5;     // Stores
+    localparam logic [11:0] PERF_EXCEPTION      = 12'h6;     // Taken exceptions
+    localparam logic [11:0] PERF_EXCEPTION_RET  = 12'h7;     // Exception return
+    localparam logic [11:0] PERF_BRANCH_JUMP    = 12'h8;     // Software change of PC
+    localparam logic [11:0] PERF_CALL           = 12'h9;     // Procedure call
+    localparam logic [11:0] PERF_RET            = 12'hA;     // Procedure Return
+    localparam logic [11:0] PERF_MIS_PREDICT    = 12'hB;     // Branch mis-predicted
+
     // -----
     // CSRs
     // -----
     typedef enum logic [11:0] {
-        CSR_SSTATUS    = 12'h100,
-        CSR_SIE        = 12'h104,
-        CSR_STVEC      = 12'h105,
-        CSR_SCOUNTEREN = 12'h106,
-        CSR_SSCRATCH   = 12'h140,
-        CSR_SEPC       = 12'h141,
-        CSR_SCAUSE     = 12'h142,
-        CSR_STVAL      = 12'h143,
-        CSR_SIP        = 12'h144,
-        CSR_SATP       = 12'h180,
-
-        CSR_MSTATUS    = 12'h300,
-        CSR_MISA       = 12'h301,
-        CSR_MEDELEG    = 12'h302,
-        CSR_MIDELEG    = 12'h303,
-        CSR_MIE        = 12'h304,
-        CSR_MTVEC      = 12'h305,
-        CSR_MCOUNTEREN = 12'h306,
-        CSR_MSCRATCH   = 12'h340,
-        CSR_MEPC       = 12'h341,
-        CSR_MCAUSE     = 12'h342,
-        CSR_MTVAL      = 12'h343,
-        CSR_MIP        = 12'h344,
-        CSR_MVENDORID  = 12'hF11,
-        CSR_MARCHID    = 12'hF12,
-        CSR_MIMPID     = 12'hF13,
-        CSR_MHARTID    = 12'hF14,
-        CSR_MCYCLE     = 12'hB00,
-        CSR_MINSTRET   = 12'hB02,
+        // Supervisor Mode CSRs
+        CSR_SSTATUS        = 12'h100,
+        CSR_SIE            = 12'h104,
+        CSR_STVEC          = 12'h105,
+        CSR_SCOUNTEREN     = 12'h106,
+        CSR_SSCRATCH       = 12'h140,
+        CSR_SEPC           = 12'h141,
+        CSR_SCAUSE         = 12'h142,
+        CSR_STVAL          = 12'h143,
+        CSR_SIP            = 12'h144,
+        CSR_SATP           = 12'h180,
+        // Machine Mode CSRs
+        CSR_MSTATUS        = 12'h300,
+        CSR_MISA           = 12'h301,
+        CSR_MEDELEG        = 12'h302,
+        CSR_MIDELEG        = 12'h303,
+        CSR_MIE            = 12'h304,
+        CSR_MTVEC          = 12'h305,
+        CSR_MCOUNTEREN     = 12'h306,
+        CSR_MSCRATCH       = 12'h340,
+        CSR_MEPC           = 12'h341,
+        CSR_MCAUSE         = 12'h342,
+        CSR_MTVAL          = 12'h343,
+        CSR_MIP            = 12'h344,
+        CSR_MVENDORID      = 12'hF11,
+        CSR_MARCHID        = 12'hF12,
+        CSR_MIMPID         = 12'hF13,
+        CSR_MHARTID        = 12'hF14,
+        CSR_MCYCLE         = 12'hB00,
+        CSR_MINSTRET       = 12'hB02,
+        CSR_DCACHE         = 12'h700,
         // Counters and Timers
-        CSR_CYCLE     = 12'hC00,
-        CSR_TIME      = 12'hC01,
-        CSR_INSTRET   = 12'hC02
+        CSR_CYCLE          = 12'hC00,
+        CSR_TIME           = 12'hC01,
+        CSR_INSTRET        = 12'hC02,
+        // Performance counters
+        CSR_L1_ICACHE_MISS = PERF_L1_ICACHE_MISS + 12'hC03,
+        CSR_L1_DCACHE_MISS = PERF_L1_DCACHE_MISS + 12'hC03,
+        CSR_ITLB_MISS      = PERF_ITLB_MISS      + 12'hC03,
+        CSR_DTLB_MISS      = PERF_DTLB_MISS      + 12'hC03,
+        CSR_LOAD           = PERF_LOAD           + 12'hC03,
+        CSR_STORE          = PERF_STORE          + 12'hC03,
+        CSR_EXCEPTION      = PERF_EXCEPTION      + 12'hC03,
+        CSR_EXCEPTION_RET  = PERF_EXCEPTION_RET  + 12'hC03,
+        CSR_BRANCH_JUMP    = PERF_BRANCH_JUMP    + 12'hC03,
+        CSR_CALL           = PERF_CALL           + 12'hC03,
+        CSR_RET            = PERF_RET            + 12'hC03,
+        CSR_MIS_PREDICT    = PERF_MIS_PREDICT    + 12'hC03
     } csr_reg_t;
 
     // decoded CSR address
@@ -309,7 +353,6 @@ package ariane_pkg;
     // ----------------------
     // Debug Unit
     // ----------------------
-
     typedef enum logic [15:0] {
         DBG_CTRL     = 16'h0,
         DBG_HIT      = 16'h8,
