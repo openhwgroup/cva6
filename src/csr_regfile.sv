@@ -67,7 +67,7 @@ module csr_regfile #(
     output logic [43:0]           satp_ppn_o,
     output logic [ASID_WIDTH-1:0] asid_o,
     // external interrupts
-    input  logic                  irq_i,                      // external interrupt in
+    input  logic [1:0]            irq_i,                      // external interrupt in
     // Visualization Support
     output logic                  tvm_o,                      // trap virtual memory
     output logic                  tw_o,                       // timeout wait
@@ -238,9 +238,11 @@ module csr_regfile #(
     // CSR Write and update logic
     // ---------------------------
     always_comb begin : csr_update
-        automatic satp_t sapt   = satp_q;
+        automatic satp_t sapt;
+        automatic logic [63:0] mip;
+        sapt = satp_q;
+        mip = csr_wdata & 64'h33;
         // only USIP, SSIP, UTIP, STIP are write-able
-        automatic logic [63:0] mip = csr_wdata & 64'h33;
 
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
@@ -381,9 +383,8 @@ module csr_regfile #(
         // External Interrupts
         // ---------------------
         // Machine Mode External Interrupt Pending
-        // TODO: this is wrong for sure
-        mip_d[11] = 1'b0;
-        mip_d[9] = mie_q[9] & irq_i;
+        mip_d[11] = mie_q[11] & irq_i[1];
+        mip_d[9] = mie_q[9] & irq_i[0];
         // Timer interrupt pending, coming from platform timer
         mip_d[7] = time_irq_i;
 
@@ -547,7 +548,8 @@ module csr_regfile #(
     // Exception Control & Interrupt Control
     // --------------------------------------
     always_comb begin : exception_ctrl
-        automatic logic [63:0] interrupt_cause = '0;
+        automatic logic [63:0] interrupt_cause;
+        interrupt_cause = '0;
         // wait for interrupt register
         wfi_d = wfi_q;
 

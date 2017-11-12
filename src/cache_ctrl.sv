@@ -82,11 +82,13 @@ module cache_ctrl #(
     // Cache FSM
     // --------------
     always_comb begin : cache_ctrl_fsm
-        // incoming cache-line -> this is needed as synopsys is not supporting +: indexing in a multi-dimensional array
-        automatic logic [CACHE_LINE_WIDTH-1:0] cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
+        automatic logic [CACHE_LINE_WIDTH-1:0] cl_i;
+        automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset;
+        // incoming cache-line -> this is needed as synthesis is not supporting +: indexing in a multi-dimensional array
+        cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
         // cache-line offset -> multiple of 64
-        automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset = mem_req_q.index[BYTE_OFFSET-1:3] << 6;
-        automatic logic [$clog2(CACHE_LINE_WIDTH/8)-1:0] be_offset =  mem_req_q.index[BYTE_OFFSET-1:3] << 3;
+        cl_offset = mem_req_q.index[BYTE_OFFSET-1:3] << 6;
+
         // default assignments
         state_d   = state_q;
         mem_req_d = mem_req_q;

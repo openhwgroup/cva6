@@ -4,6 +4,7 @@ ariane:
   ]
   files: [
     include/ariane_pkg.sv,
+    include/nbdcache_pkg.sv,
     src/util/instruction_tracer_if.sv,
     src/util/instruction_tracer_pkg.sv,
     src/ariane.sv,
@@ -15,7 +16,6 @@ ariane:
     src/controller.sv,
     src/csr_buffer.sv,
     src/csr_regfile.sv,
-    src/dcache_arbiter.sv,
     src/decoder.sv,
     src/ex_stage.sv,
     src/fetch_fifo.sv,
@@ -37,6 +37,10 @@ ariane:
     src/store_unit.sv,
     src/tlb.sv,
     src/debug_unit.sv,
+    src/nbdcache.sv,
+    src/miss_handler.sv,
+    src/cache_ctrl.sv,
+    src/perf_counters.sv,
     ]
 riscv_regfile_rtl:
   targets: [
@@ -48,6 +52,7 @@ riscv_regfile_rtl:
   ]
   files: [
     src/regfile.sv,
+    src/util/gf22_sram.sv,
   ]
 
 riscv_regfile_fpga:

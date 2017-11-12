@@ -23,7 +23,7 @@ package nbdcache_pkg;
     localparam BYTE_OFFSET = $clog2(CACHE_LINE_WIDTH/8);
     localparam NUM_WORDS = 2**(INDEX_WIDTH-BYTE_OFFSET);
     localparam DIRTY_WIDTH = SET_ASSOCIATIVITY*2;
-    localparam DECISION_BIT = 31; // bit on which to decide whether the request is cache-able or not
+    localparam DECISION_BIT = 30; // bit on which to decide whether the request is cache-able or not
 
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } req_t;
 

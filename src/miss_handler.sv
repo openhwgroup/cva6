@@ -88,7 +88,7 @@ module miss_handler #(
         // Default Assignments
         // ----------------------
         // memory array
-        req_o  = 1'b0;
+        req_o  = '0;
         addr_o = '0;
         data_o = '0;
         be_o   = '0;
@@ -148,7 +148,7 @@ module miss_handler #(
             MISS: begin
                 // 1. Check if there is an empty cache-line
                 // 2. If not -> evict one
-                req_o = 1'b1;
+                req_o = '1;
                 addr_o = mshr_q.addr[INDEX_WIDTH-1:0];
                 state_d = MISS_REPL;
                 miss_o = 1'b1;
@@ -190,7 +190,8 @@ module miss_handler #(
             // ~> replace the cacheline
             SAVE_CACHELINE: begin
                 // calculate cacheline offset
-                automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset = mshr_q.addr[BYTE_OFFSET-1:3] << 6;
+                automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset;
+                cl_offset = mshr_q.addr[BYTE_OFFSET-1:3] << 6;
                 // we've got a valid response from refill unit
                 if (valid_miss_fsm) begin
 
@@ -235,7 +236,7 @@ module miss_handler #(
                 req_fsm_miss_we     = 1'b1;
                 req_fsm_miss_wdata  = evict_cl_q.data;
 
-                // we've got a grant
+                // we've got a grant --> this is timing critical, think about it
                 if (gnt_miss_fsm) begin
                     // write status array
                     addr_o     = cnt_q;
@@ -492,7 +493,8 @@ module arbiter #(
 
     // addressing read and full write
     always_comb begin : read_req_write
-        automatic logic [$clog2(NR_PORTS)-1:0] request_index = 0;
+        automatic logic [$clog2(NR_PORTS)-1:0] request_index;
+        request_index = 0;
 
         data_req_o = 1'b0;
         data_gnt_o = '0;
@@ -881,7 +883,8 @@ module lfsr #(
 
     always_comb begin
 
-        automatic logic shift_in = !(shift_q[7] ^ shift_q[3] ^ shift_q[2] ^ shift_q[1]);
+        automatic logic shift_in;
+        shift_in = !(shift_q[7] ^ shift_q[3] ^ shift_q[2] ^ shift_q[1]);
 
         shift_d = shift_q;
 

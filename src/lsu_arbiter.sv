@@ -67,8 +67,11 @@ module lsu_arbiter (
     // Read-Write Process
     // -------------------
     always_comb begin : read_write_fifo
-        automatic logic [$clog2(WIDTH)-1:0] status_cnt    = status_cnt_q;
-        automatic logic [$clog2(WIDTH)-1:0] write_pointer = write_pointer_q;
+        automatic logic [$clog2(WIDTH)-1:0] status_cnt;
+        automatic logic [$clog2(WIDTH)-1:0] write_pointer;
+
+        status_cnt    = status_cnt_q;
+        write_pointer = write_pointer_q;
 
         // default assignments
         mem_n           = mem_q;

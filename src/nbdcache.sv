@@ -313,7 +313,11 @@ module tag_cmp #(
         gnt_o     = '0;
         id_d      = '0;
         hit_way_o = '0;
-
+        wdata_o   = '0;
+        req_o     = '0;
+        addr_o    = '0;
+        be_o      = '0;
+        we_o      = '0;
         // Request Side
         // priority select
         for (int unsigned i = 0; i < NR_PORTS; i++) begin
