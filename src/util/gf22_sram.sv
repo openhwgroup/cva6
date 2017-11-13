@@ -1,6 +1,6 @@
 // Author: Florian Zaruba, ETH Zurich
 // Date: 13.10.2017
-// Description: SRAM Behavioral Model
+// Description: SRAM Model for GF22
 //
 // Copyright (C) 2017 ETH Zurich, University of Bologna
 // All rights reserved.
@@ -34,20 +34,20 @@ module sram #(
         if (NUM_WORDS == 256) begin
             if (DATA_WIDTH == 16) begin
                 IN22FDX_R1PH_NFHN_W00256B016M02C256 dirtyram (
-                 .CLK           ( clk_i       ),
-                 .CEN           ( ~req_i      ),
-                 .RDWEN         ( ~we_i       ),
-                 .AW            ( addr_i[7:1] ),
-                 .AC            ( addr_i[0]   ),
-                 .D             ( wdata_i     ),
-                 .BW            ( be_i        ),
-                 .T_LOGIC       ( 1'b0        ),
-                 .MA_SAWL       ( '0          ),
-                 .MA_WL         ( '0          ),
-                 .MA_WRAS       ( '0          ),
-                 .MA_WRASD      ( '0          ),
-                 .Q             ( rdata_o     ),
-                 .OBSV_CTL      (             )
+                    .CLK           ( clk_i       ),
+                    .CEN           ( ~req_i      ),
+                    .RDWEN         ( ~we_i       ),
+                    .AW            ( addr_i[7:1] ),
+                    .AC            ( addr_i[0]   ),
+                    .D             ( wdata_i     ),
+                    .BW            ( be_i        ),
+                    .T_LOGIC       ( 1'b0        ),
+                    .MA_SAWL       ( '0          ),
+                    .MA_WL         ( '0          ),
+                    .MA_WRAS       ( '0          ),
+                    .MA_WRASD      ( '0          ),
+                    .Q             ( rdata_o     ),
+                    .OBSV_CTL      (             )
                 );
             end
 
@@ -70,7 +70,7 @@ module sram #(
                     .MA_WRASD    ( '0              ),
                     .Q           ( rdata           ),
                     .OBSV_CTL    (                 )
-                 );
+                );
             end
 
             if (DATA_WIDTH == 128) begin

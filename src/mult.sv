@@ -440,6 +440,7 @@ module mul (
 
     // Output MUX
     always_comb begin
+        result_o = '0;
         case (operator_q)
             // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
             MUL:    result_o = mult_result[63:0];

@@ -64,4 +64,5 @@ riscv_regfile_fpga:
   ]
   files: [
     src/regfile_ff.sv,
+    src/util/xilinx_sram.sv,
   ]
