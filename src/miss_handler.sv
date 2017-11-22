@@ -556,7 +556,8 @@ endmodule
 // Description: Manages communication with the AXI Bus
 //
 module axi_adapter #(
-        int unsigned DATA_WIDTH = 256
+        int unsigned DATA_WIDTH          = 256,
+        int logic    CRITICAL_WORD_FIRST = 1 // the AXI bus needs to support wrapping reads for this feature
     )(
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
@@ -611,12 +612,14 @@ module axi_adapter #(
         axi.aw_user   = '0;
 
         axi.ar_valid  = 1'b0;
-        axi.ar_addr   = addr_i;
+        // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
+        // with an incremental transfer we need to output the corresponding base address of the cache line
+        axi.ar_addr   = (CRITICAL_WORD_FIRST || req_i == SINGLE_REQ) ? addr_i : { addr_i[63:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
         axi.ar_prot   = 3'b0;
         axi.ar_region = 4'b0;
         axi.ar_len    = 8'b0;
         axi.ar_size   = 3'b011; // 8 bytes
-        axi.ar_burst  = 2'b10;  // wrapping transfer
+        axi.ar_burst  = (req_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
         axi.ar_lock   = 1'b0;
         axi.ar_cache  = 4'b0;
         axi.ar_qos    = 4'b0;
@@ -641,11 +644,11 @@ module axi_adapter #(
         critical_word_valid_o   = 1'b0;
         rdata_o                 = cache_line_q;
 
-        state_d       = state_q;
-        cnt_d         = cnt_q;
-        cache_line_d  = cache_line_q;
-        addr_offset_d = addr_offset_q;
-        id_d          = id_q;
+        state_d                 = state_q;
+        cnt_d                   = cnt_q;
+        cache_line_d            = cache_line_q;
+        addr_offset_d           = addr_offset_q;
+        id_d                    = id_q;
 
         case (state_q)
 
@@ -801,16 +804,29 @@ module axi_adapter #(
 
             // ~> cacheline read, single read
             WAIT_R_VALID_MULTIPLE, WAIT_R_VALID: begin
-                index = addr_offset_q + (BURST_SIZE-cnt_q);
+                if (CRITICAL_WORD_FIRST)
+                    index = addr_offset_q + (BURST_SIZE-cnt_q);
+                else
+                    index = BURST_SIZE-cnt_q;
+
                 // reads are always wrapping here
                 axi.r_ready = 1'b1;
                 // this is the first read a.k.a the critical word
                 if (axi.r_valid) begin
-                    // this is the first word of a cacheline read, e.g.: the word which was causing the miss
-                    if (state_q == WAIT_R_VALID_MULTIPLE && cnt_q == BURST_SIZE) begin
-                        critical_word_valid_o = 1'b1;
-                        critical_word_o       = axi.r_data;
+                    if (CRITICAL_WORD_FIRST) begin
+                        // this is the first word of a cacheline read, e.g.: the word which was causing the miss
+                        if (state_q == WAIT_R_VALID_MULTIPLE && cnt_q == BURST_SIZE) begin
+                            critical_word_valid_o = 1'b1;
+                            critical_word_o       = axi.r_data;
+                        end
+                    end else begin
+                        // check if the address offset matches - then we are getting the critical word
+                        if (index == addr_offset_q) begin
+                            critical_word_valid_o = 1'b1;
+                            critical_word_o       = axi.r_data;
+                        end
                     end
+
                     // this is the last read
                     if (axi.r_last) begin
                         state_d = COMPLETE_READ;
