@@ -25,11 +25,7 @@ import instruction_tracer_pkg::*;
 `endif
 `endif
 
-module ariane
-    #(
-        parameter N_EXT_PERF_COUNTERS          = 0
-    )
-    (
+module ariane (
         input  logic                           clk_i,
         input  logic                           rst_ni,
         input  logic                           test_en_i,     // enable all clock gates for testing
@@ -38,7 +34,7 @@ module ariane
         // CPU Control Signals
         input  logic                           fetch_enable_i,
         output logic                           core_busy_o,
-        input  logic [N_EXT_PERF_COUNTERS-1:0] ext_perf_counters_i,
+        input  logic                           l1_icache_miss_i,
 
         // Core ID, Cluster ID and boot address are considered more or less static
         input  logic [63:0]                    boot_addr_i,
@@ -564,7 +560,6 @@ module ariane
         .commit_instr_i    ( commit_instr_id_commit ),
         .commit_ack_o      ( commit_ack             ),
 
-        .l1_icache_miss_i  ( 1'b0                   ),
         .l1_dcache_miss_i  ( dcache_miss_ex_perf    ),
         .itlb_miss_i       ( itlb_miss_ex_perf      ),
         .dtlb_miss_i       ( dtlb_miss_ex_perf      ),

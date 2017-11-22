@@ -36,22 +36,22 @@ module sram #(
             // Dirty RAM
             if (DATA_WIDTH == 16) begin
 
-                localparam NUM_WORDS = 2**8;
+                // localparam NUM_WORDS = 2**8;
 
-                logic [NUM_WORDS-1:0][15:0] mem;
+                // logic [NUM_WORDS-1:0][15:0] mem;
 
-                always_ff @(posedge clk_i) begin
-                    // write
-                    if (req_i && we_i) begin
-                        for (int unsigned i = 0; i < 16; i++) begin
-                            if (be_i[i])
-                                mem[addr_i][i] <= wdata_i[i];
-                        end
-                    // read
-                    end else if (req_i) begin
-                        rdata_o <= mem[addr_i];
-                    end
-                end
+                // always_ff @(posedge clk_i) begin
+                //     // write
+                //     if (req_i && we_i) begin
+                //         for (int unsigned i = 0; i < 16; i++) begin
+                //             if (be_i[i])
+                //                 mem[addr_i][i] <= wdata_i[i];
+                //         end
+                //     // read
+                //     end else if (req_i) begin
+                //         rdata_o <= mem[addr_i];
+                //     end
+                // end
             end
 
             // Data RAM
@@ -72,14 +72,14 @@ module sram #(
 
             // Data RAM
             if (DATA_WIDTH == 128) begin
-                xilinx_dcache_bank_data_256x128 DATA_RAM (
-                    .clka       ( clk_i   ),
-                    .ena        ( req_i   ),
-                    .wea        ( {{be_i[15] & we_i}, {be_i[14] & we_i}, {be_i[13] & we_i}, {be_i[12] & we_i}, {be_i[11] & we_i}, {be_i[10] & we_i}, {be_i[9] & we_i}, {be_i[8] & we_i}, {be_i[7] & we_i}, {be_i[6] & we_i}, {be_i[5] & we_i}, {be_i[4] & we_i}, {be_i[3] & we_i}, {be_i[2] & we_i}, {be_i[1] & we_i}, {be_i[0] & we_i}}),
-                    .addra      ( addr_i  ),
-                    .dina       ( wdata_i ),
-                    .douta      ( rdata_o )
-                );
+                // xilinx_dcache_bank_data_256x128 DATA_RAM (
+                //     .clka       ( clk_i   ),
+                //     .ena        ( req_i   ),
+                //     .wea        ( {{be_i[15] & we_i}, {be_i[14] & we_i}, {be_i[13] & we_i}, {be_i[12] & we_i}, {be_i[11] & we_i}, {be_i[10] & we_i}, {be_i[9] & we_i}, {be_i[8] & we_i}, {be_i[7] & we_i}, {be_i[6] & we_i}, {be_i[5] & we_i}, {be_i[4] & we_i}, {be_i[3] & we_i}, {be_i[2] & we_i}, {be_i[1] & we_i}, {be_i[0] & we_i}}),
+                //     .addra      ( addr_i  ),
+                //     .dina       ( wdata_i ),
+                //     .douta      ( rdata_o )
+                // );
 
             end
         end

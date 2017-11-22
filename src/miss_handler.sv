@@ -603,7 +603,7 @@ module axi_adapter #(
         axi.aw_region = 4'b0;
         axi.aw_len    = 8'b0;
         axi.aw_size   = 3'b011; // 8 bytes
-        axi.aw_burst  = 2'b01;  // incremental transfer
+        axi.aw_burst  = (req_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
         axi.aw_lock   = 1'b0;
         axi.aw_cache  = 4'b0;
         axi.aw_qos    = 4'b0;
