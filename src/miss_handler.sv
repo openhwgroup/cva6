@@ -556,8 +556,8 @@ endmodule
 // Description: Manages communication with the AXI Bus
 //
 module axi_adapter #(
-        int unsigned DATA_WIDTH          = 256,
-        int logic    CRITICAL_WORD_FIRST = 1 // the AXI bus needs to support wrapping reads for this feature
+        parameter int unsigned DATA_WIDTH          = 256,
+        parameter logic        CRITICAL_WORD_FIRST = 1 // the AXI bus needs to support wrapping reads for this feature
     )(
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
