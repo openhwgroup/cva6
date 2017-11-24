@@ -557,7 +557,7 @@ endmodule
 //
 module axi_adapter #(
         parameter int unsigned DATA_WIDTH          = 256,
-        parameter logic        CRITICAL_WORD_FIRST = 1 // the AXI bus needs to support wrapping reads for this feature
+        parameter logic        CRITICAL_WORD_FIRST = 1 // the AXI subsystem needs to support wrapping reads for this feature
     )(
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
@@ -604,7 +604,7 @@ module axi_adapter #(
         axi.aw_region = 4'b0;
         axi.aw_len    = 8'b0;
         axi.aw_size   = 3'b011; // 8 bytes
-        axi.aw_burst  = (req_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
+        axi.aw_burst  = (type_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
         axi.aw_lock   = 1'b0;
         axi.aw_cache  = 4'b0;
         axi.aw_qos    = 4'b0;
@@ -614,12 +614,12 @@ module axi_adapter #(
         axi.ar_valid  = 1'b0;
         // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
         // with an incremental transfer we need to output the corresponding base address of the cache line
-        axi.ar_addr   = (CRITICAL_WORD_FIRST || req_i == SINGLE_REQ) ? addr_i : { addr_i[63:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
+        axi.ar_addr   = (CRITICAL_WORD_FIRST || type_i == SINGLE_REQ) ? addr_i : { addr_i[63:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
         axi.ar_prot   = 3'b0;
         axi.ar_region = 4'b0;
         axi.ar_len    = 8'b0;
         axi.ar_size   = 3'b011; // 8 bytes
-        axi.ar_burst  = (req_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
+        axi.ar_burst  = (type_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
         axi.ar_lock   = 1'b0;
         axi.ar_cache  = 4'b0;
         axi.ar_qos    = 4'b0;
