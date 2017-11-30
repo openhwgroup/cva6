@@ -155,7 +155,7 @@ class instruction_tracer;
     // flush all decoded instructions
     function void flushDecode ();
         decode_queue = {};
-    endfunction;
+    endfunction
 
     // flush everything, we took an exception/interrupt
     function void flush ();
@@ -166,7 +166,7 @@ class instruction_tracer;
         // also clear mappings
         store_mapping   = {};
         load_mapping    = {};
-    endfunction;
+    endfunction
 
     function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
         instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr, priv_lvl);
@@ -174,7 +174,7 @@ class instruction_tracer;
         string print_instr = iti.printInstr();
         uvm_report_info( "Tracer",  print_instr, UVM_HIGH);
         $fwrite(this.f, {print_instr, "\n"});
-    endfunction;
+    endfunction
 
     function void printException(logic [63:0] pc, logic [63:0] cause, logic [63:0] tval);
         exception_trace_item eti = new (pc, cause, tval);
