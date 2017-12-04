@@ -680,6 +680,7 @@ module ariane (
 
 endmodule // ariane
 
+`ifndef SYNTHESIS
 program instr_tracer
     (
         instruction_tracer_if tracer_if,
@@ -699,3 +700,4 @@ program instr_tracer
         it.close();
     end
 endprogram
+`endif
