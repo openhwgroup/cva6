@@ -377,6 +377,7 @@ module decoder (
                     endcase
                 end
 
+                `ifdef ENABLE_ATOMICS
                 OPCODE_AMO: begin
                     // we are going to use the load unit for AMOs
                     instruction_o.fu  = LOAD;
@@ -418,6 +419,7 @@ module decoder (
                         illegal_instr = 1'b1;
                     end
                 end
+                `endif
 
                 // --------------------------------
                 // Control Flow Instructions
