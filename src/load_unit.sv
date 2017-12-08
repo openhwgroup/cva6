@@ -48,6 +48,7 @@ module load_unit (
     output logic                     data_req_o,
     output logic                     data_we_o,
     output logic [7:0]               data_be_o,
+    output logic [1:0]               data_size_o,
     output logic                     kill_req_o,
     output logic                     tag_valid_o,
     input  logic                     data_gnt_i,
@@ -92,6 +93,7 @@ module load_unit (
         kill_req_o        = 1'b0;
         tag_valid_o       = 1'b0;
         data_be_o         = lsu_ctrl_i.be;
+        data_size_o       = extract_transfer_size(lsu_ctrl_i.operator);
         pop_ld_o          = 1'b0;
 
         case (CS)

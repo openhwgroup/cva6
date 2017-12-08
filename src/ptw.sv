@@ -44,6 +44,7 @@ module ptw #(
     output logic                    data_req_o,
     output logic                    data_we_o,
     output logic [7:0]              data_be_o,
+    output logic [1:0]              data_size_o,
     output logic                    kill_req_o,
     output logic                    tag_valid_o,
     input  logic                    data_gnt_i,
@@ -154,6 +155,7 @@ module ptw #(
         tag_valid_n        = 1'b0;
         data_req_o         = 1'b0;
         data_be_o          = 8'hFF;
+        data_size_o        = 2'b11;
         data_we_o          = 1'b0;
         ptw_error_o        = 1'b0;
         itlb_update_o      = 1'b0;

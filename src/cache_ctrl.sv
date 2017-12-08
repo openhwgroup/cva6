@@ -28,6 +28,7 @@ module cache_ctrl #(
         input  logic                                               data_req_i,
         input  logic                                               data_we_i,
         input  logic [7:0]                                         data_be_i,
+        input  logic [1:0]                                         data_size_i,
         input  logic                                               kill_req_i,
         input  logic                                               tag_valid_i,
         output logic                                               data_gnt_o,
@@ -67,6 +68,7 @@ module cache_ctrl #(
         logic [INDEX_WIDTH-1:0] index;
         logic [TAG_WIDTH-1:0]   tag;
         logic [7:0]             be;
+        logic [1:0]             size;
         logic                   we;
         logic [63:0]            wdata;
         logic                   bypass;
@@ -118,6 +120,7 @@ module cache_ctrl #(
                     mem_req_d.index = address_index_i;
                     mem_req_d.tag   = address_tag_i;
                     mem_req_d.be    = data_be_i;
+                    mem_req_d.size  = data_size_i;
                     mem_req_d.we    = data_we_i;
                     mem_req_d.wdata = data_wdata_i;
                     // TODO: Check for non-cache able accesses
@@ -164,6 +167,7 @@ module cache_ctrl #(
                             state_d          = WAIT_TAG; // switch back to WAIT_TAG
                             mem_req_d.index  = address_index_i;
                             mem_req_d.be     = data_be_i;
+                            mem_req_d.size   = data_size_i;
                             mem_req_d.we     = data_we_i;
                             mem_req_d.wdata  = data_wdata_i;
                             mem_req_d.tag    = address_tag_i;
@@ -290,13 +294,16 @@ module cache_ctrl #(
                 miss_req_o.bypass = mem_req_q.bypass;
                 miss_req_o.addr = {mem_req_q.tag, mem_req_q.index};
                 miss_req_o.be = mem_req_q.be;
+                miss_req_o.size = mem_req_q.size;
                 miss_req_o.we = mem_req_q.we;
                 miss_req_o.wdata = mem_req_q.wdata;
 
                 // got a grant so go to valid
                 if (bypass_gnt_i) begin
                     state_d = WAIT_REFILL_VALID;
-                    data_gnt_o = 1'b1;
+                    // if this was a write we still need to give a grant to the store unit
+                    if (mem_req_q.we)
+                        data_gnt_o = 1'b1;
                 end
 
                 if (miss_gnt_i && !mem_req_q.we)
@@ -317,8 +324,9 @@ module cache_ctrl #(
                     if (data_req_i) begin
                         // save index, be and we
                         mem_req_d.index = address_index_i;
-                        mem_req_d.be = data_be_i;
-                        mem_req_d.we = data_we_i;
+                        mem_req_d.be    = data_be_i;
+                        mem_req_d.size  = data_size_i;
+                        mem_req_d.we    = data_we_i;
                         mem_req_d.wdata = data_wdata_i;
                         mem_req_d.tag   = address_tag_i;
 

@@ -51,6 +51,7 @@ module store_unit (
     output logic                     data_req_o,
     output logic                     data_we_o,
     output logic [7:0]               data_be_o,
+    output logic [1:0]               data_size_o,
     output logic                     kill_req_o,
     output logic                     tag_valid_o,
     input  logic                     data_gnt_i,
@@ -67,6 +68,7 @@ module store_unit (
     // keep the data and the byte enable for the second cycle (after address translation)
     logic [63:0]              st_data_n, st_data_q;
     logic [7:0]               st_be_n,   st_be_q;
+    logic [1:0]               st_data_size_n, st_data_size_q;
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
     // output assignments
@@ -175,8 +177,10 @@ module store_unit (
     // -----------
     // re-align the write data to comply with the address offset
     always_comb begin
-        st_be_n   = lsu_ctrl_i.be;
-        st_data_n = lsu_ctrl_i.data;
+        st_be_n        = lsu_ctrl_i.be;
+        st_data_n      = lsu_ctrl_i.data;
+        st_data_size_n = extract_transfer_size(lsu_ctrl_i.operator);
+
         case (lsu_ctrl_i.vaddr[2:0])
             3'b000: st_data_n = lsu_ctrl_i.data;
             3'b001: st_data_n = {lsu_ctrl_i.data[55:0], lsu_ctrl_i.data[63:56]};
@@ -196,6 +200,7 @@ module store_unit (
         .valid_i           ( st_valid            ),
         .data_i            ( st_data_q           ),
         .be_i              ( st_be_q             ),
+        .data_size_i       ( st_data_size_q      ),
         // store buffer out
         .ready_o           ( st_ready            ),
         .*
@@ -205,15 +210,17 @@ module store_unit (
     // ---------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            CS         <= IDLE;
-            st_be_q    <= '0;
-            st_data_q  <= '0;
-            trans_id_q <= '0;
+            CS             <= IDLE;
+            st_be_q        <= '0;
+            st_data_q      <= '0;
+            st_data_size_q <= '0;
+            trans_id_q     <= '0;
         end else begin
-            CS         <= NS;
-            st_be_q    <= st_be_n;
-            st_data_q  <= st_data_n;
-            trans_id_q <= trans_id_n;
+            CS             <= NS;
+            st_be_q        <= st_be_n;
+            st_data_q      <= st_data_n;
+            trans_id_q     <= trans_id_n;
+            st_data_size_q <= st_data_size_n;
         end
     end
 

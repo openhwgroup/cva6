@@ -37,6 +37,7 @@ module store_buffer (
     input  logic [63:0]  paddr_i,         // physical address of store which needs to be placed in the queue
     input  logic [63:0]  data_i,          // data which is placed in the queue
     input  logic [7:0]   be_i,            // byte enable in
+    input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
     output logic [11:0]  address_index_o,
@@ -45,6 +46,7 @@ module store_buffer (
     output logic         data_req_o,
     output logic         data_we_o,
     output logic [7:0]   data_be_o,
+    output logic [1:0]   data_size_o,
     output logic         kill_req_o,
     output logic         tag_valid_o,
     input  logic         data_gnt_i,
@@ -63,6 +65,7 @@ module store_buffer (
         logic [63:0] address;
         logic [63:0] data;
         logic [7:0]  be;
+        logic [1:0]  data_size;
         logic        valid;     // this entry is valid, we need this for checking if the address offset matches
     } speculative_queue_n [DEPTH_SPEC-1:0], speculative_queue_q [DEPTH_SPEC-1:0],
       commit_queue_n [DEPTH_COMMIT-1:0],    commit_queue_q [DEPTH_COMMIT-1:0];
@@ -94,9 +97,10 @@ module store_buffer (
         // LSU interface
         // we are ready to accept a new entry and the input data is valid
         if (valid_i) begin
-            speculative_queue_n[speculative_write_pointer_q].address = paddr_i;
-            speculative_queue_n[speculative_write_pointer_q].data    = data_i;
-            speculative_queue_n[speculative_write_pointer_q].be      = be_i;
+            speculative_queue_n[speculative_write_pointer_q].address   = paddr_i;
+            speculative_queue_n[speculative_write_pointer_q].data      = data_i;
+            speculative_queue_n[speculative_write_pointer_q].be        = be_i;
+            speculative_queue_n[speculative_write_pointer_q].data_size = data_size_i;
             speculative_queue_n[speculative_write_pointer_q].valid   = 1'b1;
             // advance the write pointer
             speculative_write_pointer_n = speculative_write_pointer_q + 1'b1;
@@ -137,6 +141,7 @@ module store_buffer (
     assign tag_valid_o     = 1'b0;
     assign data_wdata_o    = commit_queue_q[commit_read_pointer_q].data;
     assign data_be_o       = commit_queue_q[commit_read_pointer_q].be;
+    assign data_size_o     = commit_queue_q[commit_read_pointer_q].data_size;
     // we will never kill a request in the store buffer since we already know that the translation is valid
     // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
     assign kill_req_o = 1'b0;
