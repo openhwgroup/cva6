@@ -81,6 +81,7 @@ module mmu #(
         output logic                            data_req_o,
         output logic                            data_we_o,
         output logic [7:0]                      data_be_o,
+        output logic [1:0]                      data_size_o,
         output logic                            kill_req_o,
         output logic                            tag_valid_o,
         input  logic                            data_gnt_i,

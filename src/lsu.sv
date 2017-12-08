@@ -133,6 +133,8 @@ module lsu #(
     logic [2:0][63:0]         data_wdata_i;
     logic [2:0]               data_req_i;
     logic [2:0]               data_we_i;
+    logic [2:0][1:0]          data_size_i;
+
     logic [2:0]               kill_req_i;
     logic [2:0]               tag_valid_i;
     logic [2:0][7:0]          data_be_i;
@@ -163,6 +165,7 @@ module lsu #(
         .data_req_i        ( data_req_i              ),
         .data_we_i         ( data_we_i               ),
         .data_be_i         ( data_be_i               ),
+        .data_size_i       ( data_size_i             ),
         .kill_req_i        ( kill_req_i              ),
         .tag_valid_i       ( tag_valid_i             ),
         .data_gnt_o        ( data_gnt_o              ),
@@ -202,6 +205,7 @@ module lsu #(
         .data_req_o             ( data_req_i       [0] ),
         .data_we_o              ( data_we_i        [0] ),
         .data_be_o              ( data_be_i        [0] ),
+        .data_size_o            ( data_size_i      [0] ),
         .kill_req_o             ( kill_req_i       [0] ),
         .tag_valid_o            ( tag_valid_i      [0] ),
         .data_gnt_i             ( data_gnt_o       [0] ),
@@ -237,6 +241,7 @@ module lsu #(
         .data_req_o            ( data_req_i       [2] ),
         .data_we_o             ( data_we_i        [2] ),
         .data_be_o             ( data_be_i        [2] ),
+        .data_size_o           ( data_size_i      [2] ),
         .kill_req_o            ( kill_req_i       [2] ),
         .tag_valid_o           ( tag_valid_i      [2] ),
         .data_gnt_i            ( data_gnt_o       [2] ),
@@ -273,6 +278,7 @@ module lsu #(
         .data_req_o            ( data_req_i       [1] ),
         .data_we_o             ( data_we_i        [1] ),
         .data_be_o             ( data_be_i        [1] ),
+        .data_size_o           ( data_size_i      [1] ),
         .kill_req_o            ( kill_req_i       [1] ),
         .tag_valid_o           ( tag_valid_i      [1] ),
         .data_gnt_i            ( data_gnt_o       [1] ),

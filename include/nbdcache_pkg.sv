@@ -38,11 +38,12 @@ package nbdcache_pkg;
 
     typedef struct packed {
         logic         valid;
-        logic         bypass;
         logic [63:0]  addr;
         logic [7:0]   be;
+        logic [1:0]   size;
         logic         we;
         logic [63:0]  wdata;
+        logic         bypass;
     } miss_req_t;
 
     typedef struct packed {

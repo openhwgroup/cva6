@@ -57,6 +57,7 @@ module miss_handler #(
     logic [NR_PORTS-1:0][63:0]              miss_req_wdata;
     logic [NR_PORTS-1:0]                    miss_req_we;
     logic [NR_PORTS-1:0][7:0]               miss_req_be;
+    logic [NR_PORTS-1:0][1:0]               miss_req_size;
 
     // Cache Line Refill <-> AXI
     logic                                   req_fsm_miss_valid;
@@ -340,17 +341,17 @@ module miss_handler #(
     // Bypass Arbiter
     // ----------------------
     // Connection Arbiter <-> AXI
-    logic                                     req_fsm_bypass_valid;
-    logic [63:0]                              req_fsm_bypass_addr;
-    logic [63:0]              req_fsm_bypass_wdata;
-    logic                                     req_fsm_bypass_we;
-    logic [7:0]          req_fsm_bypass_be;
-
-    logic                                     gnt_bypass_fsm;
-    logic                                     valid_bypass_fsm;
-    logic [63:0]   data_bypass_fsm;
-    logic [$clog2(NR_PORTS)-1:0]              id_fsm_bypass;
-    logic [AXI_ID_WIDTH-1:0]                  id_bypass_fsm;
+    logic                        req_fsm_bypass_valid;
+    logic [63:0]                 req_fsm_bypass_addr;
+    logic [63:0]                 req_fsm_bypass_wdata;
+    logic                        req_fsm_bypass_we;
+    logic [7:0]                  req_fsm_bypass_be;
+    logic [1:0]                  req_fsm_bypass_size;
+    logic                        gnt_bypass_fsm;
+    logic                        valid_bypass_fsm;
+    logic [63:0]                 data_bypass_fsm;
+    logic [$clog2(NR_PORTS)-1:0] id_fsm_bypass;
+    logic [AXI_ID_WIDTH-1:0]     id_bypass_fsm;
 
     arbiter #(
         .NR_PORTS          ( NR_PORTS                                                ),
@@ -362,6 +363,7 @@ module miss_handler #(
         .data_wdata_i          ( miss_req_wdata                                           ),
         .data_we_i             ( miss_req_we                                              ),
         .data_be_i             ( miss_req_be                                              ),
+        .data_size_i           ( miss_req_size                                            ),
         .data_gnt_o            ( bypass_gnt_o                                             ),
         .data_rvalid_o         ( bypass_valid_o                                           ),
         .data_rdata_o          ( bypass_data_o                                            ),
@@ -373,6 +375,7 @@ module miss_handler #(
         .data_req_o            ( req_fsm_bypass_valid                                     ),
         .data_we_o             ( req_fsm_bypass_we                                        ),
         .data_be_o             ( req_fsm_bypass_be                                        ),
+        .data_size_o           ( req_fsm_bypass_size                                      ),
         .data_gnt_i            ( gnt_bypass_fsm                                           ),
         .data_rvalid_i         ( valid_bypass_fsm                                         ),
         .data_rdata_i          ( data_bypass_fsm                                          ),
@@ -389,6 +392,7 @@ module miss_handler #(
         .we_i                  ( req_fsm_bypass_we                                        ),
         .wdata_i               ( req_fsm_bypass_wdata                                     ),
         .be_i                  ( req_fsm_bypass_be                                        ),
+        .size_i                ( req_fsm_bypass_size                                      ),
         .id_i                  ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
         .valid_o               ( valid_bypass_fsm                                         ),
         .rdata_o               ( data_bypass_fsm                                          ),
@@ -412,6 +416,7 @@ module miss_handler #(
         .we_i                ( req_fsm_miss_we    ),
         .wdata_i             ( req_fsm_miss_wdata ),
         .be_i                ( req_fsm_miss_be    ),
+        .size_i              ( 2'b11              ),
         .id_i                ( '0                 ),
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
@@ -445,6 +450,7 @@ module miss_handler #(
             miss_req_wdata  [i]  = miss_req.wdata;
             miss_req_we     [i]  = miss_req.we;
             miss_req_be     [i]  = miss_req.be;
+            miss_req_size   [i]  = miss_req.size;
         end
     end
 
@@ -474,6 +480,7 @@ module arbiter #(
     input  logic [NR_PORTS-1:0][DATA_WIDTH-1:0]    data_wdata_i,
     input  logic [NR_PORTS-1:0]                    data_we_i,
     input  logic [NR_PORTS-1:0][DATA_WIDTH/8-1:0]  data_be_i,
+    input  logic [NR_PORTS-1:0][1:0]               data_size_i,
     output logic [NR_PORTS-1:0]                    data_gnt_o,
     output logic [NR_PORTS-1:0]                    data_rvalid_o,
     output logic [NR_PORTS-1:0][DATA_WIDTH-1:0]    data_rdata_o,
@@ -485,6 +492,7 @@ module arbiter #(
     output logic [DATA_WIDTH-1:0]                  data_wdata_o,
     output logic                                   data_we_o,
     output logic [DATA_WIDTH/8-1:0]                data_be_o,
+    output logic [1:0]                             data_size_o,
     input  logic                                   data_gnt_i,
     input  logic                                   data_rvalid_i,
     input  logic [DATA_WIDTH-1:0]                  data_rdata_i
@@ -511,6 +519,7 @@ module arbiter #(
         address_o                 = address_i[request_index];
         data_wdata_o              = data_wdata_i[request_index];
         data_be_o                 = data_be_i[request_index];
+        data_size_o               = data_size_i[request_index];
         data_we_o                 = data_we_i[request_index];
         data_gnt_o[request_index] = data_gnt_i;
         id_o                      = request_index;
@@ -569,6 +578,7 @@ module axi_adapter #(
     input  logic                                        we_i,
     input  logic [(DATA_WIDTH/64)-1:0][63:0]            wdata_i,
     input  logic [(DATA_WIDTH/64)-1:0][7:0]             be_i,
+    input  logic [1:0]                                  size_i,
     input  logic [AXI_ID_WIDTH-1:0]                     id_i,
     // read port
     output logic                                        valid_o,
@@ -603,7 +613,7 @@ module axi_adapter #(
         axi.aw_prot   = 3'b0;
         axi.aw_region = 4'b0;
         axi.aw_len    = 8'b0;
-        axi.aw_size   = 3'b011; // 8 bytes
+        axi.aw_size   = {1'b0, size_i};
         axi.aw_burst  = (req_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
         axi.aw_lock   = 1'b0;
         axi.aw_cache  = 4'b0;
@@ -618,7 +628,7 @@ module axi_adapter #(
         axi.ar_prot   = 3'b0;
         axi.ar_region = 4'b0;
         axi.ar_len    = 8'b0;
-        axi.ar_size   = 3'b011; // 8 bytes
+        axi.ar_size   = {1'b0, size_i}; // 8 bytes
         axi.ar_burst  = (req_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
         axi.ar_lock   = 1'b0;
         axi.ar_cache  = 4'b0;

@@ -104,6 +104,20 @@ package ariane_pkg;
                                DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW
                              } fu_op;
 
+    // ----------------------
+    // Extract Bytes from Op
+    // ----------------------
+    // TODO: Add atomics
+    function automatic logic [1:0] extract_transfer_size (fu_op op);
+        case (op)
+            LD, SD:      return 2'b11;
+            LW, LWU, SW: return 2'b10;
+            LH, LHU, SH: return 2'b01;
+            LB, SB, LBU: return 2'b00;
+            default:     return 2'b11;
+        endcase
+    endfunction
+
     typedef struct packed {
         logic                     valid;
         logic [63:0]              vaddr;
@@ -393,7 +407,7 @@ package ariane_pkg;
 
     // ----------------------
     // Arithmetic Functions
-    // ----------------------s
+    // ----------------------
     function automatic logic [63:0] sext32 (logic [31:0] operand);
         return {{32{operand[31]}}, operand[31:0]};
     endfunction
