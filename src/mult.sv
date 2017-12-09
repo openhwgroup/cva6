@@ -423,66 +423,61 @@ module mul (
     // Pipeline register
     logic [TRANS_ID_BITS-1:0]   trans_id_q;
     logic                       mult_valid_q;
-    logic [63:0]                operand_a_q;
-    logic [63:0]                operand_b_q;
-    fu_op                       operator_q;
-    logic                       sign_a_q, sign_b_q;
+    logic                       result_q;
+    // control registers
+    logic                       sign_a, sign_b;
     logic                       mult_valid;
 
     // control signals
     assign mult_valid_o    = mult_valid_q;
+    assign result_o        = result_q;
     assign mult_trans_id_o = trans_id_q;
     assign mult_ready_o    = 1'b1;
     assign mult_valid      = mult_valid_i & (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW});
     // datapath
     logic [127:0] mult_result;
-    assign mult_result   = $signed({operand_a_q[63] & sign_a_q, operand_a_q}) * $signed({operand_b_q[63] & sign_b_q, operand_b_q});
+    assign mult_result   = $signed({operand_a_i[63] & sign_a, operand_a_i}) * $signed({operand_b_i[63] & sign_b, operand_b_i});
 
-    // Output MUX
+    // Sign Select MUX
     always_comb begin
-        result_o = '0;
-        case (operator_q)
-            // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
-            MUL:    result_o = mult_result[63:0];
-            MULH:   result_o = mult_result[127:64];
-            MULHU:  result_o = mult_result[127:64];
-            MULHSU: result_o = mult_result[127:64];
-            MULW:   result_o = sext32(mult_result[31:0]);
-        endcase
+        sign_a = 1'b0;
+        sign_b = 1'b0;
+
+        // signed multiplication
+        if (operator_i == MULH) begin
+            sign_a   = 1'b1;
+            sign_b   = 1'b1;
+        // signed - unsigned multiplication
+        end else if (operator_i == MULHSU) begin
+            sign_a   = 1'b1;
+        // unsigned multiplication
+        end else begin
+            sign_a   = 1'b0;
+            sign_b   = 1'b0;
+        end
     end
+
     // -----------------------
-    // Input pipeline register
+    // Output pipeline register
     // -----------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             mult_valid_q <= '0;
             trans_id_q   <= '0;
-            operand_a_q  <= '0;
-            operand_b_q  <= '0;
-            operator_q   <= ADD;
-            sign_a_q     <= '0;
-            sign_b_q     <= '0;
         end else begin
-            mult_valid_q <= mult_valid;
             // Input silencing
-            if (mult_valid) begin
-                trans_id_q   <= trans_id_i;
-                operand_a_q  <= operand_a_i;
-                operand_b_q  <= operand_b_i;
-                operator_q   <= operator_i;
-                // signed multiplication
-                if (operator_i == MULH) begin
-                    sign_a_q   <= 1'b1;
-                    sign_b_q   <= 1'b1;
-                // signed - unsigned multiplication
-                end else if (operator_i == MULHSU) begin
-                    sign_a_q   <= 1'b1;
-                // unsigned multiplication
-                end else begin
-                    sign_a_q   <= 1'b0;
-                    sign_b_q   <= 1'b0;
-                end
-            end
+            trans_id_q   <= trans_id_i;
+            // Output Register
+            mult_valid_q <= mult_valid;
+
+            case (operator_i)
+                // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
+                MUL:    result_q <= mult_result[63:0];
+                MULH:   result_q <= mult_result[127:64];
+                MULHU:  result_q <= mult_result[127:64];
+                MULHSU: result_q <= mult_result[127:64];
+                MULW:   result_q <= sext32(mult_result[31:0]);
+            endcase
         end
     end
 endmodule
