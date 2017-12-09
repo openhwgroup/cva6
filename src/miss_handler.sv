@@ -614,7 +614,7 @@ module axi_adapter #(
         axi.aw_region = 4'b0;
         axi.aw_len    = 8'b0;
         axi.aw_size   = {1'b0, size_i};
-        axi.aw_burst  = (req_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
+        axi.aw_burst  = (type_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
         axi.aw_lock   = 1'b0;
         axi.aw_cache  = 4'b0;
         axi.aw_qos    = 4'b0;
@@ -629,7 +629,7 @@ module axi_adapter #(
         axi.ar_region = 4'b0;
         axi.ar_len    = 8'b0;
         axi.ar_size   = {1'b0, size_i}; // 8 bytes
-        axi.ar_burst  = (req_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
+        axi.ar_burst  = (type_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
         axi.ar_lock   = 1'b0;
         axi.ar_cache  = 4'b0;
         axi.ar_qos    = 4'b0;

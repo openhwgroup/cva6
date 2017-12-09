@@ -423,7 +423,7 @@ module mul (
     // Pipeline register
     logic [TRANS_ID_BITS-1:0]   trans_id_q;
     logic                       mult_valid_q;
-    logic                       result_q;
+    logic [63:0]                result_q;
     // control registers
     logic                       sign_a, sign_b;
     logic                       mult_valid;
@@ -433,7 +433,8 @@ module mul (
     assign result_o        = result_q;
     assign mult_trans_id_o = trans_id_q;
     assign mult_ready_o    = 1'b1;
-    assign mult_valid      = mult_valid_i & (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW});
+
+    assign mult_valid      = mult_valid_i && (operator_i inside {MUL, MULH, MULHU, MULHSU, MULW});
     // datapath
     logic [127:0] mult_result;
     assign mult_result   = $signed({operand_a_i[63] & sign_a, operand_a_i}) * $signed({operand_b_i[63] & sign_b, operand_b_i});
@@ -464,6 +465,7 @@ module mul (
         if (~rst_ni) begin
             mult_valid_q <= '0;
             trans_id_q   <= '0;
+            result_q     <= '0;
         end else begin
             // Input silencing
             trans_id_q   <= trans_id_i;
