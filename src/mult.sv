@@ -46,8 +46,8 @@ module mult (
     logic                     div_valid_op;
     logic                     mul_valid_op;
     // Input Arbitration
-    assign div_valid_op = mult_valid_i && (operator_i inside { MUL, MULH, MULHU, MULHSU, MULW });
-    assign mul_valid_op = mult_valid_i && (operator_i inside { DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW });
+    assign mul_valid_op = mult_valid_i && (operator_i inside { MUL, MULH, MULHU, MULHSU, MULW });
+    assign div_valid_op = mult_valid_i && (operator_i inside { DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW });
 
     // ---------------------
     // Output Arbitration
