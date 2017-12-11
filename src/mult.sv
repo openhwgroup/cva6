@@ -43,6 +43,12 @@ module mult (
     logic [63:0]              mul_result;
     logic [63:0]              div_result;
 
+    logic                     div_valid_op;
+    logic                     mul_valid_op;
+    // Input Arbitration
+    assign div_valid_op = mult_valid_i && (operator_i inside { MUL, MULH, MULHU, MULHSU, MULW });
+    assign mul_valid_op = mult_valid_i && (operator_i inside { DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW });
+
     // ---------------------
     // Output Arbitration
     // ---------------------
@@ -59,6 +65,7 @@ module mult (
     // ---------------------
     mul i_mul (
         .result_o          ( mul_result   ),
+        .mult_valid_i      ( mul_valid_op ),
         .mult_valid_o      ( mul_valid    ),
         .mult_trans_id_o   ( mul_trans_id ),
         .mult_ready_o      (              ), // this unit is unconditionally ready
@@ -169,7 +176,7 @@ module mult (
         .OpBIsZero_SI ( ~(|operand_b)     ),
         .OpBSign_SI   ( div_op_signed     ), // gate this to 0 in case of unsigned ops
         .OpCode_SI    ( {rem, div_signed} ), // 00: udiv, 10: urem, 01: div, 11: rem
-        .InVld_SI     ( mult_valid_i      ),
+        .InVld_SI     ( div_valid_op      ),
         .OutRdy_SO    ( mult_ready_o      ),
         .OutRdy_SI    ( div_ready_i       ),
         .OutVld_SO    ( div_valid         ),
