@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Two AXI interfaces on top level, one for bypassing and one for actual cache-able regions
 - Performance Counters
 - Hardware multiplication (full M-Extension)
+- Support for inter processor interrupts (IPI)
 
 ### Changed
 
