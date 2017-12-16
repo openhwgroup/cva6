@@ -24,13 +24,14 @@ module miss_handler #(
     AXI_BUS.Master                                      bypass_if,
     // Miss handling (~> cacheline refill)
     output logic [NR_PORTS-1:0]                         miss_gnt_o,
+    output logic [NR_PORTS-1:0]                         active_serving_o,
 
     output logic [63:0]                                 critical_word_o,
     output logic                                        critical_word_valid_o,
     AXI_BUS.Master                                      data_if,
 
     input  logic [NR_PORTS-1:0][55:0]                   mshr_addr_i,
-    output logic [NR_PORTS-1:0]                         mashr_addr_matches_o,
+    output logic [NR_PORTS-1:0]                         mshr_addr_matches_o,
     // Port to SRAMs, for refill and eviction
     output logic  [SET_ASSOCIATIVITY-1:0]               req_o,
     output logic  [INDEX_WIDTH-1:0]                     addr_o, // address into cache array
@@ -116,6 +117,9 @@ module miss_handler #(
         evict_way_d  = evict_way_q;
         evict_cl_d   = evict_cl_q;
         mshr_d       = mshr_q;
+        // communicate to the requester which unit we are currently serving
+        active_serving_o = '0;
+        active_serving_o[mshr_q.id] = mshr_q.valid;
 
         case (state_q)
 
@@ -167,6 +171,7 @@ module miss_handler #(
                         evict_cl_d.tag = data_i[lfsr_bin].tag;
                         evict_cl_d.data = data_i[lfsr_bin].data;
                         cnt_d = mshr_q.addr[INDEX_WIDTH-1:0];
+                    // no - we can request a cache line now
                     end else
                         state_d = REQ_CACHELINE;
                 // we have at least one free way
@@ -232,7 +237,7 @@ module miss_handler #(
             WB_CACHELINE_FLUSH, WB_CACHELINE_MISS: begin
 
                 req_fsm_miss_valid  = 1'b1;
-                req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q};
+                req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q[INDEX_WIDTH-1:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
                 req_fsm_miss_be     = '1;
                 req_fsm_miss_we     = 1'b1;
                 req_fsm_miss_wdata  = evict_cl_q.data;
@@ -303,11 +308,12 @@ module miss_handler #(
     // check MSHR for aliasing
     always_comb begin
 
-        mashr_addr_matches_o = 'b0;
+        mshr_addr_matches_o = 'b0;
 
         for (int i = 0; i < NR_PORTS; i++) begin
-            if (mshr_q.valid && mshr_addr_i[i][55:$clog2(CACHE_LINE_WIDTH/8)] == mshr_q.addr[55:$clog2(CACHE_LINE_WIDTH/8)]) begin
-                mashr_addr_matches_o[i] = 1'b1;
+            // check mshr for potential matching of other units, exclude the unit currently being served
+            if (mshr_q.valid && mshr_addr_i[i][55:BYTE_OFFSET] == mshr_q.addr[55:BYTE_OFFSET]) begin
+                mshr_addr_matches_o[i] = 1'b1;
             end
         end
     end
