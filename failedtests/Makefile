@@ -43,7 +43,7 @@ $(asm_tests_bin): %: %.S $(extra_files)
 	$(RISCV_GCC) $(RISCV_GCC_OPTS) -I../riscv-torture/env/p -T../riscv-torture/env/p/link.ld $< -o $@
 
 $(asm_tests_hex): %.hex: % $(extra_files)
-	elf2hex 8 16384 $< 2147483648 > $@
+	elf2hex 8 16384 $< 1073741824 > $@
 
 $(asm_tests_sig): %.sig: %
 	$(RISCV_SIM) +signature=$@ $<
