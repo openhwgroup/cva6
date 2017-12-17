@@ -283,7 +283,7 @@ module cache_ctrl #(
             WAIT_MSHR: begin
                 mshr_addr_o = {mem_req_q.tag, mem_req_q.index};
                 // we can start a new request
-                if (!mashr_addr_matches_i) begin
+                if (!mshr_addr_matches_i) begin
                     req_o = '1;
 
                     addr_o = mem_req_q.index;
