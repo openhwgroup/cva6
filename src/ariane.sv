@@ -84,7 +84,7 @@ module ariane (
     branchpredict_t           resolved_branch;
     logic [63:0]              pc_commit;
     logic                     eret;
-    logic                     commit_ack;
+    logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
     // --------------
     // PCGEN <-> IF
@@ -177,13 +177,13 @@ module ariane (
     // --------------
     // ID <-> COMMIT
     // --------------
-    scoreboard_entry_t        commit_instr_id_commit;
+    scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_id_commit;
     // --------------
     // COMMIT <-> ID
     // --------------
-    logic [4:0]               waddr_a_commit_id;
-    logic [63:0]              wdata_a_commit_id;
-    logic                     we_a_commit_id;
+    logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_commit_id;
+    logic [NR_COMMIT_PORTS-1:0][63:0] wdata_commit_id;
+    logic [NR_COMMIT_PORTS-1:0]       we_commit_id;
     // --------------
     // IF <-> EX
     // --------------
@@ -382,17 +382,16 @@ module ariane (
         .csr_valid_o                ( csr_valid_id_ex                 ),
 
         .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id,         mult_trans_id_ex_id        }),
-        .wdata_i                    ( {alu_result_ex_id,           lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id          }),
+        .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id          }),
         .ex_ex_i                    ( {{$bits(exception_t){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}} }),
         .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id,            mult_valid_ex_id           }),
 
-        .waddr_a_i                  ( waddr_a_commit_id               ),
-        .wdata_a_i                  ( wdata_a_commit_id               ),
-        .we_a_i                     ( we_a_commit_id                  ),
+        .waddr_i                    ( waddr_commit_id               ),
+        .wdata_i                    ( wdata_commit_id               ),
+        .we_i                       ( we_commit_id                  ),
 
-        .commit_instr_o             ( commit_instr_id_commit          ),
-        .commit_ack_i               ( commit_ack                      ),
-
+        .commit_instr_o             ( commit_instr_id_commit        ),
+        .commit_ack_i               ( commit_ack                    ),
         .*
     );
 
@@ -488,9 +487,9 @@ module ariane (
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
         .no_st_pending_i        ( no_st_pending_ex_commit       ),
-        .waddr_a_o              ( waddr_a_commit_id             ),
-        .wdata_a_o              ( wdata_a_commit_id             ),
-        .we_a_o                 ( we_a_commit_id                ),
+        .waddr_o                ( waddr_commit_id               ),
+        .wdata_o                ( wdata_commit_id               ),
+        .we_o                   ( we_commit_id                  ),
         .commit_lsu_o           ( lsu_commit_commit_ex          ),
         .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
         .commit_csr_o           ( csr_commit_commit_ex          ),
@@ -519,7 +518,7 @@ module ariane (
         .debug_csr_we_i         ( csr_we_debug_csr              ),
         .debug_csr_wdata_i      ( csr_wdata_debug_csr           ),
         .debug_csr_rdata_o      ( csr_rdata_debug_csr           ),
-        .commit_ack_i           ( commit_ack                    ),
+        .commit_ack_i           ( commit_ack[0]                 ),
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),
         .csr_addr_i             ( csr_addr_ex_csr               ),
@@ -559,7 +558,7 @@ module ariane (
         .data_i            ( data_csr_perf          ),
         .data_o            ( data_perf_csr          ),
         .commit_instr_i    ( commit_instr_id_commit ),
-        .commit_ack_o      ( commit_ack             ),
+        .commit_ack_i      ( commit_ack             ),
 
         .l1_dcache_miss_i  ( dcache_miss_ex_perf    ),
         .itlb_miss_i       ( itlb_miss_ex_perf      ),
@@ -605,8 +604,8 @@ module ariane (
     // Debug
     // ------------
     debug_unit debug_unit_i (
-        .commit_instr_i    ( commit_instr_id_commit    ),
-        .commit_ack_i      ( commit_ack                ),
+        .commit_instr_i    ( commit_instr_id_commit[0] ),
+        .commit_ack_i      ( commit_ack[0]             ),
         .ex_i              ( ex_commit                 ),
         .halt_o            ( halt_debug_ctrl           ),
         .fetch_enable_i    ( fetch_enable              ),
@@ -645,12 +644,12 @@ module ariane (
     assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
     assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
     // Issue
-    assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
-    assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;
+    assign tracer_if.issue_ack         = issue_stage_i.i_scoreboard.issue_ack_i;
+    assign tracer_if.issue_sbe         = issue_stage_i.i_scoreboard.issue_instr_o;
     // write-back
-    assign tracer_if.waddr             = waddr_a_commit_id;
-    assign tracer_if.wdata             = wdata_a_commit_id;
-    assign tracer_if.we                = we_a_commit_id;
+    assign tracer_if.waddr             = waddr_commit_id;
+    assign tracer_if.wdata             = wdata_commit_id;
+    assign tracer_if.we                = we_commit_id;
     // commit
     assign tracer_if.commit_instr      = commit_instr_id_commit;
     assign tracer_if.commit_ack        = commit_ack;
