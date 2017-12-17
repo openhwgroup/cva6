@@ -49,6 +49,7 @@ module cache_ctrl #(
         output miss_req_t                                          miss_req_o,
         // return
         input  logic                                               miss_gnt_i,
+        input  logic                                               active_serving_i, // the miss unit is currently active for this unit, serving the miss
         input  logic [63:0]                                        critical_word_i,
         input  logic                                               critical_word_valid_i,
 
@@ -57,7 +58,7 @@ module cache_ctrl #(
         input  logic [63:0]                                        bypass_data_i,
         // check MSHR for aliasing
         output logic [55:0]                                        mshr_addr_o,
-        input  logic                                               mashr_addr_matches_i
+        input  logic                                               mshr_addr_matches_i
 );
 
     enum logic [3:0] {
@@ -135,7 +136,6 @@ module cache_ctrl #(
                     mem_req_d.size  = data_size_i;
                     mem_req_d.we    = data_we_i;
                     mem_req_d.wdata = data_wdata_i;
-                    // TODO: Check for non-cache able accesses
 
                     // Bypass mode, check for uncacheable address here as well
                     if (bypass_i) begin
@@ -227,7 +227,7 @@ module cache_ctrl #(
                     // ---------------
                     mshr_addr_o = {address_tag_i, mem_req_q.index};
                     // we've got a match on MSHR
-                    if (mashr_addr_matches_i) begin
+                    if (mshr_addr_matches_i) begin
                         state_d = WAIT_MSHR;
                         // save tag if we didn't already save it e.g.: we are not in in the Tag saved state
                         if (state_q != WAIT_TAG_SAVED)
@@ -279,12 +279,13 @@ module cache_ctrl #(
                 end
             end
 
-            // we've got a match on MSHR ~> miss unit is serving a request
+            // we've got a match on MSHR ~> miss unit is scurrently serving a request
             WAIT_MSHR: begin
                 mshr_addr_o = {mem_req_q.tag, mem_req_q.index};
                 // we can start a new request
                 if (!mashr_addr_matches_i) begin
                     req_o = '1;
+
                     addr_o = mem_req_q.index;
 
                     if (gnt_i)
@@ -309,6 +310,8 @@ module cache_ctrl #(
             // ~> wait for grant from miss unit
             WAIT_REFILL_GNT: begin
 
+                mshr_addr_o = {mem_req_q.tag, mem_req_q.index};
+
                 miss_req_o.valid = 1'b1;
                 miss_req_o.bypass = mem_req_q.bypass;
                 miss_req_o.addr = {mem_req_q.tag, mem_req_q.index};
@@ -330,6 +333,13 @@ module cache_ctrl #(
                 else if (miss_gnt_i) begin
                     state_d = IDLE;
                     data_gnt_o = 1'b1;
+                end
+
+                // it can be the case that the miss unit is currently serving a request which matches ours
+                // so we need to check the mshr for matching continously
+                // if the mshr matches we need to go to a different state -> we should never get a matching mshr and a high miss_gnt_i
+                if (mshr_addr_matches_i && !active_serving_i) begin
+                    state_d = WAIT_MSHR;
                 end
             end
 

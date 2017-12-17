@@ -79,6 +79,7 @@ module nbdcache (
 
     logic [2:0][$bits(miss_req_t)-1:0] miss_req;
     logic [2:0]                        miss_gnt;
+    logic [2:0]                        active_serving;
 
     logic [2:0]                        bypass_gnt;
     logic [2:0]                        bypass_valid;
@@ -132,6 +133,7 @@ module nbdcache (
 
                 .miss_req_o            ( miss_req        [i]  ),
                 .miss_gnt_i            ( miss_gnt        [i]  ),
+                .active_serving_i      ( active_serving  [i]  ),
                 .critical_word_i       ( critical_word        ),
                 .critical_word_valid_i ( critical_word_valid  ),
                 .bypass_gnt_i          ( bypass_gnt      [i]  ),
@@ -139,7 +141,7 @@ module nbdcache (
                 .bypass_data_i         ( bypass_data     [i]  ),
 
                 .mshr_addr_o           ( mshr_addr         [i] ), // TODO
-                .mashr_addr_matches_i  ( mshr_addr_matches [i] ), // TODO
+                .mshr_addr_matches_i   ( mshr_addr_matches [i] ), // TODO
                 .*
             );
         end
@@ -160,7 +162,8 @@ module nbdcache (
         .critical_word_o        ( critical_word        ),
         .critical_word_valid_o  ( critical_word_valid  ),
         .mshr_addr_i            ( mshr_addr            ),
-        .mashr_addr_matches_o   ( mshr_addr_matches    ),
+        .mshr_addr_matches_o    ( mshr_addr_matches    ),
+        .active_serving_o       ( active_serving       ),
         .req_o                  ( req             [0]  ),
         .addr_o                 ( addr            [0]  ),
         .gnt_i                  ( gnt             [0]  ),
@@ -352,7 +355,7 @@ module tag_cmp #(
         `ifndef VERILATOR
         // assert that cache only hits on one way
         assert property (
-          @(posedge clk_i) $onehot0(hit_way_o)) else $warning("Hit should be one-hot encoded");
+          @(posedge clk_i) $onehot0(hit_way_o)) else begin $error("Hit should be one-hot encoded"); $stop(); end
         `endif
         `endif
     end
