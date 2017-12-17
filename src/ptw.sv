@@ -77,9 +77,12 @@ module ptw #(
     output logic                    dtlb_miss_o
 
 );
+    // input registers
+    logic data_rvalid_q;
+    logic [63:0] data_rdata_q;
 
     pte_t pte;
-    assign pte = pte_t'(data_rdata_i);
+    assign pte = pte_t'(data_rdata_q);
 
     enum logic[2:0] {
       IDLE,
@@ -211,7 +214,7 @@ module ptw #(
 
             PTE_LOOKUP: begin
                 // we wait for the valid signal
-                if (data_rvalid_i) begin
+                if (data_rvalid_q) begin
 
                     // check if the global mapping bit is set
                     if (pte.g)
@@ -313,7 +316,7 @@ module ptw #(
             end
             // wait for the rvalid before going back to IDLE
             WAIT_RVALID: begin
-                if (data_rvalid_i)
+                if (data_rvalid_q)
                     NS = IDLE;
             end
         endcase
@@ -334,7 +337,7 @@ module ptw #(
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             CS                 <= IDLE;
             is_instr_ptw_q     <= 1'b0;
             ptw_lvl_q          <= LVL1;
@@ -343,6 +346,8 @@ module ptw #(
             vaddr_q            <= '0;
             ptw_pptr_q         <= '{default: 0};
             global_mapping_q   <= 1'b0;
+            data_rdata_q       <= '0;
+            data_rvalid_q      <= 1'b0;
         end else begin
             CS                 <= NS;
             ptw_pptr_q         <= ptw_pptr_n;
@@ -352,6 +357,8 @@ module ptw #(
             tlb_update_asid_q  <= tlb_update_asid_n;
             vaddr_q            <= vaddr_n;
             global_mapping_q   <= global_mapping_n;
+            data_rdata_q       <= data_rdata_i;
+            data_rvalid_q      <= data_rvalid_i;
         end
     end
 

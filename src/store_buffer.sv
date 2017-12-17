@@ -34,6 +34,8 @@ module store_buffer (
                                           // it is only ready if it can unconditionally commit the instruction, e.g.:
                                           // the commit buffer needs to be empty
     input  logic         valid_i,         // this is a valid store
+    input  logic         valid_without_flush_i, // just tell if the address is valid which we are current putting and do not take any further action
+
     input  logic [63:0]  paddr_i,         // physical address of store which needs to be placed in the queue
     input  logic [63:0]  data_i,          // data which is placed in the queue
     input  logic [7:0]   be_i,            // byte enable in
@@ -220,7 +222,7 @@ module store_buffer (
             end
         end
         // or it matches with the entry we are currently putting into the queue
-        if ((page_offset_i[11:3] == paddr_i[11:3]) && valid_i) begin
+        if ((page_offset_i[11:3] == paddr_i[11:3]) && valid_without_flush_i) begin
             page_offset_matches_o = 1'b1;
         end
     end

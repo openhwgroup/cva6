@@ -80,16 +80,25 @@ module cache_ctrl #(
 
     mem_req_t mem_req_d, mem_req_q;
 
+    logic [CACHE_LINE_WIDTH-1:0] cl_i;
+
+    always_comb begin : way_select
+        cl_i = '0;
+        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++)
+            if (hit_way_i[i])
+                cl_i = data_i[i].data;
+
+        // cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
+    end
+
     // --------------
     // Cache FSM
     // --------------
     always_comb begin : cache_ctrl_fsm
-        automatic logic [CACHE_LINE_WIDTH-1:0] cl_i;
         automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset;
         // incoming cache-line -> this is needed as synthesis is not supporting +: indexing in a multi-dimensional array
-        cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
         // cache-line offset -> multiple of 64
-        cl_offset = mem_req_q.index[BYTE_OFFSET-1:3] << 6;
+        cl_offset = mem_req_q.index[BYTE_OFFSET-1:3] << 6; // shift by 6 to the left
 
         // default assignments
         state_d   = state_q;
@@ -104,7 +113,7 @@ module cache_ctrl #(
         mshr_addr_o   = '0;
         // Memory array communication
         req_o  = '0;
-        addr_o = '0;
+        addr_o = address_index_i;
         data_o = '0;
         be_o   = '0;
         tag_o  = '0;
@@ -116,6 +125,9 @@ module cache_ctrl #(
             IDLE: begin
                 // a new request arrived
                 if (data_req_i) begin
+                    // request the cache line - we can do this specualtive
+                    req_o = '1;
+
                     // save index, be and we
                     mem_req_d.index = address_index_i;
                     mem_req_d.tag   = address_tag_i;
@@ -135,9 +147,6 @@ module cache_ctrl #(
                     // Cache is enabled
                     // ------------------
                     end else begin
-                        // request the cache line
-                        req_o = {{SET_ASSOCIATIVITY}{1'b1}};
-                        addr_o = address_index_i;
                         // Wait that we have access on the memory array
                         if (gnt_i) begin
                             state_d = WAIT_TAG;
@@ -155,6 +164,12 @@ module cache_ctrl #(
                 // depending on where we come from
                 // For the store case the tag comes in the same cycle
                 tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  address_tag_i;
+
+                // we speculatively request another transfer
+                if (data_req_i) begin
+                    req_o      = '1;
+                end
+
                 // check that the client really wants to do the request
                 if (!kill_req_i) begin
                     // ------------
@@ -172,9 +187,6 @@ module cache_ctrl #(
                             mem_req_d.wdata  = data_wdata_i;
                             mem_req_d.tag    = address_tag_i;
                             mem_req_d.bypass = 1'b0;
-
-                            req_o      = {{SET_ASSOCIATIVITY}{1'b1}};
-                            addr_o     = address_index_i;
                             data_gnt_o = gnt_i;
 
                             if (!gnt_i) begin
@@ -185,10 +197,17 @@ module cache_ctrl #(
                             state_d = IDLE;
                         end
 
+                        // this is timing critical
+                        // data_rdata_o = cl_i[cl_offset +: 64];
+                        case (mem_req_q.index[3])
+                            1'b0: data_rdata_o = cl_i[63:0];
+                            1'b1: data_rdata_o = cl_i[127:64];
+                        endcase
+
                         // report data for a read
                         if (!mem_req_q.we) begin
                             data_rvalid_o = 1'b1;
-                            data_rdata_o = cl_i[cl_offset +: 64];
+
                         // else this was a store so we need an extra step to handle it
                         end else begin
                             state_d = STORE_REQ;
@@ -265,7 +284,7 @@ module cache_ctrl #(
                 mshr_addr_o = {mem_req_q.tag, mem_req_q.index};
                 // we can start a new request
                 if (!mashr_addr_matches_i) begin
-                    req_o = {{SET_ASSOCIATIVITY}{1'b1}};
+                    req_o = '1;
                     addr_o = mem_req_q.index;
 
                     if (gnt_i)
@@ -316,6 +335,11 @@ module cache_ctrl #(
 
             // ~> wait for critical word to arrive
             WAIT_CRITICAL_WORD: begin
+                // speculatively request another word
+                if (data_req_i) begin
+                    // request the cache line
+                    req_o = '1;
+                end
 
                 if (critical_word_valid_i) begin
                     data_rvalid_o = 1'b1;
@@ -330,9 +354,7 @@ module cache_ctrl #(
                         mem_req_d.wdata = data_wdata_i;
                         mem_req_d.tag   = address_tag_i;
 
-                        // request the cache line
-                        req_o = {{SET_ASSOCIATIVITY}{1'b1}};
-                        addr_o = address_index_i;
+
                         state_d = IDLE;
 
                         // Wait until we have access on the memory array
@@ -374,6 +396,12 @@ module cache_ctrl #(
             hit_way_q <= hit_way_d;
         end
     end
+
+    `ifndef SYNTHESIS
+        initial begin
+            assert (CACHE_LINE_WIDTH == 128) else $error ("Cacheline width has to be 128 for the moment. But only small changes required in data select logic");
+        end
+    `endif
 endmodule
 
 module AMO_alu (

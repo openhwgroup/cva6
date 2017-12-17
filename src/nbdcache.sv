@@ -309,12 +309,25 @@ module tag_cmp #(
     assign rdata_o = rdata_i;
     // one hot encoded
     logic [NR_PORTS-1:0] id_d, id_q;
+    logic [TAG_WIDTH-1:0] sel_tag;
+
+    always_comb begin : tag_sel
+        sel_tag = '0;
+        for (int unsigned i = 0; i < NR_PORTS; i++)
+            if (id_q[i])
+                sel_tag = tag_i[i];
+    end
+
+    generate
+        for (genvar j = 0; j < SET_ASSOCIATIVITY; j++) begin : tag_cmp
+            assign hit_way_o[j] = (sel_tag == rdata_i[j].tag) ? rdata_i[j].valid : 1'b0;
+        end
+    endgenerate
 
     always_comb begin
 
         gnt_o     = '0;
         id_d      = '0;
-        hit_way_o = '0;
         wdata_o   = '0;
         req_o     = '0;
         addr_o    = '0;
@@ -323,28 +336,16 @@ module tag_cmp #(
         // Request Side
         // priority select
         for (int unsigned i = 0; i < NR_PORTS; i++) begin
-            if (|req_i[i]) begin
-                req_o    = req_i[i];
-                id_d     = (1'b1 << i);
-                gnt_o[i] = 1'b1;
-                addr_o   = addr_i[i];
-                be_o     = be_i[i];
-                we_o     = we_i[i];
-                wdata_o  = wdata_i[i];
-                break;
-            end
-        end
+            req_o    = req_i[i];
+            id_d     = (1'b1 << i);
+            gnt_o[i] = 1'b1;
+            addr_o   = addr_i[i];
+            be_o     = be_i[i];
+            we_o     = we_i[i];
+            wdata_o  = wdata_i[i];
 
-        // Response Side
-        for (int unsigned i = 0; i < NR_PORTS; i++) begin
-            if (id_q[i]) begin
-                // Tag compare
-                for (int unsigned j = 0; j < SET_ASSOCIATIVITY; j++) begin
-                    // compare tag and check validity
-                    if (rdata_i[j].tag == tag_i[i] && rdata_i[j].valid)
-                        hit_way_o[j] = 1'b1;
-                end
-            end
+            if (req_i[i])
+                break;
         end
 
         `ifndef SYNTHESIS

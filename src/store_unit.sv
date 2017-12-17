@@ -64,6 +64,7 @@ module store_unit (
     // store buffer control signals
     logic                    st_ready;
     logic                    st_valid;
+    logic                    st_valid_without_flush;
 
     // keep the data and the byte enable for the second cycle (after address translation)
     logic [63:0]              st_data_n, st_data_q;
@@ -76,13 +77,14 @@ module store_unit (
     assign trans_id_o = trans_id_q; // transaction id from previous cycle
 
     always_comb begin : store_control
-        translation_req_o = 1'b0;
-        valid_o           = 1'b0;
-        st_valid          = 1'b0;
-        pop_st_o          = 1'b0;
-        ex_o              = ex_i;
-        trans_id_n        = lsu_ctrl_i.trans_id;
-        NS                = CS;
+        translation_req_o      = 1'b0;
+        valid_o                = 1'b0;
+        st_valid               = 1'b0;
+        st_valid_without_flush = 1'b0;
+        pop_st_o               = 1'b0;
+        ex_o                   = ex_i;
+        trans_id_n             = lsu_ctrl_i.trans_id;
+        NS                     = CS;
 
         case (CS)
             // we got a valid store
@@ -111,6 +113,8 @@ module store_unit (
                 // post this store to the store buffer if we are not flushing
                 if (!flush_i)
                     st_valid = 1'b1;
+
+                st_valid_without_flush = 1'b1;
 
                 // we have another request
                 if (valid_i) begin
@@ -197,12 +201,15 @@ module store_unit (
     // ---------------
     store_buffer store_buffer_i (
         // store queue write port
-        .valid_i           ( st_valid            ),
-        .data_i            ( st_data_q           ),
-        .be_i              ( st_be_q             ),
-        .data_size_i       ( st_data_size_q      ),
+        .valid_i               ( st_valid               ),
+        .valid_without_flush_i ( st_valid_without_flush ), // the flush signal can be critical and we need this valid
+                                                           // signal to check whether the page_offset matches or not, functionaly it doesn't
+                                                           // make a difference whether we use the correct valid signal or not as we are flushing the whole pipeline anyway
+        .data_i                ( st_data_q              ),
+        .be_i                  ( st_be_q                ),
+        .data_size_i           ( st_data_size_q         ),
         // store buffer out
-        .ready_o           ( st_ready            ),
+        .ready_o               ( st_ready               ),
         .*
     );
     // ---------------
