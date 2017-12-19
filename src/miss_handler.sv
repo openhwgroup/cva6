@@ -96,7 +96,7 @@ module miss_handler #(
         be_o   = '0;
         we_o   = '0;
         // Cache controller
-        miss_gnt_o = 1'b0;
+        miss_gnt_o = '0;
         // LFSR replacement unit
         lfsr_enable = 1'b0;
         // to AXI refill
@@ -358,6 +358,7 @@ module miss_handler #(
     logic [63:0]                 data_bypass_fsm;
     logic [$clog2(NR_PORTS)-1:0] id_fsm_bypass;
     logic [AXI_ID_WIDTH-1:0]     id_bypass_fsm;
+    logic [AXI_ID_WIDTH-1:0]     gnt_id_bypass_fsm;
 
     arbiter #(
         .NR_PORTS          ( NR_PORTS                                                ),
@@ -376,6 +377,7 @@ module miss_handler #(
         // Slave Sid
         .id_i                  ( id_bypass_fsm[$clog2(NR_PORTS)-1:0]                      ),
         .id_o                  ( id_fsm_bypass                                            ),
+        .gnt_id_i              ( gnt_id_bypass_fsm[$clog2(NR_PORTS)-1:0]                  ),
         .address_o             ( req_fsm_bypass_addr                                      ),
         .data_wdata_o          ( req_fsm_bypass_wdata                                     ),
         .data_req_o            ( req_fsm_bypass_valid                                     ),
@@ -402,6 +404,7 @@ module miss_handler #(
         .id_i                  ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
         .valid_o               ( valid_bypass_fsm                                         ),
         .rdata_o               ( data_bypass_fsm                                          ),
+        .gnt_id_o              ( gnt_id_bypass_fsm                                         ),
         .id_o                  ( id_bypass_fsm                                            ),
         .critical_word_o       (                                                          ), // not used for single requests
         .critical_word_valid_o (                                                          ), // not used for single requests
@@ -424,6 +427,7 @@ module miss_handler #(
         .be_i                ( req_fsm_miss_be    ),
         .size_i              ( 2'b11              ),
         .id_i                ( '0                 ),
+        .gnt_id_o            (                    ), // open
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),
@@ -493,6 +497,7 @@ module arbiter #(
     // slave port
     input  logic [$clog2(NR_PORTS)-1:0]            id_i,
     output logic [$clog2(NR_PORTS)-1:0]            id_o,
+    input  logic [$clog2(NR_PORTS)-1:0]            gnt_id_i,
     output logic                                   data_req_o,
     output logic [63:0]                            address_o,
     output logic [DATA_WIDTH-1:0]                  data_wdata_o,
@@ -527,14 +532,13 @@ module arbiter #(
         data_be_o                 = data_be_i[request_index];
         data_size_o               = data_size_i[request_index];
         data_we_o                 = data_we_i[request_index];
-        data_gnt_o[request_index] = data_gnt_i;
+        data_gnt_o[gnt_id_i]      = data_gnt_i;
         id_o                      = request_index;
     end
 
     // ------------
     // Read port
     // ------------
-
     always_comb begin : slave_read_port
         data_rvalid_o = '0;
         data_rdata_o = '0;
@@ -580,6 +584,7 @@ module axi_adapter #(
     input  logic                                        req_i,
     input  req_t                                        type_i,
     output logic                                        gnt_o,
+    output logic [AXI_ID_WIDTH-1:0]                     gnt_id_o,
     input  logic [63:0]                                 addr_i,
     input  logic                                        we_i,
     input  logic [(DATA_WIDTH/64)-1:0][63:0]            wdata_i,
@@ -652,6 +657,7 @@ module axi_adapter #(
         axi.r_ready   = 1'b0;
 
         gnt_o         = 1'b0;
+        gnt_id_o      = '0;
         valid_o       = 1'b0;
         id_o          = axi.r_id;
 
@@ -682,13 +688,14 @@ module axi_adapter #(
                         if (type_i == SINGLE_REQ) begin
                             // single req can be granted here
                             gnt_o = axi.aw_ready & axi.w_ready;
-
+                            gnt_id_o = id_i;
                             case ({axi.aw_ready, axi.w_ready})
                                 2'b11: state_d = WAIT_B_VALID;
                                 2'b01: state_d = WAIT_AW_READY;
                                 2'b10: state_d = WAIT_LAST_W_READY;
                                 default: state_d = IDLE;
                             endcase
+                            id_d = axi.aw_id;
                         // its a request for the whole cache line
                         end else begin
                             axi.aw_len = BURST_SIZE; // number of bursts to do
@@ -707,12 +714,16 @@ module axi_adapter #(
                                 2'b10: state_d = WAIT_LAST_W_READY;
                                 default:;
                             endcase
+                            // save id
+                            id_d = axi.aw_id;
+
                         end
                     // read
                     end else begin
 
                         axi.ar_valid = 1'b1;
                         gnt_o = axi.ar_ready;
+                        gnt_id_o = id_i;
 
                         if (type_i != SINGLE_REQ) begin
                             axi.ar_len = BURST_SIZE;
@@ -722,6 +733,8 @@ module axi_adapter #(
                         if (axi.ar_ready) begin
                             state_d = (type_i == SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
                             addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
+                            // save id
+                            id_d = axi.ar_id;
                         end
                     end
                 end
@@ -764,6 +777,7 @@ module axi_adapter #(
                         if (cnt_q == 0) begin
                             state_d = WAIT_B_VALID;
                             gnt_o = 1'b1;
+                            gnt_id_o = id_q;
                         // there are outstanding transactions
                         end else begin
                             state_d = WAIT_LAST_W_READY;
@@ -783,6 +797,7 @@ module axi_adapter #(
                 if (axi.aw_ready) begin
                     state_d = WAIT_B_VALID;
                     gnt_o = 1'b1;
+                    gnt_id_o = id_q;
                 end
             end
 
@@ -800,6 +815,7 @@ module axi_adapter #(
                     if (cnt_q == '0) begin
                         state_d = WAIT_B_VALID;
                         gnt_o = (cnt_q == '0);
+                        gnt_id_o = id_q;
                     end else begin
                         cnt_d = cnt_q - 1;
                     end
@@ -846,8 +862,6 @@ module axi_adapter #(
                     // this is the last read
                     if (axi.r_last) begin
                         state_d = COMPLETE_READ;
-                        // save id
-                        id_d = axi.r_id;
                     end
 
                     // save the word
