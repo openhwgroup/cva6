@@ -509,46 +509,117 @@ module arbiter #(
     input  logic [DATA_WIDTH-1:0]                  data_rdata_i
 );
 
+    enum logic [1:0] { IDLE, REQ, SERVING } state_d, state_q;
 
-    // addressing read and full write
-    always_comb begin : read_req_write
+    struct packed {
+        logic [$clog2(NR_PORTS)-1:0] id;
+        logic [63:0]                 address;
+        logic [63:0]                 data;
+        logic [1:0]                  size;
+        logic [DATA_WIDTH/8-1:0]     be;
+        logic                        we;
+    } req_d, req_q;
+
+    always_comb begin
         automatic logic [$clog2(NR_PORTS)-1:0] request_index;
         request_index = 0;
 
-        data_req_o = 1'b0;
-        data_gnt_o = '0;
+        state_d = state_q;
+        req_d   = req_q;
+        // request port
+        data_req_o                = 1'b0;
+        address_o                 = req_q.address;
+        data_wdata_o              = req_q.data;
+        data_be_o                 = req_q.be;
+        data_size_o               = req_q.size;
+        data_we_o                 = req_q.we;
+        id_o                      = req_q.id;
+        data_gnt_o                = '0;
+        // read port
+        data_rvalid_o           = '0;
+        data_rdata_o[req_q.id]  = data_rdata_i;
 
-        for (int unsigned i = 0; i < NR_PORTS; i++) begin
-            if (data_req_i[i] == 1'b1) begin
-                data_req_o        = data_req_i[i];
-                request_index     = i;
-                break; // break here as this is a priority select
+        case (state_q)
+
+            IDLE: begin
+                // wait for incoming requests
+                for (int unsigned i = 0; i < NR_PORTS; i++) begin
+                    if (data_req_i[i] == 1'b1) begin
+                        data_req_o    = data_req_i[i];
+                        data_gnt_o[i] = data_req_i[i];
+                        request_index = i;
+                        // save the request
+                        req_d.id = i;
+                        req_d.data = data_wdata_i[i];
+                        req_d.size = data_size_i[i];
+                        req_d.be = data_be_i[i];
+                        req_d.we = data_we_i[i];
+                        state_d = SERVING;
+                        break; // break here as this is a priority select
+                    end
+                end
+
+                address_o                 = address_i[request_index];
+                data_wdata_o              = data_wdata_i[request_index];
+                data_be_o                 = data_be_i[request_index];
+                data_size_o               = data_size_i[request_index];
+                data_we_o                 = data_we_i[request_index];
+                id_o                      = request_index;
             end
-        end
 
-        // pass through all signals from the correct slave port
-        address_o                 = address_i[request_index];
-        data_wdata_o              = data_wdata_i[request_index];
-        data_be_o                 = data_be_i[request_index];
-        data_size_o               = data_size_i[request_index];
-        data_we_o                 = data_we_i[request_index];
-        data_gnt_o[gnt_id_i]      = data_gnt_i;
-        id_o                      = request_index;
+            SERVING: begin
+                data_req_o = 1'b1;
+                if (data_rvalid_i) begin
+                    data_rvalid_o[req_q.id] = 1'b1;
+                    state_d = IDLE;
+                end
+            end
+
+            default : /* default */;
+        endcase
     end
+    // // addressing read and full write
+    // always_comb begin : read_req_write
+    //     automatic logic [$clog2(NR_PORTS)-1:0] request_index;
+    //     request_index = 0;
 
-    // ------------
-    // Read port
-    // ------------
-    always_comb begin : slave_read_port
-        data_rvalid_o = '0;
-        data_rdata_o = '0;
-        // if there is a valid signal the FIFO should not be empty anyway
-        if (data_rvalid_i) begin
-            data_rvalid_o[id_i] = data_rvalid_i;
-            data_rdata_o [id_i] = data_rdata_i;
+    //     data_req_o = 1'b0;
+    //     data_gnt_o = '0;
+
+
+
+    //     // pass through all signals from the correct slave port
+    //     address_o                 = address_i[request_index];
+    //     data_wdata_o              = data_wdata_i[request_index];
+    //     data_be_o                 = data_be_i[request_index];
+    //     data_size_o               = data_size_i[request_index];
+    //     data_we_o                 = data_we_i[request_index];
+    //     data_gnt_o[gnt_id_i]      = data_gnt_i;
+    //     id_o                      = request_index;
+    // end
+
+    // // ------------
+    // // Read port
+    // // ------------
+    // always_comb begin : slave_read_port
+    //     data_rvalid_o = '0;
+    //     data_rdata_o = '0;
+    //     // if there is a valid signal the FIFO should not be empty anyway
+    //     if (data_rvalid_i) begin
+    //         data_rvalid_o[id_i] = data_rvalid_i;
+    //         data_rdata_o [id_i] = data_rdata_i;
+    //     end
+    // end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            state_q <= IDLE;
+            req_q   <= '0;
+        end else begin
+            state_q <= state_d;
+            req_q   <= req_d;
         end
     end
-
     // ------------
     // Assertions
     // ------------
