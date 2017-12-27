@@ -549,6 +549,7 @@ module arbiter #(
                         data_gnt_o[i] = data_req_i[i];
                         request_index = i;
                         // save the request
+                        req_d.address = address_i[i];
                         req_d.id = i;
                         req_d.data = data_wdata_i[i];
                         req_d.size = data_size_i[i];
