@@ -20,7 +20,10 @@
 import ariane_pkg::*;
 
 module ex_stage #(
-        parameter int ASID_WIDTH = 1
+        parameter int          ASID_WIDTH       = 1,
+        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,
+        parameter int unsigned AXI_ID_WIDTH     = 10,
+        parameter int unsigned AXI_USER_WIDTH   = 1
     )(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -142,7 +145,11 @@ module ex_stage #(
     // ----------------
     // Load-Store Unit
     // ----------------
-    lsu lsu_i (
+    lsu #(
+        .CACHE_START_ADDR ( CACHE_START_ADDR ),
+        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
+        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
+    ) lsu_i (
         .commit_i       ( lsu_commit_i       ),
         .commit_ready_o ( lsu_commit_ready_o ),
         .data_if        ( data_if            ),

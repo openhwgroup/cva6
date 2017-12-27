@@ -25,7 +25,11 @@ import instruction_tracer_pkg::*;
 `endif
 `endif
 
-module ariane (
+module ariane #(
+        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000, // address on which to decide whether the request is cache-able or not
+        parameter int unsigned AXI_ID_WIDTH     = 10,
+        parameter int unsigned AXI_USER_WIDTH   = 1
+    )(
         input  logic                           clk_i,
         input  logic                           rst_ni,
         input  logic                           test_en_i,     // enable all clock gates for testing
@@ -399,7 +403,11 @@ module ariane (
     // ---------
     // EX
     // ---------
-    ex_stage ex_stage_i (
+    ex_stage #(
+        .CACHE_START_ADDR ( CACHE_START_ADDR ),
+        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
+        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
+    ) ex_stage_i (
         .flush_i                ( flush_ctrl_ex               ),
         .fu_i                   ( fu_id_ex                    ),
         .operator_i             ( operator_id_ex              ),

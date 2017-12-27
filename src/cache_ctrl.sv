@@ -15,7 +15,8 @@ module cache_ctrl #(
         parameter int unsigned SET_ASSOCIATIVITY = 8,
         parameter int unsigned INDEX_WIDTH       = 12,
         parameter int unsigned TAG_WIDTH         = 44,
-        parameter int unsigned CACHE_LINE_WIDTH  = 100
+        parameter int unsigned CACHE_LINE_WIDTH  = 100,
+        parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000
     )(
         input  logic                                               clk_i,     // Clock
         input  logic                                               rst_ni,    // Asynchronous reset active low
@@ -236,7 +237,7 @@ module cache_ctrl #(
                     // -------------------------
                     // Check for cache-ability
                     // -------------------------
-                    if (!(|tag_o[TAG_WIDTH-1:DECISION_BIT-INDEX_WIDTH])) begin
+                    if (tag_o < CACHE_START_ADDR[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH]) begin
                         mem_req_d.tag = address_tag_i;
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;

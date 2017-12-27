@@ -19,7 +19,10 @@
 import ariane_pkg::*;
 
 module lsu #(
-    parameter int ASID_WIDTH = 1
+        parameter int          ASID_WIDTH       = 1,
+        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,
+        parameter int unsigned AXI_ID_WIDTH     = 10,
+        parameter int unsigned AXI_USER_WIDTH   = 1
     )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
@@ -151,7 +154,11 @@ module lsu #(
     // Port 0: PTW
     // Port 1: Load Unit
     // Port 2: Store Unit
-    nbdcache i_nbdcache (
+    nbdcache #(
+        .CACHE_START_ADDR ( CACHE_START_ADDR ),
+        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
+        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
+    ) i_nbdcache (
         // to D$
         .data_if           ( data_if                 ),
         .bypass_if         ( bypass_if               ),

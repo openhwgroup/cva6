@@ -19,7 +19,11 @@
 import ariane_pkg::*;
 import nbdcache_pkg::*;
 
-module nbdcache (
+module nbdcache #(
+        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,
+        parameter int unsigned AXI_ID_WIDTH     = 10,
+        parameter int unsigned AXI_USER_WIDTH   = 1
+    )(
     input  logic                           clk_i,       // Clock
     input  logic                           rst_ni,      // Asynchronous reset active low
     // Cache management
@@ -103,7 +107,8 @@ module nbdcache (
                 .SET_ASSOCIATIVITY     ( SET_ASSOCIATIVITY    ),
                 .INDEX_WIDTH           ( INDEX_WIDTH          ),
                 .TAG_WIDTH             ( TAG_WIDTH            ),
-                .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     )
+                .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     ),
+                .CACHE_START_ADDR      ( CACHE_START_ADDR     )
             ) i_cache_ctrl (
                 .bypass_i              ( ~enable_i            ),
                 .busy_o                ( busy            [i]  ),

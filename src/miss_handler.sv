@@ -7,7 +7,9 @@
 import nbdcache_pkg::*;
 
 module miss_handler #(
-    parameter int unsigned NR_PORTS = 3
+    parameter int unsigned NR_PORTS         = 3,
+    parameter int unsigned AXI_ID_WIDTH     = 10,
+    parameter int unsigned AXI_USER_WIDTH   = 1
 )(
     input  logic                                        clk_i,
     input  logic                                        rst_ni,
@@ -391,7 +393,8 @@ module miss_handler #(
     );
 
     axi_adapter #(
-        .DATA_WIDTH            ( 64                                                       )
+        .DATA_WIDTH            ( 64                                                       ),
+        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                                             )
     ) i_bypass_axi_adapter (
         .req_i                 ( req_fsm_bypass_valid                                     ),
         .type_i                ( SINGLE_REQ                                               ),
@@ -416,7 +419,8 @@ module miss_handler #(
     // Cache Line Arbiter
     // ----------------------
     axi_adapter  #(
-        .DATA_WIDTH          ( CACHE_LINE_WIDTH   )
+        .DATA_WIDTH          ( CACHE_LINE_WIDTH   ),
+        .AXI_ID_WIDTH        ( AXI_ID_WIDTH       )
     ) i_miss_axi_adapter (
         .req_i               ( req_fsm_miss_valid ),
         .type_i              ( CACHE_LINE_REQ     ),
@@ -648,7 +652,8 @@ endmodule
 //
 module axi_adapter #(
         parameter int unsigned DATA_WIDTH          = 256,
-        parameter logic        CRITICAL_WORD_FIRST = 0 // the AXI subsystem needs to support wrapping reads for this feature
+        parameter logic        CRITICAL_WORD_FIRST = 0, // the AXI subsystem needs to support wrapping reads for this feature
+        parameter int unsigned AXI_ID_WIDTH        = 10
     )(
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
