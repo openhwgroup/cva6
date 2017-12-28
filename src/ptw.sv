@@ -44,6 +44,7 @@ module ptw #(
     output logic                    data_req_o,
     output logic                    data_we_o,
     output logic [7:0]              data_be_o,
+    output logic [1:0]              data_size_o,
     output logic                    kill_req_o,
     output logic                    tag_valid_o,
     input  logic                    data_gnt_i,
@@ -70,12 +71,18 @@ module ptw #(
     input  logic [63:0]             dtlb_vaddr_i,
     // from CSR file
     input  logic [43:0]             satp_ppn_i, // ppn from satp
-    input  logic                    mxr_i
+    input  logic                    mxr_i,
+    // Performance counters
+    output logic                    itlb_miss_o,
+    output logic                    dtlb_miss_o
 
 );
+    // input registers
+    logic data_rvalid_q;
+    logic [63:0] data_rdata_q;
 
     pte_t pte;
-    assign pte = pte_t'(data_rdata_i);
+    assign pte = pte_t'(data_rdata_q);
 
     enum logic[2:0] {
       IDLE,
@@ -151,6 +158,7 @@ module ptw #(
         tag_valid_n        = 1'b0;
         data_req_o         = 1'b0;
         data_be_o          = 8'hFF;
+        data_size_o        = 2'b11;
         data_we_o          = 1'b0;
         ptw_error_o        = 1'b0;
         itlb_update_o      = 1'b0;
@@ -164,6 +172,9 @@ module ptw #(
         tlb_update_asid_n  = tlb_update_asid_q;
         vaddr_n            = vaddr_q;
         faulting_address_o = '0;
+
+        itlb_miss_o        = 1'b0;
+        dtlb_miss_o        = 1'b0;
 
         case (CS)
 
@@ -179,12 +190,14 @@ module ptw #(
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = itlb_vaddr_i;
                     NS                  = WAIT_GRANT;
+                    itlb_miss_o         = 1'b1;
                 // we got an DTLB miss
                 end else if (en_ld_st_translation_i & dtlb_access_i & dtlb_miss_i) begin
                     ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = dtlb_vaddr_i;
                     NS                  = WAIT_GRANT;
+                    dtlb_miss_o         = 1'b1;
                 end
             end
 
@@ -201,7 +214,7 @@ module ptw #(
 
             PTE_LOOKUP: begin
                 // we wait for the valid signal
-                if (data_rvalid_i) begin
+                if (data_rvalid_q) begin
 
                     // check if the global mapping bit is set
                     if (pte.g)
@@ -303,7 +316,7 @@ module ptw #(
             end
             // wait for the rvalid before going back to IDLE
             WAIT_RVALID: begin
-                if (data_rvalid_i)
+                if (data_rvalid_q)
                     NS = IDLE;
             end
         endcase
@@ -324,7 +337,7 @@ module ptw #(
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             CS                 <= IDLE;
             is_instr_ptw_q     <= 1'b0;
             ptw_lvl_q          <= LVL1;
@@ -333,6 +346,8 @@ module ptw #(
             vaddr_q            <= '0;
             ptw_pptr_q         <= '{default: 0};
             global_mapping_q   <= 1'b0;
+            data_rdata_q       <= '0;
+            data_rvalid_q      <= 1'b0;
         end else begin
             CS                 <= NS;
             ptw_pptr_q         <= ptw_pptr_n;
@@ -342,6 +357,8 @@ module ptw #(
             tlb_update_asid_q  <= tlb_update_asid_n;
             vaddr_q            <= vaddr_n;
             global_mapping_q   <= global_mapping_n;
+            data_rdata_q       <= data_rdata_i;
+            data_rvalid_q      <= data_rvalid_i;
         end
     end
 

@@ -79,7 +79,8 @@ module pcgen_stage (
     // 6. Debug
     // Mis-predict handling is a little bit different
     always_comb begin : npc_select
-        automatic logic [63:0] fetch_address = npc_q;
+        automatic logic [63:0] fetch_address;
+        fetch_address = npc_q;
 
         branch_predict_o = branch_predict_btb;
         fetch_valid_o    = 1'b1;

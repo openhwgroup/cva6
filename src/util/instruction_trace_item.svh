@@ -196,6 +196,12 @@ class instruction_trace_item;
                                              instr,
                                              s);
 
+        // s = $sformatf("%s %h %h %-36s",
+        //                                      priv_lvl,
+        //                                      sbe.pc,
+        //                                      instr,
+        //                                      s);
+
         foreach (result_regs[i]) begin
             if (result_regs[i] != 0)
                 s = $sformatf("%s %-4s:%16x", s, regAddrToStr(result_regs[i]), this.result);

@@ -324,7 +324,6 @@ module debug_unit (
             HALT_REQ: begin
                 // we've got a valid instruction in the commit stage so we can proceed to the halted state
                 if (commit_instr_i.valid || !fetch_enable_i) begin
-                    halt_o = 1'b1;
                     NS = HALTED;
                 end
             end

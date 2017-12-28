@@ -55,7 +55,7 @@ module regfile
 );
 
 
-  localparam    ADDR_WIDTH = 5;;
+  localparam    ADDR_WIDTH = 5;
   localparam    NUM_WORDS  = 2**ADDR_WIDTH;
 
   logic [DATA_WIDTH-1:0]      mem[NUM_WORDS];

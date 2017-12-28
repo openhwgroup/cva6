@@ -38,13 +38,11 @@ interface mem_if
         `ifndef VERILATOR
         `ifndef SYNTHESIS
         clocking mck @(posedge clk);
-            default input #1ns output #1ns;
             input   address, data_wdata, data_we, data_req, data_be;
             output  data_rvalid, data_rdata, data_gnt;
         endclocking
         // Memory interface configured as slave
         clocking sck @(posedge clk);
-            default input #1ns output #1ns;
             output  address, data_wdata, data_we, data_req, data_be;
             input   data_rvalid, data_rdata, data_gnt;
         endclocking

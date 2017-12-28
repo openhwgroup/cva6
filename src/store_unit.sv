@@ -51,6 +51,7 @@ module store_unit (
     output logic                     data_req_o,
     output logic                     data_we_o,
     output logic [7:0]               data_be_o,
+    output logic [1:0]               data_size_o,
     output logic                     kill_req_o,
     output logic                     tag_valid_o,
     input  logic                     data_gnt_i,
@@ -63,10 +64,12 @@ module store_unit (
     // store buffer control signals
     logic                    st_ready;
     logic                    st_valid;
+    logic                    st_valid_without_flush;
 
     // keep the data and the byte enable for the second cycle (after address translation)
     logic [63:0]              st_data_n, st_data_q;
     logic [7:0]               st_be_n,   st_be_q;
+    logic [1:0]               st_data_size_n, st_data_size_q;
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
     // output assignments
@@ -74,13 +77,14 @@ module store_unit (
     assign trans_id_o = trans_id_q; // transaction id from previous cycle
 
     always_comb begin : store_control
-        translation_req_o = 1'b0;
-        valid_o           = 1'b0;
-        st_valid          = 1'b0;
-        pop_st_o          = 1'b0;
-        ex_o              = ex_i;
-        trans_id_n        = lsu_ctrl_i.trans_id;
-        NS                = CS;
+        translation_req_o      = 1'b0;
+        valid_o                = 1'b0;
+        st_valid               = 1'b0;
+        st_valid_without_flush = 1'b0;
+        pop_st_o               = 1'b0;
+        ex_o                   = ex_i;
+        trans_id_n             = lsu_ctrl_i.trans_id;
+        NS                     = CS;
 
         case (CS)
             // we got a valid store
@@ -109,6 +113,8 @@ module store_unit (
                 // post this store to the store buffer if we are not flushing
                 if (!flush_i)
                     st_valid = 1'b1;
+
+                st_valid_without_flush = 1'b1;
 
                 // we have another request
                 if (valid_i) begin
@@ -175,8 +181,10 @@ module store_unit (
     // -----------
     // re-align the write data to comply with the address offset
     always_comb begin
-        st_be_n   = lsu_ctrl_i.be;
-        st_data_n = lsu_ctrl_i.data;
+        st_be_n        = lsu_ctrl_i.be;
+        st_data_n      = lsu_ctrl_i.data;
+        st_data_size_n = extract_transfer_size(lsu_ctrl_i.operator);
+
         case (lsu_ctrl_i.vaddr[2:0])
             3'b000: st_data_n = lsu_ctrl_i.data;
             3'b001: st_data_n = {lsu_ctrl_i.data[55:0], lsu_ctrl_i.data[63:56]};
@@ -193,11 +201,15 @@ module store_unit (
     // ---------------
     store_buffer store_buffer_i (
         // store queue write port
-        .valid_i           ( st_valid            ),
-        .data_i            ( st_data_q           ),
-        .be_i              ( st_be_q             ),
+        .valid_i               ( st_valid               ),
+        .valid_without_flush_i ( st_valid_without_flush ), // the flush signal can be critical and we need this valid
+                                                           // signal to check whether the page_offset matches or not, functionaly it doesn't
+                                                           // make a difference whether we use the correct valid signal or not as we are flushing the whole pipeline anyway
+        .data_i                ( st_data_q              ),
+        .be_i                  ( st_be_q                ),
+        .data_size_i           ( st_data_size_q         ),
         // store buffer out
-        .ready_o           ( st_ready            ),
+        .ready_o               ( st_ready               ),
         .*
     );
     // ---------------
@@ -205,15 +217,17 @@ module store_unit (
     // ---------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            CS         <= IDLE;
-            st_be_q    <= '0;
-            st_data_q  <= '0;
-            trans_id_q <= '0;
+            CS             <= IDLE;
+            st_be_q        <= '0;
+            st_data_q      <= '0;
+            st_data_size_q <= '0;
+            trans_id_q     <= '0;
         end else begin
-            CS         <= NS;
-            st_be_q    <= st_be_n;
-            st_data_q  <= st_data_n;
-            trans_id_q <= trans_id_n;
+            CS             <= NS;
+            st_be_q        <= st_be_n;
+            st_data_q      <= st_data_n;
+            trans_id_q     <= trans_id_n;
+            st_data_size_q <= st_data_size_n;
         end
     end
 

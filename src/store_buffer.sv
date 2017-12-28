@@ -34,9 +34,12 @@ module store_buffer (
                                           // it is only ready if it can unconditionally commit the instruction, e.g.:
                                           // the commit buffer needs to be empty
     input  logic         valid_i,         // this is a valid store
+    input  logic         valid_without_flush_i, // just tell if the address is valid which we are current putting and do not take any further action
+
     input  logic [63:0]  paddr_i,         // physical address of store which needs to be placed in the queue
     input  logic [63:0]  data_i,          // data which is placed in the queue
     input  logic [7:0]   be_i,            // byte enable in
+    input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
     output logic [11:0]  address_index_o,
@@ -45,6 +48,7 @@ module store_buffer (
     output logic         data_req_o,
     output logic         data_we_o,
     output logic [7:0]   data_be_o,
+    output logic [1:0]   data_size_o,
     output logic         kill_req_o,
     output logic         tag_valid_o,
     input  logic         data_gnt_i,
@@ -55,10 +59,6 @@ module store_buffer (
     // allocate more space for the commit buffer to be on the save side
     localparam int unsigned DEPTH_COMMIT = 4;
 
-    // we need to keep the tag portion of the address for a cycle later
-    logic [43:0] address_tag_n, address_tag_q;
-    logic        tag_valid_n, tag_valid_q;
-
     // the store queue has two parts:
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
@@ -67,6 +67,7 @@ module store_buffer (
         logic [63:0] address;
         logic [63:0] data;
         logic [7:0]  be;
+        logic [1:0]  data_size;
         logic        valid;     // this entry is valid, we need this for checking if the address offset matches
     } speculative_queue_n [DEPTH_SPEC-1:0], speculative_queue_q [DEPTH_SPEC-1:0],
       commit_queue_n [DEPTH_COMMIT-1:0],    commit_queue_q [DEPTH_COMMIT-1:0];
@@ -85,7 +86,8 @@ module store_buffer (
     // Speculative Queue - Core Interface
     // ----------------------------------------
     always_comb begin : core_if
-        automatic logic [DEPTH_SPEC:0] speculative_status_cnt = speculative_status_cnt_q;
+        automatic logic [DEPTH_SPEC:0] speculative_status_cnt;
+        speculative_status_cnt = speculative_status_cnt_q;
 
         // we are ready if the speculative and the commit queue have a space left
         ready_o = (speculative_status_cnt_q < (DEPTH_SPEC - 1)) || commit_i;
@@ -97,9 +99,10 @@ module store_buffer (
         // LSU interface
         // we are ready to accept a new entry and the input data is valid
         if (valid_i) begin
-            speculative_queue_n[speculative_write_pointer_q].address = paddr_i;
-            speculative_queue_n[speculative_write_pointer_q].data    = data_i;
-            speculative_queue_n[speculative_write_pointer_q].be      = be_i;
+            speculative_queue_n[speculative_write_pointer_q].address   = paddr_i;
+            speculative_queue_n[speculative_write_pointer_q].data      = data_i;
+            speculative_queue_n[speculative_write_pointer_q].be        = be_i;
+            speculative_queue_n[speculative_write_pointer_q].data_size = data_size_i;
             speculative_queue_n[speculative_write_pointer_q].valid   = 1'b1;
             // advance the write pointer
             speculative_write_pointer_n = speculative_write_pointer_q + 1'b1;
@@ -136,17 +139,20 @@ module store_buffer (
     // those signals can directly be output to the memory
     assign address_index_o = commit_queue_q[commit_read_pointer_q].address[11:0];
     // if we got a new request we already saved the tag from the previous cycle
-    assign address_tag_o   = address_tag_q;
-    assign tag_valid_o     = tag_valid_q;
+    assign address_tag_o   = commit_queue_q[commit_read_pointer_q].address[55:12];
+    assign tag_valid_o     = 1'b0;
     assign data_wdata_o    = commit_queue_q[commit_read_pointer_q].data;
     assign data_be_o       = commit_queue_q[commit_read_pointer_q].be;
+    assign data_size_o     = commit_queue_q[commit_read_pointer_q].data_size;
     // we will never kill a request in the store buffer since we already know that the translation is valid
     // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
     assign kill_req_o = 1'b0;
     assign data_we_o  = 1'b1; // we will always write in the store queue
 
     always_comb begin : store_if
-        automatic logic [DEPTH_COMMIT:0] commit_status_cnt = commit_status_cnt_q;
+        automatic logic [DEPTH_COMMIT:0] commit_status_cnt;
+        commit_status_cnt = commit_status_cnt_q;
+
         commit_ready_o = (commit_status_cnt_q < DEPTH_COMMIT);
         // no store is pending if we don't have any element in the commit queue e.g.: it is empty
         no_st_pending_o         = (commit_status_cnt_q == 0);
@@ -154,10 +160,8 @@ module store_buffer (
         commit_read_pointer_n   = commit_read_pointer_q;
         commit_write_pointer_n  = commit_write_pointer_q;
 
-        address_tag_n  = address_tag_q;
         commit_queue_n = commit_queue_q;
 
-        tag_valid_n    = 1'b0;
         data_req_o     = 1'b0;
 
         // there should be no commit when we are flushing
@@ -167,10 +171,6 @@ module store_buffer (
             if (data_gnt_i) begin
                 // we can evict it from the commit buffer
                 commit_queue_n[commit_read_pointer_q].valid = 1'b0;
-                // save the tag portion
-                address_tag_n = commit_queue_q[commit_read_pointer_q].address[55:12];
-                // signal a valid tag the cycle afterwards
-                tag_valid_n  = 1'b1;
                 // advance the read_pointer
                 commit_read_pointer_n = commit_read_pointer_q + 1'b1;
                 commit_status_cnt--;
@@ -222,7 +222,7 @@ module store_buffer (
             end
         end
         // or it matches with the entry we are currently putting into the queue
-        if ((page_offset_i[11:3] == paddr_i[11:3]) && valid_i) begin
+        if ((page_offset_i[11:3] == paddr_i[11:3]) && valid_without_flush_i) begin
             page_offset_matches_o = 1'b1;
         end
     end
@@ -231,9 +231,7 @@ module store_buffer (
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
         if(~rst_ni) begin
-            address_tag_q               <= 'b0;
-            tag_valid_q                 <= 1'b0;
-            // initialize the queues
+             // initialize the queues
             speculative_queue_q         <= '{default: 0};
             commit_queue_q              <= '{default: 0};
             commit_read_pointer_q       <= '0;
@@ -243,8 +241,6 @@ module store_buffer (
             speculative_write_pointer_q <= '0;
             speculative_status_cnt_q    <= '0;
         end else begin
-            address_tag_q               <= address_tag_n;
-            tag_valid_q                 <= tag_valid_n;
             speculative_queue_q         <= speculative_queue_n;
             commit_queue_q              <= commit_queue_n;
             commit_read_pointer_q       <= commit_read_pointer_n;

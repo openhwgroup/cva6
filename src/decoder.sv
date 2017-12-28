@@ -237,7 +237,6 @@ module decoder (
                         {7'b000_0000, 3'b101}: instruction_o.op = SRL;   // Shift Right Logical
                         {7'b010_0000, 3'b101}: instruction_o.op = SRA;   // Shift Right Arithmetic
                         // Multiplications
-                        `ifdef MULT
                         {7'b000_0001, 3'b000}: instruction_o.op = MUL;
                         {7'b000_0001, 3'b001}: instruction_o.op = MULH;
                         {7'b000_0001, 3'b010}: instruction_o.op = MULHSU;
@@ -246,7 +245,6 @@ module decoder (
                         {7'b000_0001, 3'b101}: instruction_o.op = DIVU;
                         {7'b000_0001, 3'b110}: instruction_o.op = REM;
                         {7'b000_0001, 3'b111}: instruction_o.op = REMU;
-                        `endif
                         default: begin
                             illegal_instr = 1'b1;
                         end
@@ -271,13 +269,11 @@ module decoder (
                         {7'b000_0000, 3'b101}: instruction_o.op = SRLW; // srlw
                         {7'b010_0000, 3'b101}: instruction_o.op = SRAW; // sraw
                         // Multiplications
-                        `ifdef MULT
                         {7'b000_0001, 3'b000}: instruction_o.op = MULW;
                         {7'b000_0001, 3'b100}: instruction_o.op = DIVW;
                         {7'b000_0001, 3'b101}: instruction_o.op = DIVUW;
                         {7'b000_0001, 3'b110}: instruction_o.op = REMW;
                         {7'b000_0001, 3'b111}: instruction_o.op = REMUW;
-                        `endif
                         default: illegal_instr = 1'b1;
                       endcase
                 end
@@ -345,7 +341,9 @@ module decoder (
                       default: illegal_instr = 1'b1;
                     endcase
                 end
-
+                // --------------------------------
+                // LSU
+                // --------------------------------
                 OPCODE_STORE: begin
                     instruction_o.fu  = STORE;
                     imm_select = SIMM;
@@ -353,16 +351,11 @@ module decoder (
                     instruction_o.rs2  = instr.stype.rs2;
                     // determine store size
                     unique case (instr.stype.funct3)
-                        3'b000:
-                            instruction_o.op  = SB;
-                        3'b001:
-                            instruction_o.op  = SH;
-                        3'b010:
-                            instruction_o.op  = SW;
-                        3'b011:
-                            instruction_o.op  = SD;
-                        default:
-                            illegal_instr = 1'b1;
+                        3'b000: instruction_o.op  = SB;
+                        3'b001: instruction_o.op  = SH;
+                        3'b010: instruction_o.op  = SW;
+                        3'b011: instruction_o.op  = SD;
+                        default: illegal_instr = 1'b1;
                     endcase
                 end
 
@@ -373,26 +366,64 @@ module decoder (
                     instruction_o.rd  = instr.itype.rd;
                     // determine load size and signed type
                     unique case (instr.itype.funct3)
-                        3'b000:
-                            instruction_o.op  = LB;
-                        3'b001:
-                            instruction_o.op  = LH;
-                        3'b010:
-                            instruction_o.op  = LW;
-                        3'b100:
-                            instruction_o.op  = LBU;
-                        3'b101:
-                            instruction_o.op  = LHU;
-                        3'b110:
-                            instruction_o.op  = LWU;
-                        3'b011:
-                            instruction_o.op  = LD;
-                        default:
-                            illegal_instr = 1'b1;
+                        3'b000: instruction_o.op  = LB;
+                        3'b001: instruction_o.op  = LH;
+                        3'b010: instruction_o.op  = LW;
+                        3'b100: instruction_o.op  = LBU;
+                        3'b101: instruction_o.op  = LHU;
+                        3'b110: instruction_o.op  = LWU;
+                        3'b011: instruction_o.op  = LD;
+                        default: illegal_instr = 1'b1;
                     endcase
-
                 end
 
+                `ifdef ENABLE_ATOMICS
+                OPCODE_AMO: begin
+                    // we are going to use the load unit for AMOs
+                    instruction_o.fu  = LOAD;
+                    instruction_o.rd  = instr.stype.imm0;
+                    instruction_o.rs1 = instr.itype.rs1;
+                    // words
+                    if (instr.stype.funct3 == 3'h2) begin
+                        unique case (instr.instr[31:27])
+                            5'h0:  instruction_o.op = AMO_ADDW;
+                            5'h1:  instruction_o.op = AMO_SWAPW;
+                            5'h2:  instruction_o.op = AMO_LRW;
+                            5'h3:  instruction_o.op = AMO_SCW;
+                            5'h4:  instruction_o.op = AMO_XORW;
+                            5'h8:  instruction_o.op = AMO_ORW;
+                            5'hC:  instruction_o.op = AMO_ANDW;
+                            5'h10: instruction_o.op = AMO_MINW;
+                            5'h14: instruction_o.op = AMO_MAXW;
+                            5'h18: instruction_o.op = AMO_MINWU;
+                            5'h1C: instruction_o.op = AMO_MAXWU;
+                            default: illegal_instr = 1'b1;
+                        endcase
+                    // double words
+                    end else if (instr.stype.funct3 == 3'h3) begin
+                        unique case (instr.instr[31:27])
+                            5'h0:  instruction_o.op = AMO_ADDD;
+                            5'h1:  instruction_o.op = AMO_SWAPD;
+                            5'h2:  instruction_o.op = AMO_LRD;
+                            5'h3:  instruction_o.op = AMO_SCD;
+                            5'h4:  instruction_o.op = AMO_XORD;
+                            5'h8:  instruction_o.op = AMO_ORD;
+                            5'hC:  instruction_o.op = AMO_ANDD;
+                            5'h10: instruction_o.op = AMO_MIND;
+                            5'h14: instruction_o.op = AMO_MAXD;
+                            5'h18: instruction_o.op = AMO_MINDU;
+                            5'h1C: instruction_o.op = AMO_MAXDU;
+                            default: illegal_instr = 1'b1;
+                        endcase
+                    end else begin
+                        illegal_instr = 1'b1;
+                    end
+                end
+                `endif
+
+                // --------------------------------
+                // Control Flow Instructions
+                // --------------------------------
                 OPCODE_BRANCH: begin
                     imm_select              = SBIMM;
                     instruction_o.fu        = CTRL_FLOW;

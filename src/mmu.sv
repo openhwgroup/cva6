@@ -63,6 +63,9 @@ module mmu #(
         input logic [43:0]                      satp_ppn_i,
         input logic [ASID_WIDTH-1:0]            asid_i,
         input logic                             flush_tlb_i,
+        // Performance counters
+        output logic                            itlb_miss_o,
+        output logic                            dtlb_miss_o,
         // Memory interfaces
         // Instruction memory/cache
         output logic [63:0]                     instr_if_address_o,
@@ -78,6 +81,7 @@ module mmu #(
         output logic                            data_req_o,
         output logic                            data_we_o,
         output logic [7:0]                      data_be_o,
+        output logic [1:0]                      data_size_o,
         output logic                            kill_req_o,
         output logic                            tag_valid_o,
         input  logic                            data_gnt_i,
@@ -406,7 +410,7 @@ module mmu #(
     // Registers
     // ----------
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             lsu_vaddr_q      <= '0;
             lsu_req_q        <= '0;
             misaligned_ex_q  <= '0;

@@ -17,6 +17,9 @@
 // University of Bologna.
 //
 package instruction_tracer_pkg;
+    timeunit      1ns;
+    timeprecision 1ps;
+
     import ariane_pkg::*;
     `ifndef SYNTHESIS
     import uvm_pkg::*;

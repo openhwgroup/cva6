@@ -75,9 +75,12 @@ module fetch_fifo
 
     always_comb begin : fetch_fifo_logic
         // counter
-        automatic logic [$clog2(DEPTH)-1:0] status_cnt    = status_cnt_q;
-        automatic logic [$clog2(DEPTH)-1:0] write_pointer = write_pointer_q;
-        automatic logic [$clog2(DEPTH)-1:0] read_pointer  = read_pointer_q;
+        automatic logic [$clog2(DEPTH)-1:0] status_cnt;
+        automatic logic [$clog2(DEPTH)-1:0] write_pointer;
+        automatic logic [$clog2(DEPTH)-1:0] read_pointer;
+        status_cnt    = status_cnt_q;
+        write_pointer = write_pointer_q;
+        read_pointer  = read_pointer_q;
 
         mem_n = mem_q;
 

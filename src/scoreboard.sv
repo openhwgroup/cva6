@@ -95,7 +95,9 @@ module scoreboard #(
     // maintain a FIFO with issued instructions
     // keep track of all issued instructions
     always_comb begin : issue_fifo
-        automatic logic [$clog2(NR_ENTRIES)-1:0] issue_cnt = issue_cnt_q;
+        automatic logic [$clog2(NR_ENTRIES)-1:0] issue_cnt;
+        issue_cnt = issue_cnt_q;
+
         // default assignment
         mem_n            = mem_q;
         commit_pointer_n = commit_pointer_q;

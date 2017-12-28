@@ -71,7 +71,8 @@ module branch_unit (
     // here we handle the various possibilities of mis-predicts
     always_comb begin : mispredict_handler
         // set the jump base, for JALR we need to look at the register, for all other control flow instructions we can take the current PC
-        automatic logic [63:0] jump_base = (operator_i == JALR) ? operand_a_i : pc_i;
+        automatic logic [63:0] jump_base;
+        jump_base = (operator_i == JALR) ? operand_a_i : pc_i;
 
         target_address                   = 64'b0;
         resolved_branch_o.target_address = 64'b0;
