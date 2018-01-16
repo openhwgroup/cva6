@@ -1,30 +1,26 @@
-////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2017 ETH Zurich, University of Bologna                       //
-// All rights reserved.                                                       //
-//                                                                            //
-// This code is under development and not yet released to the public.         //
-// Until it is released, the code is under the copyright of ETH Zurich        //
-// and the University of Bologna, and may contain unpublished work.           //
-// Any reuse/redistribution should only be under explicit permission.         //
-//                                                                            //
-// Bug fixes and contributions will eventually be released under the          //
-// SolderPad open hardware license and under the copyright of ETH Zurich      //
-// and the University of Bologna.                                             //
-//                                                                            //
-// Engineer:       Francesco Conti - f.conti@unibo.it                         //
-//                                                                            //
-// Additional contributions by:                                               //
-//                 Markus Wegmann - markus.wegmann@technokrat.ch              //
-//                                                                            //
-// Design Name:    RISC-V register file                                       //
-// Project Name:   zero-riscy                                                 //
-// Language:       SystemVerilog                                              //
-//                                                                            //
-// Description:    Register file with 31 or 15x 32 bit wide registers.        //
-//                 Register 0 is fixed to 0. This register file is based on   //
-//                 flip flops.                                                //
-//                                                                            //
-////////////////////////////////////////////////////////////////////////////////
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the “License”); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
+// Engineer:       Francesco Conti - f.conti@unibo.it
+//
+// Additional contributions by:
+//                 Markus Wegmann - markus.wegmann@technokrat.ch
+//
+// Design Name:    RISC-V register file
+// Project Name:   zero-riscy
+// Language:       SystemVerilog
+//
+// Description:    Register file with 31 or 15x 32 bit wide registers.
+//                 Register 0 is fixed to 0. This register file is based on
+//                 flip flops.
+//
 
 module regfile
 #(
