@@ -34,7 +34,6 @@ module ariane #(
         input  logic                           fetch_enable_i,
         output logic                           core_busy_o,
         input  logic                           l1_icache_miss_i,
-
         // Core ID, Cluster ID and boot address are considered more or less static
         input  logic [63:0]                    boot_addr_i,
         input  logic [ 3:0]                    core_id_i,
@@ -59,7 +58,6 @@ module ariane #(
         // Timer facilities
         input  logic [63:0]                    time_i,        // global time (most probably coming from an RTC)
         input  logic                           time_irq_i,    // timer interrupt in
-
         // Debug Interface
         input  logic                           debug_req_i,
         output logic                           debug_gnt_o,
@@ -682,26 +680,53 @@ module ariane #(
         end
     end
 
-endmodule // ariane
+    `ifndef SYNTHESIS
+    `ifndef verilator
+    program instr_tracer
+        (
+            instruction_tracer_if tracer_if,
+            input logic [5:0] cluster_id_i,
+            input logic [3:0] core_id_i
+        );
 
-`ifndef SYNTHESIS
-program instr_tracer
-    (
-        instruction_tracer_if tracer_if,
-        input logic [5:0] cluster_id_i,
-        input logic [3:0] core_id_i
-    );
+        instruction_tracer it = new (tracer_if, 1'b0);
 
-    instruction_tracer it = new (tracer_if, 1'b0);
+        initial begin
+            #15ns;
+            it.create_file(cluster_id_i, core_id_i);
+            it.trace();
+        end
+
+        final begin
+            it.close();
+        end
+    endprogram
+    // mock tracer
+    `else
+
+    string s;
+    int f;
 
     initial begin
-        #15ns;
-        it.create_file(cluster_id_i, core_id_i);
-        it.trace();
+        f = $fopen("trace_core_0_00.dasm", "w");
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+
+        end else begin
+            if (commit_ack && !commit_stage_i.exception_o) begin
+                $fwrite(f, "0x%0h DASM(%h)\n", commit_instr_id_commit.pc, commit_instr_id_commit.ex.tval[31:0]);
+            end else if (commit_ack) begin
+                $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit.ex.cause);
+            end
+        end
     end
 
     final begin
-        it.close();
+        $fclose(f);
     end
-endprogram
-`endif
+    `endif
+    `endif
+endmodule // ariane
+

@@ -171,16 +171,19 @@ build-tests:
 	cd riscv-tests && autoconf && ./configure --prefix=/home/zarubaf/riscv && make isa -j8
 
 
-# User Verilator to lint the target
-lint:
-	verilator $(ariane_pkg) $(src) --lint-only \
-	$(list_incdir) --top-module ariane
+# User Verilator
+verilate:
+	verilator $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) src/util/behav_sram.sv tb/agents/axi_if/axi_if.sv \
+	-Wno-fatal -LDFLAGS "-lfesvr" -Wall --cc --trace \
+	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
+	cd obj_dir && make -j8 -f Variane_wrapped.mk
 
 verify:
 	qverify vlog -sv src/csr_regfile.sv
 
 clean:
 	rm -rf work/ *.ucdb
+	rm -rf obj_dir
 
 .PHONY:
 	build lint build-moore

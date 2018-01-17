@@ -12,3 +12,5 @@ wlft*
 src/moore.sv
 *.sig
 *.dtb
+*.dasm
+obj_dir/*
