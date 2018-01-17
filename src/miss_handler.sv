@@ -418,54 +418,11 @@ module miss_handler #(
         .id_i                  ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
         .valid_o               ( valid_bypass_fsm                                         ),
         .rdata_o               ( data_bypass_fsm                                          ),
-        .gnt_id_o              ( gnt_id_bypass_fsm                                        ),
+        .gnt_id_o              ( gnt_id_bypass_fsm                                         ),
         .id_o                  ( id_bypass_fsm                                            ),
         .critical_word_o       (                                                          ), // not used for single requests
         .critical_word_valid_o (                                                          ), // not used for single requests
-        .axi_aw_id             ( bypass_if.aw_id                                          ),
-        .axi_aw_addr           ( bypass_if.aw_addr                                        ),
-        .axi_aw_len            ( bypass_if.aw_len                                         ),
-        .axi_aw_size           ( bypass_if.aw_size                                        ),
-        .axi_aw_burst          ( bypass_if.aw_burst                                       ),
-        .axi_aw_lock           ( bypass_if.aw_lock                                        ),
-        .axi_aw_cache          ( bypass_if.aw_cache                                       ),
-        .axi_aw_prot           ( bypass_if.aw_prot                                        ),
-        .axi_aw_region         ( bypass_if.aw_region                                      ),
-        .axi_aw_user           ( bypass_if.aw_user                                        ),
-        .axi_aw_qos            ( bypass_if.aw_qos                                         ),
-        .axi_aw_valid          ( bypass_if.aw_valid                                       ),
-        .axi_aw_ready          ( bypass_if.aw_ready                                       ),
-        .axi_w_data            ( bypass_if.w_data                                         ),
-        .axi_w_strb            ( bypass_if.w_strb                                         ),
-        .axi_w_last            ( bypass_if.w_last                                         ),
-        .axi_w_user            ( bypass_if.w_user                                         ),
-        .axi_w_valid           ( bypass_if.w_valid                                        ),
-        .axi_w_ready           ( bypass_if.w_ready                                        ),
-        .axi_b_id              ( bypass_if.b_id                                           ),
-        .axi_b_resp            ( bypass_if.b_resp                                         ),
-        .axi_b_user            ( bypass_if.b_user                                         ),
-        .axi_b_valid           ( bypass_if.b_valid                                        ),
-        .axi_b_ready           ( bypass_if.b_ready                                        ),
-        .axi_ar_id             ( bypass_if.ar_id                                          ),
-        .axi_ar_addr           ( bypass_if.ar_addr                                        ),
-        .axi_ar_len            ( bypass_if.ar_len                                         ),
-        .axi_ar_size           ( bypass_if.ar_size                                        ),
-        .axi_ar_burst          ( bypass_if.ar_burst                                       ),
-        .axi_ar_lock           ( bypass_if.ar_lock                                        ),
-        .axi_ar_cache          ( bypass_if.ar_cache                                       ),
-        .axi_ar_prot           ( bypass_if.ar_prot                                        ),
-        .axi_ar_region         ( bypass_if.ar_region                                      ),
-        .axi_ar_user           ( bypass_if.ar_user                                        ),
-        .axi_ar_qos            ( bypass_if.ar_qos                                         ),
-        .axi_ar_valid          ( bypass_if.ar_valid                                       ),
-        .axi_ar_ready          ( bypass_if.ar_ready                                       ),
-        .axi_r_id              ( bypass_if.r_id                                           ),
-        .axi_r_data            ( bypass_if.r_data                                         ),
-        .axi_r_resp            ( bypass_if.r_resp                                         ),
-        .axi_r_last            ( bypass_if.r_last                                         ),
-        .axi_r_user            ( bypass_if.r_user                                         ),
-        .axi_r_valid           ( bypass_if.r_valid                                        ),
-        .axi_r_ready           ( bypass_if.r_ready                                        ),
+        .axi                   ( bypass_if                                                ),
         .*
     );
 
@@ -489,50 +446,7 @@ module miss_handler #(
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),
-        .axi_aw_id           ( data_if.aw_id      ),
-        .axi_aw_addr         ( data_if.aw_addr    ),
-        .axi_aw_len          ( data_if.aw_len     ),
-        .axi_aw_size         ( data_if.aw_size    ),
-        .axi_aw_burst        ( data_if.aw_burst   ),
-        .axi_aw_lock         ( data_if.aw_lock    ),
-        .axi_aw_cache        ( data_if.aw_cache   ),
-        .axi_aw_prot         ( data_if.aw_prot    ),
-        .axi_aw_region       ( data_if.aw_region  ),
-        .axi_aw_user         ( data_if.aw_user    ),
-        .axi_aw_qos          ( data_if.aw_qos     ),
-        .axi_aw_valid        ( data_if.aw_valid   ),
-        .axi_aw_ready        ( data_if.aw_ready   ),
-        .axi_w_data          ( data_if.w_data     ),
-        .axi_w_strb          ( data_if.w_strb     ),
-        .axi_w_last          ( data_if.w_last     ),
-        .axi_w_user          ( data_if.w_user     ),
-        .axi_w_valid         ( data_if.w_valid    ),
-        .axi_w_ready         ( data_if.w_ready    ),
-        .axi_b_id            ( data_if.b_id       ),
-        .axi_b_resp          ( data_if.b_resp     ),
-        .axi_b_user          ( data_if.b_user     ),
-        .axi_b_valid         ( data_if.b_valid    ),
-        .axi_b_ready         ( data_if.b_ready    ),
-        .axi_ar_id           ( data_if.ar_id      ),
-        .axi_ar_addr         ( data_if.ar_addr    ),
-        .axi_ar_len          ( data_if.ar_len     ),
-        .axi_ar_size         ( data_if.ar_size    ),
-        .axi_ar_burst        ( data_if.ar_burst   ),
-        .axi_ar_lock         ( data_if.ar_lock    ),
-        .axi_ar_cache        ( data_if.ar_cache   ),
-        .axi_ar_prot         ( data_if.ar_prot    ),
-        .axi_ar_region       ( data_if.ar_region  ),
-        .axi_ar_user         ( data_if.ar_user    ),
-        .axi_ar_qos          ( data_if.ar_qos     ),
-        .axi_ar_valid        ( data_if.ar_valid   ),
-        .axi_ar_ready        ( data_if.ar_ready   ),
-        .axi_r_id            ( data_if.r_id       ),
-        .axi_r_data          ( data_if.r_data     ),
-        .axi_r_resp          ( data_if.r_resp     ),
-        .axi_r_last          ( data_if.r_last     ),
-        .axi_r_user          ( data_if.r_user     ),
-        .axi_r_valid         ( data_if.r_valid    ),
-        .axi_r_ready         ( data_if.r_ready    ),
+        .axi                 ( data_if            ),
         .*
     );
 
@@ -750,11 +664,7 @@ endmodule
 module axi_adapter #(
         parameter int unsigned DATA_WIDTH          = 256,
         parameter logic        CRITICAL_WORD_FIRST = 0, // the AXI subsystem needs to support wrapping reads for this feature
-        parameter int unsigned AXI_ID_WIDTH        = 10,
-        parameter int unsigned AXI_USER_WIDTH      = 1,
-        parameter int unsigned AXI_ADDRESS_WIDTH   = 64,
-        parameter int unsigned AXI_DATA_WIDTH      = 64,
-        parameter int unsigned AXI_NUMBYTES        = AXI_DATA_WIDTH/8
+        parameter int unsigned AXI_ID_WIDTH        = 10
     )(
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
@@ -777,50 +687,7 @@ module axi_adapter #(
     output logic [63:0]                                 critical_word_o,
     output logic                                        critical_word_valid_o,
     // AXI port
-    output  logic [AXI_ID_WIDTH-1:0]                    axi_aw_id,
-    output  logic [AXI_ADDRESS_WIDTH-1:0]               axi_aw_addr,
-    output  logic [7:0]                                 axi_aw_len,
-    output  logic [2:0]                                 axi_aw_size,
-    output  logic [1:0]                                 axi_aw_burst,
-    output  logic                                       axi_aw_lock,
-    output  logic [3:0]                                 axi_aw_cache,
-    output  logic [2:0]                                 axi_aw_prot,
-    output  logic [3:0]                                 axi_aw_region,
-    output  logic [AXI_USER_WIDTH-1:0]                  axi_aw_user,
-    output  logic [3:0]                                 axi_aw_qos,
-    output  logic                                       axi_aw_valid,
-    input   logic                                       axi_aw_ready,
-    output  logic [AXI_DATA_WIDTH-1:0]                  axi_w_data,
-    output  logic [AXI_NUMBYTES-1:0]                    axi_w_strb,
-    output  logic                                       axi_w_last,
-    output  logic [AXI_USER_WIDTH-1:0]                  axi_w_user,
-    output  logic                                       axi_w_valid,
-    input   logic                                       axi_w_ready,
-    input   logic [AXI_ID_WIDTH-1:0]                    axi_b_id,
-    input   logic [1:0]                                 axi_b_resp,
-    input   logic [AXI_USER_WIDTH-1:0]                  axi_b_user,
-    input   logic                                       axi_b_valid,
-    output  logic                                       axi_b_ready,
-    output  logic [AXI_ID_WIDTH-1:0]                    axi_ar_id,
-    output  logic [AXI_ADDRESS_WIDTH-1:0]               axi_ar_addr,
-    output  logic [7:0]                                 axi_ar_len,
-    output  logic [2:0]                                 axi_ar_size,
-    output  logic [1:0]                                 axi_ar_burst,
-    output  logic                                       axi_ar_lock,
-    output  logic [3:0]                                 axi_ar_cache,
-    output  logic [2:0]                                 axi_ar_prot,
-    output  logic [3:0]                                 axi_ar_region,
-    output  logic [AXI_USER_WIDTH-1:0]                  axi_ar_user,
-    output  logic [3:0]                                 axi_ar_qos,
-    output  logic                                       axi_ar_valid,
-    input   logic                                       axi_ar_ready,
-    input   logic [AXI_ID_WIDTH-1:0]                    axi_r_id,
-    input   logic [AXI_DATA_WIDTH-1:0]                  axi_r_data,
-    input   logic [1:0]                                 axi_r_resp,
-    input   logic                                       axi_r_last,
-    input   logic [AXI_USER_WIDTH-1:0]                  axi_r_user,
-    input   logic                                       axi_r_valid,
-    output  logic                                       axi_r_ready
+    AXI_BUS.Master                                      axi
 );
     localparam BURST_SIZE = DATA_WIDTH/64-1;
     localparam ADDR_INDEX = ($clog2(DATA_WIDTH/64) > 0) ? $clog2(DATA_WIDTH/64) : 1;
@@ -840,50 +707,50 @@ module axi_adapter #(
 
     always_comb begin : axi_fsm
         // Default assignments
-        axi_aw_valid  = 1'b0;
-        axi_aw_addr   = addr_i;
-        axi_aw_prot   = 3'b0;
-        axi_aw_region = 4'b0;
-        axi_aw_len    = 8'b0;
-        axi_aw_size   = {1'b0, size_i};
-        axi_aw_burst  = (type_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
-        axi_aw_lock   = 1'b0;
-        axi_aw_cache  = 4'b0;
-        axi_aw_qos    = 4'b0;
-        axi_aw_id     = id_i;
-        axi_aw_user   = '0;
+        axi.aw_valid  = 1'b0;
+        axi.aw_addr   = addr_i;
+        axi.aw_prot   = 3'b0;
+        axi.aw_region = 4'b0;
+        axi.aw_len    = 8'b0;
+        axi.aw_size   = {1'b0, size_i};
+        axi.aw_burst  = (type_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
+        axi.aw_lock   = 1'b0;
+        axi.aw_cache  = 4'b0;
+        axi.aw_qos    = 4'b0;
+        axi.aw_id     = id_i;
+        axi.aw_user   = '0;
 
-        axi_ar_valid  = 1'b0;
+        axi.ar_valid  = 1'b0;
         // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
         // with an incremental transfer we need to output the corresponding base address of the cache line
-        axi_ar_addr   = (CRITICAL_WORD_FIRST || type_i == SINGLE_REQ) ? addr_i : { addr_i[63:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
-        axi_ar_prot   = 3'b0;
-        axi_ar_region = 4'b0;
-        axi_ar_len    = 8'b0;
-        axi_ar_size   = {1'b0, size_i}; // 8 bytes
-        axi_ar_burst  = (type_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
-        axi_ar_lock   = 1'b0;
-        axi_ar_cache  = 4'b0;
-        axi_ar_qos    = 4'b0;
-        axi_ar_id     = id_i;
-        axi_ar_user   = '0;
+        axi.ar_addr   = (CRITICAL_WORD_FIRST || type_i == SINGLE_REQ) ? addr_i : { addr_i[63:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
+        axi.ar_prot   = 3'b0;
+        axi.ar_region = 4'b0;
+        axi.ar_len    = 8'b0;
+        axi.ar_size   = {1'b0, size_i}; // 8 bytes
+        axi.ar_burst  = (type_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
+        axi.ar_lock   = 1'b0;
+        axi.ar_cache  = 4'b0;
+        axi.ar_qos    = 4'b0;
+        axi.ar_id     = id_i;
+        axi.ar_user   = '0;
 
-        axi_w_valid   = 1'b0;
-        axi_w_data    = wdata_i[0];
-        axi_w_strb    = be_i[0];
-        axi_w_user    = '0;
-        axi_w_last    = 1'b0;
+        axi.w_valid   = 1'b0;
+        axi.w_data    = wdata_i[0];
+        axi.w_strb    = be_i[0];
+        axi.w_user    = '0;
+        axi.w_last    = 1'b0;
 
-        axi_b_ready   = 1'b0;
-        axi_r_ready   = 1'b0;
+        axi.b_ready   = 1'b0;
+        axi.r_ready   = 1'b0;
 
         gnt_o         = 1'b0;
         gnt_id_o      = '0;
         valid_o       = 1'b0;
-        id_o          = axi_r_id;
+        id_o          = axi.r_id;
 
-        // rdata_o   = axi_r_data;
-        critical_word_o         = axi_r_data;
+        // rdata_o   = axi.r_data;
+        critical_word_o         = axi.r_data;
         critical_word_valid_o   = 1'b0;
         rdata_o                 = cache_line_q;
 
@@ -903,59 +770,59 @@ module axi_adapter #(
                     // write
                     if (we_i) begin
                         // the data is valid
-                        axi_aw_valid = 1'b1;
-                        axi_w_valid  = 1'b1;
+                        axi.aw_valid = 1'b1;
+                        axi.w_valid  = 1'b1;
                         // its a single write
                         if (type_i == SINGLE_REQ) begin
                             // single req can be granted here
-                            gnt_o = axi_aw_ready & axi_w_ready;
+                            gnt_o = axi.aw_ready & axi.w_ready;
                             gnt_id_o = id_i;
-                            case ({axi_aw_ready, axi_w_ready})
+                            case ({axi.aw_ready, axi.w_ready})
                                 2'b11: state_d = WAIT_B_VALID;
                                 2'b01: state_d = WAIT_AW_READY;
                                 2'b10: state_d = WAIT_LAST_W_READY;
                                 default: state_d = IDLE;
                             endcase
-                            id_d = axi_aw_id;
+                            id_d = axi.aw_id;
                         // its a request for the whole cache line
                         end else begin
-                            axi_aw_len = BURST_SIZE; // number of bursts to do
-                            axi_w_last = 1'b0;
-                            axi_w_data = wdata_i[0];
-                            axi_w_strb = be_i[0];
+                            axi.aw_len = BURST_SIZE; // number of bursts to do
+                            axi.w_last = 1'b0;
+                            axi.w_data = wdata_i[0];
+                            axi.w_strb = be_i[0];
 
-                            if (axi_w_ready)
+                            if (axi.w_ready)
                                 cnt_d = BURST_SIZE - 1;
                             else
                                 cnt_d = BURST_SIZE;
 
-                            case ({axi_aw_ready, axi_w_ready})
+                            case ({axi.aw_ready, axi.w_ready})
                                 2'b11: state_d = WAIT_LAST_W_READY;
                                 2'b01: state_d = WAIT_LAST_W_READY_AW_READY;
                                 2'b10: state_d = WAIT_LAST_W_READY;
                                 default:;
                             endcase
                             // save id
-                            id_d = axi_aw_id;
+                            id_d = axi.aw_id;
 
                         end
                     // read
                     end else begin
 
-                        axi_ar_valid = 1'b1;
-                        gnt_o = axi_ar_ready;
+                        axi.ar_valid = 1'b1;
+                        gnt_o = axi.ar_ready;
                         gnt_id_o = id_i;
 
                         if (type_i != SINGLE_REQ) begin
-                            axi_ar_len = BURST_SIZE;
+                            axi.ar_len = BURST_SIZE;
                             cnt_d = BURST_SIZE;
                         end
 
-                        if (axi_ar_ready) begin
+                        if (axi.ar_ready) begin
                             state_d = (type_i == SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
                             addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
                             // save id
-                            id_d = axi_ar_id;
+                            id_d = axi.ar_id;
                         end
                     end
                 end
@@ -963,10 +830,10 @@ module axi_adapter #(
 
             // ~> from single write, write request has already been granted
             WAIT_AW_READY: begin
-                axi_aw_valid = 1'b1;
-                axi_aw_len   = 8'b0;
+                axi.aw_valid = 1'b1;
+                axi.aw_len   = 8'b0;
 
-                if (axi_aw_ready)
+                if (axi.aw_ready)
                     state_d = WAIT_B_VALID;
 
             end
@@ -974,16 +841,16 @@ module axi_adapter #(
             // ~> we need to wait for an aw_ready and there is at least one outstanding write
             WAIT_LAST_W_READY_AW_READY: begin
 
-                axi_w_valid  = 1'b1;
-                axi_w_last   = (cnt_q == '0) ? 1'b1 : 1'b0;
-                axi_w_data   = wdata_i[BURST_SIZE-cnt_q];
-                axi_w_strb   = be_i[BURST_SIZE-cnt_q];
+                axi.w_valid  = 1'b1;
+                axi.w_last   = (cnt_q == '0) ? 1'b1 : 1'b0;
+                axi.w_data   = wdata_i[BURST_SIZE-cnt_q];
+                axi.w_strb   = be_i[BURST_SIZE-cnt_q];
 
-                axi_aw_valid = 1'b1;
+                axi.aw_valid = 1'b1;
                 // we are here because we want to write a cache line
-                axi_aw_len   = DATA_WIDTH/64;
+                axi.aw_len   = DATA_WIDTH/64;
                 // we got an aw_ready
-                case ({axi_aw_ready, axi_w_ready})
+                case ({axi.aw_ready, axi.w_ready})
                     // we got an aw ready
                     2'b01: begin
                         // are there any outstanding transactions?
@@ -1012,10 +879,10 @@ module axi_adapter #(
 
             // ~> all data has already been sent, we are only waiting for the aw_ready
             WAIT_AW_READY_BURST: begin
-                axi_aw_valid = 1'b1;
-                axi_aw_len   = DATA_WIDTH/64;
+                axi.aw_valid = 1'b1;
+                axi.aw_len   = DATA_WIDTH/64;
 
-                if (axi_aw_ready) begin
+                if (axi.aw_ready) begin
                     state_d = WAIT_B_VALID;
                     gnt_o = 1'b1;
                     gnt_id_o = id_q;
@@ -1024,14 +891,14 @@ module axi_adapter #(
 
             // ~> from write, there is an outstanding write
             WAIT_LAST_W_READY: begin
-                axi_w_valid = 1'b1;
-                axi_w_data  = wdata_i[BURST_SIZE-cnt_q];
-                axi_w_strb  = be_i[BURST_SIZE-cnt_q];
+                axi.w_valid = 1'b1;
+                axi.w_data  = wdata_i[BURST_SIZE-cnt_q];
+                axi.w_strb  = be_i[BURST_SIZE-cnt_q];
 
                 // this is the last write
-                axi_w_last  = (cnt_q == '0) ? 1'b1 : 1'b0;
+                axi.w_last  = (cnt_q == '0) ? 1'b1 : 1'b0;
 
-                if (axi_w_ready) begin
+                if (axi.w_ready) begin
                     // last write -> go to WAIT_B_VALID
                     if (cnt_q == '0) begin
                         state_d = WAIT_B_VALID;
@@ -1045,11 +912,11 @@ module axi_adapter #(
 
             // ~> finish write transaction
             WAIT_B_VALID: begin
-                axi_b_ready = 1'b1;
-                id_o = axi_b_id;
+                axi.b_ready = 1'b1;
+                id_o = axi.b_id;
 
                 // Write is valid
-                if (axi_b_valid) begin
+                if (axi.b_valid) begin
                     state_d = IDLE;
                     valid_o = 1'b1;
                 end
@@ -1063,34 +930,34 @@ module axi_adapter #(
                     index = BURST_SIZE-cnt_q;
 
                 // reads are always wrapping here
-                axi_r_ready = 1'b1;
+                axi.r_ready = 1'b1;
                 // this is the first read a.k.a the critical word
-                if (axi_r_valid) begin
+                if (axi.r_valid) begin
                     if (CRITICAL_WORD_FIRST) begin
                         // this is the first word of a cacheline read, e.g.: the word which was causing the miss
                         if (state_q == WAIT_R_VALID_MULTIPLE && cnt_q == BURST_SIZE) begin
                             critical_word_valid_o = 1'b1;
-                            critical_word_o       = axi_r_data;
+                            critical_word_o       = axi.r_data;
                         end
                     end else begin
                         // check if the address offset matches - then we are getting the critical word
                         if (index == addr_offset_q) begin
                             critical_word_valid_o = 1'b1;
-                            critical_word_o       = axi_r_data;
+                            critical_word_o       = axi.r_data;
                         end
                     end
 
                     // this is the last read
-                    if (axi_r_last) begin
+                    if (axi.r_last) begin
                         state_d = COMPLETE_READ;
                     end
 
                     // save the word
                     if (state_q == WAIT_R_VALID_MULTIPLE) begin
-                        cache_line_d[index] = axi_r_data;
+                        cache_line_d[index] = axi.r_data;
 
                     end else
-                        cache_line_d[0] = axi_r_data;
+                        cache_line_d[0] = axi.r_data;
 
                     // Decrease the counter
                     cnt_d = cnt_q - 1;
