@@ -29,6 +29,9 @@ module ariane_wrapped #(
         input  logic                           test_en_i,     // enable all clock gates for testing
 
         output logic                           flush_icache_o, // request to flush icache
+
+        input  logic                           flush_dcache_i,
+        output logic                           flush_dcache_ack_o,
         // CPU Control Signals
         input  logic                           fetch_enable_i,
         output logic                           core_busy_o,
@@ -114,6 +117,15 @@ module ariane_wrapped #(
         .*
     );
 
+    // direct store interface
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (i_ariane.ex_stage_i.lsu_i.i_store_unit.data_req_o
+          & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_gnt_i
+          & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_we_o) begin
+            // $display("Write");
+            write_uint64({i_ariane.ex_stage_i.lsu_i.i_store_unit.address_tag_o, i_ariane.ex_stage_i.lsu_i.i_store_unit.address_index_o[11:3], 3'b0}, i_ariane.ex_stage_i.lsu_i.i_store_unit.data_wdata_o);
+        end
+    end
 endmodule
 
 
