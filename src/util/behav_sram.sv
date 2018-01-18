@@ -40,16 +40,18 @@ module sram #(
     assign addr = addr_i[ADDR_WIDTH-1:$clog2(DATA_WIDTH/8)];
 
     always @(posedge clk_i) begin
+
         if (req_i && we_i) begin
-            for (i = 0; i < DATA_WIDTH; i++) begin
-                if (be_i[i])
-                  mem[addr][i] <= wdata[i];
-            end
+            mem[addr][i] <= wdata[i];
         end
 
         rdata_o <= mem[addr];
     end
 
-    assign wdata = wdata_i;
+    generate
+        for (genvar w = 0; w < DATA_WIDTH; w++) begin
+            assign wdata[w] = (be_i[i]) ? wdata_i[w] : wdata[w];
+        end
+    endgenerate
 
 endmodule

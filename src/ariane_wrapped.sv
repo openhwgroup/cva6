@@ -14,8 +14,8 @@
 
 import ariane_pkg::*;
 
-import "DPI-C" function void write_mem(input longint unsigned address, input longint unsigned data, input int unsigned be);
-import "DPI-C" function longint unsigned read_mem(input longint unsigned address);
+import "DPI-C" function void write_uint64(input longint unsigned address, input longint unsigned data);
+import "DPI-C" function longint unsigned read_uint64(input longint unsigned address);
 
 module ariane_wrapped #(
         parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000, // address on which to decide whether the request is cache-able or not
@@ -134,19 +134,20 @@ module core2mem #(
     output logic        instr_if_data_gnt_o,
     output logic        instr_if_data_rvalid_o,
     output logic [63:0] instr_if_data_rdata_o
-
 );
-    logic bypass_req, data_req;
+
+    logic        bypass_req,     data_req;
     logic [63:0] bypass_address, data_address;
-    logic bypass_we, data_we;
-    logic [7:0] bypass_be, data_be;
-    logic [63:0] bypass_wdata, data_wdata, data_rdata, bypass_rdata;
+    logic        bypass_we,      data_we;
+    logic [7:0]  bypass_be,      data_be;
+    logic [63:0] bypass_wdata,   data_wdata;
+    logic [63:0] bypass_rdata,   data_rdata;
 
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
-        .AXI_ADDR_WIDTH ( AXI_USER_WIDTH    ),
-        .AXI_DATA_WIDTH ( AXI_ADDRESS_WIDTH ),
-        .AXI_USER_WIDTH ( AXI_DATA_WIDTH    )
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
     ) i_bypass (
         .clk_i  ( clk_i          ),
         .rst_ni ( rst_ni         ),
@@ -161,9 +162,9 @@ module core2mem #(
 
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
-        .AXI_ADDR_WIDTH ( AXI_USER_WIDTH    ),
-        .AXI_DATA_WIDTH ( AXI_ADDRESS_WIDTH ),
-        .AXI_USER_WIDTH ( AXI_DATA_WIDTH    )
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
     ) i_data (
         .clk_i  ( clk_i        ),
         .rst_ni ( rst_ni       ),
@@ -177,6 +178,34 @@ module core2mem #(
     );
 
     // ------------------------
+    // Bypass Interface
+    // ------------------------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            bypass_rdata <= '0;
+        end else begin
+            if (bypass_req & bypass_we)
+                write_uint64(bypass_address & 3'b0, bypass_wdata);
+            else if (bypass_req)
+                bypass_rdata <= read_uint64({bypass_address[63:3], 3'b0});
+        end
+    end
+
+    // ------------------------
+    // Data Interface
+    // ------------------------
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            data_rdata <= '0;
+        end else begin
+            if (data_req & data_we)
+                write_uint64(data_address & 3'b0, data_wdata);
+            else if (data_req)
+                data_rdata <= read_uint64({data_address[63:3], 3'b0});
+        end
+    end
+
+    // ------------------------
     // Instruction Interface
     // ------------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -186,7 +215,7 @@ module core2mem #(
          end else begin
             // rvalid always one cycle after receiving re
             instr_if_data_rvalid_o <= instr_if_data_req_i;
-            instr_if_data_rdata_o  <= instr_if_data_req_i ? read_mem({instr_if_address_i[63:3], 3'b0}) : '0;
+            instr_if_data_rdata_o  <= instr_if_data_req_i ? read_uint64({instr_if_address_i[63:3], 3'b0}) : '0;
         end
     end
 
