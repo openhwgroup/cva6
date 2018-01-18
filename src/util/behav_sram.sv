@@ -16,42 +16,38 @@ module sram #(
     int unsigned DATA_WIDTH = 64,
     int unsigned NUM_WORDS  = 1024
 )(
-    // Clock and Reset
-    input  logic                          clk_i,
+   input  logic                          clk_i,
 
-    input  logic                          req_i,
-    input  logic [$clog2(NUM_WORDS)-1:0]  addr_i,
-    input  logic [DATA_WIDTH-1:0]         wdata_i,
-    output logic [DATA_WIDTH-1:0]         rdata_o,
-    input  logic                          we_i,
-    input  logic [DATA_WIDTH-1:0]         be_i
-  );
-
-    localparam words = NUM_WORDS/(DATA_WIDTH/8);
-
+   input  logic                          req_i,
+   input  logic                          we_i,
+   input  logic [$clog2(NUM_WORDS)-1:0]  addr_i,
+   input  logic [DATA_WIDTH-1:0]         wdata_i,
+   input  logic [DATA_WIDTH-1:0]         be_i,
+   output logic [DATA_WIDTH-1:0]         rdata_o
+);
     localparam ADDR_WIDTH = $clog2(NUM_WORDS);
 
-    logic [DATA_WIDTH-1:0] mem[words];
+    logic [DATA_WIDTH-1:0] ram [NUM_WORDS-1:0];
+    logic [ADDR_WIDTH-1:0] raddr_q;
+
     logic [DATA_WIDTH-1:0] wdata;
-    logic [ADDR_WIDTH-1-$clog2(DATA_WIDTH/8):0] addr;
 
-    integer i;
-
-    assign addr = addr_i[ADDR_WIDTH-1:$clog2(DATA_WIDTH/8)];
+    // 1. randomize array
+    // 2. randomize output when no request is active
 
     always @(posedge clk_i) begin
-
-        if (req_i && we_i) begin
-            mem[addr][i] <= wdata[i];
+        if (req_i) begin
+            if (!we_i)
+                raddr_q <= addr_i;
+            else
+                ram[addr_i] <= wdata;
         end
-
-        rdata_o <= mem[addr];
     end
 
-    generate
-        for (genvar w = 0; w < DATA_WIDTH; w++) begin
-            assign wdata[w] = (be_i[i]) ? wdata_i[w] : wdata[w];
-        end
-    endgenerate
+    assign rdata_o = ram[raddr_q];
 
+    generate
+        for (genvar i = 0; i < DATA_WIDTH; i++)
+            assign wdata[i] = be_i[i] ? wdata_i[i] : wdata[i];
+    endgenerate
 endmodule

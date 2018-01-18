@@ -185,7 +185,7 @@ module core2mem #(
             bypass_rdata <= '0;
         end else begin
             if (bypass_req & bypass_we)
-                write_uint64(bypass_address & 3'b0, bypass_wdata);
+                write_uint64({data_address[63:3], 3'b0}, bypass_wdata);
             else if (bypass_req)
                 bypass_rdata <= read_uint64({bypass_address[63:3], 3'b0});
         end
@@ -199,7 +199,7 @@ module core2mem #(
             data_rdata <= '0;
         end else begin
             if (data_req & data_we)
-                write_uint64(data_address & 3'b0, data_wdata);
+                write_uint64({data_address[63:3], 3'b0}, data_wdata);
             else if (data_req)
                 data_rdata <= read_uint64({data_address[63:3], 3'b0});
         end
