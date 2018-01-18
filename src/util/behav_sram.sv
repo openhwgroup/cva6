@@ -24,15 +24,15 @@ module sram #(
     input  logic [DATA_WIDTH-1:0]         wdata_i,
     output logic [DATA_WIDTH-1:0]         rdata_o,
     input  logic                          we_i,
-    input  logic [DATA_WIDTH/8-1:0]       be_i
+    input  logic [DATA_WIDTH-1:0]         be_i
   );
 
     localparam words = NUM_WORDS/(DATA_WIDTH/8);
 
     localparam ADDR_WIDTH = $clog2(NUM_WORDS);
 
-    logic [DATA_WIDTH/8-1:0][7:0] mem[words];
-    logic [DATA_WIDTH/8-1:0][7:0] wdata;
+    logic [DATA_WIDTH-1:0] mem[words];
+    logic [DATA_WIDTH-1:0] wdata;
     logic [ADDR_WIDTH-1-$clog2(DATA_WIDTH/8):0] addr;
 
     integer i;
@@ -41,7 +41,7 @@ module sram #(
 
     always @(posedge clk_i) begin
         if (req_i && we_i) begin
-            for (i = 0; i < DATA_WIDTH/8; i++) begin
+            for (i = 0; i < DATA_WIDTH; i++) begin
                 if (be_i[i])
                   mem[addr][i] <= wdata[i];
             end
@@ -50,10 +50,6 @@ module sram #(
         rdata_o <= mem[addr];
     end
 
-    generate
-        for (genvar w = 0; w < DATA_WIDTH/8; w++) begin
-            assign wdata[w] = wdata_i[(w+1)*8-1:w*8];
-        end
-    endgenerate
+    assign wdata = wdata_i;
 
 endmodule
