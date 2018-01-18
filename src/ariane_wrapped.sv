@@ -14,7 +14,7 @@
 
 import ariane_pkg::*;
 
-import "DPI-C" function void write_mem(input longint unsigned address, input longint unsigned data);
+import "DPI-C" function void write_mem(input longint unsigned address, input longint unsigned data, input int unsigned be);
 import "DPI-C" function longint unsigned read_mem(input longint unsigned address);
 
 module ariane_wrapped #(
@@ -38,95 +38,6 @@ module ariane_wrapped #(
         input  logic [63:0]                    boot_addr_i,
         input  logic [ 3:0]                    core_id_i,
         input  logic [ 5:0]                    cluster_id_i,
-        // Data memory interface
-        output  logic [AXI_ID_WIDTH-1:0]       data_if_awid_o,
-        output  logic [AXI_ADDRESS_WIDTH-1:0]  data_if_awaddr_o,
-        output  logic [7:0]                    data_if_awlen_o,
-        output  logic [2:0]                    data_if_awsize_o,
-        output  logic [1:0]                    data_if_awburst_o,
-        output  logic                          data_if_awlock_o,
-        output  logic [3:0]                    data_if_awcache_o,
-        output  logic [2:0]                    data_if_awprot_o,
-        output  logic [3:0]                    data_if_awregion_o,
-        output  logic [AXI_USER_WIDTH-1:0]     data_if_awuser_o,
-        output  logic [3:0]                    data_if_awqos_o,
-        output  logic                          data_if_awvalid_o,
-        input   logic                          data_if_awready_i,
-        output  logic [AXI_DATA_WIDTH-1:0]     data_if_wdata_o,
-        output  logic [AXI_NUMBYTES-1:0]       data_if_wstrb_o,
-        output  logic                          data_if_wlast_o,
-        output  logic [AXI_USER_WIDTH-1:0]     data_if_wuser_o,
-        output  logic                          data_if_wvalid_o,
-        input   logic                          data_if_wready_i,
-        input   logic [AXI_ID_WIDTH-1:0]       data_if_bid_i,
-        input   logic [1:0]                    data_if_bresp_i,
-        input   logic [AXI_USER_WIDTH-1:0]     data_if_buser_i,
-        input   logic                          data_if_bvalid_i,
-        output  logic                          data_if_bready_o,
-        output  logic [AXI_ID_WIDTH-1:0]       data_if_arid_o,
-        output  logic [AXI_ADDRESS_WIDTH-1:0]  data_if_araddr_o,
-        output  logic [7:0]                    data_if_arlen_o,
-        output  logic [2:0]                    data_if_arsize_o,
-        output  logic [1:0]                    data_if_arburst_o,
-        output  logic                          data_if_arlock_o,
-        output  logic [3:0]                    data_if_arcache_o,
-        output  logic [2:0]                    data_if_arprot_o,
-        output  logic [3:0]                    data_if_arregion_o,
-        output  logic [AXI_USER_WIDTH-1:0]     data_if_aruser_o,
-        output  logic [3:0]                    data_if_arqos_o,
-        output  logic                          data_if_arvalid_o,
-        input   logic                          data_if_arready_i,
-        input   logic [AXI_ID_WIDTH-1:0]       data_if_rid_i,
-        input   logic [AXI_DATA_WIDTH-1:0]     data_if_rdata_i,
-        input   logic [1:0]                    data_if_rresp_i,
-        input   logic                          data_if_rlast_i,
-        input   logic [AXI_USER_WIDTH-1:0]     data_if_ruser_i,
-        input   logic                          data_if_rvalid_i,
-        output  logic                          data_if_rready_o,
-        output  logic [AXI_ID_WIDTH-1:0]       bypass_if_awid_o,
-        output  logic [AXI_ADDRESS_WIDTH-1:0]  bypass_if_awaddr_o,
-        output  logic [7:0]                    bypass_if_awlen_o,
-        output  logic [2:0]                    bypass_if_awsize_o,
-        output  logic [1:0]                    bypass_if_awburst_o,
-        output  logic                          bypass_if_awlock_o,
-        output  logic [3:0]                    bypass_if_awcache_o,
-        output  logic [2:0]                    bypass_if_awprot_o,
-        output  logic [3:0]                    bypass_if_awregion_o,
-        output  logic [AXI_USER_WIDTH-1:0]     bypass_if_awuser_o,
-        output  logic [3:0]                    bypass_if_awqos_o,
-        output  logic                          bypass_if_awvalid_o,
-        input   logic                          bypass_if_awready_i,
-        output  logic [AXI_DATA_WIDTH-1:0]     bypass_if_wdata_o,
-        output  logic [AXI_NUMBYTES-1:0]       bypass_if_wstrb_o,
-        output  logic                          bypass_if_wlast_o,
-        output  logic [AXI_USER_WIDTH-1:0]     bypass_if_wuser_o,
-        output  logic                          bypass_if_wvalid_o,
-        input   logic                          bypass_if_wready_i,
-        input   logic [AXI_ID_WIDTH-1:0]       bypass_if_bid_i,
-        input   logic [1:0]                    bypass_if_bresp_i,
-        input   logic [AXI_USER_WIDTH-1:0]     bypass_if_buser_i,
-        input   logic                          bypass_if_bvalid_i,
-        output  logic                          bypass_if_bready_o,
-        output  logic [AXI_ID_WIDTH-1:0]       bypass_if_arid_o,
-        output  logic [AXI_ADDRESS_WIDTH-1:0]  bypass_if_araddr_o,
-        output  logic [7:0]                    bypass_if_arlen_o,
-        output  logic [2:0]                    bypass_if_arsize_o,
-        output  logic [1:0]                    bypass_if_arburst_o,
-        output  logic                          bypass_if_arlock_o,
-        output  logic [3:0]                    bypass_if_arcache_o,
-        output  logic [2:0]                    bypass_if_arprot_o,
-        output  logic [3:0]                    bypass_if_arregion_o,
-        output  logic [AXI_USER_WIDTH-1:0]     bypass_if_aruser_o,
-        output  logic [3:0]                    bypass_if_arqos_o,
-        output  logic                          bypass_if_arvalid_o,
-        input   logic                          bypass_if_arready_i,
-        input   logic [AXI_ID_WIDTH-1:0]       bypass_if_rid_i,
-        input   logic [AXI_DATA_WIDTH-1:0]     bypass_if_rdata_i,
-        input   logic [1:0]                    bypass_if_rresp_i,
-        input   logic                          bypass_if_rlast_i,
-        input   logic [AXI_USER_WIDTH-1:0]     bypass_if_ruser_i,
-        input   logic                          bypass_if_rvalid_i,
-        output  logic                          bypass_if_rready_o,
         // Interrupt inputs
         input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip
         input  logic                           ipi_i,        // inter-processor interrupts
@@ -206,7 +117,12 @@ module ariane_wrapped #(
 endmodule
 
 
-module core2mem (
+module core2mem #(
+        parameter int unsigned AXI_ID_WIDTH      = 10,
+        parameter int unsigned AXI_USER_WIDTH    = 1,
+        parameter int unsigned AXI_ADDRESS_WIDTH = 64,
+        parameter int unsigned AXI_DATA_WIDTH    = 64
+    )(
     input logic         clk_i,    // Clock
     input logic         rst_ni,  // Asynchronous reset active low
     AXI_BUS.Slave       bypass_if,
@@ -220,7 +136,45 @@ module core2mem (
     output logic [63:0] instr_if_data_rdata_o
 
 );
+    logic bypass_req, data_req;
+    logic [63:0] bypass_address, data_address;
+    logic bypass_we, data_we;
+    logic [7:0] bypass_be, data_be;
+    logic [63:0] bypass_wdata, data_wdata, data_rdata, bypass_rdata;
 
+    axi2mem #(
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
+        .AXI_ADDR_WIDTH ( AXI_USER_WIDTH    ),
+        .AXI_DATA_WIDTH ( AXI_ADDRESS_WIDTH ),
+        .AXI_USER_WIDTH ( AXI_DATA_WIDTH    )
+    ) i_bypass (
+        .clk_i  ( clk_i          ),
+        .rst_ni ( rst_ni         ),
+        .slave  ( bypass_if      ),
+        .req_o  ( bypass_req     ),
+        .we_o   ( bypass_we      ),
+        .addr_o ( bypass_address ),
+        .be_o   ( bypass_be      ),
+        .data_o ( bypass_wdata   ),
+        .data_i ( bypass_rdata   )
+    );
+
+    axi2mem #(
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
+        .AXI_ADDR_WIDTH ( AXI_USER_WIDTH    ),
+        .AXI_DATA_WIDTH ( AXI_ADDRESS_WIDTH ),
+        .AXI_USER_WIDTH ( AXI_DATA_WIDTH    )
+    ) i_data (
+        .clk_i  ( clk_i        ),
+        .rst_ni ( rst_ni       ),
+        .slave  ( data_if      ),
+        .req_o  ( data_req     ),
+        .we_o   ( data_we      ),
+        .addr_o ( data_address ),
+        .be_o   ( data_be      ),
+        .data_o ( data_wdata   ),
+        .data_i ( data_rdata   )
+    );
 
     // ------------------------
     // Instruction Interface

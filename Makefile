@@ -173,7 +173,7 @@ build-tests:
 
 # User Verilator
 verilate:
-	verilator $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) src/util/behav_sram.sv tb/agents/axi_if/axi_if.sv \
+	verilator $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
 	-Wno-fatal -LDFLAGS "-lfesvr" -Wall --cc --trace \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
 	cd obj_dir && make -j8 -f Variane_wrapped.mk
