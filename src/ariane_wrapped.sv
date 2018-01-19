@@ -16,6 +16,8 @@ import ariane_pkg::*;
 
 import "DPI-C" function void write_uint64(input longint unsigned address, input longint unsigned data);
 import "DPI-C" function longint unsigned read_uint64(input longint unsigned address);
+import "DPI-C" function longint unsigned get_tohost_address();
+import "DPI-C" function longint unsigned get_fromhost_address();
 
 module ariane_wrapped #(
         parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000, // address on which to decide whether the request is cache-able or not
@@ -30,8 +32,6 @@ module ariane_wrapped #(
 
         output logic                           flush_icache_o, // request to flush icache
 
-        input  logic                           flush_dcache_i,
-        output logic                           flush_dcache_ack_o,
         // CPU Control Signals
         input  logic                           fetch_enable_i,
         output logic                           core_busy_o,
@@ -67,6 +67,7 @@ module ariane_wrapped #(
 
     localparam int unsigned AXI_NUMBYTES = AXI_DATA_WIDTH/8;
 
+    automatic longint unsigned tohost, fromhost;
 
     logic [63:0] instr_if_address;
     logic        instr_if_data_req;
@@ -74,6 +75,8 @@ module ariane_wrapped #(
     logic        instr_if_data_gnt;
     logic        instr_if_data_rvalid;
     logic [63:0] instr_if_data_rdata;
+
+    logic        flush_dcache_ack, flush_dcache;
 
     AXI_BUS #(
         .AXI_ADDR_WIDTH ( 64             ),
@@ -95,6 +98,8 @@ module ariane_wrapped #(
         .AXI_USER_WIDTH   ( 1             )
     ) i_ariane (
         .*,
+        .flush_dcache_i         ( flush_dcache         ),
+        .flush_dcache_ack_o     ( flush_dcache_ack     ),
         .data_if                ( data_if              ),
         .bypass_if              ( bypass_if            ),
         .instr_if_address_o     ( instr_if_address     ),
@@ -118,14 +123,34 @@ module ariane_wrapped #(
     );
 
     // direct store interface
+    automatic logic [63:0] store_address;
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (i_ariane.ex_stage_i.lsu_i.i_store_unit.data_req_o
           & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_gnt_i
           & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_we_o) begin
-            // $display("Write");
-            write_uint64({i_ariane.ex_stage_i.lsu_i.i_store_unit.address_tag_o, i_ariane.ex_stage_i.lsu_i.i_store_unit.address_index_o[11:3], 3'b0}, i_ariane.ex_stage_i.lsu_i.i_store_unit.data_wdata_o);
+            store_address = {i_ariane.ex_stage_i.lsu_i.i_store_unit.address_tag_o, i_ariane.ex_stage_i.lsu_i.i_store_unit.address_index_o[11:3], 3'b0};
+
+            // this assumes that tohost writes are always 64-bit
+            if (store_address == tohost) begin
+                write_uint64(store_address, i_ariane.ex_stage_i.lsu_i.i_store_unit.data_wdata_o);
+                // flush_dcache_func ();
+            end
+
         end
     end
+
+    initial begin
+        tohost = get_tohost_address();
+        fromhost = get_fromhost_address();
+    end
+
+    task flush_dcache_func ();
+        flush_dcache = 1'b1;
+        while (!flush_dcache_ack)
+            #1ns;
+
+        flush_dcache = 1'b0;
+    endtask : flush_dcache_func
 endmodule
 
 
