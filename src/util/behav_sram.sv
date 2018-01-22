@@ -10,7 +10,6 @@
 //
 // Date: 13.10.2017
 // Description: SRAM Behavioral Model
-//
 
 module sram #(
     int unsigned DATA_WIDTH = 64,
@@ -30,24 +29,18 @@ module sram #(
     logic [DATA_WIDTH-1:0] ram [NUM_WORDS-1:0];
     logic [ADDR_WIDTH-1:0] raddr_q;
 
-    logic [DATA_WIDTH-1:0] wdata;
-
     // 1. randomize array
     // 2. randomize output when no request is active
-
-    always @(posedge clk_i) begin
+    always_ff @(posedge clk_i) begin
         if (req_i) begin
             if (!we_i)
                 raddr_q <= addr_i;
             else
-                ram[addr_i] <= wdata;
+            for (int i = 0; i < DATA_WIDTH; i++)
+                if (be_i[i]) ram[addr_i][i] <= wdata_i[i];
         end
     end
 
     assign rdata_o = ram[raddr_q];
 
-    generate
-        for (genvar i = 0; i < DATA_WIDTH; i++)
-            assign wdata[i] = be_i[i] ? wdata_i[i] : wdata[i];
-    endgenerate
 endmodule

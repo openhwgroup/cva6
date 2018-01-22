@@ -54,6 +54,15 @@ test_core_asm:
     - make run-asm-tests library=core_lib
     - vcover-10.6 report run-asm-tests.ucdb
 
+test_core_asm_verilator:
+  stage: test
+  before_script:
+    - git submodule update --init --recursive
+    - make build-tests
+    - make verilate
+  script:
+    - make run-asm-tests run-asm-tests-verilator
+
 # test with the randomized memory interfaces
 # test_core_asm_rand:
 #   stage: test

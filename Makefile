@@ -138,6 +138,9 @@ run-asm-tests: build
 		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
 		$(library).$(test_top_level)_optimized;)
 
+run-asm-tests-verilator: verilate
+	$(foreach test, $(riscv-tests), obj_dir/Variane_wrapped $(riscv-test-dir)/$(test);)
+
 run-failed-tests: build
 	# make the tests
 	cd failedtests && make
@@ -174,7 +177,7 @@ build-tests:
 # User Verilator
 verilate:
 	verilator $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
-	-Wno-fatal -LDFLAGS "-lfesvr" -Wall --cc --trace \
+	--unroll-count 256 -Wno-fatal -LDFLAGS "-lfesvr" -Wall --cc --trace \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
 	cd obj_dir && make -j8 -f Variane_wrapped.mk
 

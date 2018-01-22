@@ -67,7 +67,7 @@ module ariane_wrapped #(
 
     localparam int unsigned AXI_NUMBYTES = AXI_DATA_WIDTH/8;
 
-    automatic longint unsigned tohost, fromhost;
+    longint unsigned tohost, fromhost;
 
     logic [63:0] instr_if_address;
     logic        instr_if_data_req;
@@ -123,8 +123,10 @@ module ariane_wrapped #(
     );
 
     // direct store interface
-    automatic logic [63:0] store_address;
     always_ff @(posedge clk_i or negedge rst_ni) begin
+
+        automatic logic [63:0] store_address;
+
         if (i_ariane.ex_stage_i.lsu_i.i_store_unit.data_req_o
           & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_gnt_i
           & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_we_o) begin
