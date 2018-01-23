@@ -1,15 +1,22 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  VERILATOR_ROOT: tmp/verilator-3.918/
 
 stages:
   - build
   - test
   - deploy
 
-build_rtl:
+build-ci:
   stage: build
   script:
     - make build
+    - ci/make-tmp.sh
+    - ci/install-fesvr.sh
+    - ci/install-verilator.sh
+  artifacts:
+    paths:
+      - tmp/
 
 test_alu:
   stage: test
@@ -61,15 +68,13 @@ test_core_asm_verilator:
     - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:tmp/lib
     - export C_INCLUDE_PATH=$C_INCLUDE_PATH:tmp/include
     - export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:tmp/include
-    - export VERILATOR_ROOT=tmp/verilator-3.918/
-    - ci/make-tmp.sh
-    - ci/install-fesvr.sh
-    - ci/install-verilator.sh
     - git submodule update --init --recursive
     - make build-tests
     - make verilate
   script:
     - make run-asm-tests run-asm-tests-verilator
+  dependencies:
+    - build-ci
 
 # test with the randomized memory interfaces
 # test_core_asm_rand:
@@ -107,7 +112,7 @@ test_failed_tests:
 pages:
   stage: deploy
   dependencies:
-    - build_rtl
+    - build-ci
   script:
     - mkdir public
     - mkdocs build -d public
