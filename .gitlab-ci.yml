@@ -3,11 +3,11 @@ variables:
 
 before_script:
   - git submodule update --init --recursive
-  - export LIBRARY_PATH=$LIBRARY_PATH:tmp/lib
-  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:tmp/lib
-  - export C_INCLUDE_PATH=$C_INCLUDE_PATH:tmp/include
-  - export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:tmp/include
-  - export VERILATOR_ROOT=tmp/verilator-3.918/
+  - export LIBRARY_PATH=$LIBRARY_PATH:$CI_PROJECT_DIR/tmp/lib
+  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CI_PROJECT_DIR/tmp/lib
+  - export C_INCLUDE_PATH=$C_INCLUDE_PATH:$CI_PROJECT_DIR/tmp/include
+  - export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$CI_PROJECT_DIR/tmp/include
+  - export VERILATOR_ROOT=$CI_PROJECT_DIR/tmp/verilator-3.918/
 
 stages:
   - build
@@ -18,6 +18,7 @@ build-ci:
   stage: build
   script:
     - make build
+    - echo $VERILATOR_ROOT
     - ci/make-tmp.sh
     - ci/install-fesvr.sh
     - ci/install-verilator.sh
