@@ -22,6 +22,7 @@ build-ci:
     - ci/make-tmp.sh
     - ci/install-fesvr.sh
     - ci/install-verilator.sh
+    - ci/build-riscv-tests.sh
   artifacts:
     paths:
       - tmp/
@@ -58,17 +59,17 @@ test_store_queue:
 test_core_asm:
   stage: test
   script:
-    - make build-tests
     - make build library=core_lib
     - make run-asm-tests library=core_lib
     - vcover-10.6 report run-asm-tests.ucdb
+  dependencies:
+    - build-ci
 
 test_core_asm_verilator:
   stage: test
   script:
-    - make build-tests
     - make verilate
-    - make run-asm-tests run-asm-tests-verilator
+    - make run-asm-tests-verilator
   dependencies:
     - build-ci
 
@@ -76,13 +77,14 @@ test_core_asm_verilator:
 .test_core_asm_rand:
   stage: test
   script:
-    - make build-tests
     - make build library=core_rand_lib
     # same as above but pass the rand_mem_if flag
     - make run-asm-tests library=core_rand_lib uvm-flags=+rand_mem_if
     - vcover-10.6 report run-asm-rand-tests.ucdb
+  dependencies:
+    - build-ci
 
-test_failed_tests:
+.test_failed_tests:
   stage: test
   script:
     - make build library=failed_tests_lib
