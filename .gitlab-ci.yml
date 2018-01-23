@@ -1,10 +1,5 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
-  LIBRARY_PATH: '$LIBRARY_PATH:tmp/lib'
-  LD_LIBRARY_PATH: '$LD_LIBRARY_PATH:tmp/lib'
-  C_INCLUDE_PATH: '$C_INCLUDE_PATH:tmp/include'
-  CPLUS_INCLUDE_PATH: '$CPLUS_INCLUDE_PATH:tmp/include'
-  VERILATOR_ROOT: 'tmp/verilator-3.918/'
 
 stages:
   - build
@@ -62,6 +57,11 @@ test_core_asm:
 test_core_asm_verilator:
   stage: test
   before_script:
+    - export LIBRARY_PATH=$LIBRARY_PATH:tmp/lib
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:tmp/lib
+    - export C_INCLUDE_PATH=$C_INCLUDE_PATH:tmp/include
+    - export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:tmp/include
+    - export VERILATOR_ROOT=tmp/verilator-3.918/
     - git submodule update --init --recursive
     - make build-tests
     - make verilate
