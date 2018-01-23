@@ -1,5 +1,10 @@
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  LIBRARY_PATH: '$LIBRARY_PATH:tmp/lib'
+  LD_LIBRARY_PATH: '$LD_LIBRARY_PATH:tmp/lib'
+  C_INCLUDE_PATH: '$C_INCLUDE_PATH:tmp/include'
+  CPLUS_INCLUDE_PATH: '$CPLUS_INCLUDE_PATH:tmp/include'
+  VERILATOR_ROOT: 'tmp/verilator-3.918/'
 
 stages:
   - build

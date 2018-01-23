@@ -14,3 +14,4 @@ src/moore.sv
 *.dtb
 *.dasm
 obj_dir/*
+tmp/*
