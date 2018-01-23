@@ -69,7 +69,7 @@ test_core_asm_verilator:
   stage: test
   script:
     - make verilate
-    - make run-asm-tests-verilator
+    - make run-asm-tests-verilator verilator=$CI_PROJECT_DIR/tmp/bin/verilator
   dependencies:
     - build-ci
 

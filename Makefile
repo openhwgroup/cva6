@@ -13,6 +13,8 @@ max_cycles ?= 10000000
 test_case ?= core_test
 # QuestaSim Version
 questa_version ?= -10.6b
+# verilator version
+verilator ?= verilator
 # preset which runs a single test
 riscv-test ?= rv64ui-p-add
 # Sources
@@ -41,7 +43,7 @@ src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.
 tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
 
 # RISCV-tests path
-riscv-test-dir := tmp/riscv-tests/isa
+riscv-test-dir := tmp/riscv-tests/build/isa
 riscv-tests := rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and rv64ui-p-auipc 			 \
 			   rv64ui-p-beq rv64ui-p-bge rv64ui-p-bgeu rv64ui-p-andi rv64ui-p-blt rv64ui-p-bltu rv64ui-p-bne                 \
 			   rv64ui-p-simple rv64ui-p-jal rv64ui-p-jalr rv64ui-p-or rv64ui-p-ori rv64ui-p-sub rv64ui-p-subw                \
@@ -164,7 +166,7 @@ $(tests): build
 
 # User Verilator
 verilate:
-	verilator $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
+	$(verilator) $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
 	--unroll-count 256 -Wno-fatal -LDFLAGS "-lfesvr" -Wall --cc --trace \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
 	cd obj_dir && make -j8 -f Variane_wrapped.mk
