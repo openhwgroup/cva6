@@ -72,6 +72,16 @@ module cache_ctrl #(
         input  logic                                               mshr_addr_matches_i
 );
 
+    // 0 IDLE
+    // 1 WAIT_TAG
+    // 2 WAIT_TAG_BYPASSED
+    // 3 STORE_REQ
+    // 4 WAIT_REFILL_VALID
+    // 5 WAIT_REFILL_GNT
+    // 6 WAIT_TAG_SAVED
+    // 7 WAIT_MSHR
+    // 8 WAIT_CRITICAL_WORD
+
     enum logic [3:0] {
         IDLE, WAIT_TAG, WAIT_TAG_BYPASSED, STORE_REQ, WAIT_REFILL_VALID, WAIT_REFILL_GNT, WAIT_TAG_SAVED, WAIT_MSHR, WAIT_CRITICAL_WORD
     } state_d, state_q;

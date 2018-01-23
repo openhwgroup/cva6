@@ -3,38 +3,48 @@
 # Description: Makefile for linting and testing Ariane.
 
 # compile everything in the following library
-library = work
+library ?= work
 # Top level module to compile
-top_level = core_tb
-test_top_level = core_tb
-
+top_level ?= core_tb
+test_top_level ?= core_tb
+# Maximum amount of cycles for a successful simulation run
+max_cycles ?= 10000000
+# Test case to run
+test_case ?= core_test
+# QuestaSim Version
+questa_version ?= -10.6b
+# verilator version
+verilator ?= verilator
+# preset which runs a single test
+riscv-test ?= rv64ui-p-add
+# Sources
 # Ariane PKG
-ariane_pkg = include/ariane_pkg.sv include/nbdcache_pkg.sv
+ariane_pkg := include/ariane_pkg.sv include/nbdcache_pkg.sv
 # utility modules
-util = $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv
+util := $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv
 # test targets
-tests = alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
+tests := alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
 # UVM agents
-agents = $(wildcard tb/agents/*/*.sv*)
+agents := $(wildcard tb/agents/*/*.sv*)
 # path to interfaces
-interfaces = $(wildcard include/*.svh)
+interfaces := $(wildcard include/*.svh)
 # UVM environments
-envs = $(wildcard tb/env/*/*.sv*)
+envs := $(wildcard tb/env/*/*.sv*)
 # UVM Sequences
-sequences =  $(wildcard tb/sequences/*/*.sv*)
+sequences := $(wildcard tb/sequences/*/*.sv*)
 # Test packages
-test_pkg = $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.sv*)
+test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.sv*)
 # DPI
-dpi = $(wildcard tb/dpi/*)
+dpi := $(wildcard tb/dpi/*)
 # this list contains the standalone components
-src = $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv) \
+src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv) \
 	  $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/*.sv)
 # look for testbenches
-tbs = tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
+tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
 
 # RISCV-tests path
-riscv-test-dir = riscv-tests/isa
-riscv-tests =  rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and rv64ui-p-auipc 			 \
+riscv-test-dir := tmp/riscv-tests/build/isa
+riscv-tests := rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and rv64ui-p-auipc 			 \
 			   rv64ui-p-beq rv64ui-p-bge rv64ui-p-bgeu rv64ui-p-andi rv64ui-p-blt rv64ui-p-bltu rv64ui-p-bne                 \
 			   rv64ui-p-simple rv64ui-p-jal rv64ui-p-jalr rv64ui-p-or rv64ui-p-ori rv64ui-p-sub rv64ui-p-subw                \
 			   rv64ui-p-xor rv64ui-p-xori rv64ui-p-slliw rv64ui-p-sll rv64ui-p-slli rv64ui-p-sllw 							 \
@@ -57,28 +67,17 @@ riscv-tests =  rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-
 			   rv64um-v-remu rv64um-v-mulw rv64um-v-divw rv64um-v-divuw rv64um-v-remw rv64um-v-remuw
 
 # failed test directory
-failed-tests =  $(wildcard failedtests/*.S)
-# preset which runs a single test
-riscv-test = rv64ui-p-add
+failed-tests := $(wildcard failedtests/*.S)
 # Search here for include files (e.g.: non-standalone components)
-incdir = ./includes
-# Maximum amount of cycles for a successful simulation run
-max_cycles = 10000000
-# Test case to run
-test_case = core_test
-# QuestaSim Version
-questa_version = -10.6b
-compile_flag = +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
-# Moore binary
-moore = ~fschuiki/bin/moore
-uvm-flags = +UVM_NO_RELNOTES
+incdir := ./includes
+# Compile and sim flags
+compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
+uvm-flags += +UVM_NO_RELNOTES
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
-list_incdir = $(foreach dir, ${incdir}, +incdir+$(dir))
+list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 
-# create library if it doesn't exist
-
-# # Build the TB and module using QuestaSim
+# Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-agents $(library)/.build-interfaces $(library)/.build-components \
 		$(library)/.build-srcs $(library)/.build-tb
 		# Optimize top level
@@ -138,6 +137,9 @@ run-asm-tests: build
 		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
 		$(library).$(test_top_level)_optimized;)
 
+run-asm-tests-verilator: verilate
+	$(foreach test, $(riscv-tests), obj_dir/Variane_wrapped $(riscv-test-dir)/$(test);)
+
 run-failed-tests: build
 	# make the tests
 	cd failedtests && make
@@ -162,25 +164,19 @@ $(tests): build
 	-do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
 	${library}.$@_tb_optimized
 
-build-moore:
-	[ ! -e .moore ] || rm .moore
-	$(foreach src_file, $(src), $(moore) compile $(src_file);)
-
-# build the RISC-V tests
-build-tests:
-	cd riscv-tests && autoconf && ./configure --prefix=/home/zarubaf/riscv && make isa -j8
-
-
-# User Verilator to lint the target
-lint:
-	verilator $(ariane_pkg) $(src) --lint-only \
-	$(list_incdir) --top-module ariane
+# User Verilator
+verilate:
+	$(verilator) $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
+	--unroll-count 256 -Wno-fatal -LDFLAGS "-lfesvr" -Wall --cc --trace \
+	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
+	cd obj_dir && make -j8 -f Variane_wrapped.mk
 
 verify:
 	qverify vlog -sv src/csr_regfile.sv
 
 clean:
 	rm -rf work/ *.ucdb
+	rm -rf obj_dir
 
 .PHONY:
 	build lint build-moore

@@ -54,6 +54,20 @@ module miss_handler #(
     input  cache_line_t [SET_ASSOCIATIVITY-1:0]         data_i,
     output logic                                        we_o
 );
+
+    // 0 IDLE
+    // 1 FLUSHING
+    // 2 FLUSH
+    // 3 WB_CACHELINE_FLUSH
+    // 4 FLUSH_REQ_STATUS
+    // 5 WB_CACHELINE_MISS
+    // 6 WAIT_GNT_SRAM
+    // 7 MISS
+    // 8 REQ_CACHELINE
+    // 9 MISS_REPL
+    // A SAVE_CACHELINE
+    // B INIT
+
     // FSM states
     enum logic [3:0] { IDLE, FLUSHING, FLUSH, WB_CACHELINE_FLUSH, FLUSH_REQ_STATUS, WB_CACHELINE_MISS, WAIT_GNT_SRAM, MISS,
                        REQ_CACHELINE, MISS_REPL, SAVE_CACHELINE, INIT } state_d, state_q;

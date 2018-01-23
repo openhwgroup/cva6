@@ -1,3 +1,11 @@
+before_script:
+  - git submodule update --init --recursive
+  - export LIBRARY_PATH=$LIBRARY_PATH:$CI_PROJECT_DIR/tmp/lib
+  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CI_PROJECT_DIR/tmp/lib
+  - export C_INCLUDE_PATH=$C_INCLUDE_PATH:$CI_PROJECT_DIR/tmp/include
+  - export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$CI_PROJECT_DIR/tmp/include
+  - export VERILATOR_ROOT=$CI_PROJECT_DIR/tmp/verilator-3.918/
+
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
@@ -6,91 +14,98 @@ stages:
   - test
   - deploy
 
-build_rtl:
+build-ci:
   stage: build
   script:
     - make build
+    - echo $VERILATOR_ROOT
+    - ci/make-tmp.sh
+    - ci/install-fesvr.sh
+    - ci/install-verilator.sh
+    - ci/build-riscv-tests.sh
+  artifacts:
+    paths:
+      - tmp/
 
 test_alu:
   stage: test
-  before_script:
-    - make build library=alu_lib
   script:
+    - make build library=alu_lib
     - make alu library=alu_lib
     - vcover-10.6 report alu.ucdb
 
 test_fifo:
   stage: test
-  before_script:
-    - make build library=fifo_lib
   script:
+    - make build library=fifo_lib
     - make fifo library=fifo_lib
     - vcover-10.6 report fifo.ucdb
 
-# test_scoreboard:
-#   stage: test
-#   before_script:
-#     - make build library=scoreboard_lib
-#   script:
-#     - make scoreboard library=scoreboard_lib
-#     - vcover-10.6 report scoreboard.ucdb
+.test_scoreboard:
+  stage: test
+  script:
+    - make build library=scoreboard_lib
+    - make scoreboard library=scoreboard_lib
+    - vcover-10.6 report scoreboard.ucdb
 
 
 test_store_queue:
   stage: test
-  before_script:
-    - make build library=store_queue_lib
   script:
+    - make build library=store_queue_lib
     - make store_queue library=store_queue_lib
     - vcover-10.6 report store_queue.ucdb
 
 test_core_asm:
   stage: test
-  before_script:
-    - git submodule update --init --recursive
-    - make build-tests
-    - make build library=core_lib
   script:
+    - make build library=core_lib
     - make run-asm-tests library=core_lib
     - vcover-10.6 report run-asm-tests.ucdb
+  dependencies:
+    - build-ci
+
+test_core_asm_verilator:
+  stage: test
+  script:
+    - make verilate
+    - make run-asm-tests-verilator verilator=$CI_PROJECT_DIR/tmp/bin/verilator
+  dependencies:
+    - build-ci
 
 # test with the randomized memory interfaces
-# test_core_asm_rand:
-#   stage: test
-#   before_script:
-#     - git submodule update --init --recursive
-#     - make build-tests
-#     - make build library=core_rand_lib
-#   script:
-#     # same as above but pass the rand_mem_if flag
-#     - make run-asm-tests library=core_rand_lib uvm-flags=+rand_mem_if
-#     - vcover-10.6 report run-asm-rand-tests.ucdb
-
-test_failed_tests:
+.test_core_asm_rand:
   stage: test
-  before_script:
-    - git submodule update --init --recursive
-    - make build library=failed_tests_lib
   script:
+    - make build library=core_rand_lib
+    # same as above but pass the rand_mem_if flag
+    - make run-asm-tests library=core_rand_lib uvm-flags=+rand_mem_if
+    - vcover-10.6 report run-asm-rand-tests.ucdb
+  dependencies:
+    - build-ci
+
+.test_failed_tests:
+  stage: test
+  script:
+    - make build library=failed_tests_lib
     - make run-failed-tests library=failed_tests_lib
     - vcover-10.6 report run-failed-tests.ucdb
 
-# test_lsu:
-#   stage: test
-#   before_script:
-#     - make build library=lsu_lib
-#   script:
-#     - make lsu library=lsu_lib
-#     - vcover-10.6 report lsu.ucdb
-#     - vcover-10.6 report -html lsu.ucdb
-#   artifacts:
-#     paths:
-#       - covhtmlreport
+.test_lsu:
+  stage: test
+  script:
+    - make build library=lsu_lib
+    - make lsu library=lsu_lib
+    - vcover-10.6 report lsu.ucdb
+    - vcover-10.6 report -html lsu.ucdb
+  artifacts:
+    paths:
+      - covhtmlreport
 
 pages:
   stage: deploy
   dependencies:
-    - build_rtl
+    - build-ci
   script:
     - mkdir public
     - mkdocs build -d public
