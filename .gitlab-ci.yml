@@ -62,6 +62,9 @@ test_core_asm_verilator:
     - export C_INCLUDE_PATH=$C_INCLUDE_PATH:tmp/include
     - export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:tmp/include
     - export VERILATOR_ROOT=tmp/verilator-3.918/
+    - ci/make-tmp.sh
+    - ci/install-fesvr.sh
+    - ci/install-verilator.sh
     - git submodule update --init --recursive
     - make build-tests
     - make verilate
