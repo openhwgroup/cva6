@@ -1,0 +1,87 @@
+# Ariane RISC-V CPU
+
+This document describes the 5-stage, single issue Ariane CPU which implements the 64bit RISC-V instruction set. It is conformant to the I,M and C extensions as specified in Volume I: User-Level ISA V2.1 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system.
+
+## Scope and Purpose
+
+The purpose of the core is to run a full OS at reasonable speed and IPC. To achieve the necessary speed (targeting 1.6ns cycle time in UMC65) the core features a 5-stage pipelined design. In order to increase the IPC the CPU features a scoreboarding technique that should hide the rather long latency to the data RAM (cache) by issuing independent instructions.
+The instruction RAM has (or L1 instruction cache) an access latency of 1 cycle on a hit, while accesses to the data RAM (or L1 data cache) have a longer latency of 2 cycles on a hit.
+
+![Ariane Block Diagram](fig/ariane_overview.png)
+
+## Planned Limitations
+
+Ariane is not going to support floating points and atomic operations. No user mode interrupts are supported as well.
+
+## Instructions
+
+- Integer computation (immediate-register): ADDI/SLTI[U], ANDI/ORI/XORI, SLLI/SRLI/SRAI
+- Integer computation (register-register): ADD/SLT/SLTU, AND/OR/XOR, SLL/SRL, SUB/SRA, MUL/DIV/REM
+- Operations on PC (PC-immediate): LUI, AUIPC
+- Control Transfer: J, JAL, JALR
+- Conditional Branches: BEQ/BNE, BLT[U], BGE[U]
+- Load and Stores
+- Memory instructions: FENCE.I (flush D$ and I$, kill pipeline), SFENCE.VM (flush TLB)
+- System Instructions: CSRR[..], RDCYCLE, RDTIME, RDINSTRET, ECALL, EBREAK, WFI, MRET/SRET/URET
+
+## ToDo Section:
+
+Things that need to be done (in no particular order):
+
+<!-- - Scoreboard testbench -->
+- Decode
+- Branch prediction, detailed block diagram (support in scoreboard)
+- Processor front-end, detailed design
+- Commit stage, detailed design (especially concerning CSR register, APB interface)
+- LSU detailed design
+- Debug
+- Instruction tracer
+- Controller
+
+## File Headers
+
+For the time being everything is restricted with all rights reserved:
+
+```
+// Author: <name>, ETH Zurich
+// Date: <date>
+// Description: Lorem Impsum...
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
+//
+// This code is under development and not yet released to the public.
+// Until it is released, the code is under the copyright of ETH Zurich and
+// the University of Bologna, and may contain confidential and/or unpublished
+// work. Any reuse/redistribution is strictly forbidden without written
+// permission from ETH Zurich.
+//
+// Bug fixes and contributions will eventually be released under the
+// SolderPad open hardware license in the context of the PULP platform
+// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+// University of Bologna.
+//
+```
+# Timing Diagrams
+
+The documentation scheme allows you to insert timing diagrams written in [WaveJSON](https://github.com/drom/wavedrom/wiki/WaveJSON). To do so:
+
+Insert [WaveJSON](https://github.com/drom/wavedrom/wiki/WaveJSON) source inside HTML ``<body>`` wrapped with ``<script>`` tag:
+
+```html
+<script type="WaveDrom">
+{ signal : [
+  { name: "clk",  wave: "p......" },
+  { name: "bus",  wave: "x.34.5x",   data: "head body tail" },
+  { name: "wire", wave: "0.1..0." },
+]}
+</script>
+```
+
+<script type="WaveDrom">
+{ signal : [
+  { name: "clk",  wave: "p......" },
+  { name: "bus",  wave: "x.34.5x",   data: "head body tail" },
+  { name: "wire", wave: "0.1..0." },
+]}
+</script>

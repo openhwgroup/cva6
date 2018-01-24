@@ -1,0 +1,13 @@
+- title: Introduction
+  docs:
+  - home
+  - documentation
+
+- title: Architecture
+  docs:
+  - pcgen_stage
+  - if_stage
+  - id_stage
+  - issue_stage
+  - ex_stage
+  - commit_stage
