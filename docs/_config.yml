@@ -1,0 +1,45 @@
+# Site settings
+title: Ariane Documentation
+email: zarubaf@iis.ee.ethz.ch
+description: >
+  Documentation for Ariane, a 64-bit RISC-V core
+
+baseurl: "/ariane" # the subpath of your site, e.g. /blog/
+url: https://pulp-platform.github.io # the base hostname & protocol for your site
+git_address: https://github.com/pulp-platform/ariane
+git_edit_address: https://github.com/pulp-platform/ariane/blob/master/docs
+
+# theme options from https://bootswatch.com/
+# comment out this to use default Bootstrap
+bootwatch: paper
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+gems:
+  - jekyll-feed
+  - jekyll-redirect-from
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - .idea/
+  - .gitignore
+  - README.md
+timezone: Europe/Berlin
+defaults:
+- scope:
+    path: _docs
+    type: docs
+  values:
+    layout: docs
+    sectionid: docs
+    seo:
+      type: "WebPage"
+
+collections:
+  docs:
+    permalink: /:collection/:path/
+    output: true
