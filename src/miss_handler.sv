@@ -467,7 +467,7 @@ module miss_handler #(
     // -----------------
     // Replacement LFSR
     // -----------------
-    lfsr i_lfsr (
+    lfsr #(.WIDTH (SET_ASSOCIATIVITY)) i_lfsr (
         .en_i           ( lfsr_enable ),
         .refill_way_oh  ( lfsr_oh     ),
         .refill_way_bin ( lfsr_bin    ),
@@ -1005,58 +1005,5 @@ module axi_adapter #(
             id_q          <= id_d;
         end
     end
-
-endmodule
-
-// --------------
-// 8-bit LFSR
-// --------------
-//
-// Description: Shift register for way selection
-//
-module lfsr #(
-        parameter logic [7:0]  SEED = 8'b0
-    )(
-        input  logic                                  clk_i,
-        input  logic                                  rst_ni,
-        input  logic                                  en_i,
-        output logic [SET_ASSOCIATIVITY-1:0]          refill_way_oh,
-        output logic [$clog2(SET_ASSOCIATIVITY)-1:0]  refill_way_bin
-    );
-
-    localparam int unsigned LOG_SET_ASSOCIATIVITY = $clog2(SET_ASSOCIATIVITY);
-
-    logic [7:0] shift_d, shift_q;
-
-
-    always_comb begin
-
-        automatic logic shift_in;
-        shift_in = !(shift_q[7] ^ shift_q[3] ^ shift_q[2] ^ shift_q[1]);
-
-        shift_d = shift_q;
-
-        if (en_i)
-            shift_d = {shift_q[6:0], shift_in};
-
-        // output assignment
-        refill_way_oh = 'b0;
-        refill_way_oh[shift_q[LOG_SET_ASSOCIATIVITY-1:0]] = 1'b1;
-        refill_way_bin = shift_q;
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
-        if(~rst_ni) begin
-            shift_q <= SEED;
-        end else begin
-            shift_q <= shift_d;
-        end
-    end
-
-    `ifndef SYNTHESIS
-        initial begin
-            assert (SET_ASSOCIATIVITY <= 8) else $fatal(1, "SET_ASSOCIATIVITY needs to be less than 8 because of the 8-bit LFSR");
-        end
-    `endif
 
 endmodule
