@@ -555,11 +555,11 @@ module ariane #(
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
         .dcache_en_o            ( dcache_en_csr_nbdcache        ),
+        .icache_en_o            ( bypass_icache_csr_icache      ),
         .perf_addr_o            ( addr_csr_perf                 ),
         .perf_data_o            ( data_csr_perf                 ),
         .perf_data_i            ( data_perf_csr                 ),
         .perf_we_o              ( we_csr_perf                   ),
-        .icache_en_o            ( ~bypass_icache_csr_icache     ),
         .*
     );
 
@@ -661,7 +661,7 @@ module ariane #(
        .fetch_rvalid_o      ( instr_if_data_rvalid           ),
        .fetch_rdata_o       ( instr_if_data_rdata            ),
        .axi                 ( instr_if                       ),
-       .bypass_icache_i     ( bypass_icache_csr_icache       ),
+       .bypass_icache_i     ( ~bypass_icache_csr_icache      ),
        .cache_is_bypassed_o (                                ),
        .flush_icache_i      ( flush_icache_ctrl_icache       ),
        .cache_is_flushed_o  ( flush_icache_ack_icache_ctrl   ),
