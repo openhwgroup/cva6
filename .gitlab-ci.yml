@@ -68,8 +68,7 @@ test_core_asm:
 test_core_asm_verilator:
   stage: test
   script:
-    - make verilate verilator=$CI_PROJECT_DIR/tmp/bin/verilator
-    - make run-asm-tests-verilator
+    - make run-asm-tests-verilator verilator=$CI_PROJECT_DIR/tmp/bin/verilator
   dependencies:
     - build-ci
 
@@ -101,18 +100,3 @@ test_core_asm_verilator:
   artifacts:
     paths:
       - covhtmlreport
-
-pages:
-  stage: deploy
-  dependencies:
-    - build-ci
-  script:
-    - mkdir public
-    - mkdocs build -d public
-    # - mv covhtmlreport/ public/
-    # - lftp -e "mirror -R public . ; quit;" -u $FTP_USER,$FTP_PASSWORD $FTP_HOST
-  artifacts:
-    paths:
-      - site
-
-
