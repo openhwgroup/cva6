@@ -616,7 +616,7 @@ module icache_controller #(
                 fetch_gnt_o           = 1'b0;
                 flush_set_ID_ack_o    = 1'b1;
 
-                 NS = OPERATIVE;
+                NS = OPERATIVE;
 
                 TAG_req_o   = '1;
                 TAG_we_o    = 1'b1;
@@ -744,8 +744,8 @@ module icache_controller #(
                 TAG_wdata_o     = {1'b1,fetch_addr_Q[TAG_MSB:TAG_LSB]};
 
 
-                if(refill_r_valid_i) begin
-                    if(refill_r_last_i)
+                if (refill_r_valid_i) begin
+                    if (refill_r_last_i)
                         if(fetch_req_saved) begin
                             NS = RESTART_FROM_SAVED_FETCH;
                         end else begin
