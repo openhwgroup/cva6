@@ -171,14 +171,16 @@ module icache #(
    );
 
    generate
-      // ------------
-      // Tag RAM
-      // ------------
-      for (genvar i = 0; i < NB_WAYS; i++) begin : _TAG_WAY_
+      for (genvar i = 0; i < NB_WAYS; i++) begin : sram_block
 
-        tagram_256x46 TAG_RAM (
-            .clk       ( clk_i                           ),
-            .rst_n     ( rst_n                           ),
+        // ------------
+        // Tag RAM
+        // ------------
+        sram #(
+            .DATA_WIDTH ( 46  ),
+            .NUM_WORDS  ( 256 )
+        ) tag_sram (
+            .clk_i     ( clk_i                           ),
             .req_i     ( TAG_req_int[i]                  ),
             .we_i      ( TAG_we_int                      ),
             .addr_i    ( TAG_addr_int                    ),
@@ -190,9 +192,11 @@ module icache #(
         // ------------
         // Data RAM
         // ------------
-        dataram_512x64 DATA_RAM (
-            .clk       ( clk_i             ),
-            .rst_n     ( rst_n             ),
+        sram #(
+            .DATA_WIDTH ( 64  ),
+            .NUM_WORDS  ( 512 )
+        ) data_sram (
+            .clk_i     ( clk_i             ),
             .req_i     ( DATA_req_int[i]   ),
             .we_i      ( DATA_we_int       ),
             .addr_i    ( DATA_addr_int     ),

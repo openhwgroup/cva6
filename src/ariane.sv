@@ -38,12 +38,6 @@ module ariane #(
         input  logic [ 3:0]                    core_id_i,              // core id in a multicore environment (reflected in a CSR)
         input  logic [ 5:0]                    cluster_id_i,           // PULP specific if core is used in a clustered environment
         // Instruction memory interface
-        // output logic [63:0]                    instr_if_address_o,     // fetch address out
-        // output logic                           instr_if_data_req_o,    // fetch request out
-        // output logic [3:0]                     instr_if_data_be_o,     // not used as r/o interface
-        // input  logic                           instr_if_data_gnt_i,    // fetch request granted
-        // input  logic                           instr_if_data_rvalid_i, // fetch data valid
-        // input  logic [63:0]                    instr_if_data_rdata_i,  // fetch data
         AXI_BUS.Master                         instr_if,
         // Data memory interface
         AXI_BUS.Master                         data_if,                // data cache refill port
@@ -51,7 +45,7 @@ module ariane #(
         // Interrupt inputs
         input  logic [1:0]                     irq_i,                  // level sensitive IR lines, mip & sip
         input  logic                           ipi_i,                  // inter-processor interrupts
-        output logic                           sec_lvl_o,              // current privilege level ouot
+        output logic                           sec_lvl_o,              // current privilege level out
         // Timer facilities
         input  logic [63:0]                    time_i,                 // global time (most probably coming from an RTC)
         input  logic                           time_irq_i,             // timer interrupt in
@@ -581,6 +575,7 @@ module ariane #(
         .commit_instr_i    ( commit_instr_id_commit ),
         .commit_ack_o      ( commit_ack             ),
 
+        .l1_icache_miss_i  ( 1'b0                   ),
         .l1_dcache_miss_i  ( dcache_miss_ex_perf    ),
         .itlb_miss_i       ( itlb_miss_ex_perf      ),
         .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
