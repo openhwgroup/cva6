@@ -6,7 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-### 1.0.0
+### 2.0.0 - 2018-01-26
+
+### Added
+
+- Instruction cache added
+- Support for Verilator
+
+### Changed
+
+- CI support for verilator
+- Update documentation
+
+### 1.0.0 - 2018-01-17
 
 ### Added
 
@@ -21,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Testbench: EOC component now listening on store interface only
 - Store interfaces has been simplified by removing the `valid` signal, a transaction is now considered finished as soon as the dcache gives the grant signal.
 - EOC and dcache checker has been reworked to get rid of absolute path in UVM testbench
+- Fix problem when bypassing the data cache
 
 ### 0.4.0 - 2017-10-13
 
@@ -36,6 +49,7 @@ Linux booting on FPGA.
 - Fixed synthesis issues
 
 ## [0.3.0] - 2017-07-15
+
 ### Added
 - Added support for device tree in Ariane's testbench
 
@@ -47,6 +61,7 @@ Linux booting on FPGA.
 - Changelog design, adhering to a common [standard](http://keepachangelog.com/en/1.0.0/)
 
 ## [0.2.0] - 2017-06-28
+
 ### Added
 - Virtual memory support according to RISC-V privilege specification 1.11 (WIP)
 - Add support for Torture test framework
@@ -57,6 +72,7 @@ Linux booting on FPGA.
 - New fetch interface, smaller and ready for macro-op fusion and dual-issue
 
 ## [0.1.0] - 2017-06-21
+
 ### Added
 - Initial development, getting to a stable point
 
