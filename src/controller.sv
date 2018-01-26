@@ -171,10 +171,12 @@ module controller (
         if(~rst_ni) begin
             fence_active_q <= 1'b0;
             flush_dcache_o <= 1'b0;
+            flush_icache_q <= 1'b0;
         end else begin
             fence_active_q <= fence_active_d;
             // register on the flush signal, this signal might be critical
             flush_dcache_o <= flush_dcache;
+            flush_icache_q <= flush_icache_d;
         end
     end
 endmodule

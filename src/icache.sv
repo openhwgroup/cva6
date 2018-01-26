@@ -170,9 +170,6 @@ module icache #(
         .refill_r_data_i          ( refill_r_rdata_from_comp )
    );
 
-   initial begin
-    $display("TAG WIDTH %d ", TAG_WIDTH);
-   end
    logic [NB_WAYS-1:0] dummy_bit;
    generate
       for (genvar i = 0; i < NB_WAYS; i++) begin : sram_block
