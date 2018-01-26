@@ -259,7 +259,7 @@ module lint_to_axi_refill #(
    input  logic                         rst_n,
    input  logic                         test_en_i,
 
-   // Interface between cache_controller_to  and Compactor
+   // Interface between cache_controller_to and Compactor
    input  logic                         refill_req_i,
    input  logic                         refill_type_i, // 0 | 1 : 0 --> 64 Bit ,  1--> 128bit
    output logic                         refill_gnt_o,
@@ -273,28 +273,6 @@ module lint_to_axi_refill #(
 
    AXI_BUS.Master                       axi
 );
-
-    logic                      ar_valid_int;
-    logic [AXI_ADDR_WIDTH-1:0] ar_addr_int;
-    logic [2:0]                ar_prot_int;
-    logic [3:0]                ar_region_int;
-    logic [7:0]                ar_len_int;
-    logic [2:0]                ar_size_int;
-    logic [1:0]                ar_burst_int;
-    logic                      ar_lock_int;
-    logic [3:0]                ar_cache_int;
-    logic [3:0]                ar_qos_int;
-    logic [AXI_ID_WIDTH-1:0]   ar_id_int;
-    logic [AXI_USER_WIDTH-1:0] ar_user_int;
-    logic                      ar_ready_int;
-
-    logic                      r_valid_int;
-    logic [AXI_DATA_WIDTH-1:0] r_data_int;
-    logic [1:0]                r_resp_int;
-    logic                      r_last_int;
-    logic [AXI_ID_WIDTH-1:0]   r_id_int;
-    logic [AXI_USER_WIDTH-1:0] r_user_int;
-    logic                      r_ready_int;
 
     assign axi.aw_valid  = '0;
     assign axi.aw_addr   = '0;
@@ -316,91 +294,26 @@ module lint_to_axi_refill #(
     assign axi.w_last    = 1'b0;
     assign axi.b_ready   = 1'b0;
 
-    assign ar_valid_int  = refill_req_i;
-    assign ar_addr_int   = {{(AXI_ADDR_WIDTH-FETCH_ADDR_WIDTH){1'b0}},refill_addr_i};
-    assign ar_prot_int   = '0;
-    assign ar_region_int = '0;
-    assign ar_len_int    = (refill_type_i) ? 8'h01 : 8'h00;
-    assign ar_size_int   = 3'b011;
-    assign ar_burst_int  = 2'b01;
-    assign ar_lock_int   = '0;
-    assign ar_cache_int  = '0;
-    assign ar_qos_int    = '0;
-    assign ar_id_int     = refill_ID_i;
-    assign ar_user_int   = '0;
+    assign axi.ar_valid  = refill_req_i;
+    assign axi.ar_addr   = {{(AXI_ADDR_WIDTH-FETCH_ADDR_WIDTH){1'b0}},refill_addr_i};
+    assign axi.ar_prot   = '0;
+    assign axi.ar_region = '0;
+    assign axi.ar_len    = (refill_type_i) ? 8'h01 : 8'h00;
+    assign axi.ar_size   = 3'b011;
+    assign axi.ar_burst  = 2'b01;
+    assign axi.ar_lock   = '0;
+    assign axi.ar_cache  = '0;
+    assign axi.ar_qos    = '0;
+    assign axi.ar_id     = refill_ID_i;
+    assign axi.ar_user   = '0;
 
-    assign r_ready_int   = 1'b1;
+    assign axi.r_ready   = 1'b1;
 
-    assign refill_gnt_o     = ar_ready_int;
-    assign refill_r_valid_o = r_valid_int;
-    assign refill_r_ID_o    = r_id_int;
-    assign refill_r_data_o  = r_data_int;
-    assign refill_r_last_o  = r_last_int;
-
-   // axi read address channel buffer
-   axi_ar_buffer #(
-       .ID_WIDTH      ( AXI_ID_WIDTH   ),
-       .ADDR_WIDTH    ( AXI_ADDR_WIDTH ),
-       .USER_WIDTH    ( AXI_USER_WIDTH ),
-       .BUFFER_DEPTH  ( SLICE_DEPTH    )
-   ) ar_buffer_i (
-      .clk_i           ( clk_i         ),
-      .rst_ni          ( rst_n         ),
-      .test_en_i       ( test_en_i     ),
-      .slave_valid_i   ( ar_valid_int  ),
-      .slave_addr_i    ( ar_addr_int   ),
-      .slave_prot_i    ( ar_prot_int   ),
-      .slave_region_i  ( ar_region_int ),
-      .slave_len_i     ( ar_len_int    ),
-      .slave_size_i    ( ar_size_int   ),
-      .slave_burst_i   ( ar_burst_int  ),
-      .slave_lock_i    ( ar_lock_int   ),
-      .slave_cache_i   ( ar_cache_int  ),
-      .slave_qos_i     ( ar_qos_int    ),
-      .slave_id_i      ( ar_id_int     ),
-      .slave_user_i    ( ar_user_int   ),
-      .slave_ready_o   ( ar_ready_int  ),
-
-      .master_valid_o  ( axi.ar_valid  ),
-      .master_addr_o   ( axi.ar_addr   ),
-      .master_prot_o   ( axi.ar_prot   ),
-      .master_region_o ( axi.ar_region ),
-      .master_len_o    ( axi.ar_len    ),
-      .master_size_o   ( axi.ar_size   ),
-      .master_burst_o  ( axi.ar_burst  ),
-      .master_lock_o   ( axi.ar_lock   ),
-      .master_cache_o  ( axi.ar_cache  ),
-      .master_qos_o    ( axi.ar_qos    ),
-      .master_id_o     ( axi.ar_id     ),
-      .master_user_o   ( axi.ar_user   ),
-      .master_ready_i  ( axi.ar_ready  )
-   );
-
-   // read data channel buffer
-   axi_r_buffer #(
-       .ID_WIDTH     ( AXI_ID_WIDTH   ),
-       .DATA_WIDTH   ( AXI_DATA_WIDTH ),
-       .USER_WIDTH   ( AXI_USER_WIDTH ),
-       .BUFFER_DEPTH ( SLICE_DEPTH    )
-   ) r_buffer_i (
-      .clk_i          ( clk_i         ),
-      .rst_ni         ( rst_n         ),
-      .test_en_i      ( test_en_i     ),
-      .slave_valid_i  ( axi.r_valid   ),
-      .slave_data_i   ( axi.r_data    ),
-      .slave_resp_i   ( axi.r_resp    ),
-      .slave_user_i   ( axi.r_user    ),
-      .slave_id_i     ( axi.r_id      ),
-      .slave_last_i   ( axi.r_last    ),
-      .slave_ready_o  ( axi.r_ready   ),
-      .master_valid_o ( r_valid_int   ),
-      .master_data_o  ( r_data_int    ),
-      .master_resp_o  ( r_resp_int    ),
-      .master_user_o  ( r_user_int    ),
-      .master_id_o    ( r_id_int      ),
-      .master_last_o  ( r_last_int    ),
-      .master_ready_i ( r_ready_int   )
-   );
+    assign refill_gnt_o     = axi.ar_ready;
+    assign refill_r_valid_o = axi.r_valid;
+    assign refill_r_ID_o    = axi.r_id;
+    assign refill_r_data_o  = axi.r_data;
+    assign refill_r_last_o  = axi.r_last;
 
 endmodule
 
