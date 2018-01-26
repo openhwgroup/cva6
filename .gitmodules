@@ -1,12 +1,6 @@
-[submodule "uvm-scaffold"]
-	path = uvm-scaffold
-	url = ../uvm-scaffold.git
-[submodule "riscv-tests"]
-	path = riscv-tests
-	url = ../riscv-tests.git
 [submodule "riscv-torture"]
 	path = riscv-torture
-	url = ../riscv-torture.git
+	url = https://github.com/pulp-platform/riscv-torture.git
 [submodule "tb"]
 	path = tb
 	url = ../uvm-components.git

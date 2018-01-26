@@ -69,6 +69,7 @@ module csr_regfile #(
     output logic                  tw_o,                       // timeout wait
     output logic                  tsr_o,                      // trap sret
     // Caches
+    output logic                  icache_en_o,                // L1 ICache Enable
     output logic                  dcache_en_o,                // L1 DCache Enable
     // Performance Counter
     output logic  [11:0]          perf_addr_o,                // address to performance counter module
@@ -147,6 +148,7 @@ module csr_regfile #(
     logic [63:0] scause_q,   scause_d;
     logic [63:0] stval_q,    stval_d;
     logic [63:0] dcache_q,   dcache_d;
+    logic [63:0] icache_q,   icache_d;
 
     logic        wfi_d,      wfi_q;
 
@@ -210,6 +212,7 @@ module csr_regfile #(
                 CSR_MCYCLE:             csr_rdata = cycle_q;
                 CSR_MINSTRET:           csr_rdata = instret_q;
                 CSR_DCACHE:             csr_rdata = dcache_q;
+                CSR_ICACHE:             csr_rdata = icache_q;
                 // Counters and Timers
                 CSR_CYCLE:              csr_rdata = cycle_q;
                 CSR_TIME:               csr_rdata = time_i;
@@ -259,6 +262,7 @@ module csr_regfile #(
         mscratch_d              = mscratch_q;
         mtval_d                 = mtval_q;
         dcache_d                = dcache_q;
+        icache_d                = icache_q;
 
         sepc_d                  = sepc_q;
         scause_d                = scause_q;
@@ -357,6 +361,7 @@ module csr_regfile #(
                 CSR_MCYCLE:             cycle_d     = csr_wdata;
                 CSR_MINSTRET:           instret_d   = csr_wdata;
                 CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
+                CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
                 CSR_L1_ICACHE_MISS,
                 CSR_L1_DCACHE_MISS,
                 CSR_ITLB_MISS,
@@ -648,6 +653,7 @@ module csr_regfile #(
     assign tw_o             = mstatus_q.tw;
     assign tsr_o            = mstatus_q.tsr;
     assign halt_csr_o       = wfi_q;
+    assign icache_en_o      = icache_q[0];
     assign dcache_en_o      = dcache_q[0];
 
     // output assignments dependent on privilege mode
@@ -688,6 +694,7 @@ module csr_regfile #(
             mscratch_q             <= 64'b0;
             mtval_q                <= 64'b0;
             dcache_q               <= 64'b1;
+            icache_q               <= 64'b1;
             // supervisor mode registers
             sepc_q                 <= 64'b0;
             scause_q               <= 64'b0;
@@ -716,6 +723,7 @@ module csr_regfile #(
             mscratch_q             <= mscratch_d;
             mtval_q                <= mtval_d;
             dcache_q               <= dcache_d;
+            icache_q               <= icache_d;
             // supervisor mode registers
             sepc_q                 <= sepc_d;
             scause_q               <= scause_d;

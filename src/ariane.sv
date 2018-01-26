@@ -29,35 +29,23 @@ module ariane #(
         input  logic                           rst_ni,
         input  logic                           test_en_i,              // enable all clock gates for testing
 
-        output logic                           flush_icache_o,         // request to flush icache
-
         input  logic                           flush_dcache_i,         // external request to flush data cache
         output logic                           flush_dcache_ack_o,     // finished data cache flush
         // CPU Control Signals
         input  logic                           fetch_enable_i,         // start fetching data
-        output logic                           core_busy_o,            // NC
-        input  logic                           l1_icache_miss_i,       // to performance counters
         // Core ID, Cluster ID and boot address are considered more or less static
         input  logic [63:0]                    boot_addr_i,            // reset boot address
         input  logic [ 3:0]                    core_id_i,              // core id in a multicore environment (reflected in a CSR)
         input  logic [ 5:0]                    cluster_id_i,           // PULP specific if core is used in a clustered environment
         // Instruction memory interface
-        output logic [63:0]                    instr_if_address_o,     // fetch address out
-        output logic                           instr_if_data_req_o,    // fetch request out
-        output logic [3:0]                     instr_if_data_be_o,     // not used as r/o interface
-        input  logic                           instr_if_data_gnt_i,    // fetch request granted
-        input  logic                           instr_if_data_rvalid_i, // fetch data valid
-        input  logic [63:0]                    instr_if_data_rdata_i,  // fetch data
+        AXI_BUS.Master                         instr_if,
         // Data memory interface
         AXI_BUS.Master                         data_if,                // data cache refill port
         AXI_BUS.Master                         bypass_if,              // bypass axi port (disabled cache or uncacheable access)
         // Interrupt inputs
         input  logic [1:0]                     irq_i,                  // level sensitive IR lines, mip & sip
         input  logic                           ipi_i,                  // inter-processor interrupts
-        input  logic [4:0]                     irq_id_i,               // NC
-        output logic                           irq_ack_o,              // NC
-        input  logic                           irq_sec_i,              // NC
-        output logic                           sec_lvl_o,              // current privilege level ouot
+        output logic                           sec_lvl_o,              // current privilege level out
         // Timer facilities
         input  logic [63:0]                    time_i,                 // global time (most probably coming from an RTC)
         input  logic                           time_irq_i,             // timer interrupt in
@@ -258,6 +246,19 @@ module ariane #(
     logic                     csr_we_debug_csr;
     logic [63:0]              csr_wdata_debug_csr;
     logic [63:0]              csr_rdata_debug_csr;
+    // ----------------
+    // ICache <-> *
+    // ----------------
+    logic [63:0]             instr_if_address;
+    logic                    instr_if_data_req;    // fetch request
+    logic [3:0]              instr_if_data_be;
+    logic                    instr_if_data_gnt;    // fetch request
+    logic                    instr_if_data_rvalid; // fetch data
+    logic [63:0]             instr_if_data_rdata;
+
+    logic                    flush_icache_ctrl_icache;
+    logic                    bypass_icache_csr_icache;
+    logic                    flush_icache_ack_icache_ctrl;
 
     assign sec_lvl_o = priv_lvl;
     assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
@@ -476,6 +477,13 @@ module ariane #(
         .mult_result_o          ( mult_result_ex_id                      ),
         .mult_valid_o           ( mult_valid_ex_id                       ),
 
+        .instr_if_address_o     ( instr_if_address                       ),
+        .instr_if_data_req_o    ( instr_if_data_req                      ),
+        .instr_if_data_be_o     ( instr_if_data_be                       ),
+        .instr_if_data_gnt_i    ( instr_if_data_gnt                      ),
+        .instr_if_data_rvalid_i ( instr_if_data_rvalid                   ),
+        .instr_if_data_rdata_i  ( instr_if_data_rdata                    ),
+
         .data_if                ( data_if                                ),
         .dcache_en_i            ( dcache_en_csr_nbdcache                 ),
         .flush_dcache_i         ( flush_dcache_ctrl_ex | flush_dcache_i  ),
@@ -547,6 +555,7 @@ module ariane #(
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
         .dcache_en_o            ( dcache_en_csr_nbdcache        ),
+        .icache_en_o            ( bypass_icache_csr_icache      ),
         .perf_addr_o            ( addr_csr_perf                 ),
         .perf_data_o            ( data_csr_perf                 ),
         .perf_data_i            ( data_perf_csr                 ),
@@ -566,6 +575,7 @@ module ariane #(
         .commit_instr_i    ( commit_instr_id_commit ),
         .commit_ack_o      ( commit_ack             ),
 
+        .l1_icache_miss_i  ( 1'b0                   ),
         .l1_dcache_miss_i  ( dcache_miss_ex_perf    ),
         .itlb_miss_i       ( itlb_miss_ex_perf      ),
         .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
@@ -603,6 +613,8 @@ module ariane #(
         .fence_i                ( fence_commit_controller       ),
         .sfence_vma_i           ( sfence_vma_commit_controller  ),
 
+        .flush_icache_o         ( flush_icache_ctrl_icache      ),
+        .flush_icache_ack_i     ( flush_icache_ack_icache_ctrl  ),
         .*
     );
 
@@ -630,8 +642,32 @@ module ariane #(
         .debug_csr_we_o    ( csr_we_debug_csr          ),
         .debug_csr_wdata_o ( csr_wdata_debug_csr       ),
         .debug_csr_rdata_i ( csr_rdata_debug_csr       ),
-
         .*
+    );
+
+    // -------------------
+    // Instruction Cache
+    // -------------------
+    icache #(
+       .AXI_USER_WIDTH      ( AXI_USER_WIDTH                 ),
+       .AXI_ID_WIDTH        ( AXI_ID_WIDTH                   )
+    ) i_icache (
+       .clk_i               ( clk_i                          ),
+       .rst_n               ( rst_ni                         ),
+       .test_en_i           ( test_en_i                      ),
+       .fetch_req_i         ( instr_if_data_req              ),
+       .fetch_addr_i        ( {instr_if_address[55:3], 3'b0} ),
+       .fetch_gnt_o         ( instr_if_data_gnt              ),
+       .fetch_rvalid_o      ( instr_if_data_rvalid           ),
+       .fetch_rdata_o       ( instr_if_data_rdata            ),
+       .axi                 ( instr_if                       ),
+       .bypass_icache_i     ( ~bypass_icache_csr_icache      ),
+       .cache_is_bypassed_o (                                ),
+       .flush_icache_i      ( flush_icache_ctrl_icache       ),
+       .cache_is_flushed_o  ( flush_icache_ack_icache_ctrl   ),
+       .flush_set_ID_req_i  ( 1'b0                           ),
+       .flush_set_ID_addr_i ( '0                             ),
+       .flush_set_ID_ack_o  (                                )
     );
 
     // -------------------

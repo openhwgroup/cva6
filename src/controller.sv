@@ -24,6 +24,7 @@ module controller (
     output logic            flush_id_o,             // Flush ID stage
     output logic            flush_ex_o,             // Flush EX stage
     output logic            flush_icache_o,         // Flush ICache
+    input  logic            flush_icache_ack_i,     // Acknowledge the whole ICache Flush
     output logic            flush_dcache_o,         // Flush DCache
     input  logic            flush_dcache_ack_i,     // Acknowledge the whole DCache Flush
     output logic            flush_tlb_o,            // Flush TLBs
@@ -42,23 +43,25 @@ module controller (
 );
 
     // active fence - high if we are currently flushing the dcache
-    logic fence_active_n, fence_active_q;
+    logic fence_active_d, fence_active_q;
     logic flush_dcache;
+    logic flush_icache_d, flush_icache_q;
+
+    assign flush_icache_o = flush_icache_q;
     // ------------
     // Flush CTRL
     // ------------
     always_comb begin : flush_ctrl
-        fence_active_n         = fence_active_q;
+        fence_active_d         = fence_active_q;
         flush_pcgen_o          = 1'b0;
         flush_if_o             = 1'b0;
         flush_unissued_instr_o = 1'b0;
         flush_id_o             = 1'b0;
         flush_ex_o             = 1'b0;
         flush_tlb_o            = 1'b0;
-        flush_icache_o         = 1'b0;
         flush_dcache           = 1'b0;
         flush_bp_o             = 1'b0; // flush branch prediction
-
+        flush_icache_d         = (flush_icache_ack_i) ? 1'b0 : flush_icache_q;
         // ------------
         // Mis-predict
         // ------------
@@ -82,7 +85,7 @@ module controller (
             flush_ex_o             = 1'b1;
 
             flush_dcache           = 1'b1;
-            fence_active_n         = 1'b1;
+            fence_active_d         = 1'b1;
         end
 
         // ---------------------------------
@@ -94,15 +97,15 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-            flush_icache_o         = 1'b1;
+            flush_icache_d         = 1'b1;
 
             flush_dcache           = 1'b1;
-            fence_active_n         = 1'b1;
+            fence_active_d         = 1'b1;
         end
 
         // wait for the acknowledge here
         if (flush_dcache_ack_i && fence_active_q) begin
-            fence_active_n = 1'b0;
+            fence_active_d = 1'b0;
         // keep the flush dcache signal high as long as we didn't get the acknowledge from the cache
         end else if (fence_active_q) begin
             flush_dcache = 1'b1;
@@ -168,10 +171,12 @@ module controller (
         if(~rst_ni) begin
             fence_active_q <= 1'b0;
             flush_dcache_o <= 1'b0;
+            flush_icache_q <= 1'b0;
         end else begin
-            fence_active_q <= fence_active_n;
+            fence_active_q <= fence_active_d;
             // register on the flush signal, this signal might be critical
             flush_dcache_o <= flush_dcache;
+            flush_icache_q <= flush_icache_d;
         end
     end
 endmodule

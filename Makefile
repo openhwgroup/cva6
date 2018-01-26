@@ -21,7 +21,8 @@ riscv-test ?= rv64ui-p-add
 # Ariane PKG
 ariane_pkg := include/ariane_pkg.sv include/nbdcache_pkg.sv
 # utility modules
-util := $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv
+util := $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv \
+		src/util/generic_fifo.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv
 # test targets
 tests := alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
 # UVM agents
@@ -166,7 +167,8 @@ $(tests): build
 
 # User Verilator
 verilate:
-	$(verilator) $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
+	$(verilator) $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) $(wildcard src/axi_slice/*.sv) \
+	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
 	--unroll-count 256 -Wno-fatal -LDFLAGS "-lfesvr" -Wall --cc --trace \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
 	cd obj_dir && make -j8 -f Variane_wrapped.mk
