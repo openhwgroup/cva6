@@ -5,6 +5,7 @@ before_script:
   - export C_INCLUDE_PATH=$C_INCLUDE_PATH:$CI_PROJECT_DIR/tmp/include
   - export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$CI_PROJECT_DIR/tmp/include
   - export VERILATOR_ROOT=$CI_PROJECT_DIR/tmp/verilator-3.918/
+  - export GIT_SSL_NO_VERIFY=1
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
