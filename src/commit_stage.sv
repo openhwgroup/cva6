@@ -17,6 +17,7 @@ import ariane_pkg::*;
 module commit_stage (
     input  logic                clk_i,
     input  logic                halt_i,             // request to halt the core
+    input  logic                flush_dcache_i,     // request to flush dcache -> also flush the pipeline
 
     output exception_t          exception_o,        // take exception to controller
 
@@ -118,7 +119,7 @@ module commit_stage (
             // ------------------
             // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
             // and the private dcache. This is the most expensive instruction.
-            if (commit_instr_i.op == FENCE_I) begin
+            if (commit_instr_i.op == FENCE_I || flush_dcache_i) begin
                 commit_ack_o = no_st_pending_i;
                 // tell the controller to flush the I$
                 fence_i_o = no_st_pending_i;

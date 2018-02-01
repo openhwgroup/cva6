@@ -17,7 +17,6 @@
 //
 // Description: Cache controller
 
-
 import ariane_pkg::*;
 import nbdcache_pkg::*;
 

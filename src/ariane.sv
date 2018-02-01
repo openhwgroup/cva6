@@ -746,20 +746,28 @@ module ariane #(
 
     string s;
     int f;
+    logic [63:0] cycles;
 
     initial begin
-        f = $fopen("trace_core_0_00.dasm", "w");
+        string fn;
+        $sformat(fn, "trace_core_%h_%h.dasm", "w", cluster_id_i, core_id_i);
+        f = $fopen(fn,"w");
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-
+            cycles <= 0;
         end else begin
             if (commit_ack && !commit_stage_i.exception_o) begin
-                $fwrite(f, "0x%0h DASM(%h)\n", commit_instr_id_commit.pc, commit_instr_id_commit.ex.tval[31:0]);
+                $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit.pc, commit_instr_id_commit.ex.tval[31:0], commit_instr_id_commit.ex.tval[31:0]);
             end else if (commit_ack) begin
-                $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit.ex.cause);
+                if (commit_instr_id_commit.ex.cause == 2) begin
+                    $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h)\n", commit_instr_id_commit.ex.tval[31:0]);
+                end else begin
+                    $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit.ex.cause);
+                end
             end
+            cycles <= cycles + 1;
         end
     end
 

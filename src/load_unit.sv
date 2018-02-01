@@ -249,7 +249,7 @@ module load_unit (
             if (ex_i.valid)
                 valid_o = 1'b1;
         end
-        // an exception occurred during translation (we need to check for the valid flag so because we could also get an
+        // an exception occurred during translation (we need to check for the valid flag because we could also get an
         // exception from the store unit)
         // exceptions can retire out-of-order -> but we need to give priority to non-excepting load and stores
         // so we simply check if we got an rvalid if so we prioritize it by not retiring the exception - we simply go for another

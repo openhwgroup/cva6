@@ -20,7 +20,7 @@ import "DPI-C" function longint unsigned get_tohost_address();
 import "DPI-C" function longint unsigned get_fromhost_address();
 
 module ariane_wrapped #(
-        parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000, // address on which to decide whether the request is cache-able or not
+        parameter logic [63:0] CACHE_START_ADDR  = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
         parameter int unsigned AXI_ID_WIDTH      = 10,
         parameter int unsigned AXI_USER_WIDTH    = 1,
         parameter int unsigned AXI_ADDRESS_WIDTH = 64,
@@ -35,6 +35,8 @@ module ariane_wrapped #(
         input  logic [63:0]                    boot_addr_i,
         input  logic [ 3:0]                    core_id_i,
         input  logic [ 5:0]                    cluster_id_i,
+        input  logic                           flush_req_i,
+        output logic                           flushing_o,
         // Interrupt inputs
         input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip
         input  logic                           ipi_i,        // inter-processor interrupts
@@ -60,6 +62,7 @@ module ariane_wrapped #(
     longint unsigned tohost, fromhost;
 
     logic        flush_dcache_ack, flush_dcache;
+    logic        flush_dcache_d, flush_dcache_q;
 
     AXI_BUS #(
         .AXI_ADDR_WIDTH ( 64             ),
@@ -83,9 +86,9 @@ module ariane_wrapped #(
     ) instr_if();
 
     ariane #(
-        .CACHE_START_ADDR ( 64'h4000_0000 ),
-        .AXI_ID_WIDTH     ( 10            ),
-        .AXI_USER_WIDTH   ( 1             )
+        .CACHE_START_ADDR ( CACHE_START_ADDR ),
+        .AXI_ID_WIDTH     ( 10               ),
+        .AXI_USER_WIDTH   ( 1                )
     ) i_ariane (
         .*,
         .flush_dcache_i         ( flush_dcache         ),
@@ -102,22 +105,36 @@ module ariane_wrapped #(
         .*
     );
 
+    assign flush_dcache = flush_dcache_q;
+    assign flushing_o = flush_dcache_q;
+
     // direct store interface
     always_ff @(posedge clk_i or negedge rst_ni) begin
 
         automatic logic [63:0] store_address;
 
-        if (i_ariane.ex_stage_i.lsu_i.i_store_unit.data_req_o
-          & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_gnt_i
-          & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_we_o) begin
-            store_address = {i_ariane.ex_stage_i.lsu_i.i_store_unit.address_tag_o, i_ariane.ex_stage_i.lsu_i.i_store_unit.address_index_o[11:3], 3'b0};
+        if (~rst_ni) begin
+            flush_dcache_q  <= 1'b0;
+        end else begin
+            // got acknowledge from dcache - release the flush signal
+            if (flush_dcache_ack)
+                flush_dcache_q <= 1'b0;
 
-            // this assumes that tohost writes are always 64-bit
-            if (store_address == tohost) begin
-                write_uint64(store_address, i_ariane.ex_stage_i.lsu_i.i_store_unit.data_wdata_o);
-                // flush_dcache_func ();
+            // a write to tohost or fromhost
+            if (i_ariane.ex_stage_i.lsu_i.i_store_unit.data_req_o
+              & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_gnt_i
+              & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_we_o) begin
+                store_address = {i_ariane.ex_stage_i.lsu_i.i_store_unit.address_tag_o, i_ariane.ex_stage_i.lsu_i.i_store_unit.address_index_o[11:3], 3'b0};
+
+                // this assumes that tohost writes are always 64-bit
+                if (store_address == tohost || store_address == fromhost) begin
+                    flush_dcache_q <= 1'b1;
+                end
             end
 
+            if (flush_req_i) begin
+                flush_dcache_q <= 1'b1;
+            end
         end
     end
 
@@ -126,13 +143,6 @@ module ariane_wrapped #(
         fromhost = get_fromhost_address();
     end
 
-    task flush_dcache_func ();
-        flush_dcache = 1'b1;
-        while (!flush_dcache_ack)
-            #1ns;
-
-        flush_dcache = 1'b0;
-    endtask : flush_dcache_func
 endmodule
 
 
