@@ -47,7 +47,7 @@ module store_buffer (
     output logic         kill_req_o,
     output logic         tag_valid_o,
     input  logic         data_gnt_i,
-    input  logic         data_rvalid_i
+    input  logic         data_rvalid_i    // not used
     );
     // depth of store-buffers
     localparam int unsigned DEPTH_SPEC   = 4;
@@ -225,7 +225,7 @@ module store_buffer (
 
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
-        if(~rst_ni) begin
+        if (~rst_ni) begin
              // initialize the queues
             speculative_queue_q         <= '{default: 0};
             commit_queue_q              <= '{default: 0};

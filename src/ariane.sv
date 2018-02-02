@@ -749,9 +749,7 @@ module ariane #(
     logic [63:0] cycles;
 
     initial begin
-        string fn;
-        $sformat(fn, "trace_core_%h_%h.dasm", "w", cluster_id_i, core_id_i);
-        f = $fopen(fn,"w");
+        f = $fopen("trace_core_00_0.dasm", "w");
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
