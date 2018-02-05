@@ -1,12 +1,21 @@
-/* File:   cache_ctrl.svh
- * Author: Florian Zaruba <zarubaf@ethz.ch>
- * Date:   14.10.2017
- *
- * Copyright (C) 2017 ETH Zurich, University of Bologna
- * All rights reserved.
- *
- * Description: Cache controller
- */
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
+// File:   cache_ctrl.svh
+// Author: Florian Zaruba <zarubaf@ethz.ch>
+// Date:   14.10.2017
+//
+// Copyright (C) 2017 ETH Zurich, University of Bologna
+// All rights reserved.
+//
+// Description: Cache controller
 
 import ariane_pkg::*;
 import nbdcache_pkg::*;
@@ -15,7 +24,8 @@ module cache_ctrl #(
         parameter int unsigned SET_ASSOCIATIVITY = 8,
         parameter int unsigned INDEX_WIDTH       = 12,
         parameter int unsigned TAG_WIDTH         = 44,
-        parameter int unsigned CACHE_LINE_WIDTH  = 100
+        parameter int unsigned CACHE_LINE_WIDTH  = 100,
+        parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000
     )(
         input  logic                                               clk_i,     // Clock
         input  logic                                               rst_ni,    // Asynchronous reset active low
@@ -60,6 +70,16 @@ module cache_ctrl #(
         output logic [55:0]                                        mshr_addr_o,
         input  logic                                               mshr_addr_matches_i
 );
+
+    // 0 IDLE
+    // 1 WAIT_TAG
+    // 2 WAIT_TAG_BYPASSED
+    // 3 STORE_REQ
+    // 4 WAIT_REFILL_VALID
+    // 5 WAIT_REFILL_GNT
+    // 6 WAIT_TAG_SAVED
+    // 7 WAIT_MSHR
+    // 8 WAIT_CRITICAL_WORD
 
     enum logic [3:0] {
         IDLE, WAIT_TAG, WAIT_TAG_BYPASSED, STORE_REQ, WAIT_REFILL_VALID, WAIT_REFILL_GNT, WAIT_TAG_SAVED, WAIT_MSHR, WAIT_CRITICAL_WORD
@@ -236,7 +256,7 @@ module cache_ctrl #(
                     // -------------------------
                     // Check for cache-ability
                     // -------------------------
-                    if (!(|tag_o[TAG_WIDTH-1:DECISION_BIT-INDEX_WIDTH])) begin
+                    if (tag_o < CACHE_START_ADDR[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH]) begin
                         mem_req_d.tag = address_tag_i;
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;

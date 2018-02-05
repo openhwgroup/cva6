@@ -1,29 +1,25 @@
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
 // Author: Florian Zaruba, ETH Zurich
 // Date: 15.04.2017
 // Description: Commits to the architectural state resulting from the scoreboard.
-//
-// Copyright (C) 2017 ETH Zurich, University of Bologna
-// All rights reserved.
-//
-// This code is under development and not yet released to the public.
-// Until it is released, the code is under the copyright of ETH Zurich and
-// the University of Bologna, and may contain confidential and/or unpublished
-// work. Any reuse/redistribution is strictly forbidden without written
-// permission from ETH Zurich.
-//
-// Bug fixes and contributions will eventually be released under the
-// SolderPad open hardware license in the context of the PULP platform
-// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
-// University of Bologna.
-//
+
 import ariane_pkg::*;
 
 module commit_stage #(
     parameter int unsigned NR_COMMIT_PORTS = 2
-    )(
+)(
     input  logic                                    clk_i,
     input  logic                                    halt_i,             // request to halt the core
-
+    input  logic                                    flush_dcache_i,     // request to flush dcache -> also flush the pipeline
     output exception_t                              exception_o,        // take exception to controller
 
     // from scoreboard
@@ -131,9 +127,8 @@ module commit_stage #(
             // ------------------
             // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
             // and the private dcache. This is the most expensive instruction.
-
-            if (commit_instr_i[0].op == FENCE_I) begin
-                commit_ack_o[0] = 1'b1;
+            if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && commit_instr_i[0].fu != STORE)) begin
+                commit_ack_o[0] = no_st_pending_i;
                 // tell the controller to flush the I$
                 fence_i_o = no_st_pending_i;
             end
@@ -148,9 +143,9 @@ module commit_stage #(
         end
 
         // check if the second instruction can be committed as well and the first wasn't a CSR instruction
-        if (commit_ack_o[0] && commit_instr_i[1].valid && !halt_i && !(commit_instr_i[0].fu inside {CSR})) begin
+        if (commit_ack_o[0] && commit_instr_i[1].valid && !halt_i && !(commit_instr_i[0].fu inside {CSR}) && !flush_dcache_i) begin
             // only if the first instruction didn't throw an exception and this instruction won't throw an exception
-            // and the operator is of type ALU, LOAD
+            // and the operator is of type ALU, LOAD, CTRL_FLOW, MULT
             if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT})) begin
                 we_o[1] = 1'b1;
                 commit_ack_o[1] = 1'b1;

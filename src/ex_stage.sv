@@ -1,26 +1,25 @@
 
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
 // Author: Florian Zaruba, ETH Zurich
 // Date: 19.04.2017
 // Description: Instantiation of all functional units residing in the execute stage
-//
-// Copyright (C) 2017 ETH Zurich, University of Bologna
-// All rights reserved.
-//
-// This code is under development and not yet released to the public.
-// Until it is released, the code is under the copyright of ETH Zurich and
-// the University of Bologna, and may contain confidential and/or unpublished
-// work. Any reuse/redistribution is strictly forbidden without written
-// permission from ETH Zurich.
-//
-// Bug fixes and contributions will eventually be released under the
-// SolderPad open hardware license in the context of the PULP platform
-// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
-// University of Bologna.
-//
+
 import ariane_pkg::*;
 
 module ex_stage #(
-        parameter int ASID_WIDTH = 1
+        parameter int          ASID_WIDTH       = 1,
+        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,
+        parameter int unsigned AXI_ID_WIDTH     = 10,
+        parameter int unsigned AXI_USER_WIDTH   = 1
     )(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -142,7 +141,11 @@ module ex_stage #(
     // ----------------
     // Load-Store Unit
     // ----------------
-    lsu lsu_i (
+    lsu #(
+        .CACHE_START_ADDR ( CACHE_START_ADDR ),
+        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
+        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
+    ) lsu_i (
         .commit_i       ( lsu_commit_i       ),
         .commit_ready_o ( lsu_commit_ready_o ),
         .data_if        ( data_if            ),

@@ -1,13 +1,26 @@
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
+// Author: Florian Zaruba, ETH Zurich
+// Date: 12.11.2017
+// Description: Handles cache misses.
+
 // --------------
 // MISS Handler
 // --------------
-//
-// Description: Handles cache misses.
-//
 import nbdcache_pkg::*;
 
 module miss_handler #(
-    parameter int unsigned NR_PORTS = 3
+    parameter int unsigned NR_PORTS         = 3,
+    parameter int unsigned AXI_ID_WIDTH     = 10,
+    parameter int unsigned AXI_USER_WIDTH   = 1
 )(
     input  logic                                        clk_i,
     input  logic                                        rst_ni,
@@ -41,6 +54,20 @@ module miss_handler #(
     input  cache_line_t [SET_ASSOCIATIVITY-1:0]         data_i,
     output logic                                        we_o
 );
+
+    // 0 IDLE
+    // 1 FLUSHING
+    // 2 FLUSH
+    // 3 WB_CACHELINE_FLUSH
+    // 4 FLUSH_REQ_STATUS
+    // 5 WB_CACHELINE_MISS
+    // 6 WAIT_GNT_SRAM
+    // 7 MISS
+    // 8 REQ_CACHELINE
+    // 9 MISS_REPL
+    // A SAVE_CACHELINE
+    // B INIT
+
     // FSM states
     enum logic [3:0] { IDLE, FLUSHING, FLUSH, WB_CACHELINE_FLUSH, FLUSH_REQ_STATUS, WB_CACHELINE_MISS, WAIT_GNT_SRAM, MISS,
                        REQ_CACHELINE, MISS_REPL, SAVE_CACHELINE, INIT } state_d, state_q;
@@ -96,7 +123,7 @@ module miss_handler #(
         be_o   = '0;
         we_o   = '0;
         // Cache controller
-        miss_gnt_o = 1'b0;
+        miss_gnt_o = '0;
         // LFSR replacement unit
         lfsr_enable = 1'b0;
         // to AXI refill
@@ -358,6 +385,7 @@ module miss_handler #(
     logic [63:0]                 data_bypass_fsm;
     logic [$clog2(NR_PORTS)-1:0] id_fsm_bypass;
     logic [AXI_ID_WIDTH-1:0]     id_bypass_fsm;
+    logic [AXI_ID_WIDTH-1:0]     gnt_id_bypass_fsm;
 
     arbiter #(
         .NR_PORTS          ( NR_PORTS                                                ),
@@ -376,6 +404,7 @@ module miss_handler #(
         // Slave Sid
         .id_i                  ( id_bypass_fsm[$clog2(NR_PORTS)-1:0]                      ),
         .id_o                  ( id_fsm_bypass                                            ),
+        .gnt_id_i              ( gnt_id_bypass_fsm[$clog2(NR_PORTS)-1:0]                  ),
         .address_o             ( req_fsm_bypass_addr                                      ),
         .data_wdata_o          ( req_fsm_bypass_wdata                                     ),
         .data_req_o            ( req_fsm_bypass_valid                                     ),
@@ -389,7 +418,8 @@ module miss_handler #(
     );
 
     axi_adapter #(
-        .DATA_WIDTH            ( 64                                                       )
+        .DATA_WIDTH            ( 64                                                       ),
+        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                                             )
     ) i_bypass_axi_adapter (
         .req_i                 ( req_fsm_bypass_valid                                     ),
         .type_i                ( SINGLE_REQ                                               ),
@@ -402,6 +432,7 @@ module miss_handler #(
         .id_i                  ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
         .valid_o               ( valid_bypass_fsm                                         ),
         .rdata_o               ( data_bypass_fsm                                          ),
+        .gnt_id_o              ( gnt_id_bypass_fsm                                         ),
         .id_o                  ( id_bypass_fsm                                            ),
         .critical_word_o       (                                                          ), // not used for single requests
         .critical_word_valid_o (                                                          ), // not used for single requests
@@ -413,7 +444,8 @@ module miss_handler #(
     // Cache Line Arbiter
     // ----------------------
     axi_adapter  #(
-        .DATA_WIDTH          ( CACHE_LINE_WIDTH   )
+        .DATA_WIDTH          ( CACHE_LINE_WIDTH   ),
+        .AXI_ID_WIDTH        ( AXI_ID_WIDTH       )
     ) i_miss_axi_adapter (
         .req_i               ( req_fsm_miss_valid ),
         .type_i              ( CACHE_LINE_REQ     ),
@@ -424,6 +456,7 @@ module miss_handler #(
         .be_i                ( req_fsm_miss_be    ),
         .size_i              ( 2'b11              ),
         .id_i                ( '0                 ),
+        .gnt_id_o            (                    ), // open
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),
@@ -434,7 +467,7 @@ module miss_handler #(
     // -----------------
     // Replacement LFSR
     // -----------------
-    lfsr i_lfsr (
+    lfsr #(.WIDTH (SET_ASSOCIATIVITY)) i_lfsr (
         .en_i           ( lfsr_enable ),
         .refill_way_oh  ( lfsr_oh     ),
         .refill_way_bin ( lfsr_bin    ),
@@ -493,6 +526,7 @@ module arbiter #(
     // slave port
     input  logic [$clog2(NR_PORTS)-1:0]            id_i,
     output logic [$clog2(NR_PORTS)-1:0]            id_o,
+    input  logic [$clog2(NR_PORTS)-1:0]            gnt_id_i,
     output logic                                   data_req_o,
     output logic [63:0]                            address_o,
     output logic [DATA_WIDTH-1:0]                  data_wdata_o,
@@ -504,47 +538,118 @@ module arbiter #(
     input  logic [DATA_WIDTH-1:0]                  data_rdata_i
 );
 
+    enum logic [1:0] { IDLE, REQ, SERVING } state_d, state_q;
 
-    // addressing read and full write
-    always_comb begin : read_req_write
+    struct packed {
+        logic [$clog2(NR_PORTS)-1:0] id;
+        logic [63:0]                 address;
+        logic [63:0]                 data;
+        logic [1:0]                  size;
+        logic [DATA_WIDTH/8-1:0]     be;
+        logic                        we;
+    } req_d, req_q;
+
+    always_comb begin
         automatic logic [$clog2(NR_PORTS)-1:0] request_index;
         request_index = 0;
 
-        data_req_o = 1'b0;
-        data_gnt_o = '0;
+        state_d = state_q;
+        req_d   = req_q;
+        // request port
+        data_req_o                = 1'b0;
+        address_o                 = req_q.address;
+        data_wdata_o              = req_q.data;
+        data_be_o                 = req_q.be;
+        data_size_o               = req_q.size;
+        data_we_o                 = req_q.we;
+        id_o                      = req_q.id;
+        data_gnt_o                = '0;
+        // read port
+        data_rvalid_o           = '0;
+        data_rdata_o[req_q.id]  = data_rdata_i;
 
-        for (int unsigned i = 0; i < NR_PORTS; i++) begin
-            if (data_req_i[i] == 1'b1) begin
-                data_req_o        = data_req_i[i];
-                request_index     = i;
-                break; // break here as this is a priority select
+        case (state_q)
+
+            IDLE: begin
+                // wait for incoming requests
+                for (int unsigned i = 0; i < NR_PORTS; i++) begin
+                    if (data_req_i[i] == 1'b1) begin
+                        data_req_o    = data_req_i[i];
+                        data_gnt_o[i] = data_req_i[i];
+                        request_index = i;
+                        // save the request
+                        req_d.address = address_i[i];
+                        req_d.id = i;
+                        req_d.data = data_wdata_i[i];
+                        req_d.size = data_size_i[i];
+                        req_d.be = data_be_i[i];
+                        req_d.we = data_we_i[i];
+                        state_d = SERVING;
+                        break; // break here as this is a priority select
+                    end
+                end
+
+                address_o                 = address_i[request_index];
+                data_wdata_o              = data_wdata_i[request_index];
+                data_be_o                 = data_be_i[request_index];
+                data_size_o               = data_size_i[request_index];
+                data_we_o                 = data_we_i[request_index];
+                id_o                      = request_index;
             end
-        end
 
-        // pass through all signals from the correct slave port
-        address_o                 = address_i[request_index];
-        data_wdata_o              = data_wdata_i[request_index];
-        data_be_o                 = data_be_i[request_index];
-        data_size_o               = data_size_i[request_index];
-        data_we_o                 = data_we_i[request_index];
-        data_gnt_o[request_index] = data_gnt_i;
-        id_o                      = request_index;
+            SERVING: begin
+                data_req_o = 1'b1;
+                if (data_rvalid_i) begin
+                    data_rvalid_o[req_q.id] = 1'b1;
+                    state_d = IDLE;
+                end
+            end
+
+            default : /* default */;
+        endcase
     end
+    // // addressing read and full write
+    // always_comb begin : read_req_write
+    //     automatic logic [$clog2(NR_PORTS)-1:0] request_index;
+    //     request_index = 0;
 
-    // ------------
-    // Read port
-    // ------------
+    //     data_req_o = 1'b0;
+    //     data_gnt_o = '0;
 
-    always_comb begin : slave_read_port
-        data_rvalid_o = '0;
-        data_rdata_o = '0;
-        // if there is a valid signal the FIFO should not be empty anyway
-        if (data_rvalid_i) begin
-            data_rvalid_o[id_i] = data_rvalid_i;
-            data_rdata_o [id_i] = data_rdata_i;
+
+
+    //     // pass through all signals from the correct slave port
+    //     address_o                 = address_i[request_index];
+    //     data_wdata_o              = data_wdata_i[request_index];
+    //     data_be_o                 = data_be_i[request_index];
+    //     data_size_o               = data_size_i[request_index];
+    //     data_we_o                 = data_we_i[request_index];
+    //     data_gnt_o[gnt_id_i]      = data_gnt_i;
+    //     id_o                      = request_index;
+    // end
+
+    // // ------------
+    // // Read port
+    // // ------------
+    // always_comb begin : slave_read_port
+    //     data_rvalid_o = '0;
+    //     data_rdata_o = '0;
+    //     // if there is a valid signal the FIFO should not be empty anyway
+    //     if (data_rvalid_i) begin
+    //         data_rvalid_o[id_i] = data_rvalid_i;
+    //         data_rdata_o [id_i] = data_rdata_i;
+    //     end
+    // end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            state_q <= IDLE;
+            req_q   <= '0;
+        end else begin
+            state_q <= state_d;
+            req_q   <= req_d;
         end
     end
-
     // ------------
     // Assertions
     // ------------
@@ -572,7 +677,8 @@ endmodule
 //
 module axi_adapter #(
         parameter int unsigned DATA_WIDTH          = 256,
-        parameter logic        CRITICAL_WORD_FIRST = 0 // the AXI subsystem needs to support wrapping reads for this feature
+        parameter logic        CRITICAL_WORD_FIRST = 0, // the AXI subsystem needs to support wrapping reads for this feature
+        parameter int unsigned AXI_ID_WIDTH        = 10
     )(
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
@@ -580,6 +686,7 @@ module axi_adapter #(
     input  logic                                        req_i,
     input  req_t                                        type_i,
     output logic                                        gnt_o,
+    output logic [AXI_ID_WIDTH-1:0]                     gnt_id_o,
     input  logic [63:0]                                 addr_i,
     input  logic                                        we_i,
     input  logic [(DATA_WIDTH/64)-1:0][63:0]            wdata_i,
@@ -652,6 +759,7 @@ module axi_adapter #(
         axi.r_ready   = 1'b0;
 
         gnt_o         = 1'b0;
+        gnt_id_o      = '0;
         valid_o       = 1'b0;
         id_o          = axi.r_id;
 
@@ -682,13 +790,14 @@ module axi_adapter #(
                         if (type_i == SINGLE_REQ) begin
                             // single req can be granted here
                             gnt_o = axi.aw_ready & axi.w_ready;
-
+                            gnt_id_o = id_i;
                             case ({axi.aw_ready, axi.w_ready})
                                 2'b11: state_d = WAIT_B_VALID;
                                 2'b01: state_d = WAIT_AW_READY;
                                 2'b10: state_d = WAIT_LAST_W_READY;
                                 default: state_d = IDLE;
                             endcase
+                            id_d = axi.aw_id;
                         // its a request for the whole cache line
                         end else begin
                             axi.aw_len = BURST_SIZE; // number of bursts to do
@@ -707,12 +816,16 @@ module axi_adapter #(
                                 2'b10: state_d = WAIT_LAST_W_READY;
                                 default:;
                             endcase
+                            // save id
+                            id_d = axi.aw_id;
+
                         end
                     // read
                     end else begin
 
                         axi.ar_valid = 1'b1;
                         gnt_o = axi.ar_ready;
+                        gnt_id_o = id_i;
 
                         if (type_i != SINGLE_REQ) begin
                             axi.ar_len = BURST_SIZE;
@@ -722,6 +835,8 @@ module axi_adapter #(
                         if (axi.ar_ready) begin
                             state_d = (type_i == SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
                             addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
+                            // save id
+                            id_d = axi.ar_id;
                         end
                     end
                 end
@@ -764,6 +879,7 @@ module axi_adapter #(
                         if (cnt_q == 0) begin
                             state_d = WAIT_B_VALID;
                             gnt_o = 1'b1;
+                            gnt_id_o = id_q;
                         // there are outstanding transactions
                         end else begin
                             state_d = WAIT_LAST_W_READY;
@@ -783,6 +899,7 @@ module axi_adapter #(
                 if (axi.aw_ready) begin
                     state_d = WAIT_B_VALID;
                     gnt_o = 1'b1;
+                    gnt_id_o = id_q;
                 end
             end
 
@@ -800,6 +917,7 @@ module axi_adapter #(
                     if (cnt_q == '0) begin
                         state_d = WAIT_B_VALID;
                         gnt_o = (cnt_q == '0);
+                        gnt_id_o = id_q;
                     end else begin
                         cnt_d = cnt_q - 1;
                     end
@@ -846,8 +964,6 @@ module axi_adapter #(
                     // this is the last read
                     if (axi.r_last) begin
                         state_d = COMPLETE_READ;
-                        // save id
-                        id_d = axi.r_id;
                     end
 
                     // save the word
@@ -889,58 +1005,5 @@ module axi_adapter #(
             id_q          <= id_d;
         end
     end
-
-endmodule
-
-// --------------
-// 8-bit LFSR
-// --------------
-//
-// Description: Shift register for way selection
-//
-module lfsr #(
-        parameter logic [7:0]  SEED = 8'b0
-    )(
-        input  logic                                  clk_i,
-        input  logic                                  rst_ni,
-        input  logic                                  en_i,
-        output logic [SET_ASSOCIATIVITY-1:0]          refill_way_oh,
-        output logic [$clog2(SET_ASSOCIATIVITY)-1:0]  refill_way_bin
-    );
-
-    localparam int unsigned LOG_SET_ASSOCIATIVITY = $clog2(SET_ASSOCIATIVITY);
-
-    logic [7:0] shift_d, shift_q;
-
-
-    always_comb begin
-
-        automatic logic shift_in;
-        shift_in = !(shift_q[7] ^ shift_q[3] ^ shift_q[2] ^ shift_q[1]);
-
-        shift_d = shift_q;
-
-        if (en_i)
-            shift_d = {shift_q[6:0], shift_in};
-
-        // output assignment
-        refill_way_oh = 'b0;
-        refill_way_oh[shift_q[LOG_SET_ASSOCIATIVITY-1:0]] = 1'b1;
-        refill_way_bin = shift_q;
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
-        if(~rst_ni) begin
-            shift_q <= SEED;
-        end else begin
-            shift_q <= shift_d;
-        end
-    end
-
-    `ifndef SYNTHESIS
-        initial begin
-            assert (SET_ASSOCIATIVITY <= 8) else $fatal(1, "SET_ASSOCIATIVITY needs to be less than 8 because of the 8-bit LFSR");
-        end
-    `endif
 
 endmodule

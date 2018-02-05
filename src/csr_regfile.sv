@@ -1,26 +1,22 @@
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
 // Author: Florian Zaruba, ETH Zurich
 // Date: 05.05.2017
 // Description: CSR Register File as specified by RISC-V
-//
-//
-// Copyright (C) 2017 ETH Zurich, University of Bologna
-// All rights reserved.
-//
-// This code is under development and not yet released to the public.
-// Until it is released, the code is under the copyright of ETH Zurich and
-// the University of Bologna, and may contain confidential and/or unpublished
-// work. Any reuse/redistribution is strictly forbidden without written
-// permission from ETH Zurich.
-//
-// Bug fixes and contributions will eventually be released under the
-// SolderPad open hardware license in the context of the PULP platform
-// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
-// University of Bologna.
-//
+
 import ariane_pkg::*;
 
 module csr_regfile #(
-    parameter int ASID_WIDTH = 1
+    parameter int          ASID_WIDTH      = 1,
+    parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
@@ -28,16 +24,16 @@ module csr_regfile #(
     input  logic                  time_irq_i,                 // Timer threw a interrupt
 
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
-    output logic                  flush_o,
-    output logic                  halt_csr_o,                 // halt requested
+    output logic                       flush_o,
+    output logic                       halt_csr_o,            // halt requested
     // Debug CSR Port
-    input  logic                  debug_csr_req_i,            // Request from debug to read the CSR regfile
-    input  logic [11:0]           debug_csr_addr_i,           // Address of CSR
-    input  logic                  debug_csr_we_i,             // Is it a read or write?
-    input  logic [63:0]           debug_csr_wdata_i,          // Data to write
-    output logic [63:0]           debug_csr_rdata_o,          // Read data
+    input  logic                       debug_csr_req_i,       // Request from debug to read the CSR regfile
+    input  logic [11:0]                debug_csr_addr_i,      // Address of CSR
+    input  logic                       debug_csr_we_i,        // Is it a read or write?
+    input  logic [63:0]                debug_csr_wdata_i,     // Data to write
+    output logic [63:0]                debug_csr_rdata_o,     // Read data
     // commit acknowledge
-    input  logic                  commit_ack_i,               // Commit acknowledged a instruction -> increase instret CSR
+    input  logic [NR_COMMIT_PORTS-1:0] commit_ack_i,          // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
     input  logic  [3:0]           core_id_i,                  // Core ID is considered static
     input  logic  [5:0]           cluster_id_i,               // Cluster ID is considered static
@@ -74,6 +70,7 @@ module csr_regfile #(
     output logic                  tw_o,                       // timeout wait
     output logic                  tsr_o,                      // trap sret
     // Caches
+    output logic                  icache_en_o,                // L1 ICache Enable
     output logic                  dcache_en_o,                // L1 DCache Enable
     // Performance Counter
     output logic  [11:0]          perf_addr_o,                // address to performance counter module
@@ -152,6 +149,7 @@ module csr_regfile #(
     logic [63:0] scause_q,   scause_d;
     logic [63:0] stval_q,    stval_d;
     logic [63:0] dcache_q,   dcache_d;
+    logic [63:0] icache_q,   icache_d;
 
     logic        wfi_d,      wfi_q;
 
@@ -215,6 +213,7 @@ module csr_regfile #(
                 CSR_MCYCLE:             csr_rdata = cycle_q;
                 CSR_MINSTRET:           csr_rdata = instret_q;
                 CSR_DCACHE:             csr_rdata = dcache_q;
+                CSR_ICACHE:             csr_rdata = icache_q;
                 // Counters and Timers
                 CSR_CYCLE:              csr_rdata = cycle_q;
                 CSR_TIME:               csr_rdata = time_i;
@@ -241,8 +240,11 @@ module csr_regfile #(
     always_comb begin : csr_update
         automatic satp_t sapt;
         automatic logic [63:0] mip;
+        automatic logic [63:0] instret;
+
         sapt = satp_q;
         mip = csr_wdata & 64'h33;
+        instret = instret_q;
         // only USIP, SSIP, UTIP, STIP are write-able
 
         eret_o                  = 1'b0;
@@ -264,6 +266,7 @@ module csr_regfile #(
         mscratch_d              = mscratch_q;
         mtval_d                 = mtval_q;
         dcache_d                = dcache_q;
+        icache_d                = icache_q;
 
         sepc_d                  = sepc_q;
         scause_d                = scause_q;
@@ -360,8 +363,9 @@ module csr_regfile #(
                 CSR_MCAUSE:             mcause_d    = csr_wdata;
                 CSR_MTVAL:              mtval_d     = csr_wdata;
                 CSR_MCYCLE:             cycle_d     = csr_wdata;
-                CSR_MINSTRET:           instret_d   = csr_wdata;
+                CSR_MINSTRET:           instret     = csr_wdata;
                 CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
+                CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
                 CSR_L1_ICACHE_MISS,
                 CSR_L1_DCACHE_MISS,
                 CSR_ITLB_MISS,
@@ -488,13 +492,15 @@ module csr_regfile #(
         // --------------------
         // Counters
         // --------------------
-        instret_d = instret_q;
         // just increment the cycle count
         cycle_d = cycle_q + 1'b1;
         // increase instruction retired counter
-        if (commit_ack_i) begin
-            instret_d = instret_q + 1'b1;
+        for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+            if (commit_ack_i[i]) begin
+                instret++;
+            end
         end
+        instret_d = instret;
     end
 
     // ---------------------------
@@ -653,6 +659,7 @@ module csr_regfile #(
     assign tw_o             = mstatus_q.tw;
     assign tsr_o            = mstatus_q.tsr;
     assign halt_csr_o       = wfi_q;
+    assign icache_en_o      = icache_q[0];
     assign dcache_en_o      = dcache_q[0];
 
     // output assignments dependent on privilege mode
@@ -693,6 +700,7 @@ module csr_regfile #(
             mscratch_q             <= 64'b0;
             mtval_q                <= 64'b0;
             dcache_q               <= 64'b1;
+            icache_q               <= 64'b1;
             // supervisor mode registers
             sepc_q                 <= 64'b0;
             scause_q               <= 64'b0;
@@ -721,6 +729,7 @@ module csr_regfile #(
             mscratch_q             <= mscratch_d;
             mtval_q                <= mtval_d;
             dcache_q               <= dcache_d;
+            icache_q               <= icache_d;
             // supervisor mode registers
             sepc_q                 <= sepc_d;
             scause_q               <= scause_d;

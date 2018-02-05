@@ -1,10 +1,16 @@
-
-/* File:   ariane_pkg.svh
- * Author: Florian Zaruba <zarubaf@ethz.ch>
- * Date:   8.4.2017
+/* Copyright 2018 ETH Zurich and University of Bologna.
+ * Copyright and related rights are licensed under the Solderpad Hardware
+ * License, Version 0.51 (the “License”); you may not use this file except in
+ * compliance with the License.  You may obtain a copy of the License at
+ * http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+ * or agreed to in writing, software, hardware and materials distributed under
+ * this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  *
- * Copyright (C) 2017 ETH Zurich, University of Bologna
- * All rights reserved.
+ * File:   ariane_pkg.svh
+ * Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+ * Date:   8.4.2017
  *
  * Description: Contains all the necessary defines for Ariane
  *              in one package.
@@ -339,7 +345,8 @@ package ariane_pkg;
         CSR_MHARTID        = 12'hF14,
         CSR_MCYCLE         = 12'hB00,
         CSR_MINSTRET       = 12'hB02,
-        CSR_DCACHE         = 12'h700,
+        CSR_DCACHE         = 12'h701,
+        CSR_ICACHE         = 12'h700,
         // Counters and Timers
         CSR_CYCLE          = 12'hC00,
         CSR_TIME           = 12'hC01,

@@ -12,3 +12,9 @@ wlft*
 src/moore.sv
 *.sig
 *.dtb
+*.dasm
+obj_dir/*
+/tmp*
+*.dasm
+/Bender.lock
+/Bender.local
