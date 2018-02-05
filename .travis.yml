@@ -1,24 +1,50 @@
 language: cpp
-# matrix:
-#   include:
-#   # works on Precise and Trusty
-#   - os: linux
-#     addons:
-#       apt:
-#         sources:
-#           - ubuntu-toolchain-r-test
-#         packages:
-#           - g++-6
-#     env:
-#       - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-compiler:
-  - gcc
+# run on new infrastructure
+sudo: false
+cache: apt
+# required packages to install
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-4.8
+      - g++-4.8
+      - gperf
+      - autoconf
+      - automake
+      - autotools-dev
+      - libmpc-dev
+      - libmpfr-dev
+      - libgmp-dev
+      - gawk
+      - build-essential
+      - bison
+      - flex
+      - texinfo
+      - python-pexpect
+      - libusb-1.0-0-dev
+      - device-tree-compiler
+env:
+  global:
+    - RISCV="/home/travis/riscv_install"
+    - MAKEFLAGS="-j2"
+    - PATH="/home/travis/riscv_install/bin:$PATH"
+
+branches:
+  only:
+  - master
+
 before_install:
-  # - eval "${MATRIX_EVAL}"
+  - export CXX=g++-4.8 CC=gcc-4.8
   - ci/make-tmp.sh
-  - ci/install-fesvr.sh
   - ci/install-verilator.sh
+  # - ci/co-riscv-env.sh
+  - ci/install-fesvr.sh
   - ci/build-riscv-tests.sh
-  - export VERILATOR_ROOT=$CI_PROJECT_DIR/tmp/verilator-3.918/
+
 script:
   - make run-asm-tests-verilator verilator=$TRAVIS_BUILD_DIR/tmp/bin/verilator
+
+# extra time duing long builds
+install: travis_wait
