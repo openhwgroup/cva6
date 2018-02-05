@@ -12,5 +12,5 @@ cd $ROOT/tmp/riscv-fesvr-$RELEASE
 mkdir -p build
 cd build
 ../configure --prefix="$ROOT/tmp"
-make -j
+make -j2
 make install
