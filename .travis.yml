@@ -1,0 +1,12 @@
+language: cpp
+compiler:
+  - gcc
+  - clang
+before_install:
+  - ci/make-tmp.sh
+  - ci/install-fesvr.sh
+  - ci/install-verilator.sh
+  - ci/build-riscv-tests.sh
+  - export VERILATOR_ROOT=$CI_PROJECT_DIR/tmp/verilator-3.918/
+script:
+  - make run-asm-tests-verilator verilator=$TRAVIS_BUILD_DIR/tmp/bin/verilator
