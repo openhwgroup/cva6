@@ -18,6 +18,8 @@ Build the Verilator model of Ariane by using the Makefile:
 ```
 make verilate
 ```
+
+This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder).
 <!--
 Start the simulation using Modelsim:
 ```

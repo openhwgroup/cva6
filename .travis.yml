@@ -28,7 +28,6 @@ addons:
 env:
   global:
     - RISCV="/home/travis/riscv_install"
-    - MAKEFLAGS="-j2"
     - PATH="/home/travis/riscv_install/bin:$PATH"
 
 branches:
@@ -38,11 +37,11 @@ branches:
 before_install:
   - export CXX=g++-4.8 CC=gcc-4.8
   - ci/make-tmp.sh
+  - ci/build-riscv-gcc.sh
   - ci/install-verilator.sh
-  # - ci/co-riscv-env.sh
   - ci/install-fesvr.sh
   - ci/build-riscv-tests.sh
-
+  - export VERILATOR_ROOT=$TRAVIS_BUILD_DIR/tmp/verilator-3.918/
 script:
   - make run-asm-tests-verilator verilator=$TRAVIS_BUILD_DIR/tmp/bin/verilator
 
