@@ -11,7 +11,7 @@ autoconf
 mkdir -p build
 cd build
 ../configure --prefix=$ROOT/tmp/riscv-tests/build
-make isa -j2
+make isa -j2 > /dev/null
 make install
 
 cd isa

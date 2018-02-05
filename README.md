@@ -19,7 +19,14 @@ Build the Verilator model of Ariane by using the Makefile:
 make verilate
 ```
 
-This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder).
+This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `obj_dir` and accepts a RISC-v ELF binary as an argument, e.g.:
+
+```
+obj_dir/Variane_wrapped -p rv64um-v-divuw
+```
+
+The Verilator testbench makes use of the `riscv-fesvr`. That means that bare `riscv-tests` can be run on the simulator.
+
 <!--
 Start the simulation using Modelsim:
 ```

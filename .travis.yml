@@ -1,7 +1,11 @@
 language: cpp
 # run on new infrastructure
 sudo: false
-cache: apt
+cache:
+  apt: true
+  directories:
+    $RISCV
+
 # required packages to install
 addons:
   apt:
