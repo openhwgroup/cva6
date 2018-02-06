@@ -40,10 +40,6 @@ branches:
 
 before_install:
   - export CXX=g++-4.8 CC=gcc-4.8
-  - ci/build-riscv-gcc.sh
-  - ci/install-verilator.sh
-  - ci/install-fesvr.sh
-  - export VERILATOR_ROOT=$TRAVIS_BUILD_DIR/tmp/verilator-3.918/
 
 stages:
   - compile
@@ -56,6 +52,9 @@ jobs:
         - ci/build-riscv-gcc.sh
     - stage: test
       script:
+        - ci/install-verilator.sh
+        - ci/install-fesvr.sh
+        - export VERILATOR_ROOT=$TRAVIS_BUILD_DIR/tmp/verilator-3.918/
         - ci/build-riscv-tests.sh
         - make run-asm-tests-verilator verilator=$TRAVIS_BUILD_DIR/tmp/bin/verilator
 
