@@ -40,6 +40,7 @@ branches:
 
 before_install:
   - export CXX=g++-4.8 CC=gcc-4.8
+  - ci/make-tmp.sh
 
 stages:
   - compile
