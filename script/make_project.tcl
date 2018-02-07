@@ -39,7 +39,8 @@ set files [list \
                [file normalize $origin_dir/include/nbdcache_pkg.sv] \
                [file normalize $origin_dir/src/util/instruction_tracer_if.sv] \
                [file normalize $origin_dir/src/util/instruction_tracer_pkg.sv] \
-               [file normalize $origin_dir/axi_if/axi_if.sv] \
+               [file normalize $origin_dir/src/axi_if/axi_if.sv] \
+               [file normalize $origin_dir/src/axi_mem_if/axi2mem.sv] \
                [file normalize $origin_dir/src/ariane.sv] \
                [file normalize $origin_dir/src/ariane_wrapped.sv] \
                [file normalize $origin_dir/src/alu.sv] \
@@ -333,8 +334,6 @@ set files [list \
                [file normalize $base_dir/src/test/verilog/sd_verilator_model.sv] \
                [file normalize $base_dir/src/test/verilog/nasti_ram_dummy.sv] \
                [file normalize $base_dir/src/test/verilog/chip_top_tb.sv] \
-               [file normalize $proj_dir/$project_name.srcs/sources_1/ip/mig_7series_0/mig_7series_0/example_design/sim/ddr2_model.v] \
-               [file normalize $base_dir/opensocdebug/glip/src/backend_tcp/logic/dpi/glip_tcp_toplevel.sv] \
               ]
 add_files -norecurse -fileset $obj $files
 

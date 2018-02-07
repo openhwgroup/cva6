@@ -180,7 +180,7 @@ vivado: ariane_top/ariane_top.xpr
 	vivado ariane_top/ariane_top.xpr &
 
 ariane_top/ariane_top.xpr:
-	vivado -mode batch -source make_project.tcl
+	vivado -mode batch -source script/make_project.tcl
 
 clean:
 	rm -rf work/ *.ucdb

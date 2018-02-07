@@ -49,7 +49,10 @@ module ariane_wrapped #(
         output logic [63:0]                    debug_rdata_o,
         output logic                           debug_halted_o,
         input  logic                           debug_halt_i,
-        input  logic                           debug_resume_i
+        input  logic                           debug_resume_i,
+        
+        input logic [15:0] i_dip,
+        output logic [15:0] o_led
     );
 
     localparam int unsigned AXI_NUMBYTES = AXI_DATA_WIDTH/8;
@@ -130,6 +133,8 @@ module core2mem #(
 )(
     input logic         clk_i,    // Clock
     input logic         rst_ni,  // Asynchronous reset active low
+    input logic [15:0] i_dip,
+    output logic [15:0] o_led,
     AXI_BUS.Slave       bypass_if,
     AXI_BUS.Slave       data_if,
     AXI_BUS.Slave       instr_if
@@ -158,6 +163,17 @@ module core2mem #(
         .data_o ( bypass_wdata   ),
         .data_i ( bypass_rdata   )
     );
+    
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+       if (~rst_ni) begin
+            bypass_rdata <= '0;
+        end else begin
+            if (bypass_req & bypass_we)
+                o_led <= bypass_wdata;
+            else if (bypass_req)
+                bypass_rdata <= i_dip;
+        end
+    end
 
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
@@ -176,6 +192,16 @@ module core2mem #(
         .data_i ( data_rdata   )
     );
 
+sram #(.DATA_WIDTH(64), .NUM_WORDS(1024)) data_ram(
+   .clk_i(clk_i),
+   .req_i(data_req),
+   .we_i(data_we),
+   .addr_i(data_address),
+   .wdata_i(data_wdata),
+   .be_i(data_be),
+   .rdata_o(data_rdata)
+);
+
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
@@ -193,46 +219,15 @@ module core2mem #(
         .data_i ( instr_rdata   )
     );
 
-    // ------------------------
-    // Bypass Interface
-    // ------------------------
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            bypass_rdata <= '0;
-        end else begin
-            if (bypass_req & bypass_we)
-                write_uint64({data_address[63:3], 3'b0}, bypass_wdata);
-            else if (bypass_req)
-                bypass_rdata <= read_uint64({bypass_address[63:3], 3'b0});
-        end
-    end
+sram #(.DATA_WIDTH(64), .NUM_WORDS(1024)) prog_ram(
+       .clk_i(clk_i),
+       .req_i(instr_req),
+       .we_i(instr_we),
+       .addr_i(instr_address),
+       .wdata_i(instr_wdata),
+       .be_i(instr_be),
+       .rdata_o(instr_rdata)
+    );
 
-    // ------------------------
-    // Data Interface
-    // ------------------------
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            data_rdata <= '0;
-        end else begin
-            if (data_req & data_we)
-                write_uint64({data_address[63:3], 3'b0}, data_wdata);
-            else if (data_req)
-                data_rdata <= read_uint64({data_address[63:3], 3'b0});
-        end
-    end
-
-    // ------------------------
-    // Instruction Interface
-    // ------------------------
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            instr_rdata <= '0;
-        end else begin
-            if (instr_req & instr_we)
-                write_uint64({instr_address[63:3], 3'b0}, instr_wdata);
-            else if (instr_req)
-                instr_rdata <= read_uint64({instr_address[63:3], 3'b0});
-        end
-    end
 endmodule
 
