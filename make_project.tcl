@@ -90,6 +90,31 @@ set_property verilog_define [list FPGA FPGA_FULL NEXYS4] [get_filesets sources_1
 # Set 'sources_1' fileset properties
 set_property "top" "chip_top" [get_filesets sources_1]
 
+# Cache RAMs
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -module_name xilinx_dcache_bank_data_256x128
+set_property -dict [list \
+                        CONFIG.Use_Byte_Write_Enable {true} \
+                        CONFIG.Byte_Size {8} \
+                        CONFIG.Write_Width_A {128} \
+                        CONFIG.Read_Width_A {128} \
+                        CONFIG.Write_Width_B {128} \
+                        CONFIG.Read_Width_B {128} \
+                        CONFIG.Write_Depth_A {256} \
+                        CONFIG.Register_PortA_Output_of_Memory_Primitives {false} ] \
+    [get_ips xilinx_dcache_bank_data_256x128]
+
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -module_name xilinx_dcache_bank_tag_256x46
+set_property -dict [list \
+                        CONFIG.Use_Byte_Write_Enable {true} \
+                        CONFIG.Byte_Size {8} \
+                        CONFIG.Write_Width_A {48} \
+                        CONFIG.Read_Width_A {48} \
+                        CONFIG.Write_Width_B {48} \
+                        CONFIG.Read_Width_B {48} \
+                        CONFIG.Write_Depth_A {256} \
+                        CONFIG.Register_PortA_Output_of_Memory_Primitives {false} ] \
+    [get_ips xilinx_dcache_bank_tag_256x46]
+
 #UART
 create_ip -name axi_uart16550 -vendor xilinx.com -library ip -module_name axi_uart16550_0
 set_property -dict [list \
