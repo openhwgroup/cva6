@@ -673,7 +673,7 @@ module ariane #(
     // -------------------
     // Instruction Tracer
     // -------------------
-    `ifndef SYNTHESIS
+    `ifndef FPGA
     `ifndef verilator
     instruction_tracer_if tracer_if (clk_i);
     // assign instruction tracer interface

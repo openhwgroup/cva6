@@ -77,6 +77,8 @@ set files [list \
                [file normalize $origin_dir/src/perf_counters.sv] \
                [file normalize $origin_dir/src/regfile_ff.sv] \
                [file normalize $origin_dir/src/util/xilinx_sram.sv] \
+               [file normalize $origin_dir/src/lfsr.sv] \
+               [file normalize $origin_dir/src/icache.sv] \
              ]
 add_files -norecurse -fileset [get_filesets sources_1] $files
 
