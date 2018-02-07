@@ -10,7 +10,7 @@ set axi_id_width {8}
 set origin_dir "."
 set base_dir "src"
 
-set project_name "ariane"
+set project_name "ariane_top"
 set CONFIG "default"
 
 # Set the directory path for the original project from where this script was exported
@@ -39,7 +39,7 @@ set files [list \
                [file normalize $origin_dir/include/nbdcache_pkg.sv] \
                [file normalize $origin_dir/src/util/instruction_tracer_if.sv] \
                [file normalize $origin_dir/src/util/instruction_tracer_pkg.sv] \
-               [file normalize $origin_dir/tb/axi_if/axi_if.sv] \
+               [file normalize $origin_dir/axi_if/axi_if.sv] \
                [file normalize $origin_dir/src/ariane.sv] \
                [file normalize $origin_dir/src/ariane_wrapped.sv] \
                [file normalize $origin_dir/src/alu.sv] \
@@ -201,7 +201,7 @@ generate_target {instantiation_template} \
 
 # Memory Controller
 create_ip -name mig_7series -vendor xilinx.com -library ip -module_name mig_7series_0
-set_property CONFIG.XML_INPUT_FILE [file normalize $origin_dir/script/mig_config.prj] [get_ips mig_7series_0]
+set_property CONFIG.XML_INPUT_FILE [file normalize script/mig_config.prj] [get_ips mig_7series_0]
 generate_target {instantiation_template} \
     [get_files $proj_dir/$project_name.srcs/sources_1/ip/mig_7series_0/mig_7series_0.xci]
 
