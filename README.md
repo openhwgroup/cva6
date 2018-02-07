@@ -2,9 +2,14 @@
 
 # Ariane RISC-V CPU
 
-![](docs/fig/ariane_overview.png)
+Ariane is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M and C extensions as specified in Volume I: User-Level ISA V 2.1 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system.
+
+It has configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
+
+![](docs/img/ariane_overview.png)
 
 ## Getting Started
+
 
 Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools).
 
@@ -19,7 +24,7 @@ Build the Verilator model of Ariane by using the Makefile:
 make verilate
 ```
 
-This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `obj_dir` and accepts a RISC-v ELF binary as an argument, e.g.:
+This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `obj_dir` and accepts a RISC-V ELF binary as an argument, e.g.:
 
 ```
 obj_dir/Variane_wrapped -p rv64um-v-divuw
@@ -27,9 +32,21 @@ obj_dir/Variane_wrapped -p rv64um-v-divuw
 
 The Verilator testbench makes use of the `riscv-fesvr`. That means that bare `riscv-tests` can be run on the simulator.
 
-<!--
+> Due to the way the C++ testbench is constructed we need a slightly altered version of the `riscv-fesvr` which can be found [here](https://github.com/pulp-platform/riscv-fesvr).
+
+## Planned Improvements
+
+While developing Ariane it has become evident that, in order to support Linux, the atomic extension is going to be mandatory. While the core is currently booting Linux by emulating Atomics in BBL (in a single core environment this is trivially met by disabling interrupts) this is not the behavior which is intended. For that reason we are going to fully support all atomic extensions in the very near future.
+
+Furthermore, we have major IPC improvements planned. Specifically this will resolve about the way branches and jumps are currently handled in the core.
+
+## Going Beyond
+
+The core has been developed with a full licensed version of QuestaSim. If you happen to have this simulator available yourself here is how you could run the core with it:
+
 Start the simulation using Modelsim:
 ```
+make build
 make sim
 ```
 To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the riscv-tests isa folder:
@@ -40,9 +57,10 @@ If you call `simc` instead of `sim` it will run without the GUI.
 
 Or start any of the unit tests by:
 ```
-make dcache_arbiter
-``` -->
-<!-- ### Randomized Constrained Testing with Torture
+make alu
+```
+
+### Randomized Constrained Testing with Torture
 
 Ariane's core testbench is fully compatible with the randomized constrained testing framework called Torture. To start testing Ariane all you need is to step into the `riscv-torture/` folder and issue:
 ```
@@ -54,8 +72,7 @@ Torture's overnight tests work the same way, just call
 ```
 make rnight
 ```
-
-C (a.k.a. Verilator) tests are currently not supported. -->
+C (a.k.a. Verilator) tests are currently not supported.
 
 # Contributing
 
