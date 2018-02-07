@@ -18,3 +18,8 @@ obj_dir/*
 *.dasm
 /Bender.lock
 /Bender.local
+ariane/
+*~
+vivado*.jou
+vivado*.log
+vivado*.str

@@ -10,7 +10,7 @@ Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools).
 
 Checkout the repository and initialize all submodules
 ```
-git checkout https://github.com/pulp-platform/ariane.git
+git clone https://github.com/pulp-platform/ariane.git
 git submodule update --init --recursive
 ```
 
