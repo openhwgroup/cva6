@@ -39,7 +39,9 @@ set files [list \
                [file normalize $origin_dir/include/nbdcache_pkg.sv] \
                [file normalize $origin_dir/src/util/instruction_tracer_if.sv] \
                [file normalize $origin_dir/src/util/instruction_tracer_pkg.sv] \
+               [file normalize $origin_dir/tb/axi_if/axi_if.sv] \
                [file normalize $origin_dir/src/ariane.sv] \
+               [file normalize $origin_dir/src/ariane_wrapped.sv] \
                [file normalize $origin_dir/src/alu.sv] \
                [file normalize $origin_dir/src/branch_unit.sv] \
                [file normalize $origin_dir/src/btb.sv] \
@@ -73,7 +75,6 @@ set files [list \
                [file normalize $origin_dir/src/miss_handler.sv] \
                [file normalize $origin_dir/src/cache_ctrl.sv] \
                [file normalize $origin_dir/src/perf_counters.sv] \
-               [file normalize $origin_dir/src/regfile.sv] \
                [file normalize $origin_dir/src/regfile_ff.sv] \
                [file normalize $origin_dir/src/util/xilinx_sram.sv] \
              ]
