@@ -76,6 +76,7 @@ module frontend #(
     input  logic               debug_set_pc_i,     // Set PC request from debug
     // Instruction Fetch
     AXI_BUS.Master             axi,
+    output logic               l1_icache_miss_o,    // instruction cache missed
     //
     // instruction output port -> to processor back-end
     output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
@@ -140,7 +141,8 @@ icache #(.SET_ASSOCIATIVITY(4)) i_icache (
     .kill_req_i (),
     .ready_o   (),
     .valid_o (),
-    .axi       (axi)
+    .axi       (axi),
+    .miss_o    (l1_icache_miss_o)
 );
 
 
@@ -150,24 +152,51 @@ endmodule
 // Instruction Scanner
 // ------------------------------
 module instr_scan (
-    input logic [31:0] instr_i
+    input  logic [31:0] instr_i,        // expect aligned instruction, compressed or not
+    output logic        is_rvc_o,
+    output logic        rvi_return_o,
+    output logic        rvi_call_o,
+    output logic        rvc_branch_o,
+    output logic        rvc_jump_o,
+    output logic        rvc_jr_o,
+    output logic        rvc_return_o,
+    output logic        rvc_jalr_o,
+    output logic        rvc_call_o,
+    output logic [63:0] rvi_imm_o,
+    output logic [63:0] rvc_imm_o,
+    output logic        rvi_branch_o,
+    output logic        rvi_jalr_o,
+    output logic        rvi_jump_o
 );
-    // logic rviBranch;
-    // logic rviJump;
-    // logic rviJALR;
-    // logic rviReturnl
-    // logic rviCall;
+    assign is_rvc_o     = (instr_i[1:0] != 2'b00);
+    // check that rs1 is either x1 or x5 and that rs1 is not x1 or x5, TODO: check the fact about bit 7
+    assign rvi_return_o = rvi_jalr_o & ~instr_i[7] & ~instr_i[19] & ~instr_i[18] & instr_i[17] & ~instr_i[15];
+    assign rvi_call_o   = (rvi_jalr_o || rvi_jump_o) & instr_i[7]; // TODO: check that this captures calls
+    assign rvc_branch_o = (instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ);
+    // opcode JAL
+    assign rvc_jump_o   = (instr_i[15:13] == OPCODE_C_J);
+    assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000);
+    // check that rs1 is x1 or x5
+    assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & ~instr_i[7];
+    assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000);
+    assign rvc_call_o   = rvc_jalr_o;  // TODO: check that this captures calls
 
-    always_comb begin
+    // differentiates between JAL and BRANCH opcode, JALR comes from BHT
+    assign rvi_imm_o    = (instr_i[3]) ? uj_imm(instr_i) : sb_imm(instr_i);
+    // // differentiates between JAL and BRANCH opcode, JALR comes from BHT
+    assign rvc_imm_o    = (instr_i[14]) ? {{56{instr_i[12]}}, instr_i[6:5], instr_i[2], instr_i[11:10], instr_i[4:3], 1'b0}
+                                       : {{53{instr_i[12]}}, instr_i[8], instr_i[10:9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5:3], 1'b0};
 
-    end
-
+    assign rvi_branch_o = (instr_i[6:0] == OPCODE_BRANCH) ? 1'b1 : 1'b0;
+    assign rvi_jalr_o   = (instr_i[6:0] == OPCODE_JALR)   ? 1'b1 : 1'b0;
+    assign rvi_jump_o   = (instr_i[6:0] == OPCODE_JAL)    ? 1'b1 : 1'b0;
 endmodule
+
 // ------------------------------
 // Instruction Cache
 // ------------------------------
 module icache #(
-        parameter int unsigned SET_ASSOCIATIVITY = 8,
+        parameter int unsigned SET_ASSOCIATIVITY = 4,
         parameter int unsigned INDEX_WIDTH       = 12, // in bit
         parameter int unsigned TAG_WIDTH         = 44, // in bit
         parameter int unsigned CACHE_LINE_WIDTH  = 64, // in bit
@@ -175,7 +204,7 @@ module icache #(
     )(
         input  logic                     clk_i,
         input  logic                     rst_ni,
-        input  logic                     flush_i,    // flush the icache
+        input  logic                     flush_i,    // flush the icache, flush and kill have to be asserted together
         input  logic                     req_i,      // we request a new word
         input  logic                     kill_req_i, // kill the current request
         output logic                     ready_o,    // icache is ready
@@ -183,6 +212,7 @@ module icache #(
         input  logic [TAG_WIDTH-1:0]     tag_i,      // 2nd cycle: physical tag
         output logic [FETCH_WIDTH-1:0]   data_o,     // 2+ cycle out: tag
         output logic                     valid_o,    // signals a valid read
+        output logic                     miss_o,     // we missed on the cache
         AXI_BUS.Master                   axi
     );
 
@@ -190,13 +220,14 @@ module icache #(
     localparam ICACHE_NUM_WORD = 2**(INDEX_WIDTH - BYTE_OFFSET);
 
     // registers
-    enum logic [3:0] { FLUSH, IDLE, TAG_CMP, WAIT_AXI_R_RESP,
+    enum logic [3:0] { FLUSH, IDLE, TAG_CMP, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP,
                        REDO_REQ, WAIT_TAG_SAVED, REFILL
                      }                      state_d, state_q;
     logic [$clog2(ICACHE_NUM_WORD)-1:0]     cnt_d, cnt_q;
     logic [INDEX_WIDTH-1:0]                 index_d, index_q;
     logic [TAG_WIDTH-1:0]                   tag_d, tag_q;
     logic [SET_ASSOCIATIVITY-1:0]           evict_way_d, evict_way_q;
+    logic                                   flushing_d, flushing_q;
 
     // signals
     logic [SET_ASSOCIATIVITY-1:0]         req;           // request to memory array
@@ -291,6 +322,7 @@ module icache #(
     for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
         assign way_valid[i] = tag_rdata[i].valid;
     end
+
     // ------------------
     // AXI Plumbing
     // ------------------
@@ -327,7 +359,6 @@ module icache #(
 
     assign axi.r_ready   = 1'b1;
 
-
     // ------------------
     // Cache Ctrl
     // ------------------
@@ -338,15 +369,18 @@ module icache #(
         index_d     = index_q;
         tag_d       = tag_q;
         evict_way_d = evict_way_q;
+        flushing_d  = flushing_q;
 
-        req        = '0;
-        addr       = index_i[INDEX_WIDTH-1:BYTE_OFFSET];
-        we         = 1'b0;
-        data_wdata = '0;
-        tag_wdata  = '0;
-        ready_o    = 1'b0;
-        tag        = tag_i;
-        valid_o    = 1'b1;
+        req         = '0;
+        addr        = index_i[INDEX_WIDTH-1:BYTE_OFFSET];
+        we          = 1'b0;
+        data_wdata  = '0;
+        tag_wdata   = '0;
+        ready_o     = 1'b0;
+        tag         = tag_i;
+        valid_o     = 1'b0;
+        update_lfsr = 1'b0;
+        miss_o      = 1'b0;
 
         axi.ar_valid  = 1'b0;
         axi.ar_addr   = '0;
@@ -363,6 +397,11 @@ module icache #(
                     index_d = index_i;
                     state_d = TAG_CMP;
                 end
+
+                // go to flushing state
+                if (flush_i || flushing_q)
+                    state_d = FLUSH;
+
             end
             // ~> compare the tag
             TAG_CMP: begin
@@ -376,13 +415,21 @@ module icache #(
                         req = '1;
                         // save the index and stay in compare mode
                         index_d = index_i;
+                    // no new request -> go back to idle
+                    end else begin
+                        state_d = IDLE;
                     end
                 end else begin
                     state_d     = REFILL;
                     evict_way_d = '0;
+                    // save tag
+                    tag_d       = tag_i;
+                    miss_o      = 1'b1;
                     // get way which to replace
                     if (repl_w_random) begin
                         evict_way_d = random_way;
+                        // shift the lfsr
+                        update_lfsr = 1'b1;
                     end else begin
                         evict_way_d[repl_invalid] = 1'b1;
                     end
@@ -392,8 +439,12 @@ module icache #(
             REFILL: begin
                 axi.ar_valid  = 1'b1;
                 axi.ar_addr[INDEX_WIDTH+TAG_WIDTH-1:0] = {tag_q, index_q};
+
+                if (kill_req_i)
+                    state_d = WAIT_KILLED_REFILL;
+
                 if (axi.ar_ready)
-                    state_d = WAIT_AXI_R_RESP;
+                    state_d = (kill_req_i) ? WAIT_KILLED_AXI_R_RESP : WAIT_AXI_R_RESP;
             end
             // ~> wait for the read response
             // TODO: Handle responses for arbitrary cache line widths
@@ -410,8 +461,11 @@ module icache #(
                     data_wdata = axi.r_data;
                 end
 
+                if (kill_req_i)
+                    state_d = WAIT_KILLED_AXI_R_RESP;
+
                 if (axi.r_last) begin
-                    state_d = REDO_REQ;
+                    state_d = (kill_req_i) ? IDLE : REDO_REQ;
                 end
             end
             // ~> redo the request,
@@ -421,13 +475,23 @@ module icache #(
                 tag = tag_q;
                 state_d = WAIT_TAG_SAVED;
             end
-
+            // we already saved the tag -> apply it
             WAIT_TAG_SAVED: begin
                 tag     = tag_q;
                 state_d = IDLE;
                 valid_o = 1'b1;
             end
-
+            // we need to wait for some AXI responses to come back
+            // here for the AW valid
+            WAIT_KILLED_REFILL: begin
+                if (axi.aw_valid)
+                    state_d = IDLE;
+            end
+            // and here for the last R valid
+            WAIT_KILLED_AXI_R_RESP: begin
+                if (axi.r_last)
+                    state_d = IDLE;
+            end
             // ~> we are coming here after reset or when a flush was requested
             FLUSH: begin
                 addr    = cnt_q;
@@ -435,11 +499,22 @@ module icache #(
                 req     = '1;
                 we      = 1;
                 // we've finished flushing, go back to idle
-                if (cnt_q == ICACHE_NUM_WORD - 1) state_d = IDLE;
+                if (cnt_q == ICACHE_NUM_WORD - 1) begin
+                    state_d = IDLE;
+                    flushing_d = 1'b0;
+                end
             end
 
             default : state_d = IDLE;
         endcase
+
+        if (kill_req_i && !(state_q inside {REFILL, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP})) begin
+            state_d = IDLE;
+        end
+
+        if (flush_i) begin
+            flushing_d = 1'b1;
+        end
     end
 
     ff1 #(
@@ -469,18 +544,20 @@ module icache #(
             index_q     <= '0;
             tag_q       <= '0;
             evict_way_q <= '0;
+            flushing_q  <= 1'b0;
         end else begin
             state_q     <= state_d;
             cnt_q       <= cnt_d;
             index_q     <= index_d;
             tag_q       <= tag_d;
             evict_way_q <= evict_way_d;
+            flushing_q  <= flushing_d;
         end
     end
 
     `ifndef SYNTHESIS
         initial begin
-            assert ($bits(data_if.aw_addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
+            assert ($bits(axi.aw_addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
             assert (CACHE_LINE_WIDTH == 64) else $fatal(1, "Instruction cacheline width needs to be 64 for the moment");
         end
     `endif

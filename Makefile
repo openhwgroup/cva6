@@ -24,7 +24,7 @@ ariane_pkg := include/ariane_pkg.sv include/nbdcache_pkg.sv
 util := $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv \
 		src/util/generic_fifo.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv
 # test targets
-tests := alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
+tests := alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo icache
 # UVM agents
 agents := $(wildcard tb/agents/*/*.sv*)
 # path to interfaces
@@ -41,7 +41,7 @@ dpi := $(wildcard tb/dpi/*)
 src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv) \
 	  $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/*.sv)
 # look for testbenches
-tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
+tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv tb/icache_tb.sv
 
 # RISCV-tests path
 riscv-test-dir := tmp/riscv-tests/build/isa
@@ -160,10 +160,10 @@ $(tests): build
 	vopt${questa_version} -work ${library} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
 	# vsim${questa_version} $@_tb_optimized
 	# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
-	vsim${questa_version} +UVM_TESTNAME=$@_test +ASMTEST=$(riscv-test-dir)/$(riscv-test) \
-	+uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug \
-	-do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
-	${library}.$@_tb_optimized
+	# vsim${questa_version} +UVM_TESTNAME=$@_test +ASMTEST=$(riscv-test-dir)/$(riscv-test) \
+	# +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug \
+	# -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
+	# ${library}.$@_tb_optimized
 
 # User Verilator
 verilate:

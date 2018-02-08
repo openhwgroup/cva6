@@ -648,7 +648,7 @@ module ariane #(
     // -------------------
     // Instruction Cache
     // -------------------
-    icache #(
+    icache_old #(
        .AXI_USER_WIDTH      ( AXI_USER_WIDTH                 ),
        .AXI_ID_WIDTH        ( AXI_ID_WIDTH                   )
     ) i_icache (

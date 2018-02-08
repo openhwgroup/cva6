@@ -23,7 +23,7 @@
 // Revision v0.1 - File Created
 // Revision v0.2 - Remove SCMs
 
-module icache #(
+module icache_old #(
     parameter int unsigned FETCH_ADDR_WIDTH = 56,       // Size of the fetch address
     parameter int unsigned FETCH_DATA_WIDTH = 64,       // Size of the fetch data
     parameter int unsigned ID_WIDTH         = 4,

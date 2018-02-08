@@ -234,6 +234,10 @@ package ariane_pkg;
     localparam OPCODE_AUIPC     = 7'h17;
     localparam OPCODE_LUI       = 7'h37;
     localparam OPCODE_AMO       = 7'h2F;
+
+    localparam OPCODE_C_J       = 3'b101;
+    localparam OPCODE_C_BEQZ    = 3'b110;
+    localparam OPCODE_C_BNEZ    = 3'b111;
     // --------------------
     // Atomics
     // --------------------
@@ -434,5 +438,20 @@ package ariane_pkg;
     // ----------------------
     function automatic logic [63:0] sext32 (logic [31:0] operand);
         return {{32{operand[31]}}, operand[31:0]};
+    endfunction
+
+    // ----------------------
+    // Immediate functions
+    // ----------------------
+    function automatic logic [63:0] uj_imm (logic [31:0] instruction_i);
+        return { {44 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
+    endfunction
+
+    function automatic logic [63:0] i_imm (logic [31:0] instruction_i);
+        return { {52 {instruction_i[31]}}, instruction_i[31:20] };
+    endfunction
+
+    function automatic logic [63:0] sb_imm (logic [31:0] instruction_i);
+        return { {51 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
     endfunction
 endpackage
