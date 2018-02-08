@@ -97,56 +97,54 @@ module nbdcache #(
     // ------------------
     // Cache Controller
     // ------------------
-    generate
-        for (genvar i = 0; i < 3; i++) begin : master_ports
-            cache_ctrl  #(
-                .SET_ASSOCIATIVITY     ( SET_ASSOCIATIVITY    ),
-                .INDEX_WIDTH           ( INDEX_WIDTH          ),
-                .TAG_WIDTH             ( TAG_WIDTH            ),
-                .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     ),
-                .CACHE_START_ADDR      ( CACHE_START_ADDR     )
-            ) i_cache_ctrl (
-                .bypass_i              ( ~enable_i            ),
-                .busy_o                ( busy            [i]  ),
-                .address_index_i       ( address_index_i [i]  ),
-                .address_tag_i         ( address_tag_i   [i]  ),
-                .data_wdata_i          ( data_wdata_i    [i]  ),
-                .data_req_i            ( data_req_i      [i]  ),
-                .data_we_i             ( data_we_i       [i]  ),
-                .data_be_i             ( data_be_i       [i]  ),
-                .data_size_i           ( data_size_i     [i]  ),
-                .kill_req_i            ( kill_req_i      [i]  ),
-                .tag_valid_i           ( tag_valid_i     [i]  ),
-                .data_gnt_o            ( data_gnt_o      [i]  ),
-                .data_rvalid_o         ( data_rvalid_o   [i]  ),
-                .data_rdata_o          ( data_rdata_o    [i]  ),
-                .amo_op_i              ( amo_op_i        [i]  ),
+    for (genvar i = 0; i < 3; i++) begin : master_ports
+        cache_ctrl  #(
+            .SET_ASSOCIATIVITY     ( SET_ASSOCIATIVITY    ),
+            .INDEX_WIDTH           ( INDEX_WIDTH          ),
+            .TAG_WIDTH             ( TAG_WIDTH            ),
+            .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     ),
+            .CACHE_START_ADDR      ( CACHE_START_ADDR     )
+        ) i_cache_ctrl (
+            .bypass_i              ( ~enable_i            ),
+            .busy_o                ( busy            [i]  ),
+            .address_index_i       ( address_index_i [i]  ),
+            .address_tag_i         ( address_tag_i   [i]  ),
+            .data_wdata_i          ( data_wdata_i    [i]  ),
+            .data_req_i            ( data_req_i      [i]  ),
+            .data_we_i             ( data_we_i       [i]  ),
+            .data_be_i             ( data_be_i       [i]  ),
+            .data_size_i           ( data_size_i     [i]  ),
+            .kill_req_i            ( kill_req_i      [i]  ),
+            .tag_valid_i           ( tag_valid_i     [i]  ),
+            .data_gnt_o            ( data_gnt_o      [i]  ),
+            .data_rvalid_o         ( data_rvalid_o   [i]  ),
+            .data_rdata_o          ( data_rdata_o    [i]  ),
+            .amo_op_i              ( amo_op_i        [i]  ),
 
-                .req_o                 ( req            [i+1] ),
-                .addr_o                ( addr           [i+1] ),
-                .gnt_i                 ( gnt            [i+1] ),
-                .data_i                ( rdata                ),
-                .tag_o                 ( tag            [i+1] ),
-                .data_o                ( wdata          [i+1] ),
-                .we_o                  ( we             [i+1] ),
-                .be_o                  ( be             [i+1] ),
-                .hit_way_i             ( hit_way              ),
+            .req_o                 ( req            [i+1] ),
+            .addr_o                ( addr           [i+1] ),
+            .gnt_i                 ( gnt            [i+1] ),
+            .data_i                ( rdata                ),
+            .tag_o                 ( tag            [i+1] ),
+            .data_o                ( wdata          [i+1] ),
+            .we_o                  ( we             [i+1] ),
+            .be_o                  ( be             [i+1] ),
+            .hit_way_i             ( hit_way              ),
 
-                .miss_req_o            ( miss_req        [i]  ),
-                .miss_gnt_i            ( miss_gnt        [i]  ),
-                .active_serving_i      ( active_serving  [i]  ),
-                .critical_word_i       ( critical_word        ),
-                .critical_word_valid_i ( critical_word_valid  ),
-                .bypass_gnt_i          ( bypass_gnt      [i]  ),
-                .bypass_valid_i        ( bypass_valid    [i]  ),
-                .bypass_data_i         ( bypass_data     [i]  ),
+            .miss_req_o            ( miss_req        [i]  ),
+            .miss_gnt_i            ( miss_gnt        [i]  ),
+            .active_serving_i      ( active_serving  [i]  ),
+            .critical_word_i       ( critical_word        ),
+            .critical_word_valid_i ( critical_word_valid  ),
+            .bypass_gnt_i          ( bypass_gnt      [i]  ),
+            .bypass_valid_i        ( bypass_valid    [i]  ),
+            .bypass_data_i         ( bypass_data     [i]  ),
 
-                .mshr_addr_o           ( mshr_addr         [i] ), // TODO
-                .mshr_addr_matches_i   ( mshr_addr_matches [i] ), // TODO
-                .*
-            );
-        end
-    endgenerate
+            .mshr_addr_o           ( mshr_addr         [i] ), // TODO
+            .mshr_addr_matches_i   ( mshr_addr_matches [i] ), // TODO
+            .*
+        );
+    end
 
     // ------------------
     // Miss Handling Unit
@@ -180,50 +178,46 @@ module nbdcache #(
     // --------------
     // Memory Arrays
     // --------------
-    generate
-        for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
-            sram #(
-                .DATA_WIDTH ( CACHE_LINE_WIDTH                  ),
-                .NUM_WORDS  ( NUM_WORDS                         )
-            ) data_sram (
-                .req_i   ( req_ram [i]                          ),
-                .we_i    ( we_ram                               ),
-                .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
-                .wdata_i ( wdata_ram.data                       ),
-                .be_i    ( be_ram.data                          ),
-                .rdata_o ( rdata_ram[i].data                    ),
-                .*
-            );
+    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
+        sram #(
+            .DATA_WIDTH ( CACHE_LINE_WIDTH                  ),
+            .NUM_WORDS  ( NUM_WORDS                         )
+        ) data_sram (
+            .req_i   ( req_ram [i]                          ),
+            .we_i    ( we_ram                               ),
+            .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
+            .wdata_i ( wdata_ram.data                       ),
+            .be_i    ( be_ram.data                          ),
+            .rdata_o ( rdata_ram[i].data                    ),
+            .*
+        );
 
-            sram #(
-                .DATA_WIDTH ( TAG_WIDTH                         ),
-                .NUM_WORDS  ( NUM_WORDS                         )
-            ) tag_sram (
-                .req_i   ( req_ram [i]                          ),
-                .we_i    ( we_ram                               ),
-                .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
-                .wdata_i ( wdata_ram.tag                        ),
-                .be_i    ( be_ram.tag                           ),
-                .rdata_o ( rdata_ram[i].tag                     ),
-                .*
-            );
+        sram #(
+            .DATA_WIDTH ( TAG_WIDTH                         ),
+            .NUM_WORDS  ( NUM_WORDS                         )
+        ) tag_sram (
+            .req_i   ( req_ram [i]                          ),
+            .we_i    ( we_ram                               ),
+            .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
+            .wdata_i ( wdata_ram.tag                        ),
+            .be_i    ( be_ram.tag                           ),
+            .rdata_o ( rdata_ram[i].tag                     ),
+            .*
+        );
 
-        end
-    endgenerate
+    end
 
     // ----------------
     // Dirty SRAM
     // ----------------
     logic [DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
 
-    generate
-        for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
-            assign dirty_wdata[i]                     = wdata_ram.dirty;
-            assign dirty_wdata[SET_ASSOCIATIVITY + i] = wdata_ram.valid;
-            assign rdata_ram[i].valid                 = dirty_rdata[SET_ASSOCIATIVITY + i];
-            assign rdata_ram[i].dirty                 = dirty_rdata[i];
-        end
-    endgenerate
+    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
+        assign dirty_wdata[i]                     = wdata_ram.dirty;
+        assign dirty_wdata[SET_ASSOCIATIVITY + i] = wdata_ram.valid;
+        assign rdata_ram[i].valid                 = dirty_rdata[SET_ASSOCIATIVITY + i];
+        assign rdata_ram[i].dirty                 = dirty_rdata[i];
+    end
 
     sram #(
         .DATA_WIDTH ( DIRTY_WIDTH                      ),
@@ -322,11 +316,9 @@ module tag_cmp #(
                 sel_tag = tag_i[i];
     end
 
-    generate
-        for (genvar j = 0; j < SET_ASSOCIATIVITY; j++) begin : tag_cmp
-            assign hit_way_o[j] = (sel_tag == rdata_i[j].tag) ? rdata_i[j].valid : 1'b0;
-        end
-    endgenerate
+    for (genvar j = 0; j < SET_ASSOCIATIVITY; j++) begin : tag_cmp
+        assign hit_way_o[j] = (sel_tag == rdata_i[j].tag) ? rdata_i[j].valid : 1'b0;
+    end
 
     always_comb begin
 

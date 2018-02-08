@@ -47,16 +47,17 @@ typedef struct packed {
     logic [1:0] saturation_counter;
 } bht_prediction_t;
 
-
 module frontend #(
     parameter int unsigned BTB_ENTRIES = 8,
     parameter int unsigned BHT_ENTRIES = 32,
-    parameter int unsigned RAS_DEPTH = 2
+    parameter int unsigned RAS_DEPTH   = 2
 )(
     input  logic               clk_i,              // Clock
     input  logic               rst_ni,             // Asynchronous reset active low
     input  logic               flush_i,            // flush request for PCGEN
     input  logic               flush_bp_i,         // flush branch prediction
+    input  logic               i_fence_i,          // instruction fence in
+    input  logic               flush_itlb_i,       // flush itlb
     // global input
     input  logic [63:0]        boot_addr_i,
     input  logic               fetch_enable_i,     // start fetching instructions
@@ -74,7 +75,7 @@ module frontend #(
     input  logic [63:0]        debug_pc_i,         // PC from debug stage
     input  logic               debug_set_pc_i,     // Set PC request from debug
     // Instruction Fetch
-    AXI_BUS.Master             instr_if,
+    AXI_BUS.Master             axi,
     //
     // instruction output port -> to processor back-end
     output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
@@ -126,14 +127,364 @@ module frontend #(
     );
 
 
+    logic [11:0] index_i;
+    logic [43:0] tag_i;
+icache #(.SET_ASSOCIATIVITY(4)) i_icache (
+    .clk_i  (clk_i  ),
+    .rst_ni (rst_ni ),
+    .flush_i( ),
+    .index_i(index_i),
+    .tag_i  (tag_i  ),
+    .data_o (  ),
+    .req_i  (),
+    .kill_req_i (),
+    .ready_o   (),
+    .valid_o (),
+    .axi       (axi)
+);
+
+
 endmodule
 
 // ------------------------------
+// Instruction Scanner
+// ------------------------------
+module instr_scan (
+    input logic [31:0] instr_i
+);
+    // logic rviBranch;
+    // logic rviJump;
+    // logic rviJALR;
+    // logic rviReturnl
+    // logic rviCall;
+
+    always_comb begin
+
+    end
+
+endmodule
+// ------------------------------
 // Instruction Cache
 // ------------------------------
-// module icache #()();
+module icache #(
+        parameter int unsigned SET_ASSOCIATIVITY = 8,
+        parameter int unsigned INDEX_WIDTH       = 12, // in bit
+        parameter int unsigned TAG_WIDTH         = 44, // in bit
+        parameter int unsigned CACHE_LINE_WIDTH  = 64, // in bit
+        parameter int unsigned FETCH_WIDTH       = 32  // in bit
+    )(
+        input  logic                     clk_i,
+        input  logic                     rst_ni,
+        input  logic                     flush_i,    // flush the icache
+        input  logic                     req_i,      // we request a new word
+        input  logic                     kill_req_i, // kill the current request
+        output logic                     ready_o,    // icache is ready
+        input  logic [INDEX_WIDTH-1:0]   index_i,    // 1st cycle: 12 bit index
+        input  logic [TAG_WIDTH-1:0]     tag_i,      // 2nd cycle: physical tag
+        output logic [FETCH_WIDTH-1:0]   data_o,     // 2+ cycle out: tag
+        output logic                     valid_o,    // signals a valid read
+        AXI_BUS.Master                   axi
+    );
 
-// endmodule
+    localparam BYTE_OFFSET = $clog2(CACHE_LINE_WIDTH/8); // 3
+    localparam ICACHE_NUM_WORD = 2**(INDEX_WIDTH - BYTE_OFFSET);
+
+    // registers
+    enum logic [3:0] { FLUSH, IDLE, TAG_CMP, WAIT_AXI_R_RESP,
+                       REDO_REQ, WAIT_TAG_SAVED, REFILL
+                     }                      state_d, state_q;
+    logic [$clog2(ICACHE_NUM_WORD)-1:0]     cnt_d, cnt_q;
+    logic [INDEX_WIDTH-1:0]                 index_d, index_q;
+    logic [TAG_WIDTH-1:0]                   tag_d, tag_q;
+    logic [SET_ASSOCIATIVITY-1:0]           evict_way_d, evict_way_q;
+
+    // signals
+    logic [SET_ASSOCIATIVITY-1:0]         req;           // request to memory array
+    logic [$clog2(ICACHE_NUM_WORD)-1:0]   addr;          // this is a cache-line address, to memory array
+    logic                                 we;            // write enable to memory array
+    logic [SET_ASSOCIATIVITY-1:0]         hit;           // hit from tag compare
+    logic [BYTE_OFFSET-1:2]               idx;           // index in cache line
+    logic                                 update_lfsr;   // shift the LFSR
+    logic [SET_ASSOCIATIVITY-1:0]         random_way;    // random way select from LFSR
+    logic [SET_ASSOCIATIVITY-1:0]         way_valid;     // bit string which contains the zapped valid bits
+    logic [$clog2(SET_ASSOCIATIVITY)-1:0] repl_invalid;  // first non-valid encountered
+    logic                                 repl_w_random; // we need to switch repl strategy since all are valid
+    logic [TAG_WIDTH-1:0]                 tag;           // tag to do comparison with
+
+    // tag + valid bit read/write data
+    struct packed {
+        logic                 valid;
+        logic [TAG_WIDTH-1:0] tag;
+    } tag_rdata [SET_ASSOCIATIVITY-1:0], tag_wdata;
+
+    logic [CACHE_LINE_WIDTH-1:0] data_rdata [SET_ASSOCIATIVITY-1:0], data_wdata;
+
+    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
+        // ------------
+        // Tag RAM
+        // ------------
+        sram #(
+            // tag + valid bit
+            .DATA_WIDTH ( TAG_WIDTH + 1   ),
+            .NUM_WORDS  ( ICACHE_NUM_WORD )
+        ) tag_sram (
+            .clk_i     ( clk_i            ),
+            .req_i     ( req[i]           ),
+            .we_i      ( we               ),
+            .addr_i    ( addr             ),
+            .wdata_i   ( tag_wdata        ),
+            .be_i      (  '1              ),
+            .rdata_o   ( tag_rdata[i]     )
+        );
+        // ------------
+        // Data RAM
+        // ------------
+        sram #(
+            .DATA_WIDTH ( CACHE_LINE_WIDTH  ),
+            .NUM_WORDS  ( ICACHE_NUM_WORD   )
+        ) data_sram (
+            .clk_i     ( clk_i              ),
+            .req_i     ( req[i]             ),
+            .we_i      ( we                 ),
+            .addr_i    ( addr               ),
+            .wdata_i   ( data_wdata         ),
+            .be_i      ( '1                 ),
+            .rdata_o   ( data_rdata[i]      )
+        );
+    end
+    // --------------------
+    // Tag Comparison
+    // --------------------
+    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
+        assign hit[i] = (tag_rdata[i].tag == tag) ? tag_rdata[i].valid : 1'b0;
+    end
+
+    `ifndef SYNTHESIS
+    `ifndef VERILATOR
+    // assert that cache only hits on one way
+    assert property (
+      @(posedge clk_i) $onehot0(hit)) else begin $error("[icache] Hit should be one-hot encoded"); $stop(); end
+    `endif
+    `endif
+
+    // ------------------
+    // Way Select
+    // ------------------
+    assign idx = index_q[BYTE_OFFSET-1:2];
+    // cacheline selected by hit
+    logic [CACHE_LINE_WIDTH/FETCH_WIDTH-1:0][FETCH_WIDTH-1:0] selected_cl;
+    logic [CACHE_LINE_WIDTH-1:0] selected_cl_flat;
+
+    for (genvar i = 0; i < CACHE_LINE_WIDTH; i++) begin
+        logic [SET_ASSOCIATIVITY-1:0] hit_masked_cl;
+
+        for (genvar j = 0; j < SET_ASSOCIATIVITY; j++)
+            assign hit_masked_cl[j] = data_rdata[j][i] & hit[j];
+
+        assign selected_cl_flat[i] = |hit_masked_cl;
+    end
+
+    assign selected_cl = selected_cl_flat;
+    // maybe re-work if critical
+    assign data_o = selected_cl[idx];
+
+    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
+        assign way_valid[i] = tag_rdata[i].valid;
+    end
+    // ------------------
+    // AXI Plumbing
+    // ------------------
+    assign axi.aw_valid  = '0;
+    assign axi.aw_addr   = '0;
+    assign axi.aw_prot   = '0;
+    assign axi.aw_region = '0;
+    assign axi.aw_len    = '0;
+    assign axi.aw_size   = 3'b000;
+    assign axi.aw_burst  = 2'b00;
+    assign axi.aw_lock   = '0;
+    assign axi.aw_cache  = '0;
+    assign axi.aw_qos    = '0;
+    assign axi.aw_id     = '0;
+    assign axi.aw_user   = '0;
+
+    assign axi.w_valid   = '0;
+    assign axi.w_data    = '0;
+    assign axi.w_strb    = '0;
+    assign axi.w_user    = '0;
+    assign axi.w_last    = 1'b0;
+    assign axi.b_ready   = 1'b0;
+
+    assign axi.ar_prot   = '0;
+    assign axi.ar_region = '0;
+    assign axi.ar_len    = 8'h00;
+    assign axi.ar_size   = 3'b011;
+    assign axi.ar_burst  = 2'b01;
+    assign axi.ar_lock   = '0;
+    assign axi.ar_cache  = '0;
+    assign axi.ar_qos    = '0;
+    assign axi.ar_id     = '0;
+    assign axi.ar_user   = '0;
+
+    assign axi.r_ready   = 1'b1;
+
+
+    // ------------------
+    // Cache Ctrl
+    // ------------------
+    always_comb begin : cache_ctrl
+        // default assignments
+        state_d     = state_q;
+        cnt_d       = cnt_q;
+        index_d     = index_q;
+        tag_d       = tag_q;
+        evict_way_d = evict_way_q;
+
+        req        = '0;
+        addr       = index_i[INDEX_WIDTH-1:BYTE_OFFSET];
+        we         = 1'b0;
+        data_wdata = '0;
+        tag_wdata  = '0;
+        ready_o    = 1'b0;
+        tag        = tag_i;
+        valid_o    = 1'b1;
+
+        axi.ar_valid  = 1'b0;
+        axi.ar_addr   = '0;
+
+        case (state_q)
+            // ~> we are ready to receive a new request
+            IDLE: begin
+                ready_o = 1'b1;
+                // we are getting a new request
+                if (req_i) begin
+                    // request the content of all arrays
+                    req = '1;
+                    // save the index
+                    index_d = index_i;
+                    state_d = TAG_CMP;
+                end
+            end
+            // ~> compare the tag
+            TAG_CMP: begin
+                // we have a hit
+                if (|hit) begin
+                    ready_o = 1'b1;
+                    valid_o = 1'b1;
+                    // we've got another request
+                    if (req_i) begin
+                        // request the content of all arrays
+                        req = '1;
+                        // save the index and stay in compare mode
+                        index_d = index_i;
+                    end
+                end else begin
+                    state_d     = REFILL;
+                    evict_way_d = '0;
+                    // get way which to replace
+                    if (repl_w_random) begin
+                        evict_way_d = random_way;
+                    end else begin
+                        evict_way_d[repl_invalid] = 1'b1;
+                    end
+                end
+            end
+            // ~> request a cache-line refill
+            REFILL: begin
+                axi.ar_valid  = 1'b1;
+                axi.ar_addr[INDEX_WIDTH+TAG_WIDTH-1:0] = {tag_q, index_q};
+                if (axi.ar_ready)
+                    state_d = WAIT_AXI_R_RESP;
+            end
+            // ~> wait for the read response
+            // TODO: Handle responses for arbitrary cache line widths
+            WAIT_AXI_R_RESP: begin
+
+                state_d = REDO_REQ;
+                req     = evict_way_q;
+                addr    = index_q[INDEX_WIDTH-1:BYTE_OFFSET];
+
+                if (axi.r_valid) begin
+                    we = 1'b1;
+                    tag_wdata.tag = tag_q;
+                    tag_wdata.valid = 1'b1;
+                    data_wdata = axi.r_data;
+                end
+
+                if (axi.r_last) begin
+                    state_d = REDO_REQ;
+                end
+            end
+            // ~> redo the request,
+            REDO_REQ: begin
+                req = '1;
+                addr = index_q[INDEX_WIDTH-1:BYTE_OFFSET];
+                tag = tag_q;
+                state_d = WAIT_TAG_SAVED;
+            end
+
+            WAIT_TAG_SAVED: begin
+                tag     = tag_q;
+                state_d = IDLE;
+                valid_o = 1'b1;
+            end
+
+            // ~> we are coming here after reset or when a flush was requested
+            FLUSH: begin
+                addr    = cnt_q;
+                cnt_d   = cnt_q + 1;
+                req     = '1;
+                we      = 1;
+                // we've finished flushing, go back to idle
+                if (cnt_q == ICACHE_NUM_WORD - 1) state_d = IDLE;
+            end
+
+            default : state_d = IDLE;
+        endcase
+    end
+
+    ff1 #(
+        .LEN ( SET_ASSOCIATIVITY )
+    ) i_ff1 (
+        .in_i        ( ~way_valid    ),
+        .first_one_o ( repl_invalid  ),
+        .no_ones_o   ( repl_w_random )
+    );
+
+    // -----------------
+    // Replacement LFSR
+    // -----------------
+    lfsr #(.WIDTH (SET_ASSOCIATIVITY)) i_lfsr (
+        .clk_i          ( clk_i       ),
+        .rst_ni         ( rst_ni      ),
+        .en_i           ( update_lfsr ),
+        .refill_way_oh  ( random_way  ),
+        .refill_way_bin (             ) // left open
+    );
+
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            state_q     <= FLUSH;
+            cnt_q       <= '0;
+            index_q     <= '0;
+            tag_q       <= '0;
+            evict_way_q <= '0;
+        end else begin
+            state_q     <= state_d;
+            cnt_q       <= cnt_d;
+            index_q     <= index_d;
+            tag_q       <= tag_d;
+            evict_way_q <= evict_way_d;
+        end
+    end
+
+    `ifndef SYNTHESIS
+        initial begin
+            assert ($bits(data_if.aw_addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
+            assert (CACHE_LINE_WIDTH == 64) else $fatal(1, "Instruction cacheline width needs to be 64 for the moment");
+        end
+    `endif
+endmodule
 
 // ------------------------------
 // Branch Prediction

@@ -139,6 +139,7 @@ package ariane_pkg;
         fu_op                     operator;
         logic [TRANS_ID_BITS-1:0] trans_id;
     } lsu_ctrl_t;
+
     // ---------------
     // IF/ID Stage
     // ---------------
