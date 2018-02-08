@@ -48,19 +48,7 @@ module pcgen_stage (
     // branch-predict input register -> this path is critical
     branchpredict_t     resolved_branch_q;
 
-    btb #(
-        .NR_ENTRIES              ( BTB_ENTRIES             ),
-        .BITS_SATURATION_COUNTER ( BITS_SATURATION_COUNTER )
-    )
-    btb_i
-    (
-        // Use the PC from last cycle to perform branch lookup for the current cycle
-        .flush_i                 ( flush_bp_i              ),
-        .vpc_i                   ( npc_q                   ),
-        .branch_predict_i        ( resolved_branch_q       ), // update port
-        .branch_predict_o        ( branch_predict_btb      ), // read port
-        .*
-    );
+    assign branch_predict_btb = '0;
     // -------------------
     // Next PC
     // -------------------

@@ -12,7 +12,7 @@
 // Date: 08.02.2018
 // Description: Ariane Instruction Fetch Frontend
 
-// import ariane_pkg::*;
+import ariane_pkg::*;
 
 typedef struct packed {
     logic        valid;
@@ -53,9 +53,33 @@ module frontend #(
     parameter int unsigned BHT_ENTRIES = 32,
     parameter int unsigned RAS_DEPTH = 2
 )(
-    input clk_i,    // Clock
-    input rst_ni  // Asynchronous reset active low
-
+    input  logic               clk_i,              // Clock
+    input  logic               rst_ni,             // Asynchronous reset active low
+    input  logic               flush_i,            // flush request for PCGEN
+    input  logic               flush_bp_i,         // flush branch prediction
+    // global input
+    input  logic [63:0]        boot_addr_i,
+    input  logic               fetch_enable_i,     // start fetching instructions
+    // Set a new PC
+    // mispredict
+    input  branchpredict_t     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
+    // from commit, when flushing the whole pipeline
+    input  logic [63:0]        pc_commit_i,        // PC of instruction in commit stage
+    // CSR input
+    input  logic [63:0]        epc_i,              // exception PC which we need to return to
+    input  logic               eret_i,             // return from exception
+    input  logic [63:0]        trap_vector_base_i, // base of trap vector
+    input  logic               ex_valid_i,         // exception is valid - from commit
+    // Debug
+    input  logic [63:0]        debug_pc_i,         // PC from debug stage
+    input  logic               debug_set_pc_i,     // Set PC request from debug
+    // Instruction Fetch
+    AXI_BUS.Master             instr_if,
+    //
+    // instruction output port -> to processor back-end
+    output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
+    output logic               fetch_entry_valid_o, // instruction in IF is valid
+    input  logic               fetch_ack_i          // ID acknowledged this instruction
 );
 
     logic push_i;
@@ -64,7 +88,6 @@ module frontend #(
     ras_t data_o;
     bht_update_t bht_update_i;
     bht_prediction_t bht_prediction_o;
-    logic flush_i;
     logic [63:0] vpc_i;
     btb_update_t btb_update_i;
     btb_prediction_t btb_prediction_o;
@@ -108,9 +131,9 @@ endmodule
 // ------------------------------
 // Instruction Cache
 // ------------------------------
-module icache #()();
+// module icache #()();
 
-endmodule
+// endmodule
 
 // ------------------------------
 // Branch Prediction
@@ -265,7 +288,7 @@ module bht #(
                 if (~bht_update_i.taken)
                     bht_d[update_pc].saturation_counter = saturation_counter - 1;
             // then check if it saturated in the negative regime e.g.: branch not taken
-            end else if (saturation_counter == 2'b11) begin
+            end else if (saturation_counter == 2'b00) begin
                 // we can safely increase it
                 if (bht_update_i.taken)
                     bht_d[update_pc].saturation_counter = saturation_counter + 1;

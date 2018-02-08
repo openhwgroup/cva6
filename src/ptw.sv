@@ -18,8 +18,7 @@ import ariane_pkg::*;
 
 module ptw #(
         parameter int ASID_WIDTH = 1
-    )
-    (
+    )(
     input  logic                    clk_i,                  // Clock
     input  logic                    rst_ni,                 // Asynchronous reset active low
     input  logic                    flush_i,                // flush everything, we need to do this because
@@ -47,23 +46,20 @@ module ptw #(
     input  logic                    data_rvalid_i,
     input  logic [63:0]             data_rdata_i,
     // to TLBs, update logic
-    output logic                    itlb_update_o,
-    output logic                    dtlb_update_o,
-    output pte_t                    update_content_o,
+    output tlb_update_t             itlb_update_o,
+    output tlb_update_t             dtlb_update_o,
 
-    output logic                    update_is_2M_o,
-    output logic                    update_is_1G_o,
     output logic [38:0]             update_vaddr_o,
-    output logic [ASID_WIDTH-1:0]   update_asid_o,
+
     input  logic [ASID_WIDTH-1:0]   asid_i,
     // from TLBs
     // did we miss?
     input  logic                    itlb_access_i,
-    input  logic                    itlb_miss_i,
+    input  logic                    itlb_hit_i,
     input  logic [63:0]             itlb_vaddr_i,
 
     input  logic                    dtlb_access_i,
-    input  logic                    dtlb_miss_i,
+    input  logic                    dtlb_hit_i,
     input  logic [63:0]             dtlb_vaddr_i,
     // from CSR file
     input  logic [43:0]             satp_ppn_i, // ppn from satp
@@ -107,6 +103,7 @@ module ptw #(
 
     // Assignments
     assign update_vaddr_o  = vaddr_q;
+
     assign ptw_active_o    = (CS != IDLE);
     assign walking_instr_o = is_instr_ptw_q;
     // directly output the correct physical address
@@ -116,13 +113,23 @@ module ptw #(
     assign kill_req_o      = '0;
     // we are never going to write with the HPTW
     assign data_wdata_o    = 64'b0;
+    // -----------
+    // TLB Update
+    // -----------
+    assign itlb_update_o.vpn = vaddr_q[38:12];
+    assign dtlb_update_o.vpn = vaddr_q[38:12];
     // update the correct page table level
-    assign update_is_2M_o = (ptw_lvl_q == LVL2);
-    assign update_is_1G_o = (ptw_lvl_q == LVL1);
+    assign itlb_update_o.is_2M = (ptw_lvl_q == LVL2);
+    assign itlb_update_o.is_1G = (ptw_lvl_q == LVL1);
+    assign dtlb_update_o.is_2M = (ptw_lvl_q == LVL2);
+    assign dtlb_update_o.is_1G = (ptw_lvl_q == LVL1);
     // output the correct ASID
-    assign update_asid_o = tlb_update_asid_q;
+    assign itlb_update_o.asid = tlb_update_asid_q;
+    assign dtlb_update_o.asid = tlb_update_asid_q;
     // set the global mapping bit
-    assign update_content_o = pte | (global_mapping_q << 5);
+    assign itlb_update_o.content = pte | (global_mapping_q << 5);
+    assign dtlb_update_o.content = pte | (global_mapping_q << 5);
+
     assign tag_valid_o      = tag_valid_q;
 
     //-------------------
@@ -151,26 +158,26 @@ module ptw #(
     always_comb begin : ptw
         // default assignments
         // PTW memory interface
-        tag_valid_n        = 1'b0;
-        data_req_o         = 1'b0;
-        data_be_o          = 8'hFF;
-        data_size_o        = 2'b11;
-        data_we_o          = 1'b0;
-        ptw_error_o        = 1'b0;
-        itlb_update_o      = 1'b0;
-        dtlb_update_o      = 1'b0;
-        is_instr_ptw_n     = is_instr_ptw_q;
-        ptw_lvl_n          = ptw_lvl_q;
-        ptw_pptr_n         = ptw_pptr_q;
-        NS                 = CS;
-        global_mapping_n   = global_mapping_q;
+        tag_valid_n         = 1'b0;
+        data_req_o          = 1'b0;
+        data_be_o           = 8'hFF;
+        data_size_o         = 2'b11;
+        data_we_o           = 1'b0;
+        ptw_error_o         = 1'b0;
+        itlb_update_o.valid = 1'b0;
+        dtlb_update_o.valid = 1'b0;
+        is_instr_ptw_n      = is_instr_ptw_q;
+        ptw_lvl_n           = ptw_lvl_q;
+        ptw_pptr_n          = ptw_pptr_q;
+        NS                  = CS;
+        global_mapping_n    = global_mapping_q;
         // input registers
-        tlb_update_asid_n  = tlb_update_asid_q;
-        vaddr_n            = vaddr_q;
-        faulting_address_o = '0;
+        tlb_update_asid_n   = tlb_update_asid_q;
+        vaddr_n             = vaddr_q;
+        faulting_address_o  = '0;
 
-        itlb_miss_o        = 1'b0;
-        dtlb_miss_o        = 1'b0;
+        itlb_miss_o         = 1'b0;
+        dtlb_miss_o         = 1'b0;
 
         case (CS)
 
@@ -180,7 +187,7 @@ module ptw #(
                 global_mapping_n = 1'b0;
                 is_instr_ptw_n   = 1'b0;
                 // if we got an ITLB miss
-                if (enable_translation_i & itlb_access_i & itlb_miss_i & ~dtlb_access_i) begin
+                if (enable_translation_i & itlb_access_i & ~itlb_hit_i & ~dtlb_access_i) begin
                     ptw_pptr_n          = {satp_ppn_i, itlb_vaddr_i[38:30], 3'b0};
                     is_instr_ptw_n      = 1'b1;
                     tlb_update_asid_n   = asid_i;
@@ -188,7 +195,7 @@ module ptw #(
                     NS                  = WAIT_GRANT;
                     itlb_miss_o         = 1'b1;
                 // we got an DTLB miss
-                end else if (en_ld_st_translation_i & dtlb_access_i & dtlb_miss_i) begin
+                end else if (en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i) begin
                     ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = dtlb_vaddr_i;
@@ -241,7 +248,7 @@ module ptw #(
                                 if (!pte.x || !pte.a)
                                   NS = PROPAGATE_ERROR;
                                 else
-                                  itlb_update_o = 1'b1;
+                                  itlb_update_o.valid = 1'b1;
 
                             end else begin
                                 // ------------
@@ -253,7 +260,7 @@ module ptw #(
                                 // we can directly raise an error. This doesn't put a useless
                                 // entry into the TLB.
                                 if (pte.a && (pte.r || (pte.x && mxr_i))) begin
-                                  dtlb_update_o = 1'b1;
+                                  dtlb_update_o.valid = 1'b1;
                                 end else begin
                                   NS   = PROPAGATE_ERROR;
                                 end
@@ -261,7 +268,7 @@ module ptw #(
                                 // If the request was a store and the page is not write-able, raise an error
                                 // the same applies if the dirty flag is not set
                                 if (lsu_is_store_i && (!pte.w || !pte.d)) begin
-                                    dtlb_update_o = 1'b0;
+                                    dtlb_update_o.valid = 1'b0;
                                     NS   = PROPAGATE_ERROR;
                                 end
                             end
@@ -270,12 +277,12 @@ module ptw #(
                             // exception.
                             if (ptw_lvl_q == LVL1 && pte.ppn[17:0] != '0) begin
                                 NS = PROPAGATE_ERROR;
-                                dtlb_update_o = 1'b0;
-                                itlb_update_o = 1'b0;
+                                dtlb_update_o.valid = 1'b0;
+                                itlb_update_o.valid = 1'b0;
                             end else if (ptw_lvl_q == LVL2 && pte.ppn[8:0] != '0) begin
                                 NS = PROPAGATE_ERROR;
-                                dtlb_update_o = 1'b0;
-                                itlb_update_o = 1'b0;
+                                dtlb_update_o.valid = 1'b0;
+                                itlb_update_o.valid = 1'b0;
                             end
                         // this is a pointer to the next TLB level
                         end else begin
