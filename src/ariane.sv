@@ -14,10 +14,7 @@
 
 import ariane_pkg::*;
 `ifndef verilator
-`ifndef SYNTHESIS
-import instruction_tracer_pkg::*;
 `timescale 1ns / 1ps
-`endif
 `endif
 
 module ariane #(
@@ -670,48 +667,6 @@ module ariane #(
        .flush_set_ID_ack_o  (                                )
     );
 
-    // -------------------
-    // Instruction Tracer
-    // -------------------
-    `ifndef FPGA
-    `ifndef verilator
-    instruction_tracer_if tracer_if (clk_i);
-    // assign instruction tracer interface
-    // control signals
-    assign tracer_if.rstn              = rst_ni;
-    assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
-    assign tracer_if.flush             = flush_ctrl_ex;
-    // fetch
-    assign tracer_if.instruction       = id_stage_i.compressed_decoder_i.instr_o;
-    assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
-    assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
-    // Issue
-    assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
-    assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;
-    // write-back
-    assign tracer_if.waddr             = waddr_a_commit_id;
-    assign tracer_if.wdata             = wdata_a_commit_id;
-    assign tracer_if.we                = we_a_commit_id;
-    // commit
-    assign tracer_if.commit_instr      = commit_instr_id_commit;
-    assign tracer_if.commit_ack        = commit_ack;
-    // address translation
-    // stores
-    assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
-    assign tracer_if.st_paddr          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
-    // loads
-    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.tag_valid_o;
-    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.kill_req_o;
-    assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.i_load_unit.paddr_i;
-    // exceptions
-    assign tracer_if.exception         = commit_stage_i.exception_o;
-    // assign current privilege level
-    assign tracer_if.priv_lvl          = priv_lvl;
-
-    instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
-    `endif
-    `endif
-
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
             fetch_enable <= 0;
@@ -721,28 +676,6 @@ module ariane #(
     end
 
     `ifndef SYNTHESIS
-    `ifndef verilator
-    program instr_tracer
-        (
-            instruction_tracer_if tracer_if,
-            input logic [5:0] cluster_id_i,
-            input logic [3:0] core_id_i
-        );
-
-        instruction_tracer it = new (tracer_if, 1'b0);
-
-        initial begin
-            #15ns;
-            it.create_file(cluster_id_i, core_id_i);
-            it.trace();
-        end
-
-        final begin
-            it.close();
-        end
-    endprogram
-    // mock tracer for Verilator, to be used with spike-dasm
-    `else
 
     string s;
     int f;
@@ -769,10 +702,7 @@ module ariane #(
         end
     end
 
-    final begin
-        $fclose(f);
-    end
     `endif
-    `endif
+
 endmodule // ariane
 

@@ -37,8 +37,6 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 set files [list \
                [file normalize $origin_dir/include/ariane_pkg.sv] \
                [file normalize $origin_dir/include/nbdcache_pkg.sv] \
-               [file normalize $origin_dir/src/util/instruction_tracer_if.sv] \
-               [file normalize $origin_dir/src/util/instruction_tracer_pkg.sv] \
                [file normalize $origin_dir/src/axi_if/axi_if.sv] \
                [file normalize $origin_dir/src/axi_mem_if/axi2mem.sv] \
                [file normalize $origin_dir/src/ariane.sv] \
@@ -92,6 +90,43 @@ set_property verilog_define [list FPGA FPGA_FULL NEXYS4] [get_filesets sources_1
 
 # Set 'sources_1' fileset properties
 set_property "top" "chip_top" [get_filesets sources_1]
+
+# Program/data RAM
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name instr_ram
+set_property -dict [list \
+                        CONFIG.Memory_Type {True_Dual_Port_RAM} \
+                        CONFIG.Use_Byte_Write_Enable {true} \
+                        CONFIG.Byte_Size {8} \
+                        CONFIG.Write_Width_A {64} \
+                        CONFIG.Write_Depth_A {14} \
+                        CONFIG.Operating_Mode_A {READ_FIRST} \
+                        CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+                        CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
+                        CONFIG.Read_Width_A {64} \
+                        CONFIG.Write_Width_B {64} \
+                        CONFIG.Read_Width_B {64} \
+                        CONFIG.Enable_B {Use_ENB_Pin} \
+                        CONFIG.Port_B_Clock {100} \
+                        CONFIG.Port_B_Write_Rate {50} \
+                        CONFIG.Port_B_Enable_Rate {100}] [get_ips instr_ram]
+
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name data_ram
+set_property -dict [list \
+                        CONFIG.Memory_Type {True_Dual_Port_RAM} \
+                        CONFIG.Use_Byte_Write_Enable {true} \
+                        CONFIG.Byte_Size {8} \
+                        CONFIG.Write_Width_A {64} \
+                        CONFIG.Write_Depth_A {14} \
+                        CONFIG.Operating_Mode_A {READ_FIRST} \
+                        CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+                        CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
+                        CONFIG.Read_Width_A {64} \
+                        CONFIG.Write_Width_B {64} \
+                        CONFIG.Read_Width_B {64} \
+                        CONFIG.Enable_B {Use_ENB_Pin} \
+                        CONFIG.Port_B_Clock {100} \
+                        CONFIG.Port_B_Write_Rate {50} \
+                        CONFIG.Port_B_Enable_Rate {100}] [get_ips data_ram]
 
 # Cache RAMs
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -module_name xilinx_dcache_bank_data_256x128
@@ -310,8 +345,8 @@ if {[string equal [get_filesets -quiet constrs_1] ""]} {
 set obj [get_filesets constrs_1]
 
 # Add/Import constrs file and set constrs file properties
-set files [list [file normalize "$origin_dir/constraint/pin_plan.xdc"] \
-	       [file normalize "$origin_dir/constraint/timing.xdc"]]
+set files [list [file normalize "constraint/pin_plan.xdc"] \
+	       [file normalize "constraint/timing.xdc"]]
 
 set file_added [add_files -norecurse -fileset $obj $files]
 
