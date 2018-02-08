@@ -53,6 +53,8 @@ package ariane_pkg;
          logic        valid;
     } exception_t;
 
+    typedef enum logic [1:0] { BHT, BTB, RAS } cf_t;
+
     // branch-predict
     // this is the struct we get back from ex stage and we will use it to update
     // all the necessary data structures
@@ -65,6 +67,7 @@ package ariane_pkg;
                                       // in the lower 16 bit of the word
         logic        valid;           // prediction with all its values is valid
         logic        clear;           // invalidate this entry
+        cf_t         cf_type;         // Type of control flow change
     } branchpredict_t;
 
     // branchpredict scoreboard entry
