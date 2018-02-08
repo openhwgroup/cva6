@@ -22,18 +22,6 @@ module ariane_top(
    // Timer facilities
    logic [63:0]      time_i = 'b0; // global time (most probably coming from an RTC)
    logic             time_irq_i = 'b0; // timer interrupt in
-   // Debug Interface
-   logic             debug_req_i = 'b0;
-   logic             debug_gnt_o;
-   logic             debug_rvalid_o;
-   logic [15:0]      debug_addr_i = 'b0;
-   logic             debug_we_i = 'b0;
-   logic [63:0]      debug_wdata_i = 'b0;
-   logic [63:0]      debug_rdata_o;
-   logic             debug_halted_o;
-   logic             debug_halt_i = 'b0;
-   logic             debug_resume_i = 'b0;
-   
 
    parameter logic [63:0]               CACHE_START_ADDR  = 64'h8000_0000;
  // address on which to decide whether the request is cache-able or not

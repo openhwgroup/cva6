@@ -121,3 +121,4 @@ set_property IOSTANDARD LVCMOS33 [get_ports {i_dip[15]}]
 set_property CONFIG_MODE SPIx4 [current_design]
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
 
+

@@ -186,13 +186,13 @@ data_ram my_data_ram (
   .clka(clk_i),    // input wire clka
   .ena(data_req),      // input wire ena
   .wea(data_we ? data_be : 8'b0),      // input wire [7 : 0] wea
-  .addra(data_address[17:3]),  // input wire [3 : 0] addra
+  .addra(data_address[16:3]),  // input wire [3 : 0] addra
   .dina(data_wdata),    // input wire [63 : 0] dina
   .douta(data_rdata),  // output wire [63 : 0] douta
   .clkb(debug_clk),    // input wire clkb
   .enb(|datamem_enb),      // input wire enb
   .web(datamem_web ? datamem_enb : 8'b0),      // input wire [7 : 0] web
-  .addrb(debug_addr[17:3]),  // input wire [3 : 0] addrb
+  .addrb(debug_addr[16:3]),  // input wire [3 : 0] addrb
   .dinb(debug_wdata_i),    // input wire [63 : 0] dinb
   .doutb(datamem_doutb)  // output wire [63 : 0] doutb
 );
@@ -232,13 +232,13 @@ instr_ram my_instr_ram (
   .clka(clk_i),    // input wire clka
   .ena(instr_req),      // input wire ena
   .wea(instr_we ? instr_be : 8'b0),      // input wire [7 : 0] wea
-  .addra(instr_address[17:3]),  // input wire [3 : 0] addra
+  .addra(instr_address[16:3]),  // input wire [3 : 0] addra
   .dina(instr_wdata),    // input wire [63 : 0] dina
   .douta(instr_rdata),  // output wire [63 : 0] douta
   .clkb(debug_clk),    // input wire clkb
   .enb(|progmem_enb),      // input wire enb
   .web(progmem_web ? progmem_enb : 8'b0),      // input wire [7 : 0] web
-  .addrb(debug_addr[17:3]),  // input wire [3 : 0] addrb
+  .addrb(debug_addr[16:3]),  // input wire [3 : 0] addrb
   .dinb(debug_wdata_i),    // input wire [63 : 0] dinb
   .doutb(progmem_doutb)  // output wire [63 : 0] doutb
 );
