@@ -274,7 +274,7 @@ jtag_dummy jtag1(
     .WREN(debug_we_i),
     .FROM_MEM(debug_dout),
     .ADDR(debug_addr),
-    .TO_MEM(debug_wdata_o),
+    .TO_MEM(debug_wdata_i),
     .TCK(debug_clk),
     .TCK2(debug_clk2),
     .RESET(debug_reset),
@@ -282,11 +282,11 @@ jtag_dummy jtag1(
 
    genvar r;
 
-logic [3:0]  bypass_be;
+//logic [3:0]  bypass_be;
 logic        ce_d;
 logic        we_d;
 
-   wire [3:0] m_enb = (we_d ? bypass_be : 4'hF);
+   wire [7:0] m_enb = (we_d ? bypass_be : 8'hFF);
    wire m_web = ce_d & shared_sel & we_d;
    logic i_emdio, o_emdio, oe_emdio, o_emdclk, sync, cooked, tx_enable_old, loopback, loopback2;
    logic [10:0] rx_addr;
@@ -299,15 +299,19 @@ logic        we_d;
        (
         .CLKA   ( debug_clk                ),     // Port A Clock
         .DOA    ( sharedmem_dout[r*8 +: 8] ),     // Port A 1-bit Data Output
-        .ADDRA  ( debug_addr[13:3]       ),     // Port A 14-bit Address Input
+        .DOPA   (                          ),
+        .ADDRA  ( debug_addr[13:3]         ),     // Port A 14-bit Address Input
         .DIA    ( debug_wdata_i[r*8 +:8]   ),     // Port A 1-bit Data Input
+        .DIPA   ( 1'b0                     ),
         .ENA    ( sharedmem_en[r]          ),     // Port A RAM Enable Input
         .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
-        .WEA    ( debug_we                 ),     // Port A Write Enable Input
+        .WEA    ( debug_we_i               ),     // Port A Write Enable Input
         .CLKB   ( clk_i                    ),     // Port B Clock
         .DOB    ( bypass_rdata[r*8 +: 8]   ),     // Port B 1-bit Data Output
+        .DOPB   (                          ),
         .ADDRB  ( bypass_address[13:3]     ),     // Port B 14-bit Address Input
         .DIB    ( bypass_wdata[r*8 +: 8]   ),     // Port B 1-bit Data Input
+        .DIPB   ( 1'b0                     ),
         .ENB    ( m_enb[r]                 ),     // Port B RAM Enable Input
         .SSRB   ( 1'b0                     ),     // Port B Synchronous Set/Reset Input
         .WEB    ( m_web                    )      // Port B Write Enable Input

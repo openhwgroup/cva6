@@ -98,7 +98,7 @@ set_property -dict [list \
                         CONFIG.Use_Byte_Write_Enable {true} \
                         CONFIG.Byte_Size {8} \
                         CONFIG.Write_Width_A {64} \
-                        CONFIG.Write_Depth_A {14} \
+                        CONFIG.Write_Depth_A {16384} \
                         CONFIG.Operating_Mode_A {READ_FIRST} \
                         CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
                         CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
@@ -116,7 +116,7 @@ set_property -dict [list \
                         CONFIG.Use_Byte_Write_Enable {true} \
                         CONFIG.Byte_Size {8} \
                         CONFIG.Write_Width_A {64} \
-                        CONFIG.Write_Depth_A {14} \
+                        CONFIG.Write_Depth_A {16384} \
                         CONFIG.Operating_Mode_A {READ_FIRST} \
                         CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
                         CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
