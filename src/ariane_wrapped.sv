@@ -24,8 +24,6 @@ module ariane_wrapped #(
         input  logic                           clk_i,
         input  logic                           rst_ni,
         input  logic                           test_en_i,     // enable all clock gates for testing
-        // CPU Control Signals
-        input  logic                           fetch_enable_i,
         // Core ID, Cluster ID and boot address are considered more or less static
         input  logic [63:0]                    boot_addr_i,
         input  logic [ 3:0]                    core_id_i,
@@ -111,28 +109,25 @@ module ariane_wrapped #(
     logic [63:0] instr_wdata,   bypass_wdata,   data_wdata;
     logic [63:0] instr_rdata,   bypass_rdata,   data_rdata;
 
-   logic [31:0] debug_addr;
-
    // sharedmem shared port
    logic [7:0]  sharedmem_en;
    logic [63:0] sharedmem_dout;
-   logic [31:0] shared_rdata;
    logic        shared_sel;
 
    // datamem shared port
    logic [0:0]  datamem_web;
-   logic [7:0]  datamem_enb;
-   logic [63:0] datamem_doutb;
+   logic [7:0]  datamem_enb_i;
+   logic [63:0] datamem_doutb_o;
   
    // progmem shared port
    logic [0:0]  progmem_web;
-   logic [7:0]  progmem_enb;
+   logic [7:0]  progmem_enb_i;
    logic [63:0] progmem_doutb;
    
         // Debug Interface
-         logic                           debug_req_i;
          logic                           debug_gnt_o;
          logic                           debug_rvalid_o;
+         logic [31:0] debug_addr;
          logic [15:0]                    debug_addr_i = debug_addr[15:0];
          logic                           debug_we_i;
          logic [63:0]                    debug_wdata_i;
@@ -140,13 +135,17 @@ module ariane_wrapped #(
          logic                           debug_halted_o;
          logic                           debug_halt_i;
          logic                           debug_resume_i;
+         logic        debug_req, debug_fetch_disable;
+         logic        debug_reset;
+         logic        debug_runtest;
+         logic        debug_clk, debug_blocksel_i;
+         logic [1:0]  debug_unused;
+         
+         logic [63:0] debug_dout;
+        // CPU Control Signals
+         logic                           fetch_enable_i = ~(debug_blocksel_i && debug_fetch_disable);
+         logic                           debug_req_i = debug_blocksel_i && debug_req;
 
-   logic        debug_reset;
-   logic        debug_runtest;
-   logic        debug_clk, debug_clk2, debug_blocksel;
-   logic [2:0]  debug_unused;
-   
-   logic [63:0] debug_dout;
 
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
@@ -182,34 +181,17 @@ module ariane_wrapped #(
         .data_i ( data_rdata   )
     );
 
-data_ram my_data_ram (
-  .clka(clk_i),    // input wire clka
-  .ena(data_req),      // input wire ena
-  .wea(data_we ? data_be : 8'b0),      // input wire [7 : 0] wea
-  .addra(data_address[16:3]),  // input wire [3 : 0] addra
-  .dina(data_wdata),    // input wire [63 : 0] dina
-  .douta(data_rdata),  // output wire [63 : 0] douta
-  .clkb(debug_clk),    // input wire clkb
-  .enb(|datamem_enb),      // input wire enb
-  .web(datamem_web ? datamem_enb : 8'b0),      // input wire [7 : 0] web
-  .addrb(debug_addr[16:3]),  // input wire [3 : 0] addrb
-  .dinb(debug_wdata_i),    // input wire [63 : 0] dinb
-  .doutb(datamem_doutb)  // output wire [63 : 0] doutb
-);
-
-/*
 infer_bram  #(
-        .BRAM_SIZE(10),
+        .BRAM_SIZE(14),
         .BYTE_WIDTH(8))
         my_data_ram (
       .ram_clk(clk_i),    // input wire clka
       .ram_en(data_req),      // input wire ena
       .ram_we(data_we ? data_be : 8'b0),   // input wire [31 : 0] wea
-      .ram_addr(data_address[11:3]),  // input wire [8: 0] addra
+      .ram_addr(data_address[16:3]),  // input wire [8: 0] addra
       .ram_wrdata(data_wdata),  // input wire [255 : 0] dina
       .ram_rddata(data_rdata)  // output wire [255 : 0] douta
       );
-*/
 
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
@@ -228,63 +210,45 @@ infer_bram  #(
         .data_i ( instr_rdata   )
     );
 
-instr_ram my_instr_ram (
-  .clka(clk_i),    // input wire clka
-  .ena(instr_req),      // input wire ena
-  .wea(instr_we ? instr_be : 8'b0),      // input wire [7 : 0] wea
-  .addra(instr_address[16:3]),  // input wire [3 : 0] addra
-  .dina(instr_wdata),    // input wire [63 : 0] dina
-  .douta(instr_rdata),  // output wire [63 : 0] douta
-  .clkb(debug_clk),    // input wire clkb
-  .enb(|progmem_enb),      // input wire enb
-  .web(progmem_web ? progmem_enb : 8'b0),      // input wire [7 : 0] web
-  .addrb(debug_addr[16:3]),  // input wire [3 : 0] addrb
-  .dinb(debug_wdata_i),    // input wire [63 : 0] dinb
-  .doutb(progmem_doutb)  // output wire [63 : 0] doutb
-);
-
-/*   
 infer_bram  #(
-    .BRAM_SIZE(10),
+    .BRAM_SIZE(14),
     .BYTE_WIDTH(8))
     my_instr_ram (
   .ram_clk(clk_i),    // input wire clka
   .ram_en(instr_req),      // input wire ena
   .ram_we(instr_we ? instr_be : 8'b0),   // input wire [31 : 0] wea
-  .ram_addr(instr_address[11:3]),  // input wire [8: 0] addra
+  .ram_addr(instr_address[16:3]),  // input wire [8: 0] addra
   .ram_wrdata(instr_wdata),  // input wire [255 : 0] dina
   .ram_rddata(instr_rdata)  // output wire [255 : 0] douta
   );
-*/
 
     always @*
         begin      
-        progmem_enb = 8'h0; datamem_enb = 8'h0; sharedmem_en = 8'h0; debug_blocksel = 8'b0;
+        progmem_enb_i = 8'h0; datamem_enb_i = 8'h0; sharedmem_en = 8'h0; debug_blocksel_i = 8'b0;
         casez(debug_addr[23:20])
-            4'h0: begin progmem_enb = 8'hff; debug_dout = progmem_doutb; end
-            4'h1: begin datamem_enb = 8'hff; debug_dout = datamem_doutb; end
+            4'h0: begin progmem_enb_i = 8'hff; debug_dout = progmem_doutb; end
+            4'h1: begin datamem_enb_i = 8'hff; debug_dout = datamem_doutb_o; end
             4'h8: begin sharedmem_en = 8'hff; debug_dout = sharedmem_dout; end
-            4'hf: begin debug_blocksel = &debug_addr[31:24]; debug_dout = debug_rdata_o; end
+            4'hf: begin debug_blocksel_i = &debug_addr[31:24]; debug_dout = debug_rdata_o; end
             default: debug_dout = 64'hDEADBEEF;
             endcase
         end
 
 jtag_dummy jtag1(
-    .DBG({debug_unused[2:0],debug_halt_i,debug_resume_i,debug_req_i}),
+    .DBG({debug_unused[1:0],debug_fetch_disable,debug_req}),
     .WREN(debug_we_i),
     .FROM_MEM(debug_dout),
     .ADDR(debug_addr),
     .TO_MEM(debug_wdata_i),
     .TCK(debug_clk),
-    .TCK2(debug_clk2),
+    .TCK2(),
     .RESET(debug_reset),
     .RUNTEST(debug_runtest));
 
    genvar r;
 
-//logic [3:0]  bypass_be;
-logic        ce_d;
-logic        we_d;
+   logic        ce_d;
+   logic        we_d;
 
    wire [7:0] m_enb = (we_d ? bypass_be : 8'hFF);
    wire m_web = ce_d & shared_sel & we_d;

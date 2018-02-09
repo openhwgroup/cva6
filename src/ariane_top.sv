@@ -7,8 +7,6 @@ module ariane_top(
 
    logic             clk_i, locked;          
    logic             test_en_i = 'b0; // enable all clock gates for testing
-   // CPU Control Signals
-   logic             fetch_enable_i = 'b1;
    // Core ID; Cluster ID and boot address are considered more or less static
    logic [63:0]      boot_addr_i = 'b0;
    logic [ 3:0]      core_id_i = 'b0;

@@ -305,7 +305,7 @@ module ariane #(
         // Reserved for future use
         .fetch_entry_1_o       (                                ),
         .fetch_entry_valid_1_o (                                ),
-        .fetch_ack_1_i         (                                ),
+        .fetch_ack_1_i         ( 1'b0                           ),
         .*
     );
 

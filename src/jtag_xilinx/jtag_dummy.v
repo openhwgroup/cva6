@@ -17,7 +17,7 @@ wire CAPTURE2, DRCK2, RESET2, RUNTEST2, SEL2, SHIFT2, TDI2, TDO2, TMS2, UPDATE2;
    wire INC, WR;
 wire [31:0] ADDR0;
    
-BUFG jtag_buf(.I(TCK_unbuf), .O(TCK));
+BUFH jtag_buf(.I(TCK_unbuf), .O(TCK));
 
    // BSCANE2: Boundary-Scan User Instruction
    //          Artix-7
