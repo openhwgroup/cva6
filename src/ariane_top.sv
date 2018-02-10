@@ -8,7 +8,6 @@ module ariane_top(
    logic             clk_i, locked;          
    logic             test_en_i = 'b0; // enable all clock gates for testing
    // Core ID; Cluster ID and boot address are considered more or less static
-   logic [63:0]      boot_addr_i = 'b0;
    logic [ 3:0]      core_id_i = 'b0;
    logic [ 5:0]      cluster_id_i = 'b0;
    logic             flush_req_i = 'b0;
@@ -27,14 +26,15 @@ module ariane_top(
    parameter int                        unsigned AXI_USER_WIDTH    = 1;
    parameter int                        unsigned AXI_ADDRESS_WIDTH = 64;
    parameter int                        unsigned AXI_DATA_WIDTH    = 64;
-   
+
    ariane_wrapped dut(
    .clk_i(clk_i),
    .rst_ni(rst_top && locked),
    .*);
 
-     clk_wiz_ariane instance_name
+     clk_wiz_ariane clk_wiz_instance
       (
+       .resetn(rst_top),
       // Clock in ports
        .clk_in1(clk_p),      // input clk_in1
        // Clock out ports
