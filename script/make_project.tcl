@@ -37,9 +37,14 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 set files [list \
                [file normalize $origin_dir/include/ariane_pkg.sv] \
                [file normalize $origin_dir/include/nbdcache_pkg.sv] \
+               [file normalize $origin_dir/src/jtag_xilinx/jtag_dummy.v] \
+               [file normalize $origin_dir/src/jtag_xilinx/jtag_rom.v] \
+               [file normalize $origin_dir/src/jtag_xilinx/jtag_addr.v] \
+               [file normalize $origin_dir/src/util/infer_bram.sv] \
                [file normalize $origin_dir/src/axi_if/axi_if.sv] \
                [file normalize $origin_dir/src/axi_mem_if/axi2mem.sv] \
                [file normalize $origin_dir/src/ariane.sv] \
+               [file normalize $origin_dir/src/ariane_top.sv] \
                [file normalize $origin_dir/src/ariane_wrapped.sv] \
                [file normalize $origin_dir/src/alu.sv] \
                [file normalize $origin_dir/src/branch_unit.sv] \
@@ -253,16 +258,14 @@ set_property -dict [list \
 generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/axi_clock_converter_0/axi_clock_converter_0.xci]
 
 # Clock generators
-create_ip -name clk_wiz -vendor xilinx.com -library ip -module_name clk_wiz_0
+create_ip -name clk_wiz -vendor xilinx.com -library ip -module_name clk_wiz_ariane
 set_property -dict [list \
                         CONFIG.PRIMITIVE {PLL} \
                         CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {200.000} \
                         CONFIG.RESET_TYPE {ACTIVE_LOW} \
                         CONFIG.CLKOUT1_DRIVES {BUFG} \
                         CONFIG.MMCM_DIVCLK_DIVIDE {1} \
-                        CONFIG.MMCM_CLKFBOUT_MULT_F {10} \
                         CONFIG.MMCM_COMPENSATION {ZHOLD} \
-                        CONFIG.MMCM_CLKOUT0_DIVIDE_F {5} \
                         CONFIG.RESET_PORT {resetn} \
                         CONFIG.CLKOUT1_JITTER {114.829} \
                         CONFIG.CLKOUT1_PHASE_ERROR {98.575} \
@@ -282,9 +285,14 @@ set_property -dict [list \
                         CONFIG.CLKOUT5_DRIVES {BUFG} \
                         CONFIG.CLKOUT5_REQUESTED_OUT_FREQ {50.000} \
                         CONFIG.CLKOUT5_REQUESTED_PHASE {90.000} \
-                        CONFIG.CLK_OUT5_PORT {clk_rmii_quad}] \
-    [get_ips clk_wiz_0]
-generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.xci]
+                        CONFIG.CLK_OUT5_PORT {clk_rmii_quad} \
+			CONFIG.CLKOUT6_USED {true} \
+			CONFIG.CLK_OUT6_PORT {clk_i} \
+			CONFIG.CLKOUT6_REQUESTED_OUT_FREQ {25.000} \
+			CONFIG.NUM_OUT_CLKS {6} \
+		   ] \
+    [get_ips clk_wiz_ariane]
+generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/clk_wiz_ariane/clk_wiz_ariane.xci]
 #SD-card clock generator
 create_ip -name clk_wiz -vendor xilinx.com -library ip -module_name clk_wiz_1
 set_property -dict [list \
