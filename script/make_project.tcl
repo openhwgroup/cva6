@@ -321,6 +321,31 @@ set_property -dict [list \
                         CONFIG.CLKOUT1_PHASE_ERROR {319.966}] [get_ips clk_wiz_1]
 generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/clk_wiz_1/clk_wiz_1.xci]
 
+# Crossbar
+create_ip -name axi_crossbar -vendor xilinx.com -library ip -version 2.1 -module_name axi_crossbar_0
+set_property -dict [list \
+			CONFIG.ADDR_WIDTH {64} \
+			CONFIG.DATA_WIDTH {64} \
+			CONFIG.ID_WIDTH {10} \
+			CONFIG.AWUSER_WIDTH {1} \
+			CONFIG.ARUSER_WIDTH {1} \
+			CONFIG.WUSER_WIDTH {1} \
+			CONFIG.RUSER_WIDTH {1} \
+			CONFIG.BUSER_WIDTH {1} \
+			CONFIG.M00_A00_BASE_ADDR {0x0000000080000000} \
+			CONFIG.M01_A00_BASE_ADDR {0x0000000040000000} \
+			CONFIG.M00_A00_ADDR_WIDTH {30} \
+			CONFIG.M01_A00_ADDR_WIDTH {30} \
+			CONFIG.S00_THREAD_ID_WIDTH {8} \
+			CONFIG.S01_THREAD_ID_WIDTH {8} \
+			CONFIG.S02_THREAD_ID_WIDTH {8} \
+			CONFIG.S03_THREAD_ID_WIDTH {8} \
+			CONFIG.S01_BASE_ID {0x00000100} \
+			CONFIG.S02_BASE_ID {0x00000200} \
+			CONFIG.S03_BASE_ID {0x00000300} \
+		       ] [get_ips axi_crossbar_0]
+generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/axi_crossbar_0/axi_crossbar_0.xci]
+
 # SPI interface for R/W SD card
 create_ip -name axi_quad_spi -vendor xilinx.com -library ip -module_name axi_quad_spi_0
 set_property -dict [list \
