@@ -88,6 +88,9 @@ module frontend #(
     logic        icache_valid_d, icache_valid_q;
     logic        set_pc_d,       set_pc_q;
 
+    logic        icache_speculative_d, icache_speculative_q;
+    logic [63:0] icache_vaddr_d, icache_vaddr_q;
+
     // BHT, BTB and RAS prediction
     bht_prediction_t bht_prediction;
     btb_prediction_t btb_prediction;
@@ -109,13 +112,12 @@ module frontend #(
     logic [63:0]   rvi_imm;
 
     fetch_entry_t  fetch_queue[$];
-    logic [63:0]   fetch_vaddrs[$]; // save the fetch addresses
 
     // virtual address of current fetch
     logic [63:0]   fetch_vaddr;
     logic [63:0]   bp_vaddr;
     logic          bp_valid; // we have a valid branch-prediction
-
+    logic          fetch_is_speculative; // is it a speculative fetch or a fetch which need to do for sure
     fetch_entry_t  fe;
 
     logic [63:0]     vpc_i;
@@ -148,8 +150,8 @@ module frontend #(
         if_ready        = icache_ready;
         icache_req      = 1'b1;
 
-        bp_vaddr        = '0;
-        bp_valid        = 1'b0;
+        bp_vaddr        = '0;    // predicted address
+        bp_valid        = 1'b0;  // prediction is valid
 
         // is it a return and the RAS contains a valid prediction? **speculative**
         if (rvi_return && ras_predict.valid) begin
@@ -191,11 +193,11 @@ module frontend #(
 
         if (take_rvi_cf) begin
             bp_valid = 1'b1;
-            bp_vaddr = npc_q + rvi_imm;
+            bp_vaddr = icache_vaddr_q + rvi_imm;
         end
 
-        // icache response is valid -> so is our prediction
-        if (~icache_valid_q)
+        // icache response is valid -> so is our prediction, also check that this was no mandatory fetch
+        if (~icache_valid_q || ~icache_speculative_q)
             bp_valid = 1'b0;
     end
 
@@ -206,7 +208,11 @@ module frontend #(
         // we mis-predicted so kill the icache request and the fetch queue
         if (is_mispredict || flush_i) begin
             icache_kill_req = 1'b1;
-            fetch_vaddrs = {};
+        end
+
+        // if we have a valid branch-prediction we need to kill the current cache request
+        if (bp_valid) begin
+            icache_kill_req = 1'b1;
         end
 
         // also kill the fetch FIFO if we are flushing
@@ -214,25 +220,30 @@ module frontend #(
             fetch_queue = {};
 
         // assemble fetch entry
-        fe.address = fetch_vaddrs.pop_front();
+        fe.address = icache_vaddr_q;
         fe.instruction = icache_data_q;
         fe.branch_predict.valid = bp_valid;
         fe.branch_predict.predict_address = bp_vaddr;
         fe.branch_predict.predict_taken = bp_valid;
         fe.branch_predict.is_lower_16 = 1'b0;
         fe.branch_predict.cf_type = (rvi_jalr) ? BTB : BHT;
-
-        // save the fetch address
-        if (icache_ready && icache_req)
-            fetch_vaddrs.push_back(fetch_vaddr);
-
-        if (fetch_ack_i)
-            fetch_queue.pop_front();
+        fe.ex = '0; // ToDo
 
         fetch_entry_o = fetch_queue[0];
         fetch_entry_valid_o = (fetch_queue.size() != 0);
     end
 
+    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
+        if (fetch_ack_i) begin
+            fetch_queue.pop_front();
+            $display("acknowledged instr\n");
+        end
+
+        if (icache_valid_q) begin
+            fetch_queue.push_back(fe);
+            $display("Add new instruction %h", fe.address);
+        end
+    end
     // --------------------
     // Update Predictions
     // --------------------
@@ -264,37 +275,39 @@ module frontend #(
     always_comb begin : npc_select
         automatic logic [63:0] fetch_address;
 
+        fetch_is_speculative = 1'b0;
+
         fetch_address    = npc_q;
         set_pc_d         = set_pc_q;
         // keep stable by default
-        npc_d            = fetch_address;
-        // -------------------------------
-        // 0. Default assignment
-        // -------------------------------
-        if (if_ready && fetch_enable_i)
-            npc_d = {fetch_address[63:2], 2'b0}  + 64'h4;
-
+        npc_d            = npc_q;
         // -------------------------------
         // 1. Branch Prediction
         // -------------------------------
-        if (if_ready && bp_vaddr)
-
+        if (if_ready && bp_valid) begin
+            fetch_is_speculative = 1'b1;
+            fetch_address = bp_vaddr;
+        end
+        // -------------------------------
+        // 0. Default assignment
+        // -------------------------------
+        if (if_ready && fetch_enable_i) begin
+            npc_d = {fetch_address[63:2], 2'b0}  + 64'h4;
+            fetch_is_speculative = 1'b1;
+        end
         // -------------------------------
         // 3. Return from environment call
         // -------------------------------
         if (eret_i) begin
-            npc_d                  = epc_i;
+            npc_d = epc_i;
         end
-
-
         // -------------------------------
         // 4. Exception/Interrupt
         // -------------------------------
         if (ex_valid_i) begin
-            npc_d                  = trap_vector_base_i;
-            set_pc_d               = 1'b1;
+            npc_d    = trap_vector_base_i;
+            set_pc_d = 1'b1;
         end
-
         // -----------------------------------------------
         // 5. Pipeline Flush because of CSR side effects
         // -----------------------------------------------
@@ -321,15 +334,19 @@ module frontend #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            npc_q             <= boot_addr_i;
-            icache_data_q     <= '0;
-            icache_valid_q    <= 1'b0;
-            set_pc_q          <= 1'b0;
+            npc_q                <= boot_addr_i;
+            icache_data_q        <= '0;
+            icache_valid_q       <= 1'b0;
+            set_pc_q             <= 1'b0;
+            icache_speculative_q <= 1'b0;
+            icache_vaddr_q       <= 'b0;
         end else begin
-            npc_q             <= npc_d;
-            icache_data_q     <= icache_data_q;
-            icache_valid_q    <= icache_valid_d;
-            set_pc_q          <= set_pc_d;
+            npc_q                <= npc_d;
+            icache_data_q        <= icache_data_d;
+            icache_valid_q       <= icache_valid_d;
+            icache_speculative_q <= icache_speculative_d;
+            icache_vaddr_q       <= icache_vaddr_d;
+            set_pc_q             <= set_pc_d;
         end
     end
 
@@ -366,18 +383,21 @@ module frontend #(
     icache #(
         .SET_ASSOCIATIVITY ( 4          )
     ) i_icache (
-        .clk_i      ( clk_i             ),
-        .rst_ni     ( rst_ni            ),
-        .flush_i    ( 1'b0              ),
-        .index_i    ( fetch_vaddr[11:0] ),
-        .tag_i      ( npc_q[55:12]      ),
-        .data_o     ( icache_data_d     ),
-        .req_i      ( icache_req        ),
-        .kill_req_i ( icache_kill_req   ),
-        .ready_o    ( icache_ready      ),
-        .valid_o    ( icache_valid_d    ),
-        .axi        ( axi               ),
-        .miss_o     ( l1_icache_miss_o  )
+        .clk_i            ( clk_i                 ),
+        .rst_ni           ( rst_ni                ),
+        .flush_i          ( 1'b0                  ),
+        .vaddr_i          ( fetch_vaddr           ),
+        .is_speculative_i ( fetch_is_speculative  ),
+        .tag_i            ( npc_q[55:12]          ),
+        .data_o           ( icache_data_d         ),
+        .req_i            ( icache_req            ),
+        .kill_req_i       ( icache_kill_req       ),
+        .ready_o          ( icache_ready          ),
+        .valid_o          ( icache_valid_d        ),
+        .is_speculative_o ( icache_speculative_d  ),
+        .vaddr_o          ( icache_vaddr_d        ),
+        .axi              ( axi                   ),
+        .miss_o           ( l1_icache_miss_o      )
     );
 
     instr_scan i_instr_scan (

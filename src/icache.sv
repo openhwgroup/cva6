@@ -22,15 +22,18 @@ module icache #(
     )(
         input  logic                     clk_i,
         input  logic                     rst_ni,
-        input  logic                     flush_i,    // flush the icache, flush and kill have to be asserted together
-        input  logic                     req_i,      // we request a new word
-        input  logic                     kill_req_i, // kill the current request
-        output logic                     ready_o,    // icache is ready
-        input  logic [INDEX_WIDTH-1:0]   index_i,    // 1st cycle: 12 bit index
-        input  logic [TAG_WIDTH-1:0]     tag_i,      // 2nd cycle: physical tag
-        output logic [FETCH_WIDTH-1:0]   data_o,     // 2+ cycle out: tag
-        output logic                     valid_o,    // signals a valid read
-        output logic                     miss_o,     // we missed on the cache
+        input  logic                     flush_i,          // flush the icache, flush and kill have to be asserted together
+        input  logic                     req_i,            // we request a new word
+        input  logic                     is_speculative_i, // is this request speculative or not
+        input  logic                     kill_req_i,       // kill the current request
+        output logic                     ready_o,          // icache is ready
+        input  logic [63:0]              vaddr_i,          // 1st cycle: 12 bit index is taken for lookup
+        input  logic [TAG_WIDTH-1:0]     tag_i,            // 2nd cycle: physical tag
+        output logic [FETCH_WIDTH-1:0]   data_o,           // 2+ cycle out: tag
+        output logic                     is_speculative_o, // the fetch was speculative
+        output logic [63:0]              vaddr_o,          // virtual address out
+        output logic                     valid_o,          // signals a valid read
+        output logic                     miss_o,           // we missed on the cache
         AXI_BUS.Master                   axi
     );
 
@@ -42,7 +45,8 @@ module icache #(
                        REDO_REQ, WAIT_TAG_SAVED, REFILL
                      }                      state_d, state_q;
     logic [$clog2(ICACHE_NUM_WORD)-1:0]     cnt_d, cnt_q;
-    logic [INDEX_WIDTH-1:0]                 index_d, index_q;
+    logic [63:0]                            vaddr_d, vaddr_q;
+    logic                                   spec_d, spec_q; // request is speculative
     logic [TAG_WIDTH-1:0]                   tag_d, tag_q;
     logic [SET_ASSOCIATIVITY-1:0]           evict_way_d, evict_way_q;
     logic                                   flushing_d, flushing_q;
@@ -119,7 +123,7 @@ module icache #(
     // ------------------
     // Way Select
     // ------------------
-    assign idx = index_q[BYTE_OFFSET-1:2];
+    assign idx = vaddr_q[BYTE_OFFSET-1:2];
     // cacheline selected by hit
     logic [CACHE_LINE_WIDTH/FETCH_WIDTH-1:0][FETCH_WIDTH-1:0] selected_cl;
     logic [CACHE_LINE_WIDTH-1:0] selected_cl_flat;
@@ -184,13 +188,17 @@ module icache #(
         // default assignments
         state_d     = state_q;
         cnt_d       = cnt_q;
-        index_d     = index_q;
+        vaddr_d     = vaddr_q;
+        spec_d      = spec_q;
         tag_d       = tag_q;
         evict_way_d = evict_way_q;
         flushing_d  = flushing_q;
 
+        is_speculative_o = spec_q;
+        vaddr_o          = vaddr_q;
+
         req         = '0;
-        addr        = index_i[INDEX_WIDTH-1:BYTE_OFFSET];
+        addr        = vaddr_i[INDEX_WIDTH-1:BYTE_OFFSET];
         we          = 1'b0;
         data_wdata  = '0;
         tag_wdata   = '0;
@@ -212,7 +220,8 @@ module icache #(
                     // request the content of all arrays
                     req = '1;
                     // save the index
-                    index_d = index_i;
+                    vaddr_d = vaddr_i;
+                    spec_d  = is_speculative_i;
                     state_d = TAG_CMP;
                 end
 
@@ -232,7 +241,8 @@ module icache #(
                         // request the content of all arrays
                         req = '1;
                         // save the index and stay in compare mode
-                        index_d = index_i;
+                        vaddr_d = vaddr_i;
+                        spec_d  = is_speculative_i;
                     // no new request -> go back to idle
                     end else begin
                         state_d = IDLE;
@@ -256,7 +266,7 @@ module icache #(
             // ~> request a cache-line refill
             REFILL: begin
                 axi.ar_valid  = 1'b1;
-                axi.ar_addr[INDEX_WIDTH+TAG_WIDTH-1:0] = {tag_q, index_q};
+                axi.ar_addr[INDEX_WIDTH+TAG_WIDTH-1:0] = {tag_q, vaddr_q[INDEX_WIDTH-1:0]};
 
                 if (kill_req_i)
                     state_d = WAIT_KILLED_REFILL;
@@ -270,7 +280,7 @@ module icache #(
 
                 state_d = REDO_REQ;
                 req     = evict_way_q;
-                addr    = index_q[INDEX_WIDTH-1:BYTE_OFFSET];
+                addr    = vaddr_q[INDEX_WIDTH-1:BYTE_OFFSET];
 
                 if (axi.r_valid) begin
                     we = 1'b1;
@@ -289,7 +299,7 @@ module icache #(
             // ~> redo the request,
             REDO_REQ: begin
                 req = '1;
-                addr = index_q[INDEX_WIDTH-1:BYTE_OFFSET];
+                addr = vaddr_q[INDEX_WIDTH-1:BYTE_OFFSET];
                 tag = tag_q;
                 state_d = WAIT_TAG_SAVED;
             end
@@ -326,7 +336,7 @@ module icache #(
             default : state_d = IDLE;
         endcase
 
-        if (kill_req_i && !(state_q inside {REFILL, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP})) begin
+        if (kill_req_i && !(state_q inside {REFILL, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP}) && !ready_o) begin
             state_d = IDLE;
         end
 
@@ -359,17 +369,19 @@ module icache #(
         if (~rst_ni) begin
             state_q     <= FLUSH;
             cnt_q       <= '0;
-            index_q     <= '0;
+            vaddr_q     <= '0;
             tag_q       <= '0;
             evict_way_q <= '0;
             flushing_q  <= 1'b0;
+            spec_q      <= 1'b0;
         end else begin
             state_q     <= state_d;
             cnt_q       <= cnt_d;
-            index_q     <= index_d;
+            vaddr_q     <= vaddr_d;
             tag_q       <= tag_d;
             evict_way_q <= evict_way_d;
             flushing_q  <= flushing_d;
+            spec_q      <= spec_d;
         end
     end
 
