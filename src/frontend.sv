@@ -92,6 +92,8 @@ module frontend #(
     bht_prediction_t bht_prediction;
     btb_prediction_t btb_prediction;
     ras_t ras_predict;
+    bht_update_t     bht_update;
+    btb_update_t     btb_update;
 
     // icache controll signals
     logic icache_req, icache_kill_req, icache_ready;
@@ -106,11 +108,17 @@ module frontend #(
     logic          rvi_return, rvi_call, rvi_branch, rvi_jalr, rvi_jump;
     logic [63:0]   rvi_imm;
 
+    fetch_entry_t  fetch_queue[$];
+    logic [63:0]   fetch_vaddrs[$]; // save the fetch addresses
 
+    // virtual address of current fetch
+    logic [63:0]   fetch_vaddr;
+    logic [63:0]   bp_vaddr;
+    logic          bp_valid; // we have a valid branch-prediction
 
-    bht_update_t     bht_update_i;
+    fetch_entry_t  fe;
+
     logic [63:0]     vpc_i;
-    btb_update_t     btb_update_i;
     logic [11:0]     index_i;
     logic [43:0]     tag_i;
 
@@ -126,66 +134,37 @@ module frontend #(
     logic            rvc_call;
     logic [63:0]     rvc_imm;
 
-    // control frontend
+    logic is_mispredict;
+    assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
+    // control frontend + branch-prediction
     always_comb begin : frontend_ctrl
+        automatic logic take_rvi_cf; // take the control flow change
 
-        if_ready = 1'b0;
-        icache_req = 1'b0;
-        icache_kill_req = 1'b0;
+        ras_pop         = 1'b0;
+        ras_push        = 1'b0;
+        ras_update      = '0;
 
-    end
+        take_rvi_cf     = 1'b0;
+        if_ready        = icache_ready;
+        icache_req      = 1'b1;
 
-    // -------------------
-    // Next PC
-    // -------------------
-    // next PC (NPC) can come from (in order of precedence):
-    // 0. Default assignment
-    // 1. Branch Predict taken
-    // 2. Control flow change request
-    // 3. Return from environment call
-    // 4. Exception/Interrupt
-    // 5. Pipeline Flush because of CSR side effects
-    // 6. Debug
-    // Mis-predict handling is a little bit different
-    // select PC a.k.a PC Gen
+        bp_vaddr        = '0;
+        bp_valid        = 1'b0;
 
-    // virtual address of current fetch
-    logic [63:0] fetch_vaddr;
-    logic take_rvi_cf; // take the control flow change
-
-    always_comb begin : npc_select
-        automatic logic [63:0] fetch_address;
-        ras_pop     = 1'b0;
-        ras_push    = 1'b0;
-        ras_update  = '0;
-        take_rvi_cf = 1'b0;
-
-        fetch_address    = npc_q;
-        set_pc_d         = set_pc_q;
-        // keep stable by default
-        npc_d            = fetch_address;
-        // -------------------------------
-        // 0. Default assignment
-        // -------------------------------
-        if (if_ready && fetch_enable_i)
-            npc_d = {fetch_address[63:2], 2'b0}  + 64'h4;
-
-        // -------------------------------
-        // 1. Branch Prediction
-        // -------------------------------
         // is it a return and the RAS contains a valid prediction? **speculative**
-        if (if_ready && rvi_return && ras_predict.valid) begin
-            fetch_address = ras_predict.ra;
+        if (rvi_return && ras_predict.valid) begin
+            bp_vaddr = ras_predict.ra;
             ras_pop = 1'b1;
+            bp_valid = 1'b1;
         end
 
-        if (if_ready && rvi_call) begin
+        if (rvi_call) begin
             ras_push = 1'b1;
-            ras_update = fetch_address; // not sure here
+            ras_update = fe.address; // not sure here
         end
 
         // Branch Prediction - **speculative**
-        if (if_ready && rvi_branch) begin
+        if (rvi_branch) begin
             // dynamic prediction valid?
             if (bht_prediction.valid) begin
                 if (bht_prediction.taken || bht_prediction.strongly_taken)
@@ -204,14 +183,102 @@ module frontend #(
             take_rvi_cf = 1'b1;
         end
 
-        // to take this jump we need a valid prediction target
+        // to take this jump we need a valid prediction target **speculative**
         if (if_ready && rvi_jalr && btb_prediction.valid) begin
-            fetch_address = btb_prediction.target_address;
+            bp_vaddr = btb_prediction.target_address;
+            bp_valid = 1'b1;
         end
 
         if (take_rvi_cf) begin
-            fetch_address = npc_q + rvi_imm;
+            bp_valid = 1'b1;
+            bp_vaddr = npc_q + rvi_imm;
         end
+
+        // icache response is valid -> so is our prediction
+        if (~icache_valid_q)
+            bp_valid = 1'b0;
+    end
+
+    // Behavioral at the moment: TODO, no pressure from the processor back-end
+    always_comb begin : id_if
+        icache_kill_req = 1'b0;
+
+        // we mis-predicted so kill the icache request and the fetch queue
+        if (is_mispredict || flush_i) begin
+            icache_kill_req = 1'b1;
+            fetch_vaddrs = {};
+        end
+
+        // also kill the fetch FIFO if we are flushing
+        if (flush_i)
+            fetch_queue = {};
+
+        // assemble fetch entry
+        fe.address = fetch_vaddrs.pop_front();
+        fe.instruction = icache_data_q;
+        fe.branch_predict.valid = bp_valid;
+        fe.branch_predict.predict_address = bp_vaddr;
+        fe.branch_predict.predict_taken = bp_valid;
+        fe.branch_predict.is_lower_16 = 1'b0;
+        fe.branch_predict.cf_type = (rvi_jalr) ? BTB : BHT;
+
+        // save the fetch address
+        if (icache_ready && icache_req)
+            fetch_vaddrs.push_back(fetch_vaddr);
+
+        if (fetch_ack_i)
+            fetch_queue.pop_front();
+
+        fetch_entry_o = fetch_queue[0];
+        fetch_entry_valid_o = (fetch_queue.size() != 0);
+    end
+
+    // --------------------
+    // Update Predictions
+    // --------------------
+    // BHT
+    assign bht_update.valid = resolved_branch_i.valid;
+    assign bht_update.pc    = resolved_branch_i.pc;
+    assign bht_update.mispredict = resolved_branch_i.is_mispredict;
+    assign bht_update.taken = resolved_branch_i.is_taken;
+    // BTB
+    assign btb_update.valid = resolved_branch_i.valid & (resolved_branch_i.cf_type == BTB);
+    assign btb_update.pc    = resolved_branch_i.pc;
+    assign btb_update.target_address = resolved_branch_i.target_address;
+    assign btb_update.is_lower_16 = resolved_branch_i.is_lower_16;
+    assign btb_update.clear = resolved_branch_i.clear;
+
+    // -------------------
+    // Next PC
+    // -------------------
+    // next PC (NPC) can come from (in order of precedence):
+    // 0. Default assignment
+    // 1. Branch Predict taken
+    // 2. Control flow change request
+    // 3. Return from environment call
+    // 4. Exception/Interrupt
+    // 5. Pipeline Flush because of CSR side effects
+    // 6. Debug
+    // Mis-predict handling is a little bit different
+    // select PC a.k.a PC Gen
+    always_comb begin : npc_select
+        automatic logic [63:0] fetch_address;
+
+        fetch_address    = npc_q;
+        set_pc_d         = set_pc_q;
+        // keep stable by default
+        npc_d            = fetch_address;
+        // -------------------------------
+        // 0. Default assignment
+        // -------------------------------
+        if (if_ready && fetch_enable_i)
+            npc_d = {fetch_address[63:2], 2'b0}  + 64'h4;
+
+        // -------------------------------
+        // 1. Branch Prediction
+        // -------------------------------
+        if (if_ready && bp_vaddr)
+
         // -------------------------------
         // 3. Return from environment call
         // -------------------------------
@@ -225,7 +292,6 @@ module frontend #(
         // -------------------------------
         if (ex_valid_i) begin
             npc_d                  = trap_vector_base_i;
-            branch_predict_o.valid = 1'b0;
             set_pc_d               = 1'b1;
         end
 
@@ -240,7 +306,6 @@ module frontend #(
             // we can unconditionally do PC + 4 here
             npc_d    = pc_commit_i + 64'h4;
             set_pc_d = 1'b1;
-            branch_predict_o.valid = 1'b0;
         end
 
         // -------------------------------
@@ -248,7 +313,6 @@ module frontend #(
         // -------------------------------
         if (debug_set_pc_i) begin
             npc_d = debug_pc_i;
-            branch_predict_o.valid = 1'b0;
             set_pc_d = 1'b1;
         end
 
@@ -284,7 +348,7 @@ module frontend #(
     ) i_btb (
         .flush_i          ( flush_bp_i       ),
         .vpc_i            ( fetch_vaddr      ),
-        .btb_update_i     ( btb_update_i     ),
+        .btb_update_i     ( btb_update       ),
         .btb_prediction_o ( btb_prediction   ),
         .*
     );
@@ -294,7 +358,7 @@ module frontend #(
     ) i_bht (
         .flush_i          ( flush_bp_i       ),
         .vpc_i            ( fetch_vaddr      ),
-        .bht_update_i     ( bht_update_i     ),
+        .bht_update_i     ( bht_update       ),
         .bht_prediction_o ( bht_prediction   ),
         .*
     );
@@ -306,7 +370,7 @@ module frontend #(
         .rst_ni     ( rst_ni            ),
         .flush_i    ( 1'b0              ),
         .index_i    ( fetch_vaddr[11:0] ),
-        .tag_i      (                   ),
+        .tag_i      ( npc_q[55:12]      ),
         .data_o     ( icache_data_d     ),
         .req_i      ( icache_req        ),
         .kill_req_i ( icache_kill_req   ),
@@ -317,21 +381,21 @@ module frontend #(
     );
 
     instr_scan i_instr_scan (
-        .instr_i      ( instr        ),
-        .is_rvc_o     ( is_rvc       ),
-        .rvi_return_o ( rvi_return   ),
-        .rvi_call_o   ( rvi_call     ),
-        .rvc_branch_o ( rvc_branch   ),
-        .rvc_jump_o   ( rvc_jump     ),
-        .rvc_jr_o     ( rvc_jr       ),
-        .rvc_return_o ( rvc_return   ),
-        .rvc_jalr_o   ( rvc_jalr     ),
-        .rvc_call_o   ( rvc_call     ),
-        .rvi_imm_o    ( rvi_imm      ),
-        .rvc_imm_o    ( rvc_imm      ),
-        .rvi_branch_o ( rvi_branch   ),
-        .rvi_jalr_o   ( rvi_jalr     ),
-        .rvi_jump_o   ( rvi_jump     )
+        .instr_i      ( icache_data_q ),
+        .is_rvc_o     ( is_rvc        ),
+        .rvi_return_o ( rvi_return    ),
+        .rvi_call_o   ( rvi_call      ),
+        .rvi_branch_o ( rvi_branch    ),
+        .rvi_jalr_o   ( rvi_jalr      ),
+        .rvi_jump_o   ( rvi_jump      ),
+        .rvi_imm_o    ( rvi_imm       ),
+        .rvc_branch_o ( rvc_branch    ),
+        .rvc_jump_o   ( rvc_jump      ),
+        .rvc_jr_o     ( rvc_jr        ),
+        .rvc_return_o ( rvc_return    ),
+        .rvc_jalr_o   ( rvc_jalr      ),
+        .rvc_call_o   ( rvc_call      ),
+        .rvc_imm_o    ( rvc_imm       )
     );
 
 endmodule
@@ -344,17 +408,17 @@ module instr_scan (
     output logic        is_rvc_o,
     output logic        rvi_return_o,
     output logic        rvi_call_o,
+    output logic        rvi_branch_o,
+    output logic        rvi_jalr_o,
+    output logic        rvi_jump_o,
+    output logic [63:0] rvi_imm_o,
     output logic        rvc_branch_o,
     output logic        rvc_jump_o,
     output logic        rvc_jr_o,
     output logic        rvc_return_o,
     output logic        rvc_jalr_o,
     output logic        rvc_call_o,
-    output logic [63:0] rvi_imm_o,
-    output logic [63:0] rvc_imm_o,
-    output logic        rvi_branch_o,
-    output logic        rvi_jalr_o,
-    output logic        rvi_jump_o
+    output logic [63:0] rvc_imm_o
 );
     assign is_rvc_o     = (instr_i[1:0] != 2'b00);
     // check that rs1 is either x1 or x5 and that rs1 is not x1 or x5, TODO: check the fact about bit 7

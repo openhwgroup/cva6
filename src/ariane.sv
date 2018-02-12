@@ -263,54 +263,34 @@ module ariane #(
     assign sec_lvl_o = priv_lvl;
     assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
     // --------------
-    // NPC Generation
+    // Frontend
     // --------------
-    pcgen_stage pcgen_stage_i (
-        .fetch_enable_i        ( fetch_enable                   ),
-        .flush_i               ( flush_ctrl_pcgen               ),
-        .flush_bp_i            ( flush_bp_ctrl_pcgen            ),
-        .if_ready_i            ( ~if_ready_if_pcgen             ),
-        .resolved_branch_i     ( resolved_branch                ),
-        .fetch_address_o       ( fetch_address_pcgen_if         ),
-        .fetch_valid_o         ( fetch_valid_pcgen_if           ),
-        .branch_predict_o      ( branch_predict_pcgen_if        ),
-        .boot_addr_i           ( boot_addr_i                    ),
-        .pc_commit_i           ( pc_commit                      ),
-        .epc_i                 ( epc_commit_pcgen               ),
-        .eret_i                ( eret                           ),
-        .trap_vector_base_i    ( trap_vector_base_commit_pcgen  ),
-        .ex_valid_i            ( ex_commit.valid                ),
-        .debug_pc_i            ( pc_debug_pcgen                 ),
-        .debug_set_pc_i        ( set_pc_debug                   ),
+    frontend #(
+
+    ) i_frontend (
+        .flush_i             ( flush_ctrl_if       ), // not entirely correct
+        .flush_bp_i          ( flush_bp_ctrl_pcgen ),
+        .i_fence_i           ( 1'b0                ),
+        .flush_itlb_i        ( 1'b0                ),
+        .boot_addr_i         ( boot_addr_i         ),
+        .fetch_enable_i      ( fetch_enable        ),
+        .resolved_branch_i   ( resolved_branch     ),
+        .pc_commit_i         ( pc_commit           ),
+        .epc_i               ( epc_commit_pcgen    ),
+        .eret_i              ( eret                ),
+        .trap_vector_base_i  ( trap_vector_base_commit_pcgen ),
+        .ex_valid_i          ( ex_commit.valid     ),
+        .debug_pc_i          ( pc_debug_pcgen      ),
+        .debug_set_pc_i      ( set_pc_debug        ),
+        .axi                 ( instr_if            ),
+        .l1_icache_miss_o    (                     ), // performance counters
+        .fetch_entry_o       ( fetch_entry_if_id   ),
+        .fetch_entry_valid_o ( fetch_valid_if_id   ),
+        .fetch_ack_i         ( decode_ack_id_if    ),
         .*
     );
-    // ---------
-    // IF
-    // ---------
-    if_stage if_stage_i (
-        .flush_i               ( flush_ctrl_if                  ),
-        .halt_i                ( halt_ctrl                      ),
-        .if_busy_o             ( if_ready_if_pcgen              ),
-        .fetch_address_i       ( fetch_address_pcgen_if         ),
-        .fetch_valid_i         ( fetch_valid_pcgen_if           ),
-        .branch_predict_i      ( branch_predict_pcgen_if        ),
-        .instr_req_o           ( fetch_req_if_ex                ),
-        .instr_addr_o          ( fetch_vaddr_if_ex              ),
-        .instr_gnt_i           ( fetch_gnt_ex_if                ),
-        .instr_rvalid_i        ( fetch_valid_ex_if              ),
-        .instr_rdata_i         ( fetch_rdata_ex_if              ),
-        .instr_ex_i            ( fetch_ex_ex_if                 ), // fetch exception
 
-        .fetch_entry_0_o       ( fetch_entry_if_id              ),
-        .fetch_entry_valid_0_o ( fetch_valid_if_id              ),
-        .fetch_ack_0_i         ( decode_ack_id_if               ),
-
-        // Reserved for future use
-        .fetch_entry_1_o       (                                ),
-        .fetch_entry_valid_1_o (                                ),
-        .fetch_ack_1_i         (                                ),
-        .*
-    );
+    assign fetch_req_if_ex = 1'b0;
 
     // ---------
     // ID
@@ -643,31 +623,6 @@ module ariane #(
         .debug_csr_wdata_o ( csr_wdata_debug_csr       ),
         .debug_csr_rdata_i ( csr_rdata_debug_csr       ),
         .*
-    );
-
-    // -------------------
-    // Instruction Cache
-    // -------------------
-    icache_old #(
-       .AXI_USER_WIDTH      ( AXI_USER_WIDTH                 ),
-       .AXI_ID_WIDTH        ( AXI_ID_WIDTH                   )
-    ) i_icache (
-       .clk_i               ( clk_i                          ),
-       .rst_n               ( rst_ni                         ),
-       .test_en_i           ( test_en_i                      ),
-       .fetch_req_i         ( instr_if_data_req              ),
-       .fetch_addr_i        ( {instr_if_address[55:3], 3'b0} ),
-       .fetch_gnt_o         ( instr_if_data_gnt              ),
-       .fetch_rvalid_o      ( instr_if_data_rvalid           ),
-       .fetch_rdata_o       ( instr_if_data_rdata            ),
-       .axi                 ( instr_if                       ),
-       .bypass_icache_i     ( ~bypass_icache_csr_icache      ),
-       .cache_is_bypassed_o (                                ),
-       .flush_icache_i      ( flush_icache_ctrl_icache       ),
-       .cache_is_flushed_o  ( flush_icache_ack_icache_ctrl   ),
-       .flush_set_ID_req_i  ( 1'b0                           ),
-       .flush_set_ID_addr_i ( '0                             ),
-       .flush_set_ID_ack_o  (                                )
     );
 
     // -------------------
