@@ -1,4 +1,4 @@
-module slave_adaptor
+module slave_adapter
   #(
     ID_WIDTH = 10,               // id width
     ADDR_WIDTH = 64,             // address width

@@ -11,6 +11,28 @@
 // Date: 13.10.2017
 // Description: SRAM Behavioral Model
 
+module infer_bram #(BRAM_SIZE=16, BYTE_WIDTH=8) // BRAM_SIZE is in words
+(
+input ram_clk, ram_en,
+input [BYTE_WIDTH-1:0] ram_we,
+input [BRAM_SIZE-1:0] ram_addr,
+input [BYTE_WIDTH*8-1:0] ram_wrdata,
+output [BYTE_WIDTH*8-1:0] ram_rddata);
+
+   sram #(.DATA_WIDTH(BYTE_WIDTH*8),
+          .NUM_WORDS(1<<BRAM_SIZE))
+          sram_0
+          (
+           .clk_i(ram_clk),
+           .req_i(ram_en),
+           .we_i(ram_we),
+           .addr_i(ram_addr),
+           .wdata_i(ram_wrdata),
+           .be_i(-1),
+           .rdata_o(ram_rddata));
+          
+endmodule // infer_bram
+
 module sram #(
     parameter DATA_WIDTH = 64,
     parameter NUM_WORDS  = 1024

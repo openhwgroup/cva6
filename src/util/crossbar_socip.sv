@@ -22,6 +22,7 @@ module crossbar_socip
    nasti_channel
      #(
        .ID_WIDTH    ( ID_WIDTH      ),
+       .USER_WIDTH  ( USER_WIDTH    ),
        .ADDR_WIDTH  ( ADDR_WIDTH    ),
        .DATA_WIDTH  ( DATA_WIDTH    ))
    slave0_nasti(), slave1_nasti(), master0_nasti(), master1_nasti(), master2_nasti();
@@ -29,10 +30,11 @@ module crossbar_socip
    // input of the IO crossbar
    nasti_channel
      #(
-       .N_PORT      ( NUM_MASTER     ),
-       .ID_WIDTH    ( ID_WIDTH       ),
-       .ADDR_WIDTH  ( ADDR_WIDTH     ),
-       .DATA_WIDTH  ( DATA_WIDTH     ))
+       .N_PORT      ( NUM_MASTER    ),
+       .ID_WIDTH    ( ID_WIDTH      ),
+       .USER_WIDTH  ( USER_WIDTH    ),
+       .ADDR_WIDTH  ( ADDR_WIDTH    ),
+       .DATA_WIDTH  ( DATA_WIDTH    ))
    master_nasti();
 
    nasti_channel mem_dmm2(), mem_dmm3(), mem_dmm4(), mem_dmm5(), mem_dmm6(), mem_dmm7(); // dummy channels
@@ -53,10 +55,11 @@ module crossbar_socip
    // output of the IO crossbar
    nasti_channel
      #(
-       .N_PORT      ( NUM_SLAVE      ),
-       .ID_WIDTH    ( ID_WIDTH       ),
-       .ADDR_WIDTH  ( ADDR_WIDTH     ),
-       .DATA_WIDTH  ( DATA_WIDTH     ))
+       .N_PORT      ( NUM_SLAVE     ),
+       .ID_WIDTH    ( ID_WIDTH      ),
+       .USER_WIDTH  ( USER_WIDTH    ),
+       .ADDR_WIDTH  ( ADDR_WIDTH    ),
+       .DATA_WIDTH  ( DATA_WIDTH    ))
    cbo_nasti();
 
    nasti_crossbar

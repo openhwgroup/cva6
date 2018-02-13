@@ -41,7 +41,7 @@ module ariane_wrapped #(
         output logic [15:0] o_led
     );
 
-    logic [63:0]                    boot_addr_i = 64'h40000000;
+    wire [63:0]                    boot_addr_i = 64'h40000000;
  
     localparam int unsigned AXI_NUMBYTES = AXI_DATA_WIDTH/8;
 
@@ -117,7 +117,7 @@ module ariane_wrapped #(
          logic                           debug_gnt_o;
          logic                           debug_rvalid_o;
          logic [31:0] debug_addr;
-         logic [15:0]                    debug_addr_i = debug_addr[15:0];
+         wire  [15:0]                    debug_addr_i = debug_addr[15:0];
          logic                           debug_we_i;
          logic [63:0]                    debug_wdata_i;
          logic [63:0]                    debug_rdata_o;
@@ -132,8 +132,8 @@ module ariane_wrapped #(
          
          logic [63:0] debug_dout;
         // CPU Control Signals
-         logic                           fetch_enable_i = ~(debug_blocksel_i && debug_fetch_disable);
-         logic                           debug_req_i = debug_blocksel_i && debug_req;
+         wire                            fetch_enable_i = ~(debug_blocksel_i && debug_fetch_disable);
+         wire                            debug_req_i = debug_blocksel_i && debug_req;
 
 /*
 logic [AXI_ADDR_WIDTH-1:0] aw_addr;

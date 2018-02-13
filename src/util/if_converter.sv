@@ -9,13 +9,13 @@ module if_converter  #(
                       AXI_BUS.Master outgoing_if
                        );
 
-slave_adaptor  #(
-    .ID_WIDTH(ID_WIDTH),               // id width
+slave_adapter  #(
+    .ID_WIDTH(ID_WIDTH),                 // id width
     .ADDR_WIDTH(ADDR_WIDTH),             // address width
     .DATA_WIDTH(DATA_WIDTH),             // width of data
     .USER_WIDTH(USER_WIDTH)              // width of user field, must > 0, let synthesizer trim it if not in use
     )
- sadapt0(
+ sadapt(
   .s_axi_awid(incoming_nasti.aw_id),
   .s_axi_awaddr(incoming_nasti.aw_addr),
   .s_axi_awlen(incoming_nasti.aw_len),
@@ -65,7 +65,7 @@ slave_adaptor  #(
       .m_axi_awlen          ( outgoing_if.aw_len     ),
       .m_axi_awsize         ( outgoing_if.aw_size    ),
       .m_axi_awburst        ( outgoing_if.aw_burst   ),
-      .m_axi_awlock         (                        ), // not supported in AXI4
+      .m_axi_awlock         ( outgoing_if.aw_lock    ),
       .m_axi_awcache        ( outgoing_if.aw_cache   ),
       .m_axi_awprot         ( outgoing_if.aw_prot    ),
       .m_axi_awqos          ( outgoing_if.aw_qos     ),
@@ -87,7 +87,7 @@ slave_adaptor  #(
       .m_axi_arlen          ( outgoing_if.ar_len     ),
       .m_axi_arsize         ( outgoing_if.ar_size    ),
       .m_axi_arburst        ( outgoing_if.ar_burst   ),
-      .m_axi_arlock         (                          ), // not supported in AXI4
+      .m_axi_arlock         ( outgoing_if.ar_lock    ),
       .m_axi_arcache        ( outgoing_if.ar_cache   ),
       .m_axi_arprot         ( outgoing_if.ar_prot    ),
       .m_axi_arqos          ( outgoing_if.ar_qos     ),

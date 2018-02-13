@@ -16,3 +16,6 @@
 [submodule "src/axi_node"]
 	path = src/axi_node
 	url = https://github.com/pulp-platform/axi_node.git
+[submodule "src/socip"]
+	path = src/socip
+	url = https://github.com/lowrisc/socip.git

@@ -9,14 +9,14 @@ module nasti_converter  #(
                       nasti_channel.master outgoing_nasti                       
                        );
 
-slave_adaptor
+slave_adapter
   #(
-    .ID_WIDTH(ID_WIDTH),               // id width
+    .ID_WIDTH(ID_WIDTH),                 // id width
     .ADDR_WIDTH(ADDR_WIDTH),             // address width
     .DATA_WIDTH(DATA_WIDTH),             // width of data
     .USER_WIDTH(USER_WIDTH)              // width of user field, must > 0, let synthesizer trim it if not in use
     )
- sadapt0(
+ sadapt(
   .s_axi_awid(incoming_if.aw_id),
   .s_axi_awaddr(incoming_if.aw_addr),
   .s_axi_awlen(incoming_if.aw_len),
@@ -25,6 +25,7 @@ slave_adaptor
   .s_axi_awlock(incoming_if.aw_lock),
   .s_axi_awcache(incoming_if.aw_cache),
   .s_axi_awprot(incoming_if.aw_prot),
+  .s_axi_awregion(incoming_if.aw_region),
   .s_axi_awqos(incoming_if.aw_qos),
   .s_axi_awuser(incoming_if.aw_user),
   .s_axi_awvalid(incoming_if.aw_valid),
@@ -48,6 +49,7 @@ slave_adaptor
   .s_axi_arlock(incoming_if.ar_lock),
   .s_axi_arcache(incoming_if.ar_cache),
   .s_axi_arprot(incoming_if.ar_prot),
+  .s_axi_arregion(incoming_if.ar_region),
   .s_axi_arqos(incoming_if.ar_qos),
   .s_axi_aruser(incoming_if.ar_user),
   .s_axi_arvalid(incoming_if.ar_valid),
@@ -64,10 +66,11 @@ slave_adaptor
       .m_axi_awlen          ( outgoing_nasti.aw_len     ),
       .m_axi_awsize         ( outgoing_nasti.aw_size    ),
       .m_axi_awburst        ( outgoing_nasti.aw_burst   ),
-      .m_axi_awlock         (                          ), // not supported in AXI4
+      .m_axi_awlock         ( outgoing_nasti.aw_lock    ),
       .m_axi_awcache        ( outgoing_nasti.aw_cache   ),
       .m_axi_awprot         ( outgoing_nasti.aw_prot    ),
       .m_axi_awqos          ( outgoing_nasti.aw_qos     ),
+      .m_axi_awuser         ( outgoing_nasti.aw_user    ),
       .m_axi_awregion       ( outgoing_nasti.aw_region  ),
       .m_axi_awvalid        ( outgoing_nasti.aw_valid   ),
       .m_axi_awready        ( outgoing_nasti.aw_ready   ),
@@ -85,10 +88,11 @@ slave_adaptor
       .m_axi_arlen          ( outgoing_nasti.ar_len     ),
       .m_axi_arsize         ( outgoing_nasti.ar_size    ),
       .m_axi_arburst        ( outgoing_nasti.ar_burst   ),
-      .m_axi_arlock         (                          ), // not supported in AXI4
+      .m_axi_arlock         ( outgoing_nasti.ar_lock    ),
       .m_axi_arcache        ( outgoing_nasti.ar_cache   ),
       .m_axi_arprot         ( outgoing_nasti.ar_prot    ),
       .m_axi_arqos          ( outgoing_nasti.ar_qos     ),
+      .m_axi_aruser         ( outgoing_nasti.ar_user    ),
       .m_axi_arregion       ( outgoing_nasti.ar_region  ),
       .m_axi_arvalid        ( outgoing_nasti.ar_valid   ),
       .m_axi_arready        ( outgoing_nasti.ar_ready   ),
