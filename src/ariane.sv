@@ -214,7 +214,7 @@ module ariane #(
     // CTRL <-> *
     // --------------
     logic                     flush_bp_ctrl_pcgen;
-    logic                     flush_ctrl_pcgen;
+    logic                     set_pc_ctrl_pcgen;
     logic                     flush_csr_ctrl;
     logic                     flush_unissued_instr_ctrl_id;
     logic                     flush_ctrl_if;
@@ -276,6 +276,7 @@ module ariane #(
         .fetch_enable_i      ( fetch_enable        ),
         .resolved_branch_i   ( resolved_branch     ),
         .pc_commit_i         ( pc_commit           ),
+        .set_pc_commit_i     ( set_pc_ctrl_pcgen   ),
         .epc_i               ( epc_commit_pcgen    ),
         .eret_i              ( eret                ),
         .trap_vector_base_i  ( trap_vector_base_commit_pcgen ),
@@ -571,7 +572,7 @@ module ariane #(
     controller controller_i (
         // flush ports
         .flush_bp_o             ( flush_bp_ctrl_pcgen           ),
-        .flush_pcgen_o          ( flush_ctrl_pcgen              ),
+        .set_pc_commit_o        ( set_pc_ctrl_pcgen             ),
         .flush_unissued_instr_o ( flush_unissued_instr_ctrl_id  ),
         .flush_if_o             ( flush_ctrl_if                 ),
         .flush_id_o             ( flush_ctrl_id                 ),

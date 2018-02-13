@@ -65,6 +65,7 @@ module frontend #(
     // mispredict
     input  branchpredict_t     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
     // from commit, when flushing the whole pipeline
+    input  logic               set_pc_commit_i,    // Take the PC from commit stage
     input  logic [63:0]        pc_commit_i,        // PC of instruction in commit stage
     // CSR input
     input  logic [63:0]        epc_i,              // exception PC which we need to return to
@@ -86,7 +87,6 @@ module frontend #(
     // Registers
     logic [31:0] icache_data_d,  icache_data_q;
     logic        icache_valid_d, icache_valid_q;
-    logic        set_pc_d,       set_pc_q;
 
     logic        icache_speculative_d, icache_speculative_q;
     logic [63:0] icache_vaddr_d, icache_vaddr_q;
@@ -111,30 +111,25 @@ module frontend #(
     logic          rvi_return, rvi_call, rvi_branch, rvi_jalr, rvi_jump;
     logic [63:0]   rvi_imm;
 
-    fetch_entry_t  fetch_queue[$];
-
     // virtual address of current fetch
     logic [63:0]   fetch_vaddr;
+    logic [44:0]   tag_d, tag_q; // save tag for request to icache
+
     logic [63:0]   bp_vaddr;
     logic          bp_valid; // we have a valid branch-prediction
     logic          fetch_is_speculative; // is it a speculative fetch or a fetch which need to do for sure
-    fetch_entry_t  fe;
-
-    logic [63:0]     vpc_i;
-    logic [11:0]     index_i;
-    logic [43:0]     tag_i;
-
-    logic [31:0]     instr;
-
-    logic            is_rvc;
-
-    logic            rvc_branch;
-    logic            rvc_jump;
-    logic            rvc_jr;
-    logic            rvc_return;
-    logic            rvc_jalr;
-    logic            rvc_call;
-    logic [63:0]     rvc_imm;
+    // branchprediction which we inject into the pipeline
+    branchpredict_sbe_t  bp_sbe;
+    logic                fifo_valid, fifo_ready; // fetch FIFO
+    // RVC branching
+    logic                is_rvc;
+    logic                rvc_branch;
+    logic                rvc_jump;
+    logic                rvc_jr;
+    logic                rvc_return;
+    logic                rvc_jalr;
+    logic                rvc_call;
+    logic [63:0]         rvc_imm;
 
     logic is_mispredict;
     assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
@@ -147,7 +142,7 @@ module frontend #(
         ras_update      = '0;
 
         take_rvi_cf     = 1'b0;
-        if_ready        = icache_ready;
+        if_ready        = icache_ready & fifo_ready;
         icache_req      = 1'b1;
 
         bp_vaddr        = '0;    // predicted address
@@ -162,7 +157,7 @@ module frontend #(
 
         if (rvi_call) begin
             ras_push = 1'b1;
-            ras_update = fe.address; // not sure here
+            ras_update = icache_vaddr_q;
         end
 
         // Branch Prediction - **speculative**
@@ -197,11 +192,10 @@ module frontend #(
         end
 
         // icache response is valid -> so is our prediction, also check that this was no mandatory fetch
-        if (~icache_valid_q || ~icache_speculative_q)
+        if (~icache_valid_q && ~icache_speculative_q)
             bp_valid = 1'b0;
     end
 
-    // Behavioral at the moment: TODO, no pressure from the processor back-end
     always_comb begin : id_if
         icache_kill_req = 1'b0;
 
@@ -215,38 +209,19 @@ module frontend #(
             icache_kill_req = 1'b1;
         end
 
-        // also kill the fetch FIFO if we are flushing
-        if (flush_i)
-            fetch_queue = {};
+        // assemble scoreboard entry
+        bp_sbe.valid = bp_valid;
+        bp_sbe.predict_address = bp_vaddr;
+        bp_sbe.predict_taken = bp_valid;
+        bp_sbe.is_lower_16 = 1'b0;
+        bp_sbe.cf_type = (rvi_jalr) ? BTB : BHT;
 
-        // assemble fetch entry
-        fe.address = icache_vaddr_q;
-        fe.instruction = icache_data_q;
-        fe.branch_predict.valid = bp_valid;
-        fe.branch_predict.predict_address = bp_vaddr;
-        fe.branch_predict.predict_taken = bp_valid;
-        fe.branch_predict.is_lower_16 = 1'b0;
-        fe.branch_predict.cf_type = (rvi_jalr) ? BTB : BHT;
-        fe.ex = '0; // ToDo
-
-        fetch_entry_o = fetch_queue[0];
-        fetch_entry_valid_o = (fetch_queue.size() != 0);
+        fifo_valid = icache_valid_q;
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
-        if (fetch_ack_i) begin
-            fetch_queue.pop_front();
-            $display("acknowledged instr\n");
-        end
-
-        if (icache_valid_q) begin
-            fetch_queue.push_back(fe);
-            $display("Add new instruction %h", fe.address);
-        end
-    end
-    // --------------------
-    // Update Predictions
-    // --------------------
+    // ----------------------------------------
+    // Update Control Flow Predictions
+    // ----------------------------------------
     // BHT
     assign bht_update.valid = resolved_branch_i.valid;
     assign bht_update.pc    = resolved_branch_i.pc;
@@ -265,7 +240,7 @@ module frontend #(
     // next PC (NPC) can come from (in order of precedence):
     // 0. Default assignment
     // 1. Branch Predict taken
-    // 2. Control flow change request
+    // 2. Control flow change request (misprediction)
     // 3. Return from environment call
     // 4. Exception/Interrupt
     // 5. Pipeline Flush because of CSR side effects
@@ -278,15 +253,15 @@ module frontend #(
         fetch_is_speculative = 1'b0;
 
         fetch_address    = npc_q;
-        set_pc_d         = set_pc_q;
         // keep stable by default
         npc_d            = npc_q;
         // -------------------------------
         // 1. Branch Prediction
         // -------------------------------
-        if (if_ready && bp_valid) begin
+        if (bp_valid) begin
             fetch_is_speculative = 1'b1;
             fetch_address = bp_vaddr;
+            npc_d = bp_vaddr;
         end
         // -------------------------------
         // 0. Default assignment
@@ -294,6 +269,12 @@ module frontend #(
         if (if_ready && fetch_enable_i) begin
             npc_d = {fetch_address[63:2], 2'b0}  + 64'h4;
             fetch_is_speculative = 1'b1;
+        end
+        // -------------------------------
+        // 2. Control flow change request
+        // -------------------------------
+        if (is_mispredict) begin
+            npc_d = resolved_branch_i.target_address;
         end
         // -------------------------------
         // 3. Return from environment call
@@ -306,19 +287,17 @@ module frontend #(
         // -------------------------------
         if (ex_valid_i) begin
             npc_d    = trap_vector_base_i;
-            set_pc_d = 1'b1;
         end
         // -----------------------------------------------
         // 5. Pipeline Flush because of CSR side effects
         // -----------------------------------------------
         // On a pipeline flush start fetching from the next address
         // of the instruction in the commit stage
-        if (flush_i) begin
+        if (set_pc_commit_i) begin
             // we came here from a flush request of a CSR instruction,
             // as CSR instructions do not exist in a compressed form
             // we can unconditionally do PC + 4 here
             npc_d    = pc_commit_i + 64'h4;
-            set_pc_d = 1'b1;
         end
 
         // -------------------------------
@@ -326,27 +305,27 @@ module frontend #(
         // -------------------------------
         if (debug_set_pc_i) begin
             npc_d = debug_pc_i;
-            set_pc_d = 1'b1;
         end
 
         fetch_vaddr = fetch_address;
+        tag_d = fetch_address[56:12];
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             npc_q                <= boot_addr_i;
+            tag_q                <= '0;
             icache_data_q        <= '0;
             icache_valid_q       <= 1'b0;
-            set_pc_q             <= 1'b0;
             icache_speculative_q <= 1'b0;
             icache_vaddr_q       <= 'b0;
         end else begin
             npc_q                <= npc_d;
+            tag_q                <= tag_d;
             icache_data_q        <= icache_data_d;
             icache_valid_q       <= icache_valid_d;
             icache_speculative_q <= icache_speculative_d;
             icache_vaddr_q       <= icache_vaddr_d;
-            set_pc_q             <= set_pc_d;
         end
     end
 
@@ -385,10 +364,10 @@ module frontend #(
     ) i_icache (
         .clk_i            ( clk_i                 ),
         .rst_ni           ( rst_ni                ),
-        .flush_i          ( 1'b0                  ),
-        .vaddr_i          ( fetch_vaddr           ),
-        .is_speculative_i ( fetch_is_speculative  ),
-        .tag_i            ( npc_q[55:12]          ),
+        .flush_i          ( 1'b0                  ), // TODO: Fence
+        .vaddr_i          ( fetch_vaddr           ), // 1st cycle
+        .is_speculative_i ( fetch_is_speculative  ), // 1st cycle
+        .tag_i            ( tag_q                 ), // 2nd cycle
         .data_o           ( icache_data_d         ),
         .req_i            ( icache_req            ),
         .kill_req_i       ( icache_kill_req       ),
@@ -418,6 +397,22 @@ module frontend #(
         .rvc_imm_o    ( rvc_imm       )
     );
 
+    fetch_fifo i_fetch_fifo (
+        .branch_predict_i       ( bp_sbe              ),
+        .ex_i                   ( '0                  ),
+        .addr_i                 ( icache_vaddr_q      ),
+        .rdata_i                ( icache_data_q       ),
+        .valid_i                ( fifo_valid          ),
+        .ready_o                ( fifo_ready          ),
+        .fetch_entry_0_o        ( fetch_entry_o       ),
+        .fetch_entry_valid_0_o  ( fetch_entry_valid_o ),
+        .fetch_ack_0_i          ( fetch_ack_i         ),
+        .fetch_entry_1_o        (                     ), // open
+        .fetch_entry_valid_1_o  (                     ), // open
+        .fetch_ack_1_i          (                     ), // open
+        .*
+    );
+
 endmodule
 
 // ------------------------------
@@ -440,7 +435,7 @@ module instr_scan (
     output logic        rvc_call_o,
     output logic [63:0] rvc_imm_o
 );
-    assign is_rvc_o     = (instr_i[1:0] != 2'b00);
+    assign is_rvc_o     = (instr_i[1:0] != 2'b11);
     // check that rs1 is either x1 or x5 and that rs1 is not x1 or x5, TODO: check the fact about bit 7
     assign rvi_return_o = rvi_jalr_o & ~instr_i[7] & ~instr_i[19] & ~instr_i[18] & instr_i[17] & ~instr_i[15];
     assign rvi_call_o   = (rvi_jalr_o | rvi_jump_o) & instr_i[7]; // TODO: check that this captures calls

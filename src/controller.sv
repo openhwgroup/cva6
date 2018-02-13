@@ -18,7 +18,7 @@ module controller (
     input  logic            clk_i,
     input  logic            rst_ni,
     output logic            flush_bp_o,             // Flush branch prediction data structures
-    output logic            flush_pcgen_o,          // Flush PC Generation Stage
+    output logic            set_pc_commit_o,        // Set PC om PC Gen
     output logic            flush_if_o,             // Flush the IF stage
     output logic            flush_unissued_instr_o, // Flush un-issued instructions of the scoreboard
     output logic            flush_id_o,             // Flush ID stage
@@ -53,7 +53,7 @@ module controller (
     // ------------
     always_comb begin : flush_ctrl
         fence_active_d         = fence_active_q;
-        flush_pcgen_o          = 1'b0;
+        set_pc_commit_o        = 1'b0;
         flush_if_o             = 1'b0;
         flush_unissued_instr_o = 1'b0;
         flush_id_o             = 1'b0;
@@ -78,7 +78,7 @@ module controller (
         // ---------------------------------
         if (fence_i) begin
             // this can be seen as a CSR instruction with side-effect
-            flush_pcgen_o          = 1'b1;
+            set_pc_commit_o        = 1'b1;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
@@ -92,7 +92,7 @@ module controller (
         // FENCE.I
         // ---------------------------------
         if (fence_i_i) begin
-            flush_pcgen_o          = 1'b1;
+            set_pc_commit_o        = 1'b1;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
@@ -115,7 +115,7 @@ module controller (
         // SFENCE.VMA
         // ---------------------------------
         if (sfence_vma_i) begin
-            flush_pcgen_o          = 1'b1;
+            set_pc_commit_o        = 1'b1;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
@@ -127,7 +127,7 @@ module controller (
         // CSR instruction with side-effect
         // ---------------------------------
         if (flush_csr_i) begin
-            flush_pcgen_o          = 1'b1;
+            set_pc_commit_o        = 1'b1;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
@@ -142,7 +142,7 @@ module controller (
         if (ex_valid_i || eret_i || debug_set_pc_i) begin
             // don't flush pcgen as we want to take the exception: Flush PCGen is not a flush signal
             // for the PC Gen stage but instead tells it to take the PC we gave it
-            flush_pcgen_o          = 1'b0;
+            set_pc_commit_o        = 1'b0;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;

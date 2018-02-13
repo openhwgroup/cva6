@@ -14,8 +14,7 @@
 
 import ariane_pkg::*;
 
-module fetch_fifo
-(
+module fetch_fifo (
     input  logic                   clk_i,
     input  logic                   rst_ni,
     // control signals
@@ -24,10 +23,11 @@ module fetch_fifo
     // that we have two compressed instruction (or one compressed instruction and one unaligned instruction) so we
     // only predict on one entry and discard (or keep) the other depending on its position and prediction.
     // input port
+
     input  branchpredict_sbe_t     branch_predict_i,
     input  exception_t             ex_i,              // fetch exception in
     input  logic [63:0]            addr_i,
-    input  logic [63:0]            rdata_i,
+    input  logic [31:0]            rdata_i,
     input  logic                   valid_i,
     output logic                   ready_o,
     // Dual Port Fetch FIFO
@@ -54,20 +54,6 @@ module fetch_fifo
     assign full = (status_cnt_q == DEPTH);
     assign empty = (status_cnt_q == '0);
 
-    // -------------
-    // Downsize
-    // -------------
-    logic [31:0] in_rdata;
-    // downsize from 64 bit to 32 bit, simply ignore half of the incoming data
-    always_comb begin : downsize
-        // take the upper half
-        if (addr_i[2])
-            in_rdata = rdata_i[63:32];
-        // take the lower half of the instruction
-        else
-            in_rdata = rdata_i[31:0];
-    end
-
     always_comb begin : fetch_fifo_logic
         // counter
         automatic logic [$clog2(DEPTH)-1:0] status_cnt;
@@ -85,7 +71,7 @@ module fetch_fifo
         if (valid_i) begin
             status_cnt++;
             // new input data
-            mem_n[write_pointer_q] = {addr_i, in_rdata, branch_predict_i, ex_i};
+            mem_n[write_pointer_q] = {addr_i, rdata_i, branch_predict_i, ex_i};
             write_pointer++;
         end
 

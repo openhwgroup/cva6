@@ -336,9 +336,14 @@ module icache #(
             default : state_d = IDLE;
         endcase
 
+        // those are the states where we need to wait a little longer until we can safely exit
         if (kill_req_i && !(state_q inside {REFILL, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP}) && !ready_o) begin
             state_d = IDLE;
         end
+
+        // if we are killing we can never give a valid response
+        if (kill_req_i)
+            valid_o = 1'b0;
 
         if (flush_i) begin
             flushing_d = 1'b1;
