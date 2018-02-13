@@ -258,7 +258,6 @@ module ariane #(
 
     logic                    flush_icache_ctrl_icache;
     logic                    bypass_icache_csr_icache;
-    logic                    flush_icache_ack_icache_ctrl;
 
     assign sec_lvl_o = priv_lvl;
     assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
@@ -268,26 +267,26 @@ module ariane #(
     frontend #(
 
     ) i_frontend (
-        .flush_i             ( flush_ctrl_if       ), // not entirely correct
-        .flush_bp_i          ( flush_bp_ctrl_pcgen ),
-        .i_fence_i           ( 1'b0                ),
-        .flush_itlb_i        ( 1'b0                ),
-        .boot_addr_i         ( boot_addr_i         ),
-        .fetch_enable_i      ( fetch_enable        ),
-        .resolved_branch_i   ( resolved_branch     ),
-        .pc_commit_i         ( pc_commit           ),
-        .set_pc_commit_i     ( set_pc_ctrl_pcgen   ),
-        .epc_i               ( epc_commit_pcgen    ),
-        .eret_i              ( eret                ),
+        .flush_i             ( flush_ctrl_if                 ), // not entirely correct
+        .flush_bp_i          ( flush_bp_ctrl_pcgen           ),
+        .flush_icache_i      ( flush_icache_ctrl_icache      ),
+        .flush_itlb_i        ( flush_tlb_ctrl_ex             ),
+        .boot_addr_i         ( boot_addr_i                   ),
+        .fetch_enable_i      ( fetch_enable                  ),
+        .resolved_branch_i   ( resolved_branch               ),
+        .pc_commit_i         ( pc_commit                     ),
+        .set_pc_commit_i     ( set_pc_ctrl_pcgen             ),
+        .epc_i               ( epc_commit_pcgen              ),
+        .eret_i              ( eret                          ),
         .trap_vector_base_i  ( trap_vector_base_commit_pcgen ),
-        .ex_valid_i          ( ex_commit.valid     ),
-        .debug_pc_i          ( pc_debug_pcgen      ),
-        .debug_set_pc_i      ( set_pc_debug        ),
-        .axi                 ( instr_if            ),
-        .l1_icache_miss_o    (                     ), // performance counters
-        .fetch_entry_o       ( fetch_entry_if_id   ),
-        .fetch_entry_valid_o ( fetch_valid_if_id   ),
-        .fetch_ack_i         ( decode_ack_id_if    ),
+        .ex_valid_i          ( ex_commit.valid               ),
+        .debug_pc_i          ( pc_debug_pcgen                ),
+        .debug_set_pc_i      ( set_pc_debug                  ),
+        .axi                 ( instr_if                      ),
+        .l1_icache_miss_o    (                               ), // performance counters
+        .fetch_entry_o       ( fetch_entry_if_id             ),
+        .fetch_entry_valid_o ( fetch_valid_if_id             ),
+        .fetch_ack_i         ( decode_ack_id_if              ),
         .*
     );
 
@@ -595,7 +594,6 @@ module ariane #(
         .sfence_vma_i           ( sfence_vma_commit_controller  ),
 
         .flush_icache_o         ( flush_icache_ctrl_icache      ),
-        .flush_icache_ack_i     ( flush_icache_ack_icache_ctrl  ),
         .*
     );
 

@@ -82,6 +82,39 @@ package ariane_pkg;
         cf_t         cf_type;         // Type of control flow change
     } branchpredict_sbe_t;
 
+    typedef struct packed {
+        logic        valid;
+        logic [63:0] pc;             // update at PC
+        logic [63:0] target_address;
+        logic        is_lower_16;
+        logic        clear;
+    } btb_update_t;
+
+    typedef struct packed {
+        logic        valid;
+        logic [63:0] target_address;
+        logic        is_lower_16;
+    } btb_prediction_t;
+
+    typedef struct packed {
+        logic        valid;
+        logic [63:0] ra;
+    } ras_t;
+
+    typedef struct packed {
+        logic        valid;
+        logic [63:0] pc;          // update at PC
+        logic        mispredict;
+        logic        taken;
+    } bht_update_t;
+
+    typedef struct packed {
+        logic       valid;
+        logic       taken;
+        logic       strongly_taken;
+        logic [1:0] saturation_counter;
+    } bht_prediction_t;
+
     typedef enum logic[3:0] {
         NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR
     } fu_t;

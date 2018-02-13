@@ -32,13 +32,13 @@ module fetch_fifo (
     output logic                   ready_o,
     // Dual Port Fetch FIFO
     // output port 0
-    output fetch_entry_t           fetch_entry_0_o,
-    output logic                   fetch_entry_valid_0_o,
-    input  logic                   fetch_ack_0_i,
-    // output port 1
-    output fetch_entry_t           fetch_entry_1_o,
-    output logic                   fetch_entry_valid_1_o,
-    input  logic                   fetch_ack_1_i
+    output fetch_entry_t           fetch_entry_o,
+    output logic                   fetch_entry_valid_o,
+    input  logic                   fetch_ack_i
+    // // output port 1
+    // output fetch_entry_t           fetch_entry_1_o,
+    // output logic                   fetch_entry_valid_1_o,
+    // input  logic                   fetch_ack_1_i
 );
 
     localparam int unsigned DEPTH = 4; // must be a power of two
@@ -50,7 +50,7 @@ module fetch_fifo (
     logic [$clog2(DEPTH)-1:0]     write_pointer_n,  write_pointer_q;
     logic [$clog2(DEPTH)-1:0]     status_cnt_n,     status_cnt_q; // this integer will be truncated by the synthesis tool
 
-    assign ready_o = (status_cnt_q < DEPTH-2);
+    assign ready_o = (status_cnt_q < DEPTH-3);
     assign full = (status_cnt_q == DEPTH);
     assign empty = (status_cnt_q == '0);
 
@@ -78,10 +78,10 @@ module fetch_fifo (
         // -------------
         // Fetch Port 0
         // -------------
-        fetch_entry_valid_0_o = (status_cnt_q >= 1);
-        fetch_entry_0_o = mem_q[read_pointer_q];
+        fetch_entry_valid_o = (status_cnt_q >= 1);
+        fetch_entry_o = mem_q[read_pointer_q];
 
-        if (fetch_ack_0_i) begin
+        if (fetch_ack_i) begin
             read_pointer++;
             status_cnt--;
         end
@@ -89,13 +89,13 @@ module fetch_fifo (
         // -------------
         // Fetch Port 1
         // -------------
-        fetch_entry_valid_1_o = (status_cnt_q >= 2);
-        fetch_entry_1_o = mem_q[read_pointer_q + 1'b1];
+        // fetch_entry_valid_1_o = (status_cnt_q >= 2);
+        // fetch_entry_1_o = mem_q[read_pointer_q + 1'b1];
 
-        if (fetch_ack_1_i) begin
-            read_pointer++;
-            status_cnt--;
-        end
+        // if (fetch_ack_1_i) begin
+        //     read_pointer++;
+        //     status_cnt--;
+        // end
 
         write_pointer_n = write_pointer;
         status_cnt_n    = status_cnt;

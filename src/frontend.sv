@@ -14,39 +14,6 @@
 
 import ariane_pkg::*;
 
-typedef struct packed {
-    logic        valid;
-    logic [63:0] pc;             // update at PC
-    logic [63:0] target_address;
-    logic        is_lower_16;
-    logic        clear;
-} btb_update_t;
-
-typedef struct packed {
-    logic        valid;
-    logic [63:0] target_address;
-    logic        is_lower_16;
-} btb_prediction_t;
-
-typedef struct packed {
-    logic        valid;
-    logic [63:0] ra;
-} ras_t;
-
-typedef struct packed {
-    logic        valid;
-    logic [63:0] pc;          // update at PC
-    logic        mispredict;
-    logic        taken;
-} bht_update_t;
-
-typedef struct packed {
-    logic       valid;
-    logic       taken;
-    logic       strongly_taken;
-    logic [1:0] saturation_counter;
-} bht_prediction_t;
-
 module frontend #(
     parameter int unsigned BTB_ENTRIES = 8,
     parameter int unsigned BHT_ENTRIES = 32,
@@ -56,7 +23,7 @@ module frontend #(
     input  logic               rst_ni,             // Asynchronous reset active low
     input  logic               flush_i,            // flush request for PCGEN
     input  logic               flush_bp_i,         // flush branch prediction
-    input  logic               i_fence_i,          // instruction fence in
+    input  logic               flush_icache_i,          // instruction fence in
     input  logic               flush_itlb_i,       // flush itlb
     // global input
     input  logic [63:0]        boot_addr_i,
@@ -94,15 +61,14 @@ module frontend #(
     // BHT, BTB and RAS prediction
     bht_prediction_t bht_prediction;
     btb_prediction_t btb_prediction;
-    ras_t ras_predict;
+    ras_t            ras_predict;
     bht_update_t     bht_update;
     btb_update_t     btb_update;
+    logic            ras_push, ras_pop;
+    logic [63:0]     ras_update;
 
-    // icache controll signals
+    // icache control signals
     logic icache_req, icache_kill_req, icache_ready;
-
-    logic ras_push, ras_pop;
-    logic [63:0] ras_update;
 
     // instruction fetch is ready
     logic          if_ready;
@@ -113,12 +79,12 @@ module frontend #(
 
     // virtual address of current fetch
     logic [63:0]   fetch_vaddr;
-    logic [44:0]   tag_d, tag_q; // save tag for request to icache
+    logic [43:0]   tag_d, tag_q; // save tag for request to icache
 
     logic [63:0]   bp_vaddr;
     logic          bp_valid; // we have a valid branch-prediction
     logic          fetch_is_speculative; // is it a speculative fetch or a fetch which need to do for sure
-    // branchprediction which we inject into the pipeline
+    // branch-prediction which we inject into the pipeline
     branchpredict_sbe_t  bp_sbe;
     logic                fifo_valid, fifo_ready; // fetch FIFO
     // RVC branching
@@ -133,7 +99,8 @@ module frontend #(
 
     logic is_mispredict;
     assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
-    // control frontend + branch-prediction
+
+    // control front-end + branch-prediction
     always_comb begin : frontend_ctrl
         automatic logic take_rvi_cf; // take the control flow change
 
@@ -143,7 +110,7 @@ module frontend #(
 
         take_rvi_cf     = 1'b0;
         if_ready        = icache_ready & fifo_ready;
-        icache_req      = 1'b1;
+        icache_req      = fifo_ready;
 
         bp_vaddr        = '0;    // predicted address
         bp_valid        = 1'b0;  // prediction is valid
@@ -343,7 +310,7 @@ module frontend #(
         .NR_ENTRIES       ( BTB_ENTRIES      )
     ) i_btb (
         .flush_i          ( flush_bp_i       ),
-        .vpc_i            ( fetch_vaddr      ),
+        .vpc_i            ( icache_vaddr_q   ),
         .btb_update_i     ( btb_update       ),
         .btb_prediction_o ( btb_prediction   ),
         .*
@@ -353,7 +320,7 @@ module frontend #(
         .NR_ENTRIES       ( BHT_ENTRIES      )
     ) i_bht (
         .flush_i          ( flush_bp_i       ),
-        .vpc_i            ( fetch_vaddr      ),
+        .vpc_i            ( icache_vaddr_q   ),
         .bht_update_i     ( bht_update       ),
         .bht_prediction_o ( bht_prediction   ),
         .*
@@ -364,7 +331,7 @@ module frontend #(
     ) i_icache (
         .clk_i            ( clk_i                 ),
         .rst_ni           ( rst_ni                ),
-        .flush_i          ( 1'b0                  ), // TODO: Fence
+        .flush_i          ( flush_icache_i        ),
         .vaddr_i          ( fetch_vaddr           ), // 1st cycle
         .is_speculative_i ( fetch_is_speculative  ), // 1st cycle
         .tag_i            ( tag_q                 ), // 2nd cycle
@@ -397,19 +364,20 @@ module frontend #(
         .rvc_imm_o    ( rvc_imm       )
     );
 
+    exception_t ex;
+    assign ex = '0;
+
     fetch_fifo i_fetch_fifo (
-        .branch_predict_i       ( bp_sbe              ),
-        .ex_i                   ( '0                  ),
-        .addr_i                 ( icache_vaddr_q      ),
-        .rdata_i                ( icache_data_q       ),
-        .valid_i                ( fifo_valid          ),
-        .ready_o                ( fifo_ready          ),
-        .fetch_entry_0_o        ( fetch_entry_o       ),
-        .fetch_entry_valid_0_o  ( fetch_entry_valid_o ),
-        .fetch_ack_0_i          ( fetch_ack_i         ),
-        .fetch_entry_1_o        (                     ), // open
-        .fetch_entry_valid_1_o  (                     ), // open
-        .fetch_ack_1_i          (                     ), // open
+        .flush_i            ( flush_i             ),
+        .branch_predict_i   ( bp_sbe              ),
+        .ex_i               ( ex                  ),
+        .addr_i             ( icache_vaddr_q      ),
+        .rdata_i            ( icache_data_q       ),
+        .valid_i            ( fifo_valid          ),
+        .ready_o            ( fifo_ready          ),
+        .fetch_entry_o      ( fetch_entry_o       ),
+        .fetch_entry_valid_o( fetch_entry_valid_o ),
+        .fetch_ack_i        ( fetch_ack_i         ),
         .*
     );
 

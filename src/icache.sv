@@ -308,6 +308,23 @@ module icache #(
                 tag     = tag_q;
                 state_d = IDLE;
                 valid_o = 1'b1;
+                // TODO: Check if this is necessary in a real payload environment
+                // we can handle a new request here
+                ready_o = 1'b1;
+                // we are getting a new request
+                if (req_i && !kill_req_i) begin
+                    // request the content of all arrays
+                    req = '1;
+                    // save the index
+                    vaddr_d = vaddr_i;
+                    spec_d  = is_speculative_i;
+                    state_d = TAG_CMP;
+                end
+
+                // go to flushing state
+                if (flush_i || flushing_q)
+                    state_d = FLUSH;
+
             end
             // we need to wait for some AXI responses to come back
             // here for the AW valid
