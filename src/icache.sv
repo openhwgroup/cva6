@@ -25,7 +25,8 @@ module icache #(
         input  logic                     flush_i,          // flush the icache, flush and kill have to be asserted together
         input  logic                     req_i,            // we request a new word
         input  logic                     is_speculative_i, // is this request speculative or not
-        input  logic                     kill_req_i,       // kill the current request
+        input  logic                     kill_s1_i,        // kill the current request
+        input  logic                     kill_s2_i,        // kill the last request
         output logic                     ready_o,          // icache is ready
         input  logic [63:0]              vaddr_i,          // 1st cycle: 12 bit index is taken for lookup
         input  logic [TAG_WIDTH-1:0]     tag_i,            // 2nd cycle: physical tag
@@ -37,14 +38,15 @@ module icache #(
         AXI_BUS.Master                   axi
     );
 
-    localparam BYTE_OFFSET = $clog2(CACHE_LINE_WIDTH/8); // 3
-    localparam ICACHE_NUM_WORD = 2**(INDEX_WIDTH - BYTE_OFFSET);
-
+    localparam int unsigned BYTE_OFFSET = $clog2(CACHE_LINE_WIDTH/8); // 3
+    localparam int unsigned ICACHE_NUM_WORD = 2**(INDEX_WIDTH - BYTE_OFFSET);
+    localparam int unsigned NR_AXI_REFILLS = ($clog2(CACHE_LINE_WIDTH/64) == 0) ? 1 : $clog2(CACHE_LINE_WIDTH/64);
     // registers
     enum logic [3:0] { FLUSH, IDLE, TAG_CMP, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP,
                        REDO_REQ, WAIT_TAG_SAVED, REFILL
                      }                      state_d, state_q;
     logic [$clog2(ICACHE_NUM_WORD)-1:0]     cnt_d, cnt_q;
+    logic [NR_AXI_REFILLS-1:0]              burst_cnt_d, burst_cnt_q; // counter for AXI transfers
     logic [63:0]                            vaddr_d, vaddr_q;
     logic                                   spec_d, spec_q; // request is speculative
     logic [TAG_WIDTH-1:0]                   tag_d, tag_q;
@@ -53,6 +55,8 @@ module icache #(
 
     // signals
     logic [SET_ASSOCIATIVITY-1:0]         req;           // request to memory array
+    logic [CACHE_LINE_WIDTH-1:0]          data_be;       // byte enable for data array
+    logic [(2**NR_AXI_REFILLS-1):0][63:0] be;            // flat byte enable
     logic [$clog2(ICACHE_NUM_WORD)-1:0]   addr;          // this is a cache-line address, to memory array
     logic                                 we;            // write enable to memory array
     logic [SET_ASSOCIATIVITY-1:0]         hit;           // hit from tag compare
@@ -71,6 +75,7 @@ module icache #(
     } tag_rdata [SET_ASSOCIATIVITY-1:0], tag_wdata;
 
     logic [CACHE_LINE_WIDTH-1:0] data_rdata [SET_ASSOCIATIVITY-1:0], data_wdata;
+    logic [(2**NR_AXI_REFILLS-1):0][63:0] wdata;
 
     for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
         // ------------
@@ -101,7 +106,7 @@ module icache #(
             .we_i      ( we                 ),
             .addr_i    ( addr               ),
             .wdata_i   ( data_wdata         ),
-            .be_i      ( '1                 ),
+            .be_i      ( data_be            ),
             .rdata_o   ( data_rdata[i]      )
         );
     end
@@ -170,7 +175,7 @@ module icache #(
 
     assign axi.ar_prot   = '0;
     assign axi.ar_region = '0;
-    assign axi.ar_len    = 8'h00;
+    assign axi.ar_len    = (2**NR_AXI_REFILLS) - 1;
     assign axi.ar_size   = 3'b011;
     assign axi.ar_burst  = 2'b01;
     assign axi.ar_lock   = '0;
@@ -181,6 +186,8 @@ module icache #(
 
     assign axi.r_ready   = 1'b1;
 
+    assign data_be = be;
+    assign data_wdata = wdata;
     // ------------------
     // Cache Ctrl
     // ------------------
@@ -193,6 +200,7 @@ module icache #(
         tag_d       = tag_q;
         evict_way_d = evict_way_q;
         flushing_d  = flushing_q;
+        burst_cnt_d = burst_cnt_q;
 
         is_speculative_o = spec_q;
         vaddr_o          = vaddr_q;
@@ -200,7 +208,8 @@ module icache #(
         req         = '0;
         addr        = vaddr_i[INDEX_WIDTH-1:BYTE_OFFSET];
         we          = 1'b0;
-        data_wdata  = '0;
+        be          = '0;
+        wdata       = '0;
         tag_wdata   = '0;
         ready_o     = 1'b0;
         tag         = tag_i;
@@ -229,6 +238,8 @@ module icache #(
                 if (flush_i || flushing_q)
                     state_d = FLUSH;
 
+                if (kill_s1_i)
+                    state_d = IDLE;
             end
             // ~> compare the tag
             TAG_CMP: begin
@@ -247,6 +258,9 @@ module icache #(
                     end else begin
                         state_d = IDLE;
                     end
+
+                    if (kill_s1_i)
+                        state_d = IDLE;
                 end else begin
                     state_d     = REFILL;
                     evict_way_d = '0;
@@ -266,19 +280,19 @@ module icache #(
             // ~> request a cache-line refill
             REFILL: begin
                 axi.ar_valid  = 1'b1;
-                axi.ar_addr[INDEX_WIDTH+TAG_WIDTH-1:0] = {tag_q, vaddr_q[INDEX_WIDTH-1:0]};
+                axi.ar_addr[INDEX_WIDTH+TAG_WIDTH-1:0] = {tag_q, vaddr_q[INDEX_WIDTH-1:BYTE_OFFSET], {BYTE_OFFSET{1'b0}}};
+                burst_cnt_d = '0;
 
-                if (kill_req_i)
+                if (kill_s2_i)
                     state_d = WAIT_KILLED_REFILL;
 
                 if (axi.ar_ready)
-                    state_d = (kill_req_i) ? WAIT_KILLED_AXI_R_RESP : WAIT_AXI_R_RESP;
+                    state_d = (kill_s2_i) ? WAIT_KILLED_AXI_R_RESP : WAIT_AXI_R_RESP;
             end
             // ~> wait for the read response
             // TODO: Handle responses for arbitrary cache line widths
             WAIT_AXI_R_RESP: begin
 
-                state_d = REDO_REQ;
                 req     = evict_way_q;
                 addr    = vaddr_q[INDEX_WIDTH-1:BYTE_OFFSET];
 
@@ -286,14 +300,18 @@ module icache #(
                     we = 1'b1;
                     tag_wdata.tag = tag_q;
                     tag_wdata.valid = 1'b1;
-                    data_wdata = axi.r_data;
+                    wdata[burst_cnt_q] = axi.r_data;
+                    // enable the right write path
+                    be[burst_cnt_q] = '1;
+                    // increase burst count
+                    burst_cnt_d = burst_cnt_q + 1;
                 end
 
-                if (kill_req_i)
+                if (kill_s2_i)
                     state_d = WAIT_KILLED_AXI_R_RESP;
 
                 if (axi.r_last) begin
-                    state_d = (kill_req_i) ? IDLE : REDO_REQ;
+                    state_d = (kill_s2_i) ? IDLE : REDO_REQ;
                 end
             end
             // ~> redo the request,
@@ -312,7 +330,7 @@ module icache #(
                 // we can handle a new request here
                 ready_o = 1'b1;
                 // we are getting a new request
-                if (req_i && !kill_req_i) begin
+                if (req_i) begin
                     // request the content of all arrays
                     req = '1;
                     // save the index
@@ -321,9 +339,12 @@ module icache #(
                     state_d = TAG_CMP;
                 end
 
+                if (kill_s1_i)
+                    state_d = IDLE;
                 // go to flushing state
                 if (flush_i || flushing_q)
                     state_d = FLUSH;
+
 
             end
             // we need to wait for some AXI responses to come back
@@ -354,12 +375,12 @@ module icache #(
         endcase
 
         // those are the states where we need to wait a little longer until we can safely exit
-        if (kill_req_i && !(state_q inside {REFILL, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP}) && !ready_o) begin
+        if (kill_s2_i && !(state_q inside {REFILL, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP}) && !ready_o) begin
             state_d = IDLE;
         end
 
         // if we are killing we can never give a valid response
-        if (kill_req_i)
+        if (kill_s2_i)
             valid_o = 1'b0;
 
         if (flush_i) begin
@@ -396,6 +417,7 @@ module icache #(
             evict_way_q <= '0;
             flushing_q  <= 1'b0;
             spec_q      <= 1'b0;
+            burst_cnt_q <= '0;;
         end else begin
             state_q     <= state_d;
             cnt_q       <= cnt_d;
@@ -404,13 +426,13 @@ module icache #(
             evict_way_q <= evict_way_d;
             flushing_q  <= flushing_d;
             spec_q      <= spec_d;
+            burst_cnt_q <= burst_cnt_d;
         end
     end
 
     `ifndef SYNTHESIS
         initial begin
             assert ($bits(axi.aw_addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
-            assert (CACHE_LINE_WIDTH == 64) else $fatal(1, "Instruction cacheline width needs to be 64 for the moment");
         end
     `endif
 endmodule

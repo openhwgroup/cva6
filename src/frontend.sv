@@ -68,7 +68,7 @@ module frontend #(
     logic [63:0]     ras_update;
 
     // icache control signals
-    logic icache_req, icache_kill_req, icache_ready;
+    logic icache_req, icache_kill_s1, icache_kill_s2, icache_ready;
 
     // instruction fetch is ready
     logic          if_ready;
@@ -143,12 +143,12 @@ module frontend #(
         end
 
         // unconditional jump
-        if (if_ready && rvi_jump) begin
+        if (rvi_jump) begin
             take_rvi_cf = 1'b1;
         end
 
         // to take this jump we need a valid prediction target **speculative**
-        if (if_ready && rvi_jalr && btb_prediction.valid) begin
+        if (rvi_jalr && btb_prediction.valid) begin
             bp_vaddr = btb_prediction.target_address;
             bp_valid = 1'b1;
         end
@@ -159,21 +159,23 @@ module frontend #(
         end
 
         // icache response is valid -> so is our prediction, also check that this was no mandatory fetch
-        if (~icache_valid_q && ~icache_speculative_q)
+        if (~icache_valid_q || ~icache_speculative_q)
             bp_valid = 1'b0;
     end
 
     always_comb begin : id_if
-        icache_kill_req = 1'b0;
+        icache_kill_s1 = 1'b0;
+        icache_kill_s2 = 1'b0;
 
         // we mis-predicted so kill the icache request and the fetch queue
         if (is_mispredict || flush_i) begin
-            icache_kill_req = 1'b1;
+            icache_kill_s1 = 1'b1;
+            icache_kill_s2 = 1'b1;
         end
 
-        // if we have a valid branch-prediction we need to kill the current cache request
+        // if we have a valid branch-prediction we need to kill the last cache request
         if (bp_valid) begin
-            icache_kill_req = 1'b1;
+            icache_kill_s2 = 1'b1;
         end
 
         // assemble scoreboard entry
@@ -327,7 +329,8 @@ module frontend #(
     );
 
     icache #(
-        .SET_ASSOCIATIVITY ( 4          )
+        .SET_ASSOCIATIVITY ( 4                    ),
+        .CACHE_LINE_WIDTH  ( 128                  )
     ) i_icache (
         .clk_i            ( clk_i                 ),
         .rst_ni           ( rst_ni                ),
@@ -337,7 +340,8 @@ module frontend #(
         .tag_i            ( tag_q                 ), // 2nd cycle
         .data_o           ( icache_data_d         ),
         .req_i            ( icache_req            ),
-        .kill_req_i       ( icache_kill_req       ),
+        .kill_s1_i        ( icache_kill_s1        ),
+        .kill_s2_i        ( icache_kill_s2        ),
         .ready_o          ( icache_ready          ),
         .valid_o          ( icache_valid_d        ),
         .is_speculative_o ( icache_speculative_d  ),
