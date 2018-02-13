@@ -322,8 +322,12 @@ set_property -dict [list \
 generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/clk_wiz_1/clk_wiz_1.xci]
 
 # Crossbar
+
 create_ip -name axi_crossbar -vendor xilinx.com -library ip -version 2.1 -module_name axi_crossbar_0
 set_property -dict [list \
+                        CONFIG.NUM_SI {3} \
+                        CONFIG.NUM_MI {2} \
+                        CONFIG.ID_WIDTH {10} \
 			CONFIG.ADDR_WIDTH {64} \
 			CONFIG.DATA_WIDTH {64} \
 			CONFIG.ID_WIDTH {10} \

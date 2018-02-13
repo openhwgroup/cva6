@@ -295,7 +295,7 @@ module lint_to_axi_refill #(
     assign axi.b_ready   = 1'b0;
 
     assign axi.ar_valid  = refill_req_i;
-    assign axi.ar_addr   = {{(AXI_ADDR_WIDTH-FETCH_ADDR_WIDTH){1'b0}},refill_addr_i};
+    assign axi.ar_addr   = refill_addr_i;
     assign axi.ar_prot   = '0;
     assign axi.ar_region = '0;
     assign axi.ar_len    = (refill_type_i) ? 8'h01 : 8'h00;

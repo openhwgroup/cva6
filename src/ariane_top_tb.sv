@@ -28,3 +28,7 @@ initial
     end
 
 endmodule
+
+`ifdef VCS
+`include "stillx.log"
+`endif

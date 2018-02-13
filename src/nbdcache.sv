@@ -172,7 +172,13 @@ module nbdcache #(
         .be_o                   ( be              [0]  ),
         .data_o                 ( wdata           [0]  ),
         .we_o                   ( we              [0]  ),
-        .*
+        .clk_i                  ( clk_i                ),
+        .rst_ni                 ( rst_ni               ),
+        .flush_i                ( flush_i              ),      // flush request
+        .flush_ack_o            ( flush_ack_o          ),  // acknowledge successful flush
+        .miss_o                 ( miss_o               ),
+        .bypass_if              ( bypass_if            ),
+        .data_if                ( data_if              )
     );
 
     assign tag[0] = '0;

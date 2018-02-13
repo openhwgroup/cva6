@@ -221,7 +221,7 @@ module cache_ctrl #(
                         // data_rdata_o = cl_i[cl_offset +: 64];
                         case (mem_req_q.index[3])
                             1'b0: data_rdata_o = cl_i[63:0];
-                            1'b1: data_rdata_o = cl_i[127:64];
+                            1'b1: data_rdata_o = cl_i[CACHE_LINE_WIDTH-1:64];
                         endcase
 
                         // report data for a read

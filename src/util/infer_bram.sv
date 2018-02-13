@@ -33,7 +33,7 @@ output [BYTE_WIDTH*8-1:0] ram_rddata);
    integer                initvar;
 
    reg [BYTE_WIDTH*8-1:0] ram [0 : BRAM_LINE-1];
-   reg [BRAM_SIZE-1:0]    ram_addr_delay;
+   reg [BRAM_SIZE-1:0]    ram_addr_delay = {BRAM_SIZE{1'b0}};
    
    initial
       for (initvar = 0; initvar < BRAM_LINE; initvar = initvar+1)
@@ -50,4 +50,6 @@ output [BYTE_WIDTH*8-1:0] ram_rddata);
 
    assign ram_rddata = ram[ram_addr_delay];
 
+   initial $readmemh("cnvmem64.hex", ram);
+   
 endmodule

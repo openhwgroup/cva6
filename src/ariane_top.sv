@@ -6,7 +6,7 @@ module ariane_top(
                   );
 
    logic             clk_i, locked;          
-   logic             test_en_i = 'b0; // enable all clock gates for testing
+   logic             test_en_i = 'b1; // enable all clock gates for testing
    // Core ID; Cluster ID and boot address are considered more or less static
    logic [ 3:0]      core_id_i = 'b0;
    logic [ 5:0]      cluster_id_i = 'b0;
@@ -38,6 +38,11 @@ module ariane_top(
       // Clock in ports
        .clk_in1(clk_p),      // input clk_in1
        // Clock out ports
+       .clk_out1(),
+       .clk_io_uart(),
+       .clk_pixel(),
+       .clk_rmii(),
+       .clk_rmii_quad(),
        .clk_i(clk_i),     // output clk_i
        // Status and control signals
        .locked(locked));      // output locked
