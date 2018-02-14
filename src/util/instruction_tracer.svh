@@ -35,7 +35,7 @@ class instruction_tracer;
     logic display_instructions;
     logic [63:0] store_mapping[$], load_mapping[$], address_mapping;
 
-    static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
+    // static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
 
     function new(virtual instruction_tracer_if tracer_if, logic display_instructions);
@@ -79,7 +79,7 @@ class instruction_tracer;
             // -------------------
             // we got a new issue ack, so put the element from the decode queue to
             // the issue queue
-            if (tracer_if.pck.issue_ack) begin
+            if (tracer_if.pck.issue_ack && !tracer_if.pck.flush_unissued) begin
                 issue_instruction = decode_queue.pop_front();
                 issue_queue.push_back(issue_instruction);
                 // also save the scoreboard entry to a separate issue queue
@@ -100,38 +100,40 @@ class instruction_tracer;
             //  Commit
             // --------------
             // we are committing an instruction
-            if (tracer_if.pck.commit_ack) begin
-                commit_instruction = scoreboard_entry_t'(tracer_if.pck.commit_instr);
-                issue_commit_instruction = issue_queue.pop_front();
-                issue_sbe = issue_sbe_queue.pop_front();
-                // check if the instruction retiring is a load or store, get the physical address accordingly
-                if (tracer_if.pck.commit_instr.fu == LOAD)
-                    address_mapping = load_mapping.pop_front();
-                else if (tracer_if.pck.commit_instr.fu == STORE)
-                    address_mapping = store_mapping.pop_front();
-                // the scoreboards issue entry still contains the immediate value as a result
-                // check if the write back is valid, if not we need to source the result from the register file
-                // as the most recent version of this register will be there.
-                if (tracer_if.pck.we) begin
-                    printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata, address_mapping, tracer_if.pck.priv_lvl);
-                end else
-                    printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl);
+            for (int i = 0; i < 2; i++) begin
+                if (tracer_if.pck.commit_ack[i]) begin
+                    commit_instruction = scoreboard_entry_t'(tracer_if.pck.commit_instr[i]);
+                    issue_commit_instruction = issue_queue.pop_front();
+                    issue_sbe = issue_sbe_queue.pop_front();
+                    // check if the instruction retiring is a load or store, get the physical address accordingly
+                    if (tracer_if.pck.commit_instr[i].fu == LOAD)
+                        address_mapping = load_mapping.pop_front();
+                    else if (tracer_if.pck.commit_instr[i].fu == STORE)
+                        address_mapping = store_mapping.pop_front();
+                    // the scoreboards issue entry still contains the immediate value as a result
+                    // check if the write back is valid, if not we need to source the result from the register file
+                    // as the most recent version of this register will be there.
+                    if (tracer_if.pck.we[i]) begin
+                        printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata[i], address_mapping, tracer_if.pck.priv_lvl);
+                    end else
+                        printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl);
+                end
             end
-
             // --------------
             // Exceptions
             // --------------
             if (tracer_if.pck.exception.valid) begin
                 // print exception
-                printException(tracer_if.pck.commit_instr.pc, tracer_if.pck.exception.cause, tracer_if.pck.exception.tval);
+                printException(tracer_if.pck.commit_instr[0].pc, tracer_if.pck.exception.cause, tracer_if.pck.exception.tval);
             end
             // ----------------------
             // Commit Registers
             // ----------------------
             // update shadow reg file here
-            if (tracer_if.pck.we && tracer_if.pck.waddr != 5'b0) begin
-                reg_file[tracer_if.pck.waddr] = tracer_if.pck.wdata;
-            end
+            for (int i = 0; i < 2; i++)
+                if (tracer_if.pck.we[i] && tracer_if.pck.waddr[i] != 5'b0) begin
+                    reg_file[tracer_if.pck.waddr[i]] = tracer_if.pck.wdata[i];
+                end
 
             // --------------
             // Flush Signals

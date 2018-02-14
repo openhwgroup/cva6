@@ -17,27 +17,27 @@ import ariane_pkg::*;
 module perf_counters #(
     int unsigned NR_EXTERNAL_COUNTERS = 1
 )(
-    input  logic              clk_i,    // Clock
-    input  logic              rst_ni,   // Asynchronous reset active low
+    input  logic                                    clk_i,    // Clock
+    input  logic                                    rst_ni,   // Asynchronous reset active low
     // SRAM like interface
-    input  logic [11:0]       addr_i,   // read/write address
-    input  logic              we_i,     // write enable
-    input  logic [63:0]       data_i,   // data to write
-    output logic [63:0]       data_o,   // data to read
+    input  logic [11:0]                             addr_i,   // read/write address
+    input  logic                                    we_i,     // write enable
+    input  logic [63:0]                             data_i,   // data to write
+    output logic [63:0]                             data_o,   // data to read
     // from commit stage
-    input  scoreboard_entry_t commit_instr_i,
-    input  logic              commit_ack_o,
+    input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
+    input  logic [NR_COMMIT_PORTS-1:0]              commit_ack_i,       // acknowledge that we are indeed committing
 
     // from L1 caches
-    input  logic              l1_icache_miss_i,
-    input  logic              l1_dcache_miss_i,
+    input  logic                                    l1_icache_miss_i,
+    input  logic                                    l1_dcache_miss_i,
     // from MMU
-    input  logic              itlb_miss_i,
-    input  logic              dtlb_miss_i,
+    input  logic                                    itlb_miss_i,
+    input  logic                                    dtlb_miss_i,
     // from PC Gen
-    input  exception_t        ex_i,
-    input  logic              eret_i,
-    input  branchpredict_t    resolved_branch_i
+    input  exception_t                              ex_i,
+    input  logic                                    eret_i,
+    input  branchpredict_t                          resolved_branch_i
 );
 
     logic [11:0][63:0] perf_counter_d, perf_counter_q;
@@ -62,25 +62,26 @@ module perf_counters #(
             perf_counter_d[PERF_DTLB_MISS] = perf_counter_q[PERF_DTLB_MISS] + 1'b1;
 
         // instruction related perf counters
-        if (commit_ack_o) begin
-            if (commit_instr_i.fu == LOAD)
-                perf_counter_d[PERF_LOAD] = perf_counter_q[PERF_LOAD] + 1'b1;
+        for (int unsigned i = 0; i < NR_COMMIT_PORTS-1; i++) begin
+            if (commit_ack_i[i]) begin
+                if (commit_instr_i[i].fu == LOAD)
+                    perf_counter_d[PERF_LOAD] = perf_counter_q[PERF_LOAD] + 1'b1;
 
-            if (commit_instr_i.fu == STORE)
-                perf_counter_d[PERF_STORE] = perf_counter_q[PERF_STORE] + 1'b1;
+                if (commit_instr_i[i].fu == STORE)
+                    perf_counter_d[PERF_STORE] = perf_counter_q[PERF_STORE] + 1'b1;
 
-            if (commit_instr_i.fu == CTRL_FLOW)
-                perf_counter_d[PERF_BRANCH_JUMP] = perf_counter_q[PERF_BRANCH_JUMP] + 1'b1;
+                if (commit_instr_i[i].fu == CTRL_FLOW)
+                    perf_counter_d[PERF_BRANCH_JUMP] = perf_counter_q[PERF_BRANCH_JUMP] + 1'b1;
 
-            // The standard software calling convention uses register x1 to hold the return address on a call
-            // the unconditional jump is decoded as ADD op
-            if (commit_instr_i.fu == CTRL_FLOW && commit_instr_i.op == '0 && commit_instr_i.rd == 'b1)
-                perf_counter_d[PERF_CALL] = perf_counter_q[PERF_CALL] + 1'b1;
+                // The standard software calling convention uses register x1 to hold the return address on a call
+                // the unconditional jump is decoded as ADD op
+                if (commit_instr_i[i].fu == CTRL_FLOW && commit_instr_i[i].op == '0 && commit_instr_i[i].rd == 'b1)
+                    perf_counter_d[PERF_CALL] = perf_counter_q[PERF_CALL] + 1'b1;
 
-            // Return from call
-            if (commit_instr_i.op == JALR && commit_instr_i.rs1 == 'b1)
-                perf_counter_d[PERF_RET] = perf_counter_q[PERF_RET] + 1'b1;
-
+                // Return from call
+                if (commit_instr_i[i].op == JALR && commit_instr_i[i].rs1 == 'b1)
+                    perf_counter_d[PERF_RET] = perf_counter_q[PERF_RET] + 1'b1;
+            end
         end
 
         if (ex_i.valid)

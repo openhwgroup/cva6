@@ -16,8 +16,9 @@
 import ariane_pkg::*;
 
 module issue_stage #(
-        parameter int  NR_ENTRIES = 8,
-        parameter int  NR_WB_PORTS = 4
+        parameter int unsigned NR_ENTRIES = 8,
+        parameter int unsigned NR_WB_PORTS = 4,
+        parameter int unsigned NR_COMMIT_PORTS = 2
     )(
     input  logic                                     clk_i,     // Clock
     input  logic                                     rst_ni,    // Asynchronous reset active low
@@ -66,32 +67,39 @@ module issue_stage #(
 
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
-    input logic [NR_WB_PORTS-1:0][63:0]              wdata_i,
+
+    input logic [NR_WB_PORTS-1:0][63:0]              wbdata_i,
     input exception_t [NR_WB_PORTS-1:0]              ex_ex_i, // exception from execute stage
     input logic [NR_WB_PORTS-1:0]                    wb_valid_i,
 
-        // commit port
-    input  logic[4:0]                                waddr_a_i,
-    input  logic[63:0]                               wdata_a_i,
-    input  logic                                     we_a_i,
+    // commit port
+    input  logic [NR_COMMIT_PORTS-1:0][4:0]          waddr_i,
+    input  logic [NR_COMMIT_PORTS-1:0][63:0]         wdata_i,
+    input  logic [NR_COMMIT_PORTS-1:0]               we_i,
 
-    output scoreboard_entry_t                        commit_instr_o,
-    input  logic                                     commit_ack_i
+    output scoreboard_entry_t [NR_COMMIT_PORTS-1:0]  commit_instr_o,
+    input  logic              [NR_COMMIT_PORTS-1:0]  commit_ack_i
 );
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (IRO)
     // ---------------------------------------------------
-    fu_t  [31:0]       rd_clobber_sb_iro;
-    logic [4:0]        rs1_iro_sb;
-    logic [63:0]       rs1_sb_iro;
-    logic              rs1_valid_sb_iro;
-    logic [4:0]        rs2_iro_sb;
-    logic [63:0]       rs2_sb_iro;
-    logic              rs2_valid_iro_sb;
-    scoreboard_entry_t issue_instr_sb_iro;
-    logic              issue_instr_valid_sb_iro;
-    logic              issue_ack_iro_sb;
+    fu_t  [2**REG_ADDR_SIZE:0] rd_clobber_sb_iro;
 
+    logic [REG_ADDR_SIZE-1:0]  rs1_iro_sb;
+    logic [63:0]               rs1_sb_iro;
+    logic                      rs1_valid_sb_iro;
+
+    logic [REG_ADDR_SIZE-1:0]  rs2_iro_sb;
+    logic [63:0]               rs2_sb_iro;
+    logic                      rs2_valid_iro_sb;
+
+    scoreboard_entry_t         issue_instr_sb_rename;
+    logic                      issue_instr_valid_sb_rename;
+    logic                      issue_ack_rename_sb;
+
+    scoreboard_entry_t         issue_instr_rename_iro;
+    logic                      issue_instr_valid_rename_iro;
+    logic                      issue_ack_iro_rename;
 
     // ---------------------------------------------------
     // Branch (resolve) logic
@@ -110,12 +118,12 @@ module issue_stage #(
         end
         // if the instruction is valid, it is a control flow instruction and the issue stage acknowledged its dispatch
         // set the unresolved branch flag
-        if (issue_ack_iro_sb && decoded_instr_valid_i && is_ctrl_flow_i) begin
+        if (issue_ack_iro_rename && decoded_instr_valid_i && is_ctrl_flow_i) begin
             unresolved_branch_n = 1'b1;
         end
         // if we predicted a taken branch this means that we need to stall issue for one cycle to resolve the
         // branch, otherwise we might issue a wrong instruction
-        if (issue_ack_iro_sb && decoded_instr_i.bp.valid && decoded_instr_i.bp.predict_taken) begin
+        if (issue_ack_iro_rename && decoded_instr_i.bp.valid && decoded_instr_i.bp.predict_taken) begin
             unresolved_branch_n = 1'b1;
         end
         // if we are requested to flush also flush the unresolved branch flag because either the flush
@@ -127,11 +135,11 @@ module issue_stage #(
     // ---------------------------------------------------------
     // 1. Issue instruction and read operand
     // ---------------------------------------------------------
-    issue_read_operands issue_read_operands_i  (
+    issue_read_operands i_issue_read_operands  (
         .flush_i             ( flush_unissued_instr_i          ),
-        .issue_instr_i       ( issue_instr_sb_iro              ),
-        .issue_instr_valid_i ( issue_instr_valid_sb_iro        ),
-        .issue_ack_o         ( issue_ack_iro_sb                ),
+        .issue_instr_i       ( issue_instr_rename_iro          ),
+        .issue_instr_valid_i ( issue_instr_valid_rename_iro    ),
+        .issue_ack_o         ( issue_ack_iro_rename            ),
         .rs1_o               ( rs1_iro_sb                      ),
         .rs1_i               ( rs1_sb_iro                      ),
         .rs1_valid_i         ( rs1_valid_sb_iro                ),
@@ -141,31 +149,46 @@ module issue_stage #(
         .rd_clobber_i        ( rd_clobber_sb_iro               ),
         .*
     );
+
     // ---------------------------------------------------------
-    // 2. Manage issued instructions in a scoreboard
+    // 2. Re-name
+    // ---------------------------------------------------------
+    re_name i_re_name (
+        .clk_i               ( clk_i                        ),
+        .rst_ni              ( rst_ni                       ),
+        .issue_instr_i       ( issue_instr_sb_rename        ),
+        .issue_instr_valid_i ( issue_instr_valid_sb_rename  ),
+        .issue_ack_o         ( issue_ack_rename_sb          ),
+        .issue_instr_o       ( issue_instr_rename_iro       ),
+        .issue_instr_valid_o ( issue_instr_valid_rename_iro ),
+        .issue_ack_i         ( issue_ack_iro_rename         )
+    );
+
+    // ---------------------------------------------------------
+    // 3. Manage issued instructions in a scoreboard
     // ---------------------------------------------------------
     scoreboard  #(
-        .NR_ENTRIES            ( NR_ENTRIES                     ),
-        .NR_WB_PORTS           ( NR_WB_PORTS                    )
+        .NR_ENTRIES            ( NR_ENTRIES                                ),
+        .NR_WB_PORTS           ( NR_WB_PORTS                               )
     )
-    scoreboard_i
+    i_scoreboard
     (
-        .unresolved_branch_i   ( unresolved_branch_q            ),
-        .rd_clobber_o          ( rd_clobber_sb_iro              ),
-        .rs1_i                 ( rs1_iro_sb                     ),
-        .rs1_o                 ( rs1_sb_iro                     ),
-        .rs1_valid_o           ( rs1_valid_sb_iro               ),
-        .rs2_i                 ( rs2_iro_sb                     ),
-        .rs2_o                 ( rs2_sb_iro                     ),
-        .rs2_valid_o           ( rs2_valid_iro_sb               ),
+        .unresolved_branch_i   ( unresolved_branch_q && !resolve_branch_i  ),
+        .rd_clobber_o          ( rd_clobber_sb_iro                         ),
+        .rs1_i                 ( rs1_iro_sb                                ),
+        .rs1_o                 ( rs1_sb_iro                                ),
+        .rs1_valid_o           ( rs1_valid_sb_iro                          ),
+        .rs2_i                 ( rs2_iro_sb                                ),
+        .rs2_o                 ( rs2_sb_iro                                ),
+        .rs2_valid_o           ( rs2_valid_iro_sb                          ),
 
-        .issue_instr_o         ( issue_instr_sb_iro             ),
-        .issue_instr_valid_o   ( issue_instr_valid_sb_iro       ),
-        .issue_ack_i           ( issue_ack_iro_sb               ),
+        .issue_instr_o         ( issue_instr_sb_rename                     ),
+        .issue_instr_valid_o   ( issue_instr_valid_sb_rename               ),
+        .issue_ack_i           ( issue_ack_rename_sb                       ),
 
-        .trans_id_i            ( trans_id_i                     ),
-        .wdata_i               ( wdata_i                        ),
-        .ex_i                  ( ex_ex_i                        ),
+        .trans_id_i            ( trans_id_i                                ),
+        .wbdata_i              ( wbdata_i                                  ),
+        .ex_i                  ( ex_ex_i                                   ),
         .*
     );
 
