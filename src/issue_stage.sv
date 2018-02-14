@@ -17,7 +17,7 @@ import ariane_pkg::*;
 
 module issue_stage #(
         parameter int unsigned NR_ENTRIES = 8,
-        parameter int unsigned NR_WB_PORTS = 5,
+        parameter int unsigned NR_WB_PORTS = 4,
         parameter int unsigned NR_COMMIT_PORTS = 2
     )(
     input  logic                                     clk_i,     // Clock
@@ -170,7 +170,9 @@ module issue_stage #(
     scoreboard  #(
         .NR_ENTRIES            ( NR_ENTRIES                                ),
         .NR_WB_PORTS           ( NR_WB_PORTS                               )
-    ) i_scoreboard (
+    )
+    i_scoreboard
+    (
         .unresolved_branch_i   ( unresolved_branch_q && !resolve_branch_i  ),
         .rd_clobber_o          ( rd_clobber_sb_iro                         ),
         .rs1_i                 ( rs1_iro_sb                                ),

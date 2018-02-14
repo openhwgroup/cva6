@@ -1,3 +1,4 @@
+
 // Copyright 2018 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
@@ -54,19 +55,12 @@ module ex_stage #(
     // LSU
     output logic                                   lsu_ready_o,           // FU is ready
     input  logic                                   lsu_valid_i,           // Input is valid
-
-    output logic                                   ld_valid_o,            // Output is valid
-    output logic [63:0]                            ld_result_o,
-    output exception_t                             ld_exception_o,
-    output logic [TRANS_ID_BITS-1:0]               ld_trans_id_o,
-
-    output logic                                   st_valid_o,            // Output is valid
-    output logic [63:0]                            st_result_o,
-    output exception_t                             st_exception_o,
-    output logic [TRANS_ID_BITS-1:0]               st_trans_id_o,
-
+    output logic                                   lsu_valid_o,           // Output is valid
+    output logic [63:0]                            lsu_result_o,
+    output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
     input  logic                                   lsu_commit_i,
     output logic                                   lsu_commit_ready_o,    // commit queue is ready to accept another commit request
+    output exception_t                             lsu_exception_o,
     output logic                                   no_st_pending_o,
     // CSR
     output logic                                   csr_ready_o,

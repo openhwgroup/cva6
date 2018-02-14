@@ -135,20 +135,12 @@ module ariane #(
     branchpredict_sbe_t       branch_predict_id_ex;
     logic                     resolve_branch_ex_id;
     // LSU
+    logic [TRANS_ID_BITS-1:0] lsu_trans_id_ex_id;
     logic                     lsu_valid_id_ex;
+    logic [63:0]              lsu_result_ex_id;
     logic                     lsu_ready_ex_id;
-
-
-    logic [TRANS_ID_BITS-1:0] ld_trans_id_ex_id;
-    logic [63:0]              ld_result_ex_id;
-    logic                     ld_valid_ex_id;
-    exception_t               ld_exception_ex_id;
-
-    logic [TRANS_ID_BITS-1:0] st_trans_id_ex_id;
-    logic [63:0]              st_result_ex_id;
-    logic                     st_valid_ex_id;
-    exception_t               st_exception_ex_id;
-
+    logic                     lsu_valid_ex_id;
+    exception_t               lsu_exception_ex_id;
     // MULT
     logic                     mult_ready_ex_id;
     logic                     mult_valid_id_ex;
@@ -391,10 +383,10 @@ module ariane #(
         .csr_ready_i                ( csr_ready_ex_id                 ),
         .csr_valid_o                ( csr_valid_id_ex                 ),
 
-        .trans_id_i                 ( {alu_trans_id_ex_id,         ld_trans_id_ex_id,  st_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id,         mult_trans_id_ex_id        }),
-        .wbdata_i                   ( {alu_result_ex_id,           ld_result_ex_id,    st_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id          }),
-        .ex_ex_i                    ( {{$bits(exception_t){1'b0}}, ld_exception_ex_id, st_exception_ex_id, branch_exception_ex_id,   {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}} }),
-        .wb_valid_i                 ( {alu_valid_ex_id,            ld_valid_ex_id,     st_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id,            mult_valid_ex_id           }),
+        .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id,         mult_trans_id_ex_id        }),
+        .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id          }),
+        .ex_ex_i                    ( {{$bits(exception_t){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}} }),
+        .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id,            mult_valid_ex_id           }),
 
         .waddr_i                    ( waddr_commit_id               ),
         .wdata_i                    ( wdata_commit_id               ),
@@ -442,19 +434,12 @@ module ariane #(
         // LSU
         .lsu_ready_o            ( lsu_ready_ex_id                        ),
         .lsu_valid_i            ( lsu_valid_id_ex                        ),
-
-        .ld_result_o           ( ld_result_ex_id                       ),
-        .ld_trans_id_o         ( ld_trans_id_ex_id                     ),
-        .ld_valid_o            ( ld_valid_ex_id                        ),
-        .ld_exception_o        ( ld_exception_ex_id                    ),
-
-        .st_result_o           ( st_result_ex_id                       ),
-        .st_trans_id_o         ( st_trans_id_ex_id                     ),
-        .st_valid_o            ( st_valid_ex_id                        ),
-        .st_exception_o        ( st_exception_ex_id                    ),
-
+        .lsu_result_o           ( lsu_result_ex_id                       ),
+        .lsu_trans_id_o         ( lsu_trans_id_ex_id                     ),
+        .lsu_valid_o            ( lsu_valid_ex_id                        ),
         .lsu_commit_i           ( lsu_commit_commit_ex                   ), // from commit
         .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit             ), // to commit
+        .lsu_exception_o        ( lsu_exception_ex_id                    ),
         .no_st_pending_o        ( no_st_pending_ex_commit                ),
         // CSR
         .csr_ready_o            ( csr_ready_ex_id                        ),
