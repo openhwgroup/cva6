@@ -16,8 +16,8 @@ import ariane_pkg::*;
 
 module frontend #(
     parameter int unsigned BTB_ENTRIES = 8,
-    parameter int unsigned BHT_ENTRIES = 32,
-    parameter int unsigned RAS_DEPTH   = 2
+    parameter int unsigned BHT_ENTRIES = 1024,
+    parameter int unsigned RAS_DEPTH   = 4
 )(
     input  logic               clk_i,              // Clock
     input  logic               rst_ni,             // Asynchronous reset active low
@@ -115,14 +115,11 @@ module frontend #(
         bp_vaddr        = '0;    // predicted address
         bp_valid        = 1'b0;  // prediction is valid
 
+        bp_sbe.is_lower_16 = 1'b0;
+        bp_sbe.cf_type = RAS;
+
         // only predict on speculative fetches and if the response is valid
-        if (icache_valid_q && icache_speculative_q) begin
-            // is it a return and the RAS contains a valid prediction? **speculative**
-            if (rvi_return && ras_predict.valid) begin
-                bp_vaddr = ras_predict.ra;
-                ras_pop = 1'b1;
-                bp_valid = 1'b1;
-            end
+        if (icache_valid_q) begin
 
             if (rvi_call) begin
                 ras_push = 1'b1;
@@ -131,6 +128,7 @@ module frontend #(
 
             // Branch Prediction - **speculative**
             if (rvi_branch) begin
+                bp_sbe.cf_type = BHT;
                 // dynamic prediction valid?
                 if (bht_prediction.valid) begin
                     if (bht_prediction.taken || bht_prediction.strongly_taken)
@@ -153,13 +151,27 @@ module frontend #(
             if (rvi_jalr && btb_prediction.valid) begin
                 bp_vaddr = btb_prediction.target_address;
                 bp_valid = 1'b1;
+                bp_sbe.cf_type = BTB;
+            end
+
+            // is it a return and the RAS contains a valid prediction? **speculative**
+            if (rvi_return && ras_predict.valid) begin
+                bp_vaddr = ras_predict.ra;
+                ras_pop = 1'b1;
+                bp_valid = 1'b1;
+                bp_sbe.cf_type = RAS;
             end
 
             if (take_rvi_cf) begin
                 bp_valid = 1'b1;
                 bp_vaddr = icache_vaddr_q + rvi_imm;
             end
+
         end
+        // assemble scoreboard entry
+        bp_sbe.valid = bp_valid;
+        bp_sbe.predict_address = bp_vaddr;
+        bp_sbe.predict_taken = bp_valid;
     end
 
     always_comb begin : id_if
@@ -177,13 +189,6 @@ module frontend #(
             icache_kill_s2 = 1'b1;
         end
 
-        // assemble scoreboard entry
-        bp_sbe.valid = bp_valid;
-        bp_sbe.predict_address = bp_vaddr;
-        bp_sbe.predict_taken = bp_valid;
-        bp_sbe.is_lower_16 = 1'b0;
-        bp_sbe.cf_type = (rvi_jalr) ? BTB : BHT;
-
         fifo_valid = icache_valid_q;
     end
 
@@ -191,7 +196,7 @@ module frontend #(
     // Update Control Flow Predictions
     // ----------------------------------------
     // BHT
-    assign bht_update.valid = resolved_branch_i.valid;
+    assign bht_update.valid = resolved_branch_i.valid & (resolved_branch_i.cf_type == BHT);
     assign bht_update.pc    = resolved_branch_i.pc;
     assign bht_update.mispredict = resolved_branch_i.is_mispredict;
     assign bht_update.taken = resolved_branch_i.is_taken;
@@ -410,24 +415,23 @@ module instr_scan (
     // check that rs1 is either x1 or x5 and that rs1 is not x1 or x5, TODO: check the fact about bit 7
     assign rvi_return_o = rvi_jalr_o & ~instr_i[7] & ~instr_i[19] & ~instr_i[18] & ~instr_i[16] & instr_i[15];
     assign rvi_call_o   = (rvi_jalr_o | rvi_jump_o) & instr_i[7]; // TODO: check that this captures calls
-    assign rvc_branch_o = (instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ);
+    // differentiates between JAL and BRANCH opcode, JALR comes from BHT
+    assign rvi_imm_o    = (instr_i[3]) ? uj_imm(instr_i) : sb_imm(instr_i);
+    assign rvi_branch_o = (instr_i[6:0] == OPCODE_BRANCH) ? 1'b1 : 1'b0;
+    assign rvi_jalr_o   = (instr_i[6:0] == OPCODE_JALR)   ? 1'b1 : 1'b0;
+    assign rvi_jump_o   = (instr_i[6:0] == OPCODE_JAL)    ? 1'b1 : 1'b0;
     // opcode JAL
     assign rvc_jump_o   = (instr_i[15:13] == OPCODE_C_J);
     assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000);
+    assign rvc_branch_o = (instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ);
     // check that rs1 is x1 or x5
     assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & ~instr_i[7];
     assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000);
     assign rvc_call_o   = rvc_jalr_o;  // TODO: check that this captures calls
 
-    // differentiates between JAL and BRANCH opcode, JALR comes from BHT
-    assign rvi_imm_o    = (instr_i[3]) ? uj_imm(instr_i) : sb_imm(instr_i);
     // // differentiates between JAL and BRANCH opcode, JALR comes from BHT
     assign rvc_imm_o    = (instr_i[14]) ? {{56{instr_i[12]}}, instr_i[6:5], instr_i[2], instr_i[11:10], instr_i[4:3], 1'b0}
                                        : {{53{instr_i[12]}}, instr_i[8], instr_i[10:9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5:3], 1'b0};
-
-    assign rvi_branch_o = (instr_i[6:0] == OPCODE_BRANCH) ? 1'b1 : 1'b0;
-    assign rvi_jalr_o   = (instr_i[6:0] == OPCODE_JALR)   ? 1'b1 : 1'b0;
-    assign rvi_jump_o   = (instr_i[6:0] == OPCODE_JAL)    ? 1'b1 : 1'b0;
 endmodule
 
 // ------------------------------
@@ -548,7 +552,7 @@ endmodule
 
 // branch history table - 2 bit saturation counter
 module bht #(
-    parameter int unsigned NR_ENTRIES = 64
+    parameter int unsigned NR_ENTRIES = 1024
 )(
     input  logic            clk_i,
     input  logic            rst_ni,
