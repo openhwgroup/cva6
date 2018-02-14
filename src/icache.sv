@@ -290,8 +290,7 @@ module icache #(
                     state_d = (kill_s2_i) ? WAIT_KILLED_AXI_R_RESP : WAIT_AXI_R_RESP;
             end
             // ~> wait for the read response
-            // TODO: Handle responses for arbitrary cache line widths
-            WAIT_AXI_R_RESP: begin
+            WAIT_AXI_R_RESP, WAIT_KILLED_AXI_R_RESP: begin
 
                 req     = evict_way_q;
                 addr    = vaddr_q[INDEX_WIDTH-1:BYTE_OFFSET];
@@ -313,6 +312,9 @@ module icache #(
                 if (axi.r_last) begin
                     state_d = (kill_s2_i) ? IDLE : REDO_REQ;
                 end
+
+                if ((state_q == WAIT_KILLED_AXI_R_RESP) && axi.r_last)
+                    state_d = IDLE;
             end
             // ~> redo the request,
             REDO_REQ: begin
@@ -351,11 +353,6 @@ module icache #(
             // here for the AW valid
             WAIT_KILLED_REFILL: begin
                 if (axi.aw_valid)
-                    state_d = IDLE;
-            end
-            // and here for the last R valid
-            WAIT_KILLED_AXI_R_RESP: begin
-                if (axi.r_last)
                     state_d = IDLE;
             end
             // ~> we are coming here after reset or when a flush was requested

@@ -45,8 +45,8 @@ module instr_realigner (
     // check if the lower compressed instruction was no branch otherwise we will need to squash this instruction
     // but only if we predicted it to be taken, the predict was on the lower 16 bit compressed instruction
     logic kill_upper_16_bit;
-    assign kill_upper_16_bit = fetch_entry_0_i.branch_predict.valid &&
-                               fetch_entry_0_i.branch_predict.predict_taken &&
+    assign kill_upper_16_bit = fetch_entry_0_i.branch_predict.valid &
+                               fetch_entry_0_i.branch_predict.predict_taken &
                                fetch_entry_0_i.branch_predict.is_lower_16;
     // ----------
     // Registers
