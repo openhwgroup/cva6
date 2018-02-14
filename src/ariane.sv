@@ -268,7 +268,7 @@ module ariane #(
 
     ) i_frontend (
         .flush_i             ( flush_ctrl_if                 ), // not entirely correct
-        .flush_bp_i          ( flush_bp_ctrl_pcgen           ),
+        .flush_bp_i          ( 1'b0                          ),
         .flush_icache_i      ( flush_icache_ctrl_icache      ),
         .flush_itlb_i        ( flush_tlb_ctrl_ex             ),
         .boot_addr_i         ( boot_addr_i                   ),

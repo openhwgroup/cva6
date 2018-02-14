@@ -115,52 +115,51 @@ module frontend #(
         bp_vaddr        = '0;    // predicted address
         bp_valid        = 1'b0;  // prediction is valid
 
-        // is it a return and the RAS contains a valid prediction? **speculative**
-        if (rvi_return && ras_predict.valid) begin
-            bp_vaddr = ras_predict.ra;
-            ras_pop = 1'b1;
-            bp_valid = 1'b1;
-        end
+        // only predict on speculative fetches and if the response is valid
+        if (icache_valid_q && icache_speculative_q) begin
+            // is it a return and the RAS contains a valid prediction? **speculative**
+            if (rvi_return && ras_predict.valid) begin
+                bp_vaddr = ras_predict.ra;
+                ras_pop = 1'b1;
+                bp_valid = 1'b1;
+            end
 
-        if (rvi_call) begin
-            ras_push = 1'b1;
-            ras_update = icache_vaddr_q;
-        end
+            if (rvi_call) begin
+                ras_push = 1'b1;
+                ras_update = icache_vaddr_q + 4;
+            end
 
-        // Branch Prediction - **speculative**
-        if (rvi_branch) begin
-            // dynamic prediction valid?
-            if (bht_prediction.valid) begin
-                if (bht_prediction.taken || bht_prediction.strongly_taken)
-                    take_rvi_cf = 1'b1;
-            // default to static prediction
-            end else begin
-                // set if immediate is negative
-                if (rvi_imm[63]) begin
-                    take_rvi_cf = 1'b1;
+            // Branch Prediction - **speculative**
+            if (rvi_branch) begin
+                // dynamic prediction valid?
+                if (bht_prediction.valid) begin
+                    if (bht_prediction.taken || bht_prediction.strongly_taken)
+                        take_rvi_cf = 1'b1;
+                // default to static prediction
+                end else begin
+                    // set if immediate is negative
+                    if (rvi_imm[63]) begin
+                        take_rvi_cf = 1'b1;
+                    end
                 end
             end
-        end
 
-        // unconditional jump
-        if (rvi_jump) begin
-            take_rvi_cf = 1'b1;
-        end
+            // unconditional jump
+            if (rvi_jump) begin
+                take_rvi_cf = 1'b1;
+            end
 
-        // to take this jump we need a valid prediction target **speculative**
-        if (rvi_jalr && btb_prediction.valid) begin
-            bp_vaddr = btb_prediction.target_address;
-            bp_valid = 1'b1;
-        end
+            // to take this jump we need a valid prediction target **speculative**
+            if (rvi_jalr && btb_prediction.valid) begin
+                bp_vaddr = btb_prediction.target_address;
+                bp_valid = 1'b1;
+            end
 
-        if (take_rvi_cf) begin
-            bp_valid = 1'b1;
-            bp_vaddr = icache_vaddr_q + rvi_imm;
+            if (take_rvi_cf) begin
+                bp_valid = 1'b1;
+                bp_vaddr = icache_vaddr_q + rvi_imm;
+            end
         end
-
-        // icache response is valid -> so is our prediction, also check that this was no mandatory fetch
-        if (~icache_valid_q || ~icache_speculative_q)
-            bp_valid = 1'b0;
     end
 
     always_comb begin : id_if
@@ -409,7 +408,7 @@ module instr_scan (
 );
     assign is_rvc_o     = (instr_i[1:0] != 2'b11);
     // check that rs1 is either x1 or x5 and that rs1 is not x1 or x5, TODO: check the fact about bit 7
-    assign rvi_return_o = rvi_jalr_o & ~instr_i[7] & ~instr_i[19] & ~instr_i[18] & instr_i[17] & ~instr_i[15];
+    assign rvi_return_o = rvi_jalr_o & ~instr_i[7] & ~instr_i[19] & ~instr_i[18] & ~instr_i[16] & instr_i[15];
     assign rvi_call_o   = (rvi_jalr_o | rvi_jump_o) & instr_i[7]; // TODO: check that this captures calls
     assign rvc_branch_o = (instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ);
     // opcode JAL
@@ -563,15 +562,20 @@ module bht #(
     // number of bits we should use for prediction
     localparam PREDICTION_BITS = $clog2(NR_ENTRIES) + OFFSET;
 
-    bht_prediction_t                        bht_d[NR_ENTRIES-1:0], bht_q[NR_ENTRIES-1:0];
+    struct packed {
+        logic       valid;
+        logic [1:0] saturation_counter;
+    } bht_d[NR_ENTRIES-1:0], bht_q[NR_ENTRIES-1:0];
+
     logic [$clog2(NR_ENTRIES)-1:0]          index, update_pc;
     logic [1:0]     saturation_counter;
 
     assign index     = vpc_i[PREDICTION_BITS - 1:OFFSET];
     assign update_pc = bht_update_i.pc[PREDICTION_BITS - 1:OFFSET];
     // prediction assignment
-    assign bht_prediction_o = bht_q[index];
-
+    assign bht_prediction_o.valid = bht_q[index].valid;
+    assign bht_prediction_o.taken = bht_q[index].saturation_counter == 2'b10;
+    assign bht_prediction_o.strongly_taken = (bht_q[index].saturation_counter == 2'b11);
     always_comb begin : update_bht
         bht_d = bht_q;
         saturation_counter = bht_q[update_pc].saturation_counter;
@@ -606,6 +610,7 @@ module bht #(
             if (flush_i) begin
                 for (int i = 0; i < NR_ENTRIES; i++) begin
                     bht_q[i].valid <=  1'b0;
+                    bht_q[i].saturation_counter <= 2'b10;
                 end
             end else begin
                 bht_q <= bht_d;

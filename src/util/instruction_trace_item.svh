@@ -104,9 +104,8 @@ class instruction_trace_item;
             // Regular opcodes
             INSTR_LUI:                 s = this.printUInstr("lui");
             INSTR_AUIPC:               s = this.printUInstr("auipc");
-            INSTR_J:                   s = this.printUJInstr("j");
-            INSTR_JAL:                 s = this.printUJInstr("jal");
-            INSTR_JALR:                s = this.printIInstr("jalr");
+            INSTR_JAL:                 s = this.printJump();
+            INSTR_JALR:                s = this.printJump();
             // BRANCH
             INSTR_BEQZ:                s = this.printSBInstr("beqz");
             INSTR_BEQ:                 s = this.printSBInstr("beq");
@@ -280,6 +279,23 @@ class instruction_trace_item;
 
         return $sformatf("%-16s %s, 0x%0h", mnemonic, regAddrToStr(sbe.rd), sbe.result[31:12]);
     endfunction // printUInstr
+
+    function string printJump();
+        string mnemonic;
+        // is this a return?
+        if (instr[6:0] == OPCODE_JALR && sbe.rd == 'b0 && sbe.rs1 == 'b1) begin
+            return this.printMnemonic("ret");
+        end else begin
+            return this.printIInstr("jalr");
+        end
+
+        if (instr[6:0] == OPCODE_JAL) begin
+            if (sbe.rd == 'b0)
+                return this.printUJInstr("j");
+            else
+            return this.printUJInstr("jal");
+        end
+    endfunction
 
     function string printUJInstr(input string mnemonic);
 

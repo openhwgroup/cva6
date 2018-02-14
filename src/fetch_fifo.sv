@@ -41,7 +41,7 @@ module fetch_fifo (
     // input  logic                   fetch_ack_1_i
 );
 
-    localparam int unsigned DEPTH = 4; // must be a power of two
+    localparam int unsigned DEPTH = 8; // must be a power of two
     // status signals
     logic full, empty;
 

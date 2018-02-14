@@ -112,7 +112,6 @@ package ariane_pkg;
         logic       valid;
         logic       taken;
         logic       strongly_taken;
-        logic [1:0] saturation_counter;
     } bht_prediction_t;
 
     typedef enum logic[3:0] {
