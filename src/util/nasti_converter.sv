@@ -2,7 +2,7 @@ module nasti_converter  #(
     ID_WIDTH = 10,               // id width
     ADDR_WIDTH = 64,             // address width
     DATA_WIDTH = 64,             // width of data
-    USER_WIDTH = 6               // width of user field, must > 0, let synthesizer trim it if not in use
+    USER_WIDTH = 1               // width of user field, must > 0, let synthesizer trim it if not in use
     )
 (
                       AXI_BUS.Slave incoming_if,
@@ -77,10 +77,12 @@ slave_adapter
       .m_axi_wdata          ( outgoing_nasti.w_data     ),
       .m_axi_wstrb          ( outgoing_nasti.w_strb     ),
       .m_axi_wlast          ( outgoing_nasti.w_last     ),
+      .m_axi_wuser          ( outgoing_nasti.w_user     ),
       .m_axi_wvalid         ( outgoing_nasti.w_valid    ),
       .m_axi_wready         ( outgoing_nasti.w_ready    ),
       .m_axi_bid            ( outgoing_nasti.b_id       ),
       .m_axi_bresp          ( outgoing_nasti.b_resp     ),
+      .m_axi_buser          ( outgoing_nasti.b_user     ),
       .m_axi_bvalid         ( outgoing_nasti.b_valid    ),
       .m_axi_bready         ( outgoing_nasti.b_ready    ),
       .m_axi_arid           ( outgoing_nasti.ar_id      ),
@@ -100,6 +102,7 @@ slave_adapter
       .m_axi_rdata          ( outgoing_nasti.r_data     ),
       .m_axi_rresp          ( outgoing_nasti.r_resp     ),
       .m_axi_rlast          ( outgoing_nasti.r_last     ),
+      .m_axi_ruser          ( outgoing_nasti.r_user     ),
       .m_axi_rvalid         ( outgoing_nasti.r_valid    ),
       .m_axi_rready         ( outgoing_nasti.r_ready    )
                       );

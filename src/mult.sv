@@ -505,8 +505,9 @@ module alu_ff #(
     // Generate Tree Structure
     // ----------------------------
     generate
-        for (genvar j = 0; j < LEN; j++) begin
-            assign index_lut[j] = $unsigned(j);
+        for (genvar j = 0; j < LEN; j++) begin:tree
+           logic [31:0] index_lut_reg = $unsigned(j);
+           assign index_lut[j] = index_lut_reg[NUM_LEVELS-1:0];
         end
     endgenerate
 

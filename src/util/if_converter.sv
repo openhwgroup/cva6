@@ -2,7 +2,7 @@ module if_converter  #(
     ID_WIDTH = 10,               // id width
     ADDR_WIDTH = 64,             // address width
     DATA_WIDTH = 64,             // width of data
-    USER_WIDTH = 6              // width of user field, must > 0, let synthesizer trim it if not in use
+    USER_WIDTH = 1              // width of user field, must > 0, let synthesizer trim it if not in use
     )
    (
                       nasti_channel.slave incoming_nasti,
@@ -76,10 +76,12 @@ slave_adapter  #(
       .m_axi_wdata          ( outgoing_if.w_data     ),
       .m_axi_wstrb          ( outgoing_if.w_strb     ),
       .m_axi_wlast          ( outgoing_if.w_last     ),
+      .m_axi_wuser          ( outgoing_if.w_user     ),
       .m_axi_wvalid         ( outgoing_if.w_valid    ),
       .m_axi_wready         ( outgoing_if.w_ready    ),
       .m_axi_bid            ( outgoing_if.b_id       ),
       .m_axi_bresp          ( outgoing_if.b_resp     ),
+      .m_axi_buser          ( outgoing_if.b_user     ),
       .m_axi_bvalid         ( outgoing_if.b_valid    ),
       .m_axi_bready         ( outgoing_if.b_ready    ),
       .m_axi_arid           ( outgoing_if.ar_id      ),
@@ -99,6 +101,7 @@ slave_adapter  #(
       .m_axi_rdata          ( outgoing_if.r_data     ),
       .m_axi_rresp          ( outgoing_if.r_resp     ),
       .m_axi_rlast          ( outgoing_if.r_last     ),
+      .m_axi_ruser          ( outgoing_if.r_user     ),
       .m_axi_rvalid         ( outgoing_if.r_valid    ),
       .m_axi_rready         ( outgoing_if.r_ready    )
                       );

@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module ariane_top_tb;
 
 logic  clk_p;
@@ -30,5 +32,7 @@ initial
 endmodule
 
 `ifdef VCS
+`ifdef STILLX
 `include "stillx.log"
+`endif
 `endif

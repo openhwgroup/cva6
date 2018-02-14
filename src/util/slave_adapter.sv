@@ -68,10 +68,12 @@ module slave_adapter
   output [DATA_WIDTH-1:0]  m_axi_wdata,
   output [7:0]             m_axi_wstrb,
   output                   m_axi_wlast,
+  output [USER_WIDTH-1:0]  m_axi_wuser,
   output                   m_axi_wvalid,
   input                    m_axi_wready,
   input [ID_WIDTH-1:0]     m_axi_bid,
   input [1:0]              m_axi_bresp,
+  input [USER_WIDTH-1:0]   m_axi_buser,
   input                    m_axi_bvalid,
   output                   m_axi_bready,
   output [ID_WIDTH-1:0]    m_axi_arid,
@@ -91,6 +93,7 @@ module slave_adapter
   input [DATA_WIDTH-1:0]   m_axi_rdata,
   input [1:0]              m_axi_rresp,
   input                    m_axi_rlast,
+  input [USER_WIDTH-1:0]   m_axi_ruser,
   input                    m_axi_rvalid,
   output                   m_axi_rready);
    
@@ -98,12 +101,14 @@ assign s_axi_awready = m_axi_awready;
 assign s_axi_wready = m_axi_wready;
 assign s_axi_bid = m_axi_bid;
 assign s_axi_bresp = m_axi_bresp;
+assign s_axi_buser = m_axi_buser;   
 assign s_axi_bvalid = m_axi_bvalid;
 assign s_axi_arready = m_axi_arready;
 assign s_axi_rid = m_axi_rid;
 assign s_axi_rdata = m_axi_rdata;
 assign s_axi_rresp = m_axi_rresp;
 assign s_axi_rlast = m_axi_rlast;
+assign s_axi_ruser = m_axi_ruser;
 assign s_axi_rvalid = m_axi_rvalid;
 assign m_axi_awid = s_axi_awid;
 assign m_axi_awaddr = s_axi_awaddr;
@@ -120,6 +125,7 @@ assign m_axi_awvalid = s_axi_awvalid;
 assign m_axi_wdata = s_axi_wdata;
 assign m_axi_wstrb = s_axi_wstrb;
 assign m_axi_wlast = s_axi_wlast;
+assign m_axi_wuser = s_axi_wuser;   
 assign m_axi_wvalid = s_axi_wvalid;
 assign m_axi_bready = s_axi_bready;
 assign m_axi_arid = s_axi_arid;

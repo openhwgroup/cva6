@@ -1,0 +1,121 @@
+library ( memory) {
+type(bus4) {
+base_type : array;
+data_type : bit;
+bit_width : 4;
+bit_from : 0;
+bit_to : 3;
+downto : false;
+}
+type(bus2) {
+base_type : array;
+data_type : bit;
+bit_width : 2;
+bit_from : 0;
+bit_to : 1;
+downto : false;
+}
+cell (ram_dualport_32_2048) {
+area : 5000.000;
+interface_timing : TRUE;
+memory() {
+type : ram;
+address_width : 11;
+word_width : 32;
+}
+bus (RA) {
+bus_type : "bus4";
+direction : input;
+capacitance : 1.46;
+timing () {
+timing_type : setup_falling;
+intrinsic_rise : 3.20;
+intrinsic_fall : 3.20;
+related_pin : "CLK";
+}
+timing () {
+timing_type : hold_rising;
+intrinsic_rise : 1.85;
+intrinsic_fall : 1.85;
+related_pin : "CLK";
+}
+}
+bus (WA) {
+bus_type : "bus4";
+direction : input;
+capacitance : 1.46;
+timing () {
+timing_type : setup_falling;
+intrinsic_rise : 3.20;
+intrinsic_fall : 3.20;
+related_pin : "CLK";
+}
+timing () {
+timing_type : hold_rising;
+intrinsic_rise : 1.85;
+intrinsic_fall : 1.85;
+related_pin : "CLK";
+}
+}
+bus (DI) {
+bus_type : "bus2"
+direction : input;
+capacitance : 1.46;
+fanout_load : 1.46;
+memory_write() {
+address : WA;
+clocked_on : "EN1";
+}
+timing () {
+timing_type : setup_rising;
+intrinsic_rise : 1.50;
+intrinsic_fall : 1.50;
+related_pin : "WEN";
+}
+timing () {
+timing_type : hold_rising;
+intrinsic_rise : 0.65;
+intrinsic_fall : 0.65;
+related_pin : "WEN";
+}
+}
+bus (WEN) {
+bus_type : "bus2";
+direction : input;
+capacitance : 1.13;
+clock : true;
+}
+pin (OEN) {
+direction : input;
+capacitance : 1.13;
+clock : true;
+}
+pin (CLK) {
+direction : input;
+capacitance : 1.13;
+clock : true;
+}
+bus (EN1) {
+bus_type : "bus2";
+direction : internal;
+capacitance : 1.13;
+clock : true;
+state_function : "!OEN * !WEN * CLK";
+}
+bus (QO){
+bus_type : "bus2";
+direction : output;
+memory_read() {
+address : RA;
+}
+timing () {
+timing_sense : non_unate;
+intrinsic_rise : 5.25;
+rise_resistance : 0.020;
+intrinsic_fall : 5.50;
+fall_resistance : 0.017;
+related_bus_pins : "RA";
+}
+}
+}
+}

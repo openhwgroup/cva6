@@ -71,8 +71,8 @@ module ariane_wrapped #(
 
     ariane #(
         .CACHE_START_ADDR ( CACHE_START_ADDR ),
-        .AXI_ID_WIDTH     ( 10               ),
-        .AXI_USER_WIDTH   ( 1                )
+        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
+        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
     ) i_ariane (
         .*,
         .flush_dcache_i         ( flush_dcache         ),
@@ -243,8 +243,8 @@ logic                      b_valid;
         .data_i ( master1_rdata   )
     );
 
-infer_bram  #(
-        .BRAM_SIZE(14),
+infer_ram  #(
+        .RAM_SIZE(14),
         .BYTE_WIDTH(8))
         my_master1_ram (
       .ram_clk(clk_i),    // input wire clka

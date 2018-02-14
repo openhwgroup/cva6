@@ -5,7 +5,7 @@ module crossbar_socip
     ID_WIDTH = 10,              // id width
     ADDR_WIDTH = 64,            // address width
     DATA_WIDTH = 64,            // width of data
-    USER_WIDTH = 6,             // width of user field, must > 0, let synthesizer trim it if not in use
+    USER_WIDTH = 1,             // width of user field, must > 0, let synthesizer trim it if not in use
     LITE_MODE = 0               // whether work in Lite mode
     )
   (

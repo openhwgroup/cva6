@@ -5,7 +5,7 @@
 // 
 // Create Date: 04.02.2018 14:12:22
 // Design Name: 
-// Module Name: infer_bram
+// Module Name: infer_ram
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -21,24 +21,24 @@
 
 // See LICENSE for license details.
 
-module infer_bram #(BRAM_SIZE=16, BYTE_WIDTH=8) // BRAM_SIZE is in words
+module infer_ram #(RAM_SIZE=16, BYTE_WIDTH=8) // RAM_SIZE is in words
 (
 input ram_clk, ram_en,
 input [BYTE_WIDTH-1:0] ram_we,
-input [BRAM_SIZE-1:0] ram_addr,
+input [RAM_SIZE-1:0] ram_addr,
 input [BYTE_WIDTH*8-1:0] ram_wrdata,
 output [BYTE_WIDTH*8-1:0] ram_rddata);
 
-   localparam BRAM_LINE          = 2 ** BRAM_SIZE;   
+   localparam RAM_LINE          = 2 ** RAM_SIZE;   
    integer                initvar;
 
-   reg [BYTE_WIDTH*8-1:0] ram [0 : BRAM_LINE-1];
-   reg [BRAM_SIZE-1:0]    ram_addr_delay;
+   reg [BYTE_WIDTH*8-1:0] ram [0 : RAM_LINE-1];
+   reg [RAM_SIZE-1:0]    ram_addr_delay;
    
    initial
      begin
-      ram_addr_delay = {BRAM_SIZE{1'b0}};
-      for (initvar = 0; initvar < BRAM_LINE; initvar = initvar+1)
+      ram_addr_delay = {RAM_SIZE{1'b0}};
+      for (initvar = 0; initvar < RAM_LINE; initvar = initvar+1)
         ram[initvar] = {BYTE_WIDTH {8'b0}};
      end
    
