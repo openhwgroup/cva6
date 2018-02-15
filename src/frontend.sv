@@ -15,9 +15,12 @@
 import ariane_pkg::*;
 
 module frontend #(
-    parameter int unsigned BTB_ENTRIES = 8,
-    parameter int unsigned BHT_ENTRIES = 1024,
-    parameter int unsigned RAS_DEPTH   = 4
+    parameter int unsigned BTB_ENTRIES       = 8,
+    parameter int unsigned BHT_ENTRIES       = 1024,
+    parameter int unsigned RAS_DEPTH         = 4,
+    parameter int unsigned SET_ASSOCIATIVITY = 4,
+    parameter int unsigned CACHE_LINE_WIDTH  = 64, // in bit
+    parameter int unsigned FETCH_WIDTH       = 32
 )(
     input  logic               clk_i,              // Clock
     input  logic               rst_ni,             // Asynchronous reset active low
@@ -51,9 +54,13 @@ module frontend #(
     output logic               fetch_entry_valid_o, // instruction in IF is valid
     input  logic               fetch_ack_i          // ID acknowledged this instruction
 );
+    // maximum instructions we can fetch on one request
+    localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH/16;
+
     // Registers
     logic [31:0] icache_data_d,  icache_data_q;
     logic        icache_valid_d, icache_valid_q;
+    logic        instruction_valid;
 
     logic        icache_speculative_d, icache_speculative_q;
     logic [63:0] icache_vaddr_d, icache_vaddr_q;
@@ -68,14 +75,26 @@ module frontend #(
     logic [63:0]     ras_update;
 
     // icache control signals
-    logic icache_req, icache_kill_s1, icache_kill_s2, icache_ready;
+    logic icache_req, kill_s1, kill_s2, icache_ready;
 
     // instruction fetch is ready
     logic          if_ready;
     logic [63:0]   npc_d, npc_q; // next PC
+    // -----------------------
+    // Ctrl Flow Speculation
+    // -----------------------
     // RVI ctrl flow prediction
-    logic          rvi_return, rvi_call, rvi_branch, rvi_jalr, rvi_jump;
-    logic [63:0]   rvi_imm;
+    logic [INSTR_PER_FETCH-1:0]       rvi_return, rvi_call, rvi_branch,
+                                      rvi_jalr, rvi_jump;
+    logic [INSTR_PER_FETCH-1:0][63:0] rvi_imm;
+    // RVC branching
+    logic [INSTR_PER_FETCH-1:0]       is_rvc;
+    logic [INSTR_PER_FETCH-1:0]       rvc_branch, rvc_jump, rvc_jr, rvc_return,
+                                      rvc_jalr, rvc_call;
+    logic [INSTR_PER_FETCH-1:0][63:0] rvc_imm;
+    // re-aligned instruction and address (coming from cache - combinationally)
+    logic [INSTR_PER_FETCH-1:0][31:0] instr;
+    logic [INSTR_PER_FETCH-1:0][63:0] addr;
 
     // virtual address of current fetch
     logic [63:0]   fetch_vaddr;
@@ -87,27 +106,73 @@ module frontend #(
     // branch-prediction which we inject into the pipeline
     branchpredict_sbe_t  bp_sbe;
     logic                fifo_valid, fifo_ready; // fetch FIFO
-    // RVC branching
-    logic                is_rvc;
-    logic                rvc_branch;
-    logic                rvc_jump;
-    logic                rvc_jr;
-    logic                rvc_return;
-    logic                rvc_jalr;
-    logic                rvc_call;
-    logic [63:0]         rvc_imm;
 
-    logic is_mispredict;
-    assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
+    // save the unaligned part of the instruction to this ff
+    logic [15:0] unaligned_instr_d,   unaligned_instr_q;
+    // the last instruction was unaligned
+    logic        unaligned_d,         unaligned_q;
+    // register to save the unaligned address
+    logic [63:0] unaligned_address_d, unaligned_address_q;
 
+    // TODO: generalize to arbitrary instruction fetch width
+    always_comb begin : re_align
+        unaligned_d = unaligned_q;
+        unaligned_address_d = unaligned_address_q;
+        unaligned_instr_d = unaligned_q;
+        instruction_valid = icache_valid_q;
+
+        instr[1] = '0;
+        instr[0] = icache_data_q;
+
+        addr[1] = {icache_vaddr_q[63:2], 2'b10};
+        addr[0] = icache_vaddr_q;
+
+        if (icache_valid_q) begin
+            // last instruction was unaligned
+            if (unaligned_q) begin
+                instr[0] = {icache_data_q[15:0], unaligned_instr_q};
+                addr[0] = unaligned_address_q;
+                unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
+                // check if this is instruction is still unaligned e.g.: it is not compressed
+                if (icache_data_q[17:16] != 2'b11) begin
+                    unaligned_d = 1'b0;
+                    instr[1] = {16'b0, icache_data_q};
+                end
+            end else if (is_rvc[0]) begin // instruction zero is RVC
+                // is instruction 1 also compressed
+                // yes? -> no problem, no -> we've got an unaligned instruction
+                if (icache_data_q[17:16] == 2'b11) begin
+                    instr[1] = {16'b0, icache_data_q[31:16]};
+                end else begin
+                    unaligned_instr_d = icache_data_q[31:16];
+                    unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
+                    unaligned_d = 1'b1;
+                end
+            end // else -> normal fetch
+        end
+
+        // we started to fetch on a unaligned boundary with a whole instruction -> wait until we've
+        // received the next instruction
+        if (icache_valid_q && icache_vaddr_q[1] && icache_data_q[17:16] == 2'b11) begin
+            instruction_valid = 1'b0;
+            unaligned_d = 1'b1;
+            unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
+            unaligned_instr_d = icache_data_q[31:16];
+        end
+
+        if (kill_s2) begin
+            unaligned_d = 1'b0;
+        end
+    end
+
+    logic [INSTR_PER_FETCH:0] taken;
+    logic take_rvi_cf, take_rvc_cf; // take the control flow change
     // control front-end + branch-prediction
     always_comb begin : frontend_ctrl
-        automatic logic take_rvi_cf; // take the control flow change
-
         ras_pop         = 1'b0;
         ras_push        = 1'b0;
         ras_update      = '0;
-
+        taken           = 0;
         take_rvi_cf     = 1'b0;
         if_ready        = icache_ready & fifo_ready;
         icache_req      = fifo_ready;
@@ -115,78 +180,95 @@ module frontend #(
         bp_vaddr        = '0;    // predicted address
         bp_valid        = 1'b0;  // prediction is valid
 
-        bp_sbe.is_lower_16 = 1'b0;
+        bp_sbe.is_lower_16 = ~taken[2]; // the branch is on the lower 16 (in a 32-bit setup)
         bp_sbe.cf_type = RAS;
 
-        // only predict on speculative fetches and if the response is valid
-        if (icache_valid_q) begin
+        // only predict if the response is valid
+        if (instruction_valid) begin
+            // look at instruction 0, 1, 2,...
+            for (int unsigned i = 0; i < INSTR_PER_FETCH; i++) begin
+                // only speculate if the previous instruction was not taken
+                if (!taken[i]) begin
+                    // function call
+                    ras_push = rvi_call[i] | rvc_call[i];
+                    ras_update = addr[i] + (rvc_call[i] ? 2 : 4);
 
-            if (rvi_call) begin
-                ras_push = 1'b1;
-                ras_update = icache_vaddr_q + 4;
-            end
-
-            // Branch Prediction - **speculative**
-            if (rvi_branch) begin
-                bp_sbe.cf_type = BHT;
-                // dynamic prediction valid?
-                if (bht_prediction.valid) begin
-                    if (bht_prediction.taken || bht_prediction.strongly_taken)
-                        take_rvi_cf = 1'b1;
-                // default to static prediction
-                end else begin
-                    // set if immediate is negative
-                    if (rvi_imm[63]) begin
-                        take_rvi_cf = 1'b1;
+                    // Branch Prediction - **speculative**
+                    if (rvi_branch[i]) begin
+                        bp_sbe.cf_type = BHT;
+                        // dynamic prediction valid?
+                        if (bht_prediction.valid) begin
+                            take_rvi_cf = bht_prediction.taken | bht_prediction.strongly_taken;
+                        // default to static prediction
+                        end else begin
+                            // set if immediate is negative - static prediction
+                            take_rvi_cf = rvi_imm[i][63];
+                        end
                     end
+
+                    // unconditional jumps
+                    if (rvi_jump[i] || rvc_jump[i]) begin
+                        take_rvi_cf = rvi_jump[i];
+                        take_rvc_cf = rvc_jump[i];
+                    end
+
+                    // to take this jump we need a valid prediction target **speculative**
+                    if ((rvi_jalr[i] || rvc_jalr[i]) && btb_prediction.valid) begin
+                        bp_vaddr = btb_prediction.target_address;
+                        bp_valid = 1'b1;
+                        taken[i+1] = 1'b1;
+                        bp_sbe.cf_type = BTB;
+                    end
+
+                    // is it a return and the RAS contains a valid prediction? **speculative**
+                    if ((rvi_return[i] || rvc_return[i]) && ras_predict.valid) begin
+                        bp_vaddr = ras_predict.ra;
+                        ras_pop = 1'b1;
+                        bp_valid = 1'b1;
+                        taken[i+1] = 1'b1;
+                        bp_sbe.cf_type = RAS;
+                    end
+
+                    if (take_rvi_cf) begin
+                        bp_valid = 1'b1;
+                        taken[i+1] = 1'b1;
+                        bp_vaddr = addr[i] + rvi_imm[i];
+                    end
+
+                    if (take_rvc_cf) begin
+                        bp_valid = 1'b1;
+                        taken[i+1] = 1'b1;
+                        bp_vaddr = addr[i] + rvc_imm[i];
+                    end
+
+                    // we are not interested in the lower instruction
+                    if (icache_vaddr_q[1]) taken[1] = 1'b0;
                 end
             end
-
-            // unconditional jump
-            if (rvi_jump) begin
-                take_rvi_cf = 1'b1;
-            end
-
-            // to take this jump we need a valid prediction target **speculative**
-            if (rvi_jalr && btb_prediction.valid) begin
-                bp_vaddr = btb_prediction.target_address;
-                bp_valid = 1'b1;
-                bp_sbe.cf_type = BTB;
-            end
-
-            // is it a return and the RAS contains a valid prediction? **speculative**
-            if (rvi_return && ras_predict.valid) begin
-                bp_vaddr = ras_predict.ra;
-                ras_pop = 1'b1;
-                bp_valid = 1'b1;
-                bp_sbe.cf_type = RAS;
-            end
-
-            if (take_rvi_cf) begin
-                bp_valid = 1'b1;
-                bp_vaddr = icache_vaddr_q + rvi_imm;
-            end
-
         end
+
         // assemble scoreboard entry
         bp_sbe.valid = bp_valid;
         bp_sbe.predict_address = bp_vaddr;
         bp_sbe.predict_taken = bp_valid;
     end
 
+    logic is_mispredict;
+    assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
+
     always_comb begin : id_if
-        icache_kill_s1 = 1'b0;
-        icache_kill_s2 = 1'b0;
+        kill_s1 = 1'b0;
+        kill_s2 = 1'b0;
 
         // we mis-predicted so kill the icache request and the fetch queue
         if (is_mispredict || flush_i) begin
-            icache_kill_s1 = 1'b1;
-            icache_kill_s2 = 1'b1;
+            kill_s1 = 1'b1;
+            kill_s2 = 1'b1;
         end
 
         // if we have a valid branch-prediction we need to kill the last cache request
         if (bp_valid) begin
-            icache_kill_s2 = 1'b1;
+            kill_s2 = 1'b1;
         end
 
         fifo_valid = icache_valid_q;
@@ -292,6 +374,9 @@ module frontend #(
             icache_valid_q       <= 1'b0;
             icache_speculative_q <= 1'b0;
             icache_vaddr_q       <= 'b0;
+            unaligned_q          <= 1'b0;
+            unaligned_address_q  <= '0;
+            unaligned_instr_q    <= '0;
         end else begin
             npc_q                <= npc_d;
             tag_q                <= tag_d;
@@ -299,6 +384,9 @@ module frontend #(
             icache_valid_q       <= icache_valid_d;
             icache_speculative_q <= icache_speculative_d;
             icache_vaddr_q       <= icache_vaddr_d;
+            unaligned_q          <= unaligned_d;
+            unaligned_address_q  <= unaligned_address_d;
+            unaligned_instr_q    <= unaligned_instr_d;
         end
     end
 
@@ -334,7 +422,8 @@ module frontend #(
 
     icache #(
         .SET_ASSOCIATIVITY ( 4                    ),
-        .CACHE_LINE_WIDTH  ( 128                  )
+        .CACHE_LINE_WIDTH  ( 128                  ),
+        .FETCH_WIDTH       ( FETCH_WIDTH          )
     ) i_icache (
         .clk_i            ( clk_i                 ),
         .rst_ni           ( rst_ni                ),
@@ -344,8 +433,8 @@ module frontend #(
         .tag_i            ( tag_q                 ), // 2nd cycle
         .data_o           ( icache_data_d         ),
         .req_i            ( icache_req            ),
-        .kill_s1_i        ( icache_kill_s1        ),
-        .kill_s2_i        ( icache_kill_s2        ),
+        .kill_s1_i        ( kill_s1        ),
+        .kill_s2_i        ( kill_s2        ),
         .ready_o          ( icache_ready          ),
         .valid_o          ( icache_valid_d        ),
         .is_speculative_o ( icache_speculative_d  ),
@@ -354,23 +443,25 @@ module frontend #(
         .miss_o           ( l1_icache_miss_o      )
     );
 
-    instr_scan i_instr_scan (
-        .instr_i      ( icache_data_q ),
-        .is_rvc_o     ( is_rvc        ),
-        .rvi_return_o ( rvi_return    ),
-        .rvi_call_o   ( rvi_call      ),
-        .rvi_branch_o ( rvi_branch    ),
-        .rvi_jalr_o   ( rvi_jalr      ),
-        .rvi_jump_o   ( rvi_jump      ),
-        .rvi_imm_o    ( rvi_imm       ),
-        .rvc_branch_o ( rvc_branch    ),
-        .rvc_jump_o   ( rvc_jump      ),
-        .rvc_jr_o     ( rvc_jr        ),
-        .rvc_return_o ( rvc_return    ),
-        .rvc_jalr_o   ( rvc_jalr      ),
-        .rvc_call_o   ( rvc_call      ),
-        .rvc_imm_o    ( rvc_imm       )
-    );
+    for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin
+        instr_scan i_instr_scan (
+            .instr_i      ( instr[i]      ),
+            .is_rvc_o     ( is_rvc[i]     ),
+            .rvi_return_o ( rvi_return[i] ),
+            .rvi_call_o   ( rvi_call[i]   ),
+            .rvi_branch_o ( rvi_branch[i] ),
+            .rvi_jalr_o   ( rvi_jalr[i]   ),
+            .rvi_jump_o   ( rvi_jump[i]   ),
+            .rvi_imm_o    ( rvi_imm[i]    ),
+            .rvc_branch_o ( rvc_branch[i] ),
+            .rvc_jump_o   ( rvc_jump[i]   ),
+            .rvc_jr_o     ( rvc_jr[i]     ),
+            .rvc_return_o ( rvc_return[i] ),
+            .rvc_jalr_o   ( rvc_jalr[i]   ),
+            .rvc_call_o   ( rvc_call[i]   ),
+            .rvc_imm_o    ( rvc_imm[i]    )
+        );
+    end
 
     exception_t ex;
     assign ex = '0;
@@ -421,12 +512,12 @@ module instr_scan (
     assign rvi_jalr_o   = (instr_i[6:0] == OPCODE_JALR)   ? 1'b1 : 1'b0;
     assign rvi_jump_o   = (instr_i[6:0] == OPCODE_JAL)    ? 1'b1 : 1'b0;
     // opcode JAL
-    assign rvc_jump_o   = (instr_i[15:13] == OPCODE_C_J);
-    assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000);
-    assign rvc_branch_o = (instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ);
+    assign rvc_jump_o   = (instr_i[15:13] == OPCODE_C_J) & is_rvc_o;
+    assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000) & is_rvc_o;
+    assign rvc_branch_o = ((instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ)) & is_rvc_o;
     // check that rs1 is x1 or x5
     assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & ~instr_i[7];
-    assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000);
+    assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000) & is_rvc_o;
     assign rvc_call_o   = rvc_jalr_o;  // TODO: check that this captures calls
 
     // // differentiates between JAL and BRANCH opcode, JALR comes from BHT

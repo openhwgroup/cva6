@@ -278,7 +278,7 @@ module icache #(
                 end
             end
             // ~> request a cache-line refill
-            REFILL: begin
+            REFILL, WAIT_KILLED_REFILL: begin
                 axi.ar_valid  = 1'b1;
                 axi.ar_addr[INDEX_WIDTH+TAG_WIDTH-1:0] = {tag_q, vaddr_q[INDEX_WIDTH-1:BYTE_OFFSET], {BYTE_OFFSET{1'b0}}};
                 burst_cnt_d = '0;
@@ -286,8 +286,9 @@ module icache #(
                 if (kill_s2_i)
                     state_d = WAIT_KILLED_REFILL;
 
+                // we need to finish this AXI transfer
                 if (axi.ar_ready)
-                    state_d = (kill_s2_i) ? WAIT_KILLED_AXI_R_RESP : WAIT_AXI_R_RESP;
+                    state_d = (kill_s2_i || (state_q == WAIT_KILLED_REFILL)) ? WAIT_KILLED_AXI_R_RESP : WAIT_AXI_R_RESP;
             end
             // ~> wait for the read response
             WAIT_AXI_R_RESP, WAIT_KILLED_AXI_R_RESP: begin
