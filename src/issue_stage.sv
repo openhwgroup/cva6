@@ -101,37 +101,6 @@ module issue_stage #(
     logic                      issue_instr_valid_rename_iro;
     logic                      issue_ack_iro_rename;
 
-    // ---------------------------------------------------
-    // Branch (resolve) logic
-    // ---------------------------------------------------
-    // This should basically prevent the scoreboard from accepting
-    // instructions past a branch. We need to resolve the branch beforehand.
-    // This limitation is in place to ease the backtracking of mis-predicted branches as they
-    // can simply be in the front-end of the processor.
-    logic unresolved_branch_n, unresolved_branch_q;
-
-    always_comb begin : unresolved_branch
-        unresolved_branch_n = unresolved_branch_q;
-        // we just resolved the branch
-        if (resolve_branch_i) begin
-            unresolved_branch_n = 1'b0;
-        end
-        // if the instruction is valid, it is a control flow instruction and the issue stage acknowledged its dispatch
-        // set the unresolved branch flag
-        if (issue_ack_iro_rename && decoded_instr_valid_i && is_ctrl_flow_i) begin
-            unresolved_branch_n = 1'b1;
-        end
-        // if we predicted a taken branch this means that we need to stall issue for one cycle to resolve the
-        // branch, otherwise we might issue a wrong instruction
-        if (issue_ack_iro_rename && decoded_instr_i.bp.valid && decoded_instr_i.bp.predict_taken) begin
-            unresolved_branch_n = 1'b1;
-        end
-        // if we are requested to flush also flush the unresolved branch flag because either the flush
-        // was requested by a branch or an exception. In any case: any unresolved branch will get evicted
-        if (flush_unissued_instr_i || flush_i) begin
-            unresolved_branch_n = 1'b0;
-        end
-    end
     // ---------------------------------------------------------
     // 1. Issue instruction and read operand
     // ---------------------------------------------------------
@@ -170,10 +139,8 @@ module issue_stage #(
     scoreboard  #(
         .NR_ENTRIES            ( NR_ENTRIES                                ),
         .NR_WB_PORTS           ( NR_WB_PORTS                               )
-    )
-    i_scoreboard
-    (
-        .unresolved_branch_i   ( unresolved_branch_q && !resolve_branch_i  ),
+    ) i_scoreboard (
+        .unresolved_branch_i   ( 1'b0                                      ),
         .rd_clobber_o          ( rd_clobber_sb_iro                         ),
         .rs1_i                 ( rs1_iro_sb                                ),
         .rs1_o                 ( rs1_sb_iro                                ),
@@ -191,13 +158,5 @@ module issue_stage #(
         .ex_i                  ( ex_ex_i                                   ),
         .*
     );
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            unresolved_branch_q <= 1'b0;
-        end else begin
-            unresolved_branch_q <= unresolved_branch_n;
-        end
-    end
 
 endmodule

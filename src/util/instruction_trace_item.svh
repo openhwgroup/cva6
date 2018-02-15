@@ -282,19 +282,24 @@ class instruction_trace_item;
 
     function string printJump();
         string mnemonic;
-        // is this a return?
-        if (instr[6:0] == OPCODE_JALR && sbe.rd == 'b0 && sbe.rs1 == 'b1) begin
-            return this.printMnemonic("ret");
-        end else begin
-            return this.printIInstr("jalr");
-        end
+        case (instr[6:0])
+            OPCODE_JALR: begin
+                // is this a return?
+                if (sbe.rd == 'b0 && (sbe.rs1 == 'h1 || sbe.rs1 == 'h5)) begin
+                    return this.printMnemonic("ret");
+                end else begin
+                    return this.printIInstr("jalr");
+                end
+            end
 
-        if (instr[6:0] == OPCODE_JAL) begin
-            if (sbe.rd == 'b0)
-                return this.printUJInstr("j");
-            else
-            return this.printUJInstr("jal");
-        end
+            OPCODE_JAL: begin
+                if (sbe.rd == 'b0)
+                    return this.printUJInstr("j");
+                else
+                return this.printUJInstr("jal");
+            end
+        endcase
+
     endfunction
 
     function string printUJInstr(input string mnemonic);
