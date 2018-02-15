@@ -169,6 +169,8 @@ module frontend #(
     logic take_rvi_cf, take_rvc_cf; // take the control flow change
     // control front-end + branch-prediction
     always_comb begin : frontend_ctrl
+        take_rvi_cf     = 1'b0;
+        tale_rvc_cf     = 1'b0;
         ras_pop         = 1'b0;
         ras_push        = 1'b0;
         ras_update      = '0;
