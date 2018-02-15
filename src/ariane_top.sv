@@ -32,6 +32,10 @@ module ariane_top(
    .rst_ni(rst_top && locked),
    .*);
 
+`ifdef VCS
+   assign clk_i = clk_p;
+   assign locked = rst_top;
+`else   
      clk_wiz_ariane clk_wiz_instance
       (
        .resetn(rst_top),
@@ -46,6 +50,7 @@ module ariane_top(
        .clk_i(clk_i),     // output clk_i
        // Status and control signals
        .locked(locked));      // output locked
+`endif
                      
 endmodule
                         

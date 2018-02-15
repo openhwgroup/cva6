@@ -73,13 +73,13 @@ module crossbar_socip
        .ID_WIDTH      ( ID_WIDTH              ),
        .ADDR_WIDTH    ( ADDR_WIDTH            ),
        .DATA_WIDTH    ( DATA_WIDTH            ),
-       .ESCAPE_ENABLE ( 1                     ),
+       .ESCAPE_ENABLE ( 0                     ), // to cascade on slave0
+       .BASE0         ( 32'h41000000          ),
+       .MASK0         ( 32'h0000FFFF          ),
        .BASE1         ( 32'h40000000          ),
        .MASK1         ( 32'h0000FFFF          ),
-       .BASE2         ( 32'h41000000          ),
-       .MASK2         ( 32'h0000FFFF          ),
-       .BASE3         ( 32'h80000000          ),
-       .MASK3         ( 32'h07FFFFFF          ),
+       .BASE2         ( 32'h80000000          ),
+       .MASK2         ( 32'h07FFFFFF          ),
        .LITE_MODE     ( 0                     )
        )
    mem_crossbar
