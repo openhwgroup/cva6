@@ -52,7 +52,8 @@ module miss_handler #(
     output cache_line_t                                 data_o,
     output cl_be_t                                      be_o,
     input  cache_line_t [SET_ASSOCIATIVITY-1:0]         data_i,
-    output logic                                        we_o
+    output logic                                        we_o,
+    output logic                                        state_init_o
 );
 
     // 0 IDLE
@@ -147,6 +148,7 @@ module miss_handler #(
         // communicate to the requester which unit we are currently serving
         active_serving_o = '0;
         active_serving_o[mshr_q.id] = mshr_q.valid;
+        state_init_o = 1'b0; // indicate that we are still resetting
 
         case (state_q)
 
@@ -317,12 +319,17 @@ module miss_handler #(
             // ~> only called after reset
             INIT: begin
                 // initialize status array
+                state_init_o = 1'b1;
                 addr_o = cnt_q;
                 req_o  = 1'b1;
                 we_o   = 1'b1;
-                // only write the dirty array
+                // only write the dirty array (why ?)
                 be_o.dirty = '1;
                 be_o.valid = '1;
+                // belt and braces to keep VCS happy
+                be_o.data = '1;
+                be_o.tag = '1;
+               
                 data_o     = 'b0;
                 cnt_d      = cnt_q + (1'b1 << BYTE_OFFSET);
                 // finished initialization
@@ -551,6 +558,13 @@ module arbiter #(
 
     always_comb begin
         automatic logic [$clog2(NR_PORTS)-1:0] request_index;
+        // Give an initial value to keep VCS happy.
+        if (~rst_ni)
+          begin
+          for (int i = 0; i < NR_PORTS; i=i+1)
+            data_rdata_o[i] = {DATA_WIDTH{1'b0}};
+          end
+       
         request_index = 0;
 
         state_d = state_q;
@@ -721,6 +735,7 @@ module axi_adapter #(
 
     always_comb begin : axi_fsm
         // Default assignments
+        index = 'b0;
         axi.aw_valid  = 1'b0;
         axi.aw_addr   = addr_i;
         axi.aw_prot   = 3'b0;

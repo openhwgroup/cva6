@@ -100,13 +100,13 @@ module icache #(
     logic [FETCH_DATA_WIDTH-1:0]           refill_r_rdata_from_comp;
     logic [ID_WIDTH-1:0]                   refill_r_ID_from_comp;
 
-
+/*
     logic [NB_WAYS-1:0]                    DATA_read_enable;
     logic [NB_WAYS-1:0]                    DATA_write_enable;
 
     logic [NB_WAYS-1:0]                    TAG_read_enable;
     logic [NB_WAYS-1:0]                    TAG_write_enable;
-
+*/
     icache_controller #(
         .FETCH_ADDR_WIDTH         ( FETCH_ADDR_WIDTH         ),
         .FETCH_DATA_WIDTH         ( FETCH_DATA_WIDTH         ),
@@ -528,6 +528,11 @@ module icache_controller #(
                 TAG_we_o    = 1'b1;
                 TAG_addr_o  = counter_FLUSH_CS;
                 TAG_wdata_o = '0;
+                // To keep VCS happy
+                DATA_req_o   = '1;
+                DATA_we_o    = 1'b1;
+                DATA_addr_o  = counter_FLUSH_CS;
+                DATA_wdata_o = '0;
             end
 
             FLUSH_SET_ID: begin
@@ -699,6 +704,13 @@ module icache_controller #(
              NS = DISABLED_ICACHE;
             end
         endcase // CS
+    if (!rst_n)
+      begin
+        DATA_req_o          = -1;
+        DATA_we_o           = 1'b0;
+        TAG_req_o           = -1;
+        TAG_we_o            = 1'b0;
+      end
     end
 
     // -----------------

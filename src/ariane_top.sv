@@ -26,7 +26,7 @@ module ariane_top(
    parameter int                        unsigned AXI_USER_WIDTH    = 1;
    parameter int                        unsigned AXI_ADDRESS_WIDTH = 64;
    parameter int                        unsigned AXI_DATA_WIDTH    = 64;
-
+   
    ariane_wrapped dut(
    .clk_i(clk_i),
    .rst_ni(rst_top && locked),

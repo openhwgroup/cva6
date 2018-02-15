@@ -14,8 +14,8 @@ module jtag_dummy(
 
 wire CAPTURE, DRCK, SEL, SHIFT, TDI, TDO, TMS, UPDATE, TCK_unbuf;
 wire CAPTURE2, DRCK2, RESET2, RUNTEST2, SEL2, SHIFT2, TDI2, TDO2, TMS2, UPDATE2;
-   wire INC, WR;
-wire [31:0] ADDR0;
+wire INC, WR, WREN1, INIT;
+wire [31:0] ADDR0, ADDR1;
    
 BUFH jtag_buf(.I(TCK_unbuf), .O(TCK));
 
@@ -62,9 +62,9 @@ BUFH jtag_buf(.I(TCK_unbuf), .O(TCK));
    );
 
 jtag_rom rom1(
-.WREN(WREN),
+.WREN(WREN1),
 .TO_MEM(TO_MEM),
-.ADDR(ADDR),
+.ADDR(ADDR1),
 .FROM_MEM(FROM_MEM),
 .INC(INC),
 .WR(WR),
@@ -95,7 +95,11 @@ jtag_addr addr1(
 .TDI(TDI2), 
 .TMS(TMS2), 
 .UPDATE(UPDATE2), 
-.TCK(TCK)
+.TCK(TCK),
+.INIT(INIT)
 );
+
+assign ADDR = INIT ? ADDR1 : {24'h800000|ADDR0};
+assign WREN = INIT ? WREN1 : WR;
 				
 endmodule

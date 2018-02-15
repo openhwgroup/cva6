@@ -60,6 +60,9 @@ module load_unit (
         fu_op                     operator;
     } load_data_n, load_data_q, in_data;
 
+    // Keep VCS happy
+    assign data_wdata_o = 64'b0;
+   
     // page offset is defined as the lower 12 bits, feed through for address checker
     assign page_offset_o = lsu_ctrl_i.vaddr[11:0];
     // feed-through the virtual address for VA translation

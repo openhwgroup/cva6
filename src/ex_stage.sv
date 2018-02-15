@@ -40,7 +40,7 @@ module ex_stage #(
     output logic                                   alu_valid_o,           // ALU result is valid
     output logic [63:0]                            alu_result_o,
     output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
-    output exception_t                             alu_exception_o,
+//    output exception_t                             alu_exception_o,
     // Branches and Jumps
     output logic                                   branch_ready_o,
     input  logic                                   branch_valid_i,        // we are using the branch unit

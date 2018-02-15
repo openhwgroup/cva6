@@ -512,6 +512,8 @@ module alu_ff #(
     endgenerate
 
     generate
+      begin:nodes
+        assign sel_nodes[2**NUM_LEVELS-1] = 'b0;
         for (genvar level = 0; level < NUM_LEVELS; level++) begin
 
             if (level < NUM_LEVELS-1) begin
@@ -542,6 +544,7 @@ module alu_ff #(
                 end
             end
         end
+      end
     endgenerate
 
     // --------------------

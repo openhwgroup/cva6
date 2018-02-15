@@ -90,10 +90,10 @@ module ariane #(
     // IF <-> ID
     // --------------
     fetch_entry_t             fetch_entry_if_id;
-    logic                     ready_id_if;
+//    logic                     ready_id_if;
     logic                     fetch_valid_if_id;
     logic                     decode_ack_id_if;
-    exception_t               exception_if_id;
+//    exception_t               exception_if_id;
 
     // --------------
     // ID <-> ISSUE
@@ -120,7 +120,7 @@ module ariane #(
     logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
     logic                     alu_valid_ex_id;
     logic [63:0]              alu_result_ex_id;
-    exception_t               alu_exception_ex_id;
+//    exception_t               alu_exception_ex_id;
     // Branches and Jumps
     logic                     branch_ready_ex_id;
     logic [TRANS_ID_BITS-1:0] branch_trans_id_ex_id;
@@ -418,7 +418,7 @@ module ariane #(
         .alu_result_o           ( alu_result_ex_id                       ),
         .alu_trans_id_o         ( alu_trans_id_ex_id                     ),
         .alu_valid_o            ( alu_valid_ex_id                        ),
-        .alu_exception_o        (                                        ),
+//        .alu_exception_o        (                                        ),
         // Branches and Jumps
         .branch_ready_o         ( branch_ready_ex_id                     ),
         .branch_valid_o         ( branch_valid_ex_id                     ),
@@ -639,6 +639,8 @@ module ariane #(
         .debug_csr_we_o    ( csr_we_debug_csr          ),
         .debug_csr_wdata_o ( csr_wdata_debug_csr       ),
         .debug_csr_rdata_i ( csr_rdata_debug_csr       ),
+        .debug_resume_i    ( debug_resume_i            ),
+        .debug_halt_i      ( debug_halt_i              ),
         .*
     );
 

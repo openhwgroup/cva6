@@ -11,13 +11,13 @@ module crossbar_socip
   (
    // clock and reset
    AXI_BUS.Slave bypass_if, data_if, instr_if,
-   AXI_BUS.Master master0_if, master1_if,
+   AXI_BUS.Master master0_if, master1_if, master2_if,
    input         clk_i,
    input         rst_ni
    );
 
    localparam NUM_MASTER = 3;
-   localparam NUM_SLAVE = 2;
+   localparam NUM_SLAVE = 3;
 
    nasti_channel
      #(
@@ -25,7 +25,7 @@ module crossbar_socip
        .USER_WIDTH  ( USER_WIDTH    ),
        .ADDR_WIDTH  ( ADDR_WIDTH    ),
        .DATA_WIDTH  ( DATA_WIDTH    ))
-   slave0_nasti(), slave1_nasti(), master0_nasti(), master1_nasti(), master2_nasti();
+   slave0_nasti(), slave1_nasti(), slave2_nasti(), master0_nasti(), master1_nasti(), master2_nasti();
 
    // input of the IO crossbar
    nasti_channel
@@ -60,7 +60,7 @@ module crossbar_socip
        .USER_WIDTH  ( USER_WIDTH    ),
        .ADDR_WIDTH  ( ADDR_WIDTH    ),
        .DATA_WIDTH  ( DATA_WIDTH    ))
-   cbo_nasti();
+   combined_nasti();
 
    nasti_crossbar
      #(
@@ -78,6 +78,8 @@ module crossbar_socip
        .MASK1         ( 32'h0000FFFF          ),
        .BASE2         ( 32'h41000000          ),
        .MASK2         ( 32'h0000FFFF          ),
+       .BASE3         ( 32'h80000000          ),
+       .MASK3         ( 32'h07FFFFFF          ),
        .LITE_MODE     ( 0                     )
        )
    mem_crossbar
@@ -85,22 +87,22 @@ module crossbar_socip
       .clk    ( clk_i            ),
       .rstn   ( rst_ni           ),
       .master ( master_nasti     ),
-      .slave  ( cbo_nasti        )
+      .slave  ( combined_nasti   )
       );
 
-   nasti_channel mem_dms2(), mem_dms3(), mem_dms4(), mem_dms5(), mem_dms6(), mem_dms7(); // dummy channels
+   nasti_channel mem_dms3(), mem_dms4(), mem_dms5(), mem_dms6(), mem_dms7(); // dummy channels
 
    nasti_channel_slicer #(NUM_SLAVE)
    mem_slicer (
-                  .master   ( cbo_nasti     ),
-                  .slave_0  ( slave0_nasti  ),
-                  .slave_1  ( slave1_nasti  ),
-                  .slave_2  ( mem_dms2      ),
-                  .slave_3  ( mem_dms3      ),
-                  .slave_4  ( mem_dms4      ),
-                  .slave_5  ( mem_dms5      ),
-                  .slave_6  ( mem_dms6      ),
-                  .slave_7  ( mem_dms7      )
+                  .master   ( combined_nasti ),
+                  .slave_0  ( slave0_nasti   ),
+                  .slave_1  ( slave1_nasti   ),
+                  .slave_2  ( slave2_nasti   ),
+                  .slave_3  ( mem_dms3       ),
+                  .slave_4  ( mem_dms4       ),
+                  .slave_5  ( mem_dms5       ),
+                  .slave_6  ( mem_dms6       ),
+                  .slave_7  ( mem_dms7       )
                   );
 
    nasti_converter #(
@@ -118,6 +120,7 @@ module crossbar_socip
     .DATA_WIDTH(DATA_WIDTH),             // width of data
     .USER_WIDTH(USER_WIDTH)              // width of user field, must > 0, let synthesizer trim it if not in use
     ) cnv3(.incoming_nasti(slave0_nasti), .outgoing_if(master0_if)),
-      cnv4(.incoming_nasti(slave1_nasti), .outgoing_if(master1_if));
+      cnv4(.incoming_nasti(slave1_nasti), .outgoing_if(master1_if)),
+      cnv5(.incoming_nasti(slave2_nasti), .outgoing_if(master2_if));
    
 endmodule // crossbar_socip

@@ -55,7 +55,7 @@ module decoder (
     logic [63:0] imm_sb_type;
     logic [63:0] imm_u_type;
     logic [63:0] imm_uj_type;
-    logic [63:0] imm_z_type;
+//    logic [63:0] imm_z_type;
     logic [63:0] imm_s2_type;
     logic [63:0] imm_bi_type;
     logic [63:0] imm_s3_type;

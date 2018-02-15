@@ -83,6 +83,9 @@ module mmu #(
         input  logic                            data_rvalid_i,
         input  logic [63:0]                     data_rdata_i
 );
+    // Keep VCS happy
+    assign instr_if_data_be_o = 'b0;
+   
     // instruction error
     // instruction error valid signal and exception, delayed one cycle
     logic        ierr_valid_q, ierr_valid_n;

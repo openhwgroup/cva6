@@ -46,7 +46,9 @@ module ariane_wrapped #(
     localparam int unsigned AXI_NUMBYTES = AXI_DATA_WIDTH/8;
 
     logic        flush_dcache_ack, flush_dcache;
-    logic        flush_dcache_d, flush_dcache_q;
+    logic        flush_dcache_q;
+
+    assign o_led = 'h55;
 
     AXI_BUS #(
         .AXI_ADDR_WIDTH ( 64             ),
@@ -101,20 +103,21 @@ module ariane_wrapped #(
         end
     end
 
-    logic        master0_req,     master1_req;
-    logic [63:0] master0_address, master1_address;
-    logic        master0_we,      master1_we;
-    logic [7:0]  master0_be,      master1_be;
-    logic [63:0] master0_wdata,   master1_wdata;
-    logic [63:0] master0_rdata,   master1_rdata;
+    logic        master0_req,     master1_req,     master2_req;
+    logic [63:0] master0_address, master1_address, master2_address;
+    logic        master0_we,      master1_we,      master2_we;
+    logic [7:0]  master0_be,      master1_be,      master2_be;
+    logic [63:0] master0_wdata,   master1_wdata,   master2_wdata;
+    logic [63:0] master0_rdata,   master1_rdata,   master2_rdata;
 
    // sharedmem shared port
    logic [7:0]  sharedmem_en;
    logic [63:0] sharedmem_dout;
-   logic        shared_sel;
    
         // Debug Interface
          logic                           debug_gnt_o;
+         logic                           debug_halt;
+         logic                           debug_resume;
          logic                           debug_rvalid_o;
          logic [31:0] debug_addr;
          wire  [15:0]                    debug_addr_i = debug_addr[15:0];
@@ -122,18 +125,19 @@ module ariane_wrapped #(
          logic [63:0]                    debug_wdata_i;
          logic [63:0]                    debug_rdata_o;
          logic                           debug_halted_o;
-         logic                           debug_halt_i;
-         logic                           debug_resume_i;
          logic        debug_req, debug_fetch_disable;
          logic        debug_reset;
          logic        debug_runtest;
          logic        debug_clk, debug_blocksel_i;
-         logic [3:0]  debug_unused;
+         logic [1:0]  debug_unused;
          
          logic [63:0] debug_dout;
         // CPU Control Signals
+         wire                            debug_halt_i = debug_blocksel_i && debug_halt;
+         wire                            debug_resume_i = debug_blocksel_i && debug_resume;
          wire                            fetch_enable_i = ~(debug_blocksel_i && debug_fetch_disable);
          wire                            debug_req_i = debug_blocksel_i && debug_req;
+
 
 /*
 logic [AXI_ADDR_WIDTH-1:0] aw_addr;
@@ -191,14 +195,7 @@ logic                      b_valid;
         .AXI_DATA_WIDTH ( 64             ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
         .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) master0_if();
-
-    AXI_BUS #(
-        .AXI_ADDR_WIDTH ( 64             ),
-        .AXI_DATA_WIDTH ( 64             ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) master1_if();
+    ) master0_if(), master1_if(), master2_if();
 
    crossbar_socip cross1(
                           .data_if    ( data_if    ),
@@ -206,6 +203,7 @@ logic                      b_valid;
                           .instr_if   ( instr_if   ),
                           .master0_if ( master0_if ),
                           .master1_if ( master1_if ),
+                          .master2_if ( master2_if ),
                           .clk_i      ( clk_i      ),
                           .rst_ni     ( rst_ni     ));
                           
@@ -215,8 +213,8 @@ logic                      b_valid;
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
         .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
     ) i_master0 (
-        .clk_i  ( clk_i          ),
-        .rst_ni ( rst_ni         ),
+        .clk_i  ( clk_i           ),
+        .rst_ni ( rst_ni          ),
         .slave  ( master0_if      ),
         .req_o  ( master0_req     ),
         .we_o   ( master0_we      ),
@@ -224,16 +222,9 @@ logic                      b_valid;
         .be_o   ( master0_be      ),
         .data_o ( master0_wdata   ),
         .data_i ( master0_rdata   )
-    );
-    
-    axi2mem #(
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
-        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
-    ) i_master1 (
-        .clk_i  ( clk_i        ),
-        .rst_ni ( rst_ni       ),
+    ), i_master1 (
+        .clk_i  ( clk_i           ),
+        .rst_ni ( rst_ni          ),
         .slave  ( master1_if      ),
         .req_o  ( master1_req     ),
         .we_o   ( master1_we      ),
@@ -241,18 +232,43 @@ logic                      b_valid;
         .be_o   ( master1_be      ),
         .data_o ( master1_wdata   ),
         .data_i ( master1_rdata   )
+    ), i_master2 (
+        .clk_i  ( clk_i           ),
+        .rst_ni ( rst_ni          ),
+        .slave  ( master2_if      ),
+        .req_o  ( master2_req     ),
+        .we_o   ( master2_we      ),
+        .addr_o ( master2_address ),
+        .be_o   ( master2_be      ),
+        .data_o ( master2_wdata   ),
+        .data_i ( master2_rdata   )
     );
 
+// Boot memory at location 'h40000000
+   
 infer_ram  #(
         .RAM_SIZE(14),
         .BYTE_WIDTH(8))
         my_master1_ram (
       .ram_clk(clk_i),    // input wire clka
       .ram_en(master1_req),      // input wire ena
-      .ram_we(master1_we ? master1_be : 8'b0),   // input wire [31 : 0] wea
-      .ram_addr(master1_address[16:3]),  // input wire [8: 0] addra
-      .ram_wrdata(master1_wdata),  // input wire [255 : 0] dina
-      .ram_rddata(master1_rdata)  // output wire [255 : 0] douta
+      .ram_we(master1_we ? master1_be : 8'b0),   // input wire [7 : 0] wea
+      .ram_addr(master1_address[16:3]),  // input wire [13: 0] addra
+      .ram_wrdata(master1_wdata),  // input wire [63 : 0] dina
+      .ram_rddata(master1_rdata)  // output wire [63 : 0] douta
+      );
+
+// Fake version of DDR memory   
+infer_ram  #(
+        .RAM_SIZE(24),
+        .BYTE_WIDTH(8))
+        my_master2_ram (
+      .ram_clk(clk_i),    // input wire clka
+      .ram_en(master2_req),      // input wire ena
+      .ram_we(master2_we ? master2_be : 8'b0),   // input wire [7 : 0] wea
+      .ram_addr(master2_address[26:3]),  // input wire [8: 0] addra
+      .ram_wrdata(master2_wdata),  // input wire [63 : 0] dina
+      .ram_rddata(master2_rdata)  // output wire [63 : 0] douta
       );
 
 always @*
@@ -266,7 +282,7 @@ always @*
         end
 
 jtag_dummy jtag1(
-    .DBG({debug_unused[3:0],debug_fetch_disable,debug_req}),
+    .DBG({debug_unused[1:0],debug_resume,debug_halt,debug_fetch_disable,debug_req}),
     .WREN(debug_we_i),
     .FROM_MEM(debug_dout),
     .ADDR(debug_addr),
@@ -278,15 +294,8 @@ jtag_dummy jtag1(
 
    genvar r;
 
-   logic        ce_d;
-   logic        we_d;
-
-   wire [7:0] m_enb = (we_d ? master0_be : 8'hFF);
-   wire m_web = ce_d & shared_sel & we_d;
-   logic i_emdio, o_emdio, oe_emdio, o_emdclk, sync, cooked, tx_enable_old, loopback, loopback2;
-   logic [10:0] rx_addr;
-   logic [7:0] rx_data;
-   logic rx_ena, rx_wea;
+   wire [7:0] m_enb = master0_req ? (master0_we ? master0_be : 8'hFF) : 8'h00;
+   wire m_web = master0_req & master0_we;
 
    generate for (r = 0; r < 8; r=r+1)
      RAMB16_S9_S9
