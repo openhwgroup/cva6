@@ -23,7 +23,8 @@ class instruction_tracer;
     // issue scoreboard entries
     scoreboard_entry_t issue_sbe_queue [$];
     scoreboard_entry_t issue_sbe;
-
+    // store resolved branches, get (mis-)predictions
+    branchpredict_t bp [$];
     // shadow copy of the register file
     logic [63:0] reg_file [32];
     // 64 bit clock tick count
@@ -56,11 +57,11 @@ class instruction_tracer;
     task trace();
         logic [31:0] decode_instruction, issue_instruction, issue_commit_instruction;
         scoreboard_entry_t commit_instruction;
-
         // initialize register 0
         reg_file [0] = 0;
 
         forever begin
+            automatic branchpredict_t bp_instruction = '0;
             // new cycle, we are only interested if reset is de-asserted
             @(tracer_if.pck iff tracer_if.pck.rstn);
             // increment clock tick
@@ -96,6 +97,12 @@ class instruction_tracer;
             if (tracer_if.pck.ld_valid && !tracer_if.pck.ld_kill) begin
                 load_mapping.push_back(tracer_if.pck.ld_paddr);
             end
+            // ----------------------
+            // Store predictions
+            // ----------------------
+            if (tracer_if.pck.resolve_branch.valid) begin
+                bp.push_back(tracer_if.pck.resolve_branch);
+            end
             // --------------
             //  Commit
             // --------------
@@ -110,13 +117,16 @@ class instruction_tracer;
                         address_mapping = load_mapping.pop_front();
                     else if (tracer_if.pck.commit_instr[i].fu == STORE)
                         address_mapping = store_mapping.pop_front();
+
+                    if (tracer_if.pck.commit_instr[i].fu == CTRL_FLOW)
+                        bp_instruction = bp.pop_front();
                     // the scoreboards issue entry still contains the immediate value as a result
                     // check if the write back is valid, if not we need to source the result from the register file
                     // as the most recent version of this register will be there.
                     if (tracer_if.pck.we[i]) begin
-                        printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata[i], address_mapping, tracer_if.pck.priv_lvl);
+                        printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata[i], address_mapping, tracer_if.pck.priv_lvl, bp_instruction);
                     end else
-                        printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl);
+                        printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, bp_instruction);
                 end
             end
             // --------------
@@ -164,10 +174,11 @@ class instruction_tracer;
         // also clear mappings
         store_mapping   = {};
         load_mapping    = {};
+        bp              = {};
     endfunction
 
-    function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
-        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr, priv_lvl);
+    function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl, branchpredict_t bp);
+        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr, priv_lvl, bp);
         // print instruction to console
         string print_instr = iti.printInstr();
         uvm_report_info( "Tracer",  print_instr, UVM_HIGH);

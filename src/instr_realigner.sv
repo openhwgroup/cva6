@@ -82,6 +82,9 @@ module instr_realigner (
                     if (fetch_entry_0_i.instruction[1:0] != 2'b11) begin
                         // it is compressed
                         fetch_entry_o.instruction = {15'b0, fetch_entry_0_i.instruction[15:0]};
+                        // we need to kill the lower prediction
+                        if (fetch_entry_0_i.branch_predict.valid && !fetch_entry_0_i.branch_predict.is_lower_16)
+                            fetch_entry_o.branch_predict.valid = 1'b0;
 
                         // should we even look at the upper instruction bits?
                         if (!kill_upper_16_bit) begin
@@ -139,6 +142,9 @@ module instr_realigner (
                             fetch_ack_0_o = 1'b0;
                             // unaligned access served
                             unaligned_n = 1'b0;
+                            // we need to kill the lower prediction
+                            if (fetch_entry_0_i.branch_predict.valid && !fetch_entry_0_i.branch_predict.is_lower_16)
+                                fetch_entry_o.branch_predict.valid = 1'b0;
                             // or is it an unaligned 32 bit instruction like
                         // ____________________________________________________
                         // |instr [15:0] | instr [31:16] | compressed 1[15:0] |

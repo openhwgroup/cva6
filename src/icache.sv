@@ -29,7 +29,6 @@ module icache #(
         input  logic                     kill_s2_i,        // kill the last request
         output logic                     ready_o,          // icache is ready
         input  logic [63:0]              vaddr_i,          // 1st cycle: 12 bit index is taken for lookup
-        input  logic [TAG_WIDTH-1:0]     tag_i,            // 2nd cycle: physical tag
         output logic [FETCH_WIDTH-1:0]   data_o,           // 2+ cycle out: tag
         output logic                     is_speculative_o, // the fetch was speculative
         output logic [63:0]              vaddr_o,          // virtual address out
@@ -212,7 +211,7 @@ module icache #(
         wdata       = '0;
         tag_wdata   = '0;
         ready_o     = 1'b0;
-        tag         = tag_i;
+        tag         = vaddr_q[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
         valid_o     = 1'b0;
         update_lfsr = 1'b0;
         miss_o      = 1'b0;
@@ -243,7 +242,9 @@ module icache #(
             end
             // ~> compare the tag
             TAG_CMP: begin
-                // we have a hit
+                // -------
+                // Hit
+                // -------
                 if (|hit) begin
                     ready_o = 1'b1;
                     valid_o = 1'b1;
@@ -261,11 +262,14 @@ module icache #(
 
                     if (kill_s1_i)
                         state_d = IDLE;
+                // -------
+                // Miss
+                // -------
                 end else begin
                     state_d     = REFILL;
                     evict_way_d = '0;
                     // save tag
-                    tag_d       = tag_i;
+                    tag_d       = vaddr_q[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
                     miss_o      = 1'b1;
                     // get way which to replace
                     if (repl_w_random) begin

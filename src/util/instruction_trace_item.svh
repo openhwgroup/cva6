@@ -26,9 +26,10 @@ class instruction_trace_item;
     logic [63:0]       result;
     logic [63:0]       paddr;
     string             priv_lvl;
+    branchpredict_t    bp;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl, branchpredict_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -37,6 +38,7 @@ class instruction_trace_item;
         this.reg_file = reg_file;
         this.result   = result;
         this.paddr    = paddr;
+        this.bp       = bp;
         this.priv_lvl = getPrivLevel(priv_lvl);
     endfunction
     // convert register address to ABI compatible form
@@ -184,10 +186,11 @@ class instruction_trace_item;
         endcase
 
 
-        s = $sformatf("%10t %10d %s %h %h %-36s", simtime,
+        s = $sformatf("%10t %10d %s %h %h %h %-36s", simtime,
                                              cycle,
                                              priv_lvl,
                                              sbe.pc,
+                                             bp.is_mispredict & bp.valid,
                                              instr,
                                              s);
 

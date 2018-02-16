@@ -648,6 +648,8 @@ module ariane #(
     // commit
     assign tracer_if.commit_instr      = commit_instr_id_commit;
     assign tracer_if.commit_ack        = commit_ack;
+    // branch predict
+    assign tracer_if.resolve_branch    = resolved_branch;
     // address translation
     // stores
     assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;

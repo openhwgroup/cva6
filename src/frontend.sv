@@ -98,7 +98,6 @@ module frontend #(
 
     // virtual address of current fetch
     logic [63:0]   fetch_vaddr;
-    logic [43:0]   tag_d, tag_q; // save tag for request to icache
 
     logic [63:0]   bp_vaddr;
     logic          bp_valid; // we have a valid branch-prediction
@@ -118,7 +117,7 @@ module frontend #(
     always_comb begin : re_align
         unaligned_d = unaligned_q;
         unaligned_address_d = unaligned_address_q;
-        unaligned_instr_d = unaligned_q;
+        unaligned_instr_d = unaligned_instr_q;
         instruction_valid = icache_valid_q;
 
         instr[1] = '0;
@@ -133,15 +132,17 @@ module frontend #(
                 instr[0] = {icache_data_q[15:0], unaligned_instr_q};
                 addr[0] = unaligned_address_q;
                 unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
+                unaligned_instr_d = icache_data_q[31:16]; // save the upper bits for next cycle
                 // check if this is instruction is still unaligned e.g.: it is not compressed
+                // if its compressed re-set unaligned flag
                 if (icache_data_q[17:16] != 2'b11) begin
                     unaligned_d = 1'b0;
-                    instr[1] = {16'b0, icache_data_q};
+                    instr[1] = {16'b0, icache_data_q[31:16]};
                 end
             end else if (is_rvc[0]) begin // instruction zero is RVC
                 // is instruction 1 also compressed
                 // yes? -> no problem, no -> we've got an unaligned instruction
-                if (icache_data_q[17:16] == 2'b11) begin
+                if (icache_data_q[17:16] != 2'b11) begin
                     instr[1] = {16'b0, icache_data_q[31:16]};
                 end else begin
                     unaligned_instr_d = icache_data_q[31:16];
@@ -170,11 +171,11 @@ module frontend #(
     // control front-end + branch-prediction
     always_comb begin : frontend_ctrl
         take_rvi_cf     = 1'b0;
-        tale_rvc_cf     = 1'b0;
+        take_rvc_cf     = 1'b0;
         ras_pop         = 1'b0;
         ras_push        = 1'b0;
         ras_update      = '0;
-        taken           = 0;
+        taken           = '0;
         take_rvi_cf     = 1'b0;
         if_ready        = icache_ready & fifo_ready;
         icache_req      = fifo_ready;
@@ -182,7 +183,6 @@ module frontend #(
         bp_vaddr        = '0;    // predicted address
         bp_valid        = 1'b0;  // prediction is valid
 
-        bp_sbe.is_lower_16 = ~taken[2]; // the branch is on the lower 16 (in a 32-bit setup)
         bp_sbe.cf_type = RAS;
 
         // only predict if the response is valid
@@ -196,15 +196,17 @@ module frontend #(
                     ras_update = addr[i] + (rvc_call[i] ? 2 : 4);
 
                     // Branch Prediction - **speculative**
-                    if (rvi_branch[i]) begin
+                    if (rvi_branch[i] || rvc_branch[i]) begin
                         bp_sbe.cf_type = BHT;
                         // dynamic prediction valid?
                         if (bht_prediction.valid) begin
-                            take_rvi_cf = bht_prediction.taken | bht_prediction.strongly_taken;
+                            take_rvi_cf = rvi_branch[i] & (bht_prediction.taken | bht_prediction.strongly_taken);
+                            take_rvc_cf = rvc_branch[i] & (bht_prediction.taken | bht_prediction.strongly_taken);
                         // default to static prediction
                         end else begin
                             // set if immediate is negative - static prediction
-                            take_rvi_cf = rvi_imm[i][63];
+                            take_rvi_cf = rvi_branch[i] & rvi_imm[i][63];
+                            take_rvc_cf = rvc_branch[i] & rvc_imm[i][63];
                         end
                     end
 
@@ -217,7 +219,6 @@ module frontend #(
                     // to take this jump we need a valid prediction target **speculative**
                     if ((rvi_jalr[i] || rvc_jalr[i]) && btb_prediction.valid) begin
                         bp_vaddr = btb_prediction.target_address;
-                        bp_valid = 1'b1;
                         taken[i+1] = 1'b1;
                         bp_sbe.cf_type = BTB;
                     end
@@ -226,33 +227,37 @@ module frontend #(
                     if ((rvi_return[i] || rvc_return[i]) && ras_predict.valid) begin
                         bp_vaddr = ras_predict.ra;
                         ras_pop = 1'b1;
-                        bp_valid = 1'b1;
                         taken[i+1] = 1'b1;
                         bp_sbe.cf_type = RAS;
                     end
 
                     if (take_rvi_cf) begin
-                        bp_valid = 1'b1;
                         taken[i+1] = 1'b1;
                         bp_vaddr = addr[i] + rvi_imm[i];
                     end
 
                     if (take_rvc_cf) begin
-                        bp_valid = 1'b1;
                         taken[i+1] = 1'b1;
                         bp_vaddr = addr[i] + rvc_imm[i];
                     end
 
                     // we are not interested in the lower instruction
-                    if (icache_vaddr_q[1]) taken[1] = 1'b0;
+                    if (icache_vaddr_q[1]) begin
+                        taken[1] = 1'b0;
+                        ras_pop = 1'b0;
+                        ras_push = 1'b0;
+                    end
                 end
             end
         end
 
+        bp_valid = |taken;
         // assemble scoreboard entry
         bp_sbe.valid = bp_valid;
         bp_sbe.predict_address = bp_vaddr;
         bp_sbe.predict_taken = bp_valid;
+        bp_sbe.is_lower_16 = taken[1]; // the branch is on the lower 16 (in a 32-bit setup)
+
     end
 
     logic is_mispredict;
@@ -365,13 +370,11 @@ module frontend #(
         end
 
         fetch_vaddr = fetch_address;
-        tag_d = fetch_address[56:12];
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             npc_q                <= boot_addr_i;
-            tag_q                <= '0;
             icache_data_q        <= '0;
             icache_valid_q       <= 1'b0;
             icache_speculative_q <= 1'b0;
@@ -381,7 +384,6 @@ module frontend #(
             unaligned_instr_q    <= '0;
         end else begin
             npc_q                <= npc_d;
-            tag_q                <= tag_d;
             icache_data_q        <= icache_data_d;
             icache_valid_q       <= icache_valid_d;
             icache_speculative_q <= icache_speculative_d;
@@ -432,7 +434,6 @@ module frontend #(
         .flush_i          ( flush_icache_i        ),
         .vaddr_i          ( fetch_vaddr           ), // 1st cycle
         .is_speculative_i ( fetch_is_speculative  ), // 1st cycle
-        .tag_i            ( tag_q                 ), // 2nd cycle
         .data_o           ( icache_data_d         ),
         .req_i            ( icache_req            ),
         .kill_s1_i        ( kill_s1        ),
@@ -514,11 +515,11 @@ module instr_scan (
     assign rvi_jalr_o   = (instr_i[6:0] == OPCODE_JALR)   ? 1'b1 : 1'b0;
     assign rvi_jump_o   = (instr_i[6:0] == OPCODE_JAL)    ? 1'b1 : 1'b0;
     // opcode JAL
-    assign rvc_jump_o   = (instr_i[15:13] == OPCODE_C_J) & is_rvc_o;
-    assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000) & is_rvc_o;
-    assign rvc_branch_o = ((instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ)) & is_rvc_o;
+    assign rvc_jump_o   = (instr_i[15:13] == OPCODE_C_J) & is_rvc_o & (instr_i[1:0] == 2'b01);
+    assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000) & is_rvc_o & & (instr_i[1:0] == 2'b10);
+    assign rvc_branch_o = ((instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ)) & is_rvc_o & (instr_i[1:0] == 2'b01);
     // check that rs1 is x1 or x5
-    assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & ~instr_i[7];
+    assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & instr_i[7];
     assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000) & is_rvc_o;
     assign rvc_call_o   = rvc_jalr_o;  // TODO: check that this captures calls
 
