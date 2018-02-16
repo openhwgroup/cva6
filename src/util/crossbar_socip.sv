@@ -1,4 +1,5 @@
 // See LICENSE for license details.
+// The terms master and slave are not very useful in this file.
 
 module crossbar_socip
   #(
@@ -11,13 +12,13 @@ module crossbar_socip
   (
    // clock and reset
    AXI_BUS.Slave bypass_if, data_if, instr_if,
-   AXI_BUS.Master master0_if, master1_if, master2_if,
+   AXI_BUS.Master master0_if, master1_if, master2_if, master3_if,
    input         clk_i,
    input         rst_ni
    );
 
    localparam NUM_MASTER = 3;
-   localparam NUM_SLAVE = 3;
+   localparam NUM_SLAVE = 4;
 
    nasti_channel
      #(
@@ -25,7 +26,7 @@ module crossbar_socip
        .USER_WIDTH  ( USER_WIDTH    ),
        .ADDR_WIDTH  ( ADDR_WIDTH    ),
        .DATA_WIDTH  ( DATA_WIDTH    ))
-   slave0_nasti(), slave1_nasti(), slave2_nasti(), master0_nasti(), master1_nasti(), master2_nasti();
+   slave0_nasti(), slave1_nasti(), slave2_nasti(), slave3_nasti(), master0_nasti(), master1_nasti(), master2_nasti(), master3_nasti();
 
    // input of the IO crossbar
    nasti_channel
@@ -80,6 +81,8 @@ module crossbar_socip
        .MASK1         ( 32'h0000FFFF          ),
        .BASE2         ( 32'h80000000          ),
        .MASK2         ( 32'h07FFFFFF          ),
+       .BASE3         ( 32'h42000000          ),
+       .MASK3         ( 32'h0000FFFF          ),
        .LITE_MODE     ( 0                     )
        )
    mem_crossbar
@@ -121,6 +124,7 @@ module crossbar_socip
     .USER_WIDTH(USER_WIDTH)              // width of user field, must > 0, let synthesizer trim it if not in use
     ) cnv3(.incoming_nasti(slave0_nasti), .outgoing_if(master0_if)),
       cnv4(.incoming_nasti(slave1_nasti), .outgoing_if(master1_if)),
-      cnv5(.incoming_nasti(slave2_nasti), .outgoing_if(master2_if));
+      cnv5(.incoming_nasti(slave2_nasti), .outgoing_if(master2_if)),
+      cnv6(.incoming_nasti(slave3_nasti), .outgoing_if(master3_if));
    
 endmodule // crossbar_socip

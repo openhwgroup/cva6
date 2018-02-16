@@ -35,13 +35,6 @@ output [BYTE_WIDTH*8-1:0] ram_rddata);
    reg [BYTE_WIDTH*8-1:0] ram [0 : RAM_LINE-1];
    reg [RAM_SIZE-1:0]    ram_addr_delay;
    
-   initial
-     begin
-      ram_addr_delay = {RAM_SIZE{1'b0}};
-      for (initvar = 0; initvar < RAM_LINE; initvar = initvar+1)
-        ram[initvar] = {BYTE_WIDTH {8'b0}};
-     end
-   
    always @(posedge ram_clk)
     begin
      if(ram_en) begin

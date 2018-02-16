@@ -40,12 +40,11 @@ set files [list \
                [file normalize $origin_dir/src/jtag_xilinx/jtag_dummy.v] \
                [file normalize $origin_dir/src/jtag_xilinx/jtag_rom.v] \
                [file normalize $origin_dir/src/jtag_xilinx/jtag_addr.v] \
-               [file normalize $origin_dir/src/util/infer_bram.sv] \
+               [file normalize $origin_dir/src/util/infer_ram.sv] \
                [file normalize $origin_dir/src/axi_if/axi_if.sv] \
                [file normalize $origin_dir/src/axi_mem_if/axi2mem.sv] \
                [file normalize $origin_dir/src/ariane.sv] \
-               [file normalize $origin_dir/src/ariane_top.sv] \
-               [file normalize $origin_dir/src/ariane_wrapped.sv] \
+               [file normalize $origin_dir/src/ariane_nexys4ddr.sv] \
                [file normalize $origin_dir/src/alu.sv] \
                [file normalize $origin_dir/src/branch_unit.sv] \
                [file normalize $origin_dir/src/btb.sv] \
@@ -81,8 +80,63 @@ set files [list \
                [file normalize $origin_dir/src/perf_counters.sv] \
                [file normalize $origin_dir/src/regfile_ff.sv] \
                [file normalize $origin_dir/src/util/xilinx_sram.sv] \
+               [file normalize $origin_dir/src/util/slave_adapter.sv] \
+               [file normalize $origin_dir/src/util/nasti_converter.sv] \
+               [file normalize $origin_dir/src/util/if_converter.sv] \
+               [file normalize $origin_dir/src/util/crossbar_socip.sv] \
                [file normalize $origin_dir/src/lfsr.sv] \
                [file normalize $origin_dir/src/icache.sv] \
+               [file normalize $origin_dir/src/soc/ascii_code.v] \
+               [file normalize $origin_dir/src/soc/axis_gmii_rx.v] \
+               [file normalize $origin_dir/src/soc/axis_gmii_tx.v] \
+               [file normalize $origin_dir/src/soc/ddr2_model.v] \
+               [file normalize $origin_dir/src/soc/dualmem.v] \
+               [file normalize $origin_dir/src/soc/eth_lfsr.v] \
+               [file normalize $origin_dir/src/soc/fpga_srams_behav.v] \
+               [file normalize $origin_dir/src/soc/fpga_srams_check.sv] \
+               [file normalize $origin_dir/src/soc/fpga_srams_edited_old.v] \
+               [file normalize $origin_dir/src/soc/fpga_srams_edited.v] \
+               [file normalize $origin_dir/src/soc/framing_top.sv] \
+               [file normalize $origin_dir/src/soc/fstore2.v] \
+               [file normalize $origin_dir/src/soc/infer_bram.sv] \
+               [file normalize $origin_dir/src/soc/mii_to_rmii_0_open.v] \
+               [file normalize $origin_dir/src/soc/my_fifo.v] \
+               [file normalize $origin_dir/src/soc/nasti_channel.sv] \
+               [file normalize $origin_dir/src/soc/periph_soc.sv] \
+               [file normalize $origin_dir/src/soc/ps2_defines.v] \
+               [file normalize $origin_dir/src/soc/ps2_keyboard.v] \
+               [file normalize $origin_dir/src/soc/ps2_translation_table.v] \
+               [file normalize $origin_dir/src/soc/ps2.v] \
+               [file normalize $origin_dir/src/soc/rx_delay.v] \
+               [file normalize $origin_dir/src/soc/sd_bus.sv] \
+               [file normalize $origin_dir/src/soc/sd_clock_divider.v] \
+               [file normalize $origin_dir/src/soc/sd_cmd_serial_host.v] \
+               [file normalize $origin_dir/src/soc/sd_crc_16.v] \
+               [file normalize $origin_dir/src/soc/sd_crc_7.v] \
+               [file normalize $origin_dir/src/soc/sd_data_serial_host.sv] \
+               [file normalize $origin_dir/src/soc/sd_top.sv] \
+               [file normalize $origin_dir/src/soc/sd_verilator_model.sv] \
+               [file normalize $origin_dir/src/soc/spi_wrapper.sv] \
+               [file normalize $origin_dir/src/soc/uart.v] \
+               [file normalize $origin_dir/src/socip/nasti/channel.sv] \
+               [file normalize $origin_dir/src/socip/nasti/lite_nasti_reader.sv] \
+               [file normalize $origin_dir/src/socip/nasti/lite_nasti_writer.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_bram_ctrl.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_buf.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_combiner.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_crossbar.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_data_mover.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_demux.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_lite_bridge.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_lite_reader.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_lite_writer.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_mux.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_narrower_reader.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_narrower.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_narrower_writer.sv] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_request.vh] \
+               [file normalize $origin_dir/src/socip/nasti/nasti_slicer.sv] \
+               [file normalize $origin_dir/src/socip/util/arbiter.sv] \
              ]
 add_files -norecurse -fileset [get_filesets sources_1] $files
 
@@ -94,7 +148,7 @@ set_property include_dirs [list \
 set_property verilog_define [list FPGA FPGA_FULL NEXYS4] [get_filesets sources_1]
 
 # Set 'sources_1' fileset properties
-set_property "top" "chip_top" [get_filesets sources_1]
+set_property "top" "ariane_nexys4ddr" [get_filesets sources_1]
 
 # Program/data RAM
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name instr_ram

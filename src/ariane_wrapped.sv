@@ -311,10 +311,10 @@ jtag_dummy jtag1(
         .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
         .WEA    ( debug_we_i               ),     // Port A Write Enable Input
         .CLKB   ( clk_i                    ),     // Port B Clock
-        .DOB    ( master0_rdata[r*8 +: 8]   ),     // Port B 1-bit Data Output
+        .DOB    ( master0_rdata[r*8 +: 8]  ),     // Port B 1-bit Data Output
         .DOPB   (                          ),
-        .ADDRB  ( master0_address[13:3]     ),     // Port B 14-bit Address Input
-        .DIB    ( master0_wdata[r*8 +: 8]   ),     // Port B 1-bit Data Input
+        .ADDRB  ( master0_address[13:3]    ),     // Port B 14-bit Address Input
+        .DIB    ( master0_wdata[r*8 +: 8]  ),     // Port B 1-bit Data Input
         .DIPB   ( 1'b0                     ),
         .ENB    ( m_enb[r]                 ),     // Port B RAM Enable Input
         .SSRB   ( 1'b0                     ),     // Port B Synchronous Set/Reset Input

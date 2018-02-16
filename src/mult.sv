@@ -498,22 +498,19 @@ module alu_ff #(
     localparam int unsigned NUM_LEVELS = $clog2(LEN);
 
     logic [LEN-1:0] [NUM_LEVELS-1:0]           index_lut;
-    logic [2**NUM_LEVELS-1:0]                  sel_nodes;
-    logic [2**NUM_LEVELS-1:0] [NUM_LEVELS-1:0] index_nodes;
+    bit   [2**NUM_LEVELS-1:0]                  sel_nodes;
+    bit   [2**NUM_LEVELS-1:0] [NUM_LEVELS-1:0] index_nodes;
 
     // ----------------------------
     // Generate Tree Structure
     // ----------------------------
     generate
-        for (genvar j = 0; j < LEN; j++) begin:tree
-           logic [31:0] index_lut_reg = $unsigned(j);
-           assign index_lut[j] = index_lut_reg[NUM_LEVELS-1:0];
+        for (genvar j = 0; j < LEN; j++) begin
+            assign index_lut[j] = $unsigned(j);
         end
     endgenerate
 
     generate
-      begin:nodes
-        assign sel_nodes[2**NUM_LEVELS-1] = 'b0;
         for (genvar level = 0; level < NUM_LEVELS; level++) begin
 
             if (level < NUM_LEVELS-1) begin
@@ -544,7 +541,6 @@ module alu_ff #(
                 end
             end
         end
-      end
     endgenerate
 
     // --------------------
