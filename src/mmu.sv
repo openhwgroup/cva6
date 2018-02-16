@@ -224,7 +224,7 @@ module mmu #(
             // ---------
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
-                fetch_valid_o = 1'b1;
+                fetch_valid_o = ptw_error;
                 fetch_exception_o = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
         end

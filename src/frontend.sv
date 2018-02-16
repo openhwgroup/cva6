@@ -65,6 +65,8 @@ module frontend #(
     // Registers
     logic [31:0] icache_data_d,  icache_data_q;
     logic        icache_valid_d, icache_valid_q;
+    exception_t  icache_ex_d,    icache_ex_q;
+
     logic        instruction_valid;
 
     logic        icache_speculative_d, icache_speculative_q;
@@ -384,6 +386,7 @@ module frontend #(
             icache_valid_q       <= 1'b0;
             icache_speculative_q <= 1'b0;
             icache_vaddr_q       <= 'b0;
+            icache_ex_q          <= '0;
             unaligned_q          <= 1'b0;
             unaligned_address_q  <= '0;
             unaligned_instr_q    <= '0;
@@ -393,6 +396,7 @@ module frontend #(
             icache_valid_q       <= icache_valid_d;
             icache_speculative_q <= icache_speculative_d;
             icache_vaddr_q       <= icache_vaddr_d;
+            icache_ex_q          <= icache_ex_d;
             unaligned_q          <= unaligned_d;
             unaligned_address_q  <= unaligned_address_d;
             unaligned_instr_q    <= unaligned_instr_d;
@@ -434,21 +438,21 @@ module frontend #(
         .CACHE_LINE_WIDTH  ( 128                  ),
         .FETCH_WIDTH       ( FETCH_WIDTH          )
     ) i_icache (
-        .clk_i            ( clk_i                 ),
-        .rst_ni           ( rst_ni                ),
         .flush_i          ( flush_icache_i        ),
         .vaddr_i          ( fetch_vaddr           ), // 1st cycle
         .is_speculative_i ( fetch_is_speculative  ), // 1st cycle
         .data_o           ( icache_data_d         ),
         .req_i            ( icache_req            ),
-        .kill_s1_i        ( kill_s1        ),
-        .kill_s2_i        ( kill_s2        ),
+        .kill_s1_i        ( kill_s1               ),
+        .kill_s2_i        ( kill_s2               ),
         .ready_o          ( icache_ready          ),
         .valid_o          ( icache_valid_d        ),
+        .ex_o             ( icache_ex_d           ),
         .is_speculative_o ( icache_speculative_d  ),
         .vaddr_o          ( icache_vaddr_d        ),
         .axi              ( axi                   ),
-        .miss_o           ( l1_icache_miss_o      )
+        .miss_o           ( l1_icache_miss_o      ),
+        .*
     );
 
     for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin
@@ -471,13 +475,10 @@ module frontend #(
         );
     end
 
-    exception_t ex;
-    assign ex = '0;
-
     fetch_fifo i_fetch_fifo (
         .flush_i            ( flush_i             ),
         .branch_predict_i   ( bp_sbe              ),
-        .ex_i               ( ex                  ),
+        .ex_i               ( icache_ex_q         ),
         .addr_i             ( icache_vaddr_q      ),
         .rdata_i            ( icache_data_q       ),
         .valid_i            ( fifo_valid          ),
@@ -670,8 +671,8 @@ module bht #(
         logic [1:0] saturation_counter;
     } bht_d[NR_ENTRIES-1:0], bht_q[NR_ENTRIES-1:0];
 
-    logic [$clog2(NR_ENTRIES)-1:0]          index, update_pc;
-    logic [1:0]     saturation_counter;
+    logic [$clog2(NR_ENTRIES)-1:0]  index, update_pc;
+    logic [1:0]                     saturation_counter;
 
     assign index     = vpc_i[PREDICTION_BITS - 1:OFFSET];
     assign update_pc = bht_update_i.pc[PREDICTION_BITS - 1:OFFSET];

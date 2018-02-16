@@ -286,8 +286,6 @@ module ariane #(
         .*
     );
 
-    assign fetch_req_if_ex = 1'b0;
-
     // ---------
     // ID
     // ---------
