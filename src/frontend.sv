@@ -26,11 +26,16 @@ module frontend #(
     input  logic               rst_ni,             // Asynchronous reset active low
     input  logic               flush_i,            // flush request for PCGEN
     input  logic               flush_bp_i,         // flush branch prediction
-    input  logic               flush_icache_i,          // instruction fence in
-    input  logic               flush_itlb_i,       // flush itlb
+    input  logic               flush_icache_i,     // instruction fence in
     // global input
     input  logic [63:0]        boot_addr_i,
     input  logic               fetch_enable_i,     // start fetching instructions
+    // Address translation interface
+    output logic               fetch_req_o,        // address translation request
+    output logic [63:0]        fetch_vaddr_o,      // virtual address out
+    input  logic               fetch_valid_i,      // address translation valid
+    input  logic [63:0]        fetch_paddr_i,      // physical address in
+    input  exception_t         fetch_exception_i,  // exception occurred during fetch
     // Set a new PC
     // mispredict
     input  branchpredict_t     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB

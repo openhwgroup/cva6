@@ -176,11 +176,10 @@ module ariane #(
     // IF <-> EX
     // --------------
     logic                     fetch_req_if_ex;
-    logic                     fetch_gnt_ex_if;
-    logic                     fetch_valid_ex_if;
-    logic [63:0]              fetch_rdata_ex_if;
-    exception_t               fetch_ex_ex_if;
     logic [63:0]              fetch_vaddr_if_ex;
+    logic                     fetch_valid_ex_if;
+    logic [63:0]              fetch_paddr_ex_if;
+    exception_t               fetch_ex_ex_if;
     // --------------
     // CSR <-> *
     // --------------
@@ -249,13 +248,6 @@ module ariane #(
     // ----------------
     // ICache <-> *
     // ----------------
-    logic [63:0]             instr_if_address;
-    logic                    instr_if_data_req;    // fetch request
-    logic [3:0]              instr_if_data_be;
-    logic                    instr_if_data_gnt;    // fetch request
-    logic                    instr_if_data_rvalid; // fetch data
-    logic [63:0]             instr_if_data_rdata;
-
     logic                    flush_icache_ctrl_icache;
     logic                    bypass_icache_csr_icache;
 
@@ -270,9 +262,13 @@ module ariane #(
         .flush_i             ( flush_ctrl_if                 ), // not entirely correct
         .flush_bp_i          ( 1'b0                          ),
         .flush_icache_i      ( flush_icache_ctrl_icache      ),
-        .flush_itlb_i        ( flush_tlb_ctrl_ex             ),
         .boot_addr_i         ( boot_addr_i                   ),
         .fetch_enable_i      ( fetch_enable                  ),
+        .fetch_req_o         ( fetch_req_if_ex               ),
+        .fetch_vaddr_o       ( fetch_vaddr_if_ex             ),
+        .fetch_valid_i       ( fetch_valid_ex_if             ),
+        .fetch_paddr_i       ( fetch_paddr_ex_if             ),
+        .fetch_exception_i   ( fetch_ex_ex_if                ),
         .resolved_branch_i   ( resolved_branch               ),
         .pc_commit_i         ( pc_commit                     ),
         .set_pc_commit_i     ( set_pc_ctrl_pcgen             ),
@@ -437,12 +433,12 @@ module ariane #(
         .enable_translation_i   ( enable_translation_csr_ex              ), // from CSR
         .en_ld_st_translation_i ( en_ld_st_translation_csr_ex            ),
         .flush_tlb_i            ( flush_tlb_ctrl_ex                      ),
+
         .fetch_req_i            ( fetch_req_if_ex                        ),
-        .fetch_gnt_o            ( fetch_gnt_ex_if                        ),
         .fetch_valid_o          ( fetch_valid_ex_if                      ),
         .fetch_vaddr_i          ( fetch_vaddr_if_ex                      ),
-        .fetch_rdata_o          ( fetch_rdata_ex_if                      ),
-        .fetch_ex_o             ( fetch_ex_ex_if                         ), // fetch exception to IF
+        .fetch_paddr_o          ( fetch_paddr_ex_if                      ),
+        .fetch_exception_o      ( fetch_ex_ex_if                         ), // fetch exception to IF
         .priv_lvl_i             ( priv_lvl                               ), // from CSR
         .ld_st_priv_lvl_i       ( ld_st_priv_lvl_csr_ex                  ), // from CSR
         .sum_i                  ( sum_csr_ex                             ), // from CSR
@@ -455,13 +451,6 @@ module ariane #(
         .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
         .mult_result_o          ( mult_result_ex_id                      ),
         .mult_valid_o           ( mult_valid_ex_id                       ),
-
-        .instr_if_address_o     ( instr_if_address                       ),
-        .instr_if_data_req_o    ( instr_if_data_req                      ),
-        .instr_if_data_be_o     ( instr_if_data_be                       ),
-        .instr_if_data_gnt_i    ( instr_if_data_gnt                      ),
-        .instr_if_data_rvalid_i ( instr_if_data_rvalid                   ),
-        .instr_if_data_rdata_i  ( instr_if_data_rdata                    ),
 
         .data_if                ( data_if                                ),
         .dcache_en_i            ( dcache_en_csr_nbdcache                 ),
@@ -502,8 +491,7 @@ module ariane #(
     // ---------
     csr_regfile #(
         .ASID_WIDTH             ( ASID_WIDTH                    )
-    )
-    csr_regfile_i (
+    ) csr_regfile_i (
         .flush_o                ( flush_csr_ctrl                ),
         .halt_csr_o             ( halt_csr_ctrl                 ),
         .debug_csr_req_i        ( csr_req_debug_csr             ),

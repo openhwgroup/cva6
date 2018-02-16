@@ -17,11 +17,10 @@
 import ariane_pkg::*;
 
 module mmu #(
-      parameter int INSTR_TLB_ENTRIES = 4,
-      parameter int DATA_TLB_ENTRIES  = 4,
-      parameter int ASID_WIDTH        = 1
-    )
-    (
+      parameter int unsigned INSTR_TLB_ENTRIES = 4,
+      parameter int unsigned DATA_TLB_ENTRIES  = 4,
+      parameter int unsigned ASID_WIDTH        = 1
+)(
         input  logic                            clk_i,
         input  logic                            rst_ni,
         input  logic                            flush_i,
@@ -30,11 +29,11 @@ module mmu #(
 
         // IF interface
         input  logic                            fetch_req_i,
-        output logic                            fetch_gnt_o,
-        output logic                            fetch_valid_o,
         input  logic [63:0]                     fetch_vaddr_i,
-        output logic [63:0]                     fetch_rdata_o,  // pass-through because of interfaces
-        output exception_t                      fetch_ex_o,     // write-back fetch exceptions (e.g.: bus faults, page faults, etc.)
+        output logic                            fetch_valid_o,     // translation is valid
+        output logic [63:0]                     fetch_paddr_o,
+        output exception_t                      fetch_exception_o, // write-back fetch exceptions (e.g.: bus faults, page faults, etc.)
+
         // LSU interface
         // this is a more minimalistic interface because the actual addressing logic is handled
         // in the LSU as we distinguish load and stores, what we do here is simple address translation
@@ -61,15 +60,7 @@ module mmu #(
         // Performance counters
         output logic                            itlb_miss_o,
         output logic                            dtlb_miss_o,
-        // Memory interfaces
-        // Instruction memory/cache
-        output logic [63:0]                     instr_if_address_o,
-        output logic                            instr_if_data_req_o,
-        output logic [3:0]                      instr_if_data_be_o,
-        input  logic                            instr_if_data_gnt_i,
-        input  logic                            instr_if_data_rvalid_i,
-        input  logic [63:0]                     instr_if_data_rdata_i,
-        // Data memory/cache
+        // PTW memory interface
         output logic [11:0]                     address_index_o,
         output logic [43:0]                     address_tag_o,
         output logic [63:0]                     data_wdata_o,
@@ -83,9 +74,6 @@ module mmu #(
         input  logic                            data_rvalid_i,
         input  logic [63:0]                     data_rdata_i
 );
-    // instruction error
-    // instruction error valid signal and exception, delayed one cycle
-    logic        ierr_valid_q, ierr_valid_n;
 
     logic        iaccess_err;   // insufficient privilege to access this instruction page
     logic        daccess_err;   // insufficient privilege to access this data page
@@ -114,7 +102,6 @@ module mmu #(
     // Assignments
     assign itlb_lu_access = fetch_req_i;
     assign dtlb_lu_access = lsu_req_i;
-    assign fetch_rdata_o  = instr_if_data_rdata_i;
 
     tlb #(
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
@@ -185,46 +172,39 @@ module mmu #(
     //-----------------------
     // Instruction Interface
     //-----------------------
-    exception_t fetch_exception;
-    logic exception_fifo_empty;
-    // This is a full memory interface, e.g.: it handles all signals to the I$
-    // Exceptions are always signaled together with the fetch_valid_o signal
+    // The instruction interface is a simple request response interface
     always_comb begin : instr_interface
         // MMU disabled: just pass through
-        instr_if_data_req_o = fetch_req_i;
-        instr_if_address_o  = fetch_vaddr_i; // play through in case we disabled address translation
-        fetch_gnt_o         = instr_if_data_gnt_i;
+        fetch_valid_o  = fetch_req_i;
+        fetch_paddr_o  = fetch_vaddr_i; // play through in case we disabled address translation
         // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
-        fetch_exception      = '0;
-        ierr_valid_n         = 1'b0; // we keep a separate valid signal in case of an error
+        fetch_exception_o      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
         iaccess_err   = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
                                      || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
         // check that the upper-most bits (63-39) are the same, otherwise throw a page fault exception...
         if (fetch_req_i && !((&fetch_vaddr_i[63:39]) == 1'b1 || (|fetch_vaddr_i[63:39]) == 1'b0)) begin
-            fetch_exception = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
-            ierr_valid_n = 1'b1;
-            fetch_gnt_o  = 1'b1;
+            fetch_exception_o = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
         end
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
         // an error.
         if (enable_translation_i) begin
-            instr_if_data_req_o = 1'b0;
+            fetch_valid_o = 1'b0;
 
             // 4K page
-            instr_if_address_o = {itlb_content.ppn, fetch_vaddr_i[11:0]};
+            fetch_paddr_o = {itlb_content.ppn, fetch_vaddr_i[11:0]};
             // Mega page
             if (itlb_is_2M) begin
-                instr_if_address_o[20:12] = fetch_vaddr_i[20:12];
+                fetch_paddr_o[20:12] = fetch_vaddr_i[20:12];
             end
             // Giga page
             if (itlb_is_1G) begin
-                instr_if_address_o[29:12] = fetch_vaddr_i[29:12];
+                fetch_paddr_o[29:12] = fetch_vaddr_i[29:12];
             end
 
             // ---------
@@ -232,20 +212,11 @@ module mmu #(
             // --------
             // if we hit the ITLB output the request signal immediately
             if (itlb_lu_hit) begin
-                instr_if_data_req_o = fetch_req_i;
+                fetch_valid_o = fetch_req_i;
                 // we got an access error
                 if (iaccess_err) begin
-                    // immediately grant a fetch which threw an exception, and stop the request from happening
-                    instr_if_data_req_o = 1'b0;
-                    // in case we hit the TLB with an exception we need to order the memory request e.g.
-                    // we need to wait until all outstanding request drained otherwise we get an out-of order result
-                    // which will be wrong
-                    if (exception_fifo_empty) begin
-                        fetch_gnt_o         = 1'b1;
-                        ierr_valid_n        = 1'b1;
-                    end
                     // throw a page fault
-                    fetch_exception = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+                    fetch_exception_o = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
                 end
             end else
             // ---------
@@ -253,49 +224,9 @@ module mmu #(
             // ---------
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
-                // check that the fetch address is equal with the faulting address as it could be that the page table walker
-                // has walked an instruction the instruction fetch stage is no longer interested in as we didn't give a grant
-                // we should not propagate back the exception when the request is no longer high
-                if (faulting_address == fetch_vaddr_i && fetch_req_i) begin
-                    // on an error pass through fetch with an error signaled
-                    fetch_gnt_o  = ptw_error;
-                    ierr_valid_n = ptw_error; // signal valid/error on next cycle
-                end
-                fetch_exception = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                fetch_valid_o = 1'b1;
+                fetch_exception_o = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
-        end
-        // the fetch is valid if we either got an error in the previous cycle or the I$ gave us a valid signal.
-        fetch_valid_o = instr_if_data_rvalid_i || ierr_valid_q;
-    end
-    // ---------------------------
-    // Fetch exception register
-    // ---------------------------
-    // We can have two outstanding transactions
-    fifo #(
-        .dtype            ( exception_t          ),
-        .DEPTH            ( 2                    )
-    ) i_exception_fifo (
-        .clk_i            ( clk_i                ),
-        .rst_ni           ( rst_ni               ),
-        .flush_i          ( 1'b0                 ),
-        .full_o           (                      ),
-        .empty_o          ( exception_fifo_empty ),
-        .single_element_o (                      ),
-        .data_i           ( fetch_exception      ),
-        .push_i           ( fetch_gnt_o          ),
-        .data_o           ( fetch_ex_o           ),
-        .pop_i            ( fetch_valid_o        ),
-        .*
-    );
-
-    // ----------
-    // Registers
-    // ----------
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            ierr_valid_q <= 1'b0;
-        end else begin
-            ierr_valid_q <= ierr_valid_n;
         end
     end
 
