@@ -19,6 +19,8 @@ git checkout https://github.com/pulp-platform/ariane.git
 git submodule update --init --recursive
 ```
 
+The Verilator testbench relies on our forked version of `riscv-fesvr` which can be found [here](https://github.com/pulp-platform/riscv-fesvr). Follow the README there and make sure that your compiler and linker is aware of the library (e.g.: add it to your path if it is in a non-default directory).
+
 Build the Verilator model of Ariane by using the Makefile:
 ```
 make verilate
