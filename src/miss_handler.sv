@@ -565,8 +565,9 @@ module arbiter #(
         id_o                      = req_q.id;
         data_gnt_o                = '0;
         // read port
-        data_rvalid_o           = '0;
-        data_rdata_o[req_q.id]  = data_rdata_i;
+        data_rvalid_o             = '0;
+        data_rdata_o              = '0;
+        data_rdata_o[req_q.id]    = data_rdata_i;
 
         case (state_q)
 
@@ -608,38 +609,6 @@ module arbiter #(
             default : /* default */;
         endcase
     end
-    // // addressing read and full write
-    // always_comb begin : read_req_write
-    //     automatic logic [$clog2(NR_PORTS)-1:0] request_index;
-    //     request_index = 0;
-
-    //     data_req_o = 1'b0;
-    //     data_gnt_o = '0;
-
-
-
-    //     // pass through all signals from the correct slave port
-    //     address_o                 = address_i[request_index];
-    //     data_wdata_o              = data_wdata_i[request_index];
-    //     data_be_o                 = data_be_i[request_index];
-    //     data_size_o               = data_size_i[request_index];
-    //     data_we_o                 = data_we_i[request_index];
-    //     data_gnt_o[gnt_id_i]      = data_gnt_i;
-    //     id_o                      = request_index;
-    // end
-
-    // // ------------
-    // // Read port
-    // // ------------
-    // always_comb begin : slave_read_port
-    //     data_rvalid_o = '0;
-    //     data_rdata_o = '0;
-    //     // if there is a valid signal the FIFO should not be empty anyway
-    //     if (data_rvalid_i) begin
-    //         data_rvalid_o[id_i] = data_rvalid_i;
-    //         data_rdata_o [id_i] = data_rdata_i;
-    //     end
-    // end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
@@ -773,6 +742,7 @@ module axi_adapter #(
         cache_line_d            = cache_line_q;
         addr_offset_d           = addr_offset_q;
         id_d                    = id_q;
+        index                   = '0;
 
         case (state_q)
 
