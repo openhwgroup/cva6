@@ -174,9 +174,11 @@ module frontend #(
     end
 
     logic [INSTR_PER_FETCH:0] taken;
-    logic take_rvi_cf, take_rvc_cf; // take the control flow change
     // control front-end + branch-prediction
     always_comb begin : frontend_ctrl
+        automatic logic take_rvi_cf; // take the control flow change (non-compressed)
+        automatic logic take_rvc_cf; // take the control flow change (compressed)
+
         take_rvi_cf     = 1'b0;
         take_rvc_cf     = 1'b0;
         ras_pop         = 1'b0;

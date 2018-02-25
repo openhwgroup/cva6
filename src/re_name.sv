@@ -66,7 +66,7 @@ module re_name (
     // Registers
     // -------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             re_name_table_q <= '0;
         end else begin
             re_name_table_q <= re_name_table_n;

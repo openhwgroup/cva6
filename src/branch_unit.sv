@@ -70,6 +70,7 @@ module branch_unit (
         jump_base = (operator_i == JALR) ? operand_a_i : pc_i;
 
         target_address                   = 64'b0;
+        resolve_branch_o                 = 1'b0;
         resolved_branch_o.target_address = 64'b0;
         resolved_branch_o.is_taken       = 1'b0;
         resolved_branch_o.valid          = branch_valid_i;
