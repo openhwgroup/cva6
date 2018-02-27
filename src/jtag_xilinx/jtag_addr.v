@@ -1,4 +1,4 @@
-module jtag_addr(output reg [5:0] DBG, output reg INC, output reg WR, output reg [31:0] ADDR, output reg INIT,
+module jtag_addr(output reg [5:0] DBG, output reg INC, output reg WR, output reg [31:0] ADDR,
 input wire CAPTURE, RESET, RUNTEST, SEL, SHIFT, TDI, TMS, UPDATE, TCK,
 output wire TDO);
 
@@ -17,17 +17,8 @@ always @(posedge TCK)
               DBG = 0;
 	      INC = 0;
               ADDR = 0;
-              INIT = 0;
            end
-       else
-         begin
-            if (!INIT)
-              begin
-                 ADDR = ADDR + 1;
-                 INIT = &ADDR[13:0];
-                 WR = !INIT;
-              end
-            if (SEL)
+       else if (SEL)
               begin
                  if (CAPTURE)
                    begin
@@ -41,7 +32,6 @@ always @(posedge TCK)
                    begin
                       SR = {TDI,SR[wid-1:1]};
                    end
-              end // if (SEL)
          end
        end
 

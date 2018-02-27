@@ -1,7 +1,11 @@
 `timescale 1ns / 1ps
-`default_nettype wire
+`default_nettype none
 
-module jtag_dummy(
+module jtag_dummy
+#(
+    parameter JTAG_CHAIN_START  = 1
+ )
+   (
     output wire [5:0] DBG,
     output wire WREN,
     output wire [63:0] TO_MEM,
@@ -14,8 +18,8 @@ module jtag_dummy(
 
 wire CAPTURE, DRCK, SEL, SHIFT, TDI, TDO, TMS, UPDATE, TCK_unbuf;
 wire CAPTURE2, DRCK2, RESET2, RUNTEST2, SEL2, SHIFT2, TDI2, TDO2, TMS2, UPDATE2;
-wire INC, WR, WREN1, INIT;
-wire [31:0] ADDR0, ADDR1;
+   wire INC, WR;
+wire [31:0] ADDR0;
    
 BUFH jtag_buf(.I(TCK_unbuf), .O(TCK));
 
@@ -24,7 +28,7 @@ BUFH jtag_buf(.I(TCK_unbuf), .O(TCK));
    // Xilinx HDL Language Template, version 2017.1
 
    BSCANE2 #(
-      .JTAG_CHAIN(1)  // Value for USER command.
+      .JTAG_CHAIN(JTAG_CHAIN_START)  // Value for USER command.
    )
    BSCANE2_inst (
       .CAPTURE(CAPTURE), // 1-bit output: CAPTURE output from TAP controller.
@@ -43,7 +47,7 @@ BUFH jtag_buf(.I(TCK_unbuf), .O(TCK));
    );
 
    BSCANE2 #(
-      .JTAG_CHAIN(2)  // Value for USER command.
+      .JTAG_CHAIN(JTAG_CHAIN_START+1)  // Value for USER command.
    )
    BSCANE2_inst2 (
       .CAPTURE(CAPTURE2), // 1-bit output: CAPTURE output from TAP controller.
@@ -62,9 +66,9 @@ BUFH jtag_buf(.I(TCK_unbuf), .O(TCK));
    );
 
 jtag_rom rom1(
-.WREN(WREN1),
+.WREN(WREN),
 .TO_MEM(TO_MEM),
-.ADDR(ADDR1),
+.ADDR(ADDR),
 .FROM_MEM(FROM_MEM),
 .INC(INC),
 .WR(WR),
@@ -95,11 +99,7 @@ jtag_addr addr1(
 .TDI(TDI2), 
 .TMS(TMS2), 
 .UPDATE(UPDATE2), 
-.TCK(TCK),
-.INIT(INIT)
+.TCK(TCK)
 );
-
-assign ADDR = INIT ? ADDR1 : {24'h800000|ADDR0};
-assign WREN = INIT ? WREN1 : WR;
 				
 endmodule

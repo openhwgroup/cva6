@@ -150,7 +150,44 @@ set_property verilog_define [list FPGA FPGA_FULL NEXYS4] [get_filesets sources_1
 # Set 'sources_1' fileset properties
 set_property "top" "ariane_nexys4ddr" [get_filesets sources_1]
 
+# AXI master FIFOs
+create_ip -name fifo_generator -vendor xilinx.com -library ip -version 13.0 -module_name data_fifo_32
+set_property -dict [list \
+                        CONFIG.Fifo_Implementation {Common_Clock_Builtin_FIFO} \
+                        CONFIG.Performance_Options {Standard_FIFO} \
+                        CONFIG.Input_Data_Width {32} \
+                        CONFIG.Output_Data_Width {32} \
+                        CONFIG.Reset_Type {Asynchronous_Reset} \
+                        CONFIG.Use_Dout_Reset {false}] [get_ips data_fifo_32]
+
+create_ip -name fifo_generator -vendor xilinx.com -library ip -version 13.0 -module_name data_fifo_64
+set_property -dict [list \
+                        CONFIG.Fifo_Implementation {Common_Clock_Builtin_FIFO} \
+                        CONFIG.Performance_Options {Standard_FIFO} \
+                        CONFIG.Input_Data_Width {64} \
+                        CONFIG.Output_Data_Width {64} \
+                        CONFIG.Reset_Type {Asynchronous_Reset} \
+                        CONFIG.Use_Dout_Reset {false}] [get_ips data_fifo_64]
+
 # Program/data RAM
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name instr_ram
+set_property -dict [list \
+                        CONFIG.Memory_Type {True_Dual_Port_RAM} \
+                        CONFIG.Use_Byte_Write_Enable {true} \
+                        CONFIG.Byte_Size {8} \
+                        CONFIG.Write_Width_A {64} \
+                        CONFIG.Write_Depth_A {16384} \
+                        CONFIG.Operating_Mode_A {READ_FIRST} \
+                        CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
+                        CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
+                        CONFIG.Read_Width_A {64} \
+                        CONFIG.Write_Width_B {64} \
+                        CONFIG.Read_Width_B {64} \
+                        CONFIG.Enable_B {Use_ENB_Pin} \
+                        CONFIG.Port_B_Clock {100} \
+                        CONFIG.Port_B_Write_Rate {50} \
+                        CONFIG.Port_B_Enable_Rate {100}] [get_ips instr_ram]
+
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name instr_ram
 set_property -dict [list \
                         CONFIG.Memory_Type {True_Dual_Port_RAM} \
@@ -404,6 +441,25 @@ set_property -dict [list \
 		       ] [get_ips axi_crossbar_0]
 generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/axi_crossbar_0/axi_crossbar_0.xci]
 
+# Protocol checker
+create_ip -name axi_protocol_checker -vendor xilinx.com -library ip -version 1.1 -module_name axi_protocol_checker_0
+set_property -dict [list \
+                        CONFIG.AWUSER_WIDTH {2} \
+                        CONFIG.ARUSER_WIDTH {2} \
+                        CONFIG.RUSER_WIDTH {2} \
+                        CONFIG.WUSER_WIDTH {2} \
+                        CONFIG.BUSER_WIDTH {2} \
+                        CONFIG.DATA_WIDTH {64} \
+                        CONFIG.ID_WIDTH {4} \
+                        CONFIG.MAX_RD_BURSTS {2} \
+                        CONFIG.MAX_WR_BURSTS {2} \
+                        CONFIG.MAX_AW_WAITS {1023} \
+                        CONFIG.MAX_AR_WAITS {1023} \
+                        CONFIG.MAX_W_WAITS {1023} \
+                        CONFIG.MAX_R_WAITS {1023} \
+                        CONFIG.MAX_B_WAITS {1023} \
+                        CONFIG.HAS_SYSTEM_RESET {1}] [get_ips axi_protocol_checker_0]
+
 # SPI interface for R/W SD card
 create_ip -name axi_quad_spi -vendor xilinx.com -library ip -module_name axi_quad_spi_0
 set_property -dict [list \
@@ -497,3 +553,4 @@ set_msg_config -id "\[Netlist 29-345\]" -suppress
 
 # do not flatten design
 set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY none [get_runs synth_1]
+

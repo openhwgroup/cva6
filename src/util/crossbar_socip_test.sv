@@ -1,7 +1,7 @@
 // See LICENSE for license details.
 // The terms master and slave are not very useful in this file.
 
-module crossbar_socip
+module crossbar_socip_test
   #(
     ID_WIDTH = 10,              // id width
     ADDR_WIDTH = 64,            // address width
@@ -11,14 +11,14 @@ module crossbar_socip
     )
   (
    // clock and reset
-   AXI_BUS.Slave dbg_if, bypass_if, data_if, instr_if,
-   AXI_BUS.Master master0_if, master1_if, master2_if, master3_if,
+   AXI_BUS.Slave slave0_if, slave1_if,
+   AXI_BUS.Master master0_if, master1_if,
    input         clk_i,
    input         rst_ni
    );
 
-   localparam NUM_MASTER = 4;
-   localparam NUM_SLAVE = 4;
+   localparam NUM_MASTER = 2;
+   localparam NUM_SLAVE = 1;
 
    nasti_channel
      #(
@@ -26,7 +26,7 @@ module crossbar_socip
        .USER_WIDTH  ( USER_WIDTH    ),
        .ADDR_WIDTH  ( ADDR_WIDTH    ),
        .DATA_WIDTH  ( DATA_WIDTH    ))
-   slave0_nasti(), slave1_nasti(), slave2_nasti(), slave3_nasti(), master0_nasti(), master1_nasti(), master2_nasti(), master3_nasti();
+   slave0_nasti(), slave1_nasti(), master0_nasti(), master1_nasti();
 
    // input of the IO crossbar
    nasti_channel
@@ -38,14 +38,14 @@ module crossbar_socip
        .DATA_WIDTH  ( DATA_WIDTH    ))
    master_nasti();
 
-   nasti_channel mem_dmm4(), mem_dmm5(), mem_dmm6(), mem_dmm7(); // dummy channels
+   nasti_channel mem_dmm2(), mem_dmm3(), mem_dmm4(), mem_dmm5(), mem_dmm6(), mem_dmm7(); // dummy channels
    
    nasti_channel_combiner #(NUM_MASTER)
    mem_combiner (
                   .master_0  ( master0_nasti ),
                   .master_1  ( master1_nasti ),
-                  .master_2  ( master2_nasti ),
-                  .master_3  ( master3_nasti ),
+                  .master_2  ( mem_dmm2      ),
+                  .master_3  ( mem_dmm3      ),
                   .master_4  ( mem_dmm4      ),
                   .master_5  ( mem_dmm5      ),
                   .master_6  ( mem_dmm6      ),
@@ -93,14 +93,14 @@ module crossbar_socip
       .slave  ( combined_nasti   )
       );
 
-   nasti_channel mem_dms3(), mem_dms4(), mem_dms5(), mem_dms6(), mem_dms7(); // dummy channels
+   nasti_channel mem_dms2(), mem_dms3(), mem_dms4(), mem_dms5(), mem_dms6(), mem_dms7(); // dummy channels
 
    nasti_channel_slicer #(NUM_SLAVE)
    mem_slicer (
                   .master   ( combined_nasti ),
                   .slave_0  ( slave0_nasti   ),
                   .slave_1  ( slave1_nasti   ),
-                  .slave_2  ( slave2_nasti   ),
+                  .slave_2  ( mem_dms2       ),
                   .slave_3  ( mem_dms3       ),
                   .slave_4  ( mem_dms4       ),
                   .slave_5  ( mem_dms5       ),
@@ -113,10 +113,8 @@ module crossbar_socip
     .ADDR_WIDTH(ADDR_WIDTH),             // address width
     .DATA_WIDTH(DATA_WIDTH),             // width of data
     .USER_WIDTH(USER_WIDTH)              // width of user field, must > 0, let synthesizer trim it if not in use
-    ) cnvi(.incoming_if(instr_if), .outgoing_nasti(master0_nasti)),
-      cnvd(.incoming_if(data_if), .outgoing_nasti(master1_nasti)),
-      cnvb(.incoming_if(bypass_if), .outgoing_nasti(master2_nasti)),
-      cnvg(.incoming_if(dbg_if), .outgoing_nasti(master3_nasti));
+    ) cnvi(.incoming_if(slave0_if), .outgoing_nasti(master0_nasti)),
+      cnvd(.incoming_if(slave1_if), .outgoing_nasti(master1_nasti));
 
    if_converter #(
     .ID_WIDTH(ID_WIDTH),               // id width
@@ -124,8 +122,6 @@ module crossbar_socip
     .DATA_WIDTH(DATA_WIDTH),             // width of data
     .USER_WIDTH(USER_WIDTH)              // width of user field, must > 0, let synthesizer trim it if not in use
     ) cnv0(.incoming_nasti(slave0_nasti), .outgoing_if(master0_if)),
-      cnv1(.incoming_nasti(slave1_nasti), .outgoing_if(master1_if)),
-      cnv2(.incoming_nasti(slave2_nasti), .outgoing_if(master2_if)),
-      cnv3(.incoming_nasti(slave3_nasti), .outgoing_if(master3_if));
+      cnv1(.incoming_nasti(slave1_nasti), .outgoing_if(master1_if));
    
 endmodule // crossbar_socip

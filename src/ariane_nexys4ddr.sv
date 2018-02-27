@@ -235,6 +235,7 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
       .clk_rmii      ( clk_rmii      ), // 50 MHz rmii
       .clk_rmii_quad ( clk_rmii_quad ), // 50 MHz rmii quad
       .clk_pixel     ( clk_pixel     ), // 120 MHz
+      .clk_i         (               ), // 25 MHz (only if DDR not used)
       .resetn        ( rst_top       ),
       .locked        ( clk_locked_wiz )
       );
@@ -247,6 +248,10 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
       .sys_clk_i            ( mig_sys_clk            ),
       .sys_rst              ( clk_locked             ),
       .ui_addn_clk_0        ( clk_i                  ),
+      .ui_addn_clk_1        (                        ),
+      .ui_addn_clk_2        (                        ),
+      .ui_addn_clk_3        (                        ),
+      .ui_addn_clk_4        (                        ),
       .device_temp_i        ( 0                      ),
       .ddr2_dq              ( ddr_dq                 ),
       .ddr2_dqs_n           ( ddr_dqs_n              ),
@@ -267,8 +272,12 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
       .mmcm_locked          ( rst_ni                 ),
       .aresetn              ( rst_ni                 ), // AXI reset
       .app_sr_req           ( 1'b0                   ),
+      .app_sr_active        (                        ),
       .app_ref_req          ( 1'b0                   ),
+      .app_ref_ack          (                        ),
       .app_zq_req           ( 1'b0                   ),
+      .app_zq_ack           (                        ),
+      .init_calib_complete  (                        ),
       .s_axi_awid           ( mem_mig_nasti.aw_id    ),
       .s_axi_awaddr         ( mem_mig_nasti.aw_addr  ),
       .s_axi_awlen          ( mem_mig_nasti.aw_len   ),
@@ -314,9 +323,9 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
    logic                       hid_irq, sd_irq;
 
    wire                        hid_rst, hid_clk, hid_en;
-   wire [3:0]                  hid_we, hid_be;
+   wire [7:0]                  hid_we, hid_be;
    wire [17:0]                 hid_addr;
-   wire [31:0]                 hid_wrdata,  hid_rddata;
+   wire [63:0]                 hid_wrdata,  hid_rddata;
    logic [30:0]                hid_ar_addr, hid_aw_addr;
    logic [1:0] eth_txd;
    logic eth_rstn, eth_refclk, eth_txen;
@@ -402,25 +411,11 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
     logic        flush_dcache_q;
     
     AXI_BUS #(
-        .AXI_ADDR_WIDTH ( 64             ),
-        .AXI_DATA_WIDTH ( 64             ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) data_if();
-
-    AXI_BUS #(
-        .AXI_ADDR_WIDTH ( 64             ),
-        .AXI_DATA_WIDTH ( 64             ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) bypass_if();
-
-    AXI_BUS #(
-        .AXI_ADDR_WIDTH ( 64             ),
-        .AXI_DATA_WIDTH ( 64             ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) instr_if();
+              .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
+              .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
+              .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
+              .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
+    ) instr_if(), data_if(), bypass_if(), dbg_if(), master0_if(), master1_if(), master2_if(), master3_if();
 
     ariane #(
         .CACHE_START_ADDR ( CACHE_START_ADDR ),
@@ -462,17 +457,12 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
     logic [63:0] master0_wdata,   master1_wdata,   master3_wdata;
     logic [63:0] master0_rdata,   master1_rdata,   master3_rdata;
 
-   // sharedmem shared port
-   logic [7:0]  sharedmem_en;
-   logic [63:0] sharedmem_dout;
-   
         // Debug Interface
          logic                           debug_gnt_o;
-         logic                           debug_halt;
-         logic                           debug_resume;
+         logic                           debug_halt_i;
+         logic                           debug_resume_i;
          logic                           debug_rvalid_o;
-         logic [31:0] debug_addr;
-         wire  [15:0]                    debug_addr_i = debug_addr[15:0];
+         wire  [15:0]                    debug_addr_i;
          logic                           debug_we_i;
          logic [63:0]                    debug_wdata_i;
          logic [63:0]                    debug_rdata_o;
@@ -485,28 +475,50 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
          
          logic [63:0] debug_dout;
         // CPU Control Signals
-         wire                            debug_halt_i = debug_blocksel_i && debug_halt;
-         wire                            debug_resume_i = debug_blocksel_i && debug_resume;
-         wire                            fetch_enable_i = ~(debug_blocksel_i && debug_fetch_disable);
-         wire                            debug_req_i = debug_blocksel_i && debug_req;
+         wire         fetch_enable_i = 1'b1;
+         wire         debug_req_i = debug_blocksel_i && debug_req;
+ 
+   axi_cache_wrap cache1(
+            .slave0   ( instr_if   ),
+            .slave1   ( data_if    ),
+            .master   ( master2_if ),
+            .clk_i    ( clk_i      ),
+            .rst_ni   ( rst_ni     ));
+    
+   crossbar_socip_test cross1(
+      .slave0_if  ( bypass_if  ),
+      .slave1_if  ( dbg_if     ),
+      .master0_if ( master0_if ),
+      .master1_if ( master1_if ),
+      .clk_i      ( clk_i      ),
+      .rst_ni     ( rst_ni     ));
 
-    AXI_BUS #(
-        .AXI_ADDR_WIDTH ( 64             ),
-        .AXI_DATA_WIDTH ( 64             ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) master0_if(), master1_if(), master2_if(), master3_if();
-
-   crossbar_socip cross1(
-                          .data_if    ( data_if    ),
-                          .bypass_if  ( bypass_if  ),
-                          .instr_if   ( instr_if   ),
-                          .master0_if ( master0_if ),
-                          .master1_if ( master1_if ),
-                          .master2_if ( master2_if ),
-                          .master3_if ( master3_if ),
-                          .clk_i      ( clk_i      ),
-                          .rst_ni     ( rst_ni     ));
+   dbg_wrap #(
+      .AXI_ID_MASTER_WIDTH  ( AXI_ID_WIDTH      ),
+      .AXI_ID_SLAVE_WIDTH   ( AXI_ID_WIDTH      ),
+      .AXI_ADDR_WIDTH       ( AXI_ADDRESS_WIDTH ),
+      .AXI_DATA_WIDTH       ( AXI_DATA_WIDTH    ),
+      .AXI_USER_WIDTH       ( AXI_USER_WIDTH    )
+    ) i_dbg (
+        .clk        ( clk_i          ),
+        .rst_n      ( rst_ni         ),
+        .testmode_i ( 1'b0           ),
+        .dbg_master ( dbg_if         ),
+         // CPU signals
+        .cpu_addr_o ( debug_addr_i   ), 
+        .cpu_data_i ( debug_rdata_o  ),
+        .cpu_data_o ( debug_wdata_i  ),
+        .cpu_bp_i   ( debug_halted_o ),
+        .cpu_stall_o( debug_halt_i   ),
+        .cpu_stb_o  ( debug_req_i    ),
+        .cpu_we_o   ( debug_we_i     ),
+        .cpu_ack_i  ( debug_rvalid_o ),
+        .tms_i      ( tms_i          ),
+        .tck_i      ( tck_i          ),
+        .trstn_i    ( trstn_i        ),
+        .tdi_i      ( tdi_i          ),
+        .tdo_o      ( tdo_o          )
+             );
                           
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
@@ -567,56 +579,5 @@ infer_ram  #(
       .ram_wrdata(master1_wdata),  // input wire [63 : 0] dina
       .ram_rddata(master1_rdata)  // output wire [63 : 0] douta
       );
-
-always @*
-        begin      
-        sharedmem_en = 8'h0; debug_blocksel_i = 1'b0;
-        casez(debug_addr[23:20])
-            4'h8: begin sharedmem_en = 8'hff; debug_dout = sharedmem_dout; end
-            4'hf: begin debug_blocksel_i = &debug_addr[31:24]; debug_dout = debug_rdata_o; end
-            default: debug_dout = 64'hDEADBEEF;
-            endcase
-        end
-
-jtag_dummy jtag1(
-    .DBG({debug_unused[1:0],debug_resume,debug_halt,debug_fetch_disable,debug_req}),
-    .WREN(debug_we_i),
-    .FROM_MEM(debug_dout),
-    .ADDR(debug_addr),
-    .TO_MEM(debug_wdata_i),
-    .TCK(debug_clk),
-    .TCK2(),
-    .RESET(debug_reset),
-    .RUNTEST(debug_runtest));
-
-   genvar r;
-
-   wire [7:0] m_enb = master3_req ? (master3_we ? master3_be : 8'hFF) : 8'h00;
-   wire m_web = master3_req & master3_we;
-
-   generate for (r = 0; r < 8; r=r+1)
-     RAMB16_S9_S9
-     RAMB16_S9_S9_inst
-       (
-        .CLKA   ( debug_clk                ),     // Port A Clock
-        .DOA    ( sharedmem_dout[r*8 +: 8] ),     // Port A 1-bit Data Output
-        .DOPA   (                          ),
-        .ADDRA  ( debug_addr[13:3]         ),     // Port A 14-bit Address Input
-        .DIA    ( debug_wdata_i[r*8 +:8]   ),     // Port A 1-bit Data Input
-        .DIPA   ( 1'b0                     ),
-        .ENA    ( sharedmem_en[r]          ),     // Port A RAM Enable Input
-        .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
-        .WEA    ( debug_we_i               ),     // Port A Write Enable Input
-        .CLKB   ( clk_i                    ),     // Port B Clock
-        .DOB    ( master3_rdata[r*8 +: 8]   ),     // Port B 1-bit Data Output
-        .DOPB   (                          ),
-        .ADDRB  ( master3_address[13:3]     ),     // Port B 14-bit Address Input
-        .DIB    ( master3_wdata[r*8 +: 8]   ),     // Port B 1-bit Data Input
-        .DIPB   ( 1'b0                     ),
-        .ENB    ( m_enb[r]                 ),     // Port B RAM Enable Input
-        .SSRB   ( 1'b0                     ),     // Port B Synchronous Set/Reset Input
-        .WEB    ( m_web                    )      // Port B Write Enable Input
-        );
-   endgenerate
 
 endmodule
