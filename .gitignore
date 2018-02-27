@@ -24,3 +24,10 @@ vivado*.jou
 vivado*.log
 vivado*.str
 ariane_top
+README.txt
+cnvmem.mem
+cnvmem64.hex
+compile_simlib/
+syn/
+synopsys_sim.setup.bak
+vcs/

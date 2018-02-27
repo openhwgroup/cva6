@@ -1,0 +1,12 @@
+.restartSimSession.tcl.old
+DVEfiles/
+cnvmem64.hex
+csrc/
+inter.vpd
+session.inter.vpd.tcl
+simv.daidir/
+stillx.log
+ucli.key
+vc_hdrs.h
+vcs.log
+verilog.dump*
