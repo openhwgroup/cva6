@@ -83,7 +83,17 @@ set files [list \
                [file normalize $origin_dir/src/util/slave_adapter.sv] \
                [file normalize $origin_dir/src/util/nasti_converter.sv] \
                [file normalize $origin_dir/src/util/if_converter.sv] \
-               [file normalize $origin_dir/src/util/crossbar_socip.sv] \
+               [file normalize $origin_dir/src/util/axi_cache_wrap.sv] \
+               [file normalize $origin_dir/src/util/crossbar_socip_test.sv] \
+	       [file normalize $origin_dir/src/custom_axi_master/HDL_sources/Synthesis_Sources/dbg_wrap.sv] \
+	       [file normalize $origin_dir/src/custom_axi_master/HDL_sources/Synthesis_Sources/AXI_WRITE_DATA_RESPONSE_CHANNEL_edited.sv] \
+	       [file normalize $origin_dir/src/jtag_xilinx/jtag_dummy.v] \
+	       [file normalize $origin_dir/src/custom_axi_master/HDL_sources/Synthesis_Sources/AXI_READ_DATA_CHANNEL_edited.sv] \
+	       [file normalize $origin_dir/src/custom_axi_master/HDL_sources/Synthesis_Sources/AXI_WRITE_DATA_CHANNEL_edited.sv] \
+	       [file normalize $origin_dir/src/jtag_xilinx/jtag_addr.v] \
+	       [file normalize $origin_dir/src/custom_axi_master/HDL_sources/Synthesis_Sources/AXI_master_edited.sv] \
+	       [file normalize $origin_dir/src/jtag_xilinx/jtag_rom.v] \
+	       [file normalize $origin_dir/src/custom_axi_master/HDL_sources/Synthesis_Sources/AXI_ADDRESS_CONTROL_CHANNEL_edited.sv] \
                [file normalize $origin_dir/src/lfsr.sv] \
                [file normalize $origin_dir/src/icache.sv] \
                [file normalize $origin_dir/src/soc/ascii_code.v] \
@@ -92,16 +102,10 @@ set files [list \
                [file normalize $origin_dir/src/soc/ddr2_model.v] \
                [file normalize $origin_dir/src/soc/dualmem.v] \
                [file normalize $origin_dir/src/soc/eth_lfsr.v] \
-               [file normalize $origin_dir/src/soc/fpga_srams_behav.v] \
-               [file normalize $origin_dir/src/soc/fpga_srams_check.sv] \
-               [file normalize $origin_dir/src/soc/fpga_srams_edited_old.v] \
-               [file normalize $origin_dir/src/soc/fpga_srams_edited.v] \
                [file normalize $origin_dir/src/soc/framing_top.sv] \
                [file normalize $origin_dir/src/soc/fstore2.v] \
                [file normalize $origin_dir/src/soc/infer_bram.sv] \
-               [file normalize $origin_dir/src/soc/mii_to_rmii_0_open.v] \
                [file normalize $origin_dir/src/soc/my_fifo.v] \
-               [file normalize $origin_dir/src/soc/nasti_channel.sv] \
                [file normalize $origin_dir/src/soc/periph_soc.sv] \
                [file normalize $origin_dir/src/soc/ps2_defines.v] \
                [file normalize $origin_dir/src/soc/ps2_keyboard.v] \
@@ -115,8 +119,6 @@ set files [list \
                [file normalize $origin_dir/src/soc/sd_crc_7.v] \
                [file normalize $origin_dir/src/soc/sd_data_serial_host.sv] \
                [file normalize $origin_dir/src/soc/sd_top.sv] \
-               [file normalize $origin_dir/src/soc/sd_verilator_model.sv] \
-               [file normalize $origin_dir/src/soc/spi_wrapper.sv] \
                [file normalize $origin_dir/src/soc/uart.v] \
                [file normalize $origin_dir/src/socip/nasti/channel.sv] \
                [file normalize $origin_dir/src/socip/nasti/lite_nasti_reader.sv] \
@@ -170,24 +172,6 @@ set_property -dict [list \
                         CONFIG.Use_Dout_Reset {false}] [get_ips data_fifo_64]
 
 # Program/data RAM
-create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name instr_ram
-set_property -dict [list \
-                        CONFIG.Memory_Type {True_Dual_Port_RAM} \
-                        CONFIG.Use_Byte_Write_Enable {true} \
-                        CONFIG.Byte_Size {8} \
-                        CONFIG.Write_Width_A {64} \
-                        CONFIG.Write_Depth_A {16384} \
-                        CONFIG.Operating_Mode_A {READ_FIRST} \
-                        CONFIG.Register_PortA_Output_of_Memory_Primitives {false} \
-                        CONFIG.Register_PortB_Output_of_Memory_Primitives {false} \
-                        CONFIG.Read_Width_A {64} \
-                        CONFIG.Write_Width_B {64} \
-                        CONFIG.Read_Width_B {64} \
-                        CONFIG.Enable_B {Use_ENB_Pin} \
-                        CONFIG.Port_B_Clock {100} \
-                        CONFIG.Port_B_Write_Rate {50} \
-                        CONFIG.Port_B_Enable_Rate {100}] [get_ips instr_ram]
-
 create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name instr_ram
 set_property -dict [list \
                         CONFIG.Memory_Type {True_Dual_Port_RAM} \
@@ -512,10 +496,8 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 # Set 'sim_1' fileset object
 set obj [get_filesets sim_1]
 set files [list \
-               [file normalize $base_dir/src/test/verilog/host_behav.sv] \
-               [file normalize $base_dir/src/test/verilog/sd_verilator_model.sv] \
-               [file normalize $base_dir/src/test/verilog/nasti_ram_dummy.sv] \
-               [file normalize $base_dir/src/test/verilog/chip_top_tb.sv] \
+               [file normalize $base_dir/soc/sd_verilator_model.sv] \
+               [file normalize $base_dir/ariane_top_tb.sv] \
               ]
 add_files -norecurse -fileset $obj $files
 

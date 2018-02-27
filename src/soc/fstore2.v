@@ -13,19 +13,19 @@ specific language governing permissions and limitations under the License.
 // A simple monitor (LCD display) driver with glass TTY behaviour in text mode
 
 module fstore2(
-               input             pixel2_clk,
+               input wire             pixel2_clk,
                output reg [7:0]  red,
                output reg [7:0]  green,
                output reg [7:0]  blue,
 
-               output [11:0]     DVI_D,
-               output            DVI_DE,
-               output            DVI_H,
-               output            DVI_V,
-               output            DVI_XCLK_N,
-               output            DVI_XCLK_P,
+               output wire [11:0]     DVI_D,
+               output wire            DVI_DE,
+               output wire            DVI_H,
+               output wire            DVI_V,
+               output wire            DVI_XCLK_N,
+               output wire            DVI_XCLK_P,
 
-               output            vsyn,
+               output wire            vsyn,
                output reg        hsyn,
                output reg        blank,
 
@@ -36,11 +36,11 @@ module fstore2(
                input wire        clk_data,
                input wire        irst,
 
-               input             GPIO_SW_C,
-               input             GPIO_SW_N,
-               input             GPIO_SW_S,
-               input             GPIO_SW_E,
-               input             GPIO_SW_W
+               input wire             GPIO_SW_C,
+               input wire             GPIO_SW_N,
+               input wire             GPIO_SW_S,
+               input wire             GPIO_SW_E,
+               input wire             GPIO_SW_W
                );
 
    wire                          clear = GPIO_SW_S & GPIO_SW_N; 

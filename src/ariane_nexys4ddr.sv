@@ -13,37 +13,38 @@
 // Description: Ariane Top-level module
 
 import ariane_pkg::*;
+`default_nettype none
 
 module ariane_nexys4ddr
   (
    // DDR2 RAM
-   inout [15:0]  ddr_dq,
-   inout [1:0]   ddr_dqs_n,
-   inout [1:0]   ddr_dqs_p,
-   output [12:0] ddr_addr,
-   output [2:0]  ddr_ba,
-   output        ddr_ras_n,
-   output        ddr_cas_n,
-   output        ddr_we_n,
-   output        ddr_ck_n,
-   output        ddr_ck_p,
-   output        ddr_cke,
-   output        ddr_cs_n,
-   output [1:0]  ddr_dm,
-   output        ddr_odt,
+   inout wire [15:0]  ddr_dq,
+   inout wire [1:0]   ddr_dqs_n,
+   inout wire [1:0]   ddr_dqs_p,
+   output wire [12:0] ddr_addr,
+   output wire [2:0]  ddr_ba,
+   output wire        ddr_ras_n,
+   output wire        ddr_cas_n,
+   output wire        ddr_we_n,
+   output wire        ddr_ck_n,
+   output wire        ddr_ck_p,
+   output wire        ddr_cke,
+   output wire        ddr_cs_n,
+   output wire [1:0]  ddr_dm,
+   output wire        ddr_odt,
    input         rxd,
-   output        txd,
-   output        rts,
+   output wire        txd,
+   output wire        rts,
    input         cts,
    // 4-bit full SD interface
-   output        sd_sclk,
+   output wire        sd_sclk,
    input         sd_detect,
-   inout [3:0]   sd_dat,
-   inout         sd_cmd,
-   output        sd_reset,
+   inout wire [3:0]   sd_dat,
+   inout wire         sd_cmd,
+   output wire        sd_reset,
 
    // LED and DIP switch
-   output [7:0]  o_led,
+   output wire [7:0]  o_led,
    input  [15:0] i_dip,
 
    // push button array
@@ -54,17 +55,17 @@ module ariane_nexys4ddr
    input         GPIO_SW_S,
 
    //keyboard
-   inout         PS2_CLK,
-   inout         PS2_DATA,
+   inout wire         PS2_CLK,
+   inout wire         PS2_DATA,
 
   // display
-   output        VGA_HS_O,
-   output        VGA_VS_O,
-   output [3:0]  VGA_RED_O,
-   output [3:0]  VGA_BLUE_O,
-   output [3:0]  VGA_GREEN_O,
+   output wire        VGA_HS_O,
+   output wire        VGA_VS_O,
+   output wire [3:0]  VGA_RED_O,
+   output wire [3:0]  VGA_BLUE_O,
+   output wire [3:0]  VGA_GREEN_O,
 
-   // clock and reset
+   // Ethernet
  input wire [1:0]   i_erxd, // RMII receive data
  input wire         i_erx_dv, // PHY data valid
  input wire         i_erx_er, // PHY coding error
@@ -75,6 +76,13 @@ module ariane_nexys4ddr
  output wire        o_emdc, // MDIO clock
  inout wire         io_emdio, // MDIO inout
  output wire        o_erstn, // PHY reset active low
+
+  // JTAG signals
+    input  logic        tck_i,
+    input  logic        trstn_i,
+    input  logic        tms_i,
+    input  logic        tdi_i,
+    output logic        tdo_o,
 
    // clock and reset
    input         clk_p,
@@ -240,7 +248,7 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
       .locked        ( clk_locked_wiz )
       );
    
-   assign clk_locked = clk_locked_wiz & rst_top;
+   assign clk_locked = &{clk_locked_wiz, rst_top};
 
    // DRAM controller
    mig_7series_0 dram_ctl
@@ -320,7 +328,7 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
    /////////////////////////////////////////////////////////////
    // HID
 
-   logic                       hid_irq, sd_irq;
+   logic                       hid_irq, sd_irq, eth_irq;
 
    wire                        hid_rst, hid_clk, hid_en;
    wire [7:0]                  hid_we, hid_be;
@@ -560,7 +568,7 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
    assign hid_be = master0_be & 8'hF0 ? master0_be[7:4] : master0_be[3:0];
    assign hid_we = master0_we ? hid_be : 4'b0;
    assign hid_wrdata = master0_be & 8'hF0 ? master0_wdata[63:32] : master0_wdata[31:0];
-   assign master_rdata = {hid_rddata,hid_rddata};
+   assign master0_rdata = {hid_rddata,hid_rddata};
    assign hid_addr = master0_address[17:0];
    assign hid_clk = clk_i;
    assign hid_en = master0_req;
