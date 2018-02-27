@@ -113,7 +113,6 @@ set files [list \
                [file normalize $origin_dir/src/soc/ps2.v] \
                [file normalize $origin_dir/src/soc/rx_delay.v] \
                [file normalize $origin_dir/src/soc/sd_bus.sv] \
-               [file normalize $origin_dir/src/soc/sd_clock_divider.v] \
                [file normalize $origin_dir/src/soc/sd_cmd_serial_host.v] \
                [file normalize $origin_dir/src/soc/sd_crc_16.v] \
                [file normalize $origin_dir/src/soc/sd_crc_7.v] \
@@ -497,7 +496,7 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 set obj [get_filesets sim_1]
 set files [list \
                [file normalize $base_dir/soc/sd_verilator_model.sv] \
-               [file normalize $base_dir/ariane_top_tb.sv] \
+               [file normalize $base_dir/soc/ariane_nexys4ddr_top_tb.sv] \
               ]
 add_files -norecurse -fileset $obj $files
 
