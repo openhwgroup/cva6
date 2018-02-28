@@ -1,0 +1,72 @@
+CAPI=2:
+name : ::ariane:0
+
+filesets:
+  rtl:
+    files:
+      - include/ariane_pkg.sv
+      - include/nbdcache_pkg.sv
+      - src/alu.sv
+      - src/ariane.sv
+      - src/ariane_wrapped.sv
+      - src/branch_unit.sv
+      - src/btb.sv
+      - src/cache_ctrl.sv
+      - src/commit_stage.sv
+      - src/compressed_decoder.sv
+      - src/controller.sv
+      - src/csr_buffer.sv
+      - src/csr_regfile.sv
+      - src/debug_unit.sv
+      - src/decoder.sv
+      - src/ex_stage.sv
+      - src/fetch_fifo.sv
+      - src/fifo.sv
+      - src/icache.sv
+      - src/id_stage.sv
+      - src/if_stage.sv
+      - src/instr_realigner.sv
+      - src/issue_read_operands.sv
+      - src/issue_stage.sv
+      - src/lfsr.sv
+      - src/load_unit.sv
+      - src/lsu_arbiter.sv
+      - src/lsu.sv
+      - src/miss_handler.sv
+      - src/mmu.sv
+      - src/mult.sv
+      - src/nbdcache.sv
+      - src/pcgen_stage.sv
+      - src/perf_counters.sv
+      - src/ptw.sv
+      - src/regfile_ff.sv
+      - src/scoreboard.sv
+      - src/store_buffer.sv
+      - src/store_unit.sv
+      - src/tlb.sv
+    file_type : systemVerilogSource
+    depend :
+      - pulp-platform.org::axi_mem_if
+      - tool_verilator? (pulp-platform::uvm-components)
+  behav_sram:
+    files:
+      - src/util/behav_sram.sv
+    file_type : systemVerilogSource
+    
+targets:
+  verilator:
+    default_tool : verilator
+    filesets: [behav_sram, rtl]
+    tools:
+      verilator:
+        mode : cc
+        verilator_options :
+          - --unroll-count 256
+          - -Wno-fatal
+          - -LDFLAGS
+          - "-lfesvr"
+          - -CFLAGS
+          - "-std=c++11"
+          - -Wall
+          - --trace
+    toplevel : [ariane_wrapped]
