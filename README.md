@@ -44,18 +44,28 @@ Furthermore, we have major IPC improvements planned. Specifically this will reso
 
 ## Going Beyond
 
-The core has been developed with a full licensed version of QuestaSim. If you happen to have this simulator available yourself here is how you could run the core with it:
+The core has been developed with a full licensed version of QuestaSim. If you happen to have this simulator available yourself here is how you could run the core with it. You need to generate **both** an `elf` file and a `hex` file, most easily this can be done by calling:
+
+```
+elf2hex 8 2097152 elf_file.riscv 2147483648  > elf_file.riscv.hex
+```
 
 Start the simulation using Modelsim:
 ```
 make build
 make sim
 ```
-To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the riscv-tests isa folder:
+To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the `tmp/risc-tests/build/isa` folder:
 ```
 make sim riscv-test=rv64ui-p-sraw
 ```
+If you need to specify a different directory you can pass the optional `riscv-test-dir` flag:
+```
+make sim riscv-test=elf_name riscv-test-dir=/path/to/elf/and/hex/file
+```
 If you call `simc` instead of `sim` it will run without the GUI.
+
+### Unit Tests
 
 Or start any of the unit tests by:
 ```
