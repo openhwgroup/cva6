@@ -146,7 +146,7 @@ set_property include_dirs [list \
                                [file normalize $base_dir/include] \
                               ] [get_filesets sources_1]
 
-set_property verilog_define [list FPGA FPGA_FULL NEXYS4] [get_filesets sources_1]
+set_property verilog_define [list FPGA FPGA_FULL NEXYS4 PULP_FPGA_EMUL BOOT_MEM=\"[file normalize $origin_dir/src/boot.mem]\"] [get_filesets sources_1]
 
 # Set 'sources_1' fileset properties
 set_property "top" "ariane_nexys4ddr" [get_filesets sources_1]
@@ -507,8 +507,8 @@ set_property include_dirs [list \
                                [file normalize $origin_dir/generated-src] \
                                [file normalize $proj_dir/$project_name.srcs/sources_1/ip/mig_7series_0/mig_7series_0/example_design/sim] \
                               ] $obj
-#set_property verilog_define [list FPGA FPGA_FULL NEXYS4] $obj
-set_property verilog_define [list FPGA NASTI_RAM_DUMMY BOOT_MEM=\"[file normalize $origin_dir/src/boot.mem]\"] $obj
+
+set_property verilog_define [list FPGA NASTI_RAM_DUMMY] $obj
 
 #set_property -name {xsim.elaborate.xelab.more_options} -value {-cc gcc -sv_lib dpi} -objects $obj
 set_property "top" "tb" $obj

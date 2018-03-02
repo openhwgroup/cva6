@@ -7,7 +7,7 @@
 
 module tb;
 
-   logic clk, rst;
+   logic clk, rst, tck_i, trstn_i, tms_i, tdi_i, tdo_o;
 
    ariane_nexys4ddr DUT
      (
@@ -153,7 +153,10 @@ sd_verilator_model sdflash1 (
    // vcd
    initial begin
          $dumpfile("test.vcd");
-         $dumpvars(0, tb.DUT);
+         $dumpvars(0, tb.DUT.i_ariane);
+         $dumpvars(0, tb.DUT.i_master0);
+         $dumpvars(0, tb.DUT.i_master1);
+         $dumpvars(0, tb.DUT.i_master_behav);
          $dumpon;
       end
 
@@ -172,5 +175,10 @@ sd_verilator_model sdflash1 (
    assign i_erx_dv = o_etx_en;
    assign i_erxd = o_etxd;
    assign i_erx_er = 1'b0;
+ 
+   assign trstn_i = !rst;
+   assign tck_i = 'b0;
+   assign tms_i = 1'b0;
+   assign tdi_i = 'b0;
    
 endmodule // tb

@@ -22,13 +22,7 @@ module   axi_bram_ctrl_ariane
     parameter AXI4_USER_WIDTH    = 10,
     parameter AXI_NUMBYTES       = AXI4_WDATA_WIDTH/8,
     parameter MEM_ADDR_WIDTH     = 13,
-    parameter BUFF_DEPTH_SLAVE   = 4,
-
-    parameter LATENCY_AW         = 50,
-    parameter LATENCY_AR         = 50,
-    parameter LATENCY_R          = 50,
-    parameter LATENCY_B          = 50,
-    parameter LATENCY_W          = 50
+    parameter BUFF_DEPTH_SLAVE   = 4
 )
 (
 

@@ -41,11 +41,15 @@ module regfile
   input  logic [4:0]             raddr_b_i,
   output logic [DATA_WIDTH-1:0]  rdata_b_o,
 
-
   // Write port W1
   input  logic [4:0]              waddr_a_i,
   input  logic [DATA_WIDTH-1:0]   wdata_a_i,
-  input  logic                    we_a_i
+  input  logic                    we_a_i,
+  
+  // Debug ports
+  output logic [DATA_WIDTH-1:0]  ra, sp, gp, tp, t0, t1, t2, s0, s1,
+  output logic [DATA_WIDTH-1:0]  a0, a1, a2, a3, a4, a5, a6, a7,
+  output logic [DATA_WIDTH-1:0]  s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, t3, t4, t5, t6
 
 );
 
@@ -100,4 +104,37 @@ module regfile
   assign rdata_a_o = rf_reg[raddr_a_i];
   assign rdata_b_o = rf_reg[raddr_b_i];
 
+  // Debug outputs
+  assign ra = rf_reg[1];
+  assign sp = rf_reg[2];
+  assign gp = rf_reg[3];
+  assign tp = rf_reg[4];
+  assign t0 = rf_reg[5];
+  assign t1 = rf_reg[6];
+  assign t2 = rf_reg[7];
+  assign s0 = rf_reg[8];
+  assign s1 = rf_reg[9];
+  assign a0 = rf_reg[10];
+  assign a1 = rf_reg[11];
+  assign a2 = rf_reg[12];
+  assign a3 = rf_reg[13];
+  assign a4 = rf_reg[14];
+  assign a5 = rf_reg[15];
+  assign a6 = rf_reg[16];
+  assign a7 = rf_reg[17];
+  assign s2 = rf_reg[18];
+  assign s3 = rf_reg[19];
+  assign s4 = rf_reg[20];
+  assign s5 = rf_reg[21];
+  assign s6 = rf_reg[22];
+  assign s7 = rf_reg[23];
+  assign s8 = rf_reg[24];
+  assign s9 = rf_reg[25];
+  assign s10 = rf_reg[26];
+  assign s11 = rf_reg[27];
+  assign t3 = rf_reg[28];
+  assign t4 = rf_reg[29];
+  assign t5 = rf_reg[30];
+  assign t6 = rf_reg[31];
+  
 endmodule

@@ -694,8 +694,10 @@ module ariane #(
             if (commit_ack && !commit_stage_i.exception_o) begin
                 $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit.pc, commit_instr_id_commit.ex.tval[31:0], commit_instr_id_commit.ex.tval[31:0]);
             end else if (commit_ack) begin
+               $write("Exception %d\n", commit_instr_id_commit.ex.cause);
                 if (commit_instr_id_commit.ex.cause == 2) begin
-                    $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h)\n", commit_instr_id_commit.ex.tval[31:0]);
+                    $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h), PC=0x%0h\n",
+                            commit_instr_id_commit.ex.tval[31:0], commit_instr_id_commit.pc);
                 end else begin
                     $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit.ex.cause);
                 end

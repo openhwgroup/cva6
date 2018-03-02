@@ -4,8 +4,6 @@ AXI_BUS.Master master,
 input clk_i, rst_ni
 );
 
-`ifdef SYSTEM_CACHE
-
 system_cache_0 your_instance_name (
   .ACLK(clk_i),                              // input wire ACLK
   .ARESETN(rst_ni),                        // input wire ARESETN
@@ -144,107 +142,5 @@ system_cache_0 your_instance_name (
   .M_AXI_RVALID(master.r_valid),
   .M_AXI_RREADY(master.r_ready)
 );
-
-`else // !`ifdef SYSTEM_CACHE
-   
-axi_crossbar_0 your_instance_name (
-  .aclk(clk_i),                   // input wire aclk
-  .aresetn(rst_ni),             // input wire aresetn
-  .s_axi_awid({slave1.aw_id,slave0.aw_id}),
-  .s_axi_awaddr({slave1.aw_addr,slave0.aw_addr}),
-  .s_axi_awlen({slave1.aw_len,slave0.aw_len}),
-  .s_axi_awsize({slave1.aw_size,slave0.aw_size}),
-  .s_axi_awburst({slave1.aw_burst,slave0.aw_burst}),
-  .s_axi_awlock({slave1.aw_lock,slave0.aw_lock}),
-  .s_axi_awcache({slave1.aw_cache,slave0.aw_cache}),
-  .s_axi_awprot({slave1.aw_prot,slave0.aw_prot}),
-//.s_axi_awregion({slave1.aw_region,slave0.aw_region}),
-  .s_axi_awqos({slave1.aw_qos,slave0.aw_qos}),
-//.s_axi_awuser({slave1.aw_user,slave0.aw_user}),
-  .s_axi_awvalid({slave1.aw_valid,slave0.aw_valid}),
-  .s_axi_awready({slave1.aw_ready,slave0.aw_ready}),
-  .s_axi_wdata({slave1.w_data,slave0.w_data}),
-  .s_axi_wstrb({slave1.w_strb,slave0.w_strb}),
-  .s_axi_wlast({slave1.w_last,slave0.w_last}),
-//.s_axi_wuser({slave1.w_user,slave0.w_user}),
-  .s_axi_wvalid({slave1.w_valid,slave0.w_valid}),
-  .s_axi_wready({slave1.w_ready,slave0.w_ready}),
-  .s_axi_bid({slave1.b_id,slave0.b_id}),
-  .s_axi_bresp({slave1.b_resp,slave0.b_resp}),
-//.s_axi_buser({slave1.b_user,slave0.b_user}),
-  .s_axi_bvalid({slave1.b_valid,slave0.b_valid}),
-  .s_axi_bready({slave1.b_ready,slave0.b_ready}),
-  .s_axi_arid({slave1.ar_id,slave0.ar_id}),
-  .s_axi_araddr({slave1.ar_addr,slave0.ar_addr}),
-  .s_axi_arlen({slave1.ar_len,slave0.ar_len}),
-  .s_axi_arsize({slave1.ar_size,slave0.ar_size}),
-  .s_axi_arburst({slave1.ar_burst,slave0.ar_burst}),
-  .s_axi_arlock({slave1.ar_lock,slave0.ar_lock}),
-  .s_axi_arcache({slave1.ar_cache,slave0.ar_cache}),
-  .s_axi_arprot({slave1.ar_prot,slave0.ar_prot}),
-//.s_axi_arregion({slave1.ar_region,slave0.ar_region}),
-  .s_axi_arqos({slave1.ar_qos,slave0.ar_qos}),
-//.s_axi_aruser({slave1.ar_user,slave0.ar_user}),
-  .s_axi_arvalid({slave1.ar_valid,slave0.ar_valid}),
-  .s_axi_arready({slave1.ar_ready,slave0.ar_ready}),
-  .s_axi_rid({slave1.r_id,slave0.r_id}),
-  .s_axi_rdata({slave1.r_data,slave0.r_data}),
-  .s_axi_rresp({slave1.r_resp,slave0.r_resp}),
-  .s_axi_rlast({slave1.r_last,slave0.r_last}),
-//.s_axi_ruser({slave1.r_user,slave0.r_user}),
-  .s_axi_rvalid({slave1.r_valid,slave0.r_valid}),
-  .s_axi_rready({slave1.r_ready,slave0.r_ready}),
-    .m_axi_awvalid  ( master.aw_valid  ),
-    .m_axi_awaddr   ( master.aw_addr   ),
-    .m_axi_awprot   ( master.aw_prot   ),
-    .m_axi_awregion ( master.aw_region ),
-    .m_axi_awlen    ( master.aw_len    ),
-    .m_axi_awsize   ( master.aw_size   ),
-    .m_axi_awburst  ( master.aw_burst  ),
-    .m_axi_awlock   ( master.aw_lock   ),
-    .m_axi_awcache  ( master.aw_cache  ),
-    .m_axi_awqos    ( master.aw_qos    ),
-    .m_axi_awid     ( master.aw_id     ),
-//  .m_axi_awuser   ( master.aw_user   ),
-    .m_axi_awready  ( master.aw_ready  ),
-
-    .m_axi_arvalid  ( master.ar_valid  ),
-    .m_axi_araddr   ( master.ar_addr   ),
-    .m_axi_arprot   ( master.ar_prot   ),
-    .m_axi_arregion ( master.ar_region ),
-    .m_axi_arlen    ( master.ar_len    ),
-    .m_axi_arsize   ( master.ar_size   ),
-    .m_axi_arburst  ( master.ar_burst  ),
-    .m_axi_arlock   ( master.ar_lock   ),
-    .m_axi_arcache  ( master.ar_cache  ),
-    .m_axi_arqos    ( master.ar_qos    ),
-    .m_axi_arid     ( master.ar_id     ),
-//  .m_axi_aruser   ( master.ar_user   ),
-    .m_axi_arready  ( master.ar_ready  ),
-
-    .m_axi_wvalid   ( master.w_valid   ),
-//  .m_axi_wid      (                      ),
-    .m_axi_wdata    ( master.w_data    ),
-    .m_axi_wstrb    ( master.w_strb    ),
-//  .m_axi_wuser    ( master.w_user    ),
-    .m_axi_wlast    ( master.w_last    ),
-    .m_axi_wready   ( master.w_ready   ),
-
-    .m_axi_rvalid   ( master.r_valid   ),
-    .m_axi_rdata    ( master.r_data    ),
-    .m_axi_rresp    ( master.r_resp    ),
-    .m_axi_rlast    ( master.r_last    ),
-    .m_axi_rid      ( master.r_id      ),
-//  .m_axi_ruser    ( master.r_user    ),
-    .m_axi_rready   ( master.r_ready   ),
-
-    .m_axi_bvalid   ( master.b_valid   ),
-    .m_axi_bresp    ( master.b_resp    ),
-    .m_axi_bid      ( master.b_id      ),
-//  .m_axi_buser    ( master.b_user    ),
-    .m_axi_bready   ( master.b_ready   )
-);
-
-`endif
 
 endmodule // nasti_converter

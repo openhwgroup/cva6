@@ -29,10 +29,11 @@ module fstore2(
                output reg        hsyn,
                output reg        blank,
 
-               output wire [7:0] doutb,
-               input wire [7:0]  dinb,
-               input wire [12:0] addrb,
-               input wire        web, enb,
+               output wire [63:0] doutb,
+               input wire  [63:0]  dinb,
+               input wire  [10:0] addrb,
+               input wire  [7:0] web,
+               input wire        enb,
                input wire        clk_data,
                input wire        irst,
 
@@ -71,7 +72,7 @@ module fstore2(
    reg [4:0]                     scroll;
    
    wire [7:0]                    dout;
-   wire [12:0]                   addra = {offvreg[10:5],offhreg[12:6]};
+   wire [13:0]                   addra = {offvreg[10:5],offhreg[12:6]};
    
    // 100 MHz / 2100 is 47.6kHz.  Divide by further 788 to get 60.4 Hz.
    // Aim for 1024x768 non interlaced at 60 Hz.  

@@ -2,28 +2,31 @@ module axi_ram_wrap  #(
     AXI_ID_WIDTH = 10,               // id width
     AXI_ADDR_WIDTH = 64,             // address width
     AXI_DATA_WIDTH = 64,             // width of data
-    AXI_USER_WIDTH = 1               // width of user field, must > 0, let synthesizer trim it if not in use
+    AXI_USER_WIDTH = 1,              // width of user field, must > 0, let synthesizer trim it if not in use
+    MEM_ADDR_WIDTH = 13
     )
 (
 AXI_BUS.Slave slave,
 input clk_i, rst_ni,
-output reg [63 : 0] o_data
+output wire [AXI_DATA_WIDTH/8-1 : 0] bram_we_a,
+output wire [MEM_ADDR_WIDTH-1 : 0] bram_addr_a,
+output wire [AXI_DATA_WIDTH-1 : 0] bram_wrdata_a,
+input  wire [AXI_DATA_WIDTH-1 : 0] bram_rddata_a,
+output wire          bram_rst_a, bram_clk_a, bram_en_a
 );
 
-wire [31:0] s_axi_awaddr = slave.aw_addr;
-wire [31:0] s_axi_araddr = slave.ar_addr;
-
-wire  [7 : 0] bram_we_a;
-wire [12 : 0] bram_addr_a;
-wire [63 : 0] bram_wrdata_a;
-wire [63 : 0] bram_rddata_a;
-wire          bram_rst_a, bram_clk_a, bram_en_a;
-
-axi_bram_ctrl_ariane ram_under_test (
+axi_bram_ctrl_ariane #(
+        .AXI4_ID_WIDTH   ( AXI_ID_WIDTH      ),
+        .AXI4_ADDRESS_WIDTH ( AXI_ADDR_WIDTH    ),
+        .AXI4_RDATA_WIDTH ( AXI_DATA_WIDTH    ),
+        .AXI4_WDATA_WIDTH ( AXI_DATA_WIDTH    ),
+        .AXI4_USER_WIDTH ( AXI_USER_WIDTH    ),
+        .MEM_ADDR_WIDTH ( MEM_ADDR_WIDTH )
+    )  ram_ctrl (
   .s_axi_aclk(clk_i),                // input wire s_aclk
   .s_axi_aresetn(rst_ni),           // input wire s_aresetn
   .s_axi_awid(slave.aw_id),
-  .s_axi_awaddr(s_axi_awaddr[12:0]),
+  .s_axi_awaddr(slave.aw_addr),
   .s_axi_awlen(slave.aw_len),
   .s_axi_awsize(slave.aw_size),
   .s_axi_awburst(slave.aw_burst),
@@ -47,7 +50,7 @@ axi_bram_ctrl_ariane ram_under_test (
   .s_axi_bvalid(slave.b_valid),
   .s_axi_bready(slave.b_ready),
   .s_axi_arid(slave.ar_id),
-  .s_axi_araddr(s_axi_araddr[12:0]),
+  .s_axi_araddr(slave.ar_addr),
   .s_axi_arlen(slave.ar_len),
   .s_axi_arsize(slave.ar_size),
   .s_axi_arburst(slave.ar_burst),
@@ -74,13 +77,5 @@ axi_bram_ctrl_ariane ram_under_test (
   .bram_wrdata_a(bram_wrdata_a),  // output wire [63 : 0] bram_wrdata_a
   .bram_rddata_a(bram_rddata_a)  // input wire [63 : 0] bram_rddata_a
 );
-   
-assign bram_rddata_a = 64'hDEADBEEF|{bram_addr_a,32'b0};
-
-always @(posedge clk_i)
-    begin
-    if (bram_en_a && bram_we_a)
-        o_data <= bram_wrdata_a;
-    end
     
-endmodule // nasti_converter
+endmodule

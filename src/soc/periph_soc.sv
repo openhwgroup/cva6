@@ -75,7 +75,7 @@ output wire eth_irq
  // signals from/to core
   logic  [7:0] core_lsu_rx_byte;
 logic [4:0] one_hot_data_addr;
-logic [31:0] one_hot_rdata[4:0];
+logic [63:0] one_hot_rdata[4:0];
 
     ps2 keyb_mouse(
       .clk(msoc_clk),
@@ -124,11 +124,11 @@ logic [31:0] one_hot_rdata[4:0];
       .red(red),
       .green(green),
       .blue(blue),
-      .web(hid_en & one_hot_data_addr[1] & (|hid_we)),
-      .enb(hid_en),
-      .addrb({hid_addr[14:9],1'b0,hid_addr[8:3]}),
-      .dinb(hid_wrdata[7:0]),
-      .doutb(fstore_data),
+      .web(hid_we),
+      .enb(hid_en & one_hot_data_addr[1]),
+      .addrb(hid_addr[13:3]),
+      .dinb(hid_wrdata),
+      .doutb(one_hot_rdata[1]),
       .irst(~rstn),
       .clk_data(msoc_clk),
       .GPIO_SW_C(GPIO_SW_C),
@@ -138,7 +138,6 @@ logic [31:0] one_hot_rdata[4:0];
       .GPIO_SW_W(GPIO_SW_W)              
      );
 
- assign one_hot_rdata[1] = {56'b0,fstore_data};
  assign VGA_RED_O = red[7:4];
  assign VGA_GREEN_O = green[7:4];
  assign VGA_BLUE_O = blue[7:4];
@@ -177,11 +176,11 @@ uart i_uart(
 always_comb
   begin:onehot
      integer i;
-     hid_rddata = 32'b0;
+     hid_rddata = 64'b0;
      for (i = 0; i < 5; i++)
        begin
 	   one_hot_data_addr[i] = hid_addr[17:15] == i;
-	   hid_rddata |= (one_hot_data_addr[i] ? one_hot_rdata[i] : 32'b0);
+	   hid_rddata |= (one_hot_data_addr[i] ? one_hot_rdata[i] : 64'b0);
        end
   end
 
