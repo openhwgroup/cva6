@@ -1,0 +1,115 @@
+library ( memory_generic ) {
+
+type(bus4) {
+base_type : array;
+data_type : bit;
+bit_width : 4;
+bit_from : 0;
+bit_to : 3;
+downto : false;
+}
+type(bus2) {
+base_type : array;
+data_type : bit;
+bit_width : 2;
+bit_from : 0;
+bit_to : 1;
+downto : false;
+}
+cell (sram) {
+area : 5000.000;
+interface_timing : TRUE;
+memory() {
+type : ram;
+address_width : 4;
+word_width : 2;
+}
+bus (ADDR) {
+bus_type : "bus4";
+direction : input;
+capacitance : 1.46;
+timing () {
+timing_type : setup_falling;
+intrinsic_rise : 3.20;
+intrinsic_fall : 3.20;
+related_pin : "CLK";
+}
+timing () {
+timing_type : hold_rising;
+intrinsic_rise : 1.85;
+intrinsic_fall : 1.85;
+related_pin : "CLK";
+}
+}
+bus (DI) {
+bus_type: "bus2";
+direction : input;
+capacitance : 1.46;
+fanout_load : 1.46;
+memory_write() {
+address : ADDR;
+clocked_on : "EN";
+}
+timing () {
+timing_type : setup_rising;
+intrinsic_rise : 1.50;
+intrinsic_fall : 1.50;
+related_pin : "WEN";
+}
+timing () {
+timing_type : hold_rising;
+intrinsic_rise : 0.65;
+intrinsic_fall : 0.65;
+related_pin : "WEN";
+}
+timing () {
+timing_type : setup_rising;
+intrinsic_rise : 1.50;
+intrinsic_fall : 1.50;
+related_pin : "CSN";
+}
+timing () {
+timing_type : hold_rising;
+intrinsic_rise : 0.65;
+intrinsic_fall : 0.65;
+related_pin : "CSN";
+}
+}
+pin (CLK) {
+direction : input;
+capacitance : 1.13;
+clock : true;
+}
+pin (WEN) {
+direction : input;
+capacitance : 1.13;
+clock : true;
+}
+pin (CSN) {
+direction : input;
+capacitance : 1.13;
+clock : true;
+}
+pin (EN) {
+direction : internal;
+capacitance : 1.13;
+clock : true;
+state_function : "!CSN * !WEN * CLK";
+}
+bus (QO){
+bus_type : "bus2";
+direction : output;
+memory_read() {
+address : ADDR;
+}
+timing () {
+timing_sense : non_unate;
+intrinsic_rise : 5.25;
+rise_resistance : 0.020;
+intrinsic_fall : 5.50;
+fall_resistance : 0.017;
+related_bus_pins : "ADDR";
+}
+}
+}
+}

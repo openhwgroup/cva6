@@ -27,7 +27,7 @@ module sram #(
 );
 
     generate
-        if (NUM_WORDS == 256) begin
+        if (NUM_WORDS == 256) begin:nw256
 
             // Dirty RAM
             if (DATA_WIDTH == 16) begin

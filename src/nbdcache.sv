@@ -51,6 +51,10 @@ module nbdcache #(
     input  amo_t [2:0]                     amo_op_i
 );
 
+    // To be defined - get rid of VCS warning
+    assign amo_valid_o = 1'b0;
+    assign amo_result_o = 1'b0;
+
     // -------------------------------
     // Controller <-> Arbiter
     // -------------------------------
@@ -172,7 +176,14 @@ module nbdcache #(
         .be_o                   ( be              [0]  ),
         .data_o                 ( wdata           [0]  ),
         .we_o                   ( we              [0]  ),
-        .*
+        .clk_i                  ( clk_i                ),
+        .rst_ni                 ( rst_ni               ),
+        .flush_i                ( flush_i              ),      // flush request
+        .flush_ack_o            ( flush_ack_o          ),  // acknowledge successful flush
+        .miss_o                 ( miss_o               ),
+        .bypass_if              ( bypass_if            ),
+        .data_if                ( data_if              ),
+        .state_init_o           ( state_init           )
     );
 
     assign tag[0] = '0;
@@ -262,6 +273,7 @@ module nbdcache #(
         .we_o               ( we_ram      ),
         .be_o               ( be_ram      ),
         .rdata_i            ( rdata_ram   ),
+        .state_init_i       ( state_init  ),
         .*
     );
 
@@ -307,7 +319,8 @@ module tag_cmp #(
         output data_t                                        wdata_o,
         output logic                                         we_o,
         output be_t                                          be_o,
-        input  data_t               [SET_ASSOCIATIVITY-1:0]  rdata_i
+        input  data_t               [SET_ASSOCIATIVITY-1:0]  rdata_i,
+        input  logic                                         state_init_i
     );
 
     assign rdata_o = rdata_i;
@@ -351,14 +364,19 @@ module tag_cmp #(
             if (req_i[i])
                 break;
         end
-
-        `ifndef SYNTHESIS
-        `ifndef VERILATOR
-        // assert that cache only hits on one way
-        assert property (
-          @(posedge clk_i) $onehot0(hit_way_o)) else begin $error("Hit should be one-hot encoded"); $stop(); end
-        `endif
-        `endif
+        if (state_init_i)
+          begin
+             be_o.tag = ~44'b0;
+             be_o.data = ~128'b0;
+             be_o.dirty = ~8'b0;
+             be_o.valid = ~8'b0;
+             req_o = {SET_ASSOCIATIVITY{1'b1}};
+          end
+        if (!rst_ni)
+          begin
+          we_o = 1'b0;
+          req_o = {SET_ASSOCIATIVITY{1'b1}};
+          end
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

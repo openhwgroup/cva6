@@ -498,8 +498,8 @@ module alu_ff #(
     localparam int unsigned NUM_LEVELS = $clog2(LEN);
 
     logic [LEN-1:0] [NUM_LEVELS-1:0]           index_lut;
-    logic [2**NUM_LEVELS-1:0]                  sel_nodes;
-    logic [2**NUM_LEVELS-1:0] [NUM_LEVELS-1:0] index_nodes;
+    bit   [2**NUM_LEVELS-1:0]                  sel_nodes;
+    bit   [2**NUM_LEVELS-1:0] [NUM_LEVELS-1:0] index_nodes;
 
     // ----------------------------
     // Generate Tree Structure

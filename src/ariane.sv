@@ -14,10 +14,7 @@
 
 import ariane_pkg::*;
 `ifndef verilator
-`ifndef SYNTHESIS
-import instruction_tracer_pkg::*;
 `timescale 1ns / 1ps
-`endif
 `endif
 
 module ariane #(
@@ -93,10 +90,10 @@ module ariane #(
     // IF <-> ID
     // --------------
     fetch_entry_t             fetch_entry_if_id;
-    logic                     ready_id_if;
+//    logic                     ready_id_if;
     logic                     fetch_valid_if_id;
     logic                     decode_ack_id_if;
-    exception_t               exception_if_id;
+//    exception_t               exception_if_id;
 
     // --------------
     // ID <-> ISSUE
@@ -123,7 +120,7 @@ module ariane #(
     logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
     logic                     alu_valid_ex_id;
     logic [63:0]              alu_result_ex_id;
-    exception_t               alu_exception_ex_id;
+//    exception_t               alu_exception_ex_id;
     // Branches and Jumps
     logic                     branch_ready_ex_id;
     logic [TRANS_ID_BITS-1:0] branch_trans_id_ex_id;
@@ -308,7 +305,7 @@ module ariane #(
         // Reserved for future use
         .fetch_entry_1_o       (                                ),
         .fetch_entry_valid_1_o (                                ),
-        .fetch_ack_1_i         (                                ),
+        .fetch_ack_1_i         ( 1'b0                           ),
         .*
     );
 
@@ -421,7 +418,7 @@ module ariane #(
         .alu_result_o           ( alu_result_ex_id                       ),
         .alu_trans_id_o         ( alu_trans_id_ex_id                     ),
         .alu_valid_o            ( alu_valid_ex_id                        ),
-        .alu_exception_o        (                                        ),
+//        .alu_exception_o        (                                        ),
         // Branches and Jumps
         .branch_ready_o         ( branch_ready_ex_id                     ),
         .branch_valid_o         ( branch_valid_ex_id                     ),
@@ -642,6 +639,8 @@ module ariane #(
         .debug_csr_we_o    ( csr_we_debug_csr          ),
         .debug_csr_wdata_o ( csr_wdata_debug_csr       ),
         .debug_csr_rdata_i ( csr_rdata_debug_csr       ),
+        .debug_resume_i    ( debug_resume_i            ),
+        .debug_halt_i      ( debug_halt_i              ),
         .*
     );
 
@@ -670,48 +669,6 @@ module ariane #(
        .flush_set_ID_ack_o  (                                )
     );
 
-    // -------------------
-    // Instruction Tracer
-    // -------------------
-    `ifndef SYNTHESIS
-    `ifndef verilator
-    instruction_tracer_if tracer_if (clk_i);
-    // assign instruction tracer interface
-    // control signals
-    assign tracer_if.rstn              = rst_ni;
-    assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
-    assign tracer_if.flush             = flush_ctrl_ex;
-    // fetch
-    assign tracer_if.instruction       = id_stage_i.compressed_decoder_i.instr_o;
-    assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
-    assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
-    // Issue
-    assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
-    assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;
-    // write-back
-    assign tracer_if.waddr             = waddr_a_commit_id;
-    assign tracer_if.wdata             = wdata_a_commit_id;
-    assign tracer_if.we                = we_a_commit_id;
-    // commit
-    assign tracer_if.commit_instr      = commit_instr_id_commit;
-    assign tracer_if.commit_ack        = commit_ack;
-    // address translation
-    // stores
-    assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
-    assign tracer_if.st_paddr          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
-    // loads
-    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.tag_valid_o;
-    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.kill_req_o;
-    assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.i_load_unit.paddr_i;
-    // exceptions
-    assign tracer_if.exception         = commit_stage_i.exception_o;
-    // assign current privilege level
-    assign tracer_if.priv_lvl          = priv_lvl;
-
-    instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
-    `endif
-    `endif
-
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
             fetch_enable <= 0;
@@ -721,28 +678,6 @@ module ariane #(
     end
 
     `ifndef SYNTHESIS
-    `ifndef verilator
-    program instr_tracer
-        (
-            instruction_tracer_if tracer_if,
-            input logic [5:0] cluster_id_i,
-            input logic [3:0] core_id_i
-        );
-
-        instruction_tracer it = new (tracer_if, 1'b0);
-
-        initial begin
-            #15ns;
-            it.create_file(cluster_id_i, core_id_i);
-            it.trace();
-        end
-
-        final begin
-            it.close();
-        end
-    endprogram
-    // mock tracer for Verilator, to be used with spike-dasm
-    `else
 
     string s;
     int f;
@@ -759,8 +694,10 @@ module ariane #(
             if (commit_ack && !commit_stage_i.exception_o) begin
                 $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit.pc, commit_instr_id_commit.ex.tval[31:0], commit_instr_id_commit.ex.tval[31:0]);
             end else if (commit_ack) begin
+               $write("Exception %d\n", commit_instr_id_commit.ex.cause);
                 if (commit_instr_id_commit.ex.cause == 2) begin
-                    $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h)\n", commit_instr_id_commit.ex.tval[31:0]);
+                    $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h), PC=0x%0h\n",
+                            commit_instr_id_commit.ex.tval[31:0], commit_instr_id_commit.pc);
                 end else begin
                     $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit.ex.cause);
                 end
@@ -769,10 +706,7 @@ module ariane #(
         end
     end
 
-    final begin
-        $fclose(f);
-    end
     `endif
-    `endif
+
 endmodule // ariane
 

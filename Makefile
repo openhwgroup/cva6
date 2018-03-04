@@ -48,23 +48,23 @@ riscv-test-dir := tmp/riscv-tests/build/isa
 riscv-tests := rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and rv64ui-p-auipc 			 \
 			   rv64ui-p-beq rv64ui-p-bge rv64ui-p-bgeu rv64ui-p-andi rv64ui-p-blt rv64ui-p-bltu rv64ui-p-bne                 \
 			   rv64ui-p-simple rv64ui-p-jal rv64ui-p-jalr rv64ui-p-or rv64ui-p-ori rv64ui-p-sub rv64ui-p-subw                \
-			   rv64ui-p-xor rv64ui-p-xori rv64ui-p-slliw rv64ui-p-sll rv64ui-p-slli rv64ui-p-sllw 							 \
-			   rv64ui-p-slt rv64ui-p-slti rv64ui-p-sltiu rv64ui-p-sltu rv64ui-p-sra rv64ui-p-srai 							 \
-			   rv64ui-p-sraiw rv64ui-p-sraw rv64ui-p-srl rv64ui-p-srli rv64ui-p-srliw rv64ui-p-srlw 						 \
-			   rv64ui-p-lb rv64ui-p-lbu rv64ui-p-ld rv64ui-p-lh rv64ui-p-lhu rv64ui-p-lui rv64ui-p-lw rv64ui-p-lwu 			 \
+			   rv64ui-p-xor rv64ui-p-xori rv64ui-p-slliw rv64ui-p-sll rv64ui-p-slli rv64ui-p-sllw 				 \
+			   rv64ui-p-slt rv64ui-p-slti rv64ui-p-sltiu rv64ui-p-sltu rv64ui-p-sra rv64ui-p-srai 				 \
+			   rv64ui-p-sraiw rv64ui-p-sraw rv64ui-p-srl rv64ui-p-srli rv64ui-p-srliw rv64ui-p-srlw 			 \
+			   rv64ui-p-lb rv64ui-p-lbu rv64ui-p-ld rv64ui-p-lh rv64ui-p-lhu rv64ui-p-lui rv64ui-p-lw rv64ui-p-lwu		 \
 			   rv64mi-p-csr rv64mi-p-mcsr rv64mi-p-illegal rv64mi-p-ma_addr rv64mi-p-ma_fetch rv64mi-p-sbreak rv64mi-p-scall \
-			   rv64si-p-csr rv64si-p-ma_fetch rv64si-p-scall rv64si-p-wfi rv64si-p-sbreak rv64si-p-dirty  					 \
-			   rv64uc-p-rvc																									 \
-			   rv64ui-v-add rv64ui-v-addi rv64ui-p-slli rv64ui-v-addiw rv64ui-v-addw rv64ui-v-and rv64ui-v-auipc			 \
-			   rv64ui-v-beq rv64ui-v-bge rv64ui-v-bgeu rv64ui-v-andi rv64ui-v-blt rv64ui-v-bltu rv64ui-v-bne 				 \
-			   rv64ui-v-simple rv64ui-v-jal rv64ui-v-jalr rv64ui-v-or rv64ui-v-ori rv64ui-v-sub rv64ui-v-subw				 \
-   			   rv64ui-v-xor rv64ui-v-xori rv64ui-v-slliw rv64ui-v-sll rv64ui-v-slli rv64ui-v-slliw 							 \
-			   rv64ui-v-slt rv64ui-v-slti rv64ui-v-sltiu rv64ui-v-sltu rv64ui-v-sra rv64ui-v-srai 					         \
-			   rv64ui-v-sraiw rv64ui-v-sraw rv64ui-v-srl rv64ui-v-srli rv64ui-v-srliw rv64ui-v-srlw  						 \
-			   rv64ui-v-lb rv64ui-v-lbu rv64ui-v-ld rv64ui-v-lh rv64ui-v-lhu rv64ui-v-lui 								     \
-			   rv64um-p-mul rv64um-p-mulh rv64um-p-mulhsu rv64um-p-mulhu rv64um-p-div rv64um-p-divu rv64um-p-rem  		 	 \
-			   rv64um-p-remu rv64um-p-mulw rv64um-p-divw rv64um-p-divuw rv64um-p-remw rv64um-p-remuw 						 \
-			   rv64um-v-mul rv64um-v-mulh rv64um-v-mulhsu rv64um-v-mulhu rv64um-v-div rv64um-v-divu rv64um-v-rem    		 \
+			   rv64si-p-csr rv64si-p-ma_fetch rv64si-p-scall rv64si-p-wfi rv64si-p-sbreak rv64si-p-dirty  			 \
+			   rv64uc-p-rvc													 \
+			   rv64ui-v-add rv64ui-v-addi rv64ui-p-slli rv64ui-v-addiw rv64ui-v-addw rv64ui-v-and rv64ui-v-auipc		 \
+			   rv64ui-v-beq rv64ui-v-bge rv64ui-v-bgeu rv64ui-v-andi rv64ui-v-blt rv64ui-v-bltu rv64ui-v-bne 		 \
+			   rv64ui-v-simple rv64ui-v-jal rv64ui-v-jalr rv64ui-v-or rv64ui-v-ori rv64ui-v-sub rv64ui-v-subw		 \
+			   rv64ui-v-xor rv64ui-v-xori rv64ui-v-slliw rv64ui-v-sll rv64ui-v-slli rv64ui-v-slliw 				 \
+			   rv64ui-v-slt rv64ui-v-slti rv64ui-v-sltiu rv64ui-v-sltu rv64ui-v-sra rv64ui-v-srai 			         \
+			   rv64ui-v-sraiw rv64ui-v-sraw rv64ui-v-srl rv64ui-v-srli rv64ui-v-srliw rv64ui-v-srlw  			 \
+			   rv64ui-v-lb rv64ui-v-lbu rv64ui-v-ld rv64ui-v-lh rv64ui-v-lhu rv64ui-v-lui 					 \
+			   rv64um-p-mul rv64um-p-mulh rv64um-p-mulhsu rv64um-p-mulhu rv64um-p-div rv64um-p-divu rv64um-p-rem  	 	 \
+			   rv64um-p-remu rv64um-p-mulw rv64um-p-divw rv64um-p-divuw rv64um-p-remw rv64um-p-remuw 			 \
+			   rv64um-v-mul rv64um-v-mulh rv64um-v-mulhsu rv64um-v-mulhu rv64um-v-div rv64um-v-divu rv64um-v-rem   		 \
 			   rv64um-v-remu rv64um-v-mulw rv64um-v-divw rv64um-v-divuw rv64um-v-remw rv64um-v-remuw
 
 # failed test directory
@@ -149,17 +149,17 @@ run-failed-tests: build
 		+UVM_TESTNAME=$(test_case)  $(uvm-flags) +ASMTEST=$(test) +signature=$(test).rtlsim.sig +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
 		-coverage -classdebug -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
 		$(library).$(test_top_level)_optimized;)
-	# run it on spike
+# run it on spike
 	$(foreach test, $(failed-tests:.S=), spike +signature=$(test).spike.sig $(test);)
-	# diff the results
+# diff the results
 	$(foreach test, $(failed-tests:.S=), diff $(test).spike.sig $(test).rtlsim.sig;)
 
 # Run the specified test case
 $(tests): build
-	# Optimize top level
+# Optimize top level
 	vopt${questa_version} -work ${library} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
-	# vsim${questa_version} $@_tb_optimized
-	# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
+# vsim${questa_version} $@_tb_optimized
+# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
 	vsim${questa_version} +UVM_TESTNAME=$@_test +ASMTEST=$(riscv-test-dir)/$(riscv-test) \
 	+uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug \
 	-do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
@@ -169,16 +169,22 @@ $(tests): build
 verilate:
 	$(verilator) $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) $(wildcard src/axi_slice/*.sv) \
 	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
-	--unroll-count 256 -Wno-fatal -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace \
+	--unroll-count 256 -Wno-fatal -LDFLAGS "-g -L$(RISCV)/lib -lfesvr" -CFLAGS "-g -std=c++11 -I$(RISCV)/include" -Wall --cc --trace \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
 	cd obj_dir && make -j8 -f Variane_wrapped.mk
 
 verify:
 	qverify vlog -sv src/csr_regfile.sv
 
+vivado: ariane_top/ariane_top.xpr
+	vivado ariane_top/ariane_top.xpr &
+
+ariane_top/ariane_top.xpr:
+	vivado -mode batch -source script/make_project.tcl
+
 clean:
 	rm -rf work/ *.ucdb
-	rm -rf obj_dir
+	rm -rf obj_dir ariane_top
 
 .PHONY:
 	build lint build-moore

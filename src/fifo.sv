@@ -94,7 +94,7 @@ module fifo #(
     `ifndef SYNTHESIS
     `ifndef verilator
     initial begin
-        assert (DEPTH == 2**$clog2(DEPTH)) else $fatal("FIFO size needs to be a power of two.");
+        assert (DEPTH == 2**$clog2(DEPTH)) else $fatal(1, "FIFO size needs to be a power of two.");
 
     assert property(
         @(posedge clk_i) (rst_ni && full_o |-> ~push_i))

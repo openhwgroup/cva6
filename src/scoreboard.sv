@@ -238,7 +238,7 @@ module scoreboard #(
     `ifndef SYNTHESIS
     `ifndef verilator
     initial begin
-        assert (NR_ENTRIES == 2**$clog2(NR_ENTRIES)) else $fatal("Scoreboard size needs to be a power of two.");
+        assert (NR_ENTRIES == 2**$clog2(NR_ENTRIES)) else $fatal(1, "Scoreboard size needs to be a power of two.");
     end
 
     // assert that zero is never set

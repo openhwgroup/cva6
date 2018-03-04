@@ -1,0 +1,265 @@
+-----------------------------------
+-- VCS MX Setup Variable Mappings
+-----------------------------------
+VERILOG_ARCH_NAME		= MODULE
+---------------------------------------------------------------
+-- Analysis Settings
+---------------------------------------------------------------
+-- Specifies the type of binding to use when analyzing VHDL source files
+-- Values are: SOFT or HARD
+COMPONENT_BINDING               = SOFT
+-- Specifies the analyzer options for code generation
+DEFAULT_ANALYZE_MODE            = -event
+-- Controls the analyzer whether to optimize compiled event code
+OPTIMIZE                        = TRUE
+-- Controls the level of VITAL conformance checks when analyzing VITAL models
+RELAX_CONFORMANCE               = FALSE
+-- Performs synthesis policy checking when analyzing VHDL design files
+SPC                             = FALSE
+-- Use IEEE Std 1076-1987 constructs
+-- IEEE_1076_1987 = TRUE
+-- Eliminating redundant logical operations in VHDL
+VHDL_LOGIC_OPT                  = FALSE 
+-- Disable supporting for library alias in multiple setup files
+LIBRARY_ALIAS                   = FALSE
+-- Enable performance improvement for little endian platform
+SIMFILE_LITTLE_ENDIAN           = TRUE
+---------------------------------------------------------------
+-- Elaboration Settings
+---------------------------------------------------------------
+-- Disables warning messages when duplicate design units (homographs)
+-- are found
+IGNORE_BINDING_HOMOGRAPHS       = FALSE
+-- Scans all declared VHDL libraries for a matching entity when
+-- performing component binding
+LIBRARY_SCAN                    = FALSE
+-- Limits the maximum depth of the design hierarchy
+MAX_HIERARCHY_DEPTH             = 5000
+-- Level of resolution function optimizations
+-- Values are: NO_OPT, STD_OPT, or FULL_OPT
+RESFUNC_OPT                     = FULL_OPT
+RESFUNC_OPT_WARN                = TRUE
+-- Base time unit for simulation
+-- Values are: FS, PS, NS, US, MS, SEC
+TIMEBASE = PS
+-- Minimum time precision for simulation: <value>unit
+-- Valid values are 1, 10, or 100
+-- TIME_RESOLUTION                 = 1NS
+-- Enable bounds/range check in code gen
+DEFAULT_CHECK = TRUE
+---------------------------------------------------------------
+-- Elaboration Settings with no default value
+---------------------------------------------------------------
+-- These variables force their respective VITAL generic values
+-- to always be either TRUE or FALSE
+-- FORCE_TimingChecksOn_TO =
+-- FORCE_XOn_TO =
+-- FORCE_MsgOn_TO =
+---------------------------------------------------------------
+-- Simulation Settings
+---------------------------------------------------------------
+-- Disables assertions of the given severity or higher. If left NOTSET,
+-- then the ASSERT_IGNORE_* variables are used.
+-- Values are: NOTSET, NOTE, WARNING, ERROR, FAILURE, or NOIGNORE
+ASSERT_IGNORE                   = NOTSET
+-- If ASSERT_IGNORE is left NOTSET, disables the printing of assertions
+-- of the given severity
+ASSERT_IGNORE_NOTE              = FALSE
+ASSERT_IGNORE_WARNING           = FALSE
+ASSERT_IGNORE_ERROR             = FALSE
+ASSERT_IGNORE_FAILURE           = FALSE
+-- Disables assertions of the given severity or higher from the VCS MX
+-- optimized packages such as NUMERIC_STD and STD_LOGIC_ARITH
+ASSERT_IGNORE_OPTIMIZED_LIBS    = WARNING
+-- Stops simulation on assertions of the given severity or higher
+-- Values are: NOTE, WARNING, ERROR, FAILURE, or NOSTOP
+-- Commented out as it will be set to FAILURE in XPROP mode, ERROR otherwise
+-- ASSERT_STOP                     = ERROR
+-- Controls the execution of Tcl include scripts if an error is encountered
+CCI_SH_CONTINUE_ON_ERROR        = FALSE
+-- If TRUE, simulation will continue until the next wait statement before
+-- stoping due to an assertion. If FALSE, simulation will stop immediately
+-- and cannot be continued
+CS_ASSERT_STOP_NEXT_WAIT        = TRUE
+-- If set to TRUE when running batch mode simulation, this variable will
+-- cause simulation to stop immediately without the possibility of continuing
+-- if an assertion of severity equal or higher than ASSERT_STOP occurs
+CS_ASSERT_STOP_PROMPT           = FALSE
+-- Enables optimizations to allow the grouping of VHDL processes
+GROUP_PROCESSES                 = TRUE
+-- Limits the maximum amount of delta cycles that can be executed within
+-- any individual time step. If the value is 0, no limit is imposed.
+MAX_DELTA                       = 0
+-- Determines wildcard capabilities for SDF back-annotation
+SDFWILDCARD                     = FALSE
+-- Flushes the contents of VCD output immediately to a file
+VCD_IMMEDIATE_FLUSH             = FALSE
+-- Enables delta-cycle capturing in interactive simulation
+VPDDELTACAPTURE               = OFF
+-- Updates the waveform window with every simulation timestep
+-- WARNING: This option will slow the simulation performance.
+WAVEFORM_UPDATE                 = FALSE
+---------------------------------------------------------------
+-- Simulation Settings with no default value
+---------------------------------------------------------------
+-- Specifies the default file names for the given output file
+-- EVCD_OUTFILE =
+-- VCD_OUTFILE =
+-- VPD_OUTFILE =
+-- Full pathname of the file containing the naming convention for SDF
+-- parameters
+-- SDFNAMINGFILE =
+---------------------------------------------------------------
+-- Setting for analysis, elaboration and simulation
+---------------------------------------------------------------
+-- Enables license queueing. Specifies the time in minutes before
+-- the executable gives up waiting for a license
+-- LICENSE_WAIT_TIME =
+---------------------------------------------------------------
+-- VHDL source files search path
+---------------------------------------------------------------
+USE = . $SYNOPSYS_SIM/packages/synopsys/src \
+        $SYNOPSYS_SIM/packages/IEEE/src \
+        $SYNOPSYS_SIM/packages/IEEE_asic/src \
+        $SYNOPSYS_SIM/packages/gtechnox/src \
+        $SYNOPSYS_SIM/packages/gtech/src \
+        $SYNOPSYS_SIM/packages/gscomp/src \
+        $SYNOPSYS_SIM/packages/snps_ext/src \
+	$SYNOPSYS_SIM/packages/STD_DEVELOPERSKIT/src \
+	$SYNOPSYS_SIM/packages/VITAL2000/src \
+        $SYNOPSYS_SIM/packages/dware/src \
+        $SYNOPSYS_SIM/packages/dw/dw01/src \
+        $SYNOPSYS_SIM/packages/dw/dw02/src \
+        $SYNOPSYS_SIM/packages/dw/dw03/src \
+        $SYNOPSYS_SIM/packages/dw/dw04/src \
+        $SYNOPSYS_SIM/packages/dw/dw05/src \
+        $SYNOPSYS_SIM/packages/dw/dw06/src \
+        $SYNOPSYS_SIM/packages/dw/dw07/src \
+        $SYNOPSYS_SIM/packages/dw/dw08/src
+---------------------------------------------------------------
+-- C Compilation Settings
+-- The following options are used to select a custom C compiler
+-- It is not recommended to change any of the following options
+---------------------------------------------------------------
+-- Specifies the number of compilers used in compilation
+NUM_COMPILERS                   = 4
+-- Controls the parallelism of code generation and compilation
+PARALLEL_COMPILE_OFF            = FALSE
+-- Architecture specific compiler settings
+CS_CCPATH_SPARCOS5              = cc
+CS_CCFLAGS_SPARCOS5             = -c -O
+CS_CCPATH_SOLARISX86            = cc
+CS_CCFLAGS_SOLARISX86           =  -c -xarch=pentium_pro -O
+CS_CCPATH_X86SOL64              = cc
+CS_CCFLAGS_X86SOL64             = -c -xarch=amd64 -O
+CS_CCPATH_X86SOL32              = cc
+CS_CCFLAGS_X86SOL32             = -c -xarch=pentium_pro -O
+-- CS_CCPATH_SPARC64              = $SYNOPSYS_SIM/sparc64/cc/bin/cc
+CS_CCPATH_SPARC64              = cc
+CS_CCFLAGS_SPARC64             = -c -xarch=v9 -O 
+CS_CCPATH_HP32                  = cc
+CS_CCFLAGS_HP32                 = -c -w -O -Ae
+CS_CCPATH_REDHAT72              = gcc
+CS_CCFLAGS_REDHAT72             = -c -O
+CS_CCPATH_LINUX			= gcc
+CS_CCFLAGS_LINUX		= -c -O
+CS_CCPATH_SUSE32		= gcc
+CS_CCFLAGS_SUSE32		= -c -O
+CS_CCPATH_LINUX64                 = gcc
+CS_CCFLAGS_LINUX64                = -c -O
+CS_CCPATH_SUSE64                 = gcc
+CS_CCFLAGS_SUSE64                = -c -O
+CS_CCPATH_RS6000                = cc
+CS_CCFLAGS_RS6000               = -c -qchars=signed -O -qmaxmem=2048000 -qfloat=rndsngl:nomaf
+---------------------------------------------------------------
+-- C Compilation Settings with no default value
+-- The following options are set automatically by VCS MX.
+-- It is not recommended to change any of the following options
+---------------------------------------------------------------
+-- CS_CCFLAGS =
+-- CS_CCPATH =
+-- CS_LDFLAGS =
+-- CS_LDPATH =
+-- CS_MAKEFLAGS =
+-- CS_MAKEPATH =
+-- CS_GCCLIBPATH = 
+---------------------------------------------------------------
+-- Default workspace (Current dir)
+---------------------------------------------------------------
+WORK                            > DEFAULT
+DEFAULT                         : .
+-- Disable copyright messages for all executables
+-- NO_COPYRIGHT = TRUE
+-- NOCOPYRIGHT = TRUE
+---------------------------------------------------------------
+-- VHDL library to UNIX dir mappings --
+---------------------------------------------------------------
+DWARE           : $SYNOPSYS_SIM/$ARCH/packages/dware/lib
+DW01            : $SYNOPSYS_SIM/$ARCH/packages/dw/dw01/lib
+DW02            : $SYNOPSYS_SIM/$ARCH/packages/dw/dw02/lib
+DW03            : $SYNOPSYS_SIM/$ARCH/packages/dw/dw03/lib
+DW04            : $SYNOPSYS_SIM/$ARCH/packages/dw/dw04/lib
+DW05            : $SYNOPSYS_SIM/$ARCH/packages/dw/dw05/lib
+DW06            : $SYNOPSYS_SIM/$ARCH/packages/dw/dw06/lib
+DW07            : $SYNOPSYS_SIM/$ARCH/packages/dw/dw07/lib
+DW08            : $SYNOPSYS_SIM/$ARCH/packages/dw/dw08/lib
+GTECH           : $SYNOPSYS_SIM/$ARCH/packages/gtech/lib
+-- Use this line instead of the default GTECH mapping
+-- to use the cycle-compatible GTECH library
+-- GTECH        : $SYNOPSYS_SIM/$ARCH/packages/gtechnox/lib
+GSCOMP          : $SYNOPSYS_SIM/$ARCH/packages/gscomp/lib
+IEEE            : $SYNOPSYS_SIM/$ARCH/packages/IEEE/lib
+IEEE_ASIC       : $SYNOPSYS_SIM/$ARCH/packages/IEEE_asic/lib
+SYNOPSYS        : $SYNOPSYS_SIM/$ARCH/packages/synopsys/lib
+SNPS_EXT        : $SYNOPSYS_SIM/$ARCH/packages/snps_ext/lib
+STD_DEVELOPERSKIT : $SYNOPSYS_SIM/$ARCH/packages/STD_DEVELOPERSKIT/lib
+VITAL2000       : $SYNOPSYS_SIM/$ARCH/packages/VITAL2000/lib
+-- for Verdi UFE only, please don't add it to 'USE'
+NOVAS           : $SYNOPSYS_SIM/$ARCH/packages/novas/lib
+STD             : $SYNOPSYS_SIM/$ARCH/packages/STD/lib
+---------------------------------------------------------------
+-- VHPI disable error messages
+---------------------------------------------------------------
+DISABLE_VHPI_ERRORS = TRUE
+---------------------------------------------------------------
+-- Third-Party Tools
+---------------------------------------------------------------
+-- mapping of logical library to physical path for Synopsys DW Smart model
+SMARTMODEL      : $LMC_HOME/synopsys/smartmodel
+-- mapping of logical library to physical path for Synopsys DW Flex model
+FLEXMODEL       : $LMC_HOME/synopsys/flexmodel
+---------------------------------------------------------------
+-- GUI/Virsim Related
+---------------------------------------------------------------
+-- Max first index size of memory to be displayed.
+GUI_MAX_MEM_SIZE = 1000
+---------------------------------------------------------------
+-- Coverage setup
+---------------------------------------------------------------
+-- Ignore synthsis pragmas in code coverage
+CM_IGNORE_SYNTHSIS_PRAGMA = FALSE
+---------------------------------------------------------------
+-- Read-Only Library
+---------------------------------------------------------------
+READ_ONLY_LIBS = TRUE
+-- Make sure the interface of Verilog object is identical
+-- between analysis and elaboration time.
+-- Possible values are IGNORE, WARNING and ERROR.
+MX_INTERFACE_CHECK = ERROR
+-- When computing the signature of shell files, 
+-- ignore internal attribute specifications, such as SOURCE_FILE.
+-- Possible values are TRUE and FALSE.
+MX_SHELL_NEW_SIGNATURE = TRUE
+MX_ELAB_BINDING = FALSE
+-- Dump scsim.db.file in VFS format with compression turned on
+MX_VFS_DB = FALSE 
+-- Allow exchange entity class 'FUNCTION' and 'PROCEDURE' in attribute specification
+RELAX_SUBP_ENTITY_CLASS = FALSE
+secureip : /local/scratch/jrrk2/ariane/compile_simlib/secureip
+unisim : /local/scratch/jrrk2/ariane/compile_simlib/unisim/64
+unimacro : /local/scratch/jrrk2/ariane/compile_simlib/unimacro/64
+unifast : /local/scratch/jrrk2/ariane/compile_simlib/unifast/64
+unisims_ver : /local/scratch/jrrk2/ariane/compile_simlib/unisims_ver
+unimacro_ver : /local/scratch/jrrk2/ariane/compile_simlib/unimacro_ver
+unifast_ver : /local/scratch/jrrk2/ariane/compile_simlib/unifast_ver
+simprims_ver : /local/scratch/jrrk2/ariane/compile_simlib/simprims_ver
