@@ -93,9 +93,9 @@ $(library)/.build-srcs: $(util) $(src)
 	touch $(library)/.build-srcs
 
 # build TBs
-$(library)/.build-tb: $(tbs)
+$(library)/.build-tb: $(dpi) $(tbs)
 	# Compile top level
-	vlog$(questa_version) -sv $(tbs) -work $(library)
+	vlog$(questa_version) -sv $(tbs) -work $(library) $(filter %.c %.cc, $(dpi)) -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
 	touch $(library)/.build-tb
 
 # compile DPIs
