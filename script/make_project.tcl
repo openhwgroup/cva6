@@ -6,6 +6,7 @@
 set mem_data_width {64}
 set io_data_width {32}
 set axi_id_width {8}
+set axi_user_width {2}
 
 set origin_dir "."
 set base_dir "src"
@@ -45,7 +46,7 @@ set files [list \
                [file normalize $origin_dir/src/util/axi_ram_wrap.sv] \
                [file normalize $origin_dir/src/util/axi_bram_ctrl_ariane.sv] \
                [file normalize $origin_dir/src/util/axi_crossbar_wrap.sv] \
-               [file normalize $origin_dir/src/axi_if/axi_mem_if.sv] \
+               [file normalize $origin_dir/src/axi_mem_if/axi_mem_if.sv] \
                [file normalize $origin_dir/src/axi_if/axi_if.sv] \
                [file normalize $origin_dir/src/axi_slice/axi_ar_buffer.sv] \
                [file normalize $origin_dir/src/axi_slice/axi_aw_buffer.sv] \
@@ -108,7 +109,6 @@ set files [list \
 	       [file normalize $origin_dir/src/custom_axi_master/HDL_sources/Synthesis_Sources/AXI_ADDRESS_CONTROL_CHANNEL_edited.sv] \
                [file normalize $origin_dir/src/lfsr.sv] \
                [file normalize $origin_dir/src/icache.sv] \
-               [file normalize $origin_dir/src/soc/ascii_code.v] \
                [file normalize $origin_dir/src/soc/axis_gmii_rx.v] \
                [file normalize $origin_dir/src/soc/axis_gmii_tx.v] \
                [file normalize $origin_dir/src/soc/ddr2_model.v] \
@@ -158,13 +158,13 @@ set_property include_dirs [list \
                                [file normalize $base_dir/include] \
                               ] [get_filesets sources_1]
 
-set_property verilog_define [list FPGA FPGA_FULL NEXYS4 PULP_FPGA_EMUL BOOT_MEM=\"[file normalize $origin_dir/src/boot.mem]\"] [get_filesets sources_1]
+set_property verilog_define [list MIG FPGA FPGA_FULL NEXYS4 PULP_FPGA_EMUL BOOT_MEM=\"[file normalize $origin_dir/src/boot.mem]\"] [get_filesets sources_1]
 
 # Set 'sources_1' fileset properties
 set_property "top" "ariane_nexys4ddr" [get_filesets sources_1]
 
 # AXI master FIFOs
-create_ip -name fifo_generator -vendor xilinx.com -library ip -version 13.0 -module_name data_fifo_32
+create_ip -name fifo_generator -vendor xilinx.com -library ip  -module_name data_fifo_32
 set_property -dict [list \
                         CONFIG.Fifo_Implementation {Common_Clock_Builtin_FIFO} \
                         CONFIG.Performance_Options {Standard_FIFO} \
@@ -173,7 +173,7 @@ set_property -dict [list \
                         CONFIG.Reset_Type {Asynchronous_Reset} \
                         CONFIG.Use_Dout_Reset {false}] [get_ips data_fifo_32]
 
-create_ip -name fifo_generator -vendor xilinx.com -library ip -version 13.0 -module_name data_fifo_64
+create_ip -name fifo_generator -vendor xilinx.com -library ip  -module_name data_fifo_64
 set_property -dict [list \
                         CONFIG.Fifo_Implementation {Common_Clock_Builtin_FIFO} \
                         CONFIG.Performance_Options {Standard_FIFO} \
@@ -183,7 +183,7 @@ set_property -dict [list \
                         CONFIG.Use_Dout_Reset {false}] [get_ips data_fifo_64]
 
 # Program/data RAM
-create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name instr_ram
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -module_name instr_ram
 set_property -dict [list \
                         CONFIG.Memory_Type {True_Dual_Port_RAM} \
                         CONFIG.Use_Byte_Write_Enable {true} \
@@ -201,7 +201,7 @@ set_property -dict [list \
                         CONFIG.Port_B_Write_Rate {50} \
                         CONFIG.Port_B_Enable_Rate {100}] [get_ips instr_ram]
 
-create_ip -name blk_mem_gen -vendor xilinx.com -library ip -version 8.3 -module_name data_ram
+create_ip -name blk_mem_gen -vendor xilinx.com -library ip -module_name data_ram
 set_property -dict [list \
                         CONFIG.Memory_Type {True_Dual_Port_RAM} \
                         CONFIG.Use_Byte_Write_Enable {true} \
@@ -333,13 +333,18 @@ generate_target {instantiation_template} \
     [get_files $proj_dir/$project_name.srcs/sources_1/ip/mig_7series_0/mig_7series_0.xci]
 
 # AXI clock converter due to the clock difference
-create_ip -name axi_clock_converter -vendor xilinx.com -library ip -version 2.1 -module_name axi_clock_converter_0
+create_ip -name axi_clock_converter -vendor xilinx.com -library ip -module_name axi_clock_converter_0
 set_property -dict [list \
                         CONFIG.ADDR_WIDTH {30} \
                         CONFIG.DATA_WIDTH $mem_data_width \
                         CONFIG.ID_WIDTH $axi_id_width \
                         CONFIG.ACLK_ASYNC {0} \
-                        CONFIG.ACLK_RATIO {1:2}] \
+                        CONFIG.ACLK_RATIO {1:2} \
+		        CONFIG.AWUSER_WIDTH $axi_user_width \
+			CONFIG.ARUSER_WIDTH $axi_user_width \
+			CONFIG.RUSER_WIDTH $axi_user_width \
+			CONFIG.WUSER_WIDTH $axi_user_width \
+			CONFIG.BUSER_WIDTH $axi_user_width] \
     [get_ips axi_clock_converter_0]
 generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/axi_clock_converter_0/axi_clock_converter_0.xci]
 
@@ -409,7 +414,7 @@ generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs
 
 # Crossbar
 
-create_ip -name axi_crossbar -vendor xilinx.com -library ip -version 2.1 -module_name axi_crossbar_0
+create_ip -name axi_crossbar -vendor xilinx.com -library ip -module_name axi_crossbar_0
 set_property -dict [list \
                         CONFIG.NUM_SI {3} \
                         CONFIG.NUM_MI {2} \
@@ -417,11 +422,11 @@ set_property -dict [list \
 			CONFIG.ADDR_WIDTH {64} \
 			CONFIG.DATA_WIDTH {64} \
 			CONFIG.ID_WIDTH {10} \
-			CONFIG.AWUSER_WIDTH {1} \
-			CONFIG.ARUSER_WIDTH {1} \
-			CONFIG.WUSER_WIDTH {1} \
-			CONFIG.RUSER_WIDTH {1} \
-			CONFIG.BUSER_WIDTH {1} \
+			CONFIG.AWUSER_WIDTH $axi_user_width \
+			CONFIG.ARUSER_WIDTH $axi_user_width \
+			CONFIG.WUSER_WIDTH $axi_user_width \
+			CONFIG.RUSER_WIDTH $axi_user_width \
+			CONFIG.BUSER_WIDTH $axi_user_width \
 			CONFIG.M00_A00_BASE_ADDR {0x0000000080000000} \
 			CONFIG.M01_A00_BASE_ADDR {0x0000000040000000} \
 			CONFIG.M00_A00_ADDR_WIDTH {30} \
@@ -437,13 +442,13 @@ set_property -dict [list \
 generate_target {instantiation_template} [get_files $proj_dir/$project_name.srcs/sources_1/ip/axi_crossbar_0/axi_crossbar_0.xci]
 
 # Protocol checker
-create_ip -name axi_protocol_checker -vendor xilinx.com -library ip -version 1.1 -module_name axi_protocol_checker_0
+create_ip -name axi_protocol_checker -vendor xilinx.com -library ip -module_name axi_protocol_checker_0
 set_property -dict [list \
-                        CONFIG.AWUSER_WIDTH {2} \
-                        CONFIG.ARUSER_WIDTH {2} \
-                        CONFIG.RUSER_WIDTH {2} \
-                        CONFIG.WUSER_WIDTH {2} \
-                        CONFIG.BUSER_WIDTH {2} \
+                        CONFIG.AWUSER_WIDTH $axi_user_width \
+                        CONFIG.ARUSER_WIDTH $axi_user_width \
+                        CONFIG.RUSER_WIDTH $axi_user_width \
+                        CONFIG.WUSER_WIDTH $axi_user_width \
+                        CONFIG.BUSER_WIDTH $axi_user_width \
                         CONFIG.DATA_WIDTH {64} \
                         CONFIG.ID_WIDTH {4} \
                         CONFIG.MAX_RD_BURSTS {2} \
