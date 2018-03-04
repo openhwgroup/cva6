@@ -40,9 +40,21 @@ set files [list \
                [file normalize $origin_dir/src/jtag_xilinx/jtag_dummy.v] \
                [file normalize $origin_dir/src/jtag_xilinx/jtag_rom.v] \
                [file normalize $origin_dir/src/jtag_xilinx/jtag_addr.v] \
+               [file normalize $origin_dir/src/util/generic_fifo.sv] \
                [file normalize $origin_dir/src/util/infer_ram.sv] \
+               [file normalize $origin_dir/src/util/axi_ram_wrap.sv] \
+               [file normalize $origin_dir/src/util/axi_bram_ctrl_ariane.sv] \
+               [file normalize $origin_dir/src/util/axi_crossbar_wrap.sv] \
+               [file normalize $origin_dir/src/axi_if/axi_mem_if.sv] \
                [file normalize $origin_dir/src/axi_if/axi_if.sv] \
-               [file normalize $origin_dir/src/axi_mem_if/axi2mem.sv] \
+               [file normalize $origin_dir/src/axi_slice/axi_ar_buffer.sv] \
+               [file normalize $origin_dir/src/axi_slice/axi_aw_buffer.sv] \
+               [file normalize $origin_dir/src/axi_slice/axi_b_buffer.sv] \
+               [file normalize $origin_dir/src/axi_slice/axi_buffer.sv] \
+               [file normalize $origin_dir/src/axi_slice/axi_r_buffer.sv] \
+               [file normalize $origin_dir/src/axi_slice/axi_slice.sv] \
+               [file normalize $origin_dir/src/axi_slice/axi_slice_wrap.sv] \
+               [file normalize $origin_dir/src/axi_slice/axi_w_buffer.sv] \
                [file normalize $origin_dir/src/ariane.sv] \
                [file normalize $origin_dir/src/ariane_nexys4ddr.sv] \
                [file normalize $origin_dir/src/alu.sv] \
