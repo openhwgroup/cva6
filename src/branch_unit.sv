@@ -24,6 +24,7 @@ module branch_unit (
     input  logic                      is_compressed_instr_i,
     input  logic                      fu_valid_i,             // any functional unit is valid, check that there is no accidental mis-predict
     input  logic                      branch_valid_i,
+    input  logic                      branch_comp_res_i,      // branch comparison result from ALU
     output logic                      branch_ready_o,
     output logic                      branch_valid_o,
     output logic [63:0]               branch_result_o,
@@ -37,32 +38,11 @@ module branch_unit (
 );
     logic [63:0] target_address;
     logic [63:0] next_pc;
-    logic        comparison_result; // result of comparison
-    logic        sgn;               // sign extend
     // branches are single cycle at the moment, feed-through the control signals
     assign branch_trans_id_o = trans_id_i;
     assign branch_valid_o    = branch_valid_i;
     assign branch_ready_o    = 1'b1; // we are always ready
 
-    always_comb begin : branch_resolve
-        // by default e.g.: when this is a jump, the branch is taken
-        // so set the comparison result to 1
-        comparison_result = 1'b1;
-        // sign switch
-        sgn = 1'b1;
-        // if this is an unsigned operation clear the sign bit
-        // this should ease data-path extraction
-        if (operator_i inside {LTU, GEU})
-            sgn = 1'b0;
-        // get the right comparison result
-        case (operator_i)
-            EQ:       comparison_result = operand_a_i == operand_b_i;
-            NE:       comparison_result = operand_a_i != operand_b_i;
-            LTS, LTU: comparison_result = ($signed({sgn & operand_a_i[63], operand_a_i})   <  $signed({sgn & operand_b_i[63], operand_b_i}));
-            GES, GEU: comparison_result = ($signed({sgn & operand_a_i[63], operand_a_i})  >=  $signed({sgn & operand_b_i[63], operand_b_i}));
-            default: comparison_result = 1'b1;
-        endcase
-    end
     // here we handle the various possibilities of mis-predicts
     always_comb begin : mispredict_handler
         // set the jump base, for JALR we need to look at the register, for all other control flow instructions we can take the current PC
@@ -104,15 +84,15 @@ module branch_unit (
             // the other case is a misaligned uncompressed instruction which we only predict in the next cycle (see notes above)
             resolved_branch_o.is_lower_16 = (is_compressed_instr_i && pc_i[1] == 1'b0) || (!is_compressed_instr_i && pc_i[1] == 1'b1);
             // write target address which goes to pc gen
-            resolved_branch_o.target_address = (comparison_result) ? target_address : next_pc;
-            resolved_branch_o.is_taken       = comparison_result;
+            resolved_branch_o.target_address = (branch_comp_res_i) ? target_address : next_pc;
+            resolved_branch_o.is_taken       = branch_comp_res_i;
             // we've detected a branch in ID with the following parameters
             // we mis-predicted e.g.: the predicted address is unequal to the actual address
             if (target_address[0] == 1'b0) begin
                 // we've got a valid branch prediction
                 if (branch_predict_i.valid) begin
                     // if the outcome doesn't match we've got a mis-predict
-                    if (branch_predict_i.predict_taken != comparison_result) begin
+                    if (branch_predict_i.predict_taken != branch_comp_res_i) begin
                         resolved_branch_o.is_mispredict  = 1'b1;
                     end
                     // check if the address of the predict taken branch is correct
@@ -122,7 +102,7 @@ module branch_unit (
                 // branch-prediction didn't do anything (e.g.: it fetched PC + 2/4), so if this branch is taken
                 // we also have a mis-predict
                 end else begin
-                    if (comparison_result) begin
+                    if (branch_comp_res_i) begin
                         resolved_branch_o.is_mispredict = 1'b1;
                     end
                 end

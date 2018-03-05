@@ -123,6 +123,7 @@ module ariane #(
     logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
     logic                     alu_valid_ex_id;
     logic [63:0]              alu_result_ex_id;
+    logic                     alu_branch_res_ex_id;
     exception_t               alu_exception_ex_id;
     // Branches and Jumps
     logic                     branch_ready_ex_id;
@@ -421,6 +422,7 @@ module ariane #(
         .alu_result_o           ( alu_result_ex_id                       ),
         .alu_trans_id_o         ( alu_trans_id_ex_id                     ),
         .alu_valid_o            ( alu_valid_ex_id                        ),
+        .alu_branch_res_o       ( alu_branch_res_ex_id                   ),
         .alu_exception_o        (                                        ),
         // Branches and Jumps
         .branch_ready_o         ( branch_ready_ex_id                     ),

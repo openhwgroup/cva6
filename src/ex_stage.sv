@@ -38,6 +38,7 @@ module ex_stage #(
     output logic                                   alu_ready_o,           // FU is ready
     input  logic                                   alu_valid_i,           // Output is valid
     output logic                                   alu_valid_o,           // ALU result is valid
+    output logic                                   alu_branch_res_o,      // Branch comparison result
     output logic [63:0]                            alu_result_o,
     output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
     output exception_t                             alu_exception_o,
@@ -127,6 +128,7 @@ module ex_stage #(
     // --------------------
     branch_unit branch_unit_i (
         .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i), // any functional unit is valid, check that there is no accidental mis-predict
+        .branch_comp_res_i   ( alu_branch_res_o),
         .*
     );
 
