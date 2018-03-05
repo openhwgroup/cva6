@@ -212,6 +212,8 @@ module compressed_decoder
                             if (instr_i[6:2] == 5'b0) begin
                                 // c.jr -> jalr x0, rd/rs1, 0
                                 instr_o = {12'b0, instr_i[11:7], 3'b0, 5'b0, OPCODE_JALR};
+                                // rs1 != 0
+                                illegal_instr_o = (instr_i[11:7] != '0) ? 1'b0 : 1'b1;
                             end
                         end else begin
                             // c.add -> add rd, rd, rs2
