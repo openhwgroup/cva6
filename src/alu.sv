@@ -27,6 +27,7 @@ module alu
     input  logic [63:0]              operand_a_i,
     input  logic [63:0]              operand_b_i,
     output logic [63:0]              result_o,
+    output logic                     alu_branch_res_o,
     output logic                     alu_valid_o,
     output logic                     alu_ready_o,
     output logic [TRANS_ID_BITS-1:0] alu_trans_id_o
@@ -41,6 +42,8 @@ module alu
     logic [31:0] operand_a_rev32;
     logic [64:0] operand_b_neg;
     logic [65:0] adder_result_ext_o;
+    logic        less;  // handles both signed and unsigned forms
+
     // bit reverse operand_a for left shifts and bit counting
     generate
       genvar k;
@@ -55,6 +58,7 @@ module alu
     // Adder
     // ------
     logic        adder_op_b_negate;
+    logic        adder_z_flag;
     logic [64:0] adder_in_a, adder_in_b;
     logic [63:0] adder_result;
 
@@ -63,6 +67,7 @@ module alu
 
       unique case (operator_i)
         // ADDER OPS
+        EQ,  NE,
         SUB, SUBW: adder_op_b_negate = 1'b1;
 
         default: ;
@@ -79,6 +84,20 @@ module alu
     // actual adder
     assign adder_result_ext_o = $unsigned(adder_in_a) + $unsigned(adder_in_b);
     assign adder_result       = adder_result_ext_o[64:1];
+    assign adder_z_flag       = ~|adder_result;
+
+    // get the right branch comparison result
+    always_comb begin : branch_resolve
+        // set comparison by default
+        alu_branch_res_o      = 1'b1;
+        case (operator_i)
+            EQ:       alu_branch_res_o = adder_z_flag;
+            NE:       alu_branch_res_o = ~adder_z_flag;
+            LTS, LTU: alu_branch_res_o = less;
+            GES, GEU: alu_branch_res_o = ~less;
+            default:  alu_branch_res_o = 1'b1;
+        endcase
+    end
 
     // ---------
     // Shifts
@@ -138,14 +157,14 @@ module alu
     // ------------
     // Comparisons
     // ------------
-    logic less;  // handles both signed and unsigned forms
-
 
     always_comb begin
         logic sgn;
         sgn = 1'b0;
 
-        if (operator_i == SLTS)
+        if ((operator_i == SLTS) ||
+            (operator_i == LTS)  ||
+            (operator_i == GES))
             sgn = 1'b1;
 
         less = ($signed({sgn & operand_a_i[63], operand_a_i})  <  $signed({sgn & operand_b_i[63], operand_b_i}));
