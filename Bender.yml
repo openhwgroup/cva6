@@ -3,9 +3,10 @@ package:
   authors: [ "Florian Zaruba <zarubaf@iis.ee.ethz.ch>" ]
 
 dependencies:
-  axi2per: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi2per.git", version: 0.1.0 }
-  axi_mem_if: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_mem_if.git", version: 0.1.0 }
-  axi_node: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_node.git", version: 1.0.1 }
-  axi_slice: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_slice.git", version: 1.1.0 }
-  axi: { git: "git@iis-git.ee.ethz.ch:fschuiki/axi.git", rev: master }
-  # bender-vsim: { git: "git@iis-git.ee.ethz.ch:floce/bender-vsim.git", rev: master }
+  axi: { git: "git@iis-git.ee.ethz.ch:sasa/axi.git", rev: master }
+  axi2per: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi2per.git", rev: master }
+  axi_mem_if: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_mem_if.git", version: 0.1.1 }
+  axi_node: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_node.git", version: 1.0.3 }
+  axi_slice: { git: "git@iis-git.ee.ethz.ch:sasa/axi_slice.git", version: 1.1.2 }
+  tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master }
+  common_cells: { git: "git@iis-git.ee.ethz.ch:sasa/common_cells.git", version: 1.1.0 }

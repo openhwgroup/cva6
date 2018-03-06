@@ -18,3 +18,4 @@ obj_dir/*
 *.dasm
 /Bender.lock
 /Bender.local
+build/
