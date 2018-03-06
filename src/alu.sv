@@ -162,8 +162,8 @@ module alu
         logic sgn;
         sgn = 1'b0;
 
-        if ((operator_i == SLTS) |
-            (operator_i == LTS)  |
+        if ((operator_i == SLTS) ||
+            (operator_i == LTS)  ||
             (operator_i == GES))
             sgn = 1'b1;
 
