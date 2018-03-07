@@ -136,7 +136,7 @@ sim_nopt: build
 
 simc: build
 	vsim${questa_version} -64 -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) "+UVM_VERBOSITY=HIGH" -coverage -classdebug -sv_lib $(library)/elf_dpi -do "do tb/wave/wave_core.do"
+	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) "+UVM_VERBOSITY=HIGH" -coverage -classdebug -sv_lib $(library)/elf_dpi -do "run -all; do tb/wave/wave_core.do; exit"
 
 run-asm-tests: build
 	$(foreach test, $(riscv-tests), vsim$(questa_version) -64 +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
