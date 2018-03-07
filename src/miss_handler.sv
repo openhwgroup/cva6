@@ -558,12 +558,9 @@ module arbiter #(
 
     always_comb begin
         automatic logic [$clog2(NR_PORTS)-1:0] request_index;
-        // Give an initial value to keep VCS happy.
-        if (~rst_ni)
-          begin
-          for (int i = 0; i < NR_PORTS; i=i+1)
+        // Give a default value to keep VCS happy and also prevent latch inference.
+        for (int i = 0; i < NR_PORTS; i=i+1)
             data_rdata_o[i] = {DATA_WIDTH{1'b0}};
-          end
        
         request_index = 0;
 

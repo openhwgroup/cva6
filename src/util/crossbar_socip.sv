@@ -11,14 +11,14 @@ module crossbar_socip
     )
   (
    // clock and reset
-   AXI_BUS.Slave dbg_if, bypass_if, data_if, instr_if,
-   AXI_BUS.Master master0_if, master1_if, master2_if, master3_if,
+   AXI_BUS.Slave slave0_if, slave1_if, slave2_if, slave3_if,
+   AXI_BUS.Master master0_if, master1_if, master2_if,
    input         clk_i,
    input         rst_ni
    );
 
    localparam NUM_MASTER = 4;
-   localparam NUM_SLAVE = 4;
+   localparam NUM_SLAVE = 3;
 
    nasti_channel
      #(
@@ -76,13 +76,11 @@ module crossbar_socip
        .DATA_WIDTH    ( DATA_WIDTH            ),
        .ESCAPE_ENABLE ( 0                     ), // to cascade on slave0
        .BASE0         ( 32'h41000000          ),
-       .MASK0         ( 32'h0000FFFF          ),
+       .MASK0         ( 32'h00FFFFFF          ),
        .BASE1         ( 32'h40000000          ),
-       .MASK1         ( 32'h0000FFFF          ),
+       .MASK1         ( 32'h00FFFFFF          ),
        .BASE2         ( 32'h80000000          ),
        .MASK2         ( 32'h07FFFFFF          ),
-       .BASE3         ( 32'h42000000          ),
-       .MASK3         ( 32'h0000FFFF          ),
        .LITE_MODE     ( 0                     )
        )
    mem_crossbar
@@ -113,10 +111,10 @@ module crossbar_socip
     .ADDR_WIDTH(ADDR_WIDTH),             // address width
     .DATA_WIDTH(DATA_WIDTH),             // width of data
     .USER_WIDTH(USER_WIDTH)              // width of user field, must > 0, let synthesizer trim it if not in use
-    ) cnvi(.incoming_if(instr_if), .outgoing_nasti(master0_nasti)),
-      cnvd(.incoming_if(data_if), .outgoing_nasti(master1_nasti)),
-      cnvb(.incoming_if(bypass_if), .outgoing_nasti(master2_nasti)),
-      cnvg(.incoming_if(dbg_if), .outgoing_nasti(master3_nasti));
+    ) cnvi(.incoming_if(slave0_if), .outgoing_nasti(master0_nasti)),
+      cnvd(.incoming_if(slave1_if), .outgoing_nasti(master1_nasti)),
+      cnvb(.incoming_if(slave2_if), .outgoing_nasti(master2_nasti)),
+      cnvg(.incoming_if(slave3_if), .outgoing_nasti(master3_nasti));
 
    if_converter #(
     .ID_WIDTH(ID_WIDTH),               // id width

@@ -564,6 +564,12 @@ infer_ram  #(
         .cpu_rvalid_i ( debug_rvalid_o ),
         .cpu_gnt_i    ( debug_gnt_o    ),
         .cpu_fetch_o  ( fetch_enable_i ),
+        // Boot memory at location 'h40000000
+        .boot_en(master1_req),      // input wire ena
+        .boot_we(master1_we),   // input wire [7 : 0] wea
+        .boot_addr(master1_address[15:0]),  // input wire [13: 0] addra
+        .boot_wdata(master1_wdata),  // input wire [63 : 0] dina
+        .boot_rdata(master1_rdata),  // output wire [63 : 0] douta
         .address      (                ),
         .tms_i        ( tms_i          ),
         .tck_i        ( tck_i          ),
@@ -609,19 +615,5 @@ axi_ram_wrap  #(
    assign hid_clk = clk_i;
    assign hid_en = master0_req;
    assign hid_rst = ~rst_ni;
-   
-// Boot memory at location 'h40000000
-   
-infer_ram  #(
-        .RAM_SIZE(14),
-        .BYTE_WIDTH(8))
-        my_master1_ram (
-      .ram_clk(clk_i),    // input wire clka
-      .ram_en(master1_req),      // input wire ena
-      .ram_we(master1_we),   // input wire [7 : 0] wea
-      .ram_addr(master1_address[16:3]),  // input wire [13: 0] addra
-      .ram_wrdata(master1_wdata),  // input wire [63 : 0] dina
-      .ram_rddata(master1_rdata)  // output wire [63 : 0] douta
-      );
 
 endmodule

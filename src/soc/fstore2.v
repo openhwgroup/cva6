@@ -71,8 +71,9 @@ module fstore2(
    reg [4:1]                     vrow;
    reg [4:0]                     scroll;
    
-   wire [7:0]                    dout;
+   wire [63:0]                   dout;
    wire [13:0]                   addra = {offvreg[10:5],offhreg[12:6]};
+   wire [6:0]                    dout7 = dout >> {addra[2:0],3'b000};
    
    // 100 MHz / 2100 is 47.6kHz.  Divide by further 788 to get 60.4 Hz.
    // Aim for 1024x768 non interlaced at 60 Hz.  
@@ -85,7 +86,7 @@ module fstore2(
    assign dvi_mux = hreg[0];
 
    dualmem ram1(.clka(pixel2_clk),
-                .dina(addra[7:0]), .addra(addra), .wea(clear), .douta(dout), .ena(1'b1),
+                .dina({8{addra[7:0]}}), .addra(addra[13:3]), .wea({8{clear}}), .douta(dout), .ena(1'b1),
                 .clkb(clk_data), .dinb(dinb), .addrb(addrb), .web(web), .doutb(doutb), .enb(enb));
    
    always @(posedge pixel2_clk) // or posedge reset) // JRRK - does this need async ?
@@ -147,7 +148,7 @@ module fstore2(
           begin
              if (hreg >= 128*3 && hreg < (128*3+256*6))
                begin
-                  if (&hreg[1:0])
+                  if (&hreg[0])
                     begin
                        if (offpixel == 5)
                          begin
@@ -262,7 +263,7 @@ module fstore2(
                ) RAMB16_S1_inst_0 (
                                    .CLK(pixel2_clk),      // Port A Clock
                                    .DO(pixels_out), // Port A 8-bit Data Output
-                                   .ADDR({dout[6:0],vrow}),    // Port A 11-bit Address Input
+                                   .ADDR({dout7,vrow}),    // Port A 11-bit Address Input
                                    .DI(8'b0),  // Port A 8-bit Data Input
                                    .EN(1'b1),        // Port A RAM Enable Input
                                    .SSR(1'b0),      // Port A Synchronous Set/Reset Input

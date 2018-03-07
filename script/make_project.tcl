@@ -97,7 +97,7 @@ set files [list \
                [file normalize $origin_dir/src/util/nasti_converter.sv] \
                [file normalize $origin_dir/src/util/if_converter.sv] \
                [file normalize $origin_dir/src/util/axi_cache_wrap.sv] \
-               [file normalize $origin_dir/src/util/crossbar_socip_test.sv] \
+               [file normalize $origin_dir/src/util/crossbar_socip.sv] \
 	       [file normalize $origin_dir/src/custom_axi_master/HDL_sources/Synthesis_Sources/dbg_wrap.sv] \
 	       [file normalize $origin_dir/src/custom_axi_master/HDL_sources/Synthesis_Sources/AXI_WRITE_DATA_RESPONSE_CHANNEL_edited.sv] \
 	       [file normalize $origin_dir/src/jtag_xilinx/jtag_dummy.v] \
@@ -158,7 +158,7 @@ set_property include_dirs [list \
                                [file normalize $base_dir/include] \
                               ] [get_filesets sources_1]
 
-set_property verilog_define [list MIG FPGA FPGA_FULL NEXYS4 PULP_FPGA_EMUL BOOT_MEM=\"[file normalize $origin_dir/src/boot.mem]\"] [get_filesets sources_1]
+set_property verilog_define [list MIG FPGA FPGA_FULL NEXYS4 PULP_FPGA_EMUL NASTI_BRAM BOOT_MEM=\"[file normalize $origin_dir/src/boot.mem]\"] [get_filesets sources_1]
 
 # Set 'sources_1' fileset properties
 set_property "top" "ariane_nexys4ddr" [get_filesets sources_1]
