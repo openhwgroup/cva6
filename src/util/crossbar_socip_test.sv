@@ -12,13 +12,13 @@ module crossbar_socip_test
   (
    // clock and reset
    AXI_BUS.Slave slave0_if,
-   AXI_BUS.Master master0_if, master1_if,
+   AXI_BUS.Master master0_if, master1_if, master2_if,
    input         clk_i,
    input         rst_ni
    );
 
    localparam NUM_MASTER = 1;
-   localparam NUM_SLAVE = 2;
+   localparam NUM_SLAVE = 3;
 
    nasti_channel
      #(
@@ -26,7 +26,7 @@ module crossbar_socip_test
        .USER_WIDTH  ( USER_WIDTH    ),
        .ADDR_WIDTH  ( ADDR_WIDTH    ),
        .DATA_WIDTH  ( DATA_WIDTH    ))
-   slave0_nasti(), slave1_nasti(), master0_nasti();
+   slave0_nasti(), slave1_nasti(), slave2_nasti(), master0_nasti();
 
    // input of the IO crossbar
    nasti_channel
@@ -79,10 +79,8 @@ module crossbar_socip_test
        .MASK0         ( 32'h0000FFFF          ),
        .BASE1         ( 32'h40000000          ),
        .MASK1         ( 32'h0000FFFF          ),
-       .BASE2         ( 32'h80000000          ),
-       .MASK2         ( 32'h07FFFFFF          ),
-       .BASE3         ( 32'h42000000          ),
-       .MASK3         ( 32'h0000FFFF          ),
+       .BASE2         ( 32'h42000000          ),
+       .MASK2         ( 32'h0000FFFF          ),
        .LITE_MODE     ( 0                     )
        )
    mem_crossbar
@@ -100,7 +98,7 @@ module crossbar_socip_test
                   .master   ( combined_nasti ),
                   .slave_0  ( slave0_nasti   ),
                   .slave_1  ( slave1_nasti   ),
-                  .slave_2  ( mem_dms2       ),
+                  .slave_2  ( slave2_nasti   ),
                   .slave_3  ( mem_dms3       ),
                   .slave_4  ( mem_dms4       ),
                   .slave_5  ( mem_dms5       ),
@@ -121,6 +119,7 @@ module crossbar_socip_test
     .DATA_WIDTH(DATA_WIDTH),             // width of data
     .USER_WIDTH(USER_WIDTH)              // width of user field, must > 0, let synthesizer trim it if not in use
     ) cnv0(.incoming_nasti(slave0_nasti), .outgoing_if(master0_if)),
-      cnv1(.incoming_nasti(slave1_nasti), .outgoing_if(master1_if));
+      cnv1(.incoming_nasti(slave1_nasti), .outgoing_if(master1_if)),
+      cnv2(.incoming_nasti(slave2_nasti), .outgoing_if(master2_if));
    
 endmodule // crossbar_socip
