@@ -35,3 +35,4 @@ vcs/
 .vlogansetup.args
 compile_simlib.log
 debug_wrap/
+debug_wrap_old/
