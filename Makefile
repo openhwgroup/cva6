@@ -182,9 +182,15 @@ vivado: ariane_top/ariane_top.xpr
 ariane_top/ariane_top.xpr:
 	vivado -mode batch -source script/make_project.tcl
 
+debug: debug_wrap/debug_wrap.xpr
+	vivado debug_wrap/debug_wrap.xpr &
+
+debug_wrap/debug_wrap.xpr:
+	vivado -mode batch -source script/make_debug.tcl
+
 clean:
 	rm -rf work/ *.ucdb
-	rm -rf obj_dir ariane_top
+	rm -rf obj_dir debug_wrap ariane_top
 
 .PHONY:
 	build lint build-moore

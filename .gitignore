@@ -34,3 +34,4 @@ vcs/
 .cxl.vcs_mx.version
 .vlogansetup.args
 compile_simlib.log
+debug_wrap/

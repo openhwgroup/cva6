@@ -13,6 +13,3 @@
 [submodule "src/socip"]
 	path = src/socip
 	url = https://github.com/lowrisc/socip.git
-[submodule "src/custom_axi_master"]
-	path = src/custom_axi_master
-	url = https://github.com/jrrk/custom_axi_master.git
