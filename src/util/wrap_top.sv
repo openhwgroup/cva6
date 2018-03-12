@@ -99,7 +99,7 @@ module wrap_top
 
  // address on which to decide whether the request is cache-able or not
    parameter int                        unsigned AXI_ID_WIDTH      = 4;
-   parameter int                        unsigned AXI_USER_WIDTH    = 0;
+   parameter int                        unsigned AXI_USER_WIDTH    = 1;
    parameter int                        unsigned AXI_ADDRESS_WIDTH = 32;
    parameter int                        unsigned AXI_DATA_WIDTH    = 64;
    
@@ -226,17 +226,16 @@ module wrap_top
 
     localparam int unsigned AXI_NUMBYTES = AXI_DATA_WIDTH/8;
 
-    logic        flush_dcache_ack, flush_dcache;
+    logic        flush_dcache_ack, flush_dcache, aresetn;
     logic        flush_dcache_q;
     logic [31:0] dbg_mstaddress;
-    logic [63 : 0] o_data;
     
     AXI_BUS #(
               .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
               .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
               .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
               .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
-    ) master0_if(), master1_if(), master2_if(), dbg0_if(), input_if(), output_if();
+    ) master0_if(), master1_if(), master2_if(), input_if(), output_if();
   
 display_top display(.clk    (clk_i),
                  .rst       (!rst_ni),
@@ -287,15 +286,14 @@ display_top display(.clk    (clk_i),
          logic [63:0]                    debug_wdata_i;
          logic [63:0]                    debug_rdata_o;
          logic                           debug_halted_o;
-   logic                                 debug_req_i;
+         logic                           debug_req_i;
          
         // CPU Control Signals
          wire         fetch_enable_i = 1'b1;
 
    crossbar_socip_test cross1(
-      .slave0_if  ( dbg0_if    ),
-      .slave1_if  ( input_if    ),
-      .slave2_if  ( output_if    ),
+      .slave0_if  ( input_if   ),
+      .slave1_if  ( output_if  ),
       .master0_if ( master0_if ),
       .master1_if ( master1_if ),
       .master2_if ( master2_if ),
@@ -313,10 +311,10 @@ display_top display(.clk    (clk_i),
         .clk        ( clk_i          ),
         .rst_n      ( rst_ni         ),
         .testmode_i ( 1'b0           ),
-        .dbg_master ( dbg0_if        ),
         .input_if   ( input_if       ),
         .output_if  ( output_if      ),
          // CPU signals
+        .aresetn      ( aresetn        ),
         .cpu_addr_o   ( debug_addr_i   ), 
         .cpu_rdata_i  ( debug_rdata_o  ),
         .cpu_wdata_o  ( debug_wdata_i  ),
@@ -337,10 +335,11 @@ display_top display(.clk    (clk_i),
         // JTAG shared memory at location 'h42000000
         .wrap_en(master2_req),      // input wire ena
         .wrap_we(master2_we),   // input wire [7 : 0] wea
-        .wrap_addr(master2_address[15:0]),  // input wire [13: 0] addra
+        .wrap_addr(master2_address[13:0]),  // input wire [13: 0] addra
         .wrap_wdata(master2_wdata),  // input wire [63 : 0] dina
         .wrap_rdata(master2_rdata),  // output wire [63 : 0] douta
         .address    ( dbg_mstaddress ),
+        .i_dip      ( i_dip          ),
         .tms_i      ( 1'b0           ),
         .tck_i      ( 1'b0           ),
         .trstn_i    ( 1'b1           ),
