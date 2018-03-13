@@ -11,14 +11,14 @@ module crossbar_socip
     )
   (
    // clock and reset
-   AXI_BUS.Slave slave0_if, slave1_if, slave2_if, slave3_if,
-   AXI_BUS.Master master0_if, master1_if, master2_if,
+   AXI_BUS.Slave slave0_if, slave1_if, slave2_if, slave3_if, slave4_if,
+   AXI_BUS.Master master0_if, master1_if, master2_if, master3_if,
    input         clk_i,
    input         rst_ni
    );
 
-   localparam NUM_MASTER = 4;
-   localparam NUM_SLAVE = 3;
+   localparam NUM_MASTER = 5;
+   localparam NUM_SLAVE = 4;
 
    nasti_channel
      #(
@@ -26,7 +26,8 @@ module crossbar_socip
        .USER_WIDTH  ( USER_WIDTH    ),
        .ADDR_WIDTH  ( ADDR_WIDTH    ),
        .DATA_WIDTH  ( DATA_WIDTH    ))
-   slave0_nasti(), slave1_nasti(), slave2_nasti(), slave3_nasti(), master0_nasti(), master1_nasti(), master2_nasti(), master3_nasti();
+   slave0_nasti(), slave1_nasti(), slave2_nasti(), slave3_nasti(), slave4_nasti(),
+   master0_nasti(), master1_nasti(), master2_nasti(), master3_nasti(), master4_nasti();
 
    // input of the IO crossbar
    nasti_channel
@@ -38,7 +39,7 @@ module crossbar_socip
        .DATA_WIDTH  ( DATA_WIDTH    ))
    master_nasti();
 
-   nasti_channel mem_dmm4(), mem_dmm5(), mem_dmm6(), mem_dmm7(); // dummy channels
+   nasti_channel mem_dmm5(), mem_dmm6(), mem_dmm7(); // dummy channels
    
    nasti_channel_combiner #(NUM_MASTER)
    mem_combiner (
@@ -46,7 +47,7 @@ module crossbar_socip
                   .master_1  ( master1_nasti ),
                   .master_2  ( master2_nasti ),
                   .master_3  ( master3_nasti ),
-                  .master_4  ( mem_dmm4      ),
+                  .master_4  ( master4_nasti ),
                   .master_5  ( mem_dmm5      ),
                   .master_6  ( mem_dmm6      ),
                   .master_7  ( mem_dmm7      ),
@@ -81,6 +82,8 @@ module crossbar_socip
        .MASK1         ( 32'h00FFFFFF          ),
        .BASE2         ( 32'h80000000          ),
        .MASK2         ( 32'h07FFFFFF          ),
+       .BASE3         ( 32'h42000000          ),
+       .MASK3         ( 32'h0000FFFF          ),
        .LITE_MODE     ( 0                     )
        )
    mem_crossbar
@@ -91,7 +94,7 @@ module crossbar_socip
       .slave  ( combined_nasti   )
       );
 
-   nasti_channel mem_dms3(), mem_dms4(), mem_dms5(), mem_dms6(), mem_dms7(); // dummy channels
+   nasti_channel mem_dms4(), mem_dms5(), mem_dms6(), mem_dms7(); // dummy channels
 
    nasti_channel_slicer #(NUM_SLAVE)
    mem_slicer (
@@ -99,7 +102,7 @@ module crossbar_socip
                   .slave_0  ( slave0_nasti   ),
                   .slave_1  ( slave1_nasti   ),
                   .slave_2  ( slave2_nasti   ),
-                  .slave_3  ( mem_dms3       ),
+                  .slave_3  ( slave3_nasti   ),
                   .slave_4  ( mem_dms4       ),
                   .slave_5  ( mem_dms5       ),
                   .slave_6  ( mem_dms6       ),
@@ -114,7 +117,8 @@ module crossbar_socip
     ) cnvi(.incoming_if(slave0_if), .outgoing_nasti(master0_nasti)),
       cnvd(.incoming_if(slave1_if), .outgoing_nasti(master1_nasti)),
       cnvb(.incoming_if(slave2_if), .outgoing_nasti(master2_nasti)),
-      cnvg(.incoming_if(slave3_if), .outgoing_nasti(master3_nasti));
+      cnvg(.incoming_if(slave3_if), .outgoing_nasti(master3_nasti)),
+      cnvo(.incoming_if(slave4_if), .outgoing_nasti(master4_nasti));
 
    if_converter #(
     .ID_WIDTH(ID_WIDTH),               // id width

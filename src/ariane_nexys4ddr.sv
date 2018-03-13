@@ -107,7 +107,7 @@ module ariane_nexys4ddr
 
    parameter logic [63:0]               CACHE_START_ADDR  = 64'h8000_0000;
  // address on which to decide whether the request is cache-able or not
-   parameter int                        unsigned AXI_ID_WIDTH      = 10;
+   parameter int                        unsigned AXI_ID_WIDTH      = 4;
    parameter int                        unsigned AXI_USER_WIDTH    = 1;
    parameter int                        unsigned AXI_ADDRESS_WIDTH = 64;
    parameter int                        unsigned AXI_DATA_WIDTH    = 64;
@@ -141,18 +141,18 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
    logic clk_io_uart; // UART IO clock for debug
    assign mig_ui_rstn = !mig_ui_rst;
 
-    logic        master0_req,     master1_req,     master2_req;
-    logic [63:0] master0_address, master1_address, master2_address;
-    logic [7:0]  master0_we,      master1_we,      master2_we;
-    logic [63:0] master0_wdata,   master1_wdata,   master2_wdata;
-    logic [63:0] master0_rdata,   master1_rdata,   master2_rdata;
+    logic        master0_req,     master1_req,     master2_req,     master3_req;
+    logic [63:0] master0_address, master1_address, master2_address, master3_address;
+    logic [7:0]  master0_we,      master1_we,      master2_we,      master3_we;
+    logic [63:0] master0_wdata,   master1_wdata,   master2_wdata,   master3_wdata;
+    logic [63:0] master0_rdata,   master1_rdata,   master2_rdata,   master3_rdata;
 
     AXI_BUS #(
               .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
               .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
               .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
               .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
-    ) instr_if(), data_if(), bypass_if(), dbg_if(), master0_if(), master1_if(), master2_if(), master3_if();
+    ) instr_if(), data_if(), bypass_if(), input_if(), output_if(), master0_if(), master1_if(), master2_if(), master3_if();
 
 `ifdef MIG
    
@@ -236,7 +236,7 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
       .m_axi_arlen          ( mem_mig_nasti.ar_len     ),
       .m_axi_arsize         ( mem_mig_nasti.ar_size    ),
       .m_axi_arburst        ( mem_mig_nasti.ar_burst   ),
-      .m_axi_arlock         (                          ), // not supported in AXI4
+      .m_axi_arlock         (                          ), 
       .m_axi_arcache        ( mem_mig_nasti.ar_cache   ),
       .m_axi_arprot         ( mem_mig_nasti.ar_prot    ),
       .m_axi_arqos          ( mem_mig_nasti.ar_qos     ),
@@ -252,6 +252,9 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
       .m_axi_rready         ( mem_mig_nasti.r_ready    ),
       .m_axi_ruser          ( mem_mig_nasti.r_user     )
     );
+
+assign mem_mig_nasti.b_user = 'b0; // not supported in AXI4
+assign mem_mig_nasti.r_user = 'b0;
 
    clk_wiz_ariane clk_gen
      (
@@ -352,7 +355,7 @@ reg phy_emdio_i, io_emdio_o, io_emdio_t;
    assign clk_i         = clk_p;
    assign rst_ni        = rst_top;
 
-axi_ram_wrap  #(
+axi_ram_wrap_ariane  #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
@@ -478,6 +481,7 @@ infer_ram  #(
 
     logic        flush_dcache_ack, flush_dcache;
     logic        flush_dcache_q;
+    logic [31:0] dbg_mstaddress;
     
     ariane #(
         .CACHE_START_ADDR ( CACHE_START_ADDR ),
@@ -528,14 +532,16 @@ infer_ram  #(
    // CPU Control Signals
    logic                                 fetch_enable_i;
  
-   axi_crossbar_wrap cross1(
+   crossbar_socip cross1(
       .slave0_if  ( instr_if   ),
       .slave1_if  ( data_if    ),
       .slave2_if  ( bypass_if  ),
-      .slave3_if  ( dbg_if     ),
+      .slave3_if  ( input_if   ),
+      .slave4_if  ( output_if  ),
       .master0_if ( master0_if ),
       .master1_if ( master1_if ),
       .master2_if ( master2_if ),
+      .master3_if ( master3_if ),
       .clk_i      ( clk_i      ),
       .rst_ni     ( aresetn    ));
 
@@ -550,9 +556,10 @@ infer_ram  #(
         .clk        ( clk_i          ),
         .rst_n      ( rst_ni         ),
         .testmode_i ( 1'b0           ),
-        .dbg_master ( dbg_if         ),
-        .aresetn    ( aresetn        ),
+        .input_if   ( input_if       ),
+        .output_if  ( output_if      ),
         // CPU signals
+        .aresetn      ( aresetn        ),
         .cpu_addr_o   ( debug_addr_i   ), 
         .cpu_rdata_i  ( debug_rdata_o  ),
         .cpu_wdata_o  ( debug_wdata_i  ),
@@ -570,7 +577,13 @@ infer_ram  #(
         .boot_addr(master1_address[15:0]),  // input wire [13: 0] addra
         .boot_wdata(master1_wdata),  // input wire [63 : 0] dina
         .boot_rdata(master1_rdata),  // output wire [63 : 0] douta
-        .address      (                ),
+        // JTAG shared memory at location 'h42000000
+        .wrap_en(master2_req),      // input wire ena
+        .wrap_we(master2_we),   // input wire [7 : 0] wea
+        .wrap_addr(master2_address[13:0]),  // input wire [13: 0] addra
+        .wrap_wdata(master2_wdata),  // input wire [63 : 0] dina
+        .wrap_rdata(master2_rdata),  // output wire [63 : 0] douta
+        .address    ( dbg_mstaddress ),
         .tms_i        ( tms_i          ),
         .tck_i        ( tck_i          ),
         .trstn_i      ( rst_top        ),
@@ -578,7 +591,7 @@ infer_ram  #(
         .tdo_o        ( tdo_o          )
              );
 
-axi_ram_wrap  #(
+axi_ram_wrap_ariane  #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
@@ -606,6 +619,17 @@ axi_ram_wrap  #(
         .bram_rddata_a ( master1_rdata   ),
         .bram_clk_a ( ),
         .bram_rst_a ( )
+    ), i_master3 (
+                .clk_i  ( clk_i           ),
+                .rst_ni ( rst_ni          ),
+                .slave  ( master3_if      ),
+                .bram_en_a  ( master3_req     ),
+                .bram_addr_a ( master3_address ),
+                .bram_we_a   ( master3_we      ),
+                .bram_wrdata_a ( master3_wdata   ),
+                .bram_rddata_a ( master3_rdata   ),
+                .bram_clk_a ( ),
+                .bram_rst_a ( )
     );
 
    assign hid_we = master0_we;

@@ -11,13 +11,13 @@ module crossbar_socip_test
     )
   (
    // clock and reset
-   AXI_BUS.Slave slave0_if, slave1_if, slave2_if,
+   AXI_BUS.Slave slave0_if, slave1_if,
    AXI_BUS.Master master0_if, master1_if, master2_if,
    input         clk_i,
    input         rst_ni
    );
 
-   localparam NUM_MASTER = 3;
+   localparam NUM_MASTER = 2;
    localparam NUM_SLAVE = 3;
 
    nasti_channel
@@ -112,8 +112,7 @@ module crossbar_socip_test
     .DATA_WIDTH(DATA_WIDTH),             // width of data
     .USER_WIDTH(USER_WIDTH)              // width of user field, must > 0, let synthesizer trim it if not in use
     ) cnvi0(.incoming_if(slave0_if), .outgoing_nasti(master0_nasti)),
-    cnvi1(.incoming_if(slave1_if), .outgoing_nasti(master1_nasti)),
-    cnvi2(.incoming_if(slave2_if), .outgoing_nasti(master2_nasti));
+    cnvi1(.incoming_if(slave1_if), .outgoing_nasti(master1_nasti));
 
    if_converter #(
     .ID_WIDTH(ID_WIDTH),               // id width

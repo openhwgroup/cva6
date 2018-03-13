@@ -20,8 +20,10 @@ module dualmem(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena
        (
         .CLKA   ( clka                     ),     // Port A Clock
         .DOA    ( douta[r*8 +: 8]          ),     // Port A 1-bit Data Output
+        .DOPA   (                          ),
         .ADDRA  ( addra                    ),     // Port A 14-bit Address Input
         .DIA    ( dina[r*8 +: 8]           ),     // Port A 1-bit Data Input
+        .DIPA   ( 1'b0                     ),
         .ENA    ( ena                      ),     // Port A RAM Enable Input
         .SSRA   ( 1'b0                     ),     // Port A Synchronous Set/Reset Input
         .WEA    ( wea[r]                   ),     // Port A Write Enable Input

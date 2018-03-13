@@ -100,7 +100,7 @@ module wrap_top
  // address on which to decide whether the request is cache-able or not
    parameter int                        unsigned AXI_ID_WIDTH      = 4;
    parameter int                        unsigned AXI_USER_WIDTH    = 1;
-   parameter int                        unsigned AXI_ADDRESS_WIDTH = 32;
+   parameter int                        unsigned AXI_ADDRESS_WIDTH = 64;
    parameter int                        unsigned AXI_DATA_WIDTH    = 64;
    
    genvar        i;
