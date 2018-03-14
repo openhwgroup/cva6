@@ -36,6 +36,26 @@ The Verilator testbench makes use of the `riscv-fesvr`. That means that bare `ri
 
 > Due to the way the C++ testbench is constructed we need a slightly altered version of the `riscv-fesvr` which can be found [here](https://github.com/pulp-platform/riscv-fesvr).
 
+### Running custom C-code
+
+It is possible to cross compile and run your own C-code or benchmarks on Ariane. The following steps need to be followed to compile and run:
+
+Compile the file using the following command (you need to have the [riscv-tests](https://github.com/riscv/riscv-tests) repo checked-out):
+
+```
+riscv64-unknown-elf-gcc -I./riscv-tests/benchmarks/../env -I./riscv-tests/benchmarks/common \
+-DPREALLOCATE=1 -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common \
+-fno-builtin-printf ./riscv-tests/benchmarks/common/syscalls.c -static -nostdlib \
+./riscv-tests/benchmarks/common/crt.S  -nostartfiles -lm -lgcc \
+-T ./riscv-tests/benchmarks/common/test.ld -o hello.riscv hello.c
+```
+
+Use the generated ELF file as an input to the Verilator model:
+
+```
+obj_dir/Variane_wrapped -p hello.riscv
+```
+
 ## Planned Improvements
 
 While developing Ariane it has become evident that, in order to support Linux, the atomic extension is going to be mandatory. While the core is currently booting Linux by emulating Atomics in BBL (in a single core environment this is trivially met by disabling interrupts) this is not the behavior which is intended. For that reason we are going to fully support all atomic extensions in the very near future.
