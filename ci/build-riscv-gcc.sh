@@ -6,7 +6,7 @@ cd $ROOT/tmp
 if ! [ -e $RISCV/bin ]; then
     [ -d $ROOT/tmp/riscv-gnu-toolchain ] || git clone https://github.com/riscv/riscv-gnu-toolchain.git
     cd riscv-gnu-toolchain
-    git checkout 8ad8d4839acf2cdac0129b8fed8fe12136e77307
+    git checkout 691e4e826251c7ec59f883cab18440c87baf45e7
     git submodule update --init --recursive
 
     mkdir -p $RISCV
