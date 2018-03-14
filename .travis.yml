@@ -41,10 +41,10 @@ branches:
 before_install:
   - export CXX=g++-4.8 CC=gcc-4.8
   - ci/make-tmp.sh
-  - export LIBRARY_PATH=$TRAVIS_BUILD_DIR/tmp/lib:$LIBRARY_PATH
-  - export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/tmp/lib:$LD_LIBRARY_PATH
-  - export C_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include:$C_INCLUDE_PATH
-  - export CPLUS_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include:$CPLUS_INCLUDE_PATH
+  - export LIBRARY_PATH=$TRAVIS_BUILD_DIR/tmp/lib
+  - export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/tmp/lib
+  - export C_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include
+  - export CPLUS_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include
   - export VERILATOR_ROOT=$TRAVIS_BUILD_DIR/tmp/verilator-3.918/
 
 stages:
