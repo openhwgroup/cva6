@@ -206,24 +206,28 @@ module decoder (
                         default: illegal_instr = 1'b1;
                     endcase
                 end
-
+                // Memory ordering instructions
                 OPCODE_FENCE: begin
-                    // FENCE.I
-                    if (instr.itype.funct3 == 3'b001) begin
-                        instruction_o.fu  = CSR;
-                        instruction_o.op  = FENCE_I;
-                        instruction_o.rs1 = '0;
-                        instruction_o.rs2 = '0;
-                        instruction_o.rd  = '0;
-                    // FENCE
-                    end else begin
+                    instruction_o.fu  = CSR;
+                    instruction_o.rs1 = '0;
+                    instruction_o.rs2 = '0;
+                    instruction_o.rd  = '0;
+
+                    case (instr.stype.funct3)
+                        // FENCE
                         // Currently implemented as a whole DCache flush boldly ignoring other things
-                        instruction_o.fu  = CSR;
-                        instruction_o.op  = FENCE;
-                        instruction_o.rs1 = '0;
-                        instruction_o.rs2 = '0;
-                        instruction_o.rd  = '0;
-                    end
+                        3'b000: instruction_o.op  = FENCE;
+                        // FENCE.I
+                        3'b001: begin
+                            if (instr.instr[31:20] != '0)
+                                illegal_instr = 1'b1;
+                            instruction_o.op  = FENCE_I;
+                        end
+                        default: illegal_instr = 1'b1;
+                    endcase
+
+                    if (instr.stype.rs1 != '0 || instr.stype.imm0 != '0 || instr.instr[31:28] != '0)
+                        illegal_instr = 1'b1;
                 end
 
                 // --------------------------
@@ -461,6 +465,9 @@ module decoder (
                     imm_select              = IIMM;
                     instruction_o.rd        = instr.itype.rd;
                     is_control_flow_instr_o = 1'b1;
+                    // invalid jump and link register -> reserved for vector encoding
+                    if (instr.itype.funct3 != 3'b0)
+                        illegal_instr = 1'b1;
                 end
                 // Jump and link
                 OPCODE_JAL: begin

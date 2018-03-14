@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Bugfix in non-detected illegal instruction #12
+- Bugfix in non-detected illegal instruction JALR (funct3 != 0)
+- Bugfix in non-detected illegal instruction FENCE (some bit-checks missing)
 
 ### 2.0.0 - 2018-01-26
 
