@@ -83,11 +83,10 @@ module ex_stage #(
     input  logic                                   en_ld_st_translation_i,
     input  logic                                   flush_tlb_i,
     input  logic                                   fetch_req_i,
-    output logic                                   fetch_gnt_o,
-    output logic                                   fetch_valid_o,
     input  logic [63:0]                            fetch_vaddr_i,
-    output logic [63:0]                            fetch_rdata_o,
-    output exception_t                             fetch_ex_o,
+    output logic                                   fetch_valid_o,
+    output logic [63:0]                            fetch_paddr_o,
+    output exception_t                             fetch_exception_o,
     input  priv_lvl_t                              priv_lvl_i,
     input  priv_lvl_t                              ld_st_priv_lvl_i,
     input  logic                                   sum_i,
@@ -99,13 +98,6 @@ module ex_stage #(
     output logic                                   itlb_miss_o,
     output logic                                   dtlb_miss_o,
     output logic                                   dcache_miss_o,
-
-    output logic [63:0]                            instr_if_address_o,
-    output logic                                   instr_if_data_req_o,
-    output logic [3:0]                             instr_if_data_be_o,
-    input  logic                                   instr_if_data_gnt_i,
-    input  logic                                   instr_if_data_rvalid_i,
-    input  logic [63:0]                            instr_if_data_rdata_i,
 
     // DCache interface
     input  logic                                   dcache_en_i,

@@ -12,7 +12,7 @@ max_cycles ?= 10000000
 # Test case to run
 test_case ?= core_test
 # QuestaSim Version
-questa_version ?= -10.6b
+questa_version ?=
 # verilator version
 verilator ?= verilator
 # preset which runs a single test
@@ -53,8 +53,8 @@ riscv-tests := rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-
 			   rv64ui-p-sraiw rv64ui-p-sraw rv64ui-p-srl rv64ui-p-srli rv64ui-p-srliw rv64ui-p-srlw 						 \
 			   rv64ui-p-lb rv64ui-p-lbu rv64ui-p-ld rv64ui-p-lh rv64ui-p-lhu rv64ui-p-lui rv64ui-p-lw rv64ui-p-lwu 			 \
 			   rv64mi-p-csr rv64mi-p-mcsr rv64mi-p-illegal rv64mi-p-ma_addr rv64mi-p-ma_fetch rv64mi-p-sbreak rv64mi-p-scall \
-			   rv64si-p-csr rv64si-p-ma_fetch rv64si-p-scall rv64si-p-wfi rv64si-p-sbreak rv64si-p-dirty  					 \
-			   rv64uc-p-rvc																									 \
+			   rv64si-p-csr rv64si-p-ma_fetch rv64si-p-scall rv64si-p-wfi rv64si-p-sbreak rv64si-p-dirty					 \
+			   rv64uc-p-rvc \
 			   rv64ui-v-add rv64ui-v-addi rv64ui-p-slli rv64ui-v-addiw rv64ui-v-addw rv64ui-v-and rv64ui-v-auipc			 \
 			   rv64ui-v-beq rv64ui-v-bge rv64ui-v-bgeu rv64ui-v-andi rv64ui-v-blt rv64ui-v-bltu rv64ui-v-bne 				 \
 			   rv64ui-v-simple rv64ui-v-jal rv64ui-v-jalr rv64ui-v-or rv64ui-v-ori rv64ui-v-sub rv64ui-v-subw				 \
@@ -145,7 +145,7 @@ run-asm-tests: build
 		$(library).$(test_top_level)_optimized;)
 
 run-asm-tests-verilator: verilate
-	$(foreach test, $(riscv-tests), obj_dir/Variane_wrapped $(riscv-test-dir)/$(test);)
+	$(foreach test, $(riscv-tests), obj_dir/Variane_wrapped --label="Starting: $(riscv-test-dir)/$(test)" $(riscv-test-dir)/$(test);)
 
 run-failed-tests: build
 	# make the tests
@@ -175,7 +175,7 @@ $(tests): build
 verilate:
 	$(verilator) $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) $(wildcard src/axi_slice/*.sv) \
 	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
-	--unroll-count 256 -Wno-fatal -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace \
+	--unroll-count 1024 -Wno-fatal -Wno-UNOPTFLAT -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
 	cd obj_dir && make -j8 -f Variane_wrapped.mk
 

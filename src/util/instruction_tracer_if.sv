@@ -18,23 +18,24 @@ import ariane_pkg::*;
 interface instruction_tracer_if (
         input clk
     );
-    logic              rstn;
-    logic              flush_unissued;
-    logic              flush;
+
+    logic             rstn;
+    logic             flush_unissued;
+    logic             flush;
     // Decode
-    logic [31:0]       instruction;
-    logic              fetch_valid;
-    logic              fetch_ack;
+    logic [31:0]      instruction;
+    logic             fetch_valid;
+    logic             fetch_ack;
     // Issue stage
-    logic              issue_ack; // issue acknowledged
-    scoreboard_entry_t issue_sbe; // issue scoreboard entry
+    logic               issue_ack; // issue acknowledged
+    scoreboard_entry_t  issue_sbe; // issue scoreboard entry
     // WB stage
-    logic [4:0]        waddr;
-    logic [63:0]       wdata;
-    logic              we;
+    logic [1:0][4:0]  waddr;
+    logic [1:0][63:0] wdata;
+    logic [1:0]       we;
     // commit stage
-    scoreboard_entry_t commit_instr; // commit instruction
-    logic              commit_ack;
+    scoreboard_entry_t [1:0] commit_instr; // commit instruction
+    logic              [1:0] commit_ack;
 
     // address translation
     // stores
@@ -44,7 +45,8 @@ interface instruction_tracer_if (
     logic              ld_valid;
     logic              ld_kill;
     logic [63:0]       ld_paddr;
-
+    // misprediction
+    branchpredict_t    resolve_branch;
     // exceptions
     exception_t        exception;
     // current privilege level
@@ -53,7 +55,7 @@ interface instruction_tracer_if (
     `ifndef SYNTHESIS
     clocking pck @(posedge clk);
         input rstn, flush_unissued, flush, instruction, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr,
-              st_valid, st_paddr, ld_valid, ld_kill, ld_paddr,
+              st_valid, st_paddr, ld_valid, ld_kill, ld_paddr, resolve_branch,
               wdata, we, commit_instr, commit_ack, exception, priv_lvl;
     endclocking
     `endif

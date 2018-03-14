@@ -48,7 +48,7 @@ module lfsr #(
         // output assignment
         refill_way_oh = 'b0;
         refill_way_oh[shift_q[LOG_WIDTH-1:0]] = 1'b1;
-        refill_way_bin = shift_q;
+        refill_way_bin = shift_q[$clog2(WIDTH)-1:0];
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_

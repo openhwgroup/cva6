@@ -15,11 +15,11 @@
 import ariane_pkg::*;
 
 module lsu #(
-        parameter int          ASID_WIDTH       = 1,
+        parameter int unsigned ASID_WIDTH       = 1,
         parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,
         parameter int unsigned AXI_ID_WIDTH     = 10,
         parameter int unsigned AXI_USER_WIDTH   = 1
-    )(
+)(
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,
@@ -41,12 +41,12 @@ module lsu #(
 
     input  logic                     enable_translation_i,     // enable virtual memory translation
     input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores
+
     input  logic                     fetch_req_i,              // Instruction fetch interface
-    output logic                     fetch_gnt_o,              // Instruction fetch interface
-    output logic                     fetch_valid_o,            // Instruction fetch interface
     input  logic [63:0]              fetch_vaddr_i,            // Instruction fetch interface
-    output logic [63:0]              fetch_rdata_o,            // Instruction fetch interface
-    output exception_t               fetch_ex_o,               // Instruction fetch interface
+    output logic                     fetch_valid_o,            // Instruction fetch interface
+    output logic [63:0]              fetch_paddr_o,            // Instruction fetch interface
+    output exception_t               fetch_exception_o,        // Instruction fetch interface
 
     input  priv_lvl_t                priv_lvl_i,               // From CSR register file
     input  priv_lvl_t                ld_st_priv_lvl_i,         // From CSR register file
@@ -59,13 +59,6 @@ module lsu #(
     output logic                     itlb_miss_o,
     output logic                     dtlb_miss_o,
     output logic                     dcache_miss_o,
-     // Instruction memory/cache
-    output logic [63:0]              instr_if_address_o,
-    output logic                     instr_if_data_req_o,
-    output logic [3:0]               instr_if_data_be_o,
-    input  logic                     instr_if_data_gnt_i,
-    input  logic                     instr_if_data_rvalid_i,
-    input  logic [63:0]              instr_if_data_rdata_i,
 
     input  logic                     dcache_en_i,
     input  logic                     flush_dcache_i,

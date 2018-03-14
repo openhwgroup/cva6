@@ -90,7 +90,7 @@ module compressed_decoder
                         illegal_instr_o = 1'b1;
                   end
 
-                  3'b101: begin
+                  OPCODE_C_J: begin
                       // 101: c.j   -> jal x0, imm
                       instr_o = {instr_i[12], instr_i[8], instr_i[10:9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5:3], {9 {instr_i[12]}}, 4'b0, ~instr_i[15], OPCODE_JAL};
                   end
@@ -174,7 +174,7 @@ module compressed_decoder
                       endcase
                   end
 
-                  3'b110, 3'b111: begin
+                  OPCODE_C_BEQZ, OPCODE_C_BNEZ: begin
                       // 0: c.beqz -> beq rs1', x0, imm
                       // 1: c.bnez -> bne rs1', x0, imm
                       instr_o = {{4 {instr_i[12]}}, instr_i[6:5], instr_i[2], 5'b0, 2'b01, instr_i[9:7], 2'b00, instr_i[13], instr_i[11:10], instr_i[4:3], instr_i[12], OPCODE_BRANCH};

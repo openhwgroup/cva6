@@ -15,7 +15,6 @@
 parameter INSTR_LUI       = { 25'b?, OPCODE_LUI };
 parameter INSTR_AUIPC     = { 25'b?, OPCODE_AUIPC };
 parameter INSTR_JAL       = { 25'b?, OPCODE_JAL };
-parameter INSTR_J         = { 20'b?, 5'b0, OPCODE_JAL };
 parameter INSTR_JALR      = { 17'b?, 3'b000, 5'b?, OPCODE_JALR };
 // BRANCH
 parameter INSTR_BEQZ     =  { 7'b?, 5'b0, 5'b?, 3'b000, 5'b?, OPCODE_BRANCH };

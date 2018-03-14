@@ -26,9 +26,10 @@ class instruction_trace_item;
     logic [63:0]       result;
     logic [63:0]       paddr;
     string             priv_lvl;
+    branchpredict_t    bp;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl, branchpredict_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -37,6 +38,7 @@ class instruction_trace_item;
         this.reg_file = reg_file;
         this.result   = result;
         this.paddr    = paddr;
+        this.bp       = bp;
         this.priv_lvl = getPrivLevel(priv_lvl);
     endfunction
     // convert register address to ABI compatible form
@@ -104,9 +106,8 @@ class instruction_trace_item;
             // Regular opcodes
             INSTR_LUI:                 s = this.printUInstr("lui");
             INSTR_AUIPC:               s = this.printUInstr("auipc");
-            INSTR_J:                   s = this.printUJInstr("j");
-            INSTR_JAL:                 s = this.printUJInstr("jal");
-            INSTR_JALR:                s = this.printIInstr("jalr");
+            INSTR_JAL:                 s = this.printJump();
+            INSTR_JALR:                s = this.printJump();
             // BRANCH
             INSTR_BEQZ:                s = this.printSBInstr("beqz");
             INSTR_BEQ:                 s = this.printSBInstr("beq");
@@ -185,10 +186,11 @@ class instruction_trace_item;
         endcase
 
 
-        s = $sformatf("%10t %10d %s %h %h %-36s", simtime,
+        s = $sformatf("%10t %10d %s %h %h %h %-36s", simtime,
                                              cycle,
                                              priv_lvl,
                                              sbe.pc,
+                                             bp.is_mispredict & bp.valid,
                                              instr,
                                              s);
 
@@ -280,6 +282,28 @@ class instruction_trace_item;
 
         return $sformatf("%-16s %s, 0x%0h", mnemonic, regAddrToStr(sbe.rd), sbe.result[31:12]);
     endfunction // printUInstr
+
+    function string printJump();
+        string mnemonic;
+        case (instr[6:0])
+            OPCODE_JALR: begin
+                // is this a return?
+                if (sbe.rd == 'b0 && (sbe.rs1 == 'h1 || sbe.rs1 == 'h5)) begin
+                    return this.printMnemonic("ret");
+                end else begin
+                    return this.printIInstr("jalr");
+                end
+            end
+
+            OPCODE_JAL: begin
+                if (sbe.rd == 'b0)
+                    return this.printUJInstr("j");
+                else
+                return this.printUJInstr("jal");
+            end
+        endcase
+
+    endfunction
 
     function string printUJInstr(input string mnemonic);
 

@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Improved instruction fetch fronten-end
+- Add RAS
+- Add support for Bender hardware management
+
+### Changed
+
 - Bugfix in non-detected illegal instruction #12
 - Bugfix in non-detected illegal instruction JALR (funct3 != 0)
 - Bugfix in non-detected illegal instruction FENCE (some bit-checks missing)
@@ -83,8 +89,3 @@ Linux booting on FPGA.
 
 ### Added
 - Initial development, getting to a stable point
-
-[Unreleased]: https://iis-git.ee.ethz.ch/floce/ariane/compare/v0.3.0...HEAD
-[0.3.0]: https://iis-git.ee.ethz.ch/floce/ariane/compare/v0.3.0...v0.4.0
-[0.2.0]: https://iis-git.ee.ethz.ch/floce/ariane/compare/v0.2.0...v0.3.0
-[0.1.0]: https://iis-git.ee.ethz.ch/floce/ariane/compare/v0.1.0...v0.2.0

@@ -31,6 +31,7 @@ package ariane_pkg;
     localparam ASID_WIDTH    = 1;
     localparam BTB_ENTRIES   = 8;
     localparam BITS_SATURATION_COUNTER = 2;
+    localparam NR_COMMIT_PORTS = 2;
 
     localparam logic [63:0] ISA_CODE = (1 <<  2)  // C - Compressed extension
                                      | (1 <<  8)  // I - RV32I/64I/128I base ISA
@@ -40,6 +41,9 @@ package ariane_pkg;
                                      | (1 << 20)  // U - User mode implemented
                                      | (0 << 23)  // X - Non-standard extensions present
                                      | (1 << 63); // RV64
+
+    // 32 registers + 1 bit for re-naming = 6
+    localparam REG_ADDR_SIZE = 6;
 
     // ---------------
     // Fetch Stage
@@ -53,6 +57,8 @@ package ariane_pkg;
          logic        valid;
     } exception_t;
 
+    typedef enum logic [1:0] { BHT, BTB, RAS } cf_t;
+
     // branch-predict
     // this is the struct we get back from ex stage and we will use it to update
     // all the necessary data structures
@@ -65,18 +71,52 @@ package ariane_pkg;
                                       // in the lower 16 bit of the word
         logic        valid;           // prediction with all its values is valid
         logic        clear;           // invalidate this entry
+        cf_t         cf_type;         // Type of control flow change
     } branchpredict_t;
 
     // branchpredict scoreboard entry
     // this is the struct which we will inject into the pipeline to guide the various
     // units towards the correct branch decision and resolve
     typedef struct packed {
+        logic        valid;           // this is a valid hint
         logic [63:0] predict_address; // target address at which to jump, or not
         logic        predict_taken;   // branch is taken
         logic        is_lower_16;     // branch instruction is compressed and resides
                                       // in the lower 16 bit of the word
-        logic        valid;           // this is a valid hint
+        cf_t         cf_type;         // Type of control flow change
     } branchpredict_sbe_t;
+
+    typedef struct packed {
+        logic        valid;
+        logic [63:0] pc;             // update at PC
+        logic [63:0] target_address;
+        logic        is_lower_16;
+        logic        clear;
+    } btb_update_t;
+
+    typedef struct packed {
+        logic        valid;
+        logic [63:0] target_address;
+        logic        is_lower_16;
+    } btb_prediction_t;
+
+    typedef struct packed {
+        logic        valid;
+        logic [63:0] ra;
+    } ras_t;
+
+    typedef struct packed {
+        logic        valid;
+        logic [63:0] pc;          // update at PC
+        logic        mispredict;
+        logic        taken;
+    } bht_update_t;
+
+    typedef struct packed {
+        logic       valid;
+        logic       taken;
+        logic       strongly_taken;
+    } bht_prediction_t;
 
     typedef enum logic[3:0] {
         NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR
@@ -136,6 +176,7 @@ package ariane_pkg;
         fu_op                     operator;
         logic [TRANS_ID_BITS-1:0] trans_id;
     } lsu_ctrl_t;
+
     // ---------------
     // IF/ID Stage
     // ---------------
@@ -156,9 +197,9 @@ package ariane_pkg;
                                                  // with the transaction id in any case make the width more generic
         fu_t                      fu;            // functional unit to use
         fu_op                     op;            // operation to perform in each functional unit
-        logic [4:0]               rs1;           // register source address 1
-        logic [4:0]               rs2;           // register source address 2
-        logic [4:0]               rd;            // register destination address
+        logic [REG_ADDR_SIZE-1:0] rs1;           // register source address 1
+        logic [REG_ADDR_SIZE-1:0] rs2;           // register source address 2
+        logic [REG_ADDR_SIZE-1:0] rd;            // register destination address
         logic [63:0]              result;        // for unfinished instructions this field also holds the immediate
         logic                     valid;         // is the result valid
         logic                     use_imm;       // should we use the immediate as operand b?
@@ -230,6 +271,10 @@ package ariane_pkg;
     localparam OPCODE_AUIPC     = 7'h17;
     localparam OPCODE_LUI       = 7'h37;
     localparam OPCODE_AMO       = 7'h2F;
+
+    localparam OPCODE_C_J       = 3'b101;
+    localparam OPCODE_C_BEQZ    = 3'b110;
+    localparam OPCODE_C_BNEZ    = 3'b111;
     // --------------------
     // Atomics
     // --------------------
@@ -261,6 +306,16 @@ package ariane_pkg;
         logic r;
         logic v;
     } pte_t;
+
+
+    typedef struct packed {
+        logic                  valid;      // valid flag
+        logic                  is_2M;      //
+        logic                  is_1G;      //
+        logic [26:0]           vpn;
+        logic [ASID_WIDTH-1:0] asid;
+        pte_t                  content;
+    } tlb_update_t;
 
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).
@@ -420,5 +475,20 @@ package ariane_pkg;
     // ----------------------
     function automatic logic [63:0] sext32 (logic [31:0] operand);
         return {{32{operand[31]}}, operand[31:0]};
+    endfunction
+
+    // ----------------------
+    // Immediate functions
+    // ----------------------
+    function automatic logic [63:0] uj_imm (logic [31:0] instruction_i);
+        return { {44 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
+    endfunction
+
+    function automatic logic [63:0] i_imm (logic [31:0] instruction_i);
+        return { {52 {instruction_i[31]}}, instruction_i[31:20] };
+    endfunction
+
+    function automatic logic [63:0] sb_imm (logic [31:0] instruction_i);
+        return { {51 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
     endfunction
 endpackage

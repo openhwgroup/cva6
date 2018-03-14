@@ -55,12 +55,7 @@ module decoder (
     logic [63:0] imm_sb_type;
     logic [63:0] imm_u_type;
     logic [63:0] imm_uj_type;
-    logic [63:0] imm_z_type;
-    logic [63:0] imm_s2_type;
     logic [63:0] imm_bi_type;
-    logic [63:0] imm_s3_type;
-    logic [63:0] imm_vs_type;
-    logic [63:0] imm_vu_type;
 
     always_comb begin : decoder
 
@@ -498,17 +493,13 @@ module decoder (
     // Sign extend immediate
     // --------------------------------
     always_comb begin : sign_extend
-        imm_i_type  = { {52 {instruction_i[31]}}, instruction_i[31:20] };
+        imm_i_type  = i_imm(instruction_i);
         imm_iz_type = {  52'b0, instruction_i[31:20] };
         imm_s_type  = { {52 {instruction_i[31]}}, instruction_i[31:25], instruction_i[11:7] };
-        imm_sb_type = { {51 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
+        imm_sb_type = sb_imm(instruction_i);
         imm_u_type  = { {32 {instruction_i[31]}}, instruction_i[31:12], 12'b0 }; // JAL, AUIPC, sign extended to 64 bit
-        imm_uj_type = { {44 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
-        imm_s2_type = { 59'b0, instruction_i[24:20] };
+        imm_uj_type = uj_imm(instruction_i);
         imm_bi_type = { {59{instruction_i[24]}}, instruction_i[24:20] };
-        imm_s3_type = { 59'b0, instruction_i[29:25] };
-        imm_vs_type = { {58 {instruction_i[24]}}, instruction_i[24:20], instruction_i[25] };
-        imm_vu_type = { 58'b0, instruction_i[24:20], instruction_i[25] };
 
         // NOIMM, PCIMM, IIMM, SIMM, BIMM, BIMM, UIMM, JIMM
         // select immediate
