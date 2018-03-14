@@ -97,7 +97,8 @@ module nbdcache #(
     cache_line_t                         wdata_ram;
     cache_line_t [SET_ASSOCIATIVITY-1:0] rdata_ram;
     cl_be_t                              be_ram;
-
+    logic                                state_init;
+   
     // ------------------
     // Cache Controller
     // ------------------

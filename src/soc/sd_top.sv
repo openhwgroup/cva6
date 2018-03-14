@@ -99,7 +99,7 @@ module sd_top(
  output wire 	 sd_cmd_to_mem,
  output wire 	 sd_cmd_oe,
  output wire 	 sd_dat_oe,
- output reg [8:0]  sd_xfr_addr);
+ output reg [9:0]  sd_xfr_addr);
 
    reg 		    sd_cmd_to_host_dly;
    reg [3:0] 	    sd_dat_to_host_dly;

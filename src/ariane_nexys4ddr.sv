@@ -90,7 +90,7 @@ module ariane_nexys4ddr
    input wire        rst_top
    );
 
-   logic             clk_i, locked;          
+   logic             clk_i, locked, tdo;          
    logic             test_en_i = 'b1; // enable all clock gates for testing
    // Core ID; Cluster ID and boot address are considered more or less static
    logic [ 3:0]      core_id_i = 'b0;
@@ -578,17 +578,18 @@ infer_ram  #(
         .boot_wdata(master1_wdata),  // input wire [63 : 0] dina
         .boot_rdata(master1_rdata),  // output wire [63 : 0] douta
         // JTAG shared memory at location 'h42000000
-        .wrap_en(master2_req),      // input wire ena
-        .wrap_we(master2_we),   // input wire [7 : 0] wea
-        .wrap_addr(master2_address[13:0]),  // input wire [13: 0] addra
-        .wrap_wdata(master2_wdata),  // input wire [63 : 0] dina
-        .wrap_rdata(master2_rdata),  // output wire [63 : 0] douta
-        .address    ( dbg_mstaddress ),
+        .wrap_en(master3_req),      // input wire ena
+        .wrap_we(master3_we),   // input wire [7 : 0] wea
+        .wrap_addr(master3_address[13:0]),  // input wire [13: 0] addra
+        .wrap_wdata(master3_wdata),  // input wire [63 : 0] dina
+        .wrap_rdata(master3_rdata),  // output wire [63 : 0] douta
+        .address      ( dbg_mstaddress ),
+        .i_dip        ( i_dip          ),
         .tms_i        ( tms_i          ),
         .tck_i        ( tck_i          ),
         .trstn_i      ( rst_top        ),
         .tdi_i        ( tdi_i          ),
-        .tdo_o        ( tdo_o          )
+        .tdo_o        ( tdo            )
              );
 
 axi_ram_wrap_ariane  #(

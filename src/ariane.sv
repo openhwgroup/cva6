@@ -698,6 +698,10 @@ module ariane #(
                 if (commit_instr_id_commit.ex.cause == 2) begin
                     $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h), PC=0x%0h\n",
                             commit_instr_id_commit.ex.tval[31:0], commit_instr_id_commit.pc);
+                end else if (commit_instr_id_commit.ex.cause == 4) begin
+                    $fwrite(f, "Exception Cause: Misaligned load, DASM(%h), PC=0x%0h\n",
+                            commit_instr_id_commit.ex.tval[31:0], commit_instr_id_commit.pc);
+                    $stop;
                 end else begin
                     $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit.ex.cause);
                 end

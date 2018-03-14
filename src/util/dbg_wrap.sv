@@ -9,6 +9,7 @@
 // specific language governing permissions and limitations under the License.
 
 `default_nettype none
+`timescale 1ns/1ps
 
 module dbg_wrap
 #(
@@ -98,19 +99,19 @@ logic [289:0] capture_input, capture_output, capture_select;
 
 wire [96 : 0] pc_status;
 
-    wire [5:0] DBG;
-    wire WREN;
-    wire [63:0] TO_MEM;
-    wire [31:0] ADDR;
+    logic [5:0] DBG;
+    logic WREN;
+    logic [63:0] TO_MEM;
+    logic [31:0] ADDR;
     logic [63:0] FROM_MEM;
-    wire TCK;
-    wire TCK2;
-    wire RESET;
-    wire RUNTEST;
-    wire CAPTURE;
-    wire CAPTURE2;
-    wire UPDATE;
-    wire UPDATE2;
+    logic TCK;
+    logic TCK2;
+    logic RESET;
+    logic RUNTEST;
+    logic CAPTURE;
+    logic CAPTURE2;
+    logic UPDATE;
+    logic UPDATE2;
    logic [63:0]  sharedmem_dout, bootmem_dout;
    logic [7:0]   sharedmem_en;
    logic [511:0] capmem_dout, capmem_shift, capture_wdata;
@@ -123,7 +124,7 @@ wire [96 : 0] pc_status;
    wire   capture_busy = (dma_capture || cpu_capture) & !(&capture_address);
    wire [63:0] move_status = {move_done, areset, dma_capture_select, dma_capture, move_en_in, move_mask};
    assign capture_select = dma_capture_select ? capture_output : capture_input;
-   assign aresetn = !areset;
+   assign aresetn = combined_rstn && (!areset);
    
    logic  dma_en;
 
@@ -181,8 +182,53 @@ wire [96 : 0] pc_status;
          endcase
       end
 
+`ifdef NOJTAG
+
+   assign DBG = 'b0;
+   assign RESET = 'b0;
+   assign RUNTEST = 'b0;
+
+   initial
+     begin:init
+        logic [63:0] tmpmem[0:8191];
+        integer      ix = 0;
+        
+        $readmemh("cnvmem64.hex", tmpmem);
+        TCK = 1'b0;
+        WREN = 1'b0;
+        TO_MEM = 64'b0;
+        ADDR = 32'h000000;
+        @(posedge clk)
+          TCK = 1'b1;        
+        @(negedge clk)
+          TCK = 1'b0;
+        
+        @(posedge rst_n)
+          for (ix = 0; ix < 'h10000; ix=ix+8)
+            begin
+               WREN = 1'b1;
+               TO_MEM = tmpmem[ix/8];
+               ADDR = 32'hFF200000 + ix;
+               @(posedge clk)
+                 TCK = 1'b1;        
+               @(negedge clk)
+                 TCK = 1'b0;
+               WREN = 1'b0;
+               @(posedge clk)
+                 TCK = 1'b1;        
+               @(negedge clk)
+                 TCK = 1'b0;
+            end
+        
+        ADDR = 32'h000000;
+        
+     end
+`else
+   
 jtag_dummy #(.JTAG_CHAIN_START(JTAG_CHAIN_START)) jtag1(.*);
 
+`endif
+   
    genvar r;
 
    generate for (r = 0; r < 32; r=r+1)

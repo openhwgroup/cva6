@@ -184,8 +184,7 @@ always_comb
        end
   end
 
-   wire    tx_rd;
-   wire    rx_wr;
+   wire    tx_rd, rx_wr_en;
    wire       sd_data_busy, data_crc_ok, sd_dat_oe;
    wire [3:0] sd_dat_to_mem, sd_dat_to_host, sd_dat_to_host_maj;
    wire       sd_cmd_to_mem, sd_cmd_to_host, sd_cmd_to_host_maj, sd_cmd_oe;
@@ -219,7 +218,7 @@ always_comb
    reg 	   sd_cmd_start, sd_cmd_rst, sd_data_rst, sd_clk_rst;
    reg [15:0] from_dip_reg;
 
-   wire [8:0] sd_xfr_addr;
+   wire [9:0] sd_xfr_addr;
    
 logic [6:0] sd_clk_daddr;
 logic       sd_clk_dclk, sd_clk_den, sd_clk_drdy, sd_clk_dwe, sd_clk_locked;
@@ -363,27 +362,37 @@ always @(posedge sd_clk_o)
         
    endgenerate					
 
-   RAMB16_S36_S36 RAMB16_S1_inst_sd (
-                                   .CLKA(~sd_clk_o),             // Port A Clock
-                                   .CLKB(~msoc_clk),             // Port A Clock
-                                   .DOA(data_out_tx),            // Port A 32-bit Data Output
-                                   .DOPA(),                      // Port A parity unused
-                                   .ADDRA(sd_xfr_addr),          // Port A 11-bit Address Input
-                                   .DIA(data_in_rx),             // Port A 32-bit Data Input
-                                   .DIPA(4'b0),                  // Port A parity unused
-                                   .SSRA(1'b0),                  // Port A Synchronous Set/Reset Input
-                                   .ENA(tx_rd|rx_wr),            // Port A RAM Enable Input
-                                   .WEA(rx_wr),                  // Port A Write Enable Input
-                                   .DOB(one_hot_rdata[3]),       // Port B 32-bit Data Output
-                                   .DOPB(),                      // Port B parity unused
-                                   .ADDRB(hid_addr[10:2]),       // Port B 9-bit Address Input
-                                   .DIB(hid_wrdata),             // Port B 32-bit Data Input
-                                   .DIPB(4'b0),                  // Port B parity unused
-                                   .ENB(hid_en&one_hot_data_addr[3]),
-				                                 // Port B RAM Enable Input
-                                   .SSRB(1'b0),                  // Port B Synchronous Set/Reset Input
-                                   .WEB(|hid_we)                  // Port B Write Enable Input
-                                   );
+   genvar r;
+
+   logic [1:0] rx_wr = {rx_wr_en,sd_xfr_addr[0]};
+   logic [63:0] douta, doutb;
+   assign one_hot_rdata[3] = doutb;
+   assign data_out_tx = sd_xfr_addr[0] ? douta[63:32] : douta[31:0];
+   
+   generate for (r = 0; r < 2; r=r+1)
+     RAMB16_S36_S36
+     RAMB16_S36_S36_inst_sd
+       (
+        .CLKA   ( ~sd_clk_o                   ),     // Port A Clock
+        .DOA    ( douta[r*32 +: 32]           ),     // Port A 1-bit Data Output
+        .DOPA   (                             ),
+        .ADDRA  ( sd_xfr_addr[9:1]            ),     // Port A 14-bit Address Input
+        .DIA    ( data_in_rx                  ),     // Port A 1-bit Data Input
+        .DIPA   ( 4'b0                        ),
+        .ENA    ( tx_rd|rx_wr_en              ),     // Port A RAM Enable Input
+        .SSRA   ( 1'b0                        ),     // Port A Synchronous Set/Reset Input
+        .WEA    ( rx_wr[r]                    ),     // Port A Write Enable Input
+        .CLKB   ( ~msoc_clk                   ),     // Port B Clock
+        .DOB    ( doutb[r*32 +: 32]           ),     // Port B 1-bit Data Output
+        .DOPB   (                             ),
+        .ADDRB  ( hid_addr[11:3]              ),     // Port B 14-bit Address Input
+        .DIB    ( hid_wrdata[r*32 +: 32]      ),     // Port B 1-bit Data Input
+        .DIPB   ( 4'b0                        ),
+        .ENB    ( hid_en&one_hot_data_addr[3] ),     // Port B RAM Enable Input
+        .SSRB   ( 1'b0                        ),     // Port B Synchronous Set/Reset Input
+        .WEB    ( |hid_we                     )      // Port B Write Enable Input
+        );
+   endgenerate
 
    always @(posedge msoc_clk)
      begin
@@ -487,7 +496,7 @@ sd_top sdtop(
     .crc_val_o(sd_cmd_crc_val),
     .crc_actual_o(sd_cmd_response[6:0]),
     .sd_rd_o(tx_rd),
-    .sd_we_o(rx_wr),
+    .sd_we_o(rx_wr_en),
     .sd_data_o(data_in_rx),    
     .sd_dat_to_mem(sd_dat_to_mem),
     .sd_cmd_to_mem(sd_cmd_to_mem),
@@ -501,7 +510,7 @@ framing_top open
    .rstn(locked),
    .msoc_clk(msoc_clk),
    .clk_rmii(clk_rmii),
-   .core_lsu_addr(hid_addr[12:0]),
+   .core_lsu_addr(hid_addr[13:0]),
    .core_lsu_wdata(hid_wrdata),
    .core_lsu_be(hid_we),
    .ce_d(hid_en),
