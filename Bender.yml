@@ -51,7 +51,7 @@ sources:
   - src/pcgen_stage.sv
   - src/perf_counters.sv
   - src/ptw.sv
-  - src/ariane_regfile_ff.sv
+  # - src/ariane_regfile_ff.sv
   - src/ariane_regfile.sv
   - src/re_name.sv
   - src/scoreboard.sv
