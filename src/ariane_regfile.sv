@@ -23,11 +23,9 @@
 //                 latches and is thus smaller than the flip-flop based RF.
 //
 
-module regfile
-#(
+module ariane_regfile #(
   parameter DATA_WIDTH    = 32
-)
-(
+)(
   // Clock and Reset
   input  logic                   clk,
   input  logic                   rst_n,

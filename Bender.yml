@@ -5,19 +5,19 @@ package:
 dependencies:
   axi: { git: "git@iis-git.ee.ethz.ch:sasa/axi.git", rev: master }
   axi2per: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi2per.git", rev: master }
-  axi_mem_if: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_mem_if.git", version: 0.1.1 }
+  axi_mem_if: { git: "git@github.com:pulp-platform/axi_mem_if.git", rev: master }
   axi_node: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_node.git", version: 1.0.3 }
   axi_slice: { git: "git@iis-git.ee.ethz.ch:sasa/axi_slice.git", version: 1.1.2 }
   tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master }
   common_cells: { git: "git@iis-git.ee.ethz.ch:sasa/common_cells.git", version: 1.1.0 }
 
 sources:
+  - include/ariane_pkg.sv
+  - include/nbdcache_pkg.sv
   - target: not(synthesis)
     files:
       - src/util/instruction_tracer_pkg.sv
       - src/util/instruction_tracer_if.sv
-  - include/ariane_pkg.sv
-  - include/nbdcache_pkg.sv
   - src/alu.sv
   - src/ariane.sv
   - src/branch_unit.sv
@@ -32,7 +32,7 @@ sources:
   - src/ex_stage.sv
   - src/fetch_fifo.sv
   - src/ff1.sv
-  - src/fifo.sv
+  # - src/fifo.sv
   - src/frontend.sv
   - src/icache.sv
   - src/id_stage.sv

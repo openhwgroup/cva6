@@ -307,7 +307,7 @@ module issue_read_operands #(
     // ----------------------
     // Integer Register File
     // ----------------------
-    regfile #(
+    ariane_regfile #(
         .DATA_WIDTH     ( 64                     )
     ) regfile_i (
         // Clock and Reset
