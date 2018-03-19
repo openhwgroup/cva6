@@ -23,15 +23,15 @@ module ariane_timer #(
     parameter int unsigned NR_CORES        = 1 // Number of cores therefore also the number of timecmp registers and timer interrupts
 )(
     // APB Slave
-    input  logic           clk_i,   // Clock
-    input  logic           rst_ni,  // Asynchronous reset active low
+    input  logic                clk_i,   // Clock
+    input  logic                rst_ni,  // Asynchronous reset active low
 
-    AXI_BUS.Slave          slave,
+    AXI_BUS.Slave               slave,
 
-    input  logic           halted_i, // cores are halted, also halt timer
-    input  logic           rtc_i,    // Real-time clock in (usually 32.768 kHz)
-    output logic    [63:0] time_o,   // Global Time out, this is the time-base of the whole SoC
-    output logic           irq_o     // Timer interrupt
+    input  logic                halted_i, // cores are halted, also halt timer
+    input  logic                rtc_i,    // Real-time clock in (usually 32.768 kHz)
+    output logic [63:0]         time_o,   // Global Time out, this is the time-base of the whole SoC
+    output logic [NR_CORES-1:0] irq_o     // Timer interrupts
 );
     // register offset
     localparam logic [1:0] REG_CMP  = 2'h1;
@@ -123,10 +123,12 @@ module ariane_timer #(
     // if interrupts are enabled and the MTIE bit is set in the mie register.
     always_comb begin : irq_gen
         // check that the mtime cmp register is set to a meaningful value
-        if (mtimecmp_q != 0 && mtime_q >= mtimecmp_q)
-            irq_o = 1'b1;
-        else
-            irq_o = 1'b0;
+        for (int unsigned i = 0; i < NR_CORES; i++) begin
+            if (mtimecmp_q[i] != 0 && mtime_q >= mtimecmp_q[i])
+                irq_o[i] = 1'b1;
+            else
+                irq_o[i] = 1'b0;
+        end
     end
 
     // -----------------------------
