@@ -18,6 +18,7 @@ import ariane_pkg::*;
 module mult (
     input  logic                     clk_i,
     input  logic                     rst_ni,
+    input  logic                     flush_i,
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     input  logic                     mult_valid_i,
     input  fu_op                     operator_i,
@@ -49,8 +50,8 @@ module mult (
     // just a dumb pipelined multiplier
     assign div_ready_i      = (mul_valid) ? 1'b0         : 1'b1;
     assign mult_trans_id_o  = (mul_valid) ? mul_trans_id : div_trans_id;
-    assign result_o         = (mul_valid) ? mul_result   : div_result;
-    assign mult_valid_o     = div_valid | mul_valid;
+    assign result_o         = (flush_i)   ? 64'b0        : (mul_valid) ? mul_result   : div_result;
+    assign mult_valid_o     = (flush_i)   ? 1'b0         : div_valid | mul_valid;
     // mult_ready_o = division as the multiplication will unconditionally be ready to accept new requests
 
     // ---------------------
