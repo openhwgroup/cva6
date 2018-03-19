@@ -124,6 +124,7 @@ module mult (
                 word_op_d = 1'b1;
             // regular operation
             end else begin
+                word_op_d = 1'b0;
                 // no sign extending is necessary as we are already using the full 64 bit
                 operand_a = operand_a_i;
                 operand_b = operand_b_i;
