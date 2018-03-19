@@ -258,7 +258,9 @@ module ariane #(
     // Frontend
     // --------------
     frontend #(
-
+        .BTB_ENTRIES         ( BTB_ENTRIES ),
+        .BHT_ENTRIES         ( BHT_ENTRIES ),
+        .RAS_DEPTH           ( RAS_DEPTH   )
     ) i_frontend (
         .flush_i             ( flush_ctrl_if                 ), // not entirely correct
         .flush_bp_i          ( 1'b0                          ),

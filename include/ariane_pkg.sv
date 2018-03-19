@@ -30,6 +30,8 @@ package ariane_pkg;
     localparam NR_WB_PORTS   = 5;
     localparam ASID_WIDTH    = 1;
     localparam BTB_ENTRIES   = 8;
+    localparam BHT_ENTRIES   = 32;
+    localparam RAS_DEPTH     = 2;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
