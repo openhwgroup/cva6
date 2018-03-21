@@ -141,6 +141,8 @@ module csr_regfile #(
     logic [63:0] medeleg_q,  medeleg_d;
     logic [63:0] mideleg_q,  mideleg_d;
     logic [63:0] mip_q,      mip_d;
+    logic [63:0] pmpcfg0_q,  pmpcfg0_d;
+    logic [63:0] pmpaddr0_q, pmpaddr0_d;
     logic [63:0] mie_q,      mie_d;
     logic [63:0] mscratch_q, mscratch_d;
     logic [63:0] mepc_q,     mepc_d;
@@ -216,7 +218,6 @@ module csr_regfile #(
                 CSR_MISA:               csr_rdata = ISA_CODE;
                 CSR_MEDELEG:            csr_rdata = medeleg_q;
                 CSR_MIDELEG:            csr_rdata = mideleg_q;
-                CSR_MIP:                csr_rdata = mip_q;
                 CSR_MIE:                csr_rdata = mie_q;
                 CSR_MTVEC:              csr_rdata = mtvec_q;
                 CSR_MCOUNTEREN:         csr_rdata = 64'b0; // not implemented
@@ -224,6 +225,10 @@ module csr_regfile #(
                 CSR_MEPC:               csr_rdata = mepc_q;
                 CSR_MCAUSE:             csr_rdata = mcause_q;
                 CSR_MTVAL:              csr_rdata = mtval_q;
+                CSR_MIP:                csr_rdata = mip_q;
+                // Placeholders for M-mode protection
+                CSR_PMPCFG0:            csr_rdata = pmpcfg0_q;
+                CSR_PMPADDR0:           csr_rdata = pmpaddr0_q;
                 CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
                 CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
                 CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
@@ -385,7 +390,6 @@ module csr_regfile #(
 
                 // mask the register so that unsupported interrupts can never be set
                 CSR_MIE:                mie_d       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
-                CSR_MIP:                mip_d       = mip;
 
                 CSR_MTVEC: begin
                     mtvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
@@ -400,6 +404,11 @@ module csr_regfile #(
                 CSR_MEPC:               mepc_d      = {csr_wdata[63:1], 1'b0};
                 CSR_MCAUSE:             mcause_d    = csr_wdata;
                 CSR_MTVAL:              mtval_d     = csr_wdata;
+                CSR_MIP:                mip_d       = mip;
+                // Placeholders for M-mode protection
+                CSR_PMPCFG0:            pmpcfg0_d   = csr_wdata;
+                CSR_PMPADDR0:           pmpaddr0_d  = csr_wdata;
+
                 CSR_MCYCLE:             cycle_d     = csr_wdata;
                 CSR_MINSTRET:           instret     = csr_wdata;
                 CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit

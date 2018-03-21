@@ -590,6 +590,8 @@ package ariane_pkg;
         CSR_MCAUSE         = 12'h342,
         CSR_MTVAL          = 12'h343,
         CSR_MIP            = 12'h344,
+        CSR_PMPCFG0        = 12'h3A0,
+        CSR_PMPADDR0       = 12'h3B0,
         CSR_MVENDORID      = 12'hF11,
         CSR_MARCHID        = 12'hF12,
         CSR_MIMPID         = 12'hF13,
