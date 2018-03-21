@@ -7,52 +7,54 @@ ariane:
     include/nbdcache_pkg.sv,
     src/util/instruction_tracer_if.sv,
     src/util/instruction_tracer_pkg.sv,
-    src/ariane.sv,
     src/alu.sv,
+    src/ariane.sv,
     src/branch_unit.sv,
-    src/btb.sv,
+    src/cache_ctrl.sv,
     src/commit_stage.sv,
     src/compressed_decoder.sv,
     src/controller.sv,
     src/csr_buffer.sv,
     src/csr_regfile.sv,
+    src/debug_unit.sv,
     src/decoder.sv,
     src/ex_stage.sv,
     src/fetch_fifo.sv,
-    src/fifo.sv,
+    src/ff1.sv,
+    src/frontend.sv,
+    src/icache.sv,
     src/id_stage.sv,
     src/if_stage.sv,
     src/instr_realigner.sv,
     src/issue_read_operands.sv,
     src/issue_stage.sv,
+    src/lfsr.sv,
     src/load_unit.sv,
-    src/lsu.sv,
     src/lsu_arbiter.sv,
+    src/lsu.sv,
+    src/miss_handler.sv,
     src/mmu.sv,
     src/mult.sv,
+    src/nbdcache.sv,
     src/pcgen_stage.sv,
+    src/perf_counters.sv,
     src/ptw.sv,
+    src/re_name.sv,
     src/scoreboard.sv,
     src/store_buffer.sv,
     src/store_unit.sv,
     src/tlb.sv,
-    src/debug_unit.sv,
-    src/nbdcache.sv,
-    src/miss_handler.sv,
-    src/cache_ctrl.sv,
-    src/perf_counters.sv,
     ]
 riscv_regfile_rtl:
   targets: [
     rtl,
-    gf22,
   ]
   incdirs: [
     include,
   ]
   files: [
-    src/regfile.sv,
-    src/util/gf22_sram.sv,
+    src/ariane_regfile.sv,
+    src/util/behav_sram.sv,
   ]
 
 riscv_regfile_fpga:
@@ -63,6 +65,6 @@ riscv_regfile_fpga:
     include,
   ]
   files: [
-    src/regfile_ff.sv,
+    src/ariane_regfile_ff.sv,
     src/util/xilinx_sram.sv,
   ]
