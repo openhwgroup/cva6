@@ -80,6 +80,8 @@ class instruction_trace_item;
             CSR_MCAUSE:     return "mcause";
             CSR_MTVAL:      return "mtval";
             CSR_MIP:        return "mip";
+            CSR_PMPCFG0:    return "pmpcfg0";
+            CSR_PMPADDR0:   return "pmpaddr0";
             CSR_MVENDORID:  return "mvendorid";
             CSR_MARCHID:    return "marchid";
             CSR_MIMPID:     return "mimpid";
