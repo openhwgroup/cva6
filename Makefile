@@ -145,7 +145,7 @@ run-asm-tests: build
 		$(library).$(test_top_level)_optimized;)
 
 run-asm-tests-verilator: verilate
-	$(foreach test, $(riscv-tests), obj_dir/Variane_wrapped $(riscv-test-dir)/$(test);)
+	$(foreach test, $(riscv-tests), obj_dir/Variane_wrapped $(riscv-test-dir)/$(test) > $(riscv-test-dir)/$(test).log ;)
 
 run-failed-tests: build
 	# make the tests
