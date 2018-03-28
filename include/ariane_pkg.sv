@@ -259,24 +259,72 @@ package ariane_pkg;
     // --------------------
     // Opcodes
     // --------------------
-    localparam OPCODE_SYSTEM    = 7'h73;
-    localparam OPCODE_FENCE     = 7'h0f;
-    localparam OPCODE_OP        = 7'h33;
-    localparam OPCODE_OP32      = 7'h3B;
-    localparam OPCODE_OPIMM     = 7'h13;
-    localparam OPCODE_OPIMM32   = 7'h1B;
-    localparam OPCODE_STORE     = 7'h23;
-    localparam OPCODE_LOAD      = 7'h03;
-    localparam OPCODE_BRANCH    = 7'h63;
-    localparam OPCODE_JALR      = 7'h67;
-    localparam OPCODE_JAL       = 7'h6f;
-    localparam OPCODE_AUIPC     = 7'h17;
-    localparam OPCODE_LUI       = 7'h37;
-    localparam OPCODE_AMO       = 7'h2F;
+    // RV32/64G listings:
+    // Quadrant 0
+    localparam OPCODE_LOAD      = 7'b00_000_11;
+    localparam OPCODE_LOAD_FP   = 7'b00_001_11;
+    localparam OPCODE_CUSTOM_0  = 7'b00_010_11;
+    localparam OPCODE_MISC_MEM  = 7'b00_011_11;
+    localparam OPCODE_OP_IMM    = 7'b00_100_11;
+    localparam OPCODE_AUIPC     = 7'b00_101_11;
+    localparam OPCODE_OP_IMM_32 = 7'b00_110_11;
+    // Quadrant 1
+    localparam OPCODE_STORE     = 7'b01_000_11;
+    localparam OPCODE_STORE_FP  = 7'b01_001_11;
+    localparam OPCODE_CUSTOM_1  = 7'b01_010_11;
+    localparam OPCODE_AMO       = 7'b01_011_11;
+    localparam OPCODE_OP        = 7'b01_100_11;
+    localparam OPCODE_LUI       = 7'b01_101_11;
+    localparam OPCODE_OP_32     = 7'b01_110_11;
+    // Quadrant 2
+    localparam OPCODE_MADD      = 7'b10_000_11;
+    localparam OPCODE_MSUB      = 7'b10_001_11;
+    localparam OPCODE_NMSUB     = 7'b10_010_11;
+    localparam OPCODE_NMADD     = 7'b10_011_11;
+    localparam OPCODE_OP_FP     = 7'b10_100_11;
+    localparam OPCODE_RSRVD_1   = 7'b10_101_11;
+    localparam OPCODE_CUSTOM_2  = 7'b10_110_11;
+    // Quadrant 3
+    localparam OPCODE_BRANCH    = 7'b11_000_11;
+    localparam OPCODE_JALR      = 7'b11_001_11;
+    localparam OPCODE_RSRVD_2   = 7'b11_010_11;
+    localparam OPCODE_JAL       = 7'b11_011_11;
+    localparam OPCODE_SYSTEM    = 7'b11_100_11;
+    localparam OPCODE_RSRVD_3   = 7'b11_101_11;
+    localparam OPCODE_CUSTOM_3  = 7'b11_110_11;
 
-    localparam OPCODE_C_J       = 3'b101;
-    localparam OPCODE_C_BEQZ    = 3'b110;
-    localparam OPCODE_C_BNEZ    = 3'b111;
+    // RV64C listings:
+    // Quadrant 0
+    localparam OPCODE_C0              = 2'b00;
+    localparam OPCODE_C0_ADDI4SPN     = 3'b000;
+    localparam OPCODE_C0_FLD          = 3'b001;
+    localparam OPCODE_C0_LW           = 3'b010;
+    localparam OPCODE_C0_LD           = 3'b011;
+    localparam OPCODE_C0_RSRVD        = 3'b100;
+    localparam OPCODE_C0_FSD          = 3'b101;
+    localparam OPCODE_C0_SW           = 3'b110;
+    localparam OPCODE_C0_SD           = 3'b111;
+    // Quadrant 1
+    localparam OPCODE_C1              = 2'b01;
+    localparam OPCODE_C1_ADDI         = 3'b000;
+    localparam OPCODE_C1_ADDIW        = 3'b001;
+    localparam OPCODE_C1_LI           = 3'b010;
+    localparam OPCODE_C1_LUI_ADDI16SP = 3'b011;
+    localparam OPCODE_C1_MISC_ALU     = 3'b100;
+    localparam OPCODE_C1_J            = 3'b101;
+    localparam OPCODE_C1_BEQZ         = 3'b110;
+    localparam OPCODE_C1_BNEZ         = 3'b111;
+    // Quadrant 2
+    localparam OPCODE_C2              = 2'b10;
+    localparam OPCODE_C2_SLLI         = 3'b000;
+    localparam OPCODE_C2_FLDSP        = 3'b001;
+    localparam OPCODE_C2_LWSP         = 3'b010;
+    localparam OPCODE_C2_LDSP         = 3'b011;
+    localparam OPCODE_C2_JALR_MV_ADD  = 3'b100;
+    localparam OPCODE_C2_FSDSP        = 3'b101;
+    localparam OPCODE_C2_SWSP         = 3'b110;
+    localparam OPCODE_C2_SDSP         = 3'b111;
+
     // --------------------
     // Atomics
     // --------------------

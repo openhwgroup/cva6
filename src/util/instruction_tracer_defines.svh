@@ -28,23 +28,23 @@ parameter INSTR_BGE      =  { 7'b?, 5'b?, 5'b?, 3'b101, 5'b?, OPCODE_BRANCH };
 parameter INSTR_BLTU     =  { 7'b?, 5'b?, 5'b?, 3'b110, 5'b?, OPCODE_BRANCH };
 parameter INSTR_BGEU     =  { 7'b?, 5'b?, 5'b?, 3'b111, 5'b?, OPCODE_BRANCH };
 
-// OPIMM
-parameter INSTR_LI       =  { 12'b?, 5'b0, 3'b000, 5'b?, OPCODE_OPIMM };
-parameter INSTR_ADDI     =  { 17'b?, 3'b000, 5'b?, OPCODE_OPIMM };
-parameter INSTR_SLTI     =  { 17'b?, 3'b010, 5'b?, OPCODE_OPIMM };
-parameter INSTR_SLTIU    =  { 17'b?, 3'b011, 5'b?, OPCODE_OPIMM };
-parameter INSTR_XORI     =  { 17'b?, 3'b100, 5'b?, OPCODE_OPIMM };
-parameter INSTR_ORI      =  { 17'b?, 3'b110, 5'b?, OPCODE_OPIMM };
-parameter INSTR_ANDI     =  { 17'b?, 3'b111, 5'b?, OPCODE_OPIMM };
-parameter INSTR_SLLI     =  { 6'b000000, 11'b?, 3'b001, 5'b?, OPCODE_OPIMM };
-parameter INSTR_SRLI     =  { 6'b000000, 11'b?, 3'b101, 5'b?, OPCODE_OPIMM };
-parameter INSTR_SRAI     =  { 6'b010000, 11'b?, 3'b101, 5'b?, OPCODE_OPIMM };
+// OP-IMM
+parameter INSTR_LI       =  { 12'b?, 5'b0, 3'b000, 5'b?, OPCODE_OP_IMM };
+parameter INSTR_ADDI     =  { 17'b?, 3'b000, 5'b?, OPCODE_OP_IMM };
+parameter INSTR_SLTI     =  { 17'b?, 3'b010, 5'b?, OPCODE_OP_IMM };
+parameter INSTR_SLTIU    =  { 17'b?, 3'b011, 5'b?, OPCODE_OP_IMM };
+parameter INSTR_XORI     =  { 17'b?, 3'b100, 5'b?, OPCODE_OP_IMM };
+parameter INSTR_ORI      =  { 17'b?, 3'b110, 5'b?, OPCODE_OP_IMM };
+parameter INSTR_ANDI     =  { 17'b?, 3'b111, 5'b?, OPCODE_OP_IMM };
+parameter INSTR_SLLI     =  { 6'b000000, 11'b?, 3'b001, 5'b?, OPCODE_OP_IMM };
+parameter INSTR_SRLI     =  { 6'b000000, 11'b?, 3'b101, 5'b?, OPCODE_OP_IMM };
+parameter INSTR_SRAI     =  { 6'b010000, 11'b?, 3'b101, 5'b?, OPCODE_OP_IMM };
 
-// OPIMM32
-parameter INSTR_ADDIW    =  { 17'b?, 3'b000, 5'b?, OPCODE_OPIMM32 };
-parameter INSTR_SLLIW    =  { 7'b0000000, 10'b?, 3'b001, 5'b?, OPCODE_OPIMM32 };
-parameter INSTR_SRLIW    =  { 7'b0000000, 10'b?, 3'b101, 5'b?, OPCODE_OPIMM32 };
-parameter INSTR_SRAIW    =  { 7'b0100000, 10'b?, 3'b101, 5'b?, OPCODE_OPIMM32 };
+// OP-IMM-32
+parameter INSTR_ADDIW    =  { 17'b?, 3'b000, 5'b?, OPCODE_OP_IMM_32 };
+parameter INSTR_SLLIW    =  { 7'b0000000, 10'b?, 3'b001, 5'b?, OPCODE_OP_IMM_32 };
+parameter INSTR_SRLIW    =  { 7'b0000000, 10'b?, 3'b101, 5'b?, OPCODE_OP_IMM_32 };
+parameter INSTR_SRAIW    =  { 7'b0100000, 10'b?, 3'b101, 5'b?, OPCODE_OP_IMM_32 };
 
 // OP
 parameter INSTR_ADD      =  { 7'b0000000, 10'b?, 3'b000, 5'b?, OPCODE_OP };
@@ -59,17 +59,17 @@ parameter INSTR_OR       =  { 7'b0000000, 10'b?, 3'b110, 5'b?, OPCODE_OP };
 parameter INSTR_AND      =  { 7'b0000000, 10'b?, 3'b111, 5'b?, OPCODE_OP };
 parameter INSTR_MUL      =  { 7'b0000001, 10'b?, 3'b???, 5'b?, OPCODE_OP };
 
-// OP32
-parameter INSTR_ADDW     =  { 7'b0000000, 10'b?, 3'b000, 5'b?, OPCODE_OP32 };
-parameter INSTR_SUBW     =  { 7'b0100000, 10'b?, 3'b000, 5'b?, OPCODE_OP32 };
-parameter INSTR_SLLW     =  { 7'b0000000, 10'b?, 3'b001, 5'b?, OPCODE_OP32 };
-parameter INSTR_SRLW     =  { 7'b0000000, 10'b?, 3'b101, 5'b?, OPCODE_OP32 };
-parameter INSTR_SRAW     =  { 7'b0100000, 10'b?, 3'b101, 5'b?, OPCODE_OP32 };
-parameter INSTR_MULW     =  { 7'b0000001, 10'b?, 3'b???, 5'b?, OPCODE_OP32 };
+// OP-32
+parameter INSTR_ADDW     =  { 7'b0000000, 10'b?, 3'b000, 5'b?, OPCODE_OP_32 };
+parameter INSTR_SUBW     =  { 7'b0100000, 10'b?, 3'b000, 5'b?, OPCODE_OP_32 };
+parameter INSTR_SLLW     =  { 7'b0000000, 10'b?, 3'b001, 5'b?, OPCODE_OP_32 };
+parameter INSTR_SRLW     =  { 7'b0000000, 10'b?, 3'b101, 5'b?, OPCODE_OP_32 };
+parameter INSTR_SRAW     =  { 7'b0100000, 10'b?, 3'b101, 5'b?, OPCODE_OP_32 };
+parameter INSTR_MULW     =  { 7'b0000001, 10'b?, 3'b???, 5'b?, OPCODE_OP_32 };
 
-// FENCE
-parameter INSTR_FENCE    =  { 4'b0, 8'b?, 13'b0, OPCODE_FENCE };
-parameter INSTR_FENCEI   =  { 17'b0, 3'b001, 5'b0, OPCODE_FENCE };
+// MISC-MEM
+parameter INSTR_FENCE    =  { 4'b0, 8'b?, 13'b0, OPCODE_MISC_MEM };
+parameter INSTR_FENCEI   =  { 17'b0, 3'b001, 5'b0, OPCODE_MISC_MEM };
 // SYSTEM
 parameter INSTR_CSRW     =  { 12'b?, 5'b?, 3'b001, 5'b0, OPCODE_SYSTEM };
 parameter INSTR_CSRRW    =  { 12'b?, 5'b?, 3'b001, 5'b?, OPCODE_SYSTEM };

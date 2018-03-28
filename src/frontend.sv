@@ -523,9 +523,9 @@ module instr_scan (
     assign rvi_jalr_o   = (instr_i[6:0] == OPCODE_JALR)   ? 1'b1 : 1'b0;
     assign rvi_jump_o   = (instr_i[6:0] == OPCODE_JAL)    ? 1'b1 : 1'b0;
     // opcode JAL
-    assign rvc_jump_o   = (instr_i[15:13] == OPCODE_C_J) & is_rvc_o & (instr_i[1:0] == 2'b01);
+    assign rvc_jump_o   = (instr_i[15:13] == OPCODE_C1_J) & is_rvc_o & (instr_i[1:0] == 2'b01);
     assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000) & is_rvc_o & (instr_i[1:0] == 2'b10);
-    assign rvc_branch_o = ((instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ)) & is_rvc_o & (instr_i[1:0] == 2'b01);
+    assign rvc_branch_o = ((instr_i[15:13] == OPCODE_C1_BEQZ) | (instr_i[15:13] == OPCODE_C1_BNEZ)) & is_rvc_o & (instr_i[1:0] == 2'b01);
     // check that rs1 is x1 or x5
     assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & instr_i[7];
     assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000) & is_rvc_o;

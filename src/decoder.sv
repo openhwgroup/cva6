@@ -202,7 +202,7 @@ module decoder (
                     endcase
                 end
                 // Memory ordering instructions
-                OPCODE_FENCE: begin
+                OPCODE_MISC_MEM: begin
                     instruction_o.fu  = CSR;
                     instruction_o.rs1 = '0;
                     instruction_o.rs2 = '0;
@@ -263,7 +263,7 @@ module decoder (
                 // --------------------------
                 // 32bit Reg-Reg Operations
                 // --------------------------
-                OPCODE_OP32: begin
+                OPCODE_OP_32: begin
                     instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
                     instruction_o.rs1 = instr.rtype.rs1;
                     instruction_o.rs2 = instr.rtype.rs2;
@@ -287,7 +287,7 @@ module decoder (
                 // --------------------------------
                 // Reg-Immediate Operations
                 // --------------------------------
-                OPCODE_OPIMM: begin
+                OPCODE_OP_IMM: begin
                     instruction_o.fu  = ALU;
                     imm_select = IIMM;
                     instruction_o.rs1 = instr.itype.rs1;
@@ -321,7 +321,7 @@ module decoder (
                 // --------------------------------
                 // 32 bit Reg-Immediate Operations
                 // --------------------------------
-                OPCODE_OPIMM32: begin
+                OPCODE_OP_IMM_32: begin
                     instruction_o.fu  = ALU;
                     imm_select = IIMM;
                     instruction_o.rs1 = instr.itype.rs1;
