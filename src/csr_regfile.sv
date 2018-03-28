@@ -54,6 +54,9 @@ module csr_regfile #(
     output logic                  eret_o,                     // Return from exception, set the PC of epc_o
     output logic  [63:0]          trap_vector_base_o,         // Output base of exception vector, correct CSR is output (mtvec, stvec)
     output priv_lvl_t             priv_lvl_o,                 // Current privilege level the CPU is in
+    // FPU
+    output logic [4:0]            fflags_o,                   // Floating-Point Accured Exceptions
+    output logic [2:0]            frm_o,                      // Floating-Point Dynamic Rounding Mode
     // MMU
     output logic                  en_translation_o,           // enable VA translation
     output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
@@ -164,6 +167,15 @@ module csr_regfile #(
 
     satp_t satp_q, satp_d;
 
+    // Floating-Point control and status register (32-bit!)
+    typedef struct packed {
+        logic [31:8] reserved;  // reserved for L extension, return 0 otherwise
+        logic [2:0]  frm;       // float rounding mode
+        logic [4:0]  fflags;    // float exception flags
+    } fcsr_t;
+
+    fcsr_t fcsr_q, fcsr_d;
+
     // ----------------
     // CSR Read logic
     // ----------------
@@ -176,6 +188,11 @@ module csr_regfile #(
 
         if (csr_read) begin
             case (csr_addr.address)
+
+                // Floating-Point
+                CSR_FFLAGS:             csr_rdata = {59'b0, fcsr_q.fflags};
+                CSR_FRM:                csr_rdata = {61'b0, fcsr_q.frm};
+                CSR_FCSR:               csr_rdata = {32'b0, fcsr_q};
 
                 CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h3fffe1fee;
                 CSR_SIE:                csr_rdata = mie_q & mideleg_q;
@@ -245,7 +262,7 @@ module csr_regfile #(
         sapt = satp_q;
         mip = csr_wdata & 64'h33;
         instret = instret_q;
-        // only USIP, SSIP, UTIP, STIP are write-able
+        // only FCSR, USIP, SSIP, UTIP, STIP are write-able
 
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
@@ -253,6 +270,8 @@ module csr_regfile #(
 
         perf_we_o               = 1'b0;
         perf_data_o             = 'b0;
+
+        fcsr_d                  = fcsr_q;
 
         priv_lvl_d              = priv_lvl_q;
         mstatus_d               = mstatus_q;
@@ -279,6 +298,12 @@ module csr_regfile #(
         // check for correct access rights and that we are writing
         if (csr_we) begin
             case (csr_addr.address)
+
+                // Floating-Point
+                CSR_FFLAGS:   fcsr_d.fflags = csr_wdata[4:0];
+                CSR_FRM:      fcsr_d.frm    = csr_wdata[2:0];
+                CSR_FCSR:     fcsr_d[7:0]   = csr_wdata[7:0]; // ignore writes to reserved space
+
                 // sstatus is a subset of mstatus - mask it accordingly
                 CSR_SSTATUS: begin
                     mstatus_d   = csr_wdata & 64'h3fffe1fee;
@@ -648,6 +673,9 @@ module csr_regfile #(
     // -------------------
     assign csr_rdata_o      = csr_rdata;
     assign priv_lvl_o       = priv_lvl_q;
+    // FPU outputs
+    assign fflags_o         = fcsr_q.fflags;
+    assign frm_o            = fcsr_q.frm;
     // MMU outputs
     assign satp_ppn_o       = satp_q.ppn;
     assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
@@ -688,6 +716,8 @@ module csr_regfile #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             priv_lvl_q             <= PRIV_LVL_M;
+            // floating-point registers
+            fcsr_q                 <= 64'b0;
             // machine mode registers
             mstatus_q              <= 64'b0;
             mtvec_q                <= {boot_addr_i[63:2], 2'b0}; // set to boot address + direct mode
@@ -717,6 +747,8 @@ module csr_regfile #(
             wfi_q                  <= 1'b0;
         end else begin
             priv_lvl_q             <= priv_lvl_d;
+            // floating-point registers
+            fcsr_q                 <= fcsr_d;
             // machine mode registers
             mstatus_q              <= mstatus_d;
             mtvec_q                <= mtvec_d;

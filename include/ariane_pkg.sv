@@ -121,7 +121,7 @@ package ariane_pkg;
     } bht_prediction_t;
 
     typedef enum logic[3:0] {
-        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR
+        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR, FPU
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -368,6 +368,10 @@ package ariane_pkg;
     // CSRs
     // -----
     typedef enum logic [11:0] {
+        // Floating-Point CSRs
+        CSR_FFLAGS         = 12'h001;
+        CSR_FRM            = 12'h002;
+        CSR_FCSR           = 12'h003;
         // Supervisor Mode CSRs
         CSR_SSTATUS        = 12'h100,
         CSR_SIE            = 12'h104,
