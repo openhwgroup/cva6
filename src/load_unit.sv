@@ -319,7 +319,9 @@ module load_unit (
     logic [63:0] rdata_h_ext; // sign extension for half words
     logic [63:0] rdata_b_ext; // sign extension for bytes
 
-    // double words
+    logic [63:0] rdata_fw_box; // nan-boxing for single floats
+
+    // double words or double floats
     always_comb begin : sign_extend_double_word
         rdata_d_ext = data_rdata_i[63:0];
     end
@@ -332,6 +334,17 @@ module load_unit (
             3'b010:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[47]}}, data_rdata_i[47:16]} : {32'h0, data_rdata_i[47:16]};
             3'b011:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[55]}}, data_rdata_i[55:24]} : {32'h0, data_rdata_i[55:24]};
             3'b100:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{data_rdata_i[63]}}, data_rdata_i[63:32]} : {32'h0, data_rdata_i[63:32]};
+        endcase
+    end
+
+    // nan-boxing single floats
+    always_comb begin : nan_box_single_float
+        case (load_data_q.address_offset)
+            default: rdata_fw_box = {{32{1'b1}}, data_rdata_i[31:0]};
+            3'b001:  rdata_fw_box = {{32{1'b1}}, data_rdata_i[39:8]};
+            3'b010:  rdata_fw_box = {{32{1'b1}}, data_rdata_i[47:16]};
+            3'b011:  rdata_fw_box = {{32{1'b1}}, data_rdata_i[55:24]};
+            3'b100:  rdata_fw_box = {{32{1'b1}}, data_rdata_i[63:32]};
         endcase
     end
 
@@ -366,6 +379,7 @@ module load_unit (
     always_comb begin
         case (load_data_q.operator)
             LW, LWU:       result_o = rdata_w_ext;
+            FLW:           result_o = rdata_fw_box;
             LH, LHU:       result_o = rdata_h_ext;
             LB, LBU:       result_o = rdata_b_ext;
             default:       result_o = rdata_d_ext;
