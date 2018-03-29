@@ -36,6 +36,8 @@ module compressed_decoder
         is_compressed_o = 1'b1;
         instr_o         = instr_i;
 
+        // I: |    imm[11:0]    | rs1 | funct3 |    rd    | opcode |
+        // S: | imm[11:5] | rs2 | rs1 | funct3 | imm[4:0] | opcode |
         unique case (instr_i[1:0])
             // C0
             OPCODE_C0: begin
@@ -46,6 +48,12 @@ module compressed_decoder
                         if (instr_i[12:5] == 8'b0)  illegal_instr_o = 1'b1;
                     end
 
+                    OPCODE_C0_FLD: begin
+                        // c.fld -> fld rd', imm(rs1')
+                        // CLD: | funct3 | imm[5:3] | rs1' | imm[7:6] | rd' | C0 |
+                        instr_o = {4'b0, instr_i[6:5], instr_i[12:10], 3'b000, 2'b01, instr_i[9:7], 3'b011, 2'b01, instr_i[4:2], OPCODE_LOAD_FP};
+                    end
+
                     OPCODE_C0_LW: begin
                         // c.lw -> lw rd', imm(rs1')
                         instr_o = {5'b0, instr_i[5], instr_i[12:10], instr_i[6], 2'b00, 2'b01, instr_i[9:7], 3'b010, 2'b01, instr_i[4:2], OPCODE_LOAD};
@@ -53,8 +61,13 @@ module compressed_decoder
 
                     OPCODE_C0_LD: begin
                         // c.ld -> ld rd', imm(rs1')
-                        // | imm[11:0] | rs1 | funct3 | rd | opcode |
+                        // CLD: | funct3 | imm[5:3] | rs1' | imm[7:6] | rd' | C0 |
                         instr_o = {4'b0, instr_i[6:5], instr_i[12:10], 3'b000, 2'b01, instr_i[9:7], 3'b011, 2'b01, instr_i[4:2], OPCODE_LOAD};
+                    end
+
+                    OPCODE_C0_FSD: begin
+                        // c.fsd -> fsd rs2', imm(rs1')
+                        instr_o = {4'b0, instr_i[6:5], instr_i[12], 2'b01, instr_i[4:2], 2'b01, instr_i[9:7], 3'b011, instr_i[11:10], 3'b000, OPCODE_STORE_FP};
                     end
 
                     OPCODE_C0_SW: begin
@@ -192,6 +205,12 @@ module compressed_decoder
                         if ({instr_i[12], instr_i[6:2]}  == 6'b0)  illegal_instr_o = 1'b1; // shift amount must be non zero
                     end
 
+                    OPCODE_C2_FLDSP: begin
+                        // c.fldsp -> fld rd, imm(x2)
+                        instr_o = {3'b0, instr_i[4:2], instr_i[12], instr_i[6:5], 3'b000, 5'h02, 3'b011, instr_i[11:7], OPCODE_LOAD_FP};
+                        if (instr_i[11:7] == 5'b0)  illegal_instr_o = 1'b1;
+                    end
+
                     OPCODE_C2_LWSP: begin
                         // c.lwsp -> lw rd, imm(x2)
                         instr_o = {4'b0, instr_i[3:2], instr_i[12], instr_i[6:4], 2'b00, 5'h02, 3'b010, instr_i[11:7], OPCODE_LOAD};
@@ -229,6 +248,11 @@ module compressed_decoder
                                 instr_o = {12'b0, instr_i[11:7], 3'b000, 5'b00001, OPCODE_JALR};
                             end
                         end
+                    end
+
+                    OPCODE_C2_FSDSP: begin
+                        // c.fsdsp -> fsd rs2, imm(x2)
+                        instr_o = {3'b0, instr_i[9:7], instr_i[12], instr_i[6:2], 5'h02, 3'b011, instr_i[11:10], 3'b000, OPCODE_STORE_FP};
                     end
 
                     OPCODE_C2_SWSP: begin
