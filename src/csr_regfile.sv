@@ -300,9 +300,21 @@ module csr_regfile #(
             case (csr_addr.address)
 
                 // Floating-Point
-                CSR_FFLAGS:   fcsr_d.fflags = csr_wdata[4:0];
-                CSR_FRM:      fcsr_d.frm    = csr_wdata[2:0];
-                CSR_FCSR:     fcsr_d[7:0]   = csr_wdata[7:0]; // ignore writes to reserved space
+                CSR_FFLAGS: begin
+                    fcsr_d.fflags = csr_wdata[4:0];
+                    // this instruction has side-effects
+                    flush_o = 1'b1;
+                end
+                CSR_FRM: begin
+                    fcsr_d.frm    = csr_wdata[2:0];
+                    // this instruction has side-effects
+                    flush_o = 1'b1;
+                end
+                CSR_FCSR: begin
+                    fcsr_d[7:0]   = csr_wdata[7:0]; // ignore writes to reserved space
+                    // this instruction has side-effects
+                    flush_o = 1'b1;
+                end
 
                 // sstatus is a subset of mstatus - mask it accordingly
                 CSR_SSTATUS: begin
