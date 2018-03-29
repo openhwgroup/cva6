@@ -21,16 +21,14 @@ module commit_stage #(
     input  logic                                    halt_i,             // request to halt the core
     input  logic                                    flush_dcache_i,     // request to flush dcache -> also flush the pipeline
     output exception_t                              exception_o,        // take exception to controller
-
     // from scoreboard
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
     output logic [NR_COMMIT_PORTS-1:0]              commit_ack_o,       // acknowledge that we are indeed committing
-
     // to register file
     output  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_o,            // register file write address
     output  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_o,            // register file write data
     output  logic [NR_COMMIT_PORTS-1:0]             we_o,               // register file write enable
-
+    output  logic [NR_COMMIT_PORTS-1:0]             we_fpr_o,           // floating point register enable
     // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
     output logic [63:0]                             pc_o,
     // to/from CSR file
@@ -38,6 +36,7 @@ module commit_stage #(
     output logic [63:0]                             csr_wdata_o,        // data to write to CSR
     input  logic [63:0]                             csr_rdata_i,        // data to read from CSR
     input  exception_t                              csr_exception_i,    // exception or interrupt occurred in CSR stage (the same as commit)
+    output logic                                    csr_write_fflags_o, // write the fflags CSR
     // commit signals to ex
     output logic                                    commit_lsu_o,       // commit the pending store
     input  logic                                    commit_lsu_ready_i, // commit buffer of LSU is ready
@@ -59,21 +58,22 @@ module commit_stage #(
     // write register file or commit instruction in LSU or CSR Buffer
     always_comb begin : commit
         // default assignments
-        commit_ack_o[0] = 1'b0;
-        commit_ack_o[1] = 1'b0;
+        commit_ack_o[0]    = 1'b0;
+        commit_ack_o[1]    = 1'b0;
 
-        we_o[0]         = 1'b0;
-        we_o[1]         = 1'b0;
+        we_o[0]            = 1'b0;
+        we_o[1]            = 1'b0;
 
-        commit_lsu_o    = 1'b0;
-        commit_csr_o    = 1'b0;
-        wdata_o[0]      = commit_instr_i[0].result;
-        wdata_o[1]      = commit_instr_i[1].result;
-        csr_op_o        = ADD; // this corresponds to a CSR NOP
-        csr_wdata_o     = 64'b0;
-        fence_i_o       = 1'b0;
-        fence_o         = 1'b0;
-        sfence_vma_o    = 1'b0;
+        commit_lsu_o       = 1'b0;
+        commit_csr_o       = 1'b0;
+        wdata_o[0]         = commit_instr_i[0].result;
+        wdata_o[1]         = commit_instr_i[1].result;
+        csr_op_o           = ADD; // this corresponds to a CSR NOP
+        csr_wdata_o        = 64'b0;
+        fence_i_o          = 1'b0;
+        fence_o            = 1'b0;
+        sfence_vma_o       = 1'b0;
+        csr_write_fflags_o = 1'b0;
 
         // we will not commit the instruction if we took an exception
         // but we do not commit the instruction if we requested a halt
@@ -99,6 +99,16 @@ module commit_stage #(
                     else // if the LSU buffer is not ready - do not commit, wait
                         commit_ack_o[0] = 1'b0;
                 end
+            end
+
+            // ---------
+            // FPU
+            // ---------
+            if (commit_instr_i[0].fu == FPU) begin
+                // write the CSR with potential exception flags from retiring floating point instruction
+                csr_op_o = CSR_SET;
+                csr_wdata_o = {59'b0, commit_instr_i[0].ex.cause[4:0]};
+                csr_write_fflags_o = 1'b1;
             end
 
             // ---------
@@ -145,10 +155,15 @@ module commit_stage #(
         // check if the second instruction can be committed as well and the first wasn't a CSR instruction
         if (commit_ack_o[0] && commit_instr_i[1].valid && !halt_i && !(commit_instr_i[0].fu inside {CSR}) && !flush_dcache_i) begin
             // only if the first instruction didn't throw an exception and this instruction won't throw an exception
-            // and the operator is of type ALU, LOAD, CTRL_FLOW, MULT
-            if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT})) begin
+            // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT or FPU
+            if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU})) begin
                 we_o[1] = 1'b1;
                 commit_ack_o[1] = 1'b1;
+                // additionally check if we are retiring an FPU instruction because we need to make sure that we right all
+                // exception flags
+                csr_op_o = CSR_SET;
+                csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
+                csr_write_fflags_o = (commit_instr_i[1].fu == FPU);
             end
         end
     end

@@ -76,6 +76,7 @@ module issue_stage #(
     input  logic [NR_COMMIT_PORTS-1:0][4:0]          waddr_i,
     input  logic [NR_COMMIT_PORTS-1:0][63:0]         wdata_i,
     input  logic [NR_COMMIT_PORTS-1:0]               we_i,
+    input  logic [NR_COMMIT_PORTS-1:0]               we_fpr_i,
 
     output scoreboard_entry_t [NR_COMMIT_PORTS-1:0]  commit_instr_o,
     input  logic              [NR_COMMIT_PORTS-1:0]  commit_ack_i

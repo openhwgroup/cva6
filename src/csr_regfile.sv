@@ -45,6 +45,7 @@ module csr_regfile #(
     input  logic  [11:0]          csr_addr_i,                 // Address of the register to read/write
     input  logic  [63:0]          csr_wdata_i,                // Write data in
     output logic  [63:0]          csr_rdata_o,                // Read data out
+    input  logic                  csr_write_fflags_i,         // Write fflags register
     input  logic  [63:0]          pc_i,                       // PC of instruction accessing the CSR
     output exception_t            csr_exception_o,            // attempts to access a CSR without appropriate privilege
                                                               // level or to write  a read-only register also
@@ -96,8 +97,8 @@ module csr_regfile #(
     // ----------------
     // Assignments
     // ----------------
-    // Debug MUX
-    assign csr_addr = csr_t'(((debug_csr_req_i) ? debug_csr_addr_i : csr_addr_i));
+    // Debug MUX and fflags register
+    assign csr_addr = csr_t'(((debug_csr_req_i) ? debug_csr_addr_i : (csr_write_fflags_i) ? CSR_FFLAGS : csr_addr_i));
     // Output the read data directly
     assign debug_csr_rdata_o = csr_rdata;
 
@@ -667,6 +668,9 @@ module csr_regfile #(
                 csr_exception_o.valid = 1'b1;
             end
         end
+        // in case we are writing the CSR flag no exception can ever occur, don't set the valid flag in that case
+        if (csr_write_fflags_i)
+            csr_exception_o.valid = 1'b0;
 
         // -------------------
         // Wait for Interrupt

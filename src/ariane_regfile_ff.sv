@@ -23,87 +23,58 @@
 //
 
 module ariane_regfile #(
-  parameter DATA_WIDTH    = 32
+  parameter int unsigned DATA_WIDTH     = 32,
+  parameter int unsigned NR_READ_PORTS  = 2,
+  parameter int unsigned NR_WRITE_PORTS = 2,
+  parameter bit          ZERO_REG_ZERO  = 0
 )(
-  // Clock and Reset
-  input  logic                   clk,
-  input  logic                   rst_n,
-
-  input  logic                   test_en_i,
-
-  //Read port R1
-  input  logic [4:0]             raddr_a_i,
-  output logic [DATA_WIDTH-1:0]  rdata_a_o,
-
-  //Read port R2
-  input  logic [4:0]             raddr_b_i,
-  output logic [DATA_WIDTH-1:0]  rdata_b_o,
-
-
-  // Write port W1
-  input  logic [4:0]              waddr_a_i,
-  input  logic [DATA_WIDTH-1:0]   wdata_a_i,
-  input  logic                    we_a_i,
-
-  // Write port W2
-  input  logic [4:0]              waddr_b_i,
-  input  logic [DATA_WIDTH-1:0]   wdata_b_i,
-  input  logic                    we_b_i
+  // clock and reset
+  input  logic                                      clk_i,
+  input  logic                                      rst_ni,
+  // disable clock gates for testing
+  input  logic                                      test_en_i,
+  // read port
+  input  logic [NR_READ_PORTS-1:0][4:0]             raddr_i,
+  output logic [NR_READ_PORTS-1:0][DATA_WIDTH-1:0]  rdata_o,
+  // write port
+  input  logic [NR_WRITE_PORTS-1:0][4:0]            waddr_i,
+  input  logic [NR_WRITE_PORTS-1:0][DATA_WIDTH-1:0] wdata_i,
+  input  logic [NR_WRITE_PORTS-1:0]                 we_i
 );
 
   localparam    ADDR_WIDTH = 5;
   localparam    NUM_WORDS  = 2**ADDR_WIDTH;
 
-  logic [NUM_WORDS-1:0][DATA_WIDTH-1:0] rf_reg;
-  logic [NUM_WORDS-1:0]                 we_a_dec, we_b_dec;
+  logic [NUM_WORDS-1:0][DATA_WIDTH-1:0]     mem;
+  logic [NR_WRITE_PORTS-1:0][NUM_WORDS-1:0] we_dec;
 
-  always_comb begin : we_a_decoder
-    for (int i = 0; i < NUM_WORDS; i++) begin
-      if (waddr_a_i == i)
-        we_a_dec[i] = we_a_i;
-      else
-        we_a_dec[i] = 1'b0;
-    end
-  end
 
-  always_comb begin : we_b_decoder
-    for (int i = 0; i < NUM_WORDS; i++) begin
-      if (waddr_b_i == i)
-        we_b_dec[i] = we_b_i;
-      else
-        we_b_dec[i] = 1'b0;
-    end
-  end
-
-  generate
-    // loop from 1 to NUM_WORDS-1 as R0 is nil
-    for (genvar i = 1; i < NUM_WORDS; i++) begin : rf_gen
-
-      always_ff @(posedge clk, negedge rst_n) begin : register_write_behavioral
-        if (rst_n==1'b0) begin
-          rf_reg[i] <= 'b0;
-        end else begin
-          if (we_a_dec[i])
-            rf_reg[i] <= wdata_a_i;
-
-          if (we_b_dec[i])
-            rf_reg[i] <= wdata_b_i;
+    always_comb begin : we_decoder
+        for (int unsigned j = 0; j < NR_WRITE_PORTS; j++) begin
+            for (int unsigned i = 0; i < NUM_WORDS; i++) begin
+                if (waddr_i[j] == i)
+                    we_dec[j][i] = we_i[j];
+                else
+                    we_dec[j][i] = 1'b0;
+            end
         end
-      end
     end
 
-// R0 is nil
-`ifdef verilator
-    always_ff @(posedge clk, negedge rst_n) begin
-      rf_reg[0] <= '0;
+    // loop from 1 to NUM_WORDS-1 as R0 is nil
+    always_ff @(posedge clk_i, negedge rst_ni) begin : register_write_behavioral
+        if (~rst_ni) begin
+            mem <= '{default: '0};
+        end else begin
+            for (int unsigned j = 0; j < NR_WRITE_PORTS; j++) begin
+                for (int unsigned i = ZERO_REG_ZERO; i < NUM_WORDS; i++) begin
+                    if (we_dec[j][i])
+                        mem[i] <= wdata_i[j];
+                end
+            end
+        end
     end
-`else
-    assign rf_reg[0] = '0;
-`endif
 
-  endgenerate
-
-  assign rdata_a_o = rf_reg[raddr_a_i];
-  assign rdata_b_o = rf_reg[raddr_b_i];
+  for (genvar i = 0; i < NR_READ_PORTS; i++)
+    assign rdata_o[i] = mem[raddr_i[i]];
 
 endmodule

@@ -23,151 +23,98 @@
 //                 latches and is thus smaller than the flip-flop based RF.
 //
 
-module ariane_regfile #(
-  parameter DATA_WIDTH    = 32
+module ariane_regfile_latch #(
+  parameter int unsigned DATA_WIDTH     = 32,
+  parameter int unsigned NR_READ_PORTS  = 2,
+  parameter int unsigned NR_WRITE_PORTS = 2,
+  parameter bit          ZERO_REG_ZERO  = 0
 )(
-  // Clock and Reset
-  input  logic                   clk,
-  input  logic                   rst_n,
-
-  input  logic                   test_en_i,
-
-  //Read port R1
-  input  logic [4:0]             raddr_a_i,
-  output logic [DATA_WIDTH-1:0]  rdata_a_o,
-
-  //Read port R2
-  input  logic [4:0]             raddr_b_i,
-  output logic [DATA_WIDTH-1:0]  rdata_b_o,
-
-
-  // Write port W1
-  input  logic [4:0]              waddr_a_i,
-  input  logic [DATA_WIDTH-1:0]   wdata_a_i,
-  input  logic                    we_a_i,
-
-  // Write port W2
-  input  logic [4:0]              waddr_b_i,
-  input  logic [DATA_WIDTH-1:0]   wdata_b_i,
-  input  logic                    we_b_i
+  // clock and reset
+  input  logic                                      clk_i,
+  input  logic                                      rst_ni,
+  // disable clock gates for testing
+  input  logic                                      test_en_i,
+  // read port
+  input  logic [NR_READ_PORTS-1:0][4:0]             raddr_i,
+  output logic [NR_READ_PORTS-1:0][DATA_WIDTH-1:0]  rdata_o,
+  // write port
+  input  logic [NR_WRITE_PORTS-1:0][4:0]            waddr_i,
+  input  logic [NR_WRITE_PORTS-1:0][DATA_WIDTH-1:0] wdata_i,
+  input  logic [NR_WRITE_PORTS-1:0]                 we_i
 );
 
-    localparam    ADDR_WIDTH = 5;;
-    localparam    NUM_WORDS  = 2**ADDR_WIDTH;
+    localparam ADDR_WIDTH = 5;;
+    localparam NUM_WORDS  = 2**ADDR_WIDTH;
 
-    logic [DATA_WIDTH-1:0]      mem[NUM_WORDS];
+    logic [NUM_WORDS-1:1]                      mem_clocks;
 
-    logic [NUM_WORDS-1:1]       waddr_onehot_a;
-    logic [NUM_WORDS-1:1]       waddr_onehot_b, waddr_onehot_b_q;
+    logic [DATA_WIDTH-1:0]                     mem[NUM_WORDS];
+    logic [NR_WRITE_PORTS-1:0][NUM_WORDS-1:1]  waddr_onehot,waddr_onehot_q;
+    logic [NR_WRITE_PORTS-1:0][DATA_WIDTH-1:0] wdata_q;
 
-    logic [NUM_WORDS-1:1]       mem_clocks;
-    logic [DATA_WIDTH-1:0]      wdata_a_q;
-    logic [DATA_WIDTH-1:0]      wdata_b_q;
 
-    // Write port W1
-    logic [ADDR_WIDTH-1:0]     raddr_a_int, raddr_b_int, waddr_a_int;
+    // decode addresses
+    for (genvar i = 0; i < NR_READ_PORTS; i++)
+        assign rdata_o[i] = mem[raddr_i[i][ADDR_WIDTH-1:0]];
 
-    assign raddr_a_int = raddr_a_i[ADDR_WIDTH-1:0];
-    assign raddr_b_int = raddr_b_i[ADDR_WIDTH-1:0];
-    assign waddr_a_int = waddr_a_i[ADDR_WIDTH-1:0];
-
-    int unsigned i;
-    int unsigned j;
-    int unsigned k;
-    int unsigned l;
-    genvar x;
-
-    logic clk_int;
-
-    //-----------------------------------------------------------------------------
-    //-- READ : Read address decoder RAD
-    //-----------------------------------------------------------------------------
-    assign rdata_a_o = mem[raddr_a_int];
-    assign rdata_b_o = mem[raddr_b_int];
-
-    //-----------------------------------------------------------------------------
-    // WRITE : SAMPLE INPUT DATA
-    //---------------------------------------------------------------------------
-
-    cluster_clock_gating CG_WE_GLOBAL
-    (
-      .clk_i     ( clk             ),
-      .en_i      ( we_a_i          ),
-      .test_en_i ( test_en_i       ),
-      .clk_o     ( clk_int         )
-    );
-
-    // use clk_int here, since otherwise we don't want to write anything anyway
-    always_ff @(posedge clk_int, negedge rst_n) begin : sample_waddr
-        if (~rst_n) begin
-            wdata_a_q        <= '0;
-            wdata_b_q        <= '0;
-            waddr_onehot_b_q <= '0;
+    always_ff @(posedge clk_i, negedge rst_ni) begin : sample_waddr
+        if (~rst_ni) begin
+            wdata_q <= '0;
         end else begin
-            if (we_a_i)
-                wdata_a_q <= wdata_a_i;
-            if (we_b_i)
-                wdata_b_q <= wdata_b_i;
-
-            waddr_onehot_b_q <= waddr_onehot_b;
+            for (int unsigned i = 0; i < NR_WRITE_PORTS; i++)
+                // enable flipflop will most probably infer clock gating
+                if (we_i[i]) begin
+                    wdata_q[i]     <= wdata_i[i];
+                end
+            waddr_onehot_q <= waddr_onehot;
         end
     end
 
-    //-----------------------------------------------------------------------------
-    //-- WRITE : Write Address Decoder (WAD), combinatorial process
-    //-----------------------------------------------------------------------------
-    always_comb begin : p_WADa
-        for (i = 1; i < NUM_WORDS; i++) begin : p_WordItera
-            if ((we_a_i == 1'b1) && (waddr_a_i == i))
-                waddr_onehot_a[i] = 1'b1;
-            else
-                waddr_onehot_a[i] = 1'b0;
+    // WRITE : Write Address Decoder (WAD), combinatorial process
+    always_comb begin : decode_write_addess
+        for (int unsigned i = 0; i < NR_WRITE_PORTS; i++) begin
+            for (int unsigned j = 1; j < NUM_WORDS; j++) begin
+                if (we_i[i] && (waddr_i[i] == j))
+                    waddr_onehot[i][j] = 1'b1;
+                else
+                    waddr_onehot[i][j] = 1'b0;
+            end
         end
     end
 
-    always_comb begin : p_WADb
-         for (j = 1; j < NUM_WORDS; j++) begin : p_WordIterb
-            if ((we_b_i == 1'b1) && (waddr_b_i == j))
-                waddr_onehot_b[j] = 1'b1;
-            else
-                waddr_onehot_b[j] = 1'b0;
-        end
+    // WRITE : Clock gating (if integrated clock-gating cells are available)
+    for (genvar x = ZERO_REG_ZERO; x < NUM_WORDS; x++) begin
+
+        logic [NR_WRITE_PORTS-1:0] waddr_ored;
+
+        for (genvar i = 0; i < NR_WRITE_PORTS; i++)
+          assign waddr_ored[i] = waddr_onehot[i][x];
+
+        cluster_clock_gating i_cg (
+            .clk_i     ( clk_i         ),
+            .en_i      ( |waddr_ored   ),
+            .test_en_i ( test_en_i     ),
+            .clk_o     ( mem_clocks[x] )
+        );
     end
 
-    //-----------------------------------------------------------------------------
-    //-- WRITE : Clock gating (if integrated clock-gating cells are available)
-    //-----------------------------------------------------------------------------
-    generate
-       for (x = 1; x < NUM_WORDS; x++)
-         begin : CG_CELL_WORD_ITER
-            cluster_clock_gating CG_Inst
-              (
-               .clk_i     ( clk_int                               ),
-               .en_i      ( waddr_onehot_a[x] | waddr_onehot_b[x] ),
-               .test_en_i ( test_en_i                             ),
-               .clk_o     ( mem_clocks[x]                         )
-               );
-         end
-    endgenerate
-
-    //-----------------------------------------------------------------------------
-    //-- WRITE : Write operation
-    //-----------------------------------------------------------------------------
-    //-- Generate M = WORDS sequential processes, each of which describes one
-    //-- word of the memory. The processes are synchronized with the clocks
-    //-- ClocksxC(i), i = 0, 1, ..., M-1
-    //-- Use active low, i.e. transparent on low latches as storage elements
-    //-- Data is sampled on rising clock edge
+    // Generate M = WORDS sequential processes, each of which describes one
+    // word of the memory. The processes are synchronized with the clocks
+    // ClocksxC(i), i = 0, 1, ..., M-1
+    // Use active low, i.e. transparent on low latches as storage elements
+    // Data is sampled on rising clock edge
 
     // Integer registers
     always_latch begin : latch_wdata
         // Note: The assignment has to be done inside this process or Modelsim complains about it
-        mem[0] = '0;
+        if (ZERO_REG_ZERO)
+            mem[0] = '0;
 
-        for(k = 1; k < NUM_WORDS; k++)
-          begin : w_WordIter
-             if (mem_clocks[k] == 1'b1)
-               mem[k] = waddr_onehot_b_q[k] ? wdata_b_q : wdata_a_q;
-          end
+        for (int unsigned i = 0; i < NR_WRITE_PORTS; i++) begin
+            for (int unsigned k = ZERO_REG_ZERO; k < NUM_WORDS; k++) begin
+                if (mem_clocks[k] && waddr_onehot_q[i][k])
+                    mem[k] = wdata_q[i];
+            end
+        end
     end
 endmodule

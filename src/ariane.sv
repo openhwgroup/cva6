@@ -200,6 +200,7 @@ module ariane #(
     logic                     tw_csr_id;
     logic                     tsr_csr_id;
     logic                     dcache_en_csr_nbdcache;
+    logic                     csr_write_fflags_commit_cs;
     // ----------------------------
     // Performance Counters <-> *
     // ----------------------------
@@ -368,7 +369,7 @@ module ariane #(
         .waddr_i                    ( waddr_commit_id               ),
         .wdata_i                    ( wdata_commit_id               ),
         .we_i                       ( we_commit_id                  ),
-
+        .we_fpr_i                   ( ), // TODO
         .commit_instr_o             ( commit_instr_id_commit        ),
         .commit_ack_i               ( commit_ack                    ),
         .*
@@ -474,6 +475,7 @@ module ariane #(
         .waddr_o                ( waddr_commit_id               ),
         .wdata_o                ( wdata_commit_id               ),
         .we_o                   ( we_commit_id                  ),
+        .we_fpr_o               ( ), // write FPU reg, TODO
         .commit_lsu_o           ( lsu_commit_commit_ex          ),
         .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
         .commit_csr_o           ( csr_commit_commit_ex          ),
@@ -481,6 +483,7 @@ module ariane #(
         .csr_op_o               ( csr_op_commit_csr             ),
         .csr_wdata_o            ( csr_wdata_commit_csr          ),
         .csr_rdata_i            ( csr_rdata_csr_commit          ),
+        .csr_write_fflags_o     ( csr_write_fflags_commit_cs    ),
         .csr_exception_i        ( csr_exception_csr_commit      ),
         .fence_i_o              ( fence_i_commit_controller     ),
         .fence_o                ( fence_commit_controller       ),
@@ -504,6 +507,7 @@ module ariane #(
         .commit_ack_i           ( commit_ack                    ),
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),
+        .csr_write_fflags_i     ( csr_write_fflags_commit_cs    ),
         .csr_addr_i             ( csr_addr_ex_csr               ),
         .csr_wdata_i            ( csr_wdata_commit_csr          ),
         .csr_rdata_o            ( csr_rdata_csr_commit          ),
@@ -511,6 +515,8 @@ module ariane #(
         .csr_exception_o        ( csr_exception_csr_commit      ),
         .epc_o                  ( epc_commit_pcgen              ),
         .eret_o                 ( eret                          ),
+        .fflags_o               ( ), // FPU flags out
+        .frm_o                  ( ), // FPU rounding mode flags out TODO
         .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
         .priv_lvl_o             ( priv_lvl                      ),
         .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),

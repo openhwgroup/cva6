@@ -70,7 +70,8 @@ module issue_read_operands #(
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_i,
     input  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_i,
-    input  logic [NR_COMMIT_PORTS-1:0]             we_i
+    input  logic [NR_COMMIT_PORTS-1:0]             we_i,
+    input  logic [NR_COMMIT_PORTS-1:0]             we_fpr_i
     // committing instruction instruction
     // from scoreboard
     // input  scoreboard_entry     commit_instr_i,
@@ -307,27 +308,23 @@ module issue_read_operands #(
     // ----------------------
     // Integer Register File
     // ----------------------
+    logic [1:0][63:0] rdata_o;
+
+    assign operand_a_regfile = rdata_o[0];
+    assign operand_b_regfile = rdata_o[1];
+
     ariane_regfile #(
-        .DATA_WIDTH     ( 64                     )
-    ) regfile_i (
-        // Clock and Reset
-        .clk            ( clk_i                  ),
-        .rst_n          ( rst_ni                 ),
-        .test_en_i      ( test_en_i              ),
-
-        .raddr_a_i      ( raddr_a                ),
-        .rdata_a_o      ( operand_a_regfile      ),
-
-        .raddr_b_i      ( issue_instr_i.rs2[4:0] ),
-        .rdata_b_o      ( operand_b_regfile      ),
-
-        .waddr_a_i      ( waddr                  ),
-        .wdata_a_i      ( wdata                  ),
-        .we_a_i         ( we                     ),
-
-        .waddr_b_i      ( waddr_i[1]             ),
-        .wdata_b_i      ( wdata_i[1]             ),
-        .we_b_i         ( we_i[1]                )
+        .DATA_WIDTH     ( 64 ),
+        .NR_READ_PORTS  ( 2  ),
+        .NR_WRITE_PORTS ( 2  ),
+        .ZERO_REG_ZERO  ( 1  )
+    ) i_ariane_regfile (
+        .raddr_i   ( '{issue_instr_i.rs2[4:0], raddr_a} ),
+        .rdata_o   ( rdata_o ),
+        .waddr_i   ( '{waddr_i[1], waddr}               ),
+        .wdata_i   ( '{wdata_i[1], wdata}               ),
+        .we_i      ( '{we_i[1], we}                     ),
+        .*
     );
 
     // ----------------------
