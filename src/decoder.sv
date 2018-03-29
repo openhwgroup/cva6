@@ -29,6 +29,7 @@ module decoder (
     input  exception_t         ex_i,                    // if an exception occured in if
     // From CSR
     input  priv_lvl_t          priv_lvl_i,              // current privilege level
+    input  logic [2:0]         frm_i,                   // floating-point dynamic rounding mode
     input  logic               tvm_i,                   // trap virtual memory
     input  logic               tw_i,                    // timeout wait
     input  logic               tsr_i,                   // trap sret
@@ -40,13 +41,15 @@ module decoder (
     logic ecall;
     // this instruction is a software break-point
     logic ebreak;
+    // this instruction needs floating-point rounding-mode verification
+    logic check_fprm;
     instruction_t instr;
     assign instr = instruction_t'(instruction_i);
     // --------------------
     // Immediate select
     // --------------------
     enum logic[3:0] {
-        NOIMM, PCIMM, IIMM, SIMM, SBIMM, BIMM, UIMM, JIMM
+        NOIMM, PCIMM, IIMM, SIMM, SBIMM, BIMM, UIMM, JIMM, RS3
     } imm_select;
 
     logic [63:0] imm_i_type;
@@ -63,18 +66,19 @@ module decoder (
         is_control_flow_instr_o     = 1'b0;
         illegal_instr               = 1'b0;
         instruction_o.pc            = pc_i;
+        instruction_o.trans_id      = 5'b0;
         instruction_o.fu            = NONE;
         instruction_o.op            = ADD;
         instruction_o.rs1           = 5'b0;
         instruction_o.rs2           = 5'b0;
         instruction_o.rd            = 5'b0;
         instruction_o.use_pc        = 1'b0;
-        instruction_o.trans_id      = 5'b0;
         instruction_o.is_compressed = is_compressed_i;
         instruction_o.use_zimm      = 1'b0;
         instruction_o.bp            = branch_predict_i;
         ecall                       = 1'b0;
         ebreak                      = 1'b0;
+        check_fprm                  = 1'b0;
 
         if (~ex_i.valid) begin
             case (instr.rtype.opcode)
@@ -384,6 +388,183 @@ module decoder (
                     endcase
                 end
 
+                // --------------------------------
+                // Floating-Point Load/store
+                // --------------------------------
+                OPCODE_STORE_FP: begin
+                    if (RVF || RVD) begin // only generate decoder if FP extensions are enabled
+                        instruction_o.fu  = STORE;
+                        imm_select = SIMM;
+                        instruction_o.rs1        = instr.stype.rs1;
+                        instruction_o.rs2        = instr.stype.rs2;
+                        // determine store size
+                        unique case (instr.stype.funct3)
+                            // Only process instruction if corresponding extension is active (static)
+                            3'b010: if (RVF) instruction_o.op = FSW;
+                                    else illegal_instr = 1'b1;
+                            3'b011: if (RVD) instruction_o.op = FSD;
+                                    else illegal_instr = 1'b1;
+                            default: illegal_instr = 1'b1;
+                        endcase
+                    end else
+                        illegal_instr = 1'b1;
+                end
+
+                OPCODE_LOAD_FP: begin
+                    if (RVF || RVD) begin // only generate decoder if FP extensions are enabled
+                        instruction_o.fu  = LOAD;
+                        imm_select = IIMM;
+                        instruction_o.rs1       = instr.itype.rs1;
+                        instruction_o.rd        = instr.itype.rd;
+                        // determine load size
+                        unique case (instr.itype.funct3)
+                            // Only process instruction if corresponding extension is active (static)
+                            3'b010: if (RVF) instruction_o.op  = FLW;
+                                    else illegal_instr = 1'b1;
+                            3'b011: if (RVD) instruction_o.op  = FLD;
+                                    else illegal_instr = 1'b1;
+                            default: illegal_instr = 1'b1;
+                        endcase
+                    end else
+                        illegal_instr = 1'b1;
+                end
+
+                // ----------------------------------
+                // Floating-Point Reg-Reg Operations
+                // ----------------------------------
+                OPCODE_MADD,
+                OPCODE_MSUB,
+                OPCODE_NMSUB,
+                OPCODE_NMADD: begin
+                    if (RVF || RVD) begin // only generate decoder if FP extensions are enabled
+                        instruction_o.fu  = FPU;
+                        instruction_o.rs1 = instr.r4type.rs1;
+                        instruction_o.rs2 = instr.r4type.rs2;
+                        instruction_o.rd  = instr.r4type.rd;
+                        imm_select        = RS3; // rs3 into result field
+                        check_fprm        = 1'b1;
+                        // select the correct fused operation
+                        unique case (instr.r4type.opcode)
+                            default:      instruction_o.op = FMADD;  // fmadd.fmt - Fused multiply-add
+                            OPCODE_MSUB:  instruction_o.op = FMSUB;  // fmsub.fmt - Fused multiply-subtract
+                            OPCODE_NMSUB: instruction_o.op = FNMSUB; // fnmsub.fmt - Negated fused multiply-subtract
+                            OPCODE_NMADD: instruction_o.op = FNMADD; // fnmadd.fmt - Negated fused multiply-add
+                        endcase
+
+                        // determine fp format
+                        unique case (instr.r4type.funct2)
+                            // Only process instruction if corresponding extension is active (static)
+                            2'b00: if (!RVF) illegal_instr = 1'b1;
+                            2'b01: if (!RVD) illegal_instr = 1'b1;
+                            default: illegal_instr = 1'b1;
+                        endcase
+                    end else
+                        illegal_instr = 1'b1;
+                end
+
+                OPCODE_FP: begin
+                    if (RVF || RVD) begin // only generate decoder if FP extensions are enabled
+                        instruction_o.fu  = FPU;
+                        instruction_o.rs1 = instr.rftype.rs1;
+                        instruction_o.rs2 = instr.rftype.rs2;
+                        instruction_o.rd  = instr.rftype.rd;
+                        check_fprm        = 1'b1;
+                        // decode FP instruction
+                        unique case (instr.rftype.funct5)
+                            5'b00000: instruction_o.op = FADD;  // fadd.fmt - FP Addition
+                            5'b00001: instruction_o.op = FSUB;  // fsub.fmt - FP Subtraction
+                            5'b00010: instruction_o.op = FMUL;  // fmul.fmt - FP Multiplication
+                            5'b00011: instruction_o.op = FDIV;  // fdiv.fmt - FP Division
+                            5'b01011: begin
+                                instruction_o.op = FSQRT; // fsqrt.fmt - FP Square Root
+                                // rs2 must be zero
+                                if (instr.rftype.rs2 != 5'b00000) illegal_instr = 1'b1;
+                            end
+                            5'b00100: begin
+                                instruction_o.op = FSGNJ; // fsgn{j[n]/jx}.fmt - FP Sign Injection
+                                check_fprm       = 1'b0;  // instruction encoded in rm, do the check here
+                                if (instr.rftype.rm > 3'b010) illegal_instr = 1'b1;
+                            end
+                            5'b00101: begin
+                                instruction_o.op = FMIN_MAX; // fmin/fmax.fmt - FP Minimum / Maximum
+                                check_fprm       = 1'b0;     // instruction encoded in rm, do the check here
+                                if (instr.rftype.rm > 3'b001) illegal_instr = 1'b1;
+                            end
+                            5'b01000: begin
+                                instruction_o.op = FCVT_F2F; // fcvt.fmt.fmt - FP to FP Conversion
+                                imm_select       = IIMM;     // rs2 holds part of the intruction
+                                if (instr.rftype.rs2[24:22]) illegal_instr = 1'b1; // bits [21:20] used, other bits must be 0
+                                // check source format
+                                unique case (instr.rftype.rs2[21:20])
+                                    // Only process instruction if corresponding extension is active (static)
+                                    2'b00: if (!RVF) illegal_instr = 1'b1;
+                                    2'b01: if (!RVD) illegal_instr = 1'b1;
+                                    default: illegal_instr = 1'b1;
+                                endcase
+                            end
+                            5'b11000: begin
+                                instruction_o.op = FCVT_F2I; // fcvt.ifmt.fmt - FP to Int Conversion
+                                imm_select       = IIMM;     // rs2 holds part of the instruction
+                                if (instr.rftype.rs2[24:22]) illegal_instr = 1'b1; // bits [21:20] used, other bits must be 0
+                            end
+                            5'b11100: begin
+                                instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
+                                check_fprm       = 1'b0; // instruction encoded in rm, do the check here
+                                if (instr.rftype.rm == 3'b000) instruction_o.op = FMV_F2X;     // fmv.ifmt.fmt - FPR to GPR Move
+                                else if (instr.rftype.rm == 3'b001) instruction_o.op = FCLASS; // fclass.fmt - FP Classify
+                                else illegal_instr = 1'b1;
+                                // rs2 must be zero
+                                if (instr.rftype.rs2 != 5'b00000) illegal_instr = 1'b1;
+                            end
+                            5'b10100: begin
+                                instruction_o.op = FCMP; // feq/flt/fle.fmt - FP Comparisons
+                                check_fprm       = 1'b0; // instruction encoded in rm, do the check here
+                                if (instr.rftype.rm > 3'b010) illegal_instr = 1'b1;
+                            end
+                            5'b11010: begin
+                                instruction_o.op = FCVT_I2F;  // fcvt.fmt.ifmt - Int to FP Conversion
+                                imm_select       = IIMM;     // rs2 holds part of the instruction
+                                if (instr.rftype.rs2[24:22]) illegal_instr = 1'b1; // bits [21:20] used, other bits must be 0
+                            end
+                            5'b11110: begin
+                                instruction_o.op = FMV_X2F;   // fmv.fmt.ifmt - GPR to FPR Move
+                                instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
+                                check_fprm       = 1'b0; // instruction encoded in rm, do the check here
+                                if (instr.rftype.rm != 3'b000) illegal_instr = 1'b1;
+                                // rs2 must be zero
+                                if (instr.rftype.rs2 != 5'b00000) illegal_instr = 1'b1;
+                            end
+                            default : illegal_instr = 1'b1;
+                        endcase
+
+                        // check format
+                        unique case (instr.rftype.fmt)
+                            // Only process instruction if corresponding extension is active (static)
+                            2'b00: if (!RVF) illegal_instr = 1'b1;
+                            2'b01: if (!RVD) illegal_instr = 1'b1;
+                            default: illegal_instr = 1'b1;
+                        endcase
+
+                        // check rounding mode
+                        if (check_fprm) begin
+                            unique case (instr.rftype.rm)
+                                [3'b000:3'b100]: ; //legal rounding modes
+                                3'b111: begin
+                                    unique case (frm_i)
+                                        [3'b000:3'b100]: ; //legal rounding modes
+                                        default : illegal_instr = 1'b1;
+                                    endcase
+                                end
+                                default : illegal_instr = 1'b1;
+                            endcase
+                        end
+                    end else
+                        illegal_instr = 1'b1;
+                end
+
+                // ----------------------------------
+                // Atomic Operations
+                // ----------------------------------
                 `ifdef ENABLE_ATOMICS
                 OPCODE_AMO: begin
                     // we are going to use the load unit for AMOs
@@ -489,6 +670,7 @@ module decoder (
             endcase
         end
     end
+
     // --------------------------------
     // Sign extend immediate
     // --------------------------------
@@ -501,7 +683,7 @@ module decoder (
         imm_uj_type = uj_imm(instruction_i);
         imm_bi_type = { {59{instruction_i[24]}}, instruction_i[24:20] };
 
-        // NOIMM, PCIMM, IIMM, SIMM, BIMM, BIMM, UIMM, JIMM
+        // NOIMM, PCIMM, IIMM, SIMM, BIMM, BIMM, UIMM, JIMM, RS3
         // select immediate
         case (imm_select)
             PCIMM: begin
@@ -531,6 +713,11 @@ module decoder (
             JIMM: begin
                 instruction_o.result = imm_uj_type;
                 instruction_o.use_imm = 1'b1;
+            end
+            RS3: begin
+                // result holds address of fp operand rs3
+                instruction_o.result = {59'b0, instr.r4type.rs3};
+                instruction_o.use_imm = 1'b0;
             end
             default: begin
                 instruction_o.result = 64'b0;

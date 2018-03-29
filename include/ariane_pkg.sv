@@ -35,14 +35,21 @@ package ariane_pkg;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
-    localparam logic [63:0] ISA_CODE = (1 <<  2)  // C - Compressed extension
-                                     | (1 <<  8)  // I - RV32I/64I/128I base ISA
-                                     | (1 << 12)  // M - Integer Multiply/Divide extension
-                                     | (0 << 13)  // N - User level interrupts supported
-                                     | (1 << 18)  // S - Supervisor mode implemented
-                                     | (1 << 20)  // U - User mode implemented
-                                     | (0 << 23)  // X - Non-standard extensions present
-                                     | (1 << 63); // RV64
+    // Floating-point extensions configuration
+    localparam bit RVF = 1'b1; // Is F extension enabled
+    localparam bit RVD = 1'b1; // Is D extension enabled
+
+    localparam logic [63:0] ISA_CODE = (0   <<  0)  // A - Atomic Instructions extension
+                                     | (1   <<  2)  // C - Compressed extension
+                                     | (RVD <<  3)  // D - Double precsision floating-point extension
+                                     | (RVF <<  5)  // F - Single precsision floating-point extension
+                                     | (1   <<  8)  // I - RV32I/64I/128I base ISA
+                                     | (1   << 12)  // M - Integer Multiply/Divide extension
+                                     | (0   << 13)  // N - User level interrupts supported
+                                     | (1   << 18)  // S - Supervisor mode implemented
+                                     | (1   << 20)  // U - User mode implemented
+                                     | (0   << 23)  // X - Non-standard extensions present
+                                     | (1   << 63); // RV64
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
@@ -152,7 +159,17 @@ package ariane_pkg;
                                // Multiplications
                                MUL, MULH, MULHU, MULHSU, MULW,
                                // Divisions
-                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW
+                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW,
+                               // Floating-Point Load and Store Instructions
+                               FLD, FLW, FSD, FSW,
+                               // Floating-Point Computational Instructions
+                               FADD, FSUB, FMUL, FDIV, FMIN_MAX, FSQRT, FMADD, FMSUB, FNMADD, FNMSUB,
+                               // Floating-Point Conversion and Move Instructions
+                               FCVT_F2I, FCVT_I2F, FCVT_F2F, FSGNJ, FMV_F2X, FMV_X2F,
+                               // Floating-Point Compare Instructions
+                               FCMP,
+                               // Floating-Point Classify Instruction
+                               FCLASS
                              } fu_op;
 
     // ----------------------
@@ -161,11 +178,11 @@ package ariane_pkg;
     // TODO: Add atomics
     function automatic logic [1:0] extract_transfer_size (fu_op op);
         case (op)
-            LD, SD:      return 2'b11;
-            LW, LWU, SW: return 2'b10;
-            LH, LHU, SH: return 2'b01;
-            LB, SB, LBU: return 2'b00;
-            default:     return 2'b11;
+            LD, SD, FLD, FSD      : return 2'b11;
+            LW, LWU, SW, FLW, FSW : return 2'b10;
+            LH, LHU, SH           : return 2'b01;
+            LB, LBU, SB           : return 2'b00;
+            default               : return 2'b11;
         endcase
     endfunction
 
@@ -202,7 +219,10 @@ package ariane_pkg;
         logic [REG_ADDR_SIZE-1:0] rs1;           // register source address 1
         logic [REG_ADDR_SIZE-1:0] rs2;           // register source address 2
         logic [REG_ADDR_SIZE-1:0] rd;            // register destination address
-        logic [63:0]              result;        // for unfinished instructions this field also holds the immediate
+        logic [63:0]              result;        // for unfinished instructions this field also holds the immediate,
+                                                 // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
+                                                 // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
+                                                 // this field holds the address of the third operand from the floating-point register file
         logic                     valid;         // is the result valid
         logic                     use_imm;       // should we use the immediate as operand b?
         logic                     use_zimm;      // use zimm as operand a
@@ -224,6 +244,26 @@ package ariane_pkg;
         logic [11:7]  rd;
         logic [6:0]   opcode;
     } rtype_t;
+
+    typedef struct packed {
+        logic [31:27] rs3;
+        logic [1:0]   funct2;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:12] funct3;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } r4type_t;
+
+    typedef struct packed {
+        logic [31:27] funct5;
+        logic [26:25] fmt;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:12] rm;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } rftype_t; // floating-point
 
     typedef struct packed {
         logic [31:20] imm;
@@ -251,6 +291,8 @@ package ariane_pkg;
     typedef union packed {
         logic [31:0]   instr;
         rtype_t        rtype;
+        r4type_t       r4type;
+        rftype_t       rftype;
         itype_t        itype;
         stype_t        stype;
         utype_t        utype;
