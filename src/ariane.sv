@@ -172,7 +172,8 @@ module ariane #(
     // --------------
     logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_commit_id;
     logic [NR_COMMIT_PORTS-1:0][63:0] wdata_commit_id;
-    logic [NR_COMMIT_PORTS-1:0]       we_commit_id;
+    logic [NR_COMMIT_PORTS-1:0]       we_gpr_commit_id;
+    logic [NR_COMMIT_PORTS-1:0]       we_fpr_commit_id;
     // --------------
     // IF <-> EX
     // --------------
@@ -184,6 +185,8 @@ module ariane #(
     // --------------
     // CSR <-> *
     // --------------
+    logic [4:0]               fflags_csr_ci;
+    logic [2:0]               frm_csr_id;
     logic                     enable_translation_csr_ex;
     logic                     en_ld_st_translation_csr_ex;
     priv_lvl_t                ld_st_priv_lvl_csr_ex;
@@ -365,11 +368,11 @@ module ariane #(
         .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id          }),
         .ex_ex_i                    ( {{$bits(exception_t){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}} }),
         .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id,            mult_valid_ex_id           }),
-
+        // Commit
         .waddr_i                    ( waddr_commit_id               ),
         .wdata_i                    ( wdata_commit_id               ),
-        .we_i                       ( we_commit_id                  ),
-        .we_fpr_i                   ( ), // TODO
+        .we_gpr_i                   ( we_gpr_commit_id              ),
+        .we_fpr_i                   ( we_fpr_commit_id              ),
         .commit_instr_o             ( commit_instr_id_commit        ),
         .commit_ack_i               ( commit_ack                    ),
         .*
@@ -474,8 +477,8 @@ module ariane #(
         .no_st_pending_i        ( no_st_pending_ex_commit       ),
         .waddr_o                ( waddr_commit_id               ),
         .wdata_o                ( wdata_commit_id               ),
-        .we_o                   ( we_commit_id                  ),
-        .we_fpr_o               ( ), // write FPU reg, TODO
+        .we_o                   ( we_gpr_commit_id              ),
+        .we_fpr_o               ( we_fpr_commit_id              ),
         .commit_lsu_o           ( lsu_commit_commit_ex          ),
         .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
         .commit_csr_o           ( csr_commit_commit_ex          ),
@@ -516,9 +519,10 @@ module ariane #(
         .epc_o                  ( epc_commit_pcgen              ),
         .eret_o                 ( eret                          ),
         .fflags_o               ( ), // FPU flags out
-        .frm_o                  ( ), // FPU rounding mode flags out TODO
         .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
         .priv_lvl_o             ( priv_lvl                      ),
+        .fflags_o               ( fflags_csr_ci                 ),
+        .frm_o                  ( frm_csr_id                    ),
         .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
         .en_translation_o       ( enable_translation_csr_ex     ),
         .en_ld_st_translation_o ( en_ld_st_translation_csr_ex   ),
@@ -640,7 +644,7 @@ module ariane #(
     // write-back
     assign tracer_if.waddr             = waddr_commit_id;
     assign tracer_if.wdata             = wdata_commit_id;
-    assign tracer_if.we                = we_commit_id;
+    assign tracer_if.we                = we_gpr_commit_id;
     // commit
     assign tracer_if.commit_instr      = commit_instr_id_commit;
     assign tracer_if.commit_ack        = commit_ack;

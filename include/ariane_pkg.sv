@@ -39,6 +39,13 @@ package ariane_pkg;
     localparam bit RVF = 1'b1; // Is F extension enabled
     localparam bit RVD = 1'b1; // Is D extension enabled
 
+    // No need changing these by hand
+    localparam bit FP_PRESENT = RVF | RVD;
+    // Length of widest floating-point format
+    localparam FLEN = RVD ? 64 : // D ext.
+                      RVF ? 32 : // F ext.
+                      0;
+
     localparam logic [63:0] ISA_CODE = (0   <<  0)  // A - Atomic Instructions extension
                                      | (1   <<  2)  // C - Compressed extension
                                      | (RVD <<  3)  // D - Double precsision floating-point extension
@@ -163,7 +170,7 @@ package ariane_pkg;
                                // Floating-Point Load and Store Instructions
                                FLD, FLW, FSD, FSW,
                                // Floating-Point Computational Instructions
-                               FADD, FSUB, FMUL, FDIV, FMIN_MAX, FSQRT, FMADD, FMSUB, FNMADD, FNMSUB,
+                               FADD, FSUB, FMUL, FDIV, FMIN_MAX, FSQRT, FMADD, FMSUB, FNMSUB, FNMADD,
                                // Floating-Point Conversion and Move Instructions
                                FCVT_F2I, FCVT_I2F, FCVT_F2F, FSGNJ, FMV_F2X, FMV_X2F,
                                // Floating-Point Compare Instructions
@@ -171,6 +178,65 @@ package ariane_pkg;
                                // Floating-Point Classify Instruction
                                FCLASS
                              } fu_op;
+
+    // -------------------------------
+    // Extract Src/Dst FP Reg from Op
+    // -------------------------------
+    function automatic logic is_rs1_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FADD:FNMADD],                // Computational Operations
+                FCVT_F2I,                     // Float-Int Casts
+                FCVT_F2F,                     // Float-Float Casts
+                FSGNJ,                        // Sign Injections
+                FMV_F2X,                      // FPR-GPR Moves
+                FCMP,                         // Comparisons
+                FCLASS         : return 1'b1; // Classifications
+                default        : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    function automatic logic is_rs2_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FSD:FSW],                      // FP Stores
+                [FADD:FMIN_MAX],                // Computational Operations (no sqrt)
+                [FMADD:FNMADD],                 // Fused Computational Operations
+                FSGNJ,                          // Sign Injections
+                FCMP             : return 1'b1; // Comparisons
+                default          : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    // ternary operations encode the rs3 address in the imm field
+    function automatic logic is_imm_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FMADD:FNMADD] : return 1'b1; // Fused Computational Operations
+                default        : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    function automatic logic is_rd_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FLD:FLW],                    // FP Loads
+                [FADD:FNMADD],                // Computational Operations
+                FCVT_I2F,                     // Int-Float Casts
+                FCVT_F2F,                     // Float-Float Casts
+                FSGNJ,                        // Sign Injections
+                FMV_X2F        : return 1'b1; // GPR-FPR Moves
+                default        : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
 
     // ----------------------
     // Extract Bytes from Op

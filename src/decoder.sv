@@ -392,7 +392,7 @@ module decoder (
                 // Floating-Point Load/store
                 // --------------------------------
                 OPCODE_STORE_FP: begin
-                    if (RVF || RVD) begin // only generate decoder if FP extensions are enabled
+                    if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = STORE;
                         imm_select = SIMM;
                         instruction_o.rs1        = instr.stype.rs1;
@@ -411,7 +411,7 @@ module decoder (
                 end
 
                 OPCODE_LOAD_FP: begin
-                    if (RVF || RVD) begin // only generate decoder if FP extensions are enabled
+                    if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = LOAD;
                         imm_select = IIMM;
                         instruction_o.rs1       = instr.itype.rs1;
@@ -436,7 +436,7 @@ module decoder (
                 OPCODE_MSUB,
                 OPCODE_NMSUB,
                 OPCODE_NMADD: begin
-                    if (RVF || RVD) begin // only generate decoder if FP extensions are enabled
+                    if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = FPU;
                         instruction_o.rs1 = instr.r4type.rs1;
                         instruction_o.rs2 = instr.r4type.rs2;
@@ -454,8 +454,8 @@ module decoder (
                         // determine fp format
                         unique case (instr.r4type.funct2)
                             // Only process instruction if corresponding extension is active (static)
-                            2'b00: if (!RVF) illegal_instr = 1'b1;
-                            2'b01: if (!RVD) illegal_instr = 1'b1;
+                            2'b00: if (~RVF) illegal_instr = 1'b1;
+                            2'b01: if (~RVD) illegal_instr = 1'b1;
                             default: illegal_instr = 1'b1;
                         endcase
                     end else
@@ -463,7 +463,7 @@ module decoder (
                 end
 
                 OPCODE_FP: begin
-                    if (RVF || RVD) begin // only generate decoder if FP extensions are enabled
+                    if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = FPU;
                         instruction_o.rs1 = instr.rftype.rs1;
                         instruction_o.rs2 = instr.rftype.rs2;
@@ -497,8 +497,8 @@ module decoder (
                                 // check source format
                                 unique case (instr.rftype.rs2[21:20])
                                     // Only process instruction if corresponding extension is active (static)
-                                    2'b00: if (!RVF) illegal_instr = 1'b1;
-                                    2'b01: if (!RVD) illegal_instr = 1'b1;
+                                    2'b00: if (~RVF) illegal_instr = 1'b1;
+                                    2'b01: if (~RVD) illegal_instr = 1'b1;
                                     default: illegal_instr = 1'b1;
                                 endcase
                             end
@@ -540,8 +540,8 @@ module decoder (
                         // check format
                         unique case (instr.rftype.fmt)
                             // Only process instruction if corresponding extension is active (static)
-                            2'b00: if (!RVF) illegal_instr = 1'b1;
-                            2'b01: if (!RVD) illegal_instr = 1'b1;
+                            2'b00: if (~RVF) illegal_instr = 1'b1;
+                            2'b01: if (~RVD) illegal_instr = 1'b1;
                             default: illegal_instr = 1'b1;
                         endcase
 

@@ -75,7 +75,7 @@ module issue_stage #(
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]          waddr_i,
     input  logic [NR_COMMIT_PORTS-1:0][63:0]         wdata_i,
-    input  logic [NR_COMMIT_PORTS-1:0]               we_i,
+    input  logic [NR_COMMIT_PORTS-1:0]               we_gpr_i,
     input  logic [NR_COMMIT_PORTS-1:0]               we_fpr_i,
 
     output scoreboard_entry_t [NR_COMMIT_PORTS-1:0]  commit_instr_o,
@@ -84,7 +84,8 @@ module issue_stage #(
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (IRO)
     // ---------------------------------------------------
-    fu_t  [2**REG_ADDR_SIZE:0] rd_clobber_sb_iro;
+    fu_t  [2**REG_ADDR_SIZE:0] rd_clobber_gpr_sb_iro;
+    fu_t  [2**REG_ADDR_SIZE:0] rd_clobber_fpr_sb_iro;
 
     logic [REG_ADDR_SIZE-1:0]  rs1_iro_sb;
     logic [63:0]               rs1_sb_iro;
@@ -93,6 +94,10 @@ module issue_stage #(
     logic [REG_ADDR_SIZE-1:0]  rs2_iro_sb;
     logic [63:0]               rs2_sb_iro;
     logic                      rs2_valid_iro_sb;
+
+    logic [REG_ADDR_SIZE-1:0]  rs3_iro_sb;
+    logic [FLEN-1:0]           rs3_sb_iro;
+    logic                      rs3_valid_iro_sb;
 
     scoreboard_entry_t         issue_instr_sb_rename;
     logic                      issue_instr_valid_sb_rename;
@@ -103,7 +108,7 @@ module issue_stage #(
     logic                      issue_ack_iro_rename;
 
     // ---------------------------------------------------------
-    // 1. Issue instruction and read operand
+    // 1. Issue instruction and read operand, also commit
     // ---------------------------------------------------------
     issue_read_operands i_issue_read_operands  (
         .flush_i             ( flush_unissued_instr_i          ),
@@ -116,7 +121,11 @@ module issue_stage #(
         .rs2_o               ( rs2_iro_sb                      ),
         .rs2_i               ( rs2_sb_iro                      ),
         .rs2_valid_i         ( rs2_valid_iro_sb                ),
-        .rd_clobber_i        ( rd_clobber_sb_iro               ),
+        .rs3_o               ( rs3_iro_sb                      ),
+        .rs3_i               ( rs3_sb_iro                      ),
+        .rs3_valid_i         ( rs3_valid_iro_sb                ),
+        .rd_clobber_gpr_i    ( rd_clobber_gpr_sb_iro           ),
+        .rd_clobber_fpr_i    ( rd_clobber_fpr_sb_iro           ),
         .*
     );
 
@@ -142,13 +151,17 @@ module issue_stage #(
         .NR_WB_PORTS           ( NR_WB_PORTS                               )
     ) i_scoreboard (
         .unresolved_branch_i   ( 1'b0                                      ),
-        .rd_clobber_o          ( rd_clobber_sb_iro                         ),
+        .rd_clobber_gpr_o      ( rd_clobber_gpr_sb_iro                     ),
+        .rd_clobber_fpr_o      ( rd_clobber_fpr_sb_iro                     ),
         .rs1_i                 ( rs1_iro_sb                                ),
         .rs1_o                 ( rs1_sb_iro                                ),
         .rs1_valid_o           ( rs1_valid_sb_iro                          ),
         .rs2_i                 ( rs2_iro_sb                                ),
         .rs2_o                 ( rs2_sb_iro                                ),
         .rs2_valid_o           ( rs2_valid_iro_sb                          ),
+        .rs3_i                 ( rs3_iro_sb                                ),
+        .rs3_o                 ( rs3_sb_iro                                ),
+        .rs3_valid_o           ( rs3_valid_iro_sb                          ),
 
         .issue_instr_o         ( issue_instr_sb_rename                     ),
         .issue_instr_valid_o   ( issue_instr_valid_sb_rename               ),
