@@ -423,6 +423,13 @@ module ariane #(
         .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit             ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id                    ),
         .no_st_pending_o        ( no_st_pending_ex_commit                ),
+        // MULT
+        .mult_ready_o           ( mult_ready_ex_id                       ),
+        .mult_valid_i           ( mult_valid_id_ex                       ),
+        .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
+        .mult_result_o          ( mult_result_ex_id                      ),
+        .mult_valid_o           ( mult_valid_ex_id                       ),
+
         // CSR
         .csr_ready_o            ( csr_ready_ex_id                        ),
         .csr_valid_i            ( csr_valid_id_ex                        ),
@@ -451,13 +458,6 @@ module ariane #(
         .mxr_i                  ( mxr_csr_ex                             ), // from CSR
         .satp_ppn_i             ( satp_ppn_csr_ex                        ), // from CSR
         .asid_i                 ( asid_csr_ex                            ), // from CSR
-
-        .mult_ready_o           ( mult_ready_ex_id                       ),
-        .mult_valid_i           ( mult_valid_id_ex                       ),
-        .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
-        .mult_result_o          ( mult_result_ex_id                      ),
-        .mult_valid_o           ( mult_valid_ex_id                       ),
-
         .data_if                ( data_if                                ),
         .dcache_en_i            ( dcache_en_csr_nbdcache                 ),
         .flush_dcache_i         ( flush_dcache_ctrl_ex | flush_dcache_i  ),
@@ -477,7 +477,7 @@ module ariane #(
         .no_st_pending_i        ( no_st_pending_ex_commit       ),
         .waddr_o                ( waddr_commit_id               ),
         .wdata_o                ( wdata_commit_id               ),
-        .we_o                   ( we_gpr_commit_id              ),
+        .we_gpr_o               ( we_gpr_commit_id              ),
         .we_fpr_o               ( we_fpr_commit_id              ),
         .commit_lsu_o           ( lsu_commit_commit_ex          ),
         .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),

@@ -27,7 +27,7 @@ module commit_stage #(
     // to register file
     output  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_o,            // register file write address
     output  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_o,            // register file write data
-    output  logic [NR_COMMIT_PORTS-1:0]             we_o,               // register file write enable
+    output  logic [NR_COMMIT_PORTS-1:0]             we_gpr_o,           // register file write enable
     output  logic [NR_COMMIT_PORTS-1:0]             we_fpr_o,           // floating point register enable
     // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
     output logic [63:0]                             pc_o,
@@ -47,6 +47,7 @@ module commit_stage #(
     output logic                                    sfence_vma_o        // flush TLBs and pipeline
 );
 
+    // TODO make these parametric with NR_COMMIT_PORTS
     assign waddr_o[0] = commit_instr_i[0].rd[4:0];
     assign waddr_o[1] = commit_instr_i[1].rd[4:0];
 
@@ -57,12 +58,14 @@ module commit_stage #(
     // -------------------
     // write register file or commit instruction in LSU or CSR Buffer
     always_comb begin : commit
+
         // default assignments
         commit_ack_o[0]    = 1'b0;
         commit_ack_o[1]    = 1'b0;
 
-        we_o[0]            = 1'b0;
-        we_o[1]            = 1'b0;
+        we_gpr_o[0]        = 1'b0;
+        we_gpr_o[1]        = 1'b0;
+        we_fpr_o           = '{default: 1'b0};
 
         commit_lsu_o       = 1'b0;
         commit_csr_o       = 1'b0;
@@ -87,7 +90,10 @@ module commit_stage #(
             if (!exception_o.valid) begin
                 // we can definitely write the register file
                 // if the instruction is not committing anything the destination
-                we_o[0] = 1'b1;
+                if (is_rd_fpr(commit_instr_i[0].op))
+                    we_fpr_o[0] = 1'b1;
+                else
+                    we_gpr_o[0] = 1'b1;
 
                 // check whether the instruction we retire was a store
                 // do not commit the instruction if we got an exception since the store buffer will be cleared
@@ -102,7 +108,7 @@ module commit_stage #(
             end
 
             // ---------
-            // FPU
+            // FPU Flags
             // ---------
             if (commit_instr_i[0].fu == FPU) begin
                 // write the CSR with potential exception flags from retiring floating point instruction
@@ -157,13 +163,25 @@ module commit_stage #(
             // only if the first instruction didn't throw an exception and this instruction won't throw an exception
             // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT or FPU
             if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU})) begin
-                we_o[1] = 1'b1;
+
+                if (is_rd_fpr(commit_instr_i[1].op))
+                    we_fpr_o[1] = 1'b1;
+                else
+                    we_gpr_o[1] = 1'b1;
+
                 commit_ack_o[1] = 1'b1;
-                // additionally check if we are retiring an FPU instruction because we need to make sure that we right all
+
+                // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
                 // exception flags
-                csr_op_o = CSR_SET;
-                csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
-                csr_write_fflags_o = (commit_instr_i[1].fu == FPU);
+                if (commit_instr_i[1].fu == FPU) begin
+                    csr_op_o = CSR_SET;
+                    if (csr_write_fflags_o)
+                        csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
+                    else
+                        csr_wdata_o = {59'b0, commit_instr_i[1].ex.cause[4:0]};
+
+                    csr_write_fflags_o = 1'b1;
+                end
             end
         end
     end
