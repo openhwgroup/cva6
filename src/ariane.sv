@@ -148,6 +148,13 @@ module ariane #(
     logic [TRANS_ID_BITS-1:0] mult_trans_id_ex_id;
     logic [63:0]              mult_result_ex_id;
     logic                     mult_valid_ex_id;
+    // FPU
+    logic                     fpu_ready_ex_id;
+    logic                     fpu_valid_id_ex;
+    logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
+    logic [63:0]              fpu_result_ex_id;
+    logic                     fpu_valid_ex_id;
+    exception_t               fpu_exception_ex_id;
     // CSR
     logic                     csr_ready_ex_id;
     logic                     csr_valid_id_ex;
@@ -185,8 +192,8 @@ module ariane #(
     // --------------
     // CSR <-> *
     // --------------
-    logic [4:0]               fflags_csr_ci;
-    logic [2:0]               frm_csr_id;
+    logic [4:0]               fflags_csr_commit;
+    logic [2:0]               frm_csr_id_issue;
     logic                     enable_translation_csr_ex;
     logic                     en_ld_st_translation_csr_ex;
     priv_lvl_t                ld_st_priv_lvl_csr_ex;
@@ -360,6 +367,9 @@ module ariane #(
         // Multiplier
         .mult_ready_i               ( mult_ready_ex_id                ),
         .mult_valid_o               ( mult_valid_id_ex                ),
+        // FPU
+        .fpu_ready_i                ( fpu_ready_ex_id                 ),
+        .fpu_valid_o                ( fpu_valid_id_ex                 ),
         // CSR
         .csr_ready_i                ( csr_ready_ex_id                 ),
         .csr_valid_o                ( csr_valid_id_ex                 ),
@@ -518,11 +528,10 @@ module ariane #(
         .csr_exception_o        ( csr_exception_csr_commit      ),
         .epc_o                  ( epc_commit_pcgen              ),
         .eret_o                 ( eret                          ),
-        .fflags_o               ( ), // FPU flags out
         .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
         .priv_lvl_o             ( priv_lvl                      ),
-        .fflags_o               ( fflags_csr_ci                 ),
-        .frm_o                  ( frm_csr_id                    ),
+        .fflags_o               ( fflags_csr_commit             ),
+        .frm_o                  ( frm_csr_id_issue             ),
         .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
         .en_translation_o       ( enable_translation_csr_ex     ),
         .en_ld_st_translation_o ( en_ld_st_translation_csr_ex   ),

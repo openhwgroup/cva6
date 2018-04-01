@@ -128,9 +128,12 @@ module scoreboard #(
             if (wb_valid_i[i] && mem_n[trans_id_i[i]].issued) begin
                 mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
                 mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
-                // write the exception back if it is valid --> removing this check to always write back FP flags
-                // if (ex_i[i].valid)
+                // write the exception back if it is valid
+                if (ex_i[i].valid)
                     mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
+                // write the fflags back from the FPU (exception valid is never set), leave tval intact
+                else if (mem_n[trans_id_i[i]].sbe.fu = FPU)
+                    mem_n[trans_id_i[i]].sbe.ex.cause = ex_i[i].cause;
             end
         end
 

@@ -62,6 +62,9 @@ module issue_stage #(
     input  logic                                     mult_ready_i,
     output logic                                     mult_valid_o,    // Branch predict Out
 
+    input  logic                                     fpu_ready_i,
+    output logic                                     fpu_valid_o,
+
     input  logic                                     csr_ready_i,
     output logic                                     csr_valid_o,
 

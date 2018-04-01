@@ -77,6 +77,13 @@ module ex_stage #(
     output logic [TRANS_ID_BITS-1:0]               mult_trans_id_o,
     output logic [63:0]                            mult_result_o,
     output logic                                   mult_valid_o,
+    // FPU
+    output logic                                   fpu_ready_o,      // FU is ready
+    input  logic                                   fpu_valid_i,      // Output is valid
+    output logic [TRANS_ID_BITS-1:0]               fpu_trans_id_o,
+    output logic [63:0]                            fpu_result_o,
+    output logic                                   fpu_valid_o,
+    output exception_t                             fpu_exception_o,
 
     // Memory Management
     input  logic                                   enable_translation_i,
