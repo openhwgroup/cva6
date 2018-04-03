@@ -458,11 +458,26 @@ module decoder (
                             2'b01: if (~RVD) illegal_instr = 1'b1;
                             default: illegal_instr = 1'b1;
                         endcase
-                    end else
+
+                        // check rounding mode
+                        if (check_fprm) begin
+                            unique case (instr.rftype.rm) inside
+                                [3'b000:3'b100]: ; //legal rounding modes
+                                3'b111: begin
+                                    unique case (frm_i) inside
+                                        [3'b000:3'b100]: ; //legal rounding modes
+                                        default : illegal_instr = 1'b1;
+                                    endcase
+                                end
+                                default : illegal_instr = 1'b1;
+                            endcase
+                        end
+                    end else begin
                         illegal_instr = 1'b1;
+                    end
                 end
 
-                OPCODE_FP: begin
+                OPCODE_OP_FP: begin
                     if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = FPU;
                         instruction_o.rs1 = instr.rftype.rs1;
@@ -502,8 +517,18 @@ module decoder (
                                     default: illegal_instr = 1'b1;
                                 endcase
                             end
+                            5'b10100: begin
+                                instruction_o.op = FCMP; // feq/flt/fle.fmt - FP Comparisons
+                                check_fprm       = 1'b0; // instruction encoded in rm, do the check here
+                                if (instr.rftype.rm > 3'b010) illegal_instr = 1'b1;
+                            end
                             5'b11000: begin
                                 instruction_o.op = FCVT_F2I; // fcvt.ifmt.fmt - FP to Int Conversion
+                                imm_select       = IIMM;     // rs2 holds part of the instruction
+                                if (instr.rftype.rs2[24:22]) illegal_instr = 1'b1; // bits [21:20] used, other bits must be 0
+                            end
+                            5'b11010: begin
+                                instruction_o.op = FCVT_I2F;  // fcvt.fmt.ifmt - Int to FP Conversion
                                 imm_select       = IIMM;     // rs2 holds part of the instruction
                                 if (instr.rftype.rs2[24:22]) illegal_instr = 1'b1; // bits [21:20] used, other bits must be 0
                             end
@@ -515,16 +540,6 @@ module decoder (
                                 else illegal_instr = 1'b1;
                                 // rs2 must be zero
                                 if (instr.rftype.rs2 != 5'b00000) illegal_instr = 1'b1;
-                            end
-                            5'b10100: begin
-                                instruction_o.op = FCMP; // feq/flt/fle.fmt - FP Comparisons
-                                check_fprm       = 1'b0; // instruction encoded in rm, do the check here
-                                if (instr.rftype.rm > 3'b010) illegal_instr = 1'b1;
-                            end
-                            5'b11010: begin
-                                instruction_o.op = FCVT_I2F;  // fcvt.fmt.ifmt - Int to FP Conversion
-                                imm_select       = IIMM;     // rs2 holds part of the instruction
-                                if (instr.rftype.rs2[24:22]) illegal_instr = 1'b1; // bits [21:20] used, other bits must be 0
                             end
                             5'b11110: begin
                                 instruction_o.op = FMV_X2F;   // fmv.fmt.ifmt - GPR to FPR Move
@@ -547,10 +562,10 @@ module decoder (
 
                         // check rounding mode
                         if (check_fprm) begin
-                            unique case (instr.rftype.rm)
+                            unique case (instr.rftype.rm) inside
                                 [3'b000:3'b100]: ; //legal rounding modes
                                 3'b111: begin
-                                    unique case (frm_i)
+                                    unique case (frm_i) inside
                                         [3'b000:3'b100]: ; //legal rounding modes
                                         default : illegal_instr = 1'b1;
                                     endcase
@@ -558,8 +573,9 @@ module decoder (
                                 default : illegal_instr = 1'b1;
                             endcase
                         end
-                    end else
+                    end else begin
                         illegal_instr = 1'b1;
+                    end
                 end
 
                 // ----------------------------------
