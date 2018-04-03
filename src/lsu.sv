@@ -355,7 +355,7 @@ module lsu #(
                     3'b100: be_i = 8'b1111_0000;
                     default:;
                 endcase
-            LH, LHU, SH: // half word
+            LH, LHU, SH, FLH, FSH: // half word
                 case (vaddr_i[2:0])
                     3'b000: be_i = 8'b0000_0011;
                     3'b001: be_i = 8'b0000_0110;
@@ -366,7 +366,7 @@ module lsu #(
                     3'b110: be_i = 8'b1100_0000;
                     default:;
                 endcase
-            LB, LBU, SB: // byte
+            LB, LBU, SB, FLB, FSB: // byte
                 case (vaddr_i[2:0])
                     3'b000: be_i = 8'b0000_0001;
                     3'b001: be_i = 8'b0000_0010;
@@ -412,7 +412,7 @@ module lsu #(
                 end
 
                 // half word
-                LH, LHU, SH: begin
+                LH, LHU, SH, FLH, FSH: begin
                     if (lsu_ctrl.vaddr[0] != 1'b0)
                         data_misaligned = 1'b1;
                 end

@@ -39,12 +39,23 @@ package ariane_pkg;
     localparam bit RVF = 1'b0; // Is F extension enabled
     localparam bit RVD = 1'b0; // Is D extension enabled
 
+
+    // Transprecision floating-point extensions configuration
+    localparam bit XF16    = 1'b1; // Is half-precision float extension (Xf16) enabled
+    localparam bit XF16ALT = 1'b1; // Is alternative half-precision float extension (Xf16alt) enabled
+    localparam bit XF8     = 1'b1; // Is quarter-precision float extension (Xf8) enabled
+    localparam bit XFVEC   = 1'b1; // Is vectorial float extension (Xfvec) enabled
+
     // No need changing these by hand
-    localparam bit FP_PRESENT = RVF | RVD;
+    localparam bit FP_PRESENT = RVF | RVD | XF16 | XF16ALT | XF8;
     // Length of widest floating-point format
-    localparam FLEN = RVD ? 64 : // D ext.
-                      RVF ? 32 : // F ext.
-                      0;
+    localparam FLEN    = RVD     ? 64 : // D ext.
+                         RVF     ? 32 : // F ext.
+                         XF16    ? 16 : // Xf16 ext.
+                         XF16ALT ? 16 : // Xf16alt ext.
+                         XF8     ? 8 :  // Xf8 ext.
+                         0;             // Unused in case of no FP
+    localparam bit NSX = XF16 | XF16ALT | XF8 | XFVEC; // Are non-standard extensions present?
 
     localparam logic [63:0] ISA_CODE = (0   <<  0)  // A - Atomic Instructions extension
                                      | (1   <<  2)  // C - Compressed extension
@@ -55,7 +66,7 @@ package ariane_pkg;
                                      | (0   << 13)  // N - User level interrupts supported
                                      | (1   << 18)  // S - Supervisor mode implemented
                                      | (1   << 20)  // U - User mode implemented
-                                     | (0   << 23)  // X - Non-standard extensions present
+                                     | (NSX << 23)  // X - Non-standard extensions present
                                      | (1   << 63); // RV64
 
     // 32 registers + 1 bit for re-naming = 6
@@ -168,7 +179,7 @@ package ariane_pkg;
                                // Divisions
                                DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW,
                                // Floating-Point Load and Store Instructions
-                               FLD, FLW, FSD, FSW,
+                               FLD, FLW, FLH, FLB, FSD, FSW, FSH, FSB,
                                // Floating-Point Computational Instructions
                                FADD, FSUB, FMUL, FDIV, FMIN_MAX, FSQRT, FMADD, FMSUB, FNMSUB, FNMADD,
                                // Floating-Point Conversion and Move Instructions

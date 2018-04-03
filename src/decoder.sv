@@ -400,6 +400,10 @@ module decoder (
                         // determine store size
                         unique case (instr.stype.funct3)
                             // Only process instruction if corresponding extension is active (static)
+                            3'b000: if (XF8) instruction_o.op = FSB;
+                                    else illegal_instr = 1'b1;
+                            3'b001: if (XF16 | XF16ALT) instruction_o.op = FSH;
+                                    else illegal_instr = 1'b1;
                             3'b010: if (RVF) instruction_o.op = FSW;
                                     else illegal_instr = 1'b1;
                             3'b011: if (RVD) instruction_o.op = FSD;
@@ -419,6 +423,10 @@ module decoder (
                         // determine load size
                         unique case (instr.itype.funct3)
                             // Only process instruction if corresponding extension is active (static)
+                            3'b000: if (XF8) instruction_o.op = FLB;
+                                    else illegal_instr = 1'b1;
+                            3'b001: if (XF16 | XF16ALT) instruction_o.op = FLH;
+                                    else illegal_instr = 1'b1;
                             3'b010: if (RVF) instruction_o.op  = FLW;
                                     else illegal_instr = 1'b1;
                             3'b011: if (RVD) instruction_o.op  = FLD;
@@ -454,8 +462,10 @@ module decoder (
                         // determine fp format
                         unique case (instr.r4type.funct2)
                             // Only process instruction if corresponding extension is active (static)
-                            2'b00: if (~RVF) illegal_instr = 1'b1;
-                            2'b01: if (~RVD) illegal_instr = 1'b1;
+                            2'b00: if (~RVF)             illegal_instr = 1'b1;
+                            2'b01: if (~RVD)             illegal_instr = 1'b1;
+                            2'b10: if (~XF16 & ~XF16ALT) illegal_instr = 1'b1;
+                            2'b11: if (~XF8)             illegal_instr = 1'b1;
                             default: illegal_instr = 1'b1;
                         endcase
 
@@ -498,12 +508,24 @@ module decoder (
                             5'b00100: begin
                                 instruction_o.op = FSGNJ; // fsgn{j[n]/jx}.fmt - FP Sign Injection
                                 check_fprm       = 1'b0;  // instruction encoded in rm, do the check here
-                                if (instr.rftype.rm > 3'b010) illegal_instr = 1'b1;
+                                if (XF16ALT) begin        // FP16ALT instructions encoded in rm separately
+                                    if (!(instr.rftype.rm inside {[3'b000:3'b010], [3'b100:3'b110]}))
+                                        illegal_instr = 1'b1;
+                                end else begin
+                                    if (!(instr.rftype.rm inside {[3'b000:3'b010]}))
+                                        illegal_instr = 1'b1;
+                                end
                             end
                             5'b00101: begin
                                 instruction_o.op = FMIN_MAX; // fmin/fmax.fmt - FP Minimum / Maximum
                                 check_fprm       = 1'b0;     // instruction encoded in rm, do the check here
-                                if (instr.rftype.rm > 3'b001) illegal_instr = 1'b1;
+                                if (XF16ALT) begin           // FP16ALT instructions encoded in rm separately
+                                    if (!(instr.rftype.rm inside {[3'b000:3'b001], [3'b100:3'b101]}))
+                                        illegal_instr = 1'b1;
+                                end else begin
+                                    if (!(instr.rftype.rm inside {[3'b000:3'b001]}))
+                                        illegal_instr = 1'b1;
+                                end
                             end
                             5'b01000: begin
                                 instruction_o.op = FCVT_F2F; // fcvt.fmt.fmt - FP to FP Conversion
@@ -512,15 +534,23 @@ module decoder (
                                 // check source format
                                 unique case (instr.rftype.rs2[21:20])
                                     // Only process instruction if corresponding extension is active (static)
-                                    2'b00: if (~RVF) illegal_instr = 1'b1;
-                                    2'b01: if (~RVD) illegal_instr = 1'b1;
+                                    2'b00: if (~RVF)             illegal_instr = 1'b1;
+                                    2'b01: if (~RVD)             illegal_instr = 1'b1;
+                                    2'b10: if (~XF16 & ~XF16ALT) illegal_instr = 1'b1;
+                                    2'b11: if (~XF8)             illegal_instr = 1'b1;
                                     default: illegal_instr = 1'b1;
                                 endcase
                             end
                             5'b10100: begin
                                 instruction_o.op = FCMP; // feq/flt/fle.fmt - FP Comparisons
                                 check_fprm       = 1'b0; // instruction encoded in rm, do the check here
-                                if (instr.rftype.rm > 3'b010) illegal_instr = 1'b1;
+                                if (XF16ALT) begin       // FP16ALT instructions encoded in rm separately
+                                    if (!(instr.rftype.rm inside {[3'b000:3'b010], [3'b100:3'b110]}))
+                                        illegal_instr = 1'b1;
+                                end else begin
+                                    if (!(instr.rftype.rm inside {[3'b000:3'b010]}))
+                                        illegal_instr = 1'b1;
+                                end
                             end
                             5'b11000: begin
                                 instruction_o.op = FCVT_F2I; // fcvt.ifmt.fmt - FP to Int Conversion
@@ -534,9 +564,11 @@ module decoder (
                             end
                             5'b11100: begin
                                 instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
-                                check_fprm       = 1'b0; // instruction encoded in rm, do the check here
-                                if (instr.rftype.rm == 3'b000) instruction_o.op = FMV_F2X;     // fmv.ifmt.fmt - FPR to GPR Move
-                                else if (instr.rftype.rm == 3'b001) instruction_o.op = FCLASS; // fclass.fmt - FP Classify
+                                check_fprm        = 1'b0; // instruction encoded in rm, do the check here
+                                if (instr.rftype.rm == 3'b000 || (XF16ALT && instr.rftype.rm == 3'b100)) // FP16ALT has separate encoding
+                                    instruction_o.op = FMV_F2X;       // fmv.ifmt.fmt - FPR to GPR Move
+                                else if (instr.rftype.rm == 3'b001 || (XF16ALT && instr.rftype.rm == 3'b101)) // FP16ALT has separate encoding
+                                    instruction_o.op = FCLASS; // fclass.fmt - FP Classify
                                 else illegal_instr = 1'b1;
                                 // rs2 must be zero
                                 if (instr.rftype.rs2 != 5'b00000) illegal_instr = 1'b1;
@@ -545,7 +577,8 @@ module decoder (
                                 instruction_o.op = FMV_X2F;   // fmv.fmt.ifmt - GPR to FPR Move
                                 instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
                                 check_fprm       = 1'b0; // instruction encoded in rm, do the check here
-                                if (instr.rftype.rm != 3'b000) illegal_instr = 1'b1;
+                                if (instr.rftype.rm != 3'b000 || (XF16ALT && instr.rftype.rm == 3'b100))
+                                    illegal_instr = 1'b1;
                                 // rs2 must be zero
                                 if (instr.rftype.rs2 != 5'b00000) illegal_instr = 1'b1;
                             end
@@ -555,8 +588,10 @@ module decoder (
                         // check format
                         unique case (instr.rftype.fmt)
                             // Only process instruction if corresponding extension is active (static)
-                            2'b00: if (~RVF) illegal_instr = 1'b1;
-                            2'b01: if (~RVD) illegal_instr = 1'b1;
+                            2'b00: if (~RVF)             illegal_instr = 1'b1;
+                            2'b01: if (~RVD)             illegal_instr = 1'b1;
+                            2'b10: if (~XF16 & ~XF16ALT) illegal_instr = 1'b1;
+                            2'b11: if (~XF8)             illegal_instr = 1'b1;
                             default: illegal_instr = 1'b1;
                         endcase
 
@@ -564,7 +599,16 @@ module decoder (
                         if (check_fprm) begin
                             unique case (instr.rftype.rm) inside
                                 [3'b000:3'b100]: ; //legal rounding modes
+                                3'b101: begin      // Alternative Half-Precsision encded as fmt=10 and rm=101
+                                    if (~XF16ALT || instr.rftype.fmt != 2'b10)
+                                        illegal_instr = 1'b1;
+                                    unique case (frm_i) inside // actual rounding mode from frm csr
+                                        [3'b000:3'b100]: ; //legal rounding modes
+                                        default : illegal_instr = 1'b1;
+                                    endcase
+                                end
                                 3'b111: begin
+                                    // rounding mode from frm csr
                                     unique case (frm_i) inside
                                         [3'b000:3'b100]: ; //legal rounding modes
                                         default : illegal_instr = 1'b1;
