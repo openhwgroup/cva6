@@ -233,35 +233,257 @@ module decoder (
                 // Reg-Reg Operations
                 // --------------------------
                 OPCODE_OP: begin
-                    instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
-                    instruction_o.rs1 = instr.rtype.rs1;
-                    instruction_o.rs2 = instr.rtype.rs2;
-                    instruction_o.rd  = instr.rtype.rd;
+                    // --------------------------------------------
+                    // Vectorial Floating-Point Reg-Reg Operations
+                    // --------------------------------------------
+                    if (instr.rvftype.funct2 == 2'b10) begin // Prefix 10 for all Xfvec ops
+                        if (FP_PRESENT & XFVEC) begin // only generate decoder if FP extensions are enabled (static)
+                            automatic logic allow_replication; // control honoring of replication flag
 
-                    unique case ({instr.rtype.funct7, instr.rtype.funct3})
-                        {7'b000_0000, 3'b000}: instruction_o.op = ADD;   // Add
-                        {7'b010_0000, 3'b000}: instruction_o.op = SUB;   // Sub
-                        {7'b000_0000, 3'b010}: instruction_o.op = SLTS;  // Set Lower Than
-                        {7'b000_0000, 3'b011}: instruction_o.op = SLTU;  // Set Lower Than Unsigned
-                        {7'b000_0000, 3'b100}: instruction_o.op = XORL;  // Xor
-                        {7'b000_0000, 3'b110}: instruction_o.op = ORL;   // Or
-                        {7'b000_0000, 3'b111}: instruction_o.op = ANDL;  // And
-                        {7'b000_0000, 3'b001}: instruction_o.op = SLL;   // Shift Left Logical
-                        {7'b000_0000, 3'b101}: instruction_o.op = SRL;   // Shift Right Logical
-                        {7'b010_0000, 3'b101}: instruction_o.op = SRA;   // Shift Right Arithmetic
-                        // Multiplications
-                        {7'b000_0001, 3'b000}: instruction_o.op = MUL;
-                        {7'b000_0001, 3'b001}: instruction_o.op = MULH;
-                        {7'b000_0001, 3'b010}: instruction_o.op = MULHSU;
-                        {7'b000_0001, 3'b011}: instruction_o.op = MULHU;
-                        {7'b000_0001, 3'b100}: instruction_o.op = DIV;
-                        {7'b000_0001, 3'b101}: instruction_o.op = DIVU;
-                        {7'b000_0001, 3'b110}: instruction_o.op = REM;
-                        {7'b000_0001, 3'b111}: instruction_o.op = REMU;
-                        default: begin
+                            instruction_o.fu  = FPU_VEC; // Same unit, but sets 'vectorial' signal
+                            instruction_o.rs1 = instr.rvftype.rs1;
+                            instruction_o.rs2 = instr.rvftype.rs2;
+                            instruction_o.rd  = instr.rvftype.rd;
+                            check_fprm        = 1'b1;
+                            allow_replication = 1'b1;
+                            // decode vectorial FP instruction
+                            unique case (instr.rvftype.vecfltop)
+                                5'b00001 : instruction_o.op = FADD; // vfadd.vfmt - Vectorial FP Addition
+                                5'b00010 : instruction_o.op = FSUB; // vfsub.vfmt - Vectorial FP Subtraction
+                                5'b00011 : instruction_o.op = FMUL; // vfmul.vfmt - Vectorial FP Multiplication
+                                5'b00100 : instruction_o.op = FDIV; // vfdiv.vfmt - Vectorial FP Division
+                                5'b00101 : begin
+                                    instruction_o.op = VFMIN; // vfmin.vfmt - Vectorial FP Minimum
+                                    check_fprm       = 1'b0;  // rounding mode irrelevant
+                                end
+                                5'b00110 : begin
+                                    instruction_o.op = VFMAX; // vfmax.vfmt - Vectorial FP Maximum
+                                    check_fprm       = 1'b0;  // rounding mode irrelevant
+                                end
+                                5'b00111 : begin
+                                    instruction_o.op  = FSQRT; // vfsqrt.vfmt - Vectorial FP Square Root
+                                    allow_replication = 1'b0;  // only one operand
+                                    if (instr.rvftype.rs2 != 5'b00000) illegal_instr = 1'b1; // rs2 must be 0
+                                end
+                                5'b01000 : begin
+                                    instruction_o.op = FMADD; // vfmac.vfmt - Vectorial FP Multiply-Accumulate
+                                    imm_select       = SIMM;  // rd into result field (upper bits don't matter)
+                                end
+                                5'b01001 : begin
+                                    instruction_o.op = FMSUB; // vfmre.vfmt - Vectorial FP Multiply-Reduce
+                                    imm_select       = SIMM;  // rd into result field (upper bits don't matter)
+                                end
+                                5'b01100 : begin
+                                    unique case (instr.rvftype.rs2) inside // operation encoded in rs2, `inside` for matching ?
+                                        5'b00000 : begin
+                                            if (instr.rvftype.repl)
+                                                instruction_o.op = FMV_F2X; // vfmv.x.vfmt - FPR to GPR Move
+                                            else
+                                                instruction_o.op = FMV_X2F; // vfmv.vfmt.x - GPR to FPR Move
+                                            check_fprm = 1'b0;              // no rounding for moves
+                                        end
+                                        5'b00001 : begin
+                                            instruction_o.op  = FCLASS; // vfclass.vfmt - Vectorial FP Classify
+                                            check_fprm        = 1'b0;   // no rounding for classification
+                                            allow_replication = 1'b0;   // R must not be set
+                                        end
+                                        5'b00010 : instruction_o.op = FCVT_F2I; // vfcvt.x.vfmt - Vectorial FP to Int Conversion
+                                        5'b00011 : instruction_o.op = FCVT_I2F; // vfcvt.vfmt.x - Vectorial Int to FP Conversion
+                                        5'b001?? : begin
+                                            instruction_o.op  = FCVT_F2F; // vfcvt.vfmt.vfmt - Vectorial FP to FP Conversion
+                                            allow_replication = 1'b0;     // R must not be set
+                                            // determine source format
+                                            unique case (instr.rvftype.rs2[21:20])
+                                                // Only process instruction if corresponding extension is active (static)
+                                                2'b00: if (~RVFVEC)     illegal_instr = 1'b1;
+                                                2'b01: if (~XF16ALTVEC) illegal_instr = 1'b1;
+                                                2'b10: if (~XF16VEC)    illegal_instr = 1'b1;
+                                                2'b11: if (~XF8VEC)     illegal_instr = 1'b1;
+                                                default : illegal_instr = 1'b1;
+                                            endcase
+                                        end
+                                        default : illegal_instr = 1'b1;
+                                    endcase
+                                end
+                                5'b01101 : begin
+                                    check_fprm = 1'b0;         // no rounding for sign-injection
+                                    instruction_o.op = VFSGNJ; // vfsgnj.vfmt - Vectorial FP Sign Injection
+                                end
+                                5'b01110 : begin
+                                    check_fprm = 1'b0;          // no rounding for sign-injection
+                                    instruction_o.op = VFSGNJN; // vfsgnjN.vfmt - Vectorial FP Negated Sign Injection
+                                end
+                                5'b01111 : begin
+                                    check_fprm = 1'b0;          // no rounding for sign-injection
+                                    instruction_o.op = VFSGNJX; // vfsgnjx.vfmt - Vectorial FP XORed Sign Injection
+                                end
+                                5'b10000 : begin
+                                    check_fprm = 1'b0;          // no rounding for comparisons
+                                    instruction_o.op = VFEQ;    // vfeq.vfmt - Vectorial FP Equality
+                                end
+                                5'b10001 : begin
+                                    check_fprm = 1'b0;          // no rounding for comparisons
+                                    instruction_o.op = VFNE;    // vfne.vfmt - Vectorial FP Non-Equality
+                                end
+                                5'b10010 : begin
+                                    check_fprm = 1'b0;          // no rounding for comparisons
+                                    instruction_o.op = VFLT;    // vfle.vfmt - Vectorial FP Less Than
+                                end
+                                5'b10011 : begin
+                                    check_fprm = 1'b0;          // no rounding for comparisons
+                                    instruction_o.op = VFGE;    // vfge.vfmt - Vectorial FP Greater or Equal
+                                end
+                                5'b10100 : begin
+                                    check_fprm = 1'b0;          // no rounding for comparisons
+                                    instruction_o.op = VFLE;    // vfle.vfmt - Vectorial FP Less or Equal
+                                end
+                                5'b10101 : begin
+                                    check_fprm = 1'b0;          // no rounding for comparisons
+                                    instruction_o.op = VFGT;    // vfgt.vfmt - Vectorial FP Greater Than
+                                end
+                                5'b11000 : begin
+                                    allow_replication = 1'b0; // no replication for cast-and-pack
+                                    instruction_o.op  = VFCPKAB_S; // vfcpka/b.vfmt.s - Vectorial FP Cast-and-Pack from 2x FP32, lowest 4 entries
+                                    if (~RVF) illegal_instr = 1'b1; // if we don't support RVF, we can't cast from FP32
+                                    // check destination format
+                                    unique case (instr.rvftype.vfmt)
+                                        // Only process instruction if corresponding extension is active and FLEN suffices (static)
+                                        2'b00: begin
+                                            if (~RVFVEC)            illegal_instr = 1'b1; // destination vector not supported
+                                            if (instr.rvftype.repl) illegal_instr = 1'b1; // no entries 2/3 in vector of 2 fp32
+                                        end
+                                        2'b01: begin
+                                            if (~XF16ALTVEC) illegal_instr = 1'b1; // destination vector not supported
+                                        end
+                                        2'b10: begin
+                                            if (~XF16VEC) illegal_instr = 1'b1; // destination vector not supported
+                                        end
+                                        2'b11: begin
+                                            if (~XF8VEC) illegal_instr = 1'b1; // destination vector not supported
+                                        end
+                                        default : illegal_instr = 1'b1;
+                                    endcase
+                                end
+                                5'b11001 : begin
+                                    allow_replication = 1'b0; // no replication for cast-and-pack
+                                    instruction_o.op  = VFCPKCD_S; // vfcpkc/d.vfmt.s - Vectorial FP Cast-and-Pack from 2x FP32, second 4 entries
+                                    if (~RVF) illegal_instr = 1'b1; // if we don't support RVF, we can't cast from FP32
+                                    // check destination format
+                                    unique case (instr.rvftype.vfmt)
+                                        // Only process instruction if corresponding extension is active and FLEN suffices (static)
+                                        2'b00: illegal_instr = 1'b1; // no entries 4-7 in vector of 2 FP32
+                                        2'b01: illegal_instr = 1'b1; // no entries 4-7 in vector of 4 FP16ALT
+                                        2'b10: illegal_instr = 1'b1; // no entries 4-7 in vector of 4 FP16
+                                        2'b11: begin
+                                            if (~XF8VEC) illegal_instr = 1'b1; // destination vector not supported
+                                        end
+                                        default : illegal_instr = 1'b1;
+                                    endcase
+                                end
+                                5'b11010 : begin
+                                    allow_replication = 1'b0; // no replication for cast-and-pack
+                                    instruction_o.op  = VFCPKAB_D; // vfcpka/b.vfmt.d - Vectorial FP Cast-and-Pack from 2x FP64, lowest 4 entries
+                                    if (~RVD) illegal_instr = 1'b1; // if we don't support RVD, we can't cast from FP64
+                                    // check destination format
+                                    unique case (instr.rvftype.vfmt)
+                                        // Only process instruction if corresponding extension is active and FLEN suffices (static)
+                                        2'b00: begin
+                                            if (~RVFVEC)            illegal_instr = 1'b1; // destination vector not supported
+                                            if (instr.rvftype.repl) illegal_instr = 1'b1; // no entries 2/3 in vector of 2 fp32
+                                        end
+                                        2'b01: begin
+                                            if (~XF16ALTVEC) illegal_instr = 1'b1; // destination vector not supported
+                                        end
+                                        2'b10: begin
+                                            if (~XF16VEC) illegal_instr = 1'b1; // destination vector not supported
+                                        end
+                                        2'b11: begin
+                                            if (~XF8VEC) illegal_instr = 1'b1; // destination vector not supported
+                                        end
+                                        default : illegal_instr = 1'b1;
+                                    endcase
+                                end
+                                5'b11011 : begin
+                                    allow_replication = 1'b0; // no replication for cast-and-pack
+                                    instruction_o.op  = VFCPKCD_D; // vfcpka/b.vfmt.d - Vectorial FP Cast-and-Pack from 2x FP64, second 4 entries
+                                    if (~RVD) illegal_instr = 1'b1; // if we don't support RVD, we can't cast from FP64
+                                    // check destination format
+                                    unique case (instr.rvftype.vfmt)
+                                        // Only process instruction if corresponding extension is active and FLEN suffices (static)
+                                        2'b00: illegal_instr = 1'b1; // no entries 4-7 in vector of 2 FP32
+                                        2'b01: illegal_instr = 1'b1; // no entries 4-7 in vector of 4 FP16ALT
+                                        2'b10: illegal_instr = 1'b1; // no entries 4-7 in vector of 4 FP16
+                                        2'b11: begin
+                                            if (~XF8VEC) illegal_instr = 1'b1; // destination vector not supported
+                                        end
+                                        default : illegal_instr = 1'b1;
+                                    endcase
+                                end
+                                default : illegal_instr = 1'b1;
+                            endcase
+
+                            // check format
+                            unique case (instr.rftype.fmt)
+                                // Only process instruction if corresponding extension is active (static)
+                                2'b00: if (~RVFVEC)     illegal_instr = 1'b1;
+                                2'b01: if (~XF16ALTVEC) illegal_instr = 1'b1;
+                                2'b10: if (~XF16VEC)    illegal_instr = 1'b1;
+                                2'b11: if (~XF8VEC)     illegal_instr = 1'b1;
+                                default: illegal_instr = 1'b1;
+                            endcase
+
+                            // check disallowed replication
+                            if (~allow_replication & instr.rvftype.repl) illegal_instr = 1'b1;
+
+                            // communicate replication to the unit
+                            if (instr.rvftype.repl) instruction_o.fu  = FPU_VEC_REPL; // Same unit, but sets 'vectorial' and 'replication' signals
+
+                            // check rounding mode
+                            if (check_fprm) begin
+                                unique case (frm_i) inside // actual rounding mode from frm csr
+                                    [3'b000:3'b100]: ; //legal rounding modes
+                                    default : illegal_instr = 1'b1;
+                                endcase
+                            end
+
+                        end else begin // No vectorial FP enabled (static)
                             illegal_instr = 1'b1;
                         end
-                    endcase
+
+                    // ---------------------------
+                    // Integer Reg-Reg Operations
+                    // ---------------------------
+                    end else begin
+                        instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
+                        instruction_o.rs1 = instr.rtype.rs1;
+                        instruction_o.rs2 = instr.rtype.rs2;
+                        instruction_o.rd  = instr.rtype.rd;
+
+                        unique case ({instr.rtype.funct7, instr.rtype.funct3})
+                            {7'b000_0000, 3'b000}: instruction_o.op = ADD;   // Add
+                            {7'b010_0000, 3'b000}: instruction_o.op = SUB;   // Sub
+                            {7'b000_0000, 3'b010}: instruction_o.op = SLTS;  // Set Lower Than
+                            {7'b000_0000, 3'b011}: instruction_o.op = SLTU;  // Set Lower Than Unsigned
+                            {7'b000_0000, 3'b100}: instruction_o.op = XORL;  // Xor
+                            {7'b000_0000, 3'b110}: instruction_o.op = ORL;   // Or
+                            {7'b000_0000, 3'b111}: instruction_o.op = ANDL;  // And
+                            {7'b000_0000, 3'b001}: instruction_o.op = SLL;   // Shift Left Logical
+                            {7'b000_0000, 3'b101}: instruction_o.op = SRL;   // Shift Right Logical
+                            {7'b010_0000, 3'b101}: instruction_o.op = SRA;   // Shift Right Arithmetic
+                            // Multiplications
+                            {7'b000_0001, 3'b000}: instruction_o.op = MUL;
+                            {7'b000_0001, 3'b001}: instruction_o.op = MULH;
+                            {7'b000_0001, 3'b010}: instruction_o.op = MULHSU;
+                            {7'b000_0001, 3'b011}: instruction_o.op = MULHU;
+                            {7'b000_0001, 3'b100}: instruction_o.op = DIV;
+                            {7'b000_0001, 3'b101}: instruction_o.op = DIVU;
+                            {7'b000_0001, 3'b110}: instruction_o.op = REM;
+                            {7'b000_0001, 3'b111}: instruction_o.op = REMU;
+                            default: begin
+                                illegal_instr = 1'b1;
+                            end
+                        endcase
+                    end
                 end
 
                 // --------------------------
@@ -453,10 +675,10 @@ module decoder (
                         check_fprm        = 1'b1;
                         // select the correct fused operation
                         unique case (instr.r4type.opcode)
-                            default:      instruction_o.op = FMADD;  // fmadd.fmt - Fused multiply-add
-                            OPCODE_MSUB:  instruction_o.op = FMSUB;  // fmsub.fmt - Fused multiply-subtract
-                            OPCODE_NMSUB: instruction_o.op = FNMSUB; // fnmsub.fmt - Negated fused multiply-subtract
-                            OPCODE_NMADD: instruction_o.op = FNMADD; // fnmadd.fmt - Negated fused multiply-add
+                            default:      instruction_o.op = FMADD;  // fmadd.fmt - FP Fused multiply-add
+                            OPCODE_MSUB:  instruction_o.op = FMSUB;  // fmsub.fmt - FP Fused multiply-subtract
+                            OPCODE_NMSUB: instruction_o.op = FNMSUB; // fnmsub.fmt - FP Negated fused multiply-subtract
+                            OPCODE_NMADD: instruction_o.op = FNMADD; // fnmadd.fmt - FP Negated fused multiply-add
                         endcase
 
                         // determine fp format
@@ -473,7 +695,16 @@ module decoder (
                         if (check_fprm) begin
                             unique case (instr.rftype.rm) inside
                                 [3'b000:3'b100]: ; //legal rounding modes
+                                3'b101: begin      // Alternative Half-Precsision encded as fmt=10 and rm=101
+                                    if (~XF16ALT || instr.rftype.fmt != 2'b10)
+                                        illegal_instr = 1'b1;
+                                    unique case (frm_i) inside // actual rounding mode from frm csr
+                                        [3'b000:3'b100]: ; //legal rounding modes
+                                        default : illegal_instr = 1'b1;
+                                    endcase
+                                end
                                 3'b111: begin
+                                    // rounding mode from frm csr
                                     unique case (frm_i) inside
                                         [3'b000:3'b100]: ; //legal rounding modes
                                         default : illegal_instr = 1'b1;
@@ -508,7 +739,7 @@ module decoder (
                             5'b00100: begin
                                 instruction_o.op = FSGNJ; // fsgn{j[n]/jx}.fmt - FP Sign Injection
                                 check_fprm       = 1'b0;  // instruction encoded in rm, do the check here
-                                if (XF16ALT) begin        // FP16ALT instructions encoded in rm separately
+                                if (XF16ALT) begin        // FP16ALT instructions encoded in rm separately (static)
                                     if (!(instr.rftype.rm inside {[3'b000:3'b010], [3'b100:3'b110]}))
                                         illegal_instr = 1'b1;
                                 end else begin
@@ -519,7 +750,7 @@ module decoder (
                             5'b00101: begin
                                 instruction_o.op = FMIN_MAX; // fmin/fmax.fmt - FP Minimum / Maximum
                                 check_fprm       = 1'b0;     // instruction encoded in rm, do the check here
-                                if (XF16ALT) begin           // FP16ALT instructions encoded in rm separately
+                                if (XF16ALT) begin           // FP16ALT instructions encoded in rm separately (static)
                                     if (!(instr.rftype.rm inside {[3'b000:3'b001], [3'b100:3'b101]}))
                                         illegal_instr = 1'b1;
                                 end else begin
@@ -544,7 +775,7 @@ module decoder (
                             5'b10100: begin
                                 instruction_o.op = FCMP; // feq/flt/fle.fmt - FP Comparisons
                                 check_fprm       = 1'b0; // instruction encoded in rm, do the check here
-                                if (XF16ALT) begin       // FP16ALT instructions encoded in rm separately
+                                if (XF16ALT) begin       // FP16ALT instructions encoded in rm separately (static)
                                     if (!(instr.rftype.rm inside {[3'b000:3'b010], [3'b100:3'b110]}))
                                         illegal_instr = 1'b1;
                                 end else begin

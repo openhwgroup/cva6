@@ -46,8 +46,10 @@ package ariane_pkg;
     localparam bit XF8     = 1'b1; // Is quarter-precision float extension (Xf8) enabled
     localparam bit XFVEC   = 1'b1; // Is vectorial float extension (Xfvec) enabled
 
-    // No need changing these by hand
+    // --------------------------------------
+    // vvvv Don't change these by hand! vvvv
     localparam bit FP_PRESENT = RVF | RVD | XF16 | XF16ALT | XF8;
+
     // Length of widest floating-point format
     localparam FLEN    = RVD     ? 64 : // D ext.
                          RVF     ? 32 : // F ext.
@@ -55,7 +57,15 @@ package ariane_pkg;
                          XF16ALT ? 16 : // Xf16alt ext.
                          XF8     ? 8 :  // Xf8 ext.
                          0;             // Unused in case of no FP
+
     localparam bit NSX = XF16 | XF16ALT | XF8 | XFVEC; // Are non-standard extensions present?
+
+    localparam bit RVFVEC     = RVF     & XFVEC & FLEN>32; // FP32 vectors available if vectors and larger fmt enabled
+    localparam bit XF16VEC    = XF16    & XFVEC & FLEN>16; // FP16 vectors available if vectors and larger fmt enabled
+    localparam bit XF16ALTVEC = XF16ALT & XFVEC & FLEN>16; // FP16ALT vectors available if vectors and larger fmt enabled
+    localparam bit XF8VEC     = XF8     & XFVEC & FLEN>8;  // FP8 vectors available if vectors and larger fmt enabled
+    // ^^^^ until here ^^^^
+    // ---------------------
 
     localparam logic [63:0] ISA_CODE = (0   <<  0)  // A - Atomic Instructions extension
                                      | (1   <<  2)  // C - Compressed extension
@@ -146,7 +156,7 @@ package ariane_pkg;
     } bht_prediction_t;
 
     typedef enum logic[3:0] {
-        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR, FPU
+        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR, FPU, FPU_VEC, FPU_VEC_REPL
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -187,7 +197,9 @@ package ariane_pkg;
                                // Floating-Point Compare Instructions
                                FCMP,
                                // Floating-Point Classify Instruction
-                               FCLASS
+                               FCLASS,
+                               // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
+                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D
                              } fu_op;
 
     // -------------------------------
@@ -196,14 +208,15 @@ package ariane_pkg;
     function automatic logic is_rs1_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
-                [FADD:FNMADD],                // Computational Operations
-                FCVT_F2I,                     // Float-Int Casts
-                FCVT_F2F,                     // Float-Float Casts
-                FSGNJ,                        // Sign Injections
-                FMV_F2X,                      // FPR-GPR Moves
-                FCMP,                         // Comparisons
-                FCLASS         : return 1'b1; // Classifications
-                default        : return 1'b0; // all other ops
+                [FADD:FNMADD],                   // Computational Operations
+                FCVT_F2I,                        // Float-Int Casts
+                FCVT_F2F,                        // Float-Float Casts
+                FSGNJ,                           // Sign Injections
+                FMV_F2X,                         // FPR-GPR Moves
+                FCMP,                            // Comparisons
+                FCLASS,                          // Classifications
+                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
+                default           : return 1'b0; // all other ops
             endcase
         end else
             return 1'b0;
@@ -212,12 +225,13 @@ package ariane_pkg;
     function automatic logic is_rs2_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
-                [FSD:FSW],                      // FP Stores
-                [FADD:FMIN_MAX],                // Computational Operations (no sqrt)
-                [FMADD:FNMADD],                 // Fused Computational Operations
-                FSGNJ,                          // Sign Injections
-                FCMP             : return 1'b1; // Comparisons
-                default          : return 1'b0; // all other ops
+                [FSD:FSW],                       // FP Stores
+                [FADD:FMIN_MAX],                 // Computational Operations (no sqrt)
+                [FMADD:FNMADD],                  // Fused Computational Operations
+                FSGNJ,                           // Sign Injections
+                FCMP,                            // Comparisons
+                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
+                default           : return 1'b0; // all other ops
             endcase
         end else
             return 1'b0;
@@ -237,13 +251,14 @@ package ariane_pkg;
     function automatic logic is_rd_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
-                [FLD:FLW],                    // FP Loads
-                [FADD:FNMADD],                // Computational Operations
-                FCVT_I2F,                     // Int-Float Casts
-                FCVT_F2F,                     // Float-Float Casts
-                FSGNJ,                        // Sign Injections
-                FMV_X2F        : return 1'b1; // GPR-FPR Moves
-                default        : return 1'b0; // all other ops
+                [FLD:FLW],                       // FP Loads
+                [FADD:FNMADD],                   // Computational Operations
+                FCVT_I2F,                        // Int-Float Casts
+                FCVT_F2F,                        // Float-Float Casts
+                FSGNJ,                           // Sign Injections
+                FMV_X2F,                         // GPR-FPR Moves
+                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
+                default           : return 1'b0; // all other ops
             endcase
         end else
             return 1'b0;
@@ -324,7 +339,7 @@ package ariane_pkg;
 
     typedef struct packed {
         logic [31:27] rs3;
-        logic [1:0]   funct2;
+        logic [26:25] funct2;
         logic [24:20] rs2;
         logic [19:15] rs1;
         logic [14:12] funct3;
@@ -341,6 +356,17 @@ package ariane_pkg;
         logic [11:7]  rd;
         logic [6:0]   opcode;
     } rftype_t; // floating-point
+
+    typedef struct packed {
+        logic [31:30] funct2;
+        logic [29:25] vecfltop;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:14] repl;
+        logic [13:12] vfmt;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } rvftype_t; // vectorial floating-point
 
     typedef struct packed {
         logic [31:20] imm;
@@ -370,6 +396,7 @@ package ariane_pkg;
         rtype_t        rtype;
         r4type_t       r4type;
         rftype_t       rftype;
+        rvftype_t      rvftype;
         itype_t        itype;
         stype_t        stype;
         utype_t        utype;
