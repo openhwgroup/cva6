@@ -80,6 +80,9 @@ module ex_stage #(
     // FPU
     output logic                                   fpu_ready_o,      // FU is ready
     input  logic                                   fpu_valid_i,      // Output is valid
+    input  logic [1:0]                             fpu_fmt_i,        // FP format
+    input  logic [2:0]                             fpu_rm_i,         // FP rm
+    input  logic [2:0]                             fpu_frm_i,        // FP frm csr
     output logic [TRANS_ID_BITS-1:0]               fpu_trans_id_o,
     output logic [63:0]                            fpu_result_o,
     output logic                                   fpu_valid_o,
@@ -138,6 +141,25 @@ module ex_stage #(
         .result_o ( mult_result_o ),
         .*
     );
+
+    // ----------------
+    // FPU
+    // ----------------
+    generate
+        if( FP_PRESENT ) begin : fpu_gen
+            fpu_wrap fpu_i (
+                .operand_c_i ( imm_i        ),
+                .result_o    ( fpu_result_o ),
+                .*
+            );
+        end else begin : no_fpu_gen
+            assign fpu_ready_o     = '0;
+            assign fpu_trans_id_o  = '0;
+            assign fpu_result_o    = '0;
+            assign fpu_valid_o     = '0;
+            assign fpu_exception_o = '0;
+        end
+    endgenerate
 
     // ----------------
     // Load-Store Unit

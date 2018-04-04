@@ -435,9 +435,6 @@ module decoder (
                             // check disallowed replication
                             if (~allow_replication & instr.rvftype.repl) illegal_instr = 1'b1;
 
-                            // communicate replication to the unit
-                            if (instr.rvftype.repl) instruction_o.fu  = FPU_VEC_REPL; // Same unit, but sets 'vectorial' and 'replication' signals
-
                             // check rounding mode
                             if (check_fprm) begin
                                 unique case (frm_i) inside // actual rounding mode from frm csr
@@ -761,14 +758,15 @@ module decoder (
                             5'b01000: begin
                                 instruction_o.op = FCVT_F2F; // fcvt.fmt.fmt - FP to FP Conversion
                                 imm_select       = IIMM;     // rs2 holds part of the intruction
-                                if (instr.rftype.rs2[24:22]) illegal_instr = 1'b1; // bits [21:20] used, other bits must be 0
+                                if (instr.rftype.rs2[24:23]) illegal_instr = 1'b1; // bits [22:20] used, other bits must be 0
                                 // check source format
-                                unique case (instr.rftype.rs2[21:20])
+                                unique case (instr.rftype.rs2[22:20])
                                     // Only process instruction if corresponding extension is active (static)
-                                    2'b00: if (~RVF)             illegal_instr = 1'b1;
-                                    2'b01: if (~RVD)             illegal_instr = 1'b1;
-                                    2'b10: if (~XF16 & ~XF16ALT) illegal_instr = 1'b1;
-                                    2'b11: if (~XF8)             illegal_instr = 1'b1;
+                                    3'b000: if (~RVF)     illegal_instr = 1'b1;
+                                    3'b001: if (~RVD)     illegal_instr = 1'b1;
+                                    3'b010: if (~XF16)    illegal_instr = 1'b1;
+                                    3'b110: if (~XF16ALT) illegal_instr = 1'b1;
+                                    3'b011: if (~XF8)     illegal_instr = 1'b1;
                                     default: illegal_instr = 1'b1;
                                 endcase
                             end

@@ -16,3 +16,9 @@
 [submodule "src/axi_node"]
 	path = src/axi_node
 	url = https://github.com/pulp-platform/axi_node.git
+[submodule "fpnew"]
+	path = src/fpnew
+	url = git@iis-git.ee.ethz.ch:smach/fpnew.git
+[submodule "fpu-legacy"]
+	path = src/fpu_legacy
+	url = git@iis-git.ee.ethz.ch:pulp-open/fpu.git

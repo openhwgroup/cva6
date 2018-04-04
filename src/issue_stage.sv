@@ -64,6 +64,8 @@ module issue_stage #(
 
     input  logic                                     fpu_ready_i,
     output logic                                     fpu_valid_o,
+    output logic [1:0]                               fpu_fmt_o,        // FP fmt field from instr.
+    output logic [2:0]                               fpu_rm_o,         // FP rm field from instr.
 
     input  logic                                     csr_ready_i,
     output logic                                     csr_valid_o,

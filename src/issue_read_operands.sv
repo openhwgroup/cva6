@@ -71,6 +71,8 @@ module issue_read_operands #(
     // FPU
     input  logic                                   fpu_ready_i,      // FU is ready
     output logic                                   fpu_valid_o,      // Output is valid
+    output logic [1:0]                             fpu_fmt_o,        // FP fmt field from instr.
+    output logic [2:0]                             fpu_rm_o,         // FP rm field from instr.
     // CSR
     input  logic                                   csr_ready_i,      // FU is ready
     output logic                                   csr_valid_o,      // Output is valid
@@ -94,12 +96,14 @@ module issue_read_operands #(
                  operand_b_n, operand_b_q,
                  imm_n, imm_q;
 
-    logic alu_valid_n,    alu_valid_q;
-    logic mult_valid_n,   mult_valid_q;
-    logic fpu_valid_n,    fpu_valid_q;
-    logic lsu_valid_n,    lsu_valid_q;
-    logic csr_valid_n,    csr_valid_q;
-    logic branch_valid_n, branch_valid_q;
+    logic       alu_valid_n,    alu_valid_q;
+    logic       mult_valid_n,   mult_valid_q;
+    logic       fpu_valid_n,    fpu_valid_q;
+    logic [1:0] fpu_fmt_n,      fpu_fmt_q;
+    logic [2:0] fpu_rm_n,       fpu_rm_q;
+    logic       lsu_valid_n,    lsu_valid_q;
+    logic       csr_valid_n,    csr_valid_q;
+    logic       branch_valid_n, branch_valid_q;
 
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
     fu_op operator_n, operator_q; // operation to perform
@@ -107,6 +111,11 @@ module issue_read_operands #(
 
     // forwarding signals
     logic forward_rs1, forward_rs2, forward_rs3;
+
+    // original instruction stored in tval
+    instruction_t orig_instr;
+    assign orig_instr = instruction_t'(issue_instr_i.ex.tval[31:0]);
+
     // ID <-> EX registers
     assign operand_a_o    = operand_a_q;
     assign operand_b_o    = operand_b_q;
@@ -118,6 +127,8 @@ module issue_read_operands #(
     assign csr_valid_o    = csr_valid_q;
     assign mult_valid_o   = mult_valid_q;
     assign fpu_valid_o    = fpu_valid_q;
+    assign fpu_fmt_o      = fpu_fmt_q;
+    assign fpu_rm_o       = fpu_rm_q;
     assign trans_id_o     = trans_id_q;
     assign imm_o          = imm_q;
     // ---------------
@@ -136,7 +147,8 @@ module issue_read_operands #(
                 fu_busy = ~branch_ready_i;
             MULT:
                 fu_busy = ~mult_ready_i;
-            FPU:
+            FPU,
+            FPU_VEC:
                 fu_busy = ~fpu_ready_i;
             LOAD, STORE:
                 fu_busy = ~lsu_ready_i;
@@ -241,6 +253,8 @@ module issue_read_operands #(
         lsu_valid_n    = 1'b0;
         mult_valid_n   = 1'b0;
         fpu_valid_n    = 1'b0;
+        fpu_fmt_n      = 2'b0;
+        fpu_rm_n       = 3'b0;
         csr_valid_n    = 1'b0;
         branch_valid_n = 1'b0;
         // Exception pass through:
@@ -254,8 +268,16 @@ module issue_read_operands #(
                     branch_valid_n = 1'b1;
                 MULT:
                     mult_valid_n   = 1'b1;
-                FPU:
+                FPU : begin
                     fpu_valid_n    = 1'b1;
+                    fpu_fmt_n      = orig_instr.rftype.fmt; // fmt bits from instruction
+                    fpu_rm_n       = orig_instr.rftype.rm;  // rm bits from instruction
+                end
+                FPU_VEC : begin
+                    fpu_valid_n    = 1'b1;
+                    fpu_fmt_n      = orig_instr.rvftype.vfmt;         // vfmt bits from instruction
+                    fpu_rm_n       = {2'b0, orig_instr.rvftype.repl}; // repl bit from instruction
+                end
                 LOAD, STORE:
                     lsu_valid_n    = 1'b1;
                 CSR:
@@ -403,6 +425,8 @@ module issue_read_operands #(
             branch_valid_q        <= 1'b0;
             mult_valid_q          <= 1'b0;
             fpu_valid_q           <= 1'b0;
+            fpu_fmt_q             <= 2'b0;
+            fpu_rm_q              <= 3'b0;
             lsu_valid_q           <= 1'b0;
             csr_valid_q           <= 1'b0;
             fu_q                  <= NONE;
@@ -419,6 +443,8 @@ module issue_read_operands #(
             branch_valid_q        <= branch_valid_n;
             mult_valid_q          <= mult_valid_n;
             fpu_valid_q           <= fpu_valid_n;
+            fpu_fmt_q             <= fpu_fmt_n;
+            fpu_rm_q              <= fpu_rm_n;
             lsu_valid_q           <= lsu_valid_n;
             csr_valid_q           <= csr_valid_n;
             fu_q                  <= fu_n;

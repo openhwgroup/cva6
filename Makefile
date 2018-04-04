@@ -20,9 +20,11 @@ riscv-test ?= rv64ui-p-add
 # Sources
 # Ariane PKG
 ariane_pkg := include/ariane_pkg.sv include/nbdcache_pkg.sv
+# FPnew PKG
+fpnew_pkg := src/fpnew/src/pkg/fpnew_pkg.vhd src/fpnew/src/pkg/fpnew_fmts_pkg.vhd src/fpnew/src/pkg/fpnew_comps_pkg.vhd src/fpnew/src/pkg/fpnew_pkg_constants.vhd
 # utility modules
 util := $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv \
-		src/util/generic_fifo.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv
+		src/util/generic_fifo.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/util/find_first_one.sv
 # test targets
 tests := alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
 # UVM agents
@@ -39,7 +41,10 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.s
 dpi := $(wildcard tb/dpi/*)
 # this list contains the standalone components
 src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv) \
-	  $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/*.sv)
+	  $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/src/*.sv) src/fpu_legacy/hdl/fpu_utils/fpu_ff.sv \
+	  src/fpu_legacy/hdl/fpu_div_sqrt_mvp/defs_div_sqrt_mvp.sv $(wildcard src/fpu_legacy/hdl/fpu_div_sqrt_mvp/*.sv) \
+	  $(fpnew_pkg) $(wildcard src/fpnew/src/utils/*.vhd) $(wildcard src/fpnew/src/ops/*.vhd) \
+	  $(wildcard src/fpnew/src/subunits/*.vhd) src/fpnew/src/fpnew.vhd src/fpnew/src/fpnew_top.vhd
 # look for testbenches
 tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
 
@@ -65,7 +70,11 @@ riscv-tests := rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-
 			   rv64um-p-mul rv64um-p-mulh rv64um-p-mulhsu rv64um-p-mulhu rv64um-p-div rv64um-p-divu rv64um-p-rem  		 	 \
 			   rv64um-p-remu rv64um-p-mulw rv64um-p-divw rv64um-p-divuw rv64um-p-remw rv64um-p-remuw 						 \
 			   rv64um-v-mul rv64um-v-mulh rv64um-v-mulhsu rv64um-v-mulhu rv64um-v-div rv64um-v-divu rv64um-v-rem    		 \
-			   rv64um-v-remu rv64um-v-mulw rv64um-v-divw rv64um-v-divuw rv64um-v-remw rv64um-v-remuw
+			   rv64um-v-remu rv64um-v-mulw rv64um-v-divw rv64um-v-divuw rv64um-v-remw rv64um-v-remuw						 \
+			   rv64uf-p-fadd rv64uf-p-fclass rv64uf-p-fcmp rv64uf-p-fcvt rv64uf-p-fcvt_w rv64uf-p-fdiv rv64uf-p-fmadd 		 \
+			   rv64uf-p-fmin rv64uf-p-ldst rv64uf-p-move rv64uf-p-recoding													 \
+			   rv64uf-v-fadd rv64uf-v-fclass rv64uf-v-fcmp rv64uf-v-fcvt rv64uf-v-fcvt_w rv64uf-v-fdiv rv64uf-v-fmadd 		 \
+			   rv64uf-v-fmin rv64uf-v-ldst rv64uf-v-move rv64uf-v-recoding
 
 # failed test directory
 failed-tests := $(wildcard failedtests/*.S)
@@ -73,6 +82,7 @@ failed-tests := $(wildcard failedtests/*.S)
 incdir := ./includes
 # Compile and sim flags
 compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
+compile_flag_vhd += -64 -nologo -quiet -2008
 uvm-flags += +UVM_NO_RELNOTES
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
@@ -89,7 +99,8 @@ $(library)/.build-srcs: $(util) $(src)
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
 	# Compile agents, interfaces and environments
-	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(src) $(list_incdir) -suppress 2583
+	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(filter %.sv,$(src)) $(list_incdir) -suppress 2583
+	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(src))
 	touch $(library)/.build-srcs
 
 # build TBs
@@ -136,7 +147,7 @@ sim_nopt: build
 
 simc: build
 	vsim${questa_version} -64 -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) "+UVM_VERBOSITY=HIGH" -coverage -classdebug -sv_lib $(library)/elf_dpi -do "run -all; do tb/wave/wave_core.do; exit"
+	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) "+UVM_VERBOSITY=HIGH" -coverage -classdebug -sv_lib $(library)/elf_dpi -do "set NumericStdNoWarnings 1; run -all; do tb/wave/wave_core.do; exit"
 
 run-asm-tests: build
 	$(foreach test, $(riscv-tests), vsim$(questa_version) -64 +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
@@ -174,7 +185,7 @@ $(tests): build
 # User Verilator
 verilate:
 	$(verilator) $(ariane_pkg) $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv)) $(wildcard src/axi_slice/*.sv) \
-	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
+	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/src/axi2mem.sv tb/agents/axi_if/axi_if.sv \
 	--unroll-count 1024 -Wno-fatal -Wno-UNOPTFLAT -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
 	cd obj_dir && make -j8 -f Variane_wrapped.mk

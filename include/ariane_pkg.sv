@@ -27,7 +27,7 @@ package ariane_pkg;
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
-    localparam NR_WB_PORTS   = 5;
+    localparam NR_WB_PORTS   = 6;
     localparam ASID_WIDTH    = 1;
     localparam BTB_ENTRIES   = 8;
     localparam BHT_ENTRIES   = 32;
@@ -36,8 +36,8 @@ package ariane_pkg;
     localparam NR_COMMIT_PORTS = 2;
 
     // Floating-point extensions configuration
-    localparam bit RVF = 1'b0; // Is F extension enabled
-    localparam bit RVD = 1'b0; // Is D extension enabled
+    localparam bit RVF = 1'b1; // Is F extension enabled
+    localparam bit RVD = 1'b1; // Is D extension enabled
 
 
     // Transprecision floating-point extensions configuration
@@ -156,7 +156,7 @@ package ariane_pkg;
     } bht_prediction_t;
 
     typedef enum logic[3:0] {
-        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR, FPU, FPU_VEC, FPU_VEC_REPL
+        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR, FPU, FPU_VEC
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;

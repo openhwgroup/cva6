@@ -39,7 +39,7 @@ module scoreboard #(
     output logic                                      rs2_valid_o,
 
     input  logic [REG_ADDR_SIZE-1:0]                  rs3_i,
-    output logic [63:0]                               rs3_o,
+    output logic [FLEN-1:0]                           rs3_o,
     output logic                                      rs3_valid_o,
 
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
@@ -132,7 +132,7 @@ module scoreboard #(
                 if (ex_i[i].valid)
                     mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
                 // write the fflags back from the FPU (exception valid is never set), leave tval intact
-                else if (mem_n[trans_id_i[i]].sbe.fu == FPU)
+                else if (mem_n[trans_id_i[i]].sbe.fu inside {FPU, FPU_VEC})
                     mem_n[trans_id_i[i]].sbe.ex.cause = ex_i[i].cause;
             end
         end
@@ -203,7 +203,7 @@ module scoreboard #(
     always_comb begin : read_operands
         rs1_o       = 64'b0;
         rs2_o       = 64'b0;
-        rs3_o       = 64'b0;
+        rs3_o       = '0;
         rs1_valid_o = 1'b0;
         rs2_valid_o = 1'b0;
         rs3_valid_o = 1'b0;

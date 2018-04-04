@@ -110,7 +110,7 @@ module commit_stage #(
             // ---------
             // FPU Flags
             // ---------
-            if (commit_instr_i[0].fu == FPU) begin
+            if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
                 // write the CSR with potential exception flags from retiring floating point instruction
                 csr_op_o = CSR_SET;
                 csr_wdata_o = {59'b0, commit_instr_i[0].ex.cause[4:0]};
@@ -161,8 +161,8 @@ module commit_stage #(
         // check if the second instruction can be committed as well and the first wasn't a CSR instruction
         if (commit_ack_o[0] && commit_instr_i[1].valid && !halt_i && !(commit_instr_i[0].fu inside {CSR}) && !flush_dcache_i) begin
             // only if the first instruction didn't throw an exception and this instruction won't throw an exception
-            // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT or FPU
-            if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU})) begin
+            // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
+            if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
 
                 if (is_rd_fpr(commit_instr_i[1].op))
                     we_fpr_o[1] = 1'b1;
@@ -173,7 +173,7 @@ module commit_stage #(
 
                 // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
                 // exception flags
-                if (commit_instr_i[1].fu == FPU) begin
+                if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
                     csr_op_o = CSR_SET;
                     if (csr_write_fflags_o)
                         csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
