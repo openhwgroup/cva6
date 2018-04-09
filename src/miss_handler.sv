@@ -304,8 +304,12 @@ module miss_handler #(
                 // not dirty ~> increment and continue
                 end else begin
                     // increment and re-request
-                    cnt_d   = cnt_q + (1'b1 << BYTE_OFFSET);
-                    state_d = FLUSH_REQ_STATUS;
+                    cnt_d      = cnt_q + (1'b1 << BYTE_OFFSET);
+                    state_d    = FLUSH_REQ_STATUS;
+                    addr_o     = cnt_q;
+                    req_o      = 1'b1;
+                    be_o.valid = '1;
+                    we_o       = 1'b1;
                     // finished with flushing operation, go back to idle
                     if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1) begin
                         flush_ack_o = 1'b1;
@@ -323,7 +327,6 @@ module miss_handler #(
                 // only write the dirty array
                 be_o.dirty = '1;
                 be_o.valid = '1;
-                data_o     = 'b0;
                 cnt_d      = cnt_q + (1'b1 << BYTE_OFFSET);
                 // finished initialization
                 if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1)
