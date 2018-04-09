@@ -29,6 +29,7 @@ module cache_ctrl #(
     )(
         input  logic                                               clk_i,     // Clock
         input  logic                                               rst_ni,    // Asynchronous reset active low
+        input  logic                                               flush_i,
         input  logic                                               bypass_i,  // enable cache
         output logic                                               busy_o,
         // Core request ports
@@ -145,7 +146,7 @@ module cache_ctrl #(
 
             IDLE: begin
                 // a new request arrived
-                if (data_req_i) begin
+                if (data_req_i && !flush_i) begin
                     // request the cache line - we can do this specualtive
                     req_o = '1;
 
@@ -186,7 +187,7 @@ module cache_ctrl #(
                 tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  address_tag_i;
 
                 // we speculatively request another transfer
-                if (data_req_i) begin
+                if (data_req_i && !flush_i) begin
                     req_o      = '1;
                 end
 
@@ -198,7 +199,7 @@ module cache_ctrl #(
                     if (|hit_way_i) begin
                         // we can request another cache-line if this was a load
                         // make another request
-                        if (data_req_i && !mem_req_q.we) begin
+                        if (data_req_i && !mem_req_q.we && !flush_i) begin
                             state_d          = WAIT_TAG; // switch back to WAIT_TAG
                             mem_req_d.index  = address_index_i;
                             mem_req_d.be     = data_be_i;
