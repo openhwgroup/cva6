@@ -262,6 +262,16 @@ package ariane_pkg;
         logic v;
     } pte_t;
 
+
+    typedef struct packed {
+        logic                  valid;      // valid flag
+        logic                  is_2M;      //
+        logic                  is_1G;      //
+        logic [26:0]           vpn;
+        logic [ASID_WIDTH-1:0] asid;
+        pte_t                  content;
+    } tlb_update_t;
+
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).
     localparam PPN4K_WIDTH = 38;

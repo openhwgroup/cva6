@@ -94,11 +94,8 @@ module mmu #(
     logic        ptw_error;     // PTW threw an exception
     logic [63:0] faulting_address;
 
-    logic        update_is_2M;
-    logic        update_is_1G;
     logic [38:0] update_vaddr;
-    logic [0:0]  update_asid;
-    pte_t        update_content;
+    tlb_update_t update_ptw_itlb, update_ptw_dtlb;
 
     logic        itlb_update;
     logic        itlb_lu_access;
@@ -122,44 +119,38 @@ module mmu #(
     tlb #(
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
         .ASID_WIDTH       ( ASID_WIDTH                 )
-    ) itlb_i (
+    ) i_itlb (
         .clk_i            ( clk_i                      ),
         .rst_ni           ( rst_ni                     ),
         .flush_i          ( flush_tlb_i                ),
-        .update_is_2M_i   ( update_is_2M               ),
-        .update_is_1G_i   ( update_is_1G               ),
-        .update_vpn_i     ( update_vaddr[38:12]        ),
-        .update_asid_i    ( update_asid                ),
-        .update_content_i ( update_content             ),
-        .update_tlb_i     ( itlb_update                ),
+
+        .update_i         ( update_ptw_itlb            ),
 
         .lu_access_i      ( itlb_lu_access             ),
         .lu_asid_i        ( asid_i                     ),
         .lu_vaddr_i       ( fetch_vaddr_i              ),
         .lu_content_o     ( itlb_content               ),
+
         .lu_is_2M_o       ( itlb_is_2M                 ),
         .lu_is_1G_o       ( itlb_is_1G                 ),
         .lu_hit_o         ( itlb_lu_hit                )
     );
 
     tlb #(
-        .TLB_ENTRIES(DATA_TLB_ENTRIES),
-        .ASID_WIDTH(ASID_WIDTH))
-    dtlb_i (
+        .TLB_ENTRIES     ( DATA_TLB_ENTRIES             ),
+        .ASID_WIDTH      ( ASID_WIDTH                   )
+    ) i_dtlb (
         .clk_i            ( clk_i                       ),
         .rst_ni           ( rst_ni                      ),
         .flush_i          ( flush_tlb_i                 ),
-        .update_is_2M_i   ( update_is_2M                ),
-        .update_is_1G_i   ( update_is_1G                ),
-        .update_vpn_i     ( update_vaddr[38:12]         ),
-        .update_asid_i    ( update_asid                 ),
-        .update_content_i ( update_content              ),
-        .update_tlb_i     ( dtlb_update                 ),
+
+        .update_i         ( update_ptw_dtlb             ),
 
         .lu_access_i      ( dtlb_lu_access              ),
         .lu_asid_i        ( asid_i                      ),
         .lu_vaddr_i       ( lsu_vaddr_i                 ),
         .lu_content_o     ( dtlb_content                ),
+
         .lu_is_2M_o       ( dtlb_is_2M                  ),
         .lu_is_1G_o       ( dtlb_is_1G                  ),
         .lu_hit_o         ( dtlb_lu_hit                 )
@@ -168,8 +159,7 @@ module mmu #(
 
     ptw  #(
         .ASID_WIDTH             ( ASID_WIDTH            )
-    ) ptw_i
-    (
+    ) i_ptw (
         .clk_i                  ( clk_i                 ),
         .rst_ni                 ( rst_ni                ),
         .ptw_active_o           ( ptw_active            ),
@@ -178,20 +168,16 @@ module mmu #(
         .faulting_address_o     ( faulting_address      ),
         .enable_translation_i   ( enable_translation_i  ),
 
-        .itlb_update_o          ( itlb_update           ),
-        .dtlb_update_o          ( dtlb_update           ),
-        .update_content_o       ( update_content        ),
-        .update_is_2M_o         ( update_is_2M          ),
-        .update_is_1G_o         ( update_is_1G          ),
         .update_vaddr_o         ( update_vaddr          ),
-        .update_asid_o          ( update_asid           ),
+        .itlb_update_o          ( update_ptw_itlb       ),
+        .dtlb_update_o          ( update_ptw_dtlb       ),
 
         .itlb_access_i          ( itlb_lu_access        ),
-        .itlb_miss_i            ( ~itlb_lu_hit          ),
+        .itlb_hit_i             ( itlb_lu_hit           ),
         .itlb_vaddr_i           ( fetch_vaddr_i         ),
 
         .dtlb_access_i          ( dtlb_lu_access        ),
-        .dtlb_miss_i            ( ~dtlb_lu_hit          ),
+        .dtlb_hit_i             ( dtlb_lu_hit           ),
         .dtlb_vaddr_i           ( lsu_vaddr_i           ),
         .*
      );

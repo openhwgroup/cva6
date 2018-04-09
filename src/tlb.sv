@@ -19,20 +19,12 @@ import ariane_pkg::*;
 module tlb #(
       parameter int unsigned TLB_ENTRIES = 4,
       parameter int unsigned ASID_WIDTH  = 1
-  )
-  (
-    input logic                     clk_i,    // Clock
-    input logic                     rst_ni,   // Asynchronous reset active low
+  )(
+    input  logic                    clk_i,    // Clock
+    input  logic                    rst_ni,   // Asynchronous reset active low
     input  logic                    flush_i,  // Flush signal
-
-    // Update signals
-    input  logic                    update_is_2M_i,
-    input  logic                    update_is_1G_i,
-    input  logic [26:0]             update_vpn_i,
-    input  logic [ASID_WIDTH-1:0]   update_asid_i,
-    input  pte_t                    update_content_i,
-    input  logic                    update_tlb_i,
-
+    // Update TLB
+    input  tlb_update_t             update_i,
     // Lookup signals
     input  logic                    lu_access_i,
     input  logic [ASID_WIDTH-1:0]   lu_asid_i,
@@ -113,19 +105,19 @@ module tlb #(
                     tags_n[i].valid = 1'b0;
 
             // normal replacement
-            end else if (update_tlb_i & replace_en[i]) begin
+            end else if (update_i.valid & replace_en[i]) begin
                 // update tag array
                 tags_n[i] = '{
-                    asid:  update_asid_i,
-                    vpn2:  update_vpn_i [26:18],
-                    vpn1:  update_vpn_i [17:9],
-                    vpn0:  update_vpn_i [8:0],
-                    is_1G: update_is_1G_i,
-                    is_2M: update_is_2M_i,
+                    asid:  update_i.asid,
+                    vpn2:  update_i.vpn [26:18],
+                    vpn1:  update_i.vpn [17:9],
+                    vpn0:  update_i.vpn [8:0],
+                    is_1G: update_i.is_1G,
+                    is_2M: update_i.is_2M,
                     valid: 1'b1
                 };
                 // and content as well
-                content_n[i] = update_content_i;
+                content_n[i] = update_i.content;
             end
         end
     end

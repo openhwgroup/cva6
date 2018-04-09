@@ -39,7 +39,7 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.s
 dpi := $(wildcard tb/dpi/*)
 # this list contains the standalone components
 src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv) \
-	  $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/*.sv)
+	  $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/src/*.sv)
 # look for testbenches
 tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
 
@@ -174,7 +174,7 @@ $(tests): build
 # User Verilator
 verilate:
 	$(verilator) $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) $(wildcard src/axi_slice/*.sv) \
-	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/axi2mem.sv tb/agents/axi_if/axi_if.sv \
+	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/src/axi2mem.sv tb/agents/axi_if/axi_if.sv \
 	--unroll-count 256 -Wno-fatal -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp
 	cd obj_dir && make -j8 -f Variane_wrapped.mk
