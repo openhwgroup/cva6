@@ -316,6 +316,7 @@ module ariane #(
         .issue_instr_ack_i          ( issue_instr_issue_id            ),
 
         .priv_lvl_i                 ( priv_lvl                        ),
+        .frm_i                      ( frm_csr_id_issue                ),
         .tvm_i                      ( tvm_csr_id                      ),
         .tw_i                       ( tw_csr_id                       ),
         .tsr_i                      ( tsr_csr_id                      ),
@@ -439,7 +440,12 @@ module ariane #(
         .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
         .mult_result_o          ( mult_result_ex_id                      ),
         .mult_valid_o           ( mult_valid_ex_id                       ),
-
+        .fpu_ready_o            ( ),      // FU is ready
+        .fpu_valid_i            ( 1'b0 ),      // Output is valid
+        .fpu_trans_id_o         ( ),
+        .fpu_result_o           ( ),
+        .fpu_valid_o            ( ),
+        .fpu_exception_o        ( ),
         // CSR
         .csr_ready_o            ( csr_ready_ex_id                        ),
         .csr_valid_i            ( csr_valid_id_ex                        ),
@@ -531,7 +537,7 @@ module ariane #(
         .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
         .priv_lvl_o             ( priv_lvl                      ),
         .fflags_o               ( fflags_csr_commit             ),
-        .frm_o                  ( frm_csr_id_issue             ),
+        .frm_o                  ( frm_csr_id_issue              ),
         .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
         .en_translation_o       ( enable_translation_csr_ex     ),
         .en_ld_st_translation_o ( en_ld_st_translation_csr_ex   ),

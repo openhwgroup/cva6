@@ -132,7 +132,7 @@ module scoreboard #(
                 if (ex_i[i].valid)
                     mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
                 // write the fflags back from the FPU (exception valid is never set), leave tval intact
-                else if (mem_n[trans_id_i[i]].sbe.fu = FPU)
+                else if (mem_n[trans_id_i[i]].sbe.fu == FPU)
                     mem_n[trans_id_i[i]].sbe.ex.cause = ex_i[i].cause;
             end
         end

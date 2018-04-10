@@ -36,8 +36,8 @@ package ariane_pkg;
     localparam NR_COMMIT_PORTS = 2;
 
     // Floating-point extensions configuration
-    localparam bit RVF = 1'b1; // Is F extension enabled
-    localparam bit RVD = 1'b1; // Is D extension enabled
+    localparam bit RVF = 1'b0; // Is F extension enabled
+    localparam bit RVD = 1'b0; // Is D extension enabled
 
     // No need changing these by hand
     localparam bit FP_PRESENT = RVF | RVD;
