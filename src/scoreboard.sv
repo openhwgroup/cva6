@@ -271,42 +271,14 @@ module scoreboard #(
         else $error ("Issue acknowledged but instruction is not valid");
 
     // there should never be more than one instruction writing the same destination register (except x0)
-    // assert strict pointer ordering
-
-    // print scoreboard
-    // initial begin
-    //         automatic string pointer = "";
-    //         static integer f = $fopen("scoreboard.txt", "w");
-
-    //         forever begin
-    //             wait(rst_ni == 1'b1);
-    //             @(posedge clk_i)
-    //             $fwrite(f, $time);
-    //             $fwrite(f, "\n");
-    //             $fwrite(f, "._________________________.\n");
-    //             for (int i = 0; i < NR_ENTRIES; i++) begin
-    //                 if (i == commit_pointer_q && i == issue_pointer_q && i == top_pointer_q)
-    //                     pointer = " <- top, issue, commit pointer";
-    //                 else if (i == commit_pointer_q && i == issue_pointer_q)
-    //                     pointer = " <- issue, commit pointer";
-    //                 else if (i == top_pointer_q && i == issue_pointer_q)
-    //                     pointer = " <- top, issue pointer";
-    //                 else if (i == top_pointer_q && i == commit_pointer_q)
-    //                     pointer = " <- top, commit pointer";
-    //                 else if (i == top_pointer_q)
-    //                     pointer = " <- top pointer";
-    //                 else if (i == commit_pointer_q)
-    //                     pointer = " <- commit pointer";
-    //                 else if (i == issue_pointer_q)
-    //                     pointer = " <- issue pointer";
-    //                 else
-    //                     pointer = "";
-    //                 $fwrite(f, "|_________________________| %s\n", pointer);
-    //             end
-    //              $fwrite(f, "\n");
-    //         end
-    //         $fclose(f);
-    // end
+    // check that no functional unit is retiring with the same transaction id
+    for (genvar i = 0; i < NR_WB_PORTS; i++) begin
+        for (genvar j = 0; j < NR_WB_PORTS; j++)  begin
+            assert property (
+                @(posedge clk_i) wb_valid_i[i] && wb_valid_i[j] && (i != j) |-> (trans_id_i[i] != trans_id_i[j]))
+                else $error ("Two or more functional units are retiring instructions with the same transaction id!");
+        end
+    end
     `endif
     `endif
 endmodule
