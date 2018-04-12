@@ -28,7 +28,7 @@ See [style-guidlines](https://github.com/pulp-platform/style-guidelines)
     * :arrow_down: `:arrow_down:` When downgrading dependencies
     * :rotating_light: `:rotating_light:` When removing linter warnings
     * :pencil2: `pencil2:` Fixing typos
-    * :recycle: `:scisccor:` Refactoring code.
+    * :recycle: `:recycle:` Refactoring code.
     * :boom: `:boom:` Introducing breaking changes
     * :truck: `truck` Moving or renaming files.
     * :space_invader: `:space_invader:` When fixing something synthesis related

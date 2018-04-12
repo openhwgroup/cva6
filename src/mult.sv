@@ -316,15 +316,8 @@ module serial_divider #(
 
                 IDLE: begin
                     OutRdy_SO    = 1'b1;
-                    if (Flush_SI) begin
-                        OutRdy_SO  = 1'b0;
-                        OutVld_SO  = 1'b0;
-                        ARegEn_S   = 1'b0;
-                        BRegEn_S   = 1'b0;
-                        LoadEn_S   = 1'b0;
-                        State_SN   = IDLE;
-                    end
-                    else if(InVld_SI) begin
+
+                    if (InVld_SI) begin
                         OutRdy_SO  = 1'b0;
                         OutVld_SO  = 1'b0;
                         ARegEn_S   = 1'b1;
@@ -340,17 +333,9 @@ module serial_divider #(
                     BRegEn_S     = 1'b1;
                     ResRegEn_S   = 1'b1;
 
-                    if (Flush_SI) begin
-                        OutRdy_SO  = 1'b0;
-                        OutVld_SO  = 1'b0;
-                        ARegEn_S   = 1'b0;
-                        BRegEn_S   = 1'b0;
-                        LoadEn_S   = 1'b0;
-                        State_SN   = IDLE;
-                    end
                     // calculation finished
                     // one more divide cycle (C_WIDTH th divide cycle)
-                    else if (CntZero_S) begin
+                    if (CntZero_S) begin
                         State_SN   = FINISH;
                     end
                 end
@@ -358,15 +343,7 @@ module serial_divider #(
                 FINISH: begin
                     OutVld_SO = 1'b1;
 
-                    if (Flush_SI) begin
-                        OutRdy_SO  = 1'b0;
-                        OutVld_SO  = 1'b0;
-                        ARegEn_S   = 1'b0;
-                        BRegEn_S   = 1'b0;
-                        LoadEn_S   = 1'b0;
-                        State_SN   = IDLE;
-                    end
-                    else if(OutRdy_SI) begin
+                    if (OutRdy_SI) begin
                         State_SN  = IDLE;
                     end
                 end
@@ -374,6 +351,15 @@ module serial_divider #(
                 default : /* default */ ;
 
             endcase
+
+            if (Flush_SI) begin
+                OutRdy_SO  = 1'b0;
+                OutVld_SO  = 1'b0;
+                ARegEn_S   = 1'b0;
+                BRegEn_S   = 1'b0;
+                LoadEn_S   = 1'b0;
+                State_SN   = IDLE;
+            end
         end
 
     // -----------------
