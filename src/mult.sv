@@ -18,6 +18,7 @@ import ariane_pkg::*;
 module mult (
     input  logic                     clk_i,
     input  logic                     rst_ni,
+    input  logic                     flush_i,
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     input  logic                     mult_valid_i,
     input  fu_op                     operator_i,
@@ -39,8 +40,8 @@ module mult (
     logic                     div_valid_op;
     logic                     mul_valid_op;
     // Input Arbitration
-    assign mul_valid_op = mult_valid_i && (operator_i inside { MUL, MULH, MULHU, MULHSU, MULW });
-    assign div_valid_op = mult_valid_i && (operator_i inside { DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW });
+    assign mul_valid_op = ~flush_i && mult_valid_i && (operator_i inside { MUL, MULH, MULHU, MULHSU, MULW });
+    assign div_valid_op = ~flush_i && mult_valid_i && (operator_i inside { DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW });
 
     // ---------------------
     // Output Arbitration
@@ -171,6 +172,7 @@ module mult (
         .OpBSign_SI   ( div_op_signed     ), // gate this to 0 in case of unsigned ops
         .OpCode_SI    ( {rem, div_signed} ), // 00: udiv, 10: urem, 01: div, 11: rem
         .InVld_SI     ( div_valid_op      ),
+        .Flush_SI     ( flush_i           ),
         .OutRdy_SO    ( mult_ready_o      ),
         .OutRdy_SI    ( div_ready_i       ),
         .OutVld_SO    ( div_valid         ),
@@ -224,6 +226,7 @@ module serial_divider #(
     input  logic [1:0]                OpCode_SI,  // 0: udiv, 2: urem, 1: div, 3: rem
     // handshake
     input  logic                      InVld_SI,
+    input  logic                      Flush_SI,
     // output IF
     output logic                      OutRdy_SO,
     input  logic                      OutRdy_SI,
@@ -313,7 +316,15 @@ module serial_divider #(
 
                 IDLE: begin
                     OutRdy_SO    = 1'b1;
-                    if(InVld_SI) begin
+                    if (Flush_SI) begin
+                        OutRdy_SO  = 1'b0;
+                        OutVld_SO  = 1'b0;
+                        ARegEn_S   = 1'b0;
+                        BRegEn_S   = 1'b0;
+                        LoadEn_S   = 1'b0;
+                        State_SN   = IDLE;
+                    end
+                    else if(InVld_SI) begin
                         OutRdy_SO  = 1'b0;
                         OutVld_SO  = 1'b0;
                         ARegEn_S   = 1'b1;
@@ -329,9 +340,17 @@ module serial_divider #(
                     BRegEn_S     = 1'b1;
                     ResRegEn_S   = 1'b1;
 
+                    if (Flush_SI) begin
+                        OutRdy_SO  = 1'b0;
+                        OutVld_SO  = 1'b0;
+                        ARegEn_S   = 1'b0;
+                        BRegEn_S   = 1'b0;
+                        LoadEn_S   = 1'b0;
+                        State_SN   = IDLE;
+                    end
                     // calculation finished
                     // one more divide cycle (C_WIDTH th divide cycle)
-                    if (CntZero_S) begin
+                    else if (CntZero_S) begin
                         State_SN   = FINISH;
                     end
                 end
@@ -339,7 +358,15 @@ module serial_divider #(
                 FINISH: begin
                     OutVld_SO = 1'b1;
 
-                    if(OutRdy_SI) begin
+                    if (Flush_SI) begin
+                        OutRdy_SO  = 1'b0;
+                        OutVld_SO  = 1'b0;
+                        ARegEn_S   = 1'b0;
+                        BRegEn_S   = 1'b0;
+                        LoadEn_S   = 1'b0;
+                        State_SN   = IDLE;
+                    end
+                    else if(OutRdy_SI) begin
                         State_SN  = IDLE;
                     end
                 end
