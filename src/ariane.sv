@@ -667,7 +667,8 @@ module ariane #(
     // write-back
     assign tracer_if.waddr             = waddr_commit_id;
     assign tracer_if.wdata             = wdata_commit_id;
-    assign tracer_if.we                = we_gpr_commit_id;
+    assign tracer_if.we_gpr            = we_gpr_commit_id;
+    assign tracer_if.we_fpr            = we_fpr_commit_id;
     // commit
     assign tracer_if.commit_instr      = commit_instr_id_commit;
     assign tracer_if.commit_ack        = commit_ack;

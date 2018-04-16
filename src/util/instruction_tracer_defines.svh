@@ -100,6 +100,35 @@ parameter INSTR_DIVU     =  { 7'b0000001, 10'b?, 3'b101, 5'b?, OPCODE_OP };
 parameter INSTR_REM      =  { 7'b0000001, 10'b?, 3'b110, 5'b?, OPCODE_OP };
 parameter INSTR_REMU     =  { 7'b0000001, 10'b?, 3'b111, 5'b?, OPCODE_OP };
 
+// RVFD
+parameter INSTR_FMADD    =  { 5'b?, 2'b?, 5'b?, 5'b?, 3'b?, 5'b?, OPCODE_MADD};
+parameter INSTR_FMSUB    =  { 5'b?, 2'b?, 5'b?, 5'b?, 3'b?, 5'b?, OPCODE_MSUB};
+parameter INSTR_FNSMSUB  =  { 5'b?, 2'b?, 5'b?, 5'b?, 3'b?, 5'b?, OPCODE_NMSUB};
+parameter INSTR_FNMADD   =  { 5'b?, 2'b?, 5'b?, 5'b?, 3'b?, 5'b?, OPCODE_NMADD};
+
+parameter INSTR_FADD     =  { 5'b00000, 2'b?, 5'b?, 5'b?, 3'b?, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FSUB     =  { 5'b00001, 2'b?, 5'b?, 5'b?, 3'b?, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FMUL     =  { 5'b00010, 2'b?, 5'b?, 5'b?, 3'b?, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FDIV     =  { 5'b00011, 2'b?, 5'b?, 5'b?, 3'b?, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FSQRT    =  { 5'b01011, 2'b?, 5'b0, 5'b?, 3'b?, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FSGNJ    =  { 5'b00100, 2'b?, 5'b?, 5'b?, 3'b000, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FSGNJN   =  { 5'b00100, 2'b?, 5'b?, 5'b?, 3'b001, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FSGNJX   =  { 5'b00100, 2'b?, 5'b?, 5'b?, 3'b010, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FMIN     =  { 5'b00101, 2'b?, 5'b?, 5'b?, 3'b000, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FMAX     =  { 5'b00101, 2'b?, 5'b?, 5'b?, 3'b001, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FLE      =  { 5'b10100, 2'b?, 5'b?, 5'b?, 3'b000, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FLT      =  { 5'b10100, 2'b?, 5'b?, 5'b?, 3'b001, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FEQ      =  { 5'b10100, 2'b?, 5'b?, 5'b?, 3'b010, 5'b?, OPCODE_OP_FP};
+
+parameter INSTR_FCVT_F2F =  { 5'b01000, 2'b?, 5'b000??, 5'b?, 3'b?, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FMV_F2X  =  { 5'b11100, 2'b?, 5'b0, 5'b?, 3'b000, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FCLASS   =  { 5'b11100, 2'b?, 5'b0, 5'b?, 3'b001, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FMV_X2F  =  { 5'b11110, 2'b?, 5'b0, 5'b?, 3'b000, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FCVT_F2I =  { 5'b11000, 2'b?, 5'b000??, 5'b?, 3'b?, 5'b?, OPCODE_OP_FP};
+parameter INSTR_FCVT_I2F =  { 5'b11010, 2'b?, 5'b000??, 5'b?, 3'b?, 5'b?, OPCODE_OP_FP};
+
 // Load/Stores
 parameter INSTR_LOAD     =  {25'b?, OPCODE_LOAD};
+parameter INSTR_LOAD_FP  =  {25'b?, OPCODE_LOAD_FP};
 parameter INSTR_STORE    =  {25'b?, OPCODE_STORE};
+parameter INSTR_STORE_FP =  {25'b?, OPCODE_STORE_FP};
