@@ -182,10 +182,10 @@ module fpu_wrap (
                     fpu_op_mod_n = 1'b1;
                 end
                 // Fused Negated Multiply Subtract
-                FNMSUB    : fpu_op_n = FNMSUB;
+                FNMSUB    : fpu_op_n = OP_FNMSUB;
                 // Fused Negated Multiply Add is modified FNMSUB
                 FNMADD    : begin
-                    fpu_op_n     = FNMSUB;
+                    fpu_op_n     = OP_FNMSUB;
                     fpu_op_mod_n = 1'b1;
                 end
                 // Float to Int Cast - Op encoded in lowest two imm bits or rm
@@ -260,14 +260,15 @@ module fpu_wrap (
                 // Move from FPR to GPR - mapped to NOP since no recoding
                 FMV_F2X   : begin
                     fpu_op_n          = OP_SGNJ;
+                    fpu_op_mod_n      = 1'b1; // no NaN-Boxing
                     operand_b_n       = operand_a_n;
-                    vec_replication = 1'b0; // no replication, we set second operand
+                    vec_replication   = 1'b0; // no replication, we set second operand
                 end
                 // Move from GPR to FPR - mapped to NOP since no recoding
                 FMV_X2F   : begin
                     fpu_op_n          = OP_SGNJ;
                     operand_b_n       = operand_a_n;
-                    vec_replication = 1'b0; // no replication, we set second operand
+                    vec_replication   = 1'b0; // no replication, we set second operand
                 end
                 // Scalar Comparisons - op encoded in rm (000-010)
                 FCMP      : fpu_op_n = OP_CMP;
@@ -342,14 +343,20 @@ module fpu_wrap (
             endcase
 
             // Replication
-            if (fpu_vec_op_n && vec_replication) begin
+            if (fpu_vec_op_n && vec_replication)
                 case (fpu_fmt_n)
-                    FMT_FP32    : operand_b_n = RVD ? {2{operand_b_i[31:0]}} : operand_b_i;
+                    FMT_FP32    : operand_b_n = RVD ? {2{operand_b_n[31:0]}} : operand_b_n;
                     FMT_FP16,
-                    FMT_FP16ALT : operand_b_n = RVD ? {4{operand_b_i[15:0]}} : {2{operand_b_i[15:0]}};
-                    FMT_FP8     : operand_b_n = RVD ? {8{operand_b_i[7:0]}}  : {4{operand_b_i[7:0]}};
+                    FMT_FP16ALT : operand_b_n = RVD ? {4{operand_b_n[15:0]}} : {2{operand_b_n[15:0]}};
+                    FMT_FP8     : operand_b_n = RVD ? {8{operand_b_n[7:0]}}  : {4{operand_b_n[7:0]}};
                 endcase // fpu_fmt_n
+
+            // Ugly but needs to be done: map additions to operands B and C
+            if (fpu_op_n == OP_ADD) begin
+                operand_c_n = operand_b_n;
+                operand_b_n = operand_a_n;
             end
+
         end
 
 
