@@ -43,6 +43,7 @@ package ariane_pkg;
                                      | (1 << 20)  // U - User mode implemented
                                      | (0 << 23)  // X - Non-standard extensions present
                                      | (1 << 63); // RV64
+    localparam ENABLE_RENAME = 1'b0;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
