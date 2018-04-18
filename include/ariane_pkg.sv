@@ -35,6 +35,8 @@ package ariane_pkg;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
+    localparam ENABLE_RENAME = 1'b1;
+
     // Floating-point extensions configuration
     localparam bit RVF = 1'b1; // Is F extension enabled
     localparam bit RVD = 1'b1; // Is D extension enabled

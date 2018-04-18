@@ -29,7 +29,7 @@ module issue_read_operands #(
     input  logic                                   debug_gpr_we_i,
     input  logic [63:0]                            debug_gpr_wdata_i,
     output logic [63:0]                            debug_gpr_rdata_o,
-    // coming from scoreboard
+    // coming from rename
     input  scoreboard_entry_t                      issue_instr_i,
     input  logic                                   issue_instr_valid_i,
     output logic                                   issue_ack_o,
