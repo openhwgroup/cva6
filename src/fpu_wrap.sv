@@ -75,7 +75,37 @@ module fpu_wrap (
     logic [IFMTBITS-1:0] IFMT_INT64;
 
     // bind the constants from the fpnew entity
-    fpnew_pkg_constants i_fpnew_constants ( .* );
+    fpnew_pkg_constants i_fpnew_constants (
+        .OP_NUMBITS   ( OP_NUMBITS   ),
+        .OP_FMADD     ( OP_FMADD     ),
+        .OP_FNMSUB    ( OP_FNMSUB    ),
+        .OP_ADD       ( OP_ADD       ),
+        .OP_MUL       ( OP_MUL       ),
+        .OP_DIV       ( OP_DIV       ),
+        .OP_SQRT      ( OP_SQRT      ),
+        .OP_SGNJ      ( OP_SGNJ      ),
+        .OP_MINMAX    ( OP_MINMAX    ),
+        .OP_CMP       ( OP_CMP       ),
+        .OP_CLASS     ( OP_CLASS     ),
+        .OP_F2I       ( OP_F2I       ),
+        .OP_I2F       ( OP_I2F       ),
+        .OP_F2F       ( OP_F2F       ),
+        .OP_CPK       ( OP_CPK       ),
+        .FMT_NUMBITS  ( FMT_NUMBITS  ),
+        .FMT_FP32     ( FMT_FP32     ),
+        .FMT_FP64     ( FMT_FP64     ),
+        .FMT_FP16     ( FMT_FP16     ),
+        .FMT_FP8      ( FMT_FP8      ),
+        .FMT_FP16ALT  ( FMT_FP16ALT  ),
+        .FMT_CUST1    ( FMT_CUST1    ),
+        .FMT_CUST2    ( FMT_CUST2    ),
+        .FMT_CUST3    ( FMT_CUST3    ),
+        .IFMT_NUMBITS ( IFMT_NUMBITS ),
+        .IFMT_INT8    ( IFMT_INT8    ),
+        .IFMT_INT16   ( IFMT_INT16   ),
+        .IFMT_INT32   ( IFMT_INT32   ),
+        .IFMT_INT64   ( IFMT_INT64   )
+    );
 
     // always_comb begin
     //     assert (OPBITS >= OP_NUMBITS) else $error("OPBITS is smaller than %0d", OP_NUMBITS);

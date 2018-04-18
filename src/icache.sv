@@ -410,8 +410,8 @@ module icache #(
             ready_o = 1'b0;
     end
 
-    ff1 #(
-        .LEN ( SET_ASSOCIATIVITY )
+    find_first_one #(
+        .WIDTH ( SET_ASSOCIATIVITY )
     ) i_ff1 (
         .in_i        ( ~way_valid    ),
         .first_one_o ( repl_invalid  ),

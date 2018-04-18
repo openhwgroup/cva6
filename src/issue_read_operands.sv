@@ -367,6 +367,16 @@ module issue_read_operands #(
     // Integer Register File
     // ----------------------
     logic [1:0][63:0] rdata;
+    logic [1:0][4:0]  raddr_pack;
+
+    // pack signals
+    logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_pack;
+    logic [NR_COMMIT_PORTS-1:0][63:0] wdata_pack;
+    logic [NR_COMMIT_PORTS-1:0]       we_pack;
+    assign raddr_pack = {issue_instr_i.rs2[4:0], raddr_a};
+    assign waddr_pack = {waddr_i[1], waddr};
+    assign wdata_pack = {wdata_i[1], wdata};
+    assign we_pack    = {we_gpr_i[1], we};
 
     ariane_regfile #(
         .DATA_WIDTH     ( 64              ),
@@ -374,11 +384,11 @@ module issue_read_operands #(
         .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
         .ZERO_REG_ZERO  ( 1               )
     ) i_ariane_regfile (
-        .raddr_i   ( '{issue_instr_i.rs2[4:0], raddr_a} ),
-        .rdata_o   ( rdata                              ),
-        .waddr_i   ( '{waddr_i[1], waddr}               ),
-        .wdata_i   ( '{wdata_i[1], wdata}               ),
-        .we_i      ( '{we_gpr_i[1], we}                 ),
+        .raddr_i   ( raddr_pack ),
+        .rdata_o   ( rdata      ),
+        .waddr_i   ( waddr_pack ),
+        .wdata_i   ( wdata_pack ),
+        .we_i      ( we_pack    ),
         .*
     );
 
@@ -386,6 +396,10 @@ module issue_read_operands #(
     // Floating-Point Register File
     // -----------------------------
     logic [2:0][FLEN-1:0] fprdata;
+
+    // pack signals
+    logic [2:0][4:0]  fp_raddr_pack;
+    assign fp_raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
 
     generate
         if (FP_PRESENT) begin : float_regfile_gen
@@ -395,11 +409,11 @@ module issue_read_operands #(
                 .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
                 .ZERO_REG_ZERO  ( 0               )
             ) i_ariane_fp_regfile (
-                .raddr_i   ( '{issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]} ),
-                .rdata_o   ( fprdata                                                                      ),
-                .waddr_i   ( waddr_i                                                                      ),
-                .wdata_i   ( '{wdata_i[1][FLEN-1:0], wdata_i[0][FLEN-1:0]}                                ),
-                .we_i      ( we_fpr_i                                                                     ),
+                .raddr_i   ( fp_raddr_pack ),
+                .rdata_o   ( fprdata       ),
+                .waddr_i   ( waddr_pack    ),
+                .wdata_i   ( wdata_pack    ),
+                .we_i      ( we_fpr_i      ),
                 .*
             );
         end else begin : no_fpr_gen
