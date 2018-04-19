@@ -141,8 +141,8 @@ module mult (
     // Find First one
     // ---------------------
     // this unit is used to speed up the sequential division by shifting the dividend first
-    ff1 #(
-        .LEN         ( 64         )
+    find_first_one #(
+        .WIDTH       ( 64         )
     ) i_ff1 (
         .in_i        ( ff1_input  ), // signed = operand_b_rev_neg, unsigned operand_b_rev
         .first_one_o ( ff1_result ),

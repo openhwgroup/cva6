@@ -105,17 +105,17 @@ module commit_stage #(
                     else // if the LSU buffer is not ready - do not commit, wait
                         commit_ack_o[0] = 1'b0;
                 end
+
+                // ---------
+                // FPU Flags
+                // ---------
+                if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
+                    // write the CSR with potential exception flags from retiring floating point instruction
+                    csr_wdata_o = {59'b0, commit_instr_i[0].ex.cause[4:0]};
+                    csr_write_fflags_o = 1'b1;
+                end
             end
 
-            // ---------
-            // FPU Flags
-            // ---------
-            if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
-                // write the CSR with potential exception flags from retiring floating point instruction
-                csr_op_o = CSR_SET;
-                csr_wdata_o = {59'b0, commit_instr_i[0].ex.cause[4:0]};
-                csr_write_fflags_o = 1'b1;
-            end
 
             // ---------
             // CSR Logic
@@ -174,7 +174,6 @@ module commit_stage #(
                 // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
                 // exception flags
                 if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
-                    csr_op_o = CSR_SET;
                     if (csr_write_fflags_o)
                         csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
                     else

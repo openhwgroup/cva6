@@ -12,6 +12,40 @@ dependencies:
   common_cells: { git: "git@iis-git.ee.ethz.ch:sasa/common_cells.git", version: 1.1.0 }
 
 sources:
+  - src/fpu_legacy/hdl/fpu_utils/fpu_ff.sv
+  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/defs_div_sqrt_mvp.sv
+  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/control_mvp.sv
+  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/div_sqrt_mvp_wrapper.sv
+  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/div_sqrt_top_mvp.sv
+  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/iteration_div_sqrt_mvp.sv
+  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/norm_div_sqrt_mvp.sv
+  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/nrbd_nrsc_mvp.sv
+  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/preprocess_mvp.sv
+  - src/fpnew/src/pkg/fpnew_pkg.vhd
+  - src/fpnew/src/pkg/fpnew_fmts_pkg.vhd
+  - src/fpnew/src/pkg/fpnew_comps_pkg.vhd
+  - src/fpnew/src/pkg/fpnew_pkg_constants.vhd
+  - src/fpnew/src/utils/fp_pipe.vhd
+  - src/fpnew/src/utils/fp_rounding.vhd
+  - src/fpnew/src/utils/fp_arbiter.vhd
+  - src/fpnew/src/ops/fma_core.vhd
+  - src/fpnew/src/ops/fp_fma.vhd
+  - src/fpnew/src/ops/fp_divsqrt_multi.vhd
+  - src/fpnew/src/ops/fp_noncomp.vhd
+  - src/fpnew/src/ops/fp_f2fcasts.vhd
+  - src/fpnew/src/ops/fp_f2icasts.vhd
+  - src/fpnew/src/ops/fp_i2fcasts.vhd
+  - src/fpnew/src/ops/fp_conv_multi.vhd
+  - src/fpnew/src/subunits/addmul_fmt_slice.vhd
+  - src/fpnew/src/subunits/addmul_block.vhd
+  - src/fpnew/src/subunits/divsqrt_multifmt_slice.vhd
+  - src/fpnew/src/subunits/divsqrt_block.vhd
+  - src/fpnew/src/subunits/noncomp_fmt_slice.vhd
+  - src/fpnew/src/subunits/noncomp_block.vhd
+  - src/fpnew/src/subunits/conv_multifmt_slice.vhd
+  - src/fpnew/src/subunits/conv_block.vhd
+  - src/fpnew/src/fpnew.vhd
+  - src/fpnew/src/fpnew_top.vhd
   - include/ariane_pkg.sv
   - include/nbdcache_pkg.sv
   - target: not(synthesis)
@@ -19,6 +53,7 @@ sources:
       - src/util/instruction_tracer_pkg.sv
       - src/util/instruction_tracer_if.sv
   - src/alu.sv
+  - src/fpu_wrap.sv
   - src/ariane.sv
   - src/branch_unit.sv
   - src/cache_ctrl.sv
@@ -58,3 +93,5 @@ sources:
   - src/store_buffer.sv
   - src/store_unit.sv
   - src/tlb.sv
+
+

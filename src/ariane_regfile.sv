@@ -23,7 +23,7 @@
 //                 latches and is thus smaller than the flip-flop based RF.
 //
 
-module ariane_regfile_latch #(
+module ariane_regfile #(
   parameter int unsigned DATA_WIDTH     = 32,
   parameter int unsigned NR_READ_PORTS  = 2,
   parameter int unsigned NR_WRITE_PORTS = 2,
@@ -46,7 +46,7 @@ module ariane_regfile_latch #(
     localparam ADDR_WIDTH = 5;;
     localparam NUM_WORDS  = 2**ADDR_WIDTH;
 
-    logic [NUM_WORDS-1:1]                      mem_clocks;
+    logic [NUM_WORDS-1:ZERO_REG_ZERO]          mem_clocks;
 
     logic [DATA_WIDTH-1:0]                     mem[NUM_WORDS];
     logic [NR_WRITE_PORTS-1:0][NUM_WORDS-1:1]  waddr_onehot,waddr_onehot_q;

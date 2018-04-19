@@ -1,44 +1,53 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
-// Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
-// or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the
-// specific language governing permissions and limitations under the License.
+// Copyright (c) 2018 ETH Zurich, University of Bologna
+// All rights reserved.
 //
-// Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
-// Date: 05.06.2017
-// Description: Finds first one
+// This code is under development and not yet released to the public.
+// Until it is released, the code is under the copyright of ETH Zurich and
+// the University of Bologna, and may contain confidential and/or unpublished
+// work. Any reuse/redistribution is strictly forbidden without written
+// permission from ETH Zurich.
+//
+// Bug fixes and contributions will eventually be released under the
+// SolderPad open hardware license in the context of the PULP platform
+// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+// University of Bologna.
 
-// -----------------
-// Find First One
-// -----------------
-module ff1 #(
-    parameter int unsigned LEN = 32
+
+/// A leading-one finder / leading zero counter.
+/// Set FLIP to 0 for find_first_one => first_one_o is the index of the first one (from the LSB)
+/// Set FLIP to 1 for leading zero counter => first_one_o is the number of leading zeroes (from the MSB)
+module find_first_one #(
+    /// The width of the input vector.
+    parameter int WIDTH = -1,
+    parameter int FLIP = 0
 )(
-    input  logic [LEN-1:0]         in_i,
-    output logic [$clog2(LEN)-1:0] first_one_o,
-    output logic                   no_ones_o
+    input  logic [WIDTH-1:0]         in_i,
+    output logic [$clog2(WIDTH)-1:0] first_one_o,
+    output logic                     no_ones_o
 );
 
-localparam int unsigned NUM_LEVELS = $clog2(LEN);
+    localparam int NUM_LEVELS = $clog2(WIDTH);
 
-logic [LEN-1:0] [NUM_LEVELS-1:0]           index_lut;
-logic [2**NUM_LEVELS-1:0]                  sel_nodes;
-logic [2**NUM_LEVELS-1:0] [NUM_LEVELS-1:0] index_nodes;
-
-// ----------------------------
-// Generate Tree Structure
-// ----------------------------
-generate
-    for (genvar j = 0; j < LEN; j++) begin
-        assign index_lut[j] = $unsigned(j[NUM_LEVELS-1:0]);
+    // pragma translate_off
+    initial begin
+        assert(WIDTH >= 0);
     end
-endgenerate
+    // pragma translate_on
 
-generate
+    logic [WIDTH-1:0][NUM_LEVELS-1:0]          index_lut;
+    logic [2**NUM_LEVELS-1:0]                  sel_nodes;
+    logic [2**NUM_LEVELS-1:0][NUM_LEVELS-1:0]  index_nodes;
+
+    logic [WIDTH-1:0] in_tmp;
+
+    for (genvar i = 0; i < WIDTH; i++) begin
+        assign in_tmp[i] = FLIP ? in_i[WIDTH-1-i] : in_i[i];
+    end
+
+    for (genvar j = 0; j < WIDTH; j++) begin
+        assign index_lut[j] = j;
+    end
+
     for (genvar level = 0; level < NUM_LEVELS; level++) begin
 
         if (level < NUM_LEVELS-1) begin
@@ -52,29 +61,25 @@ generate
         if (level == NUM_LEVELS-1) begin
             for (genvar k = 0; k < 2**level; k++) begin
                 // if two successive indices are still in the vector...
-                if (k * 2 < LEN) begin
-                    assign sel_nodes[2**level-1+k]   = in_i[k*2] | in_i[k*2+1];
-                    assign index_nodes[2**level-1+k] = (in_i[k*2] == 1'b1) ? index_lut[k*2] : index_lut[k*2+1];
+                if (k * 2 < WIDTH-1) begin
+                    assign sel_nodes[2**level-1+k]   = in_tmp[k*2] | in_tmp[k*2+1];
+                    assign index_nodes[2**level-1+k] = (in_tmp[k*2] == 1'b1) ? index_lut[k*2] : index_lut[k*2+1];
                 end
                 // if only the first index is still in the vector...
-                if (k * 2 == LEN) begin
-                    assign sel_nodes[2**level-1+k]   = in_i[k*2];
+                if (k * 2 == WIDTH-1) begin
+                    assign sel_nodes[2**level-1+k]   = in_tmp[k*2];
                     assign index_nodes[2**level-1+k] = index_lut[k*2];
                 end
                 // if index is out of range
-                if (k * 2 > LEN) begin
+                if (k * 2 > WIDTH-1) begin
                     assign sel_nodes[2**level-1+k]   = 1'b0;
                     assign index_nodes[2**level-1+k] = '0;
                 end
             end
         end
     end
-endgenerate
 
-// --------------------
-// Connect Output
-// --------------------
-assign first_one_o = index_nodes[0];
-assign no_ones_o   = ~sel_nodes[0];
+    assign first_one_o = NUM_LEVELS > 0 ? index_nodes[0] : '0;
+    assign no_ones_o   = NUM_LEVELS > 0 ? ~sel_nodes[0]  : '1;
 
 endmodule
