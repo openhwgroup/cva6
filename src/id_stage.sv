@@ -16,31 +16,32 @@
 import ariane_pkg::*;
 
 module id_stage (
-    input  logic                                     clk_i,     // Clock
-    input  logic                                     rst_ni,    // Asynchronous reset active low
+    input  logic              clk_i,     // Clock
+    input  logic              rst_ni,    // Asynchronous reset active low
 
-    input  logic                                     flush_i,
+    input  logic              flush_i,
     // from IF
-    input  fetch_entry_t                             fetch_entry_i,
-    input  logic                                     fetch_entry_valid_i,
-    output logic                                     decoded_instr_ack_o, // acknowledge the instruction (fetch entry)
+    input  fetch_entry_t      fetch_entry_i,
+    input  logic              fetch_entry_valid_i,
+    output logic              decoded_instr_ack_o, // acknowledge the instruction (fetch entry)
 
     // to ID
-    output scoreboard_entry_t                        issue_entry_o,       // a decoded instruction
-    output logic                                     issue_entry_valid_o, // issue entry is valid
-    output logic                                     is_ctrl_flow_o,      // the instruction we issue is a ctrl flow instructions
-    input  logic                                     issue_instr_ack_i,   // issue stage acknowledged sampling of instructions
+    output scoreboard_entry_t issue_entry_o,       // a decoded instruction
+    output logic              issue_entry_valid_o, // issue entry is valid
+    output logic              is_ctrl_flow_o,      // the instruction we issue is a ctrl flow instructions
+    input  logic              issue_instr_ack_i,   // issue stage acknowledged sampling of instructions
     // from CSR file
-    input  priv_lvl_t                                priv_lvl_i,          // current privilege level
-    input  logic                                     tvm_i,
-    input  logic                                     tw_i,
-    input  logic                                     tsr_i
+    input  priv_lvl_t         priv_lvl_i,          // current privilege level
+    input  logic [2:0]        frm_i,               // floating-point dynamic rounding mode
+    input  logic              tvm_i,
+    input  logic              tw_i,
+    input  logic              tsr_i
 );
     // register stage
     struct packed {
-        logic            valid;
+        logic              valid;
         scoreboard_entry_t sbe;
-        logic            is_ctrl_flow;
+        logic              is_ctrl_flow;
 
     } issue_n, issue_q;
 

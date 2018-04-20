@@ -344,9 +344,9 @@ module lsu #(
         // 12 bit are the same anyway
         // and we can always generate the byte enable from the address at hand
         case (operator_i)
-            LD, SD: // double word
+            LD, SD, FLD, FSD: // double word
                     be_i = 8'b1111_1111;
-            LW, LWU, SW: // word
+            LW, LWU, SW, FLW, FSW: // word
                 case (vaddr_i[2:0])
                     3'b000: be_i = 8'b0000_1111;
                     3'b001: be_i = 8'b0001_1110;
@@ -355,7 +355,7 @@ module lsu #(
                     3'b100: be_i = 8'b1111_0000;
                     default:;
                 endcase
-            LH, LHU, SH: // half word
+            LH, LHU, SH, FLH, FSH: // half word
                 case (vaddr_i[2:0])
                     3'b000: be_i = 8'b0000_0011;
                     3'b001: be_i = 8'b0000_0110;
@@ -366,7 +366,7 @@ module lsu #(
                     3'b110: be_i = 8'b1100_0000;
                     default:;
                 endcase
-            LB, LBU, SB: // byte
+            LB, LBU, SB, FLB, FSB: // byte
                 case (vaddr_i[2:0])
                     3'b000: be_i = 8'b0000_0001;
                     3'b001: be_i = 8'b0000_0010;
@@ -401,18 +401,18 @@ module lsu #(
         if(lsu_ctrl.valid) begin
             case (lsu_ctrl.operator)
                 // double word
-                LD, SD: begin
+                LD, SD, FLD, FSD: begin
                     if (lsu_ctrl.vaddr[2:0] != 3'b000)
                         data_misaligned = 1'b1;
                 end
                 // word
-                LW, LWU, SW: begin
+                LW, LWU, SW, FLW, FSW: begin
                     if (lsu_ctrl.vaddr[1:0] != 2'b00)
                         data_misaligned = 1'b1;
                 end
 
                 // half word
-                LH, LHU, SH: begin
+                LH, LHU, SH, FLH, FSH: begin
                     if (lsu_ctrl.vaddr[0] != 1'b0)
                         data_misaligned = 1'b1;
                 end

@@ -319,7 +319,11 @@ module load_unit (
     logic [63:0] rdata_h_ext; // sign extension for half words
     logic [63:0] rdata_b_ext; // sign extension for bytes
 
-    // double words
+    logic [63:0] rdata_fw_box; // nan-boxing for single floats
+    logic [63:0] rdata_fh_box; // nan-boxing for half floats
+    logic [63:0] rdata_fb_box; // nan-boxing for quarter floats
+
+    // double words or double floats
     always_comb begin : sign_extend_double_word
         rdata_d_ext = data_rdata_i[63:0];
     end
@@ -335,6 +339,17 @@ module load_unit (
         endcase
     end
 
+    // nan-boxing single floats
+    always_comb begin : nan_box_single_float
+        case (load_data_q.address_offset)
+            default: rdata_fw_box = {{32{1'b1}}, data_rdata_i[31:0]};
+            3'b001:  rdata_fw_box = {{32{1'b1}}, data_rdata_i[39:8]};
+            3'b010:  rdata_fw_box = {{32{1'b1}}, data_rdata_i[47:16]};
+            3'b011:  rdata_fw_box = {{32{1'b1}}, data_rdata_i[55:24]};
+            3'b100:  rdata_fw_box = {{32{1'b1}}, data_rdata_i[63:32]};
+        endcase
+    end
+
     // sign extension for half words
     always_comb begin : sign_extend_half_word
         case (load_data_q.address_offset)
@@ -345,6 +360,19 @@ module load_unit (
             3'b100:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[47]}}, data_rdata_i[47:32]} : {48'h0, data_rdata_i[47:32]};
             3'b101:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[55]}}, data_rdata_i[55:40]} : {48'h0, data_rdata_i[55:40]};
             3'b110:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{data_rdata_i[63]}}, data_rdata_i[63:48]} : {48'h0, data_rdata_i[63:48]};
+        endcase
+    end
+
+    // nan-boxing half floats
+    always_comb begin : nan_box_half_float
+        case (load_data_q.address_offset)
+            default: rdata_fh_box = {{48{1'b1}}, data_rdata_i[15:0]};
+            3'b001:  rdata_fh_box = {{48{1'b1}}, data_rdata_i[23:8]};
+            3'b010:  rdata_fh_box = {{48{1'b1}}, data_rdata_i[31:16]};
+            3'b011:  rdata_fh_box = {{48{1'b1}}, data_rdata_i[39:24]};
+            3'b100:  rdata_fh_box = {{48{1'b1}}, data_rdata_i[47:32]};
+            3'b101:  rdata_fh_box = {{48{1'b1}}, data_rdata_i[55:40]};
+            3'b110:  rdata_fh_box = {{48{1'b1}}, data_rdata_i[63:48]};
         endcase
     end
 
@@ -362,12 +390,30 @@ module load_unit (
         endcase
     end
 
+
+    // nan-boxing quarter floats
+    always_comb begin : nan_box_quarter_float
+        case (load_data_q.address_offset)
+            default: rdata_fb_box = {{56{1'b1}}, data_rdata_i[7:0]};
+            3'b001:  rdata_fb_box = {{56{1'b1}}, data_rdata_i[15:8]};
+            3'b010:  rdata_fb_box = {{56{1'b1}}, data_rdata_i[23:16]};
+            3'b011:  rdata_fb_box = {{56{1'b1}}, data_rdata_i[31:24]};
+            3'b100:  rdata_fb_box = {{56{1'b1}}, data_rdata_i[39:32]};
+            3'b101:  rdata_fb_box = {{56{1'b1}}, data_rdata_i[47:40]};
+            3'b110:  rdata_fb_box = {{56{1'b1}}, data_rdata_i[55:48]};
+            3'b111:  rdata_fb_box = {{56{1'b1}}, data_rdata_i[63:56]};
+        endcase
+    end
+
     // Result Mux
     always_comb begin
         case (load_data_q.operator)
             LW, LWU:       result_o = rdata_w_ext;
+            FLW:           result_o = rdata_fw_box;
             LH, LHU:       result_o = rdata_h_ext;
+            FLH:           result_o = rdata_fh_box;
             LB, LBU:       result_o = rdata_b_ext;
+            FLB:           result_o = rdata_fb_box;
             default:       result_o = rdata_d_ext;
         endcase
     end

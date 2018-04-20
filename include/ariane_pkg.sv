@@ -27,7 +27,7 @@ package ariane_pkg;
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
-    localparam NR_WB_PORTS   = 5;
+    localparam NR_WB_PORTS   = 6;
     localparam ASID_WIDTH    = 1;
     localparam BTB_ENTRIES   = 8;
     localparam BHT_ENTRIES   = 32;
@@ -35,14 +35,51 @@ package ariane_pkg;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
-    localparam logic [63:0] ISA_CODE = (1 <<  2)  // C - Compressed extension
-                                     | (1 <<  8)  // I - RV32I/64I/128I base ISA
-                                     | (1 << 12)  // M - Integer Multiply/Divide extension
-                                     | (0 << 13)  // N - User level interrupts supported
-                                     | (1 << 18)  // S - Supervisor mode implemented
-                                     | (1 << 20)  // U - User mode implemented
-                                     | (0 << 23)  // X - Non-standard extensions present
-                                     | (1 << 63); // RV64
+    localparam ENABLE_RENAME = 1'b1;
+
+    // Floating-point extensions configuration
+    localparam bit RVF = 1'b1; // Is F extension enabled
+    localparam bit RVD = 1'b1; // Is D extension enabled
+
+
+    // Transprecision floating-point extensions configuration
+    localparam bit XF16    = 1'b1; // Is half-precision float extension (Xf16) enabled
+    localparam bit XF16ALT = 1'b1; // Is alternative half-precision float extension (Xf16alt) enabled
+    localparam bit XF8     = 1'b1; // Is quarter-precision float extension (Xf8) enabled
+    localparam bit XFVEC   = 1'b1; // Is vectorial float extension (Xfvec) enabled
+
+    // --------------------------------------
+    // vvvv Don't change these by hand! vvvv
+    localparam bit FP_PRESENT = RVF | RVD | XF16 | XF16ALT | XF8;
+
+    // Length of widest floating-point format
+    localparam FLEN    = RVD     ? 64 : // D ext.
+                         RVF     ? 32 : // F ext.
+                         XF16    ? 16 : // Xf16 ext.
+                         XF16ALT ? 16 : // Xf16alt ext.
+                         XF8     ? 8 :  // Xf8 ext.
+                         0;             // Unused in case of no FP
+
+    localparam bit NSX = XF16 | XF16ALT | XF8 | XFVEC; // Are non-standard extensions present?
+
+    localparam bit RVFVEC     = RVF     & XFVEC & FLEN>32; // FP32 vectors available if vectors and larger fmt enabled
+    localparam bit XF16VEC    = XF16    & XFVEC & FLEN>16; // FP16 vectors available if vectors and larger fmt enabled
+    localparam bit XF16ALTVEC = XF16ALT & XFVEC & FLEN>16; // FP16ALT vectors available if vectors and larger fmt enabled
+    localparam bit XF8VEC     = XF8     & XFVEC & FLEN>8;  // FP8 vectors available if vectors and larger fmt enabled
+    // ^^^^ until here ^^^^
+    // ---------------------
+
+    localparam logic [63:0] ISA_CODE = (0   <<  0)  // A - Atomic Instructions extension
+                                     | (1   <<  2)  // C - Compressed extension
+                                     | (RVD <<  3)  // D - Double precsision floating-point extension
+                                     | (RVF <<  5)  // F - Single precsision floating-point extension
+                                     | (1   <<  8)  // I - RV32I/64I/128I base ISA
+                                     | (1   << 12)  // M - Integer Multiply/Divide extension
+                                     | (0   << 13)  // N - User level interrupts supported
+                                     | (1   << 18)  // S - Supervisor mode implemented
+                                     | (1   << 20)  // U - User mode implemented
+                                     | (NSX << 23)  // X - Non-standard extensions present
+                                     | (1   << 63); // RV64
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
@@ -121,7 +158,7 @@ package ariane_pkg;
     } bht_prediction_t;
 
     typedef enum logic[3:0] {
-        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR
+        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR, FPU, FPU_VEC
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -152,8 +189,82 @@ package ariane_pkg;
                                // Multiplications
                                MUL, MULH, MULHU, MULHSU, MULW,
                                // Divisions
-                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW
+                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW,
+                               // Floating-Point Load and Store Instructions
+                               FLD, FLW, FLH, FLB, FSD, FSW, FSH, FSB,
+                               // Floating-Point Computational Instructions
+                               FADD, FSUB, FMUL, FDIV, FMIN_MAX, FSQRT, FMADD, FMSUB, FNMSUB, FNMADD,
+                               // Floating-Point Conversion and Move Instructions
+                               FCVT_F2I, FCVT_I2F, FCVT_F2F, FSGNJ, FMV_F2X, FMV_X2F,
+                               // Floating-Point Compare Instructions
+                               FCMP,
+                               // Floating-Point Classify Instruction
+                               FCLASS,
+                               // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
+                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D
                              } fu_op;
+
+    // -------------------------------
+    // Extract Src/Dst FP Reg from Op
+    // -------------------------------
+    function automatic logic is_rs1_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FADD:FNMADD],                   // Computational Operations
+                FCVT_F2I,                        // Float-Int Casts
+                FCVT_F2F,                        // Float-Float Casts
+                FSGNJ,                           // Sign Injections
+                FMV_F2X,                         // FPR-GPR Moves
+                FCMP,                            // Comparisons
+                FCLASS,                          // Classifications
+                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
+                default           : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    function automatic logic is_rs2_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FSD:FSW],                       // FP Stores
+                [FADD:FMIN_MAX],                 // Computational Operations (no sqrt)
+                [FMADD:FNMADD],                  // Fused Computational Operations
+                FSGNJ,                           // Sign Injections
+                FCMP,                            // Comparisons
+                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
+                default           : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    // ternary operations encode the rs3 address in the imm field
+    function automatic logic is_imm_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FMADD:FNMADD] : return 1'b1; // Fused Computational Operations
+                default        : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    function automatic logic is_rd_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FLD:FLW],                       // FP Loads
+                [FADD:FNMADD],                   // Computational Operations
+                FCVT_I2F,                        // Int-Float Casts
+                FCVT_F2F,                        // Float-Float Casts
+                FSGNJ,                           // Sign Injections
+                FMV_X2F,                         // GPR-FPR Moves
+                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
+                default           : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
 
     // ----------------------
     // Extract Bytes from Op
@@ -161,11 +272,11 @@ package ariane_pkg;
     // TODO: Add atomics
     function automatic logic [1:0] extract_transfer_size (fu_op op);
         case (op)
-            LD, SD:      return 2'b11;
-            LW, LWU, SW: return 2'b10;
-            LH, LHU, SH: return 2'b01;
-            LB, SB, LBU: return 2'b00;
-            default:     return 2'b11;
+            LD, SD, FLD, FSD      : return 2'b11;
+            LW, LWU, SW, FLW, FSW : return 2'b10;
+            LH, LHU, SH           : return 2'b01;
+            LB, LBU, SB           : return 2'b00;
+            default               : return 2'b11;
         endcase
     endfunction
 
@@ -202,7 +313,10 @@ package ariane_pkg;
         logic [REG_ADDR_SIZE-1:0] rs1;           // register source address 1
         logic [REG_ADDR_SIZE-1:0] rs2;           // register source address 2
         logic [REG_ADDR_SIZE-1:0] rd;            // register destination address
-        logic [63:0]              result;        // for unfinished instructions this field also holds the immediate
+        logic [63:0]              result;        // for unfinished instructions this field also holds the immediate,
+                                                 // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
+                                                 // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
+                                                 // this field holds the address of the third operand from the floating-point register file
         logic                     valid;         // is the result valid
         logic                     use_imm;       // should we use the immediate as operand b?
         logic                     use_zimm;      // use zimm as operand a
@@ -224,6 +338,37 @@ package ariane_pkg;
         logic [11:7]  rd;
         logic [6:0]   opcode;
     } rtype_t;
+
+    typedef struct packed {
+        logic [31:27] rs3;
+        logic [26:25] funct2;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:12] funct3;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } r4type_t;
+
+    typedef struct packed {
+        logic [31:27] funct5;
+        logic [26:25] fmt;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:12] rm;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } rftype_t; // floating-point
+
+    typedef struct packed {
+        logic [31:30] funct2;
+        logic [29:25] vecfltop;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:14] repl;
+        logic [13:12] vfmt;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } rvftype_t; // vectorial floating-point
 
     typedef struct packed {
         logic [31:20] imm;
@@ -251,6 +396,9 @@ package ariane_pkg;
     typedef union packed {
         logic [31:0]   instr;
         rtype_t        rtype;
+        r4type_t       r4type;
+        rftype_t       rftype;
+        rvftype_t      rvftype;
         itype_t        itype;
         stype_t        stype;
         utype_t        utype;
@@ -259,24 +407,72 @@ package ariane_pkg;
     // --------------------
     // Opcodes
     // --------------------
-    localparam OPCODE_SYSTEM    = 7'h73;
-    localparam OPCODE_FENCE     = 7'h0f;
-    localparam OPCODE_OP        = 7'h33;
-    localparam OPCODE_OP32      = 7'h3B;
-    localparam OPCODE_OPIMM     = 7'h13;
-    localparam OPCODE_OPIMM32   = 7'h1B;
-    localparam OPCODE_STORE     = 7'h23;
-    localparam OPCODE_LOAD      = 7'h03;
-    localparam OPCODE_BRANCH    = 7'h63;
-    localparam OPCODE_JALR      = 7'h67;
-    localparam OPCODE_JAL       = 7'h6f;
-    localparam OPCODE_AUIPC     = 7'h17;
-    localparam OPCODE_LUI       = 7'h37;
-    localparam OPCODE_AMO       = 7'h2F;
+    // RV32/64G listings:
+    // Quadrant 0
+    localparam OPCODE_LOAD      = 7'b00_000_11;
+    localparam OPCODE_LOAD_FP   = 7'b00_001_11;
+    localparam OPCODE_CUSTOM_0  = 7'b00_010_11;
+    localparam OPCODE_MISC_MEM  = 7'b00_011_11;
+    localparam OPCODE_OP_IMM    = 7'b00_100_11;
+    localparam OPCODE_AUIPC     = 7'b00_101_11;
+    localparam OPCODE_OP_IMM_32 = 7'b00_110_11;
+    // Quadrant 1
+    localparam OPCODE_STORE     = 7'b01_000_11;
+    localparam OPCODE_STORE_FP  = 7'b01_001_11;
+    localparam OPCODE_CUSTOM_1  = 7'b01_010_11;
+    localparam OPCODE_AMO       = 7'b01_011_11;
+    localparam OPCODE_OP        = 7'b01_100_11;
+    localparam OPCODE_LUI       = 7'b01_101_11;
+    localparam OPCODE_OP_32     = 7'b01_110_11;
+    // Quadrant 2
+    localparam OPCODE_MADD      = 7'b10_000_11;
+    localparam OPCODE_MSUB      = 7'b10_001_11;
+    localparam OPCODE_NMSUB     = 7'b10_010_11;
+    localparam OPCODE_NMADD     = 7'b10_011_11;
+    localparam OPCODE_OP_FP     = 7'b10_100_11;
+    localparam OPCODE_RSRVD_1   = 7'b10_101_11;
+    localparam OPCODE_CUSTOM_2  = 7'b10_110_11;
+    // Quadrant 3
+    localparam OPCODE_BRANCH    = 7'b11_000_11;
+    localparam OPCODE_JALR      = 7'b11_001_11;
+    localparam OPCODE_RSRVD_2   = 7'b11_010_11;
+    localparam OPCODE_JAL       = 7'b11_011_11;
+    localparam OPCODE_SYSTEM    = 7'b11_100_11;
+    localparam OPCODE_RSRVD_3   = 7'b11_101_11;
+    localparam OPCODE_CUSTOM_3  = 7'b11_110_11;
 
-    localparam OPCODE_C_J       = 3'b101;
-    localparam OPCODE_C_BEQZ    = 3'b110;
-    localparam OPCODE_C_BNEZ    = 3'b111;
+    // RV64C listings:
+    // Quadrant 0
+    localparam OPCODE_C0              = 2'b00;
+    localparam OPCODE_C0_ADDI4SPN     = 3'b000;
+    localparam OPCODE_C0_FLD          = 3'b001;
+    localparam OPCODE_C0_LW           = 3'b010;
+    localparam OPCODE_C0_LD           = 3'b011;
+    localparam OPCODE_C0_RSRVD        = 3'b100;
+    localparam OPCODE_C0_FSD          = 3'b101;
+    localparam OPCODE_C0_SW           = 3'b110;
+    localparam OPCODE_C0_SD           = 3'b111;
+    // Quadrant 1
+    localparam OPCODE_C1              = 2'b01;
+    localparam OPCODE_C1_ADDI         = 3'b000;
+    localparam OPCODE_C1_ADDIW        = 3'b001;
+    localparam OPCODE_C1_LI           = 3'b010;
+    localparam OPCODE_C1_LUI_ADDI16SP = 3'b011;
+    localparam OPCODE_C1_MISC_ALU     = 3'b100;
+    localparam OPCODE_C1_J            = 3'b101;
+    localparam OPCODE_C1_BEQZ         = 3'b110;
+    localparam OPCODE_C1_BNEZ         = 3'b111;
+    // Quadrant 2
+    localparam OPCODE_C2              = 2'b10;
+    localparam OPCODE_C2_SLLI         = 3'b000;
+    localparam OPCODE_C2_FLDSP        = 3'b001;
+    localparam OPCODE_C2_LWSP         = 3'b010;
+    localparam OPCODE_C2_LDSP         = 3'b011;
+    localparam OPCODE_C2_JALR_MV_ADD  = 3'b100;
+    localparam OPCODE_C2_FSDSP        = 3'b101;
+    localparam OPCODE_C2_SWSP         = 3'b110;
+    localparam OPCODE_C2_SDSP         = 3'b111;
+
     // --------------------
     // Atomics
     // --------------------
@@ -368,6 +564,10 @@ package ariane_pkg;
     // CSRs
     // -----
     typedef enum logic [11:0] {
+        // Floating-Point CSRs
+        CSR_FFLAGS         = 12'h001,
+        CSR_FRM            = 12'h002,
+        CSR_FCSR           = 12'h003,
         // Supervisor Mode CSRs
         CSR_SSTATUS        = 12'h100,
         CSR_SIE            = 12'h104,
@@ -392,6 +592,8 @@ package ariane_pkg;
         CSR_MCAUSE         = 12'h342,
         CSR_MTVAL          = 12'h343,
         CSR_MIP            = 12'h344,
+        CSR_PMPCFG0        = 12'h3A0,
+        CSR_PMPADDR0       = 12'h3B0,
         CSR_MVENDORID      = 12'hF11,
         CSR_MARCHID        = 12'hF12,
         CSR_MIMPID         = 12'hF13,

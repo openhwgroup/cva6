@@ -3,7 +3,7 @@
 	url = https://github.com/pulp-platform/riscv-torture.git
 [submodule "tb"]
 	path = tb
-	url = https://github.com/pulp-platform/uvm-components.git
+	url = https://github.com/stmach/uvm-components.git
 [submodule "src/axi_mem_if"]
 	path = src/axi_mem_if
 	url = https://github.com/pulp-platform/axi_mem_if.git
@@ -16,3 +16,9 @@
 [submodule "src/axi_node"]
 	path = src/axi_node
 	url = https://github.com/pulp-platform/axi_node.git
+[submodule "fpnew"]
+	path = src/fpnew
+	url = git@iis-git.ee.ethz.ch:smach/fpnew.git
+[submodule "fpu-legacy"]
+	path = src/fpu_legacy
+	url = git@iis-git.ee.ethz.ch:pulp-open/fpu.git

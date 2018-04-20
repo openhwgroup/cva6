@@ -45,6 +45,7 @@ module csr_regfile #(
     input  logic  [11:0]          csr_addr_i,                 // Address of the register to read/write
     input  logic  [63:0]          csr_wdata_i,                // Write data in
     output logic  [63:0]          csr_rdata_o,                // Read data out
+    input  logic                  csr_write_fflags_i,         // Write fflags register e.g.: we are retiring a floating point instruction
     input  logic  [63:0]          pc_i,                       // PC of instruction accessing the CSR
     output exception_t            csr_exception_o,            // attempts to access a CSR without appropriate privilege
                                                               // level or to write  a read-only register also
@@ -54,6 +55,9 @@ module csr_regfile #(
     output logic                  eret_o,                     // Return from exception, set the PC of epc_o
     output logic  [63:0]          trap_vector_base_o,         // Output base of exception vector, correct CSR is output (mtvec, stvec)
     output priv_lvl_t             priv_lvl_o,                 // Current privilege level the CPU is in
+    // FPU
+    output logic [4:0]            fflags_o,                   // Floating-Point Accured Exceptions
+    output logic [2:0]            frm_o,                      // Floating-Point Dynamic Rounding Mode
     // MMU
     output logic                  en_translation_o,           // enable VA translation
     output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
@@ -93,7 +97,7 @@ module csr_regfile #(
     // ----------------
     // Assignments
     // ----------------
-    // Debug MUX
+    // Debug MUX and fflags register
     assign csr_addr = csr_t'(((debug_csr_req_i) ? debug_csr_addr_i : csr_addr_i));
     // Output the read data directly
     assign debug_csr_rdata_o = csr_rdata;
@@ -137,6 +141,8 @@ module csr_regfile #(
     logic [63:0] medeleg_q,  medeleg_d;
     logic [63:0] mideleg_q,  mideleg_d;
     logic [63:0] mip_q,      mip_d;
+    logic [63:0] pmpcfg0_q,  pmpcfg0_d;
+    logic [63:0] pmpaddr0_q, pmpaddr0_d;
     logic [63:0] mie_q,      mie_d;
     logic [63:0] mscratch_q, mscratch_d;
     logic [63:0] mepc_q,     mepc_d;
@@ -164,6 +170,15 @@ module csr_regfile #(
 
     satp_t satp_q, satp_d;
 
+    // Floating-Point control and status register (32-bit!)
+    typedef struct packed {
+        logic [31:8] reserved;  // reserved for L extension, return 0 otherwise
+        logic [2:0]  frm;       // float rounding mode
+        logic [4:0]  fflags;    // float exception flags
+    } fcsr_t;
+
+    fcsr_t fcsr_q, fcsr_d;
+
     // ----------------
     // CSR Read logic
     // ----------------
@@ -176,6 +191,11 @@ module csr_regfile #(
 
         if (csr_read) begin
             case (csr_addr.address)
+
+                // Floating-Point
+                CSR_FFLAGS:             csr_rdata = {59'b0, fcsr_q.fflags};
+                CSR_FRM:                csr_rdata = {61'b0, fcsr_q.frm};
+                CSR_FCSR:               csr_rdata = {32'b0, fcsr_q};
 
                 CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h3fffe1fee;
                 CSR_SIE:                csr_rdata = mie_q & mideleg_q;
@@ -198,7 +218,6 @@ module csr_regfile #(
                 CSR_MISA:               csr_rdata = ISA_CODE;
                 CSR_MEDELEG:            csr_rdata = medeleg_q;
                 CSR_MIDELEG:            csr_rdata = mideleg_q;
-                CSR_MIP:                csr_rdata = mip_q;
                 CSR_MIE:                csr_rdata = mie_q;
                 CSR_MTVEC:              csr_rdata = mtvec_q;
                 CSR_MCOUNTEREN:         csr_rdata = 64'b0; // not implemented
@@ -206,6 +225,10 @@ module csr_regfile #(
                 CSR_MEPC:               csr_rdata = mepc_q;
                 CSR_MCAUSE:             csr_rdata = mcause_q;
                 CSR_MTVAL:              csr_rdata = mtval_q;
+                CSR_MIP:                csr_rdata = mip_q;
+                // Placeholders for M-mode protection
+                CSR_PMPCFG0:            csr_rdata = pmpcfg0_q;
+                CSR_PMPADDR0:           csr_rdata = pmpaddr0_q;
                 CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
                 CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
                 CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
@@ -245,7 +268,7 @@ module csr_regfile #(
         sapt = satp_q;
         mip = csr_wdata & 64'h33;
         instret = instret_q;
-        // only USIP, SSIP, UTIP, STIP are write-able
+        // only FCSR, USIP, SSIP, UTIP, STIP are write-able
 
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
@@ -253,6 +276,8 @@ module csr_regfile #(
 
         perf_we_o               = 1'b0;
         perf_data_o             = 'b0;
+
+        fcsr_d                  = fcsr_q;
 
         priv_lvl_d              = priv_lvl_q;
         mstatus_d               = mstatus_q;
@@ -279,6 +304,24 @@ module csr_regfile #(
         // check for correct access rights and that we are writing
         if (csr_we) begin
             case (csr_addr.address)
+
+                // Floating-Point
+                CSR_FFLAGS: begin
+                    fcsr_d.fflags = csr_wdata[4:0];
+                    // this instruction has side-effects
+                    flush_o = 1'b1;
+                end
+                CSR_FRM: begin
+                    fcsr_d.frm    = csr_wdata[2:0];
+                    // this instruction has side-effects
+                    flush_o = 1'b1;
+                end
+                CSR_FCSR: begin
+                    fcsr_d[7:0]   = csr_wdata[7:0]; // ignore writes to reserved space
+                    // this instruction has side-effects
+                    flush_o = 1'b1;
+                end
+
                 // sstatus is a subset of mstatus - mask it accordingly
                 CSR_SSTATUS: begin
                     mstatus_d   = csr_wdata & 64'h3fffe1fee;
@@ -347,7 +390,6 @@ module csr_regfile #(
 
                 // mask the register so that unsupported interrupts can never be set
                 CSR_MIE:                mie_d       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
-                CSR_MIP:                mip_d       = mip;
 
                 CSR_MTVEC: begin
                     mtvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
@@ -362,6 +404,11 @@ module csr_regfile #(
                 CSR_MEPC:               mepc_d      = {csr_wdata[63:1], 1'b0};
                 CSR_MCAUSE:             mcause_d    = csr_wdata;
                 CSR_MTVAL:              mtval_d     = csr_wdata;
+                CSR_MIP:                mip_d       = mip;
+                // Placeholders for M-mode protection
+                CSR_PMPCFG0:            pmpcfg0_d   = csr_wdata;
+                CSR_PMPADDR0:           pmpaddr0_d  = csr_wdata;
+
                 CSR_MCYCLE:             cycle_d     = csr_wdata;
                 CSR_MINSTRET:           instret     = csr_wdata;
                 CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
@@ -384,6 +431,11 @@ module csr_regfile #(
                 default: update_access_exception = 1'b1;
             endcase
         end
+
+        // write the floating point status register
+        if (csr_write_fflags_i)
+            fcsr_d.fflags = csr_wdata_i[4:0] | fcsr_q.fflags;
+
         // ---------------------
         // External Interrupts
         // ---------------------
@@ -648,6 +700,9 @@ module csr_regfile #(
     // -------------------
     assign csr_rdata_o      = csr_rdata;
     assign priv_lvl_o       = priv_lvl_q;
+    // FPU outputs
+    assign fflags_o         = fcsr_q.fflags;
+    assign frm_o            = fcsr_q.frm;
     // MMU outputs
     assign satp_ppn_o       = satp_q.ppn;
     assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
@@ -688,6 +743,8 @@ module csr_regfile #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             priv_lvl_q             <= PRIV_LVL_M;
+            // floating-point registers
+            fcsr_q                 <= 64'b0;
             // machine mode registers
             mstatus_q              <= 64'b0;
             mtvec_q                <= {boot_addr_i[63:2], 2'b0}; // set to boot address + direct mode
@@ -717,6 +774,8 @@ module csr_regfile #(
             wfi_q                  <= 1'b0;
         end else begin
             priv_lvl_q             <= priv_lvl_d;
+            // floating-point registers
+            fcsr_q                 <= fcsr_d;
             // machine mode registers
             mstatus_q              <= mstatus_d;
             mtvec_q                <= mtvec_d;
