@@ -23,7 +23,7 @@
 //                 latches and is thus smaller than the flip-flop based RF.
 //
 
-module ariane_regfile #(
+module ariane_regfile_lol #(
   parameter int unsigned DATA_WIDTH     = 32,
   parameter int unsigned NR_READ_PORTS  = 2,
   parameter int unsigned NR_WRITE_PORTS = 2,
