@@ -284,7 +284,7 @@ class instruction_trace_item;
         endcase
 
 
-        s = $sformatf("%10t %10d %s %h %h %h %-36s", simtime,
+        s = $sformatf("%8dns %8d %s %h %h %h %-36s", simtime,
                                              cycle,
                                              priv_lvl,
                                              sbe.pc,
@@ -312,7 +312,7 @@ class instruction_trace_item;
             else if (read_regs[i] != 0)
                 s = $sformatf("%s %-4s:%16x", s, regAddrToStr(read_regs[i]), gp_reg_file[read_regs[i]]);
         end
-        casex (instr)
+        case (instr) inside
             // check of the instrction was a load or store
             INSTR_STORE,
             INSTR_STORE_FP: begin
@@ -407,7 +407,7 @@ class instruction_trace_item;
             FCVT_F2I : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", intFmtToStr(instr[21:20]), fpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1), fpRmToStr(instr[14:12]));
             FCVT_I2F : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", fpFmtToStr(instr[26:25]), intFmtToStr(instr[21:20])), fpRegAddrToStr(rd), regAddrToStr(rs1), fpRmToStr(instr[14:12]));
             FMV_F2X  : return $sformatf("%-12s %4s, %s", $sformatf("fmv.x.%s", fmvFpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1));
-            FMV_X2F  : return $sformatf("%-12s %4s, %s", $sformatf("fmv.x.%s", fmvFpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1));
+            FMV_X2F  : return $sformatf("%-12s %4s, %s", $sformatf("fmv.%s.x", fmvFpFmtToStr(instr[26:25])), fpRegAddrToStr(rd), regAddrToStr(rs1));
         endcase
     endfunction
 
