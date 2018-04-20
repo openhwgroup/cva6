@@ -287,9 +287,10 @@ module fpu_wrap (
                 end
                 // Scalar Sign Injection - op encoded in rm (000-010)
                 FSGNJ     : fpu_op_n = OP_SGNJ;
-                // Move from FPR to GPR - mapped to NOP since no recoding
+                // Move from FPR to GPR - mapped to SGNJ-passthrough since no recoding
                 FMV_F2X   : begin
                     fpu_op_n          = OP_SGNJ;
+                    fpu_rm_n          = 3'b011; // passthrough without checking nan-box
                     fpu_op_mod_n      = 1'b1; // no NaN-Boxing
                     operand_b_n       = operand_a_n;
                     vec_replication   = 1'b0; // no replication, we set second operand
@@ -297,6 +298,7 @@ module fpu_wrap (
                 // Move from GPR to FPR - mapped to NOP since no recoding
                 FMV_X2F   : begin
                     fpu_op_n          = OP_SGNJ;
+                    fpu_rm_n          = 3'b011; // passthrough without checking nan-box
                     operand_b_n       = operand_a_n;
                     vec_replication   = 1'b0; // no replication, we set second operand
                 end
@@ -429,8 +431,8 @@ module fpu_wrap (
                 fpu_vec_op_q  <= '0;
                 fpu_tag_q     <= '0;
             end else begin
-                if (reg_out_ready) begin // Only advance pipeline if unit is ready for our op
-                    reg_out_valid <= reg_in_valid;
+                if (reg_out_ready || flush_i) begin // Only advance pipeline if unit is ready for our op
+                    reg_out_valid <= reg_in_valid & ~flush_i;
                     if (reg_in_valid) begin // clock gate data to save poer
                         operand_a_q   <= operand_a_n;
                         operand_b_q   <= operand_b_n;
@@ -499,6 +501,7 @@ module fpu_wrap (
             .Tag_DI         ( fpu_tag        ),
             .InValid_SI     ( fpu_in_valid   ),
             .InReady_SO     ( fpu_in_ready   ),
+            .Flush_SI       ( flush_i        ),
             .Z_DO           ( result_o       ),
             .Status_DO      ( fpu_status     ),
             .Tag_DO         ( fpu_trans_id_o ),

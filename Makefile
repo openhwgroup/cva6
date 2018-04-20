@@ -138,7 +138,7 @@ $(library):
 
 sim: build
 	vsim${questa_version} -64 -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) -noautoldlibpath \
-	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -sv_lib $(library)/elf_dpi -do "do tb/wave/wave_core.do"
+	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -sv_lib $(library)/elf_dpi -do "set NumericStdNoWarnings 1; set StdArithNoWarnings 1; do tb/wave/wave_core.do"
 
 sim_nopt: build
 	vsim${questa_version} -64 -novopt -lib ${library} ${top_level} +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
