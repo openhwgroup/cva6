@@ -25,6 +25,7 @@ module icache #(
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,          // flush the icache, flush and kill have to be asserted together
+    input  logic                     fetch_enable_i,   // the core should fetch instructions
     input  logic                     req_i,            // we request a new word
     input  logic                     is_speculative_i, // is this request speculative or not
     input  logic                     kill_s1_i,        // kill the current request
@@ -237,9 +238,9 @@ module icache #(
         case (state_q)
             // ~> we are ready to receive a new request
             IDLE: begin
-                ready_o = 1'b1;
+                ready_o = 1'b1 & fetch_enable_i;
                 // we are getting a new request
-                if (req_i) begin
+                if (req_i && fetch_enable_i) begin
                     // request the content of all arrays
                     req = '1;
                     // save the virtual address
@@ -356,11 +357,11 @@ module icache #(
                 if (kill_s2_i)
                     state_d = WAIT_KILLED_AXI_R_RESP;
 
-                if (axi.r_last) begin
+                if (axi.r_valid && axi.r_last) begin
                     state_d = (kill_s2_i) ? IDLE : REDO_REQ;
                 end
 
-                if ((state_q == WAIT_KILLED_AXI_R_RESP) && axi.r_last)
+                if ((state_q == WAIT_KILLED_AXI_R_RESP) && axi.r_last && axi.r_valid)
                     state_d = IDLE;
             end
             // ~> redo the request,
