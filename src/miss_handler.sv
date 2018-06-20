@@ -684,7 +684,7 @@ module axi_adapter #(
     } state_q, state_d;
 
     // counter for AXI transfers
-    logic [$clog2(DATA_WIDTH/64)-1:0] cnt_d, cnt_q;
+    logic [ADDR_INDEX-1:0] cnt_d, cnt_q;
     logic [(DATA_WIDTH/64)-1:0][63:0] cache_line_d, cache_line_q;
     // save the address for a read, as we allow for non-cacheline aligned accesses
     logic [(DATA_WIDTH/64)-1:0] addr_offset_d, addr_offset_q;
