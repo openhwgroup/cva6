@@ -746,34 +746,51 @@ module ariane #(
     // mock tracer for Verilator, to be used with spike-dasm
     `else
 
-    string s;
-    int f;
-    logic [63:0] cycles;
-
-    initial begin
-        f = $fopen("trace_core_00_0.dasm", "w");
-    end
+    logic [31:0] cycles;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             cycles <= 0;
         end else begin
             if (commit_ack && !commit_stage_i.exception_o) begin
-                $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit.pc, commit_instr_id_commit.ex.tval[31:0], commit_instr_id_commit.ex.tval[31:0]);
+                $display("%d %0h (%h) %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h",
+                        cycles,
+                        commit_instr_id_commit.pc,
+                        commit_instr_id_commit.ex.tval[31:0],
+                        flush_unissued_instr_ctrl_id,
+                        flush_ctrl_ex,
+                        id_stage_i.compressed_decoder_i.instr_o,
+                        id_stage_i.instr_realigner_i.fetch_entry_valid_o,
+                        id_stage_i.instr_realigner_i.fetch_ack_i,
+                        issue_stage_i.scoreboard_i.issue_ack_i,
+                        waddr_a_commit_id,
+                        wdata_a_commit_id,
+                        we_a_commit_id,
+                        commit_ack,
+                        ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i,
+                        ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i,
+                        ex_stage_i.lsu_i.i_load_unit.tag_valid_o,
+                        ex_stage_i.lsu_i.i_load_unit.kill_req_o,
+                        ex_stage_i.lsu_i.i_load_unit.paddr_i,
+                        priv_lvl,
+                        issue_stage_i.issue_read_operands_i.regfile_i.raddr_a_i,
+                        issue_stage_i.issue_read_operands_i.regfile_i.rdata_a_o,
+                        issue_stage_i.issue_read_operands_i.regfile_i.raddr_b_i,
+                        issue_stage_i.issue_read_operands_i.regfile_i.rdata_b_o,
+                        issue_stage_i.issue_read_operands_i.regfile_i.waddr_a_i,
+                        issue_stage_i.issue_read_operands_i.regfile_i.wdata_a_i);
             end else if (commit_ack) begin
-                if (commit_instr_id_commit.ex.cause == 2) begin
-                    $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h)\n", commit_instr_id_commit.ex.tval[31:0]);
-                end else begin
-                    $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit.ex.cause);
-                end
+               $display("%d %0h (%h) %h %h",
+                       cycles,
+                       commit_instr_id_commit.pc,
+                       commit_instr_id_commit.ex.tval[31:0],
+                       commit_stage_i.exception_o,
+                       commit_instr_id_commit.ex.cause);
             end
             cycles <= cycles + 1;
         end
     end
 
-    final begin
-        $fclose(f);
-    end
     `endif
     `endif
 endmodule // ariane
