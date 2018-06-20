@@ -835,7 +835,7 @@ module axi_adapter #(
 
                 axi.aw_valid = 1'b1;
                 // we are here because we want to write a cache line
-                axi.aw_len   = DATA_WIDTH/64;
+                axi.aw_len   = BURST_SIZE;
                 // we got an aw_ready
                 case ({axi.aw_ready, axi.w_ready})
                     // we got an aw ready
@@ -867,7 +867,7 @@ module axi_adapter #(
             // ~> all data has already been sent, we are only waiting for the aw_ready
             WAIT_AW_READY_BURST: begin
                 axi.aw_valid = 1'b1;
-                axi.aw_len   = DATA_WIDTH/64;
+                axi.aw_len   = BURST_SIZE;
 
                 if (axi.aw_ready) begin
                     state_d = WAIT_B_VALID;
