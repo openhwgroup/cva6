@@ -29,7 +29,6 @@ module frontend #(
     input  logic               flush_icache_i,     // instruction fence in
     // global input
     input  logic [63:0]        boot_addr_i,
-    input  logic               fetch_enable_i,     // start fetching instructions
     // Address translation interface
     output logic               fetch_req_o,        // address translation request
     output logic [63:0]        fetch_vaddr_o,      // virtual address out
@@ -47,9 +46,6 @@ module frontend #(
     input  logic               eret_i,             // return from exception
     input  logic [63:0]        trap_vector_base_i, // base of trap vector
     input  logic               ex_valid_i,         // exception is valid - from commit
-    // Debug
-    input  logic [63:0]        debug_pc_i,         // PC from debug stage
-    input  logic               debug_set_pc_i,     // Set PC request from debug
     // Instruction Fetch
     AXI_BUS.Master             axi,
     output logic               l1_icache_miss_o,    // instruction cache missed
@@ -315,7 +311,6 @@ module frontend #(
     // 3. Return from environment call
     // 4. Exception/Interrupt
     // 5. Pipeline Flush because of CSR side effects
-    // 6. Debug
     // Mis-predict handling is a little bit different
     // select PC a.k.a PC Gen
     always_comb begin : npc_select
@@ -337,7 +332,7 @@ module frontend #(
         // -------------------------------
         // 0. Default assignment
         // -------------------------------
-        if (if_ready && fetch_enable_i) begin
+        if (if_ready) begin
             npc_d = {fetch_address[63:2], 2'b0}  + 64'h4;
             fetch_is_speculative = 1'b1;
         end
@@ -369,13 +364,6 @@ module frontend #(
             // as CSR instructions do not exist in a compressed form
             // we can unconditionally do PC + 4 here
             npc_d    = pc_commit_i + 64'h4;
-        end
-
-        // -------------------------------
-        // 6. Debug
-        // -------------------------------
-        if (debug_set_pc_i) begin
-            npc_d = debug_pc_i;
         end
 
         fetch_vaddr = fetch_address;

@@ -31,8 +31,6 @@ module ariane #(
 
         input  logic                           flush_dcache_i,         // external request to flush data cache
         output logic                           flush_dcache_ack_o,     // finished data cache flush
-        // CPU Control Signals
-        input  logic                           fetch_enable_i,         // start fetching data
         // Core ID, Cluster ID and boot address are considered more or less static
         input  logic [63:0]                    boot_addr_i,            // reset boot address
         input  logic [ 3:0]                    core_id_i,              // core id in a multicore environment (reflected in a CSR)
@@ -48,18 +46,7 @@ module ariane #(
         output logic                           sec_lvl_o,              // current privilege level out
         // Timer facilities
         input  logic [63:0]                    time_i,                 // global time (most probably coming from an RTC)
-        input  logic                           time_irq_i,             // timer interrupt in
-        // Debug Interface
-        input  logic                           debug_req_i,
-        output logic                           debug_gnt_o,
-        output logic                           debug_rvalid_o,
-        input  logic [15:0]                    debug_addr_i,
-        input  logic                           debug_we_i,
-        input  logic [63:0]                    debug_wdata_i,
-        output logic [63:0]                    debug_rdata_o,
-        output logic                           debug_halted_o,
-        input  logic                           debug_halt_i,
-        input  logic                           debug_resume_i
+        input  logic                           time_irq_i              // timer interrupt in
     );
 
     // ------------------------------------------
@@ -67,7 +54,6 @@ module ariane #(
     // Signals connecting more than one module
     // ------------------------------------------
     priv_lvl_t                priv_lvl;
-    logic                     fetch_enable;
     exception_t               ex_commit; // exception from commit stage
     branchpredict_t           resolved_branch;
     logic [63:0]              pc_commit;
@@ -225,27 +211,9 @@ module ariane #(
     logic                     fence_commit_controller;
     logic                     sfence_vma_commit_controller;
     logic                     halt_ctrl;
-    logic                     halt_debug_ctrl;
     logic                     halt_csr_ctrl;
     logic                     flush_dcache_ctrl_ex;
     logic                     flush_dcache_ack_ex_ctrl;
-    // --------------
-    // Debug <-> *
-    // --------------
-    logic [63:0]              pc_debug_pcgen;
-    logic                     set_pc_debug;
-
-    logic                     gpr_req_debug_issue;
-    logic [4:0]               gpr_addr_debug_issue;
-    logic                     gpr_we_debug_issue;
-    logic [63:0]              gpr_wdata_debug_issue;
-    logic [63:0]              gpr_rdata_debug_issue;
-
-    logic                     csr_req_debug_csr;
-    logic [11:0]              csr_addr_debug_csr;
-    logic                     csr_we_debug_csr;
-    logic [63:0]              csr_wdata_debug_csr;
-    logic [63:0]              csr_rdata_debug_csr;
     // ----------------
     // ICache <-> *
     // ----------------
@@ -266,7 +234,6 @@ module ariane #(
         .flush_bp_i          ( 1'b0                          ),
         .flush_icache_i      ( flush_icache_ctrl_icache      ),
         .boot_addr_i         ( boot_addr_i                   ),
-        .fetch_enable_i      ( fetch_enable                  ),
         .fetch_req_o         ( fetch_req_if_ex               ),
         .fetch_vaddr_o       ( fetch_vaddr_if_ex             ),
         .fetch_valid_i       ( fetch_valid_ex_if             ),
@@ -279,8 +246,6 @@ module ariane #(
         .eret_i              ( eret                          ),
         .trap_vector_base_i  ( trap_vector_base_commit_pcgen ),
         .ex_valid_i          ( ex_commit.valid               ),
-        .debug_pc_i          ( pc_debug_pcgen                ),
-        .debug_set_pc_i      ( set_pc_debug                  ),
         .axi                 ( instr_if                      ),
         .l1_icache_miss_o    (                               ), // performance counters
         .fetch_entry_o       ( fetch_entry_if_id             ),
@@ -321,12 +286,6 @@ module ariane #(
     ) issue_stage_i (
         .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id    ),
         .flush_i                    ( flush_ctrl_id                   ),
-        // Debug
-        .debug_gpr_req_i            ( gpr_req_debug_issue             ),
-        .debug_gpr_addr_i           ( gpr_addr_debug_issue            ),
-        .debug_gpr_we_i             ( gpr_we_debug_issue              ),
-        .debug_gpr_wdata_i          ( gpr_wdata_debug_issue           ),
-        .debug_gpr_rdata_o          ( gpr_rdata_debug_issue           ),
 
         .decoded_instr_i            ( issue_entry_id_issue            ),
         .decoded_instr_valid_i      ( issue_entry_valid_id_issue      ),
@@ -496,11 +455,6 @@ module ariane #(
     ) csr_regfile_i (
         .flush_o                ( flush_csr_ctrl                ),
         .halt_csr_o             ( halt_csr_ctrl                 ),
-        .debug_csr_req_i        ( csr_req_debug_csr             ),
-        .debug_csr_addr_i       ( csr_addr_debug_csr            ),
-        .debug_csr_we_i         ( csr_we_debug_csr              ),
-        .debug_csr_wdata_i      ( csr_wdata_debug_csr           ),
-        .debug_csr_rdata_o      ( csr_rdata_debug_csr           ),
         .commit_ack_i           ( commit_ack                    ),
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),
@@ -570,8 +524,6 @@ module ariane #(
         .flush_dcache_ack_i     ( flush_dcache_ack_ex_ctrl      ),
 
         .halt_csr_i             ( halt_csr_ctrl                 ),
-        .halt_debug_i           ( halt_debug_ctrl               ),
-        .debug_set_pc_i         ( set_pc_debug                  ),
         .halt_o                 ( halt_ctrl                     ),
         // control ports
         .eret_i                 ( eret                          ),
@@ -583,33 +535,6 @@ module ariane #(
         .sfence_vma_i           ( sfence_vma_commit_controller  ),
 
         .flush_icache_o         ( flush_icache_ctrl_icache      ),
-        .*
-    );
-
-    // ------------
-    // Debug
-    // ------------
-    debug_unit debug_unit_i (
-        .commit_instr_i    ( commit_instr_id_commit[0] ),
-        .commit_ack_i      ( commit_ack[0]             ),
-        .ex_i              ( ex_commit                 ),
-        .halt_o            ( halt_debug_ctrl           ),
-        .fetch_enable_i    ( fetch_enable              ),
-
-        .debug_pc_o        ( pc_debug_pcgen            ),
-        .debug_set_pc_o    ( set_pc_debug              ),
-
-        .debug_gpr_req_o   ( gpr_req_debug_issue       ),
-        .debug_gpr_addr_o  ( gpr_addr_debug_issue      ),
-        .debug_gpr_we_o    ( gpr_we_debug_issue        ),
-        .debug_gpr_wdata_o ( gpr_wdata_debug_issue     ),
-        .debug_gpr_rdata_i ( gpr_rdata_debug_issue     ),
-
-        .debug_csr_req_o   ( csr_req_debug_csr         ),
-        .debug_csr_addr_o  ( csr_addr_debug_csr        ),
-        .debug_csr_we_o    ( csr_we_debug_csr          ),
-        .debug_csr_wdata_o ( csr_wdata_debug_csr       ),
-        .debug_csr_rdata_i ( csr_rdata_debug_csr       ),
         .*
     );
 
@@ -656,14 +581,6 @@ module ariane #(
     instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
     `endif
     `endif
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            fetch_enable <= 0;
-        end else begin
-            fetch_enable <= fetch_enable_i;
-        end
-    end
 
     `ifndef SYNTHESIS
     `ifndef verilator

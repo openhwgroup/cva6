@@ -26,12 +26,6 @@ module csr_regfile #(
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                       flush_o,
     output logic                       halt_csr_o,            // halt requested
-    // Debug CSR Port
-    input  logic                       debug_csr_req_i,       // Request from debug to read the CSR regfile
-    input  logic [11:0]                debug_csr_addr_i,      // Address of CSR
-    input  logic                       debug_csr_we_i,        // Is it a read or write?
-    input  logic [63:0]                debug_csr_wdata_i,     // Data to write
-    output logic [63:0]                debug_csr_rdata_o,     // Read data
     // commit acknowledge
     input  logic [NR_COMMIT_PORTS-1:0] commit_ack_i,          // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
@@ -93,10 +87,7 @@ module csr_regfile #(
     // ----------------
     // Assignments
     // ----------------
-    // Debug MUX
-    assign csr_addr = csr_t'(((debug_csr_req_i) ? debug_csr_addr_i : csr_addr_i));
-    // Output the read data directly
-    assign debug_csr_rdata_o = csr_rdata;
+    assign csr_addr = csr_t'(csr_addr_i);
 
     // ----------------
     // CSR Registers
@@ -549,16 +540,6 @@ module csr_regfile #(
             mret = 1'b0;
             sret = 1'b0;
         end
-        // ------------------------------
-        // Debug Multiplexer (Priority)
-        // ------------------------------
-        if (debug_csr_req_i) begin
-            // Use the data supplied by the debug unit
-            csr_wdata = debug_csr_wdata_i;
-            csr_we    = debug_csr_we_i;
-            csr_read  = ~debug_csr_we_i;
-        end
-
     end
 
     logic interrupt_global_enable;
@@ -621,23 +602,20 @@ module csr_regfile #(
         // -----------------
         // Privilege Check
         // -----------------
-        // only if this is not a CSR request from debug (debug has M privilege status)
-        if (!debug_csr_req_i) begin
-            // if we are reading or writing, check for the correct privilege level
-            if (csr_we || csr_read) begin
-                if ((priv_lvl_t'(priv_lvl_q & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
-                    csr_exception_o.cause = ILLEGAL_INSTR;
-                    csr_exception_o.valid = 1'b1;
-                end
-            end
-            // we got an exception in one of the processes above
-            // throw an illegal instruction exception
-            if (update_access_exception || read_access_exception) begin
+        // if we are reading or writing, check for the correct privilege level
+        if (csr_we || csr_read) begin
+            if ((priv_lvl_t'(priv_lvl_q & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
                 csr_exception_o.cause = ILLEGAL_INSTR;
-                // we don't set the tval field as this will be set by the commit stage
-                // this spares the extra wiring from commit to CSR and back to commit
                 csr_exception_o.valid = 1'b1;
             end
+        end
+        // we got an exception in one of the processes above
+        // throw an illegal instruction exception
+        if (update_access_exception || read_access_exception) begin
+            csr_exception_o.cause = ILLEGAL_INSTR;
+            // we don't set the tval field as this will be set by the commit stage
+            // this spares the extra wiring from commit to CSR and back to commit
+            csr_exception_o.valid = 1'b1;
         end
 
         // -------------------

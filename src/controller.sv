@@ -29,8 +29,6 @@ module controller (
     output logic            flush_tlb_o,            // Flush TLBs
 
     input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
-    input  logic            halt_debug_i,           // Halt request from debug
-    input  logic            debug_set_pc_i,         // Debug wants to set the PC
     output logic            halt_o,                 // Halt signal to commit stage
     input  logic            eret_i,                 // Return from exception
     input  logic            ex_valid_i,             // We got an exception, flush the pipeline
@@ -134,9 +132,8 @@ module controller (
         // ---------------------------------
         // 1. Exception
         // 2. Return from exception
-        // 3. Debug
         // ---------------------------------
-        if (ex_valid_i || eret_i || debug_set_pc_i) begin
+        if (ex_valid_i || eret_i) begin
             // don't flush pcgen as we want to take the exception: Flush PCGen is not a flush signal
             // for the PC Gen stage but instead tells it to take the PC we gave it
             set_pc_commit_o        = 1'b0;
@@ -158,7 +155,7 @@ module controller (
     // ----------------------
     always_comb begin
         // halt the core if the fence is active
-        halt_o = halt_debug_i || halt_csr_i || fence_active_q;
+        halt_o = halt_csr_i || fence_active_q;
     end
 
     // ----------------------
