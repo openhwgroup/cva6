@@ -159,7 +159,7 @@ module issue_stage #(
         .rs2_o               ( rs2_iro_sb                      ),
         .rs2_i               ( rs2_sb_iro                      ),
         .rs2_valid_i         ( rs2_valid_iro_sb                ),
-        .rd_clobber_i        ( rd_clobber_gpr_sb_iro           ),
+        .rd_clobber_i        ( rd_clobber_sb_iro               ),
         .*
     );
 
