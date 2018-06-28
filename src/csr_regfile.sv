@@ -24,8 +24,8 @@ module csr_regfile #(
     input  logic                  time_irq_i,                 // Timer threw a interrupt
 
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
-    output logic                       flush_o,
-    output logic                       halt_csr_o,            // halt requested
+    output logic                  flush_o,
+    output logic                  halt_csr_o,                 // halt requested
     // commit acknowledge
     input  logic [NR_COMMIT_PORTS-1:0] commit_ack_i,          // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
@@ -94,6 +94,8 @@ module csr_regfile #(
     // ----------------
     // privilege level register
     priv_lvl_t   priv_lvl_d, priv_lvl_q;
+    // we are in debug
+    logic        debug_mode_q, debug_mode_d;
 
     typedef struct packed {
         logic         sd;     // signal dirty - read-only - hardwired zero
@@ -122,8 +124,27 @@ module csr_regfile #(
         logic         uie;    // user interrupts enable - hardwired to zero
     } status_t;
 
-    status_t mstatus_q, mstatus_d;
+    typedef struct packed {
+        logic [31:28] xdebugver;
+        logic [27:16] zero2;
+        logic         ebreakm;
+        logic         zero1;
+        logic         ebreaks;
+        logic         ebreaku;
+        logic         stepie;
+        logic         stopcount;
+        logic         stoptime;
+        logic [8:6]   cause;
+        logic         zero0;
+        logic         mprven;
+        logic         nmip;
+        logic         step;
+        logic         prv;
+    } dcsr_t;
 
+    dcsr_t       dcsr_q,     dcsr_d;
+    logic [63:0] dpc_q,      dpc_d;
+    status_t     mstatus_q,  mstatus_d;
     logic [63:0] mtvec_q,    mtvec_d;
     logic [63:0] medeleg_q,  medeleg_d;
     logic [63:0] mideleg_q,  mideleg_d;
@@ -169,6 +190,8 @@ module csr_regfile #(
 
         if (csr_read) begin
             case (csr_addr.address)
+                CSR_DCSR:               csr_rdata = {31'b0, dcsr_q};
+                CSR_DPC:                csr_rdata = dpc_q;
 
                 CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h3fffe1fee;
                 CSR_SIE:                csr_rdata = mie_q & mideleg_q;
@@ -251,6 +274,9 @@ module csr_regfile #(
         perf_data_o             = 'b0;
 
         priv_lvl_d              = priv_lvl_q;
+        debug_mode_d            = debug_mode_q;
+        dcsr_d                  = dcsr_q;
+        dpc_d                   = dpc_q;
         mstatus_d               = mstatus_q;
         mtvec_d                 = mtvec_q;
         medeleg_d               = medeleg_q;
@@ -275,6 +301,14 @@ module csr_regfile #(
         // check for correct access rights and that we are writing
         if (csr_we) begin
             case (csr_addr.address)
+                // debug CSR
+                CSR_DCSR: begin
+                    dcsr_d = csr_wdata[31:0];
+                    // debug is implemented
+                    dcsr_d.xdebugver = 4'h4;
+                    dcsr_d.nmip = 1'b0; // currently not supported
+                end
+                CSR_DPC:                dpc_d = csr_wdata;
                 // sstatus is a subset of mstatus - mask it accordingly
                 CSR_SSTATUS: begin
                     mstatus_d   = csr_wdata & 64'h3fffe1fee;
@@ -608,6 +642,11 @@ module csr_regfile #(
                 csr_exception_o.cause = ILLEGAL_INSTR;
                 csr_exception_o.valid = 1'b1;
             end
+            // check access to debug mode only CSRs
+            if (csr_addr_i[11:4] == 8'h7b && !debug_mode_q) begin
+                csr_exception_o.cause = ILLEGAL_INSTR;
+                csr_exception_o.valid = 1'b1;
+            end
         end
         // we got an exception in one of the processes above
         // throw an illegal instruction exception
@@ -675,6 +714,10 @@ module csr_regfile #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             priv_lvl_q             <= PRIV_LVL_M;
+            // debug signals
+            debug_mode_q           <= 1'b0;
+            dcsr_q                 <= '0;
+            dpc_q                  <= 64'b0;
             // machine mode registers
             mstatus_q              <= 64'b0;
             mtvec_q                <= {boot_addr_i[63:2], 2'b0}; // set to boot address + direct mode
@@ -704,6 +747,10 @@ module csr_regfile #(
             wfi_q                  <= 1'b0;
         end else begin
             priv_lvl_q             <= priv_lvl_d;
+            // debug signals
+            debug_mode_q           <= debug_mode_d;
+            dcsr_q                 <= dcsr_d;
+            dpc_q                  <= dpc_d;
             // machine mode registers
             mstatus_q              <= mstatus_d;
             mtvec_q                <= mtvec_d;

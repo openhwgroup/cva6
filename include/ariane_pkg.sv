@@ -403,6 +403,11 @@ package ariane_pkg;
         CSR_MINSTRET       = 12'hB02,
         CSR_DCACHE         = 12'h701,
         CSR_ICACHE         = 12'h700,
+        // Debug CSR
+        CSR_DCSR           = 12'h7b0,
+        CSR_DPC            = 12'h7b1,
+        CSR_DSCRATCH0      = 12'h7b2, // optional
+        CSR_DSCRATCH1      = 12'h7b3, // optional
         // Counters and Timers
         CSR_CYCLE          = 12'hC00,
         CSR_TIME           = 12'hC01,
