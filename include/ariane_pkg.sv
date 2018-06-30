@@ -143,7 +143,7 @@ package ariane_pkg;
                                // set lower than operations
                                SLTS, SLTU,
                                // CSR functions
-                               MRET, SRET, ECALL, WFI, FENCE, FENCE_I, SFENCE_VMA, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
+                               MRET, SRET, DRET, ECALL, WFI, FENCE, FENCE_I, SFENCE_VMA, CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
                                // LSU functions
                                LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU,
                                // Atomic Memory Operations
@@ -278,10 +278,10 @@ package ariane_pkg;
     localparam OPCODE_C_J       = 3'b101;
     localparam OPCODE_C_BEQZ    = 3'b110;
     localparam OPCODE_C_BNEZ    = 3'b111;
+
     // --------------------
     // Atomics
     // --------------------
-
     typedef enum logic [3:0] {
         AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND, AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
     } amo_t;
@@ -319,6 +319,8 @@ package ariane_pkg;
         logic [ASID_WIDTH-1:0] asid;
         pte_t                  content;
     } tlb_update_t;
+
+    localparam logic [3:0] MODE_SV39 = 4'h8;
 
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).

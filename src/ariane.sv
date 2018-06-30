@@ -184,7 +184,10 @@ module ariane #(
     logic                     tsr_csr_id;
     logic                     dcache_en_csr_nbdcache;
     logic                     icache_en_csr_frontend;
-
+    logic                     ebreakm_csr_id;
+    logic                     ebreaks_csr_id;
+    logic                     ebreaku_csr_id;
+    logic                     debug_mode_csr_id;
     // ----------------------------
     // Performance Counters <-> *
     // ----------------------------
@@ -262,6 +265,10 @@ module ariane #(
         .issue_instr_ack_i          ( issue_instr_issue_id            ),
 
         .priv_lvl_i                 ( priv_lvl                        ),
+        .ebreakm_i                  ( ebreakm_csr_id                  ),
+        .ebreaks_i                  ( ebreaks_csr_id                  ),
+        .ebreaku_i                  ( ebreaku_csr_id                  ),
+        .debug_mode_i               ( debug_mode_csr_id               ),
         .tvm_i                      ( tvm_csr_id                      ),
         .tw_i                       ( tw_csr_id                       ),
         .tsr_i                      ( tsr_csr_id                      ),
@@ -419,6 +426,7 @@ module ariane #(
     commit_stage commit_stage_i (
         .halt_i                 ( halt_ctrl                     ),
         .exception_o            ( ex_commit                     ),
+        .debug_mode_i           ( debug_mode_csr_id             ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
         .no_st_pending_i        ( no_st_pending_ex_commit       ),
@@ -469,6 +477,10 @@ module ariane #(
         .tvm_o                  ( tvm_csr_id                    ),
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
+        .ebreakm_o              ( ebreakm_csr_id                ),
+        .ebreaks_o              ( ebreaks_csr_id                ),
+        .ebreaku_o              ( ebreaku_csr_id                ),
+        .debug_mode_o           ( debug_mode_csr_id             ),
         .dcache_en_o            ( dcache_en_csr_nbdcache        ),
         .icache_en_o            ( icache_en_csr_frontend        ),
         .perf_addr_o            ( addr_csr_perf                 ),

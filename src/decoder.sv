@@ -29,6 +29,10 @@ module decoder (
     input  exception_t         ex_i,                    // if an exception occured in if
     // From CSR
     input  priv_lvl_t          priv_lvl_i,              // current privilege level
+    input  logic               ebreakm_i,               // take ebreak in M-mode
+    input  logic               ebreaks_i,               // take ebreak in S-mode
+    input  logic               ebreaku_i,               // take ebreak in U-mode
+    input  logic               debug_mode_i,            // we are in debug mode
     input  logic               tvm_i,                   // trap virtual memory
     input  logic               tw_i,                    // timeout wait
     input  logic               tsr_i,                   // trap sret
@@ -93,9 +97,17 @@ module decoder (
                                 // ECALL -> inject exception
                                 12'b0: ecall  = 1'b1;
                                 // EBREAK -> inject exception
-                                12'b1: ebreak = 1'b1;
+                                12'b1: begin
+                                    instruction_o.op = ADD;
+                                    // otherwise decode as nop
+                                    unique case (priv_lvl_i)
+                                        PRIV_LVL_M: ebreak = ebreakm_i;
+                                        PRIV_LVL_S: ebreak = ebreaks_i;
+                                        PRIV_LVL_U: ebreak = ebreaku_i;
+                                    endcase
+                                end
                                 // SRET
-                                12'b100000010: begin
+                                12'b1_0000_0010: begin
                                     instruction_o.op = SRET;
                                     // check privilege level, SRET can only be executed in S and M mode
                                     // we'll just decode an illegal instruction if we are in the wrong privilege level
@@ -112,12 +124,18 @@ module decoder (
                                     end
                                 end
                                 // MRET
-                                12'b1100000010: begin
+                                12'b11_0000_0010: begin
                                     instruction_o.op = MRET;
                                     // check privilege level, MRET can only be executed in M mode
                                     // otherwise we decode an illegal instruction
                                     if (priv_lvl_i inside {PRIV_LVL_U, PRIV_LVL_S})
                                         illegal_instr = 1'b1;
+                                end
+                                // DRET
+                                12'b111_1011_0010: begin
+                                    instruction_o.op = DRET;
+                                    // check that we are in debug mode when executing this instruction
+                                    illegal_instr = (!debug_mode_i) ? 1'b1 : 1'b0;
                                 end
                                 // WFI
                                 12'b1_0000_0101: begin

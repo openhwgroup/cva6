@@ -63,6 +63,10 @@ module csr_regfile #(
     output logic                  tvm_o,                      // trap virtual memory
     output logic                  tw_o,                       // timeout wait
     output logic                  tsr_o,                      // trap sret
+    output logic                  ebreakm_o,                  // take ebreak in M-mode
+    output logic                  ebreaks_o,                  // take ebreak in S-mode
+    output logic                  ebreaku_o,                  // take ebreak in U-mode
+    output logic                  debug_mode_o,
     // Caches
     output logic                  icache_en_o,                // L1 ICache Enable
     output logic                  dcache_en_o,                // L1 DCache Enable
@@ -79,7 +83,7 @@ module csr_regfile #(
     priv_lvl_t   trap_to_priv_lvl;
     // register for enabling load store address translation, this is critical, hence the register
     logic        en_ld_st_translation_d, en_ld_st_translation_q;
-
+    logic  mprv;
     logic  mret;  // return from M-mode exception
     logic  sret;  // return from S-mode exception
 
@@ -88,7 +92,6 @@ module csr_regfile #(
     // Assignments
     // ----------------
     assign csr_addr = csr_t'(csr_addr_i);
-
     // ----------------
     // CSR Registers
     // ----------------
@@ -204,7 +207,7 @@ module csr_regfile #(
                 CSR_STVAL:              csr_rdata = stval_q;
                 CSR_SATP: begin
                     // intercept reads to SATP if in S-Mode and TVM is enabled
-                    if (priv_lvl_q == PRIV_LVL_S && mstatus_q.tvm)
+                    if (priv_lvl_o == PRIV_LVL_S && mstatus_q.tvm)
                         read_access_exception = 1'b1;
                     else
                         csr_rdata = satp_q;
@@ -306,7 +309,10 @@ module csr_regfile #(
                     dcsr_d = csr_wdata[31:0];
                     // debug is implemented
                     dcsr_d.xdebugver = 4'h4;
-                    dcsr_d.nmip = 1'b0; // currently not supported
+                    // currently not supported
+                    dcsr_d.nmip      = 1'b0;
+                    dcsr_d.stopcount = 1'b0;
+                    dcsr_d.stoptime  = 1'b0;
                 end
                 CSR_DPC:                dpc_d = csr_wdata;
                 // sstatus is a subset of mstatus - mask it accordingly
@@ -340,7 +346,7 @@ module csr_regfile #(
                 // supervisor address translation and protection
                 CSR_SATP: begin
                     // intercept SATP writes if in S-Mode and TVM is enabled
-                    if (priv_lvl_q == PRIV_LVL_S && mstatus_q.tvm)
+                    if (priv_lvl_o == PRIV_LVL_S && mstatus_q.tvm)
                         update_access_exception = 1'b1;
                     else begin
                         sapt      = satp_t'(csr_wdata);
@@ -435,8 +441,8 @@ module csr_regfile #(
         // update exception CSRs
         // we got an exception update cause, pc and stval register
         trap_to_priv_lvl = PRIV_LVL_M;
-        // Exception is taken
-        if (ex_i.valid) begin
+        // Exception is taken and we are not in debug mode
+        if (!debug_mode_q && ex_i.valid) begin
             // do not flush, flush is reserved for CSR writes with side effects
             flush_o   = 1'b0;
             // figure out where to trap to
@@ -447,7 +453,7 @@ module csr_regfile #(
                 (~ex_i.cause[63] && medeleg_q[ex_i.cause[5:0]])) begin
                 // traps never transition from a more-privileged mode to a less privileged mode
                 // so if we are already in M mode, stay there
-                trap_to_priv_lvl = (priv_lvl_q == PRIV_LVL_M) ? PRIV_LVL_M : PRIV_LVL_S;
+                trap_to_priv_lvl = (priv_lvl_o == PRIV_LVL_M) ? PRIV_LVL_M : PRIV_LVL_S;
             end
 
             // trap to supervisor mode
@@ -484,12 +490,12 @@ module csr_regfile #(
         // ------------------------------
         // Set the address translation at which the load and stores should occur
         // we can use the previous values since changing the address translation will always involve a pipeline flush
-        if (mstatus_q.mprv && satp_q.mode == 4'h8 && (mstatus_q.mpp != PRIV_LVL_M))
+        if (mprv && satp_q.mode == MODE_SV39 && (mstatus_q.mpp != PRIV_LVL_M))
             en_ld_st_translation_d = 1'b1;
         else // otherwise we go with the regular settings
             en_ld_st_translation_d = en_translation_o;
 
-        ld_st_priv_lvl_o = (mstatus_q.mprv) ? mstatus_q.mpp : priv_lvl_o;
+        ld_st_priv_lvl_o = (mprv) ? mstatus_q.mpp : priv_lvl_o;
         en_ld_st_translation_o = en_ld_st_translation_q;
         // ------------------------------
         // Return from Environment
@@ -618,7 +624,10 @@ module csr_regfile #(
         // An interrupt i will be taken if bit i is set in both mip and mie, and if interrupts are globally enabled.
         // By default, M-mode interrupts are globally enabled if the hart’s current privilege mode  is less
         // than M, or if the current privilege mode is M and the MIE bit in the mstatus register is set.
-        interrupt_global_enable = (mstatus_q.mie && (priv_lvl_q == PRIV_LVL_M)) || (priv_lvl_q inside {PRIV_LVL_S, PRIV_LVL_U});
+        // All interrupts are masked in debug mode
+        interrupt_global_enable = ~debug_mode_q
+                                    & ((mstatus_q.mie & (priv_lvl_o == PRIV_LVL_M))
+                                    | (priv_lvl_o != PRIV_LVL_M));
         if (interrupt_cause[63] && interrupt_global_enable) begin
             // we can set the cause here
             csr_exception_o.cause = interrupt_cause;
@@ -626,7 +635,7 @@ module csr_regfile #(
             // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
             // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
             if (mideleg_q[interrupt_cause[5:0]]) begin
-                if ((mstatus_q.sie && priv_lvl_q == PRIV_LVL_S) || priv_lvl_q == PRIV_LVL_U)
+                if ((mstatus_q.sie && priv_lvl_o == PRIV_LVL_S) || priv_lvl_o == PRIV_LVL_U)
                     csr_exception_o.valid = 1'b1;
             end else begin
                 csr_exception_o.valid = 1'b1;
@@ -638,7 +647,7 @@ module csr_regfile #(
         // -----------------
         // if we are reading or writing, check for the correct privilege level
         if (csr_we || csr_read) begin
-            if ((priv_lvl_t'(priv_lvl_q & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
+            if ((priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
                 csr_exception_o.cause = ILLEGAL_INSTR;
                 csr_exception_o.valid = 1'b1;
             end
@@ -656,15 +665,14 @@ module csr_regfile #(
             // this spares the extra wiring from commit to CSR and back to commit
             csr_exception_o.valid = 1'b1;
         end
-
         // -------------------
         // Wait for Interrupt
         // -------------------
         // if there is any interrupt pending un-stall the core
         if (|mip_q) begin
             wfi_d = 1'b0;
-        // or alternatively if there is no exception pending, wait here for the interrupt
-        end else if (csr_op_i == WFI && !ex_i.valid) begin
+        // or alternatively if there is no exception pending and we are not in debug mode wait here for the interrupt
+        end else if (!debug_mode_q && csr_op_i == WFI && !ex_i.valid) begin
             wfi_d = 1'b1;
         end
     end
@@ -673,20 +681,27 @@ module csr_regfile #(
     // Output Assignments
     // -------------------
     assign csr_rdata_o      = csr_rdata;
-    assign priv_lvl_o       = priv_lvl_q;
+    // in debug mode we execute with privilege level M
+    assign priv_lvl_o       = (debug_mode_q) ? PRIV_LVL_M : priv_lvl_q;
     // MMU outputs
     assign satp_ppn_o       = satp_q.ppn;
     assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
     assign sum_o            = mstatus_q.sum;
     // we support bare memory addressing and SV39
-    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_q != PRIV_LVL_M) ? 1'b1 : 1'b0;
+    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_o != PRIV_LVL_M) ? 1'b1 : 1'b0;
     assign mxr_o            = mstatus_q.mxr;
     assign tvm_o            = mstatus_q.tvm;
     assign tw_o             = mstatus_q.tw;
     assign tsr_o            = mstatus_q.tsr;
     assign halt_csr_o       = wfi_q;
-    assign icache_en_o      = icache_q[0];
+    assign icache_en_o      = icache_q[0] & (~debug_mode_q);
     assign dcache_en_o      = dcache_q[0];
+    // determine if mprv needs to be considered if in debug mode
+    assign mprv             = (debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
+    assign debug_mode_o     = debug_mode_q;
+    assign ebreakm_o        = dcsr_q.ebreakm;
+    assign ebreaks_o        = dcsr_q.ebreaks;
+    assign ebreaku_o        = dcsr_q.ebreaku;
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
