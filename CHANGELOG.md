@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### 3.0.0
+
+### Added
+
+- Added RISC-V compliant debug (interface changes)
+- Implemented basic re-naming
+
+### Changed
+
+- Bugfix in cache-refill AXI logic (AXI protocol violation)
+
 ### 2.0.2 - 2018-04-08
 
 ### Changed
