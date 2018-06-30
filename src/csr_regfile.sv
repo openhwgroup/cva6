@@ -546,6 +546,10 @@ module csr_regfile #(
                 dcsr_d.cause = DBG_CAUSE_SINGLE_STEP;
             end
         end
+        // go in halt-state again when we encounter an exception
+        if (debug_mode_q && ex_i.valid && ex_i.cause == BREAKPOINT) begin
+            set_debug_pc_o = 1'b1;
+        end
 
         // ------------------------------
         // MPRV - Modify Privilege Level
