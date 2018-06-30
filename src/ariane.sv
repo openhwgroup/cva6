@@ -41,12 +41,13 @@ module ariane #(
         AXI_BUS.Master                         data_if,                // data cache refill port
         AXI_BUS.Master                         bypass_if,              // bypass axi port (disabled cache or uncacheable access)
         // Interrupt inputs
-        input  logic [1:0]                     irq_i,                  // level sensitive IR lines, mip & sip
-        input  logic                           ipi_i,                  // inter-processor interrupts
+        input  logic [1:0]                     irq_i,                  // level sensitive IR lines, mip & sip (async)
+        input  logic                           ipi_i,                  // inter-processor interrupts (async)
         output logic                           sec_lvl_o,              // current privilege level out
         // Timer facilities
         input  logic [63:0]                    time_i,                 // global time (most probably coming from an RTC)
-        input  logic                           time_irq_i              // timer interrupt in
+        input  logic                           time_irq_i,             // timer interrupt in (async)
+        input  logic                           debug_req_i             // debug request (async)
     );
 
     // ------------------------------------------
@@ -184,10 +185,8 @@ module ariane #(
     logic                     tsr_csr_id;
     logic                     dcache_en_csr_nbdcache;
     logic                     icache_en_csr_frontend;
-    logic                     ebreakm_csr_id;
-    logic                     ebreaks_csr_id;
-    logic                     ebreaku_csr_id;
     logic                     debug_mode_csr_id;
+    logic                     single_step_csr_commit;
     // ----------------------------
     // Performance Counters <-> *
     // ----------------------------
@@ -217,6 +216,7 @@ module ariane #(
     logic                     flush_dcache_ctrl_ex;
     logic                     flush_dcache_ack_ex_ctrl;
     logic                     flush_icache_ctrl_icache;
+    logic                     set_debug_pc;
 
     assign sec_lvl_o = priv_lvl;
     assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
@@ -237,6 +237,7 @@ module ariane #(
         .resolved_branch_i   ( resolved_branch               ),
         .pc_commit_i         ( pc_commit                     ),
         .set_pc_commit_i     ( set_pc_ctrl_pcgen             ),
+        .set_debug_pc_i      ( set_debug_pc                  ),
         .epc_i               ( epc_commit_pcgen              ),
         .eret_i              ( eret                          ),
         .trap_vector_base_i  ( trap_vector_base_commit_pcgen ),
@@ -265,9 +266,6 @@ module ariane #(
         .issue_instr_ack_i          ( issue_instr_issue_id            ),
 
         .priv_lvl_i                 ( priv_lvl                        ),
-        .ebreakm_i                  ( ebreakm_csr_id                  ),
-        .ebreaks_i                  ( ebreaks_csr_id                  ),
-        .ebreaku_i                  ( ebreaku_csr_id                  ),
         .debug_mode_i               ( debug_mode_csr_id               ),
         .tvm_i                      ( tvm_csr_id                      ),
         .tw_i                       ( tw_csr_id                       ),
@@ -426,7 +424,8 @@ module ariane #(
     commit_stage commit_stage_i (
         .halt_i                 ( halt_ctrl                     ),
         .exception_o            ( ex_commit                     ),
-        .debug_mode_i           ( debug_mode_csr_id             ),
+        // .debug_mode_i           ( debug_mode_csr_id             ),
+        .single_step_i          ( single_step_csr_commit        ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
         .no_st_pending_i        ( no_st_pending_ex_commit       ),
@@ -456,6 +455,7 @@ module ariane #(
         .flush_o                ( flush_csr_ctrl                ),
         .halt_csr_o             ( halt_csr_ctrl                 ),
         .commit_ack_i           ( commit_ack                    ),
+        .commit_instr_i         ( commit_instr_id_commit        ),
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),
         .csr_addr_i             ( csr_addr_ex_csr               ),
@@ -465,6 +465,7 @@ module ariane #(
         .csr_exception_o        ( csr_exception_csr_commit      ),
         .epc_o                  ( epc_commit_pcgen              ),
         .eret_o                 ( eret                          ),
+        .set_debug_pc_o         ( set_debug_pc                  ),
         .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
         .priv_lvl_o             ( priv_lvl                      ),
         .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
@@ -477,10 +478,8 @@ module ariane #(
         .tvm_o                  ( tvm_csr_id                    ),
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
-        .ebreakm_o              ( ebreakm_csr_id                ),
-        .ebreaks_o              ( ebreaks_csr_id                ),
-        .ebreaku_o              ( ebreaku_csr_id                ),
         .debug_mode_o           ( debug_mode_csr_id             ),
+        .single_step_o          ( single_step_csr_commit        ),
         .dcache_en_o            ( dcache_en_csr_nbdcache        ),
         .icache_en_o            ( icache_en_csr_frontend        ),
         .perf_addr_o            ( addr_csr_perf                 ),
@@ -532,6 +531,7 @@ module ariane #(
         // control ports
         .eret_i                 ( eret                          ),
         .ex_valid_i             ( ex_commit.valid               ),
+        .set_debug_pc_i         ( set_debug_pc                  ),
         .flush_csr_i            ( flush_csr_ctrl                ),
         .resolved_branch_i      ( resolved_branch               ),
         .fence_i_i              ( fence_i_commit_controller     ),

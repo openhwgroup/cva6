@@ -44,6 +44,7 @@ module frontend #(
     input  logic               eret_i,             // return from exception
     input  logic [63:0]        trap_vector_base_i, // base of trap vector
     input  logic               ex_valid_i,         // exception is valid - from commit
+    input  logic               set_debug_pc_i,     // jump to debug address
     // Instruction Fetch
     AXI_BUS.Master             axi,
     output logic               l1_icache_miss_o,    // instruction cache missed
@@ -355,9 +356,16 @@ module frontend #(
             // we came here from a flush request of a CSR instruction,
             // as CSR instructions do not exist in a compressed form
             // we can unconditionally do PC + 4 here
+            // TODO(zarubaf) This adder can at least be merged with the one in the csr_regfile stage
             npc_d    = pc_commit_i + 64'h4;
         end
-
+        // -------------------------------
+        // 6. Debug
+        // -------------------------------
+        // enter debug on a hard-coded base-address
+        if (set_debug_pc_i) begin
+            npc_d = 64'h1000;
+        end
         fetch_vaddr = fetch_address;
     end
 

@@ -32,9 +32,6 @@ module id_stage (
     input  logic                  issue_instr_ack_i,   // issue stage acknowledged sampling of instructions
     // from CSR file
     input  priv_lvl_t             priv_lvl_i,          // current privilege level
-    input  logic                  ebreakm_i,           // take ebreak in M-mode
-    input  logic                  ebreaks_i,           // take ebreak in S-mode
-    input  logic                  ebreaku_i,           // take ebreak in U-mode
     input  logic                  debug_mode_i,        // we are in debug mode
     input  logic                  tvm_i,
     input  logic                  tw_i,

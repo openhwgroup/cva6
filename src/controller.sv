@@ -32,6 +32,7 @@ module controller (
     output logic            halt_o,                 // Halt signal to commit stage
     input  logic            eret_i,                 // Return from exception
     input  logic            ex_valid_i,             // We got an exception, flush the pipeline
+    input  logic            set_debug_pc_i,         // set the debug pc from CSR
     input  branchpredict_t  resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
     input  logic            flush_csr_i,            // We got an instruction which altered the CSR, flush the pipeline
     input  logic            fence_i_i,              // fence.i in
@@ -133,7 +134,7 @@ module controller (
         // 1. Exception
         // 2. Return from exception
         // ---------------------------------
-        if (ex_valid_i || eret_i) begin
+        if (ex_valid_i || eret_i || set_debug_pc_i) begin
             // don't flush pcgen as we want to take the exception: Flush PCGen is not a flush signal
             // for the PC Gen stage but instead tells it to take the PC we gave it
             set_pc_commit_o        = 1'b0;

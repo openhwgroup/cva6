@@ -27,7 +27,8 @@ module csr_regfile #(
     output logic                  flush_o,
     output logic                  halt_csr_o,                 // halt requested
     // commit acknowledge
-    input  logic [NR_COMMIT_PORTS-1:0] commit_ack_i,          // Commit acknowledged a instruction -> increase instret CSR
+    input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i, // the instruction we want to commit
+    input  logic [NR_COMMIT_PORTS-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
     input  logic  [3:0]           core_id_i,                  // Core ID is considered static
     input  logic  [5:0]           cluster_id_i,               // Cluster ID is considered static
@@ -59,14 +60,14 @@ module csr_regfile #(
     // external interrupts
     input  logic [1:0]            irq_i,                      // external interrupt in
     input  logic                  ipi_i,                      // inter processor interrupt -> connected to machine mode sw
-    // Visualization Support
+    input  logic                  debug_req_i,                // debug request in
+    output logic                  set_debug_pc_o,
+    // Virtualization Support
     output logic                  tvm_o,                      // trap virtual memory
     output logic                  tw_o,                       // timeout wait
     output logic                  tsr_o,                      // trap sret
-    output logic                  ebreakm_o,                  // take ebreak in M-mode
-    output logic                  ebreaks_o,                  // take ebreak in S-mode
-    output logic                  ebreaku_o,                  // take ebreak in U-mode
-    output logic                  debug_mode_o,
+    output logic                  debug_mode_o,               // we are in debug mode -> that will change some decoding
+    output logic                  single_step_o,              // we are in single-step mode
     // Caches
     output logic                  icache_en_o,                // L1 ICache Enable
     output logic                  dcache_en_o,                // L1 DCache Enable
@@ -86,6 +87,7 @@ module csr_regfile #(
     logic  mprv;
     logic  mret;  // return from M-mode exception
     logic  sret;  // return from S-mode exception
+    logic  dret;  // return from debug mode
 
     csr_t  csr_addr;
     // ----------------
@@ -99,6 +101,7 @@ module csr_regfile #(
     priv_lvl_t   priv_lvl_d, priv_lvl_q;
     // we are in debug
     logic        debug_mode_q, debug_mode_d;
+    logic        next_pc;
 
     typedef struct packed {
         logic         sd;     // signal dirty - read-only - hardwired zero
@@ -273,6 +276,8 @@ module csr_regfile #(
         flush_o                 = 1'b0;
         update_access_exception = 1'b0;
 
+        set_debug_pc_o          = 1'b0;
+
         perf_we_o               = 1'b0;
         perf_data_o             = 'b0;
 
@@ -442,6 +447,7 @@ module csr_regfile #(
         // we got an exception update cause, pc and stval register
         trap_to_priv_lvl = PRIV_LVL_M;
         // Exception is taken and we are not in debug mode
+        // exceptions in debug mode don't update any fields
         if (!debug_mode_q && ex_i.valid) begin
             // do not flush, flush is reserved for CSR writes with side effects
             flush_o   = 1'b0;
@@ -484,7 +490,63 @@ module csr_regfile #(
             end
 
             priv_lvl_d = trap_to_priv_lvl;
+
         end
+
+        // ------------------------------
+        // Debug
+        // ------------------------------
+        // Explains why Debug Mode was entered.
+        // When there are multiple reasons to enter Debug Mode in a single cycle, hardware should set cause to the cause with the highest priority.
+        // 1: An ebreak instruction was executed. (priority 3)
+        // 2: The Trigger Module caused a breakpoint exception. (priority 4)
+        // 3: The debugger requested entry to Debug Mode. (priority 2)
+        // 4: The hart single stepped because step was set. (priority 1)
+        // we are currently not in debug mode and could potentially enter
+        if (!debug_mode_q) begin
+            dcsr_d.prv = priv_lvl_o;
+            // trigger module fired
+
+            // caused by a breakpoint
+            if (ex_i.valid && ex_i.cause == BREAKPOINT) begin
+                // check that we actually want to enter debug depending on the privilege level we are currently in
+                unique case (priv_lvl_o)
+                    PRIV_LVL_M: begin
+                        debug_mode_d = dcsr_q.ebreakm;
+                        set_debug_pc_o = dcsr_q.ebreakm;
+                    end
+                    PRIV_LVL_S: begin
+                        debug_mode_d = dcsr_q.ebreaks;
+                        set_debug_pc_o = dcsr_q.ebreaks;
+                    end
+                    PRIV_LVL_U: begin
+                        debug_mode_d = dcsr_q.ebreaku;
+                        set_debug_pc_o = dcsr_q.ebreaku;
+                    end
+                    default:;
+                endcase
+                // save PC of next this instruction e.g.: the next one to be executed
+                dpc_d = pc_i;
+                dcsr_d.cause = DBG_CAUSE_BREAKPOINT;
+            end
+
+            // we've got a debug request (and we have an instruction which we can associate it to)
+            if (debug_req_i && (|commit_ack_i)) begin
+                dpc_d = next_pc;
+                debug_mode_d = 1'b1;
+                set_debug_pc_o = 1'b1;
+                dcsr_d.cause = DBG_CAUSE_REQUEST;
+            end
+
+            // single step enable and we just retired an instruction
+            if (dcsr_q.step && (|commit_ack_i)) begin
+                dpc_d = next_pc;
+                debug_mode_d = 1'b1;
+                set_debug_pc_o = 1'b1;
+                dcsr_d.cause = DBG_CAUSE_SINGLE_STEP;
+            end
+        end
+
         // ------------------------------
         // MPRV - Modify Privilege Level
         // ------------------------------
@@ -529,6 +591,16 @@ module csr_regfile #(
             mstatus_d.spie = 1'b1;
         end
 
+        // return from debug mode
+        if (dret) begin
+            // return from exception, IF doesn't care from where we are returning
+            eret_o = 1'b1;
+            // restore the previous privilege level
+            priv_lvl_d     = priv_lvl_t'(dcsr_q.prv);
+            // actually return from debug mode
+            debug_mode_d = 1'b0;
+        end
+
         // --------------------
         // Counters
         // --------------------
@@ -570,6 +642,12 @@ module csr_regfile #(
                 csr_read = 1'b0;
                 mret     = 1'b1; // signal a return from machine mode
             end
+            DRET: begin
+                // the return should not have any write or read side-effects
+                csr_we   = 1'b0;
+                csr_read = 1'b0;
+                dret     = 1'b1; // signal a return from debug mode
+            end // DRET:
             default: begin
                 csr_we   = 1'b0;
                 csr_read = 1'b0;
@@ -579,6 +657,7 @@ module csr_regfile #(
         if (ex_i.valid) begin
             mret = 1'b0;
             sret = 1'b0;
+            dret = 1'b0;
         end
     end
 
@@ -625,9 +704,12 @@ module csr_regfile #(
         // By default, M-mode interrupts are globally enabled if the hart’s current privilege mode  is less
         // than M, or if the current privilege mode is M and the MIE bit in the mstatus register is set.
         // All interrupts are masked in debug mode
-        interrupt_global_enable = ~debug_mode_q
-                                    & ((mstatus_q.mie & (priv_lvl_o == PRIV_LVL_M))
-                                    | (priv_lvl_o != PRIV_LVL_M));
+        interrupt_global_enable = (~debug_mode_q)
+                                // interrupts are enabled during single step or we are not stepping
+                                & (~dcsr_q.step | dcsr_q.stepie)
+                                & ((mstatus_q.mie & (priv_lvl_o == PRIV_LVL_M))
+                                | (priv_lvl_o != PRIV_LVL_M));
+
         if (interrupt_cause[63] && interrupt_global_enable) begin
             // we can set the cause here
             csr_exception_o.cause = interrupt_cause;
@@ -677,6 +759,57 @@ module csr_regfile #(
         end
     end
 
+    // output assignments dependent on privilege mode
+    always_comb begin : priv_output
+        trap_vector_base_o = {mtvec_q[63:2], 2'b0};
+        // output user mode stvec
+        if (trap_to_priv_lvl == PRIV_LVL_S) begin
+            trap_vector_base_o = {stvec_q[63:2], 2'b0};
+        end
+
+        // check if we are in vectored mode, if yes then do BASE + 4 * cause
+        // we are imposing an additional alignment-constraint of 64 * 4 bytes since
+        // we want to spare the costly addition
+        if ((mtvec_q[0] || stvec_q[0]) && csr_exception_o.cause[63]) begin
+            trap_vector_base_o[7:2] = csr_exception_o.cause[5:0];
+        end
+
+        epc_o = mepc_q;
+        // we are returning from supervisor mode, so take the sepc register
+        if (sret) begin
+            epc_o = sepc_q;
+        end
+        // we are returning from debug mode, to take the dpc register
+        if (dret) begin
+            epc_o = dpc_q;
+        end
+    end
+
+    // calculate the next PC based on the current one
+    always_comb begin : next_pc_calc
+        automatic logic [63:0] pc;
+        automatic logic [63:0] branch_target;
+        automatic logic branch_taken;
+        automatic logic is_compressed;
+        pc = commit_instr_i[0].pc;
+        branch_taken = commit_instr_i[0].bp.valid & commit_instr_i[0].bp.predict_taken;
+        is_compressed = commit_instr_i[0].is_compressed;
+        branch_target = commit_instr_i[0].bp.predict_address;
+        // check each port for instruction commit
+        // the last committed instruction takes priority
+        for (int i = 1; i < NR_COMMIT_PORTS; i++) begin
+            if (commit_ack_i[i]) begin
+                pc = commit_instr_i[i].pc;
+                branch_taken = commit_instr_i[i].bp.valid & commit_instr_i[i].bp.predict_taken;
+                is_compressed = commit_instr_i[i].is_compressed;
+                branch_target = commit_instr_i[i].bp.predict_address;
+            end
+        end
+        // TODO(zarubaf) this adder can potentially be saved, the next address has been
+        // calculated a couple of times down the pipeline
+        next_pc = (branch_taken ? branch_target : (is_compressed ? pc + 'h2 : pc + 'h4));
+    end
+
     // -------------------
     // Output Assignments
     // -------------------
@@ -699,31 +832,7 @@ module csr_regfile #(
     // determine if mprv needs to be considered if in debug mode
     assign mprv             = (debug_mode_q && !dcsr_q.mprven) ? 1'b0 : mstatus_q.mprv;
     assign debug_mode_o     = debug_mode_q;
-    assign ebreakm_o        = dcsr_q.ebreakm;
-    assign ebreaks_o        = dcsr_q.ebreaks;
-    assign ebreaku_o        = dcsr_q.ebreaku;
-
-    // output assignments dependent on privilege mode
-    always_comb begin : priv_output
-        trap_vector_base_o = {mtvec_q[63:2], 2'b0};
-        // output user mode stvec
-        if (trap_to_priv_lvl == PRIV_LVL_S) begin
-            trap_vector_base_o = {stvec_q[63:2], 2'b0};
-        end
-
-        // check if we are in vectored mode, if yes then do BASE + 4 * cause
-        // we are imposing an additional alignment-constraint of 64 * 4 bytes since
-        // we want to spare the costly addition
-        if ((mtvec_q[0] || stvec_q[0]) && csr_exception_o.cause[63]) begin
-            trap_vector_base_o[7:2] = csr_exception_o.cause[5:0];
-        end
-
-        epc_o = mepc_q;
-        // we are returning from supervisor mode, so take the sepc register
-        if (sret) begin
-            epc_o = sepc_q;
-        end
-    end
+    assign single_step_o    = dcsr_q.step;
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -732,6 +841,7 @@ module csr_regfile #(
             // debug signals
             debug_mode_q           <= 1'b0;
             dcsr_q                 <= '0;
+            dcsr_q.prv             <= 2'h3;
             dpc_q                  <= 64'b0;
             // machine mode registers
             mstatus_q              <= 64'b0;

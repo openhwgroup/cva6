@@ -40,8 +40,9 @@ module ariane_wrapped #(
         input  logic                           ipi_i,        // inter-processor interrupts
         output logic                           sec_lvl_o,    // current privilege level oot
         // Timer facilities
-        input  logic [63:0]                    time_i,        // global time (most probably coming from an RTC)
-        input  logic                           time_irq_i     // timer interrupt in
+        input  logic [63:0]                    time_i,       // global time (most probably coming from an RTC)
+        input  logic                           time_irq_i,   // timer interrupt in
+        input  logic                           debug_req_i   // request debug
     );
 
     localparam int unsigned AXI_NUMBYTES = AXI_DATA_WIDTH/8;

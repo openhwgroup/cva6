@@ -21,7 +21,7 @@ module commit_stage #(
     input  logic                                    halt_i,             // request to halt the core
     input  logic                                    flush_dcache_i,     // request to flush dcache -> also flush the pipeline
     output exception_t                              exception_o,        // take exception to controller
-    input  logic                                    debug_mode_i,       // we are in debug mode
+    input  logic                                    single_step_i,      // we are in single step debug mode
     // from scoreboard
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
     output logic [NR_COMMIT_PORTS-1:0]              commit_ack_o,       // acknowledge that we are indeed committing
@@ -143,7 +143,8 @@ module commit_stage #(
         end
 
         // check if the second instruction can be committed as well and the first wasn't a CSR instruction
-        if (commit_ack_o[0] && commit_instr_i[1].valid && !halt_i && !(commit_instr_i[0].fu inside {CSR}) && !flush_dcache_i && !debug_mode_i) begin
+        // also if we are in single step mode don't retire the second instruction
+        if (commit_ack_o[0] && commit_instr_i[1].valid && !halt_i && !(commit_instr_i[0].fu inside {CSR}) && !flush_dcache_i && !single_step_i) begin
             // only if the first instruction didn't throw an exception and this instruction won't throw an exception
             // and the operator is of type ALU, LOAD, CTRL_FLOW, MULT
             if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT})) begin
