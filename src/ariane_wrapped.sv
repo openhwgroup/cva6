@@ -29,8 +29,6 @@ module ariane_wrapped #(
         input  logic                           clk_i,
         input  logic                           rst_ni,
         input  logic                           test_en_i,     // enable all clock gates for testing
-        // CPU Control Signals
-        input  logic                           fetch_enable_i,
         // Core ID, Cluster ID and boot address are considered more or less static
         input  logic [63:0]                    boot_addr_i,
         input  logic [ 3:0]                    core_id_i,
@@ -43,18 +41,7 @@ module ariane_wrapped #(
         output logic                           sec_lvl_o,    // current privilege level oot
         // Timer facilities
         input  logic [63:0]                    time_i,        // global time (most probably coming from an RTC)
-        input  logic                           time_irq_i,    // timer interrupt in
-        // Debug Interface
-        input  logic                           debug_req_i,
-        output logic                           debug_gnt_o,
-        output logic                           debug_rvalid_o,
-        input  logic [15:0]                    debug_addr_i,
-        input  logic                           debug_we_i,
-        input  logic [63:0]                    debug_wdata_i,
-        output logic [63:0]                    debug_rdata_o,
-        output logic                           debug_halted_o,
-        input  logic                           debug_halt_i,
-        input  logic                           debug_resume_i
+        input  logic                           time_irq_i     // timer interrupt in
     );
 
     localparam int unsigned AXI_NUMBYTES = AXI_DATA_WIDTH/8;

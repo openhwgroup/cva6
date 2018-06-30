@@ -68,9 +68,6 @@ module ariane #(
     logic                     if_ready_if_pcgen;
     logic                     fetch_valid_pcgen_if;
     // --------------
-    // PCGEN <-> COMMIT
-    // --------------
-    // --------------
     // PCGEN <-> CSR
     // --------------
     logic [63:0]              trap_vector_base_commit_pcgen;
@@ -186,6 +183,8 @@ module ariane #(
     logic                     tw_csr_id;
     logic                     tsr_csr_id;
     logic                     dcache_en_csr_nbdcache;
+    logic                     icache_en_csr_frontend;
+
     // ----------------------------
     // Performance Counters <-> *
     // ----------------------------
@@ -214,22 +213,15 @@ module ariane #(
     logic                     halt_csr_ctrl;
     logic                     flush_dcache_ctrl_ex;
     logic                     flush_dcache_ack_ex_ctrl;
-    // ----------------
-    // ICache <-> *
-    // ----------------
-    logic                    flush_icache_ctrl_icache;
-    logic                    bypass_icache_csr_icache;
+    logic                     flush_icache_ctrl_icache;
 
     assign sec_lvl_o = priv_lvl;
     assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
     // --------------
     // Frontend
     // --------------
-    frontend #(
-        .BTB_ENTRIES         ( BTB_ENTRIES ),
-        .BHT_ENTRIES         ( BHT_ENTRIES ),
-        .RAS_DEPTH           ( RAS_DEPTH   )
-    ) i_frontend (
+    frontend i_frontend (
+        .en_cache_i          ( icache_en_csr_frontend        ),
         .flush_i             ( flush_ctrl_if                 ), // not entirely correct
         .flush_bp_i          ( 1'b0                          ),
         .flush_icache_i      ( flush_icache_ctrl_icache      ),
@@ -478,7 +470,7 @@ module ariane #(
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
         .dcache_en_o            ( dcache_en_csr_nbdcache        ),
-        .icache_en_o            ( bypass_icache_csr_icache      ),
+        .icache_en_o            ( icache_en_csr_frontend        ),
         .perf_addr_o            ( addr_csr_perf                 ),
         .perf_data_o            ( data_csr_perf                 ),
         .perf_data_i            ( data_perf_csr                 ),

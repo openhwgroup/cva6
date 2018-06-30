@@ -15,9 +15,6 @@
 import ariane_pkg::*;
 
 module frontend #(
-    parameter int unsigned BTB_ENTRIES       = 8,
-    parameter int unsigned BHT_ENTRIES       = 1024,
-    parameter int unsigned RAS_DEPTH         = 4,
     parameter int unsigned SET_ASSOCIATIVITY = 4,
     parameter int unsigned CACHE_LINE_WIDTH  = 64, // in bit
     parameter int unsigned FETCH_WIDTH       = 32
@@ -25,6 +22,7 @@ module frontend #(
     input  logic               clk_i,              // Clock
     input  logic               rst_ni,             // Asynchronous reset active low
     input  logic               flush_i,            // flush request for PCGEN
+    input  logic               en_cache_i,         // enable icache
     input  logic               flush_bp_i,         // flush branch prediction
     input  logic               flush_icache_i,     // instruction fence in
     // global input
@@ -65,7 +63,6 @@ module frontend #(
 
     logic        instruction_valid;
 
-    logic        icache_speculative_d, icache_speculative_q;
     logic [63:0] icache_vaddr_d, icache_vaddr_q;
 
     // BHT, BTB and RAS prediction
@@ -104,7 +101,6 @@ module frontend #(
 
     logic [63:0]   bp_vaddr;
     logic          bp_valid; // we have a valid branch-prediction
-    logic          fetch_is_speculative; // is it a speculative fetch or a fetch which need to do for sure
     // branch-prediction which we inject into the pipeline
     branchpredict_sbe_t  bp_sbe;
     logic                fifo_valid, fifo_ready; // fetch FIFO
@@ -316,8 +312,6 @@ module frontend #(
     always_comb begin : npc_select
         automatic logic [63:0] fetch_address;
 
-        fetch_is_speculative = 1'b0;
-
         fetch_address    = npc_q;
         // keep stable by default
         npc_d            = npc_q;
@@ -325,7 +319,6 @@ module frontend #(
         // 1. Branch Prediction
         // -------------------------------
         if (bp_valid) begin
-            fetch_is_speculative = 1'b1;
             fetch_address = bp_vaddr;
             npc_d = bp_vaddr;
         end
@@ -334,7 +327,6 @@ module frontend #(
         // -------------------------------
         if (if_ready) begin
             npc_d = {fetch_address[63:2], 2'b0}  + 64'h4;
-            fetch_is_speculative = 1'b1;
         end
         // -------------------------------
         // 2. Control flow change request
@@ -374,7 +366,6 @@ module frontend #(
             npc_q                <= boot_addr_i;
             icache_data_q        <= '0;
             icache_valid_q       <= 1'b0;
-            icache_speculative_q <= 1'b0;
             icache_vaddr_q       <= 'b0;
             icache_ex_q          <= '0;
             unaligned_q          <= 1'b0;
@@ -384,7 +375,6 @@ module frontend #(
             npc_q                <= npc_d;
             icache_data_q        <= icache_data_d;
             icache_valid_q       <= icache_valid_d;
-            icache_speculative_q <= icache_speculative_d;
             icache_vaddr_q       <= icache_vaddr_d;
             icache_ex_q          <= icache_ex_d;
             unaligned_q          <= unaligned_d;
@@ -428,9 +418,11 @@ module frontend #(
         .CACHE_LINE_WIDTH  ( 128                  ),
         .FETCH_WIDTH       ( FETCH_WIDTH          )
     ) i_icache (
+        .clk_i,
+        .rst_ni,
         .flush_i          ( flush_icache_i        ),
+        .en_cache_i,
         .vaddr_i          ( fetch_vaddr           ), // 1st cycle
-        .is_speculative_i ( fetch_is_speculative  ), // 1st cycle
         .data_o           ( icache_data_d         ),
         .req_i            ( icache_req            ),
         .kill_s1_i        ( kill_s1               ),
@@ -438,11 +430,14 @@ module frontend #(
         .ready_o          ( icache_ready          ),
         .valid_o          ( icache_valid_d        ),
         .ex_o             ( icache_ex_d           ),
-        .is_speculative_o ( icache_speculative_d  ),
         .vaddr_o          ( icache_vaddr_d        ),
-        .axi              ( axi                   ),
-        .miss_o           ( l1_icache_miss_o      ),
-        .*
+        .axi,
+        .fetch_req_o,
+        .fetch_vaddr_o,
+        .fetch_valid_i,
+        .fetch_paddr_i,
+        .fetch_exception_i,
+        .miss_o           ( l1_icache_miss_o      )
     );
 
     for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin
