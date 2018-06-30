@@ -48,8 +48,8 @@ module lsu #(
     output logic [63:0]              fetch_paddr_o,            // Instruction fetch interface
     output exception_t               fetch_exception_o,        // Instruction fetch interface
 
-    input  priv_lvl_t                priv_lvl_i,               // From CSR register file
-    input  priv_lvl_t                ld_st_priv_lvl_i,         // From CSR register file
+    input  riscv::priv_lvl_t         priv_lvl_i,               // From CSR register file
+    input  riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
     input  logic                     sum_i,                    // From CSR register file
     input  logic                     mxr_i,                    // From CSR register file
     input  logic [43:0]              satp_ppn_i,               // From CSR register file

@@ -19,7 +19,7 @@ verilator ?= verilator
 riscv-test ?= rv64ui-p-add
 # Sources
 # Ariane PKG
-ariane_pkg := include/ariane_pkg.sv include/nbdcache_pkg.sv
+ariane_pkg := include/ariane_pkg.sv include/nbdcache_pkg.sv src/debug/dm_pkg.sv include/riscv_pkg.sv
 # utility modules
 util := $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv \
 		src/util/generic_fifo.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv

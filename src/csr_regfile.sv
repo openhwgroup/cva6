@@ -48,11 +48,11 @@ module csr_regfile #(
     output logic  [63:0]          epc_o,                      // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
     output logic                  eret_o,                     // Return from exception, set the PC of epc_o
     output logic  [63:0]          trap_vector_base_o,         // Output base of exception vector, correct CSR is output (mtvec, stvec)
-    output priv_lvl_t             priv_lvl_o,                 // Current privilege level the CPU is in
+    output riscv::priv_lvl_t      priv_lvl_o,                 // Current privilege level the CPU is in
     // MMU
     output logic                  en_translation_o,           // enable VA translation
     output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
-    output priv_lvl_t             ld_st_priv_lvl_o,           // Privilege level at which load and stores should happen
+    output riscv::priv_lvl_t      ld_st_priv_lvl_o,           // Privilege level at which load and stores should happen
     output logic                  sum_o,
     output logic                  mxr_o,
     output logic [43:0]           satp_ppn_o,
@@ -81,7 +81,7 @@ module csr_regfile #(
     logic        read_access_exception, update_access_exception;
     logic        csr_we, csr_read;
     logic [63:0] csr_wdata, csr_rdata;
-    priv_lvl_t   trap_to_priv_lvl;
+    riscv::priv_lvl_t   trap_to_priv_lvl;
     // register for enabling load store address translation, this is critical, hence the register
     logic        en_ld_st_translation_d, en_ld_st_translation_q;
     logic  mprv;
@@ -89,68 +89,25 @@ module csr_regfile #(
     logic  sret;  // return from S-mode exception
     logic  dret;  // return from debug mode
 
-    csr_t  csr_addr;
+    riscv::csr_t  csr_addr;
     // ----------------
     // Assignments
     // ----------------
-    assign csr_addr = csr_t'(csr_addr_i);
+    assign csr_addr = riscv::csr_t'(csr_addr_i);
     // ----------------
     // CSR Registers
     // ----------------
     // privilege level register
-    priv_lvl_t   priv_lvl_d, priv_lvl_q;
+    riscv::priv_lvl_t   priv_lvl_d, priv_lvl_q;
     // we are in debug
     logic        debug_mode_q, debug_mode_d;
     logic        next_pc;
 
-    typedef struct packed {
-        logic         sd;     // signal dirty - read-only - hardwired zero
-        logic [62:36] wpri4;  // writes preserved reads ignored
-        logic [1:0]   sxl;    // variable supervisor mode xlen - hardwired to zero
-        logic [1:0]   uxl;    // variable user mode xlen - hardwired to zero
-        logic [8:0]   wpri3;  // writes preserved reads ignored
-        logic         tsr;    // trap sret
-        logic         tw;     // time wait
-        logic         tvm;    // trap virtual memory
-        logic         mxr;    // make executable readable
-        logic         sum;    // permit supervisor user memory access
-        logic         mprv;   // modify privilege - privilege level for ld/st
-        logic [1:0]   xs;     // extension register - hardwired to zero
-        logic [1:0]   fs;     // extension register - hardwired to zero
-        priv_lvl_t    mpp;    // holds the previous privilege mode up to machine
-        logic [1:0]   wpri2;  // writes preserved reads ignored
-        logic         spp;    // holds the previous privilege mode up to supervisor
-        logic         mpie;   // machine interrupts enable bit active prior to trap
-        logic         wpri1;  // writes preserved reads ignored
-        logic         spie;   // supervisor interrupts enable bit active prior to trap
-        logic         upie;   // user interrupts enable bit active prior to trap - hardwired to zero
-        logic         mie;    // machine interrupts enable
-        logic         wpri0;  // writes preserved reads ignored
-        logic         sie;    // supervisor interrupts enable
-        logic         uie;    // user interrupts enable - hardwired to zero
-    } status_t;
+    riscv::status_rv64_t  mstatus_q,  mstatus_d;
+    riscv::satp_t         satp_q, satp_d;
+    dm::dcsr_t            dcsr_q,     dcsr_d;
 
-    typedef struct packed {
-        logic [31:28] xdebugver;
-        logic [27:16] zero2;
-        logic         ebreakm;
-        logic         zero1;
-        logic         ebreaks;
-        logic         ebreaku;
-        logic         stepie;
-        logic         stopcount;
-        logic         stoptime;
-        logic [8:6]   cause;
-        logic         zero0;
-        logic         mprven;
-        logic         nmip;
-        logic         step;
-        logic         prv;
-    } dcsr_t;
-
-    dcsr_t       dcsr_q,     dcsr_d;
     logic [63:0] dpc_q,      dpc_d;
-    status_t     mstatus_q,  mstatus_d;
     logic [63:0] mtvec_q,    mtvec_d;
     logic [63:0] medeleg_q,  medeleg_d;
     logic [63:0] mideleg_q,  mideleg_d;
@@ -176,14 +133,6 @@ module csr_regfile #(
     logic [63:0] cycle_q,    cycle_d;
     logic [63:0] instret_q,  instret_d;
 
-    typedef struct packed {
-        logic [3:0]  mode;
-        logic [15:0] asid;
-        logic [43:0] ppn;
-    } satp_t;
-
-    satp_t satp_q, satp_d;
-
     // ----------------
     // CSR Read logic
     // ----------------
@@ -196,65 +145,65 @@ module csr_regfile #(
 
         if (csr_read) begin
             case (csr_addr.address)
-                CSR_DCSR:               csr_rdata = {31'b0, dcsr_q};
-                CSR_DPC:                csr_rdata = dpc_q;
+                riscv::CSR_DCSR:               csr_rdata = {31'b0, dcsr_q};
+                riscv::CSR_DPC:                csr_rdata = dpc_q;
 
-                CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h3fffe1fee;
-                CSR_SIE:                csr_rdata = mie_q & mideleg_q;
-                CSR_SIP:                csr_rdata = mip_q & mideleg_q;
-                CSR_STVEC:              csr_rdata = stvec_q;
-                CSR_SCOUNTEREN:         csr_rdata = 64'b0; // not implemented
-                CSR_SSCRATCH:           csr_rdata = sscratch_q;
-                CSR_SEPC:               csr_rdata = sepc_q;
-                CSR_SCAUSE:             csr_rdata = scause_q;
-                CSR_STVAL:              csr_rdata = stval_q;
-                CSR_SATP: begin
+                riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h3fffe1fee;
+                riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
+                riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
+                riscv::CSR_STVEC:              csr_rdata = stvec_q;
+                riscv::CSR_SCOUNTEREN:         csr_rdata = 64'b0; // not implemented
+                riscv::CSR_SSCRATCH:           csr_rdata = sscratch_q;
+                riscv::CSR_SEPC:               csr_rdata = sepc_q;
+                riscv::CSR_SCAUSE:             csr_rdata = scause_q;
+                riscv::CSR_STVAL:              csr_rdata = stval_q;
+                riscv::CSR_SATP: begin
                     // intercept reads to SATP if in S-Mode and TVM is enabled
-                    if (priv_lvl_o == PRIV_LVL_S && mstatus_q.tvm)
+                    if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm)
                         read_access_exception = 1'b1;
                     else
                         csr_rdata = satp_q;
                 end
 
-                CSR_MSTATUS:            csr_rdata = mstatus_q;
-                CSR_MISA:               csr_rdata = ISA_CODE;
-                CSR_MEDELEG:            csr_rdata = medeleg_q;
-                CSR_MIDELEG:            csr_rdata = mideleg_q;
-                CSR_MIE:                csr_rdata = mie_q;
-                CSR_MTVEC:              csr_rdata = mtvec_q;
-                CSR_MCOUNTEREN:         csr_rdata = 64'b0; // not implemented
-                CSR_MSCRATCH:           csr_rdata = mscratch_q;
-                CSR_MEPC:               csr_rdata = mepc_q;
-                CSR_MCAUSE:             csr_rdata = mcause_q;
-                CSR_MTVAL:              csr_rdata = mtval_q;
-                CSR_MIP:                csr_rdata = mip_q;
+                riscv::CSR_MSTATUS:            csr_rdata = mstatus_q;
+                riscv::CSR_MISA:               csr_rdata = ISA_CODE;
+                riscv::CSR_MEDELEG:            csr_rdata = medeleg_q;
+                riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
+                riscv::CSR_MIE:                csr_rdata = mie_q;
+                riscv::CSR_MTVEC:              csr_rdata = mtvec_q;
+                riscv::CSR_MCOUNTEREN:         csr_rdata = 64'b0; // not implemented
+                riscv::CSR_MSCRATCH:           csr_rdata = mscratch_q;
+                riscv::CSR_MEPC:               csr_rdata = mepc_q;
+                riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
+                riscv::CSR_MTVAL:              csr_rdata = mtval_q;
+                riscv::CSR_MIP:                csr_rdata = mip_q;
                 // Placeholders for M-mode protection
-                CSR_PMPCFG0:            csr_rdata = pmpcfg0_q;
-                CSR_PMPADDR0:           csr_rdata = pmpaddr0_q;
-                CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
-                CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
-                CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
-                CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
-                CSR_MCYCLE:             csr_rdata = cycle_q;
-                CSR_MINSTRET:           csr_rdata = instret_q;
-                CSR_DCACHE:             csr_rdata = dcache_q;
-                CSR_ICACHE:             csr_rdata = icache_q;
+                riscv::CSR_PMPCFG0:            csr_rdata = pmpcfg0_q;
+                riscv::CSR_PMPADDR0:           csr_rdata = pmpaddr0_q;
+                riscv::CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
+                riscv::CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
+                riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
+                riscv::CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
+                riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
+                riscv::CSR_MINSTRET:           csr_rdata = instret_q;
+                riscv::CSR_DCACHE:             csr_rdata = dcache_q;
+                riscv::CSR_ICACHE:             csr_rdata = icache_q;
                 // Counters and Timers
-                CSR_CYCLE:              csr_rdata = cycle_q;
-                CSR_TIME:               csr_rdata = time_i;
-                CSR_INSTRET:            csr_rdata = instret_q;
-                CSR_L1_ICACHE_MISS,
-                CSR_L1_DCACHE_MISS,
-                CSR_ITLB_MISS,
-                CSR_DTLB_MISS,
-                CSR_LOAD,
-                CSR_STORE,
-                CSR_EXCEPTION,
-                CSR_EXCEPTION_RET,
-                CSR_BRANCH_JUMP,
-                CSR_CALL,
-                CSR_RET,
-                CSR_MIS_PREDICT:        csr_rdata = perf_data_i;
+                riscv::CSR_CYCLE:              csr_rdata = cycle_q;
+                riscv::CSR_TIME:               csr_rdata = time_i;
+                riscv::CSR_INSTRET:            csr_rdata = instret_q;
+                riscv::CSR_L1_ICACHE_MISS,
+                riscv::CSR_L1_DCACHE_MISS,
+                riscv::CSR_ITLB_MISS,
+                riscv::CSR_DTLB_MISS,
+                riscv::CSR_LOAD,
+                riscv::CSR_STORE,
+                riscv::CSR_EXCEPTION,
+                riscv::CSR_EXCEPTION_RET,
+                riscv::CSR_BRANCH_JUMP,
+                riscv::CSR_CALL,
+                riscv::CSR_RET,
+                riscv::CSR_MIS_PREDICT:        csr_rdata = perf_data_i;
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -263,7 +212,7 @@ module csr_regfile #(
     // CSR Write and update logic
     // ---------------------------
     always_comb begin : csr_update
-        automatic satp_t sapt;
+        automatic riscv::satp_t sapt;
         automatic logic [63:0] mip;
         automatic logic [63:0] instret;
 
@@ -310,7 +259,7 @@ module csr_regfile #(
         if (csr_we) begin
             case (csr_addr.address)
                 // debug CSR
-                CSR_DCSR: begin
+                riscv::CSR_DCSR: begin
                     dcsr_d = csr_wdata[31:0];
                     // debug is implemented
                     dcsr_d.xdebugver = 4'h4;
@@ -319,16 +268,16 @@ module csr_regfile #(
                     dcsr_d.stopcount = 1'b0;
                     dcsr_d.stoptime  = 1'b0;
                 end
-                CSR_DPC:                dpc_d = csr_wdata;
+                riscv::CSR_DPC:                dpc_d = csr_wdata;
                 // sstatus is a subset of mstatus - mask it accordingly
-                CSR_SSTATUS: begin
+                riscv::CSR_SSTATUS: begin
                     mstatus_d   = csr_wdata & 64'h3fffe1fee;
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
-                CSR_SIE: begin
+                riscv::CSR_SIE: begin
                     // the mideleg makes sure only delegate-able register (and therefore also only implemented registers)
                     // are written
                     for (int unsigned i = 0; i < 64; i++)
@@ -336,25 +285,25 @@ module csr_regfile #(
                             mie_d[i] = csr_wdata[i];
                 end
 
-                CSR_SIP: begin
+                riscv::CSR_SIP: begin
                     for (int unsigned i = 0; i < 64; i++)
                         if (mideleg_q[i])
                             mip_d[i] = mip[i];
                 end
 
-                CSR_SCOUNTEREN:;
-                CSR_STVEC:              stvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
-                CSR_SSCRATCH:           sscratch_d  = csr_wdata;
-                CSR_SEPC:               sepc_d      = {csr_wdata[63:1], 1'b0};
-                CSR_SCAUSE:             scause_d    = csr_wdata;
-                CSR_STVAL:              stval_d     = csr_wdata;
+                riscv::CSR_SCOUNTEREN:;
+                riscv::CSR_STVEC:              stvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                riscv::CSR_SSCRATCH:           sscratch_d  = csr_wdata;
+                riscv::CSR_SEPC:               sepc_d      = {csr_wdata[63:1], 1'b0};
+                riscv::CSR_SCAUSE:             scause_d    = csr_wdata;
+                riscv::CSR_STVAL:              stval_d     = csr_wdata;
                 // supervisor address translation and protection
-                CSR_SATP: begin
+                riscv::CSR_SATP: begin
                     // intercept SATP writes if in S-Mode and TVM is enabled
-                    if (priv_lvl_o == PRIV_LVL_S && mstatus_q.tvm)
+                    if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm)
                         update_access_exception = 1'b1;
                     else begin
-                        sapt      = satp_t'(csr_wdata);
+                        sapt      = riscv::satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
                         sapt.asid = sapt.asid & {{(16-ASID_WIDTH){1'b0}}, {ASID_WIDTH{1'b1}}};
                         satp_d    = sapt;
@@ -364,7 +313,7 @@ module csr_regfile #(
                     flush_o = 1'b1;
                 end
 
-                CSR_MSTATUS: begin
+                riscv::CSR_MSTATUS: begin
                     mstatus_d      = csr_wdata;
                     mstatus_d.sxl  = 2'b10;
                     mstatus_d.uxl  = 2'b10;
@@ -378,51 +327,51 @@ module csr_regfile #(
                     flush_o        = 1'b1;
                 end
                 // MISA is WARL (Write Any Value, Reads Legal Value)
-                CSR_MISA:;
+                riscv::CSR_MISA:;
                 // machine exception delegation register
                 // 0 - 15 exceptions supported
-                CSR_MEDELEG:            medeleg_d   = csr_wdata & 64'hF7FF;
+                riscv::CSR_MEDELEG:            medeleg_d   = csr_wdata & 64'hF7FF;
                 // machine interrupt delegation register
                 // we do not support user interrupt delegation
-                CSR_MIDELEG:            mideleg_d   = csr_wdata & 64'hBBB;
+                riscv::CSR_MIDELEG:            mideleg_d   = csr_wdata & 64'hBBB;
 
                 // mask the register so that unsupported interrupts can never be set
-                CSR_MIE:                mie_d       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
+                riscv::CSR_MIE:                mie_d       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
 
-                CSR_MTVEC: begin
+                riscv::CSR_MTVEC: begin
                     mtvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                     // we are in vector mode, this implementation requires the additional
                     // alignment constraint of 64 * 4 bytes
                     if (csr_wdata[0])
                         mtvec_d = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
                 end
-                CSR_MCOUNTEREN:;
+                riscv::CSR_MCOUNTEREN:;
 
-                CSR_MSCRATCH:           mscratch_d  = csr_wdata;
-                CSR_MEPC:               mepc_d      = {csr_wdata[63:1], 1'b0};
-                CSR_MCAUSE:             mcause_d    = csr_wdata;
-                CSR_MTVAL:              mtval_d     = csr_wdata;
-                CSR_MIP:                mip_d       = mip;
+                riscv::CSR_MSCRATCH:           mscratch_d  = csr_wdata;
+                riscv::CSR_MEPC:               mepc_d      = {csr_wdata[63:1], 1'b0};
+                riscv::CSR_MCAUSE:             mcause_d    = csr_wdata;
+                riscv::CSR_MTVAL:              mtval_d     = csr_wdata;
+                riscv::CSR_MIP:                mip_d       = mip;
                 // Placeholders for M-mode protection
-                CSR_PMPCFG0:            pmpcfg0_d   = csr_wdata;
-                CSR_PMPADDR0:           pmpaddr0_d  = csr_wdata;
+                riscv::CSR_PMPCFG0:            pmpcfg0_d   = csr_wdata;
+                riscv::CSR_PMPADDR0:           pmpaddr0_d  = csr_wdata;
 
-                CSR_MCYCLE:             cycle_d     = csr_wdata;
-                CSR_MINSTRET:           instret     = csr_wdata;
-                CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
-                CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
-                CSR_L1_ICACHE_MISS,
-                CSR_L1_DCACHE_MISS,
-                CSR_ITLB_MISS,
-                CSR_DTLB_MISS,
-                CSR_LOAD,
-                CSR_STORE,
-                CSR_EXCEPTION,
-                CSR_EXCEPTION_RET,
-                CSR_BRANCH_JUMP,
-                CSR_CALL,
-                CSR_RET,
-                CSR_MIS_PREDICT: begin
+                riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
+                riscv::CSR_MINSTRET:           instret     = csr_wdata;
+                riscv::CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
+                riscv::CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
+                riscv::CSR_L1_ICACHE_MISS,
+                riscv::CSR_L1_DCACHE_MISS,
+                riscv::CSR_ITLB_MISS,
+                riscv::CSR_DTLB_MISS,
+                riscv::CSR_LOAD,
+                riscv::CSR_STORE,
+                riscv::CSR_EXCEPTION,
+                riscv::CSR_EXCEPTION_RET,
+                riscv::CSR_BRANCH_JUMP,
+                riscv::CSR_CALL,
+                riscv::CSR_RET,
+                riscv::CSR_MIS_PREDICT: begin
                                         perf_data_o = csr_wdata;
                                         perf_we_o   = 1'b1;
                 end
@@ -445,7 +394,7 @@ module csr_regfile #(
         // -----------------------
         // update exception CSRs
         // we got an exception update cause, pc and stval register
-        trap_to_priv_lvl = PRIV_LVL_M;
+        trap_to_priv_lvl = riscv::PRIV_LVL_M;
         // Exception is taken and we are not in debug mode
         // exceptions in debug mode don't update any fields
         if (!debug_mode_q && ex_i.valid) begin
@@ -459,11 +408,11 @@ module csr_regfile #(
                 (~ex_i.cause[63] && medeleg_q[ex_i.cause[5:0]])) begin
                 // traps never transition from a more-privileged mode to a less privileged mode
                 // so if we are already in M mode, stay there
-                trap_to_priv_lvl = (priv_lvl_o == PRIV_LVL_M) ? PRIV_LVL_M : PRIV_LVL_S;
+                trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
             end
 
             // trap to supervisor mode
-            if (trap_to_priv_lvl == PRIV_LVL_S) begin
+            if (trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
                 // update sstatus
                 mstatus_d.sie  = 1'b0;
                 mstatus_d.spie = mstatus_q.sie;
@@ -511,15 +460,15 @@ module csr_regfile #(
             if (ex_i.valid && ex_i.cause == BREAKPOINT) begin
                 // check that we actually want to enter debug depending on the privilege level we are currently in
                 unique case (priv_lvl_o)
-                    PRIV_LVL_M: begin
+                    riscv::PRIV_LVL_M: begin
                         debug_mode_d = dcsr_q.ebreakm;
                         set_debug_pc_o = dcsr_q.ebreakm;
                     end
-                    PRIV_LVL_S: begin
+                    riscv::PRIV_LVL_S: begin
                         debug_mode_d = dcsr_q.ebreaks;
                         set_debug_pc_o = dcsr_q.ebreaks;
                     end
-                    PRIV_LVL_U: begin
+                    riscv::PRIV_LVL_U: begin
                         debug_mode_d = dcsr_q.ebreaku;
                         set_debug_pc_o = dcsr_q.ebreaku;
                     end
@@ -527,7 +476,7 @@ module csr_regfile #(
                 endcase
                 // save PC of next this instruction e.g.: the next one to be executed
                 dpc_d = pc_i;
-                dcsr_d.cause = DBG_CAUSE_BREAKPOINT;
+                dcsr_d.cause = dm::CauseBreakpoint;
             end
 
             // we've got a debug request (and we have an instruction which we can associate it to)
@@ -535,7 +484,7 @@ module csr_regfile #(
                 dpc_d = next_pc;
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
-                dcsr_d.cause = DBG_CAUSE_REQUEST;
+                dcsr_d.cause = dm::CauseRequest;
             end
 
             // single step enable and we just retired an instruction
@@ -543,7 +492,7 @@ module csr_regfile #(
                 dpc_d = next_pc;
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
-                dcsr_d.cause = DBG_CAUSE_SINGLE_STEP;
+                dcsr_d.cause = dm::CauseSingleStep;
             end
         end
         // go in halt-state again when we encounter an exception
@@ -556,7 +505,7 @@ module csr_regfile #(
         // ------------------------------
         // Set the address translation at which the load and stores should occur
         // we can use the previous values since changing the address translation will always involve a pipeline flush
-        if (mprv && satp_q.mode == MODE_SV39 && (mstatus_q.mpp != PRIV_LVL_M))
+        if (mprv && satp_q.mode == MODE_SV39 && (mstatus_q.mpp != riscv::PRIV_LVL_M))
             en_ld_st_translation_d = 1'b1;
         else // otherwise we go with the regular settings
             en_ld_st_translation_d = en_translation_o;
@@ -577,7 +526,7 @@ module csr_regfile #(
             // restore the previous privilege level
             priv_lvl_d     = mstatus_q.mpp;
             // set mpp to user mode
-            mstatus_d.mpp  = PRIV_LVL_U;
+            mstatus_d.mpp  = riscv::PRIV_LVL_U;
             // set mpie to 1
             mstatus_d.mpie = 1'b1;
         end
@@ -588,9 +537,9 @@ module csr_regfile #(
             // return the previous supervisor interrupt enable flag
             mstatus_d.sie  = mstatus_d.spie;
             // restore the previous privilege level
-            priv_lvl_d     = priv_lvl_t'({1'b0, mstatus_d.spp});
+            priv_lvl_d     = riscv::priv_lvl_t'({1'b0, mstatus_d.spp});
             // set spp to user mode
-            mstatus_d.spp  = logic'(PRIV_LVL_U);
+            mstatus_d.spp  = logic'(riscv::PRIV_LVL_U);
             // set spie to 1
             mstatus_d.spie = 1'b1;
         end
@@ -600,7 +549,7 @@ module csr_regfile #(
             // return from exception, IF doesn't care from where we are returning
             eret_o = 1'b1;
             // restore the previous privilege level
-            priv_lvl_d     = priv_lvl_t'(dcsr_q.prv);
+            priv_lvl_d     = riscv::priv_lvl_t'(dcsr_q.prv);
             // actually return from debug mode
             debug_mode_d = 1'b0;
         end
@@ -711,8 +660,8 @@ module csr_regfile #(
         interrupt_global_enable = (~debug_mode_q)
                                 // interrupts are enabled during single step or we are not stepping
                                 & (~dcsr_q.step | dcsr_q.stepie)
-                                & ((mstatus_q.mie & (priv_lvl_o == PRIV_LVL_M))
-                                | (priv_lvl_o != PRIV_LVL_M));
+                                & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
+                                | (priv_lvl_o != riscv::PRIV_LVL_M));
 
         if (interrupt_cause[63] && interrupt_global_enable) begin
             // we can set the cause here
@@ -721,7 +670,7 @@ module csr_regfile #(
             // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
             // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
             if (mideleg_q[interrupt_cause[5:0]]) begin
-                if ((mstatus_q.sie && priv_lvl_o == PRIV_LVL_S) || priv_lvl_o == PRIV_LVL_U)
+                if ((mstatus_q.sie && priv_lvl_o == riscv::PRIV_LVL_S) || priv_lvl_o == riscv::PRIV_LVL_U)
                     csr_exception_o.valid = 1'b1;
             end else begin
                 csr_exception_o.valid = 1'b1;
@@ -733,7 +682,7 @@ module csr_regfile #(
         // -----------------
         // if we are reading or writing, check for the correct privilege level
         if (csr_we || csr_read) begin
-            if ((priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
+            if ((riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
                 csr_exception_o.cause = ILLEGAL_INSTR;
                 csr_exception_o.valid = 1'b1;
             end
@@ -767,7 +716,7 @@ module csr_regfile #(
     always_comb begin : priv_output
         trap_vector_base_o = {mtvec_q[63:2], 2'b0};
         // output user mode stvec
-        if (trap_to_priv_lvl == PRIV_LVL_S) begin
+        if (trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
             trap_vector_base_o = {stvec_q[63:2], 2'b0};
         end
 
@@ -819,13 +768,13 @@ module csr_regfile #(
     // -------------------
     assign csr_rdata_o      = csr_rdata;
     // in debug mode we execute with privilege level M
-    assign priv_lvl_o       = (debug_mode_q) ? PRIV_LVL_M : priv_lvl_q;
+    assign priv_lvl_o       = (debug_mode_q) ? riscv::PRIV_LVL_M : priv_lvl_q;
     // MMU outputs
     assign satp_ppn_o       = satp_q.ppn;
     assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
     assign sum_o            = mstatus_q.sum;
     // we support bare memory addressing and SV39
-    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_o != PRIV_LVL_M) ? 1'b1 : 1'b0;
+    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_o != riscv::PRIV_LVL_M) ? 1'b1 : 1'b0;
     assign mxr_o            = mstatus_q.mxr;
     assign tvm_o            = mstatus_q.tvm;
     assign tw_o             = mstatus_q.tw;
@@ -841,7 +790,7 @@ module csr_regfile #(
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            priv_lvl_q             <= PRIV_LVL_M;
+            priv_lvl_q             <= riscv::PRIV_LVL_M;
             // debug signals
             debug_mode_q           <= 1'b0;
             dcsr_q                 <= '0;

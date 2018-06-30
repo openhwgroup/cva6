@@ -49,8 +49,8 @@ module mmu #(
         output logic [63:0]                     lsu_paddr_o,      // translated address
         output exception_t                      lsu_exception_o,  // address translation threw an exception
         // General control signals
-        input priv_lvl_t                        priv_lvl_i,
-        input priv_lvl_t                        ld_st_priv_lvl_i,
+        input riscv::priv_lvl_t                 priv_lvl_i,
+        input riscv::priv_lvl_t                 ld_st_priv_lvl_i,
         input logic                             sum_i,
         input logic                             mxr_i,
         // input logic flag_mprv_i,
@@ -182,8 +182,8 @@ module mmu #(
         // 2. We got an access error because of insufficient permissions -> throw an access exception
         fetch_exception_o      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err   = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
-                                     || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
+        iaccess_err   = fetch_req_i && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
+                                     || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
         // check that the upper-most bits (63-39) are the same, otherwise throw a page fault exception...
         if (fetch_req_i && !((&fetch_vaddr_i[63:39]) == 1'b1 || (|fetch_vaddr_i[63:39]) == 1'b0)) begin
@@ -265,8 +265,8 @@ module mmu #(
 
         // Check if the User flag is set, then we may only access it in supervisor mode
         // if SUM is enabled
-        daccess_err = (ld_st_priv_lvl_i == PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
-                      (ld_st_priv_lvl_i == PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
+        daccess_err = (ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
+                      (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
         // translation is enabled and no misaligned exception occurred
         if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
             lsu_valid_o = 1'b0;

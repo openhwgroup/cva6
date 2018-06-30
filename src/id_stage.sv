@@ -31,7 +31,7 @@ module id_stage (
     output logic                  is_ctrl_flow_o,      // the instruction we issue is a ctrl flow instructions
     input  logic                  issue_instr_ack_i,   // issue stage acknowledged sampling of instructions
     // from CSR file
-    input  priv_lvl_t             priv_lvl_i,          // current privilege level
+    input  riscv::priv_lvl_t      priv_lvl_i,          // current privilege level
     input  logic                  debug_mode_i,        // we are in debug mode
     input  logic                  tvm_i,
     input  logic                  tw_i,
