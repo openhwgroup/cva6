@@ -14,14 +14,16 @@
  *
  * Description: Top-level of debug module (DM). This is an AXI-Slave.
  *              DTM protocol is equal to SiFives debug protocol to leverage
- *              SW infrastructure re-use.
+ *              SW infrastructure re-use. As of version 0.13
  */
 
-module axi_riscv_dm (
+module axi_riscv_dm #(
+    parameter int NrHarts = -1
+)(
     input  logic        clk_i,      // clock
     input  logic        rst_ni,     // asynchronous reset active low
     output logic        ndmreset_o, // non-debug module reset
-    AXI_BUS.Slave       axi_slave   // bus slave
+    AXI_BUS.Slave       axi_slave,   // bus slave
     // Connection to DTM - compatible to RocketChip Debug Module
     input  logic        debug_req_valid,
     output logic        debug_req_ready,
@@ -34,5 +36,8 @@ module axi_riscv_dm (
     output logic [ 1:0] debug_resp_bits_resp,
     output logic [31:0] debug_resp_bits_data
 );
+
+    // Debug CSRs
+
 
 endmodule

@@ -17,6 +17,7 @@
  */
 
 package dm;
+    localparam logic [3:0] DbgVersion013 = 4'h2;
     // debug registers
     localparam logic [7:0] Data0        = 8'h04;
     // up to Data11
@@ -35,6 +36,9 @@ package dm;
     localparam logic [7:0] DevTreeAddr3 = 8'h1C;
     localparam logic [7:0] NextDM       = 8'h1D;
     localparam logic [7:0] ProgBuf0     = 8'h20;
+    localparam logic [7:0] ProgBuf1     = 8'h21;
+    localparam logic [7:0] ProgBuf2     = 8'h22;
+    localparam logic [7:0] ProgBuf3     = 8'h23;
     // up to ProgBuf15
     localparam logic [7:0] AuthData     = 8'h30;
     localparam logic [7:0] HaltSum2     = 8'h34;
@@ -145,5 +149,12 @@ package dm;
         logic         step;
         logic         prv;
     } dcsr_t;
+
+    // DTM
+    localparam logic[1:0] DTM_NOP   = 2'h0;
+    localparam logic[1:0] DTM_READ  = 2'h1;
+    localparam logic[1:0] DTM_WRITE = 2'h2;
+
+    localparam logic[1:0] DTM_SUCCESS = 2'h0;
 
 endpackage
