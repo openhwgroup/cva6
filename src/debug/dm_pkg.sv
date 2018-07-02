@@ -17,42 +17,45 @@
  */
 
 package dm;
-    localparam logic [3:0] DbgVersion013 = 4'h2;
+    parameter logic [3:0] DbgVersion013 = 4'h2;
+    // size of program buffer in junks of 32-bit words
+    parameter logic [4:0] ProgBufSize   = 5'h4;
+    // amount of data count registers implemented
+    parameter logic [3:0] DataCount     = 5'h0;
     // debug registers
-    localparam logic [7:0] Data0        = 8'h04;
-    // up to Data11
-    localparam logic [7:0] DMControl    = 8'h10;
-    localparam logic [7:0] DMStatus     = 8'h11; // r/o
-    localparam logic [7:0] Hartinfo     = 8'h12;
-    localparam logic [7:0] HaltSum1     = 8'h13;
-    localparam logic [7:0] HAWindowSel  = 8'h14;
-    localparam logic [7:0] HAWindow     = 8'h15;
-    localparam logic [7:0] AbstractCS   = 8'h16;
-    localparam logic [7:0] Command      = 8'h17;
-    localparam logic [7:0] AbstractAuto = 8'h18;
-    localparam logic [7:0] DevTreeAddr0 = 8'h19;
-    localparam logic [7:0] DevTreeAddr1 = 8'h1A;
-    localparam logic [7:0] DevTreeAddr2 = 8'h1B;
-    localparam logic [7:0] DevTreeAddr3 = 8'h1C;
-    localparam logic [7:0] NextDM       = 8'h1D;
-    localparam logic [7:0] ProgBuf0     = 8'h20;
-    localparam logic [7:0] ProgBuf1     = 8'h21;
-    localparam logic [7:0] ProgBuf2     = 8'h22;
-    localparam logic [7:0] ProgBuf3     = 8'h23;
-    // up to ProgBuf15
-    localparam logic [7:0] AuthData     = 8'h30;
-    localparam logic [7:0] HaltSum2     = 8'h34;
-    localparam logic [7:0] HaltSum3     = 8'h35;
-    localparam logic [7:0] SBAddress3   = 8'h37;
-    localparam logic [7:0] SBCS         = 8'h38;
-    localparam logic [7:0] SBAddress0   = 8'h39;
-    localparam logic [7:0] SBAddress1   = 8'h3A;
-    localparam logic [7:0] SBAddress2   = 8'h3B;
-    localparam logic [7:0] SBData0      = 8'h3C;
-    localparam logic [7:0] SBData1      = 8'h3D;
-    localparam logic [7:0] SBData2      = 8'h3E;
-    localparam logic [7:0] SBData3      = 8'h3F;
-    localparam logic [7:0] HaltSum0     = 8'h40;
+    typedef enum logic [7:0] {
+        Data0        = 8'h04,
+        Data11       = 8'h0F,
+        DMControl    = 8'h10,
+        DMStatus     = 8'h11, // r/o
+        Hartinfo     = 8'h12,
+        HaltSum1     = 8'h13,
+        HAWindowSel  = 8'h14,
+        HAWindow     = 8'h15,
+        AbstractCS   = 8'h16,
+        Command      = 8'h17,
+        AbstractAuto = 8'h18,
+        DevTreeAddr0 = 8'h19,
+        DevTreeAddr1 = 8'h1A,
+        DevTreeAddr2 = 8'h1B,
+        DevTreeAddr3 = 8'h1C,
+        NextDM       = 8'h1D,
+        ProgBuf0     = 8'h20,
+        ProgBuf15    = 8'h2F,
+        AuthData     = 8'h30,
+        HaltSum2     = 8'h34,
+        HaltSum3     = 8'h35,
+        SBAddress3   = 8'h37,
+        SBCS         = 8'h38,
+        SBAddress0   = 8'h39,
+        SBAddress1   = 8'h3A,
+        SBAddress2   = 8'h3B,
+        SBData0      = 8'h3C,
+        SBData1      = 8'h3D,
+        SBData2      = 8'h3E,
+        SBData3      = 8'h3F,
+        HaltSum0     = 8'h40
+    } dm_csr_t;
 
     // address to which a hart should jump when it was requested to halt
     localparam logic [63:0] HaltAddress = 64'h1000;
@@ -110,13 +113,18 @@ package dm;
         logic [11:0]  dataaddr;
     } hartinfo_t;
 
+    typedef enum logic [2:0] {  CmdErrNone, CmdErrBusy, CmdErrNotSupported,
+                                CmdErrorException, CmdErrorHaltResume,
+                                CmdErrorBus, CmdErrorOther = 7
+                             } cmderr_t;
+
     typedef struct packed {
         logic [31:29] zero3;
         logic [28:24] progbufsize;
         logic [23:12] zero2;
         logic         busy;
         logic         zero1;
-        logic [10:8]  cmderr;
+        cmderr_t      cmderr;
         logic [7:4]   zero0;
         logic [3:0]   datacount;
     } abstractcs_t;

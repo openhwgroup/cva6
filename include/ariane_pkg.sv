@@ -47,7 +47,9 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
-
+    // static debug hartinfo
+    // for the moment nothing of this is implemented
+    parameter dm::hartinfo_t DebugHartInfo = '{zero1: '0, nscratch: '0, zero0: '0, dataaccess: '0, datasize: '0, dataaddr: '0};
     // ---------------
     // Fetch Stage
     // ---------------
