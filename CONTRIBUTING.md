@@ -14,6 +14,7 @@ See [style-guidlines](https://github.com/pulp-platform/style-guidelines)
 - Wrap the body at 72 characters.
 - Use the body to explain what and why vs. how.
 - Consider starting the commit message with an applicable emoji:
+    * :sparkles: `:sparkles:` When introducing a new feature
     * :art: `:art:` Improving the format/structure of the code
     * :zap: `:zap:` When improving performance
     * :fire: `:fire` Removing code or files.
