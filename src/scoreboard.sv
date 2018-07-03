@@ -214,10 +214,10 @@ module scoreboard #(
                 // look at the appropriate fields and look whether there was an
                 // instruction that wrote the rd field before, first for RS1 and then for RS2, then for RS3
                 // we check the type of the stored result register file against issued register file
-                if ((mem_q[i].sbe.rd == rs1_i) && (is_rs1_fpr(mem_q[i].sbe.op) == is_rs1_fpr(issue_instr_o.op))) begin
+                if ((mem_q[i].sbe.rd == rs1_i) && (is_rd_fpr(mem_q[i].sbe.op) == is_rs1_fpr(issue_instr_o.op))) begin
                     rs1_o       = mem_q[i].sbe.result;
                     rs1_valid_o = mem_q[i].sbe.valid;
-                end else if ((mem_q[i].sbe.rd == rs2_i) && (is_rs2_fpr(mem_q[i].sbe.op) == is_rs2_fpr(issue_instr_o.op))) begin
+                end else if ((mem_q[i].sbe.rd == rs2_i) && (is_rd_fpr(mem_q[i].sbe.op) == is_rs2_fpr(issue_instr_o.op))) begin
                     rs2_o       = mem_q[i].sbe.result;
                     rs2_valid_o = mem_q[i].sbe.valid;
                 end else if (mem_q[i].sbe.rd == rs3_i) begin // rs3 is only considered in FP cases so no check needed
@@ -234,13 +234,13 @@ module scoreboard #(
         // make sure that we are not forwarding a result that got an exception
         for (int unsigned j = 0; j < NR_WB_PORTS; j++) begin
             if (mem_q[trans_id_i[j]].sbe.rd == rs1_i && wb_valid_i[j] && ~ex_i[j].valid
-               && (is_rs1_fpr(mem_q[trans_id_i[j]].sbe.op) == is_rs1_fpr(issue_instr_o.op))) begin
+               && (is_rd_fpr(mem_q[trans_id_i[j]].sbe.op) == is_rs1_fpr(issue_instr_o.op))) begin
                 rs1_o = wbdata_i[j];
                 rs1_valid_o = wb_valid_i[j];
                 break;
             end
             if (mem_q[trans_id_i[j]].sbe.rd == rs2_i && wb_valid_i[j] && ~ex_i[j].valid
-               && (is_rs2_fpr(mem_q[trans_id_i[j]].sbe.op) == is_rs2_fpr(issue_instr_o.op))) begin
+               && (is_rd_fpr(mem_q[trans_id_i[j]].sbe.op) == is_rs2_fpr(issue_instr_o.op))) begin
                 rs2_o = wbdata_i[j];
                 rs2_valid_o = wb_valid_i[j];
                 break;
