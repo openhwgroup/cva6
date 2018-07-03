@@ -227,7 +227,7 @@ package ariane_pkg;
     function automatic logic is_rs2_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
-                [FSD:FSW],                       // FP Stores
+                [FSD:FSB],                       // FP Stores
                 [FADD:FMIN_MAX],                 // Computational Operations (no sqrt)
                 [FMADD:FNMADD],                  // Fused Computational Operations
                 FSGNJ,                           // Sign Injections
@@ -253,7 +253,7 @@ package ariane_pkg;
     function automatic logic is_rd_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
-                [FLD:FLW],                       // FP Loads
+                [FLD:FLB],                       // FP Loads
                 [FADD:FNMADD],                   // Computational Operations
                 FCVT_I2F,                        // Int-Float Casts
                 FCVT_F2F,                        // Float-Float Casts
@@ -274,8 +274,8 @@ package ariane_pkg;
         case (op)
             LD, SD, FLD, FSD      : return 2'b11;
             LW, LWU, SW, FLW, FSW : return 2'b10;
-            LH, LHU, SH           : return 2'b01;
-            LB, LBU, SB           : return 2'b00;
+            LH, LHU, SH, FLH, FSH : return 2'b01;
+            LB, LBU, SB, FLB, FSB : return 2'b00;
             default               : return 2'b11;
         endcase
     endfunction
