@@ -34,9 +34,6 @@ module dm_csrs #(
     // global ctrl
     output logic                        ndmreset_o,      // non-debug module reset, active-high
     output logic                        dmactive_o,      // 1 -> debug-module is active, 0 -> synchronous re-set
-    // hart ctrl communication
-    output logic [NrHarts-1:0]          halt_req_o,      // request to halt a hart
-    output logic [NrHarts-1:0]          resume_req_o,    // request hart to resume
     // hart status
     input  dm::hartinfo_t [NrHarts-1:0] hartinfo_i,      // static hartinfo
     input  logic [NrHarts-1:0]          halted_i,        // hart is halted
@@ -45,6 +42,9 @@ module dm_csrs #(
     input  logic [NrHarts-1:0]          havereset_i,     // hart has reset
     input  logic [NrHarts-1:0]          resumeack_i,     // hart acknowledged resume request
     // hart control
+    output logic [NrHarts-1:0]          haltreq_o,       // request to halt a hart
+    output logic [NrHarts-1:0]          resumereq_o,     // request hart to resume
+    output logic [NrHarts-1:0]          ackhavereset_o,  // DM acknowledges reset
     output logic                        command_write_o, // debugger is writing to the command field
     input  dm::command_t                command_o,       // abstract command
     input  logic [NrHarts-1:0]          set_cmderror_i,  // an error occured
@@ -97,6 +97,7 @@ module dm_csrs #(
 
         resp_queue_data = 32'0;
         command_write_o = 1'b0;
+        ackhavereset_o  = 'b0;
 
         // read
         if (dmi_req_valid_i && dmi_req_bits_op_i == DTM_READ) begin
@@ -129,7 +130,12 @@ module dm_csrs #(
                         data_d[dmi_req_bits_addr_i[4:0]] = dmi_req_bits_data_i;
                     end
                 end
-                dm::DMControl: dmcontrol_d = dmi_req_bits_data_i;
+                dm::DMControl: begin
+                    automatic dm::dmcontrol_t dmcontrol;
+                    dmcontrol = dm::dmcontrol_t'(dmi_req_bits_data_i);
+                    ackhavereset_o[selected_hart] = dmcontrol.ackhavereset;
+                    dmcontrol_d = dmi_req_bits_data_i;
+                end
                 dm::DMStatus:; // write are ignored to R/O register
                 dm::Hartinfo:; // hartinfo is R/O
                 // only command error is write-able
@@ -198,7 +204,7 @@ module dm_csrs #(
         dmcontrol_d.clrresethaltreq = 1'b0;
         dmcontrol_d.zero1           = '0;
         dmcontrol_d.zero0           = '0;
-
+        dmcontrol_d.ackhavereset    = 1'b0;
         // abstractcs
         abstractcs = '0;
         abstractcs.datacount = dm::DataCount;
@@ -211,10 +217,10 @@ module dm_csrs #(
     always_comb begin
         selected_hart = hartsel[NrHarts-1:0];
         // default assignment
-        halt_req_o = '0;
-        resume_req_o = '0;
+        haltreq_o = '0;
+        resumereq_o = '0;
         halt_req[selected_hart] = dmcontrol_q.haltreq;
-        resume_req_o[selected_hart] = dmcontrol_q.resumereq;
+        resumereq_o[selected_hart] = dmcontrol_q.resumereq;
     end
 
     assign dmactive_o = dmcontrol_q.dmactive;

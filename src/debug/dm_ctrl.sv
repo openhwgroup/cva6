@@ -19,15 +19,24 @@
 module dm_ctrl #(
     parameter dm::hartinfo_t HartInfo = '0
 )(
-    input  logic          clk_i,    // Clock
-    input  logic          rst_ni,   // Asynchronous reset active low
+    input  logic          clk_i,        // Clock
+    input  logic          dmactive_i,   // synchronous low active reset
+    output logic          debug_req_o,
     // to/from CSRs
-    input  logic          halt_req_i,
+    // status
+    output logic          hartinfo_o,
     output logic          halted_o,
     output logic          running_o,
     output logic          unavailable_o,
-    output dm::hartinfo_t hartinfo_o,
+    output logic          havereset_o,
+    output logic          resumeack_o,
+    // ctrl
+    input  logic          haltreq_i,
+    input  logic          resumereq_i,
+    input  logic          ackhavereset_i,
+    input  logic          command_write_i,
     input  dm::command_t  command_i,
+    output logic          set_cmderror_o,
     output dm::cmderr_t   cmderror_o,
     output logic          cmdbusy_o
 );
@@ -35,18 +44,34 @@ module dm_ctrl #(
     assign hartinfo_o = HartInfo;
 
     typedef enum logic [1:0] {
-        kRunning
+        kReset, kRunning
     } state_t;
     state_t state_d, state_q;
 
     always_comb begin
         state_d = state_q;
 
+        halted_o      = 1'b0;
+        running_o     = 1'b0;
+        unavailable_o = 1'b0;
+        havereset_o   = 1'b0;
+        resumeack_o   = 1'b0;
+
+        unique case (state_q)
+
+            kReset: begin
+                havereset_o = 1'b1;
+                if (ackhavereset_i) state_d = kRunning;
+            end
+            kRunning: begin
+
+            end
+        endcase
     end
 
     // sequential process
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
+    always_ff @(posedge clk_i) begin
+        if (~dmactive_i) begin
             state_q <= kIdle;
         end else begin
             state_q <= state_d;

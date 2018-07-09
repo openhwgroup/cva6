@@ -10,7 +10,8 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Date: 19.03.2017
-// Description: Ariane Top-level module
+// Description: Test-harness for Ariane
+//              Instantiates an AXI-Bus and memories
 
 import ariane_pkg::*;
 

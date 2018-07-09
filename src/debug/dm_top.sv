@@ -20,25 +20,29 @@
 module dm_top #(
     parameter int NrHarts = -1
 )(
-    input  logic        clk_i,       // clock
-    input  logic        rst_ni,      // asynchronous reset active low, connect PoR here, not the system reset
-    output logic        ndmreset_o,  // non-debug module reset
-    AXI_BUS.Slave       axi_slave,   // bus slave
+    input  logic               clk_i,       // clock
+    input  logic               rst_ni,      // asynchronous reset active low, connect PoR here, not the system reset
+    output logic               ndmreset_o,  // non-debug module reset
+    output logic [NrHarts-1:0] debug_req_o, // async debug request
+    AXI_BUS.Slave              axi_slave,   // bus slave
     // Connection to DTM - compatible to RocketChip Debug Module
-    input  logic        dmi_rst_ni,
-    input  logic        dmi_req_valid_i,
-    output logic        dmi_req_ready_o,
-    input  logic [ 6:0] dmi_req_bits_addr_i,
-    input  logic [ 1:0] dmi_req_bits_op_i, // 0 = nop, 1 = read, 2 = write
-    input  logic [31:0] dmi_req_bits_data_i,
+    input  logic               dmi_rst_ni,
+    input  logic               dmi_req_valid_i,
+    output logic               dmi_req_ready_o,
+    input  logic [ 6:0]        dmi_req_bits_addr_i,
+    input  logic [ 1:0]        dmi_req_bits_op_i, // 0 = nop, 1 = read, 2 = write
+    input  logic [31:0]        dmi_req_bits_data_i,
 
-    output logic        dmi_resp_valid_o,
-    input  logic        dmi_resp_ready_i,
-    output logic [ 1:0] dmi_resp_bits_resp_o,
-    output logic [31:0] dmi_resp_bits_data_o
+    output logic               dmi_resp_valid_o,
+    input  logic               dmi_resp_ready_i,
+    output logic [ 1:0]        dmi_resp_bits_resp_o,
+    output logic [31:0]        dmi_resp_bits_data_o
 );
 
     // Debug CSRs
 
+    // Debug Ctrl
+
+    // Debug AXI Bus
 
 endmodule
