@@ -43,7 +43,6 @@ module ariane #(
         // Interrupt inputs
         input  logic [1:0]                     irq_i,                  // level sensitive IR lines, mip & sip (async)
         input  logic                           ipi_i,                  // inter-processor interrupts (async)
-        output logic                           sec_lvl_o,              // current privilege level out
         // Timer facilities
         input  logic [63:0]                    time_i,                 // global time (most probably coming from an RTC)
         input  logic                           time_irq_i,             // timer interrupt in (async)
@@ -218,7 +217,6 @@ module ariane #(
     logic                     flush_icache_ctrl_icache;
     logic                     set_debug_pc;
 
-    assign sec_lvl_o = priv_lvl;
     assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
     // --------------
     // Frontend

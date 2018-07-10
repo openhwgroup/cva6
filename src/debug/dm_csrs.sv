@@ -46,7 +46,7 @@ module dm_csrs #(
     output logic [NrHarts-1:0]          resumereq_o,     // request hart to resume
     output logic [NrHarts-1:0]          ackhavereset_o,  // DM acknowledges reset
     output logic                        command_write_o, // debugger is writing to the command field
-    input  dm::command_t                command_o,       // abstract command
+    output dm::command_t                command_o,       // abstract command
     input  logic [NrHarts-1:0]          set_cmderror_i,  // an error occured
     input  dm::cmderr_t [NrHarts-1:0]   cmderror_i,      // this error occured
     input  logic [NrHarts-1:0]          cmdbusy_i,       // cmd is currently busy executing
@@ -60,15 +60,16 @@ module dm_csrs #(
     logic        resp_queue_push;
     logic [31:0] resp_queue_data;
 
-    logic [10:0] hartsel;
+    logic [19:0] hartsel;
     assign hartsel    = {dmcontrol_q.hartselhi, dmcontrol_q.hartsello};
 
     logic [31:0] haltsum0, haltsum1, haltsum2, haltsum3;
     for (genvar i = 0; i < 32; i++) begin
-        assign haltsum0[i] = halted_i[hartsel[HartSelLen-1:5]];
-        assign haltsum1[i] = (NrHarts > 32)    ? &halted_i[hartsel[HartSelLen-1:10] +: 32]    : 1'b0;
-        assign haltsum2[i] = (NrHarts > 1024)  ? &halted_i[hartsel[HartSelLen-1:15] +: 1024]  : 1'b0;
-        assign haltsum3[i] = (NrHarts > 32768) ? &halted_i[hartsel[HartSelLen-1:15] +: 32768] : 1'b0;
+        assign haltsum0[i] = halted_i[i];
+        // assign haltsum0[i] = halted_i[hartsel[19:5]];
+        // assign haltsum1[i] = (NrHarts > 32)    ? &halted_i[hartsel[19:10] +: 32]    : 1'b0;
+        // assign haltsum2[i] = (NrHarts > 1024)  ? &halted_i[hartsel[19:15] +: 1024]  : 1'b0;
+        // assign haltsum3[i] = (NrHarts > 32768) ? &halted_i[hartsel[19:19] +: 32768] : 1'b0;
     end
 
     dm::dmstatus_t      dmstatus;
@@ -83,12 +84,48 @@ module dm_csrs #(
     logic [NrHarts-1:0] selected_hart;
 
     // a successful response returns zero
-    assign dmi_resp_bits_resp_o = DTM_SUCCESS;
+    assign dmi_resp_bits_resp_o = dm::DTM_SUCCESS;
     assign dmi_resp_valid_o     = ~resp_queue_empty;
     assign dmi_req_ready_o      = ~resp_queue_full;
     assign resp_queue_push      = dmi_req_valid_i & dmi_req_ready_o;
 
     always_comb begin : csr_read_write
+        // --------------------
+        // Static Values (R/O)
+        // --------------------
+        // dmstatus
+        dmstatus    = '0;
+        dmstatus.version = dm::DbgVersion013;
+        // no authentication implemented
+        dmstatus.authenticated = 1'b1;
+        // we do not support halt-on-reset sequence
+        dmstatus.hasresethaltreq = 1'b0;
+        // TODO(zarubaf) things need to change here if we implement the array mask
+        dmstatus.allhavereset = havereset_i[hartsel[HartSelLen-1:0]];
+        dmstatus.anyhavereset = havereset_i[hartsel[HartSelLen-1:0]];
+
+        dmstatus.allresumeack = resumeack_i[hartsel[HartSelLen-1:0]];
+        dmstatus.anyresumeack = resumeack_i[hartsel[HartSelLen-1:0]];
+
+        dmstatus.allunavail   = unavailable_i[hartsel[HartSelLen-1:0]];
+        dmstatus.anyunavail   = unavailable_i[hartsel[HartSelLen-1:0]];
+
+        dmstatus.allnonexistent = (hartsel > NrHarts - 1) ? 1'b1 : 1'b0;
+        dmstatus.anynonexistent = (hartsel > NrHarts - 1) ? 1'b1 : 1'b0;
+
+        dmstatus.allhalted    = halted_i[hartsel[HartSelLen-1:0]];
+        dmstatus.anyhalted    = halted_i[hartsel[HartSelLen-1:0]];
+
+        dmstatus.allrunning   = running_i[hartsel[HartSelLen-1:0]];
+        dmstatus.anyrunning   = running_i[hartsel[HartSelLen-1:0]];
+
+        // abstractcs
+        abstractcs = '0;
+        abstractcs.datacount = dm::DataCount;
+        abstractcs.progbufsize = dm::ProgBufSize;
+        abstractcs.busy = cmdbusy_i[selected_hart];
+        abstractcs.cmderr = cmderr_q;
+
         // default assignments
         dmcontrol_d = dmcontrol_q;
         cmderr_d    = cmderr_q;
@@ -100,8 +137,8 @@ module dm_csrs #(
         ackhavereset_o  = 'b0;
 
         // read
-        if (dmi_req_valid_i && dmi_req_bits_op_i == DTM_READ) begin
-            unique case (dm_csr_t'({1'b0, dmi_req_bits_addr_i})) inside
+        if (dmi_req_valid_i && dmi_req_bits_op_i == dm::DTM_READ) begin
+            unique case (dm::dm_csr_t'({1'b0, dmi_req_bits_addr_i})) inside
                 [(dm::Data0):(dm::Data0 + dm::DataCount << 2)]: begin
                     resp_queue_data = data_q[dmi_req_bits_addr_i[4:0]];
                 end
@@ -122,8 +159,8 @@ module dm_csrs #(
         end
 
         // write
-        if (dmi_req_valid_i && dmi_req_bits_op_i == DTM_WRITE) begin
-            unique case (dm_csr_t'({1'b0, dmi_req_bits_addr_i})) inside
+        if (dmi_req_valid_i && dmi_req_bits_op_i == dm::DTM_WRITE) begin
+            unique case (dm::dm_csr_t'({1'b0, dmi_req_bits_addr_i})) inside
                 [(dm::Data0):(dm::Data0 + dm::DataCount << 2)]: begin
                     // attempts to write them while busy is set does not change their value
                     if (!cmdbusy_i) begin
@@ -151,7 +188,7 @@ module dm_csrs #(
                 [dm::ProgBuf0:dm::ProgBuf15]: begin
                     // attempts to write them while busy is set does not change their value
                     if (!cmdbusy_i) begin
-                        probuf_d[dmi_req_bits_addr_i[4:0]] = dmi_req_bits_data_i;
+                        progbuf_d[dmi_req_bits_addr_i[4:0]] = dmi_req_bits_data_i;
                     end
                 end
                 default:;
@@ -161,35 +198,6 @@ module dm_csrs #(
         if (set_cmderror_i[selected_hart]) begin
             cmderr_d = cmderror_i[selected_hart];
         end
-        // --------------------
-        // Static Values (R/O)
-        // --------------------
-        // dmstatus
-        dmstatus    = '0;
-        dmstatus.version = DbgVersion013;
-        // no authentication implemented
-        dmstatus.authenticated = 1'b1;
-        // we do not support halt-on-reset sequence
-        dmstatus.hasresethaltreq = 1'b0;
-        // TODO(zarubaf) things need to change here if we implement the array mask
-        dmstatus.allhavereset = havereset_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyhavereset = havereset_i[hartsel[HartSelLen-1:0]];
-
-        dmstatus.allresumeack = resumeack_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyresumeack = resumeack_i[hartsel[HartSelLen-1:0]];
-
-        dmstatus.allunavail   = unavailable_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyunavail   = unavailable_i[hartsel[HartSelLen-1:0]];
-
-        dmstatus.allnonexistent = (hartsel > NrHarts - 1) ? 1'b1 : 1'b0;
-        dmstatus.anynonexsstent = (hartsel > NrHarts - 1) ? 1'b1 : 1'b0;
-
-        dmstatus.allhalted    = halted_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyhalted    = halted_i[hartsel[HartSelLen-1:0]];
-
-        dmstatus.allrunning   = running_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyrunning   = running_i[hartsel[HartSelLen-1:0]];
-
         // dmcontrol
         // determine how how many harts we actually want to select
         // and tie-off (through constant propagation the remaining harts)
@@ -205,12 +213,6 @@ module dm_csrs #(
         dmcontrol_d.zero1           = '0;
         dmcontrol_d.zero0           = '0;
         dmcontrol_d.ackhavereset    = 1'b0;
-        // abstractcs
-        abstractcs = '0;
-        abstractcs.datacount = dm::DataCount;
-        abstractcs.progbufsize = dm::ProgBufSize;
-        abstractcs.busy = cmdbusy_i[selected_hart];
-        abstractcs.cmderr = cmderr_q;
     end
 
     // output multiplexer
@@ -219,7 +221,7 @@ module dm_csrs #(
         // default assignment
         haltreq_o = '0;
         resumereq_o = '0;
-        halt_req[selected_hart] = dmcontrol_q.haltreq;
+        haltreq_o[selected_hart] = dmcontrol_q.haltreq;
         resumereq_o[selected_hart] = dmcontrol_q.resumereq;
     end
 

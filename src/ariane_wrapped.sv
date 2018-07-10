@@ -15,237 +15,186 @@
 
 import ariane_pkg::*;
 
-import "DPI-C" function void write_uint64(input longint unsigned address, input longint unsigned data);
-import "DPI-C" function longint unsigned read_uint64(input longint unsigned address);
-import "DPI-C" function longint unsigned get_tohost_address();
-import "DPI-C" function longint unsigned get_fromhost_address();
-
 module ariane_wrapped #(
         parameter logic [63:0] CACHE_START_ADDR  = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
         parameter int unsigned AXI_ID_WIDTH      = 10,
         parameter int unsigned AXI_USER_WIDTH    = 1,
         parameter int unsigned AXI_ADDRESS_WIDTH = 64,
-        parameter int unsigned AXI_DATA_WIDTH    = 64
+        parameter int unsigned AXI_DATA_WIDTH    = 64,
+        parameter int unsigned NUM_WORDS         = 2**24
     )(
         input  logic                           clk_i,
         input  logic                           rst_ni,
-        input  logic                           test_en_i,     // enable all clock gates for testing
-        // Core ID, Cluster ID and boot address are considered more or less static
-        input  logic [63:0]                    boot_addr_i,
-        input  logic [ 3:0]                    core_id_i,
-        input  logic [ 5:0]                    cluster_id_i,
-        input  logic                           flush_req_i,
-        output logic                           flushing_o,
-        // Interrupt inputs
-        input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip
-        input  logic                           ipi_i,        // inter-processor interrupts
-        output logic                           sec_lvl_o,    // current privilege level oot
-        // Timer facilities
-        input  logic [63:0]                    time_i,       // global time (most probably coming from an RTC)
-        input  logic                           time_irq_i,   // timer interrupt in
-        input  logic                           debug_req_i   // request debug
+        output logic [31:0]                    exit_o
     );
 
-    localparam int unsigned AXI_NUMBYTES = AXI_DATA_WIDTH/8;
+    // disable test-enable
+    logic        test_en;
+    logic        ndmreset;
+    logic        debug_req;
 
-    longint unsigned tohost, fromhost;
+    logic        debug_req_valid;
+    logic        debug_req_ready;
+    logic [6:0]  debug_req_bits_addr;
+    logic [1:0]  debug_req_bits_op;
+    logic [31:0] debug_req_bits_data;
+    logic        debug_resp_valid;
+    logic        debug_resp_ready;
+    logic [1:0]  debug_resp_bits_resp;
+    logic [31:0] debug_resp_bits_data;
 
-    logic        flush_dcache_ack, flush_dcache;
-    logic        flush_dcache_d, flush_dcache_q;
+    assign test_en = 1'b0;
+
+    localparam NB_SLAVE = 3;
+    localparam NB_MASTER = 2;
+    localparam AXI_ID_WIDTH_SLAVES = AXI_ID_WIDTH + $clog2(NB_SLAVE);
 
     AXI_BUS #(
-        .AXI_ADDR_WIDTH ( 64             ),
-        .AXI_DATA_WIDTH ( 64             ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) data_if();
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
+    ) slave[NB_SLAVE-1:0]();
 
     AXI_BUS #(
-        .AXI_ADDR_WIDTH ( 64             ),
-        .AXI_DATA_WIDTH ( 64             ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) bypass_if();
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
+    ) master[NB_MASTER-1:0]();
 
-    AXI_BUS #(
-        .AXI_ADDR_WIDTH ( 64             ),
-        .AXI_DATA_WIDTH ( 64             ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH   ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH )
-    ) instr_if();
+    // ---------------
+    // Debug
+    // ---------------
+    // SiFive's SimDTM Module
+    // Converts to DPI calls
+    SimDTM i_SimDTM (
+        .clk                  ( clk_i                ),
+        .reset                ( ~rst_ni              ),
+        .debug_req_valid      ( debug_req_valid      ),
+        .debug_req_ready      ( debug_req_ready      ),
+        .debug_req_bits_addr  ( debug_req_bits_addr  ),
+        .debug_req_bits_op    ( debug_req_bits_op    ),
+        .debug_req_bits_data  ( debug_req_bits_data  ),
+        .debug_resp_valid     ( debug_resp_valid     ),
+        .debug_resp_ready     ( debug_resp_ready     ),
+        .debug_resp_bits_resp ( debug_resp_bits_resp ),
+        .debug_resp_bits_data ( debug_resp_bits_data ),
+        .exit                 ( exit_o               )
+    );
+    // debug module
+    dm_top #(
+        .NrHarts ( 1 ) // current implementation only supports 1 hart
+    ) i_dm_top (
+        .clk_i                ( clk_i                ),
+        .rst_ni               ( rst_ni               ), // PoR
+        .ndmreset_o           ( ndmreset             ),
+        .debug_req_o          ( debug_req            ),
+        .axi_slave            ( master[0]            ),
+        .dmi_rst_ni           ( rst_ni               ),
+        .dmi_req_valid_i      ( debug_req_valid      ),
+        .dmi_req_ready_o      ( debug_req_ready      ),
+        .dmi_req_bits_addr_i  ( debug_req_bits_addr  ),
+        .dmi_req_bits_op_i    ( debug_req_bits_op    ),
+        .dmi_req_bits_data_i  ( debug_req_bits_data  ),
+        .dmi_resp_valid_o     ( debug_resp_valid     ),
+        .dmi_resp_ready_i     ( debug_resp_ready     ),
+        .dmi_resp_bits_resp_o ( debug_resp_bits_resp ),
+        .dmi_resp_bits_data_o ( debug_resp_bits_data )
+    );
 
+    // ---------------
+    // Memory
+    // ---------------
+    logic                         req;
+    logic                         we;
+    logic [AXI_ADDRESS_WIDTH-1:0] addr;
+    logic [AXI_DATA_WIDTH/8-1:0]  be;
+    logic [AXI_DATA_WIDTH-1:0]    wdata;
+    logic [AXI_DATA_WIDTH-1:0]    rdata;
+    logic [AXI_DATA_WIDTH-1:0]    bit_en;
+
+    // convert byte enable to bit enable
+    for (genvar i = 0; i < AXI_DATA_WIDTH/8; i++) begin
+        assign bit_en[i*8 +: 8] = {8{be[i]}};
+    end
+
+    axi2mem #(
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
+    ) i_axi2mem (
+        .clk_i  ( clk_i     ),
+        .rst_ni ( ndmreset  ),
+        .slave  ( master[1] ),
+        .req_o  ( req       ),
+        .we_o   ( we        ),
+        .addr_o ( addr      ),
+        .be_o   ( be        ),
+        .data_o ( wdata     ),
+        .data_i ( rdata     )
+    );
+
+    sram #(
+        .DATA_WIDTH ( AXI_DATA_WIDTH ),
+        .NUM_WORDS  ( NUM_WORDS      )
+    ) i_sram (
+        .clk_i      ( clk_i                                                                       ),
+        .req_i      ( req                                                                         ),
+        .we_i       ( we                                                                          ),
+        .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(AXI_DATA_WIDTH/8):$clog2(AXI_DATA_WIDTH/8)] ),
+        .wdata_i    ( wdata                                                                       ),
+        .be_i       ( bit_en                                                                      ),
+        .rdata_o    ( rdata                                                                       )
+    );
+
+    // ---------------
+    // AXI Xbar
+    // ---------------
+    axi_node_intf_wrap #(
+        // three ports from Ariane (instruction, data and bypass)
+        .NB_SLAVE       ( NB_SLAVE          ),
+        .NB_MASTER      ( NB_MASTER         ), // debug unit, memory unit
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH    ),
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH      )
+    ) i_axi_xbar (
+        .clk          ( clk_i                                       ),
+        .rst_n        ( ndmreset                                    ),
+        .test_en_i    ( test_en                                     ),
+        .slave        ( slave                                       ),
+        .master       ( master                                      ),
+        .start_addr_i ( {64'h0,           CACHE_START_ADDR}         ),
+        .end_addr_i   ( {64'h1_0000_0000, CACHE_START_ADDR + 2**24} )
+    );
+
+    // ---------------
+    // Core
+    // ---------------
     ariane #(
         .CACHE_START_ADDR ( CACHE_START_ADDR ),
-        .AXI_ID_WIDTH     ( 10               ),
-        .AXI_USER_WIDTH   ( 1                )
+        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
+        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
     ) i_ariane (
-        .*,
-        .flush_dcache_i         ( flush_dcache         ),
-        .flush_dcache_ack_o     ( flush_dcache_ack     ),
-        .data_if                ( data_if              ),
-        .bypass_if              ( bypass_if            ),
-        .instr_if               ( instr_if             )
+        .clk_i                ( clk_i            ),
+        .rst_ni               ( ndmreset         ),
+        .test_en_i            ( test_en          ),
+        .boot_addr_i          ( CACHE_START_ADDR ),
+        .core_id_i            ( '0               ),
+        .cluster_id_i         ( '0               ),
+        .irq_i                ( '0               ),
+        .ipi_i                ( '0               ),
+        .time_i               ( '0               ),
+        .time_irq_i           ( '0               ),
+        .debug_req_i          ( debug_req        ),
+        .flush_dcache_i       ( 1'b0             ),
+        .flush_dcache_ack_o   (                  ),
+        .data_if              ( slave[2]         ),
+        .bypass_if            ( slave[1]         ),
+        .instr_if             ( slave[0]         )
     );
 
-    core2mem i_core2mem (
-        .instr_if               ( instr_if             ),
-        .bypass_if              ( bypass_if            ),
-        .data_if                ( data_if              ),
-        .*
-    );
-
-    assign flush_dcache = flush_dcache_q;
-    assign flushing_o = flush_dcache_q;
-
-    // direct store interface
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-
-        automatic logic [63:0] store_address;
-
-        if (~rst_ni) begin
-            flush_dcache_q  <= 1'b0;
-        end else begin
-            // got acknowledge from dcache - release the flush signal
-            if (flush_dcache_ack)
-                flush_dcache_q <= 1'b0;
-
-            // a write to tohost or fromhost
-            if (i_ariane.ex_stage_i.lsu_i.i_store_unit.data_req_o
-              & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_gnt_i
-              & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_we_o) begin
-                store_address = {i_ariane.ex_stage_i.lsu_i.i_store_unit.address_tag_o, i_ariane.ex_stage_i.lsu_i.i_store_unit.address_index_o[11:3], 3'b0};
-
-                // this assumes that tohost writes are always 64-bit
-                if (store_address == tohost || store_address == fromhost) begin
-                    flush_dcache_q <= 1'b1;
-                end
-            end
-
-            if (flush_req_i) begin
-                flush_dcache_q <= 1'b1;
-            end
-        end
-    end
-
-    initial begin
-        tohost = get_tohost_address();
-        fromhost = get_fromhost_address();
-    end
-
-endmodule
-
-
-module core2mem #(
-    parameter int unsigned AXI_ID_WIDTH      = 10,
-    parameter int unsigned AXI_USER_WIDTH    = 1,
-    parameter int unsigned AXI_ADDRESS_WIDTH = 64,
-    parameter int unsigned AXI_DATA_WIDTH    = 64
-)(
-    input logic         clk_i,    // Clock
-    input logic         rst_ni,  // Asynchronous reset active low
-    AXI_BUS.Slave       bypass_if,
-    AXI_BUS.Slave       data_if,
-    AXI_BUS.Slave       instr_if
-);
-
-    logic        instr_req,     bypass_req,     data_req;
-    logic [63:0] instr_address, bypass_address, data_address;
-    logic        instr_we,      bypass_we,      data_we;
-    logic [7:0]  instr_be,      bypass_be,      data_be;
-    logic [63:0] instr_wdata,   bypass_wdata,   data_wdata;
-    logic [63:0] instr_rdata,   bypass_rdata,   data_rdata;
-
-    axi2mem #(
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
-        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
-    ) i_bypass (
-        .clk_i  ( clk_i          ),
-        .rst_ni ( rst_ni         ),
-        .slave  ( bypass_if      ),
-        .req_o  ( bypass_req     ),
-        .we_o   ( bypass_we      ),
-        .addr_o ( bypass_address ),
-        .be_o   ( bypass_be      ),
-        .data_o ( bypass_wdata   ),
-        .data_i ( bypass_rdata   )
-    );
-
-    axi2mem #(
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
-        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
-    ) i_data (
-        .clk_i  ( clk_i        ),
-        .rst_ni ( rst_ni       ),
-        .slave  ( data_if      ),
-        .req_o  ( data_req     ),
-        .we_o   ( data_we      ),
-        .addr_o ( data_address ),
-        .be_o   ( data_be      ),
-        .data_o ( data_wdata   ),
-        .data_i ( data_rdata   )
-    );
-
-    axi2mem #(
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH      ),
-        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH    )
-    ) i_instr (
-        .clk_i  ( clk_i         ),
-        .rst_ni ( rst_ni        ),
-        .slave  ( instr_if      ),
-        .req_o  ( instr_req     ),
-        .we_o   ( instr_we      ),
-        .addr_o ( instr_address ),
-        .be_o   ( instr_be      ),
-        .data_o ( instr_wdata   ),
-        .data_i ( instr_rdata   )
-    );
-
-    // ------------------------
-    // Bypass Interface
-    // ------------------------
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            bypass_rdata <= '0;
-        end else begin
-            if (bypass_req & bypass_we)
-                write_uint64({bypass_address[63:3], 3'b0}, bypass_wdata);
-            else if (bypass_req)
-                bypass_rdata <= read_uint64({bypass_address[63:3], 3'b0});
-        end
-    end
-
-    // ------------------------
-    // Data Interface
-    // ------------------------
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            data_rdata <= '0;
-        end else begin
-            if (data_req & data_we)
-                write_uint64({data_address[63:3], 3'b0}, data_wdata);
-            else if (data_req)
-                data_rdata <= read_uint64({data_address[63:3], 3'b0});
-        end
-    end
-
-    // ------------------------
-    // Instruction Interface
-    // ------------------------
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            instr_rdata <= '0;
-        end else begin
-            if (instr_req & instr_we)
-                write_uint64({instr_address[63:3], 3'b0}, instr_wdata);
-            else if (instr_req)
-                instr_rdata <= read_uint64({instr_address[63:3], 3'b0});
-        end
-    end
 endmodule
 
