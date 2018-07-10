@@ -68,7 +68,7 @@ package dm;
     typedef struct packed {
         logic [31:23] zero1;
         logic         impebreak;
-        logic [21:0]  zero0;
+        logic [21:20] zero0;
         logic         allhavereset;
         logic         anyhavereset;
         logic         allresumeack;
@@ -85,7 +85,7 @@ package dm;
         logic         authbusy;
         logic         hasresethaltreq;
         logic         devtreevalid;
-        logic         version;
+        logic [3:0]   version;
     } dmstatus_t;
 
     typedef struct packed {
@@ -159,9 +159,11 @@ package dm;
     } dcsr_t;
 
     // DTM
-    localparam logic[1:0] DTM_NOP   = 2'h0;
-    localparam logic[1:0] DTM_READ  = 2'h1;
-    localparam logic[1:0] DTM_WRITE = 2'h2;
+    typedef enum logic [1:0] {
+        DTM_NOP   = 2'h0,
+        DTM_READ  = 2'h1,
+        DTM_WRITE = 2'h2
+    } dtm_op_t;
 
     localparam logic[1:0] DTM_SUCCESS = 2'h0;
 

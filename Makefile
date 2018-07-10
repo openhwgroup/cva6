@@ -177,7 +177,7 @@ verilate:
 	$(verilator) $(ariane_pkg) $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv)) $(wildcard src/axi_slice/*.sv) \
 	$(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv)) src/util/generic_fifo.sv tb/common/SimDTM.v  \
 	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/src/axi2mem.sv tb/agents/axi_if/axi_if.sv \
-	+incdir+src/axi_node --vpi \
+	+incdir+src/axi_node --vpi --trace-structs \
 	--unroll-count 256 -Wno-fatal -Werror-PINMISSING  -Werror-IMPLICIT  -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace \
 	-Wno-PINCONNECTEMPTY -Wno-DECLFILENAME -Wno-UNOPTFLAT -Wno-UNUSED \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc

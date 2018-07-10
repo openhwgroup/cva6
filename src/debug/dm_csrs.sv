@@ -54,6 +54,8 @@ module dm_csrs #(
 );
     // the amount of bits we need to represent all harts
     localparam HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
+    dm::dtm_op_t dtm_op;
+    assign dtm_op = dm::dtm_op_t'(dmi_req_bits_op_i);
 
     logic        resp_queue_full;
     logic        resp_queue_empty;
@@ -66,6 +68,7 @@ module dm_csrs #(
     logic [31:0] haltsum0, haltsum1, haltsum2, haltsum3;
     for (genvar i = 0; i < 32; i++) begin
         assign haltsum0[i] = halted_i[i];
+        // TODO(zarubaf) Implement correct haltsum logic
         // assign haltsum0[i] = halted_i[hartsel[19:5]];
         // assign haltsum1[i] = (NrHarts > 32)    ? &halted_i[hartsel[19:10] +: 32]    : 1'b0;
         // assign haltsum2[i] = (NrHarts > 1024)  ? &halted_i[hartsel[19:15] +: 1024]  : 1'b0;
@@ -110,6 +113,8 @@ module dm_csrs #(
         dmstatus.allunavail   = unavailable_i[hartsel[HartSelLen-1:0]];
         dmstatus.anyunavail   = unavailable_i[hartsel[HartSelLen-1:0]];
 
+        // as soon as we are out of the legal Hart region tell the debugger
+        // that there are only non-existent harts
         dmstatus.allnonexistent = (hartsel > NrHarts - 1) ? 1'b1 : 1'b0;
         dmstatus.anynonexistent = (hartsel > NrHarts - 1) ? 1'b1 : 1'b0;
 
@@ -137,17 +142,18 @@ module dm_csrs #(
         ackhavereset_o  = 'b0;
 
         // read
-        if (dmi_req_valid_i && dmi_req_bits_op_i == dm::DTM_READ) begin
+        if (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) begin
             unique case (dm::dm_csr_t'({1'b0, dmi_req_bits_addr_i})) inside
-                [(dm::Data0):(dm::Data0 + dm::DataCount << 2)]: begin
-                    resp_queue_data = data_q[dmi_req_bits_addr_i[4:0]];
+                [(dm::Data0):(dm::Data0 + dm::DataCount)]: begin
+                    if (dm::DataCount > 0)
+                        resp_queue_data = data_q[dmi_req_bits_addr_i[4:0]];
                 end
                 dm::DMControl:  resp_queue_data = dmcontrol_q;
                 dm::DMStatus:   resp_queue_data = dmstatus;
                 dm::Hartinfo:   resp_queue_data = hartinfo_i[selected_hart];
                 dm::AbstractCS: resp_queue_data = abstractcs;
                 dm::Command:    resp_queue_data = command_q;
-                [(dm::ProgBuf0):(dm::ProgBuf0 + dm::ProgBufSize << 2)]: begin
+                [(dm::ProgBuf0):(dm::ProgBuf0 + dm::ProgBufSize)]: begin
                     resp_queue_data = progbuf_q[dmi_req_bits_addr_i[4:0]];
                 end
                 dm::HaltSum0: resp_queue_data = haltsum0;
@@ -159,11 +165,11 @@ module dm_csrs #(
         end
 
         // write
-        if (dmi_req_valid_i && dmi_req_bits_op_i == dm::DTM_WRITE) begin
+        if (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_WRITE) begin
             unique case (dm::dm_csr_t'({1'b0, dmi_req_bits_addr_i})) inside
-                [(dm::Data0):(dm::Data0 + dm::DataCount << 2)]: begin
+                [(dm::Data0):(dm::Data0 + dm::DataCount)]: begin
                     // attempts to write them while busy is set does not change their value
-                    if (!cmdbusy_i) begin
+                    if (!cmdbusy_i && dm::DataCount > 0) begin
                         data_d[dmi_req_bits_addr_i[4:0]] = dmi_req_bits_data_i;
                     end
                 end
@@ -185,7 +191,7 @@ module dm_csrs #(
                     command_write_o = 1'b1;
                     command_d = dmi_req_bits_data_i;
                 end
-                [dm::ProgBuf0:dm::ProgBuf15]: begin
+                [(dm::ProgBuf0):(dm::ProgBuf0 + dm::ProgBufSize)]: begin
                     // attempts to write them while busy is set does not change their value
                     if (!cmdbusy_i) begin
                         progbuf_d[dmi_req_bits_addr_i[4:0]] = dmi_req_bits_data_i;
@@ -199,19 +205,15 @@ module dm_csrs #(
             cmderr_d = cmderror_i[selected_hart];
         end
         // dmcontrol
-        // determine how how many harts we actually want to select
-        // and tie-off (through constant propagation the remaining harts)
-        {dmcontrol_d.hartselhi, dmcontrol_d.hartsello} = hartsel[19:HartSelLen];
         // TODO(zarubaf) we currently do not implement the hartarry mask
         dmcontrol_d.hasel           = 1'b0;
         // we do not support resetting an individual hart
         dmcontrol_d.hartreset       = 1'b0;
-        // we only allow 1024 harts
-        dmcontrol_d.hartselhi       = '0;
         dmcontrol_d.setresethaltreq = 1'b0;
         dmcontrol_d.clrresethaltreq = 1'b0;
         dmcontrol_d.zero1           = '0;
         dmcontrol_d.zero0           = '0;
+        // TODO(zarubaf)
         dmcontrol_d.ackhavereset    = 1'b0;
     end
 
