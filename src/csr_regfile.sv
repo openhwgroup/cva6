@@ -107,31 +107,32 @@ module csr_regfile #(
     riscv::satp_t         satp_q, satp_d;
     dm::dcsr_t            dcsr_q,     dcsr_d;
 
-    logic [63:0] dpc_q,      dpc_d;
-    logic [63:0] mtvec_q,    mtvec_d;
-    logic [63:0] medeleg_q,  medeleg_d;
-    logic [63:0] mideleg_q,  mideleg_d;
-    logic [63:0] mip_q,      mip_d;
-    logic [63:0] pmpcfg0_q,  pmpcfg0_d;
-    logic [63:0] pmpaddr0_q, pmpaddr0_d;
-    logic [63:0] mie_q,      mie_d;
-    logic [63:0] mscratch_q, mscratch_d;
-    logic [63:0] mepc_q,     mepc_d;
-    logic [63:0] mcause_q,   mcause_d;
-    logic [63:0] mtval_q,    mtval_d;
+    logic [63:0] dpc_q,       dpc_d;
+    logic [63:0] dscratch0_q, dscratch0_d;
+    logic [63:0] mtvec_q,     mtvec_d;
+    logic [63:0] medeleg_q,   medeleg_d;
+    logic [63:0] mideleg_q,   mideleg_d;
+    logic [63:0] mip_q,       mip_d;
+    logic [63:0] pmpcfg0_q,   pmpcfg0_d;
+    logic [63:0] pmpaddr0_q,  pmpaddr0_d;
+    logic [63:0] mie_q,       mie_d;
+    logic [63:0] mscratch_q,  mscratch_d;
+    logic [63:0] mepc_q,      mepc_d;
+    logic [63:0] mcause_q,    mcause_d;
+    logic [63:0] mtval_q,     mtval_d;
 
-    logic [63:0] stvec_q,    stvec_d;
-    logic [63:0] sscratch_q, sscratch_d;
-    logic [63:0] sepc_q,     sepc_d;
-    logic [63:0] scause_q,   scause_d;
-    logic [63:0] stval_q,    stval_d;
-    logic [63:0] dcache_q,   dcache_d;
-    logic [63:0] icache_q,   icache_d;
+    logic [63:0] stvec_q,     stvec_d;
+    logic [63:0] sscratch_q,  sscratch_d;
+    logic [63:0] sepc_q,      sepc_d;
+    logic [63:0] scause_q,    scause_d;
+    logic [63:0] stval_q,     stval_d;
+    logic [63:0] dcache_q,    dcache_d;
+    logic [63:0] icache_q,    icache_d;
 
-    logic        wfi_d,      wfi_q;
+    logic        wfi_d,       wfi_q;
 
-    logic [63:0] cycle_q,    cycle_d;
-    logic [63:0] instret_q,  instret_d;
+    logic [63:0] cycle_q,     cycle_d;
+    logic [63:0] instret_q,   instret_d;
 
     // ----------------
     // CSR Read logic
@@ -147,7 +148,7 @@ module csr_regfile #(
             case (csr_addr.address)
                 riscv::CSR_DCSR:               csr_rdata = {31'b0, dcsr_q};
                 riscv::CSR_DPC:                csr_rdata = dpc_q;
-
+                riscv::CSR_DSCRATCH0:          csr_rdata = dscratch0_q;
                 riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h3fffe1fee;
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
@@ -234,6 +235,7 @@ module csr_regfile #(
         debug_mode_d            = debug_mode_q;
         dcsr_d                  = dcsr_q;
         dpc_d                   = dpc_q;
+        dscratch0_d             = dscratch0_q;
         mstatus_d               = mstatus_q;
         mtvec_d                 = mtvec_q;
         medeleg_d               = medeleg_q;
@@ -269,6 +271,7 @@ module csr_regfile #(
                     dcsr_d.stoptime  = 1'b0;
                 end
                 riscv::CSR_DPC:                dpc_d = csr_wdata;
+                riscv::CSR_DSCRATCH0:          dscratch0_d = csr_wdata;
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
                     mstatus_d   = csr_wdata & 64'h3fffe1fee;
@@ -796,6 +799,7 @@ module csr_regfile #(
             dcsr_q                 <= '0;
             dcsr_q.prv             <= 2'h3;
             dpc_q                  <= 64'b0;
+            dscratch0_q            <= 64'b0;
             // machine mode registers
             mstatus_q              <= 64'b0;
             mtvec_q                <= {boot_addr_i[63:2], 2'b0}; // set to boot address + direct mode
@@ -829,6 +833,7 @@ module csr_regfile #(
             debug_mode_q           <= debug_mode_d;
             dcsr_q                 <= dcsr_d;
             dpc_q                  <= dpc_d;
+            dscratch0_q            <= dscratch0_d;
             // machine mode registers
             mstatus_q              <= mstatus_d;
             mtvec_q                <= mtvec_d;
