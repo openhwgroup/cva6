@@ -707,7 +707,8 @@ module csr_regfile #(
         // Wait for Interrupt
         // -------------------
         // if there is any interrupt pending un-stall the core
-        if (|mip_q) begin
+        // also un-stall if we want to enter debug mode
+        if (|mip_q || debug_req_i) begin
             wfi_d = 1'b0;
         // or alternatively if there is no exception pending and we are not in debug mode wait here for the interrupt
         end else if (!debug_mode_q && csr_op_i == WFI && !ex_i.valid) begin

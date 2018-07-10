@@ -228,7 +228,8 @@ module dm_csrs #(
     end
 
     assign dmactive_o = dmcontrol_q.dmactive;
-    assign ndmreset_o = dmcontrol_q.ndmreset;
+    // if the PoR is set we want to re-set the other system as well
+    assign ndmreset_o = dmcontrol_q.ndmreset | (~rst_ni);
     assign command_o  = command_q;
 
     // response FIFO

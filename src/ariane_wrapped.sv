@@ -21,7 +21,7 @@ module ariane_wrapped #(
         parameter int unsigned AXI_USER_WIDTH    = 1,
         parameter int unsigned AXI_ADDRESS_WIDTH = 64,
         parameter int unsigned AXI_DATA_WIDTH    = 64,
-        parameter int unsigned NUM_WORDS         = 2**24
+        parameter int unsigned NUM_WORDS         = 2**24          // memory size
     )(
         input  logic                           clk_i,
         input  logic                           rst_ni,
@@ -45,10 +45,10 @@ module ariane_wrapped #(
     logic [31:0] debug_resp_bits_data;
 
     assign test_en = 1'b0;
-    assign ndmreset_n = ~ndmreset;
+    assign ndmreset_n = ~ndmreset ;
 
     localparam NB_SLAVE = 3;
-    localparam NB_MASTER = 2;
+    localparam NB_MASTER = 3;
     localparam AXI_ID_WIDTH_SLAVES = AXI_ID_WIDTH + $clog2(NB_SLAVE);
 
     AXI_BUS #(
@@ -107,6 +107,37 @@ module ariane_wrapped #(
     );
 
     // ---------------
+    // ROM
+    // ---------------
+    logic                         rom_req;
+    logic [AXI_ADDRESS_WIDTH-1:0] rom_addr;
+    logic [AXI_DATA_WIDTH-1:0]    rom_rdata;
+
+    axi2mem #(
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
+    ) i_axi2rom (
+        .clk_i  ( clk_i      ),
+        .rst_ni ( ndmreset_n ),
+        .slave  ( master[1]  ),
+        .req_o  ( rom_req    ),
+        .we_o   (            ),
+        .addr_o ( rom_addr   ),
+        .be_o   (            ),
+        .data_o (            ),
+        .data_i ( rom_rdata  )
+    );
+
+    bootrom i_bootrom (
+        .clk_i      ( clk_i     ),
+        .req_i      ( rom_req   ),
+        .addr_i     ( rom_addr  ),
+        .rdata_o    ( rom_rdata )
+    );
+
+    // ---------------
     // Memory
     // ---------------
     logic                         req;
@@ -130,7 +161,7 @@ module ariane_wrapped #(
     ) i_axi2mem (
         .clk_i  ( clk_i      ),
         .rst_ni ( ndmreset_n ),
-        .slave  ( master[1]  ),
+        .slave  ( master[2]  ),
         .req_o  ( req        ),
         .we_o   ( we         ),
         .addr_o ( addr       ),
@@ -164,13 +195,13 @@ module ariane_wrapped #(
         .AXI_USER_WIDTH ( AXI_USER_WIDTH    ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      )
     ) i_axi_xbar (
-        .clk          ( clk_i                                       ),
-        .rst_n        ( ndmreset_n                                  ),
-        .test_en_i    ( test_en                                     ),
-        .slave        ( slave                                       ),
-        .master       ( master                                      ),
-        .start_addr_i ( {64'h0,           CACHE_START_ADDR}         ),
-        .end_addr_i   ( {64'h1_0000_0000, CACHE_START_ADDR + 2**24} )
+        .clk          ( clk_i                                          ),
+        .rst_n        ( ndmreset_n                                     ),
+        .test_en_i    ( test_en                                        ),
+        .slave        ( slave                                          ),
+        .master       ( master                                         ),
+        .start_addr_i ( {64'h0,   64'h10000, CACHE_START_ADDR}         ),
+        .end_addr_i   ( {64'hFFF, 64'h1FFFF, CACHE_START_ADDR + 2**24} )
     );
 
     // ---------------
@@ -184,7 +215,7 @@ module ariane_wrapped #(
         .clk_i                ( clk_i            ),
         .rst_ni               ( ndmreset_n       ),
         .test_en_i            ( test_en          ),
-        .boot_addr_i          ( CACHE_START_ADDR ),
+        .boot_addr_i          ( 64'h10040        ), // start fetching from ROM
         .core_id_i            ( '0               ),
         .cluster_id_i         ( '0               ),
         .irq_i                ( '0               ),

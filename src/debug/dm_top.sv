@@ -124,6 +124,6 @@ module dm_top #(
     assign axi_slave.aw_ready = 1'b1;
     assign axi_slave.ar_ready = 1'b1;
     assign axi_slave.w_ready  = 1'b1;
-    assign axi_slave.r_valid  = 1'b1;
-    assign axi_slave.b_valid  = 1'b1;
+    assign axi_slave.r_valid  = 1'b0;
+    assign axi_slave.b_valid  = 1'b0;
 endmodule
