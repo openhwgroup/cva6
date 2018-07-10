@@ -250,6 +250,7 @@ module dm_csrs #(
     );
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
+        // PoR
         if (~rst_ni) begin
             dmcontrol_q <= '0;
         end else begin

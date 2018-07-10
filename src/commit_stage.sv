@@ -21,6 +21,8 @@ module commit_stage #(
     input  logic                                    halt_i,             // request to halt the core
     input  logic                                    flush_dcache_i,     // request to flush dcache -> also flush the pipeline
     output exception_t                              exception_o,        // take exception to controller
+    input  logic                                    debug_mode_i,       // we are in debug mode
+    input  logic                                    debug_req_i,        // debug unit is requesting to enter debug mode
     input  logic                                    single_step_i,      // we are in single step debug mode
     // from scoreboard
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
@@ -76,8 +78,9 @@ module commit_stage #(
         sfence_vma_o    = 1'b0;
 
         // we will not commit the instruction if we took an exception
-        // but we do not commit the instruction if we requested a halt
-        if (commit_instr_i[0].valid && !halt_i) begin
+        // and we do not commit the instruction if we requested a halt
+        // furthermore if the debugger is requesting to debug do not commit this instruction if we are not yet in debug mode
+        if (commit_instr_i[0].valid && !halt_i && (!debug_req_i || debug_mode_i)) begin
 
             commit_ack_o[0] = 1'b1;
             // register will be the all zero register.

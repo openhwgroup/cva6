@@ -483,10 +483,14 @@ module csr_regfile #(
             end
 
             // we've got a debug request (and we have an instruction which we can associate it to)
-            if (debug_req_i && (|commit_ack_i)) begin
-                dpc_d = next_pc;
+            if (debug_req_i && commit_instr_i[0].valid) begin
+                // save the PC
+                dpc_d = pc_i;
+                // enter debug mode
                 debug_mode_d = 1'b1;
+                // jump to the base address
                 set_debug_pc_o = 1'b1;
+                // save the cause as external debug request
                 dcsr_d.cause = dm::CauseRequest;
             end
 

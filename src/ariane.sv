@@ -422,7 +422,8 @@ module ariane #(
     commit_stage commit_stage_i (
         .halt_i                 ( halt_ctrl                     ),
         .exception_o            ( ex_commit                     ),
-        // .debug_mode_i           ( debug_mode_csr_id             ),
+        .debug_mode_i           ( debug_mode_csr_id             ),
+        .debug_req_i            ( debug_req_i                   ),
         .single_step_i          ( single_step_csr_commit        ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
