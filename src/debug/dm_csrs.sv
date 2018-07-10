@@ -213,7 +213,7 @@ module dm_csrs #(
         dmcontrol_d.clrresethaltreq = 1'b0;
         dmcontrol_d.zero1           = '0;
         dmcontrol_d.zero0           = '0;
-        // TODO(zarubaf)
+        // Non-writeable, clear only
         dmcontrol_d.ackhavereset    = 1'b0;
     end
 
@@ -266,6 +266,7 @@ module dm_csrs #(
                 dmcontrol_q.setresethaltreq  <= '0;
                 dmcontrol_q.clrresethaltreq  <= '0;
                 dmcontrol_q.ndmreset         <= '0;
+                // this is the only write-able bit during reset
                 dmcontrol_q.dmactive         <= dmcontrol_d.dmactive;
                 cmderr_q                     <= dm::CmdErrNone;
                 command_q                    <= '0;

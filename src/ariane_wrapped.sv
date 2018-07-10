@@ -31,6 +31,7 @@ module ariane_wrapped #(
     // disable test-enable
     logic        test_en;
     logic        ndmreset;
+    logic        ndmreset_n;
     logic        debug_req;
 
     logic        debug_req_valid;
@@ -44,6 +45,7 @@ module ariane_wrapped #(
     logic [31:0] debug_resp_bits_data;
 
     assign test_en = 1'b0;
+    assign ndmreset_n = ~ndmreset;
 
     localparam NB_SLAVE = 3;
     localparam NB_MASTER = 2;
@@ -89,6 +91,7 @@ module ariane_wrapped #(
         .clk_i                ( clk_i                ),
         .rst_ni               ( rst_ni               ), // PoR
         .ndmreset_o           ( ndmreset             ),
+        .dmactive_o           (                      ), // active debug session
         .debug_req_o          ( debug_req            ),
         .axi_slave            ( master[0]            ),
         .dmi_rst_ni           ( rst_ni               ),
@@ -125,15 +128,15 @@ module ariane_wrapped #(
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
         .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
     ) i_axi2mem (
-        .clk_i  ( clk_i     ),
-        .rst_ni ( ndmreset  ),
-        .slave  ( master[1] ),
-        .req_o  ( req       ),
-        .we_o   ( we        ),
-        .addr_o ( addr      ),
-        .be_o   ( be        ),
-        .data_o ( wdata     ),
-        .data_i ( rdata     )
+        .clk_i  ( clk_i      ),
+        .rst_ni ( ndmreset_n ),
+        .slave  ( master[1]  ),
+        .req_o  ( req        ),
+        .we_o   ( we         ),
+        .addr_o ( addr       ),
+        .be_o   ( be         ),
+        .data_o ( wdata      ),
+        .data_i ( rdata      )
     );
 
     sram #(
@@ -162,7 +165,7 @@ module ariane_wrapped #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      )
     ) i_axi_xbar (
         .clk          ( clk_i                                       ),
-        .rst_n        ( ndmreset                                    ),
+        .rst_n        ( ndmreset_n                                  ),
         .test_en_i    ( test_en                                     ),
         .slave        ( slave                                       ),
         .master       ( master                                      ),
@@ -179,7 +182,7 @@ module ariane_wrapped #(
         .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
     ) i_ariane (
         .clk_i                ( clk_i            ),
-        .rst_ni               ( ndmreset         ),
+        .rst_ni               ( ndmreset_n       ),
         .test_en_i            ( test_en          ),
         .boot_addr_i          ( CACHE_START_ADDR ),
         .core_id_i            ( '0               ),

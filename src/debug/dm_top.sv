@@ -23,6 +23,7 @@ module dm_top #(
     input  logic               clk_i,       // clock
     input  logic               rst_ni,      // asynchronous reset active low, connect PoR here, not the system reset
     output logic               ndmreset_o,  // non-debug module reset
+    output logic               dmactive_o,  // debug module is active
     output logic [NrHarts-1:0] debug_req_o, // async debug request
     AXI_BUS.Slave              axi_slave,   // bus slave
     // Connection to DTM - compatible to RocketChip Debug Module
@@ -40,24 +41,21 @@ module dm_top #(
 );
 
     // Debug CSRs
-    logic                             dmactive_o;
-    dm::hartinfo_t [NrHarts-1:0]      hartinfo_i;
-    logic [NrHarts-1:0]               halted_i;
-    logic [NrHarts-1:0]               running_i;
-    logic [NrHarts-1:0]               unavailable_i;
-    logic [NrHarts-1:0]               havereset_i;
-    logic [NrHarts-1:0]               resumeack_i;
-    logic [NrHarts-1:0]               haltreq_o;
-    logic [NrHarts-1:0]               resumereq_o;
-    logic [NrHarts-1:0]               ackhavereset_o;
-    logic                             command_write_o;
-    dm::command_t                     command_o;
-    logic [NrHarts-1:0]               set_cmderror_i;
-    dm::cmderr_t [NrHarts-1:0]        cmderror_i;
-    logic [NrHarts-1:0]               cmdbusy_i;
-    logic [dm::ProgBufSize-1:0][31:0] progbuf_o;
-
-    assign hartinfo_i = ariane_pkg::DebugHartInfo;
+    dm::hartinfo_t [NrHarts-1:0]      hartinfo;
+    logic [NrHarts-1:0]               halted;
+    logic [NrHarts-1:0]               running;
+    logic [NrHarts-1:0]               unavailable;
+    logic [NrHarts-1:0]               havereset;
+    logic [NrHarts-1:0]               resumeack;
+    logic [NrHarts-1:0]               haltreq;
+    logic [NrHarts-1:0]               resumereq;
+    logic [NrHarts-1:0]               ackhavereset;
+    logic                             command_write;
+    dm::command_t                     command;
+    logic [NrHarts-1:0]               set_cmderror;
+    dm::cmderr_t [NrHarts-1:0]        cmderror;
+    logic [NrHarts-1:0]               cmdbusy;
+    logic [dm::ProgBufSize-1:0][31:0] progbuf;
 
     dm_csrs #(
         .NrHarts(NrHarts)
@@ -76,26 +74,53 @@ module dm_top #(
         .dmi_resp_bits_data_o ( dmi_resp_bits_data_o ),
         .ndmreset_o           ( ndmreset_o           ),
         .dmactive_o           ( dmactive_o           ),
-        .hartinfo_i           ( hartinfo_i           ),
-        .halted_i             ( halted_i             ),
-        .running_i            ( running_i            ),
-        .unavailable_i        ( unavailable_i        ),
-        .havereset_i          ( havereset_i          ),
-        .resumeack_i          ( resumeack_i          ),
-        .haltreq_o            ( haltreq_o            ),
-        .resumereq_o          ( resumereq_o          ),
-        .ackhavereset_o       ( ackhavereset_o       ),
-        .command_write_o      ( command_write_o      ),
-        .command_o            ( command_o            ),
-        .set_cmderror_i       ( set_cmderror_i       ),
-        .cmderror_i           ( cmderror_i           ),
-        .cmdbusy_i            ( cmdbusy_i            ),
-        .progbuf_o            ( progbuf_o            )
+        .hartinfo_i           ( hartinfo             ),
+        .halted_i             ( halted               ),
+        .running_i            ( running              ),
+        .unavailable_i        ( unavailable          ),
+        .havereset_i          ( havereset            ),
+        .resumeack_i          ( resumeack            ),
+        .haltreq_o            ( haltreq              ),
+        .resumereq_o          ( resumereq            ),
+        .ackhavereset_o       ( ackhavereset         ),
+        .command_write_o      ( command_write        ),
+        .command_o            ( command              ),
+        .set_cmderror_i       ( set_cmderror         ),
+        .cmderror_i           ( cmderror             ),
+        .cmdbusy_i            ( cmdbusy              ),
+        .progbuf_o            ( progbuf              )
     );
 
-    // Debug Ctrl
+    logic [NrHarts-1:0] ackhalt;
+    // Debug Ctrl for each hart
+    for (genvar i = 0; i < NrHarts; i++) begin : dm_hart_ctrl
+
+        assign hartinfo[i] = ariane_pkg::DebugHartInfo;
+
+        dm_ctrl i_dm_ctrl (
+            .clk_i           ( clk_i            ),
+            .dmactive_i      ( dmactive_o       ),
+            .ndmreset_i      ( ndmreset_o       ),
+            .debug_req_o     ( debug_req_o  [i] ),
+            .halted_o        ( halted       [i] ),
+            .running_o       ( running      [i] ),
+            .unavailable_o   ( unavailable  [i] ),
+            .havereset_o     ( havereset    [i] ),
+            .resumeack_o     ( resumeack    [i] ),
+            .haltreq_i       ( haltreq          ),
+            .resumereq_i     ( resumereq        ),
+            .ackhavereset_i  ( ackhavereset     ),
+            .command_write_i ( command_write    ),
+            .command_i       ( command          ),
+            .set_cmderror_o  ( set_cmderror [i] ),
+            .cmderror_o      ( cmderror     [i] ),
+            .cmdbusy_o       ( cmdbusy      [i] ),
+            .ackhalt_i       ( ackhalt      [i] )
+        );
+    end
 
     // Debug AXI Bus
+    assign ackhalt = '0;
     assign axi_slave.aw_ready = 1'b1;
     assign axi_slave.ar_ready = 1'b1;
     assign axi_slave.w_ready  = 1'b1;
