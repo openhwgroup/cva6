@@ -86,14 +86,18 @@ module ariane_wrapped #(
     );
     // debug module
     dm_top #(
-        .NrHarts ( 1 ) // current implementation only supports 1 hart
+        .NrHarts      ( 1                   ), // current implementation only supports 1 hart
+        .AxiIdWidth   ( AXI_ID_WIDTH_SLAVES ),
+        .AxiAddrWidth ( AXI_ADDRESS_WIDTH   ),
+        .AxiDataWidth ( AXI_DATA_WIDTH      ),
+        .AxiUserWidth ( AXI_USER_WIDTH      )
     ) i_dm_top (
         .clk_i                ( clk_i                ),
         .rst_ni               ( rst_ni               ), // PoR
         .ndmreset_o           ( ndmreset             ),
         .dmactive_o           (                      ), // active debug session
         .debug_req_o          ( debug_req            ),
-        .axi_slave            ( master[0]            ),
+        .axi_slave            ( master[2]            ),
         .dmi_rst_ni           ( rst_ni               ),
         .dmi_req_valid_i      ( debug_req_valid      ),
         .dmi_req_ready_o      ( debug_req_ready      ),
@@ -161,7 +165,7 @@ module ariane_wrapped #(
     ) i_axi2mem (
         .clk_i  ( clk_i      ),
         .rst_ni ( ndmreset_n ),
-        .slave  ( master[2]  ),
+        .slave  ( master[0]  ),
         .req_o  ( req        ),
         .we_o   ( we         ),
         .addr_o ( addr       ),

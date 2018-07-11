@@ -50,7 +50,8 @@ module dm_csrs #(
     input  logic [NrHarts-1:0]          set_cmderror_i,  // an error occured
     input  dm::cmderr_t [NrHarts-1:0]   cmderror_i,      // this error occured
     input  logic [NrHarts-1:0]          cmdbusy_i,       // cmd is currently busy executing
-    output [dm::ProgBufSize-1:0][31:0]  progbuf_o        // to system bus
+    output logic [dm::ProgBufSize-1:0][31:0]  progbuf_o, // to system bus
+    output logic [dm::DataCount-1:0][31:0]    data_o     // optional data register (to system bus)
 );
     // the amount of bits we need to represent all harts
     localparam HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
@@ -136,6 +137,7 @@ module dm_csrs #(
         cmderr_d    = cmderr_q;
         command_d   = command_q;
         progbuf_d   = progbuf_q;
+        data_d      = data_q;
 
         resp_queue_data = 32'0;
         command_write_o = 1'b0;
@@ -231,7 +233,8 @@ module dm_csrs #(
     // if the PoR is set we want to re-set the other system as well
     assign ndmreset_o = dmcontrol_q.ndmreset | (~rst_ni);
     assign command_o  = command_q;
-
+    assign progbuf_o  = progbuf_q;
+    assign data_o     = data_q;
     // response FIFO
     fifo #(
         .dtype            ( logic [31:0]         ),
@@ -273,11 +276,13 @@ module dm_csrs #(
                 cmderr_q                     <= dm::CmdErrNone;
                 command_q                    <= '0;
                 progbuf_q                    <= '0;
+                data_q                       <= '0;
             end else begin
                 dmcontrol_q                  <= dmcontrol_d;
                 cmderr_q                     <= cmderr_d;
                 command_q                    <= command_q;
                 progbuf_q                    <= progbuf_d;
+                data_q                       <= data_d;
             end
         end
     end

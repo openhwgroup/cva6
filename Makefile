@@ -172,20 +172,33 @@ $(tests): build
 	-do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
 	${library}.$@_tb_optimized
 
-# User Verilator
+# User Verilator, at some point in the future this will be auto-generated
 verilate:
-	$(verilator) $(ariane_pkg) $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv)) $(wildcard src/axi_slice/*.sv) \
-	$(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv)) src/util/generic_fifo.sv tb/common/SimDTM.v  bootrom/bootrom.sv \
-	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/src/axi2mem.sv tb/agents/axi_if/axi_if.sv \
-	+incdir+src/axi_node --vpi --trace-structs \
-	--unroll-count 256  -Werror-PINMISSING  -Werror-IMPLICIT  -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace \
-	-Wno-fatal 			 \
-	-Wno-PINCONNECTEMPTY \
-	-Wno-DECLFILENAME    \
-	-Wno-UNOPTFLAT       \
-	-Wno-UNUSED          \
-	-Wno-ASSIGNDLY       \
-	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc
+	$(verilator)                                                     \
+    $(ariane_pkg)                                                    \
+    $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))        \
+    $(wildcard src/axi_slice/*.sv)                                   \
+    $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))    \
+    src/debug/debug_rom/debug_rom.sv                                 \
+    src/util/generic_fifo.sv                                         \
+    tb/common/SimDTM.v                                               \
+    bootrom/bootrom.sv                                               \
+    src/util/cluster_clock_gating.sv                                 \
+    src/util/behav_sram.sv                                           \
+    src/axi_mem_if/src/axi2mem.sv                                    \
+    tb/agents/axi_if/axi_if.sv                                       \
+    +incdir+src/axi_node                                             \
+    --unroll-count 256                                               \
+    -Werror-PINMISSING                                               \
+    -Werror-IMPLICIT                                                 \
+    -Wno-fatal                                                       \
+    -Wno-PINCONNECTEMPTY                                             \
+    -Wno-DECLFILENAME                                                \
+    -Wno-UNOPTFLAT                                                   \
+    -Wno-UNUSED                                                      \
+    -Wno-ASSIGNDLY                                                   \
+    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace --vpi --trace-structs \
+    $(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc
 	cd obj_dir && make -j8 -f Variane_wrapped.mk
 
 # -Werror-UNDRIVEN

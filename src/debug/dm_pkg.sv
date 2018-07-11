@@ -8,7 +8,7 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  *
- * File:   axi_riscv_debug_module.sv
+ * File:   dm_pkg.sv
  * Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
  * Date:   30.6.2018
  *
@@ -23,10 +23,16 @@ package dm;
     // amount of data count registers implemented
     parameter logic [3:0] DataCount     = 5'h0;
 
-    // #define HALTED    0x100
-    // #define GOING     0x104
-    // #define RESUMING  0x108
-    // #define EXCEPTION 0x10C
+    // address to which a hart should jump when it was requested to halt
+    parameter logic [63:0] HaltAddress = 64'h800;
+
+    parameter DbgAddressBits = 12;
+
+    parameter logic [DbgAddressBits-1:0] Halted    = 'h100;
+    parameter logic [DbgAddressBits-1:0] Going     = 'h104;
+    parameter logic [DbgAddressBits-1:0] Resuming  = 'h108;
+    parameter logic [DbgAddressBits-1:0] Exception = 'h10C;
+
     // #define FLAGS 0x400
     // #define FLAG_GO     0
     // #define FLAG_RESUME 1
@@ -66,8 +72,6 @@ package dm;
         HaltSum0     = 8'h40
     } dm_csr_t;
 
-    // address to which a hart should jump when it was requested to halt
-    localparam logic [63:0] HaltAddress = 64'h1000;
     // debug causes
     localparam logic [2:0] CauseBreakpoint = 3'h1;
     localparam logic [2:0] CauseTrigger    = 3'h2;

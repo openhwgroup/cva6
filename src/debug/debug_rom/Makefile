@@ -8,7 +8,7 @@ OBJCOPY=riscv64-unknown-elf-objcopy
 all: $(debug_rom)
 
 %.img: %.bin
-	dd if=$< of=$@ bs=128 count=2
+	dd if=$< of=$@ bs=128 count=1
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@

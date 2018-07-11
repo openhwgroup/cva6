@@ -11,7 +11,7 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 ## Getting Started
 
 
-Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools).
+Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools). Make sure that your `RISCV` environment variable points to your RISC-V installation.
 
 Checkout the repository and initialize all submodules
 ```

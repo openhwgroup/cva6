@@ -8,7 +8,7 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  *
- * File:   axi_riscv_debug_module.sv
+ * File:   dm_ctrl.sv
  * Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
  * Date:   1.7.2018
  *
@@ -37,8 +37,8 @@ module dm_ctrl (
     output logic          set_cmderror_o,
     output dm::cmderr_t   cmderror_o,
     output logic          cmdbusy_o,
-    // from AXI module
-    input  logic          ackhalt_i // hart acknowledged halt request
+    // from hart communication module
+    input  logic          halted_i // hart is halted
 );
 
     logic havereset_d, havereset_q;
@@ -66,13 +66,15 @@ module dm_ctrl (
 
             kRunning: begin
                 if (haltreq_i) state_d = kHaltReq;
+                // the core is already halted
+                if (halted_i) state_d = kHalted;
             end
 
             kHaltReq: begin
                 // request entering debug mode
                 debug_req_o = 1'b1;
                 // hart acknowledged ~> halt
-                if (ackhalt_i) state_d = kHalted;
+                if (halted_i) state_d = kHalted;
             end
 
             kHalted: begin
