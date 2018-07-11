@@ -1,4 +1,4 @@
-bootrom_img = bootrom.img bootrom.elf
+bootrom_img = bootrom.img
 
 GCC=riscv64-unknown-elf-gcc
 OBJCOPY=riscv64-unknown-elf-objcopy

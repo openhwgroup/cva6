@@ -22,6 +22,15 @@ package dm;
     parameter logic [4:0] ProgBufSize   = 5'h4;
     // amount of data count registers implemented
     parameter logic [3:0] DataCount     = 5'h0;
+
+    // #define HALTED    0x100
+    // #define GOING     0x104
+    // #define RESUMING  0x108
+    // #define EXCEPTION 0x10C
+    // #define FLAGS 0x400
+    // #define FLAG_GO     0
+    // #define FLAG_RESUME 1
+
     // debug registers
     typedef enum logic [7:0] {
         Data0        = 8'h04,
