@@ -19,23 +19,20 @@
 package dm;
     parameter logic [3:0] DbgVersion013 = 4'h2;
     // size of program buffer in junks of 32-bit words
-    parameter logic [4:0] ProgBufSize   = 5'h4;
+    parameter logic [4:0] ProgBufSize   = 5'h2;
+
+    // TODO(zarubaf) This is hard-coded to two at the moment
     // amount of data count registers implemented
-    parameter logic [3:0] DataCount     = 5'h0;
+    parameter logic [3:0] DataCount     = 5'h2;
 
     // address to which a hart should jump when it was requested to halt
     parameter logic [63:0] HaltAddress = 64'h800;
+    parameter logic [63:0] ResumeAddress = HaltAddress + 4;
+    parameter logic [63:0] ExceptionAddress = HaltAddress + 8;
 
-    parameter DbgAddressBits = 12;
-
-    parameter logic [DbgAddressBits-1:0] Halted    = 'h100;
-    parameter logic [DbgAddressBits-1:0] Going     = 'h104;
-    parameter logic [DbgAddressBits-1:0] Resuming  = 'h108;
-    parameter logic [DbgAddressBits-1:0] Exception = 'h10C;
-
-    // #define FLAGS 0x400
-    // #define FLAG_GO     0
-    // #define FLAG_RESUME 1
+    // address where data0-15 is shadowed or if shadowed in a CSR
+    // address of the first CSR used for shadowing the data
+    parameter logic [11:0] DataAddr = 12'h380; // we are aligned with Rocket here
 
     // debug registers
     typedef enum logic [7:0] {
@@ -152,6 +149,16 @@ package dm;
         cmd_t        cmdtype;
         logic [23:0] control;
     } command_t;
+
+    typedef struct packed {
+        logic         zero1;
+        logic [22:20] aarsize;
+        logic         zero0;
+        logic         postexec;
+        logic         transfer;
+        logic         write;
+        logic [15:0]  regno;
+    } ac_ar_cmd_t;
 
     typedef struct packed {
         logic [31:28] xdebugver;

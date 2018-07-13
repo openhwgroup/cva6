@@ -39,6 +39,7 @@ module dm_ctrl (
     output logic          cmdbusy_o,
     // from hart communication module
     input  logic          halted_i // hart is halted
+    // input  logic          command_finished_i
 );
 
     logic havereset_d, havereset_q;
@@ -47,14 +48,13 @@ module dm_ctrl (
     assign havereset_o = havereset_q;
 
     typedef enum logic [1:0] {
-        kRunning, kHaltReq, kHalted
+        kRunning, kHaltReq, kHalted, kCommandExec
     } state_t;
 
     state_t state_d, state_q;
 
     always_comb begin
         state_d       = state_q;
-
 
         halted_o      = 1'b0;
         running_o     = 1'b0;
@@ -78,8 +78,15 @@ module dm_ctrl (
             end
 
             kHalted: begin
-
+                halted_o = 1'b1;
+                // if (command_write_i) state_d = kHalted;
             end
+
+            kCommandExec: begin
+                // halted_o = 1'b1;
+                // if (command_finished_i) state_d = kHalted;
+            end
+
         endcase
     end
 

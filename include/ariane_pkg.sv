@@ -47,9 +47,16 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
+
     // static debug hartinfo
-    // for the moment nothing of this is implemented
-    parameter dm::hartinfo_t DebugHartInfo = '{zero1: '0, nscratch: 1, zero0: '0, dataaccess: 1'b1, datasize: '0, dataaddr: '0};
+    parameter dm::hartinfo_t DebugHartInfo = '{
+                                                zero1:        '0,
+                                                nscratch:      1, // DTM currently needs at least one scratch register
+                                                zero0:        '0,
+                                                dataaccess: 1'b1, // data registers are memory mapped in the debugger
+                                                datasize: dm::DataCount,
+                                                dataaddr: dm::DataAddr
+                                              };
     // ---------------
     // Fetch Stage
     // ---------------
@@ -300,4 +307,5 @@ package ariane_pkg;
     function automatic logic [63:0] sb_imm (logic [31:0] instruction_i);
         return { {51 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
     endfunction
+
 endpackage

@@ -55,7 +55,7 @@ module $filename (
 
     always_ff @(posedge clk_i) begin
         if (req_i) begin
-            addr_q = addr_i[$$clog2(RomSize)-1+3:3];
+            addr_q <= addr_i[$$clog2(RomSize)-1+3:3];
         end
     end
 

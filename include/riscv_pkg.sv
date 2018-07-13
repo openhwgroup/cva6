@@ -129,24 +129,24 @@ package riscv;
     // --------------------
     // Opcodes
     // --------------------
-    localparam OpcodeSystem    = 7'h73;
-    localparam OpcodeFence     = 7'h0f;
-    localparam OpcodeOp        = 7'h33;
-    localparam OpcodeOp32      = 7'h3B;
-    localparam OpcodeOpimm     = 7'h13;
-    localparam OpcodeOpimm32   = 7'h1B;
-    localparam OpcodeStore     = 7'h23;
-    localparam OpcodeLoad      = 7'h03;
-    localparam OpcodeBranch    = 7'h63;
-    localparam OpcodeJalr      = 7'h67;
-    localparam OpcodeJal       = 7'h6f;
-    localparam OpcodeAuipc     = 7'h17;
-    localparam OpcodeLui       = 7'h37;
-    localparam OpcodeAmo       = 7'h2F;
+    parameter OpcodeSystem    = 7'h73;
+    parameter OpcodeFence     = 7'h0f;
+    parameter OpcodeOp        = 7'h33;
+    parameter OpcodeOp32      = 7'h3B;
+    parameter OpcodeOpimm     = 7'h13;
+    parameter OpcodeOpimm32   = 7'h1B;
+    parameter OpcodeStore     = 7'h23;
+    parameter OpcodeLoad      = 7'h03;
+    parameter OpcodeBranch    = 7'h63;
+    parameter OpcodeJalr      = 7'h67;
+    parameter OpcodeJal       = 7'h6f;
+    parameter OpcodeAuipc     = 7'h17;
+    parameter OpcodeLui       = 7'h37;
+    parameter OpcodeAmo       = 7'h2F;
 
-    localparam OpcodeCJ        = 3'b101;
-    localparam OpcodeCBeqz     = 3'b110;
-    localparam OpcodeCBnez     = 3'b111;
+    parameter OpcodeCJ        = 3'b101;
+    parameter OpcodeCBeqz     = 3'b110;
+    parameter OpcodeCBnez     = 3'b111;
 
     // -----
     // CSRs
@@ -237,5 +237,29 @@ package riscv;
         csr_reg_t   address;
         csr_addr_t  csr_decode;
     } csr_t;
+
+    // Instruction Generation *incomplete*
+    function automatic logic [31:0] jal (logic[4:0] rd, logic [20:0] imm);
+        // OpCode Jal
+        return {imm[20], imm[10:1], imm[11], imm[19:12], rd, 7'h6f};
+    endfunction
+
+    function automatic logic [31:0] load (logic [2:0] size, logic[4:0] rd, logic[4:0] rs1, logic [11:0] imm);
+        // OpCode Load
+        return {imm[11:0], rs1, size, rd, 7'h03};
+    endfunction
+
+    function automatic logic [31:0] store (logic [2:0] size, logic[4:0] rs1, logic[4:0] rs2, logic [11:0] imm);
+        // OpCode Store
+        return {imm[11:5], rs2, rs1, size, imm[4:0], 7'h23};
+    endfunction
+
+    function automatic logic [31:0] ebreak ();
+        return 32'h00100073;
+    endfunction
+
+    function automatic logic [31:0] nop ();
+        return 32'h00000013;
+    endfunction
 
 endpackage

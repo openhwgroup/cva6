@@ -193,6 +193,7 @@ verilate:
     -Werror-IMPLICIT                                                 \
     -Wno-fatal                                                       \
     -Wno-PINCONNECTEMPTY                                             \
+    -Wno-ASSIGNDLY                                                   \
     -Wno-DECLFILENAME                                                \
     -Wno-UNOPTFLAT                                                   \
     -Wno-UNUSED                                                      \

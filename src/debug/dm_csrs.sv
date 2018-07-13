@@ -37,7 +37,6 @@ module dm_csrs #(
     // hart status
     input  dm::hartinfo_t [NrHarts-1:0] hartinfo_i,      // static hartinfo
     input  logic [NrHarts-1:0]          halted_i,        // hart is halted
-    input  logic [NrHarts-1:0]          running_i,       // hart is running
     input  logic [NrHarts-1:0]          unavailable_i,   // e.g.: powered down
     input  logic [NrHarts-1:0]          havereset_i,     // hart has reset
     input  logic [NrHarts-1:0]          resumeack_i,     // hart acknowledged resume request
@@ -45,13 +44,18 @@ module dm_csrs #(
     output logic [NrHarts-1:0]          haltreq_o,       // request to halt a hart
     output logic [NrHarts-1:0]          resumereq_o,     // request hart to resume
     output logic [NrHarts-1:0]          ackhavereset_o,  // DM acknowledges reset
-    output logic                        command_write_o, // debugger is writing to the command field
-    output dm::command_t                command_o,       // abstract command
-    input  logic [NrHarts-1:0]          set_cmderror_i,  // an error occured
-    input  dm::cmderr_t [NrHarts-1:0]   cmderror_i,      // this error occured
-    input  logic [NrHarts-1:0]          cmdbusy_i,       // cmd is currently busy executing
+
+    output logic                        cmd_valid_o,       // debugger is writing to the command field
+    output dm::command_t                cmd_o,             // abstract command
+    input  logic [NrHarts-1:0]          cmderror_valid_i,  // an error occured
+    input  dm::cmderr_t [NrHarts-1:0]   cmderror_i,        // this error occured
+    input  logic [NrHarts-1:0]          cmdbusy_i,         // cmd is currently busy executing
+
     output logic [dm::ProgBufSize-1:0][31:0]  progbuf_o, // to system bus
-    output logic [dm::DataCount-1:0][31:0]    data_o     // optional data register (to system bus)
+    output logic [dm::DataCount-1:0][31:0]    data_o,
+
+    output logic [dm::DataCount-1:0][31:0]    data_i,
+    output logic                              data_valid_i
 );
     // the amount of bits we need to represent all harts
     localparam HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
@@ -122,8 +126,8 @@ module dm_csrs #(
         dmstatus.allhalted    = halted_i[hartsel[HartSelLen-1:0]];
         dmstatus.anyhalted    = halted_i[hartsel[HartSelLen-1:0]];
 
-        dmstatus.allrunning   = running_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyrunning   = running_i[hartsel[HartSelLen-1:0]];
+        dmstatus.allrunning   = ~halted_i[hartsel[HartSelLen-1:0]];
+        dmstatus.anyrunning   = ~halted_i[hartsel[HartSelLen-1:0]];
 
         // abstractcs
         abstractcs = '0;
@@ -140,7 +144,7 @@ module dm_csrs #(
         data_d      = data_q;
 
         resp_queue_data = 32'0;
-        command_write_o = 1'b0;
+        cmd_valid_o     = 1'b0;
         ackhavereset_o  = 'b0;
 
         // read
@@ -154,7 +158,8 @@ module dm_csrs #(
                 dm::DMStatus:   resp_queue_data = dmstatus;
                 dm::Hartinfo:   resp_queue_data = hartinfo_i[selected_hart];
                 dm::AbstractCS: resp_queue_data = abstractcs;
-                dm::Command:    resp_queue_data = command_q;
+                // command is read-only
+                dm::Command:    resp_queue_data = '0;
                 [(dm::ProgBuf0):(dm::ProgBuf0 + dm::ProgBufSize)]: begin
                     resp_queue_data = progbuf_q[dmi_req_bits_addr_i[4:0]];
                 end
@@ -184,14 +189,31 @@ module dm_csrs #(
                 dm::DMStatus:; // write are ignored to R/O register
                 dm::Hartinfo:; // hartinfo is R/O
                 // only command error is write-able
-                dm::AbstractCS: begin
+                dm::AbstractCS: begin // W1C
+                    // Gets set if an abstract command fails. The bits in this
+                    // field remain set until they are cleared by writing 1 to
+                    // them. No abstract command is started until the value is
+                    // reset to 0.
                     automatic dm::abstractcs_t abstractcs;
                     abstractcs = dm::abstractcs_t'(dmi_req_bits_data_i);
-                    cmderr_d = abstractcs.cmderr;
+                    // reads during abstract command execution are not allowed
+                    if (!cmdbusy_i) begin
+                        cmderr_d = ~abstractcs.cmderr & cmderr_q;
+                    end else if (cmderr_q == dm::CmdErrNone) begin
+                        cmderr_d = dm::CmdErrBusy;
+                    end
+
                 end
                 dm::Command: begin
-                    command_write_o = 1'b1;
-                    command_d = dmi_req_bits_data_i;
+                    // writes are ignored if a command is already busy
+                    if (!cmdbusy_i) begin
+                        cmd_valid_o = 1'b1;
+                        command_d = dmi_req_bits_data_i;
+                    // if there was an attempted to write during a busy execution
+                    // and the cmderror field is zero set the busy error
+                    end else if (cmderr_q == dm::CmdErrNone) begin
+                        cmderr_d = dm::CmdErrBusy;
+                    end
                 end
                 [(dm::ProgBuf0):(dm::ProgBuf0 + dm::ProgBufSize)]: begin
                     // attempts to write them while busy is set does not change their value
@@ -203,9 +225,14 @@ module dm_csrs #(
             endcase
         end
         // hart threw a command error and has precedence over bus writes
-        if (set_cmderror_i[selected_hart]) begin
+        if (cmderror_valid_i[selected_hart]) begin
             cmderr_d = cmderror_i[selected_hart];
         end
+
+        // update data registers
+        if (data_valid_i)
+            data_d = data_i;
+
         // dmcontrol
         // TODO(zarubaf) we currently do not implement the hartarry mask
         dmcontrol_d.hasel           = 1'b0;
@@ -232,7 +259,7 @@ module dm_csrs #(
     assign dmactive_o = dmcontrol_q.dmactive;
     // if the PoR is set we want to re-set the other system as well
     assign ndmreset_o = dmcontrol_q.ndmreset | (~rst_ni);
-    assign command_o  = command_q;
+    assign cmd_o      = command_q;
     assign progbuf_o  = progbuf_q;
     assign data_o     = data_q;
     // response FIFO

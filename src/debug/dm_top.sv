@@ -55,13 +55,16 @@ module dm_top #(
     logic [NrHarts-1:0]               haltreq;
     logic [NrHarts-1:0]               resumereq;
     logic [NrHarts-1:0]               ackhavereset;
-    logic                             command_write;
-    dm::command_t                     command;
-    logic [NrHarts-1:0]               set_cmderror;
+    logic                             cmd_valid;
+    dm::command_t                     cmd;
+
+    logic [NrHarts-1:0]               cmderror_valid;
     dm::cmderr_t [NrHarts-1:0]        cmderror;
     logic [NrHarts-1:0]               cmdbusy;
     logic [dm::ProgBufSize-1:0][31:0] progbuf;
-    logic [dm::DataCount-1:0][31:0]   data;
+    logic [dm::DataCount-1:0][31:0]   data_csrs_mem;
+    logic [dm::DataCount-1:0][31:0]   data_mem_csrs;
+    logic                             data_valid;
 
     dm_csrs #(
         .NrHarts(NrHarts)
@@ -82,48 +85,30 @@ module dm_top #(
         .dmactive_o           ( dmactive_o           ),
         .hartinfo_i           ( hartinfo             ),
         .halted_i             ( halted               ),
-        .running_i            ( running              ),
         .unavailable_i        ( unavailable          ),
         .havereset_i          ( havereset            ),
         .resumeack_i          ( resumeack            ),
         .haltreq_o            ( haltreq              ),
         .resumereq_o          ( resumereq            ),
         .ackhavereset_o       ( ackhavereset         ),
-        .command_write_o      ( command_write        ),
-        .command_o            ( command              ),
-        .set_cmderror_i       ( set_cmderror         ),
+        .cmd_valid_o          ( cmd_valid            ),
+        .cmd_o                ( cmd                  ),
+        .cmderror_valid_i     ( cmderror_valid       ),
         .cmderror_i           ( cmderror             ),
         .cmdbusy_i            ( cmdbusy              ),
         .progbuf_o            ( progbuf              ),
-        .data_o               ( data                 )
+        .data_i               ( data_mem_csrs        ),
+        .data_valid_i         ( data_valid           ),
+        .data_o               ( data_csrs_mem        )
     );
 
-    logic [NrHarts-1:0] ackhalt;
+    // TODO(zarubaf) take care of resetting
+    assign havereset = '1;
+    assign unavailable = '0;
+
     // Debug Ctrl for each hart
     for (genvar i = 0; i < NrHarts; i++) begin : dm_hart_ctrl
-
         assign hartinfo[i] = ariane_pkg::DebugHartInfo;
-
-        dm_ctrl i_dm_ctrl (
-            .clk_i           ( clk_i            ),
-            .dmactive_i      ( dmactive_o       ),
-            .ndmreset_i      ( ndmreset_o       ),
-            .debug_req_o     ( debug_req_o  [i] ),
-            .halted_o        ( halted       [i] ),
-            .running_o       ( running      [i] ),
-            .unavailable_o   ( unavailable  [i] ),
-            .havereset_o     ( havereset    [i] ),
-            .resumeack_o     ( resumeack    [i] ),
-            .haltreq_i       ( haltreq          ),
-            .resumereq_i     ( resumereq        ),
-            .ackhavereset_i  ( ackhavereset     ),
-            .command_write_i ( command_write    ),
-            .command_i       ( command          ),
-            .set_cmderror_o  ( set_cmderror [i] ),
-            .cmderror_o      ( cmderror     [i] ),
-            .cmdbusy_o       ( cmdbusy      [i] ),
-            .halted_i        ( ackhalt      [i] )
-        );
     end
 
     logic        req;
@@ -137,20 +122,31 @@ module dm_top #(
     dm_mem #(
         .NrHarts (NrHarts)
     ) i_dm_mem (
-        .clk_i       ( clk_i     ),
-        .dmactive_i  ( dmactive_o),
-        .halted_o    ( ackhalt   ),
-        .going_o     (           ),
-        .resuming_o  (           ),
-        .exception_o (           ),
-        .progbuf_i   ( progbuf   ), // program buffer to expose
-        .data_i      ( data      ),    // data in
-        .req_i       ( req       ),
-        .we_i        ( we        ),
-        .addr_i      ( addr      ),
-        .wdata_i     ( wdata     ),
-        .be_i        ( be        ),
-        .rdata_o     ( rdata     )
+        .clk_i            ( clk_i           ),
+        .dmactive_i       ( dmactive_o      ),
+        .debug_req_o      ( debug_req_o     ),
+
+        .haltreq_i        ( haltreq         ),
+        .resumereq_i      ( resumereq       ),
+        .halted_o         ( halted          ),
+        .resuming_o       ( resumeack       ),
+        .cmd_valid_i      ( cmd_valid       ),
+        .cmd_i            ( cmd             ),
+        .cmderror_valid_o ( cmderror_valid  ),
+        .cmderror_o       ( cmderror        ),
+        .cmdbusy_o        ( cmdbusy         ),
+
+        .progbuf_i        ( progbuf         ),
+        .data_i           ( data_csrs_mem   ),
+        .data_o           ( data_mem_csrs   ),
+        .data_valid_o     ( data_valid      ),
+
+        .req_i            ( req             ),
+        .we_i             ( we              ),
+        .addr_i           ( addr            ),
+        .wdata_i          ( wdata           ),
+        .be_i             ( be              ),
+        .rdata_o          ( rdata           )
     );
 
     axi2mem #(

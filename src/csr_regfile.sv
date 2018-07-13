@@ -728,6 +728,11 @@ module csr_regfile #(
             trap_vector_base_o = {stvec_q[63:2], 2'b0};
         end
 
+        // if we are in debug mode jump to a specific address
+        if (debug_mode_q) begin
+            trap_vector_base_o = dm::ExceptionAddress;
+        end
+
         // check if we are in vectored mode, if yes then do BASE + 4 * cause
         // we are imposing an additional alignment-constraint of 64 * 4 bytes since
         // we want to spare the costly addition
