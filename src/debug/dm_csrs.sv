@@ -41,6 +41,7 @@ module dm_csrs #(
     input  logic [NrHarts-1:0]          havereset_i,     // hart has reset
     input  logic [NrHarts-1:0]          resumeack_i,     // hart acknowledged resume request
     // hart control
+    output logic [19:0]                 hartsel_o,       // hartselect to ctrl module
     output logic [NrHarts-1:0]          haltreq_o,       // request to halt a hart
     output logic [NrHarts-1:0]          resumereq_o,     // request hart to resume
     output logic [NrHarts-1:0]          ackhavereset_o,  // DM acknowledges reset
@@ -67,8 +68,7 @@ module dm_csrs #(
     logic        resp_queue_push;
     logic [31:0] resp_queue_data;
 
-    logic [19:0] hartsel;
-    assign hartsel    = {dmcontrol_q.hartselhi, dmcontrol_q.hartsello};
+    assign hartsel_o    = {dmcontrol_q.hartselhi, dmcontrol_q.hartsello};
 
     logic [31:0] haltsum0, haltsum1, haltsum2, haltsum3;
     for (genvar i = 0; i < 32; i++) begin
@@ -109,25 +109,25 @@ module dm_csrs #(
         // we do not support halt-on-reset sequence
         dmstatus.hasresethaltreq = 1'b0;
         // TODO(zarubaf) things need to change here if we implement the array mask
-        dmstatus.allhavereset = havereset_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyhavereset = havereset_i[hartsel[HartSelLen-1:0]];
+        dmstatus.allhavereset = havereset_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.anyhavereset = havereset_i[hartsel_o[HartSelLen-1:0]];
 
-        dmstatus.allresumeack = resumeack_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyresumeack = resumeack_i[hartsel[HartSelLen-1:0]];
+        dmstatus.allresumeack = resumeack_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.anyresumeack = resumeack_i[hartsel_o[HartSelLen-1:0]];
 
-        dmstatus.allunavail   = unavailable_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyunavail   = unavailable_i[hartsel[HartSelLen-1:0]];
+        dmstatus.allunavail   = unavailable_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.anyunavail   = unavailable_i[hartsel_o[HartSelLen-1:0]];
 
         // as soon as we are out of the legal Hart region tell the debugger
         // that there are only non-existent harts
-        dmstatus.allnonexistent = (hartsel > NrHarts - 1) ? 1'b1 : 1'b0;
-        dmstatus.anynonexistent = (hartsel > NrHarts - 1) ? 1'b1 : 1'b0;
+        dmstatus.allnonexistent = (hartsel_o > NrHarts - 1) ? 1'b1 : 1'b0;
+        dmstatus.anynonexistent = (hartsel_o > NrHarts - 1) ? 1'b1 : 1'b0;
 
-        dmstatus.allhalted    = halted_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyhalted    = halted_i[hartsel[HartSelLen-1:0]];
+        dmstatus.allhalted    = halted_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.anyhalted    = halted_i[hartsel_o[HartSelLen-1:0]];
 
-        dmstatus.allrunning   = ~halted_i[hartsel[HartSelLen-1:0]];
-        dmstatus.anyrunning   = ~halted_i[hartsel[HartSelLen-1:0]];
+        dmstatus.allrunning   = ~halted_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.anyrunning   = ~halted_i[hartsel_o[HartSelLen-1:0]];
 
         // abstractcs
         abstractcs = '0;
@@ -208,7 +208,7 @@ module dm_csrs #(
                     // writes are ignored if a command is already busy
                     if (!cmdbusy_i) begin
                         cmd_valid_o = 1'b1;
-                        command_d = dmi_req_bits_data_i;
+                        command_d = dm::command_t'(dmi_req_bits_data_i);
                     // if there was an attempted to write during a busy execution
                     // and the cmderror field is zero set the busy error
                     end else if (cmderr_q == dm::CmdErrNone) begin
@@ -248,7 +248,7 @@ module dm_csrs #(
 
     // output multiplexer
     always_comb begin
-        selected_hart = hartsel[NrHarts-1:0];
+        selected_hart = hartsel_o[NrHarts-1:0];
         // default assignment
         haltreq_o = '0;
         resumereq_o = '0;
@@ -307,7 +307,7 @@ module dm_csrs #(
             end else begin
                 dmcontrol_q                  <= dmcontrol_d;
                 cmderr_q                     <= cmderr_d;
-                command_q                    <= command_q;
+                command_q                    <= command_d;
                 progbuf_q                    <= progbuf_d;
                 data_q                       <= data_d;
             end

@@ -65,6 +65,7 @@ module dm_top #(
     logic [dm::DataCount-1:0][31:0]   data_csrs_mem;
     logic [dm::DataCount-1:0][31:0]   data_mem_csrs;
     logic                             data_valid;
+    logic [19:0]                      hartsel;
 
     dm_csrs #(
         .NrHarts(NrHarts)
@@ -83,6 +84,7 @@ module dm_top #(
         .dmi_resp_bits_data_o ( dmi_resp_bits_data_o ),
         .ndmreset_o           ( ndmreset_o           ),
         .dmactive_o           ( dmactive_o           ),
+        .hartsel_o            ( hartsel              ),
         .hartinfo_i           ( hartinfo             ),
         .halted_i             ( halted               ),
         .unavailable_i        ( unavailable          ),
@@ -125,6 +127,7 @@ module dm_top #(
         .clk_i            ( clk_i           ),
         .dmactive_i       ( dmactive_o      ),
         .debug_req_o      ( debug_req_o     ),
+        .hartsel_i        ( hartsel         ),
 
         .haltreq_i        ( haltreq         ),
         .resumereq_i      ( resumereq       ),

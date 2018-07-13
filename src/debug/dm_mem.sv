@@ -17,12 +17,13 @@
  */
 
 module dm_mem #(
-    parameter int NrHarts = -1
+    parameter int NrHarts     = -1
 )(
     input  logic                             clk_i,       // Clock
     input  logic                             dmactive_i,  // debug module reset
 
     output logic                             debug_req_o,
+    input  logic [19:0]                      hartsel_i,
     // from Ctrl and Status register
     input  logic [NrHarts-1:0]               haltreq_i,
     input  logic [NrHarts-1:0]               resumereq_i,
@@ -53,8 +54,8 @@ module dm_mem #(
     output logic [63:0]                      rdata_o
 );
 
+    localparam int HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
     localparam DbgAddressBits  = 12;
-    localparam HartSelLen      = (NrHarts == 1) ? 1 : $clog2(NrHarts);
     localparam DataAddr        = dm::DataAddr;
     localparam ProgBufBase     = dm::DataAddr - 4*dm::DataCount;
     localparam AbstractCmdBase = ProgBufBase - 4*dm::ProgBufSize;
@@ -65,15 +66,15 @@ module dm_mem #(
     localparam logic [DbgAddressBits-1:0] Exception = 'h10C;
     localparam logic [DbgAddressBits-1:0] WhereTo   = 'h300;
     localparam logic [DbgAddressBits-1:0] Flags     = 'h400;
-    localparam logic [7:0] FlagGo     = 7'b0;
-    localparam logic [7:0] FlagResume = 7'b1;
+    // localparam logic [7:0] FlagGo     = 7'b0;
+    // localparam logic [7:0] FlagResume = 7'b1;
 
     logic [NrHarts-1:0] halted_d, halted_q;
     logic [NrHarts-1:0] resuming_d, resuming_q;
-    logic               cmdbusy_d, cmdbusy_q;
+    logic               resume, go, going;
 
     logic [HartSelLen-1:0] hart_sel;
-    logic going, exception, halted;
+    logic exception, halted;
     logic unsupported_command;
 
     logic [63:0] rom_rdata;
@@ -81,37 +82,60 @@ module dm_mem #(
     // distinguish whether we need to forward data from the ROM or the FSM
     // latch the address for this
     logic fwd_rom_d, fwd_rom_q;
+    dm::ac_ar_cmd_t ac_ar;
 
+    // Abstract Command Access Register
+    assign ac_ar       = dm::ac_ar_cmd_t'(cmd_i.control);
     assign hart_sel    = wdata_i[HartSelLen-1:0];
     assign debug_req_o = haltreq_i;
     assign halted_o    = halted_q;
     assign resuming_o  = resuming_q;
-    assign cmdbusy_o   = cmdbusy_q;
+
+    enum logic [1:0] { Idle, Go, Executing } state_d, state_q;
 
     // abstract command ctrl
     always_comb begin
         cmderror_valid_o = 1'b0;
         cmderror_o       = '0;
-        cmdbusy_d        = cmdbusy_q;
+        state_d          = state_q;
+        go               = 1'b0;
+        cmdbusy_o        = 1'b1;
+
+        case (state_q)
+            Idle: begin
+                cmdbusy_o = 1'b0;
+                if (cmd_valid_i && halted_q) begin
+                    // give the go signal
+                    state_d = Go;
+                end else if (cmd_valid_i) begin
+                    // hart must be halted for all requests
+                    cmderror_valid_o = 1'b1;
+                    cmderror_o = dm::CmdErrorHaltResume;
+                end
+            end
+
+            Go: begin
+                // we are already busy here since we scheduled the execution of a program
+                cmdbusy_o = 1'b1;
+                go        = 1'b1;
+                // the thread is now executing the command, track its state
+                if (going)
+                    state_d = Executing;
+            end
+
+            Executing: begin
+                cmdbusy_o = 1'b1;
+                go        = 1'b0;
+                // wait until the hart has halted again
+                if (halted) begin
+                    state_d = Idle;
+                end
+            end
+        endcase
 
         if (exception) begin
             cmderror_valid_o = 1'b1;
             cmderror_o = dm::CmdErrorException;
-        end
-
-        // we've got a new command
-        if (cmd_valid_i && halted_q) begin
-            cmdbusy_d = 1'b1;
-            // release the go flag
-        end else if (cmd_valid_i) begin
-            // hart must be halted for all requests
-            cmderror_valid_o = 1'b1;
-            cmderror_o = dm::CmdErrorHaltResume;
-        end
-
-        // we've halted again ~> clear the busy flag
-        if (halted) begin
-            cmdbusy_d = 1'b0;
         end
 
         if (unsupported_command) begin
@@ -122,15 +146,20 @@ module dm_mem #(
 
     // read/write logic
     always_comb begin
+        automatic logic [63:0] data_bits;
+
         halted_d     = halted_q;
         resuming_d   = resuming_q;
         rdata_o      = fwd_rom_q ? rom_rdata : rdata_q;
         rdata_d      = rdata_q;
-        data_o       = data_i;
+        // convert the data in bits representation
+        data_bits    = data_i;
         // write data in csr register
         data_valid_o = 1'b0;
         exception    = 1'b0;
         halted       = 1'b0;
+        going        = 1'b0;
+        // this abstract command is currently unsupported
         unsupported_command = 1'b0;
         // we've got a new request
         if (req_i) begin
@@ -142,7 +171,7 @@ module dm_mem #(
                         halted_d[hart_sel] = 1'b1;
                         resuming_d[hart_sel] = 1'b0;
                     end
-                    Going:;
+                    Going: going = 1'b1;
                     Resuming: begin
                         halted_d[hart_sel] = 1'b0;
                         resuming_d[hart_sel] = 1'b1;
@@ -152,17 +181,13 @@ module dm_mem #(
                     // core can write data registers
                     // TODO(zarubaf) Remove hard-coded values
                     (dm::DataAddr || dm::DataAddr+4): begin
-                        // data_valid_o = 1'b1;
+
+                        data_valid_o = 1'b1;
                         for (int i = 0; i < $bits(be_i); i++) begin
                             if (be_i[i]) begin
-                                // data_o = wdata_i[i*8+:8];
+                                data_bits[i*8+:8] = wdata_i[i*8+:8];
                             end
                         end
-                    end
-
-                    // harts are polling for flags here
-                    [Flags:AbstractCmdBase] begin
-
                     end
                 endcase
 
@@ -171,30 +196,33 @@ module dm_mem #(
                 unique case (addr_i[DbgAddressBits-1:0]) inside
                     // variable ROM content
                     WhereTo: begin
+                        // $display(".wherto @%x", addr_i);
                         // variable jump to abstract cmd, program_buffer or resume
                         if (resumereq_i) begin
-                            rdata_d = {32'b0, riscv::jal(0, dm::ResumeAddress)};
+                            rdata_d = {32'b0, riscv::jalr(0, 0, dm::ResumeAddress)};
                         end
 
                         // there is a command active so jump there
-                        if (cmdbusy_q) begin
-                            rdata_d = {32'b0, riscv::jal(0, AbstractCmdBase)};
+                        if (cmdbusy_o) begin
+                            rdata_d = {32'b0, riscv::jalr(0, 0, AbstractCmdBase)};
                         end
                     end
 
                     // TODO(zarubaf) change hard-coded values
-                    // TODO(zarubaf) submit verilator bug report
-                    // %Error: Internal Error: src/debug/dm_mem.sv:129: ../V3Hashed.cpp:73: sameHash function undefined (returns 0) for node under CFunc.
-                    (dm::DataAddr || dm::DataAddr+4): begin
+                    ['h380:'h387]: begin
+                        // $display("Reading from dataddr @%x", addr_i);
                         rdata_d = {data_i[1], data_i[0]};
                     end
 
-                    [ProgBufBase:(dm::DataAddr-4)]: begin
-                        // TODO(zarubaf) change hard-coded values
+                    // TODO(zarubaf) change hard-coded values
+                    ['h378:'h37F]: begin
+                        // $display("Reading from progbuf @%x", addr_i);
                         rdata_d = {progbuf_i[1], progbuf_i[0]};
                     end
+
                     // two slots for abstract command
-                    [AbstractCmdBase:AbstractCmdBase+4]: begin
+                    ['h370:'h377]: begin
+                        // $display("Reading from abstract command @%x", addr_i);
                         rdata_d = '0;
                         // this depends on the command being executed
                         unique case (cmd_i.cmdtype)
@@ -202,21 +230,21 @@ module dm_mem #(
                             // Access Register
                             // --------------------
                             dm::AccessRegister: begin
-                                automatic dm::ac_ar_cmd_t ac_ar;
-                                ac_ar = dm::ac_ar_cmd_t'(cmd_i.control);
-
-                                if (ac_ar.transfer && ac_ar.write) begin
-                                    rdata_d[0] = riscv::store(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
+                                if (ac_ar.aarsize >= 4) begin
+                                    // illegal size in that case issue a sq instruction which will throw an illegal instruction
+                                    rdata_d[31:0] = riscv::store(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
+                                end else if (ac_ar.transfer && ac_ar.write) begin
+                                    rdata_d[31:0] = riscv::store(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
                                 end else if (ac_ar.transfer) begin
-                                    rdata_d[0] = riscv::load(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
+                                    rdata_d[31:0] = riscv::load(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
                                 end
                                 // check whether we need to execute the program buffer
                                 if (ac_ar.postexec) begin
                                     // issue a nop, we will automatically run into the program buffer
-                                    rdata_d[1] = riscv::nop();
+                                    rdata_d[63:32] = riscv::nop();
                                 end else begin
                                     // transfer control back to idle loop
-                                    rdata_d[1] = riscv::ebreak();
+                                    rdata_d[63:32] = riscv::ebreak();
                                 end
                             end
                             // not supported at the moment
@@ -227,9 +255,24 @@ module dm_mem #(
                             end
                         endcase
                     end
+                    // harts are polling for flags here
+                    // TODO(zarubaf) Remove hard-coded value
+                    ['h400:'h7FF]: begin
+                        // $display("Reading from flags @%x", addr_i);
+                        // release the corresponding hart
+                        if (({addr_i[DbgAddressBits-1:3], 3'b0} - Flags) == {hartsel_i[19:3], 3'b0}) begin
+                            rdata_d[hartsel_i[2:0]+:8] = {6'b0, resume, go};
+                        end
+                    end
+                    default: begin
+                        // if (addr_i < dm::HaltAddress)
+                            // $display("Reading from nothing @%x", addr_i);
+                    end
                 endcase
             end
         end
+
+        data_o = data_bits;
     end
 
     debug_rom i_debug_rom (
@@ -249,13 +292,13 @@ module dm_mem #(
             rdata_q    <= '0;
             halted_q   <= 1'b0;
             resuming_q <= 1'b0;
-            cmdbusy_q  <= 1'b0;
+            state_q    <= Idle;
         end else begin
             fwd_rom_q  <= fwd_rom_d;
             rdata_q    <= rdata_d;
             halted_q   <= halted_d;
             resuming_q <= resuming_d;
-            cmdbusy_q  <= cmdbusy_d;
+            state_q    <= state_d;
         end
     end
 

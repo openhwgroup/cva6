@@ -244,6 +244,11 @@ package riscv;
         return {imm[20], imm[10:1], imm[11], imm[19:12], rd, 7'h6f};
     endfunction
 
+    function automatic logic [31:0] jalr (logic[4:0] rd, logic[4:0] rs1, logic [11:0] offset);
+        // OpCode Jal
+        return {offset[11:0], rs1, 3'b0, rd, 7'h67};
+    endfunction
+
     function automatic logic [31:0] load (logic [2:0] size, logic[4:0] rd, logic[4:0] rs1, logic [11:0] imm);
         // OpCode Load
         return {imm[11:0], rs1, size, rd, 7'h03};
