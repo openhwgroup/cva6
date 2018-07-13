@@ -91,14 +91,15 @@ module dm_mem #(
     assign halted_o    = halted_q;
     assign resuming_o  = resuming_q;
 
-    enum logic [1:0] { Idle, Go, Executing } state_d, state_q;
+    enum logic [1:0] { Idle, Go, Resume, CmdExecuting } state_d, state_q;
 
-    // abstract command ctrl
+    // hart ctrl queue
     always_comb begin
         cmderror_valid_o = 1'b0;
         cmderror_o       = '0;
         state_d          = state_q;
         go               = 1'b0;
+        resume           = 1'b0;
         cmdbusy_o        = 1'b1;
 
         case (state_q)
@@ -112,6 +113,11 @@ module dm_mem #(
                     cmderror_valid_o = 1'b1;
                     cmderror_o = dm::CmdErrorHaltResume;
                 end
+                // CSRs want to resume, the request is ignored when the hart is
+                // requested to halt
+                if (resumereq_i && !haltreq_i && halted_q) begin
+                    state_d = Resume;
+                end
             end
 
             Go: begin
@@ -120,10 +126,17 @@ module dm_mem #(
                 go        = 1'b1;
                 // the thread is now executing the command, track its state
                 if (going)
-                    state_d = Executing;
+                    state_d = CmdExecuting;
             end
 
-            Executing: begin
+            Resume: begin
+                cmdbusy_o = 1'b1;
+                resume = 1'b1;
+                if (resuming_o)
+                    state_d = Idle;
+            end
+
+            CmdExecuting: begin
                 cmdbusy_o = 1'b1;
                 go        = 1'b0;
                 // wait until the hart has halted again
@@ -180,7 +193,7 @@ module dm_mem #(
                     Exception: exception = 1'b1;
                     // core can write data registers
                     // TODO(zarubaf) Remove hard-coded values
-                    (dm::DataAddr || dm::DataAddr+4): begin
+                    ['h380:'h387]: begin
 
                         data_valid_o = 1'b1;
                         for (int i = 0; i < $bits(be_i); i++) begin
@@ -196,7 +209,6 @@ module dm_mem #(
                 unique case (addr_i[DbgAddressBits-1:0]) inside
                     // variable ROM content
                     WhereTo: begin
-                        // $display(".wherto @%x", addr_i);
                         // variable jump to abstract cmd, program_buffer or resume
                         if (resumereq_i) begin
                             rdata_d = {32'b0, riscv::jalr(0, 0, dm::ResumeAddress)};
@@ -234,9 +246,9 @@ module dm_mem #(
                                     // illegal size in that case issue a sq instruction which will throw an illegal instruction
                                     rdata_d[31:0] = riscv::store(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
                                 end else if (ac_ar.transfer && ac_ar.write) begin
-                                    rdata_d[31:0] = riscv::store(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
-                                end else if (ac_ar.transfer) begin
                                     rdata_d[31:0] = riscv::load(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
+                                end else if (ac_ar.transfer && !ac_ar.write) begin
+                                    rdata_d[31:0] = riscv::store(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
                                 end
                                 // check whether we need to execute the program buffer
                                 if (ac_ar.postexec) begin

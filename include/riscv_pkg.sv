@@ -249,14 +249,14 @@ package riscv;
         return {offset[11:0], rs1, 3'b0, rd, 7'h67};
     endfunction
 
-    function automatic logic [31:0] load (logic [2:0] size, logic[4:0] rd, logic[4:0] rs1, logic [11:0] imm);
+    function automatic logic [31:0] load (logic [2:0] size, logic[4:0] dest, logic[4:0] base, logic [11:0] offset);
         // OpCode Load
-        return {imm[11:0], rs1, size, rd, 7'h03};
+        return {offset[11:0], base, size, dest, 7'h03};
     endfunction
 
-    function automatic logic [31:0] store (logic [2:0] size, logic[4:0] rs1, logic[4:0] rs2, logic [11:0] imm);
+    function automatic logic [31:0] store (logic [2:0] size, logic[4:0] src, logic[4:0] base, logic [11:0] offset);
         // OpCode Store
-        return {imm[11:5], rs2, rs1, size, imm[4:0], 7'h23};
+        return {offset[11:5], src, base, size, offset[4:0], 7'h23};
     endfunction
 
     function automatic logic [31:0] ebreak ();

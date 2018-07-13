@@ -584,6 +584,7 @@ module csr_regfile #(
         csr_read  = 1'b1;
         mret      = 1'b0;
         sret      = 1'b0;
+        dret      = 1'b0;
 
         unique case (csr_op_i)
             CSR_WRITE: csr_wdata = csr_wdata_i;
