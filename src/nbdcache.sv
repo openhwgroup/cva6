@@ -74,6 +74,7 @@ module nbdcache #(
     logic [2:0]                        busy;
     logic [2:0][55:0]                  mshr_addr;
     logic [2:0]                        mshr_addr_matches;
+    logic [2:0]                        mshr_index_matches;
     logic [63:0]                       critical_word;
     logic                              critical_word_valid;
 
@@ -97,54 +98,57 @@ module nbdcache #(
     // ------------------
     // Cache Controller
     // ------------------
-    for (genvar i = 0; i < 3; i++) begin : master_ports
-        cache_ctrl  #(
-            .SET_ASSOCIATIVITY     ( SET_ASSOCIATIVITY    ),
-            .INDEX_WIDTH           ( INDEX_WIDTH          ),
-            .TAG_WIDTH             ( TAG_WIDTH            ),
-            .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     ),
-            .CACHE_START_ADDR      ( CACHE_START_ADDR     )
-        ) i_cache_ctrl (
-            .bypass_i              ( ~enable_i            ),
-            .busy_o                ( busy            [i]  ),
-            .address_index_i       ( address_index_i [i]  ),
-            .address_tag_i         ( address_tag_i   [i]  ),
-            .data_wdata_i          ( data_wdata_i    [i]  ),
-            .data_req_i            ( data_req_i      [i]  ),
-            .data_we_i             ( data_we_i       [i]  ),
-            .data_be_i             ( data_be_i       [i]  ),
-            .data_size_i           ( data_size_i     [i]  ),
-            .kill_req_i            ( kill_req_i      [i]  ),
-            .tag_valid_i           ( tag_valid_i     [i]  ),
-            .data_gnt_o            ( data_gnt_o      [i]  ),
-            .data_rvalid_o         ( data_rvalid_o   [i]  ),
-            .data_rdata_o          ( data_rdata_o    [i]  ),
-            .amo_op_i              ( amo_op_i        [i]  ),
+    generate
+        for (genvar i = 0; i < 3; i++) begin : master_ports
+            cache_ctrl  #(
+                .SET_ASSOCIATIVITY     ( SET_ASSOCIATIVITY    ),
+                .INDEX_WIDTH           ( INDEX_WIDTH          ),
+                .TAG_WIDTH             ( TAG_WIDTH            ),
+                .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     ),
+                .CACHE_START_ADDR      ( CACHE_START_ADDR     )
+            ) i_cache_ctrl (
+                .bypass_i              ( ~enable_i            ),
+                .busy_o                ( busy            [i]  ),
+                .address_index_i       ( address_index_i [i]  ),
+                .address_tag_i         ( address_tag_i   [i]  ),
+                .data_wdata_i          ( data_wdata_i    [i]  ),
+                .data_req_i            ( data_req_i      [i]  ),
+                .data_we_i             ( data_we_i       [i]  ),
+                .data_be_i             ( data_be_i       [i]  ),
+                .data_size_i           ( data_size_i     [i]  ),
+                .kill_req_i            ( kill_req_i      [i]  ),
+                .tag_valid_i           ( tag_valid_i     [i]  ),
+                .data_gnt_o            ( data_gnt_o      [i]  ),
+                .data_rvalid_o         ( data_rvalid_o   [i]  ),
+                .data_rdata_o          ( data_rdata_o    [i]  ),
+                .amo_op_i              ( amo_op_i        [i]  ),
 
-            .req_o                 ( req            [i+1] ),
-            .addr_o                ( addr           [i+1] ),
-            .gnt_i                 ( gnt            [i+1] ),
-            .data_i                ( rdata                ),
-            .tag_o                 ( tag            [i+1] ),
-            .data_o                ( wdata          [i+1] ),
-            .we_o                  ( we             [i+1] ),
-            .be_o                  ( be             [i+1] ),
-            .hit_way_i             ( hit_way              ),
+                .req_o                 ( req            [i+1] ),
+                .addr_o                ( addr           [i+1] ),
+                .gnt_i                 ( gnt            [i+1] ),
+                .data_i                ( rdata                ),
+                .tag_o                 ( tag            [i+1] ),
+                .data_o                ( wdata          [i+1] ),
+                .we_o                  ( we             [i+1] ),
+                .be_o                  ( be             [i+1] ),
+                .hit_way_i             ( hit_way              ),
 
-            .miss_req_o            ( miss_req        [i]  ),
-            .miss_gnt_i            ( miss_gnt        [i]  ),
-            .active_serving_i      ( active_serving  [i]  ),
-            .critical_word_i       ( critical_word        ),
-            .critical_word_valid_i ( critical_word_valid  ),
-            .bypass_gnt_i          ( bypass_gnt      [i]  ),
-            .bypass_valid_i        ( bypass_valid    [i]  ),
-            .bypass_data_i         ( bypass_data     [i]  ),
+                .miss_req_o            ( miss_req        [i]  ),
+                .miss_gnt_i            ( miss_gnt        [i]  ),
+                .active_serving_i      ( active_serving  [i]  ),
+                .critical_word_i       ( critical_word        ),
+                .critical_word_valid_i ( critical_word_valid  ),
+                .bypass_gnt_i          ( bypass_gnt      [i]  ),
+                .bypass_valid_i        ( bypass_valid    [i]  ),
+                .bypass_data_i         ( bypass_data     [i]  ),
 
-            .mshr_addr_o           ( mshr_addr         [i] ), // TODO
-            .mshr_addr_matches_i   ( mshr_addr_matches [i] ), // TODO
-            .*
-        );
-    end
+                .mshr_addr_o           ( mshr_addr         [i] ), // TODO
+                .mshr_addr_matches_i   ( mshr_addr_matches [i] ), // TODO
+                .mshr_index_matches_i  ( mshr_index_matches[i] ), // TODO
+                .*
+            );
+        end
+    endgenerate
 
     // ------------------
     // Miss Handling Unit
@@ -162,6 +166,7 @@ module nbdcache #(
         .critical_word_valid_o  ( critical_word_valid  ),
         .mshr_addr_i            ( mshr_addr            ),
         .mshr_addr_matches_o    ( mshr_addr_matches    ),
+        .mshr_index_matches_o   ( mshr_index_matches   ),
         .active_serving_o       ( active_serving       ),
         .req_o                  ( req             [0]  ),
         .addr_o                 ( addr            [0]  ),
@@ -362,4 +367,3 @@ module tag_cmp #(
     end
 
 endmodule
-
