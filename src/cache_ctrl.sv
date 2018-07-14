@@ -267,29 +267,36 @@ module cache_ctrl #(
 
             // ~> we are here as we need a second round of memory access for a store
             STORE_REQ: begin
-                // store data, write dirty bit
-                req_o = hit_way_q;
-                addr_o = mem_req_q.index;
-                we_o  = 1'b1;
+                // check if the MSHR still doesn't match
+                mshr_addr_o = {mem_req_d.tag, mem_req_q.index};
 
-                be_o.dirty = hit_way_q;
-                be_o.valid = hit_way_q;
+                if (!mshr_addr_matches_i) begin
+                    // store data, write dirty bit
+                    req_o = hit_way_q;
+                    addr_o = mem_req_q.index;
+                    we_o  = 1'b1;
 
-                // set the correct byte enable
-                for (int unsigned i = 0; i < 8; i++) begin
-                    if (mem_req_q.be[i])
-                        be_o.data[cl_offset + i*8 +: 8] = '1;
-                end
+                    be_o.dirty = hit_way_q;
+                    be_o.valid = hit_way_q;
 
-                data_o.data[cl_offset +: 64] = mem_req_q.wdata;
-                // ~> change the state
-                data_o.dirty = 1'b1;
-                data_o.valid = 1'b1;
+                    // set the correct byte enable
+                    for (int unsigned i = 0; i < 8; i++) begin
+                        if (mem_req_q.be[i])
+                            be_o.data[cl_offset + i*8 +: 8] = '1;
+                    end
 
-                // got a grant ~> this is finished now
-                if (gnt_i) begin
-                    data_gnt_o = 1'b1;
-                    state_d = IDLE;
+                    data_o.data[cl_offset +: 64] = mem_req_q.wdata;
+                    // ~> change the state
+                    data_o.dirty = 1'b1;
+                    data_o.valid = 1'b1;
+
+                    // got a grant ~> this is finished now
+                    if (gnt_i) begin
+                        data_gnt_o = 1'b1;
+                        state_d = IDLE;
+                    end
+                end else begin
+                    state_d = WAIT_MSHR;
                 end
             end
 

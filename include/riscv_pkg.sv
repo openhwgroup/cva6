@@ -148,6 +148,22 @@ package riscv;
     parameter OpcodeCBeqz     = 3'b110;
     parameter OpcodeCBnez     = 3'b111;
 
+    // ----------------------
+    // Performance Counters
+    // ----------------------
+    localparam logic [11:0] PERF_L1_ICACHE_MISS = 12'h0;     // L1 Instr Cache Miss
+    localparam logic [11:0] PERF_L1_DCACHE_MISS = 12'h1;     // L1 Data Cache Miss
+    localparam logic [11:0] PERF_ITLB_MISS      = 12'h2;     // ITLB Miss
+    localparam logic [11:0] PERF_DTLB_MISS      = 12'h3;     // DTLB Miss
+    localparam logic [11:0] PERF_LOAD           = 12'h4;     // Loads
+    localparam logic [11:0] PERF_STORE          = 12'h5;     // Stores
+    localparam logic [11:0] PERF_EXCEPTION      = 12'h6;     // Taken exceptions
+    localparam logic [11:0] PERF_EXCEPTION_RET  = 12'h7;     // Exception return
+    localparam logic [11:0] PERF_BRANCH_JUMP    = 12'h8;     // Software change of PC
+    localparam logic [11:0] PERF_CALL           = 12'h9;     // Procedure call
+    localparam logic [11:0] PERF_RET            = 12'hA;     // Procedure Return
+    localparam logic [11:0] PERF_MIS_PREDICT    = 12'hB;     // Branch mis-predicted
+
     // -----
     // CSRs
     // -----
@@ -209,22 +225,6 @@ package riscv;
         CSR_RET            = PERF_RET            + 12'hC03,
         CSR_MIS_PREDICT    = PERF_MIS_PREDICT    + 12'hC03
     } csr_reg_t;
-
-    // ----------------------
-    // Performance Counters
-    // ----------------------
-    localparam logic [11:0] PERF_L1_ICACHE_MISS = 12'h0;     // L1 Instr Cache Miss
-    localparam logic [11:0] PERF_L1_DCACHE_MISS = 12'h1;     // L1 Data Cache Miss
-    localparam logic [11:0] PERF_ITLB_MISS      = 12'h2;     // ITLB Miss
-    localparam logic [11:0] PERF_DTLB_MISS      = 12'h3;     // DTLB Miss
-    localparam logic [11:0] PERF_LOAD           = 12'h4;     // Loads
-    localparam logic [11:0] PERF_STORE          = 12'h5;     // Stores
-    localparam logic [11:0] PERF_EXCEPTION      = 12'h6;     // Taken exceptions
-    localparam logic [11:0] PERF_EXCEPTION_RET  = 12'h7;     // Exception return
-    localparam logic [11:0] PERF_BRANCH_JUMP    = 12'h8;     // Software change of PC
-    localparam logic [11:0] PERF_CALL           = 12'h9;     // Procedure call
-    localparam logic [11:0] PERF_RET            = 12'hA;     // Procedure Return
-    localparam logic [11:0] PERF_MIS_PREDICT    = 12'hB;     // Branch mis-predicted
 
     // decoded CSR address
     typedef struct packed {
