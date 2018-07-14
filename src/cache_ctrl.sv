@@ -69,7 +69,8 @@ module cache_ctrl #(
         input  logic [63:0]                                        bypass_data_i,
         // check MSHR for aliasing
         output logic [55:0]                                        mshr_addr_o,
-        input  logic                                               mshr_addr_matches_i
+        input  logic                                               mshr_addr_matches_i,
+        input  logic                                               mshr_index_matches_i
 );
 
     // 0 IDLE
@@ -270,11 +271,13 @@ module cache_ctrl #(
                 // check if the MSHR still doesn't match
                 mshr_addr_o = {mem_req_d.tag, mem_req_q.index};
 
-                if (!mshr_addr_matches_i) begin
+                // We need to re-check for MSHR aliasing here as the store requires at least
+                // two memory look-ups on a single-ported SRAM and therefore is non-atomic
+                if (!mshr_index_matches_i) begin
                     // store data, write dirty bit
-                    req_o = hit_way_q;
-                    addr_o = mem_req_q.index;
-                    we_o  = 1'b1;
+                    req_o      = hit_way_q;
+                    addr_o     = mem_req_q.index;
+                    we_o       = 1'b1;
 
                     be_o.dirty = hit_way_q;
                     be_o.valid = hit_way_q;
@@ -298,13 +301,13 @@ module cache_ctrl #(
                 end else begin
                     state_d = WAIT_MSHR;
                 end
-            end
+            end // case: STORE_REQ
 
             // we've got a match on MSHR ~> miss unit is scurrently serving a request
             WAIT_MSHR: begin
                 mshr_addr_o = {mem_req_q.tag, mem_req_q.index};
                 // we can start a new request
-                if (!mshr_addr_matches_i) begin
+                if (!mshr_index_matches_i) begin
                     req_o = '1;
 
                     addr_o = mem_req_q.index;
