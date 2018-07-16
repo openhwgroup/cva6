@@ -34,7 +34,7 @@ module dm_mem #(
 
     input  logic [dm::ProgBufSize-1:0][31:0] progbuf_i,    // program buffer to expose
 
-    output logic [dm::DataCount-1:0][31:0]   data_i,       // data in
+    input  logic [dm::DataCount-1:0][31:0]   data_i,       // data in
     output logic [dm::DataCount-1:0][31:0]   data_o,       // data out
     output logic                             data_valid_o, // data out is valid
     // abstract command interface
@@ -96,7 +96,7 @@ module dm_mem #(
     // hart ctrl queue
     always_comb begin
         cmderror_valid_o = 1'b0;
-        cmderror_o       = '0;
+        cmderror_o       = dm::CmdErrNone;
         state_d          = state_q;
         go               = 1'b0;
         resume           = 1'b0;

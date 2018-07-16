@@ -37,6 +37,16 @@ package dm;
     // debug registers
     typedef enum logic [7:0] {
         Data0        = 8'h04,
+        Data1        = 8'h05,
+        Data2        = 8'h06,
+        Data3        = 8'h07,
+        Data4        = 8'h08,
+        Data5        = 8'h09,
+        Data6        = 8'h0A,
+        Data7        = 8'h0B,
+        Data8        = 8'h0C,
+        Data9        = 8'h0D,
+        Data10       = 8'h0E,
         Data11       = 8'h0F,
         DMControl    = 8'h10,
         DMStatus     = 8'h11, // r/o

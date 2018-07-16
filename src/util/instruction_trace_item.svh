@@ -31,7 +31,7 @@ class instruction_trace_item;
     logic [4:0] rs1, rs2, rs3, rd;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl, branchpredict_t bp);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, branchpredict_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -97,10 +97,10 @@ class instruction_trace_item;
             riscv::CSR_MCYCLE:     return "mcycle";
             riscv::CSR_MINSTRET:   return "minstret";
 
-            riscv::CSR_DCSR        return "dcsr";
-            riscv::CSR_DPC         return "dpc";
-            riscv::CSR_DSCRATCH0   return "dscratch0";
-            riscv::CSR_DSCRATCH1   return "dscratch0";
+            riscv::CSR_DCSR:       return "dcsr";
+            riscv::CSR_DPC:        return "dpc";
+            riscv::CSR_DSCRATCH0:  return "dscratch0";
+            riscv::CSR_DSCRATCH1:  return "dscratch0";
 
             riscv::CSR_CYCLE:      return "cycle";
             riscv::CSR_TIME:       return "time";
@@ -239,11 +239,11 @@ class instruction_trace_item;
     endfunction : printInstr
 
     // Return the current privilege level as a string
-    function string getPrivLevel(input priv_lvl_t priv_lvl);
+    function string getPrivLevel(input riscv::priv_lvl_t priv_lvl);
         case (priv_lvl)
-            PRIV_LVL_M: return "M";
-            PRIV_LVL_S: return "S";
-            PRIV_LVL_U: return "U";
+            riscv::PRIV_LVL_M: return "M";
+            riscv::PRIV_LVL_S: return "S";
+            riscv::PRIV_LVL_U: return "U";
         endcase
     endfunction : getPrivLevel
 
@@ -303,7 +303,7 @@ class instruction_trace_item;
     function string printJump();
         string mnemonic;
         case (instr[6:0])
-            OpcodeJalr: begin
+            riscv::OpcodeJalr: begin
                 // is this a return?
                 if (rd == 'b0 && (rs1 == 'h1 || rs1 == 'h5)) begin
                     return this.printMnemonic("ret");
@@ -312,7 +312,7 @@ class instruction_trace_item;
                 end
             end
 
-            OpcodeJal: begin
+            riscv::OpcodeJal: begin
                 if (rd == 'b0)
                     return this.printUJInstr("j");
                 else

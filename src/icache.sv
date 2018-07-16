@@ -293,7 +293,7 @@ module icache #(
                         evict_way_d = random_way;
                         // shift the lfsr
                         update_lfsr = 1'b1;
-                    end else if (!|hit) begin
+                    end else if (!(|hit)) begin
                         evict_way_d[repl_invalid] = 1'b1;
                     end
                 end

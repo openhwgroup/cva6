@@ -16,7 +16,6 @@ import ariane_pkg::*;
 `ifndef verilator
 `ifndef SYNTHESIS
 import instruction_tracer_pkg::*;
-`timescale 1ns / 1ps
 `endif
 `endif
 

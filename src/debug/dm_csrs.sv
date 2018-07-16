@@ -55,8 +55,8 @@ module dm_csrs #(
     output logic [dm::ProgBufSize-1:0][31:0]  progbuf_o, // to system bus
     output logic [dm::DataCount-1:0][31:0]    data_o,
 
-    output logic [dm::DataCount-1:0][31:0]    data_i,
-    output logic                              data_valid_i
+    input  logic [dm::DataCount-1:0][31:0]    data_i,
+    input  logic                              data_valid_i
 );
     // the amount of bits we need to represent all harts
     localparam HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
@@ -68,11 +68,15 @@ module dm_csrs #(
     logic        resp_queue_push;
     logic [31:0] resp_queue_data;
 
+    localparam dm::dm_csr_t DataEnd = dm::dm_csr_t'((dm::Data0 + dm::DataCount));
+    localparam dm::dm_csr_t ProgBufEnd = dm::dm_csr_t'((dm::ProgBuf0 + dm::ProgBufSize));
+
     assign hartsel_o    = {dmcontrol_q.hartselhi, dmcontrol_q.hartsello};
 
     logic [31:0] haltsum0, haltsum1, haltsum2, haltsum3;
+    // TODO(zarubaf) Need an elegant way to calculate haltsums
     for (genvar i = 0; i < 32; i++) begin
-        assign haltsum0[i] = halted_i[i];
+        // assign haltsum0[i] = halted_i[i];
         // TODO(zarubaf) Implement correct haltsum logic
         // assign haltsum0[i] = halted_i[hartsel[19:5]];
         // assign haltsum1[i] = (NrHarts > 32)    ? &halted_i[hartsel[19:10] +: 32]    : 1'b0;
@@ -143,14 +147,14 @@ module dm_csrs #(
         progbuf_d   = progbuf_q;
         data_d      = data_q;
 
-        resp_queue_data = 32'0;
+        resp_queue_data = 32'b0;
         cmd_valid_o     = 1'b0;
         ackhavereset_o  = 'b0;
 
         // read
         if (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) begin
-            unique case (dm::dm_csr_t'({1'b0, dmi_req_bits_addr_i})) inside
-                [(dm::Data0):(dm::Data0 + dm::DataCount)]: begin
+            unique case ({1'b0, dmi_req_bits_addr_i}) inside
+                [(dm::Data0):DataEnd]: begin
                     if (dm::DataCount > 0)
                         resp_queue_data = data_q[dmi_req_bits_addr_i[4:0]];
                 end
@@ -160,7 +164,7 @@ module dm_csrs #(
                 dm::AbstractCS: resp_queue_data = abstractcs;
                 // command is read-only
                 dm::Command:    resp_queue_data = '0;
-                [(dm::ProgBuf0):(dm::ProgBuf0 + dm::ProgBufSize)]: begin
+                [(dm::ProgBuf0):ProgBufEnd]: begin
                     resp_queue_data = progbuf_q[dmi_req_bits_addr_i[4:0]];
                 end
                 dm::HaltSum0: resp_queue_data = haltsum0;
@@ -174,7 +178,7 @@ module dm_csrs #(
         // write
         if (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_WRITE) begin
             unique case (dm::dm_csr_t'({1'b0, dmi_req_bits_addr_i})) inside
-                [(dm::Data0):(dm::Data0 + dm::DataCount)]: begin
+                [(dm::Data0):DataEnd]: begin
                     // attempts to write them while busy is set does not change their value
                     if (!cmdbusy_i && dm::DataCount > 0) begin
                         data_d[dmi_req_bits_addr_i[4:0]] = dmi_req_bits_data_i;
@@ -198,7 +202,7 @@ module dm_csrs #(
                     abstractcs = dm::abstractcs_t'(dmi_req_bits_data_i);
                     // reads during abstract command execution are not allowed
                     if (!cmdbusy_i) begin
-                        cmderr_d = ~abstractcs.cmderr & cmderr_q;
+                        cmderr_d = dm::cmderr_t'(~abstractcs.cmderr & cmderr_q);
                     end else if (cmderr_q == dm::CmdErrNone) begin
                         cmderr_d = dm::CmdErrBusy;
                     end
@@ -215,7 +219,7 @@ module dm_csrs #(
                         cmderr_d = dm::CmdErrBusy;
                     end
                 end
-                [(dm::ProgBuf0):(dm::ProgBuf0 + dm::ProgBufSize)]: begin
+                [(dm::ProgBuf0):ProgBufEnd]: begin
                     // attempts to write them while busy is set does not change their value
                     if (!cmdbusy_i) begin
                         progbuf_d[dmi_req_bits_addr_i[4:0]] = dmi_req_bits_data_i;

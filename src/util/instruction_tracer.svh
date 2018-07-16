@@ -177,7 +177,7 @@ class instruction_tracer;
         bp              = {};
     endfunction
 
-    function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl, branchpredict_t bp);
+    function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, branchpredict_t bp);
         instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr, priv_lvl, bp);
         // print instruction to console
         string print_instr = iti.printInstr();

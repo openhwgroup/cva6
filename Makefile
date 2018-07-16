@@ -5,8 +5,8 @@
 # compile everything in the following library
 library ?= work
 # Top level module to compile
-top_level ?= core_tb
-test_top_level ?= core_tb
+top_level ?= ariane_tb
+test_top_level ?= ariane_tb
 # Maximum amount of cycles for a successful simulation run
 max_cycles ?= 10000000
 # Test case to run
@@ -38,10 +38,13 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.s
 # DPI
 dpi := $(wildcard tb/dpi/*)
 # this list contains the standalone components
-src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv) \
-	  $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/src/*.sv) $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))
+src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard tb/common/*.v) $(wildcard src/axi2per/*.sv)  \
+       $(wildcard src/axi_slice/*.sv)                                                                          \
+       $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/src/*.sv)                                       \
+       $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv)) $(wildcard bootrom/*.sv)                  \
+       $(wildcard src/debug/debug_rom/*.sv)
 # look for testbenches
-tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
+tbs := tb/alu_tb.sv tb/ariane_tb.sv tb/ariane_testharness.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
 
 # RISCV-tests path
 riscv-test-dir := tmp/riscv-tests/build/isa
@@ -96,14 +99,15 @@ $(library)/.build-srcs: $(util) $(src)
 # build TBs
 $(library)/.build-tb: $(dpi) $(tbs)
 	# Compile top level
-	vlog$(questa_version) -sv $(tbs) -work $(library) $(filter %.c %.cc, $(dpi)) -ccflags "-g -std=c++11 " -dpiheader tb/dpi/elfdpi.h
+	vlog$(questa_version) -sv $(tbs) -work $(library)
 	touch $(library)/.build-tb
 
 # compile DPIs
 $(library)/.build-dpi: $(dpi)
 	# Compile C-code and generate .so file
-	g++ -c -fPIC -m64 -std=c++0x -I$(QUESTASIM_HOME)/include -shared -o $(library)/elf_dpi.o -c $(filter %.c %.cc, $(dpi))
-	g++ -shared -m64 -o $(library)/elf_dpi.so $(library)/elf_dpi.o
+	# g++ -lfesvr -c -fPIC -m64 -std=c++0x -I$(QUESTASIM_HOME)/include -o $(library)/ariane_dpi.o tb/dpi/SimDTM.cc
+	# g++ -shared -m64 -o $(library)/ariane_dpi.so $(library)/ariane_dpi.o -lfesvr
+	gcc -shared -fPIC -std=c++0x -Bsymbolic -I$(QUESTASIM_HOME)/include -o work/ariane_dpi.so tb/dpi/SimDTM.cc -lfesvr -lstdc++
 	touch $(library)/.build-dpi
 
 # Compile Sequences and Tests
@@ -127,34 +131,35 @@ $(library):
 	vlib${questa_version} ${library}
 
 sim: build
-	vsim${questa_version} -64 -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) -noautoldlibpath \
-	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -sv_lib $(library)/elf_dpi -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -64 -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
+	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -sv_lib $(library)/ariane_dpi -do "do tb/wave/wave_core.do"
 
 sim_nopt: build
-	vsim${questa_version} -64 -novopt -lib ${library} ${top_level} +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
-	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -sv_lib $(library)/elf_dpi -do "do tb/wave/wave_core.do"
+	vsim${questa_version} -64 -novopt -lib ${library} ${top_level} +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir)  \
+	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -sv_lib $(library)/ariane_dpi -do "do tb/wave/wave_core.do"
 
 
 simc: build
-	vsim${questa_version} -64 -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} -noautoldlibpath \
-	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) "+UVM_VERBOSITY=HIGH" -coverage -classdebug -sv_lib $(library)/elf_dpi -do "run -all; do tb/wave/wave_core.do; exit"
+	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
+	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=HIGH" -coverage -classdebug\
+	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do "run -all; do tb/wave/wave_core.do; exit" +permissive-off ${top_level}_optimized
 
 run-asm-tests: build
 	$(foreach test, $(riscv-tests), vsim$(questa_version) -64 +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
 		+UVM_TESTNAME=$(test_case) $(uvm-flags) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
-		-coverage -classdebug  -sv_lib $(library)/elf_dpi -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
+		-coverage -classdebug  -sv_lib $(library)/ariane_dpi -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
 		$(library).$(test_top_level)_optimized;)
 
 run-asm-tests-verilator: verilate
-	$(foreach test, $(riscv-tests), obj_dir/Variane_wrapped --label="Starting: $(riscv-test-dir)/$(test)" $(riscv-test-dir)/$(test);)
+	$(foreach test, $(riscv-tests), obj_dir/Variane_testharness --label="Starting: $(riscv-test-dir)/$(test)" $(riscv-test-dir)/$(test);)
 
 run-failed-tests: build
 	# make the tests
 	cd failedtests && make
 	# run the RTL simulation
 	$(foreach test, $(failed-tests:.S=), vsim$(questa_version) -64 +BASEDIR=. +max-cycles=$(max_cycles) \
-		+UVM_TESTNAME=$(test_case)  $(uvm-flags) +ASMTEST=$(test) +signature=$(test).rtlsim.sig +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
-		-coverage -classdebug  -sv_lib $(library)/elf_dpi -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
+		+UVM_TESTNAME=$(test_case) $(uvm-flags) +ASMTEST=$(test) +signature=$(test).rtlsim.sig +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
+		-coverage -classdebug  -sv_lib $(library)/ariane_dpi -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
 		$(library).$(test_top_level)_optimized;)
 	# run it on spike
 	$(foreach test, $(failed-tests:.S=), spike +signature=$(test).spike.sig $(test);)
@@ -168,7 +173,7 @@ $(tests): build
 	# vsim${questa_version} $@_tb_optimized
 	# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
 	vsim${questa_version} -64 +UVM_TESTNAME=$@_test +ASMTEST=$(riscv-test-dir)/$(riscv-test) \
-	+uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -sv_lib $(library)/elf_dpi \
+	+uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -sv_lib $(library)/ariane_dpi \
 	-do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
 	${library}.$@_tb_optimized
 
@@ -176,12 +181,13 @@ $(tests): build
 verilate:
 	$(verilator)                                                     \
     $(ariane_pkg)                                                    \
+    tb/ariane_testharness.sv                                         \
     $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))        \
     $(wildcard src/axi_slice/*.sv)                                   \
     $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))    \
     src/debug/debug_rom/debug_rom.sv                                 \
     src/util/generic_fifo.sv                                         \
-    tb/common/SimDTM.v                                               \
+    tb/common/SimDTM.sv                                              \
     bootrom/bootrom.sv                                               \
     src/util/cluster_clock_gating.sv                                 \
     src/util/behav_sram.sv                                           \
@@ -199,8 +205,8 @@ verilate:
     -Wno-UNUSED                                                      \
     -Wno-ASSIGNDLY                                                   \
     -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace --vpi --trace-structs \
-    $(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc
-	cd obj_dir && make -j8 -f Variane_wrapped.mk
+    $(list_incdir) --top-module ariane_testharness --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc
+	cd obj_dir && make -j8 -f Variane_testharness.mk
 
 # -Werror-UNDRIVEN
 # -Werror-BLKSEQ

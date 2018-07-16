@@ -50,7 +50,7 @@ interface instruction_tracer_if (
     // exceptions
     exception_t        exception;
     // current privilege level
-    priv_lvl_t         priv_lvl;
+    riscv::priv_lvl_t  priv_lvl;
     // the tracer just has a passive interface we do not drive anything with it
     `ifndef SYNTHESIS
     clocking pck @(posedge clk);
