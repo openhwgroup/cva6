@@ -45,6 +45,7 @@ module miss_handler #(
 
     input  logic [NR_PORTS-1:0][55:0]                   mshr_addr_i,
     output logic [NR_PORTS-1:0]                         mshr_addr_matches_o,
+    output logic [NR_PORTS-1:0]                         mshr_index_matches_o,
     // Port to SRAMs, for refill and eviction
     output logic  [SET_ASSOCIATIVITY-1:0]               req_o,
     output logic  [INDEX_WIDTH-1:0]                     addr_o, // address into cache array
@@ -338,12 +339,18 @@ module miss_handler #(
     // check MSHR for aliasing
     always_comb begin
 
-        mshr_addr_matches_o = 'b0;
+        mshr_addr_matches_o  = 'b0;
+        mshr_index_matches_o = 'b0;
 
         for (int i = 0; i < NR_PORTS; i++) begin
             // check mshr for potential matching of other units, exclude the unit currently being served
             if (mshr_q.valid && mshr_addr_i[i][55:BYTE_OFFSET] == mshr_q.addr[55:BYTE_OFFSET]) begin
                 mshr_addr_matches_o[i] = 1'b1;
+            end
+
+            // same as previous, but checking only the index
+            if (mshr_q.valid && mshr_addr_i[i][INDEX_WIDTH-1:BYTE_OFFSET] == mshr_q.addr[INDEX_WIDTH-1:BYTE_OFFSET]) begin
+                mshr_index_matches_o[i] = 1'b1;
             end
         end
     end

@@ -74,6 +74,7 @@ module nbdcache #(
     logic [2:0]                        busy;
     logic [2:0][55:0]                  mshr_addr;
     logic [2:0]                        mshr_addr_matches;
+    logic [2:0]                        mshr_index_matches;
     logic [63:0]                       critical_word;
     logic                              critical_word_valid;
 
@@ -143,6 +144,7 @@ module nbdcache #(
 
                 .mshr_addr_o           ( mshr_addr         [i] ), // TODO
                 .mshr_addr_matches_i   ( mshr_addr_matches [i] ), // TODO
+                .mshr_index_matches_i  ( mshr_index_matches[i] ), // TODO
                 .*
             );
         end
@@ -164,6 +166,7 @@ module nbdcache #(
         .critical_word_valid_o  ( critical_word_valid  ),
         .mshr_addr_i            ( mshr_addr            ),
         .mshr_addr_matches_o    ( mshr_addr_matches    ),
+        .mshr_index_matches_o   ( mshr_index_matches   ),
         .active_serving_o       ( active_serving       ),
         .req_o                  ( req             [0]  ),
         .addr_o                 ( addr            [0]  ),
@@ -370,4 +373,3 @@ module tag_cmp #(
     end
 
 endmodule
-
