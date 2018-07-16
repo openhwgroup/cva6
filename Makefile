@@ -131,13 +131,10 @@ $(library):
 	vlib${questa_version} ${library}
 
 sim: build
-	vsim${questa_version} -64 -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
-	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -sv_lib $(library)/ariane_dpi -do "do tb/wave/wave_core.do"
-
-sim_nopt: build
-	vsim${questa_version} -64 -novopt -lib ${library} ${top_level} +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir)  \
-	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -sv_lib $(library)/ariane_dpi -do "do tb/wave/wave_core.do"
-
+	vsim${questa_version} +permissive -64 -lib ${library} +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
+	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -gblso $(RISCV)/lib/libfesvr.so \
+	-sv_lib $(library)/ariane_dpi \
+	-do "do tb/wave/wave_core.do"  +permissive-off ${top_level}_optimized
 
 simc: build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \

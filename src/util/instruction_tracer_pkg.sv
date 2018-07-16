@@ -13,8 +13,6 @@
 // Description: Instruction Tracer Package
 
 package instruction_tracer_pkg;
-    timeunit      1ns;
-    timeprecision 1ps;
 
     import ariane_pkg::*;
     `ifndef SYNTHESIS
