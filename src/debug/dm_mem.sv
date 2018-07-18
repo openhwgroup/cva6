@@ -56,15 +56,18 @@ module dm_mem #(
 
     localparam int HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
     localparam DbgAddressBits  = 12;
-    localparam DataAddr        = dm::DataAddr;
-    localparam ProgBufBase     = dm::DataAddr - 4*dm::DataCount;
-    localparam AbstractCmdBase = ProgBufBase - 4*dm::ProgBufSize;
+    localparam logic [DbgAddressBits-1:0] DataEnd = (dm::DataAddr + 4*dm::DataCount);
+    localparam logic [DbgAddressBits-1:0] ProgBufBase = (dm::DataAddr - 4*dm::ProgBufSize);
+    localparam logic [DbgAddressBits-1:0] ProgBufEnd = (dm::DataAddr - 1);
+    localparam logic [DbgAddressBits-1:0] AbstractCmdBase = (ProgBufBase - 4*2);
+    localparam logic [DbgAddressBits-1:0] AbstractCmdEnd = (ProgBufBase - 1);
+    localparam logic [DbgAddressBits-1:0] WhereTo = 'h300;
+
 
     localparam logic [DbgAddressBits-1:0] Halted    = 'h100;
     localparam logic [DbgAddressBits-1:0] Going     = 'h104;
     localparam logic [DbgAddressBits-1:0] Resuming  = 'h108;
     localparam logic [DbgAddressBits-1:0] Exception = 'h10C;
-    localparam logic [DbgAddressBits-1:0] WhereTo   = 'h300;
     localparam logic [DbgAddressBits-1:0] Flags     = 'h400;
     // localparam logic [7:0] FlagGo     = 7'b0;
     // localparam logic [7:0] FlagResume = 7'b1;
@@ -193,7 +196,7 @@ module dm_mem #(
                     Exception: exception = 1'b1;
                     // core can write data registers
                     // TODO(zarubaf) Remove hard-coded values
-                    ['h380:'h387]: begin
+                    [(dm::DataAddr):DataEnd]: begin
 
                         data_valid_o = 1'b1;
                         for (int i = 0; i < $bits(be_i); i++) begin
@@ -221,19 +224,26 @@ module dm_mem #(
                     end
 
                     // TODO(zarubaf) change hard-coded values
-                    ['h380:'h387]: begin
+                    [(dm::DataAddr):DataEnd]: begin
                         // $display("Reading from dataddr @%x", addr_i);
-                        rdata_d = {data_i[1], data_i[0]};
+                        // if (data_bits[3]) begin
+                        //     rdata_d = {data_i[3], data_i[2]};
+                        // end else begin
+                            rdata_d = {data_i[1], data_i[0]};
+                        // end
                     end
 
                     // TODO(zarubaf) change hard-coded values
-                    ['h378:'h37F]: begin
-                        // $display("Reading from progbuf @%x", addr_i);
-                        rdata_d = {progbuf_i[1], progbuf_i[0]};
+                    [ProgBufBase:ProgBufEnd]: begin
+                        case (addr_i)
+                            ProgBufBase + 16: rdata_d = {progbuf_i[5], progbuf_i[4]};
+                            ProgBufBase + 8:  rdata_d = {progbuf_i[3], progbuf_i[2]};
+                            ProgBufBase:      rdata_d = {progbuf_i[1], progbuf_i[0]};
+                        endcase
                     end
 
                     // two slots for abstract command
-                    ['h370:'h377]: begin
+                    [AbstractCmdBase:AbstractCmdEnd]: begin
                         // $display("Reading from abstract command @%x", addr_i);
                         rdata_d = '0;
                         // this depends on the command being executed

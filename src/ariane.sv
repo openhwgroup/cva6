@@ -579,7 +579,7 @@ module ariane #(
     assign tracer_if.exception         = commit_stage_i.exception_o;
     // assign current privilege level
     assign tracer_if.priv_lvl          = priv_lvl;
-
+    assign tracer_if.debug_mode        = debug_mode_csr_id;
     instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
     `endif
     `endif

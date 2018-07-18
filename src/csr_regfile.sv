@@ -808,7 +808,7 @@ module csr_regfile #(
             // debug signals
             debug_mode_q           <= 1'b0;
             dcsr_q                 <= '0;
-            dcsr_q.prv             <= 2'h3;
+            dcsr_q.prv             <= riscv::PRIV_LVL_M;
             dpc_q                  <= 64'b0;
             dscratch0_q            <= 64'b0;
             // machine mode registers

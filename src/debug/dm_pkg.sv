@@ -19,7 +19,7 @@
 package dm;
     parameter logic [3:0] DbgVersion013 = 4'h2;
     // size of program buffer in junks of 32-bit words
-    parameter logic [4:0] ProgBufSize   = 5'h2;
+    parameter logic [4:0] ProgBufSize   = 5'h6;
 
     // TODO(zarubaf) This is hard-coded to two at the moment
     // amount of data count registers implemented
@@ -171,21 +171,21 @@ package dm;
     } ac_ar_cmd_t;
 
     typedef struct packed {
-        logic [31:28] xdebugver;
-        logic [27:16] zero2;
-        logic         ebreakm;
-        logic         zero1;
-        logic         ebreaks;
-        logic         ebreaku;
-        logic         stepie;
-        logic         stopcount;
-        logic         stoptime;
-        logic [8:6]   cause;
-        logic         zero0;
-        logic         mprven;
-        logic         nmip;
-        logic         step;
-        logic         prv;
+        logic [31:28]     xdebugver;
+        logic [27:16]     zero2;
+        logic             ebreakm;
+        logic             zero1;
+        logic             ebreaks;
+        logic             ebreaku;
+        logic             stepie;
+        logic             stopcount;
+        logic             stoptime;
+        logic [8:6]       cause;
+        logic             zero0;
+        logic             mprven;
+        logic             nmip;
+        logic             step;
+        riscv::priv_lvl_t prv;
     } dcsr_t;
 
     // DTM

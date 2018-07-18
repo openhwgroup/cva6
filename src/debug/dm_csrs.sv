@@ -91,7 +91,8 @@ module dm_csrs #(
     dm::command_t       command_d, command_q;
     // program buffer
     logic [dm::ProgBufSize-1:0][31:0] progbuf_d, progbuf_q;
-    logic [dm::DataCount-1:0][31:0]   data_d,    data_q;
+    // because first data address starts at 0x04
+    logic [(dm::DataCount + dm::Data0 - 1):(dm::Data0)][31:0]   data_d,    data_q;
 
     logic [NrHarts-1:0] selected_hart;
 
@@ -155,8 +156,9 @@ module dm_csrs #(
         if (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) begin
             unique case ({1'b0, dmi_req_bits_addr_i}) inside
                 [(dm::Data0):DataEnd]: begin
-                    if (dm::DataCount > 0)
+                    if (dm::DataCount > 0) begin
                         resp_queue_data = data_q[dmi_req_bits_addr_i[4:0]];
+                    end
                 end
                 dm::DMControl:  resp_queue_data = dmcontrol_q;
                 dm::DMStatus:   resp_queue_data = dmstatus;
