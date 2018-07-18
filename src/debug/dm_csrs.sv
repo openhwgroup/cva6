@@ -89,6 +89,7 @@ module dm_csrs #(
     dm::abstractcs_t    abstractcs;
     dm::cmderr_t        cmderr_d, cmderr_q;
     dm::command_t       command_d, command_q;
+    dm::abstractauto_t  abstractauto_d, abstractauto_q;
     // program buffer
     logic [dm::ProgBufSize-1:0][31:0] progbuf_d, progbuf_q;
     // because first data address starts at 0x04
@@ -141,6 +142,10 @@ module dm_csrs #(
         abstractcs.busy = cmdbusy_i[selected_hart];
         abstractcs.cmderr = cmderr_q;
 
+        // abstractautoexec
+        abstractauto_d = abstractauto_q;
+        abstractauto_d.zero0 = '0;
+
         // default assignments
         dmcontrol_d = dmcontrol_q;
         cmderr_d    = cmderr_q;
@@ -159,15 +164,24 @@ module dm_csrs #(
                     if (dm::DataCount > 0) begin
                         resp_queue_data = data_q[dmi_req_bits_addr_i[4:0]];
                     end
+                    if (!cmdbusy_i) begin
+                        // check whether we need to re-execute the command (just give a cmd_valid)
+                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_bits_addr_i[3:0] - dm::Data0];
+                    end
                 end
-                dm::DMControl:  resp_queue_data = dmcontrol_q;
-                dm::DMStatus:   resp_queue_data = dmstatus;
-                dm::Hartinfo:   resp_queue_data = hartinfo_i[selected_hart];
-                dm::AbstractCS: resp_queue_data = abstractcs;
+                dm::DMControl:    resp_queue_data = dmcontrol_q;
+                dm::DMStatus:     resp_queue_data = dmstatus;
+                dm::Hartinfo:     resp_queue_data = hartinfo_i[selected_hart];
+                dm::AbstractCS:   resp_queue_data = abstractcs;
+                dm::AbstractAuto: resp_queue_data = abstractauto_q;
                 // command is read-only
                 dm::Command:    resp_queue_data = '0;
                 [(dm::ProgBuf0):ProgBufEnd]: begin
                     resp_queue_data = progbuf_q[dmi_req_bits_addr_i[4:0]];
+                    if (!cmdbusy_i) begin
+                        // check whether we need to re-execute the command (just give a cmd_valid)
+                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_bits_addr_i[3:0]];
+                    end
                 end
                 dm::HaltSum0: resp_queue_data = haltsum0;
                 dm::HaltSum1: resp_queue_data = haltsum1;
@@ -184,6 +198,8 @@ module dm_csrs #(
                     // attempts to write them while busy is set does not change their value
                     if (!cmdbusy_i && dm::DataCount > 0) begin
                         data_d[dmi_req_bits_addr_i[4:0]] = dmi_req_bits_data_i;
+                        // check whether we need to re-execute the command (just give a cmd_valid)
+                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_bits_addr_i[3:0] - dm::Data0];
                     end
                 end
                 dm::DMControl: begin
@@ -221,10 +237,21 @@ module dm_csrs #(
                         cmderr_d = dm::CmdErrBusy;
                     end
                 end
+                dm::AbstractAuto: begin
+                    // this field can only be written legally when there is no command executing
+                    if (!cmdbusy_i) begin
+                        abstractauto_d = {dmi_req_bits_data_i[31:16], 4'b0, dmi_req_bits_data_i[11:0]};
+                    end else if (cmderr_q == dm::CmdErrNone) begin
+                        cmderr_d = dm::CmdErrBusy;
+                    end
+                end
                 [(dm::ProgBuf0):ProgBufEnd]: begin
                     // attempts to write them while busy is set does not change their value
                     if (!cmdbusy_i) begin
                         progbuf_d[dmi_req_bits_addr_i[4:0]] = dmi_req_bits_data_i;
+                        // check whether we need to re-execute the command (just give a cmd_valid)
+                        // this should probably throw an error if executed during another command was busy
+                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_bits_addr_i[3:0]];
                     end
                 end
                 default:;
@@ -308,12 +335,14 @@ module dm_csrs #(
                 dmcontrol_q.dmactive         <= dmcontrol_d.dmactive;
                 cmderr_q                     <= dm::CmdErrNone;
                 command_q                    <= '0;
+                abstractauto_q               <= '0;
                 progbuf_q                    <= '0;
                 data_q                       <= '0;
             end else begin
                 dmcontrol_q                  <= dmcontrol_d;
                 cmderr_q                     <= cmderr_d;
                 command_q                    <= command_d;
+                abstractauto_q               <= abstractauto_d;
                 progbuf_q                    <= progbuf_d;
                 data_q                       <= data_d;
             end

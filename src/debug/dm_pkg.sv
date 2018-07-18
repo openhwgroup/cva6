@@ -161,6 +161,12 @@ package dm;
     } command_t;
 
     typedef struct packed {
+        logic [31:16] autoexecprogbuf;
+        logic [15:12] zero0;
+        logic [11:0]  autoexecdata;
+    } abstractauto_t;
+
+    typedef struct packed {
         logic         zero1;
         logic [22:20] aarsize;
         logic         zero0;
