@@ -56,19 +56,21 @@ module dm_mem #(
 
     localparam int HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
     localparam DbgAddressBits  = 12;
+    localparam logic [DbgAddressBits-1:0] DataBase = (dm::DataAddr);
     localparam logic [DbgAddressBits-1:0] DataEnd = (dm::DataAddr + 4*dm::DataCount);
     localparam logic [DbgAddressBits-1:0] ProgBufBase = (dm::DataAddr - 4*dm::ProgBufSize);
     localparam logic [DbgAddressBits-1:0] ProgBufEnd = (dm::DataAddr - 1);
     localparam logic [DbgAddressBits-1:0] AbstractCmdBase = (ProgBufBase - 4*2);
     localparam logic [DbgAddressBits-1:0] AbstractCmdEnd = (ProgBufBase - 1);
     localparam logic [DbgAddressBits-1:0] WhereTo = 'h300;
+    localparam logic [DbgAddressBits-1:0] FlagsBase   = 'h400;
+    localparam logic [DbgAddressBits-1:0] FlagsEnd     = 'h7FF;
 
 
     localparam logic [DbgAddressBits-1:0] Halted    = 'h100;
     localparam logic [DbgAddressBits-1:0] Going     = 'h104;
     localparam logic [DbgAddressBits-1:0] Resuming  = 'h108;
     localparam logic [DbgAddressBits-1:0] Exception = 'h10C;
-    localparam logic [DbgAddressBits-1:0] Flags     = 'h400;
     // localparam logic [7:0] FlagGo     = 7'b0;
     // localparam logic [7:0] FlagResume = 7'b1;
 
@@ -224,13 +226,8 @@ module dm_mem #(
                     end
 
                     // TODO(zarubaf) change hard-coded values
-                    [(dm::DataAddr):DataEnd]: begin
-                        // $display("Reading from dataddr @%x", addr_i);
-                        // if (data_bits[3]) begin
-                        //     rdata_d = {data_i[3], data_i[2]};
-                        // end else begin
-                            rdata_d = {data_i[1], data_i[0]};
-                        // end
+                    [DataBase:DataEnd]: begin
+                        rdata_d = {data_i[1], data_i[0]};
                     end
 
                     // TODO(zarubaf) change hard-coded values
@@ -278,18 +275,13 @@ module dm_mem #(
                         endcase
                     end
                     // harts are polling for flags here
-                    // TODO(zarubaf) Remove hard-coded value
-                    ['h400:'h7FF]: begin
-                        // $display("Reading from flags @%x", addr_i);
+                    [FlagsBase:FlagsEnd]: begin
                         // release the corresponding hart
-                        if (({addr_i[DbgAddressBits-1:3], 3'b0} - Flags) == {hartsel_i[19:3], 3'b0}) begin
+                        if (({addr_i[DbgAddressBits-1:3], 3'b0} - FlagsBase) == {hartsel_i[19:3], 3'b0}) begin
                             rdata_d[hartsel_i[2:0]+:8] = {6'b0, resume, go};
                         end
                     end
-                    default: begin
-                        // if (addr_i < dm::HaltAddress)
-                            // $display("Reading from nothing @%x", addr_i);
-                    end
+                    default: ;
                 endcase
             end
         end
