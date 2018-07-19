@@ -15,8 +15,6 @@ test_case ?= core_test
 questa_version ?=
 # verilator version
 verilator ?= verilator
-# preset which runs a single test
-riscv-test ?= rv64ui-p-add
 # Sources
 # Ariane PKG
 ariane_pkg := include/riscv_pkg.sv src/debug/dm_pkg.sv include/ariane_pkg.sv include/nbdcache_pkg.sv
@@ -70,7 +68,8 @@ riscv-tests := rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-
                rv64um-v-mul rv64um-v-mulh rv64um-v-mulhsu rv64um-v-mulhu rv64um-v-div rv64um-v-divu rv64um-v-rem             \
                rv64um-v-remu rv64um-v-mulw rv64um-v-divw rv64um-v-divuw rv64um-v-remw rv64um-v-remuw
 
-
+# preset which runs a single test
+riscv-test ?= $(riscv-test-dir)/rv64ui-p-add
 # failed test directory
 failed-tests := $(wildcard failedtests/*.S)
 # Search here for include files (e.g.: non-standalone components)
@@ -131,37 +130,24 @@ $(library):
 	vlib${questa_version} ${library}
 
 sim: build
-	vsim${questa_version} +permissive -64 -lib ${library} +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
-	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -gblso $(RISCV)/lib/libfesvr.so \
-	-sv_lib $(library)/ariane_dpi \
-	-do "do tb/wave/wave_core.do"  +permissive-off ${top_level}_optimized
+	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
+	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=HIGH" -coverage -classdebug\
+	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do "run -all; do tb/wave/wave_core.do; exit" ${top_level}_optimized +permissive-off ++$(riscv-test)
 
 simc: build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=HIGH" -coverage -classdebug\
-	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do "run -all; do tb/wave/wave_core.do; exit" +permissive-off ${top_level}_optimized
+	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do "run -all; do tb/wave/wave_core.do; exit" ${top_level}_optimized +permissive-off ++$(riscv-test)
 
 run-asm-tests: build
-	$(foreach test, $(riscv-tests), vsim$(questa_version) -64 +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
+	$(foreach test, $(riscv-tests), vsim$(questa_version) +permissive -64 +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \
 		+UVM_TESTNAME=$(test_case) $(uvm-flags) +ASMTEST=$(test) +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
-		-coverage -classdebug  -sv_lib $(library)/ariane_dpi -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
-		$(library).$(test_top_level)_optimized;)
+		-coverage -classdebug  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi \
+		-do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
+		$(library).$(test_top_level)_optimized +permissive-off ++$(test);)
 
 run-asm-tests-verilator: verilate
-	$(foreach test, $(riscv-tests), obj_dir/Variane_testharness --label="Starting: $(riscv-test-dir)/$(test)" $(riscv-test-dir)/$(test);)
-
-run-failed-tests: build
-	# make the tests
-	cd failedtests && make
-	# run the RTL simulation
-	$(foreach test, $(failed-tests:.S=), vsim$(questa_version) -64 +BASEDIR=. +max-cycles=$(max_cycles) \
-		+UVM_TESTNAME=$(test_case) $(uvm-flags) +ASMTEST=$(test) +signature=$(test).rtlsim.sig +uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c \
-		-coverage -classdebug  -sv_lib $(library)/ariane_dpi -do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
-		$(library).$(test_top_level)_optimized;)
-	# run it on spike
-	$(foreach test, $(failed-tests:.S=), spike +signature=$(test).spike.sig $(test);)
-	# diff the results
-	$(foreach test, $(failed-tests:.S=), diff $(test).spike.sig $(test).rtlsim.sig;)
+	$(foreach test, $(riscv-tests), obj_dir/Variane_testharness $(riscv-test-dir)/$(test);)
 
 # Run the specified test case
 $(tests): build
