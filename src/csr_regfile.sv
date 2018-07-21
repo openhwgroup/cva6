@@ -178,7 +178,7 @@ module csr_regfile #(
         if (csr_read) begin
             case (csr_addr.address)
 
-                CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h3fffe1fee;
+                CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h80000003000DE133;
                 CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 CSR_SIP:                csr_rdata = mip_q & mideleg_q;
                 CSR_STVEC:              csr_rdata = stvec_q;
@@ -282,7 +282,16 @@ module csr_regfile #(
             case (csr_addr.address)
                 // sstatus is a subset of mstatus - mask it accordingly
                 CSR_SSTATUS: begin
-                    mstatus_d   = csr_wdata & 64'h3fffe1fee;
+                    mstatus_d   = csr_wdata;
+                    // not all fields of mstatus can be written
+                    mstatus_d.mie = mstatus_q.mie;
+                    mstatus_d.mpie = mstatus_q.mipe;
+                    mstatus_d.mpp = mscratch_q.mpp
+                    mstatus_d.mprv = mstatus_q.mprv;
+                    mstatus_d.tsr = mstatus_q.tsr;
+                    mstatus_d.tw = mstatus_q.tw;
+                    mstatus_d.tvm = mstatus_q.tvm;
+                    mstatus_d.sxl = mstatus_q.sxl;
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
