@@ -274,16 +274,25 @@ module csr_regfile #(
                 riscv::CSR_DSCRATCH0:          dscratch0_d = csr_wdata;
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
-                    mstatus_d   = csr_wdata;
+                    mstatus_d = csr_wdata;
+                    // also hardwire the registers for sstatus
+                    mstatus_d.sxl  = 2'b10;
+                    mstatus_d.uxl  = 2'b10;
+                    // hardwired zero registers
+                    mstatus_d.sd   = 1'b0;
+                    mstatus_d.xs   = 2'b0;
+                    mstatus_d.fs   = 2'b0;
+                    mstatus_d.upie = 1'b0;
+                    mstatus_d.uie  = 1'b0;
                     // not all fields of mstatus can be written
-                    mstatus_d.mie = mstatus_q.mie;
-                    mstatus_d.mpie = mstatus_q.mipe;
-                    mstatus_d.mpp = mscratch_q.mpp
+                    mstatus_d.mie  = mstatus_q.mie;
+                    mstatus_d.mpie = mstatus_q.mpie;
+                    mstatus_d.mpp  = mstatus_q.mpp;
                     mstatus_d.mprv = mstatus_q.mprv;
-                    mstatus_d.tsr = mstatus_q.tsr;
-                    mstatus_d.tw = mstatus_q.tw;
-                    mstatus_d.tvm = mstatus_q.tvm;
-                    mstatus_d.sxl = mstatus_q.sxl;
+                    mstatus_d.tsr  = mstatus_q.tsr;
+                    mstatus_d.tw   = mstatus_q.tw;
+                    mstatus_d.tvm  = mstatus_q.tvm;
+                    mstatus_d.sxl  = mstatus_q.sxl;
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
