@@ -16,7 +16,7 @@
  *
  */
 
-module jtag_dmi (
+module dmi_jtag (
     input  logic        clk_i,    // DMI Clock
     input  logic        rst_ni,   // Asynchronous reset active low
 
@@ -43,7 +43,7 @@ module jtag_dmi (
 
 endmodule
 
-module jtag_tap #(
+module dmi_jtag_tap #(
     parameter int IrLength = 5
 )(
     input  logic        tck_i,    // JTAG test clock pad
@@ -188,8 +188,6 @@ module jtag_tap #(
             idcode_d = IDCODE_VALUE;
             bypass_d = 1'b0;
         end
-
-        // there are a couple of values which don't change for dtmcs_d
     end
 
     // ----------------
