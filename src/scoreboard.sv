@@ -16,28 +16,30 @@ import ariane_pkg::*;
 
 module scoreboard #(
     parameter int unsigned NR_ENTRIES  = 8,
-    parameter int unsigned NR_WB_PORTS = 1
+    parameter int unsigned NR_WB_PORTS = 1,
+    parameter int unsigned NR_COMMIT_PORTS = 2
     )
     (
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
+    input  logic                                      flush_unissued_instr_i, // flush only un-issued instructions
     input  logic                                      flush_i,  // flush whole scoreboard
     input  logic                                      unresolved_branch_i, // we have an unresolved branch
     // list of clobbered registers to issue stage
-    output fu_t [31:0]                                rd_clobber_o,
+    output fu_t [2**REG_ADDR_SIZE:0]                  rd_clobber_o,
 
     // regfile like interface to operand read stage
-    input  logic [4:0]                                rs1_i,
+    input  logic [REG_ADDR_SIZE-1:0]                  rs1_i,
     output logic [63:0]                               rs1_o,
     output logic                                      rs1_valid_o,
 
-    input  logic [4:0]                                rs2_i,
+    input  logic [REG_ADDR_SIZE-1:0]                  rs2_i,
     output logic [63:0]                               rs2_o,
     output logic                                      rs2_valid_o,
 
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
-    output scoreboard_entry_t                         commit_instr_o,
-    input  logic                                      commit_ack_i,
+    output scoreboard_entry_t [NR_COMMIT_PORTS-1:0]   commit_instr_o,
+    input  logic              [NR_COMMIT_PORTS-1:0]   commit_ack_i,
 
     // instruction to put on top of scoreboard e.g.   : top pointer
     // we can always put this instruction to the to   p unless we signal with asserted full_o
@@ -52,8 +54,8 @@ module scoreboard #(
 
     // write-back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
-    input logic [NR_WB_PORTS-1:0][63:0]               wdata_i,     // write data in
-    input exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception, divide by zero)
+    input logic [NR_WB_PORTS-1:0][63:0]               wbdata_i,    // write data in
+    input exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
     input logic [NR_WB_PORTS-1:0]                     wb_valid_i   // data in is valid
 );
     localparam int unsigned BITS_ENTRIES      = $clog2(NR_ENTRIES);
@@ -73,7 +75,10 @@ module scoreboard #(
     assign issue_full = (issue_cnt_q == NR_ENTRIES-1);
 
     // output commit instruction directly
-    assign commit_instr_o = mem_q[commit_pointer_q].sbe;
+    always_comb begin : commit_ports
+        for (logic [$clog2(NR_ENTRIES)-1:0] i = 0; i < NR_COMMIT_PORTS; i++)
+            commit_instr_o[i] = mem_q[commit_pointer_q + i].sbe;
+    end
 
     // an instruction is ready for issue if we have place in the issue FIFO and it the decoder says it is valid
     always_comb begin
@@ -90,15 +95,17 @@ module scoreboard #(
     // keep track of all issued instructions
     always_comb begin : issue_fifo
         automatic logic [$clog2(NR_ENTRIES)-1:0] issue_cnt;
+        automatic logic [$clog2(NR_ENTRIES)-1:0] commit_pointer;
+
+        commit_pointer = commit_pointer_q;
         issue_cnt = issue_cnt_q;
 
         // default assignment
         mem_n            = mem_q;
-        commit_pointer_n = commit_pointer_q;
         issue_pointer_n  = issue_pointer_q;
 
         // if we got a acknowledge from the issue stage, put this scoreboard entry in the queue
-        if (decoded_instr_valid_i && decoded_instr_ack_o) begin
+        if (decoded_instr_valid_i && decoded_instr_ack_o && !flush_unissued_instr_i) begin
             // the decoded instruction we put in there is valid (1st bit)
             // increase the issue counter
             issue_cnt++;
@@ -115,7 +122,7 @@ module scoreboard #(
             // something in the pipeline e.g. an incomplete memory operation)
             if (wb_valid_i[i] && mem_n[trans_id_i[i]].issued) begin
                 mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
-                mem_n[trans_id_i[i]].sbe.result = wdata_i[i];
+                mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
                 // write the exception back if it is valid
                 if (ex_i[i].valid)
                     mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
@@ -126,14 +133,16 @@ module scoreboard #(
         // Commit Port
         // ------------
         // we've got an acknowledge from commit
-        if (commit_ack_i) begin
-            // decrease the issue counter
-            issue_cnt--;
-            // this instruction is no longer in issue e.g.: it is considered finished
-            mem_n[commit_pointer_q].issued    = 1'b0;
-            mem_n[commit_pointer_q].sbe.valid = 1'b0;
-            // advance commit pointer
-            commit_pointer_n = commit_pointer_n + 1'b1;
+        for (logic [$clog2(NR_ENTRIES)-1:0] i = 0; i < NR_COMMIT_PORTS; i++) begin
+            if (commit_ack_i[i]) begin
+                // decrease the issue counter
+                issue_cnt--;
+                // this instruction is no longer in issue e.g.: it is considered finished
+                mem_n[commit_pointer_q + i].issued    = 1'b0;
+                mem_n[commit_pointer_q + i].sbe.valid = 1'b0;
+                // advance commit pointer
+                commit_pointer++;
+            end
         end
         // ------
         // Flush
@@ -147,11 +156,13 @@ module scoreboard #(
                 // set the pointer and counter back to zero
                 issue_cnt             = '0;
                 issue_pointer_n       = '0;
-                commit_pointer_n      = '0;
+                commit_pointer        = '0;
             end
         end
         // update issue counter
         issue_cnt_n      = issue_cnt;
+        // update commit potiner
+        commit_pointer_n = commit_pointer;
     end
 
     // -------------------
@@ -203,12 +214,12 @@ module scoreboard #(
         // make sure that we are not forwarding a result that got an exception
         for (int unsigned j = 0; j < NR_WB_PORTS; j++) begin
             if (mem_q[trans_id_i[j]].sbe.rd == rs1_i && wb_valid_i[j] && ~ex_i[j].valid) begin
-                rs1_o = wdata_i[j];
+                rs1_o = wbdata_i[j];
                 rs1_valid_o = wb_valid_i[j];
                 break;
             end
             if (mem_q[trans_id_i[j]].sbe.rd == rs2_i && wb_valid_i[j] && ~ex_i[j].valid) begin
-                rs2_o = wdata_i[j];
+                rs2_o = wbdata_i[j];
                 rs2_valid_o = wb_valid_i[j];
                 break;
             end
@@ -247,8 +258,13 @@ module scoreboard #(
         else $error ("RD 0 should not bet set");
     // assert that we never acknowledge a commit if the instruction is not valid
     assert property (
-        @(posedge clk_i) (rst_ni && commit_ack_i |-> commit_instr_o.valid))
+        @(posedge clk_i) (rst_ni && commit_ack_i[0] |-> commit_instr_o[0].valid))
         else $error ("Commit acknowledged but instruction is not valid");
+
+    assert property (
+        @(posedge clk_i) (rst_ni && commit_ack_i[1] |-> commit_instr_o[1].valid))
+        else $error ("Commit acknowledged but instruction is not valid");
+
     // assert that we never give an issue ack signal if the instruction is not valid
     assert property (
         @(posedge clk_i) (rst_ni && issue_ack_i |-> issue_instr_valid_o))

@@ -183,50 +183,46 @@ module nbdcache #(
     // --------------
     // Memory Arrays
     // --------------
-    generate
-        for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
-            sram #(
-                .DATA_WIDTH ( CACHE_LINE_WIDTH                  ),
-                .NUM_WORDS  ( NUM_WORDS                         )
-            ) data_sram (
-                .req_i   ( req_ram [i]                          ),
-                .we_i    ( we_ram                               ),
-                .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
-                .wdata_i ( wdata_ram.data                       ),
-                .be_i    ( be_ram.data                          ),
-                .rdata_o ( rdata_ram[i].data                    ),
-                .*
-            );
+    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
+        sram #(
+            .DATA_WIDTH ( CACHE_LINE_WIDTH                  ),
+            .NUM_WORDS  ( NUM_WORDS                         )
+        ) data_sram (
+            .req_i   ( req_ram [i]                          ),
+            .we_i    ( we_ram                               ),
+            .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
+            .wdata_i ( wdata_ram.data                       ),
+            .be_i    ( be_ram.data                          ),
+            .rdata_o ( rdata_ram[i].data                    ),
+            .*
+        );
 
-            sram #(
-                .DATA_WIDTH ( TAG_WIDTH                         ),
-                .NUM_WORDS  ( NUM_WORDS                         )
-            ) tag_sram (
-                .req_i   ( req_ram [i]                          ),
-                .we_i    ( we_ram                               ),
-                .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
-                .wdata_i ( wdata_ram.tag                        ),
-                .be_i    ( be_ram.tag                           ),
-                .rdata_o ( rdata_ram[i].tag                     ),
-                .*
-            );
+        sram #(
+            .DATA_WIDTH ( TAG_WIDTH                         ),
+            .NUM_WORDS  ( NUM_WORDS                         )
+        ) tag_sram (
+            .req_i   ( req_ram [i]                          ),
+            .we_i    ( we_ram                               ),
+            .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
+            .wdata_i ( wdata_ram.tag                        ),
+            .be_i    ( be_ram.tag                           ),
+            .rdata_o ( rdata_ram[i].tag                     ),
+            .*
+        );
 
-        end
-    endgenerate
+    end
 
     // ----------------
     // Dirty SRAM
     // ----------------
     logic [DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
 
-    generate
-        for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
-            assign dirty_wdata[i]                     = wdata_ram.dirty;
-            assign dirty_wdata[SET_ASSOCIATIVITY + i] = wdata_ram.valid;
-            assign rdata_ram[i].valid                 = dirty_rdata[SET_ASSOCIATIVITY + i];
-            assign rdata_ram[i].dirty                 = dirty_rdata[i];
-        end
-    endgenerate
+    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
+        assign dirty_wdata[i]                     = wdata_ram.dirty;
+        assign dirty_wdata[SET_ASSOCIATIVITY + i] = wdata_ram.valid;
+        assign rdata_ram[i].valid                 = dirty_rdata[SET_ASSOCIATIVITY + i];
+        assign rdata_ram[i].dirty                 = dirty_rdata[i];
+    end
 
     sram #(
         .DATA_WIDTH ( DIRTY_WIDTH                      ),
@@ -325,11 +321,9 @@ module tag_cmp #(
                 sel_tag = tag_i[i];
     end
 
-    generate
-        for (genvar j = 0; j < SET_ASSOCIATIVITY; j++) begin : tag_cmp
-            assign hit_way_o[j] = (sel_tag == rdata_i[j].tag) ? rdata_i[j].valid : 1'b0;
-        end
-    endgenerate
+    for (genvar j = 0; j < SET_ASSOCIATIVITY; j++) begin : tag_cmp
+        assign hit_way_o[j] = (sel_tag == rdata_i[j].tag) ? rdata_i[j].valid : 1'b0;
+    end
 
     always_comb begin
 

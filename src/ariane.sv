@@ -72,7 +72,7 @@ module ariane #(
     branchpredict_t           resolved_branch;
     logic [63:0]              pc_commit;
     logic                     eret;
-    logic                     commit_ack;
+    logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
     // --------------
     // PCGEN <-> IF
@@ -166,22 +166,21 @@ module ariane #(
     // --------------
     // ID <-> COMMIT
     // --------------
-    scoreboard_entry_t        commit_instr_id_commit;
+    scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_id_commit;
     // --------------
     // COMMIT <-> ID
     // --------------
-    logic [4:0]               waddr_a_commit_id;
-    logic [63:0]              wdata_a_commit_id;
-    logic                     we_a_commit_id;
+    logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_commit_id;
+    logic [NR_COMMIT_PORTS-1:0][63:0] wdata_commit_id;
+    logic [NR_COMMIT_PORTS-1:0]       we_commit_id;
     // --------------
     // IF <-> EX
     // --------------
     logic                     fetch_req_if_ex;
-    logic                     fetch_gnt_ex_if;
-    logic                     fetch_valid_ex_if;
-    logic [63:0]              fetch_rdata_ex_if;
-    exception_t               fetch_ex_ex_if;
     logic [63:0]              fetch_vaddr_if_ex;
+    logic                     fetch_valid_ex_if;
+    logic [63:0]              fetch_paddr_ex_if;
+    exception_t               fetch_ex_ex_if;
     // --------------
     // CSR <-> *
     // --------------
@@ -215,7 +214,7 @@ module ariane #(
     // CTRL <-> *
     // --------------
     logic                     flush_bp_ctrl_pcgen;
-    logic                     flush_ctrl_pcgen;
+    logic                     set_pc_ctrl_pcgen;
     logic                     flush_csr_ctrl;
     logic                     flush_unissued_instr_ctrl_id;
     logic                     flush_ctrl_if;
@@ -250,66 +249,43 @@ module ariane #(
     // ----------------
     // ICache <-> *
     // ----------------
-    logic [63:0]             instr_if_address;
-    logic                    instr_if_data_req;    // fetch request
-    logic [3:0]              instr_if_data_be;
-    logic                    instr_if_data_gnt;    // fetch request
-    logic                    instr_if_data_rvalid; // fetch data
-    logic [63:0]             instr_if_data_rdata;
-
     logic                    flush_icache_ctrl_icache;
     logic                    bypass_icache_csr_icache;
-    logic                    flush_icache_ack_icache_ctrl;
 
     assign sec_lvl_o = priv_lvl;
     assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
     // --------------
-    // NPC Generation
+    // Frontend
     // --------------
-    pcgen_stage pcgen_stage_i (
-        .fetch_enable_i        ( fetch_enable                   ),
-        .flush_i               ( flush_ctrl_pcgen               ),
-        .flush_bp_i            ( flush_bp_ctrl_pcgen            ),
-        .if_ready_i            ( ~if_ready_if_pcgen             ),
-        .resolved_branch_i     ( resolved_branch                ),
-        .fetch_address_o       ( fetch_address_pcgen_if         ),
-        .fetch_valid_o         ( fetch_valid_pcgen_if           ),
-        .branch_predict_o      ( branch_predict_pcgen_if        ),
-        .boot_addr_i           ( boot_addr_i                    ),
-        .pc_commit_i           ( pc_commit                      ),
-        .epc_i                 ( epc_commit_pcgen               ),
-        .eret_i                ( eret                           ),
-        .trap_vector_base_i    ( trap_vector_base_commit_pcgen  ),
-        .ex_valid_i            ( ex_commit.valid                ),
-        .debug_pc_i            ( pc_debug_pcgen                 ),
-        .debug_set_pc_i        ( set_pc_debug                   ),
-        .*
-    );
-    // ---------
-    // IF
-    // ---------
-    if_stage if_stage_i (
-        .flush_i               ( flush_ctrl_if                  ),
-        .halt_i                ( halt_ctrl                      ),
-        .if_busy_o             ( if_ready_if_pcgen              ),
-        .fetch_address_i       ( fetch_address_pcgen_if         ),
-        .fetch_valid_i         ( fetch_valid_pcgen_if           ),
-        .branch_predict_i      ( branch_predict_pcgen_if        ),
-        .instr_req_o           ( fetch_req_if_ex                ),
-        .instr_addr_o          ( fetch_vaddr_if_ex              ),
-        .instr_gnt_i           ( fetch_gnt_ex_if                ),
-        .instr_rvalid_i        ( fetch_valid_ex_if              ),
-        .instr_rdata_i         ( fetch_rdata_ex_if              ),
-        .instr_ex_i            ( fetch_ex_ex_if                 ), // fetch exception
-
-        .fetch_entry_0_o       ( fetch_entry_if_id              ),
-        .fetch_entry_valid_0_o ( fetch_valid_if_id              ),
-        .fetch_ack_0_i         ( decode_ack_id_if               ),
-
-        // Reserved for future use
-        .fetch_entry_1_o       (                                ),
-        .fetch_entry_valid_1_o (                                ),
-        .fetch_ack_1_i         (                                ),
+    frontend #(
+        .BTB_ENTRIES         ( BTB_ENTRIES ),
+        .BHT_ENTRIES         ( BHT_ENTRIES ),
+        .RAS_DEPTH           ( RAS_DEPTH   )
+    ) i_frontend (
+        .flush_i             ( flush_ctrl_if                 ), // not entirely correct
+        .flush_bp_i          ( 1'b0                          ),
+        .flush_icache_i      ( flush_icache_ctrl_icache      ),
+        .boot_addr_i         ( boot_addr_i                   ),
+        .fetch_enable_i      ( fetch_enable                  ),
+        .fetch_req_o         ( fetch_req_if_ex               ),
+        .fetch_vaddr_o       ( fetch_vaddr_if_ex             ),
+        .fetch_valid_i       ( fetch_valid_ex_if             ),
+        .fetch_paddr_i       ( fetch_paddr_ex_if             ),
+        .fetch_exception_i   ( fetch_ex_ex_if                ),
+        .resolved_branch_i   ( resolved_branch               ),
+        .pc_commit_i         ( pc_commit                     ),
+        .set_pc_commit_i     ( set_pc_ctrl_pcgen             ),
+        .epc_i               ( epc_commit_pcgen              ),
+        .eret_i              ( eret                          ),
+        .trap_vector_base_i  ( trap_vector_base_commit_pcgen ),
+        .ex_valid_i          ( ex_commit.valid               ),
+        .debug_pc_i          ( pc_debug_pcgen                ),
+        .debug_set_pc_i      ( set_pc_debug                  ),
+        .axi                 ( instr_if                      ),
+        .l1_icache_miss_o    (                               ), // performance counters
+        .fetch_entry_o       ( fetch_entry_if_id             ),
+        .fetch_entry_valid_o ( fetch_valid_if_id             ),
+        .fetch_ack_i         ( decode_ack_id_if              ),
         .*
     );
 
@@ -385,17 +361,16 @@ module ariane #(
         .csr_valid_o                ( csr_valid_id_ex                 ),
 
         .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id,         mult_trans_id_ex_id        }),
-        .wdata_i                    ( {alu_result_ex_id,           lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id          }),
+        .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id          }),
         .ex_ex_i                    ( {{$bits(exception_t){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}} }),
         .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id,            mult_valid_ex_id           }),
 
-        .waddr_a_i                  ( waddr_a_commit_id               ),
-        .wdata_a_i                  ( wdata_a_commit_id               ),
-        .we_a_i                     ( we_a_commit_id                  ),
+        .waddr_i                    ( waddr_commit_id               ),
+        .wdata_i                    ( wdata_commit_id               ),
+        .we_i                       ( we_commit_id                  ),
 
-        .commit_instr_o             ( commit_instr_id_commit          ),
-        .commit_ack_i               ( commit_ack                      ),
-
+        .commit_instr_o             ( commit_instr_id_commit        ),
+        .commit_ack_i               ( commit_ack                    ),
         .*
     );
 
@@ -460,12 +435,12 @@ module ariane #(
         .enable_translation_i   ( enable_translation_csr_ex              ), // from CSR
         .en_ld_st_translation_i ( en_ld_st_translation_csr_ex            ),
         .flush_tlb_i            ( flush_tlb_ctrl_ex                      ),
+
         .fetch_req_i            ( fetch_req_if_ex                        ),
-        .fetch_gnt_o            ( fetch_gnt_ex_if                        ),
         .fetch_valid_o          ( fetch_valid_ex_if                      ),
         .fetch_vaddr_i          ( fetch_vaddr_if_ex                      ),
-        .fetch_rdata_o          ( fetch_rdata_ex_if                      ),
-        .fetch_ex_o             ( fetch_ex_ex_if                         ), // fetch exception to IF
+        .fetch_paddr_o          ( fetch_paddr_ex_if                      ),
+        .fetch_exception_o      ( fetch_ex_ex_if                         ), // fetch exception to IF
         .priv_lvl_i             ( priv_lvl                               ), // from CSR
         .ld_st_priv_lvl_i       ( ld_st_priv_lvl_csr_ex                  ), // from CSR
         .sum_i                  ( sum_csr_ex                             ), // from CSR
@@ -478,13 +453,6 @@ module ariane #(
         .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
         .mult_result_o          ( mult_result_ex_id                      ),
         .mult_valid_o           ( mult_valid_ex_id                       ),
-
-        .instr_if_address_o     ( instr_if_address                       ),
-        .instr_if_data_req_o    ( instr_if_data_req                      ),
-        .instr_if_data_be_o     ( instr_if_data_be                       ),
-        .instr_if_data_gnt_i    ( instr_if_data_gnt                      ),
-        .instr_if_data_rvalid_i ( instr_if_data_rvalid                   ),
-        .instr_if_data_rdata_i  ( instr_if_data_rdata                    ),
 
         .data_if                ( data_if                                ),
         .dcache_en_i            ( dcache_en_csr_nbdcache                 ),
@@ -503,9 +471,9 @@ module ariane #(
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
         .no_st_pending_i        ( no_st_pending_ex_commit       ),
-        .waddr_a_o              ( waddr_a_commit_id             ),
-        .wdata_a_o              ( wdata_a_commit_id             ),
-        .we_a_o                 ( we_a_commit_id                ),
+        .waddr_o                ( waddr_commit_id               ),
+        .wdata_o                ( wdata_commit_id               ),
+        .we_o                   ( we_commit_id                  ),
         .commit_lsu_o           ( lsu_commit_commit_ex          ),
         .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
         .commit_csr_o           ( csr_commit_commit_ex          ),
@@ -525,8 +493,7 @@ module ariane #(
     // ---------
     csr_regfile #(
         .ASID_WIDTH             ( ASID_WIDTH                    )
-    )
-    csr_regfile_i (
+    ) csr_regfile_i (
         .flush_o                ( flush_csr_ctrl                ),
         .halt_csr_o             ( halt_csr_ctrl                 ),
         .debug_csr_req_i        ( csr_req_debug_csr             ),
@@ -575,7 +542,7 @@ module ariane #(
         .data_i            ( data_csr_perf          ),
         .data_o            ( data_perf_csr          ),
         .commit_instr_i    ( commit_instr_id_commit ),
-        .commit_ack_o      ( commit_ack             ),
+        .commit_ack_i      ( commit_ack             ),
 
         .l1_icache_miss_i  ( 1'b0                   ),
         .l1_dcache_miss_i  ( dcache_miss_ex_perf    ),
@@ -593,7 +560,7 @@ module ariane #(
     controller controller_i (
         // flush ports
         .flush_bp_o             ( flush_bp_ctrl_pcgen           ),
-        .flush_pcgen_o          ( flush_ctrl_pcgen              ),
+        .set_pc_commit_o        ( set_pc_ctrl_pcgen             ),
         .flush_unissued_instr_o ( flush_unissued_instr_ctrl_id  ),
         .flush_if_o             ( flush_ctrl_if                 ),
         .flush_id_o             ( flush_ctrl_id                 ),
@@ -616,7 +583,6 @@ module ariane #(
         .sfence_vma_i           ( sfence_vma_commit_controller  ),
 
         .flush_icache_o         ( flush_icache_ctrl_icache      ),
-        .flush_icache_ack_i     ( flush_icache_ack_icache_ctrl  ),
         .*
     );
 
@@ -624,8 +590,8 @@ module ariane #(
     // Debug
     // ------------
     debug_unit debug_unit_i (
-        .commit_instr_i    ( commit_instr_id_commit    ),
-        .commit_ack_i      ( commit_ack                ),
+        .commit_instr_i    ( commit_instr_id_commit[0] ),
+        .commit_ack_i      ( commit_ack[0]             ),
         .ex_i              ( ex_commit                 ),
         .halt_o            ( halt_debug_ctrl           ),
         .fetch_enable_i    ( fetch_enable              ),
@@ -648,31 +614,6 @@ module ariane #(
     );
 
     // -------------------
-    // Instruction Cache
-    // -------------------
-    icache #(
-       .AXI_USER_WIDTH      ( AXI_USER_WIDTH                 ),
-       .AXI_ID_WIDTH        ( AXI_ID_WIDTH                   )
-    ) i_icache (
-       .clk_i               ( clk_i                          ),
-       .rst_n               ( rst_ni                         ),
-       .test_en_i           ( test_en_i                      ),
-       .fetch_req_i         ( instr_if_data_req              ),
-       .fetch_addr_i        ( {instr_if_address[55:3], 3'b0} ),
-       .fetch_gnt_o         ( instr_if_data_gnt              ),
-       .fetch_rvalid_o      ( instr_if_data_rvalid           ),
-       .fetch_rdata_o       ( instr_if_data_rdata            ),
-       .axi                 ( instr_if                       ),
-       .bypass_icache_i     ( ~bypass_icache_csr_icache      ),
-       .cache_is_bypassed_o (                                ),
-       .flush_icache_i      ( flush_icache_ctrl_icache       ),
-       .cache_is_flushed_o  ( flush_icache_ack_icache_ctrl   ),
-       .flush_set_ID_req_i  ( 1'b0                           ),
-       .flush_set_ID_addr_i ( '0                             ),
-       .flush_set_ID_ack_o  (                                )
-    );
-
-    // -------------------
     // Instruction Tracer
     // -------------------
     `ifndef SYNTHESIS
@@ -688,15 +629,17 @@ module ariane #(
     assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
     assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
     // Issue
-    assign tracer_if.issue_ack         = issue_stage_i.scoreboard_i.issue_ack_i;
-    assign tracer_if.issue_sbe         = issue_stage_i.scoreboard_i.issue_instr_o;
+    assign tracer_if.issue_ack         = issue_stage_i.i_scoreboard.issue_ack_i;
+    assign tracer_if.issue_sbe         = issue_stage_i.i_scoreboard.issue_instr_o;
     // write-back
-    assign tracer_if.waddr             = waddr_a_commit_id;
-    assign tracer_if.wdata             = wdata_a_commit_id;
-    assign tracer_if.we                = we_a_commit_id;
+    assign tracer_if.waddr             = waddr_commit_id;
+    assign tracer_if.wdata             = wdata_commit_id;
+    assign tracer_if.we                = we_commit_id;
     // commit
     assign tracer_if.commit_instr      = commit_instr_id_commit;
     assign tracer_if.commit_ack        = commit_ack;
+    // branch predict
+    assign tracer_if.resolve_branch    = resolved_branch;
     // address translation
     // stores
     assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
@@ -758,13 +701,15 @@ module ariane #(
         if (~rst_ni) begin
             cycles <= 0;
         end else begin
-            if (commit_ack && !commit_stage_i.exception_o) begin
-                $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit.pc, commit_instr_id_commit.ex.tval[31:0], commit_instr_id_commit.ex.tval[31:0]);
-            end else if (commit_ack) begin
-                if (commit_instr_id_commit.ex.cause == 2) begin
-                    $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h)\n", commit_instr_id_commit.ex.tval[31:0]);
-                end else begin
-                    $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit.ex.cause);
+            for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+                if (commit_ack[i] && !commit_stage_i.exception_o) begin
+                    $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+                end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
+                    if (commit_instr_id_commit[i].ex.cause == 2) begin
+                        $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h)\n", commit_instr_id_commit[i].ex.tval[31:0]);
+                    end else begin
+                        $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit[i].ex.cause);
+                    end
                 end
             end
             cycles <= cycles + 1;

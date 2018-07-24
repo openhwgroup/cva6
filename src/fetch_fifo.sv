@@ -14,8 +14,7 @@
 
 import ariane_pkg::*;
 
-module fetch_fifo
-(
+module fetch_fifo (
     input  logic                   clk_i,
     input  logic                   rst_ni,
     // control signals
@@ -24,24 +23,25 @@ module fetch_fifo
     // that we have two compressed instruction (or one compressed instruction and one unaligned instruction) so we
     // only predict on one entry and discard (or keep) the other depending on its position and prediction.
     // input port
+
     input  branchpredict_sbe_t     branch_predict_i,
     input  exception_t             ex_i,              // fetch exception in
     input  logic [63:0]            addr_i,
-    input  logic [63:0]            rdata_i,
+    input  logic [31:0]            rdata_i,
     input  logic                   valid_i,
     output logic                   ready_o,
     // Dual Port Fetch FIFO
     // output port 0
-    output fetch_entry_t           fetch_entry_0_o,
-    output logic                   fetch_entry_valid_0_o,
-    input  logic                   fetch_ack_0_i,
-    // output port 1
-    output fetch_entry_t           fetch_entry_1_o,
-    output logic                   fetch_entry_valid_1_o,
-    input  logic                   fetch_ack_1_i
+    output fetch_entry_t           fetch_entry_o,
+    output logic                   fetch_entry_valid_o,
+    input  logic                   fetch_ack_i
+    // // output port 1
+    // output fetch_entry_t           fetch_entry_1_o,
+    // output logic                   fetch_entry_valid_1_o,
+    // input  logic                   fetch_ack_1_i
 );
 
-    localparam int unsigned DEPTH = 4; // must be a power of two
+    localparam int unsigned DEPTH = 8; // must be a power of two
     // status signals
     logic full, empty;
 
@@ -50,23 +50,9 @@ module fetch_fifo
     logic [$clog2(DEPTH)-1:0]     write_pointer_n,  write_pointer_q;
     logic [$clog2(DEPTH)-1:0]     status_cnt_n,     status_cnt_q; // this integer will be truncated by the synthesis tool
 
-    assign ready_o = (status_cnt_q < DEPTH-2);
+    assign ready_o = (status_cnt_q < DEPTH-3);
     assign full = (status_cnt_q == DEPTH);
     assign empty = (status_cnt_q == '0);
-
-    // -------------
-    // Downsize
-    // -------------
-    logic [31:0] in_rdata;
-    // downsize from 64 bit to 32 bit, simply ignore half of the incoming data
-    always_comb begin : downsize
-        // take the upper half
-        if (addr_i[2])
-            in_rdata = rdata_i[63:32];
-        // take the lower half of the instruction
-        else
-            in_rdata = rdata_i[31:0];
-    end
 
     always_comb begin : fetch_fifo_logic
         // counter
@@ -85,17 +71,17 @@ module fetch_fifo
         if (valid_i) begin
             status_cnt++;
             // new input data
-            mem_n[write_pointer_q] = {addr_i, in_rdata, branch_predict_i, ex_i};
+            mem_n[write_pointer_q] = {addr_i, rdata_i, branch_predict_i, ex_i};
             write_pointer++;
         end
 
         // -------------
         // Fetch Port 0
         // -------------
-        fetch_entry_valid_0_o = (status_cnt_q >= 1);
-        fetch_entry_0_o = mem_q[read_pointer_q];
+        fetch_entry_valid_o = (status_cnt_q >= 1);
+        fetch_entry_o = mem_q[read_pointer_q];
 
-        if (fetch_ack_0_i) begin
+        if (fetch_ack_i) begin
             read_pointer++;
             status_cnt--;
         end
@@ -103,13 +89,13 @@ module fetch_fifo
         // -------------
         // Fetch Port 1
         // -------------
-        fetch_entry_valid_1_o = (status_cnt_q >= 2);
-        fetch_entry_1_o = mem_q[read_pointer_q + 1'b1];
+        // fetch_entry_valid_1_o = (status_cnt_q >= 2);
+        // fetch_entry_1_o = mem_q[read_pointer_q + 1'b1];
 
-        if (fetch_ack_1_i) begin
-            read_pointer++;
-            status_cnt--;
-        end
+        // if (fetch_ack_1_i) begin
+        //     read_pointer++;
+        //     status_cnt--;
+        // end
 
         write_pointer_n = write_pointer;
         status_cnt_n    = status_cnt;

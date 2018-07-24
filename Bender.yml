@@ -3,9 +3,58 @@ package:
   authors: [ "Florian Zaruba <zarubaf@iis.ee.ethz.ch>" ]
 
 dependencies:
-  axi2per: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi2per.git", version: 0.1.0 }
-  axi_mem_if: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_mem_if.git", version: 0.1.0 }
-  axi_node: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_node.git", version: 1.0.1 }
-  axi_slice: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_slice.git", version: 1.1.0 }
-  axi: { git: "git@iis-git.ee.ethz.ch:fschuiki/axi.git", rev: master }
-  # bender-vsim: { git: "git@iis-git.ee.ethz.ch:floce/bender-vsim.git", rev: master }
+  axi: { git: "git@iis-git.ee.ethz.ch:sasa/axi.git", rev: master }
+  axi2per: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi2per.git", rev: master }
+  axi_mem_if: { git: "git@github.com:pulp-platform/axi_mem_if.git", rev: master }
+  axi_node: { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_node.git", version: 1.0.3 }
+  axi_slice: { git: "git@iis-git.ee.ethz.ch:sasa/axi_slice.git", version: 1.1.2 }
+  tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master }
+  common_cells: { git: "git@iis-git.ee.ethz.ch:sasa/common_cells.git", version: 1.1.0 }
+
+sources:
+  - include/ariane_pkg.sv
+  - include/nbdcache_pkg.sv
+  - target: not(synthesis)
+    files:
+      - src/util/instruction_tracer_pkg.sv
+      - src/util/instruction_tracer_if.sv
+  - src/alu.sv
+  - src/ariane.sv
+  - src/branch_unit.sv
+  - src/cache_ctrl.sv
+  - src/commit_stage.sv
+  - src/compressed_decoder.sv
+  - src/controller.sv
+  - src/csr_buffer.sv
+  - src/csr_regfile.sv
+  - src/debug_unit.sv
+  - src/decoder.sv
+  - src/ex_stage.sv
+  - src/fetch_fifo.sv
+  - src/ff1.sv
+  # - src/fifo.sv
+  - src/frontend.sv
+  - src/icache.sv
+  - src/id_stage.sv
+  - src/if_stage.sv
+  - src/instr_realigner.sv
+  - src/issue_read_operands.sv
+  - src/issue_stage.sv
+  - src/lfsr.sv
+  - src/load_unit.sv
+  - src/lsu_arbiter.sv
+  - src/lsu.sv
+  - src/miss_handler.sv
+  - src/mmu.sv
+  - src/mult.sv
+  - src/nbdcache.sv
+  - src/pcgen_stage.sv
+  - src/perf_counters.sv
+  - src/ptw.sv
+  # - src/ariane_regfile_ff.sv
+  - src/ariane_regfile.sv
+  - src/re_name.sv
+  - src/scoreboard.sv
+  - src/store_buffer.sv
+  - src/store_unit.sv
+  - src/tlb.sv

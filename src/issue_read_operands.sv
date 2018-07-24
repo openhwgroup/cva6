@@ -15,7 +15,9 @@
 
 import ariane_pkg::*;
 
-module issue_read_operands (
+module issue_read_operands #(
+    parameter int unsigned NR_COMMIT_PORTS = 2
+    )(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   test_en_i,
@@ -27,19 +29,19 @@ module issue_read_operands (
     input  logic                                   debug_gpr_we_i,
     input  logic [63:0]                            debug_gpr_wdata_i,
     output logic [63:0]                            debug_gpr_rdata_o,
-    // coming from scoreboard
+    // coming from rename
     input  scoreboard_entry_t                      issue_instr_i,
     input  logic                                   issue_instr_valid_i,
     output logic                                   issue_ack_o,
     // lookup rd in scoreboard
-    output logic [4:0]                             rs1_o,
+    output logic [REG_ADDR_SIZE-1:0]               rs1_o,
     input  logic [63:0]                            rs1_i,
     input  logic                                   rs1_valid_i,
-    output logic [4:0]                             rs2_o,
+    output logic [REG_ADDR_SIZE-1:0]               rs2_o,
     input  logic [63:0]                            rs2_i,
     input  logic                                   rs2_valid_i,
     // get clobber input
-    input  fu_t [31:0]                             rd_clobber_i,
+    input  fu_t [2**REG_ADDR_SIZE:0]               rd_clobber_i,
     // To FU, just single issue for now
     output fu_t                                    fu_o,
     output fu_op                                   operator_o,
@@ -66,9 +68,9 @@ module issue_read_operands (
     input  logic                                   csr_ready_i,      // FU is ready
     output logic                                   csr_valid_o,      // Output is valid
     // commit port
-    input  logic [4:0]                             waddr_a_i,
-    input  logic [63:0]                            wdata_a_i,
-    input  logic                                   we_a_i
+    input  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_i,
+    input  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_i,
+    input  logic [NR_COMMIT_PORTS-1:0]             we_i
     // committing instruction instruction
     // from scoreboard
     // input  scoreboard_entry     commit_instr_i,
@@ -130,9 +132,10 @@ module issue_read_operands (
                 end
                 // or check that the target destination register will be written in this cycle by the
                 // commit stage
-                if (we_a_i && waddr_a_i == issue_instr_i.rd) begin
-                    issue_ack_o = 1'b1;
-                end
+                for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++)
+                    if (we_i[i] && waddr_i[i] == issue_instr_i.rd) begin
+                        issue_ack_o = 1'b1;
+                    end
             end
             // we can also issue the instruction under the following two circumstances:
             // we can do this even if we are stalled or no functional unit is ready (as we don't need one)
@@ -287,11 +290,11 @@ module issue_read_operands (
         // get the address from the issue stage by default
         // read port
         debug_gpr_rdata_o = operand_a_regfile;
-        raddr_a           = issue_instr_i.rs1;
+        raddr_a           = issue_instr_i.rs1[4:0];
         // write port
-        waddr             = waddr_a_i;
-        wdata             = wdata_a_i;
-        we                = we_a_i;
+        waddr             = waddr_i[0];
+        wdata             = wdata_i[0];
+        we                = we_i[0];
         // we've got a debug request in
         if (debug_gpr_req_i) begin
             raddr_a = debug_gpr_addr_i;
@@ -304,31 +307,34 @@ module issue_read_operands (
     // ----------------------
     // Integer Register File
     // ----------------------
-    regfile #(
-        .DATA_WIDTH     ( 64                  )
-    )
-    regfile_i (
+    ariane_regfile #(
+        .DATA_WIDTH     ( 64                     )
+    ) regfile_i (
         // Clock and Reset
-        .clk            ( clk_i               ),
-        .rst_n          ( rst_ni              ),
-        .test_en_i      ( test_en_i           ),
+        .clk            ( clk_i                  ),
+        .rst_n          ( rst_ni                 ),
+        .test_en_i      ( test_en_i              ),
 
-        .raddr_a_i      ( raddr_a             ),
-        .rdata_a_o      ( operand_a_regfile   ),
+        .raddr_a_i      ( raddr_a                ),
+        .rdata_a_o      ( operand_a_regfile      ),
 
-        .raddr_b_i      ( issue_instr_i.rs2   ),
-        .rdata_b_o      ( operand_b_regfile   ),
+        .raddr_b_i      ( issue_instr_i.rs2[4:0] ),
+        .rdata_b_o      ( operand_b_regfile      ),
 
-        .waddr_a_i      ( waddr               ),
-        .wdata_a_i      ( wdata               ),
-        .we_a_i         ( we                  )
+        .waddr_a_i      ( waddr                  ),
+        .wdata_a_i      ( wdata                  ),
+        .we_a_i         ( we                     ),
+
+        .waddr_b_i      ( waddr_i[1]             ),
+        .wdata_b_i      ( wdata_i[1]             ),
+        .we_b_i         ( we_i[1]                )
     );
 
     // ----------------------
     // Registers (ID <-> EX)
     // ----------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             operand_a_q           <= '{default: 0};
             operand_b_q           <= '{default: 0};
             imm_q                 <= 64'b0;
@@ -366,6 +372,10 @@ module issue_read_operands (
      assert property (
         @(posedge clk_i) (branch_valid_q) |-> (!$isunknown(operand_a_q) && !$isunknown(operand_b_q)))
         else $warning ("Got unknown value in one of the operands");
+
+    initial begin
+        assert (NR_COMMIT_PORTS == 2) else $error("Only two commit ports are supported at the moment!");
+    end
     `endif
     `endif
 endmodule

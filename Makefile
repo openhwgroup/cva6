@@ -12,7 +12,7 @@ max_cycles ?= 10000000
 # Test case to run
 test_case ?= core_test
 # QuestaSim Version
-questa_version ?= -10.6b
+questa_version ?=
 # verilator version
 verilator ?= verilator
 # preset which runs a single test
@@ -45,27 +45,28 @@ tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv t
 
 # RISCV-tests path
 riscv-test-dir := tmp/riscv-tests/build/isa
-riscv-tests := rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and rv64ui-p-auipc 			 \
-			   rv64ui-p-beq rv64ui-p-bge rv64ui-p-bgeu rv64ui-p-andi rv64ui-p-blt rv64ui-p-bltu rv64ui-p-bne                 \
-			   rv64ui-p-simple rv64ui-p-jal rv64ui-p-jalr rv64ui-p-or rv64ui-p-ori rv64ui-p-sub rv64ui-p-subw                \
-			   rv64ui-p-xor rv64ui-p-xori rv64ui-p-slliw rv64ui-p-sll rv64ui-p-slli rv64ui-p-sllw 				 \
-			   rv64ui-p-slt rv64ui-p-slti rv64ui-p-sltiu rv64ui-p-sltu rv64ui-p-sra rv64ui-p-srai 				 \
-			   rv64ui-p-sraiw rv64ui-p-sraw rv64ui-p-srl rv64ui-p-srli rv64ui-p-srliw rv64ui-p-srlw 			 \
-			   rv64ui-p-lb rv64ui-p-lbu rv64ui-p-ld rv64ui-p-lh rv64ui-p-lhu rv64ui-p-lui rv64ui-p-lw rv64ui-p-lwu 		 \
-			   rv64mi-p-csr rv64mi-p-mcsr rv64mi-p-illegal rv64mi-p-ma_addr rv64mi-p-ma_fetch rv64mi-p-sbreak rv64mi-p-scall \
-			   rv64si-p-csr rv64si-p-ma_fetch rv64si-p-scall rv64si-p-wfi rv64si-p-sbreak rv64si-p-dirty  			 \
-			   rv64uc-p-rvc													 \
-			   rv64ui-v-add rv64ui-v-addi rv64ui-p-slli rv64ui-v-addiw rv64ui-v-addw rv64ui-v-and rv64ui-v-auipc		 \
-			   rv64ui-v-beq rv64ui-v-bge rv64ui-v-bgeu rv64ui-v-andi rv64ui-v-blt rv64ui-v-bltu rv64ui-v-bne 		 \
-			   rv64ui-v-simple rv64ui-v-jal rv64ui-v-jalr rv64ui-v-or rv64ui-v-ori rv64ui-v-sub rv64ui-v-subw		 \
-			   rv64ui-v-xor rv64ui-v-xori rv64ui-v-slliw rv64ui-v-sll rv64ui-v-slli rv64ui-v-slliw 				 \
-			   rv64ui-v-slt rv64ui-v-slti rv64ui-v-sltiu rv64ui-v-sltu rv64ui-v-sra rv64ui-v-srai 			         \
-			   rv64ui-v-sraiw rv64ui-v-sraw rv64ui-v-srl rv64ui-v-srli rv64ui-v-srliw rv64ui-v-srlw  			 \
-			   rv64ui-v-lb rv64ui-v-lbu rv64ui-v-ld rv64ui-v-lh rv64ui-v-lhu rv64ui-v-lui 					 \
-			   rv64um-p-mul rv64um-p-mulh rv64um-p-mulhsu rv64um-p-mulhu rv64um-p-div rv64um-p-divu rv64um-p-rem  		 \
-			   rv64um-p-remu rv64um-p-mulw rv64um-p-divw rv64um-p-divuw rv64um-p-remw rv64um-p-remuw 			 \
-			   rv64um-v-mul rv64um-v-mulh rv64um-v-mulhsu rv64um-v-mulhu rv64um-v-div rv64um-v-divu rv64um-v-rem    	 \
-			   rv64um-v-remu rv64um-v-mulw rv64um-v-divw rv64um-v-divuw rv64um-v-remw rv64um-v-remuw
+riscv-tests := rv64ui-p-add rv64ui-p-addi rv64ui-p-slli rv64ui-p-addiw rv64ui-p-addw rv64ui-p-and rv64ui-p-auipc             \
+               rv64ui-p-beq rv64ui-p-bge rv64ui-p-bgeu rv64ui-p-andi rv64ui-p-blt rv64ui-p-bltu rv64ui-p-bne                 \
+               rv64ui-p-simple rv64ui-p-jal rv64ui-p-jalr rv64ui-p-or rv64ui-p-ori rv64ui-p-sub rv64ui-p-subw                \
+               rv64ui-p-xor rv64ui-p-xori rv64ui-p-slliw rv64ui-p-sll rv64ui-p-slli rv64ui-p-sllw                            \
+               rv64ui-p-slt rv64ui-p-slti rv64ui-p-sltiu rv64ui-p-sltu rv64ui-p-sra rv64ui-p-srai                            \
+               rv64ui-p-sraiw rv64ui-p-sraw rv64ui-p-srl rv64ui-p-srli rv64ui-p-srliw rv64ui-p-srlw                          \
+               rv64ui-p-lb rv64ui-p-lbu rv64ui-p-ld rv64ui-p-lh rv64ui-p-lhu rv64ui-p-lui rv64ui-p-lw rv64ui-p-lwu           \
+               rv64mi-p-csr rv64mi-p-mcsr rv64mi-p-illegal rv64mi-p-ma_addr rv64mi-p-ma_fetch rv64mi-p-sbreak rv64mi-p-scall \
+               rv64si-p-csr rv64si-p-ma_fetch rv64si-p-scall rv64si-p-wfi rv64si-p-sbreak rv64si-p-dirty                     \
+               rv64uc-p-rvc                                                                                                  \
+               rv64ui-v-add rv64ui-v-addi rv64ui-p-slli rv64ui-v-addiw rv64ui-v-addw rv64ui-v-and rv64ui-v-auipc             \
+               rv64ui-v-beq rv64ui-v-bge rv64ui-v-bgeu rv64ui-v-andi rv64ui-v-blt rv64ui-v-bltu rv64ui-v-bne                 \
+               rv64ui-v-simple rv64ui-v-jal rv64ui-v-jalr rv64ui-v-or rv64ui-v-ori rv64ui-v-sub rv64ui-v-subw                \
+               rv64ui-v-xor rv64ui-v-xori rv64ui-v-slliw rv64ui-v-sll rv64ui-v-slli rv64ui-v-slliw                           \
+               rv64ui-v-slt rv64ui-v-slti rv64ui-v-sltiu rv64ui-v-sltu rv64ui-v-sra rv64ui-v-srai                            \
+               rv64ui-v-sraiw rv64ui-v-sraw rv64ui-v-srl rv64ui-v-srli rv64ui-v-srliw rv64ui-v-srlw                          \
+               rv64ui-v-lb rv64ui-v-lbu rv64ui-v-ld rv64ui-v-lh rv64ui-v-lhu rv64ui-v-lui                                    \
+               rv64um-p-mul rv64um-p-mulh rv64um-p-mulhsu rv64um-p-mulhu rv64um-p-div rv64um-p-divu rv64um-p-rem             \
+               rv64um-p-remu rv64um-p-mulw rv64um-p-divw rv64um-p-divuw rv64um-p-remw rv64um-p-remuw                         \
+               rv64um-v-mul rv64um-v-mulh rv64um-v-mulhsu rv64um-v-mulhu rv64um-v-div rv64um-v-divu rv64um-v-rem             \
+               rv64um-v-remu rv64um-v-mulw rv64um-v-divw rv64um-v-divuw rv64um-v-remw rv64um-v-remuw
+
 
 # failed test directory
 failed-tests := $(wildcard failedtests/*.S)
@@ -126,7 +127,7 @@ $(library):
 	vlib${questa_version} ${library}
 
 sim: build
-	vsim${questa_version} -64 -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) \
+	vsim${questa_version} -64 -lib ${library} ${top_level}_optimized +UVM_TESTNAME=${test_case} +BASEDIR=$(riscv-test-dir) -noautoldlibpath \
 	+ASMTEST=$(riscv-test)  $(uvm-flags) +UVM_VERBOSITY=HIGH -coverage -classdebug -sv_lib $(library)/elf_dpi -do "do tb/wave/wave_core.do"
 
 sim_nopt: build
@@ -135,7 +136,7 @@ sim_nopt: build
 
 
 simc: build
-	vsim${questa_version} -64 -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
+	vsim${questa_version} -64 -c -lib ${library} ${top_level}_optimized +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} -noautoldlibpath \
 	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) +ASMTEST=$(riscv-test) "+UVM_VERBOSITY=HIGH" -coverage -classdebug -sv_lib $(library)/elf_dpi -do "run -all; do tb/wave/wave_core.do; exit"
 
 run-asm-tests: build
@@ -145,7 +146,7 @@ run-asm-tests: build
 		$(library).$(test_top_level)_optimized;)
 
 run-asm-tests-verilator: verilate
-	$(foreach test, $(riscv-tests), obj_dir/Variane_wrapped $(riscv-test-dir)/$(test);)
+	$(foreach test, $(riscv-tests), obj_dir/Variane_wrapped --label="Starting: $(riscv-test-dir)/$(test)" $(riscv-test-dir)/$(test);)
 
 run-failed-tests: build
 	# make the tests
@@ -173,7 +174,7 @@ $(tests): build
 
 # User Verilator
 verilate:
-	$(verilator) $(ariane_pkg) $(filter-out src/regfile.sv, $(wildcard src/*.sv)) $(wildcard src/axi_slice/*.sv) \
+	$(verilator) $(ariane_pkg) $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv)) $(wildcard src/axi_slice/*.sv) \
 	src/util/cluster_clock_gating.sv src/util/behav_sram.sv src/axi_mem_if/src/axi2mem.sv tb/agents/axi_if/axi_if.sv \
 	--unroll-count 256 -Wno-fatal -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace \
 	$(list_incdir) --top-module ariane_wrapped --exe tb/ariane_tb.cpp tb/simmem.cpp

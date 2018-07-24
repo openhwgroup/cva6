@@ -15,7 +15,8 @@
 import ariane_pkg::*;
 
 module csr_regfile #(
-    parameter int ASID_WIDTH = 1
+    parameter int          ASID_WIDTH      = 1,
+    parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
@@ -23,16 +24,16 @@ module csr_regfile #(
     input  logic                  time_irq_i,                 // Timer threw a interrupt
 
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
-    output logic                  flush_o,
-    output logic                  halt_csr_o,                 // halt requested
+    output logic                       flush_o,
+    output logic                       halt_csr_o,            // halt requested
     // Debug CSR Port
-    input  logic                  debug_csr_req_i,            // Request from debug to read the CSR regfile
-    input  logic [11:0]           debug_csr_addr_i,           // Address of CSR
-    input  logic                  debug_csr_we_i,             // Is it a read or write?
-    input  logic [63:0]           debug_csr_wdata_i,          // Data to write
-    output logic [63:0]           debug_csr_rdata_o,          // Read data
+    input  logic                       debug_csr_req_i,       // Request from debug to read the CSR regfile
+    input  logic [11:0]                debug_csr_addr_i,      // Address of CSR
+    input  logic                       debug_csr_we_i,        // Is it a read or write?
+    input  logic [63:0]                debug_csr_wdata_i,     // Data to write
+    output logic [63:0]                debug_csr_rdata_o,     // Read data
     // commit acknowledge
-    input  logic                  commit_ack_i,               // Commit acknowledged a instruction -> increase instret CSR
+    input  logic [NR_COMMIT_PORTS-1:0] commit_ack_i,          // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
     input  logic  [3:0]           core_id_i,                  // Core ID is considered static
     input  logic  [5:0]           cluster_id_i,               // Cluster ID is considered static
@@ -244,8 +245,11 @@ module csr_regfile #(
     always_comb begin : csr_update
         automatic satp_t sapt;
         automatic logic [63:0] mip;
+        automatic logic [63:0] instret;
+
         sapt = satp_q;
         mip = csr_wdata & 64'h33;
+        instret = instret_q;
         // only USIP, SSIP, UTIP, STIP are write-able
 
         eret_o                  = 1'b0;
@@ -386,7 +390,7 @@ module csr_regfile #(
                 CSR_PMPADDR0:           pmpaddr0_d  = csr_wdata;
 
                 CSR_MCYCLE:             cycle_d     = csr_wdata;
-                CSR_MINSTRET:           instret_d   = csr_wdata;
+                CSR_MINSTRET:           instret     = csr_wdata;
                 CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
                 CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
                 CSR_L1_ICACHE_MISS,
@@ -515,13 +519,15 @@ module csr_regfile #(
         // --------------------
         // Counters
         // --------------------
-        instret_d = instret_q;
         // just increment the cycle count
         cycle_d = cycle_q + 1'b1;
         // increase instruction retired counter
-        if (commit_ack_i) begin
-            instret_d = instret_q + 1'b1;
+        for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+            if (commit_ack_i[i]) begin
+                instret++;
+            end
         end
+        instret_d = instret;
     end
 
     // ---------------------------
