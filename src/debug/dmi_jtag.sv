@@ -17,16 +17,16 @@
  */
 
 module dmi_jtag (
-    input  logic        clk_i,    // DMI Clock
-    input  logic        rst_ni,   // Asynchronous reset active low
+    input  logic        clk_i,      // DMI Clock
+    input  logic        rst_ni,     // Asynchronous reset active low
 
     output logic        dmi_rst_no, // hard reset
+
     output logic        dmi_req_valid_o,
     input  logic        dmi_req_ready_i,
     output logic [ 6:0] dmi_req_bits_addr_o,
     output logic [ 1:0] dmi_req_bits_op_o, // 0 = nop, 1 = read, 2 = write
     output logic [31:0] dmi_req_bits_data_o,
-
     input  logic        dmi_resp_valid_i,
     output logic        dmi_resp_ready_o,
     input  logic [ 1:0] dmi_resp_bits_resp_i,
@@ -39,310 +39,75 @@ module dmi_jtag (
     output logic        td_o      // JTAG test data output pad
 );
 
+    logic        test_logic_reset;
+    logic        run_test_idle;
+    logic        shift_dr;
+    logic        pause_dr;
+    logic        update_dr;
+    logic        capture_dr;
+    logic        dmi_access;
+    logic        dmi_tdi;
+    logic        dmi_tdo;
 
+    logic        mem_valid;
+    logic        mem_gnt;
+    logic [6:0]  mem_addr;
+    logic        mem_we;
+    logic [31:0] mem_wdata;
+    logic [31:0] mem_rdata;
+    logic        mem_rvalid;
+    logic        mem_rerror;
 
-endmodule
+    // ---------
+    // TAP
+    // ---------
+    dmi_jtag_tap #(
+        .IrLength (5)
+    ) i_dmi_jtag_tap (
+        .tck_i,
+        .tms_i,
+        .trst_ni,
+        .td_i,
+        .td_o,
+        .test_logic_reset_o ( test_logic_reset ),
+        .run_test_idle_o    ( run_test_idle    ),
+        .shift_dr_o         ( shift_dr         ),
+        .pause_dr_o         ( pause_dr         ),
+        .update_dr_o        ( update_dr        ),
+        .capture_dr_o       ( capture_dr       ),
+        .dmi_access_o       ( dmi_access       ),
+        .dmi_tdi_o          ( dmi_tdi          ),
+        .dmi_tdo_i          ( dmi_tdo          )
+    );
 
-module dmi_jtag_tap #(
-    parameter int IrLength = 5
-)(
-    input  logic        tck_i,    // JTAG test clock pad
-    input  logic        tms_i,    // JTAG test mode select pad
-    input  logic        trst_ni,  // JTAG test reset pad
-    input  logic        td_i,     // JTAG test data input pad
-    output logic        td_o,     // JTAG test data output pad
+    // ---------
+    // CDC
+    // ---------
+    dmi_cdc i_dmi_cdc (
+        // JTAG side (master side)
+        .tck_i,
+        .trst_ni,
 
-    output logic        test_logic_reset_o,
-    output logic        run_test_idle_o,
-    output logic        shift_dr_o,
-    output logic        pause_dr_o,
-    output logic        update_dr_o,
-    output logic        capture_dr_o,
+        .mem_valid_i       ( mem_valid   ),
+        .mem_gnt_o         ( mem_gnt     ),
+        .mem_addr_i        ( mem_addr    ),
+        .mem_we_i          ( mem_we      ),
+        .mem_wdata_i       ( mem_wdata   ),
+        .mem_rdata_o       ( mem_rdata   ),
+        .mem_rvalid_o      ( mem_rvalid  ),
+        .mem_rerror_o      ( mem_rerror  ),
 
-    // we want to access DMI register
-    output logic        dmi_access_o,
-    // test data to submodule
-    output logic        dmi_tdi_o,
-    // test data in from submodule
-    output logic        dmi_tdo_i
-
-);
-
-    // to submodule
-    assign dmi_tdi_o = td_i;
-
-    enum logic [3:0] { TestLogicReset, RunTestIdle, SelectDrScan,
-                     CaptureDr, ShiftDr, Exit1Dr, PauseDr, Exit2Dr,
-                     UpdateDr, SelectIrScan, CaptureIr, ShiftIr,
-                     Exit1Ir, PauseIr, Exit2Ir, UpdateIr } tap_state_q, tap_state_d;
-
-    localparam BYPASS0   = 'h0;
-    localparam IDCODE    = 'h1;
-    localparam DTMCSR    = 'h10;
-    localparam DMIACCESS = 'h11;
-    localparam BYPASS1   = 'h1f;
-
-    typedef struct packed {
-        logic [31:18] zero1;
-        logic         dmihardreset;
-        logic         dmireset;
-        logic         zero0;
-        logic [14:12] idle;
-        logic [11:10] dmistat;
-        logic [9:4]   abits;
-        logic [3:0]   version;
-    } dtmcs_t;
-
-    // ----------------
-    // IR logic
-    // ----------------
-    logic [IrLength-1:0]  jtag_ir_shift_d, jtag_ir_shift_q; // shift register
-    logic [IrLength-1:0]  jtag_ir_d, jtag_ir_q; // IR register
-    logic capture_ir, shift_ir, pause_ir, update_ir;
-
-    always_comb begin
-        jtag_ir_shift_d = jtag_ir_shift_q;
-        jtag_ir_d       = jtag_ir_q;
-        bypass_d        = bypass_q;
-
-        // IR shift register
-        if (shift_ir) begin
-            jtag_ir_shift_d = {td_i, jtag_ir_shift_q[IrLength-1:1]};
-        end
-
-        // capture IR register
-        if (capture_ir) begin
-            jtag_ir_d =  'b0101;
-        end
-
-        // update IR register
-        if (capture_ir) begin
-            jtag_ir_d = jtag_ir_shift_q;
-        end
-
-        // synchronous test-logic reset
-        if (test_logic_reset_o) begin
-            jtag_ir_d       = IDCODE;
-            jtag_ir_shift_d = IDCODE;
-        end
-    end
-
-    always_ff @(posedge tck_i, negedge trst_ni) begin
-        if (~trst_ni) begin
-            jtag_ir_shift_q <= IDCODE;
-            jtag_ir_q       <= '0;
-        end else begin
-            jtag_ir_shift_q <= jtag_ir_shift_q;
-            jtag_ir_q       <= jtag_ir_d;
-        end
-    end
-
-    // ----------------
-    // TAP DR Regs
-    // ----------------
-    // - Bypass
-    // - IDCODE
-    // - DTM CS
-    // Define IDCODE Value
-    localparam IDCODE_VALUE = 32'h249511C3;
-    // 0001             version
-    // 0100100101010001 part number (IQ)
-    // 00011100001      manufacturer id (flextronics)
-    // 1                required by standard
-    logic [31:0] idcode_d, idcode_q;
-    logic        idcode_select;
-    logic        bypass_select;
-    logic        dtmcs_select; // JTAG is interested in writing the DTM CSR register
-    dtmcs_t      dtmcs_d, dtmcs_q;
-    logic        bypass_d, bypass_q;  // this is a 1-bit register
-
-    always_comb begin
-        idcode_d = idcode_q;
-        bypass_d = bypass_q;
-        dtmcs_d  = dtmcs_q;
-
-        if (capture_dr_o) begin
-            if (idcode_select) idcode_d = IDCODE_VALUE;
-            if (bypass_select) bypass_d = 1'b0;
-            if (dtmcs_select) begin
-                dtmcs_d  = '{
-                                zero1        : '0,
-                                dmihardreset : 1'b0,
-                                dmireset     : 1'b0,
-                                zero0        : '0,
-                                idle         : 'd1, // 1: Enter Run-Test/Idle and leave it immediately
-                                dmistat      : '0,  // 0: No error
-                                abits        : 'd7, // The size of address in dmi
-                                version      : 'd1  // Version described in spec version 0.13 (and later?)
-                            };
-            end
-        end
-
-        if (shift_dr_o) begin
-            if (idcode_select) idcode_d = {td_i, idcode_q[31:1]};
-            if (bypass_select) bypass_d = td_i;
-            if (dtmcs_select)  dtmcs_d  = {td_i, dtmcs_q[31:1]};
-        end
-
-        if (test_logic_reset_o) begin
-            idcode_d = IDCODE_VALUE;
-            bypass_d = 1'b0;
-        end
-    end
-
-    // ----------------
-    // Data reg select
-    // ----------------
-    always_comb begin
-        dmi_access_o  = 1'b0;
-        dtmcs_select  = 1'b0;
-        idcode_select = 1'b0;
-        bypass_select = 1'b0;
-        case (jtag_ir_q)
-            BYPASS0:   bypass_select = 1'b1;
-            IDCODE:    idcode_select = 1'b1;
-            DTMCSR:    dtmcs_select  = 1'b1;
-            DMIACCESS: dmi_access_o  = 1'b1;
-            BYPASS1:   bypass_select = 1'b1;
-            default:   bypass_select = 1'b1;
-        endcase
-    end
-
-    // ----------------
-    // Output select
-    // ----------------
-    logic tdo_mux;
-
-    always_comb begin
-        if (shift_ir) begin
-            tdo_mux = jtag_ir_q[0];
-        end else begin
-          case (jtag_ir_q)    // synthesis parallel_case
-            IDCODE:         tdo_mux = idcode_q[0];     // Reading ID code
-            DTMCSR:         tdo_mux = dtmcs_q[0];
-            DMIACCESS:      tdo_mux = dmi_tdo_i;       // Read from DMI TDO
-            default:        tdo_mux = bypass_q;      // BYPASS instruction
-          endcase
-        end
-
-    end
-
-  // TDO changes state at negative edge of TCK
-    always_ff @(negedge tck_i, negedge trst_ni) begin
-        if (~trst_ni) begin
-            td_o <= 1'b0;
-        end else begin
-            td_o <= tdo_mux;
-        end
-    end
-    // ----------------
-    // TAP FSM
-    // ----------------
-    // Determination of next state; purely combinatorial
-    always_comb begin
-        test_logic_reset_o = 1'b0;
-        run_test_idle_o    = 1'b0;
-
-        capture_dr_o       = 1'b0;
-        shift_dr_o         = 1'b0;
-        pause_dr_o         = 1'b0;
-        update_dr_o        = 1'b0;
-
-        capture_ir         = 1'b0;
-        shift_ir           = 1'b0;
-        pause_ir           = 1'b0;
-        update_ir          = 1'b0;
-
-        case (tap_state_q)
-            TestLogicReset: begin
-                test_logic_reset_o = 1'b0;
-                tap_state_d = (tms_i) ? TestLogicReset : RunTestIdle;
-            end
-            RunTestIdle: begin
-                run_test_idle_o = 1'b1;
-                tap_state_d = (tms_i) ? SelectDrScan : RunTestIdle;
-            end
-            // DR Path
-            SelectDrScan: begin
-                tap_state_d = (tms_i) ? SelectIrScan : CaptureDr;
-            end
-            CaptureDr: begin
-                capture_dr_o = 1'b1;
-                tap_state_d = (tms_i) ? Exit1Dr : ShiftDr;
-            end
-            ShiftDr: begin
-                shift_dr_o = 1'b1;
-                tap_state_d = (tms_i) ? Exit1Dr : ShiftDr;
-            end
-            Exit1Dr: begin
-                tap_state_d = (tms_i) ? UpdateDr : PauseDr;
-            end
-            PauseDr: begin
-                pause_dr_o = 1'b1;
-                tap_state_d = (tms_i) ? Exit2Dr : PauseDr;
-            end
-            Exit2Dr: begin
-                tap_state_d = (tms_i) ? UpdateDr : ShiftDr;
-            end
-            UpdateDr: begin
-                update_dr_o = 1'b1;
-                tap_state_d = (tms_i) ? SelectDrScan : RunTestIdle;
-            end
-            // IR Path
-            SelectIrScan: begin
-                tap_state_d = (tms_i) ? TestLogicReset : CaptureIr;
-            end
-            // In this controller state, the shift register bank in the
-            // Instruction Register parallel loads a pattern of fixed values on
-            // the rising edge of TCK. The last two significant bits must always
-            // be "01".
-            CaptureIr: begin
-                capture_ir = 1'b1;
-                tap_state_d = (tms_i) ? Exit1Ir : ShiftIr;
-            end
-            // In this controller state, the instruction register gets connected
-            // between TDI and TDO, and the captured pattern gets shifted on
-            // each rising edge of TCK. The instruction available on the TDI
-            // pin is also shifted in to the instruction register.
-            ShiftIr: begin
-                shift_ir = 1'b1;
-                tap_state_d = (tms_i) ? Exit1Ir : ShiftIr;
-            end
-            Exit1Ir: begin
-                tap_state_d = (tms_i) ? UpdateIr : PauseIr;
-            end
-            PauseIr: begin
-                pause_ir = 1'b1;
-                tap_state_d = (tms_i) ? Exit2Ir : PauseIr;
-            end
-            Exit2Ir: begin
-                tap_state_d = (tms_i) ? UpdateIr : ShiftIr;
-            end
-            // In this controller state, the instruction in the instruction
-            // shift register is latched to the latch bank of the Instruction
-            // Register on every falling edge of TCK. This instruction becomes
-            // the current instruction once it is latched.
-            UpdateIr: begin
-                update_ir = 1'b1;
-                tap_state_d = (tms_i) ? SelectDrScan : RunTestIdle;
-            end
-            default: tap_state_d = TestLogicReset;  // can't actually happen
-      endcase
-    end
-
-    always_ff @(posedge tck_i or negedge trst_ni) begin
-        if (~trst_ni) begin
-            tap_state_q <= RunTestIdle;
-            idcode_q    <= IDCODE_VALUE;
-            bypass_q    <= 1'b0;
-            dtmcs_q     <= '0;
-        end else begin
-            tap_state_q <= tap_state_d;
-            idcode_q    <= idcode_d;
-            bypass_q    <= bypass_d;
-            dtmcs_q     <= dtmcs_d;
-        end
-    end
-
+        .clk_i,
+        .rst_ni,
+        .dmi_req_valid_o,
+        .dmi_req_ready_i,
+        .dmi_req_bits_addr_o,
+        .dmi_req_bits_op_o,
+        .dmi_req_bits_data_o,
+        .dmi_resp_valid_i,
+        .dmi_resp_ready_o,
+        .dmi_resp_bits_resp_i,
+        .dmi_resp_bits_data_i
+    );
 
 endmodule

@@ -14,7 +14,7 @@
  *
  * Description: Clock domain crossings for JTAG to DMI very heavily based
  *              on previous work by Andreas Traber for the PULP project.
- *
+ *              This is mainly a wrapper around the existing CDCs.
  */
 module dmi_cdc (
     // JTAG side (master side)
@@ -25,12 +25,9 @@ module dmi_cdc (
     output logic                    mem_gnt_o,
     input  logic [AddrWidth-1:0]    mem_addr_i,
     input  logic                    mem_we_i,
-    input  logic [DataWidth/8-1:0]  mem_be_i,
     input  logic [DataWidth-1:0]    mem_wdata_i,
     output logic [DataWidth-1:0]    mem_rdata_o,
     output logic                    mem_rvalid_o,
-    output logic                    mem_rerror_o,
-    input  logic                    mem_clear_i,
 
     // Memory -> Slave side
     input  logic                    clk_i,
@@ -49,11 +46,10 @@ module dmi_cdc (
     input  logic [31:0]             dmi_resp_bits_data_i
 );
 
-    logic mem_rerror, mem_we;
+    logic mem_we;
     // we will always be ready to receive the request we made
     assign dmi_resp_ready_o = 1'b1;
     // very "cheap" protocol conversion
-    assign mem_rerror = (dmi_resp_bits_resp_i != dm::DTM_SUCCESS);
     assign dmi_req_bits_op_o = (mem_we) ? dm::DTM_WRITE : dm::DTM_READ;
 
     localparam int unsigned AddrWidth = 7,
@@ -71,8 +67,7 @@ module dmi_cdc (
     logic [DataWidth-1:0]    cdc_rdata_a;
     logic                    cdc_rerror_a;
 
-    // lets re-use most of the debug facilities which are already in the PULP
-    // project
+    // lets re-use most of the debug facilities which are already in PULP
     dmi_cdc_jtag #(
         .ADDR_WIDTH (AddrWidth),
         .DATA_WIDTH (DataWidth)
@@ -83,12 +78,14 @@ module dmi_cdc (
         .mem_gnt_o,
         .mem_addr_i,
         .mem_we_i,
-        .mem_be_i,
+        .mem_be_i       ( '1            ),
         .mem_wdata_i,
         .mem_rdata_o,
         .mem_rvalid_o,
-        .mem_rerror_o,
-        .mem_clear_i,
+        // we are not managing any errors here
+        // a more elaborate implementation should probably handle this more gracefully
+        .mem_rerror_o   (               ),
+        .mem_clear_i    ( 1'b0          ),
         .cdc_req_ao     ( .cdc_req_a    ),
         .cdc_ack_ai     ( .cdc_ack_a    ),
         .cdc_addr_ao    ( .cdc_addr_a   ),
@@ -112,11 +109,15 @@ module dmi_cdc (
         .mem_gnt_i      ( dmi_req_ready_i      ),
         .mem_addr_o     ( dmi_req_bits_addr_o  ),
         .mem_we_o       ( mem_we               ),
-        .mem_be_o,      // don't care we always write whole words
+        // don't care we always write whole words
+        .mem_be_o       (                      ),
         .mem_wdata_o    ( dmi_req_bits_data_o  ),
         .mem_rdata_i    ( dmi_resp_bits_data_i ),
         .mem_rvalid_i   ( dmi_resp_valid_i     ),
-        .mem_rerror_i   ( mem_rerror           ),
+        // don't care about clearing an error flag
+        // that is handled differently in the RISC-V implementation
+        .mem_rerror_i   ( 1'b0                 ),
+        .mem_clear_o    (                      ),
         .cdc_req_ai     ( .cdc_req_a           ),
         .cdc_ack_ao     ( .cdc_ack_a           ),
         .cdc_addr_ai    ( .cdc_addr_a          ),
@@ -131,7 +132,7 @@ module dmi_cdc (
     );
 endmodule
 
-module dmi_cdc_mem #(
+module dmi_cdc_jtag #(
     parameter int unsigned ADDR_WIDTH = 32,
     parameter int unsigned DATA_WIDTH = 64
 )(
@@ -321,6 +322,7 @@ module dmi_cdc_mem #(
     input  logic [DATA_WIDTH-1:0]   mem_rdata_i,
     input  logic                    mem_rvalid_i,
     input  logic                    mem_rerror_i,
+    output logic                    mem_clear_o,
 
     // CDC side
     input  logic                    cdc_req_ai,
