@@ -46,6 +46,8 @@ module dmi_jtag (
     logic        update_dr;
     logic        capture_dr;
     logic        dmi_access;
+    logic        dtmcs_select;
+    logic        dmi_reset;
     logic        dmi_tdi;
     logic        dmi_tdo;
 
@@ -56,8 +58,130 @@ module dmi_jtag (
     logic [31:0] mem_wdata;
     logic [31:0] mem_rdata;
     logic        mem_rvalid;
-    logic        mem_rerror;
 
+    typedef struct packed {
+        logic [7:0]  address;
+        logic [31:0] data;
+        logic [1:0]  op;
+    } dmi_t;
+
+    typedef enum logic [1:0] {
+                                DMINoError = 0, DMIReservedError = 1,
+                                DMIOPFailed = 2, DMIBusy = 3
+                             } dmi_error_t;
+
+    enum logic [1:0] { Idle, Read, WaitReadValid, Write } state_d, state_q;
+
+    logic [$bits(dmi_t)-1:0] dr_d, dr_q;
+    logic [7:0] address_d, address_q;
+    logic [31:0] data_d, data_q;
+
+    dmi_t  dmi, read_dmi;
+    assign dmi       = dmi_t'(dr_q);
+    assign mem_addr  = address_q;
+    assign mem_wdata = data_q;
+    assign mem_we    = (state_q == Write);
+
+    dmi_error_t error_d, error_q;
+
+    // DMI which we return
+    assign read_dmi = {7'b0, data_q, error_q};
+
+    always_comb begin
+        // default assignments
+        state_d   = state_q;
+        address_d = address_q;
+        data_d    = data_q;
+        error_d   = error_q;
+
+        mem_valid = 1'b0
+
+        case (state_q)
+            Idle: begin
+                // make sure that no error is sticky
+                if (dmi_access && update_dr && (dmi_error_q == 0)) begin
+                    // save address and value
+                    address_d = dmi.address;
+                    data_d = dmi.data;
+                    if (dtm_op_t'(dmi.op) == dm::DTM_READ) begin
+                        state_d = Read;
+                    end else if (dtm_op_t'(dmi.op) == dm::DTM_WRITE) begin
+                        state_d = Write;
+                    end
+                    // else this is a nop and we can stay here
+                end
+            end
+
+            Read: begin
+                mem_valid = 1'b1;
+                if (mem_gnt) begin
+                    state_d = WaitReadValid;
+                end
+            end
+
+            WaitReadValid: begin
+                // load data into register and shift out
+                if (mem_rvalid) begin
+                    data_d = mem_rdata;
+                    state_d = Idle;
+                end
+            end
+
+            Write: begin
+                mem_valid = 1'b1;
+                // got a valid answer go back to idle
+                if (mem_gnt) begin
+                    state_d = Idle;
+                end
+            end
+        endcase
+
+        // update_dr means we got another request but we didn't finish
+        // the one in progress, this state is sticky
+        if (update_dr && state_q != Idle) begin
+            error_d = DMIBusy;
+        end
+
+        // clear sticky error flag
+        if (dmi_reset && dtmcs_select) begin
+            error_d = DMINoError;
+        end
+    end
+
+    // shift register
+    assign dmi_tdo = dr_q[0];
+
+    always_comb begin
+        dr_d    = dr_q;
+
+        if (capture_dr) begin
+            if (dmi_access) dr_d = data_q;
+        end
+
+        if (shift_dr) begin
+            if (dmi_access) dr_d = {dmi_tdi, dr_q[$bits(dr_q)-1:1]};
+        end
+
+        if (test_logic_reset) begin
+            dr_d = '0;
+        end
+    end
+
+    always_ff @(posedge tck_i or negedge trst_ni) begin
+        if (~trst_ni) begin
+            dr_q      <= '0;
+            state_d   <= Idle;
+            address_q <= '0;
+            data_q    <= '0;
+            error_q   <= '0;
+        end else begin
+            dr_q      <= dr_d;
+            state_q   <= state_d;
+            address_q <= address_d;
+            data_q    <= data_d;
+            error_q   <= error_d;
+        end
+    end
     // ---------
     // TAP
     // ---------
@@ -76,6 +200,8 @@ module dmi_jtag (
         .update_dr_o        ( update_dr        ),
         .capture_dr_o       ( capture_dr       ),
         .dmi_access_o       ( dmi_access       ),
+        .dtmcs_select_o     ( dtmcs_select     ),
+        .dmi_reset_o        ( dmi_reset        ),
         .dmi_tdi_o          ( dmi_tdi          ),
         .dmi_tdo_i          ( dmi_tdo          )
     );
@@ -95,7 +221,6 @@ module dmi_jtag (
         .mem_wdata_i       ( mem_wdata   ),
         .mem_rdata_o       ( mem_rdata   ),
         .mem_rvalid_o      ( mem_rvalid  ),
-        .mem_rerror_o      ( mem_rerror  ),
 
         .clk_i,
         .rst_ni,
