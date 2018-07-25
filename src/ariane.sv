@@ -20,43 +20,40 @@ import instruction_tracer_pkg::*;
 `endif
 
 module ariane #(
-        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000, // address on which to decide whether the request is cache-able or not
+        parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
         parameter int unsigned AXI_ID_WIDTH     = 10,            // minimum 1
         parameter int unsigned AXI_USER_WIDTH   = 1              // minimum 1
     )(
         input  logic                           clk_i,
         input  logic                           rst_ni,
-        input  logic                           test_en_i,              // enable all clock gates for testing
-
-        input  logic                           flush_dcache_i,         // external request to flush data cache
-        output logic                           flush_dcache_ack_o,     // finished data cache flush
+        input  logic                           test_en_i,    // enable all clock gates for testing
         // Core ID, Cluster ID and boot address are considered more or less static
-        input  logic [63:0]                    boot_addr_i,            // reset boot address
-        input  logic [ 3:0]                    core_id_i,              // core id in a multicore environment (reflected in a CSR)
-        input  logic [ 5:0]                    cluster_id_i,           // PULP specific if core is used in a clustered environment
+        input  logic [63:0]                    boot_addr_i,  // reset boot address
+        input  logic [ 3:0]                    core_id_i,    // core id in a multicore environment (reflected in a CSR)
+        input  logic [ 5:0]                    cluster_id_i, // PULP specific if core is used in a clustered environment
         // Instruction memory interface
         AXI_BUS.Master                         instr_if,
         // Data memory interface
-        AXI_BUS.Master                         data_if,                // data cache refill port
-        AXI_BUS.Master                         bypass_if,              // bypass axi port (disabled cache or uncacheable access)
+        AXI_BUS.Master                         data_if,      // data cache refill port
+        AXI_BUS.Master                         bypass_if,    // bypass axi port (disabled cache or uncacheable access)
         // Interrupt inputs
-        input  logic [1:0]                     irq_i,                  // level sensitive IR lines, mip & sip (async)
-        input  logic                           ipi_i,                  // inter-processor interrupts (async)
+        input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip (async)
+        input  logic                           ipi_i,        // inter-processor interrupts (async)
         // Timer facilities
-        input  logic [63:0]                    time_i,                 // global time (most probably coming from an RTC)
-        input  logic                           time_irq_i,             // timer interrupt in (async)
-        input  logic                           debug_req_i             // debug request (async)
+        input  logic [63:0]                    time_i,       // global time (most probably coming from an RTC)
+        input  logic                           time_irq_i,   // timer interrupt in (async)
+        input  logic                           debug_req_i   // debug request (async)
     );
 
     // ------------------------------------------
     // Global Signals
     // Signals connecting more than one module
     // ------------------------------------------
-    riscv::priv_lvl_t         priv_lvl;
-    exception_t               ex_commit; // exception from commit stage
-    branchpredict_t           resolved_branch;
-    logic [63:0]              pc_commit;
-    logic                     eret;
+    riscv::priv_lvl_t           priv_lvl;
+    exception_t                 ex_commit; // exception from commit stage
+    branchpredict_t             resolved_branch;
+    logic [63:0]                pc_commit;
+    logic                       eret;
     logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
     // --------------
@@ -216,7 +213,6 @@ module ariane #(
     logic                     flush_icache_ctrl_icache;
     logic                     set_debug_pc;
 
-    assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
     // --------------
     // Frontend
     // --------------
@@ -409,7 +405,7 @@ module ariane #(
 
         .data_if                ( data_if                                ),
         .dcache_en_i            ( dcache_en_csr_nbdcache                 ),
-        .flush_dcache_i         ( flush_dcache_ctrl_ex | flush_dcache_i  ),
+        .flush_dcache_i         ( flush_dcache_ctrl_ex                   ),
         .flush_dcache_ack_o     ( flush_dcache_ack_ex_ctrl               ),
 
         .*
@@ -420,6 +416,7 @@ module ariane #(
     // ---------
     commit_stage commit_stage_i (
         .halt_i                 ( halt_ctrl                     ),
+        .flush_dcache_i         ( flush_dcache_ctrl_ex          ),
         .exception_o            ( ex_commit                     ),
         .debug_mode_i           ( debug_mode_csr_id             ),
         .debug_req_i            ( debug_req_i                   ),

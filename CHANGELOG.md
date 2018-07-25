@@ -15,7 +15,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Bugfix in cache-refill AXI logic (AXI protocol violation)
+- [Bugfix] Cache-refill AXI logic (AXI protocol violation)
+- [Bugfix] `MSTATUS` write-able through `SSTATUS` #65
+- [Bugfix] PTW has protocol violation #61
+- [Bugfix] Race-condition #54
 
 ### 2.0.2 - 2018-04-08
 
