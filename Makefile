@@ -164,8 +164,9 @@ verilate:
     -Wno-UNOPTFLAT                                                   \
     -Wno-UNUSED                                                      \
     -Wno-ASSIGNDLY                                                   \
-    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -Wall --cc --trace --vpi --trace-structs \
-    $(list_incdir) --top-module ariane_testharness --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc
+    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -I../tb/dpi -Wall --cc --trace --vpi --trace-structs \
+    $(list_incdir) --top-module ariane_testharness \
+    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
 	cd obj_dir && make -j8 -f Variane_testharness.mk
 
 verify:

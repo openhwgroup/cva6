@@ -62,6 +62,7 @@ jobs:
         - ci/install-verilator.sh
         - ci/install-fesvr.sh
         - ci/build-riscv-tests.sh
+        - make verilate verilator=$TRAVIS_BUILD_DIR/tmp/bin/verilator
         - ci/run-tests.sh
 
 # extra time during long builds
