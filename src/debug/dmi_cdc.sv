@@ -23,10 +23,10 @@ module dmi_cdc (
 
     input  logic                    mem_valid_i,
     output logic                    mem_gnt_o,
-    input  logic [AddrWidth-1:0]    mem_addr_i,
+    input  logic [6:0]              mem_addr_i,
     input  logic                    mem_we_i,
-    input  logic [DataWidth-1:0]    mem_wdata_i,
-    output logic [DataWidth-1:0]    mem_rdata_o,
+    input  logic [31:0]             mem_wdata_i,
+    output logic [31:0]             mem_rdata_o,
     output logic                    mem_rvalid_o,
 
     // Memory -> Slave side
