@@ -52,8 +52,8 @@ module dmi_cdc (
     // very "cheap" protocol conversion
     assign dmi_req_bits_op_o = (mem_we) ? dm::DTM_WRITE : dm::DTM_READ;
 
-    localparam int unsigned AddrWidth = 7,
-    localparam int unsigned DataWidth = 32
+    localparam int unsigned AddrWidth = 7;
+    localparam int unsigned DataWidth = 32;
 
     logic                    cdc_req_a;
     logic                    cdc_ack_a;
@@ -86,17 +86,17 @@ module dmi_cdc (
         // a more elaborate implementation should probably handle this more gracefully
         .mem_rerror_o   (               ),
         .mem_clear_i    ( 1'b0          ),
-        .cdc_req_ao     ( .cdc_req_a    ),
-        .cdc_ack_ai     ( .cdc_ack_a    ),
-        .cdc_addr_ao    ( .cdc_addr_a   ),
-        .cdc_we_ao      ( .cdc_we_a     ),
-        .cdc_be_ao      ( .cdc_be_a     ),
-        .cdc_wdata_ao   ( .cdc_wdata_a  ),
-        .cdc_clear_ao   ( .cdc_clear_a  ),
-        .cdc_rreq_ai    ( .cdc_rreq_a   ),
-        .cdc_rack_ao    ( .cdc_rack_a   ),
-        .cdc_rdata_ai   ( .cdc_rdata_a  ),
-        .cdc_rerror_ai  ( .cdc_rerror_a )
+        .cdc_req_ao     ( cdc_req_a     ),
+        .cdc_ack_ai     ( cdc_ack_a     ),
+        .cdc_addr_ao    ( cdc_addr_a    ),
+        .cdc_we_ao      ( cdc_we_a      ),
+        .cdc_be_ao      ( cdc_be_a      ),
+        .cdc_wdata_ao   ( cdc_wdata_a   ),
+        .cdc_clear_ao   ( cdc_clear_a   ),
+        .cdc_rreq_ai    ( cdc_rreq_a    ),
+        .cdc_rack_ao    ( cdc_rack_a    ),
+        .cdc_rdata_ai   ( cdc_rdata_a   ),
+        .cdc_rerror_ai  ( cdc_rerror_a  )
     );
 
     dmi_cdc_mem #(
@@ -118,17 +118,17 @@ module dmi_cdc (
         // that is handled differently in the RISC-V implementation
         .mem_rerror_i   ( 1'b0                 ),
         .mem_clear_o    (                      ),
-        .cdc_req_ai     ( .cdc_req_a           ),
-        .cdc_ack_ao     ( .cdc_ack_a           ),
-        .cdc_addr_ai    ( .cdc_addr_a          ),
-        .cdc_we_ai      ( .cdc_we_a            ),
-        .cdc_be_ai      ( .cdc_be_a            ),
-        .cdc_wdata_ai   ( .cdc_wdata_a         ),
-        .cdc_clear_ai   ( .cdc_clear_a         ),
-        .cdc_rreq_ao    ( .cdc_rreq_a          ),
-        .cdc_rack_ai    ( .cdc_rack_a          ),
-        .cdc_rdata_ao   ( .cdc_rdata_a         ),
-        .cdc_rerror_ao  ( .cdc_rerror_a        )
+        .cdc_req_ai     ( cdc_req_a            ),
+        .cdc_ack_ao     ( cdc_ack_a            ),
+        .cdc_addr_ai    ( cdc_addr_a           ),
+        .cdc_we_ai      ( cdc_we_a             ),
+        .cdc_be_ai      ( cdc_be_a             ),
+        .cdc_wdata_ai   ( cdc_wdata_a          ),
+        .cdc_clear_ai   ( cdc_clear_a          ),
+        .cdc_rreq_ao    ( cdc_rreq_a           ),
+        .cdc_rack_ai    ( cdc_rack_a           ),
+        .cdc_rdata_ao   ( cdc_rdata_a          ),
+        .cdc_rerror_ao  ( cdc_rerror_a         )
     );
 endmodule
 
@@ -502,6 +502,7 @@ module dmi_cdc_mem #(
   //----------------------------------------------------------------------------
 
 `ifndef SYNTHESIS
+`ifndef verilator
   assert property (
     @(posedge clk_i) (mem_req_o) |-> (!$isunknown(mem_addr_o) && !$isunknown(mem_we_o)
       && !$isunknown(mem_be_o) && !$isunknown(mem_wdata_o)))
@@ -509,5 +510,6 @@ module dmi_cdc_mem #(
 
   assert property (
     @(posedge clk_i) (!$isunknown(mem_gnt_i))) else $warning("memory grant may never be unknown");
+`endif
 `endif
 endmodule

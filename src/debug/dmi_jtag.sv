@@ -94,7 +94,7 @@ module dmi_jtag (
         data_d    = data_q;
         error_d   = error_q;
 
-        mem_valid = 1'b0
+        mem_valid = 1'b0;
 
         case (state_q)
             Idle: begin

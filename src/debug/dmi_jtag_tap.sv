@@ -35,7 +35,7 @@ module dmi_jtag_tap #(
     // we want to access DMI register
     output logic        dmi_access_o,
     // JTAG is interested in writing the DTM CSR register
-    output logic        dtmcs_select_o
+    output logic        dtmcs_select_o,
     // clear error state
     output logic        dmi_reset_o,
     // test data to submodule
