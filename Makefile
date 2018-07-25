@@ -138,6 +138,7 @@ $(tests): build
 	${library}.$@_tb_optimized
 
 # User Verilator, at some point in the future this will be auto-generated
+# --trace-structs --trace
 verilate:
 	$(verilator)                                                     \
     $(ariane_pkg)                                                    \
@@ -164,17 +165,18 @@ verilate:
     -Wno-UNOPTFLAT                                                   \
     -Wno-UNUSED                                                      \
     -Wno-ASSIGNDLY                                                   \
-    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11" -I../tb/dpi -Wall --cc --trace --vpi --trace-structs \
+    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
     $(list_incdir) --top-module ariane_testharness \
+    --Mdir build \
     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
-	cd obj_dir && make -j8 -f Variane_testharness.mk
+	cd build && make -j8 -f Variane_testharness.mk
 
 verify:
 	qverify vlog -sv src/csr_regfile.sv
 
 clean:
 	rm -rf work/ *.ucdb
-	rm -rf obj_dir
+	rm -rf build
 
 .PHONY:
 	build lint build-moore

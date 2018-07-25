@@ -13,7 +13,7 @@ src/moore.sv
 *.sig
 *.dtb
 *.dasm
-obj_dir/*
+build/*
 /tmp*
 *.dasm
 /Bender.lock
