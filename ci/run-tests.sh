@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 # run the tests in parallel, 4 at a time

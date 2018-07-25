@@ -46,7 +46,7 @@ before_install:
   - export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/tmp/lib
   - export C_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include
   - export CPLUS_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include
-  - export VERILATOR_ROOT=$TRAVIS_BUILD_DIR/tmp/verilator-3.918/
+  - export VERILATOR_ROOT=$TRAVIS_BUILD_DIR/tmp/verilator-3.924/
 
 stages:
   - compile
