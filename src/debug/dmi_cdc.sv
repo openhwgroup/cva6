@@ -74,7 +74,7 @@ module dmi_cdc (
     ) i_dmi_cdc_jtag (
         .tck_i,
         .trst_ni,
-        .mem_req_i,
+        .mem_req_i      ( mem_valid_i   ),
         .mem_gnt_o,
         .mem_addr_i,
         .mem_we_i,

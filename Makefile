@@ -148,6 +148,8 @@ verilate:
     src/debug/debug_rom/debug_rom.sv                                 \
     src/util/generic_fifo.sv                                         \
     tb/common/SimDTM.sv                                              \
+    tb/common/SimJTAG.sv                                             \
+    tb/common/pulp_sync.sv                                           \
     bootrom/bootrom.sv                                               \
     src/util/cluster_clock_gating.sv                                 \
     src/util/behav_sram.sv                                           \

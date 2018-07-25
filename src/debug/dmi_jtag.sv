@@ -99,13 +99,13 @@ module dmi_jtag (
         case (state_q)
             Idle: begin
                 // make sure that no error is sticky
-                if (dmi_access && update_dr && (dmi_error_q == 0)) begin
+                if (dmi_access && update_dr && (error_q == 0)) begin
                     // save address and value
                     address_d = dmi.address;
                     data_d = dmi.data;
-                    if (dtm_op_t'(dmi.op) == dm::DTM_READ) begin
+                    if (dm::dtm_op_t'(dmi.op) == dm::DTM_READ) begin
                         state_d = Read;
-                    end else if (dtm_op_t'(dmi.op) == dm::DTM_WRITE) begin
+                    end else if (dm::dtm_op_t'(dmi.op) == dm::DTM_WRITE) begin
                         state_d = Write;
                     end
                     // else this is a nop and we can stay here
@@ -170,7 +170,7 @@ module dmi_jtag (
     always_ff @(posedge tck_i or negedge trst_ni) begin
         if (~trst_ni) begin
             dr_q      <= '0;
-            state_d   <= Idle;
+            state_q   <= Idle;
             address_q <= '0;
             data_q    <= '0;
             error_q   <= '0;

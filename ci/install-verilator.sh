@@ -5,7 +5,7 @@ cd $ROOT/tmp
 
 if [ ! -e "$ROOT/tmp/bin/verilator" ]; then
     echo "Installing Verilator"
-    wget https://www.veripool.org/ftp/verilator-3.918.tgz
+    wget https://www.veripool.org/ftp/verilator-3.924.tgz
     tar xzf verilator*.t*gz && cd verilator-*
     autoconf && ./configure --prefix="$ROOT/tmp" && make -j2 && make test && make install
 else
