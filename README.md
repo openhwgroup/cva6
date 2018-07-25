@@ -19,7 +19,7 @@ git clone https://github.com/pulp-platform/ariane.git
 git submodule update --init --recursive
 ```
 
-The Verilator testbench relies on our forked version of `riscv-fesvr` which can be found [here](https://github.com/pulp-platform/riscv-fesvr). Follow the README there and make sure that your compiler and linker is aware of the library (e.g.: add it to your path if it is in a non-default directory).
+The Verilator testbench relies on our forked version of `riscv-fesvr` which can be found [here](https://github.com/riscv/riscv-fesvr). Follow the README there and make sure that your compiler and linker is aware of the library (e.g.: add it to your path if it is in a non-default directory).
 
 Build the Verilator model of Ariane by using the Makefile:
 ```
@@ -33,8 +33,6 @@ obj_dir/Variane_wrapped -p rv64um-v-divuw
 ```
 
 The Verilator testbench makes use of the `riscv-fesvr`. That means that bare `riscv-tests` can be run on the simulator.
-
-> Due to the way the C++ testbench is constructed we need a slightly altered version of the `riscv-fesvr` which can be found [here](https://github.com/pulp-platform/riscv-fesvr).
 
 ### Running custom C-code
 
@@ -59,8 +57,6 @@ obj_dir/Variane_wrapped -p hello.riscv
 ## Planned Improvements
 
 While developing Ariane it has become evident that, in order to support Linux, the atomic extension is going to be mandatory. While the core is currently booting Linux by emulating Atomics in BBL (in a single core environment this is trivially met by disabling interrupts) this is not the behavior which is intended. For that reason we are going to fully support all atomic extensions in the very near future.
-
-Furthermore, we have major IPC improvements planned. Specifically this will resolve about the way branches and jumps are currently handled in the core.
 
 ## Going Beyond
 
