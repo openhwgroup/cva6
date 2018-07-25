@@ -138,7 +138,6 @@ $(tests): build
 	${library}.$@_tb_optimized
 
 # User Verilator, at some point in the future this will be auto-generated
-# --trace-structs --trace
 verilate:
 	$(verilator)                                                     \
     $(ariane_pkg)                                                    \
@@ -165,6 +164,7 @@ verilate:
     -Wno-UNOPTFLAT                                                   \
     -Wno-UNUSED                                                      \
     -Wno-ASSIGNDLY                                                   \
+    --trace-structs --trace \
     -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
     $(list_incdir) --top-module ariane_testharness \
     --Mdir build \

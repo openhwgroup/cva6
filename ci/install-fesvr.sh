@@ -5,7 +5,7 @@ cd $ROOT/tmp
 RELEASE=0.1.0
 
 if ! [ -e $ROOT/tmp/riscv-fesvr ]; then
-    https://github.com/riscv/riscv-fesvr.git
+    git clone https://github.com/riscv/riscv-fesvr.git
 fi
 cd $ROOT/tmp/riscv-fesvr
 mkdir -p build
