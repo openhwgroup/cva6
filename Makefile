@@ -166,12 +166,12 @@ verilate:
     -Wno-UNOPTFLAT                                                   \
     -Wno-UNUSED                                                      \
     -Wno-ASSIGNDLY                                                   \
-    --trace-structs --trace \
     -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
     $(list_incdir) --top-module ariane_testharness \
-    --Mdir build \
+    --Mdir build -O3 \
     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
 	cd build && make -j8 -f Variane_testharness.mk
+# --trace-structs --trace \
 
 verify:
 	qverify vlog -sv src/csr_regfile.sv
