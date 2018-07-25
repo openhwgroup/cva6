@@ -99,7 +99,7 @@ module dmi_jtag (
         case (state_q)
             Idle: begin
                 // make sure that no error is sticky
-                if (dmi_access && update_dr && (error_q == 0)) begin
+                if (dmi_access && update_dr && (error_q == DMINoError)) begin
                     // save address and value
                     address_d = dmi.address;
                     data_d = dmi.data;
@@ -173,7 +173,7 @@ module dmi_jtag (
             state_q   <= Idle;
             address_q <= '0;
             data_q    <= '0;
-            error_q   <= '0;
+            error_q   <= DMINoError;
         end else begin
             dr_q      <= dr_d;
             state_q   <= state_d;

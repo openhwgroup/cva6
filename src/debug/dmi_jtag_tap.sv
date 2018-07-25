@@ -41,7 +41,7 @@ module dmi_jtag_tap #(
     // test data to submodule
     output logic        dmi_tdi_o,
     // test data in from submodule
-    output logic        dmi_tdo_i
+    input  logic        dmi_tdo_i
 
 );
 
@@ -80,7 +80,6 @@ module dmi_jtag_tap #(
     always_comb begin
         jtag_ir_shift_d = jtag_ir_shift_q;
         jtag_ir_d       = jtag_ir_q;
-        bypass_d        = bypass_q;
 
         // IR shift register
         if (shift_ir) begin

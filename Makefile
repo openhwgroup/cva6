@@ -34,7 +34,8 @@ sequences := $(wildcard tb/sequences/*/*.sv*)
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.sv*)
 # DPI
-dpi := $(wildcard tb/dpi/*)
+dpi := $(patsubst tb/dpi/%.cc,work/%.o,$(wildcard tb/dpi/*.cc))
+dpi_hdr := $(wildcard tb/dpi/*.h)
 # this list contains the standalone components
 src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard tb/common/*.v) $(wildcard src/axi2per/*.sv)  \
        $(wildcard src/axi_slice/*.sv)                                                                          \
@@ -63,7 +64,7 @@ list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-agents $(library)/.build-interfaces $(library)/.build-components \
-		$(library)/.build-srcs $(library)/.build-tb $(library)/.build-dpi
+		$(library)/.build-srcs $(library)/.build-tb $(library)/ariane_dpi.so
 		# Optimize top level
 	vopt$(questa_version) $(compile_flag) -work $(library)  $(test_top_level) -o $(test_top_level)_optimized +acc -check_synthesis
 
@@ -82,12 +83,12 @@ $(library)/.build-tb: $(dpi) $(tbs)
 	touch $(library)/.build-tb
 
 # compile DPIs
-$(library)/.build-dpi: $(dpi)
+work/%.o: tb/dpi/%.cc $(dpi_hdr)
+	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic -I$(QUESTASIM_HOME)/include -o $@ $<
+
+$(library)/ariane_dpi.so: $(dpi)
 	# Compile C-code and generate .so file
-	# g++ -lfesvr -c -fPIC -m64 -std=c++0x -I$(QUESTASIM_HOME)/include -o $(library)/ariane_dpi.o tb/dpi/SimDTM.cc
-	# g++ -shared -m64 -o $(library)/ariane_dpi.so $(library)/ariane_dpi.o -lfesvr
-	gcc -shared -fPIC -std=c++0x -Bsymbolic -I$(QUESTASIM_HOME)/include -o work/ariane_dpi.so tb/dpi/SimDTM.cc -lfesvr -lstdc++
-	touch $(library)/.build-dpi
+	g++ -shared -m64 -o $(library)/ariane_dpi.so $? -lfesvr
 
 # Compile Sequences and Tests
 $(library)/.build-components: $(envs) $(sequences) $(test_pkg)
@@ -109,12 +110,12 @@ $(library):
 	# Create the library
 	vlib${questa_version} ${library}
 
-sim: build
+sim: build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=HIGH" -coverage -classdebug\
 	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do "run -all; do tb/wave/wave_core.do; exit" ${top_level}_optimized +permissive-off ++$(riscv-test)
 
-simc: build
+simc: build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=HIGH" -coverage -classdebug\
 	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do "run -all; do tb/wave/wave_core.do; exit" ${top_level}_optimized +permissive-off ++$(riscv-test)
