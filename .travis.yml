@@ -62,7 +62,7 @@ jobs:
         - ci/install-verilator.sh
         - ci/install-fesvr.sh
         - ci/build-riscv-tests.sh
-        - make run-asm-tests-verilator verilator=$TRAVIS_BUILD_DIR/tmp/bin/verilator
+        - ci/run-tests.sh
 
-# extra time duing long builds
+# extra time during long builds
 install: travis_wait
