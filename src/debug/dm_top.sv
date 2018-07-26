@@ -50,11 +50,9 @@ module dm_top #(
     logic [NrHarts-1:0]               halted;
     logic [NrHarts-1:0]               running;
     logic [NrHarts-1:0]               unavailable;
-    logic [NrHarts-1:0]               havereset;
     logic [NrHarts-1:0]               resumeack;
     logic [NrHarts-1:0]               haltreq;
     logic [NrHarts-1:0]               resumereq;
-    logic [NrHarts-1:0]               ackhavereset;
     logic                             cmd_valid;
     dm::command_t                     cmd;
 
@@ -88,11 +86,9 @@ module dm_top #(
         .hartinfo_i           ( hartinfo             ),
         .halted_i             ( halted               ),
         .unavailable_i        ( unavailable          ),
-        .havereset_i          ( havereset            ),
         .resumeack_i          ( resumeack            ),
         .haltreq_o            ( haltreq              ),
         .resumereq_o          ( resumereq            ),
-        .ackhavereset_o       ( ackhavereset         ),
         .cmd_valid_o          ( cmd_valid            ),
         .cmd_o                ( cmd                  ),
         .cmderror_valid_i     ( cmderror_valid       ),
@@ -104,8 +100,6 @@ module dm_top #(
         .data_o               ( data_csrs_mem        )
     );
 
-    // TODO(zarubaf) take care of resetting
-    assign havereset = '1;
     assign unavailable = '0;
 
     // Debug Ctrl for each hart

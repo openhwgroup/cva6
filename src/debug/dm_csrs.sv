@@ -38,13 +38,11 @@ module dm_csrs #(
     input  dm::hartinfo_t [NrHarts-1:0] hartinfo_i,      // static hartinfo
     input  logic [NrHarts-1:0]          halted_i,        // hart is halted
     input  logic [NrHarts-1:0]          unavailable_i,   // e.g.: powered down
-    input  logic [NrHarts-1:0]          havereset_i,     // hart has reset
     input  logic [NrHarts-1:0]          resumeack_i,     // hart acknowledged resume request
     // hart control
     output logic [19:0]                 hartsel_o,       // hartselect to ctrl module
     output logic [NrHarts-1:0]          haltreq_o,       // request to halt a hart
     output logic [NrHarts-1:0]          resumereq_o,     // request hart to resume
-    output logic [NrHarts-1:0]          ackhavereset_o,  // DM acknowledges reset
 
     output logic                        cmd_valid_o,       // debugger is writing to the command field
     output dm::command_t                cmd_o,             // abstract command
@@ -90,6 +88,7 @@ module dm_csrs #(
     dm::cmderr_t        cmderr_d, cmderr_q;
     dm::command_t       command_d, command_q;
     dm::abstractauto_t  abstractauto_d, abstractauto_q;
+    logic [NrHarts-1:0] havereset_d, havereset_q;
     // program buffer
     logic [dm::ProgBufSize-1:0][31:0] progbuf_d, progbuf_q;
     // because first data address starts at 0x04
@@ -115,8 +114,8 @@ module dm_csrs #(
         // we do not support halt-on-reset sequence
         dmstatus.hasresethaltreq = 1'b0;
         // TODO(zarubaf) things need to change here if we implement the array mask
-        dmstatus.allhavereset = havereset_i[hartsel_o[HartSelLen-1:0]];
-        dmstatus.anyhavereset = havereset_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.allhavereset = havereset_q[hartsel_o[HartSelLen-1:0]];
+        dmstatus.anyhavereset = havereset_q[hartsel_o[HartSelLen-1:0]];
 
         dmstatus.allresumeack = resumeack_i[hartsel_o[HartSelLen-1:0]];
         dmstatus.anyresumeack = resumeack_i[hartsel_o[HartSelLen-1:0]];
@@ -147,6 +146,7 @@ module dm_csrs #(
         abstractauto_d.zero0 = '0;
 
         // default assignments
+        havereset_d = havereset_q;
         dmcontrol_d = dmcontrol_q;
         cmderr_d    = cmderr_q;
         command_d   = command_q;
@@ -155,7 +155,6 @@ module dm_csrs #(
 
         resp_queue_data = 32'b0;
         cmd_valid_o     = 1'b0;
-        ackhavereset_o  = 'b0;
 
         // read
         if (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) begin
@@ -205,7 +204,10 @@ module dm_csrs #(
                 dm::DMControl: begin
                     automatic dm::dmcontrol_t dmcontrol;
                     dmcontrol = dm::dmcontrol_t'(dmi_req_bits_data_i);
-                    ackhavereset_o[selected_hart] = dmcontrol.ackhavereset;
+                    // clear the havreset of the selected hart
+                    if (dmcontrol.ackhavereset) begin
+                        havereset_d[selected_hart] = 1'b0;
+                    end
                     dmcontrol_d = dmi_req_bits_data_i;
                 end
                 dm::DMStatus:; // write are ignored to R/O register
@@ -266,6 +268,11 @@ module dm_csrs #(
         if (data_valid_i)
             data_d = data_i;
 
+        // set the havereset flag when we did a ndmreset
+        if (ndmreset_o) begin
+            havereset_d = '1;
+        end
+
         // dmcontrol
         // TODO(zarubaf) we currently do not implement the hartarry mask
         dmcontrol_d.hasel           = 1'b0;
@@ -317,12 +324,11 @@ module dm_csrs #(
         if (~rst_ni) begin
             dmcontrol_q <= '0;
         end else begin
-            // synchronous re-set, active-low, except for dmactive
+            // synchronous re-set of debug module, active-low, except for dmactive
             if (!dmcontrol_q.dmactive) begin
                 dmcontrol_q.haltreq          <= '0;
                 dmcontrol_q.resumereq        <= '0;
                 dmcontrol_q.hartreset        <= '0;
-                dmcontrol_q.ackhavereset     <= '0;
                 dmcontrol_q.zero1            <= '0;
                 dmcontrol_q.hasel            <= '0;
                 dmcontrol_q.hartsello        <= '0;
@@ -339,6 +345,7 @@ module dm_csrs #(
                 progbuf_q                    <= '0;
                 data_q                       <= '0;
             end else begin
+                havereset_q                  <= havereset_d;
                 dmcontrol_q                  <= dmcontrol_d;
                 cmderr_q                     <= cmderr_d;
                 command_q                    <= command_d;
