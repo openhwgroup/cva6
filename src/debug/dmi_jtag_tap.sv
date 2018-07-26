@@ -24,7 +24,7 @@ module dmi_jtag_tap #(
     input  logic        trst_ni,  // JTAG test reset pad
     input  logic        td_i,     // JTAG test data input pad
     output logic        td_o,     // JTAG test data output pad
-
+    output logic        tdo_oe_o, // Data out output enable
     output logic        test_logic_reset_o,
     output logic        run_test_idle_o,
     output logic        shift_dr_o,
@@ -88,25 +88,25 @@ module dmi_jtag_tap #(
 
         // capture IR register
         if (capture_ir) begin
-            jtag_ir_d =  'b0101;
+            jtag_ir_shift_d =  'b0101;
         end
 
         // update IR register
-        if (capture_ir) begin
+        if (update_ir) begin
             jtag_ir_d = jtag_ir_shift_q;
         end
 
         // synchronous test-logic reset
         if (test_logic_reset_o) begin
+            jtag_ir_shift_d = '0;
             jtag_ir_d       = IDCODE;
-            jtag_ir_shift_d = IDCODE;
         end
     end
 
     always_ff @(posedge tck_i, negedge trst_ni) begin
         if (~trst_ni) begin
-            jtag_ir_shift_q <= IDCODE;
-            jtag_ir_q       <= '0;
+            jtag_ir_shift_q <= '0;
+            jtag_ir_q       <= IDCODE;
         end else begin
             jtag_ir_shift_q <= jtag_ir_shift_q;
             jtag_ir_q       <= jtag_ir_d;
@@ -207,9 +207,11 @@ module dmi_jtag_tap #(
   // TDO changes state at negative edge of TCK
     always_ff @(negedge tck_i, negedge trst_ni) begin
         if (~trst_ni) begin
-            td_o <= 1'b0;
+            td_o     <= 1'b0;
+            tdo_oe_o <= 1'b0;
         end else begin
-            td_o <= tdo_mux;
+            td_o     <= tdo_mux;
+            tdo_oe_o <= (shift_ir | shift_dr_o);
         end
     end
     // ----------------
@@ -232,7 +234,7 @@ module dmi_jtag_tap #(
 
         case (tap_state_q)
             TestLogicReset: begin
-                test_logic_reset_o = 1'b0;
+                test_logic_reset_o = 1'b1;
                 tap_state_d = (tms_i) ? TestLogicReset : RunTestIdle;
             end
             RunTestIdle: begin

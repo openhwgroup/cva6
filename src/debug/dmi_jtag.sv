@@ -36,7 +36,8 @@ module dmi_jtag (
     input  logic        tms_i,    // JTAG test mode select pad
     input  logic        trst_ni,  // JTAG test reset pad
     input  logic        td_i,     // JTAG test data input pad
-    output logic        td_o      // JTAG test data output pad
+    output logic        td_o,     // JTAG test data output pad
+    output logic        tdo_oe_o  // Data out output enable
 );
 
     logic        test_logic_reset;
@@ -193,6 +194,7 @@ module dmi_jtag (
         .trst_ni,
         .td_i,
         .td_o,
+        .tdo_oe_o,
         .test_logic_reset_o ( test_logic_reset ),
         .run_test_idle_o    ( run_test_idle    ),
         .shift_dr_o         ( shift_dr         ),
