@@ -38,6 +38,7 @@ module dmi_jtag_tap #(
     output logic        dtmcs_select_o,
     // clear error state
     output logic        dmi_reset_o,
+    input  logic [1:0]  dmi_error_i,
     // test data to submodule
     output logic        dmi_tdi_o,
     // test data in from submodule
@@ -53,11 +54,13 @@ module dmi_jtag_tap #(
                      UpdateDr, SelectIrScan, CaptureIr, ShiftIr,
                      Exit1Ir, PauseIr, Exit2Ir, UpdateIr } tap_state_q, tap_state_d;
 
-    localparam BYPASS0   = 'h0;
-    localparam IDCODE    = 'h1;
-    localparam DTMCSR    = 'h10;
-    localparam DMIACCESS = 'h11;
-    localparam BYPASS1   = 'h1f;
+    typedef enum logic [IrLength-1:0] {
+        BYPASS0   = 'h0,
+        IDCODE    = 'h1,
+        DTMCSR    = 'h10,
+        DMIACCESS = 'h11,
+        BYPASS1   = 'h1f
+    } ir_reg_t;
 
     typedef struct packed {
         logic [31:18] zero1;
@@ -74,7 +77,7 @@ module dmi_jtag_tap #(
     // IR logic
     // ----------------
     logic [IrLength-1:0]  jtag_ir_shift_d, jtag_ir_shift_q; // shift register
-    logic [IrLength-1:0]  jtag_ir_d, jtag_ir_q; // IR register -> this gets captured from shift register upon update_ir
+    ir_reg_t              jtag_ir_d, jtag_ir_q; // IR register -> this gets captured from shift register upon update_ir
     logic capture_ir, shift_ir, pause_ir, update_ir;
 
     always_comb begin
@@ -93,7 +96,7 @@ module dmi_jtag_tap #(
 
         // update IR register
         if (update_ir) begin
-            jtag_ir_d = jtag_ir_shift_q;
+            jtag_ir_d = ir_reg_t'(jtag_ir_shift_q);
         end
 
         // synchronous test-logic reset
@@ -147,8 +150,8 @@ module dmi_jtag_tap #(
                                 dmihardreset : 1'b0,
                                 dmireset     : 1'b0,
                                 zero0        : '0,
-                                idle         : 'd1, // 1: Enter Run-Test/Idle and leave it immediately
-                                dmistat      : '0,  // 0: No error
+                                idle         : 'd1,         // 1: Enter Run-Test/Idle and leave it immediately
+                                dmistat      : dmi_error_i, // 0: No error, 1: Op failed, 2: too fast
                                 abits        : 'd7, // The size of address in dmi
                                 version      : 'd1  // Version described in spec version 0.13 (and later?)
                             };

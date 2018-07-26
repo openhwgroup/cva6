@@ -61,7 +61,7 @@ module dmi_jtag (
     logic        mem_rvalid;
 
     typedef struct packed {
-        logic [7:0]  address;
+        logic [6:0]  address;
         logic [31:0] data;
         logic [1:0]  op;
     } dmi_t;
@@ -71,10 +71,10 @@ module dmi_jtag (
                                 DMIOPFailed = 2, DMIBusy = 3
                              } dmi_error_t;
 
-    enum logic [1:0] { Idle, Read, WaitReadValid, Write } state_d, state_q;
+    enum logic [2:0] { Idle, Read, WaitReadValid, Write, WaitWriteValid } state_d, state_q;
 
     logic [$bits(dmi_t)-1:0] dr_d, dr_q;
-    logic [7:0] address_d, address_q;
+    logic [6:0] address_d, address_q;
     logic [31:0] data_d, data_q;
 
     dmi_t  dmi, read_dmi;
@@ -83,12 +83,14 @@ module dmi_jtag (
     assign mem_wdata = data_q;
     assign mem_we    = (state_q == Write);
 
+    logic error_dmi_busy;
     dmi_error_t error_d, error_q;
 
     // DMI which we return
     assign read_dmi = {7'b0, data_q, error_q};
 
     always_comb begin
+        error_dmi_busy = 1'b0;
         // default assignments
         state_d   = state_q;
         address_d = address_q;
@@ -135,14 +137,31 @@ module dmi_jtag (
                     state_d = Idle;
                 end
             end
+
+            WaitWriteValid: begin
+                // just wait for idle here
+                if (mem_rvalid) begin
+                    state_d = Idle;
+                end
+            end
         endcase
 
         // update_dr means we got another request but we didn't finish
         // the one in progress, this state is sticky
         if (update_dr && state_q != Idle) begin
-            error_d = DMIBusy;
+            error_dmi_busy = 1'b1;
         end
 
+        // if capture_dr goes high while we are in the read state
+        // or in the corresponding wait state we are not giving back a valid word
+        // -> throw an error
+        if (capture_dr && state_q inside {Read, WaitReadValid}) begin
+            error_dmi_busy = 1'b1;
+        end
+
+        if (error_dmi_busy) begin
+            error_d = DMIBusy;
+        end
         // clear sticky error flag
         if (dmi_reset && dtmcs_select) begin
             error_d = DMINoError;
@@ -156,7 +175,14 @@ module dmi_jtag (
         dr_d    = dr_q;
 
         if (capture_dr) begin
-            if (dmi_access) dr_d = data_q;
+            if (dmi_access) begin
+                if (error_q == DMINoError && !error_dmi_busy) begin
+                    dr_d = {address_q, data_q, DMINoError};
+                // DMI was busy, report an error
+                end else if (error_q == DMIBusy || error_dmi_busy) begin
+                    dr_d = {address_q, data_q, DMIBusy};
+                end
+            end
         end
 
         if (shift_dr) begin
@@ -204,6 +230,7 @@ module dmi_jtag (
         .dmi_access_o       ( dmi_access       ),
         .dtmcs_select_o     ( dtmcs_select     ),
         .dmi_reset_o        ( dmi_reset        ),
+        .dmi_error_i        ( error_q          ),
         .dmi_tdi_o          ( dmi_tdi          ),
         .dmi_tdo_i          ( dmi_tdo          )
     );
