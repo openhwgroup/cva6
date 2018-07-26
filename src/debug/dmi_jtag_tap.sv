@@ -74,7 +74,7 @@ module dmi_jtag_tap #(
     // IR logic
     // ----------------
     logic [IrLength-1:0]  jtag_ir_shift_d, jtag_ir_shift_q; // shift register
-    logic [IrLength-1:0]  jtag_ir_d, jtag_ir_q; // IR register
+    logic [IrLength-1:0]  jtag_ir_d, jtag_ir_q; // IR register -> this gets captured from shift register upon update_ir
     logic capture_ir, shift_ir, pause_ir, update_ir;
 
     always_comb begin
@@ -108,7 +108,7 @@ module dmi_jtag_tap #(
             jtag_ir_shift_q <= '0;
             jtag_ir_q       <= IDCODE;
         end else begin
-            jtag_ir_shift_q <= jtag_ir_shift_q;
+            jtag_ir_shift_q <= jtag_ir_shift_d;
             jtag_ir_q       <= jtag_ir_d;
         end
     end
@@ -191,8 +191,10 @@ module dmi_jtag_tap #(
     logic tdo_mux;
 
     always_comb begin
+        // we are shifting out the IR register
         if (shift_ir) begin
-            tdo_mux = jtag_ir_q[0];
+            tdo_mux = jtag_ir_shift_q[0];
+        // here we are shifting the DR register
         end else begin
           case (jtag_ir_q)    // synthesis parallel_case
             IDCODE:         tdo_mux = idcode_q[0];     // Reading ID code
