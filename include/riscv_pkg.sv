@@ -129,24 +129,26 @@ package riscv;
     // --------------------
     // Opcodes
     // --------------------
-    parameter OpcodeSystem    = 7'h73;
-    parameter OpcodeFence     = 7'h0f;
-    parameter OpcodeOp        = 7'h33;
-    parameter OpcodeOp32      = 7'h3B;
-    parameter OpcodeOpimm     = 7'h13;
-    parameter OpcodeOpimm32   = 7'h1B;
-    parameter OpcodeStore     = 7'h23;
-    parameter OpcodeLoad      = 7'h03;
-    parameter OpcodeBranch    = 7'h63;
-    parameter OpcodeJalr      = 7'h67;
-    parameter OpcodeJal       = 7'h6f;
-    parameter OpcodeAuipc     = 7'h17;
-    parameter OpcodeLui       = 7'h37;
-    parameter OpcodeAmo       = 7'h2F;
+    localparam OpcodeSystem    = 7'h73;
+    localparam OpcodeFence     = 7'h0f;
+    localparam OpcodeOp        = 7'h33;
+    localparam OpcodeOp32      = 7'h3B;
+    localparam OpcodeOpimm     = 7'h13;
+    localparam OpcodeOpimm32   = 7'h1B;
+    localparam OpcodeStore     = 7'h23;
+    localparam OpcodeStoreFP   = 7'b01_001_11;
+    localparam OpcodeLoad      = 7'h03;
+    localparam OpcodeLoadFP    = 7'b00_001_11;
+    localparam OpcodeBranch    = 7'h63;
+    localparam OpcodeJalr      = 7'h67;
+    localparam OpcodeJal       = 7'h6f;
+    localparam OpcodeAuipc     = 7'h17;
+    localparam OpcodeLui       = 7'h37;
+    localparam OpcodeAmo       = 7'h2F;
 
-    parameter OpcodeCJ        = 3'b101;
-    parameter OpcodeCBeqz     = 3'b110;
-    parameter OpcodeCBnez     = 3'b111;
+    localparam OpcodeCJ        = 3'b101;
+    localparam OpcodeCBeqz     = 3'b110;
+    localparam OpcodeCBnez     = 3'b111;
 
     // ----------------------
     // Performance Counters
@@ -202,6 +204,13 @@ package riscv;
         CSR_MINSTRET       = 12'hB02,
         CSR_DCACHE         = 12'h701,
         CSR_ICACHE         = 12'h700,
+
+        CSR_TSELECT        = 12'h7A0,
+        CSR_TDATA1         = 12'h7A1,
+        CSR_TDATA2         = 12'h7A2,
+        CSR_TDATA3         = 12'h7A3,
+        CSR_TINFO          = 12'h7A4,
+
         // Debug CSR
         CSR_DCSR           = 12'h7b0,
         CSR_DPC            = 12'h7b1,
@@ -225,6 +234,15 @@ package riscv;
         CSR_RET            = PERF_RET            + 12'hC03,
         CSR_MIS_PREDICT    = PERF_MIS_PREDICT    + 12'hC03
     } csr_reg_t;
+
+    enum logic [2:0] {
+        CSRRW  = 3'h1,
+        CSRRS  = 3'h2,
+        CSRRC  = 3'h3,
+        CSRRWI = 3'h5,
+        CSRRSI = 3'h6,
+        CSRRCI = 3'h7
+    } csr_op_t;
 
     // decoded CSR address
     typedef struct packed {
@@ -259,6 +277,26 @@ package riscv;
         return {offset[11:5], src, base, size, offset[4:0], 7'h23};
     endfunction
 
+    function automatic logic [31:0] float_load (logic [2:0] size, logic[4:0] dest, logic[4:0] base, logic [11:0] offset);
+        // OpCode Load
+        return {offset[11:0], base, size, dest, 7'b00_001_11};
+    endfunction
+
+    function automatic logic [31:0] float_store (logic [2:0] size, logic[4:0] src, logic[4:0] base, logic [11:0] offset);
+        // OpCode Store
+        return {offset[11:5], src, base, size, offset[4:0], 7'b01_001_11};
+    endfunction
+
+    function automatic logic [31:0] csrw (csr_reg_t csr, logic[4:0] rs1);
+                         // CSRRW, rd, OpCode System
+        return {csr, rs1, 3'h1, 5'h0, 7'h73};
+    endfunction
+
+    function automatic logic [31:0] csrr (csr_reg_t csr, logic [4:0] dest);
+                  // rs1, CSRRS, rd, OpCode System
+        return {csr, 5'h0, 3'h2, dest, 7'h73};
+    endfunction
+
     function automatic logic [31:0] ebreak ();
         return 32'h00100073;
     endfunction
@@ -267,4 +305,7 @@ package riscv;
         return 32'h00000013;
     endfunction
 
+    function automatic logic [31:0] illegal ();
+        return 32'h00000000;
+    endfunction
 endpackage

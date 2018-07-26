@@ -113,7 +113,6 @@ module dm_top #(
     logic [7:0]  be;
     logic [63:0] wdata;
     logic [63:0] rdata;
-    logic [63:0] bit_en;
 
     dm_mem #(
         .NrHarts (NrHarts)

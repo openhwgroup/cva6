@@ -98,10 +98,16 @@ class instruction_trace_item;
             riscv::CSR_MCYCLE:     return "mcycle";
             riscv::CSR_MINSTRET:   return "minstret";
 
+            riscv::CSR_TSELECT:    return "tselect";
+            riscv::CSR_TDATA1:     return "tdata1";
+            riscv::CSR_TDATA2:     return "tdata2";
+            riscv::CSR_TDATA3:     return "tdata3";
+            riscv::CSR_TINFO:      return "tinfo";
+
             riscv::CSR_DCSR:       return "dcsr";
             riscv::CSR_DPC:        return "dpc";
             riscv::CSR_DSCRATCH0:  return "dscratch0";
-            riscv::CSR_DSCRATCH1:  return "dscratch0";
+            riscv::CSR_DSCRATCH1:  return "dscratch1";
 
             riscv::CSR_CYCLE:      return "cycle";
             riscv::CSR_TIME:       return "time";
