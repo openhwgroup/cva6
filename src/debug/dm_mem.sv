@@ -332,7 +332,7 @@ module dm_mem #(
                 // check whether we need to execute the program buffer
                 if (ac_ar.postexec) begin
                     // issue a nop, we will automatically run into the program buffer
-                    abstract_cmd[2][31:0] = riscv::nop();
+                    abstract_cmd[2][63:32] = riscv::nop();
                 end
             end
             // not supported at the moment
