@@ -247,7 +247,6 @@ class instruction_trace_item;
 
     function string printRInstr(input string mnemonic);
 
-<<<<<<< HEAD
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
         read_regs.push_back(sbe.rs2);
@@ -264,109 +263,18 @@ class instruction_trace_item;
             return $sformatf("%-16s %s, %0d", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result));
 
         return $sformatf("%-16s %s, %s, %0d", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), $signed(sbe.result));
-=======
-        result_regs.push_back(rd);
-        result_fpr.push_back(1'b0);
-        read_regs.push_back(rs1);
-        read_fpr.push_back(1'b0);
-        read_regs.push_back(rs2);
-        read_fpr.push_back(1'b0);
-
-        return $sformatf("%-12s %4s, %s, %s", mnemonic, regAddrToStr(rd), regAddrToStr(rs1), regAddrToStr(rs2));
-    endfunction // printRInstr
-
-    function string printRFInstr(input string mnemonic, input bit use_rnd);
-
-        result_regs.push_back(rd);
-        result_fpr.push_back(is_rd_fpr(sbe.op));
-        read_regs.push_back(rs1);
-        read_fpr.push_back(is_rs1_fpr(sbe.op));
-        read_regs.push_back(rs2);
-        read_fpr.push_back(is_rs2_fpr(sbe.op));
-
-        if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), fpRmToStr(instr[14:12]));
-        else
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2));
-    endfunction // printRFInstr
-
-    function string printRFInstr1Op(input string mnemonic, input bit use_rnd);
-
-        result_regs.push_back(rd);
-        result_fpr.push_back(is_rd_fpr(sbe.op));
-        read_regs.push_back(rs1);
-        read_fpr.push_back(is_rs1_fpr(sbe.op));
-
-        if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), fpRmToStr(instr[14:12]));
-        else
-            return $sformatf("%-12s %4s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1));
-    endfunction // printRFInstr1Op
-
-    function string printR4Instr(input string mnemonic);
-
-        result_regs.push_back(rd);
-        result_fpr.push_back(1'b1);
-        read_regs.push_back(rs1);
-        read_fpr.push_back(1'b1);
-        read_regs.push_back(rs2);
-        read_fpr.push_back(1'b1);
-        read_regs.push_back(rs3);
-        read_fpr.push_back(1'b1);
-
-        return $sformatf("%-12s %4s, %s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), fpRegAddrToStr(rd), fpRegAddrToStr(rs1), fpRegAddrToStr(rs2), fpRegAddrToStr(instr[31:27]), fpRmToStr(instr[14:12]));
-    endfunction // printR4Instr
-
-    function string printFpSpecialInstr();
-
-        result_regs.push_back(rd);
-        result_fpr.push_back(is_rd_fpr(sbe.op));
-        read_regs.push_back(rs1);
-        read_fpr.push_back(is_rs1_fpr(sbe.op));
-
-        case (sbe.op)
-            FCVT_F2F : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", fpFmtToStr(instr[26:25]), fpFmtToStr(instr[21:20])), fpRegAddrToStr(rd), fpRegAddrToStr(rs1), fpRmToStr(instr[14:12]));
-            FCVT_F2I : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", intFmtToStr(instr[21:20]), fpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1), fpRmToStr(instr[14:12]));
-            FCVT_I2F : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", fpFmtToStr(instr[26:25]), intFmtToStr(instr[21:20])), fpRegAddrToStr(rd), regAddrToStr(rs1), fpRmToStr(instr[14:12]));
-            FMV_F2X  : return $sformatf("%-12s %4s, %s", $sformatf("fmv.x.%s", fmvFpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1));
-            FMV_X2F  : return $sformatf("%-12s %4s, %s", $sformatf("fmv.x.%s", fmvFpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1));
-        endcase
-    endfunction
-
-    function string printIInstr(input string mnemonic);
-
-        result_regs.push_back(rd);
-        result_fpr.push_back(1'b0);
-        read_regs.push_back(rs1);
-        read_fpr.push_back(1'b0);
-
-        if (rs1 == 0)
-            return $sformatf("%-12s %4s, %0d", mnemonic, regAddrToStr(rd), $signed(sbe.result));
-
-        return $sformatf("%-12s %4s, %s, %0d", mnemonic, regAddrToStr(rd), regAddrToStr(rs1), $signed(sbe.result));
->>>>>>> 385359f... :sparkles: Add register renaming to issue stage
     endfunction // printIInstr
 
     function string printIuInstr(input string mnemonic);
 
-<<<<<<< HEAD
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
 
         return $sformatf("%-16s %s, %s, 0x%0x", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), sbe.result);
-=======
-        result_regs.push_back(rd);
-        result_fpr.push_back(1'b0);
-        read_regs.push_back(rs1);
-        read_fpr.push_back(1'b0);
-
-        return $sformatf("%-12s %4s, %s, 0x%0x", mnemonic, regAddrToStr(rd), regAddrToStr(rs1), sbe.result);
->>>>>>> 385359f... :sparkles: Add register renaming to issue stage
     endfunction // printIuInstr
 
     function string printSBInstr(input string mnemonic);
 
-<<<<<<< HEAD
         read_regs.push_back(sbe.rs1);
         read_regs.push_back(sbe.rs2);
 
@@ -374,31 +282,13 @@ class instruction_trace_item;
             return $sformatf("%-16s %s, pc + %0d", mnemonic, regAddrToStr(sbe.rs1), $signed(sbe.result));
         else
             return $sformatf("%-16s %s, %s, pc + %0d", mnemonic, regAddrToStr(sbe.rs1), regAddrToStr(sbe.rs2), $signed(sbe.result));
-=======
-        read_regs.push_back(rs1);
-        read_fpr.push_back(1'b0);
-        read_regs.push_back(rs2);
-        read_fpr.push_back(1'b0);
-
-        if (rs2 == 0)
-            return $sformatf("%-12s %4s, pc + %0d", mnemonic, regAddrToStr(rs1), $signed(sbe.result));
-        else
-            return $sformatf("%-12s %4s, %s, pc + %0d", mnemonic, regAddrToStr(rs1), regAddrToStr(rs2), $signed(sbe.result));
->>>>>>> 385359f... :sparkles: Add register renaming to issue stage
     endfunction // printIuInstr
 
     function string printUInstr(input string mnemonic);
 
-<<<<<<< HEAD
         result_regs.push_back(sbe.rd);
 
         return $sformatf("%-16s %s, 0x%0h", mnemonic, regAddrToStr(sbe.rd), sbe.result[31:12]);
-=======
-        result_regs.push_back(rd);
-        result_fpr.push_back(1'b0);
-
-        return $sformatf("%-12s %4s, 0x%0h", mnemonic, regAddrToStr(rd), sbe.result[31:12]);
->>>>>>> 385359f... :sparkles: Add register renaming to issue stage
     endfunction // printUInstr
 
     function string printJump();
@@ -425,27 +315,16 @@ class instruction_trace_item;
 
     function string printUJInstr(input string mnemonic);
 
-<<<<<<< HEAD
         result_regs.push_back(sbe.rd);
         // jump instruction
         if (sbe.rd == 0)
             return $sformatf("%-16s pc + %0d", mnemonic, $signed(sbe.result));
         else
             return $sformatf("%-16s %s, pc + %0d", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result));
-=======
-        result_regs.push_back(rd);
-        result_fpr.push_back(1'b0);
-        // jump instruction
-        if (rd == 0)
-            return $sformatf("%-12s   pc + %0d", mnemonic, $signed(sbe.result));
-        else
-            return $sformatf("%-12s %4s, pc + %0d", mnemonic, regAddrToStr(rd), $signed(sbe.result));
->>>>>>> 385359f... :sparkles: Add register renaming to issue stage
     endfunction // printUJInstr
 
     function string printCSRInstr(input string mnemonic);
 
-<<<<<<< HEAD
         result_regs.push_back(sbe.rd);
         if (instr[14] == 0) begin
         read_regs.push_back(sbe.rs1);
@@ -465,29 +344,6 @@ class instruction_trace_item;
                   return $sformatf("%-16s %d, %s", mnemonic, $unsigned(sbe.rs1), csrAddrToStr(sbe.result[11:0]));
             end else if (sbe.rs1 == 0) begin
                 return $sformatf("%-16s %s, %s", mnemonic, regAddrToStr(sbe.rd), csrAddrToStr(sbe.result[11:0]));
-=======
-        result_regs.push_back(rd);
-        result_fpr.push_back(1'b0);
-        if (instr[14] == 0) begin
-        read_regs.push_back(rs1);
-        read_fpr.push_back(1'b0);
-            if (rd != 0 && rs1 != 0) begin
-                  return $sformatf("%-12s %4s, %s, %s", mnemonic, regAddrToStr(rd), regAddrToStr(rs1), csrAddrToStr(sbe.result[11:0]));
-            // don't display instructions which write to zero
-            end else if (rd == 0) begin
-                  return $sformatf("%-12s %4s, %s", mnemonic, regAddrToStr(rs1), csrAddrToStr(sbe.result[11:0]));
-            end else if (rs1 == 0) begin
-                return $sformatf("%-12s %4s, %s", mnemonic, regAddrToStr(rd), csrAddrToStr(sbe.result[11:0]));
-            end
-        end else begin
-            if (rd != 0 && rs1 != 0) begin
-                  return $sformatf("%-12s %4s, %d, %s", mnemonic, regAddrToStr(rd), $unsigned(rs1), csrAddrToStr(sbe.result[11:0]));
-            // don't display instructions which write to zero
-            end else if (rd == 0) begin
-                  return $sformatf("%-14s %2d, %s", mnemonic, $unsigned(rs1), csrAddrToStr(sbe.result[11:0]));
-            end else if (rs1 == 0) begin
-                return $sformatf("%-12s %4s, %s", mnemonic, regAddrToStr(rd), csrAddrToStr(sbe.result[11:0]));
->>>>>>> 385359f... :sparkles: Add register renaming to issue stage
             end
         end
     endfunction // printCSRInstr
@@ -506,29 +362,12 @@ class instruction_trace_item;
           default: return printMnemonic("INVALID");
         endcase
 
-<<<<<<< HEAD
         result_regs.push_back(sbe.rd);
         read_regs.push_back(sbe.rs1);
         // save the immediate for calculating the virtual address
         this.imm = sbe.result;
 
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result), regAddrToStr(sbe.rs1));
-=======
-        if (instr[6:0] == OPCODE_LOAD_FP)
-            mnemonic = $sformatf("f%s",mnemonic);
-
-        result_regs.push_back(rd);
-        result_fpr.push_back(is_rd_fpr(sbe.op));
-        read_regs.push_back(rs1);
-        read_fpr.push_back(1'b0);
-        // save the immediate for calculating the virtual address
-        this.imm = sbe.result;
-
-        if (instr[6:0] == OPCODE_LOAD_FP)
-            return $sformatf("%-12s %4s, %0d(%s)", mnemonic, fpRegAddrToStr(rd), $signed(sbe.result), regAddrToStr(rs1));
-        else
-            return $sformatf("%-12s %4s, %0d(%s)", mnemonic, regAddrToStr(rd), $signed(sbe.result), regAddrToStr(rs1));
->>>>>>> 385359f... :sparkles: Add register renaming to issue stage
     endfunction
 
     function string printStoreInstr();
@@ -542,30 +381,12 @@ class instruction_trace_item;
           default: return printMnemonic("INVALID");
         endcase
 
-<<<<<<< HEAD
         read_regs.push_back(sbe.rs2);
         read_regs.push_back(sbe.rs1);
         // save the immediate for calculating the virtual address
         this.imm = sbe.result;
 
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rs2), $signed(sbe.result), regAddrToStr(sbe.rs1));
-=======
-        if (instr[6:0] == OPCODE_STORE_FP)
-            mnemonic = $sformatf("f%s",mnemonic);
-
-        read_regs.push_back(rs2);
-        read_fpr.push_back(is_rs2_fpr(sbe.op));
-        read_regs.push_back(rs1);
-        read_fpr.push_back(1'b0);
-        // save the immediate for calculating the virtual address
-        this.imm = sbe.result;
-
-        if (instr[6:0] == OPCODE_STORE_FP)
-            return $sformatf("%-12s %4s, %0d(%s)", mnemonic, fpRegAddrToStr(rs2), $signed(sbe.result), regAddrToStr(rs1));
-        else
-            return $sformatf("%-12s %4s, %0d(%s)", mnemonic, regAddrToStr(rs2), $signed(sbe.result), regAddrToStr(rs1));
->>>>>>> 385359f... :sparkles: Add register renaming to issue stage
-
     endfunction // printSInstr
 
     function string printMulInstr(logic is_op32);
