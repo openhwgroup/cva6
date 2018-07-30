@@ -139,7 +139,7 @@ module decoder (
                                     if (instr.instr[31:25] == 7'b1001) begin
                                         // Reset illegal instruction here, this is the only type
                                         // of instruction which needs those kind of fields
-                                        illegal_instr    = 1'b0;
+                                        illegal_instr    = (priv_lvl_i inside {PRIV_LVL_M, PRIV_LVL_S}) ? 1'b0 : 1'b1;
                                         instruction_o.op = SFENCE_VMA;
                                         // check TVM flag and intercept SFENCE.VMA call if necessary
                                         if (priv_lvl_i == PRIV_LVL_S && tvm_i)
