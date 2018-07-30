@@ -69,8 +69,6 @@ module dm_csrs #(
     localparam dm::dm_csr_t DataEnd = dm::dm_csr_t'((dm::Data0 + dm::DataCount));
     localparam dm::dm_csr_t ProgBufEnd = dm::dm_csr_t'((dm::ProgBuf0 + dm::ProgBufSize));
 
-    assign hartsel_o    = {dmcontrol_q.hartselhi, dmcontrol_q.hartsello};
-
     logic [31:0] haltsum0, haltsum1, haltsum2, haltsum3;
     // TODO(zarubaf) Need an elegant way to calculate haltsums
     for (genvar i = 0; i < 32; i++) begin
@@ -101,6 +99,8 @@ module dm_csrs #(
     assign dmi_resp_valid_o     = ~resp_queue_empty;
     assign dmi_req_ready_o      = ~resp_queue_full;
     assign resp_queue_push      = dmi_req_valid_i & dmi_req_ready_o;
+
+    assign hartsel_o    = {dmcontrol_q.hartselhi, dmcontrol_q.hartsello};
 
     always_comb begin : csr_read_write
         // --------------------

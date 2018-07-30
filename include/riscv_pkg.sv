@@ -235,7 +235,7 @@ package riscv;
         CSR_MIS_PREDICT    = PERF_MIS_PREDICT    + 12'hC03
     } csr_reg_t;
 
-    enum logic [2:0] {
+    typedef enum logic [2:0] {
         CSRRW  = 3'h1,
         CSRRS  = 3'h2,
         CSRRC  = 3'h3,

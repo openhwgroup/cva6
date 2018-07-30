@@ -17,22 +17,22 @@
  */
 
 package dm;
-    parameter logic [3:0] DbgVersion013 = 4'h2;
+    localparam logic [3:0] DbgVersion013 = 4'h2;
     // size of program buffer in junks of 32-bit words
-    parameter logic [4:0] ProgBufSize   = 5'h6;
+    localparam logic [4:0] ProgBufSize   = 5'h6;
 
     // TODO(zarubaf) This is hard-coded to two at the moment
     // amount of data count registers implemented
-    parameter logic [3:0] DataCount     = 5'h2;
+    localparam logic [3:0] DataCount     = 5'h2;
 
     // address to which a hart should jump when it was requested to halt
-    parameter logic [63:0] HaltAddress = 64'h800;
-    parameter logic [63:0] ResumeAddress = HaltAddress + 4;
-    parameter logic [63:0] ExceptionAddress = HaltAddress + 8;
+    localparam logic [63:0] HaltAddress = 64'h800;
+    localparam logic [63:0] ResumeAddress = HaltAddress + 4;
+    localparam logic [63:0] ExceptionAddress = HaltAddress + 8;
 
     // address where data0-15 is shadowed or if shadowed in a CSR
     // address of the first CSR used for shadowing the data
-    parameter logic [11:0] DataAddr = 12'h380; // we are aligned with Rocket here
+    localparam logic [11:0] DataAddr = 12'h380; // we are aligned with Rocket here
 
     // debug registers
     typedef enum logic [7:0] {

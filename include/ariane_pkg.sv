@@ -47,7 +47,7 @@ package ariane_pkg;
     localparam REG_ADDR_SIZE = 6;
 
     // static debug hartinfo
-    parameter dm::hartinfo_t DebugHartInfo = '{
+    localparam dm::hartinfo_t DebugHartInfo = '{
                                                 zero1:        '0,
                                                 nscratch:      1, // DTM currently needs at least one scratch register
                                                 zero0:        '0,
