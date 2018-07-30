@@ -832,7 +832,7 @@ module csr_regfile #(
             // machine mode registers
             mstatus_q              <= 64'b0;
             // set to boot address + direct mode + 4 byte offset which is the initial trap
-            mtvec_q                <= {boot_addr_i[63:3], 3'h4};
+            mtvec_q                <= boot_addr_i + 'h40;
             medeleg_q              <= 64'b0;
             mideleg_q              <= 64'b0;
             mip_q                  <= 64'b0;
