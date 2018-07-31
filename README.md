@@ -69,13 +69,6 @@ make sim riscv-test=tmp/risc-tests/build/isa/rv64ui-p-sraw
 
 If you call `simc` instead of `sim` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
 
-### Unit Tests
-
-Or start any of the unit tests by:
-```
-make alu
-```
-
 ### Randomized Constrained Testing with Torture
 
 Currently not up-to-date.
