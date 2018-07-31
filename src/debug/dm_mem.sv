@@ -118,8 +118,8 @@ module dm_mem #(
                     cmderror_o = dm::CmdErrorHaltResume;
                 end
                 // CSRs want to resume, the request is ignored when the hart is
-                // requested to halt
-                if (resumereq_i && !haltreq_i && halted_q) begin
+                // requested to halt or it didn't clear the resuming_q bit before
+                if (resumereq_i && !resuming_q && !haltreq_i && halted_q) begin
                     state_d = Resume;
                 end
             end
@@ -176,6 +176,10 @@ module dm_mem #(
         exception    = 1'b0;
         halted       = 1'b0;
         going        = 1'b0;
+        // The resume ack signal is lowered when the resume request is deasserted
+        if (resumereq_i == 1'b0) begin
+            resuming_d[hart_sel] = 1'b0;
+        end
         // we've got a new request
         if (req_i) begin
             // this is a write
@@ -184,19 +188,20 @@ module dm_mem #(
                     Halted: begin
                         halted = 1'b1;
                         halted_d[hart_sel] = 1'b1;
-                        resuming_d[hart_sel] = 1'b0;
                     end
-                    Going: going = 1'b1;
+                    Going: begin
+                        going = 1'b1;
+                    end
                     Resuming: begin
+                        // clear the halted flag as the hart resumed execution
                         halted_d[hart_sel] = 1'b0;
+                        // set the resuming flag which needs to be cleared by the debugger
                         resuming_d[hart_sel] = 1'b1;
                     end
                     // an exception occurred during execution
                     Exception: exception = 1'b1;
                     // core can write data registers
-                    // TODO(zarubaf) Remove hard-coded values
                     [(dm::DataAddr):DataEnd]: begin
-
                         data_valid_o = 1'b1;
                         for (int i = 0; i < $bits(be_i); i++) begin
                             if (be_i[i]) begin

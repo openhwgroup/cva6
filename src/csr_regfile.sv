@@ -101,7 +101,7 @@ module csr_regfile #(
     riscv::priv_lvl_t   priv_lvl_d, priv_lvl_q;
     // we are in debug
     logic        debug_mode_q, debug_mode_d;
-    logic        next_pc;
+    logic [63:0] next_pc;
 
     riscv::status_rv64_t  mstatus_q,  mstatus_d;
     riscv::satp_t         satp_q, satp_d;
@@ -155,7 +155,6 @@ module csr_regfile #(
                 riscv::CSR_TDATA1:;  // not implemented
                 riscv::CSR_TDATA2:;  // not implemented
                 riscv::CSR_TDATA3:;  // not implemented
-                riscv::CSR_TINFO:;   // not implemented
                 // supervisor registers
                 riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h80000003000DE133;
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
@@ -286,7 +285,6 @@ module csr_regfile #(
                 riscv::CSR_TDATA1:;  // not implemented
                 riscv::CSR_TDATA2:;  // not implemented
                 riscv::CSR_TDATA3:;  // not implemented
-                riscv::CSR_TINFO:;   // not implemented
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
                     mstatus_d = csr_wdata;
@@ -791,20 +789,11 @@ module csr_regfile #(
         automatic logic [63:0] branch_target;
         automatic logic branch_taken;
         automatic logic is_compressed;
+        // we only need to check the 0th instruction as in single-step mode we are only retiring one instruction
         pc = commit_instr_i[0].pc;
         branch_taken = commit_instr_i[0].bp.valid & commit_instr_i[0].bp.predict_taken;
         is_compressed = commit_instr_i[0].is_compressed;
         branch_target = commit_instr_i[0].bp.predict_address;
-        // check each port for instruction commit
-        // the last committed instruction takes priority
-        for (int i = 1; i < NR_COMMIT_PORTS; i++) begin
-            if (commit_ack_i[i]) begin
-                pc = commit_instr_i[i].pc;
-                branch_taken = commit_instr_i[i].bp.valid & commit_instr_i[i].bp.predict_taken;
-                is_compressed = commit_instr_i[i].is_compressed;
-                branch_target = commit_instr_i[i].bp.predict_address;
-            end
-        end
         // TODO(zarubaf) this adder can potentially be saved, the next address has been
         // calculated a couple of times down the pipeline
         next_pc = (branch_taken ? branch_target : (is_compressed ? pc + 'h2 : pc + 'h4));

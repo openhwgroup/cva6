@@ -323,6 +323,7 @@ module dm_csrs #(
         // PoR
         if (~rst_ni) begin
             dmcontrol_q <= '0;
+            havereset_q <= '1;
         end else begin
             // synchronous re-set of debug module, active-low, except for dmactive
             if (!dmcontrol_q.dmactive) begin
