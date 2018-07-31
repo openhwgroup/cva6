@@ -17,20 +17,10 @@ questa_version ?=
 verilator ?= verilator
 # Sources
 # Ariane PKG
-ariane_pkg := include/riscv_pkg.sv src/debug/dm_pkg.sv include/ariane_pkg.sv include/nbdcache_pkg.sv
+ariane_pkg := include/riscv_pkg.sv src/debug/dm_pkg.sv include/ariane_pkg.sv include/nbdcache_pkg.sv include/axi_if.sv
 # utility modules
 util := $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv \
 		src/util/generic_fifo.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv
-# test targets
-tests := alu scoreboard fifo dcache_arbiter store_queue lsu core fetch_fifo
-# UVM agents
-agents := $(wildcard tb/agents/*/*.sv*)
-# path to interfaces
-interfaces := $(wildcard include/*.svh)
-# UVM environments
-envs := $(wildcard tb/env/*/*.sv*)
-# UVM Sequences
-sequences := $(wildcard tb/sequences/*/*.sv*)
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.sv*)
 # DPI
@@ -43,7 +33,7 @@ src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard tb/common/*.v)
        $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv)) $(wildcard bootrom/*.sv)       \
        $(wildcard src/debug/debug_rom/*.sv)
 # look for testbenches
-tbs := tb/alu_tb.sv tb/ariane_tb.sv tb/ariane_testharness.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
+tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 
 # RISCV-tests path
 riscv-test-dir := tmp/riscv-tests/build/isa
@@ -63,16 +53,15 @@ uvm-flags += +UVM_NO_RELNOTES
 list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 
 # Build the TB and module using QuestaSim
-build: $(library) $(library)/.build-agents $(library)/.build-interfaces $(library)/.build-components \
-		$(library)/.build-srcs $(library)/.build-tb $(library)/ariane_dpi.so
+build: $(library) $(library)/.build-srcs $(library)/.build-tb $(library)/ariane_dpi.so
 		# Optimize top level
 	vopt$(questa_version) $(compile_flag) -work $(library)  $(test_top_level) -o $(test_top_level)_optimized +acc -check_synthesis
 
 # src files
-$(library)/.build-srcs: $(util) $(src)
+$(library)/.build-srcs: $(ariane_pkg) $(util) $(src)
+	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(ariane_pkg)) $(list_incdir) -suppress 2583
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
-	# Compile agents, interfaces and environments
 	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(src) $(list_incdir) -suppress 2583
 	touch $(library)/.build-srcs
 
@@ -89,22 +78,6 @@ work/%.o: tb/dpi/%.cc $(dpi_hdr)
 $(library)/ariane_dpi.so: $(dpi)
 	# Compile C-code and generate .so file
 	g++ -shared -m64 -o $(library)/ariane_dpi.so $? -lfesvr
-
-# Compile Sequences and Tests
-$(library)/.build-components: $(envs) $(sequences) $(test_pkg)
-	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(envs)) $(filter %.sv,$(sequences)) \
-													$(filter %.sv,$(test_pkg)) ${list_incdir} -suppress 2583
-	touch $(library)/.build-components
-
-# Compile Agents
-$(library)/.build-agents: $(agents) $(ariane_pkg)
-	vlog$(questa_version) $(compile_flag) -work $(library) $(ariane_pkg) $(filter %.sv,$(agents)) $(list_incdir) -suppress 2583
-	touch $(library)/.build-agents
-
-# Compile Interfaces
-$(library)/.build-interfaces: $(interfaces)
-	vlog$(questa_version) $(compile_flag) -work $(library) $(interfaces) $(list_incdir) -suppress 2583
-	touch $(library)/.build-interfaces
 
 $(library):
 	# Create the library
@@ -127,17 +100,6 @@ run-asm-tests: build
 		-do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
 		$(library).$(test_top_level)_optimized +permissive-off ++$(test);)
 
-# Run the specified test case
-$(tests): build
-	# Optimize top level
-	vopt${questa_version} -work ${library} ${compile_flag} $@_tb -o $@_tb_optimized +acc -check_synthesis
-	# vsim${questa_version} $@_tb_optimized
-	# vsim${questa_version} +UVM_TESTNAME=$@_test -coverage -classdebug $@_tb_optimized
-	vsim${questa_version} -64 +UVM_TESTNAME=$@_test +ASMTEST=$(riscv-test-dir)/$(riscv-test) \
-	+uvm_set_action="*,_ALL_,UVM_ERROR,UVM_DISPLAY|UVM_STOP" -c -coverage -classdebug -sv_lib $(library)/ariane_dpi \
-	-do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
-	${library}.$@_tb_optimized
-
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
 	$(verilator)                                                     \
@@ -155,7 +117,6 @@ verilate:
     src/util/cluster_clock_gating.sv                                 \
     src/util/behav_sram.sv                                           \
     src/axi_mem_if/src/axi2mem.sv                                    \
-    tb/agents/axi_if/axi_if.sv                                       \
     +incdir+src/axi_node                                             \
     --unroll-count 256                                               \
     -Werror-PINMISSING                                               \
