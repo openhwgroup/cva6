@@ -146,9 +146,17 @@ module csr_regfile #(
 
         if (csr_read) begin
             case (csr_addr.address)
+                // debug registers
                 riscv::CSR_DCSR:               csr_rdata = {31'b0, dcsr_q};
                 riscv::CSR_DPC:                csr_rdata = dpc_q;
                 riscv::CSR_DSCRATCH0:          csr_rdata = dscratch0_q;
+                // trigger module registers
+                riscv::CSR_TSELECT:; // not implemented
+                riscv::CSR_TDATA1:;  // not implemented
+                riscv::CSR_TDATA2:;  // not implemented
+                riscv::CSR_TDATA3:;  // not implemented
+                riscv::CSR_TINFO:;   // not implemented
+                // supervisor registers
                 riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h80000003000DE133;
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
@@ -165,7 +173,7 @@ module csr_regfile #(
                     else
                         csr_rdata = satp_q;
                 end
-
+                // machine mode registers
                 riscv::CSR_MSTATUS:            csr_rdata = mstatus_q;
                 riscv::CSR_MISA:               csr_rdata = ISA_CODE;
                 riscv::CSR_MEDELEG:            csr_rdata = medeleg_q;
@@ -187,6 +195,7 @@ module csr_regfile #(
                 riscv::CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
                 riscv::CSR_MINSTRET:           csr_rdata = instret_q;
+                // custom (non RISC-V) cache control
                 riscv::CSR_DCACHE:             csr_rdata = dcache_q;
                 riscv::CSR_ICACHE:             csr_rdata = icache_q;
                 // Counters and Timers
@@ -272,6 +281,12 @@ module csr_regfile #(
                 end
                 riscv::CSR_DPC:                dpc_d = csr_wdata;
                 riscv::CSR_DSCRATCH0:          dscratch0_d = csr_wdata;
+                // trigger module CSRs
+                riscv::CSR_TSELECT:; // not implemented
+                riscv::CSR_TDATA1:;  // not implemented
+                riscv::CSR_TDATA2:;  // not implemented
+                riscv::CSR_TDATA3:;  // not implemented
+                riscv::CSR_TINFO:;   // not implemented
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
                     mstatus_d = csr_wdata;
@@ -376,7 +391,7 @@ module csr_regfile #(
                 // Placeholders for M-mode protection
                 riscv::CSR_PMPCFG0:            pmpcfg0_d   = csr_wdata;
                 riscv::CSR_PMPADDR0:           pmpaddr0_d  = csr_wdata;
-
+                // performance counters
                 riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
                 riscv::CSR_MINSTRET:           instret     = csr_wdata;
                 riscv::CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
