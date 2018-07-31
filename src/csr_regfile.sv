@@ -20,7 +20,6 @@ module csr_regfile #(
 )(
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
-    input  logic [63:0]           time_i,                     // Platform Timer
     input  logic                  time_irq_i,                 // Timer threw a interrupt
 
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
@@ -199,7 +198,6 @@ module csr_regfile #(
                 riscv::CSR_ICACHE:             csr_rdata = icache_q;
                 // Counters and Timers
                 riscv::CSR_CYCLE:              csr_rdata = cycle_q;
-                riscv::CSR_TIME:               csr_rdata = time_i;
                 riscv::CSR_INSTRET:            csr_rdata = instret_q;
                 riscv::CSR_L1_ICACHE_MISS,
                 riscv::CSR_L1_DCACHE_MISS,

@@ -40,7 +40,6 @@ module ariane #(
         input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip (async)
         input  logic                           ipi_i,        // inter-processor interrupts (async)
         // Timer facilities
-        input  logic [63:0]                    time_i,       // global time (most probably coming from an RTC)
         input  logic                           time_irq_i,   // timer interrupt in (async)
         input  logic                           debug_req_i   // debug request (async)
     );
