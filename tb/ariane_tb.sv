@@ -27,7 +27,6 @@ module ariane_tb;
 
     logic clk_i;
     logic rst_ni;
-    logic [63:0] time_i;
 
     longint unsigned cycles;
     longint unsigned max_cycles;
@@ -55,16 +54,6 @@ module ariane_tb;
             //    $fatal(1, "Simulation reached maximum cycle count of %d", max_cycles);
 
             cycles++;
-        end
-    end
-    // Real Time Clock
-    initial begin
-        // initialize platform timer
-        time_i = 64'b0;
-        // increment timer with a frequency of 32.768 kHz
-        forever begin
-            #30.517578us;
-            time_i++;
         end
     end
 
