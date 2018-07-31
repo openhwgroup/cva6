@@ -37,10 +37,10 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) $(wildcard tb/test/*/*_pkg.s
 dpi := $(patsubst tb/dpi/%.cc,work/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 # this list contains the standalone components
-src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard tb/common/*.v) $(wildcard src/axi2per/*.sv)  \
-       $(wildcard src/axi_slice/*.sv)                                                                          \
-       $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/src/*.sv)                                       \
-       $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv)) $(wildcard bootrom/*.sv)                  \
+src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard tb/common/*.v)                    \
+       $(wildcard src/axi_slice/*.sv)                                                               \
+       $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/src/*.sv)                            \
+       $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv)) $(wildcard bootrom/*.sv)       \
        $(wildcard src/debug/debug_rom/*.sv)
 # look for testbenches
 tbs := tb/alu_tb.sv tb/ariane_tb.sv tb/ariane_testharness.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
