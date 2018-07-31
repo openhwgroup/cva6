@@ -60,26 +60,14 @@ While developing Ariane it has become evident that, in order to support Linux, t
 
 ## Going Beyond
 
-The core has been developed with a full licensed version of QuestaSim. If you happen to have this simulator available yourself here is how you could run the core with it. You need to generate **both** an `elf` file and a `hex` file, most easily this can be done by calling:
+The core has been developed with a full licensed version of QuestaSim. If you happen to have this simulator available yourself here is how you could run the core with it.
 
-```
-elf2hex 8 2097152 elf_file.riscv 2147483648  > elf_file.riscv.hex
-```
-
-Start the simulation using Modelsim:
-```
-make build
-make sim
-```
 To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the `tmp/risc-tests/build/isa` folder:
 ```
-make sim riscv-test=rv64ui-p-sraw
+make sim riscv-test=tmp/risc-tests/build/isa/rv64ui-p-sraw
 ```
-If you need to specify a different directory you can pass the optional `riscv-test-dir` flag:
-```
-make sim riscv-test=elf_name riscv-test-dir=/path/to/elf/and/hex/file
-```
-If you call `simc` instead of `sim` it will run without the GUI.
+
+If you call `simc` instead of `sim` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
 
 ### Unit Tests
 
@@ -90,17 +78,7 @@ make alu
 
 ### Randomized Constrained Testing with Torture
 
-Ariane's core testbench is fully compatible with the randomized constrained testing framework called Torture. To start testing Ariane all you need is to step into the `riscv-torture/` folder and issue:
-```
-make rgentest
-```
-Which will produce a single randomized program, runs it on Spike (see [Getting Started](#getting_started)) and on the RTL simulator (QuestaSim) by calling `ariane-run-torture`.
-
-Torture's overnight tests work the same way, just call
-```
-make rnight
-```
-C (a.k.a. Verilator) tests are currently not supported.
+Currently not up-to-date.
 
 # Contributing
 

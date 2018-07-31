@@ -19,7 +19,7 @@
         .global exception
 
         // Entry location on ebreak, Halt, or Breakpoint
-        // It is the same for all harts. They branch when 
+        // It is the same for all harts. They branch when
         // their GO or RESUME bit is set.
 
 entry:
@@ -58,10 +58,7 @@ _exception:
 going:
         csrr s0, CSR_DSCRATCH          // Restore s0 here
         sw zero, GOING(zero)           // When debug module sees this write, the GO flag is reset.
-        jalr zero, zero, %lo(whereto)          // Rocket-Chip has a specific hack which is that jalr in
-                                       // Debug Mode will flush the I-Cache. We need that so that the
-                                       // remainder of the variable instructions will be what Debug Module
-                                       // intends.
+        jalr zero, zero, %lo(whereto)
 _resume:
         csrr s0, CSR_MHARTID
         sw   s0, RESUMING(zero) // When Debug Module sees this write, the RESUME flag is reset.
