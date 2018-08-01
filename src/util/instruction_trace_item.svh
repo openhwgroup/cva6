@@ -276,7 +276,6 @@ class instruction_trace_item;
             return $sformatf("%-16s %s, %0d", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result));
 
         return $sformatf("%-16s %s, %s, %0d", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), $signed(sbe.result));
-
     endfunction // printIInstr
 
     function string printIuInstr(input string mnemonic);
@@ -285,7 +284,6 @@ class instruction_trace_item;
         read_regs.push_back(sbe.rs1);
 
         return $sformatf("%-16s %s, %s, 0x%0x", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs1), sbe.result);
-
     endfunction // printIuInstr
 
     function string printSBInstr(input string mnemonic);
@@ -304,7 +302,6 @@ class instruction_trace_item;
         result_regs.push_back(sbe.rd);
 
         return $sformatf("%-16s %s, 0x%0h", mnemonic, regAddrToStr(sbe.rd), sbe.result[31:12]);
-
     endfunction // printUInstr
 
     function string printJump();
@@ -337,7 +334,6 @@ class instruction_trace_item;
             return $sformatf("%-16s pc + %0d", mnemonic, $signed(sbe.result));
         else
             return $sformatf("%-16s %s, pc + %0d", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result));
-
     endfunction // printUJInstr
 
     function string printCSRInstr(input string mnemonic);
@@ -404,7 +400,6 @@ class instruction_trace_item;
         this.imm = sbe.result;
 
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rs2), $signed(sbe.result), regAddrToStr(sbe.rs1));
-
     endfunction // printSInstr
 
     function string printMulInstr(logic is_op32);
