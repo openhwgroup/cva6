@@ -21,4 +21,4 @@ _hang:
 .globl _dtb
 .align 5, 0
 _dtb:
-.ascii "DTB goes here"
+.incbin "ariane.dtb"
