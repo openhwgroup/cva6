@@ -311,9 +311,10 @@ module icache #(
                 fetch_req_o = 1'b1;
                 // retry the request if no exception occurred
                 if (fetch_valid_i && (state_q == WAIT_ADDRESS_TRANSLATION)) begin
-                    if (fetch_exception_i.valid)
+                    if (fetch_exception_i.valid) begin
                         valid_o = 1'b1;
-                    else begin
+                        state_d = IDLE;
+                    end else begin
                         state_d = REDO_REQ;
                         tag_d = fetch_paddr_i[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
                     end
