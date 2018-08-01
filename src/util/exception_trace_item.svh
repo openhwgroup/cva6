@@ -24,26 +24,26 @@ class exception_trace_item;
         this.cause = cause;
 
         case (cause)
-            INSTR_ADDR_MISALIGNED: this.cause_s = "Instruction Address Misaligned";
-            INSTR_ACCESS_FAULT:    this.cause_s = "Instruction Access Fault";
-            ILLEGAL_INSTR:         this.cause_s = "Illegal Instruction";
-            BREAKPOINT:            this.cause_s = "Breakpoint";
-            LD_ADDR_MISALIGNED:    this.cause_s = "Load Address Misaligned";
-            LD_ACCESS_FAULT:       this.cause_s = "Load Access Fault";
-            ST_ADDR_MISALIGNED:    this.cause_s = "Store Address Misaligned";
-            ST_ACCESS_FAULT:       this.cause_s = "Store Access Fault";
-            ENV_CALL_UMODE:        this.cause_s = "Environment Call User Mode";
-            ENV_CALL_SMODE:        this.cause_s = "Environment Call Supervisor Mode";
-            ENV_CALL_MMODE:        this.cause_s = "Environment Call Machine Mode";
-            INSTR_PAGE_FAULT:      this.cause_s = "Instruction Page Fault";
-            LOAD_PAGE_FAULT:       this.cause_s = "Load Page Fault";
-            STORE_PAGE_FAULT:      this.cause_s = "Store Page Fault";
-            S_SW_INTERRUPT:        this.cause_s = "Supervisor Software Interrupt";
-            M_SW_INTERRUPT:        this.cause_s = "Machine Software Interrupt";
-            S_TIMER_INTERRUPT:     this.cause_s = "Supervisor Timer Interrupt";
-            M_TIMER_INTERRUPT:     this.cause_s = "Machine Timer Interrupt";
-            S_EXT_INTERRUPT:       this.cause_s = "Supervisor External Interrupt";
-            M_EXT_INTERRUPT:       this.cause_s = "Machine External Interrupt";
+            riscv::INSTR_ADDR_MISALIGNED: this.cause_s = "Instruction Address Misaligned";
+            riscv::INSTR_ACCESS_FAULT:    this.cause_s = "Instruction Access Fault";
+            riscv::ILLEGAL_INSTR:         this.cause_s = "Illegal Instruction";
+            riscv::BREAKPOINT:            this.cause_s = "Breakpoint";
+            riscv::LD_ADDR_MISALIGNED:    this.cause_s = "Load Address Misaligned";
+            riscv::LD_ACCESS_FAULT:       this.cause_s = "Load Access Fault";
+            riscv::ST_ADDR_MISALIGNED:    this.cause_s = "Store Address Misaligned";
+            riscv::ST_ACCESS_FAULT:       this.cause_s = "Store Access Fault";
+            riscv::ENV_CALL_UMODE:        this.cause_s = "Environment Call User Mode";
+            riscv::ENV_CALL_SMODE:        this.cause_s = "Environment Call Supervisor Mode";
+            riscv::ENV_CALL_MMODE:        this.cause_s = "Environment Call Machine Mode";
+            riscv::INSTR_PAGE_FAULT:      this.cause_s = "Instruction Page Fault";
+            riscv::LOAD_PAGE_FAULT:       this.cause_s = "Load Page Fault";
+            riscv::STORE_PAGE_FAULT:      this.cause_s = "Store Page Fault";
+            riscv::S_SW_INTERRUPT:        this.cause_s = "Supervisor Software Interrupt";
+            riscv::M_SW_INTERRUPT:        this.cause_s = "Machine Software Interrupt";
+            riscv::S_TIMER_INTERRUPT:     this.cause_s = "Supervisor Timer Interrupt";
+            riscv::M_TIMER_INTERRUPT:     this.cause_s = "Machine Timer Interrupt";
+            riscv::S_EXT_INTERRUPT:       this.cause_s = "Supervisor External Interrupt";
+            riscv::M_EXT_INTERRUPT:       this.cause_s = "Machine External Interrupt";
             default: this.cause_s = "Interrupt";
         endcase
 
@@ -55,7 +55,17 @@ class exception_trace_item;
         string s;
         s = $sformatf("Exception @%10t, PC: %h, Cause: %s", $time, this.pc, this.cause_s);
         // write out tval if it wasn't an environment call or interrupt, in that case the tval field has no meaning
-        if (!(this.cause inside {ENV_CALL_MMODE, ENV_CALL_SMODE, ENV_CALL_UMODE, S_SW_INTERRUPT, M_SW_INTERRUPT, S_TIMER_INTERRUPT, M_TIMER_INTERRUPT, S_EXT_INTERRUPT, M_EXT_INTERRUPT}))
+        if (!(this.cause inside {
+                riscv::ENV_CALL_MMODE,
+                riscv::ENV_CALL_SMODE,
+                riscv::ENV_CALL_UMODE,
+                riscv::S_SW_INTERRUPT,
+                riscv::M_SW_INTERRUPT,
+                riscv::S_TIMER_INTERRUPT,
+                riscv::M_TIMER_INTERRUPT,
+                riscv::S_EXT_INTERRUPT,
+                riscv::M_EXT_INTERRUPT
+            }))
             s = $sformatf("%s, \n\t\t\t\ttval: %h", s, this.tval);
         return s;
     endfunction

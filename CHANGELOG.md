@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+
+### 3.0.0
+
+### Added
+
+- Added RISC-V compliant debug (interface changes)
+- Implemented basic re-naming
+
+### Changed
+
+- [Bugfix] Cache-refill AXI logic (AXI protocol violation)
+- [Bugfix] `MSTATUS` write-able through `SSTATUS` #65
+- [Bugfix] PTW has protocol violation #61
+- [Bugfix] Race-condition #54
+- Removed timer input. Access to mtime will trap and must be handled by M-mode SW.
+
 ### 2.0.2 - 2018-04-08
 
 ### Changed

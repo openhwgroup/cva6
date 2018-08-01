@@ -23,12 +23,6 @@ module issue_read_operands #(
     input  logic                                   test_en_i,
     // flush
     input  logic                                   flush_i,
-    // coming from Debug
-    input  logic                                   debug_gpr_req_i,
-    input  logic [4:0]                             debug_gpr_addr_i,
-    input  logic                                   debug_gpr_we_i,
-    input  logic [63:0]                            debug_gpr_wdata_i,
-    output logic [63:0]                            debug_gpr_rdata_o,
     // coming from rename
     input  scoreboard_entry_t                      issue_instr_i,
     input  logic                                   issue_instr_valid_i,
@@ -339,30 +333,6 @@ module issue_read_operands #(
         end
     end
 
-    // --------------------
-    // Debug Multiplexers
-    // --------------------
-    logic [4:0]  raddr_a, waddr;
-    logic [63:0] wdata;
-    logic        we;
-
-    always_comb begin
-        // get the address from the issue stage by default
-        // read port
-        raddr_a           = issue_instr_i.rs1[4:0];
-        // write port
-        waddr             = waddr_i[0];
-        wdata             = wdata_i[0];
-        we                = we_gpr_i[0];
-        // we've got a debug request in
-        if (debug_gpr_req_i) begin // TODO is there a fpr debug req?
-            raddr_a = debug_gpr_addr_i;
-            waddr   = debug_gpr_addr_i;
-            wdata   = debug_gpr_wdata_i;
-            we      = debug_gpr_we_i;
-        end
-    end
-
     // ----------------------
     // Integer Register File
     // ----------------------
@@ -373,10 +343,10 @@ module issue_read_operands #(
     logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_pack;
     logic [NR_COMMIT_PORTS-1:0][63:0] wdata_pack;
     logic [NR_COMMIT_PORTS-1:0]       we_pack;
-    assign raddr_pack = {issue_instr_i.rs2[4:0], raddr_a};
-    assign waddr_pack = {waddr_i[1], waddr};
-    assign wdata_pack = {wdata_i[1], wdata};
-    assign we_pack    = {we_gpr_i[1], we};
+    assign raddr_pack = {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
+    assign waddr_pack = {waddr_i[1], waddr_i[0]};
+    assign wdata_pack = {wdata_i[1], wdata_i[0]};
+    assign we_pack    = {we_gpr_i[1], we_i[0]};
 
     ariane_regfile #(
         .DATA_WIDTH     ( 64              ),
@@ -422,8 +392,6 @@ module issue_read_operands #(
             assign fprdata = '{default: '0};
         end
     endgenerate
-
-    assign debug_gpr_rdata_o = rdata[0];
 
     assign operand_a_regfile = is_rs1_fpr(issue_instr_i.op) ? fprdata[0] : rdata[0];
     assign operand_b_regfile = is_rs2_fpr(issue_instr_i.op) ? fprdata[1] : rdata[1];

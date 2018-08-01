@@ -45,6 +45,7 @@ module miss_handler #(
 
     input  logic [NR_PORTS-1:0][55:0]                   mshr_addr_i,
     output logic [NR_PORTS-1:0]                         mshr_addr_matches_o,
+    output logic [NR_PORTS-1:0]                         mshr_index_matches_o,
     // Port to SRAMs, for refill and eviction
     output logic  [SET_ASSOCIATIVITY-1:0]               req_o,
     output logic  [INDEX_WIDTH-1:0]                     addr_o, // address into cache array
@@ -338,12 +339,18 @@ module miss_handler #(
     // check MSHR for aliasing
     always_comb begin
 
-        mshr_addr_matches_o = 'b0;
+        mshr_addr_matches_o  = 'b0;
+        mshr_index_matches_o = 'b0;
 
         for (int i = 0; i < NR_PORTS; i++) begin
             // check mshr for potential matching of other units, exclude the unit currently being served
             if (mshr_q.valid && mshr_addr_i[i][55:BYTE_OFFSET] == mshr_q.addr[55:BYTE_OFFSET]) begin
                 mshr_addr_matches_o[i] = 1'b1;
+            end
+
+            // same as previous, but checking only the index
+            if (mshr_q.valid && mshr_addr_i[i][INDEX_WIDTH-1:BYTE_OFFSET] == mshr_q.addr[INDEX_WIDTH-1:BYTE_OFFSET]) begin
+                mshr_index_matches_o[i] = 1'b1;
             end
         end
     end
@@ -684,7 +691,7 @@ module axi_adapter #(
     } state_q, state_d;
 
     // counter for AXI transfers
-    logic [$clog2(DATA_WIDTH/64)-1:0] cnt_d, cnt_q;
+    logic [ADDR_INDEX-1:0] cnt_d, cnt_q;
     logic [(DATA_WIDTH/64)-1:0][63:0] cache_line_d, cache_line_q;
     // save the address for a read, as we allow for non-cacheline aligned accesses
     logic [(DATA_WIDTH/64)-1:0] addr_offset_d, addr_offset_q;
@@ -835,7 +842,7 @@ module axi_adapter #(
 
                 axi.aw_valid = 1'b1;
                 // we are here because we want to write a cache line
-                axi.aw_len   = DATA_WIDTH/64;
+                axi.aw_len   = BURST_SIZE;
                 // we got an aw_ready
                 case ({axi.aw_ready, axi.w_ready})
                     // we got an aw ready
@@ -867,7 +874,7 @@ module axi_adapter #(
             // ~> all data has already been sent, we are only waiting for the aw_ready
             WAIT_AW_READY_BURST: begin
                 axi.aw_valid = 1'b1;
-                axi.aw_len   = DATA_WIDTH/64;
+                axi.aw_len   = BURST_SIZE;
 
                 if (axi.aw_ready) begin
                     state_d = WAIT_B_VALID;

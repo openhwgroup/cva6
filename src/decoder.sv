@@ -28,7 +28,8 @@ module decoder (
     input  branchpredict_sbe_t branch_predict_i,
     input  exception_t         ex_i,                    // if an exception occured in if
     // From CSR
-    input  priv_lvl_t          priv_lvl_i,              // current privilege level
+    input  riscv::priv_lvl_t   priv_lvl_i,              // current privilege level
+    input  logic               debug_mode_i,            // we are in debug mode
     input  logic [2:0]         frm_i,                   // floating-point dynamic rounding mode
     input  logic               tvm_i,                   // trap virtual memory
     input  logic               tw_i,                    // timeout wait
@@ -43,8 +44,8 @@ module decoder (
     logic ebreak;
     // this instruction needs floating-point rounding-mode verification
     logic check_fprm;
-    instruction_t instr;
-    assign instr = instruction_t'(instruction_i);
+    riscv::instruction_t instr;
+    assign instr = riscv::instruction_t'(instruction_i);
     // --------------------
     // Immediate select
     // --------------------
@@ -82,7 +83,7 @@ module decoder (
 
         if (~ex_i.valid) begin
             case (instr.rtype.opcode)
-                OPCODE_SYSTEM: begin
+                riscv::OpcodeSystem: begin
                     instruction_o.fu  = CSR;
                     instruction_o.rs1 = instr.itype.rs1;
                     instruction_o.rd  = instr.itype.rd;
@@ -99,41 +100,47 @@ module decoder (
                                 // EBREAK -> inject exception
                                 12'b1: ebreak = 1'b1;
                                 // SRET
-                                12'b100000010: begin
+                                12'b1_0000_0010: begin
                                     instruction_o.op = SRET;
                                     // check privilege level, SRET can only be executed in S and M mode
                                     // we'll just decode an illegal instruction if we are in the wrong privilege level
-                                    if (priv_lvl_i == PRIV_LVL_U) begin
+                                    if (priv_lvl_i == riscv::PRIV_LVL_U) begin
                                         illegal_instr = 1'b1;
                                         //  do not change privilege level if this is an illegal instruction
                                         instruction_o.op = ADD;
                                     end
                                     // if we are in S-Mode and Trap SRET (tsr) is set -> trap on illegal instruction
-                                    if (priv_lvl_i == PRIV_LVL_S && tsr_i) begin
+                                    if (priv_lvl_i == riscv::PRIV_LVL_S && tsr_i) begin
                                         illegal_instr = 1'b1;
                                         //  do not change privilege level if this is an illegal instruction
                                        instruction_o.op = ADD;
                                     end
                                 end
                                 // MRET
-                                12'b1100000010: begin
+                                12'b11_0000_0010: begin
                                     instruction_o.op = MRET;
                                     // check privilege level, MRET can only be executed in M mode
                                     // otherwise we decode an illegal instruction
-                                    if (priv_lvl_i inside {PRIV_LVL_U, PRIV_LVL_S})
+                                    if (priv_lvl_i inside {riscv::PRIV_LVL_U, riscv::PRIV_LVL_S})
                                         illegal_instr = 1'b1;
+                                end
+                                // DRET
+                                12'b111_1011_0010: begin
+                                    instruction_o.op = DRET;
+                                    // check that we are in debug mode when executing this instruction
+                                    illegal_instr = (!debug_mode_i) ? 1'b1 : 1'b0;
                                 end
                                 // WFI
                                 12'b1_0000_0101: begin
                                     instruction_o.op = WFI;
                                     // if timeout wait is set, trap on an illegal instruction in S Mode
                                     // (after 0 cycles timeout)
-                                    if (priv_lvl_i == PRIV_LVL_S && tw_i) begin
+                                    if (priv_lvl_i == riscv::PRIV_LVL_S && tw_i) begin
                                         illegal_instr = 1'b1;
                                         instruction_o.op = ADD;
                                     end
                                     // we don't support U mode interrupts so WFI is illegal in this context
-                                    if (priv_lvl_i == PRIV_LVL_U) begin
+                                    if (priv_lvl_i == riscv::PRIV_LVL_U) begin
                                         illegal_instr = 1'b1;
                                         instruction_o.op = ADD;
                                     end
@@ -141,12 +148,12 @@ module decoder (
                                 // SFENCE.VMA
                                 default: begin
                                     if (instr.instr[31:25] == 7'b1001) begin
-                                        // Reset illegal instruction here, this is the only type
-                                        // of instruction which needs those kind of fields
-                                        illegal_instr    = 1'b0;
+                                        // check privilege level, SFENCE.VMA can only be executed in M/S mode
+                                        // otherwise decode an illegal instruction
+                                        illegal_instr    = (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) ? 1'b0 : 1'b1;
                                         instruction_o.op = SFENCE_VMA;
                                         // check TVM flag and intercept SFENCE.VMA call if necessary
-                                        if (priv_lvl_i == PRIV_LVL_S && tvm_i)
+                                        if (priv_lvl_i == riscv::PRIV_LVL_S && tvm_i)
                                             illegal_instr = 1'b1;
                                     end
                                 end
@@ -206,7 +213,7 @@ module decoder (
                     endcase
                 end
                 // Memory ordering instructions
-                OPCODE_MISC_MEM: begin
+                riscv::OpcodeMiscMem: begin
                     instruction_o.fu  = CSR;
                     instruction_o.rs1 = '0;
                     instruction_o.rs2 = '0;
@@ -232,7 +239,7 @@ module decoder (
                 // --------------------------
                 // Reg-Reg Operations
                 // --------------------------
-                OPCODE_OP: begin
+                riscv::OpcodeOp: begin
                     // --------------------------------------------
                     // Vectorial Floating-Point Reg-Reg Operations
                     // --------------------------------------------
@@ -486,7 +493,7 @@ module decoder (
                 // --------------------------
                 // 32bit Reg-Reg Operations
                 // --------------------------
-                OPCODE_OP_32: begin
+                riscv::OpcodeOp32: begin
                     instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
                     instruction_o.rs1 = instr.rtype.rs1;
                     instruction_o.rs2 = instr.rtype.rs2;
@@ -510,7 +517,7 @@ module decoder (
                 // --------------------------------
                 // Reg-Immediate Operations
                 // --------------------------------
-                OPCODE_OP_IMM: begin
+                riscv::OpcodeOpImm: begin
                     instruction_o.fu  = ALU;
                     imm_select = IIMM;
                     instruction_o.rs1 = instr.itype.rs1;
@@ -544,7 +551,7 @@ module decoder (
                 // --------------------------------
                 // 32 bit Reg-Immediate Operations
                 // --------------------------------
-                OPCODE_OP_IMM_32: begin
+                riscv::OpcodeOpImm32: begin
                     instruction_o.fu  = ALU;
                     imm_select = IIMM;
                     instruction_o.rs1 = instr.itype.rs1;
@@ -574,7 +581,7 @@ module decoder (
                 // --------------------------------
                 // LSU
                 // --------------------------------
-                OPCODE_STORE: begin
+                riscv::OpcodeStore: begin
                     instruction_o.fu  = STORE;
                     imm_select = SIMM;
                     instruction_o.rs1  = instr.stype.rs1;
@@ -589,7 +596,7 @@ module decoder (
                     endcase
                 end
 
-                OPCODE_LOAD: begin
+                riscv::OpcodeLoad: begin
                     instruction_o.fu  = LOAD;
                     imm_select = IIMM;
                     instruction_o.rs1 = instr.itype.rs1;
@@ -610,7 +617,7 @@ module decoder (
                 // --------------------------------
                 // Floating-Point Load/store
                 // --------------------------------
-                OPCODE_STORE_FP: begin
+                riscv::OpcodeStoreFp: begin
                     if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = STORE;
                         imm_select = SIMM;
@@ -633,7 +640,7 @@ module decoder (
                         illegal_instr = 1'b1;
                 end
 
-                OPCODE_LOAD_FP: begin
+                riscv::OpcodeLoadFp: begin
                     if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = LOAD;
                         imm_select = IIMM;
@@ -659,10 +666,10 @@ module decoder (
                 // ----------------------------------
                 // Floating-Point Reg-Reg Operations
                 // ----------------------------------
-                OPCODE_MADD,
-                OPCODE_MSUB,
-                OPCODE_NMSUB,
-                OPCODE_NMADD: begin
+                riscv::OpcodeMadd,
+                riscv::OpcodeMsub,
+                riscv::OpcodeNmsub,
+                riscv::OpcodeNmadd: begin
                     if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = FPU;
                         instruction_o.rs1 = instr.r4type.rs1;
@@ -715,7 +722,7 @@ module decoder (
                     end
                 end
 
-                OPCODE_OP_FP: begin
+                riscv::OpcodeOpFp: begin
                     if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = FPU;
                         instruction_o.rs1 = instr.rftype.rs1;
@@ -855,7 +862,7 @@ module decoder (
                 // Atomic Operations
                 // ----------------------------------
                 `ifdef ENABLE_ATOMICS
-                OPCODE_AMO: begin
+                riscv::OpcodeAmo: begin
                     // we are going to use the load unit for AMOs
                     instruction_o.fu  = LOAD;
                     instruction_o.rd  = instr.stype.imm0;
@@ -901,7 +908,7 @@ module decoder (
                 // --------------------------------
                 // Control Flow Instructions
                 // --------------------------------
-                OPCODE_BRANCH: begin
+                riscv::OpcodeBranch: begin
                     imm_select              = SBIMM;
                     instruction_o.fu        = CTRL_FLOW;
                     instruction_o.rs1       = instr.stype.rs1;
@@ -923,7 +930,7 @@ module decoder (
                     endcase
                 end
                 // Jump and link register
-                OPCODE_JALR: begin
+                riscv::OpcodeJalr: begin
                     instruction_o.fu        = CTRL_FLOW;
                     instruction_o.op        = JALR;
                     instruction_o.rs1       = instr.itype.rs1;
@@ -935,21 +942,21 @@ module decoder (
                         illegal_instr = 1'b1;
                 end
                 // Jump and link
-                OPCODE_JAL: begin
+                riscv::OpcodeJal: begin
                     instruction_o.fu        = CTRL_FLOW;
                     imm_select              = JIMM;
                     instruction_o.rd        = instr.utype.rd;
                     is_control_flow_instr_o = 1'b1;
                 end
 
-                OPCODE_AUIPC: begin
+                riscv::OpcodeAuipc: begin
                     instruction_o.fu     = ALU;
                     imm_select           = UIMM;
                     instruction_o.use_pc = 1'b1;
                     instruction_o.rd     = instr.utype.rd;
                 end
 
-                OPCODE_LUI: begin
+                riscv::OpcodeLui: begin
                     imm_select           = UIMM;
                     instruction_o.fu     = ALU;
                     instruction_o.rd     = instr.utype.rd;
@@ -1035,7 +1042,7 @@ module decoder (
                 instruction_o.valid    = 1'b1;
                 instruction_o.ex.valid = 1'b1;
                 // we decoded an illegal exception here
-                instruction_o.ex.cause = ILLEGAL_INSTR;
+                instruction_o.ex.cause = riscv::ILLEGAL_INSTR;
             // we got an ecall, set the correct cause depending on the current privilege level
             end else if (ecall) begin
                 // this instruction has already executed
@@ -1044,9 +1051,9 @@ module decoder (
                 instruction_o.ex.valid = 1'b1;
                 // depending on the privilege mode, set the appropriate cause
                 case (priv_lvl_i)
-                    PRIV_LVL_M: instruction_o.ex.cause = ENV_CALL_MMODE;
-                    PRIV_LVL_S: instruction_o.ex.cause = ENV_CALL_SMODE;
-                    PRIV_LVL_U: instruction_o.ex.cause = ENV_CALL_UMODE;
+                    riscv::PRIV_LVL_M: instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
+                    riscv::PRIV_LVL_S: instruction_o.ex.cause = riscv::ENV_CALL_SMODE;
+                    riscv::PRIV_LVL_U: instruction_o.ex.cause = riscv::ENV_CALL_UMODE;
                     default:; // this should not happen
                 endcase
             end else if (ebreak) begin
@@ -1055,7 +1062,7 @@ module decoder (
                 // this exception is valid
                 instruction_o.ex.valid = 1'b1;
                 // set breakpoint cause
-                instruction_o.ex.cause = BREAKPOINT;
+                instruction_o.ex.cause = riscv::BREAKPOINT;
             end
         end
     end

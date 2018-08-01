@@ -73,8 +73,8 @@ module ptw #(
     logic data_rvalid_q;
     logic [63:0] data_rdata_q;
 
-    pte_t pte;
-    assign pte = pte_t'(data_rdata_q);
+    riscv::pte_t pte;
+    assign pte = riscv::pte_t'(data_rdata_q);
 
     enum logic[2:0] {
       IDLE,
@@ -329,9 +329,11 @@ module ptw #(
         // -------
         // should we have flushed before we got an rvalid, wait for it until going back to IDLE
         if (flush_i) begin
-            // on a flush check whether we are waiting for a grant, if so: wait for it
-            // if not go back to idle
-            if ((CS == WAIT_GRANT) && data_gnt_i)
+            // on a flush check whether we are
+            // 1. in the PTE Lookup check whether we still need to wait for an rvalid
+            // 2. waiting for a grant, if so: wait for it
+            // if not, go back to idle
+            if ((CS == PTE_LOOKUP && !data_rvalid_q) || ((CS == WAIT_GRANT) && data_gnt_i))
                 NS = WAIT_RVALID;
             else
                 NS = IDLE;

@@ -48,8 +48,8 @@ module lsu #(
     output logic [63:0]              fetch_paddr_o,            // Instruction fetch interface
     output exception_t               fetch_exception_o,        // Instruction fetch interface
 
-    input  priv_lvl_t                priv_lvl_i,               // From CSR register file
-    input  priv_lvl_t                ld_st_priv_lvl_i,         // From CSR register file
+    input  riscv::priv_lvl_t         priv_lvl_i,               // From CSR register file
+    input  riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
     input  logic                     sum_i,                    // From CSR register file
     input  logic                     mxr_i,                    // From CSR register file
     input  logic [43:0]              satp_ppn_i,               // From CSR register file
@@ -425,14 +425,14 @@ module lsu #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    LD_ADDR_MISALIGNED,
+                    riscv::LD_ADDR_MISALIGNED,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    ST_ADDR_MISALIGNED,
+                    riscv::ST_ADDR_MISALIGNED,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
@@ -444,14 +444,14 @@ module lsu #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    LOAD_PAGE_FAULT,
+                    riscv::LOAD_PAGE_FAULT,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    STORE_PAGE_FAULT,
+                    riscv::STORE_PAGE_FAULT,
                     lsu_ctrl.vaddr,
                     1'b1
                 };

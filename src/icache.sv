@@ -25,15 +25,13 @@ module icache #(
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,          // flush the icache, flush and kill have to be asserted together
-    input  logic                     fetch_enable_i,   // the core should fetch instructions
+    input  logic                     en_cache_i,       // cache accesses
     input  logic                     req_i,            // we request a new word
-    input  logic                     is_speculative_i, // is this request speculative or not
     input  logic                     kill_s1_i,        // kill the current request
     input  logic                     kill_s2_i,        // kill the last request
     output logic                     ready_o,          // icache is ready
     input  logic [63:0]              vaddr_i,          // 1st cycle: 12 bit index is taken for lookup
     output logic [FETCH_WIDTH-1:0]   data_o,           // 2+ cycle out: tag
-    output logic                     is_speculative_o, // the fetch was speculative
     output logic [63:0]              vaddr_o,          // virtual address out
     output logic                     valid_o,          // signals a valid read
     output exception_t               ex_o,             // we've encountered an exception
@@ -58,7 +56,6 @@ module icache #(
     logic [$clog2(ICACHE_NUM_WORD)-1:0]     cnt_d, cnt_q;
     logic [NR_AXI_REFILLS-1:0]              burst_cnt_d, burst_cnt_q; // counter for AXI transfers
     logic [63:0]                            vaddr_d, vaddr_q;
-    logic                                   spec_d, spec_q; // request is speculative
     logic [TAG_WIDTH-1:0]                   tag_d, tag_q;
     logic [SET_ASSOCIATIVITY-1:0]           evict_way_d, evict_way_q;
     logic                                   flushing_d, flushing_q;
@@ -203,19 +200,19 @@ module icache #(
     // ------------------
     // Cache Ctrl
     // ------------------
+    // for bypassing we use the existing infrastructure of the cache
+    // but on every access we are re-fetching the cache-line
     always_comb begin : cache_ctrl
         // default assignments
         state_d     = state_q;
         cnt_d       = cnt_q;
         vaddr_d     = vaddr_q;
-        spec_d      = spec_q;
         tag_d       = tag_q;
         evict_way_d = evict_way_q;
         flushing_d  = flushing_q;
         burst_cnt_d = burst_cnt_q;
 
-        is_speculative_o = spec_q;
-        vaddr_o          = vaddr_q;
+        vaddr_o     = vaddr_q;
 
         req         = '0;
         addr        = vaddr_i[INDEX_WIDTH-1:BYTE_OFFSET];
@@ -245,7 +242,6 @@ module icache #(
                     req = '1;
                     // save the virtual address
                     vaddr_d = vaddr_i;
-                    spec_d  = is_speculative_i;
                     state_d = TAG_CMP;
                 end
 
@@ -265,7 +261,7 @@ module icache #(
                 // -------
                 // Hit
                 // -------
-                if (|hit && fetch_valid_i) begin
+                if (|hit && fetch_valid_i && (en_cache_i || (state_q != TAG_CMP))) begin
                     ready_o = 1'b1;
                     valid_o = 1'b1;
                     // we've got another request
@@ -274,7 +270,6 @@ module icache #(
                         req = '1;
                         // save the index and stay in compare mode
                         vaddr_d = vaddr_i;
-                        spec_d  = is_speculative_i;
                         state_d = TAG_CMP;
                     // no new request -> go back to idle
                     end else begin
@@ -288,7 +283,8 @@ module icache #(
                 // -------
                 end else begin
                     state_d     = REFILL;
-                    evict_way_d = '0;
+                    // hit gonna be zero in most cases except for when the cache is disabled
+                    evict_way_d = hit;
                     // save tag
                     tag_d       = fetch_paddr_i[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
                     miss_o      = 1'b1;
@@ -297,7 +293,7 @@ module icache #(
                         evict_way_d = random_way;
                         // shift the lfsr
                         update_lfsr = 1'b1;
-                    end else begin
+                    end else if (!(|hit)) begin
                         evict_way_d[repl_invalid] = 1'b1;
                     end
                 end
@@ -439,7 +435,6 @@ module icache #(
             tag_q       <= '0;
             evict_way_q <= '0;
             flushing_q  <= 1'b0;
-            spec_q      <= 1'b0;
             burst_cnt_q <= '0;;
         end else begin
             state_q     <= state_d;
@@ -448,7 +443,6 @@ module icache #(
             tag_q       <= tag_d;
             evict_way_q <= evict_way_d;
             flushing_q  <= flushing_d;
-            spec_q      <= spec_d;
             burst_cnt_q <= burst_cnt_d;
         end
     end
