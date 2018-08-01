@@ -425,14 +425,14 @@ module lsu #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    LD_ADDR_MISALIGNED,
+                    riscv::LD_ADDR_MISALIGNED,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    ST_ADDR_MISALIGNED,
+                    riscv::ST_ADDR_MISALIGNED,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
@@ -444,14 +444,14 @@ module lsu #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    LOAD_PAGE_FAULT,
+                    riscv::LOAD_PAGE_FAULT,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    STORE_PAGE_FAULT,
+                    riscv::STORE_PAGE_FAULT,
                     lsu_ctrl.vaddr,
                     1'b1
                 };

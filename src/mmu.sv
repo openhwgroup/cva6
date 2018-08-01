@@ -87,14 +87,14 @@ module mmu #(
 
     logic        itlb_update;
     logic        itlb_lu_access;
-    pte_t        itlb_content;
+    riscv::pte_t itlb_content;
     logic        itlb_is_2M;
     logic        itlb_is_1G;
     logic        itlb_lu_hit;
 
     logic        dtlb_update;
     logic        dtlb_lu_access;
-    pte_t        dtlb_content;
+    riscv::pte_t dtlb_content;
     logic        dtlb_is_2M;
     logic        dtlb_is_1G;
     logic        dtlb_lu_hit;
@@ -187,7 +187,7 @@ module mmu #(
 
         // check that the upper-most bits (63-39) are the same, otherwise throw a page fault exception...
         if (fetch_req_i && !((&fetch_vaddr_i[63:39]) == 1'b1 || (|fetch_vaddr_i[63:39]) == 1'b0)) begin
-            fetch_exception_o = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+            fetch_exception_o = {riscv::INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
         end
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
@@ -216,7 +216,7 @@ module mmu #(
                 // we got an access error
                 if (iaccess_err) begin
                     // throw a page fault
-                    fetch_exception_o = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+                    fetch_exception_o = {riscv::INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
                 end
             end else
             // ---------
@@ -225,7 +225,7 @@ module mmu #(
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
                 fetch_valid_o = ptw_error;
-                fetch_exception_o = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                fetch_exception_o = {riscv::INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
         end
     end
@@ -234,7 +234,7 @@ module mmu #(
     // Data Interface
     //-----------------------
     logic [63:0] lsu_vaddr_n,     lsu_vaddr_q;
-    pte_t        dtlb_pte_n,      dtlb_pte_q;
+    riscv::pte_t dtlb_pte_n,      dtlb_pte_q;
     exception_t  misaligned_ex_n, misaligned_ex_q;
     logic        lsu_req_n,       lsu_req_q;
     logic        lsu_is_store_n,  lsu_is_store_q;
@@ -290,12 +290,12 @@ module mmu #(
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
                     if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
-                        lsu_exception_o = {STORE_PAGE_FAULT, lsu_vaddr_q, 1'b1};
+                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, lsu_vaddr_q, 1'b1};
                     end
 
                 // this is a load, check for sufficient access privileges - throw a page fault if necessary
                 end else if (daccess_err) begin
-                    lsu_exception_o = {LOAD_PAGE_FAULT, lsu_vaddr_q, 1'b1};
+                    lsu_exception_o = {riscv::LOAD_PAGE_FAULT, lsu_vaddr_q, 1'b1};
                 end
             end else
 
@@ -310,9 +310,9 @@ module mmu #(
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
                     if (lsu_is_store_q) begin
-                        lsu_exception_o = {STORE_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
                     end else begin
-                        lsu_exception_o = {LOAD_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
                     end
                 end
             end

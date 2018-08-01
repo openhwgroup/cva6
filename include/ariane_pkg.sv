@@ -228,29 +228,13 @@ package ariane_pkg;
         AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND, AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
     } amo_t;
 
-    // memory management, pte
-    typedef struct packed {
-        logic [9:0]  reserved;
-        logic [43:0] ppn;
-        logic [1:0]  rsw;
-        logic d;
-        logic a;
-        logic g;
-        logic u;
-        logic x;
-        logic w;
-        logic r;
-        logic v;
-    } pte_t;
-
-
     typedef struct packed {
         logic                  valid;      // valid flag
         logic                  is_2M;      //
         logic                  is_1G;      //
         logic [26:0]           vpn;
         logic [ASID_WIDTH-1:0] asid;
-        pte_t                  content;
+        riscv::pte_t           content;
     } tlb_update_t;
 
     localparam logic [3:0] MODE_SV39 = 4'h8;
@@ -258,31 +242,6 @@ package ariane_pkg;
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).
     localparam PPN4K_WIDTH = 38;
-
-    // ----------------------
-    // Exception Cause Codes
-    // ----------------------
-    localparam logic [63:0] INSTR_ADDR_MISALIGNED = 0;
-    localparam logic [63:0] INSTR_ACCESS_FAULT    = 1;
-    localparam logic [63:0] ILLEGAL_INSTR         = 2;
-    localparam logic [63:0] BREAKPOINT            = 3;
-    localparam logic [63:0] LD_ADDR_MISALIGNED    = 4;
-    localparam logic [63:0] LD_ACCESS_FAULT       = 5;
-    localparam logic [63:0] ST_ADDR_MISALIGNED    = 6;
-    localparam logic [63:0] ST_ACCESS_FAULT       = 7;
-    localparam logic [63:0] ENV_CALL_UMODE        = 8;  // environment call from user mode
-    localparam logic [63:0] ENV_CALL_SMODE        = 9;  // environment call from supervisor mode
-    localparam logic [63:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
-    localparam logic [63:0] INSTR_PAGE_FAULT      = 12; // Instruction page fault
-    localparam logic [63:0] LOAD_PAGE_FAULT       = 13; // Load page fault
-    localparam logic [63:0] STORE_PAGE_FAULT      = 15; // Store page fault
-
-    localparam logic [63:0] S_SW_INTERRUPT        = (1 << 63) | 1;
-    localparam logic [63:0] M_SW_INTERRUPT        = (1 << 63) | 3;
-    localparam logic [63:0] S_TIMER_INTERRUPT     = (1 << 63) | 5;
-    localparam logic [63:0] M_TIMER_INTERRUPT     = (1 << 63) | 7;
-    localparam logic [63:0] S_EXT_INTERRUPT       = (1 << 63) | 9;
-    localparam logic [63:0] M_EXT_INTERRUPT       = (1 << 63) | 11;
 
     // ----------------------
     // Arithmetic Functions

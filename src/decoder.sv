@@ -144,9 +144,9 @@ module decoder (
                                 // SFENCE.VMA
                                 default: begin
                                     if (instr.instr[31:25] == 7'b1001) begin
-                                        // Reset illegal instruction here, this is the only type
-                                        // of instruction which needs those kind of fields
-                                        illegal_instr    = (priv_lvl_i inside {PRIV_LVL_M, PRIV_LVL_S}) ? 1'b0 : 1'b1;
+                                        // check privilege level, SFENCE.VMA can only be executed in M/S mode
+                                        // otherwise decode an illegal instruction
+                                        illegal_instr    = (priv_lvl_i inside {riscv::PRIV_LVL_M, riscv::PRIV_LVL_S}) ? 1'b0 : 1'b1;
                                         instruction_o.op = SFENCE_VMA;
                                         // check TVM flag and intercept SFENCE.VMA call if necessary
                                         if (priv_lvl_i == riscv::PRIV_LVL_S && tvm_i)
@@ -566,7 +566,7 @@ module decoder (
                 instruction_o.valid    = 1'b1;
                 instruction_o.ex.valid = 1'b1;
                 // we decoded an illegal exception here
-                instruction_o.ex.cause = ILLEGAL_INSTR;
+                instruction_o.ex.cause = riscv::ILLEGAL_INSTR;
             // we got an ecall, set the correct cause depending on the current privilege level
             end else if (ecall) begin
                 // this instruction has already executed
@@ -575,9 +575,9 @@ module decoder (
                 instruction_o.ex.valid = 1'b1;
                 // depending on the privilege mode, set the appropriate cause
                 case (priv_lvl_i)
-                    riscv::PRIV_LVL_M: instruction_o.ex.cause = ENV_CALL_MMODE;
-                    riscv::PRIV_LVL_S: instruction_o.ex.cause = ENV_CALL_SMODE;
-                    riscv::PRIV_LVL_U: instruction_o.ex.cause = ENV_CALL_UMODE;
+                    riscv::PRIV_LVL_M: instruction_o.ex.cause = riscv::ENV_CALL_MMODE;
+                    riscv::PRIV_LVL_S: instruction_o.ex.cause = riscv::ENV_CALL_SMODE;
+                    riscv::PRIV_LVL_U: instruction_o.ex.cause = riscv::ENV_CALL_UMODE;
                     default:; // this should not happen
                 endcase
             end else if (ebreak) begin
@@ -586,7 +586,7 @@ module decoder (
                 // this exception is valid
                 instruction_o.ex.valid = 1'b1;
                 // set breakpoint cause
-                instruction_o.ex.cause = BREAKPOINT;
+                instruction_o.ex.cause = riscv::BREAKPOINT;
             end
         end
     end

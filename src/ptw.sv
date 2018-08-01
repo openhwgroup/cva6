@@ -73,8 +73,8 @@ module ptw #(
     logic data_rvalid_q;
     logic [63:0] data_rdata_q;
 
-    pte_t pte;
-    assign pte = pte_t'(data_rdata_q);
+    riscv::pte_t pte;
+    assign pte = riscv::pte_t'(data_rdata_q);
 
     enum logic[2:0] {
       IDLE,

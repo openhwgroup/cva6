@@ -155,7 +155,7 @@ module csr_regfile #(
                 riscv::CSR_TDATA2:;  // not implemented
                 riscv::CSR_TDATA3:;  // not implemented
                 // supervisor registers
-                riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & 64'h80000003000DE133;
+                riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & riscv::SMODE_STATUS_MASK;
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
                 riscv::CSR_STVEC:              csr_rdata = stvec_q;
@@ -287,8 +287,8 @@ module csr_regfile #(
                 riscv::CSR_SSTATUS: begin
                     mstatus_d = csr_wdata;
                     // also hardwire the registers for sstatus
-                    mstatus_d.sxl  = 2'b10;
-                    mstatus_d.uxl  = 2'b10;
+                    mstatus_d.sxl  = riscv::XLEN_64;
+                    mstatus_d.uxl  = riscv::XLEN_64;
                     // hardwired zero registers
                     mstatus_d.sd   = 1'b0;
                     mstatus_d.xs   = 2'b0;
@@ -303,7 +303,6 @@ module csr_regfile #(
                     mstatus_d.tsr  = mstatus_q.tsr;
                     mstatus_d.tw   = mstatus_q.tw;
                     mstatus_d.tvm  = mstatus_q.tvm;
-                    mstatus_d.sxl  = mstatus_q.sxl;
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
@@ -347,8 +346,8 @@ module csr_regfile #(
 
                 riscv::CSR_MSTATUS: begin
                     mstatus_d      = csr_wdata;
-                    mstatus_d.sxl  = 2'b10;
-                    mstatus_d.uxl  = 2'b10;
+                    mstatus_d.sxl  = riscv::XLEN_64;
+                    mstatus_d.uxl  = riscv::XLEN_64;
                     // hardwired zero registers
                     mstatus_d.sd   = 1'b0;
                     mstatus_d.xs   = 2'b0;
@@ -489,7 +488,7 @@ module csr_regfile #(
             // trigger module fired
 
             // caused by a breakpoint
-            if (ex_i.valid && ex_i.cause == BREAKPOINT) begin
+            if (ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
                 // check that we actually want to enter debug depending on the privilege level we are currently in
                 unique case (priv_lvl_o)
                     riscv::PRIV_LVL_M: begin
@@ -532,7 +531,7 @@ module csr_regfile #(
             end
         end
         // go in halt-state again when we encounter an exception
-        if (debug_mode_q && ex_i.valid && ex_i.cause == BREAKPOINT) begin
+        if (debug_mode_q && ex_i.valid && ex_i.cause == riscv::BREAKPOINT) begin
             set_debug_pc_o = 1'b1;
         end
 
@@ -672,23 +671,23 @@ module csr_regfile #(
         // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
         // for two privilege levels: Supervisor and Machine Mode
         // Supervisor Timer Interrupt
-        if (mie_q[S_TIMER_INTERRUPT[5:0]] && mip_q[S_TIMER_INTERRUPT[5:0]])
-            interrupt_cause = S_TIMER_INTERRUPT;
+        if (mie_q[riscv::S_TIMER_INTERRUPT[5:0]] && mip_q[riscv::S_TIMER_INTERRUPT[5:0]])
+            interrupt_cause = riscv::S_TIMER_INTERRUPT;
         // Supervisor Software Interrupt
-        if (mie_q[S_SW_INTERRUPT[5:0]] && mip_q[S_SW_INTERRUPT[5:0]])
-            interrupt_cause = S_SW_INTERRUPT;
+        if (mie_q[riscv::S_SW_INTERRUPT[5:0]] && mip_q[riscv::S_SW_INTERRUPT[5:0]])
+            interrupt_cause = riscv::S_SW_INTERRUPT;
         // Supervisor External Interrupt
-        if (mie_q[S_EXT_INTERRUPT[5:0]] && mip_q[S_EXT_INTERRUPT[5:0]])
-            interrupt_cause = S_EXT_INTERRUPT;
+        if (mie_q[riscv::S_EXT_INTERRUPT[5:0]] && mip_q[riscv::S_EXT_INTERRUPT[5:0]])
+            interrupt_cause = riscv::S_EXT_INTERRUPT;
         // Machine Timer Interrupt
-        if (mip_q[M_TIMER_INTERRUPT[5:0]] && mie_q[M_TIMER_INTERRUPT[5:0]])
-            interrupt_cause = M_TIMER_INTERRUPT;
+        if (mip_q[riscv::M_TIMER_INTERRUPT[5:0]] && mie_q[riscv::M_TIMER_INTERRUPT[5:0]])
+            interrupt_cause = riscv::M_TIMER_INTERRUPT;
         // Machine Mode Software Interrupt
-        if (mip_q[M_SW_INTERRUPT[5:0]] && mie_q[M_SW_INTERRUPT[5:0]])
-            interrupt_cause = M_SW_INTERRUPT;
+        if (mip_q[riscv::M_SW_INTERRUPT[5:0]] && mie_q[riscv::M_SW_INTERRUPT[5:0]])
+            interrupt_cause = riscv::M_SW_INTERRUPT;
         // Machine Mode External Interrupt
-        if (mip_q[M_EXT_INTERRUPT[5:0]] && mie_q[M_EXT_INTERRUPT[5:0]])
-            interrupt_cause = M_EXT_INTERRUPT;
+        if (mip_q[riscv::M_EXT_INTERRUPT[5:0]] && mie_q[riscv::M_EXT_INTERRUPT[5:0]])
+            interrupt_cause = riscv::M_EXT_INTERRUPT;
 
         // An interrupt i will be taken if bit i is set in both mip and mie, and if interrupts are globally enabled.
         // By default, M-mode interrupts are globally enabled if the hart’s current privilege mode  is less
@@ -720,19 +719,19 @@ module csr_regfile #(
         // if we are reading or writing, check for the correct privilege level
         if (csr_we || csr_read) begin
             if ((riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
-                csr_exception_o.cause = ILLEGAL_INSTR;
+                csr_exception_o.cause = riscv::ILLEGAL_INSTR;
                 csr_exception_o.valid = 1'b1;
             end
             // check access to debug mode only CSRs
             if (csr_addr_i[11:4] == 8'h7b && !debug_mode_q) begin
-                csr_exception_o.cause = ILLEGAL_INSTR;
+                csr_exception_o.cause = riscv::ILLEGAL_INSTR;
                 csr_exception_o.valid = 1'b1;
             end
         end
         // we got an exception in one of the processes above
         // throw an illegal instruction exception
         if (update_access_exception || read_access_exception) begin
-            csr_exception_o.cause = ILLEGAL_INSTR;
+            csr_exception_o.cause = riscv::ILLEGAL_INSTR;
             // we don't set the tval field as this will be set by the commit stage
             // this spares the extra wiring from commit to CSR and back to commit
             csr_exception_o.valid = 1'b1;

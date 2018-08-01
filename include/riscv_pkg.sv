@@ -25,12 +25,18 @@ package riscv;
       PRIV_LVL_U = 2'b00
     } priv_lvl_t;
 
+    // type which holds xlen
+    typedef enum logic [1:0] {
+        XLEN_32  = 2'b01,
+        XLEN_64  = 2'b10,
+        XLEN_128 = 2'b11
+    } xlen_t;
 
     typedef struct packed {
         logic         sd;     // signal dirty - read-only - hardwired zero
         logic [62:36] wpri4;  // writes preserved reads ignored
-        logic [1:0]   sxl;    // variable supervisor mode xlen - hardwired to zero
-        logic [1:0]   uxl;    // variable user mode xlen - hardwired to zero
+        xlen_t        sxl;    // variable supervisor mode xlen - hardwired to zero
+        xlen_t        uxl;    // variable user mode xlen - hardwired to zero
         logic [8:0]   wpri3;  // writes preserved reads ignored
         logic         tsr;    // trap sret
         logic         tw;     // time wait
@@ -82,6 +88,9 @@ package riscv;
         logic [15:0] asid;
         logic [43:0] ppn;
     } satp_t;
+
+    // read mask for SSTATUS over MMSTATUS
+    localparam logic [63:0] SMODE_STATUS_MASK = 64'h80000003000DE133;
 
     // --------------------
     // Instruction Types
@@ -165,6 +174,49 @@ package riscv;
     localparam logic [11:0] PERF_CALL           = 12'h9;     // Procedure call
     localparam logic [11:0] PERF_RET            = 12'hA;     // Procedure Return
     localparam logic [11:0] PERF_MIS_PREDICT    = 12'hB;     // Branch mis-predicted
+
+    // ----------------------
+    // Virtual Memory
+    // ----------------------
+    // memory management, pte
+    typedef struct packed {
+        logic [9:0]  reserved;
+        logic [43:0] ppn;
+        logic [1:0]  rsw;
+        logic d;
+        logic a;
+        logic g;
+        logic u;
+        logic x;
+        logic w;
+        logic r;
+        logic v;
+    } pte_t;
+
+    // ----------------------
+    // Exception Cause Codes
+    // ----------------------
+    localparam logic [63:0] INSTR_ADDR_MISALIGNED = 0;
+    localparam logic [63:0] INSTR_ACCESS_FAULT    = 1;
+    localparam logic [63:0] ILLEGAL_INSTR         = 2;
+    localparam logic [63:0] BREAKPOINT            = 3;
+    localparam logic [63:0] LD_ADDR_MISALIGNED    = 4;
+    localparam logic [63:0] LD_ACCESS_FAULT       = 5;
+    localparam logic [63:0] ST_ADDR_MISALIGNED    = 6;
+    localparam logic [63:0] ST_ACCESS_FAULT       = 7;
+    localparam logic [63:0] ENV_CALL_UMODE        = 8;  // environment call from user mode
+    localparam logic [63:0] ENV_CALL_SMODE        = 9;  // environment call from supervisor mode
+    localparam logic [63:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
+    localparam logic [63:0] INSTR_PAGE_FAULT      = 12; // Instruction page fault
+    localparam logic [63:0] LOAD_PAGE_FAULT       = 13; // Load page fault
+    localparam logic [63:0] STORE_PAGE_FAULT      = 15; // Store page fault
+
+    localparam logic [63:0] S_SW_INTERRUPT        = (1 << 63) | 1;
+    localparam logic [63:0] M_SW_INTERRUPT        = (1 << 63) | 3;
+    localparam logic [63:0] S_TIMER_INTERRUPT     = (1 << 63) | 5;
+    localparam logic [63:0] M_TIMER_INTERRUPT     = (1 << 63) | 7;
+    localparam logic [63:0] S_EXT_INTERRUPT       = (1 << 63) | 9;
+    localparam logic [63:0] M_EXT_INTERRUPT       = (1 << 63) | 11;
 
     // -----
     // CSRs
