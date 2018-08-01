@@ -36,7 +36,6 @@ sources:
   - src/frontend.sv
   - src/icache.sv
   - src/id_stage.sv
-  - src/if_stage.sv
   - src/instr_realigner.sv
   - src/issue_read_operands.sv
   - src/issue_stage.sv
@@ -48,7 +47,6 @@ sources:
   - src/mmu.sv
   - src/mult.sv
   - src/nbdcache.sv
-  - src/pcgen_stage.sv
   - src/perf_counters.sv
   - src/ptw.sv
   - src/ariane_regfile.sv
