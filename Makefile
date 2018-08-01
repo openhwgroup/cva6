@@ -100,39 +100,41 @@ run-asm-tests: build
 		-do "coverage save -onexit $@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"  \
 		$(library).$(test_top_level)_optimized +permissive-off ++$(test);)
 
+verilate_command := $(verilator)                                                     \
+                    $(ariane_pkg)                                                    \
+                    tb/ariane_testharness.sv                                         \
+                    $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))        \
+                    $(wildcard src/axi_slice/*.sv)                                   \
+                    $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))    \
+                    src/debug/debug_rom/debug_rom.sv                                 \
+                    src/util/generic_fifo.sv                                         \
+                    tb/common/SimDTM.sv                                              \
+                    tb/common/SimJTAG.sv                                             \
+                    tb/common/pulp_sync.sv                                           \
+                    bootrom/bootrom.sv                                               \
+                    src/util/cluster_clock_gating.sv                                 \
+                    src/util/behav_sram.sv                                           \
+                    src/axi_mem_if/src/axi2mem.sv                                    \
+                    +incdir+src/axi_node                                             \
+                    --unroll-count 256                                               \
+                    -Werror-PINMISSING                                               \
+                    -Werror-IMPLICIT                                                 \
+                    -Wno-fatal                                                       \
+                    -Wno-PINCONNECTEMPTY                                             \
+                    -Wno-ASSIGNDLY                                                   \
+                    -Wno-DECLFILENAME                                                \
+                    -Wno-UNOPTFLAT                                                   \
+                    -Wno-UNUSED                                                      \
+                    -Wno-ASSIGNDLY                                                   \
+                    $(if $(DEBUG),--trace-structs --trace,) \
+                    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
+                    $(list_incdir) --top-module ariane_testharness \
+                    --Mdir build -O3 \
+                    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
+
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
-	$(verilator)                                                     \
-    $(ariane_pkg)                                                    \
-    tb/ariane_testharness.sv                                         \
-    $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))        \
-    $(wildcard src/axi_slice/*.sv)                                   \
-    $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))    \
-    src/debug/debug_rom/debug_rom.sv                                 \
-    src/util/generic_fifo.sv                                         \
-    tb/common/SimDTM.sv                                              \
-    tb/common/SimJTAG.sv                                             \
-    tb/common/pulp_sync.sv                                           \
-    bootrom/bootrom.sv                                               \
-    src/util/cluster_clock_gating.sv                                 \
-    src/util/behav_sram.sv                                           \
-    src/axi_mem_if/src/axi2mem.sv                                    \
-    +incdir+src/axi_node                                             \
-    --unroll-count 256                                               \
-    -Werror-PINMISSING                                               \
-    -Werror-IMPLICIT                                                 \
-    -Wno-fatal                                                       \
-    -Wno-PINCONNECTEMPTY                                             \
-    -Wno-ASSIGNDLY                                                   \
-    -Wno-DECLFILENAME                                                \
-    -Wno-UNOPTFLAT                                                   \
-    -Wno-UNUSED                                                      \
-    -Wno-ASSIGNDLY                                                   \
-	--trace-structs --trace \
-    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
-    $(list_incdir) --top-module ariane_testharness \
-    --Mdir build -O3 \
-    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
+	$(verilate_command)
 	cd build && make -j8 -f Variane_testharness.mk
 
 verify:
