@@ -46,7 +46,7 @@ module decoder (
     // Immediate select
     // --------------------
     enum logic[3:0] {
-        NOIMM, PCIMM, IIMM, SIMM, SBIMM, BIMM, UIMM, JIMM
+        NOIMM, IIMM, SIMM, SBIMM, UIMM, JIMM
     } imm_select;
 
     logic [63:0] imm_i_type;
@@ -501,13 +501,9 @@ module decoder (
         imm_uj_type = uj_imm(instruction_i);
         imm_bi_type = { {59{instruction_i[24]}}, instruction_i[24:20] };
 
-        // NOIMM, PCIMM, IIMM, SIMM, BIMM, BIMM, UIMM, JIMM
+        // NOIMM, IIMM, SIMM, BIMM, UIMM, JIMM
         // select immediate
         case (imm_select)
-            PCIMM: begin
-                instruction_o.result = pc_i;
-                instruction_o.use_imm = 1'b1;
-            end
             IIMM: begin
                 instruction_o.result = imm_i_type;
                 instruction_o.use_imm = 1'b1;
@@ -518,10 +514,6 @@ module decoder (
             end
             SBIMM: begin
                 instruction_o.result = imm_sb_type;
-                instruction_o.use_imm = 1'b1;
-            end
-            BIMM: begin
-                instruction_o.result = imm_bi_type;
                 instruction_o.use_imm = 1'b1;
             end
             UIMM: begin
