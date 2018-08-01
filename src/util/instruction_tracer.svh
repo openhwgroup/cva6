@@ -124,15 +124,15 @@ class instruction_tracer;
                     // check if the write back is valid, if not we need to source the result from the register file
                     // as the most recent version of this register will be there.
                     if (tracer_if.pck.we[i]) begin
-                        printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata[i], address_mapping, tracer_if.pck.priv_lvl, bp_instruction);
+                        printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata[i], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
                     end else
-                        printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, bp_instruction);
+                        printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
                 end
             end
             // --------------
             // Exceptions
             // --------------
-            if (tracer_if.pck.exception.valid) begin
+            if (tracer_if.pck.exception.valid && !(tracer_if.pck.debug_mode && tracer_if.pck.exception.cause == riscv::BREAKPOINT)) begin
                 // print exception
                 printException(tracer_if.pck.commit_instr[0].pc, tracer_if.pck.exception.cause, tracer_if.pck.exception.tval);
             end
@@ -177,8 +177,8 @@ class instruction_tracer;
         bp              = {};
     endfunction
 
-    function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl, branchpredict_t bp);
-        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr, priv_lvl, bp);
+    function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, branchpredict_t bp);
+        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr, priv_lvl, debug_mode, bp);
         // print instruction to console
         string print_instr = iti.printInstr();
         uvm_report_info( "Tracer",  print_instr, UVM_HIGH);

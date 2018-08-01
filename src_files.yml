@@ -3,6 +3,8 @@ ariane:
     include,
   ]
   files: [
+    include/riscv_pkg.sv,
+    src/debug/dm_pkg.sv,
     include/ariane_pkg.sv,
     include/nbdcache_pkg.sv,
     src/util/instruction_tracer_if.sv,
@@ -16,7 +18,6 @@ ariane:
     src/controller.sv,
     src/csr_buffer.sv,
     src/csr_regfile.sv,
-    src/debug_unit.sv,
     src/decoder.sv,
     src/ex_stage.sv,
     src/fetch_fifo.sv,
@@ -24,7 +25,6 @@ ariane:
     src/frontend.sv,
     src/icache.sv,
     src/id_stage.sv,
-    src/if_stage.sv,
     src/instr_realigner.sv,
     src/issue_read_operands.sv,
     src/issue_stage.sv,
@@ -36,7 +36,6 @@ ariane:
     src/mmu.sv,
     src/mult.sv,
     src/nbdcache.sv,
-    src/pcgen_stage.sv,
     src/perf_counters.sv,
     src/ptw.sv,
     src/re_name.sv,
@@ -44,6 +43,12 @@ ariane:
     src/store_buffer.sv,
     src/store_unit.sv,
     src/tlb.sv,
+    src/debug/dm_csrs.sv,
+    src/debug/dm_mem.sv,
+    src/debug/dm_top.sv,
+    src/debug/dmi_cdc.sv,
+    src/debug/dmi_jtag.sv,
+    src/debug/dmi_jtag_tap.sv,
     ]
 riscv_regfile_rtl:
   targets: [

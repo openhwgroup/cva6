@@ -50,48 +50,48 @@ module perf_counters #(
         // Update Performance Counters
         // ------------------------------
         if (l1_icache_miss_i)
-            perf_counter_d[PERF_L1_ICACHE_MISS] = perf_counter_q[PERF_L1_ICACHE_MISS] + 1'b1;
+            perf_counter_d[riscv::PERF_L1_ICACHE_MISS] = perf_counter_q[riscv::PERF_L1_ICACHE_MISS] + 1'b1;
 
         if (l1_dcache_miss_i)
-            perf_counter_d[PERF_L1_DCACHE_MISS] = perf_counter_q[PERF_L1_DCACHE_MISS] + 1'b1;
+            perf_counter_d[riscv::PERF_L1_DCACHE_MISS] = perf_counter_q[riscv::PERF_L1_DCACHE_MISS] + 1'b1;
 
         if (itlb_miss_i)
-            perf_counter_d[PERF_ITLB_MISS] = perf_counter_q[PERF_ITLB_MISS] + 1'b1;
+            perf_counter_d[riscv::PERF_ITLB_MISS] = perf_counter_q[riscv::PERF_ITLB_MISS] + 1'b1;
 
         if (dtlb_miss_i)
-            perf_counter_d[PERF_DTLB_MISS] = perf_counter_q[PERF_DTLB_MISS] + 1'b1;
+            perf_counter_d[riscv::PERF_DTLB_MISS] = perf_counter_q[riscv::PERF_DTLB_MISS] + 1'b1;
 
         // instruction related perf counters
         for (int unsigned i = 0; i < NR_COMMIT_PORTS-1; i++) begin
             if (commit_ack_i[i]) begin
                 if (commit_instr_i[i].fu == LOAD)
-                    perf_counter_d[PERF_LOAD] = perf_counter_q[PERF_LOAD] + 1'b1;
+                    perf_counter_d[riscv::PERF_LOAD] = perf_counter_q[riscv::PERF_LOAD] + 1'b1;
 
                 if (commit_instr_i[i].fu == STORE)
-                    perf_counter_d[PERF_STORE] = perf_counter_q[PERF_STORE] + 1'b1;
+                    perf_counter_d[riscv::PERF_STORE] = perf_counter_q[riscv::PERF_STORE] + 1'b1;
 
                 if (commit_instr_i[i].fu == CTRL_FLOW)
-                    perf_counter_d[PERF_BRANCH_JUMP] = perf_counter_q[PERF_BRANCH_JUMP] + 1'b1;
+                    perf_counter_d[riscv::PERF_BRANCH_JUMP] = perf_counter_q[riscv::PERF_BRANCH_JUMP] + 1'b1;
 
                 // The standard software calling convention uses register x1 to hold the return address on a call
                 // the unconditional jump is decoded as ADD op
                 if (commit_instr_i[i].fu == CTRL_FLOW && commit_instr_i[i].op == '0 && commit_instr_i[i].rd == 'b1)
-                    perf_counter_d[PERF_CALL] = perf_counter_q[PERF_CALL] + 1'b1;
+                    perf_counter_d[riscv::PERF_CALL] = perf_counter_q[riscv::PERF_CALL] + 1'b1;
 
                 // Return from call
                 if (commit_instr_i[i].op == JALR && commit_instr_i[i].rs1 == 'b1)
-                    perf_counter_d[PERF_RET] = perf_counter_q[PERF_RET] + 1'b1;
+                    perf_counter_d[riscv::PERF_RET] = perf_counter_q[riscv::PERF_RET] + 1'b1;
             end
         end
 
         if (ex_i.valid)
-            perf_counter_d[PERF_EXCEPTION] = perf_counter_q[PERF_EXCEPTION] + 1'b1;
+            perf_counter_d[riscv::PERF_EXCEPTION] = perf_counter_q[riscv::PERF_EXCEPTION] + 1'b1;
 
         if (eret_i)
-            perf_counter_d[PERF_EXCEPTION_RET] = perf_counter_q[PERF_EXCEPTION_RET] + 1'b1;
+            perf_counter_d[riscv::PERF_EXCEPTION_RET] = perf_counter_q[riscv::PERF_EXCEPTION_RET] + 1'b1;
 
         if (resolved_branch_i.valid && resolved_branch_i.is_mispredict)
-            perf_counter_d[PERF_MIS_PREDICT] = perf_counter_q[PERF_MIS_PREDICT] + 1'b1;
+            perf_counter_d[riscv::PERF_MIS_PREDICT] = perf_counter_q[riscv::PERF_MIS_PREDICT] + 1'b1;
 
         // Read Port
         if (!we_i) begin
