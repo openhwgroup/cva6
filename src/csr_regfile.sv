@@ -104,7 +104,7 @@ module csr_regfile #(
 
     riscv::status_rv64_t  mstatus_q,  mstatus_d;
     riscv::satp_t         satp_q, satp_d;
-    dm::dcsr_t            dcsr_q,     dcsr_d;
+    riscv::dcsr_t         dcsr_q,     dcsr_d;
 
     logic [63:0] dpc_q,       dpc_d;
     logic [63:0] dscratch0_q, dscratch0_d;

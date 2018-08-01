@@ -176,24 +176,6 @@ package dm;
         logic [15:0]  regno;
     } ac_ar_cmd_t;
 
-    typedef struct packed {
-        logic [31:28]     xdebugver;
-        logic [27:16]     zero2;
-        logic             ebreakm;
-        logic             zero1;
-        logic             ebreaks;
-        logic             ebreaku;
-        logic             stepie;
-        logic             stopcount;
-        logic             stoptime;
-        logic [8:6]       cause;
-        logic             zero0;
-        logic             mprven;
-        logic             nmip;
-        logic             step;
-        riscv::priv_lvl_t prv;
-    } dcsr_t;
-
     // DTM
     typedef enum logic [1:0] {
         DTM_NOP   = 2'h0,

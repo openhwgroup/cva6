@@ -34,7 +34,7 @@ See [style-guidlines](https://github.com/pulp-platform/style-guidelines)
     * :truck: `:truck:` Moving or renaming files.
     * :space_invader: `:space_invader:` When fixing something synthesis related
     * :beers: `:beer:` Writing code drunkenly.
-    * :ok_hand: `:ok_hand` Updating code due to code review changes
+    * :ok_hand: `:ok_hand:` Updating code due to code review changes
     * :building_construction: `:building_construction:` Making architectural changes.
     * :wrench: `:wrench:` Tooling
     * :construction: `:construction:` Work In Progress WIP

@@ -308,6 +308,27 @@ package riscv;
         csr_addr_t  csr_decode;
     } csr_t;
 
+    // -----
+    // Debug
+    // -----
+    typedef struct packed {
+        logic [31:28]     xdebugver;
+        logic [27:16]     zero2;
+        logic             ebreakm;
+        logic             zero1;
+        logic             ebreaks;
+        logic             ebreaku;
+        logic             stepie;
+        logic             stopcount;
+        logic             stoptime;
+        logic [8:6]       cause;
+        logic             zero0;
+        logic             mprven;
+        logic             nmip;
+        logic             step;
+        priv_lvl_t        prv;
+    } dcsr_t;
+
     // Instruction Generation *incomplete*
     function automatic logic [31:0] jal (logic[4:0] rd, logic [20:0] imm);
         // OpCode Jal
