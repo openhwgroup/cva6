@@ -6,5 +6,6 @@ The CLINT plugs into an existing AXI Bus with an AXI 4 Lite interface. The IP mi
 
 |      Address      | Description |                      Note                      |
 |-------------------|-------------|------------------------------------------------|
+| `BASE` + `0xo`    | msip        | Machine mode software interrupt (IPI)          |
 | `BASE` + `0x4000` | mtimecmp    | Machine mode timer compare register for Hart 0 |
-| `BASE` + `0xC000` | mtime       | Timer register                                 |
+| `BASE` + `0xBFF8` | mtime       | Timer register                                 |

@@ -30,7 +30,7 @@ dpi := $(patsubst tb/dpi/%.cc,work/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 # this list contains the standalone components
 src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard tb/common/*.v)                    \
-       $(wildcard src/axi_slice/*.sv)                                                               \
+       $(wildcard src/axi_slice/*.sv) $(wildcard src/clint/*.sv)                                    \
        $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/src/*.sv)                            \
        $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv)) $(wildcard bootrom/*.sv)       \
        $(wildcard src/debug/debug_rom/*.sv)
@@ -107,6 +107,7 @@ verilate_command := $(verilator)                                                
                     tb/ariane_testharness.sv                                         \
                     $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))        \
                     $(wildcard src/axi_slice/*.sv)                                   \
+                    $(wildcard src/clint/*.sv)                                       \
                     $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))    \
                     src/debug/debug_rom/debug_rom.sv                                 \
                     src/util/generic_fifo.sv                                         \

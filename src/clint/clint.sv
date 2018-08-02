@@ -22,19 +22,21 @@ module clint #(
     parameter int unsigned AXI_ID_WIDTH   = 10,
     parameter int unsigned NR_CORES       = 1 // Number of cores therefore also the number of timecmp registers and timer interrupts
 )(
-    input  logic                clk_i,   // Clock
-    input  logic                rst_ni,  // Asynchronous reset active low
+    input  logic                clk_i,       // Clock
+    input  logic                rst_ni,      // Asynchronous reset active low
 
     AXI_BUS.Slave               slave,
 
-    input  logic                halted_i, // cores are halted, also halt timer
-    input  logic                rtc_i,    // Real-time clock in (usually 32.768 kHz)
-    output logic [63:0]         time_o,   // Global Time out, this is the time-base of the whole SoC
-    output logic [NR_CORES-1:0] irq_o     // Timer interrupts
+    input  logic                halted_i,    // cores are halted, also halt timer
+    input  logic                rtc_i,       // Real-time clock in (usually 32.768 kHz)
+    output logic [63:0]         time_o,      // Global Time out, this is the time-base of the whole SoC
+    output logic [NR_CORES-1:0] timer_irq_o, // Timer interrupts
+    output logic [NR_CORES-1:0] ipi_o        // software interrupt (a.k.a inter-process-interrupt)
 );
     // register offset
-    localparam logic [1:0] REG_CMP  = 2'h1;
-    localparam logic [1:0] REG_TIME = 2'h3;
+    localparam logic [15:0] MSIP_BASE     = 16'h0;
+    localparam logic [15:0] MTIMECMP_BASE = 16'h4000;
+    localparam logic [15:0] MTIME_BASE    = 16'hbff8;
     // signals from AXI 4 Lite
     logic [AXI_ADDR_WIDTH-1:0] address;
     logic                      en;
@@ -43,12 +45,12 @@ module clint #(
     logic [63:0] rdata;
 
     // bit 11 and 10 are determining the address offset
-    logic [1:0] register_address;
-    assign register_address = address[11:10];
+    logic [15:0] register_address;
+    assign register_address = address[15:0];
     // actual registers
     logic [63:0]               mtime_n, mtime_q;
     logic [NR_CORES-1:0][63:0] mtimecmp_n, mtimecmp_q;
-
+    logic [NR_CORES-1:0]       msip_n, misp_q;
     // increase the timer
     logic increase_timer;
 
@@ -78,19 +80,25 @@ module clint #(
     always_comb begin
         mtime_n    = mtime_q;
         mtimecmp_n = mtimecmp_q;
-
+        msip_n     = msip_q;
         // RTC says we should increase the timer
         if (increase_timer && !halted_i)
             mtime_n = mtime_q + 1;
 
         // written from APB bus - gets priority
         if (en && we) begin
-            case (register_address)
-                REG_TIME:
-                    mtime_n = wdata;
+            case (register_address) inside
+                [MSIP_BASE:MSIP_BASE+8*NR_CORES]: begin
+                    msip_n[$unsigned(address[NR_CORES-1+3:3])] = wdata[0];
+                end
 
-                REG_CMP:
+                [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
                     mtimecmp_n[$unsigned(address[NR_CORES-1+3:3])] = wdata;
+                end
+
+                MTIME_BASE: begin
+                    mtime_n = wdata;
+                end
                 default:;
             endcase
         end
@@ -101,12 +109,18 @@ module clint #(
         rdata = 'b0;
 
         if (en && !we) begin
-            case (register_address)
-                REG_TIME:
-                    rdata = mtime_q;
+            case (register_address) inside
+                [MSIP_BASE:MSIP_BASE+8*NR_CORES]: begin
+                    rdata = misp_q[$unsigned(address[NR_CORES-1+3:3])];
+                end
 
-                REG_CMP:
+                [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
                     rdata = mtimecmp_q[$unsigned(address[NR_CORES-1+3:3])];
+                end
+
+                MTIME_BASE: begin
+                    rdata = mtime_q;
+                end
                 default:;
             endcase
         end
@@ -149,9 +163,11 @@ module clint #(
         if(~rst_ni) begin
             mtime_q    <= 64'b0;
             mtimecmp_q <= 'b0;
+            misp_q     <= '0;
         end else begin
             mtime_q    <= mtime_n;
             mtimecmp_q <= mtimecmp_n;
+            misp_q     <= msip_n;
         end
     end
 
