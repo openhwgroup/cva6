@@ -219,6 +219,11 @@ module instr_realigner (
             unaligned_n  = 1'b0;
             compressed_n = 1'b0;
         end
+
+        // assign the correct address for a potentially faulting unaligned instruction
+        // we've already done the re-alignment for the instruction word so we
+        // can just assign it here to tval
+        fetch_entry_o.ex.tval = fetch_entry_o.instruction;
     end
 
     // ---------
