@@ -73,11 +73,13 @@ module dm_top #(
     logic                             data_valid;
     logic [19:0]                      hartsel;
     // System Bus Access Module
-    logic [63:0]                      sbaddress;
+    logic [63:0]                      sbaddress_csrs_sba;
+    logic [63:0]                      sbaddress_sba_csrs;
     logic                             sbaddress_write_valid;
     logic                             sbreadonaddr;
     logic                             sbautoincrement;
     logic [2:0]                       sbaccess;
+    logic                             sbreadondata;
     logic [63:0]                      sbdata_write;
     logic                             sbdata_read_valid;
     logic                             sbdata_write_valid;
@@ -126,31 +128,34 @@ module dm_top #(
         .data_i                  ( data_mem_csrs         ),
         .data_valid_i            ( data_valid            ),
         .data_o                  ( data_csrs_mem         ),
-        .sbaddress_o             ( sbaddress             ),
+        .sbaddress_o             ( sbaddress_csrs_sba    ),
+        .sbaddress_i             ( sbaddress_sba_csrs    ),
         .sbaddress_write_valid_o ( sbaddress_write_valid ),
         .sbreadonaddr_o          ( sbreadonaddr          ),
         .sbautoincrement_o       ( sbautoincrement       ),
         .sbaccess_o              ( sbaccess              ),
+        .sbreadondata_o          ( sbreadondata          ),
         .sbdata_o                ( sbdata_write          ),
         .sbdata_read_valid_o     ( sbdata_read_valid     ),
         .sbdata_write_valid_o    ( sbdata_write_valid    ),
         .sbdata_i                ( sbdata_read           ),
         .sbdata_valid_i          ( sbdata_valid          ),
         .sbbusy_i                ( sbbusy                ),
-        .sberror_i               ( sberror_valid         ),
-        .sberror_valid_i         ( sberror               )
+        .sberror_valid_i         ( sberror_valid         ),
+        .sberror_i               ( sberror               )
     );
 
     dm_sba i_dm_sba (
         .clk_i                   ( clk_i                 ),
-        .rst_ni                  ( rst_ni                ),
+        .dmactive_i              ( dmactive_o            ),
         .axi_master,
-        .ndmreset_i              ( ndmreset_o            ),
-        .sbaddress_i             ( sbaddress             ),
+        .sbaddress_i             ( sbaddress_csrs_sba    ),
+        .sbaddress_o             ( sbaddress_sba_csrs    ),
         .sbaddress_write_valid_i ( sbaddress_write_valid ),
         .sbreadonaddr_i          ( sbreadonaddr          ),
         .sbautoincrement_i       ( sbautoincrement       ),
         .sbaccess_i              ( sbaccess              ),
+        .sbreadondata_i          ( sbreadondata          ),
         .sbdata_i                ( sbdata_write          ),
         .sbdata_read_valid_i     ( sbdata_read_valid     ),
         .sbdata_write_valid_i    ( sbdata_write_valid    ),

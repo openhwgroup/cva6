@@ -57,12 +57,14 @@ module dm_csrs #(
     input  logic                              data_valid_i,
     // system bus access module (SBA)
     output logic [63:0]                       sbaddress_o,
+    input  logic [63:0]                       sbaddress_i,
     output logic                              sbaddress_write_valid_o,
     // control signals in
     output logic                              sbreadonaddr_o,
     output logic                              sbautoincrement_o,
     output logic [2:0]                        sbaccess_o,
     // data out
+    output logic                              sbreadondata_o,
     output logic [63:0]                       sbdata_o,
     output logic                              sbdata_read_valid_o,
     output logic                              sbdata_write_valid_o,
@@ -121,13 +123,15 @@ module dm_csrs #(
     assign dmi_resp_valid_o     = ~resp_queue_empty;
     assign dmi_req_ready_o      = ~resp_queue_full;
     assign resp_queue_push      = dmi_req_valid_i & dmi_req_ready_o;
-
+    // SBA
     assign sbautoincrement_o = sbcs_q.sbautoincrement;
-    assign sbreadonaddr_o = sbcs_q.sbreadonaddr;
-    assign sbaccess_o = sbcs_q.sbaccess;
-    assign sbdata_o = sbdata_q;
-    assign sbaddress_o = sbaddr_q;
-    assign hartsel_o    = {dmcontrol_q.hartselhi, dmcontrol_q.hartsello};
+    assign sbreadonaddr_o    = sbcs_q.sbreadonaddr;
+    assign sbreadondata_o    = sbcs_q.sbreadondata;
+    assign sbaccess_o        = sbcs_q.sbaccess;
+    assign sbdata_o          = sbdata_q;
+    assign sbaddress_o       = sbaddr_q;
+
+    assign hartsel_o         = {dmcontrol_q.hartselhi, dmcontrol_q.hartsello};
 
     always_comb begin : csr_read_write
         // --------------------
@@ -180,7 +184,7 @@ module dm_csrs #(
         progbuf_d   = progbuf_q;
         data_d      = data_q;
         sbcs_d      = sbcs_d;
-        sbaddr_d    = sbaddr_q;
+        sbaddr_d    = sbaddress_i;
         sbdata_d    = sbdata_q;
 
         resp_queue_data         = 32'b0;
@@ -245,7 +249,7 @@ module dm_csrs #(
                     if (sbbusy_i) begin
                        sbcs_d.sbbusyerror = 1'b1;
                     end begin
-                        sbdata_read_valid_o = 1'b0;
+                        sbdata_read_valid_o = (sbcs_q.sberror == '0);
                         resp_queue_data = sbdata_q[31:0];
                     end
                 end
@@ -332,7 +336,11 @@ module dm_csrs #(
                     if (sbbusy_i) begin
                         sbcs_d.sbbusyerror = 1'b1;
                     end begin
-                        sbcs_d = dmi_req_bits_data_i;
+                        automatic dm::sbcs_t sbcs = dm::sbcs_t'(dmi_req_bits_data_i);
+                        sbcs_d = sbcs;
+                        // R/W1C
+                        sbcs_d.sbbusyerror = sbcs_q.sbbusyerror & (~sbcs.sbbusyerror);
+                        sbcs_d.sberror     = sbcs_q.sberror     & (~sbcs.sberror);
                     end
                 end
                 dm::SBAddress0: begin
@@ -341,7 +349,7 @@ module dm_csrs #(
                        sbcs_d.sbbusyerror = 1'b1;
                     end begin
                         sbaddr_d[31:0] = dmi_req_bits_data_i;
-                        sbaddress_write_valid_o = 1'b1;
+                        sbaddress_write_valid_o = (sbcs_q.sberror == '0);
                     end
                 end
                 dm::SBAddress1: begin
@@ -358,7 +366,7 @@ module dm_csrs #(
                        sbcs_d.sbbusyerror = 1'b1;
                     end begin
                         sbdata_d[31:0] = dmi_req_bits_data_i;
-                        sbdata_write_valid_o = 1'b1;
+                        sbdata_write_valid_o = (sbcs_q.sberror == '0);
                     end
                 end
                 dm::SBData1: begin
@@ -385,12 +393,14 @@ module dm_csrs #(
         if (ndmreset_o) begin
             havereset_d = '1;
         end
-
+        // -------------
+        // System Bus
+        // -------------
         // set bus error
         if (sberror_valid_i) begin
             sbcs_d.sberror = sberror_i;
         end
-
+        // update read data
         if (sbdata_valid_i) begin
             sbdata_d = sbdata_i;
         end
