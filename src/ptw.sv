@@ -27,7 +27,6 @@ module ptw #(
     output logic                    ptw_active_o,
     output logic                    walking_instr_o,        // set when walking for TLB
     output logic                    ptw_error_o,            // set when an error occurred
-    output logic [63:0]             faulting_address_o,     // the address which threw the page-fault exception
     input  logic                    enable_translation_i,   // CSRs indicate to enable SV39
     input  logic                    en_ld_st_translation_i, // enable virtual memory translation for load/stores
 
@@ -174,7 +173,6 @@ module ptw #(
         // input registers
         tlb_update_asid_n   = tlb_update_asid_q;
         vaddr_n             = vaddr_q;
-        faulting_address_o  = '0;
 
         itlb_miss_o         = 1'b0;
         dtlb_miss_o         = 1'b0;
@@ -315,7 +313,6 @@ module ptw #(
             PROPAGATE_ERROR: begin
                 NS = IDLE;
                 ptw_error_o        = 1'b1;
-                faulting_address_o = vaddr_q;
             end
             // wait for the rvalid before going back to IDLE
             WAIT_RVALID: begin

@@ -223,7 +223,7 @@ module instr_realigner (
         // assign the correct address for a potentially faulting unaligned instruction
         // we've already done the re-alignment for the instruction word so we
         // can just assign it here to tval
-        fetch_entry_o.ex.tval = fetch_entry_o.instruction;
+        fetch_entry_o.ex.tval = fetch_entry_o.address;
     end
 
     // ---------

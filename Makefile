@@ -128,7 +128,8 @@ verilate_command := $(verilator)                                                
                     -Wno-DECLFILENAME                                                \
                     -Wno-UNOPTFLAT                                                   \
                     -Wno-UNUSED                                                      \
-                    -Wno-ASSIGNDLY                                                   \
+                    -Wno-style \
+                    -Wno-lint \
                     $(if $(DEBUG),--trace-structs --trace,) \
                     -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
                     $(list_incdir) --top-module ariane_testharness \

@@ -51,7 +51,6 @@ module decoder (
     } imm_select;
 
     logic [63:0] imm_i_type;
-    logic [11:0] imm_iz_type;
     logic [63:0] imm_s_type;
     logic [63:0] imm_sb_type;
     logic [63:0] imm_u_type;
@@ -66,11 +65,11 @@ module decoder (
         instruction_o.pc            = pc_i;
         instruction_o.fu            = NONE;
         instruction_o.op            = ADD;
-        instruction_o.rs1           = 5'b0;
-        instruction_o.rs2           = 5'b0;
-        instruction_o.rd            = 5'b0;
+        instruction_o.rs1           = '0;
+        instruction_o.rs2[4:0]           = '0;
+        instruction_o.rd            = '0;
         instruction_o.use_pc        = 1'b0;
-        instruction_o.trans_id      = 5'b0;
+        instruction_o.trans_id      = '0;
         instruction_o.is_compressed = is_compressed_i;
         instruction_o.use_zimm      = 1'b0;
         instruction_o.bp            = branch_predict_i;
@@ -80,9 +79,9 @@ module decoder (
         if (~ex_i.valid) begin
             case (instr.rtype.opcode)
                 riscv::OpcodeSystem: begin
-                    instruction_o.fu  = CSR;
-                    instruction_o.rs1 = instr.itype.rs1;
-                    instruction_o.rd  = instr.itype.rd;
+                    instruction_o.fu       = CSR;
+                    instruction_o.rs1[4:0] = instr.itype.rs1;
+                    instruction_o.rd[4:0]  = instr.itype.rd;
 
                     unique case (instr.itype.funct3)
                         3'b000: begin
@@ -180,13 +179,13 @@ module decoder (
                         end
                         // use zimm and iimm
                         3'b101: begin// CSRRWI
-                            instruction_o.rs1 = instr.itype.rs1;
+                            instruction_o.rs1[4:0] = instr.itype.rs1;
                             imm_select = IIMM;
                             instruction_o.use_zimm = 1'b1;
                             instruction_o.op = CSR_WRITE;
                         end
                         3'b110: begin// CSRRSI
-                            instruction_o.rs1 = instr.itype.rs1;
+                            instruction_o.rs1[4:0] = instr.itype.rs1;
                             imm_select = IIMM;
                             instruction_o.use_zimm = 1'b1;
                             // this is just a read
@@ -196,7 +195,7 @@ module decoder (
                                 instruction_o.op = CSR_SET;
                         end
                         3'b111: begin// CSRRCI
-                            instruction_o.rs1 = instr.itype.rs1;
+                            instruction_o.rs1[4:0] = instr.itype.rs1;
                             imm_select = IIMM;
                             instruction_o.use_zimm = 1'b1;
                             // this is just a read
@@ -237,9 +236,9 @@ module decoder (
                 // --------------------------
                 riscv::OpcodeOp: begin
                     instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
-                    instruction_o.rs1 = instr.rtype.rs1;
-                    instruction_o.rs2 = instr.rtype.rs2;
-                    instruction_o.rd  = instr.rtype.rd;
+                    instruction_o.rs1[4:0] = instr.rtype.rs1;
+                    instruction_o.rs2[4:0] = instr.rtype.rs2;
+                    instruction_o.rd[4:0]  = instr.rtype.rd;
 
                     unique case ({instr.rtype.funct7, instr.rtype.funct3})
                         {7'b000_0000, 3'b000}: instruction_o.op = ADD;   // Add
@@ -272,9 +271,9 @@ module decoder (
                 // --------------------------
                 riscv::OpcodeOp32: begin
                     instruction_o.fu  = (instr.rtype.funct7 == 7'b000_0001) ? MULT : ALU;
-                    instruction_o.rs1 = instr.rtype.rs1;
-                    instruction_o.rs2 = instr.rtype.rs2;
-                    instruction_o.rd  = instr.rtype.rd;
+                    instruction_o.rs1[4:0] = instr.rtype.rs1;
+                    instruction_o.rs2[4:0] = instr.rtype.rs2;
+                    instruction_o.rd[4:0]  = instr.rtype.rd;
 
                         unique case ({instr.rtype.funct7, instr.rtype.funct3})
                             {7'b000_0000, 3'b000}: instruction_o.op = ADDW; // addw
@@ -297,8 +296,8 @@ module decoder (
                 riscv::OpcodeOpimm: begin
                     instruction_o.fu  = ALU;
                     imm_select = IIMM;
-                    instruction_o.rs1 = instr.itype.rs1;
-                    instruction_o.rd  = instr.itype.rd;
+                    instruction_o.rs1[4:0] = instr.itype.rs1;
+                    instruction_o.rd[4:0]  = instr.itype.rd;
 
                     unique case (instr.itype.funct3)
                         3'b000: instruction_o.op = ADD;   // Add Immediate
@@ -331,8 +330,8 @@ module decoder (
                 riscv::OpcodeOpimm32: begin
                     instruction_o.fu  = ALU;
                     imm_select = IIMM;
-                    instruction_o.rs1 = instr.itype.rs1;
-                    instruction_o.rd  = instr.itype.rd;
+                    instruction_o.rs1[4:0] = instr.itype.rs1;
+                    instruction_o.rd[4:0]  = instr.itype.rd;
 
                     unique case (instr.itype.funct3)
                         3'b000: instruction_o.op = ADDW;  // Add Immediate
@@ -361,8 +360,8 @@ module decoder (
                 riscv::OpcodeStore: begin
                     instruction_o.fu  = STORE;
                     imm_select = SIMM;
-                    instruction_o.rs1  = instr.stype.rs1;
-                    instruction_o.rs2  = instr.stype.rs2;
+                    instruction_o.rs1[4:0]  = instr.stype.rs1;
+                    instruction_o.rs2[4:0]  = instr.stype.rs2;
                     // determine store size
                     unique case (instr.stype.funct3)
                         3'b000: instruction_o.op  = SB;
@@ -376,8 +375,8 @@ module decoder (
                 riscv::OpcodeLoad: begin
                     instruction_o.fu  = LOAD;
                     imm_select = IIMM;
-                    instruction_o.rs1 = instr.itype.rs1;
-                    instruction_o.rd  = instr.itype.rd;
+                    instruction_o.rs1[4:0] = instr.itype.rs1;
+                    instruction_o.rd[4:0]  = instr.itype.rd;
                     // determine load size and signed type
                     unique case (instr.itype.funct3)
                         3'b000: instruction_o.op  = LB;
@@ -395,8 +394,8 @@ module decoder (
                 riscv::OpcodeAmo: begin
                     // we are going to use the load unit for AMOs
                     instruction_o.fu  = LOAD;
-                    instruction_o.rd  = instr.stype.imm0;
-                    instruction_o.rs1 = instr.itype.rs1;
+                    instruction_o.rd[4:0]  = instr.stype.imm0;
+                    instruction_o.rs1[4:0] = instr.itype.rs1;
                     // words
                     if (instr.stype.funct3 == 3'h2) begin
                         unique case (instr.instr[31:27])
@@ -441,8 +440,8 @@ module decoder (
                 riscv::OpcodeBranch: begin
                     imm_select              = SBIMM;
                     instruction_o.fu        = CTRL_FLOW;
-                    instruction_o.rs1       = instr.stype.rs1;
-                    instruction_o.rs2       = instr.stype.rs2;
+                    instruction_o.rs1[4:0]  = instr.stype.rs1;
+                    instruction_o.rs2[4:0]  = instr.stype.rs2;
 
                     is_control_flow_instr_o = 1'b1;
 
@@ -463,33 +462,32 @@ module decoder (
                 riscv::OpcodeJalr: begin
                     instruction_o.fu        = CTRL_FLOW;
                     instruction_o.op        = JALR;
-                    instruction_o.rs1       = instr.itype.rs1;
+                    instruction_o.rs1[4:0]  = instr.itype.rs1;
                     imm_select              = IIMM;
-                    instruction_o.rd        = instr.itype.rd;
+                    instruction_o.rd[4:0]   = instr.itype.rd;
                     is_control_flow_instr_o = 1'b1;
                     // invalid jump and link register -> reserved for vector encoding
-                    if (instr.itype.funct3 != 3'b0)
-                        illegal_instr = 1'b1;
+                    if (instr.itype.funct3 != 3'b0) illegal_instr = 1'b1;
                 end
                 // Jump and link
                 riscv::OpcodeJal: begin
                     instruction_o.fu        = CTRL_FLOW;
                     imm_select              = JIMM;
-                    instruction_o.rd        = instr.utype.rd;
+                    instruction_o.rd[4:0]   = instr.utype.rd;
                     is_control_flow_instr_o = 1'b1;
                 end
 
                 riscv::OpcodeAuipc: begin
-                    instruction_o.fu     = ALU;
-                    imm_select           = UIMM;
-                    instruction_o.use_pc = 1'b1;
-                    instruction_o.rd     = instr.utype.rd;
+                    instruction_o.fu      = ALU;
+                    imm_select            = UIMM;
+                    instruction_o.use_pc  = 1'b1;
+                    instruction_o.rd[4:0] = instr.utype.rd;
                 end
 
                 riscv::OpcodeLui: begin
-                    imm_select           = UIMM;
-                    instruction_o.fu     = ALU;
-                    instruction_o.rd     = instr.utype.rd;
+                    imm_select            = UIMM;
+                    instruction_o.fu      = ALU;
+                    instruction_o.rd[4:0] = instr.utype.rd;
                 end
 
                 default: illegal_instr = 1'b1;
@@ -501,7 +499,6 @@ module decoder (
     // --------------------------------
     always_comb begin : sign_extend
         imm_i_type  = i_imm(instruction_i);
-        imm_iz_type = {  52'b0, instruction_i[31:20] };
         imm_s_type  = { {52 {instruction_i[31]}}, instruction_i[31:25], instruction_i[11:7] };
         imm_sb_type = sb_imm(instruction_i);
         imm_u_type  = { {32 {instruction_i[31]}}, instruction_i[31:12], 12'b0 }; // JAL, AUIPC, sign extended to 64 bit
@@ -549,7 +546,7 @@ module decoder (
         if (~ex_i.valid) begin
             // if we didn't already get an exception save the instruction here as we may need it
             // in the commit stage if we got a access exception to one of the CSR registers
-            instruction_o.ex.tval  = instruction_i;
+            instruction_o.ex.tval  = {32'b0, instruction_i};
             // instructions which will throw an exception are marked as valid
             // e.g.: they can be committed anytime and do not need to wait for any functional unit
             // check here if we decoded an invalid instruction or if the compressed decoder already decoded

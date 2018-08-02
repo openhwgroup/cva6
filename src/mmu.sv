@@ -80,19 +80,16 @@ module mmu #(
     logic        ptw_active;    // PTW is currently walking a page table
     logic        walking_instr; // PTW is walking because of an ITLB miss
     logic        ptw_error;     // PTW threw an exception
-    logic [63:0] faulting_address;
 
     logic [38:0] update_vaddr;
     tlb_update_t update_ptw_itlb, update_ptw_dtlb;
 
-    logic        itlb_update;
     logic        itlb_lu_access;
     riscv::pte_t itlb_content;
     logic        itlb_is_2M;
     logic        itlb_is_1G;
     logic        itlb_lu_hit;
 
-    logic        dtlb_update;
     logic        dtlb_lu_access;
     riscv::pte_t dtlb_content;
     logic        dtlb_is_2M;
@@ -152,7 +149,6 @@ module mmu #(
         .ptw_active_o           ( ptw_active            ),
         .walking_instr_o        ( walking_instr         ),
         .ptw_error_o            ( ptw_error             ),
-        .faulting_address_o     ( faulting_address      ),
         .enable_translation_i   ( enable_translation_i  ),
 
         .update_vaddr_o         ( update_vaddr          ),

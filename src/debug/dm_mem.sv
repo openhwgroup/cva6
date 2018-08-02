@@ -218,7 +218,7 @@ module dm_mem #(
                     WhereTo: begin
                         // variable jump to abstract cmd, program_buffer or resume
                         if (resumereq_i) begin
-                            rdata_d = {32'b0, riscv::jalr(0, 0, dm::ResumeAddress)};
+                            rdata_d = {32'b0, riscv::jalr(0, 0, dm::ResumeAddress[11:0])};
                         end
 
                         // there is a command active so jump there
@@ -240,7 +240,7 @@ module dm_mem #(
 
                     // TODO(zarubaf) change hard-coded values
                     [ProgBufBase:ProgBufEnd]: begin
-                        case (addr_i)
+                        case (addr_i[DbgAddressBits-1:0])
                             ProgBufBase + 16: rdata_d = {progbuf_i[5], progbuf_i[4]};
                             ProgBufBase + 8:  rdata_d = {progbuf_i[3], progbuf_i[2]};
                             ProgBufBase:      rdata_d = {progbuf_i[1], progbuf_i[0]};
@@ -250,14 +250,17 @@ module dm_mem #(
                     // two slots for abstract command
                     [AbstractCmdBase:AbstractCmdEnd]: begin
                         // return the correct address index
-                        rdata_d = abstract_cmd[(addr_i[DbgAddressBits-1:3] - (AbstractCmdBase >> 3))];
+                        rdata_d = abstract_cmd[(addr_i[DbgAddressBits-1:3] - AbstractCmdBase[DbgAddressBits-1:3])];
                     end
                     // harts are polling for flags here
                     [FlagsBase:FlagsEnd]: begin
+                        automatic logic [7:0][7:0] rdata;
+                        rdata = '0;
                         // release the corresponding hart
-                        if (({addr_i[DbgAddressBits-1:3], 3'b0} - FlagsBase) == {hartsel_i[19:3], 3'b0}) begin
-                            rdata_d[hartsel_i[2:0]+:8] = {6'b0, resume, go};
+                        if (({addr_i[DbgAddressBits-1:3], 3'b0} - FlagsBase[DbgAddressBits-1:0]) == {hartsel_i[DbgAddressBits-1:3], 3'b0}) begin
+                            rdata[hartsel_i[2:0]] = {6'b0, resume, go};
                         end
+                        rdata_d = rdata;
                     end
                     default: ;
                 endcase
@@ -358,7 +361,7 @@ module dm_mem #(
 
     // ROM starts at the HaltAddress of the core e.g.: it immediately jumps to
     // the ROM base address
-    assign fwd_rom_d = (addr_i[DbgAddressBits-1:0] >= dm::HaltAddress) ? 1'b1 : 1'b0;
+    assign fwd_rom_d = (addr_i[DbgAddressBits-1:0] >= dm::HaltAddress[DbgAddressBits-1:0]) ? 1'b1 : 1'b0;
 
     always_ff @(posedge clk_i) begin
         if (~dmactive_i) begin

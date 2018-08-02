@@ -169,7 +169,7 @@ module lsu #(
         .data_rdata_o      ( data_rdata_o            ),
         .amo_op_i          ( amo_op_i                ),
 
-        .amo_commit_i      (                         ),
+        .amo_commit_i      ( 1'b0                    ),
         .amo_valid_o       (                         ),
         .amo_result_o      (                         ),
         .amo_flush_i       ( 1'b0                    ),

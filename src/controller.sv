@@ -17,7 +17,6 @@ import ariane_pkg::*;
 module controller (
     input  logic            clk_i,
     input  logic            rst_ni,
-    output logic            flush_bp_o,             // Flush branch prediction data structures
     output logic            set_pc_commit_o,        // Set PC om PC Gen
     output logic            flush_if_o,             // Flush the IF stage
     output logic            flush_unissued_instr_o, // Flush un-issued instructions of the scoreboard
@@ -56,7 +55,6 @@ module controller (
         flush_ex_o             = 1'b0;
         flush_tlb_o            = 1'b0;
         flush_dcache           = 1'b0;
-        flush_bp_o             = 1'b0; // flush branch prediction
         flush_icache_o         = 1'b0;
         // ------------
         // Mis-predict
@@ -142,12 +140,6 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-            // flush branch-prediction - it is difficult to say whether this actually looses performance or increases performance
-            // because of reduced mis-predicts. There is one case where flushing branch-prediction is absolutely necessary
-            // that is when trapping back to machine mode. As the core is making speculative accesses it can happen that it tries
-            // to load from an non-idempotent register where a read can have a side-effect. This can happen as the core can try to load
-            // from a user-mode address which is then not translated in machine-mode.
-            flush_bp_o             = 1'b1;
         end
     end
 

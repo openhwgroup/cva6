@@ -56,13 +56,6 @@ module ariane #(
     logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
     // --------------
-    // PCGEN <-> IF
-    // --------------
-    logic [63:0]              fetch_address_pcgen_if;
-    branchpredict_sbe_t       branch_predict_pcgen_if;
-    logic                     if_ready_if_pcgen;
-    logic                     fetch_valid_pcgen_if;
-    // --------------
     // PCGEN <-> CSR
     // --------------
     logic [63:0]              trap_vector_base_commit_pcgen;
@@ -71,10 +64,8 @@ module ariane #(
     // IF <-> ID
     // --------------
     fetch_entry_t             fetch_entry_if_id;
-    logic                     ready_id_if;
     logic                     fetch_valid_if_id;
     logic                     decode_ack_id_if;
-    exception_t               exception_if_id;
 
     // --------------
     // ID <-> ISSUE
@@ -101,8 +92,6 @@ module ariane #(
     logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
     logic                     alu_valid_ex_id;
     logic [63:0]              alu_result_ex_id;
-    logic                     alu_branch_res_ex_id;
-    exception_t               alu_exception_ex_id;
     // Branches and Jumps
     logic                     branch_ready_ex_id;
     logic [TRANS_ID_BITS-1:0] branch_trans_id_ex_id;
@@ -188,13 +177,13 @@ module ariane #(
     logic [63:0]              data_csr_perf, data_perf_csr;
     logic                     we_csr_perf;
 
+    logic                     l1_icache_miss;
     logic                     itlb_miss_ex_perf;
     logic                     dtlb_miss_ex_perf;
     logic                     dcache_miss_ex_perf;
     // --------------
     // CTRL <-> *
     // --------------
-    logic                     flush_bp_ctrl_pcgen;
     logic                     set_pc_ctrl_pcgen;
     logic                     flush_csr_ctrl;
     logic                     flush_unissued_instr_ctrl_id;
@@ -235,7 +224,7 @@ module ariane #(
         .trap_vector_base_i  ( trap_vector_base_commit_pcgen ),
         .ex_valid_i          ( ex_commit.valid               ),
         .axi                 ( instr_if                      ),
-        .l1_icache_miss_o    (                               ), // performance counters
+        .l1_icache_miss_o    ( l1_icache_miss                ), // performance counters
         .fetch_entry_o       ( fetch_entry_if_id             ),
         .fetch_entry_valid_o ( fetch_valid_if_id             ),
         .fetch_ack_i         ( decode_ack_id_if              ),
@@ -345,8 +334,6 @@ module ariane #(
         .alu_result_o           ( alu_result_ex_id                       ),
         .alu_trans_id_o         ( alu_trans_id_ex_id                     ),
         .alu_valid_o            ( alu_valid_ex_id                        ),
-        .alu_branch_res_o       ( alu_branch_res_ex_id                   ),
-        .alu_exception_o        (                                        ),
         // Branches and Jumps
         .branch_ready_o         ( branch_ready_ex_id                     ),
         .branch_valid_o         ( branch_valid_ex_id                     ),
@@ -495,7 +482,7 @@ module ariane #(
         .commit_instr_i    ( commit_instr_id_commit ),
         .commit_ack_i      ( commit_ack             ),
 
-        .l1_icache_miss_i  ( 1'b0                   ),
+        .l1_icache_miss_i  ( l1_icache_miss         ),
         .l1_dcache_miss_i  ( dcache_miss_ex_perf    ),
         .itlb_miss_i       ( itlb_miss_ex_perf      ),
         .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
@@ -510,7 +497,6 @@ module ariane #(
     // ------------
     controller controller_i (
         // flush ports
-        .flush_bp_o             ( flush_bp_ctrl_pcgen           ),
         .set_pc_commit_o        ( set_pc_ctrl_pcgen             ),
         .flush_unissued_instr_o ( flush_unissued_instr_ctrl_id  ),
         .flush_if_o             ( flush_ctrl_if                 ),
@@ -604,7 +590,6 @@ module ariane #(
     // mock tracer for Verilator, to be used with spike-dasm
     `else
 
-    string s;
     int f;
     logic [63:0] cycles;
 
@@ -617,7 +602,7 @@ module ariane #(
             cycles <= 0;
         end else begin
             for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-                if (commit_ack[i] && !commit_stage_i.exception_o) begin
+                if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
                     $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
                 end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
                     if (commit_instr_id_commit[i].ex.cause == 2) begin

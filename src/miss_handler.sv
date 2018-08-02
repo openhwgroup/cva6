@@ -49,7 +49,6 @@ module miss_handler #(
     // Port to SRAMs, for refill and eviction
     output logic  [SET_ASSOCIATIVITY-1:0]               req_o,
     output logic  [INDEX_WIDTH-1:0]                     addr_o, // address into cache array
-    input  logic                                        gnt_i,
     output cache_line_t                                 data_o,
     output cl_be_t                                      be_o,
     input  cache_line_t [SET_ASSOCIATIVITY-1:0]         data_i,
@@ -587,10 +586,10 @@ module arbiter #(
                     if (data_req_i[i] == 1'b1) begin
                         data_req_o    = data_req_i[i];
                         data_gnt_o[i] = data_req_i[i];
-                        request_index = i;
+                        request_index = i[$bits(request_index)-1:0];
                         // save the request
                         req_d.address = address_i[i];
-                        req_d.id = i;
+                        req_d.id = i[$bits(req_q.id)-1:0];
                         req_d.data = data_wdata_i[i];
                         req_d.size = data_size_i[i];
                         req_d.be = data_be_i[i];
@@ -682,7 +681,7 @@ module axi_adapter #(
     // AXI port
     AXI_BUS.Master                                      axi
 );
-    localparam BURST_SIZE = DATA_WIDTH/64-1;
+    localparam logic [7:0] BURST_SIZE = DATA_WIDTH/64-1;
     localparam ADDR_INDEX = ($clog2(DATA_WIDTH/64) > 0) ? $clog2(DATA_WIDTH/64) : 1;
 
     enum logic [3:0] {
