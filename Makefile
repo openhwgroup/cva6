@@ -15,6 +15,8 @@ test_case ?= core_test
 questa_version ?=
 # verilator version
 verilator ?= verilator
+# traget option
+target-options ?=
 # Sources
 # Ariane PKG
 ariane_pkg := include/riscv_pkg.sv src/debug/dm_pkg.sv include/ariane_pkg.sv include/nbdcache_pkg.sv include/axi_if.sv
@@ -85,13 +87,13 @@ $(library):
 # +jtag_rbb_enable=1
 sim: build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=HIGH" -coverage -classdebug  +jtag_rbb_enable=1 \
-	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" ${top_level}_optimized +permissive-off ++$(riscv-test)
+	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0 \
+	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" ${top_level}_optimized +permissive-off ++$(riscv-test) ++$(target-options)
 
 simc: build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=HIGH" -coverage -classdebug +jtag_rbb_enable=1 \
-	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" ${top_level}_optimized +permissive-off ++$(riscv-test)
+	 +BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0 \
+	 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" ${top_level}_optimized +permissive-off ++$(riscv-test) ++$(target-options)
 
 run-asm-tests: build
 	$(foreach test, $(riscv-ci-tests), vsim$(questa_version) +permissive -64 +BASEDIR=$(riscv-test-dir) +max-cycles=$(max_cycles) \

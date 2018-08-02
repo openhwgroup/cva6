@@ -946,13 +946,21 @@ module axi_adapter #(
                         state_d = COMPLETE_READ;
                     end
 
+                    // *work-around* so that the missing critical_word_valid is not violating the
+                    // protocol between miss_handler and load_unit. TODO(zarubaf) In general this needs proper
+                    // handling as an access fault
+                    if (axi.r_last && axi.r_resp != '0) begin
+                        critical_word_valid_o = 1'b1;
+                        // in the case of a bus erro (SIGBUS)r this is garbage anyway
+                        critical_word_o       = axi.r_data;
+                    end
+
                     // save the word
                     if (state_q == WAIT_R_VALID_MULTIPLE) begin
                         cache_line_d[index] = axi.r_data;
-
-                    end else
+                    end else begin
                         cache_line_d[0] = axi.r_data;
-
+                    end
                     // Decrease the counter
                     cnt_d = cnt_q - 1;
                 end

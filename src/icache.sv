@@ -261,6 +261,7 @@ module icache #(
                 // -------
                 // Hit
                 // -------
+                // disabling the icache just makes it fetch on every request
                 if (|hit && fetch_valid_i && (en_cache_i || (state_q != TAG_CMP))) begin
                     ready_o = 1'b1;
                     valid_o = 1'b1;
@@ -287,14 +288,21 @@ module icache #(
                     evict_way_d = hit;
                     // save tag
                     tag_d       = fetch_paddr_i[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
-                    miss_o      = 1'b1;
+                    miss_o      = en_cache_i; // only count misses if the cache is enabled
                     // get way which to replace
-                    if (repl_w_random) begin
-                        evict_way_d = random_way;
-                        // shift the lfsr
-                        update_lfsr = 1'b1;
-                    end else if (!(|hit)) begin
-                        evict_way_d[repl_invalid] = 1'b1;
+                    // only if there is no hit we should fall back to real replacement. If there was a hit then
+                    // it means we are in bypass mode (!en_cache_i) and should update the cache-line with the most recent
+                    // value fetched from memory.
+                    if (!(|hit)) begin
+                        // all ways are currently full, randomly replace one of them
+                        if (repl_w_random) begin
+                            evict_way_d = random_way;
+                            // shift the lfsr
+                            update_lfsr = 1'b1;
+                        // there is still one cache-line which is not valid ~> replace that one
+                        end else begin
+                            evict_way_d[repl_invalid] = 1'b1;
+                        end
                     end
                 end
                 // if we didn't hit on the TLB we need to wait until the request has been completed
