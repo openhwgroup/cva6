@@ -18,43 +18,61 @@
 module dm_csrs #(
     parameter int NrHarts = -1
 )(
-    input  logic                        clk_i,              // Clock
-    input  logic                        rst_ni,             // Asynchronous reset active low
-    input  logic                        dmi_rst_ni,         // Debug Module Interface reset, active-low
-    input  logic                        dmi_req_valid_i,
-    output logic                        dmi_req_ready_o,
-    input  logic [ 6:0]                 dmi_req_bits_addr_i,
-    input  logic [ 1:0]                 dmi_req_bits_op_i,  // 0 = nop, 1 = read, 2 = write
-    input  logic [31:0]                 dmi_req_bits_data_i,
+    input  logic                              clk_i,              // Clock
+    input  logic                              rst_ni,             // Asynchronous reset active low
+    input  logic                              dmi_rst_ni,         // Debug Module Interface reset, active-low
+    input  logic                              dmi_req_valid_i,
+    output logic                              dmi_req_ready_o,
+    input  logic [ 6:0]                       dmi_req_bits_addr_i,
+    input  logic [ 1:0]                       dmi_req_bits_op_i,  // 0 = nop, 1 = read, 2 = write
+    input  logic [31:0]                       dmi_req_bits_data_i,
     // every request needs a response one cycle later
-    output logic                        dmi_resp_valid_o,
-    input  logic                        dmi_resp_ready_i,
-    output logic [ 1:0]                 dmi_resp_bits_resp_o,
-    output logic [31:0]                 dmi_resp_bits_data_o,
+    output logic                              dmi_resp_valid_o,
+    input  logic                              dmi_resp_ready_i,
+    output logic [ 1:0]                       dmi_resp_bits_resp_o,
+    output logic [31:0]                       dmi_resp_bits_data_o,
     // global ctrl
-    output logic                        ndmreset_o,      // non-debug module reset, active-high
-    output logic                        dmactive_o,      // 1 -> debug-module is active, 0 -> synchronous re-set
+    output logic                              ndmreset_o,      // non-debug module reset, active-high
+    output logic                              dmactive_o,      // 1 -> debug-module is active, 0 -> synchronous re-set
     // hart status
-    input  dm::hartinfo_t [NrHarts-1:0] hartinfo_i,      // static hartinfo
-    input  logic [NrHarts-1:0]          halted_i,        // hart is halted
-    input  logic [NrHarts-1:0]          unavailable_i,   // e.g.: powered down
-    input  logic [NrHarts-1:0]          resumeack_i,     // hart acknowledged resume request
+    input  dm::hartinfo_t [NrHarts-1:0]       hartinfo_i,      // static hartinfo
+    input  logic [NrHarts-1:0]                halted_i,        // hart is halted
+    input  logic [NrHarts-1:0]                unavailable_i,   // e.g.: powered down
+    input  logic [NrHarts-1:0]                resumeack_i,     // hart acknowledged resume request
     // hart control
-    output logic [19:0]                 hartsel_o,       // hartselect to ctrl module
-    output logic [NrHarts-1:0]          haltreq_o,       // request to halt a hart
-    output logic [NrHarts-1:0]          resumereq_o,     // request hart to resume
+    output logic [19:0]                       hartsel_o,       // hartselect to ctrl module
+    output logic [NrHarts-1:0]                haltreq_o,       // request to halt a hart
+    output logic [NrHarts-1:0]                resumereq_o,     // request hart to resume
 
-    output logic                        cmd_valid_o,       // debugger is writing to the command field
-    output dm::command_t                cmd_o,             // abstract command
-    input  logic [NrHarts-1:0]          cmderror_valid_i,  // an error occured
-    input  dm::cmderr_t [NrHarts-1:0]   cmderror_i,        // this error occured
-    input  logic [NrHarts-1:0]          cmdbusy_i,         // cmd is currently busy executing
+    output logic                              cmd_valid_o,       // debugger is writing to the command field
+    output dm::command_t                      cmd_o,             // abstract command
+    input  logic [NrHarts-1:0]                cmderror_valid_i,  // an error occured
+    input  dm::cmderr_t [NrHarts-1:0]         cmderror_i,        // this error occured
+    input  logic [NrHarts-1:0]                cmdbusy_i,         // cmd is currently busy executing
 
     output logic [dm::ProgBufSize-1:0][31:0]  progbuf_o, // to system bus
     output logic [dm::DataCount-1:0][31:0]    data_o,
 
     input  logic [dm::DataCount-1:0][31:0]    data_i,
-    input  logic                              data_valid_i
+    input  logic                              data_valid_i,
+    // system bus access module (SBA)
+    output logic [63:0]                       sbaddress_o,
+    output logic                              sbaddress_write_valid_o,
+    // control signals in
+    output logic                              sbreadonaddr_o,
+    output logic                              sbautoincrement_o,
+    output logic [2:0]                        sbaccess_o,
+    // data out
+    output logic [63:0]                       sbdata_o,
+    output logic                              sbdata_read_valid_o,
+    output logic                              sbdata_write_valid_o,
+    // read data in
+    input  logic [63:0]                       sbdata_i,
+    input  logic                              sbdata_valid_i,
+    // control signals
+    input  logic                              sbbusy_i,
+    input  logic                              sberror_valid_i, // bus error occurred
+    input  logic [2:0]                        sberror_i // bus error occurred
 );
     // the amount of bits we need to represent all harts
     localparam HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
@@ -86,6 +104,10 @@ module dm_csrs #(
     dm::cmderr_t        cmderr_d, cmderr_q;
     dm::command_t       command_d, command_q;
     dm::abstractauto_t  abstractauto_d, abstractauto_q;
+    dm::sbcs_t          sbcs_d, sbcs_q;
+    logic [63:0]        sbaddr_d, sbaddr_q;
+    logic [63:0]        sbdata_d, sbdata_q;
+
     logic [NrHarts-1:0] havereset_d, havereset_q;
     // program buffer
     logic [dm::ProgBufSize-1:0][31:0] progbuf_d, progbuf_q;
@@ -100,6 +122,11 @@ module dm_csrs #(
     assign dmi_req_ready_o      = ~resp_queue_full;
     assign resp_queue_push      = dmi_req_valid_i & dmi_req_ready_o;
 
+    assign sbautoincrement_o = sbcs_q.sbautoincrement;
+    assign sbreadonaddr_o = sbcs_q.sbreadonaddr;
+    assign sbaccess_o = sbcs_q.sbaccess;
+    assign sbdata_o = sbdata_q;
+    assign sbaddress_o = sbaddr_q;
     assign hartsel_o    = {dmcontrol_q.hartselhi, dmcontrol_q.hartsello};
 
     always_comb begin : csr_read_write
@@ -152,11 +179,17 @@ module dm_csrs #(
         command_d   = command_q;
         progbuf_d   = progbuf_q;
         data_d      = data_q;
+        sbcs_d      = sbcs_d;
+        sbaddr_d    = sbaddr_q;
+        sbdata_d    = sbdata_q;
 
-        resp_queue_data = 32'b0;
-        cmd_valid_o     = 1'b0;
+        resp_queue_data         = 32'b0;
+        cmd_valid_o             = 1'b0;
+        sbaddress_write_valid_o = 1'b0;
+        sbdata_read_valid_o     = 1'b0;
+        sbdata_write_valid_o    = 1'b0;
 
-        // read
+        // reads
         if (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) begin
             unique case ({1'b0, dmi_req_bits_addr_i}) inside
                 [(dm::Data0):DataEnd]: begin
@@ -186,6 +219,44 @@ module dm_csrs #(
                 dm::HaltSum1: resp_queue_data = haltsum1;
                 dm::HaltSum2: resp_queue_data = haltsum2;
                 dm::HaltSum3: resp_queue_data = haltsum3;
+                dm::SBCS: begin
+                    if (sbbusy_i) begin
+                        sbcs_d.sbbusyerror = 1'b1;
+                    end
+                end
+                dm::SBAddress0: begin
+                    // access while the SBA was busy
+                    if (sbbusy_i) begin
+                       sbcs_d.sbbusyerror = 1'b1;
+                    end begin
+                        resp_queue_data = sbaddr_q[31:0];
+                    end
+                end
+                dm::SBAddress1: begin
+                    // access while the SBA was busy
+                    if (sbbusy_i) begin
+                       sbcs_d.sbbusyerror = 1'b1;
+                    end begin
+                        resp_queue_data = sbaddr_q[63:32];
+                    end
+                end
+                dm::SBData0: begin
+                    // access while the SBA was busy
+                    if (sbbusy_i) begin
+                       sbcs_d.sbbusyerror = 1'b1;
+                    end begin
+                        sbdata_read_valid_o = 1'b0;
+                        resp_queue_data = sbdata_q[31:0];
+                    end
+                end
+                dm::SBData1: begin
+                    // access while the SBA was busy
+                    if (sbbusy_i) begin
+                       sbcs_d.sbbusyerror = 1'b1;
+                    end begin
+                        resp_queue_data = sbdata_q[63:32];
+                    end
+                end
                 default:;
             endcase
         end
@@ -256,6 +327,48 @@ module dm_csrs #(
                         cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_bits_addr_i[3:0]];
                     end
                 end
+                dm::SBCS: begin
+                    // access while the SBA was busy
+                    if (sbbusy_i) begin
+                        sbcs_d.sbbusyerror = 1'b1;
+                    end begin
+                        sbcs_d = dmi_req_bits_data_i;
+                    end
+                end
+                dm::SBAddress0: begin
+                    // access while the SBA was busy
+                    if (sbbusy_i) begin
+                       sbcs_d.sbbusyerror = 1'b1;
+                    end begin
+                        sbaddr_d[31:0] = dmi_req_bits_data_i;
+                        sbaddress_write_valid_o = 1'b1;
+                    end
+                end
+                dm::SBAddress1: begin
+                    // access while the SBA was busy
+                    if (sbbusy_i) begin
+                       sbcs_d.sbbusyerror = 1'b1;
+                    end begin
+                        sbaddr_d[63:32] = dmi_req_bits_data_i;
+                    end
+                end
+                dm::SBData0: begin
+                    // access while the SBA was busy
+                    if (sbbusy_i) begin
+                       sbcs_d.sbbusyerror = 1'b1;
+                    end begin
+                        sbdata_d[31:0] = dmi_req_bits_data_i;
+                        sbdata_write_valid_o = 1'b1;
+                    end
+                end
+                dm::SBData1: begin
+                    // access while the SBA was busy
+                    if (sbbusy_i) begin
+                       sbcs_d.sbbusyerror = 1'b1;
+                    end begin
+                        sbdata_d[63:32] = dmi_req_bits_data_i;
+                    end
+                end
                 default:;
             endcase
         end
@@ -273,6 +386,15 @@ module dm_csrs #(
             havereset_d = '1;
         end
 
+        // set bus error
+        if (sberror_valid_i) begin
+            sbcs_d.sberror = sberror_i;
+        end
+
+        if (sbdata_valid_i) begin
+            sbdata_d = sbdata_i;
+        end
+
         // dmcontrol
         // TODO(zarubaf) we currently do not implement the hartarry mask
         dmcontrol_d.hasel           = 1'b0;
@@ -284,6 +406,15 @@ module dm_csrs #(
         dmcontrol_d.zero0           = '0;
         // Non-writeable, clear only
         dmcontrol_d.ackhavereset    = 1'b0;
+        // static values for dcsr
+        sbcs_d.sbversion            = 3'b1;
+        sbcs_d.sbbusy               = sbbusy_i;
+        sbcs_d.sbasize              = 7'd64; // bus is 64 bit wide
+        sbcs_d.sbaccess128          = 1'b0;
+        sbcs_d.sbaccess64           = 1'b0;
+        sbcs_d.sbaccess32           = 1'b0;
+        sbcs_d.sbaccess16           = 1'b0;
+        sbcs_d.sbaccess8            = 1'b0;
     end
 
     // output multiplexer
@@ -345,6 +476,9 @@ module dm_csrs #(
                 abstractauto_q               <= '0;
                 progbuf_q                    <= '0;
                 data_q                       <= '0;
+                sbcs_q                       <= '0;
+                sbaddr_q                     <= '0;
+                sbdata_q                     <= '0;
             end else begin
                 havereset_q                  <= havereset_d;
                 dmcontrol_q                  <= dmcontrol_d;
@@ -353,6 +487,9 @@ module dm_csrs #(
                 abstractauto_q               <= abstractauto_d;
                 progbuf_q                    <= progbuf_d;
                 data_q                       <= data_d;
+                sbcs_q                       <= sbcs_d;
+                sbaddr_q                     <= sbaddr_d;
+                sbdata_q                     <= sbdata_d;
             end
         end
     end
