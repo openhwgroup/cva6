@@ -86,7 +86,8 @@ module dm_top #(
     logic                             sberror_valid;
     logic [2:0]                       sberror;
 
-    // Debug Ctrl for each hart
+    // Debug Ctrl for each hart -> I haven't found a better way to
+    // parameterize this
     for (genvar i = 0; i < NrHarts; i++) begin : dm_hart_ctrl
         assign hartinfo[i] = ariane_pkg::DebugHartInfo;
     end
