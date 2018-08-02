@@ -177,6 +177,7 @@ module ariane_testharness #(
         .ndmreset_o           ( ndmreset             ),
         .dmactive_o           (                      ), // active debug session
         .debug_req_o          ( debug_req            ),
+        .unavailable_i        ( '0                   ),
         .axi_slave            ( master[2]            ),
         .dmi_rst_ni           ( rst_ni               ),
         .dmi_req_valid_i      ( debug_req_valid      ),

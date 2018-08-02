@@ -8,7 +8,7 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  *
- * File:   axi_riscv_debug_module.sv
+ * File:  dm_csrs.sv
  * Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
  * Date:   30.6.2018
  *
