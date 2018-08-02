@@ -32,6 +32,7 @@ module dm_top #(
     input  logic [NrHarts-1:0] unavailable_i, // communicate whether the hart is unavailable (e.g.: power down)
 
     AXI_BUS.Slave              axi_slave,   // bus slave, for an execution based technique
+    AXI_BUS.Master             axi_master,  // bus master, for system bus accesses
     // Connection to DTM - compatible to RocketChip Debug Module
     input  logic               dmi_rst_ni,
     input  logic               dmi_req_valid_i,
@@ -143,6 +144,7 @@ module dm_top #(
     dm_sba i_dm_sba (
         .clk_i                   ( clk_i                 ),
         .rst_ni                  ( rst_ni                ),
+        .axi_master,
         .ndmreset_i              ( ndmreset_o            ),
         .sbaddress_i             ( sbaddress             ),
         .sbaddress_write_valid_i ( sbaddress_write_valid ),

@@ -70,7 +70,7 @@ module ariane_testharness #(
     assign test_en = 1'b0;
     assign ndmreset_n = ~ndmreset ;
 
-    localparam NB_SLAVE = 3;
+    localparam NB_SLAVE = 4;
     localparam NB_MASTER = 3;
     localparam AXI_ID_WIDTH_SLAVES = AXI_ID_WIDTH + $clog2(NB_SLAVE);
 
@@ -178,6 +178,7 @@ module ariane_testharness #(
         .dmactive_o           (                      ), // active debug session
         .debug_req_o          ( debug_req            ),
         .unavailable_i        ( '0                   ),
+        .axi_master           ( slave[3]             ),
         .axi_slave            ( master[2]            ),
         .dmi_rst_ni           ( rst_ni               ),
         .dmi_req_valid_i      ( debug_req_valid      ),

@@ -20,13 +20,16 @@ module dm_sba (
     input  logic          clk_i,       // Clock
     input  logic          rst_ni,
     input  logic          ndmreset_i,  // synchronous reset active high
+
+    AXI_BUS.Master        axi_master,
+
     input  logic [63:0]   sbaddress_i,
     input  logic          sbaddress_write_valid_i,
     // control signals in
     input  logic          sbreadonaddr_i,
     input  logic          sbautoincrement_i,
     input  logic [2:0]    sbaccess_i,
-    // data out
+    // data in
     input  logic [63:0]   sbdata_i,
     input  logic          sbdata_read_valid_i,
     input  logic          sbdata_write_valid_i,
@@ -44,4 +47,39 @@ module dm_sba (
     assign sberror_valid_o = '0;
     assign sberror_o = '0;
 
+    logic [63:0] address;
+    logic       req;
+    logic       gnt;
+    logic       we;
+    logic [7:0] be;
+
+    always_comb begin
+        req = 1'b0;
+        address = sbaddress_i;
+        we = 1'b0;
+        be = 1'b0;
+    end
+
+    axi_adapter #(
+
+    ) i_axi_master (
+        .clk_i,
+        .rst_ni                ( ~ndmreset_i & rst_ni     ),
+        .req_i                 ( req                      ),
+        .type_i                ( nbdcache_pkg::SINGLE_REQ ),
+        .gnt_o                 ( gnt                      ),
+        .gnt_id_o              (                          ),
+        .addr_i                ( address                  ),
+        .we_i                  ( we                       ),
+        .wdata_i               ( sbdata_i                 ),
+        .be_i                  ( be                       ),
+        .size_i                ( sbaccess_i               ),
+        .id_i                  ( '0                       ),
+        .valid_o               ( sbdata_valid_o           ),
+        .rdata_o               ( sbdata_o                 ),
+        .id_o                  (                          ),
+        .critical_word_o       (                          ), // not needed here
+        .critical_word_valid_o (                          ), // not needed here
+        .axi                   ( axi_master               )
+    );
 endmodule
