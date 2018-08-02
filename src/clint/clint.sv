@@ -10,19 +10,18 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Date: 15/07/2017
-// Description: A RISC-V privilege spec 1.11 (WIP) compatible timer
+// Description: A RISC-V privilege spec 1.11 (WIP) compatible CLINT (core local interrupt controller)
 //
 
 // Platforms provide a real-time counter, exposed as a memory-mapped machine-mode register, mtime. mtime must run at
-// constant frequency, and the platform must provide a mechanism for determining the timebase of mtime.
+// constant frequency, and the platform must provide a mechanism for determining the timebase of mtime (device tree).
 
-module ariane_timer #(
+module clint #(
     parameter int unsigned AXI_ADDR_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned AXI_ID_WIDTH   = 10,
-    parameter int unsigned NR_CORES        = 1 // Number of cores therefore also the number of timecmp registers and timer interrupts
+    parameter int unsigned NR_CORES       = 1 // Number of cores therefore also the number of timecmp registers and timer interrupts
 )(
-    // APB Slave
     input  logic                clk_i,   // Clock
     input  logic                rst_ni,  // Asynchronous reset active low
 
