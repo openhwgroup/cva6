@@ -173,7 +173,6 @@ module cache_ctrl #(
                 // depending on where we come from
                 // For the store case the tag comes in the same cycle
                 tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  req_port_i.address_tag;
-
                 // we speculatively request another transfer
                 if (req_port_i.data_req && !flush_i) begin
                     req_o      = '1;
@@ -234,7 +233,7 @@ module cache_ctrl #(
                     // ----------------------------------------------
                     // Check MSHR - Miss Status Handling Register
                     // ----------------------------------------------
-                    mshr_addr_o = {req_port_i.address_tag, mem_req_q.index};
+                    mshr_addr_o = {tag_o, mem_req_q.index};
                     // 1. We've got a match on MSHR and while are going down the
                     //    store path. This means that the miss controller is
                     //    currently evicting our cache-line. As the store is
