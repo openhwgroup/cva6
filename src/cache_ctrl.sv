@@ -230,22 +230,40 @@ module cache_ctrl #(
                     // MISS CASE
                     // ------------
                     end else begin
-                        // also save tag
+                        // also save the tag
                         mem_req_d.tag = req_port_i.address_tag;
                         // make a miss request
                         state_d = WAIT_REFILL_GNT;
                     end
-                    // ---------------
-                    // Check MSHR
-                    // ---------------
-                    mshr_addr_o = {req_port_i.address_tag, mem_req_q.index};
-                    // we've got a match on MSHR
-                    if (mshr_addr_matches_i) begin
+                    // ----------------------------------------------
+                    // Check MSHR - Miss Status Handling Register
+                    // ----------------------------------------------
+                    mshr_addr_o = {tag_o, mem_req_q.index};
+                    // 1. We've got a match on MSHR and while are going down the
+                    //    store path. This means that the miss controller is
+                    //    currently evicting our cache-line. As the store is
+                    //    non-atomic we need to constantly check whether we are
+                    //    matching the address the miss handler is serving.
+                    //    Furthermore we need to check for the whole index
+                    //    because a completely different memory line could alias
+                    //    with the cache-line we are evicting.
+                    // 2. The second case is where we are currently loading and
+                    //    the address matches the exact CL the miss controller
+                    //    is currently serving. That means we need to wait for
+                    //    the miss controller to finish its request before we
+                    //    can continue to serve this CL. Otherwise we will fetch
+                    //    the cache-line again and potentially loosing any
+                    //    content we've written so far. This as a consequence
+                    //    means we can't have hit on the CL which mean the
+                    //    data_rvalid_o will be de-asserted.
+                    if ((mshr_index_matches_i && mem_req_q.we) || mshr_addr_matches_i) begin
                         state_d = WAIT_MSHR;
                         // save tag if we didn't already save it e.g.: we are not in in the Tag saved state
-                        if (state_q != WAIT_TAG_SAVED)
+                        if (state_q != WAIT_TAG_SAVED) begin
                             mem_req_d.tag = req_port_i.address_tag;
+                        end
                     end
+
                     // -------------------------
                     // Check for cache-ability
                     // -------------------------
@@ -254,7 +272,7 @@ module cache_ctrl #(
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
                     end
-                end
+                end // !kill_req_i
             end
 
             // ~> we are here as we need a second round of memory access for a store
@@ -294,7 +312,7 @@ module cache_ctrl #(
                 end
             end // case: STORE_REQ
 
-            // we've got a match on MSHR ~> miss unit is scurrently serving a request
+            // we've got a match on MSHR ~> miss unit is currently serving a request
             WAIT_MSHR: begin
                 mshr_addr_o = {mem_req_q.tag, mem_req_q.index};
                 // we can start a new request
@@ -346,9 +364,10 @@ module cache_ctrl #(
                     req_port_o.data_gnt = 1'b1;
                 end
 
-                // it can be the case that the miss unit is currently serving a request which matches ours
-                // so we need to check the mshr for matching continously
-                // if the mshr matches we need to go to a different state -> we should never get a matching mshr and a high miss_gnt_i
+                // it can be the case that the miss unit is currently serving a
+                // request which matches ours
+                // so we need to check the MSHR for matching continuously
+                // if the MSHR matches we need to go to a different state -> we should never get a matching MSHR and a high miss_gnt_i
                 if (mshr_addr_matches_i && !active_serving_i) begin
                     state_d = WAIT_MSHR;
                 end
@@ -426,6 +445,10 @@ module cache_ctrl #(
         initial begin
             assert (CACHE_LINE_WIDTH == 128) else $error ("Cacheline width has to be 128 for the moment. But only small changes required in data select logic");
         end
+        // if the full MSHR address matches so should also match the partial one
+        partial_full_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> mshr_index_matches_i)
+        // there should never be a valid answer when the MSHR matches
+        no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> !data_rvalid_o)
     `endif
 endmodule
 
