@@ -451,6 +451,7 @@ module cache_ctrl #(
     end
 
     `ifndef SYNTHESIS
+    `ifndef verilator
         initial begin
             assert (CACHE_LINE_WIDTH == 128) else $error ("Cacheline width has to be 128 for the moment. But only small changes required in data select logic");
         end
@@ -458,6 +459,7 @@ module cache_ctrl #(
         partial_full_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> mshr_index_matches_i)
         // there should never be a valid answer when the MSHR matches
         no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> !data_rvalid_o)
+    `endif
     `endif
 endmodule
 
