@@ -16,7 +16,6 @@
  *              in one package.
  */
 
-
 package ariane_pkg;
     timeunit      1ns;
     timeprecision 1ps;
@@ -47,6 +46,17 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
+
+
+    // ---------------
+    // Cache config
+    // ---------------
+    localparam int unsigned INDEX_WIDTH       = 12;
+    localparam int unsigned TAG_WIDTH         = 44;
+    localparam int unsigned CACHE_LINE_WIDTH  = 128;
+    localparam int unsigned SET_ASSOCIATIVITY = 8;
+
+
 
     // ---------------
     // Fetch Stage
@@ -474,6 +484,30 @@ package ariane_pkg;
         DBG_CSR_M0   = 16'hE???,
         DBG_CSR_M1   = 16'hF???
     } debug_reg_t;
+
+    // ----------------------
+    // cache request ports
+    // ----------------------
+
+    typedef struct packed {
+        logic [INDEX_WIDTH-1:0]    address_index;
+        logic [TAG_WIDTH-1:0]      address_tag;
+        logic [63:0]               data_wdata;
+        logic                      data_req;
+        logic                      data_we;
+        logic [7:0]                data_be;
+        logic [1:0]                data_size;
+        logic                      kill_req;
+        logic                      tag_valid;
+        amo_t                      amo_op;
+    } dcache_req_i_t;
+
+    typedef struct packed {
+        logic                      data_gnt;
+        logic                      data_rvalid;
+        logic [63:0]               data_rdata;
+    } dcache_req_o_t;
+
 
     // ----------------------
     // Arithmetic Functions

@@ -13,6 +13,8 @@
 // Description: Store queue persists store requests and pushes them to memory
 //              if they are no longer speculative
 
+import ariane_pkg::*;
+
 module store_buffer (
     input logic          clk_i,           // Clock
     input logic          rst_ni,          // Asynchronous reset active low
@@ -37,22 +39,14 @@ module store_buffer (
     input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
-    output logic [11:0]  address_index_o,
-    output logic [43:0]  address_tag_o,
-    output logic [63:0]  data_wdata_o,
-    output logic         data_req_o,
-    output logic         data_we_o,
-    output logic [7:0]   data_be_o,
-    output logic [1:0]   data_size_o,
-    output logic         kill_req_o,
-    output logic         tag_valid_o,
-    input  logic         data_gnt_i,
-    input  logic         data_rvalid_i    // not used
+    input  dcache_req_o_t            req_port_i,
+    output dcache_req_i_t            req_port_o  
     );
     // depth of store-buffers
     localparam int unsigned DEPTH_SPEC   = 4;
     // allocate more space for the commit buffer to be on the save side
     localparam int unsigned DEPTH_COMMIT = 4;
+
 
     // the store queue has two parts:
     // 1. Speculative queue
@@ -76,6 +70,10 @@ module store_buffer (
     // Commit Queue
     logic [$clog2(DEPTH_COMMIT)-1:0] commit_read_pointer_n,  commit_read_pointer_q;
     logic [$clog2(DEPTH_COMMIT)-1:0] commit_write_pointer_n, commit_write_pointer_q;
+
+
+
+    assign req_port_o.amo_op = AMO_NONE;
 
     // ----------------------------------------
     // Speculative Queue - Core Interface
@@ -132,17 +130,17 @@ module store_buffer (
     // Commit Queue - Memory Interface
     // ----------------------------------------
     // those signals can directly be output to the memory
-    assign address_index_o = commit_queue_q[commit_read_pointer_q].address[11:0];
+    assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[11:0];
     // if we got a new request we already saved the tag from the previous cycle
-    assign address_tag_o   = commit_queue_q[commit_read_pointer_q].address[55:12];
-    assign tag_valid_o     = 1'b0;
-    assign data_wdata_o    = commit_queue_q[commit_read_pointer_q].data;
-    assign data_be_o       = commit_queue_q[commit_read_pointer_q].be;
-    assign data_size_o     = commit_queue_q[commit_read_pointer_q].data_size;
+    assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[55:12];
+    assign req_port_o.tag_valid     = 1'b0;
+    assign req_port_o.data_wdata    = commit_queue_q[commit_read_pointer_q].data;
+    assign req_port_o.data_be       = commit_queue_q[commit_read_pointer_q].be;
+    assign req_port_o.data_size     = commit_queue_q[commit_read_pointer_q].data_size;
     // we will never kill a request in the store buffer since we already know that the translation is valid
     // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
-    assign kill_req_o = 1'b0;
-    assign data_we_o  = 1'b1; // we will always write in the store queue
+    assign req_port_o.kill_req = 1'b0;
+    assign req_port_o.data_we  = 1'b1; // we will always write in the store queue
 
     always_comb begin : store_if
         automatic logic [DEPTH_COMMIT:0] commit_status_cnt;
@@ -157,13 +155,13 @@ module store_buffer (
 
         commit_queue_n = commit_queue_q;
 
-        data_req_o     = 1'b0;
+        req_port_o.data_req     = 1'b0;
 
         // there should be no commit when we are flushing
         // if the entry in the commit queue is valid and not speculative anymore we can issue this instruction
         if (commit_queue_q[commit_read_pointer_q].valid) begin
-            data_req_o = 1'b1;
-            if (data_gnt_i) begin
+            req_port_o.data_req = 1'b1;
+            if (req_port_i.data_gnt) begin
                 // we can evict it from the commit buffer
                 commit_queue_n[commit_read_pointer_q].valid = 1'b0;
                 // advance the read_pointer

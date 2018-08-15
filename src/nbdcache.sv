@@ -13,7 +13,7 @@
 // Description: Nonblocking private L1 dcache
 
 import ariane_pkg::*;
-import nbdcache_pkg::*;
+import std_cache_pkg::*;
 
 module nbdcache #(
         parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,
@@ -36,19 +36,8 @@ module nbdcache #(
     output logic [63:0]                    amo_result_o, // result of atomic memory operation
     input  logic                           amo_flush_i,  // forget about AMO
     // Request ports
-    input  logic [2:0][INDEX_WIDTH-1:0]    address_index_i,
-    input  logic [2:0][TAG_WIDTH-1:0]      address_tag_i,
-    input  logic [2:0][63:0]               data_wdata_i,
-    input  logic [2:0]                     data_req_i,
-    input  logic [2:0]                     data_we_i,
-    input  logic [2:0][7:0]                data_be_i,
-    input  logic [2:0][1:0]                data_size_i,
-    input  logic [2:0]                     kill_req_i,
-    input  logic [2:0]                     tag_valid_i,
-    output logic [2:0]                     data_gnt_o,
-    output logic [2:0]                     data_rvalid_o,
-    output logic [2:0][63:0]               data_rdata_o,
-    input  amo_t [2:0]                     amo_op_i
+    input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
+    output dcache_req_o_t [2:0]            req_ports_o   // request ports 
 );
 
     // -------------------------------
@@ -101,27 +90,19 @@ module nbdcache #(
     generate
         for (genvar i = 0; i < 3; i++) begin : master_ports
             cache_ctrl  #(
-                .SET_ASSOCIATIVITY     ( SET_ASSOCIATIVITY    ),
-                .INDEX_WIDTH           ( INDEX_WIDTH          ),
-                .TAG_WIDTH             ( TAG_WIDTH            ),
-                .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     ),
+                // .SET_ASSOCIATIVITY     ( SET_ASSOCIATIVITY    ),
+                // .INDEX_WIDTH           ( INDEX_WIDTH          ),
+                // .TAG_WIDTH             ( TAG_WIDTH            ),
+                // .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     ),
                 .CACHE_START_ADDR      ( CACHE_START_ADDR     )
             ) i_cache_ctrl (
                 .bypass_i              ( ~enable_i            ),
+
                 .busy_o                ( busy            [i]  ),
-                .address_index_i       ( address_index_i [i]  ),
-                .address_tag_i         ( address_tag_i   [i]  ),
-                .data_wdata_i          ( data_wdata_i    [i]  ),
-                .data_req_i            ( data_req_i      [i]  ),
-                .data_we_i             ( data_we_i       [i]  ),
-                .data_be_i             ( data_be_i       [i]  ),
-                .data_size_i           ( data_size_i     [i]  ),
-                .kill_req_i            ( kill_req_i      [i]  ),
-                .tag_valid_i           ( tag_valid_i     [i]  ),
-                .data_gnt_o            ( data_gnt_o      [i]  ),
-                .data_rvalid_o         ( data_rvalid_o   [i]  ),
-                .data_rdata_o          ( data_rdata_o    [i]  ),
-                .amo_op_i              ( amo_op_i        [i]  ),
+
+                .req_port_i            ( req_ports_i     [i]  ),
+                .req_port_o            ( req_ports_o     [i]  ),
+
 
                 .req_o                 ( req            [i+1] ),
                 .addr_o                ( addr           [i+1] ),

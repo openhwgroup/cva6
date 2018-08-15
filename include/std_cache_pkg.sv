@@ -1,27 +1,26 @@
-/* Copyright 2018 ETH Zurich and University of Bologna.
- * Copyright and related rights are licensed under the Solderpad Hardware
- * License, Version 0.51 (the “License”); you may not use this file except in
- * compliance with the License.  You may obtain a copy of the License at
- * http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
- * or agreed to in writing, software, hardware and materials distributed under
- * this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations under the License.
- *
- * File:   nbdcache_pkh.sv
- * Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
- * Date:   13.10.2017
- *
- * Description: Contains all the necessary defines for the non-block DCache
- *              of Ariane in one package.
- */
+// Copyright (c) 2018 ETH Zurich, University of Bologna
+// All rights reserved.
+//
+// This code is under development and not yet released to the public.
+// Until it is released, the code is under the copyright of ETH Zurich and
+// the University of Bologna, and may contain confidential and/or unpublished
+// work. Any reuse/redistribution is strictly forbidden without written
+// permission from ETH Zurich.
+//
+// Bug fixes and contributions will eventually be released under the
+// SolderPad open hardware license in the context of the PULP platform
+// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+// University of Bologna.
+//
+// Author: Florian Zaruba    <zarubaf@iis.ee.ethz.ch>, ETH Zurich
+//         Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
+// Date: 15.08.2018
+// Description: package for the standard Ariane cache subsystem.
 
-package nbdcache_pkg;
+package std_cache_pkg;
 
-    localparam int unsigned INDEX_WIDTH       = 12;
-    localparam int unsigned TAG_WIDTH         = 44;
-    localparam int unsigned CACHE_LINE_WIDTH  = 128;
-    localparam int unsigned SET_ASSOCIATIVITY = 8;
+    import ariane_pkg::*;
+
     localparam int unsigned NR_MSHR           = 1;
 
     // Calculated parameter
@@ -31,6 +30,7 @@ package nbdcache_pkg;
     // localparam DECISION_BIT = 30; // bit on which to decide whether the request is cache-able or not
 
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } req_t;
+
 
     typedef struct packed {
         logic [1:0]      id;     // id for which we handle the miss
@@ -84,4 +84,5 @@ package nbdcache_pkg;
             end
         end
     endfunction
-endpackage
+endpackage : std_cache_pkg
+

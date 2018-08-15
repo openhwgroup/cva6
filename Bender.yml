@@ -13,7 +13,7 @@ dependencies:
 
 sources:
   - include/ariane_pkg.sv
-  - include/nbdcache_pkg.sv
+  - include/std_cache_pkg.sv
   - target: not(synthesis)
     files:
       - src/util/instruction_tracer_pkg.sv
@@ -51,6 +51,7 @@ sources:
   - src/pcgen_stage.sv
   - src/perf_counters.sv
   - src/ptw.sv
+  - src/std_cache_subsystem.sv
   # - src/ariane_regfile_ff.sv
   - src/ariane_regfile.sv
   - src/re_name.sv

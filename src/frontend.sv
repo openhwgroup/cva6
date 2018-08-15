@@ -18,8 +18,6 @@ module frontend #(
     parameter int unsigned BTB_ENTRIES       = 8,
     parameter int unsigned BHT_ENTRIES       = 1024,
     parameter int unsigned RAS_DEPTH         = 4,
-    parameter int unsigned SET_ASSOCIATIVITY = 4,
-    parameter int unsigned CACHE_LINE_WIDTH  = 64, // in bit
     parameter int unsigned FETCH_WIDTH       = 32
 )(
     input  logic               clk_i,              // Clock

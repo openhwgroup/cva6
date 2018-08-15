@@ -18,13 +18,13 @@
 // Description: Cache controller
 
 import ariane_pkg::*;
-import nbdcache_pkg::*;
+import std_cache_pkg::*;
 
 module cache_ctrl #(
-        parameter int unsigned SET_ASSOCIATIVITY = 8,
-        parameter int unsigned INDEX_WIDTH       = 12,
-        parameter int unsigned TAG_WIDTH         = 44,
-        parameter int unsigned CACHE_LINE_WIDTH  = 100,
+        // parameter int unsigned SET_ASSOCIATIVITY = 8,
+        // parameter int unsigned INDEX_WIDTH       = 12,
+        // parameter int unsigned TAG_WIDTH         = 44,
+        // parameter int unsigned CACHE_LINE_WIDTH  = 100,
         parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000
     )(
         input  logic                                               clk_i,     // Clock
@@ -32,20 +32,11 @@ module cache_ctrl #(
         input  logic                                               flush_i,
         input  logic                                               bypass_i,  // enable cache
         output logic                                               busy_o,
+        
         // Core request ports
-        input  logic [INDEX_WIDTH-1:0]                             address_index_i,
-        input  logic [TAG_WIDTH-1:0]                               address_tag_i,
-        input  logic [63:0]                                        data_wdata_i,
-        input  logic                                               data_req_i,
-        input  logic                                               data_we_i,
-        input  logic [7:0]                                         data_be_i,
-        input  logic [1:0]                                         data_size_i,
-        input  logic                                               kill_req_i,
-        input  logic                                               tag_valid_i,
-        output logic                                               data_gnt_o,
-        output logic                                               data_rvalid_o,
-        output logic [63:0]                                        data_rdata_o,
-        input  amo_t                                               amo_op_i,
+        input  dcache_req_i_t                                      req_port_i,  
+        output dcache_req_o_t                                      req_port_o,  
+
         // SRAM interface
         output logic [SET_ASSOCIATIVITY-1:0]                       req_o,  // req is valid
         output logic [INDEX_WIDTH-1:0]                             addr_o, // address into cache array
@@ -129,14 +120,14 @@ module cache_ctrl #(
         hit_way_d = hit_way_q;
 
         // output assignments
-        data_gnt_o    = 1'b0;
-        data_rvalid_o = 1'b0;
-        data_rdata_o  = '0;
+        req_port_o.data_gnt    = 1'b0;
+        req_port_o.data_rvalid = 1'b0;
+        req_port_o.data_rdata  = '0;
         miss_req_o    = '0;
         mshr_addr_o   = '0;
         // Memory array communication
         req_o  = '0;
-        addr_o = address_index_i;
+        addr_o = req_port_i.address_index;
         data_o = '0;
         be_o   = '0;
         tag_o  = '0;
@@ -147,23 +138,23 @@ module cache_ctrl #(
 
             IDLE: begin
                 // a new request arrived
-                if (data_req_i && !flush_i) begin
+                if (req_port_i.data_req && !flush_i) begin
                     // request the cache line - we can do this specualtive
                     req_o = '1;
 
                     // save index, be and we
-                    mem_req_d.index = address_index_i;
-                    mem_req_d.tag   = address_tag_i;
-                    mem_req_d.be    = data_be_i;
-                    mem_req_d.size  = data_size_i;
-                    mem_req_d.we    = data_we_i;
-                    mem_req_d.wdata = data_wdata_i;
+                    mem_req_d.index = req_port_i.address_index;
+                    mem_req_d.tag   = req_port_i.address_tag;
+                    mem_req_d.be    = req_port_i.data_be;
+                    mem_req_d.size  = req_port_i.data_size;
+                    mem_req_d.we    = req_port_i.data_we;
+                    mem_req_d.wdata = req_port_i.data_wdata;
 
                     // Bypass mode, check for uncacheable address here as well
                     if (bypass_i) begin
                         state_d = WAIT_TAG_BYPASSED;
                         // grant this access
-                        data_gnt_o = 1'b1;
+                        req_port_o.data_gnt = 1'b1;
                         mem_req_d.bypass = 1'b1;
                     // ------------------
                     // Cache is enabled
@@ -174,8 +165,8 @@ module cache_ctrl #(
                             state_d = WAIT_TAG;
                             mem_req_d.bypass = 1'b0;
                             // only for a read
-                            if (!data_we_i)
-                                data_gnt_o = 1'b1;
+                            if (!req_port_i.data_we)
+                                req_port_o.data_gnt = 1'b1;
                         end
                     end
                 end
@@ -185,31 +176,31 @@ module cache_ctrl #(
             WAIT_TAG, WAIT_TAG_SAVED: begin
                 // depending on where we come from
                 // For the store case the tag comes in the same cycle
-                tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  address_tag_i;
+                tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  req_port_i.address_tag;
 
                 // we speculatively request another transfer
-                if (data_req_i && !flush_i) begin
+                if (req_port_i.data_req && !flush_i) begin
                     req_o      = '1;
                 end
 
                 // check that the client really wants to do the request
-                if (!kill_req_i) begin
+                if (!req_port_i.kill_req) begin
                     // ------------
                     // HIT CASE
                     // ------------
                     if (|hit_way_i) begin
                         // we can request another cache-line if this was a load
                         // make another request
-                        if (data_req_i && !mem_req_q.we && !flush_i) begin
+                        if (req_port_i.data_req && !mem_req_q.we && !flush_i) begin
                             state_d          = WAIT_TAG; // switch back to WAIT_TAG
-                            mem_req_d.index  = address_index_i;
-                            mem_req_d.be     = data_be_i;
-                            mem_req_d.size   = data_size_i;
-                            mem_req_d.we     = data_we_i;
-                            mem_req_d.wdata  = data_wdata_i;
-                            mem_req_d.tag    = address_tag_i;
+                            mem_req_d.index  = req_port_i.address_index;
+                            mem_req_d.be     = req_port_i.data_be;
+                            mem_req_d.size   = req_port_i.data_size;
+                            mem_req_d.we     = req_port_i.data_we;
+                            mem_req_d.wdata  = req_port_i.data_wdata;
+                            mem_req_d.tag    = req_port_i.address_tag;
                             mem_req_d.bypass = 1'b0;
-                            data_gnt_o = gnt_i;
+                            req_port_o.data_gnt = gnt_i;
 
                             if (!gnt_i) begin
                                 state_d = IDLE;
@@ -220,15 +211,15 @@ module cache_ctrl #(
                         end
 
                         // this is timing critical
-                        // data_rdata_o = cl_i[cl_offset +: 64];
+                        // req_port_o.data_rdata = cl_i[cl_offset +: 64];
                         case (mem_req_q.index[3])
-                            1'b0: data_rdata_o = cl_i[63:0];
-                            1'b1: data_rdata_o = cl_i[127:64];
+                            1'b0: req_port_o.data_rdata = cl_i[63:0];
+                            1'b1: req_port_o.data_rdata = cl_i[127:64];
                         endcase
 
                         // report data for a read
                         if (!mem_req_q.we) begin
-                            data_rvalid_o = 1'b1;
+                            req_port_o.data_rvalid = 1'b1;
 
                         // else this was a store so we need an extra step to handle it
                         end else begin
@@ -240,26 +231,26 @@ module cache_ctrl #(
                     // ------------
                     end else begin
                         // also save tag
-                        mem_req_d.tag = address_tag_i;
+                        mem_req_d.tag = req_port_i.address_tag;
                         // make a miss request
                         state_d = WAIT_REFILL_GNT;
                     end
                     // ---------------
                     // Check MSHR
                     // ---------------
-                    mshr_addr_o = {address_tag_i, mem_req_q.index};
+                    mshr_addr_o = {req_port_i.address_tag, mem_req_q.index};
                     // we've got a match on MSHR
                     if (mshr_addr_matches_i) begin
                         state_d = WAIT_MSHR;
                         // save tag if we didn't already save it e.g.: we are not in in the Tag saved state
                         if (state_q != WAIT_TAG_SAVED)
-                            mem_req_d.tag = address_tag_i;
+                            mem_req_d.tag = req_port_i.address_tag;
                     end
                     // -------------------------
                     // Check for cache-ability
                     // -------------------------
                     if (tag_o < CACHE_START_ADDR[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH]) begin
-                        mem_req_d.tag = address_tag_i;
+                        mem_req_d.tag = req_port_i.address_tag;
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
                     end
@@ -295,7 +286,7 @@ module cache_ctrl #(
 
                     // got a grant ~> this is finished now
                     if (gnt_i) begin
-                        data_gnt_o = 1'b1;
+                        req_port_o.data_gnt = 1'b1;
                         state_d = IDLE;
                     end
                 end else begin
@@ -320,9 +311,9 @@ module cache_ctrl #(
             // its for sure a miss
             WAIT_TAG_BYPASSED: begin
                 // the request was killed
-                if (!kill_req_i) begin
+                if (!req_port_i.kill_req) begin
                     // save tag
-                    mem_req_d.tag = address_tag_i;
+                    mem_req_d.tag = req_port_i.address_tag;
                     state_d = WAIT_REFILL_GNT;
                 end
             end
@@ -345,14 +336,14 @@ module cache_ctrl #(
                     state_d = WAIT_REFILL_VALID;
                     // if this was a write we still need to give a grant to the store unit
                     if (mem_req_q.we)
-                        data_gnt_o = 1'b1;
+                        req_port_o.data_gnt = 1'b1;
                 end
 
                 if (miss_gnt_i && !mem_req_q.we)
                     state_d = WAIT_CRITICAL_WORD;
                 else if (miss_gnt_i) begin
                     state_d = IDLE;
-                    data_gnt_o = 1'b1;
+                    req_port_o.data_gnt = 1'b1;
                 end
 
                 // it can be the case that the miss unit is currently serving a request which matches ours
@@ -366,23 +357,23 @@ module cache_ctrl #(
             // ~> wait for critical word to arrive
             WAIT_CRITICAL_WORD: begin
                 // speculatively request another word
-                if (data_req_i) begin
+                if (req_port_i.data_req) begin
                     // request the cache line
                     req_o = '1;
                 end
 
                 if (critical_word_valid_i) begin
-                    data_rvalid_o = 1'b1;
-                    data_rdata_o = critical_word_i;
+                    req_port_o.data_rvalid = 1'b1;
+                    req_port_o.data_rdata = critical_word_i;
                     // we can make another request
-                    if (data_req_i) begin
+                    if (req_port_i.data_req) begin
                         // save index, be and we
-                        mem_req_d.index = address_index_i;
-                        mem_req_d.be    = data_be_i;
-                        mem_req_d.size  = data_size_i;
-                        mem_req_d.we    = data_we_i;
-                        mem_req_d.wdata = data_wdata_i;
-                        mem_req_d.tag   = address_tag_i;
+                        mem_req_d.index = req_port_i.address_index;
+                        mem_req_d.be    = req_port_i.data_be;
+                        mem_req_d.size  = req_port_i.data_size;
+                        mem_req_d.we    = req_port_i.data_we;
+                        mem_req_d.wdata = req_port_i.data_wdata;
+                        mem_req_d.tag   = req_port_i.address_tag;
 
 
                         state_d = IDLE;
@@ -391,7 +382,7 @@ module cache_ctrl #(
                         if (gnt_i) begin
                             state_d = WAIT_TAG;
                             mem_req_d.bypass = 1'b0;
-                            data_gnt_o = 1'b1;
+                            req_port_o.data_gnt = 1'b1;
                         end
 
                     end else begin
@@ -403,16 +394,16 @@ module cache_ctrl #(
             WAIT_REFILL_VALID: begin
                 // got a valid answer
                 if (bypass_valid_i) begin
-                    data_rdata_o = bypass_data_i;
-                    data_rvalid_o = 1'b1;
+                    req_port_o.data_rdata = bypass_data_i;
+                    req_port_o.data_rvalid = 1'b1;
                     state_d = IDLE;
                 end
             end
         endcase
 
-        if (kill_req_i) begin
+        if (req_port_i.kill_req) begin
             state_d       = IDLE;
-            data_rvalid_o = 1'b1;
+            req_port_o.data_rvalid = 1'b1;
         end
     end
 

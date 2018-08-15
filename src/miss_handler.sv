@@ -15,7 +15,8 @@
 // --------------
 // MISS Handler
 // --------------
-import nbdcache_pkg::*;
+import ariane_pkg::*;
+import std_cache_pkg::*;
 
 module miss_handler #(
     parameter int unsigned NR_PORTS         = 3,

@@ -60,19 +60,9 @@ module mmu #(
         // Performance counters
         output logic                            itlb_miss_o,
         output logic                            dtlb_miss_o,
-        // PTW memory interface
-        output logic [11:0]                     address_index_o,
-        output logic [43:0]                     address_tag_o,
-        output logic [63:0]                     data_wdata_o,
-        output logic                            data_req_o,
-        output logic                            data_we_o,
-        output logic [7:0]                      data_be_o,
-        output logic [1:0]                      data_size_o,
-        output logic                            kill_req_o,
-        output logic                            tag_valid_o,
-        input  logic                            data_gnt_i,
-        input  logic                            data_rvalid_i,
-        input  logic [63:0]                     data_rdata_i
+        // PTW memory interface 
+        input  dcache_req_o_t                   req_port_i,
+        output dcache_req_i_t                   req_port_o  
 );
 
     logic        iaccess_err;   // insufficient privilege to access this instruction page
@@ -99,9 +89,11 @@ module mmu #(
     logic        dtlb_is_1G;
     logic        dtlb_lu_hit;
 
+
     // Assignments
     assign itlb_lu_access = fetch_req_i;
     assign dtlb_lu_access = lsu_req_i;
+
 
     tlb #(
         .TLB_ENTRIES      ( INSTR_TLB_ENTRIES          ),
@@ -166,6 +158,10 @@ module mmu #(
         .dtlb_access_i          ( dtlb_lu_access        ),
         .dtlb_hit_i             ( dtlb_lu_hit           ),
         .dtlb_vaddr_i           ( lsu_vaddr_i           ),
+                
+        .req_port_i            ( req_port_i             ),
+        .req_port_o            ( req_port_o             ),
+
         .*
      );
 

@@ -252,6 +252,14 @@ module ariane #(
     logic                    flush_icache_ctrl_icache;
     logic                    bypass_icache_csr_icache;
 
+    // ----------------
+    // DCache <-> *
+    // ----------------
+    dcache_req_i_t [2:0]     dcache_req_ports_in;
+    dcache_req_o_t [2:0]     dcache_req_ports_out; 
+
+
+
     assign sec_lvl_o = priv_lvl;
     assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
     // --------------
@@ -377,11 +385,7 @@ module ariane #(
     // ---------
     // EX
     // ---------
-    ex_stage #(
-        .CACHE_START_ADDR ( CACHE_START_ADDR ),
-        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
-        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
-    ) ex_stage_i (
+    ex_stage ex_stage_i (
         .flush_i                ( flush_ctrl_ex                          ),
         .fu_i                   ( fu_id_ex                               ),
         .operator_i             ( operator_id_ex                         ),
@@ -430,7 +434,6 @@ module ariane #(
         // Performance counters
         .itlb_miss_o            ( itlb_miss_ex_perf                      ),
         .dtlb_miss_o            ( dtlb_miss_ex_perf                      ),
-        .dcache_miss_o          ( dcache_miss_ex_perf                    ),
         // Memory Management
         .enable_translation_i   ( enable_translation_csr_ex              ), // from CSR
         .en_ld_st_translation_i ( en_ld_st_translation_csr_ex            ),
@@ -454,13 +457,13 @@ module ariane #(
         .mult_result_o          ( mult_result_ex_id                      ),
         .mult_valid_o           ( mult_valid_ex_id                       ),
 
-        .data_if                ( data_if                                ),
-        .dcache_en_i            ( dcache_en_csr_nbdcache                 ),
-        .flush_dcache_i         ( flush_dcache_ctrl_ex | flush_dcache_i  ),
-        .flush_dcache_ack_o     ( flush_dcache_ack_ex_ctrl               ),
+        // DCACHE interfaces
+        .dcache_req_ports_i     ( dcache_req_ports_out                   ),
+        .dcache_req_ports_o     ( dcache_req_ports_in                    ),
 
         .*
     );
+
 
     // ---------
     // Commit
@@ -586,6 +589,35 @@ module ariane #(
         .*
     );
 
+
+    // -------------------
+    // Cache Subsystem
+    // -------------------
+    
+    std_cache_subsystem #(
+        .CACHE_START_ADDR ( CACHE_START_ADDR ),
+        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
+        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
+    ) i_std_cache_subsystem (
+        // to D$
+        .clk_i                ( clk_i                                 ),
+        .rst_ni               ( rst_ni                                ),
+        .dcache_data_if       ( data_if                               ),
+        .dcache_bypass_if     ( bypass_if                             ),
+        .dcache_enable_i      ( dcache_en_csr_nbdcache                ),
+        .dcache_flush_i       ( flush_dcache_ctrl_ex | flush_dcache_i ),
+        .dcache_flush_ack_o   ( flush_dcache_ack_ex_ctrl              ),
+        // from PTW, Load Unit and Store Unit             
+        .dcache_amo_commit_i  ( 1'b0                                  ),
+        .dcache_amo_valid_o   (                                       ),
+        .dcache_amo_result_o  (                                       ),
+        .dcache_amo_flush_i   ( 1'b0                                  ),
+        .dcache_miss_o        ( dcache_miss_ex_perf                   ),
+             
+        .dcache_req_ports_i   ( dcache_req_ports_in                   ),
+        .dcache_req_ports_o   ( dcache_req_ports_out                  )
+  );
+
     // ------------
     // Debug
     // ------------
@@ -645,8 +677,8 @@ module ariane #(
     assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
     assign tracer_if.st_paddr          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
     // loads
-    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.tag_valid_o;
-    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.kill_req_o;
+    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid;
+    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req;
     assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.i_load_unit.paddr_i;
     // exceptions
     assign tracer_if.exception         = commit_stage_i.exception_o;
