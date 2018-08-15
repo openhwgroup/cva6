@@ -238,7 +238,7 @@ module cache_ctrl #(
                     // ----------------------------------------------
                     // Check MSHR - Miss Status Handling Register
                     // ----------------------------------------------
-                    mshr_addr_o = {tag_o, mem_req_q.index};
+                    mshr_addr_o = {req_port_i.address_tag, mem_req_q.index};
                     // 1. We've got a match on MSHR and while are going down the
                     //    store path. This means that the miss controller is
                     //    currently evicting our cache-line. As the store is
