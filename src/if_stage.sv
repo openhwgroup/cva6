@@ -58,7 +58,7 @@ module if_stage (
     logic               fifo_valid, fifo_ready;
     logic               pop_empty; // pop the address queue in case of a flush, empty signal
     // Address queue status signals
-    logic               empty, full, single_element;
+    logic               empty, alm_empty, full, single_element;
 
     // We are busy if:
     // 1. we are either waiting for a grant
@@ -202,7 +202,7 @@ module if_stage (
     // ---------------------------------
     // Address and Branch-predict Queue
     // ---------------------------------
-    fifo #(
+/*    oldfifo #(
         .dtype            ( address_fifo_t          ),
         .DEPTH            ( 2                       )  // right now we support two outstanding transactions
     ) i_fifo (
@@ -215,7 +215,29 @@ module if_stage (
         .data_o           ( pop_data                ), // data we send to the fetch_fifo, along with the instr data which comes from memory
         .pop_i            ( fifo_valid || pop_empty ), // pop the data if we say that the fetch is valid
         .*
+    );*/
+
+    fifo #(
+        .dtype            ( address_fifo_t          ),
+        .DEPTH            ( 2                       ), // right now we support two outstanding transactions
+        .ALM_EMPTY        ( 1                       )
+    ) i_fifo (
+        .flush_i          ( 1'b0                    ), // do not flush, we need to keep track of all outstanding rvalids
+        .testmode_i       ( 1'b0                    ),
+        .full_o           ( full                    ), // the address buffer is full
+        .empty_o          ( empty                   ), // ...or empty
+        .alm_full_o       (                         ),
+        .alm_empty_o      ( alm_empty               ), 
+        .data_i           ( push_data               ),
+        .push_i           ( instr_gnt_i             ), // if we got a grant push the address and data
+        .data_o           ( pop_data                ), // data we send to the fetch_fifo, along with the instr data which comes from memory
+        .pop_i            ( fifo_valid || pop_empty ), // pop the data if we say that the fetch is valid
+        .*
     );
+
+    // just one element in the pipeline
+    assign single_element = alm_empty & (~empty);
+
 
     // ---------------------------------
     // Fetch FIFO

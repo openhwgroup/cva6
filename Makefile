@@ -19,7 +19,7 @@ verilator ?= verilator
 riscv-test ?= rv64ui-p-add
 # Sources
 # Ariane PKG
-ariane_pkg := include/ariane_pkg.sv include/std_cache_pkg.sv 
+ariane_pkg := include/ariane_pkg.sv include/std_cache_pkg.sv
 # utility modules
 util := $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv \
 		src/util/generic_fifo.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv
@@ -41,7 +41,7 @@ dpi := $(wildcard tb/dpi/*)
 src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi2per/*.sv) $(wildcard src/axi_slice/*.sv) \
 	  $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/src/*.sv)
 # look for testbenches
-tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv
+tbs := tb/alu_tb.sv tb/core_tb.sv tb/dcache_arbiter_tb.sv tb/store_queue_tb.sv tb/scoreboard_tb.sv tb/fifo_tb.sv 
 
 # RISCV-tests path
 riscv-test-dir := tmp/riscv-tests/build/isa

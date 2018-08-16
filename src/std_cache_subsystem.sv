@@ -31,8 +31,6 @@ module std_cache_subsystem #(
           
    // Icache
    //input  logic               flush_icache_i,     // instruction fence in
-    
-
 
    // Dcache
    // Cache management
