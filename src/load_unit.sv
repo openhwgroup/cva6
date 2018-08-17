@@ -48,7 +48,7 @@ module load_unit (
         logic [TRANS_ID_BITS-1:0] trans_id;
         logic [2:0]               address_offset;
         fu_op                     operator;
-    } load_data_n, load_data_q, in_data;
+    } load_data_d, load_data_q, in_data;
 
     // page offset is defined as the lower 12 bits, feed through for address checker
     assign page_offset_o = lsu_ctrl_i.vaddr[11:0];
@@ -72,7 +72,7 @@ module load_unit (
     always_comb begin : load_control
         // default assignments
         NS                   = CS;
-        load_data_n          = load_data_q;
+        load_data_d          = load_data_q;
         translation_req_o    = 1'b0;
         req_port_o.data_req  = 1'b0;
         // tag control
@@ -213,7 +213,7 @@ module load_unit (
 
         // save the load data for later usage -> we should not clutter the load_data register
         if (pop_ld_o && !ex_i.valid) begin
-            load_data_n = in_data;
+            load_data_d = in_data;
         end
 
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
@@ -262,7 +262,7 @@ module load_unit (
             load_data_q <= '0;
         end else begin
             CS          <= NS;
-            load_data_q <= load_data_n;
+            load_data_q <= load_data_d;
         end
     end
 
@@ -326,16 +326,25 @@ module load_unit (
 
     // result mux fast
     logic [7:0]  sign_bits;
-    logic [2:0]  idx_n, idx_q;
-    logic        sign_bit, signed_n, signed_q;
+    logic [2:0]  idx_d, idx_q;
+    logic        sign_bit, signed_d, signed_q, fp_sign_d, fp_sign_q;
 
-    // prepare these signals for faster selection in the next cycle                          
-    assign idx_n = (load_data_n.operator == LW) ? load_data_n.address_offset + 3 : 
-                   (load_data_n.operator == LH) ? load_data_n.address_offset + 1 : 
-                                                  load_data_n.address_offset;   
     
-    assign signed_n = load_data_q.operator inside { LW, LH, LB };
+    // prepare these signals for faster selection in the next cycle                          
+    assign signed_d  = load_data_q.operator inside { LW, LH, LB };
+    assign fp_sign_d = 1'b0;
+    assign idx_d     = (load_data_d.operator inside {LW}) ? load_data_d.address_offset + 3 : 
+                       (load_data_d.operator inside {LH}) ? load_data_d.address_offset + 1 : 
+                                                            load_data_d.address_offset;   
+        
+    // use this with FP support:
+    // assign signed_d  = load_data_q.operator inside { LW, LH, LB };
+    // assign fp_sign_d = load_data_q.operator inside { FLW, FLH, FLB };
+    // assign idx_d     = (load_data_d.operator inside {LW, FLW}) ? load_data_d.address_offset + 3 : 
+    //                    (load_data_d.operator inside {LH, FLH}) ? load_data_d.address_offset + 1 : 
+    //                                                              load_data_d.address_offset;   
 
+    
     assign sign_bits = { req_port_i.data_rdata[63], 
                          req_port_i.data_rdata[55], 
                          req_port_i.data_rdata[47], 
@@ -347,7 +356,7 @@ module load_unit (
 
     // select correct sign bit in parallel to result shifter above
     // pull to 0 if unsigned
-    assign sign_bit       = signed_q & sign_bits [ idx_q ];
+    assign sign_bit       = signed_q & sign_bits [ idx_q ] | fp_sign_q;
 
     // result mux
     always_comb begin
@@ -361,11 +370,13 @@ module load_unit (
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
         if(~rst_ni) begin
-            idx_q    <= 0;
-            signed_q <= 0;
+            idx_q     <= 0;
+            signed_q  <= 0;
+            fp_sign_q <= 0;
         end else begin
-            idx_q    <= idx_n;
-            signed_q <= signed_n;
+            idx_q     <= idx_d;
+            signed_q  <= signed_d;
+            fp_sign_q <= fp_sign_d;
         end
     end
     // end result mux fast
