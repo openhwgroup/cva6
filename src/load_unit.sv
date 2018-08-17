@@ -8,8 +8,9 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
-// Author: Florian Zaruba, ETH Zurich
-// Date: 22.05.2017
+// Author: Florian Zaruba    <zarubaf@iis.ee.ethz.ch>, ETH Zurich
+//         Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
+// Date: 15.08.2018
 // Description: Load Unit, takes care of all load requests
 
 import ariane_pkg::*;
@@ -303,62 +304,83 @@ module load_unit (
     // ---------------
     // Sign Extend
     // ---------------
-    logic [63:0] rdata_d_ext; // sign extension for double words, actually only misaligned assembly
-    logic [63:0] rdata_w_ext; // sign extension for words
-    logic [63:0] rdata_h_ext; // sign extension for half words
-    logic [63:0] rdata_b_ext; // sign extension for bytes
 
-    // double words
-    always_comb begin : sign_extend_double_word
-        rdata_d_ext = req_port_i.data_rdata[63:0];
-    end
+    logic [63:0] shifted_data;
 
-    // sign extension for words
-    always_comb begin : sign_extend_word
-        case (load_data_q.address_offset)
-            default: rdata_w_ext = (load_data_q.operator == LW) ? {{32{req_port_i.data_rdata[31]}}, req_port_i.data_rdata[31:0]}  : {32'h0, req_port_i.data_rdata[31:0]};
-            3'b001:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{req_port_i.data_rdata[39]}}, req_port_i.data_rdata[39:8]}  : {32'h0, req_port_i.data_rdata[39:8]};
-            3'b010:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{req_port_i.data_rdata[47]}}, req_port_i.data_rdata[47:16]} : {32'h0, req_port_i.data_rdata[47:16]};
-            3'b011:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{req_port_i.data_rdata[55]}}, req_port_i.data_rdata[55:24]} : {32'h0, req_port_i.data_rdata[55:24]};
-            3'b100:  rdata_w_ext = (load_data_q.operator == LW) ? {{32{req_port_i.data_rdata[63]}}, req_port_i.data_rdata[63:32]} : {32'h0, req_port_i.data_rdata[63:32]};
-        endcase
-    end
+    // realign as needed
+    assign shifted_data   = req_port_i.data_rdata >> {load_data_q.address_offset, 3'b000};
 
-    // sign extension for half words
-    always_comb begin : sign_extend_half_word
-        case (load_data_q.address_offset)
-            default: rdata_h_ext = (load_data_q.operator == LH) ? {{48{req_port_i.data_rdata[15]}}, req_port_i.data_rdata[15:0]}  : {48'h0, req_port_i.data_rdata[15:0]};
-            3'b001:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{req_port_i.data_rdata[23]}}, req_port_i.data_rdata[23:8]}  : {48'h0, req_port_i.data_rdata[23:8]};
-            3'b010:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{req_port_i.data_rdata[31]}}, req_port_i.data_rdata[31:16]} : {48'h0, req_port_i.data_rdata[31:16]};
-            3'b011:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{req_port_i.data_rdata[39]}}, req_port_i.data_rdata[39:24]} : {48'h0, req_port_i.data_rdata[39:24]};
-            3'b100:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{req_port_i.data_rdata[47]}}, req_port_i.data_rdata[47:32]} : {48'h0, req_port_i.data_rdata[47:32]};
-            3'b101:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{req_port_i.data_rdata[55]}}, req_port_i.data_rdata[55:40]} : {48'h0, req_port_i.data_rdata[55:40]};
-            3'b110:  rdata_h_ext = (load_data_q.operator == LH) ? {{48{req_port_i.data_rdata[63]}}, req_port_i.data_rdata[63:48]} : {48'h0, req_port_i.data_rdata[63:48]};
-        endcase
-    end
-
-    // sign extend byte
-    always_comb begin : sign_extend_byte
-        case (load_data_q.address_offset)
-            default: rdata_b_ext = (load_data_q.operator == LB) ? {{56{req_port_i.data_rdata[7]}},  req_port_i.data_rdata[7:0]}   : {56'h0, req_port_i.data_rdata[7:0]};
-            3'b001:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{req_port_i.data_rdata[15]}}, req_port_i.data_rdata[15:8]}  : {56'h0, req_port_i.data_rdata[15:8]};
-            3'b010:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{req_port_i.data_rdata[23]}}, req_port_i.data_rdata[23:16]} : {56'h0, req_port_i.data_rdata[23:16]};
-            3'b011:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{req_port_i.data_rdata[31]}}, req_port_i.data_rdata[31:24]} : {56'h0, req_port_i.data_rdata[31:24]};
-            3'b100:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{req_port_i.data_rdata[39]}}, req_port_i.data_rdata[39:32]} : {56'h0, req_port_i.data_rdata[39:32]};
-            3'b101:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{req_port_i.data_rdata[47]}}, req_port_i.data_rdata[47:40]} : {56'h0, req_port_i.data_rdata[47:40]};
-            3'b110:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{req_port_i.data_rdata[55]}}, req_port_i.data_rdata[55:48]} : {56'h0, req_port_i.data_rdata[55:48]};
-            3'b111:  rdata_b_ext = (load_data_q.operator == LB) ? {{56{req_port_i.data_rdata[63]}}, req_port_i.data_rdata[63:56]} : {56'h0, req_port_i.data_rdata[63:56]};
-        endcase
-    end
-
-    // Result Mux
+/*  // result mux (leaner code, but more logic stages. 
+    // can be used instead of the code below (in between //result mux fast) if timing is not so critical)
     always_comb begin
-        case (load_data_q.operator)
-            LW, LWU:       result_o = rdata_w_ext;
-            LH, LHU:       result_o = rdata_h_ext;
-            LB, LBU:       result_o = rdata_b_ext;
-            default:       result_o = rdata_d_ext;
+        unique case (load_data_q.operator)
+            LWU:        result_o = shifted_data[31:0];
+            LHU:        result_o = shifted_data[15:0];
+            LBU:        result_o = shifted_data[7:0];
+            LW:         result_o = 64'(signed'(shifted_data[31:0]));
+            LH:         result_o = 64'(signed'(shifted_data[15:0]));
+            LB:         result_o = 64'(signed'(shifted_data[ 7:0]));
+            default:    result_o = shifted_data;
         endcase
+    end  */
+
+    // result mux fast
+    logic [7:0]  sign_bits;
+    logic [2:0]  idx_n, idx_q;
+    logic        sign_bit, signed_n, signed_q;
+
+    // prepare these signals for faster selection in the next cycle                          
+    assign idx_n = (load_data_n.operator == LW) ? load_data_n.address_offset + 3 : 
+                   (load_data_n.operator == LH) ? load_data_n.address_offset + 1 : 
+                                                  load_data_n.address_offset;   
+    
+    assign signed_n = load_data_q.operator inside { LW, LH, LB };
+
+    assign sign_bits = { req_port_i.data_rdata[63], 
+                         req_port_i.data_rdata[55], 
+                         req_port_i.data_rdata[47], 
+                         req_port_i.data_rdata[39], 
+                         req_port_i.data_rdata[31], 
+                         req_port_i.data_rdata[23], 
+                         req_port_i.data_rdata[15], 
+                         req_port_i.data_rdata[7]  };
+
+    // select correct sign bit in parallel to result shifter above
+    // pull to 0 if unsigned
+    assign sign_bit       = signed_q & sign_bits [ idx_q ];
+
+    // result mux
+    always_comb begin
+        unique case (load_data_q.operator)
+            LW, LWU:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
+            LH, LHU:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
+            LB, LBU:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
+            default:    result_o = shifted_data;
+        endcase
+    end    
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+        if(~rst_ni) begin
+            idx_q    <= 0;
+            signed_q <= 0;
+        end else begin
+            idx_q    <= idx_n;
+            signed_q <= signed_n;
+        end
     end
+    // end result mux fast
+
+`ifndef SYNTHESIS
+`ifndef VERILATOR
+    // check invalid offsets
+    assert property (@(posedge clk_i) disable iff (~rst_ni) 
+        (load_data_q.operator inside {LW, LWU}) |-> load_data_q.address_offset < 5) else $fatal ("invalid address offset used with {LW, LWU}");
+    assert property (@(posedge clk_i) disable iff (~rst_ni) 
+        (load_data_q.operator inside {LH, LHU}) |-> load_data_q.address_offset < 7) else $fatal ("invalid address offset used with {LH, LHU}");
+    assert property (@(posedge clk_i) disable iff (~rst_ni) 
+        (load_data_q.operator inside {LB, LBU}) |-> load_data_q.address_offset < 8) else $fatal ("invalid address offset used with {LB, LBU}");
+`endif
+`endif
+
 
 endmodule
