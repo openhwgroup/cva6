@@ -21,10 +21,6 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module cache_ctrl #(
-        // parameter int unsigned SET_ASSOCIATIVITY = 8,
-        // parameter int unsigned INDEX_WIDTH       = 12,
-        // parameter int unsigned TAG_WIDTH         = 44,
-        // parameter int unsigned CACHE_LINE_WIDTH  = 100,
         parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000
     )(
         input  logic                                               clk_i,     // Clock
@@ -38,15 +34,15 @@ module cache_ctrl #(
         output dcache_req_o_t                                      req_port_o,  
 
         // SRAM interface
-        output logic [SET_ASSOCIATIVITY-1:0]                       req_o,  // req is valid
-        output logic [INDEX_WIDTH-1:0]                             addr_o, // address into cache array
+        output logic [DCACHE_SET_ASSOC-1:0]                        req_o,  // req is valid
+        output logic [DCACHE_INDEX_WIDTH-1:0]                      addr_o, // address into cache array
         input  logic                                               gnt_i,
         output cache_line_t                                        data_o,
         output cl_be_t                                             be_o,
-        output logic [TAG_WIDTH-1:0]                               tag_o, //valid one cycle later
-        input  cache_line_t [SET_ASSOCIATIVITY-1:0]                data_i,
+        output logic [DCACHE_TAG_WIDTH-1:0]                        tag_o, //valid one cycle later
+        input  cache_line_t [DCACHE_SET_ASSOC-1:0]                 data_i,
         output logic                                               we_o,
-        input  logic [SET_ASSOCIATIVITY-1:0]                       hit_way_i,
+        input  logic [DCACHE_SET_ASSOC-1:0]                        hit_way_i,
         // Miss handling
         output miss_req_t                                          miss_req_o,
         // return
@@ -79,8 +75,8 @@ module cache_ctrl #(
     } state_d, state_q;
 
     typedef struct packed {
-        logic [INDEX_WIDTH-1:0] index;
-        logic [TAG_WIDTH-1:0]   tag;
+        logic [DCACHE_INDEX_WIDTH-1:0] index;
+        logic [DCACHE_TAG_WIDTH-1:0]   tag;
         logic [7:0]             be;
         logic [1:0]             size;
         logic                   we;
@@ -88,17 +84,17 @@ module cache_ctrl #(
         logic                   bypass;
     } mem_req_t;
 
-    logic [SET_ASSOCIATIVITY-1:0] hit_way_d, hit_way_q;
+    logic [DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
 
     assign busy_o = (state_q != IDLE);
 
     mem_req_t mem_req_d, mem_req_q;
 
-    logic [CACHE_LINE_WIDTH-1:0] cl_i;
+    logic [DCACHE_LINE_WIDTH-1:0] cl_i;
 
     always_comb begin : way_select
         cl_i = '0;
-        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++)
+        for (int unsigned i = 0; i < DCACHE_SET_ASSOC; i++)
             if (hit_way_i[i])
                 cl_i = data_i[i].data;
 
@@ -109,10 +105,10 @@ module cache_ctrl #(
     // Cache FSM
     // --------------
     always_comb begin : cache_ctrl_fsm
-        automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset;
+        automatic logic [$clog2(DCACHE_LINE_WIDTH)-1:0] cl_offset;
         // incoming cache-line -> this is needed as synthesis is not supporting +: indexing in a multi-dimensional array
         // cache-line offset -> multiple of 64
-        cl_offset = mem_req_q.index[BYTE_OFFSET-1:3] << 6; // shift by 6 to the left
+        cl_offset = mem_req_q.index[DCACHE_BYTE_OFFSET-1:3] << 6; // shift by 6 to the left
 
         // default assignments
         state_d   = state_q;
@@ -267,7 +263,7 @@ module cache_ctrl #(
                     // -------------------------
                     // Check for cache-ability
                     // -------------------------
-                    if (tag_o < CACHE_START_ADDR[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH]) begin
+                    if (tag_o < CACHE_START_ADDR[DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH]) begin
                         mem_req_d.tag = req_port_i.address_tag;
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
@@ -444,7 +440,7 @@ module cache_ctrl #(
     `ifndef SYNTHESIS
     `ifndef verilator
         initial begin
-            assert (CACHE_LINE_WIDTH == 128) else $error ("Cacheline width has to be 128 for the moment. But only small changes required in data select logic");
+            assert (DCACHE_LINE_WIDTH == 128) else $error ("Cacheline width has to be 128 for the moment. But only small changes required in data select logic");
         end
         // if the full MSHR address matches so should also match the partial one
         partial_full_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> mshr_index_matches_i)   else $fatal ("partial mshr index doesn't match");

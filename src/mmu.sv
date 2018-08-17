@@ -26,14 +26,9 @@ module mmu #(
         input  logic                            flush_i,
         input  logic                            enable_translation_i,
         input  logic                            en_ld_st_translation_i,   // enable virtual memory translation for load/stores
-
         // IF interface
-        input  logic                            fetch_req_i,
-        input  logic [63:0]                     fetch_vaddr_i,
-        output logic                            fetch_valid_o,     // translation is valid
-        output logic [63:0]                     fetch_paddr_o,
-        output exception_t                      fetch_exception_o, // write-back fetch exceptions (e.g.: bus faults, page faults, etc.)
-
+        input  icache_areq_o_t                  icache_areq_i,         
+        output icache_areq_i_t                  icache_areq_o, 
         // LSU interface
         // this is a more minimalistic interface because the actual addressing logic is handled
         // in the LSU as we distinguish load and stores, what we do here is simple address translation
@@ -91,7 +86,7 @@ module mmu #(
 
 
     // Assignments
-    assign itlb_lu_access = fetch_req_i;
+    assign itlb_lu_access = icache_areq_i.fetch_req;
     assign dtlb_lu_access = lsu_req_i;
 
 
@@ -107,7 +102,7 @@ module mmu #(
 
         .lu_access_i      ( itlb_lu_access             ),
         .lu_asid_i        ( asid_i                     ),
-        .lu_vaddr_i       ( fetch_vaddr_i              ),
+        .lu_vaddr_i       ( icache_areq_i.fetch_vaddr              ),
         .lu_content_o     ( itlb_content               ),
 
         .lu_is_2M_o       ( itlb_is_2M                 ),
@@ -153,7 +148,7 @@ module mmu #(
 
         .itlb_access_i          ( itlb_lu_access        ),
         .itlb_hit_i             ( itlb_lu_hit           ),
-        .itlb_vaddr_i           ( fetch_vaddr_i         ),
+        .itlb_vaddr_i           ( icache_areq_i.fetch_vaddr         ),
 
         .dtlb_access_i          ( dtlb_lu_access        ),
         .dtlb_hit_i             ( dtlb_lu_hit           ),
@@ -171,36 +166,36 @@ module mmu #(
     // The instruction interface is a simple request response interface
     always_comb begin : instr_interface
         // MMU disabled: just pass through
-        fetch_valid_o  = fetch_req_i;
-        fetch_paddr_o  = fetch_vaddr_i; // play through in case we disabled address translation
+        icache_areq_o.fetch_valid  = icache_areq_i.fetch_req;
+        icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr; // play through in case we disabled address translation
         // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
-        fetch_exception_o      = '0;
+        icache_areq_o.fetch_exception      = '0;
         // Check whether we are allowed to access this memory region from a fetch perspective
-        iaccess_err   = fetch_req_i && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
+        iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == PRIV_LVL_U) && ~itlb_content.u)
                                      || ((priv_lvl_i == PRIV_LVL_S) && itlb_content.u));
 
         // check that the upper-most bits (63-39) are the same, otherwise throw a page fault exception...
-        if (fetch_req_i && !((&fetch_vaddr_i[63:39]) == 1'b1 || (|fetch_vaddr_i[63:39]) == 1'b0)) begin
-            fetch_exception_o = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+        if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[63:39]) == 1'b1 || (|icache_areq_i.fetch_vaddr[63:39]) == 1'b0)) begin
+            icache_areq_o.fetch_exception = {INSTR_PAGE_FAULT, icache_areq_i.fetch_vaddr, 1'b1};
         end
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
         // an error.
         if (enable_translation_i) begin
-            fetch_valid_o = 1'b0;
+            icache_areq_o.fetch_valid = 1'b0;
 
             // 4K page
-            fetch_paddr_o = {itlb_content.ppn, fetch_vaddr_i[11:0]};
+            icache_areq_o.fetch_paddr = {itlb_content.ppn, icache_areq_i.fetch_vaddr[11:0]};
             // Mega page
             if (itlb_is_2M) begin
-                fetch_paddr_o[20:12] = fetch_vaddr_i[20:12];
+                icache_areq_o.fetch_paddr[20:12] = icache_areq_i.fetch_vaddr[20:12];
             end
             // Giga page
             if (itlb_is_1G) begin
-                fetch_paddr_o[29:12] = fetch_vaddr_i[29:12];
+                icache_areq_o.fetch_paddr[29:12] = icache_areq_i.fetch_vaddr[29:12];
             end
 
             // ---------
@@ -208,11 +203,11 @@ module mmu #(
             // --------
             // if we hit the ITLB output the request signal immediately
             if (itlb_lu_hit) begin
-                fetch_valid_o = fetch_req_i;
+                icache_areq_o.fetch_valid = icache_areq_i.fetch_req;
                 // we got an access error
                 if (iaccess_err) begin
                     // throw a page fault
-                    fetch_exception_o = {INSTR_PAGE_FAULT, fetch_vaddr_i, 1'b1};
+                    icache_areq_o.fetch_exception = {INSTR_PAGE_FAULT, icache_areq_i.fetch_vaddr, 1'b1};
                 end
             end else
             // ---------
@@ -220,8 +215,8 @@ module mmu #(
             // ---------
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
-                fetch_valid_o = ptw_error;
-                fetch_exception_o = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                icache_areq_o.fetch_valid = ptw_error;
+                icache_areq_o.fetch_exception = {INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
         end
     end

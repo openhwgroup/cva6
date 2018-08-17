@@ -19,14 +19,13 @@
 
 package std_cache_pkg;
 
+    // get global params and cache config 
     import ariane_pkg::*;
 
-    localparam int unsigned NR_MSHR           = 1;
-
     // Calculated parameter
-    localparam BYTE_OFFSET = $clog2(CACHE_LINE_WIDTH/8);
-    localparam NUM_WORDS = 2**(INDEX_WIDTH-BYTE_OFFSET);
-    localparam DIRTY_WIDTH = SET_ASSOCIATIVITY*2;
+    localparam DCACHE_BYTE_OFFSET = $clog2(DCACHE_LINE_WIDTH/8);
+    localparam DCACHE_NUM_WORDS   = 2**(DCACHE_INDEX_WIDTH-DCACHE_BYTE_OFFSET);
+    localparam DCACHE_DIRTY_WIDTH = DCACHE_SET_ASSOC*2;
     // localparam DECISION_BIT = 30; // bit on which to decide whether the request is cache-able or not
 
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } req_t;
@@ -52,32 +51,32 @@ package std_cache_pkg;
     } miss_req_t;
 
     typedef struct packed {
-        logic [TAG_WIDTH-1:0]           tag;    // tag array
-        logic [CACHE_LINE_WIDTH-1:0]    data;   // data array
+        logic [DCACHE_TAG_WIDTH-1:0]      tag;    // tag array
+        logic [DCACHE_LINE_WIDTH-1:0]    data;   // data array
         logic                           valid;  // state array
         logic                           dirty;  // state array
     } cache_line_t;
 
     // cache line byte enable
     typedef struct packed {
-        logic [TAG_WIDTH-1:0]        tag;   // byte enable into tag array
-        logic [CACHE_LINE_WIDTH-1:0] data;  // byte enable into data array
-        logic [DIRTY_WIDTH/2-1:0]    dirty; // byte enable into state array
-        logic [DIRTY_WIDTH/2-1:0]    valid; // byte enable into state array
+        logic [DCACHE_TAG_WIDTH-1:0]       tag;   // byte enable into tag array
+        logic [DCACHE_LINE_WIDTH-1:0]     data;  // byte enable into data array
+        logic [DCACHE_DIRTY_WIDTH/2-1:0] dirty; // byte enable into state array
+        logic [DCACHE_DIRTY_WIDTH/2-1:0] valid; // byte enable into state array
     } cl_be_t;
 
     // convert one hot to bin for -> needed for cache replacement
-    function automatic logic [$clog2(SET_ASSOCIATIVITY)-1:0] one_hot_to_bin (input logic [SET_ASSOCIATIVITY-1:0] in);
-        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
+    function automatic logic [$clog2(DCACHE_SET_ASSOC)-1:0] one_hot_to_bin (input logic [DCACHE_SET_ASSOC-1:0] in);
+        for (int unsigned i = 0; i < DCACHE_SET_ASSOC; i++) begin
             if (in[i])
                 return i;
         end
     endfunction
     // get the first bit set, returns one hot value
-    function automatic logic [SET_ASSOCIATIVITY-1:0] get_victim_cl (input logic [SET_ASSOCIATIVITY-1:0] valid_dirty);
+    function automatic logic [DCACHE_SET_ASSOC-1:0] get_victim_cl (input logic [DCACHE_SET_ASSOC-1:0] valid_dirty);
         // one-hot return vector
-        logic [SET_ASSOCIATIVITY-1:0] oh = '0;
-        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
+        logic [DCACHE_SET_ASSOC-1:0] oh = '0;
+        for (int unsigned i = 0; i < DCACHE_SET_ASSOC; i++) begin
             if (valid_dirty[i]) begin
                 oh[i] = 1'b1;
                 return oh;

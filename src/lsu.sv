@@ -39,11 +39,9 @@ module lsu #(
     input  logic                     enable_translation_i,     // enable virtual memory translation
     input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores
 
-    input  logic                     fetch_req_i,              // Instruction fetch interface
-    input  logic [63:0]              fetch_vaddr_i,            // Instruction fetch interface
-    output logic                     fetch_valid_o,            // Instruction fetch interface
-    output logic [63:0]              fetch_paddr_o,            // Instruction fetch interface
-    output exception_t               fetch_exception_o,        // Instruction fetch interface
+    // icache translation requests
+    input  icache_areq_o_t           icache_areq_i,         
+    output icache_areq_i_t           icache_areq_o,       
 
     input  priv_lvl_t                priv_lvl_i,               // From CSR register file
     input  priv_lvl_t                ld_st_priv_lvl_i,         // From CSR register file
@@ -152,6 +150,9 @@ module lsu #(
         // connecting PTW to D$ IF (aka mem arbiter
         .req_port_i             ( dcache_req_ports_i [0] ),
         .req_port_o             ( dcache_req_ports_o [0] ),
+        // icache address translation requests
+        .icache_areq_i          ( icache_areq_i          ),
+        .icache_areq_o          ( icache_areq_o          ),
         .*
     );
     // ------------------

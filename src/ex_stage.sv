@@ -79,18 +79,16 @@ module ex_stage #(
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
     input  logic                                   flush_tlb_i,
-    input  logic                                   fetch_req_i,
-    input  logic [63:0]                            fetch_vaddr_i,
-    output logic                                   fetch_valid_o,
-    output logic [63:0]                            fetch_paddr_o,
-    output exception_t                             fetch_exception_o,
     input  priv_lvl_t                              priv_lvl_i,
     input  priv_lvl_t                              ld_st_priv_lvl_i,
     input  logic                                   sum_i,
     input  logic                                   mxr_i,
     input  logic [43:0]                            satp_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
-
+    // icache translation requests
+    input  icache_areq_o_t                         icache_areq_i,         
+    output icache_areq_i_t                         icache_areq_o,       
+    
     // interface to dcache
     input  dcache_req_o_t [2:0]                    dcache_req_ports_i,  
     output dcache_req_i_t [2:0]                    dcache_req_ports_o, 
