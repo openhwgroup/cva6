@@ -54,7 +54,7 @@ module lsu_arbiter (
 
     logic ld_full, ld_empty, ld_ren;
     logic st_full, st_empty, st_ren;
-    logic rrstate_q, rrstate_d;
+    logic idx;
 
     assign st_in.trans_id = st_trans_id_i;
     assign st_in.result   = st_result_i;
@@ -64,60 +64,58 @@ module lsu_arbiter (
     assign ld_in.result   = ld_result_i;
     assign ld_in.ex       = ld_ex_i;
 
-    assign trans_id_o     = (st_ren) ? st_out.trans_id : ld_out.trans_id; 
-    assign result_o       = (st_ren) ? st_out.result   : ld_out.result;   
-    assign ex_o           = (st_ren) ? st_out.ex       : ld_out.ex;      
-
-    assign valid_o        = (~ld_empty) | (~st_empty);
+    assign trans_id_o     = (idx) ? st_out.trans_id : ld_out.trans_id; 
+    assign result_o       = (idx) ? st_out.result   : ld_out.result;   
+    assign ex_o           = (idx) ? st_out.ex       : ld_out.ex;      
 
     // round robin with "lookahead" for 2 requesters
-    assign ld_ren         = ((~rrstate_q) | ( rrstate_q & st_empty)) & ~ld_empty;
-    assign st_ren         = (( rrstate_q) | (~rrstate_q & ld_empty)) & ~st_empty;
-
-    assign rrstate_d      = (valid_o) ? ~st_ren : rrstate_q;
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-        if(~rst_ni) begin
-            rrstate_q <= 0;
-        end else begin
-            rrstate_q <= rrstate_d;
-        end
-    end
+    rrarbiter #(
+        .NUM_REQ     ( 2 )
+    ) i_rrarbiter (
+        .clk_i       (  clk_i                 ),
+        .rst_ni      (  rst_ni                ),
+        .flush_i     (  flush_i               ),
+        .en_i        (  1'b1                  ),
+        .req_i       ( {~st_empty, ~ld_empty} ),
+        .ack_o       ( { st_ren,    ld_ren  } ),
+        .vld_o       ( valid_o                ),
+        .idx_o       ( idx                    )
+    );
 
     fifo #(
-        .dtype             (  fifo_t     ),
-        .DEPTH             (  DEPTH      )
-    ) ld_fifo (       
-        .clk_i             (  clk_i      ),
-        .rst_ni            (  rst_ni     ),
-        .flush_i           (  flush_i    ),
-        .testmode_i        (  1'b0       ),
-        .full_o            (  ld_full    ),
-        .empty_o           (  ld_empty   ),
-        .alm_full_o        (             ),
-        .alm_empty_o       (             ),
-        .data_i            (  ld_in      ),
-        .push_i            (  ld_valid_i ),
-        .data_o            (  ld_out     ),
-        .pop_i             (  ld_ren     )
+        .dtype       (  fifo_t     ),
+        .DEPTH       (  DEPTH      )
+    ) i_ld_fifo (    
+        .clk_i       (  clk_i      ),
+        .rst_ni      (  rst_ni     ),
+        .flush_i     (  flush_i    ),
+        .testmode_i  (  1'b0       ),
+        .full_o      (  ld_full    ),
+        .empty_o     (  ld_empty   ),
+        .alm_full_o  (             ),
+        .alm_empty_o (             ),
+        .data_i      (  ld_in      ),
+        .push_i      (  ld_valid_i ),
+        .data_o      (  ld_out     ),
+        .pop_i       (  ld_ren     )
     );  
 
     fifo #(
-        .dtype             (  fifo_t     ),
-        .DEPTH             (  DEPTH      )
-    ) st_fifo (       
-        .clk_i             (  clk_i      ),
-        .rst_ni            (  rst_ni     ),
-        .flush_i           (  flush_i    ),
-        .testmode_i        (  1'b0       ),
-        .full_o            (  st_full    ),
-        .empty_o           (  st_empty   ),
-        .alm_full_o        (             ),
-        .alm_empty_o       (             ),
-        .data_i            (  st_in      ),
-        .push_i            (  st_valid_i ),
-        .data_o            (  st_out     ),
-        .pop_i             (  st_ren     )
+        .dtype       (  fifo_t     ),
+        .DEPTH       (  DEPTH      )
+    ) i_st_fifo (    
+        .clk_i       (  clk_i      ),
+        .rst_ni      (  rst_ni     ),
+        .flush_i     (  flush_i    ),
+        .testmode_i  (  1'b0       ),
+        .full_o      (  st_full    ),
+        .empty_o     (  st_empty   ),
+        .alm_full_o  (             ),
+        .alm_empty_o (             ),
+        .data_i      (  st_in      ),
+        .push_i      (  st_valid_i ),
+        .data_o      (  st_out     ),
+        .pop_i       (  st_ren     )
     ); 
 
 

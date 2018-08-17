@@ -356,7 +356,7 @@ module load_unit (
 
     // select correct sign bit in parallel to result shifter above
     // pull to 0 if unsigned
-    assign sign_bit       = signed_q & sign_bits [ idx_q ] | fp_sign_q;
+    assign sign_bit       = signed_q & sign_bits[idx_q] | fp_sign_q;
 
     // result mux
     always_comb begin
