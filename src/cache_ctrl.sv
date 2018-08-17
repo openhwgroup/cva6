@@ -255,7 +255,7 @@ module cache_ctrl #(
                     //    the cache-line again and potentially loosing any
                     //    content we've written so far. This as a consequence
                     //    means we can't have hit on the CL which mean the
-                    //    data_rvalid_o will be de-asserted.
+                    //    req_port_o.data_rvalid will be de-asserted.
                     if ((mshr_index_matches_i && mem_req_q.we) || mshr_addr_matches_i) begin
                         state_d = WAIT_MSHR;
                         // save tag if we didn't already save it e.g.: we are not in in the Tag saved state
@@ -447,12 +447,15 @@ module cache_ctrl #(
             assert (CACHE_LINE_WIDTH == 128) else $error ("Cacheline width has to be 128 for the moment. But only small changes required in data select logic");
         end
         // if the full MSHR address matches so should also match the partial one
-        partial_full_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> mshr_index_matches_i)
+        partial_full_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> mshr_index_matches_i)   else $fatal ("partial mshr index doesn't match");
         // there should never be a valid answer when the MSHR matches
-        no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> !data_rvalid_o)
+        no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> !req_port_o.data_rvalid) else $fatal ("rvalid_o should not be set on MSHR match");
     `endif
     `endif
 endmodule
+
+  
+
 
 module AMO_alu (
         input logic         clk_i,
