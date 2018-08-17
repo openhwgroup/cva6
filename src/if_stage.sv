@@ -202,20 +202,6 @@ module if_stage (
     // ---------------------------------
     // Address and Branch-predict Queue
     // ---------------------------------
-/*    oldfifo #(
-        .dtype            ( address_fifo_t          ),
-        .DEPTH            ( 2                       )  // right now we support two outstanding transactions
-    ) i_fifo (
-        .flush_i          ( 1'b0                    ), // do not flush, we need to keep track of all outstanding rvalids
-        .full_o           ( full                    ), // the address buffer is full
-        .empty_o          ( empty                   ), // ...or empty
-        .single_element_o ( single_element          ), // just a single element in the queue
-        .data_i           ( push_data               ),
-        .push_i           ( instr_gnt_i             ), // if we got a grant push the address and data
-        .data_o           ( pop_data                ), // data we send to the fetch_fifo, along with the instr data which comes from memory
-        .pop_i            ( fifo_valid || pop_empty ), // pop the data if we say that the fetch is valid
-        .*
-    );*/
 
     fifo #(
         .dtype            ( address_fifo_t          ),
