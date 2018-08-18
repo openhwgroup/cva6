@@ -121,10 +121,10 @@ module ariane_wrapped #(
                 flush_dcache_q <= 1'b0;
 
             // a write to tohost or fromhost
-            if (i_ariane.ex_stage_i.lsu_i.i_store_unit.data_req_o
-              & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_gnt_i
-              & i_ariane.ex_stage_i.lsu_i.i_store_unit.data_we_o) begin
-                store_address = {i_ariane.ex_stage_i.lsu_i.i_store_unit.address_tag_o, i_ariane.ex_stage_i.lsu_i.i_store_unit.address_index_o[11:3], 3'b0};
+            if (i_ariane.ex_stage_i.lsu_i.i_store_unit.req_port_o.data_req
+              & i_ariane.ex_stage_i.lsu_i.i_store_unit.req_port_i.data_gnt
+              & i_ariane.ex_stage_i.lsu_i.i_store_unit.req_port_o.data_we) begin
+                store_address = {i_ariane.ex_stage_i.lsu_i.i_store_unit.req_port_o.address_tag, i_ariane.ex_stage_i.lsu_i.i_store_unit.req_port_o.address_index[11:3], 3'b0};
 
                 // this assumes that tohost writes are always 64-bit
                 if (store_address == tohost || store_address == fromhost) begin
