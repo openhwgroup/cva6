@@ -12,7 +12,7 @@ max_cycles ?= 10000000
 # Test case to run
 test_case ?= core_test
 # QuestaSim Version
-questa_version ?= -10.5c
+questa_version ?=
 # verilator version
 verilator ?= verilator
 # preset which runs a single test
