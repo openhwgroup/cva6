@@ -41,17 +41,8 @@ module store_unit (
     input  logic [11:0]              page_offset_i,
     output logic                     page_offset_matches_o,
     // D$ interface
-    output logic [11:0]              address_index_o,
-    output logic [43:0]              address_tag_o,
-    output logic [63:0]              data_wdata_o,
-    output logic                     data_req_o,
-    output logic                     data_we_o,
-    output logic [7:0]               data_be_o,
-    output logic [1:0]               data_size_o,
-    output logic                     kill_req_o,
-    output logic                     tag_valid_o,
-    input  logic                     data_gnt_i,
-    input  logic                     data_rvalid_i
+    input  dcache_req_o_t            req_port_i,
+    output dcache_req_i_t            req_port_o  
 );
     assign result_o = 64'b0;
 
@@ -206,6 +197,10 @@ module store_unit (
         .data_size_i           ( st_data_size_q         ),
         // store buffer out
         .ready_o               ( st_ready               ),
+        
+        .req_port_i            ( req_port_i             ),
+        .req_port_o            ( req_port_o             ),
+
         .*
     );
     // ---------------

@@ -14,42 +14,32 @@
 // Instruction Cache
 // ------------------------------
 import ariane_pkg::*;
+import std_cache_pkg::*;
 
-module icache #(
-    parameter int unsigned SET_ASSOCIATIVITY = 4,
-    parameter int unsigned INDEX_WIDTH       = 12, // in bit
-    parameter int unsigned TAG_WIDTH         = 44, // in bit
-    parameter int unsigned CACHE_LINE_WIDTH  = 64, // in bit
-    parameter int unsigned FETCH_WIDTH       = 32  // in bit
+module icache  #(
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
+
     input  logic                     flush_i,          // flush the icache, flush and kill have to be asserted together
     input  logic                     fetch_enable_i,   // the core should fetch instructions
-    input  logic                     req_i,            // we request a new word
-    input  logic                     is_speculative_i, // is this request speculative or not
-    input  logic                     kill_s1_i,        // kill the current request
-    input  logic                     kill_s2_i,        // kill the last request
-    output logic                     ready_o,          // icache is ready
-    input  logic [63:0]              vaddr_i,          // 1st cycle: 12 bit index is taken for lookup
-    output logic [FETCH_WIDTH-1:0]   data_o,           // 2+ cycle out: tag
-    output logic                     is_speculative_o, // the fetch was speculative
-    output logic [63:0]              vaddr_o,          // virtual address out
-    output logic                     valid_o,          // signals a valid read
-    output exception_t               ex_o,             // we've encountered an exception
-    output logic                     miss_o,           // we missed on the cache
-    AXI_BUS.Master                   axi,
-    // Address translation
-    output logic                     fetch_req_o,
-    output logic [63:0]              fetch_vaddr_o,
-    input  logic                     fetch_valid_i,
-    input  logic [63:0]              fetch_paddr_i,
-    input  exception_t               fetch_exception_i
+    output logic                     miss_o,           // to performance counter
+
+    // address translation requests
+    input  icache_areq_i_t           areq_i,           
+    output icache_areq_o_t           areq_o,           
+
+    // data requests
+    input  icache_dreq_i_t           dreq_i,           
+    output icache_dreq_o_t           dreq_o, 
+    
+    // refill port
+    AXI_BUS.Master                   axi
 );
 
-    localparam int unsigned BYTE_OFFSET = $clog2(CACHE_LINE_WIDTH/8); // 3
-    localparam int unsigned ICACHE_NUM_WORD = 2**(INDEX_WIDTH - BYTE_OFFSET);
-    localparam int unsigned NR_AXI_REFILLS = ($clog2(CACHE_LINE_WIDTH/64) == 0) ? 1 : $clog2(CACHE_LINE_WIDTH/64);
+    localparam int unsigned ICACHE_BYTE_OFFSET = $clog2(ICACHE_LINE_WIDTH/8); // 3
+    localparam int unsigned ICACHE_NUM_WORD    = 2**(ICACHE_INDEX_WIDTH - ICACHE_BYTE_OFFSET);
+    localparam int unsigned NR_AXI_REFILLS     = ($clog2(ICACHE_LINE_WIDTH/64) == 0) ? 1 : $clog2(ICACHE_LINE_WIDTH/64);
     // registers
     enum logic [3:0] { FLUSH, IDLE, TAG_CMP, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP,
                        REDO_REQ, TAG_CMP_SAVED, REFILL,
@@ -59,41 +49,41 @@ module icache #(
     logic [NR_AXI_REFILLS-1:0]              burst_cnt_d, burst_cnt_q; // counter for AXI transfers
     logic [63:0]                            vaddr_d, vaddr_q;
     logic                                   spec_d, spec_q; // request is speculative
-    logic [TAG_WIDTH-1:0]                   tag_d, tag_q;
-    logic [SET_ASSOCIATIVITY-1:0]           evict_way_d, evict_way_q;
+    logic [ICACHE_TAG_WIDTH-1:0]            tag_d, tag_q;
+    logic [ICACHE_SET_ASSOC-1:0]            evict_way_d, evict_way_q;
     logic                                   flushing_d, flushing_q;
 
     // signals
-    logic [SET_ASSOCIATIVITY-1:0]         req;           // request to memory array
-    logic [CACHE_LINE_WIDTH-1:0]          data_be;       // byte enable for data array
+    logic [ICACHE_SET_ASSOC-1:0]          req;           // request to memory array
+    logic [ICACHE_LINE_WIDTH-1:0]         data_be;       // byte enable for data array
     logic [(2**NR_AXI_REFILLS-1):0][63:0] be;            // flat byte enable
     logic [$clog2(ICACHE_NUM_WORD)-1:0]   addr;          // this is a cache-line address, to memory array
     logic                                 we;            // write enable to memory array
-    logic [SET_ASSOCIATIVITY-1:0]         hit;           // hit from tag compare
-    logic [BYTE_OFFSET-1:2]               idx;           // index in cache line
+    logic [ICACHE_SET_ASSOC-1:0]          hit;           // hit from tag compare
+    logic [ICACHE_BYTE_OFFSET-1:2]        idx;           // index in cache line
     logic                                 update_lfsr;   // shift the LFSR
-    logic [SET_ASSOCIATIVITY-1:0]         random_way;    // random way select from LFSR
-    logic [SET_ASSOCIATIVITY-1:0]         way_valid;     // bit string which contains the zapped valid bits
-    logic [$clog2(SET_ASSOCIATIVITY)-1:0] repl_invalid;  // first non-valid encountered
+    logic [ICACHE_SET_ASSOC-1:0]          random_way;    // random way select from LFSR
+    logic [ICACHE_SET_ASSOC-1:0]          way_valid;     // bit string which contains the zapped valid bits
+    logic [$clog2(ICACHE_SET_ASSOC)-1:0]  repl_invalid;  // first non-valid encountered
     logic                                 repl_w_random; // we need to switch repl strategy since all are valid
-    logic [TAG_WIDTH-1:0]                 tag;           // tag to do comparison with
+    logic [ICACHE_TAG_WIDTH-1:0]          tag;           // tag to do comparison with
 
     // tag + valid bit read/write data
     struct packed {
         logic                 valid;
-        logic [TAG_WIDTH-1:0] tag;
-    } tag_rdata [SET_ASSOCIATIVITY-1:0], tag_wdata;
+        logic [ICACHE_TAG_WIDTH-1:0] tag;
+    } tag_rdata [ICACHE_SET_ASSOC-1:0], tag_wdata;
 
-    logic [CACHE_LINE_WIDTH-1:0] data_rdata [SET_ASSOCIATIVITY-1:0], data_wdata;
+    logic [ICACHE_LINE_WIDTH-1:0] data_rdata [ICACHE_SET_ASSOC-1:0], data_wdata;
     logic [(2**NR_AXI_REFILLS-1):0][63:0] wdata;
 
-    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
+    for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : sram_block
         // ------------
         // Tag RAM
         // ------------
         sram #(
             // tag + valid bit
-            .DATA_WIDTH ( TAG_WIDTH + 1   ),
+            .DATA_WIDTH ( ICACHE_TAG_WIDTH + 1   ),
             .NUM_WORDS  ( ICACHE_NUM_WORD )
         ) tag_sram (
             .clk_i     ( clk_i            ),
@@ -108,7 +98,7 @@ module icache #(
         // Data RAM
         // ------------
         sram #(
-            .DATA_WIDTH ( CACHE_LINE_WIDTH  ),
+            .DATA_WIDTH ( ICACHE_LINE_WIDTH  ),
             .NUM_WORDS  ( ICACHE_NUM_WORD   )
         ) data_sram (
             .clk_i     ( clk_i              ),
@@ -123,7 +113,7 @@ module icache #(
     // --------------------
     // Tag Comparison
     // --------------------
-    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
+    for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin
         assign hit[i] = (tag_rdata[i].tag == tag) ? tag_rdata[i].valid : 1'b0;
     end
 
@@ -138,15 +128,15 @@ module icache #(
     // ------------------
     // Way Select
     // ------------------
-    assign idx = vaddr_q[BYTE_OFFSET-1:2];
+    assign idx = vaddr_q[ICACHE_BYTE_OFFSET-1:2];
     // cacheline selected by hit
-    logic [CACHE_LINE_WIDTH/FETCH_WIDTH-1:0][FETCH_WIDTH-1:0] selected_cl;
-    logic [CACHE_LINE_WIDTH-1:0] selected_cl_flat;
+    logic [ICACHE_LINE_WIDTH/FETCH_WIDTH-1:0][FETCH_WIDTH-1:0] selected_cl;
+    logic [ICACHE_LINE_WIDTH-1:0] selected_cl_flat;
 
-    for (genvar i = 0; i < CACHE_LINE_WIDTH; i++) begin
-        logic [SET_ASSOCIATIVITY-1:0] hit_masked_cl;
+    for (genvar i = 0; i < ICACHE_LINE_WIDTH; i++) begin
+        logic [ICACHE_SET_ASSOC-1:0] hit_masked_cl;
 
-        for (genvar j = 0; j < SET_ASSOCIATIVITY; j++)
+        for (genvar j = 0; j < ICACHE_SET_ASSOC; j++)
             assign hit_masked_cl[j] = data_rdata[j][i] & hit[j];
 
         assign selected_cl_flat[i] = |hit_masked_cl;
@@ -154,9 +144,9 @@ module icache #(
 
     assign selected_cl = selected_cl_flat;
     // maybe re-work if critical
-    assign data_o = selected_cl[idx];
+    assign dreq_o.data = selected_cl[idx];
 
-    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
+    for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin
         assign way_valid[i] = tag_rdata[i].valid;
     end
 
@@ -199,7 +189,7 @@ module icache #(
     assign data_be = be;
     assign data_wdata = wdata;
 
-    assign ex_o = fetch_exception_i;
+    assign dreq_o.ex = areq_i.fetch_exception;
     // ------------------
     // Cache Ctrl
     // ------------------
@@ -214,38 +204,38 @@ module icache #(
         flushing_d  = flushing_q;
         burst_cnt_d = burst_cnt_q;
 
-        is_speculative_o = spec_q;
-        vaddr_o          = vaddr_q;
+        dreq_o.is_speculative = spec_q;
+        dreq_o.vaddr          = vaddr_q;
 
         req         = '0;
-        addr        = vaddr_i[INDEX_WIDTH-1:BYTE_OFFSET];
+        addr        = dreq_i.vaddr[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET];
         we          = 1'b0;
         be          = '0;
         wdata       = '0;
         tag_wdata   = '0;
-        ready_o     = 1'b0;
-        tag         = fetch_paddr_i[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
-        valid_o     = 1'b0;
+        dreq_o.ready     = 1'b0;
+        tag         = areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH];
+        dreq_o.valid     = 1'b0;
         update_lfsr = 1'b0;
         miss_o      = 1'b0;
 
         axi.ar_valid = 1'b0;
         axi.ar_addr  = '0;
 
-        fetch_req_o = 1'b0;
-        fetch_vaddr_o = vaddr_q;
+        areq_o.fetch_req = 1'b0;
+        areq_o.fetch_vaddr = vaddr_q;
 
         case (state_q)
             // ~> we are ready to receive a new request
             IDLE: begin
-                ready_o = 1'b1 & fetch_enable_i;
+                dreq_o.ready = 1'b1 & fetch_enable_i;
                 // we are getting a new request
-                if (req_i && fetch_enable_i) begin
+                if (dreq_i.req && fetch_enable_i) begin
                     // request the content of all arrays
                     req = '1;
                     // save the virtual address
-                    vaddr_d = vaddr_i;
-                    spec_d  = is_speculative_i;
+                    vaddr_d = dreq_i.vaddr;
+                    spec_d  = dreq_i.is_speculative;
                     state_d = TAG_CMP;
                 end
 
@@ -253,35 +243,35 @@ module icache #(
                 if (flush_i || flushing_q)
                     state_d = FLUSH;
 
-                if (kill_s1_i)
+                if (dreq_i.kill_s1)
                     state_d = IDLE;
             end
             // ~> compare the tag
             TAG_CMP, TAG_CMP_SAVED: begin
-                fetch_req_o = 1'b1; // request address translation
+                areq_o.fetch_req = 1'b1; // request address translation
                 // use the saved tag
                 if (state_q == TAG_CMP_SAVED)
                     tag = tag_q;
                 // -------
                 // Hit
                 // -------
-                if (|hit && fetch_valid_i) begin
-                    ready_o = 1'b1;
-                    valid_o = 1'b1;
+                if (|hit && areq_i.fetch_valid) begin
+                    dreq_o.ready = 1'b1;
+                    dreq_o.valid = 1'b1;
                     // we've got another request
-                    if (req_i) begin
+                    if (dreq_i.req) begin
                         // request the content of all arrays
                         req = '1;
                         // save the index and stay in compare mode
-                        vaddr_d = vaddr_i;
-                        spec_d  = is_speculative_i;
+                        vaddr_d = dreq_i.vaddr;
+                        spec_d  = dreq_i.is_speculative;
                         state_d = TAG_CMP;
                     // no new request -> go back to idle
                     end else begin
                         state_d = IDLE;
                     end
 
-                    if (kill_s1_i)
+                    if (dreq_i.kill_s1)
                         state_d = IDLE;
                 // -------
                 // Miss
@@ -290,7 +280,7 @@ module icache #(
                     state_d     = REFILL;
                     evict_way_d = '0;
                     // save tag
-                    tag_d       = fetch_paddr_i[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
+                    tag_d       = areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH];
                     miss_o      = 1'b1;
                     // get way which to replace
                     if (repl_w_random) begin
@@ -302,47 +292,47 @@ module icache #(
                     end
                 end
                 // if we didn't hit on the TLB we need to wait until the request has been completed
-                if (!fetch_valid_i) begin
+                if (!areq_i.fetch_valid) begin
                     state_d = WAIT_ADDRESS_TRANSLATION;
                 end
             end
             // ~> wait here for a valid address translation, or on a translation even if the request has been killed
             WAIT_ADDRESS_TRANSLATION, WAIT_ADDRESS_TRANSLATION_KILLED: begin
-                fetch_req_o = 1'b1;
+                areq_o.fetch_req = 1'b1;
                 // retry the request if no exception occurred
-                if (fetch_valid_i && (state_q == WAIT_ADDRESS_TRANSLATION)) begin
-                    if (fetch_exception_i.valid) begin
-                        valid_o = 1'b1;
+                if (areq_i.fetch_valid && (state_q == WAIT_ADDRESS_TRANSLATION)) begin
+                    if (areq_i.fetch_exception.valid) begin
+                        dreq_o.valid = 1'b1;
                         state_d = IDLE;
                     end else begin
                         state_d = REDO_REQ;
-                        tag_d = fetch_paddr_i[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
+                        tag_d = areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH];
                     end
-                end else if (fetch_valid_i) begin
+                end else if (areq_i.fetch_valid) begin
                     state_d = IDLE;
                 end
 
-                if (kill_s2_i)
+                if (dreq_i.kill_s2)
                     state_d = WAIT_ADDRESS_TRANSLATION_KILLED;
             end
             // ~> request a cache-line refill
             REFILL, WAIT_KILLED_REFILL: begin
                 axi.ar_valid  = 1'b1;
-                axi.ar_addr[INDEX_WIDTH+TAG_WIDTH-1:0] = {tag_q, vaddr_q[INDEX_WIDTH-1:BYTE_OFFSET], {BYTE_OFFSET{1'b0}}};
+                axi.ar_addr[ICACHE_INDEX_WIDTH+ICACHE_TAG_WIDTH-1:0] = {tag_q, vaddr_q[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET], {ICACHE_BYTE_OFFSET{1'b0}}};
                 burst_cnt_d = '0;
 
-                if (kill_s2_i)
+                if (dreq_i.kill_s2)
                     state_d = WAIT_KILLED_REFILL;
 
                 // we need to finish this AXI transfer
                 if (axi.ar_ready)
-                    state_d = (kill_s2_i || (state_q == WAIT_KILLED_REFILL)) ? WAIT_KILLED_AXI_R_RESP : WAIT_AXI_R_RESP;
+                    state_d = (dreq_i.kill_s2 || (state_q == WAIT_KILLED_REFILL)) ? WAIT_KILLED_AXI_R_RESP : WAIT_AXI_R_RESP;
             end
             // ~> wait for the read response
             WAIT_AXI_R_RESP, WAIT_KILLED_AXI_R_RESP: begin
 
                 req     = evict_way_q;
-                addr    = vaddr_q[INDEX_WIDTH-1:BYTE_OFFSET];
+                addr    = vaddr_q[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET];
 
                 if (axi.r_valid) begin
                     we = 1'b1;
@@ -355,11 +345,11 @@ module icache #(
                     burst_cnt_d = burst_cnt_q + 1;
                 end
 
-                if (kill_s2_i)
+                if (dreq_i.kill_s2)
                     state_d = WAIT_KILLED_AXI_R_RESP;
 
                 if (axi.r_valid && axi.r_last) begin
-                    state_d = (kill_s2_i) ? IDLE : REDO_REQ;
+                    state_d = (dreq_i.kill_s2) ? IDLE : REDO_REQ;
                 end
 
                 if ((state_q == WAIT_KILLED_AXI_R_RESP) && axi.r_last && axi.r_valid)
@@ -368,7 +358,7 @@ module icache #(
             // ~> redo the request,
             REDO_REQ: begin
                 req = '1;
-                addr = vaddr_q[INDEX_WIDTH-1:BYTE_OFFSET];
+                addr = vaddr_q[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET];
                 tag = tag_q;
                 state_d = TAG_CMP_SAVED; // do tag comparison on the saved tag
             end
@@ -395,25 +385,25 @@ module icache #(
         endcase
 
         // those are the states where we need to wait a little longer until we can safely exit
-        if (kill_s2_i && !(state_q inside {REFILL, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP}) && !ready_o) begin
+        if (dreq_i.kill_s2 && !(state_q inside {REFILL, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP}) && !dreq_o.ready) begin
             state_d = IDLE;
         end
 
         // if we are killing we can never give a valid response
-        if (kill_s2_i)
-            valid_o = 1'b0;
+        if (dreq_i.kill_s2)
+            dreq_o.valid = 1'b0;
 
         if (flush_i) begin
             flushing_d = 1'b1;
-            ready_o = 1'b0; // we are not ready to accept a further request here
+            dreq_o.ready = 1'b0; // we are not ready to accept a further request here
         end
         // if we are going to flush -> do not accept any new requests
         if (flushing_q)
-            ready_o = 1'b0;
+            dreq_o.ready = 1'b0;
     end
 
     ff1 #(
-        .LEN ( SET_ASSOCIATIVITY )
+        .LEN ( ICACHE_SET_ASSOC )
     ) i_ff1 (
         .in_i        ( ~way_valid    ),
         .first_one_o ( repl_invalid  ),
@@ -423,7 +413,7 @@ module icache #(
     // -----------------
     // Replacement LFSR
     // -----------------
-    lfsr #(.WIDTH (SET_ASSOCIATIVITY)) i_lfsr (
+    lfsr #(.WIDTH (ICACHE_SET_ASSOC)) i_lfsr (
         .clk_i          ( clk_i       ),
         .rst_ni         ( rst_ni      ),
         .en_i           ( update_lfsr ),

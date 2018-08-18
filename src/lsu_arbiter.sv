@@ -8,8 +8,9 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
-// Author: Florian Zaruba, ETH Zurich
-// Date: 22.05.2017
+// Author: Florian Zaruba    <zarubaf@iis.ee.ethz.ch>, ETH Zurich
+//         Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
+// Date: 15.08.2018
 // Description: Arbitrates the LSU result port
 
 import ariane_pkg::*;
@@ -34,95 +35,99 @@ module lsu_arbiter (
     output logic [63:0]              result_o,
     output exception_t               ex_o
 );
-    // this is a dual input FIFO which takes results from the load and store
-    // paths of the LSU and sequentializes through the FIFO construct. If there is a valid output
-    // it unconditionally posts the result on its output ports and expects it to be consumed.
 
-    // 4 entries is enough to unconditionally post loads and stores since we can only have two outstanding loads
-    localparam int WIDTH = 4;
+    // the two fifos are used to buffer results from ld and st paths, and arbits between these results in
+    // RR fashion. FIFOs need to be 2 deep in order to unconditionally accept loads and stores since we can
+    // have a maximum of 2 outstanding loads.
+    // if there are valid elements in the fifos, the unit posts the result on its output ports and expects it
+    // to be consumed unconditionally 
 
-    // queue pointer
-    logic [$clog2(WIDTH)-1:0] read_pointer_n,  read_pointer_q;
-    logic [$clog2(WIDTH)-1:0] write_pointer_n, write_pointer_q;
-    logic [$clog2(WIDTH)-1:0] status_cnt_n,    status_cnt_q;
+    localparam int DEPTH = 2;
 
-    struct packed {
+    typedef struct packed {
         logic [TRANS_ID_BITS-1:0] trans_id;
         logic [63:0]              result;
         exception_t               ex;
-    } mem_n[WIDTH-1:0], mem_q[WIDTH-1:0];
+    } fifo_t;
 
-    // output last element of queue
-    assign trans_id_o = mem_q[read_pointer_q].trans_id;
-    assign result_o   = mem_q[read_pointer_q].result;
-    assign ex_o       = mem_q[read_pointer_q].ex;
+    fifo_t st_in, st_out, ld_in, ld_out;
 
-    // if we are not empty we have a valid output
-    assign valid_o    = (status_cnt_q != '0);
-    // -------------------
-    // Read-Write Process
-    // -------------------
-    always_comb begin : read_write_fifo
-        automatic logic [$clog2(WIDTH)-1:0] status_cnt;
-        automatic logic [$clog2(WIDTH)-1:0] write_pointer;
+    logic ld_full, ld_empty, ld_ren;
+    logic st_full, st_empty, st_ren;
+    logic idx;
 
-        status_cnt    = status_cnt_q;
-        write_pointer = write_pointer_q;
+    assign st_in.trans_id = st_trans_id_i;
+    assign st_in.result   = st_result_i;
+    assign st_in.ex       = st_ex_i;
 
-        // default assignments
-        mem_n           = mem_q;
-        read_pointer_n  = read_pointer_q;
-        // ------------
-        // Write Port
-        // ------------
-        // write port 1 - load unit
-        if (ld_valid_i) begin
-            mem_n[write_pointer] = {ld_trans_id_i, ld_result_i, ld_ex_i};
-            write_pointer++;
-            status_cnt++;
-        end
-        // write port 2 - store unit
-        if (st_valid_i) begin
-            mem_n[write_pointer] = {st_trans_id_i, st_result_i, st_ex_i};
-            write_pointer++;
-            status_cnt++;
-        end
-        // ------------
-        // Read Port
-        // ------------
-        // if the last element in the queue was valid we can push it out and make space for a new element
-        if (valid_o) begin
-            read_pointer_n = read_pointer_q + 1;
-            status_cnt--;
-        end
+    assign ld_in.trans_id = ld_trans_id_i;
+    assign ld_in.result   = ld_result_i;
+    assign ld_in.ex       = ld_ex_i;
 
-        // update status count
-        status_cnt_n    = status_cnt;
-        // update write pointer
-        write_pointer_n = write_pointer;
+    assign trans_id_o     = (idx) ? st_out.trans_id : ld_out.trans_id; 
+    assign result_o       = (idx) ? st_out.result   : ld_out.result;   
+    assign ex_o           = (idx) ? st_out.ex       : ld_out.ex;      
 
-        // ------------
-        // Flush
-        // ------------
-        if (flush_i) begin
-            status_cnt_n    = '0;
-            write_pointer_n = '0;
-            read_pointer_n  = '0;
-        end
-    end
-    // sequential process
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            mem_q           <= '{default: 0};
-            read_pointer_q  <= '0;
-            write_pointer_q <= '0;
-            status_cnt_q    <= '0;
-        end else begin
-            mem_q           <= mem_n;
-            read_pointer_q  <= read_pointer_n;
-            write_pointer_q <= write_pointer_n;
-            status_cnt_q    <= status_cnt_n;
-        end
-    end
+    // round robin with "lookahead" for 2 requesters
+    rrarbiter #(
+        .NUM_REQ     ( 2 )
+    ) i_rrarbiter (
+        .clk_i       (  clk_i                 ),
+        .rst_ni      (  rst_ni                ),
+        .flush_i     (  flush_i               ),
+        .en_i        (  1'b1                  ),
+        .req_i       ( {~st_empty, ~ld_empty} ),
+        .ack_o       ( { st_ren,    ld_ren  } ),
+        .vld_o       ( valid_o                ),
+        .idx_o       ( idx                    )
+    );
+
+    fifo #(
+        .dtype       (  fifo_t     ),
+        .DEPTH       (  DEPTH      )
+    ) i_ld_fifo (    
+        .clk_i       (  clk_i      ),
+        .rst_ni      (  rst_ni     ),
+        .flush_i     (  flush_i    ),
+        .testmode_i  (  1'b0       ),
+        .full_o      (  ld_full    ),
+        .empty_o     (  ld_empty   ),
+        .alm_full_o  (             ),
+        .alm_empty_o (             ),
+        .data_i      (  ld_in      ),
+        .push_i      (  ld_valid_i ),
+        .data_o      (  ld_out     ),
+        .pop_i       (  ld_ren     )
+    );  
+
+    fifo #(
+        .dtype       (  fifo_t     ),
+        .DEPTH       (  DEPTH      )
+    ) i_st_fifo (    
+        .clk_i       (  clk_i      ),
+        .rst_ni      (  rst_ni     ),
+        .flush_i     (  flush_i    ),
+        .testmode_i  (  1'b0       ),
+        .full_o      (  st_full    ),
+        .empty_o     (  st_empty   ),
+        .alm_full_o  (             ),
+        .alm_empty_o (             ),
+        .data_i      (  st_in      ),
+        .push_i      (  st_valid_i ),
+        .data_o      (  st_out     ),
+        .pop_i       (  st_ren     )
+    ); 
+
+
+`ifndef SYNTHESIS
+`ifndef VERILATOR
+    // check fifo control signals
+    assert property (@(posedge clk_i) disable iff (~rst_ni) ld_full |-> !ld_valid_i) else $fatal ("cannot write full ld_fifo");
+    assert property (@(posedge clk_i) disable iff (~rst_ni) st_full |-> !st_valid_i) else $fatal ("cannot write full st_fifo");
+    assert property (@(posedge clk_i) disable iff (~rst_ni) ld_empty |-> !ld_ren)    else $fatal ("cannot read empty ld_fifo");
+    assert property (@(posedge clk_i) disable iff (~rst_ni) st_empty |-> !st_ren)    else $fatal ("cannot read empty st_fifo");
+`endif
+`endif
+
 
 endmodule

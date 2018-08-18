@@ -37,11 +37,7 @@ module ariane #(
         input  logic [63:0]                    boot_addr_i,            // reset boot address
         input  logic [ 3:0]                    core_id_i,              // core id in a multicore environment (reflected in a CSR)
         input  logic [ 5:0]                    cluster_id_i,           // PULP specific if core is used in a clustered environment
-        // Instruction memory interface
-        AXI_BUS.Master                         instr_if,
-        // Data memory interface
-        AXI_BUS.Master                         data_if,                // data cache refill port
-        AXI_BUS.Master                         bypass_if,              // bypass axi port (disabled cache or uncacheable access)
+
         // Interrupt inputs
         input  logic [1:0]                     irq_i,                  // level sensitive IR lines, mip & sip
         input  logic                           ipi_i,                  // inter-processor interrupts
@@ -59,7 +55,12 @@ module ariane #(
         output logic [63:0]                    debug_rdata_o,
         output logic                           debug_halted_o,
         input  logic                           debug_halt_i,
-        input  logic                           debug_resume_i
+        input  logic                           debug_resume_i,
+
+        // memory side
+        AXI_BUS.Master                         instr_if,                // I$ refill port
+        AXI_BUS.Master                         data_if,                 // D$ refill port
+        AXI_BUS.Master                         bypass_if                // bypass axi port (disabled D$ or uncacheable access)
     );
 
     // ------------------------------------------
@@ -209,7 +210,8 @@ module ariane #(
 
     logic                     itlb_miss_ex_perf;
     logic                     dtlb_miss_ex_perf;
-    logic                     dcache_miss_ex_perf;
+    logic                     dcache_miss_cache_perf;
+    logic                     icache_miss_cache_perf;
     // --------------
     // CTRL <-> *
     // --------------
@@ -249,8 +251,20 @@ module ariane #(
     // ----------------
     // ICache <-> *
     // ----------------
-    logic                    flush_icache_ctrl_icache;
+    logic                    icache_flush_ctrl_cache;
     logic                    bypass_icache_csr_icache;
+
+
+    icache_areq_i_t          icache_areq_ex_cache;
+    icache_areq_o_t          icache_areq_cache_ex;
+    icache_dreq_i_t          icache_dreq_if_cache;
+    icache_dreq_o_t          icache_dreq_cache_if;
+    // ----------------
+    // DCache <-> *
+    // ----------------
+    dcache_req_i_t [2:0]     dcache_req_ports_ex_cache;
+    dcache_req_o_t [2:0]     dcache_req_ports_cache_ex; 
+
 
     assign sec_lvl_o = priv_lvl;
     assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
@@ -264,14 +278,10 @@ module ariane #(
     ) i_frontend (
         .flush_i             ( flush_ctrl_if                 ), // not entirely correct
         .flush_bp_i          ( 1'b0                          ),
-        .flush_icache_i      ( flush_icache_ctrl_icache      ),
         .boot_addr_i         ( boot_addr_i                   ),
         .fetch_enable_i      ( fetch_enable                  ),
-        .fetch_req_o         ( fetch_req_if_ex               ),
-        .fetch_vaddr_o       ( fetch_vaddr_if_ex             ),
-        .fetch_valid_i       ( fetch_valid_ex_if             ),
-        .fetch_paddr_i       ( fetch_paddr_ex_if             ),
-        .fetch_exception_i   ( fetch_ex_ex_if                ),
+        .icache_dreq_i       ( icache_dreq_cache_if          ),
+        .icache_dreq_o       ( icache_dreq_if_cache          ),
         .resolved_branch_i   ( resolved_branch               ),
         .pc_commit_i         ( pc_commit                     ),
         .set_pc_commit_i     ( set_pc_ctrl_pcgen             ),
@@ -281,8 +291,6 @@ module ariane #(
         .ex_valid_i          ( ex_commit.valid               ),
         .debug_pc_i          ( pc_debug_pcgen                ),
         .debug_set_pc_i      ( set_pc_debug                  ),
-        .axi                 ( instr_if                      ),
-        .l1_icache_miss_o    (                               ), // performance counters
         .fetch_entry_o       ( fetch_entry_if_id             ),
         .fetch_entry_valid_o ( fetch_valid_if_id             ),
         .fetch_ack_i         ( decode_ack_id_if              ),
@@ -377,11 +385,7 @@ module ariane #(
     // ---------
     // EX
     // ---------
-    ex_stage #(
-        .CACHE_START_ADDR ( CACHE_START_ADDR ),
-        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
-        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
-    ) ex_stage_i (
+    ex_stage ex_stage_i (
         .flush_i                ( flush_ctrl_ex                          ),
         .fu_i                   ( fu_id_ex                               ),
         .operator_i             ( operator_id_ex                         ),
@@ -430,23 +434,18 @@ module ariane #(
         // Performance counters
         .itlb_miss_o            ( itlb_miss_ex_perf                      ),
         .dtlb_miss_o            ( dtlb_miss_ex_perf                      ),
-        .dcache_miss_o          ( dcache_miss_ex_perf                    ),
         // Memory Management
         .enable_translation_i   ( enable_translation_csr_ex              ), // from CSR
         .en_ld_st_translation_i ( en_ld_st_translation_csr_ex            ),
         .flush_tlb_i            ( flush_tlb_ctrl_ex                      ),
-
-        .fetch_req_i            ( fetch_req_if_ex                        ),
-        .fetch_valid_o          ( fetch_valid_ex_if                      ),
-        .fetch_vaddr_i          ( fetch_vaddr_if_ex                      ),
-        .fetch_paddr_o          ( fetch_paddr_ex_if                      ),
-        .fetch_exception_o      ( fetch_ex_ex_if                         ), // fetch exception to IF
         .priv_lvl_i             ( priv_lvl                               ), // from CSR
         .ld_st_priv_lvl_i       ( ld_st_priv_lvl_csr_ex                  ), // from CSR
         .sum_i                  ( sum_csr_ex                             ), // from CSR
         .mxr_i                  ( mxr_csr_ex                             ), // from CSR
         .satp_ppn_i             ( satp_ppn_csr_ex                        ), // from CSR
         .asid_i                 ( asid_csr_ex                            ), // from CSR
+        .icache_areq_i          ( icache_areq_cache_ex                   ),
+        .icache_areq_o          ( icache_areq_ex_cache                   ),
 
         .mult_ready_o           ( mult_ready_ex_id                       ),
         .mult_valid_i           ( mult_valid_id_ex                       ),
@@ -454,13 +453,13 @@ module ariane #(
         .mult_result_o          ( mult_result_ex_id                      ),
         .mult_valid_o           ( mult_valid_ex_id                       ),
 
-        .data_if                ( data_if                                ),
-        .dcache_en_i            ( dcache_en_csr_nbdcache                 ),
-        .flush_dcache_i         ( flush_dcache_ctrl_ex | flush_dcache_i  ),
-        .flush_dcache_ack_o     ( flush_dcache_ack_ex_ctrl               ),
+        // DCACHE interfaces
+        .dcache_req_ports_i     ( dcache_req_ports_cache_ex              ),
+        .dcache_req_ports_o     ( dcache_req_ports_ex_cache              ),
 
         .*
     );
+
 
     // ---------
     // Commit
@@ -544,8 +543,8 @@ module ariane #(
         .commit_instr_i    ( commit_instr_id_commit ),
         .commit_ack_i      ( commit_ack             ),
 
-        .l1_icache_miss_i  ( 1'b0                   ),
-        .l1_dcache_miss_i  ( dcache_miss_ex_perf    ),
+        .l1_icache_miss_i  ( icache_miss_cache_perf ),
+        .l1_dcache_miss_i  ( dcache_miss_cache_perf ),
         .itlb_miss_i       ( itlb_miss_ex_perf      ),
         .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
 
@@ -582,9 +581,46 @@ module ariane #(
         .fence_i                ( fence_commit_controller       ),
         .sfence_vma_i           ( sfence_vma_commit_controller  ),
 
-        .flush_icache_o         ( flush_icache_ctrl_icache      ),
+        .flush_icache_o         ( icache_flush_ctrl_cache       ),
         .*
     );
+
+
+    // -------------------
+    // Cache Subsystem
+    // -------------------
+    
+    std_cache_subsystem #(
+        .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
+    ) i_std_cache_subsystem ( 
+        // to D$ 
+        .clk_i                 ( clk_i                                 ),
+        .rst_ni                ( rst_ni                                ),
+        // I$     
+        .icache_flush_i        ( icache_flush_ctrl_cache               ),
+        .icache_fetch_enable_i ( fetch_enable                          ),
+        .icache_miss_o         ( icache_miss_cache_perf                ), 
+        .icache_areq_i         ( icache_areq_ex_cache                  ),
+        .icache_areq_o         ( icache_areq_cache_ex                  ),
+        .icache_dreq_i         ( icache_dreq_if_cache                  ),
+        .icache_dreq_o         ( icache_dreq_cache_if                  ),
+        // D$ 
+        .dcache_enable_i       ( dcache_en_csr_nbdcache                ),
+        .dcache_flush_i        ( flush_dcache_ctrl_ex | flush_dcache_i ),
+        .dcache_flush_ack_o    ( flush_dcache_ack_ex_ctrl              ),
+        // from PTW, Load Unit  and Store Unit             
+        .dcache_amo_commit_i   ( 1'b0                                  ),
+        .dcache_amo_valid_o    (                                       ),
+        .dcache_amo_result_o   (                                       ),
+        .dcache_amo_flush_i    ( 1'b0                                  ),
+        .dcache_miss_o         ( dcache_miss_cache_perf                ),
+        .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
+        .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),
+        // memory side
+        .icache_data_if        ( instr_if                              ),
+        .dcache_data_if        ( data_if                               ),
+        .dcache_bypass_if      ( bypass_if                             )
+  ); 
 
     // ------------
     // Debug
@@ -645,8 +681,8 @@ module ariane #(
     assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
     assign tracer_if.st_paddr          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
     // loads
-    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.tag_valid_o;
-    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.kill_req_o;
+    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid;
+    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req;
     assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.i_load_unit.paddr_i;
     // exceptions
     assign tracer_if.exception         = commit_stage_i.exception_o;
