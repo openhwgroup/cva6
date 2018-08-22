@@ -31,19 +31,11 @@ module ptw #(
     input  logic                    en_ld_st_translation_i, // enable virtual memory translation for load/stores
 
     input  logic                    lsu_is_store_i,         // this translation was triggered by a store
-    // PTW Memory Port
-    output logic [11:0]             address_index_o,
-    output logic [43:0]             address_tag_o,
-    output logic [63:0]             data_wdata_o,
-    output logic                    data_req_o,
-    output logic                    data_we_o,
-    output logic [7:0]              data_be_o,
-    output logic [1:0]              data_size_o,
-    output logic                    kill_req_o,
-    output logic                    tag_valid_o,
-    input  logic                    data_gnt_i,
-    input  logic                    data_rvalid_i,
-    input  logic [63:0]             data_rdata_i,
+    // PTW memory interface 
+    input  dcache_req_o_t           req_port_i,
+    output dcache_req_i_t           req_port_o,
+
+
     // to TLBs, update logic
     output tlb_update_t             itlb_update_o,
     output tlb_update_t             dtlb_update_o,
@@ -68,6 +60,9 @@ module ptw #(
     output logic                    dtlb_miss_o
 
 );
+
+    assign req_port_o.amo_op = AMO_NONE;
+
     // input registers
     logic data_rvalid_q;
     logic [63:0] data_rdata_q;
@@ -106,12 +101,12 @@ module ptw #(
     assign ptw_active_o    = (CS != IDLE);
     assign walking_instr_o = is_instr_ptw_q;
     // directly output the correct physical address
-    assign address_index_o = ptw_pptr_q[11:0];
-    assign address_tag_o   = ptw_pptr_q[55:12];
+    assign req_port_o.address_index = ptw_pptr_q[11:0];
+    assign req_port_o.address_tag   = ptw_pptr_q[55:12];
     // we are never going to kill this request
-    assign kill_req_o      = '0;
+    assign req_port_o.kill_req      = '0;
     // we are never going to write with the HPTW
-    assign data_wdata_o    = 64'b0;
+    assign req_port_o.data_wdata    = 64'b0;
     // -----------
     // TLB Update
     // -----------
@@ -129,7 +124,7 @@ module ptw #(
     assign itlb_update_o.content = pte | (global_mapping_q << 5);
     assign dtlb_update_o.content = pte | (global_mapping_q << 5);
 
-    assign tag_valid_o      = tag_valid_q;
+    assign req_port_o.tag_valid      = tag_valid_q;
 
     //-------------------
     // Page table walker
@@ -158,10 +153,10 @@ module ptw #(
         // default assignments
         // PTW memory interface
         tag_valid_n         = 1'b0;
-        data_req_o          = 1'b0;
-        data_be_o           = 8'hFF;
-        data_size_o         = 2'b11;
-        data_we_o           = 1'b0;
+        req_port_o.data_req          = 1'b0;
+        req_port_o.data_be           = 8'hFF;
+        req_port_o.data_size         = 2'b11;
+        req_port_o.data_we           = 1'b0;
         ptw_error_o         = 1'b0;
         itlb_update_o.valid = 1'b0;
         dtlb_update_o.valid = 1'b0;
@@ -204,9 +199,9 @@ module ptw #(
 
             WAIT_GRANT: begin
                 // send a request out
-                data_req_o = 1'b1;
+                req_port_o.data_req = 1'b1;
                 // wait for the WAIT_GRANT
-                if (data_gnt_i) begin
+                if (req_port_i.data_gnt) begin
                     // send the tag valid signal one cycle later
                     tag_valid_n = 1'b1;
                     NS          = PTE_LOOKUP;
@@ -330,7 +325,7 @@ module ptw #(
             // 1. in the PTE Lookup check whether we still need to wait for an rvalid
             // 2. waiting for a grant, if so: wait for it
             // if not, go back to idle
-            if ((CS == PTE_LOOKUP && !data_rvalid_q) || ((CS == WAIT_GRANT) && data_gnt_i))
+            if ((CS == PTE_LOOKUP && !data_rvalid_q) || ((CS == WAIT_GRANT) && req_port_i.data_gnt))
                 NS = WAIT_RVALID;
             else
                 NS = IDLE;
@@ -359,8 +354,8 @@ module ptw #(
             tlb_update_asid_q  <= tlb_update_asid_n;
             vaddr_q            <= vaddr_n;
             global_mapping_q   <= global_mapping_n;
-            data_rdata_q       <= data_rdata_i;
-            data_rvalid_q      <= data_rvalid_i;
+            data_rdata_q       <= req_port_i.data_rdata;
+            data_rvalid_q      <= req_port_i.data_rvalid;
         end
     end
 

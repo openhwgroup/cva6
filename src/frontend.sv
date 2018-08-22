@@ -12,27 +12,16 @@
 // Date: 08.02.2018
 // Description: Ariane Instruction Fetch Frontend
 
+
 import ariane_pkg::*;
 
-module frontend #(
-    parameter int unsigned SET_ASSOCIATIVITY = 4,
-    parameter int unsigned CACHE_LINE_WIDTH  = 64, // in bit
-    parameter int unsigned FETCH_WIDTH       = 32
-)(
+module frontend (
     input  logic               clk_i,              // Clock
     input  logic               rst_ni,             // Asynchronous reset active low
     input  logic               flush_i,            // flush request for PCGEN
-    input  logic               en_cache_i,         // enable icache
     input  logic               flush_bp_i,         // flush branch prediction
-    input  logic               flush_icache_i,     // instruction fence in
     // global input
     input  logic [63:0]        boot_addr_i,
-    // Address translation interface
-    output logic               fetch_req_o,        // address translation request
-    output logic [63:0]        fetch_vaddr_o,      // virtual address out
-    input  logic               fetch_valid_i,      // address translation valid
-    input  logic [63:0]        fetch_paddr_i,      // physical address in
-    input  exception_t         fetch_exception_i,  // exception occurred during fetch
     // Set a new PC
     // mispredict
     input  branchpredict_t     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
@@ -46,9 +35,8 @@ module frontend #(
     input  logic               ex_valid_i,         // exception is valid - from commit
     input  logic               set_debug_pc_i,     // jump to debug address
     // Instruction Fetch
-    AXI_BUS.Master             axi,
-    output logic               l1_icache_miss_o,    // instruction cache missed
-    //
+    input  icache_dreq_o_t     icache_dreq_i,
+    output icache_dreq_i_t     icache_dreq_o,
     // instruction output port -> to processor back-end
     output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
     output logic               fetch_entry_valid_o, // instruction in IF is valid
@@ -58,13 +46,13 @@ module frontend #(
     localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH/16;
 
     // Registers
-    logic [31:0] icache_data_d,  icache_data_q;
-    logic        icache_valid_d, icache_valid_q;
-    exception_t  icache_ex_d,    icache_ex_q;
+    logic [31:0] icache_data_q;
+    logic        icache_valid_q;
+    exception_t  icache_ex_q;
 
     logic        instruction_valid;
 
-    logic [63:0] icache_vaddr_d, icache_vaddr_q;
+    logic [63:0] icache_vaddr_q;
 
     // BHT, BTB and RAS prediction
     bht_prediction_t bht_prediction;
@@ -75,8 +63,6 @@ module frontend #(
     logic            ras_push, ras_pop;
     logic [63:0]     ras_update;
 
-    // icache control signals
-    logic icache_req, kill_s1, kill_s2, icache_ready;
 
     // instruction fetch is ready
     logic          if_ready;
@@ -96,9 +82,6 @@ module frontend #(
     // re-aligned instruction and address (coming from cache - combinationally)
     logic [INSTR_PER_FETCH-1:0][31:0] instr;
     logic [INSTR_PER_FETCH-1:0][63:0] addr;
-
-    // virtual address of current fetch
-    logic [63:0]   fetch_vaddr;
 
     logic [63:0]   bp_vaddr;
     logic          bp_valid; // we have a valid branch-prediction
@@ -161,7 +144,7 @@ module frontend #(
             unaligned_instr_d = icache_data_q[31:16];
         end
 
-        if (kill_s2) begin
+        if (icache_dreq_o.kill_s2) begin
             unaligned_d = 1'b0;
         end
     end
@@ -172,20 +155,20 @@ module frontend #(
         automatic logic take_rvi_cf; // take the control flow change (non-compressed)
         automatic logic take_rvc_cf; // take the control flow change (compressed)
 
-        take_rvi_cf     = 1'b0;
-        take_rvc_cf     = 1'b0;
-        ras_pop         = 1'b0;
-        ras_push        = 1'b0;
-        ras_update      = '0;
-        taken           = '0;
-        take_rvi_cf     = 1'b0;
-        if_ready        = icache_ready & fifo_ready;
-        icache_req      = fifo_ready;
+        take_rvi_cf       = 1'b0;
+        take_rvc_cf       = 1'b0;
+        ras_pop           = 1'b0;
+        ras_push          = 1'b0;
+        ras_update        = '0;
+        taken             = '0;
+        take_rvi_cf       = 1'b0;
+        if_ready          = icache_dreq_i.ready & fifo_ready;
+        icache_dreq_o.req = fifo_ready;
 
-        bp_vaddr        = '0;    // predicted address
-        bp_valid        = 1'b0;  // prediction is valid
+        bp_vaddr          = '0;    // predicted address
+        bp_valid          = 1'b0;  // prediction is valid
 
-        bp_sbe.cf_type = RAS;
+        bp_sbe.cf_type    = RAS;
 
         // only predict if the response is valid
         if (instruction_valid) begin
@@ -266,18 +249,18 @@ module frontend #(
     assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
 
     always_comb begin : id_if
-        kill_s1 = 1'b0;
-        kill_s2 = 1'b0;
+        icache_dreq_o.kill_s1 = 1'b0;
+        icache_dreq_o.kill_s2 = 1'b0;
 
         // we mis-predicted so kill the icache request and the fetch queue
         if (is_mispredict || flush_i) begin
-            kill_s1 = 1'b1;
-            kill_s2 = 1'b1;
+            icache_dreq_o.kill_s1 = 1'b1;
+            icache_dreq_o.kill_s2 = 1'b1;
         end
 
         // if we have a valid branch-prediction we need to kill the last cache request
         if (bp_valid) begin
-            kill_s2 = 1'b1;
+            icache_dreq_o.kill_s2 = 1'b1;
         end
 
         fifo_valid = icache_valid_q;
@@ -366,7 +349,8 @@ module frontend #(
         if (set_debug_pc_i) begin
             npc_d = dm::HaltAddress;
         end
-        fetch_vaddr = fetch_address;
+
+        icache_dreq_o.vaddr = fetch_address;
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -381,10 +365,10 @@ module frontend #(
             unaligned_instr_q    <= '0;
         end else begin
             npc_q                <= npc_d;
-            icache_data_q        <= icache_data_d;
-            icache_valid_q       <= icache_valid_d;
-            icache_vaddr_q       <= icache_vaddr_d;
-            icache_ex_q          <= icache_ex_d;
+            icache_data_q        <= icache_dreq_i.data;
+            icache_valid_q       <= icache_dreq_i.valid;
+            icache_vaddr_q       <= icache_dreq_i.vaddr;
+            icache_ex_q          <= icache_dreq_i.ex;
             unaligned_q          <= unaligned_d;
             unaligned_address_q  <= unaligned_address_d;
             unaligned_instr_q    <= unaligned_instr_d;
@@ -419,33 +403,6 @@ module frontend #(
         .bht_update_i     ( bht_update       ),
         .bht_prediction_o ( bht_prediction   ),
         .*
-    );
-
-    icache #(
-        .SET_ASSOCIATIVITY ( 4                    ),
-        .CACHE_LINE_WIDTH  ( 128                  ),
-        .FETCH_WIDTH       ( FETCH_WIDTH          )
-    ) i_icache (
-        .clk_i,
-        .rst_ni,
-        .flush_i          ( flush_icache_i        ),
-        .en_cache_i,
-        .vaddr_i          ( fetch_vaddr           ), // 1st cycle
-        .data_o           ( icache_data_d         ),
-        .req_i            ( icache_req            ),
-        .kill_s1_i        ( kill_s1               ),
-        .kill_s2_i        ( kill_s2               ),
-        .ready_o          ( icache_ready          ),
-        .valid_o          ( icache_valid_d        ),
-        .ex_o             ( icache_ex_d           ),
-        .vaddr_o          ( icache_vaddr_d        ),
-        .axi,
-        .fetch_req_o,
-        .fetch_vaddr_o,
-        .fetch_valid_i,
-        .fetch_paddr_i,
-        .fetch_exception_i,
-        .miss_o           ( l1_icache_miss_o      )
     );
 
     for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin

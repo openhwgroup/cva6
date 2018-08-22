@@ -14,6 +14,7 @@
  *
  * Description: Manages communication with the AXI Bus
  */
+import std_cache_pkg::*;
 
 module axi_adapter #(
         parameter int unsigned DATA_WIDTH          = 256,
@@ -24,7 +25,7 @@ module axi_adapter #(
     input  logic                                        rst_ni, // Asynchronous reset active low
 
     input  logic                                        req_i,
-    input  nbdcache_pkg::req_t                          type_i,
+    input  req_t                                        type_i,
     output logic                                        gnt_o,
     output logic [AXI_ID_WIDTH-1:0]                     gnt_id_o,
     input  logic [63:0]                                 addr_i,
@@ -43,7 +44,7 @@ module axi_adapter #(
     // AXI port
     AXI_BUS.Master                                      axi
 );
-    localparam logic [7:0] BURST_SIZE = DATA_WIDTH/64-1;
+    localparam BURST_SIZE = DATA_WIDTH/64-1;
     localparam ADDR_INDEX = ($clog2(DATA_WIDTH/64) > 0) ? $clog2(DATA_WIDTH/64) : 1;
 
     enum logic [3:0] {
@@ -77,7 +78,7 @@ module axi_adapter #(
         axi.ar_valid  = 1'b0;
         // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
         // with an incremental transfer we need to output the corresponding base address of the cache line
-        axi.ar_addr   = (CRITICAL_WORD_FIRST || type_i == SINGLE_REQ) ? addr_i : { addr_i[63:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
+        axi.ar_addr   = (CRITICAL_WORD_FIRST || type_i == SINGLE_REQ) ? addr_i : { addr_i[63:DCACHE_BYTE_OFFSET], {{DCACHE_BYTE_OFFSET}{1'b0}}};
         axi.ar_prot   = 3'b0;
         axi.ar_region = 4'b0;
         axi.ar_len    = 8'b0;
@@ -307,21 +308,13 @@ module axi_adapter #(
                         state_d = COMPLETE_READ;
                     end
 
-                    // *work-around* so that the missing critical_word_valid is not violating the
-                    // protocol between miss_handler and load_unit. TODO(zarubaf) In general this needs proper
-                    // handling as an access fault
-                    if (axi.r_last && axi.r_resp != '0) begin
-                        critical_word_valid_o = 1'b1;
-                        // in the case of a bus erro (SIGBUS)r this is garbage anyway
-                        critical_word_o       = axi.r_data;
-                    end
-
                     // save the word
                     if (state_q == WAIT_R_VALID_MULTIPLE) begin
                         cache_line_d[index] = axi.r_data;
-                    end else begin
+
+                    end else
                         cache_line_d[0] = axi.r_data;
-                    end
+
                     // Decrease the counter
                     cnt_d = cnt_q - 1;
                 end

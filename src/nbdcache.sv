@@ -13,13 +13,11 @@
 // Description: Nonblocking private L1 dcache
 
 import ariane_pkg::*;
-import nbdcache_pkg::*;
+import std_cache_pkg::*;
 
 module nbdcache #(
-        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,
-        parameter int unsigned AXI_ID_WIDTH     = 10,
-        parameter int unsigned AXI_USER_WIDTH   = 1
-    )(
+        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
+)(
     input  logic                           clk_i,       // Clock
     input  logic                           rst_ni,      // Asynchronous reset active low
     // Cache management
@@ -27,28 +25,18 @@ module nbdcache #(
     input  logic                           flush_i,     // high until acknowledged
     output logic                           flush_ack_o, // send a single cycle acknowledge signal when the cache is flushed
     output logic                           miss_o,      // we missed on a ld/st
-    // Cache AXI refill port
-    AXI_BUS.Master                         data_if,
-    AXI_BUS.Master                         bypass_if,
     // AMO interface
     input  logic                           amo_commit_i, // commit atomic memory operation
     output logic                           amo_valid_o,  // we have a valid AMO result
     output logic [63:0]                    amo_result_o, // result of atomic memory operation
     input  logic                           amo_flush_i,  // forget about AMO
     // Request ports
-    input  logic [2:0][INDEX_WIDTH-1:0]    address_index_i,
-    input  logic [2:0][TAG_WIDTH-1:0]      address_tag_i,
-    input  logic [2:0][63:0]               data_wdata_i,
-    input  logic [2:0]                     data_req_i,
-    input  logic [2:0]                     data_we_i,
-    input  logic [2:0][7:0]                data_be_i,
-    input  logic [2:0][1:0]                data_size_i,
-    input  logic [2:0]                     kill_req_i,
-    input  logic [2:0]                     tag_valid_i,
-    output logic [2:0]                     data_gnt_o,
-    output logic [2:0]                     data_rvalid_o,
-    output logic [2:0][63:0]               data_rdata_o,
-    input  amo_t [2:0]                     amo_op_i
+    input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
+    output dcache_req_o_t [2:0]            req_ports_o,  // request ports 
+
+    // Cache AXI refill port
+    AXI_BUS.Master                         data_if,
+    AXI_BUS.Master                         bypass_if
 );
 
     // -------------------------------
@@ -58,16 +46,16 @@ module nbdcache #(
     // 2. PTW
     // 3. Load Unit
     // 4. Store unit
-    logic        [3:0][SET_ASSOCIATIVITY-1:0] req;
-    logic        [3:0][INDEX_WIDTH-1:0]       addr;
+    logic        [3:0][DCACHE_SET_ASSOC-1:0]  req;
+    logic        [3:0][DCACHE_INDEX_WIDTH-1:0]addr;
     logic        [3:0]                        gnt;
-    cache_line_t [SET_ASSOCIATIVITY-1:0]      rdata;
-    logic        [3:0][TAG_WIDTH-1:0]         tag;
+    cache_line_t [DCACHE_SET_ASSOC-1:0]       rdata;
+    logic        [3:0][DCACHE_TAG_WIDTH-1:0]  tag;
 
     cache_line_t [3:0]                        wdata;
     logic        [3:0]                        we;
     cl_be_t      [3:0]                        be;
-    logic        [SET_ASSOCIATIVITY-1:0]      hit_way;
+    logic        [DCACHE_SET_ASSOC-1:0]       hit_way;
     // -------------------------------
     // Controller <-> Miss unit
     // -------------------------------
@@ -88,11 +76,11 @@ module nbdcache #(
     // -------------------------------
     // Arbiter <-> Datram,
     // -------------------------------
-    logic [SET_ASSOCIATIVITY-1:0]        req_ram;
-    logic [INDEX_WIDTH-1:0]              addr_ram;
+    logic [DCACHE_SET_ASSOC-1:0]        req_ram;
+    logic [DCACHE_INDEX_WIDTH-1:0]              addr_ram;
     logic                                we_ram;
     cache_line_t                         wdata_ram;
-    cache_line_t [SET_ASSOCIATIVITY-1:0] rdata_ram;
+    cache_line_t [DCACHE_SET_ASSOC-1:0] rdata_ram;
     cl_be_t                              be_ram;
 
     // ------------------
@@ -101,27 +89,15 @@ module nbdcache #(
     generate
         for (genvar i = 0; i < 3; i++) begin : master_ports
             cache_ctrl  #(
-                .SET_ASSOCIATIVITY     ( SET_ASSOCIATIVITY    ),
-                .INDEX_WIDTH           ( INDEX_WIDTH          ),
-                .TAG_WIDTH             ( TAG_WIDTH            ),
-                .CACHE_LINE_WIDTH      ( CACHE_LINE_WIDTH     ),
                 .CACHE_START_ADDR      ( CACHE_START_ADDR     )
             ) i_cache_ctrl (
                 .bypass_i              ( ~enable_i            ),
+
                 .busy_o                ( busy            [i]  ),
-                .address_index_i       ( address_index_i [i]  ),
-                .address_tag_i         ( address_tag_i   [i]  ),
-                .data_wdata_i          ( data_wdata_i    [i]  ),
-                .data_req_i            ( data_req_i      [i]  ),
-                .data_we_i             ( data_we_i       [i]  ),
-                .data_be_i             ( data_be_i       [i]  ),
-                .data_size_i           ( data_size_i     [i]  ),
-                .kill_req_i            ( kill_req_i      [i]  ),
-                .tag_valid_i           ( tag_valid_i     [i]  ),
-                .data_gnt_o            ( data_gnt_o      [i]  ),
-                .data_rvalid_o         ( data_rvalid_o   [i]  ),
-                .data_rdata_o          ( data_rdata_o    [i]  ),
-                .amo_op_i              ( amo_op_i        [i]  ),
+
+                .req_port_i            ( req_ports_i     [i]  ),
+                .req_port_o            ( req_ports_o     [i]  ),
+
 
                 .req_o                 ( req            [i+1] ),
                 .addr_o                ( addr           [i+1] ),
@@ -182,14 +158,14 @@ module nbdcache #(
     // --------------
     // Memory Arrays
     // --------------
-    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin : sram_block
+    for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin : sram_block
         sram #(
-            .DATA_WIDTH ( CACHE_LINE_WIDTH                  ),
-            .NUM_WORDS  ( NUM_WORDS                         )
+            .DATA_WIDTH ( DCACHE_LINE_WIDTH                 ),
+            .NUM_WORDS  ( DCACHE_NUM_WORDS                  )
         ) data_sram (
             .req_i   ( req_ram [i]                          ),
             .we_i    ( we_ram                               ),
-            .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
+            .addr_i  ( addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]  ),
             .wdata_i ( wdata_ram.data                       ),
             .be_i    ( be_ram.data                          ),
             .rdata_o ( rdata_ram[i].data                    ),
@@ -197,12 +173,12 @@ module nbdcache #(
         );
 
         sram #(
-            .DATA_WIDTH ( TAG_WIDTH                         ),
-            .NUM_WORDS  ( NUM_WORDS                         )
+            .DATA_WIDTH ( DCACHE_TAG_WIDTH                  ),
+            .NUM_WORDS  ( DCACHE_NUM_WORDS                  )
         ) tag_sram (
             .req_i   ( req_ram [i]                          ),
             .we_i    ( we_ram                               ),
-            .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET]  ),
+            .addr_i  ( addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]  ),
             .wdata_i ( wdata_ram.tag                        ),
             .be_i    ( be_ram.tag                           ),
             .rdata_o ( rdata_ram[i].tag                     ),
@@ -214,23 +190,23 @@ module nbdcache #(
     // ----------------
     // Dirty SRAM
     // ----------------
-    logic [DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
+    logic [DCACHE_DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
 
-    for (genvar i = 0; i < SET_ASSOCIATIVITY; i++) begin
+    for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin
         assign dirty_wdata[i]                     = wdata_ram.dirty;
-        assign dirty_wdata[SET_ASSOCIATIVITY + i] = wdata_ram.valid;
-        assign rdata_ram[i].valid                 = dirty_rdata[SET_ASSOCIATIVITY + i];
+        assign dirty_wdata[DCACHE_SET_ASSOC + i] = wdata_ram.valid;
+        assign rdata_ram[i].valid                 = dirty_rdata[DCACHE_SET_ASSOC + i];
         assign rdata_ram[i].dirty                 = dirty_rdata[i];
     end
 
     sram #(
-        .DATA_WIDTH ( DIRTY_WIDTH                      ),
-        .NUM_WORDS  ( NUM_WORDS                        )
+        .DATA_WIDTH ( DCACHE_DIRTY_WIDTH               ),
+        .NUM_WORDS  ( DCACHE_NUM_WORDS                 )
     ) dirty_sram (
         .clk_i   ( clk_i                               ),
         .req_i   ( |req_ram                            ),
         .we_i    ( we_ram                              ),
-        .addr_i  ( addr_ram[INDEX_WIDTH-1:BYTE_OFFSET] ),
+        .addr_i  ( addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] ),
         .wdata_i ( dirty_wdata                         ),
         .be_i    ( {be_ram.valid, be_ram.dirty}        ),
         .rdata_o ( dirty_rdata                         )
@@ -241,8 +217,8 @@ module nbdcache #(
     // ------------------------------------------------
     tag_cmp #(
         .NR_PORTS           ( 4                  ),
-        .ADDR_WIDTH         ( INDEX_WIDTH        ),
-        .SET_ASSOCIATIVITY  ( SET_ASSOCIATIVITY  )
+        .ADDR_WIDTH         ( DCACHE_INDEX_WIDTH ),
+        .DCACHE_SET_ASSOC   ( DCACHE_SET_ASSOC   )
     ) i_tag_cmp (
         .req_i              ( req         ),
         .gnt_o              ( gnt         ),
@@ -267,7 +243,7 @@ module nbdcache #(
 `ifndef SYNTHESIS
     initial begin
         assert ($bits(data_if.aw_addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
-        assert (CACHE_LINE_WIDTH/64 inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of 64");
+        assert (DCACHE_LINE_WIDTH/64 inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of 64");
     end
 `endif
 endmodule
@@ -284,34 +260,34 @@ module tag_cmp #(
         parameter int unsigned ADDR_WIDTH        = 64,
         parameter type data_t                    = cache_line_t,
         parameter type be_t                      = cl_be_t,
-        parameter int unsigned SET_ASSOCIATIVITY = 8
+        parameter int unsigned DCACHE_SET_ASSOC = 8
     )(
         input  logic                                         clk_i,
         input  logic                                         rst_ni,
 
-        input  logic  [NR_PORTS-1:0][SET_ASSOCIATIVITY-1:0]  req_i,
+        input  logic  [NR_PORTS-1:0][DCACHE_SET_ASSOC-1:0]  req_i,
         output logic  [NR_PORTS-1:0]                         gnt_o,
         input  logic  [NR_PORTS-1:0][ADDR_WIDTH-1:0]         addr_i,
         input  data_t [NR_PORTS-1:0]                         wdata_i,
         input  logic  [NR_PORTS-1:0]                         we_i,
         input  be_t   [NR_PORTS-1:0]                         be_i,
-        output data_t               [SET_ASSOCIATIVITY-1:0]  rdata_o,
-        input  logic  [NR_PORTS-1:0][TAG_WIDTH-1:0]          tag_i, // tag in - comes one cycle later
-        output logic                [SET_ASSOCIATIVITY-1:0]  hit_way_o, // we've got a hit on the corresponding way
+        output data_t               [DCACHE_SET_ASSOC-1:0]  rdata_o,
+        input  logic  [NR_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]          tag_i, // tag in - comes one cycle later
+        output logic                [DCACHE_SET_ASSOC-1:0]  hit_way_o, // we've got a hit on the corresponding way
 
 
-        output logic                [SET_ASSOCIATIVITY-1:0]  req_o,
+        output logic                [DCACHE_SET_ASSOC-1:0]  req_o,
         output logic                [ADDR_WIDTH-1:0]         addr_o,
         output data_t                                        wdata_o,
         output logic                                         we_o,
         output be_t                                          be_o,
-        input  data_t               [SET_ASSOCIATIVITY-1:0]  rdata_i
+        input  data_t               [DCACHE_SET_ASSOC-1:0]  rdata_i
     );
 
     assign rdata_o = rdata_i;
     // one hot encoded
     logic [NR_PORTS-1:0] id_d, id_q;
-    logic [TAG_WIDTH-1:0] sel_tag;
+    logic [DCACHE_TAG_WIDTH-1:0] sel_tag;
 
     always_comb begin : tag_sel
         sel_tag = '0;
@@ -320,7 +296,7 @@ module tag_cmp #(
                 sel_tag = tag_i[i];
     end
 
-    for (genvar j = 0; j < SET_ASSOCIATIVITY; j++) begin : tag_cmp
+    for (genvar j = 0; j < DCACHE_SET_ASSOC; j++) begin : tag_cmp
         assign hit_way_o[j] = (sel_tag == rdata_i[j].tag) ? rdata_i[j].valid : 1'b0;
     end
 

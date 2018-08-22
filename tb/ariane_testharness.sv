@@ -174,6 +174,7 @@ module ariane_testharness #(
     ) i_dm_top (
         .clk_i                ( clk_i                ),
         .rst_ni               ( rst_ni               ), // PoR
+        .testmode_i           ( test_en              ),
         .ndmreset_o           ( ndmreset             ),
         .dmactive_o           (                      ), // active debug session
         .debug_req_o          ( debug_req            ),

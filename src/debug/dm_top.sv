@@ -26,6 +26,7 @@ module dm_top #(
 )(
     input  logic               clk_i,       // clock
     input  logic               rst_ni,      // asynchronous reset active low, connect PoR here, not the system reset
+    input  logic               testmode_i,
     output logic               ndmreset_o,  // non-debug module reset
     output logic               dmactive_o,  // debug module is active
     output logic [NrHarts-1:0] debug_req_o, // async debug request
@@ -100,6 +101,7 @@ module dm_top #(
     ) i_dm_csrs (
         .clk_i                   ( clk_i                 ),
         .rst_ni                  ( rst_ni                ),
+        .testmode_i              ( testmode_i            ),
         .dmi_rst_ni              ( dmi_rst_ni            ),
         .dmi_req_valid_i         ( dmi_req_valid_i       ),
         .dmi_req_ready_o         ( dmi_req_ready_o       ),

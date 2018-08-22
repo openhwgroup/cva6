@@ -134,7 +134,7 @@ module dm_sba (
         .clk_i,
         .rst_ni                ( dmactive_i               ),
         .req_i                 ( req                      ),
-        .type_i                ( nbdcache_pkg::SINGLE_REQ ),
+        .type_i                ( std_cache_pkg::SINGLE_REQ),
         .gnt_o                 ( gnt                      ),
         .gnt_id_o              (                          ),
         .addr_i                ( address                  ),

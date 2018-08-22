@@ -18,8 +18,13 @@ verilator ?= verilator
 # traget option
 target-options ?=
 # Sources
-# Ariane PKG
-ariane_pkg := include/riscv_pkg.sv src/debug/dm_pkg.sv include/ariane_pkg.sv include/nbdcache_pkg.sv include/axi_if.sv
+# Package files -> compile first
+ariane_pkg := include/riscv_pkg.sv     \
+              src/debug/dm_pkg.sv      \
+              include/ariane_pkg.sv    \
+              include/std_cache_pkg.sv \
+              include/axi_if.sv
+
 # utility modules
 util := $(wildcard src/util/*.svh) src/util/instruction_tracer_pkg.sv src/util/instruction_tracer_if.sv \
 		src/util/generic_fifo.sv src/util/cluster_clock_gating.sv src/util/behav_sram.sv

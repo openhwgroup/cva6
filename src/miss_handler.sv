@@ -15,7 +15,8 @@
 // --------------
 // MISS Handler
 // --------------
-import nbdcache_pkg::*;
+import ariane_pkg::*;
+import std_cache_pkg::*;
 
 module miss_handler #(
     parameter int unsigned NR_PORTS         = 3,
@@ -47,11 +48,11 @@ module miss_handler #(
     output logic [NR_PORTS-1:0]                         mshr_addr_matches_o,
     output logic [NR_PORTS-1:0]                         mshr_index_matches_o,
     // Port to SRAMs, for refill and eviction
-    output logic  [SET_ASSOCIATIVITY-1:0]               req_o,
-    output logic  [INDEX_WIDTH-1:0]                     addr_o, // address into cache array
+    output logic  [DCACHE_SET_ASSOC-1:0]                req_o,
+    output logic  [DCACHE_INDEX_WIDTH-1:0]              addr_o, // address into cache array
     output cache_line_t                                 data_o,
     output cl_be_t                                      be_o,
-    input  cache_line_t [SET_ASSOCIATIVITY-1:0]         data_i,
+    input  cache_line_t [DCACHE_SET_ASSOC-1:0]          data_i,
     output logic                                        we_o
 );
 
@@ -73,8 +74,8 @@ module miss_handler #(
                        REQ_CACHELINE, MISS_REPL, SAVE_CACHELINE, INIT } state_d, state_q;
     // Registers
     mshr_t                                  mshr_d, mshr_q;
-    logic [INDEX_WIDTH-1:0]                 cnt_d, cnt_q;
-    logic [SET_ASSOCIATIVITY-1:0]           evict_way_d, evict_way_q;
+    logic [DCACHE_INDEX_WIDTH-1:0]          cnt_d, cnt_q;
+    logic [DCACHE_SET_ASSOC-1:0]            evict_way_d, evict_way_q;
     // cache line to evict
     cache_line_t                            evict_cl_d, evict_cl_q;
 
@@ -88,28 +89,28 @@ module miss_handler #(
     logic [NR_PORTS-1:0][1:0]               miss_req_size;
 
     // Cache Line Refill <-> AXI
-    logic                                   req_fsm_miss_valid;
-    logic                                   req_fsm_miss_bypass;
-    logic [63:0]                            req_fsm_miss_addr;
-    logic [CACHE_LINE_WIDTH-1:0]            req_fsm_miss_wdata;
-    logic                                   req_fsm_miss_we;
-    logic [(CACHE_LINE_WIDTH/8)-1:0]        req_fsm_miss_be;
-    logic                                   gnt_miss_fsm;
-    logic                                   valid_miss_fsm;
-    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0] data_miss_fsm;
+    logic                                    req_fsm_miss_valid;
+    logic                                    req_fsm_miss_bypass;
+    logic [63:0]                             req_fsm_miss_addr;
+    logic [DCACHE_LINE_WIDTH-1:0]            req_fsm_miss_wdata;
+    logic                                    req_fsm_miss_we;
+    logic [(DCACHE_LINE_WIDTH/8)-1:0]        req_fsm_miss_be;
+    logic                                    gnt_miss_fsm;
+    logic                                    valid_miss_fsm;
+    logic [(DCACHE_LINE_WIDTH/64)-1:0][63:0] data_miss_fsm;
 
     // Cache Management <-> LFSR
-    logic                                   lfsr_enable;
-    logic [SET_ASSOCIATIVITY-1:0]           lfsr_oh;
-    logic [$clog2(SET_ASSOCIATIVITY-1)-1:0] lfsr_bin;
+    logic                                  lfsr_enable;
+    logic [DCACHE_SET_ASSOC-1:0]           lfsr_oh;
+    logic [$clog2(DCACHE_SET_ASSOC-1)-1:0] lfsr_bin;
 
     // ------------------------------
     // Cache Management
     // ------------------------------
     always_comb begin : cache_management
-        automatic logic [SET_ASSOCIATIVITY-1:0] evict_way, valid_way;
+        automatic logic [DCACHE_SET_ASSOC-1:0] evict_way, valid_way;
 
-        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
+        for (int unsigned i = 0; i < DCACHE_SET_ASSOC; i++) begin
             evict_way[i] = data_i[i].valid & data_i[i].dirty;
             valid_way[i] = data_i[i].valid;
         end
@@ -168,7 +169,7 @@ module miss_handler #(
                         mshr_d.valid = 1'b1;
                         mshr_d.we    = miss_req_we[i];
                         mshr_d.id    = i;
-                        mshr_d.addr  = miss_req_addr[i][TAG_WIDTH+INDEX_WIDTH-1:0];
+                        mshr_d.addr  = miss_req_addr[i][DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:0];
                         mshr_d.wdata = miss_req_wdata[i];
                         mshr_d.be    = miss_req_be[i];
                         break;
@@ -181,7 +182,7 @@ module miss_handler #(
                 // 1. Check if there is an empty cache-line
                 // 2. If not -> evict one
                 req_o = '1;
-                addr_o = mshr_q.addr[INDEX_WIDTH-1:0];
+                addr_o = mshr_q.addr[DCACHE_INDEX_WIDTH-1:0];
                 state_d = MISS_REPL;
                 miss_o = 1'b1;
             end
@@ -197,7 +198,7 @@ module miss_handler #(
                         state_d = WB_CACHELINE_MISS;
                         evict_cl_d.tag = data_i[lfsr_bin].tag;
                         evict_cl_d.data = data_i[lfsr_bin].data;
-                        cnt_d = mshr_q.addr[INDEX_WIDTH-1:0];
+                        cnt_d = mshr_q.addr[DCACHE_INDEX_WIDTH-1:0];
                     // no - we can request a cache line now
                     end else
                         state_d = REQ_CACHELINE;
@@ -223,18 +224,18 @@ module miss_handler #(
             // ~> replace the cacheline
             SAVE_CACHELINE: begin
                 // calculate cacheline offset
-                automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset;
-                cl_offset = mshr_q.addr[BYTE_OFFSET-1:3] << 6;
+                automatic logic [$clog2(DCACHE_LINE_WIDTH)-1:0] cl_offset;
+                cl_offset = mshr_q.addr[DCACHE_BYTE_OFFSET-1:3] << 6;
                 // we've got a valid response from refill unit
                 if (valid_miss_fsm) begin
 
-                    addr_o       = mshr_q.addr[INDEX_WIDTH-1:0];
+                    addr_o       = mshr_q.addr[DCACHE_INDEX_WIDTH-1:0];
                     req_o        = evict_way_q;
                     we_o         = 1'b1;
                     be_o         = '1;
                     be_o.valid   = evict_way_q;
                     be_o.dirty   = evict_way_q;
-                    data_o.tag   = mshr_q.addr[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
+                    data_o.tag   = mshr_q.addr[DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
                     data_o.data  = data_miss_fsm;
                     data_o.valid = 1'b1;
                     data_o.dirty = 1'b0;
@@ -264,7 +265,7 @@ module miss_handler #(
             WB_CACHELINE_FLUSH, WB_CACHELINE_MISS: begin
 
                 req_fsm_miss_valid  = 1'b1;
-                req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q[INDEX_WIDTH-1:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
+                req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET], {{DCACHE_BYTE_OFFSET}{1'b0}}};
                 req_fsm_miss_be     = '1;
                 req_fsm_miss_we     = 1'b1;
                 req_fsm_miss_wdata  = evict_cl_q.data;
@@ -304,14 +305,14 @@ module miss_handler #(
                 // not dirty ~> increment and continue
                 end else begin
                     // increment and re-request
-                    cnt_d      = cnt_q + (1'b1 << BYTE_OFFSET);
+                    cnt_d      = cnt_q + (1'b1 << DCACHE_BYTE_OFFSET);
                     state_d    = FLUSH_REQ_STATUS;
                     addr_o     = cnt_q;
                     req_o      = 1'b1;
                     be_o.valid = '1;
                     we_o       = 1'b1;
                     // finished with flushing operation, go back to idle
-                    if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1) begin
+                    if (cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == DCACHE_NUM_WORDS-1) begin
                         flush_ack_o = 1'b1;
                         state_d     = IDLE;
                     end
@@ -327,9 +328,9 @@ module miss_handler #(
                 // only write the dirty array
                 be_o.dirty = '1;
                 be_o.valid = '1;
-                cnt_d      = cnt_q + (1'b1 << BYTE_OFFSET);
+                cnt_d      = cnt_q + (1'b1 << DCACHE_BYTE_OFFSET);
                 // finished initialization
-                if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1)
+                if (cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == DCACHE_NUM_WORDS-1)
                     state_d = IDLE;
             end
         endcase
@@ -343,12 +344,12 @@ module miss_handler #(
 
         for (int i = 0; i < NR_PORTS; i++) begin
             // check mshr for potential matching of other units, exclude the unit currently being served
-            if (mshr_q.valid && mshr_addr_i[i][55:BYTE_OFFSET] == mshr_q.addr[55:BYTE_OFFSET]) begin
+            if (mshr_q.valid && mshr_addr_i[i][55:DCACHE_BYTE_OFFSET] == mshr_q.addr[55:DCACHE_BYTE_OFFSET]) begin
                 mshr_addr_matches_o[i] = 1'b1;
             end
 
             // same as previous, but checking only the index
-            if (mshr_q.valid && mshr_addr_i[i][INDEX_WIDTH-1:BYTE_OFFSET] == mshr_q.addr[INDEX_WIDTH-1:BYTE_OFFSET]) begin
+            if (mshr_q.valid && mshr_addr_i[i][DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == mshr_q.addr[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]) begin
                 mshr_index_matches_o[i] = 1'b1;
             end
         end
@@ -441,7 +442,7 @@ module miss_handler #(
         .id_i                  ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
         .valid_o               ( valid_bypass_fsm                                         ),
         .rdata_o               ( data_bypass_fsm                                          ),
-        .gnt_id_o              ( gnt_id_bypass_fsm                                         ),
+        .gnt_id_o              ( gnt_id_bypass_fsm                                        ),
         .id_o                  ( id_bypass_fsm                                            ),
         .critical_word_o       (                                                          ), // not used for single requests
         .critical_word_valid_o (                                                          ), // not used for single requests
@@ -453,7 +454,7 @@ module miss_handler #(
     // Cache Line Arbiter
     // ----------------------
     axi_adapter  #(
-        .DATA_WIDTH          ( CACHE_LINE_WIDTH   ),
+        .DATA_WIDTH          ( DCACHE_LINE_WIDTH   ),
         .AXI_ID_WIDTH        ( AXI_ID_WIDTH       )
     ) i_miss_axi_adapter (
         .req_i               ( req_fsm_miss_valid ),
@@ -476,7 +477,7 @@ module miss_handler #(
     // -----------------
     // Replacement LFSR
     // -----------------
-    lfsr #(.WIDTH (SET_ASSOCIATIVITY)) i_lfsr (
+    lfsr #(.WIDTH (DCACHE_SET_ASSOC)) i_lfsr (
         .en_i           ( lfsr_enable ),
         .refill_way_oh  ( lfsr_oh     ),
         .refill_way_bin ( lfsr_bin    ),

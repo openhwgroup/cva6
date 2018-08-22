@@ -20,6 +20,7 @@ module dm_csrs #(
 )(
     input  logic                              clk_i,              // Clock
     input  logic                              rst_ni,             // Asynchronous reset active low
+    input  logic                              testmode_i,
     input  logic                              dmi_rst_ni,         // Debug Module Interface reset, active-low
     input  logic                              dmi_req_valid_i,
     output logic                              dmi_req_ready_o,
@@ -451,9 +452,11 @@ module dm_csrs #(
         .clk_i            ( clk_i                ),
         .rst_ni           ( dmi_rst_ni           ), // reset only when system is re-set
         .flush_i          ( 1'b0                 ), // we do not need to flush this queue
+        .testmode_i       ( testmode_i           ),
         .full_o           ( resp_queue_full      ),
         .empty_o          ( resp_queue_empty     ),
-        .single_element_o (                      ),
+        .alm_full_o       (                      ),
+        .alm_empty_o      (                      ),
         .data_i           ( resp_queue_data      ),
         .push_i           ( resp_queue_push      ),
         .data_o           ( dmi_resp_bits_data_o ),
