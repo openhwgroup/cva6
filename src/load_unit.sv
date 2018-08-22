@@ -331,7 +331,7 @@ module load_unit (
 
     
     // prepare these signals for faster selection in the next cycle                          
-    assign signed_d  = load_data_q.operator inside { LW, LH, LB };
+    assign signed_d  = load_data_d.operator inside { LW, LH, LB };
     assign fp_sign_d = 1'b0;
     assign idx_d     = (load_data_d.operator inside {LW}) ? load_data_d.address_offset + 3 : 
                        (load_data_d.operator inside {LH}) ? load_data_d.address_offset + 1 : 
