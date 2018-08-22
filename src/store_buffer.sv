@@ -43,9 +43,9 @@ module store_buffer (
     output dcache_req_i_t            req_port_o  
     );
     // depth of store-buffers
-    localparam int unsigned DEPTH_SPEC   = 4;
+    localparam logic [2:0] DEPTH_SPEC   = 4;
     // allocate more space for the commit buffer to be on the save side
-    localparam int unsigned DEPTH_COMMIT = 4;
+    localparam logic [2:0] DEPTH_COMMIT = 4;
 
 
     // the store queue has two parts:
@@ -79,7 +79,7 @@ module store_buffer (
     // Speculative Queue - Core Interface
     // ----------------------------------------
     always_comb begin : core_if
-        automatic logic [DEPTH_SPEC:0] speculative_status_cnt;
+        automatic logic [$clog2(DEPTH_SPEC):0] speculative_status_cnt;
         speculative_status_cnt = speculative_status_cnt_q;
 
         // we are ready if the speculative and the commit queue have a space left
@@ -117,7 +117,7 @@ module store_buffer (
         // when we flush evict the speculative stores
         if (flush_i) begin
             // reset all valid flags
-            for (int unsigned i = 0; i < DEPTH_SPEC; i++)
+            for (int unsigned i = 0; i < int'(DEPTH_SPEC); i++)
                 speculative_queue_n[i].valid = 1'b0;
 
             speculative_write_pointer_n = speculative_read_pointer_q;
@@ -143,7 +143,7 @@ module store_buffer (
     assign req_port_o.data_we  = 1'b1; // we will always write in the store queue
 
     always_comb begin : store_if
-        automatic logic [DEPTH_COMMIT:0] commit_status_cnt;
+        automatic logic [$clog2(DEPTH_COMMIT):0] commit_status_cnt;
         commit_status_cnt = commit_status_cnt_q;
 
         commit_ready_o = (commit_status_cnt_q < DEPTH_COMMIT);
