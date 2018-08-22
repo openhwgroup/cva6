@@ -141,14 +141,6 @@ module ariane #(
     logic [NR_COMMIT_PORTS-1:0][63:0] wdata_commit_id;
     logic [NR_COMMIT_PORTS-1:0]       we_commit_id;
     // --------------
-    // IF <-> EX
-    // --------------
-    logic                     fetch_req_if_ex;
-    logic [63:0]              fetch_vaddr_if_ex;
-    logic                     fetch_valid_ex_if;
-    logic [63:0]              fetch_paddr_ex_if;
-    exception_t               fetch_ex_ex_if;
-    // --------------
     // CSR <-> *
     // --------------
     logic                     enable_translation_csr_ex;

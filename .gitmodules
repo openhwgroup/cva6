@@ -10,3 +10,6 @@
 [submodule "src/axi_node"]
 	path = src/axi_node
 	url = https://github.com/pulp-platform/axi_node.git
+[submodule "src/fpga-support"]
+	path = src/fpga-support
+	url = https://github.com/pulp-platform/fpga-support.git

@@ -30,7 +30,8 @@ util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_if.sv  \
 		src/util/generic_fifo.sv           \
         src/util/cluster_clock_gating.sv   \
-        src/util/behav_sram.sv
+		src/util/sram_wrap.sv
+        
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
             $(wildcard tb/test/*/*_pkg.sv*)
@@ -43,7 +44,7 @@ src := $(wildcard src/*.sv)           $(wildcard tb/common/*.sv)          \
        $(wildcard src/axi_slice/*.sv) $(wildcard src/clint/*.sv)          \
        $(wildcard src/axi_node/*.sv)  $(wildcard src/axi_mem_if/src/*.sv) \
        $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))      \
-       $(wildcard src/debug/debug_rom/*.sv)
+       $(wildcard src/debug/debug_rom/*.sv) src/fpga-support/rtl/SyncSpRamBeNx64.sv
 # look for testbenches
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
@@ -156,8 +157,9 @@ verilate_command := $(verilator)                                                
                     tb/common/pulp_sync.sv                                           \
                     bootrom/bootrom.sv                                               \
                     src/util/cluster_clock_gating.sv                                 \
-                    src/util/behav_sram.sv                                           \
-                    src/axi_mem_if/src/axi2mem.sv                                    \
+                    src/util/sram_wrap.sv                                            \
+					src/fpga-support/rtl/SyncSpRamBeNx64.sv                          \
+					src/axi_mem_if/src/axi2mem.sv                                    \
                     +incdir+src/axi_node                                             \
                     --unroll-count 256                                               \
                     -Werror-PINMISSING                                               \
@@ -208,4 +210,4 @@ clean:
 	rm -f tmp/*.log
 
 .PHONY:
-	build lint build-moore $(riscv-asm-tests) $(addsuffix _verilator,$(riscv-asm-tests)) check simc sim verilate clean verilate
+	build lint build-moore $(riscv-asm-tests) $(addsuffix _verilator,$(riscv-asm-tests)) $(riscv-benchmarks) $(addsuffix _verilator,$(riscv-benchmarks)) check simc sim verilate clean verilate
