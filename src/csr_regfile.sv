@@ -146,7 +146,7 @@ module csr_regfile #(
         if (csr_read) begin
             case (csr_addr.address)
                 // debug registers
-                riscv::CSR_DCSR:               csr_rdata = {31'b0, dcsr_q};
+                riscv::CSR_DCSR:               csr_rdata = {32'b0, dcsr_q};
                 riscv::CSR_DPC:                csr_rdata = dpc_q;
                 riscv::CSR_DSCRATCH0:          csr_rdata = dscratch0_q;
                 // trigger module registers

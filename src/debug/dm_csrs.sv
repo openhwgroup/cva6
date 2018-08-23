@@ -184,7 +184,7 @@ module dm_csrs #(
         command_d   = command_q;
         progbuf_d   = progbuf_q;
         data_d      = data_q;
-        sbcs_d      = sbcs_d;
+        sbcs_d      = sbcs_q;
         sbaddr_d    = sbaddress_i;
         sbdata_d    = sbdata_q;
 
@@ -426,6 +426,7 @@ module dm_csrs #(
         sbcs_d.sbaccess32           = 1'b0;
         sbcs_d.sbaccess16           = 1'b0;
         sbcs_d.sbaccess8            = 1'b0;
+        sbcs_d.sbaccess             = 1'b0;
     end
 
     // output multiplexer
