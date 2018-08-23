@@ -408,12 +408,12 @@ module icache  #(
             dreq_o.ready = 1'b0;
     end
 
-    ff1 #(
-        .LEN ( ICACHE_SET_ASSOC )
-    ) i_ff1 (
-        .in_i        ( ~way_valid    ),
-        .first_one_o ( repl_invalid  ),
-        .no_ones_o   ( repl_w_random )
+    lzc #(
+        .WIDTH ( ICACHE_SET_ASSOC )
+    ) i_lzc (
+        .in_i    ( ~way_valid    ),
+        .cnt_o   ( repl_invalid  ),
+        .empty_o ( repl_w_random )
     );
 
     // -----------------

@@ -24,13 +24,12 @@ ariane_pkg := include/riscv_pkg.sv     \
               include/ariane_pkg.sv    \
               include/std_cache_pkg.sv \
               include/axi_if.sv
+
 # utility modules
 util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_pkg.sv \
         src/util/instruction_tracer_if.sv  \
-		src/util/generic_fifo.sv           \
-        src/util/cluster_clock_gating.sv   \
-		src/util/sram_wrap.sv
+        src/util/cluster_clock_gating.sv
         
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
@@ -39,12 +38,27 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
 dpi := $(patsubst tb/dpi/%.cc,work/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 # this list contains the standalone components
-src := $(wildcard src/*.sv)           $(wildcard tb/common/*.sv)          \
-       $(wildcard tb/common/*.v)      $(wildcard bootrom/*.sv)            \
-       $(wildcard src/axi_slice/*.sv) $(wildcard src/clint/*.sv)          \
-       $(wildcard src/axi_node/*.sv)  $(wildcard src/axi_mem_if/src/*.sv) \
-       $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))      \
-       $(wildcard src/debug/debug_rom/*.sv) src/fpga-support/rtl/SyncSpRamBeNx64.sv
+src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
+        $(wildcard bootrom/*.sv)                                       \
+        $(wildcard src/axi_slice/*.sv)                                 \
+        $(wildcard src/clint/*.sv)                                     \
+        $(wildcard src/axi_node/*.sv)                                  \
+        $(wildcard src/axi_mem_if/src/*.sv)                            \
+        $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
+        $(wildcard src/debug/debug_rom/*.sv)                           \
+        src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
+        src/common_cells/src/deprecated/generic_fifo.sv                \
+        src/common_cells/src/deprecated/pulp_sync.sv                   \
+        src/common_cells/src/fifo.sv                                   \
+        src/common_cells/src/lzc.sv                                    \
+        src/common_cells/src/rrarbiter.sv                              \
+        tb/ariane_testharness.sv                                       \
+        tb/common/SimDTM.sv                                            \
+        tb/common/SimJTAG.sv                                           
+							       
+	   
+	   
+	   	
 # look for testbenches
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
@@ -70,7 +84,7 @@ list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(library)/ariane_dpi.so
-		# Optimize top level
+	# Optimize top level
 	vopt$(questa_version) $(compile_flag) -work $(library)  $(test_top_level) -o $(test_top_level)_optimized +acc -check_synthesis
 
 # src files
@@ -143,45 +157,31 @@ check-benchmarks:
 	ci/check-tests.sh tmp/riscv-benchmarks- $(riscv-benchmarks-list)   
 
 
-verilate_command := $(verilator)                                                     \
-                    $(ariane_pkg)                                                    \
-                    tb/ariane_testharness.sv                                         \
-                    $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))        \
-                    $(wildcard src/axi_slice/*.sv)                                   \
-                    $(wildcard src/clint/*.sv)                                       \
-                    $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))    \
-                    src/debug/debug_rom/debug_rom.sv                                 \
-                    src/util/generic_fifo.sv                                         \
-                    tb/common/SimDTM.sv                                              \
-                    tb/common/SimJTAG.sv                                             \
-                    tb/common/pulp_sync.sv                                           \
-                    bootrom/bootrom.sv                                               \
-                    src/util/cluster_clock_gating.sv                                 \
-                    src/util/sram_wrap.sv                                            \
-					src/fpga-support/rtl/SyncSpRamBeNx64.sv                          \
-					src/axi_mem_if/src/axi2mem.sv                                    \
-                    +incdir+src/axi_node                                             \
-                    --unroll-count 256                                               \
-                    -Werror-PINMISSING                                               \
-                    -Werror-IMPLICIT                                                 \
-                    -Wno-fatal                                                       \
-                    -Wno-PINCONNECTEMPTY                                             \
-                    -Wno-ASSIGNDLY                                                   \
-                    -Wno-DECLFILENAME                                                \
-                    -Wno-UNOPTFLAT                                                   \
-                    -Wno-UNUSED                                                      \
-                    -Wno-style \
-                    -Wno-lint \
-                    $(if $(DEBUG),--trace-structs --trace,) \
+verilate_command := $(verilator)                                                           \
+                    $(ariane_pkg)                                                          \
+                    $(filter-out tb/ariane_bt.sv,$(src))                                   \
+                    +incdir+src/axi_node                                                   \
+                    --unroll-count 256                                                     \
+                    -Werror-PINMISSING                                                     \
+                    -Werror-IMPLICIT                                                       \
+                    -Wno-fatal                                                             \
+                    -Wno-PINCONNECTEMPTY                                                   \
+                    -Wno-ASSIGNDLY                                                         \
+                    -Wno-DECLFILENAME                                                      \
+                    -Wno-UNOPTFLAT                                                         \
+                    -Wno-UNUSED                                                            \
+                    -Wno-style                                                             \
+                    -Wno-lint                                                              \
+                    $(if $(DEBUG),--trace-structs --trace,)                                \
                     -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
-                    $(list_incdir) --top-module ariane_testharness \
-                    --Mdir build -O3 \
+                    $(list_incdir) --top-module ariane_testharness                         \
+                    --Mdir build -O3                                                       \
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
 	$(verilate_command)
-	cd build && make -j4 -f Variane_testharness.mk
+	cd build && make -j${NUM_JOBS} -f Variane_testharness.mk
 
 $(addsuffix -verilator,$(riscv-asm-tests)): verilate
 	build/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
