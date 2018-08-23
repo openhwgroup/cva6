@@ -146,7 +146,6 @@ module nbdcache #(
         .active_serving_o       ( active_serving       ),
         .req_o                  ( req             [0]  ),
         .addr_o                 ( addr            [0]  ),
-        .gnt_i                  ( gnt             [0]  ),
         .data_i                 ( rdata                ),
         .be_o                   ( be              [0]  ),
         .data_o                 ( wdata           [0]  ),

@@ -17,7 +17,6 @@ import ariane_pkg::*;
 module controller (
     input  logic            clk_i,
     input  logic            rst_ni,
-    output logic            flush_bp_o,             // Flush branch prediction data structures
     output logic            set_pc_commit_o,        // Set PC om PC Gen
     output logic            flush_if_o,             // Flush the IF stage
     output logic            flush_unissued_instr_o, // Flush un-issued instructions of the scoreboard
@@ -29,11 +28,10 @@ module controller (
     output logic            flush_tlb_o,            // Flush TLBs
 
     input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
-    input  logic            halt_debug_i,           // Halt request from debug
-    input  logic            debug_set_pc_i,         // Debug wants to set the PC
     output logic            halt_o,                 // Halt signal to commit stage
     input  logic            eret_i,                 // Return from exception
     input  logic            ex_valid_i,             // We got an exception, flush the pipeline
+    input  logic            set_debug_pc_i,         // set the debug pc from CSR
     input  branchpredict_t  resolved_branch_i,      // We got a resolved branch, check if we need to flush the front-end
     input  logic            flush_csr_i,            // We got an instruction which altered the CSR, flush the pipeline
     input  logic            fence_i_i,              // fence.i in
@@ -57,7 +55,6 @@ module controller (
         flush_ex_o             = 1'b0;
         flush_tlb_o            = 1'b0;
         flush_dcache           = 1'b0;
-        flush_bp_o             = 1'b0; // flush branch prediction
         flush_icache_o         = 1'b0;
         // ------------
         // Mis-predict
@@ -134,9 +131,8 @@ module controller (
         // ---------------------------------
         // 1. Exception
         // 2. Return from exception
-        // 3. Debug
         // ---------------------------------
-        if (ex_valid_i || eret_i || debug_set_pc_i) begin
+        if (ex_valid_i || eret_i || set_debug_pc_i) begin
             // don't flush pcgen as we want to take the exception: Flush PCGen is not a flush signal
             // for the PC Gen stage but instead tells it to take the PC we gave it
             set_pc_commit_o        = 1'b0;
@@ -144,12 +140,6 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-            // flush branch-prediction - it is difficult to say whether this actually looses performance or increases performance
-            // because of reduced mis-predicts. There is one case where flushing branch-prediction is absolutely necessary
-            // that is when trapping back to machine mode. As the core is making speculative accesses it can happen that it tries
-            // to load from an non-idempotent register where a read can have a side-effect. This can happen as the core can try to load
-            // from a user-mode address which is then not translated in machine-mode.
-            flush_bp_o             = 1'b1;
         end
     end
 
@@ -158,7 +148,7 @@ module controller (
     // ----------------------
     always_comb begin
         // halt the core if the fence is active
-        halt_o = halt_debug_i || halt_csr_i || fence_active_q;
+        halt_o = halt_csr_i || fence_active_q;
     end
 
     // ----------------------

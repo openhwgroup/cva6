@@ -40,11 +40,11 @@ module lsu #(
     input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores
 
     // icache translation requests
-    input  icache_areq_o_t           icache_areq_i,         
-    output icache_areq_i_t           icache_areq_o,       
+    input  icache_areq_o_t           icache_areq_i,
+    output icache_areq_i_t           icache_areq_o,
 
-    input  priv_lvl_t                priv_lvl_i,               // From CSR register file
-    input  priv_lvl_t                ld_st_priv_lvl_i,         // From CSR register file
+    input  riscv::priv_lvl_t         priv_lvl_i,               // From CSR register file
+    input  riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
     input  logic                     sum_i,                    // From CSR register file
     input  logic                     mxr_i,                    // From CSR register file
     input  logic [43:0]              satp_ppn_i,               // From CSR register file
@@ -53,10 +53,10 @@ module lsu #(
     // Performance counters
     output logic                     itlb_miss_o,
     output logic                     dtlb_miss_o,
-    
+
     // interface to dcache
-    input  dcache_req_o_t [2:0]      dcache_req_ports_i,  
-    output dcache_req_i_t [2:0]      dcache_req_ports_o, 
+    input  dcache_req_o_t [2:0]      dcache_req_ports_i,
+    output dcache_req_i_t [2:0]      dcache_req_ports_o,
 
     output exception_t               lsu_exception_o   // to WB, signal exception status LD/ST exception
 
@@ -137,8 +137,8 @@ module lsu #(
         .INSTR_TLB_ENTRIES      ( 16                     ),
         .DATA_TLB_ENTRIES       ( 16                     ),
         .ASID_WIDTH             ( ASID_WIDTH             )
-    ) i_mmu (  
-            // misaligned bypass  
+    ) i_mmu (
+            // misaligned bypass
         .misaligned_ex_i        ( misaligned_exception   ),
         .lsu_is_store_i         ( st_translation_req     ),
         .lsu_req_i              ( translation_req        ),
@@ -351,14 +351,14 @@ module lsu #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    LD_ADDR_MISALIGNED,
+                    riscv::LD_ADDR_MISALIGNED,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    ST_ADDR_MISALIGNED,
+                    riscv::ST_ADDR_MISALIGNED,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
@@ -370,14 +370,14 @@ module lsu #(
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    LOAD_PAGE_FAULT,
+                    riscv::LOAD_PAGE_FAULT,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    STORE_PAGE_FAULT,
+                    riscv::STORE_PAGE_FAULT,
                     lsu_ctrl.vaddr,
                     1'b1
                 };

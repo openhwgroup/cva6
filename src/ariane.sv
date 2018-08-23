@@ -16,75 +16,45 @@ import ariane_pkg::*;
 `ifndef verilator
 `ifndef SYNTHESIS
 import instruction_tracer_pkg::*;
-`timescale 1ns / 1ps
 `endif
 `endif
 
 module ariane #(
-        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000, // address on which to decide whether the request is cache-able or not
+        parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
         parameter int unsigned AXI_ID_WIDTH     = 10,            // minimum 1
         parameter int unsigned AXI_USER_WIDTH   = 1              // minimum 1
     )(
         input  logic                           clk_i,
         input  logic                           rst_ni,
-        input  logic                           test_en_i,              // enable all clock gates for testing
-
-        input  logic                           flush_dcache_i,         // external request to flush data cache
-        output logic                           flush_dcache_ack_o,     // finished data cache flush
-        // CPU Control Signals
-        input  logic                           fetch_enable_i,         // start fetching data
+        input  logic                           test_en_i,    // enable all clock gates for testing
         // Core ID, Cluster ID and boot address are considered more or less static
-        input  logic [63:0]                    boot_addr_i,            // reset boot address
-        input  logic [ 3:0]                    core_id_i,              // core id in a multicore environment (reflected in a CSR)
-        input  logic [ 5:0]                    cluster_id_i,           // PULP specific if core is used in a clustered environment
-
+        input  logic [63:0]                    boot_addr_i,  // reset boot address
+        input  logic [ 3:0]                    core_id_i,    // core id in a multicore environment (reflected in a CSR)
+        input  logic [ 5:0]                    cluster_id_i, // PULP specific if core is used in a clustered environment
+        // Instruction memory interface
+        AXI_BUS.Master                         instr_if,
+        // Data memory interface
+        AXI_BUS.Master                         data_if,      // data cache refill port
+        AXI_BUS.Master                         bypass_if,    // bypass axi port (disabled cache or uncacheable access)
         // Interrupt inputs
-        input  logic [1:0]                     irq_i,                  // level sensitive IR lines, mip & sip
-        input  logic                           ipi_i,                  // inter-processor interrupts
-        output logic                           sec_lvl_o,              // current privilege level out
+        input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip (async)
+        input  logic                           ipi_i,        // inter-processor interrupts (async)
         // Timer facilities
-        input  logic [63:0]                    time_i,                 // global time (most probably coming from an RTC)
-        input  logic                           time_irq_i,             // timer interrupt in
-        // Debug Interface
-        input  logic                           debug_req_i,
-        output logic                           debug_gnt_o,
-        output logic                           debug_rvalid_o,
-        input  logic [15:0]                    debug_addr_i,
-        input  logic                           debug_we_i,
-        input  logic [63:0]                    debug_wdata_i,
-        output logic [63:0]                    debug_rdata_o,
-        output logic                           debug_halted_o,
-        input  logic                           debug_halt_i,
-        input  logic                           debug_resume_i,
-
-        // memory side
-        AXI_BUS.Master                         instr_if,                // I$ refill port
-        AXI_BUS.Master                         data_if,                 // D$ refill port
-        AXI_BUS.Master                         bypass_if                // bypass axi port (disabled D$ or uncacheable access)
+        input  logic                           time_irq_i,   // timer interrupt in (async)
+        input  logic                           debug_req_i   // debug request (async)
     );
 
     // ------------------------------------------
     // Global Signals
     // Signals connecting more than one module
     // ------------------------------------------
-    priv_lvl_t                priv_lvl;
-    logic                     fetch_enable;
-    exception_t               ex_commit; // exception from commit stage
-    branchpredict_t           resolved_branch;
-    logic [63:0]              pc_commit;
-    logic                     eret;
+    riscv::priv_lvl_t           priv_lvl;
+    exception_t                 ex_commit; // exception from commit stage
+    branchpredict_t             resolved_branch;
+    logic [63:0]                pc_commit;
+    logic                       eret;
     logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
-    // --------------
-    // PCGEN <-> IF
-    // --------------
-    logic [63:0]              fetch_address_pcgen_if;
-    branchpredict_sbe_t       branch_predict_pcgen_if;
-    logic                     if_ready_if_pcgen;
-    logic                     fetch_valid_pcgen_if;
-    // --------------
-    // PCGEN <-> COMMIT
-    // --------------
     // --------------
     // PCGEN <-> CSR
     // --------------
@@ -94,10 +64,8 @@ module ariane #(
     // IF <-> ID
     // --------------
     fetch_entry_t             fetch_entry_if_id;
-    logic                     ready_id_if;
     logic                     fetch_valid_if_id;
     logic                     decode_ack_id_if;
-    exception_t               exception_if_id;
 
     // --------------
     // ID <-> ISSUE
@@ -124,8 +92,6 @@ module ariane #(
     logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
     logic                     alu_valid_ex_id;
     logic [63:0]              alu_result_ex_id;
-    logic                     alu_branch_res_ex_id;
-    exception_t               alu_exception_ex_id;
     // Branches and Jumps
     logic                     branch_ready_ex_id;
     logic [TRANS_ID_BITS-1:0] branch_trans_id_ex_id;
@@ -187,7 +153,7 @@ module ariane #(
     // --------------
     logic                     enable_translation_csr_ex;
     logic                     en_ld_st_translation_csr_ex;
-    priv_lvl_t                ld_st_priv_lvl_csr_ex;
+    riscv::priv_lvl_t         ld_st_priv_lvl_csr_ex;
     logic                     sum_csr_ex;
     logic                     mxr_csr_ex;
     logic [43:0]              satp_ppn_csr_ex;
@@ -201,6 +167,9 @@ module ariane #(
     logic                     tw_csr_id;
     logic                     tsr_csr_id;
     logic                     dcache_en_csr_nbdcache;
+    logic                     icache_en_csr;
+    logic                     debug_mode_csr_id;
+    logic                     single_step_csr_commit;
     // ----------------------------
     // Performance Counters <-> *
     // ----------------------------
@@ -208,6 +177,8 @@ module ariane #(
     logic [63:0]              data_csr_perf, data_perf_csr;
     logic                     we_csr_perf;
 
+    logic                     l1_icache_miss;
+    logic                     icache_flush_ctrl_cache;
     logic                     itlb_miss_ex_perf;
     logic                     dtlb_miss_ex_perf;
     logic                     dcache_miss_cache_perf;
@@ -215,7 +186,6 @@ module ariane #(
     // --------------
     // CTRL <-> *
     // --------------
-    logic                     flush_bp_ctrl_pcgen;
     logic                     set_pc_ctrl_pcgen;
     logic                     flush_csr_ctrl;
     logic                     flush_unissued_instr_ctrl_id;
@@ -227,70 +197,39 @@ module ariane #(
     logic                     fence_commit_controller;
     logic                     sfence_vma_commit_controller;
     logic                     halt_ctrl;
-    logic                     halt_debug_ctrl;
     logic                     halt_csr_ctrl;
     logic                     flush_dcache_ctrl_ex;
     logic                     flush_dcache_ack_ex_ctrl;
-    // --------------
-    // Debug <-> *
-    // --------------
-    logic [63:0]              pc_debug_pcgen;
-    logic                     set_pc_debug;
+    logic                     flush_icache_ctrl_icache;
+    logic                     set_debug_pc;
 
-    logic                     gpr_req_debug_issue;
-    logic [4:0]               gpr_addr_debug_issue;
-    logic                     gpr_we_debug_issue;
-    logic [63:0]              gpr_wdata_debug_issue;
-    logic [63:0]              gpr_rdata_debug_issue;
-
-    logic                     csr_req_debug_csr;
-    logic [11:0]              csr_addr_debug_csr;
-    logic                     csr_we_debug_csr;
-    logic [63:0]              csr_wdata_debug_csr;
-    logic [63:0]              csr_rdata_debug_csr;
-    // ----------------
-    // ICache <-> *
-    // ----------------
-    logic                    icache_flush_ctrl_cache;
-    logic                    bypass_icache_csr_icache;
-
-
-    icache_areq_i_t          icache_areq_ex_cache;
-    icache_areq_o_t          icache_areq_cache_ex;
-    icache_dreq_i_t          icache_dreq_if_cache;
-    icache_dreq_o_t          icache_dreq_cache_if;
+    icache_areq_i_t           icache_areq_ex_cache;
+    icache_areq_o_t           icache_areq_cache_ex;
+    icache_dreq_i_t           icache_dreq_if_cache;
+    icache_dreq_o_t           icache_dreq_cache_if;
     // ----------------
     // DCache <-> *
     // ----------------
-    dcache_req_i_t [2:0]     dcache_req_ports_ex_cache;
-    dcache_req_o_t [2:0]     dcache_req_ports_cache_ex; 
+    dcache_req_i_t [2:0]      dcache_req_ports_ex_cache;
+    dcache_req_o_t [2:0]      dcache_req_ports_cache_ex;
 
-
-    assign sec_lvl_o = priv_lvl;
-    assign flush_dcache_ack_o = flush_dcache_ack_ex_ctrl;
     // --------------
     // Frontend
     // --------------
-    frontend #(
-        .BTB_ENTRIES         ( BTB_ENTRIES ),
-        .BHT_ENTRIES         ( BHT_ENTRIES ),
-        .RAS_DEPTH           ( RAS_DEPTH   )
-    ) i_frontend (
+    frontend i_frontend (
         .flush_i             ( flush_ctrl_if                 ), // not entirely correct
         .flush_bp_i          ( 1'b0                          ),
         .boot_addr_i         ( boot_addr_i                   ),
-        .fetch_enable_i      ( fetch_enable                  ),
         .icache_dreq_i       ( icache_dreq_cache_if          ),
         .icache_dreq_o       ( icache_dreq_if_cache          ),
         .resolved_branch_i   ( resolved_branch               ),
         .pc_commit_i         ( pc_commit                     ),
         .set_pc_commit_i     ( set_pc_ctrl_pcgen             ),
+        .set_debug_pc_i      ( set_debug_pc                  ),
         .epc_i               ( epc_commit_pcgen              ),
         .eret_i              ( eret                          ),
         .trap_vector_base_i  ( trap_vector_base_commit_pcgen ),
         .ex_valid_i          ( ex_commit.valid               ),
-        .debug_pc_i          ( pc_debug_pcgen                ),
-        .debug_set_pc_i      ( set_pc_debug                  ),
         .fetch_entry_o       ( fetch_entry_if_id             ),
         .fetch_entry_valid_o ( fetch_valid_if_id             ),
         .fetch_ack_i         ( decode_ack_id_if              ),
@@ -313,6 +252,7 @@ module ariane #(
         .issue_instr_ack_i          ( issue_instr_issue_id            ),
 
         .priv_lvl_i                 ( priv_lvl                        ),
+        .debug_mode_i               ( debug_mode_csr_id               ),
         .tvm_i                      ( tvm_csr_id                      ),
         .tw_i                       ( tw_csr_id                       ),
         .tsr_i                      ( tsr_csr_id                      ),
@@ -329,12 +269,6 @@ module ariane #(
     ) issue_stage_i (
         .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id    ),
         .flush_i                    ( flush_ctrl_id                   ),
-        // Debug
-        .debug_gpr_req_i            ( gpr_req_debug_issue             ),
-        .debug_gpr_addr_i           ( gpr_addr_debug_issue            ),
-        .debug_gpr_we_i             ( gpr_we_debug_issue              ),
-        .debug_gpr_wdata_i          ( gpr_wdata_debug_issue           ),
-        .debug_gpr_rdata_o          ( gpr_rdata_debug_issue           ),
 
         .decoded_instr_i            ( issue_entry_id_issue            ),
         .decoded_instr_valid_i      ( issue_entry_valid_id_issue      ),
@@ -401,8 +335,6 @@ module ariane #(
         .alu_result_o           ( alu_result_ex_id                       ),
         .alu_trans_id_o         ( alu_trans_id_ex_id                     ),
         .alu_valid_o            ( alu_valid_ex_id                        ),
-        .alu_branch_res_o       ( alu_branch_res_ex_id                   ),
-        .alu_exception_o        (                                        ),
         // Branches and Jumps
         .branch_ready_o         ( branch_ready_ex_id                     ),
         .branch_valid_o         ( branch_valid_ex_id                     ),
@@ -452,21 +384,22 @@ module ariane #(
         .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
         .mult_result_o          ( mult_result_ex_id                      ),
         .mult_valid_o           ( mult_valid_ex_id                       ),
-
         // DCACHE interfaces
         .dcache_req_ports_i     ( dcache_req_ports_cache_ex              ),
         .dcache_req_ports_o     ( dcache_req_ports_ex_cache              ),
-
         .*
     );
-
 
     // ---------
     // Commit
     // ---------
     commit_stage commit_stage_i (
         .halt_i                 ( halt_ctrl                     ),
+        .flush_dcache_i         ( flush_dcache_ctrl_ex          ),
         .exception_o            ( ex_commit                     ),
+        .debug_mode_i           ( debug_mode_csr_id             ),
+        .debug_req_i            ( debug_req_i                   ),
+        .single_step_i          ( single_step_csr_commit        ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
         .no_st_pending_i        ( no_st_pending_ex_commit       ),
@@ -495,12 +428,8 @@ module ariane #(
     ) csr_regfile_i (
         .flush_o                ( flush_csr_ctrl                ),
         .halt_csr_o             ( halt_csr_ctrl                 ),
-        .debug_csr_req_i        ( csr_req_debug_csr             ),
-        .debug_csr_addr_i       ( csr_addr_debug_csr            ),
-        .debug_csr_we_i         ( csr_we_debug_csr              ),
-        .debug_csr_wdata_i      ( csr_wdata_debug_csr           ),
-        .debug_csr_rdata_o      ( csr_rdata_debug_csr           ),
         .commit_ack_i           ( commit_ack                    ),
+        .commit_instr_i         ( commit_instr_id_commit        ),
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),
         .csr_addr_i             ( csr_addr_ex_csr               ),
@@ -510,6 +439,7 @@ module ariane #(
         .csr_exception_o        ( csr_exception_csr_commit      ),
         .epc_o                  ( epc_commit_pcgen              ),
         .eret_o                 ( eret                          ),
+        .set_debug_pc_o         ( set_debug_pc                  ),
         .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
         .priv_lvl_o             ( priv_lvl                      ),
         .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
@@ -522,15 +452,16 @@ module ariane #(
         .tvm_o                  ( tvm_csr_id                    ),
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
+        .debug_mode_o           ( debug_mode_csr_id             ),
+        .single_step_o          ( single_step_csr_commit        ),
         .dcache_en_o            ( dcache_en_csr_nbdcache        ),
-        .icache_en_o            ( bypass_icache_csr_icache      ),
+        .icache_en_o            ( icache_en_csr                 ),
         .perf_addr_o            ( addr_csr_perf                 ),
         .perf_data_o            ( data_csr_perf                 ),
         .perf_data_i            ( data_perf_csr                 ),
         .perf_we_o              ( we_csr_perf                   ),
         .*
     );
-
 
     // ------------------------
     // Performance Counters
@@ -543,8 +474,8 @@ module ariane #(
         .commit_instr_i    ( commit_instr_id_commit ),
         .commit_ack_i      ( commit_ack             ),
 
-        .l1_icache_miss_i  ( icache_miss_cache_perf ),
-        .l1_dcache_miss_i  ( dcache_miss_cache_perf ),
+        .l1_icache_miss_i  ( l1_icache_miss         ),
+        .l1_dcache_miss_i  ( icache_miss_cache_perf ),
         .itlb_miss_i       ( itlb_miss_ex_perf      ),
         .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
 
@@ -553,12 +484,12 @@ module ariane #(
         .resolved_branch_i ( resolved_branch        ),
         .*
     );
+
     // ------------
     // Controller
     // ------------
     controller controller_i (
         // flush ports
-        .flush_bp_o             ( flush_bp_ctrl_pcgen           ),
         .set_pc_commit_o        ( set_pc_ctrl_pcgen             ),
         .flush_unissued_instr_o ( flush_unissued_instr_ctrl_id  ),
         .flush_if_o             ( flush_ctrl_if                 ),
@@ -569,12 +500,11 @@ module ariane #(
         .flush_dcache_ack_i     ( flush_dcache_ack_ex_ctrl      ),
 
         .halt_csr_i             ( halt_csr_ctrl                 ),
-        .halt_debug_i           ( halt_debug_ctrl               ),
-        .debug_set_pc_i         ( set_pc_debug                  ),
         .halt_o                 ( halt_ctrl                     ),
         // control ports
         .eret_i                 ( eret                          ),
         .ex_valid_i             ( ex_commit.valid               ),
+        .set_debug_pc_i         ( set_debug_pc                  ),
         .flush_csr_i            ( flush_csr_ctrl                ),
         .resolved_branch_i      ( resolved_branch               ),
         .fence_i_i              ( fence_i_commit_controller     ),
@@ -585,30 +515,28 @@ module ariane #(
         .*
     );
 
-
     // -------------------
     // Cache Subsystem
     // -------------------
-    
     std_cache_subsystem #(
         .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
-    ) i_std_cache_subsystem ( 
-        // to D$ 
+    ) i_std_cache_subsystem (
+        // to D$
         .clk_i                 ( clk_i                                 ),
         .rst_ni                ( rst_ni                                ),
-        // I$     
+        // I$
+        .icache_en_i           ( icache_en_csr                         ),
         .icache_flush_i        ( icache_flush_ctrl_cache               ),
-        .icache_fetch_enable_i ( fetch_enable                          ),
-        .icache_miss_o         ( icache_miss_cache_perf                ), 
+        .icache_miss_o         ( icache_miss_cache_perf                ),
         .icache_areq_i         ( icache_areq_ex_cache                  ),
         .icache_areq_o         ( icache_areq_cache_ex                  ),
         .icache_dreq_i         ( icache_dreq_if_cache                  ),
         .icache_dreq_o         ( icache_dreq_cache_if                  ),
-        // D$ 
+        // D$
         .dcache_enable_i       ( dcache_en_csr_nbdcache                ),
-        .dcache_flush_i        ( flush_dcache_ctrl_ex | flush_dcache_i ),
+        .dcache_flush_i        ( flush_dcache_ctrl_ex                  ),
         .dcache_flush_ack_o    ( flush_dcache_ack_ex_ctrl              ),
-        // from PTW, Load Unit  and Store Unit             
+        // from PTW, Load Unit  and Store Unit
         .dcache_amo_commit_i   ( 1'b0                                  ),
         .dcache_amo_valid_o    (                                       ),
         .dcache_amo_result_o   (                                       ),
@@ -620,34 +548,7 @@ module ariane #(
         .icache_data_if        ( instr_if                              ),
         .dcache_data_if        ( data_if                               ),
         .dcache_bypass_if      ( bypass_if                             )
-  ); 
-
-    // ------------
-    // Debug
-    // ------------
-    debug_unit debug_unit_i (
-        .commit_instr_i    ( commit_instr_id_commit[0] ),
-        .commit_ack_i      ( commit_ack[0]             ),
-        .ex_i              ( ex_commit                 ),
-        .halt_o            ( halt_debug_ctrl           ),
-        .fetch_enable_i    ( fetch_enable              ),
-
-        .debug_pc_o        ( pc_debug_pcgen            ),
-        .debug_set_pc_o    ( set_pc_debug              ),
-
-        .debug_gpr_req_o   ( gpr_req_debug_issue       ),
-        .debug_gpr_addr_o  ( gpr_addr_debug_issue      ),
-        .debug_gpr_we_o    ( gpr_we_debug_issue        ),
-        .debug_gpr_wdata_o ( gpr_wdata_debug_issue     ),
-        .debug_gpr_rdata_i ( gpr_rdata_debug_issue     ),
-
-        .debug_csr_req_o   ( csr_req_debug_csr         ),
-        .debug_csr_addr_o  ( csr_addr_debug_csr        ),
-        .debug_csr_we_o    ( csr_we_debug_csr          ),
-        .debug_csr_wdata_o ( csr_wdata_debug_csr       ),
-        .debug_csr_rdata_i ( csr_rdata_debug_csr       ),
-        .*
-    );
+  );
 
     // -------------------
     // Instruction Tracer
@@ -688,23 +589,14 @@ module ariane #(
     assign tracer_if.exception         = commit_stage_i.exception_o;
     // assign current privilege level
     assign tracer_if.priv_lvl          = priv_lvl;
-
+    assign tracer_if.debug_mode        = debug_mode_csr_id;
     instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
     `endif
     `endif
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            fetch_enable <= 0;
-        end else begin
-            fetch_enable <= fetch_enable_i;
-        end
-    end
-
     `ifndef SYNTHESIS
     `ifndef verilator
-    program instr_tracer
-        (
+    program instr_tracer (
             instruction_tracer_if tracer_if,
             input logic [5:0] cluster_id_i,
             input logic [3:0] core_id_i
@@ -725,7 +617,6 @@ module ariane #(
     // mock tracer for Verilator, to be used with spike-dasm
     `else
 
-    string s;
     int f;
     logic [63:0] cycles;
 
@@ -738,13 +629,17 @@ module ariane #(
             cycles <= 0;
         end else begin
             for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-                if (commit_ack[i] && !commit_stage_i.exception_o) begin
+                if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
                     $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
                 end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
                     if (commit_instr_id_commit[i].ex.cause == 2) begin
-                        $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h)\n", commit_instr_id_commit[i].ex.tval[31:0]);
+                        $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
                     end else begin
-                        $fwrite(f, "Exception Cause: %5d\n", commit_instr_id_commit[i].ex.cause);
+                        if (debug_mode_csr_id) begin
+                            $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+                        end else begin
+                            $fwrite(f, "Exception Cause: %5d, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
+                        end
                     end
                 end
             end

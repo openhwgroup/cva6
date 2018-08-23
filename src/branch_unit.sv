@@ -125,7 +125,7 @@ module branch_unit (
     // use ALU exception signal for storing instruction fetch exceptions if
     // the target address is not aligned to a 2 byte boundary
     always_comb begin : exception_handling
-        branch_exception_o.cause = INSTR_ADDR_MISALIGNED;
+        branch_exception_o.cause = riscv::INSTR_ADDR_MISALIGNED;
         branch_exception_o.valid = 1'b0;
         branch_exception_o.tval  = pc_i;
         // only throw exception if this is indeed a branch

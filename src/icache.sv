@@ -22,17 +22,14 @@ module icache  #(
     input  logic                     rst_ni,
 
     input  logic                     flush_i,          // flush the icache, flush and kill have to be asserted together
-    input  logic                     fetch_enable_i,   // the core should fetch instructions
+    input  logic                     en_i,             // enable icache
     output logic                     miss_o,           // to performance counter
-
     // address translation requests
-    input  icache_areq_i_t           areq_i,           
-    output icache_areq_o_t           areq_o,           
-
+    input  icache_areq_i_t           areq_i,
+    output icache_areq_o_t           areq_o,
     // data requests
-    input  icache_dreq_i_t           dreq_i,           
-    output icache_dreq_o_t           dreq_o, 
-    
+    input  icache_dreq_i_t           dreq_i,
+    output icache_dreq_o_t           dreq_o,
     // refill port
     AXI_BUS.Master                   axi
 );
@@ -48,7 +45,6 @@ module icache  #(
     logic [$clog2(ICACHE_NUM_WORD)-1:0]     cnt_d, cnt_q;
     logic [NR_AXI_REFILLS-1:0]              burst_cnt_d, burst_cnt_q; // counter for AXI transfers
     logic [63:0]                            vaddr_d, vaddr_q;
-    logic                                   spec_d, spec_q; // request is speculative
     logic [ICACHE_TAG_WIDTH-1:0]            tag_d, tag_q;
     logic [ICACHE_SET_ASSOC-1:0]            evict_way_d, evict_way_q;
     logic                                   flushing_d, flushing_q;
@@ -193,19 +189,19 @@ module icache  #(
     // ------------------
     // Cache Ctrl
     // ------------------
+    // for bypassing we use the existing infrastructure of the cache
+    // but on every access we are re-fetching the cache-line
     always_comb begin : cache_ctrl
         // default assignments
         state_d     = state_q;
         cnt_d       = cnt_q;
         vaddr_d     = vaddr_q;
-        spec_d      = spec_q;
         tag_d       = tag_q;
         evict_way_d = evict_way_q;
         flushing_d  = flushing_q;
         burst_cnt_d = burst_cnt_q;
 
-        dreq_o.is_speculative = spec_q;
-        dreq_o.vaddr          = vaddr_q;
+        dreq_o.vaddr = vaddr_q;
 
         req         = '0;
         addr        = dreq_i.vaddr[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET];
@@ -228,14 +224,13 @@ module icache  #(
         case (state_q)
             // ~> we are ready to receive a new request
             IDLE: begin
-                dreq_o.ready = 1'b1 & fetch_enable_i;
+                dreq_o.ready = 1'b1;
                 // we are getting a new request
-                if (dreq_i.req && fetch_enable_i) begin
+                if (dreq_i.req) begin
                     // request the content of all arrays
                     req = '1;
                     // save the virtual address
                     vaddr_d = dreq_i.vaddr;
-                    spec_d  = dreq_i.is_speculative;
                     state_d = TAG_CMP;
                 end
 
@@ -255,16 +250,17 @@ module icache  #(
                 // -------
                 // Hit
                 // -------
-                if (|hit && areq_i.fetch_valid) begin
+                // disabling the icache just makes it fetch on every request
+                if (|hit && areq_i.fetch_valid && (en_i || (state_q != TAG_CMP))) begin
                     dreq_o.ready = 1'b1;
                     dreq_o.valid = 1'b1;
+
                     // we've got another request
                     if (dreq_i.req) begin
                         // request the content of all arrays
                         req = '1;
                         // save the index and stay in compare mode
                         vaddr_d = dreq_i.vaddr;
-                        spec_d  = dreq_i.is_speculative;
                         state_d = TAG_CMP;
                     // no new request -> go back to idle
                     end else begin
@@ -278,17 +274,25 @@ module icache  #(
                 // -------
                 end else begin
                     state_d     = REFILL;
-                    evict_way_d = '0;
+                    // hit gonna be zero in most cases except for when the cache is disabled
+                    evict_way_d = hit;
                     // save tag
                     tag_d       = areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH];
-                    miss_o      = 1'b1;
+                    miss_o      = en_i;
                     // get way which to replace
-                    if (repl_w_random) begin
-                        evict_way_d = random_way;
-                        // shift the lfsr
-                        update_lfsr = 1'b1;
-                    end else begin
-                        evict_way_d[repl_invalid] = 1'b1;
+                    // only if there is no hit we should fall back to real replacement. If there was a hit then
+                    // it means we are in bypass mode (!en_i) and should update the cache-line with the most recent
+                    // value fetched from memory.
+                    if (!(|hit)) begin
+                        // all ways are currently full, randomly replace one of them
+                        if (repl_w_random) begin
+                            evict_way_d = random_way;
+                            // shift the lfsr
+                            update_lfsr = 1'b1;
+                        // there is still one cache-line which is not valid ~> replace that one
+                        end else begin
+                            evict_way_d[repl_invalid] = 1'b1;
+                        end
                     end
                 end
                 // if we didn't hit on the TLB we need to wait until the request has been completed
@@ -421,7 +425,6 @@ module icache  #(
         .refill_way_bin (             ) // left open
     );
 
-
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             state_q     <= FLUSH;
@@ -430,7 +433,6 @@ module icache  #(
             tag_q       <= '0;
             evict_way_q <= '0;
             flushing_q  <= 1'b0;
-            spec_q      <= 1'b0;
             burst_cnt_q <= '0;;
         end else begin
             state_q     <= state_d;
@@ -439,7 +441,6 @@ module icache  #(
             tag_q       <= tag_d;
             evict_way_q <= evict_way_d;
             flushing_q  <= flushing_d;
-            spec_q      <= spec_d;
             burst_cnt_q <= burst_cnt_d;
         end
     end
