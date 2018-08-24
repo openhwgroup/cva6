@@ -77,10 +77,10 @@ module icache  #(
         // ------------
         // Tag RAM
         // ------------
-        sram_wrap #(
+        sram #(
             // tag + valid bit
             .DATA_WIDTH ( ICACHE_TAG_WIDTH + 1   ),
-            .DATA_DEPTH ( ICACHE_NUM_WORD )
+            .NUM_WORDS  ( ICACHE_NUM_WORD )
         ) tag_sram (
             .clk_i     ( clk_i            ),
             .rst_ni    ( rst_ni           ),
@@ -94,9 +94,9 @@ module icache  #(
         // ------------
         // Data RAM
         // ------------
-        sram_wrap #(
+        sram #(
             .DATA_WIDTH ( ICACHE_LINE_WIDTH ),
-            .DATA_DEPTH ( ICACHE_NUM_WORD   )
+            .NUM_WORDS  ( ICACHE_NUM_WORD   )
         ) data_sram (
             .clk_i     ( clk_i              ),
             .rst_ni    ( rst_ni             ),

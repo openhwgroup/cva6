@@ -29,7 +29,8 @@ ariane_pkg := include/riscv_pkg.sv     \
 util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_pkg.sv \
         src/util/instruction_tracer_if.sv  \
-        src/util/cluster_clock_gating.sv
+        src/util/cluster_clock_gating.sv   \
+		src/util/sram.sv
         
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
@@ -160,7 +161,8 @@ check-benchmarks:
 verilate_command := $(verilator)                                                           \
                     $(ariane_pkg)                                                          \
                     $(filter-out tb/ariane_bt.sv,$(src))                                   \
-                    +incdir+src/axi_node                                                   \
+                    src/util/sram.sv                                                       \
+					+incdir+src/axi_node                                                   \
                     --unroll-count 256                                                     \
                     -Werror-PINMISSING                                                     \
                     -Werror-IMPLICIT                                                       \

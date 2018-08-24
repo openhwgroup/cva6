@@ -159,9 +159,9 @@ module nbdcache #(
     // Memory Arrays
     // --------------
     for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin : sram_block
-        sram_wrap #(
+        sram #(
             .DATA_WIDTH ( DCACHE_LINE_WIDTH                 ),
-            .DATA_DEPTH ( DCACHE_NUM_WORDS                  )
+            .NUM_WORDS  ( DCACHE_NUM_WORDS                  )
         ) data_sram (
             .req_i   ( req_ram [i]                          ),
             .rst_ni  ( rst_ni                               ),
@@ -173,9 +173,9 @@ module nbdcache #(
             .*
         );
 
-        sram_wrap #(
+        sram #(
             .DATA_WIDTH ( DCACHE_TAG_WIDTH                  ),
-            .DATA_DEPTH ( DCACHE_NUM_WORDS                  )
+            .NUM_WORDS  ( DCACHE_NUM_WORDS                  )
         ) tag_sram (
             .req_i   ( req_ram [i]                          ),
             .rst_ni  ( rst_ni                               ),

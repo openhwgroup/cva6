@@ -252,9 +252,9 @@ module ariane_testharness #(
         .data_i ( rdata      )
     );
 
-    sram_wrap #(
+    sram #(
         .DATA_WIDTH ( AXI_DATA_WIDTH ),
-        .DATA_DEPTH ( NUM_WORDS      )
+        .NUM_WORDS  ( NUM_WORDS      )
     ) i_sram (
         .clk_i      ( clk_i                                                                       ),
         .rst_ni     ( rst_ni                                                                      ),
