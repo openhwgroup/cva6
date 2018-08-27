@@ -446,7 +446,7 @@ module dm_csrs #(
     assign progbuf_o  = progbuf_q;
     assign data_o     = data_q;
     // response FIFO
-    fifo #(
+    fifo_v2 #(
         .dtype            ( logic [31:0]         ),
         .DEPTH            ( 2                    )
     ) i_fifo (
