@@ -28,6 +28,8 @@
 #include <getopt.h>
 #include <chrono>
 #include <ctime>
+#include <signal.h>
+#include <unistd.h>
 
 #include <fesvr/dtm.h>
 #include "remote_bitbang.h"
