@@ -82,7 +82,7 @@ module lsu_arbiter (
         .idx_o       ( idx                    )
     );
 
-    fifo #(
+    fifo_v2 #(
         .dtype       (  fifo_t     ),
         .DEPTH       (  DEPTH      )
     ) i_ld_fifo (    
@@ -100,7 +100,7 @@ module lsu_arbiter (
         .pop_i       (  ld_ren     )
     );  
 
-    fifo #(
+    fifo_v2 #(
         .dtype       (  fifo_t     ),
         .DEPTH       (  DEPTH      )
     ) i_st_fifo (    

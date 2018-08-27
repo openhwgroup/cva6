@@ -76,11 +76,11 @@ module nbdcache #(
     // -------------------------------
     // Arbiter <-> Datram,
     // -------------------------------
-    logic [DCACHE_SET_ASSOC-1:0]        req_ram;
-    logic [DCACHE_INDEX_WIDTH-1:0]              addr_ram;
+    logic [DCACHE_SET_ASSOC-1:0]         req_ram;
+    logic [DCACHE_INDEX_WIDTH-1:0]       addr_ram;
     logic                                we_ram;
     cache_line_t                         wdata_ram;
-    cache_line_t [DCACHE_SET_ASSOC-1:0] rdata_ram;
+    cache_line_t [DCACHE_SET_ASSOC-1:0]  rdata_ram;
     cl_be_t                              be_ram;
 
     // ------------------
@@ -164,6 +164,7 @@ module nbdcache #(
             .NUM_WORDS  ( DCACHE_NUM_WORDS                  )
         ) data_sram (
             .req_i   ( req_ram [i]                          ),
+            .rst_ni  ( rst_ni                               ),
             .we_i    ( we_ram                               ),
             .addr_i  ( addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]  ),
             .wdata_i ( wdata_ram.data                       ),
@@ -177,10 +178,11 @@ module nbdcache #(
             .NUM_WORDS  ( DCACHE_NUM_WORDS                  )
         ) tag_sram (
             .req_i   ( req_ram [i]                          ),
+            .rst_ni  ( rst_ni                               ),
             .we_i    ( we_ram                               ),
             .addr_i  ( addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]  ),
             .wdata_i ( wdata_ram.tag                        ),
-            .be_i    ( be_ram.tag                           ),
+            .be_i    ( be_ram.tag                          ),
             .rdata_o ( rdata_ram[i].tag                     ),
             .*
         );
@@ -188,27 +190,28 @@ module nbdcache #(
     end
 
     // ----------------
-    // Dirty SRAM
+    // Valid/Dirty Regs
     // ----------------
     logic [DCACHE_DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
 
     for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin
         assign dirty_wdata[i]                     = wdata_ram.dirty;
-        assign dirty_wdata[DCACHE_SET_ASSOC + i] = wdata_ram.valid;
+        assign dirty_wdata[DCACHE_SET_ASSOC + i]  = wdata_ram.valid;
         assign rdata_ram[i].valid                 = dirty_rdata[DCACHE_SET_ASSOC + i];
         assign rdata_ram[i].dirty                 = dirty_rdata[i];
     end
 
-    sram #(
+    vdregs #(
         .DATA_WIDTH ( DCACHE_DIRTY_WIDTH               ),
-        .NUM_WORDS  ( DCACHE_NUM_WORDS                 )
-    ) dirty_sram (
+        .DATA_DEPTH ( DCACHE_NUM_WORDS                 )
+    ) i_vdregs (
         .clk_i   ( clk_i                               ),
+        .rst_ni  ( rst_ni                              ),
         .req_i   ( |req_ram                            ),
         .we_i    ( we_ram                              ),
         .addr_i  ( addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] ),
         .wdata_i ( dirty_wdata                         ),
-        .be_i    ( {be_ram.valid, be_ram.dirty}        ),
+        .biten_i ( {be_ram.valid, be_ram.dirty}        ),
         .rdata_o ( dirty_rdata                         )
     );
 
@@ -265,23 +268,23 @@ module tag_cmp #(
         input  logic                                         clk_i,
         input  logic                                         rst_ni,
 
-        input  logic  [NR_PORTS-1:0][DCACHE_SET_ASSOC-1:0]  req_i,
+        input  logic  [NR_PORTS-1:0][DCACHE_SET_ASSOC-1:0]   req_i,
         output logic  [NR_PORTS-1:0]                         gnt_o,
         input  logic  [NR_PORTS-1:0][ADDR_WIDTH-1:0]         addr_i,
         input  data_t [NR_PORTS-1:0]                         wdata_i,
         input  logic  [NR_PORTS-1:0]                         we_i,
         input  be_t   [NR_PORTS-1:0]                         be_i,
-        output data_t               [DCACHE_SET_ASSOC-1:0]  rdata_o,
-        input  logic  [NR_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]          tag_i, // tag in - comes one cycle later
-        output logic                [DCACHE_SET_ASSOC-1:0]  hit_way_o, // we've got a hit on the corresponding way
+        output data_t               [DCACHE_SET_ASSOC-1:0]   rdata_o,
+        input  logic  [NR_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]   tag_i, // tag in - comes one cycle later
+        output logic                [DCACHE_SET_ASSOC-1:0]   hit_way_o, // we've got a hit on the corresponding way
 
 
-        output logic                [DCACHE_SET_ASSOC-1:0]  req_o,
+        output logic                [DCACHE_SET_ASSOC-1:0]   req_o,
         output logic                [ADDR_WIDTH-1:0]         addr_o,
         output data_t                                        wdata_o,
         output logic                                         we_o,
         output be_t                                          be_o,
-        input  data_t               [DCACHE_SET_ASSOC-1:0]  rdata_i
+        input  data_t               [DCACHE_SET_ASSOC-1:0]   rdata_i
     );
 
     assign rdata_o = rdata_i;

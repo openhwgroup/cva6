@@ -49,7 +49,7 @@ module dm_sba (
     logic             req;
     logic             gnt;
     logic             we;
-    logic [7:0][7:0]  be;
+    logic [7:0]       be;
 
     assign sbbusy_o = (state_q != Idle) ? 1'b1 : 1'b0;
 
@@ -86,8 +86,8 @@ module dm_sba (
                 // generate byte enable mask
                 case (sbaccess_i)
                     3'b000: be[ sbaddress_i[2:0]] = '1;
-                    3'b001: be[{sbaddress_i[2:1], 1'b0} +: 1] = '1;
-                    3'b010: be[{sbaddress_i[2:2], 2'b0} +: 3] = '1;
+                    3'b001: be[{sbaddress_i[2:1], 1'b0} +: 2] = '1;
+                    3'b010: be[{sbaddress_i[2:2], 2'b0} +: 4] = '1;
                     3'b011: be = '1;
                     default:;
                 endcase
@@ -131,7 +131,7 @@ module dm_sba (
     axi_adapter #(
         .DATA_WIDTH            ( 64                       )
     ) i_axi_master (
-        .clk_i,
+        .clk_i                 ( clk_i                    ),
         .rst_ni                ( dmactive_i               ),
         .req_i                 ( req                      ),
         .type_i                ( std_cache_pkg::SINGLE_REQ),
@@ -141,7 +141,7 @@ module dm_sba (
         .we_i                  ( we                       ),
         .wdata_i               ( sbdata_i                 ),
         .be_i                  ( be                       ),
-        .size_i                ( sbaccess_i               ),
+        .size_i                ( sbaccess_i[1:0]          ),
         .id_i                  ( '0                       ),
         .valid_o               ( sbdata_valid_o           ),
         .rdata_o               ( sbdata_o                 ),
@@ -150,4 +150,13 @@ module dm_sba (
         .critical_word_valid_o (                          ), // not needed here
         .axi                   ( axi_master               )
     );
+
+
+    `ifndef SYNTHESIS
+    `ifndef verilator
+        // maybe bump severity to $error if not handled at runtime
+        dm_sba_access_size: assert property(@(posedge  clk_i) disable iff (dmactive_i !== 1'b0) (state_d != Idle) |-> (sbaccess_i < 4)) else $warning ("accesses > 8 byte not supported at the moment");
+    `endif
+    `endif
+
 endmodule

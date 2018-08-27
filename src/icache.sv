@@ -51,8 +51,8 @@ module icache  #(
 
     // signals
     logic [ICACHE_SET_ASSOC-1:0]          req;           // request to memory array
-    logic [ICACHE_LINE_WIDTH-1:0]         data_be;       // byte enable for data array
-    logic [(2**NR_AXI_REFILLS-1):0][63:0] be;            // flat byte enable
+    logic [(ICACHE_LINE_WIDTH+7)/8-1:0]   data_be;       // byte enable for data array
+    logic [(2**NR_AXI_REFILLS-1):0][7:0]  be;            // byte enable
     logic [$clog2(ICACHE_NUM_WORD)-1:0]   addr;          // this is a cache-line address, to memory array
     logic                                 we;            // write enable to memory array
     logic [ICACHE_SET_ASSOC-1:0]          hit;           // hit from tag compare
@@ -83,21 +83,23 @@ module icache  #(
             .NUM_WORDS  ( ICACHE_NUM_WORD )
         ) tag_sram (
             .clk_i     ( clk_i            ),
+            .rst_ni    ( rst_ni           ),
             .req_i     ( req[i]           ),
             .we_i      ( we               ),
             .addr_i    ( addr             ),
             .wdata_i   ( tag_wdata        ),
-            .be_i      (  '1              ),
+            .be_i      ( '1               ),
             .rdata_o   ( tag_rdata[i]     )
         );
         // ------------
         // Data RAM
         // ------------
         sram #(
-            .DATA_WIDTH ( ICACHE_LINE_WIDTH  ),
+            .DATA_WIDTH ( ICACHE_LINE_WIDTH ),
             .NUM_WORDS  ( ICACHE_NUM_WORD   )
         ) data_sram (
             .clk_i     ( clk_i              ),
+            .rst_ni    ( rst_ni             ),
             .req_i     ( req[i]             ),
             .we_i      ( we                 ),
             .addr_i    ( addr               ),
@@ -406,12 +408,12 @@ module icache  #(
             dreq_o.ready = 1'b0;
     end
 
-    ff1 #(
-        .LEN ( ICACHE_SET_ASSOC )
-    ) i_ff1 (
-        .in_i        ( ~way_valid    ),
-        .first_one_o ( repl_invalid  ),
-        .no_ones_o   ( repl_w_random )
+    lzc #(
+        .WIDTH ( ICACHE_SET_ASSOC )
+    ) i_lzc (
+        .in_i    ( ~way_valid    ),
+        .cnt_o   ( repl_invalid  ),
+        .empty_o ( repl_w_random )
     );
 
     // -----------------

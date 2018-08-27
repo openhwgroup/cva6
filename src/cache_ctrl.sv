@@ -287,12 +287,8 @@ module cache_ctrl #(
                     be_o.valid = hit_way_q;
 
                     // set the correct byte enable
-                    for (int unsigned i = 0; i < 8; i++) begin
-                        if (mem_req_q.be[i])
-                            be_o.data[cl_offset + i*8 +: 8] = '1;
-                    end
-
-                    data_o.data[cl_offset +: 64] = mem_req_q.wdata;
+                    be_o.data[cl_offset>>3 +: 8]  = mem_req_q.be;
+                    data_o.data[cl_offset  +: 64] = mem_req_q.wdata;
                     // ~> change the state
                     data_o.dirty = 1'b1;
                     data_o.valid = 1'b1;
