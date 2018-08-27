@@ -1,11 +1,11 @@
 # Customise this to a fast local disk
-export TOP=/scratch/$USER/projects
-export CI_BUILD_DIR=$TOP/ariane-repo
+export TOP=/scratch2/michscha/projects/
+export CI_BUILD_DIR=$TOP/ariane-dev
 
 #customize this to your setup
-export QUESTASIM_HOME=
-export QUESTASIM_VERSION=
-export CXX=g++-4.8 CC=gcc-4.8
+export QUESTASIM_HOME=/usr/pack/modelsim-10.6b-kgf/questasim/
+export QUESTASIM_VERSION=-10.6b
+export CXX=g++-4.8.3 CC=gcc-4.8.3
 
 # where to install the tools
 export RISCV=$TOP/riscv_install

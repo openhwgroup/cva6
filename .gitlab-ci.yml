@@ -1,11 +1,11 @@
 before_script:
+  # paths to local or network installations (the riscv toolchain and 
+  # verilator are not built in the ci job as in travis)
+  - export QUESTASIM_HOME=/usr/pack/modelsim-10.6b-kgf/questasim/
+  - export QUESTASIM_VERSION=-10.6b
   - export CXX=g++-4.8.3 CC=gcc-4.8.3
-  # paths to local or network installation (the riscv toolchain and 
-  # verilator are not built in a ci job in this case)
-  - export QUESTASIM_HOME=/scratch/$USER/questasim
-  - export QUESTASIM_VERSION=
-  - export RISCV=/scratch/$USER/riscv_install
-  - export VERILATOR_ROOT=/scratch/$USER/verilator-3.924
+  - export RISCV=/usr/scratch2/larain1/gitlabci/riscv_install
+  - export VERILATOR_ROOT=/usr/scratch2/larain1/gitlabci/verilator-3.924
   # setup dependent paths
   - export PATH=${RISCV}/bin:$VERILATOR_ROOT/bin:${PATH}
   - export LIBRARY_PATH=$CI_PROJECT_DIR/tmp/lib
