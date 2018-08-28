@@ -44,6 +44,8 @@
 //
 // 9) the adapter converts from little endian (Ariane) to big endian (openpiton), and vice versa. 
 //
+// 10) L1I$ requests to I.O space (bit39 of address = 1'b1) always return 32bit nc data
+//
 // Refs: [1] OpenSPARC T1 Microarchitecture Specification
 //           https://www.oracle.com/technetwork/systems/opensparc/t1-01-opensparct1-micro-arch-1538959.html
 //       [2] OpenPiton Microarchitecture Specification
@@ -123,7 +125,6 @@ l15_rtrn_t rtrn_fifo_data;
 // logic [63:0]                       l15_data_o.l15_data;                  // word to write
 // logic [63:0]                       l15_data_o.l15_data_next_entry;       // unused in Ariane (only used for CAS atomic requests)
 // logic [L15_TLB_CSM_WIDTH-1:0]      l15_data_o.l15_csm_data;   
-
 
 // need to deassert valid signal when header is acked
 // can move on when packed is acked (need to clear header ack)
@@ -286,7 +287,7 @@ fifo_v2 #(
 // l15_rtrn_i.l15_noncacheable;          // non-cacheable bit
 // l15_rtrn_i.l15_atomic;                // asserted in load return and store ack pack
 // l15_rtrn_i.l15_threadid;              // used as transaction ID 
-// l15_rtrn_i.l15_f4b;                   // 4byte instruction fill. not used in Ariane
+// l15_rtrn_i.l15_f4b;                   // 4byte instruction fill from I/O space (nc). 
 // l15_rtrn_i.l15_data_0;                // used for both caches
 // l15_rtrn_i.l15_data_1;                // used for both caches
 // l15_rtrn_i.l15_data_2;                // currently only used for I$
@@ -351,7 +352,7 @@ assign icache_rtrn_o.data = { swendian64(rtrn_fifo_data.l15_data_3),
                               swendian64(rtrn_fifo_data.l15_data_0) };
 assign icache_rtrn_o.tid  = rtrn_fifo_data.l15_threadid;
 assign icache_rtrn_o.nc   = rtrn_fifo_data.l15_noncacheable;
-
+assign icache_rtrn_o.f4b  = rtrn_fifo_data.l15_f4b;
 
 // dcache fifo signal mapping
 assign dcache_rtrn_o.data = { swendian64(rtrn_fifo_data.l15_data_1),
@@ -362,12 +363,12 @@ assign dcache_rtrn_o.nc       = rtrn_fifo_data.l15_noncacheable;
 
 
 // invalidation signal mapping
-assign icache_rtrn_o.inv.addr = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};;
+assign icache_rtrn_o.inv.idx  = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};
 assign icache_rtrn_o.inv.way  = rtrn_fifo_data.l15_inval_way;
 assign icache_rtrn_o.inv.vld  = rtrn_fifo_data.l15_inval_icache_inval;
 assign icache_rtrn_o.inv.all  = rtrn_fifo_data.l15_inval_icache_all_way;
 
-assign dcache_rtrn_o.inv.addr = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};;
+assign dcache_rtrn_o.inv.idx  = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};
 assign dcache_rtrn_o.inv.way  = rtrn_fifo_data.l15_inval_way;
 assign dcache_rtrn_o.inv.vld  = rtrn_fifo_data.l15_inval_dcache_inval;
 assign dcache_rtrn_o.inv.all  = rtrn_fifo_data.l15_inval_dcache_all_way;
@@ -397,42 +398,47 @@ fifo_v2 #(
 
 //pragma translate_off
 `ifndef VERILATOR
-   invalidations: assert property (
+
+  iospace: assert property (
+      @(posedge clk_i) disable iff (~rst_ni) l15_val_o |-> l15_data_o.l15_address >= {40'h8000000000} |-> l15_data_o.l15_nc)       
+         else $fatal("[l15_adapter] accesses to I/O space must have noncacheable bit set!");
+
+  invalidations: assert property (
       @(posedge clk_i) disable iff (~rst_ni) l15_val_i |-> l15_rtrn_i.l15_returntype == EVICT_REQ |-> (inv_in.inv | inv_in.all))       
-         else $fatal("[l15_adapter] got invalidation package with zero invalidation flags");
+        else $fatal("[l15_adapter] got invalidation package with zero invalidation flags");
 
-   blockstore_o: assert property (
+  blockstore_o: assert property (
       @(posedge clk_i) disable iff (~rst_ni) l15_val_o|-> !l15_data_o.l15_blockstore)       
-         else $fatal("[l15_adapter] blockstores are not supported");
+        else $fatal("[l15_adapter] blockstores are not supported");
 
-   blockstore_i: assert property (
+  blockstore_i: assert property (
       @(posedge clk_i) disable iff (~rst_ni) l15_val_i|-> !l15_rtrn_i.l15_blockinitstore)  
-         else $fatal("[l15_adapter] blockstores are not supported");
+        else $fatal("[l15_adapter] blockstores are not supported");
 
-   instr_fill_size: assert property (
+  instr_fill_size: assert property (
       @(posedge clk_i) disable iff (~rst_ni) (!l15_rtrn_i.l15_f4b))                        
-         else $fatal("[l15_adapter] 4b instruction fills not supported");
+        else $fatal("[l15_adapter] 4b instruction fills not supported");
 
-   unsuported_rtrn_types: assert property (
+  unsuported_rtrn_types: assert property (
       @(posedge clk_i) disable iff (~rst_ni) (l15_val_i |-> l15_rtrn_i.l15_returntype inside {LOAD_RET, ST_ACK, IFILL_RET, EVICT_REQ}))
-         else $fatal("[l15_adapter] unsupported rtrn type");
+        else $fatal("[l15_adapter] unsupported rtrn type");
 
 
    initial begin
       // assert wrong parameterizations
       assert (L15_SET_ASSOC == ICACHE_SET_ASSOC)                  
-         else $fatal("[l15_adapter] number of icache ways not aligned with L15");
+        else $fatal("[l15_adapter] number of icache ways not aligned with L15");
       // assert wrong parameterizations
       assert (L15_SET_ASSOC == DCACHE_SET_ASSOC)                  
-         else $fatal("[l15_adapter] number of dcache ways not aligned with L15");
+        else $fatal("[l15_adapter] number of dcache ways not aligned with L15");
       // invalidation address returned by L1.5 is 16 bit
       assert (16 >= $max(ICACHE_INDEX_WIDTH, DCACHE_INDEX_WIDTH)) 
-         else $fatal("[l15_adapter] maximum number of index bits supported by L1.5 is 16");
+        else $fatal("[l15_adapter] maximum number of index bits supported by L1.5 is 16");
       // assert mismatch of cache line width
       assert (ICACHE_LINE_WIDTH==256)                             
-         else $fatal("[l15_adapter] ichache lines are currently restricted to 256 bits");         
+        else $fatal("[l15_adapter] ichache lines are currently restricted to 256 bits");         
       assert (DCACHE_LINE_WIDTH==128)                             
-         else $fatal("[l15_adapter] dchache lines are currently restricted to 128 bits");         
+        else $fatal("[l15_adapter] dchache lines are currently restricted to 128 bits");         
    end
 `endif
 //pragma translate_on

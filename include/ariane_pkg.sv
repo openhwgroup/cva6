@@ -143,7 +143,7 @@ package ariane_pkg;
     // ---------------
 
     // I$
-    parameter int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit
+    parameter int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit (includes byte offset)
     parameter int unsigned  ICACHE_TAG_WIDTH         = 44; // in bit
     parameter int unsigned  ICACHE_SET_ASSOC         = 4;
     parameter int unsigned  ICACHE_LINE_WIDTH        = 128; // in bit

@@ -76,6 +76,8 @@ module piton_cache_subsystem #(
 
 
    piton_icache #(
+      .NC_ADDR_BEGIN      ( CACHE_START_ADDR ),
+      .NC_ADDR_GE_LT      ( 1'b1             )
    ) i_piton_icache (
       .clk_i              ( clk_i                   ),
       .rst_ni             ( rst_ni                  ),
