@@ -66,7 +66,7 @@ module decoder (
         instruction_o.fu            = NONE;
         instruction_o.op            = ADD;
         instruction_o.rs1           = '0;
-        instruction_o.rs2[4:0]           = '0;
+        instruction_o.rs2           = '0;
         instruction_o.rd            = '0;
         instruction_o.use_pc        = 1'b0;
         instruction_o.trans_id      = '0;

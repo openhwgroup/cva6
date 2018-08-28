@@ -66,6 +66,7 @@ module frontend (
     // instruction fetch is ready
     logic          if_ready;
     logic [63:0]   npc_d, npc_q; // next PC
+    logic npc_rst_load_q; //indicates whether we come out of reset (then we need to load boot_addr_i)
     // -----------------------
     // Ctrl Flow Speculation
     // -----------------------
@@ -299,9 +300,21 @@ module frontend (
     always_comb begin : npc_select
         automatic logic [63:0] fetch_address;
 
-        fetch_address    = npc_q;
-        // keep stable by default
-        npc_d            = npc_q;
+        // check whether we come out of reset
+        // this is a workaround. some tools have issues 
+        // having boot_addr_i in the asynchronous 
+        // reset assignment to npc_q, even though
+        // boot_addr_i will be assigned a constant
+        // on the top-level. 
+        if (npc_rst_load_q) begin
+            npc_d         = boot_addr_i;
+            fetch_address = boot_addr_i;
+        end else begin
+            fetch_address    = npc_q;
+            // keep stable by default
+            npc_d            = npc_q;
+        end
+            
         // -------------------------------
         // 1. Branch Prediction
         // -------------------------------
@@ -392,10 +405,10 @@ module frontend (
 `endif
 //pragma translate_on
 
-
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            npc_q                <= boot_addr_i;
+            npc_q                <= '0;
+            npc_rst_load_q       <= 1'b1;
             icache_data_q        <= '0;
             icache_valid_q       <= 1'b0;
             icache_vaddr_q       <= 'b0;
@@ -406,6 +419,7 @@ module frontend (
             fifo_credits_q       <= FETCH_FIFO_DEPTH;
             s2_in_flight_q       <= 1'b0;
         end else begin
+            npc_rst_load_q       <= 1'b0;
             npc_q                <= npc_d;
             icache_data_q        <= icache_dreq_i.data;
             icache_valid_q       <= icache_dreq_i.valid;
@@ -471,7 +485,6 @@ module frontend (
 
 fifo_v2 #(
     .DEPTH        (  8                   ),
-    .ALM_EMPTY_TH ( 8-4                  ), 
     .dtype        ( fetch_entry_t        )) 
 i_fetch_fifo (
     .clk_i       ( clk_i                 ),

@@ -56,6 +56,7 @@ module load_unit (
     assign vaddr_o = lsu_ctrl_i.vaddr;
     // this is a read-only interface so set the write enable to 0
     assign req_port_o.data_we = 1'b0;
+    assign req_port_o.data_wdata = '0;
     // compose the queue data, control is handled in the FSM
     assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.operator};
     // output address
