@@ -57,6 +57,9 @@ package ariane_pkg;
     // ---------------
     // Fetch Stage
     // ---------------
+
+    // leave as is (fails with >8 entries and wider fetch width)
+    localparam int unsigned FETCH_FIFO_DEPTH  = 8;
     localparam int unsigned FETCH_WIDTH       = 32;
 
     // Only use struct when signals have same direction
