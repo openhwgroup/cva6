@@ -15,18 +15,13 @@
 
 import ariane_pkg::*;
 
-module frontend #(
-    parameter int unsigned BTB_ENTRIES       = 8,
-    parameter int unsigned BHT_ENTRIES       = 1024,
-    parameter int unsigned RAS_DEPTH         = 4
-)(
+module frontend (
     input  logic               clk_i,              // Clock
     input  logic               rst_ni,             // Asynchronous reset active low
     input  logic               flush_i,            // flush request for PCGEN
     input  logic               flush_bp_i,         // flush branch prediction
     // global input
     input  logic [63:0]        boot_addr_i,
-    input  logic               fetch_enable_i,     // start fetching instructions
     // Set a new PC
     // mispredict
     input  branchpredict_t     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
@@ -38,13 +33,10 @@ module frontend #(
     input  logic               eret_i,             // return from exception
     input  logic [63:0]        trap_vector_base_i, // base of trap vector
     input  logic               ex_valid_i,         // exception is valid - from commit
-    // Debug
-    input  logic [63:0]        debug_pc_i,         // PC from debug stage
-    input  logic               debug_set_pc_i,     // Set PC request from debug
+    input  logic               set_debug_pc_i,     // jump to debug address
     // Instruction Fetch
-    input  icache_dreq_o_t     icache_dreq_i,         
-    output icache_dreq_i_t     icache_dreq_o,       
-    
+    input  icache_dreq_o_t     icache_dreq_i,
+    output icache_dreq_i_t     icache_dreq_o,
     // instruction output port -> to processor back-end
     output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
     output logic               fetch_entry_valid_o, // instruction in IF is valid
@@ -60,7 +52,6 @@ module frontend #(
 
     logic        instruction_valid;
 
-    logic        icache_speculative_q;
     logic [63:0] icache_vaddr_q;
 
     // BHT, BTB and RAS prediction
@@ -94,7 +85,6 @@ module frontend #(
 
     logic [63:0]   bp_vaddr;
     logic          bp_valid; // we have a valid branch-prediction
-    
     // branch-prediction which we inject into the pipeline
     branchpredict_sbe_t  bp_sbe;
     logic                fifo_valid, fifo_ready; // fetch FIFO
@@ -301,13 +291,10 @@ module frontend #(
     // 3. Return from environment call
     // 4. Exception/Interrupt
     // 5. Pipeline Flush because of CSR side effects
-    // 6. Debug
     // Mis-predict handling is a little bit different
     // select PC a.k.a PC Gen
     always_comb begin : npc_select
         automatic logic [63:0] fetch_address;
-
-        icache_dreq_o.is_speculative = 1'b0;
 
         fetch_address    = npc_q;
         // keep stable by default
@@ -316,16 +303,14 @@ module frontend #(
         // 1. Branch Prediction
         // -------------------------------
         if (bp_valid) begin
-            icache_dreq_o.is_speculative = 1'b1;
             fetch_address = bp_vaddr;
             npc_d = bp_vaddr;
         end
         // -------------------------------
         // 0. Default assignment
         // -------------------------------
-        if (if_ready && fetch_enable_i) begin
+        if (if_ready) begin
             npc_d = {fetch_address[63:2], 2'b0}  + 64'h4;
-            icache_dreq_o.is_speculative = 1'b1;
         end
         // -------------------------------
         // 2. Control flow change request
@@ -354,14 +339,15 @@ module frontend #(
             // we came here from a flush request of a CSR instruction,
             // as CSR instructions do not exist in a compressed form
             // we can unconditionally do PC + 4 here
+            // TODO(zarubaf) This adder can at least be merged with the one in the csr_regfile stage
             npc_d    = pc_commit_i + 64'h4;
         end
-
         // -------------------------------
         // 6. Debug
         // -------------------------------
-        if (debug_set_pc_i) begin
-            npc_d = debug_pc_i;
+        // enter debug on a hard-coded base-address
+        if (set_debug_pc_i) begin
+            npc_d = dm::HaltAddress;
         end
 
         icache_dreq_o.vaddr = fetch_address;
@@ -372,7 +358,6 @@ module frontend #(
             npc_q                <= boot_addr_i;
             icache_data_q        <= '0;
             icache_valid_q       <= 1'b0;
-            icache_speculative_q <= 1'b0;
             icache_vaddr_q       <= 'b0;
             icache_ex_q          <= '0;
             unaligned_q          <= 1'b0;
@@ -382,7 +367,6 @@ module frontend #(
             npc_q                <= npc_d;
             icache_data_q        <= icache_dreq_i.data;
             icache_valid_q       <= icache_dreq_i.valid;
-            icache_speculative_q <= icache_dreq_i.is_speculative;
             icache_vaddr_q       <= icache_dreq_i.vaddr;
             icache_ex_q          <= icache_dreq_i.ex;
             unaligned_q          <= unaligned_d;
@@ -420,8 +404,6 @@ module frontend #(
         .bht_prediction_o ( bht_prediction   ),
         .*
     );
-
-
 
     for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin
         instr_scan i_instr_scan (
@@ -485,13 +467,13 @@ module instr_scan (
     assign rvi_call_o   = (rvi_jalr_o | rvi_jump_o) & instr_i[7]; // TODO: check that this captures calls
     // differentiates between JAL and BRANCH opcode, JALR comes from BHT
     assign rvi_imm_o    = (instr_i[3]) ? uj_imm(instr_i) : sb_imm(instr_i);
-    assign rvi_branch_o = (instr_i[6:0] == OPCODE_BRANCH) ? 1'b1 : 1'b0;
-    assign rvi_jalr_o   = (instr_i[6:0] == OPCODE_JALR)   ? 1'b1 : 1'b0;
-    assign rvi_jump_o   = (instr_i[6:0] == OPCODE_JAL)    ? 1'b1 : 1'b0;
+    assign rvi_branch_o = (instr_i[6:0] == riscv::OpcodeBranch) ? 1'b1 : 1'b0;
+    assign rvi_jalr_o   = (instr_i[6:0] == riscv::OpcodeJalr)   ? 1'b1 : 1'b0;
+    assign rvi_jump_o   = (instr_i[6:0] == riscv::OpcodeJal)    ? 1'b1 : 1'b0;
     // opcode JAL
-    assign rvc_jump_o   = (instr_i[15:13] == OPCODE_C_J) & is_rvc_o & (instr_i[1:0] == 2'b01);
+    assign rvc_jump_o   = (instr_i[15:13] == riscv::OpcodeCJ) & is_rvc_o & (instr_i[1:0] == 2'b01);
     assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000) & is_rvc_o & (instr_i[1:0] == 2'b10);
-    assign rvc_branch_o = ((instr_i[15:13] == OPCODE_C_BEQZ) | (instr_i[15:13] == OPCODE_C_BNEZ)) & is_rvc_o & (instr_i[1:0] == 2'b01);
+    assign rvc_branch_o = ((instr_i[15:13] == riscv::OpcodeCBeqz) | (instr_i[15:13] == riscv::OpcodeCBnez)) & is_rvc_o & (instr_i[1:0] == 2'b01);
     // check that rs1 is x1 or x5
     assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & instr_i[7];
     assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000) & is_rvc_o;

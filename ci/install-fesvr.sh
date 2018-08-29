@@ -4,13 +4,16 @@ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 cd $ROOT/tmp
 RELEASE=0.1.0
 
-if ! [ -e $ROOT/tmp/riscv-fesvr-$RELEASE ]; then
-    wget https://github.com/pulp-platform/riscv-fesvr/archive/v$RELEASE.tar.gz
-    tar xzf v$RELEASE.tar.gz
+if [ -z ${NUM_JOBS} ]; then
+    NUM_JOBS=1
 fi
-cd $ROOT/tmp/riscv-fesvr-$RELEASE
+
+if ! [ -e $ROOT/tmp/riscv-fesvr ]; then
+    git clone https://github.com/riscv/riscv-fesvr.git
+fi
+cd $ROOT/tmp/riscv-fesvr
 mkdir -p build
 cd build
 ../configure --prefix="$ROOT/tmp"
-make -j2
+make -j${NUM_JOBS}
 make install

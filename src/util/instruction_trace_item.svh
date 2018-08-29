@@ -31,7 +31,8 @@ class instruction_trace_item;
     logic [4:0] rs1, rs2, rs3, rd;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] reg_file [32], logic [63:0] result, logic [63:0] paddr, priv_lvl_t priv_lvl, branchpredict_t bp);
+    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] reg_file [32],
+                  logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, branchpredict_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -41,7 +42,7 @@ class instruction_trace_item;
         this.result   = result;
         this.paddr    = paddr;
         this.bp       = bp;
-        this.priv_lvl = getPrivLevel(priv_lvl);
+        this.priv_lvl = (debug_mode) ? "D" : getPrivLevel(priv_lvl);
         this.rs1      = sbe.rs1[4:0];
         this.rs2      = sbe.rs2[4:0];
         this.rs3      = instr[31:27];
@@ -65,41 +66,52 @@ class instruction_trace_item;
 
     function string csrAddrToStr(logic [11:0] addr);
         case (addr)
-            CSR_SSTATUS:    return "sstatus";
-            CSR_SIE:        return "sie";
-            CSR_STVEC:      return "stvec";
-            CSR_SCOUNTEREN: return "scounteren";
-            CSR_SSCRATCH:   return "sscratch";
-            CSR_SEPC:       return "sepc";
-            CSR_SCAUSE:     return "scause";
-            CSR_STVAL:      return "stval";
-            CSR_SIP:        return "sip";
-            CSR_SATP:       return "satp";
+            riscv::CSR_SSTATUS:    return "sstatus";
+            riscv::CSR_SIE:        return "sie";
+            riscv::CSR_STVEC:      return "stvec";
+            riscv::CSR_SCOUNTEREN: return "scounteren";
+            riscv::CSR_SSCRATCH:   return "sscratch";
+            riscv::CSR_SEPC:       return "sepc";
+            riscv::CSR_SCAUSE:     return "scause";
+            riscv::CSR_STVAL:      return "stval";
+            riscv::CSR_SIP:        return "sip";
+            riscv::CSR_SATP:       return "satp";
 
-            CSR_MSTATUS:    return "mstatus";
-            CSR_MISA:       return "misa";
-            CSR_MEDELEG:    return "medeleg";
-            CSR_MIDELEG:    return "mideleg";
-            CSR_MIE:        return "mie";
-            CSR_MTVEC:      return "mtvec";
-            CSR_MCOUNTEREN: return "mcounteren";
-            CSR_MSCRATCH:   return "mscratch";
-            CSR_MEPC:       return "mepc";
-            CSR_MCAUSE:     return "mcause";
-            CSR_MTVAL:      return "mtval";
-            CSR_MIP:        return "mip";
-            CSR_PMPCFG0:    return "pmpcfg0";
-            CSR_PMPADDR0:   return "pmpaddr0";
-            CSR_MVENDORID:  return "mvendorid";
-            CSR_MARCHID:    return "marchid";
-            CSR_MIMPID:     return "mimpid";
-            CSR_MHARTID:    return "mhartid";
-            CSR_MCYCLE:     return "mcycle";
-            CSR_MINSTRET:   return "minstret";
+            riscv::CSR_MSTATUS:    return "mstatus";
+            riscv::CSR_MISA:       return "misa";
+            riscv::CSR_MEDELEG:    return "medeleg";
+            riscv::CSR_MIDELEG:    return "mideleg";
+            riscv::CSR_MIE:        return "mie";
+            riscv::CSR_MTVEC:      return "mtvec";
+            riscv::CSR_MCOUNTEREN: return "mcounteren";
+            riscv::CSR_MSCRATCH:   return "mscratch";
+            riscv::CSR_MEPC:       return "mepc";
+            riscv::CSR_MCAUSE:     return "mcause";
+            riscv::CSR_MTVAL:      return "mtval";
+            riscv::CSR_MIP:        return "mip";
+            riscv::CSR_PMPCFG0:    return "pmpcfg0";
+            riscv::CSR_PMPADDR0:   return "pmpaddr0";
+            riscv::CSR_MVENDORID:  return "mvendorid";
+            riscv::CSR_MARCHID:    return "marchid";
+            riscv::CSR_MIMPID:     return "mimpid";
+            riscv::CSR_MHARTID:    return "mhartid";
+            riscv::CSR_MCYCLE:     return "mcycle";
+            riscv::CSR_MINSTRET:   return "minstret";
 
-            CSR_CYCLE:      return "cycle";
-            CSR_TIME:       return "time";
-            CSR_INSTRET:    return "instret";
+            riscv::CSR_TSELECT:    return "tselect";
+            riscv::CSR_TDATA1:     return "tdata1";
+            riscv::CSR_TDATA2:     return "tdata2";
+            riscv::CSR_TDATA3:     return "tdata3";
+            riscv::CSR_TINFO:      return "tinfo";
+
+            riscv::CSR_DCSR:       return "dcsr";
+            riscv::CSR_DPC:        return "dpc";
+            riscv::CSR_DSCRATCH0:  return "dscratch0";
+            riscv::CSR_DSCRATCH1:  return "dscratch1";
+
+            riscv::CSR_CYCLE:      return "cycle";
+            riscv::CSR_TIME:       return "time";
+            riscv::CSR_INSTRET:    return "instret";
 
             default:        return $sformatf("%0h", addr);
         endcase
@@ -185,6 +197,7 @@ class instruction_trace_item;
             INSTR_EBREAK:              s = this.printMnemonic("ebreak");
             INSTR_MRET:                s = this.printMnemonic("mret");
             INSTR_SRET:                s = this.printMnemonic("sret");
+            INSTR_DRET:                s = this.printMnemonic("dret");
             INSTR_WFI:                 s = this.printMnemonic("wfi");
             INSTR_SFENCE:              s = this.printMnemonic("sfence.vma");
             // loads and stores
@@ -233,11 +246,11 @@ class instruction_trace_item;
     endfunction : printInstr
 
     // Return the current privilege level as a string
-    function string getPrivLevel(input priv_lvl_t priv_lvl);
+    function string getPrivLevel(input riscv::priv_lvl_t priv_lvl);
         case (priv_lvl)
-            PRIV_LVL_M: return "M";
-            PRIV_LVL_S: return "S";
-            PRIV_LVL_U: return "U";
+            riscv::PRIV_LVL_M: return "M";
+            riscv::PRIV_LVL_S: return "S";
+            riscv::PRIV_LVL_U: return "U";
         endcase
     endfunction : getPrivLevel
 
@@ -294,7 +307,7 @@ class instruction_trace_item;
     function string printJump();
         string mnemonic;
         case (instr[6:0])
-            OPCODE_JALR: begin
+            riscv::OpcodeJalr: begin
                 // is this a return?
                 if (rd == 'b0 && (rs1 == 'h1 || rs1 == 'h5)) begin
                     return this.printMnemonic("ret");
@@ -303,7 +316,7 @@ class instruction_trace_item;
                 end
             end
 
-            OPCODE_JAL: begin
+            riscv::OpcodeJal: begin
                 if (rd == 'b0)
                     return this.printUJInstr("j");
                 else

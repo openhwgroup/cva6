@@ -35,10 +35,8 @@ module ex_stage #(
     output logic                                   alu_ready_o,           // FU is ready
     input  logic                                   alu_valid_i,           // Output is valid
     output logic                                   alu_valid_o,           // ALU result is valid
-    output logic                                   alu_branch_res_o,      // Branch comparison result
     output logic [63:0]                            alu_result_o,
     output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
-    output exception_t                             alu_exception_o,
     // Branches and Jumps
     output logic                                   branch_ready_o,
     input  logic                                   branch_valid_i,        // we are using the branch unit
@@ -79,31 +77,34 @@ module ex_stage #(
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
     input  logic                                   flush_tlb_i,
-    input  priv_lvl_t                              priv_lvl_i,
-    input  priv_lvl_t                              ld_st_priv_lvl_i,
+
+    input  riscv::priv_lvl_t                       priv_lvl_i,
+    input  riscv::priv_lvl_t                       ld_st_priv_lvl_i,
     input  logic                                   sum_i,
     input  logic                                   mxr_i,
     input  logic [43:0]                            satp_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
     // icache translation requests
-    input  icache_areq_o_t                         icache_areq_i,         
-    output icache_areq_i_t                         icache_areq_o,       
-    
+    input  icache_areq_o_t                         icache_areq_i,
+    output icache_areq_i_t                         icache_areq_o,
+
     // interface to dcache
-    input  dcache_req_o_t [2:0]                    dcache_req_ports_i,  
-    output dcache_req_i_t [2:0]                    dcache_req_ports_o, 
+    input  dcache_req_o_t [2:0]                    dcache_req_ports_i,
+    output dcache_req_i_t [2:0]                    dcache_req_ports_o,
 
     // Performance counters
     output logic                                   itlb_miss_o,
     output logic                                   dtlb_miss_o
-    
 );
+
+    logic alu_branch_res; // branch comparison result
 
     // -----
     // ALU
     // -----
     alu alu_i (
         .result_o            ( alu_result_o                 ),
+        .alu_branch_res_o    ( alu_branch_res               ),
         .*
     );
 
@@ -112,7 +113,7 @@ module ex_stage #(
     // --------------------
     branch_unit branch_unit_i (
         .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i), // any functional unit is valid, check that there is no accidental mis-predict
-        .branch_comp_res_i   ( alu_branch_res_o),
+        .branch_comp_res_i   ( alu_branch_res ),
         .*
     );
 

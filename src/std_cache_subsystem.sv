@@ -15,7 +15,7 @@
 // Author: Florian Zaruba    <zarubaf@iis.ee.ethz.ch>, ETH Zurich
 //         Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
-// Description: Standard Ariane cache subsystem with instruction cache and 
+// Description: Standard Ariane cache subsystem with instruction cache and
 //              write-back data cache.
 
 import ariane_pkg::*;
@@ -23,29 +23,29 @@ import std_cache_pkg::*;
 
 module std_cache_subsystem #(
    parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
-)(   
+)(
    input logic                            clk_i,
    input logic                            rst_ni,
-          
+
    // I$
+   input  logic                           icache_en_i,            // enable icache (or bypass e.g: in debug mode)
    input  logic                           icache_flush_i,         // flush the icache, flush and kill have to be asserted together
-   input  logic                           icache_fetch_enable_i,  // the core should fetch instructions
    output logic                           icache_miss_o,          // to performance counter
-      
-   // address translation requests      
-   input  icache_areq_i_t                 icache_areq_i,          // to/from frontend 
-   output icache_areq_o_t                 icache_areq_o,           
-   // data requests      
-   input  icache_dreq_i_t                 icache_dreq_i,          // to/from frontend 
-   output icache_dreq_o_t                 icache_dreq_o, 
-    
+
+   // address translation requests
+   input  icache_areq_i_t                 icache_areq_i,          // to/from frontend
+   output icache_areq_o_t                 icache_areq_o,
+   // data requests
+   input  icache_dreq_i_t                 icache_dreq_i,          // to/from frontend
+   output icache_dreq_o_t                 icache_dreq_o,
+
    // D$
    // Cache management
    input  logic                           dcache_enable_i,        // from CSR
    input  logic                           dcache_flush_i,         // high until acknowledged
    output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
    output logic                           dcache_miss_o,          // we missed on a ld/st
-   // AMO interface   
+   // AMO interface
    input  logic                           dcache_amo_commit_i,    // commit atomic memory operation
    output logic                           dcache_amo_valid_o,     // we have a valid AMO result
    output logic [63:0]                    dcache_amo_result_o,    // result of atomic memory operation
@@ -66,7 +66,7 @@ module std_cache_subsystem #(
       .clk_i             ( clk_i                 ),
       .rst_ni            ( rst_ni                ),
       .flush_i           ( icache_flush_i        ),
-      .fetch_enable_i    ( icache_fetch_enable_i ),
+      .en_i              ( icache_en_i           ),
       .miss_o            ( icache_miss_o         ),
       .areq_i            ( icache_areq_i         ),
       .areq_o            ( icache_areq_o         ),

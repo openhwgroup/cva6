@@ -1,102 +1,77 @@
 before_script:
+  - export CXX=g++-4.8.3 CC=gcc-4.8.3
+  # paths to local or network installation (the riscv toolchain and 
+  # verilator are not built in a ci job in this case)
+  - export QUESTASIM_HOME=/scratch/$USER/questasim
+  - export QUESTASIM_VERSION=
+  - export RISCV=/scratch/$USER/riscv_install
+  - export VERILATOR_ROOT=/scratch/$USER/verilator-3.924
+  # setup dependent paths
+  - export PATH=${RISCV}/bin:$VERILATOR_ROOT/bin:${PATH}
+  - export LIBRARY_PATH=$CI_PROJECT_DIR/tmp/lib
+  - export LD_LIBRARY_PATH=$CI_PROJECT_DIR/tmp/lib
+  - export C_INCLUDE_PATH=$CI_PROJECT_DIR/tmp/include:$VERILATOR_ROOT/include
+  - export CPLUS_INCLUDE_PATH=$CI_PROJECT_DIR/tmp/include:$VERILATOR_ROOT/include
+  # number of parallel jobs to use for make commands and simulation
+  - export NUM_JOBS=4
+  - ci/make-tmp.sh
   - git submodule update --init --recursive
-  - export LIBRARY_PATH=$LIBRARY_PATH:$CI_PROJECT_DIR/tmp/lib
-  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CI_PROJECT_DIR/tmp/lib
-  - export C_INCLUDE_PATH=$C_INCLUDE_PATH:$CI_PROJECT_DIR/tmp/include
-  - export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$CI_PROJECT_DIR/tmp/include
-  - export VERILATOR_ROOT=$CI_PROJECT_DIR/tmp/verilator-3.918/
-
+  
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
   - build
   - test
-  - deploy
 
-build-ci:
+build:
   stage: build
   script:
-    - make build
-    - echo $VERILATOR_ROOT
-    - ci/make-tmp.sh
     - ci/install-fesvr.sh
-    - ci/install-verilator.sh
     - ci/build-riscv-tests.sh
+    - make clean
+    - make build questa_version=$QUESTASIM_VERSION
+    - make verilate verilator=$VERILATOR_ROOT/bin/verilator
   artifacts:
-    paths:
-      - tmp/
+      paths:
+        - tmp 
 
-test_alu:
+# rv64ui-p-* and rv64ui-v-* tests    
+run-asm-tests-questa:
   stage: test
   script:
-    - make build library=alu_lib
-    - make alu library=alu_lib
-    - vcover-10.6 report alu.ucdb
-
-test_fifo:
-  stage: test
-  script:
-    - make build library=fifo_lib
-    - make fifo library=fifo_lib
-    - vcover-10.6 report fifo.ucdb
-
-.test_scoreboard:
-  stage: test
-  script:
-    - make build library=scoreboard_lib
-    - make scoreboard library=scoreboard_lib
-    - vcover-10.6 report scoreboard.ucdb
-
-
-test_store_queue:
-  stage: test
-  script:
-    - make build library=store_queue_lib
-    - make store_queue library=store_queue_lib
-    - vcover-10.6 report store_queue.ucdb
-
-test_core_asm:
-  stage: test
-  script:
-    - make build library=core_lib
-    - make run-asm-tests library=core_lib
-    - vcover-10.6 report run-asm-tests.ucdb
+    - make -j${NUM_JOBS} run-asm-tests questa_version=$QUESTASIM_VERSION
   dependencies:
-    - build-ci
+    - build
 
-test_core_asm_verilator:
+run-benchmarks-questa:
   stage: test
   script:
-    - make run-asm-tests-verilator verilator=$CI_PROJECT_DIR/tmp/bin/verilator
+    - make -j${NUM_JOBS} run-benchmarks questa_version=$QUESTASIM_VERSION
   dependencies:
-    - build-ci
+    - build    
 
-# test with the randomized memory interfaces
-.test_core_asm_rand:
+# rv64ui-p-* tests
+run-asm-tests1-verilator:
   stage: test
   script:
-    - make build library=core_rand_lib
-    # same as above but pass the rand_mem_if flag
-    - make run-asm-tests library=core_rand_lib uvm-flags=+rand_mem_if
-    - vcover-10.6 report run-asm-rand-tests.ucdb
+    - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator
   dependencies:
-    - build-ci
+    - build
 
-.test_failed_tests:
+# rv64ui-v-* tests
+run-asm-tests2-verilator:
   stage: test
   script:
-    - make build library=failed_tests_lib
-    - make run-failed-tests library=failed_tests_lib
-    - vcover-10.6 report run-failed-tests.ucdb
+    - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
+  dependencies:
+    - build    
 
-.test_lsu:
+run-benchmarks-verilator:
   stage: test
   script:
-    - make build library=lsu_lib
-    - make lsu library=lsu_lib
-    - vcover-10.6 report lsu.ucdb
-    - vcover-10.6 report -html lsu.ucdb
-  artifacts:
-    paths:
-      - covhtmlreport
+    - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
+  dependencies:
+    - build
+
+
