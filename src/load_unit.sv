@@ -386,11 +386,11 @@ module load_unit (
 `ifndef VERILATOR
     // check invalid offsets
     assert property (@(posedge clk_i) disable iff (~rst_ni) 
-        (load_data_q.operator inside {LW, LWU}) |-> load_data_q.address_offset < 5) else $fatal ("invalid address offset used with {LW, LWU}");
+        (load_data_q.operator inside {LW, LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
     assert property (@(posedge clk_i) disable iff (~rst_ni) 
-        (load_data_q.operator inside {LH, LHU}) |-> load_data_q.address_offset < 7) else $fatal ("invalid address offset used with {LH, LHU}");
+        (load_data_q.operator inside {LH, LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
     assert property (@(posedge clk_i) disable iff (~rst_ni) 
-        (load_data_q.operator inside {LB, LBU}) |-> load_data_q.address_offset < 8) else $fatal ("invalid address offset used with {LB, LBU}");
+        (load_data_q.operator inside {LB, LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
 `endif
 `endif
 
