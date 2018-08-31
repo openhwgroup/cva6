@@ -16,7 +16,7 @@
 import ariane_pkg::*;
 import std_cache_pkg::*;
 
-module icache  #(
+module std_icache  #(
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
