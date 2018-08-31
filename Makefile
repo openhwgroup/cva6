@@ -23,6 +23,7 @@ ariane_pkg := include/riscv_pkg.sv       \
               src/debug/dm_pkg.sv        \
               include/ariane_pkg.sv      \
               include/std_cache_pkg.sv   \
+              include/piton_cache_pkg.sv \
 			  include/axi_if.sv
 
 # utility modules
