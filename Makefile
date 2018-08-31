@@ -19,11 +19,11 @@ verilator      ?= verilator
 target-options ?=
 # Sources
 # Package files -> compile first
-ariane_pkg := include/riscv_pkg.sv     \
-              src/debug/dm_pkg.sv      \
-              include/ariane_pkg.sv    \
-              include/std_cache_pkg.sv \
-              include/axi_if.sv
+ariane_pkg := include/riscv_pkg.sv       \
+              src/debug/dm_pkg.sv        \
+              include/ariane_pkg.sv      \
+              include/std_cache_pkg.sv   \
+			  include/axi_if.sv
 
 # utility modules
 util := $(wildcard src/util/*.svh)         \
@@ -40,7 +40,8 @@ dpi := $(patsubst tb/dpi/%.cc,work/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 # this list contains the standalone components
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
-        $(wildcard bootrom/*.sv)                                       \
+        $(wildcard src/cache_subsystem/*.sv)                           \
+		$(wildcard bootrom/*.sv)                                       \
         $(wildcard src/axi_slice/*.sv)                                 \
         $(wildcard src/clint/*.sv)                                     \
         $(wildcard src/axi_node/*.sv)                                  \

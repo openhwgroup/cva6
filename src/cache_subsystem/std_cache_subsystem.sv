@@ -45,7 +45,7 @@ module std_cache_subsystem #(
    input  logic                           dcache_flush_i,         // high until acknowledged
    output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
    output logic                           dcache_miss_o,          // we missed on a ld/st
-   // AMO interface
+   // AMO interface (not functional yet)
    input  logic                           dcache_amo_commit_i,    // commit atomic memory operation
    output logic                           dcache_amo_valid_o,     // we have a valid AMO result
    output logic [63:0]                    dcache_amo_result_o,    // result of atomic memory operation
@@ -61,7 +61,7 @@ module std_cache_subsystem #(
 );
 
 
-   icache #(
+   std_icache #(
    ) i_icache (
       .clk_i             ( clk_i                 ),
       .rst_ni            ( rst_ni                ),
@@ -80,7 +80,7 @@ module std_cache_subsystem #(
    // Port 0: PTW
    // Port 1: Load Unit
    // Port 2: Store Unit
-   nbdcache #(
+   std_nbdcache #(
       .CACHE_START_ADDR ( CACHE_START_ADDR )
    ) i_nbdcache (
       .clk_i              ( clk_i                  ),
