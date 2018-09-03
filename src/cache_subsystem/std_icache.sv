@@ -16,7 +16,7 @@
 import ariane_pkg::*;
 import std_cache_pkg::*;
 
-module icache  #(
+module std_icache  #(
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
@@ -367,12 +367,6 @@ module icache  #(
                 addr = vaddr_q[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET];
                 tag = tag_q;
                 state_d = TAG_CMP_SAVED; // do tag comparison on the saved tag
-            end
-            // we need to wait for some AXI responses to come back
-            // here for the AW valid
-            WAIT_KILLED_REFILL: begin
-                if (axi.aw_valid)
-                    state_d = IDLE;
             end
             // ~> we are coming here after reset or when a flush was requested
             FLUSH: begin

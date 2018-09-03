@@ -105,7 +105,9 @@ module csr_regfile #(
     riscv::status_rv64_t  mstatus_q,  mstatus_d;
     riscv::satp_t         satp_q, satp_d;
     riscv::dcsr_t         dcsr_q,     dcsr_d;
-
+    
+    logic        mtvec_rst_load_q;// used to determine whether we came out of reset
+    
     logic [63:0] dpc_q,       dpc_d;
     logic [63:0] dscratch0_q, dscratch0_d;
     logic [63:0] mtvec_q,     mtvec_d;
@@ -243,7 +245,19 @@ module csr_regfile #(
         dpc_d                   = dpc_q;
         dscratch0_d             = dscratch0_q;
         mstatus_d               = mstatus_q;
-        mtvec_d                 = mtvec_q;
+        
+        // check whether we come out of reset
+        // this is a workaround. some tools have issues 
+        // having boot_addr_i in the asynchronous 
+        // reset assignment to mtvec_d, even though
+        // boot_addr_i will be assigned a constant
+        // on the top-level. 
+        if (mtvec_rst_load_q) begin
+            mtvec_d             = boot_addr_i + 'h40;
+        end else begin    
+            mtvec_d             = mtvec_q;
+        end
+
         medeleg_d               = medeleg_q;
         mideleg_d               = mideleg_q;
         mip_d                   = mip_q;
@@ -833,7 +847,8 @@ module csr_regfile #(
             // machine mode registers
             mstatus_q              <= 64'b0;
             // set to boot address + direct mode + 4 byte offset which is the initial trap
-            mtvec_q                <= boot_addr_i + 'h40;
+            mtvec_rst_load_q       <= 1'b1;
+            mtvec_q                <= '0;
             medeleg_q              <= 64'b0;
             mideleg_q              <= 64'b0;
             mip_q                  <= 64'b0;
@@ -867,6 +882,7 @@ module csr_regfile #(
             dscratch0_q            <= dscratch0_d;
             // machine mode registers
             mstatus_q              <= mstatus_d;
+            mtvec_rst_load_q       <= 1'b0;
             mtvec_q                <= mtvec_d;
             medeleg_q              <= medeleg_d;
             mideleg_q              <= mideleg_d;
