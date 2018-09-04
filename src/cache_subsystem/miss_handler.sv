@@ -233,8 +233,7 @@ module miss_handler #(
                     req_o        = evict_way_q;
                     we_o         = 1'b1;
                     be_o         = '1;
-                    be_o.valid   = evict_way_q;
-                    be_o.dirty   = evict_way_q;
+                    be_o.vldrty  = evict_way_q;
                     data_o.tag   = mshr_q.addr[DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
                     data_o.data  = data_miss_fsm;
                     data_o.valid = 1'b1;
@@ -277,8 +276,7 @@ module miss_handler #(
                     req_o      = 1'b1;
                     we_o       = 1'b1;
                     // invalidate
-                    be_o.valid = evict_way_q;
-                    be_o.dirty = evict_way_q;
+                    be_o.vldrty = evict_way_q;
                     // go back to handling the miss or flushing, depending on where we came from
                     state_d = (state_q == WB_CACHELINE_MISS) ? MISS : FLUSH_REQ_STATUS;
                 end
@@ -305,12 +303,12 @@ module miss_handler #(
                 // not dirty ~> increment and continue
                 end else begin
                     // increment and re-request
-                    cnt_d      = cnt_q + (1'b1 << DCACHE_BYTE_OFFSET);
-                    state_d    = FLUSH_REQ_STATUS;
-                    addr_o     = cnt_q;
-                    req_o      = 1'b1;
-                    be_o.valid = '1;
-                    we_o       = 1'b1;
+                    cnt_d       = cnt_q + (1'b1 << DCACHE_BYTE_OFFSET);
+                    state_d     = FLUSH_REQ_STATUS;
+                    addr_o      = cnt_q;
+                    req_o       = 1'b1;
+                    be_o.vldrty = '1;
+                    we_o        = 1'b1;
                     // finished with flushing operation, go back to idle
                     if (cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == DCACHE_NUM_WORDS-1) begin
                         flush_ack_o = 1'b1;
@@ -326,9 +324,8 @@ module miss_handler #(
                 req_o  = 1'b1;
                 we_o   = 1'b1;
                 // only write the dirty array
-                be_o.dirty = '1;
-                be_o.valid = '1;
-                cnt_d      = cnt_q + (1'b1 << DCACHE_BYTE_OFFSET);
+                be_o.vldrty = '1;
+                cnt_d       = cnt_q + (1'b1 << DCACHE_BYTE_OFFSET);
                 // finished initialization
                 if (cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == DCACHE_NUM_WORDS-1)
                     state_d = IDLE;

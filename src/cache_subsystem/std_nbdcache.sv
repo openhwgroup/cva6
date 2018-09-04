@@ -182,7 +182,7 @@ module std_nbdcache #(
             .we_i    ( we_ram                               ),
             .addr_i  ( addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]  ),
             .wdata_i ( wdata_ram.tag                        ),
-            .be_i    ( be_ram.tag                          ),
+            .be_i    ( be_ram.tag                           ),
             .rdata_o ( rdata_ram[i].tag                     ),
             .*
         );
@@ -192,26 +192,30 @@ module std_nbdcache #(
     // ----------------
     // Valid/Dirty Regs
     // ----------------
-    logic [DCACHE_DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
+
+    // align each valid/dirty bit pair to a byte boundary in order to leverage byte enable signals.
+    // note: if you have an SRAM that supports flat bit enables for your target technology, 
+    // you can use it here to save the extra 4x overhead introduced by this workaround.
+    logic [4*DCACHE_DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
 
     for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin
-        assign dirty_wdata[i]                     = wdata_ram.dirty;
-        assign dirty_wdata[DCACHE_SET_ASSOC + i]  = wdata_ram.valid;
-        assign rdata_ram[i].valid                 = dirty_rdata[DCACHE_SET_ASSOC + i];
-        assign rdata_ram[i].dirty                 = dirty_rdata[i];
+        assign dirty_wdata[8*i]   = wdata_ram.dirty;
+        assign dirty_wdata[8*i+1] = wdata_ram.valid;
+        assign rdata_ram[i].dirty = dirty_rdata[8*i];
+        assign rdata_ram[i].valid = dirty_rdata[8*i+1];
     end
 
-    vdregs #(
-        .DATA_WIDTH ( DCACHE_DIRTY_WIDTH               ),
-        .DATA_DEPTH ( DCACHE_NUM_WORDS                 )
-    ) i_vdregs (
+    sram #(
+        .DATA_WIDTH ( 4*DCACHE_DIRTY_WIDTH             ),
+        .NUM_WORDS  ( DCACHE_NUM_WORDS                 )
+    ) valid_dirty_sram (
         .clk_i   ( clk_i                               ),
         .rst_ni  ( rst_ni                              ),
         .req_i   ( |req_ram                            ),
         .we_i    ( we_ram                              ),
         .addr_i  ( addr_ram[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] ),
         .wdata_i ( dirty_wdata                         ),
-        .biten_i ( {be_ram.valid, be_ram.dirty}        ),
+        .be_i    ( be_ram.vldrty                       ),
         .rdata_o ( dirty_rdata                         )
     );
 
