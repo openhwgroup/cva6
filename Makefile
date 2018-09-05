@@ -213,6 +213,7 @@ clean:
 	rm -rf build
 	rm -f tmp/*.ucdb
 	rm -f tmp/*.log
+	rm -f *.wlf *vstf wlft*
 
 .PHONY:
 	build lint build-moore $(riscv-asm-tests) $(addsuffix _verilator,$(riscv-asm-tests)) $(riscv-benchmarks) $(addsuffix _verilator,$(riscv-benchmarks)) check simc sim verilate clean verilate
