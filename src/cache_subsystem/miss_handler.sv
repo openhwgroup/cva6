@@ -474,7 +474,7 @@ module miss_handler #(
     // -----------------
     // Replacement LFSR
     // -----------------
-    lfsr #(.WIDTH (DCACHE_SET_ASSOC)) i_lfsr (
+    lfsr_8bit #(.WIDTH (DCACHE_SET_ASSOC)) i_lfsr (
         .en_i           ( lfsr_enable ),
         .refill_way_oh  ( lfsr_oh     ),
         .refill_way_bin ( lfsr_bin    ),
