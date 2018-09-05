@@ -413,7 +413,7 @@ module std_icache  #(
     // -----------------
     // Replacement LFSR
     // -----------------
-    lfsr #(.WIDTH (ICACHE_SET_ASSOC)) i_lfsr (
+    lfsr_8bit #(.WIDTH (ICACHE_SET_ASSOC)) i_lfsr (
         .clk_i          ( clk_i       ),
         .rst_ni         ( rst_ni      ),
         .en_i           ( update_lfsr ),
