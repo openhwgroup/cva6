@@ -6,10 +6,10 @@ dependencies:
   axi:                { git: "git@iis-git.ee.ethz.ch:sasa/axi.git",                     rev: master      }
   axi2per:            { git: "git@iis-git.ee.ethz.ch:pulp-open/axi2per.git",            rev: master      }
   axi_mem_if:         { git: "git@github.com:pulp-platform/axi_mem_if.git",             rev: master      }
-  axi_node:           { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_node.git",           version: 1.0.3   }
+  axi_node:           { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_node.git",           version: v1.0.4  }
   axi_slice:          { git: "git@iis-git.ee.ethz.ch:sasa/axi_slice.git",               version: 1.1.2   }
   tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master      }
-  common_cells:       { git: "git@iis-git.ee.ethz.ch:sasa/common_cells.git",            version: v1.7.0  }
+  common_cells:       { git: "git@iis-git.ee.ethz.ch:sasa/common_cells.git",            version: v1.7.4  }
   fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       version: v0.3.2  }
 sources:
   - include/riscv_pkg.sv
