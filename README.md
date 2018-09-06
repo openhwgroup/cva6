@@ -25,6 +25,10 @@ Build the Verilator model of Ariane by using the Makefile:
 ```
 $ make verilate
 ```
+To build the verilator model with support for vcd files run
+```
+$ make verilate DEBUG=1
+```
 
 This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
 
