@@ -21,7 +21,8 @@ target-options ?=
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv       \
               src/debug/dm_pkg.sv        \
-              include/ariane_pkg.sv      \
+              src/axi/src/axi_pkg.sv     \
+			  include/ariane_pkg.sv      \
               include/std_cache_pkg.sv   \
               include/axi_if.sv
 
@@ -45,7 +46,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/axi_slice/*.sv)                                 \
         $(wildcard src/clint/*.sv)                                     \
-        $(wildcard src/axi_node/*.sv)                                  \
+        $(wildcard src/axi_node/src/*.sv)                              \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
         $(wildcard src/debug/debug_rom/*.sv)                           \
