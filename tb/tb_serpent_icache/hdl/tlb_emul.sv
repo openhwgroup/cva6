@@ -18,7 +18,7 @@
 //
 
 import ariane_pkg::*;
-import piton_cache_pkg::*;
+import serpent_cache_pkg::*;
 
 module tlb_emul #(
     parameter TLB_RAND_HIT_RATE = 10 //in percent

@@ -13,9 +13,9 @@
 // Description: Nonblocking private L1 dcache
 
 import ariane_pkg::*;
-import piton_cache_pkg::*;
+import serpent_cache_pkg::*;
 
-module piton_dcache #(
+module serpent_dcache #(
         parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 )(
     input  logic                           clk_i,       // Clock
@@ -346,4 +346,4 @@ module tag_cmp #(
         end
     end*/
 
-endmodule
+endmodule // serpent_dcache

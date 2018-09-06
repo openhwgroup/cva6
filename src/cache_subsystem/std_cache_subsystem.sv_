@@ -60,6 +60,7 @@ module std_cache_subsystem #(
    AXI_BUS.Master                         dcache_bypass_if         // bypass axi port (disabled D$ or uncacheable access)
 );
 
+
    std_icache #(
    ) i_icache (
       .clk_i             ( clk_i                 ),
@@ -73,6 +74,66 @@ module std_cache_subsystem #(
       .dreq_o            ( icache_dreq_o         ),
       .axi               ( icache_data_if        )
    );
+
+   // logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld_o;
+   // piton_cache_pkg::icache_req_t  icache_adapter;
+   // piton_cache_pkg::icache_rtrn_t adapter_icache;
+
+   // piton_icache #(
+   //    .NC_ADDR_BEGIN(CACHE_START_ADDR),
+   //    .NC_ADDR_GE_LE(0)
+   // ) i_piton_icache (
+   //    .clk_i              ( clk_i                   ),
+   //    .rst_ni             ( rst_ni                  ),
+   //    .flush_i            ( icache_flush_i          ),
+   //    .en_i               ( icache_en_i             ),
+   //    .miss_o             ( icache_miss_o           ),
+   //    .areq_i             ( icache_areq_i           ),
+   //    .areq_o             ( icache_areq_o           ),
+   //    .dreq_i             ( icache_dreq_i           ),
+   //    .dreq_o             ( icache_dreq_o           ),
+   //    .mem_rtrn_vld_i     ( adapter_icache_rtrn_vld ),
+   //    .mem_rtrn_i         ( adapter_icache          ),
+   //    .mem_data_req_o     ( icache_adapter_data_req ),
+   //    .mem_data_ack_i     ( adapter_icache_data_ack ),
+   //    .mem_data_o         ( icache_adapter          )
+   // );
+
+   // // cannot handle invalidations atm
+   // assign adapter_icache.rtype = piton_cache_pkg::ICACHE_IFILL_ACK;
+   // assign adapter_icache.inv   = '0;
+   // assign adapter_icache.nc    = icache_adapter.nc;
+   // assign adapter_icache.tid   = '0;
+   // assign adapter_icache.f4b   = icache_adapter.nc;
+
+   // // NC accesses are always 4B!
+   // logic [1:0] icache_axi_size;
+   // req_t icache_axi_req_type;
+   // assign icache_axi_size      = ( icache_adapter.nc ) ? 2'b10      : 2'b11;
+   // assign icache_axi_req_type  = ( icache_adapter.nc ) ? SINGLE_REQ : CACHE_LINE_REQ;
+   
+   // axi_adapter #(
+   //    .DATA_WIDTH ( ICACHE_LINE_WIDTH )
+   // ) i_axi_adapter (
+   //    .clk_i                ( clk_i                   ),
+   //    .rst_ni               ( rst_ni                  ),
+   //    .req_i                ( icache_adapter_data_req ),
+   //    .type_i               ( icache_axi_req_type     ),
+   //    .gnt_o                ( adapter_icache_data_ack ),
+   //    .gnt_id_o             (                         ),
+   //    .addr_i               ( icache_adapter.paddr    ),
+   //    .we_i                 ( '0                      ),
+   //    .wdata_i              ( '0                      ),
+   //    .be_i                 ( '0                      ),
+   //    .size_i               ( icache_axi_size         ),
+   //    .id_i                 ( '0                      ),
+   //    .valid_o              ( adapter_icache_rtrn_vld ),
+   //    .rdata_o              ( adapter_icache.data     ),
+   //    .id_o                 (                         ),
+   //    .critical_word_o      (                         ),
+   //    .critical_word_valid_o(                         ),
+   //    .axi                  ( icache_data_if          )
+   // );
 
    // decreasing priority
    // Port 0: PTW

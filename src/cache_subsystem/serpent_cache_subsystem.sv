@@ -17,11 +17,16 @@
 // Date: 15.08.2018
 // Description: Ariane cache subsystem that is compatible with the OpenPiton
 //              coherent memory system.
+//              
+//              Define SERPENT_PULP if you want to use this cache. 
+//              Define AXI64_CACHE_PORTS if you want to use this cache 
+//              with a standard 64bit AXI interace instead of the openpiton 
+//              L1.5 interface.
 
 import ariane_pkg::*;
-import piton_cache_pkg::*;
+import serpent_cache_pkg::*;
 
-module piton_cache_subsystem #(
+module serpent_cache_subsystem #(
    parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 )(
    input logic                            clk_i,
@@ -54,6 +59,12 @@ module piton_cache_subsystem #(
    input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
    output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
 
+`ifdef AXI64_CACHE_PORTS
+   // memory side
+   AXI_BUS.Master                         icache_data_if,          // I$ refill port
+   AXI_BUS.Master                         dcache_data_if,          // D$ refill port
+   AXI_BUS.Master                         dcache_bypass_if         // bypass axi port (disabled D$ or uncacheable access)
+`else
    // L15 (memory side)   
    output logic                           l15_val_o,
    input  logic                           l15_ack_i,
@@ -63,22 +74,21 @@ module piton_cache_subsystem #(
    input  logic                           l15_val_i,
    output logic                           l15_req_ack_o,
    input  l15_rtrn_t                      l15_rtrn_i
-   
+`endif   
    // TODO: interrupt interface
 );
-   
-   logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld_o;
-   icache_req_t  icache_adapter;
-   icache_rtrn_t adapter_icache;
-   logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
-   dcache_req_t  dcache_adapter;
-   dcache_rtrn_t adapter_dcache;
 
+   logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
+   serpent_cache_pkg::icache_req_t  icache_adapter;
+   serpent_cache_pkg::icache_rtrn_t adapter_icache;
 
-   piton_icache #(
-      .NC_ADDR_BEGIN      ( CACHE_START_ADDR ),
-      .NC_ADDR_GE_LT      ( 1'b1             )
-   ) i_piton_icache (
+   serpent_icache #(
+`ifdef AXI64_CACHE_PORTS
+      .AXI64BIT_COMPLIANT ( 1'b1                    ),
+`endif
+      .NC_ADDR_BEGIN      ( CACHE_START_ADDR        ),
+      .NC_ADDR_GE_LT      ( 0                       ) // todo: make compliant with openpiton
+   ) i_serpent_icache (
       .clk_i              ( clk_i                   ),
       .rst_ni             ( rst_ni                  ),
       .flush_i            ( icache_flush_i          ),
@@ -99,30 +109,96 @@ module piton_cache_subsystem #(
    // Port 0: PTW
    // Port 1: Load Unit
    // Port 2: Store Unit
-   piton_dcache #(
+   std_nbdcache #(
       .CACHE_START_ADDR ( CACHE_START_ADDR )
-   ) i_piton_dcache (
-      .clk_i              ( clk_i                   ),
-      .rst_ni             ( rst_ni                  ),
-      .enable_i           ( dcache_enable_i         ),
-      .flush_i            ( dcache_flush_i          ),
-      .flush_ack_o        ( dcache_flush_ack_o      ),
-      .miss_o             ( dcache_miss_o           ),
-      .amo_commit_i       ( dcache_amo_commit_i     ),
-      .amo_valid_o        ( dcache_amo_valid_o      ),
-      .amo_result_o       ( dcache_amo_result_o     ),
-      .amo_flush_i        ( dcache_amo_flush_i      ),
-      .req_ports_i        ( dcache_req_ports_i      ),
-      .req_ports_o        ( dcache_req_ports_o      ),
-      .mem_rtrn_vld_i     ( adapter_dcache_rtrn_vld ),
-      .mem_rtrn_i         ( adapter_dcache          ),
-      .mem_data_req_o     ( dcache_adapter_data_req ),
-      .mem_data_ack_i     ( adapter_dcache_data_ack ),
-      .mem_data_o         ( dcache_adapter          )
+   ) i_nbdcache (
+      .clk_i              ( clk_i                  ),
+      .rst_ni             ( rst_ni                 ),
+      .enable_i           ( dcache_enable_i        ),
+      .flush_i            ( dcache_flush_i         ),
+      .flush_ack_o        ( dcache_flush_ack_o     ),
+      .miss_o             ( dcache_miss_o          ),
+      .data_if            ( dcache_data_if         ),
+      .bypass_if          ( dcache_bypass_if       ),
+      .amo_commit_i       ( dcache_amo_commit_i    ),
+      .amo_valid_o        ( dcache_amo_valid_o     ),
+      .amo_result_o       ( dcache_amo_result_o    ),
+      .amo_flush_i        ( dcache_amo_flush_i     ),
+      .req_ports_i        ( dcache_req_ports_i     ),
+      .req_ports_o        ( dcache_req_ports_o     )
    );
 
 
-   piton_l15_adapter #(
+   // logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
+   // dcache_req_t  dcache_adapter;
+   // dcache_rtrn_t adapter_dcache;
+
+   // // decreasing priority
+   // // Port 0: PTW
+   // // Port 1: Load Unit
+   // // Port 2: Store Unit
+   // serpent_dcache #(
+   //    .CACHE_START_ADDR ( CACHE_START_ADDR )
+   // ) i_serpent_dcache (
+   //    .clk_i              ( clk_i                   ),
+   //    .rst_ni             ( rst_ni                  ),
+   //    .enable_i           ( dcache_enable_i         ),
+   //    .flush_i            ( dcache_flush_i          ),
+   //    .flush_ack_o        ( dcache_flush_ack_o      ),
+   //    .miss_o             ( dcache_miss_o           ),
+   //    .amo_commit_i       ( dcache_amo_commit_i     ),
+   //    .amo_valid_o        ( dcache_amo_valid_o      ),
+   //    .amo_result_o       ( dcache_amo_result_o     ),
+   //    .amo_flush_i        ( dcache_amo_flush_i      ),
+   //    .req_ports_i        ( dcache_req_ports_i      ),
+   //    .req_ports_o        ( dcache_req_ports_o      ),
+   //    .mem_rtrn_vld_i     ( adapter_dcache_rtrn_vld ),
+   //    .mem_rtrn_i         ( adapter_dcache          ),
+   //    .mem_data_req_o     ( dcache_adapter_data_req ),
+   //    .mem_data_ack_i     ( adapter_dcache_data_ack ),
+   //    .mem_data_o         ( dcache_adapter          )
+   // );
+
+
+// different memory plumbing
+`ifdef AXI64_CACHE_PORTS
+
+   // cannot handle invalidations atm
+   assign adapter_icache.rtype = ICACHE_IFILL_ACK;
+   assign adapter_icache.inv   = '0;
+   assign adapter_icache.nc    = icache_adapter.nc;
+   assign adapter_icache.tid   = '0;
+   assign adapter_icache.f4b   = icache_adapter.nc;
+
+   std_cache_pkg::req_t icache_axi_req_type;
+   assign icache_axi_req_type  = ( icache_adapter.nc ) ? std_cache_pkg::SINGLE_REQ : std_cache_pkg::CACHE_LINE_REQ;
+   
+   axi_adapter #(
+      .DATA_WIDTH ( ICACHE_LINE_WIDTH )
+   ) i_axi_adapter (
+      .clk_i                ( clk_i                   ),
+      .rst_ni               ( rst_ni                  ),
+      .req_i                ( icache_adapter_data_req ),
+      .type_i               ( icache_axi_req_type     ),
+      .gnt_o                ( adapter_icache_data_ack ),
+      .gnt_id_o             (                         ),
+      .addr_i               ( icache_adapter.paddr    ),
+      .we_i                 ( '0                      ),
+      .wdata_i              ( '0                      ),
+      .be_i                 ( '0                      ),
+      .size_i               ( 2'b11                   ),// always request in multiples of 64bit
+      .id_i                 ( '0                      ),
+      .valid_o              ( adapter_icache_rtrn_vld ),
+      .rdata_o              ( adapter_icache.data     ),
+      .id_o                 (                         ),
+      .critical_word_o      (                         ),
+      .critical_word_valid_o(                         ),
+      .axi                  ( icache_data_if          )
+   );
+
+`else 
+
+   serpent_l15_adapter #(
    ) i_adapter (
       .clk_i              ( clk_i                   ),
       .rst_ni             ( rst_ni                  ),
@@ -145,4 +221,6 @@ module piton_cache_subsystem #(
       .l15_rtrn_i         ( l15_port_i              )
       );
 
-endmodule // piton_cache_subsystem
+`endif
+
+endmodule // serpent_cache_subsystem

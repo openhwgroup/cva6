@@ -29,9 +29,9 @@
 //    or accesses with disabled cache.
 
 import ariane_pkg::*;
-import piton_cache_pkg::*;
+import serpent_cache_pkg::*;
 
-module piton_icache  #( 
+module serpent_icache  #( 
     parameter bit AXI64BIT_COMPLIANT     = 1'b0,           // set this to 1 when using in conjunction with 64bit AXI bus adapter
     parameter     NC_ADDR_BEGIN          = 40'h8000000000, // start address of noncacheable I/O region
     parameter bit NC_ADDR_GE_LT          = 1'b1            // determines how the physical address is compared with NC_ADDR_BEGIN
@@ -568,4 +568,4 @@ module piton_icache  #(
 `endif
 //pragma translate_on
 
-endmodule
+endmodule // serpent_icache

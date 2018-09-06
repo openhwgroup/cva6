@@ -53,9 +53,9 @@
 //
 
 import ariane_pkg::*;
-import piton_cache_pkg::*;
+import serpent_cache_pkg::*;
 
-module piton_l15_adapter #(
+module serpent_l15_adapter #(
    
 )  (   
    input logic                  clk_i,
@@ -397,14 +397,17 @@ fifo_v2 #(
 ///////////////////////////////////////////////////////
 
 //pragma translate_off
-`ifndef VERILATOR
+`ifndef verilator
 
   iospace: assert property (
       @(posedge clk_i) disable iff (~rst_ni) l15_val_o |-> l15_data_o.l15_address >= {40'h8000000000} |-> l15_data_o.l15_nc)       
          else $fatal("[l15_adapter] accesses to I/O space must have noncacheable bit set!");
 
   invalidations: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) l15_val_i |-> l15_rtrn_i.l15_returntype == EVICT_REQ |-> (inv_in.inv | inv_in.all))       
+      @(posedge clk_i) disable iff (~rst_ni) l15_val_i |-> l15_rtrn_i.l15_returntype == EVICT_REQ |-> (l15_rtrn_i.l15_inval_icache_inval    | 
+                                                                                                       l15_rtrn_i.l15_inval_dcache_inval    |
+                                                                                                       l15_rtrn_i.l15_inval_icache_all_way  |
+                                                                                                       l15_rtrn_i.l15_inval_dcache_all_way))       
         else $fatal("[l15_adapter] got invalidation package with zero invalidation flags");
 
   blockstore_o: assert property (
@@ -443,4 +446,4 @@ fifo_v2 #(
 `endif
 //pragma translate_on
 
-endmodule // piton_l15_adapter
+endmodule // serpent_l15_adapter

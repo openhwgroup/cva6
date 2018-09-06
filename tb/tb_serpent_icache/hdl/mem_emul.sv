@@ -18,7 +18,7 @@
 //
 
 import ariane_pkg::*;
-import piton_cache_pkg::*;
+import serpent_cache_pkg::*;
 
 module mem_emul #(
   parameter MEM_RAND_HIT_RATE = 10, //in percent

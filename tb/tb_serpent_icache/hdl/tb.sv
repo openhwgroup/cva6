@@ -26,7 +26,7 @@
 // (random offsets).
 
 import ariane_pkg::*;
-import piton_cache_pkg::*;
+import serpent_cache_pkg::*;
 import tb_pkg::*;
 
 module tb;
@@ -241,7 +241,7 @@ mem_emul #(
 // MUT
 ///////////////////////////////////////////////////////////////////////////////
 
-piton_icache  #(
+serpent_icache  #(
   .NC_ADDR_BEGIN(NC_ADDR_BEGIN),
   .NC_ADDR_GE_LT(0)
   ) dut (

@@ -19,6 +19,12 @@ import instruction_tracer_pkg::*;
 `endif
 `endif
 
+// default to AXI64 cache ports if not using the 
+// serpent PULP extension
+`ifndef SERPENT_PULP 
+    `define AXI64_CACHE_PORTS
+`endif
+
 module ariane #(
         parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
         parameter int unsigned AXI_ID_WIDTH     = 10,            // minimum 1
@@ -31,17 +37,30 @@ module ariane #(
         input  logic [63:0]                    boot_addr_i,  // reset boot address
         input  logic [ 3:0]                    core_id_i,    // core id in a multicore environment (reflected in a CSR)
         input  logic [ 5:0]                    cluster_id_i, // PULP specific if core is used in a clustered environment
-        // Instruction memory interface
-        AXI_BUS.Master                         instr_if,
-        // Data memory interface
-        AXI_BUS.Master                         data_if,      // data cache refill port
-        AXI_BUS.Master                         bypass_if,    // bypass axi port (disabled cache or uncacheable access)
         // Interrupt inputs
         input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip (async)
         input  logic                           ipi_i,        // inter-processor interrupts (async)
         // Timer facilities
         input  logic                           time_irq_i,   // timer interrupt in (async)
-        input  logic                           debug_req_i   // debug request (async)
+        input  logic                           debug_req_i,  // debug request (async)
+        
+    `ifdef AXI64_CACHE_PORTS
+       // memory side
+       AXI_BUS.Master                         instr_if,       // I$ refill port
+       AXI_BUS.Master                         data_if,       // D$ refill port
+       AXI_BUS.Master                         bypass_if      // bypass axi port (disabled D$ or uncacheable access)
+    `else    
+       // L15 (memory side)   
+       output logic                           l15_val_o,
+       input  logic                           l15_ack_i,
+       input  logic                           l15_header_ack_i,
+       output l15_req_t                       l15_data_o,
+              
+       input  logic                           l15_val_i,
+       output logic                           l15_req_ack_o,
+       input  l15_rtrn_t                      l15_rtrn_i
+    `endif   
+
     );
 
     // ------------------------------------------
@@ -508,9 +527,53 @@ module ariane #(
     // -------------------
     // Cache Subsystem
     // -------------------
+`ifdef SERPENT_PULP   
+    serpent_cache_subsystem #(
+        .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
+    ) i_cache_subsystem (
+        // to D$
+        .clk_i                 ( clk_i                                 ),
+        .rst_ni                ( rst_ni                                ),
+        // I$
+        .icache_en_i           ( icache_en_csr                         ),
+        .icache_flush_i        ( icache_flush_ctrl_cache               ),
+        .icache_miss_o         ( icache_miss_cache_perf                ),
+        .icache_areq_i         ( icache_areq_ex_cache                  ),
+        .icache_areq_o         ( icache_areq_cache_ex                  ),
+        .icache_dreq_i         ( icache_dreq_if_cache                  ),
+        .icache_dreq_o         ( icache_dreq_cache_if                  ),
+        // D$
+        .dcache_enable_i       ( dcache_en_csr_nbdcache                ),
+        .dcache_flush_i        ( dcache_flush_ctrl_cache               ),
+        .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl           ),
+        // from PTW, Load Unit  and Store Unit
+        .dcache_amo_commit_i   ( 1'b0                                  ),
+        .dcache_amo_valid_o    (                                       ),
+        .dcache_amo_result_o   (                                       ),
+        .dcache_amo_flush_i    ( 1'b0                                  ),
+        .dcache_miss_o         ( dcache_miss_cache_perf                ),
+        .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
+        .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),
+
+`ifdef AXI64_CACHE_PORTS
+        // memory side
+        .icache_data_if        ( instr_if                              ),
+        .dcache_data_if        ( data_if                               ),
+        .dcache_bypass_if      ( bypass_if                             )
+`else
+        .l15_val_o             ( l15_val_o                             ),
+        .l15_ack_i             ( l15_ack_i                             ),
+        .l15_header_ack_i      ( l15_header_ack_i                      ),
+        .l15_data_o            ( l15_data_o                            ),
+        .l15_val_i             ( l15_val_i                             ),
+        .l15_req_ack_o         ( l15_req_ack_o                         ),
+        .l15_rtrn_i            ( l15_rtrn_i                            )
+`endif   
+  );
+`else 
     std_cache_subsystem #(
         .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
-    ) i_std_cache_subsystem (
+    ) i_cache_subsystem (
         // to D$
         .clk_i                 ( clk_i                                 ),
         .rst_ni                ( rst_ni                                ),
@@ -539,6 +602,7 @@ module ariane #(
         .dcache_data_if        ( data_if                               ),
         .dcache_bypass_if      ( bypass_if                             )
   );
+`endif    
 
     // -------------------
     // Instruction Tracer

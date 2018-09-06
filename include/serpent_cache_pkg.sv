@@ -16,7 +16,7 @@
 // Date: 15.08.2018
 // Description: Package for OpenPiton compatible L1 cache subsystem
 
-package piton_cache_pkg;
+package serpent_cache_pkg;
 
     localparam L15_SET_ASSOC      = 4;
 
@@ -216,4 +216,4 @@ package piton_cache_pkg;
 
 
 
-endpackage : piton_cache_pkg
+endpackage : serpent_cache_pkg
