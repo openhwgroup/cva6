@@ -1,5 +1,5 @@
 # Customise this to a fast local disk
-export TOP=/scratch2/michscha/projects/
+export TOP=/usr/scratch2/toscana/michscha/projects/
 export CI_BUILD_DIR=$TOP/ariane-dev
 
 #customize this to your setup
