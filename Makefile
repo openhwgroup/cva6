@@ -130,7 +130,7 @@ sim: build $(library)/ariane_dpi.so
 simc: build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0 \
-	-gblso tmp/riscv-fesvr/build/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" \
+	-gblso tmp/riscv-fesvr/build/libfesvr.so -sv_lib $(library)/ariane_dpi -do " run -all; exit" \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
 
