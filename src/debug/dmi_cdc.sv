@@ -174,6 +174,8 @@ module dmi_cdc_jtag #(
   logic [DATA_WIDTH/8-1:0] cdc_be_p;
   logic [DATA_WIDTH-1:0]   cdc_wdata_p;
 
+  logic                    cdc_req_n;
+
   logic                    cdc_clear_p;
 
   logic                    cdc_ack;
@@ -184,7 +186,7 @@ module dmi_cdc_jtag #(
     req_state_n = req_state_p;
 
     mem_gnt_o   = 1'b0;
-    cdc_req_ao  = 1'b0;
+    cdc_req_n   = 1'b0;
 
     unique case (req_state_p)
       IDLE: begin
@@ -196,7 +198,7 @@ module dmi_cdc_jtag #(
       end
 
       WAIT_ACK_HIGH: begin
-        cdc_req_ao = 1'b1;
+        cdc_req_n  = 1'b1;
 
         if (cdc_ack) begin
           req_state_n = WAIT_ACK_LOW;
@@ -255,8 +257,7 @@ module dmi_cdc_jtag #(
     endcase
   end
 
-  always_ff @(posedge tck_i, negedge trst_ni)
-  begin
+  always_ff @(posedge tck_i, negedge trst_ni) begin
     if (~trst_ni) begin
       req_state_p  <= IDLE;
       resp_state_p <= RIDLE;
@@ -266,9 +267,11 @@ module dmi_cdc_jtag #(
       cdc_be_p     <= '0;
       cdc_wdata_p  <= '0;
       cdc_clear_p  <= '0;
+      cdc_req_ao   <= 1'b0;
     end else begin
       req_state_p  <= req_state_n;
       resp_state_p <= resp_state_n;
+      cdc_req_ao   <= cdc_req_n;
 
       if (mem_gnt_o) begin
         cdc_addr_p  <= mem_addr_i;
@@ -286,16 +289,18 @@ module dmi_cdc_jtag #(
   assign cdc_wdata_ao = cdc_wdata_p;
   assign cdc_clear_ao = cdc_clear_p;
 
-  pulp_sync i_sync_ack (
+  (* ASYNC_REG = "TRUE" *)
+  sync i_sync_ack (
       .clk_i     ( tck_i        ),
-      .rstn_i    ( trst_ni      ) ,
+      .rst_ni    ( trst_ni      ) ,
       .serial_i  ( cdc_ack_ai   ),
       .serial_o  ( cdc_ack      )
   );
 
-  pulp_sync i_sync_rreq (
+  (* ASYNC_REG = "TRUE" *)
+  sync i_sync_rreq (
       .clk_i     ( tck_i        ),
-      .rstn_i    ( trst_ni      ) ,
+      .rst_ni    ( trst_ni      ) ,
       .serial_i  ( cdc_rreq_ai  ),
       .serial_o  ( cdc_rreq     )
   );
@@ -356,11 +361,13 @@ module dmi_cdc_mem #(
   logic [DATA_WIDTH-1:0]   cdc_rdata_p;
   logic                    cdc_rerror_p;
 
-  always_comb
-  begin
+  logic                    cdc_rreq_n;
+  logic                    cdc_ack_n;
+
+  always_comb begin
     req_state_n = req_state_p;
 
-    cdc_ack_ao  = 1'b0;
+    cdc_ack_n   = 1'b0;
     cdc_sample  = 1'b0;
 
     mem_req_o   = 1'b0;
@@ -375,7 +382,7 @@ module dmi_cdc_mem #(
 
       REQUEST: begin
         mem_req_o  = 1'b1;
-        cdc_ack_ao = 1'b1;
+        cdc_ack_n  = 1'b1;
 
         if (mem_gnt_i) begin
           req_state_n = WAIT_REQ_LOW;
@@ -383,7 +390,7 @@ module dmi_cdc_mem #(
       end
 
       WAIT_REQ_LOW: begin
-        cdc_ack_ao = 1'b1;
+        cdc_ack_n  = 1'b1;
 
         if (~cdc_req) begin
           req_state_n = IDLE;
@@ -397,10 +404,9 @@ module dmi_cdc_mem #(
       req_state_n = IDLE;
   end
 
-  always_comb
-  begin
+  always_comb begin
     resp_state_n = resp_state_p;
-    cdc_rreq_ao  = 1'b0;
+    cdc_rreq_n  = 1'b0;
 
     unique case (resp_state_p)
       RIDLE: begin
@@ -410,7 +416,7 @@ module dmi_cdc_mem #(
       end
 
       WAIT_ACK_HIGH: begin
-        cdc_rreq_ao = 1'b1;
+        cdc_rreq_n = 1'b1;
 
         if (cdc_rack) begin
           resp_state_n = WAIT_ACK_LOW;
@@ -418,7 +424,7 @@ module dmi_cdc_mem #(
       end
 
       WAIT_ACK_LOW: begin
-        cdc_rreq_ao = 1'b0;
+        cdc_rreq_n = 1'b0;
 
         if (~cdc_rack) begin
           resp_state_n = RIDLE;
@@ -432,8 +438,7 @@ module dmi_cdc_mem #(
       resp_state_n = RIDLE;
   end
 
-  always_ff @(posedge clk_i, negedge rst_ni)
-  begin
+  always_ff @(posedge clk_i, negedge rst_ni) begin
     if (~rst_ni) begin
       req_state_p  <= IDLE;
       resp_state_p <= RIDLE;
@@ -446,9 +451,13 @@ module dmi_cdc_mem #(
 
       cdc_rdata_p  <= '0;
       cdc_rerror_p <= '0;
+      cdc_rreq_ao  <= 1'b0;
+      cdc_ack_ao   <= 1'b0;
     end else begin
       req_state_p  <= req_state_n;
       resp_state_p <= resp_state_n;
+      cdc_rreq_ao  <= cdc_rreq_n;
+      cdc_ack_ao   <= cdc_ack_n;
 
       if (cdc_sample) begin
         mem_addr_p  <= cdc_addr_ai;
@@ -476,23 +485,26 @@ module dmi_cdc_mem #(
   assign cdc_rdata_ao  = cdc_rdata_p;
   assign cdc_rerror_ao = cdc_rerror_p;
 
-  pulp_sync i_sync_req (
+  (* ASYNC_REG = "TRUE" *)
+  sync i_sync_req (
       .clk_i     ( clk_i      ),
-      .rstn_i    ( rst_ni     ) ,
+      .rst_ni    ( rst_ni     ) ,
       .serial_i  ( cdc_req_ai ),
       .serial_o  ( cdc_req    )
   );
 
-  pulp_sync i_sync_clear (
+  (* ASYNC_REG = "TRUE" *)
+  sync i_sync_clear (
       .clk_i     ( clk_i        ),
-      .rstn_i    ( rst_ni       ),
+      .rst_ni    ( rst_ni       ),
       .serial_i  ( cdc_clear_ai ),
       .serial_o  ( cdc_clear    )
   );
 
-  pulp_sync i_sync_rack (
+  (* ASYNC_REG = "TRUE" *)
+  sync i_sync_rack (
       .clk_i     ( clk_i        ),
-      .rstn_i    ( rst_ni       ) ,
+      .rst_ni    ( rst_ni       ) ,
       .serial_i  ( cdc_rack_ai  ),
       .serial_o  ( cdc_rack     )
   );

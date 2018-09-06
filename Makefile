@@ -6,7 +6,6 @@
 library        ?= work
 # Top level module to compile
 top_level      ?= ariane_tb
-test_top_level ?= ariane_tb
 # Maximum amount of cycles for a successful simulation run
 max_cycles     ?= 10000000
 # Test case to run
@@ -23,7 +22,8 @@ ariane_pkg := include/riscv_pkg.sv       \
               src/debug/dm_pkg.sv        \
               include/ariane_pkg.sv      \
               include/std_cache_pkg.sv   \
-              include/axi_if.sv
+              src/axi/src/axi_pkg.sv     \
+              include/axi_intf.sv
 
 # utility modules
 util := $(wildcard src/util/*.svh)         \
@@ -31,7 +31,7 @@ util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_if.sv  \
         src/util/cluster_clock_gating.sv   \
 		src/util/sram.sv
-        
+
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
             $(wildcard tb/test/*/*_pkg.sv*)
@@ -42,25 +42,27 @@ dpi_hdr := $(wildcard tb/dpi/*.h)
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
-        $(wildcard src/axi_slice/*.sv)                                 \
         $(wildcard src/clint/*.sv)                                     \
-        $(wildcard src/axi_node/*.sv)                                  \
+        $(wildcard src/axi_node/src/*.sv)                              \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
         $(wildcard src/debug/debug_rom/*.sv)                           \
+        src/axi/src/axi_cut.sv                                         \
+        src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
         src/common_cells/src/deprecated/generic_fifo.sv                \
-        src/common_cells/src/deprecated/pulp_sync.sv                   \
+        src/common_cells/src/sync.sv                                   \
+        src/common_cells/src/spill_register.sv                         \
+        src/common_cells/src/sync_wedge.sv                             \
 		src/common_cells/src/fifo_v2.sv                                \
+		src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
         tb/ariane_testharness.sv                                       \
         tb/common/SimDTM.sv                                            \
-        tb/common/SimJTAG.sv                                           
-							       
-	   
-	   
-	   	
+        tb/common/SimJTAG.sv
+
+
 # look for testbenches
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
@@ -87,7 +89,7 @@ list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(library)/ariane_dpi.so
 	# Optimize top level
-	vopt$(questa_version) $(compile_flag) -work $(library)  $(test_top_level) -o $(test_top_level)_optimized +acc -check_synthesis
+	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
 # src files
 $(library)/.build-srcs: $(ariane_pkg) $(util) $(src)
@@ -134,29 +136,29 @@ $(riscv-asm-tests): build $(library)/ariane_dpi.so
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0     \
 	-gblso tmp/riscv-fesvr/build/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
-	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log 
+	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
 $(riscv-benchmarks): build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0   \
 	-gblso tmp/riscv-fesvr/build/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
-	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log 
+	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
 
 
 # can use -jX to run ci tests in parallel using X processes
 run-asm-tests: $(riscv-asm-tests)
-	make check-asm-tests	
+	make check-asm-tests
 
-check-asm-tests: 
-	ci/check-tests.sh tmp/riscv-asm-tests- $(riscv-asm-tests-list)   
+check-asm-tests:
+	ci/check-tests.sh tmp/riscv-asm-tests- $(riscv-asm-tests-list)
 
 # can use -jX to run ci tests in parallel using X processes
 run-benchmarks: $(riscv-benchmarks)
 	make check-benchmarks
 
-check-benchmarks: 
-	ci/check-tests.sh tmp/riscv-benchmarks- $(riscv-benchmarks-list)   
+check-benchmarks:
+	ci/check-tests.sh tmp/riscv-benchmarks- $(riscv-benchmarks-list)
 
 
 verilate_command := $(verilator)                                                           \

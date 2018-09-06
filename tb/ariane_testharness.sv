@@ -71,7 +71,8 @@ module ariane_testharness #(
     assign ndmreset_n = ~ndmreset ;
 
     localparam NB_SLAVE = 4;
-    localparam NB_MASTER = 3;
+    localparam NB_MASTER = 4;
+
     localparam AXI_ID_WIDTH_SLAVES = AXI_ID_WIDTH + $clog2(NB_SLAVE);
 
     AXI_BUS #(
@@ -180,7 +181,7 @@ module ariane_testharness #(
         .debug_req_o          ( debug_req            ),
         .unavailable_i        ( '0                   ),
         .axi_master           ( slave[3]             ),
-        .axi_slave            ( master[2]            ),
+        .axi_slave            ( master[3]            ),
         .dmi_rst_ni           ( rst_ni               ),
         .dmi_req_valid_i      ( debug_req_valid      ),
         .dmi_req_ready_o      ( debug_req_ready      ),
@@ -208,7 +209,7 @@ module ariane_testharness #(
     ) i_axi2rom (
         .clk_i  ( clk_i      ),
         .rst_ni ( ndmreset_n ),
-        .slave  ( master[1]  ),
+        .slave  ( master[2]  ),
         .req_o  ( rom_req    ),
         .we_o   (            ),
         .addr_o ( rom_addr   ),
@@ -234,7 +235,7 @@ module ariane_testharness #(
     logic [AXI_DATA_WIDTH-1:0]    wdata;
     logic [AXI_DATA_WIDTH-1:0]    rdata;
 
-    
+
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
@@ -278,13 +279,33 @@ module ariane_testharness #(
         .AXI_USER_WIDTH ( AXI_USER_WIDTH    ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH      )
     ) i_axi_xbar (
-        .clk          ( clk_i                                          ),
-        .rst_n        ( ndmreset_n                                     ),
-        .test_en_i    ( test_en                                        ),
-        .slave        ( slave                                          ),
-        .master       ( master                                         ),
-        .start_addr_i ( {64'h0,   64'h10000, CACHE_START_ADDR}         ),
-        .end_addr_i   ( {64'hFFF, 64'h1FFFF, CACHE_START_ADDR + 2**24} )
+        .clk          ( clk_i                                                       ),
+        .rst_n        ( ndmreset_n                                                  ),
+        .test_en_i    ( test_en                                                     ),
+        .slave        ( slave                                                       ),
+        .master       ( master                                                      ),
+        .start_addr_i ( {64'h0,   64'h10000, 64'h2000000, CACHE_START_ADDR}         ),
+        .end_addr_i   ( {64'hFFF, 64'h1FFFF, 64'h2FFFFFF, CACHE_START_ADDR + 2**24} )
+    );
+
+    // ---------------
+    // CLINT
+    // ---------------
+    logic ipi;
+    logic timer_irq;
+
+    clint #(
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
+        .NR_CORES       ( 1                   )
+    ) i_clint (
+        .clk_i       ( clk_i     ),
+        .rst_ni      ( rst_ni    ),
+        .slave       ( master[1] ),
+        .rtc_i       ( 1'b0     ),
+        .timer_irq_o ( timer_irq ),
+        .ipi_o       ( ipi       )
     );
 
     // ---------------
@@ -301,9 +322,9 @@ module ariane_testharness #(
         .boot_addr_i          ( 64'h10000        ), // start fetching from ROM
         .core_id_i            ( '0               ),
         .cluster_id_i         ( '0               ),
-        .irq_i                ( '0               ),
-        .ipi_i                ( '0               ),
-        .time_irq_i           ( '0               ),
+        .irq_i                ( '0               ), // we do not specify other interrupts in this TB
+        .ipi_i                ( ipi              ),
+        .time_irq_i           ( timer_irq        ),
         .debug_req_i          ( debug_req        ),
         .data_if              ( slave[2]         ),
         .bypass_if            ( slave[1]         ),

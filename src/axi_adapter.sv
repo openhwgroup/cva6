@@ -131,6 +131,8 @@ module axi_adapter #(
                         axi.w_valid  = 1'b1;
                         // its a single write
                         if (type_i == SINGLE_REQ) begin
+                            // only a single write so the data is already the last one
+                            axi.w_last   = 1'b1;
                             // single req can be granted here
                             gnt_o = axi.aw_ready & axi.w_ready;
                             gnt_id_o = id_i;
