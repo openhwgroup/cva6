@@ -409,17 +409,18 @@ assign exp_pop    = (dreq_o.valid | dreq_i.kill_s2) & (~exp_empty);
       n++;
       // wait for stimuli application end
       acqWait(clk_i, stim_end);
-      acqWaitCyc(clk_i,10);
+      acqWaitCyc(clk_i,100);
     end  
     ///////////////////////////////////////////////
-    acqWait(clk_i,end_of_sim);
-
+    
     status.printToFile("summary.rep", 1);     
       
     if(status.totErrCnt == 0) begin
+      $display("TB: ----------------------------------------------------------------------\n");
       $display("TB: PASSED %0d VECTORS", status.totAcqCnt);
       $display("TB: ----------------------------------------------------------------------\n");
     end else begin
+      $display("TB: ----------------------------------------------------------------------\n");
       $display("TB: FAILED %0d OF %0d VECTORS\n", status.totErrCnt, status.totAcqCnt);
       $display("TB: failing tests:");
       $display("%s", failingTests);

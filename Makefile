@@ -17,6 +17,8 @@ questa_version ?= ${QUESTASIM_VERSION}
 verilator      ?= verilator
 # traget option
 target-options ?=
+# additional defines
+define         ?=
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv         \
@@ -81,7 +83,7 @@ failed-tests := $(wildcard failedtests/*.S)
 # Search here for include files (e.g.: non-standalone components)
 incdir := ./includes
 # Compile and sim flags
-compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
+compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(define)
 uvm-flags    += +UVM_NO_RELNOTES
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
@@ -165,8 +167,9 @@ check-benchmarks:
 verilate_command := $(verilator)                                                           \
                     $(ariane_pkg)                                                          \
                     $(filter-out tb/ariane_bt.sv,$(src))                                   \
+                    +define+$(define)                                                      \
                     src/util/sram.sv                                                       \
-					+incdir+src/axi_node                                                   \
+                    +incdir+src/axi_node                                                   \
                     --unroll-count 256                                                     \
                     -Werror-PINMISSING                                                     \
                     -Werror-IMPLICIT                                                       \

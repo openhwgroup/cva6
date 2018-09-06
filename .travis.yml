@@ -84,6 +84,33 @@ jobs:
         - ci/install-fesvr.sh
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
+
+    - stage: test
+      name: run riscv benchmarks 
+      script:
+        - ci/install-fesvr.sh
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator define=SERPENT_PULP+AXI64_CACHE_PORTS
+    # rv64ui-p-* tests
+    - stage: test
+      name: run rv64ui-p-* asm tests
+      script:
+        - ci/install-fesvr.sh
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator define=SERPENT_PULP+AXI64_CACHE_PORTS
+    # rv64ui-v-* tests
+    - stage: test
+      name: run rv64ui-v-* asm tests
+      script:
+        - ci/install-fesvr.sh
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator define=SERPENT_PULP+AXI64_CACHE_PORTS
+
+
+
+
+
+
     
 # extra time during long builds
 install: travis_wait
