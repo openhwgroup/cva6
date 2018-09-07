@@ -203,4 +203,15 @@ package dm;
 
     localparam logic[1:0] DTM_SUCCESS = 2'h0;
 
+    typedef struct packed {
+        logic [6:0]  addr;
+        dtm_op_t     op;
+        logic [31:0] data;
+    } dmi_req_t;
+
+    typedef struct packed  {
+        logic [31:0] data;
+        logic [1:0]  resp;
+    } dmi_resp_t;
+
 endpackage

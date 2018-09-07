@@ -22,7 +22,6 @@ module issue_stage #(
     )(
     input  logic                                     clk_i,     // Clock
     input  logic                                     rst_ni,    // Asynchronous reset active low
-    input  logic                                     test_en_i, // Test Enable
 
     input  logic                                     flush_unissued_instr_i,
     input  logic                                     flush_i,

@@ -51,7 +51,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
         src/common_cells/src/deprecated/generic_fifo.sv                \
-        src/common_cells/src/sync.sv                                   \
+        src/common_cells/src/cdc_2phase.sv                             \
         src/common_cells/src/spill_register.sv                         \
         src/common_cells/src/sync_wedge.sv                             \
 		src/common_cells/src/fifo_v2.sv                                \

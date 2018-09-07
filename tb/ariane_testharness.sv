@@ -30,7 +30,7 @@ module ariane_testharness #(
     logic        test_en;
     logic        ndmreset;
     logic        ndmreset_n;
-    logic        debug_req;
+    logic        debug_req_core;
 
     int          jtag_enable;
     logic        init_done;
@@ -45,9 +45,6 @@ module ariane_testharness #(
 
     logic        debug_req_valid;
     logic        debug_req_ready;
-    logic [6:0]  debug_req_bits_addr;
-    logic [1:0]  debug_req_bits_op;
-    logic [31:0] debug_req_bits_data;
     logic        debug_resp_valid;
     logic        debug_resp_ready;
     logic [1:0]  debug_resp_bits_resp;
@@ -98,12 +95,16 @@ module ariane_testharness #(
         if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
     end
 
+    dm::dmi_req_t  jtag_dmi_req;
+    dm::dmi_req_t  dmi_req;
+
+    dm::dmi_req_t  debug_req;
+    dm::dmi_resp_t debug_resp;
+
     // debug if MUX
     assign debug_req_valid     = (jtag_enable[0]) ? jtag_req_valid     : dmi_req_valid;
-    assign debug_req_bits_addr = (jtag_enable[0]) ? jtag_req_bits_addr : dmi_req_bits_addr;
-    assign debug_req_bits_op   = (jtag_enable[0]) ? jtag_req_bits_op   : dmi_req_bits_op;
-    assign debug_req_bits_data = (jtag_enable[0]) ? jtag_req_bits_data : dmi_req_bits_data;
     assign debug_resp_ready    = (jtag_enable[0]) ? jtag_resp_ready    : dmi_resp_ready;
+    assign debug_req           = (jtag_enable[0]) ? jtag_dmi_req       : dmi_req;
     assign exit_o              = (jtag_enable[0]) ? jtag_exit          : dmi_exit;
     assign jtag_resp_valid     = (jtag_enable[0]) ? debug_resp_valid   : 1'b0;
     assign dmi_resp_valid      = (jtag_enable[0]) ? 1'b0               : debug_resp_valid;
@@ -125,26 +126,21 @@ module ariane_testharness #(
     );
 
     dmi_jtag i_dmi_jtag (
-        .clk_i                ( clk_i                ),
-        .rst_ni               ( rst_ni               ),
-
-        .dmi_rst_no           (                      ),
-        .dmi_req_valid_o      ( jtag_req_valid       ),
-        .dmi_req_ready_i      ( debug_req_ready      ),
-        .dmi_req_bits_addr_o  ( jtag_req_bits_addr   ),
-        .dmi_req_bits_op_o    ( jtag_req_bits_op     ),
-        .dmi_req_bits_data_o  ( jtag_req_bits_data   ),
-        .dmi_resp_valid_i     ( jtag_resp_valid      ),
-        .dmi_resp_ready_o     ( jtag_resp_ready      ),
-        .dmi_resp_bits_resp_i ( debug_resp_bits_resp ),
-        .dmi_resp_bits_data_i ( debug_resp_bits_data ),
-
-        .tck_i                ( jtag_TCK             ),
-        .tms_i                ( jtag_TMS             ),
-        .trst_ni              ( jtag_TRSTn           ),
-        .td_i                 ( jtag_TDI             ),
-        .td_o                 ( jtag_TDO_data        ),
-        .tdo_oe_o             ( jtag_TDO_driven      )
+        .clk_i            ( clk_i           ),
+        .rst_ni           ( rst_ni          ),
+        .dmi_req_o        ( jtag_dmi_req    ),
+        .dmi_req_valid_o  ( jtag_req_valid  ),
+        .dmi_req_ready_i  ( debug_req_ready ),
+        .dmi_resp_i       ( debug_resp      ),
+        .dmi_resp_ready_o ( jtag_resp_ready ),
+        .dmi_resp_valid_i ( jtag_resp_valid ),
+        .dmi_rst_no       (                 ), // not connected
+        .tck_i            ( jtag_TCK        ),
+        .tms_i            ( jtag_TMS        ),
+        .trst_ni          ( jtag_TRSTn      ),
+        .td_i             ( jtag_TDI        ),
+        .td_o             ( jtag_TDO_data   ),
+        .tdo_oe_o         ( jtag_TDO_driven )
     );
 
     // SiFive's SimDTM Module
@@ -154,13 +150,13 @@ module ariane_testharness #(
         .reset                ( ~rst_ni              ),
         .debug_req_valid      ( dmi_req_valid        ),
         .debug_req_ready      ( debug_req_ready      ),
-        .debug_req_bits_addr  ( dmi_req_bits_addr    ),
-        .debug_req_bits_op    ( dmi_req_bits_op      ),
-        .debug_req_bits_data  ( dmi_req_bits_data    ),
+        .debug_req_bits_addr  ( dmi_req.addr         ),
+        .debug_req_bits_op    ( dmi_req.op           ),
+        .debug_req_bits_data  ( dmi_req.data         ),
         .debug_resp_valid     ( dmi_resp_valid       ),
         .debug_resp_ready     ( dmi_resp_ready       ),
-        .debug_resp_bits_resp ( debug_resp_bits_resp ),
-        .debug_resp_bits_data ( debug_resp_bits_data ),
+        .debug_resp_bits_resp ( debug_resp.resp      ),
+        .debug_resp_bits_data ( debug_resp.data      ),
         .exit                 ( dmi_exit             )
     );
 
@@ -178,20 +174,17 @@ module ariane_testharness #(
         .testmode_i           ( test_en              ),
         .ndmreset_o           ( ndmreset             ),
         .dmactive_o           (                      ), // active debug session
-        .debug_req_o          ( debug_req            ),
+        .debug_req_o          ( debug_req_core       ),
         .unavailable_i        ( '0                   ),
         .axi_master           ( slave[3]             ),
         .axi_slave            ( master[3]            ),
         .dmi_rst_ni           ( rst_ni               ),
         .dmi_req_valid_i      ( debug_req_valid      ),
         .dmi_req_ready_o      ( debug_req_ready      ),
-        .dmi_req_bits_addr_i  ( debug_req_bits_addr  ),
-        .dmi_req_bits_op_i    ( debug_req_bits_op    ),
-        .dmi_req_bits_data_i  ( debug_req_bits_data  ),
+        .dmi_req_i            ( debug_req            ),
         .dmi_resp_valid_o     ( debug_resp_valid     ),
         .dmi_resp_ready_i     ( debug_resp_ready     ),
-        .dmi_resp_bits_resp_o ( debug_resp_bits_resp ),
-        .dmi_resp_bits_data_o ( debug_resp_bits_data )
+        .dmi_resp_o           ( debug_resp           )
     );
 
     // ---------------
@@ -303,7 +296,7 @@ module ariane_testharness #(
         .clk_i       ( clk_i     ),
         .rst_ni      ( rst_ni    ),
         .slave       ( master[1] ),
-        .rtc_i       ( 1'b0     ),
+        .rtc_i       ( 1'b0      ),
         .timer_irq_o ( timer_irq ),
         .ipi_o       ( ipi       )
     );
@@ -318,14 +311,13 @@ module ariane_testharness #(
     ) i_ariane (
         .clk_i                ( clk_i            ),
         .rst_ni               ( ndmreset_n       ),
-        .test_en_i            ( test_en          ),
         .boot_addr_i          ( 64'h10000        ), // start fetching from ROM
         .core_id_i            ( '0               ),
         .cluster_id_i         ( '0               ),
         .irq_i                ( '0               ), // we do not specify other interrupts in this TB
         .ipi_i                ( ipi              ),
         .time_irq_i           ( timer_irq        ),
-        .debug_req_i          ( debug_req        ),
+        .debug_req_i          ( debug_req_core   ),
         .data_if              ( slave[2]         ),
         .bypass_if            ( slave[1]         ),
         .instr_if             ( slave[0]         )

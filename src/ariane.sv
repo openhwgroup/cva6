@@ -26,7 +26,6 @@ module ariane #(
     )(
         input  logic                           clk_i,
         input  logic                           rst_ni,
-        input  logic                           test_en_i,    // enable all clock gates for testing
         // Core ID, Cluster ID and boot address are considered more or less static
         input  logic [63:0]                    boot_addr_i,  // reset boot address
         input  logic [ 3:0]                    core_id_i,    // core id in a multicore environment (reflected in a CSR)
