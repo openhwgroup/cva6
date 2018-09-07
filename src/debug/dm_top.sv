@@ -38,14 +38,11 @@ module dm_top #(
     input  logic               dmi_rst_ni,
     input  logic               dmi_req_valid_i,
     output logic               dmi_req_ready_o,
-    input  logic [ 6:0]        dmi_req_bits_addr_i,
-    input  logic [ 1:0]        dmi_req_bits_op_i, // 0 = nop, 1 = read, 2 = write
-    input  logic [31:0]        dmi_req_bits_data_i,
+    input  dm::dmi_req_t       dmi_req_i,
 
     output logic               dmi_resp_valid_o,
     input  logic               dmi_resp_ready_i,
-    output logic [ 1:0]        dmi_resp_bits_resp_o,
-    output logic [31:0]        dmi_resp_bits_data_o
+    output dm::dmi_resp_t      dmi_resp_o
 );
 
     // Debug CSRs
@@ -102,16 +99,13 @@ module dm_top #(
         .clk_i                   ( clk_i                 ),
         .rst_ni                  ( rst_ni                ),
         .testmode_i              ( testmode_i            ),
-        .dmi_rst_ni              ( dmi_rst_ni            ),
-        .dmi_req_valid_i         ( dmi_req_valid_i       ),
-        .dmi_req_ready_o         ( dmi_req_ready_o       ),
-        .dmi_req_bits_addr_i     ( dmi_req_bits_addr_i   ),
-        .dmi_req_bits_op_i       ( dmi_req_bits_op_i     ),
-        .dmi_req_bits_data_i     ( dmi_req_bits_data_i   ),
-        .dmi_resp_valid_o        ( dmi_resp_valid_o      ),
-        .dmi_resp_ready_i        ( dmi_resp_ready_i      ),
-        .dmi_resp_bits_resp_o    ( dmi_resp_bits_resp_o  ),
-        .dmi_resp_bits_data_o    ( dmi_resp_bits_data_o  ),
+        .dmi_rst_ni,
+        .dmi_req_valid_i,
+        .dmi_req_ready_o,
+        .dmi_req_i,
+        .dmi_resp_valid_o,
+        .dmi_resp_ready_i,
+        .dmi_resp_o,
         .ndmreset_o              ( ndmreset_o            ),
         .dmactive_o              ( dmactive_o            ),
         .hartsel_o               ( hartsel               ),
