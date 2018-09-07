@@ -73,6 +73,7 @@ module serpent_icache  #(
     logic [$clog2(ICACHE_SET_ASSOC)-1:0]  inv_way;                      // first non-valid encountered
     logic [$clog2(ICACHE_SET_ASSOC)-1:0]  rnd_way;                      // random index for replacement
     logic [$clog2(ICACHE_SET_ASSOC)-1:0]  repl_way;                     // way to replace
+    logic [ICACHE_SET_ASSOC-1:0]          repl_way_oh_d, repl_way_oh_q; // way to replace (onehot)
     logic                                 all_ways_valid;               // we need to switch repl strategy since all are valid
 
     // invalidations / flushing       
@@ -219,12 +220,11 @@ module serpent_icache  #(
                         if (dreq_i.req) begin
                             cache_rden       = 1'b1;
                             state_d          = READ;
-
-                            if (dreq_i.kill_s1) begin 
-                                state_d = IDLE;
-                            end
                         end
-                    end    
+                    end            
+                    if (dreq_i.kill_s1) begin 
+                        state_d = IDLE;
+                    end   
                 end    
             end
             //////////////////////////////////
@@ -237,20 +237,17 @@ module serpent_icache  #(
                 state_d          = TLB_MISS;
                 areq_o.fetch_req = '1;
                 // only enable tag comparison if cache is enabled
-                cmp_en_d = cache_en_q;
+                cmp_en_d    = cache_en_q;
+                // readout speculatively
+                cache_rden  = cache_en_q;
                 
                 if (areq_i.fetch_valid) begin
-                    // check if we have to kill this request
-                    if (dreq_i.kill_s2 | flush_d) begin
+                    // check if we have to flush
+                    if (flush_d) begin
                         state_d  = IDLE;
-                    // check whether we got an exception
-                    end else if (areq_i.fetch_exception.valid) begin
-                        dreq_o.valid = 1'b1;
-                        state_d      = IDLE;
-                    // we have a hit, output valid result
-                    // and check whether we have another request
-                    end else if (|cl_hit & cache_en_q) begin
-                        dreq_o.valid     = 1'b1;
+                    // we have a hit or an exception output valid result
+                    end else if ((|cl_hit & cache_en_q) | areq_i.fetch_exception.valid) begin
+                        dreq_o.valid     = ~dreq_i.kill_s2;// just don't output in this case
                         state_d          = IDLE;
 
                         // we can accept another request
@@ -259,30 +256,29 @@ module serpent_icache  #(
                         if (~mem_rtrn_vld_i) begin
                             dreq_o.ready     = 1'b1;
                             if (dreq_i.req) begin
-                                cache_rden       = 1'b1;
                                 state_d          = READ;
-
-                                // if a request is being killed at this stage, 
-                                // we have to bail out and wait for the address translation to complete 
-                                if (dreq_i.kill_s1) begin 
-                                    state_d = IDLE;
-                                end
                             end
                         end     
+                        // if a request is being killed at this stage, 
+                        // we have to bail out and wait for the address translation to complete 
+                        if (dreq_i.kill_s1) begin 
+                            state_d = IDLE;
+                        end
                     // we have a miss / NC transaction    
+                    end else if (dreq_i.kill_s2) begin 
+                        state_d = IDLE;
                     end else begin    
                         cmp_en_d = 1'b0;
                         // only count this as a miss if the cache is enabled, and
                         // the address is cacheable
-                        miss_o         = (~paddr_is_nc);
-
                         // send out ifill request
                         mem_data_req_o = 1'b1;
                         if (mem_data_ack_i) begin
-                            state_d = MISS;
-                        end
+                            miss_o         = (~paddr_is_nc);
+                            state_d        = MISS;
+                        end     
                     end        
-                // bail out if this request is being killed
+                // bail out if this request is being killed (and we missed on the TLB)
                 end else if (dreq_i.kill_s2 | flush_d) begin
                     state_d  = KILL_ATRANS;
                 end
@@ -295,7 +291,9 @@ module serpent_icache  #(
                 areq_o.fetch_req = '1;
                 // only enable tag comparison if cache is enabled
                 cmp_en_d = cache_en_q;
-                    
+                // readout speculatively
+                cache_rden = cache_en_q;
+
                 if (areq_i.fetch_valid) begin
                     // check if we have to kill this request
                     if (dreq_i.kill_s2 | flush_d) begin
@@ -307,7 +305,6 @@ module serpent_icache  #(
                     // re-trigger cache readout for tag comparison and cache line selection
                     // but if we got an invalidation, we have to wait another cycle
                     end else if (~mem_rtrn_vld_i) begin
-                        cache_rden       = 1'b1;
                         state_d          = READ;
                     end        
                 // bail out if this request is being killed
@@ -323,14 +320,12 @@ module serpent_icache  #(
                 // note: this is mutually exclusive with ICACHE_INV_REQ, 
                 // so we do not have to check for invals here
                 if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
-                    // bail out if this request is being killed
-                    if (dreq_i.kill_s2 | flush_d) begin
-                        state_d  = IDLE;
-                    end else begin
+                    state_d      = IDLE;
+                    // only return data if request is not being killed
+                    if (~(dreq_i.kill_s2 | flush_d)) begin
                         dreq_o.valid = 1'b1;
                         // only write to cache if this address is cacheable
-                        cache_wren   = (~paddr_is_nc);
-                        state_d      = IDLE;
+                        cache_wren   = ~paddr_is_nc;
                     end    
                 // bail out if this request is being killed
                 end else if (dreq_i.kill_s2 | flush_d) begin
@@ -387,7 +382,7 @@ module serpent_icache  #(
     assign vld_req  = (flush_en | cache_rden)         ? '1                             : 
                       (mem_rtrn_i.inv.all & inv_en)   ? '1                             : 
                       (mem_rtrn_i.inv.vld & inv_en)   ? bin2onehot(mem_rtrn_i.inv.way) :
-                                                        bin2onehot(repl_way);
+                                                        repl_way_oh_q;
 
     assign vld_wdata = (cache_wren) ? '1 : '0;
                        
@@ -396,12 +391,13 @@ module serpent_icache  #(
                      
 
     // chose random replacement if all are valid
-    assign update_lfsr = cache_wren & all_ways_valid;
-    assign repl_way    = (all_ways_valid) ? rnd_way : inv_way;
-    
+    assign update_lfsr   = cache_wren & all_ways_valid;
+    assign repl_way      = (all_ways_valid) ? rnd_way : inv_way;
+    assign repl_way_oh_d = (cmp_en_q) ? bin2onehot(repl_way) : repl_way_oh_q;
+
     // enable signals for memory arrays
-    assign cl_req   = (cache_rden) ? '1                   : 
-                      (cache_wren) ? bin2onehot(repl_way) :
+    assign cl_req   = (cache_rden) ? '1            : 
+                      (cache_wren) ? repl_way_oh_q :
                                      '0;
     assign cl_we    = cache_wren;
     
@@ -506,23 +502,25 @@ module serpent_icache  #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
         if(~rst_ni) begin
-            cl_tag_q     <= '0;
-            flush_cnt_q  <= '0;
-            vaddr_q      <= '0;
-            cmp_en_q     <= '0;
-            cache_en_q   <= '0;
-            flush_q      <= '0;
-            state_q      <= IDLE;
-            cl_offset_q  <= '0;
+            cl_tag_q      <= '0;
+            flush_cnt_q   <= '0;
+            vaddr_q       <= '0;
+            cmp_en_q      <= '0;
+            cache_en_q    <= '0;
+            flush_q       <= '0;
+            state_q       <= IDLE;
+            cl_offset_q   <= '0;
+            repl_way_oh_q <= '0;
         end else begin
-            cl_tag_q     <= cl_tag_d;
-            flush_cnt_q  <= flush_cnt_d;
-            vaddr_q      <= vaddr_d;
-            cmp_en_q     <= cmp_en_d;
-            cache_en_q   <= cache_en_d;
-            flush_q      <= flush_d;
-            state_q      <= state_d;
-            cl_offset_q  <= cl_offset_d;
+            cl_tag_q      <= cl_tag_d;
+            flush_cnt_q   <= flush_cnt_d;
+            vaddr_q       <= vaddr_d;
+            cmp_en_q      <= cmp_en_d;
+            cache_en_q    <= cache_en_d;
+            flush_q       <= flush_d;
+            state_q       <= state_d;
+            cl_offset_q   <= cl_offset_d;
+            repl_way_oh_q <= repl_way_oh_d;
         end
     end
 
