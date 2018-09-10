@@ -12,27 +12,16 @@
 // Date: 08.02.2018
 // Description: Ariane Instruction Fetch Frontend
 
+
 import ariane_pkg::*;
 
-module frontend #(
-    parameter int unsigned SET_ASSOCIATIVITY = 4,
-    parameter int unsigned CACHE_LINE_WIDTH  = 64, // in bit
-    parameter int unsigned FETCH_WIDTH       = 32
-)(
+module frontend (
     input  logic               clk_i,              // Clock
     input  logic               rst_ni,             // Asynchronous reset active low
     input  logic               flush_i,            // flush request for PCGEN
-    input  logic               en_cache_i,         // enable icache
     input  logic               flush_bp_i,         // flush branch prediction
-    input  logic               flush_icache_i,     // instruction fence in
     // global input
     input  logic [63:0]        boot_addr_i,
-    // Address translation interface
-    output logic               fetch_req_o,        // address translation request
-    output logic [63:0]        fetch_vaddr_o,      // virtual address out
-    input  logic               fetch_valid_i,      // address translation valid
-    input  logic [63:0]        fetch_paddr_i,      // physical address in
-    input  exception_t         fetch_exception_i,  // exception occurred during fetch
     // Set a new PC
     // mispredict
     input  branchpredict_t     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
@@ -46,9 +35,8 @@ module frontend #(
     input  logic               ex_valid_i,         // exception is valid - from commit
     input  logic               set_debug_pc_i,     // jump to debug address
     // Instruction Fetch
-    AXI_BUS.Master             axi,
-    output logic               l1_icache_miss_o,    // instruction cache missed
-    //
+    input  icache_dreq_o_t     icache_dreq_i,
+    output icache_dreq_i_t     icache_dreq_o,
     // instruction output port -> to processor back-end
     output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
     output logic               fetch_entry_valid_o, // instruction in IF is valid
@@ -58,13 +46,13 @@ module frontend #(
     localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH/16;
 
     // Registers
-    logic [31:0] icache_data_d,  icache_data_q;
-    logic        icache_valid_d, icache_valid_q;
-    exception_t  icache_ex_d,    icache_ex_q;
+    logic [31:0] icache_data_q;
+    logic        icache_valid_q;
+    exception_t  icache_ex_q;
 
     logic        instruction_valid;
 
-    logic [63:0] icache_vaddr_d, icache_vaddr_q;
+    logic [63:0] icache_vaddr_q;
 
     // BHT, BTB and RAS prediction
     bht_prediction_t bht_prediction;
@@ -75,12 +63,10 @@ module frontend #(
     logic            ras_push, ras_pop;
     logic [63:0]     ras_update;
 
-    // icache control signals
-    logic icache_req, kill_s1, kill_s2, icache_ready;
-
     // instruction fetch is ready
     logic          if_ready;
     logic [63:0]   npc_d, npc_q; // next PC
+    logic npc_rst_load_q; //indicates whether we come out of reset (then we need to load boot_addr_i)
     // -----------------------
     // Ctrl Flow Speculation
     // -----------------------
@@ -97,14 +83,17 @@ module frontend #(
     logic [INSTR_PER_FETCH-1:0][31:0] instr;
     logic [INSTR_PER_FETCH-1:0][63:0] addr;
 
-    // virtual address of current fetch
-    logic [63:0]   fetch_vaddr;
-
     logic [63:0]   bp_vaddr;
     logic          bp_valid; // we have a valid branch-prediction
+    logic          is_mispredict;
     // branch-prediction which we inject into the pipeline
     branchpredict_sbe_t  bp_sbe;
-    logic                fifo_valid, fifo_ready; // fetch FIFO
+
+    // fetch fifo credit system
+    logic fifo_valid, fifo_ready, fifo_empty, fifo_pop;
+    logic s2_eff_kill, issue_req, s2_in_flight_d, s2_in_flight_q;
+    logic [$clog2(FETCH_FIFO_DEPTH):0] fifo_credits_d;
+    logic [$clog2(FETCH_FIFO_DEPTH):0] fifo_credits_q;
 
     // save the unaligned part of the instruction to this ff
     logic [15:0] unaligned_instr_d,   unaligned_instr_q;
@@ -161,10 +150,11 @@ module frontend #(
             unaligned_instr_d = icache_data_q[31:16];
         end
 
-        if (kill_s2) begin
+        if (icache_dreq_o.kill_s2) begin
             unaligned_d = 1'b0;
         end
     end
+
 
     logic [INSTR_PER_FETCH:0] taken;
     // control front-end + branch-prediction
@@ -172,20 +162,18 @@ module frontend #(
         automatic logic take_rvi_cf; // take the control flow change (non-compressed)
         automatic logic take_rvc_cf; // take the control flow change (compressed)
 
-        take_rvi_cf     = 1'b0;
-        take_rvc_cf     = 1'b0;
-        ras_pop         = 1'b0;
-        ras_push        = 1'b0;
-        ras_update      = '0;
-        taken           = '0;
-        take_rvi_cf     = 1'b0;
-        if_ready        = icache_ready & fifo_ready;
-        icache_req      = fifo_ready;
+        take_rvi_cf       = 1'b0;
+        take_rvc_cf       = 1'b0;
+        ras_pop           = 1'b0;
+        ras_push          = 1'b0;
+        ras_update        = '0;
+        taken             = '0;
+        take_rvi_cf       = 1'b0;
 
-        bp_vaddr        = '0;    // predicted address
-        bp_valid        = 1'b0;  // prediction is valid
+        bp_vaddr          = '0;    // predicted address
+        bp_valid          = 1'b0;  // prediction is valid
 
-        bp_sbe.cf_type = RAS;
+        bp_sbe.cf_type    = RAS;
 
         // only predict if the response is valid
         if (instruction_valid) begin
@@ -262,22 +250,21 @@ module frontend #(
 
     end
 
-    logic is_mispredict;
     assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
 
     always_comb begin : id_if
-        kill_s1 = 1'b0;
-        kill_s2 = 1'b0;
+        icache_dreq_o.kill_s1 = 1'b0;
+        icache_dreq_o.kill_s2 = 1'b0;
 
         // we mis-predicted so kill the icache request and the fetch queue
         if (is_mispredict || flush_i) begin
-            kill_s1 = 1'b1;
-            kill_s2 = 1'b1;
+            icache_dreq_o.kill_s1 = 1'b1;
+            icache_dreq_o.kill_s2 = 1'b1;
         end
 
         // if we have a valid branch-prediction we need to kill the last cache request
         if (bp_valid) begin
-            kill_s2 = 1'b1;
+            icache_dreq_o.kill_s2 = 1'b1;
         end
 
         fifo_valid = icache_valid_q;
@@ -313,9 +300,21 @@ module frontend #(
     always_comb begin : npc_select
         automatic logic [63:0] fetch_address;
 
-        fetch_address    = npc_q;
-        // keep stable by default
-        npc_d            = npc_q;
+        // check whether we come out of reset
+        // this is a workaround. some tools have issues
+        // having boot_addr_i in the asynchronous
+        // reset assignment to npc_q, even though
+        // boot_addr_i will be assigned a constant
+        // on the top-level.
+        if (npc_rst_load_q) begin
+            npc_d         = boot_addr_i;
+            fetch_address = boot_addr_i;
+        end else begin
+            fetch_address    = npc_q;
+            // keep stable by default
+            npc_d            = npc_q;
+        end
+
         // -------------------------------
         // 1. Branch Prediction
         // -------------------------------
@@ -366,12 +365,50 @@ module frontend #(
         if (set_debug_pc_i) begin
             npc_d = dm::HaltAddress;
         end
-        fetch_vaddr = fetch_address;
+
+        icache_dreq_o.vaddr = fetch_address;
     end
+
+    // -------------------
+    // Credit-based fetch FIFO flow ctrl
+    // -------------------
+
+    assign fifo_credits_d       =  (flush_i) ? FETCH_FIFO_DEPTH :
+                                               fifo_credits_q + fifo_pop + s2_eff_kill - issue_req;
+
+    // check whether there is a request in flight that is being killed now
+    // if this is the case, we need to increment the credit by 1
+    assign s2_eff_kill         = s2_in_flight_q & icache_dreq_o.kill_s2;
+    assign s2_in_flight_d      = (flush_i)             ? 1'b0 :
+                                 (issue_req)           ? 1'b1 :
+                                 (icache_dreq_i.valid) ? 1'b0 :
+                                                         s2_in_flight_q;
+
+    // only enable counter if current request is not being killed
+    assign issue_req           = if_ready & (~icache_dreq_o.kill_s1);
+    assign fifo_pop            = fetch_ack_i & fetch_entry_valid_o;
+    assign fifo_ready          = (|fifo_credits_q);
+    assign if_ready            =  icache_dreq_i.ready & fifo_ready;
+    assign icache_dreq_o.req   =  fifo_ready;
+    assign fetch_entry_valid_o = ~fifo_empty;
+
+
+//pragma translate_off
+`ifndef VERILATOR
+  fetch_fifo_credits0 : assert property (
+      @(posedge clk_i) disable iff (~rst_ni) (fifo_credits_q <= FETCH_FIFO_DEPTH))
+         else $fatal("[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
+    initial begin
+        assert (FETCH_FIFO_DEPTH<=8) else $fatal("[frontend] fetch fifo deeper than 8 not supported");
+        assert (FETCH_WIDTH==32)     else $fatal("[frontend] fetch width != not supported");
+    end
+`endif
+//pragma translate_on
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            npc_q                <= boot_addr_i;
+            npc_q                <= '0;
+            npc_rst_load_q       <= 1'b1;
             icache_data_q        <= '0;
             icache_valid_q       <= 1'b0;
             icache_vaddr_q       <= 'b0;
@@ -379,15 +416,20 @@ module frontend #(
             unaligned_q          <= 1'b0;
             unaligned_address_q  <= '0;
             unaligned_instr_q    <= '0;
+            fifo_credits_q       <= FETCH_FIFO_DEPTH;
+            s2_in_flight_q       <= 1'b0;
         end else begin
+            npc_rst_load_q       <= 1'b0;
             npc_q                <= npc_d;
-            icache_data_q        <= icache_data_d;
-            icache_valid_q       <= icache_valid_d;
-            icache_vaddr_q       <= icache_vaddr_d;
-            icache_ex_q          <= icache_ex_d;
+            icache_data_q        <= icache_dreq_i.data;
+            icache_valid_q       <= icache_dreq_i.valid;
+            icache_vaddr_q       <= icache_dreq_i.vaddr;
+            icache_ex_q          <= icache_dreq_i.ex;
             unaligned_q          <= unaligned_d;
             unaligned_address_q  <= unaligned_address_d;
             unaligned_instr_q    <= unaligned_instr_d;
+            fifo_credits_q       <= fifo_credits_d;
+            s2_in_flight_q       <= s2_in_flight_d;
         end
     end
 
@@ -421,33 +463,6 @@ module frontend #(
         .*
     );
 
-    icache #(
-        .SET_ASSOCIATIVITY ( 4                    ),
-        .CACHE_LINE_WIDTH  ( 128                  ),
-        .FETCH_WIDTH       ( FETCH_WIDTH          )
-    ) i_icache (
-        .clk_i,
-        .rst_ni,
-        .flush_i          ( flush_icache_i        ),
-        .en_cache_i,
-        .vaddr_i          ( fetch_vaddr           ), // 1st cycle
-        .data_o           ( icache_data_d         ),
-        .req_i            ( icache_req            ),
-        .kill_s1_i        ( kill_s1               ),
-        .kill_s2_i        ( kill_s2               ),
-        .ready_o          ( icache_ready          ),
-        .valid_o          ( icache_valid_d        ),
-        .ex_o             ( icache_ex_d           ),
-        .vaddr_o          ( icache_vaddr_d        ),
-        .axi,
-        .fetch_req_o,
-        .fetch_vaddr_o,
-        .fetch_valid_i,
-        .fetch_paddr_i,
-        .fetch_exception_i,
-        .miss_o           ( l1_icache_miss_o      )
-    );
-
     for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin
         instr_scan i_instr_scan (
             .instr_i      ( instr[i]      ),
@@ -468,250 +483,24 @@ module frontend #(
         );
     end
 
-    fetch_fifo i_fetch_fifo (
-        .flush_i            ( flush_i             ),
-        .branch_predict_i   ( bp_sbe              ),
-        .ex_i               ( icache_ex_q         ),
-        .addr_i             ( icache_vaddr_q      ),
-        .rdata_i            ( icache_data_q       ),
-        .valid_i            ( fifo_valid          ),
-        .ready_o            ( fifo_ready          ),
-        .fetch_entry_o      ( fetch_entry_o       ),
-        .fetch_entry_valid_o( fetch_entry_valid_o ),
-        .fetch_ack_i        ( fetch_ack_i         ),
-        .*
-    );
-
-endmodule
-
-// ------------------------------
-// Instruction Scanner
-// ------------------------------
-module instr_scan (
-    input  logic [31:0] instr_i,        // expect aligned instruction, compressed or not
-    output logic        is_rvc_o,
-    output logic        rvi_return_o,
-    output logic        rvi_call_o,
-    output logic        rvi_branch_o,
-    output logic        rvi_jalr_o,
-    output logic        rvi_jump_o,
-    output logic [63:0] rvi_imm_o,
-    output logic        rvc_branch_o,
-    output logic        rvc_jump_o,
-    output logic        rvc_jr_o,
-    output logic        rvc_return_o,
-    output logic        rvc_jalr_o,
-    output logic        rvc_call_o,
-    output logic [63:0] rvc_imm_o
-);
-    assign is_rvc_o     = (instr_i[1:0] != 2'b11);
-    // check that rs1 is either x1 or x5 and that rs1 is not x1 or x5, TODO: check the fact about bit 7
-    assign rvi_return_o = rvi_jalr_o & ~instr_i[7] & ~instr_i[19] & ~instr_i[18] & ~instr_i[16] & instr_i[15];
-    assign rvi_call_o   = (rvi_jalr_o | rvi_jump_o) & instr_i[7]; // TODO: check that this captures calls
-    // differentiates between JAL and BRANCH opcode, JALR comes from BHT
-    assign rvi_imm_o    = (instr_i[3]) ? uj_imm(instr_i) : sb_imm(instr_i);
-    assign rvi_branch_o = (instr_i[6:0] == riscv::OpcodeBranch) ? 1'b1 : 1'b0;
-    assign rvi_jalr_o   = (instr_i[6:0] == riscv::OpcodeJalr)   ? 1'b1 : 1'b0;
-    assign rvi_jump_o   = (instr_i[6:0] == riscv::OpcodeJal)    ? 1'b1 : 1'b0;
-    // opcode JAL
-    assign rvc_jump_o   = (instr_i[15:13] == riscv::OpcodeCJ) & is_rvc_o & (instr_i[1:0] == 2'b01);
-    assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000) & is_rvc_o & (instr_i[1:0] == 2'b10);
-    assign rvc_branch_o = ((instr_i[15:13] == riscv::OpcodeCBeqz) | (instr_i[15:13] == riscv::OpcodeCBnez)) & is_rvc_o & (instr_i[1:0] == 2'b01);
-    // check that rs1 is x1 or x5
-    assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & instr_i[7];
-    assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000) & is_rvc_o;
-    assign rvc_call_o   = rvc_jalr_o;  // TODO: check that this captures calls
-
-    // // differentiates between JAL and BRANCH opcode, JALR comes from BHT
-    assign rvc_imm_o    = (instr_i[14]) ? {{56{instr_i[12]}}, instr_i[6:5], instr_i[2], instr_i[11:10], instr_i[4:3], 1'b0}
-                                       : {{53{instr_i[12]}}, instr_i[8], instr_i[10:9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5:3], 1'b0};
-endmodule
-
-// ------------------------------
-// Branch Prediction
-// ------------------------------
-
-// branch target buffer
-module btb #(
-    parameter int NR_ENTRIES = 8
-)(
-    input  logic               clk_i,           // Clock
-    input  logic               rst_ni,          // Asynchronous reset active low
-    input  logic               flush_i,         // flush the btb
-
-    input  logic [63:0]        vpc_i,           // virtual PC from IF stage
-    input  btb_update_t        btb_update_i,    // update btb with this information
-    output btb_prediction_t    btb_prediction_o // prediction from btb
-);
-    // number of bits which are not used for indexing
-    localparam OFFSET = 1; // we are using compressed instructions so do use the lower 2 bits for prediction
-    localparam ANTIALIAS_BITS = 8;
-    // number of bits we should use for prediction
-    localparam PREDICTION_BITS = $clog2(NR_ENTRIES) + OFFSET;
-    // typedef for all branch target entries
-    // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
-    btb_prediction_t btb_d [NR_ENTRIES-1:0], btb_q [NR_ENTRIES-1:0];
-    logic [$clog2(NR_ENTRIES)-1:0]          index, update_pc;
-
-    assign index     = vpc_i[PREDICTION_BITS - 1:OFFSET];
-    assign update_pc = btb_update_i.pc[PREDICTION_BITS - 1:OFFSET];
-
-    // output matching prediction
-    assign btb_prediction_o = btb_q[index];
-
-    // -------------------------
-    // Update Branch Prediction
-    // -------------------------
-    // update on a mis-predict
-    always_comb begin : update_branch_predict
-        btb_d = btb_q;
-
-        if (btb_update_i.valid) begin
-            btb_d[update_pc].valid = 1'b1;
-            // the target address is simply updated
-            btb_d[update_pc].target_address = btb_update_i.target_address;
-            // as is the information whether this was a compressed branch
-            btb_d[update_pc].is_lower_16    = btb_update_i.is_lower_16;
-            // check if we should invalidate this entry, this happens in case we predicted a branch
-            // where actually none-is (aliasing)
-            if (btb_update_i.clear) begin
-                btb_d[update_pc].valid = 1'b0;
-            end
-        end
-    end
-
-    // sequential process
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            // Bias the branches to be taken upon first arrival
-            for (int i = 0; i < NR_ENTRIES; i++)
-                btb_q[i] <= '{default: 0};
-        end else begin
-            // evict all entries
-            if (flush_i) begin
-                for (int i = 0; i < NR_ENTRIES; i++) begin
-                    btb_q[i].valid <=  1'b0;
-                end
-            end else begin
-                btb_q <=  btb_d;
-            end
-        end
-    end
-endmodule
-
-// return address stack
-module ras #(
-    parameter int unsigned DEPTH = 2
-)(
-    input  logic        clk_i,
-    input  logic        rst_ni,
-    input  logic        push_i,
-    input  logic        pop_i,
-    input  logic [63:0] data_i,
-    output ras_t        data_o
+fifo_v2 #(
+    .DEPTH        (  8                   ),
+    .dtype        ( fetch_entry_t        ))
+i_fetch_fifo (
+    .clk_i       ( clk_i                 ),
+    .rst_ni      ( rst_ni                ),
+    .flush_i     ( flush_i               ),
+    .testmode_i  ( 1'b0                  ),
+    .full_o      (                       ),
+    .empty_o     ( fifo_empty            ),
+    .alm_full_o  (                       ),
+    .alm_empty_o (                       ),
+    .data_i      ( {icache_vaddr_q, icache_data_q, bp_sbe, icache_ex_q} ),
+    .push_i      ( fifo_valid            ),
+    .data_o      ( fetch_entry_o         ),
+    .pop_i       ( fifo_pop              )
 );
 
-    ras_t [DEPTH-1:0] stack_d, stack_q;
 
-    assign data_o = stack_q[0];
 
-    always_comb begin
-        stack_d = stack_q;
-
-        // push on the stack
-        if (push_i) begin
-            stack_d[0].ra = data_i;
-            // mark the new return address as valid
-            stack_d[0].valid = 1'b1;
-            stack_d[DEPTH-1:1] = stack_q[DEPTH-2:0];
-        end
-
-        if (pop_i) begin
-            stack_d[DEPTH-2:0] = stack_q[DEPTH-1:1];
-            // we popped the value so invalidate the end of the stack
-            stack_d[DEPTH-1].valid = 1'b0;
-            stack_d[DEPTH-1].ra = 'b0;
-        end
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            stack_q <= '0;
-        end else begin
-            stack_q <= stack_d;
-        end
-    end
-endmodule
-
-// branch history table - 2 bit saturation counter
-module bht #(
-    parameter int unsigned NR_ENTRIES = 1024
-)(
-    input  logic            clk_i,
-    input  logic            rst_ni,
-    input  logic            flush_i,
-    input  logic [63:0]     vpc_i,
-    input  bht_update_t     bht_update_i,
-    output bht_prediction_t bht_prediction_o
-);
-    localparam OFFSET = 2; // we are using compressed instructions so do not use the lower 2 bits for prediction
-    localparam ANTIALIAS_BITS = 8;
-    // number of bits we should use for prediction
-    localparam PREDICTION_BITS = $clog2(NR_ENTRIES) + OFFSET;
-
-    struct packed {
-        logic       valid;
-        logic [1:0] saturation_counter;
-    } bht_d[NR_ENTRIES-1:0], bht_q[NR_ENTRIES-1:0];
-
-    logic [$clog2(NR_ENTRIES)-1:0]  index, update_pc;
-    logic [1:0]                     saturation_counter;
-
-    assign index     = vpc_i[PREDICTION_BITS - 1:OFFSET];
-    assign update_pc = bht_update_i.pc[PREDICTION_BITS - 1:OFFSET];
-    // prediction assignment
-    assign bht_prediction_o.valid = bht_q[index].valid;
-    assign bht_prediction_o.taken = bht_q[index].saturation_counter == 2'b10;
-    assign bht_prediction_o.strongly_taken = (bht_q[index].saturation_counter == 2'b11);
-    always_comb begin : update_bht
-        bht_d = bht_q;
-        saturation_counter = bht_q[update_pc].saturation_counter;
-
-        if (bht_update_i.valid) begin
-            bht_d[update_pc].valid = 1'b1;
-
-            if (saturation_counter == 2'b11) begin
-                // we can safely decrease it
-                if (~bht_update_i.taken)
-                    bht_d[update_pc].saturation_counter = saturation_counter - 1;
-            // then check if it saturated in the negative regime e.g.: branch not taken
-            end else if (saturation_counter == 2'b00) begin
-                // we can safely increase it
-                if (bht_update_i.taken)
-                    bht_d[update_pc].saturation_counter = saturation_counter + 1;
-            end else begin // otherwise we are not in any boundaries and can decrease or increase it
-                if (bht_update_i.taken)
-                    bht_d[update_pc].saturation_counter = saturation_counter + 1;
-                else
-                    bht_d[update_pc].saturation_counter = saturation_counter - 1;
-            end
-        end
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            for (int unsigned i = 0; i < NR_ENTRIES; i++)
-                bht_q[i] <= '0;
-        end else begin
-            // evict all entries
-            if (flush_i) begin
-                for (int i = 0; i < NR_ENTRIES; i++) begin
-                    bht_q[i].valid <=  1'b0;
-                    bht_q[i].saturation_counter <= 2'b10;
-                end
-            end else begin
-                bht_q <= bht_d;
-            end
-        end
-    end
 endmodule
