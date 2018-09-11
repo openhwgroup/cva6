@@ -49,6 +49,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/fpu/src/subunits/*.vhd)                         \
         src/fpu_legacy/hdl/fpu_div_sqrt_mvp/defs_div_sqrt_mvp.sv       \
         $(wildcard src/fpu_legacy/hdl/fpu_div_sqrt_mvp/*.sv)           \
+        $(wildcard src/frontend/*.sv)                                  \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/axi_slice/*.sv)                                 \
