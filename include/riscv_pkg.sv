@@ -32,6 +32,13 @@ package riscv;
         XLEN_128 = 2'b11
     } xlen_t;
 
+    typedef enum logic [1:0] {
+        Off     = 2'b00,
+        Initial = 2'b01,
+        Clean   = 2'b10,
+        Dirty   = 2'b11
+    } xs_t;
+
     typedef struct packed {
         logic         sd;     // signal dirty - read-only - hardwired zero
         logic [62:36] wpri4;  // writes preserved reads ignored
@@ -44,8 +51,8 @@ package riscv;
         logic         mxr;    // make executable readable
         logic         sum;    // permit supervisor user memory access
         logic         mprv;   // modify privilege - privilege level for ld/st
-        logic [1:0]   xs;     // extension register - hardwired to zero
-        logic [1:0]   fs;     // extension register - hardwired to zero
+        xs_t          xs;     // extension register - hardwired to zero
+        xs_t          fs;     // floating point extension register
         priv_lvl_t    mpp;    // holds the previous privilege mode up to machine
         logic [1:0]   wpri2;  // writes preserved reads ignored
         logic         spp;    // holds the previous privilege mode up to supervisor

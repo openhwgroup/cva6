@@ -21,6 +21,7 @@ module commit_stage #(
     input  logic                                    halt_i,             // request to halt the core
     input  logic                                    flush_dcache_i,     // request to flush dcache -> also flush the pipeline
     output exception_t                              exception_o,        // take exception to controller
+    output logic                                    dirty_fp_state_o,   // mark the F state as dirty
     input  logic                                    debug_mode_i,       // we are in debug mode
     input  logic                                    debug_req_i,        // debug unit is requesting to enter debug mode
     input  logic                                    single_step_i,      // we are in single step debug mode
@@ -55,6 +56,7 @@ module commit_stage #(
     assign waddr_o[1] = commit_instr_i[1].rd[4:0];
 
     assign pc_o       = commit_instr_i[0].pc;
+    assign dirty_fp_state_o = |we_fpr_o;
 
     // -------------------
     // Commit Instruction
@@ -69,7 +71,6 @@ module commit_stage #(
         we_gpr_o[0]        = 1'b0;
         we_gpr_o[1]        = 1'b0;
         we_fpr_o           = '{default: 1'b0};
-
         commit_lsu_o       = 1'b0;
         commit_csr_o       = 1'b0;
         wdata_o[0]         = commit_instr_i[0].result;

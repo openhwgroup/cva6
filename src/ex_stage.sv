@@ -122,7 +122,8 @@ module ex_stage #(
     // Branch Engine
     // --------------------
     branch_unit branch_unit_i (
-        .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i), // any functional unit is valid, check that there is no accidental mis-predict
+        // any functional unit is valid, check that there is no accidental mis-predict
+        .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i ),
         .branch_comp_res_i   ( alu_branch_res ),
         .*
     );
@@ -139,7 +140,7 @@ module ex_stage #(
     // FPU
     // ----------------
     generate
-        if( FP_PRESENT ) begin : fpu_gen
+        if (FP_PRESENT) begin : fpu_gen
             fpu_wrap fpu_i (
                 .operand_c_i ( imm_i        ),
                 .result_o    ( fpu_result_o ),

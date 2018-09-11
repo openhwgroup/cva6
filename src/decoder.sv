@@ -30,6 +30,7 @@ module decoder (
     // From CSR
     input  riscv::priv_lvl_t   priv_lvl_i,              // current privilege level
     input  logic               debug_mode_i,            // we are in debug mode
+    input  riscv::xs_t         fs_i,                    // floating point extension status
     input  logic [2:0]         frm_i,                   // floating-point dynamic rounding mode
     input  logic               tvm_i,                   // trap virtual memory
     input  logic               tw_i,                    // timeout wait
@@ -244,7 +245,8 @@ module decoder (
                     // Vectorial Floating-Point Reg-Reg Operations
                     // --------------------------------------------
                     if (instr.rvftype.funct2 == 2'b10) begin // Prefix 10 for all Xfvec ops
-                        if (FP_PRESENT & XFVEC) begin // only generate decoder if FP extensions are enabled (static)
+                        // only generate decoder if FP extensions are enabled (static)
+                        if (FP_PRESENT && XFVEC && fs_i != riscv::Off) begin
                             automatic logic allow_replication; // control honoring of replication flag
 
                             instruction_o.fu       = FPU_VEC; // Same unit, but sets 'vectorial' signal
@@ -618,7 +620,7 @@ module decoder (
                 // Floating-Point Load/store
                 // --------------------------------
                 riscv::OpcodeStoreFp: begin
-                    if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
+                    if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = STORE;
                         imm_select = SIMM;
                         instruction_o.rs1        = instr.stype.rs1;
@@ -641,7 +643,7 @@ module decoder (
                 end
 
                 riscv::OpcodeLoadFp: begin
-                    if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
+                    if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = LOAD;
                         imm_select = IIMM;
                         instruction_o.rs1       = instr.itype.rs1;
@@ -670,7 +672,7 @@ module decoder (
                 riscv::OpcodeMsub,
                 riscv::OpcodeNmsub,
                 riscv::OpcodeNmadd: begin
-                    if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
+                    if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = FPU;
                         instruction_o.rs1 = instr.r4type.rs1;
                         instruction_o.rs2 = instr.r4type.rs2;
@@ -723,7 +725,7 @@ module decoder (
                 end
 
                 riscv::OpcodeOpFp: begin
-                    if (FP_PRESENT) begin // only generate decoder if FP extensions are enabled (static)
+                    if (FP_PRESENT && fs_i != riscv::Off) begin // only generate decoder if FP extensions are enabled (static)
                         instruction_o.fu  = FPU;
                         instruction_o.rs1 = instr.rftype.rs1;
                         instruction_o.rs2 = instr.rftype.rs2;

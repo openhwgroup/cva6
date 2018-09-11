@@ -135,6 +135,7 @@ module ariane #(
     // --------------
     // CSR Commit
     logic                     csr_commit_commit_ex;
+    logic                     dirty_fp_state;
     // LSU Commit
     logic                     lsu_commit_commit_ex;
     logic                     lsu_commit_ready_ex_commit;
@@ -154,6 +155,7 @@ module ariane #(
     // CSR <-> *
     // --------------
     logic [4:0]               fflags_csr_commit;
+    riscv::xs_t               fs;
     logic [2:0]               frm_csr_id_issue_ex;
     logic                     enable_translation_csr_ex;
     logic                     en_ld_st_translation_csr_ex;
@@ -255,6 +257,7 @@ module ariane #(
         .issue_instr_ack_i          ( issue_instr_issue_id            ),
 
         .priv_lvl_i                 ( priv_lvl                        ),
+        .fs_i                       ( fs                              ),
         .frm_i                      ( frm_csr_id_issue_ex             ),
         .debug_mode_i               ( debug_mode_csr_id               ),
         .tvm_i                      ( tvm_csr_id                      ),
@@ -415,8 +418,9 @@ module ariane #(
     // ---------
     commit_stage commit_stage_i (
         .halt_i                 ( halt_ctrl                     ),
-        .flush_dcache_i         ( dcache_flush_ctrl_cache          ),
+        .flush_dcache_i         ( dcache_flush_ctrl_cache       ),
         .exception_o            ( ex_commit                     ),
+        .dirty_fp_state_o       ( dirty_fp_state                ),
         .debug_mode_i           ( debug_mode_csr_id             ),
         .debug_req_i            ( debug_req_i                   ),
         .single_step_i          ( single_step_csr_commit        ),
@@ -455,6 +459,7 @@ module ariane #(
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),
         .csr_write_fflags_i     ( csr_write_fflags_commit_cs    ),
+        .dirty_fp_state_i       ( dirty_fp_state                ),
         .csr_addr_i             ( csr_addr_ex_csr               ),
         .csr_wdata_i            ( csr_wdata_commit_csr          ),
         .csr_rdata_o            ( csr_rdata_csr_commit          ),
@@ -465,6 +470,7 @@ module ariane #(
         .set_debug_pc_o         ( set_debug_pc                  ),
         .trap_vector_base_o     ( trap_vector_base_commit_pcgen ),
         .priv_lvl_o             ( priv_lvl                      ),
+        .fs_o                   ( fs                            ),
         .fflags_o               ( fflags_csr_commit             ),
         .frm_o                  ( frm_csr_id_issue_ex           ),
         .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
