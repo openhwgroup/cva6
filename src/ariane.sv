@@ -367,11 +367,11 @@ module ariane #(
         .lsu_exception_o        ( lsu_exception_ex_id                    ),
         .no_st_pending_o        ( no_st_pending_ex_commit                ),
         // MULT
-        // .mult_ready_o           ( mult_ready_ex_id                       ),
-        // .mult_valid_i           ( mult_valid_id_ex                       ),
-        // .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
-        // .mult_result_o          ( mult_result_ex_id                      ),
-        // .mult_valid_o           ( mult_valid_ex_id                       ),
+        .mult_ready_o           ( mult_ready_ex_id                       ),
+        .mult_valid_i           ( mult_valid_id_ex                       ),
+        .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
+        .mult_result_o          ( mult_result_ex_id                      ),
+        .mult_valid_o           ( mult_valid_ex_id                       ),
         // FPU
         .fpu_ready_o            ( fpu_ready_ex_id                        ),
         .fpu_valid_i            ( fpu_valid_id_ex                        ),
@@ -405,12 +405,6 @@ module ariane #(
         .asid_i                 ( asid_csr_ex                            ), // from CSR
         .icache_areq_i          ( icache_areq_cache_ex                   ),
         .icache_areq_o          ( icache_areq_ex_cache                   ),
-
-        .mult_ready_o           ( mult_ready_ex_id                       ),
-        .mult_valid_i           ( mult_valid_id_ex                       ),
-        .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
-        .mult_result_o          ( mult_result_ex_id                      ),
-        .mult_valid_o           ( mult_valid_ex_id                       ),
         // DCACHE interfaces
         .dcache_req_ports_i     ( dcache_req_ports_cache_ex              ),
         .dcache_req_ports_o     ( dcache_req_ports_ex_cache              )

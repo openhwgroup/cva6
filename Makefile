@@ -43,16 +43,6 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
 dpi := $(patsubst tb/dpi/%.cc,work/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 # this list contains the standalone components
-# <<<<<<< HEAD
-# src := $(wildcard src/*.sv) $(wildcard tb/common/*.sv) $(wildcard src/axi_slice/*.sv)                                \
-#        $(wildcard src/axi_node/*.sv) $(wildcard src/axi_mem_if/src/*.sv) src/fpu_legacy/hdl/fpu_utils/fpu_ff.sv      \
-#        src/fpu_legacy/hdl/fpu_div_sqrt_mvp/defs_div_sqrt_mvp.sv $(wildcard src/fpu_legacy/hdl/fpu_div_sqrt_mvp/*.sv) \
-#        $(fpnew_pkg) $(wildcard src/fpnew/src/utils/*.vhd) $(wildcard src/fpnew/src/ops/*.vhd)                        \
-#        $(wildcard src/fpnew/src/subunits/*.vhd) src/fpnew/src/fpnew.vhd src/fpnew/src/fpnew_top.vhd                  \
-#        $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv)) $(wildcard bootrom/*.sv)                        \
-#        $(wildcard src/debug/debug_rom/*.sv)
-
-# =======
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/fpu/src/utils/*.vhd)                            \
         $(wildcard src/fpu/src/ops/*.vhd)                              \
@@ -160,7 +150,7 @@ $(riscv-asm-tests): build $(library)/ariane_dpi.so
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0     \
 	$(QUESTASIM_FLAGS) \
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
-	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
+	-do "set StdArithNoWarnings 1; set NumericStdNoWarnings 1; coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
 $(riscv-benchmarks): build $(library)/ariane_dpi.so
@@ -168,7 +158,7 @@ $(riscv-benchmarks): build $(library)/ariane_dpi.so
 	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0   \
 	$(QUESTASIM_FLAGS) \
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
-	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
+	-do "set StdArithNoWarnings 1; set NumericStdNoWarnings 1; coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
 
 

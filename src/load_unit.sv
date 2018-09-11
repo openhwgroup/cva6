@@ -331,8 +331,8 @@ module load_unit (
 
 
     // prepare these signals for faster selection in the next cycle
-    assign signed_d  = load_data_q.operator inside { LW, LH, LB };
-    assign fp_sign_d = load_data_q.operator inside { FLW, FLH, FLB };
+    assign signed_d  = load_data_d.operator inside {LW, LH, LB};
+    assign fp_sign_d = load_data_d.operator inside {FLW, FLH, FLB};
     assign idx_d     = (load_data_d.operator inside {LW, FLW}) ? load_data_d.address_offset + 3 :
                        (load_data_d.operator inside {LH, FLH}) ? load_data_d.address_offset + 1 :
                                                                  load_data_d.address_offset;
@@ -354,15 +354,15 @@ module load_unit (
     // result mux
     always_comb begin
         unique case (load_data_q.operator)
-            LW, LWU:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
-            LH, LHU:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
-            LB, LBU:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
+            LW, LWU, FLW:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
+            LH, LHU, FLH:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
+            LB, LBU, FLB:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
             default:    result_o = shifted_data;
         endcase
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             idx_q     <= 0;
             signed_q  <= 0;
             fp_sign_q <= 0;
