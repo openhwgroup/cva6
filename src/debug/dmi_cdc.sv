@@ -187,7 +187,7 @@ module dmi_cdc_jtag #(
     cdc_req_ao  = 1'b0;
 
     unique case (req_state_p)
-      RIDLE: begin
+      IDLE: begin
         if (mem_req_i) begin
           req_state_n = WAIT_ACK_HIGH;
 

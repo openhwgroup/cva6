@@ -48,7 +48,7 @@ module csr_regfile #(
     output logic  [63:0]          epc_o,                      // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
     output logic                  eret_o,                     // Return from exception, set the PC of epc_o
     output logic  [63:0]          trap_vector_base_o,         // Output base of exception vector, correct CSR is output (mtvec, stvec)
-    output priv_lvl_t             priv_lvl_o,                 // Current privilege level the CPU is in
+    output riscv::priv_lvl_t      priv_lvl_o,                 // Current privilege level the CPU is in
     // FPU
     output logic [4:0]            fflags_o,                   // Floating-Point Accured Exceptions
     output logic [2:0]            frm_o,                      // Floating-Point Dynamic Rounding Mode
@@ -110,6 +110,8 @@ module csr_regfile #(
     riscv::satp_t         satp_q, satp_d;
     riscv::dcsr_t         dcsr_q,     dcsr_d;
 
+    logic        mtvec_rst_load_q;// used to determine whether we came out of reset
+
     logic [63:0] dpc_q,       dpc_d;
     logic [63:0] dscratch0_q, dscratch0_d;
     logic [63:0] mtvec_q,     mtvec_d;
@@ -155,7 +157,7 @@ module csr_regfile #(
                 riscv::CSR_FRM:                csr_rdata = {61'b0, fcsr_q.frm};
                 riscv::CSR_FCSR:               csr_rdata = {32'b0, fcsr_q};
                 // debug registers
-                riscv::CSR_DCSR:               csr_rdata = {31'b0, dcsr_q};
+                riscv::CSR_DCSR:               csr_rdata = {32'b0, dcsr_q};
                 riscv::CSR_DPC:                csr_rdata = dpc_q;
                 riscv::CSR_DSCRATCH0:          csr_rdata = dscratch0_q;
                 // trigger module registers
@@ -254,7 +256,19 @@ module csr_regfile #(
         dpc_d                   = dpc_q;
         dscratch0_d             = dscratch0_q;
         mstatus_d               = mstatus_q;
-        mtvec_d                 = mtvec_q;
+
+        // check whether we come out of reset
+        // this is a workaround. some tools have issues
+        // having boot_addr_i in the asynchronous
+        // reset assignment to mtvec_d, even though
+        // boot_addr_i will be assigned a constant
+        // on the top-level.
+        if (mtvec_rst_load_q) begin
+            mtvec_d             = boot_addr_i + 'h40;
+        end else begin
+            mtvec_d             = mtvec_q;
+        end
+
         medeleg_d               = medeleg_q;
         mideleg_d               = mideleg_q;
         mip_d                   = mip_q;
@@ -870,7 +884,8 @@ module csr_regfile #(
             // machine mode registers
             mstatus_q              <= 64'b0;
             // set to boot address + direct mode + 4 byte offset which is the initial trap
-            mtvec_q                <= boot_addr_i + 'h40;
+            mtvec_rst_load_q       <= 1'b1;
+            mtvec_q                <= '0;
             medeleg_q              <= 64'b0;
             mideleg_q              <= 64'b0;
             mip_q                  <= 64'b0;
@@ -906,6 +921,7 @@ module csr_regfile #(
             dscratch0_q            <= dscratch0_d;
             // machine mode registers
             mstatus_q              <= mstatus_d;
+            mtvec_rst_load_q       <= 1'b0;
             mtvec_q                <= mtvec_d;
             medeleg_q              <= medeleg_d;
             mideleg_q              <= mideleg_d;

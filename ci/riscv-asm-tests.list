@@ -80,7 +80,6 @@ rv64ui-v-sub
 rv64ui-v-subw
 rv64ui-v-xor
 rv64ui-v-xori
-rv64ui-v-slliw
 rv64ui-v-sll
 rv64ui-v-slli
 rv64ui-v-slliw

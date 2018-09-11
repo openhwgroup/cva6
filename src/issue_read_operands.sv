@@ -107,8 +107,8 @@ module issue_read_operands #(
     logic forward_rs1, forward_rs2, forward_rs3;
 
     // original instruction stored in tval
-    instruction_t orig_instr;
-    assign orig_instr = instruction_t'(issue_instr_i.ex.tval[31:0]);
+    riscv::instruction_t orig_instr;
+    assign orig_instr = riscv::instruction_t'(issue_instr_i.ex.tval[31:0]);
 
     // ID <-> EX registers
     assign operand_a_o    = operand_a_q;
@@ -344,9 +344,9 @@ module issue_read_operands #(
     logic [NR_COMMIT_PORTS-1:0][63:0] wdata_pack;
     logic [NR_COMMIT_PORTS-1:0]       we_pack;
     assign raddr_pack = {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
-    assign waddr_pack = {waddr_i[1], waddr_i[0]};
-    assign wdata_pack = {wdata_i[1], wdata_i[0]};
-    assign we_pack    = {we_gpr_i[1], we_i[0]};
+    assign waddr_pack = {waddr_i[1],  waddr_i[0]};
+    assign wdata_pack = {wdata_i[1],  wdata_i[0]};
+    assign we_pack    = {we_gpr_i[1], we_gpr_i[0]};
 
     ariane_regfile #(
         .DATA_WIDTH     ( 64              ),

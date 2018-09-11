@@ -32,7 +32,7 @@ extern "C" int debug_tick
               info.argv[i][j] = info.argv[i][j + 2];
             }
         }
-        // printf("Argument %d: %s\n", i, info.argv[i]);
+        printf("Argument %d: %s\n", i, info.argv[i]);
       }
 
       dtm = new dtm_t(info.argc, info.argv);

@@ -132,5 +132,5 @@ parameter INSTR_FCVT_I2F =  { 5'b11010, 2'b?, 5'b000??, 5'b?, 3'b?, 5'b?, riscv:
 // Load/Stores
 parameter INSTR_LOAD     =  {25'b?, riscv::OpcodeLoad};
 parameter INSTR_LOAD_FP  =  {25'b?, riscv::OpcodeLoadFp};
-parameter INSTR_LOAD     =  {25'b?, riscv::OpcodeLoad };
-parameter INSTR_STORE    =  {25'b?, riscv::OpcodeStore };
+parameter INSTR_STORE    =  {25'b?, riscv::OpcodeStore};
+parameter INSTR_STORE_FP =  {25'b?, riscv::OpcodeStoreFp};

@@ -15,10 +15,7 @@
 import ariane_pkg::*;
 
 module lsu #(
-        parameter int unsigned ASID_WIDTH       = 1,
-        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,
-        parameter int unsigned AXI_ID_WIDTH     = 10,
-        parameter int unsigned AXI_USER_WIDTH   = 1
+        parameter int unsigned ASID_WIDTH       = 1
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
@@ -42,11 +39,9 @@ module lsu #(
     input  logic                     enable_translation_i,     // enable virtual memory translation
     input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores
 
-    input  logic                     fetch_req_i,              // Instruction fetch interface
-    input  logic [63:0]              fetch_vaddr_i,            // Instruction fetch interface
-    output logic                     fetch_valid_o,            // Instruction fetch interface
-    output logic [63:0]              fetch_paddr_o,            // Instruction fetch interface
-    output exception_t               fetch_exception_o,        // Instruction fetch interface
+    // icache translation requests
+    input  icache_areq_o_t           icache_areq_i,
+    output icache_areq_i_t           icache_areq_o,
 
     input  riscv::priv_lvl_t         priv_lvl_i,               // From CSR register file
     input  riscv::priv_lvl_t         ld_st_priv_lvl_i,         // From CSR register file
@@ -58,14 +53,10 @@ module lsu #(
     // Performance counters
     output logic                     itlb_miss_o,
     output logic                     dtlb_miss_o,
-    output logic                     dcache_miss_o,
 
-    input  logic                     dcache_en_i,
-    input  logic                     flush_dcache_i,
-    output logic                     flush_dcache_ack_o,
-    // Data cache refill port
-    AXI_BUS.Master                   data_if,
-    AXI_BUS.Master                   bypass_if,
+    // interface to dcache
+    input  dcache_req_o_t [2:0]      dcache_req_ports_i,
+    output dcache_req_i_t [2:0]      dcache_req_ports_o,
 
     output exception_t               lsu_exception_o   // to WB, signal exception status LD/ST exception
 
@@ -139,74 +130,29 @@ module lsu #(
     assign amo_op_i[0] = AMO_NONE;
     assign amo_op_i[2] = AMO_NONE;
 
-    // decreasing priority
-    // Port 0: PTW
-    // Port 1: Load Unit
-    // Port 2: Store Unit
-    nbdcache #(
-        .CACHE_START_ADDR ( CACHE_START_ADDR ),
-        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
-        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
-    ) i_nbdcache (
-        // to D$
-        .data_if           ( data_if                 ),
-        .bypass_if         ( bypass_if               ),
-        .enable_i          ( dcache_en_i             ),
-        .flush_i           ( flush_dcache_i          ),
-        .flush_ack_o       ( flush_dcache_ack_o      ),
-        // from PTW, Load Unit and Store Unit
-        .address_index_i   ( address_index_i         ),
-        .address_tag_i     ( address_tag_i           ),
-        .data_wdata_i      ( data_wdata_i            ),
-        .data_req_i        ( data_req_i              ),
-        .data_we_i         ( data_we_i               ),
-        .data_be_i         ( data_be_i               ),
-        .data_size_i       ( data_size_i             ),
-        .kill_req_i        ( kill_req_i              ),
-        .tag_valid_i       ( tag_valid_i             ),
-        .data_gnt_o        ( data_gnt_o              ),
-        .data_rvalid_o     ( data_rvalid_o           ),
-        .data_rdata_o      ( data_rdata_o            ),
-        .amo_op_i          ( amo_op_i                ),
-
-        .amo_commit_i      (                         ),
-        .amo_valid_o       (                         ),
-        .amo_result_o      (                         ),
-        .amo_flush_i       ( 1'b0                    ),
-        .miss_o            ( dcache_miss_o           ),
-        .*
-    );
-
     // -------------------
     // MMU e.g.: TLBs/PTW
     // -------------------
     mmu #(
-        .INSTR_TLB_ENTRIES      ( 16                   ),
-        .DATA_TLB_ENTRIES       ( 16                   ),
-        .ASID_WIDTH             ( ASID_WIDTH           )
+        .INSTR_TLB_ENTRIES      ( 16                     ),
+        .DATA_TLB_ENTRIES       ( 16                     ),
+        .ASID_WIDTH             ( ASID_WIDTH             )
     ) i_mmu (
             // misaligned bypass
-        .misaligned_ex_i        ( misaligned_exception ),
-        .lsu_is_store_i         ( st_translation_req   ),
-        .lsu_req_i              ( translation_req      ),
-        .lsu_vaddr_i            ( mmu_vaddr            ),
-        .lsu_valid_o            ( translation_valid    ),
-        .lsu_paddr_o            ( mmu_paddr            ),
-        .lsu_exception_o        ( mmu_exception        ),
-        .lsu_dtlb_hit_o         ( dtlb_hit             ), // send in the same cycle as the request
+        .misaligned_ex_i        ( misaligned_exception   ),
+        .lsu_is_store_i         ( st_translation_req     ),
+        .lsu_req_i              ( translation_req        ),
+        .lsu_vaddr_i            ( mmu_vaddr              ),
+        .lsu_valid_o            ( translation_valid      ),
+        .lsu_paddr_o            ( mmu_paddr              ),
+        .lsu_exception_o        ( mmu_exception          ),
+        .lsu_dtlb_hit_o         ( dtlb_hit               ), // send in the same cycle as the request
         // connecting PTW to D$ IF (aka mem arbiter
-        .address_index_o        ( address_index_i  [0] ),
-        .address_tag_o          ( address_tag_i    [0] ),
-        .data_wdata_o           ( data_wdata_i     [0] ),
-        .data_req_o             ( data_req_i       [0] ),
-        .data_we_o              ( data_we_i        [0] ),
-        .data_be_o              ( data_be_i        [0] ),
-        .data_size_o            ( data_size_i      [0] ),
-        .kill_req_o             ( kill_req_i       [0] ),
-        .tag_valid_o            ( tag_valid_i      [0] ),
-        .data_gnt_i             ( data_gnt_o       [0] ),
-        .data_rvalid_i          ( data_rvalid_o    [0] ),
-        .data_rdata_i           ( data_rdata_o     [0] ),
+        .req_port_i             ( dcache_req_ports_i [0] ),
+        .req_port_o             ( dcache_req_ports_o [0] ),
+        // icache address translation requests
+        .icache_areq_i          ( icache_areq_i          ),
+        .icache_areq_o          ( icache_areq_o          ),
         .*
     );
     // ------------------
@@ -231,17 +177,8 @@ module lsu #(
         .page_offset_i         ( page_offset          ),
         .page_offset_matches_o ( page_offset_matches  ),
         // to memory arbiter
-        .address_index_o       ( address_index_i  [2] ),
-        .address_tag_o         ( address_tag_i    [2] ),
-        .data_wdata_o          ( data_wdata_i     [2] ),
-        .data_req_o            ( data_req_i       [2] ),
-        .data_we_o             ( data_we_i        [2] ),
-        .data_be_o             ( data_be_i        [2] ),
-        .data_size_o           ( data_size_i      [2] ),
-        .kill_req_o            ( kill_req_i       [2] ),
-        .tag_valid_o           ( tag_valid_i      [2] ),
-        .data_gnt_i            ( data_gnt_o       [2] ),
-        .data_rvalid_i         ( data_rvalid_o    [2] ),
+        .req_port_i             ( dcache_req_ports_i [2] ),
+        .req_port_o             ( dcache_req_ports_o [2] ),
         .*
     );
 
@@ -267,19 +204,8 @@ module lsu #(
         .page_offset_o         ( page_offset          ),
         .page_offset_matches_i ( page_offset_matches  ),
         // to memory arbiter
-        .address_index_o       ( address_index_i  [1] ),
-        .address_tag_o         ( address_tag_i    [1] ),
-        .data_wdata_o          ( data_wdata_i     [1] ),
-        .amo_op_o              ( amo_op_i         [1] ),
-        .data_req_o            ( data_req_i       [1] ),
-        .data_we_o             ( data_we_i        [1] ),
-        .data_be_o             ( data_be_i        [1] ),
-        .data_size_o           ( data_size_i      [1] ),
-        .kill_req_o            ( kill_req_i       [1] ),
-        .tag_valid_o           ( tag_valid_i      [1] ),
-        .data_gnt_i            ( data_gnt_o       [1] ),
-        .data_rvalid_i         ( data_rvalid_o    [1] ),
-        .data_rdata_i          ( data_rdata_o     [1] ),
+        .req_port_i            ( dcache_req_ports_i [1] ),
+        .req_port_o            ( dcache_req_ports_o [1] ),
         .*
     );
 

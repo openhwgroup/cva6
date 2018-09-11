@@ -6,7 +6,7 @@ ariane:
     include/riscv_pkg.sv,
     src/debug/dm_pkg.sv,
     include/ariane_pkg.sv,
-    include/nbdcache_pkg.sv,
+    include/std_cache_pkg.sv,
     src/util/instruction_tracer_if.sv,
     src/util/instruction_tracer_pkg.sv,
     src/alu.sv,
@@ -21,7 +21,6 @@ ariane:
     src/decoder.sv,
     src/ex_stage.sv,
     src/fetch_fifo.sv,
-    src/ff1.sv,
     src/frontend.sv,
     src/icache.sv,
     src/id_stage.sv,
@@ -36,6 +35,10 @@ ariane:
     src/mmu.sv,
     src/mult.sv,
     src/nbdcache.sv,
+    src/vdregs.sv,
+    src/std_cache_subsystem.sv,
+    src/sram_wrapper.sv,
+    src/pcgen_stage.sv,
     src/perf_counters.sv,
     src/ptw.sv,
     src/re_name.sv,
@@ -59,7 +62,6 @@ riscv_regfile_rtl:
   ]
   files: [
     src/ariane_regfile.sv,
-    src/util/behav_sram.sv,
   ]
 
 riscv_regfile_fpga:
@@ -71,5 +73,4 @@ riscv_regfile_fpga:
   ]
   files: [
     src/ariane_regfile_ff.sv,
-    src/util/xilinx_sram.sv,
   ]

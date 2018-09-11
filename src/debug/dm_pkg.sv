@@ -23,7 +23,7 @@ package dm;
 
     // TODO(zarubaf) This is hard-coded to two at the moment
     // amount of data count registers implemented
-    localparam logic [3:0] DataCount     = 5'h2;
+    localparam logic [3:0] DataCount     = 4'h2;
 
     // address to which a hart should jump when it was requested to halt
     localparam logic [63:0] HaltAddress = 64'h800;
@@ -183,7 +183,24 @@ package dm;
         DTM_WRITE = 2'h2
     } dtm_op_t;
 
-    localparam logic[1:0] DTM_SUCCESS = 2'h0;
+    typedef struct packed {
+        logic [31:29] sbversion;
+        logic [28:23] zero0;
+        logic         sbbusyerror;
+        logic         sbbusy;
+        logic         sbreadonaddr;
+        logic [19:17] sbaccess;
+        logic         sbautoincrement;
+        logic         sbreadondata;
+        logic [14:12] sberror;
+        logic [11:5]  sbasize;
+        logic         sbaccess128;
+        logic         sbaccess64;
+        logic         sbaccess32;
+        logic         sbaccess16;
+        logic         sbaccess8;
+    } sbcs_t;
 
+    localparam logic[1:0] DTM_SUCCESS = 2'h0;
 
 endpackage

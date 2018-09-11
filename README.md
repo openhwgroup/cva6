@@ -15,44 +15,61 @@ Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools). Make sure t
 
 Checkout the repository and initialize all submodules
 ```
-git clone https://github.com/pulp-platform/ariane.git
-git submodule update --init --recursive
+$ git clone https://github.com/pulp-platform/ariane.git
+$ git submodule update --init --recursive
 ```
 
-The Verilator testbench relies on our forked version of `riscv-fesvr` which can be found [here](https://github.com/riscv/riscv-fesvr). Follow the README there and make sure that your compiler and linker is aware of the library (e.g.: add it to your path if it is in a non-default directory).
+The testbench relies on `riscv-fesvr` which can be found [here](https://github.com/riscv/riscv-fesvr). Follow the README there and make sure that your compiler and linker is aware of the library (e.g.: add it to your path if it is in a non-default directory).
 
 Build the Verilator model of Ariane by using the Makefile:
 ```
-make verilate
+$ make verilate
 ```
 
 This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `build` and accepts a RISC-V ELF binary as an argument, e.g.:
 
 ```
-build/Variane_testharness rv64um-v-divuw
+$ build/Variane_testharness rv64um-v-divuw
 ```
 
-The Verilator testbench makes use of the `riscv-fesvr`. That means that bare `riscv-tests` can be run on the simulator.
+The Verilator testbench makes use of the `riscv-fesvr`. This means that you can use the `riscv-tests` repository as well as `riscv-pk` out-of-the-box. As a general rule of thumb the Verilator model will behave like Spike (exception for being orders of magnitudes slower).
 
-### Running custom C-code
-
-It is possible to cross compile and run your own C-code or benchmarks on Ariane. The following steps need to be followed to compile and run:
-
-Compile the file using the following command (you need to have the [riscv-tests](https://github.com/riscv/riscv-tests) repo checked-out):
+Both, the Verilator model as well as the Questa simulation will produce trace logs. The Verilator trace is more basic but you can feed the log to `spike-dasm` to resolve instructions to mnemonics. Unfortunately value inspection is currently not possible for the Verilator trace file.
 
 ```
-riscv64-unknown-elf-gcc -I./riscv-tests/benchmarks/../env -I./riscv-tests/benchmarks/common \
--DPREALLOCATE=1 -mcmodel=medany -static -std=gnu99 -O2 -ffast-math -fno-common \
--fno-builtin-printf ./riscv-tests/benchmarks/common/syscalls.c -static -nostdlib \
-./riscv-tests/benchmarks/common/crt.S  -nostartfiles -lm -lgcc \
--T ./riscv-tests/benchmarks/common/test.ld -o hello.riscv hello.c
+$ spike-dasm < trace_core_00_0.dasm > logfile.txt
 ```
 
-Use the generated ELF file as an input to the Verilator model:
+### Running Applications
+
+It is possible to run user-space binaries on Ariane with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)). As Ariane currently does not support atomics and floating point extensions make sure that you configure `riscv-pk` with:
+`--with-arch=rv64imc`. In particular inside the `riscv-pk` directory do:
 
 ```
-build/Variane_testharness hello.riscv
+$ mkdir build
+$ cd build
+$ ../configure --prefix=$RISCV --host=riscv64-unknown-elf --with-arch=rv64imc
+$ make
+$ make install
 ```
+
+Then to run a RISC-V ELF using the Verilator model do:
+
+```
+$ make verilate
+$ build/Variane_testharness /path/to/pk path/to/riscv.elf
+```
+
+If you want to use QuestaSim to run it you can use the following command:
+```
+$ make simc riscv-test=/path/to/pk target-options=path/to/riscv.elf
+```
+
+> Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
+
+## FPGA Emulation
+
+Coming.
 
 ## Planned Improvements
 
@@ -64,7 +81,7 @@ The core has been developed with a full licensed version of QuestaSim. If you ha
 
 To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the `tmp/risc-tests/build/isa` folder:
 ```
-make sim riscv-test=tmp/risc-tests/build/isa/rv64ui-p-sraw
+$ make sim riscv-test=tmp/risc-tests/build/isa/rv64ui-p-sraw
 ```
 
 If you call `simc` instead of `sim` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.

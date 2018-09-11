@@ -39,11 +39,10 @@ module dmi_jtag (
     output logic        td_o,     // JTAG test data output pad
     output logic        tdo_oe_o  // Data out output enable
 );
+    assign       dmi_rst_no = 1'b1;
 
     logic        test_logic_reset;
-    logic        run_test_idle;
     logic        shift_dr;
-    logic        pause_dr;
     logic        update_dr;
     logic        capture_dr;
     logic        dmi_access;
@@ -67,8 +66,8 @@ module dmi_jtag (
     } dmi_t;
 
     typedef enum logic [1:0] {
-                                DMINoError = 0, DMIReservedError = 1,
-                                DMIOPFailed = 2, DMIBusy = 3
+                                DMINoError = 2'h0, DMIReservedError = 2'h1,
+                                DMIOPFailed = 2'h2, DMIBusy = 2'h3
                              } dmi_error_t;
 
     enum logic [2:0] { Idle, Read, WaitReadValid, Write, WaitWriteValid } state_d, state_q;
@@ -77,7 +76,7 @@ module dmi_jtag (
     logic [6:0] address_d, address_q;
     logic [31:0] data_d, data_q;
 
-    dmi_t  dmi, read_dmi;
+    dmi_t  dmi;
     assign dmi       = dmi_t'(dr_q);
     assign mem_addr  = address_q;
     assign mem_wdata = data_q;
@@ -85,9 +84,6 @@ module dmi_jtag (
 
     logic error_dmi_busy;
     dmi_error_t error_d, error_q;
-
-    // DMI which we return
-    assign read_dmi = {7'b0, data_q, error_q};
 
     always_comb begin
         error_dmi_busy = 1'b0;
@@ -209,6 +205,7 @@ module dmi_jtag (
             error_q   <= error_d;
         end
     end
+
     // ---------
     // TAP
     // ---------
@@ -222,9 +219,7 @@ module dmi_jtag (
         .td_o,
         .tdo_oe_o,
         .test_logic_reset_o ( test_logic_reset ),
-        .run_test_idle_o    ( run_test_idle    ),
         .shift_dr_o         ( shift_dr         ),
-        .pause_dr_o         ( pause_dr         ),
         .update_dr_o        ( update_dr        ),
         .capture_dr_o       ( capture_dr       ),
         .dmi_access_o       ( dmi_access       ),

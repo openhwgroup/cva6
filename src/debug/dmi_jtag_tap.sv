@@ -26,9 +26,7 @@ module dmi_jtag_tap #(
     output logic        td_o,     // JTAG test data output pad
     output logic        tdo_oe_o, // Data out output enable
     output logic        test_logic_reset_o,
-    output logic        run_test_idle_o,
     output logic        shift_dr_o,
-    output logic        pause_dr_o,
     output logic        update_dr_o,
     output logic        capture_dr_o,
 
@@ -225,11 +223,9 @@ module dmi_jtag_tap #(
     // Determination of next state; purely combinatorial
     always_comb begin
         test_logic_reset_o = 1'b0;
-        run_test_idle_o    = 1'b0;
 
         capture_dr_o       = 1'b0;
         shift_dr_o         = 1'b0;
-        pause_dr_o         = 1'b0;
         update_dr_o        = 1'b0;
 
         capture_ir         = 1'b0;
@@ -239,11 +235,9 @@ module dmi_jtag_tap #(
 
         case (tap_state_q)
             TestLogicReset: begin
-                test_logic_reset_o = 1'b1;
                 tap_state_d = (tms_i) ? TestLogicReset : RunTestIdle;
             end
             RunTestIdle: begin
-                run_test_idle_o = 1'b1;
                 tap_state_d = (tms_i) ? SelectDrScan : RunTestIdle;
             end
             // DR Path
@@ -262,7 +256,6 @@ module dmi_jtag_tap #(
                 tap_state_d = (tms_i) ? UpdateDr : PauseDr;
             end
             PauseDr: begin
-                pause_dr_o = 1'b1;
                 tap_state_d = (tms_i) ? Exit2Dr : PauseDr;
             end
             Exit2Dr: begin

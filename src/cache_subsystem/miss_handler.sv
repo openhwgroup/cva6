@@ -15,7 +15,8 @@
 // --------------
 // MISS Handler
 // --------------
-import nbdcache_pkg::*;
+import ariane_pkg::*;
+import std_cache_pkg::*;
 
 module miss_handler #(
     parameter int unsigned NR_PORTS         = 3,
@@ -47,12 +48,11 @@ module miss_handler #(
     output logic [NR_PORTS-1:0]                         mshr_addr_matches_o,
     output logic [NR_PORTS-1:0]                         mshr_index_matches_o,
     // Port to SRAMs, for refill and eviction
-    output logic  [SET_ASSOCIATIVITY-1:0]               req_o,
-    output logic  [INDEX_WIDTH-1:0]                     addr_o, // address into cache array
-    input  logic                                        gnt_i,
+    output logic  [DCACHE_SET_ASSOC-1:0]                req_o,
+    output logic  [DCACHE_INDEX_WIDTH-1:0]              addr_o, // address into cache array
     output cache_line_t                                 data_o,
     output cl_be_t                                      be_o,
-    input  cache_line_t [SET_ASSOCIATIVITY-1:0]         data_i,
+    input  cache_line_t [DCACHE_SET_ASSOC-1:0]          data_i,
     output logic                                        we_o
 );
 
@@ -74,8 +74,8 @@ module miss_handler #(
                        REQ_CACHELINE, MISS_REPL, SAVE_CACHELINE, INIT } state_d, state_q;
     // Registers
     mshr_t                                  mshr_d, mshr_q;
-    logic [INDEX_WIDTH-1:0]                 cnt_d, cnt_q;
-    logic [SET_ASSOCIATIVITY-1:0]           evict_way_d, evict_way_q;
+    logic [DCACHE_INDEX_WIDTH-1:0]          cnt_d, cnt_q;
+    logic [DCACHE_SET_ASSOC-1:0]            evict_way_d, evict_way_q;
     // cache line to evict
     cache_line_t                            evict_cl_d, evict_cl_q;
 
@@ -89,28 +89,28 @@ module miss_handler #(
     logic [NR_PORTS-1:0][1:0]               miss_req_size;
 
     // Cache Line Refill <-> AXI
-    logic                                   req_fsm_miss_valid;
-    logic                                   req_fsm_miss_bypass;
-    logic [63:0]                            req_fsm_miss_addr;
-    logic [CACHE_LINE_WIDTH-1:0]            req_fsm_miss_wdata;
-    logic                                   req_fsm_miss_we;
-    logic [(CACHE_LINE_WIDTH/8)-1:0]        req_fsm_miss_be;
-    logic                                   gnt_miss_fsm;
-    logic                                   valid_miss_fsm;
-    logic [(CACHE_LINE_WIDTH/64)-1:0][63:0] data_miss_fsm;
+    logic                                    req_fsm_miss_valid;
+    logic                                    req_fsm_miss_bypass;
+    logic [63:0]                             req_fsm_miss_addr;
+    logic [DCACHE_LINE_WIDTH-1:0]            req_fsm_miss_wdata;
+    logic                                    req_fsm_miss_we;
+    logic [(DCACHE_LINE_WIDTH/8)-1:0]        req_fsm_miss_be;
+    logic                                    gnt_miss_fsm;
+    logic                                    valid_miss_fsm;
+    logic [(DCACHE_LINE_WIDTH/64)-1:0][63:0] data_miss_fsm;
 
     // Cache Management <-> LFSR
-    logic                                   lfsr_enable;
-    logic [SET_ASSOCIATIVITY-1:0]           lfsr_oh;
-    logic [$clog2(SET_ASSOCIATIVITY-1)-1:0] lfsr_bin;
+    logic                                  lfsr_enable;
+    logic [DCACHE_SET_ASSOC-1:0]           lfsr_oh;
+    logic [$clog2(DCACHE_SET_ASSOC-1)-1:0] lfsr_bin;
 
     // ------------------------------
     // Cache Management
     // ------------------------------
     always_comb begin : cache_management
-        automatic logic [SET_ASSOCIATIVITY-1:0] evict_way, valid_way;
+        automatic logic [DCACHE_SET_ASSOC-1:0] evict_way, valid_way;
 
-        for (int unsigned i = 0; i < SET_ASSOCIATIVITY; i++) begin
+        for (int unsigned i = 0; i < DCACHE_SET_ASSOC; i++) begin
             evict_way[i] = data_i[i].valid & data_i[i].dirty;
             valid_way[i] = data_i[i].valid;
         end
@@ -169,7 +169,7 @@ module miss_handler #(
                         mshr_d.valid = 1'b1;
                         mshr_d.we    = miss_req_we[i];
                         mshr_d.id    = i;
-                        mshr_d.addr  = miss_req_addr[i][TAG_WIDTH+INDEX_WIDTH-1:0];
+                        mshr_d.addr  = miss_req_addr[i][DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:0];
                         mshr_d.wdata = miss_req_wdata[i];
                         mshr_d.be    = miss_req_be[i];
                         break;
@@ -182,7 +182,7 @@ module miss_handler #(
                 // 1. Check if there is an empty cache-line
                 // 2. If not -> evict one
                 req_o = '1;
-                addr_o = mshr_q.addr[INDEX_WIDTH-1:0];
+                addr_o = mshr_q.addr[DCACHE_INDEX_WIDTH-1:0];
                 state_d = MISS_REPL;
                 miss_o = 1'b1;
             end
@@ -198,7 +198,7 @@ module miss_handler #(
                         state_d = WB_CACHELINE_MISS;
                         evict_cl_d.tag = data_i[lfsr_bin].tag;
                         evict_cl_d.data = data_i[lfsr_bin].data;
-                        cnt_d = mshr_q.addr[INDEX_WIDTH-1:0];
+                        cnt_d = mshr_q.addr[DCACHE_INDEX_WIDTH-1:0];
                     // no - we can request a cache line now
                     end else
                         state_d = REQ_CACHELINE;
@@ -224,18 +224,17 @@ module miss_handler #(
             // ~> replace the cacheline
             SAVE_CACHELINE: begin
                 // calculate cacheline offset
-                automatic logic [$clog2(CACHE_LINE_WIDTH)-1:0] cl_offset;
-                cl_offset = mshr_q.addr[BYTE_OFFSET-1:3] << 6;
+                automatic logic [$clog2(DCACHE_LINE_WIDTH)-1:0] cl_offset;
+                cl_offset = mshr_q.addr[DCACHE_BYTE_OFFSET-1:3] << 6;
                 // we've got a valid response from refill unit
                 if (valid_miss_fsm) begin
 
-                    addr_o       = mshr_q.addr[INDEX_WIDTH-1:0];
+                    addr_o       = mshr_q.addr[DCACHE_INDEX_WIDTH-1:0];
                     req_o        = evict_way_q;
                     we_o         = 1'b1;
                     be_o         = '1;
-                    be_o.valid   = evict_way_q;
-                    be_o.dirty   = evict_way_q;
-                    data_o.tag   = mshr_q.addr[TAG_WIDTH+INDEX_WIDTH-1:INDEX_WIDTH];
+                    be_o.vldrty  = evict_way_q;
+                    data_o.tag   = mshr_q.addr[DCACHE_TAG_WIDTH+DCACHE_INDEX_WIDTH-1:DCACHE_INDEX_WIDTH];
                     data_o.data  = data_miss_fsm;
                     data_o.valid = 1'b1;
                     data_o.dirty = 1'b0;
@@ -265,7 +264,7 @@ module miss_handler #(
             WB_CACHELINE_FLUSH, WB_CACHELINE_MISS: begin
 
                 req_fsm_miss_valid  = 1'b1;
-                req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q[INDEX_WIDTH-1:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
+                req_fsm_miss_addr   = {evict_cl_q.tag, cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET], {{DCACHE_BYTE_OFFSET}{1'b0}}};
                 req_fsm_miss_be     = '1;
                 req_fsm_miss_we     = 1'b1;
                 req_fsm_miss_wdata  = evict_cl_q.data;
@@ -277,8 +276,7 @@ module miss_handler #(
                     req_o      = 1'b1;
                     we_o       = 1'b1;
                     // invalidate
-                    be_o.valid = evict_way_q;
-                    be_o.dirty = evict_way_q;
+                    be_o.vldrty = evict_way_q;
                     // go back to handling the miss or flushing, depending on where we came from
                     state_d = (state_q == WB_CACHELINE_MISS) ? MISS : FLUSH_REQ_STATUS;
                 end
@@ -305,14 +303,14 @@ module miss_handler #(
                 // not dirty ~> increment and continue
                 end else begin
                     // increment and re-request
-                    cnt_d      = cnt_q + (1'b1 << BYTE_OFFSET);
-                    state_d    = FLUSH_REQ_STATUS;
-                    addr_o     = cnt_q;
-                    req_o      = 1'b1;
-                    be_o.valid = '1;
-                    we_o       = 1'b1;
+                    cnt_d       = cnt_q + (1'b1 << DCACHE_BYTE_OFFSET);
+                    state_d     = FLUSH_REQ_STATUS;
+                    addr_o      = cnt_q;
+                    req_o       = 1'b1;
+                    be_o.vldrty = '1;
+                    we_o        = 1'b1;
                     // finished with flushing operation, go back to idle
-                    if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1) begin
+                    if (cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == DCACHE_NUM_WORDS-1) begin
                         flush_ack_o = 1'b1;
                         state_d     = IDLE;
                     end
@@ -326,11 +324,10 @@ module miss_handler #(
                 req_o  = 1'b1;
                 we_o   = 1'b1;
                 // only write the dirty array
-                be_o.dirty = '1;
-                be_o.valid = '1;
-                cnt_d      = cnt_q + (1'b1 << BYTE_OFFSET);
+                be_o.vldrty = '1;
+                cnt_d       = cnt_q + (1'b1 << DCACHE_BYTE_OFFSET);
                 // finished initialization
-                if (cnt_q[INDEX_WIDTH-1:BYTE_OFFSET] == NUM_WORDS-1)
+                if (cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == DCACHE_NUM_WORDS-1)
                     state_d = IDLE;
             end
         endcase
@@ -344,12 +341,12 @@ module miss_handler #(
 
         for (int i = 0; i < NR_PORTS; i++) begin
             // check mshr for potential matching of other units, exclude the unit currently being served
-            if (mshr_q.valid && mshr_addr_i[i][55:BYTE_OFFSET] == mshr_q.addr[55:BYTE_OFFSET]) begin
+            if (mshr_q.valid && mshr_addr_i[i][55:DCACHE_BYTE_OFFSET] == mshr_q.addr[55:DCACHE_BYTE_OFFSET]) begin
                 mshr_addr_matches_o[i] = 1'b1;
             end
 
             // same as previous, but checking only the index
-            if (mshr_q.valid && mshr_addr_i[i][INDEX_WIDTH-1:BYTE_OFFSET] == mshr_q.addr[INDEX_WIDTH-1:BYTE_OFFSET]) begin
+            if (mshr_q.valid && mshr_addr_i[i][DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == mshr_q.addr[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET]) begin
                 mshr_index_matches_o[i] = 1'b1;
             end
         end
@@ -442,7 +439,7 @@ module miss_handler #(
         .id_i                  ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
         .valid_o               ( valid_bypass_fsm                                         ),
         .rdata_o               ( data_bypass_fsm                                          ),
-        .gnt_id_o              ( gnt_id_bypass_fsm                                         ),
+        .gnt_id_o              ( gnt_id_bypass_fsm                                        ),
         .id_o                  ( id_bypass_fsm                                            ),
         .critical_word_o       (                                                          ), // not used for single requests
         .critical_word_valid_o (                                                          ), // not used for single requests
@@ -454,7 +451,7 @@ module miss_handler #(
     // Cache Line Arbiter
     // ----------------------
     axi_adapter  #(
-        .DATA_WIDTH          ( CACHE_LINE_WIDTH   ),
+        .DATA_WIDTH          ( DCACHE_LINE_WIDTH   ),
         .AXI_ID_WIDTH        ( AXI_ID_WIDTH       )
     ) i_miss_axi_adapter (
         .req_i               ( req_fsm_miss_valid ),
@@ -477,7 +474,7 @@ module miss_handler #(
     // -----------------
     // Replacement LFSR
     // -----------------
-    lfsr #(.WIDTH (SET_ASSOCIATIVITY)) i_lfsr (
+    lfsr_8bit #(.WIDTH (DCACHE_SET_ASSOC)) i_lfsr (
         .en_i           ( lfsr_enable ),
         .refill_way_oh  ( lfsr_oh     ),
         .refill_way_bin ( lfsr_bin    ),
@@ -587,10 +584,10 @@ module arbiter #(
                     if (data_req_i[i] == 1'b1) begin
                         data_req_o    = data_req_i[i];
                         data_gnt_o[i] = data_req_i[i];
-                        request_index = i;
+                        request_index = i[$bits(request_index)-1:0];
                         // save the request
                         req_d.address = address_i[i];
-                        req_d.id = i;
+                        req_d.id = i[$bits(req_q.id)-1:0];
                         req_d.data = data_wdata_i[i];
                         req_d.size = data_size_i[i];
                         req_d.be = data_be_i[i];
@@ -647,343 +644,4 @@ module arbiter #(
 
     `endif
     `endif
-endmodule
-// --------------
-// AXI Adapter
-// --------------
-//
-// Description: Manages communication with the AXI Bus
-//
-module axi_adapter #(
-        parameter int unsigned DATA_WIDTH          = 256,
-        parameter logic        CRITICAL_WORD_FIRST = 0, // the AXI subsystem needs to support wrapping reads for this feature
-        parameter int unsigned AXI_ID_WIDTH        = 10
-    )(
-    input  logic                                        clk_i,  // Clock
-    input  logic                                        rst_ni, // Asynchronous reset active low
-
-    input  logic                                        req_i,
-    input  req_t                                        type_i,
-    output logic                                        gnt_o,
-    output logic [AXI_ID_WIDTH-1:0]                     gnt_id_o,
-    input  logic [63:0]                                 addr_i,
-    input  logic                                        we_i,
-    input  logic [(DATA_WIDTH/64)-1:0][63:0]            wdata_i,
-    input  logic [(DATA_WIDTH/64)-1:0][7:0]             be_i,
-    input  logic [1:0]                                  size_i,
-    input  logic [AXI_ID_WIDTH-1:0]                     id_i,
-    // read port
-    output logic                                        valid_o,
-    output logic [(DATA_WIDTH/64)-1:0][63:0]            rdata_o,
-    output logic [AXI_ID_WIDTH-1:0]                     id_o,
-    // critical word - read port
-    output logic [63:0]                                 critical_word_o,
-    output logic                                        critical_word_valid_o,
-    // AXI port
-    AXI_BUS.Master                                      axi
-);
-    localparam BURST_SIZE = DATA_WIDTH/64-1;
-    localparam ADDR_INDEX = ($clog2(DATA_WIDTH/64) > 0) ? $clog2(DATA_WIDTH/64) : 1;
-
-    enum logic [3:0] {
-        IDLE, WAIT_B_VALID, WAIT_AW_READY, WAIT_LAST_W_READY, WAIT_LAST_W_READY_AW_READY, WAIT_AW_READY_BURST,
-        WAIT_R_VALID, WAIT_R_VALID_MULTIPLE, COMPLETE_READ
-    } state_q, state_d;
-
-    // counter for AXI transfers
-    logic [ADDR_INDEX-1:0] cnt_d, cnt_q;
-    logic [(DATA_WIDTH/64)-1:0][63:0] cache_line_d, cache_line_q;
-    // save the address for a read, as we allow for non-cacheline aligned accesses
-    logic [(DATA_WIDTH/64)-1:0] addr_offset_d, addr_offset_q;
-    logic [AXI_ID_WIDTH-1:0]    id_d, id_q;
-    logic [ADDR_INDEX-1:0]      index;
-
-    always_comb begin : axi_fsm
-        // Default assignments
-        axi.aw_valid  = 1'b0;
-        axi.aw_addr   = addr_i;
-        axi.aw_prot   = 3'b0;
-        axi.aw_region = 4'b0;
-        axi.aw_len    = 8'b0;
-        axi.aw_size   = {1'b0, size_i};
-        axi.aw_burst  = (type_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
-        axi.aw_lock   = 1'b0;
-        axi.aw_cache  = 4'b0;
-        axi.aw_qos    = 4'b0;
-        axi.aw_id     = id_i;
-        axi.aw_user   = '0;
-
-        axi.ar_valid  = 1'b0;
-        // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
-        // with an incremental transfer we need to output the corresponding base address of the cache line
-        axi.ar_addr   = (CRITICAL_WORD_FIRST || type_i == SINGLE_REQ) ? addr_i : { addr_i[63:BYTE_OFFSET], {{BYTE_OFFSET}{1'b0}}};
-        axi.ar_prot   = 3'b0;
-        axi.ar_region = 4'b0;
-        axi.ar_len    = 8'b0;
-        axi.ar_size   = {1'b0, size_i}; // 8 bytes
-        axi.ar_burst  = (type_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
-        axi.ar_lock   = 1'b0;
-        axi.ar_cache  = 4'b0;
-        axi.ar_qos    = 4'b0;
-        axi.ar_id     = id_i;
-        axi.ar_user   = '0;
-
-        axi.w_valid   = 1'b0;
-        axi.w_data    = wdata_i[0];
-        axi.w_strb    = be_i[0];
-        axi.w_user    = '0;
-        axi.w_last    = 1'b0;
-
-        axi.b_ready   = 1'b0;
-        axi.r_ready   = 1'b0;
-
-        gnt_o         = 1'b0;
-        gnt_id_o      = '0;
-        valid_o       = 1'b0;
-        id_o          = axi.r_id;
-
-        // rdata_o   = axi.r_data;
-        critical_word_o         = axi.r_data;
-        critical_word_valid_o   = 1'b0;
-        rdata_o                 = cache_line_q;
-
-        state_d                 = state_q;
-        cnt_d                   = cnt_q;
-        cache_line_d            = cache_line_q;
-        addr_offset_d           = addr_offset_q;
-        id_d                    = id_q;
-        index                   = '0;
-
-        case (state_q)
-
-            IDLE: begin
-                cnt_d = '0;
-                // we have an incoming request
-                if (req_i) begin
-                    // is this a read or write?
-                    // write
-                    if (we_i) begin
-                        // the data is valid
-                        axi.aw_valid = 1'b1;
-                        axi.w_valid  = 1'b1;
-                        // its a single write
-                        if (type_i == SINGLE_REQ) begin
-                            // single req can be granted here
-                            gnt_o = axi.aw_ready & axi.w_ready;
-                            gnt_id_o = id_i;
-                            case ({axi.aw_ready, axi.w_ready})
-                                2'b11: state_d = WAIT_B_VALID;
-                                2'b01: state_d = WAIT_AW_READY;
-                                2'b10: state_d = WAIT_LAST_W_READY;
-                                default: state_d = IDLE;
-                            endcase
-                            id_d = axi.aw_id;
-                        // its a request for the whole cache line
-                        end else begin
-                            axi.aw_len = BURST_SIZE; // number of bursts to do
-                            axi.w_last = 1'b0;
-                            axi.w_data = wdata_i[0];
-                            axi.w_strb = be_i[0];
-
-                            if (axi.w_ready)
-                                cnt_d = BURST_SIZE - 1;
-                            else
-                                cnt_d = BURST_SIZE;
-
-                            case ({axi.aw_ready, axi.w_ready})
-                                2'b11: state_d = WAIT_LAST_W_READY;
-                                2'b01: state_d = WAIT_LAST_W_READY_AW_READY;
-                                2'b10: state_d = WAIT_LAST_W_READY;
-                                default:;
-                            endcase
-                            // save id
-                            id_d = axi.aw_id;
-
-                        end
-                    // read
-                    end else begin
-
-                        axi.ar_valid = 1'b1;
-                        gnt_o = axi.ar_ready;
-                        gnt_id_o = id_i;
-
-                        if (type_i != SINGLE_REQ) begin
-                            axi.ar_len = BURST_SIZE;
-                            cnt_d = BURST_SIZE;
-                        end
-
-                        if (axi.ar_ready) begin
-                            state_d = (type_i == SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
-                            addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
-                            // save id
-                            id_d = axi.ar_id;
-                        end
-                    end
-                end
-            end
-
-            // ~> from single write, write request has already been granted
-            WAIT_AW_READY: begin
-                axi.aw_valid = 1'b1;
-                axi.aw_len   = 8'b0;
-
-                if (axi.aw_ready)
-                    state_d = WAIT_B_VALID;
-
-            end
-
-            // ~> we need to wait for an aw_ready and there is at least one outstanding write
-            WAIT_LAST_W_READY_AW_READY: begin
-
-                axi.w_valid  = 1'b1;
-                axi.w_last   = (cnt_q == '0) ? 1'b1 : 1'b0;
-                axi.w_data   = wdata_i[BURST_SIZE-cnt_q];
-                axi.w_strb   = be_i[BURST_SIZE-cnt_q];
-
-                axi.aw_valid = 1'b1;
-                // we are here because we want to write a cache line
-                axi.aw_len   = BURST_SIZE;
-                // we got an aw_ready
-                case ({axi.aw_ready, axi.w_ready})
-                    // we got an aw ready
-                    2'b01: begin
-                        // are there any outstanding transactions?
-                        if (cnt_q == 0)
-                            state_d = WAIT_AW_READY_BURST;
-                        else // yes, so reduce the count and stay here
-                            cnt_d = cnt_q - 1;
-                    end
-                    2'b10: state_d = WAIT_LAST_W_READY;
-                    2'b11: begin
-                        // we are finished
-                        if (cnt_q == 0) begin
-                            state_d = WAIT_B_VALID;
-                            gnt_o = 1'b1;
-                            gnt_id_o = id_q;
-                        // there are outstanding transactions
-                        end else begin
-                            state_d = WAIT_LAST_W_READY;
-                            cnt_d = cnt_q - 1;
-                        end
-                    end
-                    default:;
-               endcase
-
-            end
-
-            // ~> all data has already been sent, we are only waiting for the aw_ready
-            WAIT_AW_READY_BURST: begin
-                axi.aw_valid = 1'b1;
-                axi.aw_len   = BURST_SIZE;
-
-                if (axi.aw_ready) begin
-                    state_d = WAIT_B_VALID;
-                    gnt_o = 1'b1;
-                    gnt_id_o = id_q;
-                end
-            end
-
-            // ~> from write, there is an outstanding write
-            WAIT_LAST_W_READY: begin
-                axi.w_valid = 1'b1;
-                axi.w_data  = wdata_i[BURST_SIZE-cnt_q];
-                axi.w_strb  = be_i[BURST_SIZE-cnt_q];
-
-                // this is the last write
-                axi.w_last  = (cnt_q == '0) ? 1'b1 : 1'b0;
-
-                if (axi.w_ready) begin
-                    // last write -> go to WAIT_B_VALID
-                    if (cnt_q == '0) begin
-                        state_d = WAIT_B_VALID;
-                        gnt_o = (cnt_q == '0);
-                        gnt_id_o = id_q;
-                    end else begin
-                        cnt_d = cnt_q - 1;
-                    end
-                end
-            end
-
-            // ~> finish write transaction
-            WAIT_B_VALID: begin
-                axi.b_ready = 1'b1;
-                id_o = axi.b_id;
-
-                // Write is valid
-                if (axi.b_valid) begin
-                    state_d = IDLE;
-                    valid_o = 1'b1;
-                end
-            end
-
-            // ~> cacheline read, single read
-            WAIT_R_VALID_MULTIPLE, WAIT_R_VALID: begin
-                if (CRITICAL_WORD_FIRST)
-                    index = addr_offset_q + (BURST_SIZE-cnt_q);
-                else
-                    index = BURST_SIZE-cnt_q;
-
-                // reads are always wrapping here
-                axi.r_ready = 1'b1;
-                // this is the first read a.k.a the critical word
-                if (axi.r_valid) begin
-                    if (CRITICAL_WORD_FIRST) begin
-                        // this is the first word of a cacheline read, e.g.: the word which was causing the miss
-                        if (state_q == WAIT_R_VALID_MULTIPLE && cnt_q == BURST_SIZE) begin
-                            critical_word_valid_o = 1'b1;
-                            critical_word_o       = axi.r_data;
-                        end
-                    end else begin
-                        // check if the address offset matches - then we are getting the critical word
-                        if (index == addr_offset_q) begin
-                            critical_word_valid_o = 1'b1;
-                            critical_word_o       = axi.r_data;
-                        end
-                    end
-
-                    // this is the last read
-                    if (axi.r_last) begin
-                        state_d = COMPLETE_READ;
-                    end
-
-                    // save the word
-                    if (state_q == WAIT_R_VALID_MULTIPLE) begin
-                        cache_line_d[index] = axi.r_data;
-
-                    end else
-                        cache_line_d[0] = axi.r_data;
-
-                    // Decrease the counter
-                    cnt_d = cnt_q - 1;
-                end
-            end
-            // ~> read is complete
-            COMPLETE_READ: begin
-                valid_o = 1'b1;
-                state_d = IDLE;
-                id_o    = id_q;
-            end
-        endcase
-    end
-
-    // ----------------
-    // Registers
-    // ----------------
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            // start in flushing state and initialize the memory
-            state_q       <= IDLE;
-            cnt_q         <= '0;
-            cache_line_q  <= '0;
-            addr_offset_q <= '0;
-            id_q          <= '0;
-        end else begin
-            state_q       <= state_d;
-            cnt_q         <= cnt_d;
-            cache_line_q  <= cache_line_d;
-            addr_offset_q <= addr_offset_d;
-            id_q          <= id_d;
-        end
-    end
-
 endmodule

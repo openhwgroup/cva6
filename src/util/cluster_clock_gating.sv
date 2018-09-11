@@ -23,7 +23,7 @@ module cluster_clock_gating (
 `ifdef PULP_FPGA_EMUL
   // no clock gates in FPGA flow
   assign clk_o = clk_i;
-`elseif verilator
+`elsif verilator
   assign clk_o = clk_i;
 `else
   logic clk_en;

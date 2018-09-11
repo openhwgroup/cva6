@@ -27,24 +27,15 @@ module ptw #(
     output logic                    ptw_active_o,
     output logic                    walking_instr_o,        // set when walking for TLB
     output logic                    ptw_error_o,            // set when an error occurred
-    output logic [63:0]             faulting_address_o,     // the address which threw the page-fault exception
     input  logic                    enable_translation_i,   // CSRs indicate to enable SV39
     input  logic                    en_ld_st_translation_i, // enable virtual memory translation for load/stores
 
     input  logic                    lsu_is_store_i,         // this translation was triggered by a store
-    // PTW Memory Port
-    output logic [11:0]             address_index_o,
-    output logic [43:0]             address_tag_o,
-    output logic [63:0]             data_wdata_o,
-    output logic                    data_req_o,
-    output logic                    data_we_o,
-    output logic [7:0]              data_be_o,
-    output logic [1:0]              data_size_o,
-    output logic                    kill_req_o,
-    output logic                    tag_valid_o,
-    input  logic                    data_gnt_i,
-    input  logic                    data_rvalid_i,
-    input  logic [63:0]             data_rdata_i,
+    // PTW memory interface 
+    input  dcache_req_o_t           req_port_i,
+    output dcache_req_i_t           req_port_o,
+
+
     // to TLBs, update logic
     output tlb_update_t             itlb_update_o,
     output tlb_update_t             dtlb_update_o,
@@ -69,6 +60,9 @@ module ptw #(
     output logic                    dtlb_miss_o
 
 );
+
+    assign req_port_o.amo_op = AMO_NONE;
+
     // input registers
     logic data_rvalid_q;
     logic [63:0] data_rdata_q;
@@ -82,7 +76,7 @@ module ptw #(
       PTE_LOOKUP,
       WAIT_RVALID,
       PROPAGATE_ERROR
-    } CS, NS;
+    } state_q, state_d;
 
     // SV39 defines three levels of page tables
     enum logic [1:0] {
@@ -104,15 +98,15 @@ module ptw #(
     // Assignments
     assign update_vaddr_o  = vaddr_q;
 
-    assign ptw_active_o    = (CS != IDLE);
+    assign ptw_active_o    = (state_q != IDLE);
     assign walking_instr_o = is_instr_ptw_q;
     // directly output the correct physical address
-    assign address_index_o = ptw_pptr_q[11:0];
-    assign address_tag_o   = ptw_pptr_q[55:12];
+    assign req_port_o.address_index = ptw_pptr_q[11:0];
+    assign req_port_o.address_tag   = ptw_pptr_q[55:12];
     // we are never going to kill this request
-    assign kill_req_o      = '0;
+    assign req_port_o.kill_req      = '0;
     // we are never going to write with the HPTW
-    assign data_wdata_o    = 64'b0;
+    assign req_port_o.data_wdata    = 64'b0;
     // -----------
     // TLB Update
     // -----------
@@ -130,7 +124,7 @@ module ptw #(
     assign itlb_update_o.content = pte | (global_mapping_q << 5);
     assign dtlb_update_o.content = pte | (global_mapping_q << 5);
 
-    assign tag_valid_o      = tag_valid_q;
+    assign req_port_o.tag_valid      = tag_valid_q;
 
     //-------------------
     // Page table walker
@@ -158,28 +152,27 @@ module ptw #(
     always_comb begin : ptw
         // default assignments
         // PTW memory interface
-        tag_valid_n         = 1'b0;
-        data_req_o          = 1'b0;
-        data_be_o           = 8'hFF;
-        data_size_o         = 2'b11;
-        data_we_o           = 1'b0;
-        ptw_error_o         = 1'b0;
-        itlb_update_o.valid = 1'b0;
-        dtlb_update_o.valid = 1'b0;
-        is_instr_ptw_n      = is_instr_ptw_q;
-        ptw_lvl_n           = ptw_lvl_q;
-        ptw_pptr_n          = ptw_pptr_q;
-        NS                  = CS;
-        global_mapping_n    = global_mapping_q;
-        // input registers
-        tlb_update_asid_n   = tlb_update_asid_q;
-        vaddr_n             = vaddr_q;
-        faulting_address_o  = '0;
+        tag_valid_n           = 1'b0;
+        req_port_o.data_req   = 1'b0;
+        req_port_o.data_be    = 8'hFF;
+        req_port_o.data_size  = 2'b11;
+        req_port_o.data_we    = 1'b0;
+        ptw_error_o           = 1'b0;
+        itlb_update_o.valid   = 1'b0;
+        dtlb_update_o.valid   = 1'b0;
+        is_instr_ptw_n        = is_instr_ptw_q;
+        ptw_lvl_n             = ptw_lvl_q;
+        ptw_pptr_n            = ptw_pptr_q;
+        state_d               = state_q;
+        global_mapping_n      = global_mapping_q;
+        // input registers  
+        tlb_update_asid_n     = tlb_update_asid_q;
+        vaddr_n               = vaddr_q;
+  
+        itlb_miss_o           = 1'b0;
+        dtlb_miss_o           = 1'b0;
 
-        itlb_miss_o         = 1'b0;
-        dtlb_miss_o         = 1'b0;
-
-        case (CS)
+        case (state_q)
 
             IDLE: begin
                 // by default we start with the top-most page table
@@ -192,26 +185,26 @@ module ptw #(
                     is_instr_ptw_n      = 1'b1;
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = itlb_vaddr_i;
-                    NS                  = WAIT_GRANT;
+                    state_d             = WAIT_GRANT;
                     itlb_miss_o         = 1'b1;
                 // we got an DTLB miss
                 end else if (en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit_i) begin
                     ptw_pptr_n          = {satp_ppn_i, dtlb_vaddr_i[38:30], 3'b0};
                     tlb_update_asid_n   = asid_i;
                     vaddr_n             = dtlb_vaddr_i;
-                    NS                  = WAIT_GRANT;
+                    state_d             = WAIT_GRANT;
                     dtlb_miss_o         = 1'b1;
                 end
             end
 
             WAIT_GRANT: begin
                 // send a request out
-                data_req_o = 1'b1;
+                req_port_o.data_req = 1'b1;
                 // wait for the WAIT_GRANT
-                if (data_gnt_i) begin
+                if (req_port_i.data_gnt) begin
                     // send the tag valid signal one cycle later
                     tag_valid_n = 1'b1;
-                    NS          = PTE_LOOKUP;
+                    state_d     = PTE_LOOKUP;
                 end
             end
 
@@ -228,12 +221,12 @@ module ptw #(
                     // -------------
                     // If pte.v = 0, or if pte.r = 0 and pte.w = 1, stop and raise a page-fault exception.
                     if (!pte.v || (!pte.r && pte.w))
-                        NS = PROPAGATE_ERROR;
+                        state_d = PROPAGATE_ERROR;
                     // -----------
                     // Valid PTE
                     // -----------
                     else begin
-                        NS = IDLE;
+                        state_d = IDLE;
                         // it is a valid PTE
                         // if pte.r = 1 or pte.x = 1 it is a valid PTE
                         if (pte.r || pte.x) begin
@@ -246,7 +239,7 @@ module ptw #(
                                 // doesn't put a useless entry into the TLB. The same idea applies
                                 // to the access flag since we let the access flag be managed by SW.
                                 if (!pte.x || !pte.a)
-                                  NS = PROPAGATE_ERROR;
+                                  state_d = PROPAGATE_ERROR;
                                 else
                                   itlb_update_o.valid = 1'b1;
 
@@ -262,25 +255,25 @@ module ptw #(
                                 if (pte.a && (pte.r || (pte.x && mxr_i))) begin
                                   dtlb_update_o.valid = 1'b1;
                                 end else begin
-                                  NS   = PROPAGATE_ERROR;
+                                  state_d   = PROPAGATE_ERROR;
                                 end
                                 // Request is a store: perform some additional checks
                                 // If the request was a store and the page is not write-able, raise an error
                                 // the same applies if the dirty flag is not set
                                 if (lsu_is_store_i && (!pte.w || !pte.d)) begin
                                     dtlb_update_o.valid = 1'b0;
-                                    NS   = PROPAGATE_ERROR;
+                                    state_d   = PROPAGATE_ERROR;
                                 end
                             end
                             // check if the ppn is correctly aligned:
                             // 6. If i > 0 and pa.ppn[i − 1 : 0] != 0, this is a misaligned superpage; stop and raise a page-fault
                             // exception.
                             if (ptw_lvl_q == LVL1 && pte.ppn[17:0] != '0) begin
-                                NS = PROPAGATE_ERROR;
+                                state_d             = PROPAGATE_ERROR;
                                 dtlb_update_o.valid = 1'b0;
                                 itlb_update_o.valid = 1'b0;
                             end else if (ptw_lvl_q == LVL2 && pte.ppn[8:0] != '0) begin
-                                NS = PROPAGATE_ERROR;
+                                state_d             = PROPAGATE_ERROR;
                                 dtlb_update_o.valid = 1'b0;
                                 itlb_update_o.valid = 1'b0;
                             end
@@ -299,12 +292,12 @@ module ptw #(
                                 ptw_pptr_n = {pte.ppn, vaddr_q[20:12], 3'b0};
                             end
 
-                            NS = WAIT_GRANT;
+                            state_d = WAIT_GRANT;
 
                             if (ptw_lvl_q == LVL3) begin
                               // Should already be the last level page table => Error
                               ptw_lvl_n   = LVL3;
-                              NS = PROPAGATE_ERROR;
+                              state_d = PROPAGATE_ERROR;
                             end
                         end
                     end
@@ -313,14 +306,16 @@ module ptw #(
             end
             // Propagate error to MMU/LSU
             PROPAGATE_ERROR: begin
-                NS = IDLE;
-                ptw_error_o        = 1'b1;
-                faulting_address_o = vaddr_q;
+                state_d     = IDLE;
+                ptw_error_o = 1'b1;
             end
             // wait for the rvalid before going back to IDLE
             WAIT_RVALID: begin
                 if (data_rvalid_q)
-                    NS = IDLE;
+                    state_d = IDLE;
+            end
+            default: begin
+                state_d = IDLE;
             end
         endcase
 
@@ -333,28 +328,28 @@ module ptw #(
             // 1. in the PTE Lookup check whether we still need to wait for an rvalid
             // 2. waiting for a grant, if so: wait for it
             // if not, go back to idle
-            if ((CS == PTE_LOOKUP && !data_rvalid_q) || ((CS == WAIT_GRANT) && data_gnt_i))
-                NS = WAIT_RVALID;
+            if ((state_q == PTE_LOOKUP && !data_rvalid_q) || ((state_q == WAIT_GRANT) && req_port_i.data_gnt))
+                state_d = WAIT_RVALID;
             else
-                NS = IDLE;
+                state_d = IDLE;
         end
     end
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            CS                 <= IDLE;
+            state_q            <= IDLE;
             is_instr_ptw_q     <= 1'b0;
             ptw_lvl_q          <= LVL1;
             tag_valid_q        <= 1'b0;
-            tlb_update_asid_q  <= '{default: 0};
+            tlb_update_asid_q  <= '0;
             vaddr_q            <= '0;
-            ptw_pptr_q         <= '{default: 0};
+            ptw_pptr_q         <= '0;
             global_mapping_q   <= 1'b0;
             data_rdata_q       <= '0;
             data_rvalid_q      <= 1'b0;
         end else begin
-            CS                 <= NS;
+            state_q            <= state_d;
             ptw_pptr_q         <= ptw_pptr_n;
             is_instr_ptw_q     <= is_instr_ptw_n;
             ptw_lvl_q          <= ptw_lvl_n;
@@ -362,8 +357,8 @@ module ptw #(
             tlb_update_asid_q  <= tlb_update_asid_n;
             vaddr_q            <= vaddr_n;
             global_mapping_q   <= global_mapping_n;
-            data_rdata_q       <= data_rdata_i;
-            data_rvalid_q      <= data_rvalid_i;
+            data_rdata_q       <= req_port_i.data_rdata;
+            data_rvalid_q      <= req_port_i.data_rvalid;
         end
     end
 

@@ -16,11 +16,8 @@
 import ariane_pkg::*;
 
 module ex_stage #(
-        parameter int          ASID_WIDTH       = 1,
-        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,
-        parameter int unsigned AXI_ID_WIDTH     = 10,
-        parameter int unsigned AXI_USER_WIDTH   = 1
-    )(
+        parameter int          ASID_WIDTH       = 1
+    ) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,
@@ -38,10 +35,8 @@ module ex_stage #(
     output logic                                   alu_ready_o,           // FU is ready
     input  logic                                   alu_valid_i,           // Output is valid
     output logic                                   alu_valid_o,           // ALU result is valid
-    output logic                                   alu_branch_res_o,      // Branch comparison result
     output logic [63:0]                            alu_result_o,
     output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
-    output exception_t                             alu_exception_o,
     // Branches and Jumps
     output logic                                   branch_ready_o,
     input  logic                                   branch_valid_i,        // we are using the branch unit
@@ -92,36 +87,34 @@ module ex_stage #(
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
     input  logic                                   flush_tlb_i,
-    input  logic                                   fetch_req_i,
-    input  logic [63:0]                            fetch_vaddr_i,
-    output logic                                   fetch_valid_o,
-    output logic [63:0]                            fetch_paddr_o,
-    output exception_t                             fetch_exception_o,
+
     input  riscv::priv_lvl_t                       priv_lvl_i,
     input  riscv::priv_lvl_t                       ld_st_priv_lvl_i,
     input  logic                                   sum_i,
     input  logic                                   mxr_i,
     input  logic [43:0]                            satp_ppn_i,
     input  logic [ASID_WIDTH-1:0]                  asid_i,
+    // icache translation requests
+    input  icache_areq_o_t                         icache_areq_i,
+    output icache_areq_i_t                         icache_areq_o,
+
+    // interface to dcache
+    input  dcache_req_o_t [2:0]                    dcache_req_ports_i,
+    output dcache_req_i_t [2:0]                    dcache_req_ports_o,
 
     // Performance counters
     output logic                                   itlb_miss_o,
-    output logic                                   dtlb_miss_o,
-    output logic                                   dcache_miss_o,
-
-    // DCache interface
-    input  logic                                   dcache_en_i,
-    input  logic                                   flush_dcache_i,
-    output logic                                   flush_dcache_ack_o,
-    AXI_BUS.Master                                 data_if,
-    AXI_BUS.Master                                 bypass_if
+    output logic                                   dtlb_miss_o
 );
+
+    logic alu_branch_res; // branch comparison result
 
     // -----
     // ALU
     // -----
     alu alu_i (
         .result_o            ( alu_result_o                 ),
+        .alu_branch_res_o    ( alu_branch_res               ),
         .*
     );
 
@@ -130,7 +123,7 @@ module ex_stage #(
     // --------------------
     branch_unit branch_unit_i (
         .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i), // any functional unit is valid, check that there is no accidental mis-predict
-        .branch_comp_res_i   ( alu_branch_res_o),
+        .branch_comp_res_i   ( alu_branch_res ),
         .*
     );
 
@@ -164,14 +157,11 @@ module ex_stage #(
     // ----------------
     // Load-Store Unit
     // ----------------
-    lsu #(
-        .CACHE_START_ADDR ( CACHE_START_ADDR ),
-        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
-        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
-    ) lsu_i (
-        .commit_i       ( lsu_commit_i       ),
-        .commit_ready_o ( lsu_commit_ready_o ),
-        .data_if        ( data_if            ),
+    lsu lsu_i (
+        .commit_i           ( lsu_commit_i       ),
+        .commit_ready_o     ( lsu_commit_ready_o ),
+        .dcache_req_ports_i ( dcache_req_ports_i ),
+        .dcache_req_ports_o ( dcache_req_ports_o ),
         .*
     );
 

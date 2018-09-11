@@ -16,7 +16,6 @@
  *              in one package.
  */
 
-
 package ariane_pkg;
 
     // ---------------
@@ -94,6 +93,11 @@ package ariane_pkg;
     // ---------------
     // Fetch Stage
     // ---------------
+
+    // leave as is (fails with >8 entries and wider fetch width)
+    localparam int unsigned FETCH_FIFO_DEPTH  = 8;
+    localparam int unsigned FETCH_WIDTH       = 32;
+
     // Only use struct when signals have same direction
     // exception
     typedef struct packed {
@@ -169,6 +173,22 @@ package ariane_pkg;
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
+
+    // ---------------
+    // Cache config
+    // ---------------
+
+    // I$
+    parameter int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit
+    parameter int unsigned  ICACHE_TAG_WIDTH         = 44; // in bit
+    parameter int unsigned  ICACHE_SET_ASSOC         = 4;
+    parameter int unsigned  ICACHE_LINE_WIDTH        = 128; // in bit
+
+    // D$
+    localparam int unsigned DCACHE_INDEX_WIDTH       = 12;
+    localparam int unsigned DCACHE_TAG_WIDTH         = 44;
+    localparam int unsigned DCACHE_LINE_WIDTH        = 128;
+    localparam int unsigned DCACHE_SET_ASSOC         = 8;
 
     // ---------------
     // EX Stage
@@ -355,6 +375,58 @@ package ariane_pkg;
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).
     localparam PPN4K_WIDTH = 38;
+
+    // ----------------------
+    // cache request ports
+    // ----------------------
+
+    // I$ address translation requests
+    typedef struct packed {
+        logic                     fetch_valid;     // address translation valid
+        logic [63:0]              fetch_paddr;     // physical address in
+        exception_t               fetch_exception; // exception occurred during fetch
+    } icache_areq_i_t;
+
+    typedef struct packed {
+        logic                     fetch_req;       // address translation request
+        logic [63:0]              fetch_vaddr;     // virtual address out
+    } icache_areq_o_t;
+
+    // I$ data requests
+    typedef struct packed {
+        logic                     req;                    // we request a new word
+        logic                     kill_s1;                // kill the current request
+        logic                     kill_s2;                // kill the last request
+        logic [63:0]              vaddr;                  // 1st cycle: 12 bit index is taken for lookup
+    } icache_dreq_i_t;
+
+    typedef struct packed {
+        logic                     ready;                  // icache is ready
+        logic                     valid;                  // signals a valid read
+        logic [FETCH_WIDTH-1:0]   data;                   // 2+ cycle out: tag
+        logic [63:0]              vaddr;                  // virtual address out
+        exception_t               ex;                     // we've encountered an exception
+    } icache_dreq_o_t;
+
+    // D$ data requests
+    typedef struct packed {
+        logic [DCACHE_INDEX_WIDTH-1:0] address_index;
+        logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
+        logic [63:0]                   data_wdata;
+        logic                          data_req;
+        logic                          data_we;
+        logic [7:0]                    data_be;
+        logic [1:0]                    data_size;
+        logic                          kill_req;
+        logic                          tag_valid;
+        amo_t                          amo_op;
+    } dcache_req_i_t;
+
+    typedef struct packed {
+        logic                      data_gnt;
+        logic                      data_rvalid;
+        logic [63:0]               data_rdata;
+    } dcache_req_o_t;
 
     // ----------------------
     // Arithmetic Functions

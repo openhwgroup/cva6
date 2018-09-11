@@ -5,6 +5,7 @@ cache:
   apt: true
   directories:
     $RISCV
+    $VERILATOR_ROOT
 
 # required packages to install
 addons:
@@ -32,7 +33,7 @@ addons:
 env:
   global:
     - RISCV="/home/travis/riscv_install"
-    - PATH="/home/travis/riscv_install/bin:$PATH"
+    - VERILATOR_ROOT="/home/travis/verilator-3.924/"
 
 branches:
   only:
@@ -41,12 +42,16 @@ branches:
 
 before_install:
   - export CXX=g++-4.8 CC=gcc-4.8
-  - ci/make-tmp.sh
+  # setup dependent paths
+  - export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
   - export LIBRARY_PATH=$TRAVIS_BUILD_DIR/tmp/lib
   - export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/tmp/lib
-  - export C_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include
-  - export CPLUS_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include
-  - export VERILATOR_ROOT=$TRAVIS_BUILD_DIR/tmp/verilator-3.924/
+  - export C_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include:$VERILATOR_ROOT/include
+  - export CPLUS_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include:$VERILATOR_ROOT/include
+  # number of parallel jobs to use for make commands and simulation
+  - export NUM_JOBS=4
+  - ci/make-tmp.sh
+  - git submodule update --init --recursive
 
 stages:
   - compile
@@ -55,15 +60,30 @@ stages:
 jobs:
   include:
     - stage: compile
+      name: prepare cache
       script:
         - ci/build-riscv-gcc.sh
-    - stage: test
-      script:
         - ci/install-verilator.sh
+    - stage: test
+      name: run riscv benchmarks
+      script:
         - ci/install-fesvr.sh
         - ci/build-riscv-tests.sh
-        - make verilate verilator=$TRAVIS_BUILD_DIR/tmp/bin/verilator
-        - ci/run-tests.sh
-
+        - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    # rv64ui-p-* tests
+    - stage: test
+      name: run rv64ui-p-* asm tests
+      script:
+        - ci/install-fesvr.sh
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    # rv64ui-v-* tests
+    - stage: test
+      name: run rv64ui-v-* asm tests
+      script:
+        - ci/install-fesvr.sh
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    
 # extra time during long builds
 install: travis_wait

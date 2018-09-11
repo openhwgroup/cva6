@@ -69,9 +69,9 @@ module mult (
     // ---------------------
     // Division
     // ---------------------
-    logic [5:0]  ff1_result; // holds the index of the last '1' (as the input operand is reversed)
-    logic        ff1_no_one; // no one was found by find first one
-    logic [63:0] ff1_input;  // input to find first one
+    logic [5:0]  lzc_result; // holds the index of the last '1' (as the input operand is reversed)
+    logic        lzc_no_one; // no one was found by find first one
+    logic [63:0] lzc_input;  // input to find first one
     logic [63:0] operand_b_rev, operand_b_rev_neg, operand_b_shift; // couple of different representations for the dividend
     logic [6:0]  div_shift;             // amount of which to shift to left
     logic        div_signed;            // should this operation be performed as a signed or unsigned division
@@ -95,7 +95,7 @@ module mult (
     endgenerate
     // negated reverse input operand, used for signed divisions
     assign operand_b_rev_neg = ~operand_b_rev;
-    assign ff1_input = (div_op_signed) ? operand_b_rev_neg : operand_b_rev;
+    assign lzc_input = (div_op_signed) ? operand_b_rev_neg : operand_b_rev;
 
     // prepare the input operands and control divider
     always_comb begin
@@ -139,19 +139,19 @@ module mult (
     end
 
     // ---------------------
-    // Find First one
+    // Leading Zero Counter
     // ---------------------
     // this unit is used to speed up the sequential division by shifting the dividend first
-    find_first_one #(
-        .WIDTH       ( 64         )
-    ) i_ff1 (
-        .in_i        ( ff1_input  ), // signed = operand_b_rev_neg, unsigned operand_b_rev
-        .first_one_o ( ff1_result ),
-        .no_ones_o   ( ff1_no_one )
+    lzc #(
+        .WIDTH   ( 64         )
+    ) i_lzc (
+        .in_i    ( lzc_input  ), // signed = operand_b_rev_neg, unsigned operand_b_rev
+        .cnt_o   ( lzc_result ),
+        .empty_o ( lzc_no_one )
     );
 
     // if the dividend is all zero go for the full length
-    assign div_shift = ff1_no_one ? 7'd64 : ff1_result;
+    assign div_shift = lzc_no_one ? 7'd64 : lzc_result;
     // prepare dividend by shifting
     assign operand_b_shift = operand_b <<< div_shift;
 
