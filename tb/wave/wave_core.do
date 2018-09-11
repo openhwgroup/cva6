@@ -1,11 +1,11 @@
 add wave -noupdate -group core /ariane_tb/dut/i_ariane/*
 
 add wave -noupdate -group frontend /ariane_tb/dut/i_ariane/i_frontend/*
-add wave -noupdate -group frontend -group icache /ariane_tb/dut/i_ariane/i_frontend/i_icache/*
+add wave -noupdate -group frontend -group icache /ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_icache/*
 add wave -noupdate -group frontend -group ras /ariane_tb/dut/i_ariane/i_frontend/i_ras/*
 add wave -noupdate -group frontend -group btb /ariane_tb/dut/i_ariane/i_frontend/i_btb/*
 add wave -noupdate -group frontend -group bht /ariane_tb/dut/i_ariane/i_frontend/i_bht/*
-# add wave -noupdate -group frontend -group instr_scan /ariane_tb/dut/i_ariane/i_frontend/*i_instr_scan/*
+add wave -noupdate -group frontend -group instr_scan /ariane_tb/dut/i_ariane/i_frontend/*/i_instr_scan/*
 add wave -noupdate -group frontend -group fetch_fifo /ariane_tb/dut/i_ariane/i_frontend/i_fetch_fifo/*
 
 add wave -noupdate -group id_stage -group decoder /ariane_tb/dut/i_ariane/id_stage_i/decoder_i/*
@@ -22,7 +22,6 @@ add wave -noupdate -group ex_stage -group alu /ariane_tb/dut/i_ariane/ex_stage_i
 add wave -noupdate -group ex_stage -group mult /ariane_tb/dut/i_ariane/ex_stage_i/i_mult/*
 add wave -noupdate -group ex_stage -group mult -group mul /ariane_tb/dut/i_ariane/ex_stage_i/i_mult/i_mul/*
 add wave -noupdate -group ex_stage -group mult -group div /ariane_tb/dut/i_ariane/ex_stage_i/i_mult/i_div/*
-add wave -noupdate -group ex_stage -group mult -group ff1 /ariane_tb/dut/i_ariane/ex_stage_i/i_mult/i_ff1/*
 
 add wave -noupdate -group ex_stage -group lsu /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/*
 add wave -noupdate -group ex_stage -group lsu  -group lsu_bypass /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/lsu_bypass_i/*
@@ -48,23 +47,23 @@ add wave -noupdate -group csr_file /ariane_tb/dut/i_ariane/csr_regfile_i/*
 
 add wave -noupdate -group controller /ariane_tb/dut/i_ariane/controller_i/*
 
-add wave -noupdate -group nbdcache /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/*
-add wave -noupdate -group nbdcache -group miss_handler /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/i_miss_handler/*
+add wave -noupdate -group nbdcache /ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/*
+add wave -noupdate -group nbdcache -group miss_handler /ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/i_miss_handler/*
 
-add wave -noupdate -group nbdcache -group bypass_arbiter /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/i_miss_handler/i_bypass_arbiter/*
-add wave -noupdate -group nbdcache -group bypass_axi /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/i_miss_handler/i_bypass_axi_adapter/*
+add wave -noupdate -group nbdcache -group bypass_arbiter /ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/i_miss_handler/i_bypass_arbiter/*
+add wave -noupdate -group nbdcache -group bypass_axi /ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/i_miss_handler/i_bypass_axi_adapter/*
 
-add wave -noupdate -group nbdcache -group miss_axi /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/i_miss_handler/i_miss_axi_adapter/*
-add wave -noupdate -group nbdcache -group lfsr /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/i_miss_handler/i_lfsr/*
+add wave -noupdate -group nbdcache -group miss_axi /ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/i_miss_handler/i_miss_axi_adapter/*
+add wave -noupdate -group nbdcache -group lfsr /ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/i_miss_handler/i_lfsr/*
 
-add wave -noupdate -group nbdcache -group dirty_ram /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/dirty_sram/*
-add wave -noupdate -group nbdcache -group tag_cmp /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/i_tag_cmp/*
+add wave -noupdate -group nbdcache -group dirty_ram /ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/valid_dirty_sram/*
+add wave -noupdate -group nbdcache -group tag_cmp /ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/i_tag_cmp/*
 
-add wave -noupdate -group nbdcache -group ptw {/ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/master_ports[0]/i_cache_ctrl/*}
-add wave -noupdate -group nbdcache -group load {/ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/master_ports[1]/i_cache_ctrl/*}
-add wave -noupdate -group nbdcache -group store {/ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/i_nbdcache/master_ports[2]/i_cache_ctrl/*}
+add wave -noupdate -group nbdcache -group ptw {/ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/master_ports[0]/i_cache_ctrl/*}
+add wave -noupdate -group nbdcache -group load {/ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/master_ports[1]/i_cache_ctrl/*}
+add wave -noupdate -group nbdcache -group store {/ariane_tb/dut/i_ariane/i_std_cache_subsystem/i_nbdcache/master_ports[2]/i_cache_ctrl/*}
 
-add wave -noupdate -group perf_counters {/ariane_tb/dut/i_ariane/i_perf_counters/*}
+add wave -noupdate -group perf_counters /ariane_tb/dut/i_ariane/i_perf_counters/*
 
 add wave -noupdate -group dm_top /ariane_tb/dut/i_dm_top/*
 add wave -noupdate -group dm_top -group dm_csrs /ariane_tb/dut/i_dm_top/i_dm_csrs/*
