@@ -233,13 +233,8 @@ module ariane_testharness #(
     logic [AXI_DATA_WIDTH/8-1:0]  be;
     logic [AXI_DATA_WIDTH-1:0]    wdata;
     logic [AXI_DATA_WIDTH-1:0]    rdata;
-    logic [AXI_DATA_WIDTH-1:0]    bit_en;
 
-    // convert byte enable to bit enable
-    for (genvar i = 0; i < AXI_DATA_WIDTH/8; i++) begin
-        assign bit_en[i*8 +: 8] = {8{be[i]}};
-    end
-
+    
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
@@ -262,11 +257,12 @@ module ariane_testharness #(
         .NUM_WORDS  ( NUM_WORDS      )
     ) i_sram (
         .clk_i      ( clk_i                                                                       ),
+        .rst_ni     ( rst_ni                                                                      ),
         .req_i      ( req                                                                         ),
         .we_i       ( we                                                                          ),
         .addr_i     ( addr[$clog2(NUM_WORDS)-1+$clog2(AXI_DATA_WIDTH/8):$clog2(AXI_DATA_WIDTH/8)] ),
         .wdata_i    ( wdata                                                                       ),
-        .be_i       ( bit_en                                                                      ),
+        .be_i       ( be                                                                          ),
         .rdata_o    ( rdata                                                                       )
     );
 

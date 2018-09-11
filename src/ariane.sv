@@ -141,14 +141,6 @@ module ariane #(
     logic [NR_COMMIT_PORTS-1:0][63:0] wdata_commit_id;
     logic [NR_COMMIT_PORTS-1:0]       we_commit_id;
     // --------------
-    // IF <-> EX
-    // --------------
-    logic                     fetch_req_if_ex;
-    logic [63:0]              fetch_vaddr_if_ex;
-    logic                     fetch_valid_ex_if;
-    logic [63:0]              fetch_paddr_ex_if;
-    exception_t               fetch_ex_ex_if;
-    // --------------
     // CSR <-> *
     // --------------
     logic                     enable_translation_csr_ex;
@@ -177,7 +169,6 @@ module ariane #(
     logic [63:0]              data_csr_perf, data_perf_csr;
     logic                     we_csr_perf;
 
-    logic                     l1_icache_miss;
     logic                     icache_flush_ctrl_cache;
     logic                     itlb_miss_ex_perf;
     logic                     dtlb_miss_ex_perf;
@@ -198,9 +189,8 @@ module ariane #(
     logic                     sfence_vma_commit_controller;
     logic                     halt_ctrl;
     logic                     halt_csr_ctrl;
-    logic                     flush_dcache_ctrl_ex;
-    logic                     flush_dcache_ack_ex_ctrl;
-    logic                     flush_icache_ctrl_icache;
+    logic                     dcache_flush_ctrl_cache;
+    logic                     dcache_flush_ack_cache_ctrl;
     logic                     set_debug_pc;
 
     icache_areq_i_t           icache_areq_ex_cache;
@@ -395,7 +385,7 @@ module ariane #(
     // ---------
     commit_stage commit_stage_i (
         .halt_i                 ( halt_ctrl                     ),
-        .flush_dcache_i         ( flush_dcache_ctrl_ex          ),
+        .flush_dcache_i         ( dcache_flush_ctrl_cache          ),
         .exception_o            ( ex_commit                     ),
         .debug_mode_i           ( debug_mode_csr_id             ),
         .debug_req_i            ( debug_req_i                   ),
@@ -474,8 +464,8 @@ module ariane #(
         .commit_instr_i    ( commit_instr_id_commit ),
         .commit_ack_i      ( commit_ack             ),
 
-        .l1_icache_miss_i  ( l1_icache_miss         ),
-        .l1_dcache_miss_i  ( icache_miss_cache_perf ),
+        .l1_icache_miss_i  ( icache_miss_cache_perf ),
+        .l1_dcache_miss_i  ( dcache_miss_cache_perf ),
         .itlb_miss_i       ( itlb_miss_ex_perf      ),
         .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
 
@@ -496,8 +486,8 @@ module ariane #(
         .flush_id_o             ( flush_ctrl_id                 ),
         .flush_ex_o             ( flush_ctrl_ex                 ),
         .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
-        .flush_dcache_o         ( flush_dcache_ctrl_ex          ),
-        .flush_dcache_ack_i     ( flush_dcache_ack_ex_ctrl      ),
+        .flush_dcache_o         ( dcache_flush_ctrl_cache          ),
+        .flush_dcache_ack_i     ( dcache_flush_ack_cache_ctrl      ),
 
         .halt_csr_i             ( halt_csr_ctrl                 ),
         .halt_o                 ( halt_ctrl                     ),
@@ -534,8 +524,8 @@ module ariane #(
         .icache_dreq_o         ( icache_dreq_cache_if                  ),
         // D$
         .dcache_enable_i       ( dcache_en_csr_nbdcache                ),
-        .dcache_flush_i        ( flush_dcache_ctrl_ex                  ),
-        .dcache_flush_ack_o    ( flush_dcache_ack_ex_ctrl              ),
+        .dcache_flush_i        ( dcache_flush_ctrl_cache               ),
+        .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl           ),
         // from PTW, Load Unit  and Store Unit
         .dcache_amo_commit_i   ( 1'b0                                  ),
         .dcache_amo_valid_o    (                                       ),
