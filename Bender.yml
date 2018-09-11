@@ -31,8 +31,11 @@ sources:
   - src/csr_regfile.sv
   - src/decoder.sv
   - src/ex_stage.sv
-  - src/fetch_fifo.sv
-  - src/frontend.sv
+  - src/frontend/btb.sv,
+  - src/frontend/bht.sv,
+  - src/frontend/ras.sv,
+  - src/frontend/instr_scan.sv,
+  - src/frontend/frontend.sv
   - src/icache.sv
   - src/id_stage.sv
   - src/instr_realigner.sv
