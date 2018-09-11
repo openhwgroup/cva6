@@ -813,7 +813,7 @@ module decoder (
                                 instruction_o.op = FMV_X2F;   // fmv.fmt.ifmt - GPR to FPR Move
                                 instruction_o.rs2 = instr.rftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
                                 check_fprm       = 1'b0; // instruction encoded in rm, do the check here
-                                if (instr.rftype.rm != 3'b000 || (XF16ALT && instr.rftype.rm == 3'b100))
+                                if (!(instr.rftype.rm == 3'b000 || (XF16ALT && instr.rftype.rm == 3'b100)))
                                     illegal_instr = 1'b1;
                                 // rs2 must be zero
                                 if (instr.rftype.rs2 != 5'b00000) illegal_instr = 1'b1;
