@@ -24,6 +24,7 @@ module dmi_cdc (
     input  dm::dmi_req_t     jtag_dmi_req_i,
     output logic             jtag_dmi_ready_o,
     input  logic             jtag_dmi_valid_i,
+
     output dm::dmi_resp_t    jtag_dmi_resp_o,
     output logic             jtag_dmi_valid_o,
     input  logic             jtag_dmi_ready_i,
@@ -35,6 +36,7 @@ module dmi_cdc (
     output dm::dmi_req_t     core_dmi_req_o,
     output logic             core_dmi_valid_o,
     input  logic             core_dmi_ready_i,
+
     input dm::dmi_resp_t     core_dmi_resp_i,
     output logic             core_dmi_ready_o,
     input  logic             core_dmi_valid_i
@@ -49,7 +51,7 @@ module dmi_cdc (
 
     .dst_rst_ni  ( rst_ni           ),
     .dst_clk_i   ( clk_i            ),
-    .dst_data_o  ( core_dmi_valid_o ),
+    .dst_data_o  ( core_dmi_req_o   ),
     .dst_valid_o ( core_dmi_valid_o ),
     .dst_ready_i ( core_dmi_ready_i )
   );
