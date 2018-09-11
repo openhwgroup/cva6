@@ -102,27 +102,31 @@ $(library):
 sim: build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0 \
-	-gblso tmp/riscv-fesvr/build/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" \
+	$(QUESTASIM_FLAGS) \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
 simc: build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0 \
-	-gblso tmp/riscv-fesvr/build/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" \
+	$(QUESTASIM_FLAGS) \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
 
 $(riscv-asm-tests): build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0     \
-	-gblso tmp/riscv-fesvr/build/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
+	$(QUESTASIM_FLAGS) \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log 
 
 $(riscv-benchmarks): build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0   \
-	-gblso tmp/riscv-fesvr/build/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
+	$(QUESTASIM_FLAGS) \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log 
 
