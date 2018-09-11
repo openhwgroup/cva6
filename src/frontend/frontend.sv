@@ -88,9 +88,9 @@ module frontend (
     logic          is_mispredict;
     // branch-prediction which we inject into the pipeline
     branchpredict_sbe_t  bp_sbe;
-    
+
     // fetch fifo credit system
-    logic fifo_valid, fifo_ready, fifo_empty, fifo_pop; 
+    logic fifo_valid, fifo_ready, fifo_empty, fifo_pop;
     logic s2_eff_kill, issue_req, s2_in_flight_d, s2_in_flight_q;
     logic [$clog2(FETCH_FIFO_DEPTH):0] fifo_credits_d;
     logic [$clog2(FETCH_FIFO_DEPTH):0] fifo_credits_q;
@@ -301,11 +301,11 @@ module frontend (
         automatic logic [63:0] fetch_address;
 
         // check whether we come out of reset
-        // this is a workaround. some tools have issues 
-        // having boot_addr_i in the asynchronous 
+        // this is a workaround. some tools have issues
+        // having boot_addr_i in the asynchronous
         // reset assignment to npc_q, even though
         // boot_addr_i will be assigned a constant
-        // on the top-level. 
+        // on the top-level.
         if (npc_rst_load_q) begin
             npc_d         = boot_addr_i;
             fetch_address = boot_addr_i;
@@ -314,7 +314,7 @@ module frontend (
             // keep stable by default
             npc_d            = npc_q;
         end
-            
+
         // -------------------------------
         // 1. Branch Prediction
         // -------------------------------
@@ -372,36 +372,34 @@ module frontend (
     // -------------------
     // Credit-based fetch FIFO flow ctrl
     // -------------------
-    
-    assign fifo_credits_d       =  (flush_i) ? FETCH_FIFO_DEPTH : 
-                                               fifo_credits_q + fifo_pop + s2_eff_kill - issue_req; 
-    
-    // check whether there is a request in flight that is being killed now 
+    assign fifo_credits_d       =  (flush_i) ? FETCH_FIFO_DEPTH :
+                                               fifo_credits_q + fifo_pop + s2_eff_kill - issue_req;
+
+    // check whether there is a request in flight that is being killed now
     // if this is the case, we need to increment the credit by 1
     assign s2_eff_kill         = s2_in_flight_q & icache_dreq_o.kill_s2;
-    assign s2_in_flight_d      = (flush_i)             ? 1'b0 : 
-                                 (issue_req)           ? 1'b1 : 
+    assign s2_in_flight_d      = (flush_i)             ? 1'b0 :
+                                 (issue_req)           ? 1'b1 :
                                  (icache_dreq_i.valid) ? 1'b0 :
-                                                         s2_in_flight_q; 
+                                                         s2_in_flight_q;
 
     // only enable counter if current request is not being killed
     assign issue_req           = if_ready & (~icache_dreq_o.kill_s1);
-    assign fifo_pop            = fetch_ack_i & fetch_entry_valid_o;                                                                    
+    assign fifo_pop            = fetch_ack_i & fetch_entry_valid_o;
     assign fifo_ready          = (|fifo_credits_q);
     assign if_ready            =  icache_dreq_i.ready & fifo_ready;
     assign icache_dreq_o.req   =  fifo_ready;
     assign fetch_entry_valid_o = ~fifo_empty;
 
-
 //pragma translate_off
 `ifndef VERILATOR
   fetch_fifo_credits0 : assert property (
-      @(posedge clk_i) disable iff (~rst_ni) (fifo_credits_q <= FETCH_FIFO_DEPTH))       
+      @(posedge clk_i) disable iff (~rst_ni) (fifo_credits_q <= FETCH_FIFO_DEPTH))
          else $fatal("[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
     initial begin
-        assert (FETCH_FIFO_DEPTH<=8) else $fatal("[frontend] fetch fifo deeper than 8 not supported"); 
-        assert (FETCH_WIDTH==32)     else $fatal("[frontend] fetch width != not supported");      
-    end   
+        assert (FETCH_FIFO_DEPTH<=8) else $fatal("[frontend] fetch fifo deeper than 8 not supported");
+        assert (FETCH_WIDTH==32)     else $fatal("[frontend] fetch width != not supported");
+    end
 `endif
 //pragma translate_on
 
@@ -483,256 +481,22 @@ module frontend (
         );
     end
 
-fifo_v2 #(
-    .DEPTH        (  8                   ),
-    .dtype        ( fetch_entry_t        )) 
-i_fetch_fifo (
-    .clk_i       ( clk_i                 ),
-    .rst_ni      ( rst_ni                ),
-    .flush_i     ( flush_i               ),
-    .testmode_i  ( 1'b0                  ),
-    .full_o      (                       ),
-    .empty_o     ( fifo_empty            ),
-    .alm_full_o  (                       ),
-    .alm_empty_o (                       ),
-    .data_i      ( {icache_vaddr_q, icache_data_q, bp_sbe, icache_ex_q} ),
-    .push_i      ( fifo_valid            ),
-    .data_o      ( fetch_entry_o         ),
-    .pop_i       ( fifo_pop              )
-);
+    fifo_v2 #(
+        .DEPTH        (  8                   ),
+        .dtype        ( fetch_entry_t        ))
+    i_fetch_fifo (
+        .clk_i       ( clk_i                 ),
+        .rst_ni      ( rst_ni                ),
+        .flush_i     ( flush_i               ),
+        .testmode_i  ( 1'b0                  ),
+        .full_o      (                       ),
+        .empty_o     ( fifo_empty            ),
+        .alm_full_o  (                       ),
+        .alm_empty_o (                       ),
+        .data_i      ( {icache_vaddr_q, icache_data_q, bp_sbe, icache_ex_q} ),
+        .push_i      ( fifo_valid            ),
+        .data_o      ( fetch_entry_o         ),
+        .pop_i       ( fifo_pop              )
+    );
 
-
-
-endmodule
-
-// ------------------------------
-// Instruction Scanner
-// ------------------------------
-module instr_scan (
-    input  logic [31:0] instr_i,        // expect aligned instruction, compressed or not
-    output logic        is_rvc_o,
-    output logic        rvi_return_o,
-    output logic        rvi_call_o,
-    output logic        rvi_branch_o,
-    output logic        rvi_jalr_o,
-    output logic        rvi_jump_o,
-    output logic [63:0] rvi_imm_o,
-    output logic        rvc_branch_o,
-    output logic        rvc_jump_o,
-    output logic        rvc_jr_o,
-    output logic        rvc_return_o,
-    output logic        rvc_jalr_o,
-    output logic        rvc_call_o,
-    output logic [63:0] rvc_imm_o
-);
-    assign is_rvc_o     = (instr_i[1:0] != 2'b11);
-    // check that rs1 is either x1 or x5 and that rs1 is not x1 or x5, TODO: check the fact about bit 7
-    assign rvi_return_o = rvi_jalr_o & ~instr_i[7] & ~instr_i[19] & ~instr_i[18] & ~instr_i[16] & instr_i[15];
-    assign rvi_call_o   = (rvi_jalr_o | rvi_jump_o) & instr_i[7]; // TODO: check that this captures calls
-    // differentiates between JAL and BRANCH opcode, JALR comes from BHT
-    assign rvi_imm_o    = (instr_i[3]) ? uj_imm(instr_i) : sb_imm(instr_i);
-    assign rvi_branch_o = (instr_i[6:0] == riscv::OpcodeBranch) ? 1'b1 : 1'b0;
-    assign rvi_jalr_o   = (instr_i[6:0] == riscv::OpcodeJalr)   ? 1'b1 : 1'b0;
-    assign rvi_jump_o   = (instr_i[6:0] == riscv::OpcodeJal)    ? 1'b1 : 1'b0;
-    // opcode JAL
-    assign rvc_jump_o   = (instr_i[15:13] == riscv::OpcodeCJ) & is_rvc_o & (instr_i[1:0] == 2'b01);
-    assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000) & is_rvc_o & (instr_i[1:0] == 2'b10);
-    assign rvc_branch_o = ((instr_i[15:13] == riscv::OpcodeCBeqz) | (instr_i[15:13] == riscv::OpcodeCBnez)) & is_rvc_o & (instr_i[1:0] == 2'b01);
-    // check that rs1 is x1 or x5
-    assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & instr_i[7];
-    assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000) & is_rvc_o;
-    assign rvc_call_o   = rvc_jalr_o;  // TODO: check that this captures calls
-
-    // // differentiates between JAL and BRANCH opcode, JALR comes from BHT
-    assign rvc_imm_o    = (instr_i[14]) ? {{56{instr_i[12]}}, instr_i[6:5], instr_i[2], instr_i[11:10], instr_i[4:3], 1'b0}
-                                       : {{53{instr_i[12]}}, instr_i[8], instr_i[10:9], instr_i[6], instr_i[7], instr_i[2], instr_i[11], instr_i[5:3], 1'b0};
-endmodule
-
-// ------------------------------
-// Branch Prediction
-// ------------------------------
-
-// branch target buffer
-module btb #(
-    parameter int NR_ENTRIES = 8
-)(
-    input  logic               clk_i,           // Clock
-    input  logic               rst_ni,          // Asynchronous reset active low
-    input  logic               flush_i,         // flush the btb
-
-    input  logic [63:0]        vpc_i,           // virtual PC from IF stage
-    input  btb_update_t        btb_update_i,    // update btb with this information
-    output btb_prediction_t    btb_prediction_o // prediction from btb
-);
-    // number of bits which are not used for indexing
-    localparam OFFSET = 1; // we are using compressed instructions so do use the lower 2 bits for prediction
-    localparam ANTIALIAS_BITS = 8;
-    // number of bits we should use for prediction
-    localparam PREDICTION_BITS = $clog2(NR_ENTRIES) + OFFSET;
-    // typedef for all branch target entries
-    // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
-    btb_prediction_t btb_d [NR_ENTRIES-1:0], btb_q [NR_ENTRIES-1:0];
-    logic [$clog2(NR_ENTRIES)-1:0]          index, update_pc;
-
-    assign index     = vpc_i[PREDICTION_BITS - 1:OFFSET];
-    assign update_pc = btb_update_i.pc[PREDICTION_BITS - 1:OFFSET];
-
-    // output matching prediction
-    assign btb_prediction_o = btb_q[index];
-
-    // -------------------------
-    // Update Branch Prediction
-    // -------------------------
-    // update on a mis-predict
-    always_comb begin : update_branch_predict
-        btb_d = btb_q;
-
-        if (btb_update_i.valid) begin
-            btb_d[update_pc].valid = 1'b1;
-            // the target address is simply updated
-            btb_d[update_pc].target_address = btb_update_i.target_address;
-            // as is the information whether this was a compressed branch
-            btb_d[update_pc].is_lower_16    = btb_update_i.is_lower_16;
-            // check if we should invalidate this entry, this happens in case we predicted a branch
-            // where actually none-is (aliasing)
-            if (btb_update_i.clear) begin
-                btb_d[update_pc].valid = 1'b0;
-            end
-        end
-    end
-
-    // sequential process
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            // Bias the branches to be taken upon first arrival
-            for (int i = 0; i < NR_ENTRIES; i++)
-                btb_q[i] <= '{default: 0};
-        end else begin
-            // evict all entries
-            if (flush_i) begin
-                for (int i = 0; i < NR_ENTRIES; i++) begin
-                    btb_q[i].valid <=  1'b0;
-                end
-            end else begin
-                btb_q <=  btb_d;
-            end
-        end
-    end
-endmodule
-
-// return address stack
-module ras #(
-    parameter int unsigned DEPTH = 2
-)(
-    input  logic        clk_i,
-    input  logic        rst_ni,
-    input  logic        push_i,
-    input  logic        pop_i,
-    input  logic [63:0] data_i,
-    output ras_t        data_o
-);
-
-    ras_t [DEPTH-1:0] stack_d, stack_q;
-
-    assign data_o = stack_q[0];
-
-    always_comb begin
-        stack_d = stack_q;
-
-        // push on the stack
-        if (push_i) begin
-            stack_d[0].ra = data_i;
-            // mark the new return address as valid
-            stack_d[0].valid = 1'b1;
-            stack_d[DEPTH-1:1] = stack_q[DEPTH-2:0];
-        end
-
-        if (pop_i) begin
-            stack_d[DEPTH-2:0] = stack_q[DEPTH-1:1];
-            // we popped the value so invalidate the end of the stack
-            stack_d[DEPTH-1].valid = 1'b0;
-            stack_d[DEPTH-1].ra = 'b0;
-        end
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            stack_q <= '0;
-        end else begin
-            stack_q <= stack_d;
-        end
-    end
-endmodule
-
-// branch history table - 2 bit saturation counter
-module bht #(
-    parameter int unsigned NR_ENTRIES = 1024
-)(
-    input  logic            clk_i,
-    input  logic            rst_ni,
-    input  logic            flush_i,
-    input  logic [63:0]     vpc_i,
-    input  bht_update_t     bht_update_i,
-    output bht_prediction_t bht_prediction_o
-);
-    localparam OFFSET = 2; // we are using compressed instructions so do not use the lower 2 bits for prediction
-    localparam ANTIALIAS_BITS = 8;
-    // number of bits we should use for prediction
-    localparam PREDICTION_BITS = $clog2(NR_ENTRIES) + OFFSET;
-
-    struct packed {
-        logic       valid;
-        logic [1:0] saturation_counter;
-    } bht_d[NR_ENTRIES-1:0], bht_q[NR_ENTRIES-1:0];
-
-    logic [$clog2(NR_ENTRIES)-1:0]  index, update_pc;
-    logic [1:0]                     saturation_counter;
-
-    assign index     = vpc_i[PREDICTION_BITS - 1:OFFSET];
-    assign update_pc = bht_update_i.pc[PREDICTION_BITS - 1:OFFSET];
-    // prediction assignment
-    assign bht_prediction_o.valid = bht_q[index].valid;
-    assign bht_prediction_o.taken = bht_q[index].saturation_counter == 2'b10;
-    assign bht_prediction_o.strongly_taken = (bht_q[index].saturation_counter == 2'b11);
-    always_comb begin : update_bht
-        bht_d = bht_q;
-        saturation_counter = bht_q[update_pc].saturation_counter;
-
-        if (bht_update_i.valid) begin
-            bht_d[update_pc].valid = 1'b1;
-
-            if (saturation_counter == 2'b11) begin
-                // we can safely decrease it
-                if (~bht_update_i.taken)
-                    bht_d[update_pc].saturation_counter = saturation_counter - 1;
-            // then check if it saturated in the negative regime e.g.: branch not taken
-            end else if (saturation_counter == 2'b00) begin
-                // we can safely increase it
-                if (bht_update_i.taken)
-                    bht_d[update_pc].saturation_counter = saturation_counter + 1;
-            end else begin // otherwise we are not in any boundaries and can decrease or increase it
-                if (bht_update_i.taken)
-                    bht_d[update_pc].saturation_counter = saturation_counter + 1;
-                else
-                    bht_d[update_pc].saturation_counter = saturation_counter - 1;
-            end
-        end
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            for (int unsigned i = 0; i < NR_ENTRIES; i++)
-                bht_q[i] <= '0;
-        end else begin
-            // evict all entries
-            if (flush_i) begin
-                for (int i = 0; i < NR_ENTRIES; i++) begin
-                    bht_q[i].valid <=  1'b0;
-                    bht_q[i].saturation_counter <= 2'b10;
-                end
-            end else begin
-                bht_q <= bht_d;
-            end
-        end
-    end
 endmodule
