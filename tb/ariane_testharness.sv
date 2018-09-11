@@ -145,13 +145,15 @@ module ariane_testharness #(
 
     // SiFive's SimDTM Module
     // Converts to DPI calls
+    logic [1:0] debug_req_bits_op;
+    assign dmi_req.op = dm::dtm_op_t'(debug_req_bits_op);
     SimDTM i_SimDTM (
         .clk                  ( clk_i                ),
         .reset                ( ~rst_ni              ),
         .debug_req_valid      ( dmi_req_valid        ),
         .debug_req_ready      ( debug_req_ready      ),
         .debug_req_bits_addr  ( dmi_req.addr         ),
-        .debug_req_bits_op    ( dmi_req.op           ),
+        .debug_req_bits_op    (  debug_req_bits_op   ),
         .debug_req_bits_data  ( dmi_req.data         ),
         .debug_resp_valid     ( dmi_resp_valid       ),
         .debug_resp_ready     ( dmi_resp_ready       ),
