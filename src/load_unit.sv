@@ -39,7 +39,7 @@ module load_unit (
     input  logic                     page_offset_matches_i,
     // D$ interface
     input dcache_req_o_t             req_port_i,
-    output dcache_req_i_t            req_port_o  
+    output dcache_req_i_t            req_port_o
 );
     enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, ABORT_TRANSACTION, WAIT_TRANSLATION, WAIT_FLUSH} NS, CS;
     // in order to decouple the response interface from the request interface we need a
@@ -311,7 +311,7 @@ module load_unit (
     // realign as needed
     assign shifted_data   = req_port_i.data_rdata >> {load_data_q.address_offset, 3'b000};
 
-/*  // result mux (leaner code, but more logic stages. 
+/*  // result mux (leaner code, but more logic stages.
     // can be used instead of the code below (in between //result mux fast) if timing is not so critical)
     always_comb begin
         unique case (load_data_q.operator)
@@ -330,29 +330,29 @@ module load_unit (
     logic [2:0]  idx_d, idx_q;
     logic        sign_bit, signed_d, signed_q, fp_sign_d, fp_sign_q;
 
-    
-    // prepare these signals for faster selection in the next cycle                          
-    assign signed_d  = load_data_d.operator inside { LW, LH, LB };
-    assign fp_sign_d = 1'b0;
-    assign idx_d     = (load_data_d.operator inside {LW}) ? load_data_d.address_offset + 3 : 
-                       (load_data_d.operator inside {LH}) ? load_data_d.address_offset + 1 : 
-                                                            load_data_d.address_offset;   
-        
-    // use this with FP support:
-    // assign signed_d  = load_data_q.operator inside { LW, LH, LB };
-    // assign fp_sign_d = load_data_q.operator inside { FLW, FLH, FLB };
-    // assign idx_d     = (load_data_d.operator inside {LW, FLW}) ? load_data_d.address_offset + 3 : 
-    //                    (load_data_d.operator inside {LH, FLH}) ? load_data_d.address_offset + 1 : 
-    //                                                              load_data_d.address_offset;   
 
-    
-    assign sign_bits = { req_port_i.data_rdata[63], 
-                         req_port_i.data_rdata[55], 
-                         req_port_i.data_rdata[47], 
-                         req_port_i.data_rdata[39], 
-                         req_port_i.data_rdata[31], 
-                         req_port_i.data_rdata[23], 
-                         req_port_i.data_rdata[15], 
+    // prepare these signals for faster selection in the next cycle
+    assign signed_d  = load_data_d.operator inside {LW, LH, LB};
+    assign fp_sign_d = 1'b0;
+    assign idx_d     = (load_data_d.operator inside {LW}) ? load_data_d.address_offset + 3 :
+                       (load_data_d.operator inside {LH}) ? load_data_d.address_offset + 1 :
+                                                            load_data_d.address_offset;
+
+    // use this with FP support:
+    // assign signed_d  = load_data_d.operator inside {LW, LH, LB};
+    // assign fp_sign_d = load_data_d.operator inside {FLW, FLH, FLB};
+    // assign idx_d     = (load_data_d.operator inside {LW, FLW}) ? load_data_d.address_offset + 3 :
+    //                    (load_data_d.operator inside {LH, FLH}) ? load_data_d.address_offset + 1 :
+    //                                                              load_data_d.address_offset;
+
+
+    assign sign_bits = { req_port_i.data_rdata[63],
+                         req_port_i.data_rdata[55],
+                         req_port_i.data_rdata[47],
+                         req_port_i.data_rdata[39],
+                         req_port_i.data_rdata[31],
+                         req_port_i.data_rdata[23],
+                         req_port_i.data_rdata[15],
                          req_port_i.data_rdata[7]  };
 
     // select correct sign bit in parallel to result shifter above
@@ -367,7 +367,17 @@ module load_unit (
             LB, LBU:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
             default:    result_o = shifted_data;
         endcase
-    end    
+    end
+
+    // use this with FP support:
+    // always_comb begin
+    //     unique case (load_data_q.operator)
+    //         LW, LWU, FLW:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
+    //         LH, LHU, FLH:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
+    //         LB, LBU, FLB:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
+    //         default:    result_o = shifted_data;
+    //     endcase
+    // end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
         if(~rst_ni) begin
@@ -382,17 +392,20 @@ module load_unit (
     end
     // end result mux fast
 
-`ifndef SYNTHESIS
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
+
+//pragma translate_off
 `ifndef VERILATOR
     // check invalid offsets
-    assert property (@(posedge clk_i) disable iff (~rst_ni) 
+    addr_offset0: assert property (@(posedge clk_i) disable iff (~rst_ni) 
         (load_data_q.operator inside {LW, LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
-    assert property (@(posedge clk_i) disable iff (~rst_ni) 
+    addr_offset1: assert property (@(posedge clk_i) disable iff (~rst_ni) 
         (load_data_q.operator inside {LH, LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
-    assert property (@(posedge clk_i) disable iff (~rst_ni) 
+    addr_offset2: assert property (@(posedge clk_i) disable iff (~rst_ni) 
         (load_data_q.operator inside {LB, LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
 `endif
-`endif
-
+//pragma translate_on
 
 endmodule
