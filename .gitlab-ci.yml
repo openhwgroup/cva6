@@ -1,18 +1,18 @@
 before_script:
-  - export CXX=g++-7 CC=gcc-7
   # paths to local or network installations (the riscv toolchain and 
   # verilator are not built in the ci job as in travis)
-  - export QUESTASIM_HOME=
-  - export QUESTASIM_VERSION=
-  - export QUESTASIM_FLAGS=
-  - export RISCV=/scratch/$USER/projects/riscv_install
-  - export VERILATOR_ROOT=/scratch/$USER/projects/verilator-3.924
+  - export QUESTASIM_HOME=/usr/pack/modelsim-10.6b-kgf/questasim/
+  - export QUESTASIM_VERSION=-10.6b
+  - export QUESTASIM_FLAGS=-noautoldlibpath
+  - export CXX=g++-7.2.0 CC=gcc-7.2.0
+  - export RISCV=/usr/scratch2/larain1/gitlabci/riscv_install
+  - export VERILATOR_ROOT=/usr/scratch2/larain1/gitlabci/verilator-3.924
   # setup dependent paths
   - export PATH=${RISCV}/bin:$VERILATOR_ROOT/bin:${PATH}
   - export LIBRARY_PATH=$RISCV/lib
-  - export LD_LIBRARY_PATH=$RISCV/lib
-  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
+  - export LD_LIBRARY_PATH=$RISCV/lib:/usr/pack/gcc-7.2.0-af/linux-x64/lib64/
+  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
+  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
   # number of parallel jobs to use for make commands and simulation
   - export NUM_JOBS=4
   - ci/make-tmp.sh
@@ -23,55 +23,57 @@ variables:
 
 stages:
   - build
-  - test
+  - test_std
+
+###################################
+# prepare
 
 build:
   stage: build
   script:
     - ci/build-riscv-tests.sh
-    - make clean
-    - make build questa_version=$QUESTASIM_VERSION
-    - make verilate verilator=$VERILATOR_ROOT/bin/verilator
   artifacts:
       paths:
         - tmp 
 
+###################################
+# tests with standard cache system
+
 # rv64ui-p-* and rv64ui-v-* tests    
-run-asm-tests-questa:
-  stage: test
+asm-quest:
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-asm-tests questa_version=$QUESTASIM_VERSION
   dependencies:
     - build
-
-run-benchmarks-questa:
-  stage: test
+    
+bench-quest:
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-benchmarks questa_version=$QUESTASIM_VERSION
   dependencies:
     - build    
 
 # rv64ui-p-* tests
-run-asm-tests1-verilator:
-  stage: test
+asm1-ver:
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator
   dependencies:
     - build
 
 # rv64ui-v-* tests
-run-asm-tests2-verilator:
-  stage: test
+asm2-ver:
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
   dependencies:
     - build    
 
-run-benchmarks-verilator:
-  stage: test
+bench-ver:
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
   dependencies:
     - build
-
 
