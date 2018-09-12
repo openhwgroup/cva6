@@ -3,8 +3,8 @@
 # source this with a bash shell in the project root
 # comment out next command if you don't want to use sudo
 sudo apt install \
-    gcc-4.8 \
-    g++-4.8 \
+    gcc-7 \
+    g++-7 \
     gperf \
     autoconf \
     automake \
@@ -18,8 +18,7 @@ sudo apt install \
     flex \
     texinfo \
     python-pexpect \
-    libusb-1.0-0-dev \
-    device-tree-compiler
+    libusb-1.0-0-dev 
 
 # customize your paths here
 source ci/path-setup.sh
@@ -30,6 +29,8 @@ ci/build-riscv-gcc.sh
 ci/install-fesvr.sh
 ci/install-verilator.sh
 ci/build-riscv-tests.sh
+ci/install-dtc.sh
+ci/install-spike.sh
 make clean
 
 # run asm tests on verilator
