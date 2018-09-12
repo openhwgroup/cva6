@@ -112,7 +112,7 @@ work/%.o: tb/dpi/%.cc $(dpi_hdr)
 
 $(library)/ariane_dpi.so: $(dpi)
 	# Compile C-code and generate .so file
-	g++ -shared -m64 -o $(library)/ariane_dpi.so $? -lfesvr
+	$(CXX) -shared -m64 -o $(library)/ariane_dpi.so $? -lfesvr
 
 $(library):
 	# Create the library
