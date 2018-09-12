@@ -122,7 +122,7 @@ module serpent_icache  #(
     
     // latch this in case we have to stall later on
     // make sure this is 32bit aligned
-    assign vaddr_d = (dreq_o.ready) ? dreq_i.vaddr : vaddr_q;
+    assign vaddr_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr : vaddr_q;
     assign areq_o.fetch_vaddr = {vaddr_q>>2, 2'b0};
 
     // split virtual address into index and offset to address cache arrays
