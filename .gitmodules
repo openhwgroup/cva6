@@ -1,6 +1,3 @@
-[submodule "riscv-torture"]
-	path = riscv-torture
-	url = https://github.com/pulp-platform/riscv-torture.git
 [submodule "src/axi_mem_if"]
 	path = src/axi_mem_if
 	url = https://github.com/pulp-platform/axi_mem_if.git

@@ -94,5 +94,6 @@ jobs:
         - make clean
         - make torture-gen
         - make torture-rtest-verilator verilator=$VERILATOR_ROOT/bin/verilator
+
 # extra time during long builds
 install: travis_wait
