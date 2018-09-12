@@ -122,7 +122,7 @@ module serpent_icache  #(
     
     // latch this in case we have to stall later on
     // make sure this is 32bit aligned
-    assign vaddr_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr : vaddr_q;
+    assign vaddr_d = (dreq_o.ready) ? dreq_i.vaddr : vaddr_q;
     assign areq_o.fetch_vaddr = {vaddr_q>>2, 2'b0};
 
     // split virtual address into index and offset to address cache arrays
@@ -555,7 +555,7 @@ module serpent_icache  #(
          else $fatal(1,"[l1 icache] fsm reached an invalid state");
 
   hot1: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) (~inv_en) |=> cmp_en_q |-> (popcnt64(cl_hit) == 1 || cl_hit == 0))     
+      @(posedge clk_i) disable iff (~rst_ni) (~inv_en) |=> cmp_en_q |-> $onehot0(cl_hit))     
          else $fatal(1,"[l1 icache] cl_hit signal must be hot1");
 
    initial begin
