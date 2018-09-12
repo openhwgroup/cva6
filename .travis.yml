@@ -59,9 +59,12 @@ stages:
 jobs:
   include:
     - stage: compile
-      name: prepare cache
+      name: build gcc
       script:
         - ci/build-riscv-gcc.sh
+    - stage: compile
+      name: build tools
+      script:
         - ci/install-verilator.sh
         - ci/install-fesvr.sh
         - ci/install-dtc.sh
@@ -82,6 +85,5 @@ jobs:
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
-    
 # extra time during long builds
 install: travis_wait
