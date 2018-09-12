@@ -24,13 +24,9 @@ if [ ! -f "${1}"*.log ]; then
   exit 1;
 fi
 
-if [ ! -f "$2" ]; then
-  echo -e "${RED}FAILED file $2 does not exist ${NC}"
-  exit 1;
-fi
 
 # get NUM_TOTAL number of tests
-NUM_TOTAL=`wc -l $2 | awk -F " " '{ print $1 }'`
+NUM_TOTAL=$2
 
 echo "list containint tests: $2"
 

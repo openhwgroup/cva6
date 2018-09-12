@@ -26,10 +26,10 @@ Build the Verilator model of Ariane by using the Makefile:
 $ make verilate
 ```
 
-This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `build` and accepts a RISC-V ELF binary as an argument, e.g.:
+This will create a C++ model of the core including a SystemVerilog wrapper and link it against a C++ testbench (in the `tb` subfolder). The binary can be found in the `work-ver` and accepts a RISC-V ELF binary as an argument, e.g.:
 
 ```
-$ build/Variane_testharness rv64um-v-divuw
+$ work-ver/Variane_testharness rv64um-v-divuw
 ```
 
 The Verilator testbench makes use of the `riscv-fesvr`. This means that you can use the `riscv-tests` repository as well as `riscv-pk` out-of-the-box. As a general rule of thumb the Verilator model will behave like Spike (exception for being orders of magnitudes slower).
@@ -57,7 +57,7 @@ Then to run a RISC-V ELF using the Verilator model do:
 
 ```
 $ make verilate
-$ build/Variane_testharness /path/to/pk path/to/riscv.elf
+$ work-ver/Variane_testharness /path/to/pk path/to/riscv.elf
 ```
 
 If you want to use QuestaSim to run it you can use the following command:
@@ -86,9 +86,29 @@ $ make sim riscv-test=tmp/risc-tests/build/isa/rv64ui-p-sraw
 
 If you call `simc` instead of `sim` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
 
-### Randomized Constrained Testing with Torture
+### CI Testsuites and Randomized Constrained Testing with Torture
 
-Currently not up-to-date.
+We provide two CI configuration files for Travis CI and GitLab CI that run the RISCV assembly tests, the RISCV benchmarks and a randomized RISCV Torture test. The difference between the two is that Travis CI runs these tests only on Verilator, whereas GitLab CI runs the same tests on QuestaSim and Verilator. 
+
+If you would like to run the CI test suites locally on your machine, follow any of the two scripts `ci.travis-ci-emul.sh` and `ci.travis-ci-emul.sh` (depending on whether you have QuestaSim or not). In particular, you have to get the required packages for your system, the paths in `ci/path-setup.sh` to match your setup, and run the installation and build scripts prior to running any of the tests suites. 
+
+Once everything is set up and installed, you can run the tests suites as follows (using Verilator):
+
+```
+$ make verilate 
+$ make run-asm-tests-verilator  
+$ make run-benchmarks-verilator 
+```
+
+In order to run randomized Torture tests, you first have to generate the randomized program prior to running the simulation:
+
+```
+$ make torture-gen
+$ make torture-rtest-verilator
+
+```
+This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file. 
+
 
 # Contributing
 
