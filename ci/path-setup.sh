@@ -8,6 +8,7 @@ export QUESTASIM_VERSION=-10.6b
 export QUESTASIM_FLAGS=-noautoldlibpath
 export CXX=g++-7.2.0 CC=gcc-7.2.0
 
+
 # where to install the tools
 export RISCV=$TOP/riscv_install
 export VERILATOR_ROOT=$TOP/verilator-3.924/

@@ -35,7 +35,7 @@ util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_if.sv  \
         src/util/cluster_clock_gating.sv   \
 		src/util/sram.sv
-        
+
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
             $(wildcard tb/test/*/*_pkg.sv*)
@@ -44,8 +44,9 @@ dpi := $(patsubst tb/dpi/%.cc,work/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 # this list contains the standalone components
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
+        $(wildcard src/frontend/*.sv)                                  \
         $(wildcard src/cache_subsystem/*.sv)                           \
-		$(wildcard bootrom/*.sv)                                       \
+        $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/axi_slice/*.sv)                                 \
         $(wildcard src/clint/*.sv)                                     \
         $(wildcard src/axi_node/src/*.sv)                              \
@@ -61,11 +62,11 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/lfsr_8bit.sv                              \
         tb/ariane_testharness.sv                                       \
         tb/common/SimDTM.sv                                            \
-        tb/common/SimJTAG.sv                                           
-							       
-	   
-	   
-	   	
+        tb/common/SimJTAG.sv
+
+
+
+
 # look for testbenches
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
@@ -132,7 +133,7 @@ simc: build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0 \
 	$(QUESTASIM_FLAGS) \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " run -all; exit" \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
 
@@ -142,7 +143,7 @@ $(riscv-asm-tests): build $(library)/ariane_dpi.so
 	$(QUESTASIM_FLAGS) \
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
-	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log 
+	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
 $(riscv-benchmarks): build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
@@ -150,22 +151,22 @@ $(riscv-benchmarks): build $(library)/ariane_dpi.so
 	$(QUESTASIM_FLAGS) \
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
-	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log 
+	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
 
 
 # can use -jX to run ci tests in parallel using X processes
 run-asm-tests: $(riscv-asm-tests)
-	make check-asm-tests	
+	make check-asm-tests
 
-check-asm-tests: 
-	ci/check-tests.sh tmp/riscv-asm-tests- $(riscv-asm-tests-list)   
+check-asm-tests:
+	ci/check-tests.sh tmp/riscv-asm-tests- $(riscv-asm-tests-list)
 
 # can use -jX to run ci tests in parallel using X processes
 run-benchmarks: $(riscv-benchmarks)
 	make check-benchmarks
 
-check-benchmarks: 
-	ci/check-tests.sh tmp/riscv-benchmarks- $(riscv-benchmarks-list)   
+check-benchmarks:
+	ci/check-tests.sh tmp/riscv-benchmarks- $(riscv-benchmarks-list)
 
 
 verilate_command := $(verilator)                                                           \

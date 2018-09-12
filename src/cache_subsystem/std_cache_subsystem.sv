@@ -60,6 +60,7 @@ module std_cache_subsystem #(
    AXI_BUS.Master                         dcache_bypass_if         // bypass axi port (disabled D$ or uncacheable access)
 );
 
+
    std_icache #(
    ) i_icache (
       .clk_i             ( clk_i                 ),

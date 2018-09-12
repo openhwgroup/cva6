@@ -72,13 +72,13 @@ jobs:
         - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
     # rv64ui-p-* tests
     - stage: test
-      name: run rv64ui-p-* asm tests
+      name: run asm tests1
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator
     # rv64ui-v-* tests
     - stage: test
-      name: run rv64ui-v-* asm tests
+      name: run asm tests2
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
