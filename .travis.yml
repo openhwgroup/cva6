@@ -13,8 +13,8 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - gcc-4.8
-      - g++-4.8
+      - gcc-7
+      - g++-7
       - gperf
       - autoconf
       - automake
@@ -29,7 +29,6 @@ addons:
       - texinfo
       - python-pexpect
       - libusb-1.0-0-dev
-      - device-tree-compiler
 env:
   global:
     - RISCV="/home/travis/riscv_install"
@@ -41,13 +40,13 @@ branches:
   - ariane_next
 
 before_install:
-  - export CXX=g++-4.8 CC=gcc-4.8
+  - export CXX=g++-7 CC=gcc-7
   # setup dependent paths
   - export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
-  - export LIBRARY_PATH=$TRAVIS_BUILD_DIR/tmp/lib
-  - export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/tmp/lib
-  - export C_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include:$VERILATOR_ROOT/include
-  - export CPLUS_INCLUDE_PATH=$TRAVIS_BUILD_DIR/tmp/include:$VERILATOR_ROOT/include
+  - export LIBRARY_PATH=$RISCV/lib
+  - export LD_LIBRARY_PATH=$RISCV/lib
+  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
+  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
   # number of parallel jobs to use for make commands and simulation
   - export NUM_JOBS=4
   - ci/make-tmp.sh
@@ -64,24 +63,23 @@ jobs:
       script:
         - ci/build-riscv-gcc.sh
         - ci/install-verilator.sh
+        - ci/install-fesvr.sh
+        - ci/install-dtc.sh
     - stage: test
       name: run riscv benchmarks
       script:
-        - ci/install-fesvr.sh
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
     # rv64ui-p-* tests
     - stage: test
-      name: run rv64ui-p-* asm tests
+      name: run asm tests1
       script:
-        - ci/install-fesvr.sh
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator
     # rv64ui-v-* tests
     - stage: test
-      name: run rv64ui-v-* asm tests
+      name: run asm tests2
       script:
-        - ci/install-fesvr.sh
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
     
