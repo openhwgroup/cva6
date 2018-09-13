@@ -96,5 +96,33 @@ jobs:
         - make torture-gen
         - make torture-rtest-verilator verilator=$VERILATOR_ROOT/bin/verilator
 
+    - stage: test
+      name: run riscv benchmarks (serpent)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    # rv64ui-p-* tests
+    - stage: test
+      name: run asm tests1 (serpent)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    # rv64ui-v-* tests
+    - stage: test
+      name: run asm tests2 (serpent)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+
+    - stage: test
+      name: run torture (serpent)
+      script:
+        - ci/get-torture.sh
+        - make clean
+        - make torture-gen defines=SERPENT_PULP+AXI64_CACHE_PORTS
+        - make torture-rtest-verilator verilator=$VERILATOR_ROOT/bin/verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+
+
+
 # extra time during long builds
 install: travis_wait
