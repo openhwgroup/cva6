@@ -19,7 +19,7 @@ sudo apt install \
     texinfo \
     python-pexpect \
     libusb-1.0-0-dev \
-    device-tree-compiler
+    default-jdk
 
 # customize your paths here
 source ci/path-setup.sh
@@ -30,6 +30,8 @@ ci/build-riscv-gcc.sh
 ci/install-fesvr.sh
 ci/install-verilator.sh
 ci/build-riscv-tests.sh
+ci/install-dtc.sh
+ci/install-spike.sh
 make clean
 
 # run asm tests on verilator
