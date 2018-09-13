@@ -67,33 +67,34 @@ jobs:
     - stage: compile2
       name: build tools
       script:
-        - ci/install-verilator.sh
         - ci/install-fesvr.sh
+        - ci/install-verilator.sh
         - ci/install-dtc.sh
+        - ci/install-spike.sh
     - stage: test
       name: run riscv benchmarks
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
+        - make -j${NUM_JOBS} run-benchmarks-verilator 
     # rv64ui-p-* tests
     - stage: test
       name: run asm tests1
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator
+        - make -j${NUM_JOBS} run-asm-tests1-verilator 
     # rv64ui-v-* tests
     - stage: test
       name: run asm tests2
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
+        - make -j${NUM_JOBS} run-asm-tests2-verilator 
     - stage: test
       name: run torture
       script:
         - ci/get-torture.sh
         - make clean
         - make torture-gen
-        - make torture-rtest-verilator verilator=$VERILATOR_ROOT/bin/verilator
+        - make torture-rtest-verilator 
 
 # extra time during long builds
 install: travis_wait

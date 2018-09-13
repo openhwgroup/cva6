@@ -41,14 +41,14 @@ build:
 run-asm-tests-questa:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests questa_version=$QUESTASIM_VERSION
+    - make -j${NUM_JOBS} run-asm-tests 
   dependencies:
     - build
 
 run-benchmarks-questa:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-benchmarks questa_version=$QUESTASIM_VERSION
+    - make -j${NUM_JOBS} run-benchmarks 
   dependencies:
     - build    
 
@@ -56,7 +56,7 @@ run-benchmarks-questa:
 run-asm-tests1-verilator:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    - make -j${NUM_JOBS} run-asm-tests1-verilator 
   dependencies:
     - build
 
@@ -64,14 +64,14 @@ run-asm-tests1-verilator:
 run-asm-tests2-verilator:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    - make -j${NUM_JOBS} run-asm-tests2-verilator 
   dependencies:
     - build    
 
 run-benchmarks-verilator:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    - make -j${NUM_JOBS} run-benchmarks-verilator 
   dependencies:
     - build
 
