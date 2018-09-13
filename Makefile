@@ -27,9 +27,9 @@ defines        ?=
 ariane_pkg := include/riscv_pkg.sv         \
               src/debug/dm_pkg.sv          \
               src/axi/src/axi_pkg.sv       \
-			  include/ariane_pkg.sv        \
+              include/ariane_pkg.sv        \
               include/std_cache_pkg.sv     \
-			  include/axi_if.sv
+              include/axi_intf.sv
 
 # utility modules
 util := $(wildcard src/util/*.svh)         \

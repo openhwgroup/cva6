@@ -22,7 +22,7 @@ module dm_mem #(
     input  logic                             clk_i,       // Clock
     input  logic                             dmactive_i,  // debug module reset
 
-    output logic                             debug_req_o,
+    output logic [NrHarts-1:0]               debug_req_o,
     input  logic [19:0]                      hartsel_i,
     // from Ctrl and Status register
     input  logic [NrHarts-1:0]               haltreq_i,

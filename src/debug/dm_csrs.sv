@@ -44,9 +44,9 @@ module dm_csrs #(
 
     output logic                              cmd_valid_o,       // debugger is writing to the command field
     output dm::command_t                      cmd_o,             // abstract command
-    input  logic [NrHarts-1:0]                cmderror_valid_i,  // an error occured
-    input  dm::cmderr_t [NrHarts-1:0]         cmderror_i,        // this error occured
-    input  logic [NrHarts-1:0]                cmdbusy_i,         // cmd is currently busy executing
+    input  logic                              cmderror_valid_i,  // an error occured
+    input  dm::cmderr_t                       cmderror_i,        // this error occured
+    input  logic                              cmdbusy_i,         // cmd is currently busy executing
 
     output logic [dm::ProgBufSize-1:0][31:0]  progbuf_o, // to system bus
     output logic [dm::DataCount-1:0][31:0]    data_o,
@@ -168,7 +168,7 @@ module dm_csrs #(
         abstractcs = '0;
         abstractcs.datacount = dm::DataCount;
         abstractcs.progbufsize = dm::ProgBufSize;
-        abstractcs.busy = cmdbusy_i[selected_hart];
+        abstractcs.busy = cmdbusy_i;
         abstractcs.cmderr = cmderr_q;
 
         // abstractautoexec
@@ -380,8 +380,8 @@ module dm_csrs #(
             endcase
         end
         // hart threw a command error and has precedence over bus writes
-        if (cmderror_valid_i[selected_hart]) begin
-            cmderr_d = cmderror_i[selected_hart];
+        if (cmderror_valid_i) begin
+            cmderr_d = cmderror_i;
         end
 
         // update data registers

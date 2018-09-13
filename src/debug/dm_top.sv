@@ -62,9 +62,9 @@ module dm_top #(
     logic [63:0]                      wdata;
     logic [63:0]                      rdata;
 
-    logic [NrHarts-1:0]               cmderror_valid;
-    dm::cmderr_t [NrHarts-1:0]        cmderror;
-    logic [NrHarts-1:0]               cmdbusy;
+    logic                             cmderror_valid;
+    dm::cmderr_t                      cmderror;
+    logic                             cmdbusy;
     logic [dm::ProgBufSize-1:0][31:0] progbuf;
     logic [dm::DataCount-1:0][31:0]   data_csrs_mem;
     logic [dm::DataCount-1:0][31:0]   data_mem_csrs;
