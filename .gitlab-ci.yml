@@ -47,14 +47,14 @@ build:
 asm-quest:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests questa_version=$QUESTASIM_VERSION
+    - make -j${NUM_JOBS} run-asm-tests 
   dependencies:
     - build
     
 bench-quest:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-benchmarks questa_version=$QUESTASIM_VERSION
+    - make -j${NUM_JOBS} run-benchmarks 
   dependencies:
     - build    
 
@@ -62,7 +62,7 @@ bench-quest:
 asm1-ver:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    - make -j${NUM_JOBS} run-asm-tests1-verilator 
   dependencies:
     - build
 
@@ -70,14 +70,14 @@ asm1-ver:
 asm2-ver:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    - make -j${NUM_JOBS} run-asm-tests2-verilator 
   dependencies:
     - build    
 
 bench-ver:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    - make -j${NUM_JOBS} run-benchmarks-verilator 
   dependencies:
     - build
 
@@ -96,14 +96,14 @@ torture:
 serp-asm-quest:
   stage: test_serpent
   script:
-    - make -j${NUM_JOBS} run-asm-tests questa_version=$QUESTASIM_VERSION defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-asm-tests defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
     - build
     
 serp-bench-quest:
   stage: test_serpent
   script:
-    - make -j${NUM_JOBS} run-benchmarks questa_version=$QUESTASIM_VERSION defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-benchmarks defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
     - build    
 
@@ -111,7 +111,7 @@ serp-bench-quest:
 serp-asm1-ver:
   stage: test_serpent
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
     - build
 
@@ -119,14 +119,14 @@ serp-asm1-ver:
 serp-asm2-ver:
   stage: test_serpent
   script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
     - build    
 
 serp-bench-ver:
   stage: test_serpent
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-benchmarks-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
     - build
 
