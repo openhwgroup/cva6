@@ -17,7 +17,7 @@ before_script:
   - export NUM_JOBS=4
   - ci/make-tmp.sh
   - git submodule update --init --recursive
-  
+       
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
@@ -39,14 +39,14 @@ build:
 
 # rv64ui-p-* and rv64ui-v-* tests    
 run-asm-tests-questa:
-  stage: test
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-asm-tests questa_version=$QUESTASIM_VERSION
   dependencies:
     - build
 
 run-benchmarks-questa:
-  stage: test
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-benchmarks questa_version=$QUESTASIM_VERSION
   dependencies:
@@ -54,7 +54,7 @@ run-benchmarks-questa:
 
 # rv64ui-p-* tests
 run-asm-tests1-verilator:
-  stage: test
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-asm-tests1-verilator verilator=$VERILATOR_ROOT/bin/verilator
   dependencies:
@@ -62,29 +62,23 @@ run-asm-tests1-verilator:
 
 # rv64ui-v-* tests
 run-asm-tests2-verilator:
-  stage: test
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
   dependencies:
     - build    
 
 run-benchmarks-verilator:
-  stage: test
+  stage: test_std
   script:
     - make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
   dependencies:
     - build
 
-torture-quest:
+torture:
   stage: test_std
   script:
     - make torture-rtest
-  dependencies:
-    - build
-
-torture-ver:
-  stage: test_std
-  script:
     - make torture-rtest-verilator
   dependencies:
     - build
