@@ -53,16 +53,17 @@ before_install:
   - git submodule update --init --recursive
 
 stages:
-  - compile
+  - compile1
+  - compile2
   - test
 
 jobs:
   include:
-    - stage: compile
+    - stage: compile1
       name: build gcc
       script:
         - ci/build-riscv-gcc.sh
-    - stage: compile
+    - stage: compile2
       name: build tools
       script:
         - ci/install-verilator.sh

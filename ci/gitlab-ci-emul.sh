@@ -18,7 +18,8 @@ sudo apt install \
     flex \
     texinfo \
     python-pexpect \
-    libusb-1.0-0-dev 
+    libusb-1.0-0-dev \
+     default-jdk
 
 # customize your paths here
 source ci/path-setup.sh
