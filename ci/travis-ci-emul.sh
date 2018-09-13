@@ -38,3 +38,4 @@ make clean
 make -j${NUM_JOBS} verilate                 verilator=$VERILATOR_ROOT/bin/verilator
 make -j${NUM_JOBS} run-asm-tests-verilator  verilator=$VERILATOR_ROOT/bin/verilator
 make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
+make -j${NUM_JOBS} run-torture-verilator    verilator=$VERILATOR_ROOT/bin/verilator

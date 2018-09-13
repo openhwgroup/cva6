@@ -29,6 +29,7 @@ addons:
       - texinfo
       - python-pexpect
       - libusb-1.0-0-dev
+      - default-jdk
 env:
   global:
     - RISCV="/home/travis/riscv_install"
@@ -86,5 +87,12 @@ jobs:
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator verilator=$VERILATOR_ROOT/bin/verilator
+    - stage: test
+      name: run torture
+      script:
+        - ci/get-torture.sh
+        - make clean
+        - make torture-gen
+        - make torture-rtest-verilator verilator=$VERILATOR_ROOT/bin/verilator
 # extra time during long builds
 install: travis_wait
