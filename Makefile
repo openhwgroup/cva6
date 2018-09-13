@@ -17,14 +17,16 @@ questa_version ?= ${QUESTASIM_VERSION}
 verilator      ?= verilator
 # traget option
 target-options ?=
+# additional definess
+defines        ?=
 # Sources
 # Package files -> compile first
-ariane_pkg := include/riscv_pkg.sv       \
-              src/debug/dm_pkg.sv        \
-              src/axi/src/axi_pkg.sv     \
-			  include/ariane_pkg.sv      \
-              include/std_cache_pkg.sv   \
-              include/axi_if.sv
+ariane_pkg := include/riscv_pkg.sv         \
+              src/debug/dm_pkg.sv          \
+              src/axi/src/axi_pkg.sv       \
+			  include/ariane_pkg.sv        \
+              include/std_cache_pkg.sv     \
+			  include/axi_if.sv
 
 # utility modules
 util := $(wildcard src/util/*.svh)         \
@@ -63,11 +65,12 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
 
 
 
-
+# root path
+root-dir := $(shell pwd)
 # look for testbenches
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
-# there is a defined test-list with selected CI tests
+# there is a definesd test-list with selected CI tests
 riscv-test-dir        := tmp/riscv-tests/build/isa/
 riscv-benchmarks-dir  := tmp/riscv-tests/build/benchmarks/
 riscv-asm-tests-list  := ci/riscv-asm-tests.list
@@ -76,16 +79,19 @@ riscv-asm-tests       := $(shell xargs printf '\n%s' < $(riscv-asm-tests-list)  
 riscv-benchmarks      := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 # preset which runs a single test
 riscv-test ?= rv64ui-p-add
-# failed test directory
-failed-tests := $(wildcard failedtests/*.S)
+
 # Search here for include files (e.g.: non-standalone components)
 incdir := ./includes
 # Compile and sim flags
-compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive
+compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags    += +UVM_NO_RELNOTES
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
+
+# RISCV torture setup
+riscv-torture-dir    := tmp/riscv-torture/
+riscv-torture-bin    := java -Xmx1G -Xss8M -XX:MaxPermSize=128M -jar sbt-launch.jar
 
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(library)/ariane_dpi.so
@@ -107,10 +113,12 @@ $(library)/.build-tb: $(dpi) $(tbs)
 	touch $(library)/.build-tb
 
 # compile DPIs
-work/%.o: tb/dpi/%.cc $(dpi_hdr)
+$(library)/%.o: tb/dpi/%.cc $(dpi_hdr)
+	mkdir -p $(library)
 	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic -I$(QUESTASIM_HOME)/include -o $@ $<
 
 $(library)/ariane_dpi.so: $(dpi)
+	mkdir -p $(library)
 	# Compile C-code and generate .so file
 	$(CXX) -shared -m64 -o $(library)/ariane_dpi.so $? -lfesvr
 
@@ -118,59 +126,57 @@ $(library):
 	# Create the library
 	vlib${questa_version} ${library}
 
-# +jtag_rbb_enable=1
 sim: build $(library)/ariane_dpi.so
-	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0 \
-	$(QUESTASIM_FLAGS) \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit" \
+	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}    \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0        \
+	$(QUESTASIM_FLAGS)                                                                                            \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit"  \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
 simc: build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0 \
-	$(QUESTASIM_FLAGS) \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " run -all; exit" \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
+	$(QUESTASIM_FLAGS)                                                                                            \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi -do " run -all; exit"                           \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
-
 
 $(riscv-asm-tests): build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0     \
-	$(QUESTASIM_FLAGS) \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
+	$(QUESTASIM_FLAGS)                                                                                            \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                                 \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
 $(riscv-benchmarks): build $(library)/ariane_dpi.so
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0   \
-	$(QUESTASIM_FLAGS) \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                        \
+	$(QUESTASIM_FLAGS)                                                                                            \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                                 \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
-
 
 # can use -jX to run ci tests in parallel using X processes
 run-asm-tests: $(riscv-asm-tests)
 	make check-asm-tests
 
 check-asm-tests:
-	ci/check-tests.sh tmp/riscv-asm-tests- $(riscv-asm-tests-list)
+	ci/check-tests.sh tmp/riscv-asm-tests- $(shell wc -l $(riscv-asm-tests-list) | awk -F " " '{ print $1 }')
 
 # can use -jX to run ci tests in parallel using X processes
 run-benchmarks: $(riscv-benchmarks)
 	make check-benchmarks
 
 check-benchmarks:
-	ci/check-tests.sh tmp/riscv-benchmarks- $(riscv-benchmarks-list)
+	ci/check-tests.sh tmp/riscv-benchmarks- $(shell wc -l $(riscv-benchmarks-list) | awk -F " " '{ print $1 }')
 
-
+# verilator-specific
 verilate_command := $(verilator)                                                           \
                     $(ariane_pkg)                                                          \
                     $(filter-out tb/ariane_bt.sv,$(src))                                   \
+                    +define+$(defines)                                                     \
                     src/util/sram.sv                                                       \
-					+incdir+src/axi_node                                                   \
+                    +incdir+src/axi_node                                                   \
                     --unroll-count 256                                                     \
                     -Werror-PINMISSING                                                     \
                     -Werror-IMPLICIT                                                       \
@@ -189,7 +195,7 @@ verilate_command := $(verilator)                                                
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
 
 # User Verilator, at some point in the future this will be auto-generated
-verilate:
+verilate: $(library)/ariane_dpi.so $(library)/SimJTAG.o $(library)/SimDTM.o $(library)/remote_bitbang.o 
 	$(verilate_command)
 	cd build && make -j${NUM_JOBS} -f Variane_testharness.mk
 
@@ -209,16 +215,54 @@ $(addsuffix -verilator,$(riscv-benchmarks)): verilate
 
 run-benchmarks-verilator: $(addsuffix -verilator,$(riscv-benchmarks))
 
-
 verify:
 	qverify vlog -sv src/csr_regfile.sv
 
-clean:
-	rm -rf work/ *.ucdb
-	rm -rf build
-	rm -f tmp/*.ucdb
-	rm -f tmp/*.log
-	rm -f *.wlf *vstf wlft*
+# torture-specific
+torture-gen: 
+	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'generator/run'
 
+torture-itest: 
+	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -a output/test.S'
+
+torture-rtest: build
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture defines=$(defines)" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a output/test.S' | tee output/test.log
+	make check-torture
+
+torture-rtest-verilator: verilate
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture-verilator defines=$(defines)" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a output/test.S' | tee output/test-verilator.log
+	make check-torture-verilator
+
+run-torture: build $(library)/ariane_dpi.so
+	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles)+UVM_TESTNAME=${test_case}  \
+	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0      \
+	$(QUESTASIM_FLAGS)                                                                                            \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(library)/ariane_dpi                                                 \
+	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
+	${top_level}_optimized +permissive-off                                                                        \
+	+signature=$(riscv-torture-dir)/output/test.rtlsim.sig ++$(riscv-torture-dir)/output/test ++$(target-options) 
+
+run-torture-verilator: verilate
+	build/Variane_testharness +max-cycles=$(max_cycles) +signature=$(riscv-torture-dir)/output/test.rtlsim.verilator.sig $(riscv-torture-dir)/output/test
+
+
+check-torture:
+	grep 'All signatures match for output/test' $(riscv-torture-dir)/output/test.log
+	diff -s $(riscv-torture-dir)/output/test.spike.sig $(riscv-torture-dir)/output/test.rtlsim.sig
+
+check-torture-verilator:
+	grep 'All signatures match for output/test' $(riscv-torture-dir)/output/test-verilator.log
+	diff -s $(riscv-torture-dir)/output/test.spike.sig $(riscv-torture-dir)/output/test.rtlsim.verilator.sig
+
+clean:
+	rm -rf $(riscv-torture-dir)/output/test*
+	rm -rf work/ *.ucdb build
+	rm -f tmp/*.ucdb tmp/*.log *.wlf *vstf wlft*
+	
 .PHONY:
-	build lint build-moore $(riscv-asm-tests) $(addsuffix _verilator,$(riscv-asm-tests)) $(riscv-benchmarks) $(addsuffix _verilator,$(riscv-benchmarks)) check simc sim verilate clean verilate
+	build lint build-moore check simc sim verilate clean verilate    \
+	$(riscv-asm-tests) $(addsuffix _verilator,$(riscv-asm-tests))    \
+	$(riscv-benchmarks) $(addsuffix _verilator,$(riscv-benchmarks))  \
+	torture-gen torture-igentest torture-rgentest torture-itest torture-rtest

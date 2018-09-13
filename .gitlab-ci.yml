@@ -23,15 +23,16 @@ variables:
 
 stages:
   - build
-  - test
+  - test_std
 
+# prepare
 build:
   stage: build
   script:
     - ci/build-riscv-tests.sh
+    - ci/get-torture.sh
     - make clean
-    - make build questa_version=$QUESTASIM_VERSION
-    - make verilate verilator=$VERILATOR_ROOT/bin/verilator
+    - make torture-gen
   artifacts:
       paths:
         - tmp 
@@ -74,4 +75,16 @@ run-benchmarks-verilator:
   dependencies:
     - build
 
+torture-quest:
+  stage: test_std
+  script:
+    - make torture-rtest
+  dependencies:
+    - build
 
+torture-ver:
+  stage: test_std
+  script:
+    - make torture-rtest-verilator
+  dependencies:
+    - build
