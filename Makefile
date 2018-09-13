@@ -199,7 +199,7 @@ verilate_command := $(verilator)                                                
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
 
 # User Verilator, at some point in the future this will be auto-generated
-verilate: $(dpi-library)/ariane_dpi.so 
+verilate:  
 	$(verilate_command)
 	cd $(ver-library) && make -j${NUM_JOBS} -f Variane_testharness.mk
 
@@ -233,8 +233,8 @@ torture-rtest: build
 
 torture-rtest-verilator: verilate
 	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture-verilator defines=$(defines)" > call.sh && chmod +x call.sh
-	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a output/test.S' | tee output/test-verilator.log
-	make check-torture-verilator
+	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a output/test.S' | tee output/test.log
+	make check-torture
 
 run-torture: build 
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles)+UVM_TESTNAME=${test_case}  \
@@ -246,15 +246,11 @@ run-torture: build
 	+signature=$(riscv-torture-dir)/output/test.rtlsim.sig ++$(riscv-torture-dir)/output/test ++$(target-options) 
 
 run-torture-verilator: verilate
-	$(ver-library)/Variane_testharness +max-cycles=$(max_cycles) +signature=$(riscv-torture-dir)/output/test.rtlsim.verilator.sig $(riscv-torture-dir)/output/test
+	$(ver-library)/Variane_testharness +max-cycles=$(max_cycles) +signature=$(riscv-torture-dir)/output/test.rtlsim.sig $(riscv-torture-dir)/output/test
 
 check-torture:
 	grep 'All signatures match for output/test' $(riscv-torture-dir)/output/test.log
 	diff -s $(riscv-torture-dir)/output/test.spike.sig $(riscv-torture-dir)/output/test.rtlsim.sig
-
-check-torture-verilator:
-	grep 'All signatures match for output/test' $(riscv-torture-dir)/output/test-verilator.log
-	diff -s $(riscv-torture-dir)/output/test.spike.sig $(riscv-torture-dir)/output/test.rtlsim.verilator.sig 
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*

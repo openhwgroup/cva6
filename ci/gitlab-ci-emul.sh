@@ -40,13 +40,13 @@ make clean
 make torture-gen
 
 # run asm tests on verilator
-make -j${NUM_JOBS} verilate                 verilator=$VERILATOR_ROOT/bin/verilator
-make -j${NUM_JOBS} run-asm-tests-verilator  verilator=$VERILATOR_ROOT/bin/verilator
-make -j${NUM_JOBS} run-benchmarks-verilator verilator=$VERILATOR_ROOT/bin/verilator
-make -j${NUM_JOBS} torture-rtest-verilator  verilator=$VERILATOR_ROOT/bin/verilator
+make -j${NUM_JOBS} verilate                 
+make -j${NUM_JOBS} run-asm-tests-verilator  
+make -j${NUM_JOBS} run-benchmarks-verilator 
+make -j${NUM_JOBS} torture-rtest-verilator  
 
 # run asm tests on questa
-make -j${NUM_JOBS} build                    questa_version=$QUESTASIM_VERSION
-make -j${NUM_JOBS} run-asm-tests            questa_version=$QUESTASIM_VERSION
-make -j${NUM_JOBS} run-benchmarks           questa_version=$QUESTASIM_VERSION
-make -j${NUM_JOBS} torture-rtest            questa_version=$QUESTASIM_VERSION
+make -j${NUM_JOBS} build                    
+make -j${NUM_JOBS} run-asm-tests            
+make -j${NUM_JOBS} run-benchmarks           
+make -j${NUM_JOBS} torture-rtest            
