@@ -24,9 +24,12 @@ module ariane_tb;
     // static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
     localparam int unsigned CLOCK_PERIOD = 20ns;
+    // toggle with half the clock period
+    localparam int unsigned RTC_CLOCK_PERIOD = CLOCK_PERIOD/2;
 
     logic clk_i;
     logic rst_ni;
+    logic rtc_i;
 
     longint unsigned cycles;
     longint unsigned max_cycles;
@@ -36,6 +39,7 @@ module ariane_tb;
     ariane_testharness dut (
         .clk_i,
         .rst_ni,
+        .rtc_i,
         .exit_o
     );
 
@@ -54,6 +58,13 @@ module ariane_tb;
             //    $fatal(1, "Simulation reached maximum cycle count of %d", max_cycles);
 
             cycles++;
+        end
+    end
+
+    initial begin
+        forever begin
+            #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b1;
+            #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b0;
         end
     end
 

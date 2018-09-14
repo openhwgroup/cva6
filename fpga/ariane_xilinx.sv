@@ -8,6 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
+// Top-level for ZCU102
 module ariane_xilinx (
     input  logic        c0_sys_clk_p,    // Clock
     input  logic        c0_sys_clk_n,    // Clock
@@ -69,7 +70,10 @@ AXI_BUS #(
 logic test_en;
 logic ndmreset;
 logic ndmreset_n;
-logic debug_req;
+logic debug_req_irq;
+logic time_irq;
+logic ipi;
+
 logic clk;
 logic rst_n;
 
@@ -197,13 +201,13 @@ axi_node_intf_wrap #(
     .AXI_USER_WIDTH ( AxiUserWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthMaster )
 ) i_axi_xbar (
-    .clk          ( clk                                                   ),
-    .rst_n        ( ndmreset_n                                            ),
-    .test_en_i    ( test_en                                               ),
-    .slave        ( slave                                                 ),
-    .master       ( master                                                ),
-    .start_addr_i ( {64'h0,   RomBase,            CacheStartAddr}         ),
-    .end_addr_i   ( {64'hFFF, RomBase + 64'hFFFF, CacheStartAddr + 2**24} )
+    .clk          ( clk                                                                ),
+    .rst_n        ( ndmreset_n                                                         ),
+    .test_en_i    ( test_en                                                            ),
+    .slave        ( slave                                                              ),
+    .master       ( master                                                             ),
+    .start_addr_i ( {64'h0,   RomBase,            64'h2000000, CacheStartAddr}         ),
+    .end_addr_i   ( {64'hFFF, RomBase + 64'hFFFF, 64'h2FFFFFF, CacheStartAddr + 2**24} )
 );
 
 dm::dmi_req_t debug_req;;
@@ -244,10 +248,10 @@ dm_top #(
     .testmode_i           ( test_en              ),
     .ndmreset_o           ( ndmreset             ),
     .dmactive_o           (                      ), // active debug session
-    .debug_req_o          ( debug_req            ),
+    .debug_req_o          ( debug_req_irq        ),
     .unavailable_i        ( '0                   ),
     .axi_master           ( slave_slice[3]       ),
-    .axi_slave            ( master[2]            ),
+    .axi_slave            ( master[3]            ),
     .dmi_rst_ni           ( rst_n                ),
     .dmi_req_valid_i      ( debug_req_valid      ),
     .dmi_req_ready_o      ( debug_req_ready      ),
@@ -270,13 +274,32 @@ ariane #(
     .boot_addr_i          ( RomBase        ), // start fetching from ROM
     .core_id_i            ( '0             ),
     .cluster_id_i         ( '0             ),
+    // TODO(zarubaf) Instantiate PLIC
     .irq_i                ( '0             ),
-    .ipi_i                ( '0             ),
-    .time_irq_i           ( '0             ),
-    .debug_req_i          ( debug_req      ),
+    .ipi_i                ( ipi            ),
+    .time_irq_i           ( time_irq       ),
+    .debug_req_i          ( debug_req_irq  ),
     .data_if              ( slave_slice[2] ),
     .bypass_if            ( slave_slice[1] ),
     .instr_if             ( slave_slice[0] )
+);
+
+// ---------------
+// CLINT
+// ---------------
+clint #(
+    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
+    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
+    .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
+    .NR_CORES       ( 1                   )
+) i_clint (
+    .clk_i       ( clk_i     ),
+    .rst_ni      ( rst_ni    ),
+    .slave       ( master[1] ),
+    // TODO(zarubaf): Fix RTC
+    .rtc_i       ( 1'b0      ),
+    .timer_irq_o ( timer_irq ),
+    .ipi_o       ( ipi       )
 );
 
 // ---------------
@@ -294,7 +317,7 @@ axi2mem #(
 ) i_axi2rom (
     .clk_i  ( clk        ),
     .rst_ni ( ndmreset_n ),
-    .slave  ( master[1]  ),
+    .slave  ( master[2]  ),
     .req_o  ( rom_req    ),
     .we_o   (            ),
     .addr_o ( rom_addr   ),
@@ -309,6 +332,7 @@ bootrom i_bootrom (
     .addr_i     ( rom_addr  ),
     .rdata_o    ( rom_rdata )
 );
+
 
 // DDR 4 Subsystem
 axi_clock_converter_0 axi_clock_converter (

@@ -22,6 +22,7 @@ module ariane_testharness #(
         parameter int unsigned NUM_WORDS         = 2**24          // memory size
     )(
         input  logic                           clk_i,
+        input  logic                           rtc_i,
         input  logic                           rst_ni,
         output logic [31:0]                    exit_o
     );
@@ -298,7 +299,7 @@ module ariane_testharness #(
         .clk_i       ( clk_i     ),
         .rst_ni      ( rst_ni    ),
         .slave       ( master[1] ),
-        .rtc_i       ( 1'b0      ),
+        .rtc_i,
         .timer_irq_o ( timer_irq ),
         .ipi_o       ( ipi       )
     );

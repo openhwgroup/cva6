@@ -75,6 +75,36 @@ $ make simc riscv-test=/path/to/pk target-options=path/to/riscv.elf
 
 Coming.
 
+### Debugging
+
+```
+(gdb) b putchar
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x0000000080009126 in putchar (s=72) at lib/qprintf.c:69
+69    uart_sendchar(s);
+(gdb) si
+0x000000008000912a  69    uart_sendchar(s);
+(gdb) p/x $mepc
+$1 = 0xfffffffffffdb5ee
+```
+
+You can read or write device memory by using:
+```
+(gdb) x/i 0x1000
+    0x1000: lui t0,0x4
+(gdb) set {int} 0x1000 = 22
+(gdb) set $pc = 0x1000
+```
+
+If you are on an Ubuntu based system you need to add the following udev rule to `/etc/udev/rules.d/olimex-arm-usb-tiny-h.rules`
+
+>```
+> SUBSYSTEM=="usb", ACTION=="add", ATTRS{idProduct}=="002a", ATTRS{idVendor}=="15ba", MODE="664", GROUP="plugdev"
+>```
+
 ## Planned Improvements
 
 While developing Ariane it has become evident that, in order to support Linux, the atomic extension is going to be mandatory. While the core is currently booting Linux by emulating Atomics in BBL (in a single core environment this is trivially met by disabling interrupts) this is not the behavior which is intended. For that reason we are going to fully support all atomic extensions in the very near future.
@@ -92,16 +122,16 @@ If you call `simc` instead of `sim` it will run without the GUI. QuestaSim uses 
 
 ### CI Testsuites and Randomized Constrained Testing with Torture
 
-We provide two CI configuration files for Travis CI and GitLab CI that run the RISCV assembly tests, the RISCV benchmarks and a randomized RISCV Torture test. The difference between the two is that Travis CI runs these tests only on Verilator, whereas GitLab CI runs the same tests on QuestaSim and Verilator. 
+We provide two CI configuration files for Travis CI and GitLab CI that run the RISCV assembly tests, the RISCV benchmarks and a randomized RISCV Torture test. The difference between the two is that Travis CI runs these tests only on Verilator, whereas GitLab CI runs the same tests on QuestaSim and Verilator.
 
-If you would like to run the CI test suites locally on your machine, follow any of the two scripts `ci.travis-ci-emul.sh` and `ci.travis-ci-emul.sh` (depending on whether you have QuestaSim or not). In particular, you have to get the required packages for your system, the paths in `ci/path-setup.sh` to match your setup, and run the installation and build scripts prior to running any of the tests suites. 
+If you would like to run the CI test suites locally on your machine, follow any of the two scripts `ci.travis-ci-emul.sh` and `ci.travis-ci-emul.sh` (depending on whether you have QuestaSim or not). In particular, you have to get the required packages for your system, the paths in `ci/path-setup.sh` to match your setup, and run the installation and build scripts prior to running any of the tests suites.
 
 Once everything is set up and installed, you can run the tests suites as follows (using Verilator):
 
 ```
-$ make verilate 
-$ make run-asm-tests-verilator  
-$ make run-benchmarks-verilator 
+$ make verilate
+$ make run-asm-tests-verilator
+$ make run-benchmarks-verilator
 ```
 
 In order to run randomized Torture tests, you first have to generate the randomized program prior to running the simulation:
@@ -111,7 +141,7 @@ $ make torture-gen
 $ make torture-rtest-verilator
 
 ```
-This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file. 
+This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
 
 
 # Contributing
