@@ -24,11 +24,11 @@ target-options ?=
 defines        ?=
 # Sources
 # Package files -> compile first
-ariane_pkg := include/riscv_pkg.sv         \
-              src/debug/dm_pkg.sv          \
-              src/axi/src/axi_pkg.sv       \
-              include/ariane_pkg.sv        \
-              include/std_cache_pkg.sv     \
+ariane_pkg := include/riscv_pkg.sv       \
+              src/debug/dm_pkg.sv        \
+              include/ariane_pkg.sv      \
+              include/std_cache_pkg.sv   \
+              src/axi/src/axi_pkg.sv     \
               include/axi_intf.sv
 
 # utility modules
@@ -36,7 +36,7 @@ util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_pkg.sv \
         src/util/instruction_tracer_if.sv  \
         src/util/cluster_clock_gating.sv   \
-		src/util/sram.sv
+        src/util/sram.sv
 
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
@@ -57,14 +57,12 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
-        src/common_cells/src/deprecated/generic_fifo.sv                \
-        src/common_cells/src/deprecated/pulp_sync.sv                   \
         src/common_cells/src/sync.sv                                   \
         src/common_cells/src/cdc_2phase.sv                             \
         src/common_cells/src/spill_register.sv                         \
         src/common_cells/src/sync_wedge.sv                             \
-		src/common_cells/src/fifo_v2.sv                                \
-		src/common_cells/src/fifo_v1.sv                                \
+        src/common_cells/src/fifo_v2.sv                                \
+        src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
         src/common_cells/src/lfsr_8bit.sv                              \
