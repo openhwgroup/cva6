@@ -34,9 +34,9 @@ module ariane_tb;
     logic [31:0] exit_o;
 
     ariane_testharness dut (
-        .clk_i                   ( clk_i                        ),
-        .rst_ni                  ( rst_ni                       ),
-        .exit_o                  ( exit_o                       )
+        .clk_i,
+        .rst_ni,
+        .exit_o
     );
 
     // Clock process
