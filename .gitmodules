@@ -1,9 +1,6 @@
 [submodule "src/axi_mem_if"]
 	path = src/axi_mem_if
 	url = https://github.com/pulp-platform/axi_mem_if.git
-[submodule "src/axi_slice"]
-	path = src/axi_slice
-	url = https://github.com/pulp-platform/axi_slice.git
 [submodule "src/axi_node"]
 	path = src/axi_node
 	url = https://github.com/pulp-platform/axi_node.git
