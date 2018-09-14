@@ -114,7 +114,7 @@ $(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library)
 	touch $(library)/.build-srcs
 
 # build TBs
-$(library)/.build-tb: $(dpi) $(tbs)
+$(library)/.build-tb: $(dpi) $(tbs) 
 	# Compile top level
 	vlog$(questa_version) -sv $(tbs) -work $(library)
 	touch $(library)/.build-tb
@@ -123,11 +123,11 @@ $(library):
 	vlib${questa_version} ${library}
 
 # compile DPIs
-$(dpi-library)/%.o: tb/dpi/%.cc $(dpi_hdr)
+$(dpi-library)/%.o: tb/dpi/%.cc $(dpi_hdr) 
 	mkdir -p $(dpi-library)
 	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic -I$(QUESTASIM_HOME)/include -o $@ $<
 
-$(dpi-library)/ariane_dpi.so: $(dpi)
+$(dpi-library)/ariane_dpi.so: $(dpi) 
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
 	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -lfesvr
@@ -140,14 +140,14 @@ sim: build
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit"  \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
-simc: build
+simc: build 
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
 	$(QUESTASIM_FLAGS)                                                                                            \
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " run -all; exit"                       \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
-$(riscv-asm-tests): build
+$(riscv-asm-tests): build 
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
 	$(QUESTASIM_FLAGS)                                                                                            \
@@ -202,7 +202,7 @@ verilate_command := $(verilator)                                                
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
 
 # User Verilator, at some point in the future this will be auto-generated
-verilate:
+verilate:  
 	$(verilate_command)
 	cd $(ver-library) && make -j${NUM_JOBS} -f Variane_testharness.mk
 
@@ -214,7 +214,7 @@ run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests))
 # split into two halfs for travis jobs (otherwise they will time out)
 run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-p-% ,$(riscv-asm-tests)))
 
-run-asm-tests2-verilator: $(addsuffix -verilator, $(filter rv64ui-v-% rv64um-%,$(riscv-asm-tests)))
+run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-p-% ,$(riscv-asm-tests)))
 
 
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate
@@ -223,10 +223,10 @@ $(addsuffix -verilator,$(riscv-benchmarks)): verilate
 run-benchmarks-verilator: $(addsuffix -verilator,$(riscv-benchmarks))
 
 # torture-specific
-torture-gen:
+torture-gen: 
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'generator/run'
 
-torture-itest:
+torture-itest: 
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -a output/test.S'
 
 torture-rtest: build
@@ -239,14 +239,14 @@ torture-rtest-verilator: verilate
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a output/test.S' | tee output/test.log
 	make check-torture
 
-run-torture: build
+run-torture: build 
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles)+UVM_TESTNAME=${test_case}  \
 	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0      \
 	$(QUESTASIM_FLAGS)                                                                                            \
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                             \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off                                                                        \
-	+signature=$(riscv-torture-dir)/output/test.rtlsim.sig ++$(riscv-torture-dir)/output/test ++$(target-options)
+	+signature=$(riscv-torture-dir)/output/test.rtlsim.sig ++$(riscv-torture-dir)/output/test ++$(target-options) 
 
 run-torture-verilator: verilate
 	$(ver-library)/Variane_testharness +max-cycles=$(max_cycles) +signature=$(riscv-torture-dir)/output/test.rtlsim.sig $(riscv-torture-dir)/output/test
@@ -257,9 +257,9 @@ check-torture:
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*
-	rm -rf $(library)/ $(dpi-library)/ $(ver-library)/
+	rm -rf $(library)/ $(dpi-library)/ $(ver-library)/ 
 	rm -f tmp/*.ucdb tmp/*.log *.wlf *vstf wlft* *.ucdb
-
+	
 .PHONY:
 	build sim simc verilate clean                                             \
 	$(riscv-asm-tests) $(addsuffix _verilator,$(riscv-asm-tests))             \
