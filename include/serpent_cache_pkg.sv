@@ -37,12 +37,15 @@ package serpent_cache_pkg;
 
 
     // Calculated parameter
-    // localparam DCACHE_BYTE_OFFSET = $clog2(ariane_pkg::DCACHE_LINE_WIDTH/8);
-    // localparam DCACHE_NUM_WORDS   = 2**(ariane_pkg::DCACHE_INDEX_WIDTH-DCACHE_BYTE_OFFSET);
-    // localparam DCACHE_DIRTY_WIDTH = ariane_pkg::DCACHE_SET_ASSOC*2;
     localparam ICACHE_OFFSET_WIDTH    = $clog2(ariane_pkg::ICACHE_LINE_WIDTH/8);
     localparam ICACHE_NUM_WORDS       = 2**(ariane_pkg::ICACHE_INDEX_WIDTH-ICACHE_OFFSET_WIDTH);
     localparam ICACHE_CL_IDX_WIDTH    = $clog2(ICACHE_NUM_WORDS);// excluding byte offset
+
+    localparam DCACHE_OFFSET_WIDTH    = $clog2(ariane_pkg::DCACHE_LINE_WIDTH/8);
+    localparam DCACHE_NUM_WORDS       = 2**(ariane_pkg::DCACHE_INDEX_WIDTH-DCACHE_OFFSET_WIDTH);
+    localparam DCACHE_CL_IDX_WIDTH    = $clog2(DCACHE_NUM_WORDS);// excluding byte offset
+
+    localparam DCACHE_NUM_BANKS       = ariane_pkg::DCACHE_LINE_WIDTH/64;
 
 
     // local interfaces between caches and L15 adapter
@@ -195,7 +198,16 @@ package serpent_cache_pkg;
         return out;
     endfunction
 
-    function automatic logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] bin2onehot (
+    function automatic logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh (
+        input logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] in
+    );  
+        logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] out;
+        out     = '0;
+        out[in] = 1'b1;
+        return out;    
+    endfunction
+
+    function automatic logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh (
         input logic [$clog2(ariane_pkg::DCACHE_SET_ASSOC)-1:0] in
     );  
         logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] out;
@@ -203,6 +215,16 @@ package serpent_cache_pkg;
         out[in] = 1'b1;
         return out;    
     endfunction
+
+    function automatic logic [DCACHE_NUM_BANKS-1:0] dcache_cl_bin2oh (
+        input logic [$clog2(DCACHE_NUM_BANKS)-1:0] in
+    );  
+        logic [DCACHE_NUM_BANKS-1:0] out;
+        out     = '0;
+        out[in] = 1'b1;
+        return out;    
+    endfunction
+
 
     function automatic logic [5:0] popcnt64 (
         input logic [63:0] in

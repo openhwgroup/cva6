@@ -379,9 +379,9 @@ module serpent_icache  #(
                       (inv_en)         ? mem_rtrn_i.inv.idx[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH] :
                                          cl_index; 
     
-    assign vld_req  = (flush_en | cache_rden)         ? '1                             : 
-                      (mem_rtrn_i.inv.all & inv_en)   ? '1                             : 
-                      (mem_rtrn_i.inv.vld & inv_en)   ? bin2onehot(mem_rtrn_i.inv.way) :
+    assign vld_req  = (flush_en | cache_rden)         ? '1                                    : 
+                      (mem_rtrn_i.inv.all & inv_en)   ? '1                                    : 
+                      (mem_rtrn_i.inv.vld & inv_en)   ? icache_way_bin2oh(mem_rtrn_i.inv.way) :
                                                         repl_way_oh_q;
 
     assign vld_wdata = (cache_wren) ? '1 : '0;
@@ -393,7 +393,7 @@ module serpent_icache  #(
     // chose random replacement if all are valid
     assign update_lfsr   = cache_wren & all_ways_valid;
     assign repl_way      = (all_ways_valid) ? rnd_way : inv_way;
-    assign repl_way_oh_d = (cmp_en_q) ? bin2onehot(repl_way) : repl_way_oh_q;
+    assign repl_way_oh_d = (cmp_en_q) ? icache_way_bin2oh(repl_way) : repl_way_oh_q;
 
     // enable signals for memory arrays
     assign cl_req   = (cache_rden) ? '1            : 
