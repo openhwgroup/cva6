@@ -17,27 +17,25 @@
  */
 
 module dmi_jtag (
-    input  logic        clk_i,      // DMI Clock
-    input  logic        rst_ni,     // Asynchronous reset active low
+    input  logic         clk_i,      // DMI Clock
+    input  logic         rst_ni,     // Asynchronous reset active low
 
-    output logic        dmi_rst_no, // hard reset
+    output logic         dmi_rst_no, // hard reset
 
-    output logic        dmi_req_valid_o,
-    input  logic        dmi_req_ready_i,
-    output logic [ 6:0] dmi_req_bits_addr_o,
-    output logic [ 1:0] dmi_req_bits_op_o, // 0 = nop, 1 = read, 2 = write
-    output logic [31:0] dmi_req_bits_data_o,
-    input  logic        dmi_resp_valid_i,
-    output logic        dmi_resp_ready_o,
-    input  logic [ 1:0] dmi_resp_bits_resp_i,
-    input  logic [31:0] dmi_resp_bits_data_i,
+    output dm::dmi_req_t dmi_req_o,
+    output logic         dmi_req_valid_o,
+    input  logic         dmi_req_ready_i,
 
-    input  logic        tck_i,    // JTAG test clock pad
-    input  logic        tms_i,    // JTAG test mode select pad
-    input  logic        trst_ni,  // JTAG test reset pad
-    input  logic        td_i,     // JTAG test data input pad
-    output logic        td_o,     // JTAG test data output pad
-    output logic        tdo_oe_o  // Data out output enable
+    input dm::dmi_resp_t dmi_resp_i,
+    output logic         dmi_resp_ready_o,
+    input  logic         dmi_resp_valid_i,
+
+    input  logic         tck_i,    // JTAG test clock pad
+    input  logic         tms_i,    // JTAG test mode select pad
+    input  logic         trst_ni,  // JTAG test reset pad
+    input  logic         td_i,     // JTAG test data input pad
+    output logic         td_o,     // JTAG test data output pad
+    output logic         tdo_oe_o  // Data out output enable
 );
     assign       dmi_rst_no = 1'b1;
 
@@ -51,13 +49,13 @@ module dmi_jtag (
     logic        dmi_tdi;
     logic        dmi_tdo;
 
-    logic        mem_valid;
-    logic        mem_gnt;
-    logic [6:0]  mem_addr;
-    logic        mem_we;
-    logic [31:0] mem_wdata;
-    logic [31:0] mem_rdata;
-    logic        mem_rvalid;
+    dm::dmi_req_t  dmi_req;
+    logic          dmi_req_ready;
+    logic          dmi_req_valid;
+
+    dm::dmi_resp_t dmi_resp;
+    logic          dmi_resp_valid;
+    logic          dmi_resp_ready;
 
     typedef struct packed {
         logic [6:0]  address;
@@ -77,10 +75,12 @@ module dmi_jtag (
     logic [31:0] data_d, data_q;
 
     dmi_t  dmi;
-    assign dmi       = dmi_t'(dr_q);
-    assign mem_addr  = address_q;
-    assign mem_wdata = data_q;
-    assign mem_we    = (state_q == Write);
+    assign dmi          = dmi_t'(dr_q);
+    assign dmi_req.addr = address_q;
+    assign dmi_req.data = data_q;
+    assign dmi_req.op   = (state_q == Write) ? dm::DTM_WRITE : dm::DTM_READ;
+    // we'will always be ready to accept the data we requested
+    assign dmi_resp_ready = 1'b1;
 
     logic error_dmi_busy;
     dmi_error_t error_d, error_q;
@@ -93,7 +93,7 @@ module dmi_jtag (
         data_d    = data_q;
         error_d   = error_q;
 
-        mem_valid = 1'b0;
+        dmi_req_valid = 1'b0;
 
         case (state_q)
             Idle: begin
@@ -112,31 +112,31 @@ module dmi_jtag (
             end
 
             Read: begin
-                mem_valid = 1'b1;
-                if (mem_gnt) begin
+                dmi_req_valid = 1'b1;
+                if (dmi_req_ready) begin
                     state_d = WaitReadValid;
                 end
             end
 
             WaitReadValid: begin
                 // load data into register and shift out
-                if (mem_rvalid) begin
-                    data_d = mem_rdata;
+                if (dmi_resp_valid) begin
+                    data_d = dmi_resp.data;
                     state_d = Idle;
                 end
             end
 
             Write: begin
-                mem_valid = 1'b1;
+                dmi_req_valid = 1'b1;
                 // got a valid answer go back to idle
-                if (mem_gnt) begin
+                if (dmi_req_ready) begin
                     state_d = Idle;
                 end
             end
 
             WaitWriteValid: begin
                 // just wait for idle here
-                if (mem_rvalid) begin
+                if (dmi_resp_valid) begin
                     state_d = Idle;
                 end
             end
@@ -237,26 +237,21 @@ module dmi_jtag (
         // JTAG side (master side)
         .tck_i,
         .trst_ni,
-
-        .mem_valid_i       ( mem_valid   ),
-        .mem_gnt_o         ( mem_gnt     ),
-        .mem_addr_i        ( mem_addr    ),
-        .mem_we_i          ( mem_we      ),
-        .mem_wdata_i       ( mem_wdata   ),
-        .mem_rdata_o       ( mem_rdata   ),
-        .mem_rvalid_o      ( mem_rvalid  ),
-
+        .jtag_dmi_req_i    ( dmi_req          ),
+        .jtag_dmi_ready_o  ( dmi_req_ready    ),
+        .jtag_dmi_valid_i  ( dmi_req_valid    ),
+        .jtag_dmi_resp_o   ( dmi_resp         ),
+        .jtag_dmi_valid_o  ( dmi_resp_valid   ),
+        .jtag_dmi_ready_i  ( dmi_resp_ready   ),
+        // core side
         .clk_i,
         .rst_ni,
-        .dmi_req_valid_o,
-        .dmi_req_ready_i,
-        .dmi_req_bits_addr_o,
-        .dmi_req_bits_op_o,
-        .dmi_req_bits_data_o,
-        .dmi_resp_valid_i,
-        .dmi_resp_ready_o,
-        .dmi_resp_bits_resp_i,
-        .dmi_resp_bits_data_i
+        .core_dmi_req_o    ( dmi_req_o        ),
+        .core_dmi_valid_o  ( dmi_req_valid_o  ),
+        .core_dmi_ready_i  ( dmi_req_ready_i  ),
+        .core_dmi_resp_i   ( dmi_resp_i       ),
+        .core_dmi_ready_o  ( dmi_resp_ready_o ),
+        .core_dmi_valid_i  ( dmi_resp_valid_i )
     );
 
 endmodule

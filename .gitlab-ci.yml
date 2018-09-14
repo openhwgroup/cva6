@@ -17,7 +17,7 @@ before_script:
   - export NUM_JOBS=4
   - ci/make-tmp.sh
   - git submodule update --init --recursive
-   
+
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
@@ -28,7 +28,6 @@ stages:
 
 ###################################
 # prepare
-
 build:
   stage: build
   script:

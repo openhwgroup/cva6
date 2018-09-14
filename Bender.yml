@@ -61,7 +61,17 @@ sources:
   - src/store_buffer.sv
   - src/store_unit.sv
   - src/tlb.sv
+  - src/commit_stage.sv
+  - src/axi_adapter.sv
+  - src/cache_subsystem/cache_ctrl.sv
+  - src/cache_subsystem/miss_handler.sv
+  - src/cache_subsystem/std_cache_subsystem.sv
+  - src/cache_subsystem/std_icache.sv
+  - src/cache_subsystem/std_nbdcache.sv
+  - src/debug/debug_rom/debug_rom.sv
   - src/debug/dm_csrs.sv
+  - src/clint/clint.sv
+  - src/clint/axi_lite_interface.sv
   - src/debug/dm_mem.sv
   - src/debug/dm_top.sv
   - src/debug/dmi_cdc.sv

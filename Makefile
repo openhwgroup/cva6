@@ -10,7 +10,6 @@ ver-library    ?= work-ver
 dpi-library    ?= work-dpi
 # Top level module to compile
 top_level      ?= ariane_tb
-test_top_level ?= ariane_tb
 # Maximum amount of cycles for a successful simulation run
 max_cycles     ?= 10000000
 # Test case to run
@@ -31,14 +30,14 @@ ariane_pkg := include/riscv_pkg.sv         \
 			  include/ariane_pkg.sv        \
               include/std_cache_pkg.sv     \
               include/serpent_cache_pkg.sv \
-              include/axi_if.sv
+              include/axi_intf.sv
 
 # utility modules
 util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_pkg.sv \
         src/util/instruction_tracer_if.sv  \
         src/util/cluster_clock_gating.sv   \
-		src/util/sram.sv
+        src/util/sram.sv
 
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
@@ -51,16 +50,20 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/frontend/*.sv)                                  \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
-        $(wildcard src/axi_slice/*.sv)                                 \
         $(wildcard src/clint/*.sv)                                     \
         $(wildcard src/axi_node/src/*.sv)                              \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
         $(wildcard src/debug/debug_rom/*.sv)                           \
+        src/axi/src/axi_cut.sv                                         \
+        src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
-        src/common_cells/src/deprecated/generic_fifo.sv                \
-        src/common_cells/src/deprecated/pulp_sync.sv                   \
+        src/common_cells/src/sync.sv                                   \
+        src/common_cells/src/cdc_2phase.sv                             \
+        src/common_cells/src/spill_register.sv                         \
+        src/common_cells/src/sync_wedge.sv                             \
         src/common_cells/src/fifo_v2.sv                                \
+        src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
         src/common_cells/src/lfsr_8bit.sv                              \
@@ -86,7 +89,7 @@ riscv-benchmarks      := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) 
 riscv-test ?= rv64ui-p-add
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := 
+incdir :=
 # Compile and sim flags
 compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags    += +UVM_NO_RELNOTES
@@ -101,7 +104,7 @@ riscv-torture-bin    := java -Xmx1G -Xss8M -XX:MaxPermSize=128M -jar sbt-launch.
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
-	vopt$(questa_version) $(compile_flag) -work $(library)  $(test_top_level) -o $(test_top_level)_optimized +acc -check_synthesis
+	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
 # src files
 $(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library)
@@ -131,7 +134,7 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -lfesvr
 
 
-sim: build 
+sim: build
 	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}        \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0            \
 	$(QUESTASIM_FLAGS)                                                                                                \
@@ -153,7 +156,7 @@ $(riscv-asm-tests): build
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
-$(riscv-benchmarks): build 
+$(riscv-benchmarks): build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0   \
 	$(QUESTASIM_FLAGS)                                                                                            \
