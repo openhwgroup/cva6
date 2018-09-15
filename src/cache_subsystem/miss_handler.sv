@@ -395,32 +395,32 @@ module miss_handler #(
     logic [AXI_ID_WIDTH-1:0]     gnt_id_bypass_fsm;
 
     arbiter #(
-        .NR_PORTS          ( NR_PORTS                                                ),
-        .DATA_WIDTH        ( 64                                                      )
+        .NR_PORTS       ( NR_PORTS                                 ),
+        .DATA_WIDTH     ( 64                                       )
     ) i_bypass_arbiter (
         // Master Side
-        .data_req_i            ( miss_req_valid & miss_req_bypass                         ),
-        .address_i             ( miss_req_addr                                            ),
-        .data_wdata_i          ( miss_req_wdata                                           ),
-        .data_we_i             ( miss_req_we                                              ),
-        .data_be_i             ( miss_req_be                                              ),
-        .data_size_i           ( miss_req_size                                            ),
-        .data_gnt_o            ( bypass_gnt_o                                             ),
-        .data_rvalid_o         ( bypass_valid_o                                           ),
-        .data_rdata_o          ( bypass_data_o                                            ),
+        .data_req_i     ( miss_req_valid & miss_req_bypass         ),
+        .address_i      ( miss_req_addr                            ),
+        .data_wdata_i   ( miss_req_wdata                           ),
+        .data_we_i      ( miss_req_we                              ),
+        .data_be_i      ( miss_req_be                              ),
+        .data_size_i    ( miss_req_size                            ),
+        .data_gnt_o     ( bypass_gnt_o                             ),
+        .data_rvalid_o  ( bypass_valid_o                           ),
+        .data_rdata_o   ( bypass_data_o                            ),
         // Slave Sid
-        .id_i                  ( id_bypass_fsm[$clog2(NR_PORTS)-1:0]                      ),
-        .id_o                  ( id_fsm_bypass                                            ),
-        .gnt_id_i              ( gnt_id_bypass_fsm[$clog2(NR_PORTS)-1:0]                  ),
-        .address_o             ( req_fsm_bypass_addr                                      ),
-        .data_wdata_o          ( req_fsm_bypass_wdata                                     ),
-        .data_req_o            ( req_fsm_bypass_valid                                     ),
-        .data_we_o             ( req_fsm_bypass_we                                        ),
-        .data_be_o             ( req_fsm_bypass_be                                        ),
-        .data_size_o           ( req_fsm_bypass_size                                      ),
-        .data_gnt_i            ( gnt_bypass_fsm                                           ),
-        .data_rvalid_i         ( valid_bypass_fsm                                         ),
-        .data_rdata_i          ( data_bypass_fsm                                          ),
+        .id_i           ( id_bypass_fsm[$clog2(NR_PORTS)-1:0]      ),
+        .id_o           ( id_fsm_bypass                            ),
+        .gnt_id_i       ( gnt_id_bypass_fsm[$clog2(NR_PORTS)-1:0]  ),
+        .address_o      ( req_fsm_bypass_addr                      ),
+        .data_wdata_o   ( req_fsm_bypass_wdata                     ),
+        .data_req_o     ( req_fsm_bypass_valid                     ),
+        .data_we_o      ( req_fsm_bypass_we                        ),
+        .data_be_o      ( req_fsm_bypass_be                        ),
+        .data_size_o    ( req_fsm_bypass_size                      ),
+        .data_gnt_i     ( gnt_bypass_fsm                           ),
+        .data_rvalid_i  ( valid_bypass_fsm                         ),
+        .data_rdata_i   ( data_bypass_fsm                          ),
         .*
     );
 

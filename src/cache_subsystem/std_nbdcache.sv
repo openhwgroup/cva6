@@ -16,7 +16,7 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module std_nbdcache #(
-        parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
+        parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
 )(
     input  logic                           clk_i,       // Clock
     input  logic                           rst_ni,      // Asynchronous reset active low
@@ -24,15 +24,16 @@ module std_nbdcache #(
     input  logic                           enable_i,    // from CSR
     input  logic                           flush_i,     // high until acknowledged
     output logic                           flush_ack_o, // send a single cycle acknowledge signal when the cache is flushed
-    output logic                           miss_o,      // we missed on a ld/st
+    output logic                           miss_o,      // we missed on a LD/ST
     // AMO interface
-    input  logic                           amo_commit_i, // commit atomic memory operation
-    output logic                           amo_valid_o,  // we have a valid AMO result
-    output logic [63:0]                    amo_result_o, // result of atomic memory operation
-    input  logic                           amo_flush_i,  // forget about AMO
+
+    input  logic                           amo_commit_i,  // commit atomic memory operation
+    output logic                           amo_valid_o,   // we have a valid AMO result
+    output logic                           amo_sc_succ_o, // store conditional was successful
+    input  logic                           amo_flush_i,   // forget about pending AMO
     // Request ports
     input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
-    output dcache_req_o_t [2:0]            req_ports_o,  // request ports 
+    output dcache_req_o_t [2:0]            req_ports_o,  // request ports
 
     // Cache AXI refill port
     AXI_BUS.Master                         data_if,
@@ -83,6 +84,13 @@ module std_nbdcache #(
     cache_line_t [DCACHE_SET_ASSOC-1:0]  rdata_ram;
     cl_be_t                              be_ram;
 
+    logic [2:0] amo_valid;
+    logic [2:0] amo_sc_succ;
+
+    // only one unit can produce a result
+    assign amo_valid_o = |amo_valid;
+    assign amo_sc_succ = |amo_sc_succ;
+
     // ------------------
     // Cache Controller
     // ------------------
@@ -92,13 +100,15 @@ module std_nbdcache #(
                 .CACHE_START_ADDR      ( CACHE_START_ADDR     )
             ) i_cache_ctrl (
                 .bypass_i              ( ~enable_i            ),
-
                 .busy_o                ( busy            [i]  ),
-
+                // from core
                 .req_port_i            ( req_ports_i     [i]  ),
                 .req_port_o            ( req_ports_o     [i]  ),
-
-
+                .amo_flush_i,
+                .amo_commit_i,
+                .amo_valid_o           ( amo_valid       [i]  ),
+                .amo_sc_succ_o         ( amo_sc_succ     [i]  ),
+                // to SRAM array
                 .req_o                 ( req            [i+1] ),
                 .addr_o                ( addr           [i+1] ),
                 .gnt_i                 ( gnt            [i+1] ),
@@ -118,9 +128,9 @@ module std_nbdcache #(
                 .bypass_valid_i        ( bypass_valid    [i]  ),
                 .bypass_data_i         ( bypass_data     [i]  ),
 
-                .mshr_addr_o           ( mshr_addr         [i] ), // TODO
-                .mshr_addr_matches_i   ( mshr_addr_matches [i] ), // TODO
-                .mshr_index_matches_i  ( mshr_index_matches[i] ), // TODO
+                .mshr_addr_o           ( mshr_addr         [i] ),
+                .mshr_addr_matches_i   ( mshr_addr_matches [i] ),
+                .mshr_index_matches_i  ( mshr_index_matches[i] ),
                 .*
             );
         end
@@ -132,6 +142,7 @@ module std_nbdcache #(
     miss_handler #(
         .NR_PORTS               ( 3                    )
     ) i_miss_handler (
+        .flush_i                ( flush_i              ),
         .busy_i                 ( |busy                ),
         .miss_req_i             ( miss_req             ),
         .miss_gnt_o             ( miss_gnt             ),
@@ -150,6 +161,8 @@ module std_nbdcache #(
         .be_o                   ( be              [0]  ),
         .data_o                 ( wdata           [0]  ),
         .we_o                   ( we              [0]  ),
+        .bypass_if,
+        .data_if,
         .*
     );
 
@@ -194,7 +207,7 @@ module std_nbdcache #(
     // ----------------
 
     // align each valid/dirty bit pair to a byte boundary in order to leverage byte enable signals.
-    // note: if you have an SRAM that supports flat bit enables for your target technology, 
+    // note: if you have an SRAM that supports flat bit enables for your target technology,
     // you can use it here to save the extra 4x overhead introduced by this workaround.
     logic [4*DCACHE_DIRTY_WIDTH-1:0] dirty_wdata, dirty_rdata;
 

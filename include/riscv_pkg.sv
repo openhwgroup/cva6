@@ -127,12 +127,25 @@ package riscv;
         logic [6:0]   opcode;
     } utype_t;
 
+    // atomic instructions
+    typedef struct packed {
+        logic [31:27] funct5;
+        logic         aq;
+        logic         rl;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:20] funct3;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } atype_t;
+
     typedef union packed {
         logic [31:0]   instr;
         rtype_t        rtype;
         itype_t        itype;
         stype_t        stype;
         utype_t        utype;
+        atype_t        atype;
     } instruction_t;
 
     // --------------------

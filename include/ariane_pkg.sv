@@ -186,14 +186,49 @@ package ariane_pkg;
     // ----------------------
     // Extract Bytes from Op
     // ----------------------
-    // TODO: Add atomics
     function automatic logic [1:0] extract_transfer_size (fu_op op);
         case (op)
-            LD, SD:      return 2'b11;
-            LW, LWU, SW: return 2'b10;
+            LD, SD,
+            AMO_LRD, AMO_SCD,
+            AMO_SWAPD, AMO_ADDD,
+            AMO_ANDD, AMO_ORD,
+            AMO_XORD, AMO_MAXD,
+            AMO_MAXDU, AMO_MIND,
+            AMO_MINDU: begin
+                return 2'b11;
+            end
+            LW, LWU, SW,
+            AMO_LRW, AMO_SCW,
+            AMO_SWAPW, AMO_ADDW,
+            AMO_ANDW, AMO_ORW,
+            AMO_XORW, AMO_MAXW,
+            AMO_MAXWU, AMO_MINW,
+            AMO_MINWU: begin
+                return 2'b10;
+            end
             LH, LHU, SH: return 2'b01;
             LB, SB, LBU: return 2'b00;
             default:     return 2'b11;
+        endcase
+    endfunction
+
+    function automatic logic is_amo_op (fu_op op);
+        case (op)
+            AMO_LRD,   AMO_SCD,
+            AMO_SWAPD, AMO_ADDD,
+            AMO_ANDD,  AMO_ORD,
+            AMO_XORD,  AMO_MAXD,
+            AMO_MAXDU, AMO_MIND,
+            AMO_MINDU,
+            AMO_LRW,   AMO_SCW,
+            AMO_SWAPW, AMO_ADDW,
+            AMO_ANDW,  AMO_ORW,
+            AMO_XORW,  AMO_MAXW,
+            AMO_MAXWU, AMO_MINW,
+            AMO_MINWU: begin
+                return 1'b1;
+            end
+            default: return 1'b0;
         endcase
     endfunction
 
@@ -245,7 +280,8 @@ package ariane_pkg;
     // Atomics
     // --------------------
     typedef enum logic [3:0] {
-        AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND, AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
+        AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND,
+        AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
     } amo_t;
 
     typedef struct packed {

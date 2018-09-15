@@ -48,7 +48,7 @@ module std_cache_subsystem #(
    // AMO interface (not functional yet)
    input  logic                           dcache_amo_commit_i,    // commit atomic memory operation
    output logic                           dcache_amo_valid_o,     // we have a valid AMO result
-   output logic [63:0]                    dcache_amo_result_o,    // result of atomic memory operation
+   output logic                           dcache_amo_sc_succ_o,   // result of store conditional
    input  logic                           dcache_amo_flush_i,     // forget about AMO
    // Request ports
    input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
@@ -93,7 +93,7 @@ module std_cache_subsystem #(
       .bypass_if          ( dcache_bypass_if       ),
       .amo_commit_i       ( dcache_amo_commit_i    ),
       .amo_valid_o        ( dcache_amo_valid_o     ),
-      .amo_result_o       ( dcache_amo_result_o    ),
+      .amo_sc_succ_o      ( dcache_amo_sc_succ_o   ),
       .amo_flush_i        ( dcache_amo_flush_i     ),
       .req_ports_i        ( dcache_req_ports_i     ),
       .req_ports_o        ( dcache_req_ports_o     )

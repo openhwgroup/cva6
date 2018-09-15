@@ -73,6 +73,7 @@ module lsu #(
     logic      pop_st;
     logic      pop_ld;
 
+    // ------------------------------
     // Address Generation Unit (AGU)
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
@@ -147,7 +148,7 @@ module lsu #(
         .lsu_paddr_o            ( mmu_paddr              ),
         .lsu_exception_o        ( mmu_exception          ),
         .lsu_dtlb_hit_o         ( dtlb_hit               ), // send in the same cycle as the request
-        // connecting PTW to D$ IF (aka mem arbiter
+        // connecting PTW to D$ IF
         .req_port_i             ( dcache_req_ports_i [0] ),
         .req_port_o             ( dcache_req_ports_o [0] ),
         // icache address translation requests
@@ -270,9 +271,18 @@ module lsu #(
         // 12 bit are the same anyway
         // and we can always generate the byte enable from the address at hand
         case (operator_i)
-            LD, SD: // double word
-                    be_i = 8'b1111_1111;
-            LW, LWU, SW: // word
+            LD, SD,
+            AMO_LRD, AMO_SCD,
+            AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
+            AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
+            AMO_MINDU: begin // double word
+                be_i = 8'b1111_1111;
+            end
+            LW, LWU, SW,
+            AMO_LRW, AMO_SCW,
+            AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW,
+            AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW,
+            AMO_MINWU: begin// word
                 case (vaddr_i[2:0])
                     3'b000: be_i = 8'b0000_1111;
                     3'b001: be_i = 8'b0001_1110;
@@ -281,7 +291,8 @@ module lsu #(
                     3'b100: be_i = 8'b1111_0000;
                     default:;
                 endcase
-            LH, LHU, SH: // half word
+            end
+            LH, LHU, SH: begin // half word
                 case (vaddr_i[2:0])
                     3'b000: be_i = 8'b0000_0011;
                     3'b001: be_i = 8'b0000_0110;
@@ -292,7 +303,8 @@ module lsu #(
                     3'b110: be_i = 8'b1100_0000;
                     default:;
                 endcase
-            LB, LBU, SB: // byte
+            end
+            LB, LBU, SB: begin // byte
                 case (vaddr_i[2:0])
                     3'b000: be_i = 8'b0000_0001;
                     3'b001: be_i = 8'b0000_0010;
@@ -303,8 +315,10 @@ module lsu #(
                     3'b110: be_i = 8'b0100_0000;
                     3'b111: be_i = 8'b1000_0000;
                 endcase
-            default:
+            end
+            default: begin
                 be_i = 8'b0;
+            end
         endcase
     end
 
@@ -324,23 +338,33 @@ module lsu #(
 
         data_misaligned = 1'b0;
 
-        if(lsu_ctrl.valid) begin
+        if (lsu_ctrl.valid) begin
             case (lsu_ctrl.operator)
                 // double word
-                LD, SD: begin
-                    if (lsu_ctrl.vaddr[2:0] != 3'b000)
+                LD, SD,
+                AMO_LRD, AMO_SCD,
+                AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
+                AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
+                AMO_MINDU: begin
+                    if (lsu_ctrl.vaddr[2:0] != 3'b000) begin
                         data_misaligned = 1'b1;
+                    end
                 end
                 // word
-                LW, LWU, SW: begin
-                    if (lsu_ctrl.vaddr[1:0] != 2'b00)
+                LW, LWU, SW,
+                AMO_LRW, AMO_SCW,
+                AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW,
+                AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW,
+                AMO_MINWU: begin
+                    if (lsu_ctrl.vaddr[1:0] != 2'b00) begin
                         data_misaligned = 1'b1;
+                    end
                 end
-
                 // half word
                 LH, LHU, SH: begin
-                    if (lsu_ctrl.vaddr[0] != 1'b0)
+                    if (lsu_ctrl.vaddr[0] != 1'b0) begin
                         data_misaligned = 1'b1;
+                    end
                 end
                 // byte -> is always aligned
                 default:;
@@ -504,7 +528,7 @@ module lsu_bypass (
 
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             mem_q           <= '{default: 0};
             status_cnt_q    <= '0;
             write_pointer_q <= '0;

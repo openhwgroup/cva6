@@ -18,6 +18,7 @@ module commit_stage #(
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                    clk_i,
+    input  logic                                    rst_ni,
     input  logic                                    halt_i,             // request to halt the core
     input  logic                                    flush_dcache_i,     // request to flush dcache -> also flush the pipeline
     output exception_t                              exception_o,        // take exception to controller
@@ -32,7 +33,10 @@ module commit_stage #(
     output  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_o,            // register file write address
     output  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_o,            // register file write data
     output  logic [NR_COMMIT_PORTS-1:0]             we_o,               // register file write enable
-
+    // Atomic memory operations
+    output logic                                    amo_commit_o,
+    input  logic                                    amo_valid_i,
+    input  logic                                    amo_sc_succ_i,
     // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
     output logic [63:0]                             pc_o,
     // to/from CSR file
@@ -49,11 +53,16 @@ module commit_stage #(
     output logic                                    fence_o,            // flush D$ and pipeline
     output logic                                    sfence_vma_o        // flush TLBs and pipeline
 );
+    // we need to wait for AMOS
+    logic comitting_amo_q, comitting_amo_d;
+    logic [4:0] amo_reg_addr_q, amo_reg_addr_d;
 
-    assign waddr_o[0] = commit_instr_i[0].rd[4:0];
-    assign waddr_o[1] = commit_instr_i[1].rd[4:0];
+    logic [NR_COMMIT_PORTS-1:0] is_amo;
+    for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin
+        assign is_amo[i] = is_amo_op(commit_instr_i[i].op);
+    end
 
-    assign pc_o       = commit_instr_i[0].pc;
+    assign pc_o = commit_instr_i[0].pc;
 
     // -------------------
     // Commit Instruction
@@ -69,7 +78,7 @@ module commit_stage #(
 
         commit_lsu_o    = 1'b0;
         commit_csr_o    = 1'b0;
-        wdata_o[0]      = commit_instr_i[0].result;
+        wdata_o[0]      = (amo_valid_i) ? commit_instr_i[0].result : amo_sc_succ_i;
         wdata_o[1]      = commit_instr_i[1].result;
         csr_op_o        = ADD; // this corresponds to a CSR NOP
         csr_wdata_o     = 64'b0;
@@ -80,7 +89,9 @@ module commit_stage #(
         // we will not commit the instruction if we took an exception
         // and we do not commit the instruction if we requested a halt
         // furthermore if the debugger is requesting to debug do not commit this instruction if we are not yet in debug mode
-        if (commit_instr_i[0].valid && !halt_i && (!debug_req_i || debug_mode_i)) begin
+        // also check that there is no atomic memory operation committing, right now this is the only operation
+        // which will take longer than one cycle to commit
+        if (commit_instr_i[0].valid && !halt_i && (!debug_req_i || debug_mode_i) && !comitting_amo_q) begin
 
             commit_ack_o[0] = 1'b1;
             // register will be the all zero register.
@@ -104,6 +115,15 @@ module commit_stage #(
                 end
             end
 
+            // check whether instruction 0 is an AMO
+            if (is_amo[0]) begin
+                // do not write the instruction now
+                we_o[0] = 1'b0;
+                // we are committing an AMO, wait for the result
+                amo_commit_o = 1'b1;
+                // save the write address 0
+                amo_reg_addr_d = waddr_o[0];
+            end
             // ---------
             // CSR Logic
             // ---------
@@ -145,18 +165,46 @@ module commit_stage #(
             end
         end
 
+        // -----------------
+        // Commit Port 2
+        // -----------------
         // check if the second instruction can be committed as well and the first wasn't a CSR instruction
         // also if we are in single step mode don't retire the second instruction
-        if (commit_ack_o[0] && commit_instr_i[1].valid && !halt_i && !(commit_instr_i[0].fu inside {CSR}) && !flush_dcache_i && !single_step_i) begin
+        if (commit_ack_o[0] && commit_instr_i[1].valid
+                            && !halt_i
+                            && !(commit_instr_i[0].fu inside {CSR})
+                            && !flush_dcache_i
+                            && !single_step_i
+                            && !is_amo[0] // we are only retiring AMOs on port 0
+                            && !is_amo[1]) begin
             // only if the first instruction didn't throw an exception and this instruction won't throw an exception
             // and the operator is of type ALU, LOAD, CTRL_FLOW, MULT
-            if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT})) begin
+            if (!exception_o.valid && !commit_instr_i[1].ex.valid
+                                   && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT})) begin
                 we_o[1] = 1'b1;
                 commit_ack_o[1] = 1'b1;
             end
         end
     end
 
+    // AMO Commit logic
+    always_comb begin
+        comitting_amo_d = comitting_amo_q;
+
+        waddr_o[0] = commit_instr_i[0].rd[4:0];
+        waddr_o[1] = commit_instr_i[1].rd[4:0];
+
+        // set the mutex and wait for a valid answer
+        if (amo_commit_o) begin
+            comitting_amo_d = 1'b1;
+        end
+
+        // reset the mutex
+        if (amo_valid_i) begin
+            comitting_amo_d = 1'b0;
+            waddr_o[0] = amo_reg_addr_q;
+        end
+    end
     // -----------------------------
     // Exception & Interrupt Logic
     // -----------------------------
@@ -203,6 +251,16 @@ module commit_stage #(
         // If we halted the processor don't take any exceptions
         if (halt_i) begin
             exception_o.valid = 1'b0;
+        end
+    end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
+            comitting_amo_q <= 1'b0;
+            amo_reg_addr_q  <= '0;
+        end else begin
+            comitting_amo_q <= comitting_amo_d;
+            amo_reg_addr_q  <= amo_reg_addr_d;
         end
     end
 endmodule

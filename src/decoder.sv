@@ -390,12 +390,13 @@ module decoder (
                     endcase
                 end
 
-                `ifdef ENABLE_ATOMICS
                 riscv::OpcodeAmo: begin
                     // we are going to use the load unit for AMOs
                     instruction_o.fu  = LOAD;
-                    instruction_o.rd[4:0]  = instr.stype.imm0;
-                    instruction_o.rs1[4:0] = instr.itype.rs1;
+                    instruction_o.rs1[4:0] = instr.atype.rs2;
+                    instruction_o.rs2[4:0] = instr.atype.rs2;
+                    instruction_o.rd[4:0]  = instr.atype.rd;
+                    // TODO(zarubaf): Ordering
                     // words
                     if (instr.stype.funct3 == 3'h2) begin
                         unique case (instr.instr[31:27])
@@ -432,7 +433,6 @@ module decoder (
                         illegal_instr = 1'b1;
                     end
                 end
-                `endif
 
                 // --------------------------------
                 // Control Flow Instructions
