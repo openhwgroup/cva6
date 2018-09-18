@@ -2,10 +2,6 @@ package:
   name: ariane
   authors: [ "Florian Zaruba <zarubaf@iis.ee.ethz.ch>" ]
 
-package:
-  name: ariane
-  authors: [ "Florian Zaruba <zarubaf@iis.ee.ethz.ch>" ]
-
 dependencies:
   axi:                { git: "https://github.com/pulp-platform/axi.git",                version: 0.4.5 }
   axi_mem_if:         { git: "https://github.com/pulp-platform/axi_mem_if.git",         version: 0.2.0 }
