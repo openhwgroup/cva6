@@ -2,15 +2,18 @@ package:
   name: ariane
   authors: [ "Florian Zaruba <zarubaf@iis.ee.ethz.ch>" ]
 
+package:
+  name: ariane
+  authors: [ "Florian Zaruba <zarubaf@iis.ee.ethz.ch>" ]
+
 dependencies:
-  axi:                { git: "git@iis-git.ee.ethz.ch:sasa/axi.git",                     rev: master      }
-  axi2per:            { git: "git@iis-git.ee.ethz.ch:pulp-open/axi2per.git",            rev: master      }
-  axi_mem_if:         { git: "git@github.com:pulp-platform/axi_mem_if.git",             rev: master      }
-  axi_node:           { git: "git@iis-git.ee.ethz.ch:pulp-open/axi_node.git",           version: v1.1.0  }
-  axi_slice:          { git: "git@iis-git.ee.ethz.ch:sasa/axi_slice.git",               version: 1.1.2   }
-  tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master      }
-  common_cells:       { git: "git@iis-git.ee.ethz.ch:sasa/common_cells.git",            version: v1.7.4  }
-  fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       version: v0.3.2  }
+  axi:                { git: "https://github.com/pulp-platform/axi.git",                version: 0.4.5 }
+  axi_mem_if:         { git: "https://github.com/pulp-platform/axi_mem_if.git",         version: 0.2.0 }
+  axi_node:           { git: "https://github.com/pulp-platform/axi_node.git",           version: 1.1.1 }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1 }
+  common_cells:       { git: "https://github.com/pulp-platform/common_cells.git",       version: 1.7.5 }
+  fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       version: 0.3.2 }
+
 sources:
   - src/fpu_legacy/hdl/fpu_utils/fpu_ff.sv
   - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/defs_div_sqrt_mvp.sv
@@ -58,47 +61,49 @@ sources:
   - src/fpu_wrap.sv
   - src/ariane.sv
   - src/branch_unit.sv
-  - src/cache_ctrl.sv
-  - src/commit_stage.sv
   - src/compressed_decoder.sv
   - src/controller.sv
   - src/csr_buffer.sv
   - src/csr_regfile.sv
   - src/decoder.sv
   - src/ex_stage.sv
-  - src/frontend/btb.sv,
-  - src/frontend/bht.sv,
-  - src/frontend/ras.sv,
-  - src/frontend/instr_scan.sv,
+  - src/frontend/btb.sv
+  - src/frontend/bht.sv
+  - src/frontend/ras.sv
+  - src/frontend/instr_scan.sv
   - src/frontend/frontend.sv
-  - src/icache.sv
   - src/id_stage.sv
   - src/instr_realigner.sv
   - src/issue_read_operands.sv
   - src/issue_stage.sv
-  - src/lfsr.sv
   - src/load_unit.sv
   - src/lsu_arbiter.sv
   - src/lsu.sv
-  - src/miss_handler.sv
   - src/mmu.sv
   - src/mult.sv
-  - src/nbdcache.sv
-  - src/vdregs.sv
   - src/perf_counters.sv
   - src/ptw.sv
-  - src/std_cache_subsystem.sv
-  - src/sram_wrapper.sv
-  # - src/ariane_regfile_ff.sv
-  - src/ariane_regfile.sv
+  - src/ariane_regfile_ff.sv
+  # - src/ariane_regfile.sv
   - src/re_name.sv
   - src/scoreboard.sv
   - src/store_buffer.sv
   - src/store_unit.sv
   - src/tlb.sv
+  - src/commit_stage.sv
+  - src/axi_adapter.sv
+  - src/cache_subsystem/cache_ctrl.sv
+  - src/cache_subsystem/miss_handler.sv
+  - src/cache_subsystem/std_cache_subsystem.sv
+  - src/cache_subsystem/std_icache.sv
+  - src/cache_subsystem/std_nbdcache.sv
+  - src/debug/debug_rom/debug_rom.sv
   - src/debug/dm_csrs.sv
+  - src/clint/clint.sv
+  - src/clint/axi_lite_interface.sv
   - src/debug/dm_mem.sv
   - src/debug/dm_top.sv
   - src/debug/dmi_cdc.sv
   - src/debug/dmi_jtag.sv
+  - src/debug/dm_sba.sv
   - src/debug/dmi_jtag_tap.sv
