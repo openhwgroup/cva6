@@ -67,19 +67,19 @@ module ariane_regfile #(
         end else begin
             for (int unsigned j = 0; j < NR_WRITE_PORTS; j++) begin
                 for (int unsigned i = 0; i < NUM_WORDS; i++) begin
-                    if (we_dec[j][i])
+                    if (we_dec[j][i]) begin
                         mem[i] <= wdata_i[j];
+                    end
+                end
+                if (ZERO_REG_ZERO) begin
+                  mem[0] <= '0;
                 end
             end
         end
     end
 
-  for (genvar i = ZERO_REG_ZERO; i < NR_READ_PORTS; i++) begin
-    if (ZERO_REG_ZERO) begin
-      assign rdata_o[0] = '0;
-    end else begin
-      assign rdata_o[i] = mem[raddr_i[i]];
-    end
+  for (genvar i = 0; i < NR_READ_PORTS; i++) begin
+    assign rdata_o[i] = mem[raddr_i[i]];
   end
 
 endmodule
