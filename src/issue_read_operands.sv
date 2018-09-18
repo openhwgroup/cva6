@@ -20,7 +20,6 @@ module issue_read_operands #(
     )(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
-    input  logic                                   test_en_i,
     // flush
     input  logic                                   flush_i,
     // coming from rename
@@ -354,6 +353,7 @@ module issue_read_operands #(
         .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
         .ZERO_REG_ZERO  ( 1               )
     ) i_ariane_regfile (
+        .test_en_i ( 1'b0       ),
         .raddr_i   ( raddr_pack ),
         .rdata_o   ( rdata      ),
         .waddr_i   ( waddr_pack ),
@@ -381,6 +381,7 @@ module issue_read_operands #(
                 .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
                 .ZERO_REG_ZERO  ( 0               )
             ) i_ariane_fp_regfile (
+                .test_en_i ( 1'b0          ),
                 .raddr_i   ( fp_raddr_pack ),
                 .rdata_o   ( fprdata       ),
                 .waddr_i   ( waddr_pack    ),

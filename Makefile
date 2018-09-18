@@ -10,7 +10,6 @@ ver-library    ?= work-ver
 dpi-library    ?= work-dpi
 # Top level module to compile
 top_level      ?= ariane_tb
-test_top_level ?= ariane_tb
 # Maximum amount of cycles for a successful simulation run
 max_cycles     ?= 10000000
 # Test case to run
@@ -29,7 +28,8 @@ ariane_pkg := include/riscv_pkg.sv                     \
               src/debug/dm_pkg.sv                      \
               include/ariane_pkg.sv                    \
               include/std_cache_pkg.sv                 \
-              include/axi_if.sv                        \
+              src/axi/src/axi_pkg.sv                   \
+              include/axi_intf.sv                      \
               src/fpu/src/pkg/fpnew_pkg.vhd            \
 			  src/fpu/src/pkg/fpnew_fmts_pkg.vhd       \
 			  src/fpu/src/pkg/fpnew_comps_pkg.vhd      \
@@ -40,7 +40,7 @@ util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_pkg.sv \
         src/util/instruction_tracer_if.sv  \
         src/util/cluster_clock_gating.sv   \
-		src/util/sram.sv
+        src/util/sram.sv
 
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
@@ -58,7 +58,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/frontend/*.sv)                                  \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
-        $(wildcard src/axi_slice/*.sv)                                 \
         $(wildcard src/clint/*.sv)                                     \
         $(wildcard src/axi_node/src/*.sv)                              \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
@@ -71,7 +70,15 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/deprecated/generic_fifo.sv                \
         src/common_cells/src/deprecated/pulp_sync.sv                   \
         src/common_cells/src/deprecated/find_first_one.sv              \
+        src/axi/src/axi_cut.sv                                         \
+        src/axi/src/axi_join.sv                                        \
+        src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
+        src/common_cells/src/sync.sv                                   \
+        src/common_cells/src/cdc_2phase.sv                             \
+        src/common_cells/src/spill_register.sv                         \
+        src/common_cells/src/sync_wedge.sv                             \
         src/common_cells/src/fifo_v2.sv                                \
+        src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
         src/common_cells/src/lfsr_8bit.sv                              \
@@ -111,7 +118,7 @@ riscv-torture-bin    := java -Xmx1G -Xss8M -XX:MaxPermSize=128M -jar sbt-launch.
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
-	vopt$(questa_version) $(compile_flag) -work $(library)  $(test_top_level) -o $(test_top_level)_optimized +acc -check_synthesis
+	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
 # src files
 $(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library)
@@ -223,7 +230,7 @@ run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests))
 # split into two halfs for travis jobs (otherwise they will time out)
 run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-p-% ,$(riscv-asm-tests)))
 
-run-asm-tests2-verilator: $(addsuffix -verilator, $(filter rv64ui-v-% rv64um-%,$(riscv-asm-tests)))
+run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-p-% ,$(riscv-asm-tests)))
 
 
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate
