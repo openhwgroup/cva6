@@ -397,7 +397,7 @@ module fpu_wrap (
         //---------------------------------------------------------
 
         // Input is ready whenever the register is free to accept a potentially spilling instruction
-        assign fpu_ready_o = reg_in_ready;
+        assign fpu_ready_o = ~reg_in_valid & (~reg_out_valid | reg_out_ready);
 
         // Input data goes to the buffer register if the received instruction cannot be handled
         assign reg_in_valid = fpu_valid_i & ~fpu_in_ready;
