@@ -359,9 +359,9 @@ package ariane_pkg;
     } dcache_req_i_t;
 
     typedef struct packed {
-        logic                      data_gnt;
-        logic                      data_rvalid;
-        logic [63:0]               data_rdata;
+        logic                          data_gnt;
+        logic                          data_rvalid;
+        logic [63:0]                   data_rdata;
     } dcache_req_o_t;
 
     // ----------------------

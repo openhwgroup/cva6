@@ -78,7 +78,6 @@ module serpent_l15_adapter #(
    output logic                 dcache_rtrn_vld_o,
    output dcache_rtrn_t         dcache_rtrn_o,          
 
-   // TODO: amops interface   
    // TODO: interrupt interface   
    
    // L15    
@@ -149,7 +148,7 @@ assign l15_data_o.l15_l1rplway             = (arb_idx) ? dcache_data.way   : ica
 assign l15_data_o.l15_address              = (arb_idx) ? dcache_data.paddr : icache_data.paddr;
 assign l15_data_o.l15_data_next_entry      = 1'b0; // unused in Ariane (only used for CAS atomic requests)
 assign l15_data_o.l15_csm_data             = 1'b0; // unused in Ariane (only used for coherence domain restriction features)   
-
+assign l15_data_o.l15_amo_op               = dcache_data.amo_op;
 // swap endianess and replicate datawords if necessary
 always_comb begin : p_datarepl
     unique case(dcache_data.size) 
@@ -209,18 +208,12 @@ always_comb begin : p_req
             DCACHE_LOAD_REQ: begin 
                 l15_data_o.l15_rqtype = LOAD_RQ;
             end  
-            // DCACHE_ATOMIC_REQ: begin
-            //     //TODO
-            // end  
+            DCACHE_ATOMIC_REQ: begin
+                l15_data_o.l15_rqtype = ATOMIC_RQ;
+            end  
             // DCACHE_INT_REQ: begin
             //     //TODO
             // end  
-            // TODO: atomics
-            // CAS1_RQ     
-            // CAS2_RQ     
-            // SWAP_RQ     
-            // TODO: interrupt request
-            // INT_RQ      
             default: begin
                 ;
             end
@@ -332,10 +325,9 @@ always_comb begin : p_rtrn_logic
                 icache_rtrn_vld_o   = 1'b1;
                 dcache_rtrn_vld_o   = 1'b1;
             end             
-            // CPX_RESTYPE_ATOMIC_RES: begin
-            // TODO: implement this
-            // dcache_rtrn_o.reqType = DCACHE_INT_ACK;
-            // end
+            CPX_RESTYPE_ATOMIC_RES: begin
+                dcache_rtrn_o.rtype = DCACHE_ATOMIC_ACK;
+            end
             default: begin  
             ;
             end

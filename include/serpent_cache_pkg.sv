@@ -47,6 +47,21 @@ package serpent_cache_pkg;
 
     localparam DCACHE_NUM_BANKS       = ariane_pkg::DCACHE_LINE_WIDTH/64;
 
+    // write buffer parameterization
+    localparam DCACHE_WBUF_DEPTH      = 8;
+    localparam DCACHE_MAX_TX          = 4;// TODO: set to number of threads supported in 
+    localparam DCACHE_ID_WIDTH        = $clog2(DCACHE_MAX_TX);// TODO: set to number of threads supported in 
+
+    
+    typedef struct packed {
+        logic [ariane_pkg::DCACHE_INDEX_WIDTH+ariane_pkg::DCACHE_TAG_WIDTH-1:0] wtag;
+        logic    [63:0]                                                         data;
+        logic    [7:0]                                                          dirty;   // byte is dirty (not yet sent to memory)
+        logic    [7:0]                                                          valid;   // byte is valid
+        logic                                                                   checked; // if cache state of this word has been checked
+        logic    [ariane_pkg::DCACHE_SET_ASSOC-1:0]                             hit_oh;  // valid way in the cache
+    } wbuffer_t;
+
 
     // local interfaces between caches and L15 adapter
     typedef enum logic [1:0] { 
@@ -99,6 +114,7 @@ package serpent_cache_pkg;
         logic [63:0]                                     data;        // word width of processor (no block stores at the moment)
         logic                                            nc;          // noncacheable
         logic [L15_TID_WIDTH-1:0]                        tid;         // threadi id (used as transaction id in Ariane)
+        ariane_pkg::amo_t                                amo_op;      // amo opcode
     } dcache_req_t;
 
     typedef struct packed {
@@ -116,9 +132,10 @@ package serpent_cache_pkg;
     typedef enum logic [4:0] {LOAD_RQ     = 5'b00000, // load request
         IMISS_RQ    = 5'b10000, // instruction fill request
         STORE_RQ    = 5'b00001, // store request
-        CAS1_RQ     = 5'b00010, // compare and swap1 packet (OpenSparc atomics)
-        CAS2_RQ     = 5'b00011, // compare and swap2 packet (OpenSparc atomics)
-        SWAP_RQ     = 5'b00110, // swap packet (OpenSparc atomics)
+        ATOMIC_RQ   = 5'b00110, // atomic op
+        //CAS1_RQ     = 5'b00010, // compare and swap1 packet (OpenSparc atomics)
+        //CAS2_RQ     = 5'b00011, // compare and swap2 packet (OpenSparc atomics)
+        //SWAP_RQ     = 5'b00110, // swap packet (OpenSparc atomics)
         STRLOAD_RQ  = 5'b00100, // unused
         STRST_RQ    = 5'b00101, // unused
         STQ_RQ      = 5'b00111, // unused
@@ -163,6 +180,7 @@ package serpent_cache_pkg;
         logic [63:0]                       l15_data;                  // word to write
         logic [63:0]                       l15_data_next_entry;       // unused in Ariane (only used for CAS atomic requests)
         logic [L15_TLB_CSM_WIDTH-1:0]      l15_csm_data;              // unused in Ariane
+        logic [3:0]                        l15_amo_op;                // atomic operation type
     } l15_req_t;
 
     typedef struct packed {
