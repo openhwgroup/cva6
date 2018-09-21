@@ -1,7 +1,0 @@
-#!/bin/sh
-# make the verilog first
-cd output && make
-cd ../..
-# start the simulation
-vsim-10.6b -c -lib work core_tb_optimized +UVM_TESTNAME=core_test $2 +BASEDIR=riscv-torture $1 +ASMTEST=$3  +UVM_VERBOSITY=LOW -coverage -classdebug -do "run -a"
-

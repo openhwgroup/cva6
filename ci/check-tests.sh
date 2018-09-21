@@ -24,13 +24,9 @@ if [ ! -f "${1}"*.log ]; then
   exit 1;
 fi
 
-if [ ! -f "$2" ]; then
-  echo -e "${RED}FAILED file $2 does not exist ${NC}"
-  exit 1;
-fi
 
 # get NUM_TOTAL number of tests
-NUM_TOTAL=`wc -l $2 | awk -F " " '{ print $1 }'`
+NUM_TOTAL=$2
 
 echo "list containint tests: $2"
 
@@ -38,10 +34,10 @@ echo "checking files:"
 ls "${1}"*.log
 
 # check for patterns
-NUM_PASSED=`grep -s "SUCCESS"  ${1}*.log | wc -l`
-NUM_FAILED=`grep -s "FAILED"   ${1}*.log | wc -l`
-NUM_FATAL=`grep  -s "Fatal:"   ${1}*.log | wc -l`
-NUM_ERROR=`grep  -s "Error:"   ${1}*.log | wc -l`
+NUM_PASSED=`grep -i -s "SUCCESS"  ${1}*.log | wc -l`
+NUM_FAILED=`grep -i -s "FAILED"   ${1}*.log | wc -l`
+NUM_FATAL=`grep  -i -s "Fatal:"   ${1}*.log | wc -l`
+NUM_ERROR=`grep  -i -s "Error:"   ${1}*.log | wc -l`
 
 echo "NUM_TOTAL:  $NUM_TOTAL"
 echo "NUM_PASSED: $NUM_PASSED"

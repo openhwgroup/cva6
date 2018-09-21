@@ -1,0 +1,9 @@
+.*
+!.gitignore
+vivado*
+*.cache
+*.hw
+*.ip_user_files
+*.runs
+*.srcs
+*.xpr
