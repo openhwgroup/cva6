@@ -383,8 +383,8 @@ class instruction_trace_item;
 
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result), regAddrToStr(sbe.rs1));
     end else if (instr[6:0] == riscv::OpcodeAmo) begin
+        // words
         if (instr[14:12] == 3'h2) begin
-            // words
             case (instr[31:27])
                 5'h0:  mnemonic = "amoadd.w";
                 5'h1:  mnemonic = "amoswap.w";
@@ -399,8 +399,8 @@ class instruction_trace_item;
                 5'h1C: mnemonic = "amomax.w";
                 default: return printMnemonic("INVALID");
             endcase
-        end if (instr[14:12] == 3'h3) begin
-            // doubles
+        // doubles
+        end else if (instr[14:12] == 3'h3) begin
             case (instr[31:27])
                 5'h0:  mnemonic = "amoadd.d";
                 5'h1:  mnemonic = "amoswap.d";

@@ -115,7 +115,11 @@ module miss_handler #(
     // AMOs
     ariane_pkg::amo_t amo_op;
     logic [63:0] amo_operand_a, amo_operand_b, amo_result_o;
-    logic [63:0] amo_operand_a_sext32;
+
+    struct packed {
+        logic [63:3] address;
+        logic        valid;
+    } reservation_d, reservation_q;
 
     // ------------------------------
     // Cache Management
@@ -170,8 +174,8 @@ module miss_handler #(
         amo_op = amo_req_i.amo_op;
         amo_operand_a = '0;
         amo_operand_b = '0;
-        amo_operand_a_sext32 = '0;
 
+        reservation_d = reservation_q;
         case (state_q)
 
             IDLE: begin
@@ -413,12 +417,25 @@ module miss_handler #(
                 req_fsm_miss_wdata = data_align(amo_req_i.operand_a[2:0], amo_result_o);
                 req_fsm_miss_be = be_gen(amo_req_i.operand_a[2:0], amo_req_i.size);
 
+                if (amo_req_i.amo_op == AMO_LR) begin
+                    reservation_d.address = amo_req_i.operand_a[63:3];
+                    reservation_d.valid = 1'b1;
+                end
+
                 // the request is valid or we didn't need to go for another store
                 if (valid_miss_fsm || (amo_req_i.amo_op == AMO_LR)) begin
                     state_d = IDLE;
                     amo_resp_o.ack = 1'b1;
-                    // write-back the result -> SC will always succeed in the current setting
-                    amo_resp_o.result = (amo_req_i.amo_op == AMO_SC) ? 1'b1 : amo_operand_a;
+                    // write-back the result
+                    amo_resp_o.result = amo_operand_a;
+                    // in case we have a SC we need to look into the reservation table
+                    if (amo_req_i.amo_op == AMO_SC) begin
+                        if (reservation_q.address == amo_req_i.operand_a[63:3] && reservation_q.valid) begin
+                            amo_resp_o.result = 1'b0;
+                        end else begin
+                            amo_resp_o.result = 1'b1;
+                        end
+                    end
                 end
             end
         endcase
@@ -447,19 +464,21 @@ module miss_handler #(
     // --------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            mshr_q       <= '0;
-            state_q      <= INIT;
-            cnt_q        <= '0;
-            evict_way_q  <= '0;
-            evict_cl_q   <= '0;
-            serve_amo_q  <= 1'b0;
+            mshr_q        <= '0;
+            state_q       <= INIT;
+            cnt_q         <= '0;
+            evict_way_q   <= '0;
+            evict_cl_q    <= '0;
+            serve_amo_q   <= 1'b0;
+            reservation_q <= '0;
         end else begin
-            mshr_q       <= mshr_d;
-            state_q      <= state_d;
-            cnt_q        <= cnt_d;
-            evict_way_q  <= evict_way_d;
-            evict_cl_q   <= evict_cl_d;
-            serve_amo_q  <= serve_amo_d;
+            mshr_q        <= mshr_d;
+            state_q       <= state_d;
+            cnt_q         <= cnt_d;
+            evict_way_q   <= evict_way_d;
+            evict_cl_q    <= evict_cl_d;
+            serve_amo_q   <= serve_amo_d;
+            reservation_d <= reservation_d;
         end
     end
 

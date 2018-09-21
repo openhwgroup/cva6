@@ -51,7 +51,7 @@ module amo_alu (
                 amo_result_o = ($signed(amo_operand_a) < $signed(amo_operand_b)) ? amo_operand_a : amo_operand_b;
             end
             ariane_pkg::AMO_MINU: begin
-                amo_result_o = (amo_operand_a > amo_operand_b) ? amo_operand_a : amo_operand_b;
+                amo_result_o = (amo_operand_a < amo_operand_b) ? amo_operand_a : amo_operand_b;
             end
             default:;
         endcase
