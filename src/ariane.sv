@@ -129,6 +129,7 @@ module ariane #(
     logic                     lsu_commit_commit_ex;
     logic                     lsu_commit_ready_ex_commit;
     logic                     no_st_pending_ex_commit;
+    logic                     amo_valid_commit;
     // --------------
     // ID <-> COMMIT
     // --------------
@@ -196,6 +197,14 @@ module ariane #(
     icache_areq_o_t           icache_areq_cache_ex;
     icache_dreq_i_t           icache_dreq_if_cache;
     icache_dreq_o_t           icache_dreq_cache_if;
+
+    amo_req_t                 amo_req;
+    amo_resp_t                amo_resp;
+
+    logic debug_req;
+    // Disable debug during AMO commit
+    assign debug_req = debug_req_i & ~amo_valid_commit;
+
     // ----------------
     // DCache <-> *
     // ----------------
@@ -344,6 +353,9 @@ module ariane #(
         .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit             ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id                    ),
         .no_st_pending_o        ( no_st_pending_ex_commit                ),
+        .amo_valid_commit_i     ( amo_valid_commit                       ),
+        .amo_req_o              ( amo_req                                ),
+        .amo_resp_i             ( amo_resp                               ),
         // CSR
         .csr_ready_o            ( csr_ready_ex_id                        ),
         .csr_valid_i            ( csr_valid_id_ex                        ),
@@ -389,7 +401,7 @@ module ariane #(
         .flush_dcache_i         ( dcache_flush_ctrl_cache       ),
         .exception_o            ( ex_commit                     ),
         .debug_mode_i           ( debug_mode_csr_id             ),
-        .debug_req_i            ( debug_req_i                   ),
+        .debug_req_i            ( debug_req                     ),
         .single_step_i          ( single_step_csr_commit        ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
@@ -397,11 +409,10 @@ module ariane #(
         .waddr_o                ( waddr_commit_id               ),
         .wdata_o                ( wdata_commit_id               ),
         .we_o                   ( we_commit_id                  ),
-        .amo_commit_o           (                               ),
-        .amo_valid_i            (                               ),
-        .amo_sc_succ_i          (                               ),
         .commit_lsu_o           ( lsu_commit_commit_ex          ),
         .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
+        .amo_valid_commit_o     ( amo_valid_commit              ),
+        .amo_resp_i             ( amo_resp                      ),
         .commit_csr_o           ( csr_commit_commit_ex          ),
         .pc_o                   ( pc_commit                     ),
         .csr_op_o               ( csr_op_commit_csr             ),
@@ -422,8 +433,8 @@ module ariane #(
     ) csr_regfile_i (
         .flush_o                ( flush_csr_ctrl                ),
         .halt_csr_o             ( halt_csr_ctrl                 ),
-        .commit_ack_i           ( commit_ack                    ),
         .commit_instr_i         ( commit_instr_id_commit        ),
+        .commit_ack_i           ( commit_ack                    ),
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),
         .csr_addr_i             ( csr_addr_ex_csr               ),
@@ -454,6 +465,10 @@ module ariane #(
         .perf_data_o            ( data_csr_perf                 ),
         .perf_data_i            ( data_perf_csr                 ),
         .perf_we_o              ( we_csr_perf                   ),
+        .debug_req_i            ( debug_req                     ),
+        .ipi_i,
+        .irq_i,
+        .time_irq_i,
         .*
     );
 
@@ -531,10 +546,8 @@ module ariane #(
         .dcache_flush_i        ( dcache_flush_ctrl_cache               ),
         .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl           ),
         // to commit stage
-        .dcache_amo_commit_i   ( amo_commit                            ),
-        .dcache_amo_valid_o    ( amo_valid                             ),
-        .dcache_amo_sc_succ_o  ( amo_sc_succ                           ),
-        .dcache_amo_flush_i    ( amo_flush                             ),
+        .amo_req_i             ( amo_req                               ),
+        .amo_resp_o            ( amo_resp                              ),
         .dcache_miss_o         ( dcache_miss_cache_perf                ),
         // from PTW, Load Unit  and Store Unit
         .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),

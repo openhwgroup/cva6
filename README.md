@@ -2,7 +2,7 @@
 
 # Ariane RISC-V CPU
 
-Ariane is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M and C extensions as specified in Volume I: User-Level ISA V 2.1 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
+Ariane is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.1 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
 
 It has configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
 
@@ -92,16 +92,16 @@ If you call `simc` instead of `sim` it will run without the GUI. QuestaSim uses 
 
 ### CI Testsuites and Randomized Constrained Testing with Torture
 
-We provide two CI configuration files for Travis CI and GitLab CI that run the RISCV assembly tests, the RISCV benchmarks and a randomized RISCV Torture test. The difference between the two is that Travis CI runs these tests only on Verilator, whereas GitLab CI runs the same tests on QuestaSim and Verilator. 
+We provide two CI configuration files for Travis CI and GitLab CI that run the RISCV assembly tests, the RISCV benchmarks and a randomized RISCV Torture test. The difference between the two is that Travis CI runs these tests only on Verilator, whereas GitLab CI runs the same tests on QuestaSim and Verilator.
 
-If you would like to run the CI test suites locally on your machine, follow any of the two scripts `ci.travis-ci-emul.sh` and `ci.travis-ci-emul.sh` (depending on whether you have QuestaSim or not). In particular, you have to get the required packages for your system, the paths in `ci/path-setup.sh` to match your setup, and run the installation and build scripts prior to running any of the tests suites. 
+If you would like to run the CI test suites locally on your machine, follow any of the two scripts `ci.travis-ci-emul.sh` and `ci.travis-ci-emul.sh` (depending on whether you have QuestaSim or not). In particular, you have to get the required packages for your system, the paths in `ci/path-setup.sh` to match your setup, and run the installation and build scripts prior to running any of the tests suites.
 
 Once everything is set up and installed, you can run the tests suites as follows (using Verilator):
 
 ```
-$ make verilate 
-$ make run-asm-tests-verilator  
-$ make run-benchmarks-verilator 
+$ make verilate
+$ make run-asm-tests-verilator
+$ make run-benchmarks-verilator
 ```
 
 In order to run randomized Torture tests, you first have to generate the randomized program prior to running the simulation:
@@ -111,7 +111,7 @@ $ make torture-gen
 $ make torture-rtest-verilator
 
 ```
-This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file. 
+This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
 
 
 # Contributing

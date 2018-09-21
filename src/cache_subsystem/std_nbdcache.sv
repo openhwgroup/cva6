@@ -36,6 +36,8 @@ module std_nbdcache #(
     AXI_BUS.Master                         bypass_if
 );
 
+    assign amo_resp_o = '0;
+
     // -------------------------------
     // Controller <-> Arbiter
     // -------------------------------

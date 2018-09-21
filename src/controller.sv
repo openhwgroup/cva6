@@ -126,7 +126,6 @@ module controller (
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
-
             flush_ex_o             = 1'b1;
         end
 

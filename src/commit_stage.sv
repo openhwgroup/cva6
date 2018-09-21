@@ -45,12 +45,16 @@ module commit_stage #(
     // commit signals to ex
     output logic                                    commit_lsu_o,       // commit the pending store
     input  logic                                    commit_lsu_ready_i, // commit buffer of LSU is ready
+    output logic                                    amo_valid_commit_o, // valid AMO in commit stage
     input  logic                                    no_st_pending_i,    // there is no store pending
     output logic                                    commit_csr_o,       // commit the pending CSR instruction
     output logic                                    fence_i_o,          // flush I$ and pipeline
     output logic                                    fence_o,            // flush D$ and pipeline
     output logic                                    sfence_vma_o        // flush TLBs and pipeline
 );
+
+    assign waddr_o[0] = commit_instr_i[0].rd[4:0];
+    assign waddr_o[1] = commit_instr_i[1].rd[4:0];
 
     assign pc_o = commit_instr_i[0].pc;
 
@@ -62,6 +66,8 @@ module commit_stage #(
         // default assignments
         commit_ack_o[0] = 1'b0;
         commit_ack_o[1] = 1'b0;
+
+        amo_valid_commit_o = 1'b0;
 
         we_o[0]         = 1'b0;
         we_o[1]         = 1'b0;
@@ -145,6 +151,14 @@ module commit_stage #(
                 // tell the controller to flush the D$
                 fence_o = no_st_pending_i;
             end
+            // ------------------
+            // AMO
+            // ------------------
+            if (is_amo(commit_instr_i[0].op)) begin
+                // TODO(zarubaf): Flush pipeline
+                amo_valid_commit_o = 1'b1;
+                commit_ack_o[0] = amo_resp_i.ack;
+            end
         end
 
         // -----------------
@@ -210,8 +224,10 @@ module commit_stage #(
                 exception_o.tval = commit_instr_i[0].ex.tval;
             end
         end
-        // If we halted the processor don't take any exceptions
-        if (halt_i) begin
+        // Don't take any exceptions iff:
+        // - If we halted the processor
+        // - We are committing an AMO
+        if (halt_i || amo_valid_commit_o) begin
             exception_o.valid = 1'b0;
         end
     end

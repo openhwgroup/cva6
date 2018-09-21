@@ -397,7 +397,7 @@ class instruction_trace_item;
                 5'h14: mnemonic = "amomax.w";
                 5'h18: mnemonic = "amominu.w";
                 5'h1C: mnemonic = "amomax.w";
-                default: printMnemonic("INVALID");
+                default: return printMnemonic("INVALID");
             endcase
         end if (instr[14:12] == 3'h3) begin
             // doubles
@@ -413,7 +413,7 @@ class instruction_trace_item;
                 5'h14: mnemonic = "amomax.d";
                 5'h18: mnemonic = "amominu.d";
                 5'h1C: mnemonic = "amomax.d";
-                default: printMnemonic("INVALID");
+                default: return printMnemonic("INVALID");
             endcase
         end else return printMnemonic("INVALID");
 

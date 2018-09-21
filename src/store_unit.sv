@@ -62,9 +62,11 @@ module store_unit (
     logic                    st_valid_without_flush;
 
     // keep the data and the byte enable for the second cycle (after address translation)
-    logic [63:0]              st_data_n, st_data_q;
-    logic [7:0]               st_be_n,   st_be_q;
-    logic [1:0]               st_data_size_n, st_data_size_q;
+    logic [63:0]  st_data_n,      st_data_q;
+    logic [7:0]   st_be_n,        st_be_q;
+    logic [1:0]   st_data_size_n, st_data_size_q;
+    amo_t         amo_op_d,       amo_op_q;
+
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
     // output assignments
@@ -193,10 +195,13 @@ module store_unit (
     end
 
     logic store_buffer_valid, amo_buffer_valid;
+    logic store_buffer_ready, amo_buffer_ready;
 
     // multiplex between store unit and amo buffer
     assign store_buffer_valid = st_valid & (amo_op_q == AMO_NONE);
     assign amo_buffer_valid = st_valid & (amo_op_q != AMO_NONE);
+
+    assign st_ready = store_buffer_ready & amo_buffer_ready;
 
     // ---------------
     // Store Queue
@@ -210,7 +215,7 @@ module store_unit (
         .page_offset_matches_o,
         .commit_i,
         .commit_ready_o,
-        .ready_o               ( st_ready               ),
+        .ready_o               ( store_buffer_ready     ),
         .valid_i               ( store_buffer_valid     ),
         // the flush signal can be critical and we need this valid
         // signal to check whether the page_offset matches or not,
@@ -229,8 +234,6 @@ module store_unit (
     // ---------------
     // AMO Buffer
     // ---------------
-    amo_t amo_op_q, amo_op_q;
-
     always_comb begin
         amo_op_d = amo_op_q;
 
@@ -250,11 +253,11 @@ module store_unit (
     end
 
     amo_buffer i_amo_buffer (
-        .clk_i              ( clk_i              ),
-        .rst_ni             ( rst_ni             ),
-        .flush_i            ( flush_i            ),
+        .clk_i,
+        .rst_ni,
+        .flush_i,
         .valid_i            ( amo_buffer_valid   ),
-        .ready_o            ( commit_ready_o     ),
+        .ready_o            ( amo_buffer_ready   ),
         .paddr_i            ( paddr_i            ),
         .amo_op_i           ( amo_op_q           ),
         .data_i             ( st_data_q          ),

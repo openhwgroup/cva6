@@ -32,7 +32,9 @@ package ariane_pkg;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
-    localparam logic [63:0] ISA_CODE = (1 <<  2)  // C - Compressed extension
+    localparam logic [63:0] ISA_CODE =
+                                     | (1 <<  0)  // A - Atomic extension
+                                     | (1 <<  2)  // C - Compressed extension
                                      | (1 <<  8)  // I - RV32I/64I/128I base ISA
                                      | (1 << 12)  // M - Integer Multiply/Divide extension
                                      | (0 << 13)  // N - User level interrupts supported
@@ -218,7 +220,7 @@ package ariane_pkg;
         endcase
     endfunction
 
-    function automatic logic is_amo_op (fu_op op);
+    function automatic logic is_amo (fu_op op);
         case (op)
             AMO_LRD,   AMO_SCD,
             AMO_SWAPD, AMO_ADDD,

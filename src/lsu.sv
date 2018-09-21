@@ -15,12 +15,13 @@
 import ariane_pkg::*;
 
 module lsu #(
-        parameter int unsigned ASID_WIDTH       = 1
+    parameter int unsigned ASID_WIDTH = 1
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,
     output logic                     no_st_pending_o,
+    input  logic                     amo_valid_commit_i,
 
     input  fu_t                      fu_i,
     input  fu_op                     operator_i,
@@ -59,6 +60,7 @@ module lsu #(
     output dcache_req_i_t [2:0]      dcache_req_ports_o,
     // AMO interface
     output amo_req_t                 amo_req_o,
+    input  amo_resp_t                amo_resp_i,
     output exception_t               lsu_exception_o   // to WB, signal exception status LD/ST exception
 
 );
@@ -139,9 +141,17 @@ module lsu #(
     // Store Unit
     // ------------------
     store_unit i_store_unit (
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .no_st_pending_o,
+
         .valid_i               ( st_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
         .pop_st_o              ( pop_st               ),
+        .commit_i,
+        .commit_ready_o,
+        .amo_valid_commit_i,
 
         .valid_o               ( st_valid             ),
         .trans_id_o            ( st_trans_id          ),
@@ -156,10 +166,12 @@ module lsu #(
         // Load Unit
         .page_offset_i         ( page_offset          ),
         .page_offset_matches_o ( page_offset_matches  ),
+        // AMOs
+        .amo_req_o,
+        .amo_resp_i,
         // to memory arbiter
         .req_port_i             ( dcache_req_ports_i [2] ),
-        .req_port_o             ( dcache_req_ports_o [2] ),
-        .*
+        .req_port_o             ( dcache_req_ports_o [2] )
     );
 
     // ------------------
@@ -253,11 +265,7 @@ module lsu #(
             LD, SD: begin // double word
                 be_i = 8'b1111_1111;
             end
-            LW, LWU, SW,
-            AMO_LRW, AMO_SCW,
-            AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW,
-            AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW,
-            AMO_MINWU: begin// word
+            LW, LWU, SW: begin// word
                 case (vaddr_i[2:0])
                     3'b000: be_i = 8'b0000_1111;
                     3'b001: be_i = 8'b0001_1110;
@@ -348,7 +356,7 @@ module lsu #(
 
         if (data_misaligned) begin
 
-            if (lsu_ctrl.fu == LOAD || lsu_ctrl.fu == AMO) begin
+            if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
                     riscv::LD_ADDR_MISALIGNED,
                     lsu_ctrl.vaddr,
@@ -402,15 +410,6 @@ module lsu #(
         .ready_o            ( lsu_ready_o ),
         .*
     );
-    // ------------
-    // Assertions
-    // ------------
-
-    `ifndef SYNTHESIS
-    `ifndef VERILATOR
-    // TODO
-    `endif
-    `endif
 endmodule
 
 // ------------------
