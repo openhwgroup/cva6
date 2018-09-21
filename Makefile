@@ -22,6 +22,11 @@ verilator      ?= ${VERILATOR_ROOT}/bin/verilator
 target-options ?=
 # additional definess
 defines        ?=
+# test name for torture runs (binary name)
+test-location  ?= output/test
+# set to either nothing or -log
+torture-logs := -log
+
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv                     \
@@ -112,7 +117,7 @@ uvm-flags    += +UVM_NO_RELNOTES
 list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 
 # RISCV torture setup
-riscv-torture-dir    := tmp/riscv-torture/
+riscv-torture-dir    := tmp/riscv-torture
 riscv-torture-bin    := java -Xmx1G -Xss8M -XX:MaxPermSize=128M -jar sbt-launch.jar
 
 # Build the TB and module using QuestaSim
@@ -246,8 +251,16 @@ torture-itest:
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -a output/test.S'
 
 torture-rtest: build
-	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture defines=$(defines)" > call.sh && chmod +x call.sh
-	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a output/test.S' | tee output/test.log
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture$(torture-logs) defines=$(defines) test-location=$(test-location)" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a $(test-location).S' | tee $(test-location).log
+	make check-torture test-location=$(test-location)
+
+torture-dummy: build
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture defines=$(defines) test-location=\$${@: -1}" > call.sh
+
+torture-rnight: build
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture$(torture-logs) defines=$(defines) test-location=\$${@: -1}" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'overnight/run -r ./call.sh -g none' | tee output/overnight.log
 	make check-torture
 
 torture-rtest-verilator: verilate
@@ -262,14 +275,26 @@ run-torture: build
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                             \
 	-do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off                                                                        \
-	+signature=$(riscv-torture-dir)/output/test.rtlsim.sig ++$(riscv-torture-dir)/output/test ++$(target-options)
+	+signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
+
+run-torture-log: build
+	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles)+UVM_TESTNAME=${test_case}  \
+	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0      \
+	$(QUESTASIM_FLAGS)                                                                                            \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                             \
+	-do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; coverage save -onexit tmp/$@.ucdb; log -r /*; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
+	${top_level}_optimized +permissive-off                                                                        \
+	+signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
+	cp vsim.wlf $(riscv-torture-dir)/$(test-location).wlf
+	cp trace_core_00_0.log $(riscv-torture-dir)/$(test-location).trace
+	cp transcript $(riscv-torture-dir)/$(test-location).transcript
 
 run-torture-verilator: verilate
 	$(ver-library)/Variane_testharness +max-cycles=$(max_cycles) +signature=$(riscv-torture-dir)/output/test.rtlsim.sig $(riscv-torture-dir)/output/test
 
 check-torture:
-	grep 'All signatures match for output/test' $(riscv-torture-dir)/output/test.log
-	diff -s $(riscv-torture-dir)/output/test.spike.sig $(riscv-torture-dir)/output/test.rtlsim.sig
+	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
+	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*
@@ -283,3 +308,4 @@ clean:
 	check-benchmarks check-asm-tests                                          \
 	torture-gen torture-itest torture-rtest                                   \
 	run-torture run-torture-verilator check-torture check-torture-verilator
+
