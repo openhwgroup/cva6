@@ -133,7 +133,13 @@ package ariane_pkg;
     } bht_prediction_t;
 
     typedef enum logic[3:0] {
-        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR
+        NONE,      // 0
+        LOAD,      // 1
+        STORE,     // 2
+        ALU,       // 3
+        CTRL_FLOW, // 4
+        MULT,      // 5
+        CSR        // 6
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -189,8 +195,24 @@ package ariane_pkg;
     // TODO: Add atomics
     function automatic logic [1:0] extract_transfer_size (fu_op op);
         case (op)
-            LD, SD:      return 2'b11;
-            LW, LWU, SW: return 2'b10;
+            LD, SD,
+            AMO_LRD,   AMO_SCD,
+            AMO_SWAPD, AMO_ADDD,
+            AMO_ANDD,  AMO_ORD,
+            AMO_XORD,  AMO_MAXD,
+            AMO_MAXDU, AMO_MIND,
+            AMO_MINDU: begin
+                return 2'b11;
+            end
+            LW, LWU, SW,
+            AMO_LRW,   AMO_SCW,
+            AMO_SWAPW, AMO_ADDW,
+            AMO_ANDW,  AMO_ORW,
+            AMO_XORW,  AMO_MAXW,
+            AMO_MAXWU, AMO_MINW,
+            AMO_MINWU: begin
+                return 2'b10;
+            end
             LH, LHU, SH: return 2'b01;
             LB, SB, LBU: return 2'b00;
             default:     return 2'b11;
@@ -266,7 +288,6 @@ package ariane_pkg;
     // ----------------------
     // cache request ports
     // ----------------------
-
     // I$ address translation requests
     typedef struct packed {
         logic                     fetch_valid;     // address translation valid
@@ -295,6 +316,24 @@ package ariane_pkg;
         exception_t               ex;                     // we've encountered an exception
     } icache_dreq_o_t;
 
+    // AMO request going to cache. this request is unconditionally valid as soon
+    // as request goes high.
+    // Furthermore, those signals are kept stable until the response indicates
+    // completion by asserting ack.
+    typedef struct packed {
+        logic        req;       // this request is valid
+        amo_t        amo_op;    // atomic memory operation to perform
+        logic [1:0]  size;      // 2'b10 --> word operation, 2'b11 --> double word operation
+        logic [63:0] operand_a; // address
+        logic [63:0] operand_b; // data as layuoted in the register
+    } amo_req_t;
+
+    // AMO response coming from cache.
+    typedef struct packed {
+        logic        ack;    // response is valid
+        logic [63:0] result; // sign-extended, result
+    } amo_resp_t;
+
     // D$ data requests
     typedef struct packed {
         logic [DCACHE_INDEX_WIDTH-1:0] address_index;
@@ -306,7 +345,6 @@ package ariane_pkg;
         logic [1:0]                    data_size;
         logic                          kill_req;
         logic                          tag_valid;
-        amo_t                          amo_op;
     } dcache_req_i_t;
 
     typedef struct packed {
