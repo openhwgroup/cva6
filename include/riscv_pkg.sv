@@ -134,7 +134,7 @@ package riscv;
         logic         rl;
         logic [24:20] rs2;
         logic [19:15] rs1;
-        logic [14:20] funct3;
+        logic [14:12] funct3;
         logic [11:7]  rd;
         logic [6:0]   opcode;
     } atype_t;

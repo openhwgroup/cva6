@@ -40,7 +40,7 @@ module store_buffer (
 
     // D$ interface
     input  dcache_req_o_t            req_port_i,
-    output dcache_req_i_t            req_port_o  
+    output dcache_req_i_t            req_port_o
     );
     // depth of store-buffers
     localparam int unsigned DEPTH_SPEC   = 4;
@@ -70,10 +70,6 @@ module store_buffer (
     // Commit Queue
     logic [$clog2(DEPTH_COMMIT)-1:0] commit_read_pointer_n,  commit_read_pointer_q;
     logic [$clog2(DEPTH_COMMIT)-1:0] commit_write_pointer_n, commit_write_pointer_q;
-
-
-
-    assign req_port_o.amo_op = AMO_NONE;
 
     // ----------------------------------------
     // Speculative Queue - Core Interface

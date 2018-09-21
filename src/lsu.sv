@@ -57,7 +57,8 @@ module lsu #(
     // interface to dcache
     input  dcache_req_o_t [2:0]      dcache_req_ports_i,
     output dcache_req_i_t [2:0]      dcache_req_ports_o,
-
+    // AMO interface
+    output amo_req_t                 amo_req_o,
     output exception_t               lsu_exception_o   // to WB, signal exception status LD/ST exception
 
 );
@@ -108,28 +109,6 @@ module lsu #(
     exception_t               misaligned_exception;
     exception_t               ld_ex;
     exception_t               st_ex;
-
-    // ------------
-    // NB Dcache
-    // ------------
-    logic [2:0][11:0]         address_index_i;
-    logic [2:0][43:0]         address_tag_i;
-    logic [2:0][63:0]         data_wdata_i;
-    logic [2:0]               data_req_i;
-    logic [2:0]               data_we_i;
-    logic [2:0][1:0]          data_size_i;
-
-    logic [2:0]               kill_req_i;
-    logic [2:0]               tag_valid_i;
-    logic [2:0][7:0]          data_be_i;
-    logic [2:0]               data_gnt_o;
-    logic [2:0]               data_rvalid_o;
-    logic [2:0][63:0]         data_rdata_o;
-    amo_t [2:0]               amo_op_i;
-
-    // AMO operations always go through the load unit
-    assign amo_op_i[0] = AMO_NONE;
-    assign amo_op_i[2] = AMO_NONE;
 
     // -------------------
     // MMU e.g.: TLBs/PTW
@@ -271,11 +250,7 @@ module lsu #(
         // 12 bit are the same anyway
         // and we can always generate the byte enable from the address at hand
         case (operator_i)
-            LD, SD,
-            AMO_LRD, AMO_SCD,
-            AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
-            AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
-            AMO_MINDU: begin // double word
+            LD, SD: begin // double word
                 be_i = 8'b1111_1111;
             end
             LW, LWU, SW,
@@ -373,7 +348,7 @@ module lsu #(
 
         if (data_misaligned) begin
 
-            if (lsu_ctrl.fu == LOAD) begin
+            if (lsu_ctrl.fu == LOAD || lsu_ctrl.fu == AMO) begin
                 misaligned_exception = {
                     riscv::LD_ADDR_MISALIGNED,
                     lsu_ctrl.vaddr,

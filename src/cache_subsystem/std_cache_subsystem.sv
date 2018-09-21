@@ -24,57 +24,49 @@ import std_cache_pkg::*;
 module std_cache_subsystem #(
    parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 )(
-   input logic                            clk_i,
-   input logic                            rst_ni,
-
-   // I$
-   input  logic                           icache_en_i,            // enable icache (or bypass e.g: in debug mode)
-   input  logic                           icache_flush_i,         // flush the icache, flush and kill have to be asserted together
-   output logic                           icache_miss_o,          // to performance counter
-
-   // address translation requests
-   input  icache_areq_i_t                 icache_areq_i,          // to/from frontend
-   output icache_areq_o_t                 icache_areq_o,
-   // data requests
-   input  icache_dreq_i_t                 icache_dreq_i,          // to/from frontend
-   output icache_dreq_o_t                 icache_dreq_o,
-
-   // D$
-   // Cache management
-   input  logic                           dcache_enable_i,        // from CSR
-   input  logic                           dcache_flush_i,         // high until acknowledged
-   output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
-   output logic                           dcache_miss_o,          // we missed on a ld/st
-   // AMO interface (not functional yet)
-   input  logic                           dcache_amo_commit_i,    // commit atomic memory operation
-   output logic                           dcache_amo_valid_o,     // we have a valid AMO result
-   output logic                           dcache_amo_sc_succ_o,   // result of store conditional
-   input  logic                           dcache_amo_flush_i,     // forget about AMO
-   // Request ports
-   input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
-   output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
-
-   // memory side
-   AXI_BUS.Master                         icache_data_if,          // I$ refill port
-   AXI_BUS.Master                         dcache_data_if,          // D$ refill port
-   AXI_BUS.Master                         dcache_bypass_if         // bypass axi port (disabled D$ or uncacheable access)
+    input logic                            clk_i,
+    input logic                            rst_ni,
+    // I$
+    input  logic                           icache_en_i,            // enable icache (or bypass e.g: in debug mode)
+    input  logic                           icache_flush_i,         // flush the icache, flush and kill have to be asserted together
+    output logic                           icache_miss_o,          // to performance counter
+    // address translation requests
+    input  icache_areq_i_t                 icache_areq_i,          // to/from frontend
+    output icache_areq_o_t                 icache_areq_o,
+    // data requests
+    input  icache_dreq_i_t                 icache_dreq_i,          // to/from frontend
+    output icache_dreq_o_t                 icache_dreq_o,
+    // AMOs
+    input  amo_req_t                       amo_req_i,
+    output amo_resp_t                      amo_resp_o,
+    // D$
+    // Cache management
+    input  logic                           dcache_enable_i,        // from CSR
+    input  logic                           dcache_flush_i,         // high until acknowledged
+    output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
+    output logic                           dcache_miss_o,          // we missed on a ld/st
+    // Request ports
+    input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
+    output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
+    // memory side
+    AXI_BUS.Master                         icache_data_if,          // I$ refill port
+    AXI_BUS.Master                         dcache_data_if,          // D$ refill port
+    AXI_BUS.Master                         dcache_bypass_if         // bypass axi port (disabled D$ or uncacheable access)
 );
-
 
    std_icache #(
    ) i_icache (
-      .clk_i             ( clk_i                 ),
-      .rst_ni            ( rst_ni                ),
-      .flush_i           ( icache_flush_i        ),
-      .en_i              ( icache_en_i           ),
-      .miss_o            ( icache_miss_o         ),
-      .areq_i            ( icache_areq_i         ),
-      .areq_o            ( icache_areq_o         ),
-      .dreq_i            ( icache_dreq_i         ),
-      .dreq_o            ( icache_dreq_o         ),
-      .axi               ( icache_data_if        )
+       .clk_i    ( clk_i                 ),
+       .rst_ni   ( rst_ni                ),
+       .flush_i  ( icache_flush_i        ),
+       .en_i     ( icache_en_i           ),
+       .miss_o   ( icache_miss_o         ),
+       .areq_i   ( icache_areq_i         ),
+       .areq_o   ( icache_areq_o         ),
+       .dreq_i   ( icache_dreq_i         ),
+       .dreq_o   ( icache_dreq_o         ),
+       .axi      ( icache_data_if        )
    );
-
 
    // decreasing priority
    // Port 0: PTW
@@ -83,21 +75,18 @@ module std_cache_subsystem #(
    std_nbdcache #(
       .CACHE_START_ADDR ( CACHE_START_ADDR )
    ) i_nbdcache (
-      .clk_i              ( clk_i                  ),
-      .rst_ni             ( rst_ni                 ),
-      .enable_i           ( dcache_enable_i        ),
-      .flush_i            ( dcache_flush_i         ),
-      .flush_ack_o        ( dcache_flush_ack_o     ),
-      .miss_o             ( dcache_miss_o          ),
-      .data_if            ( dcache_data_if         ),
-      .bypass_if          ( dcache_bypass_if       ),
-      .amo_commit_i       ( dcache_amo_commit_i    ),
-      .amo_valid_o        ( dcache_amo_valid_o     ),
-      .amo_sc_succ_o      ( dcache_amo_sc_succ_o   ),
-      .amo_flush_i        ( dcache_amo_flush_i     ),
-      .req_ports_i        ( dcache_req_ports_i     ),
-      .req_ports_o        ( dcache_req_ports_o     )
+      .clk_i        ( clk_i                  ),
+      .rst_ni       ( rst_ni                 ),
+      .enable_i     ( dcache_enable_i        ),
+      .flush_i      ( dcache_flush_i         ),
+      .flush_ack_o  ( dcache_flush_ack_o     ),
+      .miss_o       ( dcache_miss_o          ),
+      .data_if      ( dcache_data_if         ),
+      .bypass_if    ( dcache_bypass_if       ),
+      .req_ports_i  ( dcache_req_ports_i     ),
+      .req_ports_o  ( dcache_req_ports_o     ),
+      .amo_req_i    ( amo_req_i              ),
+      .amo_resp_o   ( amo_resp_o             )
    );
-
 
 endmodule // std_cache_subsystem

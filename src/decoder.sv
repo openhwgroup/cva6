@@ -392,8 +392,8 @@ module decoder (
 
                 riscv::OpcodeAmo: begin
                     // we are going to use the load unit for AMOs
-                    instruction_o.fu  = LOAD;
-                    instruction_o.rs1[4:0] = instr.atype.rs2;
+                    instruction_o.fu  = STORE;
+                    instruction_o.rs1[4:0] = instr.atype.rs1;
                     instruction_o.rs2[4:0] = instr.atype.rs2;
                     instruction_o.rd[4:0]  = instr.atype.rd;
                     // TODO(zarubaf): Ordering

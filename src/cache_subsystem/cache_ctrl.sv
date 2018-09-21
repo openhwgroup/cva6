@@ -31,11 +31,6 @@ module cache_ctrl #(
     // Core request ports
     input  dcache_req_i_t                        req_port_i,
     output dcache_req_o_t                        req_port_o,
-    // Atomic memory operations
-    input  logic                                 amo_commit_i,
-    input  logic                                 amo_flush_i,
-    output logic                                 amo_valid_o,
-    output logic                                 amo_sc_succ_o, // store conditional was successful
     // SRAM interface
     output logic [DCACHE_SET_ASSOC-1:0]          req_o,  // req is valid
     output logic [DCACHE_INDEX_WIDTH-1:0]        addr_o, // address into cache array
@@ -72,9 +67,7 @@ module cache_ctrl #(
         WAIT_REFILL_GNT,    // 5
         WAIT_TAG_SAVED,     // 6
         WAIT_MSHR,          // 7
-        WAIT_CRITICAL_WORD, // 8
-        WAIT_AMO_COMMIT,    // 9
-        STORE_AMO           // 10
+        WAIT_CRITICAL_WORD  // 8
     } state_d, state_q;
 
     typedef struct packed {
@@ -82,25 +75,12 @@ module cache_ctrl #(
         logic [DCACHE_TAG_WIDTH-1:0]   tag;
         logic [7:0]             be;
         logic [1:0]             size;
-        amo_t                   amo;
         logic                   we;
         logic [63:0]            wdata;
         logic                   bypass;
     } mem_req_t;
 
     logic [DCACHE_SET_ASSOC-1:0] hit_way_d, hit_way_q;
-    // the word we loaded previously, needed as an operand for the AMOs
-    logic [63:0] loaded_word_d, loaded_word_q;
-    logic load_loaded_word;
-
-    amo_t amo_op;
-    logic [63:0] amo_operand_a;
-    logic [63:0] amo_operand_b;
-    logic [63:0] amo_result_o;
-
-    assign amo_operand_a = loaded_word_q;
-    assign amo_operand_b = mem_req_q.wdata;
-    assign amo_op = mem_req_q.amo;
 
     assign busy_o = (state_q != IDLE);
 
@@ -117,8 +97,6 @@ module cache_ctrl #(
         // cl_i = data_i[one_hot_to_bin(hit_way_i)].data;
     end
 
-    assign loaded_word_d = req_port_o.data_rvalid;
-
     // --------------
     // Cache FSM
     // --------------
@@ -127,15 +105,10 @@ module cache_ctrl #(
         // incoming cache-line -> this is needed as synthesis is not supporting +: indexing in a multi-dimensional array
         // cache-line offset -> multiple of 64
         cl_offset = mem_req_q.index[DCACHE_BYTE_OFFSET-1:3] << 6; // shift by 6 to the left
-        load_loaded_word = 1'b0;
         // default assignments
         state_d   = state_q;
         mem_req_d = mem_req_q;
         hit_way_d = hit_way_q;
-
-        amo_sc_succ_o = 1'b1;
-        amo_valid_o = 1'b0;
-
         // output assignments
         req_port_o.data_gnt    = 1'b0;
         req_port_o.data_rvalid = 1'b0;
@@ -166,7 +139,6 @@ module cache_ctrl #(
                     mem_req_d.size  = req_port_i.data_size;
                     mem_req_d.we    = req_port_i.data_we;
                     mem_req_d.wdata = req_port_i.data_wdata;
-                    mem_req_d.amo   = req_port_i.amo_op;
 
                     // Bypass mode, check for uncacheable address here as well
                     if (bypass_i) begin
@@ -208,8 +180,7 @@ module cache_ctrl #(
                     // ------------
                     if (|hit_way_i) begin
                         // we can request another cache-line if this was a load
-                        // make another request (if that one was no AMO)
-                        if (req_port_i.data_req && !mem_req_q.we && !flush_i && mem_req_q.amo == AMO_NONE) begin
+                        if (req_port_i.data_req && !mem_req_q.we && !flush_i) begin
                             state_d          = WAIT_TAG; // switch back to WAIT_TAG
                             mem_req_d.index  = req_port_i.address_index;
                             mem_req_d.be     = req_port_i.data_be;
@@ -217,7 +188,6 @@ module cache_ctrl #(
                             mem_req_d.we     = req_port_i.data_we;
                             mem_req_d.wdata  = req_port_i.data_wdata;
                             mem_req_d.tag    = req_port_i.address_tag;
-                            mem_req_d.amo    = req_port_i.amo_op;
                             mem_req_d.bypass = 1'b0;
 
                             req_port_o.data_gnt = gnt_i;
@@ -243,13 +213,6 @@ module cache_ctrl #(
                         end else begin
                             state_d = STORE_REQ;
                             hit_way_d = hit_way_i;
-                        end
-
-                        // we've got a hit and an AMO was requested
-                        if (mem_req_q.amo != AMO_NONE && !amo_flush_i) begin
-                            state_d = WAIT_AMO_COMMIT;
-                            // save the load we just reported
-                            load_loaded_word = 1'b1;
                         end
                     // ------------
                     // MISS CASE
@@ -323,7 +286,7 @@ module cache_ctrl #(
                     data_o.valid = 1'b1;
 
                     // got a grant ~> this is finished now
-                    if (gnt_i && mem_req_q.amo != AMO_NONE) begin
+                    if (gnt_i) begin
                         req_port_o.data_gnt = 1'b1;
                         state_d = IDLE;
                     end
@@ -405,7 +368,7 @@ module cache_ctrl #(
                     req_port_o.data_rvalid = 1'b1;
                     req_port_o.data_rdata = critical_word_i;
                     // we can make another request
-                    if (req_port_i.data_req && mem_req_q.amo == AMO_NONE) begin
+                    if (req_port_i.data_req) begin
                         // save index, be and we
                         mem_req_d.index = req_port_i.address_index;
                         mem_req_d.be    = req_port_i.data_be;
@@ -413,7 +376,6 @@ module cache_ctrl #(
                         mem_req_d.we    = req_port_i.data_we;
                         mem_req_d.wdata = req_port_i.data_wdata;
                         mem_req_d.tag   = req_port_i.address_tag;
-                        mem_req_d.amo   = req_port_i.amo_op;
 
                         state_d = IDLE;
 
@@ -426,13 +388,6 @@ module cache_ctrl #(
                     end else begin
                         state_d = IDLE;
                     end
-
-                    // we've got a hit and an AMO was requested
-                    if (mem_req_q.amo != AMO_NONE && !amo_flush_i) begin
-                        state_d = WAIT_AMO_COMMIT;
-                        // save the load we just reported
-                        load_loaded_word = 1'b1;
-                    end
                 end
             end
             // ~> wait until the bypass request is valid
@@ -443,35 +398,6 @@ module cache_ctrl #(
                     req_port_o.data_rvalid = 1'b1;
                     state_d = IDLE;
                 end
-
-                // potentially this request was an AMO
-                if (mem_req_q.amo != AMO_NONE && !amo_flush_i) begin
-                    state_d = WAIT_AMO_COMMIT;
-                    // save the load we just reported
-                    load_loaded_word = 1'b1;
-                end
-            end
-            // ------------------------
-            // Atomic Memory Operation
-            // ------------------------
-            // ~> wait until we committed the AMO
-            WAIT_AMO_COMMIT: begin
-                if (amo_commit_i) begin
-                    state_d = STORE_AMO;
-                end
-                // AMO was flushed, go back to IDLE
-                if (amo_flush_i) begin
-                    state_d = IDLE;
-                end
-            end
-            // non-speculative store-part of AMO
-            STORE_AMO: begin
-                // address is still saved
-                mem_req_d.we    = req_port_i.data_we;
-                mem_req_d.wdata = amo_result_o;
-                // the AMO will still be in the cache
-                state_d         = STORE_REQ;
-                amo_valid_o     = 1'b1;
             end
         endcase
 
@@ -481,13 +407,6 @@ module cache_ctrl #(
         end
     end
 
-    amo_alu i_amo_alu (
-        .amo_op        ( amo_op        ),
-        .amo_operand_a ( amo_operand_a ),
-        .amo_operand_b ( amo_operand_b ),
-        .amo_result_o  ( amo_result_o  )
-    );
-
     // --------------
     // Registers
     // --------------
@@ -496,14 +415,10 @@ module cache_ctrl #(
             state_q       <= IDLE;
             mem_req_q     <= '0;
             hit_way_q     <= '0;
-            loaded_word_q <= '0;
         end else begin
             state_q   <= state_d;
             mem_req_q <= mem_req_d;
             hit_way_q <= hit_way_d;
-            if (load_loaded_word) begin
-                loaded_word_q <= loaded_word_d;
-            end
         end
     end
 

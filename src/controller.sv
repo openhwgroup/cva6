@@ -26,7 +26,6 @@ module controller (
     output logic            flush_dcache_o,         // Flush DCache
     input  logic            flush_dcache_ack_i,     // Acknowledge the whole DCache Flush
     output logic            flush_tlb_o,            // Flush TLBs
-    output logic            flush_amo_o,            // Flush all pending AMOs
 
     input  logic            halt_csr_i,             // Halt request from CSR (WFI instruction)
     output logic            halt_o,                 // Halt signal to commit stage
@@ -57,7 +56,6 @@ module controller (
         flush_tlb_o            = 1'b0;
         flush_dcache           = 1'b0;
         flush_icache_o         = 1'b0;
-        flush_amo_o            = 1'b0;
         // ------------
         // Mis-predict
         // ------------
@@ -79,7 +77,6 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-            flush_amo_o            = 1'b1;
 
             flush_dcache           = 1'b1;
             fence_active_d         = 1'b1;
@@ -95,7 +92,6 @@ module controller (
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
             flush_icache_o         = 1'b1;
-            flush_amo_o            = 1'b1;
 
             flush_dcache           = 1'b1;
             fence_active_d         = 1'b1;
@@ -118,7 +114,6 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-            flush_amo_o            = 1'b1;
 
             flush_tlb_o            = 1'b1;
         end
@@ -131,7 +126,6 @@ module controller (
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
-            flush_amo_o            = 1'b1;
 
             flush_ex_o             = 1'b1;
         end
@@ -148,7 +142,6 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-            flush_amo_o            = 1'b1;
         end
     end
 

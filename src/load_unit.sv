@@ -58,8 +58,7 @@ module load_unit (
     assign vaddr_o = lsu_ctrl_i.vaddr;
     // this is a read-only interface so set the write enable to 0
     assign req_port_o.data_we = 1'b0;
-    // we need operand b for the AMOs
-    assign req_port_o.data_wdata = lsu_ctrl_i.data;
+    assign req_port_o.data_wdata = '0;
     // compose the queue data, control is handled in the FSM
     assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.operator};
     // output address
@@ -271,31 +270,6 @@ module load_unit (
     end
 
     // ---------------
-    // AMO Operation
-    // ---------------
-    always_comb begin : amo_op_select
-        req_port_o.amo_op = AMO_NONE;
-        // map the operators to BUS AMOS the downstream circuit understands
-        // e.g.: remove the size field as this will be encoded in another signal
-        if (lsu_ctrl_i.valid) begin
-            case (lsu_ctrl_i.operator)
-                AMO_LRW,   AMO_LRD:   req_port_o.amo_op = AMO_LR;
-                AMO_SCW,   AMO_SCD:   req_port_o.amo_op = AMO_SC;
-                AMO_SWAPW, AMO_SWAPD: req_port_o.amo_op = AMO_SWAP;
-                AMO_ADDW,  AMO_ADDD:  req_port_o.amo_op = AMO_ADD;
-                AMO_ANDW,  AMO_ANDD:  req_port_o.amo_op = AMO_AND;
-                AMO_ORW,   AMO_ORD:   req_port_o.amo_op = AMO_OR;
-                AMO_XORW,  AMO_XORD:  req_port_o.amo_op = AMO_XOR;
-                AMO_MAXW,  AMO_MAXD:  req_port_o.amo_op = AMO_MAX;
-                AMO_MAXWU, AMO_MAXDU: req_port_o.amo_op = AMO_MAXU;
-                AMO_MINW,  AMO_MIND:  req_port_o.amo_op = AMO_MIN;
-                AMO_MINWU, AMO_MINDU: req_port_o.amo_op = AMO_MINU;
-                default: req_port_o.amo_op = AMO_NONE;
-            endcase
-        end
-    end
-
-    // ---------------
     // Sign Extend
     // ---------------
     logic [63:0] shifted_data;
@@ -324,8 +298,7 @@ module load_unit (
 
 
     // prepare these signals for faster selection in the next cycle
-    // all AMOs are sign extended
-    assign signed_d  = load_data_d.operator inside {LW, LH, LB} | is_amo_op(load_data_d.operator);
+    assign signed_d  = load_data_d.operator inside {LW, LH, LB};
     assign fp_sign_d = 1'b0;
     assign idx_d     = (load_data_d.operator inside {LW}) ? load_data_d.address_offset + 3 :
                        (load_data_d.operator inside {LH}) ? load_data_d.address_offset + 1 :
@@ -355,13 +328,7 @@ module load_unit (
     // result mux
     always_comb begin
         unique case (load_data_q.operator)
-            LW, LWU,
-            AMO_LRW,   AMO_SCW,
-            AMO_SWAPW, AMO_ADDW,
-            AMO_ANDW,  AMO_ORW,
-            AMO_XORW,  AMO_MAXW,
-            AMO_MAXWU, AMO_MINW,
-            AMO_MINWU: begin
+            LW, LWU: begin
                 result_o = {{32{sign_bit}}, shifted_data[31:0]};
             end
             LH, LHU:    result_o = {{48{sign_bit}}, shifted_data[15:0]};

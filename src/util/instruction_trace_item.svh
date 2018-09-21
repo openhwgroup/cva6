@@ -203,6 +203,7 @@ class instruction_trace_item;
             // loads and stores
             INSTR_LOAD:                s = this.printLoadInstr();
             INSTR_STORE:               s = this.printStoreInstr();
+            INSTR_AMO:                 s = this.printLoadInstr();
             default:                   s = this.printMnemonic("INVALID");
         endcase
 
@@ -363,7 +364,7 @@ class instruction_trace_item;
 
     function string printLoadInstr();
       string mnemonic;
-
+      if (instr[6:0] == riscv::OpcodeLoad) begin
         case (instr[14:12])
           3'b000: mnemonic = "lb";
           3'b001: mnemonic = "lh";
@@ -381,6 +382,49 @@ class instruction_trace_item;
         this.imm = sbe.result;
 
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result), regAddrToStr(sbe.rs1));
+    end else if (instr[6:0] == riscv::OpcodeAmo) begin
+        if (instr[14:12] == 3'h2) begin
+            // words
+            case (instr[31:27])
+                5'h0:  mnemonic = "amoadd.w";
+                5'h1:  mnemonic = "amoswap.w";
+                5'h2:  mnemonic = "lr.w";
+                5'h3:  mnemonic = "sc.w";
+                5'h4:  mnemonic = "amoxor.w";
+                5'h8:  mnemonic = "amoor.w";
+                5'hC:  mnemonic = "amoand.w";
+                5'h10: mnemonic = "amomin.w";
+                5'h14: mnemonic = "amomax.w";
+                5'h18: mnemonic = "amominu.w";
+                5'h1C: mnemonic = "amomax.w";
+                default: printMnemonic("INVALID");
+            endcase
+        end if (instr[14:12] == 3'h3) begin
+            // doubles
+            case (instr[31:27])
+                5'h0:  mnemonic = "amoadd.d";
+                5'h1:  mnemonic = "amoswap.d";
+                5'h2:  mnemonic = "lr.d";
+                5'h3:  mnemonic = "sc.d";
+                5'h4:  mnemonic = "amoxor.d";
+                5'h8:  mnemonic = "amoor.d";
+                5'hC:  mnemonic = "amoand.d";
+                5'h10: mnemonic = "amomin.d";
+                5'h14: mnemonic = "amomax.d";
+                5'h18: mnemonic = "amominu.d";
+                5'h1C: mnemonic = "amomax.d";
+                default: printMnemonic("INVALID");
+            endcase
+        end else return printMnemonic("INVALID");
+
+        result_regs.push_back(sbe.rd);
+        read_regs.push_back(sbe.rs1);
+        read_regs.push_back(sbe.rs2);
+        // save the immediate for calculating the virtual address
+        this.imm = 0;
+
+        return $sformatf("%-16s %s, %s,(%s)", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs2), regAddrToStr(sbe.rs1));
+    end
     endfunction
 
     function string printStoreInstr();

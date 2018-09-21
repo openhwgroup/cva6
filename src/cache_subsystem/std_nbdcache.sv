@@ -16,7 +16,7 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module std_nbdcache #(
-        parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
+    parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
 )(
     input  logic                           clk_i,       // Clock
     input  logic                           rst_ni,      // Asynchronous reset active low
@@ -25,16 +25,12 @@ module std_nbdcache #(
     input  logic                           flush_i,     // high until acknowledged
     output logic                           flush_ack_o, // send a single cycle acknowledge signal when the cache is flushed
     output logic                           miss_o,      // we missed on a LD/ST
-    // AMO interface
-
-    input  logic                           amo_commit_i,  // commit atomic memory operation
-    output logic                           amo_valid_o,   // we have a valid AMO result
-    output logic                           amo_sc_succ_o, // store conditional was successful
-    input  logic                           amo_flush_i,   // forget about pending AMO
+    // AMOs
+    input  amo_req_t                       amo_req_i,
+    output amo_resp_t                      amo_resp_o,
     // Request ports
     input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
     output dcache_req_o_t [2:0]            req_ports_o,  // request ports
-
     // Cache AXI refill port
     AXI_BUS.Master                         data_if,
     AXI_BUS.Master                         bypass_if
@@ -84,13 +80,6 @@ module std_nbdcache #(
     cache_line_t [DCACHE_SET_ASSOC-1:0]  rdata_ram;
     cl_be_t                              be_ram;
 
-    logic [2:0] amo_valid;
-    logic [2:0] amo_sc_succ;
-
-    // only one unit can produce a result
-    assign amo_valid_o = |amo_valid;
-    assign amo_sc_succ = |amo_sc_succ;
-
     // ------------------
     // Cache Controller
     // ------------------
@@ -104,10 +93,6 @@ module std_nbdcache #(
                 // from core
                 .req_port_i            ( req_ports_i     [i]  ),
                 .req_port_o            ( req_ports_o     [i]  ),
-                .amo_flush_i,
-                .amo_commit_i,
-                .amo_valid_o           ( amo_valid       [i]  ),
-                .amo_sc_succ_o         ( amo_sc_succ     [i]  ),
                 // to SRAM array
                 .req_o                 ( req            [i+1] ),
                 .addr_o                ( addr           [i+1] ),
