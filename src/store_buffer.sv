@@ -253,6 +253,10 @@ module store_buffer (
         @(posedge clk_i) rst_ni && (speculative_status_cnt_q == DEPTH_SPEC) |-> !valid_i)
         else $error ("[Speculative Queue] You are trying to push new data although the buffer is not ready");
 
+    speculative_buffer_underflow: assert property (
+        @(posedge clk_i) rst_ni && (speculative_status_cnt_q == 0) |-> !commit_i)
+        else $error ("[Speculative Queue] You are committing although there are no stores to commit");
+
     commit_buffer_overflow: assert property (
         @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_SPEC) |-> !commit_i)
         else $error("[Commit Queue] You are trying to commit a store although the buffer is full");

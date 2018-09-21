@@ -352,8 +352,8 @@ module frontend (
         // On a pipeline flush start fetching from the next address
         // of the instruction in the commit stage
         if (set_pc_commit_i) begin
-            // we came here from a flush request of a CSR instruction,
-            // as CSR instructions do not exist in a compressed form
+            // we came here from a flush request of a CSR instruction or AMO,
+            // as CSR or AMO instructions do not exist in a compressed form
             // we can unconditionally do PC + 4 here
             // TODO(zarubaf) This adder can at least be merged with the one in the csr_regfile stage
             npc_d    = pc_commit_i + 64'h4;

@@ -57,9 +57,9 @@ module store_unit (
     } state_d, state_q;
 
     // store buffer control signals
-    logic                    st_ready;
-    logic                    st_valid;
-    logic                    st_valid_without_flush;
+    logic st_ready;
+    logic st_valid;
+    logic st_valid_without_flush;
 
     // keep the data and the byte enable for the second cycle (after address translation)
     logic [63:0]  st_data_n,      st_data_q;
@@ -165,7 +165,7 @@ module store_unit (
             // the only difference is that we do not want to store this request
             pop_st_o = 1'b1;
             st_valid = 1'b0;
-            state_d       = IDLE;
+            state_d  = IDLE;
             valid_o  = 1'b1;
         end
 
@@ -179,18 +179,22 @@ module store_unit (
     // re-align the write data to comply with the address offset
     always_comb begin
         st_be_n        = lsu_ctrl_i.be;
-        st_data_n      = lsu_ctrl_i.data;
+        st_data_n      = data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
         st_data_size_n = extract_transfer_size(lsu_ctrl_i.operator);
-
-        case (lsu_ctrl_i.vaddr[2:0])
-            3'b000: st_data_n = lsu_ctrl_i.data;
-            3'b001: st_data_n = {lsu_ctrl_i.data[55:0], lsu_ctrl_i.data[63:56]};
-            3'b010: st_data_n = {lsu_ctrl_i.data[47:0], lsu_ctrl_i.data[63:48]};
-            3'b011: st_data_n = {lsu_ctrl_i.data[39:0], lsu_ctrl_i.data[63:40]};
-            3'b100: st_data_n = {lsu_ctrl_i.data[31:0], lsu_ctrl_i.data[63:32]};
-            3'b101: st_data_n = {lsu_ctrl_i.data[23:0], lsu_ctrl_i.data[63:24]};
-            3'b110: st_data_n = {lsu_ctrl_i.data[15:0], lsu_ctrl_i.data[63:16]};
-            3'b111: st_data_n = {lsu_ctrl_i.data[7:0],  lsu_ctrl_i.data[63:8]};
+        // save AMO op for next cycle
+        case (lsu_ctrl_i.operator)
+            AMO_LRW, AMO_LRD:     amo_op_d = AMO_LR;
+            AMO_SCW, AMO_SCD:     amo_op_d = AMO_SC;
+            AMO_SWAPW, AMO_SWAPD: amo_op_d = AMO_SWAP;
+            AMO_ADDW, AMO_ADDD:   amo_op_d = AMO_ADD;
+            AMO_ANDW, AMO_ANDD:   amo_op_d = AMO_AND;
+            AMO_ORW, AMO_ORD:     amo_op_d = AMO_OR;
+            AMO_XORW, AMO_XORD:   amo_op_d = AMO_XOR;
+            AMO_MAXW, AMO_MAXD:   amo_op_d = AMO_MAX;
+            AMO_MAXWU, AMO_MAXDU: amo_op_d = AMO_MAXU;
+            AMO_MINW, AMO_MIND:   amo_op_d = AMO_MIN;
+            AMO_MINWU, AMO_MINDU: amo_op_d = AMO_MINU;
+            default: amo_op_d = AMO_NONE;
         endcase
     end
 
@@ -231,27 +235,6 @@ module store_unit (
         .req_port_o            ( req_port_o             )
     );
 
-    // ---------------
-    // AMO Buffer
-    // ---------------
-    always_comb begin
-        amo_op_d = amo_op_q;
-
-        case (lsu_ctrl_i.operator)
-            AMO_LRW, AMO_LRD:     amo_op_d = AMO_LR;
-            AMO_SCW, AMO_SCD:     amo_op_d = AMO_SC;
-            AMO_SWAPW, AMO_SWAPD: amo_op_d = AMO_SWAP;
-            AMO_ADDW, AMO_ADDD:   amo_op_d = AMO_ADD;
-            AMO_ANDW, AMO_ANDD:   amo_op_d = AMO_AND;
-            AMO_ORW, AMO_ORD:     amo_op_d = AMO_OR;
-            AMO_XORW, AMO_XORD:   amo_op_d = AMO_XOR;
-            AMO_MAXW, AMO_MAXD:   amo_op_d = AMO_MAX;
-            AMO_MAXWU, AMO_MAXDU: amo_op_d = AMO_MAXU;
-            AMO_MINW, AMO_MIND:   amo_op_d = AMO_MIN;
-            AMO_MINWU, AMO_MINDU: amo_op_d = AMO_MINU;
-        endcase
-    end
-
     amo_buffer i_amo_buffer (
         .clk_i,
         .rst_ni,
@@ -280,7 +263,7 @@ module store_unit (
             trans_id_q     <= '0;
             amo_op_q       <= AMO_NONE;
         end else begin
-            state_q             <= state_d;
+            state_q        <= state_d;
             st_be_q        <= st_be_n;
             st_data_q      <= st_data_n;
             trans_id_q     <= trans_id_n;

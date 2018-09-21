@@ -23,6 +23,9 @@ module amo_alu (
     always_comb begin
         amo_result_o = '0;
         case (amo_op)
+            ariane_pkg::AMO_SC: begin
+                amo_result_o = amo_operand_b;
+            end
             ariane_pkg::AMO_SWAP: begin
                 amo_result_o = amo_operand_b;
             end
@@ -33,7 +36,7 @@ module amo_alu (
                 amo_result_o = amo_operand_a & amo_operand_b;
             end
             ariane_pkg::AMO_OR: begin
-                amo_result_o = amo_operand_a & amo_operand_b;
+                amo_result_o = amo_operand_a | amo_operand_b;
             end
             ariane_pkg::AMO_XOR: begin
                amo_result_o = amo_operand_a ^ amo_operand_b;

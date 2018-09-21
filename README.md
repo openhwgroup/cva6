@@ -77,7 +77,7 @@ Coming.
 
 ## Planned Improvements
 
-While developing Ariane it has become evident that, in order to support Linux, the atomic extension is going to be mandatory. While the core is currently booting Linux by emulating Atomics in BBL (in a single core environment this is trivially met by disabling interrupts) this is not the behavior which is intended. For that reason we are going to fully support all atomic extensions in the very near future.
+> Atomics are implemented for a single core environment. They will fail in a multi-core setup
 
 ## Going Beyond
 

@@ -36,8 +36,6 @@ module std_nbdcache #(
     AXI_BUS.Master                         bypass_if
 );
 
-    assign amo_resp_o = '0;
-
     // -------------------------------
     // Controller <-> Arbiter
     // -------------------------------
@@ -131,6 +129,9 @@ module std_nbdcache #(
     ) i_miss_handler (
         .flush_i                ( flush_i              ),
         .busy_i                 ( |busy                ),
+        // AMOs
+        .amo_req_i             ( amo_req_i            ),
+        .amo_resp_o            ( amo_resp_o           ),
         .miss_req_i             ( miss_req             ),
         .miss_gnt_o             ( miss_gnt             ),
         .bypass_gnt_o           ( bypass_gnt           ),

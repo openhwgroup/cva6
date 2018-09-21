@@ -256,54 +256,10 @@ module lsu #(
     // ---------------
     // Byte Enable
     // ---------------
-    always_comb begin : byte_enable
-        be_i = 8'b0;
-        // we can generate the byte enable from the virtual address since the last
-        // 12 bit are the same anyway
-        // and we can always generate the byte enable from the address at hand
-        case (operator_i)
-            LD, SD: begin // double word
-                be_i = 8'b1111_1111;
-            end
-            LW, LWU, SW: begin// word
-                case (vaddr_i[2:0])
-                    3'b000: be_i = 8'b0000_1111;
-                    3'b001: be_i = 8'b0001_1110;
-                    3'b010: be_i = 8'b0011_1100;
-                    3'b011: be_i = 8'b0111_1000;
-                    3'b100: be_i = 8'b1111_0000;
-                    default:;
-                endcase
-            end
-            LH, LHU, SH: begin // half word
-                case (vaddr_i[2:0])
-                    3'b000: be_i = 8'b0000_0011;
-                    3'b001: be_i = 8'b0000_0110;
-                    3'b010: be_i = 8'b0000_1100;
-                    3'b011: be_i = 8'b0001_1000;
-                    3'b100: be_i = 8'b0011_0000;
-                    3'b101: be_i = 8'b0110_0000;
-                    3'b110: be_i = 8'b1100_0000;
-                    default:;
-                endcase
-            end
-            LB, LBU, SB: begin // byte
-                case (vaddr_i[2:0])
-                    3'b000: be_i = 8'b0000_0001;
-                    3'b001: be_i = 8'b0000_0010;
-                    3'b010: be_i = 8'b0000_0100;
-                    3'b011: be_i = 8'b0000_1000;
-                    3'b100: be_i = 8'b0001_0000;
-                    3'b101: be_i = 8'b0010_0000;
-                    3'b110: be_i = 8'b0100_0000;
-                    3'b111: be_i = 8'b1000_0000;
-                endcase
-            end
-            default: begin
-                be_i = 8'b0;
-            end
-        endcase
-    end
+    // we can generate the byte enable from the virtual address since the last
+    // 12 bit are the same anyway
+    // and we can always generate the byte enable from the address at hand
+    assign be_i = be_gen(vaddr_i[2:0], extract_transfer_size(operator_i));
 
     // ------------------------
     // Misaligned Exception

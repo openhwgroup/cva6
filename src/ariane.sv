@@ -192,6 +192,7 @@ module ariane #(
     logic                     dcache_flush_ctrl_cache;
     logic                     dcache_flush_ack_cache_ctrl;
     logic                     set_debug_pc;
+    logic                     flush_commit;
 
     icache_areq_i_t           icache_areq_ex_cache;
     icache_areq_o_t           icache_areq_cache_ex;
@@ -422,6 +423,7 @@ module ariane #(
         .fence_i_o              ( fence_i_commit_controller     ),
         .fence_o                ( fence_commit_controller       ),
         .sfence_vma_o           ( sfence_vma_commit_controller  ),
+        .flush_commit_o         ( flush_commit                  ),
         .*
     );
 
@@ -519,6 +521,7 @@ module ariane #(
         .fence_i_i              ( fence_i_commit_controller     ),
         .fence_i                ( fence_commit_controller       ),
         .sfence_vma_i           ( sfence_vma_commit_controller  ),
+        .flush_commit_i         ( flush_commit                  ),
 
         .flush_icache_o         ( icache_flush_ctrl_cache       ),
         .*

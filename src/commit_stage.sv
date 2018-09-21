@@ -28,7 +28,6 @@ module commit_stage #(
     // from scoreboard
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
     output logic [NR_COMMIT_PORTS-1:0]              commit_ack_o,       // acknowledge that we are indeed committing
-
     // to register file
     output  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_o,            // register file write address
     output  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_o,            // register file write data
@@ -50,6 +49,7 @@ module commit_stage #(
     output logic                                    commit_csr_o,       // commit the pending CSR instruction
     output logic                                    fence_i_o,          // flush I$ and pipeline
     output logic                                    fence_o,            // flush D$ and pipeline
+    output logic                                    flush_commit_o,     // request a pipeline flush
     output logic                                    sfence_vma_o        // flush TLBs and pipeline
 );
 
@@ -58,6 +58,8 @@ module commit_stage #(
 
     assign pc_o = commit_instr_i[0].pc;
 
+    logic instr_0_is_amo;
+    assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
     // -------------------
     // Commit Instruction
     // -------------------
@@ -82,6 +84,7 @@ module commit_stage #(
         fence_i_o       = 1'b0;
         fence_o         = 1'b0;
         sfence_vma_o    = 1'b0;
+        flush_commit_o  = 1'b0;
 
         // we will not commit the instruction if we took an exception
         // and we do not commit the instruction if we requested a halt
@@ -103,7 +106,7 @@ module commit_stage #(
                 // check whether the instruction we retire was a store
                 // do not commit the instruction if we got an exception since the store buffer will be cleared
                 // by the subsequent flush triggered by an exception
-                if (commit_instr_i[0].fu == STORE) begin
+                if (commit_instr_i[0].fu == STORE && !instr_0_is_amo) begin
                     // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
                     if (commit_lsu_ready_i)
                         commit_lsu_o = 1'b1;
@@ -154,10 +157,12 @@ module commit_stage #(
             // ------------------
             // AMO
             // ------------------
-            if (is_amo(commit_instr_i[0].op)) begin
-                // TODO(zarubaf): Flush pipeline
-                amo_valid_commit_o = 1'b1;
+            if (instr_0_is_amo) begin
+                // AMO finished
                 commit_ack_o[0] = amo_resp_i.ack;
+                // flush the pipeline
+                flush_commit_o = amo_resp_i.ack;
+                amo_valid_commit_o = 1'b1;
             end
         end
 
@@ -170,6 +175,7 @@ module commit_stage #(
                             && !halt_i
                             && !(commit_instr_i[0].fu inside {CSR})
                             && !flush_dcache_i
+                            && !instr_0_is_amo
                             && !single_step_i) begin
             // only if the first instruction didn't throw an exception and this instruction won't throw an exception
             // and the operator is of type ALU, LOAD, CTRL_FLOW, MULT
