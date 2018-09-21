@@ -72,9 +72,6 @@ module store_buffer (
     logic [$clog2(DEPTH_COMMIT)-1:0] commit_write_pointer_n, commit_write_pointer_q;
 
 
-
-    assign req_port_o.amo_op = AMO_NONE;
-
     // ----------------------------------------
     // Speculative Queue - Core Interface
     // ----------------------------------------

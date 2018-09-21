@@ -268,41 +268,6 @@ module load_unit (
     end
 
     // ---------------
-    // AMO Operation
-    // ---------------
-    always_comb begin : amo_op_select
-        req_port_o.amo_op = AMO_NONE;
-
-        if (lsu_ctrl_i.valid) begin
-            case (lsu_ctrl_i.operator)
-                AMO_LRW:    req_port_o.amo_op = AMO_LR;
-                AMO_LRD:    req_port_o.amo_op = AMO_LR;
-                AMO_SCW:    req_port_o.amo_op = AMO_SC;
-                AMO_SCD:    req_port_o.amo_op = AMO_SC;
-                AMO_SWAPW:  req_port_o.amo_op = AMO_SWAP;
-                AMO_ADDW:   req_port_o.amo_op = AMO_ADD;
-                AMO_ANDW:   req_port_o.amo_op = AMO_AND;
-                AMO_ORW:    req_port_o.amo_op = AMO_OR;
-                AMO_XORW:   req_port_o.amo_op = AMO_XOR;
-                AMO_MAXW:   req_port_o.amo_op = AMO_MAX;
-                AMO_MAXWU:  req_port_o.amo_op = AMO_MAXU;
-                AMO_MINW:   req_port_o.amo_op = AMO_MIN;
-                AMO_MINWU:  req_port_o.amo_op = AMO_MINU;
-                AMO_SWAPD:  req_port_o.amo_op = AMO_SWAP;
-                AMO_ADDD:   req_port_o.amo_op = AMO_ADD;
-                AMO_ANDD:   req_port_o.amo_op = AMO_AND;
-                AMO_ORD:    req_port_o.amo_op = AMO_OR;
-                AMO_XORD:   req_port_o.amo_op = AMO_XOR;
-                AMO_MAXD:   req_port_o.amo_op = AMO_MAX;
-                AMO_MAXDU:  req_port_o.amo_op = AMO_MAXU;
-                AMO_MIND:   req_port_o.amo_op = AMO_MIN;
-                AMO_MINDU:  req_port_o.amo_op = AMO_MINU;
-                default: req_port_o.amo_op = AMO_NONE;
-            endcase
-        end
-    end
-
-    // ---------------
     // Sign Extend
     // ---------------
 

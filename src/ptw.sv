@@ -61,8 +61,6 @@ module ptw #(
 
 );
 
-    assign req_port_o.amo_op = AMO_NONE;
-
     // input registers
     logic data_rvalid_q;
     logic [63:0] data_rdata_q;
