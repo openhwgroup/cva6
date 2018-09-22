@@ -100,14 +100,13 @@ module csr_regfile #(
     riscv::priv_lvl_t   priv_lvl_d, priv_lvl_q;
     // we are in debug
     logic        debug_mode_q, debug_mode_d;
-    logic [63:0] next_pc;
 
     riscv::status_rv64_t  mstatus_q,  mstatus_d;
     riscv::satp_t         satp_q, satp_d;
     riscv::dcsr_t         dcsr_q,     dcsr_d;
-    
+
     logic        mtvec_rst_load_q;// used to determine whether we came out of reset
-    
+
     logic [63:0] dpc_q,       dpc_d;
     logic [63:0] dscratch0_q, dscratch0_d;
     logic [63:0] mtvec_q,     mtvec_d;
@@ -245,16 +244,16 @@ module csr_regfile #(
         dpc_d                   = dpc_q;
         dscratch0_d             = dscratch0_q;
         mstatus_d               = mstatus_q;
-        
+
         // check whether we come out of reset
-        // this is a workaround. some tools have issues 
-        // having boot_addr_i in the asynchronous 
+        // this is a workaround. some tools have issues
+        // having boot_addr_i in the asynchronous
         // reset assignment to mtvec_d, even though
         // boot_addr_i will be assigned a constant
-        // on the top-level. 
+        // on the top-level.
         if (mtvec_rst_load_q) begin
             mtvec_d             = boot_addr_i + 'h40;
-        end else begin    
+        end else begin
             mtvec_d             = mtvec_q;
         end
 
@@ -538,7 +537,8 @@ module csr_regfile #(
 
             // single step enable and we just retired an instruction
             if (dcsr_q.step && (|commit_ack_i)) begin
-                dpc_d = next_pc;
+                // we saved the correct target address during execute
+                dpc_d = commit_instr_i[0].bp.predict_address;
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
                 dcsr_d.cause = dm::CauseSingleStep;
@@ -792,22 +792,6 @@ module csr_regfile #(
         if (dret) begin
             epc_o = dpc_q;
         end
-    end
-
-    // calculate the next PC based on the current one
-    always_comb begin : next_pc_calc
-        automatic logic [63:0] pc;
-        automatic logic [63:0] branch_target;
-        automatic logic branch_taken;
-        automatic logic is_compressed;
-        // we only need to check the 0th instruction as in single-step mode we are only retiring one instruction
-        pc = commit_instr_i[0].pc;
-        branch_taken = commit_instr_i[0].bp.valid & commit_instr_i[0].bp.predict_taken;
-        is_compressed = commit_instr_i[0].is_compressed;
-        branch_target = commit_instr_i[0].bp.predict_address;
-        // TODO(zarubaf) this adder can potentially be saved, the next address has been
-        // calculated a couple of times down the pipeline
-        next_pc = (branch_taken ? branch_target : (is_compressed ? pc + 'h2 : pc + 'h4));
     end
 
     // -------------------
