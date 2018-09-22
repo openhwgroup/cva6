@@ -50,17 +50,17 @@ class instruction_trace_item;
     endfunction
     // convert register address to ABI compatible form
     function string regAddrToStr(logic [5:0] addr);
-        case (addr)
+        case (addr[4:0])
             0: return "x0";
             1: return "ra";
             2: return "sp";
             3: return "gp";
             4: return "tp";
-            5, 6, 7: return $sformatf("t%0d", (addr - 5));
-            8, 9: return $sformatf("s%0d", (addr - 8));
-            10, 11, 12, 13, 14, 15, 16, 17: return $sformatf("a%0d", (addr - 10));
-            28, 29, 30, 31: return $sformatf("t%0d", (addr - 25));
-            default: return $sformatf("s%0d", (addr - 16));
+            5, 6, 7: return $sformatf("t%0d", (addr[4:0] - 5));
+            8, 9: return $sformatf("s%0d", (addr[4:0] - 8));
+            10, 11, 12, 13, 14, 15, 16, 17: return $sformatf("a%0d", (addr[4:0] - 10));
+            28, 29, 30, 31: return $sformatf("t%0d", (addr[4:0] - 25));
+            default: return $sformatf("s%0d", (addr[4:0] - 16));
         endcase
     endfunction
 
