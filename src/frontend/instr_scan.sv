@@ -43,12 +43,22 @@ module instr_scan (
     assign rvi_jump_o   = (instr_i[6:0] == riscv::OpcodeJal)    ? 1'b1 : 1'b0;
     // opcode JAL
     assign rvc_jump_o   = (instr_i[15:13] == riscv::OpcodeCJ) & is_rvc_o & (instr_i[1:0] == 2'b01);
-    assign rvc_jr_o     = (instr_i[15:12] == 4'b1000) & (instr_i[6:2] == 5'b00000) & is_rvc_o & (instr_i[1:0] == 2'b10);
-    assign rvc_branch_o = ((instr_i[15:13] == riscv::OpcodeCBeqz) | (instr_i[15:13] == riscv::OpcodeCBnez)) & is_rvc_o & (instr_i[1:0] == 2'b01);
+    // always links to register 0
+    assign rvc_jr_o     = (instr_i[15:13] == riscv::OpcodeC2JalrMvAdd)
+                        & ~instr_i[12]
+                        & (instr_i[6:2] == 5'b00000)
+                        & (instr_i[1:0] == 2'b10)
+                        & is_rvc_o;
+    assign rvc_branch_o = ((instr_i[15:13] == riscv::OpcodeCBeqz) | (instr_i[15:13] == riscv::OpcodeCBnez))
+                        & (instr_i[1:0] == 2'b01)
+                        & is_rvc_o ;
     // check that rs1 is x1 or x5
-    assign rvc_return_o = rvc_jr_o & ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & instr_i[7];
-    assign rvc_jalr_o   = (instr_i[15:12] == 4'b1001) & (instr_i[6:2] == 5'b00000) & is_rvc_o;
-    assign rvc_call_o   = rvc_jalr_o;  // TODO: check that this captures calls
+    assign rvc_return_o = ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & instr_i[7] & rvc_jr_o ;
+    // always links to register 1 e.g.: it is a jump
+    assign rvc_jalr_o   = (instr_i[15:13] == riscv::OpcodeC2JalrMvAdd)
+                        & instr_i[12]
+                        & (instr_i[6:2] == 5'b00000) & is_rvc_o;
+    assign rvc_call_o   = rvc_jalr_o;
 
     // // differentiates between JAL and BRANCH opcode, JALR comes from BHT
     assign rvc_imm_o    = (instr_i[14]) ? {{56{instr_i[12]}}, instr_i[6:5], instr_i[2], instr_i[11:10], instr_i[4:3], 1'b0}
