@@ -349,7 +349,8 @@ module miss_handler #(
                     we_o        = 1'b1;
                     // finished with flushing operation, go back to idle
                     if (cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == DCACHE_NUM_WORDS-1) begin
-                        flush_ack_o = 1'b1;
+                        // only acknowledge if the flush wasn't triggered by an atomic
+                        flush_ack_o = ~serve_amo_q;
                         state_d     = IDLE;
                     end
                 end
@@ -417,6 +418,7 @@ module miss_handler #(
                 req_fsm_miss_wdata = data_align(amo_req_i.operand_a[2:0], amo_result_o);
                 req_fsm_miss_be = be_gen(amo_req_i.operand_a[2:0], amo_req_i.size);
 
+                // place a reservation on the memory
                 if (amo_req_i.amo_op == AMO_LR) begin
                     reservation_d.address = amo_req_i.operand_a[63:3];
                     reservation_d.valid = 1'b1;
@@ -435,6 +437,10 @@ module miss_handler #(
                         end else begin
                             amo_resp_o.result = 1'b1;
                         end
+                        // An SC must fail if there is a nother SC (to any address) between the LR and the SC in program
+                        // order.
+                        // in any case destory the reservation
+                        reservation_d.valid = 1'b0;
                     end
                 end
             end
@@ -478,7 +484,7 @@ module miss_handler #(
             evict_way_q   <= evict_way_d;
             evict_cl_q    <= evict_cl_d;
             serve_amo_q   <= serve_amo_d;
-            reservation_d <= reservation_d;
+            reservation_q <= reservation_d;
         end
     end
 

@@ -178,8 +178,10 @@ module store_unit (
     // -----------
     // re-align the write data to comply with the address offset
     always_comb begin
-        st_be_n        = lsu_ctrl_i.be;
-        st_data_n      = data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
+        st_be_n   = lsu_ctrl_i.be;
+        // don't shift the data if we are going to perform an AMO as we still need to operate on this data
+        st_data_n = is_amo(lsu_ctrl_i.operator) ? lsu_ctrl_i.data
+                                                : data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
         st_data_size_n = extract_transfer_size(lsu_ctrl_i.operator);
         // save AMO op for next cycle
         case (lsu_ctrl_i.operator)

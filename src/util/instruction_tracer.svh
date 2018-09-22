@@ -125,8 +125,9 @@ class instruction_tracer;
                     // as the most recent version of this register will be there.
                     if (tracer_if.pck.we[i]) begin
                         printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata[i], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
-                    end else
+                    end else begin
                         printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
+                    end
                 end
             end
             // --------------
@@ -140,10 +141,11 @@ class instruction_tracer;
             // Commit Registers
             // ----------------------
             // update shadow reg file here
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 2; i++) begin
                 if (tracer_if.pck.we[i] && tracer_if.pck.waddr[i] != 5'b0) begin
                     reg_file[tracer_if.pck.waddr[i]] = tracer_if.pck.wdata[i];
                 end
+            end
 
             // --------------
             // Flush Signals

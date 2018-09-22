@@ -163,6 +163,7 @@ module commit_stage #(
                 // flush the pipeline
                 flush_commit_o = amo_resp_i.ack;
                 amo_valid_commit_o = 1'b1;
+                we_o[0] = amo_resp_i.ack;
             end
         end
 
