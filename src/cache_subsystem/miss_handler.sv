@@ -403,11 +403,12 @@ module miss_handler #(
                 // Sign-extend for word operation
                 if (amo_req_i.size == 2'b10) begin
                     amo_operand_a = sext32(load_data[31:0]);
+                    amo_operand_b = sext32(amo_req_i.operand_b[31:0]);
                 end else begin
                     amo_operand_a = load_data;
+                    amo_operand_b = amo_req_i.operand_b;
                 end
 
-                amo_operand_b = amo_req_i.operand_b;
                 //  we do not need a store request for load reserved
                 req_fsm_miss_valid = (amo_req_i.amo_op == AMO_LR) ? 1'b0 : 1'b1;
                 // for a load reserved we do not want to write
@@ -604,10 +605,10 @@ module miss_handler #(
     // AMO ALU
     // -----------------
     amo_alu i_amo_alu (
-        .amo_op        ( amo_op        ),
-        .amo_operand_a ( amo_operand_a ),
-        .amo_operand_b ( amo_operand_b ),
-        .amo_result_o  ( amo_result_o  )
+        .amo_op_i        ( amo_op        ),
+        .amo_operand_a_i ( amo_operand_a ),
+        .amo_operand_b_i ( amo_operand_b ),
+        .amo_result_o    ( amo_result_o  )
     );
 
     // -----------------

@@ -57,13 +57,15 @@ package ariane_pkg;
                                                 dataaddr: dm::DataAddr
                                               };
 
+
+    // enables a commit log which matches spikes commit log format for easier trace comparison
+    localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b0;
+
+    // ------------- Dangerouse -------------
     // if set to zero a flush will not invalidate the cache-lines, in a single core environment
     // where coherence is not necessary this can improve performance. This needs to be switched on
     // when more than one core is in a system
-    localparam logic INVALIDATE_ON_FLUSH = 1'b0;
-
-    // enables a commit log which matches spikes commit log format for easier trace comparison
-    localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
+    localparam logic INVALIDATE_ON_FLUSH = 1'b1;
 
     // ---------------
     // Fetch Stage
@@ -160,10 +162,10 @@ package ariane_pkg;
     // ---------------
 
     // I$
-    parameter int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit
-    parameter int unsigned  ICACHE_TAG_WIDTH         = 44; // in bit
-    parameter int unsigned  ICACHE_SET_ASSOC         = 4;
-    parameter int unsigned  ICACHE_LINE_WIDTH        = 128; // in bit
+    localparam int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit
+    localparam int unsigned  ICACHE_TAG_WIDTH         = 44; // in bit
+    localparam int unsigned  ICACHE_SET_ASSOC         = 4;
+    localparam int unsigned  ICACHE_LINE_WIDTH        = 128; // in bit
 
     // D$
     localparam int unsigned DCACHE_INDEX_WIDTH       = 12;

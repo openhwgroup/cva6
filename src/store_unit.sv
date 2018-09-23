@@ -60,7 +60,8 @@ module store_unit (
     logic st_ready;
     logic st_valid;
     logic st_valid_without_flush;
-
+    logic instr_is_amo;
+    assign instr_is_amo = is_amo(lsu_ctrl_i.operator);
     // keep the data and the byte enable for the second cycle (after address translation)
     logic [63:0]  st_data_n,      st_data_q;
     logic [7:0]   st_be_n,        st_be_q;
@@ -87,7 +88,6 @@ module store_unit (
             // we got a valid store
             IDLE: begin
                 if (valid_i) begin
-
                     state_d = VALID_STORE;
                     translation_req_o = 1'b1;
                     pop_st_o = 1'b1;
@@ -113,12 +113,12 @@ module store_unit (
 
                 st_valid_without_flush = 1'b1;
 
-                // we have another request
-                if (valid_i) begin
+                // we have another request and its not an AMO (the AMO buffer only has depth 1)
+                if (valid_i && !instr_is_amo) begin
 
                     translation_req_o = 1'b1;
                     state_d = VALID_STORE;
-                        pop_st_o = 1'b1;
+                    pop_st_o = 1'b1;
 
                     if (!dtlb_hit_i) begin
                         state_d = WAIT_TRANSLATION;
@@ -126,8 +126,8 @@ module store_unit (
                     end
 
                     if (!st_ready) begin
-                        pop_st_o = 1'b0;
                         state_d = WAIT_STORE_READY;
+                        pop_st_o = 1'b0;
                     end
                 // if we do not have another request go back to idle
                 end else begin
@@ -180,8 +180,8 @@ module store_unit (
     always_comb begin
         st_be_n   = lsu_ctrl_i.be;
         // don't shift the data if we are going to perform an AMO as we still need to operate on this data
-        st_data_n = is_amo(lsu_ctrl_i.operator) ? lsu_ctrl_i.data
-                                                : data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
+        st_data_n = instr_is_amo ? lsu_ctrl_i.data
+                                 : data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
         st_data_size_n = extract_transfer_size(lsu_ctrl_i.operator);
         // save AMO op for next cycle
         case (lsu_ctrl_i.operator)

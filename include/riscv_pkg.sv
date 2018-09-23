@@ -395,7 +395,9 @@ package riscv;
         return 32'h00000000;
     endfunction
 
+
     // trace log compatible to spikes commit log feature
+    // pragma translate_off
     function string spikeCommitLog(logic [63:0] pc, priv_lvl_t priv_lvl, logic [31:0] instr, logic [4:0] rd, logic [63:0] result);
         string rd_s;
 
@@ -410,4 +412,5 @@ package riscv;
             return $sformatf("%d 0x%h (0x%h)\n", priv_lvl, pc, instr);
         end
     endfunction
+    // pragma translate_on
 endpackage
