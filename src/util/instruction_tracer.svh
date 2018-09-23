@@ -30,7 +30,7 @@ class instruction_tracer;
     logic [63:0] fp_reg_file [32];
     // 64 bit clock tick count
     longint unsigned clk_ticks;
-    int f;
+    int f, commit_log;
     // address mapping
     // contains mappings of the form vaddr <-> paddr
     // should it print the instructions to the console
@@ -48,11 +48,13 @@ class instruction_tracer;
     endfunction : new
 
     function void create_file(logic [5:0] cluster_id, logic [3:0] core_id);
-        string fn;
+        string fn, fn_commit_log;
         $sformat(fn, "trace_core_%h_%h.log", cluster_id, core_id);
+        $sformat(fn_commit_log, "trace_core_%h_%h_commit.log", cluster_id, core_id);
         $display("[TRACER] Output filename is: %s", fn);
 
         this.f = $fopen(fn,"w");
+        if (ENABLE_SPIKE_COMMIT_LOG) this.commit_log = $fopen(fn_commit_log, "w");
     endfunction : create_file
 
     task trace();
@@ -185,6 +187,9 @@ class instruction_tracer;
         instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.gp_reg_file, this.fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
         // print instruction to console
         string print_instr = iti.printInstr();
+        if (ENABLE_SPIKE_COMMIT_LOG && !debug_mode) begin
+            $fwrite(this.commit_log, riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result));
+        end
         uvm_report_info( "Tracer",  print_instr, UVM_HIGH);
         $fwrite(this.f, {print_instr, "\n"});
     endfunction
@@ -197,8 +202,8 @@ class instruction_tracer;
     endfunction
 
     function void close();
-        if (f)
-            $fclose(this.f);
+        if (f) $fclose(this.f);
+        if (ENABLE_SPIKE_COMMIT_LOG && this.commit_log) $fclose(this.commit_log);
     endfunction
 
 endclass : instruction_tracer
