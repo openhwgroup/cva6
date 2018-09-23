@@ -313,6 +313,7 @@ module miss_handler #(
                     addr_o     = cnt_q;
                     req_o      = 1'b1;
                     we_o       = 1'b1;
+                    data_o.valid = INVALIDATE_ON_FLUSH ? 1'b0 : 1'b1;
                     // invalidate
                     be_o.vldrty = evict_way_q;
                     // go back to handling the miss or flushing, depending on where we came from
@@ -345,7 +346,7 @@ module miss_handler #(
                     state_d     = FLUSH_REQ_STATUS;
                     addr_o      = cnt_q;
                     req_o       = 1'b1;
-                    be_o.vldrty = '1;
+                    be_o.vldrty = INVALIDATE_ON_FLUSH ? '1 : '0;
                     we_o        = 1'b1;
                     // finished with flushing operation, go back to idle
                     if (cnt_q[DCACHE_INDEX_WIDTH-1:DCACHE_BYTE_OFFSET] == DCACHE_NUM_WORDS-1) begin

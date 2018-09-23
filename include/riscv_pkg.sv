@@ -171,7 +171,7 @@ package riscv;
     localparam OpcodeCJ        = 3'b101;
     localparam OpcodeCBeqz     = 3'b110;
     localparam OpcodeCBnez     = 3'b111;
-
+    localparam OpcodeC2JalrMvAdd    = 3'b100;
     // ----------------------
     // Performance Counters
     // ----------------------

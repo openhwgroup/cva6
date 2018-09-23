@@ -19,6 +19,8 @@ module bht #(
     input  logic                        clk_i,
     input  logic                        rst_ni,
     input  logic                        flush_i,
+    input  logic                        debug_mode_i,
+
     input  logic [63:0]                 vpc_i,
     input  ariane_pkg::bht_update_t     bht_update_i,
     output ariane_pkg::bht_prediction_t bht_prediction_o
@@ -46,7 +48,7 @@ module bht #(
         bht_d = bht_q;
         saturation_counter = bht_q[update_pc].saturation_counter;
 
-        if (bht_update_i.valid) begin
+        if (bht_update_i.valid && !debug_mode_i) begin
             bht_d[update_pc].valid = 1'b1;
 
             if (saturation_counter == 2'b11) begin

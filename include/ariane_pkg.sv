@@ -42,7 +42,7 @@ package ariane_pkg;
                                      | (1 << 20)  // U - User mode implemented
                                      | (0 << 23)  // X - Non-standard extensions present
                                      | (1 << 63); // RV64
-    localparam ENABLE_RENAME = 1'b0;
+    localparam ENABLE_RENAME = 1'b1;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
@@ -56,6 +56,11 @@ package ariane_pkg;
                                                 datasize: dm::DataCount,
                                                 dataaddr: dm::DataAddr
                                               };
+
+    // if set to zero a flush will not invalidate the cache-lines, in a single core environment
+    // where coherence is not necessary this can improve performance. This needs to be switched on
+    // when more than one core is in a system
+    localparam logic INVALIDATE_ON_FLUSH = 1'b0;
     // ---------------
     // Fetch Stage
     // ---------------

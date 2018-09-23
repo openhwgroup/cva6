@@ -160,7 +160,7 @@ module ariane #(
     logic                     tsr_csr_id;
     logic                     dcache_en_csr_nbdcache;
     logic                     icache_en_csr;
-    logic                     debug_mode_csr_id;
+    logic                     debug_mode;
     logic                     single_step_csr_commit;
     // ----------------------------
     // Performance Counters <-> *
@@ -218,6 +218,7 @@ module ariane #(
     frontend i_frontend (
         .flush_i             ( flush_ctrl_if                 ), // not entirely correct
         .flush_bp_i          ( 1'b0                          ),
+        .debug_mode_i        ( debug_mode                    ),
         .boot_addr_i         ( boot_addr_i                   ),
         .icache_dreq_i       ( icache_dreq_cache_if          ),
         .icache_dreq_o       ( icache_dreq_if_cache          ),
@@ -251,7 +252,7 @@ module ariane #(
         .issue_instr_ack_i          ( issue_instr_issue_id            ),
 
         .priv_lvl_i                 ( priv_lvl                        ),
-        .debug_mode_i               ( debug_mode_csr_id               ),
+        .debug_mode_i               ( debug_mode                      ),
         .tvm_i                      ( tvm_csr_id                      ),
         .tw_i                       ( tw_csr_id                       ),
         .tsr_i                      ( tsr_csr_id                      ),
@@ -401,7 +402,7 @@ module ariane #(
         .halt_i                 ( halt_ctrl                     ),
         .flush_dcache_i         ( dcache_flush_ctrl_cache       ),
         .exception_o            ( ex_commit                     ),
-        .debug_mode_i           ( debug_mode_csr_id             ),
+        .debug_mode_i           ( debug_mode                    ),
         .debug_req_i            ( debug_req                     ),
         .single_step_i          ( single_step_csr_commit        ),
         .commit_instr_i         ( commit_instr_id_commit        ),
@@ -459,7 +460,7 @@ module ariane #(
         .tvm_o                  ( tvm_csr_id                    ),
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
-        .debug_mode_o           ( debug_mode_csr_id             ),
+        .debug_mode_o           ( debug_mode                    ),
         .single_step_o          ( single_step_csr_commit        ),
         .dcache_en_o            ( dcache_en_csr_nbdcache        ),
         .icache_en_o            ( icache_en_csr                 ),
@@ -600,7 +601,7 @@ module ariane #(
     assign tracer_if.exception         = commit_stage_i.exception_o;
     // assign current privilege level
     assign tracer_if.priv_lvl          = priv_lvl;
-    assign tracer_if.debug_mode        = debug_mode_csr_id;
+    assign tracer_if.debug_mode        = debug_mode;
     instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
     `endif
     `endif
@@ -639,15 +640,24 @@ module ariane #(
         if (~rst_ni) begin
             cycles <= 0;
         end else begin
+            string mode = "";
+            if (debug_mode) mode = "D";
+            else begin
+                case (priv_lvl)
+                riscv::PRIV_LVL_M: mode = "M";
+                riscv::PRIV_LVL_S: mode = "S";
+                riscv::PRIV_LVL_U: mode = "U";
+                endcase
+            end
             for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
                 if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
-                    $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+                    $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
                 end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
                     if (commit_instr_id_commit[i].ex.cause == 2) begin
                         $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
                     end else begin
-                        if (debug_mode_csr_id) begin
-                            $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+                        if (debug_mode) begin
+                            $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
                         end else begin
                             $fwrite(f, "Exception Cause: %5d, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
                         end

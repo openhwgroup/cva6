@@ -46,13 +46,12 @@ $ spike-dasm < trace_core_00_0.dasm > logfile.txt
 
 ### Running Applications
 
-It is possible to run user-space binaries on Ariane with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)). As Ariane currently does not support atomics and floating point extensions make sure that you configure `riscv-pk` with:
-`--with-arch=rv64imc`. In particular inside the `riscv-pk` directory do:
+It is possible to run user-space binaries on Ariane with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)).
 
 ```
 $ mkdir build
 $ cd build
-$ ../configure --prefix=$RISCV --host=riscv64-unknown-elf --with-arch=rv64imc
+$ ../configure --prefix=$RISCV --host=riscv64-unknown-elf
 $ make
 $ make install
 ```
@@ -77,7 +76,7 @@ Coming.
 
 ## Planned Improvements
 
-> Atomics are implemented for a single core environment. They will fail in a multi-core setup
+> Atomics are implemented for a single core environment. They will semantically fail in a multi-core setup.
 
 ## Going Beyond
 
@@ -94,7 +93,7 @@ If you call `simc` instead of `sim` it will run without the GUI. QuestaSim uses 
 
 We provide two CI configuration files for Travis CI and GitLab CI that run the RISCV assembly tests, the RISCV benchmarks and a randomized RISCV Torture test. The difference between the two is that Travis CI runs these tests only on Verilator, whereas GitLab CI runs the same tests on QuestaSim and Verilator.
 
-If you would like to run the CI test suites locally on your machine, follow any of the two scripts `ci.travis-ci-emul.sh` and `ci.travis-ci-emul.sh` (depending on whether you have QuestaSim or not). In particular, you have to get the required packages for your system, the paths in `ci/path-setup.sh` to match your setup, and run the installation and build scripts prior to running any of the tests suites.
+If you would like to run the CI test suites locally on your machine, follow any of the two scripts `ci/travis-ci-emul.sh` and `ci/travis-ci-emul.sh` (depending on whether you have QuestaSim or not). In particular, you have to get the required packages for your system, the paths in `ci/path-setup.sh` to match your setup, and run the installation and build scripts prior to running any of the tests suites.
 
 Once everything is set up and installed, you can run the tests suites as follows (using Verilator):
 
@@ -107,6 +106,7 @@ $ make run-benchmarks-verilator
 In order to run randomized Torture tests, you first have to generate the randomized program prior to running the simulation:
 
 ```
+$ ./ci/get-torture.sh
 $ make torture-gen
 $ make torture-rtest-verilator
 
