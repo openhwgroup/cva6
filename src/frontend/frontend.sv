@@ -20,6 +20,7 @@ module frontend (
     input  logic               rst_ni,             // Asynchronous reset active low
     input  logic               flush_i,            // flush request for PCGEN
     input  logic               flush_bp_i,         // flush branch prediction
+    input  logic               debug_mode_i,
     // global input
     input  logic [63:0]        boot_addr_i,
     // Set a new PC
@@ -207,10 +208,12 @@ module frontend (
                     end
 
                     // to take this jump we need a valid prediction target **speculative**
-                    if ((rvi_jalr[i] || rvc_jalr[i]) && btb_prediction.valid) begin
-                        bp_vaddr = btb_prediction.target_address;
-                        taken[i+1] = 1'b1;
+                    if ((rvi_jalr[i] || rvc_jalr[i]) && ~(rvi_call[i] || rvc_call[i])) begin
                         bp_sbe.cf_type = BTB;
+                        if (btb_prediction.valid) begin
+                            bp_vaddr = btb_prediction.target_address;
+                            taken[i+1] = 1'b1;
+                        end
                     end
 
                     // is it a return and the RAS contains a valid prediction? **speculative**
@@ -444,21 +447,25 @@ module frontend (
     btb #(
         .NR_ENTRIES       ( BTB_ENTRIES      )
     ) i_btb (
+        .clk_i,
+        .rst_ni,
         .flush_i          ( flush_bp_i       ),
+        .debug_mode_i,
         .vpc_i            ( icache_vaddr_q   ),
         .btb_update_i     ( btb_update       ),
-        .btb_prediction_o ( btb_prediction   ),
-        .*
+        .btb_prediction_o ( btb_prediction   )
     );
 
     bht #(
         .NR_ENTRIES       ( BHT_ENTRIES      )
     ) i_bht (
+        .clk_i,
+        .rst_ni,
         .flush_i          ( flush_bp_i       ),
+        .debug_mode_i,
         .vpc_i            ( icache_vaddr_q   ),
         .bht_update_i     ( bht_update       ),
-        .bht_prediction_o ( bht_prediction   ),
-        .*
+        .bht_prediction_o ( bht_prediction   )
     );
 
     for (genvar i = 0; i < INSTR_PER_FETCH; i++) begin
