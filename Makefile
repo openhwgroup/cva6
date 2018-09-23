@@ -287,6 +287,7 @@ run-torture-log: build
 	+signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
 	cp vsim.wlf $(riscv-torture-dir)/$(test-location).wlf
 	cp trace_core_00_0.log $(riscv-torture-dir)/$(test-location).trace
+	cp trace_core_00_0_commit.log $(riscv-torture-dir)/$(test-location).commit
 	cp transcript $(riscv-torture-dir)/$(test-location).transcript
 
 run-torture-verilator: verilate
