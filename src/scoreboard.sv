@@ -220,7 +220,7 @@ module scoreboard #(
                 end else if ((mem_q[i].sbe.rd == rs2_i) && (is_rd_fpr(mem_q[i].sbe.op) == is_rs2_fpr(issue_instr_o.op))) begin
                     rs2_o       = mem_q[i].sbe.result;
                     rs2_valid_o = mem_q[i].sbe.valid;
-                end else if (mem_q[i].sbe.rd == rs3_i) begin // rs3 is only considered in FP cases so no check needed
+                end else if ((mem_q[i].sbe.rd == rs3_i) && (is_rd_fpr(mem_q[i].sbe.op) == is_imm_fpr(issue_instr_o.op))) begin
                     rs3_o       = mem_q[i].sbe.result;
                     rs3_valid_o = mem_q[i].sbe.valid;
                 end
@@ -245,7 +245,8 @@ module scoreboard #(
                 rs2_valid_o = wb_valid_i[j];
                 break;
             end
-            if (mem_q[trans_id_i[j]].sbe.rd == rs3_i && wb_valid_i[j] && ~ex_i[j].valid) begin // rs3 only uses fpr
+            if (mem_q[trans_id_i[j]].sbe.rd == rs3_i && wb_valid_i[j] && ~ex_i[j].valid
+               && (is_rd_fpr(mem_q[trans_id_i[j]].sbe.op) == is_imm_fpr(issue_instr_o.op))) begin
                 rs3_o = wbdata_i[j];
                 rs3_valid_o = wb_valid_i[j];
                 break;
