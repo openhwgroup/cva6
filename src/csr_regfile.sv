@@ -606,15 +606,17 @@ module csr_regfile #(
         // --------------------
         // Counters
         // --------------------
-        // just increment the cycle count
-        cycle_d = cycle_q + 1'b1;
-        // increase instruction retired counter
-        for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-            if (commit_ack_i[i]) begin
-                instret++;
+        if (!debug_mode_q) begin
+            // just increment the cycle count
+            cycle_d = cycle_q + 1'b1;
+            // increase instruction retired counter
+            for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+                if (commit_ack_i[i]) begin
+                    instret++;
+                end
             end
+            instret_d = instret;
         end
-        instret_d = instret;
     end
 
     // ---------------------------
