@@ -2,7 +2,7 @@
 
 # Ariane RISC-V CPU
 
-Ariane is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.1 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
+Ariane is a 6-stage, single issue, in-order CPU which implements the 64-bit RISC-V instruction set. It fully implements I, M, A and C extensions as specified in Volume I: User-Level ISA V 2.3 as well as the draft privilege extension 1.10. It implements three privilege levels M, S, U to fully support a Unix-like operating system. Furthermore it is compliant to the draft external debug spec 0.13.
 
 It has configurable size, separate TLBs, a hardware PTW and branch-prediction (branch target buffer and branch history table). The primary design goal was on reducing critical path length.
 
@@ -44,7 +44,7 @@ Both, the Verilator model as well as the Questa simulation will produce trace lo
 $ spike-dasm < trace_core_00_0.dasm > logfile.txt
 ```
 
-### Running Applications
+### Running User-Space Applications
 
 It is possible to run user-space binaries on Ariane with `riscv-pk` ([link](https://github.com/riscv/riscv-pk)).
 
@@ -59,13 +59,26 @@ $ make install
 Then to run a RISC-V ELF using the Verilator model do:
 
 ```
+$ echo '
+#include <stdio.h>
+
+int main(int argc, char const *argv[]) {
+    printf("Hello Ariane!\\n");
+    return 0;
+}' > hello.c
+$ riscv64-unknown-elf-gcc hello.c -o hello.elf
+```
+
+```
 $ make verilate
-$ work-ver/Variane_testharness /path/to/pk path/to/riscv.elf
+$ work-ver/Variane_testharness $RISCV/riscv64-unknown-elf/bin/pk hello.elf
+
+
 ```
 
 If you want to use QuestaSim to run it you can use the following command:
 ```
-$ make simc riscv-test=/path/to/pk target-options=path/to/riscv.elf
+$ make simc riscv-test-dir=$RISCV/riscv64-unknown-elf/bin riscv-test=pk target-options=hello.elf
 ```
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
@@ -113,6 +126,23 @@ $ make torture-rtest-verilator
 ```
 This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
 
+Ariane can dump a trace-log in Questa which can be easily diffed against Spike with commit log enabled. In `include/ariane_pkg.sv` set:
+
+```verilog
+localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
+```
+This will dump a file called `trace_core_*_*_commit.log`.
+
+This can be helpful for debugging long traces (e.g.: torture traces). To compile Spike with the commit log feature do:
+
+```
+$ apt-get install device-tree-compiler
+$ mkdir build
+$ cd build
+$ ../configure --prefix=$RISCV --with-fesvr=$RISCV --enable-commitlog
+$ make
+$ [sudo] make install
+```
 
 # Contributing
 
