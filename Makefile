@@ -212,9 +212,9 @@ $(addsuffix -verilator,$(riscv-asm-tests)): verilate
 run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests))
 
 # split into two halfs for travis jobs (otherwise they will time out)
-run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-p-% ,$(riscv-asm-tests)))
+run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-v-% ,$(riscv-asm-tests)))
 
-run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-p-% ,$(riscv-asm-tests)))
+run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-v-% ,$(riscv-asm-tests)))
 
 
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate
