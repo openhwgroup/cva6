@@ -24,6 +24,7 @@ module btb #(
     input  logic                        clk_i,           // Clock
     input  logic                        rst_ni,          // Asynchronous reset active low
     input  logic                        flush_i,         // flush the btb
+    input  logic                        debug_mode_i,
 
     input  logic [63:0]                 vpc_i,           // virtual PC from IF stage
     input  ariane_pkg::btb_update_t     btb_update_i,    // update btb with this information
@@ -52,7 +53,7 @@ module btb #(
     always_comb begin : update_branch_predict
         btb_d = btb_q;
 
-        if (btb_update_i.valid) begin
+        if (btb_update_i.valid && !debug_mode_i) begin
             btb_d[update_pc].valid = 1'b1;
             // the target address is simply updated
             btb_d[update_pc].target_address = btb_update_i.target_address;

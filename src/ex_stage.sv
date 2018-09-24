@@ -58,6 +58,7 @@ module ex_stage #(
     output logic                                   lsu_commit_ready_o,    // commit queue is ready to accept another commit request
     output exception_t                             lsu_exception_o,
     output logic                                   no_st_pending_o,
+    input  logic                                   amo_valid_commit_i,
     // CSR
     output logic                                   csr_ready_o,
     input  logic                                   csr_valid_i,
@@ -91,7 +92,8 @@ module ex_stage #(
     // interface to dcache
     input  dcache_req_o_t [2:0]                    dcache_req_ports_i,
     output dcache_req_i_t [2:0]                    dcache_req_ports_o,
-
+    output amo_req_t                               amo_req_o,          // request to cache subsytem
+    input  amo_resp_t                              amo_resp_i,         // response from cache subsystem
     // Performance counters
     output logic                                   itlb_miss_o,
     output logic                                   dtlb_miss_o
@@ -131,8 +133,10 @@ module ex_stage #(
     lsu lsu_i (
         .commit_i           ( lsu_commit_i       ),
         .commit_ready_o     ( lsu_commit_ready_o ),
-        .dcache_req_ports_i ( dcache_req_ports_i ),
-        .dcache_req_ports_o ( dcache_req_ports_o ),
+        .dcache_req_ports_i,
+        .dcache_req_ports_o,
+        .amo_req_o,
+        .amo_resp_i,
         .*
     );
 

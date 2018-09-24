@@ -153,7 +153,7 @@ module ariane_testharness #(
         .debug_req_valid      ( dmi_req_valid        ),
         .debug_req_ready      ( debug_req_ready      ),
         .debug_req_bits_addr  ( dmi_req.addr         ),
-        .debug_req_bits_op    (  debug_req_bits_op   ),
+        .debug_req_bits_op    ( debug_req_bits_op    ),
         .debug_req_bits_data  ( dmi_req.data         ),
         .debug_resp_valid     ( dmi_resp_valid       ),
         .debug_resp_ready     ( dmi_resp_ready       ),

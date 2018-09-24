@@ -129,6 +129,7 @@ module ariane #(
     logic                     lsu_commit_commit_ex;
     logic                     lsu_commit_ready_ex_commit;
     logic                     no_st_pending_ex_commit;
+    logic                     amo_valid_commit;
     // --------------
     // ID <-> COMMIT
     // --------------
@@ -159,7 +160,7 @@ module ariane #(
     logic                     tsr_csr_id;
     logic                     dcache_en_csr_nbdcache;
     logic                     icache_en_csr;
-    logic                     debug_mode_csr_id;
+    logic                     debug_mode;
     logic                     single_step_csr_commit;
     // ----------------------------
     // Performance Counters <-> *
@@ -191,11 +192,20 @@ module ariane #(
     logic                     dcache_flush_ctrl_cache;
     logic                     dcache_flush_ack_cache_ctrl;
     logic                     set_debug_pc;
+    logic                     flush_commit;
 
     icache_areq_i_t           icache_areq_ex_cache;
     icache_areq_o_t           icache_areq_cache_ex;
     icache_dreq_i_t           icache_dreq_if_cache;
     icache_dreq_o_t           icache_dreq_cache_if;
+
+    amo_req_t                 amo_req;
+    amo_resp_t                amo_resp;
+
+    logic debug_req;
+    // Disable debug during AMO commit
+    assign debug_req = debug_req_i & ~amo_valid_commit;
+
     // ----------------
     // DCache <-> *
     // ----------------
@@ -208,6 +218,7 @@ module ariane #(
     frontend i_frontend (
         .flush_i             ( flush_ctrl_if                 ), // not entirely correct
         .flush_bp_i          ( 1'b0                          ),
+        .debug_mode_i        ( debug_mode                    ),
         .boot_addr_i         ( boot_addr_i                   ),
         .icache_dreq_i       ( icache_dreq_cache_if          ),
         .icache_dreq_o       ( icache_dreq_if_cache          ),
@@ -241,7 +252,7 @@ module ariane #(
         .issue_instr_ack_i          ( issue_instr_issue_id            ),
 
         .priv_lvl_i                 ( priv_lvl                        ),
-        .debug_mode_i               ( debug_mode_csr_id               ),
+        .debug_mode_i               ( debug_mode                      ),
         .tvm_i                      ( tvm_csr_id                      ),
         .tw_i                       ( tw_csr_id                       ),
         .tsr_i                      ( tsr_csr_id                      ),
@@ -291,6 +302,7 @@ module ariane #(
         .csr_ready_i                ( csr_ready_ex_id                 ),
         .csr_valid_o                ( csr_valid_id_ex                 ),
 
+        .resolved_branch_i          ( resolved_branch                 ),
         .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id,         mult_trans_id_ex_id        }),
         .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id          }),
         .ex_ex_i                    ( {{$bits(exception_t){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}} }),
@@ -344,6 +356,9 @@ module ariane #(
         .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit             ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id                    ),
         .no_st_pending_o        ( no_st_pending_ex_commit                ),
+        .amo_valid_commit_i     ( amo_valid_commit                       ),
+        .amo_req_o              ( amo_req                                ),
+        .amo_resp_i             ( amo_resp                               ),
         // CSR
         .csr_ready_o            ( csr_ready_ex_id                        ),
         .csr_valid_i            ( csr_valid_id_ex                        ),
@@ -383,11 +398,13 @@ module ariane #(
     // Commit
     // ---------
     commit_stage commit_stage_i (
+        .clk_i,
+        .rst_ni,
         .halt_i                 ( halt_ctrl                     ),
-        .flush_dcache_i         ( dcache_flush_ctrl_cache          ),
+        .flush_dcache_i         ( dcache_flush_ctrl_cache       ),
         .exception_o            ( ex_commit                     ),
-        .debug_mode_i           ( debug_mode_csr_id             ),
-        .debug_req_i            ( debug_req_i                   ),
+        .debug_mode_i           ( debug_mode                    ),
+        .debug_req_i            ( debug_req                     ),
         .single_step_i          ( single_step_csr_commit        ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
@@ -397,6 +414,8 @@ module ariane #(
         .we_o                   ( we_commit_id                  ),
         .commit_lsu_o           ( lsu_commit_commit_ex          ),
         .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
+        .amo_valid_commit_o     ( amo_valid_commit              ),
+        .amo_resp_i             ( amo_resp                      ),
         .commit_csr_o           ( csr_commit_commit_ex          ),
         .pc_o                   ( pc_commit                     ),
         .csr_op_o               ( csr_op_commit_csr             ),
@@ -406,6 +425,7 @@ module ariane #(
         .fence_i_o              ( fence_i_commit_controller     ),
         .fence_o                ( fence_commit_controller       ),
         .sfence_vma_o           ( sfence_vma_commit_controller  ),
+        .flush_commit_o         ( flush_commit                  ),
         .*
     );
 
@@ -417,8 +437,8 @@ module ariane #(
     ) csr_regfile_i (
         .flush_o                ( flush_csr_ctrl                ),
         .halt_csr_o             ( halt_csr_ctrl                 ),
-        .commit_ack_i           ( commit_ack                    ),
         .commit_instr_i         ( commit_instr_id_commit        ),
+        .commit_ack_i           ( commit_ack                    ),
         .ex_i                   ( ex_commit                     ),
         .csr_op_i               ( csr_op_commit_csr             ),
         .csr_addr_i             ( csr_addr_ex_csr               ),
@@ -441,7 +461,7 @@ module ariane #(
         .tvm_o                  ( tvm_csr_id                    ),
         .tw_o                   ( tw_csr_id                     ),
         .tsr_o                  ( tsr_csr_id                    ),
-        .debug_mode_o           ( debug_mode_csr_id             ),
+        .debug_mode_o           ( debug_mode                    ),
         .single_step_o          ( single_step_csr_commit        ),
         .dcache_en_o            ( dcache_en_csr_nbdcache        ),
         .icache_en_o            ( icache_en_csr                 ),
@@ -449,6 +469,10 @@ module ariane #(
         .perf_data_o            ( data_csr_perf                 ),
         .perf_data_i            ( data_perf_csr                 ),
         .perf_we_o              ( we_csr_perf                   ),
+        .debug_req_i            ( debug_req                     ),
+        .ipi_i,
+        .irq_i,
+        .time_irq_i,
         .*
     );
 
@@ -485,8 +509,8 @@ module ariane #(
         .flush_id_o             ( flush_ctrl_id                 ),
         .flush_ex_o             ( flush_ctrl_ex                 ),
         .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
-        .flush_dcache_o         ( dcache_flush_ctrl_cache          ),
-        .flush_dcache_ack_i     ( dcache_flush_ack_cache_ctrl      ),
+        .flush_dcache_o         ( dcache_flush_ctrl_cache       ),
+        .flush_dcache_ack_i     ( dcache_flush_ack_cache_ctrl   ),
 
         .halt_csr_i             ( halt_csr_ctrl                 ),
         .halt_o                 ( halt_ctrl                     ),
@@ -499,6 +523,7 @@ module ariane #(
         .fence_i_i              ( fence_i_commit_controller     ),
         .fence_i                ( fence_commit_controller       ),
         .sfence_vma_i           ( sfence_vma_commit_controller  ),
+        .flush_commit_i         ( flush_commit                  ),
 
         .flush_icache_o         ( icache_flush_ctrl_cache       ),
         .*
@@ -525,12 +550,11 @@ module ariane #(
         .dcache_enable_i       ( dcache_en_csr_nbdcache                ),
         .dcache_flush_i        ( dcache_flush_ctrl_cache               ),
         .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl           ),
-        // from PTW, Load Unit  and Store Unit
-        .dcache_amo_commit_i   ( 1'b0                                  ),
-        .dcache_amo_valid_o    (                                       ),
-        .dcache_amo_result_o   (                                       ),
-        .dcache_amo_flush_i    ( 1'b0                                  ),
+        // to commit stage
+        .amo_req_i             ( amo_req                               ),
+        .amo_resp_o            ( amo_resp                              ),
         .dcache_miss_o         ( dcache_miss_cache_perf                ),
+        // from PTW, Load Unit  and Store Unit
         .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
         .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),
         // memory side
@@ -578,7 +602,7 @@ module ariane #(
     assign tracer_if.exception         = commit_stage_i.exception_o;
     // assign current privilege level
     assign tracer_if.priv_lvl          = priv_lvl;
-    assign tracer_if.debug_mode        = debug_mode_csr_id;
+    assign tracer_if.debug_mode        = debug_mode;
     instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
     `endif
     `endif
@@ -617,15 +641,24 @@ module ariane #(
         if (~rst_ni) begin
             cycles <= 0;
         end else begin
+            string mode = "";
+            if (debug_mode) mode = "D";
+            else begin
+                case (priv_lvl)
+                riscv::PRIV_LVL_M: mode = "M";
+                riscv::PRIV_LVL_S: mode = "S";
+                riscv::PRIV_LVL_U: mode = "U";
+                endcase
+            end
             for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
                 if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
-                    $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+                    $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
                 end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
                     if (commit_instr_id_commit[i].ex.cause == 2) begin
                         $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
                     end else begin
-                        if (debug_mode_csr_id) begin
-                            $fwrite(f, "%d 0x%0h (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+                        if (debug_mode) begin
+                            $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
                         end else begin
                             $fwrite(f, "Exception Cause: %5d, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
                         end

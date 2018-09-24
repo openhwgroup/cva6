@@ -132,10 +132,11 @@ module clint #(
     always_comb begin : irq_gen
         // check that the mtime cmp register is set to a meaningful value
         for (int unsigned i = 0; i < NR_CORES; i++) begin
-            if (mtimecmp_q[i] != 0 && mtime_q >= mtimecmp_q[i])
+            if (mtimecmp_q[i] != 0 && mtime_q >= mtimecmp_q[i]) begin
                 timer_irq_o[i] = 1'b1;
-            else
+            end else begin
                 timer_irq_o[i] = 1'b0;
+            end
         end
     end
 
@@ -155,7 +156,7 @@ module clint #(
 
     // Registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             mtime_q    <= 64'b0;
             mtimecmp_q <= 'b0;
             msip_q     <= '0;

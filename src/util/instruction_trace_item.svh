@@ -50,17 +50,17 @@ class instruction_trace_item;
     endfunction
     // convert register address to ABI compatible form
     function string regAddrToStr(logic [5:0] addr);
-        case (addr)
+        case (addr[4:0])
             0: return "x0";
             1: return "ra";
             2: return "sp";
             3: return "gp";
             4: return "tp";
-            5, 6, 7: return $sformatf("t%0d", (addr - 5));
-            8, 9: return $sformatf("s%0d", (addr - 8));
-            10, 11, 12, 13, 14, 15, 16, 17: return $sformatf("a%0d", (addr - 10));
-            28, 29, 30, 31: return $sformatf("t%0d", (addr - 25));
-            default: return $sformatf("s%0d", (addr - 16));
+            5, 6, 7: return $sformatf("t%0d", (addr[4:0] - 5));
+            8, 9: return $sformatf("s%0d", (addr[4:0] - 8));
+            10, 11, 12, 13, 14, 15, 16, 17: return $sformatf("a%0d", (addr[4:0] - 10));
+            28, 29, 30, 31: return $sformatf("t%0d", (addr[4:0] - 25));
+            default: return $sformatf("s%0d", (addr[4:0] - 16));
         endcase
     endfunction
 
@@ -203,6 +203,7 @@ class instruction_trace_item;
             // loads and stores
             INSTR_LOAD:                s = this.printLoadInstr();
             INSTR_STORE:               s = this.printStoreInstr();
+            INSTR_AMO:                 s = this.printAMOInstr();
             default:                   s = this.printMnemonic("INVALID");
         endcase
 
@@ -226,11 +227,11 @@ class instruction_trace_item;
                 s = $sformatf("%s %-4s:%16x", s, regAddrToStr(result_regs[i]), this.result);
         end
 
-
         foreach (read_regs[i]) begin
             if (read_regs[i] != 0)
                 s = $sformatf("%s %-4s:%16x", s, regAddrToStr(read_regs[i]), reg_file[read_regs[i]]);
         end
+
         casex (instr)
             // check of the instrction was a load or store
             INSTR_STORE: begin
@@ -363,29 +364,27 @@ class instruction_trace_item;
 
     function string printLoadInstr();
       string mnemonic;
+      case (instr[14:12])
+        3'b000: mnemonic = "lb";
+        3'b001: mnemonic = "lh";
+        3'b010: mnemonic = "lw";
+        3'b100: mnemonic = "lbu";
+        3'b101: mnemonic = "lhu";
+        3'b110: mnemonic = "lwu";
+        3'b011: mnemonic = "ld";
+        default: return printMnemonic("INVALID");
+      endcase
 
-        case (instr[14:12])
-          3'b000: mnemonic = "lb";
-          3'b001: mnemonic = "lh";
-          3'b010: mnemonic = "lw";
-          3'b100: mnemonic = "lbu";
-          3'b101: mnemonic = "lhu";
-          3'b110: mnemonic = "lwu";
-          3'b011: mnemonic = "ld";
-          default: return printMnemonic("INVALID");
-        endcase
+      result_regs.push_back(sbe.rd);
+      read_regs.push_back(sbe.rs1);
+      // save the immediate for calculating the virtual address
+      this.imm = sbe.result;
 
-        result_regs.push_back(sbe.rd);
-        read_regs.push_back(sbe.rs1);
-        // save the immediate for calculating the virtual address
-        this.imm = sbe.result;
-
-        return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result), regAddrToStr(sbe.rs1));
+      return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rd), $signed(sbe.result), regAddrToStr(sbe.rs1));
     endfunction
 
     function string printStoreInstr();
-      string mnemonic;
-
+        string mnemonic;
         case (instr[14:12])
           3'b000:  mnemonic = "sb";
           3'b001:  mnemonic = "sh";
@@ -401,6 +400,51 @@ class instruction_trace_item;
 
         return $sformatf("%-16s %s, %0d(%s)", mnemonic, regAddrToStr(sbe.rs2), $signed(sbe.result), regAddrToStr(sbe.rs1));
     endfunction // printSInstr
+
+    function string printAMOInstr();
+        string mnemonic;
+        // words
+        if (instr[14:12] == 3'h2) begin
+            case (instr[31:27])
+                5'h0:  mnemonic = "amoadd.w";
+                5'h1:  mnemonic = "amoswap.w";
+                5'h2:  mnemonic = "lr.w";
+                5'h3:  mnemonic = "sc.w";
+                5'h4:  mnemonic = "amoxor.w";
+                5'h8:  mnemonic = "amoor.w";
+                5'hC:  mnemonic = "amoand.w";
+                5'h10: mnemonic = "amomin.w";
+                5'h14: mnemonic = "amomax.w";
+                5'h18: mnemonic = "amominu.w";
+                5'h1C: mnemonic = "amomax.w";
+                default: return printMnemonic("INVALID");
+            endcase
+        // doubles
+        end else if (instr[14:12] == 3'h3) begin
+            case (instr[31:27])
+                5'h0:  mnemonic = "amoadd.d";
+                5'h1:  mnemonic = "amoswap.d";
+                5'h2:  mnemonic = "lr.d";
+                5'h3:  mnemonic = "sc.d";
+                5'h4:  mnemonic = "amoxor.d";
+                5'h8:  mnemonic = "amoor.d";
+                5'hC:  mnemonic = "amoand.d";
+                5'h10: mnemonic = "amomin.d";
+                5'h14: mnemonic = "amomax.d";
+                5'h18: mnemonic = "amominu.d";
+                5'h1C: mnemonic = "amomax.d";
+                default: return printMnemonic("INVALID");
+            endcase
+        end else return printMnemonic("INVALID");
+
+        result_regs.push_back(sbe.rd);
+        read_regs.push_back(sbe.rs2);
+        read_regs.push_back(sbe.rs1);
+        // save the immediate for calculating the virtual address
+        this.imm = 0;
+
+        return $sformatf("%-16s %s, %s,(%s)", mnemonic, regAddrToStr(sbe.rd), regAddrToStr(sbe.rs2), regAddrToStr(sbe.rs1));
+    endfunction
 
     function string printMulInstr(logic is_op32);
         string s = "";
