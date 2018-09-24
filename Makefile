@@ -17,7 +17,7 @@ test_case      ?= core_test
 # QuestaSim Version
 questa_version ?= ${QUESTASIM_VERSION}
 # verilator version
-verilator      ?= ${VERILATOR_ROOT}/bin/verilator
+verilator      ?= verilator
 # traget option
 target-options ?=
 # additional definess
@@ -58,8 +58,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/fpu/src/utils/*.vhd)                            \
         $(wildcard src/fpu/src/ops/*.vhd)                              \
         $(wildcard src/fpu/src/subunits/*.vhd)                         \
-        src/fpu_legacy/hdl/fpu_div_sqrt_mvp/defs_div_sqrt_mvp.sv       \
-        $(wildcard src/fpu_legacy/hdl/fpu_div_sqrt_mvp/*.sv)           \
+        src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv                  \
+        $(wildcard src/fpu_div_sqrt_mvp/hdl/*.sv)                      \
         $(wildcard src/frontend/*.sv)                                  \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
@@ -70,7 +70,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/debug/debug_rom/*.sv)                           \
         src/fpu/src/fpnew.vhd                                          \
         src/fpu/src/fpnew_top.vhd                                      \
-        src/fpu_legacy/hdl/fpu_utils/fpu_ff.sv                         \
+        src/fpu_div_sqrt_mvp/hdl/fpu_ff.sv                             \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
         src/common_cells/src/deprecated/generic_fifo.sv                \
         src/common_cells/src/deprecated/pulp_sync.sv                   \
@@ -158,7 +158,7 @@ sim: build
 	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}        \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0            \
 	$(QUESTASIM_FLAGS)                                                                                                \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; do tb/wave/wave_core.do; run -all; exit"  \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; log -r /*; run -all; exit"  \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
 simc: build
@@ -233,9 +233,9 @@ $(addsuffix -verilator,$(riscv-asm-tests)): verilate
 run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests))
 
 # split into two halfs for travis jobs (otherwise they will time out)
-run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-p-% ,$(riscv-asm-tests)))
+run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-v-% ,$(riscv-asm-tests)))
 
-run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-p-% ,$(riscv-asm-tests)))
+run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-v-% ,$(riscv-asm-tests)))
 
 
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate

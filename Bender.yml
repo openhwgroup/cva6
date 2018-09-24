@@ -11,15 +11,15 @@ dependencies:
   fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       version: 0.3.2 }
 
 sources:
-  - src/fpu_legacy/hdl/fpu_utils/fpu_ff.sv
-  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/defs_div_sqrt_mvp.sv
-  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/control_mvp.sv
-  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/div_sqrt_mvp_wrapper.sv
-  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/div_sqrt_top_mvp.sv
-  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/iteration_div_sqrt_mvp.sv
-  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/norm_div_sqrt_mvp.sv
-  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/nrbd_nrsc_mvp.sv
-  - src/fpu_legacy/hdl/fpu_div_sqrt_mvp/preprocess_mvp.sv
+  - src/fpu_div_sqrt_mvp/hdl/fpu_utils/fpu_ff.sv
+  - src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+  - src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
+  - src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv
+  - src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
+  - src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
+  - src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
+  - src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
+  - src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
   - src/fpu/src/pkg/fpnew_pkg.vhd
   - src/fpu/src/pkg/fpnew_fmts_pkg.vhd
   - src/fpu/src/pkg/fpnew_comps_pkg.vhd
@@ -84,11 +84,13 @@ sources:
   - src/re_name.sv
   - src/scoreboard.sv
   - src/store_buffer.sv
+  - src/amo_buffer.sv
   - src/store_unit.sv
   - src/tlb.sv
   - src/commit_stage.sv
   - src/axi_adapter.sv
   - src/cache_subsystem/cache_ctrl.sv
+  - src/cache_subsystem/amo_alu.sv
   - src/cache_subsystem/miss_handler.sv
   - src/cache_subsystem/std_cache_subsystem.sv
   - src/cache_subsystem/std_icache.sv

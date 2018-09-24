@@ -126,12 +126,13 @@ class instruction_tracer;
                     // the scoreboards issue entry still contains the immediate value as a result
                     // check if the write back is valid, if not we need to source the result from the register file
                     // as the most recent version of this register will be there.
-                    if (tracer_if.pck.we_gpr[i] || tracer_if.pck.we_fpr[i])
+                    if (tracer_if.pck.we_gpr[i] || tracer_if.pck.we_fpr[i]) begin
                         printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata[i], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
-                    else if (is_rd_fpr(commit_instruction.op))
+                    end else if (is_rd_fpr(commit_instruction.op)) begin
                         printInstr(issue_sbe, issue_commit_instruction, fp_reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
-                    else
+                    end else begin
                         printInstr(issue_sbe, issue_commit_instruction, gp_reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
+                    end
                 end
             end
             // --------------
@@ -145,12 +146,13 @@ class instruction_tracer;
             // Commit Registers
             // ----------------------
             // update shadow reg files here
-            for (int i = 0; i < 2; i++)
-                if (tracer_if.pck.we_gpr[i] && tracer_if.pck.waddr[i] != 5'b0)
+            for (int i = 0; i < 2; i++) begin
+                if (tracer_if.pck.we_gpr[i] && tracer_if.pck.waddr[i] != 5'b0) begin
                     gp_reg_file[tracer_if.pck.waddr[i]] = tracer_if.pck.wdata[i];
-                else if (tracer_if.pck.we_fpr[i])
+                end else if (tracer_if.pck.we_fpr[i]) begin
                     fp_reg_file[tracer_if.pck.waddr[i]] = tracer_if.pck.wdata[i];
-
+                end
+            end
             // --------------
             // Flush Signals
             // --------------

@@ -37,7 +37,6 @@ interface instruction_tracer_if (
     // commit stage
     scoreboard_entry_t [1:0] commit_instr; // commit instruction
     logic              [1:0] commit_ack;
-
     // address translation
     // stores
     logic              st_valid;

@@ -129,6 +129,9 @@ parameter INSTR_FMV_X2F  =  { 5'b11110, 2'b?, 5'b0, 5'b?, 3'b000, 5'b?,   riscv:
 parameter INSTR_FCVT_F2I =  { 5'b11000, 2'b?, 5'b000??, 5'b?, 3'b?, 5'b?, riscv::OpcodeOpFp};
 parameter INSTR_FCVT_I2F =  { 5'b11010, 2'b?, 5'b000??, 5'b?, 3'b?, 5'b?, riscv::OpcodeOpFp};
 
+// A
+parameter INSTR_AMO      =  {25'b?, riscv::OpcodeAmo };
+
 // Load/Stores
 parameter INSTR_LOAD     =  {25'b?, riscv::OpcodeLoad};
 parameter INSTR_LOAD_FP  =  {25'b?, riscv::OpcodeLoadFp};

@@ -15,12 +15,13 @@
 import ariane_pkg::*;
 
 module lsu #(
-        parameter int unsigned ASID_WIDTH       = 1
+    parameter int unsigned ASID_WIDTH = 1
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,
     output logic                     no_st_pending_o,
+    input  logic                     amo_valid_commit_i,
 
     input  fu_t                      fu_i,
     input  fu_op                     operator_i,
@@ -57,7 +58,9 @@ module lsu #(
     // interface to dcache
     input  dcache_req_o_t [2:0]      dcache_req_ports_i,
     output dcache_req_i_t [2:0]      dcache_req_ports_o,
-
+    // AMO interface
+    output amo_req_t                 amo_req_o,
+    input  amo_resp_t                amo_resp_i,
     output exception_t               lsu_exception_o   // to WB, signal exception status LD/ST exception
 
 );
@@ -73,6 +76,7 @@ module lsu #(
     logic      pop_st;
     logic      pop_ld;
 
+    // ------------------------------
     // Address Generation Unit (AGU)
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
@@ -108,28 +112,6 @@ module lsu #(
     exception_t               ld_ex;
     exception_t               st_ex;
 
-    // ------------
-    // NB Dcache
-    // ------------
-    logic [2:0][11:0]         address_index_i;
-    logic [2:0][43:0]         address_tag_i;
-    logic [2:0][63:0]         data_wdata_i;
-    logic [2:0]               data_req_i;
-    logic [2:0]               data_we_i;
-    logic [2:0][1:0]          data_size_i;
-
-    logic [2:0]               kill_req_i;
-    logic [2:0]               tag_valid_i;
-    logic [2:0][7:0]          data_be_i;
-    logic [2:0]               data_gnt_o;
-    logic [2:0]               data_rvalid_o;
-    logic [2:0][63:0]         data_rdata_o;
-    amo_t [2:0]               amo_op_i;
-
-    // AMO operations always go through the load unit
-    assign amo_op_i[0] = AMO_NONE;
-    assign amo_op_i[2] = AMO_NONE;
-
     // -------------------
     // MMU e.g.: TLBs/PTW
     // -------------------
@@ -147,7 +129,7 @@ module lsu #(
         .lsu_paddr_o            ( mmu_paddr              ),
         .lsu_exception_o        ( mmu_exception          ),
         .lsu_dtlb_hit_o         ( dtlb_hit               ), // send in the same cycle as the request
-        // connecting PTW to D$ IF (aka mem arbiter
+        // connecting PTW to D$ IF
         .req_port_i             ( dcache_req_ports_i [0] ),
         .req_port_o             ( dcache_req_ports_o [0] ),
         // icache address translation requests
@@ -159,9 +141,17 @@ module lsu #(
     // Store Unit
     // ------------------
     store_unit i_store_unit (
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .no_st_pending_o,
+
         .valid_i               ( st_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
         .pop_st_o              ( pop_st               ),
+        .commit_i,
+        .commit_ready_o,
+        .amo_valid_commit_i,
 
         .valid_o               ( st_valid             ),
         .trans_id_o            ( st_trans_id          ),
@@ -176,10 +166,12 @@ module lsu #(
         // Load Unit
         .page_offset_i         ( page_offset          ),
         .page_offset_matches_o ( page_offset_matches  ),
+        // AMOs
+        .amo_req_o,
+        .amo_resp_i,
         // to memory arbiter
         .req_port_i             ( dcache_req_ports_i [2] ),
-        .req_port_o             ( dcache_req_ports_o [2] ),
-        .*
+        .req_port_o             ( dcache_req_ports_o [2] )
     );
 
     // ------------------
@@ -264,49 +256,10 @@ module lsu #(
     // ---------------
     // Byte Enable
     // ---------------
-    always_comb begin : byte_enable
-        be_i = 8'b0;
-        // we can generate the byte enable from the virtual address since the last
-        // 12 bit are the same anyway
-        // and we can always generate the byte enable from the address at hand
-        case (operator_i)
-            LD, SD, FLD, FSD: // double word
-                    be_i = 8'b1111_1111;
-            LW, LWU, SW, FLW, FSW: // word
-                case (vaddr_i[2:0])
-                    3'b000: be_i = 8'b0000_1111;
-                    3'b001: be_i = 8'b0001_1110;
-                    3'b010: be_i = 8'b0011_1100;
-                    3'b011: be_i = 8'b0111_1000;
-                    3'b100: be_i = 8'b1111_0000;
-                    default:;
-                endcase
-            LH, LHU, SH, FLH, FSH: // half word
-                case (vaddr_i[2:0])
-                    3'b000: be_i = 8'b0000_0011;
-                    3'b001: be_i = 8'b0000_0110;
-                    3'b010: be_i = 8'b0000_1100;
-                    3'b011: be_i = 8'b0001_1000;
-                    3'b100: be_i = 8'b0011_0000;
-                    3'b101: be_i = 8'b0110_0000;
-                    3'b110: be_i = 8'b1100_0000;
-                    default:;
-                endcase
-            LB, LBU, SB, FLB, FSB: // byte
-                case (vaddr_i[2:0])
-                    3'b000: be_i = 8'b0000_0001;
-                    3'b001: be_i = 8'b0000_0010;
-                    3'b010: be_i = 8'b0000_0100;
-                    3'b011: be_i = 8'b0000_1000;
-                    3'b100: be_i = 8'b0001_0000;
-                    3'b101: be_i = 8'b0010_0000;
-                    3'b110: be_i = 8'b0100_0000;
-                    3'b111: be_i = 8'b1000_0000;
-                endcase
-            default:
-                be_i = 8'b0;
-        endcase
-    end
+    // we can generate the byte enable from the virtual address since the last
+    // 12 bit are the same anyway
+    // and we can always generate the byte enable from the address at hand
+    assign be_i = be_gen(vaddr_i[2:0], extract_transfer_size(operator_i));
 
     // ------------------------
     // Misaligned Exception
@@ -324,23 +277,33 @@ module lsu #(
 
         data_misaligned = 1'b0;
 
-        if(lsu_ctrl.valid) begin
+        if (lsu_ctrl.valid) begin
             case (lsu_ctrl.operator)
                 // double word
-                LD, SD, FLD, FSD: begin
-                    if (lsu_ctrl.vaddr[2:0] != 3'b000)
+                LD, SD, FLD, FSD,
+                AMO_LRD, AMO_SCD,
+                AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
+                AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
+                AMO_MINDU: begin
+                    if (lsu_ctrl.vaddr[2:0] != 3'b000) begin
                         data_misaligned = 1'b1;
+                    end
                 end
                 // word
-                LW, LWU, SW, FLW, FSW: begin
-                    if (lsu_ctrl.vaddr[1:0] != 2'b00)
+                LW, LWU, SW, FLW, FSW,
+                AMO_LRW, AMO_SCW,
+                AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW,
+                AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW,
+                AMO_MINWU: begin
+                    if (lsu_ctrl.vaddr[1:0] != 2'b00) begin
                         data_misaligned = 1'b1;
+                    end
                 end
-
                 // half word
                 LH, LHU, SH, FLH, FSH: begin
-                    if (lsu_ctrl.vaddr[0] != 1'b0)
+                    if (lsu_ctrl.vaddr[0] != 1'b0) begin
                         data_misaligned = 1'b1;
+                    end
                 end
                 // byte -> is always aligned
                 default:;
@@ -403,15 +366,7 @@ module lsu #(
         .ready_o            ( lsu_ready_o ),
         .*
     );
-    // ------------
-    // Assertions
-    // ------------
 
-    `ifndef SYNTHESIS
-    `ifndef VERILATOR
-    // TODO
-    `endif
-    `endif
 endmodule
 
 // ------------------
@@ -504,7 +459,7 @@ module lsu_bypass (
 
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             mem_q           <= '{default: 0};
             status_cnt_q    <= '0;
             write_pointer_q <= '0;

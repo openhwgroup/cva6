@@ -58,6 +58,7 @@ module ex_stage #(
     output logic                                   lsu_commit_ready_o,    // commit queue is ready to accept another commit request
     output exception_t                             lsu_exception_o,
     output logic                                   no_st_pending_o,
+    input  logic                                   amo_valid_commit_i,
     // CSR
     output logic                                   csr_ready_o,
     input  logic                                   csr_valid_i,
@@ -101,7 +102,8 @@ module ex_stage #(
     // interface to dcache
     input  dcache_req_o_t [2:0]                    dcache_req_ports_i,
     output dcache_req_i_t [2:0]                    dcache_req_ports_o,
-
+    output amo_req_t                               amo_req_o,          // request to cache subsytem
+    input  amo_resp_t                              amo_resp_i,         // response from cache subsystem
     // Performance counters
     output logic                                   itlb_miss_o,
     output logic                                   dtlb_miss_o
@@ -234,39 +236,42 @@ module ex_stage #(
     assign lsu_data.imm       = lsu_valid_i ? imm_i       : '0;
 
     lsu lsu_i (
-        .clk_i,
-        .rst_ni,
-        .flush_i,
-        .no_st_pending_o,
-        .fu_i,
-        .operator_i             ( lsu_data.operator  ),
-        .operand_a_i            ( lsu_data.operand_a ),
-        .operand_b_i            ( lsu_data.operand_b ),
-        .imm_i                  ( lsu_data.imm       ),
-        .lsu_ready_o,
-        .lsu_valid_i,
-        .trans_id_i,
-        .lsu_trans_id_o,
-        .lsu_result_o,
-        .lsu_valid_o,
-        .commit_i               ( lsu_commit_i       ),
-        .commit_ready_o         ( lsu_commit_ready_o ),
-        .enable_translation_i,
-        .en_ld_st_translation_i,
-        .icache_areq_i,
-        .icache_areq_o,
-        .priv_lvl_i,
-        .ld_st_priv_lvl_i,
-        .sum_i,
-        .mxr_i,
-        .satp_ppn_i,
-        .asid_i,
-        .flush_tlb_i,
-        .itlb_miss_o,
-        .dtlb_miss_o,
-        .dcache_req_ports_i,
-        .dcache_req_ports_o,
-        .lsu_exception_o
+        .clk_i                                         ,
+        .rst_ni                                        ,
+        .flush_i                                       ,
+        .no_st_pending_o                               ,
+        .fu_i                                          ,
+        .operator_i            (lsu_data.operator     ),
+        .operand_a_i           (lsu_data.operand_a    ),
+        .operand_b_i           (lsu_data.operand_b    ),
+        .imm_i                 (lsu_data.imm          ),
+        .lsu_ready_o                                   ,
+        .lsu_valid_i                                   ,
+        .trans_id_i                                    ,
+        .lsu_trans_id_o                                ,
+        .lsu_result_o                                  ,
+        .lsu_valid_o                                   ,
+        .commit_i              (lsu_commit_i          ),
+        .commit_ready_o        (lsu_commit_ready_o    ),
+        .enable_translation_i                          ,
+        .en_ld_st_translation_i                        ,
+        .icache_areq_i                                 ,
+        .icache_areq_o                                 ,
+        .priv_lvl_i                                    ,
+        .ld_st_priv_lvl_i                              ,
+        .sum_i                                         ,
+        .mxr_i                                         ,
+        .satp_ppn_i                                    ,
+        .asid_i                                        ,
+        .flush_tlb_i                                   ,
+        .itlb_miss_o                                   ,
+        .dtlb_miss_o                                   ,
+        .dcache_req_ports_i                            ,
+        .dcache_req_ports_o                            ,
+        .lsu_exception_o                               ,
+        .amo_valid_commit_i                            ,
+        .amo_req_o                                     ,
+        .amo_resp_i
     );
 
     // -----
@@ -294,6 +299,5 @@ module ex_stage #(
         .commit_i       ( csr_commit_i ),
         .csr_addr_o
     );
-
 
 endmodule

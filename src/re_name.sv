@@ -24,6 +24,7 @@ module re_name (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,  // Flush renaming state
+    input  logic                                   flush_unissied_instr_i,
     // from/to scoreboard
     input  scoreboard_entry_t                      issue_instr_i,
     input  logic                                   issue_instr_valid_i,
@@ -54,7 +55,7 @@ module re_name (
         re_name_table_fpr_n = re_name_table_fpr_q;
         issue_instr_o       = issue_instr_i;
 
-        if (issue_ack_i) begin
+        if (issue_ack_i && !flush_unissied_instr_i) begin
             // if we acknowledge the instruction tic the corresponding destination register
             if (is_rd_fpr(issue_instr_i.op))
                 re_name_table_fpr_n[issue_instr_i.rd] = re_name_table_fpr_q[issue_instr_i.rd] ^ 1'b1;

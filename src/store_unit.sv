@@ -10,7 +10,7 @@
 //
 // Author: Florian Zaruba, ETH Zurich
 // Date: 22.05.2017
-// Description: Store Unit, takes care of all store requests
+// Description: Store Unit, takes care of all store requests and atomic memory operations (AMOs)
 
 import ariane_pkg::*;
 
@@ -25,7 +25,7 @@ module store_unit (
     output logic                     pop_st_o,
     input  logic                     commit_i,
     output logic                     commit_ready_o,
-
+    input  logic                     amo_valid_commit_i,
     // store unit output port
     output logic                     valid_o,
     output logic [TRANS_ID_BITS-1:0] trans_id_o,
@@ -41,22 +41,33 @@ module store_unit (
     input  logic [11:0]              page_offset_i,
     output logic                     page_offset_matches_o,
     // D$ interface
+    output amo_req_t                 amo_req_o,
+    input  amo_resp_t                amo_resp_i,
     input  dcache_req_o_t            req_port_i,
-    output dcache_req_i_t            req_port_o  
+    output dcache_req_i_t            req_port_o
 );
+    // it doesn't matter what we are writing back as stores don't return anything
     assign result_o = 64'b0;
 
-    enum logic [1:0] {IDLE, VALID_STORE, WAIT_TRANSLATION, WAIT_STORE_READY} NS, CS;
+    enum logic [1:0] {
+        IDLE,
+        VALID_STORE,
+        WAIT_TRANSLATION,
+        WAIT_STORE_READY
+    } state_d, state_q;
 
     // store buffer control signals
-    logic                    st_ready;
-    logic                    st_valid;
-    logic                    st_valid_without_flush;
-
+    logic st_ready;
+    logic st_valid;
+    logic st_valid_without_flush;
+    logic instr_is_amo;
+    assign instr_is_amo = is_amo(lsu_ctrl_i.operator);
     // keep the data and the byte enable for the second cycle (after address translation)
-    logic [63:0]              st_data_n, st_data_q;
-    logic [7:0]               st_be_n,   st_be_q;
-    logic [1:0]               st_data_size_n, st_data_size_q;
+    logic [63:0]  st_data_n,      st_data_q;
+    logic [7:0]   st_be_n,        st_be_q;
+    logic [1:0]   st_data_size_n, st_data_size_q;
+    amo_t         amo_op_d,       amo_op_q;
+
     logic [TRANS_ID_BITS-1:0] trans_id_n, trans_id_q;
 
     // output assignments
@@ -71,25 +82,24 @@ module store_unit (
         pop_st_o               = 1'b0;
         ex_o                   = ex_i;
         trans_id_n             = lsu_ctrl_i.trans_id;
-        NS                     = CS;
+        state_d                     = state_q;
 
-        case (CS)
+        case (state_q)
             // we got a valid store
             IDLE: begin
                 if (valid_i) begin
-
-                    NS = VALID_STORE;
+                    state_d = VALID_STORE;
                     translation_req_o = 1'b1;
                     pop_st_o = 1'b1;
                     // check if translation was valid and we have space in the store buffer
                     // otherwise simply stall
                     if (!dtlb_hit_i) begin
-                        NS = WAIT_TRANSLATION;
+                        state_d = WAIT_TRANSLATION;
                         pop_st_o = 1'b0;
                     end
 
                     if (!st_ready) begin
-                        NS = WAIT_STORE_READY;
+                        state_d = WAIT_STORE_READY;
                         pop_st_o = 1'b0;
                     end
                 end
@@ -103,25 +113,25 @@ module store_unit (
 
                 st_valid_without_flush = 1'b1;
 
-                // we have another request
-                if (valid_i) begin
+                // we have another request and its not an AMO (the AMO buffer only has depth 1)
+                if (valid_i && !instr_is_amo) begin
 
                     translation_req_o = 1'b1;
-                    NS = VALID_STORE;
-                        pop_st_o = 1'b1;
+                    state_d = VALID_STORE;
+                    pop_st_o = 1'b1;
 
                     if (!dtlb_hit_i) begin
-                        NS = WAIT_TRANSLATION;
+                        state_d = WAIT_TRANSLATION;
                         pop_st_o = 1'b0;
                     end
 
                     if (!st_ready) begin
+                        state_d = WAIT_STORE_READY;
                         pop_st_o = 1'b0;
-                        NS = WAIT_STORE_READY;
                     end
                 // if we do not have another request go back to idle
                 end else begin
-                    NS = IDLE;
+                    state_d = IDLE;
                 end
             end
 
@@ -131,7 +141,7 @@ module store_unit (
                 translation_req_o = 1'b1;
 
                 if (st_ready && dtlb_hit_i) begin
-                    NS = IDLE;
+                    state_d = IDLE;
                 end
             end
 
@@ -142,7 +152,7 @@ module store_unit (
                 translation_req_o = 1'b1;
 
                 if (dtlb_hit_i) begin
-                    NS = IDLE;
+                    state_d = IDLE;
                 end
             end
         endcase
@@ -151,16 +161,16 @@ module store_unit (
         // Access Exception
         // -----------------
         // we got an address translation exception (access rights, misaligned or page fault)
-        if (ex_i.valid && (CS != IDLE)) begin
+        if (ex_i.valid && (state_q != IDLE)) begin
             // the only difference is that we do not want to store this request
             pop_st_o = 1'b1;
             st_valid = 1'b0;
-            NS       = IDLE;
+            state_d  = IDLE;
             valid_o  = 1'b1;
         end
 
         if (flush_i)
-            NS = IDLE;
+            state_d = IDLE;
     end
 
     // -----------
@@ -168,57 +178,99 @@ module store_unit (
     // -----------
     // re-align the write data to comply with the address offset
     always_comb begin
-        st_be_n        = lsu_ctrl_i.be;
-        st_data_n      = lsu_ctrl_i.data;
+        st_be_n   = lsu_ctrl_i.be;
+        // don't shift the data if we are going to perform an AMO as we still need to operate on this data
+        st_data_n = instr_is_amo ? lsu_ctrl_i.data
+                                 : data_align(lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.data);
         st_data_size_n = extract_transfer_size(lsu_ctrl_i.operator);
-
-        case (lsu_ctrl_i.vaddr[2:0])
-            3'b000: st_data_n = lsu_ctrl_i.data;
-            3'b001: st_data_n = {lsu_ctrl_i.data[55:0], lsu_ctrl_i.data[63:56]};
-            3'b010: st_data_n = {lsu_ctrl_i.data[47:0], lsu_ctrl_i.data[63:48]};
-            3'b011: st_data_n = {lsu_ctrl_i.data[39:0], lsu_ctrl_i.data[63:40]};
-            3'b100: st_data_n = {lsu_ctrl_i.data[31:0], lsu_ctrl_i.data[63:32]};
-            3'b101: st_data_n = {lsu_ctrl_i.data[23:0], lsu_ctrl_i.data[63:24]};
-            3'b110: st_data_n = {lsu_ctrl_i.data[15:0], lsu_ctrl_i.data[63:16]};
-            3'b111: st_data_n = {lsu_ctrl_i.data[7:0],  lsu_ctrl_i.data[63:8]};
+        // save AMO op for next cycle
+        case (lsu_ctrl_i.operator)
+            AMO_LRW, AMO_LRD:     amo_op_d = AMO_LR;
+            AMO_SCW, AMO_SCD:     amo_op_d = AMO_SC;
+            AMO_SWAPW, AMO_SWAPD: amo_op_d = AMO_SWAP;
+            AMO_ADDW, AMO_ADDD:   amo_op_d = AMO_ADD;
+            AMO_ANDW, AMO_ANDD:   amo_op_d = AMO_AND;
+            AMO_ORW, AMO_ORD:     amo_op_d = AMO_OR;
+            AMO_XORW, AMO_XORD:   amo_op_d = AMO_XOR;
+            AMO_MAXW, AMO_MAXD:   amo_op_d = AMO_MAX;
+            AMO_MAXWU, AMO_MAXDU: amo_op_d = AMO_MAXU;
+            AMO_MINW, AMO_MIND:   amo_op_d = AMO_MIN;
+            AMO_MINWU, AMO_MINDU: amo_op_d = AMO_MINU;
+            default: amo_op_d = AMO_NONE;
         endcase
     end
+
+    logic store_buffer_valid, amo_buffer_valid;
+    logic store_buffer_ready, amo_buffer_ready;
+
+    // multiplex between store unit and amo buffer
+    assign store_buffer_valid = st_valid & (amo_op_q == AMO_NONE);
+    assign amo_buffer_valid = st_valid & (amo_op_q != AMO_NONE);
+
+    assign st_ready = store_buffer_ready & amo_buffer_ready;
+
     // ---------------
     // Store Queue
     // ---------------
     store_buffer store_buffer_i (
-        // store queue write port
-        .valid_i               ( st_valid               ),
-        .valid_without_flush_i ( st_valid_without_flush ), // the flush signal can be critical and we need this valid
-                                                           // signal to check whether the page_offset matches or not, functionaly it doesn't
-                                                           // make a difference whether we use the correct valid signal or not as we are flushing the whole pipeline anyway
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .no_st_pending_o,
+        .page_offset_i,
+        .page_offset_matches_o,
+        .commit_i,
+        .commit_ready_o,
+        .ready_o               ( store_buffer_ready     ),
+        .valid_i               ( store_buffer_valid     ),
+        // the flush signal can be critical and we need this valid
+        // signal to check whether the page_offset matches or not,
+        // functionaly it doesn't make a difference whether we use
+        // the correct valid signal or not as we are flushing
+        // the whole pipeline anyway
+        .valid_without_flush_i ( st_valid_without_flush ),
+        .paddr_i,
         .data_i                ( st_data_q              ),
         .be_i                  ( st_be_q                ),
         .data_size_i           ( st_data_size_q         ),
-        // store buffer out
-        .ready_o               ( st_ready               ),
-        
         .req_port_i            ( req_port_i             ),
-        .req_port_o            ( req_port_o             ),
-
-        .*
+        .req_port_o            ( req_port_o             )
     );
+
+    amo_buffer i_amo_buffer (
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .valid_i            ( amo_buffer_valid   ),
+        .ready_o            ( amo_buffer_ready   ),
+        .paddr_i            ( paddr_i            ),
+        .amo_op_i           ( amo_op_q           ),
+        .data_i             ( st_data_q          ),
+        .data_size_i        ( st_data_size_q     ),
+        .amo_req_o          ( amo_req_o          ),
+        .amo_resp_i         ( amo_resp_i         ),
+        .amo_valid_commit_i ( amo_valid_commit_i ),
+        .no_st_pending_i    ( no_st_pending_o    )
+    );
+
     // ---------------
     // Registers
     // ---------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            CS             <= IDLE;
+        if (~rst_ni) begin
+            state_q             <= IDLE;
             st_be_q        <= '0;
             st_data_q      <= '0;
             st_data_size_q <= '0;
             trans_id_q     <= '0;
+            amo_op_q       <= AMO_NONE;
         end else begin
-            CS             <= NS;
+            state_q        <= state_d;
             st_be_q        <= st_be_n;
             st_data_q      <= st_data_n;
             trans_id_q     <= trans_id_n;
             st_data_size_q <= st_data_size_n;
+            amo_op_q       <= amo_op_d;
         end
     end
 

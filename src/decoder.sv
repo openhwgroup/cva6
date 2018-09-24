@@ -863,18 +863,22 @@ module decoder (
                 // ----------------------------------
                 // Atomic Operations
                 // ----------------------------------
-                `ifdef ENABLE_ATOMICS
                 riscv::OpcodeAmo: begin
                     // we are going to use the load unit for AMOs
-                    instruction_o.fu  = LOAD;
-                    instruction_o.rd[4:0]  = instr.stype.imm0;
-                    instruction_o.rs1[4:0] = instr.itype.rs1;
+                    instruction_o.fu  = STORE;
+                    instruction_o.rs1[4:0] = instr.atype.rs1;
+                    instruction_o.rs2[4:0] = instr.atype.rs2;
+                    instruction_o.rd[4:0]  = instr.atype.rd;
+                    // TODO(zarubaf): Ordering
                     // words
                     if (instr.stype.funct3 == 3'h2) begin
                         unique case (instr.instr[31:27])
                             5'h0:  instruction_o.op = AMO_ADDW;
                             5'h1:  instruction_o.op = AMO_SWAPW;
-                            5'h2:  instruction_o.op = AMO_LRW;
+                            5'h2: begin
+                                instruction_o.op = AMO_LRW;
+                                if (instr.atype.rs2 != 0) illegal_instr = 1'b1;
+                            end
                             5'h3:  instruction_o.op = AMO_SCW;
                             5'h4:  instruction_o.op = AMO_XORW;
                             5'h8:  instruction_o.op = AMO_ORW;
@@ -890,7 +894,10 @@ module decoder (
                         unique case (instr.instr[31:27])
                             5'h0:  instruction_o.op = AMO_ADDD;
                             5'h1:  instruction_o.op = AMO_SWAPD;
-                            5'h2:  instruction_o.op = AMO_LRD;
+                            5'h2: begin
+                                instruction_o.op = AMO_LRD;
+                                if (instr.atype.rs2 != 0) illegal_instr = 1'b1;
+                            end
                             5'h3:  instruction_o.op = AMO_SCD;
                             5'h4:  instruction_o.op = AMO_XORD;
                             5'h8:  instruction_o.op = AMO_ORD;
@@ -905,7 +912,6 @@ module decoder (
                         illegal_instr = 1'b1;
                     end
                 end
-                `endif
 
                 // --------------------------------
                 // Control Flow Instructions
