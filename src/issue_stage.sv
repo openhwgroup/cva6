@@ -16,9 +16,9 @@
 import ariane_pkg::*;
 
 module issue_stage #(
-        parameter int unsigned NR_ENTRIES = 8,
-        parameter int unsigned NR_WB_PORTS = 4,
-        parameter int unsigned NR_COMMIT_PORTS = 2
+    parameter int unsigned NR_ENTRIES = 8,
+    parameter int unsigned NR_WB_PORTS = 4,
+    parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                     clk_i,     // Clock
     input  logic                                     rst_ni,    // Asynchronous reset active low
@@ -59,7 +59,6 @@ module issue_stage #(
     output logic [1:0]                               fpu_fmt_o,        // FP fmt field from instr.
     output logic [2:0]                               fpu_rm_o,         // FP rm field from instr.
 
-    input  logic                                     csr_ready_i,
     output logic                                     csr_valid_o,
 
     // write back port

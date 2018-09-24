@@ -17,7 +17,7 @@ import ariane_pkg::*;
 
 module issue_read_operands #(
     parameter int unsigned NR_COMMIT_PORTS = 2
-    )(
+)(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     // flush
@@ -66,7 +66,6 @@ module issue_read_operands #(
     output logic [1:0]                             fpu_fmt_o,        // FP fmt field from instr.
     output logic [2:0]                             fpu_rm_o,         // FP rm field from instr.
     // CSR
-    input  logic                                   csr_ready_i,      // FU is ready
     output logic                                   csr_valid_o,      // Output is valid
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_i,
@@ -133,19 +132,14 @@ module issue_read_operands #(
         unique case (issue_instr_i.fu)
             NONE:
                 fu_busy = 1'b0;
-            ALU:
-                fu_busy = ~alu_ready_i;
-            CTRL_FLOW:
+            ALU, CTRL_FLOW, CSR:
                 fu_busy = ~alu_ready_i;
             MULT:
                 fu_busy = ~mult_ready_i;
-            FPU,
-            FPU_VEC:
+            FPU, FPU_VEC:
                 fu_busy = ~fpu_ready_i;
             LOAD, STORE:
                 fu_busy = ~lsu_ready_i;
-            CSR:
-                fu_busy = ~csr_ready_i;
             default:
                 fu_busy = 1'b0;
         endcase

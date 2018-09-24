@@ -23,13 +23,10 @@ module csr_buffer (
     input  fu_op                     operator_i,
     input  logic [63:0]              operand_a_i,
     input  logic [63:0]              operand_b_i,
-    input  logic [TRANS_ID_BITS-1:0] trans_id_i,     // transaction id, needed for WB
 
     output logic                     csr_ready_o,    // FU is ready e.g. not busy
     input  logic                     csr_valid_i,    // Input is valid
-    output logic [TRANS_ID_BITS-1:0] csr_trans_id_o, // ID of scoreboard entry at which to write back
     output logic [63:0]              csr_result_o,
-    output logic                     csr_valid_o,    // transaction id for which the output is the requested one
     input  logic                     commit_i,       // commit the pending CSR OP
 
     // to CSR file
@@ -43,9 +40,6 @@ module csr_buffer (
     } csr_reg_n, csr_reg_q;
 
     // control logic, scoreboard signals
-    assign csr_trans_id_o = trans_id_i;
-    // CSR instructions for this post buffer are single cycle
-    assign csr_valid_o    = csr_valid_i;
     assign csr_result_o   = operand_a_i;
     assign csr_addr_o     = csr_reg_q.csr_address;
 

@@ -43,6 +43,10 @@ module ex_stage #(
     input  branchpredict_sbe_t                     branch_predict_i,
     output branchpredict_t                         resolved_branch_o,     // the branch engine uses the write back from the ALU
     output logic                                   resolve_branch_o,      // to ID signaling that we resolved the branch
+    // CSR
+    input  logic                                   csr_valid_i,
+    output logic [11:0]                            csr_addr_o,
+    input  logic                                   csr_commit_i,
     // LSU
     output logic                                   lsu_ready_o,           // FU is ready
     input  logic                                   lsu_valid_i,           // Input is valid
@@ -54,14 +58,6 @@ module ex_stage #(
     output exception_t                             lsu_exception_o,
     output logic                                   no_st_pending_o,
     input  logic                                   amo_valid_commit_i,
-    // CSR
-    output logic                                   csr_ready_o,
-    input  logic                                   csr_valid_i,
-    output logic [TRANS_ID_BITS-1:0]               csr_trans_id_o,
-    output logic [63:0]                            csr_result_o,
-    output logic                                   csr_valid_o,
-    output logic [11:0]                            csr_addr_o,
-    input  logic                                   csr_commit_i,
     // MULT
     output logic                                   mult_ready_o,      // FU is ready
     input  logic                                   mult_valid_i,      // Output is valid
@@ -110,16 +106,22 @@ module ex_stage #(
     // ALU
     // -----
     fu_data_t alu_data;
-    assign alu_data.operator  = (alu_valid_i | branch_valid_i) ? operator_i  : ADD;
-    assign alu_data.operand_a = (alu_valid_i | branch_valid_i) ? operand_a_i : '0;
-    assign alu_data.operand_b = (alu_valid_i | branch_valid_i) ? operand_b_i : '0;
-    assign alu_data.imm       = (alu_valid_i | branch_valid_i) ? imm_i : '0;
+    assign alu_data.operator  = (alu_valid_i | branch_valid_i | csr_valid_i) ? operator_i  : ADD;
+    assign alu_data.operand_a = (alu_valid_i | branch_valid_i | csr_valid_i) ? operand_a_i : '0;
+    assign alu_data.operand_b = (alu_valid_i | branch_valid_i | csr_valid_i) ? operand_b_i : '0;
+    assign alu_data.imm       = (alu_valid_i | branch_valid_i | csr_valid_i) ? imm_i : '0;
 
+    // fixed latency FUs
+    // TOOD(zarubaf) Re-name this module and re-factor ALU
     alu alu_i (
+        .clk_i,
+        .rst_ni,
+        .flush_i,
         .pc_i,
         .trans_id_i,
         .alu_valid_i,
         .branch_valid_i,
+        .csr_valid_i      ( csr_valid_i        ),
         .operator_i       ( alu_data.operator  ),
         .operand_a_i      ( alu_data.operand_a ),
         .operand_b_i      ( alu_data.operand_b ),
@@ -134,7 +136,10 @@ module ex_stage #(
         .is_compressed_instr_i,
         .branch_predict_i,
         .resolved_branch_o,
-        .resolve_branch_o
+        .resolve_branch_o,
+
+        .commit_i        ( csr_commit_i ),
+        .csr_addr_o      ( csr_addr_o   )
     );
 
     // ----------------
@@ -246,32 +251,6 @@ module ex_stage #(
         .amo_valid_commit_i                            ,
         .amo_req_o                                     ,
         .amo_resp_i
-    );
-
-    // -----
-    // CSR
-    // -----
-    fu_data_t csr_data;
-    assign csr_data.operator  = csr_valid_i ? operator_i  : CSR_READ;
-    assign csr_data.operand_a = csr_valid_i ? operand_a_i : '0;
-    assign csr_data.operand_b = csr_valid_i ? operand_b_i : '0;
-
-    // CSR address buffer
-    csr_buffer csr_buffer_i (
-        .clk_i,
-        .rst_ni,
-        .flush_i,
-        .operator_i     ( csr_data.operator  ),
-        .operand_a_i    ( csr_data.operand_a ),
-        .operand_b_i    ( csr_data.operand_b ),
-        .trans_id_i,
-        .csr_ready_o,
-        .csr_valid_i,
-        .csr_trans_id_o,
-        .csr_result_o,
-        .csr_valid_o,
-        .commit_i       ( csr_commit_i ),
-        .csr_addr_o
     );
 
 endmodule

@@ -120,11 +120,7 @@ module ariane #(
     logic                     fpu_valid_ex_id;
     exception_t               fpu_exception_ex_id;
     // CSR
-    logic                     csr_ready_ex_id;
     logic                     csr_valid_id_ex;
-    logic [TRANS_ID_BITS-1:0] csr_trans_id_ex_id;
-    logic [63:0]              csr_result_ex_id;
-    logic                     csr_valid_ex_id;
     // --------------
     // EX <-> COMMIT
     // --------------
@@ -316,15 +312,14 @@ module ariane #(
         .fpu_fmt_o                  ( fpu_fmt_id_ex                   ),
         .fpu_rm_o                   ( fpu_rm_id_ex                    ),
         // CSR
-        .csr_ready_i                ( csr_ready_ex_id                 ),
         .csr_valid_o                ( csr_valid_id_ex                 ),
 
         // Commit
         .resolved_branch_i          ( resolved_branch                 ),
-        .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,   csr_trans_id_ex_id,         mult_trans_id_ex_id,        fpu_trans_id_ex_id }),
-        .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,       csr_result_ex_id,           mult_result_ex_id,          fpu_result_ex_id }),
-        .ex_ex_i                    ( {alu_exception_ex_id,        lsu_exception_ex_id, {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}}, fpu_exception_ex_id }),
-        .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,         csr_valid_ex_id,            mult_valid_ex_id,           fpu_valid_ex_id }),
+        .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,   mult_trans_id_ex_id,        fpu_trans_id_ex_id }),
+        .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,       mult_result_ex_id,          fpu_result_ex_id }),
+        .ex_ex_i                    ( {alu_exception_ex_id,        lsu_exception_ex_id, {$bits(exception_t){1'b0}}, fpu_exception_ex_id }),
+        .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,         mult_valid_ex_id,           fpu_valid_ex_id }),
 
         .waddr_i                    ( waddr_commit_id               ),
         .wdata_i                    ( wdata_commit_id               ),
@@ -362,6 +357,10 @@ module ariane #(
         .branch_predict_i       ( branch_predict_id_ex                   ), // branch predict to ex
         .resolved_branch_o      ( resolved_branch                        ),
         .resolve_branch_o       ( resolve_branch_ex_id                   ),
+        // CSR
+        .csr_valid_i            ( csr_valid_id_ex                        ),
+        .csr_addr_o             ( csr_addr_ex_csr                        ),
+        .csr_commit_i           ( csr_commit_commit_ex                   ), // from commit
         // LSU
         .lsu_ready_o            ( lsu_ready_ex_id                        ),
         .lsu_valid_i            ( lsu_valid_id_ex                        ),
@@ -391,14 +390,6 @@ module ariane #(
         .amo_valid_commit_i     ( amo_valid_commit                       ),
         .amo_req_o              ( amo_req                                ),
         .amo_resp_i             ( amo_resp                               ),
-        // CSR
-        .csr_ready_o            ( csr_ready_ex_id                        ),
-        .csr_valid_i            ( csr_valid_id_ex                        ),
-        .csr_trans_id_o         ( csr_trans_id_ex_id                     ),
-        .csr_result_o           ( csr_result_ex_id                       ),
-        .csr_valid_o            ( csr_valid_ex_id                        ),
-        .csr_addr_o             ( csr_addr_ex_csr                        ),
-        .csr_commit_i           ( csr_commit_commit_ex                   ), // from commit
         // Performance counters
         .itlb_miss_o            ( itlb_miss_ex_perf                      ),
         .dtlb_miss_o            ( dtlb_miss_ex_perf                      ),

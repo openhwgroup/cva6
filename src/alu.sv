@@ -20,10 +20,14 @@
 import ariane_pkg::*;
 
 module alu (
+    input  logic                     clk_i,          // Clock
+    input  logic                     rst_ni,         // Asynchronous reset active low
+    input  logic                     flush_i,
     input  logic [63:0]              pc_i,
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     input  logic                     alu_valid_i,
     input  logic                     branch_valid_i,
+    input  logic                     csr_valid_i,
     input  fu_op                     operator_i,
     input  logic [63:0]              operand_a_i,
     input  logic [63:0]              operand_b_i,
@@ -38,12 +42,17 @@ module alu (
     input  logic                     is_compressed_instr_i,
     input  branchpredict_sbe_t       branch_predict_i,
     output branchpredict_t           resolved_branch_o,
-    output logic                     resolve_branch_o
+    output logic                     resolve_branch_o,
+
+    input  logic                     commit_i,
+    // to CSR file
+    output logic  [11:0]             csr_addr_o  // CSR address to commit stage
 );
 
-    // ALU is a single cycle instructions, hence it is always ready
-    assign alu_ready_o    = 1'b1;
-    assign alu_valid_o    = alu_valid_i | branch_valid_i;
+    logic csr_ready;
+
+    assign alu_ready_o    = csr_ready;
+    assign alu_valid_o    = alu_valid_i | branch_valid_i | csr_valid_i;
     assign alu_trans_id_o = trans_id_i;
 
     logic [63:0] operand_a_rev;
@@ -52,7 +61,7 @@ module alu (
     logic [65:0] adder_result_ext_o;
     logic        less;  // handles both signed and unsigned forms
     logic        alu_branch_res;
-    logic [63:0] branch_result;
+    logic [63:0] branch_result, csr_result;
 
     // bit reverse operand_a for left shifts and bit counting
     generate
@@ -209,7 +218,11 @@ module alu (
             default: ; // default case to suppress unique warning
         endcase
 
-        if (branch_valid_i) result_o = branch_result;
+        if (branch_valid_i) begin
+            result_o = branch_result;
+        end else if (csr_valid_i) begin
+            result_o = csr_result;
+        end
 
     end
 
@@ -227,15 +240,29 @@ module alu (
         // any functional unit is valid, check that there is no accidental mis-predict
         .fu_valid_i,
         .branch_valid_i,
-        .branch_comp_res_i     ( alu_branch_res ),
-        .branch_ready_o        ( ), // is always high
-        .branch_valid_o        ( ), // high when input is high
-        .branch_result_o       ( branch_result ),
-        .branch_trans_id_o     ( ), // feed through
+        .branch_comp_res_i ( alu_branch_res ),
+        .branch_ready_o    ( ), // is always high
+        .branch_valid_o    ( ), // high when input is high
+        .branch_result_o   ( branch_result ),
+        .branch_trans_id_o ( ), // feed through
         .branch_predict_i,
         .resolved_branch_o,
         .resolve_branch_o,
         .branch_exception_o ( alu_exception_o )
+    );
+
+    csr_buffer csr_buffer_i (
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .csr_valid_i,
+        .operator_i,
+        .operand_a_i,
+        .operand_b_i,
+        .csr_ready_o    ( csr_ready    ),
+        .csr_result_o   ( csr_result   ),
+        .commit_i,
+        .csr_addr_o
     );
 
 endmodule
