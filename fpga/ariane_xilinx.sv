@@ -31,14 +31,13 @@ module ariane_xilinx (
     input  logic tms,
     input  logic trst_n,
     input  logic tdi,
-    output logic tdo
+    output logic tdo,
+    input  logic rx,
+    output logic tx
 );
 
-localparam logic [63:0] RomBase = 64'h10000;
 localparam NBSlave = 4; // debug, Instruction fetch, data bypass, data
-localparam NBMaster = 3; // debug, ROM, RAM
 
-localparam logic [63:0] CacheStartAddr = 64'h8000_0000;
 localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 2;
@@ -64,7 +63,7 @@ AXI_BUS #(
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
-) master[NBMaster-1:0]();
+) master[ariane_soc::NB_PERIPHERALS-1:0]();
 
 // disable test-enable
 logic test_en;
@@ -201,13 +200,27 @@ axi_node_intf_wrap #(
     .AXI_USER_WIDTH ( AxiUserWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthMaster )
 ) i_axi_xbar (
-    .clk          ( clk                                                                ),
-    .rst_n        ( ndmreset_n                                                         ),
-    .test_en_i    ( test_en                                                            ),
-    .slave        ( slave                                                              ),
-    .master       ( master                                                             ),
-    .start_addr_i ( {64'h0,   RomBase,            64'h2000000, CacheStartAddr}         ),
-    .end_addr_i   ( {64'hFFF, RomBase + 64'hFFFF, 64'h2FFFFFF, CacheStartAddr + 2**24} )
+    .clk          ( clk                                                                                              ),
+    .rst_n        ( ndmreset_n                                                                                       ),
+    .test_en_i    ( test_en                                                                                          ),
+    .slave        ( slave                                                                                            ),
+    .master       ( master                                                                                           ),
+    .start_addr_i ({
+        ariane_soc::DebugBase,
+        ariane_soc::ROMBase,
+        ariane_soc::CLINTBase,
+        ariane_soc::PLICBase,
+        ariane_soc::UARTBase,
+        ariane_soc::DRAMBase
+    }),
+    .end_addr_i   ({
+        ariane_soc::DebugBase + ariane_soc::DebugLength,
+        ariane_soc::ROMBase   + ariane_soc::ROMLength,
+        ariane_soc::CLINTBase + ariane_soc::CLINTLength,
+        ariane_soc::PLICBase  + ariane_soc::PLICLength,
+        ariane_soc::UARTBase  + ariane_soc::UARTLength,
+        ariane_soc::DRAMBase  + ariane_soc::DRAMLength
+    })
 );
 
 dm::dmi_req_t debug_req;;
@@ -243,22 +256,22 @@ dm_top #(
     .AxiDataWidth         ( AxiDataWidth         ),
     .AxiUserWidth         ( AxiUserWidth         )
 ) i_dm_top (
-    .clk_i                ( clk                  ),
-    .rst_ni               ( rst_n                ), // PoR
-    .testmode_i           ( test_en              ),
-    .ndmreset_o           ( ndmreset             ),
-    .dmactive_o           (                      ), // active debug session
-    .debug_req_o          ( debug_req_irq        ),
-    .unavailable_i        ( '0                   ),
-    .axi_master           ( slave_slice[3]       ),
-    .axi_slave            ( master[3]            ),
-    .dmi_rst_ni           ( rst_n                ),
-    .dmi_req_valid_i      ( debug_req_valid      ),
-    .dmi_req_ready_o      ( debug_req_ready      ),
-    .dmi_req_i            ( debug_req            ),
-    .dmi_resp_valid_o     ( debug_resp_valid     ),
-    .dmi_resp_ready_i     ( debug_resp_ready     ),
-    .dmi_resp_o           ( debug_resp           )
+    .clk_i                ( clk                        ),
+    .rst_ni               ( rst_n                      ), // PoR
+    .testmode_i           ( test_en                    ),
+    .ndmreset_o           ( ndmreset                   ),
+    .dmactive_o           (                            ), // active debug session
+    .debug_req_o          ( debug_req_irq              ),
+    .unavailable_i        ( '0                         ),
+    .axi_master           ( slave_slice[3]             ),
+    .axi_slave            ( master[ariane_soc::Debug]  ),
+    .dmi_rst_ni           ( rst_n                      ),
+    .dmi_req_valid_i      ( debug_req_valid            ),
+    .dmi_req_ready_o      ( debug_req_ready            ),
+    .dmi_req_i            ( debug_req                  ),
+    .dmi_resp_valid_o     ( debug_resp_valid           ),
+    .dmi_resp_ready_i     ( debug_resp_ready           ),
+    .dmi_resp_o           ( debug_resp                 )
 );
 
 // ---------------
@@ -288,18 +301,91 @@ ariane #(
 // CLINT
 // ---------------
 clint #(
-    .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
-    .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
-    .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
-    .NR_CORES       ( 1                   )
+    .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
+    .AXI_DATA_WIDTH ( AxiDataWidth     ),
+    .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
+    .NR_CORES       ( 1                )
 ) i_clint (
-    .clk_i       ( clk_i     ),
-    .rst_ni      ( rst_ni    ),
-    .slave       ( master[1] ),
+    .clk_i       ( clk                       ),
+    .rst_ni      ( ndmreset_n                ),
+    .slave       ( master[ariane_soc::CLINT] ),
     // TODO(zarubaf): Fix RTC
-    .rtc_i       ( 1'b0      ),
-    .timer_irq_o ( timer_irq ),
-    .ipi_o       ( ipi       )
+    .rtc_i       ( 1'b0                      ),
+    .timer_irq_o ( timer_irq                 ),
+    .ipi_o       ( ipi                       )
+);
+
+// ---------------
+// PLIC
+// ---------------
+logic [ariane_soc::NumTargets-1:0] irqs;
+logic [ariane_soc::NumSources-1:0] irq_sources;
+
+REG_BUS #(
+    .ADDR_WIDTH ( AxiAddrWidth ),
+    .DATA_WIDTH ( AxiDataWidth )
+) reg_bus (clk_i);
+
+plic #(
+    .ADDR_WIDTH         ( AxiAddrWidth           ),
+    .DATA_WIDTH         ( AxiDataWidth           ),
+    .ID_BITWIDTH        ( 2                      ), // TODO (zarubaf): Find propper width
+    .PARAMETER_BITWIDTH ( 2                      ), // TODO (zarubaf): Find propper width
+    .NUM_TARGETS        ( ariane_soc::NumTargets ),
+    .NUM_SOURCES        ( ariane_soc::NumSources )
+) i_plic (
+    .clk_i           ( clk         ),
+    .rst_ni          ( ndmreset_n  ),
+    .irq_sources_i   ( irq_sources ),
+    .eip_targets_o   ( irqs        ),
+    .external_bus_io ( reg_bus     )
+);
+
+// ---------------
+// Peripheral
+// ---------------
+logic [3:0]  uart_axi_lite_awaddr;
+logic        uart_axi_lite_awvalid;
+logic        uart_axi_lite_awready;
+logic [31:0] uart_axi_lite_wdata;
+logic [3:0]  uart_axi_lite_wstrb;
+logic        uart_axi_lite_wvalid;
+logic        uart_axi_lite_wready;
+logic [1:0]  uart_axi_lite_bresp;
+logic        uart_axi_lite_bvalid;
+logic        uart_axi_lite_bready;
+logic [3:0]  uart_axi_lite_araddr;
+logic        uart_axi_lite_arvalid;
+logic        uart_axi_lite_arready;
+logic [31:0] uart_axi_lite_rdata;
+logic [1:0]  uart_axi_lite_rresp;
+logic        uart_axi_lite_rvalid;
+logic        uart_axi_lite_rready;
+
+
+axi_uartlite_0 i_axi_uart_lite (
+  .s_axi_aclk     ( clk                   ),
+  .s_axi_aresetn  ( ndmreset_n            ),
+  .interrupt      ( irq_sources[0]        ),
+  .s_axi_awaddr   ( uart_axi_lite_awaddr  ),
+  .s_axi_awvalid  ( uart_axi_lite_awvalid ),
+  .s_axi_awready  ( uart_axi_lite_awready ),
+  .s_axi_wdata    ( uart_axi_lite_wdata   ),
+  .s_axi_wstrb    ( uart_axi_lite_wstrb   ),
+  .s_axi_wvalid   ( uart_axi_lite_wvalid  ),
+  .s_axi_wready   ( uart_axi_lite_wready  ),
+  .s_axi_bresp    ( uart_axi_lite_bresp   ),
+  .s_axi_bvalid   ( uart_axi_lite_bvalid  ),
+  .s_axi_bready   ( uart_axi_lite_bready  ),
+  .s_axi_araddr   ( uart_axi_lite_araddr  ),
+  .s_axi_arvalid  ( uart_axi_lite_arvalid ),
+  .s_axi_arready  ( uart_axi_lite_arready ),
+  .s_axi_rdata    ( uart_axi_lite_rdata   ),
+  .s_axi_rresp    ( uart_axi_lite_rresp   ),
+  .s_axi_rvalid   ( uart_axi_lite_rvalid  ),
+  .s_axi_rready   ( uart_axi_lite_rready  ),
+  .rx,
+  .tx
 );
 
 // ---------------
@@ -315,15 +401,15 @@ axi2mem #(
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) i_axi2rom (
-    .clk_i  ( clk        ),
-    .rst_ni ( ndmreset_n ),
-    .slave  ( master[2]  ),
-    .req_o  ( rom_req    ),
-    .we_o   (            ),
-    .addr_o ( rom_addr   ),
-    .be_o   (            ),
-    .data_o (            ),
-    .data_i ( rom_rdata  )
+    .clk_i  ( clk                     ),
+    .rst_ni ( ndmreset_n              ),
+    .slave  ( master[ariane_soc::ROM] ),
+    .req_o  ( rom_req                 ),
+    .we_o   (                         ),
+    .addr_o ( rom_addr                ),
+    .be_o   (                         ),
+    .data_o (                         ),
+    .data_i ( rom_rdata               )
 );
 
 bootrom i_bootrom (
@@ -333,50 +419,49 @@ bootrom i_bootrom (
     .rdata_o    ( rom_rdata )
 );
 
-
 // DDR 4 Subsystem
 axi_clock_converter_0 axi_clock_converter (
   .s_axi_aclk(clk),
   .s_axi_aresetn(ndmreset_n),
-  .s_axi_awid(master[0].aw_id),
-  .s_axi_awaddr(master[0].aw_addr),
-  .s_axi_awlen(master[0].aw_len),
-  .s_axi_awsize(master[0].aw_size),
-  .s_axi_awburst(master[0].aw_burst),
-  .s_axi_awlock(master[0].aw_lock),
-  .s_axi_awcache(master[0].aw_cache),
-  .s_axi_awprot(master[0].aw_prot),
-  .s_axi_awregion(master[0].aw_region),
-  .s_axi_awqos(master[0].aw_qos),
-  .s_axi_awvalid(master[0].aw_valid),
-  .s_axi_awready(master[0].aw_ready),
-  .s_axi_wdata(master[0].w_data),
-  .s_axi_wstrb(master[0].w_strb),
-  .s_axi_wlast(master[0].w_last),
-  .s_axi_wvalid(master[0].w_valid),
-  .s_axi_wready(master[0].w_ready),
-  .s_axi_bid(master[0].b_id),
-  .s_axi_bresp(master[0].b_resp),
-  .s_axi_bvalid(master[0].b_valid),
-  .s_axi_bready(master[0].b_ready),
-  .s_axi_arid(master[0].ar_id),
-  .s_axi_araddr(master[0].ar_addr[31:0]),
-  .s_axi_arlen(master[0].ar_len),
-  .s_axi_arsize(master[0].ar_size),
-  .s_axi_arburst(master[0].ar_burst),
-  .s_axi_arlock(master[0].ar_lock),
-  .s_axi_arcache(master[0].ar_cache),
-  .s_axi_arprot(master[0].ar_prot),
-  .s_axi_arregion(master[0].ar_region),
-  .s_axi_arqos(master[0].ar_qos),
-  .s_axi_arvalid(master[0].ar_valid),
-  .s_axi_arready(master[0].ar_ready),
-  .s_axi_rid(master[0].r_id),
-  .s_axi_rdata(master[0].r_data),
-  .s_axi_rresp(master[0].r_resp),
-  .s_axi_rlast(master[0].r_last),
-  .s_axi_rvalid(master[0].r_valid),
-  .s_axi_rready(master[0].r_ready),
+  .s_axi_awid(master[ariane_soc::DRAM].aw_id),
+  .s_axi_awaddr(master[ariane_soc::DRAM].aw_addr),
+  .s_axi_awlen(master[ariane_soc::DRAM].aw_len),
+  .s_axi_awsize(master[ariane_soc::DRAM].aw_size),
+  .s_axi_awburst(master[ariane_soc::DRAM].aw_burst),
+  .s_axi_awlock(master[ariane_soc::DRAM].aw_lock),
+  .s_axi_awcache(master[ariane_soc::DRAM].aw_cache),
+  .s_axi_awprot(master[ariane_soc::DRAM].aw_prot),
+  .s_axi_awregion(master[ariane_soc::DRAM].aw_region),
+  .s_axi_awqos(master[ariane_soc::DRAM].aw_qos),
+  .s_axi_awvalid(master[ariane_soc::DRAM].aw_valid),
+  .s_axi_awready(master[ariane_soc::DRAM].aw_ready),
+  .s_axi_wdata(master[ariane_soc::DRAM].w_data),
+  .s_axi_wstrb(master[ariane_soc::DRAM].w_strb),
+  .s_axi_wlast(master[ariane_soc::DRAM].w_last),
+  .s_axi_wvalid(master[ariane_soc::DRAM].w_valid),
+  .s_axi_wready(master[ariane_soc::DRAM].w_ready),
+  .s_axi_bid(master[ariane_soc::DRAM].b_id),
+  .s_axi_bresp(master[ariane_soc::DRAM].b_resp),
+  .s_axi_bvalid(master[ariane_soc::DRAM].b_valid),
+  .s_axi_bready(master[ariane_soc::DRAM].b_ready),
+  .s_axi_arid(master[ariane_soc::DRAM].ar_id),
+  .s_axi_araddr(master[ariane_soc::DRAM].ar_addr[31:0]),
+  .s_axi_arlen(master[ariane_soc::DRAM].ar_len),
+  .s_axi_arsize(master[ariane_soc::DRAM].ar_size),
+  .s_axi_arburst(master[ariane_soc::DRAM].ar_burst),
+  .s_axi_arlock(master[ariane_soc::DRAM].ar_lock),
+  .s_axi_arcache(master[ariane_soc::DRAM].ar_cache),
+  .s_axi_arprot(master[ariane_soc::DRAM].ar_prot),
+  .s_axi_arregion(master[ariane_soc::DRAM].ar_region),
+  .s_axi_arqos(master[ariane_soc::DRAM].ar_qos),
+  .s_axi_arvalid(master[ariane_soc::DRAM].ar_valid),
+  .s_axi_arready(master[ariane_soc::DRAM].ar_ready),
+  .s_axi_rid(master[ariane_soc::DRAM].r_id),
+  .s_axi_rdata(master[ariane_soc::DRAM].r_data),
+  .s_axi_rresp(master[ariane_soc::DRAM].r_resp),
+  .s_axi_rlast(master[ariane_soc::DRAM].r_last),
+  .s_axi_rvalid(master[ariane_soc::DRAM].r_valid),
+  .s_axi_rready(master[ariane_soc::DRAM].r_ready),
   // to size converter
   .m_axi_aclk(c0_ddr4_ui_clk),
   .m_axi_aresetn(ndmreset_n),

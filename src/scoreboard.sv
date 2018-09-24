@@ -18,8 +18,7 @@ module scoreboard #(
     parameter int unsigned NR_ENTRIES  = 8,
     parameter int unsigned NR_WB_PORTS = 1,
     parameter int unsigned NR_COMMIT_PORTS = 2
-    )
-    (
+)(
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
     input  logic                                      flush_unissued_instr_i, // flush only un-issued instructions

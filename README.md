@@ -77,6 +77,8 @@ Coming.
 
 ### Debugging
 
+[OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html)
+
 ```
 (gdb) b putchar
 (gdb) c
@@ -148,3 +150,6 @@ This runs the randomized program on Spike and on the RTL target, and checks whet
 
 Check out the [contribution guide](CONTRIBUTING.md)
 
+# Acknowledgements
+
+Thanks to Gian Marti, Thomas Kramer and Thomas E. Benz for implementing the PLIC.

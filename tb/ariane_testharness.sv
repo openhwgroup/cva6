@@ -69,7 +69,6 @@ module ariane_testharness #(
     assign ndmreset_n = ~ndmreset ;
 
     localparam NB_SLAVE = 4;
-    localparam NB_MASTER = 4;
 
     localparam AXI_ID_WIDTH_SLAVES = AXI_ID_WIDTH + $clog2(NB_SLAVE);
 
@@ -85,7 +84,7 @@ module ariane_testharness #(
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
         .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
-    ) master[NB_MASTER-1:0]();
+    ) master[ariane_soc::NB_PERIPHERALS-1:0]();
 
     // ---------------
     // Debug
@@ -172,22 +171,22 @@ module ariane_testharness #(
         .AxiDataWidth         ( AXI_DATA_WIDTH       ),
         .AxiUserWidth         ( AXI_USER_WIDTH       )
     ) i_dm_top (
-        .clk_i                ( clk_i                ),
-        .rst_ni               ( rst_ni               ), // PoR
-        .testmode_i           ( test_en              ),
-        .ndmreset_o           ( ndmreset             ),
-        .dmactive_o           (                      ), // active debug session
-        .debug_req_o          ( debug_req_core       ),
-        .unavailable_i        ( '0                   ),
-        .axi_master           ( slave[3]             ),
-        .axi_slave            ( master[3]            ),
-        .dmi_rst_ni           ( rst_ni               ),
-        .dmi_req_valid_i      ( debug_req_valid      ),
-        .dmi_req_ready_o      ( debug_req_ready      ),
-        .dmi_req_i            ( debug_req            ),
-        .dmi_resp_valid_o     ( debug_resp_valid     ),
-        .dmi_resp_ready_i     ( debug_resp_ready     ),
-        .dmi_resp_o           ( debug_resp           )
+        .clk_i                ( clk_i                     ),
+        .rst_ni               ( rst_ni                    ), // PoR
+        .testmode_i           ( test_en                   ),
+        .ndmreset_o           ( ndmreset                  ),
+        .dmactive_o           (                           ), // active debug session
+        .debug_req_o          ( debug_req_core            ),
+        .unavailable_i        ( '0                        ),
+        .axi_master           ( slave[3]                  ),
+        .axi_slave            ( master[ariane_soc::Debug] ),
+        .dmi_rst_ni           ( rst_ni                    ),
+        .dmi_req_valid_i      ( debug_req_valid           ),
+        .dmi_req_ready_o      ( debug_req_ready           ),
+        .dmi_req_i            ( debug_req                 ),
+        .dmi_resp_valid_o     ( debug_resp_valid          ),
+        .dmi_resp_ready_i     ( debug_resp_ready          ),
+        .dmi_resp_o           ( debug_resp                )
     );
 
     // ---------------
@@ -203,15 +202,15 @@ module ariane_testharness #(
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
         .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
     ) i_axi2rom (
-        .clk_i  ( clk_i      ),
-        .rst_ni ( ndmreset_n ),
-        .slave  ( master[2]  ),
-        .req_o  ( rom_req    ),
-        .we_o   (            ),
-        .addr_o ( rom_addr   ),
-        .be_o   (            ),
-        .data_o (            ),
-        .data_i ( rom_rdata  )
+        .clk_i  ( clk_i                   ),
+        .rst_ni ( ndmreset_n              ),
+        .slave  ( master[ariane_soc::ROM] ),
+        .req_o  ( rom_req                 ),
+        .we_o   (                         ),
+        .addr_o ( rom_addr                ),
+        .be_o   (                         ),
+        .data_o (                         ),
+        .data_i ( rom_rdata               )
     );
 
     bootrom i_bootrom (
@@ -231,22 +230,21 @@ module ariane_testharness #(
     logic [AXI_DATA_WIDTH-1:0]    wdata;
     logic [AXI_DATA_WIDTH-1:0]    rdata;
 
-
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
         .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
     ) i_axi2mem (
-        .clk_i  ( clk_i      ),
-        .rst_ni ( ndmreset_n ),
-        .slave  ( master[0]  ),
-        .req_o  ( req        ),
-        .we_o   ( we         ),
-        .addr_o ( addr       ),
-        .be_o   ( be         ),
-        .data_o ( wdata      ),
-        .data_i ( rdata      )
+        .clk_i  ( clk_i                    ),
+        .rst_ni ( ndmreset_n               ),
+        .slave  ( master[ariane_soc::DRAM] ),
+        .req_o  ( req                      ),
+        .we_o   ( we                       ),
+        .addr_o ( addr                     ),
+        .be_o   ( be                       ),
+        .data_o ( wdata                    ),
+        .data_i ( rdata                    )
     );
 
     sram #(
@@ -268,20 +266,34 @@ module ariane_testharness #(
     // ---------------
     axi_node_intf_wrap #(
         // three ports from Ariane (instruction, data and bypass)
-        .NB_SLAVE       ( NB_SLAVE          ),
-        .NB_MASTER      ( NB_MASTER         ), // debug unit, memory unit
-        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH    ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH    ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH      )
+        .NB_SLAVE       ( NB_SLAVE                   ),
+        .NB_MASTER      ( ariane_soc::NB_PERIPHERALS ),
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH          ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH             ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH             ),
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH               )
     ) i_axi_xbar (
-        .clk          ( clk_i                                                       ),
-        .rst_n        ( ndmreset_n                                                  ),
-        .test_en_i    ( test_en                                                     ),
-        .slave        ( slave                                                       ),
-        .master       ( master                                                      ),
-        .start_addr_i ( {64'h0,   64'h10000, 64'h2000000, CACHE_START_ADDR}         ),
-        .end_addr_i   ( {64'hFFF, 64'h1FFFF, 64'h2FFFFFF, CACHE_START_ADDR + 2**24} )
+        .clk          ( clk_i      ),
+        .rst_n        ( ndmreset_n ),
+        .test_en_i    ( test_en    ),
+        .slave        ( slave      ),
+        .master       ( master     ),
+        .start_addr_i ({
+            ariane_soc::DebugBase,
+            ariane_soc::ROMBase,
+            ariane_soc::CLINTBase,
+            ariane_soc::PLICBase,
+            ariane_soc::UARTBase,
+            ariane_soc::DRAMBase
+        }),
+        .end_addr_i   ({
+            ariane_soc::DebugBase + ariane_soc::DebugLength,
+            ariane_soc::ROMBase   + ariane_soc::ROMLength,
+            ariane_soc::CLINTBase + ariane_soc::CLINTLength,
+            ariane_soc::PLICBase  + ariane_soc::PLICLength,
+            ariane_soc::UARTBase  + ariane_soc::UARTLength,
+            ariane_soc::DRAMBase  + ariane_soc::DRAMLength
+        })
     );
 
     // ---------------
@@ -296,13 +308,51 @@ module ariane_testharness #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
         .NR_CORES       ( 1                   )
     ) i_clint (
-        .clk_i       ( clk_i     ),
-        .rst_ni      ( rst_ni    ),
-        .slave       ( master[1] ),
+        .clk_i       ( clk_i                     ),
+        .rst_ni      ( rst_ni                    ),
+        .slave       ( master[ariane_soc::CLINT] ),
         .rtc_i,
-        .timer_irq_o ( timer_irq ),
-        .ipi_o       ( ipi       )
+        .timer_irq_o ( timer_irq                 ),
+        .ipi_o       ( ipi                       )
     );
+
+    // ---------------
+    // PLIC
+    // ---------------
+    logic [ariane_soc::NumTargets-1:0] irqs;
+    logic [ariane_soc::NumSources-1:0] irq_sources;
+
+    REG_BUS #(
+        .ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
+        .DATA_WIDTH ( AXI_DATA_WIDTH    )
+    ) reg_bus (clk_i);
+
+    plic #(
+        .ADDR_WIDTH         ( AXI_ADDRESS_WIDTH      ),
+        .DATA_WIDTH         ( AXI_DATA_WIDTH         ),
+        .ID_BITWIDTH        ( 2                      ), // TODO (zarubaf): Find propper width
+        .PARAMETER_BITWIDTH ( 2                      ), // TODO (zarubaf): Find propper width
+        .NUM_TARGETS        ( ariane_soc::NumTargets ),
+        .NUM_SOURCES        ( ariane_soc::NumSources )
+    ) i_plic (
+        .clk_i,
+        .rst_ni          ( ndmreset_n  ),
+        .irq_sources_i   ( irq_sources ),
+        .eip_targets_o   ( irqs        ),
+        .external_bus_io ( reg_bus     )
+    );
+
+    // ---------------
+    // Peripheral
+    // ---------------
+
+    // tie-off uart here
+    assign irq_sources = '0;
+    assign master[ariane_soc::UART].aw_ready = 1'b1;
+    assign master[ariane_soc::UART].ar_ready = 1'b1;
+    assign master[ariane_soc::UART].w_ready  = 1'b1;
+    assign master[ariane_soc::UART].b_valid  = 1'b0;
+    assign master[ariane_soc::UART].r_valid  = 1'b0;
 
     // ---------------
     // Core
@@ -312,18 +362,18 @@ module ariane_testharness #(
         .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
         .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
     ) i_ariane (
-        .clk_i                ( clk_i            ),
-        .rst_ni               ( ndmreset_n       ),
-        .boot_addr_i          ( 64'h10000        ), // start fetching from ROM
-        .core_id_i            ( '0               ),
-        .cluster_id_i         ( '0               ),
-        .irq_i                ( '0               ), // we do not specify other interrupts in this TB
-        .ipi_i                ( ipi              ),
-        .time_irq_i           ( timer_irq        ),
-        .debug_req_i          ( debug_req_core   ),
-        .data_if              ( slave[2]         ),
-        .bypass_if            ( slave[1]         ),
-        .instr_if             ( slave[0]         )
+        .clk_i         ( clk_i            ),
+        .rst_ni        ( ndmreset_n       ),
+        .boot_addr_i   ( 64'h10000        ), // start fetching from ROM
+        .core_id_i     ( '0               ),
+        .cluster_id_i  ( '0               ),
+        .irq_i         ( irqs             ),
+        .ipi_i         ( ipi              ),
+        .time_irq_i    ( timer_irq        ),
+        .debug_req_i   ( debug_req_core   ),
+        .data_if       ( slave[2]         ),
+        .bypass_if     ( slave[1]         ),
+        .instr_if      ( slave[0]         )
     );
 
 endmodule

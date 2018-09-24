@@ -13,3 +13,6 @@
 [submodule "src/axi"]
 	path = src/axi
 	url = https://github.com/pulp-platform/axi.git
+[submodule "src/register_interface"]
+	path = src/register_interface
+	url = https://github.com/pulp-platform/register_interface.git

@@ -27,7 +27,7 @@
 //-- 2018-03-31  2.0      tbenz   Created header
 //-------------------------------------------------------------------------------
 
-module plic_core #(
+module plic #(
     parameter int ADDR_WIDTH         = -1,   //width of external address bus
     parameter int DATA_WIDTH         = -1,   //width of external data bus
     parameter int ID_BITWIDTH        = -1,   //width of the gateway identifiers

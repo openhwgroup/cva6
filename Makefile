@@ -24,12 +24,14 @@ target-options ?=
 defines        ?=
 # Sources
 # Package files -> compile first
-ariane_pkg := include/riscv_pkg.sv       \
-              src/debug/dm_pkg.sv        \
-              include/ariane_pkg.sv      \
-              include/std_cache_pkg.sv   \
-              src/axi/src/axi_pkg.sv     \
-              include/axi_intf.sv
+ariane_pkg := include/riscv_pkg.sv                   \
+              src/debug/dm_pkg.sv                    \
+              include/ariane_pkg.sv                  \
+              include/std_cache_pkg.sv               \
+              src/axi/src/axi_pkg.sv                 \
+              include/axi_intf.sv                    \
+              tb/ariane_soc_pkg.sv                   \
+              src/register_interface/src/reg_intf.sv
 
 # utility modules
 util := $(wildcard src/util/*.svh)         \
@@ -50,10 +52,13 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/clint/*.sv)                                     \
+        $(wildcard src/plic/*.sv)                                      \
+        $(wildcard src/register_interface/*.sv)                        \
         $(wildcard src/axi_node/src/*.sv)                              \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
         $(wildcard src/debug/debug_rom/*.sv)                           \
+        src/axi/src/axi_multicut.sv                                    \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
@@ -135,16 +140,16 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 
 sim: build
 	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}        \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0            \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=1            \
 	$(QUESTASIM_FLAGS)                                                                                                \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit"  \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*; run -all; exit"  \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
 simc: build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
 	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " run -all; exit"                       \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do "run -all; exit"                       \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
 $(riscv-asm-tests): build

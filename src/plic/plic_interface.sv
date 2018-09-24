@@ -56,8 +56,8 @@ module plic_interface #(
                                                              // CCP: claim/clear pulses
 
         //calculate some parameter needed later
-    localparam int num_gateway_bundles    = (NUM_GATEWAYS-1) / DATA_WIDTH + 1;       // how many bundles we have to consider
-    localparam int bpw                    = DATA_WIDTH / 8;                          // how many bytes a data word consist of
+    localparam int num_gateway_bundles = (NUM_GATEWAYS-1) / DATA_WIDTH + 1;       // how many bundles we have to consider
+    localparam int bpw                 = DATA_WIDTH / 8;                          // how many bytes a data word consist of
     //internal signals
     logic [ADDR_WIDTH-12-1:0     ]  page_address;       // the upper part of the address
     logic [11:0                  ]  page_offset;        // the lowest 12 bit describes the page offset
@@ -157,7 +157,7 @@ module plic_interface #(
 
                 //the bottom part page_word_offset now tells us which gateway bundle we have to consider
                 //part of the page_address and the upper part of the page_word_offset give us the target nr.
-                if(page_offset[6:$clog2(bpw)]<num_gateway_bundles) begin
+                if(page_offset[6:$clog2(bpw)] < num_gateway_bundles) begin
                     if(({page_address[8:0], page_offset[11:7]} - 64) < NUM_TARGETS) begin
                         funct = IEB;
                         // debug:
@@ -218,7 +218,7 @@ module plic_interface #(
                     external_bus_io.rdata = irq_pending_bundle[page_word_offset];
                     external_bus_io.ready = 1;
                 //write case
-                end else if(write_active != 0) begin
+                end else if (write_active != 0) begin
                     external_bus_io.error = 1;  //not allowed
                 end
             end

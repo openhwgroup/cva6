@@ -46,17 +46,6 @@ module plic_target_slice #(
 
     logic[PRIORITY_BITWIDTH:0]  interrupt_priority_masked[NUM_GATEWAYS];
 
-    always_comb begin : proc_mask_gateway_outputs
-        for (int i = 0; i < NUM_GATEWAYS; i++) begin
-             if(interrupt_enable_i[i] && interrupt_pending_i[i]) begin
-                interrupt_priority_masked[i] <= interrupt_priority_i[i] + 1;      //priority shift +1
-
-             end else begin
-                interrupt_priority_masked[i] <= '0;
-
-             end
-        end
-    end
 
     // Signals that represent the selected interrupt source.
     logic[PRIORITY_BITWIDTH:0] best_priority;
@@ -64,22 +53,22 @@ module plic_target_slice #(
 
     // Create a tree to find the best interrupt source.
     plic_find_max #(
-        .NUM_OPERANDS             (NUM_GATEWAYS              ),
-        .ID_BITWIDTH              (ID_BITWIDTH               ),
-        .PRIORITY_BITWIDTH        (PRIORITY_BITWIDTH+1       )
+        .NUM_OPERANDS             ( NUM_GATEWAYS              ),
+        .ID_BITWIDTH              ( ID_BITWIDTH               ),
+        .PRIORITY_BITWIDTH        ( PRIORITY_BITWIDTH + 1     )
     ) find_max_instance (
-        .priorities_i             (interrupt_priority_masked ),
-        .identifiers_i            (interrupt_id_i            ),
+        .priorities_i             ( interrupt_priority_masked ),
+        .identifiers_i            ( interrupt_id_i            ),
         // Outputs
-        .largest_priority_o       (best_priority             ),
-        .identifier_of_largest_o  (best_id                   )
+        .largest_priority_o       ( best_priority             ),
+        .identifier_of_largest_o  ( best_id                   )
     );
 
     // Compare the priority of the best interrupt source to the threshold.
     always_comb begin : proc_compare_threshold
         if ((best_priority - 1 > threshold_i) && (best_priority != '0)) begin
-            ext_interrupt_present_o     = 1;
-            identifier_of_largest_o     = best_id;
+            ext_interrupt_present_o = 1;
+            identifier_of_largest_o = best_id;
         end else begin
             if ((best_priority - 1 <= threshold_i) && (best_priority != '0)) begin
                 ext_interrupt_present_o = 0;
@@ -91,4 +80,13 @@ module plic_target_slice #(
         end
     end
 
+    always_comb begin : proc_mask_gateway_outputs
+        for (int i = 0; i < NUM_GATEWAYS; i++) begin
+             if (interrupt_enable_i[i] && interrupt_pending_i[i]) begin
+                interrupt_priority_masked[i] = interrupt_priority_i[i] + 1;      //priority shift +1
+             end else begin
+                interrupt_priority_masked[i] = '0;
+             end
+        end
+    end
 endmodule
