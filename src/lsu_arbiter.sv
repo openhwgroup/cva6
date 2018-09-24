@@ -37,97 +37,68 @@ module lsu_arbiter (
 );
 
     // the two fifos are used to buffer results from ld and st paths, and arbits between these results in
-    // RR fashion. FIFOs need to be 2 deep in order to unconditionally accept loads and stores since we can
-    // have a maximum of 2 outstanding loads.
-    // if there are valid elements in the fifos, the unit posts the result on its output ports and expects it
-    // to be consumed unconditionally 
-
-    localparam int DEPTH = 2;
+    // RR fashion. FIFOs need to be 3 deep in order to unconditionally accept loads and stores since we can
+    // have a maximum of 2 outstanding loads (valid elements are unconditionally posted to the output and hence
+    // we do not need 4 entries).
+    localparam DEPTH = 3;
 
     typedef struct packed {
+        logic                     valid;
         logic [TRANS_ID_BITS-1:0] trans_id;
         logic [63:0]              result;
         exception_t               ex;
     } fifo_t;
 
-    fifo_t st_in, st_out, ld_in, ld_out;
+    fifo_t regs_d[DEPTH:0], regs_q[DEPTH:0];
+    logic [$clog2(DEPTH):0]  cnt_d, cnt_q, cnt_inc;
 
-    logic ld_full, ld_empty, ld_ren;
-    logic st_full, st_empty, st_ren;
-    logic idx;
+    assign w_one   = ld_valid_i ^ st_valid_i;
+    assign w_two   = ld_valid_i & st_valid_i;
 
-    assign st_in.trans_id = st_trans_id_i;
-    assign st_in.result   = st_result_i;
-    assign st_in.ex       = st_ex_i;
+    assign cnt_inc = cnt_q+1;
+    assign cnt_d   = (w_two)    ? cnt_inc :
+                     (w_one)    ? cnt_q   :
+                     (cnt_q>0)  ? cnt_q-1 :
+                                  cnt_q;
 
-    assign ld_in.trans_id = ld_trans_id_i;
-    assign ld_in.result   = ld_result_i;
-    assign ld_in.ex       = ld_ex_i;
+    assign regs_d[DEPTH] = '0;                                                        
+    generate
+        for(genvar k=0; k<DEPTH; k++) begin
+           assign regs_d[k] =  (ld_valid_i & (k==cnt_q))   ?  {1'b1, ld_trans_id_i, ld_result_i, ld_ex_i} : 
+                               (w_one      & (k==cnt_q))   ?  {1'b1, st_trans_id_i, st_result_i, st_ex_i} : 
+                               (w_two      & (k==cnt_inc)) ?  {1'b1, st_trans_id_i, st_result_i, st_ex_i} : 
+                                                              regs_q[k+1];
+        end
+    endgenerate
 
-    assign trans_id_o     = (idx) ? st_out.trans_id : ld_out.trans_id; 
-    assign result_o       = (idx) ? st_out.result   : ld_out.result;   
-    assign ex_o           = (idx) ? st_out.ex       : ld_out.ex;      
+    // unconditionally output valid data
+    assign valid_o    =  regs_q[0].valid;
+    assign trans_id_o =  regs_q[0].trans_id;
+    assign result_o   =  regs_q[0].result;
+    assign ex_o       =  regs_q[0].ex;  
 
-    // round robin with "lookahead" for 2 requesters
-    rrarbiter #(
-        .NUM_REQ     ( 2 )
-    ) i_rrarbiter (
-        .clk_i       (  clk_i                 ),
-        .rst_ni      (  rst_ni                ),
-        .flush_i     (  flush_i               ),
-        .en_i        (  1'b1                  ),
-        .req_i       ( {~st_empty, ~ld_empty} ),
-        .ack_o       ( { st_ren,    ld_ren  } ),
-        .vld_o       ( valid_o                ),
-        .idx_o       ( idx                    )
-    );
-
-    fifo_v2 #(
-        .dtype       (  fifo_t     ),
-        .DEPTH       (  DEPTH      )
-    ) i_ld_fifo (    
-        .clk_i       (  clk_i      ),
-        .rst_ni      (  rst_ni     ),
-        .flush_i     (  flush_i    ),
-        .testmode_i  (  1'b0       ),
-        .full_o      (  ld_full    ),
-        .empty_o     (  ld_empty   ),
-        .alm_full_o  (             ),
-        .alm_empty_o (             ),
-        .data_i      (  ld_in      ),
-        .push_i      (  ld_valid_i ),
-        .data_o      (  ld_out     ),
-        .pop_i       (  ld_ren     )
-    );  
-
-    fifo_v2 #(
-        .dtype       (  fifo_t     ),
-        .DEPTH       (  DEPTH      )
-    ) i_st_fifo (    
-        .clk_i       (  clk_i      ),
-        .rst_ni      (  rst_ni     ),
-        .flush_i     (  flush_i    ),
-        .testmode_i  (  1'b0       ),
-        .full_o      (  st_full    ),
-        .empty_o     (  st_empty   ),
-        .alm_full_o  (             ),
-        .alm_empty_o (             ),
-        .data_i      (  st_in      ),
-        .push_i      (  st_valid_i ),
-        .data_o      (  st_out     ),
-        .pop_i       (  st_ren     )
-    ); 
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+        if(~rst_ni) begin
+            regs_q <= '{default:'0};
+            cnt_q  <= '0;
+        end else begin
+            regs_q <= regs_d;
+            cnt_q  <= cnt_d;
+        end
+    end
 
 
-`ifndef SYNTHESIS
-`ifndef VERILATOR
-    // check fifo control signals
-    assert property (@(posedge clk_i) disable iff (~rst_ni) ld_full |-> !ld_valid_i) else $fatal ("cannot write full ld_fifo");
-    assert property (@(posedge clk_i) disable iff (~rst_ni) st_full |-> !st_valid_i) else $fatal ("cannot write full st_fifo");
-    assert property (@(posedge clk_i) disable iff (~rst_ni) ld_empty |-> !ld_ren)    else $fatal ("cannot read empty ld_fifo");
-    assert property (@(posedge clk_i) disable iff (~rst_ni) st_empty |-> !st_ren)    else $fatal ("cannot read empty st_fifo");
-`endif
-`endif
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
 
+    //pragma translate_off
+    `ifndef VERILATOR
+        cnt: assert property (
+          @(posedge clk_i) disable iff (~rst_ni) cnt_q<DEPTH)      
+             else $fatal(1,"cnt_q must be lower than DEPTH");
+
+    `endif
+    //pragma translate_on
 
 endmodule
