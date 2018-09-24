@@ -112,28 +112,76 @@ module ex_stage #(
     // -----
     // ALU
     // -----
+    fu_data_t alu_data;
+    assign alu_data.operator  = alu_valid_i | branch_valid_i ? operator_i  : ADD;
+    assign alu_data.operand_a = alu_valid_i | branch_valid_i ? operand_a_i : '0;
+    assign alu_data.operand_b = alu_valid_i | branch_valid_i ? operand_b_i : '0;
+
     alu alu_i (
-        .result_o            ( alu_result_o                 ),
-        .alu_branch_res_o    ( alu_branch_res               ),
-        .*
+        .trans_id_i,
+        .alu_valid_i,
+        .operator_i       ( alu_data.operator  ),
+        .operand_a_i      ( alu_data.operand_a ),
+        .operand_b_i      ( alu_data.operand_b ),
+        .result_o         ( alu_result_o       ),
+        .alu_branch_res_o ( alu_branch_res     ),
+        .alu_valid_o,
+        .alu_ready_o,
+        .alu_trans_id_o
     );
 
     // --------------------
     // Branch Engine
     // --------------------
+    fu_data_t branch_data;
+    assign branch_data.operator  = branch_valid_i ? operator_i  : JALR;
+    assign branch_data.operand_a = branch_valid_i ? operand_a_i : '0;
+    assign branch_data.operand_b = branch_valid_i ? operand_b_i : '0;
+    assign branch_data.imm       = branch_valid_i ? imm_i       : '0;
+
     branch_unit branch_unit_i (
+        .trans_id_i,
+        .operator_i            ( branch_data.operator  ),
+        .operand_a_i           ( branch_data.operand_a ),
+        .operand_b_i           ( branch_data.operand_b ),
+        .imm_i                 ( branch_data.imm       ),
+        .pc_i,
+        .is_compressed_instr_i,
         // any functional unit is valid, check that there is no accidental mis-predict
-        .fu_valid_i          ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i ),
-        .branch_comp_res_i   ( alu_branch_res ),
-        .*
+        .fu_valid_i            ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i ),
+        .branch_valid_i,
+        .branch_comp_res_i     ( alu_branch_res ),
+        .branch_ready_o,
+        .branch_valid_o,
+        .branch_result_o,
+        .branch_trans_id_o,
+        .branch_predict_i,
+        .resolved_branch_o,
+        .resolve_branch_o,
+        .branch_exception_o
     );
 
     // ----------------
     // Multiplication
     // ----------------
+    fu_data_t mult_data;
+    assign mult_data.operator  = mult_valid_i ? operator_i  : MUL;
+    assign mult_data.operand_a = mult_valid_i ? operand_a_i : '0;
+    assign mult_data.operand_b = mult_valid_i ? operand_b_i : '0;
+
     mult i_mult (
-        .result_o ( mult_result_o ),
-        .*
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .trans_id_i,
+        .mult_valid_i,
+        .operator_i      ( mult_data.operator  ),
+        .operand_a_i     ( mult_data.operand_a ),
+        .operand_b_i     ( mult_data.operand_b ),
+        .result_o        ( mult_result_o       ),
+        .mult_valid_o,
+        .mult_ready_o,
+        .mult_trans_id_o
     );
 
     // ----------------
@@ -141,10 +189,31 @@ module ex_stage #(
     // ----------------
     generate
         if (FP_PRESENT) begin : fpu_gen
+            fu_data_t fpu_data;
+            assign fpu_data.operator  = fpu_valid_i ? operator_i  : FSGNJ;
+            assign fpu_data.operand_a = fpu_valid_i ? operand_a_i : '0;
+            assign fpu_data.operand_b = fpu_valid_i ? operand_b_i : '0;
+            assign fpu_data.imm       = fpu_valid_i ? imm_i       : '0;
+
             fpu_wrap fpu_i (
-                .operand_c_i ( imm_i        ),
-                .result_o    ( fpu_result_o ),
-                .*
+                .clk_i,
+                .rst_ni,
+                .flush_i,
+                .trans_id_i,
+                .fu_i,
+                .fpu_valid_i,
+                .fpu_ready_o,
+                .operator_i      ( fpu_data.operator            ),
+                .operand_a_i     ( fpu_data.operand_a[FLEN-1:0] ),
+                .operand_b_i     ( fpu_data.operand_b[FLEN-1:0] ),
+                .operand_c_i     ( fpu_data.imm[FLEN-1:0]       ),
+                .fpu_fmt_i,
+                .fpu_rm_i,
+                .fpu_frm_i,
+                .fpu_trans_id_o,
+                .result_o        ( fpu_result_o ),
+                .fpu_valid_o,
+                .fpu_exception_o
             );
         end else begin : no_fpu_gen
             assign fpu_ready_o     = '0;
@@ -158,21 +227,72 @@ module ex_stage #(
     // ----------------
     // Load-Store Unit
     // ----------------
+    fu_data_t lsu_data;
+    assign lsu_data.operator  = lsu_valid_i ? operator_i  : LD;
+    assign lsu_data.operand_a = lsu_valid_i ? operand_a_i : '0;
+    assign lsu_data.operand_b = lsu_valid_i ? operand_b_i : '0;
+    assign lsu_data.imm       = lsu_valid_i ? imm_i       : '0;
+
     lsu lsu_i (
-        .commit_i           ( lsu_commit_i       ),
-        .commit_ready_o     ( lsu_commit_ready_o ),
-        .dcache_req_ports_i ( dcache_req_ports_i ),
-        .dcache_req_ports_o ( dcache_req_ports_o ),
-        .*
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .no_st_pending_o,
+        .fu_i,
+        .operator_i             ( lsu_data.operator  ),
+        .operand_a_i            ( lsu_data.operand_a ),
+        .operand_b_i            ( lsu_data.operand_b ),
+        .imm_i                  ( lsu_data.imm       ),
+        .lsu_ready_o,
+        .lsu_valid_i,
+        .trans_id_i,
+        .lsu_trans_id_o,
+        .lsu_result_o,
+        .lsu_valid_o,
+        .commit_i               ( lsu_commit_i       ),
+        .commit_ready_o         ( lsu_commit_ready_o ),
+        .enable_translation_i,
+        .en_ld_st_translation_i,
+        .icache_areq_i,
+        .icache_areq_o,
+        .priv_lvl_i,
+        .ld_st_priv_lvl_i,
+        .sum_i,
+        .mxr_i,
+        .satp_ppn_i,
+        .asid_i,
+        .flush_tlb_i,
+        .itlb_miss_o,
+        .dtlb_miss_o,
+        .dcache_req_ports_i,
+        .dcache_req_ports_o,
+        .lsu_exception_o
     );
 
     // -----
     // CSR
     // -----
+    fu_data_t csr_data;
+    assign csr_data.operator  = csr_valid_i ? operator_i  : CSR_READ;
+    assign csr_data.operand_a = csr_valid_i ? operand_a_i : '0;
+    assign csr_data.operand_b = csr_valid_i ? operand_b_i : '0;
+
     // CSR address buffer
     csr_buffer csr_buffer_i (
-        .commit_i ( csr_commit_i  ),
-        .*
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .operator_i     ( csr_data.operator  ),
+        .operand_a_i    ( csr_data.operand_a ),
+        .operand_b_i    ( csr_data.operand_b ),
+        .trans_id_i,
+        .csr_ready_o,
+        .csr_valid_i,
+        .csr_trans_id_o,
+        .csr_result_o,
+        .csr_valid_o,
+        .commit_i       ( csr_commit_i ),
+        .csr_addr_o
     );
 
 

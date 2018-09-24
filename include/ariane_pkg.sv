@@ -240,6 +240,13 @@ package ariane_pkg;
                                VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D
                              } fu_op;
 
+    typedef struct packed {
+      fu_op        operator;
+      logic [63:0] operand_a;
+      logic [63:0] operand_b;
+      logic [63:0] imm;
+    } fu_data_t;
+
     // -------------------------------
     // Extract Src/Dst FP Reg from Op
     // -------------------------------
