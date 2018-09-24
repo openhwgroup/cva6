@@ -16,8 +16,8 @@
 import ariane_pkg::*;
 
 module ex_stage #(
-        parameter int          ASID_WIDTH       = 1
-    ) (
+    parameter int          ASID_WIDTH       = 1
+)(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,
@@ -37,15 +37,10 @@ module ex_stage #(
     output logic                                   alu_valid_o,           // ALU result is valid
     output logic [63:0]                            alu_result_o,
     output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
+    output exception_t                             alu_exception_o,
     // Branches and Jumps
-    output logic                                   branch_ready_o,
     input  logic                                   branch_valid_i,        // we are using the branch unit
-    output logic                                   branch_valid_o,        // the calculated branch target is valid
-    output logic [63:0]                            branch_result_o,       // branch target address out
-    input  branchpredict_sbe_t                     branch_predict_i,      // branch prediction in
-    output logic [TRANS_ID_BITS-1:0]               branch_trans_id_o,
-    output exception_t                             branch_exception_o,    // branch unit detected an exception
-
+    input  branchpredict_sbe_t                     branch_predict_i,
     output branchpredict_t                         resolved_branch_o,     // the branch engine uses the write back from the ALU
     output logic                                   resolve_branch_o,      // to ID signaling that we resolved the branch
     // LSU
@@ -115,52 +110,31 @@ module ex_stage #(
     // ALU
     // -----
     fu_data_t alu_data;
-    assign alu_data.operator  = alu_valid_i | branch_valid_i ? operator_i  : ADD;
-    assign alu_data.operand_a = alu_valid_i | branch_valid_i ? operand_a_i : '0;
-    assign alu_data.operand_b = alu_valid_i | branch_valid_i ? operand_b_i : '0;
+    assign alu_data.operator  = (alu_valid_i | branch_valid_i) ? operator_i  : ADD;
+    assign alu_data.operand_a = (alu_valid_i | branch_valid_i) ? operand_a_i : '0;
+    assign alu_data.operand_b = (alu_valid_i | branch_valid_i) ? operand_b_i : '0;
+    assign alu_data.imm       = (alu_valid_i | branch_valid_i) ? imm_i : '0;
 
     alu alu_i (
+        .pc_i,
         .trans_id_i,
         .alu_valid_i,
+        .branch_valid_i,
         .operator_i       ( alu_data.operator  ),
         .operand_a_i      ( alu_data.operand_a ),
         .operand_b_i      ( alu_data.operand_b ),
+        .imm_i            ( alu_data.imm       ),
         .result_o         ( alu_result_o       ),
-        .alu_branch_res_o ( alu_branch_res     ),
         .alu_valid_o,
         .alu_ready_o,
-        .alu_trans_id_o
-    );
+        .alu_trans_id_o,
+        .alu_exception_o,
 
-    // --------------------
-    // Branch Engine
-    // --------------------
-    fu_data_t branch_data;
-    assign branch_data.operator  = branch_valid_i ? operator_i  : JALR;
-    assign branch_data.operand_a = branch_valid_i ? operand_a_i : '0;
-    assign branch_data.operand_b = branch_valid_i ? operand_b_i : '0;
-    assign branch_data.imm       = branch_valid_i ? imm_i       : '0;
-
-    branch_unit branch_unit_i (
-        .trans_id_i,
-        .operator_i            ( branch_data.operator  ),
-        .operand_a_i           ( branch_data.operand_a ),
-        .operand_b_i           ( branch_data.operand_b ),
-        .imm_i                 ( branch_data.imm       ),
-        .pc_i,
+        .fu_valid_i       ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i ),
         .is_compressed_instr_i,
-        // any functional unit is valid, check that there is no accidental mis-predict
-        .fu_valid_i            ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i ),
-        .branch_valid_i,
-        .branch_comp_res_i     ( alu_branch_res ),
-        .branch_ready_o,
-        .branch_valid_o,
-        .branch_result_o,
-        .branch_trans_id_o,
         .branch_predict_i,
         .resolved_branch_o,
-        .resolve_branch_o,
-        .branch_exception_o
+        .resolve_branch_o
     );
 
     // ----------------

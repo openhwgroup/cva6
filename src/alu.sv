@@ -19,23 +19,31 @@
 
 import ariane_pkg::*;
 
-module alu
-(
+module alu (
+    input  logic [63:0]              pc_i,
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,
     input  logic                     alu_valid_i,
+    input  logic                     branch_valid_i,
     input  fu_op                     operator_i,
     input  logic [63:0]              operand_a_i,
     input  logic [63:0]              operand_b_i,
+    input  logic [63:0]              imm_i,
     output logic [63:0]              result_o,
-    output logic                     alu_branch_res_o,
     output logic                     alu_valid_o,
     output logic                     alu_ready_o,
-    output logic [TRANS_ID_BITS-1:0] alu_trans_id_o
+    output logic [TRANS_ID_BITS-1:0] alu_trans_id_o,
+    output exception_t               alu_exception_o,
+
+    input  logic                     fu_valid_i,
+    input  logic                     is_compressed_instr_i,
+    input  branchpredict_sbe_t       branch_predict_i,
+    output branchpredict_t           resolved_branch_o,
+    output logic                     resolve_branch_o
 );
 
     // ALU is a single cycle instructions, hence it is always ready
     assign alu_ready_o    = 1'b1;
-    assign alu_valid_o    = alu_valid_i;
+    assign alu_valid_o    = alu_valid_i | branch_valid_i;
     assign alu_trans_id_o = trans_id_i;
 
     logic [63:0] operand_a_rev;
@@ -43,6 +51,8 @@ module alu
     logic [64:0] operand_b_neg;
     logic [65:0] adder_result_ext_o;
     logic        less;  // handles both signed and unsigned forms
+    logic        alu_branch_res;
+    logic [63:0] branch_result;
 
     // bit reverse operand_a for left shifts and bit counting
     generate
@@ -89,13 +99,13 @@ module alu
     // get the right branch comparison result
     always_comb begin : branch_resolve
         // set comparison by default
-        alu_branch_res_o      = 1'b1;
+        alu_branch_res      = 1'b1;
         case (operator_i)
-            EQ:       alu_branch_res_o = adder_z_flag;
-            NE:       alu_branch_res_o = ~adder_z_flag;
-            LTS, LTU: alu_branch_res_o = less;
-            GES, GEU: alu_branch_res_o = ~less;
-            default:  alu_branch_res_o = 1'b1;
+            EQ:       alu_branch_res = adder_z_flag;
+            NE:       alu_branch_res = ~adder_z_flag;
+            LTS, LTU: alu_branch_res = less;
+            GES, GEU: alu_branch_res = ~less;
+            default:  alu_branch_res = 1'b1;
         endcase
     end
 
@@ -198,6 +208,34 @@ module alu
 
             default: ; // default case to suppress unique warning
         endcase
+
+        if (branch_valid_i) result_o = branch_result;
+
     end
+
+    // ----------------------
+    // Branch Unit
+    // ----------------------
+    branch_unit branch_unit_i (
+        .trans_id_i,
+        .operator_i,
+        .operand_a_i,
+        .operand_b_i,
+        .imm_i,
+        .pc_i,
+        .is_compressed_instr_i,
+        // any functional unit is valid, check that there is no accidental mis-predict
+        .fu_valid_i,
+        .branch_valid_i,
+        .branch_comp_res_i     ( alu_branch_res ),
+        .branch_ready_o        ( ), // is always high
+        .branch_valid_o        ( ), // high when input is high
+        .branch_result_o       ( branch_result ),
+        .branch_trans_id_o     ( ), // feed through
+        .branch_predict_i,
+        .resolved_branch_o,
+        .resolve_branch_o,
+        .branch_exception_o ( alu_exception_o )
+    );
 
 endmodule

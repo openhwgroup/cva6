@@ -48,8 +48,7 @@ module issue_stage #(
     input  logic                                     lsu_ready_i,
     output logic                                     lsu_valid_o,
     // branch prediction
-    input  logic                                     branch_ready_i,
-    output logic                                     branch_valid_o, // use branch prediction unit
+    output logic                                     branch_valid_o,   // use branch prediction unit
     output branchpredict_sbe_t                       branch_predict_o,
 
     input  logic                                     mult_ready_i,

@@ -91,12 +91,8 @@ module ariane #(
     logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
     logic                     alu_valid_ex_id;
     logic [63:0]              alu_result_ex_id;
+    exception_t               alu_exception_ex_id;
     // Branches and Jumps
-    logic                     branch_ready_ex_id;
-    logic [TRANS_ID_BITS-1:0] branch_trans_id_ex_id;
-    logic [63:0]              branch_result_ex_id;
-    exception_t               branch_exception_ex_id;
-    logic                     branch_valid_ex_id;
     logic                     branch_valid_id_ex;
 
     branchpredict_sbe_t       branch_predict_id_ex;
@@ -305,7 +301,6 @@ module ariane #(
         .alu_ready_i                ( alu_ready_ex_id                 ),
         .alu_valid_o                ( alu_valid_id_ex                 ),
         // Branches and Jumps
-        .branch_ready_i             ( branch_ready_ex_id              ),
         .branch_valid_o             ( branch_valid_id_ex              ), // branch is valid
         .branch_predict_o           ( branch_predict_id_ex            ), // branch predict to ex
         .resolve_branch_i           ( resolve_branch_ex_id            ), // in order to resolve the branch
@@ -326,10 +321,10 @@ module ariane #(
 
         // Commit
         .resolved_branch_i          ( resolved_branch                 ),
-        .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,  branch_trans_id_ex_id,    csr_trans_id_ex_id,         mult_trans_id_ex_id,        fpu_trans_id_ex_id  }),
-        .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,    branch_result_ex_id,      csr_result_ex_id,           mult_result_ex_id,          fpu_result_ex_id    }),
-        .ex_ex_i                    ( {{$bits(exception_t){1'b0}}, lsu_exception_ex_id, branch_exception_ex_id,   {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}}, fpu_exception_ex_id }),
-        .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,     branch_valid_ex_id,       csr_valid_ex_id,            mult_valid_ex_id,           fpu_valid_ex_id     }),
+        .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,   csr_trans_id_ex_id,         mult_trans_id_ex_id,        fpu_trans_id_ex_id }),
+        .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,       csr_result_ex_id,           mult_result_ex_id,          fpu_result_ex_id }),
+        .ex_ex_i                    ( {alu_exception_ex_id,        lsu_exception_ex_id, {$bits(exception_t){1'b0}}, {$bits(exception_t){1'b0}}, fpu_exception_ex_id }),
+        .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,         csr_valid_ex_id,            mult_valid_ex_id,           fpu_valid_ex_id }),
 
         .waddr_i                    ( waddr_commit_id               ),
         .wdata_i                    ( wdata_commit_id               ),
@@ -361,13 +356,9 @@ module ariane #(
         .alu_result_o           ( alu_result_ex_id                       ),
         .alu_trans_id_o         ( alu_trans_id_ex_id                     ),
         .alu_valid_o            ( alu_valid_ex_id                        ),
+        .alu_exception_o        ( alu_exception_ex_id                    ),
         // Branches and Jumps
-        .branch_ready_o         ( branch_ready_ex_id                     ),
-        .branch_valid_o         ( branch_valid_ex_id                     ),
         .branch_valid_i         ( branch_valid_id_ex                     ),
-        .branch_trans_id_o      ( branch_trans_id_ex_id                  ),
-        .branch_result_o        ( branch_result_ex_id                    ),
-        .branch_exception_o     ( branch_exception_ex_id                 ),
         .branch_predict_i       ( branch_predict_id_ex                   ), // branch predict to ex
         .resolved_branch_o      ( resolved_branch                        ),
         .resolve_branch_o       ( resolve_branch_ex_id                   ),

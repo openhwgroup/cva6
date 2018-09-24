@@ -128,27 +128,28 @@ module dm_sba (
         end
     end
 
+
     axi_adapter #(
-        .DATA_WIDTH            ( 64                       )
+        .DATA_WIDTH            ( 64                        )
     ) i_axi_master (
-        .clk_i                 ( clk_i                    ),
-        .rst_ni                ( dmactive_i               ),
-        .req_i                 ( req                      ),
-        .type_i                ( std_cache_pkg::SINGLE_REQ),
-        .gnt_o                 ( gnt                      ),
-        .gnt_id_o              (                          ),
-        .addr_i                ( address                  ),
-        .we_i                  ( we                       ),
-        .wdata_i               ( sbdata_i                 ),
-        .be_i                  ( be                       ),
-        .size_i                ( sbaccess_i[1:0]          ),
-        .id_i                  ( '0                       ),
-        .valid_o               ( sbdata_valid_o           ),
-        .rdata_o               ( sbdata_o                 ),
-        .id_o                  (                          ),
-        .critical_word_o       (                          ), // not needed here
-        .critical_word_valid_o (                          ), // not needed here
-        .axi                   ( axi_master               )
+        .clk_i                 ( clk_i                     ),
+        .rst_ni                ( dmactive_i                ),
+        .req_i                 ( req                       ),
+        .type_i                ( std_cache_pkg::SINGLE_REQ ),
+        .gnt_o                 ( gnt                       ),
+        .gnt_id_o              (                           ),
+        .addr_i                ( address                   ),
+        .we_i                  ( we                        ),
+        .wdata_i               ( sbdata_i                  ),
+        .be_i                  ( be                        ),
+        .size_i                ( sbaccess_i[1:0]           ),
+        .id_i                  ( '0                        ),
+        .valid_o               ( sbdata_valid_o            ),
+        .rdata_o               ( sbdata_o                  ),
+        .id_o                  (                           ),
+        .critical_word_o       (                           ), // not needed here
+        .critical_word_valid_o (                           ), // not needed here
+        .axi                   ( axi_master                )
     );
 
 

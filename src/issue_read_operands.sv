@@ -52,7 +52,6 @@ module issue_read_operands #(
     input  logic                                   alu_ready_i,      // FU is ready
     output logic                                   alu_valid_o,      // Output is valid
     // Branches and Jumps
-    input  logic                                   branch_ready_i,
     output logic                                   branch_valid_o,   // this is a valid branch instruction
     output branchpredict_sbe_t                     branch_predict_o,
     // LSU
@@ -137,7 +136,7 @@ module issue_read_operands #(
             ALU:
                 fu_busy = ~alu_ready_i;
             CTRL_FLOW:
-                fu_busy = ~branch_ready_i;
+                fu_busy = ~alu_ready_i;
             MULT:
                 fu_busy = ~mult_ready_i;
             FPU,
