@@ -230,7 +230,6 @@ module alu (
     // Branch Unit
     // ----------------------
     branch_unit branch_unit_i (
-        .trans_id_i,
         .operator_i,
         .operand_a_i,
         .operand_b_i,
@@ -241,10 +240,7 @@ module alu (
         .fu_valid_i,
         .branch_valid_i,
         .branch_comp_res_i ( alu_branch_res ),
-        .branch_ready_o    ( ), // is always high
-        .branch_valid_o    ( ), // high when input is high
         .branch_result_o   ( branch_result ),
-        .branch_trans_id_o ( ), // feed through
         .branch_predict_i,
         .resolved_branch_o,
         .resolve_branch_o,
