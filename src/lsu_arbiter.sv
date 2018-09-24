@@ -51,6 +51,7 @@ module lsu_arbiter (
 
     fifo_t regs_d[DEPTH:0], regs_q[DEPTH:0];
     logic [$clog2(DEPTH):0]  cnt_d, cnt_q, cnt_inc;
+    logic w_one, w_two;
 
     assign w_one   = ld_valid_i ^ st_valid_i;
     assign w_two   = ld_valid_i & st_valid_i;
