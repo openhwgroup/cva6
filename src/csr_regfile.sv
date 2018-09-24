@@ -524,6 +524,7 @@ module csr_regfile #(
             end
 
             // we've got a debug request (and we have an instruction which we can associate it to)
+            // don't interrupt the AMO
             if (debug_req_i && commit_instr_i[0].valid) begin
                 // save the PC
                 dpc_d = pc_i;

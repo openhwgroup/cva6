@@ -141,7 +141,7 @@ module axi_lite_interface #(
     // Registers
     // ------------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             CS         <= IDLE;
             address_q  <= '0;
             trans_id_q <= '0;
@@ -159,10 +159,10 @@ module axi_lite_interface #(
     `ifndef SYNTHESIS
     `ifndef VERILATOR
         // check that burst length is just one
-        assert property (@(posedge clk_i) slave.ar_valid |->  ((slave.ar_len == 8'b0) && (slave.ar_size == $clog2(AXI_ADDR_WIDTH/8))))
+        assert property (@(posedge clk_i) slave.ar_valid |->  ((slave.ar_len == 8'b0)))
         else begin $error("AXI Lite does not support bursts larger than 1 or byte length unequal to the native bus size"); $stop(); end
         // do the same for the write channel
-        assert property (@(posedge clk_i) slave.aw_valid |->  ((slave.aw_len == 8'b0) && (slave.aw_size == $clog2(AXI_ADDR_WIDTH/8))))
+        assert property (@(posedge clk_i) slave.aw_valid |->  ((slave.aw_len == 8'b0)))
         else begin $error("AXI Lite does not support bursts larger than 1 or byte length unequal to the native bus size"); $stop(); end
     `endif
     `endif

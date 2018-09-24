@@ -18,6 +18,7 @@ module commit_stage #(
     parameter int unsigned NR_COMMIT_PORTS = 2
 )(
     input  logic                                    clk_i,
+    input  logic                                    rst_ni,
     input  logic                                    halt_i,             // request to halt the core
     input  logic                                    flush_dcache_i,     // request to flush dcache -> also flush the pipeline
     output exception_t                              exception_o,        // take exception to controller
@@ -27,12 +28,12 @@ module commit_stage #(
     // from scoreboard
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
     output logic [NR_COMMIT_PORTS-1:0]              commit_ack_o,       // acknowledge that we are indeed committing
-
     // to register file
     output  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_o,            // register file write address
     output  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_o,            // register file write data
     output  logic [NR_COMMIT_PORTS-1:0]             we_o,               // register file write enable
-
+    // Atomic memory operations
+    input  amo_resp_t                               amo_resp_i,         // result of AMO operation
     // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
     output logic [63:0]                             pc_o,
     // to/from CSR file
@@ -43,18 +44,22 @@ module commit_stage #(
     // commit signals to ex
     output logic                                    commit_lsu_o,       // commit the pending store
     input  logic                                    commit_lsu_ready_i, // commit buffer of LSU is ready
+    output logic                                    amo_valid_commit_o, // valid AMO in commit stage
     input  logic                                    no_st_pending_i,    // there is no store pending
     output logic                                    commit_csr_o,       // commit the pending CSR instruction
     output logic                                    fence_i_o,          // flush I$ and pipeline
     output logic                                    fence_o,            // flush D$ and pipeline
+    output logic                                    flush_commit_o,     // request a pipeline flush
     output logic                                    sfence_vma_o        // flush TLBs and pipeline
 );
 
     assign waddr_o[0] = commit_instr_i[0].rd[4:0];
     assign waddr_o[1] = commit_instr_i[1].rd[4:0];
 
-    assign pc_o       = commit_instr_i[0].pc;
+    assign pc_o = commit_instr_i[0].pc;
 
+    logic instr_0_is_amo;
+    assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
     // -------------------
     // Commit Instruction
     // -------------------
@@ -64,22 +69,28 @@ module commit_stage #(
         commit_ack_o[0] = 1'b0;
         commit_ack_o[1] = 1'b0;
 
+        amo_valid_commit_o = 1'b0;
+
         we_o[0]         = 1'b0;
         we_o[1]         = 1'b0;
 
         commit_lsu_o    = 1'b0;
         commit_csr_o    = 1'b0;
-        wdata_o[0]      = commit_instr_i[0].result;
+        // amos will commit on port 0
+        wdata_o[0]      = (amo_resp_i.ack) ? amo_resp_i.result : commit_instr_i[0].result;
         wdata_o[1]      = commit_instr_i[1].result;
         csr_op_o        = ADD; // this corresponds to a CSR NOP
         csr_wdata_o     = 64'b0;
         fence_i_o       = 1'b0;
         fence_o         = 1'b0;
         sfence_vma_o    = 1'b0;
+        flush_commit_o  = 1'b0;
 
         // we will not commit the instruction if we took an exception
         // and we do not commit the instruction if we requested a halt
         // furthermore if the debugger is requesting to debug do not commit this instruction if we are not yet in debug mode
+        // also check that there is no atomic memory operation committing, right now this is the only operation
+        // which will take longer than one cycle to commit
         if (commit_instr_i[0].valid && !halt_i && (!debug_req_i || debug_mode_i)) begin
 
             commit_ack_o[0] = 1'b1;
@@ -95,7 +106,7 @@ module commit_stage #(
                 // check whether the instruction we retire was a store
                 // do not commit the instruction if we got an exception since the store buffer will be cleared
                 // by the subsequent flush triggered by an exception
-                if (commit_instr_i[0].fu == STORE) begin
+                if (commit_instr_i[0].fu == STORE && !instr_0_is_amo) begin
                     // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
                     if (commit_lsu_ready_i)
                         commit_lsu_o = 1'b1;
@@ -143,14 +154,34 @@ module commit_stage #(
                 // tell the controller to flush the D$
                 fence_o = no_st_pending_i;
             end
+            // ------------------
+            // AMO
+            // ------------------
+            if (instr_0_is_amo && !exception_o.valid) begin
+                // AMO finished
+                commit_ack_o[0] = amo_resp_i.ack;
+                // flush the pipeline
+                flush_commit_o = amo_resp_i.ack;
+                amo_valid_commit_o = 1'b1;
+                we_o[0] = amo_resp_i.ack;
+            end
         end
 
+        // -----------------
+        // Commit Port 2
+        // -----------------
         // check if the second instruction can be committed as well and the first wasn't a CSR instruction
         // also if we are in single step mode don't retire the second instruction
-        if (commit_ack_o[0] && commit_instr_i[1].valid && !halt_i && !(commit_instr_i[0].fu inside {CSR}) && !flush_dcache_i && !single_step_i) begin
+        if (commit_ack_o[0] && commit_instr_i[1].valid
+                            && !halt_i
+                            && !(commit_instr_i[0].fu inside {CSR})
+                            && !flush_dcache_i
+                            && !instr_0_is_amo
+                            && !single_step_i) begin
             // only if the first instruction didn't throw an exception and this instruction won't throw an exception
             // and the operator is of type ALU, LOAD, CTRL_FLOW, MULT
-            if (!exception_o.valid && !commit_instr_i[1].ex.valid && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT})) begin
+            if (!exception_o.valid && !commit_instr_i[1].ex.valid
+                                   && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT})) begin
                 we_o[1] = 1'b1;
                 commit_ack_o[1] = 1'b1;
             end
@@ -195,14 +226,17 @@ module commit_stage #(
             // ------------------------
             // check for CSR interrupts (e.g.: normal interrupts which get triggered here)
             // by putting interrupts here we give them precedence over any other exception
-            if (csr_exception_i.valid && csr_exception_i.cause[63]) begin
+            // Don't take the interrupt if we are committing an AMO.
+            if (csr_exception_i.valid && csr_exception_i.cause[63] && !amo_valid_commit_o) begin
                 exception_o = csr_exception_i;
                 exception_o.tval = commit_instr_i[0].ex.tval;
             end
         end
-        // If we halted the processor don't take any exceptions
+        // Don't take any exceptions iff:
+        // - If we halted the processor
         if (halt_i) begin
             exception_o.valid = 1'b0;
         end
     end
+
 endmodule

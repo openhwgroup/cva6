@@ -127,12 +127,25 @@ package riscv;
         logic [6:0]   opcode;
     } utype_t;
 
+    // atomic instructions
+    typedef struct packed {
+        logic [31:27] funct5;
+        logic         aq;
+        logic         rl;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:12] funct3;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } atype_t;
+
     typedef union packed {
         logic [31:0]   instr;
         rtype_t        rtype;
         itype_t        itype;
         stype_t        stype;
         utype_t        utype;
+        atype_t        atype;
     } instruction_t;
 
     // --------------------
@@ -381,4 +394,23 @@ package riscv;
     function automatic logic [31:0] illegal ();
         return 32'h00000000;
     endfunction
+
+
+    // trace log compatible to spikes commit log feature
+    // pragma translate_off
+    function string spikeCommitLog(logic [63:0] pc, priv_lvl_t priv_lvl, logic [31:0] instr, logic [4:0] rd, logic [63:0] result);
+        string rd_s;
+
+        if (rd < 10) rd_s = $sformatf("x %0d", rd);
+        else rd_s = $sformatf("x%0d", rd);
+
+        if (rd != 0) begin
+            // 0 0x0000000080000118 (0xeecf8f93) x31 0x0000000080004000
+            return $sformatf("%d 0x%h (0x%h) %s 0x%h\n", priv_lvl, pc, instr, rd_s, result);
+        end else begin
+            // 0 0x000000008000019c (0x0040006f)
+            return $sformatf("%d 0x%h (0x%h)\n", priv_lvl, pc, instr);
+        end
+    endfunction
+    // pragma translate_on
 endpackage
