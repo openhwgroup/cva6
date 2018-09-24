@@ -11,7 +11,7 @@ dependencies:
   fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       version: 0.3.2 }
 
 sources:
-  - src/fpu_div_sqrt_mvp/hdl/fpu_utils/fpu_ff.sv
+  - src/fpu_div_sqrt_mvp/hdl/fpu_ff.sv
   - src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
   - src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
   - src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv
