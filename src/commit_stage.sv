@@ -157,7 +157,7 @@ module commit_stage #(
             // ------------------
             // AMO
             // ------------------
-            if (instr_0_is_amo) begin
+            if (instr_0_is_amo && !exception_o.valid) begin
                 // AMO finished
                 commit_ack_o[0] = amo_resp_i.ack;
                 // flush the pipeline
@@ -226,15 +226,15 @@ module commit_stage #(
             // ------------------------
             // check for CSR interrupts (e.g.: normal interrupts which get triggered here)
             // by putting interrupts here we give them precedence over any other exception
-            if (csr_exception_i.valid && csr_exception_i.cause[63]) begin
+            // Don't take the interrupt if we are committing an AMO.
+            if (csr_exception_i.valid && csr_exception_i.cause[63] && !amo_valid_commit_o) begin
                 exception_o = csr_exception_i;
                 exception_o.tval = commit_instr_i[0].ex.tval;
             end
         end
         // Don't take any exceptions iff:
         // - If we halted the processor
-        // - We are committing an AMO
-        if (halt_i || amo_valid_commit_o) begin
+        if (halt_i) begin
             exception_o.valid = 1'b0;
         end
     end

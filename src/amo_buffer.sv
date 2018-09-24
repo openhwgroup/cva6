@@ -33,6 +33,7 @@ module amo_buffer (
     input  logic no_st_pending_i     // there is currently no store pending anymore
 );
     logic flush_amo_buffer;
+    logic amo_valid;
 
     typedef struct packed {
         ariane_pkg::amo_t        op;
@@ -44,7 +45,7 @@ module amo_buffer (
     amo_op_t amo_data_in, amo_data_out;
 
     // validate this request as soon as all stores have drained and the AMO is in the commit stage
-    assign amo_req_o.req = no_st_pending_i & amo_valid_commit_i;
+    assign amo_req_o.req = no_st_pending_i & amo_valid_commit_i & amo_valid;
     assign amo_req_o.amo_op = amo_data_out.op;
     assign amo_req_o.size = amo_data_out.size;
     assign amo_req_o.operand_a = amo_data_out.paddr;
@@ -69,7 +70,7 @@ module amo_buffer (
         .rst_ni       ( rst_ni           ),
         .flush_i      ( flush_amo_buffer ),
         .testmode_i   ( 1'b0             ),
-        .full_o       (  ), // not used as this FIFO has only a single element depth
+        .full_o       ( amo_valid        ),
         .empty_o      ( ready_o          ),
         .alm_full_o   (  ), // left open
         .alm_empty_o  (  ), // left open
