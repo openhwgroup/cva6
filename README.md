@@ -72,8 +72,6 @@ $ riscv64-unknown-elf-gcc hello.c -o hello.elf
 ```
 $ make verilate
 $ work-ver/Variane_testharness $RISCV/riscv64-unknown-elf/bin/pk hello.elf
-
-
 ```
 
 If you want to use QuestaSim to run it you can use the following command:
@@ -122,7 +120,6 @@ In order to run randomized Torture tests, you first have to generate the randomi
 $ ./ci/get-torture.sh
 $ make torture-gen
 $ make torture-rtest-verilator
-
 ```
 This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
 

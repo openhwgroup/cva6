@@ -19,7 +19,7 @@ module issue_stage #(
         parameter int unsigned NR_ENTRIES = 8,
         parameter int unsigned NR_WB_PORTS = 4,
         parameter int unsigned NR_COMMIT_PORTS = 2
-    )(
+)(
     input  logic                                     clk_i,     // Clock
     input  logic                                     rst_ni,    // Asynchronous reset active low
 
@@ -98,45 +98,54 @@ module issue_stage #(
     // 1. Re-name
     // ---------------------------------------------------------
     re_name i_re_name (
-        .clk_i               ( clk_i                        ),
-        .rst_ni              ( rst_ni                       ),
-        .flush_i             ( flush_i                      ),
-        .issue_instr_i       ( decoded_instr_i              ),
-        .issue_instr_valid_i ( decoded_instr_valid_i        ),
-        .issue_ack_o         ( decoded_instr_ack_o          ),
-        .issue_instr_o       ( issue_instr_rename_sb        ),
-        .issue_instr_valid_o ( issue_instr_valid_rename_sb  ),
-        .issue_ack_i         ( issue_ack_sb_rename          )
+        .clk_i                  ( clk_i                        ),
+        .rst_ni                 ( rst_ni                       ),
+        .flush_i                ( flush_i                      ),
+        .flush_unissied_instr_i ( flush_unissued_instr_i       ),
+        .issue_instr_i          ( decoded_instr_i              ),
+        .issue_instr_valid_i    ( decoded_instr_valid_i        ),
+        .issue_ack_o            ( decoded_instr_ack_o          ),
+        .issue_instr_o          ( issue_instr_rename_sb        ),
+        .issue_instr_valid_o    ( issue_instr_valid_rename_sb  ),
+        .issue_ack_i            ( issue_ack_sb_rename          )
     );
 
     // ---------------------------------------------------------
     // 2. Manage instructions in a scoreboard
     // ---------------------------------------------------------
-    scoreboard  #(
-        .NR_ENTRIES            ( NR_ENTRIES                                ),
-        .NR_WB_PORTS           ( NR_WB_PORTS                               )
+    scoreboard #(
+        .NR_ENTRIES (NR_ENTRIES ),
+        .NR_WB_PORTS(NR_WB_PORTS)
     ) i_scoreboard (
-        .unresolved_branch_i   ( 1'b0                                      ),
-        .rd_clobber_o          ( rd_clobber_sb_iro                         ),
-        .rs1_i                 ( rs1_iro_sb                                ),
-        .rs1_o                 ( rs1_sb_iro                                ),
-        .rs1_valid_o           ( rs1_valid_sb_iro                          ),
-        .rs2_i                 ( rs2_iro_sb                                ),
-        .rs2_o                 ( rs2_sb_iro                                ),
-        .rs2_valid_o           ( rs2_valid_iro_sb                          ),
+        .clk_i                  ( clk_i                       ),
+        .rst_ni                 ( rst_ni                      ),
+        .flush_unissued_instr_i ( flush_unissued_instr_i      ),
+        .flush_i                ( flush_i                     ),
+        .unresolved_branch_i    ( 1'b0                        ),
 
-        .decoded_instr_i       ( issue_instr_rename_sb                     ),
-        .decoded_instr_valid_i ( issue_instr_valid_rename_sb               ),
-        .decoded_instr_ack_o   ( issue_ack_sb_rename                       ),
-        .issue_instr_o         ( issue_instr_sb_iro                        ),
-        .issue_instr_valid_o   ( issue_instr_valid_sb_iro                  ),
-        .issue_ack_i           ( issue_ack_iro_sb                          ),
+        .rd_clobber_o           ( rd_clobber_sb_iro           ),
+        .rs1_i                  ( rs1_iro_sb                  ),
+        .rs1_o                  ( rs1_sb_iro                  ),
+        .rs1_valid_o            ( rs1_valid_sb_iro            ),
+        .rs2_i                  ( rs2_iro_sb                  ),
+        .rs2_o                  ( rs2_sb_iro                  ),
+        .rs2_valid_o            ( rs2_valid_iro_sb            ),
 
-        .resolved_branch_i     ( resolved_branch_i                         ),
-        .trans_id_i            ( trans_id_i                                ),
-        .wbdata_i              ( wbdata_i                                  ),
-        .ex_i                  ( ex_ex_i                                   ),
-        .*
+        .commit_instr_o         ( commit_instr_o              ),
+        .commit_ack_i           ( commit_ack_i                ),
+
+        .decoded_instr_i        ( issue_instr_rename_sb       ),
+        .decoded_instr_valid_i  ( issue_instr_valid_rename_sb ),
+        .decoded_instr_ack_o    ( issue_ack_sb_rename         ),
+
+        .issue_instr_o          ( issue_instr_sb_iro          ),
+        .issue_instr_valid_o    ( issue_instr_valid_sb_iro    ),
+        .issue_ack_i            ( issue_ack_iro_sb            ),
+        .resolved_branch_i      ( resolved_branch_i           ),
+        .trans_id_i             ( trans_id_i                  ),
+        .wbdata_i               ( wbdata_i                    ),
+        .ex_i                   ( ex_ex_i                     ),
+        .wb_valid_i             ( wb_valid_i                  )
     );
 
     // ---------------------------------------------------------

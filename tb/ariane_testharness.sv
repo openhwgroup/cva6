@@ -14,17 +14,17 @@
 //              Instantiates an AXI-Bus and memories
 
 module ariane_testharness #(
-        parameter logic [63:0] CACHE_START_ADDR  = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
-        parameter int unsigned AXI_ID_WIDTH      = 10,
-        parameter int unsigned AXI_USER_WIDTH    = 1,
-        parameter int unsigned AXI_ADDRESS_WIDTH = 64,
-        parameter int unsigned AXI_DATA_WIDTH    = 64,
-        parameter int unsigned NUM_WORDS         = 2**24          // memory size
-    )(
-        input  logic                           clk_i,
-        input  logic                           rst_ni,
-        output logic [31:0]                    exit_o
-    );
+    parameter logic [63:0] CACHE_START_ADDR  = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
+    parameter int unsigned AXI_ID_WIDTH      = 10,
+    parameter int unsigned AXI_USER_WIDTH    = 1,
+    parameter int unsigned AXI_ADDRESS_WIDTH = 64,
+    parameter int unsigned AXI_DATA_WIDTH    = 64,
+    parameter int unsigned NUM_WORDS         = 2**24          // memory size
+)(
+    input  logic                           clk_i,
+    input  logic                           rst_ni,
+    output logic [31:0]                    exit_o
+);
 
     // disable test-enable
     logic        test_en;
@@ -63,6 +63,9 @@ module ariane_testharness #(
     logic [31:0] dmi_req_bits_data;
     logic        dmi_resp_ready;
     logic        dmi_resp_valid;
+
+    logic rtc_i;
+    assign rtc_i = 1'b0;
 
     assign test_en = 1'b0;
     assign ndmreset_n = ~ndmreset ;
@@ -153,7 +156,7 @@ module ariane_testharness #(
         .debug_req_valid      ( dmi_req_valid        ),
         .debug_req_ready      ( debug_req_ready      ),
         .debug_req_bits_addr  ( dmi_req.addr         ),
-        .debug_req_bits_op    (  debug_req_bits_op   ),
+        .debug_req_bits_op    ( debug_req_bits_op    ),
         .debug_req_bits_data  ( dmi_req.data         ),
         .debug_resp_valid     ( dmi_resp_valid       ),
         .debug_resp_ready     ( dmi_resp_ready       ),
@@ -298,7 +301,7 @@ module ariane_testharness #(
         .clk_i       ( clk_i     ),
         .rst_ni      ( rst_ni    ),
         .slave       ( master[1] ),
-        .rtc_i       ( 1'b0      ),
+        .rtc_i       ( rtc_i     ),
         .timer_irq_o ( timer_irq ),
         .ipi_o       ( ipi       )
     );
