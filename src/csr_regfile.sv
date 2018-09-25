@@ -274,6 +274,10 @@ module csr_regfile #(
         sscratch_d              = sscratch_q;
         stval_d                 = stval_q;
         satp_d                  = satp_q;
+
+        cycle_d                 = cycle_q;
+        instret_d               = instret_q;
+
         en_ld_st_translation_d  = en_ld_st_translation_q;
 
         // check for correct access rights and that we are writing
