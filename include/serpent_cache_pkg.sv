@@ -18,16 +18,16 @@
 
 package serpent_cache_pkg;
 
-    localparam L15_SET_ASSOC      = 4;
+    localparam L15_SET_ASSOC           = 4;
 
     // these parames need to coincide with the current L1.5 parameterization
     // do not change
-    localparam L15_TID_WIDTH      = 2;
-    localparam L15_TLB_CSM_WIDTH  = 33;
-
-    localparam L15_WAY_WIDTH      = $clog2(L15_SET_ASSOC);
-    localparam L1I_WAY_WIDTH      = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
-    localparam L1D_WAY_WIDTH      = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
+    localparam L15_TID_WIDTH           = 2;
+    localparam L15_TLB_CSM_WIDTH       = 33;
+     
+    localparam L15_WAY_WIDTH           = $clog2(L15_SET_ASSOC);
+    localparam L1I_WAY_WIDTH           = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
+    localparam L1D_WAY_WIDTH           = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
 
     // FIFO depths of L15 adapter
     localparam ADAPTER_REQ_FIFO_DEPTH  = 2;
@@ -37,31 +37,40 @@ package serpent_cache_pkg;
 
 
     // Calculated parameter
-    localparam ICACHE_OFFSET_WIDTH    = $clog2(ariane_pkg::ICACHE_LINE_WIDTH/8);
-    localparam ICACHE_NUM_WORDS       = 2**(ariane_pkg::ICACHE_INDEX_WIDTH-ICACHE_OFFSET_WIDTH);
-    localparam ICACHE_CL_IDX_WIDTH    = $clog2(ICACHE_NUM_WORDS);// excluding byte offset
-
-    localparam DCACHE_OFFSET_WIDTH    = $clog2(ariane_pkg::DCACHE_LINE_WIDTH/8);
-    localparam DCACHE_NUM_WORDS       = 2**(ariane_pkg::DCACHE_INDEX_WIDTH-DCACHE_OFFSET_WIDTH);
-    localparam DCACHE_CL_IDX_WIDTH    = $clog2(DCACHE_NUM_WORDS);// excluding byte offset
-
-    localparam DCACHE_NUM_BANKS       = ariane_pkg::DCACHE_LINE_WIDTH/64;
-
-    // write buffer parameterization
-    localparam DCACHE_WBUF_DEPTH      = 8;
-    localparam DCACHE_MAX_TX          = 4;// TODO: set to number of threads supported in 
-    localparam DCACHE_ID_WIDTH        = $clog2(DCACHE_MAX_TX);// TODO: set to number of threads supported in 
+    localparam ICACHE_OFFSET_WIDTH     = $clog2(ariane_pkg::ICACHE_LINE_WIDTH/8);
+    localparam ICACHE_NUM_WORDS        = 2**(ariane_pkg::ICACHE_INDEX_WIDTH-ICACHE_OFFSET_WIDTH);
+    localparam ICACHE_CL_IDX_WIDTH     = $clog2(ICACHE_NUM_WORDS);// excluding byte offset
+ 
+    localparam DCACHE_OFFSET_WIDTH     = $clog2(ariane_pkg::DCACHE_LINE_WIDTH/8);
+    localparam DCACHE_NUM_WORDS        = 2**(ariane_pkg::DCACHE_INDEX_WIDTH-DCACHE_OFFSET_WIDTH);
+    localparam DCACHE_CL_IDX_WIDTH     = $clog2(DCACHE_NUM_WORDS);// excluding byte offset
+ 
+    localparam DCACHE_NUM_BANKS        = ariane_pkg::DCACHE_LINE_WIDTH/64;
+ 
+    // write buffer parameterization 
+    localparam DCACHE_WBUF_DEPTH       = 8;
+    localparam DCACHE_MAX_TX           = 4;// TODO: set to number of threads supported in 
+    localparam DCACHE_ID_WIDTH         = $clog2(DCACHE_MAX_TX);// TODO: set to number of threads supported in 
 
     
     typedef struct packed {
         logic [ariane_pkg::DCACHE_INDEX_WIDTH+ariane_pkg::DCACHE_TAG_WIDTH-1:0] wtag;
-        logic    [63:0]                                                         data;
-        logic    [7:0]                                                          dirty;   // byte is dirty (not yet sent to memory)
-        logic    [7:0]                                                          valid;   // byte is valid
+        logic [63:0]                                                            data;
+        logic [7:0]                                                             dirty;   // byte is dirty 
+        logic [7:0]                                                             valid;   // byte is valid
+        logic [7:0]                                                             txblock; // byte is part of transaction in-flight
         logic                                                                   checked; // if cache state of this word has been checked
-        logic    [ariane_pkg::DCACHE_SET_ASSOC-1:0]                             hit_oh;  // valid way in the cache
+        logic [ariane_pkg::DCACHE_SET_ASSOC-1:0]                                hit_oh;  // valid way in the cache
     } wbuffer_t;
 
+    // TX status registers are indexed with the transaction ID
+    // they basically store which bytes from which buffer entry are part
+    // of that transaction
+    typedef struct packed { 
+        logic                                 vld;
+        logic [7:0]                           be;
+        logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
+    } tx_stat_t;
 
     // local interfaces between caches and L15 adapter
     typedef enum logic [1:0] { 
@@ -127,7 +136,6 @@ package serpent_cache_pkg;
 
 
     // taken from iop.h in openpiton
-    // this is a work around, need to include files properly
     // to l1.5 (only marked subset is used)
     typedef enum logic [4:0] {LOAD_RQ     = 5'b00000, // load request
         IMISS_RQ    = 5'b10000, // instruction fill request
@@ -165,7 +173,6 @@ package serpent_cache_pkg;
     } l15_rtrntypes_t;
 
 
-    // l15 interface uses reg for compatibility with verilog
     typedef struct packed {
         l15_reqtypes_t                     l15_rqtype;                // see below for encoding
         logic                              l15_nc;                    // non-cacheable bit

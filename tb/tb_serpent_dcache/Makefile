@@ -1,14 +1,16 @@
 library      ?= work
 toplevel     ?= tb
 src-list     := tb.list
+inc-path     := $(shell pwd)/hdl/
 src          := $(shell xargs printf '\n%s' < $(src-list)  | cut -b 1-)
-compile_flag += +cover+/dut -incr -64 -nologo 
+compile_flag += +cover+i_dut -incr -64 -nologo 
 sim_opts     += -64 -coverage -classdebug -voptargs="+acc"
 questa_version ?= ${QUESTASIM_VERSION}
 
+
 build: clean
 	vlib${questa_version} $(library)
-	vlog${questa_version} -work $(library) -pedanticerrors $(src) $(compile_flag)
+	vlog${questa_version} -work $(library) -pedanticerrors $(src) $(compile_flag) +incdir+$(inc-path)
 	touch $(library)/.build
 
 sim: build

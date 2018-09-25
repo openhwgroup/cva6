@@ -57,7 +57,7 @@ import serpent_cache_pkg::*;
 
 module serpent_l15_adapter #(
    
-)  (   
+)(   
    input logic                  clk_i,
    input logic                  rst_ni,
    

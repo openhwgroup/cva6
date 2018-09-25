@@ -34,8 +34,8 @@ module serpent_dcache #(
     output amo_resp_t                      amo_ack_o,
    
     // Request ports
-    input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
-    output dcache_req_o_t [2:0]            req_ports_o,  // request ports 
+    input  dcache_req_i_t [2:0]            req_ports_i, 
+    output dcache_req_o_t [2:0]            req_ports_o, 
 
     input  logic                           mem_rtrn_vld_i,
     input  dcache_rtrn_t                   mem_rtrn_i,
@@ -45,21 +45,20 @@ module serpent_dcache #(
 );
     
     // LD unit and PTW    
-    localparam NUM_RD_PORTS = 3;
+    localparam NUM_PORTS = 3;
 
     // miss unit <-> read controllers
     logic cache_en, flush_en;
-    
+
     // miss unit <-> memory
-    logic bypass_en;
-    logic [DCACHE_SET_ASSOC-1:0]    wr_cl_vld;
+    logic                           wr_cl_vld;
+    logic                           wr_cl_nc;
+    logic [DCACHE_SET_ASSOC-1:0]    wr_cl_we;
     logic [DCACHE_TAG_WIDTH-1:0]    wr_cl_tag;
     logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx;
     logic [DCACHE_OFFSET_WIDTH-1:0] wr_cl_off;
     logic [DCACHE_LINE_WIDTH-1:0]   wr_cl_data;
     logic [DCACHE_LINE_WIDTH/8-1:0] wr_cl_data_be;
-    logic                           wr_cl_data_is_nc;
-    logic                           wr_cl_byp_en;
     logic [DCACHE_SET_ASSOC-1:0]    wr_vld_bits;
     logic [DCACHE_SET_ASSOC-1:0]    wr_req;
     logic                           wr_ack;
@@ -69,34 +68,37 @@ module serpent_dcache #(
     logic [7:0]                     wr_data_be;
     
     // miss unit <-> controllers/wbuffer
-    logic [NUM_RD_PORTS-1:0]                          miss_req;
-    logic [NUM_RD_PORTS-1:0]                          miss_ack;
-    logic [NUM_RD_PORTS-1:0]                          miss_nc;
-    logic [NUM_RD_PORTS-1:0]                          miss_we;
-    logic [NUM_RD_PORTS-1:0][63:0]                    miss_wdata;
-    logic [NUM_RD_PORTS-1:0][63:0]                    miss_paddr;
-    logic [NUM_RD_PORTS-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
-    logic [NUM_RD_PORTS-1:0][2:0]                     miss_size;
-    logic [NUM_RD_PORTS-1:0][DCACHE_ID_WIDTH-1:0]     miss_id;
-    logic                                             miss_rtrn;
-    logic [DCACHE_ID_WIDTH-1:0]                       miss_rtrn_id;
+    logic [NUM_PORTS-1:0]                          miss_req;
+    logic [NUM_PORTS-1:0]                          miss_ack;
+    logic [NUM_PORTS-1:0]                          miss_nc;
+    logic [NUM_PORTS-1:0]                          miss_we;
+    logic [NUM_PORTS-1:0][63:0]                    miss_wdata;
+    logic [NUM_PORTS-1:0][63:0]                    miss_paddr;
+    logic [NUM_PORTS-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
+    logic [NUM_PORTS-1:0][2:0]                     miss_size;
+    logic [NUM_PORTS-1:0][DCACHE_ID_WIDTH-1:0]     miss_wr_id;
+    logic [NUM_PORTS-1:0]                          miss_replay;
+    logic [NUM_PORTS-1:0]                          miss_rtrn_vld;
+    logic [DCACHE_ID_WIDTH-1:0]                    miss_rtrn_id;
  
     // memory <-> read controllers/miss unit
-    logic [NUM_RD_PORTS:0]                            rd_req;
-    logic [NUM_RD_PORTS:0]                            rd_ack;
-    logic [NUM_RD_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]    rd_tag;
-    logic [NUM_RD_PORTS-1:0][DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
-    logic [NUM_RD_PORTS-1:0][DCACHE_OFFSET_WIDTH-1:0] rd_off;
-    logic [63:0]                                      rd_data;
-    logic [DCACHE_SET_ASSOC-1:0]                      rd_vld_bits;
-    logic [DCACHE_SET_ASSOC-1:0]                      rd_hit_oh;
+    logic [NUM_PORTS-1:0]                          rd_prio;
+    logic [NUM_PORTS-1:0]                          rd_tag_only;
+    logic [NUM_PORTS-1:0]                          rd_req;
+    logic [NUM_PORTS-1:0]                          rd_ack;
+    logic [NUM_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]    rd_tag;
+    logic [NUM_PORTS-1:0][DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
+    logic [NUM_PORTS-1:0][DCACHE_OFFSET_WIDTH-1:0] rd_off;
+    logic [63:0]                                   rd_data;
+    logic [DCACHE_SET_ASSOC-1:0]                   rd_vld_bits;
+    logic [DCACHE_SET_ASSOC-1:0]                   rd_hit_oh;
 
     // miss unit <-> wbuffer    
-    logic                           inval_vld;
-    logic [DCACHE_CL_IDX_WIDTH-1:0] inval_cl_idx;   
-
-    // wbuffer <-> memory
-    wbuffer_t [DCACHE_WBUF_DEPTH-1:0] wbuffer_data;
+    logic [DCACHE_MAX_TX-1:0][63:0]                tx_paddr;     
+    logic [DCACHE_MAX_TX-1:0]                      tx_vld;         
+           
+    // wbuffer <-> memory           
+    wbuffer_t [DCACHE_WBUF_DEPTH-1:0]              wbuffer_data;
     
 
 ///////////////////////////////////////////////////////
@@ -104,7 +106,7 @@ module serpent_dcache #(
 ///////////////////////////////////////////////////////
 
     serpent_dcache_missunit #(
-        .NUM_PORTS(NUM_RD_PORTS)
+        .NUM_PORTS(NUM_PORTS)
     ) i_serpent_dcache_missunit (
         .clk_i              ( clk_i              ),
         .rst_ni             ( rst_ni             ),
@@ -127,21 +129,23 @@ module serpent_dcache #(
         .miss_paddr_i       ( miss_paddr         ),
         .miss_vld_bits_i    ( miss_vld_bits      ),
         .miss_size_i        ( miss_size          ),
-        .miss_id_i          ( miss_id            ),
-        // to writebuffer
-        .miss_rtrn_o        ( miss_rtrn          ),
+        .miss_wr_id_i       ( miss_wr_id         ),
+        .miss_replay_o      ( miss_replay        ),
+        .miss_rtrn_vld_o    ( miss_rtrn_vld      ),
         .miss_rtrn_id_o     ( miss_rtrn_id       ),
-        .inval_vld_o        ( inval_vld          ),
-        .inval_cl_idx_o     ( inval_cl_idx       ),
+        // from writebuffer
+        .tx_paddr_i         ( tx_paddr           ),
+        .tx_vld_i           ( tx_vld             ),
         // cache memory interface 
         .wr_cl_vld_o        ( wr_cl_vld          ),
+        .wr_cl_nc_o         ( wr_cl_nc           ),
+        .wr_cl_we_o         ( wr_cl_we           ),
         .wr_cl_tag_o        ( wr_cl_tag          ),
         .wr_cl_idx_o        ( wr_cl_idx          ),
         .wr_cl_off_o        ( wr_cl_off          ),
         .wr_cl_data_o       ( wr_cl_data         ),
         .wr_cl_data_be_o    ( wr_cl_data_be      ),
         .wr_vld_bits_o      ( wr_vld_bits        ),
-        .wr_cl_byp_en_o     ( wr_cl_byp_en       ),
         // memory interface 
         .mem_rtrn_vld_i     ( mem_rtrn_vld_i     ),
         .mem_rtrn_i         ( mem_rtrn_i         ),
@@ -156,37 +160,45 @@ module serpent_dcache #(
 
     generate
         // note: last read port is used by the write buffer
-        for(genvar k=0; k<NUM_RD_PORTS-1; k++) begin
+        for(genvar k=0; k<NUM_PORTS-1; k++) begin
+        // set these to high prio ports
+        assign rd_prio[k] = 1'b1;
+                    
         serpent_dcache_ctrl #(
                 .NC_ADDR_BEGIN(NC_ADDR_BEGIN), 
                 .NC_ADDR_GE_LT(NC_ADDR_GE_LT)) 
             i_serpent_dcache_ctrl (
-                .clk_i           ( clk_i            ),
-                .rst_ni          ( rst_ni           ),
-                .flush_i         ( flush_en         ),
-                .cache_en_i      ( cache_en         ),
+                .clk_i           ( clk_i             ),
+                .rst_ni          ( rst_ni            ),
+                .flush_i         ( flush_en          ),
+                .cache_en_i      ( cache_en          ),
                 // reqs from core
-                .req_port_i      ( req_ports_i  [k] ),
-                .req_port_o      ( req_ports_o  [k] ),
-                // miss interface
-                .miss_req_o      ( miss_req     [k] ),
-                .miss_ack_i      ( miss_ack     [k] ),
-                .miss_we_o       ( miss_we      [k] ),
-                .miss_wdata_o    ( miss_wdata   [k] ),
-                .miss_vld_bits_o ( miss_vld_bits[k] ),
-                .miss_paddr_o    ( miss_paddr   [k] ),
-                .miss_nc_o       ( miss_nc      [k] ),
-                .miss_size_o     ( miss_size    [k] ),
-                .miss_id_o       ( miss_id      [k] ),
-                // cache mem interface
-                .rd_tag_o        ( rd_tag       [k] ),
-                .rd_idx_o        ( rd_idx       [k] ),
-                .rd_off_o        ( rd_off       [k] ),
-                .rd_req_o        ( rd_req       [k] ),
-                .rd_ack_i        ( rd_ack       [k] ),
-                .rd_data_i       ( rd_data          ),
-                .rd_vld_data_i   ( rd_vld_data      ),
-                .rd_hit_oh_i     ( rd_hit_oh        )
+                .req_port_i      ( req_ports_i   [k] ),
+                .req_port_o      ( req_ports_o   [k] ),
+                // miss interface 
+                .miss_req_o      ( miss_req      [k] ),
+                .miss_ack_i      ( miss_ack      [k] ),
+                .miss_we_o       ( miss_we       [k] ),
+                .miss_wdata_o    ( miss_wdata    [k] ),
+                .miss_vld_bits_o ( miss_vld_bits [k] ),
+                .miss_paddr_o    ( miss_paddr    [k] ),
+                .miss_nc_o       ( miss_nc       [k] ),
+                .miss_size_o     ( miss_size     [k] ),
+                .miss_wr_id_o    ( miss_wr_id    [k] ),
+                .miss_replay_i   ( miss_replay   [k] ),
+                .miss_rtrn_vld_i ( miss_rtrn_vld [k] ),
+                // used to detect readout mux collisions
+                .wr_cl_vld_i     ( wr_cl_vld         ),
+                // cache mem interface 
+                .rd_tag_o        ( rd_tag        [k] ),
+                .rd_idx_o        ( rd_idx        [k] ),
+                .rd_off_o        ( rd_off        [k] ),
+                .rd_req_o        ( rd_req        [k] ),
+                .rd_tag_only_o   ( rd_tag_only   [k] ),
+                .rd_ack_i        ( rd_ack        [k] ),
+                .rd_data_i       ( rd_data           ),
+                .rd_vld_bits_i   ( rd_vld_bits       ),
+                .rd_hit_oh_i     ( rd_hit_oh         )
             );
         end
     endgenerate
@@ -194,91 +206,98 @@ module serpent_dcache #(
 ///////////////////////////////////////////////////////
 // store unit controller
 ///////////////////////////////////////////////////////
-
-serpent_dcache_wbuffer #(
-        .NUM_WORDS     ( DCACHE_WBUF_DEPTH     ),
-        .MAX_TX        ( DCACHE_MAX_TX         ),
-        .NC_ADDR_BEGIN ( NC_ADDR_BEGIN         ), 
-        .NC_ADDR_GE_LT ( NC_ADDR_GE_LT         )) 
-    i_serpent_dcache_wbuffer (
-        .clk_i           ( clk_i               ),
-        .rst_ni          ( rst_ni              ),
-        .empty_o         ( wbuffer_empty_o     ),
-        .cache_en_i      ( cache_en            ),
-        // request ports from core (store unit)
-        .req_port_i      ( req_ports_i  [2]    ),
-        .req_port_o      ( req_ports_o  [2]    ),
-        // miss unit interface
-        .miss_req_o      ( miss_req     [2]    ),
-        .miss_ack_i      ( miss_ack     [2]    ),
-        .miss_we_o       ( miss_we      [2]    ),
-        .miss_wdata_o    ( miss_wdata   [2]    ),
-        .miss_vld_bits_o ( miss_vld_bits[2]    ),
-        .miss_paddr_o    ( miss_paddr   [2]    ),
-        .miss_nc_o       ( miss_nc      [2]    ),
-        .miss_size_o     ( miss_size    [2]    ),
-        .miss_id_o       ( miss_id      [2]    ),
-        .miss_rtrn_i     ( miss_rtrn           ),
-        .miss_rtrn_id_i  ( miss_rtrn_id        ),
-        // cache read interface
-        .rd_tag_o        ( rd_tag       [2]    ),
-        .rd_idx_o        ( rd_idx       [2]    ),
-        .rd_off_o        ( rd_off       [2]    ),
-        .rd_req_o        ( rd_req       [2]    ),
-        .rd_ack_i        ( rd_ack       [2]    ),
-        .rd_data_i       ( rd_data             ),
-        .rd_vld_data_i   ( rd_vld_bits         ),
-        .rd_hit_oh_i     ( rd_hit_oh           ),
-         // incoming invalidations
-        .inval_vld_i     ( inval_vld           ),
-        .inval_cl_idx_i  ( inval_cl_idx        ),
-        // single word write interface
-        .wr_req_o        ( wr_req              ),
-        .wr_ack_i        ( wr_ack              ),
-        .wr_idx_o        ( wr_idx              ),
-        .wr_off_o        ( wr_off              ),
-        .wr_data_o       ( wr_data             ),
-        .wr_data_be      ( wr_data_be          ),
-        // write buffer forwarding
-        .wbuffer_data_o  ( wbuffer_data        )
-    );
+    
+    // set read port to low priority
+    assign rd_prio[2] = 1'b0;
+                
+    serpent_dcache_wbuffer #(
+            .NC_ADDR_BEGIN ( NC_ADDR_BEGIN         ), 
+            .NC_ADDR_GE_LT ( NC_ADDR_GE_LT         )) 
+        i_serpent_dcache_wbuffer (
+            .clk_i           ( clk_i               ),
+            .rst_ni          ( rst_ni              ),
+            .empty_o         ( wbuffer_empty_o     ),
+            .cache_en_i      ( cache_en            ),
+            // request ports from core (store unit)
+            .req_port_i      ( req_ports_i   [2]   ),
+            .req_port_o      ( req_ports_o   [2]   ),
+            // miss unit interface 
+            .miss_req_o      ( miss_req      [2]   ),
+            .miss_ack_i      ( miss_ack      [2]   ),
+            .miss_we_o       ( miss_we       [2]   ),
+            .miss_wdata_o    ( miss_wdata    [2]   ),
+            .miss_vld_bits_o ( miss_vld_bits [2]   ),
+            .miss_paddr_o    ( miss_paddr    [2]   ),
+            .miss_nc_o       ( miss_nc       [2]   ),
+            .miss_size_o     ( miss_size     [2]   ),
+            .miss_wr_id_o    ( miss_wr_id    [2]   ),
+            .miss_rtrn_vld_i ( miss_rtrn_vld [2]   ),
+            .miss_rtrn_id_i  ( miss_rtrn_id        ),
+            // cache read interface 
+            .rd_tag_o        ( rd_tag        [2]   ),
+            .rd_idx_o        ( rd_idx        [2]   ),
+            .rd_off_o        ( rd_off        [2]   ),
+            .rd_req_o        ( rd_req        [2]   ),
+            .rd_tag_only_o   ( rd_tag_only   [2]   ),
+            .rd_ack_i        ( rd_ack        [2]   ),
+            .rd_data_i       ( rd_data             ),
+            .rd_vld_bits_i   ( rd_vld_bits         ),
+            .rd_hit_oh_i     ( rd_hit_oh           ),
+             // incoming invalidations/cache refills
+            .wr_cl_vld_i     ( wr_cl_vld           ),
+            .wr_cl_idx_i     ( wr_cl_idx           ),
+            // single word write interface
+            .wr_req_o        ( wr_req              ),
+            .wr_ack_i        ( wr_ack              ),
+            .wr_idx_o        ( wr_idx              ),
+            .wr_off_o        ( wr_off              ),
+            .wr_data_o       ( wr_data             ),
+            .wr_data_be_o    ( wr_data_be          ),
+            // write buffer forwarding
+            .wbuffer_data_o  ( wbuffer_data        ),
+            .tx_paddr_o      ( tx_paddr            ),
+            .tx_vld_o        ( tx_vld              )
+        );
 
 ///////////////////////////////////////////////////////
 // memory arrays, arbitration and tag comparison
 ///////////////////////////////////////////////////////
 
    serpent_dcache_mem #(
-        .NUM_RD_PORTS(NUM_RD_PORTS)
+            .NUM_PORTS(NUM_PORTS)
         ) i_serpent_dcache_mem (
-        .clk_i             ( clk_i              ),
-        .rst_ni            ( rst_ni             ),
-        // read ports
-        .rd_tag_i          ( rd_tag             ),
-        .rd_idx_i          ( rd_idx             ),
-        .rd_off_i          ( rd_off             ),
-        .rd_req_i          ( rd_req             ),
-        .rd_ack_o          ( rd_ack             ),
-        .rd_vld_bits_o     ( rd_vld_bits        ),
-        .rd_hit_oh_o       ( rd_hit_oh          ),
-        .rd_data_o         ( rd_data            ),
-        // cacheline write port
-        .wr_cl_vld_i       ( wr_cl_vld           ),
-        .wr_cl_tag_i       ( wr_cl_tag          ),
-        .wr_cl_idx_i       ( wr_cl_idx          ),
-        .wr_cl_off_i       ( wr_cl_off          ),
-        .wr_cl_data_i      ( wr_cl_data         ),
-        .wr_cl_data_be_i   ( wr_cl_data_be      ),
-        .wr_vld_bits_i     ( wr_vld_bits        ),
-        .wr_cl_byp_en_i    ( wr_cl_byp_en       ),
-        // single word write port
-        .wr_req_i          ( wr_req             ),
-        .wr_ack_o          ( wr_ack             ),
-        .wr_idx_i          ( wr_idx             ),
-        .wr_off_i          ( wr_off             ),
-        .wr_data_i         ( wr_data            ),
-        .wr_data_be_i      ( wr_data_be         ),
-        // write buffer forwarding
-        .wbuffer_data_i    ( wbuffer_data       )
+            .clk_i             ( clk_i              ),
+            .rst_ni            ( rst_ni             ),
+            // read ports
+            .rd_prio_i         ( rd_prio            ),
+            .rd_tag_i          ( rd_tag             ),
+            .rd_idx_i          ( rd_idx             ),
+            .rd_off_i          ( rd_off             ),
+            .rd_req_i          ( rd_req             ),
+            .rd_tag_only_i     ( rd_tag_only        ),
+            .rd_ack_o          ( rd_ack             ),
+            .rd_vld_bits_o     ( rd_vld_bits        ),
+            .rd_hit_oh_o       ( rd_hit_oh          ),
+            .rd_data_o         ( rd_data            ),
+            // cacheline write port
+            .wr_cl_vld_i       ( wr_cl_vld          ),
+            .wr_cl_nc_i        ( wr_cl_nc           ),
+            .wr_cl_we_i        ( wr_cl_we           ),
+            .wr_cl_tag_i       ( wr_cl_tag          ),
+            .wr_cl_idx_i       ( wr_cl_idx          ),
+            .wr_cl_off_i       ( wr_cl_off          ),
+            .wr_cl_data_i      ( wr_cl_data         ),
+            .wr_cl_data_be_i   ( wr_cl_data_be      ),
+            .wr_vld_bits_i     ( wr_vld_bits        ),
+            // single word write port
+            .wr_req_i          ( wr_req             ),
+            .wr_ack_o          ( wr_ack             ),
+            .wr_idx_i          ( wr_idx             ),
+            .wr_off_i          ( wr_off             ),
+            .wr_data_i         ( wr_data            ),
+            .wr_data_be_i      ( wr_data_be         ),
+            // write buffer forwarding
+            .wbuffer_data_i    ( wbuffer_data       )
     );
 
 ///////////////////////////////////////////////////////
@@ -290,57 +309,16 @@ serpent_dcache_wbuffer #(
 
 //pragma translate_off
 `ifndef VERILATOR
+  flush: assert property (
+      @(posedge clk_i) disable iff (~rst_ni) flush_i |-> flush_ack_o |-> wbuffer_empty_o)     
+         else $fatal(1,"[l1 dcache] flushed cache implies flushed wbuffer");
 
-    // //needs to be hot one
-    // wr_req_i
-    // // hot one per bank
-    // port_bank_gnt[ports][banks]
-
-  // hot1: assert property (
-  //     @(posedge clk_i) disable iff (~rst_ni) &vld_req |-> ~vld_we |=> $onehot0(rd_hit_oh_o))     
-  //        else $fatal(1,"[l1 dcache] rd_hit_oh_o signal must be hot1");
-
-  // noncacheable0: assert property (
-  //     @(posedge clk_i) disable iff (~rst_ni) paddr_is_nc |-> mem_rtrn_vld_i && (mem_rtrn_i.rtype == DCACHE_IFILL_ACK) |-> mem_rtrn_i.nc)       
-  //        else $fatal("[l1 icache] NC paddr implies nc ifill");
-
-  // noncacheable1: assert property (
-  //     @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> mem_rtrn_i.f4b |-> mem_rtrn_i.nc)       
-  //        else $fatal(1,"[l1 icache] 4b ifill implies NC");
-
-  // noncacheable2: assert property (
-  //     @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> mem_rtrn_i.nc |-> mem_rtrn_i.f4b)       
-  //        else $fatal(1,"[l1 icache] NC implies 4b ifill");         
-
-  // repl_inval0: assert property (
-  //     @(posedge clk_i) disable iff (~rst_ni) cache_wren |-> ~(mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld))       
-  //        else $fatal(1,"[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
-
-  // repl_inval1: assert property (
-  //     @(posedge clk_i) disable iff (~rst_ni) (mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld) |-> ~cache_wren)       
-  //        else $fatal(1,"[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
-  
-  // invalid_state: assert property (
-  //     @(posedge clk_i) disable iff (~rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, TLB_MISS, KILL_ATRANS, KILL_MISS}))     
-  //        else $fatal(1,"[l1 icache] fsm reached an invalid state");
-
-  // hot1: assert property (
-  //     @(posedge clk_i) disable iff (~rst_ni) (~inv_en) |=> cmp_en_q |-> $onehot0(cl_hit))     
-  //        else $fatal(1,"[l1 icache] cl_hit signal must be hot1");
-
-   // initial begin
-   //    // assert wrong parameterizations
-   //    assert (DCACHE_INDEX_WIDTH<=12) 
-   //      else $fatal(1,"[l1 dcache] cache index width can be maximum 12bit since VM uses 4kB pages");    
-   // end
+   initial begin
+      // assert wrong parameterizations
+      assert (DCACHE_INDEX_WIDTH<=12) 
+        else $fatal(1,"[l1 dcache] cache index width can be maximum 12bit since VM uses 4kB pages");    
+   end
 `endif
 //pragma translate_on
 
-
-// `ifndef SYNTHESIS
-//     initial begin
-//         assert ($bits(data_if.aw_addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
-//         assert (DCACHE_LINE_WIDTH/64 inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of 64");
-//     end
-// `endif
 endmodule // serpent_dcache

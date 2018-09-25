@@ -33,44 +33,14 @@ package tb_pkg;
   // creates a 10ns ATI timing cycle 
   time CLK_HI               = 5ns;     // set clock high time                    
   time CLK_LO               = 5ns;     // set clock low time             
+  time CLK_PERIOD           = CLK_HI+CLK_LO;
   time APPL_DEL             = 2ns;     // set stimuli application delay          
   time ACQ_DEL              = 8ns;     // set response aquisition delay          
 
   parameter ERROR_CNT_STOP_LEVEL = 1; // use 1 for debugging. 0 runs the complete simulation...
 
-//////////////////////////////////////////////////////////////////////////////
-// use to ensure proper ATI timing      
-///////////////////////////////////////////////////////////////////////////////
-
-  task automatic applWaitCyc(ref logic Clk_C, input int unsigned n);                            
-     if (n > 0) begin                                                                 
-       repeat (n) @(posedge(Clk_C));                                       
-       #(APPL_DEL);                                                        
-     end                                                                   
-  endtask                                                                  
-                                                                           
-  task automatic acqWaitCyc(ref logic Clk_C, input int unsigned n);                               
-     if (n > 0) begin                                                                 
-       repeat (n) @(posedge(Clk_C));                                       
-       #(ACQ_DEL);                                                         
-     end                                                                   
-  endtask     
-  
-  // sample right on active clock edge 
-  task automatic applWait(ref logic Clk_C, ref logic SigToWaitFor_S);                              
-     do begin
-       @(posedge(Clk_C));                                       
-     end while(SigToWaitFor_S == 1'b0);                                                                  
-     #(APPL_DEL);                                               
-  endtask
-
-    // sample right on active clock edge 
-  task automatic acqWait(ref logic Clk_C, ref logic SigToWaitFor_S);                              
-     do begin
-       @(posedge(Clk_C));                                       
-     end while(SigToWaitFor_S == 1'b0);                                                                  
-     //#(ACQ_DEL);                                               
-  endtask      
+  // tb_readport sequences
+  typedef enum logic [2:0] { RANDOM_SEQ, LINEAR_SEQ, BURST_SEQ, IDLE_SEQ, WRAP_SEQ } seq_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 // progress 
@@ -79,9 +49,11 @@ package tb_pkg;
   class progress;
     real newState, oldState;
     longint numResp, acqCnt, errCnt, totAcqCnt, totErrCnt;
+    string name;
 
-    function new();
+    function new(string name);
       begin
+          this.name     = name;
           this.acqCnt   = 0;
           this.errCnt   = 0;
           this.newState = 0.0;
@@ -111,7 +83,7 @@ package tb_pkg;
           this.totErrCnt += isError;
 
           if(ERROR_CNT_STOP_LEVEL <= this.errCnt && ERROR_CNT_STOP_LEVEL > 0) begin
-            $error("TB> simulation stopped (ERROR_CNT_STOP_LEVEL = %d reached).", ERROR_CNT_STOP_LEVEL); 
+            $error("%s> simulation stopped (ERROR_CNT_STOP_LEVEL = %d reached).", this.name, ERROR_CNT_STOP_LEVEL); 
             $stop();
           end 
       end  
@@ -121,7 +93,8 @@ package tb_pkg;
       begin
         this.newState = $itor(this.acqCnt) / $itor(this.numResp);
         if(this.newState - this.oldState >= 0.01) begin  
-          $display("TB> validated %03d%% -- %01d failed (%03.3f%%) ",
+          $display("%s> validated %03d%% -- %01d failed (%03.3f%%) ",
+                  this.name,
                   $rtoi(this.newState*100.0),
                   this.errCnt,
                   $itor(this.errCnt) / $itor(this.acqCnt) * 100.0);
@@ -145,11 +118,11 @@ package tb_pkg;
 
         fptr = $fopen(file,"w");
         if(summary) begin
-          $fdisplay(fptr, "Simulation Summary");
+          $fdisplay(fptr, "Simulation Summary of %s", this.name);
           $fdisplay(fptr, "total: %01d of %01d vectors failed (%03.3f%%) ",
                     this.totErrCnt,
                     this.totAcqCnt,
-                    $itor(this.totErrCnt) / $itor(this.totAcqCnt) * 100.0);
+                    $itor(this.totErrCnt) / ($itor(this.totAcqCnt) * 100.0 + 0.000000001));
           if(this.totErrCnt == 0) begin
             $fdisplay(fptr, "CI: PASSED");
           end else begin

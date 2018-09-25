@@ -29,65 +29,78 @@ module serpent_dcache_ctrl #(
     output dcache_req_o_t                   req_port_o,  
     // interface to miss handler
     output logic                            miss_req_o,
-    input  logic                            miss_ack_i,      // asserted in the same cycle as when the data returns from memory
+    input  logic                            miss_ack_i,      
     output logic                            miss_we_o,       // unused (set to 0)
     output logic [63:0]                     miss_wdata_o,    // unused (set to 0)
     output logic [DCACHE_SET_ASSOC-1:0]     miss_vld_bits_o, // valid bits at the missed index 
     output logic [63:0]                     miss_paddr_o,    
     output logic                            miss_nc_o,       // request to I/O space
     output logic [2:0]                      miss_size_o,     // 00: 1byte, 01: 2byte, 10: 4byte, 11: 8byte, 111: cacheline 
-    output logic [DCACHE_ID_WIDTH-1:0]      miss_id_o,       // unused (set to 0)
+    output logic [DCACHE_ID_WIDTH-1:0]      miss_wr_id_o,    // unused (set to 0)
+    input  logic                            miss_replay_i,   // request collided with pending miss - have to replay the request  
+    input  logic                            miss_rtrn_vld_i, // signals that the miss has been served, asserted in the same cycle as when the data returns from memory
+    // used to detect readout mux collisions
+    input  logic                            wr_cl_vld_i,
     // cache memory interface
     output logic [DCACHE_TAG_WIDTH-1:0]     rd_tag_o,        // tag in - comes one cycle later
     output logic [DCACHE_CL_IDX_WIDTH-1:0]  rd_idx_o, 
     output logic [DCACHE_OFFSET_WIDTH-1:0]  rd_off_o, 
     output logic                            rd_req_o,        // read the word at offset off_i[:3] in all ways
+    output logic                            rd_tag_only_o,   // set to zero here
     input  logic                            rd_ack_i, 
-    input logic  [63:0]                     rd_data_i,
-    input logic  [DCACHE_SET_ASSOC-1:0]     rd_vld_data_i,
-    input logic  [DCACHE_SET_ASSOC-1:0]     rd_hit_oh_i
+    input  logic [63:0]                     rd_data_i,
+    input  logic [DCACHE_SET_ASSOC-1:0]     rd_vld_bits_i,
+    input  logic [DCACHE_SET_ASSOC-1:0]     rd_hit_oh_i
 );
 
-    // cpmtroller FSM
-    typedef enum logic[1:0] {IDLE, READ, MISS, KILL_MISS} state_t;
+    // controller FSM
+    typedef enum logic[2:0] {IDLE, READ, MISS_REQ, MISS_WAIT, KILL_MISS, REPLAY_REQ, REPLAY_READ} state_t;
     state_t state_d, state_q;
 
     logic [DCACHE_TAG_WIDTH-1:0]    address_tag_d, address_tag_q;
     logic [DCACHE_CL_IDX_WIDTH-1:0] address_idx_d, address_idx_q;
     logic [DCACHE_OFFSET_WIDTH-1:0] address_off_d, address_off_q;
     logic [DCACHE_SET_ASSOC-1:0]    vld_data_d,    vld_data_q;
-    logic save_tag;
-
+    logic save_tag, rd_req_d, rd_req_q, rd_ack_d, rd_ack_q;
+    logic [1:0] data_size_d, data_size_q;
+    
+///////////////////////////////////////////////////////
+// misc
+///////////////////////////////////////////////////////
 
     // map address to tag/idx/offset and save
-    assign vld_data_d    = (save_tag)            ? rd_vld_data_i : vld_data_q;
+    assign vld_data_d    = (rd_req_q)            ? rd_vld_bits_i                                                      : vld_data_q;
     assign address_tag_d = (save_tag)            ? req_port_i.address_tag                                             : address_tag_q;
     assign address_idx_d = (req_port_o.data_gnt) ? req_port_i.address_index[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH] : address_idx_q;
     assign address_off_d = (req_port_o.data_gnt) ? req_port_i.address_index[DCACHE_OFFSET_WIDTH-1:0]                  : address_off_q;
-    assign tag_o         = address_tag_d;
-    assign off_o         = address_off_d;
+    assign data_size_d   = (req_port_o.data_gnt) ? req_port_i.data_size                                               : data_size_q;
+    assign rd_tag_o      = address_tag_d;
+    assign rd_idx_o      = address_idx_d;
+    assign rd_off_o      = address_off_d;
 
     assign req_port_o.data_rdata = rd_data_i;
     
     // to miss unit
-    assign miss_vld_bits_o       = vld_data_d;
-    assign miss_paddr_o          = {address_tag_d, address_idx_q, address_off_q};
-    assign miss_size_o           = (miss_nc_o) ? req_port_i.data_size : 3'b111;
-
+    assign miss_vld_bits_o       = vld_data_q;
+    assign miss_paddr_o          = {address_tag_q, address_idx_q, address_off_q};
+    assign miss_size_o           = (miss_nc_o) ? data_size_q : 3'b111;
 
     generate 
         if (NC_ADDR_GE_LT) begin : g_nc_addr_high
-            assign miss_nc_o = (address_tag_d >= (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH)) | ~cache_en_i;
+            assign miss_nc_o = (address_tag_q >= (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH)) | ~cache_en_i;
         end
         if (~NC_ADDR_GE_LT) begin : g_nc_addr_low
-            assign miss_nc_o = (address_tag_d < (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH))  | ~cache_en_i;
+            assign miss_nc_o = (address_tag_q < (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH))  | ~cache_en_i;
         end
     endgenerate  
 
     assign miss_we_o    = '0;
     assign miss_wdata_o = '0;   
-    assign miss_id_o    = '0;
-
+    assign miss_wr_id_o = '0;
+    assign rd_req_d     = rd_req_o;
+    assign rd_ack_d     = rd_ack_i;
+    assign rd_tag_only_o = '0;
+    
 ///////////////////////////////////////////////////////
 // main control logic
 ///////////////////////////////////////////////////////
@@ -122,51 +135,81 @@ module serpent_dcache_ctrl #(
             // or in case the address is NC, we
             // reuse the miss mechanism to handle
             // the request
-            READ: begin
+            READ, REPLAY_READ: begin
                 // speculatively request cache line
                 rd_req_o = 1'b1;
-                save_tag = 1'b1;
-
+                
                 // flush or kill -> go back to IDLE
                 if(flush_i || req_port_i.kill_req) begin
                     state_d = IDLE;
-                end else if(req_port_i.tag_valid) begin
+                end else if(req_port_i.tag_valid | state_q==REPLAY_READ) begin
+                    save_tag = (state_q!=REPLAY_READ);
+                    if(wr_cl_vld_i | ~rd_ack_q) begin
+                        state_d = REPLAY_REQ;
                     // we've got a hit   
-                    if((|rd_hit_oh_i) & cache_en_i) begin
+                    end else if((|rd_hit_oh_i) & cache_en_i) begin
                         state_d = IDLE;
                         req_port_o.data_rvalid = 1'b1;
                         // we can handle another request
-                        if (rd_ack_i) begin
+                        if (rd_ack_i && req_port_i.data_req) begin
                             state_d = READ;
                             req_port_o.data_gnt = 1'b1;
                         end
                     // we've got a miss
                     end else begin
-                        miss_req_o = 1'b1;
-                        state_d    = MISS;
+                        state_d = MISS_REQ;    
                     end    
                 end 
             end
             //////////////////////////////////
-            // wait until the memory transaction
-            // returns. 
-            MISS: begin
+            // issue request
+            MISS_REQ: begin
                 miss_req_o = 1'b1;
 
+                if (flush_i || req_port_i.kill_req) begin
+                    if(miss_ack_i) begin
+                        state_d = KILL_MISS;
+                    end else begin    
+                        state_d = IDLE;
+                    end    
+                end else if(miss_replay_i) begin
+                    state_d  = REPLAY_REQ;
+                end else if(miss_ack_i) begin
+                    state_d  = MISS_WAIT;
+                end        
+            end
+            //////////////////////////////////
+            // wait until the memory transaction
+            // returns. 
+            MISS_WAIT: begin
                 if(flush_i || req_port_i.kill_req) begin
-                    state_d = KILL_MISS;
-                end else if(miss_ack_i) begin     
+                    if(miss_rtrn_vld_i) begin
+                        state_d = IDLE;
+                    end else begin
+                        state_d = KILL_MISS;
+                    end        
+                end else if(miss_rtrn_vld_i) begin     
                     state_d = IDLE;
                     req_port_o.data_rvalid = 1'b1;
                 end
             end
             //////////////////////////////////
+            // replay read request
+            REPLAY_REQ: begin
+                rd_req_o = 1'b1;
+                if (flush_i || req_port_i.kill_req) begin
+                    state_d = IDLE;
+                end else if(rd_ack_i) begin
+                    state_d = REPLAY_READ;
+                end 
+            end            
+            //////////////////////////////////
             // killed miss,
             // wait until miss unit responds and 
             // go back to idle
             KILL_MISS: begin
-                if (miss_ack_i) begin
-                    state_d      = IDLE;
+                if (miss_rtrn_vld_i) begin
+                    state_d = IDLE;
                 end   
             end
             default: begin
@@ -182,15 +225,23 @@ module serpent_dcache_ctrl #(
 
 always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if(~rst_ni) begin
-        state_q       <= IDLE;
-        address_tag_q <= '0; 
-        address_idx_q <= '0;
-        address_off_q <= '0;
+        state_q          <= IDLE;
+        address_tag_q    <= '0; 
+        address_idx_q    <= '0;
+        address_off_q    <= '0;
+        vld_data_q       <= '0;
+        data_size_q      <= '0;
+        rd_req_q         <= '0;
+        rd_ack_q         <= '0;
     end else begin
-        state_q       <= state_d;
-        address_tag_q <= address_tag_d; 
-        address_idx_q <= address_idx_d;
-        address_off_q <= address_off_d;
+        state_q          <= state_d;
+        address_tag_q    <= address_tag_d; 
+        address_idx_q    <= address_idx_d;
+        address_off_q    <= address_off_d;
+        vld_data_q       <= vld_data_d;
+        data_size_q      <= data_size_d;
+        rd_req_q         <= rd_req_d;
+        rd_ack_q         <= rd_ack_d;
     end
 end
 

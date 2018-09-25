@@ -138,6 +138,17 @@ serp-icache-quest:
   dependencies:
     - build    
 
+serp-dcache-quest:
+  stage: test_serpent
+  script:
+    - cd tb/tb_serpent_dcache/
+    - make simc
+    - "grep 'CI: PASSED' RD0_summary.rep"
+    - "grep 'CI: PASSED' RD1_summary.rep"
+    - "grep 'CI: PASSED' TB_MEM_summary.rep"
+  dependencies:
+    - build    
+
 serp-torture:
   stage: test_serpent
   script:

@@ -22,36 +22,40 @@
 //           these single word writes can interleave with read operations if they go to different 
 //           cacheline offsets, since each word offset is placed into a different SRAM bank.
 //
-//        4) Access priority is port 0 > port 1 > port 2... > single word write port  
+//        4) Read ports with same priority are RR arbited. but high prio ports (rd_prio_i[port_nr] = '1b1) will stall
+//           low prio ports (rd_prio_i[port_nr] = '1b0)
 
 import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_mem #(
-        parameter int unsigned NUM_RD_PORTS     = 3
+        parameter int unsigned NUM_PORTS     = 3
     )(
         input  logic                                              clk_i,
         input  logic                                              rst_ni,
         
         // ports
-        input  logic  [NUM_RD_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]    rd_tag_i,           // tag in - comes one cycle later
-        input  logic  [NUM_RD_PORTS-1:0][DCACHE_CL_IDX_WIDTH-1:0] rd_idx_i,     
-        input  logic  [NUM_RD_PORTS-1:0][DCACHE_OFFSET_WIDTH-1:0] rd_off_i,     
-        input  logic  [NUM_RD_PORTS-1:0]                          rd_req_i,           // read the word at offset off_i[:3] in all ways
-        output logic  [NUM_RD_PORTS-1:0]                          rd_ack_o,     
+        input  logic  [NUM_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]       rd_tag_i,           // tag in - comes one cycle later
+        input  logic  [NUM_PORTS-1:0][DCACHE_CL_IDX_WIDTH-1:0]    rd_idx_i,     
+        input  logic  [NUM_PORTS-1:0][DCACHE_OFFSET_WIDTH-1:0]    rd_off_i,     
+        input  logic  [NUM_PORTS-1:0]                             rd_req_i,           // read the word at offset off_i[:3] in all ways
+        input  logic  [NUM_PORTS-1:0]                             rd_tag_only_i,      // only do a tag/valid lookup, no access to data arrays
+        input  logic  [NUM_PORTS-1:0]                             rd_prio_i,          // 0: low prio, 1: high prio
+        output logic  [NUM_PORTS-1:0]                             rd_ack_o,     
         output logic                [DCACHE_SET_ASSOC-1:0]        rd_vld_bits_o,
         output logic                [DCACHE_SET_ASSOC-1:0]        rd_hit_oh_o,
         output logic                [63:0]                        rd_data_o,
         
         // only available on port 0, uses address signals of port 0    
-        input  logic                [DCACHE_SET_ASSOC-1:0]        wr_cl_vld_i,        // writes a full cacheline 
+        input  logic                                              wr_cl_vld_i,
+        input  logic                                              wr_cl_nc_i,         // noncacheable access
+        input  logic                [DCACHE_SET_ASSOC-1:0]        wr_cl_we_i,         // writes a full cacheline 
         input  logic                [DCACHE_TAG_WIDTH-1:0]        wr_cl_tag_i,
         input  logic                [DCACHE_CL_IDX_WIDTH-1:0]     wr_cl_idx_i,
         input  logic                [DCACHE_OFFSET_WIDTH-1:0]     wr_cl_off_i,
         input  logic                [DCACHE_LINE_WIDTH-1:0]       wr_cl_data_i, 
         input  logic                [DCACHE_LINE_WIDTH/8-1:0]     wr_cl_data_be_i, 
         input  logic                [DCACHE_SET_ASSOC-1:0]        wr_vld_bits_i,      
-        input  logic                                              wr_cl_byp_en_i,
         
         // separate port for single word write, no tag access
         input  logic                [DCACHE_SET_ASSOC-1:0]        wr_req_i,           // write a single word to offset off_i[:3] 
@@ -77,22 +81,23 @@ module serpent_dcache_mem #(
     logic [DCACHE_NUM_BANKS-1:0][DCACHE_SET_ASSOC-1:0][63:0]      bank_rdata;                   // 
     logic [DCACHE_SET_ASSOC-1:0][63:0]                            rdata_cl;                     // selected word from each cacheline
  
-    logic [DCACHE_TAG_WIDTH-1:0]                                  tag;
+    logic [DCACHE_TAG_WIDTH-1:0]                                  rd_tag;
     logic [DCACHE_SET_ASSOC-1:0]                                  vld_req;                      // bit enable for valid regs
     logic                                                         vld_we;                       // valid bits write enable
     logic [DCACHE_SET_ASSOC-1:0]                                  vld_wdata;                    // valid bits to write
     logic [DCACHE_SET_ASSOC-1:0][DCACHE_TAG_WIDTH-1:0]            tag_rdata;                    // these are the tags coming from the tagmem
     logic                       [DCACHE_CL_IDX_WIDTH-1:0]         vld_addr;                     // valid bit 
     
-    logic [NUM_RD_PORTS-1:0][$clog2(DCACHE_NUM_BANKS)-1:0]        vld_sel_d, vld_sel_q;
+    logic [$clog2(NUM_PORTS)-1:0]                                 vld_sel_d, vld_sel_q;
     
-    logic [DCACHE_SET_ASSOC-1:0]                                  wr_idx_oh;
-    logic [DCACHE_SET_ASSOC-1:0][63:0]                            rdata_sel;
-
     logic [DCACHE_WBUF_DEPTH-1:0]                                 wbuffer_hit_oh;
     logic [7:0]                                                   wbuffer_be;
     logic [63:0]                                                  wbuffer_rdata, rdata;
     logic [63:0]                                                  wbuffer_cmp_addr;
+    
+    logic                                                         cmp_en_d, cmp_en_q;
+    logic                                                         rd_acked;
+    logic [NUM_PORTS-1:0]                                         bank_collision, rd_req_masked, rd_req_prio;
 
 ///////////////////////////////////////////////////////
 // arbiter
@@ -109,139 +114,138 @@ module serpent_dcache_mem #(
     generate 
         for (genvar k=0;k<DCACHE_NUM_BANKS;k++) begin : g_bank
             for (genvar j=0;j<DCACHE_SET_ASSOC;j++) begin : g_bank_way
-                assign bank_be[k][j]   = (wr_cl_vld_i[j]) ? wr_cl_data_be_i[k*8 +: 8] : 
-                                         (wr_ack_o)       ? wr_data_be_i              : 
-                                                            '0;
+                assign bank_be[k][j]   = (wr_cl_we_i[j] & wr_cl_vld_i) ? wr_cl_data_be_i[k*8 +: 8] : 
+                                         (wr_req_i[j]   & wr_ack_o)    ? wr_data_be_i              : 
+                                                                         '0;
                 
-                assign bank_wdata[k][j] = (|wr_cl_vld_i) ?  wr_cl_data_i[k*64 +: 64] :
-                                                            wr_data_i;    
+                assign bank_wdata[k][j] = (wr_cl_vld_i) ?  wr_cl_data_i[k*64 +: 64] :
+                                                           wr_data_i;    
             end
         end
     endgenerate
 
     assign vld_wdata  = wr_vld_bits_i;
-    assign vld_addr   = (|wr_cl_vld_i) ? wr_cl_idx_i : rd_idx_i[vld_sel_d];
-    assign tag        = (|wr_cl_vld_i) ? wr_cl_tag_i : rd_tag_i[vld_sel_q];// delayed by one cycle
-    assign idx        = (|wr_cl_vld_i) ? wr_cl_tag_i : rd_tag_i[vld_sel_q];// delayed by one cycle
-    assign bank_off_d = (|wr_cl_vld_i) ? wr_cl_off_i : rd_off_i[vld_sel_d];
-          
-    assign wr_idx_oh  = dcache_cl_bin2oh(wr_off_i[DCACHE_OFFSET_WIDTH-1:3]);
+    assign vld_addr   = (wr_cl_vld_i) ? wr_cl_idx_i   : rd_idx_i[vld_sel_d];
+    assign rd_tag     = rd_tag_i[vld_sel_q]; //delayed by one cycle
+    assign bank_off_d = (wr_cl_vld_i) ? wr_cl_off_i   : rd_off_i[vld_sel_d];
+    assign bank_idx_d = (wr_cl_vld_i) ? wr_cl_idx_i   : rd_idx_i[vld_sel_d];
+    assign vld_req    = (wr_cl_vld_i) ? wr_cl_we_i    : (rd_acked) ? '1 : '0;  
+
+
+    // priority masking
+    // disable low prio requests when any of the high prio reqs is present
+    assign rd_req_prio   = rd_req_i & rd_prio_i;
+    assign rd_req_masked = (|rd_req_prio) ? rd_req_prio : rd_req_i;
     
-    // priority arbiting for each bank separately
-    // full cl writes always block the cache
-    // tag readouts / cl readouts may interleave with single word writes in case
-    // there is no conflict between the indexes
-    always_comb begin : p_prio_arb
-        // interface
-        wr_ack_o    = 1'b0;
-        rd_ack_o    = '0;
-
-        // mem arrays
-        bank_req    = '0;
-        bank_we     = '0;
-
-        vld_req     = '0;
-        vld_we      = 1'b0;
-
-        vld_sel_d   = 0;
-
-        bank_idx    = '{default:wr_cl_idx_i};
-        bank_idx_d  = wr_cl_idx_i;
-
-        if(|wr_cl_vld_i) begin
-            bank_req    = '1;
-            bank_we     = '1;
-            vld_req     = wr_cl_vld_i;
-            vld_we      = 1'b1;
-        end else begin
-            // loop over ports
-            for (int k=0;k<NUM_RD_PORTS;k++) begin
-                if(rd_req_i[k]) begin
-                    rd_ack_o[k]    = 1'b1;
-                    vld_req        = 1'b1;
-                    vld_sel_d      = k;
-                    bank_req       = dcache_cl_bin2oh(rd_off_i[k][DCACHE_OFFSET_WIDTH-1:3]);
-                    bank_idx       = '{default:rd_idx_i[k]};
-                    bank_idx_d     = rd_idx_i[k];
-                    break;
-                end
-            end        
-
-            // check whether we can interleave a single word write
-            if(~(|(bank_req & wr_idx_oh))) begin
-                if(|wr_req_i) begin
-                    wr_ack_o  = 1'b1;
-                    bank_req |= wr_idx_oh;
-                    bank_we   = wr_idx_oh;    
-                    bank_idx[wr_off_i[DCACHE_OFFSET_WIDTH-1:3]] = wr_idx_i;
-                end
-            end
-        end
-    end                         
-
-///////////////////////////////////////////////////////
-// tag comparison, hit generation
-///////////////////////////////////////////////////////
-
-    logic [DCACHE_WBUF_DEPTH-1:0][7:0]  wbuffer_bvalid;
-    logic [DCACHE_WBUF_DEPTH-1:0][63:0] wbuffer_data;
-
-    // word tag comparison in write buffer
-    assign wbuffer_cmp_addr = (wr_cl_byp_en_i) ? {wr_cl_tag_i, wr_cl_idx_i, wr_cl_off_i} : 
-                                                 {tag, bank_idx_q, bank_off_q};
-
-    // tag comparison of way 0                                    
-    assign rd_hit_oh_o[0] = (tag == tag_rdata[0]) & rd_vld_bits_o[0];
-
-    // use way 0 to bypass read data in case we missed on the cache or in case the req is NC
-    assign rdata_cl[0] = (wr_cl_byp_en_i) ? wr_cl_data_i[wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3]]  :
-                         (rd_hit_oh_o[0]) ? bank_rdata[bank_off_q[DCACHE_OFFSET_WIDTH-1:3]][0] :
-                                            '0 ;
+    // read port arbiter
+    rrarbiter #(
+        .NUM_REQ(NUM_PORTS)
+    ) i_rrarbiter (
+        .clk_i  ( clk_i         ),
+        .rst_ni ( rst_ni        ),
+        .flush_i( 1'b0          ),
+        .en_i   ( ~wr_cl_vld_i  ),
+        .req_i  ( rd_req_masked ),
+        .ack_o  ( rd_ack_o      ),
+        .vld_o  ( rd_acked      ),
+        .idx_o  ( vld_sel_d     )
+    );
     
-    generate 
-        for (genvar i=1;i<DCACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
-            // tag comparison of ways >0
-            assign rd_hit_oh_o[i] = (tag == tag_rdata[i]) & rd_vld_bits_o[i];
-            // byte offset mux of ways >0
-            assign rdata_cl[i] = (rd_hit_oh_o[i] & ~wr_cl_byp_en_i) ? bank_rdata[bank_off_q[DCACHE_OFFSET_WIDTH-1:3]][i] : '0;
-        end
+    always_comb begin : p_bank_req
+        
+        vld_we   = wr_cl_vld_i;
+        bank_req = '0;
+        wr_ack_o = '0;
+        bank_we  = '0;
+        bank_idx = '{default:wr_idx_i};
 
-        for(genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin
-            for(genvar j=0; j<8; j++) begin
-                assign wbuffer_bvalid[k][j] = wbuffer_data_i[k].valid[j];
-            end
-            assign wbuffer_data[k]   = wbuffer_data_i[k].data;
-            assign wbuffer_hit_oh[k] = (|wbuffer_bvalid[k]) & (wbuffer_data_i[k].wtag == (wbuffer_cmp_addr >> 3));
+        for(int k=0; k<NUM_PORTS; k++) begin
+            bank_collision[k] = rd_off_i[k][DCACHE_OFFSET_WIDTH-1:3] == wr_off_i[DCACHE_OFFSET_WIDTH-1:3];
         end    
 
-        // overlay bytes that hit in the write buffer
-        for(genvar k=0; k<8; k++) begin
-            assign rd_data_o[8*k +: 8] = (wbuffer_be[k]) ? wbuffer_rdata[8*k +: 8] : rdata[8*k +: 8];
+        if(wr_cl_vld_i) begin
+            bank_req = '1;
+            bank_we  = '1;
+            bank_idx = '{default:wr_cl_idx_i};
+        end else begin
+            if(rd_acked) begin
+                if(~rd_tag_only_i[vld_sel_d]) begin
+                    bank_req                                               = dcache_cl_bin2oh(rd_off_i[vld_sel_d][DCACHE_OFFSET_WIDTH-1:3]);
+                    bank_idx[rd_off_i[vld_sel_d][DCACHE_OFFSET_WIDTH-1:3]] = rd_idx_i[vld_sel_d]; 
+                end
+            end        
+        
+            if(|wr_req_i) begin
+                if(rd_tag_only_i[vld_sel_d] | ~(rd_ack_o[vld_sel_d] & bank_collision[vld_sel_d])) begin
+                    wr_ack_o = 1'b1;
+                    bank_req |= dcache_cl_bin2oh(wr_off_i[DCACHE_OFFSET_WIDTH-1:3]);
+                    bank_we   = dcache_cl_bin2oh(wr_off_i[DCACHE_OFFSET_WIDTH-1:3]);
+                end
+            end  
+        end        
+    end
+
+///////////////////////////////////////////////////////
+// tag comparison, hit generatio, readoud muxes
+///////////////////////////////////////////////////////
+    
+    logic [DCACHE_WBUF_DEPTH-1:0][7:0]    wbuffer_bvalid;
+    logic [DCACHE_WBUF_DEPTH-1:0][63:0]   wbuffer_data;
+    logic [DCACHE_OFFSET_WIDTH-1:0]       wr_cl_off;
+    logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] wbuffer_hit_idx;
+    logic [$clog2(DCACHE_SET_ASSOC)-1:0]  rd_hit_idx;
+
+    assign cmp_en_d = (|vld_req) & ~vld_we;
+
+    // word tag comparison in write buffer
+    assign wbuffer_cmp_addr = (wr_cl_vld_i) ? {wr_cl_tag_i, wr_cl_idx_i, wr_cl_off_i} : 
+                                              {rd_tag, bank_idx_q, bank_off_q};
+    // hit generation
+    generate 
+        for (genvar i=0;i<DCACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
+            // tag comparison of ways >0
+            assign rd_hit_oh_o[i] = (rd_tag == tag_rdata[i]) & rd_vld_bits_o[i]  & cmp_en_q;
+            // byte offset mux of ways >0
+            assign rdata_cl[i] = bank_rdata[bank_off_q[DCACHE_OFFSET_WIDTH-1:3]][i];
         end
+
+        for(genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin : g_wbuffer_hit
+            assign wbuffer_hit_oh[k] = (|wbuffer_data_i[k].valid) & (wbuffer_data_i[k].wtag == (wbuffer_cmp_addr >> 3));
+        end    
     endgenerate
 
-    // OR reduction of writebuffer byte enables
-    always_comb begin : p_wbuf_be_red
-        for(int j=0; j<8;j++) begin
-            wbuffer_be[j]  = (wbuffer_hit_oh[0]) ? wbuffer_bvalid[0][j] : '0;
-            for(int k=1; k<DCACHE_WBUF_DEPTH;k++) 
-                wbuffer_be[j] |= (wbuffer_hit_oh[k]) ? wbuffer_bvalid[k][j] : '0;
+
+    lzc #(
+        .WIDTH ( DCACHE_WBUF_DEPTH )
+    ) i_lzc_wbuffer_hit (
+        .in_i    ( wbuffer_hit_oh   ),
+        .cnt_o   ( wbuffer_hit_idx  ),
+        .empty_o (                  )
+    );
+    
+    lzc #(
+        .WIDTH ( DCACHE_SET_ASSOC )
+    ) i_lzc_rd_hit (
+        .in_i    ( rd_hit_oh_o  ),
+        .cnt_o   ( rd_hit_idx   ),
+        .empty_o (              )
+    );
+
+    assign wbuffer_rdata = wbuffer_data_i[wbuffer_hit_idx].data; 
+    assign wbuffer_be    = (|wbuffer_hit_oh) ? wbuffer_data_i[wbuffer_hit_idx].valid : '0;
+    
+    assign wr_cl_off     = (wr_cl_nc_i)     ? '0 : wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
+    assign rdata         = (wr_cl_vld_i)    ? wr_cl_data_i[wr_cl_off*64 +: 64] :
+                                              rdata_cl[rd_hit_idx];
+
+    // overlay bytes that hit in the write buffer
+    generate  
+        for(genvar k=0; k<8; k++) begin : g_rd_data
+            assign rd_data_o[8*k +: 8] = (wbuffer_be[k]) ? wbuffer_rdata[8*k +: 8] : rdata[8*k +: 8];
         end
-    end
+    endgenerate    
 
-    // OR reduction of writebuffer data
-    always_comb begin : p_wbuf_data_red
-        wbuffer_rdata = (wbuffer_hit_oh[0]) ? wbuffer_data[0] : '0;
-        for(int k=1; k<DCACHE_WBUF_DEPTH;k++)
-            wbuffer_rdata |= (wbuffer_hit_oh[k]) ? wbuffer_data[k] : '0;
-    end
-
-    // OR reduction of selected cachelines
-    always_comb begin : p_data_red
-        rdata = rdata_cl[0];
-        for(int k=1; k<DCACHE_SET_ASSOC;k++)
-            rdata |= rdata_cl[k];
-    end
+    
 
 ///////////////////////////////////////////////////////
 // memory arrays and regs
@@ -255,7 +259,7 @@ module serpent_dcache_mem #(
             sram #(
                 .DATA_WIDTH ( 64*DCACHE_SET_ASSOC ),
                 .NUM_WORDS  ( DCACHE_NUM_WORDS    )
-            ) data_sram (
+            ) i_data_sram (
                 .clk_i      ( clk_i               ),
                 .rst_ni     ( rst_ni              ),
                 .req_i      ( bank_req   [k]      ),
@@ -267,7 +271,7 @@ module serpent_dcache_mem #(
             );
         end
 
-        for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin : g_sram
+        for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin : g_tag_srams
 
             assign tag_rdata[i]     = vld_tag_rdata[i][DCACHE_TAG_WIDTH-1:0];
             assign rd_vld_bits_o[i] = vld_tag_rdata[i][DCACHE_TAG_WIDTH];    
@@ -277,13 +281,13 @@ module serpent_dcache_mem #(
                 // tag + valid bit
                 .DATA_WIDTH ( DCACHE_TAG_WIDTH+1 ),
                 .NUM_WORDS  ( DCACHE_NUM_WORDS   )
-            ) tag_sram (
+            ) i_tag_sram (
                 .clk_i     ( clk_i               ),
                 .rst_ni    ( rst_ni              ),
                 .req_i     ( vld_req[i]          ),
                 .we_i      ( vld_we              ),
                 .addr_i    ( vld_addr            ),
-                .wdata_i   ( {vld_wdata[i], tag} ),
+                .wdata_i   ( {vld_wdata[i], wr_cl_tag_i} ),
                 .be_i      ( '1                  ),
                 .rdata_o   ( vld_tag_rdata[i]    )
             );
@@ -296,10 +300,12 @@ module serpent_dcache_mem #(
             bank_idx_q <= '0;
             bank_off_q <= '0;
             vld_sel_q  <= '0;
+            cmp_en_q   <= '0;
         end else begin
             bank_idx_q <= bank_idx_d;
             bank_off_q <= bank_off_d;
             vld_sel_q  <= vld_sel_d ;
+            cmp_en_q   <= cmp_en_d;
         end
     end
 
@@ -309,29 +315,61 @@ module serpent_dcache_mem #(
 // assertions
 ///////////////////////////////////////////////////////
 
-    //pragma translate_off
-    `ifndef VERILATOR
+//pragma translate_off
+`ifndef VERILATOR
 
-      hit_hot1: assert property (
-          @(posedge clk_i) disable iff (~rst_ni) &vld_req |-> ~vld_we |=> $onehot0(rd_hit_oh_o))     
-             else $fatal(1,"[l1 dcache] rd_hit_oh_o signal must be hot1");
+    hit_hot1: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) &vld_req |-> ~vld_we |=> $onehot0(rd_hit_oh_o))     
+            else $fatal(1,"[l1 dcache] rd_hit_oh_o signal must be hot1");
 
-      word_write_hot1: assert property (
-          @(posedge clk_i) disable iff (~rst_ni) wr_ack_o |-> $onehot0(wr_req_i))     
-             else $fatal(1,"[l1 dcache] wr_req_i signal must be hot1");
+    word_write_hot1: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) wr_ack_o |-> $onehot0(wr_req_i))     
+            else $fatal(1,"[l1 dcache] wr_req_i signal must be hot1");
 
-      wbuffer_hit_hot1: assert property (
-          @(posedge clk_i) disable iff (~rst_ni) &vld_req |-> ~vld_we |=> $onehot0(wbuffer_hit_oh))     
-             else $fatal(1,"[l1 dcache] wbuffer_hit_oh signal must be hot1");
+    wbuffer_hit_hot1: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) &vld_req |-> ~vld_we |=> $onehot0(wbuffer_hit_oh))     
+            else $fatal(1,"[l1 dcache] wbuffer_hit_oh signal must be hot1");
 
+    // this is only used for verification!
+    logic                        vld_mirror[DCACHE_NUM_WORDS-1:0][DCACHE_SET_ASSOC-1:0];        
+    logic [DCACHE_TAG_WIDTH-1:0] tag_mirror[DCACHE_NUM_WORDS-1:0][DCACHE_SET_ASSOC-1:0];        
+    logic [DCACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
+        if(~rst_ni) begin
+            vld_mirror <= '{default:'0};
+            tag_mirror <= '{default:'0};
+        end else begin
+            for (int i = 0; i < DCACHE_SET_ASSOC; i++) begin
+                if(vld_req[i] & vld_we) begin
+                    vld_mirror[vld_addr][i] <= vld_wdata[i];
+                    tag_mirror[vld_addr][i] <= wr_cl_tag_i;
+                end 
+            end       
+        end
+    end
 
-       // initial begin
-       //    // assert wrong parameterizations
-       //    assert (DCACHE_INDEX_WIDTH<=12) 
-       //      else $fatal(1,"[l1 dcache] cache index width can be maximum 12bit since VM uses 4kB pages");    
-       // end
-    `endif
-    //pragma translate_on
+    generate
+        for (genvar i = 0; i < DCACHE_SET_ASSOC; i++) begin
+            assign tag_write_duplicate_test[i] = (tag_mirror[vld_addr][i] == wr_cl_tag_i) & vld_mirror[vld_addr][i] & (|vld_wdata);
+        end 
+    endgenerate
+
+    tag_write_duplicate: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) |vld_req |-> vld_we |-> ~(|tag_write_duplicate_test))     
+            else $fatal(1,"[l1 dcache] cannot allocate a CL that is already present in the cache");
+
+    // logic tst;
+    // always_comb begin : p_test
+    //     tst = tag == 44'h13;
+    //     // for (int k=0; k<DCACHE_SET_ASSOC;k++) begin
+    //     //     tst |= tag_rdata[k] == 44'h96;
+    //     // end    
+    //     tst &= bank_idx_d == 64'h0C;
+    //     tst &= |wr_cl_we_i;
+    // end
+
+`endif
+//pragma translate_on
 
 endmodule // serpent_dcache_mem
