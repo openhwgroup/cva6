@@ -50,11 +50,10 @@ module serpent_cache_subsystem #(
    input  logic                           dcache_flush_i,         // high until acknowledged
    output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
    output logic                           dcache_miss_o,          // we missed on a ld/st
-   // AMO interface (not functional yet)
-   input  logic                           dcache_amo_commit_i,    // commit atomic memory operation
-   output logic                           dcache_amo_valid_o,     // we have a valid AMO result
-   output logic [63:0]                    dcache_amo_result_o,    // result of atomic memory operation
-   input  logic                           dcache_amo_flush_i,     // forget about AMO
+   // AMO interface
+   input amo_req_t                        dcache_amo_req_i,
+   output amo_resp_t                      dcache_amo_resp_o,
+
    // Request ports
    input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
    output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
@@ -120,10 +119,8 @@ module serpent_cache_subsystem #(
       .miss_o             ( dcache_miss_o          ),
       .data_if            ( dcache_data_if         ),
       .bypass_if          ( dcache_bypass_if       ),
-      .amo_commit_i       ( dcache_amo_commit_i    ),
-      .amo_valid_o        ( dcache_amo_valid_o     ),
-      .amo_result_o       ( dcache_amo_result_o    ),
-      .amo_flush_i        ( dcache_amo_flush_i     ),
+      .amo_req_i          ( dcache_amo_req_i       ),
+      .amo_resp_o         ( dcache_amo_resp_o      ),
       .req_ports_i        ( dcache_req_ports_i     ),
       .req_ports_o        ( dcache_req_ports_o     )
    );

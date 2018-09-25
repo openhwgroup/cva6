@@ -570,11 +570,10 @@ module ariane #(
         .dcache_enable_i       ( dcache_en_csr_nbdcache                ),
         .dcache_flush_i        ( dcache_flush_ctrl_cache               ),
         .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl           ),
+        // to commit stage
+        .dcache_amo_req_i      ( amo_req                               ),
+        .dcache_amo_resp_o     ( amo_resp                              ),
         // from PTW, Load Unit  and Store Unit
-        .dcache_amo_commit_i   ( 1'b0                                  ),
-        .dcache_amo_valid_o    (                                       ),
-        .dcache_amo_result_o   (                                       ),
-        .dcache_amo_flush_i    ( 1'b0                                  ),
         .dcache_miss_o         ( dcache_miss_cache_perf                ),
         .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
         .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),
