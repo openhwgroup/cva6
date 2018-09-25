@@ -83,7 +83,12 @@ $ make simc riscv-test-dir=$RISCV/riscv64-unknown-elf/bin riscv-test=pk target-o
 
 ## FPGA Emulation
 
-Coming.
+We provide support for the Genesys 2 board.
+
+During Synthesis set the following tick defines:
+```
+FPGA_TARGET_XILINX
+```
 
 ### Debugging
 
