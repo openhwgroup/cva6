@@ -41,7 +41,9 @@ module load_unit (
     input dcache_req_o_t             req_port_i,
     output dcache_req_i_t            req_port_o
 );
-    enum logic [2:0] {IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET, ABORT_TRANSACTION, WAIT_TRANSLATION, WAIT_FLUSH} NS, CS;
+    enum logic [2:0] { IDLE, WAIT_GNT, SEND_TAG, WAIT_PAGE_OFFSET,
+                       ABORT_TRANSACTION, WAIT_TRANSLATION, WAIT_FLUSH
+                     } state_d, state_q;
     // in order to decouple the response interface from the request interface we need a
     // a queue which can hold all outstanding memory requests
     struct packed {
@@ -72,7 +74,7 @@ module load_unit (
     // ---------------
     always_comb begin : load_control
         // default assignments
-        NS                   = CS;
+        state_d              = state_q;
         load_data_d          = load_data_q;
         translation_req_o    = 1'b0;
         req_port_o.data_req  = 1'b0;
@@ -83,7 +85,7 @@ module load_unit (
         req_port_o.data_size = extract_transfer_size(lsu_ctrl_i.operator);
         pop_ld_o             = 1'b0;
 
-        case (CS)
+        case (state_q)
             IDLE: begin
                 // we've got a new load request
                 if (valid_i) begin
@@ -96,18 +98,18 @@ module load_unit (
                         req_port_o.data_req = 1'b1;
                         // we got no data grant so wait for the grant before sending the tag
                         if (!req_port_i.data_gnt) begin
-                            NS = WAIT_GNT;
+                            state_d = WAIT_GNT;
                         end else begin
                             if (dtlb_hit_i) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                                NS = SEND_TAG;
+                                state_d = SEND_TAG;
                                 pop_ld_o = 1'b1;
                             end else
-                                NS = ABORT_TRANSACTION;
+                                state_d = ABORT_TRANSACTION;
                         end
                     end else begin
                         // wait for the store buffer to train and the page offset to not match anymore
-                        NS = WAIT_PAGE_OFFSET;
+                        state_d = WAIT_PAGE_OFFSET;
                     end
                 end
             end
@@ -116,7 +118,7 @@ module load_unit (
             WAIT_PAGE_OFFSET: begin
                 // we make a new request as soon as the page offset does not match anymore
                 if (!page_offset_matches_i) begin
-                    NS = WAIT_GNT;
+                    state_d = WAIT_GNT;
                 end
             end
 
@@ -127,14 +129,14 @@ module load_unit (
                 req_port_o.kill_req  = 1'b1;
                 req_port_o.tag_valid = 1'b1;
                 // redo the request by going back to the wait gnt state
-                NS          = WAIT_TRANSLATION;
+                state_d = WAIT_TRANSLATION;
             end
 
             WAIT_TRANSLATION: begin
                 translation_req_o = 1'b1;
                 // we've got a hit and we can continue with the request process
                 if (dtlb_hit_i)
-                    NS = WAIT_GNT;
+                    state_d = WAIT_GNT;
             end
 
             WAIT_GNT: begin
@@ -146,17 +148,17 @@ module load_unit (
                 if (req_port_i.data_gnt) begin
                     // so we send the tag in the next cycle
                     if (dtlb_hit_i) begin
-                        NS = SEND_TAG;
+                        state_d = SEND_TAG;
                         pop_ld_o = 1'b1;
                     end else // should we not have hit on the TLB abort this transaction an retry later
-                        NS = ABORT_TRANSACTION;
+                        state_d = ABORT_TRANSACTION;
                 end
                 // otherwise we keep waiting on our grant
             end
             // we know for sure that the tag we want to send is valid
             SEND_TAG: begin
                 req_port_o.tag_valid = 1'b1;
-                NS = IDLE;
+                state_d = IDLE;
                 // we can make a new request here if we got one
                 if (valid_i) begin
                     // start the translation process even though we do not know if the addresses match
@@ -168,19 +170,19 @@ module load_unit (
                         req_port_o.data_req = 1'b1;
                         // we got no data grant so wait for the grant before sending the tag
                         if (!req_port_i.data_gnt) begin
-                            NS = WAIT_GNT;
+                            state_d = WAIT_GNT;
                         end else begin
                             // we got a grant so we can send the tag in the next cycle
                             if (dtlb_hit_i) begin
                                 // we got a grant and a hit on the DTLB so we can send the tag in the next cycle
-                                NS = SEND_TAG;
+                                state_d = SEND_TAG;
                                 pop_ld_o = 1'b1;
                             end else // we missed on the TLB -> wait for the translation
-                                NS = ABORT_TRANSACTION;
+                                state_d = ABORT_TRANSACTION;
                         end
                     end else begin
                         // wait for the store buffer to train and the page offset to not match anymore
-                        NS = WAIT_PAGE_OFFSET;
+                        state_d = WAIT_PAGE_OFFSET;
                     end
                 end
                 // ----------
@@ -198,7 +200,7 @@ module load_unit (
                 req_port_o.kill_req  = 1'b1;
                 req_port_o.tag_valid = 1'b1;
                 // we've killed the current request so we can go back to idle
-                NS = IDLE;
+                state_d = IDLE;
             end
 
         endcase
@@ -206,8 +208,8 @@ module load_unit (
         // we got an exception
         if (ex_i.valid && valid_i) begin
             // the next state will be the idle state
-            NS = IDLE;
-            // pop load - but only if we are not getting an rvalid in here - otherwise we will over-wright an incoming transaction
+            state_d = IDLE;
+            // pop load - but only if we are not getting an rvalid in here - otherwise we will over-write an incoming transaction
             if (!req_port_i.data_rvalid)
                 pop_ld_o = 1'b1;
         end
@@ -219,7 +221,7 @@ module load_unit (
 
         // if we just flushed and the queue is not empty or we are getting an rvalid this cycle wait in a extra stage
         if (flush_i) begin
-            NS = WAIT_FLUSH;
+            state_d = WAIT_FLUSH;
         end
     end
 
@@ -232,7 +234,7 @@ module load_unit (
         // output the queue data directly, the valid signal is set corresponding to the process above
         trans_id_o = load_data_q.trans_id;
         // we got an rvalid and are currently not flushing and not aborting the request
-        if (req_port_i.data_rvalid && CS != WAIT_FLUSH) begin
+        if (req_port_i.data_rvalid && state_q != WAIT_FLUSH) begin
             // we killed the request
             if(!req_port_o.kill_req)
                 valid_o = 1'b1;
@@ -249,7 +251,7 @@ module load_unit (
             valid_o    = 1'b1;
             trans_id_o = lsu_ctrl_i.trans_id;
         // if we are waiting for the translation to finish do not give a valid signal yet
-        end else if (CS == WAIT_TRANSLATION) begin
+        end else if (state_q == WAIT_TRANSLATION) begin
             valid_o = 1'b0;
         end
 
@@ -259,10 +261,10 @@ module load_unit (
     // latch physical address for the tag cycle (one cycle after applying the index)
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            CS          <= IDLE;
+            state_q     <= IDLE;
             load_data_q <= '0;
         end else begin
-            CS          <= NS;
+            state_q     <= state_d;
             load_data_q <= load_data_d;
         end
     end
@@ -270,7 +272,6 @@ module load_unit (
     // ---------------
     // Sign Extend
     // ---------------
-
     logic [63:0] shifted_data;
 
     // realign as needed
@@ -327,7 +328,9 @@ module load_unit (
     // result mux
     always_comb begin
         unique case (load_data_q.operator)
-            LW, LWU:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
+            LW, LWU: begin
+                result_o = {{32{sign_bit}}, shifted_data[31:0]};
+            end
             LH, LHU:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
             LB, LBU:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
             default:    result_o = shifted_data;
@@ -345,7 +348,7 @@ module load_unit (
     // end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             idx_q     <= 0;
             signed_q  <= 0;
             fp_sign_q <= 0;

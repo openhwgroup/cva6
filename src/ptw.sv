@@ -31,7 +31,7 @@ module ptw #(
     input  logic                    en_ld_st_translation_i, // enable virtual memory translation for load/stores
 
     input  logic                    lsu_is_store_i,         // this translation was triggered by a store
-    // PTW memory interface 
+    // PTW memory interface
     input  dcache_req_o_t           req_port_i,
     output dcache_req_i_t           req_port_o,
 
@@ -163,10 +163,10 @@ module ptw #(
         ptw_pptr_n            = ptw_pptr_q;
         state_d               = state_q;
         global_mapping_n      = global_mapping_q;
-        // input registers  
+        // input registers
         tlb_update_asid_n     = tlb_update_asid_q;
         vaddr_n               = vaddr_q;
-  
+
         itlb_miss_o           = 1'b0;
         dtlb_miss_o           = 1'b0;
 

@@ -17,7 +17,7 @@ test_case      ?= core_test
 # QuestaSim Version
 questa_version ?= ${QUESTASIM_VERSION}
 # verilator version
-verilator      ?= ${VERILATOR_ROOT}/bin/verilator
+verilator      ?= verilator
 # traget option
 target-options ?=
 # additional definess
@@ -140,10 +140,10 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 
 
 sim: build
-	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}        \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0            \
-	$(QUESTASIM_FLAGS)                                                                                                \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " do tb/wave/wave_core.do; run -all; exit"  \
+	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}    \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0        \
+	$(QUESTASIM_FLAGS)                                                                                            \
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " log -r /*; run -all; exit"            \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
 
 simc: build
@@ -218,9 +218,9 @@ $(addsuffix -verilator,$(riscv-asm-tests)): verilate
 run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests))
 
 # split into two halfs for travis jobs (otherwise they will time out)
-run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-p-% ,$(riscv-asm-tests)))
+run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-v-% ,$(riscv-asm-tests)))
 
-run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-p-% ,$(riscv-asm-tests)))
+run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-v-% ,$(riscv-asm-tests)))
 
 
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate
