@@ -111,7 +111,7 @@ module dm_sba (
             end
         endcase
         // handle error case
-        if (sbaccess_i > 3 && state_d != Idle) begin
+        if (sbaccess_i > 3 && state_q != Idle) begin
             req             = 1'b0;
             state_d         = Idle;
             sberror_valid_o = 1'b1;
