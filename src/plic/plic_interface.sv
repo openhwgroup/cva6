@@ -317,6 +317,6 @@ module plic_interface #(
         assert(NUM_TARGETS<15872)                   else $error("Num target slices has to be smaller than 15872");
     end
     `endif
-    // pragma translate_off
+    // pragma translate_on
 
 endmodule

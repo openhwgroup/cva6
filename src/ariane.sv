@@ -15,7 +15,7 @@
 import ariane_pkg::*;
 `ifndef verilator
 `ifndef SYNTHESIS
-import instruction_tracer_pkg::*;
+// import instruction_tracer_pkg::*;
 `endif
 `endif
 
@@ -566,113 +566,109 @@ module ariane #(
     // -------------------
     // Instruction Tracer
     // -------------------
-    `ifndef SYNTHESIS
-    `ifndef verilator
-    instruction_tracer_if tracer_if (clk_i);
-    // assign instruction tracer interface
-    // control signals
-    assign tracer_if.rstn              = rst_ni;
-    assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
-    assign tracer_if.flush             = flush_ctrl_ex;
-    // fetch
-    assign tracer_if.instruction       = id_stage_i.compressed_decoder_i.instr_o;
-    assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
-    assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
-    // Issue
-    assign tracer_if.issue_ack         = issue_stage_i.i_scoreboard.issue_ack_i;
-    assign tracer_if.issue_sbe         = issue_stage_i.i_scoreboard.issue_instr_o;
-    // write-back
-    assign tracer_if.waddr             = waddr_commit_id;
-    assign tracer_if.wdata             = wdata_commit_id;
-    assign tracer_if.we                = we_commit_id;
-    // commit
-    assign tracer_if.commit_instr      = commit_instr_id_commit;
-    assign tracer_if.commit_ack        = commit_ack;
-    // branch predict
-    assign tracer_if.resolve_branch    = resolved_branch;
-    // address translation
-    // stores
-    assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
-    assign tracer_if.st_paddr          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
-    // loads
-    assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid;
-    assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req;
-    assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.i_load_unit.paddr_i;
-    // exceptions
-    assign tracer_if.exception         = commit_stage_i.exception_o;
-    // assign current privilege level
-    assign tracer_if.priv_lvl          = priv_lvl;
-    assign tracer_if.debug_mode        = debug_mode;
-    instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
-    `endif
-    `endif
+    // `ifndef SYNTHESIS
+    // `ifndef verilator
+    // instruction_tracer_if tracer_if (clk_i);
+    // // assign instruction tracer interface
+    // // control signals
+    // assign tracer_if.rstn              = rst_ni;
+    // assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
+    // assign tracer_if.flush             = flush_ctrl_ex;
+    // // fetch
+    // assign tracer_if.instruction       = id_stage_i.compressed_decoder_i.instr_o;
+    // assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
+    // assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
+    // // Issue
+    // assign tracer_if.issue_ack         = issue_stage_i.i_scoreboard.issue_ack_i;
+    // assign tracer_if.issue_sbe         = issue_stage_i.i_scoreboard.issue_instr_o;
+    // // write-back
+    // assign tracer_if.waddr             = waddr_commit_id;
+    // assign tracer_if.wdata             = wdata_commit_id;
+    // assign tracer_if.we                = we_commit_id;
+    // // commit
+    // assign tracer_if.commit_instr      = commit_instr_id_commit;
+    // assign tracer_if.commit_ack        = commit_ack;
+    // // branch predict
+    // assign tracer_if.resolve_branch    = resolved_branch;
+    // // address translation
+    // // stores
+    // assign tracer_if.st_valid          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i;
+    // assign tracer_if.st_paddr          = ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i;
+    // // loads
+    // assign tracer_if.ld_valid          = ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid;
+    // assign tracer_if.ld_kill           = ex_stage_i.lsu_i.i_load_unit.req_port_o.kill_req;
+    // assign tracer_if.ld_paddr          = ex_stage_i.lsu_i.i_load_unit.paddr_i;
+    // // exceptions
+    // assign tracer_if.exception         = commit_stage_i.exception_o;
+    // // assign current privilege level
+    // assign tracer_if.priv_lvl          = priv_lvl;
+    // assign tracer_if.debug_mode        = debug_mode;
+    // instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
-    program instr_tracer (
-            instruction_tracer_if tracer_if,
-            input logic [5:0] cluster_id_i,
-            input logic [3:0] core_id_i
-        );
+    // program instr_tracer (
+    //         instruction_tracer_if tracer_if,
+    //         input logic [5:0] cluster_id_i,
+    //         input logic [3:0] core_id_i
+    //     );
 
-        instruction_tracer it = new (tracer_if, 1'b0);
+    //     instruction_tracer it = new (tracer_if, 1'b0);
 
-        initial begin
-            #15ns;
-            it.create_file(cluster_id_i, core_id_i);
-            it.trace();
-        end
+    //     initial begin
+    //         #15ns;
+    //         it.create_file(cluster_id_i, core_id_i);
+    //         it.trace();
+    //     end
 
-        final begin
-            it.close();
-        end
-    endprogram
-    // mock tracer for Verilator, to be used with spike-dasm
-    `else
+    //     final begin
+    //         it.close();
+    //     end
+    // endprogram
+    // // mock tracer for Verilator, to be used with spike-dasm
+    // `else
 
-    int f;
-    logic [63:0] cycles;
+    // int f;
+    // logic [63:0] cycles;
 
-    initial begin
-        f = $fopen("trace_core_00_0.dasm", "w");
-    end
+    // initial begin
+    //     f = $fopen("trace_core_00_0.dasm", "w");
+    // end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            cycles <= 0;
-        end else begin
-            string mode = "";
-            if (debug_mode) mode = "D";
-            else begin
-                case (priv_lvl)
-                riscv::PRIV_LVL_M: mode = "M";
-                riscv::PRIV_LVL_S: mode = "S";
-                riscv::PRIV_LVL_U: mode = "U";
-                endcase
-            end
-            for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-                if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
-                    $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
-                end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
-                    if (commit_instr_id_commit[i].ex.cause == 2) begin
-                        $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
-                    end else begin
-                        if (debug_mode) begin
-                            $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
-                        end else begin
-                            $fwrite(f, "Exception Cause: %5d, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
-                        end
-                    end
-                end
-            end
-            cycles <= cycles + 1;
-        end
-    end
+    // always_ff @(posedge clk_i or negedge rst_ni) begin
+    //     if (~rst_ni) begin
+    //         cycles <= 0;
+    //     end else begin
+    //         string mode = "";
+    //         if (debug_mode) mode = "D";
+    //         else begin
+    //             case (priv_lvl)
+    //             riscv::PRIV_LVL_M: mode = "M";
+    //             riscv::PRIV_LVL_S: mode = "S";
+    //             riscv::PRIV_LVL_U: mode = "U";
+    //             endcase
+    //         end
+    //         for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+    //             if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
+    //                 $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+    //             end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
+    //                 if (commit_instr_id_commit[i].ex.cause == 2) begin
+    //                     $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
+    //                 end else begin
+    //                     if (debug_mode) begin
+    //                         $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+    //                     end else begin
+    //                         $fwrite(f, "Exception Cause: %5d, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
+    //                     end
+    //                 end
+    //             end
+    //         end
+    //         cycles <= cycles + 1;
+    //     end
+    // end
 
-    final begin
-        $fclose(f);
-    end
-    `endif
-    `endif
+    // final begin
+    //     $fclose(f);
+    // end
+    // `endif
+    // `endif
 endmodule // ariane
 

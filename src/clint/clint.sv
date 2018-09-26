@@ -146,12 +146,13 @@ module clint #(
     // 1. Put the RTC input through a classic two stage edge-triggered synchronizer to filter out any
     //    metastability effects (or at least make them unlikely :-))
     sync_wedge i_sync_edge (
+        .clk_i,
+        .rst_ni,
         .en_i      ( 1'b1           ),
         .serial_i  ( rtc_i          ),
         .r_edge_o  ( increase_timer ),
         .f_edge_o  (                ), // left open
-        .serial_o  (                ),
-        .*
+        .serial_o  (                )  // left open
     );
 
     // Registers

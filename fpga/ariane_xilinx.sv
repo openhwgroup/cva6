@@ -8,36 +8,39 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Top-level for ZCU102
+// Top-level for Genesys 2
 module ariane_xilinx (
-    input  logic        c0_sys_clk_p,    // Clock
-    input  logic        c0_sys_clk_n,    // Clock
-    input  logic        sys_rst,         // active high reset
-    output logic        c0_ddr4_act_n,
-    output logic [16:0] c0_ddr4_adr,
-    output logic [1:0]  c0_ddr4_ba,
-    output logic [0:0]  c0_ddr4_bg,
-    output logic [0:0]  c0_ddr4_cke,
-    output logic [0:0]  c0_ddr4_odt,
-    output logic [0:0]  c0_ddr4_cs_n,
-    output logic [0:0]  c0_ddr4_ck_t,
-    output logic [0:0]  c0_ddr4_ck_c,
-    output logic        c0_ddr4_reset_n,
-    inout  logic [1:0]  c0_ddr4_dm_dbi_n,
-    inout  logic [15:0] c0_ddr4_dq,
-    inout  logic [1:0]  c0_ddr4_dqs_c,
-    inout  logic [1:0]  c0_ddr4_dqs_t,
-    input  logic tck,
-    input  logic tms,
-    input  logic trst_n,
-    input  logic tdi,
-    output logic tdo,
-    input  logic rx,
-    output logic tx
+    input  logic           cpu_resetn,
+    input  logic           sys_clk_p,
+    input  logic           sys_clk_n,
+    inout  logic  [31:0]   ddr3_dq,
+    inout  logic  [3:0]    ddr3_dqs_n,
+    inout  logic  [3:0]    ddr3_dqs_p,
+    output logic  [14:0]   ddr3_addr,
+    output logic  [2:0]    ddr3_ba,
+    output logic           ddr3_ras_n,
+    output logic           ddr3_cas_n,
+    output logic           ddr3_we_n,
+    output logic           ddr3_reset_n,
+    output logic  [0:0]    ddr3_ck_p,
+    output logic  [0:0]    ddr3_ck_n,
+    output logic  [0:0]    ddr3_cke,
+    output logic  [0:0]    ddr3_cs_n,
+    output logic  [3:0]    ddr3_dm,
+    output logic  [0:0]    ddr3_odt,
+
+    input  logic           tck,
+    input  logic           tms,
+    input  logic           trst_n,
+    input  logic           tdi,
+    output logic           tdo,
+
+    input  logic           rx,
+    output logic           tx
 );
 
 localparam NBSlave = 4; // debug, Instruction fetch, data bypass, data
-
+localparam CacheStartAddr = (1 << 31);
 localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 2;
@@ -74,16 +77,15 @@ logic time_irq;
 logic ipi;
 
 logic clk;
-logic rst_n;
+logic ddr_sync_reset;
+logic ddr_clock_out;
+
+logic rst_n, rst;
+logic cpu_reset;
 
 // DDR
-logic c0_ddr4_ui_clk;
-logic c0_init_calib_complete; // left open
-logic c0_ddr4_ui_clk_sync_rst;
-logic addn_ui_clkout1;
-
 logic [3:0] s_axi_awid;
-logic [31:0] s_axi_awaddr;
+logic [63:0] s_axi_awaddr;
 logic [7:0] s_axi_awlen;
 logic [2:0] s_axi_awsize;
 logic [1:0] s_axi_awburst;
@@ -104,7 +106,7 @@ logic [1:0] s_axi_bresp;
 logic s_axi_bvalid;
 logic s_axi_bready;
 logic [3:0] s_axi_arid;
-logic [31:0] s_axi_araddr;
+logic [63:0] s_axi_araddr;
 logic [7:0] s_axi_arlen;
 logic [2:0] s_axi_arsize;
 logic [1:0] s_axi_arburst;
@@ -122,55 +124,47 @@ logic s_axi_rlast;
 logic s_axi_rvalid;
 logic s_axi_rready;
 
-logic [31:0] m_axi_awaddr;
-logic [7:0] m_axi_awlen;
-logic [2:0] m_axi_awsize;
-logic [1:0] m_axi_awburst;
-logic [0:0] m_axi_awlock;
-logic [3:0] m_axi_awcache;
-logic [2:0] m_axi_awprot;
-logic [3:0] m_axi_awregion;
-logic [3:0] m_axi_awqos;
-logic m_axi_awvalid;
-logic m_axi_awready;
-logic [127:0] m_axi_wdata;
-logic [15:0] m_axi_wstrb;
-logic m_axi_wlast;
-logic m_axi_wvalid;
-logic m_axi_wready;
-logic [1:0] m_axi_bresp;
-logic m_axi_bvalid;
-logic m_axi_bready;
-logic [31:0] m_axi_araddr;
-logic [7:0] m_axi_arlen;
-logic [2:0] m_axi_arsize;
-logic [1:0] m_axi_arburst;
-logic [0:0] m_axi_arlock;
-logic [3:0] m_axi_arcache;
-logic [2:0] m_axi_arprot;
-logic [3:0] m_axi_arregion;
-logic [3:0] m_axi_arqos;
-logic m_axi_arvalid;
-logic m_axi_arready;
-logic [127:0] m_axi_rdata;
-logic [1:0] m_axi_rresp;
-logic m_axi_rlast;
-logic m_axi_rvalid;
-logic m_axi_rready;
+// ROM
+logic                    rom_req;
+logic [AxiAddrWidth-1:0] rom_addr;
+logic [AxiDataWidth-1:0] rom_rdata;
 
-logic        debug_req_valid;
-logic        debug_req_ready;
-logic [6:0]  debug_req_bits_addr;
-logic [1:0]  debug_req_bits_op;
-logic [31:0] debug_req_bits_data;
-logic        debug_resp_valid;
-logic        debug_resp_ready;
-logic [1:0]  debug_resp_bits_resp;
-logic [31:0] debug_resp_bits_data;
+// Debug
+logic          debug_req_valid;
+logic          debug_req_ready;
+dm::dmi_req_t  debug_req;
+logic          debug_resp_valid;
+logic          debug_resp_ready;
+dm::dmi_resp_t debug_resp;
 
-assign clk = addn_ui_clkout1;
-assign rst_n = ~c0_ddr4_ui_clk_sync_rst;
-assign test_en = 1'b0;
+// UART
+logic [3:0]  uart_axi_lite_awaddr;
+logic        uart_axi_lite_awvalid;
+logic        uart_axi_lite_awready;
+logic [31:0] uart_axi_lite_wdata;
+logic [3:0]  uart_axi_lite_wstrb;
+logic        uart_axi_lite_wvalid;
+logic        uart_axi_lite_wready;
+logic [1:0]  uart_axi_lite_bresp;
+logic        uart_axi_lite_bvalid;
+logic        uart_axi_lite_bready;
+logic [3:0]  uart_axi_lite_araddr;
+logic        uart_axi_lite_arvalid;
+logic        uart_axi_lite_arready;
+logic [31:0] uart_axi_lite_rdata;
+logic [1:0]  uart_axi_lite_rresp;
+logic        uart_axi_lite_rvalid;
+logic        uart_axi_lite_rready;
+
+// IRQ
+logic [1:0] irq;
+
+// Assignments
+assign clk        = ddr_clock_out;
+assign cpu_reset  = ~cpu_resetn;
+assign rst_n      = ~ddr_sync_reset;
+assign rst        = ddr_sync_reset;
+assign test_en    = 1'b0;
 assign ndmreset_n = ~ndmreset ;
 
 // Slice the AXI Masters (slave ports on the XBar)
@@ -193,18 +187,18 @@ end
 // ---------------
 axi_node_intf_wrap #(
     // three ports from Ariane (instruction, data and bypass)
-    .NB_SLAVE       ( NBSlave          ),
-    .NB_MASTER      ( NBMaster         ), // debug unit, memory unit
-    .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
-    .AXI_DATA_WIDTH ( AxiDataWidth     ),
-    .AXI_USER_WIDTH ( AxiUserWidth     ),
-    .AXI_ID_WIDTH   ( AxiIdWidthMaster )
+    .NB_SLAVE       ( NBSlave                    ),
+    .NB_MASTER      ( ariane_soc::NB_PERIPHERALS ),
+    .AXI_ADDR_WIDTH ( AxiAddrWidth               ),
+    .AXI_DATA_WIDTH ( AxiDataWidth               ),
+    .AXI_USER_WIDTH ( AxiUserWidth               ),
+    .AXI_ID_WIDTH   ( AxiIdWidthMaster           )
 ) i_axi_xbar (
-    .clk          ( clk                                                                                              ),
-    .rst_n        ( ndmreset_n                                                                                       ),
-    .test_en_i    ( test_en                                                                                          ),
-    .slave        ( slave                                                                                            ),
-    .master       ( master                                                                                           ),
+    .clk          ( clk        ),
+    .rst_n        ( ndmreset_n ),
+    .test_en_i    ( test_en    ),
+    .slave        ( slave      ),
+    .master       ( master     ),
     .start_addr_i ({
         ariane_soc::DebugBase,
         ariane_soc::ROMBase,
@@ -222,9 +216,6 @@ axi_node_intf_wrap #(
         ariane_soc::DRAMBase  + ariane_soc::DRAMLength
     })
 );
-
-dm::dmi_req_t debug_req;;
-dm::dmi_resp_t debug_resp;
 
 // ---------------
 // Debug Module
@@ -282,19 +273,18 @@ ariane #(
     .AXI_ID_WIDTH     ( AxiIdWidthMaster ),
     .AXI_USER_WIDTH   ( AxiUserWidth     )
 ) i_ariane (
-    .clk_i                ( clk            ),
-    .rst_ni               ( ndmreset_n     ),
-    .boot_addr_i          ( RomBase        ), // start fetching from ROM
-    .core_id_i            ( '0             ),
-    .cluster_id_i         ( '0             ),
-    // TODO(zarubaf) Instantiate PLIC
-    .irq_i                ( '0             ),
-    .ipi_i                ( ipi            ),
-    .time_irq_i           ( time_irq       ),
-    .debug_req_i          ( debug_req_irq  ),
-    .data_if              ( slave_slice[2] ),
-    .bypass_if            ( slave_slice[1] ),
-    .instr_if             ( slave_slice[0] )
+    .clk_i                ( clk                 ),
+    .rst_ni               ( ndmreset_n          ),
+    .boot_addr_i          ( ariane_soc::ROMBase ), // start fetching from ROM
+    .core_id_i            ( '0                  ),
+    .cluster_id_i         ( '0                  ),
+    .irq_i                ( irq                 ),
+    .ipi_i                ( ipi                 ),
+    .time_irq_i           ( time_irq            ),
+    .debug_req_i          ( debug_req_irq       ),
+    .data_if              ( slave_slice[2]      ),
+    .bypass_if            ( slave_slice[1]      ),
+    .instr_if             ( slave_slice[0]      )
 );
 
 // ---------------
@@ -316,85 +306,8 @@ clint #(
 );
 
 // ---------------
-// PLIC
-// ---------------
-logic [ariane_soc::NumTargets-1:0] irqs;
-logic [ariane_soc::NumSources-1:0] irq_sources;
-
-REG_BUS #(
-    .ADDR_WIDTH ( AxiAddrWidth ),
-    .DATA_WIDTH ( AxiDataWidth )
-) reg_bus (clk_i);
-
-plic #(
-    .ADDR_WIDTH         ( AxiAddrWidth           ),
-    .DATA_WIDTH         ( AxiDataWidth           ),
-    .ID_BITWIDTH        ( 2                      ), // TODO (zarubaf): Find propper width
-    .PARAMETER_BITWIDTH ( 2                      ), // TODO (zarubaf): Find propper width
-    .NUM_TARGETS        ( ariane_soc::NumTargets ),
-    .NUM_SOURCES        ( ariane_soc::NumSources )
-) i_plic (
-    .clk_i           ( clk         ),
-    .rst_ni          ( ndmreset_n  ),
-    .irq_sources_i   ( irq_sources ),
-    .eip_targets_o   ( irqs        ),
-    .external_bus_io ( reg_bus     )
-);
-
-// ---------------
-// Peripheral
-// ---------------
-logic [3:0]  uart_axi_lite_awaddr;
-logic        uart_axi_lite_awvalid;
-logic        uart_axi_lite_awready;
-logic [31:0] uart_axi_lite_wdata;
-logic [3:0]  uart_axi_lite_wstrb;
-logic        uart_axi_lite_wvalid;
-logic        uart_axi_lite_wready;
-logic [1:0]  uart_axi_lite_bresp;
-logic        uart_axi_lite_bvalid;
-logic        uart_axi_lite_bready;
-logic [3:0]  uart_axi_lite_araddr;
-logic        uart_axi_lite_arvalid;
-logic        uart_axi_lite_arready;
-logic [31:0] uart_axi_lite_rdata;
-logic [1:0]  uart_axi_lite_rresp;
-logic        uart_axi_lite_rvalid;
-logic        uart_axi_lite_rready;
-
-
-axi_uartlite_0 i_axi_uart_lite (
-  .s_axi_aclk     ( clk                   ),
-  .s_axi_aresetn  ( ndmreset_n            ),
-  .interrupt      ( irq_sources[0]        ),
-  .s_axi_awaddr   ( uart_axi_lite_awaddr  ),
-  .s_axi_awvalid  ( uart_axi_lite_awvalid ),
-  .s_axi_awready  ( uart_axi_lite_awready ),
-  .s_axi_wdata    ( uart_axi_lite_wdata   ),
-  .s_axi_wstrb    ( uart_axi_lite_wstrb   ),
-  .s_axi_wvalid   ( uart_axi_lite_wvalid  ),
-  .s_axi_wready   ( uart_axi_lite_wready  ),
-  .s_axi_bresp    ( uart_axi_lite_bresp   ),
-  .s_axi_bvalid   ( uart_axi_lite_bvalid  ),
-  .s_axi_bready   ( uart_axi_lite_bready  ),
-  .s_axi_araddr   ( uart_axi_lite_araddr  ),
-  .s_axi_arvalid  ( uart_axi_lite_arvalid ),
-  .s_axi_arready  ( uart_axi_lite_arready ),
-  .s_axi_rdata    ( uart_axi_lite_rdata   ),
-  .s_axi_rresp    ( uart_axi_lite_rresp   ),
-  .s_axi_rvalid   ( uart_axi_lite_rvalid  ),
-  .s_axi_rready   ( uart_axi_lite_rready  ),
-  .rx,
-  .tx
-);
-
-// ---------------
 // ROM
 // ---------------
-logic                    rom_req;
-logic [AxiAddrWidth-1:0] rom_addr;
-logic [AxiDataWidth-1:0] rom_rdata;
-
 axi2mem #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
@@ -418,6 +331,34 @@ bootrom i_bootrom (
     .addr_i     ( rom_addr  ),
     .rdata_o    ( rom_rdata )
 );
+
+// ---------------
+// Peripherals
+// ---------------
+ariane_peripherals #(
+  .AxiAddrWidth ( AxiAddrWidth ),
+  .AxiDataWidth ( AxiDataWidth )
+) i_ariane_peripherals (
+  .clk_i  ( clk                      ),
+  .rst_ni ( ndmreset_n               ),
+  .plic   ( master[ariane_soc::PLIC] ),
+  .uart   ( master[ariane_soc::UART] ),
+  .irq_o  ( irq                      ),
+  .cts_ni ( 1'b0                     ),
+  .dcd_ni ( 1'b0                     ),
+  .dsr_ni ( 1'b0                     ),
+  .dtr_no (                          ),
+  .ri_ni  ( 1'b0                     ),
+  .rts_no (                          ),
+  .rx_i   ( rx                       ),
+  .tx_o   ( tx                       )
+);
+
+// ---------------
+// DDR
+// ---------------
+assign master[ariane_soc::DRAM].r_user = '0;
+assign master[ariane_soc::DRAM].b_user = '0;
 
 // DDR 4 Subsystem
 axi_clock_converter_0 axi_clock_converter (
@@ -445,7 +386,7 @@ axi_clock_converter_0 axi_clock_converter (
   .s_axi_bvalid(master[ariane_soc::DRAM].b_valid),
   .s_axi_bready(master[ariane_soc::DRAM].b_ready),
   .s_axi_arid(master[ariane_soc::DRAM].ar_id),
-  .s_axi_araddr(master[ariane_soc::DRAM].ar_addr[31:0]),
+  .s_axi_araddr(master[ariane_soc::DRAM].ar_addr),
   .s_axi_arlen(master[ariane_soc::DRAM].ar_len),
   .s_axi_arsize(master[ariane_soc::DRAM].ar_size),
   .s_axi_arburst(master[ariane_soc::DRAM].ar_burst),
@@ -463,7 +404,7 @@ axi_clock_converter_0 axi_clock_converter (
   .s_axi_rvalid(master[ariane_soc::DRAM].r_valid),
   .s_axi_rready(master[ariane_soc::DRAM].r_ready),
   // to size converter
-  .m_axi_aclk(c0_ddr4_ui_clk),
+  .m_axi_aclk(ddr_clock_out),
   .m_axi_aresetn(ndmreset_n),
   .m_axi_awid(s_axi_awid),
   .m_axi_awaddr(s_axi_awaddr),
@@ -506,18 +447,42 @@ axi_clock_converter_0 axi_clock_converter (
   .m_axi_rready(s_axi_rready)
 );
 
-axi_dwidth_converter_0 axi_size_converter (
-    .s_axi_aclk(c0_ddr4_ui_clk),
-    .s_axi_aresetn(ndmreset_n),
+mig_7series_0 i_ddr (
+    .sys_clk_p,
+    .sys_clk_n,
+    .ddr3_dq,
+    .ddr3_dqs_n,
+    .ddr3_dqs_p,
+    .ddr3_addr,
+    .ddr3_ba,
+    .ddr3_ras_n,
+    .ddr3_cas_n,
+    .ddr3_we_n,
+    .ddr3_reset_n,
+    .ddr3_ck_p,
+    .ddr3_ck_n,
+    .ddr3_cke,
+    .ddr3_cs_n,
+    .ddr3_dm,
+    .ddr3_odt,
+    .mmcm_locked     (                ), // keep open
+    .app_sr_req      ( '0             ),
+    .app_ref_req     ( '0             ),
+    .app_zq_req      ( '0             ),
+    .app_sr_active   (                ), // keep open
+    .app_ref_ack     (                ), // keep open
+    .app_zq_ack      (                ), // keep open
+    .ui_clk          ( ddr_clock_out  ),
+    .ui_clk_sync_rst ( ddr_sync_reset ),
+    .aresetn         ( ndmreset_n     ),
     .s_axi_awid,
-    .s_axi_awaddr,
+    .s_axi_awaddr(s_axi_awaddr[29:0]),
     .s_axi_awlen,
     .s_axi_awsize,
     .s_axi_awburst,
     .s_axi_awlock,
     .s_axi_awcache,
     .s_axi_awprot,
-    .s_axi_awregion,
     .s_axi_awqos,
     .s_axi_awvalid,
     .s_axi_awready,
@@ -526,127 +491,30 @@ axi_dwidth_converter_0 axi_size_converter (
     .s_axi_wlast,
     .s_axi_wvalid,
     .s_axi_wready,
+    .s_axi_bready,
     .s_axi_bid,
     .s_axi_bresp,
     .s_axi_bvalid,
-    .s_axi_bready,
     .s_axi_arid,
-    .s_axi_araddr,
+    .s_axi_araddr(s_axi_araddr[29:0]),
     .s_axi_arlen,
     .s_axi_arsize,
     .s_axi_arburst,
     .s_axi_arlock,
     .s_axi_arcache,
     .s_axi_arprot,
-    .s_axi_arregion,
     .s_axi_arqos,
     .s_axi_arvalid,
     .s_axi_arready,
+    .s_axi_rready,
     .s_axi_rid,
     .s_axi_rdata,
     .s_axi_rresp,
     .s_axi_rlast,
     .s_axi_rvalid,
-    .s_axi_rready,
-    .m_axi_awaddr,
-    .m_axi_awlen,
-    .m_axi_awsize,
-    .m_axi_awburst,
-    .m_axi_awlock,
-    .m_axi_awcache,
-    .m_axi_awprot,
-    .m_axi_awregion,
-    .m_axi_awqos,
-    .m_axi_awvalid,
-    .m_axi_awready,
-    .m_axi_wdata,
-    .m_axi_wstrb,
-    .m_axi_wlast,
-    .m_axi_wvalid,
-    .m_axi_wready,
-    .m_axi_bresp,
-    .m_axi_bvalid,
-    .m_axi_bready,
-    .m_axi_araddr,
-    .m_axi_arlen,
-    .m_axi_arsize,
-    .m_axi_arburst,
-    .m_axi_arlock,
-    .m_axi_arcache,
-    .m_axi_arprot,
-    .m_axi_arregion,
-    .m_axi_arqos,
-    .m_axi_arvalid,
-    .m_axi_arready,
-    .m_axi_rdata,
-    .m_axi_rresp,
-    .m_axi_rlast,
-    .m_axi_rvalid,
-    .m_axi_rready
-);
-
-ddr4_0 ddr_i (
-    .sys_rst, // input
-    .c0_sys_clk_p,
-    .c0_sys_clk_n,
-    .c0_ddr4_act_n,
-    .c0_ddr4_adr,
-    .c0_ddr4_ba,
-    .c0_ddr4_bg,
-    .c0_ddr4_cke,
-    .c0_ddr4_odt,
-    .c0_ddr4_cs_n,
-    .c0_ddr4_ck_t,
-    .c0_ddr4_ck_c,
-    .c0_ddr4_reset_n,
-    .c0_ddr4_dm_dbi_n,
-    .c0_ddr4_dq,
-    .c0_ddr4_dqs_c,
-    .c0_ddr4_dqs_t,
-    .c0_init_calib_complete,
-    .c0_ddr4_ui_clk, // 1/4 of PHY clock, 300/4 = 75 MHz
-    .c0_ddr4_ui_clk_sync_rst,
-    .addn_ui_clkout1,
-    .dbg_clk(), // output
-    .c0_ddr4_aresetn(ndmreset_n),
-    .c0_ddr4_s_axi_awid('0),
-    .c0_ddr4_s_axi_awaddr(m_axi_awaddr),
-    .c0_ddr4_s_axi_awlen(m_axi_awlen),
-    .c0_ddr4_s_axi_awsize(m_axi_awsize),
-    .c0_ddr4_s_axi_awburst(m_axi_awburst),
-    .c0_ddr4_s_axi_awlock(m_axi_awlock),
-    .c0_ddr4_s_axi_awcache(m_axi_awcache),
-    .c0_ddr4_s_axi_awprot(m_axi_awprot),
-    .c0_ddr4_s_axi_awqos(m_axi_awqos),
-    .c0_ddr4_s_axi_awvalid(m_axi_awvalid),
-    .c0_ddr4_s_axi_awready(m_axi_awready),
-    .c0_ddr4_s_axi_wdata(m_axi_wdata),
-    .c0_ddr4_s_axi_wstrb(m_axi_wstrb),
-    .c0_ddr4_s_axi_wlast(m_axi_wlast),
-    .c0_ddr4_s_axi_wvalid(m_axi_wvalid),
-    .c0_ddr4_s_axi_wready(m_axi_wready),
-    .c0_ddr4_s_axi_bready(m_axi_bready),
-    .c0_ddr4_s_axi_bid(),
-    .c0_ddr4_s_axi_bresp(m_axi_bresp),
-    .c0_ddr4_s_axi_bvalid(m_axi_bvalid),
-    .c0_ddr4_s_axi_arid('0),
-    .c0_ddr4_s_axi_araddr(m_axi_araddr),
-    .c0_ddr4_s_axi_arlen(m_axi_arlen),
-    .c0_ddr4_s_axi_arsize(m_axi_arsize),
-    .c0_ddr4_s_axi_arburst(m_axi_arburst),
-    .c0_ddr4_s_axi_arlock(m_axi_arlock),
-    .c0_ddr4_s_axi_arcache(m_axi_arcache),
-    .c0_ddr4_s_axi_arprot(m_axi_arprot),
-    .c0_ddr4_s_axi_arqos(m_axi_arqos),
-    .c0_ddr4_s_axi_arvalid(m_axi_arvalid),
-    .c0_ddr4_s_axi_arready(m_axi_arready),
-    .c0_ddr4_s_axi_rready(m_axi_rready),
-    .c0_ddr4_s_axi_rid(),
-    .c0_ddr4_s_axi_rdata(m_axi_rdata),
-    .c0_ddr4_s_axi_rresp(m_axi_rresp),
-    .c0_ddr4_s_axi_rlast(m_axi_rlast),
-    .c0_ddr4_s_axi_rvalid(m_axi_rvalid),
-    .dbg_bus()
+    .init_calib_complete (           ), // keep open
+    .device_temp         (           ), // keep open
+    .sys_rst             ( cpu_reset )
 );
 
 endmodule
