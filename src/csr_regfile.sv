@@ -105,9 +105,9 @@ module csr_regfile #(
     riscv::status_rv64_t  mstatus_q,  mstatus_d;
     riscv::satp_t         satp_q, satp_d;
     riscv::dcsr_t         dcsr_q,     dcsr_d;
-    
+
     logic        mtvec_rst_load_q;// used to determine whether we came out of reset
-    
+
     logic [63:0] dpc_q,       dpc_d;
     logic [63:0] dscratch0_q, dscratch0_d;
     logic [63:0] mtvec_q,     mtvec_d;
@@ -245,16 +245,16 @@ module csr_regfile #(
         dpc_d                   = dpc_q;
         dscratch0_d             = dscratch0_q;
         mstatus_d               = mstatus_q;
-        
+
         // check whether we come out of reset
-        // this is a workaround. some tools have issues 
-        // having boot_addr_i in the asynchronous 
+        // this is a workaround. some tools have issues
+        // having boot_addr_i in the asynchronous
         // reset assignment to mtvec_d, even though
         // boot_addr_i will be assigned a constant
-        // on the top-level. 
+        // on the top-level.
         if (mtvec_rst_load_q) begin
             mtvec_d             = boot_addr_i + 'h40;
-        end else begin    
+        end else begin
             mtvec_d             = mtvec_q;
         end
 
@@ -537,8 +537,21 @@ module csr_regfile #(
             end
 
             // single step enable and we just retired an instruction
-            if (dcsr_q.step && (|commit_ack_i)) begin
-                dpc_d = next_pc;
+            if (dcsr_q.step && commit_ack_i[0]) begin
+                // valid CTRL flow change
+                if (commit_instr_i[0].fu == CTRL_FLOW) begin
+                    // we saved the correct target address during execute
+                    dpc_d = commit_instr_i[0].bp.predict_address;
+                // exception valid
+                end else if (ex_i.valid) begin
+                    dpc_d = trap_vector_base_o;
+                // return from environment
+                end else if (eret_o) begin
+                    dpc_d = epc_o;
+                // consecutive PC
+                end else begin
+                    dpc_d = commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4);
+                end
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
                 dcsr_d.cause = dm::CauseSingleStep;
