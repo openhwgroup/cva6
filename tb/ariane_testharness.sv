@@ -48,8 +48,6 @@ module ariane_testharness #(
     logic        debug_req_ready;
     logic        debug_resp_valid;
     logic        debug_resp_ready;
-    logic [1:0]  debug_resp_bits_resp;
-    logic [31:0] debug_resp_bits_data;
 
     logic        jtag_req_valid;
     logic [6:0]  jtag_req_bits_addr;
@@ -59,11 +57,14 @@ module ariane_testharness #(
     logic        jtag_resp_valid;
 
     logic        dmi_req_valid;
-    logic [6:0]  dmi_req_bits_addr;
-    logic [1:0]  dmi_req_bits_op;
-    logic [31:0] dmi_req_bits_data;
     logic        dmi_resp_ready;
     logic        dmi_resp_valid;
+
+    dm::dmi_req_t  jtag_dmi_req;
+    dm::dmi_req_t  dmi_req;
+
+    dm::dmi_req_t  debug_req;
+    dm::dmi_resp_t debug_resp;
 
     assign test_en = 1'b0;
     assign ndmreset_n = ~ndmreset ;
@@ -94,12 +95,6 @@ module ariane_testharness #(
     initial begin
         if (!$value$plusargs("jtag_rbb_enable=%b", jtag_enable)) jtag_enable = 'h0;
     end
-
-    dm::dmi_req_t  jtag_dmi_req;
-    dm::dmi_req_t  dmi_req;
-
-    dm::dmi_req_t  debug_req;
-    dm::dmi_resp_t debug_resp;
 
     // debug if MUX
     assign debug_req_valid     = (jtag_enable[0]) ? jtag_req_valid     : dmi_req_valid;

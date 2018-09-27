@@ -36,7 +36,9 @@ module ariane_xilinx (
     output logic           tdo,
 
     input  logic           rx,
-    output logic           tx
+    output logic           tx,
+
+    output logic [7:0]     led
 );
 
 localparam NBSlave = 4; // debug, Instruction fetch, data bypass, data
@@ -137,6 +139,8 @@ logic          debug_resp_valid;
 logic          debug_resp_ready;
 dm::dmi_resp_t debug_resp;
 
+logic dmactive;
+
 // UART
 logic [3:0]  uart_axi_lite_awaddr;
 logic        uart_axi_lite_awvalid;
@@ -160,7 +164,6 @@ logic        uart_axi_lite_rready;
 logic [1:0] irq;
 
 // Assignments
-assign clk        = ddr_clock_out;
 assign cpu_reset  = ~cpu_resetn;
 assign rst_n      = ~ddr_sync_reset;
 assign rst        = ddr_sync_reset;
@@ -251,7 +254,7 @@ dm_top #(
     .rst_ni               ( rst_n                      ), // PoR
     .testmode_i           ( test_en                    ),
     .ndmreset_o           ( ndmreset                   ),
-    .dmactive_o           (                            ), // active debug session
+    .dmactive_o           ( dmactive                   ), // active debug session
     .debug_req_o          ( debug_req_irq              ),
     .unavailable_i        ( '0                         ),
     .axi_master           ( slave_slice[3]             ),
@@ -344,14 +347,22 @@ ariane_peripherals #(
   .plic   ( master[ariane_soc::PLIC] ),
   .uart   ( master[ariane_soc::UART] ),
   .irq_o  ( irq                      ),
-  .cts_ni ( 1'b0                     ),
-  .dcd_ni ( 1'b0                     ),
-  .dsr_ni ( 1'b0                     ),
-  .dtr_no (                          ),
-  .ri_ni  ( 1'b0                     ),
-  .rts_no (                          ),
   .rx_i   ( rx                       ),
   .tx_o   ( tx                       )
+);
+
+ariane_leds i_ariane_leds (
+  .clk_i(clk),
+  .rst_ni(rst_n),
+  .led_o(led),
+  .dmactive_i(dmactive)
+);
+
+clk_wiz_0 i_clk_gen (
+  .clk_out1(clk),
+  .reset(cpu_reset),
+  .locked(), // keep open
+  .clk_in1(ddr_clock_out)
 );
 
 // ---------------
@@ -476,7 +487,7 @@ mig_7series_0 i_ddr (
     .ui_clk_sync_rst ( ddr_sync_reset ),
     .aresetn         ( ndmreset_n     ),
     .s_axi_awid,
-    .s_axi_awaddr(s_axi_awaddr[29:0]),
+    .s_axi_awaddr    ( s_axi_awaddr[29:0] ),
     .s_axi_awlen,
     .s_axi_awsize,
     .s_axi_awburst,
@@ -496,7 +507,7 @@ mig_7series_0 i_ddr (
     .s_axi_bresp,
     .s_axi_bvalid,
     .s_axi_arid,
-    .s_axi_araddr(s_axi_araddr[29:0]),
+    .s_axi_araddr     ( s_axi_araddr[29:0] ),
     .s_axi_arlen,
     .s_axi_arsize,
     .s_axi_arburst,
@@ -512,9 +523,9 @@ mig_7series_0 i_ddr (
     .s_axi_rresp,
     .s_axi_rlast,
     .s_axi_rvalid,
-    .init_calib_complete (           ), // keep open
-    .device_temp         (           ), // keep open
-    .sys_rst             ( cpu_reset )
+    .init_calib_complete (            ), // keep open
+    .device_temp         (            ), // keep open
+    .sys_rst             ( cpu_resetn )
 );
 
 endmodule

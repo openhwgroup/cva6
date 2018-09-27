@@ -76,6 +76,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
         src/common_cells/src/lfsr_8bit.sv                              \
+        src/common_cells/src/rstgen_bypass.sv 						\
         tb/ariane_testharness.sv                                       \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv

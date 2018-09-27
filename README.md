@@ -83,11 +83,18 @@ $ make simc riscv-test-dir=$RISCV/riscv64-unknown-elf/bin riscv-test=pk target-o
 
 ## FPGA Emulation
 
-We provide support for the Genesys 2 board.
+We provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual).
 
-During Synthesis set the following tick defines:
+During Synthesis set the following tick defines need to be set:
 ```
 FPGA_TARGET_XILINX
+```
+
+TBD: FPGA flow
+
+Default baudrate is `9600`:
+```
+$ screen /dev/ttyUSB0 9600
 ```
 
 ### Debugging

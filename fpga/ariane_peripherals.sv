@@ -18,13 +18,7 @@ module ariane_peripherals #(
     AXI_BUS.in         plic,
     AXI_BUS.in         uart,
     output logic [1:0] irq_o,
-    // Modem
-    input  logic cts_ni, // Clear to send (active-Low).
-    input  logic dcd_ni, // Data carrier detect (active-Low).
-    input  logic dsr_ni, // Data set ready (active-Low).
-    output logic dtr_no, // Data terminal ready (active-Low).
-    input  logic ri_ni,  // Ring indicator (active-Low).
-    output logic rts_no, // Request to send (active-Low).
+    // UART
     input  logic rx_i,
     output logic tx_o
 );
@@ -277,42 +271,29 @@ module ariane_peripherals #(
         .m_axi_rready   ( m_axi_uart_rready   )
     );
 
-    axi_uart16550_0 i_axi_uart (
-        .s_axi_aclk    ( clk_i  ),
-        .s_axi_aresetn ( rst_ni ),
-        .ip2intc_irpt  ( irq_sources[0] ),
-        .freeze        ( 1'b0 ),
-        .s_axi_awaddr  ( m_axi_uart_awaddr[12:0] ),
-        .s_axi_awvalid ( m_axi_uart_awvalid ),
-        .s_axi_awready ( m_axi_uart_awready ),
-        .s_axi_wdata   ( m_axi_uart_wdata   ),
-        .s_axi_wstrb   ( m_axi_uart_wstrb   ),
-        .s_axi_wvalid  ( m_axi_uart_wvalid  ),
-        .s_axi_wready  ( m_axi_uart_wready  ),
-        .s_axi_bresp   ( m_axi_uart_bresp   ),
-        .s_axi_bvalid  ( m_axi_uart_bvalid  ),
-        .s_axi_bready  ( m_axi_uart_bready  ),
-        .s_axi_araddr  ( m_axi_uart_araddr[12:0]  ),
-        .s_axi_arvalid ( m_axi_uart_arvalid ),
-        .s_axi_arready ( m_axi_uart_arready ),
-        .s_axi_rdata   ( m_axi_uart_rdata   ),
-        .s_axi_rresp   ( m_axi_uart_rresp   ),
-        .s_axi_rvalid  ( m_axi_uart_rvalid  ),
-        .s_axi_rready  ( m_axi_uart_rready  ),
-        .baudoutn (        ), // keep open
-        .ctsn     ( cts_ni ),
-        .dcdn     ( dcd_ni ),
-        .ddis     (        ), // DMA signals keep open
-        .dsrn     ( dsr_ni ),
-        .dtrn     ( dtr_no ),
-        .out1n    (        ), // DMA signals keep open
-        .out2n    (        ), // DMA signals keep open
-        .rin      ( ri_ni  ),
-        .rtsn     ( rts_no ),
-        .rxrdyn   (        ), // DMA signals keep open
-        .sin      ( rx_i   ),
-        .sout     ( tx_o   ),
-        .txrdyn   (        ) // DMA signals keep open
+    axi_uartlite_1 i_axi_uart (
+        .s_axi_aclk    ( clk_i                  ),
+        .s_axi_aresetn ( rst_ni                 ),
+        .interrupt     ( irq_sources[0]         ),
+        .s_axi_awaddr  ( m_axi_uart_awaddr[3:0] ),
+        .s_axi_awvalid ( m_axi_uart_awvalid     ),
+        .s_axi_awready ( m_axi_uart_awready     ),
+        .s_axi_wdata   ( m_axi_uart_wdata       ),
+        .s_axi_wstrb   ( m_axi_uart_wstrb       ),
+        .s_axi_wvalid  ( m_axi_uart_wvalid      ),
+        .s_axi_wready  ( m_axi_uart_wready      ),
+        .s_axi_bresp   ( m_axi_uart_bresp       ),
+        .s_axi_bvalid  ( m_axi_uart_bvalid      ),
+        .s_axi_bready  ( m_axi_uart_bready      ),
+        .s_axi_araddr  ( m_axi_uart_araddr[3:0] ),
+        .s_axi_arvalid ( m_axi_uart_arvalid     ),
+        .s_axi_arready ( m_axi_uart_arready     ),
+        .s_axi_rdata   ( m_axi_uart_rdata       ),
+        .s_axi_rresp   ( m_axi_uart_rresp       ),
+        .s_axi_rvalid  ( m_axi_uart_rvalid      ),
+        .s_axi_rready  ( m_axi_uart_rready      ),
+        .rx            ( rx_i                   ),
+        .tx            ( tx_o                   )
     );
 
 
