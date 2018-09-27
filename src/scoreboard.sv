@@ -129,9 +129,7 @@ module scoreboard #(
                 mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
                 mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
                 // save the target address of a branch (needed for debug in commit stage)
-                if (resolved_branch_i.valid) begin
-                    mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
-                end
+                mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
                 // write the exception back if it is valid
                 if (ex_i[i].valid)
                     mem_n[trans_id_i[i]].sbe.ex = ex_i[i];

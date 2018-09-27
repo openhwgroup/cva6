@@ -619,9 +619,21 @@ module csr_regfile #(
             end
 
             // single step enable and we just retired an instruction
-            if (dcsr_q.step && (|commit_ack_i)) begin
-                // we saved the correct target address during execute
-                dpc_d = commit_instr_i[0].bp.predict_address;
+            if (dcsr_q.step && commit_ack_i[0]) begin
+                // valid CTRL flow change
+                if (commit_instr_i[0].fu == CTRL_FLOW) begin
+                    // we saved the correct target address during execute
+                    dpc_d = commit_instr_i[0].bp.predict_address;
+                // exception valid
+                end else if (ex_i.valid) begin
+                    dpc_d = trap_vector_base_o;
+                // return from environment
+                end else if (eret_o) begin
+                    dpc_d = epc_o;
+                // consecutive PC
+                end else begin
+                    dpc_d = commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4);
+                end
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
                 dcsr_d.cause = dm::CauseSingleStep;
