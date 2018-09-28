@@ -168,6 +168,8 @@ module clint #(
         end
     end
 
+    assign ipi_o = msip_q;
+
     // -------------
     // Assertions
     // --------------
