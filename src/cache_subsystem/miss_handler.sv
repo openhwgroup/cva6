@@ -152,7 +152,18 @@ module miss_handler #(
         case (state_q)
 
             IDLE: begin
-
+                // lowest priority are AMOs, wait until everything else is served before going for the AMOs
+                if (amo_req_i.req && !busy_i) begin
+                    // 1. Flush the cache
+                    if (!serve_amo_q) begin
+                        state_d = FLUSH_REQ_STATUS;
+                        serve_amo_d = 1'b1;
+                    // 2. Do the AMO
+                    end else begin
+                        state_d = AMO_LOAD;
+                        serve_amo_d = 1'b0;
+                    end
+                end
                 // check if we want to flush and can flush e.g.: we are not busy anymore
                 // TODO: Check that the busy flag is indeed needed
                 if (flush_i && !busy_i) begin
@@ -165,6 +176,8 @@ module miss_handler #(
                     // here comes the refill portion of code
                     if (miss_req_valid[i] && !miss_req_bypass[i]) begin
                         state_d      = MISS;
+                        // we are taking another request so don't take the AMO
+                        serve_amo_d  = 1'b0;
                         // save to MSHR
                         mshr_d.valid = 1'b1;
                         mshr_d.we    = miss_req_we[i];
