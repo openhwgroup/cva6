@@ -62,7 +62,4 @@
       clock = <50000000>;
     };
   };
-  htif {
-    compatible = "ucb,htif0";
-  };
 };

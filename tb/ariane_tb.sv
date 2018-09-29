@@ -19,6 +19,12 @@ import uvm_pkg::*;
 
 `include "uvm_macros.svh"
 
+`define MAIN_MEM(P) dut.i_sram.genblk1[0].i_ram.Mem_DP[(``P``)]
+
+import "DPI-C" function read_elf(input string filename);
+import "DPI-C" function byte get_section(output longint address, output longint len);
+import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
+
 module ariane_tb;
 
     // static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
@@ -27,6 +33,7 @@ module ariane_tb;
     // toggle with half the clock period
     localparam int unsigned RTC_CLOCK_PERIOD = CLOCK_PERIOD/2;
 
+    localparam NUM_WORDS = 2**25;
     logic clk_i;
     logic rst_ni;
     logic rtc_i;
@@ -36,7 +43,9 @@ module ariane_tb;
 
     logic [31:0] exit_o;
 
-    ariane_testharness dut (
+    ariane_testharness #(
+        .NUM_WORDS ( NUM_WORDS )
+    ) dut (
         .clk_i,
         .rst_ni,
         .rtc_i,
@@ -81,6 +90,41 @@ module ariane_tb;
 
             $finish();
         end
+    end
+
+    initial begin
+        automatic string BINARY = "/scratch/zarubaf/ariane/fpga/bbl";
+        automatic logic [7:0][7:0] mem_row;
+        longint address, len;
+        byte buffer[];
+        `uvm_info( "Core Test", "Zeroing memory", UVM_LOW)
+
+        // avoid X pesimism
+        for (int i = 0; i < NUM_WORDS; i++) begin
+            `MAIN_MEM(i) = '0;
+        end
+
+        `uvm_info( "Core Test", $sformatf("Loading ELF: %s", BINARY), UVM_LOW)
+
+        void'(read_elf(BINARY));
+
+        // while there are more sections to process
+        while (get_section(address, len)) begin
+            `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
+            buffer = new [len];
+            void'(read_section(address, buffer));
+            // preload memories
+            // 64-bit
+            for (int i = 0; i < buffer.size()/8; i++) begin
+                mem_row = '0;
+                for (int j = 0; j < 8; j++) begin
+                    mem_row[j] = buffer[i*8 + j];
+                end
+
+                `MAIN_MEM((address[28:0] >> 3) + i) = mem_row;
+            end
+        end
+
     end
 
 endmodule

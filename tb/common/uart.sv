@@ -13,17 +13,14 @@
 // Description: This module takes data over UART and prints them to the console
 //              A string is printed to the console as soon as a '\n' character is found
 
-interface uart_bus
-  #(
+interface uart_bus #(
     parameter BAUD_RATE = 115200,
     parameter PARITY_EN = 0
-    )
-  (
+)(
     input  logic rx,
     output logic tx,
-
     input  logic rx_en
-  );
+);
 
   localparam BIT_PERIOD = (1000000000/BAUD_RATE*1000);
 

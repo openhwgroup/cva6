@@ -14,18 +14,18 @@
 //              Instantiates an AXI-Bus and memories
 
 module ariane_testharness #(
-        parameter logic [63:0] CACHE_START_ADDR  = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
-        parameter int unsigned AXI_ID_WIDTH      = 10,
-        parameter int unsigned AXI_USER_WIDTH    = 1,
-        parameter int unsigned AXI_ADDRESS_WIDTH = 64,
-        parameter int unsigned AXI_DATA_WIDTH    = 64,
-        parameter int unsigned NUM_WORDS         = 2**24          // memory size
-    )(
-        input  logic                           clk_i,
-        input  logic                           rtc_i,
-        input  logic                           rst_ni,
-        output logic [31:0]                    exit_o
-    );
+    parameter logic [63:0] CACHE_START_ADDR  = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
+    parameter int unsigned AXI_ID_WIDTH      = 10,
+    parameter int unsigned AXI_USER_WIDTH    = 1,
+    parameter int unsigned AXI_ADDRESS_WIDTH = 64,
+    parameter int unsigned AXI_DATA_WIDTH    = 64,
+    parameter int unsigned NUM_WORDS         = 2**25          // memory size
+)(
+    input  logic                           clk_i,
+    input  logic                           rtc_i,
+    input  logic                           rst_ni,
+    output logic [31:0]                    exit_o
+);
 
     // disable test-enable
     logic        test_en;
@@ -296,6 +296,16 @@ module ariane_testharness #(
     // ---------------
     logic ipi;
     logic timer_irq;
+    logic rtc;
+
+    // divide clock by two
+    always_ff @(posedge clk_i or negedge ndmreset_n) begin
+      if (~ndmreset_n) begin
+        rtc <= 0;
+      end else begin
+        rtc <= rtc ^ 1'b1;
+      end
+    end
 
     clint #(
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
@@ -304,9 +314,9 @@ module ariane_testharness #(
         .NR_CORES       ( 1                   )
     ) i_clint (
         .clk_i       ( clk_i                     ),
-        .rst_ni      ( rst_ni                    ),
+        .rst_ni      ( ndmreset_n                ),
         .slave       ( master[ariane_soc::CLINT] ),
-        .rtc_i,
+        .rtc_i       ( rtc                       ),
         .timer_irq_o ( timer_irq                 ),
         .ipi_o       ( ipi                       )
     );
@@ -317,10 +327,33 @@ module ariane_testharness #(
     logic [ariane_soc::NumTargets-1:0] irqs;
     logic [ariane_soc::NumSources-1:0] irq_sources;
 
+    AXI_LITE #(
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH )
+    ) axi_lite_plic ();
+
     REG_BUS #(
         .ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
         .DATA_WIDTH ( AXI_DATA_WIDTH    )
     ) reg_bus (clk_i);
+
+    axi_to_axi_lite i_axi_to_axi_lite_eth (
+      .clk_i,
+      .rst_ni,
+      .testmode_i ( 1'b0                     ),
+      .in         ( master[ariane_soc::PLIC] ),
+      .out        ( axi_lite_plic            )
+    );
+
+    axi_lite_to_reg #(
+        .ADDR_WIDTH ( AXI_ADDRESS_WIDTH  ),
+        .DATA_WIDTH ( AXI_DATA_WIDTH  )
+    ) i_axi_lite_to_reg (
+        .clk_i,
+        .rst_ni,
+        .axi_i      ( axi_lite_plic ), // AXI Lite
+        .reg_o      ( reg_bus       )
+    );
 
     plic #(
         .ADDR_WIDTH         ( AXI_ADDRESS_WIDTH      ),
@@ -340,14 +373,9 @@ module ariane_testharness #(
     // ---------------
     // Peripheral
     // ---------------
-
+    mock_uartlite i_mock_uartlite (.clk_i(clk_i), .rst_ni(rst_ni), .slave(master[ariane_soc::UART]));
     // tie-off uart here
     assign irq_sources = '0;
-    assign master[ariane_soc::UART].aw_ready = 1'b1;
-    assign master[ariane_soc::UART].ar_ready = 1'b1;
-    assign master[ariane_soc::UART].w_ready  = 1'b1;
-    assign master[ariane_soc::UART].b_valid  = 1'b0;
-    assign master[ariane_soc::UART].r_valid  = 1'b0;
 
     // ---------------
     // Core

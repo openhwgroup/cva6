@@ -34,11 +34,11 @@ package ariane_soc;
         DRAMBase  = 64'h8000_0000
     } soc_bus_start_t;
 
-    localparam DebugLength = 64'h1000;
-    localparam ROMLength   = 64'h1000;
-    localparam CLINTLength = 64'hC0000;
-    localparam PLICLength  = 64'h4000000;
-    localparam UARTLength  = 64'h10000;
-    localparam DRAMLength  = 2**24;
-
+    localparam logic[63:0] DebugLength = 64'h1000;
+    localparam logic[63:0] ROMLength   = 64'h1000;
+    localparam logic[63:0] CLINTLength = 64'hC0000;
+    // TODO(zarubaf): Put PLIC back 0x4000000
+    localparam logic[63:0] PLICLength  = 64'h40_0000;
+    localparam logic[63:0] UARTLength  = 64'h10000;
+    localparam logic[63:0] DRAMLength  = 64'h4000000;
 endpackage

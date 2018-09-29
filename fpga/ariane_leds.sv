@@ -13,6 +13,8 @@ module ariane_leds (
     input  logic       clk_i,    // Clock
     input  logic       rst_ni,  // Asynchronous reset active low
     output logic [7:0] led_o,
+    input logic [3:0]  pc_asserted_i,
+    input logic [1:0]  commit_valid_i,
     input  logic       dmactive_i
 );
 
@@ -21,11 +23,12 @@ module ariane_leds (
     always_comb begin
         cnt_d = cnt_q;
         led_o = '0;
-        // hearbeat
-        led_o[0] = cnt_q[18];
-        // debugging active
-        led_o[1] = dmactive_i;
-        led_o[7] = 1'b1;
+        led_o[0] = pc_asserted_i[0];
+        led_o[1] = pc_asserted_i[1];
+        led_o[2] = pc_asserted_i[2];
+        led_o[3] = pc_asserted_i[3];
+        led_o[4] = commit_valid_i[0];
+        led_o[5] = commit_valid_i[1];
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_

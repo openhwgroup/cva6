@@ -38,7 +38,9 @@ module ariane_xilinx (
     input  logic           rx,
     output logic           tx,
 
-    output logic [7:0]     led
+    output logic [7:0]     led,
+    input  logic [7:0]     sw,
+    output logic           fan_pwm
 );
 
 localparam NBSlave = 4; // debug, Instruction fetch, data bypass, data
@@ -86,45 +88,45 @@ logic rst_n, rst;
 logic cpu_reset;
 
 // DDR
-logic [3:0] s_axi_awid;
+logic [3:0]  s_axi_awid;
 logic [63:0] s_axi_awaddr;
-logic [7:0] s_axi_awlen;
-logic [2:0] s_axi_awsize;
-logic [1:0] s_axi_awburst;
-logic [0:0] s_axi_awlock;
-logic [3:0] s_axi_awcache;
-logic [2:0] s_axi_awprot;
-logic [3:0] s_axi_awregion;
-logic [3:0] s_axi_awqos;
-logic s_axi_awvalid;
-logic s_axi_awready;
+logic [7:0]  s_axi_awlen;
+logic [2:0]  s_axi_awsize;
+logic [1:0]  s_axi_awburst;
+logic [0:0]  s_axi_awlock;
+logic [3:0]  s_axi_awcache;
+logic [2:0]  s_axi_awprot;
+logic [3:0]  s_axi_awregion;
+logic [3:0]  s_axi_awqos;
+logic        s_axi_awvalid;
+logic        s_axi_awready;
 logic [63:0] s_axi_wdata;
-logic [7:0] s_axi_wstrb;
-logic s_axi_wlast;
-logic s_axi_wvalid;
-logic s_axi_wready;
-logic [3:0] s_axi_bid;
-logic [1:0] s_axi_bresp;
-logic s_axi_bvalid;
-logic s_axi_bready;
-logic [3:0] s_axi_arid;
+logic [7:0]  s_axi_wstrb;
+logic        s_axi_wlast;
+logic        s_axi_wvalid;
+logic        s_axi_wready;
+logic [3:0]  s_axi_bid;
+logic [1:0]  s_axi_bresp;
+logic        s_axi_bvalid;
+logic        s_axi_bready;
+logic [3:0]  s_axi_arid;
 logic [63:0] s_axi_araddr;
-logic [7:0] s_axi_arlen;
-logic [2:0] s_axi_arsize;
-logic [1:0] s_axi_arburst;
-logic [0:0] s_axi_arlock;
-logic [3:0] s_axi_arcache;
-logic [2:0] s_axi_arprot;
-logic [3:0] s_axi_arregion;
-logic [3:0] s_axi_arqos;
-logic s_axi_arvalid;
-logic s_axi_arready;
-logic [3:0] s_axi_rid;
+logic [7:0]  s_axi_arlen;
+logic [2:0]  s_axi_arsize;
+logic [1:0]  s_axi_arburst;
+logic [0:0]  s_axi_arlock;
+logic [3:0]  s_axi_arcache;
+logic [2:0]  s_axi_arprot;
+logic [3:0]  s_axi_arregion;
+logic [3:0]  s_axi_arqos;
+logic        s_axi_arvalid;
+logic        s_axi_arready;
+logic [3:0]  s_axi_rid;
 logic [63:0] s_axi_rdata;
-logic [1:0] s_axi_rresp;
-logic s_axi_rlast;
-logic s_axi_rvalid;
-logic s_axi_rready;
+logic [1:0]  s_axi_rresp;
+logic        s_axi_rlast;
+logic        s_axi_rvalid;
+logic        s_axi_rready;
 
 // ROM
 logic                    rom_req;
@@ -170,6 +172,8 @@ assign rst        = ddr_sync_reset;
 assign test_en    = 1'b0;
 assign ndmreset_n = ~ndmreset ;
 
+logic [NBSlave-1:0] pc_asserted;
+
 // Slice the AXI Masters (slave ports on the XBar)
 for (genvar i = 0; i < NBSlave; i++) begin : slave_cut_gen
     axi_cut #(
@@ -182,6 +186,57 @@ for (genvar i = 0; i < NBSlave; i++) begin : slave_cut_gen
         .rst_ni ( ndmreset_n     ),
         .in     ( slave_slice[i] ),
         .out    ( slave[i]       )
+    );
+
+    axi_protocol_checker_0 i_axi_protocol_checker (
+      .pc_status( ), // debug probe
+      .pc_asserted(pc_asserted[i]),
+      .aclk(clk),
+      .aresetn(ndmreset_n),
+      .pc_axi_awid(slave[i].aw_id),
+      .pc_axi_awaddr(slave[i].aw_addr),
+      .pc_axi_awlen(slave[i].aw_len),
+      .pc_axi_awsize(slave[i].aw_size),
+      .pc_axi_awburst(slave[i].aw_burst),
+      .pc_axi_awlock(slave[i].aw_lock),
+      .pc_axi_awcache(slave[i].aw_cache),
+      .pc_axi_awprot(slave[i].aw_prot),
+      .pc_axi_awqos(slave[i].aw_qos),
+      .pc_axi_awregion(slave[i].aw_region),
+      .pc_axi_awready(slave[i].aw_ready),
+      .pc_axi_awvalid(slave[i].aw_valid),
+      .pc_axi_awuser(slave[i].aw_user),
+      .pc_axi_wlast(slave[i].w_last),
+      .pc_axi_wdata(slave[i].w_data),
+      .pc_axi_wstrb(slave[i].w_strb),
+      .pc_axi_wuser(slave[i].w_user),
+      .pc_axi_wvalid(slave[i].w_valid),
+      .pc_axi_wready(slave[i].w_ready),
+      .pc_axi_bid(slave[i].b_id),
+      .pc_axi_bresp(slave[i].b_resp),
+      .pc_axi_buser(slave[i].b_user),
+      .pc_axi_bvalid(slave[i].b_valid),
+      .pc_axi_bready(slave[i].b_ready),
+      .pc_axi_arid(slave[i].ar_id),
+      .pc_axi_araddr(slave[i].ar_addr),
+      .pc_axi_arlen(slave[i].ar_len),
+      .pc_axi_arsize(slave[i].ar_size),
+      .pc_axi_arburst(slave[i].ar_burst),
+      .pc_axi_arlock(slave[i].ar_lock),
+      .pc_axi_arcache(slave[i].ar_cache),
+      .pc_axi_arprot(slave[i].ar_prot),
+      .pc_axi_arqos(slave[i].ar_qos),
+      .pc_axi_arregion(slave[i].ar_region),
+      .pc_axi_aruser(slave[i].ar_user),
+      .pc_axi_arvalid(slave[i].ar_valid),
+      .pc_axi_arready(slave[i].ar_ready),
+      .pc_axi_rid(slave[i].r_id),
+      .pc_axi_rlast(slave[i].r_last),
+      .pc_axi_rdata(slave[i].r_data),
+      .pc_axi_rresp(slave[i].r_resp),
+      .pc_axi_ruser(slave[i].r_user),
+      .pc_axi_rvalid(slave[i].r_valid),
+      .pc_axi_rready(slave[i].r_ready)
     );
 end
 
@@ -283,7 +338,7 @@ ariane #(
     .cluster_id_i         ( '0                  ),
     .irq_i                ( irq                 ),
     .ipi_i                ( ipi                 ),
-    .time_irq_i           ( time_irq            ),
+    .time_irq_i           ( timer_irq           ),
     .debug_req_i          ( debug_req_irq       ),
     .data_if              ( slave_slice[2]      ),
     .bypass_if            ( slave_slice[1]      ),
@@ -293,6 +348,17 @@ ariane #(
 // ---------------
 // CLINT
 // ---------------
+logic rtc;
+
+// divide clock by two
+always_ff @(posedge clk or negedge ndmreset_n) begin
+  if (~ndmreset_n) begin
+    rtc <= 0;
+  end else begin
+    rtc <= rtc ^ 1'b1;
+  end
+end
+
 clint #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
@@ -302,8 +368,7 @@ clint #(
     .clk_i       ( clk                       ),
     .rst_ni      ( ndmreset_n                ),
     .slave       ( master[ariane_soc::CLINT] ),
-    // TODO(zarubaf): Fix RTC
-    .rtc_i       ( 1'b0                      ),
+    .rtc_i       ( rtc                       ),
     .timer_irq_o ( timer_irq                 ),
     .ipi_o       ( ipi                       )
 );
@@ -351,18 +416,30 @@ ariane_peripherals #(
   .tx_o   ( tx                       )
 );
 
+// ---------------------
+// Board peripherals
+// ---------------------
+fan_ctrl i_fan_ctrl (
+    .clk_i         ( clk        ),
+    .rst_ni        ( ndmreset_n ),
+    .pwm_setting_i ( sw[3:0]    ),
+    .fan_pwm_o     ( fan_pwm    )
+);
+
 ariane_leds i_ariane_leds (
-  .clk_i(clk),
-  .rst_ni(rst_n),
-  .led_o(led),
-  .dmactive_i(dmactive)
+  .clk_i          ( clk          ),
+  .rst_ni         ( rst_n        ),
+  .led_o          ( led          ),
+  .pc_asserted_i  ( pc_asserted  ),
+  .dmactive_i     ( dmactive     ),
+  .commit_valid_i ( '0           )
 );
 
 clk_wiz_0 i_clk_gen (
-  .clk_out1(clk),
-  .reset(cpu_reset),
-  .locked(), // keep open
-  .clk_in1(ddr_clock_out)
+  .clk_out1 ( clk           ),
+  .reset    ( cpu_reset     ),
+  .locked   (               ), // keep open
+  .clk_in1  ( ddr_clock_out )
 );
 
 // ---------------

@@ -58,7 +58,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/clint/*.sv)                                     \
         $(wildcard src/plic/*.sv)                                      \
-        $(wildcard src/register_interface/*.sv)                        \
+        $(wildcard src/register_interface/src/*.sv)                    \
         $(wildcard src/axi_node/src/*.sv)                              \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
@@ -66,6 +66,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/axi/src/axi_multicut.sv                                    \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
+        src/axi/src/axi_to_axi_lite.sv                                 \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
         src/common_cells/src/sync.sv                                   \
         src/common_cells/src/cdc_2phase.sv                             \
@@ -76,8 +77,9 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
         src/common_cells/src/lfsr_8bit.sv                              \
-        src/common_cells/src/rstgen_bypass.sv 						\
+        src/common_cells/src/rstgen_bypass.sv                          \
         tb/ariane_testharness.sv                                       \
+        tb/common/mock_uartlite.sv                                     \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv
 
@@ -148,15 +150,15 @@ sim: build
 	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}    \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0        \
 	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " log -r /*; run -all; exit"            \
-    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*; run -all; exit"            \
+    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)$(riscv-test) ++$(target-options)
 
 simc: build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
 	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do "run -all; exit"                       \
-    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*; run -all; exit"                       \
+    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)$(riscv-test) ++$(target-options)
 
 $(riscv-asm-tests): build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
@@ -164,7 +166,7 @@ $(riscv-asm-tests): build
 	$(QUESTASIM_FLAGS)                                                                                            \
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                             \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
-	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
+	${top_level}_optimized +permissive-off ++$(riscv-test-dir)$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
 $(riscv-benchmarks): build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
@@ -172,7 +174,7 @@ $(riscv-benchmarks): build
 	$(QUESTASIM_FLAGS)                                                                                            \
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                             \
 	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
-	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
+	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
 
 # can use -jX to run ci tests in parallel using X processes
 run-asm-tests: $(riscv-asm-tests)
