@@ -41,10 +41,12 @@ ariane_pkg := include/riscv_pkg.sv                     \
 			  src/fpu/src/pkg/fpnew_pkg_constants.vhd
 
 # utility modules
-util := $(wildcard src/util/*.svh)         \
-        src/util/instruction_tracer_pkg.sv \
-        src/util/instruction_tracer_if.sv  \
-        src/util/cluster_clock_gating.sv   \
+util := $(wildcard src/util/*.svh)                            \
+        src/util/instruction_tracer_pkg.sv                    \
+        src/util/instruction_tracer_if.sv                     \
+        src/tech_cells_generic/src/cluster_clock_gating.sv    \
+        src/tech_cells_generic/src/cluster_clock_inverter.sv  \
+        src/tech_cells_generic/src/pulp_clock_mux2.sv         \
         src/util/sram.sv
 
 # Test packages
@@ -75,6 +77,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/deprecated/generic_fifo.sv                \
         src/common_cells/src/deprecated/pulp_sync.sv                   \
         src/common_cells/src/deprecated/find_first_one.sv              \
+        src/common_cells/src/rstgen_bypass.sv                          \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \

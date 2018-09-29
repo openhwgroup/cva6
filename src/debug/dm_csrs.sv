@@ -492,6 +492,7 @@ module dm_csrs #(
             sbaddr_q       <= '0;
             sbdata_q       <= '0;
         end else begin
+            havereset_q    <= havereset_d;
             // synchronous re-set of debug module, active-low, except for dmactive
             if (!dmcontrol_q.dmactive) begin
                 dmcontrol_q.haltreq          <= '0;
@@ -516,7 +517,6 @@ module dm_csrs #(
                 sbaddr_q                     <= '0;
                 sbdata_q                     <= '0;
             end else begin
-                havereset_q                  <= havereset_d;
                 dmcontrol_q                  <= dmcontrol_d;
                 cmderr_q                     <= cmderr_d;
                 command_q                    <= command_d;

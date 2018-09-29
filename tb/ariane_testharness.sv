@@ -131,6 +131,7 @@ module ariane_testharness #(
     dmi_jtag i_dmi_jtag (
         .clk_i            ( clk_i           ),
         .rst_ni           ( rst_ni          ),
+        .testmode_i       ( test_en         ),
         .dmi_req_o        ( jtag_dmi_req    ),
         .dmi_req_valid_o  ( jtag_req_valid  ),
         .dmi_req_ready_i  ( debug_req_ready ),
@@ -300,6 +301,7 @@ module ariane_testharness #(
     ) i_clint (
         .clk_i       ( clk_i     ),
         .rst_ni      ( rst_ni    ),
+        .testmode_i  ( test_en   ),
         .slave       ( master[1] ),
         .rtc_i       ( rtc_i     ),
         .timer_irq_o ( timer_irq ),

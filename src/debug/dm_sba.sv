@@ -18,6 +18,7 @@
 
 module dm_sba (
     input  logic          clk_i,       // Clock
+    input  logic          rst_ni,
     input  logic          dmactive_i,  // synchronous reset active low
 
     AXI_BUS.Master        axi_master,
@@ -120,8 +121,8 @@ module dm_sba (
         // further error handling should go here ...
     end
 
-    always_ff @(posedge clk_i) begin
-        if (~dmactive_i) begin
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
             state_q <= Idle;
         end else begin
             state_q <= state_d;
@@ -133,7 +134,7 @@ module dm_sba (
         .DATA_WIDTH            ( 64                        )
     ) i_axi_master (
         .clk_i                 ( clk_i                     ),
-        .rst_ni                ( dmactive_i                ),
+        .rst_ni                ( rst_ni                    ),
         .req_i                 ( req                       ),
         .type_i                ( std_cache_pkg::SINGLE_REQ ),
         .gnt_o                 ( gnt                       ),

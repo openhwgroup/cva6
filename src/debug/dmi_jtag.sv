@@ -19,9 +19,9 @@
 module dmi_jtag (
     input  logic         clk_i,      // DMI Clock
     input  logic         rst_ni,     // Asynchronous reset active low
+    input  logic         testmode_i,
 
     output logic         dmi_rst_no, // hard reset
-
     output dm::dmi_req_t dmi_req_o,
     output logic         dmi_req_valid_o,
     input  logic         dmi_req_ready_i,
@@ -218,6 +218,7 @@ module dmi_jtag (
         .td_i,
         .td_o,
         .tdo_oe_o,
+        .testmode_i         ( testmode_i       ),
         .test_logic_reset_o ( test_logic_reset ),
         .shift_dr_o         ( shift_dr         ),
         .update_dr_o        ( update_dr        ),
