@@ -26,7 +26,9 @@ defines        ?=
 test-location  ?= output/test
 # set to either nothing or -log
 torture-logs := -log
-
+# root path
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+root-dir := $(dir $(mkfile_path))
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv                   \
@@ -37,6 +39,7 @@ ariane_pkg := include/riscv_pkg.sv                   \
               include/axi_intf.sv                    \
               tb/ariane_soc_pkg.sv                   \
               src/register_interface/src/reg_intf.sv
+ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
 util := $(wildcard src/util/*.svh)         \
@@ -44,13 +47,16 @@ util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_if.sv  \
         src/util/cluster_clock_gating.sv   \
         src/util/sram.sv
-
+util := $(addprefix $(root-dir), $(util))
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
             $(wildcard tb/test/*/*_pkg.sv*)
 # DPI
 dpi := $(patsubst tb/dpi/%.cc,${dpi-library}/%.o,$(wildcard tb/dpi/*.cc))
+dpi := $(addprefix $(root-dir), $(dpi))
 dpi_hdr := $(wildcard tb/dpi/*.h)
+dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
+
 # this list contains the standalone components
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/frontend/*.sv)                                  \
@@ -58,7 +64,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/clint/*.sv)                                     \
         $(wildcard src/plic/*.sv)                                      \
-        $(wildcard src/register_interface/src/*.sv)                    \
+        $(filter-out src/register_interface/src/reg_intf.sv,           \
+        $(wildcard src/register_interface/src/*.sv))                   \
         $(wildcard src/axi_node/src/*.sv)                              \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
@@ -82,11 +89,11 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         tb/common/mock_uartlite.sv                                     \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv
+src := $(addprefix $(root-dir), $(src))
 
+fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv)
+fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
-
-# root path
-root-dir := $(shell pwd)
 # look for testbenches
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
@@ -287,6 +294,13 @@ run-torture-verilator: verilate
 check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
+
+fpga: $(ariane_pkg) $(util) $(src) $(fpga_src)
+	@echo "[FPGA] Generate sources"
+	@echo read_verilog -sv {$(ariane_pkg)} > fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(util)}      >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(src)} 	  >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(fpga_src)}  >> fpga/scripts/add_sources.tcl
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*
