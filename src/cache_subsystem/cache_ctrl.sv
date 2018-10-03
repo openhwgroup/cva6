@@ -21,57 +21,53 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module cache_ctrl #(
-        parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000
-    )(
-        input  logic                                               clk_i,     // Clock
-        input  logic                                               rst_ni,    // Asynchronous reset active low
-        input  logic                                               flush_i,
-        input  logic                                               bypass_i,  // enable cache
-        output logic                                               busy_o,
-        
-        // Core request ports
-        input  dcache_req_i_t                                      req_port_i,  
-        output dcache_req_o_t                                      req_port_o,  
-
-        // SRAM interface
-        output logic [DCACHE_SET_ASSOC-1:0]                        req_o,  // req is valid
-        output logic [DCACHE_INDEX_WIDTH-1:0]                      addr_o, // address into cache array
-        input  logic                                               gnt_i,
-        output cache_line_t                                        data_o,
-        output cl_be_t                                             be_o,
-        output logic [DCACHE_TAG_WIDTH-1:0]                        tag_o, //valid one cycle later
-        input  cache_line_t [DCACHE_SET_ASSOC-1:0]                 data_i,
-        output logic                                               we_o,
-        input  logic [DCACHE_SET_ASSOC-1:0]                        hit_way_i,
-        // Miss handling
-        output miss_req_t                                          miss_req_o,
-        // return
-        input  logic                                               miss_gnt_i,
-        input  logic                                               active_serving_i, // the miss unit is currently active for this unit, serving the miss
-        input  logic [63:0]                                        critical_word_i,
-        input  logic                                               critical_word_valid_i,
-
-        input  logic                                               bypass_gnt_i,
-        input  logic                                               bypass_valid_i,
-        input  logic [63:0]                                        bypass_data_i,
-        // check MSHR for aliasing
-        output logic [55:0]                                        mshr_addr_o,
-        input  logic                                               mshr_addr_matches_i,
-        input  logic                                               mshr_index_matches_i
+    parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000
+)(
+    input  logic                                 clk_i,     // Clock
+    input  logic                                 rst_ni,    // Asynchronous reset active low
+    input  logic                                 flush_i,
+    input  logic                                 bypass_i,  // enable cache
+    output logic                                 busy_o,
+    // Core request ports
+    input  dcache_req_i_t                        req_port_i,
+    output dcache_req_o_t                        req_port_o,
+    // SRAM interface
+    output logic [DCACHE_SET_ASSOC-1:0]          req_o,  // req is valid
+    output logic [DCACHE_INDEX_WIDTH-1:0]        addr_o, // address into cache array
+    input  logic                                 gnt_i,
+    output cache_line_t                          data_o,
+    output cl_be_t                               be_o,
+    output logic [DCACHE_TAG_WIDTH-1:0]          tag_o, //valid one cycle later
+    input  cache_line_t [DCACHE_SET_ASSOC-1:0]   data_i,
+    output logic                                 we_o,
+    input  logic [DCACHE_SET_ASSOC-1:0]          hit_way_i,
+    // Miss handling
+    output miss_req_t                            miss_req_o,
+    // return
+    input  logic                                 miss_gnt_i,
+    input  logic                                 active_serving_i, // the miss unit is currently active for this unit, serving the miss
+    input  logic [63:0]                          critical_word_i,
+    input  logic                                 critical_word_valid_i,
+    // bypass ports
+    input  logic                                 bypass_gnt_i,
+    input  logic                                 bypass_valid_i,
+    input  logic [63:0]                          bypass_data_i,
+    // check MSHR for aliasing
+    output logic [55:0]                          mshr_addr_o,
+    input  logic                                 mshr_addr_matches_i,
+    input  logic                                 mshr_index_matches_i
 );
 
-    // 0 IDLE
-    // 1 WAIT_TAG
-    // 2 WAIT_TAG_BYPASSED
-    // 3 STORE_REQ
-    // 4 WAIT_REFILL_VALID
-    // 5 WAIT_REFILL_GNT
-    // 6 WAIT_TAG_SAVED
-    // 7 WAIT_MSHR
-    // 8 WAIT_CRITICAL_WORD
-
     enum logic [3:0] {
-        IDLE, WAIT_TAG, WAIT_TAG_BYPASSED, STORE_REQ, WAIT_REFILL_VALID, WAIT_REFILL_GNT, WAIT_TAG_SAVED, WAIT_MSHR, WAIT_CRITICAL_WORD
+        IDLE,               // 0
+        WAIT_TAG,           // 1
+        WAIT_TAG_BYPASSED,  // 2
+        STORE_REQ,          // 3
+        WAIT_REFILL_VALID,  // 4
+        WAIT_REFILL_GNT,    // 5
+        WAIT_TAG_SAVED,     // 6
+        WAIT_MSHR,          // 7
+        WAIT_CRITICAL_WORD  // 8
     } state_d, state_q;
 
     typedef struct packed {
@@ -109,12 +105,10 @@ module cache_ctrl #(
         // incoming cache-line -> this is needed as synthesis is not supporting +: indexing in a multi-dimensional array
         // cache-line offset -> multiple of 64
         cl_offset = mem_req_q.index[DCACHE_BYTE_OFFSET-1:3] << 6; // shift by 6 to the left
-
         // default assignments
         state_d   = state_q;
         mem_req_d = mem_req_q;
         hit_way_d = hit_way_q;
-
         // output assignments
         req_port_o.data_gnt    = 1'b0;
         req_port_o.data_rvalid = 1'b0;
@@ -135,7 +129,7 @@ module cache_ctrl #(
             IDLE: begin
                 // a new request arrived
                 if (req_port_i.data_req && !flush_i) begin
-                    // request the cache line - we can do this specualtive
+                    // request the cache line - we can do this speculatively
                     req_o = '1;
 
                     // save index, be and we
@@ -172,10 +166,11 @@ module cache_ctrl #(
             WAIT_TAG, WAIT_TAG_SAVED: begin
                 // depending on where we come from
                 // For the store case the tag comes in the same cycle
-                tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag :  req_port_i.address_tag;
+                tag_o = (state_q == WAIT_TAG_SAVED || mem_req_q.we) ? mem_req_q.tag
+                                                                    : req_port_i.address_tag;
                 // we speculatively request another transfer
                 if (req_port_i.data_req && !flush_i) begin
-                    req_o      = '1;
+                    req_o = '1;
                 end
 
                 // check that the client really wants to do the request
@@ -185,7 +180,6 @@ module cache_ctrl #(
                     // ------------
                     if (|hit_way_i) begin
                         // we can request another cache-line if this was a load
-                        // make another request
                         if (req_port_i.data_req && !mem_req_q.we && !flush_i) begin
                             state_d          = WAIT_TAG; // switch back to WAIT_TAG
                             mem_req_d.index  = req_port_i.address_index;
@@ -195,12 +189,12 @@ module cache_ctrl #(
                             mem_req_d.wdata  = req_port_i.data_wdata;
                             mem_req_d.tag    = req_port_i.address_tag;
                             mem_req_d.bypass = 1'b0;
+
                             req_port_o.data_gnt = gnt_i;
 
                             if (!gnt_i) begin
                                 state_d = IDLE;
                             end
-
                         end else begin
                             state_d = IDLE;
                         end
@@ -215,7 +209,6 @@ module cache_ctrl #(
                         // report data for a read
                         if (!mem_req_q.we) begin
                             req_port_o.data_rvalid = 1'b1;
-
                         // else this was a store so we need an extra step to handle it
                         end else begin
                             state_d = STORE_REQ;
@@ -273,7 +266,7 @@ module cache_ctrl #(
             // ~> we are here as we need a second round of memory access for a store
             STORE_REQ: begin
                 // check if the MSHR still doesn't match
-                mshr_addr_o = {mem_req_d.tag, mem_req_q.index};
+                mshr_addr_o = {mem_req_q.tag, mem_req_q.index};
 
                 // We need to re-check for MSHR aliasing here as the store requires at least
                 // two memory look-ups on a single-ported SRAM and therefore is non-atomic
@@ -284,7 +277,7 @@ module cache_ctrl #(
                     we_o       = 1'b1;
 
                     be_o.vldrty = hit_way_q;
-                    
+
                     // set the correct byte enable
                     be_o.data[cl_offset>>3 +: 8]  = mem_req_q.be;
                     data_o.data[cl_offset  +: 64] = mem_req_q.wdata;
@@ -384,7 +377,6 @@ module cache_ctrl #(
                         mem_req_d.wdata = req_port_i.data_wdata;
                         mem_req_d.tag   = req_port_i.address_tag;
 
-
                         state_d = IDLE;
 
                         // Wait until we have access on the memory array
@@ -393,7 +385,6 @@ module cache_ctrl #(
                             mem_req_d.bypass = 1'b0;
                             req_port_o.data_gnt = 1'b1;
                         end
-
                     end else begin
                         state_d = IDLE;
                     end
@@ -411,7 +402,7 @@ module cache_ctrl #(
         endcase
 
         if (req_port_i.kill_req) begin
-            state_d       = IDLE;
+            state_d = IDLE;
             req_port_o.data_rvalid = 1'b1;
         end
     end
@@ -421,9 +412,9 @@ module cache_ctrl #(
     // --------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            state_q   <= IDLE;
-            mem_req_q <= '0;
-            hit_way_q <= '0;
+            state_q       <= IDLE;
+            mem_req_q     <= '0;
+            hit_way_q     <= '0;
         end else begin
             state_q   <= state_d;
             mem_req_q <= mem_req_d;
@@ -442,19 +433,4 @@ module cache_ctrl #(
         no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> !req_port_o.data_rvalid) else $fatal ("rvalid_o should not be set on MSHR match");
     `endif
     `endif
-endmodule
-
-  
-
-
-module AMO_alu (
-        input logic         clk_i,
-        input logic         rst_ni,
-        // AMO interface
-        input  logic        amo_commit_i, // commit atomic memory operation
-        output logic        amo_valid_o,  // we have a valid AMO result
-        output logic [63:0] amo_result_o, // result of atomic memory operation
-        input  logic        amo_flush_i   // forget about AMO
-    );
-
 endmodule

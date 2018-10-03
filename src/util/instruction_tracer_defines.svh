@@ -101,6 +101,9 @@ parameter INSTR_DIVU     =  { 7'b0000001, 10'b?, 3'b101, 5'b?, riscv::OpcodeOp }
 parameter INSTR_REM      =  { 7'b0000001, 10'b?, 3'b110, 5'b?, riscv::OpcodeOp };
 parameter INSTR_REMU     =  { 7'b0000001, 10'b?, 3'b111, 5'b?, riscv::OpcodeOp };
 
+// A
+parameter INSTR_AMO      =  {25'b?, riscv::OpcodeAmo };
+
 // Load/Stores
 parameter INSTR_LOAD     =  {25'b?, riscv::OpcodeLoad };
 parameter INSTR_STORE    =  {25'b?, riscv::OpcodeStore };

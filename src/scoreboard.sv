@@ -18,8 +18,7 @@ module scoreboard #(
     parameter int unsigned NR_ENTRIES  = 8,
     parameter int unsigned NR_WB_PORTS = 1,
     parameter int unsigned NR_COMMIT_PORTS = 2
-    )
-    (
+)(
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
     input  logic                                      flush_unissued_instr_i, // flush only un-issued instructions
@@ -53,6 +52,7 @@ module scoreboard #(
     input  logic                                      issue_ack_i,
 
     // write-back port
+    input branchpredict_t                             resolved_branch_i,
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
     input logic [NR_WB_PORTS-1:0][63:0]               wbdata_i,    // write data in
     input exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
@@ -124,10 +124,13 @@ module scoreboard #(
                 mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
                 mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
                 // save the target address of a branch (needed for debug in commit stage)
-                mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
+                if (resolved_branch_i.valid) begin
+                    mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
+                end
                 // write the exception back if it is valid
-                if (ex_i[i].valid)
+                if (ex_i[i].valid) begin
                     mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
+                end
             end
         end
 

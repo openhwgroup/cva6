@@ -32,7 +32,9 @@ package ariane_pkg;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
-    localparam logic [63:0] ISA_CODE = (1 <<  2)  // C - Compressed extension
+    localparam logic [63:0] ISA_CODE =
+                                     | (1 <<  0)  // A - Atomic extension
+                                     | (1 <<  2)  // C - Compressed extension
                                      | (1 <<  8)  // I - RV32I/64I/128I base ISA
                                      | (1 << 12)  // M - Integer Multiply/Divide extension
                                      | (0 << 13)  // N - User level interrupts supported
@@ -40,7 +42,7 @@ package ariane_pkg;
                                      | (1 << 20)  // U - User mode implemented
                                      | (0 << 23)  // X - Non-standard extensions present
                                      | (1 << 63); // RV64
-    localparam ENABLE_RENAME = 1'b0;
+    localparam ENABLE_RENAME = 1'b1;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
@@ -54,6 +56,17 @@ package ariane_pkg;
                                                 datasize: dm::DataCount,
                                                 dataaddr: dm::DataAddr
                                               };
+
+
+    // enables a commit log which matches spikes commit log format for easier trace comparison
+    localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b0;
+
+    // ------------- Dangerouse -------------
+    // if set to zero a flush will not invalidate the cache-lines, in a single core environment
+    // where coherence is not necessary this can improve performance. This needs to be switched on
+    // when more than one core is in a system
+    localparam logic INVALIDATE_ON_FLUSH = 1'b1;
+
     // ---------------
     // Fetch Stage
     // ---------------
@@ -133,7 +146,13 @@ package ariane_pkg;
     } bht_prediction_t;
 
     typedef enum logic[3:0] {
-        NONE, LOAD, STORE, ALU, CTRL_FLOW, MULT, CSR
+        NONE,      // 0
+        LOAD,      // 1
+        STORE,     // 2
+        ALU,       // 3
+        CTRL_FLOW, // 4
+        MULT,      // 5
+        CSR        // 6
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -143,10 +162,10 @@ package ariane_pkg;
     // ---------------
 
     // I$
-    parameter int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit
-    parameter int unsigned  ICACHE_TAG_WIDTH         = 44; // in bit
-    parameter int unsigned  ICACHE_SET_ASSOC         = 4;
-    parameter int unsigned  ICACHE_LINE_WIDTH        = 128; // in bit
+    localparam int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit
+    localparam int unsigned  ICACHE_TAG_WIDTH         = 44; // in bit
+    localparam int unsigned  ICACHE_SET_ASSOC         = 4;
+    localparam int unsigned  ICACHE_LINE_WIDTH        = 128; // in bit
 
     // D$
     localparam int unsigned DCACHE_INDEX_WIDTH       = 12;
@@ -183,17 +202,12 @@ package ariane_pkg;
                                DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW
                              } fu_op;
 
-    // ----------------------
-    // Extract Bytes from Op
-    // ----------------------
-    // TODO: Add atomics
-    function automatic logic [1:0] extract_transfer_size (fu_op op);
-        case (op)
-            LD, SD:      return 2'b11;
-            LW, LWU, SW: return 2'b10;
-            LH, LHU, SH: return 2'b01;
-            LB, SB, LBU: return 2'b00;
-            default:     return 2'b11;
+    function automatic logic is_amo (fu_op op);
+        case (op) inside
+            [AMO_LRW:AMO_MINDU]: begin
+                return 1'b1;
+            end
+            default: return 1'b0;
         endcase
     endfunction
 
@@ -245,7 +259,8 @@ package ariane_pkg;
     // Atomics
     // --------------------
     typedef enum logic [3:0] {
-        AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND, AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
+        AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND,
+        AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
     } amo_t;
 
     typedef struct packed {
@@ -266,7 +281,6 @@ package ariane_pkg;
     // ----------------------
     // cache request ports
     // ----------------------
-
     // I$ address translation requests
     typedef struct packed {
         logic                     fetch_valid;     // address translation valid
@@ -295,6 +309,24 @@ package ariane_pkg;
         exception_t               ex;                     // we've encountered an exception
     } icache_dreq_o_t;
 
+    // AMO request going to cache. this request is unconditionally valid as soon
+    // as request goes high.
+    // Furthermore, those signals are kept stable until the response indicates
+    // completion by asserting ack.
+    typedef struct packed {
+        logic        req;       // this request is valid
+        amo_t        amo_op;    // atomic memory operation to perform
+        logic [1:0]  size;      // 2'b10 --> word operation, 2'b11 --> double word operation
+        logic [63:0] operand_a; // address
+        logic [63:0] operand_b; // data as layuoted in the register
+    } amo_req_t;
+
+    // AMO response coming from cache.
+    typedef struct packed {
+        logic        ack;    // response is valid
+        logic [63:0] result; // sign-extended, result
+    } amo_resp_t;
+
     // D$ data requests
     typedef struct packed {
         logic [DCACHE_INDEX_WIDTH-1:0] address_index;
@@ -306,7 +338,6 @@ package ariane_pkg;
         logic [1:0]                    data_size;
         logic                          kill_req;
         logic                          tag_valid;
-        amo_t                          amo_op;
     } dcache_req_i_t;
 
     typedef struct packed {
@@ -337,4 +368,92 @@ package ariane_pkg;
         return { {51 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
     endfunction
 
+    // ----------------------
+    // LSU Functions
+    // ----------------------
+    // align data to address e.g.: shift data to be naturally 64
+    function automatic logic [63:0] data_align (logic [2:0] addr, logic [63:0] data);
+        case (addr)
+            3'b000: return data;
+            3'b001: return {data[55:0], data[63:56]};
+            3'b010: return {data[47:0], data[63:48]};
+            3'b011: return {data[39:0], data[63:40]};
+            3'b100: return {data[31:0], data[63:32]};
+            3'b101: return {data[23:0], data[63:24]};
+            3'b110: return {data[15:0], data[63:16]};
+            3'b111: return {data[7:0],  data[63:8]};
+        endcase
+        return data;
+    endfunction
+
+    // generate byte enable mask
+    function automatic logic [7:0] be_gen(logic [2:0] addr, logic [1:0] size);
+        case (size)
+            2'b11: begin
+                return 8'b1111_1111;
+            end
+            2'b10: begin
+                case (addr[2:0])
+                    3'b000: return 8'b0000_1111;
+                    3'b001: return 8'b0001_1110;
+                    3'b010: return 8'b0011_1100;
+                    3'b011: return 8'b0111_1000;
+                    3'b100: return 8'b1111_0000;
+                endcase
+            end
+            2'b01: begin
+                case (addr[2:0])
+                    3'b000: return 8'b0000_0011;
+                    3'b001: return 8'b0000_0110;
+                    3'b010: return 8'b0000_1100;
+                    3'b011: return 8'b0001_1000;
+                    3'b100: return 8'b0011_0000;
+                    3'b101: return 8'b0110_0000;
+                    3'b110: return 8'b1100_0000;
+                endcase
+            end
+            2'b00: begin
+                case (addr[2:0])
+                    3'b000: return 8'b0000_0001;
+                    3'b001: return 8'b0000_0010;
+                    3'b010: return 8'b0000_0100;
+                    3'b011: return 8'b0000_1000;
+                    3'b100: return 8'b0001_0000;
+                    3'b101: return 8'b0010_0000;
+                    3'b110: return 8'b0100_0000;
+                    3'b111: return 8'b1000_0000;
+                endcase
+            end
+        endcase
+        return 8'b0;
+    endfunction
+
+    // ----------------------
+    // Extract Bytes from Op
+    // ----------------------
+    function automatic logic [1:0] extract_transfer_size(fu_op op);
+        case (op)
+            LD, SD,
+            AMO_LRD,   AMO_SCD,
+            AMO_SWAPD, AMO_ADDD,
+            AMO_ANDD,  AMO_ORD,
+            AMO_XORD,  AMO_MAXD,
+            AMO_MAXDU, AMO_MIND,
+            AMO_MINDU: begin
+                return 2'b11;
+            end
+            LW, LWU, SW,
+            AMO_LRW,   AMO_SCW,
+            AMO_SWAPW, AMO_ADDW,
+            AMO_ANDW,  AMO_ORW,
+            AMO_XORW,  AMO_MAXW,
+            AMO_MAXWU, AMO_MINW,
+            AMO_MINWU: begin
+                return 2'b10;
+            end
+            LH, LHU, SH: return 2'b01;
+            LB, SB, LBU: return 2'b00;
+            default:     return 2'b11;
+        endcase
+    endfunction
 endpackage

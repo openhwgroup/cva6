@@ -437,14 +437,15 @@ module mul (
     // Pipeline register
     logic [TRANS_ID_BITS-1:0]   trans_id_q;
     logic                       mult_valid_q;
-    logic [63:0]                result_q;
+    fu_op                       operator_d, operator_q;
+    logic [127:0] mult_result_d, mult_result_q;
+
     // control registers
     logic                       sign_a, sign_b;
     logic                       mult_valid;
 
     // control signals
     assign mult_valid_o    = mult_valid_q;
-    assign result_o        = result_q;
     assign mult_trans_id_o = trans_id_q;
     assign mult_ready_o    = 1'b1;
 
@@ -472,28 +473,38 @@ module mul (
         end
     end
 
+   
+    // single stage version 
+    assign mult_result_d   = $signed({operand_a_i[63] & sign_a, operand_a_i}) * 
+                             $signed({operand_b_i[63] & sign_b, operand_b_i});
+
+    
+    assign operator_d = operator_i;                             
+    always_comb begin : p_selmux
+        unique case (operator_q)
+            MULH, MULHU, MULHSU: result_o = mult_result_q[127:64]; 
+            MULW:                result_o = sext32(mult_result_q[31:0]);
+            // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
+            default:             result_o = mult_result_q[63:0];// including MUL 
+        endcase
+    end    
+
     // -----------------------
     // Output pipeline register
     // -----------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            mult_valid_q <= '0;
-            trans_id_q   <= '0;
-            result_q     <= '0;
-        end else begin
+            mult_valid_q    <= '0;
+            trans_id_q      <= '0;
+            operator_q      <=  MUL;
+            mult_result_q   <= '0;
+         end else begin
             // Input silencing
             trans_id_q   <= trans_id_i;
             // Output Register
-            mult_valid_q <= mult_valid;
-
-            case (operator_i)
-                // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
-                MUL:    result_q <= mult_result[63:0];
-                MULH:   result_q <= mult_result[127:64];
-                MULHU:  result_q <= mult_result[127:64];
-                MULHSU: result_q <= mult_result[127:64];
-                MULW:   result_q <= sext32(mult_result[31:0]);
-            endcase
-        end
+            mult_valid_q    <= mult_valid;
+            operator_q      <= operator_d;
+            mult_result_q   <= mult_result_d;
+         end
     end
 endmodule

@@ -16,12 +16,11 @@
  */
 import std_cache_pkg::*;
 
-
 module axi_adapter #(
-        parameter int unsigned DATA_WIDTH          = 256,
-        parameter logic        CRITICAL_WORD_FIRST = 0, // the AXI subsystem needs to support wrapping reads for this feature
-        parameter int unsigned AXI_ID_WIDTH        = 10
-    )(
+    parameter int unsigned DATA_WIDTH          = 256,
+    parameter logic        CRITICAL_WORD_FIRST = 0, // the AXI subsystem needs to support wrapping reads for this feature
+    parameter int unsigned AXI_ID_WIDTH        = 10
+)(
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
 
@@ -131,6 +130,8 @@ module axi_adapter #(
                         axi.w_valid  = 1'b1;
                         // its a single write
                         if (type_i == SINGLE_REQ) begin
+                            // only a single write so the data is already the last one
+                            axi.w_last   = 1'b1;
                             // single req can be granted here
                             gnt_o = axi.aw_ready & axi.w_ready;
                             gnt_id_o = id_i;
@@ -200,9 +201,13 @@ module axi_adapter #(
 
                 axi.w_valid  = 1'b1;
                 axi.w_last   = (cnt_q == '0) ? 1'b1 : 1'b0;
-                axi.w_data   = wdata_i[BURST_SIZE-cnt_q];
-                axi.w_strb   = be_i[BURST_SIZE-cnt_q];
-
+                if (type_i == SINGLE_REQ) begin
+                    axi.w_data   = wdata_i[0];
+                    axi.w_strb   = be_i[0];
+                end else begin
+                    axi.w_data   = wdata_i[BURST_SIZE-cnt_q];
+                    axi.w_strb   = be_i[BURST_SIZE-cnt_q];
+                end
                 axi.aw_valid = 1'b1;
                 // we are here because we want to write a cache line
                 axi.aw_len   = BURST_SIZE;
@@ -249,8 +254,13 @@ module axi_adapter #(
             // ~> from write, there is an outstanding write
             WAIT_LAST_W_READY: begin
                 axi.w_valid = 1'b1;
-                axi.w_data  = wdata_i[BURST_SIZE-cnt_q];
-                axi.w_strb  = be_i[BURST_SIZE-cnt_q];
+                if (type_i == SINGLE_REQ) begin
+                    axi.w_data   = wdata_i[0];
+                    axi.w_strb   = be_i[0];
+                end else begin
+                    axi.w_data   = wdata_i[BURST_SIZE-cnt_q];
+                    axi.w_strb   = be_i[BURST_SIZE-cnt_q];
+                end
 
                 // this is the last write
                 axi.w_last  = (cnt_q == '0) ? 1'b1 : 1'b0;

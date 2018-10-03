@@ -27,9 +27,7 @@ module clint #(
 
     AXI_BUS.Slave               slave,
 
-    input  logic                halted_i,    // cores are halted, also halt timer
     input  logic                rtc_i,       // Real-time clock in (usually 32.768 kHz)
-    output logic [63:0]         time_o,      // Global Time out, this is the time-base of the whole SoC
     output logic [NR_CORES-1:0] timer_irq_o, // Timer interrupts
     output logic [NR_CORES-1:0] ipi_o        // software interrupt (a.k.a inter-process-interrupt)
 );
@@ -53,9 +51,6 @@ module clint #(
     logic [NR_CORES-1:0]       msip_n, msip_q;
     // increase the timer
     logic increase_timer;
-
-    // directly output the mtime_q register - this needs synchronization (but in the core).
-    assign time_o = mtime_q;
 
     // -----------------------------
     // AXI Interface Logic
@@ -82,7 +77,7 @@ module clint #(
         mtimecmp_n = mtimecmp_q;
         msip_n     = msip_q;
         // RTC says we should increase the timer
-        if (increase_timer && !halted_i)
+        if (increase_timer)
             mtime_n = mtime_q + 1;
 
         // written from APB bus - gets priority
@@ -137,10 +132,11 @@ module clint #(
     always_comb begin : irq_gen
         // check that the mtime cmp register is set to a meaningful value
         for (int unsigned i = 0; i < NR_CORES; i++) begin
-            if (mtimecmp_q[i] != 0 && mtime_q >= mtimecmp_q[i])
+            if (mtimecmp_q[i] != 0 && mtime_q >= mtimecmp_q[i]) begin
                 timer_irq_o[i] = 1'b1;
-            else
+            end else begin
                 timer_irq_o[i] = 1'b0;
+            end
         end
     end
 
@@ -160,7 +156,7 @@ module clint #(
 
     // Registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             mtime_q    <= 64'b0;
             mtimecmp_q <= 'b0;
             msip_q     <= '0;

@@ -36,7 +36,8 @@ module controller (
     input  logic            flush_csr_i,            // We got an instruction which altered the CSR, flush the pipeline
     input  logic            fence_i_i,              // fence.i in
     input  logic            fence_i,                // fence in
-    input  logic            sfence_vma_i            // We got an instruction to flush the TLBs and pipeline
+    input  logic            sfence_vma_i,           // We got an instruction to flush the TLBs and pipeline
+    input  logic            flush_commit_i          // Flush request from commit stage
 );
 
     // active fence - high if we are currently flushing the dcache
@@ -114,13 +115,12 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
+
             flush_tlb_o            = 1'b1;
         end
 
-        // ---------------------------------
-        // CSR instruction with side-effect
-        // ---------------------------------
-        if (flush_csr_i) begin
+        // Set PC to commit stage and flush pipleine
+        if (flush_csr_i || flush_commit_i) begin
             set_pc_commit_o        = 1'b1;
             flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;

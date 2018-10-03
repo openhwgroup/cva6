@@ -20,7 +20,6 @@ module issue_read_operands #(
     )(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
-    input  logic                                   test_en_i,
     // flush
     input  logic                                   flush_i,
     // coming from rename
@@ -230,7 +229,7 @@ module issue_read_operands #(
         // use the zimm as operand a
         if (issue_instr_i.use_zimm) begin
             // zero extend operand a
-            operand_a_n = {52'b0, issue_instr_i.rs1};
+            operand_a_n = {52'b0, issue_instr_i.rs1[4:0]};
         end
         // or is it an immediate (including PC), this is not the case for a store and control flow instructions
         if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW)) begin
@@ -282,7 +281,7 @@ module issue_read_operands #(
         // Clock and Reset
         .clk            ( clk_i                  ),
         .rst_n          ( rst_ni                 ),
-        .test_en_i      ( test_en_i              ),
+        .test_en_i      ( 1'b0                   ),
 
         .raddr_a_i      ( issue_instr_i.rs1[4:0] ),
         .rdata_a_o      ( operand_a_regfile      ),

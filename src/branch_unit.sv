@@ -66,7 +66,7 @@ module branch_unit (
         if (operator_i == JALR)
             target_address[0] = 1'b0;
         // if we need to put the branch target address in a destination register, output it here to WB
-        branch_result_o                  = next_pc;
+        branch_result_o = next_pc;
 
         // save PC - we need this to get the target row in the branch target buffer
         // we play this trick with the branch instruction which wraps a word boundary:
