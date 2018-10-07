@@ -240,8 +240,8 @@ class instruction_trace_item;
             INSTR_FNSMSUB:             s = this.printR4Instr("fnmsub");
             INSTR_FNMADD:              s = this.printR4Instr("fnmadd");
 
-            INSTR_FADD:                s = this.printRFInstr("fadd", 1'b1);
-            INSTR_FSUB:                s = this.printRFInstr("fsub", 1'b1);
+            INSTR_FADD:                s = this.printRFBCInstr("fadd", 1'b1);
+            INSTR_FSUB:                s = this.printRFBCInstr("fsub", 1'b1);
             INSTR_FMUL:                s = this.printRFInstr("fmul", 1'b1);
             INSTR_FDIV:                s = this.printRFInstr("fdiv", 1'b1);
             INSTR_FSQRT:               s = this.printRFInstr1Op("fsqrt", 1'b1);
@@ -365,6 +365,21 @@ class instruction_trace_item;
 
         return $sformatf("%-12s %4s, %s, %s", mnemonic, regAddrToStr(rd), regAddrToStr(rs1), regAddrToStr(rs2));
     endfunction // printRInstr
+
+    function string printRFBCInstr(input string mnemonic, input bit use_rnd);
+
+        result_regs.push_back(rd);
+        result_fpr.push_back(is_rd_fpr(sbe.op));
+        read_regs.push_back(rs2);
+        read_fpr.push_back(is_rs2_fpr(sbe.op));
+        read_regs.push_back(sbe.result[4:0]);
+        read_fpr.push_back(is_imm_fpr(sbe.op));
+
+        if (use_rnd && instr[14:12]!=3'b111)
+            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]), fpRmToStr(instr[14:12]));
+        else
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]));
+    endfunction // printRFInstr
 
     function string printRFInstr(input string mnemonic, input bit use_rnd);
 
