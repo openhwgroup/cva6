@@ -282,7 +282,7 @@ package ariane_pkg;
                 [FSD:FSB],                       // FP Stores
                 [FADD:FMIN_MAX],                 // Computational Operations (no sqrt)
                 [FMADD:FNMADD],                  // Fused Computational Operations
-                FSGNJ,                           // Sign Injections
+                [FSGNJ:FMV_F2X],                 // Sign Injections and moves mapped to SGNJ
                 FCMP,                            // Comparisons
                 [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
                 default           : return 1'b0; // all other ops
