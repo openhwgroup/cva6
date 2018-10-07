@@ -262,7 +262,7 @@ package ariane_pkg;
     function automatic logic is_rs1_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
-                [FADD:FNMADD],                   // Computational Operations
+                [FMUL:FNMADD],                   // Computational Operations (except ADD/SUB)
                 FCVT_F2I,                        // Float-Int Casts
                 FCVT_F2F,                        // Float-Float Casts
                 FSGNJ,                           // Sign Injections
@@ -282,6 +282,7 @@ package ariane_pkg;
                 [FSD:FSB],                       // FP Stores
                 [FADD:FMIN_MAX],                 // Computational Operations (no sqrt)
                 [FMADD:FNMADD],                  // Fused Computational Operations
+                FCVT_F2F,                        // Vectorial F2F Conversions requrie target
                 [FSGNJ:FMV_F2X],                 // Sign Injections and moves mapped to SGNJ
                 FCMP,                            // Comparisons
                 [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
@@ -295,9 +296,10 @@ package ariane_pkg;
     function automatic logic is_imm_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
-                [FADD:FSUB],                  // ADD/SUB need inputs as Operand B/C
-                [FMADD:FNMADD] : return 1'b1; // Fused Computational Operations
-                default        : return 1'b0; // all other ops
+                [FADD:FSUB],                         // ADD/SUB need inputs as Operand B/C
+                [FMADD:FNMADD],                      // Fused Computational Operations
+                [VFCPKAB_S:VFCPKCD_D] : return 1'b1; // Vectorial FP cast and pack ops
+                default               : return 1'b0; // all other ops
             endcase
         end else
             return 1'b0;
@@ -306,14 +308,15 @@ package ariane_pkg;
     function automatic logic is_rd_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
-                [FLD:FLB],                       // FP Loads
-                [FADD:FNMADD],                   // Computational Operations
-                FCVT_I2F,                        // Int-Float Casts
-                FCVT_F2F,                        // Float-Float Casts
-                FSGNJ,                           // Sign Injections
-                FMV_X2F,                         // GPR-FPR Moves
-                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
-                default           : return 1'b0; // all other ops
+                [FLD:FLB],                           // FP Loads
+                [FADD:FNMADD],                       // Computational Operations
+                FCVT_I2F,                            // Int-Float Casts
+                FCVT_F2F,                            // Float-Float Casts
+                FSGNJ,                               // Sign Injections
+                FMV_X2F,                             // GPR-FPR Moves
+                [VFMIN:VFSGNJX],                     // Vectorial MIN/MAX and SGNJ
+                [VFCPKAB_S:VFCPKCD_D] : return 1'b1; // Vectorial FP cast and pack ops
+                default               : return 1'b0; // all other ops
             endcase
         end else
             return 1'b0;

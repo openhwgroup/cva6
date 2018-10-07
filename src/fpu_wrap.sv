@@ -25,8 +25,8 @@ module fpu_wrap (
     output logic                     fpu_ready_o,
     input  fu_op                     operator_i,
     input  logic [FLEN-1:0]          operand_a_i,
-    input  logic [FLEN-1:0]          operand_b_i,
-    input  logic [FLEN-1:0]          operand_c_i,
+    input  logic [FLEN-1:0]          operand_b_i, // imm will be here unless used as operand
+    input  logic [FLEN-1:0]          operand_c_i, // imm will be here unless used as operand
     input  logic [1:0]               fpu_fmt_i,
     input  logic [2:0]               fpu_rm_i,
     input  logic [2:0]               fpu_frm_i,
@@ -146,12 +146,13 @@ module fpu_wrap (
     always_comb begin : input_translation
 
         automatic logic vec_replication; // control honoring of replication flag
-        automatic logic check_ah;
+        automatic logic replicate_c;     // replicate operand C instead of B (for ADD/SUB)
+        automatic logic check_ah;        // Decide for AH from RM field encoding
 
         // Default Values
         operand_a_d         = operand_a_i;
-        operand_b_d         = operand_b_i;
-        operand_c_d         = operand_c_i;
+        operand_b_d         = operand_b_i; // immediates come through this port unless used as operand
+        operand_c_d         = operand_c_i; // immediates come through this port unless used as operand
         fpu_op_d            = OP_SGNJ; // sign injection by default
         fpu_op_mod_d        = 1'b0;
         fpu_fmt_d           = FMT_FP32;
@@ -161,7 +162,8 @@ module fpu_wrap (
         fpu_vec_op_d        = fu_i == FPU_VEC;
         fpu_tag_d           = trans_id_i;
         vec_replication     = fpu_rm_i[0]; // replication bit is sent via rm field
-        check_ah            = 1'b0; // whether set AH encoding from MSB of rm_i
+        replicate_c         = 1'b0;
+        check_ah            = 1'b0; // whether set scalar AH encoding from MSB of rm_i
 
         // Scalar Rounding Modes - some ops encode inside RM but use smaller range
         if (!(fpu_rm_i inside {[3'b000:3'b100]}))
@@ -192,11 +194,15 @@ module fpu_wrap (
         // Operations (this can modify the rounding mode field and format!)
         unique case (operator_i)
             // Addition
-            FADD      : fpu_op_d = OP_ADD;
+            FADD      : begin
+                fpu_op_d    = OP_ADD;
+                replicate_c = 1'b1; // second operand is in C
+            end
             // Subtraction is modified ADD
             FSUB      : begin
                 fpu_op_d     = OP_ADD;
                 fpu_op_mod_d = 1'b1;
+                replicate_c  = 1'b1; // second operand is in C
             end
             // Multiplication
             FMUL      : fpu_op_d = OP_MUL;
@@ -227,7 +233,7 @@ module fpu_wrap (
             // Float to Int Cast - Op encoded in lowest two imm bits or rm
             FCVT_F2I  : begin
                 fpu_op_d     = OP_F2I;
-                // Vectorial Ops encoded in rm (000-001)
+                // Vectorial Ops encoded in R bit
                 if (fpu_vec_op_d) begin
                     fpu_op_mod_d      = fpu_rm_i[0];
                     vec_replication = 1'b0; // no replication, R bit used for op
@@ -249,7 +255,7 @@ module fpu_wrap (
             // Int to Float Cast - Op encoded in lowest two imm bits or rm
             FCVT_I2F  : begin
                 fpu_op_d = OP_I2F;
-                // Vectorial Ops encoded in rm (000-001)
+                // Vectorial Ops encoded in R bit
                 if (fpu_vec_op_d) begin
                     fpu_op_mod_d      = fpu_rm_i[0];
                     vec_replication = 1'b0; // no replication, R bit used for op
@@ -303,7 +309,6 @@ module fpu_wrap (
                 fpu_rm_d          = 3'b011; // passthrough without checking nan-box
                 fpu_op_mod_d      = 1'b1; // no NaN-Boxing
                 check_ah          = 1'b1; // AH has RM MSB encoding
-                // operand_b_d       = operand_a_d;
                 vec_replication   = 1'b0; // no replication, we set second operand
             end
             // Move from GPR to FPR - mapped to NOP since no recoding
@@ -311,7 +316,6 @@ module fpu_wrap (
                 fpu_op_d          = OP_SGNJ;
                 fpu_rm_d          = 3'b011; // passthrough without checking nan-box
                 check_ah          = 1'b1; // AH has RM MSB encoding
-                // operand_b_d       = operand_a_d;
                 vec_replication   = 1'b0; // no replication, we set second operand
             end
             // Scalar Comparisons - op encoded in rm (000-010)
@@ -323,7 +327,7 @@ module fpu_wrap (
             // Classification
             FCLASS    : begin
                 fpu_op_d = OP_CLASS;
-                fpu_rm_d = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit
+                fpu_rm_d = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit - CLASS doesn't care anyways
                 check_ah = 1'b1; // AH has RM MSB encoding
             end
             // Vectorial Minimum - set up scalar encoding in rm
@@ -384,14 +388,36 @@ module fpu_wrap (
                 fpu_op_mod_d = 1'b1;   // invert output
                 fpu_rm_d     = 3'b000; // le
             end
+            // Vectorial Convert-and-Pack from FP32, lower 4 entries
+            VFCPKAB_S : begin
+                fpu_op_d        = OP_CPKAB;
+                fpu_op_mod_d    = fpu_rm_i[0]; // A/B selection from R bit
+                vec_replication = 1'b0;        // no replication, R bit used for op
+                fpu_fmt2_d      = FMT_FP32;    // Cast from FP32
+            end
+            // Vectorial Convert-and-Pack from FP32, upper 4 entries
+            VFCPKCD_S : begin
+                fpu_op_d        = OP_CPKCD;
+                fpu_op_mod_d    = fpu_rm_i[0]; // C/D selection from R bit
+                vec_replication = 1'b0;        // no replication, R bit used for op
+                fpu_fmt2_d      = FMT_FP64;    // Cast from FP64
+            end
+            // Vectorial Convert-and-Pack from FP64, lower 4 entries
+            VFCPKAB_S : begin
+                fpu_op_d        = OP_CPKAB;
+                fpu_op_mod_d    = fpu_rm_i[0]; // A/B selection from R bit
+                vec_replication = 1'b0;        // no replication, R bit used for op
+                fpu_fmt2_d      = FMT_FP64;    // Cast from FP64
+            end
+            // Vectorial Convert-and-Pack from FP64, upper 4 entries
+            VFCPKCD_S : begin
+                fpu_op_d        = OP_CPKCD;
+                fpu_op_mod_d    = fpu_rm_i[0]; // C/D selection from R bit
+                vec_replication = 1'b0;        // no replication, R bit used for op
+                fpu_fmt2_d      = FMT_FP64;    // Cast from FP64
+            end
 
-            // VFCPKAB_S :
-            // VFCPKCD_S :
-            // VFCPKAB_D :
-            // VFCPKCD_D :
-
-            // by default set opb = opa to have a sgnj nop
-            // default : operand_b_d = operand_a_d;
+            // No changes per default
             default : ; //nothing
         endcase
 
@@ -401,13 +427,23 @@ module fpu_wrap (
                 fpu_fmt_d = FMT_FP16ALT;
 
         // Replication
-        if (fpu_vec_op_d && vec_replication)
-            case (fpu_fmt_d)
-                FMT_FP32    : operand_b_d = RVD ? {2{operand_b_i[31:0]}} : operand_b_i;
-                FMT_FP16,
-                FMT_FP16ALT : operand_b_d = RVD ? {4{operand_b_i[15:0]}} : {2{operand_b_i[15:0]}};
-                FMT_FP8     : operand_b_d = RVD ? {8{operand_b_i[7:0]}}  : {4{operand_b_i[7:0]}};
-            endcase // fpu_fmt_d
+        if (fpu_vec_op_d && vec_replication) begin
+            if (replicate_c) begin
+                unique case (fpu_fmt_d)
+                    FMT_FP32    : operand_c_d = RVD ? {2{operand_c_i[31:0]}} : operand_c_i;
+                    FMT_FP16,
+                    FMT_FP16ALT : operand_c_d = RVD ? {4{operand_c_i[15:0]}} : {2{operand_c_i[15:0]}};
+                    FMT_FP8     : operand_c_d = RVD ? {8{operand_c_i[7:0]}}  : {4{operand_c_i[7:0]}};
+                endcase // fpu_fmt_d
+            end else begin
+                unique case (fpu_fmt_d)
+                    FMT_FP32    : operand_b_d = RVD ? {2{operand_b_i[31:0]}} : operand_b_i;
+                    FMT_FP16,
+                    FMT_FP16ALT : operand_b_d = RVD ? {4{operand_b_i[15:0]}} : {2{operand_b_i[15:0]}};
+                    FMT_FP8     : operand_b_d = RVD ? {8{operand_b_i[7:0]}}  : {4{operand_b_i[7:0]}};
+                endcase // fpu_fmt_d
+            end
+        end
     end
 
 

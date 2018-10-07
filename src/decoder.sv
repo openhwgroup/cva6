@@ -257,8 +257,18 @@ module decoder (
                             allow_replication      = 1'b1;
                             // decode vectorial FP instruction
                             unique case (instr.rvftype.vecfltop)
-                                5'b00001 : instruction_o.op = FADD; // vfadd.vfmt - Vectorial FP Addition
-                                5'b00010 : instruction_o.op = FSUB; // vfsub.vfmt - Vectorial FP Subtraction
+                                5'b00001 : begin
+                                    instruction_o.op  = FADD; // vfadd.vfmt - Vectorial FP Addition
+                                    instruction_o.rs1 = '0;                // Operand A is set to 0
+                                    instruction_o.rs2 = instr.rvftype.rs1; // Operand B is set to rs1
+                                    imm_select        = IIMM;              // Operand C is set to rs2
+                                end
+                                5'b00010 : begin
+                                    instruction_o.op  = FSUB; // vfsub.vfmt - Vectorial FP Subtraction
+                                    instruction_o.rs1 = '0;                // Operand A is set to 0
+                                    instruction_o.rs2 = instr.rvftype.rs1; // Operand B is set to rs1
+                                    imm_select        = IIMM;              // Operand C is set to rs2
+                                end
                                 5'b00011 : instruction_o.op = FMUL; // vfmul.vfmt - Vectorial FP Multiplication
                                 5'b00100 : instruction_o.op = FDIV; // vfdiv.vfmt - Vectorial FP Division
                                 5'b00101 : begin
@@ -285,6 +295,7 @@ module decoder (
                                 5'b01100 : begin
                                     unique case (instr.rvftype.rs2) inside // operation encoded in rs2, `inside` for matching ?
                                         5'b00000 : begin
+                                            instruction_o.rs2 = instr.rvftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
                                             if (instr.rvftype.repl)
                                                 instruction_o.op = FMV_F2X; // vfmv.x.vfmt - FPR to GPR Move
                                             else
@@ -300,7 +311,9 @@ module decoder (
                                         5'b00011 : instruction_o.op = FCVT_I2F; // vfcvt.vfmt.x - Vectorial Int to FP Conversion
                                         5'b001?? : begin
                                             instruction_o.op  = FCVT_F2F; // vfcvt.vfmt.vfmt - Vectorial FP to FP Conversion
-                                            allow_replication = 1'b0;     // R must not be set
+                                            instruction_o.rs2 = instr.rvftype.rd; // set rs2 = rd as target vector for conversion
+                                            imm_select        = IIMM;     // rs2 holds part of the intruction
+                                            // TODO CHECK R bit for valid fmt combinations
                                             // determine source format
                                             unique case (instr.rvftype.rs2[21:20])
                                                 // Only process instruction if corresponding extension is active (static)
@@ -320,7 +333,7 @@ module decoder (
                                 end
                                 5'b01110 : begin
                                     check_fprm = 1'b0;          // no rounding for sign-injection
-                                    instruction_o.op = VFSGNJN; // vfsgnjN.vfmt - Vectorial FP Negated Sign Injection
+                                    instruction_o.op = VFSGNJN; // vfsgnjn.vfmt - Vectorial FP Negated Sign Injection
                                 end
                                 5'b01111 : begin
                                     check_fprm = 1'b0;          // no rounding for sign-injection
@@ -351,8 +364,8 @@ module decoder (
                                     instruction_o.op = VFGT;    // vfgt.vfmt - Vectorial FP Greater Than
                                 end
                                 5'b11000 : begin
-                                    allow_replication = 1'b0; // no replication for cast-and-pack
                                     instruction_o.op  = VFCPKAB_S; // vfcpka/b.vfmt.s - Vectorial FP Cast-and-Pack from 2x FP32, lowest 4 entries
+                                    imm_select        = SIMM;      // rd into result field (upper bits don't matter)
                                     if (~RVF) illegal_instr = 1'b1; // if we don't support RVF, we can't cast from FP32
                                     // check destination format
                                     unique case (instr.rvftype.vfmt)
@@ -374,8 +387,8 @@ module decoder (
                                     endcase
                                 end
                                 5'b11001 : begin
-                                    allow_replication = 1'b0; // no replication for cast-and-pack
                                     instruction_o.op  = VFCPKCD_S; // vfcpkc/d.vfmt.s - Vectorial FP Cast-and-Pack from 2x FP32, second 4 entries
+                                    imm_select        = SIMM;      // rd into result field (upper bits don't matter)
                                     if (~RVF) illegal_instr = 1'b1; // if we don't support RVF, we can't cast from FP32
                                     // check destination format
                                     unique case (instr.rvftype.vfmt)
@@ -390,8 +403,8 @@ module decoder (
                                     endcase
                                 end
                                 5'b11010 : begin
-                                    allow_replication = 1'b0; // no replication for cast-and-pack
                                     instruction_o.op  = VFCPKAB_D; // vfcpka/b.vfmt.d - Vectorial FP Cast-and-Pack from 2x FP64, lowest 4 entries
+                                    imm_select        = SIMM;      // rd into result field (upper bits don't matter)
                                     if (~RVD) illegal_instr = 1'b1; // if we don't support RVD, we can't cast from FP64
                                     // check destination format
                                     unique case (instr.rvftype.vfmt)
@@ -413,8 +426,8 @@ module decoder (
                                     endcase
                                 end
                                 5'b11011 : begin
-                                    allow_replication = 1'b0; // no replication for cast-and-pack
                                     instruction_o.op  = VFCPKCD_D; // vfcpka/b.vfmt.d - Vectorial FP Cast-and-Pack from 2x FP64, second 4 entries
+                                    imm_select        = SIMM;      // rd into result field (upper bits don't matter)
                                     if (~RVD) illegal_instr = 1'b1; // if we don't support RVD, we can't cast from FP64
                                     // check destination format
                                     unique case (instr.rvftype.vfmt)
@@ -432,7 +445,7 @@ module decoder (
                             endcase
 
                             // check format
-                            unique case (instr.rftype.fmt)
+                            unique case (instr.rvftype.vfmt)
                                 // Only process instruction if corresponding extension is active (static)
                                 2'b00: if (~RVFVEC)     illegal_instr = 1'b1;
                                 2'b01: if (~XF16ALTVEC) illegal_instr = 1'b1;
@@ -735,11 +748,13 @@ module decoder (
                         unique case (instr.rftype.funct5)
                             5'b00000: begin
                                 instruction_o.op  = FADD;             // fadd.fmt - FP Addition
+                                instruction_o.rs1 = '0;               // Operand A is set to 0
                                 instruction_o.rs2 = instr.rftype.rs1; // Operand B is set to rs1
                                 imm_select        = IIMM;             // Operand C is set to rs2
                             end
                             5'b00001: begin
                                 instruction_o.op  = FSUB;  // fsub.fmt - FP Subtraction
+                                instruction_o.rs1 = '0;               // Operand A is set to 0
                                 instruction_o.rs2 = instr.rftype.rs1; // Operand B is set to rs1
                                 imm_select        = IIMM;             // Operand C is set to rs2
                             end
@@ -773,8 +788,9 @@ module decoder (
                                 end
                             end
                             5'b01000: begin
-                                instruction_o.op = FCVT_F2F; // fcvt.fmt.fmt - FP to FP Conversion
-                                imm_select       = IIMM;     // rs2 holds part of the intruction
+                                instruction_o.op  = FCVT_F2F; // fcvt.fmt.fmt - FP to FP Conversion
+                                instruction_o.rs2 = instr.rvftype.rs1; // tie rs2 to rs1 to be safe (vectors use rs2)
+                                imm_select        = IIMM;     // rs2 holds part of the intruction
                                 if (instr.rftype.rs2[24:23]) illegal_instr = 1'b1; // bits [22:20] used, other bits must be 0
                                 // check source format
                                 unique case (instr.rftype.rs2[22:20])

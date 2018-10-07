@@ -199,7 +199,8 @@ module issue_read_operands #(
         // default is regfiles (gpr or fpr)
         operand_a_n = operand_a_regfile;
         operand_b_n = operand_b_regfile;
-        // immediates are the third operands in the store case or for certain fp operations
+        // immediates are the third operands in the store case
+        // for FP operations, the imm field can also be the third operand from the regfile
         imm_n      = is_imm_fpr(issue_instr_i.op) ? operand_c_regfile : issue_instr_i.result;
         trans_id_n = issue_instr_i.trans_id;
         fu_n       = issue_instr_i.fu;
@@ -228,8 +229,8 @@ module issue_read_operands #(
             operand_a_n = {52'b0, issue_instr_i.rs1[4:0]};
         end
         // or is it an immediate (including PC), this is not the case for a store and control flow instructions
-        // also make sure the imm is not already used as an FP operand
-        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW) && !is_imm_fpr(issue_instr_i.op)) begin
+        // also make sure operand B is not already used as an FP operand
+        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW) && !is_rs2_fpr(issue_instr_i.op)) begin
             operand_b_n = issue_instr_i.result;
         end
     end
