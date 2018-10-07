@@ -190,7 +190,7 @@ class instruction_tracer;
         // print instruction to console
         string print_instr = iti.printInstr();
         if (ENABLE_SPIKE_COMMIT_LOG && !debug_mode) begin
-            $fwrite(this.commit_log, riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result));
+            $fwrite(this.commit_log, riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result, is_rd_fpr(sbe.op)));
         end
         uvm_report_info( "Tracer",  print_instr, UVM_HIGH);
         $fwrite(this.f, {print_instr, "\n"});

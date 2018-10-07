@@ -495,13 +495,14 @@ package riscv;
 
     // trace log compatible to spikes commit log feature
     // pragma translate_off
-    function string spikeCommitLog(logic [63:0] pc, priv_lvl_t priv_lvl, logic [31:0] instr, logic [4:0] rd, logic [63:0] result);
+    function string spikeCommitLog(logic [63:0] pc, priv_lvl_t priv_lvl, logic [31:0] instr, logic [4:0] rd, logic [63:0] result, logic rd_fpr);
         string rd_s;
+        automatic string rf_s = rd_fpr ? "f" : "x";
 
-        if (rd < 10) rd_s = $sformatf("x %0d", rd);
-        else rd_s = $sformatf("x%0d", rd);
+        if (rd < 10) rd_s = $sformatf("%s %0d", rf_s, rd);
+        else rd_s = $sformatf("%s%0d", rf_s, rd);
 
-        if (rd != 0) begin
+        if (rd_fpr || rd != 0) begin
             // 0 0x0000000080000118 (0xeecf8f93) x31 0x0000000080004000
             return $sformatf("%d 0x%h (0x%h) %s 0x%h\n", priv_lvl, pc, instr, rd_s, result);
         end else begin
