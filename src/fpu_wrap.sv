@@ -58,7 +58,8 @@ module fpu_wrap (
     logic [OPBITS-1:0] OP_F2I;
     logic [OPBITS-1:0] OP_I2F;
     logic [OPBITS-1:0] OP_F2F;
-    logic [OPBITS-1:0] OP_CPK;
+    logic [OPBITS-1:0] OP_CPKAB;
+    logic [OPBITS-1:0] OP_CPKCD;
 
     logic [FMTBITS-1:0] FMT_FP32;
     logic [FMTBITS-1:0] FMT_FP64;
@@ -90,7 +91,8 @@ module fpu_wrap (
         .OP_F2I       ( OP_F2I       ),
         .OP_I2F       ( OP_I2F       ),
         .OP_F2F       ( OP_F2F       ),
-        .OP_CPK       ( OP_CPK       ),
+        .OP_CPKAB     ( OP_CPKAB     ),
+        .OP_CPKCD     ( OP_CPKCD     ),
         .FMT_NUMBITS  ( FMT_NUMBITS  ),
         .FMT_FP32     ( FMT_FP32     ),
         .FMT_FP64     ( FMT_FP64     ),
@@ -146,6 +148,7 @@ module fpu_wrap (
         always_comb begin : input_translation
 
             automatic logic vec_replication; // control honoring of replication flag
+            automatic logic check_ah;
 
             // Default Values
             operand_a_n         = operand_a_i;
@@ -160,6 +163,7 @@ module fpu_wrap (
             fpu_vec_op_n        = fu_i == FPU_VEC;
             fpu_tag_n           = trans_id_i;
             vec_replication     = fpu_rm_i[0]; // replication bit is sent via rm field
+            check_ah            = 1'b0; // whether set AH encoding from MSB of rm_i
 
             // Scalar Rounding Modes - some ops encode inside RM but use smaller range
             if (!(fpu_rm_i inside {[3'b000:3'b100]}))
@@ -187,8 +191,8 @@ module fpu_wrap (
             endcase
 
 
-            // Operations (this can modify the rounding mode field!)
-            case (operator_i)
+            // Operations (this can modify the rounding mode field and format!)
+            unique case (operator_i)
                 // Addition
                 FADD      : fpu_op_n = OP_ADD;
                 // Subtraction is modified ADD
@@ -201,7 +205,11 @@ module fpu_wrap (
                 // Division
                 FDIV      : fpu_op_n = OP_DIV;
                 // Min/Max - OP is encoded in rm (000-001)
-                FMIN_MAX  : fpu_op_n = OP_MINMAX;
+                FMIN_MAX  : begin
+                    fpu_op_n = OP_MINMAX;
+                    fpu_rm_n = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit
+                    check_ah = 1'b1; // AH has RM MSB encoding
+                end
                 // Square Root
                 FSQRT     : fpu_op_n = OP_SQRT;
                 // Fused Multiply Add
@@ -286,26 +294,40 @@ module fpu_wrap (
                     end
                 end
                 // Scalar Sign Injection - op encoded in rm (000-010)
-                FSGNJ     : fpu_op_n = OP_SGNJ;
+                FSGNJ     : begin
+                    fpu_op_n    = OP_SGNJ;
+                    fpu_rm_n = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit
+                    check_ah = 1'b1; // AH has RM MSB encoding
+                end
                 // Move from FPR to GPR - mapped to SGNJ-passthrough since no recoding
                 FMV_F2X   : begin
                     fpu_op_n          = OP_SGNJ;
                     fpu_rm_n          = 3'b011; // passthrough without checking nan-box
                     fpu_op_mod_n      = 1'b1; // no NaN-Boxing
-                    operand_b_n       = operand_a_n;
+                    check_ah          = 1'b1; // AH has RM MSB encoding
+                    // operand_b_n       = operand_a_n;
                     vec_replication   = 1'b0; // no replication, we set second operand
                 end
                 // Move from GPR to FPR - mapped to NOP since no recoding
                 FMV_X2F   : begin
                     fpu_op_n          = OP_SGNJ;
                     fpu_rm_n          = 3'b011; // passthrough without checking nan-box
-                    operand_b_n       = operand_a_n;
+                    check_ah          = 1'b1; // AH has RM MSB encoding
+                    // operand_b_n       = operand_a_n;
                     vec_replication   = 1'b0; // no replication, we set second operand
                 end
                 // Scalar Comparisons - op encoded in rm (000-010)
-                FCMP      : fpu_op_n = OP_CMP;
+                FCMP      : begin
+                    fpu_op_n = OP_CMP;
+                    fpu_rm_n = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit
+                    check_ah = 1'b1; // AH has RM MSB encoding
+                end
                 // Classification
-                FCLASS    : fpu_op_n = OP_CLASS;
+                FCLASS    : begin
+                    fpu_op_n = OP_CLASS;
+                    fpu_rm_n = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit
+                    check_ah = 1'b1; // AH has RM MSB encoding
+                end
                 // Vectorial Minimum - set up scalar encoding in rm
                 VFMIN     : begin
                     fpu_op_n = OP_MINMAX;
@@ -371,8 +393,14 @@ module fpu_wrap (
                 // VFCPKCD_D :
 
                 // by default set opb = opa to have a sgnj nop
-                default : operand_b_n = operand_a_n;
+                // default : operand_b_n = operand_a_n;
+                default : ; //nothing
             endcase
+
+            // Scalar AH encoding fixing
+            if (!fpu_vec_op_n && check_ah)
+                if (fpu_rm_i[2])
+                    fpu_fmt_n = FMT_FP16ALT;
 
             // Replication
             if (fpu_vec_op_n && vec_replication)
@@ -384,10 +412,10 @@ module fpu_wrap (
                 endcase // fpu_fmt_n
 
             // Ugly but needs to be done: map additions to operands B and C
-            if (fpu_op_n == OP_ADD) begin
-                operand_c_n = operand_b_n;
-                operand_b_n = operand_a_n;
-            end
+            // if (fpu_op_n == OP_ADD) begin
+            //     operand_c_n = operand_b_n;
+            //     operand_b_n = operand_a_n;
+            // end
 
         end
 

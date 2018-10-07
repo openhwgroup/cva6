@@ -733,8 +733,16 @@ module decoder (
                         check_fprm        = 1'b1;
                         // decode FP instruction
                         unique case (instr.rftype.funct5)
-                            5'b00000: instruction_o.op = FADD;  // fadd.fmt - FP Addition
-                            5'b00001: instruction_o.op = FSUB;  // fsub.fmt - FP Subtraction
+                            5'b00000: begin
+                                instruction_o.op  = FADD;             // fadd.fmt - FP Addition
+                                instruction_o.rs2 = instr.rftype.rs1; // Operand B is set to rs1
+                                imm_select        = IIMM;             // Operand C is set to rs2
+                            end
+                            5'b00001: begin
+                                instruction_o.op  = FSUB;  // fsub.fmt - FP Subtraction
+                                instruction_o.rs2 = instr.rftype.rs1; // Operand B is set to rs1
+                                imm_select        = IIMM;             // Operand C is set to rs2
+                            end
                             5'b00010: instruction_o.op = FMUL;  // fmul.fmt - FP Multiplication
                             5'b00011: instruction_o.op = FDIV;  // fdiv.fmt - FP Division
                             5'b01011: begin

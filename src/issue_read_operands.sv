@@ -228,7 +228,8 @@ module issue_read_operands #(
             operand_a_n = {52'b0, issue_instr_i.rs1[4:0]};
         end
         // or is it an immediate (including PC), this is not the case for a store and control flow instructions
-        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW)) begin
+        // also make sure the imm is not already used as an FP operand
+        if (issue_instr_i.use_imm && (issue_instr_i.fu != STORE) && (issue_instr_i.fu != CTRL_FLOW) && !is_imm_fpr(issue_instr_i.op)) begin
             operand_b_n = issue_instr_i.result;
         end
     end

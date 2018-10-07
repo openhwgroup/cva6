@@ -291,10 +291,11 @@ package ariane_pkg;
             return 1'b0;
     endfunction;
 
-    // ternary operations encode the rs3 address in the imm field
+    // ternary operations encode the rs3 address in the imm field, also add/sub
     function automatic logic is_imm_fpr (input fu_op op);
         if (FP_PRESENT) begin // makes function static for non-fp case
             unique case (op) inside
+                [FADD:FSUB],                  // ADD/SUB need inputs as Operand B/C
                 [FMADD:FNMADD] : return 1'b1; // Fused Computational Operations
                 default        : return 1'b0; // all other ops
             endcase
