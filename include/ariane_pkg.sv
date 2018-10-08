@@ -45,6 +45,16 @@ package ariane_pkg;
     localparam bit XF8     = 1'b1; // Is quarter-precision float extension (Xf8) enabled
     localparam bit XFVEC   = 1'b1; // Is vectorial float extension (Xfvec) enabled
 
+    // Transprecision float unit
+    localparam logic [30:0] LAT_COMP_FP32    = 'd3;
+    localparam logic [30:0] LAT_COMP_FP64    = 'd4;
+    localparam logic [30:0] LAT_COMP_FP16    = 'd3;
+    localparam logic [30:0] LAT_COMP_FP16ALT = 'd3;
+    localparam logic [30:0] LAT_COMP_FP8     = 'd2;
+    localparam logic [30:0] LAT_DIVSQRT      = 'd2;
+    localparam logic [30:0] LAT_NONCOMP      = 'd1;
+    localparam logic [30:0] LAT_CONV         = 'd2;
+
     // --------------------------------------
     // vvvv Don't change these by hand! vvvv
     localparam bit FP_PRESENT = RVF | RVD | XF16 | XF16ALT | XF8;
@@ -92,7 +102,7 @@ package ariane_pkg;
                                               };
 
     // enables a commit log which matches spikes commit log format for easier trace comparison
-    localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b0;
+    localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
 
     // ------------- Dangerouse -------------
     // if set to zero a flush will not invalidate the cache-lines, in a single core environment

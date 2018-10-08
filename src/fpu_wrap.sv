@@ -131,13 +131,15 @@ module fpu_wrap (
 
     logic [TRANS_ID_BITS-1:0] fpu_tag_d, fpu_tag_q, fpu_tag;
 
-    logic fpu_in_ready, reg_in_ready;
-    logic fpu_in_valid, reg_in_valid;
-    logic fpu_out_ready, reg_out_ready;
-    logic fpu_out_valid, reg_out_valid;
+    logic fpu_in_ready, fpu_in_valid;
+    logic fpu_out_ready, fpu_out_valid;
 
     logic [4:0] fpu_status;
 
+    // FSM to handle protocol inversion
+    enum logic {READY, STALL} state_q, state_d;
+    logic hold_inputs;
+    logic use_hold;
 
     //-----------------------------
     // Translate inputs
@@ -451,29 +453,53 @@ module fpu_wrap (
     // Upstream protocol inversion: InValid depends on InReady
     //---------------------------------------------------------
 
-    // Input is ready whenever the register is free to accept a potentially spilling instruction
-    assign fpu_ready_o = ~reg_in_valid & (~reg_out_valid | reg_out_ready);
+    always_comb begin : p_inputFSM
+        // Default Values
+        fpu_ready_o  = 1'b0;
+        fpu_in_valid = 1'b0;
+        hold_inputs = 1'b0;    // hold register disabled
+        use_hold    = 1'b0;    // inputs go directly to unit
+        state_d     = state_q; // stay in the same state
 
-    // Input data goes to the buffer register if the received instruction cannot be handled
-    assign reg_in_valid = fpu_valid_i & ~fpu_in_ready;
+        // FSM
+        unique case (state_q)
+            // Default state, ready for instructions
+            READY : begin
+                fpu_ready_o  = 1'b1;        // Act as if FPU ready
+                fpu_in_valid = fpu_valid_i; // Forward input valid to FPU
+                // There is a transaction but the FPU can't handle it
+                if (fpu_valid_i & ~fpu_in_ready) begin
+                    fpu_ready_o = 1'b0;  // No token given to Issue
+                    hold_inputs = 1'b1;  // save inputs to the holding register
+                    state_d     = STALL; // stall future incoming requests
+                end
+            end
+            // We're stalling the upstream (ready=0)
+            STALL : begin
+                fpu_in_valid = 1'b1; // we have data for the FPU
+                use_hold     = 1'b1; // the data comes from the hold reg
+                // Wait until it's consumed
+                if (fpu_in_ready) begin
+                    fpu_ready_o = 1'b1;  // Give a token to issue
+                    state_d     = READY; // accept future requests
+                end
+            end
+            // Default: emit default values
+            default : ;
+        endcase
 
-    // Data being applied to unit is taken from the register if there's an instruction waiting
-    assign fpu_in_valid = reg_out_valid | fpu_valid_i;
+        // Flushing will override issue and go back to idle
+        if (flush_i) begin
+            fpu_in_valid = 1'b0;
+            state_d      = READY;
+        end
 
-    // The input register is ready to accept new data if:
-    // 1. The current instruction will be processed by the fpu
-    // 2. There is no instruction waiting in the register
-    assign reg_in_ready = reg_out_ready | ~reg_out_valid;
+    end
 
-    // Register output side is signalled ready if:
-    // 1. The operation held in the reg is valid and will be processed
-    // 2. The register doesn't hold a valid instructin
-    assign reg_out_ready = fpu_in_ready | ~reg_out_valid;
-
-    // Buffer register
-    always_ff @(posedge clk_i or negedge rst_ni) begin : fp_buffer_reg
+    // Buffer register and FSM state holding
+    always_ff @(posedge clk_i or negedge rst_ni) begin : fp_hold_reg
         if(~rst_ni) begin
-            reg_out_valid <= '0;
+            state_q       <= READY;
             operand_a_q   <= '0;
             operand_b_q   <= '0;
             operand_c_q   <= '0;
@@ -486,37 +512,36 @@ module fpu_wrap (
             fpu_vec_op_q  <= '0;
             fpu_tag_q     <= '0;
         end else begin
-            if (reg_out_ready || flush_i) begin // Only advance pipeline if unit is ready for our op
-                reg_out_valid <= reg_in_valid & ~flush_i;
-                if (reg_in_valid) begin // clock gate data to save poer
-                    operand_a_q   <= operand_a_d;
-                    operand_b_q   <= operand_b_d;
-                    operand_c_q   <= operand_c_d;
-                    fpu_op_q      <= fpu_op_d;
-                    fpu_op_mod_q  <= fpu_op_mod_d;
-                    fpu_fmt_q     <= fpu_fmt_d;
-                    fpu_fmt2_q    <= fpu_fmt2_d;
-                    fpu_ifmt_q    <= fpu_ifmt_d;
-                    fpu_rm_q      <= fpu_rm_d;
-                    fpu_vec_op_q  <= fpu_vec_op_d;
-                    fpu_tag_q     <= fpu_tag_d;
-                end
+            state_q       <= state_d;
+            // Hold register is [TRIGGERED] by FSM
+            if (hold_inputs) begin
+                operand_a_q   <= operand_a_d;
+                operand_b_q   <= operand_b_d;
+                operand_c_q   <= operand_c_d;
+                fpu_op_q      <= fpu_op_d;
+                fpu_op_mod_q  <= fpu_op_mod_d;
+                fpu_fmt_q     <= fpu_fmt_d;
+                fpu_fmt2_q    <= fpu_fmt2_d;
+                fpu_ifmt_q    <= fpu_ifmt_d;
+                fpu_rm_q      <= fpu_rm_d;
+                fpu_vec_op_q  <= fpu_vec_op_d;
+                fpu_tag_q     <= fpu_tag_d;
             end
         end
     end
 
-    // Select FPU input data: from register if valid data in register, else directly vom input
-    assign operand_a  = reg_out_valid ? operand_a_q  : operand_a_d;
-    assign operand_b  = reg_out_valid ? operand_b_q  : operand_b_d;
-    assign operand_c  = reg_out_valid ? operand_c_q  : operand_c_d;
-    assign fpu_op     = reg_out_valid ? fpu_op_q     : fpu_op_d;
-    assign fpu_op_mod = reg_out_valid ? fpu_op_mod_q : fpu_op_mod_d;
-    assign fpu_fmt    = reg_out_valid ? fpu_fmt_q    : fpu_fmt_d;
-    assign fpu_fmt2   = reg_out_valid ? fpu_fmt2_q   : fpu_fmt2_d;
-    assign fpu_ifmt   = reg_out_valid ? fpu_ifmt_q   : fpu_ifmt_d;
-    assign fpu_rm     = reg_out_valid ? fpu_rm_q     : fpu_rm_d;
-    assign fpu_vec_op = reg_out_valid ? fpu_vec_op_q : fpu_vec_op_d;
-    assign fpu_tag    = reg_out_valid ? fpu_tag_q    : fpu_tag_d;
+    // Select FPU input data: from register if valid data in register, else directly from input
+    assign operand_a  = use_hold ? operand_a_q  : operand_a_d;
+    assign operand_b  = use_hold ? operand_b_q  : operand_b_d;
+    assign operand_c  = use_hold ? operand_c_q  : operand_c_d;
+    assign fpu_op     = use_hold ? fpu_op_q     : fpu_op_d;
+    assign fpu_op_mod = use_hold ? fpu_op_mod_q : fpu_op_mod_d;
+    assign fpu_fmt    = use_hold ? fpu_fmt_q    : fpu_fmt_d;
+    assign fpu_fmt2   = use_hold ? fpu_fmt2_q   : fpu_fmt2_d;
+    assign fpu_ifmt   = use_hold ? fpu_ifmt_q   : fpu_ifmt_d;
+    assign fpu_rm     = use_hold ? fpu_rm_q     : fpu_rm_d;
+    assign fpu_vec_op = use_hold ? fpu_vec_op_q : fpu_vec_op_d;
+    assign fpu_tag    = use_hold ? fpu_tag_q    : fpu_tag_d;
 
     //---------------
     // FPU instance
@@ -532,14 +557,14 @@ module fpu_wrap (
         .Xf8                  ( XF8           ),
         .Xfvec                ( XFVEC         ),
         // TODO MOVE THESE VALUES TO PACKAGE
-        .LATENCY_COMP_F       ( 31'h2         ),
-        .LATENCY_COMP_D       ( 31'h3         ),
-        .LATENCY_COMP_Xf16    ( 31'h2         ),
-        .LATENCY_COMP_Xf16alt ( 31'h2         ),
-        .LATENCY_COMP_Xf8     ( 31'h1         ),
-        .LATENCY_DIVSQRT      ( 31'h1         ),
-        .LATENCY_NONCOMP      ( 31'h0         ),
-        .LATENCY_CONV         ( 31'h1         )
+        .LATENCY_COMP_F       ( LAT_COMP_FP32    ),
+        .LATENCY_COMP_D       ( LAT_COMP_FP64    ),
+        .LATENCY_COMP_Xf16    ( LAT_COMP_FP16    ),
+        .LATENCY_COMP_Xf16alt ( LAT_COMP_FP16ALT ),
+        .LATENCY_COMP_Xf8     ( LAT_COMP_FP8     ),
+        .LATENCY_DIVSQRT      ( LAT_DIVSQRT      ),
+        .LATENCY_NONCOMP      ( LAT_NONCOMP      ),
+        .LATENCY_CONV         ( LAT_CONV         )
     ) fpnew_top_i (
         .Clk_CI         ( clk_i          ),
         .Reset_RBI      ( rst_ni         ),
