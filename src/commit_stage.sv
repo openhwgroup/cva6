@@ -180,7 +180,7 @@ module commit_stage #(
             // ------------------
             // AMO
             // ------------------
-            if (instr_0_is_amo && !commit_instr_i[0].ex.valid) begin
+            if (RVA && instr_0_is_amo && !commit_instr_i[0].ex.valid) begin
                 // AMO finished
                 commit_ack_o[0] = amo_resp_i.ack;
                 // flush the pipeline

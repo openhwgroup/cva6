@@ -895,7 +895,7 @@ module decoder (
                     instruction_o.rd[4:0]  = instr.atype.rd;
                     // TODO(zarubaf): Ordering
                     // words
-                    if (instr.stype.funct3 == 3'h2) begin
+                    if (RVA && instr.stype.funct3 == 3'h2) begin
                         unique case (instr.instr[31:27])
                             5'h0:  instruction_o.op = AMO_ADDW;
                             5'h1:  instruction_o.op = AMO_SWAPW;
@@ -914,7 +914,7 @@ module decoder (
                             default: illegal_instr = 1'b1;
                         endcase
                     // double words
-                    end else if (instr.stype.funct3 == 3'h3) begin
+                    end else if (RVA && instr.stype.funct3 == 3'h3) begin
                         unique case (instr.instr[31:27])
                             5'h0:  instruction_o.op = AMO_ADDD;
                             5'h1:  instruction_o.op = AMO_SWAPD;

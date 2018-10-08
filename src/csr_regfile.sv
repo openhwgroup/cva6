@@ -219,7 +219,7 @@ module csr_regfile #(
                 riscv::CSR_PMPCFG0:            csr_rdata = pmpcfg0_q;
                 riscv::CSR_PMPADDR0:           csr_rdata = pmpaddr0_q;
                 riscv::CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
-                riscv::CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
+                riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
