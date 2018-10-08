@@ -101,7 +101,7 @@ module commit_stage #(
         if (commit_instr_i[0].valid && !halt_i) begin
             // we have to exclude the AMOs from debug mode as we are not jumping to debug
             // while committing an AMO
-            if ((!debug_req_i || debug_mode_i)) begin
+            if (!debug_req_i || debug_mode_i) begin
                 commit_ack_o[0] = 1'b1;
                 // register will be the all zero register.
                 // and also acknowledge the instruction, this is mainly done for the instruction tracer
