@@ -149,6 +149,7 @@ module ariane #(
     logic [4:0]               fflags_csr_commit;
     riscv::xs_t               fs;
     logic [2:0]               frm_csr_id_issue_ex;
+    logic [6:0]               fprec_csr_ex;
     logic                     enable_translation_csr_ex;
     logic                     en_ld_st_translation_csr_ex;
     riscv::priv_lvl_t         ld_st_priv_lvl_csr_ex;
@@ -383,6 +384,7 @@ module ariane #(
         .fpu_fmt_i              ( fpu_fmt_id_ex                          ),
         .fpu_rm_i               ( fpu_rm_id_ex                           ),
         .fpu_frm_i              ( frm_csr_id_issue_ex                    ),
+        .fpu_prec_i             ( fprec_csr_ex                           ),
         .fpu_trans_id_o         ( fpu_trans_id_ex_id                     ),
         .fpu_result_o           ( fpu_result_ex_id                       ),
         .fpu_valid_o            ( fpu_valid_ex_id                        ),
@@ -475,6 +477,7 @@ module ariane #(
         .fs_o                   ( fs                            ),
         .fflags_o               ( fflags_csr_commit             ),
         .frm_o                  ( frm_csr_id_issue_ex           ),
+        .fprec_o                ( fprec_csr_ex                  ),
         .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
         .en_translation_o       ( enable_translation_csr_ex     ),
         .en_ld_st_translation_o ( en_ld_st_translation_csr_ex   ),

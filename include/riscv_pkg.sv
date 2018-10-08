@@ -413,9 +413,10 @@ package riscv;
 
     // Floating-Point control and status register (32-bit!)
     typedef struct packed {
-        logic [31:8] reserved;  // reserved for L extension, return 0 otherwise
-        logic [2:0]  frm;       // float rounding mode
-        logic [4:0]  fflags;    // float exception flags
+        logic [31:15] reserved;  // reserved for L extension, return 0 otherwise
+        logic [6:0]   fprec;     // div/sqrt precision control
+        logic [2:0]   frm;       // float rounding mode
+        logic [4:0]   fflags;    // float exception flags
     } fcsr_t;
 
     // -----

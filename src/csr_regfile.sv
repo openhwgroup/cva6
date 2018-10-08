@@ -53,6 +53,7 @@ module csr_regfile #(
     output riscv::xs_t            fs_o,                       // Floating point extension status
     output logic [4:0]            fflags_o,                   // Floating-Point Accured Exceptions
     output logic [2:0]            frm_o,                      // Floating-Point Dynamic Rounding Mode
+    output logic [6:0]            fprec_o,                    // Floating-Point Precision Control
     // MMU
     output logic                  en_translation_o,           // enable VA translation
     output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
@@ -341,7 +342,7 @@ module csr_regfile #(
                         update_access_exception = 1'b1;
                     end else begin
                         dirty_fp_state_csr = 1'b1;
-                        fcsr_d[7:0]   = csr_wdata[7:0]; // ignore writes to reserved space
+                        fcsr_d[14:0]   = csr_wdata[14:0]; // ignore writes to reserved space
                         // this instruction has side-effects
                         flush_o = 1'b1;
                     end
@@ -900,6 +901,7 @@ module csr_regfile #(
     // FPU outputs
     assign fflags_o         = fcsr_q.fflags;
     assign frm_o            = fcsr_q.frm;
+    assign fprec_o          = fcsr_q.fprec;
     // MMU outputs
     assign satp_ppn_o       = satp_q.ppn;
     assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];

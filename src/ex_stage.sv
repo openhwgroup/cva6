@@ -70,6 +70,7 @@ module ex_stage #(
     input  logic [1:0]                             fpu_fmt_i,        // FP format
     input  logic [2:0]                             fpu_rm_i,         // FP rm
     input  logic [2:0]                             fpu_frm_i,        // FP frm csr
+    input  logic [6:0]                             fpu_prec_i,       // FP precision control
     output logic [TRANS_ID_BITS-1:0]               fpu_trans_id_o,
     output logic [63:0]                            fpu_result_o,
     output logic                                   fpu_valid_o,
