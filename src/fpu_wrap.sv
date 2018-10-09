@@ -490,7 +490,6 @@ module fpu_wrap (
 
         // Flushing will override issue and go back to idle
         if (flush_i) begin
-            fpu_in_valid = 1'b0;
             state_d      = READY;
         end
 
