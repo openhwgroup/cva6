@@ -31,7 +31,7 @@ module serpent_dcache #(
 
     // AMO interface
     input  amo_req_t                       amo_req_i,
-    output amo_resp_t                      amo_ack_o,
+    output amo_resp_t                      amo_resp_o,
    
     // Request ports
     input  dcache_req_i_t [2:0]            req_ports_i, 
@@ -48,7 +48,7 @@ module serpent_dcache #(
     localparam NUM_PORTS = 3;
 
     // miss unit <-> read controllers
-    logic cache_en, flush_en;
+    logic cache_en;
 
     // miss unit <-> memory
     logic                           wr_cl_vld;
@@ -116,10 +116,9 @@ module serpent_dcache #(
         .miss_o             ( miss_o             ),
         .wbuffer_empty_i    ( wbuffer_empty_o    ),
         .cache_en_o         ( cache_en           ),
-        .flush_en_o         ( flush_en           ),
         // amo interface 
         .amo_req_i          ( amo_req_i          ),
-        .amo_ack_o          ( amo_ack_o          ),
+        .amo_resp_o         ( amo_resp_o         ),
         // miss handling interface 
         .miss_req_i         ( miss_req           ),
         .miss_ack_o         ( miss_ack           ),
@@ -170,7 +169,6 @@ module serpent_dcache #(
             i_serpent_dcache_ctrl (
                 .clk_i           ( clk_i             ),
                 .rst_ni          ( rst_ni            ),
-                .flush_i         ( flush_en          ),
                 .cache_en_i      ( cache_en          ),
                 // reqs from core
                 .req_port_i      ( req_ports_i   [k] ),
@@ -217,7 +215,9 @@ module serpent_dcache #(
             .clk_i           ( clk_i               ),
             .rst_ni          ( rst_ni              ),
             .empty_o         ( wbuffer_empty_o     ),
+            // TODO: fix this
             .cache_en_i      ( cache_en            ),
+            // .cache_en_i      ( '0                  ),
             // request ports from core (store unit)
             .req_port_i      ( req_ports_i   [2]   ),
             .req_port_o      ( req_ports_o   [2]   ),

@@ -27,6 +27,7 @@ import tb_pkg::*;
 
 program tb_readport  #(
     parameter string PORT_NAME  = "read port 0",
+    parameter FLUSH_RATE        = 1,
     parameter KILL_RATE         = 5,
     parameter TLB_HIT_RATE      = 95,
     parameter MEM_WORDS         = 1024*1024,// in 64bit words
@@ -42,6 +43,7 @@ program tb_readport  #(
     input  logic [6:0]    req_rate_i, //a rate between 0 and 100 percent
     input  seq_t          seq_type_i,
     input  logic          tlb_rand_en_i,
+    input  logic          flush_rand_en_i,
     input  logic          seq_run_i,
     input  logic [31:0]   seq_num_resp_i,     
     input  logic          seq_last_i,
@@ -55,6 +57,8 @@ program tb_readport  #(
     input  logic [63:0]   act_paddr_i,
     
     // interface to DUT
+    output logic          flush_o,
+    input  logic          flush_ack_i,
     output dcache_req_i_t dut_req_port_o, 
     input  dcache_req_o_t dut_req_port_i
     );
@@ -136,6 +140,14 @@ program tb_readport  #(
 // Helper tasks
 ///////////////////////////////////////////////////////////////////////////////
 
+    task automatic flushCache();
+        flush_o      = 1'b1;
+        `APPL_WAIT_SIG(clk_i, flush_ack_i);
+        flush_o      = 0'b0;
+        `APPL_WAIT_CYC(clk_i,1)
+    endtask : flushCache
+        
+
     task automatic genRandReq();
         automatic logic [63:0] val;
         automatic logic [1:0] size;
@@ -158,27 +170,32 @@ program tb_readport  #(
                 dut_req_port_o.kill_req = 1'b0;
             end else begin
                 void'(randomize(val) with {val > 0; val <= 100;});
-                if(val < req_rate_i) begin 
-                    dut_req_port_o.data_req = 1'b1;
-                    // generate random address
-                    void'(randomize(val) with {val >= 0; val < (MEM_WORDS<<3);});
-                    void'(randomize(size));
-                    
-                    dut_req_port_o.data_size = size;
-                    paddr = val;
+                if(val < FLUSH_RATE && flush_rand_en_i) begin
+                    flushCache();
+                end else begin
+                    void'(randomize(val) with {val > 0; val <= 100;});
+                    if(val < req_rate_i) begin 
+                        dut_req_port_o.data_req = 1'b1;
+                        // generate random address
+                        void'(randomize(val) with {val >= 0; val < (MEM_WORDS<<3);});
+                        void'(randomize(size));
+                        
+                        dut_req_port_o.data_size = size;
+                        paddr = val;
 
-                    // align to size
-                    unique case(size)
-                        2'b01: paddr[0]   = 1'b0;
-                        2'b10: paddr[1:0] = 2'b00;
-                        2'b11: paddr[2:0] = 3'b000;
-                        default: ;
-                    endcase
+                        // align to size
+                        unique case(size)
+                            2'b01: paddr[0]   = 1'b0;
+                            2'b10: paddr[1:0] = 2'b00;
+                            2'b11: paddr[2:0] = 3'b000;
+                            default: ;
+                        endcase
 
-                    `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
+                        `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
+                    end
+                    `APPL_WAIT_CYC(clk_i,1)
                 end
-                `APPL_WAIT_CYC(clk_i,1)
-            end
+            end    
         end
 
         dut_req_port_o.data_req      = '0;
@@ -230,6 +247,7 @@ program tb_readport  #(
         dut_req_port_o.kill_req      = '0;
     endtask : genWrapSeq
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // Sequence application
 ///////////////////////////////////////////////////////////////////////////////
@@ -243,10 +261,12 @@ program tb_readport  #(
         dut_req_port_o.data_size     = '0;
         dut_req_port_o.kill_req      = '0;
         seq_end_ack                  = '0;  
+        flush_o                      = '0;
 
         // print some info
         $display("%s> current configuration:",  PORT_NAME);
         $display("%s> KILL_RATE          %d",   PORT_NAME, KILL_RATE);
+        $display("%s> FLUSH_RATE         %d",   PORT_NAME, FLUSH_RATE);
         $display("%s> TLB_HIT_RATE       %d",   PORT_NAME, TLB_HIT_RATE);
         $display("%s> RND_SEED           %d",   PORT_NAME, RND_SEED);
 

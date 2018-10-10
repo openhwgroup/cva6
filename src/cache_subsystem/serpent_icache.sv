@@ -426,33 +426,27 @@ module serpent_icache  #(
 ///////////////////////////////////////////////////////
 // tag comparison, hit generation
 ///////////////////////////////////////////////////////
-    
-    // tag comparison of way 0                                    
-    assign cl_hit[0] = (cl_tag_d == cl_tag_rdata[0]) & vld_rdata[0];
 
-    // use way 0 to bypass read data in case we missed on the cache or in case the req is NC
-    assign cl_sel[0] = (cmp_en_q & cl_hit[0]) ? cl_rdata[0][{cl_offset_q,3'b0} +: FETCH_WIDTH]:
-                       (cmp_en_q)             ? '0 :
-                                                mem_rtrn_i.data[{cl_offset_q,3'b0} +: FETCH_WIDTH];
-
+    logic [$clog2(ICACHE_SET_ASSOC)-1:0] hit_idx;
 
     generate 
-        for (genvar i=1;i<ICACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
-            // tag comparison of ways >0
+        for (genvar i=0;i<ICACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
             assign cl_hit[i] = (cl_tag_rdata[i] == cl_tag_d) & vld_rdata[i];
-
-            // byte offset mux of ways >0
-            assign cl_sel[i] = (cmp_en_q & cl_hit[i]) ? cl_rdata[i][{cl_offset_q,3'b0} +: FETCH_WIDTH] : '0;
+            assign cl_sel[i] = cl_rdata[i][{cl_offset_q,3'b0} +: FETCH_WIDTH];
         end
     endgenerate
-    
-    // OR reduction of selected cachelines
-    always_comb begin : p_reduction
-        dreq_o.data = cl_sel[0];
-        for(int i=1; i<ICACHE_SET_ASSOC;i++)
-            dreq_o.data |= cl_sel[i];
-    end
-    
+
+    lzc #(
+        .WIDTH ( ICACHE_SET_ASSOC )
+    ) i_lzc_hit (
+        .in_i    ( cl_hit  ),
+        .cnt_o   ( hit_idx ),
+        .empty_o (         )
+    );
+
+    assign dreq_o.data = ( cmp_en_q ) ? cl_sel[hit_idx] : 
+                                        mem_rtrn_i.data[{cl_offset_q,3'b0} +: FETCH_WIDTH];
+  
 ///////////////////////////////////////////////////////
 // memory arrays and regs
 ///////////////////////////////////////////////////////

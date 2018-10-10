@@ -45,19 +45,19 @@ module ariane #(
         
     `ifdef AXI64_CACHE_PORTS
        // memory side
-       AXI_BUS.Master                         instr_if,       // I$ refill port
-       AXI_BUS.Master                         data_if,       // D$ refill port
-       AXI_BUS.Master                         bypass_if      // bypass axi port (disabled D$ or uncacheable access)
-    `else    
-       // L15 (memory side)   
-       output logic                           l15_val_o,
-       input  logic                           l15_ack_i,
-       input  logic                           l15_header_ack_i,
-       output l15_req_t                       l15_data_o,
-              
-       input  logic                           l15_val_i,
-       output logic                           l15_req_ack_o,
-       input  l15_rtrn_t                      l15_rtrn_i
+       AXI_BUS.Master                          instr_if,       // I$ refill port
+       AXI_BUS.Master                          data_if,       // D$ refill port
+       AXI_BUS.Master                          bypass_if      // bypass axi port (disabled D$ or uncacheable access)
+    `else     
+       // L15 (memory side)    
+       output logic                            l15_val_o,
+       input  logic                            l15_ack_i,
+       input  logic                            l15_header_ack_i,
+       output l15_req_t                        l15_data_o,
+               
+       input  logic                            l15_val_i,
+       output logic                            l15_req_ack_o,
+       input  l15_rtrn_t                       l15_rtrn_i
     `endif   
 
     );
@@ -145,9 +145,10 @@ module ariane #(
     // CSR Commit
     logic                     csr_commit_commit_ex;
     // LSU Commit
-    logic                     lsu_commit_commit_ex;
-    logic                     lsu_commit_ready_ex_commit;
-    logic                     no_st_pending_ex_commit;
+    logic                     lsu_commit_req_commit_ex;
+    logic                     lsu_commit_ack_ex_commit;
+    logic                     no_st_pending_ex;
+    logic                     no_st_pending_commit;
     logic                     amo_valid_commit;
     // --------------
     // ID <-> COMMIT
@@ -230,6 +231,7 @@ module ariane #(
     // ----------------
     dcache_req_i_t [2:0]      dcache_req_ports_ex_cache;
     dcache_req_o_t [2:0]      dcache_req_ports_cache_ex;
+    logic                     dcache_commit_wbuffer_empty;
 
     // --------------
     // Frontend
@@ -371,10 +373,10 @@ module ariane #(
         .lsu_result_o           ( lsu_result_ex_id                       ),
         .lsu_trans_id_o         ( lsu_trans_id_ex_id                     ),
         .lsu_valid_o            ( lsu_valid_ex_id                        ),
-        .lsu_commit_i           ( lsu_commit_commit_ex                   ), // from commit
-        .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit             ), // to commit
+        .lsu_commit_req_i       ( lsu_commit_req_commit_ex               ), // from commit
+        .lsu_commit_ack_o       ( lsu_commit_ack_ex_commit               ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id                    ),
-        .no_st_pending_o        ( no_st_pending_ex_commit                ),
+        .no_st_pending_o        ( no_st_pending_ex                       ),
         .amo_valid_commit_i     ( amo_valid_commit                       ),
         .amo_req_o              ( amo_req                                ),
         .amo_resp_i             ( amo_resp                               ),
@@ -416,6 +418,11 @@ module ariane #(
     // ---------
     // Commit
     // ---------
+
+    // we have to make sure that the whole write buffer path is empty before 
+    // used e.g. for fence instructions.
+    assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
+
     commit_stage commit_stage_i (
         .clk_i,
         .rst_ni,
@@ -427,12 +434,12 @@ module ariane #(
         .single_step_i          ( single_step_csr_commit        ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
-        .no_st_pending_i        ( no_st_pending_ex_commit       ),
+        .no_st_pending_i        ( no_st_pending_commit          ),
         .waddr_o                ( waddr_commit_id               ),
         .wdata_o                ( wdata_commit_id               ),
         .we_o                   ( we_commit_id                  ),
-        .commit_lsu_o           ( lsu_commit_commit_ex          ),
-        .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
+        .commit_lsu_req_o       ( lsu_commit_req_commit_ex      ),
+        .commit_lsu_ack_i       ( lsu_commit_ack_ex_commit      ),
         .amo_valid_commit_o     ( amo_valid_commit              ),
         .amo_resp_i             ( amo_resp                      ),
         .commit_csr_o           ( csr_commit_commit_ex          ),
@@ -551,8 +558,13 @@ module ariane #(
     // -------------------
     // Cache Subsystem
     // -------------------
+    
 `ifdef SERPENT_PULP   
+    // this is a cache subsystem that is compatible with OpenPiton
     serpent_cache_subsystem #(
+`ifdef AXI64_CACHE_PORTS        
+        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                          ),
+`endif        
         .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
     ) i_cache_subsystem (
         // to D$
@@ -577,7 +589,8 @@ module ariane #(
         .dcache_miss_o         ( dcache_miss_cache_perf                ),
         .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
         .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),
-
+        // write buffer status
+        .wbuffer_empty_o       ( dcache_commit_wbuffer_empty           ),
 `ifdef AXI64_CACHE_PORTS
         // memory side
         .icache_data_if        ( instr_if                              ),
@@ -594,7 +607,9 @@ module ariane #(
 `endif   
   );
 `else 
+    
     std_cache_subsystem #(
+        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                          ),
         .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
     ) i_cache_subsystem (
         // to D$
@@ -616,6 +631,8 @@ module ariane #(
         .amo_req_i             ( amo_req                               ),
         .amo_resp_o            ( amo_resp                              ),
         .dcache_miss_o         ( dcache_miss_cache_perf                ),
+        // this is statically set to 1 as the std_cache does not have a wbuffer
+        .wbuffer_empty_o       ( dcache_commit_wbuffer_empty           ),
         // from PTW, Load Unit  and Store Unit
         .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
         .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),

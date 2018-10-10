@@ -32,7 +32,7 @@ torture-logs := -log
 ariane_pkg := include/riscv_pkg.sv         \
               src/debug/dm_pkg.sv          \
               src/axi/src/axi_pkg.sv       \
-			  include/ariane_pkg.sv        \
+              include/ariane_pkg.sv        \
               include/std_cache_pkg.sv     \
               include/serpent_cache_pkg.sv \
               include/axi_intf.sv
@@ -91,7 +91,7 @@ riscv-benchmarks-list := ci/riscv-benchmarks.list
 riscv-asm-tests       := $(shell xargs printf '\n%s' < $(riscv-asm-tests-list)  | cut -b 1-)
 riscv-benchmarks      := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 # preset which runs a single test
-riscv-test ?= rv64ui-p-add
+riscv-test ?= $(riscv-benchmarks-dir)/towers.riscv
 
 # Search here for include files (e.g.: non-standalone components)
 incdir :=
@@ -143,15 +143,15 @@ sim: build
 	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}    \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0        \
 	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " log -r /*; run -all; exit"            \
-    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
+	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " log -r /*; run -all;"                 \
+    ${top_level}_optimized +permissive-off ++$(riscv-test) ++$(target-options)
 
 simc: build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
 	$(QUESTASIM_FLAGS)                                                                                            \
 	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do " run -all; exit"                       \
-    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$(riscv-test) ++$(target-options)
+    ${top_level}_optimized +permissive-off ++$(riscv-test) ++$(target-options)
 
 $(riscv-asm-tests): build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \

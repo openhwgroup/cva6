@@ -225,26 +225,14 @@ module tb_mem #(
                 DCACHE_LOAD_REQ: begin
                     infifo_data.tid = outfifo_data.tid;
                     infifo_data.nc  = outfifo_data.nc;
-                    // openpiton replicates the data if size < dword
+                    infifo_data.data = 'x;
                     unique case(outfifo_data.size)
-                        3'b000: begin
-                            for(int k=0;k<64;k+=8) infifo_data.data[k+:8]  = mem_array_q[outfifo_data.paddr>>3][outfifo_data.paddr[2:0]*8 +: 8];
-                        end    
-                        3'b001: begin
-                            for(int k=0;k<64;k+=16) infifo_data.data[k+:16] = mem_array_q[outfifo_data.paddr>>3][outfifo_data.paddr[2:1]*16+:16];
-                        end    
-                        3'b010: begin
-                            for(int k=0;k<64;k+=32) infifo_data.data[k+:32] = mem_array_q[outfifo_data.paddr>>3][outfifo_data.paddr[2]  *32+:32];
-                        end    
-                        3'b011: infifo_data.data[0+:64] = mem_array_q[outfifo_data.paddr>>3];
-                        3'b111: begin// full cacheline
-                            for (int k=0; k<DCACHE_LINE_WIDTH/64; k++) begin
-                                infifo_data.data[k*64 +:64] = mem_array_q[(outfifo_data.paddr>>3) + k];
-                            end    
-                        end    
-                        default: begin
-                            $fatal(1,"unsupported transfer size for read");
-                        end    
+                        3'b000: for(int k=0;k<64;k+=8)  infifo_data.data[outfifo_data.paddr[2:0]*8 +: 8] = mem_array_q[outfifo_data.paddr>>3][outfifo_data.paddr[2:0]*8 +: 8];
+                        3'b001: for(int k=0;k<64;k+=16) infifo_data.data[outfifo_data.paddr[2:1]*16+:16] = mem_array_q[outfifo_data.paddr>>3][outfifo_data.paddr[2:1]*16+:16];
+                        3'b010: for(int k=0;k<64;k+=32) infifo_data.data[outfifo_data.paddr[2]  *32+:32] = mem_array_q[outfifo_data.paddr>>3][outfifo_data.paddr[2]  *32+:32];
+                        3'b011:                                                  infifo_data.data[0+:64] = mem_array_q[outfifo_data.paddr>>3];
+                        3'b111: for(int k=0; k<DCACHE_LINE_WIDTH/64; k++) infifo_data.data[k*64 +:64]    = mem_array_q[(outfifo_data.paddr>>3) + k];
+                        default: $fatal(1,"unsupported transfer size for read");
                     endcase // infifo_data.size                    
                 end 
                 DCACHE_STORE_REQ:  begin

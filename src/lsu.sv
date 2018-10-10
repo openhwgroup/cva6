@@ -34,8 +34,8 @@ module lsu #(
     output logic [TRANS_ID_BITS-1:0] lsu_trans_id_o,           // ID of scoreboard entry at which to write back
     output logic [63:0]              lsu_result_o,
     output logic                     lsu_valid_o,              // transaction id for which the output is the requested one
-    input  logic                     commit_i,                 // commit the pending store
-    output logic                     commit_ready_o,           // commit queue is ready to accept another commit request
+    input  logic                     commit_req_i,             // request to commit the pending store
+    output logic                     commit_ack_o,             // acknowledged it the queue is ready to accept the commit request
 
     input  logic                     enable_translation_i,     // enable virtual memory translation
     input  logic                     en_ld_st_translation_i,   // enable virtual memory translation for load/stores
@@ -149,8 +149,8 @@ module lsu #(
         .valid_i               ( st_valid_i           ),
         .lsu_ctrl_i            ( lsu_ctrl             ),
         .pop_st_o              ( pop_st               ),
-        .commit_i,
-        .commit_ready_o,
+        .commit_req_i,
+        .commit_ack_o,
         .amo_valid_commit_i,
 
         .valid_o               ( st_valid             ),

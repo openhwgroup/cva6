@@ -24,16 +24,15 @@ module serpent_dcache_missunit #(
     input  logic                                       rst_ni,      // Asynchronous reset active low
     // cache management, signals from/to core
     input  logic                                       enable_i,    // from CSR
-    input  logic                                       flush_i,     // high until acknowledged
+    input  logic                                       flush_i,     // flush request, this waits for pending tx (write, read) to finish and will clear the cache
     output logic                                       flush_ack_o, // send a single cycle acknowledge signal when the cache is flushed
     output logic                                       miss_o,      // we missed on a ld/st
     // local cache management signals            
     input  logic                                       wbuffer_empty_i,
     output logic                                       cache_en_o,  // local cache enable signal
-    output logic                                       flush_en_o,  // local flush enable signal
     // AMO interface            
     input  amo_req_t                                   amo_req_i,
-    output amo_resp_t                                  amo_ack_o,
+    output amo_resp_t                                  amo_resp_o,
     // miss handling interface (ld, ptw, wbuffer)
     input  logic [NUM_PORTS-1:0]                       miss_req_i,
     output logic [NUM_PORTS-1:0]                       miss_ack_o,
@@ -71,7 +70,7 @@ module serpent_dcache_missunit #(
 );
 
     // controller FSM
-    typedef enum logic[2:0] {IDLE, DRAIN, AMO, AMO_WAIT, FLUSH} state_t;
+    typedef enum logic[2:0] {IDLE, DRAIN, AMO,  FLUSH, STORE_WAIT, LOAD_WAIT, AMO_WAIT} state_t;
     state_t state_d, state_q;
 
     // MSHR for reads
@@ -90,15 +89,17 @@ module serpent_dcache_missunit #(
     logic mshr_vld_d, mshr_vld_q, mshr_vld_q1;
     logic mshr_allocate;
     logic update_lfsr, all_ways_valid;
-
+    
     logic enable_d, enable_q;
     logic flush_ack_d, flush_ack_q; 
     logic flush_en, flush_done;
-    logic amo_sel, mask_reads, miss_is_write;
-    logic [63:0] amo_data;
+    logic mask_reads, lock_reqs;
+    logic amo_sel, miss_is_write;
+    logic [63:0] amo_data, tmp_paddr;
+    
     logic [$clog2(NUM_PORTS)-1:0] miss_port_idx;
     logic [DCACHE_CL_IDX_WIDTH-1:0] cnt_d, cnt_q;
-    logic [NUM_PORTS-1:0] miss_req;
+    logic [NUM_PORTS-1:0] miss_req_masked_d, miss_req_masked_q;
     
     logic inv_vld, inv_vld_all, cl_write_en;
     logic load_ack, store_ack, amo_ack;
@@ -115,17 +116,23 @@ module serpent_dcache_missunit #(
     assign cnt_d           = (flush_en) ? cnt_q + 1 : '0; 
     assign flush_done      = (cnt_q == DCACHE_NUM_WORDS-1);      
 
-    assign miss_req        = (mask_reads) ? miss_we_i & miss_req_i : miss_req_i;
-    assign miss_is_write   = miss_we_i[miss_port_idx];
+    assign miss_req_masked_d = ( lock_reqs  ) ? miss_req_masked_q      :
+                               ( mask_reads ) ? miss_we_i & miss_req_i : miss_req_i;
+    assign miss_is_write     = miss_we_i[miss_port_idx];
     
-    // determine which port to serve (lower indices have higher prio)
+    // read port arbiter
     lzc #(
         .WIDTH ( NUM_PORTS )
-    ) i_port (
-        .in_i    ( miss_req      ),
-        .cnt_o   ( miss_port_idx ),
-        .empty_o (               )
+    ) i_lzc_reqs (
+        .in_i    ( miss_req_masked_d ),
+        .cnt_o   ( miss_port_idx     ),
+        .empty_o (                   )
     );
+
+    always_comb begin : p_ack
+        miss_ack_o = '0;
+        miss_ack_o[miss_port_idx] = mem_data_ack_i & mem_data_req_o;
+    end
 
 ///////////////////////////////////////////////////////
 // MSHR and way replacement logic (only for read ops)
@@ -134,16 +141,16 @@ module serpent_dcache_missunit #(
     // find invalid cache line
     lzc #(
         .WIDTH ( DCACHE_SET_ASSOC )
-    ) i_lzc (
+    ) i_lzc_inv (
         .in_i    ( ~miss_vld_bits_i[miss_port_idx] ),
-        .cnt_o   ( inv_way        ),
-        .empty_o ( all_ways_valid )
+        .cnt_o   ( inv_way                         ),
+        .empty_o ( all_ways_valid                  )
     );
 
     // generate random cacheline index
     lfsr_8bit #(
         .WIDTH ( DCACHE_SET_ASSOC )
-    ) i_lfsr (
+    ) i_lfsr_inv (
         .clk_i          ( clk_i       ),
         .rst_ni         ( rst_ni      ),
         .en_i           ( update_lfsr ),
@@ -179,6 +186,7 @@ module serpent_dcache_missunit #(
     // read/write collision, stalls the corresponding request
     // write collides with MSHR
     assign mshr_rdwr_collision = (mshr_q.paddr[63:DCACHE_OFFSET_WIDTH] == miss_paddr_i[NUM_PORTS-1][63:DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
+    
     // read collides with inflight TX
     always_comb begin : p_tx_coll
         tx_rdwr_collision = 1'b0;
@@ -197,8 +205,8 @@ module serpent_dcache_missunit #(
                                                          amo_req_i.operand_b;
     
     // always sign extend 32bit values                                             
-    assign amo_ack_o.result = (amo_req_i.size==2'b10) ? $signed(mem_rtrn_i.data[amo_req_i.operand_a[2]*32 +: 32]) : 
-                                                        mem_rtrn_i.data[63:0];                                             
+    assign amo_resp_o.result = (amo_req_i.size==2'b10) ? $signed(mem_rtrn_i.data[amo_req_i.operand_a[2]*32 +: 32]) : 
+                                                         mem_rtrn_i.data[63:0];                                             
 
     // outgoing memory requests
     assign mem_data_o.tid    = (amo_sel) ? '0                  : miss_wr_id_i[miss_port_idx];
@@ -208,17 +216,8 @@ module serpent_dcache_missunit #(
     assign mem_data_o.size   = (amo_sel) ? amo_req_i.size      : miss_size_i [miss_port_idx];
     assign mem_data_o.amo_op = (amo_sel) ? amo_req_i.amo_op    : AMO_NONE;
 
-    // align address depending on transfer size
-    always_comb begin : p_align
-        mem_data_o.paddr = (amo_sel) ? amo_req_i.operand_a : miss_paddr_i[miss_port_idx];
-        unique case (mem_data_o.size)
-            3'b001: mem_data_o.paddr[0:0]                     = '0;
-            3'b010: mem_data_o.paddr[1:0]                     = '0;
-            3'b011: mem_data_o.paddr[2:0]                     = '0;
-            3'b111: mem_data_o.paddr[DCACHE_OFFSET_WIDTH-1:0] = '0; 
-            default: ;
-        endcase
-    end                                                            
+    assign tmp_paddr         = (amo_sel) ? amo_req_i.operand_a : miss_paddr_i[miss_port_idx];
+    assign mem_data_o.paddr  = serpent_cache_pkg::paddrSizeAlign(tmp_paddr, mem_data_o.size);
 
 ///////////////////////////////////////////////////////
 // responses from memory 
@@ -299,21 +298,21 @@ module serpent_dcache_missunit #(
     always_comb begin : p_fsm
         // default assignment
         state_d          = state_q;
+        
+        flush_ack_o      = 1'b0;
+        mem_data_o.rtype = DCACHE_LOAD_REQ;
+        mem_data_req_o   = 1'b0;
+        amo_resp_o.ack   = 1'b0;
+        miss_replay_o    = '0;
+        
         // disabling cache is possible anytime, enabling goes via flush
         enable_d         = enable_q & enable_i;
         flush_ack_d      = flush_ack_q; 
-        flush_ack_o      = 1'b0;
-        flush_en_o       = 1'b0;
         flush_en         = 1'b0;
-        
-        mem_data_o.rtype = DCACHE_LOAD_REQ;
-        mem_data_req_o   = 1'b0;
         amo_sel          = 1'b0;
-        amo_ack_o.ack    = 1'b0;
         update_lfsr      = 1'b0;
         mshr_allocate    = 1'b0;
-        miss_ack_o       = '0;
-        miss_replay_o    = '0;
+        lock_reqs        = 1'b0;
         mask_reads       = mshr_vld_q;
 
         // interfaces 
@@ -322,27 +321,29 @@ module serpent_dcache_missunit #(
             // wait for misses / amo ops
             IDLE: begin
                 if(flush_i | (enable_i & ~enable_q)) begin 
-                    if(wbuffer_empty_i) begin
+                    if(wbuffer_empty_i && ~mshr_vld_q) begin
                         flush_ack_d = flush_i;
                         state_d     = FLUSH;
                     end else begin
                         state_d     = DRAIN;
                     end    
                 end else if(amo_req_i.req) begin
-                    if(wbuffer_empty_i) begin
+                    if(wbuffer_empty_i && ~mshr_vld_q) begin
                         state_d     = AMO;
                     end else begin
                         state_d     = DRAIN;
                     end
-                // we've got a miss
-                end else if(|miss_req) begin
+                // we've got a miss to handle
+                end else if(|miss_req_masked_d) begin
                     // this is a write miss, just pass through (but check whether write collides with MSHR)
                     if(miss_is_write) begin
                         // stall in case this write collides with the MSHR address
                         if(~mshr_rdwr_collision) begin
                             mem_data_req_o            = 1'b1;
                             mem_data_o.rtype          = DCACHE_STORE_REQ;
-                            miss_ack_o[miss_port_idx] = mem_data_ack_i;    
+                            if(~mem_data_ack_i) begin
+                                state_d = STORE_WAIT;
+                            end                    
                         end    
                     // this is a read miss, can only allocate 1 MSHR
                     // in case of a load_ack we can accept a new miss, since the MSHR is being cleared
@@ -355,23 +356,46 @@ module serpent_dcache_missunit #(
                         end else if(~tx_rdwr_collision) begin    
                             mem_data_req_o            = 1'b1;
                             mem_data_o.rtype          = DCACHE_LOAD_REQ;
-                            miss_ack_o[miss_port_idx] = mem_data_ack_i;
-                            mshr_allocate             = mem_data_ack_i;
                             update_lfsr               = all_ways_valid & mem_data_ack_i;// need to evict a random way    
+                            mshr_allocate             = mem_data_ack_i;
+                            if(~mem_data_ack_i) begin
+                                state_d = LOAD_WAIT;
+                            end
                         end    
                     end
                 end     
             end
+            //////////////////////////////////
+            // wait until this request is acked
+            STORE_WAIT: begin
+                lock_reqs                 = 1'b1; 
+                mem_data_req_o            = 1'b1;
+                mem_data_o.rtype          = DCACHE_STORE_REQ;
+                if(mem_data_ack_i) begin
+                    state_d = IDLE;
+                end
+            end       
+            //////////////////////////////////
+            // wait until this request is acked
+            LOAD_WAIT: begin
+                lock_reqs                 = 1'b1; 
+                mem_data_req_o            = 1'b1;
+                mem_data_o.rtype          = DCACHE_LOAD_REQ;
+                if(mem_data_ack_i) begin
+                    update_lfsr   = all_ways_valid;// need to evict a random way    
+                    mshr_allocate = 1'b1;;
+                    state_d       = IDLE;
+                end   
+            end    
             //////////////////////////////////
             // only handle stores, do not accept new read requests
             // wait until MSHR is cleared and wbuffer is empty
             DRAIN: begin
                 mask_reads = 1'b1;
                 // these are writes, check whether they collide with MSHR
-                if(|miss_req && ~mshr_rdwr_collision) begin
+                if(|miss_req_masked_d && ~mshr_rdwr_collision) begin
                     mem_data_req_o            = 1'b1;
                     mem_data_o.rtype          = DCACHE_STORE_REQ;
-                    miss_ack_o[miss_port_idx] = mem_data_ack_i;    
                 end        
 
                 if(wbuffer_empty_i && ~mshr_vld_q) begin 
@@ -383,9 +407,6 @@ module serpent_dcache_missunit #(
             FLUSH: begin
                 // internal flush signal 
                 flush_en   = 1'b1;
-                // only flush port controllers if this is a real flush 
-                // (i.e., not only a "clear" upon enabling the cache)
-                flush_en_o = flush_ack_q;
                 if(flush_done) begin 
                     state_d     = IDLE;
                     flush_ack_o = flush_ack_q;
@@ -408,8 +429,8 @@ module serpent_dcache_missunit #(
             AMO_WAIT: begin
                 amo_sel = 1'b1;
                 if(amo_ack) begin
-                    amo_ack_o.ack = 1'b1;
-                    state_d       = IDLE;
+                    amo_resp_o.ack = 1'b1;
+                    state_d        = IDLE;
                 end            
             end    
             //////////////////////////////////
@@ -434,6 +455,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
         mshr_vld_q1           <= '0;
         mshr_q                <= '0;
         mshr_rdrd_collision_q <= '0;
+        miss_req_masked_q     <= '0;
     end else begin
         state_q               <= state_d;
         cnt_q                 <= cnt_d;
@@ -443,6 +465,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
         mshr_vld_q1           <= mshr_vld_q;
         mshr_q                <= mshr_d;
         mshr_rdrd_collision_q <= mshr_rdrd_collision_d;
+        miss_req_masked_q     <= miss_req_masked_d;
     end
 end
 

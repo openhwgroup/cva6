@@ -23,8 +23,8 @@ module store_unit (
     input  logic                     valid_i,
     input  lsu_ctrl_t                lsu_ctrl_i,
     output logic                     pop_st_o,
-    input  logic                     commit_i,
-    output logic                     commit_ready_o,
+    input  logic                     commit_req_i,
+    output logic                     commit_ack_o,
     input  logic                     amo_valid_commit_i,
     // store unit output port
     output logic                     valid_o,
@@ -219,8 +219,8 @@ module store_unit (
         .no_st_pending_o,
         .page_offset_i,
         .page_offset_matches_o,
-        .commit_i,
-        .commit_ready_o,
+        .commit_req_i,
+        .commit_ack_o,
         .ready_o               ( store_buffer_ready     ),
         .valid_i               ( store_buffer_valid     ),
         // the flush signal can be critical and we need this valid

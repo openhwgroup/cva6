@@ -50,6 +50,7 @@ module tb;
     parameter TLB_HIT_RATE       = 95;
 
     // parameters for random read sequences (in %)
+    parameter FLUSH_RATE         = 10;
     parameter KILL_RATE          = 5;
     
     parameter VERBOSE            = 0;
@@ -64,7 +65,7 @@ module tb;
     logic                           miss_o;      
     logic                           wbuffer_empty_o;
     amo_req_t                       amo_req_i;
-    amo_resp_t                      amo_ack_o;
+    amo_resp_t                      amo_resp_o;
     dcache_req_i_t [2:0]            req_ports_i;  
     dcache_req_o_t [2:0]            req_ports_o;  
     logic                           mem_rtrn_vld_i;
@@ -113,6 +114,8 @@ module tb;
     resp_fifo_t  fifo_data_in[1:0];
     resp_fifo_t  fifo_data[1:0];
     logic [1:0]  fifo_push, fifo_pop, fifo_flush;
+    logic [2:0]  flush;
+    logic flush_rand_en;
 
 ///////////////////////////////////////////////////////////////////////////////
 // helper tasks
@@ -130,9 +133,9 @@ module tb;
     endtask : runSeq
 
     task automatic flushCache();
-        flush_i      = 1'b1;
+        flush[2]      = 1'b1;
         `APPL_WAIT_SIG(clk_i, flush_ack_o);
-        flush_i      = 0'b0;
+        flush[2]      = 0'b0;
         `APPL_WAIT_CYC(clk_i,1)
     endtask : flushCache
 
@@ -212,7 +215,7 @@ module tb;
         .miss_o          ( miss_o          ),
         .wbuffer_empty_o ( wbuffer_empty_o ),
         .amo_req_i       ( amo_req_i       ),
-        .amo_ack_o       ( amo_ack_o       ),
+        .amo_resp_o      ( amo_resp_o      ),
         .req_ports_i     ( req_ports_i     ),
         .req_ports_o     ( req_ports_o     ),
         .mem_rtrn_vld_i  ( mem_rtrn_vld_i  ),
@@ -242,7 +245,7 @@ module tb;
             
             assign exp_rdata[k]  = mem_array[fifo_data[k].paddr>>3];                                       
             assign fifo_push[k]  = req_ports_i[k].data_req & req_ports_o[k].data_gnt;                               
-            assign fifo_flush[k] = req_ports_i[k].kill_req | flush_i;
+            assign fifo_flush[k] = req_ports_i[k].kill_req;
             assign fifo_pop[k]   = req_ports_o[k].data_rvalid;
 
             fifo_v2 #(
@@ -265,7 +268,8 @@ module tb;
     endgenerate       
 
     tb_readport #(
-        .PORT_NAME     ( "RD0"         ),
+        .PORT_NAME     ( "RD0"         ), 
+        .FLUSH_RATE    ( FLUSH_RATE    ),
         .KILL_RATE     ( KILL_RATE     ),
         .TLB_HIT_RATE  ( TLB_HIT_RATE  ),
         .MEM_WORDS     ( MEM_WORDS     ),
@@ -273,27 +277,31 @@ module tb;
         .RND_SEED      ( 5555555       ),
         .VERBOSE       ( VERBOSE       )
     ) i_tb_readport0 (
-        .clk_i          ( clk_i               ),
-        .rst_ni         ( rst_ni              ),
-        .test_name_i    ( test_name           ),
-        .req_rate_i     ( req_rate[0]         ),
-        .seq_type_i     ( seq_type[0]         ),
-        .tlb_rand_en_i  ( tlb_rand_en         ),
-        .seq_run_i      ( seq_run             ),
-        .seq_num_resp_i ( seq_num_resp        ),     
-        .seq_last_i     ( seq_last            ),
-        .seq_done_o     ( seq_done[0]         ),
-        .exp_paddr_o    ( exp_paddr[0]        ),
-        .exp_size_i     ( fifo_data[0].size   ),
-        .exp_paddr_i    ( fifo_data[0].paddr  ), 
-        .exp_rdata_i    ( exp_rdata[0]        ),
-        .act_paddr_i    ( act_paddr[0]        ),
-        .dut_req_port_o ( req_ports_i[0]      ),
-        .dut_req_port_i ( req_ports_o[0]      )
+        .clk_i           ( clk_i               ),
+        .rst_ni          ( rst_ni              ),
+        .test_name_i     ( test_name           ),
+        .req_rate_i      ( req_rate[0]         ),
+        .seq_type_i      ( seq_type[0]         ),
+        .tlb_rand_en_i   ( tlb_rand_en         ),
+        .flush_rand_en_i ( flush_rand_en       ),
+        .seq_run_i       ( seq_run             ),
+        .seq_num_resp_i  ( seq_num_resp        ),     
+        .seq_last_i      ( seq_last            ),
+        .seq_done_o      ( seq_done[0]         ),
+        .exp_paddr_o     ( exp_paddr[0]        ),
+        .exp_size_i      ( fifo_data[0].size   ),
+        .exp_paddr_i     ( fifo_data[0].paddr  ), 
+        .exp_rdata_i     ( exp_rdata[0]        ),
+        .act_paddr_i     ( act_paddr[0]        ),
+        .flush_o         ( flush[0]            ),
+        .flush_ack_i     ( flush_ack_o         ),
+        .dut_req_port_o  ( req_ports_i[0]      ),
+        .dut_req_port_i  ( req_ports_o[0]      )
         );
 
     tb_readport #(
         .PORT_NAME     ( "RD1"         ), 
+        .FLUSH_RATE    ( FLUSH_RATE    ),
         .KILL_RATE     ( KILL_RATE     ),
         .TLB_HIT_RATE  ( TLB_HIT_RATE  ),
         .MEM_WORDS     ( MEM_WORDS     ),
@@ -301,23 +309,26 @@ module tb;
         .RND_SEED      ( 3333333       ),
         .VERBOSE       ( VERBOSE       )
     ) i_tb_readport1 (
-        .clk_i          ( clk_i               ),
-        .rst_ni         ( rst_ni              ),
-        .test_name_i    ( test_name           ),
-        .req_rate_i     ( req_rate[1]         ),
-        .seq_type_i     ( seq_type[1]         ),
-        .tlb_rand_en_i  ( tlb_rand_en         ),
-        .seq_run_i      ( seq_run             ),
-        .seq_num_resp_i ( seq_num_resp        ),     
-        .seq_last_i     ( seq_last            ),
-        .exp_paddr_o    ( exp_paddr[1]        ),
-        .exp_size_i     ( fifo_data[1].size   ),
-        .exp_paddr_i    ( fifo_data[1].paddr  ),
-        .exp_rdata_i    ( exp_rdata[1]        ),
-        .act_paddr_i    ( act_paddr[1]        ), 
-        .seq_done_o     ( seq_done[1]         ), 
-        .dut_req_port_o ( req_ports_i[1]      ),
-        .dut_req_port_i ( req_ports_o[1]      )
+        .clk_i           ( clk_i               ),
+        .rst_ni          ( rst_ni              ),
+        .test_name_i     ( test_name           ),
+        .req_rate_i      ( req_rate[1]         ),
+        .seq_type_i      ( seq_type[1]         ),
+        .tlb_rand_en_i   ( tlb_rand_en         ),
+        .flush_rand_en_i ( flush_rand_en       ),
+        .seq_run_i       ( seq_run             ),
+        .seq_num_resp_i  ( seq_num_resp        ),     
+        .seq_last_i      ( seq_last            ),
+        .exp_paddr_o     ( exp_paddr[1]        ),
+        .exp_size_i      ( fifo_data[1].size   ),
+        .exp_paddr_i     ( fifo_data[1].paddr  ),
+        .exp_rdata_i     ( exp_rdata[1]        ),
+        .act_paddr_i     ( act_paddr[1]        ), 
+        .seq_done_o      ( seq_done[1]         ), 
+        .flush_o         ( flush[1]            ),
+        .flush_ack_i     ( flush_ack_o         ),
+        .dut_req_port_o  ( req_ports_i[1]      ),
+        .dut_req_port_i  ( req_ports_o[1]      )
         );
      
     tb_writeport #(
@@ -356,7 +367,9 @@ module tb;
     assign amo_req_i.size      = '0;
     assign amo_req_i.operand_a = '0;
     assign amo_req_i.operand_b = '0;
-    // amo_ack_o
+    // amo_resp_o
+
+    assign flush_i = |flush;
 
 ///////////////////////////////////////////////////////////////////////////////
 // simulation coordinator process
@@ -383,8 +396,9 @@ module tb;
         tlb_rand_en      = 0;
         inv_rand_en      = 0;
         amo_rand_en      = 0;
+        flush_rand_en    = 0;
         // cache ctrl
-        flush_i          = 0;
+        flush[2]         = 0;
         // flush_ack_o
         // wbuffer_empty_o
         enable_i         = 0;
@@ -582,6 +596,19 @@ module tb;
         inv_rand_en  = 0;
         seq_type     = '{WRAP_SEQ, IDLE_SEQ, WRAP_SEQ};
         req_rate     = '{100,0,20};
+        runSeq(5000,5000);
+        flushCache();
+        memCheck();
+        ///////////////////////////////////////////////
+        test_name    = "TEST 16 -- random write/read-- enabled cache + tlb, mem contentions + invalidations + random flushes";
+        // config
+        enable_i      = 1;
+        tlb_rand_en   = 1;
+        mem_rand_en   = 1;
+        inv_rand_en   = 1;
+        flush_rand_en = 1;
+        seq_type      = '{RANDOM_SEQ, RANDOM_SEQ, RANDOM_SEQ};
+        req_rate      = '{default:25};
         runSeq(5000,5000,1);// last sequence flag, terminates agents
         flushCache();
         memCheck();

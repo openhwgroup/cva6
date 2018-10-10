@@ -261,6 +261,76 @@ package serpent_cache_pkg;
         return cnt;
     endfunction : popcnt64
 
+    function automatic logic [7:0] toByteEnable8(
+        input logic [2:0] offset,
+        input logic [1:0] size 
+    );
+        logic [7:0] be;
+        be = '0;
+        unique case(size) 
+            2'b00:   be[offset]       = '1; // byte               
+            2'b01:   be[offset +:2 ]  = '1; // hword              
+            2'b10:   be[offset +:4 ]  = '1; // word  
+            default: be               = '1; // dword
+        endcase // size     
+        return be;
+    endfunction : toByteEnable8
+
+    // openpiton requires the data to be replicated in case of smaller sizes than dwords
+    function automatic logic [63:0] repData64(
+        input logic [63:0] data,
+        input logic [2:0]  offset,
+        input logic [1:0]  size 
+    );
+        logic [63:0] out;
+        unique case(size) 
+            2'b00:   for(int k=0; k<8; k++) out[k*8  +: 8]    = data[offset*8 +: 8];  // byte
+            2'b01:   for(int k=0; k<4; k++) out[k*16 +: 16]   = data[offset*8 +: 16]; // hword
+            2'b10:   for(int k=0; k<2; k++) out[k*32 +: 32]   = data[offset*8 +: 32]; // word
+            default: out   = data; // dword
+        endcase // size     
+        return out;
+    endfunction : repData64
+
+    // note: this is openpiton specific. cannot transmit unaligned words.
+    // hence we default to individual bytes in that case, and they have to be transmitted
+    // one after the other
+    function automatic logic [1:0] toSize64(
+        input logic  [7:0] be
+    );
+        logic [1:0] size;
+        unique case(be)
+            8'b1111_1111:                                           size = 2'b11;  // dword
+            8'b0000_1111, 8'b1111_0000:                             size = 2'b10; // word
+            8'b1100_0000, 8'b0011_0000, 8'b0000_1100, 8'b0000_0011: size = 2'b01; // hword
+            default:                                                size = 2'b00; // individual bytes
+        endcase // be     
+        return size;
+    endfunction : toSize64
+
+    // align the physical address to the specified size:
+    // 000: bytes
+    // 001: hword
+    // 010: word
+    // 011: dword
+    // 111: DCACHE line
+    function automatic logic [63:0] paddrSizeAlign(
+        input logic [63:0] paddr,
+        input logic [2:0]  size        
+    );
+        logic [63:0] out;
+        out = paddr;
+        unique case (size)
+            3'b001: out[0:0]                     = '0;
+            3'b010: out[1:0]                     = '0;
+            3'b011: out[2:0]                     = '0;
+            3'b111: out[DCACHE_OFFSET_WIDTH-1:0] = '0; 
+            default: ;
+        endcase
+        return out;
+    endfunction : paddrSizeAlign
+
+
 
 
 endpackage : serpent_cache_pkg

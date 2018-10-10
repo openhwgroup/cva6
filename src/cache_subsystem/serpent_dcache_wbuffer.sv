@@ -44,11 +44,9 @@
 //    word from the write buffer. if the word is not allocated to the cache, it is just evicted from the write buffer.
 //    if the word cache state is VOID, the pipeline is stalled until it is clear whether that word is in the cache or not.
 //
-// 4) we handle NC writes using the writebuffer circuitry. the only difference is that the NC write
-//    is not acked and popped from the core fifo until the write response returns from memory. this
-//    ensures that the data cannot be overwritten by subsequent writes. note that, although the NC word is written
-//    into the write buffer and hence visible to the forwarding logic, this particular word will 
-//    never be forwarded. the reason is that only addresses allocated in the data cache can be forwarded.
+// 4) we handle NC writes using the writebuffer circuitry. upon an NC request, the writebuffer will first be drained.
+//    then, only the NC word is written into the write buffer and no further write requests are acknowledged until that 
+//    word has been evicted from the write buffer. 
 
 import ariane_pkg::*;
 import serpent_cache_pkg::*;
@@ -167,11 +165,12 @@ endgenerate
 // 10: word
 // 11: dword
 // non-contiguous writes need to be serialized!
+// e.g. merged dwords with BE like this: 8'b01001100
 ///////////////////////////////////////////////////////
 
 // get byte offset
 lzc #(
-    .WIDTH ( DCACHE_WBUF_DEPTH )
+    .WIDTH ( 8 )
 ) i_vld_bdirty (
     .in_i    ( bdirty[dirty_ptr] ),
     .cnt_o   ( bdirty_off        ),
@@ -183,58 +182,24 @@ assign miss_paddr_o = {wbuffer_q[dirty_ptr].wtag, bdirty_off};
 assign miss_wr_id_o = tx_id_q;
 assign miss_req_o   = (|dirty) && (tx_cnt_q < DCACHE_MAX_TX);
 
-always_comb begin : p_be_to_size
-    unique case(bdirty[dirty_ptr])
-        8'b1111_1111: begin // dword
-            miss_size_o = 3'b011;
-        end    
-        8'b0000_1111, 8'b1111_0000: begin // word
-            miss_size_o = 3'b010;
-        end    
-        8'b1100_0000, 8'b0011_0000, 8'b0000_1100, 8'b0000_0011: begin // hword
-            miss_size_o = 3'b001;
-        end
-        default: begin // individual bytes
-            miss_size_o = 3'b000;
-        end    
-    endcase // dbe_idx     
-end
+// get size of aligned words, and the corresponding byte enables
+// note: openpiton can only handle aligned offsets + size, and hence
+// we have to split unaligned data into multiple transfers (see toSize64)
+// e.g. if we have the following valid bytes: 0011_1001 -> TX0: 0000_0001, TX1: 0000_1000, TX2: 0011_0000
+assign miss_size_o  = toSize64(bdirty[dirty_ptr]); 
 
-// openpiton requires the data to be replicated in case of smaller sizes than dwords
-always_comb begin : p_offset_mux
-    miss_wdata_o = '0;
-    tx_be     = '0;
-    unique case(miss_size_o)
-        3'b001: begin // hword
-            for(int k=0; k<4; k++) begin    
-                miss_wdata_o[k*16 +: 16] = wbuffer_q[dirty_ptr].data[bdirty_off*8 +: 16];
-            end 
-            tx_be[bdirty_off +:2 ]  = '1;               
-        end       
-        3'b010: begin // word
-            for(int k=0; k<2; k++) begin    
-                miss_wdata_o[k*32 +: 32] = wbuffer_q[dirty_ptr].data[bdirty_off*8 +: 32];
-            end 
-            tx_be[bdirty_off +:4 ]  = '1;   
-        end       
-        3'b011: begin // dword
-            miss_wdata_o = wbuffer_q[dirty_ptr].data;
-            tx_be     = '1;
-        end
-        default: begin // byte
-            for(int k=0; k<8; k++) begin    
-                miss_wdata_o[k*8 +: 8]   = wbuffer_q[dirty_ptr].data[bdirty_off*8 +: 8];
-            end
-            tx_be[bdirty_off]      = '1;               
-        end        
-    endcase // miss_size_o          
-end
+assign miss_wdata_o = repData64(wbuffer_q[dirty_ptr].data,
+                                bdirty_off,
+                                miss_size_o[1:0]);
+
+assign tx_be        = toByteEnable8(bdirty_off,
+                                    miss_size_o[1:0]);
 
 ///////////////////////////////////////////////////////
 // TX status registers and ID counters
 ///////////////////////////////////////////////////////
 
-// TODO: todo: make this fall through!
+// TODO: todo: make this fall through if timing permits it
 fifo_v2 #(
     .FALL_THROUGH ( 1'b0                  ), 
     .DATA_WIDTH   ( $clog2(DCACHE_MAX_TX) ), 
@@ -345,8 +310,8 @@ generate
         // checks if an invalidation/cache refill hits a particular word
         // note: an invalidation can hit multiple words!
         // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
-        assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH-3] == wr_cl_idx_d)) |
-                               (wr_cl_vld_q & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH-3] == wr_cl_idx_q));
+        assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:0]<<3 == wr_cl_idx_d<<DCACHE_OFFSET_WIDTH)) |
+                               (wr_cl_vld_q & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:0]<<3 == wr_cl_idx_q<<DCACHE_OFFSET_WIDTH));
          
         // these word have to be looked up in the cache
         assign tocheck[k]       = (~wbuffer_q[k].checked) & valid[k];
@@ -355,8 +320,10 @@ endgenerate
 
 assign wr_ptr     = (|wbuffer_hit_oh) ? hit_ptr : next_ptr;
 assign empty_o    = ~(|valid);
+// assign rdy        = empty_o;
+//(|wbuffer_hit_oh) | (~full);
 assign rdy        = (|wbuffer_hit_oh) | (~full);
-
+//assign rdy        =  (~full) && ~(|wbuffer_hit_oh);
 
 // next free entry in the buffer
 lzc #(
@@ -367,7 +334,7 @@ lzc #(
     .empty_o ( full          )
 );
 
-// next free entry in the buffer
+// get index of hit
 lzc #(
     .WIDTH ( DCACHE_WBUF_DEPTH )
 ) i_hit_lzc (
@@ -378,7 +345,8 @@ lzc #(
 
 // next dirty word to serve
 rrarbiter #(
-    .NUM_REQ ( DCACHE_WBUF_DEPTH )
+    .NUM_REQ ( DCACHE_WBUF_DEPTH ),
+    .LOCK_IN ( 1                 )// lock the decision, once request is asserted
 ) i_dirty_rr (
     .clk_i   ( clk_i         ),
     .rst_ni  ( rst_ni        ),
@@ -403,7 +371,6 @@ rrarbiter #(
     .vld_o   (               ),
     .idx_o   ( check_ptr_d   )
 );    
-
 
 ///////////////////////////////////////////////////////
 // update logic
@@ -470,35 +437,28 @@ always_comb begin : p_buffer
         end
     end
 
-    // if we are serving an NC write, we block until it is served
-    if(nc_pending_q) begin 
-        if(empty_o) begin
-            nc_pending_d        = 1'b0;
-        end
-    end else begin
-        // write new word into the buffer
-        if(req_port_i.data_req & rdy) begin
-            // in case we have an NC address, need to drain the buffer first
-            if(empty_o | ~addr_is_nc) begin 
-                wbuffer_wren = 1'b1;
+    // write new word into the buffer
+    if(req_port_i.data_req & rdy) begin
+        // in case we have an NC address, need to drain the buffer first
+        // in case we are serving an NC address,  we block until it is written to memory
+        if(empty_o | ~(addr_is_nc | nc_pending_q)) begin 
+            wbuffer_wren              = 1'b1;
 
-                // leave in the core fifo if it is NC
-                req_port_o.data_gnt       = 1'b1;
-                nc_pending_d              = addr_is_nc;
+            req_port_o.data_gnt       = 1'b1;
+            nc_pending_d              = addr_is_nc;
 
-                wbuffer_d[wr_ptr].checked = 1'b0;
-                wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:3]};
-                            
-                // mark bytes as dirty
-                for(int k=0; k<8; k++) begin
-                    if(req_port_i.data_be[k]) begin
-                        wbuffer_d[wr_ptr].valid[k]       = 1'b1;
-                        wbuffer_d[wr_ptr].dirty[k]       = 1'b1;
-                        wbuffer_d[wr_ptr].data[k*8 +: 8] = req_port_i.data_wdata[k*8 +: 8];
-                    end
+            wbuffer_d[wr_ptr].checked = 1'b0;
+            wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:3]};
+                        
+            // mark bytes as dirty
+            for(int k=0; k<8; k++) begin
+                if(req_port_i.data_be[k]) begin
+                    wbuffer_d[wr_ptr].valid[k]       = 1'b1;
+                    wbuffer_d[wr_ptr].dirty[k]       = 1'b1;
+                    wbuffer_d[wr_ptr].data[k*8 +: 8] = req_port_i.data_wdata[k*8 +: 8];
                 end
-            end    
-        end
+            end
+        end    
     end
 end
 
@@ -580,19 +540,14 @@ end
             for(genvar j=0; j<8; j++) begin
                 byteStates: assert property (
                     @(posedge clk_i) disable iff (~rst_ni) {wbuffer_q[k].valid[j], wbuffer_q[k].dirty[j], wbuffer_q[k].txblock[j]} inside {3'b000, 3'b110, 3'b101, 3'b111} )
-                        else $fatal(1,$psprintf("[l1 dcache wbuffer] byte %02d of wbuffer entry %02d has invalid state: valid=%01b, dirty=%01b, txblock=%01b",
+                        else $fatal(1,"[l1 dcache wbuffer] byte %02d of wbuffer entry %02d has invalid state: valid=%01b, dirty=%01b, txblock=%01b",
                             j,k,
                             wbuffer_q[k].valid[j],
                             wbuffer_q[k].dirty[j],
-                            wbuffer_q[k].txblock[j]));
+                            wbuffer_q[k].txblock[j]);
             end
         end
     endgenerate
-  //  initial begin
-  //     // assert wrong parameterizations
-  //     assert (DCACHE_INDEX_WIDTH<=12) 
-  //       else $fatal(1,"[l1 dcache ctrl] cache index width can be maximum 12bit since VM uses 4kB pages");    
-  //  end
 `endif
 //pragma translate_on
 

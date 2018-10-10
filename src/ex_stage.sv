@@ -54,8 +54,8 @@ module ex_stage #(
     output logic                                   lsu_valid_o,           // Output is valid
     output logic [63:0]                            lsu_result_o,
     output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
-    input  logic                                   lsu_commit_i,
-    output logic                                   lsu_commit_ready_o,    // commit queue is ready to accept another commit request
+    input  logic                                   lsu_commit_req_i,
+    output logic                                   lsu_commit_ack_o,      // commit queue is ready to accept another commit request
     output exception_t                             lsu_exception_o,
     output logic                                   no_st_pending_o,
     input  logic                                   amo_valid_commit_i,
@@ -131,8 +131,8 @@ module ex_stage #(
     // Load-Store Unit
     // ----------------
     lsu lsu_i (
-        .commit_i           ( lsu_commit_i       ),
-        .commit_ready_o     ( lsu_commit_ready_o ),
+        .commit_req_i     ( lsu_commit_req_i ),
+        .commit_ack_o     ( lsu_commit_ack_o ),
         .dcache_req_ports_i,
         .dcache_req_ports_o,
         .amo_req_o,

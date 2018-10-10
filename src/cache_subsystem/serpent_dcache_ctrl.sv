@@ -22,7 +22,6 @@ module serpent_dcache_ctrl #(
 )(
     input  logic                            clk_i,          // Clock
     input  logic                            rst_ni,         // Asynchronous reset active low
-    input  logic                            flush_i,
     input  logic                            cache_en_i,
     // core request ports
     input  dcache_req_i_t                   req_port_i,  
@@ -120,7 +119,7 @@ module serpent_dcache_ctrl #(
             // wait for an incoming request
             IDLE: begin
                 
-                if ((~flush_i) && req_port_i.data_req) begin
+                if (req_port_i.data_req) begin
                     rd_req_o = 1'b1;
 
                     if (rd_ack_i) begin
@@ -139,8 +138,8 @@ module serpent_dcache_ctrl #(
                 // speculatively request cache line
                 rd_req_o = 1'b1;
                 
-                // flush or kill -> go back to IDLE
-                if(flush_i || req_port_i.kill_req) begin
+                // kill -> go back to IDLE
+                if(req_port_i.kill_req) begin
                     state_d = IDLE;
                 end else if(req_port_i.tag_valid | state_q==REPLAY_READ) begin
                     save_tag = (state_q!=REPLAY_READ);
@@ -166,7 +165,7 @@ module serpent_dcache_ctrl #(
             MISS_REQ: begin
                 miss_req_o = 1'b1;
 
-                if (flush_i || req_port_i.kill_req) begin
+                if(req_port_i.kill_req) begin
                     if(miss_ack_i) begin
                         state_d = KILL_MISS;
                     end else begin    
@@ -182,7 +181,7 @@ module serpent_dcache_ctrl #(
             // wait until the memory transaction
             // returns. 
             MISS_WAIT: begin
-                if(flush_i || req_port_i.kill_req) begin
+                if(req_port_i.kill_req) begin
                     if(miss_rtrn_vld_i) begin
                         state_d = IDLE;
                     end else begin
@@ -197,7 +196,7 @@ module serpent_dcache_ctrl #(
             // replay read request
             REPLAY_REQ: begin
                 rd_req_o = 1'b1;
-                if (flush_i || req_port_i.kill_req) begin
+                if (req_port_i.kill_req) begin
                     state_d = IDLE;
                 end else if(rd_ack_i) begin
                     state_d = REPLAY_READ;

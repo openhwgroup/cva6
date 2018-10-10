@@ -27,6 +27,9 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_cache_subsystem #(
+// `ifdef AXI64_CACHE_PORTS   
+   parameter int unsigned AXI_ID_WIDTH     = 10,
+// `endif   
    parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 )(
    input logic                            clk_i,
@@ -50,6 +53,7 @@ module serpent_cache_subsystem #(
    input  logic                           dcache_flush_i,         // high until acknowledged
    output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
    output logic                           dcache_miss_o,          // we missed on a ld/st
+   
    // AMO interface
    input amo_req_t                        dcache_amo_req_i,
    output amo_resp_t                      dcache_amo_resp_o,
@@ -57,6 +61,9 @@ module serpent_cache_subsystem #(
    // Request ports
    input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
    output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
+
+   // writebuffer status
+   output logic                           wbuffer_empty_o,
 
 `ifdef AXI64_CACHE_PORTS
    // memory side
@@ -81,12 +88,17 @@ module serpent_cache_subsystem #(
    serpent_cache_pkg::icache_req_t  icache_adapter;
    serpent_cache_pkg::icache_rtrn_t adapter_icache;
 
+
+   logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
+   serpent_cache_pkg::dcache_req_t  dcache_adapter;
+   serpent_cache_pkg::dcache_rtrn_t adapter_dcache;
+
    serpent_icache #(
 `ifdef AXI64_CACHE_PORTS
       .AXI64BIT_COMPLIANT ( 1'b1                    ),
+      .NC_ADDR_GE_LT      ( 0                       ), 
 `endif
-      .NC_ADDR_BEGIN      ( CACHE_START_ADDR        ),
-      .NC_ADDR_GE_LT      ( 0                       ) // todo: make compliant with openpiton
+      .NC_ADDR_BEGIN      ( CACHE_START_ADDR        )
    ) i_serpent_icache (
       .clk_i              ( clk_i                   ),
       .rst_ni             ( rst_ni                  ),
@@ -104,63 +116,64 @@ module serpent_cache_subsystem #(
       .mem_data_o         ( icache_adapter          )
    );
 
-   // decreasing priority
-   // Port 0: PTW
-   // Port 1: Load Unit
-   // Port 2: Store Unit
-   std_nbdcache #(
-      .CACHE_START_ADDR ( CACHE_START_ADDR )
-   ) i_nbdcache (
-      .clk_i              ( clk_i                  ),
-      .rst_ni             ( rst_ni                 ),
-      .enable_i           ( dcache_enable_i        ),
-      .flush_i            ( dcache_flush_i         ),
-      .flush_ack_o        ( dcache_flush_ack_o     ),
-      .miss_o             ( dcache_miss_o          ),
-      .data_if            ( dcache_data_if         ),
-      .bypass_if          ( dcache_bypass_if       ),
-      .amo_req_i          ( dcache_amo_req_i       ),
-      .amo_resp_o         ( dcache_amo_resp_o      ),
-      .req_ports_i        ( dcache_req_ports_i     ),
-      .req_ports_o        ( dcache_req_ports_o     )
-   );
-
-
-   // logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
-   // dcache_req_t  dcache_adapter;
-   // dcache_rtrn_t adapter_dcache;
-
    // // decreasing priority
    // // Port 0: PTW
    // // Port 1: Load Unit
    // // Port 2: Store Unit
-   // serpent_dcache #(
+   // std_nbdcache #(
+   //    .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
    //    .CACHE_START_ADDR ( CACHE_START_ADDR )
-   // ) i_serpent_dcache (
-   //    .clk_i              ( clk_i                   ),
-   //    .rst_ni             ( rst_ni                  ),
-   //    .enable_i           ( dcache_enable_i         ),
-   //    .flush_i            ( dcache_flush_i          ),
-   //    .flush_ack_o        ( dcache_flush_ack_o      ),
-   //    .miss_o             ( dcache_miss_o           ),
-   //    .amo_commit_i       ( dcache_amo_commit_i     ),
-   //    .amo_valid_o        ( dcache_amo_valid_o      ),
-   //    .amo_result_o       ( dcache_amo_result_o     ),
-   //    .amo_flush_i        ( dcache_amo_flush_i      ),
-   //    .req_ports_i        ( dcache_req_ports_i      ),
-   //    .req_ports_o        ( dcache_req_ports_o      ),
-   //    .mem_rtrn_vld_i     ( adapter_dcache_rtrn_vld ),
-   //    .mem_rtrn_i         ( adapter_dcache          ),
-   //    .mem_data_req_o     ( dcache_adapter_data_req ),
-   //    .mem_data_ack_i     ( adapter_dcache_data_ack ),
-   //    .mem_data_o         ( dcache_adapter          )
+   // ) i_nbdcache (
+   //    .clk_i              ( clk_i                  ),
+   //    .rst_ni             ( rst_ni                 ),
+   //    .enable_i           ( dcache_enable_i        ),
+   //    .flush_i            ( dcache_flush_i         ),
+   //    .flush_ack_o        ( dcache_flush_ack_o     ),
+   //    .miss_o             ( dcache_miss_o          ),
+   //    .data_if            ( dcache_data_if         ),
+   //    .bypass_if          ( dcache_bypass_if       ),
+   //    .amo_req_i          ( dcache_amo_req_i       ),
+   //    .amo_resp_o         ( dcache_amo_resp_o      ),
+   //    .req_ports_i        ( dcache_req_ports_i     ),
+   //    .req_ports_o        ( dcache_req_ports_o     )
    // );
+
+   // assign wbuffer_empty_o = 1'b1;
+
+
+   // Note:
+   // Ports 0/1 for PTW and LD unit are read only. 
+   // they have equal prio and are RR arbited
+   // Port 2 is write only and goes into the merging write buffer
+   serpent_dcache #(
+`ifdef AXI64_CACHE_PORTS
+      .NC_ADDR_GE_LT   ( 0                       ), // std config is for openpiton, where the upper memory region is NC
+`endif         
+      .NC_ADDR_BEGIN   ( CACHE_START_ADDR        ) 
+   ) i_serpent_dcache (
+      .clk_i           ( clk_i                   ),
+      .rst_ni          ( rst_ni                  ),
+      .enable_i        ( dcache_enable_i         ),
+      .flush_i         ( dcache_flush_i          ),
+      .flush_ack_o     ( dcache_flush_ack_o      ),
+      .miss_o          ( dcache_miss_o           ),
+      .wbuffer_empty_o ( wbuffer_empty_o         ),
+      .amo_req_i       ( dcache_amo_req_i        ),
+      .amo_resp_o      ( dcache_amo_resp_o       ),
+      .req_ports_i     ( dcache_req_ports_i      ),
+      .req_ports_o     ( dcache_req_ports_o      ),
+      .mem_rtrn_vld_i  ( adapter_dcache_rtrn_vld ),
+      .mem_rtrn_i      ( adapter_dcache          ),
+      .mem_data_req_o  ( dcache_adapter_data_req ),
+      .mem_data_ack_i  ( adapter_dcache_data_ack ),
+      .mem_data_o      ( dcache_adapter          )
+   );
 
 
 // different memory plumbing
 `ifdef AXI64_CACHE_PORTS
 
-   // cannot handle invalidations atm
+   // cannot handle invalidations ATM
    assign adapter_icache.rtype = ICACHE_IFILL_ACK;
    assign adapter_icache.inv   = '0;
    assign adapter_icache.nc    = icache_adapter.nc;
@@ -171,8 +184,9 @@ module serpent_cache_subsystem #(
    assign icache_axi_req_type  = ( icache_adapter.nc ) ? std_cache_pkg::SINGLE_REQ : std_cache_pkg::CACHE_LINE_REQ;
    
    axi_adapter #(
-      .DATA_WIDTH ( ICACHE_LINE_WIDTH )
-   ) i_axi_adapter (
+      .DATA_WIDTH           ( ICACHE_LINE_WIDTH       ),
+      .AXI_ID_WIDTH         ( AXI_ID_WIDTH            )
+   ) i_icache_axi_adapter (
       .clk_i                ( clk_i                   ),
       .rst_ni               ( rst_ni                  ),
       .req_i                ( icache_adapter_data_req ),
@@ -192,6 +206,89 @@ module serpent_cache_subsystem #(
       .critical_word_valid_o(                         ),
       .axi                  ( icache_data_if          )
    );
+
+   std_cache_pkg::req_t dcache_axi_req_type;
+   logic [DCACHE_LINE_WIDTH-1:0] dcache_axi_wdata;
+   logic dcache_axi_we;
+   logic [DCACHE_LINE_WIDTH/8-1:0] dcache_axi_be;
+   logic [1:0] dcache_axi_size;
+   logic [63:0] dcache_axi_paddr;
+   // AXI IDs are 10 wide here
+   logic [AXI_ID_WIDTH-1:0] dcache_axi_id, axi_dcache_id;
+
+   // encode NC, RD, and TX ID into AXI ID field
+   // dcache is aware of the fact that transactions with different IDs can overtake each other in the
+   // interconnect, and issues the transactions accordingly. so this is safe.
+   assign dcache_axi_req_type  = ( dcache_adapter.size[2] ) ? std_cache_pkg::CACHE_LINE_REQ : std_cache_pkg::SINGLE_REQ;
+   assign dcache_axi_size      = ( dcache_adapter.size[2] ) ? 2'b11 : dcache_adapter.size;
+   assign dcache_axi_we        = ( dcache_adapter.rtype == serpent_cache_pkg::DCACHE_STORE_REQ );
+   assign dcache_axi_id        = {dcache_adapter.tid, dcache_adapter.nc, dcache_axi_we};
+   assign dcache_axi_wdata     = dcache_adapter.data;
+   assign dcache_axi_be        = ( dcache_axi_we ) ? serpent_cache_pkg::toByteEnable8(dcache_adapter.paddr[2:0], dcache_adapter.size) : '0;
+   assign dcache_axi_paddr     = dcache_adapter.paddr;
+
+   // cannot handle invalidations and atomics ATM
+   assign adapter_dcache.inv   = '0;
+   assign adapter_dcache.rtype = (axi_dcache_id[0]) ? serpent_cache_pkg::DCACHE_STORE_ACK : serpent_cache_pkg::DCACHE_LOAD_ACK;
+   assign adapter_dcache.nc    = axi_dcache_id[1];
+   assign adapter_dcache.tid   = axi_dcache_id>>2;
+   
+   axi_adapter #(
+      .DATA_WIDTH           ( DCACHE_LINE_WIDTH       ), 
+      .AXI_ID_WIDTH         ( AXI_ID_WIDTH            )
+   ) i_dcache_axi_adapter (
+      .clk_i                ( clk_i                   ),
+      .rst_ni               ( rst_ni                  ),
+      .req_i                ( dcache_adapter_data_req ),
+      .type_i               ( dcache_axi_req_type     ),
+      .gnt_o                ( adapter_dcache_data_ack ),
+      .gnt_id_o             (                         ),
+      .addr_i               ( dcache_axi_paddr        ),
+      .we_i                 ( dcache_axi_we           ),
+      .wdata_i              ( dcache_axi_wdata        ),
+      .be_i                 ( dcache_axi_be           ),
+      .size_i               ( dcache_axi_size         ),// always request in multiples of 64bit
+      .id_i                 ( dcache_axi_id           ),
+      .valid_o              ( adapter_dcache_rtrn_vld ),
+      .rdata_o              ( adapter_dcache.data     ),
+      .id_o                 ( axi_dcache_id           ),
+      .critical_word_o      (                         ),
+      .critical_word_valid_o(                         ),
+      .axi                  ( dcache_data_if          )
+   );
+
+   // tie to zero here...
+   assign dcache_bypass_if.aw_valid  = '0;
+   assign dcache_bypass_if.aw_addr   = '0;
+   assign dcache_bypass_if.aw_prot   = '0;
+   assign dcache_bypass_if.aw_region = '0;
+   assign dcache_bypass_if.aw_len    = '0;
+   assign dcache_bypass_if.aw_size   = '0;
+   assign dcache_bypass_if.aw_burst  = '0;
+   assign dcache_bypass_if.aw_lock   = '0;
+   assign dcache_bypass_if.aw_cache  = '0;
+   assign dcache_bypass_if.aw_qos    = '0;
+   assign dcache_bypass_if.aw_id     = '0;
+   assign dcache_bypass_if.aw_user   = '0;
+   assign dcache_bypass_if.ar_valid  = '0;
+   assign dcache_bypass_if.ar_addr   = '0;
+   assign dcache_bypass_if.ar_prot   = '0;
+   assign dcache_bypass_if.ar_region = '0;
+   assign dcache_bypass_if.ar_len    = '0;
+   assign dcache_bypass_if.ar_size   = '0;
+   assign dcache_bypass_if.ar_burst  = '0;
+   assign dcache_bypass_if.ar_lock   = '0;
+   assign dcache_bypass_if.ar_cache  = '0;
+   assign dcache_bypass_if.ar_qos    = '0;
+   assign dcache_bypass_if.ar_id     = '0;
+   assign dcache_bypass_if.ar_user   = '0;
+   assign dcache_bypass_if.w_valid   = '0;
+   assign dcache_bypass_if.w_data    = '0;
+   assign dcache_bypass_if.w_strb    = '0;
+   assign dcache_bypass_if.w_user    = '0;
+   assign dcache_bypass_if.w_last    = '0;
+   assign dcache_bypass_if.b_ready   = '0;
+   assign dcache_bypass_if.r_ready   = '0;
 
 `else 
 
@@ -219,5 +316,50 @@ module serpent_cache_subsystem #(
       );
 
 `endif
+
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
+
+
+//pragma translate_off
+`ifndef VERILATOR
+
+`ifdef AXI64_CACHE_PORTS
+   a_write_size: assert property (
+      @(posedge clk_i) disable iff (~rst_ni) dcache_adapter_data_req |-> adapter_dcache_data_ack |-> dcache_axi_we |-> dcache_axi_req_type==std_cache_pkg::SINGLE_REQ)     
+         else $fatal(1,"[l1 cache] full cacheline stores not supported at the moment");
+
+   a_paddr_align: assert property (
+      @(posedge clk_i) disable iff (~rst_ni) dcache_adapter_data_req |-> adapter_dcache_data_ack |-> dcache_axi_req_type==std_cache_pkg::CACHE_LINE_REQ |-> dcache_axi_paddr[2:0] == 3'b000)     
+         else $fatal(1,"[l1 cache] CL address must be aligned");
+`endif
+
+   a_invalid_instruction_fetch: assert property (
+       @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)     
+           else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X", 
+               icache_dreq_o.vaddr, icache_dreq_o.data);
+
+   a_invalid_write_data: assert property (
+       @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)     
+           else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X", 
+               {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
+
+   generate 
+      for(genvar j=0; j<2; j++) begin
+         a_invalid_read_data: assert property (
+            @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)     
+               else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X", 
+                  j, dcache_req_ports_o[j].data_rdata);
+      end
+   endgenerate  
+
+   initial begin
+      assert (AXI_ID_WIDTH >= $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2) else 
+         $fatal(1,$psprintf("[l1 cache] AXI ID must be at least %01d bit wide", $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2));
+   end      
+`endif
+//pragma translate_on
+
 
 endmodule // serpent_cache_subsystem

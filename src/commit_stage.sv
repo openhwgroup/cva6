@@ -42,8 +42,8 @@ module commit_stage #(
     input  logic [63:0]                             csr_rdata_i,        // data to read from CSR
     input  exception_t                              csr_exception_i,    // exception or interrupt occurred in CSR stage (the same as commit)
     // commit signals to ex
-    output logic                                    commit_lsu_o,       // commit the pending store
-    input  logic                                    commit_lsu_ready_i, // commit buffer of LSU is ready
+    output logic                                    commit_lsu_req_o,   // request commit of pending store
+    input  logic                                    commit_lsu_ack_i,   // asserted when the LSU can commit the store requested
     output logic                                    amo_valid_commit_o, // valid AMO in commit stage
     input  logic                                    no_st_pending_i,    // there is no store pending
     output logic                                    commit_csr_o,       // commit the pending CSR instruction
@@ -74,7 +74,7 @@ module commit_stage #(
         we_o[0]         = 1'b0;
         we_o[1]         = 1'b0;
 
-        commit_lsu_o    = 1'b0;
+        commit_lsu_req_o= 1'b0;
         commit_csr_o    = 1'b0;
         // amos will commit on port 0
         wdata_o[0]      = (amo_resp_i.ack) ? amo_resp_i.result : commit_instr_i[0].result;
@@ -108,10 +108,9 @@ module commit_stage #(
                 // by the subsequent flush triggered by an exception
                 if (commit_instr_i[0].fu == STORE && !instr_0_is_amo) begin
                     // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
-                    if (commit_lsu_ready_i)
-                        commit_lsu_o = 1'b1;
-                    else // if the LSU buffer is not ready - do not commit, wait
-                        commit_ack_o[0] = 1'b0;
+                    commit_lsu_req_o = 1'b1;
+                    // if the LSU buffer is not ready - do not commit, wait
+                    commit_ack_o[0] = commit_lsu_ack_i;
                 end
             end
 

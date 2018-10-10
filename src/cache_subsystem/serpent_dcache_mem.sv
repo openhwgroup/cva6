@@ -163,7 +163,7 @@ module serpent_dcache_mem #(
             bank_collision[k] = rd_off_i[k][DCACHE_OFFSET_WIDTH-1:3] == wr_off_i[DCACHE_OFFSET_WIDTH-1:3];
         end    
 
-        if(wr_cl_vld_i) begin
+        if(wr_cl_vld_i & |wr_cl_we_i) begin
             bank_req = '1;
             bank_we  = '1;
             bank_idx = '{default:wr_cl_idx_i};
@@ -189,8 +189,6 @@ module serpent_dcache_mem #(
 // tag comparison, hit generatio, readoud muxes
 ///////////////////////////////////////////////////////
     
-    logic [DCACHE_WBUF_DEPTH-1:0][7:0]    wbuffer_bvalid;
-    logic [DCACHE_WBUF_DEPTH-1:0][63:0]   wbuffer_data;
     logic [DCACHE_OFFSET_WIDTH-1:0]       wr_cl_off;
     logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] wbuffer_hit_idx;
     logic [$clog2(DCACHE_SET_ASSOC)-1:0]  rd_hit_idx;
