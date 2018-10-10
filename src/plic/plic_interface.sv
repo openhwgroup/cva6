@@ -82,15 +82,10 @@ module plic_interface #(
     logic [DATA_WIDTH/bpw-1:0    ]  ena_bundles_d[num_gateway_bundles][NUM_TARGETS][DATA_WIDTH/8];
     logic [DATA_WIDTH/bpw-1:0    ]  ena_bundles_q[num_gateway_bundles][NUM_TARGETS][DATA_WIDTH/8];
 
-    //debug signals (only used in the wave...)
-    logic [31:0]  gw_bundle;
-    logic [31:0]  tar;
-    logic [31:0]  gw;
-
-    //assignments
+    // assignments
     assign id_of_largest_priority_d = id_of_largest_priority_i;
 
-    //assign addresses
+    // assign addresses
     assign page_address      = external_bus_io.addr[ADDR_WIDTH-1:12];
     assign page_offset       = external_bus_io.addr[11:0           ];
     assign page_word_offset  = external_bus_io.addr[11:$clog2(bpw) ];
@@ -99,7 +94,7 @@ module plic_interface #(
     assign write_active      = (external_bus_io.valid &  external_bus_io.write) ? external_bus_io.wstrb : '0;
     assign read_active       = external_bus_io.valid  & !external_bus_io.write;
 
-    //bundle signals
+    // bundle signals
     for (genvar bundle = 0; bundle < num_gateway_bundles; bundle++) begin
         for (genvar ip_bit = 0; ip_bit < DATA_WIDTH; ip_bit++) begin
             if (bundle * DATA_WIDTH + ip_bit < NUM_GATEWAYS) begin
@@ -111,7 +106,7 @@ module plic_interface #(
     end
 
     for (genvar bundle = 0; bundle < num_gateway_bundles; bundle++) begin
-        for( genvar target = 0; target < NUM_TARGETS; target++) begin
+        for (genvar target = 0; target < NUM_TARGETS; target++) begin
             for (genvar byte_in_word = 0; byte_in_word < DATA_WIDTH/8; byte_in_word++) begin
                 for (genvar enable_bit = 0; enable_bit < 8; enable_bit++) begin
                     assign irq_enables_o[bundle * DATA_WIDTH + enable_bit + byte_in_word * 8][target] =
@@ -121,60 +116,47 @@ module plic_interface #(
         end
     end
 
-    //determine the function to be performed
+    // determine the function to be performed
     always_comb begin : proc_address_map
-        //default values
-        funct     = INV;
-        gw_bundle =  'z;
-        tar       =  'z;
-        gw        =  'z;
-        //only alligned access is allowed:
-        if(word_offset == '0) begin
-            //we have now an word alligned access -> check out page offset to determine
-            //what type of access this is.
-            if(page_address[13:0] == 0) begin //we access the gateway priority bits
-                //the page_word_offset tells us now which gateway we consider
-                //in order to grant or deny access, we have to check if the gateway
-                //in question really exist.
-                //Gateway 0 does not exist, so return an error
-                if(page_word_offset<=NUM_GATEWAYS & page_word_offset > 0) begin //the gateway in question exists
-                    //set the current operation to be an access to the priority registers
+        // default values
+        funct = INV;
+        // only alligned access is allowed:
+        if (word_offset == '0) begin
+            // we have now an word alligned access -> check out page offset to determine
+            // what type of access this is.
+            if (page_address[13:0] == 0) begin // we access the gateway priority bits
+                // the page_word_offset tells us now which gateway we consider
+                // in order to grant or deny access, we have to check if the gateway
+                // in question really exist.
+                // Gateway 0 does not exist, so return an error
+                if (page_word_offset <= NUM_GATEWAYS && page_word_offset > 0) begin //the gateway in question exists
+                    // set the current operation to be an access to the priority registers
                     funct = PRI;
-                    //debug:
-                    gw = page_word_offset;
                 end
-            //we now access the IP Bits, read only
-            end else if(page_address[13:0] == 1) begin
-                //the page_word_offset tells us now, which word we have to consider,
-                //the word, which includes the IP bit in question should be returned
-                if(page_word_offset<num_gateway_bundles) begin
+            // we now access the IP Bits, read only
+            end else if (page_address[13:0] == 1) begin
+                // the page_word_offset tells us now, which word we have to consider,
+                // the word, which includes the IP bit in question should be returned
+                if (page_word_offset<num_gateway_bundles) begin
                     funct = IPA;
-                    //debug:
-                    gw_bundle = page_word_offset;
                 end
-            //access of the enable bits for each target
-            end else if(page_address[13:9] == 0) begin
-
-                //the bottom part page_word_offset now tells us which gateway bundle we have to consider
-                //part of the page_address and the upper part of the page_word_offset give us the target nr.
-                if(page_offset[6:$clog2(bpw)] < num_gateway_bundles) begin
-                    if(({page_address[8:0], page_offset[11:7]} - 64) < NUM_TARGETS) begin
+            // access of the enable bits for each target
+            end else if (page_address[13:9] == 0) begin
+                // the bottom part page_word_offset now tells us which gateway bundle we have to consider
+                // part of the page_address and the upper part of the page_word_offset give us the target nr.
+                if (page_offset[6:$clog2(bpw)] < num_gateway_bundles) begin
+                    if (({page_address[8:0], page_offset[11:7]} - 64) < NUM_TARGETS) begin
                         funct = IEB;
-                        // debug:
-                        gw_bundle = page_offset[6:$clog2(bpw)];
-                        tar = ({page_address[8:0], page_offset[11:7]} - 64);
                     end
                 end
-            //priority / claim / complete
+            // priority / claim / complete
             end else begin
-                //page address - 0h20 gives the target number
+                // page address - 0h20 gives the target number
                 if (page_address[13:0] - 'h200 < NUM_TARGETS) begin
-                    //debug:
-                    tar = page_address[13:0] - 'h200;
-                    //check lowest bit of the page_word_offset to get the exact function
-                    if(page_word_offset == 0) begin
+                    // check lowest bit of the page_word_offset to get the exact function
+                    if (page_word_offset == 0) begin
                         funct = THR;
-                    end else if(page_word_offset == 1) begin
+                    end else if (page_word_offset == 1) begin
                         funct = CCP;
                     end
                 end
@@ -183,7 +165,7 @@ module plic_interface #(
     end
 
     always_comb begin : proc_read_write
-        //defalt values
+        // defalt values
         external_bus_io.rdata = 0;
         external_bus_io.error = 0;
         external_bus_io.ready = 0;
@@ -199,40 +181,40 @@ module plic_interface #(
         ena_bundles_d = ena_bundles_q;
         thresholds_d  = thresholds_q;
 
-        case(funct)
-            PRI : begin
-                //read case
-                if(read_active != 0) begin
+        case (funct)
+            PRI: begin
+                // read case
+                if (read_active != 0) begin
                     external_bus_io.rdata = priorities_q[page_word_offset-1];
                     external_bus_io.ready = 1;
-                //write case
-                end else if(write_active[0] == 1) begin
+                // write case
+                end else if (write_active[0] == 1) begin
                     priorities_d[page_word_offset-1] = external_bus_io.wdata[PARAMETER_BITWIDTH-1:0];
                     external_bus_io.ready = 1;
                 end
             end
 
-            IPA : begin
-                //read case
-                if(read_active != 0) begin
+            IPA: begin
+                // read case
+                if (read_active != 0) begin
                     external_bus_io.rdata = irq_pending_bundle[page_word_offset];
                     external_bus_io.ready = 1;
-                //write case
+                // write case
                 end else if (write_active != 0) begin
                     external_bus_io.error = 1;  //not allowed
                 end
             end
 
-            IEB : begin
-                //read case
-                if(read_active != 0) begin
-                    for(integer byte_in_word=0; byte_in_word<DATA_WIDTH/8; byte_in_word++) begin
+            IEB: begin
+                // read case
+                if (read_active != 0) begin
+                    for (integer byte_in_word = 0; byte_in_word < DATA_WIDTH/8; byte_in_word++) begin
                         external_bus_io.rdata[8*(byte_in_word) +: 8] =  ena_bundles_q[page_offset[6:$clog2(bpw)]][({page_address[8:0], page_offset[11:7]} - 64)][byte_in_word];
                     end
                     external_bus_io.ready = 1;
-                //write case
+                // write case
                 end else if(write_active != 0) begin
-                    for(integer byte_in_word=0; byte_in_word<DATA_WIDTH/8; byte_in_word++) begin
+                    for (integer byte_in_word=0; byte_in_word<DATA_WIDTH/8; byte_in_word++) begin
                         if(write_active[byte_in_word]) begin
                             ena_bundles_d[page_offset[6:$clog2(bpw)]][({page_address[8:0], page_offset[11:7]} - 64)][byte_in_word] = external_bus_io.wdata[8*(byte_in_word) +: 8];
                         end
@@ -241,26 +223,26 @@ module plic_interface #(
                 end
             end
 
-            THR : begin
-                //read case
-                if(read_active != 0) begin
+            THR: begin
+                // read case
+                if (read_active != 0) begin
                     external_bus_io.rdata[PARAMETER_BITWIDTH-1:0] = thresholds_q[(page_address[13:0] - 'h200)];
                     external_bus_io.ready = 1;
-                //write case
-                end else if(write_active != 0) begin
+                // write case
+                end else if (write_active != 0) begin
                     thresholds_d[(page_address[13:0] - 'h200)] = external_bus_io.wdata[PARAMETER_BITWIDTH-1:0];
                     external_bus_io.ready = 1;
                 end
             end
 
-            CCP : begin
-                //read case
-                if(read_active != 0) begin
+            CCP: begin
+                // read case
+                if (read_active != 0) begin
                     target_irq_claims_o[(page_address[13:0] - 'h200)] = 1;
                     external_bus_io.rdata[ID_BITWIDTH-1:0] = id_of_largest_priority_q[(page_address[13:0] - 'h200)];
                     external_bus_io.ready = 1;
-                //write case
-                end else if(write_active != 0) begin
+                // write case
+                end else if (write_active != 0) begin
                     target_irq_completes_o[(page_address[13:0] - 'h200)] = 1;
                     target_irq_completes_id_o[(page_address[13:0] - 'h200)] = external_bus_io.wdata[ID_BITWIDTH-1:0];
                     external_bus_io.ready = 1;
@@ -275,9 +257,9 @@ module plic_interface #(
         endcase // funct
     end
 
-    //store data in flip flops
+    // store data in flip flops
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_update_ff
-        if (~rst_ni) begin //set all registers to 0
+        if (~rst_ni) begin // set all registers to 0
             for (integer gateway = 0; gateway < NUM_GATEWAYS; gateway++)
                 priorities_q[gateway] <= 0;
 
@@ -305,16 +287,16 @@ module plic_interface #(
     // pragma translate_off
     `ifndef VERILATOR
     initial begin
-        assert((ADDR_WIDTH==32) | (ADDR_WIDTH==64)) else $error("Address width has to bei either 32 or 64 bit");
-        assert((DATA_WIDTH==32) | (DATA_WIDTH==64)) else $error("Data width has to bei either 32 or 64 bit");
-        assert(ID_BITWIDTH>0)                       else $error("ID_BITWIDTH has to be larger than 1");
-        assert(ID_BITWIDTH<10)                      else $error("ID_BITWIDTH has to be smaller than 10");
-        assert(PARAMETER_BITWIDTH>0)                else $error("PARAMETER_BITWIDTH has to be larger than 1");
-        assert(PARAMETER_BITWIDTH<8)                else $error("PARAMETER_BITWIDTH has to be smaller than 8");
-        assert(NUM_GATEWAYS>0)                      else $error("Num od Gateways has to be larger than 1");
-        assert(NUM_GATEWAYS<512)                    else $error("Num of Gateways has to be smaller than 512");
-        assert(NUM_TARGETS>0)                       else $error("Num Target slices has to be larger than 1");
-        assert(NUM_TARGETS<15872)                   else $error("Num target slices has to be smaller than 15872");
+        assert ((ADDR_WIDTH==32) | (ADDR_WIDTH==64)) else $error("Address width has to bei either 32 or 64 bit");
+        assert ((DATA_WIDTH==32) | (DATA_WIDTH==64)) else $error("Data width has to bei either 32 or 64 bit");
+        assert (ID_BITWIDTH>0)                       else $error("ID_BITWIDTH has to be larger than 1");
+        assert (ID_BITWIDTH<10)                      else $error("ID_BITWIDTH has to be smaller than 10");
+        assert (PARAMETER_BITWIDTH>0)                else $error("PARAMETER_BITWIDTH has to be larger than 1");
+        assert (PARAMETER_BITWIDTH<8)                else $error("PARAMETER_BITWIDTH has to be smaller than 8");
+        assert (NUM_GATEWAYS>0)                      else $error("Num od Gateways has to be larger than 1");
+        assert (NUM_GATEWAYS<512)                    else $error("Num of Gateways has to be smaller than 512");
+        assert (NUM_TARGETS>0)                       else $error("Num Target slices has to be larger than 1");
+        assert (NUM_TARGETS<15872)                   else $error("Num target slices has to be smaller than 15872");
     end
     `endif
     // pragma translate_on

@@ -14,7 +14,7 @@
       reg = <0>;
       status = "okay";
       compatible = "riscv";
-      riscv,isa = "rv64imc";
+      riscv,isa = "rv64imac";
       mmu-type = "riscv,sv39";
       clock-frequency = <50000000>;
       CPU0_intc: interrupt-controller {
@@ -46,7 +46,7 @@
       reg = <0x0 0xc000000 0x0 0x4000000>;
       reg-names = "control";
       riscv,max-priority = <7>;
-      riscv,ndev = <53>;
+      riscv,ndev = <2>;
     };
     debug-controller@0 {
       compatible = "riscv,debug-013";

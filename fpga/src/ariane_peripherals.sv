@@ -60,8 +60,8 @@ module ariane_peripherals #(
     plic #(
         .ADDR_WIDTH         ( AxiAddrWidth           ),
         .DATA_WIDTH         ( AxiDataWidth           ),
-        .ID_BITWIDTH        ( 2                      ), // TODO (zarubaf): Find propper width
-        .PARAMETER_BITWIDTH ( 2                      ), // TODO (zarubaf): Find propper width
+        .ID_BITWIDTH        ( 3                      ), // TODO (zarubaf): Find propper width
+        .PARAMETER_BITWIDTH ( 3                      ), // TODO (zarubaf): Find propper width
         .NUM_TARGETS        ( ariane_soc::NumTargets ),
         .NUM_SOURCES        ( ariane_soc::NumSources )
     ) i_plic (

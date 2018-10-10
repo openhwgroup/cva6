@@ -37,8 +37,7 @@ package ariane_soc;
     localparam logic[63:0] DebugLength = 64'h1000;
     localparam logic[63:0] ROMLength   = 64'h1000;
     localparam logic[63:0] CLINTLength = 64'hC0000;
-    // TODO(zarubaf): Put PLIC back 0x4000000
-    localparam logic[63:0] PLICLength  = 64'h40_0000;
+    localparam logic[63:0] PLICLength  = 64'h3FF_FFFF;
     localparam logic[63:0] UARTLength  = 64'h10000;
     localparam logic[63:0] DRAMLength  = 64'h4000000;
 endpackage
