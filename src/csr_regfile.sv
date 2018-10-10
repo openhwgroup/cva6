@@ -174,7 +174,15 @@ module csr_regfile #(
                     if (mstatus_q.fs == riscv::Off) begin
                         read_access_exception = 1'b1;
                     end else begin
-                        csr_rdata = {32'b0, fcsr_q};
+                        csr_rdata = {56'b0, fcsr_q.frm, fcsr_q.fflags};
+                    end
+                end
+                // non-standard extension
+                riscv::CSR_FTRAN: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = {57'b0, fcsr_q.fprec};
                     end
                 end
                 // debug registers
@@ -342,7 +350,17 @@ module csr_regfile #(
                         update_access_exception = 1'b1;
                     end else begin
                         dirty_fp_state_csr = 1'b1;
-                        fcsr_d[14:0]   = csr_wdata[14:0]; // ignore writes to reserved space
+                        fcsr_d[7:0] = csr_wdata[7:0]; // ignore writes to reserved space
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end
+                end
+                riscv::CSR_FTRAN: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        update_access_exception = 1'b1;
+                    end else begin
+                        dirty_fp_state_csr = 1'b1;
+                        fcsr_d.fprec = csr_wdata[6:0]; // ignore writes to reserved space
                         // this instruction has side-effects
                         flush_o = 1'b1;
                     end

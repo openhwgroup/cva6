@@ -325,6 +325,7 @@ package riscv;
         CSR_FFLAGS         = 12'h001,
         CSR_FRM            = 12'h002,
         CSR_FCSR           = 12'h003,
+        CSR_FTRAN          = 12'h800,
         // Supervisor Mode CSRs
         CSR_SSTATUS        = 12'h100,
         CSR_SIE            = 12'h104,
