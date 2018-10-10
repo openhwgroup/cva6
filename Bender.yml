@@ -31,17 +31,17 @@ sources:
   - src/fpu/src/ops/fp_fma.vhd
   - src/fpu/src/ops/fp_divsqrt_multi.vhd
   - src/fpu/src/ops/fp_noncomp.vhd
-  - src/fpu/src/ops/fp_f2fcasts.vhd
-  - src/fpu/src/ops/fp_f2icasts.vhd
-  - src/fpu/src/ops/fp_i2fcasts.vhd
-  - src/fpu/src/ops/fp_conv_multi.vhd
+  - src/fpu/src/ops/fp_f2fcasts_fmt.vhd
+  - src/fpu/src/ops/fp_f2icasts_fmt.vhd
+  - src/fpu/src/ops/fp_i2fcasts_fmt.vhd
   - src/fpu/src/subunits/addmul_fmt_slice.vhd
   - src/fpu/src/subunits/addmul_block.vhd
   - src/fpu/src/subunits/divsqrt_multifmt_slice.vhd
   - src/fpu/src/subunits/divsqrt_block.vhd
   - src/fpu/src/subunits/noncomp_fmt_slice.vhd
   - src/fpu/src/subunits/noncomp_block.vhd
-  - src/fpu/src/subunits/conv_multifmt_slice.vhd
+  - src/fpu/src/subunits/conv_fmt_slice.vhd
+  - src/fpu/src/subunits/conv_ifmt_slice.vhd
   - src/fpu/src/subunits/conv_block.vhd
   - src/fpu/src/fpnew.vhd
   - src/fpu/src/fpnew_top.vhd

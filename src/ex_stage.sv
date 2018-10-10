@@ -192,6 +192,7 @@ module ex_stage #(
                 .fpu_fmt_i,
                 .fpu_rm_i,
                 .fpu_frm_i,
+                .fpu_prec_i,
                 .fpu_trans_id_o,
                 .result_o        ( fpu_result_o ),
                 .fpu_valid_o,
