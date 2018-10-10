@@ -50,8 +50,8 @@ module std_icache  #(
     logic                                   flushing_d, flushing_q;
 
     // signals
-    logic [ICACHE_SET_ASSOC-1:0]          req;           // request to data memory 
-    logic [ICACHE_SET_ASSOC-1:0]          vld_req;       // request to valid/tag memory 
+    logic [ICACHE_SET_ASSOC-1:0]          req;           // request to data memory
+    logic [ICACHE_SET_ASSOC-1:0]          vld_req;       // request to valid/tag memory
     logic [(ICACHE_LINE_WIDTH+7)/8-1:0]   data_be;       // byte enable for data memory
     logic [(2**NR_AXI_REFILLS-1):0][7:0]  be;            // byte enable
     logic [$clog2(ICACHE_NUM_WORD)-1:0]   addr;          // this is a cache-line address, to memory array
@@ -109,24 +109,24 @@ module std_icache  #(
             .rdata_o   ( data_rdata[i]      )
         );
     end
-    
+
     // --------------------
     // Tag Comparison and way select
     // --------------------
 
     // cacheline selected by hit
-    logic [ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0] cl_sel;                
-    
+    logic [ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0] cl_sel;
+
     assign idx = vaddr_q[ICACHE_BYTE_OFFSET-1:2];
 
-    generate 
+    generate
         for (genvar i=0;i<ICACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
             assign hit[i] = (tag_rdata[i].tag == tag) ? tag_rdata[i].valid : 1'b0;
             assign cl_sel[i] = (hit[i]) ? data_rdata[i][{idx,5'b0} +: FETCH_WIDTH] : '0;
             assign way_valid[i] = tag_rdata[i].valid;
         end
     endgenerate
-    
+
     // OR reduction of selected cachelines
     always_comb begin : p_reduction
         dreq_o.data = cl_sel[0];
@@ -177,7 +177,7 @@ module std_icache  #(
     assign dreq_o.ex = areq_i.fetch_exception;
 
     assign addr = (state_q==FLUSH) ? cnt_q : vaddr_d[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET];
-        
+
 
     // ------------------
     // Cache Ctrl
@@ -219,7 +219,7 @@ module std_icache  #(
             IDLE: begin
                 dreq_o.ready = 1'b1;
                 vaddr_d      = dreq_i.vaddr;
-                    
+
                 // we are getting a new request
                 if (dreq_i.req) begin
                     // request the content of all arrays
@@ -239,7 +239,7 @@ module std_icache  #(
             // ~> compare the tag
             TAG_CMP, TAG_CMP_SAVED: begin
                 areq_o.fetch_req = 1'b1; // request address translation
-                
+
                 // (speculatively) request the content of all arrays
                 req     = '1;
                 vld_req = '1;
@@ -255,7 +255,7 @@ module std_icache  #(
                     dreq_o.ready = 1'b1;
                     dreq_o.valid = 1'b1;
                     vaddr_d      = dreq_i.vaddr;
-                        
+
                     // we've got another request
                     if (dreq_i.req) begin
                         // save the index and stay in compare mode
@@ -335,7 +335,7 @@ module std_icache  #(
 
                 req     = evict_way_q;
                 vld_req = evict_way_q;
-                
+
                 if (axi.r_valid) begin
                     we = 1'b1;
                     tag_wdata.tag = tag_q;
@@ -380,7 +380,14 @@ module std_icache  #(
         endcase
 
         // those are the states where we need to wait a little longer until we can safely exit
-        if (dreq_i.kill_s2 && !(state_q inside {REFILL, WAIT_AXI_R_RESP, WAIT_KILLED_REFILL, WAIT_KILLED_AXI_R_RESP}) && !dreq_o.ready) begin
+        if (dreq_i.kill_s2 && !(state_q inside {
+                                                    REFILL,
+                                                    WAIT_AXI_R_RESP,
+                                                    WAIT_KILLED_AXI_R_RESP,
+                                                    WAIT_KILLED_REFILL,
+                                                    WAIT_ADDRESS_TRANSLATION,
+                                                    WAIT_ADDRESS_TRANSLATION_KILLED})
+                           && !dreq_o.ready) begin
             state_d = IDLE;
         end
 
@@ -443,14 +450,14 @@ module std_icache  #(
 //pragma translate_off
 `ifndef VERILATOR
 initial begin
-    assert ($bits(axi.aw_addr) == 64) 
+    assert ($bits(axi.aw_addr) == 64)
         else $fatal(1, "[icache] Ariane needs a 64-bit bus");
 end
 
 // assert that cache only hits on one way
 onehot: assert property (
-    @(posedge clk_i) disable iff (~rst_ni) $onehot0(hit)) 
+    @(posedge clk_i) disable iff (~rst_ni) $onehot0(hit))
         else $fatal(1, "[icache] Hit should be one-hot encoded");
 `endif
-//pragma translate_on   
+//pragma translate_on
 endmodule
