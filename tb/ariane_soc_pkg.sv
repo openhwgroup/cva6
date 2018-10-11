@@ -12,17 +12,19 @@
 // Description: Contains SoC information as constants
 package ariane_soc;
 
-    localparam NB_PERIPHERALS = 6;
+    localparam NB_PERIPHERALS = 7;
     localparam NumTargets = 2;
     localparam NumSources = 1;
 
     typedef enum int unsigned {
         DRAM  = 0,
-        UART  = 1,
-        PLIC  = 2,
-        CLINT = 3,
-        ROM   = 4,
-        Debug = 5
+        SPI   = 1,
+        UART  = 2,
+        PLIC  = 3,
+        CLINT = 4,
+        ROM   = 5,
+        Debug = 6
+
     } axi_slaves_t;
 
     typedef enum logic [63:0] {
@@ -31,6 +33,7 @@ package ariane_soc;
         CLINTBase = 64'h0200_0000,
         PLICBase  = 64'h0C00_0000,
         UARTBase  = 64'h1000_0000,
+        SPIBase   = 64'h2000_0000,
         DRAMBase  = 64'h8000_0000
     } soc_bus_start_t;
 
@@ -39,5 +42,6 @@ package ariane_soc;
     localparam logic[63:0] CLINTLength = 64'hC0000;
     localparam logic[63:0] PLICLength  = 64'h3FF_FFFF;
     localparam logic[63:0] UARTLength  = 64'h10000;
+    localparam logic[63:0] SPILength   = 64'h1000;
     localparam logic[63:0] DRAMLength  = 64'h4000000;
 endpackage
