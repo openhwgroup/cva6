@@ -49,7 +49,7 @@ before_install:
   - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
   - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
   # number of parallel jobs to use for make commands and simulation
-  - export NUM_JOBS=4
+  - export NUM_JOBS=2
   - ci/make-tmp.sh
   - git submodule update --init --recursive
 
@@ -61,32 +61,28 @@ stages:
 jobs:
   include:
     - stage: compile1
-      name: build gcc
+      name: build ariane sdk toolchain
       script:
-        - ci/build-riscv-gcc.sh
+        - ci/build-ariane-sdk-toolchain.sh
     - stage: compile2
-      name: build tools
+      name: build ariane sdk and verilator
       script:
-        - ci/install-fesvr.sh
+        - travis_wait 60 ./ci/build-ariane-sdk.sh
         - ci/install-verilator.sh
         - ci/install-dtc.sh
-        - ci/install-spike.sh
     - stage: test
       name: run riscv benchmarks
       script:
-        - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-benchmarks-verilator 
     # rv64ui-p-* tests
     - stage: test
       name: run asm tests1
       script:
-        - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests1-verilator 
     # rv64ui-v-* tests
     - stage: test
       name: run asm tests2
       script:
-        - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator 
     - stage: test
       name: run torture

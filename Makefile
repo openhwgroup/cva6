@@ -78,8 +78,10 @@ root-dir := $(shell pwd)
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
 # there is a definesd test-list with selected CI tests
-riscv-test-dir        := tmp/riscv-tests/build/isa/
-riscv-benchmarks-dir  := tmp/riscv-tests/build/benchmarks/
+riscv-test-dir        := env/riscv_install/target/share/riscv-tests/isa
+riscv-benchmarks-dir  := env/riscv_install/target/share/riscv-tests/benchmarks
+# riscv-test-dir        := ${RISCV}/target/share/riscv-tests/isa
+# riscv-benchmarks-dir  := ${RISCV}/target/share/riscv-tests/benchmarks
 riscv-asm-tests-list  := ci/riscv-asm-tests.list
 riscv-benchmarks-list := ci/riscv-benchmarks.list
 riscv-asm-tests       := $(shell xargs printf '\n%s' < $(riscv-asm-tests-list)  | cut -b 1-)
