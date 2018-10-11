@@ -321,6 +321,9 @@ module csr_regfile #(
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
         dirty_fp_state_csr      = 1'b0;
+        pmpcfg0_d               = pmpcfg0_q;
+        pmpaddr0_d              = pmpaddr0_q;
+
         // check for correct access rights and that we are writing
         if (csr_we) begin
             case (csr_addr.address)
@@ -952,6 +955,9 @@ module csr_regfile #(
             dscratch0_q            <= 64'b0;
             // machine mode registers
             mstatus_q              <= 64'b0;
+            // m-mode protection
+            pmpcfg0_q              <= '0;
+            pmpaddr0_q             <= '0;
             // set to boot address + direct mode + 4 byte offset which is the initial trap
             mtvec_rst_load_q       <= 1'b1;
             mtvec_q                <= '0;
@@ -1002,6 +1008,9 @@ module csr_regfile #(
             mtval_q                <= mtval_d;
             dcache_q               <= dcache_d;
             icache_q               <= icache_d;
+            // m-mode protection
+            pmpcfg0_q              <= pmpcfg0_d;
+            pmpaddr0_q             <= pmpaddr0_d;
             // supervisor mode registers
             sepc_q                 <= sepc_d;
             scause_q               <= scause_d;

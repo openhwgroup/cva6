@@ -52,6 +52,9 @@ module clint #(
     // increase the timer
     logic increase_timer;
 
+    // currently not implemented
+    assign ipi_o = '0;
+
     // -----------------------------
     // AXI Interface Logic
     // -----------------------------
