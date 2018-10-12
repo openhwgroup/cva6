@@ -61,7 +61,7 @@ class instruction_tracer;
         logic [31:0] decode_instruction, issue_instruction, issue_commit_instruction;
         scoreboard_entry_t commit_instruction;
         // initialize register 0
-        gp_reg_file [0] = 0;
+        gp_reg_file  = '{default:0};
 
         forever begin
             automatic branchpredict_t bp_instruction = '0;

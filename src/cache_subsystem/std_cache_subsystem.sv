@@ -104,22 +104,22 @@ module std_cache_subsystem #(
 `ifndef VERILATOR
 
   a_invalid_instruction_fetch: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)     
-          else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%016X, data=%016X", 
-              icache_dreq_o.vaddr, icache_dreq_o.data);
+    @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)     
+      else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X", 
+        icache_dreq_o.vaddr, icache_dreq_o.data);
 
   a_invalid_write_data: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)     
-          else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X", 
-              {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
+    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)     
+      else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X", 
+        {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
   generate 
       for(genvar j=0; j<2; j++) begin
-         a_invalid_read_data: assert property (
-            @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)     
-               else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X", 
-                  j, dcache_req_ports_o[j].data_rdata);
-      end
-   endgenerate  
+        a_invalid_read_data: assert property (
+          @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)     
+            else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X", 
+              j, dcache_req_ports_o[j].data_rdata);
+     end
+  endgenerate  
     
 `endif
 //pragma translate_on
