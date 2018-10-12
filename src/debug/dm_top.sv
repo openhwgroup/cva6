@@ -48,7 +48,7 @@ module dm_top #(
     // Debug CSRs
     dm::hartinfo_t [NrHarts-1:0]      hartinfo;
     logic [NrHarts-1:0]               halted;
-    logic [NrHarts-1:0]               running;
+    // logic [NrHarts-1:0]               running;
     logic [NrHarts-1:0]               resumeack;
     logic [NrHarts-1:0]               haltreq;
     logic [NrHarts-1:0]               resumereq;

@@ -90,6 +90,11 @@ module dm_csrs #(
 
     logic [31:0] haltsum0, haltsum1, haltsum2, haltsum3;
     // TODO(zarubaf) Need an elegant way to calculate haltsums
+    // remove assertions below when implemented...
+    assign haltsum0 = '0;
+    assign haltsum1 = '0;
+    assign haltsum2 = '0;
+    assign haltsum3 = '0;
     for (genvar i = 0; i < 32; i++) begin
         // assign haltsum0[i] = halted_i[i];
         // TODO(zarubaf) Implement correct haltsum logic
@@ -201,7 +206,7 @@ module dm_csrs #(
                     end
                     if (!cmdbusy_i) begin
                         // check whether we need to re-execute the command (just give a cmd_valid)
-                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_i.addr[3:0] - dm::Data0];
+                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_i.addr[3:0] - int'(dm::Data0)];
                     end
                 end
                 dm::DMControl:    resp_queue_data = dmcontrol_q;
@@ -215,7 +220,8 @@ module dm_csrs #(
                     resp_queue_data = progbuf_q[dmi_req_i.addr[4:0]];
                     if (!cmdbusy_i) begin
                         // check whether we need to re-execute the command (just give a cmd_valid)
-                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_i.addr[3:0]];
+                        // TODO(zarubaf): check if offset is correct - without it this may assign Xes
+                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_i.addr[3:0]+16];
                     end
                 end
                 dm::HaltSum0: resp_queue_data = haltsum0;
@@ -272,7 +278,7 @@ module dm_csrs #(
                     if (!cmdbusy_i && dm::DataCount > 0) begin
                         data_d[dmi_req_i.addr[4:0]] = dmi_req_i.data;
                         // check whether we need to re-execute the command (just give a cmd_valid)
-                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_i.addr[3:0] - dm::Data0];
+                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_i.addr[3:0] - int'(dm::Data0)];
                     end
                 end
                 dm::DMControl: begin
@@ -327,7 +333,8 @@ module dm_csrs #(
                         progbuf_d[dmi_req_i.addr[4:0]] = dmi_req_i.data;
                         // check whether we need to re-execute the command (just give a cmd_valid)
                         // this should probably throw an error if executed during another command was busy
-                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_i.addr[3:0]];
+                        // TODO(zarubaf): check if offset is correct - without it this may assign Xes
+                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_i.addr[3:0]+16];
                     end
                 end
                 dm::SBCS: begin
@@ -508,4 +515,24 @@ module dm_csrs #(
             end
         end
     end
+
+
+        
+
+
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
+
+
+//pragma translate_off
+`ifndef VERILATOR
+    haltsum: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) |-> 
+            !({1'b0, dmi_req_i.addr} inside {dm::HaltSum0, dm::HaltSum1, dm::HaltSum2, dm::HaltSum3}))     
+                else $warning("Haltsums are not implemented yet and always return 0.");
+`endif
+//pragma translate_on
+
+
 endmodule
