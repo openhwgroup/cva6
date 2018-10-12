@@ -41,14 +41,14 @@ build:
 run-asm-tests-questa:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests 
+    - make -j${NUM_JOBS} run-asm-tests batch-mode=1
   dependencies:
     - build
-
-run-benchmarks-questa:
+    
+bench-quest:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-benchmarks 
+    - make -j${NUM_JOBS} run-benchmarks batch-mode=1
   dependencies:
     - build    
 
@@ -56,5 +56,7 @@ torture:
   stage: test_std
   script:
     - make torture-rtest
+    - make torture-rtest-verilator
   dependencies:
     - build
+

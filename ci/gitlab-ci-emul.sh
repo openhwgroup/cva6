@@ -46,7 +46,7 @@ make -j${NUM_JOBS} run-benchmarks-verilator
 make -j${NUM_JOBS} torture-rtest-verilator  
 
 # run asm tests on questa
-make -j${NUM_JOBS} build                    
-make -j${NUM_JOBS} run-asm-tests            
-make -j${NUM_JOBS} run-benchmarks           
-make -j${NUM_JOBS} torture-rtest            
+make -j${NUM_JOBS} build          batch-mode=1          
+make -j${NUM_JOBS} run-asm-tests  batch-mode=1          
+make -j${NUM_JOBS} run-benchmarks batch-mode=1          
+make -j${NUM_JOBS} torture-rtest  batch-mode=1          
