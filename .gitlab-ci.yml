@@ -46,14 +46,14 @@ build:
 asm-quest:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests 
+    - make -j${NUM_JOBS} run-asm-tests batch-mode=1
   dependencies:
     - build
     
 bench-quest:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-benchmarks 
+    - make -j${NUM_JOBS} run-benchmarks batch-mode=1
   dependencies:
     - build    
 
@@ -95,14 +95,14 @@ torture:
 serp-asm-quest:
   stage: test_serpent
   script:
-    - make -j${NUM_JOBS} run-asm-tests defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-asm-tests defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
   dependencies:
     - build
     
 serp-bench-quest:
   stage: test_serpent
   script:
-    - make -j${NUM_JOBS} run-benchmarks defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-benchmarks defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
   dependencies:
     - build    
 
@@ -110,7 +110,7 @@ serp-bench-quest:
 serp-asm1-ver:
   stage: test_serpent
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS 
   dependencies:
     - build
 
