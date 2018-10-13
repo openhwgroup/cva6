@@ -71,8 +71,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/debug/debug_rom/*.sv)                           \
         src/fpu/src/fpnew.vhd                                          \
         src/fpu/src/fpnew_top.vhd                                      \
-        src/fpu_div_sqrt_mvp/hdl/fpu_ff.sv                             \
-        src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
         src/common_cells/src/deprecated/generic_fifo.sv                \
         src/common_cells/src/deprecated/pulp_sync.sv                   \
         src/common_cells/src/deprecated/find_first_one.sv              \
