@@ -29,24 +29,23 @@ torture-logs := -log
 
 # Sources
 # Package files -> compile first
-ariane_pkg := include/riscv_pkg.sv                     \
-              src/debug/dm_pkg.sv                      \
-              include/ariane_pkg.sv                    \
-              include/std_cache_pkg.sv                 \
-              src/axi/src/axi_pkg.sv                   \
-              include/axi_intf.sv                      \
-              src/fpu/src/pkg/fpnew_pkg.vhd            \
-			  src/fpu/src/pkg/fpnew_fmts_pkg.vhd       \
-			  src/fpu/src/pkg/fpnew_comps_pkg.vhd      \
-			  src/fpu/src/pkg/fpnew_pkg_constants.vhd
+ariane_pkg := include/riscv_pkg.sv                          \
+              src/debug/dm_pkg.sv                           \
+              include/ariane_pkg.sv                         \
+              include/std_cache_pkg.sv                      \
+              src/axi/src/axi_pkg.sv                        \
+              include/axi_intf.sv                           \
+              src/fpu/src/pkg/fpnew_pkg.vhd                 \
+              src/fpu/src/pkg/fpnew_fmts_pkg.vhd            \
+              src/fpu/src/pkg/fpnew_comps_pkg.vhd           \
+              src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
+              src/fpu/src/pkg/fpnew_pkg_constants.vhd
 
 # utility modules
 util := $(wildcard src/util/*.svh)                            \
         src/util/instruction_tracer_pkg.sv                    \
         src/util/instruction_tracer_if.sv                     \
         src/tech_cells_generic/src/cluster_clock_gating.sv    \
-        src/tech_cells_generic/src/cluster_clock_inverter.sv  \
-        src/tech_cells_generic/src/pulp_clock_mux2.sv         \
         src/util/sram.sv
 
 # Test packages
@@ -60,8 +59,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/fpu/src/utils/*.vhd)                            \
         $(wildcard src/fpu/src/ops/*.vhd)                              \
         $(wildcard src/fpu/src/subunits/*.vhd)                         \
-        src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv                  \
-        $(wildcard src/fpu_div_sqrt_mvp/hdl/*.sv)                      \
+        $(filter-out src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,    \
+        $(wildcard src/fpu_div_sqrt_mvp/hdl/*.sv))                     \
         $(wildcard src/frontend/*.sv)                                  \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
@@ -90,6 +89,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
         src/common_cells/src/lfsr_8bit.sv                              \
+        src/tech_cells_generic/src/cluster_clock_inverter.sv           \
+        src/tech_cells_generic/src/pulp_clock_mux2.sv                  \
         tb/ariane_testharness.sv                                       \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv
@@ -210,8 +211,8 @@ check-benchmarks:
 
 # verilator-specific
 verilate_command := $(verilator)                                                           \
-                    $(ariane_pkg)                                                          \
-                    $(filter-out tb/ariane_bt.sv,$(src))                                   \
+                    $(filter-out %.vhd, $(ariane_pkg))                                     \
+                    $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))             \
                     +define+$(defines)                                                     \
                     src/util/sram.sv                                                       \
                     +incdir+src/axi_node                                                   \

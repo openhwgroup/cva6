@@ -365,11 +365,12 @@ module issue_read_operands #(
     // pack signals
     logic [2:0][4:0]  fp_raddr_pack;
     logic [NR_COMMIT_PORTS-1:0][63:0] fp_wdata_pack;
-    assign fp_raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
-    assign fp_wdata_pack = {wdata_i[1][FLEN-1:0], wdata_i[0][FLEN-1:0]};
 
     generate
         if (FP_PRESENT) begin : float_regfile_gen
+            assign fp_raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
+            assign fp_wdata_pack = {wdata_i[1][FLEN-1:0], wdata_i[0][FLEN-1:0]};
+
             ariane_regfile #(
                 .DATA_WIDTH     ( FLEN            ),
                 .NR_READ_PORTS  ( 3               ),
