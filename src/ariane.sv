@@ -20,14 +20,14 @@ import instruction_tracer_pkg::*;
 `endif
 
 module ariane #(
-        parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
-        parameter int unsigned AXI_ID_WIDTH     = 10,            // minimum 1
-        parameter int unsigned AXI_USER_WIDTH   = 1              // minimum 1
+        parameter logic [XLEN-1:0] CACHE_START_ADDR = 'h8000_0000, // address on which to decide whether the request is cache-able or not
+        parameter int unsigned AXI_ID_WIDTH         = 10,            // minimum 1
+        parameter int unsigned AXI_USER_WIDTH       = 1              // minimum 1
     )(
         input  logic                           clk_i,
         input  logic                           rst_ni,
         // Core ID, Cluster ID and boot address are considered more or less static
-        input  logic [63:0]                    boot_addr_i,  // reset boot address
+        input  logic [XLEN-1:0]                boot_addr_i,  // reset boot address
         input  logic [ 3:0]                    core_id_i,    // core id in a multicore environment (reflected in a CSR)
         input  logic [ 5:0]                    cluster_id_i, // PULP specific if core is used in a clustered environment
         // Instruction memory interface
@@ -50,15 +50,15 @@ module ariane #(
     riscv::priv_lvl_t           priv_lvl;
     exception_t                 ex_commit; // exception from commit stage
     branchpredict_t             resolved_branch;
-    logic [63:0]                pc_commit;
+    logic [XLEN-1:0]            pc_commit;
     logic                       eret;
     logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
     // --------------
     // PCGEN <-> CSR
     // --------------
-    logic [63:0]              trap_vector_base_commit_pcgen;
-    logic [63:0]              epc_commit_pcgen;
+    logic [XLEN-1:0]          trap_vector_base_commit_pcgen;
+    logic [XLEN-1:0]          epc_commit_pcgen;
     // --------------
     // IF <-> ID
     // --------------
@@ -77,20 +77,20 @@ module ariane #(
     // --------------
     // ISSUE <-> EX
     // --------------
-    logic [63:0]              imm_id_ex;
+    logic [XLEN-1:0]          imm_id_ex;
     logic [TRANS_ID_BITS-1:0] trans_id_id_ex;
     fu_t                      fu_id_ex;
     fu_op                     operator_id_ex;
-    logic [63:0]              operand_a_id_ex;
-    logic [63:0]              operand_b_id_ex;
-    logic [63:0]              pc_id_ex;
+    logic [XLEN-1:0]          operand_a_id_ex;
+    logic [XLEN-1:0]          operand_b_id_ex;
+    logic [XLEN-1:0]          pc_id_ex;
     logic                     is_compressed_instr_id_ex;
     // ALU
     logic                     alu_ready_ex_id;
     logic                     alu_valid_id_ex;
     logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
     logic                     alu_valid_ex_id;
-    logic [63:0]              alu_result_ex_id;
+    logic [XLEN-1:0]              alu_result_ex_id;
     exception_t               alu_exception_ex_id;
     // Branches and Jumps
     logic                     branch_valid_id_ex;
@@ -100,7 +100,7 @@ module ariane #(
     // LSU
     logic [TRANS_ID_BITS-1:0] lsu_trans_id_ex_id;
     logic                     lsu_valid_id_ex;
-    logic [63:0]              lsu_result_ex_id;
+    logic [XLEN-1:0]          lsu_result_ex_id;
     logic                     lsu_ready_ex_id;
     logic                     lsu_valid_ex_id;
     exception_t               lsu_exception_ex_id;
@@ -108,7 +108,7 @@ module ariane #(
     logic                     mult_ready_ex_id;
     logic                     mult_valid_id_ex;
     logic [TRANS_ID_BITS-1:0] mult_trans_id_ex_id;
-    logic [63:0]              mult_result_ex_id;
+    logic [XLEN-1:0]          mult_result_ex_id;
     logic                     mult_valid_ex_id;
     // FPU
     logic                     fpu_ready_ex_id;
@@ -116,7 +116,7 @@ module ariane #(
     logic [1:0]               fpu_fmt_id_ex;
     logic [2:0]               fpu_rm_id_ex;
     logic [TRANS_ID_BITS-1:0] fpu_trans_id_ex_id;
-    logic [63:0]              fpu_result_ex_id;
+    logic [XLEN-1:0]          fpu_result_ex_id;
     logic                     fpu_valid_ex_id;
     exception_t               fpu_exception_ex_id;
     // CSR
@@ -139,10 +139,10 @@ module ariane #(
     // --------------
     // COMMIT <-> ID
     // --------------
-    logic [NR_COMMIT_PORTS-1:0][4:0]  waddr_commit_id;
-    logic [NR_COMMIT_PORTS-1:0][63:0] wdata_commit_id;
-    logic [NR_COMMIT_PORTS-1:0]       we_gpr_commit_id;
-    logic [NR_COMMIT_PORTS-1:0]       we_fpr_commit_id;
+    logic [NR_COMMIT_PORTS-1:0][4:0]      waddr_commit_id;
+    logic [NR_COMMIT_PORTS-1:0][XLEN-1:0] wdata_commit_id;
+    logic [NR_COMMIT_PORTS-1:0]           we_gpr_commit_id;
+    logic [NR_COMMIT_PORTS-1:0]           we_fpr_commit_id;
     // --------------
     // CSR <-> *
     // --------------
@@ -159,8 +159,8 @@ module ariane #(
     logic [0:0]               asid_csr_ex;
     logic [11:0]              csr_addr_ex_csr;
     fu_op                     csr_op_commit_csr;
-    logic [63:0]              csr_wdata_commit_csr;
-    logic [63:0]              csr_rdata_csr_commit;
+    logic [XLEN-1:0]          csr_wdata_commit_csr;
+    logic [XLEN-1:0]          csr_rdata_csr_commit;
     exception_t               csr_exception_csr_commit;
     logic                     tvm_csr_id;
     logic                     tw_csr_id;
@@ -174,7 +174,7 @@ module ariane #(
     // Performance Counters <-> *
     // ----------------------------
     logic [11:0]              addr_csr_perf;
-    logic [63:0]              data_csr_perf, data_perf_csr;
+    logic [XLEN-1:0]          data_csr_perf, data_perf_csr;
     logic                     we_csr_perf;
 
     logic                     icache_flush_ctrl_cache;

@@ -668,7 +668,7 @@ module csr_regfile #(
         // ------------------------------
         // Set the address translation at which the load and stores should occur
         // we can use the previous values since changing the address translation will always involve a pipeline flush
-        if (mprv && satp_q.mode == MODE_SV39 && (mstatus_q.mpp != riscv::PRIV_LVL_M))
+        if (mprv && satp_q.mode == riscv::MODE_SV39 && (mstatus_q.mpp != riscv::PRIV_LVL_M))
             en_ld_st_translation_d = 1'b1;
         else // otherwise we go with the regular settings
             en_ld_st_translation_d = en_translation_o;
