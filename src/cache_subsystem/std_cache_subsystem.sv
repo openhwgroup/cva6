@@ -22,7 +22,8 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module std_cache_subsystem #(
-   parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
+  parameter int unsigned AXI_ID_WIDTH     = 10,
+  parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 )(
     input logic                            clk_i,
     input logic                            rst_ni,
@@ -45,6 +46,7 @@ module std_cache_subsystem #(
     input  logic                           dcache_flush_i,         // high until acknowledged
     output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
     output logic                           dcache_miss_o,          // we missed on a ld/st
+    output logic                           wbuffer_empty_o,        // statically set to 1, as there is no wbuffer in this cache system
     // Request ports
     input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
     output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
@@ -53,6 +55,8 @@ module std_cache_subsystem #(
     AXI_BUS.Master                         dcache_data_if,          // D$ refill port
     AXI_BUS.Master                         dcache_bypass_if         // bypass axi port (disabled D$ or uncacheable access)
 );
+  
+  assign wbuffer_empty_o = 1'b1;
 
    std_icache #(
    ) i_icache (
@@ -73,6 +77,7 @@ module std_cache_subsystem #(
    // Port 1: Load Unit
    // Port 2: Store Unit
    std_nbdcache #(
+      .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
       .CACHE_START_ADDR ( CACHE_START_ADDR )
    ) i_nbdcache (
       .clk_i        ( clk_i                  ),
@@ -88,5 +93,36 @@ module std_cache_subsystem #(
       .amo_req_i    ( amo_req_i              ),
       .amo_resp_o   ( amo_resp_o             )
    );
+
+
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
+
+
+//pragma translate_off
+`ifndef VERILATOR
+
+  a_invalid_instruction_fetch: assert property (
+    @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)     
+      else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X", 
+        icache_dreq_o.vaddr, icache_dreq_o.data);
+
+  a_invalid_write_data: assert property (
+    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)     
+      else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X", 
+        {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
+  generate 
+      for(genvar j=0; j<2; j++) begin
+        a_invalid_read_data: assert property (
+          @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)     
+            else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X", 
+              j, dcache_req_ports_o[j].data_rdata);
+     end
+  endgenerate  
+    
+`endif
+//pragma translate_on
+
 
 endmodule // std_cache_subsystem

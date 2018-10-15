@@ -13,10 +13,16 @@
 // Description: Ariane Top-level module
 
 import ariane_pkg::*;
-`ifndef verilator
-`ifndef SYNTHESIS
+//pragma translate_off
+`ifndef VERILATOR
 import instruction_tracer_pkg::*;
 `endif
+//pragma translate_on
+
+// default to AXI64 cache ports if not using the
+// serpent PULP extension
+`ifndef SERPENT_PULP
+    `define AXI64_CACHE_PORTS
 `endif
 
 module ariane #(
@@ -28,19 +34,31 @@ module ariane #(
         input  logic                           rst_ni,
         // Core ID, Cluster ID and boot address are considered more or less static
         input  logic [63:0]                    boot_addr_i,  // reset boot address
-        input  logic [ 3:0]                    core_id_i,    // core id in a multicore environment (reflected in a CSR)
-        input  logic [ 5:0]                    cluster_id_i, // PULP specific if core is used in a clustered environment
-        // Instruction memory interface
-        AXI_BUS.Master                         instr_if,
-        // Data memory interface
-        AXI_BUS.Master                         data_if,      // data cache refill port
-        AXI_BUS.Master                         bypass_if,    // bypass axi port (disabled cache or uncacheable access)
+        input  logic [63:0]                    hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
         // Interrupt inputs
         input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip (async)
         input  logic                           ipi_i,        // inter-processor interrupts (async)
         // Timer facilities
         input  logic                           time_irq_i,   // timer interrupt in (async)
-        input  logic                           debug_req_i   // debug request (async)
+        input  logic                           debug_req_i,  // debug request (async)
+
+    `ifdef AXI64_CACHE_PORTS
+       // memory side
+       AXI_BUS.Master                          instr_if,       // I$ refill port
+       AXI_BUS.Master                          data_if,       // D$ refill port
+       AXI_BUS.Master                          bypass_if      // bypass axi port (disabled D$ or uncacheable access)
+    `else
+       // L15 (memory side)
+       output logic                            l15_val_o,
+       input  logic                            l15_ack_i,
+       input  logic                            l15_header_ack_i,
+       output l15_req_t                        l15_data_o,
+
+       input  logic                            l15_val_i,
+       output logic                            l15_req_ack_o,
+       input  l15_rtrn_t                       l15_rtrn_i
+    `endif
+
     );
 
     // ------------------------------------------
@@ -130,7 +148,8 @@ module ariane #(
     // LSU Commit
     logic                     lsu_commit_commit_ex;
     logic                     lsu_commit_ready_ex_commit;
-    logic                     no_st_pending_ex_commit;
+    logic                     no_st_pending_ex;
+    logic                     no_st_pending_commit;
     logic                     amo_valid_commit;
     // --------------
     // ID <-> COMMIT
@@ -219,6 +238,7 @@ module ariane #(
     // ----------------
     dcache_req_i_t [2:0]      dcache_req_ports_ex_cache;
     dcache_req_o_t [2:0]      dcache_req_ports_cache_ex;
+    logic                     dcache_commit_wbuffer_empty;
 
     // --------------
     // Frontend
@@ -369,9 +389,9 @@ module ariane #(
         .lsu_trans_id_o         ( lsu_trans_id_ex_id                     ),
         .lsu_valid_o            ( lsu_valid_ex_id                        ),
         .lsu_commit_i           ( lsu_commit_commit_ex                   ), // from commit
-        .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit             ), // to commit
+        .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit               ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id                    ),
-        .no_st_pending_o        ( no_st_pending_ex_commit                ),
+        .no_st_pending_o        ( no_st_pending_ex                       ),
         // MULT
         .mult_ready_o           ( mult_ready_ex_id                       ),
         .mult_valid_i           ( mult_valid_id_ex                       ),
@@ -415,6 +435,11 @@ module ariane #(
     // ---------
     // Commit
     // ---------
+
+    // we have to make sure that the whole write buffer path is empty before
+    // used e.g. for fence instructions.
+    assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
+
     commit_stage commit_stage_i (
         .clk_i,
         .rst_ni,
@@ -427,7 +452,7 @@ module ariane #(
         .single_step_i          ( single_step_csr_commit        ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_o           ( commit_ack                    ),
-        .no_st_pending_i        ( no_st_pending_ex_commit       ),
+        .no_st_pending_i        ( no_st_pending_commit          ),
         .waddr_o                ( waddr_commit_id               ),
         .wdata_o                ( wdata_commit_id               ),
         .we_gpr_o               ( we_gpr_commit_id              ),
@@ -559,9 +584,60 @@ module ariane #(
     // -------------------
     // Cache Subsystem
     // -------------------
-    std_cache_subsystem #(
+
+`ifdef SERPENT_PULP
+    // this is a cache subsystem that is compatible with OpenPiton
+    serpent_cache_subsystem #(
+`ifdef AXI64_CACHE_PORTS
+        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                          ),
+`endif
         .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
-    ) i_std_cache_subsystem (
+    ) i_cache_subsystem (
+        // to D$
+        .clk_i                 ( clk_i                                 ),
+        .rst_ni                ( rst_ni                                ),
+        // I$
+        .icache_en_i           ( icache_en_csr                         ),
+        .icache_flush_i        ( icache_flush_ctrl_cache               ),
+        .icache_miss_o         ( icache_miss_cache_perf                ),
+        .icache_areq_i         ( icache_areq_ex_cache                  ),
+        .icache_areq_o         ( icache_areq_cache_ex                  ),
+        .icache_dreq_i         ( icache_dreq_if_cache                  ),
+        .icache_dreq_o         ( icache_dreq_cache_if                  ),
+        // D$
+        .dcache_enable_i       ( dcache_en_csr_nbdcache                ),
+        .dcache_flush_i        ( dcache_flush_ctrl_cache               ),
+        .dcache_flush_ack_o    ( dcache_flush_ack_cache_ctrl           ),
+        // to commit stage
+        .dcache_amo_req_i      ( amo_req                               ),
+        .dcache_amo_resp_o     ( amo_resp                              ),
+        // from PTW, Load Unit  and Store Unit
+        .dcache_miss_o         ( dcache_miss_cache_perf                ),
+        .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
+        .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),
+        // write buffer status
+        .wbuffer_empty_o       ( dcache_commit_wbuffer_empty           ),
+`ifdef AXI64_CACHE_PORTS
+        // memory side
+        .icache_data_if        ( instr_if                              ),
+        .dcache_data_if        ( data_if                               ),
+        .dcache_bypass_if      ( bypass_if                             )
+`else
+        .l15_val_o             ( l15_val_o                             ),
+        .l15_ack_i             ( l15_ack_i                             ),
+        .l15_header_ack_i      ( l15_header_ack_i                      ),
+        .l15_data_o            ( l15_data_o                            ),
+        .l15_val_i             ( l15_val_i                             ),
+        .l15_req_ack_o         ( l15_req_ack_o                         ),
+        .l15_rtrn_i            ( l15_rtrn_i                            )
+`endif
+  );
+`else
+
+    std_cache_subsystem #(
+        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                          ),
+        .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
+    ) i_cache_subsystem (
         // to D$
         .clk_i                 ( clk_i                                 ),
         .rst_ni                ( rst_ni                                ),
@@ -581,6 +657,8 @@ module ariane #(
         .amo_req_i             ( amo_req                               ),
         .amo_resp_o            ( amo_resp                              ),
         .dcache_miss_o         ( dcache_miss_cache_perf                ),
+        // this is statically set to 1 as the std_cache does not have a wbuffer
+        .wbuffer_empty_o       ( dcache_commit_wbuffer_empty           ),
         // from PTW, Load Unit  and Store Unit
         .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
         .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),
@@ -589,12 +667,13 @@ module ariane #(
         .dcache_data_if        ( data_if                               ),
         .dcache_bypass_if      ( bypass_if                             )
   );
+`endif
 
     // -------------------
     // Instruction Tracer
     // -------------------
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    //pragma translate_off
+    `ifndef VERILATOR
     instruction_tracer_if tracer_if (clk_i);
     // assign instruction tracer interface
     // control signals
@@ -631,23 +710,18 @@ module ariane #(
     // assign current privilege level
     assign tracer_if.priv_lvl          = priv_lvl;
     assign tracer_if.debug_mode        = debug_mode;
-    instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
-    `endif
-    `endif
+    instr_tracer instr_tracer_i (tracer_if, hart_id_i);
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
     program instr_tracer (
             instruction_tracer_if tracer_if,
-            input logic [5:0] cluster_id_i,
-            input logic [3:0] core_id_i
+            input logic [63:0]    hart_id_i
         );
 
         instruction_tracer it = new (tracer_if, 1'b0);
 
         initial begin
             #15ns;
-            it.create_file(cluster_id_i, core_id_i);
+            it.create_file(hart_id_i);
             it.trace();
         end
 
@@ -662,7 +736,7 @@ module ariane #(
     logic [63:0] cycles;
 
     initial begin
-        f = $fopen("trace_core_00_0.dasm", "w");
+        f = $fopen("trace_hart_00.dasm", "w");
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -701,6 +775,7 @@ module ariane #(
         $fclose(f);
     end
     `endif
-    `endif
+    //pragma translate_on
+
 endmodule // ariane
 

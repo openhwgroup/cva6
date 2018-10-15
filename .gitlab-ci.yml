@@ -1,5 +1,5 @@
 before_script:
-  # paths to local or network installations (the riscv toolchain and 
+  # paths to local or network installations (the riscv toolchain and
   # verilator are not built in the ci job as in travis)
   - export QUESTASIM_HOME=/usr/pack/modelsim-10.6b-kgf/questasim/
   - export QUESTASIM_VERSION=-10.6b
@@ -17,14 +17,16 @@ before_script:
   - export NUM_JOBS=4
   - ci/make-tmp.sh
   - git submodule update --init --recursive
-   
+
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
   - build
-  - test_std
+  - standard
+  - serpent
 
+###################################
 # prepare
 build:
   stage: build
@@ -35,26 +37,136 @@ build:
     - make torture-gen
   artifacts:
       paths:
-        - tmp 
+        - tmp
 
-# rv64ui-p-* and rv64ui-v-* tests    
-run-asm-tests-questa:
-  stage: test_std
+###################################
+# tests with standard cache system
+
+# rv64ui-p-* and rv64ui-v-* tests
+asm-quest:
+  stage: standard
   script:
-    - make -j${NUM_JOBS} run-asm-tests 
+    - make -j${NUM_JOBS} run-asm-tests batch-mode=1
   dependencies:
     - build
 
-run-benchmarks-questa:
-  stage: test_std
+amo-quest:
+  stage: standard
   script:
-    - make -j${NUM_JOBS} run-benchmarks 
+    - make -j${NUM_JOBS} run-amo-tests batch-mode=1
   dependencies:
-    - build    
+    - build
+
+bench-quest:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-benchmarks batch-mode=1
+  dependencies:
+    - build
+
+# rv64ui-p-* tests
+asm1-ver:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-asm-tests1-verilator
+  dependencies:
+    - build
+
+# rv64ui-v-* tests
+asm2-ver:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-asm-tests2-verilator
+  dependencies:
+    - build
+
+# atomics
+amo-ver:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-amo-verilator
+  dependencies:
+    - build
+
+bench-ver:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-benchmarks-verilator
+  dependencies:
+    - build
 
 torture:
-  stage: test_std
+  stage: standard
   script:
     - make torture-rtest
+  dependencies:
+    - build
+
+###################################
+# tests with serpent cache system
+
+# rv64ui-p-* and rv64ui-v-* tests
+s-asm-quest:
+  stage: serpent
+  script:
+    - make -j${NUM_JOBS} run-asm-tests defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
+  dependencies:
+    - build
+
+s-bench-quest:
+  stage: serpent
+  script:
+    - make -j${NUM_JOBS} run-benchmarks defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
+  dependencies:
+    - build
+
+# rv64ui-p-* tests
+s-asm1-ver:
+  stage: serpent
+  script:
+    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+  dependencies:
+    - build
+
+# rv64ui-v-* tests
+s-asm2-ver:
+  stage: serpent
+  script:
+    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+  dependencies:
+    - build
+
+s-bench-ver:
+  stage: serpent
+  script:
+    - make -j${NUM_JOBS} run-benchmarks-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+  dependencies:
+    - build
+
+s-icache-quest:
+  stage: serpent
+  script:
+    - cd tb/tb_serpent_icache/
+    - make simc
+    - "grep 'CI: PASSED' summary.rep"
+  dependencies:
+    - build
+
+s-dcache-quest:
+  stage: serpent
+  script:
+    - cd tb/tb_serpent_dcache/
+    - make simc
+    - "grep 'CI: PASSED' RD0_summary.rep"
+    - "grep 'CI: PASSED' RD1_summary.rep"
+    - "grep 'CI: PASSED' TB_MEM_summary.rep"
+  dependencies:
+    - build
+
+s-torture:
+  stage: serpent
+  script:
+    - make torture-rtest           defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make torture-rtest-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
     - build

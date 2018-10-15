@@ -341,17 +341,20 @@ module load_unit (
     end
     // end result mux fast
 
-`ifndef SYNTHESIS
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
+
+//pragma translate_off
 `ifndef VERILATOR
     // check invalid offsets
-    assert property (@(posedge clk_i) disable iff (~rst_ni)
-        (load_data_q.operator inside {LW, LWU}) |-> load_data_q.address_offset < 5) else $fatal ("invalid address offset used with {LW, LWU}");
-    assert property (@(posedge clk_i) disable iff (~rst_ni)
-        (load_data_q.operator inside {LH, LHU}) |-> load_data_q.address_offset < 7) else $fatal ("invalid address offset used with {LH, LHU}");
-    assert property (@(posedge clk_i) disable iff (~rst_ni)
-        (load_data_q.operator inside {LB, LBU}) |-> load_data_q.address_offset < 8) else $fatal ("invalid address offset used with {LB, LBU}");
+    addr_offset0: assert property (@(posedge clk_i) disable iff (~rst_ni) 
+        (load_data_q.operator inside {LW, LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
+    addr_offset1: assert property (@(posedge clk_i) disable iff (~rst_ni) 
+        (load_data_q.operator inside {LH, LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
+    addr_offset2: assert property (@(posedge clk_i) disable iff (~rst_ni) 
+        (load_data_q.operator inside {LB, LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
 `endif
-`endif
-
+//pragma translate_on
 
 endmodule

@@ -89,7 +89,6 @@ module frontend (
     logic          is_mispredict;
     // branch-prediction which we inject into the pipeline
     branchpredict_sbe_t  bp_sbe;
-
     // fetch fifo credit system
     logic fifo_valid, fifo_ready, fifo_empty, fifo_pop;
     logic s2_eff_kill, issue_req, s2_in_flight_d, s2_in_flight_q;
@@ -375,24 +374,25 @@ module frontend (
     // -------------------
     // Credit-based fetch FIFO flow ctrl
     // -------------------
-    assign fifo_credits_d       =  (flush_i) ? FETCH_FIFO_DEPTH :
-                                               fifo_credits_q + fifo_pop + s2_eff_kill - issue_req;
-
-    // check whether there is a request in flight that is being killed now
+    assign fifo_credits_d       =  (flush_i) ? FETCH_FIFO_DEPTH : 
+                                               fifo_credits_q + fifo_pop + s2_eff_kill - issue_req; 
+    
+    // check whether there is a request in flight that is being killed now 
     // if this is the case, we need to increment the credit by 1
     assign s2_eff_kill         = s2_in_flight_q & icache_dreq_o.kill_s2;
-    assign s2_in_flight_d      = (flush_i)             ? 1'b0 :
-                                 (issue_req)           ? 1'b1 :
+    assign s2_in_flight_d      = (flush_i)             ? 1'b0 : 
+                                 (issue_req)           ? 1'b1 : 
                                  (icache_dreq_i.valid) ? 1'b0 :
-                                                         s2_in_flight_q;
+                                                         s2_in_flight_q; 
 
     // only enable counter if current request is not being killed
     assign issue_req           = if_ready & (~icache_dreq_o.kill_s1);
-    assign fifo_pop            = fetch_ack_i & fetch_entry_valid_o;
+    assign fifo_pop            = fetch_ack_i & fetch_entry_valid_o;                                                                    
     assign fifo_ready          = (|fifo_credits_q);
     assign if_ready            =  icache_dreq_i.ready & fifo_ready;
     assign icache_dreq_o.req   =  fifo_ready;
     assign fetch_entry_valid_o = ~fifo_empty;
+
 
 //pragma translate_off
 `ifndef VERILATOR
@@ -487,6 +487,7 @@ module frontend (
             .rvc_imm_o    ( rvc_imm[i]    )
         );
     end
+
 
     fifo_v2 #(
         .DEPTH        (  8                   ),

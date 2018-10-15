@@ -276,8 +276,9 @@ module scoreboard #(
             commit_pointer_q <= commit_pointer_n;
         end
     end
-    `ifndef SYNTHESIS
-    `ifndef verilator
+
+    //pragma translate_off
+    `ifndef VERILATOR
     initial begin
         assert (NR_ENTRIES == 2**BITS_ENTRIES) else $fatal("Scoreboard size needs to be a power of two.");
     end
@@ -310,5 +311,5 @@ module scoreboard #(
         end
     end
     `endif
-    `endif
+    //pragma translate_on
 endmodule

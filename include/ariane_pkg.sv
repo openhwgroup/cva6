@@ -209,16 +209,16 @@ package ariane_pkg;
     // ---------------
 
     // I$
-    localparam int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit
-    localparam int unsigned  ICACHE_TAG_WIDTH         = 44; // in bit
-    localparam int unsigned  ICACHE_SET_ASSOC         = 4;
-    localparam int unsigned  ICACHE_LINE_WIDTH        = 128; // in bit
+    localparam int unsigned ICACHE_INDEX_WIDTH = 12; // in bit
+    localparam int unsigned ICACHE_TAG_WIDTH   = 44; // in bit
+    localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
+    localparam int unsigned ICACHE_SET_ASSOC   = 4;
 
     // D$
-    localparam int unsigned DCACHE_INDEX_WIDTH       = 12;
-    localparam int unsigned DCACHE_TAG_WIDTH         = 44;
-    localparam int unsigned DCACHE_LINE_WIDTH        = 128;
-    localparam int unsigned DCACHE_SET_ASSOC         = 8;
+    localparam int unsigned DCACHE_INDEX_WIDTH = 12;
+    localparam int unsigned DCACHE_TAG_WIDTH   = 44;
+    localparam int unsigned DCACHE_LINE_WIDTH  = 128;
+    localparam int unsigned DCACHE_SET_ASSOC   = 8;
 
     // ---------------
     // EX Stage
@@ -394,8 +394,18 @@ package ariane_pkg;
     // Atomics
     // --------------------
     typedef enum logic [3:0] {
-        AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND,
-        AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
+        AMO_NONE =4'b0000, 
+        AMO_LR   =4'b0001, 
+        AMO_SC   =4'b0010,  
+        AMO_SWAP =4'b0011,  
+        AMO_ADD  =4'b0100,  
+        AMO_AND  =4'b0101,  
+        AMO_OR   =4'b0110,  
+        AMO_XOR  =4'b0111,  
+        AMO_MAX  =4'b1000,  
+        AMO_MAXU =4'b1001,  
+        AMO_MIN  =4'b1010,  
+        AMO_MINU =4'b1011 
     } amo_t;
 
     typedef struct packed {
@@ -476,9 +486,9 @@ package ariane_pkg;
     } dcache_req_i_t;
 
     typedef struct packed {
-        logic                      data_gnt;
-        logic                      data_rvalid;
-        logic [63:0]               data_rdata;
+        logic                          data_gnt;
+        logic                          data_rvalid;
+        logic [63:0]                   data_rdata;
     } dcache_req_o_t;
 
     // ----------------------
