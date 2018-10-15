@@ -173,12 +173,13 @@ module clint #(
     // -------------
     // Assertions
     // --------------
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
     // Static assertion check for appropriate bus width
         initial begin
             assert (AXI_DATA_WIDTH == 64) else $fatal("Timer needs to interface with a 64 bit bus, everything else is not supported");
         end
     `endif
-    `endif
+    //pragma translate_on
+
 endmodule

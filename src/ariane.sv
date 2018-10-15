@@ -13,11 +13,11 @@
 // Description: Ariane Top-level module
 
 import ariane_pkg::*;
-`ifndef verilator
-`ifndef SYNTHESIS
+//pragma translate_off
+`ifndef VERILATOR
 import instruction_tracer_pkg::*;
 `endif
-`endif
+//pragma translate_on
 
 module ariane #(
         parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
@@ -592,8 +592,8 @@ module ariane #(
     // -------------------
     // Instruction Tracer
     // -------------------
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    //pragma translate_off
+    `ifndef VERILATOR
     instruction_tracer_if tracer_if (clk_i);
     // assign instruction tracer interface
     // control signals
@@ -631,11 +631,7 @@ module ariane #(
     assign tracer_if.priv_lvl          = priv_lvl;
     assign tracer_if.debug_mode        = debug_mode;
     instr_tracer instr_tracer_i (tracer_if, hart_id_i);
-    `endif
-    `endif
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
     program instr_tracer (
             instruction_tracer_if tracer_if,
             input logic [63:0]    hart_id_i
@@ -699,6 +695,7 @@ module ariane #(
         $fclose(f);
     end
     `endif
-    `endif
+    //pragma translate_on
+
 endmodule // ariane
 

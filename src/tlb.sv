@@ -217,7 +217,7 @@ module tlb #(
     // Sanity checks
     //--------------
 
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
 
     initial begin : p_assertions
@@ -242,6 +242,6 @@ module tlb #(
       else begin $error("More then one TLB entry selected for next replace!"); $stop(); end
 
     `endif
-    `endif
+    //pragma translate_on
 
 endmodule
