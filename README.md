@@ -89,6 +89,12 @@ $ make simc riscv-test-dir=$RISCV/riscv64-unknown-elf/bin riscv-test=pk target-o
 
 Coming.
 
+### Support for OpenPiton Cache System
+
+Coming.
+
+The macro `SERPENT_PULP` enables the corresponding L1 cache subsystem that follows a write-through protocol. Note however that this is still under development.
+
 ## Planned Improvements
 
 > Atomics are implemented for a single core environment. They will semantically fail in a multi-core setup.
