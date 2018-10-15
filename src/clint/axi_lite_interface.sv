@@ -156,14 +156,14 @@ module axi_lite_interface #(
     // Assertions
     // ------------------------
     // Listen for illegal transactions
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
-        // check that burst length is just one
-        assert property (@(posedge clk_i) slave.ar_valid |->  ((slave.ar_len == 8'b0)))
-        else begin $error("AXI Lite does not support bursts larger than 1 or byte length unequal to the native bus size"); $stop(); end
-        // do the same for the write channel
-        assert property (@(posedge clk_i) slave.aw_valid |->  ((slave.aw_len == 8'b0)))
-        else begin $error("AXI Lite does not support bursts larger than 1 or byte length unequal to the native bus size"); $stop(); end
+    // check that burst length is just one
+    assert property (@(posedge clk_i) slave.ar_valid |->  ((slave.ar_len == 8'b0)))
+    else begin $error("AXI Lite does not support bursts larger than 1 or byte length unequal to the native bus size"); $stop(); end
+    // do the same for the write channel
+    assert property (@(posedge clk_i) slave.aw_valid |->  ((slave.aw_len == 8'b0)))
+    else begin $error("AXI Lite does not support bursts larger than 1 or byte length unequal to the native bus size"); $stop(); end
     `endif
-    `endif
+    //pragma translate_on
 endmodule
