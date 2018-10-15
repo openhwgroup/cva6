@@ -32,6 +32,9 @@ module id_stage (
     input  logic                  issue_instr_ack_i,   // issue stage acknowledged sampling of instructions
     // from CSR file
     input  riscv::priv_lvl_t      priv_lvl_i,          // current privilege level
+    input  riscv::xs_t            fs_i,                // floating point extension status
+    input  logic [2:0]            frm_i,               // floating-point dynamic rounding mode
+
     input  logic                  debug_mode_i,        // we are in debug mode
     input  logic                  tvm_i,
     input  logic                  tw_i,
@@ -39,9 +42,9 @@ module id_stage (
 );
     // register stage
     struct packed {
-        logic            valid;
+        logic              valid;
         scoreboard_entry_t sbe;
-        logic            is_ctrl_flow;
+        logic              is_ctrl_flow;
 
     } issue_n, issue_q;
 
@@ -90,6 +93,8 @@ module id_stage (
         .ex_i                    ( fetch_entry.ex              ),
         .instruction_o           ( decoded_instruction         ),
         .is_control_flow_instr_o ( is_control_flow_instr       ),
+        .fs_i,
+        .frm_i,
         .*
     );
 

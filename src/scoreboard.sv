@@ -25,7 +25,8 @@ module scoreboard #(
     input  logic                                      flush_i,  // flush whole scoreboard
     input  logic                                      unresolved_branch_i, // we have an unresolved branch
     // list of clobbered registers to issue stage
-    output fu_t [2**REG_ADDR_SIZE:0]                  rd_clobber_o,
+    output fu_t [2**REG_ADDR_SIZE:0]                  rd_clobber_gpr_o,
+    output fu_t [2**REG_ADDR_SIZE:0]                  rd_clobber_fpr_o,
 
     // regfile like interface to operand read stage
     input  logic [REG_ADDR_SIZE-1:0]                  rs1_i,
@@ -36,12 +37,16 @@ module scoreboard #(
     output logic [63:0]                               rs2_o,
     output logic                                      rs2_valid_o,
 
+    input  logic [REG_ADDR_SIZE-1:0]                  rs3_i,
+    output logic [FLEN-1:0]                           rs3_o,
+    output logic                                      rs3_valid_o,
+
     // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
     output scoreboard_entry_t [NR_COMMIT_PORTS-1:0]   commit_instr_o,
     input  logic              [NR_COMMIT_PORTS-1:0]   commit_ack_i,
 
-    // instruction to put on top of scoreboard e.g.   : top pointer
-    // we can always put this instruction to the to   p unless we signal with asserted full_o
+    // instruction to put on top of scoreboard e.g.: top pointer
+    // we can always put this instruction to the top unless we signal with asserted full_o
     input  scoreboard_entry_t                         decoded_instr_i,
     input  logic                                      decoded_instr_valid_i,
     output logic                                      decoded_instr_ack_o,
@@ -66,9 +71,9 @@ module scoreboard #(
         scoreboard_entry_t sbe;    // this is the score board entry we will send to ex
     } mem_q [NR_ENTRIES-1:0], mem_n [NR_ENTRIES-1:0];
 
-    logic [$clog2(NR_ENTRIES)-1:0] issue_cnt_n,      issue_cnt_q;
-    logic [$clog2(NR_ENTRIES)-1:0] issue_pointer_n,  issue_pointer_q;
-    logic [$clog2(NR_ENTRIES)-1:0] commit_pointer_n, commit_pointer_q;
+    logic [BITS_ENTRIES-1:0] issue_cnt_n,      issue_cnt_q;
+    logic [BITS_ENTRIES-1:0] issue_pointer_n,  issue_pointer_q;
+    logic [BITS_ENTRIES-1:0] commit_pointer_n, commit_pointer_q;
     logic                          issue_full;
 
     // the issue queue is full don't issue any new instructions
@@ -76,7 +81,7 @@ module scoreboard #(
 
     // output commit instruction directly
     always_comb begin : commit_ports
-        for (logic [$clog2(NR_ENTRIES)-1:0] i = 0; i < NR_COMMIT_PORTS; i++)
+        for (logic [BITS_ENTRIES-1:0] i = 0; i < NR_COMMIT_PORTS; i++)
             commit_instr_o[i] = mem_q[commit_pointer_q + i].sbe;
     end
 
@@ -94,8 +99,8 @@ module scoreboard #(
     // maintain a FIFO with issued instructions
     // keep track of all issued instructions
     always_comb begin : issue_fifo
-        automatic logic [$clog2(NR_ENTRIES)-1:0] issue_cnt;
-        automatic logic [$clog2(NR_ENTRIES)-1:0] commit_pointer;
+        automatic logic [BITS_ENTRIES-1:0] issue_cnt;
+        automatic logic [BITS_ENTRIES-1:0] commit_pointer;
 
         commit_pointer = commit_pointer_q;
         issue_cnt = issue_cnt_q;
@@ -124,13 +129,13 @@ module scoreboard #(
                 mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
                 mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
                 // save the target address of a branch (needed for debug in commit stage)
-                if (resolved_branch_i.valid) begin
-                    mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
-                end
+                mem_n[trans_id_i[i]].sbe.bp.predict_address = resolved_branch_i.target_address;
                 // write the exception back if it is valid
-                if (ex_i[i].valid) begin
+                if (ex_i[i].valid)
                     mem_n[trans_id_i[i]].sbe.ex = ex_i[i];
-                end
+                // write the fflags back from the FPU (exception valid is never set), leave tval intact
+                else if (mem_n[trans_id_i[i]].sbe.fu inside {FPU, FPU_VEC})
+                    mem_n[trans_id_i[i]].sbe.ex.cause = ex_i[i].cause;
             end
         end
 
@@ -138,7 +143,7 @@ module scoreboard #(
         // Commit Port
         // ------------
         // we've got an acknowledge from commit
-        for (logic [$clog2(NR_ENTRIES)-1:0] i = 0; i < NR_COMMIT_PORTS; i++) begin
+        for (logic [BITS_ENTRIES-1:0] i = 0; i < NR_COMMIT_PORTS; i++) begin
             if (commit_ack_i[i]) begin
                 // decrease the issue counter
                 issue_cnt--;
@@ -149,6 +154,7 @@ module scoreboard #(
                 commit_pointer++;
             end
         end
+
         // ------
         // Flush
         // ------
@@ -164,6 +170,7 @@ module scoreboard #(
                 commit_pointer        = '0;
             end
         end
+
         // update issue counter
         issue_cnt_n      = issue_cnt;
         // update commit potiner
@@ -175,16 +182,20 @@ module scoreboard #(
     // -------------------
     // rd_clobber output: output currently clobbered destination registers
     always_comb begin : clobber_output
-        rd_clobber_o = '{default: NONE};
+        rd_clobber_gpr_o = '{default: NONE};
+        rd_clobber_fpr_o = '{default: NONE};
         // check for all valid entries and set the clobber register accordingly
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             if (mem_q[i].issued) begin
                 // output the functional unit which is going to clobber this register
-                rd_clobber_o[mem_q[i].sbe.rd] = mem_q[i].sbe.fu;
+                if (is_rd_fpr(mem_q[i].sbe.op))
+                    rd_clobber_fpr_o[mem_q[i].sbe.rd] = mem_q[i].sbe.fu;
+                else
+                    rd_clobber_gpr_o[mem_q[i].sbe.rd] = mem_q[i].sbe.fu;
             end
         end
-        // the zero register is always free
-        rd_clobber_o[0] = NONE;
+        // the gpr zero register is always free
+        rd_clobber_gpr_o[0] = NONE;
     end
 
     // ----------------------------------
@@ -194,20 +205,26 @@ module scoreboard #(
     always_comb begin : read_operands
         rs1_o       = 64'b0;
         rs2_o       = 64'b0;
+        rs3_o       = '0;
         rs1_valid_o = 1'b0;
         rs2_valid_o = 1'b0;
+        rs3_valid_o = 1'b0;
 
         for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
             // only consider this entry if it is valid
             if (mem_q[i].issued) begin
                 // look at the appropriate fields and look whether there was an
-                // instruction that wrote the rd field before, first for RS1 and then for RS2
-                if (mem_q[i].sbe.rd == rs1_i) begin
+                // instruction that wrote the rd field before, first for RS1 and then for RS2, then for RS3
+                // we check the type of the stored result register file against issued register file
+                if ((mem_q[i].sbe.rd == rs1_i) && (is_rd_fpr(mem_q[i].sbe.op) == is_rs1_fpr(issue_instr_o.op))) begin
                     rs1_o       = mem_q[i].sbe.result;
                     rs1_valid_o = mem_q[i].sbe.valid;
-                end else if (mem_q[i].sbe.rd == rs2_i) begin
+                end else if ((mem_q[i].sbe.rd == rs2_i) && (is_rd_fpr(mem_q[i].sbe.op) == is_rs2_fpr(issue_instr_o.op))) begin
                     rs2_o       = mem_q[i].sbe.result;
                     rs2_valid_o = mem_q[i].sbe.valid;
+                end else if ((mem_q[i].sbe.rd == rs3_i) && (is_rd_fpr(mem_q[i].sbe.op) == is_imm_fpr(issue_instr_o.op))) begin
+                    rs3_o       = mem_q[i].sbe.result;
+                    rs3_valid_o = mem_q[i].sbe.valid;
                 end
             end
         end
@@ -218,22 +235,30 @@ module scoreboard #(
         // provide a direct combinational path from WB a.k.a forwarding
         // make sure that we are not forwarding a result that got an exception
         for (int unsigned j = 0; j < NR_WB_PORTS; j++) begin
-            if (mem_q[trans_id_i[j]].sbe.rd == rs1_i && wb_valid_i[j] && ~ex_i[j].valid) begin
+            if (mem_q[trans_id_i[j]].sbe.rd == rs1_i && wb_valid_i[j] && ~ex_i[j].valid
+               && (is_rd_fpr(mem_q[trans_id_i[j]].sbe.op) == is_rs1_fpr(issue_instr_o.op))) begin
                 rs1_o = wbdata_i[j];
                 rs1_valid_o = wb_valid_i[j];
                 break;
             end
-            if (mem_q[trans_id_i[j]].sbe.rd == rs2_i && wb_valid_i[j] && ~ex_i[j].valid) begin
+            if (mem_q[trans_id_i[j]].sbe.rd == rs2_i && wb_valid_i[j] && ~ex_i[j].valid
+               && (is_rd_fpr(mem_q[trans_id_i[j]].sbe.op) == is_rs2_fpr(issue_instr_o.op))) begin
                 rs2_o = wbdata_i[j];
                 rs2_valid_o = wb_valid_i[j];
+                break;
+            end
+            if (mem_q[trans_id_i[j]].sbe.rd == rs3_i && wb_valid_i[j] && ~ex_i[j].valid
+               && (is_rd_fpr(mem_q[trans_id_i[j]].sbe.op) == is_imm_fpr(issue_instr_o.op))) begin
+                rs3_o = wbdata_i[j];
+                rs3_valid_o = wb_valid_i[j];
                 break;
             end
         end
 
         // make sure we didn't read the zero register
-        if (rs1_i == '0)
+        if (rs1_i == '0 && ~is_rs1_fpr(issue_instr_o.op)) // only GPR reg0 is 0
             rs1_valid_o = 1'b0;
-        if (rs2_i == '0)
+        if (rs2_i == '0 && ~is_rs2_fpr(issue_instr_o.op)) // only GPR reg0 is 0
             rs2_valid_o = 1'b0;
     end
 
@@ -254,12 +279,12 @@ module scoreboard #(
     `ifndef SYNTHESIS
     `ifndef verilator
     initial begin
-        assert (NR_ENTRIES == 2**$clog2(NR_ENTRIES)) else $fatal("Scoreboard size needs to be a power of two.");
+        assert (NR_ENTRIES == 2**BITS_ENTRIES) else $fatal("Scoreboard size needs to be a power of two.");
     end
 
     // assert that zero is never set
     assert property (
-        @(posedge clk_i) rst_ni |-> (rd_clobber_o[0] == NONE))
+        @(posedge clk_i) rst_ni |-> (rd_clobber_gpr_o[0] == NONE))
         else $error ("RD 0 should not bet set");
     // assert that we never acknowledge a commit if the instruction is not valid
     assert property (

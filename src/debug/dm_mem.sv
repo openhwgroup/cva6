@@ -20,7 +20,7 @@ module dm_mem #(
     parameter int NrHarts     = -1
 )(
     input  logic                             clk_i,       // Clock
-    input  logic                             dmactive_i,  // debug module reset
+    input  logic                             rst_ni,      // debug module reset
 
     output logic [NrHarts-1:0]               debug_req_o,
     input  logic [19:0]                      hartsel_i,
@@ -363,8 +363,8 @@ module dm_mem #(
     // the ROM base address
     assign fwd_rom_d = (addr_i[DbgAddressBits-1:0] >= dm::HaltAddress[DbgAddressBits-1:0]) ? 1'b1 : 1'b0;
 
-    always_ff @(posedge clk_i) begin
-        if (~dmactive_i) begin
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
             fwd_rom_q  <= 1'b0;
             rdata_q    <= '0;
             halted_q   <= 1'b0;
