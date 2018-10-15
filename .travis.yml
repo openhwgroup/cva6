@@ -88,6 +88,12 @@ jobs:
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator 
+    # amo tests
+    - stage: test
+      name: run amo tests
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-amo-verilator 
     - stage: test
       name: run torture
       script:

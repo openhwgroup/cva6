@@ -82,12 +82,13 @@ root-dir := $(shell pwd)
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
 # there is a definesd test-list with selected CI tests
-riscv-test-dir        := tmp/riscv-tests/build/isa/
-riscv-benchmarks-dir  := tmp/riscv-tests/build/benchmarks/
-riscv-asm-tests-list  := ci/riscv-asm-tests.list
-riscv-benchmarks-list := ci/riscv-benchmarks.list
-riscv-asm-tests       := $(shell xargs printf '\n%s' < $(riscv-asm-tests-list)  | cut -b 1-)
-riscv-benchmarks      := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
+riscv-test-dir            := tmp/riscv-tests/build/isa/
+riscv-benchmarks-dir      := tmp/riscv-tests/build/benchmarks/
+riscv-asm-tests-list      := ci/riscv-asm-tests.list
+riscv-amo-tests-list  := ci/riscv-amo-tests.list
+riscv-benchmarks-list     := ci/riscv-benchmarks.list
+riscv-asm-tests           := $(shell xargs printf '\n%s' < $(riscv-asm-tests-list)  | cut -b 1-)
+riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
 incdir :=
@@ -160,8 +161,14 @@ $(riscv-benchmarks): build
 run-asm-tests: $(riscv-asm-tests)
 	make check-asm-tests
 
+run-amo-tests: $(riscv-amo-tests)
+	make check-amo-tests
+
 check-asm-tests:
 	ci/check-tests.sh tmp/riscv-asm-tests- $(shell wc -l $(riscv-asm-tests-list) | awk -F " " '{ print $1 }')
+
+check-amo-tests:
+	ci/check-tests.sh tmp/riscv-amo-tests- $(shell wc -l $(riscv-amo-tests-list) | awk -F " " '{ print $1 }')
 
 # can use -jX to run ci tests in parallel using X processes
 run-benchmarks: $(riscv-benchmarks)
@@ -202,12 +209,14 @@ verilate:
 $(addsuffix -verilator,$(riscv-asm-tests)): verilate
 	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
 
-run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests))
+run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests)) $(addsuffix -verilator, $(riscv-amo-tests))
 
 # split into two halfs for travis jobs (otherwise they will time out)
 run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-v-% ,$(riscv-asm-tests)))
 
 run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-v-% ,$(riscv-asm-tests)))
+
+run-amo-verilator: $(addsuffix -verilator, $(riscv-amo-tests))
 
 
 $(addsuffix -verilator,$(riscv-benchmarks)): verilate

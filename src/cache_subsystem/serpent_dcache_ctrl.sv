@@ -141,6 +141,7 @@ module serpent_dcache_ctrl #(
                 // kill -> go back to IDLE
                 if(req_port_i.kill_req) begin
                     state_d = IDLE;
+                    req_port_o.data_rvalid = 1'b1;
                 end else if(req_port_i.tag_valid | state_q==REPLAY_READ) begin
                     save_tag = (state_q!=REPLAY_READ);
                     if(wr_cl_vld_i | ~rd_ack_q) begin
@@ -166,6 +167,7 @@ module serpent_dcache_ctrl #(
                 miss_req_o = 1'b1;
 
                 if(req_port_i.kill_req) begin
+                    req_port_o.data_rvalid = 1'b1;
                     if(miss_ack_i) begin
                         state_d = KILL_MISS;
                     end else begin    
@@ -182,6 +184,7 @@ module serpent_dcache_ctrl #(
             // returns. 
             MISS_WAIT: begin
                 if(req_port_i.kill_req) begin
+                    req_port_o.data_rvalid = 1'b1;
                     if(miss_rtrn_vld_i) begin
                         state_d = IDLE;
                     end else begin
@@ -197,6 +200,7 @@ module serpent_dcache_ctrl #(
             REPLAY_REQ: begin
                 rd_req_o = 1'b1;
                 if (req_port_i.kill_req) begin
+                    req_port_o.data_rvalid = 1'b1;
                     state_d = IDLE;
                 end else if(rd_ack_i) begin
                     state_d = REPLAY_READ;
