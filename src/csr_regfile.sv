@@ -21,7 +21,6 @@ module csr_regfile #(
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
     input  logic                  time_irq_i,                 // Timer threw a interrupt
-
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
     output logic                  halt_csr_o,                 // halt requested
@@ -39,6 +38,8 @@ module csr_regfile #(
     input  logic  [11:0]          csr_addr_i,                 // Address of the register to read/write
     input  logic  [63:0]          csr_wdata_i,                // Write data in
     output logic  [63:0]          csr_rdata_o,                // Read data out
+    input  logic                  dirty_fp_state_i,           // Mark the FP sate as dirty
+    input  logic                  csr_write_fflags_i,         // Write fflags register e.g.: we are retiring a floating point instruction
     input  logic  [63:0]          pc_i,                       // PC of instruction accessing the CSR
     output exception_t            csr_exception_o,            // attempts to access a CSR without appropriate privilege
                                                               // level or to write  a read-only register also
@@ -48,6 +49,11 @@ module csr_regfile #(
     output logic                  eret_o,                     // Return from exception, set the PC of epc_o
     output logic  [63:0]          trap_vector_base_o,         // Output base of exception vector, correct CSR is output (mtvec, stvec)
     output riscv::priv_lvl_t      priv_lvl_o,                 // Current privilege level the CPU is in
+    // FPU
+    output riscv::xs_t            fs_o,                       // Floating point extension status
+    output logic [4:0]            fflags_o,                   // Floating-Point Accured Exceptions
+    output logic [2:0]            frm_o,                      // Floating-Point Dynamic Rounding Mode
+    output logic [6:0]            fprec_o,                    // Floating-Point Precision Control
     // MMU
     output logic                  en_translation_o,           // enable VA translation
     output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
@@ -87,12 +93,14 @@ module csr_regfile #(
     logic  mret;  // return from M-mode exception
     logic  sret;  // return from S-mode exception
     logic  dret;  // return from debug mode
-
+    // CSR write causes us to mark the FPU state as dirty
+    logic  dirty_fp_state_csr;
     riscv::csr_t  csr_addr;
     // ----------------
     // Assignments
     // ----------------
     assign csr_addr = riscv::csr_t'(csr_addr_i);
+    assign fs_o = mstatus_q.fs;
     // ----------------
     // CSR Registers
     // ----------------
@@ -134,6 +142,8 @@ module csr_regfile #(
     logic [63:0] cycle_q,     cycle_d;
     logic [63:0] instret_q,   instret_d;
 
+    riscv::fcsr_t fcsr_q, fcsr_d;
+
     // ----------------
     // CSR Read logic
     // ----------------
@@ -146,6 +156,35 @@ module csr_regfile #(
 
         if (csr_read) begin
             case (csr_addr.address)
+                riscv::CSR_FFLAGS: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = {59'b0, fcsr_q.fflags};
+                    end
+                end
+                riscv::CSR_FRM: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = {61'b0, fcsr_q.frm};
+                    end
+                end
+                riscv::CSR_FCSR: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = {56'b0, fcsr_q.frm, fcsr_q.fflags};
+                    end
+                end
+                // non-standard extension
+                riscv::CSR_FTRAN: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = {57'b0, fcsr_q.fprec};
+                    end
+                end
                 // debug registers
                 riscv::CSR_DCSR:               csr_rdata = {32'b0, dcsr_q};
                 riscv::CSR_DPC:                csr_rdata = dpc_q;
@@ -189,7 +228,7 @@ module csr_regfile #(
                 riscv::CSR_PMPCFG0:            csr_rdata = pmpcfg0_q;
                 riscv::CSR_PMPADDR0:           csr_rdata = pmpaddr0_q;
                 riscv::CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
-                riscv::CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
+                riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
@@ -227,7 +266,7 @@ module csr_regfile #(
         sapt = satp_q;
         mip = csr_wdata & 64'h33;
         instret = instret_q;
-        // only USIP, SSIP, UTIP, STIP are write-able
+        // only FCSR, USIP, SSIP, UTIP, STIP are write-able
 
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
@@ -237,6 +276,8 @@ module csr_regfile #(
 
         perf_we_o               = 1'b0;
         perf_data_o             = 'b0;
+
+        fcsr_d                  = fcsr_q;
 
         priv_lvl_d              = priv_lvl_q;
         debug_mode_d            = debug_mode_q;
@@ -274,14 +315,60 @@ module csr_regfile #(
         sscratch_d              = sscratch_q;
         stval_d                 = stval_q;
         satp_d                  = satp_q;
-        en_ld_st_translation_d  = en_ld_st_translation_q;
 
         pmpcfg0_d               = pmpcfg0_q;
         pmpaddr0_d              = pmpaddr0_q;
 
+        cycle_d                 = cycle_q;
+        instret_d               = instret_q;
+
+        en_ld_st_translation_d  = en_ld_st_translation_q;
+        dirty_fp_state_csr      = 1'b0;
+
         // check for correct access rights and that we are writing
         if (csr_we) begin
             case (csr_addr.address)
+                // Floating-Point
+                riscv::CSR_FFLAGS: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        update_access_exception = 1'b1;
+                    end else begin
+                        dirty_fp_state_csr = 1'b1;
+                        fcsr_d.fflags = csr_wdata[4:0];
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end
+                end
+                riscv::CSR_FRM: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        update_access_exception = 1'b1;
+                    end else begin
+                        dirty_fp_state_csr = 1'b1;
+                        fcsr_d.frm    = csr_wdata[2:0];
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end
+                end
+                riscv::CSR_FCSR: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        update_access_exception = 1'b1;
+                    end else begin
+                        dirty_fp_state_csr = 1'b1;
+                        fcsr_d[7:0] = csr_wdata[7:0]; // ignore writes to reserved space
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end
+                end
+                riscv::CSR_FTRAN: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        update_access_exception = 1'b1;
+                    end else begin
+                        dirty_fp_state_csr = 1'b1;
+                        fcsr_d.fprec = csr_wdata[6:0]; // ignore writes to reserved space
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end
+                end
                 // debug CSR
                 riscv::CSR_DCSR: begin
                     dcsr_d = csr_wdata[31:0];
@@ -305,10 +392,13 @@ module csr_regfile #(
                     // also hardwire the registers for sstatus
                     mstatus_d.sxl  = riscv::XLEN_64;
                     mstatus_d.uxl  = riscv::XLEN_64;
-                    // hardwired zero registers
-                    mstatus_d.sd   = 1'b0;
-                    mstatus_d.xs   = 2'b0;
-                    mstatus_d.fs   = 2'b0;
+                    // hardwired extension registers
+                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
+                    mstatus_d.xs   = riscv::Off;
+                    // hardwire to zero if floating point extension is not present
+                    if (!FP_PRESENT) begin
+                        mstatus_d.fs = riscv::Off;
+                    end
                     mstatus_d.upie = 1'b0;
                     mstatus_d.uie  = 1'b0;
                     // not all fields of mstatus can be written
@@ -365,9 +455,11 @@ module csr_regfile #(
                     mstatus_d.sxl  = riscv::XLEN_64;
                     mstatus_d.uxl  = riscv::XLEN_64;
                     // hardwired zero registers
-                    mstatus_d.sd   = 1'b0;
-                    mstatus_d.xs   = 2'b0;
-                    mstatus_d.fs   = 2'b0;
+                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
+                    mstatus_d.xs   = riscv::Off;
+                    if (!FP_PRESENT) begin
+                        mstatus_d.fs = riscv::Off;
+                    end
                     mstatus_d.upie = 1'b0;
                     mstatus_d.uie  = 1'b0;
                     // this register has side-effects on other registers, flush the pipeline
@@ -425,6 +517,16 @@ module csr_regfile #(
                 default: update_access_exception = 1'b1;
             endcase
         end
+
+        // mark the floating point extension register as dirty
+        if (FP_PRESENT && (dirty_fp_state_csr || dirty_fp_state_i)) begin
+            mstatus_d.fs = riscv::Dirty;
+        end
+
+        // write the floating point status register
+        if (csr_write_fflags_i)
+            fcsr_d.fflags = csr_wdata_i[4:0] | fcsr_q.fflags;
+
         // ---------------------
         // External Interrupts
         // ---------------------
@@ -540,9 +642,21 @@ module csr_regfile #(
             end
 
             // single step enable and we just retired an instruction
-            if (dcsr_q.step && (|commit_ack_i)) begin
-                // we saved the correct target address during execute
-                dpc_d = commit_instr_i[0].bp.predict_address;
+            if (dcsr_q.step && commit_ack_i[0]) begin
+                // valid CTRL flow change
+                if (commit_instr_i[0].fu == CTRL_FLOW) begin
+                    // we saved the correct target address during execute
+                    dpc_d = commit_instr_i[0].bp.predict_address;
+                // exception valid
+                end else if (ex_i.valid) begin
+                    dpc_d = trap_vector_base_o;
+                // return from environment
+                end else if (eret_o) begin
+                    dpc_d = epc_o;
+                // consecutive PC
+                end else begin
+                    dpc_d = commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4);
+                end
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
                 dcsr_d.cause = dm::CauseSingleStep;
@@ -806,6 +920,10 @@ module csr_regfile #(
     assign csr_rdata_o      = csr_rdata;
     // in debug mode we execute with privilege level M
     assign priv_lvl_o       = (debug_mode_q) ? riscv::PRIV_LVL_M : priv_lvl_q;
+    // FPU outputs
+    assign fflags_o         = fcsr_q.fflags;
+    assign frm_o            = fcsr_q.frm;
+    assign fprec_o          = fcsr_q.fprec;
     // MMU outputs
     assign satp_ppn_o       = satp_q.ppn;
     assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
@@ -828,6 +946,8 @@ module csr_regfile #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             priv_lvl_q             <= riscv::PRIV_LVL_M;
+            // floating-point registers
+            fcsr_q                 <= 64'b0;
             // debug signals
             debug_mode_q           <= 1'b0;
             dcsr_q                 <= '0;
@@ -868,6 +988,8 @@ module csr_regfile #(
             wfi_q                  <= 1'b0;
         end else begin
             priv_lvl_q             <= priv_lvl_d;
+            // floating-point registers
+            fcsr_q                 <= fcsr_d;
             // debug signals
             debug_mode_q           <= debug_mode_d;
             dcsr_q                 <= dcsr_d;

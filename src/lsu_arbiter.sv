@@ -40,9 +40,10 @@ module lsu_arbiter (
     // RR fashion. FIFOs need to be 2 deep in order to unconditionally accept loads and stores since we can
     // have a maximum of 2 outstanding loads.
     // if there are valid elements in the fifos, the unit posts the result on its output ports and expects it
-    // to be consumed unconditionally 
+    // to be consumed unconditionally
 
-    localparam int DEPTH = 2;
+    // Important: this needs to be greater than 2 to unconditionally acept incoming requests
+    localparam int DEPTH = 4;
 
     typedef struct packed {
         logic [TRANS_ID_BITS-1:0] trans_id;
@@ -64,9 +65,9 @@ module lsu_arbiter (
     assign ld_in.result   = ld_result_i;
     assign ld_in.ex       = ld_ex_i;
 
-    assign trans_id_o     = (idx) ? st_out.trans_id : ld_out.trans_id; 
-    assign result_o       = (idx) ? st_out.result   : ld_out.result;   
-    assign ex_o           = (idx) ? st_out.ex       : ld_out.ex;      
+    assign trans_id_o     = (idx) ? st_out.trans_id : ld_out.trans_id;
+    assign result_o       = (idx) ? st_out.result   : ld_out.result;
+    assign ex_o           = (idx) ? st_out.ex       : ld_out.ex;
 
     // round robin with "lookahead" for 2 requesters
     rrarbiter #(
@@ -85,7 +86,7 @@ module lsu_arbiter (
     fifo_v2 #(
         .dtype       (  fifo_t     ),
         .DEPTH       (  DEPTH      )
-    ) i_ld_fifo (    
+    ) i_ld_fifo (
         .clk_i       (  clk_i      ),
         .rst_ni      (  rst_ni     ),
         .flush_i     (  flush_i    ),
@@ -98,12 +99,12 @@ module lsu_arbiter (
         .push_i      (  ld_valid_i ),
         .data_o      (  ld_out     ),
         .pop_i       (  ld_ren     )
-    );  
+    );
 
     fifo_v2 #(
         .dtype       (  fifo_t     ),
         .DEPTH       (  DEPTH      )
-    ) i_st_fifo (    
+    ) i_st_fifo (
         .clk_i       (  clk_i      ),
         .rst_ni      (  rst_ni     ),
         .flush_i     (  flush_i    ),
@@ -116,7 +117,7 @@ module lsu_arbiter (
         .push_i      (  st_valid_i ),
         .data_o      (  st_out     ),
         .pop_i       (  st_ren     )
-    ); 
+    );
 
 
 `ifndef SYNTHESIS

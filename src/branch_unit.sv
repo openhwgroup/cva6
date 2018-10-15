@@ -15,7 +15,6 @@
 import ariane_pkg::*;
 
 module branch_unit (
-    input  logic [TRANS_ID_BITS-1:0]  trans_id_i,
     input  fu_op                      operator_i,             // comparison operation to perform
     input  logic [63:0]               operand_a_i,            // contains content of RS 1
     input  logic [63:0]               operand_b_i,            // contains content of RS 2
@@ -25,10 +24,7 @@ module branch_unit (
     input  logic                      fu_valid_i,             // any functional unit is valid, check that there is no accidental mis-predict
     input  logic                      branch_valid_i,
     input  logic                      branch_comp_res_i,      // branch comparison result from ALU
-    output logic                      branch_ready_o,
-    output logic                      branch_valid_o,
     output logic [63:0]               branch_result_o,
-    output logic [TRANS_ID_BITS-1:0]  branch_trans_id_o,
 
     input  branchpredict_sbe_t        branch_predict_i,       // this is the address we predicted
     output branchpredict_t            resolved_branch_o,      // this is the actual address we are targeting
@@ -38,10 +34,6 @@ module branch_unit (
 );
     logic [63:0] target_address;
     logic [63:0] next_pc;
-    // branches are single cycle at the moment, feed-through the control signals
-    assign branch_trans_id_o = trans_id_i;
-    assign branch_valid_o    = branch_valid_i;
-    assign branch_ready_o    = 1'b1; // we are always ready
 
     // here we handle the various possibilities of mis-predicts
     always_comb begin : mispredict_handler

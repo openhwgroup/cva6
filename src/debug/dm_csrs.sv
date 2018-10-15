@@ -445,13 +445,25 @@ module dm_csrs #(
     end
 
     assign dmactive_o = dmcontrol_q.dmactive;
-    // if the PoR is set we want to re-set the other system as well
-    assign ndmreset_o = dmcontrol_q.ndmreset | (~rst_ni);
     assign cmd_o      = command_q;
     assign progbuf_o  = progbuf_q;
     assign data_o     = data_q;
 
     assign resp_queue_pop = dmi_resp_ready_i & ~resp_queue_empty;
+
+    logic ndmreset_n;
+
+    // if the PoR is set we want to re-set the other system as well
+    rstgen_bypass i_rstgen_bypass (
+        .clk_i ( clk_i ),
+        .rst_ni ( ~(dmcontrol_q.ndmreset | ~rst_ni) ),
+        .rst_test_mode_ni ( rst_ni ),
+        .test_mode_i ( testmode_i ),
+        .rst_no ( ndmreset_n ),
+        .init_no () // keep open
+    );
+
+    assign ndmreset_o = ~ndmreset_n;
 
     // response FIFO
     fifo_v2 #(
@@ -475,9 +487,19 @@ module dm_csrs #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         // PoR
         if (~rst_ni) begin
-            dmcontrol_q <= '0;
-            havereset_q <= '1;
+            dmcontrol_q    <= '0;
+            havereset_q    <= '1;
+            // this is the only write-able bit during reset
+            cmderr_q       <= dm::CmdErrNone;
+            command_q      <= '0;
+            abstractauto_q <= '0;
+            progbuf_q      <= '0;
+            data_q         <= '0;
+            sbcs_q         <= '0;
+            sbaddr_q       <= '0;
+            sbdata_q       <= '0;
         end else begin
+            havereset_q    <= havereset_d;
             // synchronous re-set of debug module, active-low, except for dmactive
             if (!dmcontrol_q.dmactive) begin
                 dmcontrol_q.haltreq          <= '0;
@@ -502,7 +524,6 @@ module dm_csrs #(
                 sbaddr_q                     <= '0;
                 sbdata_q                     <= '0;
             end else begin
-                havereset_q                  <= havereset_d;
                 dmcontrol_q                  <= dmcontrol_d;
                 cmderr_q                     <= cmderr_d;
                 command_q                    <= command_d;
@@ -517,9 +538,6 @@ module dm_csrs #(
     end
 
 
-        
-
-
 ///////////////////////////////////////////////////////
 // assertions
 ///////////////////////////////////////////////////////
@@ -528,8 +546,8 @@ module dm_csrs #(
 //pragma translate_off
 `ifndef VERILATOR
     haltsum: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) |-> 
-            !({1'b0, dmi_req_i.addr} inside {dm::HaltSum0, dm::HaltSum1, dm::HaltSum2, dm::HaltSum3}))     
+        @(posedge clk_i) disable iff (~rst_ni) (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) |->
+            !({1'b0, dmi_req_i.addr} inside {dm::HaltSum0, dm::HaltSum1, dm::HaltSum2, dm::HaltSum3}))
                 else $warning("Haltsums are not implemented yet and always return 0.");
 `endif
 //pragma translate_on

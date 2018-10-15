@@ -1,5 +1,5 @@
 before_script:
-  # paths to local or network installations (the riscv toolchain and 
+  # paths to local or network installations (the riscv toolchain and
   # verilator are not built in the ci job as in travis)
   - export QUESTASIM_HOME=/usr/pack/modelsim-10.6b-kgf/questasim/
   - export QUESTASIM_VERSION=-10.6b
@@ -37,12 +37,12 @@ build:
     - make torture-gen
   artifacts:
       paths:
-        - tmp 
+        - tmp
 
 ###################################
 # tests with standard cache system
 
-# rv64ui-p-* and rv64ui-v-* tests    
+# rv64ui-p-* and rv64ui-v-* tests
 asm-quest:
   stage: test_std
   script:
@@ -56,19 +56,19 @@ amo-quest:
     - make -j${NUM_JOBS} run-amo-tests batch-mode=1
   dependencies:
     - build
-    
+
 bench-quest:
   stage: test_std
   script:
     - make -j${NUM_JOBS} run-benchmarks batch-mode=1
   dependencies:
-    - build    
+    - build
 
 # rv64ui-p-* tests
 asm1-ver:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator 
+    - make -j${NUM_JOBS} run-asm-tests1-verilator
   dependencies:
     - build
 
@@ -76,22 +76,22 @@ asm1-ver:
 asm2-ver:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator 
+    - make -j${NUM_JOBS} run-asm-tests2-verilator
   dependencies:
-    - build    
+    - build
 
 # atomics
 amo-ver:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-amo-verilator 
+    - make -j${NUM_JOBS} run-amo-verilator
   dependencies:
-    - build    
+    - build
 
 bench-ver:
   stage: test_std
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator 
+    - make -j${NUM_JOBS} run-benchmarks-verilator
   dependencies:
     - build
 
@@ -99,33 +99,32 @@ torture:
   stage: test_std
   script:
     - make torture-rtest
-    - make torture-rtest-verilator
   dependencies:
     - build
 
 ###################################
 # tests with serpent cache system
 
-# rv64ui-p-* and rv64ui-v-* tests    
+# rv64ui-p-* and rv64ui-v-* tests
 serp-asm-quest:
   stage: test_serpent
   script:
     - make -j${NUM_JOBS} run-asm-tests defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
   dependencies:
     - build
-    
+
 serp-bench-quest:
   stage: test_serpent
   script:
     - make -j${NUM_JOBS} run-benchmarks defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
   dependencies:
-    - build    
+    - build
 
 # rv64ui-p-* tests
 serp-asm1-ver:
   stage: test_serpent
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS 
+    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
     - build
 
@@ -135,7 +134,7 @@ serp-asm2-ver:
   script:
     - make -j${NUM_JOBS} run-asm-tests2-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
-    - build    
+    - build
 
 serp-bench-ver:
   stage: test_serpent
@@ -151,7 +150,7 @@ serp-icache-quest:
     - make simc
     - "grep 'CI: PASSED' summary.rep"
   dependencies:
-    - build    
+    - build
 
 serp-dcache-quest:
   stage: test_serpent
@@ -162,7 +161,7 @@ serp-dcache-quest:
     - "grep 'CI: PASSED' RD1_summary.rep"
     - "grep 'CI: PASSED' TB_MEM_summary.rep"
   dependencies:
-    - build    
+    - build
 
 serp-torture:
   stage: test_serpent

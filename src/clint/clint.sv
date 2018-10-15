@@ -24,7 +24,7 @@ module clint #(
 )(
     input  logic                clk_i,       // Clock
     input  logic                rst_ni,      // Asynchronous reset active low
-
+    input  logic                testmode_i,
     AXI_BUS.Slave               slave,
 
     input  logic                rtc_i,       // Real-time clock in (usually 32.768 kHz)
@@ -149,7 +149,7 @@ module clint #(
     // 1. Put the RTC input through a classic two stage edge-triggered synchronizer to filter out any
     //    metastability effects (or at least make them unlikely :-))
     sync_wedge i_sync_edge (
-        .en_i      ( 1'b1           ),
+        .en_i      ( ~testmode_i    ),
         .serial_i  ( rtc_i          ),
         .r_edge_o  ( increase_timer ),
         .f_edge_o  (                ), // left open

@@ -29,19 +29,24 @@ torture-logs   := -log
 
 # Sources
 # Package files -> compile first
-ariane_pkg := include/riscv_pkg.sv         \
-              src/debug/dm_pkg.sv          \
-              src/axi/src/axi_pkg.sv       \
-              include/ariane_pkg.sv        \
-              include/std_cache_pkg.sv     \
-              include/serpent_cache_pkg.sv \
-              include/axi_intf.sv
+ariane_pkg := include/riscv_pkg.sv                          \
+              src/debug/dm_pkg.sv                           \
+              include/ariane_pkg.sv                         \
+              include/std_cache_pkg.sv                      \
+              include/serpent_cache_pkg.sv                  \
+              src/axi/src/axi_pkg.sv                        \
+              include/axi_intf.sv                           \
+              src/fpu/src/pkg/fpnew_pkg.vhd                 \
+              src/fpu/src/pkg/fpnew_fmts_pkg.vhd            \
+              src/fpu/src/pkg/fpnew_comps_pkg.vhd           \
+              src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
+              src/fpu/src/pkg/fpnew_pkg_constants.vhd
 
 # utility modules
-util := $(wildcard src/util/*.svh)         \
-        src/util/instruction_tracer_pkg.sv \
-        src/util/instruction_tracer_if.sv  \
-        src/util/cluster_clock_gating.sv   \
+util := $(wildcard src/util/*.svh)                            \
+        src/util/instruction_tracer_pkg.sv                    \
+        src/util/instruction_tracer_if.sv                     \
+        src/tech_cells_generic/src/cluster_clock_gating.sv    \
         src/util/sram.sv
 
 # Test packages
@@ -52,6 +57,11 @@ dpi := $(patsubst tb/dpi/%.cc,${dpi-library}/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 # this list contains the standalone components
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
+        $(wildcard src/fpu/src/utils/*.vhd)                            \
+        $(wildcard src/fpu/src/ops/*.vhd)                              \
+        $(wildcard src/fpu/src/subunits/*.vhd)                         \
+        $(filter-out src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,    \
+        $(wildcard src/fpu_div_sqrt_mvp/hdl/*.sv))                     \
         $(wildcard src/frontend/*.sv)                                  \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
@@ -60,6 +70,12 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
         $(wildcard src/debug/debug_rom/*.sv)                           \
+        src/fpu/src/fpnew.vhd                                          \
+        src/fpu/src/fpnew_top.vhd                                      \
+        src/common_cells/src/deprecated/generic_fifo.sv                \
+        src/common_cells/src/deprecated/pulp_sync.sv                   \
+        src/common_cells/src/deprecated/find_first_one.sv              \
+        src/common_cells/src/rstgen_bypass.sv                          \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
@@ -72,6 +88,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
         src/common_cells/src/lfsr_8bit.sv                              \
+        src/tech_cells_generic/src/cluster_clock_inverter.sv           \
+        src/tech_cells_generic/src/pulp_clock_mux2.sv                  \
         tb/ariane_testharness.sv                                       \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv
@@ -103,7 +121,7 @@ ifdef batch-mode
 else
 	questa-cmd   := -do " log -r /*; run -all;"
 endif
-
+compile_flag_vhd += -64 -nologo -quiet -2008
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
@@ -120,9 +138,11 @@ build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ari
 # src files
 $(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library)
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(ariane_pkg)) $(list_incdir) -suppress 2583
+	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(ariane_pkg))
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
-	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(src) $(list_incdir) -suppress 2583
+	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(src))
+	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(filter %.sv,$(src)) $(list_incdir) -suppress 2583
 	touch $(library)/.build-srcs
 
 # build TBs
@@ -159,7 +179,7 @@ $(riscv-benchmarks): build
 
 # can use -jX to run ci tests in parallel using X processes
 run-asm-tests: $(riscv-asm-tests)
-	make check-asm-tests
+	$(MAKE) check-asm-tests
 
 run-amo-tests: $(riscv-amo-tests)
 	make check-amo-tests
@@ -172,15 +192,15 @@ check-amo-tests:
 
 # can use -jX to run ci tests in parallel using X processes
 run-benchmarks: $(riscv-benchmarks)
-	make check-benchmarks
+	$(MAKE) check-benchmarks
 
 check-benchmarks:
 	ci/check-tests.sh tmp/riscv-benchmarks- $(shell wc -l $(riscv-benchmarks-list) | awk -F " " '{ print $1 }')
 
 # verilator-specific
 verilate_command := $(verilator)                                                           \
-                    $(ariane_pkg)                                                          \
-                    $(filter-out tb/ariane_bt.sv,$(src))                                   \
+                    $(filter-out %.vhd, $(ariane_pkg))                                     \
+                    $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))             \
                     +define+$(defines)                                                     \
                     src/util/sram.sv                                                       \
                     +incdir+src/axi_node                                                   \
@@ -204,7 +224,7 @@ verilate_command := $(verilator)                                                
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
 	$(verilate_command)
-	cd $(ver-library) && make -j${NUM_JOBS} -f Variane_testharness.mk
+	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
 
 $(addsuffix -verilator,$(riscv-asm-tests)): verilate
 	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
@@ -232,27 +252,27 @@ torture-itest:
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -a output/test.S'
 
 torture-rtest: build
-	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture$(torture-logs) defines=$(defines) test-location=$(test-location)" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture$(torture-logs) defines=$(defines) test-location=$(test-location)" > call.sh && chmod +x call.sh
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a $(test-location).S' | tee $(test-location).log
 	make check-torture test-location=$(test-location)
 
 torture-dummy: build
-	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture defines=$(defines) test-location=\$${@: -1}" > call.sh
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture defines=$(defines) test-location=\$${@: -1}" > call.sh
 
 torture-rnight: build
-	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture$(torture-logs) defines=$(defines) test-location=\$${@: -1}" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture$(torture-logs) defines=$(defines) test-location=\$${@: -1}" > call.sh && chmod +x call.sh
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'overnight/run -r ./call.sh -g none' | tee output/overnight.log
-	make check-torture
+	$(MAKE) check-torture
 
 torture-rtest-verilator: verilate
-	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && make run-torture-verilator defines=$(defines)" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture-verilator defines=$(defines)" > call.sh && chmod +x call.sh
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a output/test.S' | tee output/test.log
-	make check-torture
+	$(MAKE) check-torture
 
 run-torture: build
-	vsim${questa_version} +permissive $(questa-flags) -c -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)             \
-	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi      \
-	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"                           \
+	vsim${questa_version} +permissive $(questa-flags) -c -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)                                             \
+	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                      \
+	-do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"    \
 	${top_level}_optimized +permissive-off +signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
 
 run-torture-log: build
@@ -262,6 +282,7 @@ run-torture-log: build
 	${top_level}_optimized +permissive-off +signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
 	cp vsim.wlf $(riscv-torture-dir)/$(test-location).wlf
 	cp trace_core_00_0.log $(riscv-torture-dir)/$(test-location).trace
+	cp trace_core_00_0_commit.log $(riscv-torture-dir)/$(test-location).commit
 	cp transcript $(riscv-torture-dir)/$(test-location).transcript
 
 run-torture-verilator: verilate
