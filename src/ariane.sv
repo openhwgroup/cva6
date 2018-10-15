@@ -146,8 +146,8 @@ module ariane #(
     logic                     csr_commit_commit_ex;
     logic                     dirty_fp_state;
     // LSU Commit
-    logic                     lsu_commit_req_commit_ex;
-    logic                     lsu_commit_ack_ex_commit;
+    logic                     lsu_commit_commit_ex;
+    logic                     lsu_commit_ready_ex_commit;
     logic                     no_st_pending_ex;
     logic                     no_st_pending_commit;
     logic                     amo_valid_commit;
@@ -388,8 +388,8 @@ module ariane #(
         .lsu_result_o           ( lsu_result_ex_id                       ),
         .lsu_trans_id_o         ( lsu_trans_id_ex_id                     ),
         .lsu_valid_o            ( lsu_valid_ex_id                        ),
-        .lsu_commit_req_i       ( lsu_commit_req_commit_ex               ), // from commit
-        .lsu_commit_ack_o       ( lsu_commit_ack_ex_commit               ), // to commit
+        .lsu_commit_i           ( lsu_commit_commit_ex                   ), // from commit
+        .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit               ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id                    ),
         .no_st_pending_o        ( no_st_pending_ex                       ),
         // MULT
@@ -457,8 +457,8 @@ module ariane #(
         .wdata_o                ( wdata_commit_id               ),
         .we_gpr_o               ( we_gpr_commit_id              ),
         .we_fpr_o               ( we_fpr_commit_id              ),
-        .commit_lsu_req_o       ( lsu_commit_req_commit_ex      ),
-        .commit_lsu_ack_i       ( lsu_commit_ack_ex_commit      ),
+        .commit_lsu_o           ( lsu_commit_commit_ex          ),
+        .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
         .amo_valid_commit_o     ( amo_valid_commit              ),
         .amo_resp_i             ( amo_resp                      ),
         .commit_csr_o           ( csr_commit_commit_ex          ),

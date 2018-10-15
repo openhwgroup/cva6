@@ -11,7 +11,7 @@
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 13.09.2018
 // Description: coalescing write buffer for serpent dcache
-// 
+//
 // A couple of notes:
 //
 // 1) the write buffer behaves as a fully-associative cache, and is therefore coalescing.
@@ -22,31 +22,31 @@
 //    0/0/0:    invalid -> free entry in the buffer
 //    1/1/0:    valid and dirty, Byte is hence not part of TX in-flight
 //    1/0/1:    valid and not dirty, Byte is part of a TX in-flight
-//    1/1/1:    valid and, part of tx and dirty. this means that the byte has been 
-//              overwritten while in TX and needs to be retransmitted once the write of that byte returns.    
-//    1/0/0:    this would represent a clean state, but is never reached in the wbuffer in the current implementation. 
-//              this is because when a TX returns, and the byte is in state [1/0/1], it is written to cache if needed and 
+//    1/1/1:    valid and, part of tx and dirty. this means that the byte has been
+//              overwritten while in TX and needs to be retransmitted once the write of that byte returns.
+//    1/0/0:    this would represent a clean state, but is never reached in the wbuffer in the current implementation.
+//              this is because when a TX returns, and the byte is in state [1/0/1], it is written to cache if needed and
 //              its state is immediately cleared to 0/x/x.
-//    
-//    this state is used to distinguish between bytes that have been written and not 
+//
+//    this state is used to distinguish between bytes that have been written and not
 //    yet sent to the memory subsystem, and bytes that are part of a transaction.
-// 
+//
 // 2) further, each word in the write buffer has a cache states (checked, hit_oh)
 //
-//    checked == 0: unknown cache state 
+//    checked == 0: unknown cache state
 //    checked == 1: cache state has been looked up, valid way is stored in "hit_oh"
 //
 //    cache invalidations/refills affecting a particular word will clear its word state to 0,
 //    so another lookup has to be done. note that these lookups are triggered as soon as there is
 //    a valid word with checked == 0 in the write buffer.
-//  
-// 3) returning write ACKs trigger a cache update if the word is present in the cache, and evict that 
+//
+// 3) returning write ACKs trigger a cache update if the word is present in the cache, and evict that
 //    word from the write buffer. if the word is not allocated to the cache, it is just evicted from the write buffer.
 //    if the word cache state is VOID, the pipeline is stalled until it is clear whether that word is in the cache or not.
 //
 // 4) we handle NC writes using the writebuffer circuitry. upon an NC request, the writebuffer will first be drained.
-//    then, only the NC word is written into the write buffer and no further write requests are acknowledged until that 
-//    word has been evicted from the write buffer. 
+//    then, only the NC word is written into the write buffer and no further write requests are acknowledged until that
+//    word has been evicted from the write buffer.
 
 import ariane_pkg::*;
 import serpent_cache_pkg::*;
@@ -57,16 +57,16 @@ module serpent_dcache_wbuffer #(
 )(
     input  logic                               clk_i,          // Clock
     input  logic                               rst_ni,         // Asynchronous reset active low
-   
+
     input  logic                               cache_en_i,     // writes are treated as NC if disabled
     output logic                               empty_o,        // asserted if no data is present in write buffer
      // core request ports
-    input  dcache_req_i_t                      req_port_i,  
-    output dcache_req_o_t                      req_port_o,  
+    input  dcache_req_i_t                      req_port_i,
+    output dcache_req_o_t                      req_port_o,
     // interface to miss handler
-    input  logic                               miss_ack_i,      
+    input  logic                               miss_ack_i,
     output logic [63:0]                        miss_paddr_o,
-    output logic                               miss_req_o,      
+    output logic                               miss_req_o,
     output logic                               miss_we_o,       // always 1 here
     output logic [63:0]                        miss_wdata_o,
     output logic [DCACHE_SET_ASSOC-1:0]        miss_vld_bits_o, // unused here (set to 0)
@@ -75,31 +75,31 @@ module serpent_dcache_wbuffer #(
     output logic [DCACHE_ID_WIDTH-1:0]         miss_wr_id_o,    // id of this transaction
     // write responses from memory
     input  logic                               miss_rtrn_vld_i,
-    input  logic [DCACHE_ID_WIDTH-1:0]         miss_rtrn_id_i,  // transaction id to clear   
-    // cache read interface 
+    input  logic [DCACHE_ID_WIDTH-1:0]         miss_rtrn_id_i,  // transaction id to clear
+    // cache read interface
     output logic [DCACHE_TAG_WIDTH-1:0]        rd_tag_o,        // tag in - comes one cycle later
-    output logic [DCACHE_CL_IDX_WIDTH-1:0]     rd_idx_o, 
-    output logic [DCACHE_OFFSET_WIDTH-1:0]     rd_off_o, 
+    output logic [DCACHE_CL_IDX_WIDTH-1:0]     rd_idx_o,
+    output logic [DCACHE_OFFSET_WIDTH-1:0]     rd_off_o,
     output logic                               rd_req_o,        // read the word at offset off_i[:3] in all ways
     output logic                               rd_tag_only_o,   // set to 1 here as we do not have to read the data arrays
-    input  logic                               rd_ack_i,        
+    input  logic                               rd_ack_i,
     input logic  [63:0]                        rd_data_i,       // unused
     input logic  [DCACHE_SET_ASSOC-1:0]        rd_vld_bits_i,   // unused
     input logic  [DCACHE_SET_ASSOC-1:0]        rd_hit_oh_i,
     // cacheline writes
     input logic                                wr_cl_vld_i,
-    input logic [DCACHE_CL_IDX_WIDTH-1:0]      wr_cl_idx_i,   
+    input logic [DCACHE_CL_IDX_WIDTH-1:0]      wr_cl_idx_i,
     // cache word write interface
     output logic [DCACHE_SET_ASSOC-1:0]        wr_req_o,
     input  logic                               wr_ack_i,
     output logic [DCACHE_CL_IDX_WIDTH-1:0]     wr_idx_o,
     output logic [DCACHE_OFFSET_WIDTH-1:0]     wr_off_o,
     output logic [63:0]                        wr_data_o,
-    output logic [7:0]                         wr_data_be_o, 
+    output logic [7:0]                         wr_data_be_o,
     // to forwarding logic and miss unit
     output wbuffer_t  [DCACHE_WBUF_DEPTH-1:0]  wbuffer_data_o,
     output logic [DCACHE_MAX_TX-1:0][63:0]     tx_paddr_o,      // used to check for address collisions with read operations
-    output logic [DCACHE_MAX_TX-1:0]           tx_vld_o         
+    output logic [DCACHE_MAX_TX-1:0]           tx_vld_o
 );
 
 tx_stat_t [DCACHE_MAX_TX-1:0]             tx_stat_d, tx_stat_q;
@@ -108,7 +108,7 @@ logic     [DCACHE_WBUF_DEPTH-1:0]         valid;
 logic     [DCACHE_WBUF_DEPTH-1:0]         dirty;
 logic     [DCACHE_WBUF_DEPTH-1:0]         tocheck;
 logic     [DCACHE_WBUF_DEPTH-1:0]         wbuffer_hit_oh, inval_hit;
-logic     [DCACHE_WBUF_DEPTH-1:0][7:0]    bdirty; 
+logic     [DCACHE_WBUF_DEPTH-1:0][7:0]    bdirty;
 
 logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
 logic [DCACHE_ID_WIDTH-1:0] tx_id_q, tx_id_d, rtrn_id;
@@ -137,14 +137,14 @@ logic [63:0] debug_paddr [DCACHE_WBUF_DEPTH-1:0];
 
 assign miss_nc_o = nc_pending_q;
 
-generate 
+generate
     if (NC_ADDR_GE_LT) begin : g_nc_addr_high
         assign addr_is_nc = (req_port_i.address_tag >= (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH)) | ~cache_en_i;
     end
     if (~NC_ADDR_GE_LT) begin : g_nc_addr_low
         assign addr_is_nc = (req_port_i.address_tag < (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH))  | ~cache_en_i;
     end
-endgenerate  
+endgenerate
 
 assign miss_we_o       = 1'b1;
 assign miss_vld_bits_o = '0;
@@ -154,8 +154,8 @@ generate
     for(genvar k=0; k<DCACHE_MAX_TX;k++) begin
         assign tx_vld_o[k]   = tx_stat_q[k].vld;
         assign tx_paddr_o[k] = wbuffer_q[tx_stat_q[k].ptr].wtag<<3;
-    end 
-endgenerate       
+    end
+endgenerate
 
 ///////////////////////////////////////////////////////
 // openpiton does not understand byte enable sigs
@@ -186,7 +186,7 @@ assign miss_req_o   = (|dirty) && (tx_cnt_q < DCACHE_MAX_TX);
 // note: openpiton can only handle aligned offsets + size, and hence
 // we have to split unaligned data into multiple transfers (see toSize64)
 // e.g. if we have the following valid bytes: 0011_1001 -> TX0: 0000_0001, TX1: 0000_1000, TX2: 0011_0000
-assign miss_size_o  = toSize64(bdirty[dirty_ptr]); 
+assign miss_size_o  = toSize64(bdirty[dirty_ptr]);
 
 assign miss_wdata_o = repData64(wbuffer_q[dirty_ptr].data,
                                 bdirty_off,
@@ -201,9 +201,9 @@ assign tx_be        = toByteEnable8(bdirty_off,
 
 // TODO: todo: make this fall through if timing permits it
 fifo_v2 #(
-    .FALL_THROUGH ( 1'b0                  ), 
-    .DATA_WIDTH   ( $clog2(DCACHE_MAX_TX) ), 
-    .DEPTH        ( DCACHE_MAX_TX         )        
+    .FALL_THROUGH ( 1'b0                  ),
+    .DATA_WIDTH   ( $clog2(DCACHE_MAX_TX) ),
+    .DEPTH        ( DCACHE_MAX_TX         )
 ) i_rtrn_id_fifo (
     .clk_i      ( clk_i            ),
     .rst_ni     ( rst_ni           ),
@@ -220,7 +220,7 @@ fifo_v2 #(
 );
 
 always_comb begin : p_tx_stat
-    tx_stat_d = tx_stat_q;  
+    tx_stat_d = tx_stat_q;
     evict     = 1'b0;
     wr_req_o  = '0;
 
@@ -229,8 +229,8 @@ always_comb begin : p_tx_stat
         tx_stat_d[tx_id_q].vld = 1'b1;
         tx_stat_d[tx_id_q].ptr = dirty_ptr;
         tx_stat_d[tx_id_q].be  = tx_be;
-    end 
-   
+    end
+
     // clear entry if it is clear whether it can be pushed to the cache or not
     if((~rtrn_empty) && wbuffer_q[rtrn_ptr].checked) begin
         // check if data is clean and can be written, otherwise skip
@@ -244,17 +244,17 @@ always_comb begin : p_tx_stat
         end else begin
             evict = 1'b1;
             tx_stat_d[rtrn_id].vld = 1'b0;
-        end      
+        end
     end
 end
 
 assign tx_cnt_d   = (dirty_rd_en & evict) ? tx_cnt_q     :
-                    (dirty_rd_en)         ? tx_cnt_q + 1 : 
+                    (dirty_rd_en)         ? tx_cnt_q + 1 :
                     (evict)               ? tx_cnt_q - 1 :
                                             tx_cnt_q;
 // wrapping counter
 assign tx_id_d    =  (dirty_rd_en & tx_id_wrap) ? '0           :
-                     (dirty_rd_en)              ? tx_id_q + 1  : 
+                     (dirty_rd_en)              ? tx_id_q + 1  :
                                                   tx_id_q;
 
 assign tx_id_wrap = tx_id_q == (DCACHE_MAX_TX-1);
@@ -286,13 +286,13 @@ assign wr_data_o    = wbuffer_q[rtrn_ptr].data;
 
 
 ///////////////////////////////////////////////////////
-// readout of status bits, index calculation 
+// readout of status bits, index calculation
 ///////////////////////////////////////////////////////
 
 assign wr_cl_vld_d = wr_cl_vld_i;
 assign wr_cl_idx_d = wr_cl_idx_i;
 
-generate 
+generate
     for(genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin
         // only for debug, will be pruned
         assign debug_paddr[k] = wbuffer_q[k].wtag << 3;
@@ -300,30 +300,27 @@ generate
         // dirty bytes that are ready for transmission.
         // note that we cannot retransmit a byte that is already in-flight
         // since the multiple transactions might overtake each other in the memory system!
-        assign bdirty[k] = wbuffer_q[k].dirty & wbuffer_q[k].valid & (~wbuffer_q[k].txblock);    
-        
+        assign bdirty[k] = wbuffer_q[k].dirty & wbuffer_q[k].valid & (~wbuffer_q[k].txblock);
+
 
         assign dirty[k]          = |bdirty[k];
         assign valid[k]          = |wbuffer_q[k].valid;
         assign wbuffer_hit_oh[k] = valid[k] & (wbuffer_q[k].wtag == {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:3]});
-        
+
         // checks if an invalidation/cache refill hits a particular word
         // note: an invalidation can hit multiple words!
         // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
         assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:0]<<3 == wr_cl_idx_d<<DCACHE_OFFSET_WIDTH)) |
                                (wr_cl_vld_q & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:0]<<3 == wr_cl_idx_q<<DCACHE_OFFSET_WIDTH));
-         
+
         // these word have to be looked up in the cache
         assign tocheck[k]       = (~wbuffer_q[k].checked) & valid[k];
-    end    
+    end
 endgenerate
 
 assign wr_ptr     = (|wbuffer_hit_oh) ? hit_ptr : next_ptr;
 assign empty_o    = ~(|valid);
-// assign rdy        = empty_o;
-//(|wbuffer_hit_oh) | (~full);
 assign rdy        = (|wbuffer_hit_oh) | (~full);
-//assign rdy        =  (~full) && ~(|wbuffer_hit_oh);
 
 // next free entry in the buffer
 lzc #(
@@ -370,7 +367,7 @@ rrarbiter #(
     .ack_o   (               ),
     .vld_o   (               ),
     .idx_o   ( check_ptr_d   )
-);    
+);
 
 ///////////////////////////////////////////////////////
 // update logic
@@ -394,7 +391,7 @@ always_comb begin : p_buffer
         if(wbuffer_q[check_ptr_q1].valid) begin
             wbuffer_d[check_ptr_q1].checked = 1'b1;
             wbuffer_d[check_ptr_q1].hit_oh = rd_hit_oh_q;
-        end    
+        end
     end
 
     // if an invalidation or cache line refill comes in and hits on the write buffer,
@@ -402,10 +399,10 @@ always_comb begin : p_buffer
     for(int k=0; k<DCACHE_WBUF_DEPTH; k++) begin
         if(inval_hit[k]) begin
             wbuffer_d[k].checked = 1'b0;
-        end 
-    end 
+        end
+    end
 
-    // once TX write response came back, we can clear the TX block. if it was not dirty, we 
+    // once TX write response came back, we can clear the TX block. if it was not dirty, we
     // can completely evict it - otherwise we have to leave it there for retransmission
     if(evict) begin
         for(int k=0; k<8; k++) begin
@@ -413,12 +410,12 @@ always_comb begin : p_buffer
                 wbuffer_d[rtrn_ptr].txblock[k] = 1'b0;
                 if(~wbuffer_q[rtrn_ptr].dirty[k]) begin
                     wbuffer_d[rtrn_ptr].valid[k] = 1'b0;
-                    
+
                     // NOTE: uncomment only for debugging.
                     // this is not strictly needed, but makes it much easier to debug, since no invalid data remains in the buffer
                     wbuffer_d[rtrn_ptr].data[k*8 +:8] = '0;
-                end   
-            end    
+                end
+            end
         end
         // if all bytes are evicted, clear the cache status flag
         if(wbuffer_d[rtrn_ptr].valid == 0) begin
@@ -433,7 +430,7 @@ always_comb begin : p_buffer
             if(tx_be[k]) begin
                 wbuffer_d[dirty_ptr].dirty[k]   = 1'b0;
                 wbuffer_d[dirty_ptr].txblock[k] = 1'b1;
-            end    
+            end
         end
     end
 
@@ -441,7 +438,7 @@ always_comb begin : p_buffer
     if(req_port_i.data_req & rdy) begin
         // in case we have an NC address, need to drain the buffer first
         // in case we are serving an NC address,  we block until it is written to memory
-        if(empty_o | ~(addr_is_nc | nc_pending_q)) begin 
+        if(empty_o | ~(addr_is_nc | nc_pending_q)) begin
             wbuffer_wren              = 1'b1;
 
             req_port_o.data_gnt       = 1'b1;
@@ -449,7 +446,7 @@ always_comb begin : p_buffer
 
             wbuffer_d[wr_ptr].checked = 1'b0;
             wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:3]};
-                        
+
             // mark bytes as dirty
             for(int k=0; k<8; k++) begin
                 if(req_port_i.data_be[k]) begin
@@ -458,7 +455,7 @@ always_comb begin : p_buffer
                     wbuffer_d[wr_ptr].data[k*8 +: 8] = req_port_i.data_wdata[k*8 +: 8];
                 end
             end
-        end    
+        end
     end
 end
 
@@ -470,7 +467,7 @@ end
 always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if(~rst_ni) begin
         wbuffer_q     <= '{default: '0};
-        tx_stat_q     <= '{default: '0};  
+        tx_stat_q     <= '{default: '0};
         nc_pending_q  <= '0;
         tx_cnt_q      <= '0;
         tx_id_q       <= '0;
@@ -484,7 +481,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
         wr_cl_idx_q   <= '0;
     end else begin
         wbuffer_q     <= wbuffer_d;
-        tx_stat_q     <= tx_stat_d; 
+        tx_stat_q     <= tx_stat_d;
         tx_cnt_q      <= tx_cnt_d;
         tx_id_q       <= tx_id_d;
         nc_pending_q  <= nc_pending_d;
@@ -508,23 +505,23 @@ end
 `ifndef VERILATOR
 
     hot1: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) req_port_i.data_req |-> $onehot0(wbuffer_hit_oh))     
+        @(posedge clk_i) disable iff (~rst_ni) req_port_i.data_req |-> $onehot0(wbuffer_hit_oh))
             else $fatal(1,"[l1 dcache wbuffer] wbuffer_hit_oh signal must be hot1");
 
     tx_status: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) evict & miss_ack_i & miss_req_o |-> (tx_id_q != rtrn_id)) 
+        @(posedge clk_i) disable iff (~rst_ni) evict & miss_ack_i & miss_req_o |-> (tx_id_q != rtrn_id))
             else $fatal(1,"[l1 dcache wbuffer] cannot allocate and clear same tx slot id in the same cycle");
 
     tx_valid0: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) evict |-> tx_stat_q[rtrn_id].vld) 
+        @(posedge clk_i) disable iff (~rst_ni) evict |-> tx_stat_q[rtrn_id].vld)
             else $fatal(1,"[l1 dcache wbuffer] evicting invalid transaction slot");
 
     tx_valid1: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) evict |-> |wbuffer_q[rtrn_ptr].valid) 
+        @(posedge clk_i) disable iff (~rst_ni) evict |-> |wbuffer_q[rtrn_ptr].valid)
             else $fatal(1,"[l1 dcache wbuffer] wbuffer entry corresponding to this transaction is invalid");
 
     write_full: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) req_port_i.data_req |-> req_port_o.data_gnt |-> ((~full) | (|wbuffer_hit_oh))) 
+        @(posedge clk_i) disable iff (~rst_ni) req_port_i.data_req |-> req_port_o.data_gnt |-> ((~full) | (|wbuffer_hit_oh)))
             else $fatal(1,"[l1 dcache wbuffer] cannot write if full or no hit");
 
     unused0: assert property (
@@ -535,8 +532,8 @@ end
         @(posedge clk_i) disable iff (~rst_ni) ~req_port_i.kill_req)
             else $fatal(1,"[l1 dcache wbuffer] req_port_i.kill_req should not be asserted");
 
-    generate 
-        for(genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin 
+    generate
+        for(genvar k=0; k<DCACHE_WBUF_DEPTH; k++) begin
             for(genvar j=0; j<8; j++) begin
                 byteStates: assert property (
                     @(posedge clk_i) disable iff (~rst_ni) {wbuffer_q[k].valid[j], wbuffer_q[k].dirty[j], wbuffer_q[k].txblock[j]} inside {3'b000, 3'b110, 3'b101, 3'b111} )

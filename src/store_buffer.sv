@@ -25,8 +25,8 @@ module store_buffer (
     input  logic [11:0]  page_offset_i,         // check for the page offset (the last 12 bit if the current load matches them)
     output logic         page_offset_matches_o, // the above input page offset matches -> let the store buffer drain
 
-    input  logic         commit_req_i,    // request to commit the instruction which was placed there most recently
-    output logic         commit_ack_o,    // acknowledge if the queue is ready to commit the request
+    input  logic         commit_i,        // commit the instruction which was placed there most recently
+    output logic         commit_ready_o,  // commit queue is ready to accept another commit request
     output logic         ready_o,         // the store queue is ready to accept a new request
                                           // it is only ready if it can unconditionally commit the instruction, e.g.:
                                           // the commit buffer needs to be empty
@@ -44,14 +44,20 @@ module store_buffer (
     );
     // depth of store-buffers
     localparam int unsigned DEPTH_SPEC   = 4;
+
+`ifdef SERPENT_PULP
+    // in this case we can use a small commit queue since we have a write buffer in the dcache
+    // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
+    // to longer paths into the commit stage
+    localparam int unsigned DEPTH_COMMIT = 2;
+`else
     // allocate more space for the commit buffer to be on the save side
     localparam int unsigned DEPTH_COMMIT = 4;
+`endif
 
     // the store queue has two parts:
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
-    // note that the serpent cache subsystem contains a merging write buffer, 
-    // and if enabled (i.e. the macro SERPENT_PULP is defined), we do not need the commit queue 
 
     struct packed {
         logic [63:0] address;
@@ -81,7 +87,7 @@ module store_buffer (
         speculative_status_cnt = speculative_status_cnt_q;
 
         // we are ready if the speculative and the commit queue have a space left
-        ready_o = (speculative_status_cnt_q < (DEPTH_SPEC - 1)) || commit_ack_o;
+        ready_o = (speculative_status_cnt_q < (DEPTH_SPEC - 1)) || commit_i;
         // default assignments
         speculative_status_cnt_n    = speculative_status_cnt_q;
         speculative_read_pointer_n  = speculative_read_pointer_q;
@@ -102,7 +108,7 @@ module store_buffer (
 
         // evict the current entry out of this queue, the commit queue will thankfully take it and commit it
         // to the memory hierarchy
-        if (commit_ack_o) begin
+        if (commit_i) begin
             // invalidate
             speculative_queue_n[speculative_read_pointer_q].valid = 1'b0;
             // advance the read pointer
@@ -134,18 +140,6 @@ module store_buffer (
     assign req_port_o.data_we   = 1'b1; // we will always write in the store queue
     assign req_port_o.tag_valid = 1'b0;
 
-`ifdef SERPENT_PULP
-    // there is a separate signal coming in from the dcache write buffer that is connected directly to the commit stage
-    assign no_st_pending_o          = 1'b1;
-    // in this case, we directly output data from the speculative queue   
-    assign req_port_o.data_req      = commit_req_i;
-    assign commit_ack_o             = req_port_i.data_gnt;
-    assign req_port_o.address_index = speculative_queue_q[speculative_read_pointer_q].address[11:0];
-    assign req_port_o.address_tag   = speculative_queue_q[speculative_read_pointer_q].address[55:12];
-    assign req_port_o.data_wdata    = speculative_queue_q[speculative_read_pointer_q].data;
-    assign req_port_o.data_be       = speculative_queue_q[speculative_read_pointer_q].be;
-    assign req_port_o.data_size     = speculative_queue_q[speculative_read_pointer_q].data_size;
-`else
     // those signals can directly be output to the memory
     assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[11:0];
     // if we got a new request we already saved the tag from the previous cycle
@@ -153,12 +147,12 @@ module store_buffer (
     assign req_port_o.data_wdata    = commit_queue_q[commit_read_pointer_q].data;
     assign req_port_o.data_be       = commit_queue_q[commit_read_pointer_q].be;
     assign req_port_o.data_size     = commit_queue_q[commit_read_pointer_q].data_size;
-    
+
     always_comb begin : store_if
         automatic logic [DEPTH_COMMIT:0] commit_status_cnt;
         commit_status_cnt = commit_status_cnt_q;
 
-        commit_ack_o = (commit_status_cnt_q < DEPTH_COMMIT) && commit_req_i;
+        commit_ready_o = (commit_status_cnt_q < DEPTH_COMMIT);
         // no store is pending if we don't have any element in the commit queue e.g.: it is empty
         no_st_pending_o         = (commit_status_cnt_q == 0);
         // default assignments
@@ -185,7 +179,7 @@ module store_buffer (
         // happened if we got a grant
 
         // shift the store request from the speculative buffer to the non-speculative
-        if (commit_ack_o) begin
+        if (commit_i) begin
             commit_queue_n[commit_write_pointer_q] = speculative_queue_q[speculative_read_pointer_q];
             commit_write_pointer_n = commit_write_pointer_n + 1'b1;
             commit_status_cnt++;
@@ -193,7 +187,7 @@ module store_buffer (
 
         commit_status_cnt_n     = commit_status_cnt;
     end
-`endif
+
     // ------------------
     // Address Checker
     // ------------------
@@ -212,7 +206,6 @@ module store_buffer (
     always_comb begin : address_checker
         page_offset_matches_o = 1'b0;
 
-`ifndef SERPENT_PULP        
         // check if the LSBs are identical and the entry is valid
         for (int unsigned i = 0; i < DEPTH_COMMIT; i++) begin
             // Check if the page offset matches and whether the entry is valid, for the commit queue
@@ -221,7 +214,6 @@ module store_buffer (
                 break;
             end
         end
-`endif
 
         for (int unsigned i = 0; i < DEPTH_SPEC; i++) begin
             // do the same for the speculative queue
@@ -252,7 +244,6 @@ module store_buffer (
         end
      end
 
-`ifndef SERPENT_PULP
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_commit
         if (~rst_ni) begin
@@ -267,18 +258,17 @@ module store_buffer (
             commit_status_cnt_q         <= commit_status_cnt_n;
         end
      end
- `endif     
 
 ///////////////////////////////////////////////////////
 // assertions
 ///////////////////////////////////////////////////////
 
     //pragma translate_off
-    `ifndef verilator
+    `ifndef VERILATOR
     // assert that commit is never set when we are flushing this would be counter intuitive
     // as flush and commit is decided in the same stage
     commit_and_flush: assert property (
-        @(posedge clk_i) rst_ni && flush_i |-> !commit_req_i)
+        @(posedge clk_i) rst_ni && flush_i |-> !commit_i)
         else $error ("[Commit Queue] You are trying to commit and flush in the same cycle");
 
     speculative_buffer_overflow: assert property (
@@ -286,14 +276,12 @@ module store_buffer (
         else $error ("[Speculative Queue] You are trying to push new data although the buffer is not ready");
 
     speculative_buffer_underflow: assert property (
-        @(posedge clk_i) rst_ni && (speculative_status_cnt_q == 0) |-> !commit_req_i)
+        @(posedge clk_i) rst_ni && (speculative_status_cnt_q == 0) |-> !commit_i)
         else $error ("[Speculative Queue] You are committing although there are no stores to commit");
 
-    `ifndef SERPENT_PULP
-        commit_buffer_overflow: assert property (
-            @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_SPEC) |-> !commit_ack_o)
-            else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
-    `endif
+    commit_buffer_overflow: assert property (
+        @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_SPEC) |-> !commit_i)
+        else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
     `endif
     //pragma translate_on
 endmodule
