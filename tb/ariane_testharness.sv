@@ -319,8 +319,7 @@ module ariane_testharness #(
         .clk_i                ( clk_i            ),
         .rst_ni               ( ndmreset_n       ),
         .boot_addr_i          ( 64'h10000        ), // start fetching from ROM
-        .core_id_i            ( '0               ),
-        .cluster_id_i         ( '0               ),
+        .hart_id_i            ( '0               ),
         .irq_i                ( '0               ), // we do not specify other interrupts in this TB
         .ipi_i                ( ipi              ),
         .time_irq_i           ( timer_irq        ),
