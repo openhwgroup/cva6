@@ -24,7 +24,7 @@ package ariane_pkg;
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
-    localparam NR_WB_PORTS   = 5;
+    localparam NR_WB_PORTS   = 4;
     localparam ASID_WIDTH    = 1;
     localparam BTB_ENTRIES   = 8;
     localparam BHT_ENTRIES   = 32;
@@ -32,17 +32,63 @@ package ariane_pkg;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
-    localparam logic [63:0] ISA_CODE =
-                                     | (1 <<  0)  // A - Atomic extension
-                                     | (1 <<  2)  // C - Compressed extension
-                                     | (1 <<  8)  // I - RV32I/64I/128I base ISA
-                                     | (1 << 12)  // M - Integer Multiply/Divide extension
-                                     | (0 << 13)  // N - User level interrupts supported
-                                     | (1 << 18)  // S - Supervisor mode implemented
-                                     | (1 << 20)  // U - User mode implemented
-                                     | (0 << 23)  // X - Non-standard extensions present
-                                     | (1 << 63); // RV64
     localparam ENABLE_RENAME = 1'b1;
+
+    // Floating-point extensions configuration
+    localparam bit RVF = 1'b0; // Is F extension enabled
+    localparam bit RVD = 1'b0; // Is D extension enabled
+    localparam bit RVA = 1'b1; // Is A extension enabled
+
+    // Transprecision floating-point extensions configuration
+    localparam bit XF16    = 1'b0; // Is half-precision float extension (Xf16) enabled
+    localparam bit XF16ALT = 1'b0; // Is alternative half-precision float extension (Xf16alt) enabled
+    localparam bit XF8     = 1'b0; // Is quarter-precision float extension (Xf8) enabled
+    localparam bit XFVEC   = 1'b0; // Is vectorial float extension (Xfvec) enabled
+
+    // Transprecision float unit
+    localparam logic [30:0] LAT_COMP_FP32    = 'd3;
+    localparam logic [30:0] LAT_COMP_FP64    = 'd4;
+    localparam logic [30:0] LAT_COMP_FP16    = 'd3;
+    localparam logic [30:0] LAT_COMP_FP16ALT = 'd3;
+    localparam logic [30:0] LAT_COMP_FP8     = 'd2;
+    localparam logic [30:0] LAT_DIVSQRT      = 'd2;
+    localparam logic [30:0] LAT_NONCOMP      = 'd1;
+    localparam logic [30:0] LAT_CONV         = 'd2;
+
+    // --------------------------------------
+    // vvvv Don't change these by hand! vvvv
+    localparam bit FP_PRESENT = RVF | RVD | XF16 | XF16ALT | XF8;
+
+    // Length of widest floating-point format
+    localparam FLEN    = RVD     ? 64 : // D ext.
+                         RVF     ? 32 : // F ext.
+                         XF16    ? 16 : // Xf16 ext.
+                         XF16ALT ? 16 : // Xf16alt ext.
+                         XF8     ? 8 :  // Xf8 ext.
+                         0;             // Unused in case of no FP
+
+    localparam bit NSX = XF16 | XF16ALT | XF8 | XFVEC; // Are non-standard extensions present?
+
+    localparam bit RVFVEC     = RVF     & XFVEC & FLEN>32; // FP32 vectors available if vectors and larger fmt enabled
+    localparam bit XF16VEC    = XF16    & XFVEC & FLEN>16; // FP16 vectors available if vectors and larger fmt enabled
+    localparam bit XF16ALTVEC = XF16ALT & XFVEC & FLEN>16; // FP16ALT vectors available if vectors and larger fmt enabled
+    localparam bit XF8VEC     = XF8     & XFVEC & FLEN>8;  // FP8 vectors available if vectors and larger fmt enabled
+    // ^^^^ until here ^^^^
+    // ---------------------
+
+    localparam logic [63:0] ARIANE_MARCHID = 64'd3;
+
+    localparam logic [63:0] ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
+                                     | (1   <<  2)  // C - Compressed extension
+                                     | (RVD <<  3)  // D - Double precsision floating-point extension
+                                     | (RVF <<  5)  // F - Single precsision floating-point extension
+                                     | (1   <<  8)  // I - RV32I/64I/128I base ISA
+                                     | (1   << 12)  // M - Integer Multiply/Divide extension
+                                     | (0   << 13)  // N - User level interrupts supported
+                                     | (1   << 18)  // S - Supervisor mode implemented
+                                     | (1   << 20)  // U - User mode implemented
+                                     | (NSX << 23)  // X - Non-standard extensions present
+                                     | (1   << 63); // RV64
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
@@ -57,9 +103,8 @@ package ariane_pkg;
                                                 dataaddr: dm::DataAddr
                                               };
 
-
     // enables a commit log which matches spikes commit log format for easier trace comparison
-    localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b0;
+    localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
 
     // ------------- Dangerouse -------------
     // if set to zero a flush will not invalidate the cache-lines, in a single core environment
@@ -152,7 +197,9 @@ package ariane_pkg;
         ALU,       // 3
         CTRL_FLOW, // 4
         MULT,      // 5
-        CSR        // 6
+        CSR,       // 6
+        FPU,       // 7
+        FPU_VEC    // 8
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
@@ -199,8 +246,93 @@ package ariane_pkg;
                                // Multiplications
                                MUL, MULH, MULHU, MULHSU, MULW,
                                // Divisions
-                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW
+                               DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW,
+                               // Floating-Point Load and Store Instructions
+                               FLD, FLW, FLH, FLB, FSD, FSW, FSH, FSB,
+                               // Floating-Point Computational Instructions
+                               FADD, FSUB, FMUL, FDIV, FMIN_MAX, FSQRT, FMADD, FMSUB, FNMSUB, FNMADD,
+                               // Floating-Point Conversion and Move Instructions
+                               FCVT_F2I, FCVT_I2F, FCVT_F2F, FSGNJ, FMV_F2X, FMV_X2F,
+                               // Floating-Point Compare Instructions
+                               FCMP,
+                               // Floating-Point Classify Instruction
+                               FCLASS,
+                               // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
+                               VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D
                              } fu_op;
+
+    typedef struct packed {
+      fu_op        operator;
+      logic [63:0] operand_a;
+      logic [63:0] operand_b;
+      logic [63:0] imm;
+    } fu_data_t;
+
+    // -------------------------------
+    // Extract Src/Dst FP Reg from Op
+    // -------------------------------
+    function automatic logic is_rs1_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FMUL:FNMADD],                   // Computational Operations (except ADD/SUB)
+                FCVT_F2I,                        // Float-Int Casts
+                FCVT_F2F,                        // Float-Float Casts
+                FSGNJ,                           // Sign Injections
+                FMV_F2X,                         // FPR-GPR Moves
+                FCMP,                            // Comparisons
+                FCLASS,                          // Classifications
+                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
+                default           : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    function automatic logic is_rs2_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FSD:FSB],                       // FP Stores
+                [FADD:FMIN_MAX],                 // Computational Operations (no sqrt)
+                [FMADD:FNMADD],                  // Fused Computational Operations
+                FCVT_F2F,                        // Vectorial F2F Conversions requrie target
+                [FSGNJ:FMV_F2X],                 // Sign Injections and moves mapped to SGNJ
+                FCMP,                            // Comparisons
+                [VFMIN:VFCPKCD_D] : return 1'b1; // Additional Vectorial FP ops
+                default           : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    // ternary operations encode the rs3 address in the imm field, also add/sub
+    function automatic logic is_imm_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FADD:FSUB],                         // ADD/SUB need inputs as Operand B/C
+                [FMADD:FNMADD],                      // Fused Computational Operations
+                [VFCPKAB_S:VFCPKCD_D] : return 1'b1; // Vectorial FP cast and pack ops
+                default               : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
+
+    function automatic logic is_rd_fpr (input fu_op op);
+        if (FP_PRESENT) begin // makes function static for non-fp case
+            unique case (op) inside
+                [FLD:FLB],                           // FP Loads
+                [FADD:FNMADD],                       // Computational Operations
+                FCVT_I2F,                            // Int-Float Casts
+                FCVT_F2F,                            // Float-Float Casts
+                FSGNJ,                               // Sign Injections
+                FMV_X2F,                             // GPR-FPR Moves
+                [VFMIN:VFSGNJX],                     // Vectorial MIN/MAX and SGNJ
+                [VFCPKAB_S:VFCPKCD_D] : return 1'b1; // Vectorial FP cast and pack ops
+                default               : return 1'b0; // all other ops
+            endcase
+        end else
+            return 1'b0;
+    endfunction;
 
     function automatic logic is_amo (fu_op op);
         case (op) inside
@@ -244,7 +376,10 @@ package ariane_pkg;
         logic [REG_ADDR_SIZE-1:0] rs1;           // register source address 1
         logic [REG_ADDR_SIZE-1:0] rs2;           // register source address 2
         logic [REG_ADDR_SIZE-1:0] rd;            // register destination address
-        logic [63:0]              result;        // for unfinished instructions this field also holds the immediate
+        logic [63:0]              result;        // for unfinished instructions this field also holds the immediate,
+                                                 // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
+                                                 // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
+                                                 // this field holds the address of the third operand from the floating-point register file
         logic                     valid;         // is the result valid
         logic                     use_imm;       // should we use the immediate as operand b?
         logic                     use_zimm;      // use zimm as operand a
@@ -433,7 +568,7 @@ package ariane_pkg;
     // ----------------------
     function automatic logic [1:0] extract_transfer_size(fu_op op);
         case (op)
-            LD, SD,
+            LD, SD, FLD, FSD,
             AMO_LRD,   AMO_SCD,
             AMO_SWAPD, AMO_ADDD,
             AMO_ANDD,  AMO_ORD,
@@ -442,7 +577,7 @@ package ariane_pkg;
             AMO_MINDU: begin
                 return 2'b11;
             end
-            LW, LWU, SW,
+            LW, LWU, SW, FLW, FSW,
             AMO_LRW,   AMO_SCW,
             AMO_SWAPW, AMO_ADDW,
             AMO_ANDW,  AMO_ORW,
@@ -451,8 +586,8 @@ package ariane_pkg;
             AMO_MINWU: begin
                 return 2'b10;
             end
-            LH, LHU, SH: return 2'b01;
-            LB, SB, LBU: return 2'b00;
+            LH, LHU, SH, FLH, FSH: return 2'b01;
+            LB, LBU, SB, FLB, FSB: return 2'b00;
             default:     return 2'b11;
         endcase
     endfunction

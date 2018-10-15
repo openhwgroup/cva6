@@ -280,7 +280,7 @@ module lsu #(
         if (lsu_ctrl.valid) begin
             case (lsu_ctrl.operator)
                 // double word
-                LD, SD,
+                LD, SD, FLD, FSD,
                 AMO_LRD, AMO_SCD,
                 AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
                 AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
@@ -290,7 +290,7 @@ module lsu #(
                     end
                 end
                 // word
-                LW, LWU, SW,
+                LW, LWU, SW, FLW, FSW,
                 AMO_LRW, AMO_SCW,
                 AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW,
                 AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW,
@@ -300,7 +300,7 @@ module lsu #(
                     end
                 end
                 // half word
-                LH, LHU, SH: begin
+                LH, LHU, SH, FLH, FSH: begin
                     if (lsu_ctrl.vaddr[0] != 1'b0) begin
                         data_misaligned = 1'b1;
                     end
@@ -366,6 +366,7 @@ module lsu #(
         .ready_o            ( lsu_ready_o ),
         .*
     );
+
 endmodule
 
 // ------------------

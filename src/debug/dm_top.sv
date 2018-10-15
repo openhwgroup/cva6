@@ -143,6 +143,7 @@ module dm_top #(
 
     dm_sba i_dm_sba (
         .clk_i                   ( clk_i                 ),
+        .rst_ni                  ( rst_ni                ),
         .dmactive_i              ( dmactive_o            ),
         .axi_master,
         .sbaddress_i             ( sbaddress_csrs_sba    ),
@@ -166,7 +167,7 @@ module dm_top #(
         .NrHarts (NrHarts)
     ) i_dm_mem (
         .clk_i                   ( clk_i                 ),
-        .dmactive_i              ( dmactive_o            ),
+        .rst_ni                  ( rst_ni                ),
         .debug_req_o             ( debug_req_o           ),
         .hartsel_i               ( hartsel               ),
         .haltreq_i               ( haltreq               ),
@@ -197,7 +198,7 @@ module dm_top #(
         .AXI_USER_WIDTH ( AxiUserWidth )
     ) i_axi2mem (
         .clk_i  ( clk_i      ),
-        .rst_ni ( dmactive_o ),
+        .rst_ni ( rst_ni     ),
         .slave  ( axi_slave  ),
         .req_o  ( req        ),
         .we_o   ( we         ),

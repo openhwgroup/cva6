@@ -299,17 +299,10 @@ module load_unit (
 
     // prepare these signals for faster selection in the next cycle
     assign signed_d  = load_data_d.operator inside {LW, LH, LB};
-    assign fp_sign_d = 1'b0;
-    assign idx_d     = (load_data_d.operator inside {LW}) ? load_data_d.address_offset + 3 :
-                       (load_data_d.operator inside {LH}) ? load_data_d.address_offset + 1 :
-                                                            load_data_d.address_offset;
-
-    // use this with FP support:
-    // assign signed_d  = load_data_d.operator inside {LW, LH, LB};
-    // assign fp_sign_d = load_data_d.operator inside {FLW, FLH, FLB};
-    // assign idx_d     = (load_data_d.operator inside {LW, FLW}) ? load_data_d.address_offset + 3 :
-    //                    (load_data_d.operator inside {LH, FLH}) ? load_data_d.address_offset + 1 :
-    //                                                              load_data_d.address_offset;
+    assign fp_sign_d = load_data_d.operator inside {FLW, FLH, FLB};
+    assign idx_d     = (load_data_d.operator inside {LW, FLW}) ? load_data_d.address_offset + 3 :
+                       (load_data_d.operator inside {LH, FLH}) ? load_data_d.address_offset + 1 :
+                                                                 load_data_d.address_offset;
 
 
     assign sign_bits = { req_port_i.data_rdata[63],
@@ -328,24 +321,12 @@ module load_unit (
     // result mux
     always_comb begin
         unique case (load_data_q.operator)
-            LW, LWU: begin
-                result_o = {{32{sign_bit}}, shifted_data[31:0]};
-            end
-            LH, LHU:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
-            LB, LBU:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
+            LW, LWU, FLW:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
+            LH, LHU, FLH:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
+            LB, LBU, FLB:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
             default:    result_o = shifted_data;
         endcase
     end
-
-    // use this with FP support:
-    // always_comb begin
-    //     unique case (load_data_q.operator)
-    //         LW, LWU, FLW:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
-    //         LH, LHU, FLH:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
-    //         LB, LBU, FLB:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
-    //         default:    result_o = shifted_data;
-    //     endcase
-    // end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
         if (~rst_ni) begin

@@ -22,6 +22,7 @@ module commit_stage #(
     input  logic                                    halt_i,             // request to halt the core
     input  logic                                    flush_dcache_i,     // request to flush dcache -> also flush the pipeline
     output exception_t                              exception_o,        // take exception to controller
+    output logic                                    dirty_fp_state_o,   // mark the F state as dirty
     input  logic                                    debug_mode_i,       // we are in debug mode
     input  logic                                    debug_req_i,        // debug unit is requesting to enter debug mode
     input  logic                                    single_step_i,      // we are in single step debug mode
@@ -31,7 +32,8 @@ module commit_stage #(
     // to register file
     output  logic [NR_COMMIT_PORTS-1:0][4:0]        waddr_o,            // register file write address
     output  logic [NR_COMMIT_PORTS-1:0][63:0]       wdata_o,            // register file write data
-    output  logic [NR_COMMIT_PORTS-1:0]             we_o,               // register file write enable
+    output  logic [NR_COMMIT_PORTS-1:0]             we_gpr_o,           // register file write enable
+    output  logic [NR_COMMIT_PORTS-1:0]             we_fpr_o,           // floating point register enable
     // Atomic memory operations
     input  amo_resp_t                               amo_resp_i,         // result of AMO operation
     // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
@@ -41,6 +43,7 @@ module commit_stage #(
     output logic [63:0]                             csr_wdata_o,        // data to write to CSR
     input  logic [63:0]                             csr_rdata_i,        // data to read from CSR
     input  exception_t                              csr_exception_i,    // exception or interrupt occurred in CSR stage (the same as commit)
+    output logic                                    csr_write_fflags_o, // write the fflags CSR
     // commit signals to ex
     output logic                                    commit_lsu_o,       // commit the pending store
     input  logic                                    commit_lsu_ready_i, // commit buffer of LSU is ready
@@ -53,10 +56,12 @@ module commit_stage #(
     output logic                                    sfence_vma_o        // flush TLBs and pipeline
 );
 
+    // TODO make these parametric with NR_COMMIT_PORTS
     assign waddr_o[0] = commit_instr_i[0].rd[4:0];
     assign waddr_o[1] = commit_instr_i[1].rd[4:0];
 
-    assign pc_o = commit_instr_i[0].pc;
+    assign pc_o       = commit_instr_i[0].pc;
+    assign dirty_fp_state_o = |we_fpr_o;
 
     logic instr_0_is_amo;
     assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
@@ -65,25 +70,27 @@ module commit_stage #(
     // -------------------
     // write register file or commit instruction in LSU or CSR Buffer
     always_comb begin : commit
+
         // default assignments
-        commit_ack_o[0] = 1'b0;
-        commit_ack_o[1] = 1'b0;
+        commit_ack_o[0]    = 1'b0;
+        commit_ack_o[1]    = 1'b0;
 
         amo_valid_commit_o = 1'b0;
 
-        we_o[0]         = 1'b0;
-        we_o[1]         = 1'b0;
-
-        commit_lsu_o    = 1'b0;
-        commit_csr_o    = 1'b0;
+        we_gpr_o[0]        = 1'b0;
+        we_gpr_o[1]        = 1'b0;
+        we_fpr_o           = '{default: 1'b0};
+        commit_lsu_o       = 1'b0;
+        commit_csr_o       = 1'b0;
         // amos will commit on port 0
         wdata_o[0]      = (amo_resp_i.ack) ? amo_resp_i.result : commit_instr_i[0].result;
         wdata_o[1]      = commit_instr_i[1].result;
         csr_op_o        = ADD; // this corresponds to a CSR NOP
-        csr_wdata_o     = 64'b0;
-        fence_i_o       = 1'b0;
-        fence_o         = 1'b0;
-        sfence_vma_o    = 1'b0;
+        csr_wdata_o        = 64'b0;
+        fence_i_o          = 1'b0;
+        fence_o            = 1'b0;
+        sfence_vma_o       = 1'b0;
+        csr_write_fflags_o = 1'b0;
         flush_commit_o  = 1'b0;
 
         // we will not commit the instruction if we took an exception
@@ -92,6 +99,8 @@ module commit_stage #(
         // also check that there is no atomic memory operation committing, right now this is the only operation
         // which will take longer than one cycle to commit
         if (commit_instr_i[0].valid && !halt_i) begin
+            // we have to exclude the AMOs from debug mode as we are not jumping to debug
+            // while committing an AMO
             if (!debug_req_i || debug_mode_i) begin
                 commit_ack_o[0] = 1'b1;
                 // register will be the all zero register.
@@ -101,7 +110,10 @@ module commit_stage #(
                 if (!exception_o.valid) begin
                     // we can definitely write the register file
                     // if the instruction is not committing anything the destination
-                    we_o[0] = 1'b1;
+                    if (is_rd_fpr(commit_instr_i[0].op))
+                        we_fpr_o[0] = 1'b1;
+                    else
+                        we_gpr_o[0] = 1'b1;
 
                     // check whether the instruction we retire was a store
                     // do not commit the instruction if we got an exception since the store buffer will be cleared
@@ -112,6 +124,14 @@ module commit_stage #(
                             commit_lsu_o = 1'b1;
                         else // if the LSU buffer is not ready - do not commit, wait
                             commit_ack_o[0] = 1'b0;
+                    end
+                    // ---------
+                    // FPU Flags
+                    // ---------
+                    if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
+                        // write the CSR with potential exception flags from retiring floating point instruction
+                        csr_wdata_o = {59'b0, commit_instr_i[0].ex.cause[4:0]};
+                        csr_write_fflags_o = 1'b1;
                     end
                 end
 
@@ -158,13 +178,13 @@ module commit_stage #(
             // ------------------
             // AMO
             // ------------------
-            if (instr_0_is_amo && !commit_instr_i[0].ex.valid) begin
+            if (RVA && instr_0_is_amo && !commit_instr_i[0].ex.valid) begin
                 // AMO finished
                 commit_ack_o[0] = amo_resp_i.ack;
                 // flush the pipeline
                 flush_commit_o = amo_resp_i.ack;
                 amo_valid_commit_o = 1'b1;
-                we_o[0] = amo_resp_i.ack;
+                we_gpr_o[0] = amo_resp_i.ack;
             end
         end
 
@@ -180,11 +200,27 @@ module commit_stage #(
                             && !instr_0_is_amo
                             && !single_step_i) begin
             // only if the first instruction didn't throw an exception and this instruction won't throw an exception
-            // and the operator is of type ALU, LOAD, CTRL_FLOW, MULT
+            // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
             if (!exception_o.valid && !commit_instr_i[1].ex.valid
-                                   && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT})) begin
-                we_o[1] = 1'b1;
+                                   && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
+
+                if (is_rd_fpr(commit_instr_i[1].op))
+                    we_fpr_o[1] = 1'b1;
+                else
+                    we_gpr_o[1] = 1'b1;
+
                 commit_ack_o[1] = 1'b1;
+
+                // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
+                // exception flags
+                if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
+                    if (csr_write_fflags_o)
+                        csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
+                    else
+                        csr_wdata_o = {59'b0, commit_instr_i[1].ex.cause[4:0]};
+
+                    csr_write_fflags_o = 1'b1;
+                end
             end
         end
     end
