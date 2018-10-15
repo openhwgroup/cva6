@@ -250,12 +250,12 @@ module std_nbdcache #(
     );
 
 
-`ifndef SYNTHESIS
+//pragma translate_off
     initial begin
         assert ($bits(data_if.aw_addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
         assert (DCACHE_LINE_WIDTH/64 inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of 64");
     end
-`endif
+//pragma translate_on
 endmodule
 
 // --------------
@@ -334,13 +334,13 @@ module tag_cmp #(
                 break;
         end
 
-        `ifndef SYNTHESIS
-        `ifndef VERILATOR
+//pragma translate_off
+`ifndef VERILATOR
         // assert that cache only hits on one way
         assert property (
           @(posedge clk_i) $onehot0(hit_way_o)) else begin $error("Hit should be one-hot encoded"); $stop(); end
-        `endif
-        `endif
+`endif
+//pragma translate_on
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

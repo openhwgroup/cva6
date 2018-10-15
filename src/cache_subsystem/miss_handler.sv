@@ -492,13 +492,13 @@ module miss_handler #(
         end
     end
 
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
     // assert that cache only hits on one way
     assert property (
       @(posedge clk_i) $onehot0(evict_way_q)) else $warning("Evict-way should be one-hot encoded");
     `endif
-    `endif
+    //pragma translate_on
     // ----------------------
     // Bypass Arbiter
     // ----------------------
@@ -632,11 +632,11 @@ module miss_handler #(
         end
     end
 
-    `ifndef SYNTHESIS
+    //pragma translate_off
         initial begin
             assert (AXI_ID_WIDTH >= $clog2(NR_PORTS)) else $fatal (1, "AXI ID Width needs to be larger than number of requestors");
         end
-    `endif
+    //pragma translate_on
 
 endmodule
 
@@ -762,7 +762,7 @@ module arbiter #(
     // Assertions
     // ------------
 
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
     // make sure that we eventually get an rvalid after we received a grant
     assert property (@(posedge clk_i) data_gnt_i |-> ##[1:$] data_rvalid_i )
@@ -775,5 +775,5 @@ module arbiter #(
       else begin $error("address contains X when request is set"); $stop(); end
 
     `endif
-    `endif
+    //pragma translate_on
 endmodule
