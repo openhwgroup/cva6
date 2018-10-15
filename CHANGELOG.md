@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Commit log feature
 - Support for A-Extension
+- Preliminary FP support
+
+### Changed
+
+- core_id / cluster_id inputs have been merged to hard_id input
 
 ### 3.0.0
 
