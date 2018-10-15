@@ -105,6 +105,7 @@ riscv-asm-tests-list      := ci/riscv-asm-tests.list
 riscv-amo-tests-list      := ci/riscv-amo-tests.list
 riscv-benchmarks-list     := ci/riscv-benchmarks.list
 riscv-asm-tests           := $(shell xargs printf '\n%s' < $(riscv-asm-tests-list)  | cut -b 1-)
+riscv-amo-tests           := $(shell xargs printf '\n%s' < $(riscv-amo-tests-list)  | cut -b 1-)
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
@@ -172,6 +173,11 @@ $(riscv-asm-tests): build
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
 	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
+$(riscv-amo-tests): build
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-amo-tests-$@.log
+
 $(riscv-benchmarks): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi   \
@@ -229,6 +235,13 @@ verilate:
 $(addsuffix -verilator,$(riscv-asm-tests)): verilate
 	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
 
+$(addsuffix -verilator,$(riscv-amo-tests)): verilate
+	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
+
+$(addsuffix -verilator,$(riscv-benchmarks)): verilate
+	$(ver-library)/Variane_testharness $(riscv-benchmarks-dir)/$(subst -verilator,,$@)
+
+
 run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests)) $(addsuffix -verilator, $(riscv-amo-tests))
 
 # split into two halfs for travis jobs (otherwise they will time out)
@@ -237,10 +250,6 @@ run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-v-% ,$(riscv-a
 run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-v-% ,$(riscv-asm-tests)))
 
 run-amo-verilator: $(addsuffix -verilator, $(riscv-amo-tests))
-
-
-$(addsuffix -verilator,$(riscv-benchmarks)): verilate
-	$(ver-library)/Variane_testharness $(riscv-benchmarks-dir)/$(subst -verilator,,$@)
 
 run-benchmarks-verilator: $(addsuffix -verilator,$(riscv-benchmarks))
 
