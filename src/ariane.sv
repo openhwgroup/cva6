@@ -28,9 +28,8 @@ module ariane #(
         input  logic                           rst_ni,
         // Core ID, Cluster ID and boot address are considered more or less static
         input  logic [63:0]                    boot_addr_i,  // reset boot address
-        input  logic [ 3:0]                    core_id_i,    // core id in a multicore environment (reflected in a CSR)
-        input  logic [ 5:0]                    cluster_id_i, // PULP specific if core is used in a clustered environment
-        // Instruction memory interface
+        input  logic [63:0]                    hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+		// Instruction memory interface
         AXI_BUS.Master                         instr_if,
         // Data memory interface
         AXI_BUS.Master                         data_if,      // data cache refill port
@@ -631,7 +630,7 @@ module ariane #(
     // assign current privilege level
     assign tracer_if.priv_lvl          = priv_lvl;
     assign tracer_if.debug_mode        = debug_mode;
-    instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
+    instr_tracer instr_tracer_i (tracer_if, hart_id_i);
     `endif
     `endif
 
@@ -639,15 +638,14 @@ module ariane #(
     `ifndef verilator
     program instr_tracer (
             instruction_tracer_if tracer_if,
-            input logic [5:0] cluster_id_i,
-            input logic [3:0] core_id_i
+            input logic [63:0]    hart_id_i
         );
 
         instruction_tracer it = new (tracer_if, 1'b0);
 
         initial begin
             #15ns;
-            it.create_file(cluster_id_i, core_id_i);
+            it.create_file(hart_id_i);
             it.trace();
         end
 
@@ -662,7 +660,7 @@ module ariane #(
     logic [63:0] cycles;
 
     initial begin
-        f = $fopen("trace_core_00_0.dasm", "w");
+        f = $fopen("trace_hart_00.dasm", "w");
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

@@ -28,9 +28,8 @@ module csr_regfile #(
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i, // the instruction we want to commit
     input  logic [NR_COMMIT_PORTS-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
-    input  logic  [3:0]           core_id_i,                  // Core ID is considered static
-    input  logic  [5:0]           cluster_id_i,               // Cluster ID is considered static
     input  logic  [63:0]          boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
+    input  logic  [63:0]          hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
     // we are taking an exception
     input exception_t             ex_i,                       // We've got an exception from the commit stage, take its
 
@@ -230,7 +229,7 @@ module csr_regfile #(
                 riscv::CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
-                riscv::CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
+                riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
                 riscv::CSR_MINSTRET:           csr_rdata = instret_q;
                 // custom (non RISC-V) cache control
