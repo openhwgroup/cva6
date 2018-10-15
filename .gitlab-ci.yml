@@ -44,6 +44,13 @@ run-asm-tests-questa:
     - make -j${NUM_JOBS} run-asm-tests batch-mode=1
   dependencies:
     - build
+
+amo-quest:
+  stage: test_std
+  script:
+    - make -j${NUM_JOBS} run-amo-tests batch-mode=1
+  dependencies:
+    - build
     
 bench-quest:
   stage: test_std
@@ -51,6 +58,37 @@ bench-quest:
     - make -j${NUM_JOBS} run-benchmarks batch-mode=1
   dependencies:
     - build    
+
+# rv64ui-p-* tests
+asm1-ver:
+  stage: test_std
+  script:
+    - make -j${NUM_JOBS} run-asm-tests1-verilator 
+  dependencies:
+    - build
+
+# rv64ui-v-* tests
+asm2-ver:
+  stage: test_std
+  script:
+    - make -j${NUM_JOBS} run-asm-tests2-verilator 
+  dependencies:
+    - build    
+
+# atomics
+amo-ver:
+  stage: test_std
+  script:
+    - make -j${NUM_JOBS} run-amo-verilator 
+  dependencies:
+    - build    
+
+bench-ver:
+  stage: test_std
+  script:
+    - make -j${NUM_JOBS} run-benchmarks-verilator 
+  dependencies:
+    - build
 
 torture:
   stage: test_std
