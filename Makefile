@@ -85,7 +85,7 @@ tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 riscv-test-dir            := tmp/riscv-tests/build/isa/
 riscv-benchmarks-dir      := tmp/riscv-tests/build/benchmarks/
 riscv-asm-tests-list      := ci/riscv-asm-tests.list
-riscv-amo-tests-list  := ci/riscv-amo-tests.list
+riscv-amo-tests-list      := ci/riscv-amo-tests.list
 riscv-benchmarks-list     := ci/riscv-benchmarks.list
 riscv-asm-tests           := $(shell xargs printf '\n%s' < $(riscv-asm-tests-list)  | cut -b 1-)
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
@@ -102,8 +102,8 @@ ifdef batch-mode
 	questa-cmd   := -do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
 else
 	questa-cmd   := -do " log -r /*; run -all;"
-endif	
- 
+endif
+
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
