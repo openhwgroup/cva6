@@ -15,13 +15,13 @@
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
 // Description: testbench for piton_icache. includes the following tests:
-// 
+//
 // 0) random accesses with disabled cache
 // 1) random accesses with enabled cache to cacheable and noncacheable memory
 // 2) linear, wrapping sweep with enabled cache
-// 3) 1) with random stalls on the memory side and TLB side 
+// 3) 1) with random stalls on the memory side and TLB side
 // 4) nr 3) with random invalidations
-// 
+//
 // note that we use a simplified address translation scheme to emulate the TLB.
 // (random offsets).
 
@@ -32,7 +32,7 @@ import serpent_cache_pkg::*;
 import tb_pkg::*;
 
 module tb;
- 
+
     // leave this
     timeunit 1ps;
     timeprecision 1ps;
@@ -52,22 +52,22 @@ module tb;
     // parameters for random read sequences (in %)
     parameter FLUSH_RATE         = 10;
     parameter KILL_RATE          = 5;
-    
+
     parameter VERBOSE            = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // MUT signal declarations
 ///////////////////////////////////////////////////////////////////////////////
 
-    logic                           enable_i;    
-    logic                           flush_i;     
-    logic                           flush_ack_o; 
-    logic                           miss_o;      
+    logic                           enable_i;
+    logic                           flush_i;
+    logic                           flush_ack_o;
+    logic                           miss_o;
     logic                           wbuffer_empty_o;
     amo_req_t                       amo_req_i;
     amo_resp_t                      amo_resp_o;
-    dcache_req_i_t [2:0]            req_ports_i;  
-    dcache_req_o_t [2:0]            req_ports_o;  
+    dcache_req_i_t [2:0]            req_ports_i;
+    dcache_req_o_t [2:0]            req_ports_o;
     logic                           mem_rtrn_vld_i;
     dcache_rtrn_t                   mem_rtrn_i;
     logic                           mem_data_req_o;
@@ -107,7 +107,7 @@ module tb;
         logic [1:0]  size;
         logic [63:0] paddr;
     } resp_fifo_t;
-    
+
     logic [63:0] act_paddr[1:0];
     logic [63:0] exp_rdata[1:0];
     logic [63:0] exp_paddr[1:0];
@@ -120,7 +120,7 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 // helper tasks
 ///////////////////////////////////////////////////////////////////////////////
-                                                                                                
+
     task automatic runSeq(input int nReadVectors, input int nWriteVectors = 0, input logic last =1'b0);
         seq_last      = last;
         seq_run       = 1'b1;
@@ -142,7 +142,7 @@ module tb;
     task automatic memCheck();
         check_en     = 1'b1;
         `APPL_WAIT_CYC(clk_i,1)
-        check_en     = 0'b0;   
+        check_en     = 0'b0;
         `APPL_WAIT_CYC(clk_i,1)
     endtask : memCheck
 
@@ -150,19 +150,19 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 // Clock Process
 ///////////////////////////////////////////////////////////////////////////////
-                                                                                                
+
     always @*
         begin
             do begin
-            clk_i = 1;#(CLK_HI); 
-            clk_i = 0;#(CLK_LO); 
+            clk_i = 1;#(CLK_HI);
+            clk_i = 0;#(CLK_LO);
             end while (end_of_sim == 1'b0);
             repeat (100) begin
-            // generate a few extra cycle to allow 
-            // response acquisition to complete                                                   
-            clk_i = 1;#(CLK_HI); 
-            clk_i = 0;#(CLK_LO); 
-            end  
+            // generate a few extra cycle to allow
+            // response acquisition to complete
+            clk_i = 1;#(CLK_HI);
+            clk_i = 0;#(CLK_LO);
+            end
         end
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -231,20 +231,20 @@ module tb;
 
     // get actual paddr from read controllers
     assign act_paddr[0] = {i_dut.genblk1[0].i_serpent_dcache_ctrl.address_tag_d,
-                           i_dut.genblk1[0].i_serpent_dcache_ctrl.address_idx_q, 
+                           i_dut.genblk1[0].i_serpent_dcache_ctrl.address_idx_q,
                            i_dut.genblk1[0].i_serpent_dcache_ctrl.address_off_q};
     assign act_paddr[1] = {i_dut.genblk1[1].i_serpent_dcache_ctrl.address_tag_d,
-                           i_dut.genblk1[1].i_serpent_dcache_ctrl.address_idx_q, 
-                           i_dut.genblk1[1].i_serpent_dcache_ctrl.address_off_q};                       
+                           i_dut.genblk1[1].i_serpent_dcache_ctrl.address_idx_q,
+                           i_dut.genblk1[1].i_serpent_dcache_ctrl.address_off_q};
 
     // generate fifo queues for expected responses
     generate
         for(genvar k=0; k<2;k++) begin
-            assign fifo_data_in[k] =  {req_ports_i[k].data_size, 
+            assign fifo_data_in[k] =  {req_ports_i[k].data_size,
                                        exp_paddr[k]};
-            
-            assign exp_rdata[k]  = mem_array[fifo_data[k].paddr>>3];                                       
-            assign fifo_push[k]  = req_ports_i[k].data_req & req_ports_o[k].data_gnt;                               
+
+            assign exp_rdata[k]  = mem_array[fifo_data[k].paddr>>3];
+            assign fifo_push[k]  = req_ports_i[k].data_req & req_ports_o[k].data_gnt;
             assign fifo_flush[k] = req_ports_i[k].kill_req;
             assign fifo_pop[k]   = req_ports_o[k].data_rvalid;
 
@@ -261,14 +261,14 @@ module tb;
                 .alm_empty_o (                  ),
                 .data_i      ( fifo_data_in[k]  ),
                 .push_i      ( fifo_push[k]     ),
-                .data_o      ( fifo_data[k]     ), 
+                .data_o      ( fifo_data[k]     ),
                 .pop_i       ( fifo_pop[k]      )
             );
         end
-    endgenerate       
+    endgenerate
 
     tb_readport #(
-        .PORT_NAME     ( "RD0"         ), 
+        .PORT_NAME     ( "RD0"         ),
         .FLUSH_RATE    ( FLUSH_RATE    ),
         .KILL_RATE     ( KILL_RATE     ),
         .TLB_HIT_RATE  ( TLB_HIT_RATE  ),
@@ -285,12 +285,12 @@ module tb;
         .tlb_rand_en_i   ( tlb_rand_en         ),
         .flush_rand_en_i ( flush_rand_en       ),
         .seq_run_i       ( seq_run             ),
-        .seq_num_resp_i  ( seq_num_resp        ),     
+        .seq_num_resp_i  ( seq_num_resp        ),
         .seq_last_i      ( seq_last            ),
         .seq_done_o      ( seq_done[0]         ),
         .exp_paddr_o     ( exp_paddr[0]        ),
         .exp_size_i      ( fifo_data[0].size   ),
-        .exp_paddr_i     ( fifo_data[0].paddr  ), 
+        .exp_paddr_i     ( fifo_data[0].paddr  ),
         .exp_rdata_i     ( exp_rdata[0]        ),
         .act_paddr_i     ( act_paddr[0]        ),
         .flush_o         ( flush[0]            ),
@@ -300,7 +300,7 @@ module tb;
         );
 
     tb_readport #(
-        .PORT_NAME     ( "RD1"         ), 
+        .PORT_NAME     ( "RD1"         ),
         .FLUSH_RATE    ( FLUSH_RATE    ),
         .KILL_RATE     ( KILL_RATE     ),
         .TLB_HIT_RATE  ( TLB_HIT_RATE  ),
@@ -317,20 +317,20 @@ module tb;
         .tlb_rand_en_i   ( tlb_rand_en         ),
         .flush_rand_en_i ( flush_rand_en       ),
         .seq_run_i       ( seq_run             ),
-        .seq_num_resp_i  ( seq_num_resp        ),     
+        .seq_num_resp_i  ( seq_num_resp        ),
         .seq_last_i      ( seq_last            ),
         .exp_paddr_o     ( exp_paddr[1]        ),
         .exp_size_i      ( fifo_data[1].size   ),
         .exp_paddr_i     ( fifo_data[1].paddr  ),
         .exp_rdata_i     ( exp_rdata[1]        ),
-        .act_paddr_i     ( act_paddr[1]        ), 
-        .seq_done_o      ( seq_done[1]         ), 
+        .act_paddr_i     ( act_paddr[1]        ),
+        .seq_done_o      ( seq_done[1]         ),
         .flush_o         ( flush[1]            ),
         .flush_ack_i     ( flush_ack_o         ),
         .dut_req_port_o  ( req_ports_i[1]      ),
         .dut_req_port_i  ( req_ports_o[1]      )
         );
-     
+
     tb_writeport #(
         .PORT_NAME     ( "WR0"         ),
         .MEM_WORDS     ( MEM_WORDS     ),
@@ -344,9 +344,9 @@ module tb;
         .req_rate_i     ( req_rate[2]         ),
         .seq_type_i     ( seq_type[2]         ),
         .seq_run_i      ( seq_run             ),
-        .seq_num_vect_i ( seq_num_write       ),     
+        .seq_num_vect_i ( seq_num_write       ),
         .seq_last_i     ( seq_last            ),
-        .seq_done_o     ( seq_done[2]         ), 
+        .seq_done_o     ( seq_done[2]         ),
         .dut_req_port_o ( req_ports_i[2]      ),
         .dut_req_port_i ( req_ports_o[2]      )
         );
@@ -360,7 +360,7 @@ module tb;
     assign commit_be    = i_dut.i_serpent_dcache_wbuffer.wr_data_be_o;
     assign commit_paddr = i_dut.i_serpent_dcache_wbuffer.wr_paddr;
     assign commit_en    = i_dut.i_serpent_dcache_wbuffer.evict;
-    
+
     // TODO: implement AMO agent
     assign amo_req_i.req       = '0;
     assign amo_req_i.amo_op    = AMO_NONE;
@@ -379,7 +379,7 @@ module tb;
 // flush_i, flush_ack_o, enable_i, miss_o, wbuffer_empty_o
 
 
-    initial begin : p_stim      
+    initial begin : p_stim
         test_name        = "";
         seq_type         = '{default: RANDOM_SEQ};
         req_rate         = '{default: 7'd75};
@@ -387,9 +387,9 @@ module tb;
         seq_last         = 1'b0;
         seq_num_resp     = '0;
         seq_num_write    = '0;
-        check_en         = '0;        
+        check_en         = '0;
         // seq_done
-        end_of_sim       = 0;  
+        end_of_sim       = 0;
         rst_ni           = 0;
         // randomization settings
         mem_rand_en      = 0;
@@ -410,14 +410,14 @@ module tb;
         $display("TB> NC_ADDR_BEGIN      %16X", NC_ADDR_BEGIN);
         $display("TB> MEM_RAND_HIT_RATE  %d",   MEM_RAND_HIT_RATE);
         $display("TB> MEM_RAND_INV_RATE  %d",   MEM_RAND_INV_RATE);
-                
-        // reset cycles
-        `APPL_WAIT_CYC(clk_i,100)                           
-        rst_ni        = 1'b1;     
-        `APPL_WAIT_CYC(clk_i,100)                           
 
-        $display("TB> start with test sequences");  
-        // apply each test until seq_num_resp memory 
+        // reset cycles
+        `APPL_WAIT_CYC(clk_i,100)
+        rst_ni        = 1'b1;
+        `APPL_WAIT_CYC(clk_i,100)
+
+        $display("TB> start with test sequences");
+        // apply each test until seq_num_resp memory
         // requests have successfully completed
         ///////////////////////////////////////////////
         test_name    = "TEST 0 -- random read -- disabled cache";
@@ -614,14 +614,14 @@ module tb;
         memCheck();
         ///////////////////////////////////////////////
         end_of_sim = 1;
-        $display("TB> end test sequences");  
-    end      
+        $display("TB> end test sequences");
+    end
 
 
 endmodule
 
 
- 
+
 
 
 

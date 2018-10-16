@@ -17,7 +17,7 @@
 // Description: program that emulates a cache readport. the program can generate
 // randomized or linear read sequences, and it checks the returned responses against
 // the expected responses coming directly from the emulated memory (tb_mem).
-// 
+//
 
 `include "tb.svh"
 
@@ -33,7 +33,7 @@ program tb_readport  #(
     parameter MEM_WORDS         = 1024*1024,// in 64bit words
     parameter NC_ADDR_BEGIN     = 0,
     parameter RND_SEED          = 1110,
-    parameter VERBOSE           = 0       
+    parameter VERBOSE           = 0
 )(
     input logic           clk_i,
     input logic           rst_ni,
@@ -45,21 +45,21 @@ program tb_readport  #(
     input  logic          tlb_rand_en_i,
     input  logic          flush_rand_en_i,
     input  logic          seq_run_i,
-    input  logic [31:0]   seq_num_resp_i,     
+    input  logic [31:0]   seq_num_resp_i,
     input  logic          seq_last_i,
-    output logic          seq_done_o, 
+    output logic          seq_done_o,
 
-    // expresp interface 
+    // expresp interface
     output logic [63:0]   exp_paddr_o,
     input  logic [1:0]    exp_size_i,
     input  logic [63:0]   exp_rdata_i,
     input  logic [63:0]   exp_paddr_i,
     input  logic [63:0]   act_paddr_i,
-    
+
     // interface to DUT
     output logic          flush_o,
     input  logic          flush_ack_i,
-    output dcache_req_i_t dut_req_port_o, 
+    output dcache_req_i_t dut_req_port_o,
     input  dcache_req_o_t dut_req_port_i
     );
 
@@ -71,18 +71,18 @@ program tb_readport  #(
     logic seq_end_req, seq_end_ack, prog_end;
     logic [DCACHE_TAG_WIDTH-1:0] tag_q;
     logic [DCACHE_TAG_WIDTH-1:0] tag_vld_q;
-    
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Randomly delay the tag by at least one cycle
 ///////////////////////////////////////////////////////////////////////////////
-    
+
     // // TODO: add randomization
     initial begin : p_tag_delay
         logic [63:0] tmp_paddr, val;
         int unsigned cnt;
         logic tmp_vld;
-        
+
         tag_q      <= '0;
         tag_vld_q  <= 1'b0;
 
@@ -94,7 +94,7 @@ program tb_readport  #(
         cnt = 0;
         forever begin
             `APPL_WAIT_CYC(clk_i,1)
-            
+
             if(cnt==0) begin
                 if(tmp_vld) begin
                     tmp_vld   = 0;
@@ -102,8 +102,8 @@ program tb_readport  #(
                     tag_vld_q <= 1'b1;
                 end else begin
                     tag_vld_q <= 1'b0;
-                end 
-                
+                end
+
                 `APPL_ACQ_WAIT;
                 if(dut_req_port_o.data_req) begin
                     tmp_paddr = paddr;
@@ -118,18 +118,18 @@ program tb_readport  #(
                  end
 
             end else begin
-                tag_vld_q <= 1'b0; 
-                cnt -= 1;           
+                tag_vld_q <= 1'b0;
+                cnt -= 1;
                 `APPL_ACQ_WAIT;
             end
-           
+
             if(dut_req_port_o.kill_req) begin
                 tmp_vld = 0;
                 cnt     = 0;
-            end 
+            end
 
         end
-    end    
+    end
 
     assign dut_req_port_o.address_tag   = tag_q;
     assign dut_req_port_o.tag_valid     = tag_vld_q;
@@ -146,7 +146,7 @@ program tb_readport  #(
         flush_o      = 0'b0;
         `APPL_WAIT_CYC(clk_i,1)
     endtask : flushCache
-        
+
 
     task automatic genRandReq();
         automatic logic [63:0] val;
@@ -158,7 +158,7 @@ program tb_readport  #(
         dut_req_port_o.data_req      = '0;
         dut_req_port_o.data_size     = '0;
         dut_req_port_o.kill_req      = '0;
-        
+
         while(~seq_end_req) begin
             // randomize request
             dut_req_port_o.data_req = '0;
@@ -174,12 +174,12 @@ program tb_readport  #(
                     flushCache();
                 end else begin
                     void'(randomize(val) with {val > 0; val <= 100;});
-                    if(val < req_rate_i) begin 
+                    if(val < req_rate_i) begin
                         dut_req_port_o.data_req = 1'b1;
                         // generate random address
                         void'(randomize(val) with {val >= 0; val < (MEM_WORDS<<3);});
                         void'(randomize(size));
-                        
+
                         dut_req_port_o.data_size = size;
                         paddr = val;
 
@@ -195,13 +195,13 @@ program tb_readport  #(
                     end
                     `APPL_WAIT_CYC(clk_i,1)
                 end
-            end    
+            end
         end
 
         dut_req_port_o.data_req      = '0;
         dut_req_port_o.data_size     = '0;
         dut_req_port_o.kill_req      = '0;
-        
+
     endtask : genRandReq
 
     task automatic genSeqRead();
@@ -219,7 +219,7 @@ program tb_readport  #(
             val = (val + 8) % (MEM_WORDS<<3);
             `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
             `APPL_WAIT_CYC(clk_i,1)
-        end  
+        end
         dut_req_port_o.data_req      = '0;
         dut_req_port_o.data_size     = '0;
         dut_req_port_o.kill_req      = '0;
@@ -241,7 +241,7 @@ program tb_readport  #(
             val = (val + 8) % (1*(DCACHE_LINE_WIDTH/64)*8);
             `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
             `APPL_WAIT_CYC(clk_i,1)
-        end  
+        end
         dut_req_port_o.data_req      = '0;
         dut_req_port_o.data_size     = '0;
         dut_req_port_o.kill_req      = '0;
@@ -252,7 +252,7 @@ program tb_readport  #(
 // Sequence application
 ///////////////////////////////////////////////////////////////////////////////
 
-    initial begin : p_stim              
+    initial begin : p_stim
         paddr                        = '0;
         dut_req_port_o.data_wdata    = '0;
         dut_req_port_o.data_req      = '0;
@@ -260,7 +260,7 @@ program tb_readport  #(
         dut_req_port_o.data_be       = '0;
         dut_req_port_o.data_size     = '0;
         dut_req_port_o.kill_req      = '0;
-        seq_end_ack                  = '0;  
+        seq_end_ack                  = '0;
         flush_o                      = '0;
 
         // print some info
@@ -270,35 +270,35 @@ program tb_readport  #(
         $display("%s> TLB_HIT_RATE       %d",   PORT_NAME, TLB_HIT_RATE);
         $display("%s> RND_SEED           %d",   PORT_NAME, RND_SEED);
 
-        `APPL_WAIT_CYC(clk_i,1) 
+        `APPL_WAIT_CYC(clk_i,1)
         `APPL_WAIT_SIG(clk_i,~rst_ni)
-        
+
         $display("%s> starting application", PORT_NAME);
         while(~seq_last_i) begin
-                `APPL_WAIT_SIG(clk_i,seq_run_i) 
-            unique case(seq_type_i) 
+                `APPL_WAIT_SIG(clk_i,seq_run_i)
+            unique case(seq_type_i)
                 RANDOM_SEQ: begin
                     $display("%s> start random sequence with %04d responses and req_rate %03d", PORT_NAME, seq_num_resp_i, req_rate_i);
                     genRandReq();
-                end    
+                end
                 LINEAR_SEQ: begin
                     $display("%s> start linear sequence with %04d responses and req_rate %03d", PORT_NAME, seq_num_resp_i, req_rate_i);
                     genSeqRead();
-                end    
+                end
                 WRAP_SEQ: begin
                     $display("%s> start wrapping sequence with %04d responses and req_rate %03d", PORT_NAME, seq_num_resp_i, req_rate_i);
                     genWrapSeq();
-                end    
+                end
                 IDLE_SEQ: begin
                     `APPL_WAIT_SIG(clk_i,seq_end_req)
-                end    
+                end
                 BURST_SEQ: begin
                     $fatal(1, "Burst sequence not implemented for read port agent");
-                end        
+                end
             endcase // seq_type_i
             seq_end_ack = 1'b1;
             $display("%s> stop sequence", PORT_NAME);
-            `APPL_WAIT_CYC(clk_i,1) 
+            `APPL_WAIT_CYC(clk_i,1)
             seq_end_ack = 1'b0;
         end
         $display("%s> ending application", PORT_NAME);
@@ -309,7 +309,7 @@ program tb_readport  #(
 // Response acquisition
 ///////////////////////////////////////////////////////////////////////////////
 
-    initial begin : p_acq             
+    initial begin : p_acq
         bit ok;
         progress status;
         string failingTests, tmpstr1, tmpstr2;
@@ -319,11 +319,11 @@ program tb_readport  #(
 
         status       = new(PORT_NAME);
         failingTests = "";
-        seq_done_o   = 1'b0;  
+        seq_done_o   = 1'b0;
         seq_end_req  = 1'b0;
         prog_end     = 1'b0;
-        
-        `ACQ_WAIT_CYC(clk_i,1) 
+
+        `ACQ_WAIT_CYC(clk_i,1)
         `ACQ_WAIT_SIG(clk_i,~rst_ni)
 
         ///////////////////////////////////////////////
@@ -331,51 +331,51 @@ program tb_readport  #(
         n=0;
         while(~seq_last_i) begin
             `ACQ_WAIT_SIG(clk_i,seq_run_i)
-            seq_done_o = 1'b0;    
-            
-            $display("%s> %s", PORT_NAME, test_name_i);  
+            seq_done_o = 1'b0;
+
+            $display("%s> %s", PORT_NAME, test_name_i);
             status.reset(seq_num_resp_i);
             for (int k=0;k<seq_num_resp_i && seq_type_i != IDLE_SEQ;k++) begin
-                `ACQ_WAIT_SIG(clk_i, dut_req_port_i.data_rvalid)
-               
+                `ACQ_WAIT_SIG(clk_i, (dut_req_port_i.data_rvalid & ~dut_req_port_o.kill_req))
+
                 exp_rdata = 'x;
                 unique case(exp_size_i)
                     2'b00: exp_rdata[exp_paddr_i[2:0]*8  +: 8]  = exp_rdata_i[exp_paddr_i[2:0]*8  +: 8];
                     2'b01: exp_rdata[exp_paddr_i[2:1]*16 +: 16] = exp_rdata_i[exp_paddr_i[2:1]*16 +: 16];
                     2'b10: exp_rdata[exp_paddr_i[2]  *32 +: 32] = exp_rdata_i[exp_paddr_i[2]  *32 +: 32];
                     2'b11: exp_rdata                            = exp_rdata_i;
-                endcase // exp_size   
-                
+                endcase // exp_size
+
                 // note: wildcard as defined in right operand!
                 ok=(dut_req_port_i.data_rdata ==? exp_rdata) && (exp_paddr_i == act_paddr_i);
-                
-                if(VERBOSE | !ok) begin  
+
+                if(VERBOSE | !ok) begin
                     tmpstr1 =  $psprintf("vector: %02d - %06d -- exp_paddr: %16X -- exp_data: %16X -- access size: %01d Byte",
                                 n, k, exp_paddr_i, exp_rdata, 2**exp_size_i);
                     tmpstr2 =  $psprintf("vector: %02d - %06d -- act_paddr: %16X -- act_data: %16X -- access size: %01d Byte",
                                 n, k, act_paddr_i, dut_req_port_i.data_rdata, 2**exp_size_i);
                     $display("%s> %s", PORT_NAME, tmpstr1);
                     $display("%s> %s", PORT_NAME, tmpstr2);
-                end 
+                end
 
                 if(!ok) begin
-                  failingTests = $psprintf("%s%s> %s\n%s> %s\n", failingTests, PORT_NAME, tmpstr1, PORT_NAME, tmpstr2); 
-                end  
+                  failingTests = $psprintf("%s%s> %s\n%s> %s\n", failingTests, PORT_NAME, tmpstr1, PORT_NAME, tmpstr2);
+                end
                 status.addRes(!ok);
                 status.print();
             end
             seq_end_req = 1'b1;
             `ACQ_WAIT_SIG(clk_i, seq_end_ack)
             seq_end_req = 1'b0;
-            
-            `ACQ_WAIT_CYC(clk_i,1) 
-            seq_done_o = 1'b1;    
+
+            `ACQ_WAIT_CYC(clk_i,1)
+            seq_done_o = 1'b1;
             n++;
-        end  
+        end
         ///////////////////////////////////////////////
 
-        status.printToFile({PORT_NAME, "_summary.rep"}, 1);     
-          
+        status.printToFile({PORT_NAME, "_summary.rep"}, 1);
+
         if(status.totErrCnt == 0) begin
             $display("%s> ----------------------------------------------------------------------", PORT_NAME);
             $display("%s> PASSED %0d VECTORS", PORT_NAME, status.totAcqCnt);
@@ -388,7 +388,7 @@ program tb_readport  #(
             $display("%s> ----------------------------------------------------------------------\n", PORT_NAME);
         end
         prog_end = 1'b1;
-    end      
+    end
 
 ///////////////////////////////////////////////////////
 // assertions
