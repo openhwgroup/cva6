@@ -98,7 +98,8 @@ bench-ver:
 torture:
   stage: standard
   script:
-    - make torture-rtest
+    - make torture-rtest batch-mode=1
+    - make torture-rtest-verilator
   dependencies:
     - build
 
@@ -166,7 +167,7 @@ s-dcache-quest:
 s-torture:
   stage: serpent
   script:
-    - make torture-rtest           defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make torture-rtest           defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
     - make torture-rtest-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
     - build
