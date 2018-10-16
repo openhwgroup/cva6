@@ -65,8 +65,8 @@ module ariane_peripherals #(
         .NUM_TARGETS        ( ariane_soc::NumTargets ),
         .NUM_SOURCES        ( ariane_soc::NumSources )
     ) i_plic (
-        .clk_i              ( clk                    ),
-        .rst_ni             ( ndmreset_n             ),
+        .clk_i              ( clk_i                  ),
+        .rst_ni             ( rst_ni                 ),
         .irq_sources_i      ( irq_sources            ),
         .eip_targets_o      ( irq_o                  ),
         .external_bus_io    ( reg_bus                )

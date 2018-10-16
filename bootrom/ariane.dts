@@ -13,10 +13,12 @@
       device_type = "cpu";
       reg = <0>;
       status = "okay";
-      compatible = "riscv";
+      compatible = "eth, ariane", "riscv";
       riscv,isa = "rv64imac";
       mmu-type = "riscv,sv39";
       clock-frequency = <50000000>;
+      tlb-split;
+      // HLIC - hart local interrupt controller
       CPU0_intc: interrupt-controller {
         #interrupt-cells = <1>;
         interrupt-controller;
@@ -39,12 +41,12 @@
       reg = <0x0 0x2000000 0x0 0xc0000>;
     };
     PLIC0: interrupt-controller@c000000 {
+      #address-cells = <0>;
       #interrupt-cells = <1>;
-      compatible = "riscv,plic0";
+      compatible = "sifive,plic-1.0.0", "riscv,plic0";
       interrupt-controller;
       interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
       reg = <0x0 0xc000000 0x0 0x4000000>;
-      reg-names = "control";
       riscv,max-priority = <7>;
       riscv,ndev = <2>;
     };
@@ -58,9 +60,18 @@
       compatible = "xlnx,axi-uartlite-1.02.a";
       reg = <0x0 0x10000000  0x0 0x10000>;
       interrupt-parent = <&PLIC0>;
-      interrupts = <0 1 2>;
+      interrupts = <0 1>; // rising edge triggered on port 0
       clock = <50000000>;
     };
+    // uart@10000000 {
+    //   compatible = "ns16550";
+    //   reg = <0x10000000 0x100>;
+    //   clock-frequency = <50000000>;
+    //   interrupt-parent = <&PLIC0>;
+    //   interrupts = <0 4>;
+    //   reg-shift = <2>; // regs are spaced on 32 bit boundary
+    //   reg-io-width = <4>; // only 32-bit access are supported
+    // };
   };
   htif {
     compatible = "ucb,htif0";

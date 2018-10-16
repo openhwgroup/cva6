@@ -25,7 +25,7 @@ module fan_ctrl (
         ms_clock_d = ms_clock_q;
 
         // divide clock by 499999
-        if (cycle_counter_q == 499999) begin
+        if (cycle_counter_q == 499_999) begin
             cycle_counter_d = 0;
             ms_clock_d = ms_clock_q + 1;
         end else begin
@@ -48,11 +48,11 @@ module fan_ctrl (
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            ms_clock_q <= '0;
+            ms_clock_q      <= '0;
             cycle_counter_q <= '0;
         end else begin
-            ms_clock_q <= ms_clock_d;
-            cycle_counter_q <= '0;
+            ms_clock_q      <= ms_clock_d;
+            cycle_counter_q <= cycle_counter_d;
         end
     end
 endmodule
