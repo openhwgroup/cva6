@@ -290,8 +290,8 @@ run-torture-log: build
 	-do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; coverage save -onexit tmp/$@.ucdb; log -r /*; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
 	${top_level}_optimized +permissive-off +signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
 	cp vsim.wlf $(riscv-torture-dir)/$(test-location).wlf
-	cp trace_core_00_0.log $(riscv-torture-dir)/$(test-location).trace
-	cp trace_core_00_0_commit.log $(riscv-torture-dir)/$(test-location).commit
+	cp trace_hart_0000.log $(riscv-torture-dir)/$(test-location).trace
+	cp trace_hart_0000_commit.log $(riscv-torture-dir)/$(test-location).commit
 	cp transcript $(riscv-torture-dir)/$(test-location).transcript
 
 run-torture-verilator: verilate
