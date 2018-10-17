@@ -40,16 +40,11 @@ module issue_read_operands #(
     input  fu_t [2**REG_ADDR_SIZE:0]               rd_clobber_gpr_i,
     input  fu_t [2**REG_ADDR_SIZE:0]               rd_clobber_fpr_i,
     // To FU, just single issue for now
-    output fu_t                                    fu_o,
-    output fu_op                                   operator_o,
-    output logic [63:0]                            operand_a_o,
-    output logic [63:0]                            operand_b_o,
-    output logic [63:0]                            imm_o,           // output immediate for the LSU
-    output logic [TRANS_ID_BITS-1:0]               trans_id_o,
+    output fu_data_t                               fu_data_o,
     output logic [63:0]                            pc_o,
     output logic                                   is_compressed_instr_o,
     // ALU 1
-    input  logic                                   alu_ready_i,      // FU is ready
+    input  logic                                   flu_ready_i,      // Fixed latency unit ready to accept a new request
     output logic                                   alu_valid_o,      // Output is valid
     // Branches and Jumps
     output logic                                   branch_valid_o,   // this is a valid branch instruction
@@ -108,20 +103,20 @@ module issue_read_operands #(
     assign orig_instr = riscv::instruction_t'(issue_instr_i.ex.tval[31:0]);
 
     // ID <-> EX registers
-    assign operand_a_o    = operand_a_q;
-    assign operand_b_o    = operand_b_q;
-    assign fu_o           = fu_q;
-    assign operator_o     = operator_q;
-    assign alu_valid_o    = alu_valid_q;
-    assign branch_valid_o = branch_valid_q;
-    assign lsu_valid_o    = lsu_valid_q;
-    assign csr_valid_o    = csr_valid_q;
-    assign mult_valid_o   = mult_valid_q;
-    assign fpu_valid_o    = fpu_valid_q;
-    assign fpu_fmt_o      = fpu_fmt_q;
-    assign fpu_rm_o       = fpu_rm_q;
-    assign trans_id_o     = trans_id_q;
-    assign imm_o          = imm_q;
+    assign fu_data_o.operand_a = operand_a_q;
+    assign fu_data_o.operand_b = operand_b_q;
+    assign fu_data_o.fu        = fu_q;
+    assign fu_data_o.operator  = operator_q;
+    assign fu_data_o.trans_id  = trans_id_q;
+    assign fu_data_o.imm       = imm_q;
+    assign alu_valid_o         = alu_valid_q;
+    assign branch_valid_o      = branch_valid_q;
+    assign lsu_valid_o         = lsu_valid_q;
+    assign csr_valid_o         = csr_valid_q;
+    assign mult_valid_o        = mult_valid_q;
+    assign fpu_valid_o         = fpu_valid_q;
+    assign fpu_fmt_o           = fpu_fmt_q;
+    assign fpu_rm_o            = fpu_rm_q;
     // ---------------
     // Issue Stage
     // ---------------
@@ -133,7 +128,7 @@ module issue_read_operands #(
             NONE:
                 fu_busy = 1'b0;
             ALU, CTRL_FLOW, CSR:
-                fu_busy = ~alu_ready_i;
+                fu_busy = ~flu_ready_i;
             MULT:
                 fu_busy = ~mult_ready_i;
             FPU, FPU_VEC:

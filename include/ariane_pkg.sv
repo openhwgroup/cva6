@@ -262,10 +262,12 @@ package ariane_pkg;
                              } fu_op;
 
     typedef struct packed {
-      fu_op        operator;
-      logic [63:0] operand_a;
-      logic [63:0] operand_b;
-      logic [63:0] imm;
+        fu_t                      fu;
+        fu_op                     operator;
+        logic [63:0]              operand_a;
+        logic [63:0]              operand_b;
+        logic [63:0]              imm;
+        logic [TRANS_ID_BITS-1:0] trans_id;
     } fu_data_t;
 
     // -------------------------------

@@ -23,14 +23,9 @@ module lsu #(
     output logic                     no_st_pending_o,
     input  logic                     amo_valid_commit_i,
 
-    input  fu_t                      fu_i,
-    input  fu_op                     operator_i,
-    input  logic [63:0]              operand_a_i,
-    input  logic [63:0]              operand_b_i,
-    input  logic [63:0]              imm_i,
+    input  fu_data_t                 fu_data_i,
     output logic                     lsu_ready_o,              // FU is ready e.g. not busy
     input  logic                     lsu_valid_i,              // Input is valid
-    input  logic [TRANS_ID_BITS-1:0] trans_id_i,               // transaction id, needed for WB
     output logic [TRANS_ID_BITS-1:0] lsu_trans_id_o,           // ID of scoreboard entry at which to write back
     output logic [63:0]              lsu_result_o,
     output logic                     lsu_valid_o,              // transaction id for which the output is the requested one
@@ -83,7 +78,7 @@ module lsu #(
     logic [63:0] vaddr_i;
     logic [7:0]  be_i;
 
-    assign vaddr_i = $unsigned($signed(imm_i) + $signed(operand_a_i));
+    assign vaddr_i = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
 
     logic                     st_valid_i;
     logic                     ld_valid_i;
@@ -259,7 +254,7 @@ module lsu #(
     // we can generate the byte enable from the virtual address since the last
     // 12 bit are the same anyway
     // and we can always generate the byte enable from the address at hand
-    assign be_i = be_gen(vaddr_i[2:0], extract_transfer_size(operator_i));
+    assign be_i = be_gen(vaddr_i[2:0], extract_transfer_size(fu_data_i.operator));
 
     // ------------------------
     // Misaligned Exception
@@ -354,7 +349,7 @@ module lsu #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, operand_b_i, be_i, fu_i, operator_i, trans_id_i};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),

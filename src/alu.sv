@@ -12,65 +12,35 @@
 // Author: Igor Loi <igor.loi@unibo.it>
 // Author: Andreas Traber <atraber@student.ethz.ch>
 // Author: Lukas Mueller <lukasmue@student.ethz.ch>
-// Author: Florian Zaruba <zaruabf@ethz.ch>
+// Author: Florian Zaruba <zaruabf@iis.ee.ethz.ch>
 //
 // Date: 19.03.2017
-// Description: Ariane ALU
+// Description: Ariane ALU based on RI5CY's ALU
 
 import ariane_pkg::*;
 
 module alu (
     input  logic                     clk_i,          // Clock
     input  logic                     rst_ni,         // Asynchronous reset active low
-    input  logic                     flush_i,
-    input  logic [63:0]              pc_i,
-    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
-    input  logic                     alu_valid_i,
-    input  logic                     branch_valid_i,
-    input  logic                     csr_valid_i,
-    input  fu_op                     operator_i,
-    input  logic [63:0]              operand_a_i,
-    input  logic [63:0]              operand_b_i,
-    input  logic [63:0]              imm_i,
+    input  fu_data_t                 fu_data_i,
     output logic [63:0]              result_o,
-    output logic                     alu_valid_o,
-    output logic                     alu_ready_o,
-    output logic [TRANS_ID_BITS-1:0] alu_trans_id_o,
-    output exception_t               alu_exception_o,
-
-    input  logic                     fu_valid_i,
-    input  logic                     is_compressed_instr_i,
-    input  branchpredict_sbe_t       branch_predict_i,
-    output branchpredict_t           resolved_branch_o,
-    output logic                     resolve_branch_o,
-
-    input  logic                     commit_i,
-    // to CSR file
-    output logic  [11:0]             csr_addr_o  // CSR address to commit stage
+    output logic                     alu_branch_res_o
 );
-
-    logic csr_ready;
-
-    assign alu_ready_o    = csr_ready;
-    assign alu_valid_o    = alu_valid_i | branch_valid_i | csr_valid_i;
-    assign alu_trans_id_o = trans_id_i;
 
     logic [63:0] operand_a_rev;
     logic [31:0] operand_a_rev32;
     logic [64:0] operand_b_neg;
     logic [65:0] adder_result_ext_o;
     logic        less;  // handles both signed and unsigned forms
-    logic        alu_branch_res;
-    logic [63:0] branch_result, csr_result;
 
     // bit reverse operand_a for left shifts and bit counting
     generate
       genvar k;
       for(k = 0; k < 64; k++)
-        assign operand_a_rev[k] = operand_a_i[63-k];
+        assign operand_a_rev[k] = fu_data_i.operand_a[63-k];
 
       for (k = 0; k < 32; k++)
-        assign operand_a_rev32[k] = operand_a_i[31-k];
+        assign operand_a_rev32[k] = fu_data_i.operand_a[31-k];
     endgenerate
 
     // ------
@@ -84,7 +54,7 @@ module alu (
     always_comb begin
       adder_op_b_negate = 1'b0;
 
-      unique case (operator_i)
+      unique case (fu_data_i.operator)
         // ADDER OPS
         EQ,  NE,
         SUB, SUBW: adder_op_b_negate = 1'b1;
@@ -94,10 +64,10 @@ module alu (
     end
 
     // prepare operand a
-    assign adder_in_a    = {operand_a_i, 1'b1};
+    assign adder_in_a    = {fu_data_i.operand_a, 1'b1};
 
     // prepare operand b
-    assign operand_b_neg = {operand_b_i, 1'b0} ^ {65{adder_op_b_negate}};
+    assign operand_b_neg = {fu_data_i.operand_b, 1'b0} ^ {65{adder_op_b_negate}};
     assign adder_in_b    =  operand_b_neg ;
 
     // actual adder
@@ -108,13 +78,13 @@ module alu (
     // get the right branch comparison result
     always_comb begin : branch_resolve
         // set comparison by default
-        alu_branch_res      = 1'b1;
-        case (operator_i)
-            EQ:       alu_branch_res = adder_z_flag;
-            NE:       alu_branch_res = ~adder_z_flag;
-            LTS, LTU: alu_branch_res = less;
-            GES, GEU: alu_branch_res = ~less;
-            default:  alu_branch_res = 1'b1;
+        alu_branch_res_o      = 1'b1;
+        case (fu_data_i.operator)
+            EQ:       alu_branch_res_o = adder_z_flag;
+            NE:       alu_branch_res_o = ~adder_z_flag;
+            LTS, LTU: alu_branch_res_o = less;
+            GES, GEU: alu_branch_res_o = ~less;
+            default:  alu_branch_res_o = 1'b1;
         endcase
     end
 
@@ -139,19 +109,19 @@ module alu (
     logic [63:0] shift_left_result;
     logic [31:0] shift_left_result32;
 
-    assign shift_amt = operand_b_i;
+    assign shift_amt = fu_data_i.operand_b;
 
-    assign shift_left = (operator_i == SLL) | (operator_i == SLLW);
+    assign shift_left = (fu_data_i.operator == SLL) | (fu_data_i.operator == SLLW);
 
-    assign shift_arithmetic = (operator_i == SRA) | (operator_i == SRAW);
+    assign shift_arithmetic = (fu_data_i.operator == SRA) | (fu_data_i.operator == SRAW);
 
     // right shifts, we let the synthesizer optimize this
     logic [64:0] shift_op_a_64;
     logic [32:0] shift_op_a_32;
 
     // choose the bit reversed or the normal input for shift operand a
-    assign shift_op_a    = shift_left ? operand_a_rev   : operand_a_i;
-    assign shift_op_a32  = shift_left ? operand_a_rev32 : operand_a_i[31:0];
+    assign shift_op_a    = shift_left ? operand_a_rev   : fu_data_i.operand_a;
+    assign shift_op_a32  = shift_left ? operand_a_rev32 : fu_data_i.operand_a[31:0];
 
     assign shift_op_a_64 = { shift_arithmetic & shift_op_a[63], shift_op_a};
     assign shift_op_a_32 = { shift_arithmetic & shift_op_a[31], shift_op_a32};
@@ -181,12 +151,12 @@ module alu (
         logic sgn;
         sgn = 1'b0;
 
-        if ((operator_i == SLTS) ||
-            (operator_i == LTS)  ||
-            (operator_i == GES))
+        if ((fu_data_i.operator == SLTS) ||
+            (fu_data_i.operator == LTS)  ||
+            (fu_data_i.operator == GES))
             sgn = 1'b1;
 
-        less = ($signed({sgn & operand_a_i[63], operand_a_i})  <  $signed({sgn & operand_b_i[63], operand_b_i}));
+        less = ($signed({sgn & fu_data_i.operand_a[63], fu_data_i.operand_a})  <  $signed({sgn & fu_data_i.operand_b[63], fu_data_i.operand_b}));
     end
 
     // -----------
@@ -195,11 +165,11 @@ module alu (
     always_comb begin
         result_o   = '0;
 
-        unique case (operator_i)
+        unique case (fu_data_i.operator)
             // Standard Operations
-            ANDL:  result_o = operand_a_i & operand_b_i;
-            ORL:   result_o = operand_a_i | operand_b_i;
-            XORL:  result_o = operand_a_i ^ operand_b_i;
+            ANDL:  result_o = fu_data_i.operand_a & fu_data_i.operand_b;
+            ORL:   result_o = fu_data_i.operand_a | fu_data_i.operand_b;
+            XORL:  result_o = fu_data_i.operand_a ^ fu_data_i.operand_b;
 
             // Adder Operations
             ADD, SUB: result_o = adder_result;
@@ -217,48 +187,5 @@ module alu (
 
             default: ; // default case to suppress unique warning
         endcase
-
-        if (branch_valid_i) begin
-            result_o = branch_result;
-        end else if (csr_valid_i) begin
-            result_o = csr_result;
-        end
-
     end
-
-    // ----------------------
-    // Branch Unit
-    // ----------------------
-    branch_unit branch_unit_i (
-        .operator_i,
-        .operand_a_i,
-        .operand_b_i,
-        .imm_i,
-        .pc_i,
-        .is_compressed_instr_i,
-        // any functional unit is valid, check that there is no accidental mis-predict
-        .fu_valid_i,
-        .branch_valid_i,
-        .branch_comp_res_i ( alu_branch_res ),
-        .branch_result_o   ( branch_result ),
-        .branch_predict_i,
-        .resolved_branch_o,
-        .resolve_branch_o,
-        .branch_exception_o ( alu_exception_o )
-    );
-
-    csr_buffer csr_buffer_i (
-        .clk_i,
-        .rst_ni,
-        .flush_i,
-        .csr_valid_i,
-        .operator_i,
-        .operand_a_i,
-        .operand_b_i,
-        .csr_ready_o    ( csr_ready    ),
-        .csr_result_o   ( csr_result   ),
-        .commit_i,
-        .csr_addr_o
-    );
-
 endmodule
