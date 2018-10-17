@@ -28,9 +28,8 @@ module csr_regfile #(
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i, // the instruction we want to commit
     input  logic [NR_COMMIT_PORTS-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
-    input  logic  [3:0]           core_id_i,                  // Core ID is considered static
-    input  logic  [5:0]           cluster_id_i,               // Cluster ID is considered static
     input  logic  [63:0]          boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
+    input  logic  [63:0]          hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
     // we are taking an exception
     input exception_t             ex_i,                       // We've got an exception from the commit stage, take its
 
@@ -230,7 +229,7 @@ module csr_regfile #(
                 riscv::CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
-                riscv::CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
+                riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
                 riscv::CSR_MINSTRET:           csr_rdata = instret_q;
                 // custom (non RISC-V) cache control
@@ -321,6 +320,9 @@ module csr_regfile #(
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
         dirty_fp_state_csr      = 1'b0;
+        pmpcfg0_d               = pmpcfg0_q;
+        pmpaddr0_d              = pmpaddr0_q;
+
         // check for correct access rights and that we are writing
         if (csr_we) begin
             case (csr_addr.address)
@@ -952,6 +954,9 @@ module csr_regfile #(
             dscratch0_q            <= 64'b0;
             // machine mode registers
             mstatus_q              <= 64'b0;
+            // m-mode protection
+            pmpcfg0_q              <= '0;
+            pmpaddr0_q             <= '0;
             // set to boot address + direct mode + 4 byte offset which is the initial trap
             mtvec_rst_load_q       <= 1'b1;
             mtvec_q                <= '0;
@@ -1002,6 +1007,9 @@ module csr_regfile #(
             mtval_q                <= mtval_d;
             dcache_q               <= dcache_d;
             icache_q               <= icache_d;
+            // m-mode protection
+            pmpcfg0_q              <= pmpcfg0_d;
+            pmpaddr0_q             <= pmpaddr0_d;
             // supervisor mode registers
             sepc_q                 <= sepc_d;
             scause_q               <= scause_d;
@@ -1022,12 +1030,12 @@ module csr_regfile #(
     //-------------
     // Assertions
     //-------------
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
         // check that eret and ex are never valid together
         assert property (
           @(posedge clk_i) !(eret_o && ex_i.valid))
         else begin $error("eret and exception should never be valid at the same time"); $stop(); end
     `endif
-    `endif
+    //pragma translate_on
 endmodule

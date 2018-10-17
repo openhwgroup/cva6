@@ -437,8 +437,8 @@ module issue_read_operands #(
         end
     end
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    //pragma translate_off
+    `ifndef VERILATOR
      assert property (
         @(posedge clk_i) (branch_valid_q) |-> (!$isunknown(operand_a_q) && !$isunknown(operand_b_q)))
         else $warning ("Got unknown value in one of the operands");
@@ -447,7 +447,7 @@ module issue_read_operands #(
         assert (NR_COMMIT_PORTS == 2) else $error("Only two commit ports are supported at the moment!");
     end
     `endif
-    `endif
+    //pragma translate_on
 endmodule
 
 

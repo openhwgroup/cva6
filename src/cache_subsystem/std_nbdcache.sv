@@ -16,6 +16,7 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module std_nbdcache #(
+    parameter int unsigned AXI_ID_WIDTH     = 10,
     parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
 )(
     input  logic                           clk_i,       // Clock
@@ -32,8 +33,10 @@ module std_nbdcache #(
     input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
     output dcache_req_o_t [2:0]            req_ports_o,  // request ports
     // Cache AXI refill port
-    AXI_BUS.Master                         data_if,
-    AXI_BUS.Master                         bypass_if
+    output ariane_axi::req_t               axi_data_o,
+    input  ariane_axi::resp_t              axi_data_i,
+    output ariane_axi::req_t               axi_bypass_o,
+    input  ariane_axi::resp_t              axi_bypass_i
 );
 
     // -------------------------------
@@ -125,13 +128,14 @@ module std_nbdcache #(
     // Miss Handling Unit
     // ------------------
     miss_handler #(
+        .AXI_ID_WIDTH           ( AXI_ID_WIDTH         ),
         .NR_PORTS               ( 3                    )
     ) i_miss_handler (
         .flush_i                ( flush_i              ),
         .busy_i                 ( |busy                ),
         // AMOs
-        .amo_req_i             ( amo_req_i            ),
-        .amo_resp_o            ( amo_resp_o           ),
+        .amo_req_i              ( amo_req_i            ),
+        .amo_resp_o             ( amo_resp_o           ),
         .miss_req_i             ( miss_req             ),
         .miss_gnt_o             ( miss_gnt             ),
         .bypass_gnt_o           ( bypass_gnt           ),
@@ -149,8 +153,10 @@ module std_nbdcache #(
         .be_o                   ( be              [0]  ),
         .data_o                 ( wdata           [0]  ),
         .we_o                   ( we              [0]  ),
-        .bypass_if,
-        .data_if,
+        .axi_bypass_o,
+        .axi_bypass_i,
+        .axi_data_o,
+        .axi_data_i,
         .*
     );
 
@@ -248,12 +254,12 @@ module std_nbdcache #(
     );
 
 
-`ifndef SYNTHESIS
+//pragma translate_off
     initial begin
-        assert ($bits(data_if.aw_addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
+        assert ($bits(axi_data_o.aw.addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
         assert (DCACHE_LINE_WIDTH/64 inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of 64");
     end
-`endif
+//pragma translate_on
 endmodule
 
 // --------------
@@ -332,13 +338,13 @@ module tag_cmp #(
                 break;
         end
 
-        `ifndef SYNTHESIS
-        `ifndef VERILATOR
+//pragma translate_off
+`ifndef VERILATOR
         // assert that cache only hits on one way
         assert property (
           @(posedge clk_i) $onehot0(hit_way_o)) else begin $error("Hit should be one-hot encoded"); $stop(); end
-        `endif
-        `endif
+`endif
+//pragma translate_on
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

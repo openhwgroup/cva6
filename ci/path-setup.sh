@@ -5,7 +5,7 @@ export CI_BUILD_DIR=$TOP/ariane-repo
 #customize this to your setup
 export QUESTASIM_HOME=
 export QUESTASIM_VERSION=
-export QUESTASIM_FLAGS=
+export QUESTASIM_FLAGS=-noautoldlibpath
 export CXX=g++-7 CC=gcc-7
 
 # where to install the tools

@@ -13,35 +13,32 @@
 // Description: Ariane Top-level module
 
 import ariane_pkg::*;
-`ifndef verilator
-`ifndef SYNTHESIS
+//pragma translate_off
+`ifndef VERILATOR
 import instruction_tracer_pkg::*;
 `endif
-`endif
+//pragma translate_on
 
 module ariane #(
-        parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
-        parameter int unsigned AXI_ID_WIDTH     = 10,            // minimum 1
-        parameter int unsigned AXI_USER_WIDTH   = 1              // minimum 1
-    )(
-        input  logic                           clk_i,
-        input  logic                           rst_ni,
-        // Core ID, Cluster ID and boot address are considered more or less static
-        input  logic [63:0]                    boot_addr_i,  // reset boot address
-        input  logic [ 3:0]                    core_id_i,    // core id in a multicore environment (reflected in a CSR)
-        input  logic [ 5:0]                    cluster_id_i, // PULP specific if core is used in a clustered environment
-        // Instruction memory interface
-        AXI_BUS.Master                         instr_if,
-        // Data memory interface
-        AXI_BUS.Master                         data_if,      // data cache refill port
-        AXI_BUS.Master                         bypass_if,    // bypass axi port (disabled cache or uncacheable access)
-        // Interrupt inputs
-        input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip (async)
-        input  logic                           ipi_i,        // inter-processor interrupts (async)
-        // Timer facilities
-        input  logic                           time_irq_i,   // timer interrupt in (async)
-        input  logic                           debug_req_i   // debug request (async)
-    );
+    parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
+    parameter int unsigned AXI_ID_WIDTH     = 10,            // minimum 1
+    parameter int unsigned AXI_USER_WIDTH   = 1              // minimum 1
+)(
+    input  logic                clk_i,
+    input  logic                rst_ni,
+    // Core ID, Cluster ID and boot address are considered more or less static
+    input  logic [63:0]         boot_addr_i,  // reset boot address
+    input  logic [63:0]         hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+	// memory side, AXI Master
+    output ariane_axi::req_t    axi_req_o,
+    input  ariane_axi::resp_t   axi_resp_i,
+    // Interrupt inputs
+    input  logic [1:0]          irq_i,        // level sensitive IR lines, mip & sip (async)
+    input  logic                ipi_i,        // inter-processor interrupts (async)
+    // Timer facilities
+    input  logic                time_irq_i,   // timer interrupt in (async)
+    input  logic                debug_req_i   // debug request (async)
+);
 
     // ------------------------------------------
     // Global Signals
@@ -565,6 +562,7 @@ module ariane #(
         // to D$
         .clk_i                 ( clk_i                                 ),
         .rst_ni                ( rst_ni                                ),
+        .priv_lvl_i            ( priv_lvl                              ),
         // I$
         .icache_en_i           ( icache_en_csr                         ),
         .icache_flush_i        ( icache_flush_ctrl_cache               ),
@@ -585,16 +583,15 @@ module ariane #(
         .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
         .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),
         // memory side
-        .icache_data_if        ( instr_if                              ),
-        .dcache_data_if        ( data_if                               ),
-        .dcache_bypass_if      ( bypass_if                             )
+        .axi_req_o             ( axi_req_o                             ),
+        .axi_resp_i            ( axi_resp_i                            )
   );
 
     // -------------------
     // Instruction Tracer
     // -------------------
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    //pragma translate_off
+    `ifndef VERILATOR
     instruction_tracer_if tracer_if (clk_i);
     // assign instruction tracer interface
     // control signals
@@ -631,23 +628,18 @@ module ariane #(
     // assign current privilege level
     assign tracer_if.priv_lvl          = priv_lvl;
     assign tracer_if.debug_mode        = debug_mode;
-    instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
-    `endif
-    `endif
+    instr_tracer instr_tracer_i (tracer_if, hart_id_i);
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
     program instr_tracer (
             instruction_tracer_if tracer_if,
-            input logic [5:0] cluster_id_i,
-            input logic [3:0] core_id_i
+            input logic [63:0]    hart_id_i
         );
 
         instruction_tracer it = new (tracer_if, 1'b0);
 
         initial begin
             #15ns;
-            it.create_file(cluster_id_i, core_id_i);
+            it.create_file(hart_id_i);
             it.trace();
         end
 
@@ -662,7 +654,7 @@ module ariane #(
     logic [63:0] cycles;
 
     initial begin
-        f = $fopen("trace_core_00_0.dasm", "w");
+        f = $fopen("trace_hart_00.dasm", "w");
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -701,6 +693,7 @@ module ariane #(
         $fclose(f);
     end
     `endif
-    `endif
+    //pragma translate_on
+
 endmodule // ariane
 

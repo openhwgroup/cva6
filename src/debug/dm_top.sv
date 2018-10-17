@@ -33,7 +33,10 @@ module dm_top #(
     input  logic [NrHarts-1:0] unavailable_i, // communicate whether the hart is unavailable (e.g.: power down)
 
     AXI_BUS.Slave              axi_slave,   // bus slave, for an execution based technique
-    AXI_BUS.Master             axi_master,  // bus master, for system bus accesses
+    // bus master, for system bus accesses
+    output ariane_axi::req_t   axi_req_o,
+    input  ariane_axi::resp_t  axi_resp_i,
+
     // Connection to DTM - compatible to RocketChip Debug Module
     input  logic               dmi_rst_ni,
     input  logic               dmi_req_valid_i,
@@ -48,7 +51,7 @@ module dm_top #(
     // Debug CSRs
     dm::hartinfo_t [NrHarts-1:0]      hartinfo;
     logic [NrHarts-1:0]               halted;
-    logic [NrHarts-1:0]               running;
+    // logic [NrHarts-1:0]               running;
     logic [NrHarts-1:0]               resumeack;
     logic [NrHarts-1:0]               haltreq;
     logic [NrHarts-1:0]               resumereq;
@@ -145,7 +148,8 @@ module dm_top #(
         .clk_i                   ( clk_i                 ),
         .rst_ni                  ( rst_ni                ),
         .dmactive_i              ( dmactive_o            ),
-        .axi_master,
+        .axi_req_o,
+        .axi_resp_i,
         .sbaddress_i             ( sbaddress_csrs_sba    ),
         .sbaddress_o             ( sbaddress_sba_csrs    ),
         .sbaddress_write_valid_i ( sbaddress_write_valid ),

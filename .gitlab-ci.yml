@@ -23,7 +23,8 @@ variables:
 
 stages:
   - build
-  - test_std
+  - standard
+  - serpent
 
 # prepare
 build:
@@ -37,24 +38,63 @@ build:
       paths:
         - tmp 
 
-# rv64ui-p-* and rv64ui-v-* tests    
-run-asm-tests-questa:
-  stage: test_std
+asm-quest:
+  stage: standard
   script:
-    - make -j${NUM_JOBS} run-asm-tests 
+    - make -j${NUM_JOBS} run-asm-tests batch-mode=1
   dependencies:
     - build
 
-run-benchmarks-questa:
-  stage: test_std
+amo-quest:
+  stage: standard
   script:
-    - make -j${NUM_JOBS} run-benchmarks 
+    - make -j${NUM_JOBS} run-amo-tests batch-mode=1
+  dependencies:
+    - build
+    
+bench-quest:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-benchmarks batch-mode=1
   dependencies:
     - build    
 
-torture:
-  stage: test_std
+# rv64ui-p-* tests
+asm1-ver:
+  stage: standard
   script:
-    - make torture-rtest
+    - make -j${NUM_JOBS} run-asm-tests1-verilator 
   dependencies:
     - build
+
+# rv64ui-v-* tests
+asm2-ver:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-asm-tests2-verilator 
+  dependencies:
+    - build    
+
+# atomics
+amo-ver:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-amo-verilator 
+  dependencies:
+    - build    
+
+bench-ver:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-benchmarks-verilator 
+  dependencies:
+    - build
+
+torture:
+  stage: standard
+  script:
+    - make torture-rtest
+    - make torture-rtest-verilator
+  dependencies:
+    - build
+

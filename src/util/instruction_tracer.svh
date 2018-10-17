@@ -47,10 +47,10 @@ class instruction_tracer;
 
     endfunction : new
 
-    function void create_file(logic [5:0] cluster_id, logic [3:0] core_id);
+    function void create_file(logic [63:0] hart_id);
         string fn, fn_commit_log;
-        $sformat(fn, "trace_core_%h_%h.log", cluster_id, core_id);
-        $sformat(fn_commit_log, "trace_core_%h_%h_commit.log", cluster_id, core_id);
+        $sformat(fn, "trace_hart_%04h.log", hart_id);
+        $sformat(fn_commit_log, "trace_hart_%04h_commit.log", hart_id);
         $display("[TRACER] Output filename is: %s", fn);
 
         this.f = $fopen(fn,"w");
@@ -61,7 +61,7 @@ class instruction_tracer;
         logic [31:0] decode_instruction, issue_instruction, issue_commit_instruction;
         scoreboard_entry_t commit_instruction;
         // initialize register 0
-        gp_reg_file [0] = 0;
+        gp_reg_file  = '{default:0};
 
         forever begin
             automatic branchpredict_t bp_instruction = '0;
