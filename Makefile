@@ -26,6 +26,9 @@ defines        ?=
 test-location  ?= output/test
 # set to either nothing or -log
 torture-logs   :=
+# custom elf bin to run with sim or sim-verilator
+elf-bin        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
+
 
 # Sources
 # Package files -> compile first
@@ -168,10 +171,16 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
 # if you want to run in batch mode, use make <testname> batch-mode=1
+# alternatively you can call make sim elf-bin=<path/to/elf-bin> in order to load an arbitrary binary
+sim: build
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
+
 $(riscv-asm-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
-	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
+	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-amo-tests-$@.log
 
 $(riscv-amo-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
@@ -231,6 +240,9 @@ verilate_command := $(verilator)                                                
 verilate:
 	$(verilate_command)
 	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
+
+sim-verilator: verilate
+	$(ver-library)/Variane_testharness $(elf-bin)
 
 $(addsuffix -verilator,$(riscv-asm-tests)): verilate
 	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
@@ -305,7 +317,7 @@ clean:
 	rm -f tmp/*.ucdb tmp/*.log *.wlf *vstf wlft* *.ucdb
 
 .PHONY:
-	build sim simc verilate clean                                             \
+	build sim sim-verilate clean                                              \
 	$(riscv-asm-tests) $(addsuffix _verilator,$(riscv-asm-tests))             \
 	$(riscv-benchmarks) $(addsuffix _verilator,$(riscv-benchmarks))           \
 	check-benchmarks check-asm-tests                                          \
