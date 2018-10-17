@@ -120,7 +120,7 @@ module lsu_arbiter (
     );
 
 
-`ifndef SYNTHESIS
+//pragma translate_off
 `ifndef VERILATOR
     // check fifo control signals
     assert property (@(posedge clk_i) disable iff (~rst_ni) ld_full |-> !ld_valid_i) else $fatal ("cannot write full ld_fifo");
@@ -128,7 +128,6 @@ module lsu_arbiter (
     assert property (@(posedge clk_i) disable iff (~rst_ni) ld_empty |-> !ld_ren)    else $fatal ("cannot read empty ld_fifo");
     assert property (@(posedge clk_i) disable iff (~rst_ni) st_empty |-> !st_ren)    else $fatal ("cannot read empty st_fifo");
 `endif
-`endif
-
+//pragma translate_on
 
 endmodule

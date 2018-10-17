@@ -2,7 +2,7 @@
 # check simulation output (only for questasim flow)
 #
 # $1 simulation output file basename
-# $2 list file containing the test names
+# $2 number of tests to check
 #
 
 ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)

@@ -154,11 +154,11 @@ module dm_sba (
     );
 
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    //pragma translate_off
+    `ifndef VERILATOR
         // maybe bump severity to $error if not handled at runtime
         dm_sba_access_size: assert property(@(posedge  clk_i) disable iff (dmactive_i !== 1'b0) (state_d != Idle) |-> (sbaccess_i < 4)) else $warning ("accesses > 8 byte not supported at the moment");
     `endif
-    `endif
+    //pragma translate_on
 
 endmodule

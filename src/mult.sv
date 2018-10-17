@@ -409,11 +409,11 @@ module serial_divider #(
     // ------------
     // Assertions
     // ------------
-    `ifndef SYNTHESIS
+    //pragma translate_off
         initial begin : p_assertions
             assert (C_LOG_WIDTH == $clog2(C_WIDTH+1)) else $error("C_LOG_WIDTH must be $clog2(C_WIDTH+1)");
         end
-    `endif
+    //pragma translate_on
 
 endmodule
 
@@ -473,21 +473,21 @@ module mul (
         end
     end
 
-   
-    // single stage version 
-    assign mult_result_d   = $signed({operand_a_i[63] & sign_a, operand_a_i}) * 
+
+    // single stage version
+    assign mult_result_d   = $signed({operand_a_i[63] & sign_a, operand_a_i}) *
                              $signed({operand_b_i[63] & sign_b, operand_b_i});
 
-    
-    assign operator_d = operator_i;                             
+
+    assign operator_d = operator_i;
     always_comb begin : p_selmux
         unique case (operator_q)
-            MULH, MULHU, MULHSU: result_o = mult_result_q[127:64]; 
+            MULH, MULHU, MULHSU: result_o = mult_result_q[127:64];
             MULW:                result_o = sext32(mult_result_q[31:0]);
             // MUL performs an XLEN-bit×XLEN-bit multiplication and places the lower XLEN bits in the destination register
-            default:             result_o = mult_result_q[63:0];// including MUL 
+            default:             result_o = mult_result_q[63:0];// including MUL
         endcase
-    end    
+    end
 
     // -----------------------
     // Output pipeline register

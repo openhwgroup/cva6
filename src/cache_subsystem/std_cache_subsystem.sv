@@ -22,7 +22,8 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module std_cache_subsystem #(
-   parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
+  parameter int unsigned AXI_ID_WIDTH     = 10,
+  parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 )(
     input logic                            clk_i,
     input logic                            rst_ni,
@@ -73,6 +74,7 @@ module std_cache_subsystem #(
    // Port 1: Load Unit
    // Port 2: Store Unit
    std_nbdcache #(
+      .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
       .CACHE_START_ADDR ( CACHE_START_ADDR )
    ) i_nbdcache (
       .clk_i        ( clk_i                  ),
@@ -88,5 +90,36 @@ module std_cache_subsystem #(
       .amo_req_i    ( amo_req_i              ),
       .amo_resp_o   ( amo_resp_o             )
    );
+
+
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
+
+
+//pragma translate_off
+`ifndef VERILATOR
+
+  a_invalid_instruction_fetch: assert property (
+    @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)     
+      else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X", 
+        icache_dreq_o.vaddr, icache_dreq_o.data);
+
+  a_invalid_write_data: assert property (
+    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)     
+      else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X", 
+        {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
+  generate 
+      for(genvar j=0; j<2; j++) begin
+        a_invalid_read_data: assert property (
+          @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)     
+            else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X", 
+              j, dcache_req_ports_o[j].data_rdata);
+     end
+  endgenerate  
+    
+`endif
+//pragma translate_on
+
 
 endmodule // std_cache_subsystem
