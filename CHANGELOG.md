@@ -14,10 +14,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Support for A-Extension
 - Preliminary FP support
 - Preliminary support for OpenPiton cache system
+- Provisioned `aw_top` signal for close to memory atomics
 
 ### Changed
 
 - core_id / cluster_id inputs have been merged to hard_id input
+- Three AXI ports have been merged into one
 
 ### 3.0.0
 

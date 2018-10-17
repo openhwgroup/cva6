@@ -39,6 +39,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
               include/serpent_cache_pkg.sv                  \
               src/axi/src/axi_pkg.sv                        \
               include/axi_intf.sv                           \
+              include/ariane_axi_pkg.sv                     \
               src/fpu/src/pkg/fpnew_pkg.vhd                 \
               src/fpu/src/pkg/fpnew_fmts_pkg.vhd            \
               src/fpu/src/pkg/fpnew_comps_pkg.vhd           \
@@ -79,6 +80,9 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/deprecated/pulp_sync.sv                   \
         src/common_cells/src/deprecated/find_first_one.sv              \
         src/common_cells/src/rstgen_bypass.sv                          \
+        src/common_cells/src/stream_mux.sv                             \
+        src/common_cells/src/stream_demux.sv                           \
+        src/util/axi_connect.sv                                        \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
@@ -86,6 +90,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/cdc_2phase.sv                             \
         src/common_cells/src/spill_register.sv                         \
         src/common_cells/src/sync_wedge.sv                             \
+        src/common_cells/src/fifo_v3.sv                                \
         src/common_cells/src/fifo_v2.sv                                \
         src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
@@ -126,6 +131,19 @@ else
 	questa-cmd   := -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; log -r /*; run -all;"
 endif
 compile_flag_vhd += -64 -nologo -quiet -2008
+<<<<<<< HEAD
+=======
+uvm-flags    += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
+questa-flags += -t 1ns -64 -coverage -classdebug $(gui-sim)
+# if defined, calls the questa targets in batch mode
+ifdef batch-mode
+	questa-flags += -c
+	questa-cmd   := -do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
+else
+	questa-cmd   := -do " log -r /*; run -all;"
+endif
+
+>>>>>>> ariane_next
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
@@ -180,7 +198,7 @@ sim: build
 $(riscv-asm-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
-	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-amo-tests-$@.log
+	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
 $(riscv-amo-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \

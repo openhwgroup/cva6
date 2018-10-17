@@ -13,16 +13,15 @@
 // Date: 15.08.2018
 // Description: SRAM wrapper for FPGA (requires the fpga-support submodule)
 //
-// Note: the wrapped module contains two different implementations for 
-// ALTERA and XILINX tools, since these follow different coding styles for 
-// inferrable RAMS with byte enable. define `FPGA_TARGET_XILINX or 
+// Note: the wrapped module contains two different implementations for
+// ALTERA and XILINX tools, since these follow different coding styles for
+// inferrable RAMS with byte enable. define `FPGA_TARGET_XILINX or
 // `FPGA_TARGET_ALTERA in your build environment (default is ALTERA)
-        
+
 module sram #(
     parameter DATA_WIDTH = 64,
     parameter NUM_WORDS  = 1024,
-    parameter OUT_REGS   = 0,     // enables output registers in FPGA macro (read lat = 2)
-    parameter SIM_INIT   = 2      // initialize simulation model with random data upon reset       
+    parameter OUT_REGS   = 0    // enables output registers in FPGA macro (read lat = 2)
 )(
    input  logic                          clk_i,
    input  logic                          rst_ni,
@@ -53,24 +52,24 @@ end
 
 genvar k;
 generate
-    for (k = 0; k<(DATA_WIDTH+63)/64; k++) begin    
+    for (k = 0; k<(DATA_WIDTH+63)/64; k++) begin
         // unused byte-enable segments (8bits) are culled by the tool
         SyncSpRamBeNx64 #(
-          .ADDR_WIDTH        ( $clog2(NUM_WORDS) ),
-          .DATA_DEPTH        ( NUM_WORDS         ), 
-          .OUT_REGS          ( 0                 ),
-          .SIM_INIT          ( SIM_INIT          )     
+          .ADDR_WIDTH($clog2(NUM_WORDS)),
+          .DATA_DEPTH(NUM_WORDS),
+          .OUT_REGS  (0),
+          .SIM_INIT (2)
         ) i_ram (
            .Clk_CI    ( clk_i                     ),
            .Rst_RBI   ( rst_ni                    ),
            .CSel_SI   ( req_i                     ),
            .WrEn_SI   ( we_i                      ),
            .BEn_SI    ( be_aligned[k*8 +: 8]      ),
-           .WrData_DI ( wdata_aligned[k*64 +: 64] ), 
-           .Addr_DI   ( addr_i                    ), 
+           .WrData_DI ( wdata_aligned[k*64 +: 64] ),
+           .Addr_DI   ( addr_i                    ),
            .RdData_DO ( rdata_aligned[k*64 +: 64] )
-        );      
-    end   
+        );
+    end
 endgenerate
 
 endmodule : sram

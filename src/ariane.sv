@@ -26,41 +26,38 @@ import instruction_tracer_pkg::*;
 `endif
 
 module ariane #(
-        parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
-        parameter int unsigned AXI_ID_WIDTH     = 10,            // minimum 1
-        parameter int unsigned AXI_USER_WIDTH   = 1              // minimum 1
-    )(
-        input  logic                           clk_i,
-        input  logic                           rst_ni,
-        // Core ID, Cluster ID and boot address are considered more or less static
-        input  logic [63:0]                    boot_addr_i,  // reset boot address
-        input  logic [63:0]                    hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
-        // Interrupt inputs
-        input  logic [1:0]                     irq_i,        // level sensitive IR lines, mip & sip (async)
-        input  logic                           ipi_i,        // inter-processor interrupts (async)
-        // Timer facilities
-        input  logic                           time_irq_i,   // timer interrupt in (async)
-        input  logic                           debug_req_i,  // debug request (async)
+    parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000 // address on which to decide whether the request is cache-able or not
+)(
+    input  logic                clk_i,
+    input  logic                rst_ni,
+    // Core ID, Cluster ID and boot address are considered more or less static
+    input  logic [63:0]         boot_addr_i,  // reset boot address
+    input  logic [63:0]         hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
 
-    `ifdef AXI64_CACHE_PORTS
-       // memory side
-       AXI_BUS.Master                          instr_if,       // I$ refill port
-       AXI_BUS.Master                          data_if,       // D$ refill port
-       AXI_BUS.Master                          bypass_if      // bypass axi port (disabled D$ or uncacheable access)
-    `else
-       // L15 (memory side)
-       output logic                            l15_val_o,
-       input  logic                            l15_ack_i,
-       input  logic                            l15_header_ack_i,
-       output l15_req_t                        l15_data_o,
+    // Interrupt inputs
+    input  logic [1:0]          irq_i,        // level sensitive IR lines, mip & sip (async)
+    input  logic                ipi_i,        // inter-processor interrupts (async)
+    // Timer facilities
+    input  logic                time_irq_i,   // timer interrupt in (async)
+    input  logic                debug_req_i,  // debug request (async)
 
-       input  logic                            l15_val_i,
-       output logic                            l15_req_ack_o,
-       input  l15_rtrn_t                       l15_rtrn_i
-    `endif
+`ifdef AXI64_CACHE_PORTS
+    // memory side, AXI Master
+    output ariane_axi::req_t    axi_req_o,
+    input  ariane_axi::resp_t   axi_resp_i,
+`else
+   // L15 (memory side)
+   output logic                 l15_val_o,
+   input  logic                 l15_ack_i,
+   input  logic                 l15_header_ack_i,
+   output l15_req_t             l15_data_o,
 
-    );
+   input  logic                 l15_val_i,
+   output logic                 l15_req_ack_o,
+   input  l15_rtrn_t            l15_rtrn_i
+`endif
 
+);
     // ------------------------------------------
     // Global Signals
     // Signals connecting more than one module
@@ -641,6 +638,7 @@ module ariane #(
         // to D$
         .clk_i                 ( clk_i                                 ),
         .rst_ni                ( rst_ni                                ),
+        .priv_lvl_i            ( priv_lvl                              ),
         // I$
         .icache_en_i           ( icache_en_csr                         ),
         .icache_flush_i        ( icache_flush_ctrl_cache               ),
@@ -663,9 +661,8 @@ module ariane #(
         .dcache_req_ports_i    ( dcache_req_ports_ex_cache             ),
         .dcache_req_ports_o    ( dcache_req_ports_cache_ex             ),
         // memory side
-        .icache_data_if        ( instr_if                              ),
-        .dcache_data_if        ( data_if                               ),
-        .dcache_bypass_if      ( bypass_if                             )
+        .axi_req_o             ( axi_req_o                             ),
+        .axi_resp_i            ( axi_resp_i                            )
   );
 `endif
 

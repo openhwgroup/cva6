@@ -95,6 +95,13 @@ bench-ver:
   dependencies:
     - build
 
+bench-ver:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-benchmarks-verilator
+  dependencies:
+    - build
+
 torture:
   stage: standard
   script:
@@ -171,3 +178,4 @@ s-torture:
     - make torture-rtest-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
   dependencies:
     - build
+
