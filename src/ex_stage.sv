@@ -45,14 +45,20 @@ module ex_stage (
     // MULT
     input  logic                                   mult_valid_i,      // Output is valid
     // LSU
-    output logic                                   lsu_ready_o,           // FU is ready
-    input  logic                                   lsu_valid_i,           // Input is valid
-    output logic                                   lsu_valid_o,           // Output is valid
-    output logic [63:0]                            lsu_result_o,
-    output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
+    output logic                                   lsu_ready_o,        // FU is ready
+    input  logic                                   lsu_valid_i,        // Input is valid
+
+    output logic                                   load_valid_o,
+    output logic [63:0]                            load_result_o,
+    output logic [TRANS_ID_BITS-1:0]               load_trans_id_o,
+    output exception_t                             load_exception_o,
+    output logic                                   store_valid_o,
+    output logic [63:0]                            store_result_o,
+    output logic [TRANS_ID_BITS-1:0]               store_trans_id_o,
+    output exception_t                             store_exception_o,
+
     input  logic                                   lsu_commit_i,
-    output logic                                   lsu_commit_ready_o,    // commit queue is ready to accept another commit request
-    output exception_t                             lsu_exception_o,
+    output logic                                   lsu_commit_ready_o, // commit queue is ready to accept another commit request
     output logic                                   no_st_pending_o,
     input  logic                                   amo_valid_commit_i,
     // FPU
@@ -251,11 +257,16 @@ module ex_stage (
         .fu_data_i             ( lsu_data ),
         .lsu_ready_o,
         .lsu_valid_i,
-        .lsu_trans_id_o,
-        .lsu_result_o,
-        .lsu_valid_o,
-        .commit_i              (lsu_commit_i          ),
-        .commit_ready_o        (lsu_commit_ready_o    ),
+        .load_trans_id_o,
+        .load_result_o,
+        .load_valid_o,
+        .load_exception_o,
+        .store_trans_id_o,
+        .store_result_o,
+        .store_valid_o,
+        .store_exception_o,
+        .commit_i              ( lsu_commit_i       ),
+        .commit_ready_o        ( lsu_commit_ready_o ),
         .enable_translation_i,
         .en_ld_st_translation_i,
         .icache_areq_i,
@@ -271,7 +282,6 @@ module ex_stage (
         .dtlb_miss_o,
         .dcache_req_ports_i,
         .dcache_req_ports_o,
-        .lsu_exception_o,
         .amo_valid_commit_i,
         .amo_req_o,
         .amo_resp_i

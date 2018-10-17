@@ -91,6 +91,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
+        src/common_cells/src/pipe_reg_simple.sv                        \
         src/common_cells/src/lfsr_8bit.sv                              \
         src/tech_cells_generic/src/cluster_clock_inverter.sv           \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                  \

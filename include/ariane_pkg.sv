@@ -33,6 +33,11 @@ package ariane_pkg;
 
     localparam ENABLE_RENAME = 1'b1;
 
+    // amount of pipeline registers inserted for load/store return path
+    // this can be tuned to trade-off IPC vs. cycle time
+    localparam NR_LOAD_PIPE_REGS = 1;
+    localparam NR_STORE_PIPE_REGS = 0;
+
     // Floating-point extensions configuration
     localparam bit RVF = 1'b0; // Is F extension enabled
     localparam bit RVD = 1'b0; // Is D extension enabled
@@ -109,9 +114,9 @@ package ariane_pkg;
     // if set to zero a flush will not invalidate the cache-lines, in a single core environment
     // where coherence is not necessary this can improve performance. This needs to be switched on
     // when more than one core is in a system
-    localparam logic INVALIDATE_ON_FLUSH = 1'b1;
+    localparam logic INVALIDATE_ON_FLUSH = 1'b0;
 
-    localparam NR_WB_PORTS = 3;
+    localparam NR_WB_PORTS = 4;
 
     // ---------------
     // Fetch Stage

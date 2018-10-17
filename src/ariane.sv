@@ -89,12 +89,18 @@ module ariane #(
     branchpredict_sbe_t       branch_predict_id_ex;
     logic                     resolve_branch_ex_id;
     // LSU
-    logic [TRANS_ID_BITS-1:0] lsu_trans_id_ex_id;
     logic                     lsu_valid_id_ex;
-    logic [63:0]              lsu_result_ex_id;
     logic                     lsu_ready_ex_id;
-    logic                     lsu_valid_ex_id;
-    exception_t               lsu_exception_ex_id;
+
+    logic [TRANS_ID_BITS-1:0] load_trans_id_ex_id;
+    logic [63:0]              load_result_ex_id;
+    logic                     load_valid_ex_id;
+    exception_t               load_exception_ex_id;
+
+    logic [63:0]              store_result_ex_id;
+    logic [TRANS_ID_BITS-1:0] store_trans_id_ex_id;
+    logic                     store_valid_ex_id;
+    exception_t               store_exception_ex_id;
     // MULT
     logic                     mult_valid_id_ex;
     // FPU
@@ -299,10 +305,10 @@ module ariane #(
         .csr_valid_o                ( csr_valid_id_ex                 ),
         // Commit
         .resolved_branch_i          ( resolved_branch                 ),
-        .trans_id_i                 ( {flu_trans_id_ex_id,  lsu_trans_id_ex_id,   fpu_trans_id_ex_id }),
-        .wbdata_i                   ( {flu_result_ex_id,    lsu_result_ex_id,       fpu_result_ex_id }),
-        .ex_ex_i                    ( {flu_exception_ex_id, lsu_exception_ex_id, fpu_exception_ex_id }),
-        .wb_valid_i                 ( {flu_valid_ex_id,     lsu_valid_ex_id,         fpu_valid_ex_id }),
+        .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id }),
+        .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id }),
+        .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id }),
+        .wb_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id }),
 
         .waddr_i                    ( waddr_commit_id               ),
         .wdata_i                    ( wdata_commit_id               ),
@@ -345,12 +351,19 @@ module ariane #(
         // LSU
         .lsu_ready_o            ( lsu_ready_ex_id             ),
         .lsu_valid_i            ( lsu_valid_id_ex             ),
-        .lsu_result_o           ( lsu_result_ex_id            ),
-        .lsu_trans_id_o         ( lsu_trans_id_ex_id          ),
-        .lsu_valid_o            ( lsu_valid_ex_id             ),
+
+        .load_result_o          ( load_result_ex_id           ),
+        .load_trans_id_o        ( load_trans_id_ex_id         ),
+        .load_valid_o           ( load_valid_ex_id            ),
+        .load_exception_o       ( load_exception_ex_id        ),
+
+        .store_result_o         ( store_result_ex_id          ),
+        .store_trans_id_o       ( store_trans_id_ex_id        ),
+        .store_valid_o          ( store_valid_ex_id           ),
+        .store_exception_o      ( store_exception_ex_id       ),
+
         .lsu_commit_i           ( lsu_commit_commit_ex        ), // from commit
         .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
-        .lsu_exception_o        ( lsu_exception_ex_id         ),
         .no_st_pending_o        ( no_st_pending_ex_commit     ),
         // FPU
         .fpu_ready_o            ( fpu_ready_ex_id             ),
