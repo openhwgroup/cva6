@@ -35,6 +35,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
               include/std_cache_pkg.sv                      \
               src/axi/src/axi_pkg.sv                        \
               include/axi_intf.sv                           \
+              include/ariane_axi_pkg.sv                     \
               src/fpu/src/pkg/fpnew_pkg.vhd                 \
               src/fpu/src/pkg/fpnew_fmts_pkg.vhd            \
               src/fpu/src/pkg/fpnew_comps_pkg.vhd           \
@@ -75,6 +76,9 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/deprecated/pulp_sync.sv                   \
         src/common_cells/src/deprecated/find_first_one.sv              \
         src/common_cells/src/rstgen_bypass.sv                          \
+        src/common_cells/src/stream_mux.sv                             \
+        src/common_cells/src/stream_demux.sv                           \
+        src/util/axi_connect.sv                                        \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
@@ -82,6 +86,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/cdc_2phase.sv                             \
         src/common_cells/src/spill_register.sv                         \
         src/common_cells/src/sync_wedge.sv                             \
+        src/common_cells/src/fifo_v3.sv                                \
         src/common_cells/src/fifo_v2.sv                                \
         src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
