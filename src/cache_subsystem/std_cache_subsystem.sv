@@ -18,10 +18,6 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module std_cache_subsystem #(
-<<<<<<< HEAD
-  parameter int unsigned AXI_ID_WIDTH     = 10,
-=======
->>>>>>> ariane_next
   parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 )(
     input logic                            clk_i,
@@ -84,7 +80,6 @@ module std_cache_subsystem #(
    // Port 1: Load Unit
    // Port 2: Store Unit
    std_nbdcache #(
-      .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
       .CACHE_START_ADDR ( CACHE_START_ADDR )
    ) i_nbdcache (
       .clk_i,

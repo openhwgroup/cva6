@@ -394,18 +394,20 @@ package ariane_pkg;
     // Atomics
     // --------------------
     typedef enum logic [3:0] {
-        AMO_NONE =4'b0000, 
-        AMO_LR   =4'b0001, 
-        AMO_SC   =4'b0010,  
-        AMO_SWAP =4'b0011,  
-        AMO_ADD  =4'b0100,  
-        AMO_AND  =4'b0101,  
-        AMO_OR   =4'b0110,  
-        AMO_XOR  =4'b0111,  
-        AMO_MAX  =4'b1000,  
-        AMO_MAXU =4'b1001,  
-        AMO_MIN  =4'b1010,  
-        AMO_MINU =4'b1011 
+        AMO_NONE =4'b0000,
+        AMO_LR   =4'b0001,
+        AMO_SC   =4'b0010,
+        AMO_SWAP =4'b0011,
+        AMO_ADD  =4'b0100,
+        AMO_AND  =4'b0101,
+        AMO_OR   =4'b0110,
+        AMO_XOR  =4'b0111,
+        AMO_MAX  =4'b1000,
+        AMO_MAXU =4'b1001,
+        AMO_MIN  =4'b1010,
+        AMO_MINU =4'b1011,
+        AMO_CAS1 =4'b1100, // unused, not part of riscv spec, but provided in OpenPiton
+        AMO_CAS2 =4'b1101  // unused, not part of riscv spec, but provided in OpenPiton
     } amo_t;
 
     typedef struct packed {

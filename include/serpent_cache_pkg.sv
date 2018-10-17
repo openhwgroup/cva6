@@ -24,7 +24,7 @@ package serpent_cache_pkg;
     // do not change
     localparam L15_TID_WIDTH           = 2;
     localparam L15_TLB_CSM_WIDTH       = 33;
-     
+
     localparam L15_WAY_WIDTH           = $clog2(L15_SET_ASSOC);
     localparam L1I_WAY_WIDTH           = $clog2(ariane_pkg::ICACHE_SET_ASSOC);
     localparam L1D_WAY_WIDTH           = $clog2(ariane_pkg::DCACHE_SET_ASSOC);
@@ -40,23 +40,23 @@ package serpent_cache_pkg;
     localparam ICACHE_OFFSET_WIDTH     = $clog2(ariane_pkg::ICACHE_LINE_WIDTH/8);
     localparam ICACHE_NUM_WORDS        = 2**(ariane_pkg::ICACHE_INDEX_WIDTH-ICACHE_OFFSET_WIDTH);
     localparam ICACHE_CL_IDX_WIDTH     = $clog2(ICACHE_NUM_WORDS);// excluding byte offset
- 
+
     localparam DCACHE_OFFSET_WIDTH     = $clog2(ariane_pkg::DCACHE_LINE_WIDTH/8);
     localparam DCACHE_NUM_WORDS        = 2**(ariane_pkg::DCACHE_INDEX_WIDTH-DCACHE_OFFSET_WIDTH);
     localparam DCACHE_CL_IDX_WIDTH     = $clog2(DCACHE_NUM_WORDS);// excluding byte offset
- 
-    localparam DCACHE_NUM_BANKS        = ariane_pkg::DCACHE_LINE_WIDTH/64;
- 
-    // write buffer parameterization 
-    localparam DCACHE_WBUF_DEPTH       = 8;
-    localparam DCACHE_MAX_TX           = 4;// TODO: set to number of threads supported in 
-    localparam DCACHE_ID_WIDTH         = $clog2(DCACHE_MAX_TX);// TODO: set to number of threads supported in 
 
-    
+    localparam DCACHE_NUM_BANKS        = ariane_pkg::DCACHE_LINE_WIDTH/64;
+
+    // write buffer parameterization
+    localparam DCACHE_WBUF_DEPTH       = 8;
+    localparam DCACHE_MAX_TX           = 2**L15_TID_WIDTH;// needs to be aligned with OpenPiton
+    localparam DCACHE_ID_WIDTH         = $clog2(DCACHE_MAX_TX);
+
+
     typedef struct packed {
         logic [ariane_pkg::DCACHE_INDEX_WIDTH+ariane_pkg::DCACHE_TAG_WIDTH-1:0] wtag;
         logic [63:0]                                                            data;
-        logic [7:0]                                                             dirty;   // byte is dirty 
+        logic [7:0]                                                             dirty;   // byte is dirty
         logic [7:0]                                                             valid;   // byte is valid
         logic [7:0]                                                             txblock; // byte is part of transaction in-flight
         logic                                                                   checked; // if cache state of this word has been checked
@@ -66,27 +66,27 @@ package serpent_cache_pkg;
     // TX status registers are indexed with the transaction ID
     // they basically store which bytes from which buffer entry are part
     // of that transaction
-    typedef struct packed { 
+    typedef struct packed {
         logic                                 vld;
         logic [7:0]                           be;
         logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] ptr;
     } tx_stat_t;
 
     // local interfaces between caches and L15 adapter
-    typedef enum logic [1:0] { 
+    typedef enum logic [1:0] {
         DCACHE_STORE_REQ,
         DCACHE_LOAD_REQ,
         DCACHE_ATOMIC_REQ,
         DCACHE_INT_REQ }  dcache_out_t;
 
-    typedef enum logic [2:0] { 
+    typedef enum logic [2:0] {
         DCACHE_INV_REQ,  // no ack from the core required
         DCACHE_STORE_ACK,// note: this may contain an invalidation vector, too
         DCACHE_LOAD_ACK,
         DCACHE_ATOMIC_ACK,
         DCACHE_INT_ACK }  dcache_in_t;
 
-    typedef enum logic [0:0] { 
+    typedef enum logic [0:0] {
         ICACHE_INV_REQ, // no ack from the core required
         ICACHE_IFILL_ACK} icache_in_t;
 
@@ -174,6 +174,8 @@ package serpent_cache_pkg;
 
 
     typedef struct packed {
+        logic                              l15_val;                   // valid signal, asserted with request
+        logic                              l15_req_ack;               // ack for response
         l15_reqtypes_t                     l15_rqtype;                // see below for encoding
         logic                              l15_nc;                    // non-cacheable bit
         logic [2:0]                        l15_size;                  // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
@@ -191,6 +193,9 @@ package serpent_cache_pkg;
     } l15_req_t;
 
     typedef struct packed {
+        logic                              l15_ack;                   // ack for request struct
+        logic                              l15_header_ack;            // ack for request struct
+        logic                              l15_val;                   // valid signal for return struct
         l15_rtrntypes_t                    l15_returntype;            // see below for encoding
         logic                              l15_l2miss;                // unused in Ariane
         logic [1:0]                        l15_error;                 // unused in openpiton
@@ -225,29 +230,29 @@ package serpent_cache_pkg;
 
     function automatic logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh (
         input logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] in
-    );  
+    );
         logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] out;
         out     = '0;
         out[in] = 1'b1;
-        return out;    
+        return out;
     endfunction
 
     function automatic logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh (
         input logic [$clog2(ariane_pkg::DCACHE_SET_ASSOC)-1:0] in
-    );  
+    );
         logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] out;
         out     = '0;
         out[in] = 1'b1;
-        return out;    
+        return out;
     endfunction
 
     function automatic logic [DCACHE_NUM_BANKS-1:0] dcache_cl_bin2oh (
         input logic [$clog2(DCACHE_NUM_BANKS)-1:0] in
-    );  
+    );
         logic [DCACHE_NUM_BANKS-1:0] out;
         out     = '0;
         out[in] = 1'b1;
-        return out;    
+        return out;
     endfunction
 
 
@@ -263,16 +268,16 @@ package serpent_cache_pkg;
 
     function automatic logic [7:0] toByteEnable8(
         input logic [2:0] offset,
-        input logic [1:0] size 
+        input logic [1:0] size
     );
         logic [7:0] be;
         be = '0;
-        unique case(size) 
-            2'b00:   be[offset]       = '1; // byte               
-            2'b01:   be[offset +:2 ]  = '1; // hword              
-            2'b10:   be[offset +:4 ]  = '1; // word  
+        unique case(size)
+            2'b00:   be[offset]       = '1; // byte
+            2'b01:   be[offset +:2 ]  = '1; // hword
+            2'b10:   be[offset +:4 ]  = '1; // word
             default: be               = '1; // dword
-        endcase // size     
+        endcase // size
         return be;
     endfunction : toByteEnable8
 
@@ -280,15 +285,15 @@ package serpent_cache_pkg;
     function automatic logic [63:0] repData64(
         input logic [63:0] data,
         input logic [2:0]  offset,
-        input logic [1:0]  size 
+        input logic [1:0]  size
     );
         logic [63:0] out;
-        unique case(size) 
+        unique case(size)
             2'b00:   for(int k=0; k<8; k++) out[k*8  +: 8]    = data[offset*8 +: 8];  // byte
             2'b01:   for(int k=0; k<4; k++) out[k*16 +: 16]   = data[offset*8 +: 16]; // hword
             2'b10:   for(int k=0; k<2; k++) out[k*32 +: 32]   = data[offset*8 +: 32]; // word
             default: out   = data; // dword
-        endcase // size     
+        endcase // size
         return out;
     endfunction : repData64
 
@@ -304,7 +309,7 @@ package serpent_cache_pkg;
             8'b0000_1111, 8'b1111_0000:                             size = 2'b10; // word
             8'b1100_0000, 8'b0011_0000, 8'b0000_1100, 8'b0000_0011: size = 2'b01; // hword
             default:                                                size = 2'b00; // individual bytes
-        endcase // be     
+        endcase // be
         return size;
     endfunction : toSize64
 
@@ -316,7 +321,7 @@ package serpent_cache_pkg;
     // 111: DCACHE line
     function automatic logic [63:0] paddrSizeAlign(
         input logic [63:0] paddr,
-        input logic [2:0]  size        
+        input logic [2:0]  size
     );
         logic [63:0] out;
         out = paddr;
@@ -324,7 +329,7 @@ package serpent_cache_pkg;
             3'b001: out[0:0]                     = '0;
             3'b010: out[1:0]                     = '0;
             3'b011: out[2:0]                     = '0;
-            3'b111: out[DCACHE_OFFSET_WIDTH-1:0] = '0; 
+            3'b111: out[DCACHE_OFFSET_WIDTH-1:0] = '0;
             default: ;
         endcase
         return out;

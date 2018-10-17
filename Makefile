@@ -131,19 +131,7 @@ else
 	questa-cmd   := -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; log -r /*; run -all;"
 endif
 compile_flag_vhd += -64 -nologo -quiet -2008
-<<<<<<< HEAD
-=======
-uvm-flags    += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
-questa-flags += -t 1ns -64 -coverage -classdebug $(gui-sim)
-# if defined, calls the questa targets in batch mode
-ifdef batch-mode
-	questa-flags += -c
-	questa-cmd   := -do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
-else
-	questa-cmd   := -do " log -r /*; run -all;"
-endif
 
->>>>>>> ariane_next
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))

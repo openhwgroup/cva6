@@ -44,19 +44,12 @@ module ariane #(
 `ifdef AXI64_CACHE_PORTS
     // memory side, AXI Master
     output ariane_axi::req_t    axi_req_o,
-    input  ariane_axi::resp_t   axi_resp_i,
+    input  ariane_axi::resp_t   axi_resp_i
 `else
-   // L15 (memory side)
-   output logic                 l15_val_o,
-   input  logic                 l15_ack_i,
-   input  logic                 l15_header_ack_i,
-   output l15_req_t             l15_data_o,
-
-   input  logic                 l15_val_i,
-   output logic                 l15_req_ack_o,
-   input  l15_rtrn_t            l15_rtrn_i
+    // L15 (memory side)
+    output serpent_cache_pkg::l15_req_t  l15_req_o,
+    input  serpent_cache_pkg::l15_rtrn_t l15_rtrn_i
 `endif
-
 );
     // ------------------------------------------
     // Global Signals
@@ -585,9 +578,6 @@ module ariane #(
 `ifdef SERPENT_PULP
     // this is a cache subsystem that is compatible with OpenPiton
     serpent_cache_subsystem #(
-`ifdef AXI64_CACHE_PORTS
-        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                          ),
-`endif
         .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
     ) i_cache_subsystem (
         // to D$
@@ -616,23 +606,16 @@ module ariane #(
         .wbuffer_empty_o       ( dcache_commit_wbuffer_empty           ),
 `ifdef AXI64_CACHE_PORTS
         // memory side
-        .icache_data_if        ( instr_if                              ),
-        .dcache_data_if        ( data_if                               ),
-        .dcache_bypass_if      ( bypass_if                             )
+        .axi_req_o             ( axi_req_o                             ),
+        .axi_resp_i            ( axi_resp_i                            )
 `else
-        .l15_val_o             ( l15_val_o                             ),
-        .l15_ack_i             ( l15_ack_i                             ),
-        .l15_header_ack_i      ( l15_header_ack_i                      ),
-        .l15_data_o            ( l15_data_o                            ),
-        .l15_val_i             ( l15_val_i                             ),
-        .l15_req_ack_o         ( l15_req_ack_o                         ),
+        .l15_req_o             ( l15_req_o                             ),
         .l15_rtrn_i            ( l15_rtrn_i                            )
 `endif
   );
 `else
 
     std_cache_subsystem #(
-        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                          ),
         .CACHE_START_ADDR      ( CACHE_START_ADDR                      )
     ) i_cache_subsystem (
         // to D$
