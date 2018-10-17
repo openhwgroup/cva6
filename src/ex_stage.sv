@@ -104,7 +104,12 @@ module ex_stage (
     //    is only a single entry deep, hence this operation will block all
     //    other operations once this buffer is full. This should not be a major
     //    concern though as CSRs are infrequent.
-    // 4. Multiplier/Divider: TODO(zarubaf)
+    // 4. Multiplier/Divider: The multiplier has a fixed latency of 1 cycle.
+    //                        The issue logic will take care of not issuing
+    //                        another instruction if it will collide on the
+    //                        output port. Divisions are arbitrary in length
+    //                        they will simply block the issue of all other
+    //                        instructions.
 
     // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
@@ -144,7 +149,7 @@ module ex_stage (
         .branch_exception_o ( flu_exception_o )
     );
 
-    // CSR (sequential)
+    // 3. CSR (sequential)
     csr_buffer csr_buffer_i (
         .clk_i,
         .rst_ni,
@@ -181,9 +186,7 @@ module ex_stage (
         flu_ready_o = csr_ready & mult_ready;
     end
 
-    // ----------------
-    // Multiplication
-    // ----------------
+    // 4. Multiplication (Sequential)
     fu_data_t mult_data;
     // input silencing of multiplier
     assign mult_data  = mult_valid_i ? fu_data_i  : '0;
