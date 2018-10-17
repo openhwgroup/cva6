@@ -15,7 +15,7 @@
  * Description: Common RISC-V definitions.
  */
 package riscv;
-
+    localparam XLEN = 64;
     // --------------------
     // Privilege Spec
     // --------------------
@@ -40,7 +40,7 @@ package riscv;
     } xs_t;
 
     typedef struct packed {
-        logic         sd;     // signal dirty - read-only - hardwired zero
+        logic         sd;     // signal dirty - read-only
         logic [62:36] wpri4;  // writes preserved reads ignored
         xlen_t        sxl;    // variable supervisor mode xlen - hardwired to zero
         xlen_t        uxl;    // variable user mode xlen - hardwired to zero
@@ -51,7 +51,7 @@ package riscv;
         logic         mxr;    // make executable readable
         logic         sum;    // permit supervisor user memory access
         logic         mprv;   // modify privilege - privilege level for ld/st
-        xs_t          xs;     // extension register - hardwired to zero
+        xs_t          xs;     // extension register
         xs_t          fs;     // floating point extension register
         priv_lvl_t    mpp;    // holds the previous privilege mode up to machine
         logic [1:0]   wpri2;  // writes preserved reads ignored
@@ -75,8 +75,8 @@ package riscv;
         logic         mxr;    // make executable readable
         logic         sum;    // permit supervisor user memory access
         logic         mprv;   // modify privilege - privilege level for ld/st
-        logic [1:0]   xs;     // extension register - hardwired to zero
-        logic [1:0]   fs;     // extension register - hardwired to zero
+        xs_t          xs;     // extension register
+        xs_t          fs;     // floating point extension register
         priv_lvl_t    mpp;    // holds the previous privilege mode up to machine
         logic [1:0]   wpri2;  // writes preserved reads ignored
         logic         spp;    // holds the previous privilege mode up to supervisor
@@ -95,6 +95,12 @@ package riscv;
         logic [15:0] asid;
         logic [43:0] ppn;
     } satp_t;
+
+    typedef struct packed {
+        logic         mode;
+        logic [30:22] asid;
+        logic [21:0]  ppn;
+    } satp_rv32_t;
 
     // read mask for SSTATUS over MMSTATUS
     localparam logic [63:0] SMODE_STATUS_MASK = 64'h80000003000DE133;
@@ -277,45 +283,50 @@ package riscv;
     // ----------------------
     // Virtual Memory
     // ----------------------
-    // memory management, pte
+    // length of physical page addresses
+    localparam PPN_LEN = (XLEN == 64) ? 44 : 22;
+    // memory management, PTE
     typedef struct packed {
-        logic [9:0]  reserved;
-        logic [43:0] ppn;
-        logic [1:0]  rsw;
-        logic d;
-        logic a;
-        logic g;
-        logic u;
-        logic x;
-        logic w;
-        logic r;
-        logic v;
+        logic [PPN_LEN-1:0] ppn;
+        logic [1:0]         rsw;
+        logic               d;
+        logic               a;
+        logic               g;
+        logic               u;
+        logic               x;
+        logic               w;
+        logic               r;
+        logic               v;
     } pte_t;
+
+    localparam logic       MODE_SV32 = 1'h1;
+    localparam logic [3:0] MODE_SV39 = 4'h8;
+    localparam logic [3:0] MODE_SV38 = 4'h9;
 
     // ----------------------
     // Exception Cause Codes
     // ----------------------
-    localparam logic [63:0] INSTR_ADDR_MISALIGNED = 0;
-    localparam logic [63:0] INSTR_ACCESS_FAULT    = 1;
-    localparam logic [63:0] ILLEGAL_INSTR         = 2;
-    localparam logic [63:0] BREAKPOINT            = 3;
-    localparam logic [63:0] LD_ADDR_MISALIGNED    = 4;
-    localparam logic [63:0] LD_ACCESS_FAULT       = 5;
-    localparam logic [63:0] ST_ADDR_MISALIGNED    = 6;
-    localparam logic [63:0] ST_ACCESS_FAULT       = 7;
-    localparam logic [63:0] ENV_CALL_UMODE        = 8;  // environment call from user mode
-    localparam logic [63:0] ENV_CALL_SMODE        = 9;  // environment call from supervisor mode
-    localparam logic [63:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
-    localparam logic [63:0] INSTR_PAGE_FAULT      = 12; // Instruction page fault
-    localparam logic [63:0] LOAD_PAGE_FAULT       = 13; // Load page fault
-    localparam logic [63:0] STORE_PAGE_FAULT      = 15; // Store page fault
+    localparam logic [XLEN-1:0] INSTR_ADDR_MISALIGNED = 0;
+    localparam logic [XLEN-1:0] INSTR_ACCESS_FAULT    = 1;
+    localparam logic [XLEN-1:0] ILLEGAL_INSTR         = 2;
+    localparam logic [XLEN-1:0] BREAKPOINT            = 3;
+    localparam logic [XLEN-1:0] LD_ADDR_MISALIGNED    = 4;
+    localparam logic [XLEN-1:0] LD_ACCESS_FAULT       = 5;
+    localparam logic [XLEN-1:0] ST_ADDR_MISALIGNED    = 6;
+    localparam logic [XLEN-1:0] ST_ACCESS_FAULT       = 7;
+    localparam logic [XLEN-1:0] ENV_CALL_UMODE        = 8;  // environment call from user mode
+    localparam logic [XLEN-1:0] ENV_CALL_SMODE        = 9;  // environment call from supervisor mode
+    localparam logic [XLEN-1:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
+    localparam logic [XLEN-1:0] INSTR_PAGE_FAULT      = 12; // Instruction page fault
+    localparam logic [XLEN-1:0] LOAD_PAGE_FAULT       = 13; // Load page fault
+    localparam logic [XLEN-1:0] STORE_PAGE_FAULT      = 15; // Store page fault
 
-    localparam logic [63:0] S_SW_INTERRUPT        = (1 << 63) | 1;
-    localparam logic [63:0] M_SW_INTERRUPT        = (1 << 63) | 3;
-    localparam logic [63:0] S_TIMER_INTERRUPT     = (1 << 63) | 5;
-    localparam logic [63:0] M_TIMER_INTERRUPT     = (1 << 63) | 7;
-    localparam logic [63:0] S_EXT_INTERRUPT       = (1 << 63) | 9;
-    localparam logic [63:0] M_EXT_INTERRUPT       = (1 << 63) | 11;
+    localparam logic [XLEN-1:0] S_SW_INTERRUPT        = (1 << XLEN-1) | 1;
+    localparam logic [XLEN-1:0] M_SW_INTERRUPT        = (1 << XLEN-1) | 3;
+    localparam logic [XLEN-1:0] S_TIMER_INTERRUPT     = (1 << XLEN-1) | 5;
+    localparam logic [XLEN-1:0] M_TIMER_INTERRUPT     = (1 << XLEN-1) | 7;
+    localparam logic [XLEN-1:0] S_EXT_INTERRUPT       = (1 << XLEN-1) | 9;
+    localparam logic [XLEN-1:0] M_EXT_INTERRUPT       = (1 << XLEN-1) | 11;
 
     // -----
     // CSRs
@@ -497,7 +508,7 @@ package riscv;
 
     // trace log compatible to spikes commit log feature
     // pragma translate_off
-    function string spikeCommitLog(logic [63:0] pc, priv_lvl_t priv_lvl, logic [31:0] instr, logic [4:0] rd, logic [63:0] result, logic rd_fpr);
+    function string spikeCommitLog(logic [XLEN-1:0] pc, priv_lvl_t priv_lvl, logic [31:0] instr, logic [4:0] rd, logic [XLEN-1:0] result, logic rd_fpr);
         string rd_s;
         automatic string rf_s = rd_fpr ? "f" : "x";
 

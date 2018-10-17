@@ -21,6 +21,7 @@ package ariane_pkg;
     // ---------------
     // Global Config
     // ---------------
+    localparam XLEN          = 64;
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
@@ -76,19 +77,20 @@ package ariane_pkg;
     // ^^^^ until here ^^^^
     // ---------------------
 
-    localparam logic [63:0] ARIANE_MARCHID = 64'd3;
+    localparam logic [XLEN-1:0] ARIANE_MARCHID = 64'd3;
 
-    localparam logic [63:0] ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
-                                     | (1   <<  2)  // C - Compressed extension
-                                     | (RVD <<  3)  // D - Double precsision floating-point extension
-                                     | (RVF <<  5)  // F - Single precsision floating-point extension
-                                     | (1   <<  8)  // I - RV32I/64I/128I base ISA
-                                     | (1   << 12)  // M - Integer Multiply/Divide extension
-                                     | (0   << 13)  // N - User level interrupts supported
-                                     | (1   << 18)  // S - Supervisor mode implemented
-                                     | (1   << 20)  // U - User mode implemented
-                                     | (NSX << 23)  // X - Non-standard extensions present
-                                     | (1   << 63); // RV64
+    localparam logic [XLEN-1:0] ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
+                                         | (1   <<  2)  // C - Compressed extension
+                                         | (RVD <<  3)  // D - Double precsision floating-point extension
+                                         | (RVF <<  5)  // F - Single precsision floating-point extension
+                                         | (1   <<  8)  // I - RV32I/64I/128I base ISA
+                                         | (1   << 12)  // M - Integer Multiply/Divide extension
+                                         | (0   << 13)  // N - User level interrupts supported
+                                         | (1   << 18)  // S - Supervisor mode implemented
+                                         | (1   << 20)  // U - User mode implemented
+                                         | (NSX << 23)  // X - Non-standard extensions present
+                                         | ((XLEN == 32) << 31)  // RV32
+                                         | ((XLEN == 64) << 63); // RV64
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
@@ -123,10 +125,10 @@ package ariane_pkg;
     // Only use struct when signals have same direction
     // exception
     typedef struct packed {
-         logic [63:0] cause; // cause of exception
-         logic [63:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
+         logic [XLEN-1:0] cause; // cause of exception
+         logic [XLEN-1:0] tval;  // additional information of causing exception (e.g.: instruction causing it),
                              // address of LD/ST fault
-         logic        valid;
+         logic            valid;
     } exception_t;
 
     typedef enum logic [1:0] { BHT, BTB, RAS } cf_t;
@@ -135,53 +137,53 @@ package ariane_pkg;
     // this is the struct we get back from ex stage and we will use it to update
     // all the necessary data structures
     typedef struct packed {
-        logic [63:0] pc;              // pc of predict or mis-predict
-        logic [63:0] target_address;  // target address at which to jump, or not
-        logic        is_mispredict;   // set if this was a mis-predict
-        logic        is_taken;        // branch is taken
-        logic        is_lower_16;     // branch instruction is compressed and resides
+        logic [XLEN-1:0] pc;              // pc of predict or mis-predict
+        logic [XLEN-1:0] target_address;  // target address at which to jump, or not
+        logic            is_mispredict;   // set if this was a mis-predict
+        logic            is_taken;        // branch is taken
+        logic            is_lower_16;     // branch instruction is compressed and resides
                                       // in the lower 16 bit of the word
-        logic        valid;           // prediction with all its values is valid
-        logic        clear;           // invalidate this entry
-        cf_t         cf_type;         // Type of control flow change
+        logic            valid;           // prediction with all its values is valid
+        logic            clear;           // invalidate this entry
+        cf_t             cf_type;         // Type of control flow change
     } branchpredict_t;
 
     // branchpredict scoreboard entry
     // this is the struct which we will inject into the pipeline to guide the various
     // units towards the correct branch decision and resolve
     typedef struct packed {
-        logic        valid;           // this is a valid hint
-        logic [63:0] predict_address; // target address at which to jump, or not
-        logic        predict_taken;   // branch is taken
-        logic        is_lower_16;     // branch instruction is compressed and resides
+        logic            valid;           // this is a valid hint
+        logic [XLEN-1:0] predict_address; // target address at which to jump, or not
+        logic            predict_taken;   // branch is taken
+        logic            is_lower_16;     // branch instruction is compressed and resides
                                       // in the lower 16 bit of the word
-        cf_t         cf_type;         // Type of control flow change
+        cf_t             cf_type;         // Type of control flow change
     } branchpredict_sbe_t;
 
     typedef struct packed {
-        logic        valid;
-        logic [63:0] pc;             // update at PC
-        logic [63:0] target_address;
-        logic        is_lower_16;
-        logic        clear;
+        logic            valid;
+        logic [XLEN-1:0] pc;             // update at PC
+        logic [XLEN-1:0] target_address;
+        logic            is_lower_16;
+        logic            clear;
     } btb_update_t;
 
     typedef struct packed {
-        logic        valid;
-        logic [63:0] target_address;
-        logic        is_lower_16;
+        logic            valid;
+        logic [XLEN-1:0] target_address;
+        logic            is_lower_16;
     } btb_prediction_t;
 
     typedef struct packed {
-        logic        valid;
-        logic [63:0] ra;
+        logic            valid;
+        logic [XLEN-1:0] ra;
     } ras_t;
 
     typedef struct packed {
-        logic        valid;
-        logic [63:0] pc;          // update at PC
-        logic        mispredict;
-        logic        taken;
+        logic            valid;
+        logic [XLEN-1:0] pc;          // update at PC
+        logic            mispredict;
+        logic            taken;
     } bht_update_t;
 
     typedef struct packed {
@@ -262,10 +264,10 @@ package ariane_pkg;
                              } fu_op;
 
     typedef struct packed {
-      fu_op        operator;
-      logic [63:0] operand_a;
-      logic [63:0] operand_b;
-      logic [63:0] imm;
+      fu_op            operator;
+      logic [XLEN-1:0] operand_a;
+      logic [XLEN-1:0] operand_b;
+      logic [XLEN-1:0] imm;
     } fu_data_t;
 
     // -------------------------------
@@ -345,8 +347,8 @@ package ariane_pkg;
 
     typedef struct packed {
         logic                     valid;
-        logic [63:0]              vaddr;
-        logic [63:0]              data;
+        logic [XLEN-1:0]          vaddr;
+        logic [XLEN-1:0]          data;
         logic [7:0]               be;
         fu_t                      fu;
         fu_op                     operator;
@@ -358,7 +360,7 @@ package ariane_pkg;
     // ---------------
     // store the decompressed instruction
     typedef struct packed {
-        logic [63:0]        address;              // the address of the instructions from below
+        logic [XLEN-1:0]    address;              // the address of the instructions from below
         logic [31:0]        instruction;          // instruction word
         branchpredict_sbe_t branch_predict;       // this field contains branch prediction information regarding the forward branch path
         exception_t         ex;                   // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
@@ -368,7 +370,7 @@ package ariane_pkg;
     // ID/EX/WB Stage
     // ---------------
     typedef struct packed {
-        logic [63:0]              pc;            // PC of instruction
+        logic [XLEN-1:0]          pc;            // PC of instruction
         logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
                                                  // with the transaction id in any case make the width more generic
         fu_t                      fu;            // functional unit to use
@@ -376,7 +378,7 @@ package ariane_pkg;
         logic [REG_ADDR_SIZE-1:0] rs1;           // register source address 1
         logic [REG_ADDR_SIZE-1:0] rs2;           // register source address 2
         logic [REG_ADDR_SIZE-1:0] rd;            // register destination address
-        logic [63:0]              result;        // for unfinished instructions this field also holds the immediate,
+        logic [XLEN-1:0]          result;        // for unfinished instructions this field also holds the immediate,
                                                  // for unfinished floating-point that are partly encoded in rs2, this field also holds rs2
                                                  // for unfinished floating-point fused operations (FMADD, FMSUB, FNMADD, FNMSUB)
                                                  // this field holds the address of the third operand from the floating-point register file
@@ -407,8 +409,6 @@ package ariane_pkg;
         riscv::pte_t           content;
     } tlb_update_t;
 
-    localparam logic [3:0] MODE_SV39 = 4'h8;
-
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).
     localparam PPN4K_WIDTH = 38;
@@ -419,13 +419,13 @@ package ariane_pkg;
     // I$ address translation requests
     typedef struct packed {
         logic                     fetch_valid;     // address translation valid
-        logic [63:0]              fetch_paddr;     // physical address in
+        logic [XLEN-1:0]          fetch_paddr;     // physical address in
         exception_t               fetch_exception; // exception occurred during fetch
     } icache_areq_i_t;
 
     typedef struct packed {
         logic                     fetch_req;       // address translation request
-        logic [63:0]              fetch_vaddr;     // virtual address out
+        logic [XLEN-1:0]          fetch_vaddr;     // virtual address out
     } icache_areq_o_t;
 
     // I$ data requests
@@ -433,14 +433,14 @@ package ariane_pkg;
         logic                     req;                    // we request a new word
         logic                     kill_s1;                // kill the current request
         logic                     kill_s2;                // kill the last request
-        logic [63:0]              vaddr;                  // 1st cycle: 12 bit index is taken for lookup
+        logic [XLEN-1:0]          vaddr;                  // 1st cycle: 12 bit index is taken for lookup
     } icache_dreq_i_t;
 
     typedef struct packed {
         logic                     ready;                  // icache is ready
         logic                     valid;                  // signals a valid read
         logic [FETCH_WIDTH-1:0]   data;                   // 2+ cycle out: tag
-        logic [63:0]              vaddr;                  // virtual address out
+        logic [XLEN-1:0]          vaddr;                  // virtual address out
         exception_t               ex;                     // we've encountered an exception
     } icache_dreq_o_t;
 
@@ -452,21 +452,21 @@ package ariane_pkg;
         logic        req;       // this request is valid
         amo_t        amo_op;    // atomic memory operation to perform
         logic [1:0]  size;      // 2'b10 --> word operation, 2'b11 --> double word operation
-        logic [63:0] operand_a; // address
-        logic [63:0] operand_b; // data as layuoted in the register
+        logic [XLEN-1:0] operand_a; // address
+        logic [XLEN-1:0] operand_b; // data as layuoted in the register
     } amo_req_t;
 
     // AMO response coming from cache.
     typedef struct packed {
-        logic        ack;    // response is valid
-        logic [63:0] result; // sign-extended, result
+        logic            ack;    // response is valid
+        logic [XLEN-1:0] result; // sign-extended, result
     } amo_resp_t;
 
     // D$ data requests
     typedef struct packed {
         logic [DCACHE_INDEX_WIDTH-1:0] address_index;
         logic [DCACHE_TAG_WIDTH-1:0]   address_tag;
-        logic [63:0]                   data_wdata;
+        logic [XLEN-1:0]               data_wdata;
         logic                          data_req;
         logic                          data_we;
         logic [7:0]                    data_be;
@@ -476,9 +476,9 @@ package ariane_pkg;
     } dcache_req_i_t;
 
     typedef struct packed {
-        logic                      data_gnt;
-        logic                      data_rvalid;
-        logic [63:0]               data_rdata;
+        logic            data_gnt;
+        logic            data_rvalid;
+        logic [XLEN-1:0] data_rdata;
     } dcache_req_o_t;
 
     // ----------------------
@@ -491,24 +491,32 @@ package ariane_pkg;
     // ----------------------
     // Immediate functions
     // ----------------------
-    function automatic logic [63:0] uj_imm (logic [31:0] instruction_i);
-        return { {44 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
+    function automatic logic [XLEN-1:0] uj_imm (logic [31:0] instruction_i);
+        return { {{XLEN-20}{instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
     endfunction
 
-    function automatic logic [63:0] i_imm (logic [31:0] instruction_i);
-        return { {52 {instruction_i[31]}}, instruction_i[31:20] };
+    function automatic logic [XLEN-1:0] i_imm (logic [31:0] instruction_i);
+        return { {{XLEN-12}{instruction_i[31]}}, instruction_i[31:20] };
     endfunction
 
-    function automatic logic [63:0] sb_imm (logic [31:0] instruction_i);
-        return { {51 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
+    function automatic logic [XLEN-1:0] sb_imm (logic [31:0] instruction_i);
+        return { {{XLEN-13}{instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
     endfunction
 
     // ----------------------
     // LSU Functions
     // ----------------------
     // align data to address e.g.: shift data to be naturally 64
-    function automatic logic [63:0] data_align (logic [2:0] addr, logic [63:0] data);
-        case (addr)
+    function automatic logic [XLEN-1:0] data_align (logic [2:0] addr, logic [XLEN-1:0] data);
+
+        if (XLEN == 32) case (addr[1:0])
+            3'b00: return data;
+            3'b01: return {data[23:0], data[31:24]};
+            3'b10: return {data[15:0], data[31:16]};
+            3'b11: return {data[7:0],  data[31:8]};
+        endcase
+
+        if (XLEN == 64) case (addr)
             3'b000: return data;
             3'b001: return {data[55:0], data[63:56]};
             3'b010: return {data[47:0], data[63:48]};
@@ -523,12 +531,16 @@ package ariane_pkg;
 
     // generate byte enable mask
     function automatic logic [7:0] be_gen(logic [2:0] addr, logic [1:0] size);
+        automatic logic [2:0] addr_zeroed;
+        if (XLEN == 32) addr_zeroed = 3'b011 & addr;
+        if (XLEN == 64) addr_zeroed = addr;
+
         case (size)
             2'b11: begin
                 return 8'b1111_1111;
             end
             2'b10: begin
-                case (addr[2:0])
+                case (addr)
                     3'b000: return 8'b0000_1111;
                     3'b001: return 8'b0001_1110;
                     3'b010: return 8'b0011_1100;
@@ -537,7 +549,7 @@ package ariane_pkg;
                 endcase
             end
             2'b01: begin
-                case (addr[2:0])
+                case (addr)
                     3'b000: return 8'b0000_0011;
                     3'b001: return 8'b0000_0110;
                     3'b010: return 8'b0000_1100;
@@ -548,7 +560,7 @@ package ariane_pkg;
                 endcase
             end
             2'b00: begin
-                case (addr[2:0])
+                case (addr)
                     3'b000: return 8'b0000_0001;
                     3'b001: return 8'b0000_0010;
                     3'b010: return 8'b0000_0100;
