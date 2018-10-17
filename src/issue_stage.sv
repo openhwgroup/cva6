@@ -43,10 +43,9 @@ module issue_stage #(
     output logic                                     lsu_valid_o,
     // branch prediction
     output logic                                     branch_valid_o,   // use branch prediction unit
-    output branchpredict_sbe_t                       branch_predict_o,
+    output branchpredict_sbe_t                       branch_predict_o, // Branch predict Out
 
-    input  logic                                     mult_ready_i,
-    output logic                                     mult_valid_o,    // Branch predict Out
+    output logic                                     mult_valid_o,
 
     input  logic                                     fpu_ready_i,
     output logic                                     fpu_valid_o,
@@ -168,6 +167,10 @@ module issue_stage #(
         .rs3_valid_i         ( rs3_valid_iro_sb                ),
         .rd_clobber_gpr_i    ( rd_clobber_gpr_sb_iro           ),
         .rd_clobber_fpr_i    ( rd_clobber_fpr_sb_iro           ),
+        .alu_valid_o         ( alu_valid_o                     ),
+        .branch_valid_o      ( branch_valid_o                  ),
+        .csr_valid_o         ( csr_valid_o                     ),
+        .mult_valid_o        ( mult_valid_o                    ),
         .*
     );
 

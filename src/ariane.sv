@@ -75,13 +75,14 @@ module ariane #(
     fu_data_t                 fu_data_id_ex;
     logic [63:0]              pc_id_ex;
     logic                     is_compressed_instr_id_ex;
-    // ALU
+    // fixed latency units
     logic                     flu_ready_ex_id;
-    logic                     alu_valid_id_ex;
     logic [TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
     logic                     flu_valid_ex_id;
     logic [63:0]              flu_result_ex_id;
     exception_t               flu_exception_ex_id;
+    // ALU
+    logic                     alu_valid_id_ex;
     // Branches and Jumps
     logic                     branch_valid_id_ex;
 
@@ -95,11 +96,7 @@ module ariane #(
     logic                     lsu_valid_ex_id;
     exception_t               lsu_exception_ex_id;
     // MULT
-    logic                     mult_ready_ex_id;
     logic                     mult_valid_id_ex;
-    logic [TRANS_ID_BITS-1:0] mult_trans_id_ex_id;
-    logic [63:0]              mult_result_ex_id;
-    logic                     mult_valid_ex_id;
     // FPU
     logic                     fpu_ready_ex_id;
     logic                     fpu_valid_id_ex;
@@ -292,7 +289,6 @@ module ariane #(
         .lsu_ready_i                ( lsu_ready_ex_id                 ),
         .lsu_valid_o                ( lsu_valid_id_ex                 ),
         // Multiplier
-        .mult_ready_i               ( mult_ready_ex_id                ),
         .mult_valid_o               ( mult_valid_id_ex                ),
         // FPU
         .fpu_ready_i                ( fpu_ready_ex_id                 ),
@@ -303,10 +299,10 @@ module ariane #(
         .csr_valid_o                ( csr_valid_id_ex                 ),
         // Commit
         .resolved_branch_i          ( resolved_branch                 ),
-        .trans_id_i                 ( {flu_trans_id_ex_id,  lsu_trans_id_ex_id,   mult_trans_id_ex_id,        fpu_trans_id_ex_id }),
-        .wbdata_i                   ( {flu_result_ex_id,    lsu_result_ex_id,       mult_result_ex_id,          fpu_result_ex_id }),
-        .ex_ex_i                    ( {flu_exception_ex_id, lsu_exception_ex_id, {$bits(exception_t){1'b0}}, fpu_exception_ex_id }),
-        .wb_valid_i                 ( {flu_valid_ex_id,     lsu_valid_ex_id,         mult_valid_ex_id,           fpu_valid_ex_id }),
+        .trans_id_i                 ( {flu_trans_id_ex_id,  lsu_trans_id_ex_id,   fpu_trans_id_ex_id }),
+        .wbdata_i                   ( {flu_result_ex_id,    lsu_result_ex_id,       fpu_result_ex_id }),
+        .ex_ex_i                    ( {flu_exception_ex_id, lsu_exception_ex_id, fpu_exception_ex_id }),
+        .wb_valid_i                 ( {flu_valid_ex_id,     lsu_valid_ex_id,         fpu_valid_ex_id }),
 
         .waddr_i                    ( waddr_commit_id               ),
         .wdata_i                    ( wdata_commit_id               ),
@@ -344,6 +340,8 @@ module ariane #(
         .csr_valid_i            ( csr_valid_id_ex             ),
         .csr_addr_o             ( csr_addr_ex_csr             ),
         .csr_commit_i           ( csr_commit_commit_ex        ), // from commit
+        // MULT
+        .mult_valid_i           ( mult_valid_id_ex            ),
         // LSU
         .lsu_ready_o            ( lsu_ready_ex_id             ),
         .lsu_valid_i            ( lsu_valid_id_ex             ),
@@ -354,12 +352,6 @@ module ariane #(
         .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
         .lsu_exception_o        ( lsu_exception_ex_id         ),
         .no_st_pending_o        ( no_st_pending_ex_commit     ),
-        // MULT
-        .mult_ready_o           ( mult_ready_ex_id            ),
-        .mult_valid_i           ( mult_valid_id_ex            ),
-        .mult_trans_id_o        ( mult_trans_id_ex_id         ),
-        .mult_result_o          ( mult_result_ex_id           ),
-        .mult_valid_o           ( mult_valid_ex_id            ),
         // FPU
         .fpu_ready_o            ( fpu_ready_ex_id             ),
         .fpu_valid_i            ( fpu_valid_id_ex             ),

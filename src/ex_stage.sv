@@ -15,9 +15,7 @@
 
 import ariane_pkg::*;
 
-module ex_stage #(
-    parameter int          ASID_WIDTH       = 1
-)(
+module ex_stage (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,
@@ -35,6 +33,7 @@ module ex_stage #(
     // Branches and Jumps
     // ALU 1
     input  logic                                   alu_valid_i,           // Output is valid
+    // Branch Unit
     input  logic                                   branch_valid_i,        // we are using the branch unit
     input  branchpredict_sbe_t                     branch_predict_i,
     output branchpredict_t                         resolved_branch_o,     // the branch engine uses the write back from the ALU
@@ -43,6 +42,8 @@ module ex_stage #(
     input  logic                                   csr_valid_i,
     output logic [11:0]                            csr_addr_o,
     input  logic                                   csr_commit_i,
+    // MULT
+    input  logic                                   mult_valid_i,      // Output is valid
     // LSU
     output logic                                   lsu_ready_o,           // FU is ready
     input  logic                                   lsu_valid_i,           // Input is valid
@@ -54,12 +55,6 @@ module ex_stage #(
     output exception_t                             lsu_exception_o,
     output logic                                   no_st_pending_o,
     input  logic                                   amo_valid_commit_i,
-    // MULT
-    output logic                                   mult_ready_o,      // FU is ready
-    input  logic                                   mult_valid_i,      // Output is valid
-    output logic [TRANS_ID_BITS-1:0]               mult_trans_id_o,
-    output logic [63:0]                            mult_result_o,
-    output logic                                   mult_valid_o,
     // FPU
     output logic                                   fpu_ready_o,      // FU is ready
     input  logic                                   fpu_valid_i,      // Output is valid
@@ -71,7 +66,6 @@ module ex_stage #(
     output logic [63:0]                            fpu_result_o,
     output logic                                   fpu_valid_o,
     output exception_t                             fpu_exception_o,
-
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
@@ -114,8 +108,10 @@ module ex_stage #(
 
     // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
-    logic [63:0] alu_result, branch_result, csr_result;
-    logic csr_ready;
+    logic [63:0] alu_result, branch_result, csr_result, mult_result;
+    logic csr_ready, mult_ready;
+    logic [TRANS_ID_BITS-1:0] mult_trans_id;
+    logic mult_valid;
 
     // 1. ALU (combinatorial)
     // data silence operation
@@ -161,7 +157,7 @@ module ex_stage #(
         .csr_addr_o
     );
 
-    assign flu_valid_o = alu_valid_i | branch_valid_i | csr_valid_i;
+    assign flu_valid_o = alu_valid_i | branch_valid_i | csr_valid_i | mult_valid;
 
     // result MUX
     always_comb begin
@@ -174,19 +170,22 @@ module ex_stage #(
         // CSR result
         end else if (csr_valid_i) begin
             flu_result_o = csr_result;
+        end else if (mult_valid) begin
+            flu_result_o = mult_result;
+            flu_trans_id_o = mult_trans_id;
         end
     end
 
     // ready flags for FLU
     always_comb begin
-        flu_ready_o = csr_ready;
+        flu_ready_o = csr_ready & mult_ready;
     end
 
     // ----------------
     // Multiplication
     // ----------------
     fu_data_t mult_data;
-    // input silencing of the multiplier
+    // input silencing of multiplier
     assign mult_data  = mult_valid_i ? fu_data_i  : '0;
 
     mult i_mult (
@@ -195,10 +194,10 @@ module ex_stage #(
         .flush_i,
         .mult_valid_i,
         .fu_data_i       ( mult_data     ),
-        .result_o        ( mult_result_o ),
-        .mult_valid_o,
-        .mult_ready_o,
-        .mult_trans_id_o
+        .result_o        ( mult_result   ),
+        .mult_valid_o    ( mult_valid    ),
+        .mult_ready_o    ( mult_ready    ),
+        .mult_trans_id_o ( mult_trans_id )
     );
 
     // ----------------
@@ -215,13 +214,13 @@ module ex_stage #(
                 .flush_i,
                 .fpu_valid_i,
                 .fpu_ready_o,
-                .fu_data_i       ( fpu_data ),
+                .fu_data_i ( fpu_data ),
                 .fpu_fmt_i,
                 .fpu_rm_i,
                 .fpu_frm_i,
                 .fpu_prec_i,
                 .fpu_trans_id_o,
-                .result_o        ( fpu_result_o ),
+                .result_o ( fpu_result_o ),
                 .fpu_valid_o,
                 .fpu_exception_o
             );

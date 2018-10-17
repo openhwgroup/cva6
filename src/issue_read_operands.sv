@@ -53,7 +53,6 @@ module issue_read_operands #(
     input  logic                                   lsu_ready_i,      // FU is ready
     output logic                                   lsu_valid_o,      // Output is valid
     // MULT
-    input  logic                                   mult_ready_i,     // FU is ready
     output logic                                   mult_valid_o,     // Output is valid
     // FPU
     input  logic                                   fpu_ready_i,      // FU is ready
@@ -76,7 +75,6 @@ module issue_read_operands #(
     logic fu_busy; // functional unit is busy
     logic [63:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
     logic [FLEN-1:0] operand_c_regfile; // third operand only from fp regfile
-
     // output flipflop (ID <-> EX)
     logic [63:0] operand_a_n, operand_a_q,
                  operand_b_n, operand_b_q,
@@ -127,10 +125,8 @@ module issue_read_operands #(
         unique case (issue_instr_i.fu)
             NONE:
                 fu_busy = 1'b0;
-            ALU, CTRL_FLOW, CSR:
+            ALU, CTRL_FLOW, CSR, MULT:
                 fu_busy = ~flu_ready_i;
-            MULT:
-                fu_busy = ~mult_ready_i;
             FPU, FPU_VEC:
                 fu_busy = ~fpu_ready_i;
             LOAD, STORE:
@@ -165,27 +161,30 @@ module issue_read_operands #(
             // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
             // be fetched through the register file since they can't be forwarded
             // if the operand is available, forward it. CSRs don't write to/from FPR
-            if (rs1_valid_i && (is_rs1_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs1] != CSR))
+            if (rs1_valid_i && (is_rs1_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs1] != CSR)) begin
                 forward_rs1 = 1'b1;
-            else // the operand is not available -> stall
+            end else begin // the operand is not available -> stall
                 stall = 1'b1;
+            end
         end
 
         if (is_rs2_fpr(issue_instr_i.op) ? rd_clobber_fpr_i[issue_instr_i.rs2] != NONE
                                          : rd_clobber_gpr_i[issue_instr_i.rs2] != NONE) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR
-            if (rs2_valid_i && (is_rs2_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs2] != CSR))
+            if (rs2_valid_i && (is_rs2_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs2] != CSR)) begin
                 forward_rs2 = 1'b1;
-            else // the operand is not available -> stall
+            end else begin // the operand is not available -> stall
                 stall = 1'b1;
+            end
         end
 
         if (is_imm_fpr(issue_instr_i.op) && rd_clobber_fpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
-            if (rs3_valid_i)
+            if (rs3_valid_i) begin
                 forward_rs3 = 1'b1;
-            else // the operand is not available -> stall
+            end else begin // the operand is not available -> stall
                 stall = 1'b1;
+            end
         end
     end
 
@@ -319,6 +318,11 @@ module issue_read_operands #(
             if (issue_instr_i.fu == NONE) begin
                 issue_ack_o = 1'b1;
             end
+        end
+        // after a multiplication was issued we can only issue another multiplication
+        // otherwise we will get contentions on the fixed latency bus
+        if (mult_valid_q && issue_instr_i.fu != MULT) begin
+            issue_ack_o = 1'b0;
         end
     end
 
