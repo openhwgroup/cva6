@@ -16,7 +16,6 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module std_nbdcache #(
-    parameter int unsigned AXI_ID_WIDTH     = 10,
     parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
 )(
     input  logic                           clk_i,       // Clock
@@ -128,7 +127,6 @@ module std_nbdcache #(
     // Miss Handling Unit
     // ------------------
     miss_handler #(
-        .AXI_ID_WIDTH           ( AXI_ID_WIDTH         ),
         .NR_PORTS               ( 3                    )
     ) i_miss_handler (
         .flush_i                ( flush_i              ),

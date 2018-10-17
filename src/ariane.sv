@@ -20,9 +20,7 @@ import instruction_tracer_pkg::*;
 //pragma translate_on
 
 module ariane #(
-    parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
-    parameter int unsigned AXI_ID_WIDTH     = 10,            // minimum 1
-    parameter int unsigned AXI_USER_WIDTH   = 1              // minimum 1
+    parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000 // address on which to decide whether the request is cache-able or not
 )(
     input  logic                clk_i,
     input  logic                rst_ni,

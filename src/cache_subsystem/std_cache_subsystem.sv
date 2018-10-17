@@ -18,7 +18,6 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module std_cache_subsystem #(
-  parameter int unsigned AXI_ID_WIDTH     = 10,
   parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
 )(
     input logic                            clk_i,
@@ -78,7 +77,6 @@ module std_cache_subsystem #(
    // Port 1: Load Unit
    // Port 2: Store Unit
    std_nbdcache #(
-      .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
       .CACHE_START_ADDR ( CACHE_START_ADDR )
    ) i_nbdcache (
       .clk_i,
@@ -191,9 +189,9 @@ module std_cache_subsystem #(
     );
 
     always_comb begin
-        aw_enable_d = aw_enable_d;
-        ar_enable_d = ar_enable_d;
-        w_enable_d  = w_enable_d;
+        aw_enable_d = aw_enable_q;
+        ar_enable_d = ar_enable_q;
+        w_enable_d  = w_enable_q;
 
         // freeze the arbiter
         if (aw_arbiter_valid) aw_enable_d = 1'b0;
@@ -218,22 +216,22 @@ module std_cache_subsystem #(
     end
 
     // Route responses based on ID
-    // 0000         -> I$
-    // 11[00|10|01] -> Bypass
-    // 1111         -> D$
+    // 0000            -> I$
+    // 10[00|10|01|11] -> Bypass
+    // 1111            -> D$
     // R Channel
     assign axi_resp_icache.r = axi_resp_i.r;
     assign axi_resp_bypass.r = axi_resp_i.r;
     assign axi_resp_data.r   = axi_resp_i.r;
 
-    logic [2:0] r_select;
+    logic [1:0] r_select;
 
     always_comb begin
         r_select = 0;
         unique case (axi_resp_i.r.id)
             4'b0000: r_select = 2; // icache
             4'b1111: r_select = 0; // dcache
-            4'b1100, 4'b1101, 4'b1110: r_select = 1; // bypass
+            4'b1000, 4'b1001, 4'b1010, 4'b1011: r_select = 1; // bypass
             default: r_select = 0;
         endcase
     end
@@ -249,7 +247,7 @@ module std_cache_subsystem #(
     );
 
     // B Channel
-    logic [2:0] b_select;
+    logic [1:0] b_select;
 
     assign axi_resp_icache.b = axi_resp_i.b;
     assign axi_resp_bypass.b = axi_resp_i.b;
@@ -260,7 +258,7 @@ module std_cache_subsystem #(
         unique case (axi_resp_i.b.id)
             4'b0000: b_select = 2; // icache
             4'b1111: b_select = 0; // dcache
-            4'b1100, 4'b1101, 4'b1110: b_select = 1; // bypass
+            4'b1000, 4'b1001, 4'b1010, 4'b1011: b_select = 1; // bypass
             default: b_select = 0;
         endcase
     end

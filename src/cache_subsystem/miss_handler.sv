@@ -19,9 +19,7 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module miss_handler #(
-    parameter int unsigned NR_PORTS         = 3,
-    parameter int unsigned AXI_ID_WIDTH     = 10,
-    parameter int unsigned AXI_USER_WIDTH   = 1
+    parameter int unsigned NR_PORTS         = 3
 )(
     input  logic                                        clk_i,
     input  logic                                        rst_ni,
@@ -518,8 +516,8 @@ module miss_handler #(
     logic                        valid_bypass_fsm;
     logic [63:0]                 data_bypass_fsm;
     logic [$clog2(NR_PORTS)-1:0] id_fsm_bypass;
-    logic [AXI_ID_WIDTH-1:0]     id_bypass_fsm;
-    logic [AXI_ID_WIDTH-1:0]     gnt_id_bypass_fsm;
+    logic [3:0]                  id_bypass_fsm;
+    logic [3:0]                  gnt_id_bypass_fsm;
 
     arbiter #(
         .NR_PORTS       ( NR_PORTS                                 ),
@@ -552,8 +550,8 @@ module miss_handler #(
     );
 
     axi_adapter #(
-        .DATA_WIDTH            ( 64                                                       ),
-        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                                             )
+        .DATA_WIDTH            ( 64  ),
+        .AXI_ID_WIDTH          ( 4   )
     ) i_bypass_axi_adapter (
         .clk_i,
         .rst_ni,
@@ -580,8 +578,8 @@ module miss_handler #(
     // Cache Line AXI Refill
     // ----------------------
     axi_adapter  #(
-        .DATA_WIDTH          ( DCACHE_LINE_WIDTH   ),
-        .AXI_ID_WIDTH        ( AXI_ID_WIDTH       )
+        .DATA_WIDTH          ( DCACHE_LINE_WIDTH  ),
+        .AXI_ID_WIDTH        ( 4                  )
     ) i_miss_axi_adapter (
         .clk_i,
         .rst_ni,
@@ -642,13 +640,6 @@ module miss_handler #(
             miss_req_size   [i]  = miss_req.size;
         end
     end
-
-    //pragma translate_off
-        initial begin
-            assert (AXI_ID_WIDTH >= $clog2(NR_PORTS)) else $fatal (1, "AXI ID Width needs to be larger than number of requestors");
-        end
-    //pragma translate_on
-
 endmodule
 
 // --------------

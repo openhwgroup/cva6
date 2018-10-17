@@ -15,15 +15,15 @@
 
 module ariane_testharness #(
     parameter logic [63:0] CACHE_START_ADDR  = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
-    parameter int unsigned AXI_ID_WIDTH      = 10,
+    parameter int unsigned AXI_ID_WIDTH      = 4,
     parameter int unsigned AXI_USER_WIDTH    = 1,
     parameter int unsigned AXI_ADDRESS_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH    = 64,
     parameter int unsigned NUM_WORDS         = 2**24          // memory size
 )(
-    input  logic                           clk_i,
-    input  logic                           rst_ni,
-    output logic [31:0]                    exit_o
+    input  logic        clk_i,
+    input  logic        rst_ni,
+    output logic [31:0] exit_o
 );
 
     // disable test-enable
@@ -70,8 +70,8 @@ module ariane_testharness #(
     assign test_en = 1'b0;
     assign ndmreset_n = ~ndmreset ;
 
-    localparam NB_SLAVE = 4;
-    localparam NB_MASTER = 2;
+    localparam NB_SLAVE = 2;
+    localparam NB_MASTER = 4;
 
     localparam AXI_ID_WIDTH_SLAVES = AXI_ID_WIDTH + $clog2(NB_SLAVE);
 
@@ -322,9 +322,7 @@ module ariane_testharness #(
     ariane_axi::resp_t   axi_ariane_resp;
 
     ariane #(
-        .CACHE_START_ADDR ( CACHE_START_ADDR ),
-        .AXI_ID_WIDTH     ( AXI_ID_WIDTH     ),
-        .AXI_USER_WIDTH   ( AXI_USER_WIDTH   )
+        .CACHE_START_ADDR     ( CACHE_START_ADDR )
     ) i_ariane (
         .clk_i                ( clk_i            ),
         .rst_ni               ( ndmreset_n       ),

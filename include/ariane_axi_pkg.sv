@@ -16,7 +16,7 @@
  */
 
 package ariane_axi;
-    // 4 is recommended by AXI standard, so lets stick to it
+    // 4 is recommended by AXI standard, so lets stick to it, do not change
     localparam IdWidth   = 4;
     localparam UserWidth = 1;
     localparam AddrWidth = 64;

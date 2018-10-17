@@ -22,4 +22,4 @@ build/
 *.vcd
 *.log
 *.out
-work-ver/*
+work-*/*
