@@ -98,3 +98,13 @@ torture:
   dependencies:
     - build
 
+serdiv-quest:
+  stage: standard
+  script:
+    - cd tb/tb_serdiv/
+    - make simc
+    - "grep 'CI: PASSED' summary.rep"
+  dependencies:
+    - build
+
+
