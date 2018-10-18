@@ -44,7 +44,6 @@ module branch_unit (
         resolved_branch_o.is_taken       = 1'b0;
         resolved_branch_o.valid          = branch_valid_i;
         resolved_branch_o.is_mispredict  = 1'b0;
-        resolved_branch_o.is_lower_16    = 1'b0;
         resolved_branch_o.clear          = 1'b0;
         resolved_branch_o.cf_type        = branch_predict_i.cf_type;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
@@ -69,10 +68,6 @@ module branch_unit (
         resolved_branch_o.pc = (is_compressed_instr_i || pc_i[1] == 1'b0) ? pc_i : ({pc_i[63:2], 2'b0} + 64'h4);
 
         if (branch_valid_i) begin
-            // save if the branch instruction was in the lower 16 bit of the instruction word
-            // the first case is a compressed instruction which is in slot 0
-            // the other case is a misaligned uncompressed instruction which we only predict in the next cycle (see notes above)
-            resolved_branch_o.is_lower_16 = (is_compressed_instr_i && pc_i[1] == 1'b0) || (!is_compressed_instr_i && pc_i[1] == 1'b1);
             // write target address which goes to pc gen
             resolved_branch_o.target_address = (branch_comp_res_i) ? target_address : next_pc;
             resolved_branch_o.is_taken       = branch_comp_res_i;

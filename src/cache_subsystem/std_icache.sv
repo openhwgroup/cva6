@@ -121,9 +121,9 @@ module std_icache (
     assign idx = vaddr_q[ICACHE_BYTE_OFFSET-1:2];
 
     generate
-        for (genvar i=0;i<ICACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
+        for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : g_tag_cmpsel
             assign hit[i] = (tag_rdata[i].tag == tag) ? tag_rdata[i].valid : 1'b0;
-            assign cl_sel[i] = (hit[i]) ? data_rdata[i][{idx,5'b0} +: FETCH_WIDTH] : '0;
+            assign cl_sel[i] = (hit[i]) ? data_rdata[i][{idx, 5'b0} +: FETCH_WIDTH] : '0;
             assign way_valid[i] = tag_rdata[i].valid;
         end
     endgenerate
@@ -131,7 +131,7 @@ module std_icache (
     // OR reduction of selected cachelines
     always_comb begin : p_reduction
         dreq_o.data = cl_sel[0];
-        for(int i=1; i<ICACHE_SET_ASSOC;i++)
+        for(int i = 1; i < ICACHE_SET_ASSOC; i++)
             dreq_o.data |= cl_sel[i];
     end
 

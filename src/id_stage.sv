@@ -21,7 +21,7 @@ module id_stage (
 
     input  logic                  flush_i,
     // from IF
-    input  fetch_entry_t          fetch_entry_i,
+    input  frontend_fetch_t       fetch_entry_i,
     input  logic                  fetch_entry_valid_i,
     output logic                  decoded_instr_ack_o, // acknowledge the instruction (fetch entry)
 
@@ -45,7 +45,6 @@ module id_stage (
         logic              valid;
         scoreboard_entry_t sbe;
         logic              is_ctrl_flow;
-
     } issue_n, issue_q;
 
     logic                is_control_flow_instr;
@@ -62,9 +61,9 @@ module id_stage (
     // 1. Re-align instructions
     // ---------------------------------------------------------
     instr_realigner instr_realigner_i (
-        .fetch_entry_0_i         ( fetch_entry_i               ),
-        .fetch_entry_valid_0_i   ( fetch_entry_valid_i         ),
-        .fetch_ack_0_o           ( decoded_instr_ack_o         ),
+        .fetch_entry_i           ( fetch_entry_i               ),
+        .fetch_entry_valid_i     ( fetch_entry_valid_i         ),
+        .fetch_ack_o             ( decoded_instr_ack_o         ),
 
         .fetch_entry_o           ( fetch_entry                 ),
         .fetch_entry_valid_o     ( fetch_entry_valid           ),

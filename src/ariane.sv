@@ -57,7 +57,7 @@ module ariane #(
     // --------------
     // IF <-> ID
     // --------------
-    fetch_entry_t             fetch_entry_if_id;
+    frontend_fetch_t          fetch_entry_if_id;
     logic                     fetch_valid_if_id;
     logic                     decode_ack_id_if;
 
