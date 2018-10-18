@@ -1,17 +1,3 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
-// Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
-// or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the
-// specific language governing permissions and limitations under the License.
-//
-// Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
-//
-// Date: 05.06.2017
-// Description: Ariane Multiplier and Divider (as defined in the M-extension)
 
 import ariane_pkg::*;
 
@@ -71,33 +57,17 @@ module mult (
     // ---------------------
     // Division
     // ---------------------
-    logic [5:0]  lzc_result; // holds the index of the last '1' (as the input operand is reversed)
-    logic        lzc_no_one; // no one was found by find first one
-    logic [63:0] lzc_input;  // input to find first one
-    logic [63:0] operand_b_rev, operand_b_rev_neg, operand_b_shift; // couple of different representations for the dividend
-    logic [6:0]  div_shift;             // amount of which to shift to left
-    logic        div_signed;            // should this operation be performed as a signed or unsigned division
-    logic        div_op_signed;         // actual sign signal depends on div_signed and the MSB of the word
     logic [63:0] operand_b, operand_a;  // input operands after input MUX (input silencing, word operations or full inputs)
     logic [63:0] result;                // result before result mux
 
-    logic        word_op;               // is it a word operation
+    logic        div_signed;            // signed or unsigned division
     logic        rem;                   // is it a reminder (or not a reminder e.g.: a division)
     logic        word_op_d, word_op_q;  // save whether the operation was signed or not
 
-    // is this a signed operation?
-    assign div_signed = (fu_data_i.operator inside {DIV, DIVW, REM, REMW}) ? 1'b1 : 1'b0;
-    // if this operation is signed look at the actual sign bit to determine whether we should perform signed or unsigned division
-    assign div_op_signed = div_signed & operand_b[63];
-
-    // reverse input operands
-    generate
-        for (genvar k = 0; k < 64; k++)
-            assign operand_b_rev[k] = operand_b[63-k];
-    endgenerate
-    // negated reverse input operand, used for signed divisions
-    assign operand_b_rev_neg = ~operand_b_rev;
-    assign lzc_input = (div_op_signed) ? operand_b_rev_neg : operand_b_rev;
+    // is this a signed op?
+    assign div_signed = fu_data_i.operator inside {DIV, DIVW, REM, REMW};
+    // is this a modulo?
+    assign rem        = fu_data_i.operator inside {REM, REMU, REMW, REMUW};
 
     // prepare the input operands and control divider
     always_comb begin
@@ -105,82 +75,53 @@ module mult (
         operand_a   = '0;
         operand_b   = '0;
         // control signals
-        word_op_d = word_op_q;
-        word_op     = 1'b0;
-        rem         = 1'b0;
+        word_op_d   = word_op_q;
 
         // we've go a new division operation
         if (mult_valid_i && fu_data_i.operator inside {DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW}) begin
             // is this a word operation?
             if (fu_data_i.operator inside {DIVW, DIVUW, REMW, REMUW}) begin
-                word_op = 1'b1;
                 // yes so check if we should sign extend this is only done for a signed operation
                 if (div_signed) begin
                     operand_a = sext32(fu_data_i.operand_a[31:0]);
                     operand_b = sext32(fu_data_i.operand_b[31:0]);
                 end else begin
-                    operand_a = {32'b0, fu_data_i.operand_a[31:0]};
-                    operand_b = {32'b0, fu_data_i.operand_b[31:0]};
+                    operand_a = fu_data_i.operand_a[31:0];
+                    operand_b = fu_data_i.operand_b[31:0];
                 end
 
                 // save whether we want sign extend the result or not, this is done for all word operations
                 word_op_d = 1'b1;
-            // regular operation
             end else begin
-                word_op_d = 1'b0;
-                // no sign extending is necessary as we are already using the full 64 bit
+                // regular op
                 operand_a = fu_data_i.operand_a;
                 operand_b = fu_data_i.operand_b;
-            end
-
-            // is this a modulo?
-            if (fu_data_i.operator inside {REM, REMU, REMW, REMUW}) begin
-                rem = 1'b1;
+                word_op_d = 1'b0;
             end
         end
     end
 
     // ---------------------
-    // Leading Zero Counter
-    // ---------------------
-    // this unit is used to speed up the sequential division by shifting the dividend first
-    lzc #(
-        .WIDTH   ( 64         )
-    ) i_lzc (
-        .in_i    ( lzc_input  ), // signed = operand_b_rev_neg, unsigned operand_b_rev
-        .cnt_o   ( lzc_result ),
-        .empty_o ( lzc_no_one )
-    );
-
-    // if the dividend is all zero go for the full length
-    assign div_shift = lzc_no_one ? 7'd64 : lzc_result;
-    // prepare dividend by shifting
-    assign operand_b_shift = operand_b <<< div_shift;
-
-    // ---------------------
     // Serial Divider
     // ---------------------
-    serial_divider #(
-        .C_WIDTH      ( 64                ),
-        .C_LOG_WIDTH  ( $clog2(64) + 1    )
+    serdiv #(
+        .WIDTH       ( 64 )
     ) i_div (
-        .Clk_CI       ( clk_i              ),
-        .Rst_RBI      ( rst_ni             ),
-        .TransId_DI   ( fu_data_i.trans_id ),
-        .OpA_DI       ( operand_a          ),
-        .OpB_DI       ( operand_b_shift    ),
-        .OpBShift_DI  ( div_shift          ),
-        .OpBIsZero_SI ( ~(|operand_b)      ),
-        .OpBSign_SI   ( div_op_signed      ), // gate this to 0 in case of unsigned ops
-        .OpCode_SI    ( {rem, div_signed}  ), // 00: udiv, 10: urem, 01: div, 11: rem
-        .InVld_SI     ( div_valid_op       ),
-        .Flush_SI     ( flush_i            ),
-        .OutRdy_SO    ( mult_ready_o       ),
-        .OutRdy_SI    ( div_ready_i        ),
-        .OutVld_SO    ( div_valid          ),
-        .TransId_DO   ( div_trans_id       ),
-        .Res_DO       ( result             )
+        .clk_i       ( clk_i                ),
+        .rst_ni      ( rst_ni               ),
+        .id_i        ( fu_data_i.trans_id   ),
+        .op_a_i      ( operand_a            ),
+        .op_b_i      ( operand_b            ),
+        .opcode_i    ( {rem, div_signed}    ), // 00: udiv, 10: urem, 01: div, 11: rem
+        .in_vld_i    ( div_valid_op         ),
+        .in_rdy_o    ( mult_ready_o         ),
+        .flush_i     ( flush_i              ),
+        .out_vld_o   ( div_valid            ),
+        .out_rdy_i   ( div_ready_i          ),
+        .id_o        ( div_trans_id         ),
+        .res_o       ( result               )
     );
+
     // Result multiplexer
     // if it was a signed word operation the bit will be set and the result will be sign extended accordingly
     assign div_result = (word_op_q) ? sext32(result) : result;
@@ -190,7 +131,7 @@ module mult (
     // ---------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            word_op_q <= ADD;
+            word_op_q <= '0;
         end else begin
             word_op_q <= word_op_d;
         end
