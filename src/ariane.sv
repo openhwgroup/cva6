@@ -72,39 +72,37 @@ module ariane #(
     // --------------
     // ISSUE <-> EX
     // --------------
-    logic [63:0]              imm_id_ex;
-    logic [TRANS_ID_BITS-1:0] trans_id_id_ex;
-    fu_t                      fu_id_ex;
-    fu_op                     operator_id_ex;
-    logic [63:0]              operand_a_id_ex;
-    logic [63:0]              operand_b_id_ex;
+    fu_data_t                 fu_data_id_ex;
     logic [63:0]              pc_id_ex;
     logic                     is_compressed_instr_id_ex;
+    // fixed latency units
+    logic                     flu_ready_ex_id;
+    logic [TRANS_ID_BITS-1:0] flu_trans_id_ex_id;
+    logic                     flu_valid_ex_id;
+    logic [63:0]              flu_result_ex_id;
+    exception_t               flu_exception_ex_id;
     // ALU
-    logic                     alu_ready_ex_id;
     logic                     alu_valid_id_ex;
-    logic [TRANS_ID_BITS-1:0] alu_trans_id_ex_id;
-    logic                     alu_valid_ex_id;
-    logic [63:0]              alu_result_ex_id;
-    exception_t               alu_exception_ex_id;
     // Branches and Jumps
     logic                     branch_valid_id_ex;
 
     branchpredict_sbe_t       branch_predict_id_ex;
     logic                     resolve_branch_ex_id;
     // LSU
-    logic [TRANS_ID_BITS-1:0] lsu_trans_id_ex_id;
     logic                     lsu_valid_id_ex;
-    logic [63:0]              lsu_result_ex_id;
     logic                     lsu_ready_ex_id;
-    logic                     lsu_valid_ex_id;
-    exception_t               lsu_exception_ex_id;
+
+    logic [TRANS_ID_BITS-1:0] load_trans_id_ex_id;
+    logic [63:0]              load_result_ex_id;
+    logic                     load_valid_ex_id;
+    exception_t               load_exception_ex_id;
+
+    logic [63:0]              store_result_ex_id;
+    logic [TRANS_ID_BITS-1:0] store_trans_id_ex_id;
+    logic                     store_valid_ex_id;
+    exception_t               store_exception_ex_id;
     // MULT
-    logic                     mult_ready_ex_id;
     logic                     mult_valid_id_ex;
-    logic [TRANS_ID_BITS-1:0] mult_trans_id_ex_id;
-    logic [63:0]              mult_result_ex_id;
-    logic                     mult_valid_ex_id;
     // FPU
     logic                     fpu_ready_ex_id;
     logic                     fpu_valid_id_ex;
@@ -272,25 +270,22 @@ module ariane #(
         .NR_ENTRIES                 ( NR_SB_ENTRIES                   ),
         .NR_WB_PORTS                ( NR_WB_PORTS                     )
     ) issue_stage_i (
+        .clk_i,
+        .rst_ni,
         .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id    ),
         .flush_i                    ( flush_ctrl_id                   ),
-
+        // ID Stage
         .decoded_instr_i            ( issue_entry_id_issue            ),
         .decoded_instr_valid_i      ( issue_entry_valid_id_issue      ),
         .is_ctrl_flow_i             ( is_ctrl_fow_id_issue            ),
         .decoded_instr_ack_o        ( issue_instr_issue_id            ),
-
         // Functional Units
-        .fu_o                       ( fu_id_ex                        ),
-        .operator_o                 ( operator_id_ex                  ),
-        .operand_a_o                ( operand_a_id_ex                 ),
-        .operand_b_o                ( operand_b_id_ex                 ),
-        .imm_o                      ( imm_id_ex                       ),
-        .trans_id_o                 ( trans_id_id_ex                  ),
+        .fu_data_o                  ( fu_data_id_ex                   ),
         .pc_o                       ( pc_id_ex                        ),
         .is_compressed_instr_o      ( is_compressed_instr_id_ex       ),
+        // fixed latency unit ready
+        .flu_ready_i                ( flu_ready_ex_id                 ),
         // ALU
-        .alu_ready_i                ( alu_ready_ex_id                 ),
         .alu_valid_o                ( alu_valid_id_ex                 ),
         // Branches and Jumps
         .branch_valid_o             ( branch_valid_id_ex              ), // branch is valid
@@ -300,7 +295,6 @@ module ariane #(
         .lsu_ready_i                ( lsu_ready_ex_id                 ),
         .lsu_valid_o                ( lsu_valid_id_ex                 ),
         // Multiplier
-        .mult_ready_i               ( mult_ready_ex_id                ),
         .mult_valid_o               ( mult_valid_id_ex                ),
         // FPU
         .fpu_ready_i                ( fpu_ready_ex_id                 ),
@@ -309,13 +303,12 @@ module ariane #(
         .fpu_rm_o                   ( fpu_rm_id_ex                    ),
         // CSR
         .csr_valid_o                ( csr_valid_id_ex                 ),
-
         // Commit
         .resolved_branch_i          ( resolved_branch                 ),
-        .trans_id_i                 ( {alu_trans_id_ex_id,         lsu_trans_id_ex_id,   mult_trans_id_ex_id,        fpu_trans_id_ex_id }),
-        .wbdata_i                   ( {alu_result_ex_id,           lsu_result_ex_id,       mult_result_ex_id,          fpu_result_ex_id }),
-        .ex_ex_i                    ( {alu_exception_ex_id,        lsu_exception_ex_id, {$bits(exception_t){1'b0}}, fpu_exception_ex_id }),
-        .wb_valid_i                 ( {alu_valid_ex_id,            lsu_valid_ex_id,         mult_valid_ex_id,           fpu_valid_ex_id }),
+        .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id }),
+        .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id }),
+        .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id }),
+        .wb_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id }),
 
         .waddr_i                    ( waddr_commit_id               ),
         .wdata_i                    ( wdata_commit_id               ),
@@ -330,81 +323,80 @@ module ariane #(
     // EX
     // ---------
     ex_stage ex_stage_i (
-        .clk_i                  ( clk_i                                  ),
-        .rst_ni                 ( rst_ni                                 ),
-        .flush_i                ( flush_ctrl_ex                          ),
-        .fu_i                   ( fu_id_ex                               ),
-        .operator_i             ( operator_id_ex                         ),
-        .operand_a_i            ( operand_a_id_ex                        ),
-        .operand_b_i            ( operand_b_id_ex                        ),
-        .imm_i                  ( imm_id_ex                              ),
-        .trans_id_i             ( trans_id_id_ex                         ),
-        .pc_i                   ( pc_id_ex                               ),
-        .is_compressed_instr_i  ( is_compressed_instr_id_ex              ),
+        .clk_i                  ( clk_i                       ),
+        .rst_ni                 ( rst_ni                      ),
+        .flush_i                ( flush_ctrl_ex               ),
+        .fu_data_i              ( fu_data_id_ex               ),
+        .pc_i                   ( pc_id_ex                    ),
+        .is_compressed_instr_i  ( is_compressed_instr_id_ex   ),
+        // fixed latency units
+        .flu_result_o           ( flu_result_ex_id            ),
+        .flu_trans_id_o         ( flu_trans_id_ex_id          ),
+        .flu_valid_o            ( flu_valid_ex_id             ),
+        .flu_exception_o        ( flu_exception_ex_id         ),
+        .flu_ready_o            ( flu_ready_ex_id             ),
         // ALU
-        .alu_ready_o            ( alu_ready_ex_id                        ),
-        .alu_valid_i            ( alu_valid_id_ex                        ),
-        .alu_result_o           ( alu_result_ex_id                       ),
-        .alu_trans_id_o         ( alu_trans_id_ex_id                     ),
-        .alu_valid_o            ( alu_valid_ex_id                        ),
-        .alu_exception_o        ( alu_exception_ex_id                    ),
+        .alu_valid_i            ( alu_valid_id_ex             ),
         // Branches and Jumps
-        .branch_valid_i         ( branch_valid_id_ex                     ),
-        .branch_predict_i       ( branch_predict_id_ex                   ), // branch predict to ex
-        .resolved_branch_o      ( resolved_branch                        ),
-        .resolve_branch_o       ( resolve_branch_ex_id                   ),
+        .branch_valid_i         ( branch_valid_id_ex          ),
+        .branch_predict_i       ( branch_predict_id_ex        ), // branch predict to ex
+        .resolved_branch_o      ( resolved_branch             ),
+        .resolve_branch_o       ( resolve_branch_ex_id        ),
         // CSR
-        .csr_valid_i            ( csr_valid_id_ex                        ),
-        .csr_addr_o             ( csr_addr_ex_csr                        ),
-        .csr_commit_i           ( csr_commit_commit_ex                   ), // from commit
-        // LSU
-        .lsu_ready_o            ( lsu_ready_ex_id                        ),
-        .lsu_valid_i            ( lsu_valid_id_ex                        ),
-        .lsu_result_o           ( lsu_result_ex_id                       ),
-        .lsu_trans_id_o         ( lsu_trans_id_ex_id                     ),
-        .lsu_valid_o            ( lsu_valid_ex_id                        ),
-        .lsu_commit_i           ( lsu_commit_commit_ex                   ), // from commit
-        .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit             ), // to commit
-        .lsu_exception_o        ( lsu_exception_ex_id                    ),
-        .no_st_pending_o        ( no_st_pending_ex_commit                ),
+        .csr_valid_i            ( csr_valid_id_ex             ),
+        .csr_addr_o             ( csr_addr_ex_csr             ),
+        .csr_commit_i           ( csr_commit_commit_ex        ), // from commit
         // MULT
-        .mult_ready_o           ( mult_ready_ex_id                       ),
-        .mult_valid_i           ( mult_valid_id_ex                       ),
-        .mult_trans_id_o        ( mult_trans_id_ex_id                    ),
-        .mult_result_o          ( mult_result_ex_id                      ),
-        .mult_valid_o           ( mult_valid_ex_id                       ),
+        .mult_valid_i           ( mult_valid_id_ex            ),
+        // LSU
+        .lsu_ready_o            ( lsu_ready_ex_id             ),
+        .lsu_valid_i            ( lsu_valid_id_ex             ),
+
+        .load_result_o          ( load_result_ex_id           ),
+        .load_trans_id_o        ( load_trans_id_ex_id         ),
+        .load_valid_o           ( load_valid_ex_id            ),
+        .load_exception_o       ( load_exception_ex_id        ),
+
+        .store_result_o         ( store_result_ex_id          ),
+        .store_trans_id_o       ( store_trans_id_ex_id        ),
+        .store_valid_o          ( store_valid_ex_id           ),
+        .store_exception_o      ( store_exception_ex_id       ),
+
+        .lsu_commit_i           ( lsu_commit_commit_ex        ), // from commit
+        .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
+        .no_st_pending_o        ( no_st_pending_ex_commit     ),
         // FPU
-        .fpu_ready_o            ( fpu_ready_ex_id                        ),
-        .fpu_valid_i            ( fpu_valid_id_ex                        ),
-        .fpu_fmt_i              ( fpu_fmt_id_ex                          ),
-        .fpu_rm_i               ( fpu_rm_id_ex                           ),
-        .fpu_frm_i              ( frm_csr_id_issue_ex                    ),
-        .fpu_prec_i             ( fprec_csr_ex                           ),
-        .fpu_trans_id_o         ( fpu_trans_id_ex_id                     ),
-        .fpu_result_o           ( fpu_result_ex_id                       ),
-        .fpu_valid_o            ( fpu_valid_ex_id                        ),
-        .fpu_exception_o        ( fpu_exception_ex_id                    ),
-        .amo_valid_commit_i     ( amo_valid_commit                       ),
-        .amo_req_o              ( amo_req                                ),
-        .amo_resp_i             ( amo_resp                               ),
+        .fpu_ready_o            ( fpu_ready_ex_id             ),
+        .fpu_valid_i            ( fpu_valid_id_ex             ),
+        .fpu_fmt_i              ( fpu_fmt_id_ex               ),
+        .fpu_rm_i               ( fpu_rm_id_ex                ),
+        .fpu_frm_i              ( frm_csr_id_issue_ex         ),
+        .fpu_prec_i             ( fprec_csr_ex                ),
+        .fpu_trans_id_o         ( fpu_trans_id_ex_id          ),
+        .fpu_result_o           ( fpu_result_ex_id            ),
+        .fpu_valid_o            ( fpu_valid_ex_id             ),
+        .fpu_exception_o        ( fpu_exception_ex_id         ),
+        .amo_valid_commit_i     ( amo_valid_commit            ),
+        .amo_req_o              ( amo_req                     ),
+        .amo_resp_i             ( amo_resp                    ),
         // Performance counters
-        .itlb_miss_o            ( itlb_miss_ex_perf                      ),
-        .dtlb_miss_o            ( dtlb_miss_ex_perf                      ),
+        .itlb_miss_o            ( itlb_miss_ex_perf           ),
+        .dtlb_miss_o            ( dtlb_miss_ex_perf           ),
         // Memory Management
-        .enable_translation_i   ( enable_translation_csr_ex              ), // from CSR
-        .en_ld_st_translation_i ( en_ld_st_translation_csr_ex            ),
-        .flush_tlb_i            ( flush_tlb_ctrl_ex                      ),
-        .priv_lvl_i             ( priv_lvl                               ), // from CSR
-        .ld_st_priv_lvl_i       ( ld_st_priv_lvl_csr_ex                  ), // from CSR
-        .sum_i                  ( sum_csr_ex                             ), // from CSR
-        .mxr_i                  ( mxr_csr_ex                             ), // from CSR
-        .satp_ppn_i             ( satp_ppn_csr_ex                        ), // from CSR
-        .asid_i                 ( asid_csr_ex                            ), // from CSR
-        .icache_areq_i          ( icache_areq_cache_ex                   ),
-        .icache_areq_o          ( icache_areq_ex_cache                   ),
+        .enable_translation_i   ( enable_translation_csr_ex   ), // from CSR
+        .en_ld_st_translation_i ( en_ld_st_translation_csr_ex ),
+        .flush_tlb_i            ( flush_tlb_ctrl_ex           ),
+        .priv_lvl_i             ( priv_lvl                    ), // from CSR
+        .ld_st_priv_lvl_i       ( ld_st_priv_lvl_csr_ex       ), // from CSR
+        .sum_i                  ( sum_csr_ex                  ), // from CSR
+        .mxr_i                  ( mxr_csr_ex                  ), // from CSR
+        .satp_ppn_i             ( satp_ppn_csr_ex             ), // from CSR
+        .asid_i                 ( asid_csr_ex                 ), // from CSR
+        .icache_areq_i          ( icache_areq_cache_ex        ),
+        .icache_areq_o          ( icache_areq_ex_cache        ),
         // DCACHE interfaces
-        .dcache_req_ports_i     ( dcache_req_ports_cache_ex              ),
-        .dcache_req_ports_o     ( dcache_req_ports_ex_cache              )
+        .dcache_req_ports_i     ( dcache_req_ports_cache_ex   ),
+        .dcache_req_ports_o     ( dcache_req_ports_ex_cache   )
     );
 
     // ---------
