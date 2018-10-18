@@ -273,6 +273,8 @@ package riscv;
     localparam logic [11:0] PERF_CALL           = 12'h9;     // Procedure call
     localparam logic [11:0] PERF_RET            = 12'hA;     // Procedure Return
     localparam logic [11:0] PERF_MIS_PREDICT    = 12'hB;     // Branch mis-predicted
+    localparam logic [11:0] PERF_SB_FULL        = 12'hC;     // Scoreboard full
+    localparam logic [11:0] PERF_IF_EMPTY       = 12'hD;     // instruction fetch queue empty
 
     // ----------------------
     // Virtual Memory

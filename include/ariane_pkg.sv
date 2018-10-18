@@ -25,8 +25,8 @@ package ariane_pkg;
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
     localparam ASID_WIDTH    = 1;
-    localparam BTB_ENTRIES   = 8;
-    localparam BHT_ENTRIES   = 32;
+    localparam BTB_ENTRIES   = 64;
+    localparam BHT_ENTRIES   = 128;
     localparam RAS_DEPTH     = 2;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
@@ -37,6 +37,11 @@ package ariane_pkg;
     // this can be tuned to trade-off IPC vs. cycle time
     localparam NR_LOAD_PIPE_REGS = 1;
     localparam NR_STORE_PIPE_REGS = 0;
+
+    // depth of store-buffers, this needs to be a power of two
+    localparam int unsigned DEPTH_SPEC   = 4;
+    // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
+    localparam int unsigned DEPTH_COMMIT = 8;
 
     // Floating-point extensions configuration
     localparam bit RVF = 1'b0; // Is F extension enabled

@@ -82,6 +82,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/stream_mux.sv                             \
         src/common_cells/src/stream_demux.sv                           \
         src/util/axi_connect.sv                                        \
+        src/util/mock_mul.sv                                           \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
@@ -123,7 +124,7 @@ incdir :=
 compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 compile_flag_vhd += -64 -nologo -quiet -2008
 uvm-flags    += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
-questa-flags += -t 1ns -64 -coverage -classdebug $(gui-sim)
+questa-flags += -t 1ns -64 -coverage -classdebug $(gui-sim) $(QUESTASIM_FLAGS)
 # if defined, calls the questa targets in batch mode
 ifdef batch-mode
 	questa-flags += -c

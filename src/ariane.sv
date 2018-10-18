@@ -202,6 +202,7 @@ module ariane #(
 
     amo_req_t                 amo_req;
     amo_resp_t                amo_resp;
+    logic                     sb_full;
 
     logic debug_req;
     // Disable debug during AMO commit
@@ -272,6 +273,7 @@ module ariane #(
     ) issue_stage_i (
         .clk_i,
         .rst_ni,
+        .sb_full_o                  ( sb_full                         ),
         .flush_unissued_instr_i     ( flush_unissued_instr_ctrl_id    ),
         .flush_i                    ( flush_ctrl_id                   ),
         // ID Stage
@@ -494,6 +496,9 @@ module ariane #(
     // Performance Counters
     // ------------------------
     perf_counters i_perf_counters (
+        .clk_i             ( clk_i                  ),
+        .rst_ni            ( rst_ni                 ),
+        .debug_mode_i      ( debug_mode             ),
         .addr_i            ( addr_csr_perf          ),
         .we_i              ( we_csr_perf            ),
         .data_i            ( data_csr_perf          ),
@@ -505,11 +510,11 @@ module ariane #(
         .l1_dcache_miss_i  ( dcache_miss_cache_perf ),
         .itlb_miss_i       ( itlb_miss_ex_perf      ),
         .dtlb_miss_i       ( dtlb_miss_ex_perf      ),
-
+        .sb_full_i         ( sb_full                ),
+        .if_empty_i        ( ~fetch_valid_if_id     ),
         .ex_i              ( ex_commit              ),
         .eret_i            ( eret                   ),
-        .resolved_branch_i ( resolved_branch        ),
-        .*
+        .resolved_branch_i ( resolved_branch        )
     );
 
     // ------------

@@ -23,6 +23,7 @@ module issue_stage #(
     input  logic                                     clk_i,     // Clock
     input  logic                                     rst_ni,    // Asynchronous reset active low
 
+    output logic                                     sb_full_o,
     input  logic                                     flush_unissued_instr_i,
     input  logic                                     flush_i,
     // from ISSUE
@@ -119,6 +120,7 @@ module issue_stage #(
         .NR_ENTRIES (NR_ENTRIES ),
         .NR_WB_PORTS(NR_WB_PORTS)
     ) i_scoreboard (
+        .sb_full_o             ( sb_full_o                                 ),
         .unresolved_branch_i   ( 1'b0                                      ),
         .rd_clobber_gpr_o      ( rd_clobber_gpr_sb_iro                     ),
         .rd_clobber_fpr_o      ( rd_clobber_fpr_sb_iro                     ),
