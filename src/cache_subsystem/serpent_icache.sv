@@ -20,7 +20,7 @@
 //
 // 1) refills always have the size of one cache line, except for accesses to the I/O region, which is mapped
 //    to the top half of the physical address space (bit 39 = 1). the data width of the interface has the width
-//    of one cache line, and hence the ifills can be transferred in a single cycle. note that the ifills must be 
+//    of one cache line, and hence the ifills can be transferred in a single cycle. note that the ifills must be
 //    consumed unconditionally.
 //
 // 2) instruction fetches are always assumed to be aligned to 32bit (lower 2 bits are ignored)
@@ -31,7 +31,7 @@
 import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
-module serpent_icache  #( 
+module serpent_icache  #(
     parameter bit AXI64BIT_COMPLIANT     = 1'b0,           // set this to 1 when using in conjunction with 64bit AXI bus adapter
     parameter     NC_ADDR_BEGIN          = 40'h8000000000, // start address of noncacheable I/O region
     parameter bit NC_ADDR_GE_LT          = 1'b1            // determines how the physical address is compared with NC_ADDR_BEGIN
@@ -57,18 +57,18 @@ module serpent_icache  #(
     input  logic                     mem_data_ack_i,
     output icache_req_t              mem_data_o
 );
-    
+
     // signals
-    logic                                 cache_en_d, cache_en_q;       // cache is enabled  
-    logic [63:0]                          vaddr_d, vaddr_q;                          
+    logic                                 cache_en_d, cache_en_q;       // cache is enabled
+    logic [63:0]                          vaddr_d, vaddr_q;
     logic                                 paddr_is_nc;                  // asserted if physical address is non-cacheable
     logic [ICACHE_SET_ASSOC-1:0]          cl_hit;                       // hit from tag compare
     logic                                 cache_rden;                   // triggers cache lookup
     logic                                 cache_wren;                   // triggers write to cacheline
-    logic                                 cmp_en_d, cmp_en_q;           // enable tag comparison in next cycle. used to cut long path due to NC signal.    
+    logic                                 cmp_en_d, cmp_en_q;           // enable tag comparison in next cycle. used to cut long path due to NC signal.
     logic                                 flush_d, flush_q;             // used to register and signal pending flushes
 
-    // replacement strategy                
+    // replacement strategy
     logic                                 update_lfsr;                  // shift the LFSR
     logic [$clog2(ICACHE_SET_ASSOC)-1:0]  inv_way;                      // first non-valid encountered
     logic [$clog2(ICACHE_SET_ASSOC)-1:0]  rnd_way;                      // random index for replacement
@@ -76,8 +76,8 @@ module serpent_icache  #(
     logic [ICACHE_SET_ASSOC-1:0]          repl_way_oh_d, repl_way_oh_q; // way to replace (onehot)
     logic                                 all_ways_valid;               // we need to switch repl strategy since all are valid
 
-    // invalidations / flushing       
-    logic                                 inv_en;                       // incoming invalidations                      
+    // invalidations / flushing
+    logic                                 inv_en;                       // incoming invalidations
     logic                                 flush_en, flush_done;         // used to flush cache entries
     logic [ICACHE_CL_IDX_WIDTH-1:0]       flush_cnt_d, flush_cnt_q;     // used to flush cache entries
 
@@ -94,32 +94,32 @@ module serpent_icache  #(
     logic                                 vld_we;                       // valid bits write enable
     logic [ICACHE_SET_ASSOC-1:0]          vld_wdata;                    // valid bits to write
     logic [ICACHE_SET_ASSOC-1:0]          vld_rdata;                    // valid bits coming from valid regs
-    logic [ICACHE_CL_IDX_WIDTH-1:0]       vld_addr;                     // valid bit 
-    
+    logic [ICACHE_CL_IDX_WIDTH-1:0]       vld_addr;                     // valid bit
+
     // cpmtroller FSM
     typedef enum logic[2:0] {FLUSH, IDLE, READ, MISS, TLB_MISS, KILL_ATRANS, KILL_MISS} state_t;
     state_t state_d, state_q;
 
 ///////////////////////////////////////////////////////
-// address -> cl_index mapping, interface plumbing 
+// address -> cl_index mapping, interface plumbing
 ///////////////////////////////////////////////////////
-    
+
     // extract tag from physical address, check if NC
-    assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH] : cl_tag_q; 
+    assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH] : cl_tag_q;
 
     // noncacheable if request goes to I/O space, or if cache is disabled
-    generate 
+    generate
         if (NC_ADDR_GE_LT) begin : g_nc_addr_high
             assign paddr_is_nc = (cl_tag_d >= (NC_ADDR_BEGIN>>ICACHE_INDEX_WIDTH)) | ~cache_en_q;
         end
         if (~NC_ADDR_GE_LT) begin : g_nc_addr_low
             assign paddr_is_nc = (cl_tag_d < (NC_ADDR_BEGIN>>ICACHE_INDEX_WIDTH))  | ~cache_en_q;
         end
-    endgenerate    
-    
+    endgenerate
+
     // pass exception through
     assign dreq_o.ex = areq_i.fetch_exception;
-    
+
     // latch this in case we have to stall later on
     // make sure this is 32bit aligned
     assign vaddr_d = (dreq_o.ready & dreq_i.req) ? dreq_i.vaddr : vaddr_q;
@@ -127,7 +127,7 @@ module serpent_icache  #(
 
     // split virtual address into index and offset to address cache arrays
     assign cl_index    = vaddr_d[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH];
-    
+
     generate
         if(AXI64BIT_COMPLIANT)begin
             // if we generate a noncacheable access, the word will be at offset 0 or 4 in the cl coming from memory
@@ -148,11 +148,11 @@ module serpent_icache  #(
             assign mem_data_o.paddr = (paddr_is_nc) ? {cl_tag_d, vaddr_q[ICACHE_INDEX_WIDTH-1:2], 2'b0} :                                         // align to 32bit
                                                       {cl_tag_d, vaddr_q[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH], {ICACHE_OFFSET_WIDTH{1'b0}}}; // align to cl
         end
-    endgenerate                                                                 
+    endgenerate
 
     // currently we can only have one outstanding tx here
     assign mem_data_o.tid   = '0;
-   
+
     assign mem_data_o.nc    = paddr_is_nc;
     // way that is being replaced
     assign mem_data_o.way   = repl_way;
@@ -172,8 +172,8 @@ module serpent_icache  #(
         cache_wren   = 1'b0;
         inv_en       = 1'b0;
         flush_d      = flush_q | flush_i; // register incoming flush
-        
-        // interfaces 
+
+        // interfaces
         dreq_o.ready     = 1'b0;
         areq_o.fetch_req = 1'b0;
         dreq_o.valid     = 1'b0;
@@ -182,15 +182,15 @@ module serpent_icache  #(
         miss_o           = 1'b0;
 
         // handle invalidations unconditionally
-        // note: invald are mutually exclusive with 
+        // note: invald are mutually exclusive with
         // ifills, since both arrive over the same IF
-        // however, we need to make sure below that we 
-        // do not trigger a cache readout at the same time...                
+        // however, we need to make sure below that we
+        // do not trigger a cache readout at the same time...
         if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_INV_REQ) begin
             inv_en = 1'b1;
-        end    
+        end
 
-        unique case (state_q) 
+        unique case (state_q)
             //////////////////////////////////
             // this clears all valid bits
             FLUSH: begin
@@ -200,7 +200,7 @@ module serpent_icache  #(
                     flush_d = 1'b0;
                     // if the cache was not enabled set this
                     cache_en_d = en_i;
-                end    
+                end
             end
             //////////////////////////////////
             // wait for an incoming request
@@ -212,8 +212,8 @@ module serpent_icache  #(
                 if (flush_d | (en_i & ~cache_en_q)) begin
                     state_d    = FLUSH;
                 // wait for incoming requests
-                end else begin 
-                    // mem requests are for sure invals here            
+                end else begin
+                    // mem requests are for sure invals here
                     if (~mem_rtrn_vld_i) begin
                         dreq_o.ready = 1'b1;
                         // we have a new request
@@ -221,11 +221,11 @@ module serpent_icache  #(
                             cache_rden       = 1'b1;
                             state_d          = READ;
                         end
-                    end            
-                    if (dreq_i.kill_s1) begin 
+                    end
+                    if (dreq_i.kill_s1) begin
                         state_d = IDLE;
-                    end   
-                end    
+                    end
+                end
             end
             //////////////////////////////////
             // check whether we have a hit
@@ -240,7 +240,7 @@ module serpent_icache  #(
                 cmp_en_d    = cache_en_q;
                 // readout speculatively
                 cache_rden  = cache_en_q;
-                
+
                 if (areq_i.fetch_valid) begin
                     // check if we have to flush
                     if (flush_d) begin
@@ -258,16 +258,16 @@ module serpent_icache  #(
                             if (dreq_i.req) begin
                                 state_d          = READ;
                             end
-                        end     
-                        // if a request is being killed at this stage, 
-                        // we have to bail out and wait for the address translation to complete 
-                        if (dreq_i.kill_s1) begin 
+                        end
+                        // if a request is being killed at this stage,
+                        // we have to bail out and wait for the address translation to complete
+                        if (dreq_i.kill_s1) begin
                             state_d = IDLE;
                         end
-                    // we have a miss / NC transaction    
-                    end else if (dreq_i.kill_s2) begin 
+                    // we have a miss / NC transaction
+                    end else if (dreq_i.kill_s2) begin
                         state_d = IDLE;
-                    end else begin    
+                    end else begin
                         cmp_en_d = 1'b0;
                         // only count this as a miss if the cache is enabled, and
                         // the address is cacheable
@@ -276,8 +276,8 @@ module serpent_icache  #(
                         if (mem_data_ack_i) begin
                             miss_o         = (~paddr_is_nc);
                             state_d        = MISS;
-                        end     
-                    end        
+                        end
+                    end
                 // bail out if this request is being killed (and we missed on the TLB)
                 end else if (dreq_i.kill_s2 | flush_d) begin
                     state_d  = KILL_ATRANS;
@@ -306,18 +306,18 @@ module serpent_icache  #(
                     // but if we got an invalidation, we have to wait another cycle
                     end else if (~mem_rtrn_vld_i) begin
                         state_d          = READ;
-                    end        
+                    end
                 // bail out if this request is being killed
                 end else if (dreq_i.kill_s2 | flush_d) begin
                     state_d  = KILL_ATRANS;
-                end            
+                end
             end
             //////////////////////////////////
             // wait until the memory transaction
             // returns. do not write to memory
             // if the nc bit is set.
             MISS: begin
-                // note: this is mutually exclusive with ICACHE_INV_REQ, 
+                // note: this is mutually exclusive with ICACHE_INV_REQ,
                 // so we do not have to check for invals here
                 if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
                     state_d      = IDLE;
@@ -326,30 +326,30 @@ module serpent_icache  #(
                         dreq_o.valid = 1'b1;
                         // only write to cache if this address is cacheable
                         cache_wren   = ~paddr_is_nc;
-                    end    
+                    end
                 // bail out if this request is being killed
                 end else if (dreq_i.kill_s2 | flush_d) begin
                     state_d  = KILL_MISS;
-                end            
+                end
             end
             //////////////////////////////////
             // killed address translation,
-            // wait until paddr is valid, and go 
+            // wait until paddr is valid, and go
             // back to idle
             KILL_ATRANS: begin
                 areq_o.fetch_req = '1;
                 if (areq_i.fetch_valid) begin
                     state_d      = IDLE;
-                end    
+                end
             end
             //////////////////////////////////
             // killed miss,
-            // wait until memory responds and 
+            // wait until memory responds and
             // go back to idle
             KILL_MISS: begin
                 if (mem_rtrn_vld_i && mem_rtrn_i.rtype == ICACHE_IFILL_ACK) begin
                     state_d      = IDLE;
-                end   
+                end
             end
             default: begin
                 // we should never get here
@@ -363,32 +363,32 @@ module serpent_icache  #(
 ///////////////////////////////////////////////////////
 
     // note: it cannot happen that we get an invalidation + a cl replacement
-    // in the same cycle as these requests arrive via the same interface 
-    // flushes take precedence over invalidations (it is ok if we ignore 
+    // in the same cycle as these requests arrive via the same interface
+    // flushes take precedence over invalidations (it is ok if we ignore
     // the inval since the cache is cleared anyway)
 
     assign flush_cnt_d = (flush_done) ? '0               :
                          (flush_en)   ?  flush_cnt_q + 1 :
-                                         flush_cnt_q;  
-    
-    assign flush_done  = (flush_cnt_q==(ICACHE_NUM_WORDS-1));                                  
+                                         flush_cnt_q;
+
+    assign flush_done  = (flush_cnt_q==(ICACHE_NUM_WORDS-1));
 
     // invalidation/clearing address
     // flushing takes precedence over invals
     assign vld_addr = (flush_en)       ? flush_cnt_q        :
                       (inv_en)         ? mem_rtrn_i.inv.idx[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH] :
-                                         cl_index; 
-    
-    assign vld_req  = (flush_en | cache_rden)         ? '1                                    : 
-                      (mem_rtrn_i.inv.all & inv_en)   ? '1                                    : 
+                                         cl_index;
+
+    assign vld_req  = (flush_en | cache_rden)         ? '1                                    :
+                      (mem_rtrn_i.inv.all & inv_en)   ? '1                                    :
                       (mem_rtrn_i.inv.vld & inv_en)   ? icache_way_bin2oh(mem_rtrn_i.inv.way) :
                                                         repl_way_oh_q;
 
     assign vld_wdata = (cache_wren) ? '1 : '0;
-                       
-    assign vld_we    = (cache_wren | inv_en | flush_en);  
-    // assign vld_req   = (vld_we | cache_rden);          
-                     
+
+    assign vld_we    = (cache_wren | inv_en | flush_en);
+    // assign vld_req   = (vld_we | cache_rden);
+
 
     // chose random replacement if all are valid
     assign update_lfsr   = cache_wren & all_ways_valid;
@@ -396,11 +396,11 @@ module serpent_icache  #(
     assign repl_way_oh_d = (cmp_en_q) ? icache_way_bin2oh(repl_way) : repl_way_oh_q;
 
     // enable signals for memory arrays
-    assign cl_req   = (cache_rden) ? '1            : 
+    assign cl_req   = (cache_rden) ? '1            :
                       (cache_wren) ? repl_way_oh_q :
                                      '0;
     assign cl_we    = cache_wren;
-    
+
 
     // find invalid cache line
     lzc #(
@@ -419,7 +419,7 @@ module serpent_icache  #(
         .rst_ni         ( rst_ni      ),
         .en_i           ( update_lfsr ),
         .refill_way_oh  (             ),
-        .refill_way_bin ( rnd_way     ) 
+        .refill_way_bin ( rnd_way     )
     );
 
 
@@ -429,7 +429,7 @@ module serpent_icache  #(
 
     logic [$clog2(ICACHE_SET_ASSOC)-1:0] hit_idx;
 
-    generate 
+    generate
         for (genvar i=0;i<ICACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
             assign cl_hit[i] = (cl_tag_rdata[i] == cl_tag_d) & vld_rdata[i];
             assign cl_sel[i] = cl_rdata[i][{cl_offset_q,3'b0} +: FETCH_WIDTH];
@@ -444,9 +444,9 @@ module serpent_icache  #(
         .empty_o (         )
     );
 
-    assign dreq_o.data = ( cmp_en_q ) ? cl_sel[hit_idx] : 
+    assign dreq_o.data = ( cmp_en_q ) ? cl_sel[hit_idx] :
                                         mem_rtrn_i.data[{cl_offset_q,3'b0} +: FETCH_WIDTH];
-  
+
 ///////////////////////////////////////////////////////
 // memory arrays and regs
 ///////////////////////////////////////////////////////
@@ -467,7 +467,7 @@ module serpent_icache  #(
                 .req_i     ( vld_req[i]               ),
                 .we_i      ( vld_we                   ),
                 .addr_i    ( vld_addr                 ),
-                // we can always use the saved tag here since it takes a 
+                // we can always use the saved tag here since it takes a
                 // couple of cycle until we write to the cache upon a miss
                 .wdata_i   ( {vld_wdata[i], cl_tag_q} ),
                 .be_i      ( '1                       ),
@@ -475,7 +475,7 @@ module serpent_icache  #(
             );
 
             assign cl_tag_rdata[i] = cl_tag_valid_rdata[i][ICACHE_TAG_WIDTH-1:0];
-            assign vld_rdata[i]    = cl_tag_valid_rdata[i][ICACHE_TAG_WIDTH];    
+            assign vld_rdata[i]    = cl_tag_valid_rdata[i][ICACHE_TAG_WIDTH];
 
             // Data RAM
             sram #(
@@ -525,37 +525,37 @@ module serpent_icache  #(
 //pragma translate_off
 `ifndef VERILATOR
   noncacheable0: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) paddr_is_nc |-> mem_rtrn_vld_i && (mem_rtrn_i.rtype == ICACHE_IFILL_ACK) |-> mem_rtrn_i.nc)       
-         else $fatal("[l1 icache] NC paddr implies nc ifill");
+      @(posedge clk_i) disable iff (~rst_ni) paddr_is_nc |-> mem_rtrn_vld_i |-> state_q != KILL_MISS |-> mem_rtrn_i.rtype == ICACHE_IFILL_ACK |-> mem_rtrn_i.nc)
+         else $fatal(1,"[l1 icache] NC paddr implies nc ifill");
 
   noncacheable1: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> mem_rtrn_i.f4b |-> mem_rtrn_i.nc)       
+      @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> state_q != KILL_MISS |-> mem_rtrn_i.f4b |-> mem_rtrn_i.nc)
          else $fatal(1,"[l1 icache] 4b ifill implies NC");
 
   noncacheable2: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> mem_rtrn_i.nc |-> mem_rtrn_i.f4b)       
-         else $fatal(1,"[l1 icache] NC implies 4b ifill");         
+      @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> state_q != KILL_MISS |-> mem_rtrn_i.nc |-> mem_rtrn_i.f4b)
+         else $fatal(1,"[l1 icache] NC implies 4b ifill");
 
   repl_inval0: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) cache_wren |-> ~(mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld))       
+      @(posedge clk_i) disable iff (~rst_ni) cache_wren |-> ~(mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld))
          else $fatal(1,"[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
 
   repl_inval1: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) (mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld) |-> ~cache_wren)       
+      @(posedge clk_i) disable iff (~rst_ni) (mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld) |-> ~cache_wren)
          else $fatal(1,"[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
-  
+
   invalid_state: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, TLB_MISS, KILL_ATRANS, KILL_MISS}))     
+      @(posedge clk_i) disable iff (~rst_ni) (state_q inside {FLUSH, IDLE, READ, MISS, TLB_MISS, KILL_ATRANS, KILL_MISS}))
          else $fatal(1,"[l1 icache] fsm reached an invalid state");
 
   hot1: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) (~inv_en) |=> cmp_en_q |-> $onehot0(cl_hit))     
+      @(posedge clk_i) disable iff (~rst_ni) (~inv_en) |=> cmp_en_q |-> $onehot0(cl_hit))
          else $fatal(1,"[l1 icache] cl_hit signal must be hot1");
 
    initial begin
       // assert wrong parameterizations
-      assert (ICACHE_INDEX_WIDTH<=12) 
-        else $fatal(1,"[l1 icache] cache index width can be maximum 12bit since VM uses 4kB pages");    
+      assert (ICACHE_INDEX_WIDTH<=12)
+        else $fatal(1,"[l1 icache] cache index width can be maximum 12bit since VM uses 4kB pages");
    end
 `endif
 //pragma translate_on

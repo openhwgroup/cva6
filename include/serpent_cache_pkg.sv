@@ -18,10 +18,9 @@
 
 package serpent_cache_pkg;
 
-    localparam L15_SET_ASSOC           = 4;
-
     // these parames need to coincide with the current L1.5 parameterization
     // do not change
+    localparam L15_SET_ASSOC           = 4;
     localparam L15_TID_WIDTH           = 2;
     localparam L15_TLB_CSM_WIDTH       = 33;
 
@@ -31,9 +30,7 @@ package serpent_cache_pkg;
 
     // FIFO depths of L15 adapter
     localparam ADAPTER_REQ_FIFO_DEPTH  = 2;
-    // since packets have to be consumed immediately,
-    // we need not have a deeper FIFO
-    localparam ADAPTER_RTRN_FIFO_DEPTH = 1;
+    localparam ADAPTER_RTRN_FIFO_DEPTH = 2;
 
 
     // Calculated parameter
@@ -137,39 +134,41 @@ package serpent_cache_pkg;
 
     // taken from iop.h in openpiton
     // to l1.5 (only marked subset is used)
-    typedef enum logic [4:0] {LOAD_RQ     = 5'b00000, // load request
-        IMISS_RQ    = 5'b10000, // instruction fill request
-        STORE_RQ    = 5'b00001, // store request
-        ATOMIC_RQ   = 5'b00110, // atomic op
-        //CAS1_RQ     = 5'b00010, // compare and swap1 packet (OpenSparc atomics)
-        //CAS2_RQ     = 5'b00011, // compare and swap2 packet (OpenSparc atomics)
-        //SWAP_RQ     = 5'b00110, // swap packet (OpenSparc atomics)
-        STRLOAD_RQ  = 5'b00100, // unused
-        STRST_RQ    = 5'b00101, // unused
-        STQ_RQ      = 5'b00111, // unused
-        INT_RQ      = 5'b01001, // interrupt request
-        FWD_RQ      = 5'b01101, // unused
-        FWD_RPY     = 5'b01110, // unused
-        RSVD_RQ     = 5'b11111  // unused
+    typedef enum logic [4:0] {
+        L15_LOAD_RQ     = 5'b00000, // load request
+        L15_IMISS_RQ    = 5'b10000, // instruction fill request
+        L15_STORE_RQ    = 5'b00001, // store request
+        L15_ATOMIC_RQ   = 5'b00110, // atomic op
+        //L15_CAS1_RQ     = 5'b00010, // compare and swap1 packet (OpenSparc atomics)
+        //L15_CAS2_RQ     = 5'b00011, // compare and swap2 packet (OpenSparc atomics)
+        //L15_SWAP_RQ     = 5'b00110, // swap packet (OpenSparc atomics)
+        L15_STRLOAD_RQ  = 5'b00100, // unused
+        L15_STRST_RQ    = 5'b00101, // unused
+        L15_STQ_RQ      = 5'b00111, // unused
+        L15_INT_RQ      = 5'b01001, // interrupt request
+        L15_FWD_RQ      = 5'b01101, // unused
+        L15_FWD_RPY     = 5'b01110, // unused
+        L15_RSVD_RQ     = 5'b11111  // unused
     } l15_reqtypes_t;
 
     // from l1.5 (only marked subset is used)
-    typedef enum logic [3:0] {LOAD_RET               = 4'b0000, // load packet
-        // INV_RET                = 4'b0011, // invalidate packet, not unique...
-        ST_ACK                 = 4'b0100, // store ack packet
-        //AT_ACK                 = 4'b0011, // unused, not unique...
-        INT_RET                = 4'b0111, // interrupt packet
-        TEST_RET               = 4'b0101, // unused
-        FP_RET                 = 4'b1000, // unused
-        IFILL_RET              = 4'b0001, // instruction fill packet
-        EVICT_REQ              = 4'b0011, // eviction request
-        ERR_RET                = 4'b1100, // unused
-        STRLOAD_RET            = 4'b0010, // unused
-        STRST_ACK              = 4'b0110, // unused
-        FWD_RQ_RET             = 4'b1010, // unused
-        FWD_RPY_RET            = 4'b1011, // unused
-        RSVD_RET               = 4'b1111, // unused
-        CPX_RESTYPE_ATOMIC_RES = 4'b1110  // custom type for atomic responses
+    typedef enum logic [3:0] {
+        L15_LOAD_RET               = 4'b0000, // load packet
+        // L15_INV_RET                = 4'b0011, // invalidate packet, not unique...
+        L15_ST_ACK                 = 4'b0100, // store ack packet
+        //L15_AT_ACK                 = 4'b0011, // unused, not unique...
+        L15_INT_RET                = 4'b0111, // interrupt packet
+        L15_TEST_RET               = 4'b0101, // unused
+        L15_FP_RET                 = 4'b1000, // unused
+        L15_IFILL_RET              = 4'b0001, // instruction fill packet
+        L15_EVICT_REQ              = 4'b0011, // eviction request
+        L15_ERR_RET                = 4'b1100, // unused
+        L15_STRLOAD_RET            = 4'b0010, // unused
+        L15_STRST_ACK              = 4'b0110, // unused
+        L15_FWD_RQ_RET             = 4'b1010, // unused
+        L15_FWD_RPY_RET            = 4'b1011, // unused
+        L15_RSVD_RET               = 4'b1111, // unused
+        L15_CPX_RESTYPE_ATOMIC_RES = 4'b1110  // custom type for atomic responses
     } l15_rtrntypes_t;
 
 

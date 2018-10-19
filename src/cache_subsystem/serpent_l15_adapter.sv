@@ -56,7 +56,7 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_l15_adapter #(
-
+  parameter SWAP_ENDIANESS = 1
 )(
    input logic                  clk_i,
    input logic                  rst_ni,
@@ -87,14 +87,13 @@ module serpent_l15_adapter #(
 
 // request path
 icache_req_t icache_data;
-logic icache_data_full, icache_data_empty, icache_data_data, icache_data_push;
+logic icache_data_full, icache_data_empty;
 
 dcache_req_t dcache_data;
-logic dcache_data_full, dcache_data_empty, dcache_data_data, dcache_data_push;
+logic dcache_data_full, dcache_data_empty;
 
-logic [1:0] arb_req;
-logic [1:0] arb_ack;
-logic [1:0] arb_idx;
+logic [1:0] arb_req, arb_ack;
+logic       arb_idx;
 
 logic header_ack_d, header_ack_q;
 
@@ -119,94 +118,73 @@ l15_rtrn_t rtrn_fifo_data;
 // logic [63:0]                       l15_req_o.l15_data_next_entry;       // unused in Ariane (only used for CAS atomic requests)
 // logic [L15_TLB_CSM_WIDTH-1:0]      l15_req_o.l15_csm_data;
 
+assign icache_data_ack_o  = icache_data_req_i & ~icache_data_full;
+assign dcache_data_ack_o  = dcache_data_req_i & ~dcache_data_full;
+
+// data mux
+assign l15_req_o.l15_nc                   = (arb_idx)        ? dcache_data.nc    : icache_data.nc;
+assign l15_req_o.l15_size                 = (arb_idx)        ? dcache_data.size  :
+                                            (icache_data.nc) ? 3'b10             : 3'b111;// NC ifills are always 4byte
+assign l15_req_o.l15_threadid             = (arb_idx) ? dcache_data.tid   : icache_data.tid;
+assign l15_req_o.l15_prefetch             = '0; // unused in openpiton
+assign l15_req_o.l15_invalidate_cacheline = '0; // unused by Ariane as L1 has no ECC at the moment
+assign l15_req_o.l15_blockstore           = '0; // unused in openpiton
+assign l15_req_o.l15_blockinitstore       = '0; // unused in openpiton
+assign l15_req_o.l15_l1rplway             = (arb_idx) ? dcache_data.way   : icache_data.way;
+assign l15_req_o.l15_address              = (arb_idx) ? dcache_data.paddr : icache_data.paddr;
+assign l15_req_o.l15_data_next_entry      = '0; // unused in Ariane (only used for CAS atomic requests)
+assign l15_req_o.l15_csm_data             = '0; // unused in Ariane (only used for coherence domain restriction features)
+assign l15_req_o.l15_amo_op               = dcache_data.amo_op;
+
+
+// openpiton is big endian
+generate
+  if (SWAP_ENDIANESS) assign l15_req_o.l15_data = swendian64(dcache_data.data);
+  else                assign l15_req_o.l15_data = dcache_data.data;
+endgenerate
+
+// arbiter
+rrarbiter #(
+  .NUM_REQ(2),
+  .LOCK_IN(1)
+) i_rrarbiter (
+  .clk_i  ( clk_i                ),
+  .rst_ni ( rst_ni               ),
+  .flush_i( '0                   ),
+  .en_i   ( l15_rtrn_i.l15_ack   ),
+  .req_i  ( arb_req              ),
+  .ack_o  ( arb_ack              ),
+  .vld_o  (                      ),
+  .idx_o  ( arb_idx              )
+);
+
 // need to deassert valid signal when header is acked
 // can move on when packed is acked (need to clear header ack)
+assign arb_req           = {~dcache_data_empty, ~icache_data_empty};
 assign l15_req_o.l15_val = (|arb_req) & ~header_ack_q;
 assign header_ack_d      = (l15_rtrn_i.l15_ack) ? 1'b0 : (header_ack_q | l15_rtrn_i.l15_header_ack);
 
-assign arb_req           = {~dcache_data_empty,
-                            ~icache_data_empty};
-
-assign dcache_data_pop    = arb_ack[1];
-assign icache_data_pop    = arb_ack[0];
-
-assign icache_data_ack_o  = icache_data_req_i & ~ icache_data_full;
-assign dcache_data_ack_o  = dcache_data_req_i & ~ dcache_data_full;
-
-// data mux
-assign l15_req_o.l15_nc                   = (arb_idx) ? dcache_data.nc    : icache_data.nc;
-assign l15_req_o.l15_size                 = (arb_idx) ? dcache_data.size  : 3'b111;// always request full cache line for icache
-assign l15_req_o.l15_threadid             = (arb_idx) ? dcache_data.tid   : icache_data.tid;
-assign l15_req_o.l15_invalidate_cacheline = 1'b0; // unused by Ariane as L1 has no ECC at the moment
-assign l15_req_o.l15_l1rplway             = (arb_idx) ? dcache_data.way   : icache_data.way;
-assign l15_req_o.l15_address              = (arb_idx) ? dcache_data.paddr : icache_data.paddr;
-assign l15_req_o.l15_data_next_entry      = 1'b0; // unused in Ariane (only used for CAS atomic requests)
-assign l15_req_o.l15_csm_data             = 1'b0; // unused in Ariane (only used for coherence domain restriction features)
-assign l15_req_o.l15_amo_op               = dcache_data.amo_op;
-// swap endianess and replicate datawords if necessary
-always_comb begin : p_datarepl
-    unique case(dcache_data.size)
-        3'b000: begin // 1byte
-            l15_req_o.l15_data = swendian64({dcache_data.data[0],
-                                              dcache_data.data[0],
-                                              dcache_data.data[0],
-                                              dcache_data.data[0],
-                                              dcache_data.data[0],
-                                              dcache_data.data[0],
-                                              dcache_data.data[0],
-                                              dcache_data.data[0]});
-        end
-        3'b001: begin // 2byte
-            l15_req_o.l15_data = swendian64({dcache_data.data[1:0],
-                                              dcache_data.data[1:0],
-                                              dcache_data.data[1:0],
-                                              dcache_data.data[1:0]});
-        end
-        3'b010: begin // 4byte
-            l15_req_o.l15_data = swendian64({dcache_data.data[3:0],
-                                              dcache_data.data[3:0]});
-        end
-        default: begin // 8 byte
-            l15_req_o.l15_data = swendian64(dcache_data.data);
-        end
-    endcase // dcache_data.size
-end
-
-// arbiter
-// ifills always have priority
-always_comb begin : p_arb
-    arb_idx = '0;
-    arb_ack = '0;
-    if(arb_req[0] & l15_rtrn_i.l15_ack) begin
-        arb_ack[0] = 1'b1;
-        arb_idx    = 0;
-    end else if (arb_req[1] & l15_rtrn_i.l15_ack) begin
-        arb_ack[1] = 1'b1;
-        arb_idx    = 1;
-    end
-end // p_arb
-
 // encode packet type
 always_comb begin : p_req
-  l15_req_o.l15_rqtype = LOAD_RQ;
+  l15_req_o.l15_rqtype = L15_LOAD_RQ;
 
   unique case (arb_idx)
     0: begin// icache
-      l15_req_o.l15_rqtype = IMISS_RQ;
+      l15_req_o.l15_rqtype = L15_IMISS_RQ;
     end
     1: begin
         unique case (dcache_data.rtype)
             DCACHE_STORE_REQ: begin
-                l15_req_o.l15_rqtype = STORE_RQ;
+                l15_req_o.l15_rqtype = L15_STORE_RQ;
             end
             DCACHE_LOAD_REQ: begin
-                l15_req_o.l15_rqtype = LOAD_RQ;
+                l15_req_o.l15_rqtype = L15_LOAD_RQ;
             end
             DCACHE_ATOMIC_REQ: begin
-                l15_req_o.l15_rqtype = ATOMIC_RQ;
+                l15_req_o.l15_rqtype = L15_ATOMIC_RQ;
             end
             // DCACHE_INT_REQ: begin
-            //     //TODO
+            //     //TODO interrupt requests
             // end
             default: begin
                 ;
@@ -219,10 +197,9 @@ always_comb begin : p_req
   endcase
 end // p_req
 
-
 always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if(~rst_ni) begin
-        header_ack_q <= 0;
+        header_ack_q <= '0;
     end else begin
         header_ack_q <= header_ack_d;
     end
@@ -242,9 +219,9 @@ fifo_v2 #(
      .alm_full_o  (                          ),
      .alm_empty_o (                          ),
      .data_i      (  icache_data_i           ),
-     .push_i      (  icache_data_push        ),
+     .push_i      (  icache_data_ack_o       ),
      .data_o      (  icache_data             ),
-     .pop_i       (  icache_data_pop         )
+     .pop_i       (  arb_ack[0]              )
 );
 
 fifo_v2 #(
@@ -260,9 +237,9 @@ fifo_v2 #(
      .alm_full_o  (                          ),
      .alm_empty_o (                          ),
      .data_i      (  dcache_data_i           ),
-     .push_i      (  dcache_data_push        ),
+     .push_i      (  dcache_data_ack_o       ),
      .data_o      (  dcache_data             ),
-     .pop_i       (  dcache_data_pop         )
+     .pop_i       (  arb_ack[1]              )
 );
 
 ///////////////////////////////////////////////////////
@@ -297,56 +274,66 @@ always_comb begin : p_rtrn_logic
     dcache_rtrn_vld_o   = 1'b0;
     if(~rtrn_fifo_empty) begin
         unique case (rtrn_fifo_data.l15_returntype)
-            LOAD_RET:  begin
-                dcache_rtrn_o.rtype   = DCACHE_LOAD_ACK;
-                dcache_rtrn_vld_o     = 1'b1;
+            L15_LOAD_RET:  begin
+                dcache_rtrn_o.rtype = DCACHE_LOAD_ACK;
+                dcache_rtrn_vld_o   = 1'b1;
             end
-            ST_ACK:    begin
-                dcache_rtrn_o.rtype   = DCACHE_STORE_ACK;
-                dcache_rtrn_vld_o     = 1'b1;
+            L15_ST_ACK:    begin
+                dcache_rtrn_o.rtype = DCACHE_STORE_ACK;
+                dcache_rtrn_vld_o   = 1'b1;
             end
-            // INT_RET:   begin
-            // TODO: implement this
-            // dcache_rtrn_o.reqType = DCACHE_INT_ACK;
-            // end
-            IFILL_RET: begin
+            L15_IFILL_RET: begin
                 icache_rtrn_o.rtype = ICACHE_IFILL_ACK;
                 icache_rtrn_vld_o   = 1'b1;
             end
-            EVICT_REQ: begin
+            L15_EVICT_REQ: begin
                 icache_rtrn_o.rtype = ICACHE_INV_REQ;
                 dcache_rtrn_o.rtype = DCACHE_INV_REQ;
-                icache_rtrn_vld_o   = 1'b1;
+                icache_rtrn_vld_o   = icache_rtrn_o.inv.vld | icache_rtrn_o.inv.all;
+                dcache_rtrn_vld_o   = dcache_rtrn_o.inv.vld | dcache_rtrn_o.inv.all;
+            end
+            L15_CPX_RESTYPE_ATOMIC_RES: begin
+                dcache_rtrn_o.rtype = DCACHE_ATOMIC_ACK;
                 dcache_rtrn_vld_o   = 1'b1;
             end
-            CPX_RESTYPE_ATOMIC_RES: begin
-                dcache_rtrn_o.rtype = DCACHE_ATOMIC_ACK;
-            end
-            default: begin
-            ;
-            end
+            // L15_INT_RET:   begin
+            // TODO: implement this
+            // dcache_rtrn_o.reqType = DCACHE_INT_ACK;
+            // end
+            // default: begin
+            // ;
+            // end
         endcase // rtrn_fifo_data.l15_returntype
     end
 end
 
+// openpiton is big endian
+generate
+  if (SWAP_ENDIANESS) begin
+    assign dcache_rtrn_o.data = { swendian64(rtrn_fifo_data.l15_data_1),
+                                  swendian64(rtrn_fifo_data.l15_data_0) };
 
-// icache fifo signal mapping
-// swap endianess here since openpiton is big endian
-assign icache_rtrn_o.data = { swendian64(rtrn_fifo_data.l15_data_3),
-                              swendian64(rtrn_fifo_data.l15_data_2),
-                              swendian64(rtrn_fifo_data.l15_data_1),
-                              swendian64(rtrn_fifo_data.l15_data_0) };
-assign icache_rtrn_o.tid  = rtrn_fifo_data.l15_threadid;
-assign icache_rtrn_o.nc   = rtrn_fifo_data.l15_noncacheable;
-assign icache_rtrn_o.f4b  = rtrn_fifo_data.l15_f4b;
+    assign icache_rtrn_o.data = { swendian64(rtrn_fifo_data.l15_data_3),
+                                  swendian64(rtrn_fifo_data.l15_data_2),
+                                  swendian64(rtrn_fifo_data.l15_data_1),
+                                  swendian64(rtrn_fifo_data.l15_data_0) };
+  end else begin
+    assign dcache_rtrn_o.data = { rtrn_fifo_data.l15_data_1,
+                                  rtrn_fifo_data.l15_data_0 };
 
-// dcache fifo signal mapping
-assign dcache_rtrn_o.data = { swendian64(rtrn_fifo_data.l15_data_1),
-                              swendian64(rtrn_fifo_data.l15_data_0) };
+    assign icache_rtrn_o.data = { rtrn_fifo_data.l15_data_3,
+                                  rtrn_fifo_data.l15_data_2,
+                                  rtrn_fifo_data.l15_data_1,
+                                  rtrn_fifo_data.l15_data_0 };
+  end
+endgenerate
 
+// fifo signals
+assign icache_rtrn_o.tid      = rtrn_fifo_data.l15_threadid;
+assign icache_rtrn_o.nc       = rtrn_fifo_data.l15_noncacheable;
+assign icache_rtrn_o.f4b      = rtrn_fifo_data.l15_f4b;
 assign dcache_rtrn_o.tid      = rtrn_fifo_data.l15_threadid;
 assign dcache_rtrn_o.nc       = rtrn_fifo_data.l15_noncacheable;
-
 
 // invalidation signal mapping
 assign icache_rtrn_o.inv.idx  = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};
@@ -372,7 +359,7 @@ fifo_v2 #(
     .alm_full_o  (                           ),
     .alm_empty_o (                           ),
     .data_i      (  l15_rtrn_i               ),
-    .push_i      (  l15_req_o.l15_req_ack            ),
+    .push_i      (  l15_req_o.l15_req_ack    ),
     .data_o      (  rtrn_fifo_data           ),
     .pop_i       (  rtrn_fifo_pop            )
 );
@@ -383,51 +370,46 @@ fifo_v2 #(
 ///////////////////////////////////////////////////////
 
 //pragma translate_off
-`ifndef verilator
-
-  iospace: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) l15_req_o.l15_val |-> l15_req_o.l15_address >= {40'h8000000000} |-> l15_req_o.l15_nc)
-         else $fatal("[l15_adapter] accesses to I/O space must have noncacheable bit set!");
+`ifndef VERILATOR
 
   invalidations: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) l15_rtrn_i.l15_val |-> l15_rtrn_i.l15_returntype == EVICT_REQ |-> (l15_rtrn_i.l15_inval_icache_inval    |
-                                                                                                       l15_rtrn_i.l15_inval_dcache_inval    |
-                                                                                                       l15_rtrn_i.l15_inval_icache_all_way  |
-                                                                                                       l15_rtrn_i.l15_inval_dcache_all_way))
-        else $fatal("[l15_adapter] got invalidation package with zero invalidation flags");
+      @(posedge clk_i) disable iff (~rst_ni) l15_rtrn_i.l15_val |-> l15_rtrn_i.l15_returntype == L15_EVICT_REQ |-> (l15_rtrn_i.l15_inval_icache_inval    |
+                                                                                                                    l15_rtrn_i.l15_inval_dcache_inval    |
+                                                                                                                    l15_rtrn_i.l15_inval_icache_all_way  |
+                                                                                                                    l15_rtrn_i.l15_inval_dcache_all_way))
+        else $fatal(1,"[l15_adapter] got invalidation package with zero invalidation flags");
 
   blockstore_o: assert property (
       @(posedge clk_i) disable iff (~rst_ni) l15_req_o.l15_val|-> !l15_req_o.l15_blockstore)
-        else $fatal("[l15_adapter] blockstores are not supported");
+        else $fatal(1,"[l15_adapter] blockstores are not supported");
 
   blockstore_i: assert property (
       @(posedge clk_i) disable iff (~rst_ni) l15_rtrn_i.l15_val|-> !l15_rtrn_i.l15_blockinitstore)
-        else $fatal("[l15_adapter] blockstores are not supported");
-
-  instr_fill_size: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) (!l15_rtrn_i.l15_f4b))
-        else $fatal("[l15_adapter] 4b instruction fills not supported");
+        else $fatal(1,"[l15_adapter] blockstores are not supported");
 
   unsuported_rtrn_types: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) (l15_rtrn_i.l15_val |-> l15_rtrn_i.l15_returntype inside {LOAD_RET, ST_ACK, IFILL_RET, EVICT_REQ}))
-        else $fatal("[l15_adapter] unsupported rtrn type");
+      @(posedge clk_i) disable iff (~rst_ni) (l15_rtrn_i.l15_val |-> l15_rtrn_i.l15_returntype inside {L15_LOAD_RET, L15_ST_ACK, L15_IFILL_RET, L15_EVICT_REQ, L15_CPX_RESTYPE_ATOMIC_RES}))
+        else $fatal(1,"[l15_adapter] unsupported rtrn type");
 
+  amo_type: assert property (
+      @(posedge clk_i) disable iff (~rst_ni) (l15_rtrn_i.l15_val |-> l15_rtrn_i.l15_returntype inside {L15_CPX_RESTYPE_ATOMIC_RES} |-> l15_rtrn_i.l15_atomic ))
+        else $fatal(1,"[l15_adapter] l15_atomic must be asserted when the return type is an ATOMIC_RES");
 
    initial begin
       // assert wrong parameterizations
       assert (L15_SET_ASSOC == ICACHE_SET_ASSOC)
-        else $fatal("[l15_adapter] number of icache ways not aligned with L15");
+        else $fatal(1,"[l15_adapter] number of icache ways not aligned with L15");
       // assert wrong parameterizations
       assert (L15_SET_ASSOC == DCACHE_SET_ASSOC)
-        else $fatal("[l15_adapter] number of dcache ways not aligned with L15");
+        else $fatal(1,"[l15_adapter] number of dcache ways not aligned with L15");
       // invalidation address returned by L1.5 is 16 bit
-      assert (16 >= $max(ICACHE_INDEX_WIDTH, DCACHE_INDEX_WIDTH))
-        else $fatal("[l15_adapter] maximum number of index bits supported by L1.5 is 16");
+      assert (16 >= DCACHE_INDEX_WIDTH && 16 >= ICACHE_INDEX_WIDTH)
+        else $fatal(1,"[l15_adapter] maximum number of index bits supported by L1.5 is 16");
       // assert mismatch of cache line width
       assert (ICACHE_LINE_WIDTH==256)
-        else $fatal("[l15_adapter] ichache lines are currently restricted to 256 bits");
+        else $fatal(1,"[l15_adapter] ichache lines are currently restricted to 256 bits");
       assert (DCACHE_LINE_WIDTH==128)
-        else $fatal("[l15_adapter] dchache lines are currently restricted to 128 bits");
+        else $fatal(1,"[l15_adapter] dchache lines are currently restricted to 128 bits");
    end
 `endif
 //pragma translate_on

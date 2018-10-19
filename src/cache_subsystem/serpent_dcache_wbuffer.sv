@@ -188,6 +188,7 @@ assign miss_req_o   = (|dirty) && (tx_cnt_q < DCACHE_MAX_TX);
 // e.g. if we have the following valid bytes: 0011_1001 -> TX0: 0000_0001, TX1: 0000_1000, TX2: 0011_0000
 assign miss_size_o  = toSize64(bdirty[dirty_ptr]);
 
+// replicate transfers shorter than a dword
 assign miss_wdata_o = repData64(wbuffer_q[dirty_ptr].data,
                                 bdirty_off,
                                 miss_size_o[1:0]);
