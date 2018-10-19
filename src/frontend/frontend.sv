@@ -46,7 +46,7 @@ module frontend (
     // Registers
     logic [31:0] icache_data_q;
     logic        icache_valid_q;
-    exception_t  icache_ex_valid_q;
+    logic        icache_ex_valid_q;
     logic        instruction_valid;
     logic [INSTR_PER_FETCH-1:0] instr_is_compressed;
 
