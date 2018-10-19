@@ -21,6 +21,7 @@ module scoreboard #(
 )(
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
+    output logic                                      sb_full_o,
     input  logic                                      flush_unissued_instr_i, // flush only un-issued instructions
     input  logic                                      flush_i,  // flush whole scoreboard
     input  logic                                      unresolved_branch_i, // we have an unresolved branch
@@ -78,6 +79,8 @@ module scoreboard #(
 
     // the issue queue is full don't issue any new instructions
     assign issue_full = (issue_cnt_q == NR_ENTRIES-1);
+
+    assign sb_full_o = issue_full;
 
     // output commit instruction directly
     always_comb begin : commit_ports

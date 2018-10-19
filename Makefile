@@ -95,6 +95,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
+        src/common_cells/src/pipe_reg_simple.sv                        \
         src/common_cells/src/lfsr_8bit.sv                              \
         src/tech_cells_generic/src/cluster_clock_inverter.sv           \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                  \
@@ -122,7 +123,7 @@ incdir :=
 # Compile and sim flags
 compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags    += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
-questa-flags += -t 1ns -64 -coverage -classdebug $(gui-sim)
+questa-flags += -t 1ns -64 -coverage -classdebug $(gui-sim) $(QUESTASIM_FLAGS)
 # if defined, calls the questa targets in batch mode
 ifdef batch-mode
 	questa-flags += -c
@@ -203,7 +204,7 @@ run-asm-tests: $(riscv-asm-tests)
 	$(MAKE) check-asm-tests
 
 run-amo-tests: $(riscv-amo-tests)
-	make check-amo-tests
+	$(MAKE) check-amo-tests
 
 check-asm-tests:
 	ci/check-tests.sh tmp/riscv-asm-tests- $(shell wc -l $(riscv-asm-tests-list) | awk -F " " '{ print $1 }')

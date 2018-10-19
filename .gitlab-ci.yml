@@ -110,6 +110,15 @@ torture:
   dependencies:
     - build
 
+serdiv-quest:
+  stage: standard
+  script:
+    - cd tb/tb_serdiv/
+    - make simc
+    - "grep 'CI: PASSED' summary.rep"
+  dependencies:
+    - build
+
 ###################################
 # tests with serpent cache system
 
@@ -155,10 +164,6 @@ s-icache-quest:
   stage: serpent
   script:
     - cd tb/tb_serpent_icache/
-    - make simc
-    - "grep 'CI: PASSED' summary.rep"
-  dependencies:
-    - build
 
 s-dcache-quest:
   stage: serpent

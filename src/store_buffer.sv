@@ -42,23 +42,10 @@ module store_buffer (
     input  dcache_req_o_t            req_port_i,
     output dcache_req_i_t            req_port_o
     );
-    // depth of store-buffers
-    localparam int unsigned DEPTH_SPEC   = 4;
-
-`ifdef SERPENT_PULP
-    // in this case we can use a small commit queue since we have a write buffer in the dcache
-    // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
-    // to longer paths into the commit stage
-    localparam int unsigned DEPTH_COMMIT = 2;
-`else
-    // allocate more space for the commit buffer to be on the save side
-    localparam int unsigned DEPTH_COMMIT = 4;
-`endif
 
     // the store queue has two parts:
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
-
     struct packed {
         logic [63:0] address;
         logic [63:0] data;
@@ -280,7 +267,7 @@ module store_buffer (
         else $error ("[Speculative Queue] You are committing although there are no stores to commit");
 
     commit_buffer_overflow: assert property (
-        @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_SPEC) |-> !commit_i)
+        @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_COMMIT) |-> !commit_i)
         else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
     `endif
     //pragma translate_on

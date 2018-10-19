@@ -12,21 +12,16 @@
 // Date: 12.04.2018
 // Description: Wrapper for the floating-point unit
 
-
 import ariane_pkg::*;
 
 module fpu_wrap (
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic                     flush_i,
-    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
-    input  fu_t                      fu_i,
     input  logic                     fpu_valid_i,
     output logic                     fpu_ready_o,
-    input  fu_op                     operator_i,
-    input  logic [FLEN-1:0]          operand_a_i,
-    input  logic [FLEN-1:0]          operand_b_i, // imm will be here unless used as operand
-    input  logic [FLEN-1:0]          operand_c_i, // imm will be here unless used as operand
+    input  fu_data_t                 fu_data_i,
+
     input  logic [1:0]               fpu_fmt_i,
     input  logic [2:0]               fpu_rm_i,
     input  logic [2:0]               fpu_frm_i,
@@ -41,6 +36,14 @@ module fpu_wrap (
 // otherwise compilation might issue an error if FLEN=0
 generate
     if (FP_PRESENT) begin : fpu_gen
+
+        logic [FLEN-1:0] operand_a_i;
+        logic [FLEN-1:0] operand_b_i;
+        logic [FLEN-1:0] operand_c_i;
+        assign operand_a_i = fu_data_i.operand_a[FLEN-1:0];
+        assign operand_b_i = fu_data_i.operand_b[FLEN-1:0];
+        assign operand_c_i = fu_data_i.imm[FLEN-1:0];
+
         //-----------------------------------
         // FPnew encoding from FPnew package
         //-----------------------------------
@@ -166,8 +169,8 @@ generate
             fpu_fmt2_d          = FMT_FP32;
             fpu_ifmt_d          = IFMT_INT32;
             fpu_rm_d            = fpu_rm_i;
-            fpu_vec_op_d        = fu_i == FPU_VEC;
-            fpu_tag_d           = trans_id_i;
+            fpu_vec_op_d        = fu_data_i.fu == FPU_VEC;
+            fpu_tag_d           = fu_data_i.trans_id;
             vec_replication     = fpu_rm_i[0]; // replication bit is sent via rm field
             replicate_c         = 1'b0;
             check_ah            = 1'b0; // whether set scalar AH encoding from MSB of rm_i
@@ -199,7 +202,7 @@ generate
 
 
             // Operations (this can modify the rounding mode field and format!)
-            unique case (operator_i)
+            unique case (fu_data_i.operator)
                 // Addition
                 FADD      : begin
                     fpu_op_d    = OP_ADD;

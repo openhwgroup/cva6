@@ -24,15 +24,32 @@ package ariane_pkg;
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
-    localparam NR_WB_PORTS   = 4;
     localparam ASID_WIDTH    = 1;
-    localparam BTB_ENTRIES   = 8;
-    localparam BHT_ENTRIES   = 32;
+    localparam BTB_ENTRIES   = 64;
+    localparam BHT_ENTRIES   = 128;
     localparam RAS_DEPTH     = 2;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
     localparam ENABLE_RENAME = 1'b1;
+
+    // amount of pipeline registers inserted for load/store return path
+    // this can be tuned to trade-off IPC vs. cycle time
+    localparam NR_LOAD_PIPE_REGS = 1;
+    localparam NR_STORE_PIPE_REGS = 0;
+
+    // depth of store-buffers, this needs to be a power of two
+    localparam int unsigned DEPTH_SPEC   = 4;
+
+`ifdef SERPENT_PULP
+    // in this case we can use a small commit queue since we have a write buffer in the dcache
+    // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
+    // to longer paths into the commit stage
+    localparam int unsigned DEPTH_COMMIT = 2;
+`else
+    // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
+    localparam int unsigned DEPTH_COMMIT = 8;
+`endif
 
     // Floating-point extensions configuration
     localparam bit RVF = 1'b0; // Is F extension enabled
@@ -111,6 +128,8 @@ package ariane_pkg;
     // where coherence is not necessary this can improve performance. This needs to be switched on
     // when more than one core is in a system
     localparam logic INVALIDATE_ON_FLUSH = 1'b1;
+
+    localparam NR_WB_PORTS = 4;
 
     // ---------------
     // Fetch Stage
@@ -262,10 +281,12 @@ package ariane_pkg;
                              } fu_op;
 
     typedef struct packed {
-      fu_op        operator;
-      logic [63:0] operand_a;
-      logic [63:0] operand_b;
-      logic [63:0] imm;
+        fu_t                      fu;
+        fu_op                     operator;
+        logic [63:0]              operand_a;
+        logic [63:0]              operand_b;
+        logic [63:0]              imm;
+        logic [TRANS_ID_BITS-1:0] trans_id;
     } fu_data_t;
 
     // -------------------------------

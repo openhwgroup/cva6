@@ -77,6 +77,7 @@ sources:
   - src/lsu.sv
   - src/mmu.sv
   - src/mult.sv
+  - src/serdiv.sv
   - src/perf_counters.sv
   - src/ptw.sv
   - src/ariane_regfile_ff.sv

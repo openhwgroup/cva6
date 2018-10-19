@@ -192,6 +192,7 @@ module serpent_cache_subsystem #(
       .rdata_o              ( adapter_icache.data     ),
       .id_o                 (                         ),
       .critical_word_o      (                         ),
+      .critical_word_valid_o(                         ),
       .axi_req_o            ( axi_data_o              ),
       .axi_resp_i           ( axi_data_i              )
    );
@@ -243,7 +244,8 @@ module serpent_cache_subsystem #(
       .id_o                 ( axi_dcache_id           ),
       .critical_word_o      (                         ),
       .critical_word_valid_o(                         ),
-      .axi                  ( dcache_data_if          )
+      .axi_req_o            (                         ),
+      .axi_resp_i           (  '0                     )
    );
 
 

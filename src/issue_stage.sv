@@ -23,6 +23,7 @@ module issue_stage #(
     input  logic                                     clk_i,     // Clock
     input  logic                                     rst_ni,    // Asynchronous reset active low
 
+    output logic                                     sb_full_o,
     input  logic                                     flush_unissued_instr_i,
     input  logic                                     flush_i,
     // from ISSUE
@@ -31,16 +32,10 @@ module issue_stage #(
     input  logic                                     is_ctrl_flow_i,
     output logic                                     decoded_instr_ack_o,
     // to EX
-    output fu_t                                      fu_o,
-    output fu_op                                     operator_o,
-    output logic [63:0]                              operand_a_o,
-    output logic [63:0]                              operand_b_o,
-    output logic [63:0]                              imm_o,
-    output logic [TRANS_ID_BITS-1:0]                 trans_id_o,
+    output fu_data_t                                 fu_data_o,
     output logic [63:0]                              pc_o,
     output logic                                     is_compressed_instr_o,
-
-    input  logic                                     alu_ready_i,
+    input  logic                                     flu_ready_i,
     output logic                                     alu_valid_o,
     // ex just resolved our predicted branch, we are ready to accept new requests
     input  logic                                     resolve_branch_i,
@@ -49,10 +44,9 @@ module issue_stage #(
     output logic                                     lsu_valid_o,
     // branch prediction
     output logic                                     branch_valid_o,   // use branch prediction unit
-    output branchpredict_sbe_t                       branch_predict_o,
+    output branchpredict_sbe_t                       branch_predict_o, // Branch predict Out
 
-    input  logic                                     mult_ready_i,
-    output logic                                     mult_valid_o,    // Branch predict Out
+    output logic                                     mult_valid_o,
 
     input  logic                                     fpu_ready_i,
     output logic                                     fpu_valid_o,
@@ -126,6 +120,7 @@ module issue_stage #(
         .NR_ENTRIES (NR_ENTRIES ),
         .NR_WB_PORTS(NR_WB_PORTS)
     ) i_scoreboard (
+        .sb_full_o             ( sb_full_o                                 ),
         .unresolved_branch_i   ( 1'b0                                      ),
         .rd_clobber_gpr_o      ( rd_clobber_gpr_sb_iro                     ),
         .rd_clobber_fpr_o      ( rd_clobber_fpr_sb_iro                     ),
@@ -161,6 +156,8 @@ module issue_stage #(
         .issue_instr_i       ( issue_instr_sb_iro              ),
         .issue_instr_valid_i ( issue_instr_valid_sb_iro        ),
         .issue_ack_o         ( issue_ack_iro_sb                ),
+        .fu_data_o           ( fu_data_o                       ),
+        .flu_ready_i         ( flu_ready_i                     ),
         .rs1_o               ( rs1_iro_sb                      ),
         .rs1_i               ( rs1_sb_iro                      ),
         .rs1_valid_i         ( rs1_valid_sb_iro                ),
@@ -172,6 +169,10 @@ module issue_stage #(
         .rs3_valid_i         ( rs3_valid_iro_sb                ),
         .rd_clobber_gpr_i    ( rd_clobber_gpr_sb_iro           ),
         .rd_clobber_fpr_i    ( rd_clobber_fpr_sb_iro           ),
+        .alu_valid_o         ( alu_valid_o                     ),
+        .branch_valid_o      ( branch_valid_o                  ),
+        .csr_valid_o         ( csr_valid_o                     ),
+        .mult_valid_o        ( mult_valid_o                    ),
         .*
     );
 
