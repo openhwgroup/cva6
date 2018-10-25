@@ -16,3 +16,9 @@
 [submodule "src/register_interface"]
 	path = src/register_interface
 	url = https://github.com/pulp-platform/register_interface.git
+[submodule "fpga/src/apb_uart"]
+	path = fpga/src/apb_uart
+	url = git@github.com:pulp-platform/apb_uart.git
+[submodule "fpga/src/apb_node"]
+	path = fpga/src/apb_node
+	url = git@github.com:pulp-platform/apb_node.git
