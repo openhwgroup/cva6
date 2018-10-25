@@ -10,13 +10,16 @@
     #size-cells = <0>;
     timebase-frequency = <25000000>;
     CPU0: cpu@0 {
+      clock-frequency = <0>;
       device_type = "cpu";
       reg = <0>;
       status = "okay";
-      compatible = "riscv";
-      riscv,isa = "rv64imc";
+      compatible = "eth, ariane", "riscv";
+      riscv,isa = "rv64imacsu";
       mmu-type = "riscv,sv39";
-      clock-frequency = <50000000>;
+      timebase-frequency = <25000000>;
+      tlb-split;
+      // HLIC - hart local interrupt controller
       CPU0_intc: interrupt-controller {
         #interrupt-cells = <1>;
         interrupt-controller;
@@ -26,27 +29,28 @@
   };
   memory@80000000 {
     device_type = "memory";
-    reg = <0x0 0x80000000 0x0 0x2000000>;
+    reg = <0x0 0x80000000 0x0 0x8000000>;
   };
-  soc {
+  L26: soc {
     #address-cells = <2>;
     #size-cells = <2>;
     compatible = "eth,ariane-bare-soc", "simple-bus";
     ranges;
     clint@2000000 {
       compatible = "riscv,clint0";
-      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7 >;
+      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
       reg = <0x0 0x2000000 0x0 0xc0000>;
+      reg-names = "control";
     };
     PLIC0: interrupt-controller@c000000 {
+      #address-cells = <0>;
       #interrupt-cells = <1>;
       compatible = "riscv,plic0";
       interrupt-controller;
       interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
       reg = <0x0 0xc000000 0x0 0x4000000>;
-      reg-names = "control";
       riscv,max-priority = <7>;
-      riscv,ndev = <53>;
+      riscv,ndev = <2>;
     };
     debug-controller@0 {
       compatible = "riscv,debug-013";
@@ -55,11 +59,56 @@
       reg-names = "control";
     };
     uart@10000000 {
-      compatible = "xlnx,axi-uartlite-1.02.a";
-      reg = <0x0 0x10000000  0x0 0x10000>;
+      compatible = "ns16750";
+      reg = <0x0 0x10000000 0x0 0x1000>;
+      clock-frequency = <50000000>;
       interrupt-parent = <&PLIC0>;
-      interrupts = <0 1 2>;
-      clock = <50000000>;
+      interrupts = <1>;
+      reg-shift = <2>; //regs are spaced on 32 bit boundary
+      reg-io-width = <4>; // only 32-bit access are supported
     };
+    // axi_ethernetlite_1: ethernet@20000000 {
+    //   compatible = "xlnx,axi-ethernetlite-3.0", "xlnx,xps-ethernetlite-1.00.a";
+    //   device_type = "network";
+    //   interrupt-parent = <&PLIC0>;
+    //   interrupts = <2 0>;
+    //   local-mac-address = [00 0a 35 00 01 22];
+    //   phy-handle = <&phy0>;
+    //   reg = <0x0 0x20000000 0x0 0x10000>;
+    //   xlnx,duplex = <0x1>;
+    //   xlnx,include-global-buffers = <0x1>;
+    //   xlnx,include-internal-loopback = <0x0>;
+    //   xlnx,include-mdio = <0x1>;
+    //   xlnx,instance = "axi_ethernetlite_inst";
+    //   xlnx,rx-ping-pong = <0x1>;
+    //   xlnx,s-axi-id-width = <0x1>;
+    //   xlnx,tx-ping-pong = <0x1>;
+    //   xlnx,use-internal = <0x0>;
+    //   xlnx,has-mdio = <0x1>;
+    //   mdio {
+    //     #address-cells = <1>;
+    //     #size-cells = <0>;
+    //     phy0: phy@0 {
+    //       compatible = "marvell,88e1111";
+    //       device_type = "ethernet-phy";
+    //       reg = <0>;
+    //       marvell,reg-init = <2 21 0xffef 0x00 0x0 0 0x7fff 0x8000>;
+    //     };
+    //   };
+    // };
+    // axi_spi@11000000 {
+    //   compatible = "xlnx.xps-spic-2.00.b";
+    //   clock-names = "axi_clk", "axi4_clk", "spi_clk";
+    //   clocks = <&clkc 71>, <&clkc 72>, <&clkc 73>;
+    //   interrupt-parent = <&intc>;
+    //   interrupts = <0 31 1>;
+    //   reg = <0x41e00000 0x10000>;
+    //   num-cs = <0x1>;
+    //   fifo-size = <256>;
+    //   bits-per-word = <8>;
+    // }
+  };
+  chosen {
+    stdout-path = "/uart@10000000";
   };
 };
