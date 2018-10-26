@@ -22,7 +22,9 @@ import instruction_tracer_pkg::*;
 // default to AXI64 cache ports if not using the
 // serpent PULP extension
 `ifndef SERPENT_PULP
+`ifndef AXI64_CACHE_PORTS
   `define AXI64_CACHE_PORTS
+`endif
 `endif
 
 module ariane #(
@@ -756,8 +758,6 @@ module ariane #(
   final begin
     $fclose(f);
   end
-`endif
-  //pragma translate_on
 
 `ifdef SERPENT_PULP
 
@@ -790,7 +790,9 @@ module ariane #(
     end
   end
 
-`endif
+`endif // SERPENT_PULP
+`endif // VERILATOR
+  //pragma translate_on
 
 endmodule // ariane
 

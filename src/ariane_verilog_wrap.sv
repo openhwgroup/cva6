@@ -10,54 +10,80 @@
 //
 // Author: Michael Schaffner, ETH Zurich
 // Date: 19.03.2017
-// Description: Ariane Top-level wrapper to break out SV structs to nets.
+// Description: Ariane Top-level wrapper to break out SV structs to logic vectors.
 
+// default to AXI64 cache ports if not using the
+// serpent PULP extension
+`ifndef SERPENT_PULP
+`ifndef AXI64_CACHE_PORTS
+  `define AXI64_CACHE_PORTS
+`endif
+`endif
 
 module ariane_verilog_wrap #(
   parameter bit          SWAP_ENDIANESS   = 0,             // swap endianess in l15 adapter
   parameter bit          CACHE_LOW_REGION = 0,             // cached region is below CACHE_START_ADDR
   parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000  // address on which to decide whether the request is cache-able or not
 ) (
-    input                       clk_i,
-    input                       rst_ni,
-    // Core ID, Cluster ID and boot address are considered more or less static
-    input  [63:0]               boot_addr_i,  // reset boot address
-    input  [63:0]               hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
-    // Interrupt inputs
-    input  [1:0]                irq_i,        // level sensitive IR lines, mip & sip (async)
-    input                       ipi_i,        // inter-processor interrupts (async)
-    // Timer facilities
-    input                       time_irq_i,   // timer interrupt in (async)
-    input                       debug_req_i,  // debug request (async)
+  input                       clk_i,
+  input                       rst_ni,
+  // Core ID, Cluster ID and boot address are considered more or less static
+  input  [63:0]               boot_addr_i,  // reset boot address
+  input  [63:0]               hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+  // Interrupt inputs
+  input  [1:0]                irq_i,        // level sensitive IR lines, mip & sip (async)
+  input                       ipi_i,        // inter-processor interrupts (async)
+  // Timer facilities
+  input                       time_irq_i,   // timer interrupt in (async)
+  input                       debug_req_i,  // debug request (async)
 
-    // L15 (memory side)
-    output [$size(serpent_cache_pkg::l15_req_t)-1:0]  l15_req_o,
-    input  [$size(serpent_cache_pkg::l15_rtrn_t)-1:0] l15_rtrn_i
+`ifdef AXI64_CACHE_PORTS
+  // AXI (memory side)
+  output [$size(ariane_axi::req_t)-1:0]             axi_req_o,
+  input  [$size(ariane_axi::resp_t)-1:0]            axi_resp_i
+`else
+  // L15 (memory side)
+  output [$size(serpent_cache_pkg::l15_req_t)-1:0]  l15_req_o,
+  input  [$size(serpent_cache_pkg::l15_rtrn_t)-1:0] l15_rtrn_i
+`endif
  );
 
-    // assign bitvector to packed struct and vice versa
-    serpent_cache_pkg::l15_req_t  l15_req;
-    serpent_cache_pkg::l15_rtrn_t l15_rtrn;
+// assign bitvector to packed struct and vice versa
+`ifdef AXI64_CACHE_PORTS
+  ariane_axi::req_t             axi_req;
+  ariane_axi::resp_t            axi_resp;
 
-    assign l15_req_o = l15_req;
-    assign l15_rtrn  = l15_rtrn_i;
+  assign axi_req_o = axi_req;
+  assign axi_resp  = axi_resp_i;
+`else
+  // L15 (memory side)
+  serpent_cache_pkg::l15_req_t  l15_req;
+  serpent_cache_pkg::l15_rtrn_t l15_rtrn;
 
-    ariane #(
-        .SWAP_ENDIANESS   ( SWAP_ENDIANESS   ),
-        .CACHE_LOW_REGION ( CACHE_LOW_REGION ),
-        .CACHE_START_ADDR ( CACHE_START_ADDR )
-    ) ariane (
-        .clk_i                   ,
-        .rst_ni                  ,
-        .boot_addr_i             ,
-        .hart_id_i               ,
-        .irq_i                   ,
-        .ipi_i                   ,
-        .time_irq_i              ,
-        .debug_req_i             ,
-        .l15_req_o   ( l15_req  ),
-        .l15_rtrn_i  ( l15_rtrn )
-    );
+  assign l15_req_o = l15_req;
+  assign l15_rtrn  = l15_rtrn_i;
+`endif
+
+  ariane #(
+    .SWAP_ENDIANESS   ( SWAP_ENDIANESS   ),
+    .CACHE_LOW_REGION ( CACHE_LOW_REGION ),
+    .CACHE_START_ADDR ( CACHE_START_ADDR )
+  ) ariane (
+    .clk_i                   ,
+    .rst_ni                  ,
+    .boot_addr_i             ,
+    .hart_id_i               ,
+    .irq_i                   ,
+    .ipi_i                   ,
+    .time_irq_i              ,
+    .debug_req_i             ,
+`ifdef AXI64_CACHE_PORTS
+    .axi_req_o   ( axi_req  ),
+    .axi_resp_i  ( axi_resp )
+`else
+    .l15_req_o   ( l15_req  ),
+    .l15_rtrn_i  ( l15_rtrn )
+`endif
+  );
 
 endmodule // ariane_verilog_wrap
-
