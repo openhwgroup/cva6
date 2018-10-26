@@ -14,7 +14,7 @@
 
 import ariane_pkg::*;
 
-module lsu #(
+module load_store_unit #(
     parameter int unsigned ASID_WIDTH = 1
 )(
     input  logic                     clk_i,

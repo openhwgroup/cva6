@@ -73,8 +73,7 @@ sources:
   - src/issue_read_operands.sv
   - src/issue_stage.sv
   - src/load_unit.sv
-  - src/lsu_arbiter.sv
-  - src/lsu.sv
+  - src/load_store_unit.sv
   - src/mmu.sv
   - src/mult.sv
   - src/serdiv.sv

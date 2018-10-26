@@ -695,21 +695,21 @@ module ariane #(
   instr_tracer instr_tracer_i (tracer_if, hart_id_i);
 
   program instr_tracer (
-          instruction_tracer_if tracer_if,
-          input logic [63:0]    hart_id_i
-      );
+      instruction_tracer_if tracer_if,
+      input logic [63:0]    hart_id_i
+    );
 
-      instruction_tracer it = new (tracer_if, 1'b0);
+    instruction_tracer it = new (tracer_if, 1'b0);
 
-      initial begin
-          #15ns;
-          it.create_file(hart_id_i);
-          it.trace();
-      end
+    initial begin
+      #15ns;
+      it.create_file(hart_id_i);
+      it.trace();
+    end
 
-      final begin
-          it.close();
-      end
+    final begin
+      it.close();
+    end
   endprogram
 // mock tracer for Verilator, to be used with spike-dasm
 `else
@@ -718,46 +718,79 @@ module ariane #(
   logic [63:0] cycles;
 
   initial begin
-      f = $fopen("trace_hart_00.dasm", "w");
+    f = $fopen("trace_hart_00.dasm", "w");
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (~rst_ni) begin
-          cycles <= 0;
-      end else begin
-          string mode = "";
-          if (debug_mode) mode = "D";
-          else begin
-              case (priv_lvl)
-              riscv::PRIV_LVL_M: mode = "M";
-              riscv::PRIV_LVL_S: mode = "S";
-              riscv::PRIV_LVL_U: mode = "U";
-              endcase
-          end
-          for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-              if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
-                  $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
-              end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
-                  if (commit_instr_id_commit[i].ex.cause == 2) begin
-                      $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
-                  end else begin
-                      if (debug_mode) begin
-                          $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
-                      end else begin
-                          $fwrite(f, "Exception Cause: %5d, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
-                      end
-                  end
-              end
-          end
-          cycles <= cycles + 1;
+    if (~rst_ni) begin
+      cycles <= 0;
+    end else begin
+      string mode = "";
+      if (debug_mode) mode = "D";
+      else begin
+        case (priv_lvl)
+        riscv::PRIV_LVL_M: mode = "M";
+        riscv::PRIV_LVL_S: mode = "S";
+        riscv::PRIV_LVL_U: mode = "U";
+        endcase
       end
+      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+        if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
+          $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+        end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
+          if (commit_instr_id_commit[i].ex.cause == 2) begin
+            $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
+          end else begin
+            if (debug_mode) begin
+              $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+            end else begin
+              $fwrite(f, "Exception Cause: %5d, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
+            end
+          end
+        end
+      end
+        cycles <= cycles + 1;
+    end
   end
 
   final begin
-      $fclose(f);
+    $fclose(f);
   end
 `endif
   //pragma translate_on
+
+`ifdef SERPENT_PULP
+
+  logic        piton_pc_vld;
+  logic [63:0] piton_pc;
+
+  // expose retired PCs to OpenPiton verification environment
+  // note: this only works with single issue, need to adapt this in case of dual issue
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    logic [63:0] pc_queue [$];
+    if (~rst_ni) begin
+      pc_queue.delete();
+      piton_pc_vld <= 1'b0;
+      piton_pc     <= '0;
+    end else begin
+      // serialize retired PCs via queue construct
+      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+        if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
+          pc_queue.push_back(commit_instr_id_commit[i].pc);
+        end
+      end
+
+      if (pc_queue.size()>0) begin
+        piton_pc_vld <= 1'b1;
+        piton_pc     <= pc_queue.pop_front();
+      end else begin
+        piton_pc_vld <= 1'b0;
+        piton_pc     <= '0;
+      end
+    end
+  end
+
+`endif
 
 endmodule // ariane
 

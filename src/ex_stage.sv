@@ -249,7 +249,7 @@ module ex_stage (
 
     assign lsu_data  = lsu_valid_i ? fu_data_i  : '0;
 
-    lsu lsu_i (
+    load_store_unit lsu_i (
         .clk_i,
         .rst_ni,
         .flush_i,
