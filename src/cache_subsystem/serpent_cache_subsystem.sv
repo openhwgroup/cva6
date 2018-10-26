@@ -27,10 +27,12 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_cache_subsystem #(
-  `ifdef AXI64_CACHE_PORTS
+`ifdef AXI64_CACHE_PORTS
   parameter int unsigned AXI_ID_WIDTH     = 10,
-  `endif
-  parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
+`endif
+  parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,       // threshold that determines where the cached region begins
+  parameter bit          CACHE_LOW_REGION = 0,                   // cached region is below CACHE_START_ADDR
+  parameter bit          SWAP_ENDIANESS   = 0                    // swap endianess in l15 adapter
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -87,9 +89,9 @@ l15_rtrn_t                      l15_rtrn;
 
 serpent_icache #(
 `ifdef AXI64_CACHE_PORTS
-  .AXI64BIT_COMPLIANT ( 1'b1                    ),
-  .NC_ADDR_GE_LT      ( 0                       ),
+    .AXI64BIT_COMPLIANT ( 1'b1                    ),
 `endif
+    .NC_ADDR_GE_LT      ( 0                       ),
     .NC_ADDR_BEGIN      ( CACHE_START_ADDR        )
   ) i_serpent_icache (
     .clk_i              ( clk_i                   ),
@@ -114,9 +116,7 @@ serpent_icache #(
 // they have equal prio and are RR arbited
 // Port 2 is write only and goes into the merging write buffer
 serpent_dcache #(
-`ifdef AXI64_CACHE_PORTS
     .NC_ADDR_GE_LT   ( 0                       ), // std config is for openpiton, where the upper memory region is NC
-`endif
     .NC_ADDR_BEGIN   ( CACHE_START_ADDR        )
   ) i_serpent_dcache (
     .clk_i           ( clk_i                   ),
@@ -140,9 +140,7 @@ serpent_dcache #(
 
 // arbiter/adapter
 serpent_l15_adapter #(
-`ifdef AXI64_CACHE_PORTS
     .SWAP_ENDIANESS(0)
-`endif
   ) i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
