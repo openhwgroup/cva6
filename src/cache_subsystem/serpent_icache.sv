@@ -25,8 +25,8 @@
 //
 // 2) instruction fetches are always assumed to be aligned to 32bit (lower 2 bits are ignored)
 //
-// 3) noncacheable accesses expects 32bit returning from memory. these can be accesses to I/O space,
-//    or accesses with disabled cache.
+// 3) NC accesses to I/O space are expected to return 32bit from memory.
+//
 
 import ariane_pkg::*;
 import serpent_cache_pkg::*;
@@ -38,24 +38,24 @@ module serpent_icache  #(
                                                            // NC_ADDR_GE_LT == 0 ->  if paddr <  NC_ADDR_BEGIN -> NC
                                                            // NC_ADDR_GE_LT == 1 ->  if paddr >= NC_ADDR_BEGIN -> NC
 )(
-    input  logic                     clk_i,
-    input  logic                     rst_ni,
+    input  logic                      clk_i,
+    input  logic                      rst_ni,
 
-    input  logic                     flush_i,              // flush the icache, flush and kill have to be asserted together
-    input  logic                     en_i,                 // enable icache
-    output logic                     miss_o,               // to performance counter
+    input  logic                      flush_i,              // flush the icache, flush and kill have to be asserted together
+    input  logic                      en_i,                 // enable icache
+    output logic                      miss_o,               // to performance counter
     // address translation requests
-    input  icache_areq_i_t           areq_i,
-    output icache_areq_o_t           areq_o,
+    input  icache_areq_i_t            areq_i,
+    output icache_areq_o_t            areq_o,
     // data requests
-    input  icache_dreq_i_t           dreq_i,
-    output icache_dreq_o_t           dreq_o,
+    input  icache_dreq_i_t            dreq_i,
+    output icache_dreq_o_t            dreq_o,
     // refill port
-    input  logic                     mem_rtrn_vld_i,
-    input  icache_rtrn_t             mem_rtrn_i,
-    output logic                     mem_data_req_o,
-    input  logic                     mem_data_ack_i,
-    output icache_req_t              mem_data_o
+    input  logic                      mem_rtrn_vld_i,
+    input  icache_rtrn_t              mem_rtrn_i,
+    output logic                      mem_data_req_o,
+    input  logic                      mem_data_ack_i,
+    output icache_req_t               mem_data_o
 );
 
     // signals
@@ -531,10 +531,6 @@ module serpent_icache  #(
   noncacheable1: assert property (
       @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> state_q != KILL_MISS |-> mem_rtrn_i.f4b |-> mem_rtrn_i.nc)
          else $fatal(1,"[l1 icache] 4b ifill implies NC");
-
-  noncacheable2: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> state_q != KILL_MISS |-> mem_rtrn_i.nc |-> mem_rtrn_i.f4b)
-         else $fatal(1,"[l1 icache] NC implies 4b ifill");
 
   repl_inval0: assert property (
       @(posedge clk_i) disable iff (~rst_ni) cache_wren |-> ~(mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld))
