@@ -75,227 +75,165 @@ module ariane_peripherals #(
     // ---------------
     // UART
     // ---------------
-    logic [31:0] s_axi_uart_awaddr;
-    logic [7:0]  s_axi_uart_awlen;
-    logic [2:0]  s_axi_uart_awsize;
-    logic [1:0]  s_axi_uart_awburst;
-    logic [0:0]  s_axi_uart_awlock;
-    logic [3:0]  s_axi_uart_awcache;
-    logic [2:0]  s_axi_uart_awprot;
-    logic [3:0]  s_axi_uart_awregion;
-    logic [3:0]  s_axi_uart_awqos;
-    logic        s_axi_uart_awvalid;
-    logic        s_axi_uart_awready;
-    logic [31:0] s_axi_uart_wdata;
-    logic [3:0]  s_axi_uart_wstrb;
-    logic        s_axi_uart_wlast;
-    logic        s_axi_uart_wvalid;
-    logic        s_axi_uart_wready;
-    logic [1:0]  s_axi_uart_bresp;
-    logic        s_axi_uart_bvalid;
-    logic        s_axi_uart_bready;
-    logic [31:0] s_axi_uart_araddr;
-    logic [7:0]  s_axi_uart_arlen;
-    logic [2:0]  s_axi_uart_arsize;
-    logic [1:0]  s_axi_uart_arburst;
-    logic [0:0]  s_axi_uart_arlock;
-    logic [3:0]  s_axi_uart_arcache;
-    logic [2:0]  s_axi_uart_arprot;
-    logic [3:0]  s_axi_uart_arregion;
-    logic [3:0]  s_axi_uart_arqos;
-    logic        s_axi_uart_arvalid;
-    logic        s_axi_uart_arready;
-    logic [31:0] s_axi_uart_rdata;
-    logic [1:0]  s_axi_uart_rresp;
-    logic        s_axi_uart_rlast;
-    logic        s_axi_uart_rvalid;
-    logic        s_axi_uart_rready;
+    logic         uart_penable;
+    logic         uart_pwrite;
+    logic [31:0]  uart_paddr;
+    logic         uart_psel;
+    logic [31:0]  uart_pwdata;
+    logic [31:0]  uart_prdata;
+    logic         uart_pready;
+    logic         uart_pslverr;
 
-    logic [31:0] m_axi_uart_awaddr;
-    logic        m_axi_uart_awvalid;
-    logic        m_axi_uart_awready;
-    logic [31:0] m_axi_uart_wdata;
-    logic [3:0]  m_axi_uart_wstrb;
-    logic        m_axi_uart_wvalid;
-    logic        m_axi_uart_wready;
-    logic [1:0]  m_axi_uart_bresp;
-    logic        m_axi_uart_bvalid;
-    logic        m_axi_uart_bready;
-    logic [31:0] m_axi_uart_araddr;
-    logic        m_axi_uart_arvalid;
-    logic        m_axi_uart_arready;
-    logic [31:0] m_axi_uart_rdata;
-    logic [1:0]  m_axi_uart_rresp;
-    logic        m_axi_uart_rvalid;
-    logic        m_axi_uart_rready;
-
-    axi_dwidth_converter_0 i_axi_dwidth_converter (
-        .s_axi_aclk     ( clk_i               ),
-        .s_axi_aresetn  ( rst_ni              ),
-
-        .s_axi_awid     ( uart.aw_id          ),
-        .s_axi_awaddr   ( uart.aw_addr[31:0]  ),
-        .s_axi_awlen    ( uart.aw_len         ),
-        .s_axi_awsize   ( uart.aw_size        ),
-        .s_axi_awburst  ( uart.aw_burst       ),
-        .s_axi_awlock   ( uart.aw_lock        ),
-        .s_axi_awcache  ( uart.aw_cache       ),
-        .s_axi_awprot   ( uart.aw_prot        ),
-        .s_axi_awregion ( uart.aw_region      ),
-        .s_axi_awqos    ( uart.aw_qos         ),
-        .s_axi_awvalid  ( uart.aw_valid       ),
-        .s_axi_awready  ( uart.aw_ready       ),
-        .s_axi_wdata    ( uart.w_data         ),
-        .s_axi_wstrb    ( uart.w_strb         ),
-        .s_axi_wlast    ( uart.w_last         ),
-        .s_axi_wvalid   ( uart.w_valid        ),
-        .s_axi_wready   ( uart.w_ready        ),
-        .s_axi_bid      ( uart.b_id           ),
-        .s_axi_bresp    ( uart.b_resp         ),
-        .s_axi_bvalid   ( uart.b_valid        ),
-        .s_axi_bready   ( uart.b_ready        ),
-        .s_axi_arid     ( uart.ar_id          ),
-        .s_axi_araddr   ( uart.ar_addr[31:0]  ),
-        .s_axi_arlen    ( uart.ar_len         ),
-        .s_axi_arsize   ( uart.ar_size        ),
-        .s_axi_arburst  ( uart.ar_burst       ),
-        .s_axi_arlock   ( uart.ar_lock        ),
-        .s_axi_arcache  ( uart.ar_cache       ),
-        .s_axi_arprot   ( uart.ar_prot        ),
-        .s_axi_arregion ( uart.ar_region      ),
-        .s_axi_arqos    ( uart.ar_qos         ),
-        .s_axi_arvalid  ( uart.ar_valid       ),
-        .s_axi_arready  ( uart.ar_ready       ),
-        .s_axi_rid      ( uart.r_id           ),
-        .s_axi_rdata    ( uart.r_data         ),
-        .s_axi_rresp    ( uart.r_resp         ),
-        .s_axi_rlast    ( uart.r_last         ),
-        .s_axi_rvalid   ( uart.r_valid        ),
-        .s_axi_rready   ( uart.r_ready        ),
-
-        .m_axi_awaddr   ( s_axi_uart_awaddr   ),
-        .m_axi_awlen    ( s_axi_uart_awlen    ),
-        .m_axi_awsize   ( s_axi_uart_awsize   ),
-        .m_axi_awburst  ( s_axi_uart_awburst  ),
-        .m_axi_awlock   ( s_axi_uart_awlock   ),
-        .m_axi_awcache  ( s_axi_uart_awcache  ),
-        .m_axi_awprot   ( s_axi_uart_awprot   ),
-        .m_axi_awregion ( s_axi_uart_awregion ),
-        .m_axi_awqos    ( s_axi_uart_awqos    ),
-        .m_axi_awvalid  ( s_axi_uart_awvalid  ),
-        .m_axi_awready  ( s_axi_uart_awready  ),
-        .m_axi_wdata    ( s_axi_uart_wdata    ),
-        .m_axi_wstrb    ( s_axi_uart_wstrb    ),
-        .m_axi_wlast    ( s_axi_uart_wlast    ),
-        .m_axi_wvalid   ( s_axi_uart_wvalid   ),
-        .m_axi_wready   ( s_axi_uart_wready   ),
-        .m_axi_bresp    ( s_axi_uart_bresp    ),
-        .m_axi_bvalid   ( s_axi_uart_bvalid   ),
-        .m_axi_bready   ( s_axi_uart_bready   ),
-        .m_axi_araddr   ( s_axi_uart_araddr   ),
-        .m_axi_arlen    ( s_axi_uart_arlen    ),
-        .m_axi_arsize   ( s_axi_uart_arsize   ),
-        .m_axi_arburst  ( s_axi_uart_arburst  ),
-        .m_axi_arlock   ( s_axi_uart_arlock   ),
-        .m_axi_arcache  ( s_axi_uart_arcache  ),
-        .m_axi_arprot   ( s_axi_uart_arprot   ),
-        .m_axi_arregion ( s_axi_uart_arregion ),
-        .m_axi_arqos    ( s_axi_uart_arqos    ),
-        .m_axi_arvalid  ( s_axi_uart_arvalid  ),
-        .m_axi_arready  ( s_axi_uart_arready  ),
-        .m_axi_rdata    ( s_axi_uart_rdata    ),
-        .m_axi_rresp    ( s_axi_uart_rresp    ),
-        .m_axi_rlast    ( s_axi_uart_rlast    ),
-        .m_axi_rvalid   ( s_axi_uart_rvalid   ),
-        .m_axi_rready   ( s_axi_uart_rready   )
+    axi2apb_64_32 #(
+        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth        ),
+        .AXI4_RDATA_WIDTH   ( AxiDataWidth        ),
+        .AXI4_WDATA_WIDTH   ( AxiDataWidth        ),
+        .AXI4_ID_WIDTH      ( $bits(uart.aw_id)   ),
+        .AXI4_USER_WIDTH    ( $bits(uart.aw_user) ),
+        .BUFF_DEPTH_SLAVE   ( 2                   ),
+        .APB_ADDR_WIDTH     ( 32                  )
+    ) i_axi2apb_64_32 (
+        .ACLK      ( clk_i          ),
+        .ARESETn   ( rst_ni         ),
+        .test_en_i ( 1'b0           ),
+        .AWID_i    ( uart.aw_id     ),
+        .AWADDR_i  ( uart.aw_addr   ),
+        .AWLEN_i   ( uart.aw_len    ),
+        .AWSIZE_i  ( uart.aw_size   ),
+        .AWBURST_i ( uart.aw_burst  ),
+        .AWLOCK_i  ( uart.aw_lock   ),
+        .AWCACHE_i ( uart.aw_cache  ),
+        .AWPROT_i  ( uart.aw_prot   ),
+        .AWREGION_i( uart.aw_region ),
+        .AWUSER_i  ( uart.aw_user   ),
+        .AWQOS_i   ( uart.aw_qos    ),
+        .AWVALID_i ( uart.aw_valid  ),
+        .AWREADY_o ( uart.aw_ready  ),
+        .WDATA_i   ( uart.w_data    ),
+        .WSTRB_i   ( uart.w_strb    ),
+        .WLAST_i   ( uart.w_last    ),
+        .WUSER_i   ( uart.w_user    ),
+        .WVALID_i  ( uart.w_valid   ),
+        .WREADY_o  ( uart.w_ready   ),
+        .BID_o     ( uart.b_id      ),
+        .BRESP_o   ( uart.b_resp    ),
+        .BVALID_o  ( uart.b_valid   ),
+        .BUSER_o   ( uart.b_user    ),
+        .BREADY_i  ( uart.b_ready   ),
+        .ARID_i    ( uart.ar_id     ),
+        .ARADDR_i  ( uart.ar_addr   ),
+        .ARLEN_i   ( uart.ar_len    ),
+        .ARSIZE_i  ( uart.ar_size   ),
+        .ARBURST_i ( uart.ar_burst  ),
+        .ARLOCK_i  ( uart.ar_lock   ),
+        .ARCACHE_i ( uart.ar_cache  ),
+        .ARPROT_i  ( uart.ar_prot   ),
+        .ARREGION_i( uart.ar_region ),
+        .ARUSER_i  ( uart.ar_user   ),
+        .ARQOS_i   ( uart.ar_qos    ),
+        .ARVALID_i ( uart.ar_valid  ),
+        .ARREADY_o ( uart.ar_ready  ),
+        .RID_o     ( uart.r_id      ),
+        .RDATA_o   ( uart.r_data    ),
+        .RRESP_o   ( uart.r_resp    ),
+        .RLAST_o   ( uart.r_last    ),
+        .RUSER_o   ( uart.r_user    ),
+        .RVALID_o  ( uart.r_valid   ),
+        .RREADY_i  ( uart.r_ready   ),
+        .PENABLE   ( uart_penable   ),
+        .PWRITE    ( uart_pwrite    ),
+        .PADDR     ( uart_paddr     ),
+        .PSEL      ( uart_psel      ),
+        .PWDATA    ( uart_pwdata    ),
+        .PRDATA    ( uart_prdata    ),
+        .PREADY    ( uart_pready    ),
+        .PSLVERR   ( uart_pslverr   )
     );
 
-    axi_protocol_converter_0 i_axi_to_axi_lite (
-        .aclk           ( clk_i               ),
-        .aresetn        ( rst_ni              ),
-
-        .s_axi_awaddr   ( s_axi_uart_awaddr   ),
-        .s_axi_awlen    ( s_axi_uart_awlen    ),
-        .s_axi_awsize   ( s_axi_uart_awsize   ),
-        .s_axi_awburst  ( s_axi_uart_awburst  ),
-        .s_axi_awlock   ( s_axi_uart_awlock   ),
-        .s_axi_awcache  ( s_axi_uart_awcache  ),
-        .s_axi_awprot   ( s_axi_uart_awprot   ),
-        .s_axi_awregion ( s_axi_uart_awregion ),
-        .s_axi_awqos    ( s_axi_uart_awqos    ),
-        .s_axi_awvalid  ( s_axi_uart_awvalid  ),
-        .s_axi_awready  ( s_axi_uart_awready  ),
-        .s_axi_wdata    ( s_axi_uart_wdata    ),
-        .s_axi_wstrb    ( s_axi_uart_wstrb    ),
-        .s_axi_wlast    ( s_axi_uart_wlast    ),
-        .s_axi_wvalid   ( s_axi_uart_wvalid   ),
-        .s_axi_wready   ( s_axi_uart_wready   ),
-        .s_axi_bresp    ( s_axi_uart_bresp    ),
-        .s_axi_bvalid   ( s_axi_uart_bvalid   ),
-        .s_axi_bready   ( s_axi_uart_bready   ),
-        .s_axi_araddr   ( s_axi_uart_araddr   ),
-        .s_axi_arlen    ( s_axi_uart_arlen    ),
-        .s_axi_arsize   ( s_axi_uart_arsize   ),
-        .s_axi_arburst  ( s_axi_uart_arburst  ),
-        .s_axi_arlock   ( s_axi_uart_arlock   ),
-        .s_axi_arcache  ( s_axi_uart_arcache  ),
-        .s_axi_arprot   ( s_axi_uart_arprot   ),
-        .s_axi_arregion ( s_axi_uart_arregion ),
-        .s_axi_arqos    ( s_axi_uart_arqos    ),
-        .s_axi_arvalid  ( s_axi_uart_arvalid  ),
-        .s_axi_arready  ( s_axi_uart_arready  ),
-        .s_axi_rdata    ( s_axi_uart_rdata    ),
-        .s_axi_rresp    ( s_axi_uart_rresp    ),
-        .s_axi_rlast    ( s_axi_uart_rlast    ),
-        .s_axi_rvalid   ( s_axi_uart_rvalid   ),
-        .s_axi_rready   ( s_axi_uart_rready   ),
-
-        .m_axi_awaddr   ( m_axi_uart_awaddr   ),
-        .m_axi_awprot   (                     ),
-        .m_axi_awvalid  ( m_axi_uart_awvalid  ),
-        .m_axi_awready  ( m_axi_uart_awready  ),
-        .m_axi_wdata    ( m_axi_uart_wdata    ),
-        .m_axi_wstrb    ( m_axi_uart_wstrb    ),
-        .m_axi_wvalid   ( m_axi_uart_wvalid   ),
-        .m_axi_wready   ( m_axi_uart_wready   ),
-        .m_axi_bresp    ( m_axi_uart_bresp    ),
-        .m_axi_bvalid   ( m_axi_uart_bvalid   ),
-        .m_axi_bready   ( m_axi_uart_bready   ),
-        .m_axi_araddr   ( m_axi_uart_araddr   ),
-        .m_axi_arprot   (                     ),
-        .m_axi_arvalid  ( m_axi_uart_arvalid  ),
-        .m_axi_arready  ( m_axi_uart_arready  ),
-        .m_axi_rdata    ( m_axi_uart_rdata    ),
-        .m_axi_rresp    ( m_axi_uart_rresp    ),
-        .m_axi_rvalid   ( m_axi_uart_rvalid   ),
-        .m_axi_rready   ( m_axi_uart_rready   )
+    apb_uart i_apb_uart (
+        .CLK     ( clk_i           ),
+        .RSTN    ( rst_ni          ),
+        .PSEL    ( uart_psel       ),
+        .PENABLE ( uart_penable    ),
+        .PWRITE  ( uart_pwrite     ),
+        .PADDR   ( uart_paddr[4:2] ),
+        .PWDATA  ( uart_pwdata     ),
+        .PRDATA  ( uart_prdata     ),
+        .PREADY  ( uart_pready     ),
+        .PSLVERR ( uart_pslverr    ),
+        .INT     ( irq_sources[0]  ),
+        .OUT1N   (                 ), // keep open
+        .OUT2N   (                 ), // keep open
+        .RTSN    (                 ), // no flow control
+        .DTRN    (                 ), // no flow control
+        .CTSN    ( 1'b0            ),
+        .DSRN    ( 1'b0            ),
+        .DCDN    ( 1'b0            ),
+        .RIN     ( 1'b0            ),
+        .SIN     ( rx_i            ),
+        .SOUT    ( tx_o            )
     );
 
-    axi_uartlite_1 i_axi_uart (
-        .s_axi_aclk    ( clk_i                  ),
-        .s_axi_aresetn ( rst_ni                 ),
-        .interrupt     ( irq_sources[0]         ),
-        .s_axi_awaddr  ( m_axi_uart_awaddr[3:0] ),
-        .s_axi_awvalid ( m_axi_uart_awvalid     ),
-        .s_axi_awready ( m_axi_uart_awready     ),
-        .s_axi_wdata   ( m_axi_uart_wdata       ),
-        .s_axi_wstrb   ( m_axi_uart_wstrb       ),
-        .s_axi_wvalid  ( m_axi_uart_wvalid      ),
-        .s_axi_wready  ( m_axi_uart_wready      ),
-        .s_axi_bresp   ( m_axi_uart_bresp       ),
-        .s_axi_bvalid  ( m_axi_uart_bvalid      ),
-        .s_axi_bready  ( m_axi_uart_bready      ),
-        .s_axi_araddr  ( m_axi_uart_araddr[3:0] ),
-        .s_axi_arvalid ( m_axi_uart_arvalid     ),
-        .s_axi_arready ( m_axi_uart_arready     ),
-        .s_axi_rdata   ( m_axi_uart_rdata       ),
-        .s_axi_rresp   ( m_axi_uart_rresp       ),
-        .s_axi_rvalid  ( m_axi_uart_rvalid      ),
-        .s_axi_rready  ( m_axi_uart_rready      ),
-        .rx            ( rx_i                   ),
-        .tx            ( tx_o                   )
-    );
+  //   xlnx_axi_ethernetlite i_xlnx_axi_ethernetlite (
 
+  //   );
 
+  // output   ip2intc_irpt;
+  // input    s_axi_aclk;
+  // input    s_axi_aresetn;
+  // input [3:0]s_axi_awid;
+  // input [12:0]s_axi_awaddr;
+  // input [7:0]s_axi_awlen;
+  // input [2:0]s_axi_awsize;
+  // input [1:0]s_axi_awburst;
+  // input [3:0]s_axi_awcache;
+  // input s_axi_awvalid;
+  // output s_axi_awready;
+  // input [31:0]s_axi_wdata;
+  // input [3:0]s_axi_wstrb;
+  // input s_axi_wlast;
+  // input s_axi_wvalid;
+  // output s_axi_wready;
+  // output [3:0]s_axi_bid;
+  // output [1:0]s_axi_bresp;
+  // output s_axi_bvalid;
+  // input s_axi_bready;
+  // input [3:0]s_axi_arid;
+  // input [12:0]s_axi_araddr;
+  // input [7:0]s_axi_arlen;
+  // input [2:0]s_axi_arsize;
+  // input [1:0]s_axi_arburst;
+  // input [3:0]s_axi_arcache;
+  // input s_axi_arvalid;
+  // output s_axi_arready;
+  // output [3:0]s_axi_rid;
+  // output [31:0]s_axi_rdata;
+  // output [1:0]s_axi_rresp;
+  // output s_axi_rlast;
+  // output s_axi_rvalid;
+  // input s_axi_rready;
+
+  // input        phy_tx_clk   ( eth_txck ),
+  // input        phy_rx_clk   ( eth_rxck ),
+  // input        phy_crs      ( ),
+  // input        phy_dv       ( ),
+  // input [3:0]  phy_rx_data  ( eth_rxd ),
+  // input        phy_col      ( ),
+  // input        phy_rx_er    ( ),
+  // output       phy_rst_n    ( eth_rst_n  ),
+  // output       phy_tx_en    ( eth_tx_en  ),
+  // output [3:0] phy_tx_data  ( eth_txd    ),
+  // input        phy_mdio_i   ( phy_mdio_i ),
+  // output       phy_mdio_o   ( phy_mdio_o ),
+  // output       phy_mdio_t   ( phy_mdio_t ),
+  // output       phy_mdc      ( eth_mdc    )
+
+  //   assign eth_mdio = phy_mdio_t ? phy_mdio_i : 1'bz;
+  //   assign phy_mdio_i = phy_mdio_t ? 1'b0 : eth_mdio;
+
+  //   // active low
+  //   assign eth_int_b = 1'b1;
+  //   // set floating - power management event
+  //   assign eth_pme_b = 1'b1;
 
 endmodule

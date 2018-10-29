@@ -53,7 +53,6 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
             $(wildcard tb/test/*/*_pkg.sv*)
 # DPI
 dpi := $(patsubst tb/dpi/%.cc,${dpi-library}/%.o,$(wildcard tb/dpi/*.cc))
-dpi := $(addprefix $(root-dir), $(dpi))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
 
@@ -63,6 +62,9 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/clint/*.sv)                                     \
+        $(wildcard fpga/src/apb_uart/src/*.vhd)                        \
+        $(wildcard fpga/src/axi2apb/src/*.sv)                          \
+        $(wildcard fpga/src/axi_slice/src/*.sv)                        \
         $(wildcard src/plic/*.sv)                                      \
         $(filter-out src/register_interface/src/reg_intf.sv,           \
         $(wildcard src/register_interface/src/*.sv))                   \
@@ -70,6 +72,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
         $(wildcard src/debug/debug_rom/*.sv)                           \
+        fpga/src/ariane_peripherals.sv                                 \
         src/axi/src/axi_multicut.sv                                    \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
@@ -86,7 +89,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/lfsr_8bit.sv                              \
         src/common_cells/src/rstgen_bypass.sv                          \
         tb/ariane_testharness.sv                                       \
-        tb/common/mock_uartlite.sv                                     \
+        tb/common/uart.sv 		                                       \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv
 src := $(addprefix $(root-dir), $(src))
@@ -112,6 +115,7 @@ incdir :=
 # Compile and sim flags
 compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags    += +UVM_NO_RELNOTES
+compile_flag_vhd += -64 -nologo -quiet -2008
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
 list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
@@ -128,9 +132,10 @@ build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ari
 # src files
 $(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library)
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(ariane_pkg)) $(list_incdir) -suppress 2583
+	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(src))
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
-	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(src) $(list_incdir) -suppress 2583
+	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(filter %.sv,$(src)) $(list_incdir) -suppress 2583
 	touch $(library)/.build-srcs
 
 # build TBs

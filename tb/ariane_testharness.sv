@@ -322,60 +322,25 @@ module ariane_testharness #(
     );
 
     // ---------------
-    // PLIC
+    // Peripherals
     // ---------------
-    logic [ariane_soc::NumTargets-1:0] irqs;
-    logic [ariane_soc::NumSources-1:0] irq_sources;
+    logic tx, rx;
+    logic [1:0] irqs;
 
-    AXI_LITE #(
-        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH )
-    ) axi_lite_plic ();
-
-    REG_BUS #(
-        .ADDR_WIDTH ( AXI_ADDRESS_WIDTH ),
-        .DATA_WIDTH ( AXI_DATA_WIDTH    )
-    ) reg_bus (clk_i);
-
-    axi_to_axi_lite i_axi_to_axi_lite_eth (
-      .clk_i,
-      .rst_ni,
-      .testmode_i ( 1'b0                     ),
-      .in         ( master[ariane_soc::PLIC] ),
-      .out        ( axi_lite_plic            )
+    ariane_peripherals #(
+      .AxiAddrWidth ( AXI_ADDRESS_WIDTH ),
+      .AxiDataWidth ( AXI_DATA_WIDTH    )
+    ) i_ariane_peripherals (
+      .clk_i  ( clk_i                    ),
+      .rst_ni ( ndmreset_n               ),
+      .plic   ( master[ariane_soc::PLIC] ),
+      .uart   ( master[ariane_soc::UART] ),
+      .irq_o  ( irqs                     ),
+      .rx_i   ( rx                       ),
+      .tx_o   ( tx                       )
     );
 
-    axi_lite_to_reg #(
-        .ADDR_WIDTH ( AXI_ADDRESS_WIDTH  ),
-        .DATA_WIDTH ( AXI_DATA_WIDTH  )
-    ) i_axi_lite_to_reg (
-        .clk_i,
-        .rst_ni,
-        .axi_i      ( axi_lite_plic ), // AXI Lite
-        .reg_o      ( reg_bus       )
-    );
-
-    plic #(
-        .ADDR_WIDTH         ( AXI_ADDRESS_WIDTH      ),
-        .DATA_WIDTH         ( AXI_DATA_WIDTH         ),
-        .ID_BITWIDTH        ( 2                      ), // TODO (zarubaf): Find propper width
-        .PARAMETER_BITWIDTH ( 2                      ), // TODO (zarubaf): Find propper width
-        .NUM_TARGETS        ( ariane_soc::NumTargets ),
-        .NUM_SOURCES        ( ariane_soc::NumSources )
-    ) i_plic (
-        .clk_i,
-        .rst_ni          ( ndmreset_n  ),
-        .irq_sources_i   ( irq_sources ),
-        .eip_targets_o   ( irqs        ),
-        .external_bus_io ( reg_bus     )
-    );
-
-    // ---------------
-    // Peripheral
-    // ---------------
-    mock_uartlite i_mock_uartlite (.clk_i(clk_i), .rst_ni(rst_ni), .slave(master[ariane_soc::UART]));
-    // tie-off uart here
-    assign irq_sources = '0;
+    uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));
 
     // ---------------
     // Core

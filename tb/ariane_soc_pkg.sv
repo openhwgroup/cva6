@@ -39,5 +39,5 @@ package ariane_soc;
     localparam logic[63:0] CLINTLength = 64'hC0000;
     localparam logic[63:0] PLICLength  = 64'h3FF_FFFF;
     localparam logic[63:0] UARTLength  = 64'h10000;
-    localparam logic[63:0] DRAMLength  = 64'h4000000;
+    localparam logic[63:0] DRAMLength  = 64'h8000000;
 endpackage

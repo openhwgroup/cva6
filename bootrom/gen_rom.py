@@ -22,11 +22,11 @@ filename = os.path.splitext(file)[0]
 license = """\
 /* Copyright 2018 ETH Zurich and University of Bologna.
  * Copyright and related rights are licensed under the Solderpad Hardware
- * License, Version 0.51 (the “License”); you may not use this file except in
+ * License, Version 0.51 (the "License"); you may not use this file except in
  * compliance with the License.  You may obtain a copy of the License at
  * http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
  * or agreed to in writing, software, hardware and materials distributed under
- * this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+ * this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  *
@@ -59,7 +59,9 @@ module $filename (
         end
     end
 
-    assign rdata_o = mem[addr_q];
+    // this prevents spurious Xes from propagating into
+    // the speculative fetch stage of the core
+    assign rdata_o = (addr_q < RomSize) ? mem[addr_q] : '0;
 endmodule
 """
 
@@ -75,11 +77,11 @@ with open(filename + ".img", "rb") as f:
             if i == 4:
                 word = "_" + word
             if byte:
-                word = byte.hex() + word
+                word = ("%02X" % int.from_bytes(byte, "little")) + word
             # fill up with zeros if unaligned
             else:
                 pass
-                # word += "00";
+                word = "00" + word;
 
         if word != "_":
             word = "64'h" + word
