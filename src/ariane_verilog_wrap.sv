@@ -26,7 +26,7 @@ module ariane_verilog_wrap #(
   parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000  // address on which to decide whether the request is cache-able or not
 ) (
   input                       clk_i,
-  input                       rst_ni,
+  input                       reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
   // Core ID, Cluster ID and boot address are considered more or less static
   input  [63:0]               boot_addr_i,  // reset boot address
   input  [63:0]               hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
@@ -70,7 +70,7 @@ module ariane_verilog_wrap #(
     .CACHE_START_ADDR ( CACHE_START_ADDR )
   ) ariane (
     .clk_i                   ,
-    .rst_ni                  ,
+    .rst_ni      ( reset_l  ),
     .boot_addr_i             ,
     .hart_id_i               ,
     .irq_i                   ,

@@ -21,7 +21,7 @@ package serpent_cache_pkg;
     // these parames need to coincide with the current L1.5 parameterization
     // do not change
     localparam L15_SET_ASSOC           = 4;
-    localparam L15_TID_WIDTH           = 2;
+    localparam L15_TID_WIDTH           = 1;
     localparam L15_TLB_CSM_WIDTH       = 33;
 
     localparam L15_WAY_WIDTH           = $clog2(L15_SET_ASSOC);

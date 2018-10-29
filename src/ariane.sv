@@ -713,6 +713,40 @@ module ariane #(
       it.close();
     end
   endprogram
+
+`ifdef SERPENT_PULP
+
+  logic        piton_pc_vld;
+  logic [63:0] piton_pc;
+
+  // expose retired PCs to OpenPiton verification environment
+  // note: this only works with single issue, need to adapt this in case of dual issue
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    logic [63:0] pc_queue [$];
+    if (~rst_ni) begin
+      pc_queue.delete();
+      piton_pc_vld <= 1'b0;
+      piton_pc     <= '0;
+    end else begin
+      // serialize retired PCs via queue construct
+      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+        if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
+          pc_queue.push_back(commit_instr_id_commit[i].pc);
+        end
+      end
+
+      if (pc_queue.size()>0) begin
+        piton_pc_vld <= 1'b1;
+        piton_pc     <= pc_queue.pop_front();
+      end else begin
+        piton_pc_vld <= 1'b0;
+        piton_pc     <= '0;
+      end
+    end
+  end
+
+`endif // SERPENT_PULP
+
 // mock tracer for Verilator, to be used with spike-dasm
 `else
 
@@ -758,39 +792,6 @@ module ariane #(
   final begin
     $fclose(f);
   end
-
-`ifdef SERPENT_PULP
-
-  logic        piton_pc_vld;
-  logic [63:0] piton_pc;
-
-  // expose retired PCs to OpenPiton verification environment
-  // note: this only works with single issue, need to adapt this in case of dual issue
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    logic [63:0] pc_queue [$];
-    if (~rst_ni) begin
-      pc_queue.delete();
-      piton_pc_vld <= 1'b0;
-      piton_pc     <= '0;
-    end else begin
-      // serialize retired PCs via queue construct
-      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-        if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
-          pc_queue.push_back(commit_instr_id_commit[i].pc);
-        end
-      end
-
-      if (pc_queue.size()>0) begin
-        piton_pc_vld <= 1'b1;
-        piton_pc     <= pc_queue.pop_front();
-      end else begin
-        piton_pc_vld <= 1'b0;
-        piton_pc     <= '0;
-      end
-    end
-  end
-
-`endif // SERPENT_PULP
 `endif // VERILATOR
   //pragma translate_on
 

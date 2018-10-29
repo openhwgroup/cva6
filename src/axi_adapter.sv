@@ -14,18 +14,19 @@
  *
  * Description: Manages communication with the AXI Bus
  */
-import std_cache_pkg::*;
+//import std_cache_pkg::*;
 
 module axi_adapter #(
-    parameter int unsigned DATA_WIDTH          = 256,
-    parameter logic        CRITICAL_WORD_FIRST = 0, // the AXI subsystem needs to support wrapping reads for this feature
-    parameter int unsigned AXI_ID_WIDTH        = 10
+    parameter int unsigned DATA_WIDTH            = 256,
+    parameter logic        CRITICAL_WORD_FIRST   = 0, // the AXI subsystem needs to support wrapping reads for this feature
+    parameter int unsigned AXI_ID_WIDTH          = 10,
+    parameter int unsigned CACHELINE_BYTE_OFFSET = 8
 )(
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
 
     input  logic                                        req_i,
-    input  req_t                                        type_i,
+    input  ariane_axi::ad_req_t                         type_i,
     output logic                                        gnt_o,
     output logic [AXI_ID_WIDTH-1:0]                     gnt_id_o,
     input  logic [63:0]                                 addr_i,
@@ -69,7 +70,7 @@ module axi_adapter #(
         axi_req_o.aw.region = 4'b0;
         axi_req_o.aw.len    = 8'b0;
         axi_req_o.aw.size   = {1'b0, size_i};
-        axi_req_o.aw.burst  = (type_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
+        axi_req_o.aw.burst  = (type_i == ariane_axi::SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
         axi_req_o.aw.lock   = 1'b0;
         axi_req_o.aw.cache  = 4'b0;
         axi_req_o.aw.qos    = 4'b0;
@@ -79,12 +80,12 @@ module axi_adapter #(
         axi_req_o.ar_valid  = 1'b0;
         // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
         // with an incremental transfer we need to output the corresponding base address of the cache line
-        axi_req_o.ar.addr   = (CRITICAL_WORD_FIRST || type_i == SINGLE_REQ) ? addr_i : { addr_i[63:DCACHE_BYTE_OFFSET], {{DCACHE_BYTE_OFFSET}{1'b0}}};
+        axi_req_o.ar.addr   = (CRITICAL_WORD_FIRST || type_i == ariane_axi::SINGLE_REQ) ? addr_i : { addr_i[63:CACHELINE_BYTE_OFFSET], {{CACHELINE_BYTE_OFFSET}{1'b0}}};
         axi_req_o.ar.prot   = 3'b0;
         axi_req_o.ar.region = 4'b0;
         axi_req_o.ar.len    = 8'b0;
         axi_req_o.ar.size   = {1'b0, size_i}; // 8 bytes
-        axi_req_o.ar.burst  = (type_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
+        axi_req_o.ar.burst  = (type_i == ariane_axi::SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
         axi_req_o.ar.lock   = 1'b0;
         axi_req_o.ar.cache  = 4'b0;
         axi_req_o.ar.qos    = 4'b0;
@@ -127,7 +128,7 @@ module axi_adapter #(
                         axi_req_o.aw_valid = 1'b1;
                         axi_req_o.w_valid  = 1'b1;
                         // its a single write
-                        if (type_i == SINGLE_REQ) begin
+                        if (type_i == ariane_axi::SINGLE_REQ) begin
                             // only a single write so the data is already the last one
                             axi_req_o.w.last   = 1'b1;
                             // single req can be granted here
@@ -162,13 +163,13 @@ module axi_adapter #(
 
                         axi_req_o.ar_valid = 1'b1;
                         gnt_o = axi_resp_i.ar_ready;
-                        if (type_i != SINGLE_REQ) begin
+                        if (type_i != ariane_axi::SINGLE_REQ) begin
                             axi_req_o.ar.len = BURST_SIZE;
                             cnt_d = BURST_SIZE;
                         end
 
                         if (axi_resp_i.ar_ready) begin
-                            state_d = (type_i == SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
+                            state_d = (type_i == ariane_axi::SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
                             addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
                         end
                     end
@@ -189,7 +190,7 @@ module axi_adapter #(
             WAIT_LAST_W_READY_AW_READY: begin
                 axi_req_o.w_valid  = 1'b1;
                 axi_req_o.w.last   = (cnt_q == '0);
-                if (type_i == SINGLE_REQ) begin
+                if (type_i == ariane_axi::SINGLE_REQ) begin
                     axi_req_o.w.data   = wdata_i[0];
                     axi_req_o.w.strb   = be_i[0];
                 end else begin
@@ -241,7 +242,7 @@ module axi_adapter #(
             WAIT_LAST_W_READY: begin
                 axi_req_o.w_valid = 1'b1;
 
-                if (type_i != SINGLE_REQ) begin
+                if (type_i != ariane_axi::SINGLE_REQ) begin
                     axi_req_o.w.data   = wdata_i[BURST_SIZE-cnt_q];
                     axi_req_o.w.strb   = be_i[BURST_SIZE-cnt_q];
                 end

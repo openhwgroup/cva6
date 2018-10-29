@@ -15,8 +15,6 @@
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
 // Description: File list for OpenPiton flow
-
-+define+SERPENT_PULP
 // src/fpu_div_sqrt_mvp/hdl/fpu_ff.sv
 // src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 // src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
@@ -51,13 +49,14 @@
 // src/fpu/src/subunits/conv_block.vhd
 // src/fpu/src/fpnew.vhd
 // src/fpu/src/fpnew_top.vhd
+src/axi/src/axi_pkg.sv
+src/debug/dm_pkg.sv
 include/riscv_pkg.sv
 include/ariane_pkg.sv
 include/ariane_axi_pkg.sv
 include/serpent_cache_pkg.sv
-include/std_cache_pkg.sv
+//include/std_cache_pkg.sv
 include/axi_intf.sv
-src/debug/dm_pkg.sv
 src/util/instruction_tracer_pkg.sv
 src/util/instruction_tracer_if.sv
 src/util/sram.sv
