@@ -22,4 +22,7 @@ build/
 *.vcd
 *.log
 *.out
+*.jou
 work-ver/*
+fpga/work-fpga
+stdout/
