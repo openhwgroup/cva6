@@ -267,15 +267,13 @@ module csr_regfile #(
         // --------------------
         // Counters
         // --------------------
+        cycle_d = cycle_q;
+        instret_d = instret_q;
         if (!debug_mode_q) begin
             // just increment the cycle count
             cycle_d = cycle_q + 1'b1;
             // increase instruction retired counter
-            for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-                if (commit_ack_i[i]) begin
-                    instret++;
-                end
-            end
+            for (int i = 0; i < NR_COMMIT_PORTS; i++)  if (commit_ack_i[i]) instret++;
             instret_d = instret;
         end
 
@@ -326,9 +324,6 @@ module csr_regfile #(
         sscratch_d              = sscratch_q;
         stval_d                 = stval_q;
         satp_d                  = satp_q;
-
-        cycle_d                 = cycle_q;
-        instret_d               = instret_q;
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
         dirty_fp_state_csr      = 1'b0;
