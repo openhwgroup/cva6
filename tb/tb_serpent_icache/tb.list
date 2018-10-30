@@ -6,6 +6,7 @@
 ../../src/cache_subsystem/serpent_icache.sv
 ../../src/common_cells/src/lfsr_8bit.sv
 ../../src/common_cells/src/fifo_v2.sv
+../../src/common_cells/src/fifo_v3.sv
 ../../src/common_cells/src/lzc.sv
 ../../src/util/sram.sv
 hdl/mem_emul.sv

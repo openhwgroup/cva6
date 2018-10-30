@@ -10,6 +10,7 @@
 ../../src/cache_subsystem/serpent_dcache.sv
 ../../src/common_cells/src/lfsr_8bit.sv
 ../../src/common_cells/src/fifo_v2.sv
+../../src/common_cells/src/fifo_v3.sv
 ../../src/common_cells/src/lzc.sv
 ../../src/common_cells/src/rrarbiter.sv
 ../../src/util/sram.sv
