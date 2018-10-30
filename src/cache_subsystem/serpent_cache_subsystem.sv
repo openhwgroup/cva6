@@ -91,7 +91,7 @@ serpent_icache #(
 `ifdef AXI64_CACHE_PORTS
     .AXI64BIT_COMPLIANT ( 1'b1                    ),
 `endif
-    .NC_ADDR_GE_LT      ( 0                       ),
+    .NC_ADDR_GE_LT      ( CACHE_LOW_REGION        ),
     .NC_ADDR_BEGIN      ( CACHE_START_ADDR        )
   ) i_serpent_icache (
     .clk_i              ( clk_i                   ),
@@ -116,7 +116,7 @@ serpent_icache #(
 // they have equal prio and are RR arbited
 // Port 2 is write only and goes into the merging write buffer
 serpent_dcache #(
-    .NC_ADDR_GE_LT   ( 0                       ), // std config is for openpiton, where the upper memory region is NC
+    .NC_ADDR_GE_LT   ( CACHE_LOW_REGION        ), // std config is for openpiton, where the upper memory region is NC
     .NC_ADDR_BEGIN   ( CACHE_START_ADDR        )
   ) i_serpent_dcache (
     .clk_i           ( clk_i                   ),
@@ -140,7 +140,7 @@ serpent_dcache #(
 
 // arbiter/adapter
 serpent_l15_adapter #(
-    .SWAP_ENDIANESS(0)
+    .SWAP_ENDIANESS     ( SWAP_ENDIANESS          )
   ) i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
