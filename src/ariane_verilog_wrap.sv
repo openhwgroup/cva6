@@ -64,13 +64,42 @@ module ariane_verilog_wrap #(
   assign l15_rtrn  = l15_rtrn_i;
 `endif
 
+  logic rst_n, irq_received;
+
+`ifdef VERILATOR
+
+  assign irq_received = 1'b1;
+
+`else
+
+  // simulation hack, need to wait until interrupt arrives.
+  // TODO: find a clean solution for this
+  initial begin
+    irq_received <= '0;
+
+    repeat(100) @(posedge clk_i);
+
+    while(!reset_l) @(posedge clk_i);
+
+    while(l15_rtrn.l15_returntype != serpent_cache_pkg::L15_INT_RET) @(posedge clk_i);
+
+    irq_received <= 1;
+  end
+
+`endif
+
+
+  assign rst_n = reset_l & irq_received;
+
+
+
   ariane #(
     .SWAP_ENDIANESS   ( SWAP_ENDIANESS   ),
     .CACHE_LOW_REGION ( CACHE_LOW_REGION ),
     .CACHE_START_ADDR ( CACHE_START_ADDR )
   ) ariane (
     .clk_i                   ,
-    .rst_ni      ( reset_l  ),
+    .rst_ni      ( rst_n  ),
     .boot_addr_i             ,
     .hart_id_i               ,
     .irq_i                   ,
