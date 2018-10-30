@@ -14,7 +14,7 @@ package ariane_soc;
 
     localparam NB_PERIPHERALS = 7;
     localparam NumTargets = 2;
-    localparam NumSources = 1;
+    localparam NumSources = 2;
 
     typedef enum int unsigned {
         DRAM  = 0,
@@ -24,7 +24,6 @@ package ariane_soc;
         CLINT = 4,
         ROM   = 5,
         Debug = 6
-
     } axi_slaves_t;
 
     typedef enum logic [63:0] {

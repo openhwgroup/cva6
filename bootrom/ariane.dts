@@ -8,9 +8,9 @@
   cpus {
     #address-cells = <1>;
     #size-cells = <0>;
-    timebase-frequency = <25000000>;
+    timebase-frequency = <0x017d7840>; // 25 MHz
     CPU0: cpu@0 {
-      clock-frequency = <0>;
+      clock-frequency = <0x2FAF080>; // 50 MHz
       device_type = "cpu";
       reg = <0>;
       status = "okay";
@@ -62,6 +62,7 @@
       compatible = "ns16750";
       reg = <0x0 0x10000000 0x0 0x1000>;
       clock-frequency = <50000000>;
+      current-speed = <115200>;
       interrupt-parent = <&PLIC0>;
       interrupts = <1>;
       reg-shift = <2>; //regs are spaced on 32 bit boundary
@@ -69,6 +70,6 @@
     };
   };
   chosen {
-    stdout-path = "/uart@10000000";
+    stdout-path = "/soc/uart@10000000";
   };
 };

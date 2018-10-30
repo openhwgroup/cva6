@@ -279,6 +279,7 @@ module ariane_testharness #(
             ariane_soc::CLINTBase,
             ariane_soc::PLICBase,
             ariane_soc::UARTBase,
+            ariane_soc::SPIBase,
             ariane_soc::DRAMBase
         }),
         .end_addr_i   ({
@@ -287,6 +288,7 @@ module ariane_testharness #(
             ariane_soc::CLINTBase + ariane_soc::CLINTLength,
             ariane_soc::PLICBase  + ariane_soc::PLICLength,
             ariane_soc::UARTBase  + ariane_soc::UARTLength,
+            ariane_soc::SPIBase   + ariane_soc::SPILength,
             ariane_soc::DRAMBase  + ariane_soc::DRAMLength
         })
     );
@@ -331,13 +333,18 @@ module ariane_testharness #(
       .AxiAddrWidth ( AXI_ADDRESS_WIDTH ),
       .AxiDataWidth ( AXI_DATA_WIDTH    )
     ) i_ariane_peripherals (
-      .clk_i  ( clk_i                    ),
-      .rst_ni ( ndmreset_n               ),
-      .plic   ( master[ariane_soc::PLIC] ),
-      .uart   ( master[ariane_soc::UART] ),
-      .irq_o  ( irqs                     ),
-      .rx_i   ( rx                       ),
-      .tx_o   ( tx                       )
+      .clk_i     ( clk_i                    ),
+      .rst_ni    ( ndmreset_n               ),
+      .plic      ( master[ariane_soc::PLIC] ),
+      .uart      ( master[ariane_soc::UART] ),
+      .spi       ( master[ariane_soc::SPI]  ),
+      .irq_o     ( irqs                     ),
+      .rx_i      ( rx                       ),
+      .tx_o      ( tx                       ),
+      .spi_clk_o ( ),
+      .spi_mosi  ( ),
+      .spi_miso  ( ),
+      .spi_ss    ( )
     );
 
     uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));

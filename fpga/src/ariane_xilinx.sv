@@ -413,22 +413,22 @@ bootrom i_bootrom (
 // Peripherals
 // ---------------
 ariane_peripherals #(
-    .AxiAddrWidth(AxiAddrWidth),
-    .AxiDataWidth(AxiDataWidth)
+    .AxiAddrWidth ( AxiAddrWidth ),
+    .AxiDataWidth ( AxiDataWidth ),
+    .InclSPI      ( 1'b1         )
 ) i_ariane_peripherals (
-    .clk_i           (clk                     ),
-    .rst_ni          (ndmreset_n              ),
-    .plic            (master[ariane_soc::PLIC]),
-    .uart            (master[ariane_soc::UART]),
-    .spi             (master[ariane_soc::SPI] ),
-    .irq_o           (irq                     ),
-    .rx_i            (rx                      ),
-    .tx_o            (tx                      ),
-    .spi_clk_o       (spi_clk_o               ),
-    .spi_mosi        (spi_mosi                ),
-    .spi_miso        (spi_miso                ),
-    .spi_ss          (spi_ss                  ),
-    .spi_ip2intc_irtp(                        )
+    .clk_i           ( clk                      ),
+    .rst_ni          ( ndmreset_n               ),
+    .plic            ( master[ariane_soc::PLIC] ),
+    .uart            ( master[ariane_soc::UART] ),
+    .spi             ( master[ariane_soc::SPI]  ),
+    .irq_o           ( irq                      ),
+    .rx_i            ( rx                       ),
+    .tx_o            ( tx                       ),
+    .spi_clk_o       ( spi_clk_o                ),
+    .spi_mosi        ( spi_mosi                 ),
+    .spi_miso        ( spi_miso                 ),
+    .spi_ss          ( spi_ss                   )
 );
 
 // ---------------------
