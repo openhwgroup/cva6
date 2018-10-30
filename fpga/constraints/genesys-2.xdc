@@ -64,3 +64,8 @@ set_property -dict {PACKAGE_PIN R28 IOSTANDARD LVCMOS33} [get_ports spi_clk_o]
 set_property -dict {PACKAGE_PIN T30 IOSTANDARD LVCMOS33} [get_ports spi_ss]
 set_property -dict {PACKAGE_PIN R26 IOSTANDARD LVCMOS33} [get_ports spi_miso]
 set_property -dict {PACKAGE_PIN R29 IOSTANDARD LVCMOS33} [get_ports spi_mosi]
+
+set_property -dict {PACKAGE_PIN U27 IOSTANDARD LVCMOS33} [get_ports spi_clk_o_2]
+set_property -dict {PACKAGE_PIN U28 IOSTANDARD LVCMOS33} [get_ports spi_ss_2]
+set_property -dict {PACKAGE_PIN T26 IOSTANDARD LVCMOS33} [get_ports spi_miso_2]
+set_property -dict {PACKAGE_PIN T27 IOSTANDARD LVCMOS33} [get_ports spi_mosi_2]

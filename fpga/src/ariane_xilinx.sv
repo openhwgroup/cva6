@@ -10,44 +10,44 @@
 
 // Top-level for Genesys 2
 module ariane_xilinx (
-    input  logic           cpu_resetn,
-    input  logic           sys_clk_p,
-    input  logic           sys_clk_n,
-    inout  logic  [31:0]   ddr3_dq,
-    inout  logic  [3:0]    ddr3_dqs_n,
-    inout  logic  [3:0]    ddr3_dqs_p,
-    output logic  [14:0]   ddr3_addr,
-    output logic  [2:0]    ddr3_ba,
-    output logic           ddr3_ras_n,
-    output logic           ddr3_cas_n,
-    output logic           ddr3_we_n,
-    output logic           ddr3_reset_n,
-    output logic  [0:0]    ddr3_ck_p,
-    output logic  [0:0]    ddr3_ck_n,
-    output logic  [0:0]    ddr3_cke,
-    output logic  [0:0]    ddr3_cs_n,
-    output logic  [3:0]    ddr3_dm,
-    output logic  [0:0]    ddr3_odt,
-
-    input  logic           tck,
-    input  logic           tms,
-    input  logic           trst_n,
-    input  logic           tdi,
-    output logic           tdo,
-
-    input  logic           rx,
-    output logic           tx,
-
-    output logic [7:0]     led,
-    input  logic [7:0]     sw,
-    output logic           fan_pwm,
-
-    // SPI
-    output logic           spi_mosi,
-    input  logic           spi_miso,
-    output logic           spi_ss,
-    output logic           spi_clk_o
-    //output logic       spi_ip2intc_irtp
+  input  logic        cpu_resetn  ,
+  input  logic        sys_clk_p   ,
+  input  logic        sys_clk_n   ,
+  inout  logic [31:0] ddr3_dq     ,
+  inout  logic [ 3:0] ddr3_dqs_n  ,
+  inout  logic [ 3:0] ddr3_dqs_p  ,
+  output logic [14:0] ddr3_addr   ,
+  output logic [ 2:0] ddr3_ba     ,
+  output logic        ddr3_ras_n  ,
+  output logic        ddr3_cas_n  ,
+  output logic        ddr3_we_n   ,
+  output logic        ddr3_reset_n,
+  output logic [ 0:0] ddr3_ck_p   ,
+  output logic [ 0:0] ddr3_ck_n   ,
+  output logic [ 0:0] ddr3_cke    ,
+  output logic [ 0:0] ddr3_cs_n   ,
+  output logic [ 3:0] ddr3_dm     ,
+  output logic [ 0:0] ddr3_odt    ,
+  input  logic        tck         ,
+  input  logic        tms         ,
+  input  logic        trst_n      ,
+  input  logic        tdi         ,
+  output logic        tdo         ,
+  input  logic        rx          ,
+  output logic        tx          ,
+  output logic [ 7:0] led         ,
+  input  logic [ 7:0] sw          ,
+  output logic        fan_pwm     ,
+  // SPI
+  output logic        spi_mosi    ,
+  input  logic        spi_miso    ,
+  output logic        spi_ss      ,
+  output logic        spi_clk_o   ,
+  output logic        spi_mosi_2  ,
+  output logic        spi_miso_2  ,
+  output logic        spi_ss_2    ,
+  output logic        spi_clk_o_2
+  //output logic       spi_ip2intc_irtp
 );
 
 localparam NBSlave = 4; // debug, Instruction fetch, data bypass, data
@@ -79,6 +79,12 @@ AXI_BUS #(
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) master[ariane_soc::NB_PERIPHERALS-1:0]();
 
+// spi hack
+assign spi_mosi_2 = spi_mosi;
+assign spi_miso_2 = spi_miso;
+assign spi_clk_o_2 = spi_clk_o;
+assign spi_ss_2 = spi_ss;
+
 // disable test-enable
 logic test_en;
 logic ndmreset;
@@ -88,6 +94,7 @@ logic time_irq;
 logic ipi;
 
 logic clk;
+logic spi_clk_i;
 logic ddr_sync_reset;
 logic ddr_clock_out;
 
