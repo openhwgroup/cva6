@@ -96,9 +96,6 @@ package riscv;
         logic [43:0] ppn;
     } satp_t;
 
-    // read mask for SSTATUS over MMSTATUS
-    localparam logic [63:0] SMODE_STATUS_MASK = 64'h80000003000DE133;
-
     // --------------------
     // Instruction Types
     // --------------------
@@ -312,12 +309,26 @@ package riscv;
     localparam logic [63:0] LOAD_PAGE_FAULT       = 13; // Load page fault
     localparam logic [63:0] STORE_PAGE_FAULT      = 15; // Store page fault
 
-    localparam logic [63:0] S_SW_INTERRUPT        = (1 << 63) | 1;
-    localparam logic [63:0] M_SW_INTERRUPT        = (1 << 63) | 3;
-    localparam logic [63:0] S_TIMER_INTERRUPT     = (1 << 63) | 5;
-    localparam logic [63:0] M_TIMER_INTERRUPT     = (1 << 63) | 7;
-    localparam logic [63:0] S_EXT_INTERRUPT       = (1 << 63) | 9;
-    localparam logic [63:0] M_EXT_INTERRUPT       = (1 << 63) | 11;
+    localparam int unsigned IRQ_S_SOFT  = 1;
+    localparam int unsigned IRQ_M_SOFT  = 3;
+    localparam int unsigned IRQ_S_TIMER = 5;
+    localparam int unsigned IRQ_M_TIMER = 7;
+    localparam int unsigned IRQ_S_EXT   = 9;
+    localparam int unsigned IRQ_M_EXT   = 11;
+
+    localparam logic [63:0] MIP_SSIP = (1 << IRQ_S_SOFT);
+    localparam logic [63:0] MIP_MSIP = (1 << IRQ_M_SOFT);
+    localparam logic [63:0] MIP_STIP = (1 << IRQ_S_TIMER);
+    localparam logic [63:0] MIP_MTIP = (1 << IRQ_M_TIMER);
+    localparam logic [63:0] MIP_SEIP = (1 << IRQ_S_EXT);
+    localparam logic [63:0] MIP_MEIP = (1 << IRQ_M_EXT);
+
+    localparam logic [63:0] S_SW_INTERRUPT    = (1 << 63) | IRQ_S_SOFT;
+    localparam logic [63:0] M_SW_INTERRUPT    = (1 << 63) | IRQ_M_SOFT;
+    localparam logic [63:0] S_TIMER_INTERRUPT = (1 << 63) | IRQ_S_TIMER;
+    localparam logic [63:0] M_TIMER_INTERRUPT = (1 << 63) | IRQ_M_TIMER;
+    localparam logic [63:0] S_EXT_INTERRUPT   = (1 << 63) | IRQ_S_EXT;
+    localparam logic [63:0] M_EXT_INTERRUPT   = (1 << 63) | IRQ_M_EXT;
 
     // -----
     // CSRs
@@ -392,6 +403,19 @@ package riscv;
         CSR_RET            = PERF_RET            + 12'hC03,
         CSR_MIS_PREDICT    = PERF_MIS_PREDICT    + 12'hC03
     } csr_reg_t;
+
+    localparam logic [63:0] SSTATUS_UIE  = 64'h00000001;
+    localparam logic [63:0] SSTATUS_SIE  = 64'h00000002;
+    localparam logic [63:0] SSTATUS_SPIE = 64'h00000020;
+    localparam logic [63:0] SSTATUS_SPP  = 64'h00000100;
+    localparam logic [63:0] SSTATUS_FS   = 64'h00006000;
+    localparam logic [63:0] SSTATUS_XS   = 64'h00018000;
+    localparam logic [63:0] SSTATUS_SUM  = 64'h00040000;
+    localparam logic [63:0] SSTATUS_MXR  = 64'h00080000;
+    localparam logic [63:0] SSTATUS_UPIE = 64'h00000010;
+    localparam logic [63:0] SSTATUS_UXL  = 64'h0000000300000000;
+    localparam logic [63:0] SSTATUS64_SD = 64'h8000000000000000;
+    localparam logic [63:0] SSTATUS32_SD = 64'h80000000;
 
     typedef enum logic [2:0] {
         CSRRW  = 3'h1,
