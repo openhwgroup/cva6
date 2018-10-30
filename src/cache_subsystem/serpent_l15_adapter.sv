@@ -300,9 +300,9 @@ always_comb begin : p_rtrn_logic
             // TODO: implement this
             // dcache_rtrn_o.reqType = DCACHE_INT_ACK;
             // end
-            // default: begin
-            // ;
-            // end
+            default: begin
+            ;
+            end
         endcase // rtrn_fifo_data.l15_returntype
     end
 end
@@ -389,7 +389,7 @@ fifo_v2 #(
 
   unsuported_rtrn_types: assert property (
       @(posedge clk_i) disable iff (~rst_ni) (l15_rtrn_i.l15_val |-> l15_rtrn_i.l15_returntype inside {L15_LOAD_RET, L15_ST_ACK, L15_IFILL_RET, L15_EVICT_REQ, L15_CPX_RESTYPE_ATOMIC_RES}))
-        else $fatal(1,"[l15_adapter] unsupported rtrn type");
+        else $warning("[l15_adapter] return type %X04 is not (yet) supported by l15 adapter.", l15_rtrn_i.l15_returntype);
 
   amo_type: assert property (
       @(posedge clk_i) disable iff (~rst_ni) (l15_rtrn_i.l15_val |-> l15_rtrn_i.l15_returntype inside {L15_CPX_RESTYPE_ATOMIC_RES} |-> l15_rtrn_i.l15_atomic ))
