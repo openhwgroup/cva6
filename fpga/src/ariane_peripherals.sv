@@ -13,21 +13,20 @@ module ariane_peripherals #(
     parameter    AxiAddrWidth = -1,
     parameter    AxiDataWidth = -1
 ) (
-    input  logic       clk_i           , // Clock
-    input  logic       rst_ni          , // Asynchronous reset active low
-    AXI_BUS.in         plic            ,
-    AXI_BUS.in         uart            ,
-    AXI_BUS.in         spi             ,
-    output logic [1:0] irq_o           ,
+    input  logic       clk_i    , // Clock
+    input  logic       rst_ni   , // Asynchronous reset active low
+    AXI_BUS.in         plic     ,
+    AXI_BUS.in         uart     ,
+    AXI_BUS.in         spi      ,
+    output logic [1:0] irq_o    ,
     // UART
-    input  logic       rx_i            ,
-    output logic       tx_o            ,
+    input  logic       rx_i     ,
+    output logic       tx_o     ,
     // SPI
-    output logic       spi_clk_o       ,
-    output logic       spi_mosi        ,
-    input  logic       spi_miso        ,
-    output logic       spi_ss          ,
-    output logic       spi_ip2intc_irtp
+    output logic       spi_clk_o,
+    output logic       spi_mosi ,
+    input  logic       spi_miso ,
+    output logic       spi_ss
 );
 
     // ---------------
@@ -469,12 +468,10 @@ module ariane_peripherals #(
         .ss_i          ('0                    ),
         .ss_o          (spi_ss                ),
         .ss_t          ('0                    ),
-        .ip2intc_irpt  (spi_ip2intc_irtp      ),
-        
-        .cfgclk        (spi_clk_o             ), // output wire cfgclk
-        .cfgmclk       (                      ), // output wire cfgmclk
-        .eos           (                      ), // output wire eos
-        .preq          (                      )  // output wire preq
+        .ip2intc_irpt  (irq_sources[1]        ),
+        .sck_i         ('0                    ),
+        .sck_o         (spi_clk_o             ),
+        .sck_t         ('0                    )
     );
 
 

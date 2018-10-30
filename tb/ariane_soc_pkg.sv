@@ -14,7 +14,7 @@ package ariane_soc;
 
     localparam NB_PERIPHERALS = 7;
     localparam NumTargets = 2;
-    localparam NumSources = 1;
+    localparam NumSources = 2;
 
     typedef enum int unsigned {
         DRAM  = 0,
