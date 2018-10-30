@@ -67,6 +67,24 @@ package ariane_pkg;
     // when more than one core is in a system
     localparam logic INVALIDATE_ON_FLUSH = 1'b1;
 
+    // read mask for SSTATUS over MMSTATUS
+    localparam logic [63:0] SMODE_STATUS_MASK = riscv::SSTATUS_UIE
+                                              | riscv::SSTATUS_SIE
+                                              | riscv::SSTATUS_SPIE
+                                              | riscv::SSTATUS_SPP
+                                              | riscv::SSTATUS_FS
+                                              | riscv::SSTATUS_XS
+                                              | riscv::SSTATUS_SUM
+                                              | riscv::SSTATUS_MXR
+                                              | riscv::SSTATUS_UPIE
+                                              | riscv::SSTATUS_SPIE
+                                              | riscv::SSTATUS_SPP
+                                              | riscv::SSTATUS_FS
+                                              | riscv::SSTATUS_XS
+                                              | riscv::SSTATUS_SUM
+                                              | riscv::SSTATUS_MXR
+                                              | riscv::SSTATUS_UXL
+                                              | riscv::SSTATUS64_SD;
     // ---------------
     // Fetch Stage
     // ---------------

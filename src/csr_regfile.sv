@@ -145,7 +145,7 @@ module csr_regfile #(
         perf_addr_o = csr_addr.address;
 
         if (csr_read) begin
-            case (csr_addr.address)
+            unique case (csr_addr.address)
                 // debug registers
                 riscv::CSR_DCSR:               csr_rdata = {32'b0, dcsr_q};
                 riscv::CSR_DPC:                csr_rdata = dpc_q;
@@ -156,7 +156,7 @@ module csr_regfile #(
                 riscv::CSR_TDATA2:;  // not implemented
                 riscv::CSR_TDATA3:;  // not implemented
                 // supervisor registers
-                riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & riscv::SMODE_STATUS_MASK;
+                riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & ariane_pkg::SMODE_STATUS_MASK;
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
                 riscv::CSR_STVEC:              csr_rdata = stvec_q;
@@ -219,15 +219,28 @@ module csr_regfile #(
     // ---------------------------
     // CSR Write and update logic
     // ---------------------------
+    logic [63:0] mask;
     always_comb begin : csr_update
         automatic riscv::satp_t sapt;
-        automatic logic [63:0] mip;
         automatic logic [63:0] instret;
 
         sapt = satp_q;
-        mip = csr_wdata & 64'h33;
         instret = instret_q;
-        // only USIP, SSIP, UTIP, STIP are write-able
+
+        // --------------------
+        // Counters
+        // --------------------
+        if (!debug_mode_q) begin
+            // just increment the cycle count
+            cycle_d = cycle_q + 1'b1;
+            // increase instruction retired counter
+            for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+                if (commit_ack_i[i]) begin
+                    instret++;
+                end
+            end
+            instret_d = instret;
+        end
 
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
@@ -282,7 +295,7 @@ module csr_regfile #(
 
         // check for correct access rights and that we are writing
         if (csr_we) begin
-            case (csr_addr.address)
+            unique case (csr_addr.address)
                 // debug CSR
                 riscv::CSR_DCSR: begin
                     dcsr_d = csr_wdata[31:0];
@@ -328,17 +341,14 @@ module csr_regfile #(
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
                 riscv::CSR_SIE: begin
-                    // the mideleg makes sure only delegate-able register (and therefore also only implemented registers)
-                    // are written
-                    for (int unsigned i = 0; i < 64; i++)
-                        if (mideleg_q[i])
-                            mie_d[i] = csr_wdata[i];
+                    // the mideleg makes sure only delegate-able register (and therefore also only implemented registers) are written
+                    mie_d = (mie_q & ~mideleg_q) | (csr_wdata & mideleg_q);
                 end
 
                 riscv::CSR_SIP: begin
-                    for (int unsigned i = 0; i < 64; i++)
-                        if (mideleg_q[i])
-                            mip_d[i] = mip[i];
+                    // only the supervisor software interrupt is write-able, iff delegated
+                    mask = riscv::MIP_SSIP & mideleg_q;
+                    mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
 
                 riscv::CSR_SCOUNTEREN:;
@@ -380,20 +390,32 @@ module csr_regfile #(
                 riscv::CSR_MISA:;
                 // machine exception delegation register
                 // 0 - 15 exceptions supported
-                riscv::CSR_MEDELEG:            medeleg_d   = csr_wdata & 64'hF7FF;
+                riscv::CSR_MEDELEG: begin
+                    mask = (1 << riscv::INSTR_ADDR_MISALIGNED) |
+                           (1 << riscv::BREAKPOINT) |
+                           (1 << riscv::ENV_CALL_UMODE) |
+                           (1 << riscv::INSTR_PAGE_FAULT) |
+                           (1 << riscv::LOAD_PAGE_FAULT) |
+                           (1 << riscv::STORE_PAGE_FAULT);
+                    medeleg_d = (medeleg_q & ~mask) | (csr_wdata & mask);
+                end
                 // machine interrupt delegation register
                 // we do not support user interrupt delegation
-                riscv::CSR_MIDELEG:            mideleg_d   = csr_wdata & 64'hBBB;
-
+                riscv::CSR_MIDELEG: begin
+                    mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
+                    mideleg_d = (mideleg_q & ~mask) | (csr_wdata & mask);
+                end
                 // mask the register so that unsupported interrupts can never be set
-                riscv::CSR_MIE:                mie_d       = csr_wdata & 64'hBBB; // we only support supervisor and m-mode interrupts
+                riscv::CSR_MIE: begin
+                    mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP | riscv::MIP_MSIP | riscv::MIP_MTIP;
+                    mie_d = (mie_q & ~mask) | (csr_wdata & mask); // we only support supervisor and M-mode interrupts
+                end
 
                 riscv::CSR_MTVEC: begin
-                    mtvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                    mtvec_d = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                     // we are in vector mode, this implementation requires the additional
                     // alignment constraint of 64 * 4 bytes
-                    if (csr_wdata[0])
-                        mtvec_d = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
+                    if (csr_wdata[0]) mtvec_d = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
                 end
                 riscv::CSR_MCOUNTEREN:;
 
@@ -401,7 +423,10 @@ module csr_regfile #(
                 riscv::CSR_MEPC:               mepc_d      = {csr_wdata[63:1], 1'b0};
                 riscv::CSR_MCAUSE:             mcause_d    = csr_wdata;
                 riscv::CSR_MTVAL:              mtval_d     = csr_wdata;
-                riscv::CSR_MIP:                mip_d       = mip;
+                riscv::CSR_MIP: begin
+                    mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
+                    mip_d = (mip_q & ~mask) | (csr_wdata & mask);
+                end
                 // Placeholders for M-mode protection
                 riscv::CSR_PMPCFG0:            pmpcfg0_d   = csr_wdata;
                 riscv::CSR_PMPADDR0:           pmpaddr0_d  = csr_wdata;
@@ -432,12 +457,13 @@ module csr_regfile #(
         // External Interrupts
         // ---------------------
         // Machine Mode External Interrupt Pending
-        mip_d[11] = mie_q[11] & irq_i[1];
-        mip_d[9] = mie_q[9] & irq_i[0];
+        mip_d[riscv::IRQ_M_EXT] = irq_i[0];
+        // Supervisor Mode External Interrupt Pending
+        mip_d[riscv::IRQ_S_EXT] = mie_q[riscv::IRQ_S_EXT] & irq_i[1];
         // Machine software interrupt
-        mip_d[3] = mie_q[3] & ipi_i;
+        mip_d[riscv::IRQ_M_SOFT] = ipi_i;
         // Timer interrupt pending, coming from platform timer
-        mip_d[7] = time_irq_i;
+        mip_d[riscv::IRQ_M_TIMER] = time_irq_i;
 
         // -----------------------
         // Manage Exception Stack
@@ -620,21 +646,6 @@ module csr_regfile #(
             // actually return from debug mode
             debug_mode_d = 1'b0;
         end
-
-        // --------------------
-        // Counters
-        // --------------------
-        if (!debug_mode_q) begin
-            // just increment the cycle count
-            cycle_d = cycle_q + 1'b1;
-            // increase instruction retired counter
-            for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-                if (commit_ack_i[i]) begin
-                    instret++;
-                end
-            end
-            instret_d = instret;
-        end
     end
 
     // ---------------------------
@@ -711,7 +722,9 @@ module csr_regfile #(
         if (mie_q[riscv::S_SW_INTERRUPT[5:0]] && mip_q[riscv::S_SW_INTERRUPT[5:0]])
             interrupt_cause = riscv::S_SW_INTERRUPT;
         // Supervisor External Interrupt
-        if (mie_q[riscv::S_EXT_INTERRUPT[5:0]] && mip_q[riscv::S_EXT_INTERRUPT[5:0]])
+        // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
+        // used to generate external interrupts to the supervisor
+        if (mie_q[riscv::S_EXT_INTERRUPT[5:0]] && (mip_q[riscv::S_EXT_INTERRUPT[5:0]] | irq_i[1]))
             interrupt_cause = riscv::S_EXT_INTERRUPT;
         // Machine Timer Interrupt
         if (mip_q[riscv::M_TIMER_INTERRUPT[5:0]] && mie_q[riscv::M_TIMER_INTERRUPT[5:0]])
@@ -817,7 +830,11 @@ module csr_regfile #(
     // -------------------
     // Output Assignments
     // -------------------
-    assign csr_rdata_o      = csr_rdata;
+    // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value
+    // returned in the rd destination register contains the logical-OR of the software-writable
+    // bit and the interrupt signal from the interrupt controller.
+    assign csr_rdata_o      = (csr_addr.address == riscv::CSR_MIP) ? (csr_rdata | (irq_i[1] << riscv::IRQ_S_EXT))
+                                                                   : csr_rdata;
     // in debug mode we execute with privilege level M
     assign priv_lvl_o       = (debug_mode_q) ? riscv::PRIV_LVL_M : priv_lvl_q;
     // MMU outputs
