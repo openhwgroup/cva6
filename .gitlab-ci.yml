@@ -14,7 +14,7 @@ before_script:
   - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
   - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
   # number of parallel jobs to use for make commands and simulation
-  - export NUM_JOBS=8
+  - export NUM_JOBS=4
   - ci/make-tmp.sh
   - git submodule update --init --recursive
 
