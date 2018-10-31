@@ -64,42 +64,39 @@ module ariane_verilog_wrap #(
   assign l15_rtrn  = l15_rtrn_i;
 `endif
 
-  logic rst_n, irq_received;
+  // this is a workaround since interrupts are not fully supported yet.
+  // the logic below catches the initial wake up interrupt that enables the cores.
+  logic wake_up_d, wake_up_q;
+  logic clk_gated;
 
-`ifdef VERILATOR
+  assign wake_up_d = wake_up_q | (l15_rtrn.l15_returntype == serpent_cache_pkg::L15_INT_RET && l15_rtrn.l15_val);
 
-  assign irq_received = 1'b1;
-
-`else
-
-  // simulation hack, need to wait until interrupt arrives.
-  // TODO: find a clean solution for this
-  initial begin
-    irq_received <= '0;
-
-    repeat(100) @(posedge clk_i);
-
-    while(!reset_l) @(posedge clk_i);
-
-    while(l15_rtrn.l15_returntype != serpent_cache_pkg::L15_INT_RET) @(posedge clk_i);
-
-    irq_received <= 1;
+  always_ff @(posedge clk_i or negedge reset_l) begin : p_regs
+    if(~reset_l) begin
+      wake_up_q <= 0;
+    end else begin
+      wake_up_q <= wake_up_d;
+    end
   end
 
+// synthesizable version for FPGA needs to use a clock buffer
+`ifdef FPGA_SYN
+  BUFGCE i_bufgce (
+     .I  ( clk_i     ),
+     .CE ( wake_up_q ),
+     .O  ( clk_gated )
+  );
+`else
+  assign clk_gated = (wake_up_q) ? clk_i : 1'b0;
 `endif
-
-
-  assign rst_n = reset_l & irq_received;
-
-
 
   ariane #(
     .SWAP_ENDIANESS   ( SWAP_ENDIANESS   ),
     .CACHE_LOW_REGION ( CACHE_LOW_REGION ),
     .CACHE_START_ADDR ( CACHE_START_ADDR )
   ) ariane (
-    .clk_i                   ,
-    .rst_ni      ( rst_n  ),
+    .clk_i       ( clk_gated ),
+    .rst_ni      ( reset_l   ),
     .boot_addr_i             ,
     .hart_id_i               ,
     .irq_i                   ,

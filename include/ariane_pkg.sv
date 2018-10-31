@@ -230,13 +230,13 @@ package ariane_pkg;
     // align to openpiton for the time being (this should be more configurable in the future)
     `ifdef SERPENT_PULP
       // I$
-      localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit
-      localparam int unsigned ICACHE_TAG_WIDTH   = 44;  // in bit
+      localparam int unsigned ICACHE_INDEX_WIDTH = 11;  // in bit
+      localparam int unsigned ICACHE_TAG_WIDTH   = 45;  // in bit
       localparam int unsigned ICACHE_LINE_WIDTH  = 256; // in bit
       localparam int unsigned ICACHE_SET_ASSOC   = 4;
       // D$
-      localparam int unsigned DCACHE_INDEX_WIDTH = 12;
-      localparam int unsigned DCACHE_TAG_WIDTH   = 44;
+      localparam int unsigned DCACHE_INDEX_WIDTH = 11;
+      localparam int unsigned DCACHE_TAG_WIDTH   = 45;
       localparam int unsigned DCACHE_LINE_WIDTH  = 128;
       localparam int unsigned DCACHE_SET_ASSOC   = 4;
     `else
