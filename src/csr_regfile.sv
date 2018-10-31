@@ -454,7 +454,7 @@ module csr_regfile #(
         // Machine Mode External Interrupt Pending
         mip_d[riscv::IRQ_M_EXT] = irq_i[0];
         // Supervisor Mode External Interrupt Pending
-        mip_d[riscv::IRQ_S_EXT] = mie_q[riscv::IRQ_S_EXT] & irq_i[1];
+        mip_d[riscv::IRQ_S_EXT] = mie_q[riscv::IRQ_S_EXT];
         // Machine software interrupt
         mip_d[riscv::IRQ_M_SOFT] = ipi_i;
         // Timer interrupt pending, coming from platform timer

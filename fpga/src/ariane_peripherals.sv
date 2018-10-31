@@ -14,19 +14,19 @@ module ariane_peripherals #(
     parameter int AxiDataWidth = -1,
     parameter bit InclSPI      = 0
 ) (
-    input  logic       clk_i    , // Clock
-    input  logic       rst_ni   , // Asynchronous reset active low
-    AXI_BUS.in         plic     ,
-    AXI_BUS.in         uart     ,
-    AXI_BUS.in         spi      ,
-    output logic [1:0] irq_o    ,
+    input  logic       clk_i           , // Clock
+    input  logic       rst_ni          , // Asynchronous reset active low
+    AXI_BUS.in         plic            ,
+    AXI_BUS.in         uart            ,
+    AXI_BUS.in         spi             ,
+    output logic [1:0] irq_o           ,
     // UART
-    input  logic       rx_i     ,
-    output logic       tx_o     ,
+    input  logic       rx_i            ,
+    output logic       tx_o            ,
     // SPI
-    output logic       spi_clk_o,
-    output logic       spi_mosi ,
-    input  logic       spi_miso ,
+    output logic       spi_clk_o       ,
+    output logic       spi_mosi        ,
+    input  logic       spi_miso        ,
     output logic       spi_ss
 );
 
@@ -419,6 +419,7 @@ module ariane_peripherals #(
             .preq           (                        )
         );
     end else begin
+        assign irq_sources [1] = 1'b0;
         assign s_axi_spi_awready = 1'b1;
         assign s_axi_spi_wready = 1'b1;
 
