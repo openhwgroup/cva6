@@ -114,7 +114,7 @@ module serpent_dcache_missunit #(
 
     assign cache_en_o      = enable_q;
     assign cnt_d           = (flush_en) ? cnt_q + 1 : '0; 
-    assign flush_done      = (cnt_q == DCACHE_NUM_WORDS-1);      
+    assign flush_done      = (cnt_q == serpent_cache_pkg::DCACHE_NUM_WORDS-1);      
 
     assign miss_req_masked_d = ( lock_reqs  ) ? miss_req_masked_q      :
                                ( mask_reads ) ? miss_we_i & miss_req_i : miss_req_i;
@@ -140,7 +140,7 @@ module serpent_dcache_missunit #(
 
     // find invalid cache line
     lzc #(
-        .WIDTH ( DCACHE_SET_ASSOC )
+        .WIDTH ( ariane_pkg::DCACHE_SET_ASSOC )
     ) i_lzc_inv (
         .in_i    ( ~miss_vld_bits_i[miss_port_idx] ),
         .cnt_o   ( inv_way                         ),
@@ -149,7 +149,7 @@ module serpent_dcache_missunit #(
 
     // generate random cacheline index
     lfsr_8bit #(
-        .WIDTH ( DCACHE_SET_ASSOC )
+        .WIDTH ( ariane_pkg::DCACHE_SET_ASSOC )
     ) i_lfsr_inv (
         .clk_i          ( clk_i       ),
         .rst_ni         ( rst_ni      ),

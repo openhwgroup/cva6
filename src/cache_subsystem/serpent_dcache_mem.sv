@@ -255,8 +255,8 @@ module serpent_dcache_mem #(
         for (genvar k = 0; k < DCACHE_NUM_BANKS; k++) begin : g_data_banks
             // Data RAM
             sram #(
-                .DATA_WIDTH ( 64*DCACHE_SET_ASSOC ),
-                .NUM_WORDS  ( DCACHE_NUM_WORDS    )
+                .DATA_WIDTH ( ariane_pkg::DCACHE_SET_ASSOC * 64 ),
+                .NUM_WORDS  ( serpent_cache_pkg::DCACHE_NUM_WORDS    )
             ) i_data_sram (
                 .clk_i      ( clk_i               ),
                 .rst_ni     ( rst_ni              ),
@@ -277,8 +277,8 @@ module serpent_dcache_mem #(
             // Tag RAM
             sram #(
                 // tag + valid bit
-                .DATA_WIDTH ( DCACHE_TAG_WIDTH+1 ),
-                .NUM_WORDS  ( DCACHE_NUM_WORDS   )
+                .DATA_WIDTH ( ariane_pkg::DCACHE_TAG_WIDTH + 1 ),
+                .NUM_WORDS  ( serpent_cache_pkg::DCACHE_NUM_WORDS   )
             ) i_tag_sram (
                 .clk_i     ( clk_i               ),
                 .rst_ni    ( rst_ni              ),
@@ -329,9 +329,9 @@ module serpent_dcache_mem #(
             else $fatal(1,"[l1 dcache] wbuffer_hit_oh signal must be hot1");
 
     // this is only used for verification!
-    logic                        vld_mirror[DCACHE_NUM_WORDS-1:0][DCACHE_SET_ASSOC-1:0];        
-    logic [DCACHE_TAG_WIDTH-1:0] tag_mirror[DCACHE_NUM_WORDS-1:0][DCACHE_SET_ASSOC-1:0];        
-    logic [DCACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
+    logic                                    vld_mirror[serpent_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];        
+    logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] tag_mirror[serpent_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];        
+    logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
         if(~rst_ni) begin
