@@ -63,9 +63,11 @@ module load_unit (
     assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.operator};
     // output address
     // we can now output the lower 12 bit as the index to the cache
-    assign req_port_o.address_index = lsu_ctrl_i.vaddr[11:0];
+    assign req_port_o.address_index = lsu_ctrl_i.vaddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
     // translation from last cycle, again: control is handled in the FSM
-    assign req_port_o.address_tag   = paddr_i[55:12];
+    assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
+                                              ariane_pkg::DCACHE_INDEX_WIDTH-1 :
+                                              ariane_pkg::DCACHE_INDEX_WIDTH];
     // directly output an exception
     assign ex_o = ex_i;
 
