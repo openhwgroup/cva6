@@ -39,7 +39,8 @@ build:
     - ci/build-riscv-tests.sh
     - ci/get-torture.sh
     - make clean
-    - make torture-gen
+    # this currently does not work with the current runner version...
+    #- make torture-gen
   artifacts:
       paths:
         - tmp
@@ -107,13 +108,13 @@ bench-ver:
   dependencies:
     - build
 
-torture:
-  stage: standard
-  script:
-    - make torture-rtest batch-mode=1
-    - make torture-rtest-verilator
-  dependencies:
-    - build
+# torture:
+#   stage: standard
+#   script:
+#     - make torture-rtest batch-mode=1
+#     - make torture-rtest-verilator
+#   dependencies:
+#     - build
 
 serdiv-quest:
   stage: standard
@@ -181,11 +182,11 @@ s-dcache-quest:
   dependencies:
     - build
 
-s-torture:
-  stage: serpent
-  script:
-    - make torture-rtest           defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
-    - make torture-rtest-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
-  dependencies:
-    - build
+# s-torture:
+#   stage: serpent
+#   script:
+#     - make torture-rtest           defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
+#     - make torture-rtest-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+#   dependencies:
+#     - build
 
