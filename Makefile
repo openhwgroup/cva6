@@ -139,7 +139,8 @@ list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 
 # RISCV torture setup
 riscv-torture-dir    := tmp/riscv-torture
-riscv-torture-bin    := java -Xmx1G -Xss8M -XX:MaxPermSize=128M -jar sbt-launch.jar
+# old java flags  -Xmx1G -Xss8M -XX:MaxPermSize=128M
+riscv-torture-bin    := java -XshowSettings -Xdiag -jar sbt-launch.jar
 
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so

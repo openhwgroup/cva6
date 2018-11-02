@@ -5,8 +5,8 @@ before_script:
   - export QUESTASIM_VERSION=-10.6b
   - export QUESTASIM_FLAGS=-noautoldlibpath
   - export CXX=g++-7.2.0 CC=gcc-7.2.0
-  - export RISCV=/usr/scratch2/larain1/gitlabci/riscv_install
-  - export VERILATOR_ROOT=/usr/scratch2/larain1/gitlabci/verilator-3.924
+  - export RISCV=/scratch2/gitlabci/riscv_install
+  - export VERILATOR_ROOT=/scratch2/gitlabci/verilator-3.924
   # setup dependent paths
   - export PATH=${RISCV}/bin:$VERILATOR_ROOT/bin:${PATH}
   - export LIBRARY_PATH=$RISCV/lib
@@ -15,8 +15,13 @@ before_script:
   - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include:/usr/pack/gcc-7.2.0-af/linux-x64/include
   # number of parallel jobs to use for make commands and simulation
   - export NUM_JOBS=4
+  - which java
+  - java -version
+  - which git
+  - git --version
   - ci/make-tmp.sh
-  - git submodule update --init --recursive
+  - git submodule init
+  - git submodule update --recursive
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive

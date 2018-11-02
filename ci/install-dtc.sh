@@ -9,7 +9,7 @@ if [ -z ${NUM_JOBS} ]; then
     NUM_JOBS=1
 fi
 
-if [ ! -e "$RISCV/dtc/dtc" ]; then
+if [ ! -e "$RISCV/bin/dtc" ]; then
     echo "Installing DTC"
     git clone https://git.kernel.org/pub/scm/utils/dtc/dtc.git
     cd dtc
