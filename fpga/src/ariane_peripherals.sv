@@ -12,6 +12,7 @@
 module ariane_peripherals #(
     parameter int AxiAddrWidth = -1,
     parameter int AxiDataWidth = -1,
+    parameter bit DummyUART    = 0,
     parameter bit InclSPI      = 0
 ) (
     input  logic       clk_i           , // Clock
@@ -156,36 +157,39 @@ module ariane_peripherals #(
         .PSLVERR   ( uart_pslverr   )
     );
 
-    apb_uart i_apb_uart (
-        .CLK     ( clk_i           ),
-        .RSTN    ( rst_ni          ),
-        .PSEL    ( uart_psel       ),
-        .PENABLE ( uart_penable    ),
-        .PWRITE  ( uart_pwrite     ),
-        .PADDR   ( uart_paddr[4:2] ),
-        .PWDATA  ( uart_pwdata     ),
-        .PRDATA  ( uart_prdata     ),
-        .PREADY  ( uart_pready     ),
-        .PSLVERR ( uart_pslverr    ),
-        .INT     ( irq_sources[0]  ),
-        .OUT1N   (                 ), // keep open
-        .OUT2N   (                 ), // keep open
-        .RTSN    (                 ), // no flow control
-        .DTRN    (                 ), // no flow control
-        .CTSN    ( 1'b0            ),
-        .DSRN    ( 1'b0            ),
-        .DCDN    ( 1'b0            ),
-        .RIN     ( 1'b0            ),
-        .SIN     ( rx_i            ),
-        .SOUT    ( tx_o            )
-    );
+    if (DummyUART) begin
 
+    end else begin
+        apb_uart i_apb_uart (
+            .CLK     ( clk_i           ),
+            .RSTN    ( rst_ni          ),
+            .PSEL    ( uart_psel       ),
+            .PENABLE ( uart_penable    ),
+            .PWRITE  ( uart_pwrite     ),
+            .PADDR   ( uart_paddr[4:2] ),
+            .PWDATA  ( uart_pwdata     ),
+            .PRDATA  ( uart_prdata     ),
+            .PREADY  ( uart_pready     ),
+            .PSLVERR ( uart_pslverr    ),
+            .INT     ( irq_sources[0]  ),
+            .OUT1N   (                 ), // keep open
+            .OUT2N   (                 ), // keep open
+            .RTSN    (                 ), // no flow control
+            .DTRN    (                 ), // no flow control
+            .CTSN    ( 1'b0            ),
+            .DSRN    ( 1'b0            ),
+            .DCDN    ( 1'b0            ),
+            .RIN     ( 1'b0            ),
+            .SIN     ( rx_i            ),
+            .SOUT    ( tx_o            )
+        );
+    end
     // ---------------
     // Ethernet
     // ---------------
-  //   xlnx_axi_ethernetlite i_xlnx_axi_ethernetlite (
+    //   xlnx_axi_ethernetlite i_xlnx_axi_ethernetlite (
 
-  //   );
+    //   );
 
   // output   ip2intc_irpt;
   // input    s_axi_aclk;

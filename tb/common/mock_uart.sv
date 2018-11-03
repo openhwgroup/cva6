@@ -12,10 +12,17 @@
 // Date: 28/09/2018
 // Description: Mock replacement for UART in testbench
 
-module mock_uartlite (
-    input logic clk_i,    // Clock
-    input logic rst_ni,
-    AXI_BUS.Slave slave
+module mock_uart (
+    input  logic          clk_i,
+    input  logic          rst_ni,
+    input  logic          penable_i,
+    input  logic          pwrite_i,
+    input  logic [31:0]   paddr_i,
+    input  logic          psel_i,
+    input  logic [31:0]   pwdata_i,
+    output logic [31:0]   prdata_o,
+    output logic          pready_o,
+    output logic          pslverr_o
 );
 
     // string buffer
@@ -34,7 +41,7 @@ module mock_uartlite (
         buffer = {};
     endfunction : flush
 
-    // put a char to the buffer
+    // put a char into the buffer
     function void append(byte ch);
 
         // wait for the new line
@@ -45,30 +52,9 @@ module mock_uartlite (
 
     endfunction : append
 
-    logic req_o;
-    logic we_o;
-    logic [63:0] addr_o;
-    logic [64/8-1:0] be_o;
-    logic [63:0] data_o;
-
-    axi2mem #(
-        .AXI_ID_WIDTH($bits(slave.aw_id)),
-        .AXI_USER_WIDTH($bits(slave.aw_user))
-    ) i_axi2mem (
-        .clk_i  ( clk_i  ),
-        .rst_ni ( rst_ni ),
-        .slave  ( slave  ),
-        .req_o  ( req_o  ),
-        .we_o   ( we_o   ),
-        .addr_o ( addr_o ),
-        .be_o   ( be_o   ),
-        .data_o ( data_o ),
-        .data_i ( '0     )
-    );
-
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (rst_ni) begin
-            if (req_o & we_o & addr_o[3:0] == 'h4) append(byte'(data_o[40:32]));
+            if (psel_i & penable_i & pwrite_i & paddr_i[3:0] == 'h4) append(byte'(pwdata_i[7:0]));
         end
     end
 endmodule

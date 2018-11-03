@@ -27,7 +27,7 @@ import "DPI-C" context function byte read_section(input longint address, inout b
 
 module ariane_tb;
 
-    // static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
+    static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
     localparam int unsigned CLOCK_PERIOD = 20ns;
     // toggle with half the clock period
@@ -43,6 +43,8 @@ module ariane_tb;
 
     logic [31:0] exit_o;
 
+    string binary = "";
+
     ariane_testharness #(
         .NUM_WORDS ( NUM_WORDS )
     ) dut (
@@ -50,6 +52,14 @@ module ariane_tb;
         .rst_ni,
         .rtc_i,
         .exit_o
+    );
+
+    spike i_spike (
+        .clk_i,
+        .rst_ni,
+        .clint_tick_i   ( dut.i_clint.rtc_i                   ),
+        .commit_instr_i ( dut.i_ariane.commit_instr_id_commit ),
+        .commit_ack_i   ( dut.i_ariane.commit_ack             )
     );
 
     // Clock process
@@ -92,39 +102,38 @@ module ariane_tb;
         end
     end
 
+    // for faster simulation we can directly preload the ELF
+    // Note that we are loosing the capabilities to use risc-fesvr though
     initial begin
-        automatic string BINARY = "/scratch/zarubaf/ariane/fpga/bbl";
         automatic logic [7:0][7:0] mem_row;
         longint address, len;
         byte buffer[];
-        `uvm_info( "Core Test", "Zeroing memory", UVM_LOW)
+        void'(uvcl.get_arg_value("+PRELOAD=", binary));
 
-        // avoid X pesimism
-        for (int i = 0; i < NUM_WORDS; i++) begin
-            `MAIN_MEM(i) = '0;
-        end
+        binary = "/home/zarubaf/riscv/target/share/riscv-tests/benchmarks/dhrystone.riscv";
 
-        `uvm_info( "Core Test", $sformatf("Loading ELF: %s", BINARY), UVM_LOW)
+        if (binary != "") begin
+            `uvm_info( "Core Test", $sformatf("Preloading ELF: %s", binary), UVM_LOW)
 
-        void'(read_elf(BINARY));
+            void'(read_elf(binary));
 
-        // while there are more sections to process
-        while (get_section(address, len)) begin
-            `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
-            buffer = new [len];
-            void'(read_section(address, buffer));
-            // preload memories
-            // 64-bit
-            for (int i = 0; i < buffer.size()/8; i++) begin
-                mem_row = '0;
-                for (int j = 0; j < 8; j++) begin
-                    mem_row[j] = buffer[i*8 + j];
+            // while there are more sections to process
+            while (get_section(address, len)) begin
+                `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
+                buffer = new [len];
+                void'(read_section(address, buffer));
+                // preload memories
+                // 64-bit
+                for (int i = 0; i < buffer.size()/8; i++) begin
+                    mem_row = '0;
+                    for (int j = 0; j < 8; j++) begin
+                        mem_row[j] = buffer[i*8 + j];
+                    end
+
+                    `MAIN_MEM((address[28:0] >> 3) + i) = mem_row;
                 end
-
-                `MAIN_MEM((address[28:0] >> 3) + i) = mem_row;
             end
         end
-
     end
 
 endmodule

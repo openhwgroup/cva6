@@ -93,7 +93,6 @@ struct state_t
   reg_t pc;
   regfile_t<reg_t, NXPR, true> XPR;
   regfile_t<freg_t, NFPR, false> FPR;
-
   // control and status registers
   reg_t prv;    // TODO: Can this be an enum instead?
   reg_t misa;
@@ -144,6 +143,8 @@ struct state_t
   reg_t last_inst_priv;
   int last_inst_xlen;
   int last_inst_flen;
+  reg_t rd;
+  uint32_t last_insn;
 #endif
 };
 

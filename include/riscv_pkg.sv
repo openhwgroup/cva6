@@ -437,4 +437,14 @@ package riscv;
         end
     endfunction
     // pragma translate_on
+
+    typedef struct {
+        byte priv;
+        longint unsigned pc;
+        byte is_fp;
+        byte rd;
+        longint unsigned data;
+        int unsigned instr;
+    } commit_log_t;
+
 endpackage

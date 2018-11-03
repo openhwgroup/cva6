@@ -55,6 +55,9 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
 dpi := $(patsubst tb/dpi/%.cc,${dpi-library}/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
+CFLAGS := -I$(QUESTASIM_HOME)/include         \
+          -Itb/riscv-isa-sim/install/include/spike  \
+          -std=c++11 -I../tb/dpi
 
 # this list contains the standalone components
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
@@ -90,6 +93,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/rstgen_bypass.sv                          \
         tb/ariane_testharness.sv                                       \
         tb/common/uart.sv 		                                       \
+        tb/common/spike.sv                                             \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv
 src := $(addprefix $(root-dir), $(src))
@@ -150,7 +154,7 @@ $(library):
 # compile DPIs
 $(dpi-library)/%.o: tb/dpi/%.cc $(dpi_hdr)
 	mkdir -p $(dpi-library)
-	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic -I$(QUESTASIM_HOME)/include -o $@ $<
+	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic $(CFLAGS) -c $< -o $@
 
 $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
@@ -162,14 +166,14 @@ sim: build
 	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}    \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0        \
 	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*; run -all; exit"            \
+	-gblso $(RISCV)/lib/libfesvr.so -gblso tb/riscv-isa-sim/install/lib/libriscv.so  -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*;"            \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)$(riscv-test) ++$(target-options)
 
 simc: build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
 	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*; run -all; exit"                       \
+	-gblso $(RISCV)/lib/libfesvr.so -gblso tb/riscv-isa-sim/install/lib/libriscv.so -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*;"                       \
     ${top_level}_optimized +permissive-off ++$(riscv-test-dir)$(riscv-test) ++$(target-options)
 
 $(riscv-asm-tests): build
@@ -221,7 +225,7 @@ verilate_command := $(verilator)                                                
                     -Wno-style                                                             \
                     -Wno-lint                                                              \
                     $(if $(DEBUG),--trace-structs --trace,)                                \
-                    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
+                    -LDFLAGS "-lfesvr" -CFLAGS $(CFLAGS) -Wall --cc  --vpi                 \
                     $(list_incdir) --top-module ariane_testharness                         \
                     --Mdir $(ver-library) -O3                                              \
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc

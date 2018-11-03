@@ -1,68 +1,40 @@
 #include <fesvr/elf.h>
 #include <fesvr/memif.h>
 
-#include <svdpi.h>
+#include "sim_spike.h"
+#include "msim_helper.h"
 
-#include <cstring>
+#include <vpi_user.h>
+#include "svdpi.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
 #include <string>
+#include <memory>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/mman.h>
+
 #include <assert.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <vector>
 #include <map>
 #include <iostream>
+
+sim_spike_t* sim;
+std::vector<std::pair<reg_t, mem_t*>> mem;
+commit_log_t commit_log_val;
 
 #define SHT_PROGBITS 0x1
 #define SHT_GROUP 0x11
 
-// address and size
-std::vector<std::pair<reg_t, reg_t>> sections;
-std::map<std::string, uint64_t> symbols;
-// memory based address and content
-std::map<reg_t, std::vector<uint8_t>> mems;
-reg_t entry;
-int section_index = 0;
+void write_spike_mem (reg_t address, size_t len, uint8_t* buf) {
+    fprintf(stderr, "Storing: %llx\n", address);
 
-void write (uint64_t address, uint64_t len, uint8_t* buf) {
-    uint64_t datum;
-    std::vector<uint8_t> mem;
-    for (int i = 0; i < len; i++) {
-        mem.push_back(buf[i]);
-    }
-    mems.insert(std::make_pair(address, mem));
+    memcpy(mem[0].second->contents() + (address & ~(1 << 31)), buf,len);
 }
 
-// Communicate the section address and len
-// Returns:
-// 0 if there are no more sections
-// 1 if there are more sections to load
-extern "C" char get_section (long long* address, long long* len) {
-    if (section_index < sections.size()) {
-      *address = sections[section_index].first;
-      *len = sections[section_index].second;
-      section_index++;
-      return 1;
-    } else return 0;
-}
-
-extern "C" char read_section (long long address, const svOpenArrayHandle buffer) {
-    // get actual poitner
-    void* buf = svGetArrayPtr(buffer);
-    // check that the address points to a section
-    assert(mems.count(address) > 0);
-    // copy array
-    int i = 0;
-    for (auto &datum : mems.find(address)->second) {
-      *((char *) buf + i) = datum;
-      i++;
-    }
-}
-
-extern "C" void read_elf(const char* filename) {
+void read_elf(const char* filename) {
     int fd = open(filename, O_RDONLY);
     struct stat s;
     assert(fd != -1);
@@ -78,22 +50,17 @@ extern "C" void read_elf(const char* filename) {
     const Elf64_Ehdr* eh64 = (const Elf64_Ehdr*)buf;
     assert(IS_ELF32(*eh64) || IS_ELF64(*eh64));
 
-
-
     std::vector<uint8_t> zeros;
-    std::map<std::string, uint64_t> symbols;
 
     #define LOAD_ELF(ehdr_t, phdr_t, shdr_t, sym_t) do { \
     ehdr_t* eh = (ehdr_t*)buf; \
     phdr_t* ph = (phdr_t*)(buf + eh->e_phoff); \
-    entry = eh->e_entry; \
     assert(size >= eh->e_phoff + eh->e_phnum*sizeof(*ph)); \
     for (unsigned i = 0; i < eh->e_phnum; i++) { \
       if(ph[i].p_type == PT_LOAD && ph[i].p_memsz) { \
         if (ph[i].p_filesz) { \
           assert(size >= ph[i].p_offset + ph[i].p_filesz); \
-          sections.push_back(std::make_pair(ph[i].p_paddr, ph[i].p_memsz)); \
-          write(ph[i].p_paddr, ph[i].p_filesz, (uint8_t*)buf + ph[i].p_offset); \
+          write_spike_mem(ph[i].p_paddr, ph[i].p_filesz, (uint8_t*)buf + ph[i].p_offset); \
         } \
         zeros.resize(ph[i].p_memsz - ph[i].p_filesz); \
       } \
@@ -121,7 +88,6 @@ extern "C" void read_elf(const char* filename) {
         unsigned max_len = sh[strtabidx].sh_size - sym[i].st_name; \
         assert(sym[i].st_name < sh[strtabidx].  sh_size); \
         assert(strnlen(strtab + sym[i].st_name, max_len) < max_len); \
-        symbols[strtab + sym[i].st_name] = sym[i].st_value; \
       } \
     } \
     } while(0)
@@ -132,4 +98,37 @@ extern "C" void read_elf(const char* filename) {
     LOAD_ELF(Elf64_Ehdr, Elf64_Phdr, Elf64_Shdr, Elf64_Sym);
 
   munmap(buf, size);
+}
+
+extern "C" void spike_create(const char* filename, uint64_t dram_base, unsigned int size)
+{
+
+    mem = std::vector<std::pair<reg_t, mem_t*>>(1, std::make_pair(reg_t(dram_base), new mem_t(size)));
+    // zero out memory
+    memset(mem[0].second->contents(), 0, size_t(size));
+
+    read_elf(filename);
+
+    if (!sim) {
+      std::vector<std::string> htif_args = sanitize_args();
+
+      sim = new sim_spike_t("rv64imac", 1, mem, htif_args);
+    }
+}
+
+// advance Spike and get the retired instruction
+extern "C" void spike_tick(commit_log_t* commit_log)
+{
+  commit_log_val = sim->tick(1);
+  commit_log->priv = commit_log_val.priv;
+  commit_log->pc = commit_log_val.pc;
+  commit_log->is_fp = commit_log_val.is_fp;
+  commit_log->rd = commit_log_val.rd;
+  commit_log->data = commit_log_val.data;
+  commit_log->instr = commit_log_val.instr;
+}
+
+extern "C" void clint_tick()
+{
+  sim->clint_tick();
 }
