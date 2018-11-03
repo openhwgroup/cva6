@@ -17,7 +17,7 @@ import ariane_pkg::*;
 module csr_regfile #(
     parameter int          ASID_WIDTH      = 1,
     parameter int unsigned NR_COMMIT_PORTS = 2
-)(
+) (
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
     input  logic                  time_irq_i,                 // Timer threw a interrupt
@@ -156,7 +156,9 @@ module csr_regfile #(
                 riscv::CSR_TDATA2:;  // not implemented
                 riscv::CSR_TDATA3:;  // not implemented
                 // supervisor registers
-                riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & ariane_pkg::SMODE_STATUS_MASK;
+                riscv::CSR_SSTATUS: begin
+                    csr_rdata = mstatus_q & ariane_pkg::SMODE_STATUS_READ_MASK;
+                end
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
                 riscv::CSR_STVEC:              csr_rdata = stvec_q;
@@ -312,24 +314,8 @@ module csr_regfile #(
                 riscv::CSR_TDATA3:;  // not implemented
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
-                    mstatus_d = csr_wdata;
-                    // also hardwire the registers for sstatus
-                    mstatus_d.sxl  = riscv::XLEN_64;
-                    mstatus_d.uxl  = riscv::XLEN_64;
-                    // hardwired zero registers
-                    mstatus_d.sd   = 1'b0;
-                    mstatus_d.xs   = 2'b0;
-                    mstatus_d.fs   = 2'b0;
-                    mstatus_d.upie = 1'b0;
-                    mstatus_d.uie  = 1'b0;
-                    // not all fields of mstatus can be written
-                    mstatus_d.mie  = mstatus_q.mie;
-                    mstatus_d.mpie = mstatus_q.mpie;
-                    mstatus_d.mpp  = mstatus_q.mpp;
-                    mstatus_d.mprv = mstatus_q.mprv;
-                    mstatus_d.tsr  = mstatus_q.tsr;
-                    mstatus_d.tw   = mstatus_q.tw;
-                    mstatus_d.tvm  = mstatus_q.tvm;
+                    mask = ariane_pkg::SMODE_STATUS_WRITE_MASK;
+                    mstatus_d = (mstatus_q & ~mask) | (csr_wdata & mask);
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
@@ -453,8 +439,6 @@ module csr_regfile #(
         // ---------------------
         // Machine Mode External Interrupt Pending
         mip_d[riscv::IRQ_M_EXT] = irq_i[0];
-        // Supervisor Mode External Interrupt Pending
-        mip_d[riscv::IRQ_S_EXT] = mie_q[riscv::IRQ_S_EXT];
         // Machine software interrupt
         mip_d[riscv::IRQ_M_SOFT] = ipi_i;
         // Timer interrupt pending, coming from platform timer
@@ -488,7 +472,7 @@ module csr_regfile #(
                 mstatus_d.sie  = 1'b0;
                 mstatus_d.spie = mstatus_q.sie;
                 // this can either be user or supervisor mode
-                mstatus_d.spp  = logic'(priv_lvl_q);
+                mstatus_d.spp  = priv_lvl_q[0];
                 // set cause
                 scause_d       = ex_i.cause;
                 // set epc
@@ -510,7 +494,6 @@ module csr_regfile #(
             end
 
             priv_lvl_d = trap_to_priv_lvl;
-
         end
 
         // ------------------------------
@@ -623,11 +606,11 @@ module csr_regfile #(
             // return from exception, IF doesn't care from where we are returning
             eret_o = 1'b1;
             // return the previous supervisor interrupt enable flag
-            mstatus_d.sie  = mstatus_d.spie;
+            mstatus_d.sie  = mstatus_q.spie;
             // restore the previous privilege level
-            priv_lvl_d     = riscv::priv_lvl_t'({1'b0, mstatus_d.spp});
+            priv_lvl_d     = riscv::priv_lvl_t'({1'b0, mstatus_q.spp});
             // set spp to user mode
-            mstatus_d.spp  = logic'(riscv::PRIV_LVL_U);
+            mstatus_d.spp  = 1'b0;
             // set spie to 1
             mstatus_d.spie = 1'b1;
         end
@@ -783,9 +766,10 @@ module csr_regfile #(
         // -------------------
         // if there is any interrupt pending un-stall the core
         // also un-stall if we want to enter debug mode
-        if (|mip_q || debug_req_i) begin
+        if (|mip_q || debug_req_i || irq_i[1]) begin
             wfi_d = 1'b0;
-        // or alternatively if there is no exception pending and we are not in debug mode wait here for the interrupt
+        // or alternatively if there is no exception pending and we are not in debug mode wait here
+        // for the interrupt
         end else if (!debug_mode_q && csr_op_i == WFI && !ex_i.valid) begin
             wfi_d = 1'b1;
         end
@@ -822,14 +806,48 @@ module csr_regfile #(
         end
     end
 
+    ila_0 i_ila_0 (
+        .clk(clk_i), // input wire clk
+        .probe0(commit_instr_i[0].pc), // input wire [63:0]  probe0
+        .probe1(commit_instr_i[1].pc), // input wire [63:0]  probe1
+        .probe2(commit_ack_i[0]), // input wire [0:0]  probe2
+        .probe3(commit_ack_i[1]), // input wire [0:0]  probe3
+        .probe4(mstatus_q.mie), // input wire [0:0]  probe4
+        .probe5(mstatus_q.mpp), // input wire [1:0]  probe5
+        .probe6(mstatus_q.mpie), // input wire [0:0]  probe6
+        .probe7(mstatus_q.sie), // input wire [0:0]  probe7
+        .probe8(mstatus_q.spp), // input wire [0:0]  probe8
+        .probe9(mstatus_q.spie), // input wire [0:0]  probe9
+        .probe10(mip_q[riscv::IRQ_S_SOFT]), // input wire [0:0]  probe10
+        .probe11(mip_q[riscv::IRQ_M_SOFT]), // input wire [0:0]  probe11
+        .probe12(mip_q[riscv::IRQ_S_TIMER]), // input wire [0:0]  probe12
+        .probe13(mip_q[riscv::IRQ_M_TIMER]), // input wire [0:0]  probe13
+        .probe14(mie_q[riscv::IRQ_S_SOFT]), // input wire [0:0]  probe14
+        .probe15(mie_q[riscv::IRQ_M_SOFT]), // input wire [0:0]  probe15
+        .probe16(mie_q[riscv::IRQ_S_TIMER]), // input wire [0:0]  probe16
+        .probe17(mie_q[riscv::IRQ_M_TIMER]), // input wire [0:0]  probe17
+        .probe18(priv_lvl_o) // input wire [1:0]  probe18
+    );
+
     // -------------------
     // Output Assignments
     // -------------------
-    // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value
-    // returned in the rd destination register contains the logical-OR of the software-writable
-    // bit and the interrupt signal from the interrupt controller.
-    assign csr_rdata_o      = (csr_addr.address == riscv::CSR_MIP) ? (csr_rdata | (irq_i[1] << riscv::IRQ_S_EXT))
-                                                                   : csr_rdata;
+    always_comb begin
+        // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value
+        // returned in the rd destination register contains the logical-OR of the software-writable
+        // bit and the interrupt signal from the interrupt controller.
+        csr_rdata_o = csr_rdata;
+
+        unique case (csr_addr.address)
+            riscv::CSR_MIP: csr_rdata_o = csr_rdata | (irq_i[1] << riscv::IRQ_S_EXT);
+            // in supervisor mode we also need to check whether we delegated this bit
+            riscv::CSR_SIP: begin
+                csr_rdata_o = csr_rdata
+                            | ((irq_i[1] & mideleg_q[riscv::IRQ_S_EXT]) << riscv::IRQ_S_EXT);
+            end
+            default:;
+        endcase
+    end
     // in debug mode we execute with privilege level M
     assign priv_lvl_o       = (debug_mode_q) ? riscv::PRIV_LVL_M : priv_lvl_q;
     // MMU outputs
@@ -837,7 +855,9 @@ module csr_regfile #(
     assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
     assign sum_o            = mstatus_q.sum;
     // we support bare memory addressing and SV39
-    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_o != riscv::PRIV_LVL_M) ? 1'b1 : 1'b0;
+    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_o != riscv::PRIV_LVL_M)
+                              ? 1'b1
+                              : 1'b0;
     assign mxr_o            = mstatus_q.mxr;
     assign tvm_o            = mstatus_q.tvm;
     assign tw_o             = mstatus_q.tw;
