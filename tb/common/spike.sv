@@ -12,6 +12,14 @@
 // Date: 3/11/2018
 // Description: Wrapped Spike Model for Tandem Verification
 
+import uvm_pkg::*;
+
+`include "uvm_macros.svh"
+
+import "DPI-C" function int spike_create(string filename, longint unsigned dram_base, int unsigned size);
+import "DPI-C" function void spike_tick(output riscv::commit_log_t commit_log);
+import "DPI-C" function void clint_tick();
+
 module spike #(
     parameter longint unsigned DramBase = 'h8000_0000,
     parameter int unsigned     Size     = 64 * 1024 * 1024 // 64 Mega Byte
@@ -20,16 +28,20 @@ module spike #(
     input logic       rst_ni,
     input logic       clint_tick_i,
     input ariane_pkg::scoreboard_entry_t [ariane_pkg::NR_COMMIT_PORTS-1:0] commit_instr_i,
-    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0] commit_ack_i
+    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0]       commit_ack_i,
+    input ariane_pkg::exception_t                                   exception_i,
+    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0][4:0]  waddr_i,
+    input logic [ariane_pkg::NR_COMMIT_PORTS-1:0][63:0] wdata_i,
+    input riscv::priv_lvl_t                             priv_lvl_i
 );
-    // Create a spike simulation object with base at dram_base and size (in bytes).
-    // Bytes must be page aligned.
-    import "DPI-C" function int spike_create(string filename, longint unsigned dram_base, int unsigned size);
-    import "DPI-C" function void spike_tick(output riscv::commit_log_t commit_log);
-    import "DPI-C" function void clint_tick();
+    static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
+
+    string binary = "";
 
     initial begin
-        void'(spike_create("/home/zarubaf/riscv/target/share/riscv-tests/benchmarks/dhrystone.riscv", DramBase, Size));
+        void'(uvcl.get_arg_value("+PRELOAD=", binary));
+        assert(binary != "") else $error("We need a preloaded binary for tandem verification");
+        void'(spike_create(binary, DramBase, Size));
     end
 
     riscv::commit_log_t commit_log;
@@ -40,8 +52,39 @@ module spike #(
                 if (commit_instr_i[i].valid && commit_ack_i[i]) begin
                     spike_tick(commit_log);
                     instr = (commit_log.instr[1:0] != 2'b11) ? {16'b0, commit_log.instr[15:0]} : commit_log.instr;
-                    $display("\x1B[32m%h %h\x1B[0m", commit_log.pc, instr);
-                    $display("\x1B[37m%h %h\x1B[0m", commit_instr_i[i].pc, commit_instr_i[i].ex.tval[31:0]);
+                    // $display("\x1B[32m%h %h\x1B[0m", commit_log.pc, instr);
+                    // $display("%p", commit_log);
+                    // $display("\x1B[37m%h %h\x1B[0m", commit_instr_i[i].pc, commit_instr_i[i].ex.tval[31:0]);
+                    assert (commit_log.pc === commit_instr_i[i].pc) else begin
+                        $warning("\x1B[33m[Tandem] PCs Mismatch\x1B[0m");
+                    end
+                    assert (commit_log.was_exception === exception_i.valid) else begin
+                        $warning("\x1B[33m[Tandem] Exception not detected\x1B[0m");
+                         $display("Spike: %p", commit_log);
+                         $display("Ariane: %p", commit_instr_i[i]);
+                    end
+                    assert (commit_log.priv === priv_lvl_i) else begin
+                        $warning("\x1B[33m[Tandem] Privilege level mismatches\x1B[0m");
+                        $display("\x1B[37m @ PC %h\x1B[0m", commit_log.pc);
+                    end
+                    if (!exception_i.valid) begin
+                        assert (instr === commit_instr_i[i].ex.tval) else begin
+                            $warning("\x1B[33m[Tandem] Decoded instructions mismatch\x1B[0m");
+                            $display("\x1B[37m%h === %h @ PC %h\x1B[0m", commit_instr_i[i].ex.tval, instr, commit_log.pc);
+                        end
+                        // TODO(zarubaf): Adapt for floating point instructions
+                        if (commit_instr_i[i].rd != 0) begin
+                            // check the return value
+                            // $display("\x1B[37m%h === %h\x1B[0m", commit_instr_i[i].rd, commit_log.rd);
+                            assert (waddr_i[i] === commit_log.rd) else begin
+                                $warning("\x1B[33m[Tandem] Destination register mismatches\x1B[0m");
+                            end
+                            assert (wdata_i[i] === commit_log.data) else begin
+                                $warning("\x1B[33m[Tandem] Write back data mismatches\x1B[0m");
+                                $display("\x1B[37m%h === %h @ PC %h\x1B[0m", wdata_i[i], commit_log.data, commit_log.pc);
+                            end
+                        end
+                    end
                 end
             end
         end

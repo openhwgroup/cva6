@@ -54,13 +54,22 @@ module ariane_tb;
         .exit_o
     );
 
+    // `ifdef TANDEM
+    // initial $display("Tandem defined",);
     spike i_spike (
         .clk_i,
         .rst_ni,
         .clint_tick_i   ( dut.i_clint.rtc_i                   ),
         .commit_instr_i ( dut.i_ariane.commit_instr_id_commit ),
-        .commit_ack_i   ( dut.i_ariane.commit_ack             )
+        .commit_ack_i   ( dut.i_ariane.commit_ack             ),
+        .exception_i    ( dut.i_ariane.ex_commit              ),
+        .waddr_i        ( dut.i_ariane.waddr_commit_id        ),
+        .wdata_i        ( dut.i_ariane.wdata_commit_id        ),
+        .priv_lvl_i     ( dut.i_ariane.priv_lvl               )
     );
+    // `else
+    //     initial $display("Tandem not defined",);
+    // `endif
 
     // Clock process
     initial begin
@@ -110,12 +119,12 @@ module ariane_tb;
         byte buffer[];
         void'(uvcl.get_arg_value("+PRELOAD=", binary));
 
-        binary = "/home/zarubaf/riscv/target/share/riscv-tests/benchmarks/dhrystone.riscv";
-
         if (binary != "") begin
             `uvm_info( "Core Test", $sformatf("Preloading ELF: %s", binary), UVM_LOW)
 
             void'(read_elf(binary));
+            // wait with preloading, otherwise randomization will overwrite the existing value
+            wait(rst_ni);
 
             // while there are more sections to process
             while (get_section(address, len)) begin

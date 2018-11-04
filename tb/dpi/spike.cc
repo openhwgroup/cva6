@@ -29,8 +29,6 @@ commit_log_t commit_log_val;
 #define SHT_GROUP 0x11
 
 void write_spike_mem (reg_t address, size_t len, uint8_t* buf) {
-    fprintf(stderr, "Storing: %llx\n", address);
-
     memcpy(mem[0].second->contents() + (address & ~(1 << 31)), buf,len);
 }
 
@@ -126,6 +124,7 @@ extern "C" void spike_tick(commit_log_t* commit_log)
   commit_log->rd = commit_log_val.rd;
   commit_log->data = commit_log_val.data;
   commit_log->instr = commit_log_val.instr;
+  commit_log->was_exception = commit_log_val.was_exception;
 }
 
 extern "C" void clint_tick()

@@ -34,6 +34,7 @@ bool uart_t::load(reg_t addr, size_t len, uint8_t* bytes)
               if (lcr & 0x80) {
                 bytes[0] = dll;
               } else {
+                // TODO(zarubaf)
                 // printf("%c", bytes[0]);
               }
               break;

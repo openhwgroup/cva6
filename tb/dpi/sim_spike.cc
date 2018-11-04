@@ -57,27 +57,14 @@ commit_log_t sim_spike_t::tick(size_t n)
   int xlen = procs[0]->get_state()->last_inst_xlen;
   int flen = procs[0]->get_state()->last_inst_flen;
 
-  // fprintf(stderr, "%1d ", priv);
-  // fprintf(stderr, "%lx ", pc);
-  // fprintf(stderr, "%lx ", xlen);
-  // fprintf(stderr, "%1d ", fp);
-  // fprintf(stderr, "%c%d ", fp ? 'f' : 'x', rd);
-  if (procs[0]->get_state()->rd) {
-    bool fp = procs[0]->get_state()->rd & 1;
-    int rd = procs[0]->get_state()->rd >> 1;
-    int size = fp ? flen : xlen;
-    // fprintf(stderr, "%c%2d ", fp ? 'f' : 'x', rd);
-    // fprintf(stderr, "0x%016" PRIx64 "\n", reg.data.v[0]);
-    // fprintf(stderr, "\n");
-  } else {
-    // fprintf(stderr, "\n");
-  }
   commit_log.priv = priv;
   commit_log.pc = pc;
-  commit_log.is_fp = procs[0]->get_state()->rd & 1;
-  commit_log.rd = procs[0]->get_state()->rd >> 2;
+  commit_log.is_fp = reg.addr & 1;
+  commit_log.rd = reg.addr >> 1;
   commit_log.data = reg.data.v[0];
   commit_log.instr = procs[0]->get_state()->last_insn;
+  commit_log.was_exception = procs[0]->get_state()->was_exception;
+
   return commit_log;
 }
 

@@ -143,8 +143,8 @@ struct state_t
   reg_t last_inst_priv;
   int last_inst_xlen;
   int last_inst_flen;
-  reg_t rd;
   uint32_t last_insn;
+  bool     was_exception;
 #endif
 };
 

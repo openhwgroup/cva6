@@ -445,6 +445,7 @@ package riscv;
         byte rd;
         longint unsigned data;
         int unsigned instr;
+        byte was_exception;
     } commit_log_t;
 
 endpackage

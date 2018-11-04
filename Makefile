@@ -128,6 +128,29 @@ list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 riscv-torture-dir    := tmp/riscv-torture
 riscv-torture-bin    := java -Xmx1G -Xss8M -XX:MaxPermSize=128M -jar sbt-launch.jar
 
+ifdef batch-mode
+    questa-flags += -c
+    questa-cmd   := -do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
+else
+    questa-cmd   := -do " log -r /*; run -all;"
+endif
+# we want to preload the memories
+ifdef preload
+    questa-cmd += +PRELOAD=$(preload)
+    elf-bin = none
+    # tandem verify with spike, this requires pre-loading
+    ifdef tandem
+        compile_flag += +define+TANDEM
+        questa-cmd += -gblso tb/riscv-isa-sim/install/lib/libriscv.so
+    endif
+endif
+# remote bitbang is enabled
+ifdef rbb
+    questa-cmd += +jtag_rbb_enable=1
+else
+    questa-cmd += +jtag_rbb_enable=0
+endif
+
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
@@ -163,18 +186,9 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 
 
 sim: build
-	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}    \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0        \
-	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -gblso tb/riscv-isa-sim/install/lib/libriscv.so  -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*;"            \
-    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)$(riscv-test) ++$(target-options)
-
-simc: build
-	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
-	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -gblso tb/riscv-isa-sim/install/lib/libriscv.so -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*;"                       \
-    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)$(riscv-test) ++$(target-options)
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 
 $(riscv-asm-tests): build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \

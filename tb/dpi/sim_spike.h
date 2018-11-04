@@ -25,6 +25,7 @@ typedef struct
   char     rd;
   uint64_t data;
   uint32_t instr;
+  char     was_exception;
 } commit_log_t;
 
 // this class encapsulates the processors and memory in a RISC-V machine.
