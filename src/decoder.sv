@@ -23,6 +23,7 @@ import ariane_pkg::*;
 module decoder (
     input  logic [63:0]        pc_i,                    // PC from IF
     input  logic               is_compressed_i,         // is a compressed instruction
+    input  logic [15:0]        compressed_instr_i,      // compressed form of instruction
     input  logic               is_illegal_i,            // illegal compressed instruction
     input  logic [31:0]        instruction_i,           // instruction from IF
     input  branchpredict_sbe_t branch_predict_i,
@@ -552,7 +553,7 @@ module decoder (
         if (~ex_i.valid) begin
             // if we didn't already get an exception save the instruction here as we may need it
             // in the commit stage if we got a access exception to one of the CSR registers
-            instruction_o.ex.tval  = {32'b0, instruction_i};
+            instruction_o.ex.tval  = (is_compressed_i) ? {48'b0, compressed_instr_i} : {32'b0, instruction_i};
             // instructions which will throw an exception are marked as valid
             // e.g.: they can be committed anytime and do not need to wait for any functional unit
             // check here if we decoded an invalid instruction or if the compressed decoder already decoded

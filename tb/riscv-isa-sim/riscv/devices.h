@@ -82,7 +82,15 @@ class uart_t : public abstract_device_t {
   bool load(reg_t addr, size_t len, uint8_t* bytes);
   bool store(reg_t addr, size_t len, const uint8_t* bytes);
  private:
-  std::vector<char> procs;
+  uint8_t ier;
+  uint8_t dll;
+  uint8_t dlm;
+  uint8_t lcr;
+  uint8_t lsr;
+  uint8_t scr;
+  uint8_t msr;
+  uint8_t mcr;
+  bool fifo_enabled;
 };
 
 #endif

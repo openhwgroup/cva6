@@ -33,14 +33,15 @@ module spike #(
     end
 
     riscv::commit_log_t commit_log;
-
+    logic [31:0] instr;
     always_ff @(posedge clk_i) begin
         if (rst_ni) begin
             for (int i = 0; i < ariane_pkg::NR_COMMIT_PORTS; i++) begin
                 if (commit_instr_i[i].valid && commit_ack_i[i]) begin
                     spike_tick(commit_log);
-                    $display("\x1B[32m%h %h\x1B[0m", commit_log.pc, commit_log.instr);
-                    $display("\x1B[37m%h %h\x1B[0m", commit_instr_i[i].pc, commit_instr_i[i].ex.tval);
+                    instr = (commit_log.instr[1:0] != 2'b11) ? {16'b0, commit_log.instr[15:0]} : commit_log.instr;
+                    $display("\x1B[32m%h %h\x1B[0m", commit_log.pc, instr);
+                    $display("\x1B[37m%h %h\x1B[0m", commit_instr_i[i].pc, commit_instr_i[i].ex.tval[31:0]);
                 end
             end
         end

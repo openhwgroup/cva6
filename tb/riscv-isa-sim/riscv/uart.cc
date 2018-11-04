@@ -1,49 +1,126 @@
 #include "devices.h"
 #include "processor.h"
 
+#define RBR  0
+#define THR  0
+#define IER  1
+#define IIR  2
+#define FCR  2
+#define LCR  3
+#define MCR  4
+#define LSR  5
+#define MSR  6
+#define SCR  7
+#define DLL  0
+#define DLM  1
+
+#define THRE 5 // transmit holding register empty
+#define TEMT 6 // transmit holding register empty
+
 uart_t::uart_t()
 {
 }
 
-
 bool uart_t::load(reg_t addr, size_t len, uint8_t* bytes)
 {
-  // if (addr >= MSIP_BASE && addr + len <= MSIP_BASE + procs.size()*sizeof(msip_t)) {
-  //   std::vector<msip_t> msip(procs.size());
-  //   for (size_t i = 0; i < procs.size(); ++i)
-  //     msip[i] = !!(procs[i]->state.mip & MIP_MSIP);
-  //   memcpy(bytes, (uint8_t*)&msip[0] + addr - MSIP_BASE, len);
-  // } else if (addr >= MTIMECMP_BASE && addr + len <= MTIMECMP_BASE + procs.size()*sizeof(mtimecmp_t)) {
-  //   memcpy(bytes, (uint8_t*)&mtimecmp[0] + addr - MTIMECMP_BASE, len);
-  // } else if (addr >= MTIME_BASE && addr + len <= MTIME_BASE + sizeof(mtime_t)) {
-  //   memcpy(bytes, (uint8_t*)&mtime + addr - MTIME_BASE, len);
-  // } else {
-  //   return false;
-  // }
+  // we do not support unaligned stores
+  if ((addr & 0x3) != 0) {
+    return false;
+  }
+
+  switch ((addr >> 0x2) & 0x7) {
+    case THR:
+              // access DLL
+              if (lcr & 0x80) {
+                bytes[0] = dll;
+              } else {
+                // printf("%c", bytes[0]);
+              }
+              break;
+    case IER:
+              // access DLM
+              if (lcr & 0x80) {
+                bytes[0] = dlm;
+              } else {
+                bytes[0] = ier;
+              }
+              break;
+    case IIR:
+              if (fifo_enabled) {
+                bytes[0] = 0xC0;
+              } else {
+                bytes[0] = 0x00;
+              }
+              break;
+    case LCR:
+              bytes[0] = lcr;
+              break;
+    case MCR:
+              bytes[0] = mcr;
+              break;
+    case LSR:
+              bytes[0] = lsr | (1 << THRE) | (1 << TEMT);
+              break;
+    case MSR:
+              bytes[0] = msr;
+              break;
+    case SCR:
+              bytes[0] = scr;
+              break;
+  }
+
   return true;
 }
 
 bool uart_t::store(reg_t addr, size_t len, const uint8_t* bytes)
 {
-  // if (addr >= MSIP_BASE && addr + len <= MSIP_BASE + procs.size()*sizeof(msip_t)) {
-  //   std::vector<msip_t> msip(procs.size());
-  //   std::vector<msip_t> mask(procs.size(), 0);
-  //   memcpy((uint8_t*)&msip[0] + addr - MSIP_BASE, bytes, len);
-  //   memset((uint8_t*)&mask[0] + addr - MSIP_BASE, 0xff, len);
-  //   for (size_t i = 0; i < procs.size(); ++i) {
-  //     if (!(mask[i] & 0xFF)) continue;
-  //     procs[i]->state.mip &= ~MIP_MSIP;
-  //     if (!!(msip[i] & 1))
-  //       procs[i]->state.mip |= MIP_MSIP;
-  //   }
-  // } else if (addr >= MTIMECMP_BASE && addr + len <= MTIMECMP_BASE + procs.size()*sizeof(mtimecmp_t)) {
-  //   memcpy((uint8_t*)&mtimecmp[0] + addr - MTIMECMP_BASE, bytes, len);
-  // } else if (addr >= MTIME_BASE && addr + len <= MTIME_BASE + sizeof(mtime_t)) {
-  //   memcpy((uint8_t*)&mtime + addr - MTIME_BASE, bytes, len);
-  // } else {
-  //   return false;
-  // }
-  // increment(0);
+
+  // we do not support unaligned stores
+  if ((addr & 0x3) != 0) {
+    return false;
+  }
+
+  switch ((addr >> 0x2) & 0x7) {
+    case THR:
+              // access DLL
+              if (lcr & 0x80) {
+                dll = bytes[0];
+              } else {
+                printf("%c", bytes[0]);
+              }
+              break;
+    case IER:
+              // access DLM
+              if (lcr & 0x80) {
+                dlm = bytes[0];
+              } else {
+                ier = bytes[0] & 0xF;
+              }
+              break;
+    case FCR:
+              if (bytes[0] & 0x1) {
+                fifo_enabled = true;
+              } else {
+                fifo_enabled = false;
+              }
+              break;
+    case LCR:
+              lcr = bytes[0];
+              break;
+    case MCR:
+              mcr = bytes[0] & 0x1F;
+              break;
+    case LSR:
+              lsr = bytes[0];
+              break;
+    case MSR:
+              msr = bytes[0];
+              break;
+    case SCR:
+              scr = bytes[0];
+              break;
+  }
+
   return true;
 }
 
