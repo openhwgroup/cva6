@@ -359,8 +359,6 @@ module csr_regfile #(
 
                 riscv::CSR_MSTATUS: begin
                     mstatus_d      = csr_wdata;
-                    mstatus_d.sxl  = riscv::XLEN_64;
-                    mstatus_d.uxl  = riscv::XLEN_64;
                     // hardwired zero registers
                     mstatus_d.sd   = 1'b0;
                     mstatus_d.xs   = 2'b0;
@@ -437,6 +435,10 @@ module csr_regfile #(
                 default: update_access_exception = 1'b1;
             endcase
         end
+
+        mstatus_d.sxl  = riscv::XLEN_64;
+        mstatus_d.uxl  = riscv::XLEN_64;
+
         // ---------------------
         // External Interrupts
         // ---------------------
@@ -481,7 +483,8 @@ module csr_regfile #(
                 // set epc
                 sepc_d         = pc_i;
                 // set mtval or stval
-                stval_d        = ex_i.tval;
+                stval_d        = (ariane_pkg::ZERO_TVAL_ON_ILLEGAL_INSTR
+                                  && ex_i.cause == riscv::ILLEGAL_INSTR) ? '0 : ex_i.tval;
             // trap to machine mode
             end else begin
                 // update mstatus
@@ -493,7 +496,8 @@ module csr_regfile #(
                 // set epc
                 mepc_d         = pc_i;
                 // set mtval or stval
-                mtval_d        = ex_i.tval;
+                mtval_d        = (ariane_pkg::ZERO_TVAL_ON_ILLEGAL_INSTR
+                                  && ex_i.cause == riscv::ILLEGAL_INSTR) ? '0 : ex_i.tval;
             end
 
             priv_lvl_d = trap_to_priv_lvl;
@@ -809,28 +813,28 @@ module csr_regfile #(
         end
     end
 
-    ila_0 i_ila_0 (
-        .clk(clk_i), // input wire clk
-        .probe0(commit_instr_i[0].pc), // input wire [63:0]  probe0
-        .probe1(commit_instr_i[1].pc), // input wire [63:0]  probe1
-        .probe2(commit_ack_i[0]), // input wire [0:0]  probe2
-        .probe3(commit_ack_i[1]), // input wire [0:0]  probe3
-        .probe4(mstatus_q.mie), // input wire [0:0]  probe4
-        .probe5(mstatus_q.mpp), // input wire [1:0]  probe5
-        .probe6(mstatus_q.mpie), // input wire [0:0]  probe6
-        .probe7(mstatus_q.sie), // input wire [0:0]  probe7
-        .probe8(mstatus_q.spp), // input wire [0:0]  probe8
-        .probe9(mstatus_q.spie), // input wire [0:0]  probe9
-        .probe10(mip_q[riscv::IRQ_S_SOFT]), // input wire [0:0]  probe10
-        .probe11(mip_q[riscv::IRQ_M_SOFT]), // input wire [0:0]  probe11
-        .probe12(mip_q[riscv::IRQ_S_TIMER]), // input wire [0:0]  probe12
-        .probe13(mip_q[riscv::IRQ_M_TIMER]), // input wire [0:0]  probe13
-        .probe14(mie_q[riscv::IRQ_S_SOFT]), // input wire [0:0]  probe14
-        .probe15(mie_q[riscv::IRQ_M_SOFT]), // input wire [0:0]  probe15
-        .probe16(mie_q[riscv::IRQ_S_TIMER]), // input wire [0:0]  probe16
-        .probe17(mie_q[riscv::IRQ_M_TIMER]), // input wire [0:0]  probe17
-        .probe18(priv_lvl_o) // input wire [1:0]  probe18
-    );
+    // ila_0 i_ila_0 (
+    //     .clk(clk_i), // input wire clk
+    //     .probe0(commit_instr_i[0].pc), // input wire [63:0]  probe0
+    //     .probe1(commit_instr_i[1].pc), // input wire [63:0]  probe1
+    //     .probe2(commit_ack_i[0]), // input wire [0:0]  probe2
+    //     .probe3(commit_ack_i[1]), // input wire [0:0]  probe3
+    //     .probe4(mstatus_q.mie), // input wire [0:0]  probe4
+    //     .probe5(mstatus_q.mpp), // input wire [1:0]  probe5
+    //     .probe6(mstatus_q.mpie), // input wire [0:0]  probe6
+    //     .probe7(mstatus_q.sie), // input wire [0:0]  probe7
+    //     .probe8(mstatus_q.spp), // input wire [0:0]  probe8
+    //     .probe9(mstatus_q.spie), // input wire [0:0]  probe9
+    //     .probe10(mip_q[riscv::IRQ_S_SOFT]), // input wire [0:0]  probe10
+    //     .probe11(mip_q[riscv::IRQ_M_SOFT]), // input wire [0:0]  probe11
+    //     .probe12(mip_q[riscv::IRQ_S_TIMER]), // input wire [0:0]  probe12
+    //     .probe13(mip_q[riscv::IRQ_M_TIMER]), // input wire [0:0]  probe13
+    //     .probe14(mie_q[riscv::IRQ_S_SOFT]), // input wire [0:0]  probe14
+    //     .probe15(mie_q[riscv::IRQ_M_SOFT]), // input wire [0:0]  probe15
+    //     .probe16(mie_q[riscv::IRQ_S_TIMER]), // input wire [0:0]  probe16
+    //     .probe17(mie_q[riscv::IRQ_M_TIMER]), // input wire [0:0]  probe17
+    //     .probe18(priv_lvl_o) // input wire [1:0]  probe18
+    // );
 
     // -------------------
     // Output Assignments

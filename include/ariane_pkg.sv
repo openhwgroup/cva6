@@ -70,6 +70,8 @@ package ariane_pkg;
     localparam bit ENABLE_CYCLE_COUNT = 1'b0;
     // mark WIF as nop
     localparam bit ENABLE_WFI = 1'b0;
+    // this is Spike behaviour
+    localparam bit ZERO_TVAL_ON_ILLEGAL_INSTR = 1'b1;
 
     // read mask for SSTATUS over MMSTATUS
     localparam logic [63:0] SMODE_STATUS_READ_MASK = riscv::SSTATUS_UIE
