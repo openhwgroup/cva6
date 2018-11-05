@@ -23,6 +23,10 @@ build/
 *.log
 *.out
 *.jou
+*.o
+uart
 work-ver/*
 fpga/work-fpga
 stdout/
+work-dpi/
+tb/riscv-isa-sim/

@@ -1,5 +1,3 @@
-// #include "elfloader.h"
-
 #include <fesvr/elf.h>
 #include <fesvr/memif.h>
 
@@ -111,7 +109,6 @@ extern "C" void read_elf(const char* filename) {
       if ((sh[i].sh_type & SHT_GROUP) && strcmp(shstrtab + sh[i].sh_name, ".strtab") != 0 && strcmp(shstrtab + sh[i].sh_name, ".shstrtab") != 0) \
       assert(strnlen(shstrtab + sh[i].sh_name, max_len) < max_len); \
       if (sh[i].sh_type & SHT_PROGBITS) continue; \
-      assert(size >= sh[i].sh_offset + sh[i].sh_size); \
       if (strcmp(shstrtab + sh[i].sh_name, ".strtab") == 0) \
         strtabidx = i; \
       if (strcmp(shstrtab + sh[i].sh_name, ".symtab") == 0) \

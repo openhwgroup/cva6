@@ -76,7 +76,7 @@ $ work-ver/Variane_testharness $RISCV/riscv64-unknown-elf/bin/pk hello.elf
 
 If you want to use QuestaSim to run it you can use the following command:
 ```
-$ make simc riscv-test-dir=$RISCV/riscv64-unknown-elf/bin riscv-test=pk target-options=hello.elf
+$ make sim riscv-test-dir=$RISCV/riscv64-unknown-elf/bin riscv-test=pk target-options=hello.elf  batch-mode=1
 ```
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
@@ -139,10 +139,10 @@ The core has been developed with a full licensed version of QuestaSim. If you ha
 
 To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the `tmp/risc-tests/build/isa` folder:
 ```
-$ make sim riscv-test=tmp/risc-tests/build/isa/rv64ui-p-sraw
+$ make sim riscv-test=tmp/risc-tests/build/isa/rv64ui-p-sraw make
 ```
 
-If you call `simc` instead of `sim` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
+If you call `sim` with `batch-mode=1` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
 
 ### CI Testsuites and Randomized Constrained Testing with Torture
 
@@ -185,6 +185,17 @@ $ ../configure --prefix=$RISCV --with-fesvr=$RISCV --enable-commitlog
 $ make
 $ [sudo] make install
 ```
+
+### Tandem Verification with Spike
+
+```
+$ make sim preload=/home/zarubaf/Downloads/riscv-tests/build/benchmarks/dhrystone.riscv tandem=1
+```
+There are a couple of limitations:
+
+- Memories should be initialized to zero.
+- UART needs to be replaced by a mock uart which exhibits always ready behavior.
+- There is no end of test signaling at the moment. You are supposed to kill the simulation when sufficiently long run.
 
 # Contributing
 

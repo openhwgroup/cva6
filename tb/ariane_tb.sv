@@ -27,11 +27,11 @@ import "DPI-C" context function byte read_section(input longint address, inout b
 
 module ariane_tb;
 
-    // static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
+    static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
     localparam int unsigned CLOCK_PERIOD = 20ns;
-    // toggle with half the clock period
-    localparam int unsigned RTC_CLOCK_PERIOD = CLOCK_PERIOD/2;
+    // toggle with RTC period
+    localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
 
     localparam NUM_WORDS = 2**25;
     logic clk_i;
@@ -43,6 +43,8 @@ module ariane_tb;
 
     logic [31:0] exit_o;
 
+    string binary = "";
+
     ariane_testharness #(
         .NUM_WORDS ( NUM_WORDS )
     ) dut (
@@ -51,6 +53,23 @@ module ariane_tb;
         .rtc_i,
         .exit_o
     );
+
+    // `ifdef TANDEM
+    // initial $display("Tandem defined",);
+    spike i_spike (
+        .clk_i,
+        .rst_ni,
+        .clint_tick_i   ( rtc_i                               ),
+        .commit_instr_i ( dut.i_ariane.commit_instr_id_commit ),
+        .commit_ack_i   ( dut.i_ariane.commit_ack             ),
+        .exception_i    ( dut.i_ariane.ex_commit              ),
+        .waddr_i        ( dut.i_ariane.waddr_commit_id        ),
+        .wdata_i        ( dut.i_ariane.wdata_commit_id        ),
+        .priv_lvl_i     ( dut.i_ariane.priv_lvl               )
+    );
+    // `else
+    //     initial $display("Tandem not defined",);
+    // `endif
 
     // Clock process
     initial begin
@@ -72,6 +91,7 @@ module ariane_tb;
 
     initial begin
         forever begin
+            rtc_i = 1'b0;
             #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b1;
             #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b0;
         end
@@ -92,39 +112,38 @@ module ariane_tb;
         end
     end
 
+    // for faster simulation we can directly preload the ELF
+    // Note that we are loosing the capabilities to use risc-fesvr though
     initial begin
-        automatic string BINARY = "/scratch/zarubaf/ariane/fpga/bbl";
         automatic logic [7:0][7:0] mem_row;
         longint address, len;
         byte buffer[];
-        `uvm_info( "Core Test", "Zeroing memory", UVM_LOW)
+        void'(uvcl.get_arg_value("+PRELOAD=", binary));
 
-        // avoid X pesimism
-        for (int i = 0; i < NUM_WORDS; i++) begin
-            `MAIN_MEM(i) = '0;
-        end
+        if (binary != "") begin
+            `uvm_info( "Core Test", $sformatf("Preloading ELF: %s", binary), UVM_LOW)
 
-        `uvm_info( "Core Test", $sformatf("Loading ELF: %s", BINARY), UVM_LOW)
+            void'(read_elf(binary));
+            // wait with preloading, otherwise randomization will overwrite the existing value
+            wait(rst_ni);
 
-        void'(read_elf(BINARY));
+            // while there are more sections to process
+            while (get_section(address, len)) begin
+                `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
+                buffer = new [len];
+                void'(read_section(address, buffer));
+                // preload memories
+                // 64-bit
+                for (int i = 0; i < buffer.size()/8; i++) begin
+                    mem_row = '0;
+                    for (int j = 0; j < 8; j++) begin
+                        mem_row[j] = buffer[i*8 + j];
+                    end
 
-        // while there are more sections to process
-        while (get_section(address, len)) begin
-            `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
-            buffer = new [len];
-            void'(read_section(address, buffer));
-            // preload memories
-            // 64-bit
-            for (int i = 0; i < buffer.size()/8; i++) begin
-                mem_row = '0;
-                for (int j = 0; j < 8; j++) begin
-                    mem_row[j] = buffer[i*8 + j];
+                    `MAIN_MEM((address[28:0] >> 3) + i) = mem_row;
                 end
-
-                `MAIN_MEM((address[28:0] >> 3) + i) = mem_row;
             end
         end
-
     end
 
 endmodule

@@ -19,6 +19,7 @@ module ariane_testharness #(
     parameter int unsigned AXI_USER_WIDTH    = 1,
     parameter int unsigned AXI_ADDRESS_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH    = 64,
+    parameter bit          InclSimDTM        = 1'b0,
     parameter int unsigned NUM_WORDS         = 2**25          // memory size
 )(
     input  logic                           clk_i,
@@ -142,20 +143,27 @@ module ariane_testharness #(
     // Converts to DPI calls
     logic [1:0] debug_req_bits_op;
     assign dmi_req.op = dm::dtm_op_t'(debug_req_bits_op);
-    SimDTM i_SimDTM (
-        .clk                  ( clk_i                ),
-        .reset                ( ~rst_ni              ),
-        .debug_req_valid      ( dmi_req_valid        ),
-        .debug_req_ready      ( debug_req_ready      ),
-        .debug_req_bits_addr  ( dmi_req.addr         ),
-        .debug_req_bits_op    ( debug_req_bits_op    ),
-        .debug_req_bits_data  ( dmi_req.data         ),
-        .debug_resp_valid     ( dmi_resp_valid       ),
-        .debug_resp_ready     ( dmi_resp_ready       ),
-        .debug_resp_bits_resp ( debug_resp.resp      ),
-        .debug_resp_bits_data ( debug_resp.data      ),
-        .exit                 ( dmi_exit             )
-    );
+
+    if (InclSimDTM) begin
+        SimDTM i_SimDTM (
+            .clk                  ( clk_i                ),
+            .reset                ( ~rst_ni              ),
+            .debug_req_valid      ( dmi_req_valid        ),
+            .debug_req_ready      ( debug_req_ready      ),
+            .debug_req_bits_addr  ( dmi_req.addr         ),
+            .debug_req_bits_op    ( debug_req_bits_op    ),
+            .debug_req_bits_data  ( dmi_req.data         ),
+            .debug_resp_valid     ( dmi_resp_valid       ),
+            .debug_resp_ready     ( dmi_resp_ready       ),
+            .debug_resp_bits_resp ( debug_resp.resp      ),
+            .debug_resp_bits_data ( debug_resp.data      ),
+            .exit                 ( dmi_exit             )
+        );
+    end else begin
+        assign dmi_req_valid = '0;
+        assign debug_req_bits_op = '0;
+        assign dmi_exit = 1'b0;
+    end
 
     // debug module
     dm_top #(
@@ -298,16 +306,6 @@ module ariane_testharness #(
     // ---------------
     logic ipi;
     logic timer_irq;
-    logic rtc;
-
-    // divide clock by two
-    always_ff @(posedge clk_i or negedge ndmreset_n) begin
-      if (~ndmreset_n) begin
-        rtc <= 0;
-      end else begin
-        rtc <= rtc ^ 1'b1;
-      end
-    end
 
     clint #(
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
@@ -318,7 +316,7 @@ module ariane_testharness #(
         .clk_i       ( clk_i                     ),
         .rst_ni      ( ndmreset_n                ),
         .slave       ( master[ariane_soc::CLINT] ),
-        .rtc_i       ( rtc                       ),
+        .rtc_i       ( rtc_i                     ),
         .timer_irq_o ( timer_irq                 ),
         .ipi_o       ( ipi                       )
     );

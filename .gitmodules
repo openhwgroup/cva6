@@ -22,3 +22,10 @@
 [submodule "fpga/src/apb_node"]
 	path = fpga/src/apb_node
 	url = git@github.com:pulp-platform/apb_node.git
+[submodule "fpga/src/axi2apb"]
+    path = fpga/src/axi2apb
+    url = git@github.com:pulp-platform/axi2apb.git
+[submodule "fpga/src/axi_slice"]
+    path = fpga/src/axi_slice
+    url = https://github.com/pulp-platform/axi_slice.git
+

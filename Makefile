@@ -46,6 +46,7 @@ util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_pkg.sv \
         src/util/instruction_tracer_if.sv  \
         src/util/cluster_clock_gating.sv   \
+        tb/common/mock_uart.sv             \
         src/util/sram.sv
 util := $(addprefix $(root-dir), $(util))
 # Test packages
@@ -55,6 +56,9 @@ test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
 dpi := $(patsubst tb/dpi/%.cc,${dpi-library}/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
+CFLAGS := -I$(QUESTASIM_HOME)/include         \
+          -Itb/riscv-isa-sim/install/include/spike  \
+          -std=c++11 -I../tb/dpi
 
 # this list contains the standalone components
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
@@ -82,6 +86,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/cdc_2phase.sv                             \
         src/common_cells/src/spill_register.sv                         \
         src/common_cells/src/sync_wedge.sv                             \
+        src/common_cells/src/edge_detect.sv                            \
         src/common_cells/src/fifo_v2.sv                                \
         src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
@@ -90,6 +95,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/rstgen_bypass.sv                          \
         tb/ariane_testharness.sv                                       \
         tb/common/uart.sv 		                                       \
+        tb/common/spike.sv                                             \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv
 src := $(addprefix $(root-dir), $(src))
@@ -124,6 +130,29 @@ list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 riscv-torture-dir    := tmp/riscv-torture
 riscv-torture-bin    := java -Xmx1G -Xss8M -XX:MaxPermSize=128M -jar sbt-launch.jar
 
+ifdef batch-mode
+    questa-flags += -c
+    questa-cmd   := -do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
+else
+    questa-cmd   := -do " log -r /*; run -all;"
+endif
+# we want to preload the memories
+ifdef preload
+    questa-cmd += +PRELOAD=$(preload)
+    elf-bin = none
+    # tandem verify with spike, this requires pre-loading
+    ifdef tandem
+        compile_flag += +define+TANDEM
+        questa-cmd += -gblso tb/riscv-isa-sim/install/lib/libriscv.so
+    endif
+endif
+# remote bitbang is enabled
+ifdef rbb
+    questa-cmd += +jtag_rbb_enable=1
+else
+    questa-cmd += +jtag_rbb_enable=0
+endif
+
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
@@ -150,7 +179,7 @@ $(library):
 # compile DPIs
 $(dpi-library)/%.o: tb/dpi/%.cc $(dpi_hdr)
 	mkdir -p $(dpi-library)
-	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic -I$(QUESTASIM_HOME)/include -o $@ $<
+	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic $(CFLAGS) -c $< -o $@
 
 $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
@@ -159,18 +188,9 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 
 
 sim: build
-	vsim${questa_version} +permissive -64 -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case}    \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug  +jtag_rbb_enable=0        \
-	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*; run -all; exit"            \
-    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)$(riscv-test) ++$(target-options)
-
-simc: build
-	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) "+UVM_VERBOSITY=LOW" -coverage -classdebug +jtag_rbb_enable=0         \
-	$(QUESTASIM_FLAGS)                                                                                            \
-	-gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi -do "log -r /*; run -all; exit"                       \
-    ${top_level}_optimized +permissive-off ++$(riscv-test-dir)$(riscv-test) ++$(target-options)
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 
 $(riscv-asm-tests): build
 	vsim${questa_version} +permissive -64 -c -lib ${library} +max-cycles=$(max_cycles) +UVM_TESTNAME=${test_case} \
@@ -221,7 +241,7 @@ verilate_command := $(verilator)                                                
                     -Wno-style                                                             \
                     -Wno-lint                                                              \
                     $(if $(DEBUG),--trace-structs --trace,)                                \
-                    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
+                    -LDFLAGS "-lfesvr" -CFLAGS $(CFLAGS) -Wall --cc  --vpi                 \
                     $(list_incdir) --top-module ariane_testharness                         \
                     --Mdir $(ver-library) -O3                                              \
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc

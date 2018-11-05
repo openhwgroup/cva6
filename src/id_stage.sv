@@ -82,14 +82,15 @@ module id_stage (
     // 3. Decode and emit instruction to issue stage
     // ---------------------------------------------------------
     decoder decoder_i (
-        .pc_i                    ( fetch_entry.address         ),
-        .is_compressed_i         ( is_compressed               ),
-        .instruction_i           ( instruction                 ),
-        .branch_predict_i        ( fetch_entry.branch_predict  ),
-        .is_illegal_i            ( is_illegal                  ),
-        .ex_i                    ( fetch_entry.ex              ),
-        .instruction_o           ( decoded_instruction         ),
-        .is_control_flow_instr_o ( is_control_flow_instr       ),
+        .pc_i                    ( fetch_entry.address           ),
+        .is_compressed_i         ( is_compressed                 ),
+        .compressed_instr_i      ( fetch_entry.instruction[15:0] ),
+        .instruction_i           ( instruction                   ),
+        .branch_predict_i        ( fetch_entry.branch_predict    ),
+        .is_illegal_i            ( is_illegal                    ),
+        .ex_i                    ( fetch_entry.ex                ),
+        .instruction_o           ( decoded_instruction           ),
+        .is_control_flow_instr_o ( is_control_flow_instr         ),
         .*
     );
 

@@ -32,7 +32,7 @@ interface uart_bus #(
 
   initial begin
     tx   = 1'bZ;
-    file = $fopen("stdout/uart", "w");
+    file = $fopen("uart", "w");
   end
 
   always begin
