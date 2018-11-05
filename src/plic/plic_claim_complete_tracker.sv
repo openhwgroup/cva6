@@ -89,12 +89,11 @@ module plic_claim_complete_tracker #(
                     save_claims_array_q[id][counter] <= 1;
 
                 end else begin
-                    //if a complete is issued, check if that gateway has previously been claimed by
-                    //this target and forward the
-                    //complete message to that gateway. if no claim has previously been issued, the
-                    //complete message is ignored
-                    //integer complete_id = target_irq_completes_identifier_i[counter];
-
+                    // if a complete is issued, check if that gateway has previously been claimed by
+                    // this target and forward the
+                    // complete message to that gateway. if no claim has previously been issued, the
+                    // complete message is ignored
+                    // integer complete_id = target_irq_completes_identifier_i[counter];
                     complete_id = target_irq_completes_identifier_i[counter];
 
                     if (target_irq_completes_i[counter] && (save_claims_array_q[complete_id][counter] > 0)) begin

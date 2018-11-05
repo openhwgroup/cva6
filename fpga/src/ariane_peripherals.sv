@@ -37,36 +37,102 @@ module ariane_peripherals #(
     logic [ariane_soc::NumSources-1:0] irq_sources;
 
     REG_BUS #(
-        .ADDR_WIDTH ( AxiAddrWidth ),
-        .DATA_WIDTH ( AxiDataWidth )
+        .ADDR_WIDTH ( 32 ),
+        .DATA_WIDTH ( 32 )
     ) reg_bus (clk_i);
 
-    AXI_LITE #(
-        .AXI_ADDR_WIDTH ( AxiAddrWidth ),
-        .AXI_DATA_WIDTH ( AxiDataWidth )
-    ) axi_lite_plic ();
+    logic         plic_penable;
+    logic         plic_pwrite;
+    logic [31:0]  plic_paddr;
+    logic         plic_psel;
+    logic [31:0]  plic_pwdata;
+    logic [31:0]  plic_prdata;
+    logic         plic_pready;
+    logic         plic_pslverr;
 
-    axi_to_axi_lite i_axi_to_axi_lite_eth (
-      .clk_i,
-      .rst_ni,
-      .testmode_i ( 1'b0          ),
-      .in         ( plic          ),
-      .out        ( axi_lite_plic )
+    axi2apb_64_32 #(
+        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth        ),
+        .AXI4_RDATA_WIDTH   ( AxiDataWidth        ),
+        .AXI4_WDATA_WIDTH   ( AxiDataWidth        ),
+        .AXI4_ID_WIDTH      ( $bits(uart.aw_id)   ),
+        .AXI4_USER_WIDTH    ( $bits(uart.aw_user) ),
+        .BUFF_DEPTH_SLAVE   ( 2                   ),
+        .APB_ADDR_WIDTH     ( 32                  )
+    ) i_axi2apb_64_32_plic (
+        .ACLK      ( clk_i          ),
+        .ARESETn   ( rst_ni         ),
+        .test_en_i ( 1'b0           ),
+        .AWID_i    ( plic.aw_id     ),
+        .AWADDR_i  ( plic.aw_addr   ),
+        .AWLEN_i   ( plic.aw_len    ),
+        .AWSIZE_i  ( plic.aw_size   ),
+        .AWBURST_i ( plic.aw_burst  ),
+        .AWLOCK_i  ( plic.aw_lock   ),
+        .AWCACHE_i ( plic.aw_cache  ),
+        .AWPROT_i  ( plic.aw_prot   ),
+        .AWREGION_i( plic.aw_region ),
+        .AWUSER_i  ( plic.aw_user   ),
+        .AWQOS_i   ( plic.aw_qos    ),
+        .AWVALID_i ( plic.aw_valid  ),
+        .AWREADY_o ( plic.aw_ready  ),
+        .WDATA_i   ( plic.w_data    ),
+        .WSTRB_i   ( plic.w_strb    ),
+        .WLAST_i   ( plic.w_last    ),
+        .WUSER_i   ( plic.w_user    ),
+        .WVALID_i  ( plic.w_valid   ),
+        .WREADY_o  ( plic.w_ready   ),
+        .BID_o     ( plic.b_id      ),
+        .BRESP_o   ( plic.b_resp    ),
+        .BVALID_o  ( plic.b_valid   ),
+        .BUSER_o   ( plic.b_user    ),
+        .BREADY_i  ( plic.b_ready   ),
+        .ARID_i    ( plic.ar_id     ),
+        .ARADDR_i  ( plic.ar_addr   ),
+        .ARLEN_i   ( plic.ar_len    ),
+        .ARSIZE_i  ( plic.ar_size   ),
+        .ARBURST_i ( plic.ar_burst  ),
+        .ARLOCK_i  ( plic.ar_lock   ),
+        .ARCACHE_i ( plic.ar_cache  ),
+        .ARPROT_i  ( plic.ar_prot   ),
+        .ARREGION_i( plic.ar_region ),
+        .ARUSER_i  ( plic.ar_user   ),
+        .ARQOS_i   ( plic.ar_qos    ),
+        .ARVALID_i ( plic.ar_valid  ),
+        .ARREADY_o ( plic.ar_ready  ),
+        .RID_o     ( plic.r_id      ),
+        .RDATA_o   ( plic.r_data    ),
+        .RRESP_o   ( plic.r_resp    ),
+        .RLAST_o   ( plic.r_last    ),
+        .RUSER_o   ( plic.r_user    ),
+        .RVALID_o  ( plic.r_valid   ),
+        .RREADY_i  ( plic.r_ready   ),
+        .PENABLE   ( plic_penable   ),
+        .PWRITE    ( plic_pwrite    ),
+        .PADDR     ( plic_paddr     ),
+        .PSEL      ( plic_psel      ),
+        .PWDATA    ( plic_pwdata    ),
+        .PRDATA    ( plic_prdata    ),
+        .PREADY    ( plic_pready    ),
+        .PSLVERR   ( plic_pslverr   )
     );
 
-    axi_lite_to_reg #(
-        .ADDR_WIDTH ( AxiAddrWidth  ),
-        .DATA_WIDTH ( AxiDataWidth  )
-    ) i_axi_lite_to_reg (
-        .clk_i,
-        .rst_ni,
-        .axi_i      ( axi_lite_plic ), // AXI Lite
-        .reg_o      ( reg_bus       )
+    apb_to_reg i_apb_to_reg (
+        .clk_i     ( clk_i        ),
+        .rst_ni    ( rst_ni       ),
+        .penable_i ( plic_penable ),
+        .pwrite_i  ( plic_pwrite  ),
+        .paddr_i   ( plic_paddr   ),
+        .psel_i    ( plic_psel    ),
+        .pwdata_i  ( plic_pwdata  ),
+        .prdata_o  ( plic_prdata  ),
+        .pready_o  ( plic_pready  ),
+        .pslverr_o ( plic_pslverr ),
+        .reg_o     ( reg_bus      )
     );
 
     plic #(
-        .ADDR_WIDTH         ( AxiAddrWidth           ),
-        .DATA_WIDTH         ( AxiDataWidth           ),
+        .ADDR_WIDTH         ( 32                     ),
+        .DATA_WIDTH         ( 32                     ),
         .ID_BITWIDTH        ( 3                      ), // TODO (zarubaf): Find propper width
         .PARAMETER_BITWIDTH ( 3                      ), // TODO (zarubaf): Find propper width
         .NUM_TARGETS        ( ariane_soc::NumTargets ),
@@ -75,10 +141,13 @@ module ariane_peripherals #(
         .clk_i              ( clk_i                  ),
         .rst_ni             ( rst_ni                 ),
         .irq_sources_i      ( irq_sources            ),
-        .eip_targets_o      (                   ),
+        .eip_targets_o      (                        ),
         .external_bus_io    ( reg_bus                )
     );
+
+    // TODO(zarubaf): Remove once PLIC is working
     assign irq_o = '0;
+
     // ---------------
     // UART
     // ---------------
@@ -99,7 +168,7 @@ module ariane_peripherals #(
         .AXI4_USER_WIDTH    ( $bits(uart.aw_user) ),
         .BUFF_DEPTH_SLAVE   ( 2                   ),
         .APB_ADDR_WIDTH     ( 32                  )
-    ) i_axi2apb_64_32 (
+    ) i_axi2apb_64_32_uart (
         .ACLK      ( clk_i          ),
         .ARESETn   ( rst_ni         ),
         .test_en_i ( 1'b0           ),

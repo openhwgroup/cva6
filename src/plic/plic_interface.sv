@@ -120,7 +120,7 @@ module plic_interface #(
     always_comb begin : proc_address_map
         // default values
         funct = INV;
-        // only alligned access is allowed:
+        // only aligned access is allowed:
         if (word_offset == '0) begin
             // we have now an word alligned access -> check out page offset to determine
             // what type of access this is.
