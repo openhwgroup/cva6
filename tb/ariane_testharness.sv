@@ -306,16 +306,6 @@ module ariane_testharness #(
     // ---------------
     logic ipi;
     logic timer_irq;
-    logic rtc;
-
-    // divide clock by two
-    always_ff @(posedge clk_i or negedge ndmreset_n) begin
-      if (~ndmreset_n) begin
-        rtc <= 0;
-      end else begin
-        rtc <= rtc ^ 1'b1;
-      end
-    end
 
     clint #(
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
@@ -326,7 +316,7 @@ module ariane_testharness #(
         .clk_i       ( clk_i                     ),
         .rst_ni      ( ndmreset_n                ),
         .slave       ( master[ariane_soc::CLINT] ),
-        .rtc_i       ( rtc                       ),
+        .rtc_i       ( rtc_i                     ),
         .timer_irq_o ( timer_irq                 ),
         .ipi_o       ( ipi                       )
     );

@@ -20,6 +20,10 @@ clint_t::clint_t(std::vector<processor_t*>& procs)
 #define MTIMECMP_BASE	0x4000
 #define MTIME_BASE	0xbff8
 
+void clint_t::reset() {
+  mtime = 0;
+}
+
 bool clint_t::load(reg_t addr, size_t len, uint8_t* bytes)
 {
   if (addr >= MSIP_BASE && addr + len <= MSIP_BASE + procs.size()*sizeof(msip_t)) {

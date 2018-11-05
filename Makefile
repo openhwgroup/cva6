@@ -46,6 +46,7 @@ util := $(wildcard src/util/*.svh)         \
         src/util/instruction_tracer_pkg.sv \
         src/util/instruction_tracer_if.sv  \
         src/util/cluster_clock_gating.sv   \
+        tb/common/mock_uart.sv             \
         src/util/sram.sv
 util := $(addprefix $(root-dir), $(util))
 # Test packages
@@ -85,6 +86,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/cdc_2phase.sv                             \
         src/common_cells/src/spill_register.sv                         \
         src/common_cells/src/sync_wedge.sv                             \
+        src/common_cells/src/edge_detect.sv                            \
         src/common_cells/src/fifo_v2.sv                                \
         src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \

@@ -1,0 +1,27 @@
+prefix          := @prefix@
+abs_top_src_dir := @abs_top_srcdir@
+XLEN            := @XLEN@
+target_alias    := @target_alias@
+ifeq ($(target_alias),)
+RISCV_PREFIX_VAR :=
+else
+RISCV_PREFIX_VAR := RISCV_PREFIX=@target_alias@-
+endif
+instbasedir     := $(DESTDIR)$(prefix)
+ariane_dir      := $(abs_top_src_dir)/ariane
+
+all: ariane
+
+install: all
+	install -d $(instbasedir)/share/riscv-tests/ariane
+	install -p -m 644 `find ariane -maxdepth 1 -type f` $(instbasedir)/share/riscv-tests/ariane
+
+ariane:
+	mkdir -p ariane
+	$(MAKE) -C ariane -f $(ariane_dir)/Makefile src_dir=$(ariane_dir) XLEN=$(XLEN) $(RISCV_PREFIX_VAR)
+
+clean:
+	[ ! -d ariane ] || $(MAKE) -C ariane -f $(ariane_dir)/Makefile src_dir=$(ariane_dir) clean
+
+.PHONY: ariane_dir
+

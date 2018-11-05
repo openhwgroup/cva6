@@ -124,6 +124,7 @@ void state_t::reset(reg_t max_isa)
   memset(this, 0, sizeof(*this));
   misa = max_isa;
   prv = PRV_M;
+  mstatus = 0;
   pc = DEFAULT_RSTVEC;
   tselect = 0;
   for (unsigned int i = 0; i < num_triggers; i++)
@@ -377,7 +378,7 @@ void processor_t::set_csr(int which, reg_t val)
         mmu->flush_tlb();
 
       reg_t mask = MSTATUS_SIE | MSTATUS_SPIE | MSTATUS_MIE | MSTATUS_MPIE
-                 | MSTATUS_FS | MSTATUS_MPRV | MSTATUS_SUM
+                 | MSTATUS_MPRV | MSTATUS_SUM
                  | MSTATUS_MXR | MSTATUS_TW | MSTATUS_TVM
                  | MSTATUS_TSR | MSTATUS_UXL | MSTATUS_SXL |
                  (ext ? MSTATUS_XS : 0);
@@ -391,6 +392,7 @@ void processor_t::set_csr(int which, reg_t val)
 
       bool dirty = (state.mstatus & MSTATUS_FS) == MSTATUS_FS;
       dirty |= (state.mstatus & MSTATUS_XS) == MSTATUS_XS;
+      dirty = 0;
       if (max_xlen == 32)
         state.mstatus = set_field(state.mstatus, MSTATUS32_SD, dirty);
       else

@@ -30,8 +30,8 @@ module ariane_tb;
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
 
     localparam int unsigned CLOCK_PERIOD = 20ns;
-    // toggle with half the clock period
-    localparam int unsigned RTC_CLOCK_PERIOD = CLOCK_PERIOD/2;
+    // toggle with RTC period
+    localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
 
     localparam NUM_WORDS = 2**25;
     logic clk_i;
@@ -59,7 +59,7 @@ module ariane_tb;
     spike i_spike (
         .clk_i,
         .rst_ni,
-        .clint_tick_i   ( dut.i_clint.rtc_i                   ),
+        .clint_tick_i   ( rtc_i                               ),
         .commit_instr_i ( dut.i_ariane.commit_instr_id_commit ),
         .commit_ack_i   ( dut.i_ariane.commit_ack             ),
         .exception_i    ( dut.i_ariane.ex_commit              ),
@@ -91,6 +91,7 @@ module ariane_tb;
 
     initial begin
         forever begin
+            rtc_i = 1'b0;
             #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b1;
             #(RTC_CLOCK_PERIOD/2) rtc_i = 1'b0;
         end

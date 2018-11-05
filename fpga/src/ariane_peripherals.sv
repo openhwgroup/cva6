@@ -12,7 +12,7 @@
 module ariane_peripherals #(
     parameter int AxiAddrWidth = -1,
     parameter int AxiDataWidth = -1,
-    parameter bit DummyUART    = 0,
+    parameter bit DummyUART    = 1,
     parameter bit InclSPI      = 0
 ) (
     input  logic       clk_i           , // Clock
@@ -158,7 +158,18 @@ module ariane_peripherals #(
     );
 
     if (DummyUART) begin
-
+        mock_uart i_mock_uart (
+            .clk_i     ( clk_i        ),
+            .rst_ni    ( rst_ni       ),
+            .penable_i ( uart_penable ),
+            .pwrite_i  ( uart_pwrite  ),
+            .paddr_i   ( uart_paddr   ),
+            .psel_i    ( uart_psel    ),
+            .pwdata_i  ( uart_pwdata  ),
+            .prdata_o  ( uart_prdata  ),
+            .pready_o  ( uart_pready  ),
+            .pslverr_o ( uart_pslverr )
+        );
     end else begin
         apb_uart i_apb_uart (
             .CLK     ( clk_i           ),

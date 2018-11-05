@@ -1,0 +1,6 @@
+*.riscv
+*.host
+*.o
+*.dump
+*.out
+*.hex

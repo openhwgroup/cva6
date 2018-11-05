@@ -162,29 +162,17 @@ bool sim_t::mmio_store(reg_t addr, size_t len, const uint8_t* bytes)
 
 void sim_t::make_dtb()
 {
-  const int reset_vec_size = 8;
 
   start_pc = start_pc == reg_t(-1) ? get_entry_point() : start_pc;
 
-  uint32_t reset_vec[reset_vec_size] = {
-    0x297,                                      // auipc  t0,0x0
-    0x28593 + (reset_vec_size * 4 << 20),       // addi   a1, t0, &dtb
-    0xf1402573,                                 // csrr   a0, mhartid
-    get_core(0)->get_xlen() == 32 ?
-      0x0182a283u :                             // lw     t0,24(t0)
-      0x0182b283u,                              // ld     t0,24(t0)
-    0x28067,                                    // jr     t0
-    0,
-    (uint32_t) (start_pc & 0xffffffff),
-    (uint32_t) (start_pc >> 32)
-  };
+  #include "bootrom.h"
 
   std::vector<char> rom((char*)reset_vec, (char*)reset_vec + sizeof(reset_vec));
 
-  dts = make_dts(INSNS_PER_RTC_TICK, CPU_HZ, procs, mems);
-  std::string dtb = dts_compile(dts);
+  // dts = make_dts(INSNS_PER_RTC_TICK, CPU_HZ, procs, mems);
+  // std::string dtb = dts_compile(dts);
 
-  rom.insert(rom.end(), dtb.begin(), dtb.end());
+  // rom.insert(rom.end(), dtb.begin(), dtb.end());
   const int align = 0x1000;
   rom.resize((rom.size() + align - 1) / align * align);
 

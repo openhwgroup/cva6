@@ -63,6 +63,7 @@ private:
   std::string dts;
   std::unique_ptr<rom_device_t> boot_rom;
   std::unique_ptr<clint_t> clint;
+  std::unique_ptr<uart_t> uart;
   bus_t bus;
   std::thread t1;
 
@@ -84,7 +85,7 @@ private:
   bool mmio_store(reg_t addr, size_t len, const uint8_t* bytes);
   void proc_reset(unsigned id) {};
 
-  void make_dtb();
+  void make_bootrom();
 
 public:
 

@@ -33,9 +33,13 @@ sim_spike_t::sim_spike_t(const char* isa, size_t nprocs,
   }
 
   clint.reset(new clint_t(procs));
+  // we need to bring the clint to a reproducible default value
+  clint.get()->reset();
   bus.add_device(CLINT_BASE, clint.get());
-  make_dtb();
-  set_procs_debug(false);
+  uart.reset(new uart_t());
+  bus.add_device(UART_BASE, uart.get());
+  make_bootrom();
+  set_procs_debug(true);
 }
 
 sim_spike_t::~sim_spike_t()
@@ -110,30 +114,13 @@ bool sim_spike_t::mmio_store(reg_t addr, size_t len, const uint8_t* bytes)
   return bus.store(addr, len, bytes);
 }
 
-void sim_spike_t::make_dtb()
+void sim_spike_t::make_bootrom()
 {
-  const int reset_vec_size = 6;
-
   start_pc = 0x80000000;
 
-  uint32_t reset_vec[reset_vec_size] = {
-    0x0010041b,                                      // auipc  t0,0x0
-    0x01f41413,       // addi   a1, t0, &dtb
-    0xf1402573,
-    0x00000597,
-    0x07458593,
-    0x8402
-  };
+  #include "bootrom.h"
 
   std::vector<char> rom((char*)reset_vec, (char*)reset_vec + sizeof(reset_vec));
-
-  // TODO(zarubaf): Read bootrom from image
-  // dts = make_dts(INSNS_PER_RTC_TICK, CPU_HZ, procs, mems);
-  // std::string dtb = dts_compile(dts);
-
-  // rom.insert(rom.end(), dtb.begin(), dtb.end());
-  // const int align = 0x1000;
-  // rom.resize((rom.size() + align - 1) / align * align);
 
   boot_rom.reset(new rom_device_t(rom));
   bus.add_device(DEFAULT_RSTVEC, boot_rom.get());

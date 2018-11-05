@@ -36,6 +36,7 @@ bool uart_t::load(reg_t addr, size_t len, uint8_t* bytes)
               } else {
                 // TODO(zarubaf)
                 // printf("%c", bytes[0]);
+                bytes[0] = 0;
               }
               break;
     case IER:
