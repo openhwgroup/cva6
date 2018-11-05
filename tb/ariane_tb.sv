@@ -56,7 +56,9 @@ module ariane_tb;
 
     // `ifdef TANDEM
     // initial $display("Tandem defined",);
-    spike i_spike (
+    spike #(
+        .Size ( NUM_WORDS * 8 )
+    ) i_spike (
         .clk_i,
         .rst_ni,
         .clint_tick_i   ( rtc_i                               ),
