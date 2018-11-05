@@ -299,9 +299,9 @@ generate
         assign debug_paddr[k] = wbuffer_q[k].wtag << 3;
 
         // dirty bytes that are ready for transmission.
-        // note that we cannot retransmit a byte that is already in-flight
+        // note that we cannot retransmit a word that is already in-flight
         // since the multiple transactions might overtake each other in the memory system!
-        assign bdirty[k] = wbuffer_q[k].dirty & wbuffer_q[k].valid & (~wbuffer_q[k].txblock);
+        assign bdirty[k] = (|wbuffer_q[k].txblock) ? '0 : wbuffer_q[k].dirty & wbuffer_q[k].valid;
 
 
         assign dirty[k]          = |bdirty[k];
