@@ -111,9 +111,7 @@ logic     [DCACHE_WBUF_DEPTH-1:0]         wbuffer_hit_oh, inval_hit;
 logic     [DCACHE_WBUF_DEPTH-1:0][7:0]    bdirty;
 
 logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
-logic [DCACHE_ID_WIDTH-1:0] tx_id_q, tx_id_d, rtrn_id;
-logic [DCACHE_ID_WIDTH:0] tx_cnt_q, tx_cnt_d;
-logic tx_id_wrap;
+logic [DCACHE_ID_WIDTH-1:0] tx_id, rtrn_id;
 
 logic [2:0] bdirty_off;
 logic [7:0] tx_be;
@@ -125,6 +123,7 @@ logic full, dirty_rd_en, rdy;
 logic rtrn_empty, evict;
 logic nc_pending_d, nc_pending_q, addr_is_nc;
 logic wbuffer_wren;
+logic free_tx_slots;
 
 logic wr_cl_vld_q, wr_cl_vld_d;
 logic [DCACHE_CL_IDX_WIDTH-1:0] wr_cl_idx_q, wr_cl_idx_d;
@@ -179,8 +178,10 @@ lzc #(
 
 // add the offset to the physical base address of this buffer entry
 assign miss_paddr_o = {wbuffer_q[dirty_ptr].wtag, bdirty_off};
-assign miss_wr_id_o = tx_id_q;
-assign miss_req_o   = (|dirty) && (tx_cnt_q < DCACHE_MAX_TX);
+assign miss_wr_id_o = tx_id;
+
+// is there any dirty word to be transmitted, and is there a free TX slot?
+assign miss_req_o = (|dirty) && free_tx_slots;
 
 // get size of aligned words, and the corresponding byte enables
 // note: openpiton can only handle aligned offsets + size, and hence
@@ -225,13 +226,6 @@ always_comb begin : p_tx_stat
     evict     = 1'b0;
     wr_req_o  = '0;
 
-    // allocate a new entry
-    if(dirty_rd_en) begin
-        tx_stat_d[tx_id_q].vld = 1'b1;
-        tx_stat_d[tx_id_q].ptr = dirty_ptr;
-        tx_stat_d[tx_id_q].be  = tx_be;
-    end
-
     // clear entry if it is clear whether it can be pushed to the cache or not
     if((~rtrn_empty) && wbuffer_q[rtrn_ptr].checked) begin
         // check if data is clean and can be written, otherwise skip
@@ -247,18 +241,31 @@ always_comb begin : p_tx_stat
             tx_stat_d[rtrn_id].vld = 1'b0;
         end
     end
+
+    // allocate a new entry
+    if(dirty_rd_en) begin
+        tx_stat_d[tx_id].vld = 1'b1;
+        tx_stat_d[tx_id].ptr = dirty_ptr;
+        tx_stat_d[tx_id].be  = tx_be;
+    end
 end
 
-assign tx_cnt_d   = (dirty_rd_en & evict) ? tx_cnt_q     :
-                    (dirty_rd_en)         ? tx_cnt_q + 1 :
-                    (evict)               ? tx_cnt_q - 1 :
-                                            tx_cnt_q;
-// wrapping counter
-assign tx_id_d    =  (dirty_rd_en & tx_id_wrap) ? '0           :
-                     (dirty_rd_en)              ? tx_id_q + 1  :
-                                                  tx_id_q;
+assign free_tx_slots = |(~tx_vld_o);
 
-assign tx_id_wrap = tx_id_q == (DCACHE_MAX_TX-1);
+// get free TX slot
+rrarbiter #(
+    .NUM_REQ ( DCACHE_MAX_TX ),
+    .LOCK_IN ( 1             )// lock the decision, once request is asserted
+) i_tx_id_rr (
+    .clk_i   ( clk_i         ),
+    .rst_ni  ( rst_ni        ),
+    .flush_i ( 1'b0          ),
+    .en_i    ( dirty_rd_en   ),
+    .req_i   ( ~tx_vld_o     ),
+    .ack_o   (               ),
+    .vld_o   (               ),
+    .idx_o   ( tx_id         )
+);
 
 ///////////////////////////////////////////////////////
 // cache readout & update
@@ -470,8 +477,6 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
         wbuffer_q     <= '{default: '0};
         tx_stat_q     <= '{default: '0};
         nc_pending_q  <= '0;
-        tx_cnt_q      <= '0;
-        tx_id_q       <= '0;
         check_ptr_q   <= '0;
         check_ptr_q1  <= '0;
         check_en_q    <= '0;
@@ -483,8 +488,6 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     end else begin
         wbuffer_q     <= wbuffer_d;
         tx_stat_q     <= tx_stat_d;
-        tx_cnt_q      <= tx_cnt_d;
-        tx_id_q       <= tx_id_d;
         nc_pending_q  <= nc_pending_d;
         check_ptr_q   <= check_ptr_d;
         check_ptr_q1  <= check_ptr_q;
@@ -510,7 +513,7 @@ end
             else $fatal(1,"[l1 dcache wbuffer] wbuffer_hit_oh signal must be hot1");
 
     tx_status: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) evict & miss_ack_i & miss_req_o |-> (tx_id_q != rtrn_id))
+        @(posedge clk_i) disable iff (~rst_ni) evict & miss_ack_i & miss_req_o |-> (tx_id != rtrn_id))
             else $fatal(1,"[l1 dcache wbuffer] cannot allocate and clear same tx slot id in the same cycle");
 
     tx_valid0: assert property (
