@@ -19,6 +19,14 @@
 
 uart_t::uart_t()
 {
+  dll = 0;
+  dlm = 0;
+  ier = 0;
+  lcr = 0;
+  mcr = 0;
+  lsr = 0;
+  msr = 0;
+  scr = 0;
 }
 
 bool uart_t::load(reg_t addr, size_t len, uint8_t* bytes)
