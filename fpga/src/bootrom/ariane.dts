@@ -5,9 +5,9 @@
   #size-cells = <2>;
   compatible = "eth,ariane-bare-dev";
   model = "eth,ariane-bare";
-  chosen {
-    stdout-path = "/soc/uart@10000000:115200";
-  };
+  // chosen {
+  //   stdout-path = "/soc/uart@10000000:115200";
+  // };
   cpus {
     #address-cells = <1>;
     #size-cells = <0>;

@@ -108,7 +108,7 @@ module decoder (
                                     if (priv_lvl_i == riscv::PRIV_LVL_S && tsr_i) begin
                                         illegal_instr = 1'b1;
                                         //  do not change privilege level if this is an illegal instruction
-                                       instruction_o.op = ADD;
+                                        instruction_o.op = ADD;
                                     end
                                 end
                                 // MRET
