@@ -80,6 +80,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/axi/src/axi_multicut.sv                                    \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
+        src/axi/src/axi_delayer.sv                                     \
         src/axi/src/axi_to_axi_lite.sv                                 \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
         src/common_cells/src/sync.sv                                   \
@@ -87,11 +88,15 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/spill_register.sv                         \
         src/common_cells/src/sync_wedge.sv                             \
         src/common_cells/src/edge_detect.sv                            \
+        src/common_cells/src/fifo_v3.sv                                \
         src/common_cells/src/fifo_v2.sv                                \
         src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
+        src/common_cells/src/ready_valid_delay.sv                      \
         src/common_cells/src/lfsr_8bit.sv                              \
+        src/common_cells/src/lfsr_16bit.sv                             \
+        src/common_cells/src/counter.sv                                \
         src/common_cells/src/rstgen_bypass.sv                          \
         tb/ariane_testharness.sv                                       \
         tb/common/uart.sv 		                                       \

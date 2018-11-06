@@ -483,8 +483,14 @@ module csr_regfile #(
                 // set epc
                 sepc_d         = pc_i;
                 // set mtval or stval
-                stval_d        = (ariane_pkg::ZERO_TVAL_ON_ILLEGAL_INSTR
-                                  && ex_i.cause == riscv::ILLEGAL_INSTR) ? '0 : ex_i.tval;
+                stval_d        = (ariane_pkg::ZERO_TVAL
+                                  && (ex_i.cause inside {
+                                    riscv::ILLEGAL_INSTR,
+                                    riscv::BREAKPOINT,
+                                    riscv::ENV_CALL_UMODE,
+                                    riscv::ENV_CALL_SMODE,
+                                    riscv::ENV_CALL_MMODE
+                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
             // trap to machine mode
             end else begin
                 // update mstatus
@@ -496,8 +502,14 @@ module csr_regfile #(
                 // set epc
                 mepc_d         = pc_i;
                 // set mtval or stval
-                mtval_d        = (ariane_pkg::ZERO_TVAL_ON_ILLEGAL_INSTR
-                                  && ex_i.cause == riscv::ILLEGAL_INSTR) ? '0 : ex_i.tval;
+                mtval_d        = (ariane_pkg::ZERO_TVAL
+                                  && (ex_i.cause inside {
+                                    riscv::ILLEGAL_INSTR,
+                                    riscv::BREAKPOINT,
+                                    riscv::ENV_CALL_UMODE,
+                                    riscv::ENV_CALL_SMODE,
+                                    riscv::ENV_CALL_MMODE
+                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
             end
 
             priv_lvl_d = trap_to_priv_lvl;

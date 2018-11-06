@@ -165,7 +165,6 @@ module miss_handler #(
         evict_cl_d   = evict_cl_q;
         mshr_d       = mshr_q;
         // communicate to the requester which unit we are currently serving
-        active_serving_o = '0;
         active_serving_o[mshr_q.id] = mshr_q.valid;
         // AMOs
         amo_resp_o.ack = 1'b0;

@@ -342,6 +342,7 @@ module ariane_testharness #(
     assign dram.aw_prot = aw_chan_o.prot;
     assign dram.aw_qos = aw_chan_o.qos;
     assign dram.aw_region = aw_chan_o.region;
+    assign dram.aw_user = master[ariane_soc::DRAM].aw_user;
 
     assign dram.ar_id = ar_chan_o.id;
     assign dram.ar_addr = ar_chan_o.addr;
@@ -353,18 +354,22 @@ module ariane_testharness #(
     assign dram.ar_prot = ar_chan_o.prot;
     assign dram.ar_qos = ar_chan_o.qos;
     assign dram.ar_region = ar_chan_o.region;
+    assign dram.ar_user = master[ariane_soc::DRAM].ar_user;
 
     assign dram.w_data = w_chan_o.data;
     assign dram.w_strb = w_chan_o.strb;
     assign dram.w_last = w_chan_o.last;
+    assign dram.w_user = master[ariane_soc::DRAM].w_user;
 
     assign r_chan_i.id = dram.r_id;
     assign r_chan_i.data = dram.r_data;
     assign r_chan_i.resp = dram.r_resp;
     assign r_chan_i.last = dram.r_last;
+    assign master[ariane_soc::DRAM].r_user = dram.r_user;
 
     assign b_chan_i.id = dram.b_id;
     assign b_chan_i.resp = dram.b_resp;
+    assign master[ariane_soc::DRAM].b_user = dram.b_user;
 
 
     axi2mem #(

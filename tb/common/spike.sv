@@ -71,12 +71,12 @@ module spike #(
                         $display("Spike: %p", commit_log);
                         $display("Ariane: %p", commit_instr_i[i]);
                     end
-                    assert (commit_log.priv === priv_lvl_i) else begin
-                        $warning("\x1B[33m[Tandem] Privilege level mismatches\x1B[0m");
-                        // $stop;
-                        $display("\x1B[37m @ PC %h\x1B[0m", commit_log.pc);
-                    end
                     if (!exception_i.valid) begin
+                        assert (commit_log.priv === priv_lvl_i) else begin
+                            $warning("\x1B[33m[Tandem] Privilege level mismatches\x1B[0m");
+                            // $stop;
+                            $display("\x1B[37m %2d == %2d @ PC %h\x1B[0m", priv_lvl_i, commit_log.priv, commit_log.pc);
+                        end
                         assert (instr === commit_instr_i[i].ex.tval) else begin
                             $warning("\x1B[33m[Tandem] Decoded instructions mismatch\x1B[0m");
                             // $stop;

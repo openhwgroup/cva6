@@ -116,7 +116,12 @@ void processor_t::step(size_t n)
 
     try
     {
-      take_pending_interrupt();
+      insn_fetch_t fetch = mmu->load_insn(pc);
+
+      // check whether the instruction is an AMO, we dpn't take interrupts on AMOs
+      if (likely((fetch.insn.bits() & 0x2f) != 0x2f)) {
+        take_pending_interrupt();
+      }
 
       if (unlikely(slow_path()))
       {
@@ -135,7 +140,6 @@ void processor_t::step(size_t n)
             state.single_step = state.STEP_STEPPED;
           }
 
-          insn_fetch_t fetch = mmu->load_insn(pc);
           if (debug && !state.serialized)
             disasm(fetch.insn);
           pc = execute_insn(this, pc, fetch);
