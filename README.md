@@ -191,11 +191,21 @@ $ [sudo] make install
 ```
 $ make sim preload=/home/zarubaf/Downloads/riscv-tests/build/benchmarks/dhrystone.riscv tandem=1
 ```
-There are a couple of limitations:
+There are a couple of caveats:
 
-- Memories should be initialized to zero.
-- UART needs to be replaced by a mock uart which exhibits always ready behavior.
+- Memories should be initialized to zero. Random or `x` are not supported.
+- UART needs to be replaced by a mock UART which exhibits always ready behavior.
 - There is no end of test signaling at the moment. You are supposed to kill the simulation when sufficiently long run.
+- You need to use the modified Spike version in the `tb` subdirectory.
+- The RTC clock needs to be sufficiently slow (e.g.: 32 kHz seems to work). This is needed as otherwise there will be a difference when reading the `mtime` register as the RTL simulation takes more time to propagate the information through the system.
+- All traps except memory traps need to zero the `tval` register. There is a switch you can set in `ariane_pkg`.
+- `mcycle` needs to be incremented with `instret` to be similar to the performance counters found in Spike (IPC = 1)
+
+### Re-generating the Bootcode (ZSBL)
+
+The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while the bootcode for the FPGA is in `fpga/src/bootrom`. The RTL bootcode simply jumps to the base of the DRAM where the FSBL takes over. For the FPGA the ZSBL performs additional housekeeping. Both bootloader pass the hartid as well as address to the device tree in argumen register `a0` and `a1` respectively.
+
+To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.
 
 # Contributing
 
