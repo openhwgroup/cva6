@@ -60,8 +60,12 @@ sim_t::sim_t(const char* isa, size_t nprocs, bool halted, reg_t start_pc,
 
   clint.reset(new clint_t(procs));
   bus.add_device(CLINT_BASE, clint.get());
+
   uart.reset(new uart_t());
   bus.add_device(UART_BASE, uart.get());
+
+  dump.reset(new dump_t());
+  bus.add_device(DUMP_BASE, dump.get());
 }
 
 sim_t::~sim_t()

@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <fstream>
 
 class processor_t;
 
@@ -92,6 +93,15 @@ class uart_t : public abstract_device_t {
   uint8_t msr;
   uint8_t mcr;
   bool fifo_enabled;
+};
+
+class dump_t : public abstract_device_t {
+ public:
+  dump_t();
+  bool load(reg_t addr, size_t len, uint8_t* bytes);
+  bool store(reg_t addr, size_t len, const uint8_t* bytes);
+ private:
+  std::ofstream ofs;
 };
 
 #endif

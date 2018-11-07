@@ -53,6 +53,7 @@ private:
   std::string dts;
   std::unique_ptr<rom_device_t> boot_rom;
   std::unique_ptr<clint_t> clint;
+  std::unique_ptr<dump_t> dump;
   std::unique_ptr<uart_t> uart;
   bus_t bus;
 

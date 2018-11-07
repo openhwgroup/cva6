@@ -51,6 +51,7 @@ riscv_srcs = \
 	rom.cc \
     clint.cc \
 	uart.cc \
+	dump.cc \
 	debug_module.cc \
 	remote_bitbang.cc \
 	jtag_dtm.cc \

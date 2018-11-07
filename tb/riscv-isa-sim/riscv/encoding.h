@@ -157,6 +157,8 @@
 #define UART_SIZE          0x00010000
 #define EXT_IO_BASE        0x40000000
 #define DRAM_BASE          0x80000000
+#define DUMP_BASE          0x82000000
+#define DUMP_SIZE          0x20000000
 
 // page table entry (PTE) fields
 #define PTE_V     0x001 // Valid
