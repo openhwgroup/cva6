@@ -1,8 +1,9 @@
-bootrom_img = bootrom.img
+bootrom_img = bootrom.img bootrom.sv
 
 GCC=riscv64-unknown-elf-gcc
 OBJCOPY=riscv64-unknown-elf-objcopy
 DTB=ariane.dtb
+PYTHON=python
 
 all: $(bootrom_img)
 
@@ -12,11 +13,14 @@ all: $(bootrom_img)
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@
 
-%.elf: %.S linker.ld $(DTB)
+%.elf: %.S linker.ld bootrom.S $(DTB)
 	$(GCC) -Tlinker.ld $< -nostdlib -static -Wl,--no-gc-sections -o $@
 
 %.dtb: %.dts
 	dtc -I dts $< -O dtb -o $@
+
+%.sv: %.img
+	$(PYTHON) ./gen_rom.py $<
 
 clean:
 	rm $(bootrom_img) $(DTB)

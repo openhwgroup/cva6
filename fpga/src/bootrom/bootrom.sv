@@ -1,10 +1,10 @@
 /* Copyright 2018 ETH Zurich and University of Bologna.
  * Copyright and related rights are licensed under the Solderpad Hardware
- * License, Version 0.51 (the “License”); you may not use this file except in
+ * License, Version 0.51 (the "License"); you may not use this file except in
  * compliance with the License.  You may obtain a copy of the License at
  * http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
  * or agreed to in writing, software, hardware and materials distributed under
- * this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+ * this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  *
@@ -23,7 +23,7 @@ module bootrom (
     localparam int RomSize = 224;
 
     const logic [RomSize-1:0][63:0] mem = {
-        64'h_006874,
+        64'h00000000_00006874,
         64'h6469772d_6f692d67,
         64'h65720074_66696873,
         64'h2d676572_00737470,
@@ -158,7 +158,7 @@ module bootrom (
         64'h00000000_04000000,
         64'h03000000_00636f73,
         64'h01000000_02000000,
-        64'h00000008_00000000,
+        64'h00000002_00000000,
         64'h00000080_00000000,
         64'h5b000000_10000000,
         64'h03000000_00007972,
@@ -240,13 +240,13 @@ module bootrom (
         64'h10500073_03c58593,
         64'h00000597_f1402573,
         64'h00000000_00000000,
-        64'h00000000_00000000,
-        64'h00000000_00000000,
-        64'h00000000_00000000,
-        64'h00000000_00000000,
-        64'h00008402_07458593,
-        64'h00000597_f1402573,
-        64'h01f41413_0010041b
+        64'h84020525_85930000,
+        64'h0597f140_257301f4,
+        64'h14130010_041b0000,
+        64'h100f0ff0_000ffe53,
+        64'h1de30321_00033023,
+        64'h01f31313_0010031b,
+        64'h01929293_0410029b
     };
 
     logic [$clog2(RomSize)-1:0] addr_q;
@@ -257,5 +257,7 @@ module bootrom (
         end
     end
 
-    assign rdata_o = mem[addr_q];
+    // this prevents spurious Xes from propagating into
+    // the speculative fetch stage of the core
+    assign rdata_o = (addr_q < RomSize) ? mem[addr_q] : '0;
 endmodule

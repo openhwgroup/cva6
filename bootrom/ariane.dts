@@ -5,9 +5,9 @@
   #size-cells = <2>;
   compatible = "eth,ariane-bare-dev";
   model = "eth,ariane-bare";
-  chosen {
-    stdout-path = "/soc/uart@10000000:115200";
-  };
+  // chosen {
+  //   stdout-path = "/soc/uart@10000000:115200";
+  // };
   cpus {
     #address-cells = <1>;
     #size-cells = <0>;
@@ -31,7 +31,7 @@
   };
   memory@80000000 {
     device_type = "memory";
-    reg = <0x0 0x80000000 0x0 0x8000000>;
+    reg = <0x0 0x80000000 0x0 0x2000000>;
   };
   soc {
     #address-cells = <2>;
