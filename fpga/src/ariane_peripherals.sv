@@ -141,12 +141,12 @@ module ariane_peripherals #(
         .clk_i              ( clk_i                  ),
         .rst_ni             ( rst_ni                 ),
         .irq_sources_i      ( irq_sources            ),
-        .eip_targets_o      (                        ),
+        .eip_targets_o      ( irq_o                  ),
         .external_bus_io    ( reg_bus                )
     );
 
     // TODO(zarubaf): Remove once PLIC is working
-    assign irq_o = '0;
+    // assign irq_o = '0;
 
     // ---------------
     // UART

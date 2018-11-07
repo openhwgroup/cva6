@@ -422,7 +422,8 @@ bootrom i_bootrom (
 ariane_peripherals #(
     .AxiAddrWidth ( AxiAddrWidth ),
     .AxiDataWidth ( AxiDataWidth ),
-    .InclSPI      ( 1'b1         )
+    .InclSPI      ( 1'b1         ),
+    .DummyUART    ( 1'b0         )
 ) i_ariane_peripherals (
     .clk_i           ( clk                      ),
     .rst_ni          ( ndmreset_n               ),
