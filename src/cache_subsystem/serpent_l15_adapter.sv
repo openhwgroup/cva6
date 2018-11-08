@@ -95,8 +95,6 @@ logic dcache_data_full, dcache_data_empty;
 logic [1:0] arb_req, arb_ack;
 logic       arb_idx;
 
-logic header_ack_d, header_ack_q;
-
 // return path
 logic rtrn_fifo_empty, rtrn_fifo_full, rtrn_fifo_pop;
 l15_rtrn_t rtrn_fifo_data;
@@ -158,11 +156,8 @@ rrarbiter #(
   .idx_o  ( arb_idx              )
 );
 
-// need to deassert valid signal when header is acked
-// can move on when packed is acked (need to clear header ack)
 assign arb_req           = {~dcache_data_empty, ~icache_data_empty};
-assign l15_req_o.l15_val = (|arb_req) & ~header_ack_q;
-assign header_ack_d      = (l15_rtrn_i.l15_ack) ? 1'b0 : (header_ack_q | l15_rtrn_i.l15_header_ack);
+assign l15_req_o.l15_val = (|arb_req);// & ~header_ack_q;
 
 // encode packet type
 always_comb begin : p_req
@@ -196,15 +191,6 @@ always_comb begin : p_req
     end
   endcase
 end // p_req
-
-always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-    if(~rst_ni) begin
-        header_ack_q <= '0;
-    end else begin
-        header_ack_q <= header_ack_d;
-    end
-end
-
 
 fifo_v2 #(
      .dtype       (  icache_req_t            ),
