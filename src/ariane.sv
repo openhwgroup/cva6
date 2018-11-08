@@ -40,7 +40,10 @@ module ariane #(
         input  logic                           ipi_i,        // inter-processor interrupts (async)
         // Timer facilities
         input  logic                           time_irq_i,   // timer interrupt in (async)
-        input  logic                           debug_req_i   // debug request (async)
+        input  logic                           debug_req_i,  // debug request (async)
+        input  logic                           resumereq_i,
+        input  logic                           cmdbusy_i,
+        input  logic                           transfer_i
     );
 
     // ------------------------------------------
@@ -587,7 +590,10 @@ module ariane #(
         // memory side
         .icache_data_if        ( instr_if                              ),
         .dcache_data_if        ( data_if                               ),
-        .dcache_bypass_if      ( bypass_if                             )
+        .dcache_bypass_if      ( bypass_if                             ),
+        .resumereq_i,
+        .cmdbusy_i,
+        .transfer_i        
   );
 
     // -------------------

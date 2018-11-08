@@ -16,7 +16,7 @@
 
 /////////// remote_bitbang_t
 
-remote_bitbang_t::remote_bitbang_t(uint16_t port) :
+remote_bitbang_t::remote_bitbang_t() :
   socket_fd(0),
   client_fd(0),
   recv_start(0),
@@ -43,7 +43,7 @@ remote_bitbang_t::remote_bitbang_t(uint16_t port) :
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = INADDR_ANY;
-  addr.sin_port = htons(port);
+  addr.sin_port = htons(2222);
 
   if (::bind(socket_fd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
     fprintf(stderr, "remote_bitbang failed to bind socket: %s (%d)\n",
@@ -70,7 +70,6 @@ remote_bitbang_t::remote_bitbang_t(uint16_t port) :
   trstn = 1;
   quit = 0;
 
-  fprintf(stderr, "This emulator compiled with JTAG Remote Bitbang client. To enable, use +jtag_rbb_enable=1.\n");
   fprintf(stderr, "Listening on port %d\n",
          ntohs(addr.sin_port));
 }

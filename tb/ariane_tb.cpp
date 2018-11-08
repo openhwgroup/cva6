@@ -110,7 +110,6 @@ int main(int argc, char **argv) {
   int ret = 0;
   bool print_cycles = false;
   // Port numbers are 16 bit unsigned integers.
-  uint16_t rbb_port = 0;
 #if VM_TRACE
   FILE * vcdfile = NULL;
   uint64_t start = 0;
@@ -147,7 +146,6 @@ int main(int argc, char **argv) {
       case 'h': usage(argv[0]);             return 0;
       case 'm': max_cycles = atoll(optarg); break;
       case 's': random_seed = atoi(optarg); break;
-      case 'r': rbb_port = atoi(optarg);    break;
       case 'V': verbose = true;             break;
       case 'p': perf = true;                break;
 #if VM_TRACE
@@ -246,7 +244,7 @@ done_processing:
   const char *vcd_file = NULL;
   Verilated::commandArgs(argc, argv);
 
-  jtag = new remote_bitbang_t(rbb_port);
+  jtag = new remote_bitbang_t();
   dtm = new dtm_t(htif_argc, htif_argv);
   signal(SIGTERM, handle_sigterm);
 

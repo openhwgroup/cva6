@@ -51,7 +51,10 @@ module std_cache_subsystem #(
     // memory side
     AXI_BUS.Master                         icache_data_if,          // I$ refill port
     AXI_BUS.Master                         dcache_data_if,          // D$ refill port
-    AXI_BUS.Master                         dcache_bypass_if         // bypass axi port (disabled D$ or uncacheable access)
+    AXI_BUS.Master                         dcache_bypass_if,         // bypass axi port (disabled D$ or uncacheable access)
+    input  logic                           resumereq_i,
+    input  logic                           cmdbusy_i,
+    input  logic                           transfer_i
 );
 
    std_icache #(
@@ -65,7 +68,10 @@ module std_cache_subsystem #(
        .areq_o   ( icache_areq_o         ),
        .dreq_i   ( icache_dreq_i         ),
        .dreq_o   ( icache_dreq_o         ),
-       .axi      ( icache_data_if        )
+       .axi      ( icache_data_if        ),
+       .resumereq_i,
+       .cmdbusy_i,
+       .transfer_i
    );
 
    // decreasing priority

@@ -11,7 +11,7 @@ class remote_bitbang_t
 public:
   // Create a new server, listening for connections from localhost on the given
   // port.
-  remote_bitbang_t(uint16_t port);
+  remote_bitbang_t();
 
   // Do a bit of work.
   void tick(unsigned char * jtag_tck,

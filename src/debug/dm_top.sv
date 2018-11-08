@@ -42,16 +42,19 @@ module dm_top #(
 
     output logic               dmi_resp_valid_o,
     input  logic               dmi_resp_ready_i,
-    output dm::dmi_resp_t      dmi_resp_o
+    output dm::dmi_resp_t      dmi_resp_o,
+    output dm::dmcontrol_t     dmcontrol,
+    output dm::dmstatus_t      dmstatus,
+    logic [NrHarts-1:0]        resumereq_o,
+    output logic               cmdbusy_o,
+    output logic               transfer_o
 );
 
     // Debug CSRs
     dm::hartinfo_t [NrHarts-1:0]      hartinfo;
     logic [NrHarts-1:0]               halted;
-    logic [NrHarts-1:0]               running;
     logic [NrHarts-1:0]               resumeack;
     logic [NrHarts-1:0]               haltreq;
-    logic [NrHarts-1:0]               resumereq;
     logic                             cmd_valid;
     dm::command_t                     cmd;
 
@@ -64,7 +67,6 @@ module dm_top #(
 
     logic                             cmderror_valid;
     dm::cmderr_t                      cmderror;
-    logic                             cmdbusy;
     logic [dm::ProgBufSize-1:0][31:0] progbuf;
     logic [dm::DataCount-1:0][31:0]   data_csrs_mem;
     logic [dm::DataCount-1:0][31:0]   data_mem_csrs;
@@ -114,12 +116,12 @@ module dm_top #(
         .unavailable_i,
         .resumeack_i             ( resumeack             ),
         .haltreq_o               ( haltreq               ),
-        .resumereq_o             ( resumereq             ),
+        .resumereq_o             ( resumereq_o           ),
         .cmd_valid_o             ( cmd_valid             ),
         .cmd_o                   ( cmd                   ),
         .cmderror_valid_i        ( cmderror_valid        ),
         .cmderror_i              ( cmderror              ),
-        .cmdbusy_i               ( cmdbusy               ),
+        .cmdbusy_i               ( cmdbusy_o             ),
         .progbuf_o               ( progbuf               ),
         .data_i                  ( data_mem_csrs         ),
         .data_valid_i            ( data_valid            ),
@@ -138,7 +140,9 @@ module dm_top #(
         .sbdata_valid_i          ( sbdata_valid          ),
         .sbbusy_i                ( sbbusy                ),
         .sberror_valid_i         ( sberror_valid         ),
-        .sberror_i               ( sberror               )
+        .sberror_i               ( sberror               ),
+        .dmcontrol_q             ( dmcontrol             ),
+        .dmstatus
     );
 
     dm_sba i_dm_sba (
@@ -171,14 +175,14 @@ module dm_top #(
         .debug_req_o             ( debug_req_o           ),
         .hartsel_i               ( hartsel               ),
         .haltreq_i               ( haltreq               ),
-        .resumereq_i             ( resumereq             ),
+        .resumereq_i             ( resumereq_o           ),
         .halted_o                ( halted                ),
         .resuming_o              ( resumeack             ),
         .cmd_valid_i             ( cmd_valid             ),
         .cmd_i                   ( cmd                   ),
         .cmderror_valid_o        ( cmderror_valid        ),
         .cmderror_o              ( cmderror              ),
-        .cmdbusy_o               ( cmdbusy               ),
+        .cmdbusy_o               ( cmdbusy_o             ),
         .progbuf_i               ( progbuf               ),
         .data_i                  ( data_csrs_mem         ),
         .data_o                  ( data_mem_csrs         ),
@@ -188,7 +192,8 @@ module dm_top #(
         .addr_i                  ( addr                  ),
         .wdata_i                 ( wdata                 ),
         .be_i                    ( be                    ),
-        .rdata_o                 ( rdata                 )
+        .rdata_o                 ( rdata                 ),
+        .transfer_o
     );
 
     axi2mem #(

@@ -63,6 +63,9 @@ module ariane_testharness #(
     logic [31:0] dmi_req_bits_data;
     logic        dmi_resp_ready;
     logic        dmi_resp_valid;
+    logic        resumereq_i;
+    logic        cmdbusy_i;
+    logic        transfer_i;
 
     logic rtc_i;
     assign rtc_i = 1'b0;
@@ -190,8 +193,13 @@ module ariane_testharness #(
         .dmi_req_i            ( debug_req            ),
         .dmi_resp_valid_o     ( debug_resp_valid     ),
         .dmi_resp_ready_i     ( debug_resp_ready     ),
-        .dmi_resp_o           ( debug_resp           )
-    );
+        .dmi_resp_o           ( debug_resp           ),
+        .dmcontrol            (                      ),
+        .dmstatus             (                      ),
+        .resumereq_o          ( resumereq_i          ),
+        .cmdbusy_o            ( cmdbusy_i            ),
+        .transfer_o           ( transfer_i           ) 
+   );
 
     // ---------------
     // ROM
@@ -327,7 +335,10 @@ module ariane_testharness #(
         .debug_req_i          ( debug_req_core   ),
         .data_if              ( slave[2]         ),
         .bypass_if            ( slave[1]         ),
-        .instr_if             ( slave[0]         )
+        .instr_if             ( slave[0]         ),
+        .resumereq_i,
+        .cmdbusy_i,
+        .transfer_i
     );
 
 endmodule

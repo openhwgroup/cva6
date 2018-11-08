@@ -51,7 +51,8 @@ module dm_mem #(
     input  logic [63:0]                      addr_i,
     input  logic [63:0]                      wdata_i,
     input  logic [7:0]                       be_i,
-    output logic [63:0]                      rdata_o
+    output logic [63:0]                      rdata_o,
+    output logic                             transfer_o
 );
 
     localparam int HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
@@ -94,6 +95,7 @@ module dm_mem #(
     assign debug_req_o = haltreq_i;
     assign halted_o    = halted_q;
     assign resuming_o  = resuming_q;
+    assign transfer_o  = ac_ar.transfer;
 
     enum logic [1:0] { Idle, Go, Resume, CmdExecuting } state_d, state_q;
 

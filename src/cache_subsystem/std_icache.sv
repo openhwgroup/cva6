@@ -31,7 +31,10 @@ module std_icache  #(
     input  icache_dreq_i_t           dreq_i,
     output icache_dreq_o_t           dreq_o,
     // refill port
-    AXI_BUS.Master                   axi
+    AXI_BUS.Master                   axi,
+    input  logic                     resumereq_i,
+    input  logic                     cmdbusy_i,
+    input  logic                     transfer_i
 );
 
     localparam int unsigned ICACHE_BYTE_OFFSET = $clog2(ICACHE_LINE_WIDTH/8); // 3
@@ -50,17 +53,17 @@ module std_icache  #(
     logic                                   flushing_d, flushing_q;
 
     // signals
-    logic [ICACHE_SET_ASSOC-1:0]          req;           // request to data memory
-    logic [ICACHE_SET_ASSOC-1:0]          vld_req;       // request to valid/tag memory
+    logic [ICACHE_SET_ASSOC:0]            req;           // request to data memory
+    logic [ICACHE_SET_ASSOC:0]            vld_req;       // request to valid/tag memory
     logic [(ICACHE_LINE_WIDTH+7)/8-1:0]   data_be;       // byte enable for data memory
     logic [(2**NR_AXI_REFILLS-1):0][7:0]  be;            // byte enable
     logic [$clog2(ICACHE_NUM_WORD)-1:0]   addr;          // this is a cache-line address, to memory array
     logic                                 we;            // write enable to memory array
-    logic [ICACHE_SET_ASSOC-1:0]          hit;           // hit from tag compare
+    logic [ICACHE_SET_ASSOC:0]            hit;           // hit from tag compare
     logic [$clog2(ICACHE_NUM_WORD)-1:0]   idx;           // index in cache line
     logic                                 update_lfsr;   // shift the LFSR
     logic [ICACHE_SET_ASSOC-1:0]          random_way;    // random way select from LFSR
-    logic [ICACHE_SET_ASSOC-1:0]          way_valid;     // bit string which contains the zapped valid bits
+    logic [ICACHE_SET_ASSOC:0]            way_valid;     // bit string which contains the zapped valid bits
     logic [$clog2(ICACHE_SET_ASSOC)-1:0]  repl_invalid;  // first non-valid encountered
     logic                                 repl_w_random; // we need to switch repl strategy since all are valid
     logic [ICACHE_TAG_WIDTH-1:0]          tag;           // tag to do comparison with
@@ -69,9 +72,9 @@ module std_icache  #(
     struct packed {
         logic                 valid;
         logic [ICACHE_TAG_WIDTH-1:0] tag;
-    } tag_rdata [ICACHE_SET_ASSOC-1:0], tag_wdata;
+    } tag_rdata [ICACHE_SET_ASSOC:0], tag_wdata;
 
-    logic [ICACHE_LINE_WIDTH-1:0] data_rdata [ICACHE_SET_ASSOC-1:0], data_wdata;
+    logic [ICACHE_LINE_WIDTH-1:0] data_rdata [ICACHE_SET_ASSOC:0], data_wdata;
     logic [(2**NR_AXI_REFILLS-1):0][63:0] wdata;
 
     for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : sram_block
@@ -112,15 +115,50 @@ module std_icache  #(
 
     // --------------------
     // Tag Comparison and way select
+   debug_tag_rom #(
+    // --------------------
+          .DATA_WIDTH ( ICACHE_TAG_WIDTH + 1   ),
+          .NUM_WORDS  ( ICACHE_NUM_WORD )
+          ) tag_rom (
+            .clk_i     ( clk_i            ),
+            .rst_ni    ( rst_ni           ),
+            .req_i     ( vld_req[ICACHE_SET_ASSOC] ),
+            .we_i      ( we               ),
+            .addr_i    ( addr             ),
+            .wdata_i   ( tag_wdata        ),
+            .be_i      ( '1               ),
+            .rdata_o   ( tag_rdata[ICACHE_SET_ASSOC] )
+        );
+
+    // cacheline selected by hit
+   debug_data_rom #(
+            .DATA_WIDTH ( ICACHE_LINE_WIDTH ),
+            .NUM_WORDS  ( ICACHE_NUM_WORD   )
+        ) data_rom (
+            .clk_i     ( clk_i              ),
+            .rst_ni    ( rst_ni             ),
+            .req_i     ( req[ICACHE_SET_ASSOC] ),
+            .we_i      ( we                 ),
+            .addr_i    ( addr               ),
+            .wdata_i   ( data_wdata         ),
+            .be_i      ( data_be            ),
+            .rdata_o   ( data_rdata[ICACHE_SET_ASSOC] ),
+            .resumereq_i,
+            .cmdbusy_i,
+            .transfer_i
+        );
+
+    // --------------------
+    // Tag Comparison and way select
     // --------------------
 
     // cacheline selected by hit
-    logic [ICACHE_SET_ASSOC-1:0][FETCH_WIDTH-1:0] cl_sel;
+    logic [ICACHE_SET_ASSOC:0][FETCH_WIDTH-1:0] cl_sel;
 
     assign idx = vaddr_q[ICACHE_BYTE_OFFSET-1:2];
 
     generate
-        for (genvar i=0;i<ICACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
+        for (genvar i=0;i<=ICACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
             assign hit[i] = (tag_rdata[i].tag == tag) ? tag_rdata[i].valid : 1'b0;
             assign cl_sel[i] = (hit[i]) ? data_rdata[i][{idx,5'b0} +: FETCH_WIDTH] : '0;
             assign way_valid[i] = tag_rdata[i].valid;
@@ -130,7 +168,7 @@ module std_icache  #(
     // OR reduction of selected cachelines
     always_comb begin : p_reduction
         dreq_o.data = cl_sel[0];
-        for(int i=1; i<ICACHE_SET_ASSOC;i++)
+        for(int i=1; i<=ICACHE_SET_ASSOC;i++)
             dreq_o.data |= cl_sel[i];
     end
 
@@ -407,7 +445,7 @@ module std_icache  #(
     lzc #(
         .WIDTH ( ICACHE_SET_ASSOC )
     ) i_lzc (
-        .in_i    ( ~way_valid    ),
+        .in_i    ( ~way_valid[ICACHE_SET_ASSOC-1:0] ),
         .cnt_o   ( repl_invalid  ),
         .empty_o ( repl_w_random )
     );

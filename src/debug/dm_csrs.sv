@@ -72,7 +72,9 @@ module dm_csrs #(
     // control signals
     input  logic                              sbbusy_i,
     input  logic                              sberror_valid_i, // bus error occurred
-    input  logic [2:0]                        sberror_i // bus error occurred
+    input  logic [2:0]                        sberror_i, // bus error occurred
+    output dm::dmcontrol_t                    dmcontrol_q,
+    output dm::dmstatus_t                     dmstatus
 );
     // the amount of bits we need to represent all harts
     localparam HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
@@ -99,8 +101,7 @@ module dm_csrs #(
         // assign haltsum3[i] = (NrHarts > 32768) ? &halted_i[hartsel[19:19] +: 32768] : 1'b0;
     end
 
-    dm::dmstatus_t      dmstatus;
-    dm::dmcontrol_t     dmcontrol_d, dmcontrol_q;
+    dm::dmcontrol_t     dmcontrol_d;
     dm::abstractcs_t    abstractcs;
     dm::cmderr_t        cmderr_d, cmderr_q;
     dm::command_t       command_d, command_q;
