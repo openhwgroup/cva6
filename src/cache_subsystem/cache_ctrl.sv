@@ -429,8 +429,8 @@ module cache_ctrl #(
         end
         // if the full MSHR address matches so should also match the partial one
         partial_full_mshr_match: assert property(@(posedge  clk_i) disable iff (~rst_ni) mshr_addr_matches_i -> mshr_index_matches_i)   else $fatal (1, "partial mshr index doesn't match");
-        // there should never be a valid answer when the MSHR matches
-        no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (~rst_ni) mshr_addr_matches_i -> !req_port_o.data_rvalid) else $fatal (1, "rvalid_o should not be set on MSHR match");
+        // there should never be a valid answer when the MSHR matches and we are not being served
+        no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (~rst_ni) (mshr_addr_matches_i && !active_serving_i)-> !req_port_o.data_rvalid) else $fatal (1, "rvalid_o should not be set on MSHR match");
     `endif
     `endif
 endmodule
