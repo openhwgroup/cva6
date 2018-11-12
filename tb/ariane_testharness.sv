@@ -406,14 +406,16 @@ module ariane_testharness #(
     // ---------------
     // AXI Xbar
     // ---------------
-    axi_node_intf_wrap #(
+    axi_node_wrap_with_slices #(
         // three ports from Ariane (instruction, data and bypass)
-        .NB_SLAVE       ( NB_SLAVE                   ),
-        .NB_MASTER      ( ariane_soc::NB_PERIPHERALS ),
-        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH          ),
-        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH             ),
-        .AXI_USER_WIDTH ( AXI_USER_WIDTH             ),
-        .AXI_ID_WIDTH   ( AXI_ID_WIDTH               )
+        .NB_SLAVE           ( NB_SLAVE                   ),
+        .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
+        .AXI_ADDR_WIDTH     ( AXI_ADDRESS_WIDTH          ),
+        .AXI_DATA_WIDTH     ( AXI_DATA_WIDTH             ),
+        .AXI_USER_WIDTH     ( AXI_USER_WIDTH             ),
+        .AXI_ID_WIDTH       ( AXI_ID_WIDTH               ),
+        .MASTER_SLICE_DEPTH ( 2                          ),
+        .SLAVE_SLICE_DEPTH  ( 2                          )
     ) i_axi_xbar (
         .clk          ( clk_i      ),
         .rst_n        ( ndmreset_n ),

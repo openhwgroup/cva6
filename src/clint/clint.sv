@@ -60,12 +60,14 @@ module clint #(
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH    )
     ) axi_lite_interface_i (
+        .clk_i     ( clk_i   ),
+        .rst_ni    ( rst_ni  ),
+        .slave     ( slave   ),
         .address_o ( address ),
         .en_o      ( en      ),
         .we_o      ( we      ),
         .data_i    ( rdata   ),
-        .data_o    ( wdata   ),
-        .*
+        .data_o    ( wdata   )
     );
 
     // -----------------------------
