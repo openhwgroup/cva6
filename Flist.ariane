@@ -60,6 +60,10 @@ include/axi_intf.sv
 src/util/instruction_tracer_pkg.sv
 src/util/instruction_tracer_if.sv
 src/util/sram.sv
+src/util/axi_master_connect.sv
+src/util/axi_master_connect_rev.sv
+src/util/axi_slave_connect.sv
+src/util/axi_slave_connect_rev.sv
 src/common_cells/src/fifo_v2.sv
 src/common_cells/src/fifo_v3.sv
 src/common_cells/src/lfsr_8bit.sv

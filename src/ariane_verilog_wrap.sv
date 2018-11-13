@@ -69,7 +69,7 @@ module ariane_verilog_wrap #(
   logic wake_up_d, wake_up_q;
   logic clk_gated;
 
-  assign wake_up_d = wake_up_q | (l15_rtrn.l15_returntype == serpent_cache_pkg::L15_INT_RET && l15_rtrn.l15_val);
+  assign wake_up_d = wake_up_q || ((l15_rtrn.l15_returntype == serpent_cache_pkg::L15_INT_RET) && l15_rtrn.l15_val);
 
   always_ff @(posedge clk_i or negedge reset_l) begin : p_regs
     if(~reset_l) begin
@@ -79,16 +79,22 @@ module ariane_verilog_wrap #(
     end
   end
 
-// synthesizable version for FPGA needs to use a clock buffer
-`ifdef FPGA_SYN
-  BUFGCE i_bufgce (
-     .I  ( clk_i     ),
-     .CE ( wake_up_q ),
-     .O  ( clk_gated )
-  );
-`else
-  assign clk_gated = (wake_up_q) ? clk_i : 1'b0;
-`endif
+  // this is an openpiton IP
+  clk_gating_latch i_clk_gate (
+    .clk     ( clk_i     ),
+    .clk_en  ( wake_up_q ),
+    .clk_out ( clk_gated )
+    );
+
+// `ifdef FPGA_SYN
+  // BUFGCE i_bufgce (
+  //    .I  ( clk_i     ),
+  //    .CE ( wake_up_q ),
+  //    .O  ( clk_gated )
+  // );
+// `else
+//   assign clk_gated = (wake_up_q) ? clk_i : 1'b0;
+// `endif
 
   ariane #(
     .SWAP_ENDIANESS   ( SWAP_ENDIANESS   ),
