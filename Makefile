@@ -82,7 +82,10 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/rstgen_bypass.sv                          \
         src/common_cells/src/stream_mux.sv                             \
         src/common_cells/src/stream_demux.sv                           \
-        src/util/axi_connect.sv                                        \
+        src/util/axi_master_connect.sv                                 \
+        src/util/axi_slave_connect.sv                                  \
+        src/util/axi_master_connect_rev.sv                             \
+        src/util/axi_slave_connect_rev.sv                              \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \

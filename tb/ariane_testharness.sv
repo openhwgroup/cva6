@@ -166,8 +166,8 @@ module ariane_testharness #(
         .exit                 ( dmi_exit             )
     );
 
-    ariane_axi::req_t    axi_sba_req;
-    ariane_axi::resp_t   axi_sba_resp;
+    ariane_axi::req_t    dm_axi_m_req,  dm_axi_s_req;
+    ariane_axi::resp_t   dm_axi_m_resp, dm_axi_s_resp;
 
     // debug module
     dm_top #(
@@ -185,9 +185,10 @@ module ariane_testharness #(
         .dmactive_o           (                      ), // active debug session
         .debug_req_o          ( debug_req_core       ),
         .unavailable_i        ( '0                   ),
-        .axi_slave            ( master[3]            ),
-        .axi_req_o            ( axi_sba_req          ),
-        .axi_resp_i           ( axi_sba_resp         ),
+        .axi_s_req_i          ( dm_axi_s_req         ),
+        .axi_s_resp_o         ( dm_axi_s_resp        ),
+        .axi_m_req_o          ( dm_axi_m_req         ),
+        .axi_m_resp_i         ( dm_axi_m_resp        ),
         .dmi_rst_ni           ( rst_ni               ),
         .dmi_req_valid_i      ( debug_req_valid      ),
         .dmi_req_ready_o      ( debug_req_ready      ),
@@ -197,8 +198,8 @@ module ariane_testharness #(
         .dmi_resp_o           ( debug_resp           )
     );
 
-    axi_connect i_axi_connect_sba (.axi_req_i(axi_sba_req), .axi_resp_o(axi_sba_resp), .master(slave[1]));
-
+    axi_master_connect i_axi_master_dm (.axi_req_i(dm_axi_m_req), .axi_resp_o(dm_axi_m_resp), .master(slave[1]));
+    axi_slave_connect  i_axi_slave_dm  (.axi_req_o(dm_axi_s_req), .axi_resp_i(dm_axi_s_resp), .slave(master[3]));
 
     // ---------------
     // ROM
@@ -300,20 +301,26 @@ module ariane_testharness #(
     logic ipi;
     logic timer_irq;
 
+    ariane_axi::req_t    axi_clint_req;
+    ariane_axi::resp_t   axi_clint_resp;
+
     clint #(
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
         .NR_CORES       ( 1                   )
     ) i_clint (
-        .clk_i       ( clk_i     ),
-        .rst_ni      ( rst_ni    ),
-        .testmode_i  ( test_en   ),
-        .slave       ( master[1] ),
-        .rtc_i       ( rtc_i     ),
-        .timer_irq_o ( timer_irq ),
-        .ipi_o       ( ipi       )
+        .clk_i       ( clk_i          ),
+        .rst_ni      ( rst_ni         ),
+        .testmode_i  ( test_en        ),
+        .axi_req_i   ( axi_clint_req  ),
+        .axi_resp_o  ( axi_clint_resp ),
+        .rtc_i       ( rtc_i          ),
+        .timer_irq_o ( timer_irq      ),
+        .ipi_o       ( ipi            )
     );
+
+    axi_slave_connect i_axi_slave_connect_clint (.axi_req_o(axi_clint_req), .axi_resp_i(axi_clint_resp), .slave(master[1]));
 
     // ---------------
     // Core
@@ -336,7 +343,7 @@ module ariane_testharness #(
         .axi_resp_i           ( axi_ariane_resp  )
     );
 
-    axi_connect i_axi_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
+    axi_master_connect i_axi_master_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
 
 
 endmodule
