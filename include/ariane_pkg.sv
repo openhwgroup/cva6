@@ -16,6 +16,13 @@
  *              in one package.
  */
 
+// this is needed to propagate the
+// configuration in case Ariane is
+// instantiated in OpenPiton
+`ifdef PITON_ARIANE
+  `include "l15.tmp.h"
+`endif
+
 package ariane_pkg;
 
     // ---------------
@@ -227,31 +234,33 @@ package ariane_pkg;
     // Cache config
     // ---------------
 
-    // align to openpiton for the time being (this should be more configurable in the future)
-    `ifdef SERPENT_PULP
+    // if serpent pulp is used standalone (outside of openpiton)
+    // we just use the default config of ariane
+    // otherwise we have to propagate the openpiton L15 configuration from l15.h
+`ifdef PITON_ARIANE
       // I$
-      localparam int unsigned ICACHE_INDEX_WIDTH = 11;  // in bit
-      localparam int unsigned ICACHE_TAG_WIDTH   = 45;  // in bit
-      localparam int unsigned ICACHE_LINE_WIDTH  = 256; // in bit
-      localparam int unsigned ICACHE_SET_ASSOC   = 4;
+      localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
+      localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
+      localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
+      localparam int unsigned ICACHE_TAG_WIDTH   = 56 - ICACHE_INDEX_WIDTH;
       // D$
-      localparam int unsigned DCACHE_INDEX_WIDTH = 11;
-      localparam int unsigned DCACHE_TAG_WIDTH   = 45;
-      localparam int unsigned DCACHE_LINE_WIDTH  = 128;
-      localparam int unsigned DCACHE_SET_ASSOC   = 4;
-    `else
+      localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
+      localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
+      localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
+      localparam int unsigned DCACHE_TAG_WIDTH   = 56 - DCACHE_INDEX_WIDTH;
+`else
     // align to openpiton for the time being (this should be more configurable in the future)
        // I$
-      localparam int unsigned ICACHE_INDEX_WIDTH = 12; // in bit
-      localparam int unsigned ICACHE_TAG_WIDTH   = 44; // in bit
+      localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit
+      localparam int unsigned ICACHE_TAG_WIDTH   = 44;  // in bit
       localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
       localparam int unsigned ICACHE_SET_ASSOC   = 4;
       // D$
-      localparam int unsigned DCACHE_INDEX_WIDTH = 12;
-      localparam int unsigned DCACHE_TAG_WIDTH   = 44;
-      localparam int unsigned DCACHE_LINE_WIDTH  = 128;
+      localparam int unsigned DCACHE_INDEX_WIDTH = 12;  // in bit
+      localparam int unsigned DCACHE_TAG_WIDTH   = 44;  // in bit
+      localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
       localparam int unsigned DCACHE_SET_ASSOC   = 8;
-    `endif
+`endif
 
     // ---------------
     // EX Stage
