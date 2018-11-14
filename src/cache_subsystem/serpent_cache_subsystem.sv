@@ -169,9 +169,8 @@ serpent_l15_adapter #(
 // and serpent cache system with the standard AXI-based testharness
 `ifdef AXI64_CACHE_PORTS
 
-// this is static at the moment due to the openpiton config.
-// TODO: make this parameterizable in the future
-localparam AXI_NUM_WORDS = 4;
+// support up to 512bit cache lines
+localparam AXI_NUM_WORDS = 8;
 
 logic axi_rd_req, axi_rd_gnt;
 logic [63:0]                    axi_rd_addr, axi_wr_addr;

@@ -33,7 +33,7 @@ package serpent_cache_pkg;
     localparam L15_TID_WIDTH           = `L15_THREADID_WIDTH;
     localparam L15_TLB_CSM_WIDTH       = `TLB_CSM_WIDTH;
 `else
-    localparam L15_SET_ASSOC           = 4;
+    localparam L15_SET_ASSOC           = ariane_pkg::DCACHE_SET_ASSOC;// align with dcache for compatibility with the standard Ariane setup
     localparam L15_TID_WIDTH           = 2;
     localparam L15_TLB_CSM_WIDTH       = 33;
 `endif
