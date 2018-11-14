@@ -64,45 +64,53 @@ module ariane_verilog_wrap #(
   assign l15_rtrn  = l15_rtrn_i;
 `endif
 
-  // this is a workaround since interrupts are not fully supported yet.
-  // the logic below catches the initial wake up interrupt that enables the cores.
-  logic wake_up_d, wake_up_q;
-  logic clk_gated;
+  // // this is a workaround since interrupts are not fully supported yet.
+  // // the logic below catches the initial wake up interrupt that enables the cores.
+  // logic wake_up_d, wake_up_q;
+  // logic rst_n;
 
-  assign wake_up_d = wake_up_q || ((l15_rtrn.l15_returntype == serpent_cache_pkg::L15_INT_RET) && l15_rtrn.l15_val);
+  // assign wake_up_d = wake_up_q || ((l15_rtrn.l15_returntype == serpent_cache_pkg::L15_INT_RET) && l15_rtrn.l15_val);
+
+  // always_ff @(posedge clk_i or negedge reset_l) begin : p_regs
+  //   if(~reset_l) begin
+  //     wake_up_q <= 0;
+  //   end else begin
+  //     wake_up_q <= wake_up_d;
+  //   end
+  // end
+
+  // // reset gate this
+  // assign rst_n = wake_up_q & reset_l;
+
+  // this is a workaround,
+  // we basically wait for 32k cycles such that the SRAMs in openpiton can initialize
+  // 128KB..8K cycles
+  // 256KB..16K cycles
+  // etc, so this should be enough for 512k per tile
+  logic [15:0] wake_up_cnt_d, wake_up_cnt_q;
+  logic rst_n;
+
+  assign wake_up_cnt_d = (wake_up_cnt_q[$high(wake_up_cnt_q)]) ? wake_up_cnt_q : wake_up_cnt_q + 1;
 
   always_ff @(posedge clk_i or negedge reset_l) begin : p_regs
     if(~reset_l) begin
-      wake_up_q <= 0;
+      wake_up_cnt_q <= 0;
     end else begin
-      wake_up_q <= wake_up_d;
+      wake_up_cnt_q <= wake_up_cnt_d;
     end
   end
 
-  // this is an openpiton IP
-  clk_gating_latch i_clk_gate (
-    .clk     ( clk_i     ),
-    .clk_en  ( wake_up_q ),
-    .clk_out ( clk_gated )
-    );
+  // reset gate this
+  assign rst_n = wake_up_cnt_q[$high(wake_up_cnt_q)] & reset_l;
 
-// `ifdef FPGA_SYN
-  // BUFGCE i_bufgce (
-  //    .I  ( clk_i     ),
-  //    .CE ( wake_up_q ),
-  //    .O  ( clk_gated )
-  // );
-// `else
-//   assign clk_gated = (wake_up_q) ? clk_i : 1'b0;
-// `endif
 
   ariane #(
     .SWAP_ENDIANESS   ( SWAP_ENDIANESS   ),
     .CACHE_LOW_REGION ( CACHE_LOW_REGION ),
     .CACHE_START_ADDR ( CACHE_START_ADDR )
   ) ariane (
-    .clk_i       ( clk_gated ),
-    .rst_ni      ( reset_l   ),
+    .clk_i       ( clk_i     ),
+    .rst_ni      ( rst_n     ),
     .boot_addr_i             ,
     .hart_id_i               ,
     .irq_i                   ,
