@@ -32,11 +32,12 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_icache  #(
-    parameter bit AXI64BIT_COMPLIANT     = 1'b0,           // set this to 1 when using in conjunction with 64bit AXI bus adapter
-    parameter     NC_ADDR_BEGIN          = 40'h8000000000, // start address of noncacheable I/O region
-    parameter bit NC_ADDR_GE_LT          = 1'b1            // determines how the physical address is compared with NC_ADDR_BEGIN
-                                                           // NC_ADDR_GE_LT == 0 ->  if paddr <  NC_ADDR_BEGIN -> NC
-                                                           // NC_ADDR_GE_LT == 1 ->  if paddr >= NC_ADDR_BEGIN -> NC
+    parameter logic [DCACHE_ID_WIDTH-1:0] RD_TX_ID            = 0,              // ID to be used for read transactions
+    parameter int unsigned                NC_ADDR_BEGIN       = 40'h8000000000, // start address of noncacheable I/O region
+    parameter bit                         AXI64BIT_COMPLIANT  = 1'b0,           // set this to 1 when using in conjunction with 64bit AXI bus adapter
+    parameter bit                         NC_ADDR_GE_LT       = 1'b1            // determines how the physical address is compared with NC_ADDR_BEGIN
+                                                                                // NC_ADDR_GE_LT == 0 ->  if paddr <  NC_ADDR_BEGIN -> NC
+                                                                                // NC_ADDR_GE_LT == 1 ->  if paddr >= NC_ADDR_BEGIN -> NC
 )(
     input  logic                      clk_i,
     input  logic                      rst_ni,
@@ -150,8 +151,7 @@ module serpent_icache  #(
         end
     endgenerate
 
-    // currently we can only have one outstanding tx here
-    assign mem_data_o.tid   = '0;
+    assign mem_data_o.tid   = RD_TX_ID;
 
     assign mem_data_o.nc    = paddr_is_nc;
     // way that is being replaced

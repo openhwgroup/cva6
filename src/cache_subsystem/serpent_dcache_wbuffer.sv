@@ -52,9 +52,9 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_wbuffer #(
-    parameter     NC_ADDR_BEGIN          = 40'h8000000000, // start address of noncacheable I/O region
-    parameter bit NC_ADDR_GE_LT          = 1'b1            // determines how the physical address is compared with NC_ADDR_BEGIN
-)(
+    parameter int unsigned NC_ADDR_BEGIN     = 40'h8000000000, // start address of noncacheable I/O region
+    parameter bit          NC_ADDR_GE_LT     = 1'b1            // determines how the physical address is compared with NC_ADDR_BEGIN
+) (
     input  logic                               clk_i,          // Clock
     input  logic                               rst_ni,         // Asynchronous reset active low
 
@@ -72,10 +72,10 @@ module serpent_dcache_wbuffer #(
     output logic [DCACHE_SET_ASSOC-1:0]        miss_vld_bits_o, // unused here (set to 0)
     output logic                               miss_nc_o,       // request to I/O space
     output logic [2:0]                         miss_size_o,     //
-    output logic [DCACHE_ID_WIDTH-1:0]         miss_wr_id_o,    // id of this transaction
+    output logic [DCACHE_ID_WIDTH-1:0]         miss_id_o,       // ID of this transaction (wbuffer uses all IDs from 0 to DCACHE_MAX_TX-1)
     // write responses from memory
     input  logic                               miss_rtrn_vld_i,
-    input  logic [DCACHE_ID_WIDTH-1:0]         miss_rtrn_id_i,  // transaction id to clear
+    input  logic [DCACHE_ID_WIDTH-1:0]         miss_rtrn_id_i,  // transaction ID to clear
     // cache read interface
     output logic [DCACHE_TAG_WIDTH-1:0]        rd_tag_o,        // tag in - comes one cycle later
     output logic [DCACHE_CL_IDX_WIDTH-1:0]     rd_idx_o,
@@ -178,7 +178,7 @@ lzc #(
 
 // add the offset to the physical base address of this buffer entry
 assign miss_paddr_o = {wbuffer_q[dirty_ptr].wtag, bdirty_off};
-assign miss_wr_id_o = tx_id;
+assign miss_id_o    = tx_id;
 
 // is there any dirty word to be transmitted, and is there a free TX slot?
 assign miss_req_o = (|dirty) && free_tx_slots;

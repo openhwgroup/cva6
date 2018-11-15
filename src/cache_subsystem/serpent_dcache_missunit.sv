@@ -18,8 +18,9 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_missunit #(
-    parameter     NUM_PORTS          = 3
- )(
+    parameter logic [DCACHE_ID_WIDTH-1:0] AMO_TX_ID = 1, // TX id to be used for AMOs
+    parameter int unsigned                NUM_PORTS = 3  // number of miss ports
+ ) (
     input  logic                                       clk_i,       // Clock
     input  logic                                       rst_ni,      // Asynchronous reset active low
     // cache management, signals from/to core
@@ -42,7 +43,7 @@ module serpent_dcache_missunit #(
     input  logic [NUM_PORTS-1:0][63:0]                 miss_paddr_i,
     input  logic [NUM_PORTS-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits_i,
     input  logic [NUM_PORTS-1:0][2:0]                  miss_size_i,
-    input  logic [NUM_PORTS-1:0][DCACHE_ID_WIDTH-1:0]  miss_wr_id_i,       // only used for writes, set to zero fro reads
+    input  logic [NUM_PORTS-1:0][DCACHE_ID_WIDTH-1:0]  miss_id_i,          // used as transaction ID
     // signals that the request collided with a pending read
     output logic [NUM_PORTS-1:0]                       miss_replay_o,
     // signals response from memory
@@ -163,7 +164,7 @@ module serpent_dcache_missunit #(
     assign mshr_d.size            = (mshr_allocate)  ? miss_size_i    [miss_port_idx] : mshr_q.size;
     assign mshr_d.paddr           = (mshr_allocate)  ? miss_paddr_i   [miss_port_idx] : mshr_q.paddr;
     assign mshr_d.vld_bits        = (mshr_allocate)  ? miss_vld_bits_i[miss_port_idx] : mshr_q.vld_bits;
-    assign mshr_d.id              = (mshr_allocate)  ? miss_wr_id_i   [miss_port_idx] : mshr_q.id;
+    assign mshr_d.id              = (mshr_allocate)  ? miss_id_i      [miss_port_idx] : mshr_q.id;
     assign mshr_d.nc              = (mshr_allocate)  ? miss_nc_i      [miss_port_idx] : mshr_q.nc;
     assign mshr_d.repl_way        = (mshr_allocate)  ? repl_way                       : mshr_q.repl_way;
     assign mshr_d.miss_port_idx   = (mshr_allocate)  ? miss_port_idx                  : mshr_q.miss_port_idx;
@@ -209,7 +210,7 @@ module serpent_dcache_missunit #(
                                                          mem_rtrn_i.data[63:0];
 
     // outgoing memory requests (AMOs are always uncached)
-    assign mem_data_o.tid    = (amo_sel) ? '0                  : miss_wr_id_i[miss_port_idx];
+    assign mem_data_o.tid    = (amo_sel) ? AMO_TX_ID           : miss_id_i[miss_port_idx];
     assign mem_data_o.nc     = (amo_sel) ? 1'b1                : miss_nc_i[miss_port_idx];
     assign mem_data_o.way    = (amo_sel) ? '0                  : repl_way;
     assign mem_data_o.data   = (amo_sel) ? amo_data            : miss_wdata_i[miss_port_idx];

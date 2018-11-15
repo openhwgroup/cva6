@@ -91,6 +91,8 @@ serpent_icache #(
 `ifdef AXI64_CACHE_PORTS
     .AXI64BIT_COMPLIANT ( 1'b1                    ),
 `endif
+    // use ID 0 for icache reads
+    .RD_TX_ID           ( 0                       ),
     .NC_ADDR_GE_LT      ( CACHE_LOW_REGION        ),
     .NC_ADDR_BEGIN      ( CACHE_START_ADDR        )
   ) i_serpent_icache (
@@ -116,7 +118,10 @@ serpent_icache #(
 // they have equal prio and are RR arbited
 // Port 2 is write only and goes into the merging write buffer
 serpent_dcache #(
-    .NC_ADDR_GE_LT   ( CACHE_LOW_REGION        ), // std config is for openpiton, where the upper memory region is NC
+    // use ID 1 for dcache reads and amos. note that the writebuffer
+    // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
+    .RD_AMO_TX_ID    ( 1                       ),
+    .NC_ADDR_GE_LT   ( CACHE_LOW_REGION        ),
     .NC_ADDR_BEGIN   ( CACHE_START_ADDR        )
   ) i_serpent_dcache (
     .clk_i           ( clk_i                   ),
@@ -163,10 +168,12 @@ serpent_l15_adapter #(
 `endif
   );
 
+///////////////////////////////////////////////////////
+// different memory plumbing to allow for using the
+// serpent cache subsystem in a standard AXI setting
+// for verificaton purposes.
+///////////////////////////////////////////////////////
 
-// different memory plumbing
-// note that this is a workaround that is mainly used to verify L15 adapter
-// and serpent cache system with the standard AXI-based testharness
 `ifdef AXI64_CACHE_PORTS
 
 // support up to 512bit cache lines
@@ -186,29 +193,25 @@ logic axi_wr_valid, axi_rd_rdy, axi_wr_rdy;
 
 logic ifill;
 logic [serpent_cache_pkg::L15_TID_WIDTH+2-1:0] id_tmp;
-logic rd_pending_d, rd_pending_q;
+
 
 // request side
 assign ifill = (l15_req.l15_rqtype==serpent_cache_pkg::L15_IMISS_RQ);
 
-assign axi_rd_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_LOAD_RQ | ifill) && !rd_pending_q;
+assign axi_rd_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_LOAD_RQ | ifill);
 assign axi_wr_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_STORE_RQ);
 
 assign axi_rd_addr = l15_req.l15_address;
 assign axi_wr_addr = axi_rd_addr;
 
-// the axi interconnect does not correctly handle the ordering of read responses with same IDs that
-// go to different slaves. workaround: only allow for one outstanding TX
-assign rd_pending_d = (axi_rd_valid) ? '0 : axi_rd_gnt;
-
 assign axi_rd_id_in = {l15_req.l15_threadid, ifill, l15_req.l15_nc};
 assign axi_wr_id_in = axi_rd_id_in;
 
-assign axi_rd_size = (ifill) ? 2'b11 : l15_req.l15_size[1:0];// always request 64bit (fix this... at some point)
+assign axi_rd_size = (ifill) ? 2'b11 : l15_req.l15_size[1:0];// always request 64bit in this case
 assign axi_wr_size = l15_req.l15_size[1:0];
 
 assign axi_rd_blen = (l15_req.l15_size[2]) ? ((ifill) ? ariane_pkg::ICACHE_LINE_WIDTH/64-1  :
-  ariane_pkg::DCACHE_LINE_WIDTH/64-1) : '0;
+                                                        ariane_pkg::DCACHE_LINE_WIDTH/64-1) : '0;
 assign axi_wr_blen = '0;// single word writes
 
 assign axi_wr_data = l15_req.l15_data;
@@ -250,13 +253,6 @@ always_comb begin : p_axi_rtrn
   l15_rtrn.l15_data_3        = axi_rd_data[3];
 end
 
-always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-  if(~rst_ni) begin
-    rd_pending_q <= '0;
-  end else begin
-    rd_pending_q <= rd_pending_d;
-  end
-end
 
 
 axi_adapter2 #(
