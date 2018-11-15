@@ -41,7 +41,7 @@ module store_buffer (
     // D$ interface
     input  dcache_req_o_t            req_port_i,
     output dcache_req_i_t            req_port_o
-    );
+);
     // depth of store-buffers
     localparam int unsigned DEPTH_SPEC   = 4;
     // allocate more space for the commit buffer to be on the save side

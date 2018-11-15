@@ -113,8 +113,6 @@ module csr_regfile #(
     logic [63:0] medeleg_q,   medeleg_d;
     logic [63:0] mideleg_q,   mideleg_d;
     logic [63:0] mip_q,       mip_d;
-    logic [63:0] pmpcfg0_q,   pmpcfg0_d;
-    logic [63:0] pmpaddr0_q,  pmpaddr0_d;
     logic [63:0] mie_q,       mie_d;
     logic [63:0] mscratch_q,  mscratch_d;
     logic [63:0] mepc_q,      mepc_d;
@@ -187,9 +185,6 @@ module csr_regfile #(
                 riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
                 riscv::CSR_MTVAL:              csr_rdata = mtval_q;
                 riscv::CSR_MIP:                csr_rdata = mip_q;
-                // Placeholders for M-mode protection
-                riscv::CSR_PMPCFG0:            csr_rdata = pmpcfg0_q;
-                riscv::CSR_PMPADDR0:           csr_rdata = pmpaddr0_q;
                 riscv::CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
                 riscv::CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
                 riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
@@ -350,7 +345,8 @@ module csr_regfile #(
                         sapt      = riscv::satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
                         sapt.asid = sapt.asid & {{(16-ASID_WIDTH){1'b0}}, {ASID_WIDTH{1'b1}}};
-                        satp_d    = sapt;
+                        // only update if we actually support this mode
+                        if (sapt.mode == MODE_OFF || sapt.mode == MODE_SV39) satp_d = sapt;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
@@ -409,9 +405,6 @@ module csr_regfile #(
                     mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
-                // Placeholders for M-mode protection
-                riscv::CSR_PMPCFG0:            pmpcfg0_d   = csr_wdata;
-                riscv::CSR_PMPADDR0:           pmpaddr0_d  = csr_wdata;
                 // performance counters
                 riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
                 riscv::CSR_MINSTRET:           instret     = csr_wdata;
@@ -914,7 +907,7 @@ module csr_regfile #(
             mcause_q               <= 64'b0;
             mscratch_q             <= 64'b0;
             mtval_q                <= 64'b0;
-            dcache_q               <= 64'b1;
+            dcache_q               <= 64'b0;
             icache_q               <= 64'b1;
             // supervisor mode registers
             sepc_q                 <= 64'b0;

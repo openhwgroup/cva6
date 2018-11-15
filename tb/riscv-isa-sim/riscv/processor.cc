@@ -232,7 +232,7 @@ reg_t processor_t::legalize_privilege(reg_t prv)
 
 void processor_t::set_privilege(reg_t prv)
 {
-  mmu->flush_tlb();
+  // mmu->flush_tlb();
   state.prv = legalize_privilege(prv);
 }
 
@@ -338,24 +338,24 @@ void processor_t::set_csr(int which, reg_t val)
                        | ((ext != NULL) << IRQ_COP);
   reg_t all_ints = delegable_ints | MIP_MSIP | MIP_MTIP;
 
-  if (which >= CSR_PMPADDR0 && which < CSR_PMPADDR0 + state.n_pmp) {
-    size_t i = which - CSR_PMPADDR0;
-    bool locked = state.pmpcfg[i] & PMP_L;
-    bool next_locked = i+1 < state.n_pmp && (state.pmpcfg[i+1] & PMP_L);
-    bool next_tor = i+1 < state.n_pmp && (state.pmpcfg[i+1] & PMP_A) == PMP_TOR;
-    if (!locked && !(next_locked && next_tor))
-      state.pmpaddr[i] = val;
+  // if (which >= CSR_PMPADDR0 && which < CSR_PMPADDR0 + state.n_pmp) {
+  //   size_t i = which - CSR_PMPADDR0;
+  //   bool locked = state.pmpcfg[i] & PMP_L;
+  //   bool next_locked = i+1 < state.n_pmp && (state.pmpcfg[i+1] & PMP_L);
+  //   bool next_tor = i+1 < state.n_pmp && (state.pmpcfg[i+1] & PMP_A) == PMP_TOR;
+  //   if (!locked && !(next_locked && next_tor))
+  //     state.pmpaddr[i] = val;
 
-    mmu->flush_tlb();
-  }
+  //   // mmu->flush_tlb();
+  // }
 
-  if (which >= CSR_PMPCFG0 && which < CSR_PMPCFG0 + state.n_pmp / 4) {
-    for (size_t i0 = (which - CSR_PMPCFG0) * 4, i = i0; i < i0 + xlen / 8; i++) {
-      if (!(state.pmpcfg[i] & PMP_L))
-        state.pmpcfg[i] = (val >> (8 * (i - i0))) & (PMP_R | PMP_W | PMP_X | PMP_A | PMP_L);
-    }
-    mmu->flush_tlb();
-  }
+  // if (which >= CSR_PMPCFG0 && which < CSR_PMPCFG0 + state.n_pmp / 4) {
+  //   for (size_t i0 = (which - CSR_PMPCFG0) * 4, i = i0; i < i0 + xlen / 8; i++) {
+  //     if (!(state.pmpcfg[i] & PMP_L))
+  //       state.pmpcfg[i] = (val >> (8 * (i - i0))) & (PMP_R | PMP_W | PMP_X | PMP_A | PMP_L);
+  //   }
+  //   // mmu->flush_tlb();
+  // }
 
   switch (which)
   {
@@ -373,9 +373,9 @@ void processor_t::set_csr(int which, reg_t val)
       state.frm = (val & FSR_RD) >> FSR_RD_SHIFT;
       break;
     case CSR_MSTATUS: {
-      if ((val ^ state.mstatus) &
-          (MSTATUS_MPP | MSTATUS_MPRV | MSTATUS_SUM | MSTATUS_MXR))
-        mmu->flush_tlb();
+      // if ((val ^ state.mstatus) &
+      //     (MSTATUS_MPP | MSTATUS_MPRV | MSTATUS_SUM | MSTATUS_MXR))
+        // mmu->flush_tlb();
 
       reg_t mask = MSTATUS_SIE | MSTATUS_SPIE | MSTATUS_MIE | MSTATUS_MPIE
                  | MSTATUS_MPRV | MSTATUS_SUM
@@ -584,17 +584,17 @@ reg_t processor_t::get_csr(int which)
   if (which >= CSR_MHPMEVENT3 && which <= CSR_MHPMEVENT31)
     return 0;
 
-  if (which >= CSR_PMPADDR0 && which < CSR_PMPADDR0 + state.n_pmp)
-    return state.pmpaddr[which - CSR_PMPADDR0];
+  // if (which >= CSR_PMPADDR0 && which < CSR_PMPADDR0 + state.n_pmp)
+  //   return state.pmpaddr[which - CSR_PMPADDR0];
 
-  if (which >= CSR_PMPCFG0 && which < CSR_PMPCFG0 + state.n_pmp / 4) {
-    require((which & ((xlen / 32) - 1)) == 0);
+  // if (which >= CSR_PMPCFG0 && which < CSR_PMPCFG0 + state.n_pmp / 4) {
+  //   require((which & ((xlen / 32) - 1)) == 0);
 
-    reg_t res = 0;
-    for (size_t i0 = (which - CSR_PMPCFG0) * 4, i = i0; i < i0 + xlen / 8 && i < state.n_pmp; i++)
-      res |= reg_t(state.pmpcfg[i]) << (8 * (i - i0));
-    return res;
-  }
+  //   reg_t res = 0;
+  //   for (size_t i0 = (which - CSR_PMPCFG0) * 4, i = i0; i < i0 + xlen / 8 && i < state.n_pmp; i++)
+  //     res |= reg_t(state.pmpcfg[i]) << (8 * (i - i0));
+  //   return res;
+  // }
 
   switch (which)
   {
@@ -843,7 +843,7 @@ bool processor_t::store(reg_t addr, size_t len, const uint8_t* bytes)
 
 void processor_t::trigger_updated()
 {
-  mmu->flush_tlb();
+  // mmu->flush_tlb();
   mmu->check_triggers_fetch = false;
   mmu->check_triggers_load = false;
   mmu->check_triggers_store = false;
