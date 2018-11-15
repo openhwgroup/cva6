@@ -194,7 +194,6 @@ logic axi_wr_valid, axi_rd_rdy, axi_wr_rdy;
 logic ifill;
 logic [serpent_cache_pkg::L15_TID_WIDTH+2-1:0] id_tmp;
 
-
 // request side
 assign ifill = (l15_req.l15_rqtype==serpent_cache_pkg::L15_IMISS_RQ);
 
@@ -252,8 +251,6 @@ always_comb begin : p_axi_rtrn
   l15_rtrn.l15_data_2        = axi_rd_data[2];
   l15_rtrn.l15_data_3        = axi_rd_data[3];
 end
-
-
 
 axi_adapter2 #(
   .DATA_WORDS      ( AXI_NUM_WORDS     ),

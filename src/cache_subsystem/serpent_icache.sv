@@ -136,7 +136,7 @@ module serpent_icache  #(
                                  ( paddr_is_nc  & mem_data_req_o ) ? cl_offset_q[2]<<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case
                                                                      cl_offset_q;
             // request word address instead of cl address in case of NC access
-            assign mem_data_o.paddr = (paddr_is_nc) ? {cl_tag_d, vaddr_q[ICACHE_INDEX_WIDTH-1:3], 3'b0} :                                         // align to 64bit
+            assign mem_data_o.paddr = (paddr_is_nc) ? {cl_tag_d, vaddr_q[ICACHE_INDEX_WIDTH-1:2], 2'b0} :                                         // align to 32bit
                                                       {cl_tag_d, vaddr_q[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH], {ICACHE_OFFSET_WIDTH{1'b0}}}; // align to cl
         end
         if(!AXI64BIT_COMPLIANT)begin
