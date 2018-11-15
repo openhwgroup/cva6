@@ -678,7 +678,7 @@ module csr_regfile #(
                 csr_we   = 1'b0;
                 csr_read = 1'b0;
                 dret     = 1'b1; // signal a return from debug mode
-            end // DRET:
+            end
             default: begin
                 csr_we   = 1'b0;
                 csr_read = 1'b0;
@@ -708,6 +708,7 @@ module csr_regfile #(
         // -----------------
         // Interrupt Control
         // -----------------
+        // TODO(zarubaf): Move interrupt handling to commit stage.
         // we decode an interrupt the same as an exception, hence it will be taken if the instruction did not
         // throw any previous exception.
         // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
@@ -760,7 +761,8 @@ module csr_regfile #(
         // -----------------
         // Privilege Check
         // -----------------
-        // if we are reading or writing, check for the correct privilege level
+        // if we are reading or writing, check for the correct privilege level this has
+        // precedence over interrupts
         if (csr_we || csr_read) begin
             if ((riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
                 csr_exception_o.cause = riscv::ILLEGAL_INSTR;
