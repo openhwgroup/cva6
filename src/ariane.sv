@@ -193,6 +193,7 @@ module ariane #(
     logic                     dcache_flush_ack_cache_ctrl;
     logic                     set_debug_pc;
     logic                     flush_commit;
+    logic                     flush_tlb;
 
     icache_areq_i_t           icache_areq_ex_cache;
     icache_areq_o_t           icache_areq_cache_ex;
@@ -436,6 +437,7 @@ module ariane #(
         .ASID_WIDTH             ( ASID_WIDTH                    )
     ) csr_regfile_i (
         .flush_o                ( flush_csr_ctrl                ),
+        .flush_tlb_o            ( flush_tlb                     ),
         .halt_csr_o             ( halt_csr_ctrl                 ),
         .commit_instr_i         ( commit_instr_id_commit        ),
         .commit_ack_i           ( commit_ack                    ),
@@ -519,6 +521,7 @@ module ariane #(
         .ex_valid_i             ( ex_commit.valid               ),
         .set_debug_pc_i         ( set_debug_pc                  ),
         .flush_csr_i            ( flush_csr_ctrl                ),
+        .flush_tlb_i            ( flush_tlb                     ),
         .resolved_branch_i      ( resolved_branch               ),
         .fence_i_i              ( fence_i_commit_controller     ),
         .fence_i                ( fence_commit_controller       ),

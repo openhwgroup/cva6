@@ -24,6 +24,7 @@ module csr_regfile #(
 
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
+    output logic                  flush_tlb_o,                // flush TLB
     output logic                  halt_csr_o,                 // halt requested
     // commit acknowledge
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i, // the instruction we want to commit
@@ -167,10 +168,11 @@ module csr_regfile #(
                 riscv::CSR_STVAL:              csr_rdata = stval_q;
                 riscv::CSR_SATP: begin
                     // intercept reads to SATP if in S-Mode and TVM is enabled
-                    if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm)
+                    if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm) begin
                         read_access_exception = 1'b1;
-                    else
+                    end else begin
                         csr_rdata = satp_q;
+                    end
                 end
                 // machine mode registers
                 riscv::CSR_MSTATUS:            csr_rdata = mstatus_q;
@@ -220,6 +222,8 @@ module csr_regfile #(
     always_comb begin : csr_update
         automatic riscv::satp_t sapt;
         automatic logic [63:0] instret;
+
+        flush_tlb_o = 1'b0;
 
         sapt = satp_q;
         instret = instret_q;
@@ -316,6 +320,7 @@ module csr_regfile #(
                     mstatus_d = (mstatus_q & ~mask) | (csr_wdata & mask);
                     // this instruction has side-effects
                     flush_o = 1'b1;
+                    flush_tlb_o = 1'b1;
                 end
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
@@ -351,6 +356,7 @@ module csr_regfile #(
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
                     flush_o = 1'b1;
+                    flush_tlb_o = 1'b1;
                 end
 
                 riscv::CSR_MSTATUS: begin
@@ -363,6 +369,7 @@ module csr_regfile #(
                     mstatus_d.uie  = 1'b0;
                     // this register has side-effects on other registers, flush the pipeline
                     flush_o        = 1'b1;
+                    flush_tlb_o    = 1'b1;
                 end
                 // MISA is WARL (Write Any Value, Reads Legal Value)
                 riscv::CSR_MISA:;
@@ -612,6 +619,7 @@ module csr_regfile #(
             mstatus_d.mpp  = riscv::PRIV_LVL_U;
             // set mpie to 1
             mstatus_d.mpie = 1'b1;
+            flush_tlb_o = 1'b1;
         end
 
         if (sret) begin
@@ -625,6 +633,7 @@ module csr_regfile #(
             mstatus_d.spp  = 1'b0;
             // set spie to 1
             mstatus_d.spie = 1'b1;
+            flush_tlb_o = 1'b1;
         end
 
         // return from debug mode
