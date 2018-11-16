@@ -81,7 +81,6 @@ src/axi_adapter.sv
 src/alu.sv
 src/fpu_wrap.sv
 src/ariane.sv
-src/ariane_verilog_wrap.sv
 src/branch_unit.sv
 src/compressed_decoder.sv
 src/controller.sv
@@ -132,3 +131,6 @@ src/debug/dmi_cdc.sv
 src/debug/dmi_jtag.sv
 src/debug/dm_sba.sv
 src/debug/dmi_jtag_tap.sv
+openpiton/ariane_verilog_wrap.sv
+openpiton/serpent_peripherals.sv
+bootrom/bootrom.sv
