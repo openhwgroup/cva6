@@ -21,7 +21,7 @@
 // instantiated in OpenPiton
 `ifdef PITON_ARIANE
   `include "l15.tmp.h"
-  `include "define.vh"
+  `include "define.tmp.h"
 `endif
 
 package serpent_cache_pkg;
