@@ -45,7 +45,7 @@ module plic_interface #(
     output logic                         target_irq_claims_o[NUM_TARGETS],          // claim signals
     output logic                         target_irq_completes_o[NUM_TARGETS],       // complete signals
     output logic[ID_BITWIDTH-1:0]        target_irq_completes_id_o[NUM_TARGETS],    // the id of the gateway to be completed
-    REG_BUS external_bus_io                                                         // the bus
+    REG_BUS.in                           external_bus_io                            // the bus
 );
 
     //define ennumerated types

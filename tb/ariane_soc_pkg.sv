@@ -42,7 +42,7 @@ package ariane_soc;
     localparam logic[63:0] ROMLength   = 64'h1000;
     localparam logic[63:0] CLINTLength = 64'hC0000;
     localparam logic[63:0] PLICLength  = 64'h3FF_FFFF;
-    localparam logic[63:0] UARTLength  = 64'h10000;
+    localparam logic[63:0] UARTLength  = 64'h1000;
     localparam logic[63:0] SPILength   = 64'h1000;
     localparam logic[63:0] SRAMLength  = 64'h1800000;  // 24 MByte of SRAM
     localparam logic[63:0] DRAMLength  = 64'h80000000; // 2 GByte of DDR

@@ -332,43 +332,44 @@ module ariane_peripherals #(
     // ---------------
     // SPI
     // ---------------
-    logic [31:0] s_axi_spi_awaddr;
-    logic [7:0]  s_axi_spi_awlen;
-    logic [2:0]  s_axi_spi_awsize;
-    logic [1:0]  s_axi_spi_awburst;
-    logic [0:0]  s_axi_spi_awlock;
-    logic [3:0]  s_axi_spi_awcache;
-    logic [2:0]  s_axi_spi_awprot;
-    logic [3:0]  s_axi_spi_awregion;
-    logic [3:0]  s_axi_spi_awqos;
-    logic        s_axi_spi_awvalid;
-    logic        s_axi_spi_awready;
-    logic [31:0] s_axi_spi_wdata;
-    logic [3:0]  s_axi_spi_wstrb;
-    logic        s_axi_spi_wlast;
-    logic        s_axi_spi_wvalid;
-    logic        s_axi_spi_wready;
-    logic [1:0]  s_axi_spi_bresp;
-    logic        s_axi_spi_bvalid;
-    logic        s_axi_spi_bready;
-    logic [31:0] s_axi_spi_araddr;
-    logic [7:0]  s_axi_spi_arlen;
-    logic [2:0]  s_axi_spi_arsize;
-    logic [1:0]  s_axi_spi_arburst;
-    logic [0:0]  s_axi_spi_arlock;
-    logic [3:0]  s_axi_spi_arcache;
-    logic [2:0]  s_axi_spi_arprot;
-    logic [3:0]  s_axi_spi_arregion;
-    logic [3:0]  s_axi_spi_arqos;
-    logic        s_axi_spi_arvalid;
-    logic        s_axi_spi_arready;
-    logic [31:0] s_axi_spi_rdata;
-    logic [1:0]  s_axi_spi_rresp;
-    logic        s_axi_spi_rlast;
-    logic        s_axi_spi_rvalid;
-    logic        s_axi_spi_rready;
 
     if (InclSPI) begin : gen_spi
+        logic [31:0] s_axi_spi_awaddr;
+        logic [7:0]  s_axi_spi_awlen;
+        logic [2:0]  s_axi_spi_awsize;
+        logic [1:0]  s_axi_spi_awburst;
+        logic [0:0]  s_axi_spi_awlock;
+        logic [3:0]  s_axi_spi_awcache;
+        logic [2:0]  s_axi_spi_awprot;
+        logic [3:0]  s_axi_spi_awregion;
+        logic [3:0]  s_axi_spi_awqos;
+        logic        s_axi_spi_awvalid;
+        logic        s_axi_spi_awready;
+        logic [31:0] s_axi_spi_wdata;
+        logic [3:0]  s_axi_spi_wstrb;
+        logic        s_axi_spi_wlast;
+        logic        s_axi_spi_wvalid;
+        logic        s_axi_spi_wready;
+        logic [1:0]  s_axi_spi_bresp;
+        logic        s_axi_spi_bvalid;
+        logic        s_axi_spi_bready;
+        logic [31:0] s_axi_spi_araddr;
+        logic [7:0]  s_axi_spi_arlen;
+        logic [2:0]  s_axi_spi_arsize;
+        logic [1:0]  s_axi_spi_arburst;
+        logic [0:0]  s_axi_spi_arlock;
+        logic [3:0]  s_axi_spi_arcache;
+        logic [2:0]  s_axi_spi_arprot;
+        logic [3:0]  s_axi_spi_arregion;
+        logic [3:0]  s_axi_spi_arqos;
+        logic        s_axi_spi_arvalid;
+        logic        s_axi_spi_arready;
+        logic [31:0] s_axi_spi_rdata;
+        logic [1:0]  s_axi_spi_rresp;
+        logic        s_axi_spi_rlast;
+        logic        s_axi_spi_rvalid;
+        logic        s_axi_spi_rready;
+
         axi_dwidth_converter_0 i_axi_dwidth_converter_spi (
             .s_axi_aclk     ( clk_i              ),
             .s_axi_aresetn  ( rst_ni             ),
@@ -503,17 +504,36 @@ module ariane_peripherals #(
             .preq           (                        )
         );
     end else begin
+        assign spi_clk_o = 1'b0;
+        assign spi_mosi = 1'b0;
+        assign spi_ss = 1'b0;
+
         assign irq_sources [1] = 1'b0;
-        assign s_axi_spi_awready = 1'b1;
-        assign s_axi_spi_wready = 1'b1;
+        assign spi.aw_ready = 1'b1;
+        assign spi.ar_ready = 1'b1;
+        assign spi.w_ready = 1'b1;
 
-        assign s_axi_spi_bresp = '0;
-        assign s_axi_spi_bvalid = 1'b1;
+        assign spi.b_valid = spi.aw_valid;
+        assign spi.b_id = spi.aw_id;
+        assign spi.b_resp = axi_pkg::RESP_SLVERR;
+        assign spi.b_user = '0;
 
-        assign s_axi_spi_arready = 1'b1;
-        assign s_axi_spi_rdata = '0;
-        assign s_axi_spi_rresp = '0;
-        assign s_axi_spi_rlast = 1'b1;
-        assign s_axi_spi_rvalid = 1'b1;
+        assign spi.r_valid = spi.ar_valid;
+        assign spi.r_resp = axi_pkg::RESP_SLVERR;
+        assign spi.r_data = 'hdeadbeef;
+        assign spi.r_last = 1'b1;
+
+
+        // assign s_axi_spi_awready = 1'b1;
+        // assign s_axi_spi_wready = 1'b1;
+
+        // assign s_axi_spi_bresp = '0;
+        // assign s_axi_spi_bvalid = 1'b1;
+
+        // assign s_axi_spi_arready = 1'b1;
+        // assign s_axi_spi_rdata = '0;
+        // assign s_axi_spi_rresp = '0;
+        // assign s_axi_spi_rlast = 1'b1;
+        // assign s_axi_spi_rvalid = 1'b1;
     end
 endmodule

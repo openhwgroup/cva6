@@ -29,6 +29,12 @@ uart_t::uart_t()
   scr = 0;
 }
 
+  // set {char}  0x10000004 = 0x00
+  // set {char}  0x1000000C = 0x80
+  // set {char}  0x10000000 = 0x1B
+  // set {char}  0x10000004 = 0x00
+  // set {char}  0x1000000C = 0x03
+  // set {char}  0x10000008 = 0xC7
 bool uart_t::load(reg_t addr, size_t len, uint8_t* bytes)
 {
   // we do not support unaligned stores

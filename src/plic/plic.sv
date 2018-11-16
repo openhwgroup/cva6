@@ -39,7 +39,7 @@ module plic #(
     input  logic                   rst_ni,
     input  logic [NUM_SOURCES-1:0] irq_sources_i,
     output logic [NUM_TARGETS-1:0] eip_targets_o,
-    REG_BUS                        external_bus_io
+    REG_BUS.in                     external_bus_io
 );
     // declare all local variables
     // gateway arrays always go from NUM_SOURCES to 1 because gateway ids start at 1

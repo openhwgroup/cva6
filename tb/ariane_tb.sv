@@ -46,7 +46,8 @@ module ariane_tb;
     string binary = "";
 
     ariane_testharness #(
-        .NUM_WORDS ( NUM_WORDS )
+        .NUM_WORDS  ( NUM_WORDS ),
+        .InclSimDTM ( 1'b1      )
     ) dut (
         .clk_i,
         .rst_ni,
@@ -56,21 +57,19 @@ module ariane_tb;
 
     // `ifdef TANDEM
     // initial $display("Tandem defined",);
-    spike #(
-        .Size ( NUM_WORDS * 8 )
-    ) i_spike (
-        .clk_i,
-        .rst_ni,
-        .clint_tick_i   ( rtc_i                               ),
-        .commit_instr_i ( dut.i_ariane.commit_instr_id_commit ),
-        .commit_ack_i   ( dut.i_ariane.commit_ack             ),
-        .exception_i    ( dut.i_ariane.ex_commit              ),
-        .waddr_i        ( dut.i_ariane.waddr_commit_id        ),
-        .wdata_i        ( dut.i_ariane.wdata_commit_id        ),
-        .priv_lvl_i     ( dut.i_ariane.priv_lvl               )
-    );
-    // `else
-    //     initial $display("Tandem not defined",);
+    // spike #(
+    //     .Size ( NUM_WORDS * 8 )
+    // ) i_spike (
+    //     .clk_i,
+    //     .rst_ni,
+    //     .clint_tick_i   ( rtc_i                               ),
+    //     .commit_instr_i ( dut.i_ariane.commit_instr_id_commit ),
+    //     .commit_ack_i   ( dut.i_ariane.commit_ack             ),
+    //     .exception_i    ( dut.i_ariane.ex_commit              ),
+    //     .waddr_i        ( dut.i_ariane.waddr_commit_id        ),
+    //     .wdata_i        ( dut.i_ariane.wdata_commit_id        ),
+    //     .priv_lvl_i     ( dut.i_ariane.priv_lvl               )
+    // );
     // `endif
 
     // Clock process

@@ -829,6 +829,7 @@ module csr_regfile #(
         end
     end
 
+    // `ifdef SYNTHESIS
     // ila_0 i_ila_0 (
     //     .clk(clk_i), // input wire clk
     //     .probe0(commit_instr_i[0].pc), // input wire [63:0]  probe0
@@ -849,8 +850,15 @@ module csr_regfile #(
     //     .probe15(mie_q[riscv::IRQ_M_SOFT]), // input wire [0:0]  probe15
     //     .probe16(mie_q[riscv::IRQ_S_TIMER]), // input wire [0:0]  probe16
     //     .probe17(mie_q[riscv::IRQ_M_TIMER]), // input wire [0:0]  probe17
-    //     .probe18(priv_lvl_o) // input wire [1:0]  probe18
+    //     .probe18(priv_lvl_o), // input wire [1:0]  probe18
+    //     .probe19(sepc_q),
+    //     .probe20(mepc_q),
+    //     .probe21(commit_instr_i[0].valid),
+    //     .probe22(commit_instr_i[1].valid),
+    //     .probe23(csr_exception_o.tval),
+    //     .probe24('0)
     // );
+    // `endif
 
     // -------------------
     // Output Assignments
