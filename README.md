@@ -83,25 +83,65 @@ $ make sim riscv-test-dir=$RISCV/riscv64-unknown-elf/bin riscv-test=pk target-op
 
 ## FPGA Emulation
 
-We provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual).
+We currently provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual).
 
 During Synthesis set the following tick defines need to be set:
+
 ```
 FPGA_TARGET_XILINX
+GENESYSII
 ```
 
 TBD: FPGA flow
 
-Default baudrate is `9600`:
+Default baudrate is `115200`:
 ```
-$ screen /dev/ttyUSB0 9600
+$ screen /dev/ttyUSB0 115200
 ```
 
 ### Debugging
 
-[OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html)
+You can debug (and program) the FPGA using [OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html). We provide two example scripts for OpenOCD, both to be used with Olimex Debug adapter. The JTAG port ist mapped to PMOD `JC` on the Gensys 2 board. You will need to connect the following wires to your debug adapter:
+
+![](https://reference.digilentinc.com/_media/genesys2/fig_16.png)
+
+|   Pin    | Nr. |
+|----------|-----|
+| `tck`    | JC1 |
+| `tdi`    | JC2 |
+| `tdo`    | JC3 |
+| `tms`    | JC4 |
+| `trst_n` | JC7 |
+
 
 ```
+$ openocd -f fpga/ariane_tiny.cfg
+Open On-Chip Debugger 0.10.0+dev-00195-g933cb87 (2018-09-14-19:32)
+Licensed under GNU GPL v2
+For bug reports, read
+    http://openocd.org/doc/doxygen/bugs.html
+adapter speed: 1000 kHz
+Info : auto-selecting first available session transport "jtag". To override use 'transport select <transport>'.
+Info : clock speed 1000 kHz
+Info : TAP riscv.cpu does not have IDCODE
+Info : datacount=2 progbufsize=12
+Info : Examined RISC-V core; found 1 harts
+Info :  hart 0: XLEN=64, misa=0x8000000000141105
+Info : Listening on port 3333 for gdb connections
+Ready for Remote Connections
+Info : Listening on port 6666 for tcl connections
+Info : Listening on port 4444 for telnet connections
+Info : accepting 'gdb' connection on tcp/3333
+```
+
+Then you will be able to either connect through `telnet` or with `gdb`:
+
+```
+$ riscv64-unknown-elf-gdb /path/to/elf
+(gdb) target remote localhost:3333
+(gdb) load
+Loading section .text, size 0x6508 lma 0x80000000
+Loading section .rodata, size 0x900 lma 0x80006508
 (gdb) b putchar
 (gdb) c
 Continuing.
@@ -186,7 +226,7 @@ $ make
 $ [sudo] make install
 ```
 
-### Tandem Verification with Spike
+<!-- ### Tandem Verification with Spike
 
 ```
 $ make sim preload=/home/zarubaf/Downloads/riscv-tests/build/benchmarks/dhrystone.riscv tandem=1
@@ -200,6 +240,7 @@ There are a couple of caveats:
 - The RTC clock needs to be sufficiently slow (e.g.: 32 kHz seems to work). This is needed as otherwise there will be a difference when reading the `mtime` register as the RTL simulation takes more time to propagate the information through the system.
 - All traps except memory traps need to zero the `tval` register. There is a switch you can set in `ariane_pkg`.
 - `mcycle` needs to be incremented with `instret` to be similar to the performance counters found in Spike (IPC = 1)
+ -->
 
 ### Re-generating the Bootcode (ZSBL)
 

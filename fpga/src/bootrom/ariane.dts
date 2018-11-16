@@ -67,7 +67,7 @@
       current-speed = <115200>;
       interrupt-parent = <&PLIC0>;
       interrupts = <1>;
-      reg-shift = <2>; //regs are spaced on 32 bit boundary
+      reg-shift = <2>; // regs are spaced on 32 bit boundary
       reg-io-width = <4>; // only 32-bit access are supported
     };
     // xlnx_axi_ethernetlite: ethernet@12000000 {

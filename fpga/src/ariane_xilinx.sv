@@ -8,7 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Top-level for Genesys 2
+// Xilinx FPGA top-level
 module ariane_xilinx (
 `ifdef VCU118
   input  wire          c0_sys_clk_p    ,  // 250 MHz Clock for DDR
@@ -169,29 +169,6 @@ assign test_en    = 1'b0;
 assign ndmreset_n = ~ndmreset ;
 
 logic [NBSlave-1:0] pc_asserted;
-
-// ila_0 i_ila_0 (
-//     .clk(clk), // input wire clk
-//     .probe0(tck), // input wire [63:0]  probe0
-//     .probe1(tdo), // input wire [63:0]  probe1
-//     .probe2(tdi), // input wire [0:0]  probe2
-//     .probe3(tms), // input wire [0:0]  probe3
-//     .probe4(trst_n), // input wire [0:0]  probe4
-//     .probe5(ndmreset), // input wire [1:0]  probe5
-//     .probe6(rst_n), // input wire [0:0]  probe6
-//     .probe7(cpu_reset), // input wire [0:0]  probe7
-//     .probe8(1'b0), // input wire [0:0]  probe8
-//     .probe9(slave_slice[3].aw_addr), // input wire [0:0]  probe10
-//     .probe10(slave_slice[3].aw_valid), // input wire [0:0]  probe11
-//     .probe11(slave_slice[3].aw_ready), // input wire [0:0]  probe12
-//     .probe12(pcie_axi_araddr), // input wire [0:0]  probe13
-//     .probe13(pcie_axi_arvalid), // input wire [0:0]  probe14
-//     .probe14(pcie_axi_arready),
-//     .probe15(rtc),
-//     .probe16(debug_req_valid),
-//     .probe17(debug_req_ready),
-//     .probe18(debug_req)
-// );
 
 // Slice the AXI Masters (slave ports on the XBar)
 for (genvar i = 0; i < NBSlave; i++) begin : slave_cut_gen
