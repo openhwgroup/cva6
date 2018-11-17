@@ -8,7 +8,8 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Description: PWM Fan VDD
+// Description: PWM Fan Control for Genesys II board
+// Author: Florian Zaruba, zarubaf@iis.ee.ethz.ch
 
 module fan_ctrl (
     input  logic       clk_i,
