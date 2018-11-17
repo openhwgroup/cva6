@@ -22,6 +22,8 @@ interface uart_bus #(
     input  logic rx_en
 );
 
+/* pragma translate_off */
+`ifndef VERILATOR
   localparam time BIT_PERIOD = (1000000000 / BAUD_RATE) * 1ns;
 
   logic [7:0]       character;
@@ -97,4 +99,6 @@ interface uart_bus #(
     tx = 1'b1;
     #(BIT_PERIOD);
   endtask
+/* pragma translate_on */
+`endif
 endinterface

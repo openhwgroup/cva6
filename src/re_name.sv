@@ -41,33 +41,47 @@ module re_name (
 
     // keep track of re-naming data structures
     logic [31:0] re_name_table_gpr_n, re_name_table_gpr_q;
+    logic [31:0] re_name_table_fpr_n, re_name_table_fpr_q;
 
     // -------------------
     // Re-naming
     // -------------------
     always_comb begin
         // MSB of the renamed source register addresses
-        logic name_bit_rs1, name_bit_rs2, name_bit_rd;
+        logic name_bit_rs1, name_bit_rs2, name_bit_rs3, name_bit_rd;
 
         // default assignments
         re_name_table_gpr_n = re_name_table_gpr_q;
+        re_name_table_fpr_n = re_name_table_fpr_q;
         issue_instr_o       = issue_instr_i;
 
         if (issue_ack_i && !flush_unissied_instr_i) begin
             // if we acknowledge the instruction tic the corresponding destination register
-            re_name_table_gpr_n[issue_instr_i.rd] = re_name_table_gpr_q[issue_instr_i.rd] ^ 1'b1;
+            if (is_rd_fpr(issue_instr_i.op))
+                re_name_table_fpr_n[issue_instr_i.rd] = re_name_table_fpr_q[issue_instr_i.rd] ^ 1'b1;
+            else
+                re_name_table_gpr_n[issue_instr_i.rd] = re_name_table_gpr_q[issue_instr_i.rd] ^ 1'b1;
         end
 
         // select name bit according to the register file used for source operands
-        name_bit_rs1 = re_name_table_gpr_q[issue_instr_i.rs1];
-        name_bit_rs2 = re_name_table_gpr_q[issue_instr_i.rs2];
+        name_bit_rs1 = is_rs1_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rs1]
+                                                    : re_name_table_gpr_q[issue_instr_i.rs1];
+        name_bit_rs2 = is_rs2_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rs2]
+                                                    : re_name_table_gpr_q[issue_instr_i.rs2];
+        // rs3 is only used in certain FP operations and held like an immediate
+        name_bit_rs3 = re_name_table_fpr_q[issue_instr_i.result[4:0]]; // make sure only the addr bits are read
 
         // select name bit according to the state it will have after renaming
-        name_bit_rd = re_name_table_gpr_q[issue_instr_i.rd] ^ (issue_instr_i.rd != '0); // don't rename x0
+        name_bit_rd = is_rd_fpr(issue_instr_i.op) ? re_name_table_fpr_q[issue_instr_i.rd] ^ 1'b1
+                                                  : re_name_table_gpr_q[issue_instr_i.rd] ^ (issue_instr_i.rd != '0); // don't rename x0
 
         // re-name the source registers
         issue_instr_o.rs1 = { ENABLE_RENAME & name_bit_rs1, issue_instr_i.rs1[4:0] };
         issue_instr_o.rs2 = { ENABLE_RENAME & name_bit_rs2, issue_instr_i.rs2[4:0] };
+
+        // re-name the third operand in imm if it's actually an operand
+        if (is_imm_fpr(issue_instr_i.op))
+            issue_instr_o.result = { ENABLE_RENAME & name_bit_rs3, issue_instr_i.result[4:0]};
 
         // re-name the destination register
         issue_instr_o.rd = { ENABLE_RENAME & name_bit_rd, issue_instr_i.rd[4:0] };
@@ -78,6 +92,7 @@ module re_name (
         // Handle flushes
         if (flush_i) begin
             re_name_table_gpr_n = '0;
+            re_name_table_fpr_n = '0;
         end
 
     end
@@ -88,8 +103,10 @@ module re_name (
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             re_name_table_gpr_q <= '0;
+            re_name_table_fpr_q <= '0;
         end else begin
             re_name_table_gpr_q <= re_name_table_gpr_n;
+            re_name_table_fpr_q <= re_name_table_fpr_n;
         end
     end
 endmodule

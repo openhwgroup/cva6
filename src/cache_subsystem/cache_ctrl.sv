@@ -421,8 +421,8 @@ module cache_ctrl #(
         end
     end
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    //pragma translate_off
+    `ifndef VERILATOR
         initial begin
             assert (DCACHE_LINE_WIDTH == 128) else $error ("Cacheline width has to be 128 for the moment. But only small changes required in data select logic");
         end
@@ -431,5 +431,5 @@ module cache_ctrl #(
         // there should never be a valid answer when the MSHR matches and we are not being served
         no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (~rst_ni) (mshr_addr_matches_i && !active_serving_i)-> !req_port_o.data_rvalid || req_port_i.kill_req) else $fatal (1, "rvalid_o should not be set on MSHR match");
     `endif
-    `endif
+    //pragma translate_on
 endmodule

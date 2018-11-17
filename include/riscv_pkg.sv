@@ -32,6 +32,13 @@ package riscv;
         XLEN_128 = 2'b11
     } xlen_t;
 
+    typedef enum logic [1:0] {
+        Off     = 2'b00,
+        Initial = 2'b01,
+        Clean   = 2'b10,
+        Dirty   = 2'b11
+    } xs_t;
+
     typedef struct packed {
         logic         sd;     // signal dirty - read-only - hardwired zero
         logic [62:36] wpri4;  // writes preserved reads ignored
@@ -44,8 +51,8 @@ package riscv;
         logic         mxr;    // make executable readable
         logic         sum;    // permit supervisor user memory access
         logic         mprv;   // modify privilege - privilege level for ld/st
-        logic [1:0]   xs;     // extension register - hardwired to zero
-        logic [1:0]   fs;     // extension register - hardwired to zero
+        xs_t          xs;     // extension register - hardwired to zero
+        xs_t          fs;     // floating point extension register
         priv_lvl_t    mpp;    // holds the previous privilege mode up to machine
         logic [1:0]   wpri2;  // writes preserved reads ignored
         logic         spp;    // holds the previous privilege mode up to supervisor
@@ -102,6 +109,37 @@ package riscv;
     } rtype_t;
 
     typedef struct packed {
+        logic [31:27] rs3;
+        logic [26:25] funct2;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:12] funct3;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } r4type_t;
+
+    typedef struct packed {
+        logic [31:27] funct5;
+        logic [26:25] fmt;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:12] rm;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } rftype_t; // floating-point
+
+    typedef struct packed {
+        logic [31:30] funct2;
+        logic [29:25] vecfltop;
+        logic [24:20] rs2;
+        logic [19:15] rs1;
+        logic [14:14] repl;
+        logic [13:12] vfmt;
+        logic [11:7]  rd;
+        logic [6:0]   opcode;
+    } rvftype_t; // vectorial floating-point
+
+    typedef struct packed {
         logic [31:20] imm;
         logic [19:15] rs1;
         logic [14:12] funct3;
@@ -139,6 +177,9 @@ package riscv;
     typedef union packed {
         logic [31:0]   instr;
         rtype_t        rtype;
+        r4type_t       r4type;
+        rftype_t       rftype;
+        rvftype_t      rvftype;
         itype_t        itype;
         stype_t        stype;
         utype_t        utype;
@@ -148,27 +189,72 @@ package riscv;
     // --------------------
     // Opcodes
     // --------------------
-    localparam OpcodeSystem    = 7'h73;
-    localparam OpcodeFence     = 7'h0f;
-    localparam OpcodeOp        = 7'h33;
-    localparam OpcodeOp32      = 7'h3B;
-    localparam OpcodeOpimm     = 7'h13;
-    localparam OpcodeOpimm32   = 7'h1B;
-    localparam OpcodeStore     = 7'h23;
-    localparam OpcodeStoreFP   = 7'b01_001_11;
-    localparam OpcodeLoad      = 7'h03;
-    localparam OpcodeLoadFP    = 7'b00_001_11;
-    localparam OpcodeBranch    = 7'h63;
-    localparam OpcodeJalr      = 7'h67;
-    localparam OpcodeJal       = 7'h6f;
-    localparam OpcodeAuipc     = 7'h17;
-    localparam OpcodeLui       = 7'h37;
-    localparam OpcodeAmo       = 7'h2F;
+    // RV32/64G listings:
+    // Quadrant 0
+    localparam OpcodeLoad      = 7'b00_000_11;
+    localparam OpcodeLoadFp    = 7'b00_001_11;
+    localparam OpcodeCustom0   = 7'b00_010_11;
+    localparam OpcodeMiscMem   = 7'b00_011_11;
+    localparam OpcodeOpImm     = 7'b00_100_11;
+    localparam OpcodeAuipc     = 7'b00_101_11;
+    localparam OpcodeOpImm32   = 7'b00_110_11;
+    // Quadrant 1
+    localparam OpcodeStore     = 7'b01_000_11;
+    localparam OpcodeStoreFp   = 7'b01_001_11;
+    localparam OpcodeCustom1   = 7'b01_010_11;
+    localparam OpcodeAmo       = 7'b01_011_11;
+    localparam OpcodeOp        = 7'b01_100_11;
+    localparam OpcodeLui       = 7'b01_101_11;
+    localparam OpcodeOp32      = 7'b01_110_11;
+    // Quadrant 2
+    localparam OpcodeMadd      = 7'b10_000_11;
+    localparam OpcodeMsub      = 7'b10_001_11;
+    localparam OpcodeNmsub     = 7'b10_010_11;
+    localparam OpcodeNmadd     = 7'b10_011_11;
+    localparam OpcodeOpFp      = 7'b10_100_11;
+    localparam OpcodeRsrvd1    = 7'b10_101_11;
+    localparam OpcodeCustom2   = 7'b10_110_11;
+    // Quadrant 3
+    localparam OpcodeBranch    = 7'b11_000_11;
+    localparam OpcodeJalr      = 7'b11_001_11;
+    localparam OpcodeRsrvd2    = 7'b11_010_11;
+    localparam OpcodeJal       = 7'b11_011_11;
+    localparam OpcodeSystem    = 7'b11_100_11;
+    localparam OpcodeRsrvd3    = 7'b11_101_11;
+    localparam OpcodeCustom3   = 7'b11_110_11;
 
-    localparam OpcodeCJ        = 3'b101;
-    localparam OpcodeCBeqz     = 3'b110;
-    localparam OpcodeCBnez     = 3'b111;
+    // RV64C listings:
+    // Quadrant 0
+    localparam OpcodeC0             = 2'b00;
+    localparam OpcodeC0Addi4spn     = 3'b000;
+    localparam OpcodeC0Fld          = 3'b001;
+    localparam OpcodeC0Lw           = 3'b010;
+    localparam OpcodeC0Ld           = 3'b011;
+    localparam OpcodeC0Rsrvd        = 3'b100;
+    localparam OpcodeC0Fsd          = 3'b101;
+    localparam OpcodeC0Sw           = 3'b110;
+    localparam OpcodeC0Sd           = 3'b111;
+    // Quadrant 1
+    localparam OpcodeC1             = 2'b01;
+    localparam OpcodeC1Addi         = 3'b000;
+    localparam OpcodeC1Addiw        = 3'b001;
+    localparam OpcodeC1Li           = 3'b010;
+    localparam OpcodeC1LuiAddi16sp  = 3'b011;
+    localparam OpcodeC1MiscAlu      = 3'b100;
+    localparam OpcodeC1J            = 3'b101;
+    localparam OpcodeC1Beqz         = 3'b110;
+    localparam OpcodeC1Bnez         = 3'b111;
+    // Quadrant 2
+    localparam OpcodeC2             = 2'b10;
+    localparam OpcodeC2Slli         = 3'b000;
+    localparam OpcodeC2Fldsp        = 3'b001;
+    localparam OpcodeC2Lwsp         = 3'b010;
+    localparam OpcodeC2Ldsp         = 3'b011;
     localparam OpcodeC2JalrMvAdd    = 3'b100;
+    localparam OpcodeC2Fsdsp        = 3'b101;
+    localparam OpcodeC2Swsp         = 3'b110;
+    localparam OpcodeC2Sdsp         = 3'b111;
+
     // ----------------------
     // Performance Counters
     // ----------------------
@@ -184,6 +270,8 @@ package riscv;
     localparam logic [11:0] PERF_CALL           = 12'h9;     // Procedure call
     localparam logic [11:0] PERF_RET            = 12'hA;     // Procedure Return
     localparam logic [11:0] PERF_MIS_PREDICT    = 12'hB;     // Branch mis-predicted
+    localparam logic [11:0] PERF_SB_FULL        = 12'hC;     // Scoreboard full
+    localparam logic [11:0] PERF_IF_EMPTY       = 12'hD;     // instruction fetch queue empty
 
     // ----------------------
     // Virtual Memory
@@ -246,6 +334,11 @@ package riscv;
     // CSRs
     // -----
     typedef enum logic [11:0] {
+        // Floating-Point CSRs
+        CSR_FFLAGS         = 12'h001,
+        CSR_FRM            = 12'h002,
+        CSR_FCSR           = 12'h003,
+        CSR_FTRAN          = 12'h800,
         // Supervisor Mode CSRs
         CSR_SSTATUS        = 12'h100,
         CSR_SIE            = 12'h104,
@@ -369,6 +462,14 @@ package riscv;
         csr_addr_t  csr_decode;
     } csr_t;
 
+    // Floating-Point control and status register (32-bit!)
+    typedef struct packed {
+        logic [31:15] reserved;  // reserved for L extension, return 0 otherwise
+        logic [6:0]   fprec;     // div/sqrt precision control
+        logic [2:0]   frm;       // float rounding mode
+        logic [4:0]   fflags;    // float exception flags
+    } fcsr_t;
+
     // -----
     // Debug
     // -----
@@ -446,13 +547,14 @@ package riscv;
 
     // trace log compatible to spikes commit log feature
     // pragma translate_off
-    function string spikeCommitLog(logic [63:0] pc, priv_lvl_t priv_lvl, logic [31:0] instr, logic [4:0] rd, logic [63:0] result);
+    function string spikeCommitLog(logic [63:0] pc, priv_lvl_t priv_lvl, logic [31:0] instr, logic [4:0] rd, logic [63:0] result, logic rd_fpr);
         string rd_s;
+        automatic string rf_s = rd_fpr ? "f" : "x";
 
-        if (rd < 10) rd_s = $sformatf("x %0d", rd);
-        else rd_s = $sformatf("x%0d", rd);
+        if (rd < 10) rd_s = $sformatf("%s %0d", rf_s, rd);
+        else rd_s = $sformatf("%s%0d", rf_s, rd);
 
-        if (rd != 0) begin
+        if (rd_fpr || rd != 0) begin
             // 0 0x0000000080000118 (0xeecf8f93) x31 0x0000000080004000
             return $sformatf("%d 0x%h (0x%h) %s 0x%h\n", priv_lvl, pc, instr, rd_s, result);
         end else begin

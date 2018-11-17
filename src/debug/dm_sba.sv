@@ -18,9 +18,11 @@
 
 module dm_sba (
     input  logic          clk_i,       // Clock
+    input  logic          rst_ni,
     input  logic          dmactive_i,  // synchronous reset active low
-
-    AXI_BUS.Master        axi_master,
+    // AXI port
+    output ariane_axi::req_t  axi_req_o,
+    input  ariane_axi::resp_t axi_resp_i,
 
     input  logic [63:0]   sbaddress_i,
     input  logic          sbaddress_write_valid_i,
@@ -120,43 +122,45 @@ module dm_sba (
         // further error handling should go here ...
     end
 
-    always_ff @(posedge clk_i) begin
-        if (~dmactive_i) begin
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (~rst_ni) begin
             state_q <= Idle;
         end else begin
             state_q <= state_d;
         end
     end
 
+
     axi_adapter #(
-        .DATA_WIDTH            ( 64                       )
+        .DATA_WIDTH            ( 64                        )
     ) i_axi_master (
-        .clk_i                 ( clk_i                    ),
-        .rst_ni                ( dmactive_i               ),
-        .req_i                 ( req                      ),
-        .type_i                ( std_cache_pkg::SINGLE_REQ),
-        .gnt_o                 ( gnt                      ),
-        .gnt_id_o              (                          ),
-        .addr_i                ( address                  ),
-        .we_i                  ( we                       ),
-        .wdata_i               ( sbdata_i                 ),
-        .be_i                  ( be                       ),
-        .size_i                ( sbaccess_i[1:0]          ),
-        .id_i                  ( '0                       ),
-        .valid_o               ( sbdata_valid_o           ),
-        .rdata_o               ( sbdata_o                 ),
-        .id_o                  (                          ),
-        .critical_word_o       (                          ), // not needed here
-        .critical_word_valid_o (                          ), // not needed here
-        .axi                   ( axi_master               )
+        .clk_i                 ( clk_i                     ),
+        .rst_ni                ( rst_ni                    ),
+        .req_i                 ( req                       ),
+        .type_i                ( std_cache_pkg::SINGLE_REQ ),
+        .gnt_o                 ( gnt                       ),
+        .gnt_id_o              (                           ),
+        .addr_i                ( address                   ),
+        .we_i                  ( we                        ),
+        .wdata_i               ( sbdata_i                  ),
+        .be_i                  ( be                        ),
+        .size_i                ( sbaccess_i[1:0]           ),
+        .id_i                  ( '0                        ),
+        .valid_o               ( sbdata_valid_o            ),
+        .rdata_o               ( sbdata_o                  ),
+        .id_o                  (                           ),
+        .critical_word_o       (                           ), // not needed here
+        .critical_word_valid_o (                           ), // not needed here
+        .axi_req_o,
+        .axi_resp_i
     );
 
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    //pragma translate_off
+    `ifndef VERILATOR
         // maybe bump severity to $error if not handled at runtime
         dm_sba_access_size: assert property(@(posedge  clk_i) disable iff (dmactive_i !== 1'b0) (state_d != Idle) |-> (sbaccess_i < 4)) else $warning ("accesses > 8 byte not supported at the moment");
     `endif
-    `endif
+    //pragma translate_on
 
 endmodule

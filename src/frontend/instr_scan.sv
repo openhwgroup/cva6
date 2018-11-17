@@ -42,16 +42,16 @@ module instr_scan (
     assign rvi_jalr_o   = (instr_i[6:0] == riscv::OpcodeJalr)   ? 1'b1 : 1'b0;
     assign rvi_jump_o   = (instr_i[6:0] == riscv::OpcodeJal)    ? 1'b1 : 1'b0;
     // opcode JAL
-    assign rvc_jump_o   = (instr_i[15:13] == riscv::OpcodeCJ) & is_rvc_o & (instr_i[1:0] == 2'b01);
+    assign rvc_jump_o   = (instr_i[15:13] == riscv::OpcodeC1J) & is_rvc_o & (instr_i[1:0] == riscv::OpcodeC1);
     // always links to register 0
     assign rvc_jr_o     = (instr_i[15:13] == riscv::OpcodeC2JalrMvAdd)
                         & ~instr_i[12]
                         & (instr_i[6:2] == 5'b00000)
-                        & (instr_i[1:0] == 2'b10)
+                        & (instr_i[1:0] == riscv::OpcodeC2)
                         & is_rvc_o;
-    assign rvc_branch_o = ((instr_i[15:13] == riscv::OpcodeCBeqz) | (instr_i[15:13] == riscv::OpcodeCBnez))
-                        & (instr_i[1:0] == 2'b01)
-                        & is_rvc_o ;
+    assign rvc_branch_o = ((instr_i[15:13] == riscv::OpcodeC1Beqz) | (instr_i[15:13] == riscv::OpcodeC1Bnez))
+                        & (instr_i[1:0] == riscv::OpcodeC1)
+                        & is_rvc_o;
     // check that rs1 is x1 or x5
     assign rvc_return_o = ~instr_i[11] & ~instr_i[10] & ~instr_i[8] & instr_i[7] & rvc_jr_o ;
     // always links to register 1 e.g.: it is a jump

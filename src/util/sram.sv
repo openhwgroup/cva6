@@ -21,7 +21,7 @@
 module sram #(
     parameter DATA_WIDTH = 64,
     parameter NUM_WORDS  = 1024,
-    parameter OUT_REGS   = 0             // enables output registers in FPGA macro (read lat = 2)
+    parameter OUT_REGS   = 0 // enables output registers in FPGA macro (read lat = 2)
 )(
    input  logic                          clk_i,
    input  logic                          rst_ni,
@@ -57,8 +57,8 @@ generate
         SyncSpRamBeNx64 #(
           .ADDR_WIDTH($clog2(NUM_WORDS)),
           .DATA_DEPTH(NUM_WORDS),
-          .OUT_REGS  (0),
-          .SIM_INIT  (1)
+          .OUT_REGS (0),
+          .SIM_INIT (2)
         ) i_ram (
            .Clk_CI    ( clk_i                     ),
            .Rst_RBI   ( rst_ni                    ),

@@ -32,7 +32,8 @@ interface instruction_tracer_if (
     // WB stage
     logic [1:0][4:0]  waddr;
     logic [1:0][63:0] wdata;
-    logic [1:0]       we;
+    logic [1:0]       we_gpr;
+    logic [1:0]       we_fpr;
     // commit stage
     scoreboard_entry_t [1:0] commit_instr; // commit instruction
     logic              [1:0] commit_ack;
@@ -52,13 +53,14 @@ interface instruction_tracer_if (
     riscv::priv_lvl_t  priv_lvl;
     logic              debug_mode;
     // the tracer just has a passive interface we do not drive anything with it
-    `ifndef SYNTHESIS
+
+    //pragma translate_off
     clocking pck @(posedge clk);
         input rstn, flush_unissued, flush, instruction, fetch_valid, fetch_ack, issue_ack, issue_sbe, waddr,
               st_valid, st_paddr, ld_valid, ld_kill, ld_paddr, resolve_branch,
-              wdata, we, commit_instr, commit_ack, exception, priv_lvl, debug_mode;
+              wdata, we_gpr, we_fpr, commit_instr, commit_ack, exception, priv_lvl, debug_mode;
     endclocking
-    `endif
+    //pragma translate_on
 
 endinterface
 `endif

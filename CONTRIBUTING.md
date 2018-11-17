@@ -20,6 +20,7 @@ See [style-guidlines](https://github.com/pulp-platform/style-guidelines)
     * :fire: `:fire` Removing code or files.
     * :memo: `:memo:` When writing docs
     * :bug: `:bug:` When fixing a bug
+    * :fire: `:fire:` When removing code or files
     * :wastebasket: `:wastebasket:` When removing code or files
     * :green_heart: `:green_heart:` When fixing the CI build
     * :construction_worker: `:construction_worker:` Adding CI build system
@@ -28,17 +29,16 @@ See [style-guidlines](https://github.com/pulp-platform/style-guidelines)
     * :arrow_up: `:arrow_up:` When upgrading dependencies
     * :arrow_down: `:arrow_down:` When downgrading dependencies
     * :rotating_light: `:rotating_light:` When removing linter warnings
-    * :pencil2: `:pencil2:` Fixing typos
-    * :recycle: `:recycle:` Refactoring code.
+    * :pencil2: `pencil2:` Fixing typos
+    * :recycle: `:scisccor:` Refactoring code.
     * :boom: `:boom:` Introducing breaking changes
-    * :truck: `:truck:` Moving or renaming files.
+    * :truck: `truck` Moving or renaming files.
     * :space_invader: `:space_invader:` When fixing something synthesis related
     * :beers: `:beer:` Writing code drunkenly.
-    * :ok_hand: `:ok_hand:` Updating code due to code review changes
+    * :ok_hand: `:ok_hand` Updating code due to code review changes
     * :building_construction: `:building_construction:` Making architectural changes.
-    * :wrench: `:wrench:` Tooling
-    * :construction: `:construction:` Work In Progress WIP
-    * :bookmark: `:bookmark:` version tag
+
+For a detailed why and how please refer to one of the multiple [resources](https://chris.beams.io/posts/git-commit/) regarding git commit messages.
 
 If you use `vi` for your commit message, consider to put the following snippet inside your `~/.vimrc`:
 

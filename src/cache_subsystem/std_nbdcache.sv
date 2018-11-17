@@ -32,8 +32,10 @@ module std_nbdcache #(
     input  dcache_req_i_t [2:0]            req_ports_i,  // request ports
     output dcache_req_o_t [2:0]            req_ports_o,  // request ports
     // Cache AXI refill port
-    AXI_BUS.Master                         data_if,
-    AXI_BUS.Master                         bypass_if
+    output ariane_axi::req_t               axi_data_o,
+    input  ariane_axi::resp_t              axi_data_i,
+    output ariane_axi::req_t               axi_bypass_o,
+    input  ariane_axi::resp_t              axi_bypass_i
 );
 
     // -------------------------------
@@ -130,8 +132,8 @@ module std_nbdcache #(
         .flush_i                ( flush_i              ),
         .busy_i                 ( |busy                ),
         // AMOs
-        .amo_req_i             ( amo_req_i            ),
-        .amo_resp_o            ( amo_resp_o           ),
+        .amo_req_i              ( amo_req_i            ),
+        .amo_resp_o             ( amo_resp_o           ),
         .miss_req_i             ( miss_req             ),
         .miss_gnt_o             ( miss_gnt             ),
         .bypass_gnt_o           ( bypass_gnt           ),
@@ -149,8 +151,10 @@ module std_nbdcache #(
         .be_o                   ( be              [0]  ),
         .data_o                 ( wdata           [0]  ),
         .we_o                   ( we              [0]  ),
-        .bypass_if,
-        .data_if,
+        .axi_bypass_o,
+        .axi_bypass_i,
+        .axi_data_o,
+        .axi_data_i,
         .*
     );
 
@@ -248,11 +252,10 @@ module std_nbdcache #(
     );
 
 
-`ifndef SYNTHESIS
+//pragma translate_off
     initial begin
-        assert ($bits(data_if.aw_addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
+        assert ($bits(axi_data_o.aw.addr) == 64) else $fatal(1, "Ariane needs a 64-bit bus");
         assert (DCACHE_LINE_WIDTH/64 inside {2, 4, 8, 16}) else $fatal(1, "Cache line size needs to be a power of two multiple of 64");
     end
-`endif
+//pragma translate_on
 endmodule
-

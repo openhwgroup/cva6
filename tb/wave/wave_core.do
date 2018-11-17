@@ -5,8 +5,8 @@ add wave -noupdate -group frontend -group icache /ariane_tb/dut/i_ariane/i_std_c
 add wave -noupdate -group frontend -group ras /ariane_tb/dut/i_ariane/i_frontend/i_ras/*
 add wave -noupdate -group frontend -group btb /ariane_tb/dut/i_ariane/i_frontend/i_btb/*
 add wave -noupdate -group frontend -group bht /ariane_tb/dut/i_ariane/i_frontend/i_bht/*
-add wave -noupdate -group frontend -group instr_scan /ariane_tb/dut/i_ariane/i_frontend/*/i_instr_scan/*
-add wave -noupdate -group frontend -group fetch_fifo /ariane_tb/dut/i_ariane/i_frontend/i_fetch_fifo/*
+# add wave -noupdate -group frontend -group instr_scan /ariane_tb/dut/i_ariane/i_frontend/*/i_instr_scan/*
+# add wave -noupdate -group frontend -group fetch_fifo /ariane_tb/dut/i_ariane/i_frontend/i_fetch_fifo/*
 
 add wave -noupdate -group id_stage -group decoder /ariane_tb/dut/i_ariane/id_stage_i/decoder_i/*
 add wave -noupdate -group id_stage -group compressed_decoder /ariane_tb/dut/i_ariane/id_stage_i/compressed_decoder_i/*
@@ -22,6 +22,8 @@ add wave -noupdate -group ex_stage -group alu /ariane_tb/dut/i_ariane/ex_stage_i
 add wave -noupdate -group ex_stage -group mult /ariane_tb/dut/i_ariane/ex_stage_i/i_mult/*
 add wave -noupdate -group ex_stage -group mult -group mul /ariane_tb/dut/i_ariane/ex_stage_i/i_mult/i_mul/*
 add wave -noupdate -group ex_stage -group mult -group div /ariane_tb/dut/i_ariane/ex_stage_i/i_mult/i_div/*
+add wave -noupdate -group ex_stage -group fpu /ariane_tb/dut/i_ariane/ex_stage_i/fpu_gen/fpu_i/*
+add wave -noupdate -group ex_stage -group fpu -group fpnew /ariane_tb/dut/i_ariane/ex_stage_i/fpu_gen/fpu_i/fpnew_top_i/i_fpnew/*
 
 add wave -noupdate -group ex_stage -group lsu /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/*
 add wave -noupdate -group ex_stage -group lsu  -group lsu_bypass /ariane_tb/dut/i_ariane/ex_stage_i/lsu_i/lsu_bypass_i/*

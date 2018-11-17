@@ -25,8 +25,9 @@ class instruction_tracer;
     scoreboard_entry_t issue_sbe;
     // store resolved branches, get (mis-)predictions
     branchpredict_t bp [$];
-    // shadow copy of the register file
-    logic [63:0] reg_file [32];
+    // shadow copy of the register files
+    logic [63:0] gp_reg_file [32];
+    logic [63:0] fp_reg_file [32];
     // 64 bit clock tick count
     longint unsigned clk_ticks;
     int f, commit_log;
@@ -46,10 +47,10 @@ class instruction_tracer;
 
     endfunction : new
 
-    function void create_file(logic [5:0] cluster_id, logic [3:0] core_id);
+    function void create_file(logic [63:0] hart_id);
         string fn, fn_commit_log;
-        $sformat(fn, "trace_core_%h_%h.log", cluster_id, core_id);
-        $sformat(fn_commit_log, "trace_core_%h_%h_commit.log", cluster_id, core_id);
+        $sformat(fn, "trace_hart_%04h.log", hart_id);
+        $sformat(fn_commit_log, "trace_hart_%04h_commit.log", hart_id);
         $display("[TRACER] Output filename is: %s", fn);
 
         this.f = $fopen(fn,"w");
@@ -60,7 +61,7 @@ class instruction_tracer;
         logic [31:0] decode_instruction, issue_instruction, issue_commit_instruction;
         scoreboard_entry_t commit_instruction;
         // initialize register 0
-        reg_file [0] = 0;
+        gp_reg_file  = '{default:0};
 
         forever begin
             automatic branchpredict_t bp_instruction = '0;
@@ -125,10 +126,12 @@ class instruction_tracer;
                     // the scoreboards issue entry still contains the immediate value as a result
                     // check if the write back is valid, if not we need to source the result from the register file
                     // as the most recent version of this register will be there.
-                    if (tracer_if.pck.we[i]) begin
+                    if (tracer_if.pck.we_gpr[i] || tracer_if.pck.we_fpr[i]) begin
                         printInstr(issue_sbe, issue_commit_instruction, tracer_if.pck.wdata[i], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
+                    end else if (is_rd_fpr(commit_instruction.op)) begin
+                        printInstr(issue_sbe, issue_commit_instruction, fp_reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
                     end else begin
-                        printInstr(issue_sbe, issue_commit_instruction, reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
+                        printInstr(issue_sbe, issue_commit_instruction, gp_reg_file[commit_instruction.rd], address_mapping, tracer_if.pck.priv_lvl, tracer_if.pck.debug_mode, bp_instruction);
                     end
                 end
             end
@@ -142,13 +145,14 @@ class instruction_tracer;
             // ----------------------
             // Commit Registers
             // ----------------------
-            // update shadow reg file here
+            // update shadow reg files here
             for (int i = 0; i < 2; i++) begin
-                if (tracer_if.pck.we[i] && tracer_if.pck.waddr[i] != 5'b0) begin
-                    reg_file[tracer_if.pck.waddr[i]] = tracer_if.pck.wdata[i];
+                if (tracer_if.pck.we_gpr[i] && tracer_if.pck.waddr[i] != 5'b0) begin
+                    gp_reg_file[tracer_if.pck.waddr[i]] = tracer_if.pck.wdata[i];
+                end else if (tracer_if.pck.we_fpr[i]) begin
+                    fp_reg_file[tracer_if.pck.waddr[i]] = tracer_if.pck.wdata[i];
                 end
             end
-
             // --------------
             // Flush Signals
             // --------------
@@ -182,11 +186,11 @@ class instruction_tracer;
     endfunction
 
     function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, branchpredict_t bp);
-        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.reg_file, result, paddr, priv_lvl, debug_mode, bp);
+        instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, this.gp_reg_file, this.fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
         // print instruction to console
         string print_instr = iti.printInstr();
         if (ENABLE_SPIKE_COMMIT_LOG && !debug_mode) begin
-            $fwrite(this.commit_log, riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result));
+            $fwrite(this.commit_log, riscv::spikeCommitLog(sbe.pc, priv_lvl, instr, sbe.rd, result, is_rd_fpr(sbe.op)));
         end
         uvm_report_info( "Tracer",  print_instr, UVM_HIGH);
         $fwrite(this.f, {print_instr, "\n"});

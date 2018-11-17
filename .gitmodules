@@ -28,4 +28,12 @@
 [submodule "fpga/src/axi_slice"]
     path = fpga/src/axi_slice
     url = https://github.com/pulp-platform/axi_slice.git
-
+[submodule "src/fpu_div_sqrt_mvp"]
+	path = src/fpu_div_sqrt_mvp
+	url = https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
+[submodule "src/tech_cells_generic"]
+	path = src/tech_cells_generic
+	url = https://github.com/pulp-platform/tech_cells_generic.git
+[submodule "src/fpu"]
+	path = src/fpu
+	url = https://github.com/pulp-platform/fpnew.git

@@ -12,6 +12,8 @@
 module ariane_peripherals #(
     parameter int AxiAddrWidth = -1,
     parameter int AxiDataWidth = -1,
+    parameter int AxiIdWidth   = -1,
+    parameter int AxiUserWidth = 1,
     parameter bit DummyUART    = 1,
     parameter bit InclSPI      = 0
 ) (
@@ -51,13 +53,13 @@ module ariane_peripherals #(
     logic         plic_pslverr;
 
     axi2apb_64_32 #(
-        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth        ),
-        .AXI4_RDATA_WIDTH   ( AxiDataWidth        ),
-        .AXI4_WDATA_WIDTH   ( AxiDataWidth        ),
-        .AXI4_ID_WIDTH      ( $bits(uart.aw_id)   ),
-        .AXI4_USER_WIDTH    ( $bits(uart.aw_user) ),
-        .BUFF_DEPTH_SLAVE   ( 2                   ),
-        .APB_ADDR_WIDTH     ( 32                  )
+        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth  ),
+        .AXI4_RDATA_WIDTH   ( AxiDataWidth  ),
+        .AXI4_WDATA_WIDTH   ( AxiDataWidth  ),
+        .AXI4_ID_WIDTH      ( AxiIdWidth    ),
+        .AXI4_USER_WIDTH    ( AxiUserWidth  ),
+        .BUFF_DEPTH_SLAVE   ( 2             ),
+        .APB_ADDR_WIDTH     ( 32            )
     ) i_axi2apb_64_32_plic (
         .ACLK      ( clk_i          ),
         .ARESETn   ( rst_ni         ),
@@ -161,13 +163,13 @@ module ariane_peripherals #(
     logic         uart_pslverr;
 
     axi2apb_64_32 #(
-        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth        ),
-        .AXI4_RDATA_WIDTH   ( AxiDataWidth        ),
-        .AXI4_WDATA_WIDTH   ( AxiDataWidth        ),
-        .AXI4_ID_WIDTH      ( $bits(uart.aw_id)   ),
-        .AXI4_USER_WIDTH    ( $bits(uart.aw_user) ),
-        .BUFF_DEPTH_SLAVE   ( 2                   ),
-        .APB_ADDR_WIDTH     ( 32                  )
+        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth ),
+        .AXI4_RDATA_WIDTH   ( AxiDataWidth ),
+        .AXI4_WDATA_WIDTH   ( AxiDataWidth ),
+        .AXI4_ID_WIDTH      ( AxiIdWidth   ),
+        .AXI4_USER_WIDTH    ( AxiUserWidth ),
+        .BUFF_DEPTH_SLAVE   ( 2            ),
+        .APB_ADDR_WIDTH     ( 32           )
     ) i_axi2apb_64_32_uart (
         .ACLK      ( clk_i          ),
         .ARESETn   ( rst_ni         ),
@@ -227,6 +229,8 @@ module ariane_peripherals #(
     );
 
     if (DummyUART) begin
+        /* pragma translate_off */
+        `ifndef VERILATOR
         mock_uart i_mock_uart (
             .clk_i     ( clk_i        ),
             .rst_ni    ( rst_ni       ),
@@ -239,6 +243,8 @@ module ariane_peripherals #(
             .pready_o  ( uart_pready  ),
             .pslverr_o ( uart_pslverr )
         );
+        /* pragma translate_on */
+        `endif
     end else begin
         apb_uart i_apb_uart (
             .CLK     ( clk_i           ),

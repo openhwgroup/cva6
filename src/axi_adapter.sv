@@ -42,7 +42,8 @@ module axi_adapter #(
     output logic [63:0]                                 critical_word_o,
     output logic                                        critical_word_valid_o,
     // AXI port
-    AXI_BUS.Master                                      axi
+    output ariane_axi::req_t                            axi_req_o,
+    input  ariane_axi::resp_t                           axi_resp_i
 );
     localparam BURST_SIZE = DATA_WIDTH/64-1;
     localparam ADDR_INDEX = ($clog2(DATA_WIDTH/64) > 0) ? $clog2(DATA_WIDTH/64) : 1;
@@ -62,50 +63,47 @@ module axi_adapter #(
 
     always_comb begin : axi_fsm
         // Default assignments
-        axi.aw_valid  = 1'b0;
-        axi.aw_addr   = addr_i;
-        axi.aw_prot   = 3'b0;
-        axi.aw_region = 4'b0;
-        axi.aw_len    = 8'b0;
-        axi.aw_size   = {1'b0, size_i};
-        axi.aw_burst  = (type_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
-        axi.aw_lock   = 1'b0;
-        axi.aw_cache  = 4'b0;
-        axi.aw_qos    = 4'b0;
-        axi.aw_id     = id_i;
-        axi.aw_user   = '0;
+        axi_req_o.aw_valid  = 1'b0;
+        axi_req_o.aw.addr   = addr_i;
+        axi_req_o.aw.prot   = 3'b0;
+        axi_req_o.aw.region = 4'b0;
+        axi_req_o.aw.len    = 8'b0;
+        axi_req_o.aw.size   = {1'b0, size_i};
+        axi_req_o.aw.burst  = (type_i == SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
+        axi_req_o.aw.lock   = 1'b0;
+        axi_req_o.aw.cache  = 4'b0;
+        axi_req_o.aw.qos    = 4'b0;
+        axi_req_o.aw.id     = id_i;
+        axi_req_o.aw.atop   = '0; // currently not used
 
-        axi.ar_valid  = 1'b0;
+        axi_req_o.ar_valid  = 1'b0;
         // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
         // with an incremental transfer we need to output the corresponding base address of the cache line
-        axi.ar_addr   = (CRITICAL_WORD_FIRST || type_i == SINGLE_REQ) ? addr_i : { addr_i[63:DCACHE_BYTE_OFFSET], {{DCACHE_BYTE_OFFSET}{1'b0}}};
-        axi.ar_prot   = 3'b0;
-        axi.ar_region = 4'b0;
-        axi.ar_len    = 8'b0;
-        axi.ar_size   = {1'b0, size_i}; // 8 bytes
-        axi.ar_burst  = (type_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
-        axi.ar_lock   = 1'b0;
-        axi.ar_cache  = 4'b0;
-        axi.ar_qos    = 4'b0;
-        axi.ar_id     = id_i;
-        axi.ar_user   = '0;
+        axi_req_o.ar.addr   = (CRITICAL_WORD_FIRST || type_i == SINGLE_REQ) ? addr_i : { addr_i[63:DCACHE_BYTE_OFFSET], {{DCACHE_BYTE_OFFSET}{1'b0}}};
+        axi_req_o.ar.prot   = 3'b0;
+        axi_req_o.ar.region = 4'b0;
+        axi_req_o.ar.len    = 8'b0;
+        axi_req_o.ar.size   = {1'b0, size_i}; // 8 bytes
+        axi_req_o.ar.burst  = (type_i == SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
+        axi_req_o.ar.lock   = 1'b0;
+        axi_req_o.ar.cache  = 4'b0;
+        axi_req_o.ar.qos    = 4'b0;
+        axi_req_o.ar.id     = id_i;
 
-        axi.w_valid   = 1'b0;
-        axi.w_data    = wdata_i[0];
-        axi.w_strb    = be_i[0];
-        axi.w_user    = '0;
-        axi.w_last    = 1'b0;
+        axi_req_o.w_valid   = 1'b0;
+        axi_req_o.w.data    = wdata_i[0];
+        axi_req_o.w.strb    = be_i[0];
+        axi_req_o.w.last    = 1'b0;
 
-        axi.b_ready   = 1'b0;
-        axi.r_ready   = 1'b0;
+        axi_req_o.b_ready   = 1'b0;
+        axi_req_o.r_ready   = 1'b0;
 
         gnt_o         = 1'b0;
-        gnt_id_o      = '0;
+        gnt_id_o      = id_i;
         valid_o       = 1'b0;
-        id_o          = axi.r_id;
+        id_o          = axi_resp_i.r.id;
 
-        // rdata_o   = axi.r_data;
-        critical_word_o         = axi.r_data;
+        critical_word_o         = axi_resp_i.r.data;
         critical_word_valid_o   = 1'b0;
         rdata_o                 = cache_line_q;
 
@@ -126,93 +124,87 @@ module axi_adapter #(
                     // write
                     if (we_i) begin
                         // the data is valid
-                        axi.aw_valid = 1'b1;
-                        axi.w_valid  = 1'b1;
+                        axi_req_o.aw_valid = 1'b1;
+                        axi_req_o.w_valid  = 1'b1;
                         // its a single write
                         if (type_i == SINGLE_REQ) begin
                             // only a single write so the data is already the last one
-                            axi.w_last   = 1'b1;
+                            axi_req_o.w.last   = 1'b1;
                             // single req can be granted here
-                            gnt_o = axi.aw_ready & axi.w_ready;
-                            gnt_id_o = id_i;
-                            case ({axi.aw_ready, axi.w_ready})
+                            gnt_o = axi_resp_i.aw_ready & axi_resp_i.w_ready;
+                            case ({axi_resp_i.aw_ready, axi_resp_i.w_ready})
                                 2'b11: state_d = WAIT_B_VALID;
                                 2'b01: state_d = WAIT_AW_READY;
                                 2'b10: state_d = WAIT_LAST_W_READY;
                                 default: state_d = IDLE;
                             endcase
-                            id_d = axi.aw_id;
+
                         // its a request for the whole cache line
                         end else begin
-                            axi.aw_len = BURST_SIZE; // number of bursts to do
-                            axi.w_last = 1'b0;
-                            axi.w_data = wdata_i[0];
-                            axi.w_strb = be_i[0];
+                            axi_req_o.aw.len = BURST_SIZE; // number of bursts to do
+                            axi_req_o.w.data = wdata_i[0];
+                            axi_req_o.w.strb = be_i[0];
 
-                            if (axi.w_ready)
+                            if (axi_resp_i.w_ready)
                                 cnt_d = BURST_SIZE - 1;
                             else
                                 cnt_d = BURST_SIZE;
 
-                            case ({axi.aw_ready, axi.w_ready})
+                            case ({axi_resp_i.aw_ready, axi_resp_i.w_ready})
                                 2'b11: state_d = WAIT_LAST_W_READY;
                                 2'b01: state_d = WAIT_LAST_W_READY_AW_READY;
                                 2'b10: state_d = WAIT_LAST_W_READY;
                                 default:;
                             endcase
-                            // save id
-                            id_d = axi.aw_id;
-
                         end
                     // read
                     end else begin
 
-                        axi.ar_valid = 1'b1;
-                        gnt_o = axi.ar_ready;
-                        gnt_id_o = id_i;
+                        axi_req_o.ar_valid = 1'b1;
+                        gnt_o = axi_resp_i.ar_ready;
 
                         if (type_i != SINGLE_REQ) begin
-                            axi.ar_len = BURST_SIZE;
+                            axi_req_o.ar.len = BURST_SIZE;
                             cnt_d = BURST_SIZE;
                         end
 
-                        if (axi.ar_ready) begin
+                        if (axi_resp_i.ar_ready) begin
                             state_d = (type_i == SINGLE_REQ) ? WAIT_R_VALID : WAIT_R_VALID_MULTIPLE;
                             addr_offset_d = addr_i[ADDR_INDEX-1+3:3];
-                            // save id
-                            id_d = axi.ar_id;
                         end
                     end
                 end
             end
 
-            // ~> from single write, write request has already been granted
+            // ~> from single write
             WAIT_AW_READY: begin
-                axi.aw_valid = 1'b1;
-                axi.aw_len   = 8'b0;
+                axi_req_o.aw_valid = 1'b1;
 
-                if (axi.aw_ready)
+                if (axi_resp_i.aw_ready) begin
+                    gnt_o   = 1'b1;
                     state_d = WAIT_B_VALID;
+                end
 
             end
 
             // ~> we need to wait for an aw_ready and there is at least one outstanding write
             WAIT_LAST_W_READY_AW_READY: begin
 
-                axi.w_valid  = 1'b1;
-                axi.w_last   = (cnt_q == '0) ? 1'b1 : 1'b0;
+                axi_req_o.w_valid  = 1'b1;
+                axi_req_o.w.last   = (cnt_q == '0);
+
                 if (type_i == SINGLE_REQ) begin
-                    axi.w_data   = wdata_i[0];
-                    axi.w_strb   = be_i[0];
+                    axi_req_o.w.data   = wdata_i[0];
+                    axi_req_o.w.strb   = be_i[0];
                 end else begin
-                    axi.w_data   = wdata_i[BURST_SIZE-cnt_q];
-                    axi.w_strb   = be_i[BURST_SIZE-cnt_q];
+                    axi_req_o.w.data   = wdata_i[BURST_SIZE-cnt_q];
+                    axi_req_o.w.strb   = be_i[BURST_SIZE-cnt_q];
                 end
-                axi.aw_valid = 1'b1;
+                axi_req_o.aw_valid = 1'b1;
                 // we are here because we want to write a cache line
-                axi.aw_len   = BURST_SIZE;
+                axi_req_o.aw.len   = BURST_SIZE;
                 // we got an aw_ready
-                case ({axi.aw_ready, axi.w_ready})
+                case ({axi_resp_i.aw_ready, axi_resp_i.w_ready})
                     // we got an aw ready
                     2'b01: begin
                         // are there any outstanding transactions?
@@ -225,9 +217,8 @@ module axi_adapter #(
                     2'b11: begin
                         // we are finished
                         if (cnt_q == 0) begin
-                            state_d = WAIT_B_VALID;
-                            gnt_o = 1'b1;
-                            gnt_id_o = id_q;
+                            state_d  = WAIT_B_VALID;
+                            gnt_o    = 1'b1;
                         // there are outstanding transactions
                         end else begin
                             state_d = WAIT_LAST_W_READY;
@@ -241,49 +232,43 @@ module axi_adapter #(
 
             // ~> all data has already been sent, we are only waiting for the aw_ready
             WAIT_AW_READY_BURST: begin
-                axi.aw_valid = 1'b1;
-                axi.aw_len   = BURST_SIZE;
+                axi_req_o.aw_valid = 1'b1;
+                axi_req_o.aw.len   = BURST_SIZE;
 
-                if (axi.aw_ready) begin
-                    state_d = WAIT_B_VALID;
-                    gnt_o = 1'b1;
-                    gnt_id_o = id_q;
+                if (axi_resp_i.aw_ready) begin
+                    state_d  = WAIT_B_VALID;
+                    gnt_o    = 1'b1;
                 end
             end
 
             // ~> from write, there is an outstanding write
             WAIT_LAST_W_READY: begin
-                axi.w_valid = 1'b1;
-                if (type_i == SINGLE_REQ) begin
-                    axi.w_data   = wdata_i[0];
-                    axi.w_strb   = be_i[0];
-                end else begin
-                    axi.w_data   = wdata_i[BURST_SIZE-cnt_q];
-                    axi.w_strb   = be_i[BURST_SIZE-cnt_q];
+                axi_req_o.w_valid = 1'b1;
+
+                if (type_i != SINGLE_REQ) begin
+                    axi_req_o.w.data   = wdata_i[BURST_SIZE-cnt_q];
+                    axi_req_o.w.strb   = be_i[BURST_SIZE-cnt_q];
                 end
 
                 // this is the last write
-                axi.w_last  = (cnt_q == '0) ? 1'b1 : 1'b0;
-
-                if (axi.w_ready) begin
-                    // last write -> go to WAIT_B_VALID
-                    if (cnt_q == '0) begin
-                        state_d = WAIT_B_VALID;
-                        gnt_o = (cnt_q == '0);
-                        gnt_id_o = id_q;
-                    end else begin
-                        cnt_d = cnt_q - 1;
+                if (cnt_q == '0) begin
+                    axi_req_o.w.last = 1'b1;
+                    if (axi_resp_i.w_ready) begin
+                        state_d  = WAIT_B_VALID;
+                        gnt_o    = 1'b1;
                     end
+                end else if (axi_resp_i.w_ready) begin
+                    cnt_d = cnt_q - 1;
                 end
             end
 
             // ~> finish write transaction
             WAIT_B_VALID: begin
-                axi.b_ready = 1'b1;
-                id_o = axi.b_id;
+                axi_req_o.b_ready = 1'b1;
+                id_o = axi_resp_i.b.id;
 
                 // Write is valid
-                if (axi.b_valid) begin
+                if (axi_resp_i.b_valid) begin
                     state_d = IDLE;
                     valid_o = 1'b1;
                 end
@@ -297,34 +282,35 @@ module axi_adapter #(
                     index = BURST_SIZE-cnt_q;
 
                 // reads are always wrapping here
-                axi.r_ready = 1'b1;
+                axi_req_o.r_ready = 1'b1;
                 // this is the first read a.k.a the critical word
-                if (axi.r_valid) begin
+                if (axi_resp_i.r_valid) begin
                     if (CRITICAL_WORD_FIRST) begin
                         // this is the first word of a cacheline read, e.g.: the word which was causing the miss
                         if (state_q == WAIT_R_VALID_MULTIPLE && cnt_q == BURST_SIZE) begin
                             critical_word_valid_o = 1'b1;
-                            critical_word_o       = axi.r_data;
+                            critical_word_o       = axi_resp_i.r.data;
                         end
                     end else begin
                         // check if the address offset matches - then we are getting the critical word
                         if (index == addr_offset_q) begin
                             critical_word_valid_o = 1'b1;
-                            critical_word_o       = axi.r_data;
+                            critical_word_o       = axi_resp_i.r.data;
                         end
                     end
 
                     // this is the last read
-                    if (axi.r_last) begin
+                    if (axi_resp_i.r.last) begin
+                        id_d    = axi_resp_i.r.id;
                         state_d = COMPLETE_READ;
                     end
 
                     // save the word
                     if (state_q == WAIT_R_VALID_MULTIPLE) begin
-                        cache_line_d[index] = axi.r_data;
+                        cache_line_d[index] = axi_resp_i.r.data;
 
                     end else
-                        cache_line_d[0] = axi.r_data;
+                        cache_line_d[0] = axi_resp_i.r.data;
 
                     // Decrease the counter
                     cnt_d = cnt_q - 1;

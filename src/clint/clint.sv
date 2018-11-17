@@ -24,7 +24,7 @@ module clint #(
 )(
     input  logic                clk_i,       // Clock
     input  logic                rst_ni,      // Asynchronous reset active low
-
+    input  logic                testmode_i,
     AXI_BUS.Slave               slave,
 
     input  logic                rtc_i,       // Real-time clock in (usually 32.768 kHz)
@@ -51,6 +51,9 @@ module clint #(
     logic [NR_CORES-1:0]       msip_n, msip_q;
     // increase the timer
     logic increase_timer;
+
+    // currently not implemented
+    assign ipi_o = '0;
 
     // -----------------------------
     // AXI Interface Logic
@@ -150,7 +153,7 @@ module clint #(
     sync_wedge i_sync_edge (
         .clk_i,
         .rst_ni,
-        .en_i      ( 1'b1           ),
+        .en_i      ( ~testmode_i    ),
         .serial_i  ( rtc_i          ),
         .r_edge_o  ( increase_timer ),
         .f_edge_o  (                ), // left open
@@ -175,12 +178,13 @@ module clint #(
     // -------------
     // Assertions
     // --------------
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
     // Static assertion check for appropriate bus width
         initial begin
             assert (AXI_DATA_WIDTH == 64) else $fatal("Timer needs to interface with a 64 bit bus, everything else is not supported");
         end
     `endif
-    `endif
+    //pragma translate_on
+
 endmodule

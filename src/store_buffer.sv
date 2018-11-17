@@ -39,19 +39,13 @@ module store_buffer (
     input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
-    input  dcache_req_o_t            req_port_i,
-    output dcache_req_i_t            req_port_o
+    input  dcache_req_o_t req_port_i,
+    output dcache_req_i_t req_port_o
 );
-    // depth of store-buffers
-    localparam int unsigned DEPTH_SPEC   = 4;
-    // allocate more space for the commit buffer to be on the save side
-    localparam int unsigned DEPTH_COMMIT = 4;
-
 
     // the store queue has two parts:
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
-
     struct packed {
         logic [63:0] address;
         logic [63:0] data;
@@ -258,7 +252,7 @@ module store_buffer (
         else $error ("[Speculative Queue] You are committing although there are no stores to commit");
 
     commit_buffer_overflow: assert property (
-        @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_SPEC) |-> !commit_i)
+        @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_COMMIT) |-> !commit_i)
         else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
 
     `endif

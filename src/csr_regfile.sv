@@ -21,18 +21,15 @@ module csr_regfile #(
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
     input  logic                  time_irq_i,                 // Timer threw a interrupt
-
     // send a flush request out if a CSR with a side effect has changed (e.g. written)
     output logic                  flush_o,
-    output logic                  flush_tlb_o,                // flush TLB
     output logic                  halt_csr_o,                 // halt requested
     // commit acknowledge
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i, // the instruction we want to commit
     input  logic [NR_COMMIT_PORTS-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
-    input  logic  [3:0]           core_id_i,                  // Core ID is considered static
-    input  logic  [5:0]           cluster_id_i,               // Cluster ID is considered static
     input  logic  [63:0]          boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
+    input  logic  [63:0]          hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
     // we are taking an exception
     input exception_t             ex_i,                       // We've got an exception from the commit stage, take its
 
@@ -40,6 +37,8 @@ module csr_regfile #(
     input  logic  [11:0]          csr_addr_i,                 // Address of the register to read/write
     input  logic  [63:0]          csr_wdata_i,                // Write data in
     output logic  [63:0]          csr_rdata_o,                // Read data out
+    input  logic                  dirty_fp_state_i,           // Mark the FP sate as dirty
+    input  logic                  csr_write_fflags_i,         // Write fflags register e.g.: we are retiring a floating point instruction
     input  logic  [63:0]          pc_i,                       // PC of instruction accessing the CSR
     output exception_t            csr_exception_o,            // attempts to access a CSR without appropriate privilege
                                                               // level or to write  a read-only register also
@@ -49,6 +48,11 @@ module csr_regfile #(
     output logic                  eret_o,                     // Return from exception, set the PC of epc_o
     output logic  [63:0]          trap_vector_base_o,         // Output base of exception vector, correct CSR is output (mtvec, stvec)
     output riscv::priv_lvl_t      priv_lvl_o,                 // Current privilege level the CPU is in
+    // FPU
+    output riscv::xs_t            fs_o,                       // Floating point extension status
+    output logic [4:0]            fflags_o,                   // Floating-Point Accured Exceptions
+    output logic [2:0]            frm_o,                      // Floating-Point Dynamic Rounding Mode
+    output logic [6:0]            fprec_o,                    // Floating-Point Precision Control
     // MMU
     output logic                  en_translation_o,           // enable VA translation
     output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
@@ -88,12 +92,14 @@ module csr_regfile #(
     logic  mret;  // return from M-mode exception
     logic  sret;  // return from S-mode exception
     logic  dret;  // return from debug mode
-
+    // CSR write causes us to mark the FPU state as dirty
+    logic  dirty_fp_state_csr;
     riscv::csr_t  csr_addr;
     // ----------------
     // Assignments
     // ----------------
     assign csr_addr = riscv::csr_t'(csr_addr_i);
+    assign fs_o = mstatus_q.fs;
     // ----------------
     // CSR Registers
     // ----------------
@@ -133,6 +139,8 @@ module csr_regfile #(
     logic [63:0] cycle_q,     cycle_d;
     logic [63:0] instret_q,   instret_d;
 
+    riscv::fcsr_t fcsr_q, fcsr_d;
+
     // ----------------
     // CSR Read logic
     // ----------------
@@ -145,6 +153,35 @@ module csr_regfile #(
 
         if (csr_read) begin
             unique case (csr_addr.address)
+                riscv::CSR_FFLAGS: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = {59'b0, fcsr_q.fflags};
+                    end
+                end
+                riscv::CSR_FRM: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = {61'b0, fcsr_q.frm};
+                    end
+                end
+                riscv::CSR_FCSR: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = {56'b0, fcsr_q.frm, fcsr_q.fflags};
+                    end
+                end
+                // non-standard extension
+                riscv::CSR_FTRAN: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        read_access_exception = 1'b1;
+                    end else begin
+                        csr_rdata = {57'b0, fcsr_q.fprec};
+                    end
+                end
                 // debug registers
                 riscv::CSR_DCSR:               csr_rdata = {32'b0, dcsr_q};
                 riscv::CSR_DPC:                csr_rdata = dpc_q;
@@ -188,9 +225,9 @@ module csr_regfile #(
                 riscv::CSR_MTVAL:              csr_rdata = mtval_q;
                 riscv::CSR_MIP:                csr_rdata = mip_q;
                 riscv::CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
-                riscv::CSR_MARCHID:            csr_rdata = 64'b0; // PULP, anonymous source (no allocated ID yet)
+                riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
-                riscv::CSR_MHARTID:            csr_rdata = {53'b0, cluster_id_i[5:0], 1'b0, core_id_i[3:0]};
+                riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
                 riscv::CSR_MINSTRET:           csr_rdata = instret_q;
                 // custom (non RISC-V) cache control
@@ -223,7 +260,6 @@ module csr_regfile #(
         automatic riscv::satp_t sapt;
         automatic logic [63:0] instret;
 
-        flush_tlb_o = 1'b0;
 
         sapt = satp_q;
         instret = instret_q;
@@ -252,6 +288,8 @@ module csr_regfile #(
 
         perf_we_o               = 1'b0;
         perf_data_o             = 'b0;
+
+        fcsr_d                  = fcsr_q;
 
         priv_lvl_d              = priv_lvl_q;
         debug_mode_d            = debug_mode_q;
@@ -291,10 +329,52 @@ module csr_regfile #(
         satp_d                  = satp_q;
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
+        dirty_fp_state_csr      = 1'b0;
 
         // check for correct access rights and that we are writing
         if (csr_we) begin
             unique case (csr_addr.address)
+                // Floating-Point
+                riscv::CSR_FFLAGS: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        update_access_exception = 1'b1;
+                    end else begin
+                        dirty_fp_state_csr = 1'b1;
+                        fcsr_d.fflags = csr_wdata[4:0];
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end
+                end
+                riscv::CSR_FRM: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        update_access_exception = 1'b1;
+                    end else begin
+                        dirty_fp_state_csr = 1'b1;
+                        fcsr_d.frm    = csr_wdata[2:0];
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end
+                end
+                riscv::CSR_FCSR: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        update_access_exception = 1'b1;
+                    end else begin
+                        dirty_fp_state_csr = 1'b1;
+                        fcsr_d[7:0] = csr_wdata[7:0]; // ignore writes to reserved space
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end
+                end
+                riscv::CSR_FTRAN: begin
+                    if (mstatus_q.fs == riscv::Off) begin
+                        update_access_exception = 1'b1;
+                    end else begin
+                        dirty_fp_state_csr = 1'b1;
+                        fcsr_d.fprec = csr_wdata[6:0]; // ignore writes to reserved space
+                        // this instruction has side-effects
+                        flush_o = 1'b1;
+                    end
+                end
                 // debug CSR
                 riscv::CSR_DCSR: begin
                     dcsr_d = csr_wdata[31:0];
@@ -318,9 +398,14 @@ module csr_regfile #(
                 riscv::CSR_SSTATUS: begin
                     mask = ariane_pkg::SMODE_STATUS_WRITE_MASK;
                     mstatus_d = (mstatus_q & ~mask) | (csr_wdata & mask);
+                    // hardwire to zero if floating point extension is not present
+                    if (!FP_PRESENT) begin
+                        mstatus_d.fs = riscv::Off;
+                    end
+                    // hardwired extension registers
+                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
                     // this instruction has side-effects
                     flush_o = 1'b1;
-                    flush_tlb_o = 1'b1;
                 end
                 // even machine mode interrupts can be visible and set-able to supervisor
                 // if the corresponding bit in mideleg is set
@@ -356,20 +441,20 @@ module csr_regfile #(
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
                     flush_o = 1'b1;
-                    flush_tlb_o = 1'b1;
                 end
 
                 riscv::CSR_MSTATUS: begin
                     mstatus_d      = csr_wdata;
                     // hardwired zero registers
-                    mstatus_d.sd   = 1'b0;
-                    mstatus_d.xs   = 2'b0;
-                    mstatus_d.fs   = 2'b0;
+                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
+                    mstatus_d.xs   = riscv::Off;
+                    if (!FP_PRESENT) begin
+                        mstatus_d.fs = riscv::Off;
+                    end
                     mstatus_d.upie = 1'b0;
                     mstatus_d.uie  = 1'b0;
                     // this register has side-effects on other registers, flush the pipeline
                     flush_o        = 1'b1;
-                    flush_tlb_o    = 1'b1;
                 end
                 // MISA is WARL (Write Any Value, Reads Legal Value)
                 riscv::CSR_MISA:;
@@ -439,6 +524,15 @@ module csr_regfile #(
         mstatus_d.sxl  = riscv::XLEN_64;
         mstatus_d.uxl  = riscv::XLEN_64;
 
+        // mark the floating point extension register as dirty
+        if (FP_PRESENT && (dirty_fp_state_csr || dirty_fp_state_i)) begin
+            mstatus_d.fs = riscv::Dirty;
+        end
+
+        // write the floating point status register
+        if (csr_write_fflags_i) begin
+            fcsr_d.fflags = csr_wdata_i[4:0] | fcsr_q.fflags;
+        end
         // ---------------------
         // External Interrupts
         // ---------------------
@@ -619,7 +713,6 @@ module csr_regfile #(
             mstatus_d.mpp  = riscv::PRIV_LVL_U;
             // set mpie to 1
             mstatus_d.mpie = 1'b1;
-            flush_tlb_o = 1'b1;
         end
 
         if (sret) begin
@@ -633,7 +726,6 @@ module csr_regfile #(
             mstatus_d.spp  = 1'b0;
             // set spie to 1
             mstatus_d.spie = 1'b1;
-            flush_tlb_o = 1'b1;
         end
 
         // return from debug mode
@@ -829,37 +921,6 @@ module csr_regfile #(
         end
     end
 
-    // `ifdef SYNTHESIS
-    // ila_0 i_ila_0 (
-    //     .clk(clk_i), // input wire clk
-    //     .probe0(commit_instr_i[0].pc), // input wire [63:0]  probe0
-    //     .probe1(commit_instr_i[1].pc), // input wire [63:0]  probe1
-    //     .probe2(commit_ack_i[0]), // input wire [0:0]  probe2
-    //     .probe3(commit_ack_i[1]), // input wire [0:0]  probe3
-    //     .probe4(mstatus_q.mie), // input wire [0:0]  probe4
-    //     .probe5(mstatus_q.mpp), // input wire [1:0]  probe5
-    //     .probe6(mstatus_q.mpie), // input wire [0:0]  probe6
-    //     .probe7(mstatus_q.sie), // input wire [0:0]  probe7
-    //     .probe8(mstatus_q.spp), // input wire [0:0]  probe8
-    //     .probe9(mstatus_q.spie), // input wire [0:0]  probe9
-    //     .probe10(mip_q[riscv::IRQ_S_SOFT]), // input wire [0:0]  probe10
-    //     .probe11(mip_q[riscv::IRQ_M_SOFT]), // input wire [0:0]  probe11
-    //     .probe12(mip_q[riscv::IRQ_S_TIMER]), // input wire [0:0]  probe12
-    //     .probe13(mip_q[riscv::IRQ_M_TIMER]), // input wire [0:0]  probe13
-    //     .probe14(mie_q[riscv::IRQ_S_SOFT]), // input wire [0:0]  probe14
-    //     .probe15(mie_q[riscv::IRQ_M_SOFT]), // input wire [0:0]  probe15
-    //     .probe16(mie_q[riscv::IRQ_S_TIMER]), // input wire [0:0]  probe16
-    //     .probe17(mie_q[riscv::IRQ_M_TIMER]), // input wire [0:0]  probe17
-    //     .probe18(priv_lvl_o), // input wire [1:0]  probe18
-    //     .probe19(sepc_q),
-    //     .probe20(mepc_q),
-    //     .probe21(commit_instr_i[0].valid),
-    //     .probe22(commit_instr_i[1].valid),
-    //     .probe23(csr_exception_o.tval),
-    //     .probe24('0)
-    // );
-    // `endif
-
     // -------------------
     // Output Assignments
     // -------------------
@@ -879,8 +940,13 @@ module csr_regfile #(
             default:;
         endcase
     end
+
     // in debug mode we execute with privilege level M
     assign priv_lvl_o       = (debug_mode_q) ? riscv::PRIV_LVL_M : priv_lvl_q;
+    // FPU outputs
+    assign fflags_o         = fcsr_q.fflags;
+    assign frm_o            = fcsr_q.frm;
+    assign fprec_o          = fcsr_q.fprec;
     // MMU outputs
     assign satp_ppn_o       = satp_q.ppn;
     assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
@@ -905,6 +971,8 @@ module csr_regfile #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             priv_lvl_q             <= riscv::PRIV_LVL_M;
+            // floating-point registers
+            fcsr_q                 <= 64'b0;
             // debug signals
             debug_mode_q           <= 1'b0;
             dcsr_q                 <= '0;
@@ -942,6 +1010,8 @@ module csr_regfile #(
             wfi_q                  <= 1'b0;
         end else begin
             priv_lvl_q             <= priv_lvl_d;
+            // floating-point registers
+            fcsr_q                 <= fcsr_d;
             // debug signals
             debug_mode_q           <= debug_mode_d;
             dcsr_q                 <= dcsr_d;
@@ -981,12 +1051,12 @@ module csr_regfile #(
     //-------------
     // Assertions
     //-------------
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
         // check that eret and ex are never valid together
         assert property (
           @(posedge clk_i) !(eret_o && ex_i.valid))
         else begin $error("eret and exception should never be valid at the same time"); $stop(); end
     `endif
-    `endif
+    //pragma translate_on
 endmodule

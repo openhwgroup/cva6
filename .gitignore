@@ -30,3 +30,4 @@ fpga/work-fpga
 stdout/
 work-dpi/
 tb/riscv-isa-sim/
+work-*/*

@@ -12,31 +12,20 @@
 // Author: Igor Loi <igor.loi@unibo.it>
 // Author: Andreas Traber <atraber@student.ethz.ch>
 // Author: Lukas Mueller <lukasmue@student.ethz.ch>
-// Author: Florian Zaruba <zaruabf@ethz.ch>
+// Author: Florian Zaruba <zaruabf@iis.ee.ethz.ch>
 //
 // Date: 19.03.2017
-// Description: Ariane ALU
+// Description: Ariane ALU based on RI5CY's ALU
 
 import ariane_pkg::*;
 
-module alu
-(
-    input  logic [TRANS_ID_BITS-1:0] trans_id_i,
-    input  logic                     alu_valid_i,
-    input  fu_op                     operator_i,
-    input  logic [63:0]              operand_a_i,
-    input  logic [63:0]              operand_b_i,
+module alu (
+    input  logic                     clk_i,          // Clock
+    input  logic                     rst_ni,         // Asynchronous reset active low
+    input  fu_data_t                 fu_data_i,
     output logic [63:0]              result_o,
-    output logic                     alu_branch_res_o,
-    output logic                     alu_valid_o,
-    output logic                     alu_ready_o,
-    output logic [TRANS_ID_BITS-1:0] alu_trans_id_o
+    output logic                     alu_branch_res_o
 );
-
-    // ALU is a single cycle instructions, hence it is always ready
-    assign alu_ready_o    = 1'b1;
-    assign alu_valid_o    = alu_valid_i;
-    assign alu_trans_id_o = trans_id_i;
 
     logic [63:0] operand_a_rev;
     logic [31:0] operand_a_rev32;
@@ -48,10 +37,10 @@ module alu
     generate
       genvar k;
       for(k = 0; k < 64; k++)
-        assign operand_a_rev[k] = operand_a_i[63-k];
+        assign operand_a_rev[k] = fu_data_i.operand_a[63-k];
 
       for (k = 0; k < 32; k++)
-        assign operand_a_rev32[k] = operand_a_i[31-k];
+        assign operand_a_rev32[k] = fu_data_i.operand_a[31-k];
     endgenerate
 
     // ------
@@ -65,7 +54,7 @@ module alu
     always_comb begin
       adder_op_b_negate = 1'b0;
 
-      unique case (operator_i)
+      unique case (fu_data_i.operator)
         // ADDER OPS
         EQ,  NE,
         SUB, SUBW: adder_op_b_negate = 1'b1;
@@ -75,10 +64,10 @@ module alu
     end
 
     // prepare operand a
-    assign adder_in_a    = {operand_a_i, 1'b1};
+    assign adder_in_a    = {fu_data_i.operand_a, 1'b1};
 
     // prepare operand b
-    assign operand_b_neg = {operand_b_i, 1'b0} ^ {65{adder_op_b_negate}};
+    assign operand_b_neg = {fu_data_i.operand_b, 1'b0} ^ {65{adder_op_b_negate}};
     assign adder_in_b    =  operand_b_neg ;
 
     // actual adder
@@ -90,7 +79,7 @@ module alu
     always_comb begin : branch_resolve
         // set comparison by default
         alu_branch_res_o      = 1'b1;
-        case (operator_i)
+        case (fu_data_i.operator)
             EQ:       alu_branch_res_o = adder_z_flag;
             NE:       alu_branch_res_o = ~adder_z_flag;
             LTS, LTU: alu_branch_res_o = less;
@@ -120,19 +109,19 @@ module alu
     logic [63:0] shift_left_result;
     logic [31:0] shift_left_result32;
 
-    assign shift_amt = operand_b_i;
+    assign shift_amt = fu_data_i.operand_b;
 
-    assign shift_left = (operator_i == SLL) | (operator_i == SLLW);
+    assign shift_left = (fu_data_i.operator == SLL) | (fu_data_i.operator == SLLW);
 
-    assign shift_arithmetic = (operator_i == SRA) | (operator_i == SRAW);
+    assign shift_arithmetic = (fu_data_i.operator == SRA) | (fu_data_i.operator == SRAW);
 
     // right shifts, we let the synthesizer optimize this
     logic [64:0] shift_op_a_64;
     logic [32:0] shift_op_a_32;
 
     // choose the bit reversed or the normal input for shift operand a
-    assign shift_op_a    = shift_left ? operand_a_rev   : operand_a_i;
-    assign shift_op_a32  = shift_left ? operand_a_rev32 : operand_a_i[31:0];
+    assign shift_op_a    = shift_left ? operand_a_rev   : fu_data_i.operand_a;
+    assign shift_op_a32  = shift_left ? operand_a_rev32 : fu_data_i.operand_a[31:0];
 
     assign shift_op_a_64 = { shift_arithmetic & shift_op_a[63], shift_op_a};
     assign shift_op_a_32 = { shift_arithmetic & shift_op_a[31], shift_op_a32};
@@ -162,12 +151,12 @@ module alu
         logic sgn;
         sgn = 1'b0;
 
-        if ((operator_i == SLTS) ||
-            (operator_i == LTS)  ||
-            (operator_i == GES))
+        if ((fu_data_i.operator == SLTS) ||
+            (fu_data_i.operator == LTS)  ||
+            (fu_data_i.operator == GES))
             sgn = 1'b1;
 
-        less = ($signed({sgn & operand_a_i[63], operand_a_i})  <  $signed({sgn & operand_b_i[63], operand_b_i}));
+        less = ($signed({sgn & fu_data_i.operand_a[63], fu_data_i.operand_a})  <  $signed({sgn & fu_data_i.operand_b[63], fu_data_i.operand_b}));
     end
 
     // -----------
@@ -176,11 +165,11 @@ module alu
     always_comb begin
         result_o   = '0;
 
-        unique case (operator_i)
+        unique case (fu_data_i.operator)
             // Standard Operations
-            ANDL:  result_o = operand_a_i & operand_b_i;
-            ORL:   result_o = operand_a_i | operand_b_i;
-            XORL:  result_o = operand_a_i ^ operand_b_i;
+            ANDL:  result_o = fu_data_i.operand_a & fu_data_i.operand_b;
+            ORL:   result_o = fu_data_i.operand_a | fu_data_i.operand_b;
+            XORL:  result_o = fu_data_i.operand_a ^ fu_data_i.operand_b;
 
             // Adder Operations
             ADD, SUB: result_o = adder_result;
@@ -199,5 +188,4 @@ module alu
             default: ; // default case to suppress unique warning
         endcase
     end
-
 endmodule

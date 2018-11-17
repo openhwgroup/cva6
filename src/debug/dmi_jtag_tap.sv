@@ -25,6 +25,7 @@ module dmi_jtag_tap #(
     input  logic        td_i,     // JTAG test data input pad
     output logic        td_o,     // JTAG test data output pad
     output logic        tdo_oe_o, // Data out output enable
+    input  logic        testmode_i,
     output logic        test_logic_reset_o,
     output logic        shift_dr_o,
     output logic        update_dr_o,
@@ -207,8 +208,23 @@ module dmi_jtag_tap #(
 
     end
 
-  // TDO changes state at negative edge of TCK
-    always_ff @(negedge tck_i, negedge trst_ni) begin
+    // DFT
+    logic tck_n, tck_ni;
+
+    cluster_clock_inverter i_tck_inv (
+        .clk_i ( tck_i  ),
+        .clk_o ( tck_ni )
+    );
+
+    pulp_clock_mux2 i_dft_tck_mux (
+        .clk0_i    ( tck_ni     ),
+        .clk1_i    ( tck_i      ), // bypass the inverted clock for testing
+        .clk_sel_i ( testmode_i ),
+        .clk_o     ( tck_n      )
+    );
+
+    // TDO changes state at negative edge of TCK
+    always_ff @(posedge tck_n, negedge trst_ni) begin
         if (~trst_ni) begin
             td_o     <= 1'b0;
             tdo_oe_o <= 1'b0;

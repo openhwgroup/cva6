@@ -21,7 +21,7 @@ module id_stage (
 
     input  logic                  flush_i,
     // from IF
-    input  fetch_entry_t          fetch_entry_i,
+    input  frontend_fetch_t       fetch_entry_i,
     input  logic                  fetch_entry_valid_i,
     output logic                  decoded_instr_ack_o, // acknowledge the instruction (fetch entry)
 
@@ -32,6 +32,9 @@ module id_stage (
     input  logic                  issue_instr_ack_i,   // issue stage acknowledged sampling of instructions
     // from CSR file
     input  riscv::priv_lvl_t      priv_lvl_i,          // current privilege level
+    input  riscv::xs_t            fs_i,                // floating point extension status
+    input  logic [2:0]            frm_i,               // floating-point dynamic rounding mode
+
     input  logic                  debug_mode_i,        // we are in debug mode
     input  logic                  tvm_i,
     input  logic                  tw_i,
@@ -39,10 +42,9 @@ module id_stage (
 );
     // register stage
     struct packed {
-        logic            valid;
+        logic              valid;
         scoreboard_entry_t sbe;
-        logic            is_ctrl_flow;
-
+        logic              is_ctrl_flow;
     } issue_n, issue_q;
 
     logic                is_control_flow_instr;
@@ -59,9 +61,9 @@ module id_stage (
     // 1. Re-align instructions
     // ---------------------------------------------------------
     instr_realigner instr_realigner_i (
-        .fetch_entry_0_i         ( fetch_entry_i               ),
-        .fetch_entry_valid_0_i   ( fetch_entry_valid_i         ),
-        .fetch_ack_0_o           ( decoded_instr_ack_o         ),
+        .fetch_entry_i           ( fetch_entry_i               ),
+        .fetch_entry_valid_i     ( fetch_entry_valid_i         ),
+        .fetch_ack_o             ( decoded_instr_ack_o         ),
 
         .fetch_entry_o           ( fetch_entry                 ),
         .fetch_entry_valid_o     ( fetch_entry_valid           ),
@@ -91,6 +93,8 @@ module id_stage (
         .ex_i                    ( fetch_entry.ex                ),
         .instruction_o           ( decoded_instruction           ),
         .is_control_flow_instr_o ( is_control_flow_instr         ),
+        .fs_i,
+        .frm_i,
         .*
     );
 

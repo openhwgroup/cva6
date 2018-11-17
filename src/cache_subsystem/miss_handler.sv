@@ -19,9 +19,7 @@ import ariane_pkg::*;
 import std_cache_pkg::*;
 
 module miss_handler #(
-    parameter int unsigned NR_PORTS         = 3,
-    parameter int unsigned AXI_ID_WIDTH     = 10,
-    parameter int unsigned AXI_USER_WIDTH   = 1
+    parameter int unsigned NR_PORTS         = 3
 )(
     input  logic                                        clk_i,
     input  logic                                        rst_ni,
@@ -35,14 +33,19 @@ module miss_handler #(
     output logic [NR_PORTS-1:0]                         bypass_gnt_o,
     output logic [NR_PORTS-1:0]                         bypass_valid_o,
     output logic [NR_PORTS-1:0][63:0]                   bypass_data_o,
-    AXI_BUS.Master                                      bypass_if,
+
+    // AXI port
+    output ariane_axi::req_t                            axi_bypass_o,
+    input  ariane_axi::resp_t                           axi_bypass_i,
+
     // Miss handling (~> cacheline refill)
     output logic [NR_PORTS-1:0]                         miss_gnt_o,
     output logic [NR_PORTS-1:0]                         active_serving_o,
 
     output logic [63:0]                                 critical_word_o,
     output logic                                        critical_word_valid_o,
-    AXI_BUS.Master                                      data_if,
+    output ariane_axi::req_t                            axi_data_o,
+    input  ariane_axi::resp_t                           axi_data_i,
 
     input  logic [NR_PORTS-1:0][55:0]                   mshr_addr_i,
     output logic [NR_PORTS-1:0]                         mshr_addr_matches_o,
@@ -504,13 +507,13 @@ module miss_handler #(
         end
     end
 
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
     // assert that cache only hits on one way
     assert property (
       @(posedge clk_i) $onehot0(evict_way_q)) else $warning("Evict-way should be one-hot encoded");
     `endif
-    `endif
+    //pragma translate_on
     // ----------------------
     // Bypass Arbiter
     // ----------------------
@@ -525,8 +528,8 @@ module miss_handler #(
     logic                        valid_bypass_fsm;
     logic [63:0]                 data_bypass_fsm;
     logic [$clog2(NR_PORTS)-1:0] id_fsm_bypass;
-    logic [AXI_ID_WIDTH-1:0]     id_bypass_fsm;
-    logic [AXI_ID_WIDTH-1:0]     gnt_id_bypass_fsm;
+    logic [3:0]                  id_bypass_fsm;
+    logic [3:0]                  gnt_id_bypass_fsm;
 
     arbiter #(
         .NR_PORTS       ( NR_PORTS                                 ),
@@ -559,35 +562,39 @@ module miss_handler #(
     );
 
     axi_adapter #(
-        .DATA_WIDTH            ( 64                                                       ),
-        .AXI_ID_WIDTH          ( AXI_ID_WIDTH                                             )
+        .DATA_WIDTH            ( 64  ),
+        .AXI_ID_WIDTH          ( 4   )
     ) i_bypass_axi_adapter (
-        .req_i                 ( req_fsm_bypass_valid                                     ),
-        .type_i                ( SINGLE_REQ                                               ),
-        .gnt_o                 ( gnt_bypass_fsm                                           ),
-        .addr_i                ( req_fsm_bypass_addr                                      ),
-        .we_i                  ( req_fsm_bypass_we                                        ),
-        .wdata_i               ( req_fsm_bypass_wdata                                     ),
-        .be_i                  ( req_fsm_bypass_be                                        ),
-        .size_i                ( req_fsm_bypass_size                                      ),
-        .id_i                  ( {{{AXI_ID_WIDTH-$clog2(NR_PORTS)}{1'b0}}, id_fsm_bypass} ),
-        .valid_o               ( valid_bypass_fsm                                         ),
-        .rdata_o               ( data_bypass_fsm                                          ),
-        .gnt_id_o              ( gnt_id_bypass_fsm                                        ),
-        .id_o                  ( id_bypass_fsm                                            ),
-        .critical_word_o       (                                                          ), // not used for single requests
-        .critical_word_valid_o (                                                          ), // not used for single requests
-        .axi                   ( bypass_if                                                ),
-        .*
+        .clk_i,
+        .rst_ni,
+        .req_i                 ( req_fsm_bypass_valid   ),
+        .type_i                ( SINGLE_REQ             ),
+        .gnt_o                 ( gnt_bypass_fsm         ),
+        .addr_i                ( req_fsm_bypass_addr    ),
+        .we_i                  ( req_fsm_bypass_we      ),
+        .wdata_i               ( req_fsm_bypass_wdata   ),
+        .be_i                  ( req_fsm_bypass_be      ),
+        .size_i                ( req_fsm_bypass_size    ),
+        .id_i                  ( {2'b10, id_fsm_bypass} ),
+        .valid_o               ( valid_bypass_fsm       ),
+        .rdata_o               ( data_bypass_fsm        ),
+        .gnt_id_o              ( gnt_id_bypass_fsm      ),
+        .id_o                  ( id_bypass_fsm          ),
+        .critical_word_o       (                        ), // not used for single requests
+        .critical_word_valid_o (                        ), // not used for single requests
+        .axi_req_o             ( axi_bypass_o           ),
+        .axi_resp_i            ( axi_bypass_i           )
     );
 
     // ----------------------
     // Cache Line AXI Refill
     // ----------------------
     axi_adapter  #(
-        .DATA_WIDTH          ( DCACHE_LINE_WIDTH   ),
-        .AXI_ID_WIDTH        ( AXI_ID_WIDTH       )
+        .DATA_WIDTH          ( DCACHE_LINE_WIDTH  ),
+        .AXI_ID_WIDTH        ( 4                  )
     ) i_miss_axi_adapter (
+        .clk_i,
+        .rst_ni,
         .req_i               ( req_fsm_miss_valid ),
         .type_i              ( req_fsm_miss_req   ),
         .gnt_o               ( gnt_miss_fsm       ),
@@ -596,13 +603,15 @@ module miss_handler #(
         .wdata_i             ( req_fsm_miss_wdata ),
         .be_i                ( req_fsm_miss_be    ),
         .size_i              ( req_fsm_miss_size  ),
-        .id_i                ( '0                 ),
+        .id_i                ( 4'b1100            ),
         .gnt_id_o            (                    ), // open
         .valid_o             ( valid_miss_fsm     ),
         .rdata_o             ( data_miss_fsm      ),
         .id_o                (                    ),
-        .axi                 ( data_if            ),
-        .*
+        .critical_word_o,
+        .critical_word_valid_o,
+        .axi_req_o           ( axi_data_o         ),
+        .axi_resp_i          ( axi_data_i         )
     );
 
     // -----------------
@@ -643,13 +652,6 @@ module miss_handler #(
             miss_req_size   [i]  = miss_req.size;
         end
     end
-
-    `ifndef SYNTHESIS
-        initial begin
-            assert (AXI_ID_WIDTH >= $clog2(NR_PORTS)) else $fatal (1, "AXI ID Width needs to be larger than number of requestors");
-        end
-    `endif
-
 endmodule
 
 // --------------
@@ -774,7 +776,7 @@ module arbiter #(
     // Assertions
     // ------------
 
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
     // make sure that we eventually get an rvalid after we received a grant
     assert property (@(posedge clk_i) data_gnt_i |-> ##[1:$] data_rvalid_i )
@@ -787,5 +789,5 @@ module arbiter #(
       else begin $error("address contains X when request is set"); $stop(); end
 
     `endif
-    `endif
+    //pragma translate_on
 endmodule
