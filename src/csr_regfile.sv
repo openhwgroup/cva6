@@ -620,6 +620,7 @@ module csr_regfile #(
         // 4: The hart single stepped because step was set. (priority 1)
         // we are currently not in debug mode and could potentially enter
         if (!debug_mode_q) begin
+            dcsr_d.prv = priv_lvl_o;
             // trigger module fired
 
             // caused by a breakpoint
