@@ -36,21 +36,22 @@ module tb;
   timeprecision 1ps;
 
   // number of 32bit words
-  parameter MEM_BYTES         = 2**ICACHE_INDEX_WIDTH * 4 * 32;
-  parameter MEM_WORDS         = MEM_BYTES>>2;
-  parameter NC_ADDR_BEGIN     = MEM_BYTES/4;
+  parameter MemBytes                   = 2**ICACHE_INDEX_WIDTH * 4 * 32;
+  parameter MemWords                   = MemBytes>>2;
+  parameter logic [63:0] CachedAddrBeg = MemBytes/4;
+  parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
   
   // rates are in percent
-  parameter TLB_RAND_HIT_RATE  = 50;
-  parameter MEM_RAND_HIT_RATE  = 50;
-  parameter MEM_RAND_INV_RATE  = 10;
+  parameter TlbRandHitRate   = 50;
+  parameter MemRandHitRate   = 50;
+  parameter MemRandInvRate   = 10;
 
-  parameter REQ_RATE           = 90;
-  parameter S1_KILL_RATE       = 5;
-  parameter S2_KILL_RATE       = 5;
-  parameter FLUSH_RATE         = 1;
+  parameter SeqRate          = 90;
+  parameter S1KillRate       = 5;
+  parameter S2KillRate       = 5;
+  parameter FlushRate        = 1;
 
-  parameter TLB_OFFSET         = 4*1024;//use multiples of 4kB pages!
+  parameter logic [63:0] TlbOffset = 4*1024;//use multiples of 4kB pages!
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -86,7 +87,6 @@ module tb;
   logic io_rand_en;
   logic tlb_rand_en;
   logic exception_en;
-  logic [63:0] tlb_offset;
 
   logic [63:0] stim_vaddr;
   logic [63:0] exp_data;
@@ -141,18 +141,18 @@ module tb;
       // randomize request
       dreq_i.req = 0;
       ok = randomize(val) with {val > 0; val <= 100;};
-      if (val < REQ_RATE) begin 
+      if (val < SeqRate) begin 
         dreq_i.req = 1;
         // generate random address
-        ok = randomize(val) with {val >= 0; val < (MEM_BYTES-tlb_offset)>>2;};
+        ok = randomize(val) with {val >= 0; val < (MemBytes-TlbOffset)>>2;};
         dreq_i.vaddr = val<<2;// align to 4Byte 
         // generate random control events
         ok = randomize(val) with {val > 0; val <= 100;};
-        dreq_i.kill_s1 = (val < S1_KILL_RATE);
+        dreq_i.kill_s1 = (val < S1KillRate);
         ok = randomize(val) with {val > 0; val <= 100;};
-        dreq_i.kill_s2 = (val < S2_KILL_RATE);
+        dreq_i.kill_s2 = (val < S2KillRate);
         ok = randomize(val) with {val > 0; val <= 100;};
-        flush_i = (val < FLUSH_RATE);
+        flush_i = (val < FlushRate);
         applWait(clk_i, dut_in_rdy);
       end else begin
         applWaitCyc(clk_i,1);
@@ -186,7 +186,7 @@ module tb;
       dreq_i.req = 1;
       dreq_i.vaddr = addr;
       // generate linear read
-      addr = (addr + 4) % (MEM_BYTES - tlb_offset);
+      addr = (addr + 4) % (MemBytes - TlbOffset);
       applWait(clk_i, dut_in_rdy);
     end  
     stim_end       = 1;
@@ -198,30 +198,30 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
    
 tlb_emul #(
-    .TLB_RAND_HIT_RATE(TLB_RAND_HIT_RATE)
+    .TlbRandHitRate(TlbRandHitRate)
 ) i_tlb_emul (
     .clk_i          ( clk_i        ),
     .rst_ni         ( rst_ni       ),
     .tlb_rand_en_i  ( tlb_rand_en  ),
     .exception_en_i ( exception_en ),
-    .tlb_offset_i   ( tlb_offset   ),
+    .tlb_offset_i   ( TlbOffset    ),
     // icache interface
     .req_i          ( areq_o       ),
     .req_o          ( areq_i       )
 );
 
 mem_emul #(
-  .MEM_RAND_HIT_RATE ( MEM_RAND_HIT_RATE ),
-  .MEM_RAND_INV_RATE ( MEM_RAND_INV_RATE ),
-  .MEM_DEPTH         ( MEM_WORDS         ),
-  .NC_ADDR_BEGIN     ( NC_ADDR_BEGIN     )
+  .MemRandHitRate ( MemRandHitRate ),
+  .MemRandInvRate ( MemRandInvRate ),
+  .MemWords       ( MemWords       ),
+  .CachedAddrBeg  ( CachedAddrBeg  )
 ) i_mem_emul (
   .clk_i          ( clk_i          ),
   .rst_ni         ( rst_ni         ),
   .mem_rand_en_i  ( mem_rand_en    ),
   .io_rand_en_i   ( io_rand_en     ),
   .inv_rand_en_i  ( inv_rand_en    ),
-  .tlb_offset_i   ( tlb_offset     ),
+  .tlb_offset_i   ( TlbOffset      ),
   .stim_vaddr_i   ( stim_vaddr     ),
   .stim_push_i    ( stim_push      ),
   .stim_flush_i   ( stim_flush     ),
@@ -242,8 +242,8 @@ mem_emul #(
 ///////////////////////////////////////////////////////////////////////////////
 
 serpent_icache  #(
-  .NC_ADDR_BEGIN(NC_ADDR_BEGIN),
-  .NC_ADDR_GE_LT(0)
+  .CachedAddrBeg(CachedAddrBeg),
+  .CachedAddrEnd(CachedAddrEnd)
   ) dut (
   .clk_i          ( clk_i          ),
   .rst_ni         ( rst_ni         ),
@@ -288,8 +288,6 @@ assign exp_pop    = (dreq_o.valid | dreq_i.kill_s2) & (~exp_empty);
     exception_en     = 0;
     io_rand_en       = 0;
 
-    tlb_offset       = 0;
- 
     dreq_i.req       = 0;     
     dreq_i.kill_s1   = 0;
     dreq_i.kill_s2   = 0;
@@ -299,18 +297,17 @@ assign exp_pop    = (dreq_o.valid | dreq_i.kill_s2) & (~exp_empty);
 
     // print some info
     $display("TB> current configuration:");
-    $display("TB> MEM_WORDS          %d",   MEM_WORDS);
-    $display("TB> NC_ADDR_BEGIN      %16X", NC_ADDR_BEGIN);
-    $display("TB> TLB_RAND_HIT_RATE  %d",   TLB_RAND_HIT_RATE);
-    $display("TB> MEM_RAND_HIT_RATE  %d",   MEM_RAND_HIT_RATE);
-    $display("TB> MEM_RAND_INV_RATE  %d",   MEM_RAND_INV_RATE);
-    $display("TB> S1_KILL_RATE       %d",   S1_KILL_RATE);
-    $display("TB> S2_KILL_RATE       %d",   S2_KILL_RATE);
-    $display("TB> FLUSH_RATE         %d",   FLUSH_RATE);
+    $display("TB> MemWords       %d",   MemWords);
+    $display("TB> CachedAddrBeg  %16X", CachedAddrBeg);
+    $display("TB> TlbRandHitRate %d",   TlbRandHitRate);
+    $display("TB> MemRandHitRate %d",   MemRandHitRate);
+    $display("TB> MemRandInvRate %d",   MemRandInvRate);
+    $display("TB> S1KillRate     %d",   S1KillRate);
+    $display("TB> S2KillRate     %d",   S2KillRate);
+    $display("TB> FlushRate      %d",   FlushRate);
     
     applWaitCyc(clk_i,100);                           
-    tlb_offset = TLB_OFFSET;
-    $display("TB> choose TLB offset  %16X", tlb_offset);
+    $display("TB> choose TLB offset  %16X", TlbOffset);
 
     // reset cycles
     applWaitCyc(clk_i,100);                           

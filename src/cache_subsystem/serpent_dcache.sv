@@ -18,9 +18,9 @@ import serpent_cache_pkg::*;
 module serpent_dcache #(
     // ID to be used for read and AMO transactions.
     // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
-    parameter logic [DCACHE_ID_WIDTH-1:0] RD_AMO_TX_ID  = 1,
-    parameter int unsigned                NC_ADDR_BEGIN = 40'h8000000000, // start address of noncacheable I/O region
-    parameter bit                         NC_ADDR_GE_LT = 1'b1            // determines how the physical address is compared with NC_ADDR_BEGIN
+    parameter logic [DCACHE_ID_WIDTH-1:0] RdAmoTxId     = 1,
+    parameter logic [63:0]                CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
+    parameter logic [63:0]                CachedAddrEnd = 64'h80_0000_0000  // end of cached region
 ) (
     input  logic                           clk_i,       // Clock
     input  logic                           rst_ni,      // Asynchronous reset active low
@@ -48,7 +48,7 @@ module serpent_dcache #(
 );
 
     // LD unit and PTW
-    localparam NUM_PORTS = 3;
+    localparam NumPorts = 3;
 
     // miss unit <-> read controllers
     logic cache_en;
@@ -71,37 +71,37 @@ module serpent_dcache #(
     logic [7:0]                     wr_data_be;
 
     // miss unit <-> controllers/wbuffer
-    logic [NUM_PORTS-1:0]                          miss_req;
-    logic [NUM_PORTS-1:0]                          miss_ack;
-    logic [NUM_PORTS-1:0]                          miss_nc;
-    logic [NUM_PORTS-1:0]                          miss_we;
-    logic [NUM_PORTS-1:0][63:0]                    miss_wdata;
-    logic [NUM_PORTS-1:0][63:0]                    miss_paddr;
-    logic [NUM_PORTS-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
-    logic [NUM_PORTS-1:0][2:0]                     miss_size;
-    logic [NUM_PORTS-1:0][DCACHE_ID_WIDTH-1:0]     miss_id;
-    logic [NUM_PORTS-1:0]                          miss_replay;
-    logic [NUM_PORTS-1:0]                          miss_rtrn_vld;
-    logic [DCACHE_ID_WIDTH-1:0]                    miss_rtrn_id;
+    logic [NumPorts-1:0]                          miss_req;
+    logic [NumPorts-1:0]                          miss_ack;
+    logic [NumPorts-1:0]                          miss_nc;
+    logic [NumPorts-1:0]                          miss_we;
+    logic [NumPorts-1:0][63:0]                    miss_wdata;
+    logic [NumPorts-1:0][63:0]                    miss_paddr;
+    logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
+    logic [NumPorts-1:0][2:0]                     miss_size;
+    logic [NumPorts-1:0][DCACHE_ID_WIDTH-1:0]     miss_id;
+    logic [NumPorts-1:0]                          miss_replay;
+    logic [NumPorts-1:0]                          miss_rtrn_vld;
+    logic [DCACHE_ID_WIDTH-1:0]                   miss_rtrn_id;
 
     // memory <-> read controllers/miss unit
-    logic [NUM_PORTS-1:0]                          rd_prio;
-    logic [NUM_PORTS-1:0]                          rd_tag_only;
-    logic [NUM_PORTS-1:0]                          rd_req;
-    logic [NUM_PORTS-1:0]                          rd_ack;
-    logic [NUM_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]    rd_tag;
-    logic [NUM_PORTS-1:0][DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
-    logic [NUM_PORTS-1:0][DCACHE_OFFSET_WIDTH-1:0] rd_off;
-    logic [63:0]                                   rd_data;
-    logic [DCACHE_SET_ASSOC-1:0]                   rd_vld_bits;
-    logic [DCACHE_SET_ASSOC-1:0]                   rd_hit_oh;
+    logic [NumPorts-1:0]                          rd_prio;
+    logic [NumPorts-1:0]                          rd_tag_only;
+    logic [NumPorts-1:0]                          rd_req;
+    logic [NumPorts-1:0]                          rd_ack;
+    logic [NumPorts-1:0][DCACHE_TAG_WIDTH-1:0]    rd_tag;
+    logic [NumPorts-1:0][DCACHE_CL_IDX_WIDTH-1:0] rd_idx;
+    logic [NumPorts-1:0][DCACHE_OFFSET_WIDTH-1:0] rd_off;
+    logic [63:0]                                  rd_data;
+    logic [DCACHE_SET_ASSOC-1:0]                  rd_vld_bits;
+    logic [DCACHE_SET_ASSOC-1:0]                  rd_hit_oh;
 
     // miss unit <-> wbuffer
-    logic [DCACHE_MAX_TX-1:0][63:0]                tx_paddr;
-    logic [DCACHE_MAX_TX-1:0]                      tx_vld;
+    logic [DCACHE_MAX_TX-1:0][63:0]               tx_paddr;
+    logic [DCACHE_MAX_TX-1:0]                     tx_vld;
 
     // wbuffer <-> memory
-    wbuffer_t [DCACHE_WBUF_DEPTH-1:0]              wbuffer_data;
+    wbuffer_t [DCACHE_WBUF_DEPTH-1:0]             wbuffer_data;
 
 
 ///////////////////////////////////////////////////////
@@ -109,8 +109,8 @@ module serpent_dcache #(
 ///////////////////////////////////////////////////////
 
     serpent_dcache_missunit #(
-        .AMO_TX_ID( RD_AMO_TX_ID ),
-        .NUM_PORTS( NUM_PORTS    )
+        .AmoTxId  ( RdAmoTxId ),
+        .NumPorts ( NumPorts  )
     ) i_serpent_dcache_missunit (
         .clk_i              ( clk_i              ),
         .rst_ni             ( rst_ni             ),
@@ -163,14 +163,14 @@ module serpent_dcache #(
 
     generate
         // note: last read port is used by the write buffer
-        for(genvar k=0; k<NUM_PORTS-1; k++) begin
+        for(genvar k=0; k<NumPorts-1; k++) begin
         // set these to high prio ports
         assign rd_prio[k] = 1'b1;
 
         serpent_dcache_ctrl #(
-                .RD_TX_ID      ( RD_AMO_TX_ID  ),
-                .NC_ADDR_BEGIN ( NC_ADDR_BEGIN ),
-                .NC_ADDR_GE_LT ( NC_ADDR_GE_LT ))
+                .RdTxId        ( RdAmoTxId     ),
+                .CachedAddrBeg ( CachedAddrBeg ),
+                .CachedAddrEnd ( CachedAddrEnd ))
             i_serpent_dcache_ctrl (
                 .clk_i           ( clk_i             ),
                 .rst_ni          ( rst_ni            ),
@@ -214,8 +214,8 @@ module serpent_dcache #(
     assign rd_prio[2] = 1'b0;
 
     serpent_dcache_wbuffer #(
-            .NC_ADDR_BEGIN ( NC_ADDR_BEGIN         ),
-            .NC_ADDR_GE_LT ( NC_ADDR_GE_LT         ))
+            .CachedAddrBeg ( CachedAddrBeg ),
+            .CachedAddrEnd ( CachedAddrEnd ))
         i_serpent_dcache_wbuffer (
             .clk_i           ( clk_i               ),
             .rst_ni          ( rst_ni              ),
@@ -269,7 +269,7 @@ module serpent_dcache #(
 ///////////////////////////////////////////////////////
 
    serpent_dcache_mem #(
-            .NUM_PORTS(NUM_PORTS)
+            .NumPorts(NumPorts)
         ) i_serpent_dcache_mem (
             .clk_i             ( clk_i              ),
             .rst_ni            ( rst_ni             ),

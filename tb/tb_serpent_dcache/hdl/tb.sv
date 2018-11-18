@@ -38,22 +38,22 @@ module tb;
     timeprecision 1ps;
 
     // memory configuration (64bit words)
-    parameter MEM_BYTES         = 2**DCACHE_INDEX_WIDTH * 4 * 32;
-    parameter MEM_WORDS         = MEM_BYTES>>3;
+    parameter MemBytes          = 2**DCACHE_INDEX_WIDTH * 4 * 32;
+    parameter MemWords          = MemBytes>>3;
     // noncacheable portion
-    parameter NC_ADDR_BEGIN     = MEM_BYTES>>3;//1/8th of the memory is NC
-    parameter NC_ADDR_GE_LT     = 0;
+    parameter logic [63:0] CachedAddrBeg = MemBytes>>3;//1/8th of the memory is NC
+    parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
     // contention and invalidation rates (in %)
-    parameter MEM_RAND_HIT_RATE  = 75;
-    parameter MEM_RAND_INV_RATE  = 10;
-    parameter TLB_HIT_RATE       = 95;
+    parameter MemRandHitRate   = 75;
+    parameter MemRandInvRate   = 10;
+    parameter TlbHitRate       = 95;
 
     // parameters for random read sequences (in %)
-    parameter FLUSH_RATE         = 10;
-    parameter KILL_RATE          = 5;
+    parameter FlushRate         = 10;
+    parameter KillRate          = 5;
 
-    parameter VERBOSE            = 0;
+    parameter Verbose           = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // MUT signal declarations
@@ -78,7 +78,7 @@ module tb;
 // TB signal declarations
 ///////////////////////////////////////////////////////////////////////////////
 
-    logic [63:0] mem_array[MEM_WORDS-1:0];
+    logic [63:0] mem_array[MemWords-1:0];
 
     string test_name;
     logic clk_i, rst_ni;
@@ -170,11 +170,11 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 
     tb_mem #(
-        .MEM_RAND_HIT_RATE ( MEM_RAND_HIT_RATE ),
-        .MEM_RAND_INV_RATE ( MEM_RAND_INV_RATE ),
-        .MEM_WORDS         ( MEM_WORDS         ),
-        .NC_ADDR_BEGIN     ( NC_ADDR_BEGIN     ),
-        .NC_ADDR_GE_LT     ( NC_ADDR_GE_LT     )
+        .MemRandHitRate ( MemRandHitRate ),
+        .MemRandInvRate ( MemRandInvRate ),
+        .MemWords       ( MemWords       ),
+        .CachedAddrBeg  ( CachedAddrBeg  ),
+        .CachedAddrEnd  ( CachedAddrEnd  )
     ) i_tb_mem (
         .clk_i          ( clk_i          ),
         .rst_ni         ( rst_ni         ),
@@ -204,8 +204,8 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 
     serpent_dcache  #(
-        .NC_ADDR_BEGIN ( NC_ADDR_BEGIN ),
-        .NC_ADDR_GE_LT ( NC_ADDR_GE_LT )
+        .CachedAddrBeg ( CachedAddrBeg ),
+        .CachedAddrEnd ( CachedAddrEnd )
     ) i_dut (
         .clk_i           ( clk_i           ),
         .rst_ni          ( rst_ni          ),
@@ -268,14 +268,15 @@ module tb;
     endgenerate
 
     tb_readport #(
-        .PORT_NAME     ( "RD0"         ),
-        .FLUSH_RATE    ( FLUSH_RATE    ),
-        .KILL_RATE     ( KILL_RATE     ),
-        .TLB_HIT_RATE  ( TLB_HIT_RATE  ),
-        .MEM_WORDS     ( MEM_WORDS     ),
-        .NC_ADDR_BEGIN ( NC_ADDR_BEGIN ),
-        .RND_SEED      ( 5555555       ),
-        .VERBOSE       ( VERBOSE       )
+        .PortName      ( "RD0"         ),
+        .FlushRate     ( FlushRate     ),
+        .KillRate      ( KillRate      ),
+        .TlbHitRate    ( TlbHitRate    ),
+        .MemWords      ( MemWords      ),
+        .CachedAddrBeg ( CachedAddrBeg ),
+        .CachedAddrEnd ( CachedAddrEnd ),
+        .RndSeed       ( 5555555       ),
+        .Verbose       ( Verbose       )
     ) i_tb_readport0 (
         .clk_i           ( clk_i               ),
         .rst_ni          ( rst_ni              ),
@@ -300,14 +301,15 @@ module tb;
         );
 
     tb_readport #(
-        .PORT_NAME     ( "RD1"         ),
-        .FLUSH_RATE    ( FLUSH_RATE    ),
-        .KILL_RATE     ( KILL_RATE     ),
-        .TLB_HIT_RATE  ( TLB_HIT_RATE  ),
-        .MEM_WORDS     ( MEM_WORDS     ),
-        .NC_ADDR_BEGIN ( NC_ADDR_BEGIN ),
-        .RND_SEED      ( 3333333       ),
-        .VERBOSE       ( VERBOSE       )
+        .PortName      ( "RD1"         ),
+        .FlushRate     ( FlushRate     ),
+        .KillRate      ( KillRate      ),
+        .TlbHitRate    ( TlbHitRate    ),
+        .MemWords      ( MemWords      ),
+        .CachedAddrBeg ( CachedAddrBeg ),
+        .CachedAddrEnd ( CachedAddrEnd ),
+        .RndSeed       ( 3333333       ),
+        .Verbose       ( Verbose       )
     ) i_tb_readport1 (
         .clk_i           ( clk_i               ),
         .rst_ni          ( rst_ni              ),
@@ -332,11 +334,12 @@ module tb;
         );
 
     tb_writeport #(
-        .PORT_NAME     ( "WR0"         ),
-        .MEM_WORDS     ( MEM_WORDS     ),
-        .NC_ADDR_BEGIN ( NC_ADDR_BEGIN ),
-        .RND_SEED      ( 7777777       ),
-        .VERBOSE       ( VERBOSE       )
+        .PortName      ( "WR0"         ),
+        .MemWords      ( MemWords      ),
+        .CachedAddrBeg ( CachedAddrBeg ),
+        .CachedAddrEnd ( CachedAddrEnd ),
+        .RndSeed       ( 7777777       ),
+        .Verbose       ( Verbose       )
     ) i_tb_writeport (
         .clk_i          ( clk_i               ),
         .rst_ni         ( rst_ni              ),
@@ -406,10 +409,11 @@ module tb;
 
         // print some info
         $display("TB> current configuration:");
-        $display("TB> MEM_WORDS          %d",   MEM_WORDS);
-        $display("TB> NC_ADDR_BEGIN      %16X", NC_ADDR_BEGIN);
-        $display("TB> MEM_RAND_HIT_RATE  %d",   MEM_RAND_HIT_RATE);
-        $display("TB> MEM_RAND_INV_RATE  %d",   MEM_RAND_INV_RATE);
+        $display("TB> MemWords        %d",   MemWords);
+        $display("TB> CachedAddrBeg   %16X", CachedAddrBeg);
+        $display("TB> CachedAddrEnd   %16X", CachedAddrEnd);
+        $display("TB> MemRandHitRate  %d",   MemRandHitRate);
+        $display("TB> MemRandInvRate  %d",   MemRandInvRate);
 
         // reset cycles
         `APPL_WAIT_CYC(clk_i,100)
@@ -546,9 +550,9 @@ module tb;
         inv_rand_en  = 0;
         seq_type     = '{IDLE_SEQ, IDLE_SEQ, LINEAR_SEQ};
         req_rate     = '{default:100};
-        runSeq((NC_ADDR_BEGIN>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC,0);
+        runSeq((CachedAddrBeg>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC,0);
         seq_type     = '{LINEAR_SEQ, IDLE_SEQ, IDLE_SEQ};
-        runSeq(0,(NC_ADDR_BEGIN>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC,1);
+        runSeq(0,(CachedAddrBeg>>3)+(2**(DCACHE_INDEX_WIDTH-3))*DCACHE_SET_ASSOC,1);
         flushCache();
         memCheck();
         ///////////////////////////////////////////////

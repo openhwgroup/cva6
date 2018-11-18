@@ -56,8 +56,11 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_l15_adapter #(
-  parameter SWAP_ENDIANESS = 1
-)(
+  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
+  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
+  parameter bit          SwapEndianess = 1               ,
+  parameter bit          PitonRemapIO  = 1                 // for OpenPiton
+) (
    input logic                  clk_i,
    input logic                  rst_ni,
 
@@ -116,20 +119,29 @@ l15_rtrn_t rtrn_fifo_data;
 // logic [63:0]                       l15_req_o.l15_data_next_entry;       // unused in Ariane (only used for CAS atomic requests)
 // logic [L15_TLB_CSM_WIDTH-1:0]      l15_req_o.l15_csm_data;
 
+logic [63:0] tmp_paddr;
+
 assign icache_data_ack_o  = icache_data_req_i & ~icache_data_full;
 assign dcache_data_ack_o  = dcache_data_req_i & ~dcache_data_full;
 
 // data mux
 assign l15_req_o.l15_nc                   = (arb_idx)        ? dcache_data.nc    : icache_data.nc;
+// icache fills are either cachelines or 4byte fills, depending on whether they go to the Piton I/O space or not.
 assign l15_req_o.l15_size                 = (arb_idx)        ? dcache_data.size  :
-                                            (icache_data.nc) ? 3'b10             : 3'b111;// NC ifills are always 4byte
-assign l15_req_o.l15_threadid             = (arb_idx) ? dcache_data.tid   : icache_data.tid;
+                                            (icache_data.nc) ? 3'b010            : 3'b111;
+assign l15_req_o.l15_threadid             = (arb_idx)        ? dcache_data.tid   : icache_data.tid;
 assign l15_req_o.l15_prefetch             = '0; // unused in openpiton
 assign l15_req_o.l15_invalidate_cacheline = '0; // unused by Ariane as L1 has no ECC at the moment
 assign l15_req_o.l15_blockstore           = '0; // unused in openpiton
 assign l15_req_o.l15_blockinitstore       = '0; // unused in openpiton
 assign l15_req_o.l15_l1rplway             = (arb_idx) ? dcache_data.way   : icache_data.way;
-assign l15_req_o.l15_address              = (arb_idx) ? dcache_data.paddr : icache_data.paddr;
+// assign tmp_paddr                          = (arb_idx) ? dcache_data.paddr :
+//                                                         icache_data.paddr;
+
+// assign l15_req_o.l15_address              = ((tmp_paddr < CachedAddrBeg) && PitonRemapIO) ? {25'b1, tmp_paddr[38:0]} : tmp_paddr;
+assign l15_req_o.l15_address              = (arb_idx) ? dcache_data.paddr :
+                                                        icache_data.paddr;
+
 assign l15_req_o.l15_data_next_entry      = '0; // unused in Ariane (only used for CAS atomic requests)
 assign l15_req_o.l15_csm_data             = '0; // unused in Ariane (only used for coherence domain restriction features)
 assign l15_req_o.l15_amo_op               = dcache_data.amo_op;
@@ -137,8 +149,8 @@ assign l15_req_o.l15_amo_op               = dcache_data.amo_op;
 
 // openpiton is big endian
 generate
-  if (SWAP_ENDIANESS) assign l15_req_o.l15_data = swendian64(dcache_data.data);
-  else                assign l15_req_o.l15_data = dcache_data.data;
+  if (SwapEndianess) assign l15_req_o.l15_data = swendian64(dcache_data.data);
+  else               assign l15_req_o.l15_data = dcache_data.data;
 endgenerate
 
 // arbiter
@@ -295,7 +307,7 @@ end
 
 // openpiton is big endian
 generate
-  if (SWAP_ENDIANESS) begin
+  if (SwapEndianess) begin
     assign dcache_rtrn_o.data = { swendian64(rtrn_fifo_data.l15_data_1),
                                   swendian64(rtrn_fifo_data.l15_data_0) };
 

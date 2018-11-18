@@ -26,15 +26,16 @@ import serpent_cache_pkg::*;
 import tb_pkg::*;
 
 program tb_readport  #(
-    parameter string PORT_NAME  = "read port 0",
-    parameter FLUSH_RATE        = 1,
-    parameter KILL_RATE         = 5,
-    parameter TLB_HIT_RATE      = 95,
-    parameter MEM_WORDS         = 1024*1024,// in 64bit words
-    parameter NC_ADDR_BEGIN     = 0,
-    parameter RND_SEED          = 1110,
-    parameter VERBOSE           = 0
-)(
+    parameter string       PortName      = "read port 0",
+    parameter              FlushRate     = 1,
+    parameter              KillRate      = 5,
+    parameter              TlbHitRate    = 95,
+    parameter              MemWords      = 1024*1024,// in 64bit words
+    parameter logic [63:0] CachedAddrBeg = 0,
+    parameter logic [63:0] CachedAddrEnd = 0,
+    parameter              RndSeed       = 1110,
+    parameter              Verbose       = 0
+) (
     input logic           clk_i,
     input logic           rst_ni,
 
@@ -111,7 +112,7 @@ program tb_readport  #(
 
                     if(tlb_rand_en_i) begin
                         void'(randomize(val) with {val>0; val<=100;});
-                        if(val>=TLB_HIT_RATE) begin
+                        if(val>=TlbHitRate) begin
                             void'(randomize(cnt) with {cnt>0; cnt<=50;});
                         end
                     end
@@ -152,7 +153,7 @@ program tb_readport  #(
         automatic logic [63:0] val;
         automatic logic [1:0] size;
 
-        void'($urandom(RND_SEED));
+        void'($urandom(RndSeed));
 
         paddr                        = '0;
         dut_req_port_o.data_req      = '0;
@@ -164,20 +165,20 @@ program tb_readport  #(
             dut_req_port_o.data_req = '0;
             // generate random control events
             void'(randomize(val) with {val > 0; val <= 100;});
-            if(val < KILL_RATE) begin
+            if(val < KillRate) begin
                 dut_req_port_o.kill_req = 1'b1;
                 `APPL_WAIT_CYC(clk_i,1)
                 dut_req_port_o.kill_req = 1'b0;
             end else begin
                 void'(randomize(val) with {val > 0; val <= 100;});
-                if(val < FLUSH_RATE && flush_rand_en_i) begin
+                if(val < FlushRate && flush_rand_en_i) begin
                     flushCache();
                 end else begin
                     void'(randomize(val) with {val > 0; val <= 100;});
                     if(val < req_rate_i) begin
                         dut_req_port_o.data_req = 1'b1;
                         // generate random address
-                        void'(randomize(val) with {val >= 0; val < (MEM_WORDS<<3);});
+                        void'(randomize(val) with {val >= 0; val < (MemWords<<3);});
                         void'(randomize(size));
 
                         dut_req_port_o.data_size = size;
@@ -216,7 +217,7 @@ program tb_readport  #(
             dut_req_port_o.data_size = 2'b11;
             paddr = val;
             // generate linear read
-            val = (val + 8) % (MEM_WORDS<<3);
+            val = (val + 8) % (MemWords<<3);
             `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
             `APPL_WAIT_CYC(clk_i,1)
         end
@@ -227,7 +228,7 @@ program tb_readport  #(
 
     task automatic genWrapSeq();
         automatic logic [63:0] val;
-        paddr                        = NC_ADDR_BEGIN;
+        paddr                        = CachedAddrBeg;
         dut_req_port_o.data_req      = '0;
         dut_req_port_o.data_size     = '0;
         dut_req_port_o.kill_req      = '0;
@@ -237,7 +238,7 @@ program tb_readport  #(
             dut_req_port_o.data_size = 2'b11;
             paddr = val;
             // generate wrapping read of 1 cachelines
-            paddr = NC_ADDR_BEGIN + val;
+            paddr = CachedAddrBeg + val;
             val = (val + 8) % (1*(DCACHE_LINE_WIDTH/64)*8);
             `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
             `APPL_WAIT_CYC(clk_i,1)
@@ -264,29 +265,29 @@ program tb_readport  #(
         flush_o                      = '0;
 
         // print some info
-        $display("%s> current configuration:",  PORT_NAME);
-        $display("%s> KILL_RATE          %d",   PORT_NAME, KILL_RATE);
-        $display("%s> FLUSH_RATE         %d",   PORT_NAME, FLUSH_RATE);
-        $display("%s> TLB_HIT_RATE       %d",   PORT_NAME, TLB_HIT_RATE);
-        $display("%s> RND_SEED           %d",   PORT_NAME, RND_SEED);
+        $display("%s> current configuration:",  PortName);
+        $display("%s> KillRate          %d",   PortName, KillRate);
+        $display("%s> FlushRate         %d",   PortName, FlushRate);
+        $display("%s> TlbHitRate       %d",   PortName, TlbHitRate);
+        $display("%s> RndSeed           %d",   PortName, RndSeed);
 
         `APPL_WAIT_CYC(clk_i,1)
         `APPL_WAIT_SIG(clk_i,~rst_ni)
 
-        $display("%s> starting application", PORT_NAME);
+        $display("%s> starting application", PortName);
         while(~seq_last_i) begin
                 `APPL_WAIT_SIG(clk_i,seq_run_i)
             unique case(seq_type_i)
                 RANDOM_SEQ: begin
-                    $display("%s> start random sequence with %04d responses and req_rate %03d", PORT_NAME, seq_num_resp_i, req_rate_i);
+                    $display("%s> start random sequence with %04d responses and req_rate %03d", PortName, seq_num_resp_i, req_rate_i);
                     genRandReq();
                 end
                 LINEAR_SEQ: begin
-                    $display("%s> start linear sequence with %04d responses and req_rate %03d", PORT_NAME, seq_num_resp_i, req_rate_i);
+                    $display("%s> start linear sequence with %04d responses and req_rate %03d", PortName, seq_num_resp_i, req_rate_i);
                     genSeqRead();
                 end
                 WRAP_SEQ: begin
-                    $display("%s> start wrapping sequence with %04d responses and req_rate %03d", PORT_NAME, seq_num_resp_i, req_rate_i);
+                    $display("%s> start wrapping sequence with %04d responses and req_rate %03d", PortName, seq_num_resp_i, req_rate_i);
                     genWrapSeq();
                 end
                 IDLE_SEQ: begin
@@ -297,11 +298,11 @@ program tb_readport  #(
                 end
             endcase // seq_type_i
             seq_end_ack = 1'b1;
-            $display("%s> stop sequence", PORT_NAME);
+            $display("%s> stop sequence", PortName);
             `APPL_WAIT_CYC(clk_i,1)
             seq_end_ack = 1'b0;
         end
-        $display("%s> ending application", PORT_NAME);
+        $display("%s> ending application", PortName);
     end
 
 
@@ -317,7 +318,7 @@ program tb_readport  #(
         logic [63:0] exp_rdata, exp_paddr;
         logic [1:0] exp_size;
 
-        status       = new(PORT_NAME);
+        status       = new(PortName);
         failingTests = "";
         seq_done_o   = 1'b0;
         seq_end_req  = 1'b0;
@@ -333,7 +334,7 @@ program tb_readport  #(
             `ACQ_WAIT_SIG(clk_i,seq_run_i)
             seq_done_o = 1'b0;
 
-            $display("%s> %s", PORT_NAME, test_name_i);
+            $display("%s> %s", PortName, test_name_i);
             status.reset(seq_num_resp_i);
             for (int k=0;k<seq_num_resp_i && seq_type_i != IDLE_SEQ;k++) begin
                 `ACQ_WAIT_SIG(clk_i, (dut_req_port_i.data_rvalid & ~dut_req_port_o.kill_req))
@@ -349,17 +350,17 @@ program tb_readport  #(
                 // note: wildcard as defined in right operand!
                 ok=(dut_req_port_i.data_rdata ==? exp_rdata) && (exp_paddr_i == act_paddr_i);
 
-                if(VERBOSE | !ok) begin
+                if(Verbose | !ok) begin
                     tmpstr1 =  $psprintf("vector: %02d - %06d -- exp_paddr: %16X -- exp_data: %16X -- access size: %01d Byte",
                                 n, k, exp_paddr_i, exp_rdata, 2**exp_size_i);
                     tmpstr2 =  $psprintf("vector: %02d - %06d -- act_paddr: %16X -- act_data: %16X -- access size: %01d Byte",
                                 n, k, act_paddr_i, dut_req_port_i.data_rdata, 2**exp_size_i);
-                    $display("%s> %s", PORT_NAME, tmpstr1);
-                    $display("%s> %s", PORT_NAME, tmpstr2);
+                    $display("%s> %s", PortName, tmpstr1);
+                    $display("%s> %s", PortName, tmpstr2);
                 end
 
                 if(!ok) begin
-                  failingTests = $psprintf("%s%s> %s\n%s> %s\n", failingTests, PORT_NAME, tmpstr1, PORT_NAME, tmpstr2);
+                  failingTests = $psprintf("%s%s> %s\n%s> %s\n", failingTests, PortName, tmpstr1, PortName, tmpstr2);
                 end
                 status.addRes(!ok);
                 status.print();
@@ -374,18 +375,18 @@ program tb_readport  #(
         end
         ///////////////////////////////////////////////
 
-        status.printToFile({PORT_NAME, "_summary.rep"}, 1);
+        status.printToFile({PortName, "_summary.rep"}, 1);
 
         if(status.totErrCnt == 0) begin
-            $display("%s> ----------------------------------------------------------------------", PORT_NAME);
-            $display("%s> PASSED %0d VECTORS", PORT_NAME, status.totAcqCnt);
-            $display("%s> ----------------------------------------------------------------------\n", PORT_NAME);
+            $display("%s> ----------------------------------------------------------------------", PortName);
+            $display("%s> PASSED %0d VECTORS", PortName, status.totAcqCnt);
+            $display("%s> ----------------------------------------------------------------------\n", PortName);
         end else begin
-            $display("%s> ----------------------------------------------------------------------\n", PORT_NAME);
-            $display("%s> FAILED %0d OF %0d VECTORS\n", PORT_NAME , status.totErrCnt, status.totAcqCnt);
-            $display("%s> failing tests:", PORT_NAME);
+            $display("%s> ----------------------------------------------------------------------\n", PortName);
+            $display("%s> FAILED %0d OF %0d VECTORS\n", PortName , status.totErrCnt, status.totAcqCnt);
+            $display("%s> failing tests:", PortName);
             $display("%s", failingTests);
-            $display("%s> ----------------------------------------------------------------------\n", PORT_NAME);
+            $display("%s> ----------------------------------------------------------------------\n", PortName);
         end
         prog_end = 1'b1;
     end

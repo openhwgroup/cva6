@@ -29,10 +29,10 @@ import instruction_tracer_pkg::*;
 
 module ariane #(
 `ifdef SERPENT_PULP
-  parameter bit          SWAP_ENDIANESS   = 0,             // swap endianess in l15 adapter
-  parameter bit          CACHE_LOW_REGION = 0,             // cached region is below CACHE_START_ADDR
+  parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
+  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region  
 `endif
-  parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000  // address on which to decide whether the request is cache-able or not
+  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000  // begin of cached region
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -580,9 +580,9 @@ module ariane #(
 `ifdef SERPENT_PULP
   // this is a cache subsystem that is compatible with OpenPiton
   serpent_cache_subsystem #(
-    .CACHE_START_ADDR      ( CACHE_START_ADDR ),
-    .CACHE_LOW_REGION      ( CACHE_LOW_REGION ),
-    .SWAP_ENDIANESS        ( SWAP_ENDIANESS   )
+    .CachedAddrBeg        ( CachedAddrBeg ),
+    .CachedAddrEnd        ( CachedAddrEnd ),
+    .SwapEndianess        ( SwapEndianess )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
@@ -620,7 +620,7 @@ module ariane #(
 `else
 
   std_cache_subsystem #(
-      .CACHE_START_ADDR    ( CACHE_START_ADDR            )
+      .CACHE_START_ADDR    ( CachedAddrBeg )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),

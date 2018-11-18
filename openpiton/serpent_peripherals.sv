@@ -86,7 +86,7 @@ module serpent_peripherals #(
 );
 
   localparam int unsigned AxiIdWidth    =  0;
-  localparam int unsigned AxiAddrWidth  = 40;
+  localparam int unsigned AxiAddrWidth  = 64;
   localparam int unsigned AxiDataWidth  = 64;
   localparam int unsigned AxiUserWidth  =  0;
 
@@ -129,7 +129,7 @@ module serpent_peripherals #(
   // debug module
   dm_top #(
     // current implementation only supports 1 hart
-    .NumHarts              ( NumHarts              ),
+    .NrHarts              ( NumHarts             ),
     .AxiIdWidth           ( AxiIdWidth           ),
     .AxiAddrWidth         ( AxiAddrWidth         ),
     .AxiDataWidth         ( AxiDataWidth         ),
@@ -218,9 +218,9 @@ module serpent_peripherals #(
   assign dm_axi_s_req.ar.prot   = '0;
   assign dm_axi_s_req.ar.qos    = '0;
   assign dm_axi_s_req.ar.region = '0;
-  assign dm_axi_s_resp.r.id     = '0;
-  assign dm_axi_s_resp.r.last   = 1'b1;
-  assign dm_axi_s_resp.b.id     = '0;
+  // assign dm_axi_s_resp.r.id     = '0;
+  // assign dm_axi_s_resp.r.last   = 1'b1;
+  // assign dm_axi_s_resp.b.id     = '0;
 
   /////////////////////////////
   // Bootrom
@@ -233,15 +233,15 @@ module serpent_peripherals #(
   AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidth   ),
     .AXI_ADDR_WIDTH ( AxiAddrWidth ),
-    .AxiDataWidth   ( AxiDataWidth ),
-    .AxiUserWidth   ( AxiUserWidth )
+    .AXI_DATA_WIDTH ( AxiDataWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth )
   ) br_master();
 
   axi2mem #(
     .AXI_ID_WIDTH   ( AxiIdWidth    ),
     .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
-    .AxiDataWidth   ( AxiDataWidth  ),
-    .AxiUserWidth   ( AxiUserWidth  )
+    .AXI_DATA_WIDTH ( AxiDataWidth  ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
   ) i_axi2rom (
     .clk_i                ,
     .rst_ni ( ndmreset_n ),
@@ -319,10 +319,9 @@ module serpent_peripherals #(
   assign br_master.ar_prot   = '0;
   assign br_master.ar_qos    = '0;
   assign br_master.ar_region = '0;
-  assign br_master.r_id      = '0;
-  assign br_master.r_last    = 1'b1;
-  assign br_master.b_id      = '0;
-  assign br_master.b_last    = 1'b1;
+  // assign br_master.r_id      = '0;
+  // assign br_master.r_last    = 1'b1;
+  // assign br_master.b_id      = '0;
 
   /////////////////////////////
   // CLINT
@@ -332,10 +331,10 @@ module serpent_peripherals #(
   ariane_axi::resp_t   clint_axi_resp;
 
   clint #(
-      .AXI_ADDR_WIDTH ( AxiAddrWidth   ),
-      .AxiDataWidth ( AxiDataWidth      ),
-      .AXI_ID_WIDTH   ( AxiIdWidth ),
-      .NR_CORES       ( 1                   )
+      .AXI_ADDR_WIDTH ( AxiAddrWidth ),
+      .AXI_DATA_WIDTH ( AxiDataWidth ),
+      .AXI_ID_WIDTH   ( AxiIdWidth   ),
+      .NR_CORES       ( NumHarts     )
   ) i_clint (
       .clk_i                         ,
       .rst_ni                        ,
@@ -406,9 +405,6 @@ module serpent_peripherals #(
   assign clint_axi_req.ar.prot   = '0;
   assign clint_axi_req.ar.qos    = '0;
   assign clint_axi_req.ar.region = '0;
-  assign clint_axi_resp.r.id     = '0;
-  assign clint_axi_resp.r.last   = 1'b1;
-  assign clint_axi_resp.b.id     = '0;
 
 
   // /////////////////////////////
@@ -490,10 +486,9 @@ module serpent_peripherals #(
   // assign plic_master.ar_prot   = '0;
   // assign plic_master.ar_qos    = '0;
   // assign plic_master.ar_region = '0;
-  // assign plic_master.r_id      = '0;
-  // assign plic_master.r_last    = 1'b1;
-  // assign plic_master.b_id      = '0;
-  // assign plic_master.b_last    = 1'b1;
+  // //assign plic_master.r_id      = '0;
+  // //assign plic_master.r_last    = 1'b1;
+  // //assign plic_master.b_id      = '0;
 
 //     REG_BUS #(
 //         .ADDR_WIDTH ( 40 ),

@@ -25,12 +25,13 @@ import serpent_cache_pkg::*;
 import tb_pkg::*;
 
 program tb_writeport  #(
-    parameter string PORT_NAME  = "write port 0",
-    parameter MEM_WORDS         = 1024*1024,// in 64bit words
-    parameter NC_ADDR_BEGIN     = 0,
-    parameter RND_SEED          = 1110,
-    parameter VERBOSE           = 0       
-)(
+    parameter string       PortName      = "write port 0",
+    parameter              MemWords      = 1024*1024,// in 64bit words
+    parameter logic [63:0] CachedAddrBeg = 0,
+    parameter logic [63:0] CachedAddrEnd = 0,
+    parameter              RndSeed       = 1110,
+    parameter              Verbose       = 0
+) (
     input logic           clk_i,
     input logic           rst_ni,
 
@@ -96,7 +97,7 @@ program tb_writeport  #(
     task automatic genRandReq();
         automatic logic [63:0] val;
 
-        void'($urandom(RND_SEED));
+        void'($urandom(RndSeed));
 
         paddr                        = '0;
         dut_req_port_o.data_req      = '0;
@@ -113,7 +114,7 @@ program tb_writeport  #(
             if(val < req_rate_i) begin 
                 dut_req_port_o.data_req = 1'b1;
                 // generate random address
-                void'(randomize(paddr) with {paddr >= 0; paddr < (MEM_WORDS<<3);});
+                void'(randomize(paddr) with {paddr >= 0; paddr < (MemWords<<3);});
                 applyRandData();
                 `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
             end
@@ -143,7 +144,7 @@ program tb_writeport  #(
             dut_req_port_o.data_wdata = val;
             paddr = val;
             // generate linear read
-            val = (val + 8) % (MEM_WORDS<<3);
+            val = (val + 8) % (MemWords<<3);
             `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
             `APPL_WAIT_CYC(clk_i,1)
         end  
@@ -157,9 +158,9 @@ program tb_writeport  #(
 
     task automatic genWrapSeq();
         automatic logic [63:0] val;
-        void'($urandom(RND_SEED));
+        void'($urandom(RndSeed));
 
-        paddr                         = NC_ADDR_BEGIN;
+        paddr                         = CachedAddrBeg;
         dut_req_port_o.data_req       = '0;
         dut_req_port_o.data_size      = '0;
         dut_req_port_o.data_be        = '0;
@@ -169,7 +170,7 @@ program tb_writeport  #(
             dut_req_port_o.data_req   = 1'b1;
             applyRandData();
             // generate wrapping read of 1 cacheline
-            paddr = NC_ADDR_BEGIN + val;
+            paddr = CachedAddrBeg + val;
             val = (val + 8) % (1*(DCACHE_LINE_WIDTH/64)*8);
             `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
             `APPL_WAIT_CYC(clk_i,1)
@@ -188,7 +189,7 @@ program tb_writeport  #(
         automatic logic [1:0]  size;
         automatic int cnt, burst_len;
 
-        void'($urandom(RND_SEED));
+        void'($urandom(RndSeed));
 
         paddr                        = '0;
         dut_req_port_o.data_req      = '0;
@@ -205,11 +206,11 @@ program tb_writeport  #(
             if(val < req_rate_i) begin 
                 dut_req_port_o.data_req = 1'b1;
                 // generate random address base
-                void'(randomize(paddr) with {paddr >= 0; paddr < (MEM_WORDS<<3);});
+                void'(randomize(paddr) with {paddr >= 0; paddr < (MemWords<<3);});
                 
                 // do a random burst
                 void'(randomize(burst_len) with {burst_len >= 0; burst_len < 100;});
-                for(int k=0; k<burst_len && cnt < seq_num_vect_i && paddr < ((MEM_WORDS-1)<<3); k++) begin
+                for(int k=0; k<burst_len && cnt < seq_num_vect_i && paddr < ((MemWords-1)<<3); k++) begin
                     applyRandData();
                     `APPL_WAIT_COMB_SIG(clk_i, dut_req_port_i.data_gnt)
                     `APPL_WAIT_CYC(clk_i,1)
@@ -247,40 +248,40 @@ program tb_writeport  #(
         seq_done_o                   = 1'b0;  
 
         // print some info
-        $display("%s> current configuration:",  PORT_NAME);
-        $display("%s> RND_SEED           %d",   PORT_NAME, RND_SEED);
+        $display("%s> current configuration:",  PortName);
+        $display("%s> RndSeed           %d",   PortName, RndSeed);
 
         `APPL_WAIT_CYC(clk_i,1) 
         `APPL_WAIT_SIG(clk_i,~rst_ni)
         
-        $display("%s> starting application", PORT_NAME);
+        $display("%s> starting application", PortName);
         while(~seq_last_i) begin
             `APPL_WAIT_SIG(clk_i,seq_run_i) 
             seq_done_o = 1'b0;  
             unique case(seq_type_i) 
                 RANDOM_SEQ: begin
-                    $display("%s> start random sequence with %04d vectors and req_rate %03d", PORT_NAME, seq_num_vect_i, req_rate_i);
+                    $display("%s> start random sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
                     genRandReq();
                 end    
                 LINEAR_SEQ: begin
-                    $display("%s> start linear sequence with %04d vectors and req_rate %03d", PORT_NAME, seq_num_vect_i, req_rate_i);
+                    $display("%s> start linear sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
                     genSeqWrite();
                 end
                 WRAP_SEQ: begin
-                    $display("%s> start wrapping sequence with %04d vectors and req_rate %03d", PORT_NAME, seq_num_vect_i, req_rate_i);
+                    $display("%s> start wrapping sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
                     genWrapSeq();
                 end    
                 IDLE_SEQ: ;// do nothing
                 BURST_SEQ: begin
-                    $display("%s> start burst sequence with %04d vectors and req_rate %03d", PORT_NAME, seq_num_vect_i, req_rate_i);
+                    $display("%s> start burst sequence with %04d vectors and req_rate %03d", PortName, seq_num_vect_i, req_rate_i);
                     genSeqBurst();
                 end    
             endcase // seq_type_i
             seq_done_o = 1'b1;  
-            $display("%s> stop sequence", PORT_NAME);
+            $display("%s> stop sequence", PortName);
             `APPL_WAIT_CYC(clk_i,1) 
         end
-        $display("%s> ending application", PORT_NAME);
+        $display("%s> ending application", PortName);
     end
 
 ///////////////////////////////////////////////////////

@@ -21,10 +21,10 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module mem_emul #(
-  parameter MEM_RAND_HIT_RATE = 10, //in percent
-  parameter MEM_RAND_INV_RATE = 5,  //in percent
-  parameter MEM_DEPTH         = 1024*1024,// in 32bit words
-  parameter NC_ADDR_BEGIN     = MEM_DEPTH/2
+  parameter              MemRandHitRate = 10, //in percent
+  parameter              MemRandInvRate = 5,  //in percent
+  parameter              MemWords       = 1024*1024,// in 32bit words
+  parameter logic [63:0] CachedAddrBeg  = MemWords/2
 ) (
   input logic            clk_i,
   input logic            rst_ni,
@@ -61,8 +61,8 @@ module mem_emul #(
   logic [63:0] stim_addr;
   logic exp_empty;
 
-  logic [31:0] mem_array [MEM_DEPTH-1:0];
-  logic [31:0] mem_array_shadow [MEM_DEPTH-1:0];
+  logic [31:0] mem_array [MemWords-1:0];
+  logic [31:0] mem_array_shadow [MemWords-1:0];
   logic initialized_q;
 
   logic [31:0] inval_addr_queue[$];
@@ -84,7 +84,7 @@ module mem_emul #(
       
       // fill the memory once with random data
       if (~initialized_q) begin
-        for (int k=0; k<MEM_DEPTH; k++) begin
+        for (int k=0; k<MemWords; k++) begin
           ok=randomize(val);
           mem_array[k]        <= val;
           mem_array_shadow[k] <= val;
@@ -94,7 +94,7 @@ module mem_emul #(
       
       // re-randomize noncacheable I/O space if requested
       if (io_rand_en_i) begin
-        for (int k=0; k<NC_ADDR_BEGIN; k++) begin
+        for (int k=0; k<CachedAddrBeg; k++) begin
           ok = randomize(val);
           mem_array[k]        <= val;
         end
@@ -103,7 +103,7 @@ module mem_emul #(
       // generate random contentions
       if (mem_rand_en_i) begin
         ok = randomize(rnd) with {rnd > 0; rnd <= 100;};
-        if(rnd < MEM_RAND_HIT_RATE) begin
+        if(rnd < MemRandHitRate) begin
           mem_ready_q <= '1;
         end else
           mem_ready_q <= '0;
@@ -124,9 +124,9 @@ module mem_emul #(
         end
 
         ok = randomize(rnd) with {rnd > 0; rnd <= 100;};
-        if(rnd < MEM_RAND_INV_RATE) begin
+        if(rnd < MemRandInvRate) begin
           mem_inv_q = '1;
-          ok = randomize(lval) with {lval>=0; lval<MEM_DEPTH;};
+          ok = randomize(lval) with {lval>=0; lval<MemWords;};
           ok = randomize(val);
           // save for coherent view above
           inval_addr_queue.push_front(lval);

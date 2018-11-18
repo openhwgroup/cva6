@@ -21,7 +21,7 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module tlb_emul #(
-    parameter TLB_RAND_HIT_RATE = 10 //in percent
+    parameter TlbRandHitRate = 10 //in percent
 )(
 
     input logic            clk_i,
@@ -42,15 +42,15 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlb_rand
     automatic bit ok  = 0;
     automatic int rnd = 0;
 
-    assert(TLB_RAND_HIT_RATE<=100 && TLB_RAND_HIT_RATE>=0) else
-        $fatal("TLB_RAND_HIT_RATE must be a percentage");
+    assert(TlbRandHitRate<=100 && TlbRandHitRate>=0) else
+        $fatal("TlbRandHitRate must be a percentage");
 
     if(~rst_ni) begin
         tlb_ready_q <= '0;
     end else begin
         if (tlb_rand_en_i) begin
             ok = randomize(rnd) with {rnd > 0; rnd <= 100;};
-            if(rnd < TLB_RAND_HIT_RATE) begin
+            if(rnd < TlbRandHitRate) begin
                 tlb_ready_q = '1;
             end else
                 tlb_ready_q = '0;

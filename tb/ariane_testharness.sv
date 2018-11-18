@@ -14,7 +14,7 @@
 //              Instantiates an AXI-Bus and memories
 
 module ariane_testharness #(
-    parameter logic [63:0] CACHE_START_ADDR  = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
+    parameter logic [63:0] CachedAddrBeg     = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
     parameter int unsigned AXI_ID_WIDTH      = 4,
     parameter int unsigned AXI_USER_WIDTH    = 1,
     parameter int unsigned AXI_ADDRESS_WIDTH = 64,
@@ -329,7 +329,7 @@ module ariane_testharness #(
     ariane_axi::resp_t   axi_ariane_resp;
 
     ariane #(
-        .CACHE_START_ADDR     ( CACHE_START_ADDR )
+        .CachedAddrBeg ( CachedAddrBeg )
     ) i_ariane (
         .clk_i                ( clk_i            ),
         .rst_ni               ( ndmreset_n       ),

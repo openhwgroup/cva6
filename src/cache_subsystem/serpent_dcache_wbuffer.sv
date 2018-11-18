@@ -52,8 +52,8 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_wbuffer #(
-    parameter int unsigned NC_ADDR_BEGIN     = 40'h8000000000, // start address of noncacheable I/O region
-    parameter bit          NC_ADDR_GE_LT     = 1'b1            // determines how the physical address is compared with NC_ADDR_BEGIN
+    parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
+    parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000  // end of cached region
 ) (
     input  logic                               clk_i,          // Clock
     input  logic                               rst_ni,         // Asynchronous reset active low
@@ -136,14 +136,9 @@ logic [63:0] debug_paddr [DCACHE_WBUF_DEPTH-1:0];
 
 assign miss_nc_o = nc_pending_q;
 
-generate
-    if (NC_ADDR_GE_LT) begin : g_nc_addr_high
-        assign addr_is_nc = (req_port_i.address_tag >= (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH)) | ~cache_en_i;
-    end
-    if (~NC_ADDR_GE_LT) begin : g_nc_addr_low
-        assign addr_is_nc = (req_port_i.address_tag < (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH))  | ~cache_en_i;
-    end
-endgenerate
+assign addr_is_nc = (req_port_i.address_tag <  (CachedAddrBeg>>DCACHE_INDEX_WIDTH)) || 
+                    (req_port_i.address_tag >= (CachedAddrEnd>>DCACHE_INDEX_WIDTH)) || 
+                    (!cache_en_i);
 
 assign miss_we_o       = 1'b1;
 assign miss_vld_bits_o = '0;

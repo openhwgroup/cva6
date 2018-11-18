@@ -29,19 +29,19 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_mem #(
-        parameter int unsigned NUM_PORTS     = 3
+        parameter int unsigned NumPorts     = 3
     )(
         input  logic                                              clk_i,
         input  logic                                              rst_ni,
         
         // ports
-        input  logic  [NUM_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]       rd_tag_i,           // tag in - comes one cycle later
-        input  logic  [NUM_PORTS-1:0][DCACHE_CL_IDX_WIDTH-1:0]    rd_idx_i,     
-        input  logic  [NUM_PORTS-1:0][DCACHE_OFFSET_WIDTH-1:0]    rd_off_i,     
-        input  logic  [NUM_PORTS-1:0]                             rd_req_i,           // read the word at offset off_i[:3] in all ways
-        input  logic  [NUM_PORTS-1:0]                             rd_tag_only_i,      // only do a tag/valid lookup, no access to data arrays
-        input  logic  [NUM_PORTS-1:0]                             rd_prio_i,          // 0: low prio, 1: high prio
-        output logic  [NUM_PORTS-1:0]                             rd_ack_o,     
+        input  logic  [NumPorts-1:0][DCACHE_TAG_WIDTH-1:0]        rd_tag_i,           // tag in - comes one cycle later
+        input  logic  [NumPorts-1:0][DCACHE_CL_IDX_WIDTH-1:0]     rd_idx_i,     
+        input  logic  [NumPorts-1:0][DCACHE_OFFSET_WIDTH-1:0]     rd_off_i,     
+        input  logic  [NumPorts-1:0]                              rd_req_i,           // read the word at offset off_i[:3] in all ways
+        input  logic  [NumPorts-1:0]                              rd_tag_only_i,      // only do a tag/valid lookup, no access to data arrays
+        input  logic  [NumPorts-1:0]                              rd_prio_i,          // 0: low prio, 1: high prio
+        output logic  [NumPorts-1:0]                              rd_ack_o,     
         output logic                [DCACHE_SET_ASSOC-1:0]        rd_vld_bits_o,
         output logic                [DCACHE_SET_ASSOC-1:0]        rd_hit_oh_o,
         output logic                [63:0]                        rd_data_o,
@@ -88,7 +88,7 @@ module serpent_dcache_mem #(
     logic [DCACHE_SET_ASSOC-1:0][DCACHE_TAG_WIDTH-1:0]            tag_rdata;                    // these are the tags coming from the tagmem
     logic                       [DCACHE_CL_IDX_WIDTH-1:0]         vld_addr;                     // valid bit 
     
-    logic [$clog2(NUM_PORTS)-1:0]                                 vld_sel_d, vld_sel_q;
+    logic [$clog2(NumPorts)-1:0]                                  vld_sel_d, vld_sel_q;
     
     logic [DCACHE_WBUF_DEPTH-1:0]                                 wbuffer_hit_oh;
     logic [7:0]                                                   wbuffer_be;
@@ -97,7 +97,7 @@ module serpent_dcache_mem #(
     
     logic                                                         cmp_en_d, cmp_en_q;
     logic                                                         rd_acked;
-    logic [NUM_PORTS-1:0]                                         bank_collision, rd_req_masked, rd_req_prio;
+    logic [NumPorts-1:0]                                          bank_collision, rd_req_masked, rd_req_prio;
 
 ///////////////////////////////////////////////////////
 // arbiter
@@ -139,7 +139,7 @@ module serpent_dcache_mem #(
     
     // read port arbiter
     rrarbiter #(
-        .NUM_REQ(NUM_PORTS)
+        .NUM_REQ(NumPorts)
     ) i_rrarbiter (
         .clk_i  ( clk_i         ),
         .rst_ni ( rst_ni        ),
@@ -159,7 +159,7 @@ module serpent_dcache_mem #(
         bank_we  = '0;
         bank_idx = '{default:wr_idx_i};
 
-        for(int k=0; k<NUM_PORTS; k++) begin
+        for(int k=0; k<NumPorts; k++) begin
             bank_collision[k] = rd_off_i[k][DCACHE_OFFSET_WIDTH-1:3] == wr_off_i[DCACHE_OFFSET_WIDTH-1:3];
         end    
 

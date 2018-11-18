@@ -18,8 +18,8 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_missunit #(
-    parameter logic [DCACHE_ID_WIDTH-1:0] AMO_TX_ID = 1, // TX id to be used for AMOs
-    parameter int unsigned                NUM_PORTS = 3  // number of miss ports
+    parameter logic [DCACHE_ID_WIDTH-1:0] AmoTxId  = 1, // TX id to be used for AMOs
+    parameter int unsigned                NumPorts = 3  // number of miss ports
  ) (
     input  logic                                       clk_i,       // Clock
     input  logic                                       rst_ni,      // Asynchronous reset active low
@@ -35,19 +35,19 @@ module serpent_dcache_missunit #(
     input  amo_req_t                                   amo_req_i,
     output amo_resp_t                                  amo_resp_o,
     // miss handling interface (ld, ptw, wbuffer)
-    input  logic [NUM_PORTS-1:0]                       miss_req_i,
-    output logic [NUM_PORTS-1:0]                       miss_ack_o,
-    input  logic [NUM_PORTS-1:0]                       miss_nc_i,
-    input  logic [NUM_PORTS-1:0]                       miss_we_i,
-    input  logic [NUM_PORTS-1:0][63:0]                 miss_wdata_i,
-    input  logic [NUM_PORTS-1:0][63:0]                 miss_paddr_i,
-    input  logic [NUM_PORTS-1:0][DCACHE_SET_ASSOC-1:0] miss_vld_bits_i,
-    input  logic [NUM_PORTS-1:0][2:0]                  miss_size_i,
-    input  logic [NUM_PORTS-1:0][DCACHE_ID_WIDTH-1:0]  miss_id_i,          // used as transaction ID
+    input  logic [NumPorts-1:0]                        miss_req_i,
+    output logic [NumPorts-1:0]                        miss_ack_o,
+    input  logic [NumPorts-1:0]                        miss_nc_i,
+    input  logic [NumPorts-1:0]                        miss_we_i,
+    input  logic [NumPorts-1:0][63:0]                  miss_wdata_i,
+    input  logic [NumPorts-1:0][63:0]                  miss_paddr_i,
+    input  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]  miss_vld_bits_i,
+    input  logic [NumPorts-1:0][2:0]                   miss_size_i,
+    input  logic [NumPorts-1:0][DCACHE_ID_WIDTH-1:0]   miss_id_i,          // used as transaction ID
     // signals that the request collided with a pending read
-    output logic [NUM_PORTS-1:0]                       miss_replay_o,
+    output logic [NumPorts-1:0]                        miss_replay_o,
     // signals response from memory
-    output logic [NUM_PORTS-1:0]                       miss_rtrn_vld_o,
+    output logic [NumPorts-1:0]                        miss_rtrn_vld_o,
     output logic [DCACHE_ID_WIDTH-1:0]                 miss_rtrn_id_o,     // only used for writes, set to zero fro reads
     // from writebuffer
     input  logic [DCACHE_MAX_TX-1:0][63:0]             tx_paddr_i,         // used to check for address collisions with read operations
@@ -82,7 +82,7 @@ module serpent_dcache_missunit #(
         logic [DCACHE_ID_WIDTH-1:0]          id      ;
         logic                                nc      ;
         logic [$clog2(DCACHE_SET_ASSOC)-1:0] repl_way;
-        logic [$clog2(NUM_PORTS)-1:0]        miss_port_idx;
+        logic [$clog2(NumPorts)-1:0]        miss_port_idx;
     } mshr_t;
 
     mshr_t mshr_d, mshr_q;
@@ -98,15 +98,15 @@ module serpent_dcache_missunit #(
     logic amo_sel, miss_is_write;
     logic [63:0] amo_data, tmp_paddr;
 
-    logic [$clog2(NUM_PORTS)-1:0] miss_port_idx;
+    logic [$clog2(NumPorts)-1:0] miss_port_idx;
     logic [DCACHE_CL_IDX_WIDTH-1:0] cnt_d, cnt_q;
-    logic [NUM_PORTS-1:0] miss_req_masked_d, miss_req_masked_q;
+    logic [NumPorts-1:0] miss_req_masked_d, miss_req_masked_q;
 
     logic inv_vld, inv_vld_all, cl_write_en;
     logic load_ack, store_ack, amo_ack;
 
-    logic [NUM_PORTS-1:0] mshr_rdrd_collision_d, mshr_rdrd_collision_q;
-    logic [NUM_PORTS-1:0] mshr_rdrd_collision;
+    logic [NumPorts-1:0] mshr_rdrd_collision_d, mshr_rdrd_collision_q;
+    logic [NumPorts-1:0] mshr_rdrd_collision;
     logic tx_rdwr_collision, mshr_rdwr_collision;
 
 ///////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ module serpent_dcache_missunit #(
 
     // read port arbiter
     lzc #(
-        .WIDTH ( NUM_PORTS )
+        .WIDTH ( NumPorts )
     ) i_lzc_reqs (
         .in_i    ( miss_req_masked_d ),
         .cnt_o   ( miss_port_idx     ),
@@ -178,7 +178,7 @@ module serpent_dcache_missunit #(
 
 
     generate
-        for(genvar k=0; k<NUM_PORTS; k++) begin
+        for(genvar k=0; k<NumPorts; k++) begin
             assign mshr_rdrd_collision[k]   = (mshr_q.paddr[63:DCACHE_OFFSET_WIDTH] == miss_paddr_i[k][63:DCACHE_OFFSET_WIDTH]) && (mshr_vld_q | mshr_vld_q1);
             assign mshr_rdrd_collision_d[k] = (~miss_req_i[k]) ? 1'b0 : mshr_rdrd_collision_q[k] | mshr_rdrd_collision[k];
         end
@@ -186,7 +186,7 @@ module serpent_dcache_missunit #(
 
     // read/write collision, stalls the corresponding request
     // write collides with MSHR
-    assign mshr_rdwr_collision = (mshr_q.paddr[63:DCACHE_OFFSET_WIDTH] == miss_paddr_i[NUM_PORTS-1][63:DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
+    assign mshr_rdwr_collision = (mshr_q.paddr[63:DCACHE_OFFSET_WIDTH] == miss_paddr_i[NumPorts-1][63:DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
 
     // read collides with inflight TX
     always_comb begin : p_tx_coll
@@ -210,7 +210,7 @@ module serpent_dcache_missunit #(
                                                          mem_rtrn_i.data[63:0];
 
     // outgoing memory requests (AMOs are always uncached)
-    assign mem_data_o.tid    = (amo_sel) ? AMO_TX_ID           : miss_id_i[miss_port_idx];
+    assign mem_data_o.tid    = (amo_sel) ? AmoTxId             : miss_id_i[miss_port_idx];
     assign mem_data_o.nc     = (amo_sel) ? 1'b1                : miss_nc_i[miss_port_idx];
     assign mem_data_o.way    = (amo_sel) ? '0                  : repl_way;
     assign mem_data_o.data   = (amo_sel) ? amo_data            : miss_wdata_i[miss_port_idx];
@@ -240,7 +240,7 @@ module serpent_dcache_missunit #(
                 end
                 DCACHE_STORE_ACK: begin
                     store_ack = 1'b1;
-                    miss_rtrn_vld_o[NUM_PORTS-1] = 1'b1;
+                    miss_rtrn_vld_o[NumPorts-1] = 1'b1;
                 end
                 DCACHE_ATOMIC_ACK: begin
                     amo_ack = 1'b1;
@@ -486,16 +486,16 @@ end
             else $fatal(1,"[l1 dcache missunit] TID of load response doesn't match");
 
     read_ports : assert property (
-        @(posedge clk_i) disable iff (~rst_ni) |miss_req_i[NUM_PORTS-2:0] |-> miss_we_i[NUM_PORTS-2:0] == 0)
+        @(posedge clk_i) disable iff (~rst_ni) |miss_req_i[NumPorts-2:0] |-> miss_we_i[NumPorts-2:0] == 0)
             else $fatal(1,"[l1 dcache missunit] only last port can issue write requests");
 
     write_port : assert property (
-        @(posedge clk_i) disable iff (~rst_ni) miss_req_i[NUM_PORTS-1] |-> miss_we_i[NUM_PORTS-1])
+        @(posedge clk_i) disable iff (~rst_ni) miss_req_i[NumPorts-1] |-> miss_we_i[NumPorts-1])
             else $fatal(1,"[l1 dcache missunit] last port can only issue write requests");
 
    initial begin
       // assert wrong parameterizations
-      assert (NUM_PORTS>=2)
+      assert (NumPorts>=2)
         else $fatal(1,"[l1 dcache missunit] at least two ports are required (one read port, one write port)");
    end
 `endif

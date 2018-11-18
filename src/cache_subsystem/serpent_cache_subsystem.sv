@@ -28,11 +28,11 @@ import serpent_cache_pkg::*;
 
 module serpent_cache_subsystem #(
 `ifdef AXI64_CACHE_PORTS
-  parameter int unsigned AXI_ID_WIDTH     = 10,
+  parameter int unsigned AxiIdWidth    = 10,
 `endif
-  parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000,       // threshold that determines where the cached region begins
-  parameter bit          CACHE_LOW_REGION = 0,                   // cached region is below CACHE_START_ADDR
-  parameter bit          SWAP_ENDIANESS   = 0                    // swap endianess in l15 adapter
+  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
+  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
+  parameter bit          SwapEndianess = 0                 // swap endianess in l15 adapter
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -89,12 +89,12 @@ l15_rtrn_t                      l15_rtrn;
 
 serpent_icache #(
 `ifdef AXI64_CACHE_PORTS
-    .AXI64BIT_COMPLIANT ( 1'b1                    ),
+    .AXI64BIT_COMPLIANT ( 1'b1          ),
 `endif
     // use ID 0 for icache reads
-    .RD_TX_ID           ( 0                       ),
-    .NC_ADDR_GE_LT      ( CACHE_LOW_REGION        ),
-    .NC_ADDR_BEGIN      ( CACHE_START_ADDR        )
+    .RdTxId             ( 0             ),
+    .CachedAddrBeg      ( CachedAddrBeg ),
+    .CachedAddrEnd      ( CachedAddrEnd )
   ) i_serpent_icache (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
@@ -120,9 +120,9 @@ serpent_icache #(
 serpent_dcache #(
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
-    .RD_AMO_TX_ID    ( 1                       ),
-    .NC_ADDR_GE_LT   ( CACHE_LOW_REGION        ),
-    .NC_ADDR_BEGIN   ( CACHE_START_ADDR        )
+    .RdAmoTxId       ( 1             ),
+    .CachedAddrBeg   ( CachedAddrBeg ),
+    .CachedAddrEnd   ( CachedAddrEnd )
   ) i_serpent_dcache (
     .clk_i           ( clk_i                   ),
     .rst_ni          ( rst_ni                  ),
@@ -145,7 +145,9 @@ serpent_dcache #(
 
 // arbiter/adapter
 serpent_l15_adapter #(
-    .SWAP_ENDIANESS     ( SWAP_ENDIANESS          )
+    .SwapEndianess   ( SwapEndianess ),
+    .CachedAddrBeg   ( CachedAddrBeg ),
+    .CachedAddrEnd   ( CachedAddrEnd )
   ) i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
@@ -177,17 +179,17 @@ serpent_l15_adapter #(
 `ifdef AXI64_CACHE_PORTS
 
 // support up to 512bit cache lines
-localparam AXI_NUM_WORDS = 8;
+localparam AxiNumWords = 8;
 
 logic axi_rd_req, axi_rd_gnt;
 logic [63:0]                    axi_rd_addr, axi_wr_addr;
-logic [$clog2(AXI_NUM_WORDS)-1:0] axi_rd_blen, axi_wr_blen;
+logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
 logic [1:0] axi_rd_size, axi_wr_size;
-logic [AXI_ID_WIDTH-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out;
+logic [AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out;
 logic axi_rd_valid;
-logic [AXI_NUM_WORDS-1:0][63:0] axi_rd_data, axi_wr_data;
+logic [AxiNumWords-1:0][63:0] axi_rd_data, axi_wr_data;
 logic [63:0] axi_rd_word;
-logic [AXI_NUM_WORDS-1:0][7:0] axi_wr_be;
+logic [AxiNumWords-1:0][7:0] axi_wr_be;
 logic axi_rd_word_valid, axi_rd_word_cnt, axi_wr_req, axi_wr_gnt;
 logic axi_wr_valid, axi_rd_rdy, axi_wr_rdy;
 
@@ -253,8 +255,8 @@ always_comb begin : p_axi_rtrn
 end
 
 axi_adapter2 #(
-  .DATA_WORDS      ( AXI_NUM_WORDS     ),
-  .AXI_ID_WIDTH    ( AXI_ID_WIDTH      )
+  .DATA_WORDS      ( AxiNumWords     ),
+  .AXI_ID_WIDTH    ( AxiIdWidth      )
 ) i_axi_adapter (
   .clk_i           ( clk_i             ),
   .rst_ni          ( rst_ni            ),
@@ -298,7 +300,7 @@ axi_adapter2 #(
 
 `ifdef AXI64_CACHE_PORTS
   initial begin
-    assert (AXI_ID_WIDTH >= $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2) else
+    assert (AxiIdWidth >= $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2) else
       $fatal(1,$psprintf("[l1 cache] AXI ID must be at least %01d bit wide", $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2));
   end
 `endif

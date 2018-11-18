@@ -25,13 +25,13 @@ import serpent_cache_pkg::*;
 import tb_pkg::*;
 
 module tb_mem #(
-  parameter string MEM_NAME   = "TB_MEM",   
-  parameter MEM_RAND_HIT_RATE = 10, //in percent
-  parameter MEM_RAND_INV_RATE = 5,  //in percent
-  parameter MEM_WORDS         = 1024*1024,// in 64bit words
-  parameter NC_ADDR_BEGIN     = MEM_WORDS/2,
-  parameter NC_ADDR_GE_LT     = 1'b1
-)(
+  parameter string MemName             = "TB_MEM",   
+  parameter MemRandHitRate             = 10, //in percent
+  parameter MemRandInvRate             = 5,  //in percent
+  parameter MemWords                   = 1024*1024,// in 64bit words
+  parameter logic [63:0] CachedAddrBeg = MemWords/2,
+  parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF
+) (
   input logic            clk_i,
   input logic            rst_ni,
   // randomization settings
@@ -54,7 +54,7 @@ module tb_mem #(
   input  logic [7:0]     write_be_i,
   input  logic [63:0]    write_data_i,
   input  logic [63:0]    write_paddr_i,
-  output logic [63:0]    mem_array_o[MEM_WORDS-1:0]
+  output logic [63:0]    mem_array_o[MemWords-1:0]
 );
 
     // leave this
@@ -72,13 +72,13 @@ module tb_mem #(
     logic initialized_q;
     logic write_en;
 
-    logic [63:0] mem_array_q[MEM_WORDS-1:0];
+    logic [63:0] mem_array_q[MemWords-1:0];
 
     // this shadow memory  provides a view that is consistent with the one from the core
     // i.e., pending writes are present in this view, and invalidations will not overwrite 
     // the corresponding bytes until they have been commited to the normal memory.
-    logic [63:0] mem_array_shadow_q[MEM_WORDS-1:0];
-    logic [7:0]  mem_array_dirty_q[MEM_WORDS-1:0];
+    logic [63:0] mem_array_shadow_q[MemWords-1:0];
+    logic [7:0]  mem_array_dirty_q[MemWords-1:0];
 
     assign mem_array_o = mem_array_shadow_q;
 
@@ -132,7 +132,7 @@ module tb_mem #(
             end else begin
                 mem_array_dirty_q      <= '{default:'0};
                 
-                for (int k=0; k<MEM_WORDS; k++) begin
+                for (int k=0; k<MemWords; k++) begin
                     void'(randomize(val));
                     mem_array_q[k]        <= val;
                     mem_array_shadow_q[k] <= val;
@@ -144,7 +144,7 @@ module tb_mem #(
             // generate random contentions
             if (mem_rand_en_i) begin
                 void'(randomize(rnd) with {rnd > 0; rnd <= 100;});
-                if(rnd < MEM_RAND_HIT_RATE) begin
+                if(rnd < MemRandHitRate) begin
                     mem_ready_q <= '1;
                 end else begin
                     mem_ready_q <= '0;
@@ -156,9 +156,9 @@ module tb_mem #(
             // generate random invalidations
             if (inv_rand_en_i) begin
                 void'(randomize(rnd) with {rnd > 0; rnd <= 100;});
-                if(rnd < MEM_RAND_INV_RATE) begin
+                if(rnd < MemRandInvRate) begin
                     mem_inv_q <= '1;
-                    void'(randomize(lval) with {lval>=0; lval<(MEM_WORDS>>3);});
+                    void'(randomize(lval) with {lval>=0; lval<(MemWords>>3);});
                     void'(randomize(val));
                     rand_addr_q              <= lval<<3;
                     
@@ -300,35 +300,35 @@ module tb_mem #(
     initial begin
         bit ok;
         progress status;
-        status = new(MEM_NAME);
+        status = new(MemName);
         
         `ACQ_WAIT_CYC(clk_i,10)
         `ACQ_WAIT_SIG(clk_i,~rst_ni)
             
         while(~seq_last_i) begin
             `ACQ_WAIT_SIG(clk_i,check_en_i)
-            status.reset(MEM_WORDS);
+            status.reset(MemWords);
             // crosscheck whether shadow and real memory arrays still match
-            for(int k=0; k<MEM_WORDS; k++) begin
+            for(int k=0; k<MemWords; k++) begin
                 ok = (mem_array_q[k] == mem_array_shadow_q[k]) && !(|mem_array_dirty_q[k]);
                 if(!ok) begin
                     $display("%s> dirty bytes at k=%016X: real[k>>3]=%016X, shadow[k>>3]=%016X, dirty[k>>3]=%02X", 
-                        MEM_NAME, k<<3, mem_array_q[k], mem_array_shadow_q[k], mem_array_dirty_q[k]);
+                        MemName, k<<3, mem_array_q[k], mem_array_shadow_q[k], mem_array_dirty_q[k]);
                 end
                 status.addRes(!ok);
                 status.print();
             end        
         end    
-        status.printToFile({MEM_NAME, "_summary.rep"}, 1);     
+        status.printToFile({MemName, "_summary.rep"}, 1);     
         
         if(status.totErrCnt == 0) begin
-            $display("%s> ----------------------------------------------------------------------", MEM_NAME);
-            $display("%s> PASSED %0d VECTORS", MEM_NAME, status.totAcqCnt);
-            $display("%s> ----------------------------------------------------------------------\n", MEM_NAME);
+            $display("%s> ----------------------------------------------------------------------", MemName);
+            $display("%s> PASSED %0d VECTORS", MemName, status.totAcqCnt);
+            $display("%s> ----------------------------------------------------------------------\n", MemName);
         end else begin
-            $display("%s> ----------------------------------------------------------------------\n", MEM_NAME);
-            $display("%s> FAILED %0d OF %0d VECTORS\n", MEM_NAME , status.totErrCnt, status.totAcqCnt);
-            $display("%s> ----------------------------------------------------------------------\n", MEM_NAME);
+            $display("%s> ----------------------------------------------------------------------\n", MemName);
+            $display("%s> FAILED %0d OF %0d VECTORS\n", MemName , status.totErrCnt, status.totAcqCnt);
+            $display("%s> ----------------------------------------------------------------------\n", MemName);
         end
     end    
 
@@ -342,18 +342,9 @@ module tb_mem #(
 //pragma translate_off
 `ifndef verilator
 
-    generate 
-        if (NC_ADDR_GE_LT) begin : g_nc_addr_high
-            nc_region: assert property (
-                @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.paddr >= NC_ADDR_BEGIN |-> mem_data_i.nc)       
-                else $fatal(1, "cached access into noncached region");
-        end
-        if (~NC_ADDR_GE_LT) begin : g_nc_addr_low
-            nc_region: assert property (
-                @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.paddr < NC_ADDR_BEGIN |-> mem_data_i.nc)       
-                else $fatal(1, "cached access into noncached region");
-        end
-    endgenerate  
+    nc_region: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.paddr >= CachedAddrEnd || mem_data_i.paddr < CachedAddrBeg |-> mem_data_i.nc)       
+        else $fatal(1, "cached access into noncached region");
 
     cached_reads: assert property (
         @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype==DCACHE_LOAD_REQ |-> ~mem_data_i.nc |-> mem_data_i.size == 3'b111)       
@@ -368,19 +359,10 @@ module tb_mem #(
         else $fatal(1, "write size can only be one of the following: byte, halfword, word, dword");
 
     addr_range: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype inside {DCACHE_STORE_REQ, DCACHE_STORE_REQ} |-> mem_data_i.paddr < (MEM_WORDS<<3))       
+        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype inside {DCACHE_STORE_REQ, DCACHE_STORE_REQ} |-> mem_data_i.paddr < (MemWords<<3))       
         else $fatal(1, "address is out of bounds");
 
 `endif
 //pragma translate_on
-
-  // align0: assert property (
-  //   @(posedge clk_i) disable iff (~rst_ni) ~exp_empty |-> stim_addr[1:0] == 0)       
-  //      else $fatal(1,"stim_addr is not 32bit word aligned");
-
-  // align1: assert property (
-  //   @(posedge clk_i) disable iff (~rst_ni) ~outfifo_empty |-> outfifo_data.paddr[1:0] == 0)       
-  //      else $fatal(1,"paddr is not 32bit word aligned");
-
 
 endmodule // mem_emul

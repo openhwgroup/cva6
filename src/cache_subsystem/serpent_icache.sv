@@ -32,13 +32,11 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_icache  #(
-    parameter logic [DCACHE_ID_WIDTH-1:0] RD_TX_ID            = 0,              // ID to be used for read transactions
-    parameter int unsigned                NC_ADDR_BEGIN       = 40'h8000000000, // start address of noncacheable I/O region
-    parameter bit                         AXI64BIT_COMPLIANT  = 1'b0,           // set this to 1 when using in conjunction with 64bit AXI bus adapter
-    parameter bit                         NC_ADDR_GE_LT       = 1'b1            // determines how the physical address is compared with NC_ADDR_BEGIN
-                                                                                // NC_ADDR_GE_LT == 0 ->  if paddr <  NC_ADDR_BEGIN -> NC
-                                                                                // NC_ADDR_GE_LT == 1 ->  if paddr >= NC_ADDR_BEGIN -> NC
-)(
+    parameter logic [DCACHE_ID_WIDTH-1:0] RdTxId             = 0,                // ID to be used for read transactions
+    parameter bit                         Axi64BitCompliant  = 1'b0,             // set this to 1 when using in conjunction with 64bit AXI bus adapter
+    parameter logic [63:0]                CachedAddrBeg      = 64'h00_8000_0000, // begin of cached region
+    parameter logic [63:0]                CachedAddrEnd      = 64'h80_0000_0000  // end of cached region
+) (
     input  logic                      clk_i,
     input  logic                      rst_ni,
 
@@ -109,14 +107,9 @@ module serpent_icache  #(
     assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH] : cl_tag_q;
 
     // noncacheable if request goes to I/O space, or if cache is disabled
-    generate
-        if (NC_ADDR_GE_LT) begin : g_nc_addr_high
-            assign paddr_is_nc = (cl_tag_d >= (NC_ADDR_BEGIN>>ICACHE_INDEX_WIDTH)) | ~cache_en_q;
-        end
-        if (~NC_ADDR_GE_LT) begin : g_nc_addr_low
-            assign paddr_is_nc = (cl_tag_d < (NC_ADDR_BEGIN>>ICACHE_INDEX_WIDTH))  | ~cache_en_q;
-        end
-    endgenerate
+    assign paddr_is_nc = (cl_tag_d <  (CachedAddrBeg>>ICACHE_INDEX_WIDTH)) || 
+                         (cl_tag_d >= (CachedAddrEnd>>ICACHE_INDEX_WIDTH)) || 
+                         (!cache_en_q);
 
     // pass exception through
     assign dreq_o.ex = areq_i.fetch_exception;
@@ -130,19 +123,19 @@ module serpent_icache  #(
     assign cl_index    = vaddr_d[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH];
 
     generate
-        if(AXI64BIT_COMPLIANT)begin
+        if(Axi64BitCompliant)begin
             // if we generate a noncacheable access, the word will be at offset 0 or 4 in the cl coming from memory
             assign cl_offset_d = ( dreq_o.ready & dreq_i.req)      ? {dreq_i.vaddr>>2, 2'b0} :
                                  ( paddr_is_nc  & mem_data_req_o ) ? cl_offset_q[2]<<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case
                                                                      cl_offset_q;
             // request word address instead of cl address in case of NC access
-            assign mem_data_o.paddr = (paddr_is_nc) ? {cl_tag_d, vaddr_q[ICACHE_INDEX_WIDTH-1:2], 2'b0} :                                         // align to 32bit
+            assign mem_data_o.paddr = (paddr_is_nc) ? {cl_tag_d, vaddr_q[ICACHE_INDEX_WIDTH-1:3], 3'b0} :                                         // align to 32bit
                                                       {cl_tag_d, vaddr_q[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH], {ICACHE_OFFSET_WIDTH{1'b0}}}; // align to cl
         end
-        if(!AXI64BIT_COMPLIANT)begin
-            // if we generate a noncacheable access, the word will be at offset 0 in the cl coming from memory
+        if(!Axi64BitCompliant)begin
+            // icache fills are either cachelines or 4byte fills, depending on whether they go to the Piton I/O space or not.
+            // since the piton cache system replicates the data, we can always index the full CL
             assign cl_offset_d = ( dreq_o.ready & dreq_i.req)      ? {dreq_i.vaddr>>2, 2'b0} :
-                                 ( paddr_is_nc  & mem_data_req_o ) ? '0 :
                                                                      cl_offset_q;
 
             // request word address instead of cl address in case of NC access
@@ -151,7 +144,7 @@ module serpent_icache  #(
         end
     endgenerate
 
-    assign mem_data_o.tid   = RD_TX_ID;
+    assign mem_data_o.tid   = RdTxId;
 
     assign mem_data_o.nc    = paddr_is_nc;
     // way that is being replaced

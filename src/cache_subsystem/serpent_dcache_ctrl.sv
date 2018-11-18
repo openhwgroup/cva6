@@ -17,9 +17,9 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_ctrl #(
-    parameter logic [DCACHE_ID_WIDTH-1:0] RD_TX_ID      = 1,               // ID to use for read transactions
-    parameter int unsigned                NC_ADDR_BEGIN = 40'h8000000000,  // start address of noncacheable I/O region
-    parameter bit                         NC_ADDR_GE_LT = 1'b1             // determines how the physical address is compared with NC_ADDR_BEGIN
+    parameter logic [DCACHE_ID_WIDTH-1:0] RdTxId        = 1,                // ID to use for read transactions
+    parameter logic [63:0]                CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
+    parameter logic [63:0]                CachedAddrEnd = 64'h80_0000_0000  // end of cached region
 ) (
     input  logic                            clk_i,          // Clock
     input  logic                            rst_ni,         // Asynchronous reset active low
@@ -85,18 +85,13 @@ module serpent_dcache_ctrl #(
     assign miss_paddr_o          = {address_tag_q, address_idx_q, address_off_q};
     assign miss_size_o           = (miss_nc_o) ? data_size_q : 3'b111;
 
-    generate
-        if (NC_ADDR_GE_LT) begin : g_nc_addr_high
-            assign miss_nc_o = (address_tag_q >= (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH)) | ~cache_en_i;
-        end
-        if (~NC_ADDR_GE_LT) begin : g_nc_addr_low
-            assign miss_nc_o = (address_tag_q < (NC_ADDR_BEGIN>>DCACHE_INDEX_WIDTH))  | ~cache_en_i;
-        end
-    endgenerate
+    assign miss_nc_o = (address_tag_q <  (CachedAddrBeg>>DCACHE_INDEX_WIDTH)) || 
+                       (address_tag_q >= (CachedAddrEnd>>DCACHE_INDEX_WIDTH)) || 
+                       (!cache_en_i);
 
     assign miss_we_o    = '0;
     assign miss_wdata_o = '0;
-    assign miss_id_o    = RD_TX_ID;
+    assign miss_id_o    = RdTxId;
     assign rd_req_d     = rd_req_o;
     assign rd_ack_d     = rd_ack_i;
     assign rd_tag_only_o = '0;

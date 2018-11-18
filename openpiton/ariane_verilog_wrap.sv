@@ -21,9 +21,9 @@
 `endif
 
 module ariane_verilog_wrap #(
-  parameter bit          SWAP_ENDIANESS   = 0,             // swap endianess in l15 adapter
-  parameter bit          CACHE_LOW_REGION = 0,             // cached region is below CACHE_START_ADDR
-  parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000  // address on which to decide whether the request is cache-able or not
+  parameter bit          SwapEndianess = 1,                // swap endianess in l15 adapter
+  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
+  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000  // begin of cached region
 ) (
   input                       clk_i,
   input                       reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
@@ -105,9 +105,9 @@ module ariane_verilog_wrap #(
 
 
   ariane #(
-    .SWAP_ENDIANESS   ( SWAP_ENDIANESS   ),
-    .CACHE_LOW_REGION ( CACHE_LOW_REGION ),
-    .CACHE_START_ADDR ( CACHE_START_ADDR )
+    .SwapEndianess ( SwapEndianess ),
+    .CachedAddrEnd ( CachedAddrEnd ),
+    .CachedAddrBeg ( CachedAddrBeg )
   ) ariane (
     .clk_i       ( clk_i     ),
     .rst_ni      ( rst_n     ),
