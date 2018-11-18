@@ -18,13 +18,13 @@
 	url = https://github.com/pulp-platform/register_interface.git
 [submodule "fpga/src/apb_uart"]
 	path = fpga/src/apb_uart
-	url = git@github.com:pulp-platform/apb_uart.git
+	url = https://github.com/pulp-platform/apb_uart.git
 [submodule "fpga/src/apb_node"]
 	path = fpga/src/apb_node
-	url = git@github.com:pulp-platform/apb_node.git
+	url = https://github.com/pulp-platform/apb_node.git
 [submodule "fpga/src/axi2apb"]
     path = fpga/src/axi2apb
-    url = git@github.com:pulp-platform/axi2apb.git
+    url = https://github.com/pulp-platform/axi2apb.git
 [submodule "fpga/src/axi_slice"]
     path = fpga/src/axi_slice
     url = https://github.com/pulp-platform/axi_slice.git
