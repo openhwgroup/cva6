@@ -44,16 +44,16 @@
       reg = <0x0 0x2000000 0x0 0xc0000>;
       reg-names = "control";
     };
-    // PLIC0: interrupt-controller@c000000 {
-    //   #address-cells = <0>;
-    //   #interrupt-cells = <1>;
-    //   compatible = "sifive,plic-1.0.0", "riscv,plic0";
-    //   interrupt-controller;
-    //   interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
-    //   reg = <0x0 0xc000000 0x0 0x4000000>;
-    //   riscv,max-priority = <7>;
-    //   riscv,ndev = <2>;
-    // };
+    PLIC0: interrupt-controller@c000000 {
+      #address-cells = <0>;
+      #interrupt-cells = <1>;
+      compatible = "sifive,plic-1.0.0", "riscv,plic0";
+      interrupt-controller;
+      interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
+      reg = <0x0 0xc000000 0x0 0x4000000>;
+      riscv,max-priority = <7>;
+      riscv,ndev = <2>;
+    };
     debug-controller@0 {
       compatible = "riscv,debug-013";
       interrupts-extended = <&CPU0_intc 65535>;
@@ -65,8 +65,8 @@
       reg = <0x0 0x10000000 0x0 0x1000>;
       clock-frequency = <50000000>;
       current-speed = <115200>;
-      // interrupt-parent = <&PLIC0>;
-      // interrupts = <1>;
+      interrupt-parent = <&PLIC0>;
+      interrupts = <1>;
       reg-shift = <2>; // regs are spaced on 32 bit boundary
       reg-io-width = <4>; // only 32-bit access are supported
     };

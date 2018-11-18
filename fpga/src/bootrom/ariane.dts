@@ -70,38 +70,38 @@
       reg-shift = <2>; // regs are spaced on 32 bit boundary
       reg-io-width = <4>; // only 32-bit access are supported
     };
-    // xlnx_axi_ethernetlite: ethernet@12000000 {
-    //   compatible = "xlnx,axi-ethernetlite-3.0", "xlnx,xps-ethernetlite-1.00.a";
-    //   device_type = "network";
-    //   interrupt-parent = <&PLIC0>;
-    //   interrupts = <2 0>;
-    //   local-mac-address = [00 0a 35 00 01 22];
-    //   phy-handle = <&phy0>;
-    //   reg = <0x0 0x20000000 0x0 0x10000>;
-    //   xlnx,duplex = <0x1>;
-    //   xlnx,include-global-buffers = <0x1>;
-    //   xlnx,include-internal-loopback = <0x0>;
-    //   xlnx,include-mdio = <0x1>;
-    //   xlnx,instance = "axi_ethernetlite_inst";
-    //   xlnx,rx-ping-pong = <0x1>;
-    //   xlnx,s-axi-id-width = <0x4>;
-    //   xlnx,tx-ping-pong = <0x1>;
-    //   xlnx,use-internal = <0x0>;
-    //   xlnx,has-mdio = <0x1>;
-    //   // rgmii-id: combines rgmii-rxid and rgmii-txid and thus configures the
-    //   // PHY to enable the RX and TX delays. The MAC should neither add the RX
-    //   // nor TX delay in this case.
-    //   phy-mode = "rgmii-id";
-    //   mdio {
-    //     #address-cells = <1>;
-    //     #size-cells = <0>;
-    //     phy0: ethernet-phy@0 {
-    //       compatible = "realtek,RTL8211E";
-    //       device_type = "ethernet-phy";
-    //       reg = <0x1>;
-    //     };
-    //   };
-    // };
+    xlnx_axi_ethernetlite: ethernet@12000000 {
+      compatible = "xlnx,axi-ethernetlite-3.0", "xlnx,xps-ethernetlite-1.00.a";
+      device_type = "network";
+      interrupt-parent = <&PLIC0>;
+      interrupts = <2 0>;
+      local-mac-address = [00 0a 35 00 01 22];
+      phy-handle = <&phy0>;
+      reg = <0x0 0x20000000 0x0 0x10000>;
+      xlnx,duplex = <0x1>;
+      xlnx,include-global-buffers = <0x1>;
+      xlnx,include-internal-loopback = <0x0>;
+      xlnx,include-mdio = <0x1>;
+      xlnx,instance = "axi_ethernetlite_inst";
+      xlnx,rx-ping-pong = <0x1>;
+      xlnx,s-axi-id-width = <0x4>;
+      xlnx,tx-ping-pong = <0x1>;
+      xlnx,use-internal = <0x0>;
+      xlnx,has-mdio = <0x1>;
+      // rgmii-id: combines rgmii-rxid and rgmii-txid and thus configures the
+      // PHY to enable the RX and TX delays. The MAC should neither add the RX
+      // nor TX delay in this case.
+      phy-mode = "rgmii-id";
+      mdio {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        phy0: ethernet-phy@0 {
+          compatible = "realtek,RTL8211E";
+          device_type = "ethernet-phy";
+          reg = <0x1>;
+        };
+      };
+    };
     // axi_spi@11000000 {
     //   compatible = "xlnx.xps-spic-2.00.b";
     //   clock-names = "axi_clk", "axi4_clk", "spi_clk";
