@@ -13,17 +13,32 @@ module ariane_peripherals #(
     parameter int AxiAddrWidth = -1,
     parameter int AxiDataWidth = -1,
     parameter bit DummyUART    = 1,
-    parameter bit InclSPI      = 0
+    parameter bit InclSPI      = 0,
+    parameter bit InclEthernet = 0
 ) (
     input  logic       clk_i           , // Clock
     input  logic       rst_ni          , // Asynchronous reset active low
     AXI_BUS.in         plic            ,
     AXI_BUS.in         uart            ,
     AXI_BUS.in         spi             ,
+    AXI_BUS.in         ethernet        ,
     output logic [1:0] irq_o           ,
     // UART
     input  logic       rx_i            ,
     output logic       tx_o            ,
+    // Ethernet
+    input  wire        eth_txck        ,
+    input  wire        eth_rxck        ,
+    input  wire        eth_rxctl       ,
+    input  wire [3:0]  eth_rxd         ,
+    output wire        eth_rst_n       ,
+    output wire        eth_tx_en       ,
+    output wire [3:0]  eth_txd         ,
+    inout  wire        phy_mdio        ,
+    output logic       eth_mdc         ,
+    // MDIO Interface
+    inout              mdio            ,
+    output             mdc             ,
     // SPI
     output logic       spi_clk_o       ,
     output logic       spi_mosi        ,
@@ -145,9 +160,6 @@ module ariane_peripherals #(
         .external_bus_io    ( reg_bus                )
     );
 
-    // TODO(zarubaf): Remove once PLIC is working
-    // assign irq_o = '0;
-
     // ---------------
     // UART
     // ---------------
@@ -264,70 +276,178 @@ module ariane_peripherals #(
             .SOUT    ( tx_o            )
         );
     end
+
     // ---------------
     // Ethernet
     // ---------------
-    //   xlnx_axi_ethernetlite i_xlnx_axi_ethernetlite (
+    wire mdio_i, mdio_o, mdio_t;
 
-    //   );
+    if (InclEthernet) begin : gen_ethernet
 
-  // output   ip2intc_irpt;
-  // input    s_axi_aclk;
-  // input    s_axi_aresetn;
-  // input [3:0]s_axi_awid;
-  // input [12:0]s_axi_awaddr;
-  // input [7:0]s_axi_awlen;
-  // input [2:0]s_axi_awsize;
-  // input [1:0]s_axi_awburst;
-  // input [3:0]s_axi_awcache;
-  // input s_axi_awvalid;
-  // output s_axi_awready;
-  // input [31:0]s_axi_wdata;
-  // input [3:0]s_axi_wstrb;
-  // input s_axi_wlast;
-  // input s_axi_wvalid;
-  // output s_axi_wready;
-  // output [3:0]s_axi_bid;
-  // output [1:0]s_axi_bresp;
-  // output s_axi_bvalid;
-  // input s_axi_bready;
-  // input [3:0]s_axi_arid;
-  // input [12:0]s_axi_araddr;
-  // input [7:0]s_axi_arlen;
-  // input [2:0]s_axi_arsize;
-  // input [1:0]s_axi_arburst;
-  // input [3:0]s_axi_arcache;
-  // input s_axi_arvalid;
-  // output s_axi_arready;
-  // output [3:0]s_axi_rid;
-  // output [31:0]s_axi_rdata;
-  // output [1:0]s_axi_rresp;
-  // output s_axi_rlast;
-  // output s_axi_rvalid;
-  // // input s_axi_rready;
+        logic [3:0]  s_axi_eth_awid;
+        logic [12:0] s_axi_eth_awaddr;
+        logic [7:0]  s_axi_eth_awlen;
+        logic [2:0]  s_axi_eth_awsize;
+        logic [1:0]  s_axi_eth_awburst;
+        logic [3:0]  s_axi_eth_awcache;
+        logic        s_axi_eth_awvalid;
+        logic        s_axi_eth_awready;
+        logic [31:0] s_axi_eth_wdata;
+        logic [3:0]  s_axi_eth_wstrb;
+        logic        s_axi_eth_wlast;
+        logic        s_axi_eth_wvalid;
+        logic        s_axi_eth_wready;
+        logic [3:0]  s_axi_eth_bid;
+        logic [1:0]  s_axi_eth_bresp;
+        logic        s_axi_eth_bvalid;
+        logic        s_axi_eth_bready;
+        logic [3:0]  s_axi_eth_arid;
+        logic [12:0] s_axi_eth_araddr;
+        logic [7:0]  s_axi_eth_arlen;
+        logic [2:0]  s_axi_eth_arsize;
+        logic [1:0]  s_axi_eth_arburst;
+        logic [3:0]  s_axi_eth_arcache;
+        logic        s_axi_eth_arvalid;
+        logic        s_axi_eth_arready;
+        logic [3:0]  s_axi_eth_rid;
+        logic [31:0] s_axi_eth_rdata;
+        logic [1:0]  s_axi_eth_rresp;
+        logic        s_axi_eth_rlast;
+        logic        s_axi_eth_rvalid;
 
-  // input        phy_tx_clk   ( eth_txck   ),
-  // input        phy_rx_clk   ( eth_rxck   ),
-  // input        phy_crs      ( 1'b0       ),
-  // input        phy_dv       ( eth_rxctl  ),
-  // input [3:0]  phy_rx_data  ( eth_rxd    ),
-  // input        phy_col      ( 1'b0       ),
-  // input        phy_rx_er    ( 1'b0       ),
-  // output       phy_rst_n    ( eth_rst_n  ),
-  // output       phy_tx_en    ( eth_tx_en  ),
-  // output [3:0] phy_tx_data  ( eth_txd    ),
-  // input        phy_mdio_i   ( phy_mdio_i ),
-  // output       phy_mdio_o   ( phy_mdio_o ),
-  // output       phy_mdio_t   ( phy_mdio_t ),
-  // output       phy_mdc      ( eth_mdc    )
+        axi_dwidth_converter_0 i_axi_dwidth_converter_0 (
+            .s_axi_aclk    ( clk_i    ), // input wire s_axi_aclk
+            .s_axi_aresetn ( rst_ni ), // input wire s_axi_aresetn
+            .s_axi_awid    (s_axi_awid    ), // input wire [3 : 0] s_axi_awid
+            .s_axi_awaddr  (s_axi_awaddr  ), // input wire [31 : 0] s_axi_awaddr
+            .s_axi_awlen   (s_axi_awlen   ), // input wire [7 : 0] s_axi_awlen
+            .s_axi_awsize  (s_axi_awsize  ), // input wire [2 : 0] s_axi_awsize
+            .s_axi_awburst (s_axi_awburst ), // input wire [1 : 0] s_axi_awburst
+            .s_axi_awlock  (s_axi_awlock  ), // input wire [0 : 0] s_axi_awlock
+            .s_axi_awcache (s_axi_awcache ), // input wire [3 : 0] s_axi_awcache
+            .s_axi_awprot  (s_axi_awprot  ), // input wire [2 : 0] s_axi_awprot
+            .s_axi_awregion(s_axi_awregion), // input wire [3 : 0] s_axi_awregion
+            .s_axi_awqos   (s_axi_awqos   ), // input wire [3 : 0] s_axi_awqos
+            .s_axi_awvalid (s_axi_awvalid ), // input wire s_axi_awvalid
+            .s_axi_awready (s_axi_awready ), // output wire s_axi_awready
+            .s_axi_wdata   (s_axi_wdata   ), // input wire [63 : 0] s_axi_wdata
+            .s_axi_wstrb   (s_axi_wstrb   ), // input wire [7 : 0] s_axi_wstrb
+            .s_axi_wlast   (s_axi_wlast   ), // input wire s_axi_wlast
+            .s_axi_wvalid  (s_axi_wvalid  ), // input wire s_axi_wvalid
+            .s_axi_wready  (s_axi_wready  ), // output wire s_axi_wready
+            .s_axi_bid     (s_axi_bid     ), // output wire [3 : 0] s_axi_bid
+            .s_axi_bresp   (s_axi_bresp   ), // output wire [1 : 0] s_axi_bresp
+            .s_axi_bvalid  (s_axi_bvalid  ), // output wire s_axi_bvalid
+            .s_axi_bready  (s_axi_bready  ), // input wire s_axi_bready
+            .s_axi_arid    (s_axi_arid    ), // input wire [3 : 0] s_axi_arid
+            .s_axi_araddr  (s_axi_araddr  ), // input wire [31 : 0] s_axi_araddr
+            .s_axi_arlen   (s_axi_arlen   ), // input wire [7 : 0] s_axi_arlen
+            .s_axi_arsize  (s_axi_arsize  ), // input wire [2 : 0] s_axi_arsize
+            .s_axi_arburst (s_axi_arburst ), // input wire [1 : 0] s_axi_arburst
+            .s_axi_arlock  (s_axi_arlock  ), // input wire [0 : 0] s_axi_arlock
+            .s_axi_arcache (s_axi_arcache ), // input wire [3 : 0] s_axi_arcache
+            .s_axi_arprot  (s_axi_arprot  ), // input wire [2 : 0] s_axi_arprot
+            .s_axi_arregion(s_axi_arregion), // input wire [3 : 0] s_axi_arregion
+            .s_axi_arqos   (s_axi_arqos   ), // input wire [3 : 0] s_axi_arqos
+            .s_axi_arvalid (s_axi_arvalid ), // input wire s_axi_arvalid
+            .s_axi_arready (s_axi_arready ), // output wire s_axi_arready
+            .s_axi_rid     (s_axi_rid     ), // output wire [3 : 0] s_axi_rid
+            .s_axi_rdata   (s_axi_rdata   ), // output wire [63 : 0] s_axi_rdata
+            .s_axi_rresp   (s_axi_rresp   ), // output wire [1 : 0] s_axi_rresp
+            .s_axi_rlast   (s_axi_rlast   ), // output wire s_axi_rlast
+            .s_axi_rvalid  (s_axi_rvalid  ), // output wire s_axi_rvalid
+            .s_axi_rready  (s_axi_rready  ), // input wire s_axi_rready
+            .m_axi_awaddr  (m_axi_awaddr  ), // output wire [31 : 0] m_axi_awaddr
+            .m_axi_awlen   (m_axi_awlen   ), // output wire [7 : 0] m_axi_awlen
+            .m_axi_awsize  (m_axi_awsize  ), // output wire [2 : 0] m_axi_awsize
+            .m_axi_awburst (m_axi_awburst ), // output wire [1 : 0] m_axi_awburst
+            .m_axi_awlock  (m_axi_awlock  ), // output wire [0 : 0] m_axi_awlock
+            .m_axi_awcache (m_axi_awcache ), // output wire [3 : 0] m_axi_awcache
+            .m_axi_awprot  (m_axi_awprot  ), // output wire [2 : 0] m_axi_awprot
+            .m_axi_awregion(m_axi_awregion), // output wire [3 : 0] m_axi_awregion
+            .m_axi_awqos   (m_axi_awqos   ), // output wire [3 : 0] m_axi_awqos
+            .m_axi_awvalid (m_axi_awvalid ), // output wire m_axi_awvalid
+            .m_axi_awready (m_axi_awready ), // input wire m_axi_awready
+            .m_axi_wdata   (m_axi_wdata   ), // output wire [31 : 0] m_axi_wdata
+            .m_axi_wstrb   (m_axi_wstrb   ), // output wire [3 : 0] m_axi_wstrb
+            .m_axi_wlast   (m_axi_wlast   ), // output wire m_axi_wlast
+            .m_axi_wvalid  (m_axi_wvalid  ), // output wire m_axi_wvalid
+            .m_axi_wready  (m_axi_wready  ), // input wire m_axi_wready
+            .m_axi_bresp   (m_axi_bresp   ), // input wire [1 : 0] m_axi_bresp
+            .m_axi_bvalid  (m_axi_bvalid  ), // input wire m_axi_bvalid
+            .m_axi_bready  (m_axi_bready  ), // output wire m_axi_bready
+            .m_axi_araddr  (m_axi_araddr  ), // output wire [31 : 0] m_axi_araddr
+            .m_axi_arlen   (m_axi_arlen   ), // output wire [7 : 0] m_axi_arlen
+            .m_axi_arsize  (m_axi_arsize  ), // output wire [2 : 0] m_axi_arsize
+            .m_axi_arburst (m_axi_arburst ), // output wire [1 : 0] m_axi_arburst
+            .m_axi_arlock  (m_axi_arlock  ), // output wire [0 : 0] m_axi_arlock
+            .m_axi_arcache (m_axi_arcache ), // output wire [3 : 0] m_axi_arcache
+            .m_axi_arprot  (m_axi_arprot  ), // output wire [2 : 0] m_axi_arprot
+            .m_axi_arregion(m_axi_arregion), // output wire [3 : 0] m_axi_arregion
+            .m_axi_arqos   (m_axi_arqos   ), // output wire [3 : 0] m_axi_arqos
+            .m_axi_arvalid (m_axi_arvalid ), // output wire m_axi_arvalid
+            .m_axi_arready (m_axi_arready ), // input wire m_axi_arready
+            .m_axi_rdata   (m_axi_rdata   ), // input wire [31 : 0] m_axi_rdata
+            .m_axi_rresp   (m_axi_rresp   ), // input wire [1 : 0] m_axi_rresp
+            .m_axi_rlast   (m_axi_rlast   ), // input wire m_axi_rlast
+            .m_axi_rvalid  (m_axi_rvalid  ), // input wire m_axi_rvalid
+            .m_axi_rready  (m_axi_rready  )  // output wire m_axi_rready
+        );
 
-  //   assign eth_mdio = phy_mdio_t ? phy_mdio_i : 1'bz;
-  //   assign phy_mdio_i = phy_mdio_t ? 1'b0 : eth_mdio;
+        xlnx_axi_ethernetlite i_xlnx_axi_ethernetlite (
+            .s_axi_aclk    ( clk_i             ),
+            .s_axi_aresetn ( rst_ni            ),
+            .ip2intc_irpt  ( irq_sources[2]    ),
+            .s_axi_awid    ( s_axi_eth_awid    ),
+            .s_axi_awaddr  ( s_axi_eth_awaddr  ),
+            .s_axi_awlen   ( s_axi_eth_awlen   ),
+            .s_axi_awsize  ( s_axi_eth_awsize  ),
+            .s_axi_awburst ( s_axi_eth_awburst ),
+            .s_axi_awcache ( s_axi_eth_awcache ),
+            .s_axi_awvalid ( s_axi_eth_awvalid ),
+            .s_axi_awready ( s_axi_eth_awready ),
+            .s_axi_wdata   ( s_axi_eth_wdata   ),
+            .s_axi_wstrb   ( s_axi_eth_wstrb   ),
+            .s_axi_wlast   ( s_axi_eth_wlast   ),
+            .s_axi_wvalid  ( s_axi_eth_wvalid  ),
+            .s_axi_wready  ( s_axi_eth_wready  ),
+            .s_axi_bid     ( s_axi_eth_bid     ),
+            .s_axi_bresp   ( s_axi_eth_bresp   ),
+            .s_axi_bvalid  ( s_axi_eth_bvalid  ),
+            .s_axi_bready  ( s_axi_eth_bready  ),
+            .s_axi_arid    ( s_axi_eth_arid    ),
+            .s_axi_araddr  ( s_axi_eth_araddr  ),
+            .s_axi_arlen   ( s_axi_eth_arlen   ),
+            .s_axi_arsize  ( s_axi_eth_arsize  ),
+            .s_axi_arburst ( s_axi_eth_arburst ),
+            .s_axi_arcache ( s_axi_eth_arcache ),
+            .s_axi_arvalid ( s_axi_eth_arvalid ),
+            .s_axi_arready ( s_axi_eth_arready ),
+            .s_axi_rid     ( s_axi_eth_rid     ),
+            .s_axi_rdata   ( s_axi_eth_rdata   ),
+            .s_axi_rresp   ( s_axi_eth_rresp   ),
+            .s_axi_rlast   ( s_axi_eth_rlast   ),
+            .s_axi_rvalid  ( s_axi_eth_rvalid  ),
+            .s_axi_rready  ( s_axi_eth_rready  ),
+            .phy_tx_clk    ( eth_txck          ),
+            .phy_rx_clk    ( eth_rxck          ),
+            .phy_crs       ( 1'b0              ),
+            .phy_dv        ( eth_rxctl         ),
+            .phy_rx_data   ( eth_rxd           ),
+            .phy_col       ( 1'b0              ),
+            .phy_rx_er     ( 1'b0              ),
+            .phy_rst_n     ( eth_rst_n         ),
+            .phy_tx_en     ( eth_tx_en         ),
+            .phy_tx_data   ( eth_txd           ),
+            .phy_mdio_i    ( mdio_i            ),
+            .phy_mdio_o    ( mdio_o            ),
+            .phy_mdio_t    ( mdio_t            ),
+            .phy_mdc       ( eth_mdc           )
+        );
+        IOBUF mdio_io_iobuf (.I (mdio_o), .IO(mdio), .O (mdio_i), .T (mdio_t));
+    end else begin
 
-  //   // active low
-  //   assign eth_int_b = 1'b1;
-  //   // set floating - power management event
-  //   assign eth_pme_b = 1'b1;
+    end
 
     // ---------------
     // SPI
