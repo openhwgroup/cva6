@@ -136,8 +136,8 @@ logic [63:0] debug_paddr [DCACHE_WBUF_DEPTH-1:0];
 
 assign miss_nc_o = nc_pending_q;
 
-assign addr_is_nc = (req_port_i.address_tag <  (CachedAddrBeg>>DCACHE_INDEX_WIDTH)) || 
-                    (req_port_i.address_tag >= (CachedAddrEnd>>DCACHE_INDEX_WIDTH)) || 
+assign addr_is_nc = (req_port_i.address_tag <  (CachedAddrBeg>>DCACHE_INDEX_WIDTH)) ||
+                    (req_port_i.address_tag >= (CachedAddrEnd>>DCACHE_INDEX_WIDTH)) ||
                     (!cache_en_i);
 
 assign miss_we_o       = 1'b1;
@@ -414,9 +414,9 @@ always_comb begin : p_buffer
                 if(~wbuffer_q[rtrn_ptr].dirty[k]) begin
                     wbuffer_d[rtrn_ptr].valid[k] = 1'b0;
 
-                    // NOTE: uncomment only for debugging.
-                    // this is not strictly needed, but makes it much easier to debug, since no invalid data remains in the buffer
-                    wbuffer_d[rtrn_ptr].data[k*8 +:8] = '0;
+                    // NOTE: this is not strictly needed, but makes it much
+                    // easier to debug, since no invalid data remains in the buffer
+                    // wbuffer_d[rtrn_ptr].data[k*8 +:8] = '0;
                 end
             end
         end
