@@ -89,7 +89,7 @@ l15_rtrn_t                      l15_rtrn;
 
 serpent_icache #(
 `ifdef AXI64_CACHE_PORTS
-    .AXI64BIT_COMPLIANT ( 1'b1          ),
+    .Axi64BitCompliant  ( 1'b1          ),
 `endif
     // use ID 0 for icache reads
     .RdTxId             ( 0             ),

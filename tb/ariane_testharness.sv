@@ -291,8 +291,8 @@ module ariane_testharness #(
         .test_en_i    ( test_en                                                     ),
         .slave        ( slave                                                       ),
         .master       ( master                                                      ),
-        .start_addr_i ( {64'h0,   64'h10000, 64'h2000000, CACHE_START_ADDR}         ),
-        .end_addr_i   ( {64'hFFF, 64'h1FFFF, 64'h2FFFFFF, CACHE_START_ADDR + 2**24} )
+        .start_addr_i ( {64'h0,   64'h10000, 64'h2000000, CachedAddrBeg}         ),
+        .end_addr_i   ( {64'hFFF, 64'h1FFFF, 64'h2FFFFFF, CachedAddrBeg + 2**24} )
     );
 
     // ---------------

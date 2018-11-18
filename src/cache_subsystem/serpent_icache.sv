@@ -107,8 +107,8 @@ module serpent_icache  #(
     assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH] : cl_tag_q;
 
     // noncacheable if request goes to I/O space, or if cache is disabled
-    assign paddr_is_nc = (cl_tag_d <  (CachedAddrBeg>>ICACHE_INDEX_WIDTH)) || 
-                         (cl_tag_d >= (CachedAddrEnd>>ICACHE_INDEX_WIDTH)) || 
+    assign paddr_is_nc = (cl_tag_d <  (CachedAddrBeg>>ICACHE_INDEX_WIDTH)) ||
+                         (cl_tag_d >= (CachedAddrEnd>>ICACHE_INDEX_WIDTH)) ||
                          (!cache_en_q);
 
     // pass exception through
