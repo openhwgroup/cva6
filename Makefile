@@ -76,7 +76,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(filter-out src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,    \
         $(wildcard src/fpu_div_sqrt_mvp/hdl/*.sv))                     \
         $(wildcard src/frontend/*.sv)                                  \
-        $(wildcard src/cache_subsystem/*.sv)                           \
+        $(filter-out src/cache_subsystem/std_no_dcache.sv,             \
+        $(wildcard src/cache_subsystem/*.sv))                          \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/clint/*.sv)                                     \
         $(wildcard fpga/src/apb_uart/src/*.vhd)                        \
