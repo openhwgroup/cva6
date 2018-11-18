@@ -119,9 +119,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/lfsr_8bit.sv                              \
         src/common_cells/src/lfsr_16bit.sv                             \
         src/common_cells/src/counter.sv                                \
-        src/common_cells/src/rstgen_bypass.sv                          \
         src/common_cells/src/pipe_reg_simple.sv                        \
-        src/common_cells/src/lfsr_8bit.sv                              \
         src/tech_cells_generic/src/cluster_clock_inverter.sv           \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                  \
         tb/ariane_testharness.sv                                       \
@@ -294,7 +292,7 @@ verilate_command := $(verilator)                                                
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
 	@echo "[Verilator] Building Model"
-	@$(verilate_command)
+	$(verilate_command)
 	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
 
 sim-verilator: verilate
