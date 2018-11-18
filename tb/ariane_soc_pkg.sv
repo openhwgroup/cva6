@@ -15,28 +15,18 @@ package ariane_soc;
     localparam NumTargets = 2;
     // Uart, SPI, Ethernet
     localparam NumSources = 3;
+    localparam PLICIdWidth = 3;
+    localparam ParameterBitwidth = PLICIdWidth;
 
     typedef enum int unsigned {
-`ifdef INCL_SRAM
         DRAM     = 0,
-        SRAM     = 1,
-        ETHERNET = 2,
-        SPI      = 3,
-        UART     = 4,
-        PLIC     = 5,
-        CLINT    = 6,
-        ROM      = 7,
-        Debug    = 8
-`else
-        DRAM     = 0,
-        ETHERNET = 1
+        Ethernet = 1,
         SPI      = 2,
         UART     = 3,
         PLIC     = 4,
         CLINT    = 5,
         ROM      = 6,
         Debug    = 7
-`endif
     } axi_slaves_t;
 
     localparam NB_PERIPHERALS = Debug + 1;
@@ -46,7 +36,7 @@ package ariane_soc;
     localparam logic[63:0] CLINTLength    = 64'hC0000;
     localparam logic[63:0] PLICLength     = 64'h3FF_FFFF;
     localparam logic[63:0] UARTLength     = 64'h1000;
-    localparam logic[63:0] SPILength      = 64'h1000;
+    localparam logic[63:0] SPILength      = 64'h800000;
     localparam logic[63:0] EthernetLength = 64'h10000;
     localparam logic[63:0] SRAMLength     = 64'h1800000;  // 24 MByte of SRAM
     localparam logic[63:0] DRAMLength     = 64'h80000000; // 2 GByte of DDR
@@ -61,13 +51,7 @@ package ariane_soc;
         UARTBase     = 64'h1000_0000,
         SPIBase      = 64'h2000_0000,
         EthernetBase = 64'h3000_0000,
-`ifdef INCL_SRAM
-        // let the memory appear contigouse
-        SRAMBase     = 64'h8000_0000,
-        DRAMBase     = 64'h8000_0000 + SRAMLength
-`else
         DRAMBase     = 64'h8000_0000
-`endif
     } soc_bus_start_t;
 
 endpackage

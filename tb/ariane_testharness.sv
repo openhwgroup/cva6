@@ -15,7 +15,7 @@
 
 module ariane_testharness #(
     parameter logic [63:0] CACHE_START_ADDR  = 64'h8000_0000, // address on which to decide whether the request is cache-able or not
-    parameter int unsigned AXI_ID_WIDTH      = 2,
+    parameter int unsigned AXI_ID_WIDTH      = 4,
     parameter int unsigned AXI_USER_WIDTH    = 1,
     parameter int unsigned AXI_ADDRESS_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH    = 64,
@@ -413,16 +413,15 @@ module ariane_testharness #(
     // ---------------
     // AXI Xbar
     // ---------------
-    axi_node_wrap_with_slices #(
-        // three ports from Ariane (instruction, data and bypass)
+    axi_node_intf_wrap #(
         .NB_SLAVE           ( NB_SLAVE                   ),
         .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
         .AXI_ADDR_WIDTH     ( AXI_ADDRESS_WIDTH          ),
         .AXI_DATA_WIDTH     ( AXI_DATA_WIDTH             ),
         .AXI_USER_WIDTH     ( AXI_USER_WIDTH             ),
-        .AXI_ID_WIDTH       ( AXI_ID_WIDTH               ),
-        .MASTER_SLICE_DEPTH ( 2                          ),
-        .SLAVE_SLICE_DEPTH  ( 2                          )
+        .AXI_ID_WIDTH       ( AXI_ID_WIDTH               )
+        // .MASTER_SLICE_DEPTH ( 0                          ),
+        // .SLAVE_SLICE_DEPTH  ( 0                          )
     ) i_axi_xbar (
         .clk          ( clk_i      ),
         .rst_n        ( ndmreset_n ),
@@ -436,16 +435,18 @@ module ariane_testharness #(
             ariane_soc::PLICBase,
             ariane_soc::UARTBase,
             ariane_soc::SPIBase,
+            ariane_soc::EthernetBase,
             ariane_soc::DRAMBase
         }),
         .end_addr_i   ({
-            ariane_soc::DebugBase + ariane_soc::DebugLength,
-            ariane_soc::ROMBase   + ariane_soc::ROMLength,
-            ariane_soc::CLINTBase + ariane_soc::CLINTLength,
-            ariane_soc::PLICBase  + ariane_soc::PLICLength,
-            ariane_soc::UARTBase  + ariane_soc::UARTLength,
-            ariane_soc::SPIBase   + ariane_soc::SPILength,
-            ariane_soc::DRAMBase  + ariane_soc::DRAMLength
+            ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
+            ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
+            ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
+            ariane_soc::PLICBase     + ariane_soc::PLICLength - 1,
+            ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
+            ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
+            ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
+            ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
         })
     );
 
@@ -479,16 +480,31 @@ module ariane_testharness #(
     ariane_peripherals #(
       .AxiAddrWidth ( AXI_ADDRESS_WIDTH   ),
       .AxiDataWidth ( AXI_DATA_WIDTH      ),
-      .AxiIdWidth   ( AXI_ID_WIDTH_SLAVES )
+      .AxiIdWidth   ( AXI_ID_WIDTH_SLAVES ),
+      .InclUART     ( 1'b0                ),
+      .InclSPI      ( 1'b0                ),
+      .InclEthernet ( 1'b0                )
     ) i_ariane_peripherals (
-      .clk_i     ( clk_i                    ),
-      .rst_ni    ( ndmreset_n               ),
-      .plic      ( master[ariane_soc::PLIC] ),
-      .uart      ( master[ariane_soc::UART] ),
-      .spi       ( master[ariane_soc::SPI]  ),
-      .irq_o     ( irqs                     ),
-      .rx_i      ( rx                       ),
-      .tx_o      ( tx                       ),
+      .clk_i     ( clk_i                        ),
+      .rst_ni    ( ndmreset_n                   ),
+      .plic      ( master[ariane_soc::PLIC]     ),
+      .uart      ( master[ariane_soc::UART]     ),
+      .spi       ( master[ariane_soc::SPI]      ),
+      .ethernet  ( master[ariane_soc::Ethernet] ),
+      .irq_o     ( irqs                         ),
+      .rx_i      ( rx                           ),
+      .tx_o      ( tx                           ),
+      .eth_txck  ( ),
+      .eth_rxck  ( ),
+      .eth_rxctl ( ),
+      .eth_rxd   ( ),
+      .eth_rst_n ( ),
+      .eth_tx_en ( ),
+      .eth_txd   ( ),
+      .phy_mdio  ( ),
+      .eth_mdc   ( ),
+      .mdio      ( ),
+      .mdc       ( ),
       .spi_clk_o ( ),
       .spi_mosi  ( ),
       .spi_miso  ( ),
@@ -506,20 +522,18 @@ module ariane_testharness #(
     ariane #(
         .CACHE_START_ADDR     ( CACHE_START_ADDR )
     ) i_ariane (
-        .clk_i                ( clk_i            ),
-        .rst_ni               ( ndmreset_n       ),
-        .boot_addr_i          ( 64'h10000        ), // start fetching from ROM
-        .hart_id_i            ( '0               ),
-        .irq_i                ( irqs             ), // we do not specify other interrupts in this TB
-        .ipi_i                ( ipi              ),
-        .time_irq_i           ( timer_irq        ),
-        .debug_req_i          ( debug_req_core   ),
-        .axi_req_o            ( axi_ariane_req   ),
-        .axi_resp_i           ( axi_ariane_resp  )
+        .clk_i                ( clk_i               ),
+        .rst_ni               ( ndmreset_n          ),
+        .boot_addr_i          ( ariane_soc::ROMBase ), // start fetching from ROM
+        .hart_id_i            ( '0                  ),
+        .irq_i                ( irqs                ),
+        .ipi_i                ( ipi                 ),
+        .time_irq_i           ( timer_irq           ),
+        .debug_req_i          ( debug_req_core      ),
+        .axi_req_o            ( axi_ariane_req      ),
+        .axi_resp_i           ( axi_ariane_resp     )
     );
 
     axi_connect i_axi_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
 
-
 endmodule
-

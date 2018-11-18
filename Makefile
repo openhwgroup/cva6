@@ -294,7 +294,7 @@ verilate_command := $(verilator)                                                
 verilate:
 	@echo "[Verilator] Building Model"
 	@$(verilate_command)
-	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk > /dev/zero
+	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
 
 sim-verilator: verilate
 	$(ver-library)/Variane_testharness $(elf-bin)

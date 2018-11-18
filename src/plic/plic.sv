@@ -28,19 +28,19 @@
 //-------------------------------------------------------------------------------
 
 module plic #(
-    parameter int ADDR_WIDTH         = -1,   //width of external address bus
-    parameter int DATA_WIDTH         = -1,   //width of external data bus
-    parameter int ID_BITWIDTH        = -1,   //width of the gateway identifiers
-    parameter int PARAMETER_BITWIDTH = -1,   //width of the internal parameter e.g. priorities
-    parameter int NUM_TARGETS        = -1,   //number of target slices
-    parameter int NUM_SOURCES        = -1    //number of sources = number of gateways
-)(
+    parameter int ID_BITWIDTH        = -1,   // width of the gateway identifiers
+    parameter int PARAMETER_BITWIDTH = -1,   // width of the internal parameter e.g. priorities
+    parameter int NUM_TARGETS        = -1,   // number of target slices
+    parameter int NUM_SOURCES        = -1    // number of sources = number of gateways
+) (
     input  logic                   clk_i,
     input  logic                   rst_ni,
     input  logic [NUM_SOURCES-1:0] irq_sources_i,
     output logic [NUM_TARGETS-1:0] eip_targets_o,
     REG_BUS.in                     external_bus_io
 );
+    localparam int ADDR_WIDTH         = 32;
+    localparam int DATA_WIDTH         = 32;
     // declare all local variables
     // gateway arrays always go from NUM_SOURCES to 1 because gateway ids start at 1
     logic                          gateway_irq_pendings    [NUM_SOURCES];               //for pending irqs of the gateways

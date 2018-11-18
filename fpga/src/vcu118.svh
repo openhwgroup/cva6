@@ -12,4 +12,3 @@
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 `define VCU118
-`define FPGA_TARGET_XILINX

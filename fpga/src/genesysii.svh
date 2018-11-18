@@ -12,4 +12,3 @@
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 `define GENESYSII
-`define FPGA_TARGET_XILINX
