@@ -172,15 +172,16 @@ module mmu #(
         iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
                                                  || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
-        // check that the upper-most bits (63-39) are the same, otherwise throw a page fault exception...
-        if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[63:39]) == 1'b1 || (|icache_areq_i.fetch_vaddr[63:39]) == 1'b0)) begin
-            icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, icache_areq_i.fetch_vaddr, 1'b1};
-        end
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
         // an error.
         if (enable_translation_i) begin
+            // we work with SV39, so if VM is enabled, check that all bits [63:38] are equal
+            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[63:38]) == 1'b1 || (|icache_areq_i.fetch_vaddr[63:38]) == 1'b0)) begin
+                icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, icache_areq_i.fetch_vaddr, 1'b1};
+            end
+
             icache_areq_o.fetch_valid = 1'b0;
 
             // 4K page
