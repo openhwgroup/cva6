@@ -1,48 +1,93 @@
-set outputDir work-fpga
-file mkdir $outputDir
+# Copyright 2018 ETH Zurich and University of Bologna.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# Read sources
+# Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+
+set project ariane
+
+create_project $project . -force -part $::env(XILINX_PART)
+set_property board_part $::env(XILINX_BOARD) [current_project]
+
+# set number of threads to 8 (maximum, unfortunately)
+set_param general.maxThreads 8
+
+
+# hard-coded to Genesys 2 for the moment
+add_files -fileset constrs_1 -norecurse constraints/genesys-2.xdc
+
+read_ip xilinx/xlnx_mig_7_ddr3/ip/xlnx_mig_7_ddr3.xci
+read_ip xilinx/xlnx_axi_clock_converter/ip/xlnx_axi_clock_converter.xci
+read_ip xilinx/xlnx_axi_dwidth_converter/ip/xlnx_axi_dwidth_converter.xci
+read_ip xilinx/xlnx_axi_ethernetlite/ip/xlnx_axi_ethernetlite.xci
+read_ip xilinx/xlnx_axi_quad_spi/ip/xlnx_axi_quad_spi.xci
+read_ip xilinx/xlnx_clk_gen/ip/xlnx_clk_gen.xci
 
 source scripts/add_sources.tcl
 
-read_xdc constraints/ariane.xdc
-read_xdc constraints/genesys-2.xdc
+set_property top ariane_xilinx [current_fileset]
 
-read_ip /scratch/zarubaf/ariane/fpga/xilinx/ariane_axi_clock_converter.xci
-# read_ip ariane.srcs/sources_1/ip/axi_dwidth_converter_0/axi_dwidth_converter_0.xci
-# read_ip ariane.srcs/sources_1/ip/axi_protocol_checker_0/axi_protocol_checker_0.xci
-# read_ip ariane.srcs/sources_1/ip/axi_protocol_converter_0/axi_protocol_converter_0.xci
-# read_ip ariane.srcs/sources_1/ip/axi_uartlite_1/axi_uartlite_1.xci
-# read_ip ariane.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.xci
-# read_ip ariane.srcs/sources_1/ip/mig_7series_0/mig_7series_0.xci
+if {$board eq "genesys2"} {
+    read_verilog -sv {src/genesysii.svh}
+    set file "src/genesysii.svh"
+} else {
+    exit 1
+}
 
-# Synthesis
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
+set_property -dict { file_type {Verilog Header} is_global_include 1} -objects $file_obj
 
-# synth_design -top ariane_xilinx -part xc7k325tffg900-2 -flatten rebuilt -verilog_define FPGA_TARGET_XILINX=1
-# write_checkpoint -force $outputDir/post_synth
-# report_timing_summary -file $outputDir/post_synth_timing_summary.rpt
-# report_power -file $outputDir/post_synth_power.rpt
+update_compile_order -fileset sources_1
+update_compile_order -fileset sim_1
 
-# # Implementation
+add_files -fileset constrs_1 -norecurse constraints/$project.xdc
 
-# opt_design
-# power_opt_design
-# place_design
-# phys_opt_design
-# write_checkpoint -force $outputDir/post_place
-# report_timing_summary -file $outputDir/post_place_timing_summary.rpt
+# synth_design -retiming -rtl -name rtl_1 -verilog_define SYNTHESIS -verilog_define
+synth_design -rtl -name rtl_1
 
-# route_design
-# write_checkpoint -force $outputDir/post_route
+launch_runs synth_1
+wait_on_run synth_1
+open_run synth_1
 
-# report_timing_summary -file $outputDir/post_route_timing_summary.rpt
-# report_timing -sort_by group -max_paths 100 -path_type summary -file $outputDir/post_route_timing.rpt
-# report_clock_utilization -file $outputDir/clock_util.rpt
-# report_utilization -file $outputDir/post_route_util.rpt
-# report_power -file $outputDir/post_route_power.rpt
-# report_drc -file $outputDir/post_imp_drc.rpt
+exec mkdir -p reports/
+exec rm -rf reports/*
 
-# write_verilog -force $outputDir/ariane.v
-# # write_xdc -no_fixed_only -force $outputDir/bft_impl.xdc
+check_timing                                                            -file reports/$project.check_timing.rpt
+report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack -file reports/$project.timing_WORST_100.rpt
+report_timing -nworst 1 -delay_type max -sort_by group                  -file reports/$project.timing.rpt
+report_utilization -hierarchical                                        -file reports/$project.utilization.rpt
+report_cdc                                                              -file reports/$project.cdc.rpt
+report_clock_interaction                                                -file reports/$project.clock_interaction.rpt
 
-# write_bitstream -force $outputDir/ariane.bit
+# set for RuntimeOptimized implementation
+set_property "steps.place_design.args.directive" "RuntimeOptimized" [get_runs impl_1]
+set_property "steps.route_design.args.directive" "RuntimeOptimized" [get_runs impl_1]
+
+launch_runs impl_1
+wait_on_run impl_1
+launch_runs impl_1 -to_step write_bitstream
+wait_on_run impl_1
+open_run impl_1
+
+# output Verilog netlist + SDC for timing simulation
+write_verilog -force -mode funcsim work-fpga/$project_funcsim.v
+write_verilog -force -mode timesim work-fpga/$project_timesim.v
+write_sdf     -force work-fpga/$project_timesim.sdf
+
+# reports
+exec mkdir -p reports/
+exec rm -rf reports/*
+check_timing                                                              -file reports/$project.check_timing.rpt
+report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack   -file reports/$project.timing_WORST_100.rpt
+report_timing -nworst 1 -delay_type max -sort_by group                    -file reports/$project.timing.rpt
+report_utilization -hierarchical                                          -file reports/$project.utilization.rpt

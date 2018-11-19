@@ -80,7 +80,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/cache_subsystem/*.sv))                          \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/clint/*.sv)                                     \
-        $(wildcard fpga/src/apb_uart/src/*.vhd)                        \
         $(wildcard fpga/src/axi2apb/src/*.sv)                          \
         $(wildcard fpga/src/axi_slice/src/*.sv)                        \
         $(wildcard src/plic/*.sv)                                      \
@@ -89,7 +88,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
         $(wildcard src/debug/debug_rom/*.sv)                           \
         src/register_interface/src/apb_to_reg.sv                       \
-        fpga/src/ariane_peripherals.sv                                 \
         src/axi/src/axi_multicut.sv                                    \
         src/fpu/src/fpnew.vhd                                          \
         src/fpu/src/fpnew_top.vhd                                      \
@@ -123,10 +121,15 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/tech_cells_generic/src/cluster_clock_inverter.sv           \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                  \
         tb/ariane_testharness.sv                                       \
+        tb/ariane_peripherals.sv                                       \
         tb/common/uart.sv                                              \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv
+
 src := $(addprefix $(root-dir), $(src))
+
+uart_src := $(wildcard fpga/src/apb_uart/src/*.vhd)
+uart_src := $(addprefix $(root-dir), $(uart_src))
 
 fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv)
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
@@ -192,11 +195,12 @@ build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ari
 	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
 # src files
-$(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library)
+$(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library) $(uart_src)
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(ariane_pkg)) $(list_incdir) -suppress 2583
 	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(ariane_pkg))
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
+	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(uart_src))
 	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(src))
 	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(filter %.sv,$(src)) $(list_incdir) -suppress 2583
 	touch $(library)/.build-srcs
@@ -367,12 +371,15 @@ check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
-fpga: $(ariane_pkg) $(util) $(src) $(fpga_src)
+fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(util) $(uart_src)
 	@echo "[FPGA] Generate sources"
-	@echo read_verilog -sv {$(ariane_pkg)} > fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(util)}      >> fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(src)} 	  >> fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(fpga_src)}  >> fpga/scripts/add_sources.tcl
+	@echo read_vhdl        {$(uart_src)}   > fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(util)}       >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(src)} 	   >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
+	@echo "[FPGA] Generate Bitstream"
+	cd fpga && make
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*

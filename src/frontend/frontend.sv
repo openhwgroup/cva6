@@ -112,26 +112,11 @@ module frontend (
         instruction_valid = icache_valid_q;
 
         // 32-bit can contain 2 instructions
-        if (FETCH_WIDTH == 32) begin
-            instr[0] = icache_data_q;
-            addr[0]  = icache_vaddr_q;
+        instr[0] = icache_data_q;
+        addr[0]  = icache_vaddr_q;
 
-            instr[1] = '0;
-            addr[1]  = {icache_vaddr_q[63:2], 2'b10};
-        // with 64-bit we can fetch up to 4 instructions/cycle
-        end else if (FETCH_WIDTH == 64) begin
-            instr[0] = icache_data_q;
-            addr[0]  = icache_vaddr_q;
-
-            instr[1] = '0;
-            addr[1]  = {icache_vaddr_q[63:3], 3'b010};
-
-            instr[2] = '0;
-            addr[2]  = {icache_vaddr_q[63:3], 3'b100};
-
-            instr[3] = '0;
-            addr[3]  = {icache_vaddr_q[63:3], 3'b110};
-        end
+        instr[1] = '0;
+        addr[1]  = {icache_vaddr_q[63:2], 2'b10};
 
         if (icache_valid_q) begin
             // last instruction was unaligned
@@ -139,117 +124,37 @@ module frontend (
                 instr[0] = {icache_data_q[15:0], unaligned_instr_q};
                 addr[0] = unaligned_address_q;
 
-                if (FETCH_WIDTH == 32) begin
-                    unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
-                    unaligned_instr_d = icache_data_q[31:16]; // save the upper bits for next cycle
-                end else if (FETCH_WIDTH == 64) begin
-                    unaligned_address_d = {icache_vaddr_q[63:3], 3'b110};
-                    unaligned_instr_d = icache_data_q[63:48]; // save the upper bits for next cycle
-                end
+                unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
+                unaligned_instr_d = icache_data_q[31:16]; // save the upper bits for next cycle
+
                 // check if this is instruction is still unaligned e.g.: it is not compressed
                 // if its compressed re-set unaligned flag
-                if (FETCH_WIDTH == 32) begin
-                    // for 32 bit we can simply check the next instruction and whether it is compressed or not
-                    // if it is compressed the next fetch will contain an aligned instruction
-                    if (instr_is_compressed[1]) begin
-                        unaligned_d = 1'b0;
-                        instr[1] = {16'b0, icache_data_q[31:16]};
-                    end
-                end else if (FETCH_WIDTH === 64) begin
-                    // for 64 bit there exist the following options:
-                    //     64      32      0
-                    // |   I   |   I   |   U   | -> again unaligned
-                    // | * | C |   I   |   U   | -> aligned
-                    // | * |   I   | C |   U   | -> aligned
-                    // |   I   | C | C |   U   | -> again unaligned
-                    // | * | C | C | C |   U   | -> aligned
-                    // Legend: C = compressed, I = 32 bit instruction, U = unaligned upper half
-                    //         * = don't care
-                    if (instr_is_compressed[1]) begin
-                        instr[1] = {16'b0, icache_data_q[31:16]};
-                        if (instr_is_compressed[2]) begin
-                            if (instr_is_compressed[3]) begin
-                                unaligned_d = 1'b0;
-                                instr[3] = {16'b0, icache_data_q[63:48]};
-                            end else begin
-                                // continues to be unaligned
-                            end
-                        end else begin
-                            unaligned_d = 1'b0;
-                            instr[2] = icache_data_q[63:32];
-                        end
-                    // instruction 1 is not compressed
-                    end else begin
-                        instr[1] = icache_data_q[47:16];
-                        if (instr_is_compressed[2]) begin
-                            unaligned_d = 1'b0;
-                            instr[2] = icache_data_q[63:48];
-                        end else begin
-                            // continues to be unaligned
-                        end
-                    end
+                // for 32 bit we can simply check the next instruction and whether it is compressed or not
+                // if it is compressed the next fetch will contain an aligned instruction
+                if (instr_is_compressed[1]) begin
+                    unaligned_d = 1'b0;
+                    instr[1] = {16'b0, icache_data_q[31:16]};
                 end
             end else if (instr_is_compressed[0]) begin // instruction zero is RVC
-                if (FETCH_WIDTH == 32) begin
-                    // is instruction 1 also compressed
-                    // yes? -> no problem, no -> we've got an unaligned instruction
-                    if (instr_is_compressed[1]) begin
-                        instr[1] = {16'b0, icache_data_q[31:16]};
-                    end else begin
-                        unaligned_instr_d = icache_data_q[31:16];
-                        unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
-                        unaligned_d = 1'b1;
-                    end
-                end else if (FETCH_WIDTH == 64) begin
-                    //     64     32       0
-                    // |   I   |   I   | C | -> again unaligned
-                    // | * | C |   I   | C | -> aligned
-                    // | * |   I   | C | C | -> aligned
-                    // |   I   | C | C | C | -> again unaligned
-                    // | * | C | C | C | C | -> aligned
-                    if (instr_is_compressed[1]) begin
-                        instr[1] = {16'b0, icache_data_q[31:16]};
-                        if (instr_is_compressed[2]) begin
-                            if (instr_is_compressed[3]) begin
-                                unaligned_d = 1'b0;
-                                instr[3] = {16'b0, icache_data_q[63:48]};
-                            end else begin
-                                // continues to be unaligned
-                            end
-                        end else begin
-                            unaligned_d = 1'b0;
-                            instr[2] = icache_data_q[63:32];
-                        end
-                    // instruction 1 is not compressed
-                    end else begin
-                        instr[1] = icache_data_q[47:16];
-                        if (instr_is_compressed[2]) begin
-                            unaligned_d = 1'b0;
-                            instr[2] = icache_data_q[63:48];
-                        end else begin
-                            // continues to be unaligned
-                        end
-                    end
+                // is instruction 1 also compressed
+                // yes? -> no problem, no -> we've got an unaligned instruction
+                if (instr_is_compressed[1]) begin
+                    instr[1] = {16'b0, icache_data_q[31:16]};
+                end else begin
+                    unaligned_instr_d = icache_data_q[31:16];
+                    unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
+                    unaligned_d = 1'b1;
                 end
             end // else -> normal fetch
         end
 
         // we started to fetch on a unaligned boundary with a whole instruction -> wait until we've
         // received the next instruction
-        if (FETCH_WIDTH == 32) begin
-            if (icache_valid_q && icache_vaddr_q[1] && !instr_is_compressed[1]) begin
-                instruction_valid = 1'b0;
-                unaligned_d = 1'b1;
-                unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
-                unaligned_instr_d = icache_data_q[31:16];
-            end
-        end else if (FETCH_WIDTH == 64) begin
-            if (icache_valid_q && icache_vaddr_q[2] && icache_vaddr_q[1] && !instr_is_compressed[3]) begin
-                instruction_valid = 1'b0;
-                unaligned_d = 1'b1;
-                unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
-                unaligned_instr_d = icache_data_q[31:16];
-            end
+        if (icache_valid_q && icache_vaddr_q[1] && !instr_is_compressed[1]) begin
+            instruction_valid = 1'b0;
+            unaligned_d = 1'b1;
+            unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
+            unaligned_instr_d = icache_data_q[31:16];
         end
 
         // if we killed the consecutive fetch we are starting on a clean slate
@@ -337,19 +242,8 @@ module frontend (
                     end
 
                     // we are not interested in the lower instruction
-                    if (FETCH_WIDTH == 32) begin
-                        if (icache_vaddr_q[1]) begin
-                            taken[1] = 1'b0;
-                            // TODO(zarubaf): that seems to be overly pessimistic
-                            ras_pop = 1'b0;
-                            ras_push = 1'b0;
-                        end
-                    end else if (FETCH_WIDTH == 64) begin
-                        case (icache_vaddr_q[2:1])
-                            3'b010: taken[1] = 0;
-                            3'b100: taken[2] = 0;
-                            3'b110: taken[3] = 0;
-                        endcase
+                    if (icache_vaddr_q[1]) begin
+                        taken[1] = 1'b0;
                         // TODO(zarubaf): that seems to be overly pessimistic
                         ras_pop = 1'b0;
                         ras_push = 1'b0;
@@ -427,7 +321,7 @@ module frontend (
         // 0. Default assignment
         // -------------------------------
         if (if_ready) begin
-            npc_d = {fetch_address[63:2], 2'b0}  + ((FETCH_WIDTH == 64) ? 'h8 : 'h4);
+            npc_d = {fetch_address[63:2], 2'b0}  + 'h4;
         end
         // -------------------------------
         // 2. Control flow change request
@@ -499,7 +393,7 @@ module frontend (
          else $fatal("[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
     initial begin
         assert (FETCH_FIFO_DEPTH <= 8) else $fatal("[frontend] fetch fifo deeper than 8 not supported");
-        assert (FETCH_WIDTH == 32 || FETCH_WIDTH == 64) else $fatal("[frontend] fetch width != not supported");
+        assert (FETCH_WIDTH == 32) else $fatal("[frontend] fetch width != not supported");
     end
 `endif
 //pragma translate_on

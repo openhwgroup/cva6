@@ -1,5 +1,7 @@
 .*
 !.gitignore
+/reports
+scripts/add_sources.tcl
 vivado*
 *.cache
 *.hw
@@ -8,3 +10,4 @@ vivado*
 *.runs
 *.srcs
 *.xpr
+*.mif

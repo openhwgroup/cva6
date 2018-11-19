@@ -25,15 +25,15 @@ module tag_cmp #(
     input  logic                                          clk_i,
     input  logic                                          rst_ni,
 
-    input  logic    [NR_PORTS-1:0][DCACHE_SET_ASSOC-1:0]   req_i,
-    output logic    [NR_PORTS-1:0]                         gnt_o,
-    input  logic    [NR_PORTS-1:0][ADDR_WIDTH-1:0]         addr_i,
-    input  l_data_t [NR_PORTS-1:0]                         wdata_i,
-    input  logic    [NR_PORTS-1:0]                         we_i,
-    input  l_be_t   [NR_PORTS-1:0]                         be_i,
-    output l_data_t               [DCACHE_SET_ASSOC-1:0]   rdata_o,
-    input  logic    [NR_PORTS-1:0][DCACHE_TAG_WIDTH-1:0]   tag_i, // tag in - comes one cycle later
-    output logic                  [DCACHE_SET_ASSOC-1:0]   hit_way_o, // we've got a hit on the corresponding way
+    input  logic    [NR_PORTS-1:0][DCACHE_SET_ASSOC-1:0]             req_i,
+    output logic    [NR_PORTS-1:0]                                   gnt_o,
+    input  logic    [NR_PORTS-1:0][ADDR_WIDTH-1:0]                   addr_i,
+    input  l_data_t [NR_PORTS-1:0]                                   wdata_i,
+    input  logic    [NR_PORTS-1:0]                                   we_i,
+    input  l_be_t   [NR_PORTS-1:0]                                   be_i,
+    output l_data_t               [DCACHE_SET_ASSOC-1:0]             rdata_o,
+    input  logic    [NR_PORTS-1:0][ariane_pkg::DCACHE_TAG_WIDTH-1:0] tag_i, // tag in - comes one cycle later
+    output logic                  [DCACHE_SET_ASSOC-1:0]             hit_way_o, // we've got a hit on the corresponding way
 
 
     output logic                  [DCACHE_SET_ASSOC-1:0]   req_o,
@@ -47,7 +47,7 @@ module tag_cmp #(
     assign rdata_o = rdata_i;
     // one hot encoded
     logic [NR_PORTS-1:0] id_d, id_q;
-    logic [DCACHE_TAG_WIDTH-1:0] sel_tag;
+    logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] sel_tag;
 
     always_comb begin : tag_sel
         sel_tag = '0;

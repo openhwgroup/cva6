@@ -36,10 +36,8 @@ module ariane_xilinx (
   output wire          eth_rst_n   ,
   output wire          eth_tx_en   ,
   output wire [3:0]    eth_txd     ,
-  inout  wire          phy_mdio    ,
+  inout  wire          eth_mdio    ,
   output logic         eth_mdc     ,
-  inout                mdio        ,
-  output               mdc         ,
   output logic [ 7:0]  led         ,
   input  logic [ 7:0]  sw          ,
   output logic         fan_pwm     ,
@@ -275,9 +273,7 @@ ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
-    .CACHE_START_ADDR ( CacheStartAddr   ),
-    .AXI_ID_WIDTH     ( AxiIdWidthMaster ),
-    .AXI_USER_WIDTH   ( AxiUserWidth     )
+    .CACHE_START_ADDR ( CacheStartAddr   )
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),
@@ -379,10 +375,8 @@ ariane_peripherals #(
     .eth_rst_n,
     .eth_tx_en,
     .eth_txd,
-    .phy_mdio,
+    .eth_mdio,
     .eth_mdc,
-    .mdio,
-    .mdc,
     .spi_clk_o    ( spi_clk_o                    ),
     .spi_mosi     ( spi_mosi                     ),
     .spi_miso     ( spi_miso                     ),
@@ -548,7 +542,7 @@ ariane_leds i_ariane_leds (
   .commit_valid_i ( '0           )
 );
 
-mig_7series_0 i_ddr (
+xlnx_mig_7_ddr3 i_ddr (
     .sys_clk_p,
     .sys_clk_n,
     .ddr3_dq,

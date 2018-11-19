@@ -87,16 +87,14 @@ $ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  b
 
 ## FPGA Emulation
 
-We currently provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual).
-
-During Synthesis set the following tick defines need to be set:
+We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). Tested on Vivado 2018.2.
 
 ```
-FPGA_TARGET_XILINX
-GENESYSII
+$ source fpga/sourceme.sh
+$ make fpga
 ```
 
-TBD: FPGA flow
+TODO(zarubaf): Add further TODOS and simplify flow
 
 Default baudrate is `115200`:
 ```

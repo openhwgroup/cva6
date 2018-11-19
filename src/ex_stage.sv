@@ -215,7 +215,7 @@ module ex_stage (
     generate
         if (FP_PRESENT) begin : fpu_gen
             fu_data_t fpu_data;
-            assign fpu_data.operator  = fpu_valid_i ? fu_data_i  : '0;
+            assign fpu_data  = fpu_valid_i ? fu_data_i  : '0;
 
             fpu_wrap fpu_i (
                 .clk_i,
