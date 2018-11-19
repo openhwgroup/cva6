@@ -29,7 +29,7 @@ module serpent_peripherals #(
     parameter int unsigned DataWidth      = 64,
     parameter int unsigned NumHarts       =  1,
     parameter int unsigned NumSources     =  1,
-    parameter bit          SwapEndianess  =  0// set this to 1 for OpenPiton
+    parameter bit          SwapEndianess  =  0
 ) (
     input                               clk_i,
     input                               rst_ni,
@@ -160,7 +160,7 @@ module serpent_peripherals #(
     .SWAP_ENDIANESS         ( SwapEndianess )
   ) i_debug_axilite_bridge (
     .clk                    ( clk_i                         ),
-    .rst                    ( ~rst_n                        ),
+    .rst                    ( ~rst_ni                       ),
     // to/from NOC
     .splitter_bridge_val    ( buf_ariane_debug_noc2_valid_i ),
     .splitter_bridge_data   ( buf_ariane_debug_noc2_data_i  ),
@@ -244,7 +244,7 @@ module serpent_peripherals #(
     .AXI_USER_WIDTH ( AxiUserWidth  )
   ) i_axi2rom (
     .clk_i                ,
-    .rst_ni ( ndmreset_n ),
+    .rst_ni               ,
     .slave  ( br_master  ),
     .req_o  ( rom_req    ),
     .we_o   (            ),
@@ -266,7 +266,7 @@ module serpent_peripherals #(
     .SWAP_ENDIANESS         ( SwapEndianess )
   ) i_bootrom_axilite_bridge (
     .clk                    ( clk_i                           ),
-    .rst                    ( ~rst_n                          ),
+    .rst                    ( ~rst_ni                         ),
     // to/from NOC
     .splitter_bridge_val    ( buf_ariane_bootrom_noc2_valid_i ),
     .splitter_bridge_data   ( buf_ariane_bootrom_noc2_data_i  ),
@@ -351,7 +351,7 @@ module serpent_peripherals #(
     .SWAP_ENDIANESS         ( SwapEndianess )
   ) i_clint_axilite_bridge (
     .clk                    ( clk_i                         ),
-    .rst                    ( ~rst_n                        ),
+    .rst                    ( ~rst_ni                       ),
     // to/from NOC
     .splitter_bridge_val    ( buf_ariane_clint_noc2_valid_i ),
     .splitter_bridge_data   ( buf_ariane_clint_noc2_data_i  ),
@@ -432,7 +432,7 @@ module serpent_peripherals #(
   //  .SWAP_ENDIANESS         ( SwapEndianess )
   // ) i_plic_axilite_bridge (
   //   .clk                    ( clk_i                        ),
-  //   .rst                    ( ~rst_n                       ),
+  //   .rst                    ( ~rst_ni                      ),
   //   // to/from NOC
   //   .splitter_bridge_val    ( buf_ariane_plic_noc2_valid_i ),
   //   .splitter_bridge_data   ( buf_ariane_plic_noc2_data_i  ),
