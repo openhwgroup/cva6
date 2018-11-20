@@ -8,7 +8,9 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Xilinx FPGA top-level
+// Description: Xilinx FPGA top-level
+// Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+
 module ariane_xilinx (
 `ifdef GENESYSII
   input  logic         sys_clk_p   ,
@@ -101,13 +103,6 @@ AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidthMaster ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) slave[NBSlave-1:0]();
-
-AXI_BUS #(
-    .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
-    .AXI_DATA_WIDTH ( AxiDataWidth     ),
-    .AXI_ID_WIDTH   ( AxiIdWidthMaster ),
-    .AXI_USER_WIDTH ( AxiUserWidth     )
-) dummy_slave();
 
 AXI_BUS #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
@@ -220,6 +215,7 @@ dmi_jtag i_dmi_jtag (
     .clk_i                ( clk                  ),
     .rst_ni               ( rst_n                ),
     .dmi_rst_no           (                      ), // keep open
+    .testmode_i           ( test_en              ),
     .dmi_req_valid_o      ( debug_req_valid      ),
     .dmi_req_ready_i      ( debug_req_ready      ),
     .dmi_req_o            ( debug_req            ),
@@ -264,7 +260,7 @@ dm_top #(
     .dmi_resp_o       ( debug_resp                )
 );
 
-assign axi_sba_resp = '0;
+axi_connect i_axi_connect_ariane (.axi_req_i(axi_sba_req), .axi_resp_o(axi_sba_resp), .master(slave[1]));
 
 // ---------------
 // Core
@@ -287,7 +283,7 @@ ariane #(
     .axi_resp_i   ( axi_ariane_resp     )
 );
 
-axi_connect i_axi_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
+axi_connect i_axi_connect_sba (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
 
 // ---------------
 // CLINT
@@ -309,6 +305,7 @@ clint #(
 ) i_clint (
     .clk_i       ( clk                       ),
     .rst_ni      ( ndmreset_n                ),
+    .testmode_i  ( test_en                   ),
     .slave       ( master[ariane_soc::CLINT] ),
     .rtc_i       ( rtc                       ),
     .timer_irq_o ( timer_irq                 ),
@@ -389,45 +386,45 @@ ariane_peripherals #(
 // ---------------
 // DDR
 // ---------------
-logic [3:0]  s_axi_awid;
-logic [63:0] s_axi_awaddr;
-logic [7:0]  s_axi_awlen;
-logic [2:0]  s_axi_awsize;
-logic [1:0]  s_axi_awburst;
-logic [0:0]  s_axi_awlock;
-logic [3:0]  s_axi_awcache;
-logic [2:0]  s_axi_awprot;
-logic [3:0]  s_axi_awregion;
-logic [3:0]  s_axi_awqos;
-logic        s_axi_awvalid;
-logic        s_axi_awready;
-logic [63:0] s_axi_wdata;
-logic [7:0]  s_axi_wstrb;
-logic        s_axi_wlast;
-logic        s_axi_wvalid;
-logic        s_axi_wready;
-logic [3:0]  s_axi_bid;
-logic [1:0]  s_axi_bresp;
-logic        s_axi_bvalid;
-logic        s_axi_bready;
-logic [3:0]  s_axi_arid;
-logic [63:0] s_axi_araddr;
-logic [7:0]  s_axi_arlen;
-logic [2:0]  s_axi_arsize;
-logic [1:0]  s_axi_arburst;
-logic [0:0]  s_axi_arlock;
-logic [3:0]  s_axi_arcache;
-logic [2:0]  s_axi_arprot;
-logic [3:0]  s_axi_arregion;
-logic [3:0]  s_axi_arqos;
-logic        s_axi_arvalid;
-logic        s_axi_arready;
-logic [3:0]  s_axi_rid;
-logic [63:0] s_axi_rdata;
-logic [1:0]  s_axi_rresp;
-logic        s_axi_rlast;
-logic        s_axi_rvalid;
-logic        s_axi_rready;
+logic [AxiIdWidthSlaves-1:0] s_axi_awid;
+logic [AxiAddrWidth-1:0]     s_axi_awaddr;
+logic [7:0]                  s_axi_awlen;
+logic [2:0]                  s_axi_awsize;
+logic [1:0]                  s_axi_awburst;
+logic [0:0]                  s_axi_awlock;
+logic [3:0]                  s_axi_awcache;
+logic [2:0]                  s_axi_awprot;
+logic [3:0]                  s_axi_awregion;
+logic [3:0]                  s_axi_awqos;
+logic                        s_axi_awvalid;
+logic                        s_axi_awready;
+logic [AxiDataWidth-1:0]     s_axi_wdata;
+logic [AxiDataWidth/8-1:0]   s_axi_wstrb;
+logic                        s_axi_wlast;
+logic                        s_axi_wvalid;
+logic                        s_axi_wready;
+logic [AxiIdWidthSlaves-1:0] s_axi_bid;
+logic [1:0]                  s_axi_bresp;
+logic                        s_axi_bvalid;
+logic                        s_axi_bready;
+logic [AxiIdWidthSlaves-1:0] s_axi_arid;
+logic [AxiAddrWidth-1:0]     s_axi_araddr;
+logic [7:0]                  s_axi_arlen;
+logic [2:0]                  s_axi_arsize;
+logic [1:0]                  s_axi_arburst;
+logic [0:0]                  s_axi_arlock;
+logic [3:0]                  s_axi_arcache;
+logic [2:0]                  s_axi_arprot;
+logic [3:0]                  s_axi_arregion;
+logic [3:0]                  s_axi_arqos;
+logic                        s_axi_arvalid;
+logic                        s_axi_arready;
+logic [AxiIdWidthSlaves-1:0] s_axi_rid;
+logic [AxiDataWidth-1:0]     s_axi_rdata;
+logic [1:0]                  s_axi_rresp;
+logic                        s_axi_rlast;
+logic                        s_axi_rvalid;
+logic                        s_axi_rready;
 
 assign master[ariane_soc::DRAM].r_user = '0;
 assign master[ariane_soc::DRAM].b_user = '0;
@@ -531,15 +528,6 @@ fan_ctrl i_fan_ctrl (
     .rst_ni        ( ndmreset_n ),
     .pwm_setting_i ( sw[3:0]    ),
     .fan_pwm_o     ( fan_pwm    )
-);
-
-ariane_leds i_ariane_leds (
-  .clk_i          ( clk          ),
-  .rst_ni         ( rst_n        ),
-  .led_o          ( led          ),
-  .pc_asserted_i  ( pc_asserted  ),
-  .dmactive_i     ( dmactive     ),
-  .commit_valid_i ( '0           )
 );
 
 xlnx_mig_7_ddr3 i_ddr (

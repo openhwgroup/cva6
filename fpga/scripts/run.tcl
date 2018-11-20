@@ -22,6 +22,7 @@ set_property board_part $::env(XILINX_BOARD) [current_project]
 # set number of threads to 8 (maximum, unfortunately)
 set_param general.maxThreads 8
 
+set_msg_config -id {[Synth 8-5858]}         -new_severity "info"
 
 # hard-coded to Genesys 2 for the moment
 add_files -fileset constrs_1 -norecurse constraints/genesys-2.xdc
@@ -37,7 +38,7 @@ source scripts/add_sources.tcl
 
 set_property top ariane_xilinx [current_fileset]
 
-if {$board eq "genesys2"} {
+if {$::env(BOARD) eq "genesys2"} {
     read_verilog -sv {src/genesysii.svh}
     set file "src/genesysii.svh"
 } else {
@@ -80,14 +81,14 @@ wait_on_run impl_1
 open_run impl_1
 
 # output Verilog netlist + SDC for timing simulation
-write_verilog -force -mode funcsim work-fpga/$project_funcsim.v
-write_verilog -force -mode timesim work-fpga/$project_timesim.v
-write_sdf     -force work-fpga/$project_timesim.sdf
+write_verilog -force -mode funcsim work-fpga/${project}_funcsim.v
+write_verilog -force -mode timesim work-fpga/${project}_timesim.v
+write_sdf     -force work-fpga/${project}_timesim.sdf
 
 # reports
 exec mkdir -p reports/
 exec rm -rf reports/*
-check_timing                                                              -file reports/$project.check_timing.rpt
-report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack   -file reports/$project.timing_WORST_100.rpt
-report_timing -nworst 1 -delay_type max -sort_by group                    -file reports/$project.timing.rpt
-report_utilization -hierarchical                                          -file reports/$project.utilization.rpt
+check_timing                                                              -file reports/${project}.check_timing.rpt
+report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack   -file reports/${project}.timing_WORST_100.rpt
+report_timing -nworst 1 -delay_type max -sort_by group                    -file reports/${project}.timing.rpt
+report_utilization -hierarchical                                          -file reports/${project}.utilization.rpt

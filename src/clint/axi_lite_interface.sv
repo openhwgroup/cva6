@@ -62,9 +62,11 @@ module axi_lite_interface #(
         slave.aw_ready = 1'b0;
         slave.w_ready  = 1'b0;
         slave.b_valid  = 1'b0;
+        slave.b_user   = 1'b0;
 
         slave.ar_ready = 1'b1;
         slave.r_valid  = 1'b0;
+        slave.r_user   = 1'b0;
 
         address_o      = '0;
         we_o           = 1'b0;

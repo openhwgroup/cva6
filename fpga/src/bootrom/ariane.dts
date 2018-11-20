@@ -31,7 +31,7 @@
   };
   memory@80000000 {
     device_type = "memory";
-    reg = <0x0 0x80000000 0x0 0x1800000>;
+    reg = <0x0 0x80000000 0x0 0x8000000>;
   };
   L26: soc {
     #address-cells = <2>;
@@ -70,19 +70,19 @@
       reg-shift = <2>; // regs are spaced on 32 bit boundary
       reg-io-width = <4>; // only 32-bit access are supported
     };
-    xlnx_axi_ethernetlite: ethernet@12000000 {
+    xlnx_axi_ethernetlite: ethernet@30000000 {
       compatible = "xlnx,axi-ethernetlite-3.0", "xlnx,xps-ethernetlite-1.00.a";
       device_type = "network";
       interrupt-parent = <&PLIC0>;
       interrupts = <2 0>;
       local-mac-address = [00 0a 35 00 01 22];
       phy-handle = <&phy0>;
-      reg = <0x0 0x20000000 0x0 0x10000>;
+      reg = <0x0 0x30000000 0x0 0x10000>;
       xlnx,duplex = <0x1>;
       xlnx,include-global-buffers = <0x1>;
       xlnx,include-internal-loopback = <0x0>;
       xlnx,include-mdio = <0x1>;
-      xlnx,instance = "axi_ethernetlite_inst";
+      xlnx,instance = "i_xlnx_axi_ethernetlite";
       xlnx,rx-ping-pong = <0x1>;
       xlnx,s-axi-id-width = <0x4>;
       xlnx,tx-ping-pong = <0x1>;
@@ -96,7 +96,7 @@
         #address-cells = <1>;
         #size-cells = <0>;
         phy0: ethernet-phy@0 {
-          compatible = "realtek,RTL8211E";
+          compatible = "ethernet-phy-id001c.c915";
           device_type = "ethernet-phy";
           reg = <0x1>;
         };

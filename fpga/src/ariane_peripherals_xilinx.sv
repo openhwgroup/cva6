@@ -282,6 +282,9 @@ module ariane_peripherals #(
     // ---------------
     // 3. SPI
     // ---------------
+    assign spi.b_user = 1'b0;
+    assign spi.r_user = 1'b0;
+
     if (InclSPI) begin : gen_spi
         logic [31:0] s_axi_spi_awaddr;
         logic [7:0]  s_axi_spi_awlen;
@@ -474,6 +477,9 @@ module ariane_peripherals #(
     // ---------------
     // 4. Ethernet
     // ---------------
+    assign ethernet.b_user = 1'b0;
+    assign ethernet.r_user = 1'b0;
+
     if (InclEthernet) begin : gen_ethernet
         wire         mdio_i, mdio_o, mdio_t;
         logic [31:0] s_axi_eth_awaddr;

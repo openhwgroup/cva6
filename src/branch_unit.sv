@@ -38,7 +38,6 @@ module branch_unit (
         automatic logic [63:0] jump_base;
         jump_base = (fu_data_i.operator == JALR) ? fu_data_i.operand_a : pc_i;
 
-        target_address                   = 64'b0;
         resolve_branch_o                 = 1'b0;
         resolved_branch_o.target_address = 64'b0;
         resolved_branch_o.is_taken       = 1'b0;
