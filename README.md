@@ -76,7 +76,7 @@ $ work-ver/Variane_testharness $RISCV/riscv64-unknown-elf/bin/pk hello.elf
 
 If you want to use QuestaSim to run it you can use the following command:
 ```
-$ make simc riscv-test-dir=$RISCV/riscv64-unknown-elf/bin riscv-test=pk target-options=hello.elf
+$ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  batch-mode=1
 ```
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
@@ -87,7 +87,89 @@ $ make simc riscv-test-dir=$RISCV/riscv64-unknown-elf/bin riscv-test=pk target-o
 
 ## FPGA Emulation
 
-Coming.
+We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). Tested on Vivado 2018.2.
+
+```
+$ source fpga/sourceme.sh
+$ make fpga
+```
+
+TODO(zarubaf): Add further TODOS and simplify flow
+
+Default baudrate is `115200`:
+```
+$ screen /dev/ttyUSB0 115200
+```
+
+### Debugging
+
+You can debug (and program) the FPGA using [OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html). We provide two example scripts for OpenOCD, both to be used with Olimex Debug adapter. The JTAG port ist mapped to PMOD `JC` on the Gensys 2 board. You will need to connect the following wires to your debug adapter:
+
+![](https://reference.digilentinc.com/_media/genesys2/fig_16.png)
+
+|   Pin    | Nr. |
+|----------|-----|
+| `tck`    | JC1 |
+| `tdi`    | JC2 |
+| `tdo`    | JC3 |
+| `tms`    | JC4 |
+| `trst_n` | JC7 |
+
+
+```
+$ openocd -f fpga/ariane_tiny.cfg
+Open On-Chip Debugger 0.10.0+dev-00195-g933cb87 (2018-09-14-19:32)
+Licensed under GNU GPL v2
+For bug reports, read
+    http://openocd.org/doc/doxygen/bugs.html
+adapter speed: 1000 kHz
+Info : auto-selecting first available session transport "jtag". To override use 'transport select <transport>'.
+Info : clock speed 1000 kHz
+Info : TAP riscv.cpu does not have IDCODE
+Info : datacount=2 progbufsize=12
+Info : Examined RISC-V core; found 1 harts
+Info :  hart 0: XLEN=64, misa=0x8000000000141105
+Info : Listening on port 3333 for gdb connections
+Ready for Remote Connections
+Info : Listening on port 6666 for tcl connections
+Info : Listening on port 4444 for telnet connections
+Info : accepting 'gdb' connection on tcp/3333
+```
+
+Then you will be able to either connect through `telnet` or with `gdb`:
+
+```
+$ riscv64-unknown-elf-gdb /path/to/elf
+(gdb) target remote localhost:3333
+(gdb) load
+Loading section .text, size 0x6508 lma 0x80000000
+Loading section .rodata, size 0x900 lma 0x80006508
+(gdb) b putchar
+(gdb) c
+Continuing.
+
+Program received signal SIGTRAP, Trace/breakpoint trap.
+0x0000000080009126 in putchar (s=72) at lib/qprintf.c:69
+69    uart_sendchar(s);
+(gdb) si
+0x000000008000912a  69    uart_sendchar(s);
+(gdb) p/x $mepc
+$1 = 0xfffffffffffdb5ee
+```
+
+You can read or write device memory by using:
+```
+(gdb) x/i 0x1000
+    0x1000: lui t0,0x4
+(gdb) set {int} 0x1000 = 22
+(gdb) set $pc = 0x1000
+```
+
+If you are on an Ubuntu based system you need to add the following udev rule to `/etc/udev/rules.d/olimex-arm-usb-tiny-h.rules`
+
+>```
+> SUBSYSTEM=="usb", ACTION=="add", ATTRS{idProduct}=="002a", ATTRS{idVendor}=="15ba", MODE="664", GROUP="plugdev"
+>```
 
 ## Planned Improvements
 
@@ -99,10 +181,10 @@ The core has been developed with a full licensed version of QuestaSim. If you ha
 
 To specify the test to run use (e.g.: you want to run `rv64ui-p-sraw` inside the `tmp/risc-tests/build/isa` folder:
 ```
-$ make sim riscv-test=tmp/risc-tests/build/isa/rv64ui-p-sraw
+$ make sim elf-bin=path/to/rv64ui-p-sraw
 ```
 
-If you call `simc` instead of `sim` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
+If you call `sim` with `batch-mode=1` it will run without the GUI. QuestaSim uses `riscv-fesvr` for communication as well.
 
 ### CI Testsuites and Randomized Constrained Testing with Torture
 
@@ -132,6 +214,7 @@ Ariane can dump a trace-log in Questa which can be easily diffed against Spike w
 ```verilog
 localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
 ```
+This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
 This will dump a file called `trace_core_*_*_commit.log`.
 
 This can be helpful for debugging long traces (e.g.: torture traces). To compile Spike with the commit log feature do:
@@ -145,7 +228,32 @@ $ make
 $ [sudo] make install
 ```
 
+<!-- ### Tandem Verification with Spike
+
+```
+$ make sim preload=/home/zarubaf/Downloads/riscv-tests/build/benchmarks/dhrystone.riscv tandem=1
+```
+There are a couple of caveats:
+
+- Memories should be initialized to zero. Random or `x` are not supported.
+- UART needs to be replaced by a mock UART which exhibits always ready behavior.
+- There is no end of test signaling at the moment. You are supposed to kill the simulation when sufficiently long run.
+- You need to use the modified Spike version in the `tb` subdirectory.
+- The RTC clock needs to be sufficiently slow (e.g.: 32 kHz seems to work). This is needed as otherwise there will be a difference when reading the `mtime` register as the RTL simulation takes more time to propagate the information through the system.
+- All traps except memory traps need to zero the `tval` register. There is a switch you can set in `ariane_pkg`.
+- `mcycle` needs to be incremented with `instret` to be similar to the performance counters found in Spike (IPC = 1)
+ -->
+
+### Re-generating the Bootcode (ZSBL)
+
+The zero stage bootloader (ZSBL) for RTL simulation lives in `bootrom/` while the bootcode for the FPGA is in `fpga/src/bootrom`. The RTL bootcode simply jumps to the base of the DRAM where the FSBL takes over. For the FPGA the ZSBL performs additional housekeeping. Both bootloader pass the hartid as well as address to the device tree in argumen register `a0` and `a1` respectively.
+
+To re-generate the bootcode you can use the existing makefile within those directories. To generate the SystemVerilog files you will need the `bitstring` python package installed on your system.
+
 # Contributing
 
 Check out the [contribution guide](CONTRIBUTING.md)
 
+# Acknowledgements
+
+Thanks to Gian Marti, Thomas Kramer and Thomas E. Benz for implementing the PLIC.

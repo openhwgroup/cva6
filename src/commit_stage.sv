@@ -56,6 +56,20 @@ module commit_stage #(
     output logic                                    sfence_vma_o        // flush TLBs and pipeline
 );
 
+// ila_0 i_ila_commit (
+//     .clk(clk_i), // input wire clk
+//     .probe0(commit_instr_i[0].pc), // input wire [63:0]  probe0
+//     .probe1(commit_instr_i[1].pc), // input wire [63:0]  probe1
+//     .probe2(commit_instr_i[0].valid), // input wire [0:0]  probe2
+//     .probe3(commit_instr_i[1].valid), // input wire [0:0]  probe3
+//     .probe4(commit_ack_o[0]), // input wire [0:0]  probe4
+//     .probe5(commit_ack_o[0]), // input wire [0:0]  probe5
+//     .probe6(1'b0), // input wire [0:0]  probe6
+//     .probe7(1'b0), // input wire [0:0]  probe7
+//     .probe8(1'b0), // input wire [0:0]  probe8
+//     .probe9(1'b0) // input wire [0:0]  probe9
+// );
+
     // TODO make these parametric with NR_COMMIT_PORTS
     assign waddr_o[0] = commit_instr_i[0].rd[4:0];
     assign waddr_o[1] = commit_instr_i[1].rd[4:0];
@@ -139,6 +153,7 @@ module commit_stage #(
                 // CSR Logic
                 // ---------
                 // check whether the instruction we retire was a CSR instruction
+                // interrupts are never taken on CSR instructions
                 if (commit_instr_i[0].fu == CSR) begin
                     // write the CSR file
                     commit_csr_o = 1'b1;
@@ -149,6 +164,8 @@ module commit_stage #(
                 // ------------------
                 // SFENCE.VMA Logic
                 // ------------------
+                // sfence.vma is idempotent so we can safely re-execute it after returning
+                // from interrupt service routine
                 // check if this instruction was a SFENCE_VMA
                 if (commit_instr_i[0].op == SFENCE_VMA) begin
                     // no store pending so we can flush the TLBs and pipeline
@@ -159,6 +176,8 @@ module commit_stage #(
                 // ------------------
                 // FENCE.I Logic
                 // ------------------
+                // fence.i is idempotent so we can safely re-execute it after returning
+                // from interrupt service routine
                 // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
                 // and the private dcache. This is the most expensive instruction.
                 if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && commit_instr_i[0].fu != STORE)) begin
@@ -169,6 +188,8 @@ module commit_stage #(
                 // ------------------
                 // FENCE Logic
                 // ------------------
+                // fence is idempotent so we can safely re-execute it after returning
+                // from interrupt service routine
                 if (commit_instr_i[0].op == FENCE) begin
                     commit_ack_o[0] = no_st_pending_i;
                     // tell the controller to flush the D$
@@ -228,6 +249,7 @@ module commit_stage #(
     // -----------------------------
     // Exception & Interrupt Logic
     // -----------------------------
+    // TODO(zarubaf): Move interrupt handling to commit stage.
     // here we know for sure that we are taking the exception
     always_comb begin : exception_handling
         // Multiple simultaneous interrupts and traps at the same privilege level are handled in the following decreasing
@@ -263,8 +285,15 @@ module commit_stage #(
             // ------------------------
             // check for CSR interrupts (e.g.: normal interrupts which get triggered here)
             // by putting interrupts here we give them precedence over any other exception
-            // Don't take the interrupt if we are committing an AMO.
-            if (csr_exception_i.valid && csr_exception_i.cause[63] && !amo_valid_commit_o) begin
+            // Don't take the interrupt if we are committing an AMO or a CSR.
+            // - Atomics because they are atomic in their nature and should not be interrupted
+            // - CSRs because it makes the implementation easier as CSRs are figured out at the same
+            //   time as interrupts (here in the commit stage). By not allowing them on CSRs we
+            //   reduce the potential critical path length. As all CSRs are single-cycle (plus a
+            //   potential pipeline flush) this only impacts interrupt latency in a couple of cycles.
+            if (csr_exception_i.valid && csr_exception_i.cause[63]
+                                      && !amo_valid_commit_o
+                                      && commit_instr_i[0].fu != CSR) begin
                 exception_o = csr_exception_i;
                 exception_o.tval = commit_instr_i[0].ex.tval;
             end

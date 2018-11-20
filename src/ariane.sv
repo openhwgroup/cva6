@@ -21,7 +21,7 @@ import instruction_tracer_pkg::*;
 
 module ariane #(
     parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000 // address on which to decide whether the request is cache-able or not
-)(
+) (
     input  logic                clk_i,
     input  logic                rst_ni,
     // Core ID, Cluster ID and boot address are considered more or less static

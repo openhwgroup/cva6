@@ -417,6 +417,30 @@ package riscv;
     localparam logic [63:0] SSTATUS64_SD = 64'h8000000000000000;
     localparam logic [63:0] SSTATUS32_SD = 64'h80000000;
 
+    localparam logic [63:0] MSTATUS_UIE  = 64'h00000001;
+    localparam logic [63:0] MSTATUS_SIE  = 64'h00000002;
+    localparam logic [63:0] MSTATUS_HIE  = 64'h00000004;
+    localparam logic [63:0] MSTATUS_MIE  = 64'h00000008;
+    localparam logic [63:0] MSTATUS_UPIE = 64'h00000010;
+    localparam logic [63:0] MSTATUS_SPIE = 64'h00000020;
+    localparam logic [63:0] MSTATUS_HPIE = 64'h00000040;
+    localparam logic [63:0] MSTATUS_MPIE = 64'h00000080;
+    localparam logic [63:0] MSTATUS_SPP  = 64'h00000100;
+    localparam logic [63:0] MSTATUS_HPP  = 64'h00000600;
+    localparam logic [63:0] MSTATUS_MPP  = 64'h00001800;
+    localparam logic [63:0] MSTATUS_FS   = 64'h00006000;
+    localparam logic [63:0] MSTATUS_XS   = 64'h00018000;
+    localparam logic [63:0] MSTATUS_MPRV = 64'h00020000;
+    localparam logic [63:0] MSTATUS_SUM  = 64'h00040000;
+    localparam logic [63:0] MSTATUS_MXR  = 64'h00080000;
+    localparam logic [63:0] MSTATUS_TVM  = 64'h00100000;
+    localparam logic [63:0] MSTATUS_TW   = 64'h00200000;
+    localparam logic [63:0] MSTATUS_TSR  = 64'h00400000;
+    localparam logic [63:0] MSTATUS32_SD = 64'h80000000;
+    localparam logic [63:0] MSTATUS_UXL  = 64'h0000000300000000;
+    localparam logic [63:0] MSTATUS_SXL  = 64'h0000000C00000000;
+    localparam logic [63:0] MSTATUS64_SD = 64'h8000000000000000;
+
     typedef enum logic [2:0] {
         CSRRW  = 3'h1,
         CSRRS  = 3'h2,
@@ -539,4 +563,15 @@ package riscv;
         end
     endfunction
     // pragma translate_on
+
+    typedef struct {
+        byte priv;
+        longint unsigned pc;
+        byte is_fp;
+        byte rd;
+        longint unsigned data;
+        int unsigned instr;
+        byte was_exception;
+    } commit_log_t;
+
 endpackage

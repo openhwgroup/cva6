@@ -39,9 +39,9 @@ module store_buffer (
     input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
-    input  dcache_req_o_t            req_port_i,
-    output dcache_req_i_t            req_port_o
-    );
+    input  dcache_req_o_t req_port_i,
+    output dcache_req_i_t req_port_o
+);
 
     // the store queue has two parts:
     // 1. Speculative queue

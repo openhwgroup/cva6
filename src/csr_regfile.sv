@@ -17,7 +17,7 @@ import ariane_pkg::*;
 module csr_regfile #(
     parameter int          ASID_WIDTH      = 1,
     parameter int unsigned NR_COMMIT_PORTS = 2
-)(
+) (
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
     input  logic                  time_irq_i,                 // Timer threw a interrupt
@@ -120,8 +120,6 @@ module csr_regfile #(
     logic [63:0] medeleg_q,   medeleg_d;
     logic [63:0] mideleg_q,   mideleg_d;
     logic [63:0] mip_q,       mip_d;
-    logic [63:0] pmpcfg0_q,   pmpcfg0_d;
-    logic [63:0] pmpaddr0_q,  pmpaddr0_d;
     logic [63:0] mie_q,       mie_d;
     logic [63:0] mscratch_q,  mscratch_d;
     logic [63:0] mepc_q,      mepc_d;
@@ -194,7 +192,9 @@ module csr_regfile #(
                 riscv::CSR_TDATA2:;  // not implemented
                 riscv::CSR_TDATA3:;  // not implemented
                 // supervisor registers
-                riscv::CSR_SSTATUS:            csr_rdata = mstatus_q & ariane_pkg::SMODE_STATUS_MASK;
+                riscv::CSR_SSTATUS: begin
+                    csr_rdata = mstatus_q & ariane_pkg::SMODE_STATUS_READ_MASK;
+                end
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
                 riscv::CSR_STVEC:              csr_rdata = stvec_q;
@@ -205,10 +205,11 @@ module csr_regfile #(
                 riscv::CSR_STVAL:              csr_rdata = stval_q;
                 riscv::CSR_SATP: begin
                     // intercept reads to SATP if in S-Mode and TVM is enabled
-                    if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm)
+                    if (priv_lvl_o == riscv::PRIV_LVL_S && mstatus_q.tvm) begin
                         read_access_exception = 1'b1;
-                    else
+                    end else begin
                         csr_rdata = satp_q;
+                    end
                 end
                 // machine mode registers
                 riscv::CSR_MSTATUS:            csr_rdata = mstatus_q;
@@ -223,9 +224,6 @@ module csr_regfile #(
                 riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
                 riscv::CSR_MTVAL:              csr_rdata = mtval_q;
                 riscv::CSR_MIP:                csr_rdata = mip_q;
-                // Placeholders for M-mode protection
-                riscv::CSR_PMPCFG0:            csr_rdata = pmpcfg0_q;
-                riscv::CSR_PMPADDR0:           csr_rdata = pmpaddr0_q;
                 riscv::CSR_MVENDORID:          csr_rdata = 64'b0; // not implemented
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
@@ -262,19 +260,24 @@ module csr_regfile #(
         automatic riscv::satp_t sapt;
         automatic logic [63:0] instret;
 
+
         sapt = satp_q;
         instret = instret_q;
+
         // --------------------
         // Counters
         // --------------------
         cycle_d = cycle_q;
         instret_d = instret_q;
         if (!debug_mode_q) begin
-            // just increment the cycle count
-            cycle_d = cycle_q + 1'b1;
             // increase instruction retired counter
-            for (int i = 0; i < NR_COMMIT_PORTS; i++)  if (commit_ack_i[i]) instret++;
+            for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+                if (commit_ack_i[i] && !ex_i.valid) instret++;
+            end
             instret_d = instret;
+            // increment the cycle count
+            if (ENABLE_CYCLE_COUNT) cycle_d = cycle_q + 1'b1;
+            else cycle_d = instret;
         end
 
         eret_o                  = 1'b0;
@@ -327,8 +330,6 @@ module csr_regfile #(
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
         dirty_fp_state_csr      = 1'b0;
-        pmpcfg0_d               = pmpcfg0_q;
-        pmpaddr0_d              = pmpaddr0_q;
 
         // check for correct access rights and that we are writing
         if (csr_we) begin
@@ -379,6 +380,8 @@ module csr_regfile #(
                     dcsr_d = csr_wdata[31:0];
                     // debug is implemented
                     dcsr_d.xdebugver = 4'h4;
+                    // privilege level
+                    dcsr_d.prv = priv_lvl_q;
                     // currently not supported
                     dcsr_d.nmip      = 1'b0;
                     dcsr_d.stopcount = 1'b0;
@@ -393,27 +396,14 @@ module csr_regfile #(
                 riscv::CSR_TDATA3:;  // not implemented
                 // sstatus is a subset of mstatus - mask it accordingly
                 riscv::CSR_SSTATUS: begin
-                    mstatus_d = csr_wdata;
-                    // also hardwire the registers for sstatus
-                    mstatus_d.sxl  = riscv::XLEN_64;
-                    mstatus_d.uxl  = riscv::XLEN_64;
-                    // hardwired extension registers
-                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
-                    mstatus_d.xs   = riscv::Off;
+                    mask = ariane_pkg::SMODE_STATUS_WRITE_MASK;
+                    mstatus_d = (mstatus_q & ~mask) | (csr_wdata & mask);
                     // hardwire to zero if floating point extension is not present
                     if (!FP_PRESENT) begin
                         mstatus_d.fs = riscv::Off;
                     end
-                    mstatus_d.upie = 1'b0;
-                    mstatus_d.uie  = 1'b0;
-                    // not all fields of mstatus can be written
-                    mstatus_d.mie  = mstatus_q.mie;
-                    mstatus_d.mpie = mstatus_q.mpie;
-                    mstatus_d.mpp  = mstatus_q.mpp;
-                    mstatus_d.mprv = mstatus_q.mprv;
-                    mstatus_d.tsr  = mstatus_q.tsr;
-                    mstatus_d.tw   = mstatus_q.tw;
-                    mstatus_d.tvm  = mstatus_q.tvm;
+                    // hardwired extension registers
+                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
@@ -445,7 +435,8 @@ module csr_regfile #(
                         sapt      = riscv::satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
                         sapt.asid = sapt.asid & {{(16-ASID_WIDTH){1'b0}}, {ASID_WIDTH{1'b1}}};
-                        satp_d    = sapt;
+                        // only update if we actually support this mode
+                        if (sapt.mode == MODE_OFF || sapt.mode == MODE_SV39) satp_d = sapt;
                     end
                     // changing the mode can have side-effects on address translation (e.g.: other instructions), re-fetch
                     // the next instruction by executing a flush
@@ -454,8 +445,6 @@ module csr_regfile #(
 
                 riscv::CSR_MSTATUS: begin
                     mstatus_d      = csr_wdata;
-                    mstatus_d.sxl  = riscv::XLEN_64;
-                    mstatus_d.uxl  = riscv::XLEN_64;
                     // hardwired zero registers
                     mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
                     mstatus_d.xs   = riscv::Off;
@@ -508,9 +497,6 @@ module csr_regfile #(
                     mask = riscv::MIP_SSIP | riscv::MIP_STIP | riscv::MIP_SEIP;
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
-                // Placeholders for M-mode protection
-                riscv::CSR_PMPCFG0:            pmpcfg0_d   = csr_wdata;
-                riscv::CSR_PMPADDR0:           pmpaddr0_d  = csr_wdata;
                 // performance counters
                 riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
                 riscv::CSR_MINSTRET:           instret     = csr_wdata;
@@ -535,22 +521,23 @@ module csr_regfile #(
             endcase
         end
 
+        mstatus_d.sxl  = riscv::XLEN_64;
+        mstatus_d.uxl  = riscv::XLEN_64;
+
         // mark the floating point extension register as dirty
         if (FP_PRESENT && (dirty_fp_state_csr || dirty_fp_state_i)) begin
             mstatus_d.fs = riscv::Dirty;
         end
 
         // write the floating point status register
-        if (csr_write_fflags_i)
+        if (csr_write_fflags_i) begin
             fcsr_d.fflags = csr_wdata_i[4:0] | fcsr_q.fflags;
-
+        end
         // ---------------------
         // External Interrupts
         // ---------------------
         // Machine Mode External Interrupt Pending
         mip_d[riscv::IRQ_M_EXT] = irq_i[0];
-        // Supervisor Mode External Interrupt Pending
-        mip_d[riscv::IRQ_S_EXT] = mie_q[riscv::IRQ_S_EXT] & irq_i[1];
         // Machine software interrupt
         mip_d[riscv::IRQ_M_SOFT] = ipi_i;
         // Timer interrupt pending, coming from platform timer
@@ -584,13 +571,20 @@ module csr_regfile #(
                 mstatus_d.sie  = 1'b0;
                 mstatus_d.spie = mstatus_q.sie;
                 // this can either be user or supervisor mode
-                mstatus_d.spp  = logic'(priv_lvl_q);
+                mstatus_d.spp  = priv_lvl_q[0];
                 // set cause
                 scause_d       = ex_i.cause;
                 // set epc
                 sepc_d         = pc_i;
                 // set mtval or stval
-                stval_d        = ex_i.tval;
+                stval_d        = (ariane_pkg::ZERO_TVAL
+                                  && (ex_i.cause inside {
+                                    riscv::ILLEGAL_INSTR,
+                                    riscv::BREAKPOINT,
+                                    riscv::ENV_CALL_UMODE,
+                                    riscv::ENV_CALL_SMODE,
+                                    riscv::ENV_CALL_MMODE
+                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
             // trap to machine mode
             end else begin
                 // update mstatus
@@ -602,11 +596,17 @@ module csr_regfile #(
                 // set epc
                 mepc_d         = pc_i;
                 // set mtval or stval
-                mtval_d        = ex_i.tval;
+                mtval_d        = (ariane_pkg::ZERO_TVAL
+                                  && (ex_i.cause inside {
+                                    riscv::ILLEGAL_INSTR,
+                                    riscv::BREAKPOINT,
+                                    riscv::ENV_CALL_UMODE,
+                                    riscv::ENV_CALL_SMODE,
+                                    riscv::ENV_CALL_MMODE
+                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
             end
 
             priv_lvl_d = trap_to_priv_lvl;
-
         end
 
         // ------------------------------
@@ -720,11 +720,11 @@ module csr_regfile #(
             // return from exception, IF doesn't care from where we are returning
             eret_o = 1'b1;
             // return the previous supervisor interrupt enable flag
-            mstatus_d.sie  = mstatus_d.spie;
+            mstatus_d.sie  = mstatus_q.spie;
             // restore the previous privilege level
-            priv_lvl_d     = riscv::priv_lvl_t'({1'b0, mstatus_d.spp});
+            priv_lvl_d     = riscv::priv_lvl_t'({1'b0, mstatus_q.spp});
             // set spp to user mode
-            mstatus_d.spp  = logic'(riscv::PRIV_LVL_U);
+            mstatus_d.spp  = 1'b0;
             // set spie to 1
             mstatus_d.spie = 1'b1;
         end
@@ -773,7 +773,7 @@ module csr_regfile #(
                 csr_we   = 1'b0;
                 csr_read = 1'b0;
                 dret     = 1'b1; // signal a return from debug mode
-            end // DRET:
+            end
             default: begin
                 csr_we   = 1'b0;
                 csr_read = 1'b0;
@@ -803,6 +803,7 @@ module csr_regfile #(
         // -----------------
         // Interrupt Control
         // -----------------
+        // TODO(zarubaf): Move interrupt handling to commit stage.
         // we decode an interrupt the same as an exception, hence it will be taken if the instruction did not
         // throw any previous exception.
         // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
@@ -855,7 +856,8 @@ module csr_regfile #(
         // -----------------
         // Privilege Check
         // -----------------
-        // if we are reading or writing, check for the correct privilege level
+        // if we are reading or writing, check for the correct privilege level this has
+        // precedence over interrupts
         if (csr_we || csr_read) begin
             if ((riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
                 csr_exception_o.cause = riscv::ILLEGAL_INSTR;
@@ -880,9 +882,10 @@ module csr_regfile #(
         // -------------------
         // if there is any interrupt pending un-stall the core
         // also un-stall if we want to enter debug mode
-        if (|mip_q || debug_req_i) begin
+        if (|mip_q || debug_req_i || irq_i[1]) begin
             wfi_d = 1'b0;
-        // or alternatively if there is no exception pending and we are not in debug mode wait here for the interrupt
+        // or alternatively if there is no exception pending and we are not in debug mode wait here
+        // for the interrupt
         end else if (!debug_mode_q && csr_op_i == WFI && !ex_i.valid) begin
             wfi_d = 1'b1;
         end
@@ -922,11 +925,23 @@ module csr_regfile #(
     // -------------------
     // Output Assignments
     // -------------------
-    // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value
-    // returned in the rd destination register contains the logical-OR of the software-writable
-    // bit and the interrupt signal from the interrupt controller.
-    assign csr_rdata_o      = (csr_addr.address == riscv::CSR_MIP) ? (csr_rdata | (irq_i[1] << riscv::IRQ_S_EXT))
-                                                                   : csr_rdata;
+    always_comb begin
+        // When the SEIP bit is read with a CSRRW, CSRRS, or CSRRC instruction, the value
+        // returned in the rd destination register contains the logical-OR of the software-writable
+        // bit and the interrupt signal from the interrupt controller.
+        csr_rdata_o = csr_rdata;
+
+        unique case (csr_addr.address)
+            riscv::CSR_MIP: csr_rdata_o = csr_rdata | (irq_i[1] << riscv::IRQ_S_EXT);
+            // in supervisor mode we also need to check whether we delegated this bit
+            riscv::CSR_SIP: begin
+                csr_rdata_o = csr_rdata
+                            | ((irq_i[1] & mideleg_q[riscv::IRQ_S_EXT]) << riscv::IRQ_S_EXT);
+            end
+            default:;
+        endcase
+    end
+
     // in debug mode we execute with privilege level M
     assign priv_lvl_o       = (debug_mode_q) ? riscv::PRIV_LVL_M : priv_lvl_q;
     // FPU outputs
@@ -938,7 +953,9 @@ module csr_regfile #(
     assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
     assign sum_o            = mstatus_q.sum;
     // we support bare memory addressing and SV39
-    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_o != riscv::PRIV_LVL_M) ? 1'b1 : 1'b0;
+    assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_o != riscv::PRIV_LVL_M)
+                              ? 1'b1
+                              : 1'b0;
     assign mxr_o            = mstatus_q.mxr;
     assign tvm_o            = mstatus_q.tvm;
     assign tw_o             = mstatus_q.tw;
@@ -965,9 +982,6 @@ module csr_regfile #(
             dscratch0_q            <= 64'b0;
             // machine mode registers
             mstatus_q              <= 64'b0;
-            // m-mode protection
-            pmpcfg0_q              <= '0;
-            pmpaddr0_q             <= '0;
             // set to boot address + direct mode + 4 byte offset which is the initial trap
             mtvec_rst_load_q       <= 1'b1;
             mtvec_q                <= '0;
@@ -1018,9 +1032,6 @@ module csr_regfile #(
             mtval_q                <= mtval_d;
             dcache_q               <= dcache_d;
             icache_q               <= icache_d;
-            // m-mode protection
-            pmpcfg0_q              <= pmpcfg0_d;
-            pmpaddr0_q             <= pmpaddr0_d;
             // supervisor mode registers
             sepc_q                 <= sepc_d;
             scause_q               <= scause_d;

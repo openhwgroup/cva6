@@ -52,9 +52,6 @@ module clint #(
     // increase the timer
     logic increase_timer;
 
-    // currently not implemented
-    assign ipi_o = '0;
-
     // -----------------------------
     // AXI Interface Logic
     // -----------------------------
@@ -63,12 +60,14 @@ module clint #(
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH    )
     ) axi_lite_interface_i (
+        .clk_i     ( clk_i   ),
+        .rst_ni    ( rst_ni  ),
+        .slave     ( slave   ),
         .address_o ( address ),
         .en_o      ( en      ),
         .we_o      ( we      ),
         .data_i    ( rdata   ),
-        .data_o    ( wdata   ),
-        .*
+        .data_o    ( wdata   )
     );
 
     // -----------------------------
@@ -135,7 +134,7 @@ module clint #(
     always_comb begin : irq_gen
         // check that the mtime cmp register is set to a meaningful value
         for (int unsigned i = 0; i < NR_CORES; i++) begin
-            if (mtimecmp_q[i] != 0 && mtime_q >= mtimecmp_q[i]) begin
+            if (mtime_q >= mtimecmp_q[i]) begin
                 timer_irq_o[i] = 1'b1;
             end else begin
                 timer_irq_o[i] = 1'b0;
@@ -149,12 +148,13 @@ module clint #(
     // 1. Put the RTC input through a classic two stage edge-triggered synchronizer to filter out any
     //    metastability effects (or at least make them unlikely :-))
     sync_wedge i_sync_edge (
+        .clk_i,
+        .rst_ni,
         .en_i      ( ~testmode_i    ),
         .serial_i  ( rtc_i          ),
         .r_edge_o  ( increase_timer ),
         .f_edge_o  (                ), // left open
-        .serial_o  (                ),
-        .*
+        .serial_o  (                )  // left open
     );
 
     // Registers
@@ -169,6 +169,8 @@ module clint #(
             msip_q     <= msip_n;
         end
     end
+
+    assign ipi_o = msip_q;
 
     // -------------
     // Assertions

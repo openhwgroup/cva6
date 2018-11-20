@@ -57,7 +57,7 @@ generate
         SyncSpRamBeNx64 #(
           .ADDR_WIDTH($clog2(NUM_WORDS)),
           .DATA_DEPTH(NUM_WORDS),
-          .OUT_REGS  (0),
+          .OUT_REGS (0),
           .SIM_INIT (2)
         ) i_ram (
            .Clk_CI    ( clk_i                     ),
