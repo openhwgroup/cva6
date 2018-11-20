@@ -1,0 +1,11 @@
+prefix=/scratch/zarubaf/ariane/tb/riscv-isa-sim/build/../install
+exec_prefix=/scratch/zarubaf/ariane/tb/riscv-isa-sim/build/../install
+libdir=${prefix}/${exec_prefix}/lib
+includedir=${prefix}/${prefix}/include
+
+Name: riscv-softfloat
+Description: RISC-V softfloat library
+Version: git
+Libs: -Wl,-rpath,${libdir} -L${libdir} -lsoftfloat
+Cflags: -I${includedir}
+URL: http://riscv.org/download.html#tab_spike
