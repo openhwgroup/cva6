@@ -170,6 +170,8 @@ s-icache-quest:
   stage: serpent
   script:
     - cd tb/tb_serpent_icache/
+    - make simc
+    - "grep 'CI: PASSED' summary.rep"
 
 s-dcache-quest:
   stage: serpent
@@ -189,4 +191,3 @@ s-dcache-quest:
 #     - make torture-rtest-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
 #   dependencies:
 #     - build
-

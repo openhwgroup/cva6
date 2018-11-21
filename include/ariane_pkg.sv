@@ -38,8 +38,9 @@ package ariane_pkg;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
-    localparam ENABLE_RENAME = 1'b1;
+    localparam ENABLE_RENAME = 1'b0;
 
+    localparam ISSUE_WIDTH = 1;
     // amount of pipeline registers inserted for load/store return path
     // this can be tuned to trade-off IPC vs. cycle time
     localparam NR_LOAD_PIPE_REGS = 1;
@@ -116,6 +117,7 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
+    localparam NR_WB_PORTS = 4;
 
     // static debug hartinfo
     localparam dm::hartinfo_t DebugHartInfo = '{
@@ -135,9 +137,34 @@ package ariane_pkg;
     // where coherence is not necessary this can improve performance. This needs to be switched on
     // when more than one core is in a system
     localparam logic INVALIDATE_ON_FLUSH = 1'b1;
+    // enable performance cycle counter, if set to zero mcycle will be incremented
+    // with instret (non RISC-V conformal)
+    localparam bit ENABLE_CYCLE_COUNT = 1'b1;
+    // mark WIF as nop
+    localparam bit ENABLE_WFI = 1'b1;
+    // Spike zeros tval on all exception except memory faults
+    localparam bit ZERO_TVAL = 1'b0;
 
-    localparam NR_WB_PORTS = 4;
+    // read mask for SSTATUS over MMSTATUS
+    localparam logic [63:0] SMODE_STATUS_READ_MASK = riscv::SSTATUS_UIE
+                                                   | riscv::SSTATUS_SIE
+                                                   | riscv::SSTATUS_SPIE
+                                                   | riscv::SSTATUS_SPP
+                                                   | riscv::SSTATUS_FS
+                                                   | riscv::SSTATUS_XS
+                                                   | riscv::SSTATUS_SUM
+                                                   | riscv::SSTATUS_MXR
+                                                   | riscv::SSTATUS_UPIE
+                                                   | riscv::SSTATUS_SPIE
+                                                   | riscv::SSTATUS_UXL
+                                                   | riscv::SSTATUS64_SD;
 
+    localparam logic [63:0] SMODE_STATUS_WRITE_MASK = riscv::SSTATUS_SIE
+                                                    | riscv::SSTATUS_SPIE
+                                                    | riscv::SSTATUS_SPP
+                                                    | riscv::SSTATUS_FS
+                                                    | riscv::SSTATUS_SUM
+                                                    | riscv::SSTATUS_MXR;
     // ---------------
     // Fetch Stage
     // ---------------
@@ -145,6 +172,8 @@ package ariane_pkg;
     // leave as is (fails with >8 entries and wider fetch width)
     localparam int unsigned FETCH_FIFO_DEPTH  = 8;
     localparam int unsigned FETCH_WIDTH       = 32;
+    // maximum instructions we can fetch on one request (we support compressed instructions)
+    localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH / 16;
 
     // Only use struct when signals have same direction
     // exception
@@ -165,7 +194,6 @@ package ariane_pkg;
         logic [63:0] target_address;  // target address at which to jump, or not
         logic        is_mispredict;   // set if this was a mis-predict
         logic        is_taken;        // branch is taken
-        logic        is_lower_16;     // branch instruction is compressed and resides
                                       // in the lower 16 bit of the word
         logic        valid;           // prediction with all its values is valid
         logic        clear;           // invalidate this entry
@@ -179,7 +207,6 @@ package ariane_pkg;
         logic        valid;           // this is a valid hint
         logic [63:0] predict_address; // target address at which to jump, or not
         logic        predict_taken;   // branch is taken
-        logic        is_lower_16;     // branch instruction is compressed and resides
                                       // in the lower 16 bit of the word
         cf_t         cf_type;         // Type of control flow change
     } branchpredict_sbe_t;
@@ -188,14 +215,12 @@ package ariane_pkg;
         logic        valid;
         logic [63:0] pc;             // update at PC
         logic [63:0] target_address;
-        logic        is_lower_16;
         logic        clear;
     } btb_update_t;
 
     typedef struct packed {
         logic        valid;
         logic [63:0] target_address;
-        logic        is_lower_16;
     } btb_prediction_t;
 
     typedef struct packed {
@@ -400,12 +425,20 @@ package ariane_pkg;
     // ---------------
     // IF/ID Stage
     // ---------------
+   typedef struct packed {
+        logic [63:0]                address;        // the address of the instructions from below
+        logic [FETCH_WIDTH-1:0]     instruction;    // instruction word
+        branchpredict_sbe_t         branch_predict; // this field contains branch prediction information regarding the forward branch path
+        logic [INSTR_PER_FETCH-1:0] bp_taken;       // at which instruction is this branch taken?
+        logic                       page_fault;     // an instruction page fault happened
+    } frontend_fetch_t;
+
     // store the decompressed instruction
     typedef struct packed {
-        logic [63:0]        address;              // the address of the instructions from below
-        logic [31:0]        instruction;          // instruction word
-        branchpredict_sbe_t branch_predict;       // this field contains branch prediction information regarding the forward branch path
-        exception_t         ex;                   // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
+        logic [63:0]           address;        // the address of the instructions from below
+        logic [31:0]           instruction;    // instruction word
+        branchpredict_sbe_t    branch_predict; // this field contains branch prediction information regarding the forward branch path
+        exception_t            ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
     } fetch_entry_t;
 
     // ---------------
@@ -464,6 +497,7 @@ package ariane_pkg;
     } tlb_update_t;
 
     localparam logic [3:0] MODE_SV39 = 4'h8;
+    localparam logic [3:0] MODE_OFF = 4'h0;
 
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).

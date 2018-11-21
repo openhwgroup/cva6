@@ -19,7 +19,7 @@ import std_cache_pkg::*;
 
 module std_cache_subsystem #(
   parameter logic [63:0] CACHE_START_ADDR = 64'h4000_0000
-)(
+) (
     input logic                            clk_i,
     input logic                            rst_ni,
     input riscv::priv_lvl_t                priv_lvl_i,

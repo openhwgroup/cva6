@@ -1,0 +1,117 @@
+/dts-v1/;
+
+/ {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  compatible = "eth,ariane-bare-dev";
+  model = "eth,ariane-bare";
+  chosen {
+    stdout-path = "/soc/uart@10000000:115200";
+  };
+  cpus {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    timebase-frequency = <25000000>; // 25 MHz
+    CPU0: cpu@0 {
+      clock-frequency = <50000000>; // 50 MHz
+      device_type = "cpu";
+      reg = <0>;
+      status = "okay";
+      compatible = "eth, ariane", "riscv";
+      riscv,isa = "rv64imacsu";
+      mmu-type = "riscv,sv39";
+      tlb-split;
+      // HLIC - hart local interrupt controller
+      CPU0_intc: interrupt-controller {
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
+  };
+  memory@80000000 {
+    device_type = "memory";
+    reg = <0x0 0x80000000 0x0 0x8000000>;
+  };
+  L26: soc {
+    #address-cells = <2>;
+    #size-cells = <2>;
+    compatible = "eth,ariane-bare-soc", "simple-bus";
+    ranges;
+    clint@2000000 {
+      compatible = "riscv,clint0";
+      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
+      reg = <0x0 0x2000000 0x0 0xc0000>;
+      reg-names = "control";
+    };
+    PLIC0: interrupt-controller@c000000 {
+      #address-cells = <0>;
+      #interrupt-cells = <1>;
+      compatible = "riscv,plic0";
+      interrupt-controller;
+      interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
+      reg = <0x0 0xc000000 0x0 0x4000000>;
+      riscv,max-priority = <7>;
+      riscv,ndev = <2>;
+    };
+    debug-controller@0 {
+      compatible = "riscv,debug-013";
+      interrupts-extended = <&CPU0_intc 65535>;
+      reg = <0x0 0x0 0x0 0x1000>;
+      reg-names = "control";
+    };
+    uart@10000000 {
+      compatible = "ns16750";
+      reg = <0x0 0x10000000 0x0 0x1000>;
+      clock-frequency = <50000000>;
+      current-speed = <115200>;
+      interrupt-parent = <&PLIC0>;
+      interrupts = <1>;
+      reg-shift = <2>; // regs are spaced on 32 bit boundary
+      reg-io-width = <4>; // only 32-bit access are supported
+    };
+    xlnx_axi_ethernetlite: ethernet@30000000 {
+      compatible = "xlnx,axi-ethernetlite-3.0", "xlnx,xps-ethernetlite-1.00.a";
+      device_type = "network";
+      interrupt-parent = <&PLIC0>;
+      interrupts = <2 0>;
+      local-mac-address = [00 0a 35 00 01 22];
+      phy-handle = <&phy0>;
+      reg = <0x0 0x30000000 0x0 0x10000>;
+      xlnx,duplex = <0x1>;
+      xlnx,include-global-buffers = <0x1>;
+      xlnx,include-internal-loopback = <0x0>;
+      xlnx,include-mdio = <0x1>;
+      xlnx,instance = "i_xlnx_axi_ethernetlite";
+      xlnx,rx-ping-pong = <0x1>;
+      xlnx,s-axi-id-width = <0x4>;
+      xlnx,tx-ping-pong = <0x1>;
+      xlnx,use-internal = <0x0>;
+      xlnx,has-mdio = <0x1>;
+      // rgmii-id: combines rgmii-rxid and rgmii-txid and thus configures the
+      // PHY to enable the RX and TX delays. The MAC should neither add the RX
+      // nor TX delay in this case.
+      phy-mode = "rgmii-id";
+      mdio {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        phy0: ethernet-phy@0 {
+          compatible = "ethernet-phy-id001c.c915";
+          device_type = "ethernet-phy";
+          reg = <0x1>;
+        };
+      };
+    };
+    // axi_spi@11000000 {
+    //   compatible = "xlnx.xps-spic-2.00.b";
+    //   clock-names = "axi_clk", "axi4_clk", "spi_clk";
+    //   clocks = <&clkc 71>, <&clkc 72>, <&clkc 73>;
+    //   interrupt-parent = <&intc>;
+    //   interrupts = <0 31 1>;
+    //   reg = <0x41e00000 0x10000>;
+    //   num-cs = <0x1>;
+    //   fifo-size = <256>;
+    //   bits-per-word = <8>;
+    // }
+  };
+};

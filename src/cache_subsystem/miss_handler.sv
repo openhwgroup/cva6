@@ -168,7 +168,6 @@ module miss_handler #(
         evict_cl_d   = evict_cl_q;
         mshr_d       = mshr_q;
         // communicate to the requester which unit we are currently serving
-        active_serving_o = '0;
         active_serving_o[mshr_q.id] = mshr_q.valid;
         // AMOs
         amo_resp_o.ack = 1'b0;
@@ -414,10 +413,27 @@ module miss_handler #(
                     amo_operand_b = amo_req_i.operand_b;
                 end
 
-                //  we do not need a store request for load reserved
-                req_fsm_miss_valid = (amo_req_i.amo_op == AMO_LR) ? 1'b0 : 1'b1;
-                // for a load reserved we do not want to write
-                req_fsm_miss_we   = (amo_req_i.amo_op == AMO_LR) ? 1'b0 : 1'b1;
+                //  we do not need a store request for load reserved or a failing store conditional
+                //  we can bail-out without making any further requests
+                if (amo_req_i.amo_op == AMO_LR ||
+                   (amo_req_i.amo_op == AMO_SC &&
+                   ((reservation_q.valid && reservation_q.address != amo_req_i.operand_a[63:3]) || !reservation_q.valid))) begin
+                    req_fsm_miss_valid = 1'b0;
+                    state_d = IDLE;
+                    amo_resp_o.ack = 1'b1;
+                    // write-back the result
+                    amo_resp_o.result = amo_operand_a;
+                    // we know that the SC failed
+                    if (amo_req_i.amo_op == AMO_SC) begin
+                        amo_resp_o.result = 1'b1;
+                        // also clear the reservation
+                        reservation_d.valid = 1'b0;
+                    end
+                end else begin
+                    req_fsm_miss_valid = 1'b1;
+                end
+
+                req_fsm_miss_we   = 1'b1;
                 req_fsm_miss_req  = ariane_axi::SINGLE_REQ;
                 req_fsm_miss_size = amo_req_i.size;
                 req_fsm_miss_addr = amo_req_i.operand_a;
@@ -432,20 +448,16 @@ module miss_handler #(
                 end
 
                 // the request is valid or we didn't need to go for another store
-                if (valid_miss_fsm || (amo_req_i.amo_op == AMO_LR)) begin
+                if (valid_miss_fsm) begin
                     state_d = IDLE;
                     amo_resp_o.ack = 1'b1;
                     // write-back the result
                     amo_resp_o.result = amo_operand_a;
-                    // in case we have a SC we need to look into the reservation table
+
                     if (amo_req_i.amo_op == AMO_SC) begin
-                        if (reservation_q.address == amo_req_i.operand_a[63:3] && reservation_q.valid) begin
-                            amo_resp_o.result = 1'b0;
-                        end else begin
-                            amo_resp_o.result = 1'b1;
-                        end
+                        amo_resp_o.result = 1'b0;
                         // An SC must fail if there is a nother SC (to any address) between the LR and the SC in program
-                        // order.
+                        // order (even to the same address).
                         // in any case destory the reservation
                         reservation_d.valid = 1'b0;
                     end

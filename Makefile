@@ -28,7 +28,9 @@ test-location  ?= output/test
 torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
 elf-bin        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
-
+# root path
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+root-dir := $(dir $(mkfile_path))
 
 # Sources
 # Package files -> compile first
@@ -38,27 +40,36 @@ ariane_pkg := include/riscv_pkg.sv                          \
               include/std_cache_pkg.sv                      \
               include/serpent_cache_pkg.sv                  \
               src/axi/src/axi_pkg.sv                        \
+              src/register_interface/src/reg_intf.sv        \
               include/axi_intf.sv                           \
+              tb/ariane_soc_pkg.sv                          \
               include/ariane_axi_pkg.sv                     \
               src/fpu/src/pkg/fpnew_pkg.vhd                 \
               src/fpu/src/pkg/fpnew_fmts_pkg.vhd            \
               src/fpu/src/pkg/fpnew_comps_pkg.vhd           \
               src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
               src/fpu/src/pkg/fpnew_pkg_constants.vhd
+ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
 util := $(wildcard src/util/*.svh)                            \
         src/util/instruction_tracer_pkg.sv                    \
         src/util/instruction_tracer_if.sv                     \
         src/tech_cells_generic/src/cluster_clock_gating.sv    \
+        tb/common/mock_uart.sv                                \
         src/util/sram.sv
-
+util := $(addprefix $(root-dir), $(util))
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
             $(wildcard tb/test/*/*_pkg.sv*)
 # DPI
 dpi := $(patsubst tb/dpi/%.cc,${dpi-library}/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
+dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
+CFLAGS := -I$(QUESTASIM_HOME)/include         \
+          -Itb/riscv-isa-sim/install/include/spike  \
+          -std=c++11 -I../tb/dpi
+
 # this list contains the standalone components
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/fpu/src/utils/*.vhd)                            \
@@ -67,13 +78,19 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(filter-out src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,    \
         $(wildcard src/fpu_div_sqrt_mvp/hdl/*.sv))                     \
         $(wildcard src/frontend/*.sv)                                  \
-        $(wildcard src/cache_subsystem/*.sv)                           \
+        $(filter-out src/cache_subsystem/std_no_dcache.sv,             \
+        $(wildcard src/cache_subsystem/*.sv))                          \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/clint/*.sv)                                     \
+        $(wildcard fpga/src/axi2apb/src/*.sv)                          \
+        $(wildcard fpga/src/axi_slice/src/*.sv)                        \
+        $(wildcard src/plic/*.sv)                                      \
         $(wildcard src/axi_node/src/*.sv)                              \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
         $(wildcard src/debug/debug_rom/*.sv)                           \
+        src/register_interface/src/apb_to_reg.sv                       \
+        src/axi/src/axi_multicut.sv                                    \
         src/fpu/src/fpnew.vhd                                          \
         src/fpu/src/fpnew_top.vhd                                      \
         src/common_cells/src/deprecated/generic_fifo.sv                \
@@ -88,26 +105,40 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/util/axi_slave_connect_rev.sv                              \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
+        src/axi/src/axi_delayer.sv                                     \
+        src/axi/src/axi_to_axi_lite.sv                                 \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
         src/common_cells/src/sync.sv                                   \
         src/common_cells/src/cdc_2phase.sv                             \
         src/common_cells/src/spill_register.sv                         \
         src/common_cells/src/sync_wedge.sv                             \
+        src/common_cells/src/edge_detect.sv                            \
         src/common_cells/src/fifo_v3.sv                                \
         src/common_cells/src/fifo_v2.sv                                \
         src/common_cells/src/fifo_v1.sv                                \
         src/common_cells/src/lzc.sv                                    \
         src/common_cells/src/rrarbiter.sv                              \
-        src/common_cells/src/pipe_reg_simple.sv                        \
+        src/common_cells/src/ready_valid_delay.sv                      \
         src/common_cells/src/lfsr_8bit.sv                              \
+        src/common_cells/src/lfsr_16bit.sv                             \
+        src/common_cells/src/counter.sv                                \
+        src/common_cells/src/pipe_reg_simple.sv                        \
         src/tech_cells_generic/src/cluster_clock_inverter.sv           \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                  \
         tb/ariane_testharness.sv                                       \
+        tb/ariane_peripherals.sv                                       \
+        tb/common/uart.sv                                              \
         tb/common/SimDTM.sv                                            \
         tb/common/SimJTAG.sv
 
-# root path
-root-dir := $(shell pwd)
+src := $(addprefix $(root-dir), $(src))
+
+uart_src := $(wildcard fpga/src/apb_uart/src/*.vhd)
+uart_src := $(addprefix $(root-dir), $(uart_src))
+
+fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv)
+fpga_src := $(addprefix $(root-dir), $(fpga_src))
+
 # look for testbenches
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
@@ -124,16 +155,9 @@ riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-li
 # Search here for include files (e.g.: non-standalone components)
 incdir :=
 # Compile and sim flags
-compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
-uvm-flags    += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
-questa-flags += -t 1ns -64 -coverage -classdebug $(gui-sim) $(QUESTASIM_FLAGS)
-# if defined, calls the questa targets in batch mode
-ifdef batch-mode
-	questa-flags += -c
-	questa-cmd   := -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
-else
-	questa-cmd   := -do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; log -r /*; run -all;"
-endif
+compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
+uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
+questa-flags     += -t 1ns -64 -coverage -classdebug $(gui-sim) $(QUESTASIM_FLAGS)
 compile_flag_vhd += -64 -nologo -quiet -2008
 
 # Iterate over all include directories and write them with +incdir+ prefixed
@@ -146,25 +170,51 @@ riscv-torture-dir    := tmp/riscv-torture
 # -XshowSettings -Xdiag
 riscv-torture-bin    := java -jar sbt-launch.jar
 
+# if defined, calls the questa targets in batch mode
+ifdef batch-mode
+    questa-flags += -c
+    questa-cmd   := -do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
+    questa-cmd   += -do " log -r /*; run -all;"
+else
+    questa-cmd   := -do " log -r /*; run -all;"
+endif
+# we want to preload the memories
+ifdef preload
+    questa-cmd += +PRELOAD=$(preload)
+    elf-bin = none
+    # tandem verify with spike, this requires pre-loading
+    ifdef tandem
+        compile_flag += +define+TANDEM
+        questa-cmd += -gblso tb/riscv-isa-sim/install/lib/libriscv.so
+    endif
+endif
+# remote bitbang is enabled
+ifdef rbb
+    questa-cmd += +jtag_rbb_enable=1
+else
+    questa-cmd += +jtag_rbb_enable=0
+endif
+
 # Build the TB and module using QuestaSim
 build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ariane_dpi.so
 	# Optimize top level
 	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
 # src files
-$(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library)
+$(library)/.build-srcs: $(util) $(library)
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(ariane_pkg)) $(list_incdir) -suppress 2583
 	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(ariane_pkg))
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
 	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
+	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(uart_src))
 	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(src))
 	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(filter %.sv,$(src)) $(list_incdir) -suppress 2583
 	touch $(library)/.build-srcs
 
 # build TBs
-$(library)/.build-tb: $(dpi) $(tbs)
+$(library)/.build-tb: $(dpi)
 	# Compile top level
-	vlog$(questa_version) -sv $(tbs) -work $(library)
+	vlog$(questa_version) $(compile_flag) -sv $(tbs) -work $(library)
 	touch $(library)/.build-tb
 
 $(library):
@@ -173,7 +223,7 @@ $(library):
 # compile DPIs
 $(dpi-library)/%.o: tb/dpi/%.cc $(dpi_hdr)
 	mkdir -p $(dpi-library)
-	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic -I$(QUESTASIM_HOME)/include -o $@ $<
+	$(CXX) -shared -fPIC -std=c++0x -Bsymbolic $(CFLAGS) -c $< -o $@
 
 $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
@@ -185,24 +235,24 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 # if you want to run in batch mode, use make <testname> batch-mode=1
 # alternatively you can call make sim elf-bin=<path/to/elf-bin> in order to load an arbitrary binary
 sim: build
-	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
 	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 
 $(riscv-asm-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
-	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
+	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
 
 $(riscv-amo-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
-	${top_level}_optimized +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-amo-tests-$@.log
+	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-amo-tests-$@.log
 
 $(riscv-benchmarks): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi   \
-	${top_level}_optimized +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
+	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
 
 # can use -jX to run ci tests in parallel using X processes
 run-asm-tests: $(riscv-asm-tests)
@@ -243,13 +293,15 @@ verilate_command := $(verilator)                                                
                     -Wno-style                                                             \
                     -Wno-lint                                                              \
                     $(if $(DEBUG),--trace-structs --trace,)                                \
-                    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
+                    -LDFLAGS "-lfesvr" -CFLAGS "$(CFLAGS)" -Wall --cc  --vpi               \
                     $(list_incdir) --top-module ariane_testharness                         \
                     --Mdir $(ver-library) -O3                                              \
-                    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
+                    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc              \
+                          tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
+	@echo "[Verilator] Building Model"
 	$(verilate_command)
 	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
 
@@ -322,6 +374,16 @@ run-torture-verilator: verilate
 check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
+
+fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(util) $(uart_src)
+	@echo "[FPGA] Generate sources"
+	@echo read_vhdl        {$(uart_src)}   > fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(util)}       >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(src)} 	   >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
+	@echo "[FPGA] Generate Bitstream"
+	cd fpga && make
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*

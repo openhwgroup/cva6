@@ -17,6 +17,7 @@ module axi_master_connect_rev (
     AXI_BUS.in master
 );
 
+    assign  axi_req_o.aw.atop    = '0; // not supported at the moment
     assign  axi_req_o.aw.id      = master.aw_id;
     assign  axi_req_o.aw.addr    = master.aw_addr;
     assign  axi_req_o.aw.len     = master.aw_len;

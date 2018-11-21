@@ -30,7 +30,7 @@ import instruction_tracer_pkg::*;
 module ariane #(
 `ifdef SERPENT_PULP
   parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
-  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region  
+  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
 `endif
   parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000  // begin of cached region
 ) (
@@ -57,6 +57,7 @@ module ariane #(
   input  serpent_cache_pkg::l15_rtrn_t l15_rtrn_i
 `endif
 );
+
   // ------------------------------------------
   // Global Signals
   // Signals connecting more than one module
@@ -76,7 +77,7 @@ module ariane #(
   // --------------
   // IF <-> ID
   // --------------
-  fetch_entry_t             fetch_entry_if_id;
+  frontend_fetch_t          fetch_entry_if_id;
   logic                     fetch_valid_if_id;
   logic                     decode_ack_id_if;
 
