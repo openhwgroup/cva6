@@ -188,27 +188,31 @@ logic [1:0] axi_rd_size, axi_wr_size;
 logic [AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out;
 logic axi_rd_valid;
 logic [AxiNumWords-1:0][63:0] axi_rd_data, axi_wr_data;
-logic [63:0] axi_rd_word;
 logic [AxiNumWords-1:0][7:0] axi_wr_be;
-logic axi_rd_word_valid, axi_rd_word_cnt, axi_wr_req, axi_wr_gnt;
+logic axi_wr_req, axi_wr_gnt;
 logic axi_wr_valid, axi_rd_rdy, axi_wr_rdy;
 
 logic ifill;
 logic [serpent_cache_pkg::L15_TID_WIDTH+2-1:0] id_tmp;
+logic rd_pending_d, rd_pending_q;
 
 // request side
 assign ifill = (l15_req.l15_rqtype==serpent_cache_pkg::L15_IMISS_RQ);
 
-assign axi_rd_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_LOAD_RQ | ifill);
+assign axi_rd_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_LOAD_RQ | ifill) && !rd_pending_q;
 assign axi_wr_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_STORE_RQ);
 
 assign axi_rd_addr = l15_req.l15_address;
 assign axi_wr_addr = axi_rd_addr;
 
+// the axi interconnect does not correctly handle the ordering of read responses.
+// workaround: only allow for one outstanding TX. need to improve this.
+assign rd_pending_d = (axi_rd_valid ) ? '0 : rd_pending_q | axi_rd_gnt;
+
 assign axi_rd_id_in = {l15_req.l15_threadid, ifill, l15_req.l15_nc};
 assign axi_wr_id_in = axi_rd_id_in;
 
-assign axi_rd_size = (ifill) ? 2'b11 : l15_req.l15_size[1:0];// always request 64bit in this case
+assign axi_rd_size = (ifill) ? 2'b11 : l15_req.l15_size[1:0];// always request 64bit words in case of ifill
 assign axi_wr_size = l15_req.l15_size[1:0];
 
 assign axi_rd_blen = (l15_req.l15_size[2]) ? ((ifill) ? ariane_pkg::ICACHE_LINE_WIDTH/64-1  :
@@ -253,6 +257,15 @@ always_comb begin : p_axi_rtrn
   l15_rtrn.l15_data_2        = axi_rd_data[2];
   l15_rtrn.l15_data_3        = axi_rd_data[3];
 end
+
+always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+  if(~rst_ni) begin
+    rd_pending_q <= '0;
+  end else begin
+    rd_pending_q <= rd_pending_d;
+  end
+end
+
 
 axi_adapter2 #(
   .DATA_WORDS      ( AxiNumWords     ),
