@@ -72,8 +72,8 @@ module mem_emul #(
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlb_rand
     automatic bit ok  = 0;
     automatic int rnd = 0;
-    automatic logic [31:0] val; 
-    automatic logic [63:0] lval; 
+    automatic logic [31:0] val;
+    automatic logic [63:0] lval;
 
     if(~rst_ni) begin
       mem_ready_q   <= '0;
@@ -81,7 +81,7 @@ module mem_emul #(
       rand_addr_q   <= '0;
       initialized_q <= '0;
     end else begin
-      
+
       // fill the memory once with random data
       if (~initialized_q) begin
         for (int k=0; k<MemWords; k++) begin
@@ -90,15 +90,15 @@ module mem_emul #(
           mem_array_shadow[k] <= val;
         end
           initialized_q       <= 1;
-      end  
-      
+      end
+
       // re-randomize noncacheable I/O space if requested
       if (io_rand_en_i) begin
         for (int k=0; k<CachedAddrBeg; k++) begin
           ok = randomize(val);
           mem_array[k]        <= val;
         end
-      end  
+      end
 
       // generate random contentions
       if (mem_rand_en_i) begin
@@ -112,7 +112,7 @@ module mem_emul #(
       end
 
       // generate random invalidations
-      
+
       if (inv_rand_en_i) begin
         if (infifo_push) begin
           // update coherent memory view for expected responses
@@ -120,7 +120,7 @@ module mem_emul #(
             lval = inval_addr_queue.pop_back();
             val  = inval_data_queue.pop_back();
             mem_array_shadow[lval] <= val;
-          end  
+          end
         end
 
         ok = randomize(rnd) with {rnd > 0; rnd <= 100;};
@@ -150,7 +150,7 @@ module mem_emul #(
     infifo_data       = '0;
     outfifo_pop       = 0;
     infifo_data.rtype = ICACHE_IFILL_ACK;
-    
+
     // generate random invalidation
     if (mem_inv_q) begin
 
@@ -173,11 +173,10 @@ module mem_emul #(
         infifo_data.nc  = 1'b1;
         infifo_data.f4b = 1'b1;
         // replicate words (this is done in openpiton, too)
-        // note: openpiton replicates the words here. we do not do this currently, 
-        // but this could save us another mux in the critical path in the icache.
-        // for (int k=0; k<ICACHE_LINE_WIDTH/32; k++) begin
-        //   infifo_data.data[k*32 +:32] = mem_array[outfifo_data.paddr>>2];
-        // end
+        // note: openpiton replicates the words here.
+        for (int k=0; k<ICACHE_LINE_WIDTH/32; k++) begin
+          infifo_data.data[k*32 +:32] = mem_array[outfifo_data.paddr>>2];
+        end
         infifo_data.data[0 +:32] = mem_array[outfifo_data.paddr>>2];
       end else begin
         infifo_data.nc  = outfifo_data.nc;
@@ -257,11 +256,11 @@ module mem_emul #(
   assign exp_vaddr_o = stim_addr;
 
   align0: assert property (
-    @(posedge clk_i) disable iff (~rst_ni) ~exp_empty |-> stim_addr[1:0] == 0)       
+    @(posedge clk_i) disable iff (~rst_ni) ~exp_empty |-> stim_addr[1:0] == 0)
        else $fatal(1,"stim_addr is not 32bit word aligned");
 
   align1: assert property (
-    @(posedge clk_i) disable iff (~rst_ni) ~outfifo_empty |-> outfifo_data.paddr[1:0] == 0)       
+    @(posedge clk_i) disable iff (~rst_ni) ~outfifo_empty |-> outfifo_data.paddr[1:0] == 0)
        else $fatal(1,"paddr is not 32bit word aligned");
 
 
