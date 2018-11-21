@@ -55,6 +55,7 @@ util := $(wildcard src/util/*.svh)                            \
         src/util/instruction_tracer_pkg.sv                    \
         src/util/instruction_tracer_if.sv                     \
         src/tech_cells_generic/src/cluster_clock_gating.sv    \
+        tb/common/mock_uart.sv                                \
         src/util/sram.sv
 util := $(addprefix $(root-dir), $(util))
 # Test packages
