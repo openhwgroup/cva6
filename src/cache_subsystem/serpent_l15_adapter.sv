@@ -378,12 +378,12 @@ fifo_v2 #(
         else $fatal(1,"[l15_adapter] got invalidation package with zero invalidation flags");
 
   blockstore_o: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) l15_req_o.l15_val|-> !l15_req_o.l15_blockstore)
-        else $fatal(1,"[l15_adapter] blockstores are not supported");
+      @(posedge clk_i) disable iff (~rst_ni) l15_req_o.l15_val |-> l15_req_o.l15_rqtype == L15_STORE_RQ |-> !(l15_req_o.l15_blockstore || l15_req_o.l15_blockinitstore))
+        else $fatal(1,"[l15_adapter] blockstores are not supported (out)");
 
   blockstore_i: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) l15_rtrn_i.l15_val|-> !l15_rtrn_i.l15_blockinitstore)
-        else $fatal(1,"[l15_adapter] blockstores are not supported");
+      @(posedge clk_i) disable iff (~rst_ni) l15_rtrn_i.l15_val |-> l15_rtrn_i.l15_returntype inside {L15_ST_ACK, L15_ST_ACK} |-> !l15_rtrn_i.l15_blockinitstore)
+        else $fatal(1,"[l15_adapter] blockstores are not supported (in)");
 
   unsuported_rtrn_types: assert property (
       @(posedge clk_i) disable iff (~rst_ni) (l15_rtrn_i.l15_val |-> l15_rtrn_i.l15_returntype inside {L15_LOAD_RET, L15_ST_ACK, L15_IFILL_RET, L15_EVICT_REQ, L15_CPX_RESTYPE_ATOMIC_RES}))
