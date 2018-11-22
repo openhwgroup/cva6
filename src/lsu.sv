@@ -329,19 +329,19 @@ module lsu #(
             end
         end
 
-        // check that all bits in the address >= 39 are equal
-        if (!((&lsu_ctrl.vaddr[63:39]) == 1'b1 || (|lsu_ctrl.vaddr[63:39]) == 1'b0)) begin
+        // we work with SV39, so if VM is enabled, check that all bits [63:38] are equal
+        if (en_ld_st_translation_i && !((&lsu_ctrl.vaddr[63:38]) == 1'b1 || (|lsu_ctrl.vaddr[63:38]) == 1'b0)) begin
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
-                    riscv::LOAD_PAGE_FAULT,
+                    riscv::LD_ACCESS_FAULT,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
-                    riscv::STORE_PAGE_FAULT,
+                    riscv::ST_ACCESS_FAULT,
                     lsu_ctrl.vaddr,
                     1'b1
                 };
