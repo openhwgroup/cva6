@@ -52,7 +52,7 @@
       interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
       reg = <0x0 0xc000000 0x0 0x4000000>;
       riscv,max-priority = <7>;
-      riscv,ndev = <2>;
+      riscv,ndev = <3>;
     };
     debug-controller@0 {
       compatible = "riscv,debug-013";
@@ -74,7 +74,7 @@
       compatible = "xlnx,axi-ethernetlite-3.0", "xlnx,xps-ethernetlite-1.00.a";
       device_type = "network";
       interrupt-parent = <&PLIC0>;
-      interrupts = <2 0>;
+      interrupts = <3 0>;
       local-mac-address = [00 0a 35 00 01 22];
       phy-handle = <&phy0>;
       reg = <0x0 0x30000000 0x0 0x10000>;
@@ -88,10 +88,6 @@
       xlnx,tx-ping-pong = <0x1>;
       xlnx,use-internal = <0x0>;
       xlnx,has-mdio = <0x1>;
-      // rgmii-id: combines rgmii-rxid and rgmii-txid and thus configures the
-      // PHY to enable the RX and TX delays. The MAC should neither add the RX
-      // nor TX delay in this case.
-      phy-mode = "rgmii-id";
       mdio {
         #address-cells = <1>;
         #size-cells = <0>;

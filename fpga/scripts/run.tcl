@@ -14,16 +14,6 @@
 
 # Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-set project ariane
-
-create_project $project . -force -part $::env(XILINX_PART)
-set_property board_part $::env(XILINX_BOARD) [current_project]
-
-# set number of threads to 8 (maximum, unfortunately)
-set_param general.maxThreads 8
-
-set_msg_config -id {[Synth 8-5858]}         -new_severity "info"
-
 # hard-coded to Genesys 2 for the moment
 add_files -fileset constrs_1 -norecurse constraints/genesys-2.xdc
 

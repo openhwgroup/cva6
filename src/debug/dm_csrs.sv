@@ -453,17 +453,7 @@ module dm_csrs #(
 
     logic ndmreset_n;
 
-    // if the PoR is set we want to re-set the other system as well
-    rstgen_bypass i_rstgen_bypass (
-        .clk_i ( clk_i ),
-        .rst_ni ( ~(dmcontrol_q.ndmreset | ~rst_ni) ),
-        .rst_test_mode_ni ( rst_ni ),
-        .test_mode_i ( testmode_i ),
-        .rst_no ( ndmreset_n ),
-        .init_no () // keep open
-    );
-
-    assign ndmreset_o = ~ndmreset_n;
+    assign ndmreset_o = dmcontrol_q.ndmreset;
 
     // response FIFO
     fifo_v2 #(
@@ -538,7 +528,7 @@ module dm_csrs #(
     end
 
 
-        
+
 
 
 ///////////////////////////////////////////////////////
@@ -549,8 +539,8 @@ module dm_csrs #(
 //pragma translate_off
 `ifndef VERILATOR
     haltsum: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) |-> 
-            !({1'b0, dmi_req_i.addr} inside {dm::HaltSum0, dm::HaltSum1, dm::HaltSum2, dm::HaltSum3}))     
+        @(posedge clk_i) disable iff (~rst_ni) (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) |->
+            !({1'b0, dmi_req_i.addr} inside {dm::HaltSum0, dm::HaltSum1, dm::HaltSum2, dm::HaltSum3}))
                 else $warning("Haltsums are not implemented yet and always return 0.");
 `endif
 //pragma translate_on

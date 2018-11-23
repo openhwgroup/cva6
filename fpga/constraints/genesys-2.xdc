@@ -69,3 +69,6 @@ set_property -dict {PACKAGE_PIN U27 IOSTANDARD LVCMOS33} [get_ports spi_clk_o_2]
 set_property -dict {PACKAGE_PIN U28 IOSTANDARD LVCMOS33} [get_ports spi_ss_2]
 set_property -dict {PACKAGE_PIN T26 IOSTANDARD LVCMOS33} [get_ports spi_miso_2]
 set_property -dict {PACKAGE_PIN T27 IOSTANDARD LVCMOS33} [get_ports spi_mosi_2]
+
+# Genesys 2 has a quad SPI flash
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]

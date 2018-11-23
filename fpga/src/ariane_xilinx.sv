@@ -31,7 +31,7 @@ module ariane_xilinx (
   output logic [ 0:0]  ddr3_cs_n   ,
   output logic [ 3:0]  ddr3_dm     ,
   output logic [ 0:0]  ddr3_odt    ,
-  input  wire          eth_txck    ,
+  output wire          eth_txck    ,
   input  wire          eth_rxck    ,
   input  wire          eth_rxctl   ,
   input  wire [3:0]    eth_rxd     ,
@@ -126,6 +126,7 @@ logic time_irq;
 logic ipi;
 
 logic clk;
+logic eth_clk;
 logic spi_clk_i;
 logic ddr_sync_reset;
 logic ddr_clock_out;
@@ -142,8 +143,7 @@ logic cpu_reset;
 assign cpu_reset  = ~cpu_resetn;
 `endif
 
-assign rst_n      = ~ddr_sync_reset;
-assign rst        = ddr_sync_reset;
+logic pll_locked;
 
 // ROM
 logic                    rom_req;
@@ -163,9 +163,19 @@ logic dmactive;
 // IRQ
 logic [1:0] irq;
 assign test_en    = 1'b0;
-assign ndmreset_n = ~ndmreset ;
 
 logic [NBSlave-1:0] pc_asserted;
+
+rstgen i_rstgen_main (
+    .clk_i        ( clk                      ),
+    .rst_ni       ( pll_locked & (~ndmreset) ),
+    .test_mode_i  ( test_en                  ),
+    .rst_no       ( ndmreset_n               ),
+    .init_no      (                          ) // keep open
+);
+
+assign rst_n = ~ddr_sync_reset;
+assign rst = ddr_sync_reset;
 
 // ---------------
 // AXI Xbar
@@ -361,6 +371,7 @@ ariane_peripherals #(
     .plic         ( master[ariane_soc::PLIC]     ),
     .uart         ( master[ariane_soc::UART]     ),
     .spi          ( master[ariane_soc::SPI]      ),
+    .eth_clk_i    ( eth_clk                      ),
     .ethernet     ( master[ariane_soc::Ethernet] ),
     .irq_o        ( irq                          ),
     .rx_i         ( rx                           ),
@@ -429,7 +440,7 @@ logic                        s_axi_rready;
 assign master[ariane_soc::DRAM].r_user = '0;
 assign master[ariane_soc::DRAM].b_user = '0;
 
-xlnx_axi_clock_converter i_xlnx_axi_clock_converter (
+xlnx_axi_clock_converter i_xlnx_axi_clock_converter_ddr (
   .s_axi_aclk     ( clk                                ),
   .s_axi_aresetn  ( ndmreset_n                         ),
   .s_axi_awid     ( master[ariane_soc::DRAM].aw_id     ),
@@ -516,9 +527,11 @@ xlnx_axi_clock_converter i_xlnx_axi_clock_converter (
 );
 
 xlnx_clk_gen i_xlnx_clk_gen (
-  .clk_out1 ( clk           ),
+  .clk_out1 ( clk           ), // 50MHz
+  .clk_out2 ( eth_txck      ), // 25 MHz
+  .clk_out3 ( eth_clk       ), // 100 MHz
   .reset    ( cpu_reset     ),
-  .locked   (               ), // keep open
+  .locked   ( pll_locked    ),
   .clk_in1  ( ddr_clock_out )
 );
 
@@ -637,7 +650,7 @@ xlnx_mig_7_ddr3 i_ddr (
 
 axi_dwidth_converter_512_64 i_axi_dwidth_converter_512_64 (
   .s_axi_aclk     ( ddr_clock_out            ),
-  .s_axi_aresetn  ( rst_n                    ),
+  .s_axi_aresetn  ( ndmreset_n               ),
 
   .s_axi_awid     ( s_axi_awid               ),
   .s_axi_awaddr   ( s_axi_awaddr             ),
