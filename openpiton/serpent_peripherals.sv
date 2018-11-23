@@ -407,197 +407,185 @@ module serpent_peripherals #(
   assign clint_axi_req.ar.region = '0;
 
 
-  // /////////////////////////////
-  // // PLIC
-  // /////////////////////////////
+  /////////////////////////////
+  // PLIC
+  /////////////////////////////
 
-  assign irq_o = '0;
+  AXI_BUS #(
+    .AXI_ID_WIDTH   ( AxiIdWidth   ),
+    .AXI_ADDR_WIDTH ( AxiAddrWidth ),
+    .AXI_DATA_WIDTH ( AxiDataWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth )
+  ) plic_master();
 
-  assign ariane_plic_buf_noc2_ready_o = '0;
-  assign ariane_plic_buf_noc3_data_o  = '0;
-  assign ariane_plic_buf_noc3_valid_o = '0;
-
-  // AXI_BUS #(
-  //   .AXI_ID_WIDTH   ( AxiIdWidth   ),
-  //   .AXI_ADDR_WIDTH ( AxiAddrWidth ),
-  //   .AxiDataWidth   ( AxiDataWidth ),
-  //   .AxiUserWidth   ( AxiUserWidth )
-  // ) plic_master();
-
-
-  // // TODO: add PLIC
-
-  // noc_axilite_bridge #(
-  //  .SLAVE_RESP_BYTEWIDTH   ( 8             ),
-  //  .SWAP_ENDIANESS         ( SwapEndianess )
-  // ) i_plic_axilite_bridge (
-  //   .clk                    ( clk_i                        ),
-  //   .rst                    ( ~rst_ni                      ),
-  //   // to/from NOC
-  //   .splitter_bridge_val    ( buf_ariane_plic_noc2_valid_i ),
-  //   .splitter_bridge_data   ( buf_ariane_plic_noc2_data_i  ),
-  //   .bridge_splitter_rdy    ( ariane_plic_buf_noc2_ready_o ),
-  //   .bridge_splitter_val    ( ariane_plic_buf_noc3_valid_o ),
-  //   .bridge_splitter_data   ( ariane_plic_buf_noc3_data_o  ),
-  //   .splitter_bridge_rdy    ( buf_ariane_plic_noc3_ready_i ),
-  //   //axi lite signals
-  //   //write address channel
-  //   //write address channel
-  //   .m_axi_awaddr           ( plic_master.aw_addr               ),
-  //   .m_axi_awvalid          ( plic_master.aw_valid              ),
-  //   .m_axi_awready          ( plic_master.aw_ready              ),
-  //   //write data channel
-  //   .m_axi_wdata            ( plic_master.w_data                ),
-  //   .m_axi_wstrb            ( plic_master.w_strb                ),
-  //   .m_axi_wvalid           ( plic_master.w_valid               ),
-  //   .m_axi_wready           ( plic_master.w_ready               ),
-  //   //read address channel
-  //   .m_axi_araddr           ( plic_master.ar_addr               ),
-  //   .m_axi_arvalid          ( plic_master.ar_valid              ),
-  //   .m_axi_arready          ( plic_master.ar_ready              ),
-  //   //read data channel
-  //   .m_axi_rdata            ( plic_master.r_data                ),
-  //   .m_axi_rresp            ( plic_master.r_resp                ),
-  //   .m_axi_rvalid           ( plic_master.r_valid               ),
-  //   .m_axi_rready           ( plic_master.r_ready               ),
-  //   //write response channel
-  //   .m_axi_bresp            ( plic_master.b_resp                ),
-  //   .m_axi_bvalid           ( plic_master.b_valid               ),
-  //   .m_axi_bready           ( plic_master.b_ready               )
-  // );
+  noc_axilite_bridge #(
+   .SLAVE_RESP_BYTEWIDTH   ( 8             ),
+   .SWAP_ENDIANESS         ( SwapEndianess )
+  ) i_plic_axilite_bridge (
+    .clk                    ( clk_i                        ),
+    .rst                    ( ~rst_ni                      ),
+    // to/from NOC
+    .splitter_bridge_val    ( buf_ariane_plic_noc2_valid_i ),
+    .splitter_bridge_data   ( buf_ariane_plic_noc2_data_i  ),
+    .bridge_splitter_rdy    ( ariane_plic_buf_noc2_ready_o ),
+    .bridge_splitter_val    ( ariane_plic_buf_noc3_valid_o ),
+    .bridge_splitter_data   ( ariane_plic_buf_noc3_data_o  ),
+    .splitter_bridge_rdy    ( buf_ariane_plic_noc3_ready_i ),
+    //axi lite signals
+    //write address channel
+    //write address channel
+    .m_axi_awaddr           ( plic_master.aw_addr               ),
+    .m_axi_awvalid          ( plic_master.aw_valid              ),
+    .m_axi_awready          ( plic_master.aw_ready              ),
+    //write data channel
+    .m_axi_wdata            ( plic_master.w_data                ),
+    .m_axi_wstrb            ( plic_master.w_strb                ),
+    .m_axi_wvalid           ( plic_master.w_valid               ),
+    .m_axi_wready           ( plic_master.w_ready               ),
+    //read address channel
+    .m_axi_araddr           ( plic_master.ar_addr               ),
+    .m_axi_arvalid          ( plic_master.ar_valid              ),
+    .m_axi_arready          ( plic_master.ar_ready              ),
+    //read data channel
+    .m_axi_rdata            ( plic_master.r_data                ),
+    .m_axi_rresp            ( plic_master.r_resp                ),
+    .m_axi_rvalid           ( plic_master.r_valid               ),
+    .m_axi_rready           ( plic_master.r_ready               ),
+    //write response channel
+    .m_axi_bresp            ( plic_master.b_resp                ),
+    .m_axi_bvalid           ( plic_master.b_valid               ),
+    .m_axi_bready           ( plic_master.b_ready               )
+  );
 
   // tie off signals not used by AXI-lite
-  // assign plic_master.aw_id     = '0;
-  // assign plic_master.aw_len    = '0;
-  // assign plic_master.aw_size   = 2'b11;// 8byte
-  // assign plic_master.aw_burst  = '0;
-  // assign plic_master.aw_lock   = '0;
-  // assign plic_master.aw_cache  = '0;
-  // assign plic_master.aw_prot   = '0;
-  // assign plic_master.aw_qos    = '0;
-  // assign plic_master.aw_region = '0;
-  // assign plic_master.w_last    = 1'b1;
-  // assign plic_master.ar_id     = '0;
-  // assign plic_master.ar_len    = '0;
-  // assign plic_master.ar_size   = 2'b11;// 8byte
-  // assign plic_master.ar_burst  = '0;
-  // assign plic_master.ar_lock   = '0;
-  // assign plic_master.ar_cache  = '0;
-  // assign plic_master.ar_prot   = '0;
-  // assign plic_master.ar_qos    = '0;
-  // assign plic_master.ar_region = '0;
-  // //assign plic_master.r_id      = '0;
-  // //assign plic_master.r_last    = 1'b1;
-  // //assign plic_master.b_id      = '0;
+  assign plic_master.aw_id     = '0;
+  assign plic_master.aw_len    = '0;
+  assign plic_master.aw_size   = 2'b11;// 8byte
+  assign plic_master.aw_burst  = '0;
+  assign plic_master.aw_lock   = '0;
+  assign plic_master.aw_cache  = '0;
+  assign plic_master.aw_prot   = '0;
+  assign plic_master.aw_qos    = '0;
+  assign plic_master.aw_region = '0;
+  assign plic_master.w_last    = 1'b1;
+  assign plic_master.ar_id     = '0;
+  assign plic_master.ar_len    = '0;
+  assign plic_master.ar_size   = 2'b11;// 8byte
+  assign plic_master.ar_burst  = '0;
+  assign plic_master.ar_lock   = '0;
+  assign plic_master.ar_cache  = '0;
+  assign plic_master.ar_prot   = '0;
+  assign plic_master.ar_qos    = '0;
+  assign plic_master.ar_region = '0;
 
-//     REG_BUS #(
-//         .ADDR_WIDTH ( 40 ),
-//         .DATA_WIDTH ( 32 )
-//     ) reg_bus (clk_i);
+    REG_BUS #(
+        .ADDR_WIDTH ( 32 ),
+        .DATA_WIDTH ( 32 )
+    ) reg_bus (clk_i);
 
-//     logic         plic_penable;
-//     logic         plic_pwrite;
-//     logic [39:0]  plic_paddr;
-//     logic         plic_psel;
-//     logic [31:0]  plic_pwdata;
-//     logic [31:0]  plic_prdata;
-//     logic         plic_pready;
-//     logic         plic_pslverr;
+    logic         plic_penable;
+    logic         plic_pwrite;
+    logic [31:0]  plic_paddr;
+    logic         plic_psel;
+    logic [31:0]  plic_pwdata;
+    logic [31:0]  plic_prdata;
+    logic         plic_pready;
+    logic         plic_pslverr;
 
-//     axi2apb_64_32 #(
-//         .AXI4_ADDRESS_WIDTH ( AxiAddrWidth ),
-//         .AXI4_RDATA_WIDTH   ( AxiDataWidth ),
-//         .AXI4_WDATA_WIDTH   ( AxiDataWidth ),
-//         .AXI4_ID_WIDTH      ( AxiIdWidth   ),
-//         .AXI4_USER_WIDTH    ( AxiUserWidth ),
-//         .BUFF_DEPTH_SLAVE   ( 2            ),
-//         .APB_ADDR_WIDTH     ( 40           )
-//     ) i_axi2apb_64_32_plic (
-//         .ACLK      ( clk_i                 ),
-//         .ARESETn   ( rst_ni                ),
-//         .test_en_i ( testmode_i            ),
-//         .AWID_i    ( plic_master.aw_id     ),
-//         .AWADDR_i  ( plic_master.aw_addr   ),
-//         .AWLEN_i   ( plic_master.aw_len    ),
-//         .AWSIZE_i  ( plic_master.aw_size   ),
-//         .AWBURST_i ( plic_master.aw_burst  ),
-//         .AWLOCK_i  ( plic_master.aw_lock   ),
-//         .AWCACHE_i ( plic_master.aw_cache  ),
-//         .AWPROT_i  ( plic_master.aw_prot   ),
-//         .AWREGION_i( plic_master.aw_region ),
-//         .AWUSER_i  ( plic_master.aw_user   ),
-//         .AWQOS_i   ( plic_master.aw_qos    ),
-//         .AWVALID_i ( plic_master.aw_valid  ),
-//         .AWREADY_o ( plic_master.aw_ready  ),
-//         .WDATA_i   ( plic_master.w_data    ),
-//         .WSTRB_i   ( plic_master.w_strb    ),
-//         .WLAST_i   ( plic_master.w_last    ),
-//         .WUSER_i   ( plic_master.w_user    ),
-//         .WVALID_i  ( plic_master.w_valid   ),
-//         .WREADY_o  ( plic_master.w_ready   ),
-//         .BID_o     ( plic_master.b_id      ),
-//         .BRESP_o   ( plic_master.b_resp    ),
-//         .BVALID_o  ( plic_master.b_valid   ),
-//         .BUSER_o   ( plic_master.b_user    ),
-//         .BREADY_i  ( plic_master.b_ready   ),
-//         .ARID_i    ( plic_master.ar_id     ),
-//         .ARADDR_i  ( plic_master.ar_addr   ),
-//         .ARLEN_i   ( plic_master.ar_len    ),
-//         .ARSIZE_i  ( plic_master.ar_size   ),
-//         .ARBURST_i ( plic_master.ar_burst  ),
-//         .ARLOCK_i  ( plic_master.ar_lock   ),
-//         .ARCACHE_i ( plic_master.ar_cache  ),
-//         .ARPROT_i  ( plic_master.ar_prot   ),
-//         .ARREGION_i( plic_master.ar_region ),
-//         .ARUSER_i  ( plic_master.ar_user   ),
-//         .ARQOS_i   ( plic_master.ar_qos    ),
-//         .ARVALID_i ( plic_master.ar_valid  ),
-//         .ARREADY_o ( plic_master.ar_ready  ),
-//         .RID_o     ( plic_master.r_id      ),
-//         .RDATA_o   ( plic_master.r_data    ),
-//         .RRESP_o   ( plic_master.r_resp    ),
-//         .RLAST_o   ( plic_master.r_last    ),
-//         .RUSER_o   ( plic_master.r_user    ),
-//         .RVALID_o  ( plic_master.r_valid   ),
-//         .RREADY_i  ( plic_master.r_ready   ),
-//         .PENABLE   ( plic_penable   ),
-//         .PWRITE    ( plic_pwrite    ),
-//         .PADDR     ( plic_paddr     ),
-//         .PSEL      ( plic_psel      ),
-//         .PWDATA    ( plic_pwdata    ),
-//         .PRDATA    ( plic_prdata    ),
-//         .PREADY    ( plic_pready    ),
-//         .PSLVERR   ( plic_pslverr   )
-//     );
+    axi2apb_64_32 #(
+        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth ),
+        .AXI4_RDATA_WIDTH   ( AxiDataWidth ),
+        .AXI4_WDATA_WIDTH   ( AxiDataWidth ),
+        .AXI4_ID_WIDTH      ( AxiIdWidth   ),
+        .AXI4_USER_WIDTH    ( AxiUserWidth ),
+        .BUFF_DEPTH_SLAVE   ( 2            ),
+        .APB_ADDR_WIDTH     ( 32           )
+    ) i_axi2apb_64_32_plic (
+        .ACLK      ( clk_i                 ),
+        .ARESETn   ( rst_ni                ),
+        .test_en_i ( testmode_i            ),
+        .AWID_i    ( plic_master.aw_id     ),
+        .AWADDR_i  ( plic_master.aw_addr   ),
+        .AWLEN_i   ( plic_master.aw_len    ),
+        .AWSIZE_i  ( plic_master.aw_size   ),
+        .AWBURST_i ( plic_master.aw_burst  ),
+        .AWLOCK_i  ( plic_master.aw_lock   ),
+        .AWCACHE_i ( plic_master.aw_cache  ),
+        .AWPROT_i  ( plic_master.aw_prot   ),
+        .AWREGION_i( plic_master.aw_region ),
+        .AWUSER_i  ( plic_master.aw_user   ),
+        .AWQOS_i   ( plic_master.aw_qos    ),
+        .AWVALID_i ( plic_master.aw_valid  ),
+        .AWREADY_o ( plic_master.aw_ready  ),
+        .WDATA_i   ( plic_master.w_data    ),
+        .WSTRB_i   ( plic_master.w_strb    ),
+        .WLAST_i   ( plic_master.w_last    ),
+        .WUSER_i   ( plic_master.w_user    ),
+        .WVALID_i  ( plic_master.w_valid   ),
+        .WREADY_o  ( plic_master.w_ready   ),
+        .BID_o     ( plic_master.b_id      ),
+        .BRESP_o   ( plic_master.b_resp    ),
+        .BVALID_o  ( plic_master.b_valid   ),
+        .BUSER_o   ( plic_master.b_user    ),
+        .BREADY_i  ( plic_master.b_ready   ),
+        .ARID_i    ( plic_master.ar_id     ),
+        .ARADDR_i  ( plic_master.ar_addr   ),
+        .ARLEN_i   ( plic_master.ar_len    ),
+        .ARSIZE_i  ( plic_master.ar_size   ),
+        .ARBURST_i ( plic_master.ar_burst  ),
+        .ARLOCK_i  ( plic_master.ar_lock   ),
+        .ARCACHE_i ( plic_master.ar_cache  ),
+        .ARPROT_i  ( plic_master.ar_prot   ),
+        .ARREGION_i( plic_master.ar_region ),
+        .ARUSER_i  ( plic_master.ar_user   ),
+        .ARQOS_i   ( plic_master.ar_qos    ),
+        .ARVALID_i ( plic_master.ar_valid  ),
+        .ARREADY_o ( plic_master.ar_ready  ),
+        .RID_o     ( plic_master.r_id      ),
+        .RDATA_o   ( plic_master.r_data    ),
+        .RRESP_o   ( plic_master.r_resp    ),
+        .RLAST_o   ( plic_master.r_last    ),
+        .RUSER_o   ( plic_master.r_user    ),
+        .RVALID_o  ( plic_master.r_valid   ),
+        .RREADY_i  ( plic_master.r_ready   ),
+        .PENABLE   ( plic_penable   ),
+        .PWRITE    ( plic_pwrite    ),
+        .PADDR     ( plic_paddr     ),
+        .PSEL      ( plic_psel      ),
+        .PWDATA    ( plic_pwdata    ),
+        .PRDATA    ( plic_prdata    ),
+        .PREADY    ( plic_pready    ),
+        .PSLVERR   ( plic_pslverr   )
+    );
 
-//     apb_to_reg i_apb_to_reg (
-//         .clk_i                     ,
-//         .rst_ni                    ,
-//         .penable_i ( plic_penable ),
-//         .pwrite_i  ( plic_pwrite  ),
-//         .paddr_i   ( plic_paddr   ),
-//         .psel_i    ( plic_psel    ),
-//         .pwdata_i  ( plic_pwdata  ),
-//         .prdata_o  ( plic_prdata  ),
-//         .pready_o  ( plic_pready  ),
-//         .pslverr_o ( plic_pslverr ),
-//         .reg_o     ( reg_bus      )
-//     );
+    apb_to_reg i_apb_to_reg (
+        .clk_i                     ,
+        .rst_ni                    ,
+        .penable_i ( plic_penable ),
+        .pwrite_i  ( plic_pwrite  ),
+        .paddr_i   ( plic_paddr   ),
+        .psel_i    ( plic_psel    ),
+        .pwdata_i  ( plic_pwdata  ),
+        .prdata_o  ( plic_prdata  ),
+        .pready_o  ( plic_pready  ),
+        .pslverr_o ( plic_pslverr ),
+        .reg_o     ( reg_bus      )
+    );
 
-//     plic #(
-//         .ADDR_WIDTH         ( 32                     ),
-//         .DATA_WIDTH         ( 32                     ),
-//         .ID_BITWIDTH        ( 3                      ), // TODO (zarubaf): Find propper width
-//         .PARAMETER_BITWIDTH ( 3                      ), // TODO (zarubaf): Find propper width
-//         .NUM_TARGETS        ( 2*NumHarts             ),
-//         .NUM_SOURCES        ( NumSources             )
-//     ) i_plic (
-//         .clk_i                                        ,
-//         .rst_ni                                       ,
-//         .irq_sources_i                                ,
-//         .eip_targets_o      ( irq_o                  ),
-//         .external_bus_io    ( reg_bus                )
-// );
+    plic #(
+        .ADDR_WIDTH         ( 32                     ),
+        .DATA_WIDTH         ( 32                     ),
+        .ID_BITWIDTH        ( 3                      ), // TODO (zarubaf): Find propper width
+        .PARAMETER_BITWIDTH ( 3                      ), // TODO (zarubaf): Find propper width
+        .NUM_TARGETS        ( 2*NumHarts             ),
+        .NUM_SOURCES        ( NumSources             )
+    ) i_plic (
+        .clk_i                                        ,
+        .rst_ni                                       ,
+        .irq_sources_i                                ,
+        .eip_targets_o      ( irq_o                  ),
+        .external_bus_io    ( reg_bus                )
+);
 
 
 
