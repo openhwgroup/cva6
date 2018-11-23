@@ -1,0 +1,157 @@
+// Copyright (c) 2018 ETH Zurich, University of Bologna
+// All rights reserved.
+//
+// This code is under development and not yet released to the public.
+// Until it is released, the code is under the copyright of ETH Zurich and
+// the University of Bologna, and may contain confidential and/or unpublished
+// work. Any reuse/redistribution is strictly forbidden without written
+// permission from ETH Zurich.
+//
+// Bug fixes and contributions will eventually be released under the
+// SolderPad open hardware license in the context of the PULP platform
+// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
+// University of Bologna.
+//
+// Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
+// Date: 15.08.2018
+// Description: File list for OpenPiton flow
+// src/fpu_div_sqrt_mvp/hdl/fpu_ff.sv
+// src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+// src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
+// src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv
+// src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
+// src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
+// src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
+// src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
+// src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
+// src/fpu/src/pkg/fpnew_pkg.vhd
+// src/fpu/src/pkg/fpnew_fmts_pkg.vhd
+// src/fpu/src/pkg/fpnew_comps_pkg.vhd
+// src/fpu/src/pkg/fpnew_pkg_constants.vhd
+// src/fpu/src/utils/fp_pipe.vhd
+// src/fpu/src/utils/fp_rounding.vhd
+// src/fpu/src/utils/fp_arbiter.vhd
+// src/fpu/src/ops/fma_core.vhd
+// src/fpu/src/ops/fp_fma.vhd
+// src/fpu/src/ops/fp_divsqrt_multi.vhd
+// src/fpu/src/ops/fp_noncomp.vhd
+// src/fpu/src/ops/fp_f2fcasts_fmt.vhd
+// src/fpu/src/ops/fp_f2icasts_fmt.vhd
+// src/fpu/src/ops/fp_i2fcasts_fmt.vhd
+// src/fpu/src/subunits/addmul_fmt_slice.vhd
+// src/fpu/src/subunits/addmul_block.vhd
+// src/fpu/src/subunits/divsqrt_multifmt_slice.vhd
+// src/fpu/src/subunits/divsqrt_block.vhd
+// src/fpu/src/subunits/noncomp_fmt_slice.vhd
+// src/fpu/src/subunits/noncomp_block.vhd
+// src/fpu/src/subunits/conv_fmt_slice.vhd
+// src/fpu/src/subunits/conv_ifmt_slice.vhd
+// src/fpu/src/subunits/conv_block.vhd
+// src/fpu/src/fpnew.vhd
+// src/fpu/src/fpnew_top.vhd
+src/axi/src/axi_pkg.sv
+src/debug/dm_pkg.sv
+include/riscv_pkg.sv
+include/ariane_pkg.sv
+include/ariane_axi_pkg.sv
+include/serpent_cache_pkg.sv
+//include/std_cache_pkg.sv
+include/axi_intf.sv
+src/util/instruction_tracer_pkg.sv
+src/util/instruction_tracer_if.sv
+src/util/sram.sv
+src/util/axi_master_connect.sv
+src/util/axi_master_connect_rev.sv
+src/util/axi_slave_connect.sv
+src/util/axi_slave_connect_rev.sv
+src/common_cells/src/fifo_v1.sv
+src/common_cells/src/fifo_v2.sv
+src/common_cells/src/fifo_v3.sv
+src/common_cells/src/lfsr_8bit.sv
+src/common_cells/src/lzc.sv
+src/common_cells/src/rrarbiter.sv
+src/common_cells/src/rstgen_bypass.sv
+src/common_cells/src/sync_wedge.sv
+src/common_cells/src/cdc_2phase.sv
+src/common_cells/src/pipe_reg_simple.sv
+src/fpga-support/rtl/SyncSpRamBeNx64.sv
+src/axi_mem_if/src/axi2mem.sv
+src/tech_cells_generic/src/cluster_clock_inverter.sv
+src/tech_cells_generic/src/pulp_clock_mux2.sv
+src/axi_adapter.sv
+src/alu.sv
+src/fpu_wrap.sv
+src/ariane.sv
+src/branch_unit.sv
+src/compressed_decoder.sv
+src/controller.sv
+src/csr_buffer.sv
+src/csr_regfile.sv
+src/decoder.sv
+src/ex_stage.sv
+src/frontend/btb.sv
+src/frontend/bht.sv
+src/frontend/ras.sv
+src/frontend/instr_scan.sv
+src/frontend/frontend.sv
+src/id_stage.sv
+src/instr_realigner.sv
+src/issue_read_operands.sv
+src/issue_stage.sv
+src/load_unit.sv
+src/load_store_unit.sv
+src/mmu.sv
+src/mult.sv
+src/multiplier.sv
+src/serdiv.sv
+src/perf_counters.sv
+src/ptw.sv
+src/ariane_regfile_ff.sv
+src/re_name.sv
+src/scoreboard.sv
+src/store_buffer.sv
+src/amo_buffer.sv
+src/store_unit.sv
+src/tlb.sv
+src/commit_stage.sv
+src/cache_subsystem/serpent_dcache_ctrl.sv
+src/cache_subsystem/serpent_dcache_mem.sv
+src/cache_subsystem/serpent_dcache_missunit.sv
+src/cache_subsystem/serpent_dcache_wbuffer.sv
+src/cache_subsystem/serpent_dcache.sv
+src/cache_subsystem/serpent_icache.sv
+src/cache_subsystem/serpent_l15_adapter.sv
+src/cache_subsystem/serpent_cache_subsystem.sv
+src/debug/debug_rom/debug_rom.sv
+src/debug/dm_csrs.sv
+src/clint/clint.sv
+src/clint/axi_lite_interface.sv
+src/debug/dm_mem.sv
+src/debug/dm_top.sv
+src/debug/dmi_cdc.sv
+src/debug/dmi_jtag.sv
+src/debug/dm_sba.sv
+src/debug/dmi_jtag_tap.sv
+openpiton/ariane_verilog_wrap.sv
+openpiton/serpent_peripherals.sv
+bootrom/bootrom.sv
+src/plic/plic.sv
+src/plic/plic_claim_complete_tracker.sv
+src/plic/plic_comparator.sv
+src/plic/plic_find_max.sv
+src/plic/plic_gateway.sv
+src/plic/plic_interface.sv
+src/plic/plic_target_slice.sv
+fpga/src/axi2apb/src/axi2apb_wrap.sv
+fpga/src/axi2apb/src/axi2apb.sv
+fpga/src/axi2apb/src/axi2apb_64_32.sv
+fpga/src/axi_slice/src/axi_w_buffer.sv
+fpga/src/axi_slice/src/axi_b_buffer.sv
+fpga/src/axi_slice/src/axi_slice_wrap.sv
+fpga/src/axi_slice/src/axi_slice.sv
+fpga/src/axi_slice/src/axi_single_slice.sv
+fpga/src/axi_slice/src/axi_ar_buffer.sv
+fpga/src/axi_slice/src/axi_r_buffer.sv
+fpga/src/axi_slice/src/axi_aw_buffer.sv
+src/register_interface/src/apb_to_reg.sv
+src/register_interface/src/reg_intf.sv

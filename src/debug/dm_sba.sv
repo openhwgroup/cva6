@@ -137,7 +137,7 @@ module dm_sba (
         .clk_i                 ( clk_i                     ),
         .rst_ni                ( rst_ni                    ),
         .req_i                 ( req                       ),
-        .type_i                ( std_cache_pkg::SINGLE_REQ ),
+        .type_i                ( ariane_axi::SINGLE_REQ    ),
         .gnt_o                 ( gnt                       ),
         .gnt_id_o              (                           ),
         .addr_i                ( address                   ),

@@ -1,0 +1,15 @@
+../../include/riscv_pkg.sv
+../../src/debug/dm_pkg.sv
+../../include/ariane_pkg.sv
+../../include/serpent_cache_pkg.sv
+../../src/fpga-support/rtl/SyncSpRamBeNx64.sv
+../../src/cache_subsystem/serpent_icache.sv
+../../src/common_cells/src/lfsr_8bit.sv
+../../src/common_cells/src/fifo_v2.sv
+../../src/common_cells/src/fifo_v3.sv
+../../src/common_cells/src/lzc.sv
+../../src/util/sram.sv
+hdl/mem_emul.sv
+hdl/tlb_emul.sv
+hdl/tb_pkg.sv
+hdl/tb.sv

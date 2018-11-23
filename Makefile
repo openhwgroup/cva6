@@ -38,6 +38,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
               src/debug/dm_pkg.sv                           \
               include/ariane_pkg.sv                         \
               include/std_cache_pkg.sv                      \
+              include/serpent_cache_pkg.sv                  \
               src/axi/src/axi_pkg.sv                        \
               src/register_interface/src/reg_intf.sv        \
               include/axi_intf.sv                           \
@@ -99,7 +100,10 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/common_cells/src/rstgen.sv                                 \
         src/common_cells/src/stream_mux.sv                             \
         src/common_cells/src/stream_demux.sv                           \
-        src/util/axi_connect.sv                                        \
+        src/util/axi_master_connect.sv                                 \
+        src/util/axi_slave_connect.sv                                  \
+        src/util/axi_master_connect_rev.sv                             \
+        src/util/axi_slave_connect_rev.sv                              \
         src/axi/src/axi_cut.sv                                         \
         src/axi/src/axi_join.sv                                        \
         src/axi/src/axi_delayer.sv                                     \
@@ -152,11 +156,10 @@ riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-li
 # Search here for include files (e.g.: non-standalone components)
 incdir :=
 # Compile and sim flags
-compile_flag += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
-
+compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
+uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
+questa-flags     += -t 1ns -64 -coverage -classdebug $(gui-sim) $(QUESTASIM_FLAGS)
 compile_flag_vhd += -64 -nologo -quiet -2008
-uvm-flags    += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
-questa-flags += -t 1ns -64 -coverage -classdebug $(gui-sim) $(QUESTASIM_FLAGS)
 
 # Iterate over all include directories and write them with +incdir+ prefixed
 # +incdir+ works for Verilator and QuestaSim
@@ -164,7 +167,9 @@ list_incdir := $(foreach dir, ${incdir}, +incdir+$(dir))
 
 # RISCV torture setup
 riscv-torture-dir    := tmp/riscv-torture
-riscv-torture-bin    := java -Xmx1G -Xss8M -XX:MaxPermSize=128M -jar sbt-launch.jar
+# old java flags  -Xmx1G -Xss8M -XX:MaxPermSize=128M
+# -XshowSettings -Xdiag
+riscv-torture-bin    := java -jar sbt-launch.jar
 
 # if defined, calls the questa targets in batch mode
 ifdef batch-mode
@@ -197,7 +202,7 @@ build: $(library) $(library)/.build-srcs $(library)/.build-tb $(dpi-library)/ari
 	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
 # src files
-$(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library) $(uart_src)
+$(library)/.build-srcs: $(util) $(library)
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(ariane_pkg)) $(list_incdir) -suppress 2583
 	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(ariane_pkg))
 	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
@@ -208,9 +213,9 @@ $(library)/.build-srcs: $(ariane_pkg) $(util) $(src) $(library) $(uart_src)
 	touch $(library)/.build-srcs
 
 # build TBs
-$(library)/.build-tb: $(dpi) $(tbs)
+$(library)/.build-tb: $(dpi)
 	# Compile top level
-	vlog$(questa_version) -sv $(tbs) -work $(library)
+	vlog$(questa_version) $(compile_flag) -sv $(tbs) -work $(library)
 	touch $(library)/.build-tb
 
 $(library):
@@ -333,33 +338,31 @@ torture-itest:
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -a output/test.S'
 
 torture-rtest: build
-	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture$(torture-logs) defines=$(defines) test-location=$(test-location)" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture$(torture-logs) batch-mode=1 defines=$(defines) test-location=$(test-location)" > call.sh && chmod +x call.sh
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a $(test-location).S' | tee $(test-location).log
 	make check-torture test-location=$(test-location)
 
 torture-dummy: build
-	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture defines=$(defines) test-location=\$${@: -1}" > call.sh
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture batch-mode=1 defines=$(defines) test-location=\$${@: -1}" > call.sh
 
 torture-rnight: build
-	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture$(torture-logs) defines=$(defines) test-location=\$${@: -1}" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture$(torture-logs) batch-mode=1 defines=$(defines) test-location=\$${@: -1}" > call.sh && chmod +x call.sh
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'overnight/run -r ./call.sh -g none' | tee output/overnight.log
 	$(MAKE) check-torture
 
 torture-rtest-verilator: verilate
-	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture-verilator defines=$(defines)" > call.sh && chmod +x call.sh
+	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture-verilator batch-mode=1 defines=$(defines)" > call.sh && chmod +x call.sh
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a output/test.S' | tee output/test.log
 	$(MAKE) check-torture
 
 run-torture: build
-	vsim${questa_version} +permissive $(questa-flags) -c -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)             \
-	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi      \
-	-do "coverage save -onexit tmp/$@.ucdb; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"                           \
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)                                  \
+	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                      \
 	${top_level}_optimized +permissive-off +signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
 
 run-torture-log: build
-	vsim${questa_version} +permissive $(questa-flags) -c -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)                                                     \
-	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                              \
-	-do " set StdArithNoWarnings 1; set NumericStdNoWarnings 1; coverage save -onexit tmp/$@.ucdb; log -r /*; run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" \
+	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)                                  \
+	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                      \
 	${top_level}_optimized +permissive-off +signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
 	cp vsim.wlf $(riscv-torture-dir)/$(test-location).wlf
 	cp trace_hart_0000.log $(riscv-torture-dir)/$(test-location).trace

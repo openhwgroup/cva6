@@ -23,7 +23,7 @@ module dm_top #(
     parameter int AxiAddrWidth = -1,
     parameter int AxiDataWidth = -1,
     parameter int AxiUserWidth = -1
-)(
+) (
     input  logic               clk_i,       // clock
     input  logic               rst_ni,      // asynchronous reset active low, connect PoR here, not the system reset
     input  logic               testmode_i,
@@ -32,10 +32,13 @@ module dm_top #(
     output logic [NrHarts-1:0] debug_req_o, // async debug request
     input  logic [NrHarts-1:0] unavailable_i, // communicate whether the hart is unavailable (e.g.: power down)
 
-    AXI_BUS.Slave              axi_slave,   // bus slave, for an execution based technique
+    // bus slave, for an execution based technique
+    input  ariane_axi::req_t   axi_s_req_i,
+    output ariane_axi::resp_t  axi_s_resp_o,
+
     // bus master, for system bus accesses
-    output ariane_axi::req_t   axi_req_o,
-    input  ariane_axi::resp_t  axi_resp_i,
+    output ariane_axi::req_t   axi_m_req_o,
+    input  ariane_axi::resp_t  axi_m_resp_i,
 
     // Connection to DTM - compatible to RocketChip Debug Module
     input  logic               dmi_rst_ni,
@@ -148,8 +151,8 @@ module dm_top #(
         .clk_i                   ( clk_i                 ),
         .rst_ni                  ( rst_ni                ),
         .dmactive_i              ( dmactive_o            ),
-        .axi_req_o,
-        .axi_resp_i,
+        .axi_req_o               ( axi_m_req_o           ),
+        .axi_resp_i              ( axi_m_resp_i          ),
         .sbaddress_i             ( sbaddress_csrs_sba    ),
         .sbaddress_o             ( sbaddress_sba_csrs    ),
         .sbaddress_write_valid_i ( sbaddress_write_valid ),
@@ -195,20 +198,33 @@ module dm_top #(
         .rdata_o                 ( rdata                 )
     );
 
+    AXI_BUS #(
+        .AXI_ID_WIDTH   ( AxiIdWidth   ),
+        .AXI_ADDR_WIDTH ( AxiAddrWidth ),
+        .AXI_DATA_WIDTH ( AxiDataWidth ),
+        .AXI_USER_WIDTH ( AxiUserWidth )
+    ) slave();
+
+    axi_slave_connect_rev i_axi_slave_connect_rev (
+      .axi_req_i (axi_s_req_i),
+      .axi_resp_o(axi_s_resp_o),
+      .slave(slave));
+
     axi2mem #(
         .AXI_ID_WIDTH   ( AxiIdWidth   ),
         .AXI_ADDR_WIDTH ( AxiAddrWidth ),
         .AXI_DATA_WIDTH ( AxiDataWidth ),
         .AXI_USER_WIDTH ( AxiUserWidth )
     ) i_axi2mem (
-        .clk_i  ( clk_i      ),
-        .rst_ni ( rst_ni     ),
-        .slave  ( axi_slave  ),
-        .req_o  ( req        ),
-        .we_o   ( we         ),
-        .addr_o ( addr       ),
-        .be_o   ( be         ),
-        .data_o ( wdata      ),
-        .data_i ( rdata      )
+        .clk_i      ( clk_i    ),
+        .rst_ni     ( rst_ni   ),
+        .slave      ( slave    ),
+        .req_o      ( req      ),
+        .we_o       ( we       ),
+        .addr_o     ( addr     ),
+        .be_o       ( be       ),
+        .data_o     ( wdata    ),
+        .data_i     ( rdata    )
     );
+
 endmodule

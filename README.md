@@ -213,11 +213,21 @@ If you are on an Ubuntu based system you need to add the following udev rule to 
 > SUBSYSTEM=="usb", ACTION=="add", ATTRS{idProduct}=="002a", ATTRS{idVendor}=="15ba", MODE="664", GROUP="plugdev"
 >```
 
+### Preliminary Support for OpenPiton Cache System
+
+Ariane version 4.0 has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/serpent_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
+
+The corresponding integration patches will soon be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton).
+
+To activate the different cache system, compile your code with the macro `SERPENT_PULP`.
+
+Note that this feature is still in Beta stage, and may hence not be completely bug-free.
+
 ## Planned Improvements
 
 Check-out the issue tab which also loosely tracks planned improvements.
 
-> Atomics are implemented for a single core environment. They will semantically fail in a multi-core setup.
+> Atomics are implemented for a single core environment. They will semantically fail in a multi-core setup (unless you are using the serpent flavor of Ariane in combination with the OpenPiton cache subsystem, see previous section).
 
 ## Going Beyond
 

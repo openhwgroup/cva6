@@ -21,7 +21,7 @@
 module sram #(
     parameter DATA_WIDTH = 64,
     parameter NUM_WORDS  = 1024,
-    parameter OUT_REGS   = 0 // enables output registers in FPGA macro (read lat = 2)
+    parameter OUT_REGS   = 0    // enables output registers in FPGA macro (read lat = 2)
 )(
    input  logic                          clk_i,
    input  logic                          rst_ni,

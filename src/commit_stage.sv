@@ -139,6 +139,7 @@ module commit_stage #(
                         else // if the LSU buffer is not ready - do not commit, wait
                             commit_ack_o[0] = 1'b0;
                     end
+
                     // ---------
                     // FPU Flags
                     // ---------
@@ -148,6 +149,7 @@ module commit_stage #(
                         csr_write_fflags_o = 1'b1;
                     end
                 end
+
 
                 // ---------
                 // CSR Logic

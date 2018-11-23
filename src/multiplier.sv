@@ -16,7 +16,7 @@
 
 import ariane_pkg::*;
 
-module mul (
+module multiplier (
     input  logic                     clk_i,
     input  logic                     rst_ni,
     input  logic [TRANS_ID_BITS-1:0] trans_id_i,

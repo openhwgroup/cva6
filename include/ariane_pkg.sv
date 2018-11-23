@@ -16,6 +16,13 @@
  *              in one package.
  */
 
+// this is needed to propagate the
+// configuration in case Ariane is
+// instantiated in OpenPiton
+`ifdef PITON_ARIANE
+  `include "l15.tmp.h"
+`endif
+
 package ariane_pkg;
 
     // ---------------
@@ -41,8 +48,16 @@ package ariane_pkg;
 
     // depth of store-buffers, this needs to be a power of two
     localparam int unsigned DEPTH_SPEC   = 4;
+
+`ifdef SERPENT_PULP
+    // in this case we can use a small commit queue since we have a write buffer in the dcache
+    // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
+    // to longer paths into the commit stage
+    localparam int unsigned DEPTH_COMMIT = 2;
+`else
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
     localparam int unsigned DEPTH_COMMIT = 8;
+`endif
 
     // Floating-point extensions configuration
     localparam bit RVF = 1'b0; // Is F extension enabled
@@ -107,7 +122,7 @@ package ariane_pkg;
     // static debug hartinfo
     localparam dm::hartinfo_t DebugHartInfo = '{
                                                 zero1:        '0,
-                                                nscratch:      1, // DTM currently needs at least one scratch register
+                                                nscratch:      2, // Debug module needs at least two scratch regs
                                                 zero0:        '0,
                                                 dataaccess: 1'b1, // data registers are memory mapped in the debugger
                                                 datasize: dm::DataCount,
@@ -244,17 +259,33 @@ package ariane_pkg;
     // Cache config
     // ---------------
 
-    // I$
-    localparam int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit
-    localparam int unsigned  ICACHE_TAG_WIDTH         = 44; // in bit
-    localparam int unsigned  ICACHE_SET_ASSOC         = 4;
-    localparam int unsigned  ICACHE_LINE_WIDTH        = 128; // in bit
-
-    // D$
-    localparam int unsigned DCACHE_INDEX_WIDTH       = 12;
-    localparam int unsigned DCACHE_TAG_WIDTH         = 44;
-    localparam int unsigned DCACHE_LINE_WIDTH        = 128;
-    localparam int unsigned DCACHE_SET_ASSOC         = 8;
+    // if serpent pulp is used standalone (outside of openpiton)
+    // we just use the default config of ariane
+    // otherwise we have to propagate the openpiton L15 configuration from l15.h
+`ifdef PITON_ARIANE
+      // I$
+      localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
+      localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
+      localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
+      localparam int unsigned ICACHE_TAG_WIDTH   = 56 - ICACHE_INDEX_WIDTH;
+      // D$
+      localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
+      localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
+      localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
+      localparam int unsigned DCACHE_TAG_WIDTH   = 56 - DCACHE_INDEX_WIDTH;
+`else
+    // align to openpiton for the time being (this should be more configurable in the future)
+       // I$
+      localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit
+      localparam int unsigned ICACHE_TAG_WIDTH   = 44;  // in bit
+      localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
+      localparam int unsigned ICACHE_SET_ASSOC   = 4;
+      // D$
+      localparam int unsigned DCACHE_INDEX_WIDTH = 12;  // in bit
+      localparam int unsigned DCACHE_TAG_WIDTH   = 44;  // in bit
+      localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
+      localparam int unsigned DCACHE_SET_ASSOC   = 8;
+`endif
 
     // ---------------
     // EX Stage
@@ -440,8 +471,20 @@ package ariane_pkg;
     // Atomics
     // --------------------
     typedef enum logic [3:0] {
-        AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND,
-        AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
+        AMO_NONE =4'b0000,
+        AMO_LR   =4'b0001,
+        AMO_SC   =4'b0010,
+        AMO_SWAP =4'b0011,
+        AMO_ADD  =4'b0100,
+        AMO_AND  =4'b0101,
+        AMO_OR   =4'b0110,
+        AMO_XOR  =4'b0111,
+        AMO_MAX  =4'b1000,
+        AMO_MAXU =4'b1001,
+        AMO_MIN  =4'b1010,
+        AMO_MINU =4'b1011,
+        AMO_CAS1 =4'b1100, // unused, not part of riscv spec, but provided in OpenPiton
+        AMO_CAS2 =4'b1101  // unused, not part of riscv spec, but provided in OpenPiton
     } amo_t;
 
     typedef struct packed {
@@ -523,9 +566,9 @@ package ariane_pkg;
     } dcache_req_i_t;
 
     typedef struct packed {
-        logic                      data_gnt;
-        logic                      data_rvalid;
-        logic [63:0]               data_rdata;
+        logic                          data_gnt;
+        logic                          data_rvalid;
+        logic [63:0]                   data_rdata;
     } dcache_req_o_t;
 
     // ----------------------

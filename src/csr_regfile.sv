@@ -116,6 +116,7 @@ module csr_regfile #(
 
     logic [63:0] dpc_q,       dpc_d;
     logic [63:0] dscratch0_q, dscratch0_d;
+    logic [63:0] dscratch1_q, dscratch1_d;
     logic [63:0] mtvec_q,     mtvec_d;
     logic [63:0] medeleg_q,   medeleg_d;
     logic [63:0] mideleg_q,   mideleg_d;
@@ -186,6 +187,7 @@ module csr_regfile #(
                 riscv::CSR_DCSR:               csr_rdata = {32'b0, dcsr_q};
                 riscv::CSR_DPC:                csr_rdata = dpc_q;
                 riscv::CSR_DSCRATCH0:          csr_rdata = dscratch0_q;
+                riscv::CSR_DSCRATCH1:          csr_rdata = dscratch1_q;
                 // trigger module registers
                 riscv::CSR_TSELECT:; // not implemented
                 riscv::CSR_TDATA1:;  // not implemented
@@ -296,6 +298,7 @@ module csr_regfile #(
         dcsr_d                  = dcsr_q;
         dpc_d                   = dpc_q;
         dscratch0_d             = dscratch0_q;
+        dscratch1_d             = dscratch1_q;
         mstatus_d               = mstatus_q;
 
         // check whether we come out of reset
@@ -389,6 +392,7 @@ module csr_regfile #(
                 end
                 riscv::CSR_DPC:                dpc_d = csr_wdata;
                 riscv::CSR_DSCRATCH0:          dscratch0_d = csr_wdata;
+                riscv::CSR_DSCRATCH1:          dscratch1_d = csr_wdata;
                 // trigger module CSRs
                 riscv::CSR_TSELECT:; // not implemented
                 riscv::CSR_TDATA1:;  // not implemented
@@ -980,6 +984,7 @@ module csr_regfile #(
             dcsr_q.prv             <= riscv::PRIV_LVL_M;
             dpc_q                  <= 64'b0;
             dscratch0_q            <= 64'b0;
+            dscratch1_q            <= 64'b0;
             // machine mode registers
             mstatus_q              <= 64'b0;
             // set to boot address + direct mode + 4 byte offset which is the initial trap
@@ -1018,6 +1023,7 @@ module csr_regfile #(
             dcsr_q                 <= dcsr_d;
             dpc_q                  <= dpc_d;
             dscratch0_q            <= dscratch0_d;
+            dscratch1_q            <= dscratch1_d;
             // machine mode registers
             mstatus_q              <= mstatus_d;
             mtvec_rst_load_q       <= 1'b0;

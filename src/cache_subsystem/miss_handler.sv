@@ -104,7 +104,7 @@ module miss_handler #(
     logic [DCACHE_LINE_WIDTH-1:0]            req_fsm_miss_wdata;
     logic                                    req_fsm_miss_we;
     logic [(DCACHE_LINE_WIDTH/8)-1:0]        req_fsm_miss_be;
-    req_t                                    req_fsm_miss_req;
+    ariane_axi::ad_req_t                     req_fsm_miss_req;
     logic [1:0]                              req_fsm_miss_size;
 
     logic                                    gnt_miss_fsm;
@@ -153,7 +153,7 @@ module miss_handler #(
         req_fsm_miss_wdata  = '0;
         req_fsm_miss_we     = 1'b0;
         req_fsm_miss_be     = '0;
-        req_fsm_miss_req    = CACHE_LINE_REQ;
+        req_fsm_miss_req    = ariane_axi::CACHE_LINE_REQ;
         req_fsm_miss_size   = 2'b11;
         // core
         flush_ack_o         = 1'b0;
@@ -384,7 +384,7 @@ module miss_handler #(
                 req_fsm_miss_valid = 1'b1;
                 // address is in operand a
                 req_fsm_miss_addr = amo_req_i.operand_a;
-                req_fsm_miss_req = SINGLE_REQ;
+                req_fsm_miss_req = ariane_axi::SINGLE_REQ;
                 req_fsm_miss_size = amo_req_i.size;
                 // the request has been granted
                 if (gnt_miss_fsm) begin
@@ -434,7 +434,7 @@ module miss_handler #(
                 end
 
                 req_fsm_miss_we   = 1'b1;
-                req_fsm_miss_req  = SINGLE_REQ;
+                req_fsm_miss_req  = ariane_axi::SINGLE_REQ;
                 req_fsm_miss_size = amo_req_i.size;
                 req_fsm_miss_addr = amo_req_i.operand_a;
 
@@ -562,13 +562,14 @@ module miss_handler #(
     );
 
     axi_adapter #(
-        .DATA_WIDTH            ( 64  ),
-        .AXI_ID_WIDTH          ( 4   )
+        .DATA_WIDTH            ( 64                 ),
+        .AXI_ID_WIDTH          ( 4                  ),
+        .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET )
     ) i_bypass_axi_adapter (
         .clk_i,
         .rst_ni,
         .req_i                 ( req_fsm_bypass_valid   ),
-        .type_i                ( SINGLE_REQ             ),
+        .type_i                ( ariane_axi::SINGLE_REQ ),
         .gnt_o                 ( gnt_bypass_fsm         ),
         .addr_i                ( req_fsm_bypass_addr    ),
         .we_i                  ( req_fsm_bypass_we      ),
@@ -590,8 +591,9 @@ module miss_handler #(
     // Cache Line AXI Refill
     // ----------------------
     axi_adapter  #(
-        .DATA_WIDTH          ( DCACHE_LINE_WIDTH  ),
-        .AXI_ID_WIDTH        ( 4                  )
+        .DATA_WIDTH            ( DCACHE_LINE_WIDTH  ),
+        .AXI_ID_WIDTH          ( 4                  ),
+        .CACHELINE_BYTE_OFFSET ( DCACHE_BYTE_OFFSET )
     ) i_miss_axi_adapter (
         .clk_i,
         .rst_ni,

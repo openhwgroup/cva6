@@ -42,6 +42,7 @@ module std_cache_subsystem #(
     input  logic                           dcache_flush_i,         // high until acknowledged
     output logic                           dcache_flush_ack_o,     // send a single cycle acknowledge signal when the cache is flushed
     output logic                           dcache_miss_o,          // we missed on a ld/st
+    output logic                           wbuffer_empty_o,        // statically set to 1, as there is no wbuffer in this cache system
     // Request ports
     input  dcache_req_i_t   [2:0]          dcache_req_ports_i,     // to/from LSU
     output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
@@ -49,6 +50,8 @@ module std_cache_subsystem #(
     output ariane_axi::req_t               axi_req_o,
     input  ariane_axi::resp_t              axi_resp_i
 );
+
+  assign wbuffer_empty_o = 1'b1;
 
     ariane_axi::req_t  axi_req_icache;
     ariane_axi::resp_t axi_resp_icache;
@@ -273,9 +276,11 @@ module std_cache_subsystem #(
         .oup_ready_i ( {axi_req_icache.b_ready, axi_req_bypass.b_ready, axi_req_data.b_ready} )
     );
 
+
 ///////////////////////////////////////////////////////
 // assertions
 ///////////////////////////////////////////////////////
+
 //pragma translate_off
 `ifndef VERILATOR
 

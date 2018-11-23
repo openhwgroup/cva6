@@ -85,7 +85,6 @@ module frontend (
     logic          is_mispredict;
     // branch-prediction which we inject into the pipeline
     branchpredict_sbe_t  bp_sbe;
-
     // fetch fifo credit system
     logic fifo_valid, fifo_ready, fifo_empty, fifo_pop;
     logic s2_eff_kill, issue_req, s2_in_flight_d, s2_in_flight_q;
@@ -386,14 +385,15 @@ module frontend (
     assign icache_dreq_o.req   =  fifo_ready;
     assign fetch_entry_valid_o = ~fifo_empty;
 
+
 //pragma translate_off
 `ifndef VERILATOR
   fetch_fifo_credits0 : assert property (
       @(posedge clk_i) disable iff (~rst_ni) (fifo_credits_q <= FETCH_FIFO_DEPTH))
-         else $fatal(1, "[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
+         else $fatal(1,"[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
     initial begin
-        assert (FETCH_FIFO_DEPTH <= 8) else $fatal("[frontend] fetch fifo deeper than 8 not supported");
-        assert (FETCH_WIDTH == 32) else $fatal("[frontend] fetch width != not supported");
+        assert (FETCH_FIFO_DEPTH <= 8) else $fatal(1,"[frontend] fetch fifo deeper than 8 not supported");
+        assert (FETCH_WIDTH == 32) else $fatal(1,"[frontend] fetch width != not supported");
     end
 `endif
 //pragma translate_on
@@ -479,6 +479,7 @@ module frontend (
             .rvc_imm_o    ( rvc_imm[i]    )
         );
     end
+
 
     fifo_v2 #(
         .DEPTH        (  8                   ),

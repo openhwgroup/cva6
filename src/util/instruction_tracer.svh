@@ -62,6 +62,7 @@ class instruction_tracer;
         scoreboard_entry_t commit_instruction;
         // initialize register 0
         gp_reg_file  = '{default:0};
+        fp_reg_file  = '{default:0};
 
         forever begin
             automatic branchpredict_t bp_instruction = '0;
