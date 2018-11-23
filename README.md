@@ -8,6 +8,24 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 
 ![](docs/img/ariane_overview.png)
 
+Table of Contents
+=================
+
+   * [Ariane RISC-V CPU](#ariane-risc-v-cpu)
+      * [Getting Started](#getting-started)
+         * [Running User-Space Applications](#running-user-space-applications)
+         * [FPU Support](#fpu-support)
+      * [FPGA Emulation](#fpga-emulation)
+         * [Generating a Bistream](#generating-a-bistream)
+         * [Debugging](#debugging)
+      * [Planned Improvements](#planned-improvements)
+      * [Going Beyond](#going-beyond)
+         * [CI Testsuites and Randomized Constrained Testing with Torture](#ci-testsuites-and-randomized-constrained-testing-with-torture)
+         * [Re-generating the Bootcode (ZSBL)](#re-generating-the-bootcode-zsbl)
+   * [Contributing](#contributing)
+   * [Acknowledgements](#acknowledgements)
+
+
 ## Getting Started
 
 
@@ -87,19 +105,43 @@ $ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  b
 
 ## FPGA Emulation
 
-We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). Tested on Vivado 2018.2.
+We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). Tested on Vivado 2018.2. The FPGA SoC currently contains the following peripherals:
+
+- DDR3 memory controller
+- SPI controller to conncet to an SDCard
+- Ethernet controller
+- JTAG port (see debugging section below)
+- Bootrom containing zero stage bootloader and device tree.
+
+![](docs/img/fpga_bd.png)
+
+> The Ethernet controller and the corresponding network connection is still work in progress and not functional at the moment.
+
+### Generating a Bistream
+
+To generate the FPGA bitstream run:
 
 ```
 $ source fpga/sourceme.sh
 $ make fpga
 ```
 
-TODO(zarubaf): Add further TODOS and simplify flow
+This will produce a bitstream file and memory configuration file (in `fpga/work-fpga`) which you can permanently flash by:
 
-Default baudrate is `115200`:
+- Open Vivado
+- Open the hardware manager and open the target board (Genesys II - `xc7k325t`)
+- Tools - Add Configuration Memory Device
+- Select the following Spansion SPI flash `s25fl256xxxxxx0`
+- Add `ariane_xilinx.mcs`
+- Press Ok. Flashing will take a couple of minutes.
+- Right click on the FPGA device - Boot from Configuration Memory Device
+
+Connect a terminal to the USB serial device opened by the FTDI chip e.g.:
 ```
 $ screen /dev/ttyUSB0 115200
 ```
+
+Default baudrate set by the bootlaoder and Linux is `115200`.
 
 ### Debugging
 
@@ -173,15 +215,17 @@ If you are on an Ubuntu based system you need to add the following udev rule to 
 
 ### Preliminary Support for OpenPiton Cache System
 
-Ariane version 4.0 has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/serpent_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics. 
+Ariane version 4.0 has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/serpent_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
 
-The corresponding integration patches are released on the `serpent` branch of the [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton).
+The corresponding integration patches will soon be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton).
 
 To activate the different cache system, compile your code with the macro `SERPENT_PULP`.
 
 Note that this feature is still in Beta stage, and may hence not be completely bug-free.
 
 ## Planned Improvements
+
+Check-out the issue tab which also loosely tracks planned improvements.
 
 > Atomics are implemented for a single core environment. They will semantically fail in a multi-core setup (unless you are using the serpent flavor of Ariane in combination with the OpenPiton cache subsystem, see previous section).
 

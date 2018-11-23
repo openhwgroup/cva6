@@ -13,16 +13,13 @@
 # limitations under the License.
 
 # Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
-# Description: Generate a memory configuration file from a bitstream (Genesys II only right now)
 
-if {$argc < 2 || $argc > 4} {
-    puts $argc
-    puts {Error: Invalid number of arguments}
-    puts {Usage: write_cfgmem.tcl mcsfile bitfile [datafile]}
-    exit 1
-}
+set project ariane
 
-lassign $argv mcsfile bitfile
+create_project $project . -force -part $::env(XILINX_PART)
+set_property board_part $::env(XILINX_BOARD) [current_project]
 
-# https://scholar.princeton.edu/jbalkind/blog/programming-genesys-2-qspi-spi-x4-flash
-write_cfgmem -format mcs -interface SPIx4 -size 256  -loadbit "up 0x0 $bitfile" -file $mcsfile -force
+# set number of threads to 8 (maximum, unfortunately)
+set_param general.maxThreads 8
+
+set_msg_config -id {[Synth 8-5858]}         -new_severity "info"

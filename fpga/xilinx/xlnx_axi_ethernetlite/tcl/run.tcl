@@ -8,7 +8,7 @@ set_property board_part $boardName [current_project]
 
 create_ip -name axi_ethernetlite -vendor xilinx.com -library ip -module_name $ipName
 
-set_property -dict [list CONFIG.C_S_AXI_PROTOCOL {AXI4}] [get_ips $ipName]
+set_property -dict [list CONFIG.C_S_AXI_PROTOCOL {AXI4} CONFIG.AXI_ACLK_FREQ_MHZ {100}] [get_ips $ipName]
 
 generate_target {instantiation_template} [get_files ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]
 generate_target all [get_files  ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]
