@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Preliminary FP support
 - Preliminary support for OpenPiton cache system
 - Provisioned `aw_top` signal for close to memory atomics
+- FPGA Support
+- Misc bug-fixes
 
 ### Changed
 

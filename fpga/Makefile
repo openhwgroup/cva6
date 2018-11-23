@@ -26,6 +26,9 @@ $(ips):
 
 mcs: $(mcs)
 
+program:
+	$(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
+
 clean:
 	rm -rf *.log *.jou *.str $(work-dir)
 

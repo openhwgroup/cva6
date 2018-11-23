@@ -18,14 +18,9 @@
 open_hw
 
 connect_hw_server -url localhost:3121
-current_hw_target [get_hw_targets */xilinx_tcf/Digilent/210203A25514A]
-set_property PARAM.FREQUENCY 15000000 [get_hw_targets */xilinx_tcf/Digilent/210203A25514A]
-open_hw_target
-set_property PROGRAM.FILE {/home/zarubaf/kerbin/fpga/kerbin/kerbin.runs/impl_1/kerbin.bit} [get_hw_devices xc7vx485t_0]
-current_hw_device [get_hw_devices xc7vx485t_0]
-refresh_hw_device -update_hw_probes false [lindex [get_hw_devices xc7vx485t_0] 0]
+open_hw_target {localhost:3121/xilinx_tcf/Digilent/200300A8CD43B}
 
-set_property PROBES.FILE {} [get_hw_devices xc7vx485t_0]
-set_property FULL_PROBES.FILE {} [get_hw_devices xc7vx485t_0]
-set_property PROGRAM.FILE {/home/zarubaf/kerbin/fpga/kerbin/kerbin.runs/impl_1/kerbin.bit} [get_hw_devices xc7vx485t_0]
-program_hw_devices [get_hw_devices xc7vx485t_0]
+current_hw_device [get_hw_devices xc7k325t_0]
+set_property PROGRAM.FILE {work-fpga/ariane_xilinx.bit} [get_hw_devices xc7k325t_0]
+program_hw_devices [get_hw_devices xc7k325t_0]
+refresh_hw_device [lindex [get_hw_devices xc7k325t_0] 0]
