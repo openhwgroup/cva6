@@ -390,7 +390,7 @@ module frontend (
 `ifndef VERILATOR
   fetch_fifo_credits0 : assert property (
       @(posedge clk_i) disable iff (~rst_ni) (fifo_credits_q <= FETCH_FIFO_DEPTH))
-         else $fatal("[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
+         else $fatal(1, "[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
     initial begin
         assert (FETCH_FIFO_DEPTH <= 8) else $fatal("[frontend] fetch fifo deeper than 8 not supported");
         assert (FETCH_WIDTH == 32) else $fatal("[frontend] fetch width != not supported");

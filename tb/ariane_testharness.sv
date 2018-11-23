@@ -68,7 +68,6 @@ module ariane_testharness #(
     dm::dmi_resp_t debug_resp;
 
     assign test_en = 1'b0;
-    assign ndmreset_n = ~ndmreset ;
 
     localparam NB_SLAVE = 2;
 
@@ -87,6 +86,14 @@ module ariane_testharness #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
         .AXI_USER_WIDTH ( AXI_USER_WIDTH      )
     ) master[ariane_soc::NB_PERIPHERALS-1:0]();
+
+    rstgen i_rstgen_main (
+        .clk_i        ( clk_i                ),
+        .rst_ni       ( rst_ni & (~ndmreset) ),
+        .test_mode_i  ( test_en              ),
+        .rst_no       ( ndmreset_n           ),
+        .init_no      (                      ) // keep open
+    );
 
     // ---------------
     // Debug

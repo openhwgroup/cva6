@@ -6,12 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### 4.0.0
+
 ### Added
 
 - Commit log feature
 - Support for A-Extension
 - Preliminary FP support
 - Provisioned `aw_top` signal for close to memory atomics
+- FPGA Support
+- Misc bug-fixes
 
 ### Changed
 
