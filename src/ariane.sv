@@ -595,9 +595,14 @@ module ariane #(
     // -------------------
     // Instruction Tracer
     // -------------------
-    `ifndef VCS
+    `ifdef VCS
+     `define MOCK_TRACER
+    `endif
+    `ifdef verilator
+     `define MOCK_TRACER
+    `endif
     `ifndef SYNTHESIS
-    `ifndef verilator
+    `ifndef MOCK_TRACER
     instruction_tracer_if tracer_if (clk_i);
     // assign instruction tracer interface
     // control signals
@@ -699,7 +704,6 @@ module ariane #(
     final begin
         $fclose(f);
     end
-    `endif
     `endif
     `endif
 endmodule // ariane
