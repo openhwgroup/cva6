@@ -21,7 +21,7 @@ module clint #(
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned AXI_ID_WIDTH   = 10,
     parameter int unsigned NR_CORES       = 1 // Number of cores therefore also the number of timecmp registers and timer interrupts
-)(
+) (
     input  logic                clk_i,       // Clock
     input  logic                rst_ni,      // Asynchronous reset active low
     input  logic                testmode_i,
@@ -35,6 +35,9 @@ module clint #(
     localparam logic [15:0] MSIP_BASE     = 16'h0;
     localparam logic [15:0] MTIMECMP_BASE = 16'h4000;
     localparam logic [15:0] MTIME_BASE    = 16'hbff8;
+
+    localparam AddrSelWidth = (NR_CORES == 1) ? 1 : $clog2(NR_CORES);
+
     // signals from AXI 4 Lite
     logic [AXI_ADDR_WIDTH-1:0] address;
     logic                      en;
@@ -87,11 +90,11 @@ module clint #(
         if (en && we) begin
             case (register_address) inside
                 [MSIP_BASE:MSIP_BASE+8*NR_CORES]: begin
-                    msip_n[$unsigned(address[NR_CORES-1+3:3])] = wdata[0];
+                    msip_n[$unsigned(address[AddrSelWidth-1+3:3])] = wdata[0];
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    mtimecmp_n[$unsigned(address[NR_CORES-1+3:3])] = wdata;
+                    mtimecmp_n[$unsigned(address[AddrSelWidth-1+3:3])] = wdata;
                 end
 
                 MTIME_BASE: begin
@@ -109,11 +112,11 @@ module clint #(
         if (en && !we) begin
             case (register_address) inside
                 [MSIP_BASE:MSIP_BASE+8*NR_CORES]: begin
-                    rdata = msip_q[$unsigned(address[NR_CORES-1+3:3])];
+                    rdata = msip_q[$unsigned(address[AddrSelWidth-1+3:3])];
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    rdata = mtimecmp_q[$unsigned(address[NR_CORES-1+3:3])];
+                    rdata = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])];
                 end
 
                 MTIME_BASE: begin

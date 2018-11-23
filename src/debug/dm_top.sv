@@ -23,7 +23,7 @@ module dm_top #(
     parameter int AxiAddrWidth = -1,
     parameter int AxiDataWidth = -1,
     parameter int AxiUserWidth = -1
-)(
+) (
     input  logic               clk_i,       // clock
     input  logic               rst_ni,      // asynchronous reset active low, connect PoR here, not the system reset
     input  logic               testmode_i,
