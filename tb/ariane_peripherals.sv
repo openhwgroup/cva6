@@ -447,12 +447,10 @@ module ariane_peripherals #(
             .ss_i           ( '0                     ),
             .ss_o           ( spi_ss                 ),
             .ss_t           ( '0                     ),
-            .ip2intc_irpt   ( irq_sources[1]         ),
-
-            .cfgclk         ( spi_clk_o              ),
-            .cfgmclk        (                        ),
-            .eos            (                        ),
-            .preq           (                        )
+            .sck_o          ( spi_clk_o              ),
+            .sck_i          ( '0                     ),
+            .sck_t          (                        ),
+            .ip2intc_irpt   ( irq_sources[1]         )
         );
     end else begin
         assign spi_clk_o = 1'b0;
