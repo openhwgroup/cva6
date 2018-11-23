@@ -366,20 +366,20 @@ module frontend (
     // -------------------
     // Credit-based fetch FIFO flow ctrl
     // -------------------
-    assign fifo_credits_d       =  (flush_i) ? FETCH_FIFO_DEPTH : 
-                                               fifo_credits_q + fifo_pop + s2_eff_kill - issue_req; 
-    
-    // check whether there is a request in flight that is being killed now 
+    assign fifo_credits_d       =  (flush_i) ? FETCH_FIFO_DEPTH :
+                                               fifo_credits_q + fifo_pop + s2_eff_kill - issue_req;
+
+    // check whether there is a request in flight that is being killed now
     // if this is the case, we need to increment the credit by 1
     assign s2_eff_kill         = s2_in_flight_q & icache_dreq_o.kill_s2;
-    assign s2_in_flight_d      = (flush_i)             ? 1'b0 : 
-                                 (issue_req)           ? 1'b1 : 
+    assign s2_in_flight_d      = (flush_i)             ? 1'b0 :
+                                 (issue_req)           ? 1'b1 :
                                  (icache_dreq_i.valid) ? 1'b0 :
-                                                         s2_in_flight_q; 
+                                                         s2_in_flight_q;
 
     // only enable counter if current request is not being killed
     assign issue_req           = if_ready & (~icache_dreq_o.kill_s1);
-    assign fifo_pop            = fetch_ack_i & fetch_entry_valid_o;                                                                    
+    assign fifo_pop            = fetch_ack_i & fetch_entry_valid_o;
     assign fifo_ready          = (|fifo_credits_q);
     assign if_ready            =  icache_dreq_i.ready & fifo_ready;
     assign icache_dreq_o.req   =  fifo_ready;
@@ -390,10 +390,10 @@ module frontend (
 `ifndef VERILATOR
   fetch_fifo_credits0 : assert property (
       @(posedge clk_i) disable iff (~rst_ni) (fifo_credits_q <= FETCH_FIFO_DEPTH))
-         else $fatal("[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
+         else $fatal(1,"[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
     initial begin
-        assert (FETCH_FIFO_DEPTH <= 8) else $fatal("[frontend] fetch fifo deeper than 8 not supported");
-        assert (FETCH_WIDTH == 32) else $fatal("[frontend] fetch width != not supported");
+        assert (FETCH_FIFO_DEPTH <= 8) else $fatal(1,"[frontend] fetch fifo deeper than 8 not supported");
+        assert (FETCH_WIDTH == 32) else $fatal(1,"[frontend] fetch width != not supported");
     end
 `endif
 //pragma translate_on
