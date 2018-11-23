@@ -36,7 +36,7 @@ module ariane_xilinx (
   input  wire          eth_rxctl   ,
   input  wire [3:0]    eth_rxd     ,
   output wire          eth_rst_n   ,
-  output wire          eth_tx_en   ,
+  output wire          eth_txctl   ,
   output wire [3:0]    eth_txd     ,
   inout  wire          eth_mdio    ,
   output logic         eth_mdc     ,
@@ -74,10 +74,6 @@ module ariane_xilinx (
   input  logic        spi_miso    ,
   output logic        spi_ss      ,
   output logic        spi_clk_o   ,
-  output logic        spi_mosi_2  ,
-  output logic        spi_miso_2  ,
-  output logic        spi_ss_2    ,
-  output logic        spi_clk_o_2 ,
   // common part
   input  logic        tck         ,
   input  logic        tms         ,
@@ -111,12 +107,6 @@ AXI_BUS #(
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) master[ariane_soc::NB_PERIPHERALS-1:0]();
 
-// spi hack
-assign spi_mosi_2 = spi_mosi;
-assign spi_miso_2 = spi_miso;
-assign spi_clk_o_2 = spi_clk_o;
-assign spi_ss_2 = spi_ss;
-
 // disable test-enable
 logic test_en;
 logic ndmreset;
@@ -128,6 +118,8 @@ logic ipi;
 logic clk;
 logic eth_clk;
 logic spi_clk_i;
+logic phy_tx_clk;
+
 logic ddr_sync_reset;
 logic ddr_clock_out;
 
@@ -367,6 +359,7 @@ ariane_peripherals #(
     `endif
 ) i_ariane_peripherals (
     .clk_i        ( clk                          ),
+    .clk_200MHz_i ( ddr_clock_out                ),
     .rst_ni       ( ndmreset_n                   ),
     .plic         ( master[ariane_soc::PLIC]     ),
     .uart         ( master[ariane_soc::UART]     ),
@@ -381,10 +374,11 @@ ariane_peripherals #(
     .eth_rxctl,
     .eth_rxd,
     .eth_rst_n,
-    .eth_tx_en,
+    .eth_txctl,
     .eth_txd,
     .eth_mdio,
     .eth_mdc,
+    .phy_tx_clk_i ( phy_tx_clk                   ),
     .spi_clk_o    ( spi_clk_o                    ),
     .spi_mosi     ( spi_mosi                     ),
     .spi_miso     ( spi_miso                     ),
@@ -528,7 +522,7 @@ xlnx_axi_clock_converter i_xlnx_axi_clock_converter_ddr (
 
 xlnx_clk_gen i_xlnx_clk_gen (
   .clk_out1 ( clk           ), // 50MHz
-  .clk_out2 ( eth_txck      ), // 25 MHz
+  .clk_out2 ( phy_tx_clk    ), // 25 MHz
   .clk_out3 ( eth_clk       ), // 100 MHz
   .reset    ( cpu_reset     ),
   .locked   ( pll_locked    ),

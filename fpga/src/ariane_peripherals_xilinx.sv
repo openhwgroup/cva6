@@ -19,6 +19,7 @@ module ariane_peripherals #(
     parameter bit InclEthernet = 0
 ) (
     input  logic       clk_i           , // Clock
+    input  logic       clk_200MHz_i    ,
     input  logic       rst_ni          , // Asynchronous reset active low
     AXI_BUS.in         plic            ,
     AXI_BUS.in         uart            ,
@@ -30,13 +31,14 @@ module ariane_peripherals #(
     input  logic       rx_i            ,
     output logic       tx_o            ,
     // Ethernet
-    input  wire        eth_txck        ,
     input  wire        eth_rxck        ,
     input  wire        eth_rxctl       ,
     input  wire [3:0]  eth_rxd         ,
-    output wire        eth_rst_n       ,
-    output wire        eth_tx_en       ,
+    output wire        eth_txck        ,
+    output wire        eth_txctl       ,
     output wire [3:0]  eth_txd         ,
+    output wire        eth_rst_n       ,
+    input  logic       phy_tx_clk_i    , // 25 MHz Clock
     // MDIO Interface
     inout  wire        eth_mdio        ,
     output logic       eth_mdc         ,
@@ -490,9 +492,7 @@ module ariane_peripherals #(
             .AXI_USER_WIDTH ( AxiUserWidth )
         ) axi_ethernet_cdc();
 
-        wire         mdio_i, mdio_o, mdio_t;
-
-        logic eth_rst_n;
+        logic s_eth_rst_n;
 
         logic [31:0] s_axi_eth_awaddr;
         logic [7:0]  s_axi_eth_awlen;
@@ -522,11 +522,11 @@ module ariane_peripherals #(
         logic        s_axi_eth_rvalid;
 
         rstgen i_rstgen (
-            .clk_i        ( eth_clk_i ),
-            .rst_ni       ( rst_ni    ),
-            .test_mode_i  ( test_en   ),
-            .rst_no       ( eth_rst_n ),
-            .init_no      (           ) // keep open
+            .clk_i        ( eth_clk_i   ),
+            .rst_ni       ( rst_ni      ),
+            .test_mode_i  ( test_en     ),
+            .rst_no       ( s_eth_rst_n ),
+            .init_no      (             ) // keep open
         );
 
         xlnx_axi_clock_converter i_xlnx_axi_clock_converter_ethernet (
@@ -573,7 +573,7 @@ module ariane_peripherals #(
           .s_axi_rready   ( ethernet.r_ready   ),
           // to size converter
           .m_axi_aclk     ( eth_clk_i                  ),
-          .m_axi_aresetn  ( eth_rst_n                  ),
+          .m_axi_aresetn  ( s_eth_rst_n                ),
           .m_axi_awid     ( axi_ethernet_cdc.aw_id     ),
           .m_axi_awaddr   ( axi_ethernet_cdc.aw_addr   ),
           .m_axi_awlen    ( axi_ethernet_cdc.aw_len    ),
@@ -618,7 +618,7 @@ module ariane_peripherals #(
         // system-bus is 64-bit, convert down to 32 bit
         xlnx_axi_dwidth_converter i_xlnx_axi_dwidth_converter_ethernet (
             .s_axi_aclk     ( eth_clk_i                      ),
-            .s_axi_aresetn  ( eth_rst_n                      ),
+            .s_axi_aresetn  ( s_eth_rst_n                    ),
             .s_axi_awid     ( axi_ethernet_cdc.aw_id         ),
             .s_axi_awaddr   ( axi_ethernet_cdc.aw_addr[31:0] ),
             .s_axi_awlen    ( axi_ethernet_cdc.aw_len        ),
@@ -696,54 +696,91 @@ module ariane_peripherals #(
             .m_axi_rready   ( s_axi_eth_rready  )
         );
 
+        logic       phy_rx_clk;
+        logic       phy_crs;
+        logic       phy_dv;
+        logic [3:0] phy_rx_data;
+        logic       phy_col;
+        logic       phy_rx_er;
+        logic       phy_rst_n;
+        logic       phy_tx_en;
+        logic [3:0] phy_tx_data;
+        logic       phy_mdio_i;
+        logic       phy_mdio_o;
+        logic       phy_mdio_t;
+        logic       phy_mdc;
+
         xlnx_axi_ethernetlite i_xlnx_axi_ethernetlite (
-            .s_axi_aclk    ( eth_clk_i               ),
-            .s_axi_aresetn ( eth_rst_n               ),
-            .ip2intc_irpt  ( irq_sources[2]          ),
-            .s_axi_awaddr  ( s_axi_eth_awaddr[12:0]  ),
-            .s_axi_awlen   ( s_axi_eth_awlen         ),
-            .s_axi_awsize  ( s_axi_eth_awsize        ),
-            .s_axi_awburst ( s_axi_eth_awburst       ),
-            .s_axi_awcache ( s_axi_eth_awcache       ),
-            .s_axi_awvalid ( s_axi_eth_awvalid       ),
-            .s_axi_awready ( s_axi_eth_awready       ),
-            .s_axi_wdata   ( s_axi_eth_wdata         ),
-            .s_axi_wstrb   ( s_axi_eth_wstrb         ),
-            .s_axi_wlast   ( s_axi_eth_wlast         ),
-            .s_axi_wvalid  ( s_axi_eth_wvalid        ),
-            .s_axi_wready  ( s_axi_eth_wready        ),
-            .s_axi_bresp   ( s_axi_eth_bresp         ),
-            .s_axi_bvalid  ( s_axi_eth_bvalid        ),
-            .s_axi_bready  ( s_axi_eth_bready        ),
-            .s_axi_araddr  ( s_axi_eth_araddr[12:0]  ),
-            .s_axi_arlen   ( s_axi_eth_arlen         ),
-            .s_axi_arsize  ( s_axi_eth_arsize        ),
-            .s_axi_arburst ( s_axi_eth_arburst       ),
-            .s_axi_arcache ( s_axi_eth_arcache       ),
-            .s_axi_arvalid ( s_axi_eth_arvalid       ),
-            .s_axi_arready ( s_axi_eth_arready       ),
-            .s_axi_rdata   ( s_axi_eth_rdata         ),
-            .s_axi_rresp   ( s_axi_eth_rresp         ),
-            .s_axi_rlast   ( s_axi_eth_rlast         ),
-            .s_axi_rvalid  ( s_axi_eth_rvalid        ),
-            .s_axi_rready  ( s_axi_eth_rready        ),
-            .phy_tx_clk    ( eth_txck                ),
-            .phy_rx_clk    ( eth_rxck                ),
-            .phy_crs       ( 1'b0                    ),
-            .phy_dv        ( eth_rxctl               ),
-            .phy_rx_data   ( eth_rxd                 ),
-            .phy_col       ( 1'b0                    ),
-            .phy_rx_er     ( 1'b0                    ),
-            .phy_rst_n     ( eth_rst_n               ),
-            .phy_tx_en     ( eth_tx_en               ),
-            .phy_tx_data   ( eth_txd                 ),
-            .phy_mdio_i    ( mdio_i                  ),
-            .phy_mdio_o    ( mdio_o                  ),
-            .phy_mdio_t    ( mdio_t                  ),
-            .phy_mdc       ( eth_mdc                 )
+            .s_axi_aclk    ( eth_clk_i              ),
+            .s_axi_aresetn ( s_eth_rst_n            ),
+            .ip2intc_irpt  ( irq_sources[2]         ),
+            .s_axi_awaddr  ( s_axi_eth_awaddr[12:0] ),
+            .s_axi_awlen   ( s_axi_eth_awlen        ),
+            .s_axi_awsize  ( s_axi_eth_awsize       ),
+            .s_axi_awburst ( s_axi_eth_awburst      ),
+            .s_axi_awcache ( s_axi_eth_awcache      ),
+            .s_axi_awvalid ( s_axi_eth_awvalid      ),
+            .s_axi_awready ( s_axi_eth_awready      ),
+            .s_axi_wdata   ( s_axi_eth_wdata        ),
+            .s_axi_wstrb   ( s_axi_eth_wstrb        ),
+            .s_axi_wlast   ( s_axi_eth_wlast        ),
+            .s_axi_wvalid  ( s_axi_eth_wvalid       ),
+            .s_axi_wready  ( s_axi_eth_wready       ),
+            .s_axi_bresp   ( s_axi_eth_bresp        ),
+            .s_axi_bvalid  ( s_axi_eth_bvalid       ),
+            .s_axi_bready  ( s_axi_eth_bready       ),
+            .s_axi_araddr  ( s_axi_eth_araddr[12:0] ),
+            .s_axi_arlen   ( s_axi_eth_arlen        ),
+            .s_axi_arsize  ( s_axi_eth_arsize       ),
+            .s_axi_arburst ( s_axi_eth_arburst      ),
+            .s_axi_arcache ( s_axi_eth_arcache      ),
+            .s_axi_arvalid ( s_axi_eth_arvalid      ),
+            .s_axi_arready ( s_axi_eth_arready      ),
+            .s_axi_rdata   ( s_axi_eth_rdata        ),
+            .s_axi_rresp   ( s_axi_eth_rresp        ),
+            .s_axi_rlast   ( s_axi_eth_rlast        ),
+            .s_axi_rvalid  ( s_axi_eth_rvalid       ),
+            .s_axi_rready  ( s_axi_eth_rready       ),
+            .phy_tx_clk    ( phy_tx_clk_i           ),
+            .phy_rx_clk    ( phy_rx_clk             ),
+            .phy_crs       ( phy_crs                ),
+            .phy_dv        ( phy_dv                 ),
+            .phy_rx_data   ( phy_rx_data            ),
+            .phy_col       ( phy_col                ),
+            .phy_rx_er     ( phy_rx_er              ),
+            .phy_rst_n     ( phy_rst_n              ),
+            .phy_tx_en     ( phy_tx_en              ),
+            .phy_tx_data   ( phy_tx_data            ),
+            .phy_mdio_i    ( phy_mdio_i             ),
+            .phy_mdio_o    ( phy_mdio_o             ),
+            .phy_mdio_t    ( phy_mdio_t             ),
+            .phy_mdc       ( phy_mdc                )
         );
 
-        IOBUF mdio_io_iobuf (.I (mdio_o), .IO(eth_mdio), .O (mdio_i), .T (mdio_t));
+        rgmii_to_mii_conv_xilinx i_rgmii_to_mii_conv_xilinx (
+            .rgmii_phy_txc   ( eth_txck     ),
+            .rgmii_phy_txctl ( eth_txctl    ),
+            .rgmii_phy_txd   ( eth_txd      ),
+            .rgmii_phy_rxc   ( eth_rxck     ),
+            .rgmii_phy_rxctl ( eth_rxctl    ),
+            .rgmii_phy_rxd   ( eth_rxd      ),
+            .rgmii_phy_rst_n ( eth_rst_n    ),
+            .rgmii_phy_mdio  ( eth_mdio     ),
+            .rgmii_phy_mdc   ( eth_mdc      ),
+            .mem_clk_i       ( clk_200MHz_i ),
+            .net_phy_rst_n   ( phy_rst_n    ),
+            .net_phy_tx_clk  ( phy_tx_clk_i ),
+            .net_phy_tx_en   ( phy_tx_en    ),
+            .net_phy_tx_data ( phy_tx_data  ),
+            .net_phy_rx_clk  ( phy_rx_clk   ),
+            .net_phy_dv      ( phy_dv       ),
+            .net_phy_rx_data ( phy_rx_data  ),
+            .net_phy_rx_er   ( phy_rx_er    ),
+            .net_mdio_i      ( phy_mdio_o   ),
+            .net_mdio_o      ( phy_mdio_i   ),
+            .net_mdio_t      ( phy_mdio_t   ),
+            .net_phy_mdc     ( phy_mdc      )
+        );
 
     end else begin
         assign irq_sources [2] = 1'b0;

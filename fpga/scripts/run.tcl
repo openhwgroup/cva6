@@ -26,7 +26,7 @@ read_ip xilinx/xlnx_clk_gen/ip/xlnx_clk_gen.xci
 
 source scripts/add_sources.tcl
 
-set_property top ariane_xilinx [current_fileset]
+set_property top ${project}_xilinx [current_fileset]
 
 if {$::env(BOARD) eq "genesys2"} {
     read_verilog -sv {src/genesysii.svh}
