@@ -1,1 +1,5 @@
-../../bootrom/.gitignore
+venv
+*.elf
+*.o
+*.img
+*.bin
