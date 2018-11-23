@@ -65,7 +65,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         $(wildcard src/cache_subsystem/*.sv)                           \
         $(wildcard bootrom/*.sv)                                       \
         $(wildcard src/clint/*.sv)                                     \
-        $(wildcard src/axi_node/src/*.sv)                              \
+        $(filter-out src/axi_node/src/axi_node_wrap_with_slices.sv, $(wildcard src/axi_node/src/*.sv))      \
         $(wildcard src/axi_mem_if/src/*.sv)                            \
         $(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
         $(wildcard src/debug/debug_rom/*.sv)                           \
@@ -73,10 +73,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
         src/fpu/src/fpnew_top.vhd                                      \
         src/common_cells/src/deprecated/generic_fifo.sv                \
         src/common_cells/src/deprecated/pulp_sync.sv                   \
-        src/common_cells/src/deprecated/find_first_one.sv              \
         src/common_cells/src/rstgen_bypass.sv                          \
-        src/axi/src/axi_cut.sv                                         \
-        src/axi/src/axi_join.sv                                        \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                        \
         src/common_cells/src/sync.sv                                   \
         src/common_cells/src/cdc_2phase.sv                             \
@@ -305,6 +302,32 @@ run-torture-verilator: verilate
 check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
+vcs_command := vcs -full64 -sverilog -v2k_generate -timescale=1ns/1ps -debug_access +lint=TFIPC-L +lint=PCWM       \
+                    $(filter-out %.vhd, $(ariane_pkg))                                     \
+                    $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))             \
+                    +define+$(defines)                                                     \
+                    src/util/sram.sv                                                       \
+                    +incdir+src/axi_node                                                   \
+                    -CFLAGS "-std=c++11 -I../tb/dpi"                                       \
+                    $(list_incdir)                                                         \
+                    tb/ariane_tb.sv tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc	           \
+
+#		    /opt/Xilinx/Vivado/2018.1/data/verilog/src/glbl.v                      \
+                    -y /opt/Xilinx/Vivado/2018.1/data/verilog/src/unisims +libext+.v+      \
+                    +incdir+../fpga/board/nexys4_ddr/lowrisc-chip-imp/lowrisc-chip-imp.srcs/sources_1/ip/axi_crossbar_0/hdl+ \
+                    ../fpga/board/nexys4_ddr/lowrisc-chip-imp/lowrisc-chip-imp.srcs/sources_1/ip/axi_crossbar_0/sim/axi_crossbar_0.v \
+                    ../fpga/board/nexys4_ddr/lowrisc-chip-imp/lowrisc-chip-imp.srcs/sources_1/ip/axi_crossbar_0/hdl/axi_crossbar_v2_1_vl_rfs.v \
+                    ../fpga/board/nexys4_ddr/lowrisc-chip-imp/lowrisc-chip-imp.srcs/sources_1/ip/axi_crossbar_0/hdl/axi_register_slice_v2_1_vl_rfs.v \
+                    ../fpga/board/nexys4_ddr/lowrisc-chip-imp/lowrisc-chip-imp.srcs/sources_1/ip/axi_crossbar_0/hdl/axi_infrastructure_v1_1_vl_rfs.v \
+                    ../fpga/board/nexys4_ddr/lowrisc-chip-imp/lowrisc-chip-imp.ip_user_files/ipstatic/hdl/generic_baseblocks_v2_1_vl_rfs.v \
+                    ../fpga/board/nexys4_ddr/lowrisc-chip-imp/lowrisc-chip-imp.ip_user_files/ipstatic/simulation/fifo_generator_vlog_beh.v \
+                    fpga/crossbar_xilinx_4.sv
+
+#                   ../fpga/board/nexys4_ddr/lowrisc-chip-imp/lowrisc-chip-imp.srcs/sources_1/ip/axi_crossbar_0/hdl/axi_data_fifo_v2_1_vl_rfs.v \
+# -LDFLAGS "-lfesvr" tb/dpi/SimDTM.cc
+
+vcsrun:
+	$(vcs_command) -o $@
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*

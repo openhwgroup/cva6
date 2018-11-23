@@ -15,9 +15,11 @@
 
 
 import ariane_pkg::*;
+`ifndef VCS
 import uvm_pkg::*;
 
 `include "uvm_macros.svh"
+`endif
 
 module ariane_tb;
 
@@ -41,6 +43,9 @@ module ariane_tb;
 
     // Clock process
     initial begin
+`ifdef VCS
+        $vcdpluson;
+`endif       
         clk_i = 1'b0;
         rst_ni = 1'b0;
         repeat(8)
@@ -57,6 +62,7 @@ module ariane_tb;
         end
     end
 
+`ifndef VCS
     initial begin
         forever begin
 
@@ -71,5 +77,6 @@ module ariane_tb;
             $finish();
         end
     end
+`endif
 
 endmodule

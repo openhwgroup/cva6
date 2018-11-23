@@ -13,9 +13,11 @@
 // Description: Ariane Top-level module
 
 import ariane_pkg::*;
+`ifndef VCS
 `ifndef verilator
 `ifndef SYNTHESIS
 import instruction_tracer_pkg::*;
+`endif
 `endif
 `endif
 
@@ -593,6 +595,7 @@ module ariane #(
     // -------------------
     // Instruction Tracer
     // -------------------
+    `ifndef VCS
     `ifndef SYNTHESIS
     `ifndef verilator
     instruction_tracer_if tracer_if (clk_i);
@@ -632,11 +635,7 @@ module ariane #(
     assign tracer_if.priv_lvl          = priv_lvl;
     assign tracer_if.debug_mode        = debug_mode;
     instr_tracer instr_tracer_i (tracer_if, cluster_id_i, core_id_i);
-    `endif
-    `endif
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
     program instr_tracer (
             instruction_tracer_if tracer_if,
             input logic [5:0] cluster_id_i,
@@ -700,6 +699,7 @@ module ariane #(
     final begin
         $fclose(f);
     end
+    `endif
     `endif
     `endif
 endmodule // ariane

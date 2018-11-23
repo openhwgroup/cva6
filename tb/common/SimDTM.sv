@@ -1,6 +1,7 @@
 // See LICENSE.SiFive for license details.
 //VCS coverage exclude_file
 
+`ifndef VCS
 import "DPI-C" function int debug_tick
 (
   output bit     debug_req_valid,
@@ -14,7 +15,8 @@ import "DPI-C" function int debug_tick
   input  int        debug_resp_bits_resp,
   input  int        debug_resp_bits_data
 );
-
+`endif //  `ifndef VCS
+   
 module SimDTM(
   input clk,
   input reset,
@@ -33,6 +35,11 @@ module SimDTM(
   output [31:0] exit
 );
 
+`ifdef VCS
+   // DTM is disabled in VCS for now ...
+   assign { debug_req_valid, debug_req_bits_addr, debug_req_bits_op, debug_req_bits_data, debug_resp_ready, exit } = '0;
+`else
+   
   bit r_reset;
 
   wire #0.1 __debug_req_ready = debug_req_ready;
@@ -78,4 +85,7 @@ module SimDTM(
       );
     end
   end
+
+`endif // !`ifdef VCS
+   
 endmodule
