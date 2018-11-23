@@ -52,7 +52,7 @@
       interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
       reg = <0x0 0xc000000 0x0 0x4000000>;
       riscv,max-priority = <7>;
-      riscv,ndev = <2>;
+      riscv,ndev = <3>;
     };
     debug-controller@0 {
       compatible = "riscv,debug-013";
@@ -70,11 +70,41 @@
       reg-shift = <2>; // regs are spaced on 32 bit boundary
       reg-io-width = <4>; // only 32-bit access are supported
     };
+    xps-spi@20000000 {
+      compatible = "xlnx,xps-spi-2.00.b", "xlnx,xps-spi-2.00.a";
+      #address-cells = <1>;
+      #size-cells = <0>;
+      interrupt-parent = <&PLIC0>;
+      interrupts = < 2 2 >;
+      reg = < 0x0 0x20000000 0x0 0x1000 >;
+      xlnx,family = "kintex7";
+      xlnx,fifo-exist = <0x1>;
+      xlnx,num-ss-bits = <0x1>;
+      xlnx,num-transfer-bits = <0x8>;
+      xlnx,sck-ratio = <0x4>;
+
+      mmc@0 {
+        compatible = "mmc-spi-slot";
+        reg = <0>;
+        spi-max-frequency = <12500000>;
+        voltage-ranges = <3300 3300>;
+        disable-wp;
+      };
+
+      // mmc-slot@0 {
+      //   compatible = "fsl,mpc8323rdb-mmc-slot", "mmc-spi-slot";
+      //   reg = <0>;  //Chip select 0
+      //   spi-max-frequency = <12500000>;
+      //   voltage-ranges = <3300 3300>;
+      //   //interrupts = < 2 2 >;
+      //   //interrupt-parent = <&PLIC0>;
+      // };
+    };
     xlnx_axi_ethernetlite: ethernet@30000000 {
       compatible = "xlnx,axi-ethernetlite-3.0", "xlnx,xps-ethernetlite-1.00.a";
       device_type = "network";
       interrupt-parent = <&PLIC0>;
-      interrupts = <2 0>;
+      interrupts = <3 0>;
       local-mac-address = [00 0a 35 00 01 22];
       phy-handle = <&phy0>;
       reg = <0x0 0x30000000 0x0 0x10000>;
@@ -102,16 +132,5 @@
         };
       };
     };
-    // axi_spi@11000000 {
-    //   compatible = "xlnx.xps-spic-2.00.b";
-    //   clock-names = "axi_clk", "axi4_clk", "spi_clk";
-    //   clocks = <&clkc 71>, <&clkc 72>, <&clkc 73>;
-    //   interrupt-parent = <&intc>;
-    //   interrupts = <0 31 1>;
-    //   reg = <0x41e00000 0x10000>;
-    //   num-cs = <0x1>;
-    //   fifo-size = <256>;
-    //   bits-per-word = <8>;
-    // }
   };
 };
