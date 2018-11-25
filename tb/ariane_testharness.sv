@@ -447,6 +447,7 @@ module ariane_testharness #(
             ariane_soc::UARTBase,
             ariane_soc::SPIBase,
             ariane_soc::EthernetBase,
+            ariane_soc::GPIOBase,
             ariane_soc::DRAMBase
         }),
         .end_addr_i   ({
@@ -457,6 +458,7 @@ module ariane_testharness #(
             ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
             ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
             ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
+            ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
             ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
         })
     );

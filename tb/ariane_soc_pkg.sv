@@ -20,13 +20,14 @@ package ariane_soc;
 
     typedef enum int unsigned {
         DRAM     = 0,
-        Ethernet = 1,
-        SPI      = 2,
-        UART     = 3,
-        PLIC     = 4,
-        CLINT    = 5,
-        ROM      = 6,
-        Debug    = 7
+        GPIO     = 1,
+        Ethernet = 2,
+        SPI      = 3,
+        UART     = 4,
+        PLIC     = 5,
+        CLINT    = 6,
+        ROM      = 7,
+        Debug    = 8
     } axi_slaves_t;
 
     localparam NB_PERIPHERALS = Debug + 1;
@@ -38,6 +39,7 @@ package ariane_soc;
     localparam logic[63:0] UARTLength     = 64'h1000;
     localparam logic[63:0] SPILength      = 64'h800000;
     localparam logic[63:0] EthernetLength = 64'h10000;
+    localparam logic[63:0] GPIOLength     = 64'h1000;
     localparam logic[63:0] DRAMLength     = 64'h8000000; // 128 MByte of DDR
     localparam logic[63:0] SRAMLength     = 64'h1800000;  // 24 MByte of SRAM
     // Instantiate AXI protocol checkers
@@ -51,6 +53,7 @@ package ariane_soc;
         UARTBase     = 64'h1000_0000,
         SPIBase      = 64'h2000_0000,
         EthernetBase = 64'h3000_0000,
+        GPIOBase     = 64'h4000_0000,
         DRAMBase     = 64'h8000_0000
     } soc_bus_start_t;
 

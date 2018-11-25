@@ -53,6 +53,18 @@ module rgmii_to_mii_conv_xilinx (
     input  logic        net_phy_mdc
 );
 
+    xlnx_ila i_xlnx_ila (
+        .clk(mem_clk_i), // input wire clk
+        .probe0(net_phy_rst_n), // input wire [0:0]  probe0
+        .probe1(net_phy_tx_clk), // input wire [0:0]  probe1
+        .probe2(net_phy_tx_en), // input wire [0:0]  probe2
+        .probe3(net_phy_tx_data), // input wire [3:0]  probe3
+        .probe4(net_phy_rx_clk), // input wire [0:0]  probe4
+        .probe5(net_phy_dv), // input wire [0:0]  probe5
+        .probe6(net_phy_rx_data), // input wire [3:0]  probe6
+        .probe7(net_phy_rx_er) // input wire [0:0]  probe7
+    );
+
     // -------------
     // MDIO
     // -------------

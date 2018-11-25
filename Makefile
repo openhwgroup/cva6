@@ -294,7 +294,8 @@ verilate_command := $(verilator)                                                
                     -Wno-style                                                             \
                     -Wno-lint                                                              \
                     $(if $(DEBUG),--trace-structs --trace,)                                \
-                    -LDFLAGS "-lfesvr" -CFLAGS "$(CFLAGS)" -Wall --cc  --vpi               \
+                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr"              \
+                    -CFLAGS "$(CFLAGS)" -Wall --cc  --vpi                                  \
                     $(list_incdir) --top-module ariane_testharness                         \
                     --Mdir $(ver-library) -O3                                              \
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc              \
@@ -384,7 +385,7 @@ fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(util) $(uart_src)
 	@echo read_verilog -sv {$(src)} 	   >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
-	cd fpga && make
+	cd fpga && make XILINX_PART="xc7k325tffg900-2" XILINX_BOARD="digilentinc.com:genesys2:part0:1.1" CLK_PERIOD_NS="20"
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*

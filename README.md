@@ -12,12 +12,14 @@ Table of Contents
 =================
 
    * [Ariane RISC-V CPU](#ariane-risc-v-cpu)
+   * [Table of Contents](#table-of-contents)
       * [Getting Started](#getting-started)
          * [Running User-Space Applications](#running-user-space-applications)
          * [FPU Support](#fpu-support)
       * [FPGA Emulation](#fpga-emulation)
          * [Generating a Bistream](#generating-a-bistream)
          * [Debugging](#debugging)
+         * [Preliminary Support for OpenPiton Cache System](#preliminary-support-for-openpiton-cache-system)
       * [Planned Improvements](#planned-improvements)
       * [Going Beyond](#going-beyond)
          * [CI Testsuites and Randomized Constrained Testing with Torture](#ci-testsuites-and-randomized-constrained-testing-with-torture)

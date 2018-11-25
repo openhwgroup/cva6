@@ -16,7 +16,8 @@ module ariane_peripherals #(
     parameter int AxiUserWidth = 1,
     parameter bit InclUART     = 1,
     parameter bit InclSPI      = 0,
-    parameter bit InclEthernet = 0
+    parameter bit InclEthernet = 0,
+    parameter bit InclGPIO     = 0
 ) (
     input  logic       clk_i           , // Clock
     input  logic       rst_ni          , // Asynchronous reset active low
@@ -277,8 +278,8 @@ module ariane_peripherals #(
             .pready_o  ( uart_pready  ),
             .pslverr_o ( uart_pslverr )
         );
-        /* pragma translate_on */
         `endif
+        /* pragma translate_on */
     end
 
     // ---------------
@@ -450,8 +451,10 @@ module ariane_peripherals #(
             .sck_o          ( spi_clk_o              ),
             .sck_i          ( '0                     ),
             .sck_t          (                        ),
-            .ip2intc_irpt   ( irq_sources[1]         )
+            // .ip2intc_irpt   ( irq_sources[1]         )
+            .ip2intc_irpt   (          )
         );
+        assign irq_sources [1] = 1'b0;
     end else begin
         assign spi_clk_o = 1'b0;
         assign spi_mosi = 1'b0;

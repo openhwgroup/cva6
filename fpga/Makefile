@@ -8,6 +8,7 @@ ip-dir := xilinx
 ips := xlnx_axi_clock_converter.xci  \
        xlnx_axi_dwidth_converter.xci \
        xlnx_axi_quad_spi.xci         \
+       xlnx_axi_gpio.xci             \
        xlnx_clk_gen.xci              \
        xlnx_mig_7_ddr3.xci
 
@@ -17,13 +18,13 @@ ips-target := $(join $(addsuffix /ip/, $(addprefix $(ip-dir)/, $(basename $(ips)
 all: $(mcs)
 
 # Generate mcs from bitstream
-$(mcs): $(ips) $(bit)
+$(mcs): $(bit)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
-$(bit):
+$(bit): $(ips)
 	mkdir -p $(work-dir)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
-	cp ariane.runs/impl_1/ariane_xilinx.bit ./$(work-dir)
+	cp ariane.runs/impl_1/ariane_xilinx* ./$(work-dir)
 
 $(ips): %.xci :
 	@echo Generating $(@F)

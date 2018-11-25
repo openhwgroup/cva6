@@ -196,6 +196,7 @@ axi_node_wrap_with_slices #(
         ariane_soc::UARTBase,
         ariane_soc::SPIBase,
         ariane_soc::EthernetBase,
+        ariane_soc::GPIOBase,
         ariane_soc::DRAMBase
     }),
     .end_addr_i   ({
@@ -206,6 +207,7 @@ axi_node_wrap_with_slices #(
         ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
         ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
         ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
+        ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
         ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
     })
 );
@@ -264,7 +266,7 @@ dm_top #(
     .dmi_resp_o       ( debug_resp       )
 );
 
-axi_master_connect i_axi_connect_ariane (.axi_req_i(axi_sba_req), .axi_resp_o(axi_sba_resp), .master(slave[1]));
+axi_master_connect i_axi_master_dm (.axi_req_i(dm_axi_m_req), .axi_resp_o(dm_axi_m_resp), .master(slave[1]));
 axi_slave_connect  i_axi_slave_dm  (.axi_req_o(dm_axi_s_req), .axi_resp_i(dm_axi_s_resp), .slave(master[ariane_soc::Debug]));
 
 // ---------------
@@ -288,7 +290,7 @@ ariane #(
     .axi_resp_i   ( axi_ariane_resp     )
 );
 
-axi_master_connect i_axi_connect_sba (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
+axi_master_connect i_axi_master_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
 
 // ---------------
 // CLINT
@@ -359,6 +361,7 @@ ariane_peripherals #(
     .AxiIdWidth   ( AxiIdWidthSlaves ),
     .AxiUserWidth ( AxiUserWidth     ),
     .InclUART     ( 1'b1             ),
+    .InclGPIO     ( 1'b1             ),
     `ifdef GENESYSII
     .InclSPI      ( 1'b1         ),
     .InclEthernet ( 1'b1         )
@@ -373,6 +376,7 @@ ariane_peripherals #(
     .plic         ( master[ariane_soc::PLIC]     ),
     .uart         ( master[ariane_soc::UART]     ),
     .spi          ( master[ariane_soc::SPI]      ),
+    .gpio         ( master[ariane_soc::GPIO]     ),
     .eth_clk_i    ( eth_clk                      ),
     .ethernet     ( master[ariane_soc::Ethernet] ),
     .irq_o        ( irq                          ),
@@ -387,11 +391,13 @@ ariane_peripherals #(
     .eth_txd,
     .eth_mdio,
     .eth_mdc,
-    .phy_tx_clk_i ( phy_tx_clk                   ),
-    .spi_clk_o    ( spi_clk_o                    ),
-    .spi_mosi     ( spi_mosi                     ),
-    .spi_miso     ( spi_miso                     ),
-    .spi_ss       ( spi_ss                       )
+    .phy_tx_clk_i   ( phy_tx_clk                  ),
+    .spi_clk_o      ( spi_clk_o                   ),
+    .spi_mosi       ( spi_mosi                    ),
+    .spi_miso       ( spi_miso                    ),
+    .spi_ss         ( spi_ss                      ),
+    .leds_o         ( led                         ),
+    .dip_switches_i ( sw                          )
 );
 
 // ---------------------
