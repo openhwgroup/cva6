@@ -757,6 +757,9 @@ module ariane_peripherals #(
             .phy_mdc       ( phy_mdc                )
         );
 
+        assign phy_crs = 1'b0;
+        assign phy_col = 1'b0;
+
         rgmii_to_mii_conv_xilinx i_rgmii_to_mii_conv_xilinx (
             .rgmii_phy_txc   ( eth_txck     ),
             .rgmii_phy_txctl ( eth_txctl    ),

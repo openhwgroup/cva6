@@ -58,14 +58,21 @@ module rgmii_to_mii_conv_xilinx (
     // -------------
     IOBUF mdio_io_iobuf (.I (net_mdio_i), .IO(rgmii_phy_mdio), .O (net_mdio_o), .T (net_mdio_t));
     assign rgmii_phy_mdc = net_phy_mdc;
+    assign rgmii_phy_rst_n = net_phy_rst_n;
 
     // -------------
     // TX
     // -------------
+    // net_phy_tx_clk:  ___|------|______|------|______|------|______|
+    // rgmii_phy_txc:   ---|______|------|______|------|______|------|
+    // net_phy_tx_en:   -----_________________________________________
+    // rgmii_phy_txctl: _____--------------___________________________
+
+    // basically inverts the clock
     ODDR net_phy_txc_oddr (
-        .Q  ( rgmii_phy_txc     ), // 1-bit DDR output (ODDR register output)
         .C  ( net_phy_tx_clk    ), // 1-bit clock input (The CLK pin represents the clock input pin)
         .CE ( 1'b1              ), // 1-bit clock enable input (CE represents the clock enable pin. When asserted Low,
+        .Q  ( rgmii_phy_txc     ), // 1-bit DDR output (ODDR register output)
                                    // this port disables the output clock on port Q.)
         .D1 ( 1'b0              ), // 1-bit data input (positive edge) (ODDR register inputs)
         .D2 ( 1'b1              ), // 1-bit data input (negative edge) (ODDR register inputs)
@@ -77,16 +84,16 @@ module rgmii_to_mii_conv_xilinx (
 
     // D-FF
     FD net_phy_txctl_dff (
-        .Q ( rgmii_phy_txctl ),
+        .C ( net_phy_tx_clk  ),
         .D ( net_phy_tx_en   ),
-        .C ( net_phy_tx_clk  )
+        .Q ( rgmii_phy_txctl )
     );
 
     for (genvar i = 0; i < 4; i++) begin : gen_net_phy_txd
         FD net_phy_txd_dff (
-            .Q ( rgmii_phy_txd[i]   ),
+            .C ( net_phy_tx_clk     ),
             .D ( net_phy_tx_data[i] ),
-            .C ( net_phy_tx_clk     )
+            .Q ( rgmii_phy_txd[i]   )
         );
     end
 
@@ -143,27 +150,43 @@ module rgmii_to_mii_conv_xilinx (
     );
 
     BUFG BUFG_inst (
-      .O ( net_phy_rx_clk   ),
-      .I ( net_phy_rxc_delayed )
+      .I ( net_phy_rxc_delayed ),
+      .O ( net_phy_rx_clk      ),
     );
 
-    always @(posedge net_phy_rx_clk) begin
+    // The RX_CTL signal carries RXDV (data valid) on the rising edge, and (RXDV xor RXER)
+    // on the falling edge.
+    // data valid is transmitted on positive edge
+    always_ff @(posedge net_phy_rx_clk) begin
         if (~rgmii_phy_rst_n) begin
-            net_phy_rx_dv_f   <= 1'b0;
-            net_phy_rx_err_f  <= 1'b0;
-            net_phy_rx_dv_ff  <= 1'b0;
-            net_phy_rx_err_ff <= 1'b0;
+            net_phy_rx_dv_f <= 1'b0;
         end else begin
-            net_phy_rx_dv_f   <= rgmii_phy_rxctl;
-            net_phy_rx_err_f  <= rgmii_phy_rxctl;
-            net_phy_rxd_f     <= rgmii_phy_rxd;
-            net_phy_rx_dv_ff  <= net_phy_rx_dv_f;
-            net_phy_rx_err_ff <= net_phy_rx_err_f;
-            net_phy_rxd_ff    <= net_phy_rxd_f;
+            net_phy_rx_dv_f <= rgmii_phy_rxctl;
         end
     end
 
-    assign rgmii_phy_rst_n = net_phy_rst_n;
+    // data error is encoded on negative edge of rxctl
+    always_ff @(negedge net_phy_rx_clk) begin
+        if (~rgmii_phy_rst_n) begin
+            net_phy_rx_err_f <= 1'b0;
+        end else begin
+            net_phy_rx_err_f <= rgmii_phy_rxctl;
+        end
+    end
+
+    always_ff @(posedge net_phy_rx_clk) begin
+        if (~rgmii_phy_rst_n) begin
+            net_phy_rxd_f     <= '0;
+            net_phy_rxd_ff    <= '0;
+            net_phy_rx_dv_ff  <= 1'b0;
+            net_phy_rx_err_ff <= 1'b0;
+        end else begin
+            net_phy_rxd_f     <= rgmii_phy_rxd;
+            net_phy_rxd_ff    <= net_phy_rxd_f;
+            net_phy_rx_dv_ff  <= net_phy_rx_dv_f;
+            net_phy_rx_err_ff <= net_phy_rx_err_f;
+        end
+    end
 
     assign net_phy_dv = net_phy_rx_dv_ff;
     assign net_phy_rx_er = net_phy_rx_dv_ff ^ net_phy_rx_err_ff;
