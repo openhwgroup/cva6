@@ -101,81 +101,70 @@ module std_cache_subsystem #(
     // -----------------------
     // Arbitrate AXI Ports
     // -----------------------
-    logic [1:0] aw_select, ar_select, w_select;
-    logic       aw_arbiter_valid, ar_arbiter_valid, w_arbiter_valid;
-    logic       aw_enable_d, aw_enable_q;
-    logic       ar_enable_d, ar_enable_q;
-    logic       w_enable_d, w_enable_q;
-
-    // AW Channel
-    rrarbiter #(
-        .NUM_REQ     ( 3 ),
-        .LOCK_IN     ( 1 )
-    ) i_rrarbiter_aw (
-        .clk_i,
-        .rst_ni,
-        .flush_i ( 1'b0             ),
-        .en_i    ( aw_enable_q      ),
-        .req_i   ( {axi_req_icache.aw_valid, axi_req_bypass.aw_valid, axi_req_data.aw_valid} ),
-        .ack_o   (                  ),
-        .vld_o   ( aw_arbiter_valid ),
-        .idx_o   ( aw_select        )
-    );
-
-    stream_mux #(
-        .DATA_T ( ariane_axi::aw_chan_t ),
-        .N_INP  ( 3                     )
-    ) i_stream_mux_aw (
-        .inp_data_i  ( {axi_req_icache.aw, axi_req_bypass.aw, axi_req_data.aw} ),
-        .inp_valid_i ( {axi_req_icache.aw_valid, axi_req_bypass.aw_valid, axi_req_data.aw_valid} ),
-        .inp_ready_o ( {axi_resp_icache.aw_ready, axi_resp_bypass.aw_ready, axi_resp_data.aw_ready} ),
-        .inp_sel_i   ( aw_select           ),
-        .oup_data_o  ( axi_req_o.aw        ),
-        .oup_valid_o ( axi_req_o.aw_valid  ),
-        .oup_ready_i ( axi_resp_i.aw_ready )
-    );
+    logic [1:0] w_select, w_id;
+    logic full;
 
     // AR Channel
-    rrarbiter #(
-        .NUM_REQ     ( 3 ),
-        .LOCK_IN     ( 1 )
-    ) i_rrarbiter_ar (
-        .clk_i,
-        .rst_ni,
-        .flush_i ( 1'b0             ),
-        .en_i    ( ar_enable_q      ),
-        .req_i   ( {axi_req_icache.ar_valid, axi_req_bypass.ar_valid, axi_req_data.ar_valid} ),
-        .ack_o   (                  ),
-        .vld_o   ( ar_arbiter_valid ),
-        .idx_o   ( ar_select        )
-    );
-
-    stream_mux #(
+    stream_arbiter #(
         .DATA_T ( ariane_axi::ar_chan_t ),
         .N_INP  ( 3                     )
-    ) i_stream_mux_ar (
+    ) i_stream_arbiter_ar (
+        .clk_i,
+        .rst_ni,
         .inp_data_i  ( {axi_req_icache.ar, axi_req_bypass.ar, axi_req_data.ar} ),
         .inp_valid_i ( {axi_req_icache.ar_valid, axi_req_bypass.ar_valid, axi_req_data.ar_valid} ),
         .inp_ready_o ( {axi_resp_icache.ar_ready, axi_resp_bypass.ar_ready, axi_resp_data.ar_ready} ),
-        .inp_sel_i   ( ar_select           ),
         .oup_data_o  ( axi_req_o.ar        ),
         .oup_valid_o ( axi_req_o.ar_valid  ),
         .oup_ready_i ( axi_resp_i.ar_ready )
     );
 
-    // W Channel
-    rrarbiter #(
-        .NUM_REQ     ( 3 ),
-        .LOCK_IN     ( 1 )
-    ) i_rrarbiter_w (
+    // AW Channel
+    stream_arbiter #(
+        .DATA_T ( ariane_axi::aw_chan_t ),
+        .N_INP  ( 3                     )
+    ) i_stream_arbiter_aw (
         .clk_i,
         .rst_ni,
-        .flush_i ( 1'b0            ),
-        .en_i    ( w_enable_q      ),
-        .req_i   ( {axi_req_icache.w_valid, axi_req_bypass.w_valid, axi_req_data.w_valid} ),
-        .ack_o   (                 ),
-        .vld_o   ( w_arbiter_valid ),
-        .idx_o   ( w_select        )
+        .inp_data_i  ( {axi_req_icache.aw, axi_req_bypass.aw, axi_req_data.aw} ),
+        .inp_valid_i ( {axi_req_icache.aw_valid & ~full, axi_req_bypass.aw_valid & ~full, axi_req_data.aw_valid & ~full} ),
+        .inp_ready_o ( {axi_resp_icache.aw_ready, axi_resp_bypass.aw_ready, axi_resp_data.aw_ready} ),
+        .oup_data_o  ( axi_req_o.aw        ),
+        .oup_valid_o ( axi_req_o.aw_valid  ),
+        .oup_ready_i ( axi_resp_i.aw_ready )
+    );
+
+    // WID has been removed in AXI 4 so we need to keep track which AW request has been accepted
+    // to forward the correct write data.
+    always_comb begin
+        w_select = 0;
+        unique case (axi_req_o.aw.id)
+            4'b1111:                            w_select = 0; // dcache
+            4'b1000, 4'b1001, 4'b1010, 4'b1011: w_select = 1; // bypass
+            4'b0000:                            w_select = 2; // icache
+            default:                            w_select = 0;
+        endcase
+    end
+
+    fifo_v3 #(
+      .FALL_THROUGH ( 1'b1 ),
+      .DATA_WIDTH   ( 2    ),
+      .DEPTH        ( 4    )
+    ) i_fifo_w_channel (
+      .clk_i      ( clk_i           ),
+      .rst_ni     ( rst_ni          ),
+      .flush_i    ( 1'b0            ),
+      .testmode_i ( 1'b0            ),
+      .full_o     ( full            ),
+      .empty_o    (                 ), // leave open
+      .usage_o    (                 ), // leave open
+      .data_i     ( w_select        ),
+      // a new transaction was requested
+      .push_i     ( axi_req_o.aw_valid & axi_resp_i.aw_ready & ~full ),
+      // write ID to select the output MUX
+      .data_o     ( w_id            ),
+      // transaction has finished
+      .pop_i      ( axi_req_o.w_valid & axi_resp_i.w_ready & axi_req_o.w.last )
     );
 
     stream_mux #(
@@ -185,38 +174,11 @@ module std_cache_subsystem #(
         .inp_data_i  ( {axi_req_icache.w, axi_req_bypass.w, axi_req_data.w} ),
         .inp_valid_i ( {axi_req_icache.w_valid, axi_req_bypass.w_valid, axi_req_data.w_valid} ),
         .inp_ready_o ( {axi_resp_icache.w_ready, axi_resp_bypass.w_ready, axi_resp_data.w_ready} ),
-        .inp_sel_i   ( w_select           ),
+        .inp_sel_i   ( w_id               ),
         .oup_data_o  ( axi_req_o.w        ),
         .oup_valid_o ( axi_req_o.w_valid  ),
         .oup_ready_i ( axi_resp_i.w_ready )
     );
-
-    always_comb begin
-        aw_enable_d = aw_enable_q;
-        ar_enable_d = ar_enable_q;
-        w_enable_d  = w_enable_q;
-
-        // freeze the arbiter
-        if (aw_arbiter_valid) aw_enable_d = 1'b0;
-        if (ar_arbiter_valid) ar_enable_d = 1'b0;
-        if (w_arbiter_valid)  w_enable_d  = 1'b0;
-        // we've got a valid transaction, free the arbitration decision
-        if (axi_resp_i.aw_ready && axi_req_o.aw_valid) aw_enable_d = 1'b1;
-        if (axi_resp_i.ar_ready && axi_req_o.ar_valid) ar_enable_d = 1'b1;
-        if (axi_resp_i.w_ready  && axi_req_o.w_valid)  w_enable_d  = 1'b1;
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            aw_enable_q <= 1'b1;
-            ar_enable_q <= 1'b1;
-            w_enable_q  <= 1'b1;
-        end else begin
-            aw_enable_q <= aw_enable_d;
-            ar_enable_q <= ar_enable_d;
-            w_enable_q  <= w_enable_d;
-        end
-    end
 
     // Route responses based on ID
     // 0000            -> I$
@@ -232,10 +194,10 @@ module std_cache_subsystem #(
     always_comb begin
         r_select = 0;
         unique case (axi_resp_i.r.id)
-            4'b0000: r_select = 2; // icache
-            4'b1111: r_select = 0; // dcache
+            4'b1111:                            r_select = 0; // dcache
             4'b1000, 4'b1001, 4'b1010, 4'b1011: r_select = 1; // bypass
-            default: r_select = 0;
+            4'b0000:                            r_select = 2; // icache
+            default:                            r_select = 0;
         endcase
     end
 
@@ -259,10 +221,10 @@ module std_cache_subsystem #(
     always_comb begin
         b_select = 0;
         unique case (axi_resp_i.b.id)
-            4'b0000: b_select = 2; // icache
-            4'b1111: b_select = 0; // dcache
+            4'b1111:                            b_select = 0; // dcache
             4'b1000, 4'b1001, 4'b1010, 4'b1011: b_select = 1; // bypass
-            default: b_select = 0;
+            4'b0000:                            b_select = 2; // icache
+            default:                            b_select = 0;
         endcase
     end
 
