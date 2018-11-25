@@ -807,6 +807,9 @@ module ariane_peripherals #(
     end
 
     // 5. GPIO
+    assign gpio.b_user = 1'b0;
+    assign gpio.r_user = 1'b0;
+
     if (InclGPIO) begin : gen_gpio
 
         logic [31:0] s_axi_gpio_awaddr;
@@ -917,8 +920,8 @@ module ariane_peripherals #(
         );
 
         xlnx_axi_gpio i_xlnx_axi_gpio (
-            .s_axi_aclk    ( s_axi_gpio_aclk        ),
-            .s_axi_aresetn ( s_axi_gpio_aresetn     ),
+            .s_axi_aclk    ( clk_i                  ),
+            .s_axi_aresetn ( rst_ni                 ),
             .s_axi_awaddr  ( s_axi_gpio_awaddr[8:0] ),
             .s_axi_awvalid ( s_axi_gpio_awvalid     ),
             .s_axi_awready ( s_axi_gpio_awready     ),
@@ -936,10 +939,13 @@ module ariane_peripherals #(
             .s_axi_rresp   ( s_axi_gpio_rresp       ),
             .s_axi_rvalid  ( s_axi_gpio_rvalid      ),
             .s_axi_rready  ( s_axi_gpio_rready      ),
-            .gpio_io_i     (                        ),
+            .gpio_io_i     ( '0                     ),
             .gpio_io_o     ( leds_o                 ),
             .gpio_io_t     (                        ),
             .gpio2_io_i    ( dip_switches_i         )
         );
+
+        assign s_axi_gpio_rlast = 1'b1;
+        assign s_axi_gpio_wlast = 1'b1;
     end
 endmodule
