@@ -42,6 +42,7 @@ module axi_slave_connect (
     assign  slave.b_id           = axi_resp_i.b.id;
     assign  slave.b_resp         = axi_resp_i.b.resp;
     assign  slave.b_valid        = axi_resp_i.b_valid;
+    assign  slave.b_user         = 1'b0;
     assign  axi_req_o.b_ready    = slave.b_ready;
 
     assign  axi_req_o.ar.id      = slave.ar_id;
@@ -63,6 +64,7 @@ module axi_slave_connect (
     assign  slave.r_resp         = axi_resp_i.r.resp;
     assign  slave.r_last         = axi_resp_i.r.last;
     assign  slave.r_valid        = axi_resp_i.r_valid;
+    assign  slave.r_user         = 1'b0;
     assign  axi_req_o.r_ready    = slave.r_ready;
 
 endmodule

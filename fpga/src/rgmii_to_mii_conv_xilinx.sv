@@ -151,7 +151,7 @@ module rgmii_to_mii_conv_xilinx (
 
     BUFG BUFG_inst (
       .I ( net_phy_rxc_delayed ),
-      .O ( net_phy_rx_clk      ),
+      .O ( net_phy_rx_clk      )
     );
 
     // The RX_CTL signal carries RXDV (data valid) on the rising edge, and (RXDV xor RXER)

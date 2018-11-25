@@ -232,37 +232,40 @@ dmi_jtag i_dmi_jtag (
     .tdo_oe_o             (        )
 );
 
-ariane_axi::req_t    axi_sba_req;
-ariane_axi::resp_t   axi_sba_resp;
+ariane_axi::req_t    dm_axi_m_req,  dm_axi_s_req;
+ariane_axi::resp_t   dm_axi_m_resp, dm_axi_s_resp;
+
 // debug module
 dm_top #(
     // current implementation only supports 1 hart
-    .NrHarts          ( 1                    ),
-    .AxiIdWidth       ( AxiIdWidthSlaves     ),
-    .AxiAddrWidth     ( AxiAddrWidth         ),
-    .AxiDataWidth     ( AxiDataWidth         ),
-    .AxiUserWidth     ( AxiUserWidth         )
+    .NrHarts          ( 1                ),
+    .AxiIdWidth       ( AxiIdWidthSlaves ),
+    .AxiAddrWidth     ( AxiAddrWidth     ),
+    .AxiDataWidth     ( AxiDataWidth     ),
+    .AxiUserWidth     ( AxiUserWidth     )
 ) i_dm_top (
-    .clk_i            ( clk                       ),
-    .rst_ni           ( rst_n                     ), // PoR
-    .testmode_i       ( test_en                   ),
-    .ndmreset_o       ( ndmreset                  ),
-    .dmactive_o       ( dmactive                  ), // active debug session
-    .debug_req_o      ( debug_req_irq             ),
-    .unavailable_i    ( '0                        ),
-    .axi_slave        ( master[ariane_soc::Debug] ),
-    .axi_req_o        ( axi_sba_req               ),
-    .axi_resp_i       ( axi_sba_resp              ),
-    .dmi_rst_ni       ( rst_n                     ),
-    .dmi_req_valid_i  ( debug_req_valid           ),
-    .dmi_req_ready_o  ( debug_req_ready           ),
-    .dmi_req_i        ( debug_req                 ),
-    .dmi_resp_valid_o ( debug_resp_valid          ),
-    .dmi_resp_ready_i ( debug_resp_ready          ),
-    .dmi_resp_o       ( debug_resp                )
+    .clk_i            ( clk              ),
+    .rst_ni           ( rst_n            ), // PoR
+    .testmode_i       ( test_en          ),
+    .ndmreset_o       ( ndmreset         ),
+    .dmactive_o       ( dmactive         ), // active debug session
+    .debug_req_o      ( debug_req_irq    ),
+    .unavailable_i    ( '0               ),
+    .axi_s_req_i      ( dm_axi_s_req     ),
+    .axi_s_resp_o     ( dm_axi_s_resp    ),
+    .axi_m_req_o      ( dm_axi_m_req     ),
+    .axi_m_resp_i     ( dm_axi_m_resp    ),
+    .dmi_rst_ni       ( rst_n            ),
+    .dmi_req_valid_i  ( debug_req_valid  ),
+    .dmi_req_ready_o  ( debug_req_ready  ),
+    .dmi_req_i        ( debug_req        ),
+    .dmi_resp_valid_o ( debug_resp_valid ),
+    .dmi_resp_ready_i ( debug_resp_ready ),
+    .dmi_resp_o       ( debug_resp       )
 );
 
-axi_connect i_axi_connect_ariane (.axi_req_i(axi_sba_req), .axi_resp_o(axi_sba_resp), .master(slave[1]));
+axi_master_connect i_axi_connect_ariane (.axi_req_i(axi_sba_req), .axi_resp_o(axi_sba_resp), .master(slave[1]));
+axi_slave_connect  i_axi_slave_dm  (.axi_req_o(dm_axi_s_req), .axi_resp_i(dm_axi_s_resp), .slave(master[ariane_soc::Debug]));
 
 // ---------------
 // Core
@@ -271,7 +274,7 @@ ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
-    .CACHE_START_ADDR ( CacheStartAddr   )
+    .CachedAddrBeg ( CacheStartAddr   )
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),
@@ -285,7 +288,7 @@ ariane #(
     .axi_resp_i   ( axi_ariane_resp     )
 );
 
-axi_connect i_axi_connect_sba (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
+axi_master_connect i_axi_connect_sba (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
 
 // ---------------
 // CLINT
@@ -299,20 +302,26 @@ always_ff @(posedge clk or negedge ndmreset_n) begin
   end
 end
 
+ariane_axi::req_t    axi_clint_req;
+ariane_axi::resp_t   axi_clint_resp;
+
 clint #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .NR_CORES       ( 1                )
 ) i_clint (
-    .clk_i       ( clk                       ),
-    .rst_ni      ( ndmreset_n                ),
-    .testmode_i  ( test_en                   ),
-    .slave       ( master[ariane_soc::CLINT] ),
-    .rtc_i       ( rtc                       ),
-    .timer_irq_o ( timer_irq                 ),
-    .ipi_o       ( ipi                       )
+    .clk_i       ( clk            ),
+    .rst_ni      ( ndmreset_n     ),
+    .testmode_i  ( test_en        ),
+    .axi_req_i   ( axi_clint_req  ),
+    .axi_resp_o  ( axi_clint_resp ),
+    .rtc_i       ( rtc            ),
+    .timer_irq_o ( timer_irq      ),
+    .ipi_o       ( ipi            )
 );
+
+axi_slave_connect i_axi_slave_connect_clint (.axi_req_o(axi_clint_req), .axi_resp_i(axi_clint_resp), .slave(master[ariane_soc::CLINT]));
 
 // ---------------
 // ROM

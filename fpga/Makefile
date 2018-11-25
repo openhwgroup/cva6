@@ -4,16 +4,20 @@ VIVADOFLAGS ?= -nojournal -mode batch -source scripts/prologue.tcl
 work-dir := work-fpga
 bit := $(work-dir)/ariane_xilinx.bit
 mcs := $(work-dir)/ariane_xilinx.mcs
-ips := xlnx_axi_clock_converter  \
-       xlnx_axi_dwidth_converter \
-       xlnx_axi_quad_spi         \
-       xlnx_clk_gen              \
-       xlnx_mig_7_ddr
+ip-dir := xilinx
+ips := xlnx_axi_clock_converter.xci  \
+       xlnx_axi_dwidth_converter.xci \
+       xlnx_axi_quad_spi.xci         \
+       xlnx_clk_gen.xci              \
+       xlnx_mig_7_ddr3.xci
+
+ips := $(addprefix $(work-dir)/, $(ips))
+ips-target := $(join $(addsuffix /ip/, $(addprefix $(ip-dir)/, $(basename $(ips)))), $(ips))
 
 all: $(mcs)
 
 # Generate mcs from bitstream
-$(mcs): $(bit)
+$(mcs): $(ips) $(bit)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/write_cfgmem.tcl -tclargs $@ $^
 
 $(bit):
@@ -21,8 +25,10 @@ $(bit):
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
 	cp ariane.runs/impl_1/ariane_xilinx.bit ./$(work-dir)
 
-$(ips):
-	cd xilinx/$@; make clean; make
+$(ips): %.xci :
+	@echo Generating $(@F)
+	@cd $(ip-dir)/$(basename $(@F)) && make
+	@cp $(ip-dir)/$(basename $(@F))/ip/$(@F) $@
 
 mcs: $(mcs)
 
