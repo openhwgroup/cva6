@@ -20,7 +20,9 @@
 // configuration in case Ariane is
 // instantiated in OpenPiton
 `ifdef PITON_ARIANE
+`ifndef AXI64_CACHE_PORTS
   `include "l15.tmp.h"
+`endif
 `endif
 
 package ariane_pkg;
@@ -284,7 +286,7 @@ package ariane_pkg;
     `define CONFIG_L1D_ASSOCIATIVITY 4
 `endif
 
-`ifndef CONFIG_L1I_SIZE
+`ifndef CONFIG_L1D_SIZE
     `define CONFIG_L1D_SIZE 16*1024
 `endif
 
@@ -298,7 +300,7 @@ package ariane_pkg;
     localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
     localparam int unsigned DCACHE_TAG_WIDTH   = 56 - DCACHE_INDEX_WIDTH;
-    `else
+`else
     // align to openpiton for the time being (this should be more configurable in the future)
      // I$
     localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit

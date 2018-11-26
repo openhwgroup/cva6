@@ -16,8 +16,10 @@
 // configuration in case Ariane is
 // instantiated in OpenPiton
 `ifdef PITON_ARIANE
+`ifndef AXI64_CACHE_PORTS
   `include "l15.tmp.h"
   `include "define.tmp.h"
+`endif
 `endif
 
 package serpent_cache_pkg;
@@ -25,6 +27,19 @@ package serpent_cache_pkg;
   // these parames need to coincide with the
   // L1.5 parameterization, do not change
 `ifdef PITON_ARIANE
+
+`ifndef CONFIG_L15_ASSOCIATIVITY
+    `define CONFIG_L15_ASSOCIATIVITY 4
+`endif
+
+`ifndef L15_THREADID_WIDTH
+    `define L15_THREADID_WIDTH 1
+`endif
+
+`ifndef TLB_CSM_WIDTH
+    `define TLB_CSM_WIDTH 33
+`endif
+
   localparam L15_SET_ASSOC           = `CONFIG_L15_ASSOCIATIVITY;
   localparam L15_TID_WIDTH           = `L15_THREADID_WIDTH;
   localparam L15_TLB_CSM_WIDTH       = `TLB_CSM_WIDTH;
