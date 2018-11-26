@@ -219,7 +219,7 @@ Ariane version 4.0 has preliminary support for the OpenPiton distributed cache s
 
 The corresponding integration patches will soon be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton).
 
-To activate the different cache system, compile your code with the macro `SERPENT_PULP`.
+To activate the different cache system, compile your code with the macro `PITON_ARIANE`.
 
 Note that this feature is still in Beta stage, and may hence not be completely bug-free.
 

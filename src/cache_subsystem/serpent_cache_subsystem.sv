@@ -18,7 +18,7 @@
 // Description: Ariane cache subsystem that is compatible with the OpenPiton
 //              coherent memory system.
 //
-//              Define SERPENT_PULP if you want to use this cache.
+//              Define PITON_ARIANE if you want to use this cache.
 //              Define AXI64_CACHE_PORTS if you want to use this cache
 //              with a standard 64bit AXI interace instead of the openpiton
 //              L1.5 interface.
