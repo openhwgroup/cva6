@@ -1,16 +1,12 @@
-// Copyright (c) 2018 ETH Zurich, University of Bologna
-// All rights reserved.
-//
-// This code is under development and not yet released to the public.
-// Until it is released, the code is under the copyright of ETH Zurich and
-// the University of Bologna, and may contain confidential and/or unpublished
-// work. Any reuse/redistribution is strictly forbidden without written
-// permission from ETH Zurich.
-//
-// Bug fixes and contributions will eventually be released under the
-// SolderPad open hardware license in the context of the PULP platform
-// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
-// University of Bologna.
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
 //
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
@@ -25,7 +21,7 @@ import serpent_cache_pkg::*;
 import tb_pkg::*;
 
 module tb_mem #(
-  parameter string MemName             = "TB_MEM",   
+  parameter string MemName             = "TB_MEM",
   parameter MemRandHitRate             = 10, //in percent
   parameter MemRandInvRate             = 5,  //in percent
   parameter MemWords                   = 1024*1024,// in 64bit words
@@ -75,7 +71,7 @@ module tb_mem #(
     logic [63:0] mem_array_q[MemWords-1:0];
 
     // this shadow memory  provides a view that is consistent with the one from the core
-    // i.e., pending writes are present in this view, and invalidations will not overwrite 
+    // i.e., pending writes are present in this view, and invalidations will not overwrite
     // the corresponding bytes until they have been commited to the normal memory.
     logic [63:0] mem_array_shadow_q[MemWords-1:0];
     logic [7:0]  mem_array_dirty_q[MemWords-1:0];
@@ -85,8 +81,8 @@ module tb_mem #(
     // sequential process holding the state of the memory readout process
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_tlb_rand
         automatic int rnd = 0;
-        automatic logic [63:0] val; 
-        automatic logic [63:0] lval; 
+        automatic logic [63:0] val;
+        automatic logic [63:0] lval;
 
         if(~rst_ni) begin
             mem_ready_q   <= '0;
@@ -94,26 +90,26 @@ module tb_mem #(
             rand_addr_q   <= '0;
             initialized_q <= '0;
         end else begin
-          
+
             // fill the memory once with random data
             if (initialized_q) begin
                 // commit "virtual" writes (i.e., clear the dirty flags)
                 if(commit_en_i) begin
                     for(int k=0; k<8; k++) begin
                         if(commit_be_i[k]) begin
-                            mem_array_dirty_q[commit_paddr_i>>3][k] <= 1'b0;       
+                            mem_array_dirty_q[commit_paddr_i>>3][k] <= 1'b0;
                         end
-                    end                     
-                end    
-                
+                    end
+                end
+
                 // "virtual" writes coming from TB agent, used to generate expected responses
                 if(write_en_i) begin
                     for(int k=0; k<8; k++) begin
                         if(write_be_i[k]) begin
                             mem_array_shadow_q[write_paddr_i>>3][k*8 +: 8] <= write_data_i[k*8 +: 8];
-                            mem_array_dirty_q[write_paddr_i>>3][k]         <= 1'b1;       
+                            mem_array_dirty_q[write_paddr_i>>3][k]         <= 1'b1;
                         end
-                    end    
+                    end
                 end
 
                 // "real" writes coming via the miss controller
@@ -125,22 +121,22 @@ module tb_mem #(
                         3'b011: mem_array_q[outfifo_data.paddr>>3] = outfifo_data.data[0 +: 64];
                         default: begin
                             $fatal(1,"unsupported transfer size for write");
-                        end    
-                    endcase // infifo_data.size      
-                end       
-            // initialization with random data     
+                        end
+                    endcase // infifo_data.size
+                end
+            // initialization with random data
             end else begin
                 mem_array_dirty_q      <= '{default:'0};
-                
+
                 for (int k=0; k<MemWords; k++) begin
                     void'(randomize(val));
                     mem_array_q[k]        <= val;
                     mem_array_shadow_q[k] <= val;
                 end
                 initialized_q <= 1;
-            end  
+            end
 
-            
+
             // generate random contentions
             if (mem_rand_en_i) begin
                 void'(randomize(rnd) with {rnd > 0; rnd <= 100;});
@@ -150,7 +146,7 @@ module tb_mem #(
                     mem_ready_q <= '0;
                 end
             end else begin
-                mem_ready_q <= '1;    
+                mem_ready_q <= '1;
             end
 
             // generate random invalidations
@@ -161,20 +157,20 @@ module tb_mem #(
                     void'(randomize(lval) with {lval>=0; lval<(MemWords>>3);});
                     void'(randomize(val));
                     rand_addr_q              <= lval<<3;
-                    
-                    // with the current TB setup, we cannot invalidate a memory location if a write response to the same address is 
+
+                    // with the current TB setup, we cannot invalidate a memory location if a write response to the same address is
                     // in flight, since this could lead to an incosistent state between the real memory and the shadow memory view.
-                    // the workaround is not to overwrite shadow memory regions that are still pending in the write buffer 
+                    // the workaround is not to overwrite shadow memory regions that are still pending in the write buffer
                     // this can be improved.
                     for(int k=0; k<8; k++) begin
                         if(~mem_array_dirty_q[lval][k]) begin
                             mem_array_q       [lval][k*8 +: 8] <= val[k*8 +: 8];
                             mem_array_shadow_q[lval][k*8 +: 8] <= val[k*8 +: 8];
-                        end    
+                        end
                     end
                 end else begin
                     mem_inv_q <= '0;
-                end    
+                end
             end else begin
                 mem_inv_q <= '0;
             end
@@ -217,7 +213,7 @@ module tb_mem #(
             infifo_push         = 1'b1;
 
         end else if ((~outfifo_empty) && (~infifo_full) && mem_ready_q) begin
-            
+
             outfifo_pop     = 1'b1;
             infifo_push     = 1'b1;
 
@@ -233,20 +229,20 @@ module tb_mem #(
                         3'b011:                                                  infifo_data.data[0+:64] = mem_array_q[outfifo_data.paddr>>3];
                         3'b111: for(int k=0; k<DCACHE_LINE_WIDTH/64; k++) infifo_data.data[k*64 +:64]    = mem_array_q[(outfifo_data.paddr>>3) + k];
                         default: $fatal(1,"unsupported transfer size for read");
-                    endcase // infifo_data.size                    
-                end 
+                    endcase // infifo_data.size
+                end
                 DCACHE_STORE_REQ:  begin
                     infifo_data.tid   = outfifo_data.tid;
                     infifo_data.rtype = DCACHE_STORE_ACK;
                     infifo_data.nc    = outfifo_data.nc;
                     write_en          = 1'b1;
                 end
-                // DCACHE_ATOMIC_REQ: $fatal(1, "DCACHE_ATOMIC_REQ not implemented yet");            
-                // DCACHE_INT_REQ:    $fatal(1, "DCACHE_INT_REQ not implemented yet"); 
+                // DCACHE_ATOMIC_REQ: $fatal(1, "DCACHE_ATOMIC_REQ not implemented yet");
+                // DCACHE_INT_REQ:    $fatal(1, "DCACHE_INT_REQ not implemented yet");
                 default: begin
-                    // $fatal(1, "unsupported request type");  
-                end      
-            endcase // outfifo_data.rtype    
+                    // $fatal(1, "unsupported request type");
+                end
+            endcase // outfifo_data.rtype
         end
     end
 
@@ -301,10 +297,10 @@ module tb_mem #(
         bit ok;
         progress status;
         status = new(MemName);
-        
+
         `ACQ_WAIT_CYC(clk_i,10)
         `ACQ_WAIT_SIG(clk_i,~rst_ni)
-            
+
         while(~seq_last_i) begin
             `ACQ_WAIT_SIG(clk_i,check_en_i)
             status.reset(MemWords);
@@ -312,15 +308,15 @@ module tb_mem #(
             for(int k=0; k<MemWords; k++) begin
                 ok = (mem_array_q[k] == mem_array_shadow_q[k]) && !(|mem_array_dirty_q[k]);
                 if(!ok) begin
-                    $display("%s> dirty bytes at k=%016X: real[k>>3]=%016X, shadow[k>>3]=%016X, dirty[k>>3]=%02X", 
+                    $display("%s> dirty bytes at k=%016X: real[k>>3]=%016X, shadow[k>>3]=%016X, dirty[k>>3]=%02X",
                         MemName, k<<3, mem_array_q[k], mem_array_shadow_q[k], mem_array_dirty_q[k]);
                 end
                 status.addRes(!ok);
                 status.print();
-            end        
-        end    
-        status.printToFile({MemName, "_summary.rep"}, 1);     
-        
+            end
+        end
+        status.printToFile({MemName, "_summary.rep"}, 1);
+
         if(status.totErrCnt == 0) begin
             $display("%s> ----------------------------------------------------------------------", MemName);
             $display("%s> PASSED %0d VECTORS", MemName, status.totAcqCnt);
@@ -330,10 +326,10 @@ module tb_mem #(
             $display("%s> FAILED %0d OF %0d VECTORS\n", MemName , status.totErrCnt, status.totAcqCnt);
             $display("%s> ----------------------------------------------------------------------\n", MemName);
         end
-    end    
+    end
 
-            
-        
+
+
 
 ///////////////////////////////////////////////////////
 // assertions
@@ -343,23 +339,23 @@ module tb_mem #(
 `ifndef verilator
 
     nc_region: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.paddr >= CachedAddrEnd || mem_data_i.paddr < CachedAddrBeg |-> mem_data_i.nc)       
+        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.paddr >= CachedAddrEnd || mem_data_i.paddr < CachedAddrBeg |-> mem_data_i.nc)
         else $fatal(1, "cached access into noncached region");
 
     cached_reads: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype==DCACHE_LOAD_REQ |-> ~mem_data_i.nc |-> mem_data_i.size == 3'b111)       
+        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype==DCACHE_LOAD_REQ |-> ~mem_data_i.nc |-> mem_data_i.size == 3'b111)
         else $fatal(1, "cached read accesses always have to be one CL wide");
 
     nc_reads: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype==DCACHE_LOAD_REQ |-> mem_data_i.nc |-> mem_data_i.size inside {3'b000, 3'b001, 3'b010, 3'b011})       
+        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype==DCACHE_LOAD_REQ |-> mem_data_i.nc |-> mem_data_i.size inside {3'b000, 3'b001, 3'b010, 3'b011})
         else $fatal(1, "nc read size can only be one of the following: byte, halfword, word, dword");
 
     write_size: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype==DCACHE_STORE_REQ |-> mem_data_i.size inside {3'b000, 3'b001, 3'b010, 3'b011})       
+        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype==DCACHE_STORE_REQ |-> mem_data_i.size inside {3'b000, 3'b001, 3'b010, 3'b011})
         else $fatal(1, "write size can only be one of the following: byte, halfword, word, dword");
 
     addr_range: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype inside {DCACHE_STORE_REQ, DCACHE_STORE_REQ} |-> mem_data_i.paddr < (MemWords<<3))       
+        @(posedge clk_i) disable iff (~rst_ni) mem_data_req_i |-> mem_data_i.rtype inside {DCACHE_STORE_REQ, DCACHE_STORE_REQ} |-> mem_data_i.paddr < (MemWords<<3))
         else $fatal(1, "address is out of bounds");
 
 `endif

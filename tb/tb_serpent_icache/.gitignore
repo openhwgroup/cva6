@@ -1,3 +1,7 @@
 work
-modelsim.ini
 *.rep
+transcript
+*.ini
+*.wlf
+*.log
+
