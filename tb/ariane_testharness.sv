@@ -539,7 +539,7 @@ module ariane_testharness #(
     ariane_axi::resp_t   axi_ariane_resp;
 
     ariane #(
-`ifdef SERPENT_PULP
+`ifdef PITON_ARIANE
         .SwapEndianess ( 0                                               ),
         .CachedAddrEnd ( (ariane_soc::DRAMBase + ariane_soc::DRAMLength) ),
 `endif
