@@ -27,6 +27,10 @@ test-location  ?= output/test
 # set to either nothing or -log
 torture-logs := -log
 
+ifndef RISCV
+$(error RISCV not set - please point your RISCV variable to your RISCV installation)
+endif
+
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv                          \
@@ -226,7 +230,8 @@ verilate_command := $(verilator)                                                
                     -Wno-style                                                             \
                     -Wno-lint                                                              \
                     $(if $(DEBUG),--trace-structs --trace,)                                \
-                    -LDFLAGS "-lfesvr" -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi  \
+                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr"              \
+                    -CFLAGS "-std=c++11 -I../tb/dpi" -Wall --cc  --vpi                     \
                     $(list_incdir) --top-module ariane_testharness                         \
                     --Mdir $(ver-library) -O3                                              \
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc tb/dpi/remote_bitbang.cc
