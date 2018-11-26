@@ -14,7 +14,7 @@
 
 // default to AXI64 cache ports if not using the
 // serpent PULP extension
-`ifndef SERPENT_PULP
+`ifndef PITON_ARIANE
 `ifndef AXI64_CACHE_PORTS
   `define AXI64_CACHE_PORTS
 `endif

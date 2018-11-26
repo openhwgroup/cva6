@@ -21,14 +21,14 @@ import instruction_tracer_pkg::*;
 
 // default to AXI64 cache ports if not using the
 // serpent PULP extension
-`ifndef SERPENT_PULP
+`ifndef PITON_ARIANE
 `ifndef AXI64_CACHE_PORTS
   `define AXI64_CACHE_PORTS
 `endif
 `endif
 
 module ariane #(
-`ifdef SERPENT_PULP
+`ifdef PITON_ARIANE
   parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
   parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
 `endif
@@ -578,7 +578,7 @@ module ariane #(
   // Cache Subsystem
   // -------------------
 
-`ifdef SERPENT_PULP
+`ifdef PITON_ARIANE
   // this is a cache subsystem that is compatible with OpenPiton
   serpent_cache_subsystem #(
     .CachedAddrBeg        ( CachedAddrBeg ),
@@ -715,7 +715,7 @@ module ariane #(
     end
   endprogram
 
-`ifdef SERPENT_PULP
+`ifdef PITON_ARIANE
 
   logic        piton_pc_vld;
   logic [63:0] piton_pc;
@@ -746,7 +746,7 @@ module ariane #(
     end
   end
 
-`endif // SERPENT_PULP
+`endif // PITON_ARIANE
 
 // mock tracer for Verilator, to be used with spike-dasm
 `else

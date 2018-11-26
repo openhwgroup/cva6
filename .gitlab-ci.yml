@@ -132,14 +132,14 @@ serdiv-quest:
 s-asm-quest:
   stage: serpent
   script:
-    - make -j${NUM_JOBS} run-asm-tests defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
+    - make -j${NUM_JOBS} run-asm-tests defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
   dependencies:
     - build
 
 s-bench-quest:
   stage: serpent
   script:
-    - make -j${NUM_JOBS} run-benchmarks defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
+    - make -j${NUM_JOBS} run-benchmarks defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
   dependencies:
     - build
 
@@ -147,7 +147,7 @@ s-bench-quest:
 s-asm1-ver:
   stage: serpent
   script:
-    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-asm-tests1-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
   dependencies:
     - build
 
@@ -155,14 +155,14 @@ s-asm1-ver:
 s-asm2-ver:
   stage: serpent
   script:
-    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-asm-tests2-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
   dependencies:
     - build
 
 s-bench-ver:
   stage: serpent
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-benchmarks-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
   dependencies:
     - build
 
@@ -187,7 +187,7 @@ s-dcache-quest:
 # s-torture:
 #   stage: serpent
 #   script:
-#     - make torture-rtest           defines=SERPENT_PULP+AXI64_CACHE_PORTS batch-mode=1
-#     - make torture-rtest-verilator defines=SERPENT_PULP+AXI64_CACHE_PORTS
+#     - make torture-rtest           defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
+#     - make torture-rtest-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
 #   dependencies:
 #     - build

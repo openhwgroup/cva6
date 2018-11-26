@@ -49,7 +49,7 @@ package ariane_pkg;
     // depth of store-buffers, this needs to be a power of two
     localparam int unsigned DEPTH_SPEC   = 4;
 
-`ifdef SERPENT_PULP
+`ifdef PITON_ARIANE
     // in this case we can use a small commit queue since we have a write buffer in the dcache
     // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
     // to longer paths into the commit stage
@@ -263,28 +263,53 @@ package ariane_pkg;
     // we just use the default config of ariane
     // otherwise we have to propagate the openpiton L15 configuration from l15.h
 `ifdef PITON_ARIANE
-      // I$
-      localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
-      localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
-      localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
-      localparam int unsigned ICACHE_TAG_WIDTH   = 56 - ICACHE_INDEX_WIDTH;
-      // D$
-      localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
-      localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
-      localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
-      localparam int unsigned DCACHE_TAG_WIDTH   = 56 - DCACHE_INDEX_WIDTH;
-`else
+
+`ifndef CONFIG_L1I_CACHELINE_WIDTH
+    `define CONFIG_L1I_CACHELINE_WIDTH 128
+`endif
+
+`ifndef CONFIG_L1I_ASSOCIATIVITY
+    `define CONFIG_L1I_ASSOCIATIVITY 4
+`endif
+
+`ifndef CONFIG_L1I_SIZE
+    `define CONFIG_L1I_SIZE 16*1024
+`endif
+
+`ifndef CONFIG_L1D_CACHELINE_WIDTH
+    `define CONFIG_L1D_CACHELINE_WIDTH 128
+`endif
+
+`ifndef CONFIG_L1D_ASSOCIATIVITY
+    `define CONFIG_L1D_ASSOCIATIVITY 4
+`endif
+
+`ifndef CONFIG_L1I_SIZE
+    `define CONFIG_L1D_SIZE 16*1024
+`endif
+
+    // I$
+    localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
+    localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
+    localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
+    localparam int unsigned ICACHE_TAG_WIDTH   = 56 - ICACHE_INDEX_WIDTH;
+    // D$
+    localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
+    localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
+    localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
+    localparam int unsigned DCACHE_TAG_WIDTH   = 56 - DCACHE_INDEX_WIDTH;
+    `else
     // align to openpiton for the time being (this should be more configurable in the future)
-       // I$
-      localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit
-      localparam int unsigned ICACHE_TAG_WIDTH   = 44;  // in bit
-      localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
-      localparam int unsigned ICACHE_SET_ASSOC   = 4;
-      // D$
-      localparam int unsigned DCACHE_INDEX_WIDTH = 12;  // in bit
-      localparam int unsigned DCACHE_TAG_WIDTH   = 44;  // in bit
-      localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
-      localparam int unsigned DCACHE_SET_ASSOC   = 8;
+     // I$
+    localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit
+    localparam int unsigned ICACHE_TAG_WIDTH   = 44;  // in bit
+    localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
+    localparam int unsigned ICACHE_SET_ASSOC   = 4;
+    // D$
+    localparam int unsigned DCACHE_INDEX_WIDTH = 12;  // in bit
+    localparam int unsigned DCACHE_TAG_WIDTH   = 44;  // in bit
+    localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
+    localparam int unsigned DCACHE_SET_ASSOC   = 8;
 `endif
 
     // ---------------

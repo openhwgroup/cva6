@@ -17,9 +17,8 @@ _prog_start:
   li s1, DRAM_BASE
   jr s1
 
-  .section .rodata
-.section .rodata.dtb, "a", @progbits
-.globl _dtb
-.align 5, 0
+  .section .dtb
+  .globl _dtb
+  .align 4, 0
 _dtb:
-.incbin "ariane.dtb"
+  .incbin "ariane.dtb"
