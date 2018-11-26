@@ -36,4 +36,4 @@ typedef struct partition_entries
 } partition_entries_t;
 
 // Find boot partition and load it to the destination
-void gpt_find_boot_partition(uint8_t* dest, uint32_t size);
+int gpt_find_boot_partition(uint8_t* dest, uint32_t size);
