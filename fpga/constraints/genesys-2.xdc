@@ -1,4 +1,4 @@
-## Buttons
+\## Buttons
 set_property -dict {PACKAGE_PIN R19 IOSTANDARD LVCMOS33} [get_ports cpu_resetn]
 
 ## PMOD Header JC

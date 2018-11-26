@@ -55,7 +55,7 @@ open_run synth_1
 exec mkdir -p reports/
 exec rm -rf reports/*
 
-check_timing                                                            -file reports/$project.check_timing.rpt
+check_timing -verbose                                                   -file reports/$project.check_timing.rpt
 report_timing -max_paths 100 -nworst 100 -delay_type max -sort_by slack -file reports/$project.timing_WORST_100.rpt
 report_timing -nworst 1 -delay_type max -sort_by group                  -file reports/$project.timing.rpt
 report_utilization -hierarchical                                        -file reports/$project.utilization.rpt

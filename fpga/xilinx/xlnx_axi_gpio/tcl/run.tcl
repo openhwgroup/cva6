@@ -7,7 +7,7 @@ create_project $ipName . -part $partNumber
 set_property board_part $boardName [current_project]
 
 create_ip -name axi_gpio -vendor xilinx.com -library ip -module_name $ipName
-set_property -dict [list CONFIG.C_GPIO_WIDTH {8} CONFIG.C_GPIO2_WIDTH {8} CONFIG.C_IS_DUAL {1} CONFIG.C_ALL_INPUTS_2 {1} CONFIG.C_INTERRUPT_PRESENT {0} CONFIG.GPIO_BOARD_INTERFACE {led_8bits} CONFIG.GPIO2_BOARD_INTERFACE {dip_switches_8bits}] [get_ips $ipName]
+set_property -dict [list CONFIG.C_GPIO_WIDTH {8} CONFIG.C_GPIO2_WIDTH {8} CONFIG.C_IS_DUAL {1} CONFIG.C_ALL_INPUTS_2 {1} CONFIG.C_INTERRUPT_PRESENT {0}] [get_ips $ipName]
 
 generate_target {instantiation_template} [get_files ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]
 generate_target all [get_files  ./$ipName.srcs/sources_1/ip/$ipName/$ipName.xci]

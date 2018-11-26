@@ -101,8 +101,9 @@ module std_cache_subsystem #(
     // -----------------------
     // Arbitrate AXI Ports
     // -----------------------
-    logic [1:0] w_select, w_id;
-    logic full;
+    logic [1:0] w_select, w_select_fifo, w_select_arbiter;
+    logic w_fifo_empty;
+
 
     // AR Channel
     stream_arbiter #(
@@ -127,7 +128,7 @@ module std_cache_subsystem #(
         .clk_i,
         .rst_ni,
         .inp_data_i  ( {axi_req_icache.aw, axi_req_bypass.aw, axi_req_data.aw} ),
-        .inp_valid_i ( {axi_req_icache.aw_valid & ~full, axi_req_bypass.aw_valid & ~full, axi_req_data.aw_valid & ~full} ),
+        .inp_valid_i ( {axi_req_icache.aw_valid, axi_req_bypass.aw_valid, axi_req_data.aw_valid} ),
         .inp_ready_o ( {axi_resp_icache.aw_ready, axi_resp_bypass.aw_ready, axi_resp_data.aw_ready} ),
         .oup_data_o  ( axi_req_o.aw        ),
         .oup_valid_o ( axi_req_o.aw_valid  ),
@@ -139,42 +140,47 @@ module std_cache_subsystem #(
     always_comb begin
         w_select = 0;
         unique case (axi_req_o.aw.id)
-            4'b1111:                            w_select = 0; // dcache
+            4'b1100:                            w_select = 2; // dcache
             4'b1000, 4'b1001, 4'b1010, 4'b1011: w_select = 1; // bypass
-            4'b0000:                            w_select = 2; // icache
-            default:                            w_select = 0;
+            default:                            w_select = 0; // icache
         endcase
     end
 
+    // TODO(zarubaf): This causes a cycle delay, might be optimize-able, FALL_THROUGH
+    // option made problems during synthesis (timing loop)
     fifo_v3 #(
-      .FALL_THROUGH ( 1'b1 ),
       .DATA_WIDTH   ( 2    ),
+      // we can have a maximum of 4 oustanding transactions as each port is blocking
       .DEPTH        ( 4    )
     ) i_fifo_w_channel (
       .clk_i      ( clk_i           ),
       .rst_ni     ( rst_ni          ),
       .flush_i    ( 1'b0            ),
       .testmode_i ( 1'b0            ),
-      .full_o     ( full            ),
-      .empty_o    (                 ), // leave open
+      .full_o     (                 ), // leave open
+      .empty_o    ( w_fifo_empty    ),
       .usage_o    (                 ), // leave open
       .data_i     ( w_select        ),
-      // a new transaction was requested
-      .push_i     ( axi_req_o.aw_valid & axi_resp_i.aw_ready & ~full ),
+      // a new transaction was requested and granted
+      .push_i     ( axi_req_o.aw_valid & axi_resp_i.aw_ready ),
       // write ID to select the output MUX
-      .data_o     ( w_id            ),
+      .data_o     ( w_select_fifo   ),
       // transaction has finished
       .pop_i      ( axi_req_o.w_valid & axi_resp_i.w_ready & axi_req_o.w.last )
     );
+
+    // icache will never write so select it as default (e.g.: when no arbitration is active)
+    // this is equal to setting it to zero
+    assign w_select_arbiter = (w_fifo_empty) ? 0 : w_select_fifo;
 
     stream_mux #(
         .DATA_T ( ariane_axi::w_chan_t ),
         .N_INP  ( 3                    )
     ) i_stream_mux_w (
-        .inp_data_i  ( {axi_req_icache.w, axi_req_bypass.w, axi_req_data.w} ),
-        .inp_valid_i ( {axi_req_icache.w_valid, axi_req_bypass.w_valid, axi_req_data.w_valid} ),
-        .inp_ready_o ( {axi_resp_icache.w_ready, axi_resp_bypass.w_ready, axi_resp_data.w_ready} ),
-        .inp_sel_i   ( w_id               ),
+        .inp_data_i  ( {axi_req_data.w, axi_req_bypass.w, axi_req_icache.w} ),
+        .inp_valid_i ( {axi_req_data.w_valid, axi_req_bypass.w_valid, axi_req_icache.w_valid} ),
+        .inp_ready_o ( {axi_resp_data.w_ready, axi_resp_bypass.w_ready, axi_resp_icache.w_ready} ),
+        .inp_sel_i   ( w_select_arbiter   ),
         .oup_data_o  ( axi_req_o.w        ),
         .oup_valid_o ( axi_req_o.w_valid  ),
         .oup_ready_i ( axi_resp_i.w_ready )
@@ -183,7 +189,7 @@ module std_cache_subsystem #(
     // Route responses based on ID
     // 0000            -> I$
     // 10[00|10|01|11] -> Bypass
-    // 1111            -> D$
+    // 1100            -> D$
     // R Channel
     assign axi_resp_icache.r = axi_resp_i.r;
     assign axi_resp_bypass.r = axi_resp_i.r;
@@ -194,7 +200,7 @@ module std_cache_subsystem #(
     always_comb begin
         r_select = 0;
         unique case (axi_resp_i.r.id)
-            4'b1111:                            r_select = 0; // dcache
+            4'b1100:                            r_select = 0; // dcache
             4'b1000, 4'b1001, 4'b1010, 4'b1011: r_select = 1; // bypass
             4'b0000:                            r_select = 2; // icache
             default:                            r_select = 0;
@@ -221,7 +227,7 @@ module std_cache_subsystem #(
     always_comb begin
         b_select = 0;
         unique case (axi_resp_i.b.id)
-            4'b1111:                            b_select = 0; // dcache
+            4'b1100:                            b_select = 0; // dcache
             4'b1000, 4'b1001, 4'b1010, 4'b1011: b_select = 1; // bypass
             4'b0000:                            b_select = 2; // icache
             default:                            b_select = 0;
@@ -237,7 +243,6 @@ module std_cache_subsystem #(
         .oup_valid_o ( {axi_resp_icache.b_valid, axi_resp_bypass.b_valid, axi_resp_data.b_valid} ),
         .oup_ready_i ( {axi_req_icache.b_ready, axi_req_bypass.b_ready, axi_req_data.b_ready} )
     );
-
 
 ///////////////////////////////////////////////////////
 // assertions
@@ -266,6 +271,4 @@ module std_cache_subsystem #(
 
 `endif
 //pragma translate_on
-
-
 endmodule // std_cache_subsystem
