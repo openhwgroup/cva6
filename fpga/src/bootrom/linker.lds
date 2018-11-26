@@ -30,9 +30,14 @@ SECTIONS
     _BSS_END_ = .;
     }
 
-    /* PROVIDE(_sp = 0x84000000); */
-    /* PROVIDE(_heap_end = _sp - 0x80000); */
+    # PROVIDE(_sp = 0x84000000);
+    # PROVIDE(_heap_end = _sp - 0x80000);
 
-    /*.rodata.dtb : { *(.rodata.dtb) }*/
-
+    .rodata : ALIGN(0x100) {
+    _RODATA_START_ = .;
+        *(.rodata)
+        *(.dtb*)
+        *(.rodata*)
+    _RODATA_END_ = .;
+    }
 }

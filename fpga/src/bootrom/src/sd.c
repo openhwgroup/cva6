@@ -31,7 +31,9 @@ uint8_t sd_cmd(uint8_t cmd, uint32_t arg, uint8_t crc)
         }
     } while (--n > 0);
     if (n == 0)
-        print_uart("could not find valid sd response\r\n");
+    {
+        // print_uart("could not find valid sd response\r\n");
+    }
     return r;
 }
 
@@ -46,13 +48,17 @@ void print_status(const char *cmd, uint8_t response)
 
 int sd_cmd0()
 {
+    int counter = 10000;
     uint8_t r = 0xff;
     while (r != 0x1)
     {
         r = sd_cmd(0, 0, 0x95);
         sd_dummy(); // R1: 1 Byte response
-        print_status("cmd0", r);
+        counter--;
+        if (counter <= 0)
+            return 1 == 0;
     }
+    print_status("cmd0", r);
     return r == 0x1;
 }
 

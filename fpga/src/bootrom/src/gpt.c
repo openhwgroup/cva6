@@ -4,12 +4,12 @@
 #include "uart.h"
 #include <stddef.h>
 
-void gpt_find_boot_partition(uint8_t* dest, uint32_t size)
+int gpt_find_boot_partition(uint8_t* dest, uint32_t size)
 {
     int ret = init_sd();
     if (ret != 0) {
         print_uart("could not initialize sd... exiting\r\n");
-        return;
+        return -1;
     }
 
     print_uart("sd initialized!\r\n");
@@ -22,9 +22,11 @@ void gpt_find_boot_partition(uint8_t* dest, uint32_t size)
 
     if (res != 0)
     {
+        print_uart("SD card failed!\r\n");
         print_uart("sd copy return value: ");
         print_uart_addr(res);
         print_uart("\r\n");
+        return -2;
     }
 
     gpt_pth_t *lba1 = (gpt_pth_t *)lba1_buf;
@@ -58,9 +60,11 @@ void gpt_find_boot_partition(uint8_t* dest, uint32_t size)
 
     if (res != 0)
     {
+        print_uart("SD card failed!\r\n");
         print_uart("sd copy return value: ");
         print_uart_addr(res);
         print_uart("\r\n");
+        return -2;
     }
 
     for (int i = 0; i < 4; i++)
@@ -89,5 +93,16 @@ void gpt_find_boot_partition(uint8_t* dest, uint32_t size)
     partition_entries_t *boot = (partition_entries_t *)(lba2_buf);
     print_uart("copying boot image ");
     res = sd_copy(dest, boot->first_lba, size);
+
+    if (res != 0)
+    {
+        print_uart("SD card failed!\r\n");
+        print_uart("sd copy return value: ");
+        print_uart_addr(res);
+        print_uart("\r\n");
+        return -2;
+    }
+
     print_uart(" done!\r\n");
+    return 0;
 }
