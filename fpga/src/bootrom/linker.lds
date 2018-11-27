@@ -4,7 +4,7 @@ SECTIONS
 {
     ROM_BASE = 0x10000; /* ... but actually position independent */
 
-    . = ROM_BASE;  
+    . = ROM_BASE;
 
     .text.init : { *(.text.init) }
 
@@ -29,9 +29,6 @@ SECTIONS
         *(.bss)
     _BSS_END_ = .;
     }
-
-    # PROVIDE(_sp = 0x84000000);
-    # PROVIDE(_heap_end = _sp - 0x80000);
 
     .rodata : ALIGN(0x100) {
     _RODATA_START_ = .;

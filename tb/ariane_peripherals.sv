@@ -251,7 +251,7 @@ module ariane_peripherals #(
             .PRDATA  ( uart_prdata     ),
             .PREADY  ( uart_pready     ),
             .PSLVERR ( uart_pslverr    ),
-            .INT     ( irq_sources[0]  ),
+            .INT     ( irq_sources[2]  ),
             .OUT1N   (                 ), // keep open
             .OUT2N   (                 ), // keep open
             .RTSN    (                 ), // no flow control
@@ -451,10 +451,10 @@ module ariane_peripherals #(
             .sck_o          ( spi_clk_o              ),
             .sck_i          ( '0                     ),
             .sck_t          (                        ),
+            .ip2intc_irpt   ( irq_sources[1]         )
             // .ip2intc_irpt   ( irq_sources[1]         )
-            .ip2intc_irpt   (          )
         );
-        assign irq_sources [1] = 1'b0;
+        // assign irq_sources [1] = 1'b0;
     end else begin
         assign spi_clk_o = 1'b0;
         assign spi_mosi = 1'b0;
@@ -600,7 +600,7 @@ module ariane_peripherals #(
         xlnx_axi_ethernetlite i_xlnx_axi_ethernetlite (
             .s_axi_aclk    ( clk_i                   ),
             .s_axi_aresetn ( rst_ni                  ),
-            .ip2intc_irpt  ( irq_sources[2]          ),
+            .ip2intc_irpt  ( irq_sources[0]          ),
             .s_axi_awid    ( s_axi_eth_awid          ),
             .s_axi_awaddr  ( s_axi_eth_awaddr[12:0]  ),
             .s_axi_awlen   ( s_axi_eth_awlen         ),
