@@ -49,8 +49,8 @@ class instruction_tracer;
 
     function void create_file(logic [63:0] hart_id);
         string fn, fn_commit_log;
-        $sformat(fn, "trace_hart_%04h.log", hart_id);
-        $sformat(fn_commit_log, "trace_hart_%04h_commit.log", hart_id);
+        $sformat(fn, "trace_hart_%04.0f.log", hart_id);
+        $sformat(fn_commit_log, "trace_hart_%04.0f_commit.log", hart_id);
         $display("[TRACER] Output filename is: %s", fn);
 
         this.f = $fopen(fn,"w");
