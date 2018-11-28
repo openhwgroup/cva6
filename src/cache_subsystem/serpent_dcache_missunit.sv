@@ -201,8 +201,8 @@ module serpent_dcache_missunit #(
 ///////////////////////////////////////////////////////
 
     // if size = 32bit word, select appropriate offset, replicate for openpiton...
-    assign amo_data = (amo_req_i.size==2'b10)         ? {amo_req_i.operand_b[amo_req_i.operand_a[2]*32 +: 32],
-                                                         amo_req_i.operand_b[amo_req_i.operand_a[2]*32 +: 32]} :
+    assign amo_data = (amo_req_i.size==2'b10)         ? {amo_req_i.operand_b[0 +: 32],
+                                                         amo_req_i.operand_b[0 +: 32]} :
                                                          amo_req_i.operand_b;
 
     // always sign extend 32bit values
