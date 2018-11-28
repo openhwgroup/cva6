@@ -57,10 +57,17 @@ module ariane_verilog_wrap #(
   assign axi_resp  = axi_resp_i;
 `else
   // L15 (memory side)
-  serpent_cache_pkg::l15_req_t  l15_req;
+  serpent_cache_pkg::l15_req_t  l15_req, l15_req_remapped;
   serpent_cache_pkg::l15_rtrn_t l15_rtrn;
 
-  assign l15_req_o = l15_req;
+  always_comb begin : p_remap
+    l15_req_remapped = l15_req;
+    if (l15_req.l15_address < 64'h1000) begin
+      l15_req_remapped.l15_address = l15_req.l15_address + 64'hfff1000000;
+    end
+  end
+
+  assign l15_req_o = l15_req_remapped;
   assign l15_rtrn  = l15_rtrn_i;
 `endif
 
@@ -87,6 +94,12 @@ module ariane_verilog_wrap #(
   // 128KB..8K cycles
   // 256KB..16K cycles
   // etc, so this should be enough for 512k per tile
+
+  // assign wake_up_cnt_d = (wake_up_cnt_q[$high(wake_up_cnt_q)])                                                                  ? wake_up_cnt_q   :
+  //                        (((l15_rtrn.l15_returntype == serpent_cache_pkg::L15_INT_RET) && l15_rtrn.l15_val) || wake_up_cnt_q>0) ? wake_up_cnt_q +1:
+  //                                                                                                                                 wake_up_cnt_q;
+
+
   logic [15:0] wake_up_cnt_d, wake_up_cnt_q;
   logic rst_n;
 
