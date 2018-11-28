@@ -28,8 +28,9 @@ $(bit): $(ips)
 	cp ariane.runs/impl_1/ariane_xilinx* ./$(work-dir)
 
 $(ips): %.xci :
+	mkdir -p $(work-dir)
 	@echo Generating $(@F)
-	@cd $(ip-dir)/$(basename $(@F)) && make
+	@cd $(ip-dir)/$(basename $(@F)) && make clean && make
 	@cp $(ip-dir)/$(basename $(@F))/ip/$(@F) $@
 
 mcs: $(mcs)
@@ -38,7 +39,7 @@ program:
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
 
 clean:
-	rm -rf *.log *.jou *.str $(work-dir)
+	rm -rf *.log *.jou *.str *.mif *.xpr $(work-dir) ariane.cache ariane.hw ariane.ip_user_files
 
 .PHONY:
 	clean

@@ -121,10 +121,9 @@ We currently only provide support for the [Genesys 2 board](https://reference.di
 
 ### Generating a Bistream
 
-To generate the FPGA bitstream run:
+To generate the FPGA bitstream (and memory configuration) for the Genesys II board run:
 
 ```
-$ source fpga/sourceme.sh
 $ make fpga
 ```
 
