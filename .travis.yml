@@ -90,6 +90,12 @@ jobs:
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator
+    # rv64um-*-* tests
+    - stage: test
+      name: run mul tests
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-mul-verilator
     # amo tests
     - stage: test
       name: run amo tests
