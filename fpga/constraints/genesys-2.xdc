@@ -78,11 +78,11 @@ set_input_delay -clock [get_clocks eth_rxck_virt] -min -add_delay 0.000 [get_por
 set_input_delay -clock [get_clocks eth_rxck_virt] -max -add_delay 4.000 [get_ports eth_rxctl]
 
 # Output Constraints
-create_generated_clock -name eth_txck -source [get_pins i_ariane_peripherals/gen_ethernet.i_rgmii_to_mii_conv_xilinx/net_phy_txc_oddr/C] -multiply_by 1 [get_ports eth_txck]
+create_generated_clock -name eth_txck_gen -source [get_pins i_ariane_peripherals/gen_ethernet.i_rgmii_to_mii_conv_xilinx/net_phy_txc_oddr/C] -multiply_by 1 [get_ports eth_txck]
 
 # Constraint RGMII interface
-set_output_delay -clock eth_txck 2.000 [get_ports eth_txctl]
-set_output_delay -clock eth_txck 2.000 [get_ports {eth_txd[*]}]
+set_output_delay -clock eth_txck_gen 2.000 [get_ports eth_txctl]
+set_output_delay -clock eth_txck_gen 2.000 [get_ports {eth_txd[*]}]
 
 ## SD Card
 set_property -dict {PACKAGE_PIN R28 IOSTANDARD LVCMOS33} [get_ports spi_clk_o]
