@@ -96,7 +96,7 @@ module serpent_dcache_missunit #(
     logic flush_en, flush_done;
     logic mask_reads, lock_reqs;
     logic amo_sel, miss_is_write;
-    logic [63:0] amo_data, tmp_paddr;
+    logic [63:0] amo_data, tmp_paddr, amo_rtrn_mux;
 
     logic [$clog2(NumPorts)-1:0] miss_port_idx;
     logic [DCACHE_CL_IDX_WIDTH-1:0] cnt_d, cnt_q;
@@ -132,7 +132,9 @@ module serpent_dcache_missunit #(
 
     always_comb begin : p_ack
         miss_ack_o = '0;
-        miss_ack_o[miss_port_idx] = mem_data_ack_i & mem_data_req_o;
+        if (~amo_sel) begin
+          miss_ack_o[miss_port_idx] = mem_data_ack_i & mem_data_req_o;
+        end
     end
 
 ///////////////////////////////////////////////////////
@@ -205,9 +207,12 @@ module serpent_dcache_missunit #(
                                                          amo_req_i.operand_b[0 +: 32]} :
                                                          amo_req_i.operand_b;
 
+    // note: openpiton returns a full cacheline!
+    assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64 +: 64];
     // always sign extend 32bit values
-    assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{mem_rtrn_i.data[amo_req_i.operand_a[2]*32 + 31]}}, mem_rtrn_i.data[amo_req_i.operand_a[2]*32 +: 32]} :
-                                                         mem_rtrn_i.data[63:0];
+    assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},
+                                                              amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
+                                                         amo_rtrn_mux;
 
     // outgoing memory requests (AMOs are always uncached)
     assign mem_data_o.tid    = (amo_sel) ? AmoTxId             : miss_id_i[miss_port_idx];
