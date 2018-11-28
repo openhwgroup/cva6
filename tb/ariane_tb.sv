@@ -46,8 +46,10 @@ module ariane_tb;
     string binary = "";
 
     ariane_testharness #(
-        .NUM_WORDS  ( NUM_WORDS ),
-        .InclSimDTM ( 1'b1      )
+        .NUM_WORDS         ( NUM_WORDS ),
+        .InclSimDTM        ( 1'b1      ),
+        .StallRandomOutput ( 1'b1      ),
+        .StallRandomInput  ( 1'b1      )
     ) dut (
         .clk_i,
         .rst_ni,

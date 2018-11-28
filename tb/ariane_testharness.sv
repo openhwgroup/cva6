@@ -19,7 +19,9 @@ module ariane_testharness #(
     parameter int unsigned AXI_ADDRESS_WIDTH = 64,
     parameter int unsigned AXI_DATA_WIDTH    = 64,
     parameter bit          InclSimDTM        = 1'b1,
-    parameter int unsigned NUM_WORDS         = 2**25          // memory size
+    parameter int unsigned NUM_WORDS         = 2**25,         // memory size
+    parameter bit          StallRandomOutput = 1'b0,
+    parameter bit          StallRandomInput  = 1'b0
 ) (
     input  logic                           clk_i,
     input  logic                           rtc_i,
@@ -275,8 +277,8 @@ module ariane_testharness #(
         .b_t               ( axi_pkg::b_chan_t  ),
         .ar_t              ( axi_pkg::ar_chan_t ),
         .r_t               ( axi_pkg::r_chan_t  ),
-        .StallRandomOutput ( 1                  ),
-        .StallRandomInput  ( 1                  ),
+        .StallRandomOutput ( StallRandomOutput  ),
+        .StallRandomInput  ( StallRandomInput   ),
         .FixedDelayInput   ( 0                  ),
         .FixedDelayOutput  ( 0                  )
     ) i_axi_delayer (
