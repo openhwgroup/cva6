@@ -143,7 +143,7 @@ $ screen /dev/ttyUSB0 115200
 
 Default baudrate set by the bootlaoder and Linux is `115200`.
 
-After you've inserted the SD Card and programmed the FPGA you can connect to the serial port of the FPGA and should see the bootloader and afterwards Linux booting.
+After you've inserted the SD Card and programmed the FPGA you can connect to the serial port of the FPGA and should see the bootloader and afterwards Linux booting. Default username is `root`, no password required.
 
 ### Generating a Bitstream
 
