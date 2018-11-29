@@ -229,11 +229,15 @@ If you are on an Ubuntu based system you need to add the following udev rule to 
 
 Ariane has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/serpent_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
 
-The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton).
+The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the README in that repository to see how to use Ariane in the OpenPiton setting.
 
 To activate the different cache system, compile your code with the macro `PITON_ARIANE`.
 
-Note that this feature is still in Beta stage, and may therefore not be completely bug-free.
+> For testing purposes, this L1 cache subsystem also supports AXI memory plugs in order to verify it within the Ariane CI environment. In order to use this feature, the macro `AXI64_CACHE_PORTS` has to be defined. Note however, that atomics are not supported in this configuration.
+
+> Note that OpenPiton support is currently WIP, and although simple C programs run on one or several OpenPiton tiles, advanced features such as cache coherency are not fully verified yet.
+
+Also, we are working on SMP Linux support on that platform - stay tuned!
 
 ## Planned Improvements
 
