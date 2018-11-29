@@ -95,9 +95,7 @@ module serpent_peripherals #(
   /////////////////////////////
 
   logic        jtag_req_valid;
-  logic [6:0]  jtag_req_bits_addr;
-  logic [1:0]  jtag_req_bits_op;
-  logic [31:0] jtag_req_bits_data;
+  logic        debug_req_ready;
   logic        jtag_resp_ready;
   logic        jtag_resp_valid;
 
