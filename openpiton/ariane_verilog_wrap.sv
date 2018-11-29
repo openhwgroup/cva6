@@ -27,6 +27,7 @@ module ariane_verilog_wrap #(
 ) (
   input                       clk_i,
   input                       reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
+  output                      spc_grst_l,   // this is an openpiton-specific name, do not change (hier. paths in TB use this)
   // Core ID, Cluster ID and boot address are considered more or less static
   input  [63:0]               boot_addr_i,  // reset boot address
   input  [63:0]               hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
@@ -95,11 +96,6 @@ module ariane_verilog_wrap #(
   // 256KB..16K cycles
   // etc, so this should be enough for 512k per tile
 
-  // assign wake_up_cnt_d = (wake_up_cnt_q[$high(wake_up_cnt_q)])                                                                  ? wake_up_cnt_q   :
-  //                        (((l15_rtrn.l15_returntype == serpent_cache_pkg::L15_INT_RET) && l15_rtrn.l15_val) || wake_up_cnt_q>0) ? wake_up_cnt_q +1:
-  //                                                                                                                                 wake_up_cnt_q;
-
-
   logic [15:0] wake_up_cnt_d, wake_up_cnt_q;
   logic rst_n;
 
@@ -116,26 +112,40 @@ module ariane_verilog_wrap #(
   // reset gate this
   assign rst_n = wake_up_cnt_q[$high(wake_up_cnt_q)] & reset_l;
 
+  // reset_synchronizer #(
+  //    .NUM_REGS(2)
+  // ) i_sync (
+  //    .clk_i   ( clk_i      ),
+  //    .rst_ni  ( rst_n      ),
+  //    .tmode_i ( 1'b0       ),
+  //    .rst_no  ( spc_grst_l )
+  // );
+
+  synchronizer i_sync (
+    .clk         ( clk_i      ),
+    .presyncdata ( rst_n      ),
+    .syncdata    ( spc_grst_l )
+  );
 
   ariane #(
     .SwapEndianess ( SwapEndianess ),
     .CachedAddrEnd ( CachedAddrEnd ),
     .CachedAddrBeg ( CachedAddrBeg )
   ) ariane (
-    .clk_i       ( clk_i     ),
-    .rst_ni      ( rst_n     ),
-    .boot_addr_i             ,
-    .hart_id_i               ,
-    .irq_i                   ,
-    .ipi_i                   ,
-    .time_irq_i              ,
-    .debug_req_i             ,
+    .clk_i       ( clk_i      ),
+    .rst_ni      ( spc_grst_l ),
+    .boot_addr_i              ,
+    .hart_id_i                ,
+    .irq_i                    ,
+    .ipi_i                    ,
+    .time_irq_i               ,
+    .debug_req_i              ,
 `ifdef AXI64_CACHE_PORTS
-    .axi_req_o   ( axi_req  ),
-    .axi_resp_i  ( axi_resp )
+    .axi_req_o   ( axi_req   ),
+    .axi_resp_i  ( axi_resp  )
 `else
-    .l15_req_o   ( l15_req  ),
-    .l15_rtrn_i  ( l15_rtrn )
+    .l15_req_o   ( l15_req   ),
+    .l15_rtrn_i  ( l15_rtrn  )
 `endif
   );
 
