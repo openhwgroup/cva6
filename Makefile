@@ -32,6 +32,10 @@ elf-bin        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
 
+ifndef RISCV
+$(error RISCV not set - please point your RISCV variable to your RISCV installation)
+endif
+
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv                          \
