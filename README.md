@@ -17,7 +17,9 @@ Table of Contents
          * [Running User-Space Applications](#running-user-space-applications)
          * [FPU Support](#fpu-support)
       * [FPGA Emulation](#fpga-emulation)
-         * [Generating a Bistream](#generating-a-bistream)
+         * [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
+         * [Preparing the SD Card](#preparing-the-sd-card)
+         * [Generating a Bitstream](#generating-a-bitstream)
          * [Debugging](#debugging)
          * [Preliminary Support for OpenPiton Cache System](#preliminary-support-for-openpiton-cache-system)
       * [Planned Improvements](#planned-improvements)
@@ -27,11 +29,11 @@ Table of Contents
    * [Contributing](#contributing)
    * [Acknowledgements](#acknowledgements)
 
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
 ## Getting Started
 
-
-Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools). Make sure that your `RISCV` environment variable points to your RISC-V installation (see the RISC-V tools and related projects for futher information).
+Go and get the [RISC-V tools](https://github.com/riscv/riscv-tools). Make sure that your `RISCV` environment variable points to your RISC-V installation (see the RISC-V tools and related projects for further information).
 
 Checkout the repository and initialize all submodules
 ```
@@ -39,12 +41,11 @@ $ git clone https://github.com/pulp-platform/ariane.git
 $ git submodule update --init --recursive
 ```
 
-The testbench relies on `riscv-fesvr` which can be found [here](https://github.com/riscv/riscv-fesvr). Follow the README there and make sure that your compiler and linker is aware of the library (e.g.: add it to your path if it is in a non-default directory).
-
 Build the Verilator model of Ariane by using the Makefile:
 ```
 $ make verilate
 ```
+
 To build the verilator model with support for vcd files run
 ```
 $ make verilate DEBUG=1
@@ -61,7 +62,7 @@ The Verilator testbench makes use of the `riscv-fesvr`. This means that you can 
 Both, the Verilator model as well as the Questa simulation will produce trace logs. The Verilator trace is more basic but you can feed the log to `spike-dasm` to resolve instructions to mnemonics. Unfortunately value inspection is currently not possible for the Verilator trace file.
 
 ```
-$ spike-dasm < trace_core_00_0.dasm > logfile.txt
+$ spike-dasm < trace_hart_00_0.dasm > logfile.txt
 ```
 
 ### Running User-Space Applications
@@ -107,7 +108,9 @@ $ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  b
 
 ## FPGA Emulation
 
-We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). Tested on Vivado 2018.2. The FPGA SoC currently contains the following peripherals:
+We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/pulp-platform/ariane/releases).
+
+Tested on Vivado 2018.2. The FPGA SoC currently contains the following peripherals:
 
 - DDR3 memory controller
 - SPI controller to conncet to an SDCard
@@ -117,17 +120,9 @@ We currently only provide support for the [Genesys 2 board](https://reference.di
 
 ![](docs/img/fpga_bd.png)
 
-> The Ethernet controller and the corresponding network connection is still work in progress and not functional at the moment.
+> The ethernet controller and the corresponding network connection is still work in progress and not functional at the moment. Expect some updates soon-ish.
 
-### Generating a Bistream
-
-To generate the FPGA bitstream (and memory configuration) for the Genesys II board run:
-
-```
-$ make fpga
-```
-
-This will produce a bitstream file and memory configuration file (in `fpga/work-fpga`) which you can permanently flash by:
+### Programming the Memory Configuration File
 
 - Open Vivado
 - Open the hardware manager and open the target board (Genesys II - `xc7k325t`)
@@ -135,7 +130,11 @@ This will produce a bitstream file and memory configuration file (in `fpga/work-
 - Select the following Spansion SPI flash `s25fl256xxxxxx0`
 - Add `ariane_xilinx.mcs`
 - Press Ok. Flashing will take a couple of minutes.
-- Right click on the FPGA device - Boot from Configuration Memory Device
+- Right click on the FPGA device - Boot from Configuration Memory Device (or press the program button on the FPGA)
+
+### Preparing the SD Card
+
+The first stage bootloader will boot from SD Card by default. Get yourself a suitable SD Card (we use [this](https://www.amazon.com/Kingston-Digital-Mobility-MBLY10G2-32GB/dp/B00519BEQO) one). Either grab a pre-built Linux image from [here](https://github.com/pulp-platform/ariane-sdk/releases) or generate the Linux image yourself following the README in the [ariane-sdk repository](https://github.com/pulp-platform/ariane-sdk). Prepare the SD Card by following the "Booting from SD card" section in the ariane-sdk repository.
 
 Connect a terminal to the USB serial device opened by the FTDI chip e.g.:
 ```
@@ -144,9 +143,21 @@ $ screen /dev/ttyUSB0 115200
 
 Default baudrate set by the bootlaoder and Linux is `115200`.
 
+After you've inserted the SD Card and programmed the FPGA you can connect to the serial port of the FPGA and should see the bootloader and afterwards Linux booting.
+
+### Generating a Bitstream
+
+To generate the FPGA bitstream (and memory configuration) yourself for the Genesys II board run:
+
+```
+$ make fpga
+```
+
+This will produce a bitstream file and memory configuration file (in `fpga/work-fpga`) which you can permanently flash by running the above commands.
+
 ### Debugging
 
-You can debug (and program) the FPGA using [OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html). We provide two example scripts for OpenOCD, both to be used with Olimex Debug adapter. The JTAG port ist mapped to PMOD `JC` on the Gensys 2 board. You will need to connect the following wires to your debug adapter:
+You can debug (and program) the FPGA using [OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html). We provide two example scripts for OpenOCD, both to be used with Olimex Debug adapter. The JTAG port is mapped to PMOD `JC` on the Genesys 2 board. You will need to connect the following wires to your debug adapter:
 
 ![](https://reference.digilentinc.com/_media/genesys2/fig_16.png)
 
@@ -216,13 +227,13 @@ If you are on an Ubuntu based system you need to add the following udev rule to 
 
 ### Preliminary Support for OpenPiton Cache System
 
-Ariane version 4.0 has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/serpent_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
+Ariane has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/serpent_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
 
-The corresponding integration patches will soon be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton).
+The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton).
 
 To activate the different cache system, compile your code with the macro `PITON_ARIANE`.
 
-Note that this feature is still in Beta stage, and may hence not be completely bug-free.
+Note that this feature is still in Beta stage, and may therefore not be completely bug-free.
 
 ## Planned Improvements
 
@@ -270,7 +281,7 @@ Ariane can dump a trace-log in Questa which can be easily diffed against Spike w
 localparam bit ENABLE_SPIKE_COMMIT_LOG = 1'b1;
 ```
 This runs the randomized program on Spike and on the RTL target, and checks whether the two signatures match. The random instruction mix can be configured in the `./tmp/riscv-torture/config/default.config` file.
-This will dump a file called `trace_core_*_*_commit.log`.
+This will dump a file called `trace_hart_*_*_commit.log`.
 
 This can be helpful for debugging long traces (e.g.: torture traces). To compile Spike with the commit log feature do:
 
