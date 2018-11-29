@@ -40,16 +40,11 @@ module issue_read_operands #(
     input  fu_t [2**REG_ADDR_SIZE:0]               rd_clobber_gpr_i,
     input  fu_t [2**REG_ADDR_SIZE:0]               rd_clobber_fpr_i,
     // To FU, just single issue for now
-    output fu_t                                    fu_o,
-    output fu_op                                   operator_o,
-    output logic [63:0]                            operand_a_o,
-    output logic [63:0]                            operand_b_o,
-    output logic [63:0]                            imm_o,           // output immediate for the LSU
-    output logic [TRANS_ID_BITS-1:0]               trans_id_o,
+    output fu_data_t                               fu_data_o,
     output logic [63:0]                            pc_o,
     output logic                                   is_compressed_instr_o,
     // ALU 1
-    input  logic                                   alu_ready_i,      // FU is ready
+    input  logic                                   flu_ready_i,      // Fixed latency unit ready to accept a new request
     output logic                                   alu_valid_o,      // Output is valid
     // Branches and Jumps
     output logic                                   branch_valid_o,   // this is a valid branch instruction
@@ -58,7 +53,6 @@ module issue_read_operands #(
     input  logic                                   lsu_ready_i,      // FU is ready
     output logic                                   lsu_valid_o,      // Output is valid
     // MULT
-    input  logic                                   mult_ready_i,     // FU is ready
     output logic                                   mult_valid_o,     // Output is valid
     // FPU
     input  logic                                   fpu_ready_i,      // FU is ready
@@ -81,7 +75,6 @@ module issue_read_operands #(
     logic fu_busy; // functional unit is busy
     logic [63:0] operand_a_regfile, operand_b_regfile;  // operands coming from regfile
     logic [FLEN-1:0] operand_c_regfile; // third operand only from fp regfile
-
     // output flipflop (ID <-> EX)
     logic [63:0] operand_a_n, operand_a_q,
                  operand_b_n, operand_b_q,
@@ -108,20 +101,20 @@ module issue_read_operands #(
     assign orig_instr = riscv::instruction_t'(issue_instr_i.ex.tval[31:0]);
 
     // ID <-> EX registers
-    assign operand_a_o    = operand_a_q;
-    assign operand_b_o    = operand_b_q;
-    assign fu_o           = fu_q;
-    assign operator_o     = operator_q;
-    assign alu_valid_o    = alu_valid_q;
-    assign branch_valid_o = branch_valid_q;
-    assign lsu_valid_o    = lsu_valid_q;
-    assign csr_valid_o    = csr_valid_q;
-    assign mult_valid_o   = mult_valid_q;
-    assign fpu_valid_o    = fpu_valid_q;
-    assign fpu_fmt_o      = fpu_fmt_q;
-    assign fpu_rm_o       = fpu_rm_q;
-    assign trans_id_o     = trans_id_q;
-    assign imm_o          = imm_q;
+    assign fu_data_o.operand_a = operand_a_q;
+    assign fu_data_o.operand_b = operand_b_q;
+    assign fu_data_o.fu        = fu_q;
+    assign fu_data_o.operator  = operator_q;
+    assign fu_data_o.trans_id  = trans_id_q;
+    assign fu_data_o.imm       = imm_q;
+    assign alu_valid_o         = alu_valid_q;
+    assign branch_valid_o      = branch_valid_q;
+    assign lsu_valid_o         = lsu_valid_q;
+    assign csr_valid_o         = csr_valid_q;
+    assign mult_valid_o        = mult_valid_q;
+    assign fpu_valid_o         = fpu_valid_q;
+    assign fpu_fmt_o           = fpu_fmt_q;
+    assign fpu_rm_o            = fpu_rm_q;
     // ---------------
     // Issue Stage
     // ---------------
@@ -132,10 +125,8 @@ module issue_read_operands #(
         unique case (issue_instr_i.fu)
             NONE:
                 fu_busy = 1'b0;
-            ALU, CTRL_FLOW, CSR:
-                fu_busy = ~alu_ready_i;
-            MULT:
-                fu_busy = ~mult_ready_i;
+            ALU, CTRL_FLOW, CSR, MULT:
+                fu_busy = ~flu_ready_i;
             FPU, FPU_VEC:
                 fu_busy = ~fpu_ready_i;
             LOAD, STORE:
@@ -170,27 +161,30 @@ module issue_read_operands #(
             // check if the clobbering instruction is not a CSR instruction, CSR instructions can only
             // be fetched through the register file since they can't be forwarded
             // if the operand is available, forward it. CSRs don't write to/from FPR
-            if (rs1_valid_i && (is_rs1_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs1] != CSR))
+            if (rs1_valid_i && (is_rs1_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs1] != CSR)) begin
                 forward_rs1 = 1'b1;
-            else // the operand is not available -> stall
+            end else begin // the operand is not available -> stall
                 stall = 1'b1;
+            end
         end
 
         if (is_rs2_fpr(issue_instr_i.op) ? rd_clobber_fpr_i[issue_instr_i.rs2] != NONE
                                          : rd_clobber_gpr_i[issue_instr_i.rs2] != NONE) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR
-            if (rs2_valid_i && (is_rs2_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs2] != CSR))
+            if (rs2_valid_i && (is_rs2_fpr(issue_instr_i.op) ? 1'b1 : rd_clobber_gpr_i[issue_instr_i.rs2] != CSR)) begin
                 forward_rs2 = 1'b1;
-            else // the operand is not available -> stall
+            end else begin // the operand is not available -> stall
                 stall = 1'b1;
+            end
         end
 
         if (is_imm_fpr(issue_instr_i.op) && rd_clobber_fpr_i[issue_instr_i.result[REG_ADDR_SIZE-1:0]] != NONE) begin
             // if the operand is available, forward it. CSRs don't write to/from FPR so no need to check
-            if (rs3_valid_i)
+            if (rs3_valid_i) begin
                 forward_rs3 = 1'b1;
-            else // the operand is not available -> stall
+            end else begin // the operand is not available -> stall
                 stall = 1'b1;
+            end
         end
     end
 
@@ -325,6 +319,11 @@ module issue_read_operands #(
                 issue_ack_o = 1'b1;
             end
         end
+        // after a multiplication was issued we can only issue another multiplication
+        // otherwise we will get contentions on the fixed latency bus
+        if (mult_valid_q && issue_instr_i.fu != MULT) begin
+            issue_ack_o = 1'b0;
+        end
     end
 
     // ----------------------
@@ -437,8 +436,8 @@ module issue_read_operands #(
         end
     end
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    //pragma translate_off
+    `ifndef VERILATOR
      assert property (
         @(posedge clk_i) (branch_valid_q) |-> (!$isunknown(operand_a_q) && !$isunknown(operand_b_q)))
         else $warning ("Got unknown value in one of the operands");
@@ -447,7 +446,7 @@ module issue_read_operands #(
         assert (NR_COMMIT_PORTS == 2) else $error("Only two commit ports are supported at the moment!");
     end
     `endif
-    `endif
+    //pragma translate_on
 endmodule
 
 

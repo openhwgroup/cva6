@@ -16,6 +16,15 @@
  *              in one package.
  */
 
+// this is needed to propagate the
+// configuration in case Ariane is
+// instantiated in OpenPiton
+`ifdef PITON_ARIANE
+`ifndef AXI64_CACHE_PORTS
+  `include "l15.tmp.h"
+`endif
+`endif
+
 package ariane_pkg;
 
     // ---------------
@@ -24,15 +33,33 @@ package ariane_pkg;
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
-    localparam NR_WB_PORTS   = 4;
     localparam ASID_WIDTH    = 1;
-    localparam BTB_ENTRIES   = 8;
-    localparam BHT_ENTRIES   = 32;
+    localparam BTB_ENTRIES   = 64;
+    localparam BHT_ENTRIES   = 128;
     localparam RAS_DEPTH     = 2;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
-    localparam ENABLE_RENAME = 1'b1;
+    localparam ENABLE_RENAME = 1'b0;
+
+    localparam ISSUE_WIDTH = 1;
+    // amount of pipeline registers inserted for load/store return path
+    // this can be tuned to trade-off IPC vs. cycle time
+    localparam NR_LOAD_PIPE_REGS = 1;
+    localparam NR_STORE_PIPE_REGS = 0;
+
+    // depth of store-buffers, this needs to be a power of two
+    localparam int unsigned DEPTH_SPEC   = 4;
+
+`ifdef PITON_ARIANE
+    // in this case we can use a small commit queue since we have a write buffer in the dcache
+    // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
+    // to longer paths into the commit stage
+    localparam int unsigned DEPTH_COMMIT = 2;
+`else
+    // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
+    localparam int unsigned DEPTH_COMMIT = 8;
+`endif
 
     // Floating-point extensions configuration
     localparam bit RVF = 1'b0; // Is F extension enabled
@@ -92,11 +119,12 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
+    localparam NR_WB_PORTS = 4;
 
     // static debug hartinfo
     localparam dm::hartinfo_t DebugHartInfo = '{
                                                 zero1:        '0,
-                                                nscratch:      1, // DTM currently needs at least one scratch register
+                                                nscratch:      2, // Debug module needs at least two scratch regs
                                                 zero0:        '0,
                                                 dataaccess: 1'b1, // data registers are memory mapped in the debugger
                                                 datasize: dm::DataCount,
@@ -111,7 +139,34 @@ package ariane_pkg;
     // where coherence is not necessary this can improve performance. This needs to be switched on
     // when more than one core is in a system
     localparam logic INVALIDATE_ON_FLUSH = 1'b1;
+    // enable performance cycle counter, if set to zero mcycle will be incremented
+    // with instret (non RISC-V conformal)
+    localparam bit ENABLE_CYCLE_COUNT = 1'b1;
+    // mark WIF as nop
+    localparam bit ENABLE_WFI = 1'b1;
+    // Spike zeros tval on all exception except memory faults
+    localparam bit ZERO_TVAL = 1'b0;
 
+    // read mask for SSTATUS over MMSTATUS
+    localparam logic [63:0] SMODE_STATUS_READ_MASK = riscv::SSTATUS_UIE
+                                                   | riscv::SSTATUS_SIE
+                                                   | riscv::SSTATUS_SPIE
+                                                   | riscv::SSTATUS_SPP
+                                                   | riscv::SSTATUS_FS
+                                                   | riscv::SSTATUS_XS
+                                                   | riscv::SSTATUS_SUM
+                                                   | riscv::SSTATUS_MXR
+                                                   | riscv::SSTATUS_UPIE
+                                                   | riscv::SSTATUS_SPIE
+                                                   | riscv::SSTATUS_UXL
+                                                   | riscv::SSTATUS64_SD;
+
+    localparam logic [63:0] SMODE_STATUS_WRITE_MASK = riscv::SSTATUS_SIE
+                                                    | riscv::SSTATUS_SPIE
+                                                    | riscv::SSTATUS_SPP
+                                                    | riscv::SSTATUS_FS
+                                                    | riscv::SSTATUS_SUM
+                                                    | riscv::SSTATUS_MXR;
     // ---------------
     // Fetch Stage
     // ---------------
@@ -119,6 +174,8 @@ package ariane_pkg;
     // leave as is (fails with >8 entries and wider fetch width)
     localparam int unsigned FETCH_FIFO_DEPTH  = 8;
     localparam int unsigned FETCH_WIDTH       = 32;
+    // maximum instructions we can fetch on one request (we support compressed instructions)
+    localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH / 16;
 
     // Only use struct when signals have same direction
     // exception
@@ -139,7 +196,6 @@ package ariane_pkg;
         logic [63:0] target_address;  // target address at which to jump, or not
         logic        is_mispredict;   // set if this was a mis-predict
         logic        is_taken;        // branch is taken
-        logic        is_lower_16;     // branch instruction is compressed and resides
                                       // in the lower 16 bit of the word
         logic        valid;           // prediction with all its values is valid
         logic        clear;           // invalidate this entry
@@ -153,7 +209,6 @@ package ariane_pkg;
         logic        valid;           // this is a valid hint
         logic [63:0] predict_address; // target address at which to jump, or not
         logic        predict_taken;   // branch is taken
-        logic        is_lower_16;     // branch instruction is compressed and resides
                                       // in the lower 16 bit of the word
         cf_t         cf_type;         // Type of control flow change
     } branchpredict_sbe_t;
@@ -162,14 +217,12 @@ package ariane_pkg;
         logic        valid;
         logic [63:0] pc;             // update at PC
         logic [63:0] target_address;
-        logic        is_lower_16;
         logic        clear;
     } btb_update_t;
 
     typedef struct packed {
         logic        valid;
         logic [63:0] target_address;
-        logic        is_lower_16;
     } btb_prediction_t;
 
     typedef struct packed {
@@ -208,17 +261,58 @@ package ariane_pkg;
     // Cache config
     // ---------------
 
-    // I$
-    localparam int unsigned  ICACHE_INDEX_WIDTH       = 12; // in bit
-    localparam int unsigned  ICACHE_TAG_WIDTH         = 44; // in bit
-    localparam int unsigned  ICACHE_SET_ASSOC         = 4;
-    localparam int unsigned  ICACHE_LINE_WIDTH        = 128; // in bit
+    // if serpent pulp is used standalone (outside of openpiton)
+    // we just use the default config of ariane
+    // otherwise we have to propagate the openpiton L15 configuration from l15.h
+`ifdef PITON_ARIANE
 
+`ifndef CONFIG_L1I_CACHELINE_WIDTH
+    `define CONFIG_L1I_CACHELINE_WIDTH 128
+`endif
+
+`ifndef CONFIG_L1I_ASSOCIATIVITY
+    `define CONFIG_L1I_ASSOCIATIVITY 4
+`endif
+
+`ifndef CONFIG_L1I_SIZE
+    `define CONFIG_L1I_SIZE 16*1024
+`endif
+
+`ifndef CONFIG_L1D_CACHELINE_WIDTH
+    `define CONFIG_L1D_CACHELINE_WIDTH 128
+`endif
+
+`ifndef CONFIG_L1D_ASSOCIATIVITY
+    `define CONFIG_L1D_ASSOCIATIVITY 4
+`endif
+
+`ifndef CONFIG_L1D_SIZE
+    `define CONFIG_L1D_SIZE 16*1024
+`endif
+
+    // I$
+    localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
+    localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
+    localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
+    localparam int unsigned ICACHE_TAG_WIDTH   = 56 - ICACHE_INDEX_WIDTH;
     // D$
-    localparam int unsigned DCACHE_INDEX_WIDTH       = 12;
-    localparam int unsigned DCACHE_TAG_WIDTH         = 44;
-    localparam int unsigned DCACHE_LINE_WIDTH        = 128;
-    localparam int unsigned DCACHE_SET_ASSOC         = 8;
+    localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
+    localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
+    localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
+    localparam int unsigned DCACHE_TAG_WIDTH   = 56 - DCACHE_INDEX_WIDTH;
+`else
+    // align to openpiton for the time being (this should be more configurable in the future)
+     // I$
+    localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit
+    localparam int unsigned ICACHE_TAG_WIDTH   = 44;  // in bit
+    localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
+    localparam int unsigned ICACHE_SET_ASSOC   = 4;
+    // D$
+    localparam int unsigned DCACHE_INDEX_WIDTH = 12;  // in bit
+    localparam int unsigned DCACHE_TAG_WIDTH   = 44;  // in bit
+    localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
+    localparam int unsigned DCACHE_SET_ASSOC   = 8;
+`endif
 
     // ---------------
     // EX Stage
@@ -262,10 +356,12 @@ package ariane_pkg;
                              } fu_op;
 
     typedef struct packed {
-      fu_op        operator;
-      logic [63:0] operand_a;
-      logic [63:0] operand_b;
-      logic [63:0] imm;
+        fu_t                      fu;
+        fu_op                     operator;
+        logic [63:0]              operand_a;
+        logic [63:0]              operand_b;
+        logic [63:0]              imm;
+        logic [TRANS_ID_BITS-1:0] trans_id;
     } fu_data_t;
 
     // -------------------------------
@@ -356,12 +452,20 @@ package ariane_pkg;
     // ---------------
     // IF/ID Stage
     // ---------------
+   typedef struct packed {
+        logic [63:0]                address;        // the address of the instructions from below
+        logic [FETCH_WIDTH-1:0]     instruction;    // instruction word
+        branchpredict_sbe_t         branch_predict; // this field contains branch prediction information regarding the forward branch path
+        logic [INSTR_PER_FETCH-1:0] bp_taken;       // at which instruction is this branch taken?
+        logic                       page_fault;     // an instruction page fault happened
+    } frontend_fetch_t;
+
     // store the decompressed instruction
     typedef struct packed {
-        logic [63:0]        address;              // the address of the instructions from below
-        logic [31:0]        instruction;          // instruction word
-        branchpredict_sbe_t branch_predict;       // this field contains branch prediction information regarding the forward branch path
-        exception_t         ex;                   // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
+        logic [63:0]           address;        // the address of the instructions from below
+        logic [31:0]           instruction;    // instruction word
+        branchpredict_sbe_t    branch_predict; // this field contains branch prediction information regarding the forward branch path
+        exception_t            ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
     } fetch_entry_t;
 
     // ---------------
@@ -394,8 +498,20 @@ package ariane_pkg;
     // Atomics
     // --------------------
     typedef enum logic [3:0] {
-        AMO_NONE, AMO_LR, AMO_SC, AMO_SWAP, AMO_ADD, AMO_AND,
-        AMO_OR, AMO_XOR, AMO_MAX, AMO_MAXU, AMO_MIN, AMO_MINU
+        AMO_NONE =4'b0000,
+        AMO_LR   =4'b0001,
+        AMO_SC   =4'b0010,
+        AMO_SWAP =4'b0011,
+        AMO_ADD  =4'b0100,
+        AMO_AND  =4'b0101,
+        AMO_OR   =4'b0110,
+        AMO_XOR  =4'b0111,
+        AMO_MAX  =4'b1000,
+        AMO_MAXU =4'b1001,
+        AMO_MIN  =4'b1010,
+        AMO_MINU =4'b1011,
+        AMO_CAS1 =4'b1100, // unused, not part of riscv spec, but provided in OpenPiton
+        AMO_CAS2 =4'b1101  // unused, not part of riscv spec, but provided in OpenPiton
     } amo_t;
 
     typedef struct packed {
@@ -408,6 +524,7 @@ package ariane_pkg;
     } tlb_update_t;
 
     localparam logic [3:0] MODE_SV39 = 4'h8;
+    localparam logic [3:0] MODE_OFF = 4'h0;
 
     // Bits required for representation of physical address space as 4K pages
     // (e.g. 27*4K == 39bit address space).
@@ -476,9 +593,9 @@ package ariane_pkg;
     } dcache_req_i_t;
 
     typedef struct packed {
-        logic                      data_gnt;
-        logic                      data_rvalid;
-        logic [63:0]               data_rdata;
+        logic                          data_gnt;
+        logic                          data_rvalid;
+        logic [63:0]                   data_rdata;
     } dcache_req_o_t;
 
     // ----------------------

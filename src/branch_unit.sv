@@ -15,10 +15,7 @@
 import ariane_pkg::*;
 
 module branch_unit (
-    input  fu_op                      operator_i,             // comparison operation to perform
-    input  logic [63:0]               operand_a_i,            // contains content of RS 1
-    input  logic [63:0]               operand_b_i,            // contains content of RS 2
-    input  logic [63:0]               imm_i,                  // immediate to add to PC
+    input  fu_data_t                  fu_data_i,
     input  logic [63:0]               pc_i,                   // PC of instruction
     input  logic                      is_compressed_instr_i,
     input  logic                      fu_valid_i,             // any functional unit is valid, check that there is no accidental mis-predict
@@ -39,23 +36,21 @@ module branch_unit (
     always_comb begin : mispredict_handler
         // set the jump base, for JALR we need to look at the register, for all other control flow instructions we can take the current PC
         automatic logic [63:0] jump_base;
-        jump_base = (operator_i == JALR) ? operand_a_i : pc_i;
+        jump_base = (fu_data_i.operator == JALR) ? fu_data_i.operand_a : pc_i;
 
-        target_address                   = 64'b0;
         resolve_branch_o                 = 1'b0;
         resolved_branch_o.target_address = 64'b0;
         resolved_branch_o.is_taken       = 1'b0;
         resolved_branch_o.valid          = branch_valid_i;
         resolved_branch_o.is_mispredict  = 1'b0;
-        resolved_branch_o.is_lower_16    = 1'b0;
         resolved_branch_o.clear          = 1'b0;
         resolved_branch_o.cf_type        = branch_predict_i.cf_type;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
         next_pc                          = pc_i + ((is_compressed_instr_i) ? 64'h2 : 64'h4);
         // calculate target address simple 64 bit addition
-        target_address                   = $unsigned($signed(jump_base) + $signed(imm_i));
+        target_address                   = $unsigned($signed(jump_base) + $signed(fu_data_i.imm));
         // on a JALR we are supposed to reset the LSB to 0 (according to the specification)
-        if (operator_i == JALR)
+        if (fu_data_i.operator == JALR)
             target_address[0] = 1'b0;
         // if we need to put the branch target address in a destination register, output it here to WB
         branch_result_o = next_pc;
@@ -72,10 +67,6 @@ module branch_unit (
         resolved_branch_o.pc = (is_compressed_instr_i || pc_i[1] == 1'b0) ? pc_i : ({pc_i[63:2], 2'b0} + 64'h4);
 
         if (branch_valid_i) begin
-            // save if the branch instruction was in the lower 16 bit of the instruction word
-            // the first case is a compressed instruction which is in slot 0
-            // the other case is a misaligned uncompressed instruction which we only predict in the next cycle (see notes above)
-            resolved_branch_o.is_lower_16 = (is_compressed_instr_i && pc_i[1] == 1'b0) || (!is_compressed_instr_i && pc_i[1] == 1'b1);
             // write target address which goes to pc gen
             resolved_branch_o.target_address = (branch_comp_res_i) ? target_address : next_pc;
             resolved_branch_o.is_taken       = branch_comp_res_i;

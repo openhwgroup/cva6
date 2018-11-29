@@ -19,7 +19,9 @@ sudo apt install \
     texinfo \
     python-pexpect \
     libusb-1.0-0-dev \
-    default-jdk
+    default-jdk \
+    zlib1g-dev \
+    valgrind
 
 # customize your paths here
 source ci/path-setup.sh
@@ -40,13 +42,13 @@ make clean
 make torture-gen
 
 # run asm tests on verilator
-make -j${NUM_JOBS} verilate                 
-make -j${NUM_JOBS} run-asm-tests-verilator  
-make -j${NUM_JOBS} run-benchmarks-verilator 
-make -j${NUM_JOBS} torture-rtest-verilator  
+make -j${NUM_JOBS} verilate
+make -j${NUM_JOBS} run-asm-tests-verilator
+make -j${NUM_JOBS} run-benchmarks-verilator
+make -j${NUM_JOBS} torture-rtest-verilator
 
 # run asm tests on questa
-make -j${NUM_JOBS} build                    
-make -j${NUM_JOBS} run-asm-tests            
-make -j${NUM_JOBS} run-benchmarks           
-make -j${NUM_JOBS} torture-rtest            
+make -j${NUM_JOBS} build          batch-mode=1
+make -j${NUM_JOBS} run-asm-tests  batch-mode=1
+make -j${NUM_JOBS} run-benchmarks batch-mode=1
+make -j${NUM_JOBS} torture-rtest  batch-mode=1

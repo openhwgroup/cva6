@@ -22,7 +22,7 @@ import std_cache_pkg::*;
 
 module cache_ctrl #(
     parameter logic [63:0] CACHE_START_ADDR  = 64'h4000_0000
-)(
+) (
     input  logic                                 clk_i,     // Clock
     input  logic                                 rst_ni,    // Asynchronous reset active low
     input  logic                                 flush_i,
@@ -142,9 +142,9 @@ module cache_ctrl #(
 
                     // Bypass mode, check for uncacheable address here as well
                     if (bypass_i) begin
-                        state_d = WAIT_TAG_BYPASSED;
-                        // grant this access
-                        req_port_o.data_gnt = 1'b1;
+                        state_d = (req_port_i.data_we) ? WAIT_REFILL_GNT : WAIT_TAG_BYPASSED;
+                        // grant this access only if it was a load
+                        req_port_o.data_gnt = (req_port_i.data_we) ? 1'b0 : 1'b1;
                         mem_req_d.bypass = 1'b1;
                     // ------------------
                     // Cache is enabled
@@ -260,7 +260,7 @@ module cache_ctrl #(
                         mem_req_d.bypass = 1'b1;
                         state_d = WAIT_REFILL_GNT;
                     end
-                end // !kill_req_i
+                end
             end
 
             // ~> we are here as we need a second round of memory access for a store
@@ -304,8 +304,7 @@ module cache_ctrl #(
 
                     addr_o = mem_req_q.index;
 
-                    if (gnt_i)
-                        state_d = WAIT_TAG_SAVED;
+                    if (gnt_i) state_d = WAIT_TAG_SAVED;
                 end
             end
 
@@ -422,15 +421,15 @@ module cache_ctrl #(
         end
     end
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    //pragma translate_off
+    `ifndef VERILATOR
         initial begin
             assert (DCACHE_LINE_WIDTH == 128) else $error ("Cacheline width has to be 128 for the moment. But only small changes required in data select logic");
         end
         // if the full MSHR address matches so should also match the partial one
-        partial_full_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> mshr_index_matches_i)   else $fatal ("partial mshr index doesn't match");
-        // there should never be a valid answer when the MSHR matches
-        no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (rst_ni !== 1'b0) mshr_addr_matches_i -> !req_port_o.data_rvalid) else $fatal ("rvalid_o should not be set on MSHR match");
+        partial_full_mshr_match: assert property(@(posedge  clk_i) disable iff (~rst_ni) mshr_addr_matches_i -> mshr_index_matches_i)   else $fatal (1, "partial mshr index doesn't match");
+        // there should never be a valid answer when the MSHR matches and we are not being served
+        no_valid_on_mshr_match: assert property(@(posedge  clk_i) disable iff (~rst_ni) (mshr_addr_matches_i && !active_serving_i)-> !req_port_o.data_rvalid || req_port_i.kill_req) else $fatal (1, "rvalid_o should not be set on MSHR match");
     `endif
-    `endif
+    //pragma translate_on
 endmodule

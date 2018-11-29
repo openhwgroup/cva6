@@ -21,12 +21,12 @@ module clint #(
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned AXI_ID_WIDTH   = 10,
     parameter int unsigned NR_CORES       = 1 // Number of cores therefore also the number of timecmp registers and timer interrupts
-)(
+) (
     input  logic                clk_i,       // Clock
     input  logic                rst_ni,      // Asynchronous reset active low
     input  logic                testmode_i,
-    AXI_BUS.Slave               slave,
-
+    input  ariane_axi::req_t    axi_req_i,
+    output ariane_axi::resp_t   axi_resp_o,
     input  logic                rtc_i,       // Real-time clock in (usually 32.768 kHz)
     output logic [NR_CORES-1:0] timer_irq_o, // Timer interrupts
     output logic [NR_CORES-1:0] ipi_o        // software interrupt (a.k.a inter-process-interrupt)
@@ -35,6 +35,9 @@ module clint #(
     localparam logic [15:0] MSIP_BASE     = 16'h0;
     localparam logic [15:0] MTIMECMP_BASE = 16'h4000;
     localparam logic [15:0] MTIME_BASE    = 16'hbff8;
+
+    localparam AddrSelWidth = (NR_CORES == 1) ? 1 : $clog2(NR_CORES);
+
     // signals from AXI 4 Lite
     logic [AXI_ADDR_WIDTH-1:0] address;
     logic                      en;
@@ -60,12 +63,15 @@ module clint #(
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH    )
     ) axi_lite_interface_i (
-        .address_o ( address ),
-        .en_o      ( en      ),
-        .we_o      ( we      ),
-        .data_i    ( rdata   ),
-        .data_o    ( wdata   ),
-        .*
+        .clk_i      ( clk_i      ),
+        .rst_ni     ( rst_ni     ),
+        .axi_req_i  ( axi_req_i  ),
+        .axi_resp_o ( axi_resp_o ),
+        .address_o  ( address    ),
+        .en_o       ( en         ),
+        .we_o       ( we         ),
+        .data_i     ( rdata      ),
+        .data_o     ( wdata      )
     );
 
     // -----------------------------
@@ -84,11 +90,11 @@ module clint #(
         if (en && we) begin
             case (register_address) inside
                 [MSIP_BASE:MSIP_BASE+8*NR_CORES]: begin
-                    msip_n[$unsigned(address[NR_CORES-1+3:3])] = wdata[0];
+                    msip_n[$unsigned(address[AddrSelWidth-1+3:3])] = wdata[0];
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    mtimecmp_n[$unsigned(address[NR_CORES-1+3:3])] = wdata;
+                    mtimecmp_n[$unsigned(address[AddrSelWidth-1+3:3])] = wdata;
                 end
 
                 MTIME_BASE: begin
@@ -106,11 +112,11 @@ module clint #(
         if (en && !we) begin
             case (register_address) inside
                 [MSIP_BASE:MSIP_BASE+8*NR_CORES]: begin
-                    rdata = msip_q[$unsigned(address[NR_CORES-1+3:3])];
+                    rdata = msip_q[$unsigned(address[AddrSelWidth-1+3:3])];
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
-                    rdata = mtimecmp_q[$unsigned(address[NR_CORES-1+3:3])];
+                    rdata = mtimecmp_q[$unsigned(address[AddrSelWidth-1+3:3])];
                 end
 
                 MTIME_BASE: begin
@@ -132,7 +138,7 @@ module clint #(
     always_comb begin : irq_gen
         // check that the mtime cmp register is set to a meaningful value
         for (int unsigned i = 0; i < NR_CORES; i++) begin
-            if (mtimecmp_q[i] != 0 && mtime_q >= mtimecmp_q[i]) begin
+            if (mtime_q >= mtimecmp_q[i]) begin
                 timer_irq_o[i] = 1'b1;
             end else begin
                 timer_irq_o[i] = 1'b0;
@@ -146,12 +152,13 @@ module clint #(
     // 1. Put the RTC input through a classic two stage edge-triggered synchronizer to filter out any
     //    metastability effects (or at least make them unlikely :-))
     sync_wedge i_sync_edge (
+        .clk_i,
+        .rst_ni,
         .en_i      ( ~testmode_i    ),
         .serial_i  ( rtc_i          ),
         .r_edge_o  ( increase_timer ),
         .f_edge_o  (                ), // left open
-        .serial_o  (                ),
-        .*
+        .serial_o  (                )  // left open
     );
 
     // Registers
@@ -167,15 +174,18 @@ module clint #(
         end
     end
 
+    assign ipi_o = msip_q;
+
     // -------------
     // Assertions
     // --------------
-    `ifndef SYNTHESIS
+    //pragma translate_off
     `ifndef VERILATOR
     // Static assertion check for appropriate bus width
         initial begin
             assert (AXI_DATA_WIDTH == 64) else $fatal("Timer needs to interface with a 64 bit bus, everything else is not supported");
         end
     `endif
-    `endif
+    //pragma translate_on
+
 endmodule

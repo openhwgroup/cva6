@@ -57,8 +57,6 @@ module btb #(
             btb_d[update_pc].valid = 1'b1;
             // the target address is simply updated
             btb_d[update_pc].target_address = btb_update_i.target_address;
-            // as is the information whether this was a compressed branch
-            btb_d[update_pc].is_lower_16    = btb_update_i.is_lower_16;
             // check if we should invalidate this entry, this happens in case we predicted a branch
             // where actually none-is (aliasing)
             if (btb_update_i.clear) begin

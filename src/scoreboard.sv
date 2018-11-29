@@ -21,6 +21,7 @@ module scoreboard #(
 )(
     input  logic                                      clk_i,    // Clock
     input  logic                                      rst_ni,   // Asynchronous reset active low
+    output logic                                      sb_full_o,
     input  logic                                      flush_unissued_instr_i, // flush only un-issued instructions
     input  logic                                      flush_i,  // flush whole scoreboard
     input  logic                                      unresolved_branch_i, // we have an unresolved branch
@@ -78,6 +79,8 @@ module scoreboard #(
 
     // the issue queue is full don't issue any new instructions
     assign issue_full = (issue_cnt_q == NR_ENTRIES-1);
+
+    assign sb_full_o = issue_full;
 
     // output commit instruction directly
     always_comb begin : commit_ports
@@ -276,8 +279,9 @@ module scoreboard #(
             commit_pointer_q <= commit_pointer_n;
         end
     end
-    `ifndef SYNTHESIS
-    `ifndef verilator
+
+    //pragma translate_off
+    `ifndef VERILATOR
     initial begin
         assert (NR_ENTRIES == 2**BITS_ENTRIES) else $fatal("Scoreboard size needs to be a power of two.");
     end
@@ -310,5 +314,5 @@ module scoreboard #(
         end
     end
     `endif
-    `endif
+    //pragma translate_on
 endmodule

@@ -30,6 +30,8 @@ addons:
       - python-pexpect
       - libusb-1.0-0-dev
       - default-jdk
+      - zlib1g-dev
+      - valgrind
 env:
   global:
     - RISCV="/home/travis/riscv_install"
@@ -75,26 +77,66 @@ jobs:
       name: run riscv benchmarks
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-benchmarks-verilator 
+        - make -j${NUM_JOBS} run-benchmarks-verilator
     # rv64ui-p-* tests
     - stage: test
       name: run asm tests1
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests1-verilator 
+        - make -j${NUM_JOBS} run-asm-tests1-verilator
     # rv64ui-v-* tests
     - stage: test
       name: run asm tests2
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests2-verilator 
+        - make -j${NUM_JOBS} run-asm-tests2-verilator
+    # rv64um-*-* tests
+    - stage: test
+      name: run mul tests
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-mul-verilator
+    # amo tests
+    - stage: test
+      name: run amo tests
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-amo-verilator
     - stage: test
       name: run torture
       script:
         - ci/get-torture.sh
         - make clean
         - make torture-gen
-        - make torture-rtest-verilator 
+        - make torture-rtest-verilator
+
+    - stage: test
+      name: run riscv benchmarks (serpent)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-benchmarks-verilator  defines=PITON_ARIANE+AXI64_CACHE_PORTS
+    # rv64ui-p-* tests
+    - stage: test
+      name: run asm tests1 (serpent)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-asm-tests1-verilator  defines=PITON_ARIANE+AXI64_CACHE_PORTS
+    # rv64ui-v-* tests
+    - stage: test
+      name: run asm tests2 (serpent)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-asm-tests2-verilator  defines=PITON_ARIANE+AXI64_CACHE_PORTS
+
+    - stage: test
+      name: run torture (serpent)
+      script:
+        - ci/get-torture.sh
+        - make clean
+        - make torture-gen defines=PITON_ARIANE+AXI64_CACHE_PORTS
+        - make torture-rtest-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
+
+
 
 # extra time during long builds
 install: travis_wait
