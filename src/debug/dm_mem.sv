@@ -289,17 +289,17 @@ module dm_mem #(
             // --------------------
             dm::AccessRegister: begin
                 if (ac_ar.aarsize < 4 && ac_ar.transfer && ac_ar.write) begin
+                    // this range is reserved
+                    if (ac_ar.regno[15:14] != '0) begin
+                        abstract_cmd[0][31:0] = riscv::illegal();
                     // GPR/FPR access
-                    if (ac_ar.regno[12]) begin
+                    end else if (ac_ar.regno[12]) begin
                         // determine whether we want to access the floating point register or not
                         if (ac_ar.regno[5]) begin
                             abstract_cmd[0][31:0] = riscv::float_load(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
                         end else begin
                             abstract_cmd[0][31:0] = riscv::load(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
                         end
-                    // this range is reserved
-                    end else if (ac_ar.regno[15:14] != '0) begin
-                        abstract_cmd[0][31:0] = riscv::illegal();
                     // CSR access
                     end else begin
                         // data register to CSR
@@ -313,16 +313,17 @@ module dm_mem #(
                         abstract_cmd[1][63:32] = riscv::csrr(riscv::CSR_DSCRATCH0, 8);
                     end
                 end else if (ac_ar.aarsize < 4 && ac_ar.transfer && !ac_ar.write) begin
+                    // this range is reserved
+                    if (ac_ar.regno[15:14] != '0) begin
+                        abstract_cmd[0][31:0] = riscv::illegal();
                     // GPR/FPR access
-                    if (ac_ar.regno[12]) begin
+                    end else if (ac_ar.regno[12]) begin
                         // determine whether we want to access the floating point register or not
                         if (ac_ar.regno[5]) begin
                             abstract_cmd[0][31:0] = riscv::float_store(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
                         end else begin
                             abstract_cmd[0][31:0] = riscv::store(ac_ar.aarsize, ac_ar.regno[4:0], 0, dm::DataAddr);
                         end
-                    end else if (ac_ar.regno[15:14] != '0) begin
-                        abstract_cmd[0][31:0] = riscv::illegal();
                     // CSR access
                     end else begin
                         // CSR register to data
