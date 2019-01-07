@@ -141,7 +141,7 @@ package dm;
     typedef struct packed {
         logic [31:29] zero3;
         logic [28:24] progbufsize;
-        logic [23:12] zero2;
+        logic [23:13] zero2;
         logic         busy;
         logic         zero1;
         cmderr_t      cmderr;

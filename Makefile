@@ -71,7 +71,7 @@ dpi := $(patsubst tb/dpi/%.cc,${dpi-library}/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
 CFLAGS := -I$(QUESTASIM_HOME)/include         \
-          -Itb/riscv-isa-sim/install/include/spike  \
+          -I$(RISCV)/include  \
           -std=c++11 -I../tb/dpi
 
 # this list contains the standalone components
