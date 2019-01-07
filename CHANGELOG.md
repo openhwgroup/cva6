@@ -6,10 +6,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### 4.0.0
+
 ### Added
 
+- Preliminary support for A-Extension
+- Preliminary FP support
+- Preliminary support for OpenPiton cache system
 - Commit log feature
-- Support for A-Extension
+- Provisioned `aw_top` signal for close to memory atomics
+- FPGA Support
+- Misc bug-fixes
+- Platform Level Interrupt Controller (PLIC)
+- FPGA Bootrom with capability to boot from SD Card
+
+### Changed
+
+- core_id / cluster_id inputs have been merged to hard_id input (interface changes)
+- The three AXI ports have been merged into one (interface changes)
+- [Bugfix] Wrong flagging of memory in machine mode if high bits (63-38) are not equal #136
 
 ### 3.0.0
 

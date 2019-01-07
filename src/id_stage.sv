@@ -21,7 +21,7 @@ module id_stage (
 
     input  logic                  flush_i,
     // from IF
-    input  fetch_entry_t          fetch_entry_i,
+    input  frontend_fetch_t       fetch_entry_i,
     input  logic                  fetch_entry_valid_i,
     output logic                  decoded_instr_ack_o, // acknowledge the instruction (fetch entry)
 
@@ -45,7 +45,6 @@ module id_stage (
         logic              valid;
         scoreboard_entry_t sbe;
         logic              is_ctrl_flow;
-
     } issue_n, issue_q;
 
     logic                is_control_flow_instr;
@@ -62,9 +61,9 @@ module id_stage (
     // 1. Re-align instructions
     // ---------------------------------------------------------
     instr_realigner instr_realigner_i (
-        .fetch_entry_0_i         ( fetch_entry_i               ),
-        .fetch_entry_valid_0_i   ( fetch_entry_valid_i         ),
-        .fetch_ack_0_o           ( decoded_instr_ack_o         ),
+        .fetch_entry_i           ( fetch_entry_i               ),
+        .fetch_entry_valid_i     ( fetch_entry_valid_i         ),
+        .fetch_ack_o             ( decoded_instr_ack_o         ),
 
         .fetch_entry_o           ( fetch_entry                 ),
         .fetch_entry_valid_o     ( fetch_entry_valid           ),
@@ -85,14 +84,15 @@ module id_stage (
     // 3. Decode and emit instruction to issue stage
     // ---------------------------------------------------------
     decoder decoder_i (
-        .pc_i                    ( fetch_entry.address         ),
-        .is_compressed_i         ( is_compressed               ),
-        .instruction_i           ( instruction                 ),
-        .branch_predict_i        ( fetch_entry.branch_predict  ),
-        .is_illegal_i            ( is_illegal                  ),
-        .ex_i                    ( fetch_entry.ex              ),
-        .instruction_o           ( decoded_instruction         ),
-        .is_control_flow_instr_o ( is_control_flow_instr       ),
+        .pc_i                    ( fetch_entry.address           ),
+        .is_compressed_i         ( is_compressed                 ),
+        .compressed_instr_i      ( fetch_entry.instruction[15:0] ),
+        .instruction_i           ( instruction                   ),
+        .branch_predict_i        ( fetch_entry.branch_predict    ),
+        .is_illegal_i            ( is_illegal                    ),
+        .ex_i                    ( fetch_entry.ex                ),
+        .instruction_o           ( decoded_instruction           ),
+        .is_control_flow_instr_o ( is_control_flow_instr         ),
         .fs_i,
         .frm_i,
         .*

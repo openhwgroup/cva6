@@ -156,6 +156,25 @@ module mmu #(
         .*
      );
 
+    // ila_1 i_ila_1 (
+    //     .clk(clk_i), // input wire clk
+    //     .probe0({req_port_o.address_tag, req_port_o.address_index}),
+    //     .probe1(req_port_o.data_req), // input wire [63:0]  probe1
+    //     .probe2(req_port_i.data_gnt), // input wire [0:0]  probe2
+    //     .probe3(req_port_i.data_rdata), // input wire [0:0]  probe3
+    //     .probe4(req_port_i.data_rvalid), // input wire [0:0]  probe4
+    //     .probe5(ptw_error), // input wire [1:0]  probe5
+    //     .probe6(update_vaddr), // input wire [0:0]  probe6
+    //     .probe7(update_ptw_itlb.valid), // input wire [0:0]  probe7
+    //     .probe8(update_ptw_dtlb.valid), // input wire [0:0]  probe8
+    //     .probe9(dtlb_lu_access), // input wire [0:0]  probe9
+    //     .probe10(lsu_vaddr_i), // input wire [0:0]  probe10
+    //     .probe11(dtlb_lu_hit), // input wire [0:0]  probe11
+    //     .probe12(itlb_lu_access), // input wire [0:0]  probe12
+    //     .probe13(icache_areq_i.fetch_vaddr), // input wire [0:0]  probe13
+    //     .probe14(itlb_lu_hit) // input wire [0:0]  probe13
+    // );
+
     //-----------------------
     // Instruction Interface
     //-----------------------
@@ -172,15 +191,16 @@ module mmu #(
         iaccess_err   = icache_areq_i.fetch_req && (((priv_lvl_i == riscv::PRIV_LVL_U) && ~itlb_content.u)
                                                  || ((priv_lvl_i == riscv::PRIV_LVL_S) && itlb_content.u));
 
-        // check that the upper-most bits (63-39) are the same, otherwise throw a page fault exception...
-        if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[63:39]) == 1'b1 || (|icache_areq_i.fetch_vaddr[63:39]) == 1'b0)) begin
-            icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, icache_areq_i.fetch_vaddr, 1'b1};
-        end
         // MMU enabled: address from TLB, request delayed until hit. Error when TLB
         // hit and no access right or TLB hit and translated address not valid (e.g.
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
         // an error.
         if (enable_translation_i) begin
+            // we work with SV39, so if VM is enabled, check that all bits [63:38] are equal
+            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[63:38]) == 1'b1 || (|icache_areq_i.fetch_vaddr[63:38]) == 1'b0)) begin
+                icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, icache_areq_i.fetch_vaddr, 1'b1};
+            end
+
             icache_areq_o.fetch_valid = 1'b0;
 
             // 4K page

@@ -16,10 +16,10 @@
 import ariane_pkg::*;
 import std_cache_pkg::*;
 
-module std_icache  #(
-)(
+module std_icache (
     input  logic                     clk_i,
     input  logic                     rst_ni,
+    input riscv::priv_lvl_t          priv_lvl_i,
 
     input  logic                     flush_i,          // flush the icache, flush and kill have to be asserted together
     input  logic                     en_i,             // enable icache
@@ -30,8 +30,9 @@ module std_icache  #(
     // data requests
     input  icache_dreq_i_t           dreq_i,
     output icache_dreq_o_t           dreq_o,
-    // refill port
-    AXI_BUS.Master                   axi
+    // AXI refill port
+    output ariane_axi::req_t         axi_req_o,
+    input  ariane_axi::resp_t        axi_resp_i
 );
 
     localparam int unsigned ICACHE_BYTE_OFFSET = $clog2(ICACHE_LINE_WIDTH/8); // 3
@@ -120,9 +121,9 @@ module std_icache  #(
     assign idx = vaddr_q[ICACHE_BYTE_OFFSET-1:2];
 
     generate
-        for (genvar i=0;i<ICACHE_SET_ASSOC;i++) begin : g_tag_cmpsel
+        for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin : g_tag_cmpsel
             assign hit[i] = (tag_rdata[i].tag == tag) ? tag_rdata[i].valid : 1'b0;
-            assign cl_sel[i] = (hit[i]) ? data_rdata[i][{idx,5'b0} +: FETCH_WIDTH] : '0;
+            assign cl_sel[i] = (hit[i]) ? data_rdata[i][{idx, 5'b0} +: FETCH_WIDTH] : '0;
             assign way_valid[i] = tag_rdata[i].valid;
         end
     endgenerate
@@ -130,46 +131,44 @@ module std_icache  #(
     // OR reduction of selected cachelines
     always_comb begin : p_reduction
         dreq_o.data = cl_sel[0];
-        for(int i=1; i<ICACHE_SET_ASSOC;i++)
+        for(int i = 1; i < ICACHE_SET_ASSOC; i++)
             dreq_o.data |= cl_sel[i];
     end
-
 
     // ------------------
     // AXI Plumbing
     // ------------------
-    assign axi.aw_valid  = '0;
-    assign axi.aw_addr   = '0;
-    assign axi.aw_prot   = '0;
-    assign axi.aw_region = '0;
-    assign axi.aw_len    = '0;
-    assign axi.aw_size   = 3'b000;
-    assign axi.aw_burst  = 2'b00;
-    assign axi.aw_lock   = '0;
-    assign axi.aw_cache  = '0;
-    assign axi.aw_qos    = '0;
-    assign axi.aw_id     = '0;
-    assign axi.aw_user   = '0;
+    // instruction cache is read-only
+    assign axi_req_o.aw_valid  = '0;
+    assign axi_req_o.aw.addr   = '0;
+    assign axi_req_o.aw.prot   = '0;
+    assign axi_req_o.aw.region = '0;
+    assign axi_req_o.aw.len    = '0;
+    assign axi_req_o.aw.size   = 3'b000;
+    assign axi_req_o.aw.burst  = 2'b00;
+    assign axi_req_o.aw.lock   = '0;
+    assign axi_req_o.aw.cache  = '0;
+    assign axi_req_o.aw.qos    = '0;
+    assign axi_req_o.aw.id     = '0;
+    assign axi_req_o.aw.atop   = '0;
+    assign axi_req_o.w_valid   = '0;
+    assign axi_req_o.w.data    = '0;
+    assign axi_req_o.w.strb    = '0;
+    assign axi_req_o.w.last    = 1'b0;
+    assign axi_req_o.b_ready   = 1'b0;
 
-    assign axi.w_valid   = '0;
-    assign axi.w_data    = '0;
-    assign axi.w_strb    = '0;
-    assign axi.w_user    = '0;
-    assign axi.w_last    = 1'b0;
-    assign axi.b_ready   = 1'b0;
+    // set protection flag, MSB -> instruction fetch, LSB -> privileged access or not
+    assign axi_req_o.ar.prot   = {1'b1, 1'b0, (priv_lvl_i == riscv::PRIV_LVL_M)};
+    assign axi_req_o.ar.region = '0;
+    assign axi_req_o.ar.len    = (2**NR_AXI_REFILLS) - 1;
+    assign axi_req_o.ar.size   = 3'b011;
+    assign axi_req_o.ar.burst  = 2'b01;
+    assign axi_req_o.ar.lock   = '0;
+    assign axi_req_o.ar.cache  = '0;
+    assign axi_req_o.ar.qos    = '0;
+    assign axi_req_o.ar.id     = '0;
 
-    assign axi.ar_prot   = '0;
-    assign axi.ar_region = '0;
-    assign axi.ar_len    = (2**NR_AXI_REFILLS) - 1;
-    assign axi.ar_size   = 3'b011;
-    assign axi.ar_burst  = 2'b01;
-    assign axi.ar_lock   = '0;
-    assign axi.ar_cache  = '0;
-    assign axi.ar_qos    = '0;
-    assign axi.ar_id     = '0;
-    assign axi.ar_user   = '0;
-
-    assign axi.r_ready   = 1'b1;
+    assign axi_req_o.r_ready   = 1'b1;
 
     assign data_be = be;
     assign data_wdata = wdata;
@@ -177,7 +176,6 @@ module std_icache  #(
     assign dreq_o.ex = areq_i.fetch_exception;
 
     assign addr = (state_q==FLUSH) ? cnt_q : vaddr_d[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET];
-
 
     // ------------------
     // Cache Ctrl
@@ -208,8 +206,8 @@ module std_icache  #(
         update_lfsr  = 1'b0;
         miss_o       = 1'b0;
 
-        axi.ar_valid = 1'b0;
-        axi.ar_addr  = '0;
+        axi_req_o.ar_valid = 1'b0;
+        axi_req_o.ar.addr  = '0;
 
         areq_o.fetch_req = 1'b0;
         areq_o.fetch_vaddr = vaddr_q;
@@ -319,15 +317,15 @@ module std_icache  #(
             end
             // ~> request a cache-line refill
             REFILL, WAIT_KILLED_REFILL: begin
-                axi.ar_valid  = 1'b1;
-                axi.ar_addr[ICACHE_INDEX_WIDTH+ICACHE_TAG_WIDTH-1:0] = {tag_q, vaddr_q[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET], {ICACHE_BYTE_OFFSET{1'b0}}};
+                axi_req_o.ar_valid  = 1'b1;
+                axi_req_o.ar.addr[ICACHE_INDEX_WIDTH+ICACHE_TAG_WIDTH-1:0] = {tag_q, vaddr_q[ICACHE_INDEX_WIDTH-1:ICACHE_BYTE_OFFSET], {ICACHE_BYTE_OFFSET{1'b0}}};
                 burst_cnt_d = '0;
 
                 if (dreq_i.kill_s2)
                     state_d = WAIT_KILLED_REFILL;
 
                 // we need to finish this AXI transfer
-                if (axi.ar_ready)
+                if (axi_resp_i.ar_ready)
                     state_d = (dreq_i.kill_s2 || (state_q == WAIT_KILLED_REFILL)) ? WAIT_KILLED_AXI_R_RESP : WAIT_AXI_R_RESP;
             end
             // ~> wait for the read response
@@ -336,11 +334,11 @@ module std_icache  #(
                 req     = evict_way_q;
                 vld_req = evict_way_q;
 
-                if (axi.r_valid) begin
+                if (axi_resp_i.r_valid) begin
                     we = 1'b1;
                     tag_wdata.tag = tag_q;
                     tag_wdata.valid = 1'b1;
-                    wdata[burst_cnt_q] = axi.r_data;
+                    wdata[burst_cnt_q] = axi_resp_i.r.data;
                     // enable the right write path
                     be[burst_cnt_q] = '1;
                     // increase burst count
@@ -350,11 +348,11 @@ module std_icache  #(
                 if (dreq_i.kill_s2)
                     state_d = WAIT_KILLED_AXI_R_RESP;
 
-                if (axi.r_valid && axi.r_last) begin
+                if (axi_resp_i.r_valid && axi_resp_i.r.last) begin
                     state_d = (dreq_i.kill_s2) ? IDLE : REDO_REQ;
                 end
 
-                if ((state_q == WAIT_KILLED_AXI_R_RESP) && axi.r_last && axi.r_valid)
+                if ((state_q == WAIT_KILLED_AXI_R_RESP) && axi_resp_i.r.last && axi_resp_i.r_valid)
                     state_d = IDLE;
             end
             // ~> redo the request,
@@ -450,7 +448,7 @@ module std_icache  #(
 //pragma translate_off
 `ifndef VERILATOR
 initial begin
-    assert ($bits(axi.aw_addr) == 64)
+    assert ($bits(axi_req_o.aw.addr) == 64)
         else $fatal(1, "[icache] Ariane needs a 64-bit bus");
 end
 

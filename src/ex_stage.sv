@@ -15,30 +15,25 @@
 
 import ariane_pkg::*;
 
-module ex_stage #(
-    parameter int          ASID_WIDTH       = 1
-)(
+module ex_stage (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,
 
-    input  fu_t                                    fu_i,
-    input  fu_op                                   operator_i,
-    input  logic [63:0]                            operand_a_i,
-    input  logic [63:0]                            operand_b_i,
-    input  logic [63:0]                            imm_i,
-    input  logic [TRANS_ID_BITS-1:0]               trans_id_i,
+    input  fu_data_t                               fu_data_i,
     input  logic [63:0]                            pc_i,                  // PC of current instruction
     input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
                                                                           // in order to calculate the next PC on a mis-predict
-    // ALU 1
-    output logic                                   alu_ready_o,           // FU is ready
-    input  logic                                   alu_valid_i,           // Output is valid
-    output logic                                   alu_valid_o,           // ALU result is valid
-    output logic [63:0]                            alu_result_o,
-    output logic [TRANS_ID_BITS-1:0]               alu_trans_id_o,        // ID of scoreboard entry at which to write back
-    output exception_t                             alu_exception_o,
+    // Fixed latency unit(s)
+    output logic [63:0]                            flu_result_o,
+    output logic [TRANS_ID_BITS-1:0]               flu_trans_id_o,        // ID of scoreboard entry at which to write back
+    output exception_t                             flu_exception_o,
+    output logic                                   flu_ready_o,           // FLU is ready
+    output logic                                   flu_valid_o,           // FLU result is valid
     // Branches and Jumps
+    // ALU 1
+    input  logic                                   alu_valid_i,           // Output is valid
+    // Branch Unit
     input  logic                                   branch_valid_i,        // we are using the branch unit
     input  branchpredict_sbe_t                     branch_predict_i,
     output branchpredict_t                         resolved_branch_o,     // the branch engine uses the write back from the ALU
@@ -47,23 +42,25 @@ module ex_stage #(
     input  logic                                   csr_valid_i,
     output logic [11:0]                            csr_addr_o,
     input  logic                                   csr_commit_i,
+    // MULT
+    input  logic                                   mult_valid_i,      // Output is valid
     // LSU
-    output logic                                   lsu_ready_o,           // FU is ready
-    input  logic                                   lsu_valid_i,           // Input is valid
-    output logic                                   lsu_valid_o,           // Output is valid
-    output logic [63:0]                            lsu_result_o,
-    output logic [TRANS_ID_BITS-1:0]               lsu_trans_id_o,
+    output logic                                   lsu_ready_o,        // FU is ready
+    input  logic                                   lsu_valid_i,        // Input is valid
+
+    output logic                                   load_valid_o,
+    output logic [63:0]                            load_result_o,
+    output logic [TRANS_ID_BITS-1:0]               load_trans_id_o,
+    output exception_t                             load_exception_o,
+    output logic                                   store_valid_o,
+    output logic [63:0]                            store_result_o,
+    output logic [TRANS_ID_BITS-1:0]               store_trans_id_o,
+    output exception_t                             store_exception_o,
+
     input  logic                                   lsu_commit_i,
-    output logic                                   lsu_commit_ready_o,    // commit queue is ready to accept another commit request
-    output exception_t                             lsu_exception_o,
+    output logic                                   lsu_commit_ready_o, // commit queue is ready to accept another commit request
     output logic                                   no_st_pending_o,
     input  logic                                   amo_valid_commit_i,
-    // MULT
-    output logic                                   mult_ready_o,      // FU is ready
-    input  logic                                   mult_valid_i,      // Output is valid
-    output logic [TRANS_ID_BITS-1:0]               mult_trans_id_o,
-    output logic [63:0]                            mult_result_o,
-    output logic                                   mult_valid_o,
     // FPU
     output logic                                   fpu_ready_o,      // FU is ready
     input  logic                                   fpu_valid_i,      // Output is valid
@@ -75,7 +72,6 @@ module ex_stage #(
     output logic [63:0]                            fpu_result_o,
     output logic                                   fpu_valid_o,
     output exception_t                             fpu_exception_o,
-
     // Memory Management
     input  logic                                   enable_translation_i,
     input  logic                                   en_ld_st_translation_i,
@@ -101,69 +97,116 @@ module ex_stage #(
     output logic                                   dtlb_miss_o
 );
 
+    // -------------------------
+    // Fixed Latency Units
+    // -------------------------
+    // all fixed latency units share a single issue port and a sing write
+    // port into the scoreboard. At the moment those are:
+    // 1. ALU - all operations are single cycle
+    // 2. Branch unit: operation is single cycle, the ALU is needed
+    //    for comparison
+    // 3. CSR: This is a small buffer which saves the address of the CSR.
+    //    The value is then re-fetched once the instruction retires. The buffer
+    //    is only a single entry deep, hence this operation will block all
+    //    other operations once this buffer is full. This should not be a major
+    //    concern though as CSRs are infrequent.
+    // 4. Multiplier/Divider: The multiplier has a fixed latency of 1 cycle.
+    //                        The issue logic will take care of not issuing
+    //                        another instruction if it will collide on the
+    //                        output port. Divisions are arbitrary in length
+    //                        they will simply block the issue of all other
+    //                        instructions.
+
+    // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
+    logic [63:0] alu_result, branch_result, csr_result, mult_result;
+    logic csr_ready, mult_ready;
+    logic [TRANS_ID_BITS-1:0] mult_trans_id;
+    logic mult_valid;
 
-    // -----
-    // ALU
-    // -----
+    // 1. ALU (combinatorial)
+    // data silence operation
     fu_data_t alu_data;
-    assign alu_data.operator  = (alu_valid_i | branch_valid_i | csr_valid_i) ? operator_i  : ADD;
-    assign alu_data.operand_a = (alu_valid_i | branch_valid_i | csr_valid_i) ? operand_a_i : '0;
-    assign alu_data.operand_b = (alu_valid_i | branch_valid_i | csr_valid_i) ? operand_b_i : '0;
-    assign alu_data.imm       = (alu_valid_i | branch_valid_i | csr_valid_i) ? imm_i : '0;
+    assign alu_data = (alu_valid_i | branch_valid_i) ? fu_data_i  : '0;
 
-    // fixed latency FUs
-    // TOOD(zarubaf) Re-name this module and re-factor ALU
     alu alu_i (
         .clk_i,
         .rst_ni,
-        .flush_i,
-        .pc_i,
-        .trans_id_i,
-        .alu_valid_i,
-        .branch_valid_i,
-        .csr_valid_i      ( csr_valid_i        ),
-        .operator_i       ( alu_data.operator  ),
-        .operand_a_i      ( alu_data.operand_a ),
-        .operand_b_i      ( alu_data.operand_b ),
-        .imm_i            ( alu_data.imm       ),
-        .result_o         ( alu_result_o       ),
-        .alu_valid_o,
-        .alu_ready_o,
-        .alu_trans_id_o,
-        .alu_exception_o,
+        .fu_data_i        ( alu_data       ),
+        .result_o         ( alu_result     ),
+        .alu_branch_res_o ( alu_branch_res )
+    );
 
-        .fu_valid_i       ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i ),
+    // 2. Branch Unit (combinatorial)
+    // we don't silence the branch unit as this is already critical and we do
+    // not want to add another layer of logic
+    branch_unit branch_unit_i (
+        .fu_data_i,
+        .pc_i,
         .is_compressed_instr_i,
+        // any functional unit is valid, check that there is no accidental mis-predict
+        .fu_valid_i ( alu_valid_i || lsu_valid_i || csr_valid_i || mult_valid_i || fpu_valid_i ) ,
+        .branch_valid_i,
+        .branch_comp_res_i ( alu_branch_res ),
+        .branch_result_o   ( branch_result ),
         .branch_predict_i,
         .resolved_branch_o,
         .resolve_branch_o,
-
-        .commit_i        ( csr_commit_i ),
-        .csr_addr_o      ( csr_addr_o   )
+        .branch_exception_o ( flu_exception_o )
     );
 
-    // ----------------
-    // Multiplication
-    // ----------------
+    // 3. CSR (sequential)
+    csr_buffer csr_buffer_i (
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .fu_data_i,
+        .csr_valid_i,
+        .csr_ready_o    ( csr_ready    ),
+        .csr_result_o   ( csr_result   ),
+        .csr_commit_i,
+        .csr_addr_o
+    );
+
+    assign flu_valid_o = alu_valid_i | branch_valid_i | csr_valid_i | mult_valid;
+
+    // result MUX
+    always_comb begin
+        // Branch result as default case
+        flu_result_o = branch_result;
+        flu_trans_id_o = fu_data_i.trans_id;
+        // ALU result
+        if (alu_valid_i) begin
+            flu_result_o = alu_result;
+        // CSR result
+        end else if (csr_valid_i) begin
+            flu_result_o = csr_result;
+        end else if (mult_valid) begin
+            flu_result_o = mult_result;
+            flu_trans_id_o = mult_trans_id;
+        end
+    end
+
+    // ready flags for FLU
+    always_comb begin
+        flu_ready_o = csr_ready & mult_ready;
+    end
+
+    // 4. Multiplication (Sequential)
     fu_data_t mult_data;
-    assign mult_data.operator  = mult_valid_i ? operator_i  : MUL;
-    assign mult_data.operand_a = mult_valid_i ? operand_a_i : '0;
-    assign mult_data.operand_b = mult_valid_i ? operand_b_i : '0;
+    // input silencing of multiplier
+    assign mult_data  = mult_valid_i ? fu_data_i  : '0;
 
     mult i_mult (
         .clk_i,
         .rst_ni,
         .flush_i,
-        .trans_id_i,
         .mult_valid_i,
-        .operator_i      ( mult_data.operator  ),
-        .operand_a_i     ( mult_data.operand_a ),
-        .operand_b_i     ( mult_data.operand_b ),
-        .result_o        ( mult_result_o       ),
-        .mult_valid_o,
-        .mult_ready_o,
-        .mult_trans_id_o
+        .fu_data_i       ( mult_data     ),
+        .result_o        ( mult_result   ),
+        .mult_valid_o    ( mult_valid    ),
+        .mult_ready_o    ( mult_ready    ),
+        .mult_trans_id_o ( mult_trans_id )
     );
 
     // ----------------
@@ -172,29 +215,21 @@ module ex_stage #(
     generate
         if (FP_PRESENT) begin : fpu_gen
             fu_data_t fpu_data;
-            assign fpu_data.operator  = fpu_valid_i ? operator_i  : FSGNJ;
-            assign fpu_data.operand_a = fpu_valid_i ? operand_a_i : '0;
-            assign fpu_data.operand_b = fpu_valid_i ? operand_b_i : '0;
-            assign fpu_data.imm       = fpu_valid_i ? imm_i       : '0;
+            assign fpu_data  = fpu_valid_i ? fu_data_i  : '0;
 
             fpu_wrap fpu_i (
                 .clk_i,
                 .rst_ni,
                 .flush_i,
-                .trans_id_i,
-                .fu_i,
                 .fpu_valid_i,
                 .fpu_ready_o,
-                .operator_i      ( fpu_data.operator            ),
-                .operand_a_i     ( fpu_data.operand_a[FLEN-1:0] ),
-                .operand_b_i     ( fpu_data.operand_b[FLEN-1:0] ),
-                .operand_c_i     ( fpu_data.imm[FLEN-1:0]       ),
+                .fu_data_i ( fpu_data ),
                 .fpu_fmt_i,
                 .fpu_rm_i,
                 .fpu_frm_i,
                 .fpu_prec_i,
                 .fpu_trans_id_o,
-                .result_o        ( fpu_result_o ),
+                .result_o ( fpu_result_o ),
                 .fpu_valid_o,
                 .fpu_exception_o
             );
@@ -211,47 +246,44 @@ module ex_stage #(
     // Load-Store Unit
     // ----------------
     fu_data_t lsu_data;
-    assign lsu_data.operator  = lsu_valid_i ? operator_i  : LD;
-    assign lsu_data.operand_a = lsu_valid_i ? operand_a_i : '0;
-    assign lsu_data.operand_b = lsu_valid_i ? operand_b_i : '0;
-    assign lsu_data.imm       = lsu_valid_i ? imm_i       : '0;
 
-    lsu lsu_i (
-        .clk_i                                         ,
-        .rst_ni                                        ,
-        .flush_i                                       ,
-        .no_st_pending_o                               ,
-        .fu_i                                          ,
-        .operator_i            (lsu_data.operator     ),
-        .operand_a_i           (lsu_data.operand_a    ),
-        .operand_b_i           (lsu_data.operand_b    ),
-        .imm_i                 (lsu_data.imm          ),
-        .lsu_ready_o                                   ,
-        .lsu_valid_i                                   ,
-        .trans_id_i                                    ,
-        .lsu_trans_id_o                                ,
-        .lsu_result_o                                  ,
-        .lsu_valid_o                                   ,
-        .commit_i              (lsu_commit_i          ),
-        .commit_ready_o        (lsu_commit_ready_o    ),
-        .enable_translation_i                          ,
-        .en_ld_st_translation_i                        ,
-        .icache_areq_i                                 ,
-        .icache_areq_o                                 ,
-        .priv_lvl_i                                    ,
-        .ld_st_priv_lvl_i                              ,
-        .sum_i                                         ,
-        .mxr_i                                         ,
-        .satp_ppn_i                                    ,
-        .asid_i                                        ,
-        .flush_tlb_i                                   ,
-        .itlb_miss_o                                   ,
-        .dtlb_miss_o                                   ,
-        .dcache_req_ports_i                            ,
-        .dcache_req_ports_o                            ,
-        .lsu_exception_o                               ,
-        .amo_valid_commit_i                            ,
-        .amo_req_o                                     ,
+    assign lsu_data  = lsu_valid_i ? fu_data_i  : '0;
+
+    load_store_unit lsu_i (
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .no_st_pending_o,
+        .fu_data_i             ( lsu_data ),
+        .lsu_ready_o,
+        .lsu_valid_i,
+        .load_trans_id_o,
+        .load_result_o,
+        .load_valid_o,
+        .load_exception_o,
+        .store_trans_id_o,
+        .store_result_o,
+        .store_valid_o,
+        .store_exception_o,
+        .commit_i              ( lsu_commit_i       ),
+        .commit_ready_o        ( lsu_commit_ready_o ),
+        .enable_translation_i,
+        .en_ld_st_translation_i,
+        .icache_areq_i,
+        .icache_areq_o,
+        .priv_lvl_i,
+        .ld_st_priv_lvl_i,
+        .sum_i,
+        .mxr_i,
+        .satp_ppn_i,
+        .asid_i,
+        .flush_tlb_i,
+        .itlb_miss_o,
+        .dtlb_miss_o,
+        .dcache_req_ports_i,
+        .dcache_req_ports_o,
+        .amo_valid_commit_i,
+        .amo_req_o,
         .amo_resp_i
     );
 

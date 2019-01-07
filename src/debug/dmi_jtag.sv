@@ -37,7 +37,7 @@ module dmi_jtag (
     output logic         td_o,     // JTAG test data output pad
     output logic         tdo_oe_o  // Data out output enable
 );
-    assign       dmi_rst_no = 1'b1;
+    assign       dmi_rst_no = rst_ni;
 
     logic        test_logic_reset;
     logic        shift_dr;

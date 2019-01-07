@@ -39,19 +39,13 @@ module store_buffer (
     input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
 
     // D$ interface
-    input  dcache_req_o_t            req_port_i,
-    output dcache_req_i_t            req_port_o
-    );
-    // depth of store-buffers
-    localparam int unsigned DEPTH_SPEC   = 4;
-    // allocate more space for the commit buffer to be on the save side
-    localparam int unsigned DEPTH_COMMIT = 4;
-
+    input  dcache_req_o_t req_port_i,
+    output dcache_req_i_t req_port_o
+);
 
     // the store queue has two parts:
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
-
     struct packed {
         logic [63:0] address;
         logic [63:0] data;
@@ -70,6 +64,7 @@ module store_buffer (
     // Commit Queue
     logic [$clog2(DEPTH_COMMIT)-1:0] commit_read_pointer_n,  commit_read_pointer_q;
     logic [$clog2(DEPTH_COMMIT)-1:0] commit_write_pointer_n, commit_write_pointer_q;
+
 
     // ----------------------------------------
     // Speculative Queue - Core Interface
@@ -125,18 +120,22 @@ module store_buffer (
     // ----------------------------------------
     // Commit Queue - Memory Interface
     // ----------------------------------------
+
+    // we will never kill a request in the store buffer since we already know that the translation is valid
+    // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
+    assign req_port_o.kill_req  = 1'b0;
+    assign req_port_o.data_we   = 1'b1; // we will always write in the store queue
+    assign req_port_o.tag_valid = 1'b0;
+
     // those signals can directly be output to the memory
-    assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[11:0];
+    assign req_port_o.address_index = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
     // if we got a new request we already saved the tag from the previous cycle
-    assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[55:12];
-    assign req_port_o.tag_valid     = 1'b0;
+    assign req_port_o.address_tag   = commit_queue_q[commit_read_pointer_q].address[ariane_pkg::DCACHE_TAG_WIDTH     +
+                                                                                    ariane_pkg::DCACHE_INDEX_WIDTH-1 :
+                                                                                    ariane_pkg::DCACHE_INDEX_WIDTH];
     assign req_port_o.data_wdata    = commit_queue_q[commit_read_pointer_q].data;
     assign req_port_o.data_be       = commit_queue_q[commit_read_pointer_q].be;
     assign req_port_o.data_size     = commit_queue_q[commit_read_pointer_q].data_size;
-    // we will never kill a request in the store buffer since we already know that the translation is valid
-    // e.g.: a kill request will only be necessary if we are not sure if the requested memory address will result in a TLB fault
-    assign req_port_o.kill_req = 1'b0;
-    assign req_port_o.data_we  = 1'b1; // we will always write in the store queue
 
     always_comb begin : store_if
         automatic logic [DEPTH_COMMIT:0] commit_status_cnt;
@@ -195,6 +194,7 @@ module store_buffer (
     // page offsets are virtually and physically the same
     always_comb begin : address_checker
         page_offset_matches_o = 1'b0;
+
         // check if the LSBs are identical and the entry is valid
         for (int unsigned i = 0; i < DEPTH_COMMIT; i++) begin
             // Check if the page offset matches and whether the entry is valid, for the commit queue
@@ -203,6 +203,7 @@ module store_buffer (
                 break;
             end
         end
+
         for (int unsigned i = 0; i < DEPTH_SPEC; i++) begin
             // do the same for the speculative queue
             if ((page_offset_i[11:3] == speculative_queue_q[i].address[11:3]) && speculative_queue_q[i].valid) begin
@@ -218,31 +219,41 @@ module store_buffer (
 
 
     // registers
-    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_spec
         if (~rst_ni) begin
-             // initialize the queues
             speculative_queue_q         <= '{default: 0};
-            commit_queue_q              <= '{default: 0};
-            commit_read_pointer_q       <= '0;
-            commit_write_pointer_q      <= '0;
-            commit_status_cnt_q         <= '0;
             speculative_read_pointer_q  <= '0;
             speculative_write_pointer_q <= '0;
             speculative_status_cnt_q    <= '0;
         end else begin
             speculative_queue_q         <= speculative_queue_n;
-            commit_queue_q              <= commit_queue_n;
-            commit_read_pointer_q       <= commit_read_pointer_n;
-            commit_write_pointer_q      <= commit_write_pointer_n;
-            commit_status_cnt_q         <= commit_status_cnt_n;
             speculative_read_pointer_q  <= speculative_read_pointer_n;
             speculative_write_pointer_q <= speculative_write_pointer_n;
             speculative_status_cnt_q    <= speculative_status_cnt_n;
         end
      end
 
-    `ifndef SYNTHESIS
-    `ifndef verilator
+    // registers
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_commit
+        if (~rst_ni) begin
+            commit_queue_q              <= '{default: 0};
+            commit_read_pointer_q       <= '0;
+            commit_write_pointer_q      <= '0;
+            commit_status_cnt_q         <= '0;
+        end else begin
+            commit_queue_q              <= commit_queue_n;
+            commit_read_pointer_q       <= commit_read_pointer_n;
+            commit_write_pointer_q      <= commit_write_pointer_n;
+            commit_status_cnt_q         <= commit_status_cnt_n;
+        end
+     end
+
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
+
+    //pragma translate_off
+    `ifndef VERILATOR
     // assert that commit is never set when we are flushing this would be counter intuitive
     // as flush and commit is decided in the same stage
     commit_and_flush: assert property (
@@ -258,9 +269,11 @@ module store_buffer (
         else $error ("[Speculative Queue] You are committing although there are no stores to commit");
 
     commit_buffer_overflow: assert property (
-        @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_SPEC) |-> !commit_i)
+        @(posedge clk_i) rst_ni && (commit_status_cnt_q == DEPTH_COMMIT) |-> !commit_i)
         else $error("[Commit Queue] You are trying to commit a store although the buffer is full");
-
     `endif
-    `endif
+    //pragma translate_on
 endmodule
+
+
+

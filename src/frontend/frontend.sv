@@ -39,22 +39,18 @@ module frontend (
     input  icache_dreq_o_t     icache_dreq_i,
     output icache_dreq_i_t     icache_dreq_o,
     // instruction output port -> to processor back-end
-    output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
+    output frontend_fetch_t    fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
     output logic               fetch_entry_valid_o, // instruction in IF is valid
     input  logic               fetch_ack_i          // ID acknowledged this instruction
 );
-    // maximum instructions we can fetch on one request
-    localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH/16;
-
     // Registers
     logic [31:0] icache_data_q;
     logic        icache_valid_q;
-    exception_t  icache_ex_q;
-
+    logic        icache_ex_valid_q;
     logic        instruction_valid;
+    logic [INSTR_PER_FETCH-1:0] instr_is_compressed;
 
     logic [63:0] icache_vaddr_q;
-
     // BHT, BTB and RAS prediction
     bht_prediction_t bht_prediction;
     btb_prediction_t btb_prediction;
@@ -89,7 +85,6 @@ module frontend (
     logic          is_mispredict;
     // branch-prediction which we inject into the pipeline
     branchpredict_sbe_t  bp_sbe;
-
     // fetch fifo credit system
     logic fifo_valid, fifo_ready, fifo_empty, fifo_pop;
     logic s2_eff_kill, issue_req, s2_in_flight_d, s2_in_flight_q;
@@ -103,36 +98,46 @@ module frontend (
     // register to save the unaligned address
     logic [63:0] unaligned_address_d, unaligned_address_q;
 
-    // TODO: generalize to arbitrary instruction fetch width
+    for (genvar i = 0; i < INSTR_PER_FETCH; i ++) begin
+        // LSB != 2'b11
+        assign instr_is_compressed[i] = ~&icache_data_q[i * 16 +: 2];
+    end
+
+    // Soft-realignment to do branch-prediction
     always_comb begin : re_align
         unaligned_d = unaligned_q;
         unaligned_address_d = unaligned_address_q;
         unaligned_instr_d = unaligned_instr_q;
         instruction_valid = icache_valid_q;
 
-        instr[1] = '0;
+        // 32-bit can contain 2 instructions
         instr[0] = icache_data_q;
+        addr[0]  = icache_vaddr_q;
 
-        addr[1] = {icache_vaddr_q[63:2], 2'b10};
-        addr[0] = icache_vaddr_q;
+        instr[1] = '0;
+        addr[1]  = {icache_vaddr_q[63:2], 2'b10};
 
         if (icache_valid_q) begin
             // last instruction was unaligned
             if (unaligned_q) begin
                 instr[0] = {icache_data_q[15:0], unaligned_instr_q};
                 addr[0] = unaligned_address_q;
+
                 unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
                 unaligned_instr_d = icache_data_q[31:16]; // save the upper bits for next cycle
+
                 // check if this is instruction is still unaligned e.g.: it is not compressed
                 // if its compressed re-set unaligned flag
-                if (icache_data_q[17:16] != 2'b11) begin
+                // for 32 bit we can simply check the next instruction and whether it is compressed or not
+                // if it is compressed the next fetch will contain an aligned instruction
+                if (instr_is_compressed[1]) begin
                     unaligned_d = 1'b0;
                     instr[1] = {16'b0, icache_data_q[31:16]};
                 end
-            end else if (is_rvc[0]) begin // instruction zero is RVC
+            end else if (instr_is_compressed[0]) begin // instruction zero is RVC
                 // is instruction 1 also compressed
                 // yes? -> no problem, no -> we've got an unaligned instruction
-                if (icache_data_q[17:16] != 2'b11) begin
+                if (instr_is_compressed[1]) begin
                     instr[1] = {16'b0, icache_data_q[31:16]};
                 end else begin
                     unaligned_instr_d = icache_data_q[31:16];
@@ -144,13 +149,14 @@ module frontend (
 
         // we started to fetch on a unaligned boundary with a whole instruction -> wait until we've
         // received the next instruction
-        if (icache_valid_q && icache_vaddr_q[1] && icache_data_q[17:16] == 2'b11) begin
+        if (icache_valid_q && icache_vaddr_q[1] && !instr_is_compressed[1]) begin
             instruction_valid = 1'b0;
             unaligned_d = 1'b1;
             unaligned_address_d = {icache_vaddr_q[63:2], 2'b10};
             unaligned_instr_d = icache_data_q[31:16];
         end
 
+        // if we killed the consecutive fetch we are starting on a clean slate
         if (icache_dreq_o.kill_s2) begin
             unaligned_d = 1'b0;
         end
@@ -178,7 +184,7 @@ module frontend (
 
         // only predict if the response is valid
         if (instruction_valid) begin
-            // look at instruction 0, 1, 2,...
+            // look at instruction 0, 1, 2, ...
             for (int unsigned i = 0; i < INSTR_PER_FETCH; i++) begin
                 // only speculate if the previous instruction was not taken
                 if (!taken[i]) begin
@@ -237,6 +243,7 @@ module frontend (
                     // we are not interested in the lower instruction
                     if (icache_vaddr_q[1]) begin
                         taken[1] = 1'b0;
+                        // TODO(zarubaf): that seems to be overly pessimistic
                         ras_pop = 1'b0;
                         ras_push = 1'b0;
                     end
@@ -249,29 +256,14 @@ module frontend (
         bp_sbe.valid = bp_valid;
         bp_sbe.predict_address = bp_vaddr;
         bp_sbe.predict_taken = bp_valid;
-        bp_sbe.is_lower_16 = taken[1]; // the branch is on the lower 16 (in a 32-bit setup)
-
     end
 
     assign is_mispredict = resolved_branch_i.valid & resolved_branch_i.is_mispredict;
-
-    always_comb begin : id_if
-        icache_dreq_o.kill_s1 = 1'b0;
-        icache_dreq_o.kill_s2 = 1'b0;
-
-        // we mis-predicted so kill the icache request and the fetch queue
-        if (is_mispredict || flush_i) begin
-            icache_dreq_o.kill_s1 = 1'b1;
-            icache_dreq_o.kill_s2 = 1'b1;
-        end
-
-        // if we have a valid branch-prediction we need to kill the last cache request
-        if (bp_valid) begin
-            icache_dreq_o.kill_s2 = 1'b1;
-        end
-
-        fifo_valid = icache_valid_q;
-    end
+    // we mis-predicted so kill the icache request and the fetch queue
+    assign icache_dreq_o.kill_s1 = is_mispredict | flush_i;
+    // if we have a valid branch-prediction we need to kill the last cache request
+    assign icache_dreq_o.kill_s2 = icache_dreq_o.kill_s1 | bp_valid;
+    assign fifo_valid = icache_valid_q;
 
     // ----------------------------------------
     // Update Control Flow Predictions
@@ -285,7 +277,6 @@ module frontend (
     assign btb_update.valid = resolved_branch_i.valid & (resolved_branch_i.cf_type == BTB);
     assign btb_update.pc    = resolved_branch_i.pc;
     assign btb_update.target_address = resolved_branch_i.target_address;
-    assign btb_update.is_lower_16 = resolved_branch_i.is_lower_16;
     assign btb_update.clear = resolved_branch_i.clear;
 
     // -------------------
@@ -329,7 +320,7 @@ module frontend (
         // 0. Default assignment
         // -------------------------------
         if (if_ready) begin
-            npc_d = {fetch_address[63:2], 2'b0}  + 64'h4;
+            npc_d = {fetch_address[63:2], 2'b0}  + 'h4;
         end
         // -------------------------------
         // 2. Control flow change request
@@ -394,14 +385,15 @@ module frontend (
     assign icache_dreq_o.req   =  fifo_ready;
     assign fetch_entry_valid_o = ~fifo_empty;
 
+
 //pragma translate_off
 `ifndef VERILATOR
   fetch_fifo_credits0 : assert property (
       @(posedge clk_i) disable iff (~rst_ni) (fifo_credits_q <= FETCH_FIFO_DEPTH))
-         else $fatal("[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
+         else $fatal(1,"[frontend] fetch fifo credits must be <= FETCH_FIFO_DEPTH!");
     initial begin
-        assert (FETCH_FIFO_DEPTH<=8) else $fatal("[frontend] fetch fifo deeper than 8 not supported");
-        assert (FETCH_WIDTH==32)     else $fatal("[frontend] fetch width != not supported");
+        assert (FETCH_FIFO_DEPTH <= 8) else $fatal(1,"[frontend] fetch fifo deeper than 8 not supported");
+        assert (FETCH_WIDTH == 32) else $fatal(1,"[frontend] fetch width != not supported");
     end
 `endif
 //pragma translate_on
@@ -413,7 +405,7 @@ module frontend (
             icache_data_q        <= '0;
             icache_valid_q       <= 1'b0;
             icache_vaddr_q       <= 'b0;
-            icache_ex_q          <= '0;
+            icache_ex_valid_q    <= 1'b0;
             unaligned_q          <= 1'b0;
             unaligned_address_q  <= '0;
             unaligned_instr_q    <= '0;
@@ -425,7 +417,7 @@ module frontend (
             icache_data_q        <= icache_dreq_i.data;
             icache_valid_q       <= icache_dreq_i.valid;
             icache_vaddr_q       <= icache_dreq_i.vaddr;
-            icache_ex_q          <= icache_dreq_i.ex;
+            icache_ex_valid_q    <= icache_dreq_i.ex.valid;
             unaligned_q          <= unaligned_d;
             unaligned_address_q  <= unaligned_address_d;
             unaligned_instr_q    <= unaligned_instr_d;
@@ -488,10 +480,11 @@ module frontend (
         );
     end
 
+
     fifo_v2 #(
         .DEPTH        (  8                   ),
-        .dtype        ( fetch_entry_t        ))
-    i_fetch_fifo (
+        .dtype        ( frontend_fetch_t     )
+    ) i_fetch_fifo (
         .clk_i       ( clk_i                 ),
         .rst_ni      ( rst_ni                ),
         .flush_i     ( flush_i               ),
@@ -500,7 +493,7 @@ module frontend (
         .empty_o     ( fifo_empty            ),
         .alm_full_o  (                       ),
         .alm_empty_o (                       ),
-        .data_i      ( {icache_vaddr_q, icache_data_q, bp_sbe, icache_ex_q} ),
+        .data_i      ( {icache_vaddr_q, icache_data_q, bp_sbe, taken[INSTR_PER_FETCH:1], icache_ex_valid_q} ),
         .push_i      ( fifo_valid            ),
         .data_o      ( fetch_entry_o         ),
         .pop_i       ( fifo_pop              )

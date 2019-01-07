@@ -63,9 +63,11 @@ module load_unit (
     assign in_data = {lsu_ctrl_i.trans_id, lsu_ctrl_i.vaddr[2:0], lsu_ctrl_i.operator};
     // output address
     // we can now output the lower 12 bit as the index to the cache
-    assign req_port_o.address_index = lsu_ctrl_i.vaddr[11:0];
+    assign req_port_o.address_index = lsu_ctrl_i.vaddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
     // translation from last cycle, again: control is handled in the FSM
-    assign req_port_o.address_tag   = paddr_i[55:12];
+    assign req_port_o.address_tag   = paddr_i[ariane_pkg::DCACHE_TAG_WIDTH     +
+                                              ariane_pkg::DCACHE_INDEX_WIDTH-1 :
+                                              ariane_pkg::DCACHE_INDEX_WIDTH];
     // directly output an exception
     assign ex_o = ex_i;
 
@@ -341,17 +343,20 @@ module load_unit (
     end
     // end result mux fast
 
-`ifndef SYNTHESIS
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
+
+//pragma translate_off
 `ifndef VERILATOR
     // check invalid offsets
-    assert property (@(posedge clk_i) disable iff (~rst_ni)
-        (load_data_q.operator inside {LW, LWU}) |-> load_data_q.address_offset < 5) else $fatal ("invalid address offset used with {LW, LWU}");
-    assert property (@(posedge clk_i) disable iff (~rst_ni)
-        (load_data_q.operator inside {LH, LHU}) |-> load_data_q.address_offset < 7) else $fatal ("invalid address offset used with {LH, LHU}");
-    assert property (@(posedge clk_i) disable iff (~rst_ni)
-        (load_data_q.operator inside {LB, LBU}) |-> load_data_q.address_offset < 8) else $fatal ("invalid address offset used with {LB, LBU}");
+    addr_offset0: assert property (@(posedge clk_i) disable iff (~rst_ni)
+        valid_o |->  (load_data_q.operator inside {LW, LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
+    addr_offset1: assert property (@(posedge clk_i) disable iff (~rst_ni)
+        valid_o |->  (load_data_q.operator inside {LH, LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
+    addr_offset2: assert property (@(posedge clk_i) disable iff (~rst_ni)
+        valid_o |->  (load_data_q.operator inside {LB, LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
 `endif
-`endif
-
+//pragma translate_on
 
 endmodule

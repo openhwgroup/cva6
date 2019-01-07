@@ -265,6 +265,7 @@ done_processing:
   for (int i = 0; i < 10; i++) {
     top->rst_ni = 0;
     top->clk_i = 0;
+    top->rtc_i = 0;
     top->eval();
 #if VM_TRACE
       tfp->dump(static_cast<vluint64_t>(main_time * 2));
@@ -274,11 +275,11 @@ done_processing:
 #if VM_TRACE
       tfp->dump(static_cast<vluint64_t>(main_time * 2 + 1));
 #endif
-    main_time ++;
+    main_time++;
   }
   top->rst_ni = 1;
 
-while (!dtm->done() && !jtag->done()) {
+  while (!dtm->done() && !jtag->done()) {
     top->clk_i = 0;
     top->eval();
 #if VM_TRACE
@@ -293,6 +294,10 @@ while (!dtm->done() && !jtag->done()) {
     // if (dump)
       tfp->dump(static_cast<vluint64_t>(main_time * 2 + 1));
 #endif
+    // toggle RTC
+    if (main_time % 2 == 0) {
+      top->rtc_i ^= 1;
+    }
     main_time++;
   }
 

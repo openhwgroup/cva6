@@ -43,7 +43,7 @@ module ariane_regfile_lol #(
   input  logic [NR_WRITE_PORTS-1:0]                 we_i
 );
 
-    localparam ADDR_WIDTH = 5;;
+    localparam ADDR_WIDTH = 5;
     localparam NUM_WORDS  = 2**ADDR_WIDTH;
 
     logic [NUM_WORDS-1:ZERO_REG_ZERO]          mem_clocks;

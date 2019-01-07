@@ -17,7 +17,7 @@
 
 module dm_csrs #(
     parameter int NrHarts = -1
-)(
+) (
     input  logic                              clk_i,              // Clock
     input  logic                              rst_ni,             // Asynchronous reset active low
     input  logic                              testmode_i,
@@ -89,15 +89,43 @@ module dm_csrs #(
     localparam dm::dm_csr_t ProgBufEnd = dm::dm_csr_t'((dm::ProgBuf0 + {4'b0, dm::ProgBufSize}));
 
     logic [31:0] haltsum0, haltsum1, haltsum2, haltsum3;
-    // TODO(zarubaf) Need an elegant way to calculate haltsums
-    for (genvar i = 0; i < 32; i++) begin
-        // assign haltsum0[i] = halted_i[i];
-        // TODO(zarubaf) Implement correct haltsum logic
-        // assign haltsum0[i] = halted_i[hartsel[19:5]];
-        // assign haltsum1[i] = (NrHarts > 32)    ? &halted_i[hartsel[19:10] +: 32]    : 1'b0;
-        // assign haltsum2[i] = (NrHarts > 1024)  ? &halted_i[hartsel[19:15] +: 1024]  : 1'b0;
-        // assign haltsum3[i] = (NrHarts > 32768) ? &halted_i[hartsel[19:19] +: 32768] : 1'b0;
+    logic [NrHarts/2**5 :0][31:0] halted_reshaped0;
+    logic [NrHarts/2**10:0][31:0] halted_reshaped1;
+    logic [NrHarts/2**15:0][31:0] halted_reshaped2;
+    logic [(NrHarts/2**10+1)*32-1:0] halted_flat1;
+    logic [(NrHarts/2**15+1)*32-1:0] halted_flat2;
+    logic [32-1:0] halted_flat3;
+
+    // haltsum0
+    assign halted_reshaped0 = halted_i;
+    assign haltsum0         = halted_reshaped0[hartsel_o[19:5]];
+    // haltsum1
+    always_comb begin : p_reduction1
+      halted_flat1 = '0;
+      for (int k=0; k<NrHarts/2**5; k++) begin
+        halted_flat1[k] = &halted_reshaped0[k];
+      end
+      halted_reshaped1 = halted_flat1;
+      haltsum1         = halted_reshaped1[hartsel_o[19:10]];
     end
+    // haltsum2
+    always_comb begin : p_reduction2
+      halted_flat2 = '0;
+      for (int k=0; k<NrHarts/2**10; k++) begin
+        halted_flat2[k] = &halted_reshaped1[k];
+      end
+      halted_reshaped2 = halted_flat2;
+      haltsum2         = halted_reshaped2[hartsel_o[19:15]];
+    end
+    // haltsum3
+    always_comb begin : p_reduction3
+      halted_flat3 = '0;
+      for (int k=0; k<NrHarts/2**15; k++) begin
+        halted_flat3[k] = &halted_reshaped2[k];
+      end
+      haltsum3 = halted_flat3;
+    end
+
 
     dm::dmstatus_t      dmstatus;
     dm::dmcontrol_t     dmcontrol_d, dmcontrol_q;
@@ -115,7 +143,7 @@ module dm_csrs #(
     // because first data address starts at 0x04
     logic [({3'b0, dm::DataCount} + dm::Data0 - 1):(dm::Data0)][31:0] data_d, data_q;
 
-    logic [NrHarts-1:0] selected_hart;
+    logic [HartSelLen-1:0] selected_hart;
 
     // a successful response returns zero
     assign dmi_resp_o.resp = dm::DTM_SUCCESS;
@@ -144,25 +172,25 @@ module dm_csrs #(
         // we do not support halt-on-reset sequence
         dmstatus.hasresethaltreq = 1'b0;
         // TODO(zarubaf) things need to change here if we implement the array mask
-        dmstatus.allhavereset = havereset_q[hartsel_o[HartSelLen-1:0]];
-        dmstatus.anyhavereset = havereset_q[hartsel_o[HartSelLen-1:0]];
+        dmstatus.allhavereset = havereset_q[selected_hart];
+        dmstatus.anyhavereset = havereset_q[selected_hart];
 
-        dmstatus.allresumeack = resumeack_i[hartsel_o[HartSelLen-1:0]];
-        dmstatus.anyresumeack = resumeack_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.allresumeack = resumeack_i[selected_hart];
+        dmstatus.anyresumeack = resumeack_i[selected_hart];
 
-        dmstatus.allunavail   = unavailable_i[hartsel_o[HartSelLen-1:0]];
-        dmstatus.anyunavail   = unavailable_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.allunavail   = unavailable_i[selected_hart];
+        dmstatus.anyunavail   = unavailable_i[selected_hart];
 
         // as soon as we are out of the legal Hart region tell the debugger
         // that there are only non-existent harts
         dmstatus.allnonexistent = (hartsel_o > NrHarts[19:0] - 1) ? 1'b1 : 1'b0;
         dmstatus.anynonexistent = (hartsel_o > NrHarts[19:0] - 1) ? 1'b1 : 1'b0;
 
-        dmstatus.allhalted    = halted_i[hartsel_o[HartSelLen-1:0]];
-        dmstatus.anyhalted    = halted_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.allhalted    = halted_i[selected_hart];
+        dmstatus.anyhalted    = halted_i[selected_hart];
 
-        dmstatus.allrunning   = ~halted_i[hartsel_o[HartSelLen-1:0]];
-        dmstatus.anyrunning   = ~halted_i[hartsel_o[HartSelLen-1:0]];
+        dmstatus.allrunning   = ~halted_i[selected_hart];
+        dmstatus.anyrunning   = ~halted_i[selected_hart];
 
         // abstractcs
         abstractcs = '0;
@@ -201,7 +229,7 @@ module dm_csrs #(
                     end
                     if (!cmdbusy_i) begin
                         // check whether we need to re-execute the command (just give a cmd_valid)
-                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_i.addr[3:0] - dm::Data0];
+                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_i.addr[3:0] - int'(dm::Data0)];
                     end
                 end
                 dm::DMControl:    resp_queue_data = dmcontrol_q;
@@ -215,7 +243,8 @@ module dm_csrs #(
                     resp_queue_data = progbuf_q[dmi_req_i.addr[4:0]];
                     if (!cmdbusy_i) begin
                         // check whether we need to re-execute the command (just give a cmd_valid)
-                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_i.addr[3:0]];
+                        // TODO(zarubaf): check if offset is correct - without it this may assign Xes
+                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_i.addr[3:0]+16];
                     end
                 end
                 dm::HaltSum0: resp_queue_data = haltsum0;
@@ -272,7 +301,7 @@ module dm_csrs #(
                     if (!cmdbusy_i && dm::DataCount > 0) begin
                         data_d[dmi_req_i.addr[4:0]] = dmi_req_i.data;
                         // check whether we need to re-execute the command (just give a cmd_valid)
-                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_i.addr[3:0] - dm::Data0];
+                        cmd_valid_o = abstractauto_q.autoexecdata[dmi_req_i.addr[3:0] - int'(dm::Data0)];
                     end
                 end
                 dm::DMControl: begin
@@ -327,7 +356,8 @@ module dm_csrs #(
                         progbuf_d[dmi_req_i.addr[4:0]] = dmi_req_i.data;
                         // check whether we need to re-execute the command (just give a cmd_valid)
                         // this should probably throw an error if executed during another command was busy
-                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_i.addr[3:0]];
+                        // TODO(zarubaf): check if offset is correct - without it this may assign Xes
+                        cmd_valid_o = abstractauto_q.autoexecprogbuf[dmi_req_i.addr[3:0]+16];
                     end
                 end
                 dm::SBCS: begin
@@ -429,7 +459,7 @@ module dm_csrs #(
 
     // output multiplexer
     always_comb begin
-        selected_hart = hartsel_o[NrHarts-1:0];
+        selected_hart = hartsel_o[HartSelLen-1:0];
         // default assignment
         haltreq_o = '0;
         resumereq_o = '0;
@@ -446,17 +476,7 @@ module dm_csrs #(
 
     logic ndmreset_n;
 
-    // if the PoR is set we want to re-set the other system as well
-    rstgen_bypass i_rstgen_bypass (
-        .clk_i ( clk_i ),
-        .rst_ni ( ~(dmcontrol_q.ndmreset | ~rst_ni) ),
-        .rst_test_mode_ni ( rst_ni ),
-        .test_mode_i ( testmode_i ),
-        .rst_no ( ndmreset_n ),
-        .init_no () // keep open
-    );
-
-    assign ndmreset_o = ~ndmreset_n;
+    assign ndmreset_o = dmcontrol_q.ndmreset;
 
     // response FIFO
     fifo_v2 #(
@@ -529,4 +549,21 @@ module dm_csrs #(
             end
         end
     end
+
+
+///////////////////////////////////////////////////////
+// assertions
+///////////////////////////////////////////////////////
+
+
+//pragma translate_off
+`ifndef VERILATOR
+    haltsum: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) |->
+            !({1'b0, dmi_req_i.addr} inside {dm::HaltSum0, dm::HaltSum1, dm::HaltSum2, dm::HaltSum3}))
+                else $warning("Haltsums are not implemented yet and always return 0.");
+`endif
+//pragma translate_on
+
+
 endmodule
