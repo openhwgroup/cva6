@@ -256,24 +256,6 @@ package riscv;
     localparam OpcodeC2Sdsp         = 3'b111;
 
     // ----------------------
-    // Performance Counters
-    // ----------------------
-    localparam logic [11:0] PERF_L1_ICACHE_MISS = 12'h0;     // L1 Instr Cache Miss
-    localparam logic [11:0] PERF_L1_DCACHE_MISS = 12'h1;     // L1 Data Cache Miss
-    localparam logic [11:0] PERF_ITLB_MISS      = 12'h2;     // ITLB Miss
-    localparam logic [11:0] PERF_DTLB_MISS      = 12'h3;     // DTLB Miss
-    localparam logic [11:0] PERF_LOAD           = 12'h4;     // Loads
-    localparam logic [11:0] PERF_STORE          = 12'h5;     // Stores
-    localparam logic [11:0] PERF_EXCEPTION      = 12'h6;     // Taken exceptions
-    localparam logic [11:0] PERF_EXCEPTION_RET  = 12'h7;     // Exception return
-    localparam logic [11:0] PERF_BRANCH_JUMP    = 12'h8;     // Software change of PC
-    localparam logic [11:0] PERF_CALL           = 12'h9;     // Procedure call
-    localparam logic [11:0] PERF_RET            = 12'hA;     // Procedure Return
-    localparam logic [11:0] PERF_MIS_PREDICT    = 12'hB;     // Branch mis-predicted
-    localparam logic [11:0] PERF_SB_FULL        = 12'hC;     // Scoreboard full
-    localparam logic [11:0] PERF_IF_EMPTY       = 12'hD;     // instruction fetch queue empty
-
-    // ----------------------
     // Virtual Memory
     // ----------------------
     // memory management, pte
@@ -390,18 +372,20 @@ package riscv;
         CSR_TIME           = 12'hC01,
         CSR_INSTRET        = 12'hC02,
         // Performance counters
-        CSR_L1_ICACHE_MISS = PERF_L1_ICACHE_MISS + 12'hC03,
-        CSR_L1_DCACHE_MISS = PERF_L1_DCACHE_MISS + 12'hC03,
-        CSR_ITLB_MISS      = PERF_ITLB_MISS      + 12'hC03,
-        CSR_DTLB_MISS      = PERF_DTLB_MISS      + 12'hC03,
-        CSR_LOAD           = PERF_LOAD           + 12'hC03,
-        CSR_STORE          = PERF_STORE          + 12'hC03,
-        CSR_EXCEPTION      = PERF_EXCEPTION      + 12'hC03,
-        CSR_EXCEPTION_RET  = PERF_EXCEPTION_RET  + 12'hC03,
-        CSR_BRANCH_JUMP    = PERF_BRANCH_JUMP    + 12'hC03,
-        CSR_CALL           = PERF_CALL           + 12'hC03,
-        CSR_RET            = PERF_RET            + 12'hC03,
-        CSR_MIS_PREDICT    = PERF_MIS_PREDICT    + 12'hC03
+        CSR_L1_ICACHE_MISS = 12'hC03,  // L1 Instr Cache Miss
+        CSR_L1_DCACHE_MISS = 12'hC04,  // L1 Data Cache Miss
+        CSR_ITLB_MISS      = 12'hC05,  // ITLB Miss
+        CSR_DTLB_MISS      = 12'hC06,  // DTLB Miss
+        CSR_LOAD           = 12'hC07,  // Loads
+        CSR_STORE          = 12'hC08,  // Stores
+        CSR_EXCEPTION      = 12'hC09,  // Taken exceptions
+        CSR_EXCEPTION_RET  = 12'hC0A,  // Exception return
+        CSR_BRANCH_JUMP    = 12'hC0B,  // Software change of PC
+        CSR_CALL           = 12'hC0C,  // Procedure call
+        CSR_RET            = 12'hC0D,  // Procedure Return
+        CSR_MIS_PREDICT    = 12'hC0E,  // Branch mis-predicted
+        CSR_SB_FULL        = 12'hC0F,  // Scoreboard full
+        CSR_IF_EMPTY       = 12'hC10   // instruction fetch queue empty
     } csr_reg_t;
 
     localparam logic [63:0] SSTATUS_UIE  = 64'h00000001;
