@@ -4,7 +4,6 @@ sudo: false
 cache:
   apt: true
   directories:
-    /home/travis/tmp/riscv-gnu-toolchain
     $RISCV
     $VERILATOR_ROOT
 
