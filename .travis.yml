@@ -4,6 +4,7 @@ sudo: false
 cache:
   apt: true
   directories:
+    /home/travis/tmp/riscv-gnu-toolchain
     $RISCV
     $VERILATOR_ROOT
 
@@ -56,16 +57,21 @@ before_install:
   - git submodule update --init --recursive
 
 stages:
+  - checkout
   - compile1
   - compile2
   - test
 
 jobs:
   include:
+    - stage: checkout
+      name: checkout gcc
+      script:
+        - ci/build-riscv-gcc.sh 0
     - stage: compile1
       name: build gcc
       script:
-        - ci/build-riscv-gcc.sh
+        - ci/build-riscv-gcc.sh 1
     - stage: compile2
       name: build tools
       script:
