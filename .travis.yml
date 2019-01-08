@@ -6,6 +6,7 @@ cache:
   directories:
     $RISCV
     $VERILATOR_ROOT
+  timeout: 1000
 
 # required packages to install
 addons:
