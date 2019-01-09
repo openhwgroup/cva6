@@ -61,6 +61,10 @@ module ariane_verilog_wrap #(
   serpent_cache_pkg::l15_req_t  l15_req, l15_req_remapped;
   serpent_cache_pkg::l15_rtrn_t l15_rtrn;
 
+  /////////////////////////////
+  // Debug module address translation
+  /////////////////////////////
+
   always_comb begin : p_remap
     l15_req_remapped = l15_req;
     if (l15_req.l15_address < 64'h1000) begin
@@ -71,6 +75,11 @@ module ariane_verilog_wrap #(
   assign l15_req_o = l15_req_remapped;
   assign l15_rtrn  = l15_rtrn_i;
 `endif
+
+
+  /////////////////////////////
+  // Core wakeup mechanism
+  /////////////////////////////
 
   // // this is a workaround since interrupts are not fully supported yet.
   // // the logic below catches the initial wake up interrupt that enables the cores.
@@ -112,20 +121,51 @@ module ariane_verilog_wrap #(
   // reset gate this
   assign rst_n = wake_up_cnt_q[$high(wake_up_cnt_q)] & reset_l;
 
-  // reset_synchronizer #(
-  //    .NUM_REGS(2)
-  // ) i_sync (
-  //    .clk_i   ( clk_i      ),
-  //    .rst_ni  ( rst_n      ),
-  //    .tmode_i ( 1'b0       ),
-  //    .rst_no  ( spc_grst_l )
-  // );
 
+  /////////////////////////////
+  // synchronizers
+  /////////////////////////////
+
+  logic [1:0] irq;
+  logic ipi, time_irq, debug_req;
+
+  // reset synchronization
   synchronizer i_sync (
     .clk         ( clk_i      ),
     .presyncdata ( rst_n      ),
     .syncdata    ( spc_grst_l )
   );
+
+  // interrupts
+  for (genvar k=0; k<$size(irq_i); k++) begin
+    synchronizer i_irq_sync (
+      .clk         ( clk_i      ),
+      .presyncdata ( irq_i[k]   ),
+      .syncdata    ( irq[k]     )
+    );
+  end
+
+  synchronizer i_ipi_sync (
+    .clk         ( clk_i      ),
+    .presyncdata ( ipi_i      ),
+    .syncdata    ( ipi        )
+  );
+
+  synchronizer i_timer_sync (
+    .clk         ( clk_i      ),
+    .presyncdata ( time_irq_i ),
+    .syncdata    ( time_irq   )
+  );
+
+  synchronizer i_debug_sync (
+    .clk         ( clk_i       ),
+    .presyncdata ( debug_req_i ),
+    .syncdata    ( debug_req   )
+  );
+
+  /////////////////////////////
+  // ariane instance
+  /////////////////////////////
 
   ariane #(
     .SwapEndianess ( SwapEndianess ),
@@ -134,12 +174,12 @@ module ariane_verilog_wrap #(
   ) ariane (
     .clk_i       ( clk_i      ),
     .rst_ni      ( spc_grst_l ),
-    .boot_addr_i              ,
-    .hart_id_i                ,
-    .irq_i                    ,
-    .ipi_i                    ,
-    .time_irq_i               ,
-    .debug_req_i              ,
+    .boot_addr_i              ,// constant
+    .hart_id_i                ,// constant
+    .irq_i       ( irq        ),
+    .ipi_i       ( ipi        ),
+    .time_irq_i  ( time_irq   ),
+    .debug_req_i ( debug_req  ),
 `ifdef AXI64_CACHE_PORTS
     .axi_req_o   ( axi_req   ),
     .axi_resp_i  ( axi_resp  )
