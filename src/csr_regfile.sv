@@ -76,7 +76,7 @@ module csr_regfile #(
     output logic                  icache_en_o,                // L1 ICache Enable
     output logic                  dcache_en_o,                // L1 DCache Enable
     // Performance Counter
-    output logic  [11:0]          perf_addr_o,                // address to performance counter module
+    output logic  [4:0]           perf_addr_o,                // read/write address to performance counter module (up to 29 aux counters possible in riscv encoding.h)
     output logic  [63:0]          perf_data_o,                // write data to performance counter module
     input  logic  [63:0]          perf_data_i,                // read data from performance counter module
     output logic                  perf_we_o
@@ -149,8 +149,7 @@ module csr_regfile #(
         // a read access exception can only occur if we attempt to read a CSR which does not exist
         read_access_exception = 1'b0;
         csr_rdata = 64'b0;
-        // feed through address of performance counter
-        perf_addr_o = csr_addr.address;
+        perf_addr_o = csr_addr.address[4:0];;
 
         if (csr_read) begin
             unique case (csr_addr.address)
@@ -249,7 +248,9 @@ module csr_regfile #(
                 riscv::CSR_BRANCH_JUMP,
                 riscv::CSR_CALL,
                 riscv::CSR_RET,
-                riscv::CSR_MIS_PREDICT:        csr_rdata = perf_data_i;
+                riscv::CSR_MIS_PREDICT,
+                riscv::CSR_SB_FULL,
+                riscv::CSR_IF_EMPTY:           csr_rdata   = perf_data_i;
                 default: read_access_exception = 1'b1;
             endcase
         end

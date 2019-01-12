@@ -187,7 +187,7 @@ module ariane #(
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
-  logic [11:0]              addr_csr_perf;
+  logic [4:0]               addr_csr_perf;
   logic [63:0]              data_csr_perf, data_perf_csr;
   logic                     we_csr_perf;
 
