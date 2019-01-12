@@ -72,6 +72,7 @@ jobs:
       name: build gcc
       script:
         - ci/build-riscv-gcc.sh 1
+        - rm -rf $RISCV/riscv-gnu-toolchain  
     - stage: compile2
       name: build tools
       script:
