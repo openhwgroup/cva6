@@ -367,6 +367,7 @@ package riscv;
         CSR_DPC            = 12'h7b1,
         CSR_DSCRATCH0      = 12'h7b2, // optional
         CSR_DSCRATCH1      = 12'h7b3, // optional
+
         // Counters and Timers
         CSR_CYCLE          = 12'hC00,
         CSR_TIME           = 12'hC01,
@@ -486,9 +487,29 @@ package riscv;
         return {offset[11:0], rs1, 3'b0, rd, 7'h67};
     endfunction
 
+    function automatic logic [31:0] andi (logic[4:0] rd, logic[4:0] rs1, logic [11:0] imm);
+        // OpCode andi
+        return {imm[11:0], rs1, 3'h7, rd, 7'h13};
+    endfunction
+
+    function automatic logic [31:0] slli (logic[4:0] rd, logic[4:0] rs1, logic [5:0] shamt);
+        // OpCode slli
+        return {6'b0, shamt[5:0], rs1, 3'h1, rd, 7'h13};
+    endfunction
+
+    function automatic logic [31:0] srli (logic[4:0] rd, logic[4:0] rs1, logic [5:0] shamt);
+        // OpCode srli
+        return {6'b0, shamt[5:0], rs1, 3'h5, rd, 7'h13};
+    endfunction
+
     function automatic logic [31:0] load (logic [2:0] size, logic[4:0] dest, logic[4:0] base, logic [11:0] offset);
         // OpCode Load
         return {offset[11:0], base, size, dest, 7'h03};
+    endfunction
+
+    function automatic logic [31:0] auipc (logic[4:0] rd, logic [20:0] imm);
+        // OpCode Auipc
+        return {imm[20], imm[10:1], imm[11], imm[19:12], rd, 7'h17};
     endfunction
 
     function automatic logic [31:0] store (logic [2:0] size, logic[4:0] src, logic[4:0] base, logic [11:0] offset);

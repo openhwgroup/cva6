@@ -28,6 +28,7 @@ import instruction_tracer_pkg::*;
 `endif
 
 module ariane #(
+  parameter logic [63:0] DmBaseAddress = 64'h0,            // debug module base address
 `ifdef PITON_ARIANE
   parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
   parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
@@ -239,7 +240,9 @@ module ariane #(
   // --------------
   // Frontend
   // --------------
-  frontend i_frontend (
+  frontend #(
+    .DmBaseAddress       ( DmBaseAddress )
+  ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),
     .debug_mode_i        ( debug_mode                    ),
@@ -469,7 +472,8 @@ module ariane #(
   // CSR
   // ---------
   csr_regfile #(
-    .ASID_WIDTH             ( ASID_WIDTH                    )
+    .AsidWidth              ( ASID_WIDTH                    ),
+    .DmBaseAddress          ( DmBaseAddress                 )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),

@@ -18,7 +18,7 @@ package ariane_soc;
     localparam PLICIdWidth = 3;
     localparam ParameterBitwidth = PLICIdWidth;
 
-    typedef enum int unsigned {
+  typedef enum int unsigned {
         DRAM     = 0,
         GPIO     = 1,
         Ethernet = 2,
