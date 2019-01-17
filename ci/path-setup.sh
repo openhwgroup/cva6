@@ -11,7 +11,7 @@ export CXX=g++-7.2.0 CC=gcc-7.2.0
 
 # where to install the tools
 export RISCV=$TOP/riscv_install
-export VERILATOR_ROOT=$TOP/verilator-3.924/
+export VERILATOR_ROOT=$TOP/verilator-4.008/
 
 export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib

@@ -9,14 +9,15 @@ fi
 
 if [ ! -e "$VERILATOR_ROOT/bin/verilator" ]; then
     echo "Installing Verilator"
-    wget https://www.veripool.org/ftp/verilator-3.924.tgz
-    tar xzf verilator*.t*gz 
-    rm verilator*.t*gz 
+    rm verilator*.t*gz
+    wget https://www.veripool.org/ftp/verilator-4.008.tgz
+    tar xzf verilator*.t*gz
+    rm verilator*.t*gz
     cd verilator-*
     mkdir -p $VERILATOR_ROOT
     # copy scripts
-    autoconf && ./configure --prefix="$VERILATOR_ROOT" && make -j${NUM_JOBS} 
-    cp -r * $VERILATOR_ROOT/ 
+    autoconf && ./configure --prefix="$VERILATOR_ROOT" && make -j${NUM_JOBS}
+    cp -r * $VERILATOR_ROOT/
     make test
 else
     echo "Using Verilator from cached directory."
