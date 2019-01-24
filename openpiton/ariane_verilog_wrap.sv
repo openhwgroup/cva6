@@ -21,6 +21,7 @@
 `endif
 
 module ariane_verilog_wrap #(
+  parameter logic [63:0] DmBaseAddress = 64'h0,            // debug module base address
   parameter bit          SwapEndianess = 1,                // swap endianess in l15 adapter
   parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
   parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000  // begin of cached region
@@ -58,21 +59,10 @@ module ariane_verilog_wrap #(
   assign axi_resp  = axi_resp_i;
 `else
   // L15 (memory side)
-  serpent_cache_pkg::l15_req_t  l15_req, l15_req_remapped;
+  serpent_cache_pkg::l15_req_t  l15_req;
   serpent_cache_pkg::l15_rtrn_t l15_rtrn;
 
-  /////////////////////////////
-  // Debug module address translation
-  /////////////////////////////
-
-  always_comb begin : p_remap
-    l15_req_remapped = l15_req;
-    if (l15_req.l15_address < 64'h1000) begin
-      l15_req_remapped.l15_address = l15_req.l15_address + 64'hfff1000000;
-    end
-  end
-
-  assign l15_req_o = l15_req_remapped;
+  assign l15_req_o = l15_req;
   assign l15_rtrn  = l15_rtrn_i;
 `endif
 
@@ -168,6 +158,7 @@ module ariane_verilog_wrap #(
   /////////////////////////////
 
   ariane #(
+    .DmBaseAddress ( DmBaseAddress ),
     .SwapEndianess ( SwapEndianess ),
     .CachedAddrEnd ( CachedAddrEnd ),
     .CachedAddrBeg ( CachedAddrBeg )

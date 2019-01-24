@@ -15,8 +15,9 @@
 import ariane_pkg::*;
 
 module csr_regfile #(
-    parameter int          ASID_WIDTH      = 1,
-    parameter int unsigned NR_COMMIT_PORTS = 2
+    parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
+    parameter int          AsidWidth       = 1,
+    parameter int unsigned NrCommitPorts   = 2
 ) (
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
@@ -25,8 +26,8 @@ module csr_regfile #(
     output logic                  flush_o,
     output logic                  halt_csr_o,                 // halt requested
     // commit acknowledge
-    input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i, // the instruction we want to commit
-    input  logic [NR_COMMIT_PORTS-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
+    input  scoreboard_entry_t [NrCommitPorts-1:0] commit_instr_i, // the instruction we want to commit
+    input  logic [NrCommitPorts-1:0]              commit_ack_i,   // Commit acknowledged a instruction -> increase instret CSR
     // Core and Cluster ID
     input  logic  [63:0]          boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
     input  logic  [63:0]          hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
@@ -60,7 +61,7 @@ module csr_regfile #(
     output logic                  sum_o,
     output logic                  mxr_o,
     output logic [43:0]           satp_ppn_o,
-    output logic [ASID_WIDTH-1:0] asid_o,
+    output logic [AsidWidth-1:0] asid_o,
     // external interrupts
     input  logic [1:0]            irq_i,                      // external interrupt in
     input  logic                  ipi_i,                      // inter processor interrupt -> connected to machine mode sw
@@ -274,7 +275,7 @@ module csr_regfile #(
         instret_d = instret_q;
         if (!debug_mode_q) begin
             // increase instruction retired counter
-            for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+            for (int i = 0; i < NrCommitPorts; i++) begin
                 if (commit_ack_i[i] && !ex_i.valid) instret++;
             end
             instret_d = instret;
@@ -439,7 +440,7 @@ module csr_regfile #(
                     else begin
                         sapt      = riscv::satp_t'(csr_wdata);
                         // only make ASID_LEN - 1 bit stick, that way software can figure out how many ASID bits are supported
-                        sapt.asid = sapt.asid & {{(16-ASID_WIDTH){1'b0}}, {ASID_WIDTH{1'b1}}};
+                        sapt.asid = sapt.asid & {{(16-AsidWidth){1'b0}}, {AsidWidth{1'b1}}};
                         // only update if we actually support this mode
                         if (sapt.mode == MODE_OFF || sapt.mode == MODE_SV39) satp_d = sapt;
                     end
@@ -906,7 +907,7 @@ module csr_regfile #(
 
         // if we are in debug mode jump to a specific address
         if (debug_mode_q) begin
-            trap_vector_base_o = dm::ExceptionAddress;
+            trap_vector_base_o = DmBaseAddress + dm::ExceptionAddress;
         end
 
         // check if we are in vectored mode, if yes then do BASE + 4 * cause
@@ -955,7 +956,7 @@ module csr_regfile #(
     assign fprec_o          = fcsr_q.fprec;
     // MMU outputs
     assign satp_ppn_o       = satp_q.ppn;
-    assign asid_o           = satp_q.asid[ASID_WIDTH-1:0];
+    assign asid_o           = satp_q.asid[AsidWidth-1:0];
     assign sum_o            = mstatus_q.sum;
     // we support bare memory addressing and SV39
     assign en_translation_o = (satp_q.mode == 4'h8 && priv_lvl_o != riscv::PRIV_LVL_M)

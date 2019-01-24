@@ -85,8 +85,9 @@ def read_bin():
     except Exception as e:
         pass
 
+
     # align to 64 bit
-    align = (int(len(rom) / 8) + 1) * 8;
+    align = (int((len(rom) + 7) / 8 )) * 8;
 
     for i in range(len(rom), align):
         rom.append("00")
