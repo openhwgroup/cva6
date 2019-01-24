@@ -313,7 +313,6 @@ verilate_command := $(verilator)                                                
 					-Wno-DECLFILENAME                                                                  \
 					-Wno-UNUSED                                                                        \
 					-Wno-style                                                                         \
-					--Wwarn-IMPERFECTSCH                                                               \
 					$(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                            \
 					-Wno-lint                                                                          \
 					$(if $(DEBUG),--trace-structs --trace,)                                            \
@@ -411,10 +410,10 @@ check-torture:
 
 fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(util) $(uart_src)
 	@echo "[FPGA] Generate sources"
-	@echo read_vhdl        {$(uart_src)}   > fpga/scripts/add_sources.tcl
+	@echo read_vhdl        {$(uart_src)}    > fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(util)}       >> fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(src)} 	   >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(src)}        >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
 	cd fpga && make BOARD="genesys2" XILINX_PART="xc7k325tffg900-2" XILINX_BOARD="digilentinc.com:genesys2:part0:1.1" CLK_PERIOD_NS="20"
