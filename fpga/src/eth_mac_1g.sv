@@ -29,12 +29,10 @@ THE SOFTWARE.
 /*
  * 1G Ethernet MAC
  */
-module eth_mac_1g #
-(
+module eth_mac_1g #(
     parameter ENABLE_PADDING = 1,
     parameter MIN_FRAME_LENGTH = 64
-)
-(
+) (
     input  wire        rx_clk,
     input  wire        rx_rst,
     input  wire        tx_clk,

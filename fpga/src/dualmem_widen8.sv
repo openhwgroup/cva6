@@ -1,16 +1,15 @@
 
-module dualmem_widen8(clka, clkb, dina, dinb, addra, addrb, wea, web, douta, doutb, ena, enb);
-
-   input wire clka, clkb;
-   input  [15:0] dina;
-   input  [63:0] dinb;
-   input  [12:0] addra;
-   input  [10:0] addrb;
-   input   [1:0]        wea;
-   input   [1:0]        web;
-   input   [0:0]        ena, enb;
-   output [15:0]      douta;
-   output [63:0]      doutb;
+module dualmem_widen8(
+   input wire clka, clkb,
+   input  [15:0] dina,
+   input  [63:0] dinb,
+   input  [12:0] addra,
+   input  [10:0] addrb,
+   input   [1:0]        wea,
+   input   [1:0]        web,
+   output [15:0]      douta,
+   output [63:0]      doutb,
+   input   [0:0]        ena, enb);
 
    genvar r;
    wire [63:0]        dout0;
