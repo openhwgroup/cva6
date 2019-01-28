@@ -122,7 +122,6 @@ src/cache_subsystem/serpent_dcache.sv
 src/cache_subsystem/serpent_icache.sv
 src/cache_subsystem/serpent_l15_adapter.sv
 src/cache_subsystem/serpent_cache_subsystem.sv
-src/debug/debug_rom/debug_rom.sv
 src/debug/dm_csrs.sv
 src/clint/clint.sv
 src/clint/axi_lite_interface.sv
@@ -134,6 +133,7 @@ src/debug/dm_sba.sv
 src/debug/dmi_jtag_tap.sv
 openpiton/ariane_verilog_wrap.sv
 openpiton/serpent_peripherals.sv
+openpiton/debug_rom/debug_rom.sv
 bootrom/bootrom.sv
 src/plic/plic.sv
 src/plic/plic_claim_complete_tracker.sv
