@@ -20,22 +20,28 @@ module debug_rom (
    input  logic [63:0]  addr_i,
    output logic [63:0]  rdata_o
 );
-    localparam int RomSize = 13;
+    localparam int RomSize = 19;
 
     const logic [RomSize-1:0][63:0] mem = {
-        64'h00000000_00000000,
-        64'h7B200073_7B202473,
-        64'h10802423_F1402473,
-        64'h30000067_10002223,
-        64'h7B202473_00100073,
-        64'h10002623_FDDFF06F,
-        64'hFC0418E3_00247413,
-        64'h40044403_F1402473,
-        64'h02041063_00147413,
-        64'h40044403_10802023,
-        64'hF1402473_7B241073,
-        64'h0FF0000F_0340006F,
-        64'h04C0006F_00C0006F
+        64'h00000000_7b200073,
+        64'h7b302573_7b202473,
+        64'h10852423_f1402473,
+        64'ha85ff06f_7b302573,
+        64'h7b202473_10052223,
+        64'h00100073_7b302573,
+        64'h10052623_00c51513,
+        64'h00c55513_00000517,
+        64'h7b351073_fd5ff06f,
+        64'hfa041ce3_00247413,
+        64'h40044403_00a40433,
+        64'hf1402473_02041c63,
+        64'h00147413_40044403,
+        64'h00a40433_10852023,
+        64'hf1402473_00c51513,
+        64'h00c55513_00000517,
+        64'h7b351073_7b241073,
+        64'h0ff0000f_04c0006f,
+        64'h07c0006f_00c0006f
     };
 
     logic [$clog2(RomSize)-1:0] addr_q;
@@ -46,7 +52,7 @@ module debug_rom (
         end
     end
 
-    // this prevents spurious Xes from propagating into 
+    // this prevents spurious Xes from propagating into
     // the speculative fetch stage of the core
-    assign rdata_o = (addr_q<RomSize) ? mem[addr_q] : '0;
+    assign rdata_o = (addr_q < RomSize) ? mem[addr_q] : '0;
 endmodule

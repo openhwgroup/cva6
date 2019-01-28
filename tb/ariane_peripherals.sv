@@ -480,7 +480,11 @@ module ariane_peripherals #(
     // ---------------
     // 4. Ethernet
     // ---------------
-    begin
+    if (0)
+      begin
+      end
+    else
+      begin
         assign irq_sources [2] = 1'b0;
         assign ethernet.aw_ready = 1'b1;
         assign ethernet.ar_ready = 1'b1;
