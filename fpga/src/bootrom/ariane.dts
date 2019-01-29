@@ -108,33 +108,13 @@
       //   //interrupt-parent = <&PLIC0>;
       // };
     };
-    xlnx_axi_ethernetlite: ethernet@30000000 {
-      compatible = "xlnx,axi-ethernetlite-3.0", "xlnx,xps-ethernetlite-1.00.a";
+    eth: lowrisc-eth@30000000 {
+      compatible = "lowrisc-eth";
       device_type = "network";
       interrupt-parent = <&PLIC0>;
       interrupts = <3 0>;
-      local-mac-address = [00 0a 35 00 01 22];
-      phy-handle = <&phy0>;
-      reg = <0x0 0x30000000 0x0 0x10000>;
-      xlnx,duplex = <0x1>;
-      xlnx,include-global-buffers = <0x1>;
-      xlnx,include-internal-loopback = <0x0>;
-      xlnx,include-mdio = <0x1>;
-      xlnx,instance = "i_xlnx_axi_ethernetlite";
-      xlnx,rx-ping-pong = <0x1>;
-      xlnx,s-axi-id-width = <0x4>;
-      xlnx,tx-ping-pong = <0x1>;
-      xlnx,use-internal = <0x0>;
-      xlnx,has-mdio = <0x1>;
-      mdio {
-        #address-cells = <1>;
-        #size-cells = <0>;
-        phy0: axi_ethernetlite_0_mdio@1 {
-          compatible = "ethernet-phy-id001C.C915";
-          device_type = "network";
-          reg = <0x1>;
-        };
-      };
+      local-mac-address = [ee e1 e2 e3 e4 e5];
+      reg = <0x0 0x30000000 0x0 0x8000>;
     };
     xlnx_gpio: gpio@40000000 {
       #gpio-cells = <2>;

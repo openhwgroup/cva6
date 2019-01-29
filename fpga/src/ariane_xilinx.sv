@@ -536,9 +536,9 @@ xlnx_axi_clock_converter i_xlnx_axi_clock_converter_ddr (
 );
 
 xlnx_clk_gen i_xlnx_clk_gen (
-  .clk_out1 ( clk           ), // 50MHz
-  .clk_out2 ( phy_tx_clk    ), // 25 MHz
-  .clk_out3 ( eth_clk       ), // 100 MHz
+  .clk_out1 ( clk           ), // 50 MHz
+  .clk_out2 ( phy_tx_clk    ), // 125 MHz (for RGMII PHY)
+  .clk_out3 ( eth_clk       ), // 125 MHz quadrature
   .reset    ( cpu_reset     ),
   .locked   ( pll_locked    ),
   .clk_in1  ( ddr_clock_out )
