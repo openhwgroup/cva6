@@ -1,19 +1,27 @@
-\## Buttons
+## Buttons
 set_property -dict {PACKAGE_PIN R19 IOSTANDARD LVCMOS33} [get_ports cpu_resetn]
 
 ## PMOD Header JC
-set_property -dict {PACKAGE_PIN AC26 IOSTANDARD LVCMOS33} [get_ports tck]
-set_property -dict {PACKAGE_PIN AJ27 IOSTANDARD LVCMOS33} [get_ports tdi]
-set_property -dict {PACKAGE_PIN AH30 IOSTANDARD LVCMOS33} [get_ports tdo]
-set_property -dict {PACKAGE_PIN AK29 IOSTANDARD LVCMOS33} [get_ports tms]
-set_property -dict {PACKAGE_PIN AD26 IOSTANDARD LVCMOS33} [get_ports trst_n]
+# set_property -dict {PACKAGE_PIN AC26 IOSTANDARD LVCMOS33} [get_ports tck]
+# set_property -dict {PACKAGE_PIN AJ27 IOSTANDARD LVCMOS33} [get_ports tdi]
+# set_property -dict {PACKAGE_PIN AH30 IOSTANDARD LVCMOS33} [get_ports tdo]
+# set_property -dict {PACKAGE_PIN AK29 IOSTANDARD LVCMOS33} [get_ports tms]
+# set_property -dict {PACKAGE_PIN AD26 IOSTANDARD LVCMOS33} [get_ports trst_n]
+# accept sub-optimal placement
+# set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets tck_IBUF]
+
+
+## To use FTDI FT2232 JTAG
+set_property -dict { PACKAGE_PIN Y29   IOSTANDARD LVCMOS33 } [get_ports { trst_n }]; 
+set_property -dict { PACKAGE_PIN AD27  IOSTANDARD LVCMOS33 } [get_ports { tck    }]; 
+set_property -dict { PACKAGE_PIN W27   IOSTANDARD LVCMOS33 } [get_ports { tdi    }]; 
+set_property -dict { PACKAGE_PIN W28   IOSTANDARD LVCMOS33 } [get_ports { tdo    }]; 
+set_property -dict { PACKAGE_PIN W29   IOSTANDARD LVCMOS33 } [get_ports { tms    }]; 
 
 ## UART
 set_property -dict {PACKAGE_PIN Y23 IOSTANDARD LVCMOS33} [get_ports tx]
 set_property -dict {PACKAGE_PIN Y20 IOSTANDARD LVCMOS33} [get_ports rx]
 
-# accept sub-optimal placement
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets tck_IBUF]
 
 ## LEDs
 set_property -dict {PACKAGE_PIN T28 IOSTANDARD LVCMOS33} [get_ports {led[0]}]
@@ -69,6 +77,7 @@ create_clock -period 40.000 -name eth_rxck_virt
 # conservatively assuming +/- 2ns skew of rxd/rxctl
 create_clock -period 40.000 -name eth_rxck -waveform {2.000 22.000} [get_ports eth_rxck]
 
+
 # Input constraints
 set_input_delay -clock [get_clocks eth_rxck_virt] -min -add_delay 0.000 [get_ports {eth_rxd[*]}]
 set_input_delay -clock [get_clocks eth_rxck_virt] -max -add_delay 4.000 [get_ports {eth_rxd[*]}]
@@ -92,3 +101,16 @@ set_property -dict {PACKAGE_PIN R29 IOSTANDARD LVCMOS33} [get_ports spi_mosi]
 
 # Genesys 2 has a quad SPI flash
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+
+## JTAG
+# minimize routing delay
+set_max_delay -to   [get_ports { td    } ] 5 
+set_max_delay -from [get_ports { tms   } ] 5 
+set_max_delay -from [get_ports { trst_n } ] 5
+
+# reset signal 
+set_false_path -from [get_ports { trst_n } ]
+
+# constrain clock domain crossing
+set_false_path -from [get_clocks tck] -to [get_clocks clk_out1]
+set_max_delay  -from [get_clocks tck] -to [get_clocks clk_out1] 5
