@@ -15,7 +15,9 @@
 
 import ariane_pkg::*;
 
-module frontend (
+module frontend #(
+    parameter logic [63:0]     DmBaseAddress = 64'h0 // debug module base address
+) (
     input  logic               clk_i,              // Clock
     input  logic               rst_ni,             // Asynchronous reset active low
     input  logic               flush_i,            // flush request for PCGEN
@@ -357,7 +359,7 @@ module frontend (
         // -------------------------------
         // enter debug on a hard-coded base-address
         if (set_debug_pc_i) begin
-            npc_d = dm::HaltAddress;
+            npc_d = DmBaseAddress + dm::HaltAddress;
         end
 
         icache_dreq_o.vaddr = fetch_address;
