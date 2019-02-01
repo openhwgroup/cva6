@@ -292,6 +292,8 @@ assign wr_data_o    = wbuffer_q[rtrn_ptr].data;
 // readout of status bits, index calculation
 ///////////////////////////////////////////////////////
 
+logic [DCACHE_WBUF_DEPTH-1:0][DCACHE_CL_IDX_WIDTH-1:0] wtag_comp;
+
 assign wr_cl_vld_d = wr_cl_vld_i;
 assign wr_cl_idx_d = wr_cl_idx_i;
 
@@ -313,8 +315,9 @@ generate
         // checks if an invalidation/cache refill hits a particular word
         // note: an invalidation can hit multiple words!
         // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
-        assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:0]<<3 == wr_cl_idx_d<<DCACHE_OFFSET_WIDTH)) |
-                               (wr_cl_vld_q & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:0]<<3 == wr_cl_idx_q<<DCACHE_OFFSET_WIDTH));
+        assign wtag_comp[k] = wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-4:DCACHE_OFFSET_WIDTH-3];
+        assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wtag_comp[k] == wr_cl_idx_d)) |
+                               (wr_cl_vld_q & valid[k] & (wtag_comp[k] == wr_cl_idx_q));
 
         // these word have to be looked up in the cache
         assign tocheck[k]       = (~wbuffer_q[k].checked) & valid[k];

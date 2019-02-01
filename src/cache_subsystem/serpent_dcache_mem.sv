@@ -114,12 +114,12 @@ module serpent_dcache_mem #(
     generate 
         for (genvar k=0;k<DCACHE_NUM_BANKS;k++) begin : g_bank
             for (genvar j=0;j<DCACHE_SET_ASSOC;j++) begin : g_bank_way
-                assign bank_be[k][j]   = (wr_cl_we_i[j] & wr_cl_vld_i) ? wr_cl_data_be_i[k*8 +: 8] : 
-                                         (wr_req_i[j]   & wr_ack_o)    ? wr_data_be_i              : 
-                                                                         '0;
+                assign bank_be[k][j]   = (wr_cl_we_i[j] & wr_cl_vld_i)  ? wr_cl_data_be_i[k*8 +: 8] : 
+                                         (wr_req_i[j]   & wr_ack_o)     ? wr_data_be_i              : 
+                                                                          '0;
                 
-                assign bank_wdata[k][j] = (wr_cl_vld_i) ?  wr_cl_data_i[k*64 +: 64] :
-                                                           wr_data_i;    
+                assign bank_wdata[k][j] = (wr_cl_we_i[j] & wr_cl_vld_i) ?  wr_cl_data_i[k*64 +: 64] :
+                                                                           wr_data_i;    
             end
         end
     endgenerate
