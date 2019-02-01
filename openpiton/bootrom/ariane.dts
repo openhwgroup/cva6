@@ -1,0 +1,74 @@
+/dts-v1/;
+
+/ {
+  #address-cells = <2>;
+  #size-cells = <2>;
+  compatible = "eth,ariane-bare-dev";
+  model = "eth,ariane-bare";
+  // chosen {
+  //   stdout-path = "/soc/uart@10000000:115200";
+  // };
+  cpus {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    timebase-frequency = <32768>; // 32.768 kHz
+    CPU0: cpu@0 {
+      clock-frequency = <66666666>; // 50 MHz
+      device_type = "cpu";
+      reg = <0>;
+      status = "okay";
+      compatible = "eth, ariane", "riscv";
+      riscv,isa = "rv64imacsu";
+      mmu-type = "riscv,sv39";
+      tlb-split;
+      // HLIC - hart local interrupt controller
+      CPU0_intc: interrupt-controller {
+        #interrupt-cells = <1>;
+        interrupt-controller;
+        compatible = "riscv,cpu-intc";
+      };
+    };
+  };
+  memory@80000000 {
+    device_type = "memory";
+    reg = <0x0 0x80000000 0x0 0x1800000>;
+  };
+  soc {
+    #address-cells = <2>;
+    #size-cells = <2>;
+    compatible = "eth,ariane-bare-soc", "simple-bus";
+    ranges;
+    clint@fff1020000 {
+      compatible = "riscv,clint0";
+      interrupts-extended = <&CPU0_intc 3 &CPU0_intc 7>;
+      reg = <0xff 0xf1020000 0x0 0x1000>;
+      reg-names = "control";
+    };
+    PLIC0: interrupt-controller@fff1030000 {
+      #address-cells = <0>;
+      #interrupt-cells = <1>;
+      compatible = "sifive,plic-1.0.0", "riscv,plic0";
+      interrupt-controller;
+      interrupts-extended = <&CPU0_intc 11 &CPU0_intc 9>;
+      reg = <0xff 0xf1030000 0x0 0x10000>;
+      riscv,max-priority = <7>;
+      riscv,ndev = <2>;
+    };
+    debug-controller@fff1000000 {
+      compatible = "riscv,debug-013";
+      interrupts-extended = <&CPU0_intc 65535>;
+      reg = <0xff 0xf1000000 0x0 0x1000>;
+      reg-names = "control";
+    };
+    uart@fff0c2c000 {
+      compatible = "ns16550";
+      reg = <0xff 0xf0c2c000 0x0 0xd4000>;
+      clock-frequency = <100000000>;
+      current-speed = <115200>;
+      interrupt-parent = <&PLIC0>;
+      interrupts = <1>;
+      reg-shift = <1>; // regs are spaced on 8 bit boundary
+      reg-io-width = <1>; // only 8-bit access are supported
+    };
+  };
+};
