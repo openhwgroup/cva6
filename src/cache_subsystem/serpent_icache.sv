@@ -534,8 +534,38 @@ module serpent_icache  #(
          else $fatal(1,"[l1 icache] fsm reached an invalid state");
 
   hot1: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) (~inv_en) |=> cmp_en_q |-> $onehot0(cl_hit))
+      @(posedge clk_i) disable iff (~rst_ni) (~inv_en) |-> cache_rden |=> cmp_en_q |-> $onehot0(cl_hit))
          else $fatal(1,"[l1 icache] cl_hit signal must be hot1");
+
+    // this is only used for verification!
+    logic                                    vld_mirror[serpent_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];        
+    logic [ariane_pkg::ICACHE_TAG_WIDTH-1:0] tag_mirror[serpent_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];        
+    logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
+        if(~rst_ni) begin
+            vld_mirror <= '{default:'0};
+            tag_mirror <= '{default:'0};
+        end else begin
+            for (int i = 0; i < ICACHE_SET_ASSOC; i++) begin
+                if(vld_req[i] & vld_we) begin
+                    vld_mirror[vld_addr][i] <= vld_wdata[i];
+                    tag_mirror[vld_addr][i] <= cl_tag_q;
+                end 
+            end       
+        end
+    end
+
+    generate
+        for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin
+            assign tag_write_duplicate_test[i] = (tag_mirror[vld_addr][i] == cl_tag_q) & vld_mirror[vld_addr][i] & (|vld_wdata);
+        end 
+    endgenerate
+
+    tag_write_duplicate: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) |vld_req |-> vld_we |-> ~(|tag_write_duplicate_test))     
+            else $fatal(1,"[l1 icache] cannot allocate a CL that is already present in the cache");
+
 
    initial begin
       // assert wrong parameterizations
