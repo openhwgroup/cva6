@@ -490,7 +490,7 @@ module ariane_peripherals #(
     if (InclEthernet) begin : gen_ethernet
 
 logic                    clk_200_int, clk_rgmii, clk_rgmii_quad; 
-logic                    eth_en, eth_we, eth_int_n, eth_pme_n, eth_mdio_i, eth_mdio_o, eth_mdio_oen;
+logic                    eth_en, eth_we, eth_int_n, eth_pme_n, eth_mdio_i, eth_mdio_o, eth_mdio_oe;
 logic [AxiAddrWidth-1:0] eth_addr;
 logic [AxiDataWidth-1:0] eth_wrdata, eth_rdata;
 logic [AxiDataWidth/8-1:0] eth_be;
@@ -541,7 +541,7 @@ framing_top eth_rgmii
    .phy_mdc(eth_mdc),
    .phy_mdio_i(eth_mdio_i),
    .phy_mdio_o(eth_mdio_o),
-   .phy_mdio_oen(eth_mdio_oen),
+   .phy_mdio_oe(eth_mdio_oe),
    .eth_irq(irq_sources[2])
 );
 
@@ -554,7 +554,7 @@ framing_top eth_rgmii
       .O(eth_mdio_i),     // Buffer output
       .IO(eth_mdio),   // Buffer inout port (connect directly to top-level port)
       .I(eth_mdio_o),     // Buffer input
-      .T(~eth_mdio_oen)      // 3-state enable input, high=input, low=output
+      .T(~eth_mdio_oe)      // 3-state enable input, high=input, low=output
    );
 
     end else begin
