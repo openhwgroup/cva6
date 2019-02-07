@@ -115,21 +115,21 @@ module ariane_tb;
 
             // while there are more sections to process
             while (get_section(address, len)) begin
-                `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len), UVM_LOW)
-                buffer = new [len];
+                automatic int num_words = (len+7)/8;
+                `uvm_info( "Core Test", $sformatf("Loading Address: %x, Length: %x", address, len),
+UVM_LOW)
+                buffer = new [num_words*8];
                 void'(read_section(address, buffer));
                 // preload memories
                 // 64-bit
-                for (int i = 0; i < buffer.size()/8; i++) begin
+                for (int i = 0; i < num_words; i++) begin
                     mem_row = '0;
                     for (int j = 0; j < 8; j++) begin
                         mem_row[j] = buffer[i*8 + j];
                     end
-
                     `MAIN_MEM((address[28:0] >> 3) + i) = mem_row;
                 end
             end
         end
     end
-
 endmodule
