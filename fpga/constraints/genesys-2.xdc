@@ -82,16 +82,3 @@ set_property -dict {PACKAGE_PIN R29 IOSTANDARD LVCMOS33} [get_ports spi_mosi]
 
 # Genesys 2 has a quad SPI flash
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
-
-## JTAG
-# minimize routing delay
-set_max_delay -to   [get_ports { td    } ] 5 
-set_max_delay -from [get_ports { tms   } ] 5 
-set_max_delay -from [get_ports { trst_n } ] 5
-
-# reset signal 
-set_false_path -from [get_ports { trst_n } ]
-
-# constrain clock domain crossing
-set_false_path -from [get_clocks tck] -to [get_clocks clk_out1]
-set_max_delay  -from [get_clocks tck] -to [get_clocks clk_out1] 5
