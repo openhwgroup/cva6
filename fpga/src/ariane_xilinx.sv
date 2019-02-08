@@ -86,7 +86,7 @@ module ariane_xilinx (
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
 localparam NBSlave = 2; // debug, ariane
-localparam CacheStartAddr = (1 << 31);
+localparam logic [63:0] CacheStartAddr = 64'h80000000;
 localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 4;
