@@ -68,30 +68,11 @@ set_property -dict {PACKAGE_PIN AG12 IOSTANDARD LVCMOS15} [get_ports { eth_mdio 
 # set_property -dict {PACKAGE_PIN AK16  IOSTANDARD LVCMOS18} [get_ports { eth_int_b }]; #IO_L1P_T0_32 Sch=eth_intb
 
 #############################################
-# Ethernet Constraints for 100 Mb/s
+# Ethernet Constraints for 1Gb/s
 #############################################
-# Copied from OpenPiton Project
-# hint from here: https://forums.xilinx.com/t5/Timing-Analysis/XDC-constraints-Source-Synchronous-ADC-DDR/td-p/292807
-create_clock -period 40.000 -name eth_rxck_virt
-# set_clock_groups -asynchronous -group [get_clocks chipset_clk_clk_mmcm] -group [get_clocks eth_rxck]
-# conservatively assuming +/- 2ns skew of rxd/rxctl
-create_clock -period 40.000 -name eth_rxck -waveform {2.000 22.000} [get_ports eth_rxck]
-
-
-# Input constraints
-set_input_delay -clock [get_clocks eth_rxck_virt] -min -add_delay 0.000 [get_ports {eth_rxd[*]}]
-set_input_delay -clock [get_clocks eth_rxck_virt] -max -add_delay 4.000 [get_ports {eth_rxd[*]}]
-set_input_delay -clock [get_clocks eth_rxck_virt] -clock_fall -min -add_delay 0.000 [get_ports eth_rxctl]
-set_input_delay -clock [get_clocks eth_rxck_virt] -clock_fall -max -add_delay 4.000 [get_ports eth_rxctl]
-set_input_delay -clock [get_clocks eth_rxck_virt] -min -add_delay 0.000 [get_ports eth_rxctl]
-set_input_delay -clock [get_clocks eth_rxck_virt] -max -add_delay 4.000 [get_ports eth_rxctl]
-
-# Output Constraints
-create_generated_clock -name eth_txck_gen -source [get_pins i_ariane_peripherals/gen_ethernet.i_rgmii_to_mii_conv_xilinx/net_phy_txc_oddr/C] -multiply_by 1 [get_ports eth_txck]
-
-# Constraint RGMII interface
-set_output_delay -clock eth_txck_gen 2.000 [get_ports eth_txctl]
-set_output_delay -clock eth_txck_gen 2.000 [get_ports {eth_txd[*]}]
+# Modified for 125MHz receive clock
+create_clock -period 8.000 -name eth_rxck [get_ports eth_rxck]
+set_clock_groups -asynchronous -group [get_clocks eth_rxclk -include_generated_clocks]
 
 ## SD Card
 set_property -dict {PACKAGE_PIN R28 IOSTANDARD LVCMOS33} [get_ports spi_clk_o]
