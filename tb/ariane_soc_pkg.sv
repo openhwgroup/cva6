@@ -40,7 +40,7 @@ package ariane_soc;
     localparam logic[63:0] SPILength      = 64'h800000;
     localparam logic[63:0] EthernetLength = 64'h10000;
     localparam logic[63:0] GPIOLength     = 64'h1000;
-    localparam logic[63:0] DRAMLength     = 64'h8000000; // 128 MByte of DDR
+    localparam logic[63:0] DRAMLength     = 64'h40000000; // 1GByte of DDR (split between two chips on Genesys2)
     localparam logic[63:0] SRAMLength     = 64'h1800000;  // 24 MByte of SRAM
     // Instantiate AXI protocol checkers
     localparam bit GenProtocolChecker = 1'b0;
