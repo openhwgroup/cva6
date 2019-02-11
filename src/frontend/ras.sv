@@ -19,6 +19,7 @@ module ras #(
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
+    input  logic             flush_i,
     input  logic             push_i,
     input  logic             pop_i,
     input  logic [63:0]      data_i,
@@ -46,6 +47,10 @@ module ras #(
             stack_d[DEPTH-1].valid = 1'b0;
             stack_d[DEPTH-1].ra = 'b0;
         end
+
+        if (flush_i) begin
+          stack_d = '0;
+        end  
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

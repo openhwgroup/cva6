@@ -431,11 +431,13 @@ module frontend #(
     ras #(
         .DEPTH  ( RAS_DEPTH   )
     ) i_ras (
+        .clk_i,
+        .rst_ni,
+        .flush_i( flush_bp_i  ),
         .push_i ( ras_push    ),
         .pop_i  ( ras_pop     ),
         .data_i ( ras_update  ),
-        .data_o ( ras_predict ),
-        .*
+        .data_o ( ras_predict )
     );
 
     btb #(
