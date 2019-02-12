@@ -89,8 +89,8 @@ module clint #(
         // written from APB bus - gets priority
         if (en && we) begin
             case (register_address) inside
-                [MSIP_BASE:MSIP_BASE+8*NR_CORES]: begin
-                    msip_n[$unsigned(address[AddrSelWidth-1+3:3])] = wdata[0];
+                [MSIP_BASE:MSIP_BASE+4*NR_CORES]: begin
+                    msip_n[$unsigned(address[AddrSelWidth-1+2:2])] = wdata[0];
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
@@ -111,8 +111,8 @@ module clint #(
 
         if (en && !we) begin
             case (register_address) inside
-                [MSIP_BASE:MSIP_BASE+8*NR_CORES]: begin
-                    rdata = msip_q[$unsigned(address[AddrSelWidth-1+3:3])];
+                [MSIP_BASE:MSIP_BASE+4*NR_CORES]: begin
+                    rdata = msip_q[$unsigned(address[AddrSelWidth-1+2:2])];
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
