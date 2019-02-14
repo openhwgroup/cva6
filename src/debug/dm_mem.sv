@@ -298,6 +298,17 @@ module dm_mem #(
                     // this range is reserved
                     if (ac_ar.regno[15:14] != '0) begin
                         abstract_cmd[0][31:0] = riscv::illegal();
+                    // A0 access needs to be handled separately, as we use A0 to load the DM address offset
+                    // need to access DSCRATCH1 in this case
+                    end else if (ac_ar.regno[12] && (!ac_ar.regno[5]) && (ac_ar.regno[4:0] == 10)) begin
+                        // store s0 in dscratch
+                        abstract_cmd[2][31:0]  = riscv::csrw(riscv::CSR_DSCRATCH0, 8);
+                        // load from data register
+                        abstract_cmd[2][63:32] = riscv::load(ac_ar.aarsize, 8, 10, dm::DataAddr);
+                        // and store it in the corresponding CSR
+                        abstract_cmd[3][31:0]  = riscv::csrw(riscv::CSR_DSCRATCH1, 8);
+                        // restore s0 again from dscratch
+                        abstract_cmd[3][63:32] = riscv::csrr(riscv::CSR_DSCRATCH0, 8);
                     // GPR/FPR access
                     end else if (ac_ar.regno[12]) begin
                         // determine whether we want to access the floating point register or not
@@ -324,6 +335,17 @@ module dm_mem #(
                     // this range is reserved
                     if (ac_ar.regno[15:14] != '0) begin
                         abstract_cmd[0][31:0] = riscv::illegal();
+                    // A0 access needs to be handled separately, as we use A0 to load the DM address offset
+                    // need to access DSCRATCH1 in this case
+                    end else if (ac_ar.regno[12] && (!ac_ar.regno[5]) && (ac_ar.regno[4:0] == 10)) begin
+                        // store s0 in dscratch
+                        abstract_cmd[2][31:0]  = riscv::csrw(riscv::CSR_DSCRATCH0, 8);
+                        // read value from CSR into s0
+                        abstract_cmd[2][63:32] = riscv::csrr(riscv::CSR_DSCRATCH1, 8);
+                        // and store s0 into data section
+                        abstract_cmd[3][31:0]  = riscv::store(ac_ar.aarsize, 8, 10, dm::DataAddr);
+                        // restore s0 again from dscratch
+                        abstract_cmd[3][63:32] = riscv::csrr(riscv::CSR_DSCRATCH0, 8);
                     // GPR/FPR access
                     end else if (ac_ar.regno[12]) begin
                         // determine whether we want to access the floating point register or not
