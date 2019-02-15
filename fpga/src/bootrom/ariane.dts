@@ -31,7 +31,7 @@
   };
   memory@80000000 {
     device_type = "memory";
-    reg = <0x0 0x80000000 0x0 0x8000000>;
+    reg = <0x0 0x80000000 0x0 0x40000000>;
   };
   leds {
     compatible = "gpio-leds";
@@ -113,7 +113,7 @@
       device_type = "network";
       interrupt-parent = <&PLIC0>;
       interrupts = <3 0>;
-      local-mac-address = [ee e1 e2 e3 e4 e5];
+      local-mac-address = [00 18 3e 02 e3 7f]; // This needs to change if more than one GenesysII on a VLAN
       reg = <0x0 0x30000000 0x0 0x8000>;
     };
     xlnx_gpio: gpio@40000000 {
