@@ -225,16 +225,17 @@ module compressed_decoder
                             if (instr_i[6:2] == 5'b0) begin
                                 // c.jr -> jalr x0, rd/rs1, 0
                                 instr_o = {12'b0, instr_i[11:7], 3'b0, 5'b0, riscv::OpcodeJalr};
+                                // rs1 != 0
+                                illegal_instr_o = (instr_i[11:7] != '0) ? 1'b0 : 1'b1;
                             end
                         end else begin
                             // c.add -> add rd, rd, rs2
                             instr_o = {7'b0, instr_i[6:2], instr_i[11:7], 3'b0, instr_i[11:7], riscv::OpcodeOp};
 
-                            if (instr_i[11:7] == 5'b0) begin
+                            if (instr_i[11:7] == 5'b0 && instr_i[6:2] == 5'b0) begin
                                 // c.ebreak -> ebreak
                                 instr_o = {32'h00_10_00_73};
-                                if (instr_i[6:2] != 5'b0) illegal_instr_o = 1'b1;
-                            end else if (instr_i[6:2] == 5'b0) begin
+                            end else if (instr_i[11:7] != 5'b0 && instr_i[6:2] == 5'b0) begin
                                 // c.jalr -> jalr x1, rs1, 0
                                 instr_o = {12'b0, instr_i[11:7], 3'b000, 5'b00001, riscv::OpcodeJalr};
                             end
