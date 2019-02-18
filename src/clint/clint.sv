@@ -90,7 +90,7 @@ module clint #(
         if (en && we) begin
             case (register_address) inside
                 [MSIP_BASE:MSIP_BASE+4*NR_CORES]: begin
-                    msip_n[$unsigned(address[AddrSelWidth-1+2:2])] = wdata[0];
+                    msip_n[$unsigned(address[AddrSelWidth-1+2:2])] = wdata[32*address[2]];
                 end
 
                 [MTIMECMP_BASE:MTIMECMP_BASE+8*NR_CORES]: begin
