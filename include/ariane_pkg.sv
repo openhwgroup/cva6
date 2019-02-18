@@ -67,17 +67,17 @@ package ariane_pkg;
     localparam bit RVA = 1'b1; // Is A extension enabled
 
     // Transprecision floating-point extensions configuration
-    localparam bit XF16    = 1'b1; // Is half-precision float extension (Xf16) enabled
-    localparam bit XF16ALT = 1'b1; // Is alternative half-precision float extension (Xf16alt) enabled
-    localparam bit XF8     = 1'b1; // Is quarter-precision float extension (Xf8) enabled
-    localparam bit XFVEC   = 1'b1; // Is vectorial float extension (Xfvec) enabled
+    localparam bit XF16    = 1'b0; // Is half-precision float extension (Xf16) enabled
+    localparam bit XF16ALT = 1'b0; // Is alternative half-precision float extension (Xf16alt) enabled
+    localparam bit XF8     = 1'b0; // Is quarter-precision float extension (Xf8) enabled
+    localparam bit XFVEC   = 1'b0; // Is vectorial float extension (Xfvec) enabled
 
     // Transprecision float unit
-    localparam int unsigned LAT_COMP_FP32    = 'd3;
-    localparam int unsigned LAT_COMP_FP64    = 'd4;
-    localparam int unsigned LAT_COMP_FP16    = 'd3;
-    localparam int unsigned LAT_COMP_FP16ALT = 'd3;
-    localparam int unsigned LAT_COMP_FP8     = 'd2;
+    localparam int unsigned LAT_COMP_FP32    = 'd2;
+    localparam int unsigned LAT_COMP_FP64    = 'd3;
+    localparam int unsigned LAT_COMP_FP16    = 'd1;
+    localparam int unsigned LAT_COMP_FP16ALT = 'd1;
+    localparam int unsigned LAT_COMP_FP8     = 'd1;
     localparam int unsigned LAT_DIVSQRT      = 'd2;
     localparam int unsigned LAT_NONCOMP      = 'd1;
     localparam int unsigned LAT_CONV         = 'd2;

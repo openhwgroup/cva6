@@ -32,6 +32,11 @@ elf-bin        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
 
+support_verilator_4 := $(shell (verilator --version | grep '4\.') &> /dev/null; echo $$?)
+ifeq ($(support_verilator_4), 0)
+	verilator_threads := 2
+endif
+
 ifndef RISCV
 $(error RISCV not set - please point your RISCV variable to your RISCV installation)
 endif
@@ -301,12 +306,13 @@ check-benchmarks:
 	ci/check-tests.sh tmp/riscv-benchmarks- $(shell wc -l $(riscv-benchmarks-list) | awk -F " " '{ print $1 }')
 
 # verilator-specific
-verilate_command := $(verilator)                                                                       \
+verilate_command := $(verilator)                                                             \
 					$(filter-out %.vhd, $(ariane_pkg))                                                 \
 					$(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                         \
 					+define+$(defines)                                                                 \
 					src/util/sram.sv                                                                   \
 					+incdir+src/axi_node                                                               \
+					$(if $(verilator_threads), --threads $(verilator_threads) --threads-dpi none)  	   \
 					--unroll-count 256                                                                 \
 					-Werror-PINMISSING                                                                 \
 					-Werror-IMPLICIT                                                                   \
@@ -315,6 +321,7 @@ verilate_command := $(verilator)                                                
 					-Wno-ASSIGNDLY                                                                     \
 					-Wno-DECLFILENAME                                                                  \
 					-Wno-UNUSED                                                                        \
+					-Wno-UNOPTFLAT                                                                     \
 					-Wno-style                                                                         \
 					$(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                            \
 					-Wno-lint                                                                          \
@@ -324,7 +331,7 @@ verilate_command := $(verilator)                                                
 					$(list_incdir) --top-module ariane_testharness                                     \
 					--Mdir $(ver-library) -O3                                                          \
 					--exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                          \
-						  tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
+					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
