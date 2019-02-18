@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+- Rerouted the JTAG from PMOD to second channel of FTDI 2232 chip on Genesys 2 board
+
 ### 4.0.0
 
 ### Added

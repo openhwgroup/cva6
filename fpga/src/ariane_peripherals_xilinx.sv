@@ -9,6 +9,8 @@
 // specific language governing permissions and limitations under the License.
 
 // Xilinx Peripehrals
+`default_nettype none
+
 module ariane_peripherals #(
     parameter int AxiAddrWidth = -1,
     parameter int AxiDataWidth = -1,
@@ -40,7 +42,7 @@ module ariane_peripherals #(
     output wire        eth_txctl       ,
     output wire [3:0]  eth_txd         ,
     output wire        eth_rst_n       ,
-    input  logic       phy_tx_clk_i    , // 25 MHz Clock
+    input  logic       phy_tx_clk_i    , // 125 MHz Clock
     // MDIO Interface
     inout  wire        eth_mdio        ,
     output logic       eth_mdc         ,
@@ -484,310 +486,76 @@ module ariane_peripherals #(
     // ---------------
     // 4. Ethernet
     // ---------------
-    assign ethernet.b_user = 1'b0;
-    assign ethernet.r_user = 1'b0;
 
     if (InclEthernet) begin : gen_ethernet
 
-        AXI_BUS #(
-            .AXI_ADDR_WIDTH ( AxiAddrWidth ),
-            .AXI_DATA_WIDTH ( AxiDataWidth ),
-            .AXI_ID_WIDTH   ( AxiIdWidth   ),
-            .AXI_USER_WIDTH ( AxiUserWidth )
-        ) axi_ethernet_cdc();
+logic                    clk_200_int, clk_rgmii, clk_rgmii_quad; 
+logic                    eth_en, eth_we, eth_int_n, eth_pme_n, eth_mdio_i, eth_mdio_o, eth_mdio_oe;
+logic [AxiAddrWidth-1:0] eth_addr;
+logic [AxiDataWidth-1:0] eth_wrdata, eth_rdata;
+logic [AxiDataWidth/8-1:0] eth_be;
 
-        logic s_eth_rst_n;
+axi2mem #(
+    .AXI_ID_WIDTH   ( AxiIdWidth       ),
+    .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
+    .AXI_DATA_WIDTH ( AxiDataWidth     ),
+    .AXI_USER_WIDTH ( AxiUserWidth     )
+) i_axi2rom (
+    .clk_i  ( clk_i                   ),
+    .rst_ni ( rst_ni                  ),
+    .slave  ( ethernet                ),
+    .req_o  ( eth_en                  ),
+    .we_o   ( eth_we                  ),
+    .addr_o ( eth_addr                ),
+    .be_o   ( eth_be                  ),
+    .data_o ( eth_wrdata              ),
+    .data_i ( eth_rdata               )
+);
 
-        logic [31:0] s_axi_eth_awaddr;
-        logic [7:0]  s_axi_eth_awlen;
-        logic [2:0]  s_axi_eth_awsize;
-        logic [1:0]  s_axi_eth_awburst;
-        logic [3:0]  s_axi_eth_awcache;
-        logic        s_axi_eth_awvalid;
-        logic        s_axi_eth_awready;
-        logic [31:0] s_axi_eth_wdata;
-        logic [3:0]  s_axi_eth_wstrb;
-        logic        s_axi_eth_wlast;
-        logic        s_axi_eth_wvalid;
-        logic        s_axi_eth_wready;
-        logic [1:0]  s_axi_eth_bresp;
-        logic        s_axi_eth_bvalid;
-        logic        s_axi_eth_bready;
-        logic [31:0] s_axi_eth_araddr;
-        logic [7:0]  s_axi_eth_arlen;
-        logic [2:0]  s_axi_eth_arsize;
-        logic [1:0]  s_axi_eth_arburst;
-        logic [3:0]  s_axi_eth_arcache;
-        logic        s_axi_eth_arvalid;
-        logic        s_axi_eth_arready;
-        logic [31:0] s_axi_eth_rdata;
-        logic [1:0]  s_axi_eth_rresp;
-        logic        s_axi_eth_rlast;
-        logic        s_axi_eth_rvalid;
+framing_top eth_rgmii
+  (
+   .msoc_clk(clk_i),
+   .core_lsu_addr(eth_addr[14:0]),
+   .core_lsu_wdata(eth_wrdata),
+   .core_lsu_be(eth_be),
+   .ce_d(eth_en),
+   .we_d(eth_en & eth_we),
+   .framing_sel(eth_en),
+   .framing_rdata(eth_rdata),
+   .rst_int(!rst_ni),
+   .clk_int(phy_tx_clk_i), // 125 MHz in-phase
+   .clk90_int(eth_clk_i),    // 125 MHz quadrature
+   .clk_200_int(clk_200MHz_i),
+   /*
+    * Ethernet: 1000BASE-T RGMII
+    */
+   .phy_rx_clk(eth_rxck),
+   .phy_rxd(eth_rxd),
+   .phy_rx_ctl(eth_rxctl),
+   .phy_tx_clk(eth_txck),
+   .phy_txd(eth_txd),
+   .phy_tx_ctl(eth_txctl),
+   .phy_reset_n(eth_rst_n),
+   .phy_int_n(eth_int_n),
+   .phy_pme_n(eth_pme_n),
+   .phy_mdc(eth_mdc),
+   .phy_mdio_i(eth_mdio_i),
+   .phy_mdio_o(eth_mdio_o),
+   .phy_mdio_oe(eth_mdio_oe),
+   .eth_irq(irq_sources[2])
+);
 
-        rstgen i_rstgen (
-            .clk_i        ( eth_clk_i   ),
-            .rst_ni       ( rst_ni      ),
-            .test_mode_i  ( test_en     ),
-            .rst_no       ( s_eth_rst_n ),
-            .init_no      (             ) // keep open
-        );
-
-        xlnx_axi_clock_converter i_xlnx_axi_clock_converter_ethernet (
-          .s_axi_aclk     ( clk_i              ),
-          .s_axi_aresetn  ( rst_ni             ),
-          .s_axi_awid     ( ethernet.aw_id     ),
-          .s_axi_awaddr   ( ethernet.aw_addr   ),
-          .s_axi_awlen    ( ethernet.aw_len    ),
-          .s_axi_awsize   ( ethernet.aw_size   ),
-          .s_axi_awburst  ( ethernet.aw_burst  ),
-          .s_axi_awlock   ( ethernet.aw_lock   ),
-          .s_axi_awcache  ( ethernet.aw_cache  ),
-          .s_axi_awprot   ( ethernet.aw_prot   ),
-          .s_axi_awregion ( ethernet.aw_region ),
-          .s_axi_awqos    ( ethernet.aw_qos    ),
-          .s_axi_awvalid  ( ethernet.aw_valid  ),
-          .s_axi_awready  ( ethernet.aw_ready  ),
-          .s_axi_wdata    ( ethernet.w_data    ),
-          .s_axi_wstrb    ( ethernet.w_strb    ),
-          .s_axi_wlast    ( ethernet.w_last    ),
-          .s_axi_wvalid   ( ethernet.w_valid   ),
-          .s_axi_wready   ( ethernet.w_ready   ),
-          .s_axi_bid      ( ethernet.b_id      ),
-          .s_axi_bresp    ( ethernet.b_resp    ),
-          .s_axi_bvalid   ( ethernet.b_valid   ),
-          .s_axi_bready   ( ethernet.b_ready   ),
-          .s_axi_arid     ( ethernet.ar_id     ),
-          .s_axi_araddr   ( ethernet.ar_addr   ),
-          .s_axi_arlen    ( ethernet.ar_len    ),
-          .s_axi_arsize   ( ethernet.ar_size   ),
-          .s_axi_arburst  ( ethernet.ar_burst  ),
-          .s_axi_arlock   ( ethernet.ar_lock   ),
-          .s_axi_arcache  ( ethernet.ar_cache  ),
-          .s_axi_arprot   ( ethernet.ar_prot   ),
-          .s_axi_arregion ( ethernet.ar_region ),
-          .s_axi_arqos    ( ethernet.ar_qos    ),
-          .s_axi_arvalid  ( ethernet.ar_valid  ),
-          .s_axi_arready  ( ethernet.ar_ready  ),
-          .s_axi_rid      ( ethernet.r_id      ),
-          .s_axi_rdata    ( ethernet.r_data    ),
-          .s_axi_rresp    ( ethernet.r_resp    ),
-          .s_axi_rlast    ( ethernet.r_last    ),
-          .s_axi_rvalid   ( ethernet.r_valid   ),
-          .s_axi_rready   ( ethernet.r_ready   ),
-          // to size converter
-          .m_axi_aclk     ( eth_clk_i                  ),
-          .m_axi_aresetn  ( s_eth_rst_n                ),
-          .m_axi_awid     ( axi_ethernet_cdc.aw_id     ),
-          .m_axi_awaddr   ( axi_ethernet_cdc.aw_addr   ),
-          .m_axi_awlen    ( axi_ethernet_cdc.aw_len    ),
-          .m_axi_awsize   ( axi_ethernet_cdc.aw_size   ),
-          .m_axi_awburst  ( axi_ethernet_cdc.aw_burst  ),
-          .m_axi_awlock   ( axi_ethernet_cdc.aw_lock   ),
-          .m_axi_awcache  ( axi_ethernet_cdc.aw_cache  ),
-          .m_axi_awprot   ( axi_ethernet_cdc.aw_prot   ),
-          .m_axi_awregion ( axi_ethernet_cdc.aw_region ),
-          .m_axi_awqos    ( axi_ethernet_cdc.aw_qos    ),
-          .m_axi_awvalid  ( axi_ethernet_cdc.aw_valid  ),
-          .m_axi_awready  ( axi_ethernet_cdc.aw_ready  ),
-          .m_axi_wdata    ( axi_ethernet_cdc.w_data    ),
-          .m_axi_wstrb    ( axi_ethernet_cdc.w_strb    ),
-          .m_axi_wlast    ( axi_ethernet_cdc.w_last    ),
-          .m_axi_wvalid   ( axi_ethernet_cdc.w_valid   ),
-          .m_axi_wready   ( axi_ethernet_cdc.w_ready   ),
-          .m_axi_bid      ( axi_ethernet_cdc.b_id      ),
-          .m_axi_bresp    ( axi_ethernet_cdc.b_resp    ),
-          .m_axi_bvalid   ( axi_ethernet_cdc.b_valid   ),
-          .m_axi_bready   ( axi_ethernet_cdc.b_ready   ),
-          .m_axi_arid     ( axi_ethernet_cdc.ar_id     ),
-          .m_axi_araddr   ( axi_ethernet_cdc.ar_addr   ),
-          .m_axi_arlen    ( axi_ethernet_cdc.ar_len    ),
-          .m_axi_arsize   ( axi_ethernet_cdc.ar_size   ),
-          .m_axi_arburst  ( axi_ethernet_cdc.ar_burst  ),
-          .m_axi_arlock   ( axi_ethernet_cdc.ar_lock   ),
-          .m_axi_arcache  ( axi_ethernet_cdc.ar_cache  ),
-          .m_axi_arprot   ( axi_ethernet_cdc.ar_prot   ),
-          .m_axi_arregion ( axi_ethernet_cdc.ar_region ),
-          .m_axi_arqos    ( axi_ethernet_cdc.ar_qos    ),
-          .m_axi_arvalid  ( axi_ethernet_cdc.ar_valid  ),
-          .m_axi_arready  ( axi_ethernet_cdc.ar_ready  ),
-          .m_axi_rid      ( axi_ethernet_cdc.r_id      ),
-          .m_axi_rdata    ( axi_ethernet_cdc.r_data    ),
-          .m_axi_rresp    ( axi_ethernet_cdc.r_resp    ),
-          .m_axi_rlast    ( axi_ethernet_cdc.r_last    ),
-          .m_axi_rvalid   ( axi_ethernet_cdc.r_valid   ),
-          .m_axi_rready   ( axi_ethernet_cdc.r_ready   )
-        );
-
-        // system-bus is 64-bit, convert down to 32 bit
-        xlnx_axi_dwidth_converter i_xlnx_axi_dwidth_converter_ethernet (
-            .s_axi_aclk     ( eth_clk_i                      ),
-            .s_axi_aresetn  ( s_eth_rst_n                    ),
-            .s_axi_awid     ( axi_ethernet_cdc.aw_id         ),
-            .s_axi_awaddr   ( axi_ethernet_cdc.aw_addr[31:0] ),
-            .s_axi_awlen    ( axi_ethernet_cdc.aw_len        ),
-            .s_axi_awsize   ( axi_ethernet_cdc.aw_size       ),
-            .s_axi_awburst  ( axi_ethernet_cdc.aw_burst      ),
-            .s_axi_awlock   ( axi_ethernet_cdc.aw_lock       ),
-            .s_axi_awcache  ( axi_ethernet_cdc.aw_cache      ),
-            .s_axi_awprot   ( axi_ethernet_cdc.aw_prot       ),
-            .s_axi_awregion ( axi_ethernet_cdc.aw_region     ),
-            .s_axi_awqos    ( axi_ethernet_cdc.aw_qos        ),
-            .s_axi_awvalid  ( axi_ethernet_cdc.aw_valid      ),
-            .s_axi_awready  ( axi_ethernet_cdc.aw_ready      ),
-            .s_axi_wdata    ( axi_ethernet_cdc.w_data        ),
-            .s_axi_wstrb    ( axi_ethernet_cdc.w_strb        ),
-            .s_axi_wlast    ( axi_ethernet_cdc.w_last        ),
-            .s_axi_wvalid   ( axi_ethernet_cdc.w_valid       ),
-            .s_axi_wready   ( axi_ethernet_cdc.w_ready       ),
-            .s_axi_bid      ( axi_ethernet_cdc.b_id          ),
-            .s_axi_bresp    ( axi_ethernet_cdc.b_resp        ),
-            .s_axi_bvalid   ( axi_ethernet_cdc.b_valid       ),
-            .s_axi_bready   ( axi_ethernet_cdc.b_ready       ),
-            .s_axi_arid     ( axi_ethernet_cdc.ar_id         ),
-            .s_axi_araddr   ( axi_ethernet_cdc.ar_addr[31:0] ),
-            .s_axi_arlen    ( axi_ethernet_cdc.ar_len        ),
-            .s_axi_arsize   ( axi_ethernet_cdc.ar_size       ),
-            .s_axi_arburst  ( axi_ethernet_cdc.ar_burst      ),
-            .s_axi_arlock   ( axi_ethernet_cdc.ar_lock       ),
-            .s_axi_arcache  ( axi_ethernet_cdc.ar_cache      ),
-            .s_axi_arprot   ( axi_ethernet_cdc.ar_prot       ),
-            .s_axi_arregion ( axi_ethernet_cdc.ar_region     ),
-            .s_axi_arqos    ( axi_ethernet_cdc.ar_qos        ),
-            .s_axi_arvalid  ( axi_ethernet_cdc.ar_valid      ),
-            .s_axi_arready  ( axi_ethernet_cdc.ar_ready      ),
-            .s_axi_rid      ( axi_ethernet_cdc.r_id          ),
-            .s_axi_rdata    ( axi_ethernet_cdc.r_data        ),
-            .s_axi_rresp    ( axi_ethernet_cdc.r_resp        ),
-            .s_axi_rlast    ( axi_ethernet_cdc.r_last        ),
-            .s_axi_rvalid   ( axi_ethernet_cdc.r_valid       ),
-            .s_axi_rready   ( axi_ethernet_cdc.r_ready       ),
-
-            .m_axi_awaddr   ( s_axi_eth_awaddr  ),
-            .m_axi_awlen    ( s_axi_eth_awlen   ),
-            .m_axi_awsize   ( s_axi_eth_awsize  ),
-            .m_axi_awburst  ( s_axi_eth_awburst ),
-            .m_axi_awlock   (                   ),
-            .m_axi_awcache  ( s_axi_eth_awcache ),
-            .m_axi_awprot   (                   ),
-            .m_axi_awregion (                   ),
-            .m_axi_awqos    (                   ),
-            .m_axi_awvalid  ( s_axi_eth_awvalid ),
-            .m_axi_awready  ( s_axi_eth_awready ),
-            .m_axi_wdata    ( s_axi_eth_wdata   ),
-            .m_axi_wstrb    ( s_axi_eth_wstrb   ),
-            .m_axi_wlast    ( s_axi_eth_wlast   ),
-            .m_axi_wvalid   ( s_axi_eth_wvalid  ),
-            .m_axi_wready   ( s_axi_eth_wready  ),
-            .m_axi_bresp    ( s_axi_eth_bresp   ),
-            .m_axi_bvalid   ( s_axi_eth_bvalid  ),
-            .m_axi_bready   ( s_axi_eth_bready  ),
-            .m_axi_araddr   ( s_axi_eth_araddr  ),
-            .m_axi_arlen    ( s_axi_eth_arlen   ),
-            .m_axi_arsize   ( s_axi_eth_arsize  ),
-            .m_axi_arburst  ( s_axi_eth_arburst ),
-            .m_axi_arlock   (                   ),
-            .m_axi_arcache  ( s_axi_eth_arcache ),
-            .m_axi_arprot   (                   ),
-            .m_axi_arregion (                   ),
-            .m_axi_arqos    (                   ),
-            .m_axi_arvalid  ( s_axi_eth_arvalid ),
-            .m_axi_arready  ( s_axi_eth_arready ),
-            .m_axi_rdata    ( s_axi_eth_rdata   ),
-            .m_axi_rresp    ( s_axi_eth_rresp   ),
-            .m_axi_rlast    ( s_axi_eth_rlast   ),
-            .m_axi_rvalid   ( s_axi_eth_rvalid  ),
-            .m_axi_rready   ( s_axi_eth_rready  )
-        );
-
-        logic       phy_rx_clk;
-        logic       phy_crs;
-        logic       phy_dv;
-        logic [3:0] phy_rx_data;
-        logic       phy_col;
-        logic       phy_rx_er;
-        logic       phy_rst_n;
-        logic       phy_tx_en;
-        logic [3:0] phy_tx_data;
-        logic       phy_mdio_i;
-        logic       phy_mdio_o;
-        logic       phy_mdio_t;
-        logic       phy_mdc;
-
-        xlnx_axi_ethernetlite i_xlnx_axi_ethernetlite (
-            .s_axi_aclk    ( eth_clk_i              ),
-            .s_axi_aresetn ( s_eth_rst_n            ),
-            .ip2intc_irpt  ( irq_sources[2]         ),
-            .s_axi_awaddr  ( s_axi_eth_awaddr[12:0] ),
-            .s_axi_awlen   ( s_axi_eth_awlen        ),
-            .s_axi_awsize  ( s_axi_eth_awsize       ),
-            .s_axi_awburst ( s_axi_eth_awburst      ),
-            .s_axi_awcache ( s_axi_eth_awcache      ),
-            .s_axi_awvalid ( s_axi_eth_awvalid      ),
-            .s_axi_awready ( s_axi_eth_awready      ),
-            .s_axi_wdata   ( s_axi_eth_wdata        ),
-            .s_axi_wstrb   ( s_axi_eth_wstrb        ),
-            .s_axi_wlast   ( s_axi_eth_wlast        ),
-            .s_axi_wvalid  ( s_axi_eth_wvalid       ),
-            .s_axi_wready  ( s_axi_eth_wready       ),
-            .s_axi_bresp   ( s_axi_eth_bresp        ),
-            .s_axi_bvalid  ( s_axi_eth_bvalid       ),
-            .s_axi_bready  ( s_axi_eth_bready       ),
-            .s_axi_araddr  ( s_axi_eth_araddr[12:0] ),
-            .s_axi_arlen   ( s_axi_eth_arlen        ),
-            .s_axi_arsize  ( s_axi_eth_arsize       ),
-            .s_axi_arburst ( s_axi_eth_arburst      ),
-            .s_axi_arcache ( s_axi_eth_arcache      ),
-            .s_axi_arvalid ( s_axi_eth_arvalid      ),
-            .s_axi_arready ( s_axi_eth_arready      ),
-            .s_axi_rdata   ( s_axi_eth_rdata        ),
-            .s_axi_rresp   ( s_axi_eth_rresp        ),
-            .s_axi_rlast   ( s_axi_eth_rlast        ),
-            .s_axi_rvalid  ( s_axi_eth_rvalid       ),
-            .s_axi_rready  ( s_axi_eth_rready       ),
-            .phy_tx_clk    ( phy_tx_clk_i           ),
-            .phy_rx_clk    ( phy_rx_clk             ),
-            .phy_crs       ( phy_crs                ),
-            .phy_dv        ( phy_dv                 ),
-            .phy_rx_data   ( phy_rx_data            ),
-            .phy_col       ( phy_col                ),
-            .phy_rx_er     ( phy_rx_er              ),
-            .phy_rst_n     ( phy_rst_n              ),
-            .phy_tx_en     ( phy_tx_en              ),
-            .phy_tx_data   ( phy_tx_data            ),
-            .phy_mdio_i    ( phy_mdio_i             ),
-            .phy_mdio_o    ( phy_mdio_o             ),
-            .phy_mdio_t    ( phy_mdio_t             ),
-            .phy_mdc       ( phy_mdc                )
-        );
-
-        assign phy_crs = 1'b0;
-        assign phy_col = 1'b0;
-
-        rgmii_to_mii_conv_xilinx i_rgmii_to_mii_conv_xilinx (
-            .rgmii_phy_txc   ( eth_txck     ),
-            .rgmii_phy_txctl ( eth_txctl    ),
-            .rgmii_phy_txd   ( eth_txd      ),
-            .rgmii_phy_rxc   ( eth_rxck     ),
-            .rgmii_phy_rxctl ( eth_rxctl    ),
-            .rgmii_phy_rxd   ( eth_rxd      ),
-            .rgmii_phy_rst_n ( eth_rst_n    ),
-            .rgmii_phy_mdio  ( eth_mdio     ),
-            .rgmii_phy_mdc   ( eth_mdc      ),
-            .mem_clk_i       ( clk_200MHz_i ),
-            .net_phy_rst_n   ( phy_rst_n    ),
-            .net_phy_tx_clk  ( phy_tx_clk_i ),
-            .net_phy_tx_en   ( phy_tx_en    ),
-            .net_phy_tx_data ( phy_tx_data  ),
-            .net_phy_rx_clk  ( phy_rx_clk   ),
-            .net_phy_dv      ( phy_dv       ),
-            .net_phy_rx_data ( phy_rx_data  ),
-            .net_phy_rx_er   ( phy_rx_er    ),
-            .net_mdio_i      ( phy_mdio_o   ),
-            .net_mdio_o      ( phy_mdio_i   ),
-            .net_mdio_t      ( phy_mdio_t   ),
-            .net_phy_mdc     ( phy_mdc      )
-        );
+   IOBUF #(
+      .DRIVE(12), // Specify the output drive strength
+      .IBUF_LOW_PWR("TRUE"),  // Low Power - "TRUE", High Performance = "FALSE" 
+      .IOSTANDARD("DEFAULT"), // Specify the I/O standard
+      .SLEW("SLOW") // Specify the output slew rate
+   ) IOBUF_inst (
+      .O(eth_mdio_i),     // Buffer output
+      .IO(eth_mdio),   // Buffer inout port (connect directly to top-level port)
+      .I(eth_mdio_o),     // Buffer input
+      .T(~eth_mdio_oe)      // 3-state enable input, high=input, low=output
+   );
 
     end else begin
         assign irq_sources [2] = 1'b0;
@@ -838,6 +606,8 @@ module ariane_peripherals #(
         logic [1:0]  s_axi_gpio_rresp;
         logic        s_axi_gpio_rlast;
         logic        s_axi_gpio_rvalid;
+        logic        s_axi_gpio_rready;
+       
         // system-bus is 64-bit, convert down to 32 bit
         xlnx_axi_dwidth_converter i_xlnx_axi_dwidth_converter_gpio (
             .s_axi_aclk     ( clk_i              ),
@@ -949,3 +719,5 @@ module ariane_peripherals #(
         assign s_axi_gpio_wlast = 1'b1;
     end
 endmodule
+
+`default_nettype wire

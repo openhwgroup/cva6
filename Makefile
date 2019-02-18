@@ -32,6 +32,10 @@ elf-bin        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
 
+ifndef RISCV
+$(error RISCV not set - please point your RISCV variable to your RISCV installation)
+endif
+
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv                          \
@@ -64,9 +68,8 @@ dpi := $(patsubst tb/dpi/%.cc,${dpi-library}/%.o,$(wildcard tb/dpi/*.cc))
 dpi_hdr := $(wildcard tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
 CFLAGS := -I$(QUESTASIM_HOME)/include         \
-		  -Itb/riscv-isa-sim/install/include/spike  \
-		  -std=c++11 -I../tb/dpi \
-		  -flto
+          -I$(RISCV)/include  \
+          -std=c++11 -I../tb/dpi
 
 # this list contains the standalone components
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
@@ -133,7 +136,7 @@ src := $(addprefix $(root-dir), $(src))
 uart_src := $(wildcard fpga/src/apb_uart/src/*.vhd)
 uart_src := $(addprefix $(root-dir), $(uart_src))
 
-fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv)
+fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv) $(wildcard fpga/src/ariane-ethernet/*.sv)
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
@@ -229,7 +232,7 @@ $(dpi-library)/%.o: tb/dpi/%.cc $(dpi_hdr)
 $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
-	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -lfesvr
+	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr
 
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list

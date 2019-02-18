@@ -19,7 +19,7 @@
 package dm;
     localparam logic [3:0] DbgVersion013 = 4'h2;
     // size of program buffer in junks of 32-bit words
-    localparam logic [4:0] ProgBufSize   = 5'h6;
+    localparam logic [4:0] ProgBufSize   = 5'h8;
 
     // TODO(zarubaf) This is hard-coded to two at the moment
     // amount of data count registers implemented
@@ -141,7 +141,7 @@ package dm;
     typedef struct packed {
         logic [31:29] zero3;
         logic [28:24] progbufsize;
-        logic [23:12] zero2;
+        logic [23:13] zero2;
         logic         busy;
         logic         zero1;
         cmderr_t      cmderr;
