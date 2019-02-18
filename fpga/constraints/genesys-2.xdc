@@ -1,22 +1,12 @@
 ## Buttons
 set_property -dict {PACKAGE_PIN R19 IOSTANDARD LVCMOS33} [get_ports cpu_resetn]
 
-## PMOD Header JC
-# set_property -dict {PACKAGE_PIN AC26 IOSTANDARD LVCMOS33} [get_ports tck]
-# set_property -dict {PACKAGE_PIN AJ27 IOSTANDARD LVCMOS33} [get_ports tdi]
-# set_property -dict {PACKAGE_PIN AH30 IOSTANDARD LVCMOS33} [get_ports tdo]
-# set_property -dict {PACKAGE_PIN AK29 IOSTANDARD LVCMOS33} [get_ports tms]
-# set_property -dict {PACKAGE_PIN AD26 IOSTANDARD LVCMOS33} [get_ports trst_n]
-# accept sub-optimal placement
-# set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets tck_IBUF]
-
-
 ## To use FTDI FT2232 JTAG
-set_property -dict { PACKAGE_PIN Y29   IOSTANDARD LVCMOS33 } [get_ports { trst_n }]; 
-set_property -dict { PACKAGE_PIN AD27  IOSTANDARD LVCMOS33 } [get_ports { tck    }]; 
-set_property -dict { PACKAGE_PIN W27   IOSTANDARD LVCMOS33 } [get_ports { tdi    }]; 
-set_property -dict { PACKAGE_PIN W28   IOSTANDARD LVCMOS33 } [get_ports { tdo    }]; 
-set_property -dict { PACKAGE_PIN W29   IOSTANDARD LVCMOS33 } [get_ports { tms    }]; 
+set_property -dict { PACKAGE_PIN Y29   IOSTANDARD LVCMOS33 } [get_ports { trst_n }];
+set_property -dict { PACKAGE_PIN AD27  IOSTANDARD LVCMOS33 } [get_ports { tck    }];
+set_property -dict { PACKAGE_PIN W27   IOSTANDARD LVCMOS33 } [get_ports { tdi    }];
+set_property -dict { PACKAGE_PIN W28   IOSTANDARD LVCMOS33 } [get_ports { tdo    }];
+set_property -dict { PACKAGE_PIN W29   IOSTANDARD LVCMOS33 } [get_ports { tms    }];
 
 ## UART
 set_property -dict {PACKAGE_PIN Y23 IOSTANDARD LVCMOS33} [get_ports tx]
@@ -85,11 +75,11 @@ set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
 
 ## JTAG
 # minimize routing delay
-set_max_delay -to   [get_ports { td    } ] 5 
-set_max_delay -from [get_ports { tms   } ] 5 
+set_max_delay -to   [get_ports { td    } ] 5
+set_max_delay -from [get_ports { tms   } ] 5
 set_max_delay -from [get_ports { trst_n } ] 5
 
-# reset signal 
+# reset signal
 set_false_path -from [get_ports { trst_n } ]
 
 # constrain clock domain crossing

@@ -45,7 +45,9 @@ update_compile_order -fileset sim_1
 add_files -fileset constrs_1 -norecurse constraints/$project.xdc
 
 # synth_design -retiming -rtl -name rtl_1 -verilog_define SYNTHESIS -verilog_define
-synth_design -retiming -rtl -name rtl_1
+synth_design -rtl -name rtl_1
+
+set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
 
 launch_runs synth_1
 wait_on_run synth_1

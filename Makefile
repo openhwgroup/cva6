@@ -312,7 +312,7 @@ verilate_command := $(verilator)                                                
 					+define+$(defines)                                                                 \
 					src/util/sram.sv                                                                   \
 					+incdir+src/axi_node                                                               \
-					$(if $(verilator_threads), --threads $(verilator_threads) --threads-dpi none)  	   \
+					$(if $(verilator_threads), --threads $(verilator_threads))                         \
 					--unroll-count 256                                                                 \
 					-Werror-PINMISSING                                                                 \
 					-Werror-IMPLICIT                                                                   \
