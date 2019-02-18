@@ -6,9 +6,9 @@
 #endif
 
 // The maximum number of HARTs this code supports
-#define CLINT_CTRL_ADDR 0x2000000
+#define CLINT_CTRL_ADDR 0xFFF1020000
 #ifndef MAX_HARTS
-#define MAX_HARTS 256
+#define MAX_HARTS 4
 #endif
 #define CLINT_END_HART_IPI CLINT_CTRL_ADDR + (MAX_HARTS * 4)
 

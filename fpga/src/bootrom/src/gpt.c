@@ -92,6 +92,7 @@ int gpt_find_boot_partition(uint8_t* dest, uint32_t size)
 
     partition_entries_t *boot = (partition_entries_t *)(lba2_buf);
     print_uart("copying boot image ");
+    print_uart("\r\n");
     res = sd_copy(dest, boot->first_lba, size);
 
     if (res != 0)
