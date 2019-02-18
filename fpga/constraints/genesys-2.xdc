@@ -62,7 +62,7 @@ set_property -dict {PACKAGE_PIN AG12 IOSTANDARD LVCMOS15} [get_ports { eth_mdio 
 #############################################
 # Modified for 125MHz receive clock
 create_clock -period 8.000 -name eth_rxck [get_ports eth_rxck]
-set_clock_groups -asynchronous -group [get_clocks eth_rxclk -include_generated_clocks]
+# set_clock_groups -asynchronous -group [get_clocks eth_rxclk -include_generated_clocks]
 
 ## SD Card
 set_property -dict {PACKAGE_PIN R28 IOSTANDARD LVCMOS33} [get_ports spi_clk_o]
