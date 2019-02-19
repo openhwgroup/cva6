@@ -13,12 +13,12 @@
     #size-cells = <0>;
     timebase-frequency = <25000000>; // 25 MHz
     CPU0: cpu@0 {
-      clock-frequency = <50000000>; // 50 MHz
+      clock-frequency = <30000000>; // 30 MHz
       device_type = "cpu";
       reg = <0>;
       status = "okay";
       compatible = "eth, ariane", "riscv";
-      riscv,isa = "rv64imacsu";
+      riscv,isa = "rv64imafdc";
       mmu-type = "riscv,sv39";
       tlb-split;
       // HLIC - hart local interrupt controller

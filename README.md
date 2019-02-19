@@ -15,7 +15,6 @@ Table of Contents
    * [Table of Contents](#table-of-contents)
       * [Getting Started](#getting-started)
          * [Running User-Space Applications](#running-user-space-applications)
-         * [FPU Support](#fpu-support)
       * [FPGA Emulation](#fpga-emulation)
          * [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
          * [Preparing the SD Card](#preparing-the-sd-card)
@@ -101,10 +100,6 @@ $ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  b
 ```
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
-
-### FPU Support
-
-> There is preliminary support for floating point extensions F and D. At the moment floating point support will only be available in QuestaSim as the FPU is written in VHDL. This is likely to change. The floating point extensions can be enabled by setting `RVF` and `RVD` to `1'b1` in the `include/ariane_pkg.sv` file.
 
 ## FPGA Emulation
 

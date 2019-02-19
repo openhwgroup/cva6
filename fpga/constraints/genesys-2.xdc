@@ -62,7 +62,8 @@ set_property -dict {PACKAGE_PIN AG12 IOSTANDARD LVCMOS15} [get_ports { eth_mdio 
 #############################################
 # Modified for 125MHz receive clock
 create_clock -period 8.000 -name eth_rxck [get_ports eth_rxck]
-# set_clock_groups -asynchronous -group [get_clocks eth_rxclk -include_generated_clocks]
+set_clock_groups -asynchronous -group [get_clocks eth_rxck -include_generated_clocks]
+set_clock_groups -asynchronous -group [get_clocks clk_out2_xlnx_clk_gen]
 
 ## SD Card
 set_property -dict {PACKAGE_PIN R28 IOSTANDARD LVCMOS33} [get_ports spi_clk_o]
@@ -75,13 +76,11 @@ set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
 
 ## JTAG
 # minimize routing delay
-set_max_delay -to   [get_ports { td    } ] 5
-set_max_delay -from [get_ports { tms   } ] 5
-set_max_delay -from [get_ports { trst_n } ] 5
+set_max_delay -to   [get_ports { tdo } ] 20
+set_max_delay -from [get_ports { tms } ] 20
+set_max_delay -from [get_ports { tdi } ] 20
+set_max_delay -from [get_ports { trst_n } ] 20
 
 # reset signal
 set_false_path -from [get_ports { trst_n } ]
-
-# constrain clock domain crossing
-set_false_path -from [get_clocks tck] -to [get_clocks clk_out1]
-set_max_delay  -from [get_clocks tck] -to [get_clocks clk_out1] 5
+set_false_path -from [get_pins i_ddr/u_xlnx_mig_7_ddr3_mig/u_ddr3_infrastructure/rstdiv0_sync_r1_reg_rep/C]
