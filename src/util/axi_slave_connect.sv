@@ -17,7 +17,6 @@ module axi_slave_connect (
     AXI_BUS.in slave
 );
 
-    assign  axi_req_o.aw.atop    = '0; // not supported at the moment
     assign  axi_req_o.aw.id      = slave.aw_id;
     assign  axi_req_o.aw.addr    = slave.aw_addr;
     assign  axi_req_o.aw.len     = slave.aw_len;
@@ -27,6 +26,7 @@ module axi_slave_connect (
     assign  axi_req_o.aw.cache   = slave.aw_cache;
     assign  axi_req_o.aw.prot    = slave.aw_prot;
     assign  axi_req_o.aw.qos     = slave.aw_qos;
+    assign  axi_req_o.aw.atop    = slave.aw_atop;
     assign  axi_req_o.aw.region  = slave.aw_region;
     // assign                     = slave.aw_user;
     assign  axi_req_o.aw_valid   = slave.aw_valid;
