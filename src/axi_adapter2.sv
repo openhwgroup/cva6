@@ -24,8 +24,7 @@ import std_cache_pkg::*;
 
 module axi_adapter2 #(
     parameter int unsigned AxiNumWords       = 4, // data width in dwords, this is also the maximum burst length, must be >=2
-    parameter int unsigned AxiIdWidth        = 10,
-    parameter int unsigned CriticalWordFirst = 0  // this must be supported by the AXI subsystem, note that the data will be shifted by the word offset when this is enabled
+    parameter int unsigned AxiIdWidth        = 10
 ) (
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
@@ -248,7 +247,6 @@ module axi_adapter2 #(
     // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
     // with an incremental transfer we need to output the corresponding base address of the cache line
     assign axi_req_o.ar.burst  = (rd_single_req)       ? 2'b00 :
-                                 (CriticalWordFirst) ? 2'b10 :
                                                          2'b01;  // wrapping transfer in case of a critical word first strategy
     assign axi_req_o.ar.addr   = rd_addr_i;
     assign axi_req_o.ar.size   = rd_size_i;
@@ -278,11 +276,7 @@ module axi_adapter2 #(
     assign rd_id_d             = axi_resp_i.r.id;
     assign rd_id_o             = rd_id_q;
     assign rd_data_o           = rd_data_q;
-    // used to determine critical word
-    assign rd_word_o           = axi_resp_i.r.data;
-    assign rd_word_valid_o     = axi_resp_i.r_valid;
-    assign rd_word_cnt_o       = rd_cnt_q;
-
+    
     // tx counter
     assign rd_cnt_d            = (rd_cnt_clr) ? '0         :
                                  (rd_cnt_en)  ? rd_cnt_q+1 :
