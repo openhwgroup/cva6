@@ -55,7 +55,7 @@ package ariane_pkg;
     // in this case we can use a small commit queue since we have a write buffer in the dcache
     // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
     // to longer paths into the commit stage
-    localparam int unsigned DEPTH_COMMIT = 2;
+    localparam int unsigned DEPTH_COMMIT = 4;
 `else
     // allocate more space for the commit buffer to be on the save side, this needs to be a power of two
     localparam int unsigned DEPTH_COMMIT = 8;
@@ -283,11 +283,11 @@ package ariane_pkg;
 `endif
 
 `ifndef CONFIG_L1D_ASSOCIATIVITY
-    `define CONFIG_L1D_ASSOCIATIVITY 4
+    `define CONFIG_L1D_ASSOCIATIVITY 8
 `endif
 
 `ifndef CONFIG_L1D_SIZE
-    `define CONFIG_L1D_SIZE 16*1024
+    `define CONFIG_L1D_SIZE 32*1024
 `endif
 
     // I$

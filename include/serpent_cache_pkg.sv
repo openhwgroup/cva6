@@ -33,7 +33,8 @@ package serpent_cache_pkg;
 `endif
 
 `ifndef L15_THREADID_WIDTH
-    `define L15_THREADID_WIDTH 1
+    // this results in 4 pending tx slots in the writebuffer
+    `define L15_THREADID_WIDTH 2
 `endif
 
 `ifndef TLB_CSM_WIDTH
@@ -71,7 +72,7 @@ package serpent_cache_pkg;
   // write buffer parameterization
   localparam DCACHE_WBUF_DEPTH       = 8;
   localparam DCACHE_MAX_TX           = 2**L15_TID_WIDTH;
-  localparam DCACHE_ID_WIDTH         = $clog2(DCACHE_MAX_TX);
+  localparam CACHE_ID_WIDTH          = L15_TID_WIDTH;
 
 
   typedef struct packed {
@@ -126,16 +127,14 @@ package serpent_cache_pkg;
     logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] way;         // way to replace
     logic [63:0]                                     paddr;       // physical address
     logic                                            nc;          // noncacheable
-    logic [L15_TID_WIDTH-1:0]                        tid;         // threadi id (used as transaction id in Ariane)
+    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
   } icache_req_t;
 
   typedef struct packed {
     icache_in_t                                      rtype;       // see definitions above
     logic [ariane_pkg::ICACHE_LINE_WIDTH-1:0]        data;        // full cache line width
     cache_inval_t                                    inv;         // invalidation vector
-    logic                                            nc;          // noncacheable
-    logic [L15_TID_WIDTH-1:0]                        tid;         // threadi id (used as transaction id in Ariane)
-    logic                                            f4b;         // fetch 4 bytes only (from I/O space)
+    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
   } icache_rtrn_t;
 
   // dcache interface
@@ -146,7 +145,7 @@ package serpent_cache_pkg;
     logic [63:0]                                     paddr;       // physical address
     logic [63:0]                                     data;        // word width of processor (no block stores at the moment)
     logic                                            nc;          // noncacheable
-    logic [L15_TID_WIDTH-1:0]                        tid;         // threadi id (used as transaction id in Ariane)
+    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
     ariane_pkg::amo_t                                amo_op;      // amo opcode
   } dcache_req_t;
 
@@ -154,8 +153,7 @@ package serpent_cache_pkg;
     dcache_in_t                                      rtype;       // see definitions above
     logic [ariane_pkg::DCACHE_LINE_WIDTH-1:0]        data;        // full cache line width
     cache_inval_t                                    inv;         // invalidation vector
-    logic                                            nc;          // noncacheable
-    logic [L15_TID_WIDTH-1:0]                        tid;         // threadi id (used as transaction id in Ariane)
+    logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
   } dcache_rtrn_t;
 
 

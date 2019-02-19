@@ -314,10 +314,7 @@ endgenerate
 
 // fifo signals
 assign icache_rtrn_o.tid      = rtrn_fifo_data.l15_threadid;
-assign icache_rtrn_o.nc       = rtrn_fifo_data.l15_noncacheable;
-assign icache_rtrn_o.f4b      = rtrn_fifo_data.l15_f4b;
 assign dcache_rtrn_o.tid      = rtrn_fifo_data.l15_threadid;
-assign dcache_rtrn_o.nc       = rtrn_fifo_data.l15_noncacheable;
 
 // invalidation signal mapping
 assign icache_rtrn_o.inv.idx  = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};

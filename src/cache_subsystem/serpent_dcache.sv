@@ -18,7 +18,7 @@ import serpent_cache_pkg::*;
 module serpent_dcache #(
     // ID to be used for read and AMO transactions.
     // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
-    parameter logic [DCACHE_ID_WIDTH-1:0] RdAmoTxId     = 1,
+    parameter logic [CACHE_ID_WIDTH-1:0] RdAmoTxId     = 1,
     parameter logic [63:0]                CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
     parameter logic [63:0]                CachedAddrEnd = 64'h80_0000_0000  // end of cached region
 ) (
@@ -79,10 +79,10 @@ module serpent_dcache #(
     logic [NumPorts-1:0][63:0]                    miss_paddr;
     logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
     logic [NumPorts-1:0][2:0]                     miss_size;
-    logic [NumPorts-1:0][DCACHE_ID_WIDTH-1:0]     miss_id;
+    logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]      miss_id;
     logic [NumPorts-1:0]                          miss_replay;
     logic [NumPorts-1:0]                          miss_rtrn_vld;
-    logic [DCACHE_ID_WIDTH-1:0]                   miss_rtrn_id;
+    logic [CACHE_ID_WIDTH-1:0]                    miss_rtrn_id;
 
     // memory <-> read controllers/miss unit
     logic [NumPorts-1:0]                          rd_prio;

@@ -28,7 +28,7 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_icache  #(
-    parameter logic [DCACHE_ID_WIDTH-1:0] RdTxId             = 0,                // ID to be used for read transactions
+    parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId             = 0,                // ID to be used for read transactions
     parameter bit                         Axi64BitCompliant  = 1'b0,             // set this to 1 when using in conjunction with 64bit AXI bus adapter
     parameter logic [63:0]                CachedAddrBeg      = 64'h00_8000_0000, // begin of cached region
     parameter logic [63:0]                CachedAddrEnd      = 64'h80_0000_0000  // end of cached region
@@ -513,14 +513,6 @@ module serpent_icache  #(
 
 //pragma translate_off
 `ifndef VERILATOR
-  noncacheable0: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) paddr_is_nc |-> mem_rtrn_vld_i |-> state_q != KILL_MISS |-> mem_rtrn_i.rtype == ICACHE_IFILL_ACK |-> mem_rtrn_i.nc)
-         else $fatal(1,"[l1 icache] NC paddr implies nc ifill");
-
-  noncacheable1: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> state_q != KILL_MISS |-> mem_rtrn_i.f4b |-> mem_rtrn_i.nc)
-         else $fatal(1,"[l1 icache] 4b ifill implies NC");
-
   repl_inval0: assert property (
       @(posedge clk_i) disable iff (~rst_ni) cache_wren |-> ~(mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld))
          else $fatal(1,"[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");

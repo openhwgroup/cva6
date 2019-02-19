@@ -8,8 +8,9 @@
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  *
- * File:  axi_adapter.sv
- * Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+ * File:  axi_adapter2.sv
+ * Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>
+ *         Florian Zaruba <zarubaf@iis.ee.ethz.ch>
  * Date:   1.8.2018
  *
  * Description: Manages communication with the AXI Bus. Note that if you intend
@@ -22,9 +23,9 @@
 import std_cache_pkg::*;
 
 module axi_adapter2 #(
-    parameter int unsigned DATA_WORDS          = 4, // data width in dwords, this is also the maximum burst length, must be >=2
-    parameter int unsigned AXI_ID_WIDTH        = 10,
-    parameter int unsigned CRITICAL_WORD_FIRST = 0  // this must be supported by the AXI subsystem, note that the data will be shifted by the word offset when this is enabled
+    parameter int unsigned AxiNumWords       = 4, // data width in dwords, this is also the maximum burst length, must be >=2
+    parameter int unsigned AxiIdWidth        = 10,
+    parameter int unsigned CriticalWordFirst = 0  // this must be supported by the AXI subsystem, note that the data will be shifted by the word offset when this is enabled
 ) (
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
@@ -33,37 +34,37 @@ module axi_adapter2 #(
     input  logic                                        rd_req_i,
     output logic                                        rd_gnt_o,
     input  logic [63:0]                                 rd_addr_i,
-    input  logic [$clog2(DATA_WORDS)-1:0]               rd_blen_i, // axi convention: LEN-1
+    input  logic [$clog2(AxiNumWords)-1:0]              rd_blen_i, // axi convention: LEN-1
     input  logic [1:0]                                  rd_size_i,
-    input  logic [AXI_ID_WIDTH-1:0]                     rd_id_i,   // use same ID for reads, or make sure you only have one outstanding read tx
+    input  logic [AxiIdWidth-1:0]                       rd_id_i,   // use same ID for reads, or make sure you only have one outstanding read tx
     input  logic                                        rd_lock_i,
     // read response (we have to unconditionally sink the response)
     input  logic                                        rd_rdy_i,
     output logic                                        rd_valid_o,
-    output logic [DATA_WORDS-1:0][63:0]                 rd_data_o,
-    output logic [AXI_ID_WIDTH-1:0]                     rd_id_o,
+    output logic [AxiNumWords-1:0][63:0]                rd_data_o,
+    output logic [AxiIdWidth-1:0]                       rd_id_o,
     output logic                                        rd_exokay_o, // indicates whether exclusive tx succeeded
     // write channel
     input  logic                                        wr_req_i,
     output logic                                        wr_gnt_o,
     input  logic [63:0]                                 wr_addr_i,
-    input  logic [DATA_WORDS-1:0][63:0]                 wr_data_i,
-    input  logic [DATA_WORDS-1:0][7:0]                  wr_be_i,
-    input  logic [$clog2(DATA_WORDS)-1:0]               wr_blen_i, // axi convention: LEN-1
+    input  logic [AxiNumWords-1:0][63:0]                wr_data_i,
+    input  logic [AxiNumWords-1:0][7:0]                 wr_be_i,
+    input  logic [$clog2(AxiNumWords)-1:0]              wr_blen_i, // axi convention: LEN-1
     input  logic [1:0]                                  wr_size_i,
-    input  logic [AXI_ID_WIDTH-1:0]                     wr_id_i,
+    input  logic [AxiIdWidth-1:0]                       wr_id_i,
     input  logic                                        wr_lock_i,
     input  logic [5:0]                                  wr_atop_i,
     // write response
     input  logic                                        wr_rdy_i,
     output logic                                        wr_valid_o,
-    output logic [AXI_ID_WIDTH-1:0]                     wr_id_o,
+    output logic [AxiIdWidth-1:0]                       wr_id_o,
     output logic                                        wr_exokay_o, // indicates whether exclusive tx succeeded
     // AXI port
     output ariane_axi::req_t                            axi_req_o,
     input  ariane_axi::resp_t                           axi_resp_i
 );
-    localparam ADDR_INDEX = ($clog2(DATA_WORDS) > 0) ? $clog2(DATA_WORDS) : 1;
+    localparam AddrIndex = ($clog2(AxiNumWords) > 0) ? $clog2(AxiNumWords) : 1;
 
 ///////////////////////////////////////////////////////
 // write channel
@@ -74,7 +75,7 @@ module axi_adapter2 #(
     } wr_state_q, wr_state_d;
 
     // AXI tx counter
-    logic [ADDR_INDEX-1:0] wr_cnt_d, wr_cnt_q;
+    logic [AddrIndex-1:0] wr_cnt_d, wr_cnt_q;
     logic wr_single_req, wr_cnt_done, wr_cnt_clr, wr_cnt_en;
 
     assign wr_single_req       = (wr_blen_i == 0);
@@ -234,11 +235,11 @@ module axi_adapter2 #(
 ///////////////////////////////////////////////////////
 
     // AXI tx counter
-    logic [ADDR_INDEX-1:0] rd_cnt_d, rd_cnt_q;
+    logic [AddrIndex-1:0] rd_cnt_d, rd_cnt_q;
     logic rd_single_req, rd_cnt_clr, rd_cnt_en;
-    logic [DATA_WORDS-1:0][63:0] rd_data_d, rd_data_q;
+    logic [AxiNumWords-1:0][63:0] rd_data_d, rd_data_q;
     logic rd_valid_d, rd_valid_q;
-    logic [AXI_ID_WIDTH-1:0] rd_id_d, rd_id_q;
+    logic [AxiIdWidth-1:0] rd_id_d, rd_id_q;
     logic rd_exokay_d, rd_exokay_q;
 
     assign rd_single_req       = (rd_blen_i == 0);
@@ -247,7 +248,7 @@ module axi_adapter2 #(
     // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
     // with an incremental transfer we need to output the corresponding base address of the cache line
     assign axi_req_o.ar.burst  = (rd_single_req)       ? 2'b00 :
-                                 (CRITICAL_WORD_FIRST) ? 2'b10 :
+                                 (CriticalWordFirst) ? 2'b10 :
                                                          2'b01;  // wrapping transfer in case of a critical word first strategy
     assign axi_req_o.ar.addr   = rd_addr_i;
     assign axi_req_o.ar.size   = rd_size_i;
@@ -288,7 +289,7 @@ module axi_adapter2 #(
                                                 rd_cnt_q;
 
     generate
-        for(genvar k=0; k<DATA_WORDS; k++) begin : g_rd_data
+        for(genvar k=0; k<AxiNumWords; k++) begin : g_rd_data
             assign rd_data_d[k] = (rd_cnt_q==k && rd_cnt_en) ? axi_resp_i.r.data : rd_data_q[k];
         end
     endgenerate
@@ -324,8 +325,8 @@ module axi_adapter2 #(
 //pragma translate_off
 `ifndef VERILATOR
    initial begin
-      assert (DATA_WORDS >= 1) else
-         $fatal(1,"[axi adapter] DATA_WORDS must be >= 1");
+      assert (AxiNumWords >= 1) else
+         $fatal(1,"[axi adapter] AxiNumWords must be >= 1");
    end
 `endif
 //pragma translate_on

@@ -30,6 +30,9 @@ import instruction_tracer_pkg::*;
 module ariane #(
   parameter logic [63:0] DmBaseAddress = 64'h0,            // debug module base address
 `ifdef PITON_ARIANE
+`ifdef AXI64_CACHE_PORTS
+  parameter int unsigned AxiIdWidth    = 10,
+`endif
   parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
   parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
 `endif
@@ -587,6 +590,9 @@ module ariane #(
 `ifdef PITON_ARIANE
   // this is a cache subsystem that is compatible with OpenPiton
   serpent_cache_subsystem #(
+`ifdef AXI64_CACHE_PORTS    
+    .AxiIdWidth           ( AxiIdWidth    ),
+`endif    
     .CachedAddrBeg        ( CachedAddrBeg ),
     .CachedAddrEnd        ( CachedAddrEnd ),
     .SwapEndianess        ( SwapEndianess )

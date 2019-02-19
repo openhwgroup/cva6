@@ -542,6 +542,7 @@ module ariane_testharness #(
 
     ariane #(
 `ifdef PITON_ARIANE
+        .AxiIdWidth    ( AXI_ID_WIDTH                                    ),
         .SwapEndianess ( 0                                               ),
         .CachedAddrEnd ( (ariane_soc::DRAMBase + ariane_soc::DRAMLength) ),
 `endif

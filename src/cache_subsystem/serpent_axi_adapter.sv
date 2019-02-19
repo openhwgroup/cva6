@@ -95,8 +95,8 @@ rrarbiter #(
   .idx_o  ( arb_idx                 )
 );
 
-// the axi interconnect does not correctly handle the ordering of read responses.
-// workaround: only allow for one outstanding TX. need to improve this.
+// currently we only keep one pending read transaction due 
+// to the deserialization mechanism (only one buffer for one ID available)
 assign rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q | axi_rd_gnt;
 
 always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
@@ -187,17 +187,17 @@ always_comb begin : p_axi_req
     end 
     
 
-    axi_wr_id_in = {dcache_data.tid, tmp_type, dcache_data.nc};
+    axi_wr_id_in = {dcache_data.tid, tmp_type};
 
     // arbiter mux
     if (arb_idx) begin
       axi_rd_addr  = dcache_data.paddr;
       axi_rd_size  = dcache_data.size[1:0];
-      axi_rd_id_in = {dcache_data.tid, tmp_type, dcache_data.nc};
+      axi_rd_id_in = {dcache_data.tid, tmp_type};
     end else begin
       axi_rd_addr  = icache_data.paddr;
       axi_rd_size  = 2'b11;// always request 64bit words in case of ifill
-      axi_rd_id_in = {icache_data.tid, tmp_type, icache_data.nc};
+      axi_rd_id_in = {icache_data.tid, tmp_type};
     end 
   end  
 end  
@@ -259,39 +259,33 @@ always_comb begin : p_axi_rtrn
   if (axi_rd_valid) begin
     // we give prio to read responses
     axi_wr_rdy                 = 1'b0;
-    unique case(tx_t'(axi_rd_id_out[2:1]))
+    unique case(tx_t'(axi_rd_id_out[1:0]))
       STD:   begin
         dcache_rtrn_vld_o      = 1'b1;
         dcache_rtrn_o.rtype    = serpent_cache_pkg::DCACHE_LOAD_ACK;
-        dcache_rtrn_o.tid      = axi_rd_id_out>>3;
-        dcache_rtrn_o.nc       = axi_rd_id_out[0];
+        dcache_rtrn_o.tid      = axi_rd_id_out>>2;
       end  
       LRSC:  begin
         dcache_rtrn_vld_o      = 1'b1;
         dcache_rtrn_o.rtype    = serpent_cache_pkg::DCACHE_ATOMIC_ACK;
-        dcache_rtrn_o.tid      = axi_rd_id_out>>3;
-        dcache_rtrn_o.nc       = axi_rd_id_out[0];
+        dcache_rtrn_o.tid      = axi_rd_id_out>>2;
       end  
       ATOP:  begin
         dcache_rtrn_vld_o      = 1'b1;
         dcache_rtrn_o.rtype    = serpent_cache_pkg::DCACHE_ATOMIC_ACK;
-        dcache_rtrn_o.tid      = axi_rd_id_out>>3;
-        dcache_rtrn_o.nc       = axi_rd_id_out[0];
+        dcache_rtrn_o.tid      = axi_rd_id_out>>2;
       end  
       IFILL: begin 
         icache_rtrn_vld_o      = 1'b1;
         icache_rtrn_o.rtype    = serpent_cache_pkg::ICACHE_IFILL_ACK;
-        icache_rtrn_o.tid      = axi_rd_id_out>>3;
-        icache_rtrn_o.nc       = axi_rd_id_out[0];
-        icache_rtrn_o.f4b      = axi_rd_id_out[0];
+        icache_rtrn_o.tid      = axi_rd_id_out>>2;
       end  
     endcase
   //////////////////////////////////////  
   end else if (axi_wr_valid) begin
     dcache_rtrn_vld_o  = 1'b1; 
-    dcache_rtrn_o.tid  = axi_wr_id_out>>3;
-    dcache_rtrn_o.nc   = axi_wr_id_out[0];
-    unique case(tx_t'(axi_wr_id_out[2:1]))
+    dcache_rtrn_o.tid  = axi_wr_id_out>>2;
+    unique case(tx_t'(axi_wr_id_out[1:0]))
       STD:   dcache_rtrn_o.rtype = serpent_cache_pkg::DCACHE_STORE_ACK;
       ATOP:  dcache_rtrn_vld_o   = 1'b0; // silently drop atop write response, as we only rely on the read response here
       LRSC:  begin 
@@ -325,8 +319,8 @@ end
 ///////////////////////////////////////////////////////
 
 axi_adapter2 #(
-  .DATA_WORDS      ( AxiNumWords     ),
-  .AXI_ID_WIDTH    ( AxiIdWidth      )
+  .AxiNumWords     ( AxiNumWords     ),
+  .AxiIdWidth      ( AxiIdWidth      )
 ) i_axi_adapter (
   .clk_i           ( clk_i             ),
   .rst_ni          ( rst_ni            ),
@@ -367,14 +361,14 @@ axi_adapter2 #(
 //pragma translate_off
 `ifndef VERILATOR
   initial begin
-    assert (AxiIdWidth >= $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+3) else
-      $fatal(1,$psprintf("[axi adapter] AXI ID must be at least %01d bit wide", $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+3));
+    assert (AxiIdWidth >= $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2) else
+      $fatal(1,$psprintf("[axi adapter] AXI ID must be at least %01d bit wide", $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2));
     assert (ariane_pkg::ICACHE_LINE_WIDTH <= ariane_pkg::DCACHE_LINE_WIDTH) else 
       $fatal(1,"[axi adapter] AXI shim currently assumes that the icache line size >= dcache line size");
   end
 
   lr_exokay: assert property (
-  @(posedge clk_i) disable iff (~rst_ni) axi_rd_valid |-> axi_rd_rdy |-> tx_t'(axi_rd_id_out[2:1]) == LRSC |-> axi_rd_exokay)
+  @(posedge clk_i) disable iff (~rst_ni) axi_rd_valid |-> axi_rd_rdy |-> tx_t'(axi_rd_id_out[1:0]) == LRSC |-> axi_rd_exokay)
     else $warning("[axi adapter] LR did not receive an exokay, indicating that atomics are not supported");
   
 `endif
