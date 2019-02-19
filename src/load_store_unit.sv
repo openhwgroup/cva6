@@ -205,7 +205,7 @@ module load_store_unit #(
     // ----------------------------
     // Output Pipeline Register
     // ----------------------------
-    pipe_reg_simple #(
+    shift_reg #(
         .dtype ( logic[$bits(ld_valid) + $bits(ld_trans_id) + $bits(ld_result) + $bits(ld_ex) - 1: 0]),
         .Depth ( NR_LOAD_PIPE_REGS )
     ) i_pipe_reg_load (
@@ -215,7 +215,7 @@ module load_store_unit #(
         .d_o ( {load_valid_o, load_trans_id_o, load_result_o, load_exception_o} )
     );
 
-    pipe_reg_simple #(
+    shift_reg #(
         .dtype ( logic[$bits(st_valid) + $bits(st_trans_id) + $bits(st_result) + $bits(st_ex) - 1: 0]),
         .Depth ( NR_STORE_PIPE_REGS )
     ) i_pipe_reg_store (
