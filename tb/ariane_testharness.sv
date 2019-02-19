@@ -242,10 +242,9 @@ module ariane_testharness #(
         .rdata_o    ( rom_rdata )
     );
 
-    // ---------------
-    // Memory
-    // ---------------
-
+    // ------------------------------
+    // Memory + Exclusive Access
+    // ------------------------------
     AXI_BUS #(
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
@@ -260,137 +259,19 @@ module ariane_testharness #(
     logic [AXI_DATA_WIDTH-1:0]    wdata;
     logic [AXI_DATA_WIDTH-1:0]    rdata;
 
-    axi_pkg::aw_chan_t aw_chan_i;
-    axi_pkg::w_chan_t  w_chan_i;
-    axi_pkg::b_chan_t  b_chan_o;
-    axi_pkg::ar_chan_t ar_chan_i;
-    axi_pkg::r_chan_t  r_chan_o;
-    axi_pkg::aw_chan_t aw_chan_o;
-    axi_pkg::w_chan_t  w_chan_o;
-    axi_pkg::b_chan_t  b_chan_i;
-    axi_pkg::ar_chan_t ar_chan_o;
-    axi_pkg::r_chan_t  r_chan_i;
-
-    axi_delayer #(
-        .aw_t              ( axi_pkg::aw_chan_t ),
-        .w_t               ( axi_pkg::w_chan_t  ),
-        .b_t               ( axi_pkg::b_chan_t  ),
-        .ar_t              ( axi_pkg::ar_chan_t ),
-        .r_t               ( axi_pkg::r_chan_t  ),
-        .StallRandomOutput ( StallRandomOutput  ),
-        .StallRandomInput  ( StallRandomInput   ),
-        .FixedDelayInput   ( 0                  ),
-        .FixedDelayOutput  ( 0                  )
-    ) i_axi_delayer (
-        .clk_i      ( clk_i                             ),
-        .rst_ni     ( ndmreset_n                        ),
-        .aw_valid_i ( master[ariane_soc::DRAM].aw_valid ),
-        .aw_chan_i  ( aw_chan_i                         ),
-        .aw_ready_o ( master[ariane_soc::DRAM].aw_ready ),
-        .w_valid_i  ( master[ariane_soc::DRAM].w_valid  ),
-        .w_chan_i   ( w_chan_i                          ),
-        .w_ready_o  ( master[ariane_soc::DRAM].w_ready  ),
-        .b_valid_o  ( master[ariane_soc::DRAM].b_valid  ),
-        .b_chan_o   ( b_chan_o                          ),
-        .b_ready_i  ( master[ariane_soc::DRAM].b_ready  ),
-        .ar_valid_i ( master[ariane_soc::DRAM].ar_valid ),
-        .ar_chan_i  ( ar_chan_i                         ),
-        .ar_ready_o ( master[ariane_soc::DRAM].ar_ready ),
-        .r_valid_o  ( master[ariane_soc::DRAM].r_valid  ),
-        .r_chan_o   ( r_chan_o                          ),
-        .r_ready_i  ( master[ariane_soc::DRAM].r_ready  ),
-        .aw_valid_o ( dram.aw_valid                     ),
-        .aw_chan_o  ( aw_chan_o                         ),
-        .aw_ready_i ( dram.aw_ready                     ),
-        .w_valid_o  ( dram.w_valid                      ),
-        .w_chan_o   ( w_chan_o                          ),
-        .w_ready_i  ( dram.w_ready                      ),
-        .b_valid_i  ( dram.b_valid                      ),
-        .b_chan_i   ( b_chan_i                          ),
-        .b_ready_o  ( dram.b_ready                      ),
-        .ar_valid_o ( dram.ar_valid                     ),
-        .ar_chan_o  ( ar_chan_o                         ),
-        .ar_ready_i ( dram.ar_ready                     ),
-        .r_valid_i  ( dram.r_valid                      ),
-        .r_chan_i   ( r_chan_i                          ),
-        .r_ready_o  ( dram.r_ready                      )
+    axi_riscv_atomics #(
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH      ),
+        .AXI_MAX_WRITE_TXNS ( 1  ),
+        .RISCV_WORD_WIDTH   ( 64 )
+    ) i_axi_riscv_atomics (
+        .clk_i,
+        .rst_ni ( ndmreset_n               ),
+        .slv    ( master[ariane_soc::DRAM] ),
+        .mst    ( dram                     )
     );
-
-    assign aw_chan_i.atop = '0;
-    assign aw_chan_i.id = master[ariane_soc::DRAM].aw_id;
-    assign aw_chan_i.addr = master[ariane_soc::DRAM].aw_addr;
-    assign aw_chan_i.len = master[ariane_soc::DRAM].aw_len;
-    assign aw_chan_i.size = master[ariane_soc::DRAM].aw_size;
-    assign aw_chan_i.burst = master[ariane_soc::DRAM].aw_burst;
-    assign aw_chan_i.lock = master[ariane_soc::DRAM].aw_lock;
-    assign aw_chan_i.cache = master[ariane_soc::DRAM].aw_cache;
-    assign aw_chan_i.prot = master[ariane_soc::DRAM].aw_prot;
-    assign aw_chan_i.qos = master[ariane_soc::DRAM].aw_qos;
-    assign aw_chan_i.region = master[ariane_soc::DRAM].aw_region;
-
-    assign ar_chan_i.id = master[ariane_soc::DRAM].ar_id;
-    assign ar_chan_i.addr = master[ariane_soc::DRAM].ar_addr;
-    assign ar_chan_i.len = master[ariane_soc::DRAM].ar_len;
-    assign ar_chan_i.size = master[ariane_soc::DRAM].ar_size;
-    assign ar_chan_i.burst = master[ariane_soc::DRAM].ar_burst;
-    assign ar_chan_i.lock = master[ariane_soc::DRAM].ar_lock;
-    assign ar_chan_i.cache = master[ariane_soc::DRAM].ar_cache;
-    assign ar_chan_i.prot = master[ariane_soc::DRAM].ar_prot;
-    assign ar_chan_i.qos = master[ariane_soc::DRAM].ar_qos;
-    assign ar_chan_i.region = master[ariane_soc::DRAM].ar_region;
-
-    assign w_chan_i.data = master[ariane_soc::DRAM].w_data;
-    assign w_chan_i.strb = master[ariane_soc::DRAM].w_strb;
-    assign w_chan_i.last = master[ariane_soc::DRAM].w_last;
-
-    assign master[ariane_soc::DRAM].r_id = r_chan_o.id;
-    assign master[ariane_soc::DRAM].r_data = r_chan_o.data;
-    assign master[ariane_soc::DRAM].r_resp = r_chan_o.resp;
-    assign master[ariane_soc::DRAM].r_last = r_chan_o.last;
-
-    assign master[ariane_soc::DRAM].b_id = b_chan_o.id;
-    assign master[ariane_soc::DRAM].b_resp = b_chan_o.resp;
-
-
-    assign dram.aw_id = aw_chan_o.id;
-    assign dram.aw_addr = aw_chan_o.addr;
-    assign dram.aw_len = aw_chan_o.len;
-    assign dram.aw_size = aw_chan_o.size;
-    assign dram.aw_burst = aw_chan_o.burst;
-    assign dram.aw_lock = aw_chan_o.lock;
-    assign dram.aw_cache = aw_chan_o.cache;
-    assign dram.aw_prot = aw_chan_o.prot;
-    assign dram.aw_qos = aw_chan_o.qos;
-    assign dram.aw_region = aw_chan_o.region;
-    assign dram.aw_user = master[ariane_soc::DRAM].aw_user;
-
-    assign dram.ar_id = ar_chan_o.id;
-    assign dram.ar_addr = ar_chan_o.addr;
-    assign dram.ar_len = ar_chan_o.len;
-    assign dram.ar_size = ar_chan_o.size;
-    assign dram.ar_burst = ar_chan_o.burst;
-    assign dram.ar_lock = ar_chan_o.lock;
-    assign dram.ar_cache = ar_chan_o.cache;
-    assign dram.ar_prot = ar_chan_o.prot;
-    assign dram.ar_qos = ar_chan_o.qos;
-    assign dram.ar_region = ar_chan_o.region;
-    assign dram.ar_user = master[ariane_soc::DRAM].ar_user;
-
-    assign dram.w_data = w_chan_o.data;
-    assign dram.w_strb = w_chan_o.strb;
-    assign dram.w_last = w_chan_o.last;
-    assign dram.w_user = master[ariane_soc::DRAM].w_user;
-
-    assign r_chan_i.id = dram.r_id;
-    assign r_chan_i.data = dram.r_data;
-    assign r_chan_i.resp = dram.r_resp;
-    assign r_chan_i.last = dram.r_last;
-    assign master[ariane_soc::DRAM].r_user = dram.r_user;
-
-    assign b_chan_i.id = dram.b_id;
-    assign b_chan_i.resp = dram.b_resp;
-    assign master[ariane_soc::DRAM].b_user = dram.b_user;
-
 
     axi2mem #(
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
