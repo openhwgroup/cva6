@@ -1,22 +1,12 @@
 ## Buttons
 set_property -dict {PACKAGE_PIN R19 IOSTANDARD LVCMOS33} [get_ports cpu_resetn]
 
-## PMOD Header JC
-# set_property -dict {PACKAGE_PIN AC26 IOSTANDARD LVCMOS33} [get_ports tck]
-# set_property -dict {PACKAGE_PIN AJ27 IOSTANDARD LVCMOS33} [get_ports tdi]
-# set_property -dict {PACKAGE_PIN AH30 IOSTANDARD LVCMOS33} [get_ports tdo]
-# set_property -dict {PACKAGE_PIN AK29 IOSTANDARD LVCMOS33} [get_ports tms]
-# set_property -dict {PACKAGE_PIN AD26 IOSTANDARD LVCMOS33} [get_ports trst_n]
-# accept sub-optimal placement
-# set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets tck_IBUF]
-
-
 ## To use FTDI FT2232 JTAG
-set_property -dict { PACKAGE_PIN Y29   IOSTANDARD LVCMOS33 } [get_ports { trst_n }]; 
-set_property -dict { PACKAGE_PIN AD27  IOSTANDARD LVCMOS33 } [get_ports { tck    }]; 
-set_property -dict { PACKAGE_PIN W27   IOSTANDARD LVCMOS33 } [get_ports { tdi    }]; 
-set_property -dict { PACKAGE_PIN W28   IOSTANDARD LVCMOS33 } [get_ports { tdo    }]; 
-set_property -dict { PACKAGE_PIN W29   IOSTANDARD LVCMOS33 } [get_ports { tms    }]; 
+set_property -dict { PACKAGE_PIN Y29   IOSTANDARD LVCMOS33 } [get_ports { trst_n }];
+set_property -dict { PACKAGE_PIN AD27  IOSTANDARD LVCMOS33 } [get_ports { tck    }];
+set_property -dict { PACKAGE_PIN W27   IOSTANDARD LVCMOS33 } [get_ports { tdi    }];
+set_property -dict { PACKAGE_PIN W28   IOSTANDARD LVCMOS33 } [get_ports { tdo    }];
+set_property -dict { PACKAGE_PIN W29   IOSTANDARD LVCMOS33 } [get_ports { tms    }];
 
 ## UART
 set_property -dict {PACKAGE_PIN Y23 IOSTANDARD LVCMOS33} [get_ports tx]
@@ -72,7 +62,10 @@ set_property -dict {PACKAGE_PIN AG12 IOSTANDARD LVCMOS15} [get_ports { eth_mdio 
 #############################################
 # Modified for 125MHz receive clock
 create_clock -period 8.000 -name eth_rxck [get_ports eth_rxck]
-set_clock_groups -asynchronous -group [get_clocks eth_rxclk -include_generated_clocks]
+
+set_clock_groups -asynchronous -group [get_clocks eth_rxck -include_generated_clocks]
+set_clock_groups -asynchronous -group [get_clocks clk_out2_xlnx_clk_gen]
+
 
 ## SD Card
 set_property -dict {PACKAGE_PIN R28 IOSTANDARD LVCMOS33} [get_ports spi_clk_o]
@@ -82,3 +75,14 @@ set_property -dict {PACKAGE_PIN R29 IOSTANDARD LVCMOS33} [get_ports spi_mosi]
 
 # Genesys 2 has a quad SPI flash
 set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+
+## JTAG
+# minimize routing delay
+set_max_delay -to   [get_ports { tdo } ] 20
+set_max_delay -from [get_ports { tms } ] 20
+set_max_delay -from [get_ports { tdi } ] 20
+set_max_delay -from [get_ports { trst_n } ] 20
+
+# reset signal
+set_false_path -from [get_ports { trst_n } ]
+set_false_path -from [get_pins i_ddr/u_xlnx_mig_7_ddr3_mig/u_ddr3_infrastructure/rstdiv0_sync_r1_reg_rep/C]

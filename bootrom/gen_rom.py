@@ -83,6 +83,7 @@ def read_bin():
         rom = binascii.hexlify(f.read())
         rom = map(''.join, zip(rom[::2], rom[1::2]))
 
+
     # align to 64 bit
     align = (int((len(rom) + 7) / 8 )) * 8;
 

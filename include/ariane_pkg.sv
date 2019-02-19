@@ -62,8 +62,8 @@ package ariane_pkg;
 `endif
 
     // Floating-point extensions configuration
-    localparam bit RVF = 1'b0; // Is F extension enabled
-    localparam bit RVD = 1'b0; // Is D extension enabled
+    localparam bit RVF = 1'b1; // Is F extension enabled
+    localparam bit RVD = 1'b1; // Is D extension enabled
     localparam bit RVA = 1'b1; // Is A extension enabled
 
     // Transprecision floating-point extensions configuration
@@ -73,14 +73,14 @@ package ariane_pkg;
     localparam bit XFVEC   = 1'b0; // Is vectorial float extension (Xfvec) enabled
 
     // Transprecision float unit
-    localparam logic [30:0] LAT_COMP_FP32    = 'd3;
-    localparam logic [30:0] LAT_COMP_FP64    = 'd4;
-    localparam logic [30:0] LAT_COMP_FP16    = 'd3;
-    localparam logic [30:0] LAT_COMP_FP16ALT = 'd3;
-    localparam logic [30:0] LAT_COMP_FP8     = 'd2;
-    localparam logic [30:0] LAT_DIVSQRT      = 'd2;
-    localparam logic [30:0] LAT_NONCOMP      = 'd1;
-    localparam logic [30:0] LAT_CONV         = 'd2;
+    localparam int unsigned LAT_COMP_FP32    = 'd2;
+    localparam int unsigned LAT_COMP_FP64    = 'd3;
+    localparam int unsigned LAT_COMP_FP16    = 'd1;
+    localparam int unsigned LAT_COMP_FP16ALT = 'd1;
+    localparam int unsigned LAT_COMP_FP8     = 'd1;
+    localparam int unsigned LAT_DIVSQRT      = 'd2;
+    localparam int unsigned LAT_NONCOMP      = 'd1;
+    localparam int unsigned LAT_CONV         = 'd2;
 
     // --------------------------------------
     // vvvv Don't change these by hand! vvvv
