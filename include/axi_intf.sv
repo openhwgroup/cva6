@@ -31,6 +31,7 @@ interface AXI_BUS #(
   typedef logic [AXI_DATA_WIDTH-1:0] data_t;
   typedef logic [AXI_STRB_WIDTH-1:0] strb_t;
   typedef logic [AXI_USER_WIDTH-1:0] user_t;
+  typedef logic [5:0] atop_t;
 
   id_t        aw_id;
   addr_t      aw_addr;
@@ -41,6 +42,7 @@ interface AXI_BUS #(
   cache_t     aw_cache;
   prot_t      aw_prot;
   qos_t       aw_qos;
+  atop_t      aw_atop;
   region_t    aw_region;
   user_t      aw_user;
   logic       aw_valid;
@@ -82,7 +84,7 @@ interface AXI_BUS #(
   logic       r_ready;
 
   modport Master (
-    output aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_region, aw_user, aw_valid, input aw_ready,
+    output aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_atop, aw_region, aw_user, aw_valid, input aw_ready,
     output w_data, w_strb, w_last, w_user, w_valid, input w_ready,
     input b_id, b_resp, b_user, b_valid, output b_ready,
     output ar_id, ar_addr, ar_len, ar_size, ar_burst, ar_lock, ar_cache, ar_prot, ar_qos, ar_region, ar_user, ar_valid, input ar_ready,
@@ -90,7 +92,7 @@ interface AXI_BUS #(
   );
 
   modport Slave (
-    input aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_region, aw_user, aw_valid, output aw_ready,
+    input aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_atop, aw_region, aw_user, aw_valid, output aw_ready,
     input w_data, w_strb, w_last, w_user, w_valid, output w_ready,
     output b_id, b_resp, b_user, b_valid, input b_ready,
     input ar_id, ar_addr, ar_len, ar_size, ar_burst, ar_lock, ar_cache, ar_prot, ar_qos, ar_region, ar_user, ar_valid, output ar_ready,
@@ -99,7 +101,7 @@ interface AXI_BUS #(
 
   /// The interface as an output (issuing requests, initiator, master).
   modport out (
-    output aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_region, aw_user, aw_valid, input aw_ready,
+    output aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_atop, aw_region, aw_user, aw_valid, input aw_ready,
     output w_data, w_strb, w_last, w_user, w_valid, input w_ready,
     input b_id, b_resp, b_user, b_valid, output b_ready,
     output ar_id, ar_addr, ar_len, ar_size, ar_burst, ar_lock, ar_cache, ar_prot, ar_qos, ar_region, ar_user, ar_valid, input ar_ready,
@@ -108,7 +110,7 @@ interface AXI_BUS #(
 
   /// The interface as an input (accepting requests, target, slave).
   modport in (
-    input aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_region, aw_user, aw_valid, output aw_ready,
+    input aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_atop, aw_region, aw_user, aw_valid, output aw_ready,
     input w_data, w_strb, w_last, w_user, w_valid, output w_ready,
     output b_id, b_resp, b_user, b_valid, input b_ready,
     input ar_id, ar_addr, ar_len, ar_size, ar_burst, ar_lock, ar_cache, ar_prot, ar_qos, ar_region, ar_user, ar_valid, output ar_ready,
@@ -140,6 +142,7 @@ interface AXI_BUS_ASYNC
   logic [3:0]                 aw_cache;
   logic [2:0]                 aw_prot;
   logic [3:0]                 aw_qos;
+  logic [5:0]                 aw_atop;
   logic [3:0]                 aw_region;
   logic [AXI_USER_WIDTH-1:0]  aw_user;
   logic [BUFFER_WIDTH-1:0]    aw_writetoken;
@@ -181,7 +184,7 @@ interface AXI_BUS_ASYNC
   logic [BUFFER_WIDTH-1:0]    r_readpointer;
 
   modport Master (
-    output aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_region, aw_user, aw_writetoken, input aw_readpointer,
+    output aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_atop, aw_region, aw_user, aw_writetoken, input aw_readpointer,
     output w_data, w_strb, w_last, w_user, w_writetoken, input w_readpointer,
     input b_id, b_resp, b_user, b_writetoken, output b_readpointer,
     output ar_id, ar_addr, ar_len, ar_size, ar_burst, ar_lock, ar_cache, ar_prot, ar_qos, ar_region, ar_user, ar_writetoken, input ar_readpointer,
@@ -189,7 +192,7 @@ interface AXI_BUS_ASYNC
   );
 
   modport Slave (
-    input aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_region, aw_user, aw_writetoken, output aw_readpointer,
+    input aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_atop, aw_region, aw_user, aw_writetoken, output aw_readpointer,
     input w_data, w_strb, w_last, w_user, w_writetoken, output w_readpointer,
     output b_id, b_resp, b_user, b_writetoken, input b_readpointer,
     input ar_id, ar_addr, ar_len, ar_size, ar_burst, ar_lock, ar_cache, ar_prot, ar_qos, ar_region, ar_user, ar_writetoken, output ar_readpointer,

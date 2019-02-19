@@ -90,6 +90,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
 		$(wildcard fpga/src/axi_slice/src/*.sv)                        \
 		$(wildcard src/plic/*.sv)                                      \
 		$(wildcard src/axi_node/src/*.sv)                              \
+		$(wildcard src/axi_riscv_atomics/src/*.sv)                     \
 		$(wildcard src/axi_mem_if/src/*.sv)                            \
 		$(filter-out src/debug/dm_pkg.sv, $(wildcard src/debug/*.sv))  \
 		$(wildcard src/debug/debug_rom/*.sv)                           \
