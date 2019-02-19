@@ -26,6 +26,7 @@ module axi_master_connect (
     assign master.aw_cache      = axi_req_i.aw.cache;
     assign master.aw_prot       = axi_req_i.aw.prot;
     assign master.aw_qos        = axi_req_i.aw.qos;
+    assign master.aw_atop       = axi_req_i.aw.atop;
     assign master.aw_region     = axi_req_i.aw.region;
     assign master.aw_user       = '0;
     assign master.aw_valid      = axi_req_i.aw_valid;
