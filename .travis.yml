@@ -41,7 +41,7 @@ env:
 branches:
   only:
   - master
-  - ariane_next
+  - ariane-dev
 
 before_install:
   - export CXX=g++-7 CC=gcc-7
@@ -72,7 +72,7 @@ jobs:
       name: build gcc
       script:
         - ci/build-riscv-gcc.sh 1
-        - rm -rf $RISCV/riscv-gnu-toolchain  
+        - rm -rf $RISCV/riscv-gnu-toolchain
     - stage: compile2
       name: build tools
       script:
