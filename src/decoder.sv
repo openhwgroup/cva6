@@ -298,9 +298,9 @@ module decoder (
                                         5'b00000 : begin
                                             instruction_o.rs2 = instr.rvftype.rs1; // set rs2 = rs1 so we can map FMV to SGNJ in the unit
                                             if (instr.rvftype.repl)
-                                                instruction_o.op = FMV_F2X; // vfmv.x.vfmt - FPR to GPR Move
-                                            else
                                                 instruction_o.op = FMV_X2F; // vfmv.vfmt.x - GPR to FPR Move
+                                            else
+                                                instruction_o.op = FMV_F2X; // vfmv.x.vfmt - FPR to GPR Move
                                             check_fprm = 1'b0;              // no rounding for moves
                                         end
                                         5'b00001 : begin

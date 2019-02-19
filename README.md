@@ -15,7 +15,6 @@ Table of Contents
    * [Table of Contents](#table-of-contents)
       * [Getting Started](#getting-started)
          * [Running User-Space Applications](#running-user-space-applications)
-         * [FPU Support](#fpu-support)
       * [FPGA Emulation](#fpga-emulation)
          * [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
          * [Preparing the SD Card](#preparing-the-sd-card)
@@ -102,10 +101,6 @@ $ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  b
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
 
-### FPU Support
-
-> There is preliminary support for floating point extensions F and D. At the moment floating point support will only be available in QuestaSim as the FPU is written in VHDL. This is likely to change. The floating point extensions can be enabled by setting `RVF` and `RVD` to `1'b1` in the `include/ariane_pkg.sv` file.
-
 ## FPGA Emulation
 
 We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/pulp-platform/ariane/releases).
@@ -168,7 +163,6 @@ To get started, connect the micro USB port that is labeled with JTAG to your mac
 
 Once attached to your system, the FTDI chip should be listed when you type `lsusb`
 
-```
 Bus 005 Device 019: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
 ```
 
