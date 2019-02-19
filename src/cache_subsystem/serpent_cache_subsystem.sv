@@ -167,15 +167,15 @@ serpent_l15_adapter #(
 
 ///////////////////////////////////////////////////////
 // different memory plumbing to allow for using the
-// serpent cache subsystem in a standard AXI setting
-// for verificaton purposes.
+// serpent cache subsystem in a standard AXI setting.
 ///////////////////////////////////////////////////////
 
 `ifdef AXI64_CACHE_PORTS
 
 // support up to 512bit cache lines
-localparam AxiNumWords = 8;
+localparam AxiNumWords = ariane_pkg::ICACHE_LINE_WIDTH/64;
 
+typedef enum logic [1:0] {IFILL, LRSC, ATOP, STD} tx_t;
 logic axi_rd_req, axi_rd_gnt;
 logic [63:0]                    axi_rd_addr, axi_wr_addr;
 logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
@@ -186,71 +186,143 @@ logic [AxiNumWords-1:0][63:0] axi_rd_data, axi_wr_data;
 logic [AxiNumWords-1:0][7:0] axi_wr_be;
 logic axi_wr_req, axi_wr_gnt;
 logic axi_wr_valid, axi_rd_rdy, axi_wr_rdy;
+logic axi_rd_lock, axi_wr_lock, axi_rd_exokay, axi_wr_exokay;
+logic [5:0] axi_wr_atop;
 
-logic ifill;
 logic [serpent_cache_pkg::L15_TID_WIDTH+2-1:0] id_tmp;
 logic rd_pending_d, rd_pending_q;
 
-// request side
-assign ifill = (l15_req.l15_rqtype==serpent_cache_pkg::L15_IMISS_RQ);
-
-assign axi_rd_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_LOAD_RQ | ifill) && !rd_pending_q;
-assign axi_wr_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_STORE_RQ);
-
-assign axi_rd_addr = l15_req.l15_address;
-assign axi_wr_addr = axi_rd_addr;
 
 // the axi interconnect does not correctly handle the ordering of read responses.
 // workaround: only allow for one outstanding TX. need to improve this.
-assign rd_pending_d = (axi_rd_valid ) ? '0 : rd_pending_q | axi_rd_gnt;
+assign rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q | axi_rd_gnt;
 
-assign axi_rd_id_in = {l15_req.l15_threadid, ifill, l15_req.l15_nc};
-assign axi_wr_id_in = axi_rd_id_in;
+// request side
+always_comb begin : p_axi_req
+  axi_wr_data  = l15_req.l15_data;
+  axi_rd_addr  = l15_req.l15_address;
+  axi_wr_addr  = l15_req.l15_address;
+  axi_rd_req   = 1'b0;
+  axi_wr_req   = 1'b0;
+  axi_rd_id_in = {l15_req.l15_threadid, STD, l15_req.l15_nc};
+  axi_wr_id_in = {l15_req.l15_threadid, STD, l15_req.l15_nc};
+  axi_rd_size  = l15_req.l15_size[1:0];
+  axi_wr_size  = l15_req.l15_size[1:0];
+  axi_rd_blen  = '0;
+  axi_wr_blen  = '0;// single word writes
+  axi_wr_be    = '0;
+  axi_rd_lock  = '0;
+  axi_wr_lock  = '0;
+  axi_wr_atop  = '0;
 
-assign axi_rd_size = (ifill) ? 2'b11 : l15_req.l15_size[1:0];// always request 64bit words in case of ifill
-assign axi_wr_size = l15_req.l15_size[1:0];
-
-assign axi_rd_blen = (l15_req.l15_size[2]) ? ((ifill) ? ariane_pkg::ICACHE_LINE_WIDTH/64-1  :
-                                                        ariane_pkg::DCACHE_LINE_WIDTH/64-1) : '0;
-assign axi_wr_blen = '0;// single word writes
-
-assign axi_wr_data = l15_req.l15_data;
-assign axi_wr_be   = (axi_wr_req) ? serpent_cache_pkg::toByteEnable8(axi_wr_addr[2:0], axi_wr_size) : '0;
-
+  if (l15_req.l15_val) begin
+    unique case (l15_req.l15_rqtype)
+      //////////////////////////////////////
+      serpent_cache_pkg::L15_IMISS_RQ: begin
+        axi_rd_req   = !rd_pending_q;
+        axi_rd_id_in = {l15_req.l15_threadid, IFILL, l15_req.l15_nc};
+        // always request 64bit words in case of ifill
+        axi_rd_size  = 2'b11;
+        if (l15_req.l15_size[2]) axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/64-1;
+      end
+      //////////////////////////////////////
+      serpent_cache_pkg::L15_LOAD_RQ: begin
+        axi_rd_req   = !rd_pending_q;
+        if (l15_req.l15_size[2]) axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH/64-1;
+      end
+      //////////////////////////////////////
+      serpent_cache_pkg::L15_STORE_RQ: begin
+        axi_wr_req   = 1'b1;
+        axi_wr_be    = serpent_cache_pkg::toByteEnable8(l15_req.l15_address[2:0], l15_req.l15_size[1:0]);
+      end
+      //////////////////////////////////////
+      serpent_cache_pkg::L15_ATOMIC_RQ: begin
+        // default  
+        axi_wr_req   = 1'b1;
+        axi_wr_id_in = {l15_req.l15_threadid, ATOP, l15_req.l15_nc}; // encode as lr/sc
+        axi_wr_be    = serpent_cache_pkg::toByteEnable8(l15_req.l15_address[2:0], l15_req.l15_size[1:0]);
+        unique case (l15_req.l15_amo_op)
+          AMO_LR: begin
+            axi_rd_lock  = 1'b1;
+            axi_rd_req   = !rd_pending_q;
+            axi_rd_id_in = {l15_req.l15_threadid, LRSC, l15_req.l15_nc}; // encode as lr/sc
+            // tie to zero in this special case
+            axi_wr_req   = 1'b0;
+          end
+          AMO_SC: begin
+            axi_wr_lock  = 1'b1;
+            axi_wr_id_in = {l15_req.l15_threadid, LRSC, l15_req.l15_nc};
+          end  
+          // RISC-V atops have a load semantic
+          AMO_SWAP: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_ATOMICSWAP};
+          AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_ADD};
+          AMO_AND:  begin 
+            // in this case we need to invert the data to get a "CLR" semantic
+            axi_wr_data  = ~l15_req.l15_data;
+            axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_CLR};
+          end  
+          AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_SET};
+          AMO_XOR:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_EOR};
+          AMO_MAX:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_SMAX};
+          AMO_MAXU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_UMAX};
+          AMO_MIN:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_SMIN}; 
+          AMO_MINU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_UMIN}; 
+        endcase  
+      end
+      //////////////////////////////////////
+    endcase
+  end  
+end  
 
 // return path
 always_comb begin : p_axi_rtrn
   // default
   l15_rtrn                   = '0;
-
-  // from request path
   l15_rtrn.l15_ack           = axi_rd_gnt | axi_wr_gnt;
   l15_rtrn.l15_header_ack    = axi_rd_gnt | axi_wr_gnt;
-
-  // we are always ready to consume packets unconditionally,
-  // but in case of returning reads, we have to stall the write response
-  axi_rd_rdy                 = 1'b1;
-  axi_wr_rdy                 = ~axi_rd_valid;// this vld signal comes directly from a register
-
-  // unconditionally consume packets
-  l15_rtrn.l15_val           = axi_rd_valid | axi_wr_valid;
-
-  // encode packet type
-  id_tmp                     = (axi_rd_valid) ? axi_rd_id_out : axi_wr_id_out;
-  l15_rtrn.l15_returntype    = (axi_rd_valid && id_tmp[1]) ? L15_IFILL_RET :
-  (axi_rd_valid)              ? L15_LOAD_RET  :
-  L15_ST_ACK;
-
-  // decode id and set flags accordingly
-  l15_rtrn.l15_noncacheable  = id_tmp[0];
-  l15_rtrn.l15_threadid      = id_tmp>>2;
-  // 4B non-cacheable ifill
-  l15_rtrn.l15_f4b           = id_tmp[0] & id_tmp[1] & axi_rd_valid;
-
   l15_rtrn.l15_data_0        = axi_rd_data[0];
   l15_rtrn.l15_data_1        = axi_rd_data[1];
   l15_rtrn.l15_data_2        = axi_rd_data[2];
   l15_rtrn.l15_data_3        = axi_rd_data[3];
+
+  // we are always ready to consume packets unconditionally,
+  // but we give prio to read responses below
+  axi_rd_rdy                 = 1'b1;
+  axi_wr_rdy                 = 1'b1;
+  
+  //////////////////////////////////////
+  if (axi_rd_valid) begin
+    // we give prio to read responses
+    axi_wr_rdy                 = 1'b0;
+    l15_rtrn.l15_val           = 1'b1;
+    l15_rtrn.l15_threadid      = axi_rd_id_out>>3;
+    l15_rtrn.l15_noncacheable  = axi_rd_id_out[0];
+    unique case(tx_t'(axi_rd_id_out[2:1]))
+      STD:   l15_rtrn.l15_returntype = serpent_cache_pkg::L15_LOAD_RET;
+      LRSC:  l15_rtrn.l15_returntype = serpent_cache_pkg::L15_CPX_RESTYPE_ATOMIC_RES;
+      ATOP:  l15_rtrn.l15_returntype = serpent_cache_pkg::L15_CPX_RESTYPE_ATOMIC_RES;
+      IFILL: begin 
+        l15_rtrn.l15_returntype = serpent_cache_pkg::L15_IFILL_RET;
+        l15_rtrn.l15_f4b        = axi_rd_id_out[0];
+      end  
+    endcase
+  //////////////////////////////////////  
+  end else if (axi_wr_valid) begin
+    l15_rtrn.l15_val           = 1'b1; 
+    l15_rtrn.l15_threadid      = axi_wr_id_out>>3;
+    l15_rtrn.l15_noncacheable  = axi_wr_id_out[0];
+    unique case(tx_t'(axi_wr_id_out[2:1]))
+      STD:   l15_rtrn.l15_returntype = serpent_cache_pkg::L15_ST_ACK;
+      ATOP:  l15_rtrn.l15_val        = 1'b0; // silently drop atop write response, as we only rely on the read response here
+      LRSC:  begin 
+        l15_rtrn.l15_returntype = serpent_cache_pkg::L15_CPX_RESTYPE_ATOMIC_RES;
+        // encode success 
+        l15_rtrn.l15_data_0 = (axi_wr_exokay) ? '0 : '1;
+      end
+      default: ;
+    endcase
+  end
+  //////////////////////////////////////
 end
 
 always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
@@ -275,12 +347,11 @@ axi_adapter2 #(
   .rd_size_i       ( axi_rd_size       ),
   .rd_id_i         ( axi_rd_id_in      ),
   .rd_rdy_i        ( axi_rd_rdy        ),
+  .rd_lock_i       ( axi_rd_lock       ),
   .rd_valid_o      ( axi_rd_valid      ),
   .rd_data_o       ( axi_rd_data       ),
   .rd_id_o         ( axi_rd_id_out     ),
-  .rd_word_o       (                   ),
-  .rd_word_valid_o (                   ),
-  .rd_word_cnt_o   (                   ),
+  .rd_exokay_o     ( axi_rd_exokay     ),    
   .wr_req_i        ( axi_wr_req        ),
   .wr_gnt_o        ( axi_wr_gnt        ),
   .wr_addr_i       ( axi_wr_addr       ),
@@ -289,9 +360,12 @@ axi_adapter2 #(
   .wr_blen_i       ( axi_wr_blen       ),
   .wr_size_i       ( axi_wr_size       ),
   .wr_id_i         ( axi_wr_id_in      ),
+  .wr_lock_i       ( axi_wr_lock       ),
+  .wr_atop_i       ( axi_wr_atop       ),
   .wr_rdy_i        ( axi_wr_rdy        ),
   .wr_valid_o      ( axi_wr_valid      ),
   .wr_id_o         ( axi_wr_id_out     ),
+  .wr_exokay_o     ( axi_wr_exokay     ),
   .axi_req_o       ( axi_req_o         ),
   .axi_resp_i      ( axi_resp_i        )
 );
@@ -308,9 +382,16 @@ axi_adapter2 #(
 
 `ifdef AXI64_CACHE_PORTS
   initial begin
-    assert (AxiIdWidth >= $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2) else
-      $fatal(1,$psprintf("[l1 cache] AXI ID must be at least %01d bit wide", $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2));
+    assert (AxiIdWidth >= $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+3) else
+      $fatal(1,$psprintf("[l1 cache] AXI ID must be at least %01d bit wide", $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+3));
+    assert (ariane_pkg::ICACHE_LINE_WIDTH <= ariane_pkg::DCACHE_LINE_WIDTH) else 
+      $fatal(1,"[l1 cache] AXI shim currently assumes that the icache line size >= dcache line size");
   end
+
+  lr_exokay: assert property (
+  @(posedge clk_i) disable iff (~rst_ni) axi_rd_valid |-> axi_rd_rdy |-> tx_t'(axi_rd_id_out[2:1]) == LRSC |-> axi_rd_exokay)
+    else $warning("[l1 cache] LR did not receive an exokay, indicating that atomics are not supported");
+  
 `endif
 
 a_invalid_instruction_fetch: assert property (

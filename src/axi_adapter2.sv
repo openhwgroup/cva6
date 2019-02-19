@@ -36,15 +36,13 @@ module axi_adapter2 #(
     input  logic [$clog2(DATA_WORDS)-1:0]               rd_blen_i, // axi convention: LEN-1
     input  logic [1:0]                                  rd_size_i,
     input  logic [AXI_ID_WIDTH-1:0]                     rd_id_i,   // use same ID for reads, or make sure you only have one outstanding read tx
-    // read response
+    input  logic                                        rd_lock_i,
+    // read response (we have to unconditionally sink the response)
     input  logic                                        rd_rdy_i,
     output logic                                        rd_valid_o,
     output logic [DATA_WORDS-1:0][63:0]                 rd_data_o,
     output logic [AXI_ID_WIDTH-1:0]                     rd_id_o,
-    // can be used to determine critical word
-    output logic [63:0]                                 rd_word_o,
-    output logic                                        rd_word_valid_o,
-    output logic                                        rd_word_cnt_o,
+    output logic                                        rd_exokay_o, // indicates whether exclusive tx succeeded
     // write channel
     input  logic                                        wr_req_i,
     output logic                                        wr_gnt_o,
@@ -54,11 +52,13 @@ module axi_adapter2 #(
     input  logic [$clog2(DATA_WORDS)-1:0]               wr_blen_i, // axi convention: LEN-1
     input  logic [1:0]                                  wr_size_i,
     input  logic [AXI_ID_WIDTH-1:0]                     wr_id_i,
+    input  logic                                        wr_lock_i,
+    input  logic [5:0]                                  wr_atop_i,
     // write response
     input  logic                                        wr_rdy_i,
     output logic                                        wr_valid_o,
     output logic [AXI_ID_WIDTH-1:0]                     wr_id_o,
-
+    output logic                                        wr_exokay_o, // indicates whether exclusive tx succeeded
     // AXI port
     output ariane_axi::req_t                            axi_req_o,
     input  ariane_axi::resp_t                           axi_resp_i
@@ -87,10 +87,10 @@ module axi_adapter2 #(
     assign axi_req_o.aw.id     = wr_id_i;
     assign axi_req_o.aw.prot   = 3'b0;
     assign axi_req_o.aw.region = 4'b0;
-    assign axi_req_o.aw.lock   = 1'b0;
+    assign axi_req_o.aw.lock   = wr_lock_i;
     assign axi_req_o.aw.cache  = 4'b0;
     assign axi_req_o.aw.qos    = 4'b0;
-    assign axi_req_o.aw.atop   = '0; // currently not used
+    assign axi_req_o.aw.atop   = wr_atop_i; // currently not used
     // data
     assign axi_req_o.w.data    = wr_data_i[wr_cnt_q];
     assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
@@ -100,6 +100,7 @@ module axi_adapter2 #(
     assign axi_req_o.b_ready   = wr_rdy_i;
     assign wr_valid_o          = axi_resp_i.b_valid;
     assign wr_id_o             = axi_resp_i.b.id;
+    assign wr_exokay_o         = (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY);
 
     // tx counter
     assign wr_cnt_done         = (wr_cnt_q == wr_blen_i);
@@ -238,6 +239,7 @@ module axi_adapter2 #(
     logic [DATA_WORDS-1:0][63:0] rd_data_d, rd_data_q;
     logic rd_valid_d, rd_valid_q;
     logic [AXI_ID_WIDTH-1:0] rd_id_d, rd_id_q;
+    logic rd_exokay_d, rd_exokay_q;
 
     assign rd_single_req       = (rd_blen_i == 0);
 
@@ -253,7 +255,7 @@ module axi_adapter2 #(
     assign axi_req_o.ar.id     = rd_id_i;
     assign axi_req_o.ar.prot   = 3'b0;
     assign axi_req_o.ar.region = 4'b0;
-    assign axi_req_o.ar.lock   = 1'b0;
+    assign axi_req_o.ar.lock   = rd_lock_i;
     assign axi_req_o.ar.cache  = 4'b0;
     assign axi_req_o.ar.qos    = 4'b0;
 
@@ -269,6 +271,8 @@ module axi_adapter2 #(
     assign rd_cnt_clr          = axi_resp_i.r.last;
     assign rd_valid_d          = axi_resp_i.r_valid & axi_resp_i.r.last;
     assign rd_valid_o          = rd_valid_q;
+    assign rd_exokay_d         = (axi_resp_i.r.resp == axi_pkg::RESP_EXOKAY);
+    assign rd_exokay_o         = rd_exokay_q;        
 
     assign rd_id_d             = axi_resp_i.r.id;
     assign rd_id_o             = rd_id_q;
@@ -301,6 +305,7 @@ module axi_adapter2 #(
             rd_data_q     <= '0;
             rd_valid_q    <= '0;
             rd_id_q       <= '0;
+            rd_exokay_q   <= '0;
         end else begin
             wr_state_q    <= wr_state_d;
             wr_cnt_q      <= wr_cnt_d;
@@ -308,6 +313,7 @@ module axi_adapter2 #(
             rd_data_q     <= rd_data_d;
             rd_valid_q    <= rd_valid_d;
             rd_id_q       <= rd_id_d;
+            rd_exokay_q   <= rd_exokay_d;
         end
     end
 
