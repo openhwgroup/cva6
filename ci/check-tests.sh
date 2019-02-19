@@ -12,7 +12,7 @@ cd $ROOT
 if [[ -z "$-" ]]; then
   GREEN=''
   RED=''
-  NC='' 
+  NC=''
 else
   GREEN='\033[0;32m'
   RED='\033[0;31m'
@@ -28,7 +28,7 @@ fi
 # get NUM_TOTAL number of tests
 NUM_TOTAL=$2
 
-echo "list containint tests: $2"
+echo "list containing tests: $2"
 
 echo "checking files:"
 ls "${1}"*.log
@@ -45,7 +45,7 @@ echo "NUM_FAILED: $NUM_FAILED"
 echo "NUM_FATAL:  $NUM_FATAL"
 echo "NUM_ERROR:  $NUM_ERROR"
 
-if [[ $(($NUM_FAILED)) -gt 0 ]]; then 
+if [[ $(($NUM_FAILED)) -gt 0 ]]; then
   echo -e "${RED}FAILED $NUM_FAILED of $NUM_TOTAL tests ${NC}"
   exit 1;
 elif [[ $(($NUM_FATAL)) -ne  0 ]]; then
@@ -60,4 +60,4 @@ elif [[ $(($NUM_PASSED)) -ne $(($NUM_TOTAL)) ]]; then
 else
   echo -e "${GREEN}PASSED all $NUM_TOTAL tests ${NC}"
   exit 0;
-fi    
+fi

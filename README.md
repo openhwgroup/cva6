@@ -15,7 +15,6 @@ Table of Contents
    * [Table of Contents](#table-of-contents)
       * [Getting Started](#getting-started)
          * [Running User-Space Applications](#running-user-space-applications)
-         * [FPU Support](#fpu-support)
       * [FPGA Emulation](#fpga-emulation)
          * [Programming the Memory Configuration File](#programming-the-memory-configuration-file)
          * [Preparing the SD Card](#preparing-the-sd-card)
@@ -102,10 +101,6 @@ $ make sim elf-bin=$RISCV/riscv64-unknown-elf/bin/pk target-options=hello.elf  b
 
 > Be patient! RTL simulation is way slower than Spike. If you think that you ran into problems you can inspect the trace files.
 
-### FPU Support
-
-> There is preliminary support for floating point extensions F and D. At the moment floating point support will only be available in QuestaSim as the FPU is written in VHDL. This is likely to change. The floating point extensions can be enabled by setting `RVF` and `RVD` to `1'b1` in the `include/ariane_pkg.sv` file.
-
 ## FPGA Emulation
 
 We currently only provide support for the [Genesys 2 board](https://reference.digilentinc.com/reference/programmable-logic/genesys-2/reference-manual). We provide pre-build bitstream and memory configuration files for the Genesys 2 [here](https://github.com/pulp-platform/ariane/releases).
@@ -157,21 +152,25 @@ This will produce a bitstream file and memory configuration file (in `fpga/work-
 
 ### Debugging
 
-You can debug (and program) the FPGA using [OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html). We provide two example scripts for OpenOCD, both to be used with Olimex Debug adapter. The JTAG port is mapped to PMOD `JC` on the Genesys 2 board. You will need to connect the following wires to your debug adapter:
+You can debug (and program) the FPGA using [OpenOCD](http://openocd.org/doc/html/Architecture-and-Core-Commands.html). We provide two example scripts for OpenOCD below.
 
-![](https://reference.digilentinc.com/_media/genesys2/fig_16.png)
+To get started, connect the micro USB port that is labeled with JTAG to your machine. This port is attached to the FTDI 2232 USB-to-serial chip on the Genesys 2 board, and is usually used to access the native JTAG interface of the Kintex-7 FPGA (e.g. to program the device using Vivado). However, the FTDI chip also exposes a second serial link that is routed to GPIO pins on the FPGA, and we leverage this to wire up the JTAG from the RISC-V debug module.
 
-|   Pin    | Nr. |
-|----------|-----|
-| `tck`    | JC1 |
-| `tdi`    | JC2 |
-| `tdo`    | JC3 |
-| `tms`    | JC4 |
-| `trst_n` | JC7 |
+>If you are on an Ubuntu based system you need to add the following udev rule to `/etc/udev/rules.d/99-ftdi.rules`
+>```
+> SUBSYSTEM=="usb", ACTION=="add", ATTRS{idProduct}=="6010", ATTRS{idVendor}=="0403", MODE="664", GROUP="plugdev"
+>```
 
+Once attached to your system, the FTDI chip should be listed when you type `lsusb`
 
 ```
-$ openocd -f fpga/ariane_tiny.cfg
+Bus 005 Device 019: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
+```
+
+If this is the case, you can go on and start openocd with the `fpga/ariane.cfg` configuration file:
+
+```
+$ openocd -f fpga/ariane.cfg
 Open On-Chip Debugger 0.10.0+dev-00195-g933cb87 (2018-09-14-19:32)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -180,7 +179,7 @@ adapter speed: 1000 kHz
 Info : auto-selecting first available session transport "jtag". To override use 'transport select <transport>'.
 Info : clock speed 1000 kHz
 Info : TAP riscv.cpu does not have IDCODE
-Info : datacount=2 progbufsize=12
+Info : datacount=2 progbufsize=8
 Info : Examined RISC-V core; found 1 harts
 Info :  hart 0: XLEN=64, misa=0x8000000000141105
 Info : Listening on port 3333 for gdb connections
@@ -218,12 +217,6 @@ You can read or write device memory by using:
 (gdb) set {int} 0x1000 = 22
 (gdb) set $pc = 0x1000
 ```
-
-If you are on an Ubuntu based system you need to add the following udev rule to `/etc/udev/rules.d/olimex-arm-usb-tiny-h.rules`
-
->```
-> SUBSYSTEM=="usb", ACTION=="add", ATTRS{idProduct}=="002a", ATTRS{idVendor}=="15ba", MODE="664", GROUP="plugdev"
->```
 
 ### Preliminary Support for OpenPiton Cache System
 

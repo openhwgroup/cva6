@@ -13,12 +13,12 @@
     #size-cells = <0>;
     timebase-frequency = <25000000>; // 25 MHz
     CPU0: cpu@0 {
-      clock-frequency = <50000000>; // 50 MHz
+      clock-frequency = <30000000>; // 30 MHz
       device_type = "cpu";
       reg = <0>;
       status = "okay";
       compatible = "eth, ariane", "riscv";
-      riscv,isa = "rv64imacsu";
+      riscv,isa = "rv64imafdc";
       mmu-type = "riscv,sv39";
       tlb-split;
       // HLIC - hart local interrupt controller
@@ -31,7 +31,7 @@
   };
   memory@80000000 {
     device_type = "memory";
-    reg = <0x0 0x80000000 0x0 0x8000000>;
+    reg = <0x0 0x80000000 0x0 0x40000000>;
   };
   leds {
     compatible = "gpio-leds";
@@ -71,7 +71,7 @@
     uart@10000000 {
       compatible = "ns16750";
       reg = <0x0 0x10000000 0x0 0x1000>;
-      clock-frequency = <50000000>;
+      clock-frequency = <30000000>;
       current-speed = <115200>;
       interrupt-parent = <&PLIC0>;
       interrupts = <1>;
@@ -108,33 +108,13 @@
       //   //interrupt-parent = <&PLIC0>;
       // };
     };
-    xlnx_axi_ethernetlite: ethernet@30000000 {
-      compatible = "xlnx,axi-ethernetlite-3.0", "xlnx,xps-ethernetlite-1.00.a";
+    eth: lowrisc-eth@30000000 {
+      compatible = "lowrisc-eth";
       device_type = "network";
       interrupt-parent = <&PLIC0>;
       interrupts = <3 0>;
-      local-mac-address = [00 0a 35 00 01 22];
-      phy-handle = <&phy0>;
-      reg = <0x0 0x30000000 0x0 0x10000>;
-      xlnx,duplex = <0x1>;
-      xlnx,include-global-buffers = <0x1>;
-      xlnx,include-internal-loopback = <0x0>;
-      xlnx,include-mdio = <0x1>;
-      xlnx,instance = "i_xlnx_axi_ethernetlite";
-      xlnx,rx-ping-pong = <0x1>;
-      xlnx,s-axi-id-width = <0x4>;
-      xlnx,tx-ping-pong = <0x1>;
-      xlnx,use-internal = <0x0>;
-      xlnx,has-mdio = <0x1>;
-      mdio {
-        #address-cells = <1>;
-        #size-cells = <0>;
-        phy0: axi_ethernetlite_0_mdio@1 {
-          compatible = "ethernet-phy-id001C.C915";
-          device_type = "network";
-          reg = <0x1>;
-        };
-      };
+      local-mac-address = [00 18 3e 02 e3 7f]; // This needs to change if more than one GenesysII on a VLAN
+      reg = <0x0 0x30000000 0x0 0x8000>;
     };
     xlnx_gpio: gpio@40000000 {
       #gpio-cells = <2>;

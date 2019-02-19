@@ -8,6 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.                                          //
 //
+// Author:         Florian Zaruba - zarubaf@iis.ee.ethz.ch
 // Engineer:       Sven Stucki - svstucki@student.ethz.ch
 //
 // Design Name:    Compressed instruction decoder
@@ -106,7 +107,6 @@ module compressed_decoder
                     riscv::OpcodeC1Li: begin
                         // c.li -> addi rd, x0, nzimm
                         instr_o = {{6 {instr_i[12]}}, instr_i[12], instr_i[6:2], 5'b0, 3'b0, instr_i[11:7], riscv::OpcodeOpImm};
-                        if (instr_i[11:7] == 5'b0)  illegal_instr_o = 1'b1;
                     end
 
                     riscv::OpcodeC1LuiAddi16sp: begin
@@ -116,8 +116,6 @@ module compressed_decoder
                         if (instr_i[11:7] == 5'h02) begin
                             // c.addi16sp -> addi x2, x2, nzimm
                             instr_o = {{3 {instr_i[12]}}, instr_i[4:3], instr_i[5], instr_i[2], instr_i[6], 4'b0, 5'h02, 3'b000, 5'h02, riscv::OpcodeOpImm};
-                        end else if (instr_i[11:7] == 5'b0) begin
-                            illegal_instr_o = 1'b1;
                         end
 
                         if ({instr_i[12], instr_i[6:2]} == 6'b0) illegal_instr_o = 1'b1;
@@ -130,8 +128,6 @@ module compressed_decoder
                                 // 00: c.srli -> srli rd, rd, shamt
                                 // 01: c.srai -> srai rd, rd, shamt
                                 instr_o = {1'b0, instr_i[10], 4'b0, instr_i[12], instr_i[6:2], 2'b01, instr_i[9:7], 3'b101, 2'b01, instr_i[9:7], riscv::OpcodeOpImm};
-                                // shamt field must be non-zero
-                                if ({instr_i[12], instr_i[6:2]} == 6'b0) illegal_instr_o = 1'b1;
                             end
 
                             2'b10: begin
@@ -201,8 +197,6 @@ module compressed_decoder
                     riscv::OpcodeC2Slli: begin
                         // c.slli -> slli rd, rd, shamt
                         instr_o = {6'b0, instr_i[12], instr_i[6:2], instr_i[11:7], 3'b001, instr_i[11:7], riscv::OpcodeOpImm};
-                        if (instr_i[11:7] == 5'b0)  illegal_instr_o = 1'b1; // register not x0
-                        if ({instr_i[12], instr_i[6:2]}  == 6'b0)  illegal_instr_o = 1'b1; // shift amount must be non zero
                     end
 
                     riscv::OpcodeC2Fldsp: begin
@@ -238,12 +232,10 @@ module compressed_decoder
                             // c.add -> add rd, rd, rs2
                             instr_o = {7'b0, instr_i[6:2], instr_i[11:7], 3'b0, instr_i[11:7], riscv::OpcodeOp};
 
-                            if (instr_i[11:7] == 5'b0) begin
+                            if (instr_i[11:7] == 5'b0 && instr_i[6:2] == 5'b0) begin
                                 // c.ebreak -> ebreak
                                 instr_o = {32'h00_10_00_73};
-                                if (instr_i[6:2] != 5'b0)
-                                    illegal_instr_o = 1'b1;
-                            end else if (instr_i[6:2] == 5'b0) begin
+                            end else if (instr_i[11:7] != 5'b0 && instr_i[6:2] == 5'b0) begin
                                 // c.jalr -> jalr x1, rs1, 0
                                 instr_o = {12'b0, instr_i[11:7], 3'b000, 5'b00001, riscv::OpcodeJalr};
                             end

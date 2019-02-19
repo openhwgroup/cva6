@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Official support for floating point unit
+
+### Changed
+
+- Rerouted the JTAG from PMOD to second channel of FTDI 2232 chip on Genesys 2 board
+- Increase available RAM size on Genesys II board to 1 GiB
+- Fixed problem which decoded compressed hints as illegal instructions
+- Reduce clock frequency of FPGA to 30 MHz to accomodate FPU
+
 ### 4.0.0
 
 ### Added

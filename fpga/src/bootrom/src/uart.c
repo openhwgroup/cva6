@@ -23,12 +23,14 @@ void write_serial(char a)
     write_reg_u8(UART_THR, a);
 }
 
-void init_uart()
+void init_uart(uint32_t freq, uint32_t baud)
 {
+    uint32_t divisor = freq / (baud << 4);
+
     write_reg_u8(UART_INTERRUPT_ENABLE, 0x00); // Disable all interrupts
     write_reg_u8(UART_LINE_CONTROL, 0x80);     // Enable DLAB (set baud rate divisor)
-    write_reg_u8(UART_DLAB_LSB, 0x1B);         // Set divisor to 27 (lo byte) 115200 baud
-    write_reg_u8(UART_DLAB_MSB, 0x00);         //                   (hi byte)
+    write_reg_u8(UART_DLAB_LSB, divisor);         // divisor (lo byte)
+    write_reg_u8(UART_DLAB_MSB, (divisor >> 8) & 0xFF);  // divisor (hi byte)
     write_reg_u8(UART_LINE_CONTROL, 0x03);     // 8 bits, no parity, one stop bit
     write_reg_u8(UART_FIFO_CONTROL, 0xC7);     // Enable FIFO, clear them, with 14-byte threshold
     write_reg_u8(UART_MODEM_CONTROL, 0x20);    // Autoflow mode

@@ -158,7 +158,7 @@ int sd_copy(void *dst, uint32_t src_lba, uint32_t size)
     crc = (crc << 1) | 1;
     if (sd_cmd(18, src_lba, crc) != 0x00)
     {
-        for (int j = 0; j < 8; i++)
+        for (int j = 0; j < 8; j++)
             sd_dummy();
 
         print_uart("could not read SD block\r\n");

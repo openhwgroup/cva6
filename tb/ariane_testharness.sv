@@ -545,7 +545,8 @@ module ariane_testharness #(
         .SwapEndianess ( 0                                               ),
         .CachedAddrEnd ( (ariane_soc::DRAMBase + ariane_soc::DRAMLength) ),
 `endif
-        .CachedAddrBeg ( ariane_soc::DRAMBase )
+        .CachedAddrBeg ( ariane_soc::DRAMBase                            ),
+        .DmBaseAddress ( ariane_soc::DebugBase                           )
     ) i_ariane (
         .clk_i                ( clk_i               ),
         .rst_ni               ( ndmreset_n          ),
