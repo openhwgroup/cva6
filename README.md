@@ -61,7 +61,7 @@ The Verilator testbench makes use of the `riscv-fesvr`. This means that you can 
 Both, the Verilator model as well as the Questa simulation will produce trace logs. The Verilator trace is more basic but you can feed the log to `spike-dasm` to resolve instructions to mnemonics. Unfortunately value inspection is currently not possible for the Verilator trace file.
 
 ```
-$ spike-dasm < trace_hart_00_0.dasm > logfile.txt
+$ spike-dasm < trace_hart_00.dasm > logfile.txt
 ```
 
 ### Running User-Space Applications

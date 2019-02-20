@@ -174,17 +174,30 @@ module ariane_testharness #(
         assign dmi_exit = 1'b0;
     end
 
-    ariane_axi::req_t    dm_axi_m_req,  dm_axi_s_req;
-    ariane_axi::resp_t   dm_axi_m_resp, dm_axi_s_resp;
+    ariane_axi::req_t    dm_axi_m_req;
+    ariane_axi::resp_t   dm_axi_m_resp;
+
+    logic                dm_slave_req;
+    logic                dm_slave_we;
+    logic [64-1:0]       dm_slave_addr;
+    logic [64/8-1:0]     dm_slave_be;
+    logic [64-1:0]       dm_slave_wdata;
+    logic [64-1:0]       dm_slave_rdata;
+
+    logic                dm_master_req;
+    logic [64-1:0]       dm_master_add;
+    logic                dm_master_we;
+    logic [64-1:0]       dm_master_wdata;
+    logic [64/8-1:0]     dm_master_be;
+    logic                dm_master_gnt;
+    logic                dm_master_r_valid;
+    logic [64-1:0]       dm_master_r_rdata;
 
     // debug module
     dm_top #(
-        // current implementation only supports 1 hart
-        .NrHarts              ( 1                         ),
-        .AxiIdWidth           ( AXI_ID_WIDTH_SLAVES       ),
-        .AxiAddrWidth         ( AXI_ADDRESS_WIDTH         ),
-        .AxiDataWidth         ( AXI_DATA_WIDTH            ),
-        .AxiUserWidth         ( AXI_USER_WIDTH            )
+        .NrHarts              ( 1                    ),
+        .BusWidth             ( AXI_DATA_WIDTH       ),
+        .Selectable_Harts     ( 1'b1                 )
     ) i_dm_top (
 
         .clk_i                ( clk_i                ),
@@ -194,10 +207,20 @@ module ariane_testharness #(
         .dmactive_o           (                      ), // active debug session
         .debug_req_o          ( debug_req_core       ),
         .unavailable_i        ( '0                   ),
-        .axi_s_req_i          ( dm_axi_s_req         ),
-        .axi_s_resp_o         ( dm_axi_s_resp        ),
-        .axi_m_req_o          ( dm_axi_m_req         ),
-        .axi_m_resp_i         ( dm_axi_m_resp        ),
+        .slave_req_i          ( dm_slave_req         ),
+        .slave_we_i           ( dm_slave_we          ),
+        .slave_addr_i         ( dm_slave_addr        ),
+        .slave_be_i           ( dm_slave_be          ),
+        .slave_wdata_i        ( dm_slave_wdata       ),
+        .slave_rdata_o        ( dm_slave_rdata       ),
+        .master_req_o         ( dm_master_req        ),
+        .master_add_o         ( dm_master_add        ),
+        .master_we_o          ( dm_master_we         ),
+        .master_wdata_o       ( dm_master_wdata      ),
+        .master_be_o          ( dm_master_be         ),
+        .master_gnt_i         ( dm_master_gnt        ),
+        .master_r_valid_i     ( dm_master_r_valid    ),
+        .master_r_rdata_i     ( dm_master_r_rdata    ),
         .dmi_rst_ni           ( rst_ni               ),
         .dmi_req_valid_i      ( debug_req_valid      ),
         .dmi_req_ready_o      ( debug_req_ready      ),
@@ -207,8 +230,52 @@ module ariane_testharness #(
         .dmi_resp_o           ( debug_resp           )
     );
 
-    axi_master_connect i_axi_master_dm (.axi_req_i(dm_axi_m_req), .axi_resp_o(dm_axi_m_resp), .master(slave[1]));
-    axi_slave_connect  i_axi_slave_dm  (.axi_req_o(dm_axi_s_req), .axi_resp_i(dm_axi_s_resp), .slave(master[ariane_soc::Debug]));
+    axi2mem #(
+        .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES   ),
+        .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH     ),
+        .AXI_DATA_WIDTH ( AXI_DATA_WIDTH        ),
+        .AXI_USER_WIDTH ( AXI_USER_WIDTH        )
+    ) i_dm_axi2mem (
+        .clk_i      ( clk_i                     ),
+        .rst_ni     ( rst_ni                    ),
+        .slave      ( master[ariane_soc::Debug] ),
+        .req_o      ( dm_slave_req              ),
+        .we_o       ( dm_slave_we               ),
+        .addr_o     ( dm_slave_addr             ),
+        .be_o       ( dm_slave_be               ),
+        .data_o     ( dm_slave_wdata            ),
+        .data_i     ( dm_slave_rdata            )
+    );        
+
+    axi_master_connect i_dm_axi_master_connect (
+      .axi_req_i(dm_axi_m_req), 
+      .axi_resp_o(dm_axi_m_resp), 
+      .master(slave[1])
+    );
+
+    axi_adapter #(
+        .DATA_WIDTH            ( AXI_DATA_WIDTH            )
+    ) i_dm_axi_master (
+        .clk_i                 ( clk_i                     ),
+        .rst_ni                ( rst_ni                    ),
+        .req_i                 ( dm_master_req             ),
+        .type_i                ( ariane_axi::SINGLE_REQ    ),
+        .gnt_o                 ( dm_master_gnt             ),
+        .gnt_id_o              (                           ),
+        .addr_i                ( dm_master_add             ),
+        .we_i                  ( dm_master_we              ),
+        .wdata_i               ( dm_master_wdata           ),
+        .be_i                  ( dm_master_be              ),
+        .size_i                ( 2'b11                     ), // always do 64bit here and use byte enables to gate
+        .id_i                  ( '0                        ),
+        .valid_o               ( dm_master_r_valid         ),
+        .rdata_o               ( dm_master_r_rdata         ),
+        .id_o                  (                           ),
+        .critical_word_o       (                           ), 
+        .critical_word_valid_o (                           ), 
+        .axi_req_o             ( dm_axi_m_req              ),
+        .axi_resp_i            ( dm_axi_m_resp             )
+    );
 
 
     // ---------------
@@ -372,7 +439,11 @@ module ariane_testharness #(
         .ipi_o       ( ipi            )
     );
 
-    axi_slave_connect i_axi_slave_connect_clint (.axi_req_o(axi_clint_req), .axi_resp_i(axi_clint_resp), .slave(master[ariane_soc::CLINT]));
+    axi_slave_connect i_axi_slave_connect_clint (
+      .axi_req_o(axi_clint_req), 
+      .axi_resp_i(axi_clint_resp), 
+      .slave(master[ariane_soc::CLINT])
+    );
 
     // ---------------
     // Peripherals
@@ -443,6 +514,10 @@ module ariane_testharness #(
         .axi_resp_i           ( axi_ariane_resp     )
     );
 
-    axi_master_connect i_axi_master_connect_ariane (.axi_req_i(axi_ariane_req), .axi_resp_o(axi_ariane_resp), .master(slave[0]));
+    axi_master_connect i_axi_master_connect_ariane (
+      .axi_req_i(axi_ariane_req), 
+      .axi_resp_o(axi_ariane_resp), 
+      .master(slave[0])
+    );
 
 endmodule
