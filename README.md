@@ -61,7 +61,7 @@ The Verilator testbench makes use of the `riscv-fesvr`. This means that you can 
 Both, the Verilator model as well as the Questa simulation will produce trace logs. The Verilator trace is more basic but you can feed the log to `spike-dasm` to resolve instructions to mnemonics. Unfortunately value inspection is currently not possible for the Verilator trace file.
 
 ```
-$ spike-dasm < trace_hart_00_0.dasm > logfile.txt
+$ spike-dasm < trace_hart_00.dasm > logfile.txt
 ```
 
 ### Running User-Space Applications
@@ -161,7 +161,8 @@ To get started, connect the micro USB port that is labeled with JTAG to your mac
 > SUBSYSTEM=="usb", ACTION=="add", ATTRS{idProduct}=="6010", ATTRS{idVendor}=="0403", MODE="664", GROUP="plugdev"
 >```
 
-Once attached to your system, the FTDI chip should be listed when you type `lsusb`
+Once attached to your system, the FTDI chip should be listed when you type `lsusb`:
+
 
 Bus 005 Device 019: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
 ```

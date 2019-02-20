@@ -28,7 +28,7 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_icache  #(
-    parameter logic [DCACHE_ID_WIDTH-1:0] RdTxId             = 0,                // ID to be used for read transactions
+    parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId             = 0,                // ID to be used for read transactions
     parameter bit                         Axi64BitCompliant  = 1'b0,             // set this to 1 when using in conjunction with 64bit AXI bus adapter
     parameter logic [63:0]                CachedAddrBeg      = 64'h00_8000_0000, // begin of cached region
     parameter logic [63:0]                CachedAddrEnd      = 64'h80_0000_0000  // end of cached region
@@ -513,14 +513,6 @@ module serpent_icache  #(
 
 //pragma translate_off
 `ifndef VERILATOR
-  noncacheable0: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) paddr_is_nc |-> mem_rtrn_vld_i |-> state_q != KILL_MISS |-> mem_rtrn_i.rtype == ICACHE_IFILL_ACK |-> mem_rtrn_i.nc)
-         else $fatal(1,"[l1 icache] NC paddr implies nc ifill");
-
-  noncacheable1: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) mem_rtrn_vld_i |-> state_q != KILL_MISS |-> mem_rtrn_i.f4b |-> mem_rtrn_i.nc)
-         else $fatal(1,"[l1 icache] 4b ifill implies NC");
-
   repl_inval0: assert property (
       @(posedge clk_i) disable iff (~rst_ni) cache_wren |-> ~(mem_rtrn_i.inv.all | mem_rtrn_i.inv.vld))
          else $fatal(1,"[l1 icache] cannot replace cacheline and invalidate cacheline simultaneously");
@@ -534,8 +526,38 @@ module serpent_icache  #(
          else $fatal(1,"[l1 icache] fsm reached an invalid state");
 
   hot1: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) (~inv_en) |=> cmp_en_q |-> $onehot0(cl_hit))
+      @(posedge clk_i) disable iff (~rst_ni) (~inv_en) |-> cache_rden |=> cmp_en_q |-> $onehot0(cl_hit))
          else $fatal(1,"[l1 icache] cl_hit signal must be hot1");
+
+    // this is only used for verification!
+    logic                                    vld_mirror[serpent_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];        
+    logic [ariane_pkg::ICACHE_TAG_WIDTH-1:0] tag_mirror[serpent_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];        
+    logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
+        if(~rst_ni) begin
+            vld_mirror <= '{default:'0};
+            tag_mirror <= '{default:'0};
+        end else begin
+            for (int i = 0; i < ICACHE_SET_ASSOC; i++) begin
+                if(vld_req[i] & vld_we) begin
+                    vld_mirror[vld_addr][i] <= vld_wdata[i];
+                    tag_mirror[vld_addr][i] <= cl_tag_q;
+                end 
+            end       
+        end
+    end
+
+    generate
+        for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin
+            assign tag_write_duplicate_test[i] = (tag_mirror[vld_addr][i] == cl_tag_q) & vld_mirror[vld_addr][i] & (|vld_wdata);
+        end 
+    endgenerate
+
+    tag_write_duplicate: assert property (
+        @(posedge clk_i) disable iff (~rst_ni) |vld_req |-> vld_we |-> ~(|tag_write_duplicate_test))     
+            else $fatal(1,"[l1 icache] cannot allocate a CL that is already present in the cache");
+
 
    initial begin
       // assert wrong parameterizations

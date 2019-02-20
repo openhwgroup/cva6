@@ -111,20 +111,6 @@ module ariane_verilog_wrap #(
   // reset gate this
   assign rst_n = wake_up_cnt_q[$high(wake_up_cnt_q)] & reset_l;
 
-  // reset_synchronizer #(
-  //    .NUM_REGS(2)
-  // ) i_sync (
-  //    .clk_i   ( clk_i      ),
-  //    .rst_ni  ( rst_n      ),
-  //    .tmode_i ( 1'b0       ),
-  //    .rst_no  ( spc_grst_l )
-  // );
-
-  synchronizer i_sync (
-    .clk         ( clk_i      ),
-    .presyncdata ( rst_n      ),
-    .syncdata    ( spc_grst_l )
-  );
 
   /////////////////////////////
   // synchronizers

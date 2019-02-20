@@ -76,12 +76,6 @@ logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
 serpent_cache_pkg::dcache_req_t  dcache_adapter;
 serpent_cache_pkg::dcache_rtrn_t adapter_dcache;
 
-`ifdef AXI64_CACHE_PORTS
-// used for local plumbing in this case
-l15_req_t                       l15_req;
-l15_rtrn_t                      l15_rtrn;
-`endif
-
 serpent_icache #(
 `ifdef AXI64_CACHE_PORTS
     .Axi64BitCompliant  ( 1'b1          ),
@@ -113,6 +107,9 @@ serpent_icache #(
 // they have equal prio and are RR arbited
 // Port 2 is write only and goes into the merging write buffer
 serpent_dcache #(
+`ifdef AXI64_CACHE_PORTS
+    .Axi64BitCompliant  ( 1'b1          ),
+`endif
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
     .RdAmoTxId       ( 1             ),
@@ -138,166 +135,50 @@ serpent_dcache #(
   );
 
 
-// arbiter/adapter
-serpent_l15_adapter #(
-    .SwapEndianess   ( SwapEndianess ),
-    .CachedAddrBeg   ( CachedAddrBeg ),
-    .CachedAddrEnd   ( CachedAddrEnd )
-  ) i_adapter (
-    .clk_i              ( clk_i                   ),
-    .rst_ni             ( rst_ni                  ),
-    .icache_data_req_i  ( icache_adapter_data_req ),
-    .icache_data_ack_o  ( adapter_icache_data_ack ),
-    .icache_data_i      ( icache_adapter          ),
-    .icache_rtrn_vld_o  ( adapter_icache_rtrn_vld ),
-    .icache_rtrn_o      ( adapter_icache          ),
-    .dcache_data_req_i  ( dcache_adapter_data_req ),
-    .dcache_data_ack_o  ( adapter_dcache_data_ack ),
-    .dcache_data_i      ( dcache_adapter          ),
-    .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
-    .dcache_rtrn_o      ( adapter_dcache          ),
+///////////////////////////////////////////////////////
+// memory plumbing, either use 64bit AXI port or native
+// L15 cache interface (derived from OpenSPARC CCX).
+///////////////////////////////////////////////////////
+
 `ifdef AXI64_CACHE_PORTS
-    .l15_req_o          ( l15_req                 ),
-    .l15_rtrn_i         ( l15_rtrn                )
+  serpent_axi_adapter #(
+      .AxiIdWidth   ( AxiIdWidth )
+    ) i_adapter (
+      .clk_i              ( clk_i                   ),
+      .rst_ni             ( rst_ni                  ),
+      .icache_data_req_i  ( icache_adapter_data_req ),
+      .icache_data_ack_o  ( adapter_icache_data_ack ),
+      .icache_data_i      ( icache_adapter          ),
+      .icache_rtrn_vld_o  ( adapter_icache_rtrn_vld ),
+      .icache_rtrn_o      ( adapter_icache          ),
+      .dcache_data_req_i  ( dcache_adapter_data_req ),
+      .dcache_data_ack_o  ( adapter_dcache_data_ack ),
+      .dcache_data_i      ( dcache_adapter          ),
+      .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
+      .dcache_rtrn_o      ( adapter_dcache          ),
+      .axi_req_o          ( axi_req_o               ),
+      .axi_resp_i         ( axi_resp_i              )
+    );
 `else
-    .l15_req_o          ( l15_req_o               ),
-    .l15_rtrn_i         ( l15_rtrn_i              )
+  serpent_l15_adapter #(
+      .SwapEndianess   ( SwapEndianess )
+    ) i_adapter (
+      .clk_i              ( clk_i                   ),
+      .rst_ni             ( rst_ni                  ),
+      .icache_data_req_i  ( icache_adapter_data_req ),
+      .icache_data_ack_o  ( adapter_icache_data_ack ),
+      .icache_data_i      ( icache_adapter          ),
+      .icache_rtrn_vld_o  ( adapter_icache_rtrn_vld ),
+      .icache_rtrn_o      ( adapter_icache          ),
+      .dcache_data_req_i  ( dcache_adapter_data_req ),
+      .dcache_data_ack_o  ( adapter_dcache_data_ack ),
+      .dcache_data_i      ( dcache_adapter          ),
+      .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
+      .dcache_rtrn_o      ( adapter_dcache          ),
+      .l15_req_o          ( l15_req_o               ),
+      .l15_rtrn_i         ( l15_rtrn_i              )
+    );
 `endif
-  );
-
-///////////////////////////////////////////////////////
-// different memory plumbing to allow for using the
-// serpent cache subsystem in a standard AXI setting
-// for verificaton purposes.
-///////////////////////////////////////////////////////
-
-`ifdef AXI64_CACHE_PORTS
-
-// support up to 512bit cache lines
-localparam AxiNumWords = 8;
-
-logic axi_rd_req, axi_rd_gnt;
-logic [63:0]                    axi_rd_addr, axi_wr_addr;
-logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
-logic [1:0] axi_rd_size, axi_wr_size;
-logic [AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out;
-logic axi_rd_valid;
-logic [AxiNumWords-1:0][63:0] axi_rd_data, axi_wr_data;
-logic [AxiNumWords-1:0][7:0] axi_wr_be;
-logic axi_wr_req, axi_wr_gnt;
-logic axi_wr_valid, axi_rd_rdy, axi_wr_rdy;
-
-logic ifill;
-logic [serpent_cache_pkg::L15_TID_WIDTH+2-1:0] id_tmp;
-logic rd_pending_d, rd_pending_q;
-
-// request side
-assign ifill = (l15_req.l15_rqtype==serpent_cache_pkg::L15_IMISS_RQ);
-
-assign axi_rd_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_LOAD_RQ | ifill) && !rd_pending_q;
-assign axi_wr_req = l15_req.l15_val && (l15_req.l15_rqtype==serpent_cache_pkg::L15_STORE_RQ);
-
-assign axi_rd_addr = l15_req.l15_address;
-assign axi_wr_addr = axi_rd_addr;
-
-// the axi interconnect does not correctly handle the ordering of read responses.
-// workaround: only allow for one outstanding TX. need to improve this.
-assign rd_pending_d = (axi_rd_valid ) ? '0 : rd_pending_q | axi_rd_gnt;
-
-assign axi_rd_id_in = {l15_req.l15_threadid, ifill, l15_req.l15_nc};
-assign axi_wr_id_in = axi_rd_id_in;
-
-assign axi_rd_size = (ifill) ? 2'b11 : l15_req.l15_size[1:0];// always request 64bit words in case of ifill
-assign axi_wr_size = l15_req.l15_size[1:0];
-
-assign axi_rd_blen = (l15_req.l15_size[2]) ? ((ifill) ? ariane_pkg::ICACHE_LINE_WIDTH/64-1  :
-                                                        ariane_pkg::DCACHE_LINE_WIDTH/64-1) : '0;
-assign axi_wr_blen = '0;// single word writes
-
-assign axi_wr_data = l15_req.l15_data;
-assign axi_wr_be   = (axi_wr_req) ? serpent_cache_pkg::toByteEnable8(axi_wr_addr[2:0], axi_wr_size) : '0;
-
-
-// return path
-always_comb begin : p_axi_rtrn
-  // default
-  l15_rtrn                   = '0;
-
-  // from request path
-  l15_rtrn.l15_ack           = axi_rd_gnt | axi_wr_gnt;
-  l15_rtrn.l15_header_ack    = axi_rd_gnt | axi_wr_gnt;
-
-  // we are always ready to consume packets unconditionally,
-  // but in case of returning reads, we have to stall the write response
-  axi_rd_rdy                 = 1'b1;
-  axi_wr_rdy                 = ~axi_rd_valid;// this vld signal comes directly from a register
-
-  // unconditionally consume packets
-  l15_rtrn.l15_val           = axi_rd_valid | axi_wr_valid;
-
-  // encode packet type
-  id_tmp                     = (axi_rd_valid) ? axi_rd_id_out : axi_wr_id_out;
-  l15_rtrn.l15_returntype    = (axi_rd_valid && id_tmp[1]) ? L15_IFILL_RET :
-  (axi_rd_valid)              ? L15_LOAD_RET  :
-  L15_ST_ACK;
-
-  // decode id and set flags accordingly
-  l15_rtrn.l15_noncacheable  = id_tmp[0];
-  l15_rtrn.l15_threadid      = id_tmp>>2;
-  // 4B non-cacheable ifill
-  l15_rtrn.l15_f4b           = id_tmp[0] & id_tmp[1] & axi_rd_valid;
-
-  l15_rtrn.l15_data_0        = axi_rd_data[0];
-  l15_rtrn.l15_data_1        = axi_rd_data[1];
-  l15_rtrn.l15_data_2        = axi_rd_data[2];
-  l15_rtrn.l15_data_3        = axi_rd_data[3];
-end
-
-always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-  if(~rst_ni) begin
-    rd_pending_q <= '0;
-  end else begin
-    rd_pending_q <= rd_pending_d;
-  end
-end
-
-
-axi_adapter2 #(
-  .DATA_WORDS      ( AxiNumWords     ),
-  .AXI_ID_WIDTH    ( AxiIdWidth      )
-) i_axi_adapter (
-  .clk_i           ( clk_i             ),
-  .rst_ni          ( rst_ni            ),
-  .rd_req_i        ( axi_rd_req        ),
-  .rd_gnt_o        ( axi_rd_gnt        ),
-  .rd_addr_i       ( axi_rd_addr       ),
-  .rd_blen_i       ( axi_rd_blen       ),
-  .rd_size_i       ( axi_rd_size       ),
-  .rd_id_i         ( axi_rd_id_in      ),
-  .rd_rdy_i        ( axi_rd_rdy        ),
-  .rd_valid_o      ( axi_rd_valid      ),
-  .rd_data_o       ( axi_rd_data       ),
-  .rd_id_o         ( axi_rd_id_out     ),
-  .rd_word_o       (                   ),
-  .rd_word_valid_o (                   ),
-  .rd_word_cnt_o   (                   ),
-  .wr_req_i        ( axi_wr_req        ),
-  .wr_gnt_o        ( axi_wr_gnt        ),
-  .wr_addr_i       ( axi_wr_addr       ),
-  .wr_data_i       ( axi_wr_data       ),
-  .wr_be_i         ( axi_wr_be         ),
-  .wr_blen_i       ( axi_wr_blen       ),
-  .wr_size_i       ( axi_wr_size       ),
-  .wr_id_i         ( axi_wr_id_in      ),
-  .wr_rdy_i        ( axi_wr_rdy        ),
-  .wr_valid_o      ( axi_wr_valid      ),
-  .wr_id_o         ( axi_wr_id_out     ),
-  .axi_req_o       ( axi_req_o         ),
-  .axi_resp_i      ( axi_resp_i        )
-);
-
-`endif
-
 
 ///////////////////////////////////////////////////////
 // assertions
@@ -305,31 +186,23 @@ axi_adapter2 #(
 
 //pragma translate_off
 `ifndef VERILATOR
+  a_invalid_instruction_fetch: assert property (
+    @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
+  else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
+    icache_dreq_o.vaddr, icache_dreq_o.data);
 
-`ifdef AXI64_CACHE_PORTS
-  initial begin
-    assert (AxiIdWidth >= $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2) else
-      $fatal(1,$psprintf("[l1 cache] AXI ID must be at least %01d bit wide", $clog2(serpent_cache_pkg::DCACHE_MAX_TX)+2));
+  a_invalid_write_data: assert property (
+    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)
+  else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X",
+    {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
+
+
+  for(genvar j=0; j<2; j++) begin : g_assertion
+    a_invalid_read_data: assert property (
+      @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
+    else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X",
+      j, dcache_req_ports_o[j].data_rdata);
   end
-`endif
-
-a_invalid_instruction_fetch: assert property (
-  @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
-else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
-  icache_dreq_o.vaddr, icache_dreq_o.data);
-
-a_invalid_write_data: assert property (
-  @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)
-else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X",
-  {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
-
-
-for(genvar j=0; j<2; j++) begin : g_assertion
-  a_invalid_read_data: assert property (
-    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
-  else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X",
-    j, dcache_req_ports_o[j].data_rdata);
-end
 `endif
 //pragma translate_on
 
