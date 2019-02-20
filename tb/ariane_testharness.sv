@@ -245,11 +245,11 @@ module ariane_testharness #(
         .be_o       ( dm_slave_be               ),
         .data_o     ( dm_slave_wdata            ),
         .data_i     ( dm_slave_rdata            )
-    );        
+    );
 
     axi_master_connect i_dm_axi_master_connect (
-      .axi_req_i(dm_axi_m_req), 
-      .axi_resp_o(dm_axi_m_resp), 
+      .axi_req_i(dm_axi_m_req),
+      .axi_resp_o(dm_axi_m_resp),
       .master(slave[1])
     );
 
@@ -271,8 +271,8 @@ module ariane_testharness #(
         .valid_o               ( dm_master_r_valid         ),
         .rdata_o               ( dm_master_r_rdata         ),
         .id_o                  (                           ),
-        .critical_word_o       (                           ), 
-        .critical_word_valid_o (                           ), 
+        .critical_word_o       (                           ),
+        .critical_word_valid_o (                           ),
         .axi_req_o             ( dm_axi_m_req              ),
         .axi_resp_i            ( dm_axi_m_resp             )
     );
@@ -326,7 +326,7 @@ module ariane_testharness #(
     logic [AXI_DATA_WIDTH-1:0]    wdata;
     logic [AXI_DATA_WIDTH-1:0]    rdata;
 
-    axi_riscv_atomics #(
+    axi_riscv_atomics_wrap #(
         .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH   ),
         .AXI_DATA_WIDTH ( AXI_DATA_WIDTH      ),
         .AXI_ID_WIDTH   ( AXI_ID_WIDTH_SLAVES ),
@@ -377,6 +377,7 @@ module ariane_testharness #(
     axi_node_intf_wrap #(
         .NB_SLAVE           ( NB_SLAVE                   ),
         .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
+        .NB_REGION          ( ariane_soc::NrRegion       ),
         .AXI_ADDR_WIDTH     ( AXI_ADDRESS_WIDTH          ),
         .AXI_DATA_WIDTH     ( AXI_DATA_WIDTH             ),
         .AXI_USER_WIDTH     ( AXI_USER_WIDTH             ),
@@ -411,7 +412,7 @@ module ariane_testharness #(
             ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
             ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
         }),
-        .valid_rule_i ('1)
+        .valid_rule_i (ariane_soc::ValidRule)
     );
 
     // ---------------
@@ -440,8 +441,8 @@ module ariane_testharness #(
     );
 
     axi_slave_connect i_axi_slave_connect_clint (
-      .axi_req_o(axi_clint_req), 
-      .axi_resp_i(axi_clint_resp), 
+      .axi_req_o(axi_clint_req),
+      .axi_resp_i(axi_clint_resp),
       .slave(master[ariane_soc::CLINT])
     );
 
@@ -515,8 +516,8 @@ module ariane_testharness #(
     );
 
     axi_master_connect i_axi_master_connect_ariane (
-      .axi_req_i(axi_ariane_req), 
-      .axi_resp_o(axi_ariane_resp), 
+      .axi_req_i(axi_ariane_req),
+      .axi_resp_o(axi_ariane_resp),
       .master(slave[0])
     );
 
