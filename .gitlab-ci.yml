@@ -131,13 +131,13 @@ bench-ver:
   dependencies:
     - build
 
-torture:
-  stage: standard
-  script:
-    - make torture-rtest batch-mode=1
-    - make torture-rtest-verilator
-  dependencies:
-    - build
+# torture:
+#   stage: standard
+#   script:
+#     - make torture-rtest batch-mode=1
+#     - make torture-rtest-verilator
+#   dependencies:
+#     - build
 
 serdiv-quest:
   stage: standard
@@ -246,10 +246,10 @@ s-dcache-quest:
   dependencies:
     - build
 
-s-torture:
-  stage: serpent
-  script:
-    - make torture-rtest           defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
-    - make torture-rtest-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
-  dependencies:
-    - build
+# s-torture:
+#   stage: serpent
+#   script:
+#     - make torture-rtest           defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
+#     - make torture-rtest-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
+#   dependencies:
+#     - build

@@ -134,7 +134,12 @@ jobs:
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator  defines=PITON_ARIANE+AXI64_CACHE_PORTS
-
+    # amo tests
+    - stage: test
+      name: run amo tests
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-amo-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
     - stage: test
       name: run torture (serpent)
       script:
