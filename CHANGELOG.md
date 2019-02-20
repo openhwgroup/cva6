@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Increase available RAM size on Genesys II board to 1 GiB
 - Fixed problem which decoded compressed hints as illegal instructions
 - Reduce clock frequency of FPGA to 30 MHz to accomodate FPU
-- Bugfuxes in write-through cache system
+- Bugfixes in write-through cache system
 
 ### 4.0.0
 

@@ -63,6 +63,13 @@ amo-quest:
   dependencies:
     - build
 
+fp-quest:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-fp-tests batch-mode=1
+  dependencies:
+    - build
+
 bench-quest:
   stage: standard
   script:
@@ -102,10 +109,11 @@ amo-ver:
   dependencies:
     - build
 
-bench-ver:
+# floating point
+fp-ver:
   stage: standard
   script:
-    - make -j${NUM_JOBS} run-benchmarks-verilator
+    - make -j${NUM_JOBS} run-fp-tests-verilator 
   dependencies:
     - build
 
@@ -116,13 +124,20 @@ bench-ver:
   dependencies:
     - build
 
-# torture:
-#   stage: standard
-#   script:
-#     - make torture-rtest batch-mode=1
-#     - make torture-rtest-verilator
-#   dependencies:
-#     - build
+bench-ver:
+  stage: standard
+  script:
+    - make -j${NUM_JOBS} run-benchmarks-verilator
+  dependencies:
+    - build
+
+torture:
+  stage: standard
+  script:
+    - make torture-rtest batch-mode=1
+    - make torture-rtest-verilator
+  dependencies:
+    - build
 
 serdiv-quest:
   stage: standard
@@ -136,11 +151,26 @@ serdiv-quest:
 ###################################
 # tests with serpent cache system
 
-# rv64ui-p-* and rv64ui-v-* tests
 s-asm-quest:
   stage: serpent
   script:
     - make -j${NUM_JOBS} run-asm-tests defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
+  dependencies:
+    - build
+
+# atomics
+s-amo-quest:
+  stage: serpent
+  script:
+    - make -j${NUM_JOBS} run-amo-tests defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
+  dependencies:
+    - build
+
+# floating point    
+s-fp-quest:
+  stage: serpent
+  script:
+    - make -j${NUM_JOBS} run-fp-tests defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
   dependencies:
     - build
 
@@ -169,9 +199,25 @@ s-asm2-ver:
 
 # rv64um-*-* tests
 mul-ver:
-  stage: standard
+  stage: serpent
   script:
     - make -j${NUM_JOBS} run-mul-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
+  dependencies:
+    - build
+
+# atomics
+amo-ver:
+  stage: serpent
+  script:
+    - make -j${NUM_JOBS} run-amo-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
+  dependencies:
+    - build
+
+# floating point
+s-fp-ver:
+  stage: serpent
+  script:
+    - make -j${NUM_JOBS} run-fp-tests-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
   dependencies:
     - build
 
@@ -200,10 +246,10 @@ s-dcache-quest:
   dependencies:
     - build
 
-# s-torture:
-#   stage: serpent
-#   script:
-#     - make torture-rtest           defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
-#     - make torture-rtest-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
-#   dependencies:
-#     - build
+s-torture:
+  stage: serpent
+  script:
+    - make torture-rtest           defines=PITON_ARIANE+AXI64_CACHE_PORTS batch-mode=1
+    - make torture-rtest-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
+  dependencies:
+    - build
