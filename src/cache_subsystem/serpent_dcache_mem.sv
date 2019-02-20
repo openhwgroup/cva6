@@ -29,45 +29,46 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_mem #(
-        parameter int unsigned NumPorts     = 3
-    )(
-        input  logic                                              clk_i,
-        input  logic                                              rst_ni,
+    parameter bit          Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
+    parameter int unsigned NumPorts           = 3
+) (
+    input  logic                                              clk_i,
+    input  logic                                              rst_ni,
 
-        // ports
-        input  logic  [NumPorts-1:0][DCACHE_TAG_WIDTH-1:0]        rd_tag_i,           // tag in - comes one cycle later
-        input  logic  [NumPorts-1:0][DCACHE_CL_IDX_WIDTH-1:0]     rd_idx_i,
-        input  logic  [NumPorts-1:0][DCACHE_OFFSET_WIDTH-1:0]     rd_off_i,
-        input  logic  [NumPorts-1:0]                              rd_req_i,           // read the word at offset off_i[:3] in all ways
-        input  logic  [NumPorts-1:0]                              rd_tag_only_i,      // only do a tag/valid lookup, no access to data arrays
-        input  logic  [NumPorts-1:0]                              rd_prio_i,          // 0: low prio, 1: high prio
-        output logic  [NumPorts-1:0]                              rd_ack_o,
-        output logic                [DCACHE_SET_ASSOC-1:0]        rd_vld_bits_o,
-        output logic                [DCACHE_SET_ASSOC-1:0]        rd_hit_oh_o,
-        output logic                [63:0]                        rd_data_o,
+    // ports
+    input  logic  [NumPorts-1:0][DCACHE_TAG_WIDTH-1:0]        rd_tag_i,           // tag in - comes one cycle later
+    input  logic  [NumPorts-1:0][DCACHE_CL_IDX_WIDTH-1:0]     rd_idx_i,
+    input  logic  [NumPorts-1:0][DCACHE_OFFSET_WIDTH-1:0]     rd_off_i,
+    input  logic  [NumPorts-1:0]                              rd_req_i,           // read the word at offset off_i[:3] in all ways
+    input  logic  [NumPorts-1:0]                              rd_tag_only_i,      // only do a tag/valid lookup, no access to data arrays
+    input  logic  [NumPorts-1:0]                              rd_prio_i,          // 0: low prio, 1: high prio
+    output logic  [NumPorts-1:0]                              rd_ack_o,
+    output logic                [DCACHE_SET_ASSOC-1:0]        rd_vld_bits_o,
+    output logic                [DCACHE_SET_ASSOC-1:0]        rd_hit_oh_o,
+    output logic                [63:0]                        rd_data_o,
 
-        // only available on port 0, uses address signals of port 0
-        input  logic                                              wr_cl_vld_i,
-        input  logic                                              wr_cl_nc_i,         // noncacheable access
-        input  logic                [DCACHE_SET_ASSOC-1:0]        wr_cl_we_i,         // writes a full cacheline
-        input  logic                [DCACHE_TAG_WIDTH-1:0]        wr_cl_tag_i,
-        input  logic                [DCACHE_CL_IDX_WIDTH-1:0]     wr_cl_idx_i,
-        input  logic                [DCACHE_OFFSET_WIDTH-1:0]     wr_cl_off_i,
-        input  logic                [DCACHE_LINE_WIDTH-1:0]       wr_cl_data_i,
-        input  logic                [DCACHE_LINE_WIDTH/8-1:0]     wr_cl_data_be_i,
-        input  logic                [DCACHE_SET_ASSOC-1:0]        wr_vld_bits_i,
+    // only available on port 0, uses address signals of port 0
+    input  logic                                              wr_cl_vld_i,
+    input  logic                                              wr_cl_nc_i,         // noncacheable access
+    input  logic                [DCACHE_SET_ASSOC-1:0]        wr_cl_we_i,         // writes a full cacheline
+    input  logic                [DCACHE_TAG_WIDTH-1:0]        wr_cl_tag_i,
+    input  logic                [DCACHE_CL_IDX_WIDTH-1:0]     wr_cl_idx_i,
+    input  logic                [DCACHE_OFFSET_WIDTH-1:0]     wr_cl_off_i,
+    input  logic                [DCACHE_LINE_WIDTH-1:0]       wr_cl_data_i,
+    input  logic                [DCACHE_LINE_WIDTH/8-1:0]     wr_cl_data_be_i,
+    input  logic                [DCACHE_SET_ASSOC-1:0]        wr_vld_bits_i,
 
-        // separate port for single word write, no tag access
-        input  logic                [DCACHE_SET_ASSOC-1:0]        wr_req_i,           // write a single word to offset off_i[:3]
-        output logic                                              wr_ack_o,
-        input  logic                [DCACHE_CL_IDX_WIDTH-1:0]     wr_idx_i,
-        input  logic                [DCACHE_OFFSET_WIDTH-1:0]     wr_off_i,
-        input  logic                [63:0]                        wr_data_i,
-        input  logic                [7:0]                         wr_data_be_i,
+    // separate port for single word write, no tag access
+    input  logic                [DCACHE_SET_ASSOC-1:0]        wr_req_i,           // write a single word to offset off_i[:3]
+    output logic                                              wr_ack_o,
+    input  logic                [DCACHE_CL_IDX_WIDTH-1:0]     wr_idx_i,
+    input  logic                [DCACHE_OFFSET_WIDTH-1:0]     wr_off_i,
+    input  logic                [63:0]                        wr_data_i,
+    input  logic                [7:0]                         wr_data_be_i,
 
-        // forwarded wbuffer
-        input wbuffer_t             [DCACHE_WBUF_DEPTH-1:0]       wbuffer_data_i
-    );
+    // forwarded wbuffer
+    input wbuffer_t             [DCACHE_WBUF_DEPTH-1:0]       wbuffer_data_i
+);
 
 
     logic [DCACHE_NUM_BANKS-1:0]                                  bank_req;
@@ -232,11 +233,12 @@ module serpent_dcache_mem #(
     assign wbuffer_rdata = wbuffer_data_i[wbuffer_hit_idx].data;
     assign wbuffer_be    = (|wbuffer_hit_oh) ? wbuffer_data_i[wbuffer_hit_idx].valid : '0;
 
-`ifndef AXI64_CACHE_PORTS
-    assign wr_cl_off     = (wr_cl_nc_i) ? '0 : wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
-`else     
-    assign wr_cl_off     = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
-`endif // AXI64_CACHE_PORTS
+    if (Axi64BitCompliant) begin
+        assign wr_cl_off     = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
+    end else begin  
+        assign wr_cl_off     = (wr_cl_nc_i) ? '0 : wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
+    end
+      
     assign rdata         = (wr_cl_vld_i)  ? wr_cl_data_i[wr_cl_off*64 +: 64] :
                                             rdata_cl[rd_hit_idx];
 

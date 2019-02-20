@@ -107,6 +107,9 @@ serpent_icache #(
 // they have equal prio and are RR arbited
 // Port 2 is write only and goes into the merging write buffer
 serpent_dcache #(
+`ifdef AXI64_CACHE_PORTS
+    .Axi64BitCompliant  ( 1'b1          ),
+`endif
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
     .RdAmoTxId       ( 1             ),

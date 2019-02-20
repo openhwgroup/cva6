@@ -73,7 +73,8 @@ logic [AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out;
 logic [AxiNumWords-1:0][63:0] axi_rd_data, axi_wr_data;
 logic [AxiNumWords-1:0][7:0]  axi_wr_be;
 logic [5:0] axi_wr_atop;
-
+logic invalidate;
+logic [2:0] amo_off_d, amo_off_q;
 
 assign icache_data_ack_o  = icache_data_req_i & ~icache_data_full;
 assign dcache_data_ack_o  = dcache_data_req_i & ~dcache_data_full;
@@ -102,8 +103,10 @@ assign rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q | axi_rd_gnt;
 always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
   if(~rst_ni) begin
     rd_pending_q <= '0;
+    amo_off_q    <= '0;
   end else begin
     rd_pending_q <= rd_pending_d;
+    amo_off_q    <= amo_off_d;
   end
 end
 
@@ -121,8 +124,9 @@ always_comb begin : p_axi_req
   axi_rd_req   = 1'b0;
   axi_rd_blen  = '0;
   axi_rd_lock  = '0;
-  
+
   tmp_type     = STD;
+  invalidate   = 1'b0;
 
   // decode message type
   if (|arb_req) begin
@@ -150,7 +154,12 @@ always_comb begin : p_axi_req
         //////////////////////////////////////
         serpent_cache_pkg::DCACHE_ATOMIC_REQ: begin
           // default  
-          axi_wr_req   = 1'b1;
+          // push back an invalidation here.
+          // since we only keep one read tx in flight, and since
+          // the dcache drains all writes/reads before executing 
+          // an atomic, this is safe.
+          invalidate   = !rd_pending_q;
+          axi_wr_req   = !rd_pending_q;
           tmp_type     = ATOP; 
           axi_wr_be    = serpent_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
           unique case (dcache_data.amo_op)
@@ -165,21 +174,28 @@ always_comb begin : p_axi_req
             AMO_SC: begin
               axi_wr_lock  = 1'b1;
               tmp_type     = LRSC;
+              // needed to properly encode success
+              unique case (dcache_data.size[1:0])
+                2'b00: amo_off_d    = dcache_data.paddr[2:0];
+                2'b01: amo_off_d    = {dcache_data.paddr[2:1], 1'b0};
+                2'b10: amo_off_d    = {dcache_data.paddr[2],   2'b00};
+                2'b11: amo_off_d    = '0;
+              endcase    
             end  
             // RISC-V atops have a load semantic
-            AMO_SWAP: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_ATOMICSWAP};
-            AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_ADD};
+            AMO_SWAP: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ATOMICSWAP};
+            AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
             AMO_AND:  begin 
               // in this case we need to invert the data to get a "CLR" 
               axi_wr_data  = ~dcache_data.data;
-              axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_CLR};
+              axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
             end  
-            AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_SET};
-            AMO_XOR:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_EOR};
-            AMO_MAX:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_SMAX};
-            AMO_MAXU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_UMAX};
-            AMO_MIN:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_SMIN}; 
-            AMO_MINU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_UMIN}; 
+            AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
+            AMO_XOR:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
+            AMO_MAX:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX};
+            AMO_MAXU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX};
+            AMO_MIN:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN}; 
+            AMO_MINU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN}; 
           endcase  
         end
       //////////////////////////////////////
@@ -256,7 +272,22 @@ always_comb begin : p_axi_rtrn
   axi_wr_rdy                 = 1'b1;
   
   //////////////////////////////////////
-  if (axi_rd_valid) begin
+  // this is safe, there is no other read tx in flight than this atomic.
+  // note that this self invalidation is handled in this way due to the 
+  // write-through cache architecture, which is aligned with the openpiton 
+  // cache subsystem.
+  if (invalidate) begin
+      axi_wr_rdy             = 1'b0;
+      icache_rtrn_vld_o      = 1'b1;
+      dcache_rtrn_vld_o      = 1'b1;
+      icache_rtrn_o.rtype    = serpent_cache_pkg::ICACHE_INV_REQ;
+      dcache_rtrn_o.rtype    = serpent_cache_pkg::DCACHE_INV_REQ;
+      icache_rtrn_o.inv.all  = 1'b1;
+      dcache_rtrn_o.inv.all  = 1'b1;
+      icache_rtrn_o.inv.idx  = dcache_data.paddr[ariane_pkg::ICACHE_INDEX_WIDTH]; 
+      dcache_rtrn_o.inv.idx  = dcache_data.paddr[ariane_pkg::DCACHE_INDEX_WIDTH]; 
+  //////////////////////////////////////
+  end else if (axi_rd_valid) begin
     // we give prio to read responses
     axi_wr_rdy                 = 1'b0;
     unique case(tx_t'(axi_rd_id_out[1:0]))
@@ -291,7 +322,8 @@ always_comb begin : p_axi_rtrn
       LRSC:  begin 
         dcache_rtrn_o.rtype = serpent_cache_pkg::DCACHE_ATOMIC_ACK;
         // encode success 
-        dcache_rtrn_o.data[63:0] = (axi_wr_exokay) ? '0 : '1;
+        dcache_rtrn_o.data  = '0;
+        dcache_rtrn_o.data[amo_off_q*8] = (axi_wr_exokay) ? '0 : 1'b1;
       end
       default: dcache_rtrn_vld_o   = 1'b0;
     endcase
@@ -300,8 +332,8 @@ always_comb begin : p_axi_rtrn
 end
 
 
-// invalidations are not supported at the moment as this would require a snoop filter (AXI ACE...)
-// note that the atomic transactions would also need a master exclusive monitor in that case
+// remote invalidations are not supported yet (this needs a cache coherence protocol)
+// note that the atomic transactions would also need a "master exclusive monitor" in that case
 // assign icache_rtrn_o.inv.idx  = '0;
 // assign icache_rtrn_o.inv.way  = '0;
 // assign icache_rtrn_o.inv.vld  = '0;

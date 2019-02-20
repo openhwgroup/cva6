@@ -90,7 +90,7 @@ module axi_adapter2 #(
     assign axi_req_o.aw.lock   = wr_lock_i;
     assign axi_req_o.aw.cache  = 4'b0;
     assign axi_req_o.aw.qos    = 4'b0;
-    assign axi_req_o.aw.atop   = wr_atop_i; // currently not used
+    assign axi_req_o.aw.atop   = wr_atop_i; 
     // data
     assign axi_req_o.w.data    = wr_data_i[wr_cnt_q];
     assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
@@ -247,7 +247,7 @@ module axi_adapter2 #(
     // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
     // with an incremental transfer we need to output the corresponding base address of the cache line
     assign axi_req_o.ar.burst  = (rd_single_req)       ? 2'b00 :
-                                                         2'b01;  // wrapping transfer in case of a critical word first strategy
+                                                         2'b01;  
     assign axi_req_o.ar.addr   = rd_addr_i;
     assign axi_req_o.ar.size   = rd_size_i;
     assign axi_req_o.ar.len    = rd_blen_i;
