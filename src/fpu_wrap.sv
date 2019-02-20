@@ -362,17 +362,17 @@ generate
           fpu_op_d        = fpnew_pkg::CPKCD;
           fpu_op_mod_d    = fpu_rm_i[0]; // C/D selection from R bit
           vec_replication = 1'b0;        // no replication, R bit used for op
-          fpu_srcfmt_d      = fpnew_pkg::FP64;    // Cast from FP64
+          fpu_srcfmt_d      = fpnew_pkg::FP32;    // Cast from FP32
         end
         // Vectorial Convert-and-Pack from FP64, lower 4 entries
-        VFCPKAB_S : begin
+        VFCPKAB_D : begin
           fpu_op_d        = fpnew_pkg::CPKAB;
           fpu_op_mod_d    = fpu_rm_i[0]; // A/B selection from R bit
           vec_replication = 1'b0;        // no replication, R bit used for op
           fpu_srcfmt_d      = fpnew_pkg::FP64;    // Cast from FP64
         end
         // Vectorial Convert-and-Pack from FP64, upper 4 entries
-        VFCPKCD_S : begin
+        VFCPKCD_D : begin
           fpu_op_d        = fpnew_pkg::CPKCD;
           fpu_op_mod_d    = fpu_rm_i[0]; // C/D selection from R bit
           vec_replication = 1'b0;        // no replication, R bit used for op

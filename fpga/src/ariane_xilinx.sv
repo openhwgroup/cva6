@@ -176,6 +176,7 @@ axi_node_wrap_with_slices #(
     // three ports from Ariane (instruction, data and bypass)
     .NB_SLAVE           ( NBSlave                    ),
     .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
+    .NB_REGION          ( ariane_soc::NrRegion       ),
     .AXI_ADDR_WIDTH     ( AxiAddrWidth               ),
     .AXI_DATA_WIDTH     ( AxiDataWidth               ),
     .AXI_USER_WIDTH     ( AxiUserWidth               ),
@@ -210,7 +211,7 @@ axi_node_wrap_with_slices #(
         ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
         ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
     }),
-    .valid_rule_i ('1)
+    .valid_rule_i (ariane_soc::ValidRule)
 );
 
 // ---------------
@@ -259,7 +260,7 @@ dm_top #(
     .NrHarts          ( 1                 ),
     .BusWidth         ( AxiDataWidth      ),
     .Selectable_Harts ( 1'b1              )
-) i_dm_top ( 
+) i_dm_top (
     .clk_i            ( clk               ),
     .rst_ni           ( rst_n             ), // PoR
     .testmode_i       ( test_en           ),
@@ -305,11 +306,11 @@ axi2mem #(
     .be_o       ( dm_slave_be               ),
     .data_o     ( dm_slave_wdata            ),
     .data_i     ( dm_slave_rdata            )
-);        
+);
 
 axi_master_connect i_dm_axi_master_connect (
-  .axi_req_i(dm_axi_m_req), 
-  .axi_resp_o(dm_axi_m_resp), 
+  .axi_req_i(dm_axi_m_req),
+  .axi_resp_o(dm_axi_m_resp),
   .master(slave[1])
 );
 
@@ -331,8 +332,8 @@ axi_adapter #(
     .valid_o               ( dm_master_r_valid         ),
     .rdata_o               ( dm_master_r_rdata         ),
     .id_o                  (                           ),
-    .critical_word_o       (                           ), 
-    .critical_word_valid_o (                           ), 
+    .critical_word_o       (                           ),
+    .critical_word_valid_o (                           ),
     .axi_req_o             ( dm_axi_m_req              ),
     .axi_resp_i            ( dm_axi_m_resp             )
 );
@@ -521,7 +522,7 @@ AXI_BUS #(
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) dram();
 
-axi_riscv_atomics #(
+axi_riscv_atomics_wrap #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
