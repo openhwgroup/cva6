@@ -209,12 +209,14 @@ module serpent_dcache_missunit #(
                                                          amo_req_i.operand_b;
 
     // note: openpiton returns a full cacheline!
-    if (Axi64BitCompliant) begin
-        assign amo_rtrn_mux = mem_rtrn_i.data[0 +: 64];
-    end else begin
-        assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64 +: 64];
-    end
-
+    generate
+      if (Axi64BitCompliant) begin
+          assign amo_rtrn_mux = mem_rtrn_i.data[0 +: 64];
+      end else begin
+          assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64 +: 64];
+      end
+    endgenerate
+    
     // always sign extend 32bit values
     assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},
                                                               amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :

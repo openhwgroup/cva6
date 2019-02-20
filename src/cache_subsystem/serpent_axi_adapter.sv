@@ -96,10 +96,6 @@ rrarbiter #(
   .idx_o  ( arb_idx                 )
 );
 
-// currently we only keep one pending read transaction due 
-// to the deserialization mechanism (only one buffer for one ID available)
-assign rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q | axi_rd_gnt;
-
 always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
   if(~rst_ni) begin
     rd_pending_q <= '0;
@@ -128,12 +124,18 @@ always_comb begin : p_axi_req
   tmp_type     = STD;
   invalidate   = 1'b0;
 
+  // currently we only keep one pending read transaction due 
+  // to the deserialization mechanism (only one buffer for one ID available)
+  rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q;
+  
   // decode message type
   if (|arb_req) begin
     if (arb_idx == 0) begin
       //////////////////////////////////////
       // IMISS  
       axi_rd_req   = !rd_pending_q;
+      rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q | axi_rd_gnt;
+  
       tmp_type     = IFILL;
       if (~icache_data.nc) begin
         axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/64-1;
@@ -144,6 +146,8 @@ always_comb begin : p_axi_req
         //////////////////////////////////////
         serpent_cache_pkg::DCACHE_LOAD_REQ: begin
           axi_rd_req   = !rd_pending_q;
+          rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q | axi_rd_gnt;
+  
           if (dcache_data.size[2]) axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH/64-1;
         end
         //////////////////////////////////////
@@ -160,12 +164,15 @@ always_comb begin : p_axi_req
           // an atomic, this is safe.
           invalidate   = !rd_pending_q;
           axi_wr_req   = !rd_pending_q;
+          rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q | axi_wr_gnt;
+  
           tmp_type     = ATOP; 
           axi_wr_be    = serpent_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
           unique case (dcache_data.amo_op)
             AMO_LR: begin
               axi_rd_lock  = 1'b1;
               axi_rd_req   = !rd_pending_q;
+              rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q | axi_rd_gnt;
               tmp_type     = LRSC; 
               // tie to zero in this special case
               axi_wr_req   = 1'b0;
@@ -174,6 +181,7 @@ always_comb begin : p_axi_req
             AMO_SC: begin
               axi_wr_lock  = 1'b1;
               tmp_type     = LRSC;
+              rd_pending_d = (axi_rd_valid) ? '0 : rd_pending_q;
               // needed to properly encode success
               unique case (dcache_data.size[1:0])
                 2'b00: amo_off_d    = dcache_data.paddr[2:0];
