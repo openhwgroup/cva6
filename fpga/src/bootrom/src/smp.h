@@ -8,7 +8,7 @@
 // The maximum number of HARTs this code supports
 //#define CLINT_CTRL_ADDR 0xFFF1020000
 // Barrier on the cacheline above the stack pointer
-#define SMP_BARRIER_ADDR (DRAM_BASE + 64)
+#define SMP_BARRIER_ADDR (0x84000000 + 64)
 #ifndef MAX_HARTS
 #define MAX_HARTS 2
 #endif
