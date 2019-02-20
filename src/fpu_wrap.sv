@@ -47,7 +47,7 @@ generate
     //-----------------------------------
     // FPnew config from FPnew package
     //-----------------------------------
-    localparam OPBITS  =  64;
+    localparam OPBITS  =  fpnew_pkg::OP_BITS;
     localparam FMTBITS =  $clog2(fpnew_pkg::NUM_FP_FORMATS);
     localparam IFMTBITS = $clog2(fpnew_pkg::NUM_INT_FORMATS);
 
