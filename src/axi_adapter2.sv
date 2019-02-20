@@ -24,7 +24,7 @@ import std_cache_pkg::*;
 
 module axi_adapter2 #(
     parameter int unsigned AxiNumWords       = 4, // data width in dwords, this is also the maximum burst length, must be >=2
-    parameter int unsigned AxiIdWidth        = 10
+    parameter int unsigned AxiIdWidth        = 4  // stick to the spec
 ) (
     input  logic                                        clk_i,  // Clock
     input  logic                                        rst_ni, // Asynchronous reset active low
@@ -76,7 +76,8 @@ module axi_adapter2 #(
     // AXI tx counter
     logic [AddrIndex-1:0] wr_cnt_d, wr_cnt_q;
     logic wr_single_req, wr_cnt_done, wr_cnt_clr, wr_cnt_en;
-
+    logic b_push, b_full, b_empty, b_pop, b_exokay;
+    
     assign wr_single_req       = (wr_blen_i == 0);
 
     // address
@@ -96,11 +97,29 @@ module axi_adapter2 #(
     assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
     assign axi_req_o.w.last    = wr_cnt_done;
 
-    // response
-    assign axi_req_o.b_ready   = wr_rdy_i;
-    assign wr_valid_o          = axi_resp_i.b_valid;
-    assign wr_id_o             = axi_resp_i.b.id;
-    assign wr_exokay_o         = (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY);
+    // write response
+    assign b_exokay            = (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY);
+    assign axi_req_o.b_ready   = ~b_full;
+    assign b_push              = axi_resp_i.b_valid & axi_req_o.b_ready;
+    assign wr_valid_o          = ~b_empty;
+    assign b_pop               = wr_rdy_i & wr_valid_o;
+    
+    fifo_v3 #(
+      .DATA_WIDTH(AxiIdWidth+1), 
+      .DEPTH(2)
+    ) i_b_fifo (
+      .clk_i      ( clk_i      ),
+      .rst_ni     ( rst_ni     ),
+      .flush_i    ( 1'b0       ),
+      .testmode_i ( 1'b0       ),
+      .full_o     ( b_full     ),
+      .empty_o    ( b_empty    ),
+      .usage_o    (            ),
+      .data_i     ( {b_exokay, axi_resp_i.b.id}  ), 
+      .push_i     ( b_push     ),
+      .data_o     ( {wr_exokay_o, wr_id_o}       ), 
+      .pop_i      ( b_pop      )
+    );
 
     // tx counter
     assign wr_cnt_done         = (wr_cnt_q == wr_blen_i);
