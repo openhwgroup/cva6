@@ -17,7 +17,7 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_ctrl #(
-    parameter logic [DCACHE_ID_WIDTH-1:0] RdTxId        = 1,                // ID to use for read transactions
+    parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId        = 1,                // ID to use for read transactions
     parameter logic [63:0]                CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
     parameter logic [63:0]                CachedAddrEnd = 64'h80_0000_0000  // end of cached region
 ) (
@@ -36,7 +36,7 @@ module serpent_dcache_ctrl #(
     output logic [63:0]                     miss_paddr_o,
     output logic                            miss_nc_o,       // request to I/O space
     output logic [2:0]                      miss_size_o,     // 00: 1byte, 01: 2byte, 10: 4byte, 11: 8byte, 111: cacheline
-    output logic [DCACHE_ID_WIDTH-1:0]      miss_id_o,       // set to constant ID
+    output logic [CACHE_ID_WIDTH-1:0]       miss_id_o,       // set to constant ID
     input  logic                            miss_replay_i,   // request collided with pending miss - have to replay the request
     input  logic                            miss_rtrn_vld_i, // signals that the miss has been served, asserted in the same cycle as when the data returns from memory
     // used to detect readout mux collisions

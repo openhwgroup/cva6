@@ -29,6 +29,7 @@ import instruction_tracer_pkg::*;
 
 module ariane #(
   parameter logic [63:0] DmBaseAddress = 64'h0,            // debug module base address
+  parameter int unsigned AxiIdWidth    = 4,
 `ifdef PITON_ARIANE
   parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
   parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
@@ -206,6 +207,7 @@ module ariane #(
   logic                     flush_ctrl_if;
   logic                     flush_ctrl_id;
   logic                     flush_ctrl_ex;
+  logic                     flush_ctrl_bp;
   logic                     flush_tlb_ctrl_ex;
   logic                     fence_i_commit_controller;
   logic                     fence_commit_controller;
@@ -244,7 +246,7 @@ module ariane #(
     .DmBaseAddress       ( DmBaseAddress )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
-    .flush_bp_i          ( 1'b0                          ),
+    .flush_bp_i          ( flush_ctrl_bp                 ),
     .debug_mode_i        ( debug_mode                    ),
     .boot_addr_i         ( boot_addr_i                   ),
     .icache_dreq_i       ( icache_dreq_cache_if          ),
@@ -557,6 +559,7 @@ module ariane #(
     .flush_if_o             ( flush_ctrl_if                 ),
     .flush_id_o             ( flush_ctrl_id                 ),
     .flush_ex_o             ( flush_ctrl_ex                 ),
+    .flush_bp_o             ( flush_ctrl_bp                 ),
     .flush_tlb_o            ( flush_tlb_ctrl_ex             ),
     .flush_dcache_o         ( dcache_flush_ctrl_cache       ),
     .flush_dcache_ack_i     ( dcache_flush_ack_cache_ctrl   ),
@@ -585,6 +588,9 @@ module ariane #(
 `ifdef PITON_ARIANE
   // this is a cache subsystem that is compatible with OpenPiton
   serpent_cache_subsystem #(
+`ifdef AXI64_CACHE_PORTS    
+    .AxiIdWidth           ( AxiIdWidth    ),
+`endif    
     .CachedAddrBeg        ( CachedAddrBeg ),
     .CachedAddrEnd        ( CachedAddrEnd ),
     .SwapEndianess        ( SwapEndianess )

@@ -22,6 +22,7 @@ module controller (
     output logic            flush_unissued_instr_o, // Flush un-issued instructions of the scoreboard
     output logic            flush_id_o,             // Flush ID stage
     output logic            flush_ex_o,             // Flush EX stage
+    output logic            flush_bp_o,             // Flush branch predictors
     output logic            flush_icache_o,         // Flush ICache
     output logic            flush_dcache_o,         // Flush DCache
     input  logic            flush_dcache_ack_i,     // Acknowledge the whole DCache Flush
@@ -57,6 +58,7 @@ module controller (
         flush_dcache           = 1'b0;
         flush_icache_o         = 1'b0;
         flush_tlb_o            = 1'b0;
+        flush_bp_o             = 1'b0;
         // ------------
         // Mis-predict
         // ------------
@@ -78,9 +80,12 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-
+// this is not needed in the case since we 
+// have a write-through cache in this case
+`ifndef PITON_ARIANE
             flush_dcache           = 1'b1;
             fence_active_d         = 1'b1;
+`endif            
         end
 
         // ---------------------------------
@@ -93,11 +98,17 @@ module controller (
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
             flush_icache_o         = 1'b1;
-
+// this is not needed in the case since we 
+// have a write-through cache in this case
+`ifndef PITON_ARIANE
             flush_dcache           = 1'b1;
             fence_active_d         = 1'b1;
+`endif
         end
 
+// this is not needed in the case since we 
+// have a write-through cache in this case
+`ifndef PITON_ARIANE
         // wait for the acknowledge here
         if (flush_dcache_ack_i && fence_active_q) begin
             fence_active_d = 1'b0;
@@ -105,7 +116,7 @@ module controller (
         end else if (fence_active_q) begin
             flush_dcache = 1'b1;
         end
-
+`endif
         // ---------------------------------
         // SFENCE.VMA
         // ---------------------------------
@@ -140,6 +151,11 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
+            // this potentially reduces performance, but is needed
+            // to suppress speculative fetches to virtual memory from
+            // machine mode. TODO: remove when PMA checkers have been
+            // added to the system
+            flush_bp_o             = 1'b1;
         end
     end
 

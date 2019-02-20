@@ -57,13 +57,9 @@ module plic_claim_complete_tracker #(
     logic                   save_claims_array_q [NUM_GATEWAYS+1][NUM_TARGETS];
     logic                   complete_array      [NUM_GATEWAYS+1][NUM_TARGETS];
 
-    logic [ID_BITWIDTH-1:0] complete_id;
-
-
     // for handling claims
     for (genvar counter = 0; counter < NUM_TARGETS; counter++) begin
         always_ff @(posedge clk_i or negedge rst_ni) begin : proc_target
-            integer id;
 
             if (~rst_ni) begin
                 claimed_gateways_q[counter]         <= '0;
@@ -82,23 +78,18 @@ module plic_claim_complete_tracker #(
 
                 // if a claim is issued, forward it to gateway with highest priority for the claiming target
                 if (target_irq_claims_i[counter]) begin
-                    id                                = identifier_of_largest_priority_per_target[counter];
-                    claim_array[id][counter]         <= 1;
-
+                    claim_array[identifier_of_largest_priority_per_target[counter]][counter]         <= 1;
                     // save claim for later when the complete-notification arrives
-                    save_claims_array_q[id][counter] <= 1;
+                    save_claims_array_q[identifier_of_largest_priority_per_target[counter]][counter] <= 1;
 
                 end else begin
                     // if a complete is issued, check if that gateway has previously been claimed by
                     // this target and forward the
                     // complete message to that gateway. if no claim has previously been issued, the
                     // complete message is ignored
-                    // integer complete_id = target_irq_completes_identifier_i[counter];
-                    complete_id = target_irq_completes_identifier_i[counter];
-
-                    if (target_irq_completes_i[counter] && (save_claims_array_q[complete_id][counter] > 0)) begin
-                        complete_array[complete_id][counter]      <= 1;
-                        save_claims_array_q[complete_id][counter] <= 0;
+                    if (target_irq_completes_i[counter] && (save_claims_array_q[target_irq_completes_identifier_i[counter]][counter] > 0)) begin
+                        complete_array[target_irq_completes_identifier_i[counter]][counter]      <= 1;
+                        save_claims_array_q[target_irq_completes_identifier_i[counter]][counter] <= 0;
                     end
                 end
             end

@@ -72,10 +72,10 @@ module serpent_dcache_wbuffer #(
     output logic [DCACHE_SET_ASSOC-1:0]        miss_vld_bits_o, // unused here (set to 0)
     output logic                               miss_nc_o,       // request to I/O space
     output logic [2:0]                         miss_size_o,     //
-    output logic [DCACHE_ID_WIDTH-1:0]         miss_id_o,       // ID of this transaction (wbuffer uses all IDs from 0 to DCACHE_MAX_TX-1)
+    output logic [CACHE_ID_WIDTH-1:0]          miss_id_o,       // ID of this transaction (wbuffer uses all IDs from 0 to DCACHE_MAX_TX-1)
     // write responses from memory
     input  logic                               miss_rtrn_vld_i,
-    input  logic [DCACHE_ID_WIDTH-1:0]         miss_rtrn_id_i,  // transaction ID to clear
+    input  logic [CACHE_ID_WIDTH-1:0]          miss_rtrn_id_i,  // transaction ID to clear
     // cache read interface
     output logic [DCACHE_TAG_WIDTH-1:0]        rd_tag_o,        // tag in - comes one cycle later
     output logic [DCACHE_CL_IDX_WIDTH-1:0]     rd_idx_o,
@@ -111,7 +111,7 @@ logic     [DCACHE_WBUF_DEPTH-1:0]         wbuffer_hit_oh, inval_hit;
 logic     [DCACHE_WBUF_DEPTH-1:0][7:0]    bdirty;
 
 logic [$clog2(DCACHE_WBUF_DEPTH)-1:0] next_ptr, dirty_ptr, hit_ptr, wr_ptr, check_ptr_d, check_ptr_q, check_ptr_q1, rtrn_ptr;
-logic [DCACHE_ID_WIDTH-1:0] tx_id, rtrn_id;
+logic [CACHE_ID_WIDTH-1:0] tx_id, rtrn_id;
 
 logic [2:0] bdirty_off;
 logic [7:0] tx_be;
@@ -292,6 +292,8 @@ assign wr_data_o    = wbuffer_q[rtrn_ptr].data;
 // readout of status bits, index calculation
 ///////////////////////////////////////////////////////
 
+logic [DCACHE_WBUF_DEPTH-1:0][DCACHE_CL_IDX_WIDTH-1:0] wtag_comp;
+
 assign wr_cl_vld_d = wr_cl_vld_i;
 assign wr_cl_idx_d = wr_cl_idx_i;
 
@@ -313,8 +315,9 @@ generate
         // checks if an invalidation/cache refill hits a particular word
         // note: an invalidation can hit multiple words!
         // need to respect previous cycle, too, since we add a cycle of latency to the rd_hit_oh_i signal...
-        assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:0]<<3 == wr_cl_idx_d<<DCACHE_OFFSET_WIDTH)) |
-                               (wr_cl_vld_q & valid[k] & (wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-1:0]<<3 == wr_cl_idx_q<<DCACHE_OFFSET_WIDTH));
+        assign wtag_comp[k] = wbuffer_q[k].wtag[DCACHE_INDEX_WIDTH-4:DCACHE_OFFSET_WIDTH-3];
+        assign inval_hit[k]  = (wr_cl_vld_d & valid[k] & (wtag_comp[k] == wr_cl_idx_d)) |
+                               (wr_cl_vld_q & valid[k] & (wtag_comp[k] == wr_cl_idx_q));
 
         // these word have to be looked up in the cache
         assign tocheck[k]       = (~wbuffer_q[k].checked) & valid[k];

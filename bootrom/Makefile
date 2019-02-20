@@ -23,4 +23,4 @@ all: $(bootrom_img)
 	$(PYTHON) ./gen_rom.py $<
 
 clean:
-	rm $(bootrom_img) $(DTB)
+	rm -f $(bootrom_img) $(DTB)
