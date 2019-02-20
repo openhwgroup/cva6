@@ -54,7 +54,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
 			  tb/ariane_soc_pkg.sv                          \
 			  include/ariane_axi_pkg.sv                     \
 			  src/fpu/src/fpnew_pkg.sv                      \
-			  src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+			  src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
@@ -77,10 +77,10 @@ CFLAGS := -I$(QUESTASIM_HOME)/include         \
           -std=c++11 -I../tb/dpi
 
 # this list contains the standalone components
-src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))      \
-		$(filter-out src/fpu/src/fpnew_pkg.sv, $(wildcard src/fpu/src/*.sv)) \
-		$(filter-out src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,    \
-		$(wildcard src/fpu_div_sqrt_mvp/hdl/*.sv))                     \
+src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
+		$(filter-out src/fpu/src/fpnew_pkg.sv, $(wildcard src/fpu/src/*.sv))   \
+		$(filter-out src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv,    \
+		$(wildcard src/fpu/src/fpu_div_sqrt_mvp/hdl/*.sv))                     \
 		$(wildcard src/frontend/*.sv)                                  \
 		$(filter-out src/cache_subsystem/std_no_dcache.sv,             \
 		$(wildcard src/cache_subsystem/*.sv))                          \
