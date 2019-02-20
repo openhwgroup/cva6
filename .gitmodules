@@ -28,9 +28,6 @@
 [submodule "fpga/src/axi_slice"]
     path = fpga/src/axi_slice
     url = https://github.com/pulp-platform/axi_slice.git
-[submodule "src/fpu_div_sqrt_mvp"]
-	path = src/fpu_div_sqrt_mvp
-	url = https://github.com/pulp-platform/fpu_div_sqrt_mvp.git
 [submodule "src/tech_cells_generic"]
 	path = src/tech_cells_generic
 	url = https://github.com/pulp-platform/tech_cells_generic.git
@@ -43,3 +40,6 @@
 [submodule "src/axi_riscv_atomics"]
 	path = src/axi_riscv_atomics
 	url = https://github.com/pulp-platform/axi_riscv_atomics.git
+[submodule "src/riscv-dbg"]
+	path = src/riscv-dbg
+	url = https://github.com/pulp-platform/riscv-dbg.git

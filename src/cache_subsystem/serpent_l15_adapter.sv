@@ -52,10 +52,7 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_l15_adapter #(
-  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
-  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
-  parameter bit          SwapEndianess = 1               ,
-  parameter bit          PitonRemapIO  = 1                 // for OpenPiton
+  parameter bit          SwapEndianess = 1               
 ) (
    input logic                  clk_i,
    input logic                  rst_ni,
@@ -68,7 +65,6 @@ module serpent_l15_adapter #(
    output logic                 icache_rtrn_vld_o,
    output icache_rtrn_t         icache_rtrn_o,
 
-
    // dcache
    input  logic                 dcache_data_req_i,
    output logic                 dcache_data_ack_o,
@@ -76,8 +72,6 @@ module serpent_l15_adapter #(
    // returning packets must be consumed immediately
    output logic                 dcache_rtrn_vld_o,
    output dcache_rtrn_t         dcache_rtrn_o,
-
-   // TODO: interrupt interface
 
    // L15
    output l15_req_t             l15_req_o,
@@ -115,7 +109,6 @@ l15_rtrn_t rtrn_fifo_data;
 // logic [63:0]                       l15_req_o.l15_data_next_entry;       // unused in Ariane (only used for CAS atomic requests)
 // logic [L15_TLB_CSM_WIDTH-1:0]      l15_req_o.l15_csm_data;
 
-logic [63:0] tmp_paddr;
 
 assign icache_data_ack_o  = icache_data_req_i & ~icache_data_full;
 assign dcache_data_ack_o  = dcache_data_req_i & ~dcache_data_full;
@@ -131,10 +124,7 @@ assign l15_req_o.l15_invalidate_cacheline = '0; // unused by Ariane as L1 has no
 assign l15_req_o.l15_blockstore           = '0; // unused in openpiton
 assign l15_req_o.l15_blockinitstore       = '0; // unused in openpiton
 assign l15_req_o.l15_l1rplway             = (arb_idx) ? dcache_data.way   : icache_data.way;
-// assign tmp_paddr                          = (arb_idx) ? dcache_data.paddr :
-//                                                         icache_data.paddr;
 
-// assign l15_req_o.l15_address              = ((tmp_paddr < CachedAddrBeg) && PitonRemapIO) ? {25'b1, tmp_paddr[38:0]} : tmp_paddr;
 assign l15_req_o.l15_address              = (arb_idx) ? dcache_data.paddr :
                                                         icache_data.paddr;
 
@@ -324,10 +314,7 @@ endgenerate
 
 // fifo signals
 assign icache_rtrn_o.tid      = rtrn_fifo_data.l15_threadid;
-assign icache_rtrn_o.nc       = rtrn_fifo_data.l15_noncacheable;
-assign icache_rtrn_o.f4b      = rtrn_fifo_data.l15_f4b;
 assign dcache_rtrn_o.tid      = rtrn_fifo_data.l15_threadid;
-assign dcache_rtrn_o.nc       = rtrn_fifo_data.l15_noncacheable;
 
 // invalidation signal mapping
 assign icache_rtrn_o.inv.idx  = {rtrn_fifo_data.l15_inval_address_15_4, 4'b0000};

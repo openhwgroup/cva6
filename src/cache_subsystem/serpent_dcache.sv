@@ -16,11 +16,12 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache #(
+    parameter bit                         Axi64BitCompliant  = 1'b0,             // set this to 1 when using in conjunction with 64bit AXI bus adapter
     // ID to be used for read and AMO transactions.
     // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
-    parameter logic [DCACHE_ID_WIDTH-1:0] RdAmoTxId     = 1,
-    parameter logic [63:0]                CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
-    parameter logic [63:0]                CachedAddrEnd = 64'h80_0000_0000  // end of cached region
+    parameter logic [CACHE_ID_WIDTH-1:0]  RdAmoTxId          = 1,
+    parameter logic [63:0]                CachedAddrBeg      = 64'h00_8000_0000, // begin of cached region
+    parameter logic [63:0]                CachedAddrEnd      = 64'h80_0000_0000  // end of cached region
 ) (
     input  logic                           clk_i,       // Clock
     input  logic                           rst_ni,      // Asynchronous reset active low
@@ -79,10 +80,10 @@ module serpent_dcache #(
     logic [NumPorts-1:0][63:0]                    miss_paddr;
     logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
     logic [NumPorts-1:0][2:0]                     miss_size;
-    logic [NumPorts-1:0][DCACHE_ID_WIDTH-1:0]     miss_id;
+    logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]      miss_id;
     logic [NumPorts-1:0]                          miss_replay;
     logic [NumPorts-1:0]                          miss_rtrn_vld;
-    logic [DCACHE_ID_WIDTH-1:0]                   miss_rtrn_id;
+    logic [CACHE_ID_WIDTH-1:0]                    miss_rtrn_id;
 
     // memory <-> read controllers/miss unit
     logic [NumPorts-1:0]                          rd_prio;
@@ -109,8 +110,9 @@ module serpent_dcache #(
 ///////////////////////////////////////////////////////
 
     serpent_dcache_missunit #(
-        .AmoTxId  ( RdAmoTxId ),
-        .NumPorts ( NumPorts  )
+        .Axi64BitCompliant ( Axi64BitCompliant ),
+        .AmoTxId           ( RdAmoTxId         ),
+        .NumPorts          ( NumPorts          )
     ) i_serpent_dcache_missunit (
         .clk_i              ( clk_i              ),
         .rst_ni             ( rst_ni             ),
@@ -170,8 +172,8 @@ module serpent_dcache #(
         serpent_dcache_ctrl #(
                 .RdTxId        ( RdAmoTxId     ),
                 .CachedAddrBeg ( CachedAddrBeg ),
-                .CachedAddrEnd ( CachedAddrEnd ))
-            i_serpent_dcache_ctrl (
+                .CachedAddrEnd ( CachedAddrEnd )
+        ) i_serpent_dcache_ctrl (
                 .clk_i           ( clk_i             ),
                 .rst_ni          ( rst_ni            ),
                 .cache_en_i      ( cache_en          ),
@@ -215,8 +217,8 @@ module serpent_dcache #(
 
     serpent_dcache_wbuffer #(
             .CachedAddrBeg ( CachedAddrBeg ),
-            .CachedAddrEnd ( CachedAddrEnd ))
-        i_serpent_dcache_wbuffer (
+            .CachedAddrEnd ( CachedAddrEnd )
+    ) i_serpent_dcache_wbuffer (
             .clk_i           ( clk_i               ),
             .rst_ni          ( rst_ni              ),
             .empty_o         ( wbuffer_empty_o     ),
@@ -268,9 +270,10 @@ module serpent_dcache #(
 // memory arrays, arbitration and tag comparison
 ///////////////////////////////////////////////////////
 
-   serpent_dcache_mem #(
-            .NumPorts(NumPorts)
-        ) i_serpent_dcache_mem (
+    serpent_dcache_mem #(
+            .Axi64BitCompliant ( Axi64BitCompliant ),
+            .NumPorts          ( NumPorts          )
+    ) i_serpent_dcache_mem (
             .clk_i             ( clk_i              ),
             .rst_ni            ( rst_ni             ),
             // read ports

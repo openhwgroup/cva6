@@ -11,15 +11,15 @@ dependencies:
   fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       version: 0.3.2 }
 
 sources:
-  - src/fpu_div_sqrt_mvp/hdl/fpu_ff.sv
-  - src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
-  - src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
-  - src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv
-  - src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
-  - src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
-  - src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
-  - src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
-  - src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
+  - src/fpu/src/fpu_div_sqrt_mvp/hdl/fpu_ff.sv
+  - src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+  - src/fpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
+  - src/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv
+  - src/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
+  - src/fpu/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
+  - src/fpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
+  - src/fpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
+  - src/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
   - src/fpu/src/pkg/fpnew_pkg.vhd
   - src/fpu/src/pkg/fpnew_fmts_pkg.vhd
   - src/fpu/src/pkg/fpnew_comps_pkg.vhd

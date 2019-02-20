@@ -18,9 +18,10 @@ import ariane_pkg::*;
 import serpent_cache_pkg::*;
 
 module serpent_dcache_missunit #(
-    parameter logic [DCACHE_ID_WIDTH-1:0] AmoTxId  = 1, // TX id to be used for AMOs
-    parameter int unsigned                NumPorts = 3  // number of miss ports
- ) (
+    parameter bit                         Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
+    parameter logic [CACHE_ID_WIDTH-1:0]  AmoTxId            = 1,    // TX id to be used for AMOs
+    parameter int unsigned                NumPorts           = 3     // number of miss ports
+) (
     input  logic                                       clk_i,       // Clock
     input  logic                                       rst_ni,      // Asynchronous reset active low
     // cache management, signals from/to core
@@ -43,12 +44,12 @@ module serpent_dcache_missunit #(
     input  logic [NumPorts-1:0][63:0]                  miss_paddr_i,
     input  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]  miss_vld_bits_i,
     input  logic [NumPorts-1:0][2:0]                   miss_size_i,
-    input  logic [NumPorts-1:0][DCACHE_ID_WIDTH-1:0]   miss_id_i,          // used as transaction ID
+    input  logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]    miss_id_i,          // used as transaction ID
     // signals that the request collided with a pending read
     output logic [NumPorts-1:0]                        miss_replay_o,
     // signals response from memory
     output logic [NumPorts-1:0]                        miss_rtrn_vld_o,
-    output logic [DCACHE_ID_WIDTH-1:0]                 miss_rtrn_id_o,     // only used for writes, set to zero fro reads
+    output logic [CACHE_ID_WIDTH-1:0]                  miss_rtrn_id_o,     // only used for writes, set to zero fro reads
     // from writebuffer
     input  logic [DCACHE_MAX_TX-1:0][63:0]             tx_paddr_i,         // used to check for address collisions with read operations
     input  logic [DCACHE_MAX_TX-1:0]                   tx_vld_i,           // used to check for address collisions with read operations
@@ -79,7 +80,7 @@ module serpent_dcache_missunit #(
         logic [63:0]                         paddr   ;
         logic [2:0]                          size    ;
         logic [DCACHE_SET_ASSOC-1:0]         vld_bits;
-        logic [DCACHE_ID_WIDTH-1:0]          id      ;
+        logic [CACHE_ID_WIDTH-1:0]          id      ;
         logic                                nc      ;
         logic [$clog2(DCACHE_SET_ASSOC)-1:0] repl_way;
         logic [$clog2(NumPorts)-1:0]        miss_port_idx;
@@ -208,7 +209,14 @@ module serpent_dcache_missunit #(
                                                          amo_req_i.operand_b;
 
     // note: openpiton returns a full cacheline!
-    assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64 +: 64];
+    generate
+      if (Axi64BitCompliant) begin
+          assign amo_rtrn_mux = mem_rtrn_i.data[0 +: 64];
+      end else begin
+          assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64 +: 64];
+      end
+    endgenerate
+    
     // always sign extend 32bit values
     assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},
                                                               amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
@@ -481,10 +489,6 @@ end
 
 //pragma translate_off
 `ifndef VERILATOR
-
-    nc_response : assert property (
-        @(posedge clk_i) disable iff (~rst_ni) mshr_vld_q |-> mshr_q.nc |-> mem_rtrn_vld_i |-> load_ack |-> mem_rtrn_i.nc)
-            else $fatal(1,"[l1 dcache missunit] NC load response implies NC load response");
 
     read_tid : assert property (
         @(posedge clk_i) disable iff (~rst_ni) mshr_vld_q |-> mem_rtrn_vld_i |-> load_ack |-> mem_rtrn_i.tid == mshr_q.id)
