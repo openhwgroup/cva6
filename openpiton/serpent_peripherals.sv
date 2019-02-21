@@ -21,8 +21,8 @@
 //
 // Debug    40'h90_0000_0000 <length 0x1000>
 // Boot Rom 40'h90_0001_0000 <length 0x10000>
-// CLINT    40'h90_0200_0000 <length 0x1000000>
-// PLIC     40'h90_0300_0000 <length 0x1000000>
+// CLINT    40'h90_0200_0000 <length 0xc0000>
+// PLIC     40'h90_0300_0000 <length 0x4000000>
 //
 
 module serpent_peripherals #(
@@ -64,7 +64,7 @@ module serpent_peripherals #(
     output                              ariane_plic_buf_noc3_valid_o,
     input                               buf_ariane_plic_noc3_ready_i,
     // This selects either the BM or linux bootrom
-    input                               uart_boot_en_i,
+    input                               ariane_boot_sel_i,
     // Debug sigs to cores
     output                              ndmreset_o,    // non-debug module reset
     output                              dmactive_o,    // debug module is active
@@ -413,7 +413,7 @@ module serpent_peripherals #(
   );
 
   // we want to run in baremetal mode when using pitonstream
-  assign rom_rdata = (uart_boot_en_i) ? rom_rdata_bm : rom_rdata_linux;
+  assign rom_rdata = (ariane_boot_sel_i) ? rom_rdata_bm : rom_rdata_linux;
 
   noc_axilite_bridge #(
     .SLAVE_RESP_BYTEWIDTH   ( 8             ),
