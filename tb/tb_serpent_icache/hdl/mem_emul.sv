@@ -166,8 +166,6 @@ module mem_emul #(
 
       // address goes to I/O space
       if (outfifo_data.nc) begin
-        infifo_data.nc  = 1'b1;
-        infifo_data.f4b = 1'b1;
         // replicate words (this is done in openpiton, too)
         // note: openpiton replicates the words here.
         for (int k=0; k<ICACHE_LINE_WIDTH/32; k++) begin
@@ -175,7 +173,6 @@ module mem_emul #(
         end
         infifo_data.data[0 +:32] = mem_array[outfifo_data.paddr>>2];
       end else begin
-        infifo_data.nc  = outfifo_data.nc;
         // replicate words (this is done in openpiton, too)
         for (int k=0; k<ICACHE_LINE_WIDTH/32; k++) begin
           infifo_data.data[k*32 +:32] = mem_array[(outfifo_data.paddr>>2) + k];
