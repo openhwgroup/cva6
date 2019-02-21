@@ -113,7 +113,7 @@ amo-ver:
 fp-ver:
   stage: standard
   script:
-    - make -j${NUM_JOBS} run-fp-tests-verilator 
+    - make -j${NUM_JOBS} run-fp-verilator 
   dependencies:
     - build
 
@@ -217,7 +217,7 @@ amo-ver:
 s-fp-ver:
   stage: serpent
   script:
-    - make -j${NUM_JOBS} run-fp-tests-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
+    - make -j${NUM_JOBS} run-fp-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
   dependencies:
     - build
 
