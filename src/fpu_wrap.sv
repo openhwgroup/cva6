@@ -136,18 +136,18 @@ generate
       // Formats
       unique case (fpu_fmt_i)
         // FP32
-        2'b00 : fpu_dstfmt_d = fpnew_pkg::FP32;
+        2'b00: fpu_dstfmt_d = fpnew_pkg::FP32;
         // FP64 or FP16ALT (vectorial)
-        2'b01 : fpu_dstfmt_d = fpu_vec_op_d ? fpnew_pkg::FP16ALT : fpnew_pkg::FP64;
+        2'b01: fpu_dstfmt_d = fpu_vec_op_d ? fpnew_pkg::FP16ALT : fpnew_pkg::FP64;
         // FP16 or FP16ALT (scalar)
-        2'b10 : begin
+        2'b10: begin
            if (!fpu_vec_op_d && fpu_rm_i==3'b101)
              fpu_dstfmt_d = fpnew_pkg::FP16ALT;
            else
              fpu_dstfmt_d = fpnew_pkg::FP16;
         end
         // FP8
-        default : fpu_dstfmt_d = fpnew_pkg::FP8;
+        default: fpu_dstfmt_d = fpnew_pkg::FP8;
       endcase
 
       // By default, set src=dst
@@ -156,54 +156,54 @@ generate
       // Operations (this can modify the rounding mode field and format!)
       unique case (fu_data_i.operator)
         // Addition
-        FADD      : begin
+        FADD: begin
           fpu_op_d    = fpnew_pkg::ADD;
           replicate_c = 1'b1; // second operand is in C
         end
         // Subtraction is modified ADD
-        FSUB      : begin
+        FSUB: begin
           fpu_op_d     = fpnew_pkg::ADD;
           fpu_op_mod_d = 1'b1;
           replicate_c  = 1'b1; // second operand is in C
         end
         // Multiplication
-        FMUL      : fpu_op_d = fpnew_pkg::MUL;
+        FMUL: fpu_op_d = fpnew_pkg::MUL;
         // Division
-        FDIV      : fpu_op_d = fpnew_pkg::DIV;
+        FDIV: fpu_op_d = fpnew_pkg::DIV;
         // Min/Max - OP is encoded in rm (000-001)
-        FMIN_MAX  : begin
+        FMIN_MAX: begin
           fpu_op_d = fpnew_pkg::MINMAX;
           fpu_rm_d = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit
           check_ah = 1'b1; // AH has RM MSB encoding
         end
         // Square Root
-        FSQRT     : fpu_op_d = fpnew_pkg::SQRT;
+        FSQRT: fpu_op_d = fpnew_pkg::SQRT;
         // Fused Multiply Add
-        FMADD     : fpu_op_d = fpnew_pkg::FMADD;
+        FMADD: fpu_op_d = fpnew_pkg::FMADD;
         // Fused Multiply Subtract is modified FMADD
-        FMSUB     : begin
+        FMSUB: begin
           fpu_op_d     = fpnew_pkg::FMADD;
           fpu_op_mod_d = 1'b1;
         end
         // Fused Negated Multiply Subtract
-        FNMSUB    : fpu_op_d = fpnew_pkg::FNMSUB;
+        FNMSUB: fpu_op_d = fpnew_pkg::FNMSUB;
         // Fused Negated Multiply Add is modified FNMSUB
-        FNMADD    : begin
+        FNMADD: begin
           fpu_op_d     = fpnew_pkg::FNMSUB;
           fpu_op_mod_d = 1'b1;
         end
         // Float to Int Cast - Op encoded in lowest two imm bits or rm
-        FCVT_F2I  : begin
+        FCVT_F2I: begin
           fpu_op_d     = fpnew_pkg::F2I;
           // Vectorial Ops encoded in R bit
           if (fpu_vec_op_d) begin
             fpu_op_mod_d      = fpu_rm_i[0];
             vec_replication = 1'b0; // no replication, R bit used for op
             unique case (fpu_fmt_i)
-              2'b00 : fpu_ifmt_d = fpnew_pkg::INT32;
+              2'b00: fpu_ifmt_d = fpnew_pkg::INT32;
               2'b01,
-              2'b10 : fpu_ifmt_d = fpnew_pkg::INT16;
-              2'b11 : fpu_ifmt_d = fpnew_pkg::INT8;
+              2'b10: fpu_ifmt_d = fpnew_pkg::INT16;
+              2'b11: fpu_ifmt_d = fpnew_pkg::INT8;
             endcase
           // Scalar casts encoded in imm
           end else begin
@@ -215,17 +215,17 @@ generate
           end
         end
         // Int to Float Cast - Op encoded in lowest two imm bits or rm
-        FCVT_I2F  : begin
+        FCVT_I2F: begin
           fpu_op_d = fpnew_pkg::I2F;
           // Vectorial Ops encoded in R bit
           if (fpu_vec_op_d) begin
             fpu_op_mod_d      = fpu_rm_i[0];
             vec_replication = 1'b0; // no replication, R bit used for op
             unique case (fpu_fmt_i)
-              2'b00 : fpu_ifmt_d = fpnew_pkg::INT32;
+              2'b00: fpu_ifmt_d = fpnew_pkg::INT32;
               2'b01,
-              2'b10 : fpu_ifmt_d = fpnew_pkg::INT16;
-              2'b11 : fpu_ifmt_d = fpnew_pkg::INT8;
+              2'b10: fpu_ifmt_d = fpnew_pkg::INT16;
+              2'b11: fpu_ifmt_d = fpnew_pkg::INT8;
             endcase
           // Scalar casts encoded in imm
           end else begin
@@ -237,7 +237,7 @@ generate
           end
         end
         // Float to Float Cast - Source format encoded in lowest two/three imm bits
-        FCVT_F2F  : begin
+        FCVT_F2F: begin
           fpu_op_d = fpnew_pkg::F2F;
           // Vectorial ops encoded in lowest two imm bits
           if (fpu_vec_op_d) begin
@@ -260,13 +260,13 @@ generate
           end
         end
         // Scalar Sign Injection - op encoded in rm (000-010)
-        FSGNJ     : begin
+        FSGNJ: begin
           fpu_op_d = fpnew_pkg::SGNJ;
           fpu_rm_d = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit
           check_ah = 1'b1; // AH has RM MSB encoding
         end
         // Move from FPR to GPR - mapped to SGNJ-passthrough since no recoding
-        FMV_F2X   : begin
+        FMV_F2X: begin
           fpu_op_d          = fpnew_pkg::SGNJ;
           fpu_rm_d          = 3'b011; // passthrough without checking nan-box
           fpu_op_mod_d      = 1'b1; // no NaN-Boxing
@@ -274,113 +274,112 @@ generate
           vec_replication   = 1'b0; // no replication, we set second operand
         end
         // Move from GPR to FPR - mapped to NOP since no recoding
-        FMV_X2F   : begin
+        FMV_X2F: begin
           fpu_op_d          = fpnew_pkg::SGNJ;
           fpu_rm_d          = 3'b011; // passthrough without checking nan-box
           check_ah          = 1'b1; // AH has RM MSB encoding
           vec_replication   = 1'b0; // no replication, we set second operand
         end
         // Scalar Comparisons - op encoded in rm (000-010)
-        FCMP      : begin
+        FCMP: begin
           fpu_op_d = fpnew_pkg::CMP;
           fpu_rm_d = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit
           check_ah = 1'b1; // AH has RM MSB encoding
         end
         // Classification
-        FCLASS    : begin
+        FCLASS: begin
           fpu_op_d = fpnew_pkg::CLASSIFY;
           fpu_rm_d = {1'b0, fpu_rm_i[1:0]}; // mask out AH encoding bit - CLASS doesn't care anyways
           check_ah = 1'b1; // AH has RM MSB encoding
         end
         // Vectorial Minimum - set up scalar encoding in rm
-        VFMIN     : begin
+        VFMIN: begin
           fpu_op_d = fpnew_pkg::MINMAX;
           fpu_rm_d = 3'b000; // min
         end
         // Vectorial Maximum - set up scalar encoding in rm
-        VFMAX     : begin
+        VFMAX: begin
           fpu_op_d = fpnew_pkg::MINMAX;
           fpu_rm_d = 3'b001; // max
         end
         // Vectorial Sign Injection - set up scalar encoding in rm
-        VFSGNJ    : begin
+        VFSGNJ: begin
           fpu_op_d = fpnew_pkg::SGNJ;
           fpu_rm_d = 3'b000; // sgnj
         end
         // Vectorial Negated Sign Injection - set up scalar encoding in rm
-        VFSGNJN   : begin
+        VFSGNJN: begin
           fpu_op_d = fpnew_pkg::SGNJ;
           fpu_rm_d = 3'b001; // sgnjn
         end
         // Vectorial Xored Sign Injection - set up scalar encoding in rm
-        VFSGNJX   : begin
+        VFSGNJX: begin
           fpu_op_d = fpnew_pkg::SGNJ;
           fpu_rm_d = 3'b010; // sgnjx
         end
         // Vectorial Equals - set up scalar encoding in rm
-        VFEQ      : begin
+        VFEQ: begin
           fpu_op_d = fpnew_pkg::CMP;
           fpu_rm_d = 3'b010; // eq
         end
         // Vectorial Not Equals - set up scalar encoding in rm
-        VFNE      : begin
+        VFNE: begin
           fpu_op_d     = fpnew_pkg::CMP;
           fpu_op_mod_d = 1'b1;   // invert output
           fpu_rm_d     = 3'b010; // eq
           end
         // Vectorial Less Than - set up scalar encoding in rm
-        VFLT      : begin
+        VFLT: begin
           fpu_op_d = fpnew_pkg::CMP;
           fpu_rm_d = 3'b001; // lt
         end
         // Vectorial Greater or Equal - set up scalar encoding in rm
-        VFGE      : begin
+        VFGE: begin
           fpu_op_d     = fpnew_pkg::CMP;
           fpu_op_mod_d = 1'b1;   // invert output
           fpu_rm_d     = 3'b001; // lt
         end
         // Vectorial Less or Equal - set up scalar encoding in rm
-        VFLE      : begin
+        VFLE: begin
           fpu_op_d = fpnew_pkg::CMP;
           fpu_rm_d = 3'b000; // le
         end
         // Vectorial Greater Than - set up scalar encoding in rm
-        VFGT      : begin
+        VFGT: begin
           fpu_op_d     = fpnew_pkg::CMP;
           fpu_op_mod_d = 1'b1;   // invert output
           fpu_rm_d     = 3'b000; // le
         end
         // Vectorial Convert-and-Pack from FP32, lower 4 entries
-        VFCPKAB_S : begin
+        VFCPKAB_S: begin
           fpu_op_d        = fpnew_pkg::CPKAB;
           fpu_op_mod_d    = fpu_rm_i[0]; // A/B selection from R bit
-          vec_replication = 1'b0;        // no replication, R bit used for op
-          fpu_srcfmt_d      = fpnew_pkg::FP32;    // Cast from FP32
+          vec_replication = 1'b0; // no replication, R bit used for op
+          fpu_srcfmt_d    = fpnew_pkg::FP32; // Cast from FP32
         end
         // Vectorial Convert-and-Pack from FP32, upper 4 entries
-        VFCPKCD_S : begin
+        VFCPKCD_S: begin
           fpu_op_d        = fpnew_pkg::CPKCD;
           fpu_op_mod_d    = fpu_rm_i[0]; // C/D selection from R bit
-          vec_replication = 1'b0;        // no replication, R bit used for op
-          fpu_srcfmt_d      = fpnew_pkg::FP32;    // Cast from FP32
+          vec_replication = 1'b0; // no replication, R bit used for op
+          fpu_srcfmt_d    = fpnew_pkg::FP32; // Cast from FP32
         end
         // Vectorial Convert-and-Pack from FP64, lower 4 entries
-        VFCPKAB_D : begin
+        VFCPKAB_D: begin
           fpu_op_d        = fpnew_pkg::CPKAB;
           fpu_op_mod_d    = fpu_rm_i[0]; // A/B selection from R bit
-          vec_replication = 1'b0;        // no replication, R bit used for op
-          fpu_srcfmt_d      = fpnew_pkg::FP64;    // Cast from FP64
+          vec_replication = 1'b0; // no replication, R bit used for op
+          fpu_srcfmt_d    = fpnew_pkg::FP64; // Cast from FP64
         end
         // Vectorial Convert-and-Pack from FP64, upper 4 entries
-        VFCPKCD_D : begin
+        VFCPKCD_D: begin
           fpu_op_d        = fpnew_pkg::CPKCD;
           fpu_op_mod_d    = fpu_rm_i[0]; // C/D selection from R bit
-          vec_replication = 1'b0;        // no replication, R bit used for op
-          fpu_srcfmt_d      = fpnew_pkg::FP64;    // Cast from FP64
+          vec_replication = 1'b0; // no replication, R bit used for op
+          fpu_srcfmt_d    = fpnew_pkg::FP64; // Cast from FP64
         end
-
         // No changes per default
-        default : ; //nothing
+        default: ; //nothing
       endcase
 
       // Scalar AH encoding fixing
@@ -392,17 +391,17 @@ generate
       if (fpu_vec_op_d && vec_replication) begin
         if (replicate_c) begin
           unique case (fpu_dstfmt_d)
-            fpnew_pkg::FP32    : operand_c_d = RVD ? {2{operand_c_i[31:0]}} : operand_c_i;
+            fpnew_pkg::FP32:    operand_c_d = RVD ? {2{operand_c_i[31:0]}} : operand_c_i;
             fpnew_pkg::FP16,
-            fpnew_pkg::FP16ALT : operand_c_d = RVD ? {4{operand_c_i[15:0]}} : {2{operand_c_i[15:0]}};
-            fpnew_pkg::FP8     : operand_c_d = RVD ? {8{operand_c_i[7:0]}}  : {4{operand_c_i[7:0]}};
+            fpnew_pkg::FP16ALT: operand_c_d = RVD ? {4{operand_c_i[15:0]}} : {2{operand_c_i[15:0]}};
+            fpnew_pkg::FP8:     operand_c_d = RVD ? {8{operand_c_i[7:0]}}  : {4{operand_c_i[7:0]}};
           endcase // fpu_dstfmt_d
         end else begin
           unique case (fpu_dstfmt_d)
-            fpnew_pkg::FP32    : operand_b_d = RVD ? {2{operand_b_i[31:0]}} : operand_b_i;
+            fpnew_pkg::FP32:    operand_b_d = RVD ? {2{operand_b_i[31:0]}} : operand_b_i;
             fpnew_pkg::FP16,
-            fpnew_pkg::FP16ALT : operand_b_d = RVD ? {4{operand_b_i[15:0]}} : {2{operand_b_i[15:0]}};
-            fpnew_pkg::FP8     : operand_b_d = RVD ? {8{operand_b_i[7:0]}}  : {4{operand_b_i[7:0]}};
+            fpnew_pkg::FP16ALT: operand_b_d = RVD ? {4{operand_b_i[15:0]}} : {2{operand_b_i[15:0]}};
+            fpnew_pkg::FP8:     operand_b_d = RVD ? {8{operand_b_i[7:0]}}  : {4{operand_b_i[7:0]}};
           endcase // fpu_dstfmt_d
         end
       end
@@ -424,7 +423,7 @@ generate
       // FSM
       unique case (state_q)
         // Default state, ready for instructions
-        READY : begin
+        READY: begin
           fpu_ready_o  = 1'b1;        // Act as if FPU ready
           fpu_in_valid = fpu_valid_i; // Forward input valid to FPU
           // There is a transaction but the FPU can't handle it
@@ -435,7 +434,7 @@ generate
           end
         end
         // We're stalling the upstream (ready=0)
-        STALL : begin
+        STALL: begin
           fpu_in_valid = 1'b1; // we have data for the FPU
           use_hold     = 1'b1; // the data comes from the hold reg
           // Wait until it's consumed
@@ -445,12 +444,12 @@ generate
           end
         end
         // Default: emit default values
-        default : ;
+        default: ;
       endcase
 
       // Flushing will override issue and go back to idle
       if (flush_i) begin
-        state_d      = READY;
+        state_d = READY;
       end
 
     end
