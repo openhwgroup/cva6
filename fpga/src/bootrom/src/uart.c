@@ -32,6 +32,7 @@ void init_uart(uint32_t freq, uint32_t baud)
     write_reg_u8(UART_DLAB_LSB, divisor);         // divisor (lo byte)
     write_reg_u8(UART_DLAB_MSB, (divisor >> 8) & 0xFF);  // divisor (hi byte)
     write_reg_u8(UART_LINE_CONTROL, 0x03);     // 8 bits, no parity, one stop bit
+    write_reg_u8(UART_FIFO_CONTROL, 0xC7);     // Enable FIFO, clear them, with 14-byte threshold
     write_reg_u8(UART_MODEM_CONTROL, 0x20);    // Autoflow mode
 }
 

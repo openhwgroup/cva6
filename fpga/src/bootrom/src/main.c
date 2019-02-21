@@ -10,7 +10,19 @@ int main()
 
     int res = gpt_find_boot_partition((uint8_t *)0x80000000UL, 2 * 16384);
 
-    return 0;
+    if (res == 0)
+    {
+        // jump to the address
+        __asm__ volatile(
+            "li s0, 0x80000000;"
+            "la a1, _dtb;"
+            "jr s0");
+    }
+
+    while (1)
+    {
+        // do nothing
+    }
 }
 
 void handle_trap(void)
