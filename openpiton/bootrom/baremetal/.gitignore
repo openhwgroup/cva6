@@ -2,5 +2,4 @@
 *.img
 *.dtb
 *.sv
-*.dts
 *.h
