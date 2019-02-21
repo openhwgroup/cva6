@@ -1,8 +1,9 @@
+MAX_HARTS ?= 1
 CROSSCOMPILE ?= riscv64-unknown-elf-
 CC = ${CROSSCOMPILE}gcc
 PYTHON=python
 
-CFLAGS = -Os -ggdb -march=rv64imac -mabi=lp64 -Wall -mcmodel=medany -mexplicit-relocs
+CFLAGS = -DMAX_HARTS=$(MAX_HARTS) -Os -ggdb -march=rv64imac -mabi=lp64 -Wall -mcmodel=medany -mexplicit-relocs
 CCASFLAGS = -mcmodel=medany -mexplicit-relocs
 LDFLAGS = -nostdlib -nodefaultlibs -nostartfiles
 
@@ -25,17 +26,19 @@ $(MAIN): ariane.dtb $(OBJS_C) $(OBJS_S) linker.lds
 	@echo "LD    >= $(MAIN)"
 
 %.img: %.bin
-	dd if=$< of=$@ bs=128
+	dd if=$< of=$@ bs=128 
 
 %.bin: %.elf
 	$(CROSSCOMPILE)objcopy -O binary $< $@
 
 %.o: %.c
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
+	@echo "MAX_HARTS = $(MAX_HARTS)"
+	@$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@ 
 	@echo "CC    <= $<"
 
 %.o: %.S
-	@$(CC) $(CFLAGS) $(CCASFLAGS) $(INCLUDES) -c $<  -o $@
+	@echo "MAX_HARTS = $(MAX_HARTS)"
+	@$(CC) $(CFLAGS) $(CCASFLAGS) $(INCLUDES) -c $<  -o $@ 
 	@echo "CC    <= $<"
 
 %.dtb: %.dts
