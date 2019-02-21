@@ -57,4 +57,7 @@ package ariane_soc;
         DRAMBase     = 64'h8000_0000
     } soc_bus_start_t;
 
+    localparam NrRegion = 1;
+    localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};
+
 endpackage
