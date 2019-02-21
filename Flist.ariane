@@ -129,7 +129,8 @@ src/riscv-dbg/src/dmi_jtag_tap.sv
 src/riscv-dbg/debug_rom/debug_rom.sv
 openpiton/ariane_verilog_wrap.sv
 openpiton/serpent_peripherals.sv
-openpiton/bootrom/bootrom.sv
+openpiton/bootrom/baremetal/bootrom.sv
+openpiton/bootrom/linux/bootrom.sv
 src/plic/plic.sv
 src/plic/plic_claim_complete_tracker.sv
 src/plic/plic_comparator.sv
