@@ -220,7 +220,6 @@ module tb_mem #(
             unique case (outfifo_data.rtype)
                 DCACHE_LOAD_REQ: begin
                     infifo_data.tid = outfifo_data.tid;
-                    infifo_data.nc  = outfifo_data.nc;
                     infifo_data.data = 'x;
                     unique case(outfifo_data.size)
                         3'b000: for(int k=0;k<64;k+=8)  infifo_data.data[outfifo_data.paddr[2:0]*8 +: 8] = mem_array_q[outfifo_data.paddr>>3][outfifo_data.paddr[2:0]*8 +: 8];
@@ -234,7 +233,6 @@ module tb_mem #(
                 DCACHE_STORE_REQ:  begin
                     infifo_data.tid   = outfifo_data.tid;
                     infifo_data.rtype = DCACHE_STORE_ACK;
-                    infifo_data.nc    = outfifo_data.nc;
                     write_en          = 1'b1;
                 end
                 // DCACHE_ATOMIC_REQ: $fatal(1, "DCACHE_ATOMIC_REQ not implemented yet");
