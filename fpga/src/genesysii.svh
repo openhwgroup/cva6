@@ -12,3 +12,7 @@
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 `define GENESYSII
+
+`define PITON_FPGA_SYNTH
+`define ARIANE_DATA_WIDTH 64
+

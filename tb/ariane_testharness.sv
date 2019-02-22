@@ -456,7 +456,11 @@ module ariane_testharness #(
       .AxiAddrWidth ( AXI_ADDRESS_WIDTH   ),
       .AxiDataWidth ( AXI_DATA_WIDTH      ),
       .AxiIdWidth   ( AXI_ID_WIDTH_SLAVES ),
+`ifndef VERILATOR
+      .InclUART     ( 1'b1                ),
+`else
       .InclUART     ( 1'b0                ),
+`endif
       .InclSPI      ( 1'b0                ),
       .InclEthernet ( 1'b0                )
     ) i_ariane_peripherals (

@@ -74,6 +74,11 @@ module ariane_xilinx (
   input  logic        spi_miso    ,
   output logic        spi_ss      ,
   output logic        spi_clk_o   ,
+  // input  logic        sd_cd            ,
+  // output logic        sd_reset         ,
+  // output logic        sd_clk           ,
+  // inout  logic        sd_cmd           ,
+  // inout  logic [3:0]  sd_dat           ,
   // common part
   input  logic        tck         ,
   input  logic        tms         ,
@@ -86,7 +91,7 @@ module ariane_xilinx (
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
 localparam NBSlave = 2; // debug, ariane
-localparam logic [63:0] CacheStartAddr = 64'h80000000;
+localparam logic [63:0] CacheStartAddr = 64'h8000_0000;
 localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 4;
@@ -119,6 +124,7 @@ logic clk;
 logic eth_clk;
 logic spi_clk_i;
 logic phy_tx_clk;
+logic sd_clk_sys;
 
 logic ddr_sync_reset;
 logic ddr_clock_out;
@@ -297,8 +303,8 @@ axi2mem #(
     .AXI_DATA_WIDTH ( AxiDataWidth        ),
     .AXI_USER_WIDTH ( AxiUserWidth        )
 ) i_dm_axi2mem (
-    .clk_i      ( clk_i                     ),
-    .rst_ni     ( rst_ni                    ),
+    .clk_i      ( clk                       ),
+    .rst_ni     ( rst_n                     ),
     .slave      ( master[ariane_soc::Debug] ),
     .req_o      ( dm_slave_req              ),
     .we_o       ( dm_slave_we               ),
@@ -317,8 +323,8 @@ axi_master_connect i_dm_axi_master_connect (
 axi_adapter #(
     .DATA_WIDTH            ( AxiDataWidth              )
 ) i_dm_axi_master (
-    .clk_i                 ( clk_i                     ),
-    .rst_ni                ( rst_ni                    ),
+    .clk_i                 ( clk                       ),
+    .rst_ni                ( rst_n                     ),
     .req_i                 ( dm_master_req             ),
     .type_i                ( ariane_axi::SINGLE_REQ    ),
     .gnt_o                 ( dm_master_gnt             ),
@@ -461,6 +467,12 @@ ariane_peripherals #(
     .eth_mdio,
     .eth_mdc,
     .phy_tx_clk_i   ( phy_tx_clk                  ),
+    .sd_clk_i       ( sd_clk_sys                  ),
+    // .sd_cd_i        ( sd_cd                       ),
+    // .sd_reset_o     ( sd_reset                    ),
+    // .sd_clk_o       ( sd_clk                      ),
+    // .sd_cmd_io      ( sd_cmd                      ),
+    // .sd_dat_io      ( sd_dat                      ),
     .spi_clk_o      ( spi_clk_o                   ),
     .spi_mosi       ( spi_mosi                    ),
     .spi_miso       ( spi_miso                    ),
@@ -468,6 +480,7 @@ ariane_peripherals #(
     .leds_o         ( led                         ),
     .dip_switches_i ( sw                          )
 );
+
 
 // ---------------------
 // Board peripherals
@@ -629,6 +642,7 @@ xlnx_clk_gen i_xlnx_clk_gen (
   .clk_out1 ( clk           ), // 50 MHz
   .clk_out2 ( phy_tx_clk    ), // 125 MHz (for RGMII PHY)
   .clk_out3 ( eth_clk       ), // 125 MHz quadrature
+  .clk_out4( sd_clk_sys),
   .reset    ( cpu_reset     ),
   .locked   ( pll_locked    ),
   .clk_in1  ( ddr_clock_out )

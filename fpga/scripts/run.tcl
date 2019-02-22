@@ -40,11 +40,16 @@ set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file" "*$r
 set_property -dict { file_type {Verilog Header} is_global_include 1} -objects $file_obj
 
 update_compile_order -fileset sources_1
-update_compile_order -fileset sim_1
 
 add_files -fileset constrs_1 -norecurse constraints/$project.xdc
 
+set_property include_dirs src/axi_sd_bridge/include [current_fileset]
+
 # synth_design -retiming -rtl -name rtl_1 -verilog_define SYNTHESIS -verilog_define
+catch {
+  synth_design -rtl -name rtl_1
+}
+update_compile_order -fileset sources_1
 synth_design -rtl -name rtl_1
 
 set_property STEPS.SYNTH_DESIGN.ARGS.RETIMING true [get_runs synth_1]
