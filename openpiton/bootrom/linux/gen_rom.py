@@ -1,0 +1,1 @@
+../../../bootrom/gen_rom.py
