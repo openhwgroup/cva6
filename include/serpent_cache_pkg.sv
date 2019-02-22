@@ -33,8 +33,8 @@ package serpent_cache_pkg;
 `endif
 
 `ifndef L15_THREADID_WIDTH
-    // this results in 4 pending tx slots in the writebuffer
-    `define L15_THREADID_WIDTH 2
+    // this results in 8 pending tx slots in the writebuffer
+    `define L15_THREADID_WIDTH 3
 `endif
 
 `ifndef TLB_CSM_WIDTH

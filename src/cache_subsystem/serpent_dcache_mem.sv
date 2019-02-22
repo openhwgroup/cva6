@@ -234,9 +234,9 @@ module serpent_dcache_mem #(
     assign wbuffer_be    = (|wbuffer_hit_oh) ? wbuffer_data_i[wbuffer_hit_idx].valid : '0;
 
     if (Axi64BitCompliant) begin
-        assign wr_cl_off     = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
-    end else begin  
         assign wr_cl_off     = (wr_cl_nc_i) ? '0 : wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
+    end else begin  
+        assign wr_cl_off     = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
     end
       
     assign rdata         = (wr_cl_vld_i)  ? wr_cl_data_i[wr_cl_off*64 +: 64] :

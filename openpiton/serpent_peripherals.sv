@@ -10,8 +10,8 @@
 //
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 14.11.2018
-// Description: Ariane chipset for OpenPiton that includes the bootrom (with DTB),
-// debug module, clint and plic.
+// Description: Ariane chipset for OpenPiton that includes two bootroms
+// (linux, baremetal, both with DTB), debug module, clint and plic.
 //
 // Note that direct system bus accesses are not yet possible due to a missing
 // AXI-lite br_master <-> NOC converter module.
@@ -21,8 +21,8 @@
 //
 // Debug    40'h90_0000_0000 <length 0x1000>
 // Boot Rom 40'h90_0001_0000 <length 0x10000>
-// CLINT    40'h90_0200_0000 <length 0x1000000>
-// PLIC     40'h90_0300_0000 <length 0x1000000>
+// CLINT    40'h90_0200_0000 <length 0xc0000>
+// PLIC     40'h90_0300_0000 <length 0x4000000>
 //
 
 module serpent_peripherals #(
@@ -63,6 +63,8 @@ module serpent_peripherals #(
     output [DataWidth-1:0]              ariane_plic_buf_noc3_data_o,
     output                              ariane_plic_buf_noc3_valid_o,
     input                               buf_ariane_plic_noc3_ready_i,
+    // This selects either the BM or linux bootrom
+    input                               ariane_boot_sel_i,
     // Debug sigs to cores
     output                              ndmreset_o,    // non-debug module reset
     output                              dmactive_o,    // debug module is active
@@ -80,7 +82,6 @@ module serpent_peripherals #(
     output [NumHarts-1:0]               timer_irq_o,  // Timer interrupts
     output [NumHarts-1:0]               ipi_o,        // software interrupt (a.k.a inter-process-interrupt)
     // PLIC
-    // TODO
     input  [NumSources-1:0]             irq_sources_i,
     output [NumHarts-1:0][1:0]          irq_o         // level sensitive IR lines, mip & sip (async)
 );
@@ -371,7 +372,7 @@ module serpent_peripherals #(
 
   logic                    rom_req;
   logic [AxiAddrWidth-1:0] rom_addr;
-  logic [AxiDataWidth-1:0] rom_rdata;
+  logic [AxiDataWidth-1:0] rom_rdata, rom_rdata_bm, rom_rdata_linux;
 
   AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidth   ),
@@ -397,12 +398,22 @@ module serpent_peripherals #(
     .data_i ( rom_rdata  )
   );
 
-  bootrom i_bootrom (
+  bootrom i_bootrom_bm (
     .clk_i                   ,
     .req_i      ( rom_req   ),
     .addr_i     ( rom_addr  ),
-    .rdata_o    ( rom_rdata )
+    .rdata_o    ( rom_rdata_bm )
   );
+
+  bootrom_linux i_bootrom_linux (
+    .clk_i                   ,
+    .req_i      ( rom_req   ),
+    .addr_i     ( rom_addr  ),
+    .rdata_o    ( rom_rdata_linux )
+  );
+
+  // we want to run in baremetal mode when using pitonstream
+  assign rom_rdata = (ariane_boot_sel_i) ? rom_rdata_bm : rom_rdata_linux;
 
   noc_axilite_bridge #(
     .SLAVE_RESP_BYTEWIDTH   ( 8             ),
