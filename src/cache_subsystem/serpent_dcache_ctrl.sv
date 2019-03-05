@@ -54,7 +54,7 @@ module serpent_dcache_ctrl #(
 );
 
     // controller FSM
-    typedef enum logic[2:0] {IDLE, READ, MISS_REQ, MISS_WAIT, KILL_MISS, REPLAY_REQ, REPLAY_READ} state_t;
+    typedef enum logic[2:0] {IDLE, READ, MISS_REQ, MISS_WAIT, KILL_MISS, KILL_MISS_ACK, REPLAY_REQ, REPLAY_READ} state_t;
     state_t state_d, state_q;
 
     logic [DCACHE_TAG_WIDTH-1:0]    address_tag_d, address_tag_q;
@@ -167,7 +167,7 @@ module serpent_dcache_ctrl #(
                     if(miss_ack_i) begin
                         state_d = KILL_MISS;
                     end else begin
-                        state_d = IDLE;
+                        state_d = KILL_MISS_ACK;
                     end
                 end else if(miss_replay_i) begin
                     state_d  = REPLAY_REQ;
@@ -201,6 +201,13 @@ module serpent_dcache_ctrl #(
                 end else if(rd_ack_i) begin
                     state_d = REPLAY_READ;
                 end
+            end
+            //////////////////////////////////
+            KILL_MISS_ACK: begin
+                miss_req_o = 1'b1;
+                if(miss_ack_i) begin
+                  state_d = KILL_MISS;
+                end  
             end
             //////////////////////////////////
             // killed miss,
