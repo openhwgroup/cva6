@@ -158,7 +158,7 @@ module std_icache (
     assign axi_req_o.b_ready   = 1'b0;
 
     // set protection flag, MSB -> instruction fetch, LSB -> privileged access or not
-    assign axi_req_o.ar.prot   = {1'b1, 1'b0, (priv_lvl_i == riscv::PRIV_LVL_M)};
+    assign axi_req_o.ar.prot   = '0;
     assign axi_req_o.ar.region = '0;
     assign axi_req_o.ar.len    = (2**NR_AXI_REFILLS) - 1;
     assign axi_req_o.ar.size   = 3'b011;

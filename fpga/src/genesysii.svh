@@ -16,3 +16,9 @@
 `define PITON_FPGA_SYNTH
 `define ARIANE_DATA_WIDTH 64
 
+// Instantiate protocl checker
+// `define PROTOCOL_CHECKER
+
+// Use OpenPiton Caches
+`define PITON_ARIANE
+`define AXI64_CACHE_PORTS
