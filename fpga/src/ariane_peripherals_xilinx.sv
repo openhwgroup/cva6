@@ -53,11 +53,6 @@ module ariane_peripherals #(
     output logic       spi_ss          ,
     // SD Card
     input  logic       sd_clk_i        ,
-    // input  logic       sd_cd_i         ,
-    // output logic       sd_reset_o      ,
-    // output logic       sd_clk_o        ,
-    // inout  logic       sd_cmd_io       ,
-    // inout  logic [3:0] sd_dat_io       ,
     output logic [7:0] leds_o          ,
     input  logic [7:0] dip_switches_i
 );
@@ -302,94 +297,6 @@ module ariane_peripherals #(
     assign spi.r_user = 1'b0;
 
     if (InclSPI) begin : gen_spi
-        // logic sd_clk_out_internal;
-
-        // logic [AxiDataWidth-1:0]  bridge_sd_data,  sd_bridge_data;
-        // logic                     bridge_sd_valid, sd_bridge_valid;
-        // logic                     bridge_sd_ready, sd_bridge_ready;
-
-        // AXI_LITE #(
-        //     .AXI_ADDR_WIDTH (AxiAddrWidth),
-        //     .AXI_DATA_WIDTH (AxiDataWidth)
-        // ) spi_lite();
-
-        // axi_to_axi_lite i_axi_to_axi_lite_spi (
-        //     .clk_i ( clk_i ),
-        //     .rst_ni ( rst_ni ),
-        //     .testmode_i ( 1'b0 ),
-        //     .in ( spi ),
-        //     .out ( spi_lite )
-        // );
-
-        // noc_axilite_bridge #(
-        //     .SLAVE_RESP_BYTEWIDTH   ( 8              ),
-        //     .SWAP_ENDIANESS         ( 1'b1           )
-        // ) i_debug_axilite_bridge (
-        //     .clk                    ( clk_i           ),
-        //     .rst                    ( ~rst_ni         ),
-        //     // to/from NOC
-        //     .splitter_bridge_val    ( sd_bridge_valid ),
-        //     .splitter_bridge_data   ( sd_bridge_data  ),
-        //     .bridge_splitter_rdy    ( bridge_sd_ready ),
-
-        //     .bridge_splitter_val    ( bridge_sd_valid ),
-        //     .bridge_splitter_data   ( bridge_sd_data  ),
-        //     .splitter_bridge_rdy    ( sd_bridge_ready ),
-        //     //axi lite signals
-        //     //write address channel
-        //     .m_axi_awaddr           ( spi_lite.aw_addr     ),
-        //     .m_axi_awvalid          ( spi_lite.aw_valid    ),
-        //     .m_axi_awready          ( spi_lite.aw_ready    ),
-        //     //write data channel
-        //     .m_axi_wdata            ( spi_lite.w_data      ),
-        //     .m_axi_wstrb            ( spi_lite.w_strb      ),
-        //     .m_axi_wvalid           ( spi_lite.w_valid     ),
-        //     .m_axi_wready           ( spi_lite.w_ready     ),
-        //     //read address channel
-        //     .m_axi_araddr           ( spi_lite.ar_addr     ),
-        //     .m_axi_arvalid          ( spi_lite.ar_valid    ),
-        //     .m_axi_arready          ( spi_lite.ar_ready    ),
-        //     //read data channel
-        //     .m_axi_rdata            ( spi_lite.r_data      ),
-        //     .m_axi_rresp            ( spi_lite.r_resp      ),
-        //     .m_axi_rvalid           ( spi_lite.r_valid     ),
-        //     .m_axi_rready           ( spi_lite.r_ready     ),
-        //     //write response channel
-        //     .m_axi_bresp            ( spi_lite.b_resp      ),
-        //     .m_axi_bvalid           ( spi_lite.b_valid     ),
-        //     .m_axi_bready           ( spi_lite.b_ready     )
-        // );
-
-        // piton_sd_top i_piton_sd_top (
-        //     // Clock and reset
-        //     .sys_clk (clk_i),
-        //     .sd_clk (sd_clk_i),
-        //     .sys_rst (~rst_ni),
-        //     // NOC interface
-        //     .splitter_sd_val (bridge_sd_valid),
-        //     .splitter_sd_data (bridge_sd_data),
-        //     .sd_splitter_rdy (sd_bridge_ready),
-
-        //     .sd_splitter_val (sd_bridge_valid),
-        //     .sd_splitter_data (sd_bridge_data),
-        //     .splitter_sd_rdy (bridge_sd_ready),
-        //     // SD interface
-        //     .sd_cd (sd_cd_i),
-        //     .sd_reset (sd_reset_o),
-        //     .sd_clk_out (sd_clk_out_internal),
-        //     .sd_cmd (sd_cmd_io),
-        //     .sd_dat (sd_dat_io)
-        // );
-
-        // ODDR sd_clk_oddr (
-        //     .Q(sd_clk_o),
-        //     .C(sd_clk_out_internal),
-        //     .CE(1),
-        //     .D1(1),
-        //     .D2(0),
-        //     .R(0),
-        //     .S(0)
-        // );
         logic [31:0] s_axi_spi_awaddr;
         logic [7:0]  s_axi_spi_awlen;
         logic [2:0]  s_axi_spi_awsize;
@@ -557,10 +464,6 @@ module ariane_peripherals #(
             .ip2intc_irpt   ( irq_sources[1]         )
         );
     end else begin
-        // assign sd_reset_o = '0;
-        // assign sd_clk_o = '0;
-        // assign sd_cmd_io = '0;
-        // assign sd_dat_io = '0;
         assign spi_clk_o = 1'b0;
         assign spi_mosi = 1'b0;
         assign spi_ss = 1'b0;
@@ -588,73 +491,72 @@ module ariane_peripherals #(
 
     if (InclEthernet) begin : gen_ethernet
 
-logic                    clk_200_int, clk_rgmii, clk_rgmii_quad;
-logic                    eth_en, eth_we, eth_int_n, eth_pme_n, eth_mdio_i, eth_mdio_o, eth_mdio_oe;
-logic [AxiAddrWidth-1:0] eth_addr;
-logic [AxiDataWidth-1:0] eth_wrdata, eth_rdata;
-logic [AxiDataWidth/8-1:0] eth_be;
+    logic                    clk_200_int, clk_rgmii, clk_rgmii_quad;
+    logic                    eth_en, eth_we, eth_int_n, eth_pme_n, eth_mdio_i, eth_mdio_o, eth_mdio_oe;
+    logic [AxiAddrWidth-1:0] eth_addr;
+    logic [AxiDataWidth-1:0] eth_wrdata, eth_rdata;
+    logic [AxiDataWidth/8-1:0] eth_be;
 
-axi2mem #(
-    .AXI_ID_WIDTH   ( AxiIdWidth       ),
-    .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
-    .AXI_DATA_WIDTH ( AxiDataWidth     ),
-    .AXI_USER_WIDTH ( AxiUserWidth     )
-) i_axi2rom (
-    .clk_i  ( clk_i                   ),
-    .rst_ni ( rst_ni                  ),
-    .slave  ( ethernet                ),
-    .req_o  ( eth_en                  ),
-    .we_o   ( eth_we                  ),
-    .addr_o ( eth_addr                ),
-    .be_o   ( eth_be                  ),
-    .data_o ( eth_wrdata              ),
-    .data_i ( eth_rdata               )
-);
+    axi2mem #(
+        .AXI_ID_WIDTH   ( AxiIdWidth       ),
+        .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
+        .AXI_DATA_WIDTH ( AxiDataWidth     ),
+        .AXI_USER_WIDTH ( AxiUserWidth     )
+    ) i_axi2rom (
+        .clk_i  ( clk_i                   ),
+        .rst_ni ( rst_ni                  ),
+        .slave  ( ethernet                ),
+        .req_o  ( eth_en                  ),
+        .we_o   ( eth_we                  ),
+        .addr_o ( eth_addr                ),
+        .be_o   ( eth_be                  ),
+        .data_o ( eth_wrdata              ),
+        .data_i ( eth_rdata               )
+    );
 
-framing_top eth_rgmii
-  (
-   .msoc_clk(clk_i),
-   .core_lsu_addr(eth_addr[14:0]),
-   .core_lsu_wdata(eth_wrdata),
-   .core_lsu_be(eth_be),
-   .ce_d(eth_en),
-   .we_d(eth_en & eth_we),
-   .framing_sel(eth_en),
-   .framing_rdata(eth_rdata),
-   .rst_int(!rst_ni),
-   .clk_int(phy_tx_clk_i), // 125 MHz in-phase
-   .clk90_int(eth_clk_i),    // 125 MHz quadrature
-   .clk_200_int(clk_200MHz_i),
-   /*
-    * Ethernet: 1000BASE-T RGMII
-    */
-   .phy_rx_clk(eth_rxck),
-   .phy_rxd(eth_rxd),
-   .phy_rx_ctl(eth_rxctl),
-   .phy_tx_clk(eth_txck),
-   .phy_txd(eth_txd),
-   .phy_tx_ctl(eth_txctl),
-   .phy_reset_n(eth_rst_n),
-   .phy_int_n(eth_int_n),
-   .phy_pme_n(eth_pme_n),
-   .phy_mdc(eth_mdc),
-   .phy_mdio_i(eth_mdio_i),
-   .phy_mdio_o(eth_mdio_o),
-   .phy_mdio_oe(eth_mdio_oe),
-   .eth_irq(irq_sources[2])
-);
+    framing_top eth_rgmii (
+       .msoc_clk(clk_i),
+       .core_lsu_addr(eth_addr[14:0]),
+       .core_lsu_wdata(eth_wrdata),
+       .core_lsu_be(eth_be),
+       .ce_d(eth_en),
+       .we_d(eth_en & eth_we),
+       .framing_sel(eth_en),
+       .framing_rdata(eth_rdata),
+       .rst_int(!rst_ni),
+       .clk_int(phy_tx_clk_i), // 125 MHz in-phase
+       .clk90_int(eth_clk_i),    // 125 MHz quadrature
+       .clk_200_int(clk_200MHz_i),
+       /*
+        * Ethernet: 1000BASE-T RGMII
+        */
+       .phy_rx_clk(eth_rxck),
+       .phy_rxd(eth_rxd),
+       .phy_rx_ctl(eth_rxctl),
+       .phy_tx_clk(eth_txck),
+       .phy_txd(eth_txd),
+       .phy_tx_ctl(eth_txctl),
+       .phy_reset_n(eth_rst_n),
+       .phy_int_n(eth_int_n),
+       .phy_pme_n(eth_pme_n),
+       .phy_mdc(eth_mdc),
+       .phy_mdio_i(eth_mdio_i),
+       .phy_mdio_o(eth_mdio_o),
+       .phy_mdio_oe(eth_mdio_oe),
+       .eth_irq(irq_sources[2])
+    );
 
-   IOBUF #(
-      .DRIVE(12), // Specify the output drive strength
-      .IBUF_LOW_PWR("TRUE"),  // Low Power - "TRUE", High Performance = "FALSE"
-      .IOSTANDARD("DEFAULT"), // Specify the I/O standard
-      .SLEW("SLOW") // Specify the output slew rate
-   ) IOBUF_inst (
-      .O(eth_mdio_i),     // Buffer output
-      .IO(eth_mdio),   // Buffer inout port (connect directly to top-level port)
-      .I(eth_mdio_o),     // Buffer input
-      .T(~eth_mdio_oe)      // 3-state enable input, high=input, low=output
-   );
+       IOBUF #(
+          .DRIVE(12), // Specify the output drive strength
+          .IBUF_LOW_PWR("TRUE"),  // Low Power - "TRUE", High Performance = "FALSE"
+          .IOSTANDARD("DEFAULT"), // Specify the I/O standard
+          .SLEW("SLOW") // Specify the output slew rate
+       ) IOBUF_inst (
+          .O(eth_mdio_i),     // Buffer output
+          .IO(eth_mdio),   // Buffer inout port (connect directly to top-level port)
+          .I(eth_mdio_o),     // Buffer input
+          .T(~eth_mdio_oe)      // 3-state enable input, high=input, low=output
+       );
 
     end else begin
         assign irq_sources [2] = 1'b0;

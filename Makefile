@@ -175,9 +175,6 @@ uart_src := $(addprefix $(root-dir), $(uart_src))
 fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv) $(wildcard fpga/src/ariane-ethernet/*.sv)
 fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
-fpga_verilog_src := $(wildcard fpga/src/axi_sd_bridge/*.v)
-fpga_verilog_src := $(addprefix $(root-dir), $(fpga_verilog_src))
-
 # look for testbenches
 tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
 # RISCV asm tests and benchmark setup (used for CI)
@@ -459,7 +456,6 @@ fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(util) $(uart_src)
 	@echo read_vhdl        {$(uart_src)}    > fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(util)}       >> fpga/scripts/add_sources.tcl
-	@echo read_verilog     {$(fpga_verilog_src)} >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
