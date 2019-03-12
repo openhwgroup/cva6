@@ -58,7 +58,12 @@ generate
           .ADDR_WIDTH($clog2(NUM_WORDS)),
           .DATA_DEPTH(NUM_WORDS),
           .OUT_REGS (0),
+// initialize to zero if we want to co-simulate with Spike
+`ifdef SPIKE_TANDEM
+          .SIM_INIT (1)
+`else
           .SIM_INIT (2)
+`endif
         ) i_ram (
            .Clk_CI    ( clk_i                     ),
            .Rst_RBI   ( rst_ni                    ),

@@ -41,20 +41,28 @@ ifndef RISCV
 $(error RISCV not set - please point your RISCV variable to your RISCV installation)
 endif
 
+# spike tandem verification
+ifdef spike-tandem
+    compile_flag += -define SPIKE_TANDEM
+    ifndef preload
+        $(error Tandem verification requires preloading)
+    endif
+endif
+
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv                          \
-			        src/riscv-dbg/src/dm_pkg.sv                   \
-			        include/ariane_pkg.sv                         \
-			        include/std_cache_pkg.sv                      \
-			        include/serpent_cache_pkg.sv                  \
-			        src/axi/src/axi_pkg.sv                        \
-			        src/register_interface/src/reg_intf.sv        \
-			        include/axi_intf.sv                           \
-			        tb/ariane_soc_pkg.sv                          \
-			        include/ariane_axi_pkg.sv                     \
-			        src/fpu/src/fpnew_pkg.sv                      \
-			        src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+			  src/riscv-dbg/src/dm_pkg.sv                   \
+			  include/ariane_pkg.sv                         \
+			  include/std_cache_pkg.sv                      \
+			  include/serpent_cache_pkg.sv                  \
+			  src/axi/src/axi_pkg.sv                        \
+			  src/register_interface/src/reg_intf.sv        \
+			  include/axi_intf.sv                           \
+			  tb/ariane_soc_pkg.sv                          \
+			  include/ariane_axi_pkg.sv                     \
+			  src/fpu/src/fpnew_pkg.sv                      \
+			  src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
@@ -64,17 +72,33 @@ util := $(wildcard src/util/*.svh)                          \
         src/tech_cells_generic/src/cluster_clock_gating.sv  \
         tb/common/mock_uart.sv                              \
         src/util/sram.sv
+
+ifdef spike-tandem
+    util += tb/common/spike.sv
+endif
+
 util := $(addprefix $(root-dir), $(util))
 # Test packages
 test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
 			$(wildcard tb/test/*/*_pkg.sv*)
 # DPI
-dpi := $(patsubst tb/dpi/%.cc,${dpi-library}/%.o,$(wildcard tb/dpi/*.cc))
+dpi_list := $(patsubst tb/dpi/%.cc, ${dpi-library}/%.o, $(wildcard tb/dpi/*.cc))
+# filter spike stuff if tandem is not activated
+ifndef spike-tandem
+    dpi = $(filter-out ${dpi-library}/spike.o ${dpi-library}/sim_spike.o, $(dpi_list))
+else
+    dpi = $(dpi_list)
+endif
+
 dpi_hdr := $(wildcard tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
 CFLAGS := -I$(QUESTASIM_HOME)/include         \
           -I$(RISCV)/include                  \
           -std=c++11 -I../tb/dpi
+
+ifdef spike-tandem
+    CFLAGS += -Itb/riscv-isa-sim/install/include/spike
+endif
 
 # this list contains the standalone components
 src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
@@ -198,12 +222,12 @@ endif
 ifdef preload
 	questa-cmd += +PRELOAD=$(preload)
 	elf-bin = none
-	# tandem verify with spike, this requires pre-loading
-	ifdef tandem
-		compile_flag += +define+TANDEM
-		questa-cmd += -gblso tb/riscv-isa-sim/install/lib/libriscv.so
-	endif
 endif
+
+ifdef spike-tandem
+    questa-cmd += -gblso tb/riscv-isa-sim/install/lib/libriscv.so
+endif
+
 # remote bitbang is enabled
 ifdef rbb
 	questa-cmd += +jtag_rbb_enable=1
@@ -252,7 +276,7 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 # alternatively you can call make sim elf-bin=<path/to/elf-bin> in order to load an arbitrary binary
 sim: build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +MAX_CYCLES=$(max_cycles) +UVM_TESTNAME=$(test_case) \
-	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) $(QUESTASIM_FLAGS) -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
 	${top_level}_optimized +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 
 $(riscv-asm-tests): build
@@ -353,7 +377,7 @@ $(addsuffix -verilator,$(riscv-asm-tests)): verilate
 	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
 
 $(addsuffix -verilator,$(riscv-amo-tests)): verilate
-	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@) 
+	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
 
 $(addsuffix -verilator,$(riscv-mul-tests)): verilate
 	$(ver-library)/Variane_testharness $(riscv-test-dir)/$(subst -verilator,,$@)
@@ -425,17 +449,22 @@ check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
+fpga_filter := $(addprefix $(root-dir), bootrom/bootrom.sv)
+
 fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(util) $(uart_src)
 	@echo "[FPGA] Generate sources"
 	@echo read_vhdl        {$(uart_src)}    > fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(util)}       >> fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(filter-out bootrom.sv, $(src))} 	   >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
 	cd fpga && make BOARD="genesys2" XILINX_PART="xc7k325tffg900-2" XILINX_BOARD="digilentinc.com:genesys2:part0:1.1" CLK_PERIOD_NS="20"
 
 .PHONY: fpga
+
+build-spike:
+	cd tb/riscv-isa-sim && mkdir -p build && cd build && ../configure --prefix=`pwd`/../install --with-fesvr=$(RISCV) --enable-commitlog && make -j8 install
 
 clean:
 	rm -rf $(riscv-torture-dir)/output/test*

@@ -3,7 +3,7 @@ set boardName  $::env(XILINX_BOARD)
 
 set ipName xlnx_axi_gpio
 
-create_project $ipName . -part $partNumber
+create_project $ipName . -force -part $partNumber
 set_property board_part $boardName [current_project]
 
 create_ip -name axi_gpio -vendor xilinx.com -library ip -module_name $ipName

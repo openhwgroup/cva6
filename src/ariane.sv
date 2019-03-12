@@ -48,7 +48,6 @@ module ariane #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
-
 `ifdef AXI64_CACHE_PORTS
   // memory side, AXI Master
   output ariane_axi::req_t             axi_req_o,
@@ -588,9 +587,9 @@ module ariane #(
 `ifdef PITON_ARIANE
   // this is a cache subsystem that is compatible with OpenPiton
   serpent_cache_subsystem #(
-`ifdef AXI64_CACHE_PORTS    
+`ifdef AXI64_CACHE_PORTS
     .AxiIdWidth           ( AxiIdWidth    ),
-`endif    
+`endif
     .CachedAddrBeg        ( CachedAddrBeg ),
     .CachedAddrEnd        ( CachedAddrEnd ),
     .SwapEndianess        ( SwapEndianess )

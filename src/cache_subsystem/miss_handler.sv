@@ -187,6 +187,7 @@ module miss_handler #(
                     if (!serve_amo_q) begin
                         state_d = FLUSH_REQ_STATUS;
                         serve_amo_d = 1'b1;
+                        cnt_d = '0;
                     // 2. Do the AMO
                     end else begin
                         state_d = AMO_LOAD;

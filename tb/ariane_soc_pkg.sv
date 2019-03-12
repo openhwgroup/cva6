@@ -17,8 +17,9 @@ package ariane_soc;
     localparam NumSources = 3;
     localparam PLICIdWidth = 3;
     localparam ParameterBitwidth = PLICIdWidth;
+    localparam NrSlaves = 2; // actually masters, but slaves on the crossbar
 
-  typedef enum int unsigned {
+    typedef enum int unsigned {
         DRAM     = 0,
         GPIO     = 1,
         Ethernet = 2,

@@ -51,6 +51,8 @@ module ariane_peripherals #(
     output logic       spi_mosi        ,
     input  logic       spi_miso        ,
     output logic       spi_ss          ,
+    // SD Card
+    input  logic       sd_clk_i        ,
     output logic [7:0] leds_o          ,
     input  logic [7:0] dip_switches_i
 );
@@ -466,7 +468,7 @@ module ariane_peripherals #(
         assign spi_mosi = 1'b0;
         assign spi_ss = 1'b0;
 
-        assign irq_sources [1] = 1'b0;
+        // assign irq_sources [1] = 1'b0;
         assign spi.aw_ready = 1'b1;
         assign spi.ar_ready = 1'b1;
         assign spi.w_ready = 1'b1;
@@ -489,73 +491,72 @@ module ariane_peripherals #(
 
     if (InclEthernet) begin : gen_ethernet
 
-logic                    clk_200_int, clk_rgmii, clk_rgmii_quad; 
-logic                    eth_en, eth_we, eth_int_n, eth_pme_n, eth_mdio_i, eth_mdio_o, eth_mdio_oe;
-logic [AxiAddrWidth-1:0] eth_addr;
-logic [AxiDataWidth-1:0] eth_wrdata, eth_rdata;
-logic [AxiDataWidth/8-1:0] eth_be;
+    logic                    clk_200_int, clk_rgmii, clk_rgmii_quad;
+    logic                    eth_en, eth_we, eth_int_n, eth_pme_n, eth_mdio_i, eth_mdio_o, eth_mdio_oe;
+    logic [AxiAddrWidth-1:0] eth_addr;
+    logic [AxiDataWidth-1:0] eth_wrdata, eth_rdata;
+    logic [AxiDataWidth/8-1:0] eth_be;
 
-axi2mem #(
-    .AXI_ID_WIDTH   ( AxiIdWidth       ),
-    .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
-    .AXI_DATA_WIDTH ( AxiDataWidth     ),
-    .AXI_USER_WIDTH ( AxiUserWidth     )
-) i_axi2rom (
-    .clk_i  ( clk_i                   ),
-    .rst_ni ( rst_ni                  ),
-    .slave  ( ethernet                ),
-    .req_o  ( eth_en                  ),
-    .we_o   ( eth_we                  ),
-    .addr_o ( eth_addr                ),
-    .be_o   ( eth_be                  ),
-    .data_o ( eth_wrdata              ),
-    .data_i ( eth_rdata               )
-);
+    axi2mem #(
+        .AXI_ID_WIDTH   ( AxiIdWidth       ),
+        .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
+        .AXI_DATA_WIDTH ( AxiDataWidth     ),
+        .AXI_USER_WIDTH ( AxiUserWidth     )
+    ) i_axi2rom (
+        .clk_i  ( clk_i                   ),
+        .rst_ni ( rst_ni                  ),
+        .slave  ( ethernet                ),
+        .req_o  ( eth_en                  ),
+        .we_o   ( eth_we                  ),
+        .addr_o ( eth_addr                ),
+        .be_o   ( eth_be                  ),
+        .data_o ( eth_wrdata              ),
+        .data_i ( eth_rdata               )
+    );
 
-framing_top eth_rgmii
-  (
-   .msoc_clk(clk_i),
-   .core_lsu_addr(eth_addr[14:0]),
-   .core_lsu_wdata(eth_wrdata),
-   .core_lsu_be(eth_be),
-   .ce_d(eth_en),
-   .we_d(eth_en & eth_we),
-   .framing_sel(eth_en),
-   .framing_rdata(eth_rdata),
-   .rst_int(!rst_ni),
-   .clk_int(phy_tx_clk_i), // 125 MHz in-phase
-   .clk90_int(eth_clk_i),    // 125 MHz quadrature
-   .clk_200_int(clk_200MHz_i),
-   /*
-    * Ethernet: 1000BASE-T RGMII
-    */
-   .phy_rx_clk(eth_rxck),
-   .phy_rxd(eth_rxd),
-   .phy_rx_ctl(eth_rxctl),
-   .phy_tx_clk(eth_txck),
-   .phy_txd(eth_txd),
-   .phy_tx_ctl(eth_txctl),
-   .phy_reset_n(eth_rst_n),
-   .phy_int_n(eth_int_n),
-   .phy_pme_n(eth_pme_n),
-   .phy_mdc(eth_mdc),
-   .phy_mdio_i(eth_mdio_i),
-   .phy_mdio_o(eth_mdio_o),
-   .phy_mdio_oe(eth_mdio_oe),
-   .eth_irq(irq_sources[2])
-);
+    framing_top eth_rgmii (
+       .msoc_clk(clk_i),
+       .core_lsu_addr(eth_addr[14:0]),
+       .core_lsu_wdata(eth_wrdata),
+       .core_lsu_be(eth_be),
+       .ce_d(eth_en),
+       .we_d(eth_en & eth_we),
+       .framing_sel(eth_en),
+       .framing_rdata(eth_rdata),
+       .rst_int(!rst_ni),
+       .clk_int(phy_tx_clk_i), // 125 MHz in-phase
+       .clk90_int(eth_clk_i),    // 125 MHz quadrature
+       .clk_200_int(clk_200MHz_i),
+       /*
+        * Ethernet: 1000BASE-T RGMII
+        */
+       .phy_rx_clk(eth_rxck),
+       .phy_rxd(eth_rxd),
+       .phy_rx_ctl(eth_rxctl),
+       .phy_tx_clk(eth_txck),
+       .phy_txd(eth_txd),
+       .phy_tx_ctl(eth_txctl),
+       .phy_reset_n(eth_rst_n),
+       .phy_int_n(eth_int_n),
+       .phy_pme_n(eth_pme_n),
+       .phy_mdc(eth_mdc),
+       .phy_mdio_i(eth_mdio_i),
+       .phy_mdio_o(eth_mdio_o),
+       .phy_mdio_oe(eth_mdio_oe),
+       .eth_irq(irq_sources[2])
+    );
 
-   IOBUF #(
-      .DRIVE(12), // Specify the output drive strength
-      .IBUF_LOW_PWR("TRUE"),  // Low Power - "TRUE", High Performance = "FALSE" 
-      .IOSTANDARD("DEFAULT"), // Specify the I/O standard
-      .SLEW("SLOW") // Specify the output slew rate
-   ) IOBUF_inst (
-      .O(eth_mdio_i),     // Buffer output
-      .IO(eth_mdio),   // Buffer inout port (connect directly to top-level port)
-      .I(eth_mdio_o),     // Buffer input
-      .T(~eth_mdio_oe)      // 3-state enable input, high=input, low=output
-   );
+       IOBUF #(
+          .DRIVE(12), // Specify the output drive strength
+          .IBUF_LOW_PWR("TRUE"),  // Low Power - "TRUE", High Performance = "FALSE"
+          .IOSTANDARD("DEFAULT"), // Specify the I/O standard
+          .SLEW("SLOW") // Specify the output slew rate
+       ) IOBUF_inst (
+          .O(eth_mdio_i),     // Buffer output
+          .IO(eth_mdio),   // Buffer inout port (connect directly to top-level port)
+          .I(eth_mdio_o),     // Buffer input
+          .T(~eth_mdio_oe)      // 3-state enable input, high=input, low=output
+       );
 
     end else begin
         assign irq_sources [2] = 1'b0;
@@ -607,7 +608,7 @@ framing_top eth_rgmii
         logic        s_axi_gpio_rlast;
         logic        s_axi_gpio_rvalid;
         logic        s_axi_gpio_rready;
-       
+
         // system-bus is 64-bit, convert down to 32 bit
         xlnx_axi_dwidth_converter i_xlnx_axi_dwidth_converter_gpio (
             .s_axi_aclk     ( clk_i              ),

@@ -1,0 +1,92 @@
+xlnx_axi_dwidth_converter:
+  ip: axi_dwidth_converter
+  vendor: xilinx.com
+  config:
+    si_data_width: 64
+    si_id_width: 5
+    mi_data_width: 32
+
+xlnx_axi_clock_converter:
+  ip: axi_clock_converter
+  vendor: xilinx.com
+  config:
+    width: 64
+    data_width: 64
+    id_width: 5
+
+xlnx_axi_gpio:
+  ip: axi_gpio
+  vendor: xilinx.com
+  config:
+    c_gpio_width: 8
+    c_gpio2_width:  8
+    c_is_dual: 1
+    c_all_inputs_2: 1
+    c_interrupt_present: 0
+
+xlnx_axi_quad_spi:
+  ip: axi_quad_spi
+  vendor: xilinx.com
+  config:
+    c_use_startup: 0
+    c_sck_ratio: 4
+    c_fifo_depth: 256
+    c_type_of_axi4_interface: 1
+    c_s_axi4_id_width: 0
+
+xlnx_clk_gen:
+  ip: clk_wiz
+  vendor: xilinx.com
+  config:
+    prim_in_freq: 200
+    num_out_clks: 4
+    clkout2_used: true
+    clkout3_used: true
+    clkout4_used: true
+    clkout1_requested_out_freq: 50
+    clkout2_requested_out_freq: 125
+    clkout3_requested_out_freq: 125
+    clkout3_requested_phase: 90
+    clkout4_requested_out_freq: 50
+    clkin1_jitter_ps: 50
+
+xlnx_ila:
+  ip: ila
+  vendor: xilinx.com
+  config:
+    c_num_of_probes: 8
+    c_probe3_width: 4
+    c_probe6_width: 4
+    c_data_depth: 16384
+    c_input_pipe_stages: 1
+
+xlnx_mig_7_ddr3:
+  ip: mig_7series
+  vendor: xilinx.com
+  config:
+    xml_input_file: mig_a.prj
+    reset_board_interface: Custom
+    mig_dont_touch_param: Custom
+    board_mig_param: Custom
+
+xlnx_ila:
+  ip: xlnx_ila
+  vendor: xilinx.com
+  config:
+    addr_width: 64
+    data_width: 64
+    id_width: 5
+    awuser_width: 1
+    aruser_width: 1
+    ruser_width: 1
+    wuser_width: 1
+    buser_width: 1
+    max_aw_waits: 1024
+    max_ar_waits: 1024
+    max_w_waits: 1024
+    max_r_waits: 1024
+    max_b_waits: 1024
+    max_continuous_wtransfers_waits: 1024
+    max_wlast_to_awvalid_waits: 1024
+    max_write_to_bvalid_waits: 1024
+    max_continuous_rtransfers_waits: 1024
