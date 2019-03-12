@@ -3,7 +3,7 @@ set boardName  $::env(XILINX_BOARD)
 
 set ipName xlnx_mig_7_ddr3
 
-create_project $ipName . -part $partNumber
+create_project $ipName . -force -part $partNumber
 set_property board_part $boardName [current_project]
 
 create_ip -name mig_7series -vendor xilinx.com -library ip -module_name $ipName
