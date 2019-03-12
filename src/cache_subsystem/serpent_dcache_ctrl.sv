@@ -85,8 +85,8 @@ module serpent_dcache_ctrl #(
     assign miss_paddr_o          = {address_tag_q, address_idx_q, address_off_q};
     assign miss_size_o           = (miss_nc_o) ? data_size_q : 3'b111;
 
-    assign miss_nc_o = (address_tag_q <  (CachedAddrBeg>>DCACHE_INDEX_WIDTH)) || 
-                       (address_tag_q >= (CachedAddrEnd>>DCACHE_INDEX_WIDTH)) || 
+    assign miss_nc_o = (address_tag_q <  (CachedAddrBeg>>DCACHE_INDEX_WIDTH)) ||
+                       (address_tag_q >= (CachedAddrEnd>>DCACHE_INDEX_WIDTH)) ||
                        (!cache_en_i);
 
     assign miss_we_o    = '0;
@@ -207,7 +207,7 @@ module serpent_dcache_ctrl #(
                 miss_req_o = 1'b1;
                 if(miss_ack_i) begin
                   state_d = KILL_MISS;
-                end  
+                end
             end
             //////////////////////////////////
             // killed miss,

@@ -49,7 +49,7 @@ module serpent_axi_adapter #(
 localparam AxiNumWords = ariane_pkg::ICACHE_LINE_WIDTH/64;
 
 ///////////////////////////////////////////////////////
-// request path 
+// request path
 ///////////////////////////////////////////////////////
 
 icache_req_t icache_data;
@@ -74,6 +74,8 @@ logic [AxiNumWords-1:0][7:0]  axi_wr_be;
 logic [5:0] axi_wr_atop;
 logic invalidate;
 logic [2:0] amo_off_d, amo_off_q;
+// AMO generates r beat
+logic amo_gen_r_d, amo_gen_r_q;
 
 logic [serpent_cache_pkg::CACHE_ID_WIDTH-1:0] icache_rtrn_tid_d, icache_rtrn_tid_q;
 logic [serpent_cache_pkg::CACHE_ID_WIDTH-1:0] dcache_rtrn_tid_d, dcache_rtrn_tid_q;
@@ -87,10 +89,10 @@ assign icache_data_ack_o  = icache_data_req_i & ~icache_data_full;
 assign dcache_data_ack_o  = dcache_data_req_i & ~dcache_data_full;
 
 // arbiter
-assign arb_req           = {~(dcache_data_empty | 
-                              dcache_wr_full    | 
-                              dcache_rd_full), 
-                            ~(icache_data_empty | 
+assign arb_req           = {~(dcache_data_empty |
+                              dcache_wr_full    |
+                              dcache_rd_full),
+                            ~(icache_data_empty |
                               icache_rd_full)};
 
 assign arb_gnt           = axi_rd_gnt | axi_wr_gnt;
@@ -99,14 +101,14 @@ rrarbiter #(
   .NUM_REQ(2),
   .LOCK_IN(1)
 ) i_rrarbiter (
-  .clk_i  ( clk_i                   ),
-  .rst_ni ( rst_ni                  ),
-  .flush_i( '0                      ),
-  .en_i   ( arb_gnt                 ),
-  .req_i  ( arb_req                 ),
-  .ack_o  ( arb_ack                 ),
-  .vld_o  (                         ),
-  .idx_o  ( arb_idx                 )
+  .clk_i  ( clk_i   ),
+  .rst_ni ( rst_ni  ),
+  .flush_i( '0      ),
+  .en_i   ( arb_gnt ),
+  .req_i  ( arb_req ),
+  .ack_o  ( arb_ack ),
+  .vld_o  (         ),
+  .idx_o  ( arb_idx )
 );
 
 // request side
@@ -122,6 +124,7 @@ always_comb begin : p_axi_req
   axi_wr_lock  = '0;
   axi_wr_atop  = '0;
   amo_off_d    = '0;
+  amo_gen_r_d  = amo_gen_r_q;
 
   // read channel
   axi_rd_id_in = arb_idx;
@@ -135,14 +138,14 @@ always_comb begin : p_axi_req
     axi_rd_size  = dcache_data.size[1:0];
     if (dcache_data.size[2]) begin
       axi_rd_blen = ariane_pkg::DCACHE_LINE_WIDTH/64-1;
-    end  
+    end
   end else begin
     axi_rd_addr  = icache_data.paddr;
     axi_rd_size  = 2'b11;// always request 64bit words in case of ifill
     if (~icache_data.nc) begin
       axi_rd_blen = ariane_pkg::ICACHE_LINE_WIDTH/64-1;
-    end  
-  end 
+    end
+  end
 
   // signal that an invalidation message
   // needs to be generated
@@ -152,10 +155,10 @@ always_comb begin : p_axi_req
   if (|arb_req) begin
     if (arb_idx == 0) begin
       //////////////////////////////////////
-      // IMISS  
+      // IMISS
       axi_rd_req   = 1'b1;
       //////////////////////////////////////
-    end else begin  
+    end else begin
       unique case (dcache_data.rtype)
         //////////////////////////////////////
         serpent_cache_pkg::DCACHE_LOAD_REQ: begin
@@ -168,18 +171,18 @@ always_comb begin : p_axi_req
         end
         //////////////////////////////////////
         serpent_cache_pkg::DCACHE_ATOMIC_REQ: begin
-          // default  
+          // default
           // push back an invalidation here.
           // since we only keep one read tx in flight, and since
-          // the dcache drains all writes/reads before executing 
+          // the dcache drains all writes/reads before executing
           // an atomic, this is safe.
           invalidate   = arb_gnt;
           axi_wr_req   = 1'b1;
           axi_wr_be    = serpent_cache_pkg::toByteEnable8(dcache_data.paddr[2:0], dcache_data.size[1:0]);
-          
-          // need to use a separate ID here, so concat an additional bit 
+          amo_gen_r_d  = 1'b1;
+          // need to use a separate ID here, so concat an additional bit
           axi_wr_id_in[1] = 1'b1;
-          
+
           unique case (dcache_data.amo_op)
             AMO_LR: begin
               axi_rd_lock     = 1'b1;
@@ -191,35 +194,36 @@ always_comb begin : p_axi_req
             end
             AMO_SC: begin
               axi_wr_lock  = 1'b1;
+              amo_gen_r_d  = 1'b0;
               // needed to properly encode success
               unique case (dcache_data.size[1:0])
                 2'b00: amo_off_d    = dcache_data.paddr[2:0];
                 2'b01: amo_off_d    = {dcache_data.paddr[2:1], 1'b0};
                 2'b10: amo_off_d    = {dcache_data.paddr[2],   2'b00};
                 2'b11: amo_off_d    = '0;
-              endcase    
-            end  
+              endcase
+            end
             // RISC-V atops have a load semantic
             AMO_SWAP: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ATOMICSWAP};
             AMO_ADD:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_ADD};
-            AMO_AND:  begin 
-              // in this case we need to invert the data to get a "CLR" 
+            AMO_AND:  begin
+              // in this case we need to invert the data to get a "CLR"
               axi_wr_data  = ~dcache_data.data;
               axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_CLR};
-            end  
+            end
             AMO_OR:   axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SET};
             AMO_XOR:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_EOR};
             AMO_MAX:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMAX};
             AMO_MAXU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMAX};
-            AMO_MIN:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN}; 
-            AMO_MINU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN}; 
-          endcase  
+            AMO_MIN:  axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_SMIN};
+            AMO_MINU: axi_wr_atop  = {axi_pkg::ATOP_ATOMICLOAD, axi_pkg::ATOP_LITTLE_END, axi_pkg::ATOP_UMIN};
+          endcase
         end
       //////////////////////////////////////
       endcase
-    end 
-  end  
-end  
+    end
+  end
+end
 
 fifo_v2 #(
      .dtype       (  icache_req_t            ),
@@ -264,10 +268,9 @@ fifo_v2 #(
 logic icache_rtrn_rd_en, dcache_rtrn_rd_en;
 logic icache_rtrn_vld_d, icache_rtrn_vld_q, dcache_rtrn_vld_d, dcache_rtrn_vld_q;
 
-
 fifo_v3 #(
-  .DATA_WIDTH(serpent_cache_pkg::CACHE_ID_WIDTH), 
-  .DEPTH ( MetaFifoDepth )
+  .DATA_WIDTH ( serpent_cache_pkg::CACHE_ID_WIDTH ),
+  .DEPTH      ( MetaFifoDepth                     )
 ) i_rd_icache_id (
   .clk_i      ( clk_i                   ),
   .rst_ni     ( rst_ni                  ),
@@ -276,15 +279,15 @@ fifo_v3 #(
   .full_o     ( icache_rd_full          ),
   .empty_o    ( icache_rd_empty         ),
   .usage_o    (                         ),
-  .data_i     ( icache_data.tid         ), 
+  .data_i     ( icache_data.tid         ),
   .push_i     ( arb_ack[0] & axi_rd_gnt ),
-  .data_o     ( icache_rtrn_tid_d       ), 
+  .data_o     ( icache_rtrn_tid_d       ),
   .pop_i      ( icache_rtrn_vld_d       )
 );
 
 fifo_v3 #(
-  .DATA_WIDTH(serpent_cache_pkg::CACHE_ID_WIDTH), 
-  .DEPTH ( MetaFifoDepth )
+  .DATA_WIDTH ( serpent_cache_pkg::CACHE_ID_WIDTH ),
+  .DEPTH      ( MetaFifoDepth                     )
 ) i_rd_dcache_id (
   .clk_i      ( clk_i                   ),
   .rst_ni     ( rst_ni                  ),
@@ -293,15 +296,15 @@ fifo_v3 #(
   .full_o     ( dcache_rd_full          ),
   .empty_o    ( dcache_rd_empty         ),
   .usage_o    (                         ),
-  .data_i     ( dcache_data.tid         ), 
+  .data_i     ( dcache_data.tid         ),
   .push_i     ( arb_ack[1] & axi_rd_gnt ),
-  .data_o     ( dcache_rtrn_rd_tid      ), 
+  .data_o     ( dcache_rtrn_rd_tid      ),
   .pop_i      ( dcache_rd_pop           )
 );
 
 fifo_v3 #(
-  .DATA_WIDTH(serpent_cache_pkg::CACHE_ID_WIDTH), 
-  .DEPTH ( MetaFifoDepth )
+  .DATA_WIDTH ( serpent_cache_pkg::CACHE_ID_WIDTH ),
+  .DEPTH      ( MetaFifoDepth                     )
 ) i_wr_dcache_id (
   .clk_i      ( clk_i                   ),
   .rst_ni     ( rst_ni                  ),
@@ -310,9 +313,9 @@ fifo_v3 #(
   .full_o     ( dcache_wr_full          ),
   .empty_o    ( dcache_wr_empty         ),
   .usage_o    (                         ),
-  .data_i     ( dcache_data.tid         ), 
+  .data_i     ( dcache_data.tid         ),
   .push_i     ( arb_ack[1] & axi_wr_gnt ),
-  .data_o     ( dcache_rtrn_wr_tid      ), 
+  .data_o     ( dcache_rtrn_wr_tid      ),
   .pop_i      ( dcache_wr_pop           )
 );
 
@@ -320,7 +323,7 @@ fifo_v3 #(
 assign dcache_rtrn_tid_d = (dcache_wr_pop) ? dcache_rtrn_wr_tid : dcache_rtrn_rd_tid;
 
 ///////////////////////////////////////////////////////
-// return path 
+// return path
 ///////////////////////////////////////////////////////
 
 // buffer write responses
@@ -329,9 +332,9 @@ assign axi_wr_rdy          = ~b_full;
 assign b_push              = axi_wr_valid & axi_wr_rdy;
 
 fifo_v3 #(
-  .DATA_WIDTH(AxiIdWidth+1), 
-  .DEPTH        ( MetaFifoDepth ),
-  .FALL_THROUGH ( 1'b1       )
+  .DATA_WIDTH   ( AxiIdWidth + 1 ),
+  .DEPTH        ( MetaFifoDepth  ),
+  .FALL_THROUGH ( 1'b1           )
 ) i_b_fifo (
   .clk_i      ( clk_i      ),
   .rst_ni     ( rst_ni     ),
@@ -340,10 +343,10 @@ fifo_v3 #(
   .full_o     ( b_full     ),
   .empty_o    ( b_empty    ),
   .usage_o    (            ),
-  .data_i     ( {axi_wr_exokay, axi_wr_id_out} ), 
-  .push_i     ( b_push     ),
-  .data_o     ( {wr_exokay, wr_id_out}         ), 
-  .pop_i      ( b_pop      )
+  .data_i     ( {axi_wr_exokay, axi_wr_id_out} ),
+  .push_i     ( b_push                         ),
+  .data_o     ( {wr_exokay, wr_id_out}         ),
+  .pop_i      ( b_pop                          )
 );
 
 // buffer read responses in shift regs
@@ -356,12 +359,12 @@ logic dcache_sc_rtrn, axi_rd_last;
 
 always_comb begin : p_axi_rtrn_shift
   // output directly from regs
-  icache_rtrn_o              = '0;  
+  icache_rtrn_o              = '0;
   icache_rtrn_o.rtype        = serpent_cache_pkg::ICACHE_IFILL_ACK;
   icache_rtrn_o.tid          = icache_rtrn_tid_q;
   icache_rtrn_o.data         = icache_rd_shift_q;
   icache_rtrn_vld_o          = icache_rtrn_vld_q;
-  
+
   dcache_rtrn_o              = '0;
   dcache_rtrn_o.rtype        = dcache_rtrn_type_q;
   dcache_rtrn_o.inv          = dcache_rtrn_inv_q;
@@ -396,7 +399,7 @@ always_comb begin : p_axi_rtrn_shift
     dcache_rd_shift_d[0] = '0;
     dcache_rd_shift_d[0][amo_off_q*8] = (wr_exokay) ? '0 : 1'b1;
   end
-end  
+end
 
 // decode virtual read channels of icache
 always_comb begin : p_axi_rtrn_decode
@@ -407,7 +410,7 @@ always_comb begin : p_axi_rtrn_decode
   icache_rtrn_rd_en = 1'b0;
   icache_rtrn_vld_d = 1'b0;
 
-  // decode virtual icache channel, 
+  // decode virtual icache channel,
   // this is independent on dcache decoding below
   if (axi_rd_valid && axi_rd_id_out == 0 && axi_rd_rdy) begin
     icache_rtrn_rd_en = 1'b1;
@@ -422,55 +425,55 @@ always_comb begin : p_axi_rtrn_decode
   dcache_rtrn_type_d  = serpent_cache_pkg::DCACHE_LOAD_ACK;
   b_pop               = 1'b0;
   dcache_sc_rtrn      = 1'b0;
-    
+
   //////////////////////////////////////
-  // dcache needs some special treatment 
+  // dcache needs some special treatment
   // for arbitration and decoding of atomics
   //////////////////////////////////////
   // this is safe, there is no other read tx in flight than this atomic.
-  // note that this self invalidation is handled in this way due to the 
-  // write-through cache architecture, which is aligned with the openpiton 
+  // note that this self invalidation is handled in this way due to the
+  // write-through cache architecture, which is aligned with the openpiton
   // cache subsystem.
   if (invalidate) begin
       dcache_rtrn_type_d     = serpent_cache_pkg::DCACHE_INV_REQ;
       dcache_rtrn_vld_d      = 1'b1;
 
       dcache_rtrn_inv_d.all  = 1'b1;
-      dcache_rtrn_inv_d.idx  = dcache_data.paddr[ariane_pkg::DCACHE_INDEX_WIDTH]; 
+      dcache_rtrn_inv_d.idx  = dcache_data.paddr[ariane_pkg::DCACHE_INDEX_WIDTH-1:0];
   //////////////////////////////////////
   // read responses
-  // note that in case of atomics, the dcache sequentializes requests and 
+  // note that in case of atomics, the dcache sequentializes requests and
   // guarantees that there are no other pending transactions in flight
   end else if (axi_rd_valid && axi_rd_id_out[0] && axi_rd_rdy) begin
     dcache_rtrn_rd_en        = 1'b1;
     dcache_rtrn_vld_d        = axi_rd_last;
-    
+
     // if this was an atomic op
     if (axi_rd_id_out[1]) begin
       dcache_rtrn_type_d     = serpent_cache_pkg::DCACHE_ATOMIC_ACK;
-      
+
       // check if transaction was issued over write channel and pop that ID
       if (~dcache_wr_empty) begin
         dcache_wr_pop          = axi_rd_last;
-      // if this is not the case, there MUST be an id in the read channel (LR) 
+      // if this is not the case, there MUST be an id in the read channel (LR)
       end else begin
         dcache_rd_pop          = axi_rd_last;
-      end  
+      end
     end else begin
       dcache_rd_pop          = axi_rd_last;
-    end 
-  //////////////////////////////////////  
+    end
+  //////////////////////////////////////
   // write responses, check b fifo
   end else if (~b_empty) begin
-    b_pop               = 1'b1; 
+    b_pop               = 1'b1;
 
-    // this was an atomic 
+    // this was an atomic
     if (wr_id_out[1]) begin
       dcache_rtrn_type_d = serpent_cache_pkg::DCACHE_ATOMIC_ACK;
 
-      // silently discard b response if there is no corresponding entry in the
-      // write meta data queue (this is the case for all atomic loads and LRs)
-      if (~dcache_wr_empty) begin
+      // silently discard b response if we already popped the fifo
+      // with a R beat (iff the amo transaction generated an R beat)
+      if (~amo_gen_r_q) begin
         dcache_rtrn_vld_d  = 1'b1;
         dcache_wr_pop      = 1'b1;
         dcache_sc_rtrn     = 1'b1;
@@ -480,7 +483,7 @@ always_comb begin : p_axi_rtrn_decode
       dcache_rtrn_type_d = serpent_cache_pkg::DCACHE_STORE_ACK;
       dcache_rtrn_vld_d  = 1'b1;
       dcache_wr_pop      = 1'b1;
-    end  
+    end
   end
   //////////////////////////////////////
 end
@@ -498,7 +501,7 @@ end
 // assign dcache_rtrn_o.inv.all  = '0;
 
 always_ff @(posedge clk_i) begin : p_rd_buf
-  if(~rst_ni) begin
+  if (~rst_ni) begin
     icache_first_q     <= 1'b1;
     dcache_first_q     <= 1'b1;
     icache_rd_shift_q  <= '0;
@@ -508,8 +511,9 @@ always_ff @(posedge clk_i) begin : p_rd_buf
     icache_rtrn_tid_q  <= '0;
     dcache_rtrn_tid_q  <= '0;
     dcache_rtrn_type_q <= serpent_cache_pkg::DCACHE_LOAD_ACK;
-    dcache_rtrn_inv_q  <= '0; 
+    dcache_rtrn_inv_q  <= '0;
     amo_off_q          <= '0;
+    amo_gen_r_q        <= 1'b0;
   end else begin
     icache_first_q     <= icache_first_d;
     dcache_first_q     <= dcache_first_d;
@@ -522,6 +526,7 @@ always_ff @(posedge clk_i) begin : p_rd_buf
     dcache_rtrn_type_q <= dcache_rtrn_type_d;
     dcache_rtrn_inv_q  <= dcache_rtrn_inv_d;
     amo_off_q          <= amo_off_d;
+    amo_gen_r_q        <= amo_gen_r_d;
   end
 end
 
@@ -548,7 +553,7 @@ axi_shim #(
   .rd_valid_o      ( axi_rd_valid      ),
   .rd_data_o       ( axi_rd_data       ),
   .rd_id_o         ( axi_rd_id_out     ),
-  .rd_exokay_o     ( axi_rd_exokay     ),    
+  .rd_exokay_o     ( axi_rd_exokay     ),
   .wr_req_i        ( axi_wr_req        ),
   .wr_gnt_o        ( axi_wr_gnt        ),
   .wr_addr_i       ( axi_wr_addr       ),

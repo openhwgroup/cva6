@@ -1,6 +1,6 @@
 # start sequence of the bootloader
-# 
-# 
+#
+#
 #include <smp.h>
 #define DRAM_BASE 0x80000000
 

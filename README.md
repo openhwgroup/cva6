@@ -291,6 +291,18 @@ $ make
 $ [sudo] make install
 ```
 
+### Memory Preloading
+
+In standard configuration the debug module will take care of loading the memory content. It will also handle communication with `riscv-fesvr`.
+Depending on the scenario this might not be diserable (e.g.: preloading of a large elf or linux boot in simulation). You can use the preload elf flag to specify the path
+to a binary which will be preloaded.
+
+> You will loose all `riscv-fesvr` communcation like sytemcalls and eoc capabilities.
+
+```
+$ make sim preload=elf
+```
+
 <!-- ### Tandem Verification with Spike
 
 ```

@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Official support for floating point unit
 - Added AXI-64bit adapter for write-through cache system
 - Added AXI atomic ops and exclusive access support to write-through cache system
+- Provision `riscv-isa-sim` tandem simulation
+- Support for preloading
 
 ### Changed
 
@@ -19,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed problem which decoded compressed hints as illegal instructions
 - Reduce clock frequency of FPGA to 30 MHz to accomodate FPU
 - Bugfixes in write-through cache system
+- ID width fix in random delayer
 
 ### 4.0.0
 
