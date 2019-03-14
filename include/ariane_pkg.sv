@@ -60,16 +60,10 @@ package ariane_pkg;
 `endif
 
 
-`ifdef WT_DCACHE
-    `ifdef PITON_ARIANE
+`ifdef PITON_ARIANE
     // Floating-point extensions configuration
     localparam bit RVF = 1'b0; // Is F extension enabled
     localparam bit RVD = 1'b0; // Is D extension enabled
-    `else
-    // Floating-point extensions configuration
-    localparam bit RVF = 1'b0; // Is F extension enabled
-    localparam bit RVD = 1'b0; // Is D extension enabled
-    `endif
 `else
     // Floating-point extensions configuration
     localparam bit RVF = 1'b0; // Is F extension enabled

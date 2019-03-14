@@ -41,8 +41,8 @@ module ariane #(
   input  logic                         debug_req_i,  // debug request (async)
 `ifdef PITON_ARIANE
   // L15 (memory side)
-  output wt_cache_pkg::l15_req_t  l15_req_o,
-  input  wt_cache_pkg::l15_rtrn_t l15_rtrn_i
+  output wt_cache_pkg::l15_req_t       l15_req_o,
+  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
 `else
   // memory side, AXI Master
   output ariane_axi::req_t             axi_req_o,
