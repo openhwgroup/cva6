@@ -22,7 +22,18 @@ int sd_copy(void *dst, uint32_t src_lba, uint32_t size)
 
     uint64_t * addr = (uint64_t *)raw_addr;
     volatile uint64_t * p = (uint64_t *)dst;
+    int old = -1;
     for (uint32_t blk = 0; blk < size; blk++) {
+        if(((int)blk)/0x100 > old) {
+          old = (int)blk/0x100;
+          print_uart("copying block ");
+          print_uart_dec(blk, 1);
+          print_uart(" of ");
+          print_uart_dec(size, 1);
+          print_uart(" blocks (");
+          print_uart_dec((blk*100)/size, 1);
+          print_uart(" %)\r\n");
+        }
         for (uint32_t offset = 0; offset < 64; offset++) {
             *(p++) = *(addr++);
         }
