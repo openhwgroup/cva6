@@ -20,9 +20,7 @@
 // configuration in case Ariane is
 // instantiated in OpenPiton
 `ifdef PITON_ARIANE
-`ifndef AXI64_CACHE_PORTS
   `include "l15.tmp.h"
-`endif
 `endif
 
 package ariane_pkg;
@@ -51,7 +49,7 @@ package ariane_pkg;
     // depth of store-buffers, this needs to be a power of two
     localparam int unsigned DEPTH_SPEC   = 4;
 
-`ifdef PITON_ARIANE
+`ifdef WT_DCACHE
     // in this case we can use a small commit queue since we have a write buffer in the dcache
     // we could in principle do without the commit queue in this case, but the timing degrades if we do that due
     // to longer paths into the commit stage
@@ -62,8 +60,8 @@ package ariane_pkg;
 `endif
 
 
-`ifdef PITON_ARIANE
-    `ifdef AXI64_CACHE_PORTS
+`ifdef WT_DCACHE
+    `ifdef PITON_ARIANE
     // Floating-point extensions configuration
     localparam bit RVF = 1'b0; // Is F extension enabled
     localparam bit RVD = 1'b0; // Is D extension enabled
@@ -279,9 +277,7 @@ package ariane_pkg;
     // Cache config
     // ---------------
 
-    // if serpent pulp is used standalone (outside of openpiton)
-    // we just use the default config of ariane
-    // otherwise we have to propagate the openpiton L15 configuration from l15.h
+// for usage in OpenPiton we have to propagate the openpiton L15 configuration from l15.h
 `ifdef PITON_ARIANE
 
 `ifndef CONFIG_L1I_CACHELINE_WIDTH

@@ -81,34 +81,34 @@ jobs:
         - ci/install-dtc.sh
         - ci/install-spike.sh
     - stage: test
-      name: run riscv benchmarks
+      name: run riscv benchmarks (WB Cache)
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-benchmarks-verilator
+        - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
     # rv64ui-p-* tests
     - stage: test
       name: run asm tests1
       script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests1-verilator
+        - ci/build-riscv-tests.sh (WB Cache)
+        - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WB_DCACHE
     # rv64ui-v-* tests
     - stage: test
       name: run asm tests2
       script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests2-verilator
+        - ci/build-riscv-tests.sh (WB Cache)
+        - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WB_DCACHE
     # rv64um-*-* tests
     - stage: test
       name: run mul tests
       script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-mul-verilator
+        - ci/build-riscv-tests.sh (WB Cache)
+        - make -j${NUM_JOBS} run-mul-verilator defines=WB_DCACHE
     # amo tests
     - stage: test
       name: run amo tests
       script:
-        - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-amo-verilator
+        - ci/build-riscv-tests.sh (WB Cache)
+        - make -j${NUM_JOBS} run-amo-verilator defines=WB_DCACHE
     - stage: test
       name: run torture
       script:
@@ -118,37 +118,35 @@ jobs:
         - make torture-rtest-verilator
 
     - stage: test
-      name: run riscv benchmarks (serpent)
+      name: run riscv benchmarks (WT Cache)
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-benchmarks-verilator  defines=PITON_ARIANE+AXI64_CACHE_PORTS
+        - make -j${NUM_JOBS} run-benchmarks-verilator  defines=WT_DCACHE
     # rv64ui-p-* tests
     - stage: test
-      name: run asm tests1 (serpent)
+      name: run asm tests1 (WT Cache)
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests1-verilator  defines=PITON_ARIANE+AXI64_CACHE_PORTS
+        - make -j${NUM_JOBS} run-asm-tests1-verilator  defines=WT_DCACHE
     # rv64ui-v-* tests
     - stage: test
-      name: run asm tests2 (serpent)
+      name: run asm tests2 (WT Cache)
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-asm-tests2-verilator  defines=PITON_ARIANE+AXI64_CACHE_PORTS
+        - make -j${NUM_JOBS} run-asm-tests2-verilator  defines=WT_DCACHE
     # amo tests
     - stage: test
       name: run amo tests
       script:
         - ci/build-riscv-tests.sh
-        - make -j${NUM_JOBS} run-amo-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
+        - make -j${NUM_JOBS} run-amo-verilator defines=WT_DCACHE
     - stage: test
-      name: run torture (serpent)
+      name: run torture (WT Cache)
       script:
         - ci/get-torture.sh
         - make clean
-        - make torture-gen defines=PITON_ARIANE+AXI64_CACHE_PORTS
-        - make torture-rtest-verilator defines=PITON_ARIANE+AXI64_CACHE_PORTS
-
-
+        - make torture-gen defines=WT_DCACHE
+        - make torture-rtest-verilator defines=WT_DCACHE
 
 # extra time during long builds
 install: travis_wait

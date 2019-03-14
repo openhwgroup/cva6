@@ -14,7 +14,7 @@
 //
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 
 module tlb_emul #(
   parameter TlbRandHitRate = 10 //in percent

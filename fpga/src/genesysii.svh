@@ -13,12 +13,16 @@
 
 `define GENESYSII
 
-`define PITON_FPGA_SYNTH
 `define ARIANE_DATA_WIDTH 64
 
 // Instantiate protocl checker
 // `define PROTOCOL_CHECKER
 
-// Use OpenPiton Caches
+// Set if used in OpenPiton
 `define PITON_ARIANE
-`define AXI64_CACHE_PORTS
+
+// write-back cache
+// `define WB_DCACHE
+
+// write-through cache
+`define WT_DCACHE

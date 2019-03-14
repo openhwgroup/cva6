@@ -10,7 +10,7 @@
 //
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 13.09.2018
-// Description: Memory arrays, arbiter and tag comparison for serpent dcache.
+// Description: Memory arrays, arbiter and tag comparison for wb dcache.
 //
 //
 // Notes: 1) all ports can trigger a readout of all ways, and the way where the tag hits is selected
@@ -26,9 +26,9 @@
 //           low prio ports (rd_prio_i[port_nr] = '1b0)
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 
-module serpent_dcache_mem #(
+module wt_dcache_mem #(
     parameter bit          Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
     parameter int unsigned NumPorts           = 3
 ) (
@@ -235,10 +235,10 @@ module serpent_dcache_mem #(
 
     if (Axi64BitCompliant) begin
         assign wr_cl_off     = (wr_cl_nc_i) ? '0 : wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
-    end else begin  
+    end else begin
         assign wr_cl_off     = wr_cl_off_i[DCACHE_OFFSET_WIDTH-1:3];
     end
-      
+
     assign rdata         = (wr_cl_vld_i)  ? wr_cl_data_i[wr_cl_off*64 +: 64] :
                                             rdata_cl[rd_hit_idx];
 
@@ -262,7 +262,7 @@ module serpent_dcache_mem #(
             // Data RAM
             sram #(
                 .DATA_WIDTH ( ariane_pkg::DCACHE_SET_ASSOC * 64 ),
-                .NUM_WORDS  ( serpent_cache_pkg::DCACHE_NUM_WORDS    )
+                .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS    )
             ) i_data_sram (
                 .clk_i      ( clk_i               ),
                 .rst_ni     ( rst_ni              ),
@@ -284,7 +284,7 @@ module serpent_dcache_mem #(
             sram #(
                 // tag + valid bit
                 .DATA_WIDTH ( ariane_pkg::DCACHE_TAG_WIDTH + 1 ),
-                .NUM_WORDS  ( serpent_cache_pkg::DCACHE_NUM_WORDS   )
+                .NUM_WORDS  ( wt_cache_pkg::DCACHE_NUM_WORDS   )
             ) i_tag_sram (
                 .clk_i     ( clk_i               ),
                 .rst_ni    ( rst_ni              ),
@@ -335,8 +335,8 @@ module serpent_dcache_mem #(
             else $fatal(1,"[l1 dcache] wbuffer_hit_oh signal must be hot1");
 
     // this is only used for verification!
-    logic                                    vld_mirror[serpent_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
-    logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] tag_mirror[serpent_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
+    logic                                    vld_mirror[wt_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
+    logic [ariane_pkg::DCACHE_TAG_WIDTH-1:0] tag_mirror[wt_cache_pkg::DCACHE_NUM_WORDS-1:0][ariane_pkg::DCACHE_SET_ASSOC-1:0];
     logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
@@ -376,4 +376,4 @@ module serpent_dcache_mem #(
 `endif
 //pragma translate_on
 
-endmodule // serpent_dcache_mem
+endmodule // wt_dcache_mem
