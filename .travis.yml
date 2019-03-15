@@ -81,33 +81,33 @@ jobs:
         - ci/install-dtc.sh
         - ci/install-spike.sh
     - stage: test
-      name: run riscv benchmarks (WB Cache)
+      name: run riscv benchmarks (Write-Back Cache)
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-benchmarks-verilator defines=WB_DCACHE
     # rv64ui-p-* tests
     - stage: test
-      name: run asm tests1
+      name: run asm tests1 (Write-Back Cache)
       script:
-        - ci/build-riscv-tests.sh (WB Cache)
+        - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests1-verilator defines=WB_DCACHE
     # rv64ui-v-* tests
     - stage: test
-      name: run asm tests2
+      name: run asm tests2 (Write-Back Cache)
       script:
-        - ci/build-riscv-tests.sh (WB Cache)
+        - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator defines=WB_DCACHE
     # rv64um-*-* tests
     - stage: test
-      name: run mul tests
+      name: run mul tests (Write-Back Cache)
       script:
-        - ci/build-riscv-tests.sh (WB Cache)
+        - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-mul-verilator defines=WB_DCACHE
     # amo tests
     - stage: test
-      name: run amo tests
+      name: run amo tests (Write-Back Cache)
       script:
-        - ci/build-riscv-tests.sh (WB Cache)
+        - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-amo-verilator defines=WB_DCACHE
     - stage: test
       name: run torture
@@ -118,19 +118,19 @@ jobs:
         - make torture-rtest-verilator
 
     - stage: test
-      name: run riscv benchmarks (WT Cache)
+      name: run riscv benchmarks (Write-through Cache)
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-benchmarks-verilator  defines=WT_DCACHE
     # rv64ui-p-* tests
     - stage: test
-      name: run asm tests1 (WT Cache)
+      name: run asm tests1 (Write-through Cache)
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests1-verilator  defines=WT_DCACHE
     # rv64ui-v-* tests
     - stage: test
-      name: run asm tests2 (WT Cache)
+      name: run asm tests2 (Write-through Cache)
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests2-verilator  defines=WT_DCACHE
@@ -141,7 +141,7 @@ jobs:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-amo-verilator defines=WT_DCACHE
     - stage: test
-      name: run torture (WT Cache)
+      name: run torture (Write-through Cache)
       script:
         - ci/get-torture.sh
         - make clean
