@@ -25,9 +25,9 @@
 //
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 
-module serpent_icache  #(
+module wt_icache  #(
     parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId             = 0,                // ID to be used for read transactions
     parameter bit                         Axi64BitCompliant  = 1'b0,             // set this to 1 when using in conjunction with 64bit AXI bus adapter
     parameter logic [63:0]                CachedAddrBeg      = 64'h00_8000_0000, // begin of cached region
@@ -530,8 +530,8 @@ module serpent_icache  #(
          else $fatal(1,"[l1 icache] cl_hit signal must be hot1");
 
     // this is only used for verification!
-    logic                                    vld_mirror[serpent_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];        
-    logic [ariane_pkg::ICACHE_TAG_WIDTH-1:0] tag_mirror[serpent_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];        
+    logic                                    vld_mirror[wt_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
+    logic [ariane_pkg::ICACHE_TAG_WIDTH-1:0] tag_mirror[wt_cache_pkg::ICACHE_NUM_WORDS-1:0][ariane_pkg::ICACHE_SET_ASSOC-1:0];
     logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] tag_write_duplicate_test;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_mirror
@@ -543,19 +543,19 @@ module serpent_icache  #(
                 if(vld_req[i] & vld_we) begin
                     vld_mirror[vld_addr][i] <= vld_wdata[i];
                     tag_mirror[vld_addr][i] <= cl_tag_q;
-                end 
-            end       
+                end
+            end
         end
     end
 
     generate
         for (genvar i = 0; i < ICACHE_SET_ASSOC; i++) begin
             assign tag_write_duplicate_test[i] = (tag_mirror[vld_addr][i] == cl_tag_q) & vld_mirror[vld_addr][i] & (|vld_wdata);
-        end 
+        end
     endgenerate
 
     tag_write_duplicate: assert property (
-        @(posedge clk_i) disable iff (~rst_ni) |vld_req |-> vld_we |-> ~(|tag_write_duplicate_test))     
+        @(posedge clk_i) disable iff (~rst_ni) |vld_req |-> vld_we |-> ~(|tag_write_duplicate_test))
             else $fatal(1,"[l1 icache] cannot allocate a CL that is already present in the cache");
 
 
@@ -567,4 +567,4 @@ module serpent_icache  #(
 `endif
 //pragma translate_on
 
-endmodule // serpent_icache
+endmodule // wt_icache

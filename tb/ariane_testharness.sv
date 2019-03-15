@@ -637,12 +637,10 @@ module ariane_testharness #(
     ariane_axi::resp_t   axi_ariane_resp;
 
     ariane #(
-`ifdef PITON_ARIANE
         .AxiIdWidth    ( ariane_axi::IdWidth                             ),
         .SwapEndianess ( 0                                               ),
-        .CachedAddrEnd ( (ariane_soc::DRAMBase + ariane_soc::DRAMLength) ),
-`endif
         .CachedAddrBeg ( ariane_soc::DRAMBase                            ),
+        .CachedAddrEnd ( (ariane_soc::DRAMBase + ariane_soc::DRAMLength) ),
         .DmBaseAddress ( ariane_soc::DebugBase                           )
     ) i_ariane (
         .clk_i                ( clk_i               ),

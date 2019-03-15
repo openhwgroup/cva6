@@ -24,7 +24,7 @@
 `include "tb.svh"
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 import tb_pkg::*;
 
 module tb;
@@ -199,7 +199,7 @@ module tb;
 // MUT
 ///////////////////////////////////////////////////////////////////////////////
 
-  serpent_dcache  #(
+  wt_dcache  #(
     .CachedAddrBeg ( CachedAddrBeg ),
     .CachedAddrEnd ( CachedAddrEnd )
   ) i_dut (
@@ -226,12 +226,12 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 
   // get actual paddr from read controllers
-  assign act_paddr[0] = {i_dut.genblk1[0].i_serpent_dcache_ctrl.address_tag_d,
-                         i_dut.genblk1[0].i_serpent_dcache_ctrl.address_idx_q,
-                         i_dut.genblk1[0].i_serpent_dcache_ctrl.address_off_q};
-  assign act_paddr[1] = {i_dut.genblk1[1].i_serpent_dcache_ctrl.address_tag_d,
-                         i_dut.genblk1[1].i_serpent_dcache_ctrl.address_idx_q,
-                         i_dut.genblk1[1].i_serpent_dcache_ctrl.address_off_q};
+  assign act_paddr[0] = {i_dut.genblk1[0].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.genblk1[0].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.genblk1[0].i_wt_dcache_ctrl.address_off_q};
+  assign act_paddr[1] = {i_dut.genblk1[1].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.genblk1[1].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.genblk1[1].i_wt_dcache_ctrl.address_off_q};
 
   // generate fifo queues for expected responses
   generate
@@ -356,9 +356,9 @@ module tb;
   assign write_be    = req_ports_i[2].data_be;
 
   // generate write buffer commit signals based on internal eviction status
-  assign commit_be    = i_dut.i_serpent_dcache_wbuffer.wr_data_be_o;
-  assign commit_paddr = i_dut.i_serpent_dcache_wbuffer.wr_paddr;
-  assign commit_en    = i_dut.i_serpent_dcache_wbuffer.evict;
+  assign commit_be    = i_dut.i_wt_dcache_wbuffer.wr_data_be_o;
+  assign commit_paddr = i_dut.i_wt_dcache_wbuffer.wr_paddr;
+  assign commit_en    = i_dut.i_wt_dcache_wbuffer.evict;
 
   // TODO: implement AMO agent
   assign amo_req_i.req       = '0;

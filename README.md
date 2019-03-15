@@ -220,23 +220,16 @@ You can read or write device memory by using:
 
 ### Preliminary Support for OpenPiton Cache System
 
-Ariane has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/serpent_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
+Ariane has preliminary support for the OpenPiton distributed cache system from Princeton University. To this end, a different L1 cache subsystem (`src/cache_subsystem/wt_cache_subsystem.sv`) has been developed that follows a write-through protocol and that has support for cache invalidations and atomics.
 
-The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the README in that repository to see how to use Ariane in the OpenPiton setting.
+The corresponding integration patches will be released on [OpenPiton GitHub repository](https://github.com/PrincetonUniversity/openpiton). Check the `README` in that repository to see how to use Ariane in the OpenPiton setting.
 
-To activate the different cache system, compile your code with the macro `PITON_ARIANE`.
-
-> For testing purposes, this L1 cache subsystem also supports AXI memory plugs in order to verify it within the Ariane CI environment. In order to use this feature, the macro `AXI64_CACHE_PORTS` has to be defined. Note however, that atomics are not supported in this configuration.
-
-> Note that OpenPiton support is currently WIP, and although simple C programs run on one or several OpenPiton tiles, advanced features such as cache coherency are not fully verified yet.
-
-Also, we are working on SMP Linux support on that platform - stay tuned!
+To activate the different cache system, compile your code with the macro `WT_DCACHE` (set by default).
 
 ## Planned Improvements
 
 Check-out the issue tab which also loosely tracks planned improvements.
 
-> Atomics are implemented for a single core environment. They will semantically fail in a multi-core setup (unless you are using the serpent flavor of Ariane in combination with the OpenPiton cache subsystem, see previous section).
 
 ## Going Beyond
 

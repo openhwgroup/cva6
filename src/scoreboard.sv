@@ -62,7 +62,7 @@ module scoreboard #(
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
     input logic [NR_WB_PORTS-1:0][63:0]               wbdata_i,    // write data in
     input exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)
-    input logic [NR_WB_PORTS-1:0]                     wb_valid_i   // data in is valid
+    input logic [NR_WB_PORTS-1:0]                     wt_valid_i   // data in is valid
 );
     localparam int unsigned BITS_ENTRIES      = $clog2(NR_ENTRIES);
 
@@ -128,7 +128,7 @@ module scoreboard #(
         for (int unsigned i = 0; i < NR_WB_PORTS; i++) begin
             // check if this instruction was issued (e.g.: it could happen after a flush that there is still
             // something in the pipeline e.g. an incomplete memory operation)
-            if (wb_valid_i[i] && mem_n[trans_id_i[i]].issued) begin
+            if (wt_valid_i[i] && mem_n[trans_id_i[i]].issued) begin
                 mem_n[trans_id_i[i]].sbe.valid  = 1'b1;
                 mem_n[trans_id_i[i]].sbe.result = wbdata_i[i];
                 // save the target address of a branch (needed for debug in commit stage)
@@ -238,22 +238,22 @@ module scoreboard #(
         // provide a direct combinational path from WB a.k.a forwarding
         // make sure that we are not forwarding a result that got an exception
         for (int unsigned j = 0; j < NR_WB_PORTS; j++) begin
-            if (mem_q[trans_id_i[j]].sbe.rd == rs1_i && wb_valid_i[j] && ~ex_i[j].valid
+            if (mem_q[trans_id_i[j]].sbe.rd == rs1_i && wt_valid_i[j] && ~ex_i[j].valid
                && (is_rd_fpr(mem_q[trans_id_i[j]].sbe.op) == is_rs1_fpr(issue_instr_o.op))) begin
                 rs1_o = wbdata_i[j];
-                rs1_valid_o = wb_valid_i[j];
+                rs1_valid_o = wt_valid_i[j];
                 break;
             end
-            if (mem_q[trans_id_i[j]].sbe.rd == rs2_i && wb_valid_i[j] && ~ex_i[j].valid
+            if (mem_q[trans_id_i[j]].sbe.rd == rs2_i && wt_valid_i[j] && ~ex_i[j].valid
                && (is_rd_fpr(mem_q[trans_id_i[j]].sbe.op) == is_rs2_fpr(issue_instr_o.op))) begin
                 rs2_o = wbdata_i[j];
-                rs2_valid_o = wb_valid_i[j];
+                rs2_valid_o = wt_valid_i[j];
                 break;
             end
-            if (mem_q[trans_id_i[j]].sbe.rd == rs3_i && wb_valid_i[j] && ~ex_i[j].valid
+            if (mem_q[trans_id_i[j]].sbe.rd == rs3_i && wt_valid_i[j] && ~ex_i[j].valid
                && (is_rd_fpr(mem_q[trans_id_i[j]].sbe.op) == is_imm_fpr(issue_instr_o.op))) begin
                 rs3_o = wbdata_i[j];
-                rs3_valid_o = wb_valid_i[j];
+                rs3_valid_o = wt_valid_i[j];
                 break;
             end
         end
@@ -309,7 +309,7 @@ module scoreboard #(
     for (genvar i = 0; i < NR_WB_PORTS; i++) begin
         for (genvar j = 0; j < NR_WB_PORTS; j++)  begin
             assert property (
-                @(posedge clk_i) wb_valid_i[i] && wb_valid_i[j] && (i != j) |-> (trans_id_i[i] != trans_id_i[j]))
+                @(posedge clk_i) wt_valid_i[i] && wt_valid_i[j] && (i != j) |-> (trans_id_i[i] != trans_id_i[j]))
                 else $error ("Two or more functional units are retiring instructions with the same transaction id!");
         end
     end

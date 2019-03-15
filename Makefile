@@ -21,7 +21,7 @@ verilator      ?= verilator
 # traget option
 target-options ?=
 # additional definess
-defines        ?=
+defines        ?= WT_DCACHE
 # test name for torture runs (binary name)
 test-location  ?= output/test
 # set to either nothing or -log
@@ -55,7 +55,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
 			  src/riscv-dbg/src/dm_pkg.sv                   \
 			  include/ariane_pkg.sv                         \
 			  include/std_cache_pkg.sv                      \
-			  include/serpent_cache_pkg.sv                  \
+			  include/wt_cache_pkg.sv                       \
 			  src/axi/src/axi_pkg.sv                        \
 			  src/register_interface/src/reg_intf.sv        \
 			  include/axi_intf.sv                           \

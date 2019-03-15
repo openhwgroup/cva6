@@ -22,7 +22,7 @@
 // (random offsets).
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 import tb_pkg::*;
 
 `include "tb.svh"
@@ -239,7 +239,7 @@ module tb;
 // MUT
 ///////////////////////////////////////////////////////////////////////////////
 
-  serpent_icache  #(
+  wt_icache  #(
     .CachedAddrBeg(CachedAddrBeg),
     .CachedAddrEnd(CachedAddrEnd)
     ) dut (
