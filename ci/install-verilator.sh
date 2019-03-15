@@ -9,11 +9,11 @@ fi
 
 if [ ! -e "$VERILATOR_ROOT/bin/verilator" ]; then
     echo "Installing Verilator"
-    rm verilator*.t*gz
+    rm -f verilator*.tgz
     wget https://www.veripool.org/ftp/verilator-4.008.tgz
-    tar xzf verilator*.t*gz
-    rm verilator*.t*gz
-    cd verilator-*
+    tar xzf verilator*.tgz
+    rm -f verilator*.tgz
+    cd verilator*
     mkdir -p $VERILATOR_ROOT
     # copy scripts
     autoconf && ./configure --prefix="$VERILATOR_ROOT" && make -j${NUM_JOBS}
