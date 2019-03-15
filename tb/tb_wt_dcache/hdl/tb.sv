@@ -24,7 +24,7 @@
 `include "tb.svh"
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 import tb_pkg::*;
 
 module tb;
@@ -50,6 +50,10 @@ module tb;
   parameter KillRate          = 5;
 
   parameter Verbose           = 0;
+
+  // number of vectors per test
+  parameter nReadVectors      = 20000;
+  parameter nWriteVectors     = 20000;
 
 ///////////////////////////////////////////////////////////////////////////////
 // MUT signal declarations
@@ -199,9 +203,10 @@ module tb;
 // MUT
 ///////////////////////////////////////////////////////////////////////////////
 
-  serpent_dcache  #(
-    .CachedAddrBeg ( CachedAddrBeg ),
-    .CachedAddrEnd ( CachedAddrEnd )
+  wt_dcache  #(
+    .CachedAddrBeg     ( CachedAddrBeg ),
+    .CachedAddrEnd     ( CachedAddrEnd ),
+    .Axi64BitCompliant ( 1'b1          )
   ) i_dut (
     .clk_i           ( clk_i           ),
     .rst_ni          ( rst_ni          ),
@@ -226,12 +231,12 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 
   // get actual paddr from read controllers
-  assign act_paddr[0] = {i_dut.genblk1[0].i_serpent_dcache_ctrl.address_tag_d,
-                         i_dut.genblk1[0].i_serpent_dcache_ctrl.address_idx_q,
-                         i_dut.genblk1[0].i_serpent_dcache_ctrl.address_off_q};
-  assign act_paddr[1] = {i_dut.genblk1[1].i_serpent_dcache_ctrl.address_tag_d,
-                         i_dut.genblk1[1].i_serpent_dcache_ctrl.address_idx_q,
-                         i_dut.genblk1[1].i_serpent_dcache_ctrl.address_off_q};
+  assign act_paddr[0] = {i_dut.genblk1[0].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.genblk1[0].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.genblk1[0].i_wt_dcache_ctrl.address_off_q};
+  assign act_paddr[1] = {i_dut.genblk1[1].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.genblk1[1].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.genblk1[1].i_wt_dcache_ctrl.address_off_q};
 
   // generate fifo queues for expected responses
   generate
@@ -356,9 +361,9 @@ module tb;
   assign write_be    = req_ports_i[2].data_be;
 
   // generate write buffer commit signals based on internal eviction status
-  assign commit_be    = i_dut.i_serpent_dcache_wbuffer.wr_data_be_o;
-  assign commit_paddr = i_dut.i_serpent_dcache_wbuffer.wr_paddr;
-  assign commit_en    = i_dut.i_serpent_dcache_wbuffer.evict;
+  assign commit_be    = i_dut.i_wt_dcache_wbuffer.wr_data_be_o;
+  assign commit_paddr = i_dut.i_wt_dcache_wbuffer.wr_paddr;
+  assign commit_en    = i_dut.i_wt_dcache_wbuffer.evict;
 
   // TODO: implement AMO agent
   assign amo_req_i.req       = '0;
@@ -425,7 +430,7 @@ module tb;
     enable_i     = 0;
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd50};
-    runSeq(10000);
+    runSeq(nReadVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -434,7 +439,7 @@ module tb;
     enable_i     = 0;
     seq_type     = '{default: LINEAR_SEQ};
     req_rate     = '{default: 7'd50};
-    runSeq(10000);
+    runSeq(nReadVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -443,7 +448,7 @@ module tb;
     enable_i     = 1;
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd50};
-    runSeq(10000);
+    runSeq(nReadVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -452,7 +457,7 @@ module tb;
     enable_i     = 1;
     seq_type     = '{default: LINEAR_SEQ};
     req_rate     = '{default: 7'd50};
-    runSeq(10000);
+    runSeq(nReadVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -463,7 +468,7 @@ module tb;
     mem_rand_en  = 1;
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd50};
-    runSeq(10000);
+    runSeq(nReadVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -474,7 +479,7 @@ module tb;
     mem_rand_en  = 1;
     seq_type     = '{default: LINEAR_SEQ};
     req_rate     = '{default: 7'd50};
-    runSeq(10000);
+    runSeq(nReadVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -486,7 +491,7 @@ module tb;
     inv_rand_en  = 1;
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd50};
-    runSeq(10000);
+    runSeq(nReadVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -498,7 +503,7 @@ module tb;
     inv_rand_en  = 0;
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd25};
-    runSeq(10000,10000);
+    runSeq(nReadVectors,nWriteVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -510,7 +515,7 @@ module tb;
     inv_rand_en  = 0;
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd25};
-    runSeq(10000,20000);// last sequence flag, terminates agents
+    runSeq(nReadVectors,2*nWriteVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -522,7 +527,7 @@ module tb;
     inv_rand_en  = 1;
     seq_type     = '{default: RANDOM_SEQ};
     req_rate     = '{default: 7'd25};
-    runSeq(10000,20000);
+    runSeq(nReadVectors,2*nWriteVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -534,7 +539,7 @@ module tb;
     inv_rand_en  = 0;
     seq_type     = '{LINEAR_SEQ, IDLE_SEQ, IDLE_SEQ};
     req_rate     = '{100, 0, 0};
-    runSeq(0,5000);
+    runSeq(0,nWriteVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -560,7 +565,7 @@ module tb;
     inv_rand_en  = 0;
     seq_type     = '{BURST_SEQ, RANDOM_SEQ, RANDOM_SEQ};
     req_rate     = '{75, 0, 0};
-    runSeq(0,5000,0);
+    runSeq(0,nWriteVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -572,7 +577,7 @@ module tb;
     inv_rand_en  = 1;
     seq_type     = '{BURST_SEQ, IDLE_SEQ, IDLE_SEQ};
     req_rate     = '{75, 0, 0};
-    runSeq(0,5000);
+    runSeq(0,nWriteVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -584,7 +589,7 @@ module tb;
     inv_rand_en  = 1;
     seq_type     = '{RANDOM_SEQ, RANDOM_SEQ, RANDOM_SEQ};
     req_rate     = '{default:25};
-    runSeq(5000,5000);
+    runSeq(nReadVectors,nWriteVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -596,7 +601,7 @@ module tb;
     inv_rand_en  = 0;
     seq_type     = '{WRAP_SEQ, IDLE_SEQ, WRAP_SEQ};
     req_rate     = '{100,0,20};
-    runSeq(5000,5000);
+    runSeq(nReadVectors,nWriteVectors);
     flushCache();
     memCheck();
     ///////////////////////////////////////////////
@@ -609,7 +614,7 @@ module tb;
     flush_rand_en = 1;
     seq_type      = '{RANDOM_SEQ, RANDOM_SEQ, RANDOM_SEQ};
     req_rate      = '{default:25};
-    runSeq(5000,5000,1);// last sequence flag, terminates agents
+    runSeq(nReadVectors,nWriteVectors,1);// last sequence flag, terminates agents
     flushCache();
     memCheck();
     ///////////////////////////////////////////////

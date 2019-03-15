@@ -13,9 +13,9 @@
 // Description: Instruction cache that is compatible with openpiton.
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 
-module serpent_dcache #(
+module wt_dcache #(
     parameter bit                         Axi64BitCompliant  = 1'b0,             // set this to 1 when using in conjunction with 64bit AXI bus adapter
     // ID to be used for read and AMO transactions.
     // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
@@ -109,11 +109,11 @@ module serpent_dcache #(
 // miss handling unit
 ///////////////////////////////////////////////////////
 
-    serpent_dcache_missunit #(
+    wt_dcache_missunit #(
         .Axi64BitCompliant ( Axi64BitCompliant ),
         .AmoTxId           ( RdAmoTxId         ),
         .NumPorts          ( NumPorts          )
-    ) i_serpent_dcache_missunit (
+    ) i_wt_dcache_missunit (
         .clk_i              ( clk_i              ),
         .rst_ni             ( rst_ni             ),
         .enable_i           ( enable_i           ),
@@ -169,11 +169,11 @@ module serpent_dcache #(
         // set these to high prio ports
         assign rd_prio[k] = 1'b1;
 
-        serpent_dcache_ctrl #(
+        wt_dcache_ctrl #(
                 .RdTxId        ( RdAmoTxId     ),
                 .CachedAddrBeg ( CachedAddrBeg ),
                 .CachedAddrEnd ( CachedAddrEnd )
-        ) i_serpent_dcache_ctrl (
+        ) i_wt_dcache_ctrl (
                 .clk_i           ( clk_i             ),
                 .rst_ni          ( rst_ni            ),
                 .cache_en_i      ( cache_en          ),
@@ -215,10 +215,10 @@ module serpent_dcache #(
     // set read port to low priority
     assign rd_prio[2] = 1'b0;
 
-    serpent_dcache_wbuffer #(
+    wt_dcache_wbuffer #(
             .CachedAddrBeg ( CachedAddrBeg ),
             .CachedAddrEnd ( CachedAddrEnd )
-    ) i_serpent_dcache_wbuffer (
+    ) i_wt_dcache_wbuffer (
             .clk_i           ( clk_i               ),
             .rst_ni          ( rst_ni              ),
             .empty_o         ( wbuffer_empty_o     ),
@@ -270,10 +270,10 @@ module serpent_dcache #(
 // memory arrays, arbitration and tag comparison
 ///////////////////////////////////////////////////////
 
-    serpent_dcache_mem #(
+    wt_dcache_mem #(
             .Axi64BitCompliant ( Axi64BitCompliant ),
             .NumPorts          ( NumPorts          )
-    ) i_serpent_dcache_mem (
+    ) i_wt_dcache_mem (
             .clk_i             ( clk_i              ),
             .rst_ni            ( rst_ni             ),
             // read ports
@@ -329,4 +329,4 @@ module serpent_dcache #(
 `endif
 //pragma translate_on
 
-endmodule // serpent_dcache
+endmodule // wt_dcache

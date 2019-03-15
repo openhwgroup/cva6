@@ -16,13 +16,11 @@
 // configuration in case Ariane is
 // instantiated in OpenPiton
 `ifdef PITON_ARIANE
-`ifndef AXI64_CACHE_PORTS
   `include "l15.tmp.h"
   `include "define.tmp.h"
 `endif
-`endif
 
-package serpent_cache_pkg;
+package wt_cache_pkg;
 
   // these parames need to coincide with the
   // L1.5 parameterization, do not change
@@ -359,4 +357,4 @@ package serpent_cache_pkg;
     return out;
   endfunction : paddrSizeAlign
 
-endpackage : serpent_cache_pkg
+endpackage

@@ -12,13 +12,6 @@
 // Date: 19.03.2017
 // Description: Ariane Top-level wrapper to break out SV structs to logic vectors.
 
-// default to AXI64 cache ports if not using the
-// serpent PULP extension
-`ifndef PITON_ARIANE
-`ifndef AXI64_CACHE_PORTS
-  `define AXI64_CACHE_PORTS
-`endif
-`endif
 
 module ariane_verilog_wrap #(
   parameter logic [63:0] DmBaseAddress = 64'h0,            // debug module base address
@@ -39,31 +32,31 @@ module ariane_verilog_wrap #(
   input                       time_irq_i,   // timer interrupt in (async)
   input                       debug_req_i,  // debug request (async)
 
-`ifdef AXI64_CACHE_PORTS
+`ifdef PITON_ARIANE
+  // L15 (memory side)
+  output [$size(wt_cache_pkg::l15_req_t)-1:0]  l15_req_o,
+  input  [$size(wt_cache_pkg::l15_rtrn_t)-1:0] l15_rtrn_i
+`else
   // AXI (memory side)
   output [$size(ariane_axi::req_t)-1:0]             axi_req_o,
   input  [$size(ariane_axi::resp_t)-1:0]            axi_resp_i
-`else
-  // L15 (memory side)
-  output [$size(serpent_cache_pkg::l15_req_t)-1:0]  l15_req_o,
-  input  [$size(serpent_cache_pkg::l15_rtrn_t)-1:0] l15_rtrn_i
 `endif
  );
 
 // assign bitvector to packed struct and vice versa
-`ifdef AXI64_CACHE_PORTS
+`ifdef PITON_ARIANE
+  // L15 (memory side)
+  wt_cache_pkg::l15_req_t  l15_req;
+  wt_cache_pkg::l15_rtrn_t l15_rtrn;
+
+  assign l15_req_o = l15_req;
+  assign l15_rtrn  = l15_rtrn_i;
+`else
   ariane_axi::req_t             axi_req;
   ariane_axi::resp_t            axi_resp;
 
   assign axi_req_o = axi_req;
   assign axi_resp  = axi_resp_i;
-`else
-  // L15 (memory side)
-  serpent_cache_pkg::l15_req_t  l15_req;
-  serpent_cache_pkg::l15_rtrn_t l15_rtrn;
-
-  assign l15_req_o = l15_req;
-  assign l15_rtrn  = l15_rtrn_i;
 `endif
 
 
@@ -76,7 +69,7 @@ module ariane_verilog_wrap #(
   // logic wake_up_d, wake_up_q;
   // logic rst_n;
 
-  // assign wake_up_d = wake_up_q || ((l15_rtrn.l15_returntype == serpent_cache_pkg::L15_INT_RET) && l15_rtrn.l15_val);
+  // assign wake_up_d = wake_up_q || ((l15_rtrn.l15_returntype == wt_cache_pkg::L15_INT_RET) && l15_rtrn.l15_val);
 
   // always_ff @(posedge clk_i or negedge reset_l) begin : p_regs
   //   if(~reset_l) begin
@@ -171,12 +164,12 @@ module ariane_verilog_wrap #(
     .ipi_i       ( ipi        ),
     .time_irq_i  ( time_irq   ),
     .debug_req_i ( debug_req  ),
-`ifdef AXI64_CACHE_PORTS
-    .axi_req_o   ( axi_req   ),
-    .axi_resp_i  ( axi_resp  )
-`else
+`ifdef PITON_ARIANE
     .l15_req_o   ( l15_req   ),
     .l15_rtrn_i  ( l15_rtrn  )
+`else
+    .axi_req_o   ( axi_req   ),
+    .axi_resp_i  ( axi_resp  )
 `endif
   );
 

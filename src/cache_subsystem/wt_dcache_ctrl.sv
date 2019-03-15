@@ -14,9 +14,9 @@
 
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 
-module serpent_dcache_ctrl #(
+module wt_dcache_ctrl #(
     parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId        = 1,                // ID to use for read transactions
     parameter logic [63:0]                CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
     parameter logic [63:0]                CachedAddrEnd = 64'h80_0000_0000  // end of cached region
@@ -271,4 +271,4 @@ end
 `endif
 //pragma translate_on
 
-endmodule // serpent_dcache_ctrl
+endmodule // wt_dcache_ctrl
