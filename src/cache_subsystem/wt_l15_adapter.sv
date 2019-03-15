@@ -49,10 +49,10 @@
 //
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 
-module serpent_l15_adapter #(
-  parameter bit          SwapEndianess = 1               
+module wt_l15_adapter #(
+  parameter bit          SwapEndianess = 1
 ) (
    input logic                  clk_i,
    input logic                  rst_ni,
@@ -390,4 +390,4 @@ fifo_v2 #(
 `endif
 //pragma translate_on
 
-endmodule // serpent_l15_adapter
+endmodule // wt_l15_adapter

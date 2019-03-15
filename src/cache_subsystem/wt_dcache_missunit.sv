@@ -10,14 +10,14 @@
 //
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 13.09.2018
-// Description: miss controller for serpent dcache. Note that the current assumption
+// Description: miss controller for wb dcache. Note that the current assumption
 // is that the port with the highest index issues writes instead of reads.
 
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 
-module serpent_dcache_missunit #(
+module wt_dcache_missunit #(
     parameter bit                         Axi64BitCompliant  = 1'b0, // set this to 1 when using in conjunction with 64bit AXI bus adapter
     parameter logic [CACHE_ID_WIDTH-1:0]  AmoTxId            = 1,    // TX id to be used for AMOs
     parameter int unsigned                NumPorts           = 3     // number of miss ports
@@ -116,7 +116,7 @@ module serpent_dcache_missunit #(
 
     assign cache_en_o      = enable_q;
     assign cnt_d           = (flush_en) ? cnt_q + 1 : '0;
-    assign flush_done      = (cnt_q == serpent_cache_pkg::DCACHE_NUM_WORDS-1);
+    assign flush_done      = (cnt_q == wt_cache_pkg::DCACHE_NUM_WORDS-1);
 
     assign miss_req_masked_d = ( lock_reqs  ) ? miss_req_masked_q      :
                                ( mask_reads ) ? miss_we_i & miss_req_i : miss_req_i;
@@ -216,7 +216,7 @@ module serpent_dcache_missunit #(
           assign amo_rtrn_mux = mem_rtrn_i.data[amo_req_i.operand_a[DCACHE_OFFSET_WIDTH-1:3]*64 +: 64];
       end
     endgenerate
-    
+
     // always sign extend 32bit values
     assign amo_resp_o.result = (amo_req_i.size==2'b10) ? {{32{amo_rtrn_mux[amo_req_i.operand_a[2]*32 + 31]}},
                                                               amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
@@ -231,7 +231,7 @@ module serpent_dcache_missunit #(
     assign mem_data_o.amo_op = (amo_sel) ? amo_req_i.amo_op    : AMO_NONE;
 
     assign tmp_paddr         = (amo_sel) ? amo_req_i.operand_a : miss_paddr_i[miss_port_idx];
-    assign mem_data_o.paddr  = serpent_cache_pkg::paddrSizeAlign(tmp_paddr, mem_data_o.size);
+    assign mem_data_o.paddr  = wt_cache_pkg::paddrSizeAlign(tmp_paddr, mem_data_o.size);
 
 ///////////////////////////////////////////////////////
 // responses from memory
@@ -510,4 +510,4 @@ end
 `endif
 //pragma translate_on
 
-endmodule // serpent_dcache_missunit
+endmodule // wt_dcache_missunit

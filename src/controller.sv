@@ -80,12 +80,12 @@ module controller (
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
-// this is not needed in the case since we 
+// this is not needed in the case since we
 // have a write-through cache in this case
-`ifndef PITON_ARIANE
+`ifndef WT_DCACHE
             flush_dcache           = 1'b1;
             fence_active_d         = 1'b1;
-`endif            
+`endif
         end
 
         // ---------------------------------
@@ -98,17 +98,17 @@ module controller (
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
             flush_icache_o         = 1'b1;
-// this is not needed in the case since we 
+// this is not needed in the case since we
 // have a write-through cache in this case
-`ifndef PITON_ARIANE
+`ifndef WT_DCACHE
             flush_dcache           = 1'b1;
             fence_active_d         = 1'b1;
 `endif
         end
 
-// this is not needed in the case since we 
+// this is not needed in the case since we
 // have a write-through cache in this case
-`ifndef PITON_ARIANE
+`ifndef WT_DCACHE
         // wait for the acknowledge here
         if (flush_dcache_ack_i && fence_active_q) begin
             fence_active_d = 1'b0;
@@ -171,7 +171,7 @@ module controller (
     // Registers
     // ----------------------
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
+        if (~rst_ni) begin
             fence_active_q <= 1'b0;
             flush_dcache_o <= 1'b0;
         end else begin
