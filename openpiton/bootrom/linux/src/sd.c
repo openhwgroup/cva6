@@ -24,7 +24,6 @@ int sd_copy(void *dst, uint32_t src_lba, uint32_t size)
     volatile uint64_t * p = (uint64_t *)dst;
     for (uint32_t blk = 0; blk < size; blk++) {
         if(blk % 100 == 0) {
-          old = (int)blk/0x100;
           print_uart("copying block ");
           print_uart_dec(blk, 1);
           print_uart(" of ");
