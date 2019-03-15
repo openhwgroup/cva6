@@ -55,6 +55,24 @@ void bin_to_hex(uint8_t inp, uint8_t res[2])
     return;
 }
 
+void print_uart_dec(uint32_t val, uint32_t digits)
+{
+    int i;
+    uint32_t k = 1000000000;
+    for (i = 9; i > -1; i--)
+    {
+        uint32_t cur = val / k;
+        val -= cur * k;
+        k /= 10;
+        if(cur || (i<digits)) {
+            digits = i;
+            uint8_t dec;
+            dec = bin_to_hex_table[cur & 0xf];
+            write_serial(dec);
+        }
+    }
+}
+
 void print_uart_int(uint32_t addr)
 {
     int i;
