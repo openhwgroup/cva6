@@ -19,6 +19,10 @@ package ariane_soc;
     localparam ParameterBitwidth = PLICIdWidth;
     localparam NrSlaves = 2; // actually masters, but slaves on the crossbar
 
+    // 4 is recommended by AXI standard, so lets stick to it, do not change
+    localparam IdWidth   = 4;
+    localparam IdWidthSlave = IdWidth + $clog2(NrSlaves);
+
     typedef enum int unsigned {
         DRAM     = 0,
         GPIO     = 1,

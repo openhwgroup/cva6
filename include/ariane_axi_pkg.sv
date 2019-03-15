@@ -20,17 +20,13 @@ package ariane_axi;
     // used in axi_adapter.sv
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } ad_req_t;
 
-    // 4 is recommended by AXI standard, so lets stick to it, do not change
-    localparam IdWidth   = 4;
-    localparam IdWidthSlave = IdWidth + $clog2(ariane_soc::NrSlaves);
-
     localparam UserWidth = 1;
     localparam AddrWidth = 64;
     localparam DataWidth = 64;
     localparam StrbWidth = DataWidth / 8;
 
-    typedef logic [IdWidth-1:0]   id_t;
-    typedef logic [IdWidth-1:0]   id_slv_t;
+    typedef logic [ariane_soc::IdWidth-1:0]      id_t;
+    typedef logic [ariane_soc::IdWidthSlave-1:0] id_slv_t;
     typedef logic [AddrWidth-1:0] addr_t;
     typedef logic [DataWidth-1:0] data_t;
     typedef logic [StrbWidth-1:0] strb_t;
