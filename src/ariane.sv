@@ -13,27 +13,18 @@
 // Description: Ariane Top-level module
 
 import ariane_pkg::*;
-//pragma translate_off
+// pragma translate_off
 `ifndef VERILATOR
 import instruction_tracer_pkg::*;
 `endif
-//pragma translate_on
+// pragma translate_on
 
-// default to AXI64 cache ports if not using the
-// serpent PULP extension
-`ifndef PITON_ARIANE
-`ifndef AXI64_CACHE_PORTS
-  `define AXI64_CACHE_PORTS
-`endif
-`endif
 
 module ariane #(
   parameter logic [63:0] DmBaseAddress = 64'h0,            // debug module base address
   parameter int unsigned AxiIdWidth    = 4,
-`ifdef PITON_ARIANE
   parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
   parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
-`endif
   parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000  // begin of cached region
 ) (
   input  logic                         clk_i,
@@ -48,14 +39,14 @@ module ariane #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
-`ifdef AXI64_CACHE_PORTS
+`ifdef PITON_ARIANE
+  // L15 (memory side)
+  output wt_cache_pkg::l15_req_t       l15_req_o,
+  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
+`else
   // memory side, AXI Master
   output ariane_axi::req_t             axi_req_o,
   input  ariane_axi::resp_t            axi_resp_i
-`else
-  // L15 (memory side)
-  output serpent_cache_pkg::l15_req_t  l15_req_o,
-  input  serpent_cache_pkg::l15_rtrn_t l15_rtrn_i
 `endif
 );
 
@@ -335,7 +326,7 @@ module ariane #(
     .trans_id_i                 ( {flu_trans_id_ex_id,  load_trans_id_ex_id,  store_trans_id_ex_id,   fpu_trans_id_ex_id }),
     .wbdata_i                   ( {flu_result_ex_id,    load_result_ex_id,    store_result_ex_id,       fpu_result_ex_id }),
     .ex_ex_i                    ( {flu_exception_ex_id, load_exception_ex_id, store_exception_ex_id, fpu_exception_ex_id }),
-    .wb_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id }),
+    .wt_valid_i                 ( {flu_valid_ex_id,     load_valid_ex_id,     store_valid_ex_id,         fpu_valid_ex_id }),
 
     .waddr_i                    ( waddr_commit_id              ),
     .wdata_i                    ( wdata_commit_id              ),
@@ -584,12 +575,10 @@ module ariane #(
   // Cache Subsystem
   // -------------------
 
-`ifdef PITON_ARIANE
+`ifdef WT_DCACHE
   // this is a cache subsystem that is compatible with OpenPiton
-  serpent_cache_subsystem #(
-`ifdef AXI64_CACHE_PORTS
+  wt_cache_subsystem #(
     .AxiIdWidth           ( AxiIdWidth    ),
-`endif
     .CachedAddrBeg        ( CachedAddrBeg ),
     .CachedAddrEnd        ( CachedAddrEnd ),
     .SwapEndianess        ( SwapEndianess )
@@ -618,13 +607,13 @@ module ariane #(
     .dcache_req_ports_o    ( dcache_req_ports_cache_ex   ),
     // write buffer status
     .wbuffer_empty_o       ( dcache_commit_wbuffer_empty ),
-`ifdef AXI64_CACHE_PORTS
+`ifdef PITON_ARIANE
+    .l15_req_o             ( l15_req_o                   ),
+    .l15_rtrn_i            ( l15_rtrn_i                  )
+`else
     // memory side
     .axi_req_o             ( axi_req_o                   ),
     .axi_resp_i            ( axi_resp_i                  )
-`else
-    .l15_req_o             ( l15_req_o                   ),
-    .l15_rtrn_i            ( l15_rtrn_i                  )
 `endif
   );
 `else

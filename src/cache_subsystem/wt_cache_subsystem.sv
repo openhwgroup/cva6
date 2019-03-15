@@ -14,17 +14,15 @@
 //              coherent memory system.
 //
 //              Define PITON_ARIANE if you want to use this cache.
-//              Define AXI64_CACHE_PORTS if you want to use this cache
-//              with a standard 64bit AXI interace instead of the openpiton
+//              Define WT_DCACHE if you want to use this cache
+//              with a standard 64 bit AXI interface instead of the OpenPiton
 //              L1.5 interface.
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 
-module serpent_cache_subsystem #(
-`ifdef AXI64_CACHE_PORTS
+module wt_cache_subsystem #(
   parameter int unsigned AxiIdWidth    = 10,
-`endif
   parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
   parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
   parameter bit          SwapEndianess = 0                 // swap endianess in l15 adapter
@@ -55,36 +53,34 @@ module serpent_cache_subsystem #(
   output dcache_req_o_t   [2:0]          dcache_req_ports_o,     // to/from LSU
   // writebuffer status
   output logic                           wbuffer_empty_o,
-`ifdef AXI64_CACHE_PORTS
-  // memory side
-  output ariane_axi::req_t               axi_req_o,
-  input  ariane_axi::resp_t              axi_resp_i
-`else
+`ifdef PITON_ARIANE
   // L15 (memory side)
   output l15_req_t                       l15_req_o,
   input  l15_rtrn_t                      l15_rtrn_i
+`else
+  // memory side
+  output ariane_axi::req_t               axi_req_o,
+  input  ariane_axi::resp_t              axi_resp_i
 `endif
   // TODO: interrupt interface
 );
 
 logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
-serpent_cache_pkg::icache_req_t  icache_adapter;
-serpent_cache_pkg::icache_rtrn_t adapter_icache;
+wt_cache_pkg::icache_req_t  icache_adapter;
+wt_cache_pkg::icache_rtrn_t adapter_icache;
 
 
 logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
-serpent_cache_pkg::dcache_req_t  dcache_adapter;
-serpent_cache_pkg::dcache_rtrn_t adapter_dcache;
+wt_cache_pkg::dcache_req_t  dcache_adapter;
+wt_cache_pkg::dcache_rtrn_t adapter_dcache;
 
-serpent_icache #(
-`ifdef AXI64_CACHE_PORTS
+wt_icache #(
     .Axi64BitCompliant  ( 1'b1          ),
-`endif
     // use ID 0 for icache reads
     .RdTxId             ( 0             ),
     .CachedAddrBeg      ( CachedAddrBeg ),
     .CachedAddrEnd      ( CachedAddrEnd )
-  ) i_serpent_icache (
+  ) i_wt_icache (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
     .flush_i            ( icache_flush_i          ),
@@ -106,16 +102,14 @@ serpent_icache #(
 // Ports 0/1 for PTW and LD unit are read only.
 // they have equal prio and are RR arbited
 // Port 2 is write only and goes into the merging write buffer
-serpent_dcache #(
-`ifdef AXI64_CACHE_PORTS
+wt_dcache #(
     .Axi64BitCompliant  ( 1'b1          ),
-`endif
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
     .RdAmoTxId       ( 1             ),
     .CachedAddrBeg   ( CachedAddrBeg ),
     .CachedAddrEnd   ( CachedAddrEnd )
-  ) i_serpent_dcache (
+  ) i_wt_dcache (
     .clk_i           ( clk_i                   ),
     .rst_ni          ( rst_ni                  ),
     .enable_i        ( dcache_enable_i         ),
@@ -140,27 +134,8 @@ serpent_dcache #(
 // L15 cache interface (derived from OpenSPARC CCX).
 ///////////////////////////////////////////////////////
 
-`ifdef AXI64_CACHE_PORTS
-  serpent_axi_adapter #(
-      .AxiIdWidth   ( AxiIdWidth )
-    ) i_adapter (
-      .clk_i              ( clk_i                   ),
-      .rst_ni             ( rst_ni                  ),
-      .icache_data_req_i  ( icache_adapter_data_req ),
-      .icache_data_ack_o  ( adapter_icache_data_ack ),
-      .icache_data_i      ( icache_adapter          ),
-      .icache_rtrn_vld_o  ( adapter_icache_rtrn_vld ),
-      .icache_rtrn_o      ( adapter_icache          ),
-      .dcache_data_req_i  ( dcache_adapter_data_req ),
-      .dcache_data_ack_o  ( adapter_dcache_data_ack ),
-      .dcache_data_i      ( dcache_adapter          ),
-      .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
-      .dcache_rtrn_o      ( adapter_dcache          ),
-      .axi_req_o          ( axi_req_o               ),
-      .axi_resp_i         ( axi_resp_i              )
-    );
-`else
-  serpent_l15_adapter #(
+`ifdef PITON_ARIANE
+  wt_l15_adapter #(
       .SwapEndianess   ( SwapEndianess )
     ) i_adapter (
       .clk_i              ( clk_i                   ),
@@ -177,6 +152,25 @@ serpent_dcache #(
       .dcache_rtrn_o      ( adapter_dcache          ),
       .l15_req_o          ( l15_req_o               ),
       .l15_rtrn_i         ( l15_rtrn_i              )
+    );
+`else
+  wt_axi_adapter #(
+      .AxiIdWidth   ( AxiIdWidth )
+    ) i_adapter (
+      .clk_i              ( clk_i                   ),
+      .rst_ni             ( rst_ni                  ),
+      .icache_data_req_i  ( icache_adapter_data_req ),
+      .icache_data_ack_o  ( adapter_icache_data_ack ),
+      .icache_data_i      ( icache_adapter          ),
+      .icache_rtrn_vld_o  ( adapter_icache_rtrn_vld ),
+      .icache_rtrn_o      ( adapter_icache          ),
+      .dcache_data_req_i  ( dcache_adapter_data_req ),
+      .dcache_data_ack_o  ( adapter_dcache_data_ack ),
+      .dcache_data_i      ( dcache_adapter          ),
+      .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
+      .dcache_rtrn_o      ( adapter_dcache          ),
+      .axi_req_o          ( axi_req_o               ),
+      .axi_resp_i         ( axi_resp_i              )
     );
 `endif
 
@@ -207,4 +201,4 @@ serpent_dcache #(
 //pragma translate_on
 
 
-endmodule // serpent_cache_subsystem
+endmodule // wt_cache_subsystem

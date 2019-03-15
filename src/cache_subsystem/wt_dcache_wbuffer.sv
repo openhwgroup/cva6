@@ -10,7 +10,7 @@
 //
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 13.09.2018
-// Description: coalescing write buffer for serpent dcache
+// Description: coalescing write buffer for wb dcache
 //
 // A couple of notes:
 //
@@ -49,9 +49,9 @@
 //    word has been evicted from the write buffer.
 
 import ariane_pkg::*;
-import serpent_cache_pkg::*;
+import wt_cache_pkg::*;
 
-module serpent_dcache_wbuffer #(
+module wt_dcache_wbuffer #(
     parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
     parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000  // end of cached region
 ) (
@@ -550,4 +550,4 @@ end
 `endif
 //pragma translate_on
 
-endmodule // serpent_dcache_wbuffer
+endmodule // wt_dcache_wbuffer

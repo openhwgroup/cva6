@@ -60,7 +60,7 @@ module issue_stage #(
     input branchpredict_t                            resolved_branch_i,
     input logic [NR_WB_PORTS-1:0][63:0]              wbdata_i,
     input exception_t [NR_WB_PORTS-1:0]              ex_ex_i, // exception from execute stage
-    input logic [NR_WB_PORTS-1:0]                    wb_valid_i,
+    input logic [NR_WB_PORTS-1:0]                    wt_valid_i,
 
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]          waddr_i,
