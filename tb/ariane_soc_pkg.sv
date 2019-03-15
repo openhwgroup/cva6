@@ -18,6 +18,7 @@ package ariane_soc;
     localparam PLICIdWidth = 3;
     localparam ParameterBitwidth = PLICIdWidth;
     localparam NrSlaves = 2; // actually masters, but slaves on the crossbar
+    localparam IdWidthSlave = ariane_axi::IdWidth + $clog2(NrSlaves);
 
     typedef enum int unsigned {
         DRAM     = 0,
