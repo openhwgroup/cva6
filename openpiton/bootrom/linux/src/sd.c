@@ -22,7 +22,6 @@ int sd_copy(void *dst, uint32_t src_lba, uint32_t size)
 
     uint64_t * addr = (uint64_t *)raw_addr;
     volatile uint64_t * p = (uint64_t *)dst;
-    int old = -1;
     for (uint32_t blk = 0; blk < size; blk++) {
         if(blk % 100 == 0) {
           old = (int)blk/0x100;
