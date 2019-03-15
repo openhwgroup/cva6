@@ -163,7 +163,7 @@ To get started, connect the micro USB port that is labeled with JTAG to your mac
 
 Once attached to your system, the FTDI chip should be listed when you type `lsusb`:
 
-
+>```
 Bus 005 Device 019: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
 ```
 
