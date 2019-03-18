@@ -75,7 +75,11 @@ wt_cache_pkg::dcache_req_t  dcache_adapter;
 wt_cache_pkg::dcache_rtrn_t adapter_dcache;
 
 wt_icache #(
+`ifdef PITON_ARIANE
+    .Axi64BitCompliant  ( 1'b0          ),
+`else
     .Axi64BitCompliant  ( 1'b1          ),
+`endif
     // use ID 0 for icache reads
     .RdTxId             ( 0             ),
     .CachedAddrBeg      ( CachedAddrBeg ),
@@ -103,7 +107,11 @@ wt_icache #(
 // they have equal prio and are RR arbited
 // Port 2 is write only and goes into the merging write buffer
 wt_dcache #(
-    .Axi64BitCompliant  ( 1'b1          ),
+`ifdef PITON_ARIANE
+  	.Axi64BitCompliant  ( 1'b0          ),
+`else
+  	.Axi64BitCompliant  ( 1'b1          ),
+`endif  
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
     .RdAmoTxId       ( 1             ),
