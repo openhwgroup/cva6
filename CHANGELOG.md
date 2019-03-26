@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- Fix bug in wt_axi_adapter (only appeared when dcache lines were wider than icache lines)
+
+
 ### 4.1.2
 
 - Update FPU headers (license)
