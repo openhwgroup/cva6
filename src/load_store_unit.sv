@@ -435,13 +435,13 @@ module lsu_bypass (
         end
 
         if (pop_st_i && pop_ld_i)
-            mem_n = '{default: 0};
+            mem_n = '0;
 
         if (flush_i) begin
             status_cnt = '0;
             write_pointer = '0;
             read_pointer = '0;
-            mem_n = '{default: 0};
+            mem_n = '0;
         end
         // default assignments
         read_pointer_n  = read_pointer;
@@ -461,7 +461,7 @@ module lsu_bypass (
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            mem_q           <= '{default: 0};
+            mem_q           <= '0;
             status_cnt_q    <= '0;
             write_pointer_q <= '0;
             read_pointer_q  <= '0;
