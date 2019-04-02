@@ -12,11 +12,11 @@
 // Description: Contains SoC information as constants
 package ariane_soc;
     // M-Mode Hart, S-Mode Hart
-    localparam NumTargets = 2;
-    // Uart, SPI, Ethernet
-    localparam NumSources = 3;
-    localparam PLICIdWidth = 3;
-    localparam ParameterBitwidth = PLICIdWidth;
+    localparam int unsigned NumTargets = 2;
+    // Uart, SPI, Ethernet, reserved
+    localparam int unsigned NumSources = 30;
+    localparam int unsigned MaxPriority = 7;
+
     localparam NrSlaves = 2; // actually masters, but slaves on the crossbar
 
     // 4 is recommended by AXI standard, so lets stick to it, do not change
