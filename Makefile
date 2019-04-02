@@ -58,6 +58,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
 			  include/wt_cache_pkg.sv                       \
 			  src/axi/src/axi_pkg.sv                        \
 			  src/register_interface/src/reg_intf.sv        \
+			  src/register_interface/src/reg_intf_pkg.sv    \
 			  include/axi_intf.sv                           \
 			  tb/ariane_soc_pkg.sv                          \
 			  include/ariane_axi_pkg.sv                     \
@@ -112,10 +113,13 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         $(wildcard src/clint/*.sv)                                             \
         $(wildcard fpga/src/axi2apb/src/*.sv)                                  \
         $(wildcard fpga/src/axi_slice/src/*.sv)                                \
-        $(wildcard src/plic/*.sv)                                              \
         $(wildcard src/axi_node/src/*.sv)                                      \
         $(wildcard src/axi_riscv_atomics/src/*.sv)                             \
         $(wildcard src/axi_mem_if/src/*.sv)                                    \
+        src/rv_plic/rtl/rv_plic_target.sv                                      \
+        src/rv_plic/rtl/rv_plic_gateway.sv                                     \
+        src/rv_plic/rtl/plic_regmap.sv                                         \
+        src/rv_plic/rtl/plic_top.sv                                            \
         src/riscv-dbg/src/dmi_cdc.sv                                           \
         src/riscv-dbg/src/dmi_jtag.sv                                          \
         src/riscv-dbg/src/dmi_jtag_tap.sv                                      \
