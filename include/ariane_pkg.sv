@@ -28,6 +28,31 @@ package ariane_pkg;
     // ---------------
     // Global Config
     // ---------------
+    // This is the new user config interface system. If you need to parameterize something
+    // within Ariane add a field here and assign a default value to the config. Please make
+    // sure to add a propper parameter check to the `check_cfg` function.
+    typedef struct packed {
+      int                     NrNonIdempotentRules;  // Number of non idempotent rules
+      logic [2**16-1:0][63:0] NonIdempotentAddrBase; // base which needs to match
+      logic [2**16-1:0][63:0] NonIdempotentAddrMaks; // bit mask which bits to consider when matching the rule
+    } ariane_cfg_t;
+
+    localparam ariane_cfg_t ArianeDefaultConfig = '{
+      NrNonIdempotentRules: 2,
+      NonIdempotentAddrBase: {64'b0, 64'b0},
+      NonIdempotentAddrMaks: {64'b0, 64'b0}
+    };
+
+    // Function being called to check parameters
+    function automatic void check_cfg (ariane_cfg_t Cfg);
+      // pragma translate_off
+      `ifndef VERILATOR
+        assert(Cfg.NrNonIdempotentRules <= 16);
+      `endif
+      // pragma translate_on
+    endfunction
+
+    // TODO: Slowly move those parameters to the new system.
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard

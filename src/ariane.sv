@@ -25,7 +25,8 @@ module ariane #(
   parameter int unsigned AxiIdWidth    = 4,
   parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
   parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
-  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000  // begin of cached region
+  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
+  parameter ariane_pkg::ariane_cfg_t Cfg = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -339,7 +340,9 @@ module ariane #(
   // ---------
   // EX
   // ---------
-  ex_stage ex_stage_i (
+  ex_stage #(
+    .Cfg ( Cfg )
+  ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
     .flush_i                ( flush_ctrl_ex               ),
@@ -649,6 +652,15 @@ module ariane #(
     .axi_resp_i            ( axi_resp_i                  )
   );
 `endif
+
+  // -------------------
+  // Parameter Check
+  // -------------------
+  // pragma translate_off
+  `ifndef VERILATOR
+  initial ariane_pkg::check_cfg(Cfg);
+  `endif
+  // pragma translate_on
 
   // -------------------
   // Instruction Tracer
