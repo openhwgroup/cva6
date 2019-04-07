@@ -267,6 +267,19 @@ package ariane_pkg;
 
     localparam EXC_OFF_RST      = 8'h80;
 
+    localparam SupervisorIrq = 1;
+    localparam MachineIrq = 0;
+
+    // All information needed to determine whether we need to associate an interrupt
+    // with the corresponding instruction or not.
+    typedef struct packed {
+      logic [63:0] mie;
+      logic [63:0] mip;
+      logic [63:0] mideleg;
+      logic        sie;
+      logic        global_enable;
+    } irq_ctrl_t;
+
     // ---------------
     // Cache config
     // ---------------

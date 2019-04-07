@@ -171,6 +171,7 @@ module ariane #(
   logic                     tvm_csr_id;
   logic                     tw_csr_id;
   logic                     tsr_csr_id;
+  irq_ctrl_t                irq_ctrl_csr_id;
   logic                     dcache_en_csr_nbdcache;
   logic                     csr_write_fflags_commit_cs;
   logic                     icache_en_csr;
@@ -277,6 +278,8 @@ module ariane #(
     .tvm_i                      ( tvm_csr_id                 ),
     .tw_i                       ( tw_csr_id                  ),
     .tsr_i                      ( tsr_csr_id                 ),
+    .irq_i                      ( irq_i                      ),
+    .irq_ctrl_i                 ( irq_ctrl_csr_id            ),
     .*
   );
 
@@ -489,6 +492,7 @@ module ariane #(
     .fflags_o               ( fflags_csr_commit             ),
     .frm_o                  ( frm_csr_id_issue_ex           ),
     .fprec_o                ( fprec_csr_ex                  ),
+    .irq_ctrl_o             ( irq_ctrl_csr_id               ),
     .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
     .en_translation_o       ( enable_translation_csr_ex     ),
     .en_ld_st_translation_o ( en_ld_st_translation_csr_ex   ),
