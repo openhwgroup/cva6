@@ -28,6 +28,8 @@ module decoder (
     input  logic [31:0]        instruction_i,           // instruction from IF
     input  branchpredict_sbe_t branch_predict_i,
     input  exception_t         ex_i,                    // if an exception occured in if
+    input  logic [1:0]         irq_i,                   // external interrupt
+    input  irq_ctrl_t          irq_ctrl_i,              // interrupt control and status information from CSRs
     // From CSR
     input  riscv::priv_lvl_t   priv_lvl_i,              // current privilege level
     input  logic               debug_mode_i,            // we are in debug mode
@@ -1048,9 +1050,14 @@ module decoder (
     // ---------------------
     // Exception handling
     // ---------------------
+    logic [63:0] interrupt_cause;
+
+    // this instruction has already executed if the exception is valid
+    assign instruction_o.valid   = instruction_o.ex.valid;
+
     always_comb begin : exception_handling
+        interrupt_cause       = '0;
         instruction_o.ex      = ex_i;
-        instruction_o.valid   = ex_i.valid;
         // look if we didn't already get an exception in any previous
         // stage - we should not overwrite it as we retain order regarding the exception
         if (~ex_i.valid) begin
@@ -1062,14 +1069,11 @@ module decoder (
             // check here if we decoded an invalid instruction or if the compressed decoder already decoded
             // a invalid instruction
             if (illegal_instr || is_illegal_i) begin
-                instruction_o.valid    = 1'b1;
                 instruction_o.ex.valid = 1'b1;
                 // we decoded an illegal exception here
                 instruction_o.ex.cause = riscv::ILLEGAL_INSTR;
             // we got an ecall, set the correct cause depending on the current privilege level
             end else if (ecall) begin
-                // this instruction has already executed
-                instruction_o.valid    = 1'b1;
                 // this exception is valid
                 instruction_o.ex.valid = 1'b1;
                 // depending on the privilege mode, set the appropriate cause
@@ -1080,12 +1084,58 @@ module decoder (
                     default:; // this should not happen
                 endcase
             end else if (ebreak) begin
-                // this instruction has already executed
-                instruction_o.valid    = 1'b1;
                 // this exception is valid
                 instruction_o.ex.valid = 1'b1;
                 // set breakpoint cause
                 instruction_o.ex.cause = riscv::BREAKPOINT;
+            end
+            // -----------------
+            // Interrupt Control
+            // -----------------
+            // we decode an interrupt the same as an exception, hence it will be taken if the instruction did not
+            // throw any previous exception.
+            // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
+            // for two privilege levels: Supervisor and Machine Mode
+            // Supervisor Timer Interrupt
+            if (irq_ctrl_i.mie[riscv::S_TIMER_INTERRUPT[5:0]] && irq_ctrl_i.mip[riscv::S_TIMER_INTERRUPT[5:0]]) begin
+                interrupt_cause = riscv::S_TIMER_INTERRUPT;
+            end
+            // Supervisor Software Interrupt
+            if (irq_ctrl_i.mie[riscv::S_SW_INTERRUPT[5:0]] && irq_ctrl_i.mip[riscv::S_SW_INTERRUPT[5:0]]) begin
+                interrupt_cause = riscv::S_SW_INTERRUPT;
+            end
+            // Supervisor External Interrupt
+            // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
+            // used to generate external interrupts to the supervisor
+            if (irq_ctrl_i.mie[riscv::S_EXT_INTERRUPT[5:0]] && (irq_ctrl_i.mip[riscv::S_EXT_INTERRUPT[5:0]] | irq_i[ariane_pkg::SupervisorIrq])) begin
+                interrupt_cause = riscv::S_EXT_INTERRUPT;
+            end
+            // Machine Timer Interrupt
+            if (irq_ctrl_i.mip[riscv::M_TIMER_INTERRUPT[5:0]] && irq_ctrl_i.mie[riscv::M_TIMER_INTERRUPT[5:0]]) begin
+                interrupt_cause = riscv::M_TIMER_INTERRUPT;
+            end
+            // Machine Mode Software Interrupt
+            if (irq_ctrl_i.mip[riscv::M_SW_INTERRUPT[5:0]] && irq_ctrl_i.mie[riscv::M_SW_INTERRUPT[5:0]]) begin
+                interrupt_cause = riscv::M_SW_INTERRUPT;
+            end
+            // Machine Mode External Interrupt
+            if (irq_ctrl_i.mip[riscv::M_EXT_INTERRUPT[5:0]] && irq_ctrl_i.mie[riscv::M_EXT_INTERRUPT[5:0]]) begin
+                interrupt_cause = riscv::M_EXT_INTERRUPT;
+            end
+
+            if (interrupt_cause[63] && irq_ctrl_i.global_enable) begin
+                // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
+                // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
+                // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
+                if (irq_ctrl_i.mideleg[interrupt_cause[5:0]]) begin
+                    if ((irq_ctrl_i.sie && priv_lvl_i == riscv::PRIV_LVL_S) || priv_lvl_i == riscv::PRIV_LVL_U) begin
+                        instruction_o.ex.valid = 1'b1;
+                        instruction_o.ex.cause = interrupt_cause;
+                    end
+                end else begin
+                    instruction_o.ex.valid = 1'b1;
+                    instruction_o.ex.cause = interrupt_cause;
+                end
             end
         end
     end

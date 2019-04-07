@@ -32,7 +32,7 @@ module csr_regfile #(
     input  logic  [63:0]          boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
     input  logic  [63:0]          hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
     // we are taking an exception
-    input exception_t             ex_i,                       // We've got an exception from the commit stage, take its
+    input exception_t             ex_i,                       // We've got an exception from the commit stage, take it
 
     input  fu_op                  csr_op_i,                   // Operation to perform on the CSR file
     input  logic  [11:0]          csr_addr_i,                 // Address of the register to read/write
@@ -54,6 +54,8 @@ module csr_regfile #(
     output logic [4:0]            fflags_o,                   // Floating-Point Accured Exceptions
     output logic [2:0]            frm_o,                      // Floating-Point Dynamic Rounding Mode
     output logic [6:0]            fprec_o,                    // Floating-Point Precision Control
+    // Decoder
+    output irq_ctrl_t             irq_ctrl_o,                 // interrupt management to id stage
     // MMU
     output logic                  en_translation_o,           // enable VA translation
     output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
@@ -83,7 +85,7 @@ module csr_regfile #(
     output logic                  perf_we_o
 );
     // internal signal to keep track of access exceptions
-    logic        read_access_exception, update_access_exception;
+    logic        read_access_exception, update_access_exception, privilege_violation;
     logic        csr_we, csr_read;
     logic [63:0] csr_wdata, csr_rdata;
     riscv::priv_lvl_t   trap_to_priv_lvl;
@@ -785,96 +787,50 @@ module csr_regfile #(
                 csr_read = 1'b0;
             end
         endcase
-        // if we are retiring an exception do not return from exception
-        if (ex_i.valid) begin
-            mret = 1'b0;
-            sret = 1'b0;
-            dret = 1'b0;
+        // if we are violating our privilges do not update the architectural state
+        if (privilege_violation) begin
+            csr_we = 1'b0;
+            csr_read = 1'b0;
         end
     end
 
-    logic interrupt_global_enable;
-    // --------------------------------------
-    // Exception Control & Interrupt Control
-    // --------------------------------------
-    always_comb begin : exception_ctrl
-        automatic logic [63:0] interrupt_cause;
-        interrupt_cause = '0;
-        // wait for interrupt register
-        wfi_d = wfi_q;
+    assign irq_ctrl_o.mie = mie_q;
+    assign irq_ctrl_o.mip = mip_q;
+    assign irq_ctrl_o.sie = mstatus_q.sie;
+    assign irq_ctrl_o.mideleg = mideleg_q;
+    assign irq_ctrl_o.global_enable = (~debug_mode_q)
+                                    // interrupts are enabled during single step or we are not stepping
+                                    & (~dcsr_q.step | dcsr_q.stepie)
+                                    & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
+                                    | (priv_lvl_o != riscv::PRIV_LVL_M));
 
-        csr_exception_o = {
-            64'b0, 64'b0, 1'b0
-        };
-        // -----------------
-        // Interrupt Control
-        // -----------------
-        // TODO(zarubaf): Move interrupt handling to commit stage.
-        // we decode an interrupt the same as an exception, hence it will be taken if the instruction did not
-        // throw any previous exception.
-        // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
-        // for two privilege levels: Supervisor and Machine Mode
-        // Supervisor Timer Interrupt
-        if (mie_q[riscv::S_TIMER_INTERRUPT[5:0]] && mip_q[riscv::S_TIMER_INTERRUPT[5:0]])
-            interrupt_cause = riscv::S_TIMER_INTERRUPT;
-        // Supervisor Software Interrupt
-        if (mie_q[riscv::S_SW_INTERRUPT[5:0]] && mip_q[riscv::S_SW_INTERRUPT[5:0]])
-            interrupt_cause = riscv::S_SW_INTERRUPT;
-        // Supervisor External Interrupt
-        // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
-        // used to generate external interrupts to the supervisor
-        if (mie_q[riscv::S_EXT_INTERRUPT[5:0]] && (mip_q[riscv::S_EXT_INTERRUPT[5:0]] | irq_i[1]))
-            interrupt_cause = riscv::S_EXT_INTERRUPT;
-        // Machine Timer Interrupt
-        if (mip_q[riscv::M_TIMER_INTERRUPT[5:0]] && mie_q[riscv::M_TIMER_INTERRUPT[5:0]])
-            interrupt_cause = riscv::M_TIMER_INTERRUPT;
-        // Machine Mode Software Interrupt
-        if (mip_q[riscv::M_SW_INTERRUPT[5:0]] && mie_q[riscv::M_SW_INTERRUPT[5:0]])
-            interrupt_cause = riscv::M_SW_INTERRUPT;
-        // Machine Mode External Interrupt
-        if (mip_q[riscv::M_EXT_INTERRUPT[5:0]] && mie_q[riscv::M_EXT_INTERRUPT[5:0]])
-            interrupt_cause = riscv::M_EXT_INTERRUPT;
-
-        // An interrupt i will be taken if bit i is set in both mip and mie, and if interrupts are globally enabled.
-        // By default, M-mode interrupts are globally enabled if the hart’s current privilege mode  is less
-        // than M, or if the current privilege mode is M and the MIE bit in the mstatus register is set.
-        // All interrupts are masked in debug mode
-        interrupt_global_enable = (~debug_mode_q)
-                                // interrupts are enabled during single step or we are not stepping
-                                & (~dcsr_q.step | dcsr_q.stepie)
-                                & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
-                                | (priv_lvl_o != riscv::PRIV_LVL_M));
-
-        if (interrupt_cause[63] && interrupt_global_enable) begin
-            // we can set the cause here
-            csr_exception_o.cause = interrupt_cause;
-            // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
-            // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
-            // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
-            if (mideleg_q[interrupt_cause[5:0]]) begin
-                if ((mstatus_q.sie && priv_lvl_o == riscv::PRIV_LVL_S) || priv_lvl_o == riscv::PRIV_LVL_U)
-                    csr_exception_o.valid = 1'b1;
-            end else begin
-                csr_exception_o.valid = 1'b1;
-            end
-        end
-
+    always_comb begin : privilege_check
         // -----------------
         // Privilege Check
         // -----------------
+        privilege_violation = 1'b0;
         // if we are reading or writing, check for the correct privilege level this has
         // precedence over interrupts
-        if (csr_we || csr_read) begin
+        if (csr_op_i inside {CSR_WRITE, CSR_SET, CSR_CLEAR, CSR_READ}) begin
             if ((riscv::priv_lvl_t'(priv_lvl_o & csr_addr.csr_decode.priv_lvl) != csr_addr.csr_decode.priv_lvl)) begin
-                csr_exception_o.cause = riscv::ILLEGAL_INSTR;
-                csr_exception_o.valid = 1'b1;
+                privilege_violation = 1'b1;
             end
             // check access to debug mode only CSRs
             if (csr_addr_i[11:4] == 8'h7b && !debug_mode_q) begin
-                csr_exception_o.cause = riscv::ILLEGAL_INSTR;
-                csr_exception_o.valid = 1'b1;
+                privilege_violation = 1'b1;
             end
         end
+    end
+    // ----------------------
+    // CSR Exception Control
+    // ----------------------
+    always_comb begin : exception_ctrl
+        csr_exception_o = {
+            64'b0, 64'b0, 1'b0
+        };
+        // ----------------------------------
+        // Illegal Access (decode exception)
+        // ----------------------------------
         // we got an exception in one of the processes above
         // throw an illegal instruction exception
         if (update_access_exception || read_access_exception) begin
@@ -883,9 +839,19 @@ module csr_regfile #(
             // this spares the extra wiring from commit to CSR and back to commit
             csr_exception_o.valid = 1'b1;
         end
-        // -------------------
-        // Wait for Interrupt
-        // -------------------
+
+        if (privilege_violation) begin
+          csr_exception_o.cause = riscv::ILLEGAL_INSTR;
+          csr_exception_o.valid = 1'b1;
+        end
+    end
+
+    // -------------------
+    // Wait for Interrupt
+    // -------------------
+    always_comb begin : wfi_ctrl
+        // wait for interrupt register
+        wfi_d = wfi_q;
         // if there is any interrupt pending un-stall the core
         // also un-stall if we want to enter debug mode
         if (|mip_q || debug_req_i || irq_i[1]) begin
@@ -913,8 +879,8 @@ module csr_regfile #(
         // check if we are in vectored mode, if yes then do BASE + 4 * cause
         // we are imposing an additional alignment-constraint of 64 * 4 bytes since
         // we want to spare the costly addition
-        if ((mtvec_q[0] || stvec_q[0]) && csr_exception_o.cause[63]) begin
-            trap_vector_base_o[7:2] = csr_exception_o.cause[5:0];
+        if ((mtvec_q[0] || stvec_q[0]) && ex_i.cause[63]) begin
+            trap_vector_base_o[7:2] = ex_i.cause[5:0];
         end
 
         epc_o = mepc_q;
