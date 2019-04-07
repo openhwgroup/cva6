@@ -219,10 +219,6 @@ module ariane #(
   amo_resp_t                amo_resp;
   logic                     sb_full;
 
-  logic debug_req;
-  // Disable debug during AMO commit
-  assign debug_req = debug_req_i & ~amo_valid_commit;
-
   // ----------------
   // DCache <-> *
   // ----------------
@@ -260,8 +256,8 @@ module ariane #(
   // ID
   // ---------
   id_stage id_stage_i (
+    .debug_req_i,
     .flush_i                    ( flush_ctrl_if              ),
-
     .fetch_entry_i              ( fetch_entry_if_id          ),
     .fetch_entry_valid_i        ( fetch_valid_if_id          ),
     .decoded_instr_ack_o        ( decode_ack_id_if           ),
@@ -435,8 +431,6 @@ module ariane #(
     .flush_dcache_i         ( dcache_flush_ctrl_cache       ),
     .exception_o            ( ex_commit                     ),
     .dirty_fp_state_o       ( dirty_fp_state                ),
-    .debug_mode_i           ( debug_mode                    ),
-    .debug_req_i            ( debug_req                     ),
     .single_step_i          ( single_step_csr_commit        ),
     .commit_instr_i         ( commit_instr_id_commit        ),
     .commit_ack_o           ( commit_ack                    ),
@@ -511,7 +505,7 @@ module ariane #(
     .perf_data_o            ( data_csr_perf                 ),
     .perf_data_i            ( data_perf_csr                 ),
     .perf_we_o              ( we_csr_perf                   ),
-    .debug_req_i            ( debug_req                     ),
+    .debug_req_i,
     .ipi_i,
     .irq_i,
     .time_irq_i,

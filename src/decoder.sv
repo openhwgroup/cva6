@@ -21,6 +21,7 @@
 import ariane_pkg::*;
 
 module decoder (
+    input  logic               debug_req_i,             // external debug request
     input  logic [63:0]        pc_i,                    // PC from IF
     input  logic               is_compressed_i,         // is a compressed instruction
     input  logic [15:0]        compressed_instr_i,      // compressed form of instruction
@@ -1137,6 +1138,12 @@ module decoder (
                     instruction_o.ex.cause = interrupt_cause;
                 end
             end
+        end
+
+        // a debug request has precendece over everything else
+        if (debug_req_i && !debug_mode_i) begin
+          instruction_o.ex.valid = 1'b1;
+          instruction_o.ex.cause = riscv::DEBUG_REQUEST;
         end
     end
 endmodule
