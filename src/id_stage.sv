@@ -34,7 +34,8 @@ module id_stage (
     input  riscv::priv_lvl_t      priv_lvl_i,          // current privilege level
     input  riscv::xs_t            fs_i,                // floating point extension status
     input  logic [2:0]            frm_i,               // floating-point dynamic rounding mode
-
+    input  logic [1:0]            irq_i,
+    input  irq_ctrl_t             irq_ctrl_i,
     input  logic                  debug_mode_i,        // we are in debug mode
     input  logic                  tvm_i,
     input  logic                  tw_i,
