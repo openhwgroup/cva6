@@ -15,7 +15,9 @@
 
 import ariane_pkg::*;
 
-module ex_stage (
+module ex_stage #(
+    parameter ariane_pkg::ariane_cfg_t Cfg = ariane_pkg::ArianeDefaultConfig
+) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,
