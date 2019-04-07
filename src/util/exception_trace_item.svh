@@ -44,6 +44,7 @@ class exception_trace_item;
             riscv::M_TIMER_INTERRUPT:     this.cause_s = "Machine Timer Interrupt";
             riscv::S_EXT_INTERRUPT:       this.cause_s = "Supervisor External Interrupt";
             riscv::M_EXT_INTERRUPT:       this.cause_s = "Machine External Interrupt";
+            riscv::DEBUG_REQUEST:         this.cause_s = "Request Debug Mode";
             default: this.cause_s = "Interrupt";
         endcase
 

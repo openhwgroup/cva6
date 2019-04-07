@@ -20,6 +20,7 @@ module id_stage (
     input  logic                  rst_ni,    // Asynchronous reset active low
 
     input  logic                  flush_i,
+    input  logic                  debug_req_i,
     // from IF
     input  frontend_fetch_t       fetch_entry_i,
     input  logic                  fetch_entry_valid_i,
@@ -85,6 +86,7 @@ module id_stage (
     // 3. Decode and emit instruction to issue stage
     // ---------------------------------------------------------
     decoder decoder_i (
+        .debug_req_i,
         .pc_i                    ( fetch_entry.address           ),
         .is_compressed_i         ( is_compressed                 ),
         .compressed_instr_i      ( fetch_entry.instruction[15:0] ),
