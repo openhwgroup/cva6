@@ -290,6 +290,7 @@ package riscv;
     localparam logic [63:0] INSTR_PAGE_FAULT      = 12; // Instruction page fault
     localparam logic [63:0] LOAD_PAGE_FAULT       = 13; // Load page fault
     localparam logic [63:0] STORE_PAGE_FAULT      = 15; // Store page fault
+    localparam logic [63:0] DEBUG_REQUEST         = 24; // Debug request
 
     localparam int unsigned IRQ_S_SOFT  = 1;
     localparam int unsigned IRQ_M_SOFT  = 3;
