@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix bug in wt_axi_adapter (only appeared when dcache lines were wider than icache lines)
 - Fix potentially long timing path in `axi_lite_interface`
 - Fix VCS elab warning in `load_store_unit`
+- Bump `common_cells` to v1.12.0
 
 ### 4.1.2
 
