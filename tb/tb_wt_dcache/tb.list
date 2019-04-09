@@ -12,6 +12,7 @@
 ../../src/common_cells/src/fifo_v2.sv
 ../../src/common_cells/src/fifo_v3.sv
 ../../src/common_cells/src/lzc.sv
+../../src/common_cells/src/rr_arb_tree.sv
 ../../src/common_cells/src/rrarbiter.sv
 ../../src/util/sram.sv
 hdl/tb_pkg.sv

@@ -1,13 +1,13 @@
 package:
   name: ariane
-  authors: [ "Florian Zaruba <zarubaf@iis.ee.ethz.ch>" ]
+  authors: [ "Florian Zaruba <zarubaf@iis.ee.ethz.ch>" "Michael Schaffner <schaffner@iis.ee.ethz.ch>"]
 
 dependencies:
   axi:                { git: "https://github.com/pulp-platform/axi.git",                version: 0.4.5 }
   axi_mem_if:         { git: "https://github.com/pulp-platform/axi_mem_if.git",         version: 0.2.0 }
   axi_node:           { git: "https://github.com/pulp-platform/axi_node.git",           version: 1.1.1 }
   tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1 }
-  common_cells:       { git: "https://github.com/pulp-platform/common_cells.git",       version: 1.8.0 }
+  common_cells:       { git: "https://github.com/pulp-platform/common_cells.git",       version: 1.12.0 }
   fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       version: 0.3.2 }
 
 sources:
