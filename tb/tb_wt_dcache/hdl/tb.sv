@@ -231,12 +231,12 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 
   // get actual paddr from read controllers
-  assign act_paddr[0] = {i_dut.genblk1[0].i_wt_dcache_ctrl.address_tag_d,
-                         i_dut.genblk1[0].i_wt_dcache_ctrl.address_idx_q,
-                         i_dut.genblk1[0].i_wt_dcache_ctrl.address_off_q};
-  assign act_paddr[1] = {i_dut.genblk1[1].i_wt_dcache_ctrl.address_tag_d,
-                         i_dut.genblk1[1].i_wt_dcache_ctrl.address_idx_q,
-                         i_dut.genblk1[1].i_wt_dcache_ctrl.address_off_q};
+  assign act_paddr[0] = {i_dut.gen_rd_ports[0].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.gen_rd_ports[0].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.gen_rd_ports[0].i_wt_dcache_ctrl.address_off_q};
+  assign act_paddr[1] = {i_dut.gen_rd_ports[1].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.gen_rd_ports[1].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.gen_rd_ports[1].i_wt_dcache_ctrl.address_off_q};
 
   // generate fifo queues for expected responses
   generate
