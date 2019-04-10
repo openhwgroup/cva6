@@ -52,18 +52,17 @@ endif
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv                          \
-			  src/riscv-dbg/src/dm_pkg.sv                   \
-			  include/ariane_pkg.sv                         \
-			  include/std_cache_pkg.sv                      \
-			  include/wt_cache_pkg.sv                       \
-			  src/axi/src/axi_pkg.sv                        \
-			  src/register_interface/src/reg_intf.sv        \
-			  src/register_interface/src/reg_intf_pkg.sv    \
-			  include/axi_intf.sv                           \
-			  tb/ariane_soc_pkg.sv                          \
-			  include/ariane_axi_pkg.sv                     \
-			  src/fpu/src/fpnew_pkg.sv                      \
-			  src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+              src/riscv-dbg/src/dm_pkg.sv                   \
+              include/ariane_pkg.sv                         \
+              include/std_cache_pkg.sv                      \
+              include/wt_cache_pkg.sv                       \
+              src/axi/src/axi_pkg.sv                        \
+              src/register_interface/src/reg_intf.sv        \
+              include/axi_intf.sv                           \
+              tb/ariane_soc_pkg.sv                          \
+              include/ariane_axi_pkg.sv                     \
+              src/fpu/src/fpnew_pkg.sv                      \
+              src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
@@ -368,7 +367,7 @@ verilate_command := $(verilator)                                                
                     $(list_incdir) --top-module ariane_testharness                                     \
                     --Mdir $(ver-library) -O3                                                          \
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                          \
-					          tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
+					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
