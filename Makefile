@@ -52,17 +52,17 @@ endif
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv                          \
-			  src/riscv-dbg/src/dm_pkg.sv                   \
-			  include/ariane_pkg.sv                         \
-			  include/std_cache_pkg.sv                      \
-			  include/wt_cache_pkg.sv                       \
-			  src/axi/src/axi_pkg.sv                        \
-			  src/register_interface/src/reg_intf.sv        \
-			  include/axi_intf.sv                           \
-			  tb/ariane_soc_pkg.sv                          \
-			  include/ariane_axi_pkg.sv                     \
-			  src/fpu/src/fpnew_pkg.sv                      \
-			  src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+              src/riscv-dbg/src/dm_pkg.sv                   \
+              include/ariane_pkg.sv                         \
+              include/std_cache_pkg.sv                      \
+              include/wt_cache_pkg.sv                       \
+              src/axi/src/axi_pkg.sv                        \
+              src/register_interface/src/reg_intf.sv        \
+              include/axi_intf.sv                           \
+              tb/ariane_soc_pkg.sv                          \
+              include/ariane_axi_pkg.sv                     \
+              src/fpu/src/fpnew_pkg.sv                      \
+              src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
@@ -154,14 +154,14 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/fifo_v1.sv                                        \
         src/common_cells/src/lzc.sv                                            \
         src/common_cells/src/rr_arb_tree.sv                                    \
-		src/common_cells/src/rrarbiter.sv                                      \
+        src/common_cells/src/rrarbiter.sv                                      \
         src/common_cells/src/stream_delay.sv                                   \
         src/common_cells/src/lfsr_8bit.sv                                      \
         src/common_cells/src/lfsr_16bit.sv                                     \
         src/common_cells/src/counter.sv                                        \
         src/common_cells/src/shift_reg.sv                                      \
         src/tech_cells_generic/src/pulp_clock_gating.sv                        \
-		src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
+        src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
         tb/ariane_testharness.sv                                               \
         tb/ariane_peripherals.sv                                               \
@@ -364,7 +364,7 @@ verilate_command := $(verilator)                                                
                     $(list_incdir) --top-module ariane_testharness                                     \
                     --Mdir $(ver-library) -O3                                                          \
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                          \
-					          tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
+					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
