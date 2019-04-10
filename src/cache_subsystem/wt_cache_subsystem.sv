@@ -65,16 +65,16 @@ module wt_cache_subsystem #(
   // TODO: interrupt interface
 );
 
-logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
-wt_cache_pkg::icache_req_t  icache_adapter;
-wt_cache_pkg::icache_rtrn_t adapter_icache;
+  logic icache_adapter_data_req, adapter_icache_data_ack, adapter_icache_rtrn_vld;
+  wt_cache_pkg::icache_req_t  icache_adapter;
+  wt_cache_pkg::icache_rtrn_t adapter_icache;
 
 
-logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
-wt_cache_pkg::dcache_req_t  dcache_adapter;
-wt_cache_pkg::dcache_rtrn_t adapter_dcache;
+  logic dcache_adapter_data_req, adapter_dcache_data_ack, adapter_dcache_rtrn_vld;
+  wt_cache_pkg::dcache_req_t  dcache_adapter;
+  wt_cache_pkg::dcache_rtrn_t adapter_dcache;
 
-wt_icache #(
+  wt_icache #(
 `ifdef PITON_ARIANE
     .Axi64BitCompliant  ( 1'b0          ),
 `else
@@ -102,16 +102,16 @@ wt_icache #(
   );
 
 
-// Note:
-// Ports 0/1 for PTW and LD unit are read only.
-// they have equal prio and are RR arbited
-// Port 2 is write only and goes into the merging write buffer
-wt_dcache #(
+  // Note:
+  // Ports 0/1 for PTW and LD unit are read only.
+  // they have equal prio and are RR arbited
+  // Port 2 is write only and goes into the merging write buffer
+  wt_dcache #(
 `ifdef PITON_ARIANE
   	.Axi64BitCompliant  ( 1'b0          ),
 `else
   	.Axi64BitCompliant  ( 1'b1          ),
-`endif  
+`endif
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
     .RdAmoTxId       ( 1             ),
@@ -144,42 +144,42 @@ wt_dcache #(
 
 `ifdef PITON_ARIANE
   wt_l15_adapter #(
-      .SwapEndianess   ( SwapEndianess )
-    ) i_adapter (
-      .clk_i              ( clk_i                   ),
-      .rst_ni             ( rst_ni                  ),
-      .icache_data_req_i  ( icache_adapter_data_req ),
-      .icache_data_ack_o  ( adapter_icache_data_ack ),
-      .icache_data_i      ( icache_adapter          ),
-      .icache_rtrn_vld_o  ( adapter_icache_rtrn_vld ),
-      .icache_rtrn_o      ( adapter_icache          ),
-      .dcache_data_req_i  ( dcache_adapter_data_req ),
-      .dcache_data_ack_o  ( adapter_dcache_data_ack ),
-      .dcache_data_i      ( dcache_adapter          ),
-      .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
-      .dcache_rtrn_o      ( adapter_dcache          ),
-      .l15_req_o          ( l15_req_o               ),
-      .l15_rtrn_i         ( l15_rtrn_i              )
-    );
+    .SwapEndianess   ( SwapEndianess )
+  ) i_adapter (
+    .clk_i              ( clk_i                   ),
+    .rst_ni             ( rst_ni                  ),
+    .icache_data_req_i  ( icache_adapter_data_req ),
+    .icache_data_ack_o  ( adapter_icache_data_ack ),
+    .icache_data_i      ( icache_adapter          ),
+    .icache_rtrn_vld_o  ( adapter_icache_rtrn_vld ),
+    .icache_rtrn_o      ( adapter_icache          ),
+    .dcache_data_req_i  ( dcache_adapter_data_req ),
+    .dcache_data_ack_o  ( adapter_dcache_data_ack ),
+    .dcache_data_i      ( dcache_adapter          ),
+    .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
+    .dcache_rtrn_o      ( adapter_dcache          ),
+    .l15_req_o          ( l15_req_o               ),
+    .l15_rtrn_i         ( l15_rtrn_i              )
+  );
 `else
   wt_axi_adapter #(
-      .AxiIdWidth   ( AxiIdWidth )
-    ) i_adapter (
-      .clk_i              ( clk_i                   ),
-      .rst_ni             ( rst_ni                  ),
-      .icache_data_req_i  ( icache_adapter_data_req ),
-      .icache_data_ack_o  ( adapter_icache_data_ack ),
-      .icache_data_i      ( icache_adapter          ),
-      .icache_rtrn_vld_o  ( adapter_icache_rtrn_vld ),
-      .icache_rtrn_o      ( adapter_icache          ),
-      .dcache_data_req_i  ( dcache_adapter_data_req ),
-      .dcache_data_ack_o  ( adapter_dcache_data_ack ),
-      .dcache_data_i      ( dcache_adapter          ),
-      .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
-      .dcache_rtrn_o      ( adapter_dcache          ),
-      .axi_req_o          ( axi_req_o               ),
-      .axi_resp_i         ( axi_resp_i              )
-    );
+    .AxiIdWidth   ( AxiIdWidth )
+  ) i_adapter (
+    .clk_i              ( clk_i                   ),
+    .rst_ni             ( rst_ni                  ),
+    .icache_data_req_i  ( icache_adapter_data_req ),
+    .icache_data_ack_o  ( adapter_icache_data_ack ),
+    .icache_data_i      ( icache_adapter          ),
+    .icache_rtrn_vld_o  ( adapter_icache_rtrn_vld ),
+    .icache_rtrn_o      ( adapter_icache          ),
+    .dcache_data_req_i  ( dcache_adapter_data_req ),
+    .dcache_data_ack_o  ( adapter_dcache_data_ack ),
+    .dcache_data_i      ( dcache_adapter          ),
+    .dcache_rtrn_vld_o  ( adapter_dcache_rtrn_vld ),
+    .dcache_rtrn_o      ( adapter_dcache          ),
+    .axi_req_o          ( axi_req_o               ),
+    .axi_resp_i         ( axi_resp_i              )
+  );
 `endif
 
 ///////////////////////////////////////////////////////
@@ -189,19 +189,19 @@ wt_dcache #(
 //pragma translate_off
 `ifndef VERILATOR
   a_invalid_instruction_fetch: assert property (
-    @(posedge clk_i) disable iff (~rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
+    @(posedge clk_i) disable iff (!rst_ni) icache_dreq_o.valid |-> (|icache_dreq_o.data) !== 1'hX)
   else $warning(1,"[l1 dcache] reading invalid instructions: vaddr=%08X, data=%08X",
     icache_dreq_o.vaddr, icache_dreq_o.data);
 
   a_invalid_write_data: assert property (
-    @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)
+    @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_i[2].data_req |-> |dcache_req_ports_i[2].data_be |-> (|dcache_req_ports_i[2].data_wdata) !== 1'hX)
   else $warning(1,"[l1 dcache] writing invalid data: paddr=%016X, be=%02X, data=%016X",
     {dcache_req_ports_i[2].address_tag, dcache_req_ports_i[2].address_index}, dcache_req_ports_i[2].data_be, dcache_req_ports_i[2].data_wdata);
 
 
-  for(genvar j=0; j<2; j++) begin : g_assertion
+  for (genvar j=0; j<2; j++) begin : gen_assertion
     a_invalid_read_data: assert property (
-      @(posedge clk_i) disable iff (~rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
+      @(posedge clk_i) disable iff (!rst_ni) dcache_req_ports_o[j].data_rvalid |-> (|dcache_req_ports_o[j].data_rdata) !== 1'hX)
     else $warning(1,"[l1 dcache] reading invalid data on port %01d: data=%016X",
       j, dcache_req_ports_o[j].data_rdata);
   end
