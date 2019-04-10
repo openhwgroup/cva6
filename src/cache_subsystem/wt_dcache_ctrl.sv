@@ -205,7 +205,11 @@ module wt_dcache_ctrl #(
             //////////////////////////////////
             KILL_MISS_ACK: begin
                 miss_req_o = 1'b1;
-                if(miss_ack_i) begin
+                // in this case the miss handler did not issue
+                // a transaction and we can safely go to idle
+                if(miss_replay_i) begin
+                  state_d = IDLE;
+                end else if(miss_ack_i) begin
                   state_d = KILL_MISS;
                 end
             end
