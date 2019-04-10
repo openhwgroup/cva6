@@ -229,6 +229,23 @@ module wt_dcache_missunit #(
   assign mem_data_o.paddr  = wt_cache_pkg::paddrSizeAlign(tmp_paddr, mem_data_o.size);
 
 ///////////////////////////////////////////////////////
+// back-off mechanism for LR/SC completion guarantee
+///////////////////////////////////////////////////////
+
+  logic sc_fail, sc_pass, sc_backoff_over;
+  assign sc_backoff_over = 1'b1;
+  // exp_backoff #(
+  //   .Seed(3),
+  //   .MaxExp(16)
+  // ) i_exp_backoff (
+  //   .clk_i,
+  //   .rst_ni,
+  //   .set_i     ( sc_fail         ),
+  //   .clr_i     ( sc_pass         ),
+  //   .is_zero_o ( sc_backoff_over )
+  // );
+
+///////////////////////////////////////////////////////
 // responses from memory
 ///////////////////////////////////////////////////////
 
@@ -239,6 +256,8 @@ module wt_dcache_missunit #(
     amo_ack         = 1'b0;
     inv_vld         = 1'b0;
     inv_vld_all     = 1'b0;
+    sc_fail         = 1'b0;
+    sc_pass         = 1'b0;
     miss_rtrn_vld_o ='0;
     if (mem_rtrn_vld_i) begin
       unique case (mem_rtrn_i.rtype)
@@ -252,6 +271,15 @@ module wt_dcache_missunit #(
         end
         DCACHE_ATOMIC_ACK: begin
           amo_ack = 1'b1;
+          // need to set SC backoff counter if
+          // this op failed
+          if (amo_req_i.amo_op == AMO_SC) begin
+            if (amo_resp_o.result) begin
+              sc_fail = 1'b1;
+            end else begin
+              sc_pass = 1'b1;
+            end
+          end
         end
         DCACHE_INV_REQ: begin
           inv_vld     = mem_rtrn_i.inv.vld | mem_rtrn_i.inv.all;
@@ -427,10 +455,13 @@ module wt_dcache_missunit #(
       // send out amo op request
       AMO: begin
         mem_data_o.rtype = DCACHE_ATOMIC_REQ;
-        mem_data_req_o   = 1'b1;
         amo_sel          = 1'b1;
-        if (mem_data_ack_i) begin
-          state_d = AMO_WAIT;
+        // if this is an SC, we need to consult the backoff counter
+        if ((amo_req_i.amo_op != AMO_SC) || sc_backoff_over) begin
+          mem_data_req_o   = 1'b1;
+          if (mem_data_ack_i) begin
+            state_d = AMO_WAIT;
+          end
         end
       end
       //////////////////////////////////
