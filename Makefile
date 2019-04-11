@@ -58,6 +58,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
               include/wt_cache_pkg.sv                       \
               src/axi/src/axi_pkg.sv                        \
               src/register_interface/src/reg_intf.sv        \
+              src/register_interface/src/reg_intf_pkg.sv    \
               include/axi_intf.sv                           \
               tb/ariane_soc_pkg.sv                          \
               include/ariane_axi_pkg.sv                     \
