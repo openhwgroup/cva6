@@ -25,11 +25,12 @@
 // PLIC     40'h90_0300_0000 <length 0x4000000>
 //
 
-module serpent_peripherals #(
-    parameter int unsigned DataWidth      = 64,
-    parameter int unsigned NumHarts       =  1,
-    parameter int unsigned NumSources     =  1,
-    parameter bit          SwapEndianess  =  0
+module riscv_peripherals #(
+    parameter int unsigned DataWidth       = 64,
+    parameter int unsigned NumHarts        =  1,
+    parameter int unsigned NumSources      =  1,
+    parameter int unsigned PlicMaxPriority =  7,
+    parameter bit          SwapEndianess   =  0
 ) (
     input                               clk_i,
     input                               rst_ni,
@@ -102,13 +103,13 @@ module serpent_peripherals #(
 
   dm::dmi_req_t  debug_req;
   dm::dmi_resp_t debug_resp;
-  
+
 `ifdef RISCV_FESVR_SIM
 
   initial begin
     $display("[INFO] instantiating FESVR DTM in simulation.");
   end
-  
+
   // SiFive's SimDTM Module
   // Converts to DPI calls
   logic [31:0] sim_exit; // TODO: wire this up in the testbench
@@ -116,22 +117,22 @@ module serpent_peripherals #(
   assign dmi_req.op = dm::dtm_op_t'(debug_req_bits_op);
 
   SimDTM i_SimDTM (
-      .clk                  ( clk_i                ),
-      .reset                ( ~rst_ni              ),
-      .debug_req_valid      ( debug_req_valid      ),
-      .debug_req_ready      ( debug_req_ready      ),
-      .debug_req_bits_addr  ( debug_req.addr       ),
-      .debug_req_bits_op    ( debug_req_bits_op    ),
-      .debug_req_bits_data  ( debug_req.data       ),
-      .debug_resp_valid     ( debug_resp_valid     ),
-      .debug_resp_ready     ( debug_resp_ready       ),
-      .debug_resp_bits_resp ( debug_resp.resp      ),
-      .debug_resp_bits_data ( debug_resp.data      ),
-      .exit                 ( sim_exit             )
+    .clk                  ( clk_i                ),
+    .reset                ( ~rst_ni              ),
+    .debug_req_valid      ( debug_req_valid      ),
+    .debug_req_ready      ( debug_req_ready      ),
+    .debug_req_bits_addr  ( debug_req.addr       ),
+    .debug_req_bits_op    ( debug_req_bits_op    ),
+    .debug_req_bits_data  ( debug_req.data       ),
+    .debug_resp_valid     ( debug_resp_valid     ),
+    .debug_resp_ready     ( debug_resp_ready       ),
+    .debug_resp_bits_resp ( debug_resp.resp      ),
+    .debug_resp_bits_data ( debug_resp.data      ),
+    .exit                 ( sim_exit             )
   );
 
 `else // RISCV_FESVR_SIM
- 
+
   logic        tck, tms, trst_n, tdi, tdo, tdo_oe;
 
   dmi_jtag i_dmi_jtag (
@@ -158,23 +159,23 @@ module serpent_peripherals #(
   initial begin
     $display("[INFO] instantiating JTAG DTM in simulation.");
   end
- 
+
   // SiFive's SimJTAG Module
   // Converts to DPI calls
   logic [31:0] sim_exit; // TODO: wire this up in the testbench
   SimJTAG i_SimJTAG (
-      .clock                ( clk_i                ),
-      .reset                ( ~rst_ni              ),
-      .enable               ( jtag_enable[0]       ),
-      .init_done            ( init_done            ),
-      .jtag_TCK             ( tck                  ),
-      .jtag_TMS             ( tms                  ),
-      .jtag_TDI             ( trst_n               ),
-      .jtag_TRSTn           ( td                   ),
-      .jtag_TDO_data        ( td                   ),
-      .jtag_TDO_driven      ( tdo_oe               ),
-      .exit                 ( sim_exit             )
-  ); 
+    .clock                ( clk_i                ),
+    .reset                ( ~rst_ni              ),
+    .enable               ( jtag_enable[0]       ),
+    .init_done            ( init_done            ),
+    .jtag_TCK             ( tck                  ),
+    .jtag_TMS             ( tms                  ),
+    .jtag_TDI             ( trst_n               ),
+    .jtag_TRSTn           ( td                   ),
+    .jtag_TDO_data        ( td                   ),
+    .jtag_TDO_driven      ( tdo_oe               ),
+    .exit                 ( sim_exit             )
+  );
 
   assign td_o     = 1'b0  ;
   assign tdo_oe_o = 1'b0  ;
@@ -188,7 +189,7 @@ module serpent_peripherals #(
   assign td_o     = tdo     ;
   assign tdo_oe_o = tdo_oe  ;
 
-`endif // RISCV_JTAG_SIM  
+`endif // RISCV_JTAG_SIM
 `endif // RISCV_FESVR_SIM
 
   logic                dm_slave_req;
@@ -233,7 +234,7 @@ module serpent_peripherals #(
     .master_be_o          ( dm_master_be         ),
     .master_gnt_i         ( dm_master_gnt        ),
     .master_r_valid_i     ( dm_master_r_valid    ),
-    .master_r_rdata_i     ( dm_master_r_rdata    ),    
+    .master_r_rdata_i     ( dm_master_r_rdata    ),
     .dmi_rst_ni           ( rst_ni               ),
     .dmi_req_valid_i      ( debug_req_valid      ),
     .dmi_req_ready_o      ( debug_req_ready      ),
@@ -242,7 +243,7 @@ module serpent_peripherals #(
     .dmi_resp_ready_i     ( debug_resp_ready     ),
     .dmi_resp_o           ( debug_resp           )
   );
-  
+
   AXI_BUS #(
       .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
       .AXI_DATA_WIDTH ( AxiDataWidth     ),
@@ -265,7 +266,7 @@ module serpent_peripherals #(
       .be_o       ( dm_slave_be               ),
       .data_o     ( dm_slave_wdata            ),
       .data_i     ( dm_slave_rdata            )
-  );        
+  );
 
   noc_axilite_bridge #(
     .SLAVE_RESP_BYTEWIDTH   ( 8             ),
@@ -310,7 +311,7 @@ module serpent_peripherals #(
   assign dm_master_gnt      = '0;
   assign dm_master_r_valid  = '0;
   assign dm_master_r_rdata  = '0;
- 
+
   // ariane_axi::req_t    dm_axi_m_req;
   // ariane_axi::resp_t   dm_axi_m_resp;
   //
@@ -332,8 +333,8 @@ module serpent_peripherals #(
   //     .valid_o               ( dm_master_r_valid         ),
   //     .rdata_o               ( dm_master_r_rdata         ),
   //     .id_o                  (                           ),
-  //     .critical_word_o       (                           ), 
-  //     .critical_word_valid_o (                           ), 
+  //     .critical_word_o       (                           ),
+  //     .critical_word_valid_o (                           ),
   //     .axi_req_o             ( dm_axi_m_req              ),
   //     .axi_resp_i            ( dm_axi_m_resp             )
   // );
@@ -486,19 +487,19 @@ module serpent_peripherals #(
   ariane_axi::resp_t   clint_axi_resp;
 
   clint #(
-      .AXI_ADDR_WIDTH ( AxiAddrWidth ),
-      .AXI_DATA_WIDTH ( AxiDataWidth ),
-      .AXI_ID_WIDTH   ( AxiIdWidth   ),
-      .NR_CORES       ( NumHarts     )
+    .AXI_ADDR_WIDTH ( AxiAddrWidth ),
+    .AXI_DATA_WIDTH ( AxiDataWidth ),
+    .AXI_ID_WIDTH   ( AxiIdWidth   ),
+    .NR_CORES       ( NumHarts     )
   ) i_clint (
-      .clk_i                         ,
-      .rst_ni                        ,
-      .testmode_i                    ,
-      .axi_req_i   ( clint_axi_req  ),
-      .axi_resp_o  ( clint_axi_resp ),
-      .rtc_i                         ,
-      .timer_irq_o                   ,
-      .ipi_o
+    .clk_i                         ,
+    .rst_ni                        ,
+    .testmode_i                    ,
+    .axi_req_i   ( clint_axi_req  ),
+    .axi_resp_o  ( clint_axi_resp ),
+    .rtc_i                         ,
+    .timer_irq_o                   ,
+    .ipi_o
   );
 
   noc_axilite_bridge #(
@@ -634,116 +635,127 @@ module serpent_peripherals #(
   assign plic_master.ar_qos    = '0;
   assign plic_master.ar_region = '0;
 
-    REG_BUS #(
-        .ADDR_WIDTH ( 32 ),
-        .DATA_WIDTH ( 32 )
-    ) reg_bus (clk_i);
+  REG_BUS #(
+      .ADDR_WIDTH ( 32 ),
+      .DATA_WIDTH ( 32 )
+  ) reg_bus (clk_i);
 
-    logic         plic_penable;
-    logic         plic_pwrite;
-    logic [31:0]  plic_paddr;
-    logic         plic_psel;
-    logic [31:0]  plic_pwdata;
-    logic [31:0]  plic_prdata;
-    logic         plic_pready;
-    logic         plic_pslverr;
+  logic         plic_penable;
+  logic         plic_pwrite;
+  logic [31:0]  plic_paddr;
+  logic         plic_psel;
+  logic [31:0]  plic_pwdata;
+  logic [31:0]  plic_prdata;
+  logic         plic_pready;
+  logic         plic_pslverr;
 
-    axi2apb_64_32 #(
-        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth ),
-        .AXI4_RDATA_WIDTH   ( AxiDataWidth ),
-        .AXI4_WDATA_WIDTH   ( AxiDataWidth ),
-        .AXI4_ID_WIDTH      ( AxiIdWidth   ),
-        .AXI4_USER_WIDTH    ( AxiUserWidth ),
-        .BUFF_DEPTH_SLAVE   ( 2            ),
-        .APB_ADDR_WIDTH     ( 32           )
-    ) i_axi2apb_64_32_plic (
-        .ACLK      ( clk_i                 ),
-        .ARESETn   ( rst_ni                ),
-        .test_en_i ( testmode_i            ),
-        .AWID_i    ( plic_master.aw_id     ),
-        .AWADDR_i  ( plic_master.aw_addr   ),
-        .AWLEN_i   ( plic_master.aw_len    ),
-        .AWSIZE_i  ( plic_master.aw_size   ),
-        .AWBURST_i ( plic_master.aw_burst  ),
-        .AWLOCK_i  ( plic_master.aw_lock   ),
-        .AWCACHE_i ( plic_master.aw_cache  ),
-        .AWPROT_i  ( plic_master.aw_prot   ),
-        .AWREGION_i( plic_master.aw_region ),
-        .AWUSER_i  ( plic_master.aw_user   ),
-        .AWQOS_i   ( plic_master.aw_qos    ),
-        .AWVALID_i ( plic_master.aw_valid  ),
-        .AWREADY_o ( plic_master.aw_ready  ),
-        .WDATA_i   ( plic_master.w_data    ),
-        .WSTRB_i   ( plic_master.w_strb    ),
-        .WLAST_i   ( plic_master.w_last    ),
-        .WUSER_i   ( plic_master.w_user    ),
-        .WVALID_i  ( plic_master.w_valid   ),
-        .WREADY_o  ( plic_master.w_ready   ),
-        .BID_o     ( plic_master.b_id      ),
-        .BRESP_o   ( plic_master.b_resp    ),
-        .BVALID_o  ( plic_master.b_valid   ),
-        .BUSER_o   ( plic_master.b_user    ),
-        .BREADY_i  ( plic_master.b_ready   ),
-        .ARID_i    ( plic_master.ar_id     ),
-        .ARADDR_i  ( plic_master.ar_addr   ),
-        .ARLEN_i   ( plic_master.ar_len    ),
-        .ARSIZE_i  ( plic_master.ar_size   ),
-        .ARBURST_i ( plic_master.ar_burst  ),
-        .ARLOCK_i  ( plic_master.ar_lock   ),
-        .ARCACHE_i ( plic_master.ar_cache  ),
-        .ARPROT_i  ( plic_master.ar_prot   ),
-        .ARREGION_i( plic_master.ar_region ),
-        .ARUSER_i  ( plic_master.ar_user   ),
-        .ARQOS_i   ( plic_master.ar_qos    ),
-        .ARVALID_i ( plic_master.ar_valid  ),
-        .ARREADY_o ( plic_master.ar_ready  ),
-        .RID_o     ( plic_master.r_id      ),
-        .RDATA_o   ( plic_master.r_data    ),
-        .RRESP_o   ( plic_master.r_resp    ),
-        .RLAST_o   ( plic_master.r_last    ),
-        .RUSER_o   ( plic_master.r_user    ),
-        .RVALID_o  ( plic_master.r_valid   ),
-        .RREADY_i  ( plic_master.r_ready   ),
-        .PENABLE   ( plic_penable   ),
-        .PWRITE    ( plic_pwrite    ),
-        .PADDR     ( plic_paddr     ),
-        .PSEL      ( plic_psel      ),
-        .PWDATA    ( plic_pwdata    ),
-        .PRDATA    ( plic_prdata    ),
-        .PREADY    ( plic_pready    ),
-        .PSLVERR   ( plic_pslverr   )
-    );
+  axi2apb_64_32 #(
+    .AXI4_ADDRESS_WIDTH ( AxiAddrWidth ),
+    .AXI4_RDATA_WIDTH   ( AxiDataWidth ),
+    .AXI4_WDATA_WIDTH   ( AxiDataWidth ),
+    .AXI4_ID_WIDTH      ( AxiIdWidth   ),
+    .AXI4_USER_WIDTH    ( AxiUserWidth ),
+    .BUFF_DEPTH_SLAVE   ( 2            ),
+    .APB_ADDR_WIDTH     ( 32           )
+  ) i_axi2apb_64_32_plic (
+    .ACLK      ( clk_i                 ),
+    .ARESETn   ( rst_ni                ),
+    .test_en_i ( testmode_i            ),
+    .AWID_i    ( plic_master.aw_id     ),
+    .AWADDR_i  ( plic_master.aw_addr   ),
+    .AWLEN_i   ( plic_master.aw_len    ),
+    .AWSIZE_i  ( plic_master.aw_size   ),
+    .AWBURST_i ( plic_master.aw_burst  ),
+    .AWLOCK_i  ( plic_master.aw_lock   ),
+    .AWCACHE_i ( plic_master.aw_cache  ),
+    .AWPROT_i  ( plic_master.aw_prot   ),
+    .AWREGION_i( plic_master.aw_region ),
+    .AWUSER_i  ( plic_master.aw_user   ),
+    .AWQOS_i   ( plic_master.aw_qos    ),
+    .AWVALID_i ( plic_master.aw_valid  ),
+    .AWREADY_o ( plic_master.aw_ready  ),
+    .WDATA_i   ( plic_master.w_data    ),
+    .WSTRB_i   ( plic_master.w_strb    ),
+    .WLAST_i   ( plic_master.w_last    ),
+    .WUSER_i   ( plic_master.w_user    ),
+    .WVALID_i  ( plic_master.w_valid   ),
+    .WREADY_o  ( plic_master.w_ready   ),
+    .BID_o     ( plic_master.b_id      ),
+    .BRESP_o   ( plic_master.b_resp    ),
+    .BVALID_o  ( plic_master.b_valid   ),
+    .BUSER_o   ( plic_master.b_user    ),
+    .BREADY_i  ( plic_master.b_ready   ),
+    .ARID_i    ( plic_master.ar_id     ),
+    .ARADDR_i  ( plic_master.ar_addr   ),
+    .ARLEN_i   ( plic_master.ar_len    ),
+    .ARSIZE_i  ( plic_master.ar_size   ),
+    .ARBURST_i ( plic_master.ar_burst  ),
+    .ARLOCK_i  ( plic_master.ar_lock   ),
+    .ARCACHE_i ( plic_master.ar_cache  ),
+    .ARPROT_i  ( plic_master.ar_prot   ),
+    .ARREGION_i( plic_master.ar_region ),
+    .ARUSER_i  ( plic_master.ar_user   ),
+    .ARQOS_i   ( plic_master.ar_qos    ),
+    .ARVALID_i ( plic_master.ar_valid  ),
+    .ARREADY_o ( plic_master.ar_ready  ),
+    .RID_o     ( plic_master.r_id      ),
+    .RDATA_o   ( plic_master.r_data    ),
+    .RRESP_o   ( plic_master.r_resp    ),
+    .RLAST_o   ( plic_master.r_last    ),
+    .RUSER_o   ( plic_master.r_user    ),
+    .RVALID_o  ( plic_master.r_valid   ),
+    .RREADY_i  ( plic_master.r_ready   ),
+    .PENABLE   ( plic_penable   ),
+    .PWRITE    ( plic_pwrite    ),
+    .PADDR     ( plic_paddr     ),
+    .PSEL      ( plic_psel      ),
+    .PWDATA    ( plic_pwdata    ),
+    .PRDATA    ( plic_prdata    ),
+    .PREADY    ( plic_pready    ),
+    .PSLVERR   ( plic_pslverr   )
+  );
 
-    apb_to_reg i_apb_to_reg (
-        .clk_i                     ,
-        .rst_ni                    ,
-        .penable_i ( plic_penable ),
-        .pwrite_i  ( plic_pwrite  ),
-        .paddr_i   ( plic_paddr   ),
-        .psel_i    ( plic_psel    ),
-        .pwdata_i  ( plic_pwdata  ),
-        .prdata_o  ( plic_prdata  ),
-        .pready_o  ( plic_pready  ),
-        .pslverr_o ( plic_pslverr ),
-        .reg_o     ( reg_bus      )
-    );
-
-    plic #(
-        .ADDR_WIDTH         ( 32                     ),
-        .DATA_WIDTH         ( 32                     ),
-        .ID_BITWIDTH        ( 3                      ), // TODO (zarubaf): Find propper width
-        .PARAMETER_BITWIDTH ( 3                      ), // TODO (zarubaf): Find propper width
-        .NUM_TARGETS        ( 2*NumHarts             ),
-        .NUM_SOURCES        ( NumSources             )
-    ) i_plic (
-        .clk_i                                        ,
-        .rst_ni                                       ,
-        .irq_sources_i                                ,
-        .eip_targets_o      ( irq_o                  ),
-        .external_bus_io    ( reg_bus                )
-);
+  reg_intf::reg_intf_resp_d32 plic_resp;
+  reg_intf::reg_intf_req_a32_d32 plic_req;
 
 
+  apb_to_reg i_apb_to_reg (
+    .clk_i                     ,
+    .rst_ni                    ,
+    .penable_i ( plic_penable ),
+    .pwrite_i  ( plic_pwrite  ),
+    .paddr_i   ( plic_paddr   ),
+    .psel_i    ( plic_psel    ),
+    .pwdata_i  ( plic_pwdata  ),
+    .prdata_o  ( plic_prdata  ),
+    .pready_o  ( plic_pready  ),
+    .pslverr_o ( plic_pslverr ),
+    .reg_o     ( reg_bus      )
+  );
 
-endmodule
+  assign plic_req.addr  = reg_bus.addr;
+  assign plic_req.write = reg_bus.write;
+  assign plic_req.wdata = reg_bus.wdata;
+  assign plic_req.wstrb = reg_bus.wstrb;
+  assign plic_req.valid = reg_bus.valid;
+
+  assign reg_bus.rdata = plic_resp.rdata;
+  assign reg_bus.error = plic_resp.error;
+  assign reg_bus.ready = plic_resp.ready;
+
+  plic_top #(
+    .N_SOURCE    ( NumSources      ),
+    .N_TARGET    ( 2*NumHarts      ),
+    .MAX_PRIO    ( PlicMaxPriority )
+  ) i_plic (
+    .clk_i,
+    .rst_ni,
+    .req_i         ( plic_req    ),
+    .resp_o        ( plic_resp   ),
+    .le_i          ( '0          ), // 0:level 1:edge
+    .irq_sources_i ,
+    .eip_targets_o ( irq_o       )
+  );
+
+endmodule // riscv_peripherals
 

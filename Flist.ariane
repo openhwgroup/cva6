@@ -24,10 +24,14 @@ src/common_cells/src/lzc.sv
 src/common_cells/src/rr_arb_tree.sv
 src/common_cells/src/rrarbiter.sv
 src/common_cells/src/rstgen_bypass.sv
+src/common_cells/src/sync.sv
 src/common_cells/src/sync_wedge.sv
 src/common_cells/src/cdc_2phase.sv
 src/common_cells/src/stream_arbiter_flushable.sv
 src/common_cells/src/shift_reg.sv
+src/register_interface/src/apb_to_reg.sv
+src/register_interface/src/reg_intf_pkg.sv
+src/register_interface/src/reg_intf.sv
 src/fpu/src/fpnew_pkg.sv
 // src/fpu/src/fpu_div_sqrt_mvp/hdl/fpu_ff.sv
 // src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
@@ -131,16 +135,13 @@ src/riscv-dbg/src/dm_sba.sv
 src/riscv-dbg/src/dmi_jtag_tap.sv
 src/riscv-dbg/debug_rom/debug_rom.sv
 openpiton/ariane_verilog_wrap.sv
-openpiton/serpent_peripherals.sv
+openpiton/riscv_peripherals.sv
 openpiton/bootrom/baremetal/bootrom.sv
 openpiton/bootrom/linux/bootrom_linux.sv
-src/plic/plic.sv
-src/plic/plic_claim_complete_tracker.sv
-src/plic/plic_comparator.sv
-src/plic/plic_find_max.sv
-src/plic/plic_gateway.sv
-src/plic/plic_interface.sv
-src/plic/plic_target_slice.sv
+src/rv_plic/rtl/rv_plic_target.sv
+src/rv_plic/rtl/rv_plic_gateway.sv
+src/rv_plic/rtl/plic_regmap.sv
+src/rv_plic/rtl/plic_top.sv
 fpga/src/axi2apb/src/axi2apb_wrap.sv
 fpga/src/axi2apb/src/axi2apb.sv
 fpga/src/axi2apb/src/axi2apb_64_32.sv
@@ -152,5 +153,4 @@ fpga/src/axi_slice/src/axi_single_slice.sv
 fpga/src/axi_slice/src/axi_ar_buffer.sv
 fpga/src/axi_slice/src/axi_r_buffer.sv
 fpga/src/axi_slice/src/axi_aw_buffer.sv
-src/register_interface/src/apb_to_reg.sv
-src/register_interface/src/reg_intf.sv
+
