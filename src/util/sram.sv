@@ -58,12 +58,9 @@ generate
           .ADDR_WIDTH($clog2(NUM_WORDS)),
           .DATA_DEPTH(NUM_WORDS),
           .OUT_REGS (0),
-// initialize to zero if we want to co-simulate with Spike
-`ifdef SPIKE_TANDEM
+          // this initializes the memory with 0es. adjust to taste...
+          // 0: no init, 1: zero init, 2: random init, 3: deadbeef init
           .SIM_INIT (1)
-`else
-          .SIM_INIT (2)
-`endif
         ) i_ram (
            .Clk_CI    ( clk_i                     ),
            .Rst_RBI   ( rst_ni                    ),
