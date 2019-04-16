@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Fix RISC-V PK simulation bug caused due to insufficient time to init the `a0` and `a1` registers via the bootrom
 - Fix bug in wt_axi_adapter (only appeared when dcache lines were wider than icache lines)
 - Fix potentially long timing path in `axi_lite_interface`
 - Fix VCS elab warning in `load_store_unit`
