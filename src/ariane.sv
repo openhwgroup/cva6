@@ -656,6 +656,51 @@ module ariane #(
   // Instruction Tracer
   // -------------------
   //pragma translate_off
+`ifdef PITON_ARIANE
+  localparam PC_QUEUE_DEPTH = 16;
+
+  logic        piton_pc_vld;
+  logic [63:0] piton_pc;
+  logic [NR_COMMIT_PORTS-1:0][63:0] pc_data;
+  logic [NR_COMMIT_PORTS-1:0] pc_pop, pc_empty;
+
+  for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_pc_fifo
+    fifo_v3 #(
+      .DATA_WIDTH(64),
+      .DEPTH(PC_QUEUE_DEPTH))
+    i_pc_fifo (
+      .clk_i      ( clk_i                                               ),
+      .rst_ni     ( rst_ni                                              ),
+      .flush_i    ( '0                                                  ),
+      .testmode_i ( '0                                                  ),
+      .full_o     (                                                     ),
+      .empty_o    ( pc_empty[i]                                         ),
+      .usage_o    (                                                     ),
+      .data_i     ( commit_instr_id_commit[i].pc                        ),
+      .push_i     ( commit_ack[i] & ~commit_instr_id_commit[i].ex.valid ),
+      .data_o     ( pc_data[i]                                          ),
+      .pop_i      ( pc_pop[i]                                           )
+    );
+  end
+
+  rr_arb_tree #(
+    .NumIn(NR_COMMIT_PORTS),
+    .DataWidth(64))
+  i_rr_arb_tree (
+    .clk_i   ( clk_i        ),
+    .rst_ni  ( rst_ni       ),
+    .flush_i ( '0           ),
+    .rr_i    ( '0           ),
+    .req_i   ( ~pc_empty    ),
+    .gnt_o   ( pc_pop       ),
+    .data_i  ( pc_data      ),
+    .gnt_i   ( piton_pc_vld ),
+    .req_o   ( piton_pc_vld ),
+    .data_o  ( piton_pc     ),
+    .idx_o   (              )
+  );
+`endif // PITON_ARIANE
+
 `ifndef VERILATOR
   instruction_tracer_if tracer_if (clk_i);
   // assign instruction tracer interface
@@ -713,39 +758,6 @@ module ariane #(
     end
   endprogram
 
-`ifdef PITON_ARIANE
-
-  logic        piton_pc_vld;
-  logic [63:0] piton_pc;
-
-  // expose retired PCs to OpenPiton verification environment
-  // note: this only works with single issue, need to adapt this in case of dual issue
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    logic [63:0] pc_queue [$];
-    if (~rst_ni) begin
-      pc_queue.delete();
-      piton_pc_vld <= 1'b0;
-      piton_pc     <= '0;
-    end else begin
-      // serialize retired PCs via queue construct
-      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-        if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
-          pc_queue.push_back(commit_instr_id_commit[i].pc);
-        end
-      end
-
-      if (pc_queue.size()>0) begin
-        piton_pc_vld <= 1'b1;
-        piton_pc     <= pc_queue.pop_front();
-      end else begin
-        piton_pc_vld <= 1'b0;
-        piton_pc     <= '0;
-      end
-    end
-  end
-
-`endif // PITON_ARIANE
-
 // mock tracer for Verilator, to be used with spike-dasm
 `else
 
@@ -792,7 +804,7 @@ module ariane #(
     $fclose(f);
   end
 `endif // VERILATOR
-  //pragma translate_on
+//pragma translate_on
 
 endmodule // ariane
 
