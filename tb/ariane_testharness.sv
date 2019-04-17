@@ -146,7 +146,7 @@ module ariane_testharness #(
   // SiFive's SimDTM Module
   // Converts to DPI calls
   logic [1:0] debug_req_bits_op;
-  assign dmi_req.op = dm::dtm_op_t'(debug_req_bits_op);
+  assign dmi_req.op = dm::dtm_op_e'(debug_req_bits_op);
 
   if (InclSimDTM) begin
     SimDTM i_SimDTM (
@@ -211,40 +211,41 @@ module ariane_testharness #(
 
   // debug module
   dm_top #(
-    .NrHarts              ( 1                    ),
-    .BusWidth             ( AXI_DATA_WIDTH       ),
-    .Selectable_Harts     ( 1'b1                 )
+    .NrHarts              ( 1                           ),
+    .BusWidth             ( AXI_DATA_WIDTH              ),
+    .SelectableHarts      ( 1'b1                        )
   ) i_dm_top (
-
-    .clk_i                ( clk_i                ),
-    .rst_ni               ( rst_ni               ), // PoR
-    .testmode_i           ( test_en              ),
-    .ndmreset_o           ( ndmreset             ),
-    .dmactive_o           (                      ), // active debug session
-    .debug_req_o          ( debug_req_core_ungtd ),
-    .unavailable_i        ( '0                   ),
-    .slave_req_i          ( dm_slave_req         ),
-    .slave_we_i           ( dm_slave_we          ),
-    .slave_addr_i         ( dm_slave_addr        ),
-    .slave_be_i           ( dm_slave_be          ),
-    .slave_wdata_i        ( dm_slave_wdata       ),
-    .slave_rdata_o        ( dm_slave_rdata       ),
-    .master_req_o         ( dm_master_req        ),
-    .master_add_o         ( dm_master_add        ),
-    .master_we_o          ( dm_master_we         ),
-    .master_wdata_o       ( dm_master_wdata      ),
-    .master_be_o          ( dm_master_be         ),
-    .master_gnt_i         ( dm_master_gnt        ),
-    .master_r_valid_i     ( dm_master_r_valid    ),
-    .master_r_rdata_i     ( dm_master_r_rdata    ),
-    .dmi_rst_ni           ( rst_ni               ),
-    .dmi_req_valid_i      ( debug_req_valid      ),
-    .dmi_req_ready_o      ( debug_req_ready      ),
-    .dmi_req_i            ( debug_req            ),
-    .dmi_resp_valid_o     ( debug_resp_valid     ),
-    .dmi_resp_ready_i     ( debug_resp_ready     ),
-    .dmi_resp_o           ( debug_resp           )
+    .clk_i                ( clk_i                       ),
+    .rst_ni               ( rst_ni                      ), // PoR
+    .testmode_i           ( test_en                     ),
+    .ndmreset_o           ( ndmreset                    ),
+    .dmactive_o           (                             ), // active debug session
+    .debug_req_o          ( debug_req_core_ungtd        ),
+    .unavailable_i        ( '0                          ),
+    .hartinfo_i           ( {ariane_pkg::DebugHartInfo} ),
+    .slave_req_i          ( dm_slave_req                ),
+    .slave_we_i           ( dm_slave_we                 ),
+    .slave_addr_i         ( dm_slave_addr               ),
+    .slave_be_i           ( dm_slave_be                 ),
+    .slave_wdata_i        ( dm_slave_wdata              ),
+    .slave_rdata_o        ( dm_slave_rdata              ),
+    .master_req_o         ( dm_master_req               ),
+    .master_add_o         ( dm_master_add               ),
+    .master_we_o          ( dm_master_we                ),
+    .master_wdata_o       ( dm_master_wdata             ),
+    .master_be_o          ( dm_master_be                ),
+    .master_gnt_i         ( dm_master_gnt               ),
+    .master_r_valid_i     ( dm_master_r_valid           ),
+    .master_r_rdata_i     ( dm_master_r_rdata           ),
+    .dmi_rst_ni           ( rst_ni                      ),
+    .dmi_req_valid_i      ( debug_req_valid             ),
+    .dmi_req_ready_o      ( debug_req_ready             ),
+    .dmi_req_i            ( debug_req                   ),
+    .dmi_resp_valid_o     ( debug_resp_valid            ),
+    .dmi_resp_ready_i     ( debug_resp_ready            ),
+    .dmi_resp_o           ( debug_resp                  )
   );
+
 
   axi2mem #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
