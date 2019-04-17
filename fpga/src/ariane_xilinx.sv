@@ -260,7 +260,7 @@ logic [64-1:0]       dm_master_r_rdata;
 dm_top #(
     .NrHarts          ( 1                 ),
     .BusWidth         ( AxiDataWidth      ),
-    .Selectable_Harts ( 1'b1              )
+    .SelectableHarts  ( 1'b1              )
 ) i_dm_top (
     .clk_i            ( clk               ),
     .rst_ni           ( rst_n             ), // PoR
@@ -269,6 +269,7 @@ dm_top #(
     .dmactive_o       ( dmactive          ), // active debug session
     .debug_req_o      ( debug_req_irq     ),
     .unavailable_i    ( '0                ),
+    .hartinfo_i       ( {ariane_pkg::DebugHartInfo} ),
     .slave_req_i      ( dm_slave_req      ),
     .slave_we_i       ( dm_slave_we       ),
     .slave_addr_i     ( dm_slave_addr     ),

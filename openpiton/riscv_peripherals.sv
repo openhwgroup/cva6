@@ -212,7 +212,7 @@ module riscv_peripherals #(
   dm_top #(
     .NrHarts              ( NumHarts             ),
     .BusWidth             ( AxiDataWidth         ),
-    .Selectable_Harts     ( {NumHarts{1'b1}}     )
+    .SelectableHarts      ( {NumHarts{1'b1}}     )
   ) i_dm_top (
     .clk_i                                        ,
     .rst_ni                                       , // PoR
@@ -221,6 +221,7 @@ module riscv_peripherals #(
     .dmactive_o                                   , // active debug session
     .debug_req_o                                  ,
     .unavailable_i                                ,
+    .hartinfo_i           ( {NumHarts{ariane_pkg::DebugHartInfo}} ),
     .slave_req_i          ( dm_slave_req         ),
     .slave_we_i           ( dm_slave_we          ),
     .slave_addr_i         ( dm_slave_addr        ),
