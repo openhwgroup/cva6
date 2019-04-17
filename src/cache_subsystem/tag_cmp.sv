@@ -87,8 +87,10 @@ module tag_cmp #(
         `ifndef SYNTHESIS
         `ifndef VERILATOR
         // assert that cache only hits on one way
-        assert property (
-          @(posedge clk_i) $onehot0(hit_way_o)) else begin $error("Hit should be one-hot encoded"); $stop(); end
+        // this only needs to be checked one cycle after all ways have been requested
+        onehot: assert property (
+          @(posedge clk_i) disable iff (!rst_ni) &req_i |=> $onehot0(hit_way_o))
+            else begin $fatal(1,"Hit should be one-hot encoded"); end
         `endif
         `endif
     end
