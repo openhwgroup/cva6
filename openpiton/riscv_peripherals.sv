@@ -87,10 +87,10 @@ module riscv_peripherals #(
     output [NumHarts-1:0][1:0]          irq_o         // level sensitive IR lines, mip & sip (async)
 );
 
-  localparam int unsigned AxiIdWidth    =  0;
+  localparam int unsigned AxiIdWidth    =  1;
   localparam int unsigned AxiAddrWidth  = 64;
   localparam int unsigned AxiDataWidth  = 64;
-  localparam int unsigned AxiUserWidth  =  0;
+  localparam int unsigned AxiUserWidth  =  1;
 
   /////////////////////////////
   // Debug module and JTAG
