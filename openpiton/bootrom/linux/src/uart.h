@@ -18,12 +18,12 @@
 
 void init_uart();
 
-void print_uart(const char* str);
+int print_uart(const char* str);
 
-void print_uart_dec(uint32_t val, uint32_t digits);
+int print_uart_dec(uint32_t val, uint32_t digits);
 
-void print_uart_int(uint32_t addr);
+int print_uart_int(uint32_t addr);
 
-void print_uart_addr(uint64_t addr);
+int print_uart_addr(uint64_t addr);
 
-void print_uart_byte(uint8_t byte);
+int print_uart_byte(uint8_t byte);
