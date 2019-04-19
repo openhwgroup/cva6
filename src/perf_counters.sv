@@ -42,7 +42,7 @@ module perf_counters #(
     // from PC Gen
     input  exception_t                              ex_i,
     input  logic                                    eret_i,
-    input  branchpredict_t                          resolved_branch_i
+    input  bp_resolve_t                             resolved_branch_i
 );
     logic [riscv::CSR_MIF_EMPTY[4:0] : riscv::CSR_ML1_ICACHE_MISS[4:0]][63:0] perf_counter_d, perf_counter_q;
 

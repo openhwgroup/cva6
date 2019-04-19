@@ -58,7 +58,7 @@ module scoreboard #(
     input  logic                                      issue_ack_i,
 
     // write-back port
-    input branchpredict_t                             resolved_branch_i,
+    input bp_resolve_t                                resolved_branch_i,
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0]  trans_id_i,  // transaction ID at which to write the result back
     input logic [NR_WB_PORTS-1:0][63:0]               wbdata_i,    // write data in
     input exception_t [NR_WB_PORTS-1:0]               ex_i,        // exception from a functional unit (e.g.: ld/st exception)

@@ -254,7 +254,7 @@ package ariane_pkg;
         logic        valid;           // prediction with all its values is valid
         logic        clear;           // invalidate this entry
         cf_t         cf_type;         // Type of control flow change
-    } branchpredict_t;
+    } bp_resolve_t;
 
     // branchpredict scoreboard entry
     // this is the struct which we will inject into the pipeline to guide the various
