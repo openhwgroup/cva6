@@ -599,17 +599,25 @@ package riscv;
     // pragma translate_off
     function string spikeCommitLog(logic [63:0] pc, priv_lvl_t priv_lvl, logic [31:0] instr, logic [4:0] rd, logic [63:0] result, logic rd_fpr);
         string rd_s;
+        string instr_word;
+
         automatic string rf_s = rd_fpr ? "f" : "x";
+
+        if (instr[1:0] != 2'b11) begin
+          instr_word = $sformatf("(0x%h)", instr[15:0]);
+        end else begin
+          instr_word = $sformatf("(0x%h)", instr);
+        end
 
         if (rd < 10) rd_s = $sformatf("%s %0d", rf_s, rd);
         else rd_s = $sformatf("%s%0d", rf_s, rd);
 
         if (rd_fpr || rd != 0) begin
             // 0 0x0000000080000118 (0xeecf8f93) x31 0x0000000080004000
-            return $sformatf("%d 0x%h (0x%h) %s 0x%h\n", priv_lvl, pc, instr, rd_s, result);
+            return $sformatf("%d 0x%h %s %s 0x%h\n", priv_lvl, pc, instr_word, rd_s, result);
         end else begin
             // 0 0x000000008000019c (0x0040006f)
-            return $sformatf("%d 0x%h (0x%h)\n", priv_lvl, pc, instr);
+            return $sformatf("%d 0x%h %s\n", priv_lvl, pc, instr_word);
         end
     endfunction
     // pragma translate_on

@@ -708,7 +708,7 @@ module ariane #(
   assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
   assign tracer_if.flush             = flush_ctrl_ex;
   // fetch
-  assign tracer_if.instruction       = id_stage_i.compressed_decoder_i.instr_o;
+  assign tracer_if.instruction       = id_stage_i.instr_realigner_i.fetch_entry_o.instruction;
   assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
   assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
   // Issue
