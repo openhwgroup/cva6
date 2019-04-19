@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
+- Fix compressed instruction decoding in tracer
 - Fix privilege bug in performance counters. The counters have always been accessible in user mode.
 - Re-work interrupt and debug subsystem to associate requests during decode. This improves stability on for non-idempotent loads.
 - Fix RISC-V PK simulation bug caused due to insufficient time to init the `a0` and `a1` registers via the bootrom
