@@ -82,11 +82,12 @@ module perf_counters #(
 
                     // The standard software calling convention uses register x1 to hold the return address on a call
                     // the unconditional jump is decoded as ADD op
-                    if (commit_instr_i[i].fu == CTRL_FLOW && commit_instr_i[i].op == '0 && commit_instr_i[i].rd == 'b1)
+                    if (commit_instr_i[i].fu == CTRL_FLOW && commit_instr_i[i].op == '0
+                                                          && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd1))
                         perf_counter_d[riscv::CSR_CALL[4:0]] = perf_counter_q[riscv::CSR_CALL[4:0]] + 1'b1;
 
                     // Return from call
-                    if (commit_instr_i[i].op == JALR && commit_instr_i[i].rs1 == 'b1)
+                    if (commit_instr_i[i].op == JALR && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd1))
                         perf_counter_d[riscv::CSR_RET[4:0]] = perf_counter_q[riscv::CSR_RET[4:0]] + 1'b1;
                 end
             end
