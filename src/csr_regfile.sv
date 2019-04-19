@@ -234,26 +234,39 @@ module csr_regfile #(
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
                 riscv::CSR_MINSTRET:           csr_rdata = instret_q;
+                // Counters and Timers
+                riscv::CSR_ML1_ICACHE_MISS,
+                riscv::CSR_ML1_DCACHE_MISS,
+                riscv::CSR_MITLB_MISS,
+                riscv::CSR_MDTLB_MISS,
+                riscv::CSR_MLOAD,
+                riscv::CSR_MSTORE,
+                riscv::CSR_MEXCEPTION,
+                riscv::CSR_MEXCEPTION_RET,
+                riscv::CSR_MBRANCH_JUMP,
+                riscv::CSR_MCALL,
+                riscv::CSR_MRET,
+                riscv::CSR_MMIS_PREDICT,
+                riscv::CSR_MSB_FULL,
+                riscv::CSR_MIF_EMPTY,
+                riscv::CSR_MHPM_COUNTER_17,
+                riscv::CSR_MHPM_COUNTER_18,
+                riscv::CSR_MHPM_COUNTER_19,
+                riscv::CSR_MHPM_COUNTER_20,
+                riscv::CSR_MHPM_COUNTER_21,
+                riscv::CSR_MHPM_COUNTER_22,
+                riscv::CSR_MHPM_COUNTER_23,
+                riscv::CSR_MHPM_COUNTER_24,
+                riscv::CSR_MHPM_COUNTER_25,
+                riscv::CSR_MHPM_COUNTER_26,
+                riscv::CSR_MHPM_COUNTER_27,
+                riscv::CSR_MHPM_COUNTER_28,
+                riscv::CSR_MHPM_COUNTER_29,
+                riscv::CSR_MHPM_COUNTER_30,
+                riscv::CSR_MHPM_COUNTER_31:           csr_rdata   = perf_data_i;
                 // custom (non RISC-V) cache control
                 riscv::CSR_DCACHE:             csr_rdata = dcache_q;
                 riscv::CSR_ICACHE:             csr_rdata = icache_q;
-                // Counters and Timers
-                riscv::CSR_CYCLE:              csr_rdata = cycle_q;
-                riscv::CSR_INSTRET:            csr_rdata = instret_q;
-                riscv::CSR_L1_ICACHE_MISS,
-                riscv::CSR_L1_DCACHE_MISS,
-                riscv::CSR_ITLB_MISS,
-                riscv::CSR_DTLB_MISS,
-                riscv::CSR_LOAD,
-                riscv::CSR_STORE,
-                riscv::CSR_EXCEPTION,
-                riscv::CSR_EXCEPTION_RET,
-                riscv::CSR_BRANCH_JUMP,
-                riscv::CSR_CALL,
-                riscv::CSR_RET,
-                riscv::CSR_MIS_PREDICT,
-                riscv::CSR_SB_FULL,
-                riscv::CSR_IF_EMPTY:           csr_rdata   = perf_data_i;
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -508,23 +521,41 @@ module csr_regfile #(
                 // performance counters
                 riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
                 riscv::CSR_MINSTRET:           instret     = csr_wdata;
-                riscv::CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
-                riscv::CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
-                riscv::CSR_L1_ICACHE_MISS,
-                riscv::CSR_L1_DCACHE_MISS,
-                riscv::CSR_ITLB_MISS,
-                riscv::CSR_DTLB_MISS,
-                riscv::CSR_LOAD,
-                riscv::CSR_STORE,
-                riscv::CSR_EXCEPTION,
-                riscv::CSR_EXCEPTION_RET,
-                riscv::CSR_BRANCH_JUMP,
-                riscv::CSR_CALL,
-                riscv::CSR_RET,
-                riscv::CSR_MIS_PREDICT: begin
+                riscv::CSR_ML1_ICACHE_MISS,
+                riscv::CSR_ML1_DCACHE_MISS,
+                riscv::CSR_MITLB_MISS,
+                riscv::CSR_MDTLB_MISS,
+                riscv::CSR_MLOAD,
+                riscv::CSR_MSTORE,
+                riscv::CSR_MEXCEPTION,
+                riscv::CSR_MEXCEPTION_RET,
+                riscv::CSR_MBRANCH_JUMP,
+                riscv::CSR_MCALL,
+                riscv::CSR_MRET,
+                riscv::CSR_MMIS_PREDICT,
+                riscv::CSR_MSB_FULL,
+                riscv::CSR_MIF_EMPTY,
+                riscv::CSR_MHPM_COUNTER_17,
+                riscv::CSR_MHPM_COUNTER_18,
+                riscv::CSR_MHPM_COUNTER_19,
+                riscv::CSR_MHPM_COUNTER_20,
+                riscv::CSR_MHPM_COUNTER_21,
+                riscv::CSR_MHPM_COUNTER_22,
+                riscv::CSR_MHPM_COUNTER_23,
+                riscv::CSR_MHPM_COUNTER_24,
+                riscv::CSR_MHPM_COUNTER_25,
+                riscv::CSR_MHPM_COUNTER_26,
+                riscv::CSR_MHPM_COUNTER_27,
+                riscv::CSR_MHPM_COUNTER_28,
+                riscv::CSR_MHPM_COUNTER_29,
+                riscv::CSR_MHPM_COUNTER_30,
+                riscv::CSR_MHPM_COUNTER_31: begin
                                         perf_data_o = csr_wdata;
                                         perf_we_o   = 1'b1;
                 end
+
+                riscv::CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
+                riscv::CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
                 default: update_access_exception = 1'b1;
             endcase
         end
