@@ -279,7 +279,6 @@ module frontend #(
     assign btb_update.valid = resolved_branch_i.valid & (resolved_branch_i.cf_type == BTB);
     assign btb_update.pc    = resolved_branch_i.pc;
     assign btb_update.target_address = resolved_branch_i.target_address;
-    assign btb_update.clear = resolved_branch_i.clear;
 
     // -------------------
     // Next PC

@@ -246,13 +246,12 @@ package ariane_pkg;
     // this is the struct we get back from ex stage and we will use it to update
     // all the necessary data structures
     typedef struct packed {
+        logic        valid;           // prediction with all its values is valid
         logic [63:0] pc;              // pc of predict or mis-predict
         logic [63:0] target_address;  // target address at which to jump, or not
         logic        is_mispredict;   // set if this was a mis-predict
         logic        is_taken;        // branch is taken
                                       // in the lower 16 bit of the word
-        logic        valid;           // prediction with all its values is valid
-        logic        clear;           // invalidate this entry
         cf_t         cf_type;         // Type of control flow change
     } bp_resolve_t;
 
@@ -271,7 +270,6 @@ package ariane_pkg;
         logic        valid;
         logic [63:0] pc;             // update at PC
         logic [63:0] target_address;
-        logic        clear;
     } btb_update_t;
 
     typedef struct packed {
