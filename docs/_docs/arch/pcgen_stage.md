@@ -32,7 +32,7 @@ precedence):
     to correct prediction). Branch information which is passed down the
     pipeline is encapsulated in a structure called `branchpredict_sbe_t`.
     In contrast to branch prediction information which is passed up the
-    pipeline which is just called `branchpredict_t`. This is used for
+    pipeline which is just called `bp_resolve_t`. This is used for
     corrective actions (see next bullet point). This naming convention
     should make it easy to detect the flow of branch information in the source code.
 

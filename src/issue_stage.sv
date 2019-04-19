@@ -57,7 +57,7 @@ module issue_stage #(
 
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
-    input branchpredict_t                            resolved_branch_i,
+    input bp_resolve_t                               resolved_branch_i,
     input logic [NR_WB_PORTS-1:0][63:0]              wbdata_i,
     input exception_t [NR_WB_PORTS-1:0]              ex_ex_i, // exception from execute stage
     input logic [NR_WB_PORTS-1:0]                    wt_valid_i,
