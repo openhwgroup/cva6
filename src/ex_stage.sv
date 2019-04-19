@@ -38,7 +38,7 @@ module ex_stage #(
     // Branch Unit
     input  logic                                   branch_valid_i,        // we are using the branch unit
     input  branchpredict_sbe_t                     branch_predict_i,
-    output branchpredict_t                         resolved_branch_o,     // the branch engine uses the write back from the ALU
+    output bp_resolve_t                            resolved_branch_o,     // the branch engine uses the write back from the ALU
     output logic                                   resolve_branch_o,      // to ID signaling that we resolved the branch
     // CSR
     input  logic                                   csr_valid_i,

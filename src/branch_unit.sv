@@ -24,7 +24,7 @@ module branch_unit (
     output logic [63:0]               branch_result_o,
 
     input  branchpredict_sbe_t        branch_predict_i,       // this is the address we predicted
-    output branchpredict_t            resolved_branch_o,      // this is the actual address we are targeting
+    output bp_resolve_t               resolved_branch_o,      // this is the actual address we are targeting
     output logic                      resolve_branch_o,       // to ID to clear that we resolved the branch and we can
                                                               // accept new entries to the scoreboard
     output exception_t                branch_exception_o      // branch exception out

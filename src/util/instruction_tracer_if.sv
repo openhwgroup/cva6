@@ -46,7 +46,7 @@ interface instruction_tracer_if (
     logic              ld_kill;
     logic [63:0]       ld_paddr;
     // misprediction
-    branchpredict_t    resolve_branch;
+    bp_resolve_t       resolve_branch;
     // exceptions
     exception_t        exception;
     // current privilege level
