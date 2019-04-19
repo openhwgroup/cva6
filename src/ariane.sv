@@ -46,7 +46,7 @@ module ariane #(
   // ------------------------------------------
   riscv::priv_lvl_t           priv_lvl;
   exception_t                 ex_commit; // exception from commit stage
-  branchpredict_t             resolved_branch;
+  bp_resolve_t                resolved_branch;
   logic [63:0]                pc_commit;
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;

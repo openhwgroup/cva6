@@ -27,7 +27,7 @@ module frontend #(
     input  logic [63:0]        boot_addr_i,
     // Set a new PC
     // mispredict
-    input  branchpredict_t     resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
+    input  bp_resolve_t        resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
     // from commit, when flushing the whole pipeline
     input  logic               set_pc_commit_i,    // Take the PC from commit stage
     input  logic [63:0]        pc_commit_i,        // PC of instruction in commit stage
