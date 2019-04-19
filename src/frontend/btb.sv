@@ -57,11 +57,6 @@ module btb #(
             btb_d[update_pc].valid = 1'b1;
             // the target address is simply updated
             btb_d[update_pc].target_address = btb_update_i.target_address;
-            // check if we should invalidate this entry, this happens in case we predicted a branch
-            // where actually none-is (aliasing)
-            if (btb_update_i.clear) begin
-                btb_d[update_pc].valid = 1'b0;
-            end
         end
     end
 
