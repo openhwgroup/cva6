@@ -34,7 +34,7 @@ module instruction_tracer (
   scoreboard_entry_t issue_sbe_queue [$];
   scoreboard_entry_t issue_sbe;
   // store resolved branches, get (mis-)predictions
-  branchpredict_t bp [$];
+  bp_resolve_t bp [$];
   // shadow copy of the register files
   logic [63:0] gp_reg_file [32];
   logic [63:0] fp_reg_file [32];
@@ -65,7 +65,7 @@ module instruction_tracer (
     fp_reg_file  = '{default:0};
 
     forever begin
-      automatic branchpredict_t bp_instruction = '0;
+      automatic bp_resolve_t bp_instruction = '0;
       // new cycle, we are only interested if reset is de-asserted
       @(tracer_if.pck iff tracer_if.pck.rstn);
       // increment clock tick
@@ -186,7 +186,7 @@ module instruction_tracer (
     bp              = {};
   endfunction
 
-  function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, branchpredict_t bp);
+  function void printInstr(scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
     automatic instruction_trace_item iti = new ($time, clk_ticks, sbe, instr, gp_reg_file, fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
     // print instruction to console
     automatic string print_instr = iti.printInstr();
