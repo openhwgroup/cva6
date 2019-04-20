@@ -40,7 +40,6 @@ class instruction_trace_item;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
         this.sbe      = sbe;
-        this.instr    = instr;
         this.gp_reg_file = gp_reg_file;
         this.fp_reg_file = fp_reg_file;
         this.result   = result;
@@ -51,6 +50,11 @@ class instruction_trace_item;
         this.rs2      = sbe.rs2[4:0];
         this.rs3      = instr[31:27];
         this.rd       = sbe.rd[4:0];
+        if (instr[1:0] != 2'b11) begin
+            this.instr    = {16'b0, instr[15:0]};
+        end else begin
+            this.instr    = instr;
+        end
     endfunction
 
     // convert gp register address to ABI compatible form
@@ -186,8 +190,8 @@ class instruction_trace_item;
             // Regular opcodes
             INSTR_LUI:                 s = this.printUInstr("lui");
             INSTR_AUIPC:               s = this.printUInstr("auipc");
-            INSTR_JAL:                 s = this.printJump();
-            INSTR_JALR:                s = this.printJump();
+            INSTR_JAL:                 s = this.printJump("jal");
+            INSTR_JALR:                s = this.printJump("jalr");
             // BRANCH
             INSTR_BEQZ:                s = this.printSBInstr("beqz");
             INSTR_BEQ:                 s = this.printSBInstr("beq");
@@ -288,14 +292,67 @@ class instruction_trace_item;
             INSTR_WFI:                 s = this.printMnemonic("wfi");
             INSTR_SFENCE:              s = this.printMnemonic("sfence.vma");
             // loads and stores
-            INSTR_LOAD,
-            INSTR_LOAD_FP:             s = this.printLoadInstr();
-            INSTR_STORE,
-            INSTR_STORE_FP:            s = this.printStoreInstr();
+            LB:                        s = this.printLoadInstr("lb");
+            LH:                        s = this.printLoadInstr("lh");
+            LW:                        s = this.printLoadInstr("lw");
+            LD:                        s = this.printLoadInstr("ld");
+            LBU:                       s = this.printLoadInstr("lbu");
+            LHU:                       s = this.printLoadInstr("lhu");
+            LWU:                       s = this.printLoadInstr("lwu");
+            FLW:                       s = this.printLoadInstr("flw");
+            FLD:                       s = this.printLoadInstr("fld");
+            FLQ:                       s = this.printLoadInstr("flq");
+            FSW:                       s = this.printLoadInstr("fsw");
+            FSD:                       s = this.printLoadInstr("fsd");
+            FSQ:                       s = this.printLoadInstr("fsq");
+            SB:                        s = this.printStoreInstr("sb");
+            SH:                        s = this.printStoreInstr("sh");
+            SW:                        s = this.printStoreInstr("sw");
+            SD:                        s = this.printStoreInstr("sd");
+            FSW:                       s = this.printStoreInstr("fsw");
+            FSD:                       s = this.printStoreInstr("fsd");
+            FSQ:                       s = this.printStoreInstr("fsq");
             INSTR_AMO:                 s = this.printAMOInstr();
+            // Compressed Instructions
+            C_FLD:                     s = this.printLoadInstr("c.fld");
+            C_LW:                      s = this.printLoadInstr("c.lw");
+            C_LD:                      s = this.printLoadInstr("c.ld");
+            C_LWSP:                    s = this.printLoadInstr("c.lwsp");
+            C_LDSP:                    s = this.printLoadInstr("c.ldsp");
+            C_FLDSP:                   s = this.printLoadInstr("c.fldsp");
+            C_SDSP:                    s = this.printStoreInstr("c.sdsp");
+            C_SWSP:                    s = this.printStoreInstr("c.swsp");
+            C_FSDSP:                   s = this.printStoreInstr("c.fsdsp");
+            C_SW:                      s = this.printStoreInstr("c.sw");
+            C_SD:                      s = this.printStoreInstr("c.sd");
+            C_FSD:                     s = this.printStoreInstr("c.fsd");
+            C_J:                       s = this.printJump("c.j");
+            C_JR:                      s = this.printJump("c.jr");
+            C_JALR:                    s = this.printJump("c.jalr");
+            C_MV:                      s = this.printRInstr("c.mv");
+            C_ADD:                     s = this.printRInstr("c.add");
+            C_BEQZ:                    s = this.printSBInstr("c.beqz");
+            C_BNEZ:                    s = this.printSBInstr("c.bnez");
+            C_LUI:                     s = this.printUInstr("c.lui");
+            C_LI:                      s = this.printIInstr("c.li");
+            C_ADDI:                    s = this.printIInstr("c.addi");
+            C_ADDI16SP:                s = this.printIInstr("c.addi16sp");
+            C_ADDIW:                   s = this.printIInstr("c.addiw");
+            C_SLLI:                    s = this.printIInstr("c.slli");
+            C_SRLI:                    s = this.printIInstr("c.srli");
+            C_SRAI:                    s = this.printIInstr("c.srai");
+            C_ANDI:                    s = this.printIInstr("c.andi");
+            C_ADDI4SPN:                s = this.printIInstr("c.addi4spn");
+            C_SUB:                     s = this.printRInstr("c.sub");
+            C_XOR:                     s = this.printRInstr("c.xor");
+            C_OR:                      s = this.printRInstr("c.or");
+            C_AND:                     s = this.printRInstr("c.and");
+            C_SUBW:                    s = this.printRInstr("c.subw");
+            C_ADDW:                    s = this.printRInstr("c.addw");
+            C_NOP:                     s = this.printMnemonic("c.nop");
+            C_EBREAK:                  s = this.printMnemonic("c.ebreak");
             default:                   s = this.printMnemonic("INVALID");
         endcase
-
 
         s = $sformatf("%8dns %8d %s %h %h %h %-36s", simtime,
                                              cycle,
@@ -326,14 +383,14 @@ class instruction_trace_item;
         end
 
         case (instr) inside
-            // check of the instrction was a load or store
-            INSTR_STORE,
-            INSTR_STORE_FP: begin
+            // check of the instruction was a load or store
+            C_SDSP, C_SWSP, C_FSWSP, C_FSDSP, C_SW, C_SD, C_FSW, C_FSD,
+            SB, SH, SW, SD, FSW, FSD, FSQ: begin
                 logic [63:0] vaddress = gp_reg_file[read_regs[1]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
-            INSTR_LOAD,
-            INSTR_LOAD_FP: begin
+            C_FLD, C_FLW, C_LW, C_LD, C_LWSP, C_LDSP, C_FLWSP, C_FLDSP,
+            LB, LH, LW, LD, LBU, LHU, LWU, FLW, FLD, FLQ: begin
                 logic [63:0] vaddress = gp_reg_file[read_regs[0]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
@@ -469,10 +526,11 @@ class instruction_trace_item;
         read_regs.push_back(rs2);
         read_fpr.push_back(1'b0);
 
-        if (rs2 == 0)
-            return $sformatf("%-12s %4s, pc + %0d", mnemonic, regAddrToStr(rs1), $signed(sbe.result));
-        else
-            return $sformatf("%-12s %4s, %s, pc + %0d", mnemonic, regAddrToStr(rs1), regAddrToStr(rs2), $signed(sbe.result));
+        if (rs2 == 0) begin
+            return $sformatf("%-12s %4s, %s", mnemonic, regAddrToStr(rs1), printPCexpr(sbe.result));
+        end else begin
+            return $sformatf("%-12s %4s, %s, %s", mnemonic, regAddrToStr(rs1), regAddrToStr(rs2), printPCexpr(sbe.result));
+        end
     endfunction // printIuInstr
 
     function string printUInstr(input string mnemonic);
@@ -483,26 +541,17 @@ class instruction_trace_item;
         return $sformatf("%-12s %4s, 0x%0h", mnemonic, regAddrToStr(rd), sbe.result[31:12]);
     endfunction // printUInstr
 
-    function string printJump();
-        string mnemonic;
+    function string printJump(input string mnemonic);
         case (instr[6:0])
             riscv::OpcodeJalr: begin
                 // is this a return?
-                if (rd == 'b0 && (rs1 == 'h1 || rs1 == 'h5)) begin
-                    return this.printMnemonic("ret");
-                end else begin
-                    return this.printIInstr("jalr");
-                end
+                if (rd == 'b0 && (rs1 == 'h1 || rs1 == 'h5)) return this.printMnemonic("ret");
             end
-
             riscv::OpcodeJal: begin
-                if (rd == 'b0)
-                    return this.printUJInstr("j");
-                else
-                return this.printUJInstr("jal");
+                if (rd == 'b0) return this.printUJInstr("j");
             end
         endcase
-
+        return this.printIInstr(mnemonic);
     endfunction
 
     function string printUJInstr(input string mnemonic);
@@ -511,9 +560,9 @@ class instruction_trace_item;
         result_fpr.push_back(1'b0);
         // jump instruction
         if (rd == 0)
-            return $sformatf("%-12s   pc + %0d", mnemonic, $signed(sbe.result));
+            return $sformatf("%-12s   %s", mnemonic, printPCexpr(sbe.result));
         else
-            return $sformatf("%-12s %4s, pc + %0d", mnemonic, regAddrToStr(rd), $signed(sbe.result));
+            return $sformatf("%-12s %4s, %s", mnemonic, regAddrToStr(rd), printPCexpr(sbe.result));
     endfunction // printUJInstr
 
     function string printCSRInstr(input string mnemonic);
@@ -543,23 +592,7 @@ class instruction_trace_item;
         end
     endfunction // printCSRInstr
 
-    function string printLoadInstr();
-      string mnemonic;
-
-        case (instr[14:12])
-          3'b000: mnemonic = "lb";
-          3'b001: mnemonic = "lh";
-          3'b010: mnemonic = "lw";
-          3'b100: mnemonic = "lbu";
-          3'b101: mnemonic = "lhu";
-          3'b110: mnemonic = "lwu";
-          3'b011: mnemonic = "ld";
-          default: return printMnemonic("INVALID");
-        endcase
-
-        if (instr[6:0] == riscv::OpcodeLoadFp)
-            mnemonic = $sformatf("f%s",mnemonic);
-
+    function string printLoadInstr(input string mnemonic);
         result_regs.push_back(rd);
         result_fpr.push_back(is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
@@ -573,19 +606,7 @@ class instruction_trace_item;
             return $sformatf("%-12s %4s, %0d(%s)", mnemonic, regAddrToStr(rd), $signed(sbe.result), regAddrToStr(rs1));
     endfunction
 
-    function string printStoreInstr();
-        string mnemonic;
-        case (instr[14:12])
-          3'b000:  mnemonic = "sb";
-          3'b001:  mnemonic = "sh";
-          3'b010:  mnemonic = "sw";
-          3'b011:  mnemonic = "sd";
-          default: return printMnemonic("INVALID");
-        endcase
-
-        if (instr[6:0] == riscv::OpcodeStoreFp)
-            mnemonic = $sformatf("f%s",mnemonic);
-
+    function string printStoreInstr(input string mnemonic);
         read_regs.push_back(rs2);
         read_fpr.push_back(is_rs2_fpr(sbe.op));
         read_regs.push_back(rs1);
@@ -646,7 +667,6 @@ class instruction_trace_item;
 
     function string printMulInstr(logic is_op32);
         string s = "";
-
         case (this.instr[14:12])
             3'b000: s = "mul";
             3'b001: s = "mulh";
@@ -658,10 +678,16 @@ class instruction_trace_item;
             3'b111: s = "remu";
         endcase
         // if it is a 32 bit instruction concatenate a w on it
-        if (is_op32)
-            s = {s, "w"};
-
+        if (is_op32) s = {s, "w"};
         return this.printRInstr(s);
-
     endfunction
   endclass
+
+  function string printPCexpr(input logic [63:0] imm);
+    // check if the sign bit is set
+    if ($signed(imm) > 0) begin
+        return $sformatf("pc + %0d", $signed(imm));
+    end else begin
+        return $sformatf("pc - %0d", $signed(-imm));
+    end
+  endfunction
