@@ -32,6 +32,9 @@ package ariane_pkg;
     // within Ariane add a field here and assign a default value to the config. Please make
     // sure to add a propper parameter check to the `check_cfg` function.
     typedef struct packed {
+      int                     RASDepth;
+      int                     BTBEntries;
+      int                     BHTEntries;
       int                     NrNonIdempotentRules;  // Number of non idempotent rules
       logic [15:0][63:0]      NonIdempotentAddrBase; // base which needs to match
       logic [15:0][63:0]      NonIdempotentLength; // bit mask which bits to consider when matching the rule
@@ -41,6 +44,9 @@ package ariane_pkg;
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
+      RASDepth: 2,
+      BTBEntries: 32,
+      BHTEntries: 128,
       NrNonIdempotentRules: 2,
       NonIdempotentAddrBase: {64'b0, 64'b0},
       NonIdempotentLength:   {64'b0, 64'b0},
@@ -54,6 +60,9 @@ package ariane_pkg;
     function automatic void check_cfg (ariane_cfg_t Cfg);
       // pragma translate_off
       `ifndef VERILATOR
+        assert(Cfg.RASDepth > 0);
+        assert(2**$clog2(Cfg.BTBEntries)  == Cfg.BTBEntries);
+        assert(2**$clog2(Cfg.BHTEntries)  == Cfg.BHTEntries);
         assert(Cfg.NrNonIdempotentRules <= 16);
         assert(Cfg.NrExecuteRegionRules <= 16);
       `endif
@@ -76,9 +85,6 @@ package ariane_pkg;
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
     localparam ASID_WIDTH    = 1;
-    localparam BTB_ENTRIES   = 64;
-    localparam BHT_ENTRIES   = 128;
-    localparam RAS_DEPTH     = 2;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 

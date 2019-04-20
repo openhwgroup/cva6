@@ -17,7 +17,8 @@
 import ariane_pkg::*;
 
 module frontend #(
-    parameter logic [63:0]     DmBaseAddress = 64'h0 // debug module base address
+    parameter logic [63:0]     DmBaseAddress = 64'h0, // debug module base address
+    parameter ariane_pkg::ariane_cfg_t Cfg = ariane_pkg::ArianeDefaultConfig
 ) (
     input  logic               clk_i,              // Clock
     input  logic               rst_ni,             // Asynchronous reset active low
@@ -366,7 +367,7 @@ module frontend #(
     end
 
     ras #(
-        .DEPTH  ( RAS_DEPTH   )
+        .DEPTH  ( Cfg.RASDepth  )
     ) i_ras (
         .clk_i,
         .rst_ni,
@@ -378,7 +379,7 @@ module frontend #(
     );
 
     btb #(
-        .NR_ENTRIES       ( BTB_ENTRIES      )
+        .NR_ENTRIES       ( Cfg.BTBEntries   )
     ) i_btb (
         .clk_i,
         .rst_ni,
@@ -390,7 +391,7 @@ module frontend #(
     );
 
     bht #(
-        .NR_ENTRIES       ( BHT_ENTRIES      )
+        .NR_ENTRIES       ( Cfg.BHTEntries   )
     ) i_bht (
         .clk_i,
         .rst_ni,
