@@ -1,4 +1,4 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2017-2019 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -59,9 +59,9 @@ module ariane #(
   // --------------
   // IF <-> ID
   // --------------
-  frontend_fetch_t          fetch_entry_if_id;
+  fetch_entry_t             fetch_entry_if_id;
   logic                     fetch_valid_if_id;
-  logic                     decode_ack_id_if;
+  logic                     fetch_ready_id_if;
 
   // --------------
   // ID <-> ISSUE
@@ -220,7 +220,7 @@ module ariane #(
   // Frontend
   // --------------
   frontend #(
-    .DmBaseAddress       ( ArianeCfg.DmBaseAddress )
+    .ArianeCfg ( ArianeCfg )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),
@@ -238,7 +238,7 @@ module ariane #(
     .ex_valid_i          ( ex_commit.valid               ),
     .fetch_entry_o       ( fetch_entry_if_id             ),
     .fetch_entry_valid_o ( fetch_valid_if_id             ),
-    .fetch_ack_i         ( decode_ack_id_if              ),
+    .fetch_entry_ready_i ( fetch_ready_id_if             ),
     .*
   );
 
@@ -246,11 +246,14 @@ module ariane #(
   // ID
   // ---------
   id_stage id_stage_i (
-    .debug_req_i,
+    .clk_i,
+    .rst_ni,
     .flush_i                    ( flush_ctrl_if              ),
+    .debug_req_i,
+
     .fetch_entry_i              ( fetch_entry_if_id          ),
     .fetch_entry_valid_i        ( fetch_valid_if_id          ),
-    .decoded_instr_ack_o        ( decode_ack_id_if           ),
+    .fetch_entry_ready_o        ( fetch_ready_id_if          ),
 
     .issue_entry_o              ( issue_entry_id_issue       ),
     .issue_entry_valid_o        ( issue_entry_valid_id_issue ),
@@ -260,13 +263,12 @@ module ariane #(
     .priv_lvl_i                 ( priv_lvl                   ),
     .fs_i                       ( fs                         ),
     .frm_i                      ( frm_csr_id_issue_ex        ),
+    .irq_i                      ( irq_i                      ),
+    .irq_ctrl_i                 ( irq_ctrl_csr_id            ),
     .debug_mode_i               ( debug_mode                 ),
     .tvm_i                      ( tvm_csr_id                 ),
     .tw_i                       ( tw_csr_id                  ),
-    .tsr_i                      ( tsr_csr_id                 ),
-    .irq_i                      ( irq_i                      ),
-    .irq_ctrl_i                 ( irq_ctrl_csr_id            ),
-    .*
+    .tsr_i                      ( tsr_csr_id                 )
   );
 
   // ---------
@@ -334,6 +336,7 @@ module ariane #(
   ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
+    .debug_mode_i           ( debug_mode                  ),
     .flush_i                ( flush_ctrl_ex               ),
     .fu_data_i              ( fu_data_id_ex               ),
     .pc_i                   ( pc_id_ex                    ),
@@ -708,9 +711,9 @@ module ariane #(
   assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
   assign tracer_if.flush             = flush_ctrl_ex;
   // fetch
-  assign tracer_if.instruction       = id_stage_i.instr_realigner_i.fetch_entry_o.instruction;
-  assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
-  assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
+  assign tracer_if.instruction       = id_stage_i.fetch_entry_i.instruction;
+  assign tracer_if.fetch_valid       = id_stage_i.fetch_entry_valid_i;
+  assign tracer_if.fetch_ack         = id_stage_i.fetch_entry_ready_o;
   // Issue
   assign tracer_if.issue_ack         = issue_stage_i.i_scoreboard.issue_ack_i;
   assign tracer_if.issue_sbe         = issue_stage_i.i_scoreboard.issue_instr_o;
