@@ -21,6 +21,7 @@ module ex_stage #(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,
+    input  logic                                   debug_mode_i,
 
     input  fu_data_t                               fu_data_i,
     input  logic [63:0]                            pc_i,                  // PC of current instruction
@@ -143,6 +144,9 @@ module ex_stage #(
     // we don't silence the branch unit as this is already critical and we do
     // not want to add another layer of logic
     branch_unit branch_unit_i (
+        .clk_i,
+        .rst_ni,
+        .debug_mode_i,
         .fu_data_i,
         .pc_i,
         .is_compressed_instr_i,

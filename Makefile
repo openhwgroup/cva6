@@ -148,6 +148,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/axi/src/axi_delayer.sv                                             \
         src/axi/src/axi_to_axi_lite.sv                                         \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                                \
+        src/common_cells/src/unread.sv                                         \
         src/common_cells/src/sync.sv                                           \
         src/common_cells/src/cdc_2phase.sv                                     \
         src/common_cells/src/spill_register.sv                                 \
@@ -157,6 +158,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/fifo_v2.sv                                        \
         src/common_cells/src/fifo_v1.sv                                        \
         src/common_cells/src/lzc.sv                                            \
+        src/common_cells/src/popcount.sv                                       \
         src/common_cells/src/rr_arb_tree.sv                                    \
         src/common_cells/src/rrarbiter.sv                                      \
         src/common_cells/src/stream_delay.sv                                   \
@@ -361,7 +363,6 @@ verilate_command := $(verilator)                                                
                     -Wno-UNOPTFLAT                                                                     \
                     -Wno-style                                                                         \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                            \
-                    -Wno-lint                                                                          \
                     $(if $(DEBUG),--trace --trace-structs,)                                            \
                     -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -g -pg,)" \
                     -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,)" -Wall --cc  --vpi                     \
