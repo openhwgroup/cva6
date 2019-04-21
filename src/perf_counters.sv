@@ -44,7 +44,7 @@ module perf_counters #(
     input  logic                                    eret_i,
     input  bp_resolve_t                             resolved_branch_i
 );
-    logic [riscv::CSR_MIF_EMPTY[4:0] : riscv::CSR_ML1_ICACHE_MISS[4:0]][63:0] perf_counter_d, perf_counter_q;
+    logic [riscv::CSR_MHPM_COUNTER_19[4:0] : riscv::CSR_ML1_ICACHE_MISS[4:0]][63:0] perf_counter_d, perf_counter_q;
 
     always_comb begin : perf_counters
         perf_counter_d = perf_counter_q;
@@ -78,7 +78,6 @@ module perf_counters #(
 
                     if (commit_instr_i[i].fu == CTRL_FLOW)
                         perf_counter_d[riscv::CSR_MBRANCH_JUMP[4:0]] = perf_counter_q[riscv::CSR_MBRANCH_JUMP[4:0]] + 1'b1;
-
                     // The standard software calling convention uses register x1 to hold the return address on a call
                     // the unconditional jump is decoded as ADD op
                     if (commit_instr_i[i].fu == CTRL_FLOW && commit_instr_i[i].op == '0
@@ -99,6 +98,15 @@ module perf_counters #(
 
             if (resolved_branch_i.valid && resolved_branch_i.is_mispredict)
                 perf_counter_d[riscv::CSR_MMIS_PREDICT[4:0]] = perf_counter_q[riscv::CSR_MMIS_PREDICT[4:0]] + 1'b1;
+
+            if (resolved_branch_i.valid && resolved_branch_i.is_mispredict && resolved_branch_i.cf_type == ariane_pkg::Return)
+                perf_counter_d[riscv::CSR_MHPM_COUNTER_17[4:0]] = perf_counter_q[riscv::CSR_MHPM_COUNTER_17[4:0]] + 1'b1;
+
+            if (resolved_branch_i.valid && resolved_branch_i.is_mispredict && resolved_branch_i.cf_type == ariane_pkg::Branch)
+                perf_counter_d[riscv::CSR_MHPM_COUNTER_18[4:0]] = perf_counter_q[riscv::CSR_MHPM_COUNTER_18[4:0]] + 1'b1;
+
+            if (resolved_branch_i.valid && resolved_branch_i.is_mispredict && resolved_branch_i.cf_type == ariane_pkg::JumpR)
+                perf_counter_d[riscv::CSR_MHPM_COUNTER_19[4:0]] = perf_counter_q[riscv::CSR_MHPM_COUNTER_19[4:0]] + 1'b1;
 
             if (sb_full_i) begin
                 perf_counter_d[riscv::CSR_MSB_FULL[4:0]] = perf_counter_q[riscv::CSR_MSB_FULL[4:0]] + 1'b1;
