@@ -19,8 +19,9 @@ import ariane_pkg::*;
 module mmu #(
       parameter int unsigned INSTR_TLB_ENTRIES = 4,
       parameter int unsigned DATA_TLB_ENTRIES  = 4,
-      parameter int unsigned ASID_WIDTH        = 1
-)(
+      parameter int unsigned ASID_WIDTH        = 1,
+      parameter ariane_pkg::ariane_cfg_t Cfg = ariane_pkg::ArianeDefaultConfig
+) (
         input  logic                            clk_i,
         input  logic                            rst_ni,
         input  logic                            flush_i,
@@ -178,6 +179,7 @@ module mmu #(
     //-----------------------
     // Instruction Interface
     //-----------------------
+    logic match_any_execute_region;
     // The instruction interface is a simple request response interface
     always_comb begin : instr_interface
         // MMU disabled: just pass through
@@ -235,8 +237,21 @@ module mmu #(
                 icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
             end
         end
+        // if it didn't match any execute region throw an `Instruction Access Fault`
+        if (!match_any_execute_region) begin
+          icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, icache_areq_o.fetch_paddr, 1'b1};
+        end
     end
 
+    always_comb begin : execute_addr_check
+        // if we don't specify any region we assume everything is accessible
+        match_any_execute_region = (Cfg.NrExecuteRegionRules == 0);
+        // check for execute flag on memory
+        for (int i = 0; i < Cfg.NrExecuteRegionRules; i++) begin
+            match_any_execute_region |= (Cfg.ExecuteRegionAddrBase[i] & Cfg.ExecuteRegionAddrMaks[i])
+                                    == (icache_areq_o.fetch_paddr & Cfg.ExecuteRegionAddrMaks[i]);
+        end
+    end
     //-----------------------
     // Data Interface
     //-----------------------

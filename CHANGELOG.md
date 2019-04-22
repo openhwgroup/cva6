@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Chcek execute PMA on instruction frontend
+
 ### Changed
 
 - Re-work interrupt and debug subsystem to associate requests during decode. This improves stability on for non-idempotent loads.
