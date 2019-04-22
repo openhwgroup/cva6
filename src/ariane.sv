@@ -234,7 +234,7 @@ module ariane #(
     .DmBaseAddress       ( DmBaseAddress )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
-    .flush_bp_i          ( flush_ctrl_bp                 ),
+    .flush_bp_i          ( 1'b0                          ),
     .debug_mode_i        ( debug_mode                    ),
     .boot_addr_i         ( boot_addr_i                   ),
     .icache_dreq_i       ( icache_dreq_cache_if          ),
