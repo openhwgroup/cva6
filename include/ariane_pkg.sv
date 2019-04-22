@@ -33,14 +33,21 @@ package ariane_pkg;
     // sure to add a propper parameter check to the `check_cfg` function.
     typedef struct packed {
       int                     NrNonIdempotentRules;  // Number of non idempotent rules
-      logic [2**16-1:0][63:0] NonIdempotentAddrBase; // base which needs to match
-      logic [2**16-1:0][63:0] NonIdempotentAddrMaks; // bit mask which bits to consider when matching the rule
+      logic [15:0][63:0]      NonIdempotentAddrBase; // base which needs to match
+      logic [15:0][63:0]      NonIdempotentAddrMaks; // bit mask which bits to consider when matching the rule
+      int                     NrExecuteRegionRules;  // Number of regions which have execute property
+      logic [15:0][63:0]      ExecuteRegionAddrBase; // base which needs to match
+      logic [15:0][63:0]      ExecuteRegionAddrMaks; // bit mask which bits to consider when matching the rule
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
       NrNonIdempotentRules: 2,
       NonIdempotentAddrBase: {64'b0, 64'b0},
-      NonIdempotentAddrMaks: {64'b0, 64'b0}
+      NonIdempotentAddrMaks: {64'b0, 64'b0},
+      NrExecuteRegionRules: 3,
+      //                      DRAM,               Boot ROM,        Debug Module
+      ExecuteRegionAddrBase: {64'h8000_0000,      64'h1_0000,      64'h0},
+      ExecuteRegionAddrMaks: {mask(64'h40000000), mask(64'h10000), mask(64'h1000)}
     };
 
     // Function being called to check parameters
@@ -48,8 +55,20 @@ package ariane_pkg;
       // pragma translate_off
       `ifndef VERILATOR
         assert(Cfg.NrNonIdempotentRules <= 16);
+        assert(Cfg.NrExecuteRegionRules <= 16);
       `endif
       // pragma translate_on
+    endfunction
+
+    // Generate a mask for a given power of two length
+    function logic [63:0] mask (input logic [63:0] len);
+      // pragma translate_off
+      `ifndef VERILATOR
+      // check that the region we want is actually power of two aligned
+      assert (2**$clog2(len) == len) else $error("Length must be a power of two");
+      `endif
+      // pragma translate_on
+      return {64{1'b1}} << $clog2(len);
     endfunction
 
     // TODO: Slowly move those parameters to the new system.
