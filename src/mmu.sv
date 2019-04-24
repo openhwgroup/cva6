@@ -248,8 +248,8 @@ module mmu #(
         match_any_execute_region = (Cfg.NrExecuteRegionRules == 0);
         // check for execute flag on memory
         for (int i = 0; i < Cfg.NrExecuteRegionRules; i++) begin
-            match_any_execute_region |= (Cfg.ExecuteRegionAddrBase[i] & Cfg.ExecuteRegionAddrMaks[i])
-                                    == (icache_areq_o.fetch_paddr & Cfg.ExecuteRegionAddrMaks[i]);
+            match_any_execute_region |= (Cfg.ExecuteRegionAddrBase[i] & ariane_pkg::gen_mask(Cfg.ExecuteRegionLength[i]))
+                                    == (icache_areq_o.fetch_paddr & ariane_pkg::gen_mask(Cfg.ExecuteRegionLength[i]));
         end
     end
     //-----------------------
