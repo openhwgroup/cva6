@@ -34,20 +34,20 @@ package ariane_pkg;
     typedef struct packed {
       int                     NrNonIdempotentRules;  // Number of non idempotent rules
       logic [15:0][63:0]      NonIdempotentAddrBase; // base which needs to match
-      logic [15:0][63:0]      NonIdempotentAddrMaks; // bit mask which bits to consider when matching the rule
+      logic [15:0][63:0]      NonIdempotentLength; // bit mask which bits to consider when matching the rule
       int                     NrExecuteRegionRules;  // Number of regions which have execute property
       logic [15:0][63:0]      ExecuteRegionAddrBase; // base which needs to match
-      logic [15:0][63:0]      ExecuteRegionAddrMaks; // bit mask which bits to consider when matching the rule
+      logic [15:0][63:0]      ExecuteRegionLength; // bit mask which bits to consider when matching the rule
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
       NrNonIdempotentRules: 2,
       NonIdempotentAddrBase: {64'b0, 64'b0},
-      NonIdempotentAddrMaks: {64'b0, 64'b0},
+      NonIdempotentLength:   {64'b0, 64'b0},
       NrExecuteRegionRules: 3,
-      //                      DRAM,               Boot ROM,        Debug Module
-      ExecuteRegionAddrBase: {64'h8000_0000,      64'h1_0000,      64'h0},
-      ExecuteRegionAddrMaks: {mask(64'h40000000), mask(64'h10000), mask(64'h1000)}
+      //                      DRAM,          Boot ROM,   Debug Module
+      ExecuteRegionAddrBase: {64'h8000_0000, 64'h1_0000, 64'h0},
+      ExecuteRegionLength:   {64'h40000000,  64'h10000,  64'h1000}
     };
 
     // Function being called to check parameters
@@ -61,7 +61,7 @@ package ariane_pkg;
     endfunction
 
     // Generate a mask for a given power of two length
-    function logic [63:0] mask (input logic [63:0] len);
+    function logic [63:0] gen_mask (input logic [63:0] len);
       // pragma translate_off
       `ifndef VERILATOR
       // check that the region we want is actually power of two aligned
