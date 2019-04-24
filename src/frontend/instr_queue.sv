@@ -139,8 +139,7 @@ module instr_queue (
     assign branch_mask = branch_mask_extended[ariane_pkg::INSTR_PER_FETCH * 2 - 2:ariane_pkg::INSTR_PER_FETCH - 1];
 
     // mask with taken branches to get the actual amount of instructions we want to push
-    // be sure that the address FIFO isn't full
-    assign valid = valid_i & branch_mask & ({{ariane_pkg::INSTR_PER_FETCH}{~full_address}});
+    assign valid = valid_i & branch_mask;
     // rotate right again
     assign consumed_extended = {push_instr, push_instr} >> idx_is_q;
     assign consumed_o = consumed_extended[ariane_pkg::INSTR_PER_FETCH-1:0];
@@ -264,7 +263,7 @@ module instr_queue (
         end
     end
 
-    // FIFOS
+    // FIFOs
     for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_instr_fifo
         fifo_v3 #(
             .DEPTH      ( ariane_pkg::FETCH_FIFO_DEPTH ),
@@ -278,7 +277,8 @@ module instr_queue (
             .empty_o    ( instr_queue_empty[i] ),
             .usage_o    ( instr_queue_usage[i] ),
             .data_i     ( instr_data_in[i]     ),
-            .push_i     ( push_instr[i]        ),
+            // Make sure we don't save any instructions if we couldn't save the address
+            .push_i     ( push_instr[i] & ~address_overflow ),
             .data_o     ( instr_data_out[i]    ),
             .pop_i      ( pop_instr[i]         )
         );
