@@ -71,7 +71,7 @@ generate
                    '{default: fpnew_pkg::MERGED},   // DIVSQRT
                    '{default: fpnew_pkg::PARALLEL}, // NONCOMP
                    '{default: fpnew_pkg::MERGED}},  // CONV
-      PipeConfig: fpnew_pkg::INSIDE
+      PipeConfig: fpnew_pkg::DISTRIBUTED
     };
 
     //-------------------------------------------------
