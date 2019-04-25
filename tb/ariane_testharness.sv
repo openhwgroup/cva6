@@ -659,7 +659,6 @@ module ariane_testharness #(
   ariane_axi::resp_t   axi_ariane_resp;
 
   ariane #(
-    .AxiIdWidth ( ariane_soc::IdWidth      ),
     .ArianeCfg  ( ariane_soc::ArianeSocCfg )
   ) i_ariane (
     .clk_i                ( clk_i               ),

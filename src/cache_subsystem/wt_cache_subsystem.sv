@@ -22,7 +22,6 @@ import ariane_pkg::*;
 import wt_cache_pkg::*;
 
 module wt_cache_subsystem #(
-  parameter int unsigned             AxiIdWidth      = 10,
   parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig  // contains cacheable regions
 ) (
   input logic                            clk_i,
@@ -148,9 +147,7 @@ module wt_cache_subsystem #(
     .l15_rtrn_i         ( l15_rtrn_i              )
   );
 `else
-  wt_axi_adapter #(
-    .AxiIdWidth   ( AxiIdWidth )
-  ) i_adapter (
+  wt_axi_adapter i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
     .icache_data_req_i  ( icache_adapter_data_req ),
