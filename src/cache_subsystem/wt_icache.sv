@@ -28,10 +28,8 @@ import ariane_pkg::*;
 import wt_cache_pkg::*;
 
 module wt_icache  #(
-  parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId             = 0,                // ID to be used for read transactions
-  parameter bit                         Axi64BitCompliant  = 1'b0,             // set this to 1 when using in conjunction with 64bit AXI bus adapter
-  parameter logic [63:0]                CachedAddrBeg      = 64'h00_8000_0000, // begin of cached region
-  parameter logic [63:0]                CachedAddrEnd      = 64'h80_0000_0000  // end of cached region
+  parameter logic [CACHE_ID_WIDTH-1:0]  RdTxId             = 0,                                  // ID to be used for read transactions
+  parameter ariane_pkg::ariane_cfg_t    ArianeCfg          = ariane_pkg::ArianeDefaultConfig     // contains cacheable regions
 ) (
   input  logic                      clk_i,
   input  logic                      rst_ni,
@@ -103,9 +101,7 @@ module wt_icache  #(
   assign cl_tag_d  = (areq_i.fetch_valid) ? areq_i.fetch_paddr[ICACHE_TAG_WIDTH+ICACHE_INDEX_WIDTH-1:ICACHE_INDEX_WIDTH] : cl_tag_q;
 
   // noncacheable if request goes to I/O space, or if cache is disabled
-  assign paddr_is_nc = (cl_tag_d <  (CachedAddrBeg>>ICACHE_INDEX_WIDTH)) ||
-                       (cl_tag_d >= (CachedAddrEnd>>ICACHE_INDEX_WIDTH)) ||
-                       (!cache_en_q);
+  assign paddr_is_nc = (~cache_en_q) | (~ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {cl_tag_d, {ICACHE_INDEX_WIDTH{1'b0}}}));
 
   // pass exception through
   assign dreq_o.ex = areq_i.fetch_exception;
@@ -119,7 +115,7 @@ module wt_icache  #(
   assign cl_index    = vaddr_d[ICACHE_INDEX_WIDTH-1:ICACHE_OFFSET_WIDTH];
 
 
-  if (Axi64BitCompliant) begin : gen_axi_offset
+  if (ArianeCfg.Axi64BitCompliant) begin : gen_axi_offset
     // if we generate a noncacheable access, the word will be at offset 0 or 4 in the cl coming from memory
     assign cl_offset_d = ( dreq_o.ready & dreq_i.req)      ? {dreq_i.vaddr>>2, 2'b0} :
                          ( paddr_is_nc  & mem_data_req_o ) ? cl_offset_q[2]<<2 : // needed since we transfer 32bit over a 64bit AXI bus in this case
