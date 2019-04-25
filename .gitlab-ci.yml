@@ -63,12 +63,13 @@ amo-quest:
   dependencies:
     - build
 
-# fp-quest:
-#   stage: write-back
-#   script:
-#     - make -j${NUM_JOBS} run-fp-tests batch-mode=1 defines=WB_DCACHE
-#   dependencies:
-#     - build
+# floating point
+fp-quest:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-fp-tests batch-mode=1 defines=WB_DCACHE
+  dependencies:
+    - build
 
 bench-quest:
   stage: write-back
@@ -110,12 +111,12 @@ amo-ver:
     - build
 
 # floating point
-# fp-ver:
-#   stage: write-back
-#   script:
-#     - make -j${NUM_JOBS} run-fp-verilator defines=WB_DCACHE
-#   dependencies:
-#     - build
+fp-ver:
+  stage: write-back
+  script:
+    - make -j${NUM_JOBS} run-fp-verilator defines=WB_DCACHE
+  dependencies:
+    - build
 
 bench-ver:
   stage: write-back
@@ -167,12 +168,12 @@ s-amo-quest:
     - build
 
 # floating point
-# s-fp-quest:
-#   stage: write-through
-#   script:
-#     - make -j${NUM_JOBS} run-fp-tests defines=WT_DCACHE batch-mode=1
-#   dependencies:
-#     - build
+s-fp-quest:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-fp-tests defines=WT_DCACHE batch-mode=1
+  dependencies:
+    - build
 
 s-bench-quest:
   stage: write-through
@@ -214,12 +215,12 @@ amo-ver:
     - build
 
 # floating point
-# s-fp-ver:
-#   stage: write-through
-#   script:
-#     - make -j${NUM_JOBS} run-fp-verilator defines=WT_DCACHE
-#   dependencies:
-#     - build
+s-fp-ver:
+  stage: write-through
+  script:
+    - make -j${NUM_JOBS} run-fp-verilator defines=WT_DCACHE
+  dependencies:
+    - build
 
 s-bench-ver:
   stage: write-through
