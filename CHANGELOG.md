@@ -8,10 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Chcek execute PMA on instruction frontend
+- Check execute PMA on instruction frontend
+- Add support for non-contiguous cacheable regions to the PMA checks
 
 ### Changed
 
+- Several small fixes to get the code running on VCS
 - Fix compressed instruction decoding in tracer
 - Fix privilege bug in performance counters. The counters have always been accessible in user mode.
 - Re-work interrupt and debug subsystem to associate requests during decode. This improves stability on for non-idempotent loads.
@@ -22,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bump `common_cells` to v1.12.0
 - Provision exponential backoff for AMO SC in L1 D$ miss handler
 - Add lowrisc PLIC
+- Improve FPU pipelining 
 
 ### 4.1.2
 
