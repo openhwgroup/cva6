@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bump `common_cells` to v1.12.0
 - Provision exponential backoff for AMO SC in L1 D$ miss handler
 - Add lowrisc PLIC
+- Improve FPU pipelining 
 
 ### 4.1.2
 
