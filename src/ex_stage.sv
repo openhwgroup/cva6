@@ -16,7 +16,7 @@
 import ariane_pkg::*;
 
 module ex_stage #(
-    parameter ariane_pkg::ariane_cfg_t Cfg = ariane_pkg::ArianeDefaultConfig
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
@@ -252,7 +252,7 @@ module ex_stage #(
     assign lsu_data  = lsu_valid_i ? fu_data_i  : '0;
 
     load_store_unit #(
-      .Cfg ( Cfg )
+      .ArianeCfg ( ArianeCfg )
     ) lsu_i (
         .clk_i,
         .rst_ni,

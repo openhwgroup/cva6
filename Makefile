@@ -68,8 +68,8 @@ ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
 util := $(wildcard src/util/*.svh)                          \
-        src/util/instruction_tracer_pkg.sv                  \
         src/util/instruction_tracer_if.sv                   \
+        src/util/instruction_tracer.sv                      \
         src/tech_cells_generic/src/cluster_clock_gating.sv  \
         tb/common/mock_uart.sv                              \
         src/util/sram.sv

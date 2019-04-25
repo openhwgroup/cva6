@@ -17,10 +17,10 @@
 import ariane_pkg::*;
 
 module mmu #(
-      parameter int unsigned INSTR_TLB_ENTRIES = 4,
-      parameter int unsigned DATA_TLB_ENTRIES  = 4,
-      parameter int unsigned ASID_WIDTH        = 1,
-      parameter ariane_pkg::ariane_cfg_t Cfg = ariane_pkg::ArianeDefaultConfig
+      parameter int unsigned INSTR_TLB_ENTRIES     = 4,
+      parameter int unsigned DATA_TLB_ENTRIES      = 4,
+      parameter int unsigned ASID_WIDTH            = 1,
+      parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
         input  logic                            clk_i,
         input  logic                            rst_ni,
@@ -243,15 +243,9 @@ module mmu #(
         end
     end
 
-    always_comb begin : execute_addr_check
-        // if we don't specify any region we assume everything is accessible
-        match_any_execute_region = (Cfg.NrExecuteRegionRules == 0);
-        // check for execute flag on memory
-        for (int i = 0; i < Cfg.NrExecuteRegionRules; i++) begin
-            match_any_execute_region |= (Cfg.ExecuteRegionAddrBase[i] & ariane_pkg::gen_mask(Cfg.ExecuteRegionLength[i]))
-                                    == (icache_areq_o.fetch_paddr & ariane_pkg::gen_mask(Cfg.ExecuteRegionLength[i]));
-        end
-    end
+    // check for execute flag on memory
+    assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, icache_areq_o.fetch_paddr);
+
     //-----------------------
     // Data Interface
     //-----------------------

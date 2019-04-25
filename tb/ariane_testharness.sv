@@ -659,11 +659,8 @@ module ariane_testharness #(
   ariane_axi::resp_t   axi_ariane_resp;
 
   ariane #(
-    .AxiIdWidth    ( ariane_soc::IdWidth                             ),
-    .SwapEndianess ( 0                                               ),
-    .CachedAddrBeg ( ariane_soc::DRAMBase                            ),
-    .CachedAddrEnd ( (ariane_soc::DRAMBase + ariane_soc::DRAMLength) ),
-    .DmBaseAddress ( ariane_soc::DebugBase                           )
+    .AxiIdWidth ( ariane_soc::IdWidth      ),
+    .ArianeCfg  ( ariane_soc::ArianeSocCfg )
   ) i_ariane (
     .clk_i                ( clk_i               ),
     .rst_ni               ( ndmreset_n          ),

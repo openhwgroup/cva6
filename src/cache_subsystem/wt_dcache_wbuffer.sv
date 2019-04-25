@@ -52,8 +52,7 @@ import ariane_pkg::*;
 import wt_cache_pkg::*;
 
 module wt_dcache_wbuffer #(
-  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
-  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000  // end of cached region
+  parameter ariane_pkg::ariane_cfg_t    ArianeCfg          = ariane_pkg::ArianeDefaultConfig     // contains cacheable regions
 ) (
   input  logic                               clk_i,          // Clock
   input  logic                               rst_ni,         // Asynchronous reset active low
@@ -136,9 +135,8 @@ module wt_dcache_wbuffer #(
 
   assign miss_nc_o = nc_pending_q;
 
-  assign addr_is_nc = (req_port_i.address_tag <  (CachedAddrBeg>>DCACHE_INDEX_WIDTH)) ||
-                      (req_port_i.address_tag >= (CachedAddrEnd>>DCACHE_INDEX_WIDTH)) ||
-                      (!cache_en_i);
+  // noncacheable if request goes to I/O space, or if cache is disabled
+  assign addr_is_nc = (~cache_en_i) | (~ariane_pkg::is_inside_cacheable_regions(ArianeCfg, {req_port_i.address_tag, {DCACHE_INDEX_WIDTH{1'b0}}}));
 
   assign miss_we_o       = 1'b1;
   assign miss_vld_bits_o = '0;
