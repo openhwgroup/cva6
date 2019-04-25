@@ -13,20 +13,11 @@
 // Description: Ariane Top-level module
 
 import ariane_pkg::*;
-// pragma translate_off
-`ifndef VERILATOR
-import instruction_tracer_pkg::*;
-`endif
-// pragma translate_on
-
 
 module ariane #(
-  parameter logic [63:0] DmBaseAddress = 64'h0,            // debug module base address
-  parameter int unsigned AxiIdWidth    = 4,
-  parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
-  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
-  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
-  parameter ariane_pkg::ariane_cfg_t Cfg = ariane_pkg::ArianeDefaultConfig
+  parameter int unsigned             AxiIdWidth    = 4,
+  parameter bit                      SwapEndianess = 0,                // swap endianess in l15 adapter
+  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -231,7 +222,7 @@ module ariane #(
   // Frontend
   // --------------
   frontend #(
-    .DmBaseAddress       ( DmBaseAddress )
+    .DmBaseAddress       ( ArianeCfg.DmBaseAddress )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
     .flush_bp_i          ( 1'b0                          ),
@@ -341,7 +332,7 @@ module ariane #(
   // EX
   // ---------
   ex_stage #(
-    .Cfg ( Cfg )
+    .ArianeCfg ( ArianeCfg )
   ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
@@ -465,7 +456,7 @@ module ariane #(
   // ---------
   csr_regfile #(
     .AsidWidth              ( ASID_WIDTH                    ),
-    .DmBaseAddress          ( DmBaseAddress                 )
+    .DmBaseAddress          ( ArianeCfg.DmBaseAddress       )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),
@@ -580,9 +571,7 @@ module ariane #(
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
     .AxiIdWidth           ( AxiIdWidth    ),
-    .CachedAddrBeg        ( CachedAddrBeg ),
-    .CachedAddrEnd        ( CachedAddrEnd ),
-    .SwapEndianess        ( SwapEndianess )
+    .ArianeCfg            ( ArianeCfg     )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
@@ -620,7 +609,10 @@ module ariane #(
 `else
 
   std_cache_subsystem #(
-      .CACHE_START_ADDR    ( CachedAddrBeg )
+    // note: this only works with one cacheable region
+    // not as important since this cache subsystem is about to be
+    // deprecated
+    .CACHE_START_ADDR    ( ArianeCfg.CachedRegionAddrBase )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
@@ -658,7 +650,7 @@ module ariane #(
   // -------------------
   // pragma translate_off
   `ifndef VERILATOR
-  initial ariane_pkg::check_cfg(Cfg);
+  initial ariane_pkg::check_cfg(ArianeCfg);
   `endif
   // pragma translate_on
 
@@ -748,25 +740,11 @@ module ariane #(
   // assign current privilege level
   assign tracer_if.priv_lvl          = priv_lvl;
   assign tracer_if.debug_mode        = debug_mode;
-  instr_tracer instr_tracer_i (tracer_if, hart_id_i);
 
-  program instr_tracer (
-      instruction_tracer_if tracer_if,
-      input logic [63:0]    hart_id_i
-    );
-
-    instruction_tracer it = new (tracer_if, 1'b0);
-
-    initial begin
-      #15ns;
-      it.create_file(hart_id_i);
-      it.trace();
-    end
-
-    final begin
-      it.close();
-    end
-  endprogram
+  instruction_tracer instr_tracer_i (
+    .tracer_if(tracer_if),
+    .hart_id_i
+  );
 
 // mock tracer for Verilator, to be used with spike-dasm
 `else

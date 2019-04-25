@@ -16,7 +16,7 @@ import ariane_pkg::*;
 
 module load_store_unit #(
     parameter int unsigned ASID_WIDTH = 1,
-    parameter ariane_pkg::ariane_cfg_t Cfg = ariane_pkg::ArianeDefaultConfig
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
@@ -121,7 +121,7 @@ module load_store_unit #(
         .INSTR_TLB_ENTRIES      ( 16                     ),
         .DATA_TLB_ENTRIES       ( 16                     ),
         .ASID_WIDTH             ( ASID_WIDTH             ),
-        .Cfg                    ( Cfg                    )
+        .ArianeCfg              ( ArianeCfg              )
     ) i_mmu (
             // misaligned bypass
         .misaligned_ex_i        ( misaligned_exception   ),

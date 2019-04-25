@@ -16,12 +16,11 @@ import ariane_pkg::*;
 import wt_cache_pkg::*;
 
 module wt_dcache #(
-  parameter bit                          Axi64BitCompliant  = 1'b0,             // set this to 1 when using in conjunction with 64bit AXI bus adapter
   // ID to be used for read and AMO transactions.
   // note that the write buffer uses all IDs up to DCACHE_MAX_TX-1 for write transactions
   parameter logic [CACHE_ID_WIDTH-1:0]   RdAmoTxId          = 1,
-  parameter logic [63:0]                 CachedAddrBeg      = 64'h00_8000_0000, // begin of cached region
-  parameter logic [63:0]                 CachedAddrEnd      = 64'h80_0000_0000  // end of cached region
+  // contains cacheable regions
+  parameter ariane_pkg::ariane_cfg_t     ArianeCfg          = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic                           clk_i,       // Clock
   input  logic                           rst_ni,      // Asynchronous reset active low
@@ -110,9 +109,9 @@ module wt_dcache #(
 ///////////////////////////////////////////////////////
 
   wt_dcache_missunit #(
-    .Axi64BitCompliant ( Axi64BitCompliant ),
-    .AmoTxId           ( RdAmoTxId         ),
-    .NumPorts          ( NumPorts          )
+    .Axi64BitCompliant ( ArianeCfg.Axi64BitCompliant ),
+    .AmoTxId           ( RdAmoTxId                   ),
+    .NumPorts          ( NumPorts                    )
   ) i_wt_dcache_missunit (
     .clk_i              ( clk_i              ),
     .rst_ni             ( rst_ni             ),
@@ -170,8 +169,7 @@ module wt_dcache #(
 
     wt_dcache_ctrl #(
       .RdTxId        ( RdAmoTxId     ),
-      .CachedAddrBeg ( CachedAddrBeg ),
-      .CachedAddrEnd ( CachedAddrEnd )
+      .ArianeCfg     ( ArianeCfg     )
     ) i_wt_dcache_ctrl (
       .clk_i           ( clk_i             ),
       .rst_ni          ( rst_ni            ),
@@ -213,8 +211,7 @@ module wt_dcache #(
   assign rd_prio[2] = 1'b0;
 
   wt_dcache_wbuffer #(
-    .CachedAddrBeg ( CachedAddrBeg ),
-    .CachedAddrEnd ( CachedAddrEnd )
+    .ArianeCfg     ( ArianeCfg     )
   ) i_wt_dcache_wbuffer (
     .clk_i           ( clk_i               ),
     .rst_ni          ( rst_ni              ),
@@ -268,8 +265,8 @@ module wt_dcache #(
 ///////////////////////////////////////////////////////
 
   wt_dcache_mem #(
-    .Axi64BitCompliant ( Axi64BitCompliant ),
-    .NumPorts          ( NumPorts          )
+    .Axi64BitCompliant ( ArianeCfg.Axi64BitCompliant ),
+    .NumPorts          ( NumPorts                    )
   ) i_wt_dcache_mem (
     .clk_i             ( clk_i              ),
     .rst_ni            ( rst_ni             ),
