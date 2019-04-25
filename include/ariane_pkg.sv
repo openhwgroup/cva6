@@ -101,7 +101,7 @@ package ariane_pkg;
     function automatic logic is_inside_nonidempotent_regions (ariane_cfg_t Cfg, logic[63:0] address);
       logic[NrMaxRules-1:0] pass;
       pass = '0;
-      for (int unsigned k=0; k<Cfg.NrNonIdempotentRules; k++) begin
+      for (int unsigned k = 0; k < Cfg.NrNonIdempotentRules; k++) begin
         pass[k] = range_check(Cfg.NonIdempotentAddrBase[k], Cfg.NonIdempotentLength[k], address);
       end
       return |pass;
@@ -111,7 +111,7 @@ package ariane_pkg;
       // if we don't specify any region we assume everything is accessible
       logic[NrMaxRules-1:0] pass;
       pass = '0;
-      for (int unsigned k=0; k<Cfg.NrExecuteRegionRules; k++) begin
+      for (int unsigned k = 0; k < Cfg.NrExecuteRegionRules; k++) begin
         pass[k] = range_check(Cfg.ExecuteRegionAddrBase[k], Cfg.ExecuteRegionLength[k], address);
       end
       return |pass;
@@ -120,7 +120,7 @@ package ariane_pkg;
     function automatic logic is_inside_cacheable_regions (ariane_cfg_t Cfg, logic[63:0] address);
       automatic logic[NrMaxRules-1:0] pass;
       pass = '0;
-      for (int unsigned k=0; k<Cfg.NrCachedRegionRules; k++) begin
+      for (int unsigned k = 0; k < Cfg.NrCachedRegionRules; k++) begin
         pass[k] = range_check(Cfg.CachedRegionAddrBase[k], Cfg.CachedRegionLength[k], address);
       end
       return |pass;

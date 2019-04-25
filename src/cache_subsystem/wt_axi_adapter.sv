@@ -18,8 +18,7 @@ import wt_cache_pkg::*;
 
 module wt_axi_adapter #(
   parameter int unsigned ReqFifoDepth  = 2,
-  parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX,
-  parameter int unsigned AxiIdWidth    = 4
+  parameter int unsigned MetaFifoDepth = wt_cache_pkg::DCACHE_MAX_TX
 ) (
   input logic                  clk_i,
   input logic                  rst_ni,
@@ -69,7 +68,7 @@ module wt_axi_adapter #(
   logic [63:0]                    axi_rd_addr, axi_wr_addr;
   logic [$clog2(AxiNumWords)-1:0] axi_rd_blen, axi_wr_blen;
   logic [1:0] axi_rd_size, axi_wr_size;
-  logic [AxiIdWidth-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
+  logic [$size(axi_resp_i.r.id)-1:0] axi_rd_id_in, axi_wr_id_in, axi_rd_id_out, axi_wr_id_out, wr_id_out;
   logic [AxiNumWords-1:0][63:0] axi_wr_data;
   logic [63:0] axi_rd_data;
   logic [AxiNumWords-1:0][7:0]  axi_wr_be;
@@ -334,9 +333,9 @@ module wt_axi_adapter #(
   assign b_push              = axi_wr_valid & axi_wr_rdy;
 
   fifo_v3 #(
-    .DATA_WIDTH   ( AxiIdWidth + 1 ),
-    .DEPTH        ( MetaFifoDepth  ),
-    .FALL_THROUGH ( 1'b1           )
+    .DATA_WIDTH   ( $size(axi_resp_i.r.id) + 1 ),
+    .DEPTH        ( MetaFifoDepth              ),
+    .FALL_THROUGH ( 1'b1                       )
   ) i_b_fifo (
     .clk_i      ( clk_i      ),
     .rst_ni     ( rst_ni     ),
@@ -538,8 +537,8 @@ module wt_axi_adapter #(
 ///////////////////////////////////////////////////////
 
   axi_shim #(
-    .AxiNumWords     ( AxiNumWords     ),
-    .AxiIdWidth      ( AxiIdWidth      )
+    .AxiNumWords     ( AxiNumWords            ),
+    .AxiIdWidth      ( $size(axi_resp_i.r.id) )
   ) i_axi_shim (
     .clk_i           ( clk_i             ),
     .rst_ni          ( rst_ni            ),
