@@ -14,10 +14,23 @@
 
 
 module ariane_verilog_wrap #(
-  parameter logic [63:0] DmBaseAddress = 64'h0,            // debug module base address
-  parameter bit          SwapEndianess = 1,                // swap endianess in l15 adapter
-  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
-  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000  // begin of cached region
+  // debug module base address
+  parameter logic [63:0]               DmBaseAddress         = 64'h0,
+  // swap endianess in l15 adapter
+  parameter bit                        SwapEndianess         = 1,
+  // PMA configuration
+  // idempotent region
+  parameter int                        NrNonIdempotentRules  = 0,
+  parameter logic [NrMaxRules*64-1:0]  NonIdempotentAddrBase = '0,
+  parameter logic [NrMaxRules*64-1:0]  NonIdempotentLength   = '0,
+  // executable regions
+  parameter int                        NrExecuteRegionRules  = 0,
+  parameter logic [NrMaxRules*64-1:0]  ExecuteRegionAddrBase = '0,
+  parameter logic [NrMaxRules*64-1:0]  ExecuteRegionLength   = '0,
+  // cacheable regions
+  parameter int                        NrCachedRegionRules   = 0,
+  parameter logic [NrMaxRules*64-1:0]  CachedRegionAddrBase  = '0,
+  parameter logic [NrMaxRules*64-1:0]  CachedRegionLength    = '0
 ) (
   input                       clk_i,
   input                       reset_l,      // this is an openpiton-specific name, do not change (hier. paths in TB use this)
@@ -150,11 +163,27 @@ module ariane_verilog_wrap #(
   // ariane instance
   /////////////////////////////
 
+  localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
+    // idempotent region
+    NrNonIdempotentRules:  NrNonIdempotentRules,
+    NonIdempotentAddrBase: NonIdempotentAddrBase,
+    NonIdempotentLength:   NonIdempotentLength,
+    NrExecuteRegionRules:  NrExecuteRegionRules,
+    ExecuteRegionAddrBase: ExecuteRegionAddrBase,
+    ExecuteRegionLength:   ExecuteRegionLength,
+    // cached region
+    NrCachedRegionRules:   NrCachedRegionRules,
+    CachedRegionAddrBase:  CachedRegionAddrBase,
+    CachedRegionLength:    CachedRegionLength,
+    // cache config
+    Axi64BitCompliant:     1'b0,
+    SwapEndianess:         SwapEndianess,
+    // debug
+    DmBaseAddress:         DmBaseAddress
+  };
+
   ariane #(
-    .DmBaseAddress ( DmBaseAddress ),
-    .SwapEndianess ( SwapEndianess ),
-    .CachedAddrEnd ( CachedAddrEnd ),
-    .CachedAddrBeg ( CachedAddrBeg )
+    .ArianeCfg ( ArianeOpenPitonCfg )
   ) ariane (
     .clk_i       ( clk_i      ),
     .rst_ni      ( spc_grst_l ),

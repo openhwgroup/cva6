@@ -39,6 +39,26 @@ module tb;
   parameter logic [63:0] CachedAddrBeg = MemBytes/4;
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
+  localparam ariane_cfg_t Cfg = '{
+    // idempotent region
+    NrNonIdempotentRules: 0,
+    NonIdempotentAddrBase: {64'b0},
+    NonIdempotentLength:   {64'b0},
+    // executable region
+    NrExecuteRegionRules: 0,
+    ExecuteRegionAddrBase: {64'h0},
+    ExecuteRegionLength:   {64'h0},
+    // cached region
+    NrCachedRegionRules:  1,
+    CachedRegionAddrBase: {CachedAddrBeg},
+    CachedRegionLength:   {CachedAddrEnd-CachedAddrBeg+64'b1},
+    // cache config
+    Axi64BitCompliant:     1'b0,
+    SwapEndianess:         1'b0,
+    // debug
+    DmBaseAddress:         64'h0
+  };
+
   // rates are in percent
   parameter TlbRandHitRate   = 50;
   parameter MemRandHitRate   = 50;
@@ -240,8 +260,7 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 
   wt_icache  #(
-    .CachedAddrBeg(CachedAddrBeg),
-    .CachedAddrEnd(CachedAddrEnd)
+    .ArianeCfg(Cfg)
     ) dut (
     .clk_i          ( clk_i          ),
     .rst_ni         ( rst_ni         ),

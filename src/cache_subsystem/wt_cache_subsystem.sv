@@ -22,10 +22,7 @@ import ariane_pkg::*;
 import wt_cache_pkg::*;
 
 module wt_cache_subsystem #(
-  parameter int unsigned AxiIdWidth    = 10,
-  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000, // begin of cached region
-  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
-  parameter bit          SwapEndianess = 0                 // swap endianess in l15 adapter
+  parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig  // contains cacheable regions
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -75,15 +72,9 @@ module wt_cache_subsystem #(
   wt_cache_pkg::dcache_rtrn_t adapter_dcache;
 
   wt_icache #(
-`ifdef PITON_ARIANE
-    .Axi64BitCompliant  ( 1'b0          ),
-`else
-    .Axi64BitCompliant  ( 1'b1          ),
-`endif
     // use ID 0 for icache reads
     .RdTxId             ( 0             ),
-    .CachedAddrBeg      ( CachedAddrBeg ),
-    .CachedAddrEnd      ( CachedAddrEnd )
+    .ArianeCfg          ( ArianeCfg     )
   ) i_wt_icache (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
@@ -107,16 +98,10 @@ module wt_cache_subsystem #(
   // they have equal prio and are RR arbited
   // Port 2 is write only and goes into the merging write buffer
   wt_dcache #(
-`ifdef PITON_ARIANE
-  	.Axi64BitCompliant  ( 1'b0          ),
-`else
-  	.Axi64BitCompliant  ( 1'b1          ),
-`endif
     // use ID 1 for dcache reads and amos. note that the writebuffer
     // uses all IDs up to DCACHE_MAX_TX-1 for write transactions.
     .RdAmoTxId       ( 1             ),
-    .CachedAddrBeg   ( CachedAddrBeg ),
-    .CachedAddrEnd   ( CachedAddrEnd )
+    .ArianeCfg       ( ArianeCfg     )
   ) i_wt_dcache (
     .clk_i           ( clk_i                   ),
     .rst_ni          ( rst_ni                  ),
@@ -144,7 +129,7 @@ module wt_cache_subsystem #(
 
 `ifdef PITON_ARIANE
   wt_l15_adapter #(
-    .SwapEndianess   ( SwapEndianess )
+    .SwapEndianess   ( ArianeCfg.SwapEndianess )
   ) i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
@@ -162,9 +147,7 @@ module wt_cache_subsystem #(
     .l15_rtrn_i         ( l15_rtrn_i              )
   );
 `else
-  wt_axi_adapter #(
-    .AxiIdWidth   ( AxiIdWidth )
-  ) i_adapter (
+  wt_axi_adapter i_adapter (
     .clk_i              ( clk_i                   ),
     .rst_ni             ( rst_ni                  ),
     .icache_data_req_i  ( icache_adapter_data_req ),
