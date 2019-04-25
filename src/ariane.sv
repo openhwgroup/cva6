@@ -15,8 +15,6 @@
 import ariane_pkg::*;
 
 module ariane #(
-  parameter int unsigned             AxiIdWidth    = 4,
-  parameter bit                      SwapEndianess = 0,                // swap endianess in l15 adapter
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic                         clk_i,
@@ -570,7 +568,6 @@ module ariane #(
 `ifdef WT_DCACHE
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
-    .AxiIdWidth           ( AxiIdWidth    ),
     .ArianeCfg            ( ArianeCfg     )
   ) i_cache_subsystem (
     // to D$
