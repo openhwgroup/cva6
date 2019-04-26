@@ -267,7 +267,7 @@ module tb;
       assign fifo_flush[k] = req_ports_i[k].kill_req;
       assign fifo_pop[k]   = req_ports_o[k].data_rvalid;
 
-      fifo_v2 #(
+      fifo_v3 #(
         .dtype(resp_fifo_t)
       ) i_resp_fifo (
         .clk_i       ( clk_i            ),
@@ -276,8 +276,7 @@ module tb;
         .testmode_i  ( '0               ),
         .full_o      (                  ),
         .empty_o     (                  ),
-        .alm_full_o  (                  ),
-        .alm_empty_o (                  ),
+        .usage_o     (                  ),
         .data_i      ( fifo_data_in[k]  ),
         .push_i      ( fifo_push[k]     ),
         .data_o      ( fifo_data[k]     ),

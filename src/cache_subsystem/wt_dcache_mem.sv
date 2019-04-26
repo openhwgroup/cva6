@@ -135,19 +135,25 @@ module wt_dcache_mem #(
   assign rd_req_prio   = rd_req_i & rd_prio_i;
   assign rd_req_masked = (|rd_req_prio) ? rd_req_prio : rd_req_i;
 
-  // read port arbiter
-  rrarbiter #(
-    .NUM_REQ(NumPorts)
-  ) i_rrarbiter (
-    .clk_i  ( clk_i         ),
-    .rst_ni ( rst_ni        ),
-    .flush_i( 1'b0          ),
-    .en_i   ( ~wr_cl_vld_i  ),
-    .req_i  ( rd_req_masked ),
-    .ack_o  ( rd_ack_o      ),
-    .vld_o  ( rd_acked      ),
-    .idx_o  ( vld_sel_d     )
+  logic rd_req;
+  rr_arb_tree #(
+    .NumIn     (NumPorts),
+    .DataWidth (1)
+  ) i_rr_arb_tree (
+    .clk_i  (clk_i   ),
+    .rst_ni (rst_ni  ),
+    .flush_i('0      ),
+    .rr_i   ('0      ),
+    .req_i  (rd_req_masked ),
+    .gnt_o  (rd_ack_o      ),
+    .data_i ('0            ),
+    .gnt_i  (~wr_cl_vld_i  ),
+    .req_o  (rd_req        ),
+    .data_o (              ),
+    .idx_o  (vld_sel_d     )
   );
+
+  assign rd_acked = rd_req & ~wr_cl_vld_i;
 
   always_comb begin : p_bank_req
     vld_we   = wr_cl_vld_i;
