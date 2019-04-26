@@ -181,7 +181,7 @@ module mem_emul #(
     end
   end
 
-  fifo_v2 #(
+  fifo_v3 #(
     .dtype(icache_req_t),
     .DEPTH(2)
   ) i_outfifo (
@@ -191,8 +191,7 @@ module mem_emul #(
     .testmode_i  ( 1'b0          ),
     .full_o      ( outfifo_full  ),
     .empty_o     ( outfifo_empty ),
-    .alm_full_o  (               ),
-    .alm_empty_o (               ),
+    .usage_o     (               ),
     .data_i      ( mem_data_i    ),
     .push_i      ( outfifo_push  ),
     .data_o      ( outfifo_data  ),
@@ -202,7 +201,7 @@ module mem_emul #(
   assign outfifo_push   = mem_data_req_i & (~outfifo_full);
   assign mem_data_ack_o = outfifo_push;
 
-  fifo_v2 #(
+  fifo_v3 #(
     .dtype(icache_rtrn_t),
     .DEPTH(2)
   ) i_infifo (
@@ -212,8 +211,7 @@ module mem_emul #(
     .testmode_i  ( 1'b0          ),
     .full_o      ( infifo_full   ),
     .empty_o     ( infifo_empty  ),
-    .alm_full_o  (               ),
-    .alm_empty_o (               ),
+    .usage_o     (               ),
     .data_i      ( infifo_data   ),
     .push_i      ( infifo_push   ),
     .data_o      ( mem_rtrn_o    ),
@@ -224,7 +222,7 @@ module mem_emul #(
   assign mem_rtrn_vld_o = infifo_pop;
 
   // this is to readout the expected responses
-  fifo_v2 #(
+  fifo_v3 #(
     .DATA_WIDTH(64),
     .DEPTH(3)
   ) i_stimuli_fifo (
@@ -234,8 +232,7 @@ module mem_emul #(
     .testmode_i  ( 1'b0          ),
     .full_o      ( stim_full_o   ),
     .empty_o     ( exp_empty     ),
-    .alm_full_o  (               ),
-    .alm_empty_o (               ),
+    .usage_o     (               ),
     .data_i      ( stim_vaddr_i  ),
     .push_i      ( stim_push_i   ),
     .data_o      ( stim_addr     ),

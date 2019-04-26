@@ -137,8 +137,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/rstgen.sv                                         \
         src/common_cells/src/stream_mux.sv                                     \
         src/common_cells/src/stream_demux.sv                                   \
-        src/common_cells/src/deprecated/stream_arbiter.sv                      \
-        src/common_cells/src/deprecated/stream_arbiter_flushable.sv            \
         src/util/axi_master_connect.sv                                         \
         src/util/axi_slave_connect.sv                                          \
         src/util/axi_master_connect_rev.sv                                     \
@@ -153,9 +151,11 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/spill_register.sv                                 \
         src/common_cells/src/sync_wedge.sv                                     \
         src/common_cells/src/edge_detect.sv                                    \
-        src/common_cells/src/fifo_v3.sv                                        \
-        src/common_cells/src/deprecated/fifo_v2.sv                             \
+        src/common_cells/src/deprecated/stream_arbiter.sv                      \
+        src/common_cells/src/deprecated/stream_arbiter_flushable.sv            \
         src/common_cells/src/deprecated/fifo_v1.sv                             \
+        src/common_cells/src/deprecated/fifo_v2.sv                             \
+        src/common_cells/src/fifo_v3.sv                                        \
         src/common_cells/src/lzc.sv                                            \
         src/common_cells/src/rr_arb_tree.sv                                    \
         src/common_cells/src/deprecated/rrarbiter.sv                           \
