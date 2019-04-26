@@ -17,19 +17,14 @@
 // Description: File list for OpenPiton flow
 +incdir+src/common_cells/include/common_cells/
 +incdir+src/util/
-src/common_cells/src/deprecated/fifo_v1.sv
-src/common_cells/src/deprecated/fifo_v2.sv
 src/common_cells/src/fifo_v3.sv
 src/common_cells/src/lfsr_8bit.sv
 src/common_cells/src/lzc.sv
 src/common_cells/src/rr_arb_tree.sv
-src/common_cells/src/deprecated/rrarbiter.sv
 src/common_cells/src/rstgen_bypass.sv
 src/common_cells/src/sync.sv
 src/common_cells/src/sync_wedge.sv
 src/common_cells/src/cdc_2phase.sv
-src/common_cells/src/deprecated/stream_arbiter.sv
-src/common_cells/src/deprecated/stream_arbiter_flushable.sv
 src/common_cells/src/shift_reg.sv
 src/register_interface/src/apb_to_reg.sv
 src/register_interface/src/reg_intf_pkg.sv
