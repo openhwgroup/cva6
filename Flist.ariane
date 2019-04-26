@@ -30,7 +30,6 @@ src/register_interface/src/apb_to_reg.sv
 src/register_interface/src/reg_intf_pkg.sv
 src/register_interface/src/reg_intf.sv
 src/fpu/src/fpnew_pkg.sv
-src/fpu/src/fpu_div_sqrt_mvp/hdl/fpu_ff.sv
 src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 src/fpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
 src/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv
