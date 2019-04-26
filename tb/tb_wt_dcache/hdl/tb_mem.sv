@@ -244,7 +244,7 @@ module tb_mem #(
         end
     end
 
-  fifo_v2 #(
+  fifo_v3 #(
     .dtype(dcache_req_t),
     .DEPTH(2)
   ) i_outfifo (
@@ -254,8 +254,7 @@ module tb_mem #(
     .testmode_i  ( 1'b0          ),
     .full_o      ( outfifo_full  ),
     .empty_o     ( outfifo_empty ),
-    .alm_full_o  (               ),
-    .alm_empty_o (               ),
+    .usage_o     (               ),
     .data_i      ( mem_data_i    ),
     .push_i      ( outfifo_push  ),
     .data_o      ( outfifo_data  ),
@@ -265,7 +264,7 @@ module tb_mem #(
   assign outfifo_push   = mem_data_req_i & (~outfifo_full);
   assign mem_data_ack_o = outfifo_push;
 
-  fifo_v2 #(
+  fifo_v3 #(
     .dtype(dcache_rtrn_t),
     .DEPTH(2)
   ) i_infifo (
@@ -275,8 +274,7 @@ module tb_mem #(
     .testmode_i  ( 1'b0          ),
     .full_o      ( infifo_full   ),
     .empty_o     ( infifo_empty  ),
-    .alm_full_o  (               ),
-    .alm_empty_o (               ),
+    .usage_o     (               ),
     .data_i      ( infifo_data   ),
     .push_i      ( infifo_push   ),
     .data_o      ( mem_rtrn_o    ),

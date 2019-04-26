@@ -484,8 +484,7 @@ module frontend #(
         );
     end
 
-
-    fifo_v2 #(
+    fifo_v3 #(
         .DEPTH        (  8                   ),
         .dtype        ( frontend_fetch_t     )
     ) i_fetch_fifo (
@@ -495,8 +494,7 @@ module frontend #(
         .testmode_i  ( 1'b0                  ),
         .full_o      (                       ),
         .empty_o     ( fifo_empty            ),
-        .alm_full_o  (                       ),
-        .alm_empty_o (                       ),
+        .usage_o     (                       ),
         .data_i      ( {icache_vaddr_q, icache_data_q, bp_sbe, taken[INSTR_PER_FETCH:1], icache_ex_valid_q} ),
         .push_i      ( fifo_valid            ),
         .data_o      ( fetch_entry_o         ),

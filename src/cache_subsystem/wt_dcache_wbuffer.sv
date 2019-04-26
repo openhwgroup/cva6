@@ -129,6 +129,8 @@ module wt_dcache_wbuffer #(
 
   logic [63:0] debug_paddr [DCACHE_WBUF_DEPTH-1:0];
 
+  wbuffer_t wbuffer_check_mux, wbuffer_dirty_mux;
+
 ///////////////////////////////////////////////////////
 // misc
 ///////////////////////////////////////////////////////
@@ -168,7 +170,7 @@ module wt_dcache_wbuffer #(
   );
 
   // add the offset to the physical base address of this buffer entry
-  assign miss_paddr_o = {wbuffer_q[dirty_ptr].wtag, bdirty_off};
+  assign miss_paddr_o = {wbuffer_dirty_mux.wtag, bdirty_off};
   assign miss_id_o    = tx_id;
 
   // is there any dirty word to be transmitted, and is there a free TX slot?
@@ -181,7 +183,7 @@ module wt_dcache_wbuffer #(
   assign miss_size_o  = toSize64(bdirty[dirty_ptr]);
 
   // replicate transfers shorter than a dword
-  assign miss_wdata_o = repData64(wbuffer_q[dirty_ptr].data,
+  assign miss_wdata_o = repData64(wbuffer_dirty_mux.data,
                                   bdirty_off,
                                   miss_size_o[1:0]);
 
@@ -193,7 +195,7 @@ module wt_dcache_wbuffer #(
 ///////////////////////////////////////////////////////
 
   // TODO: todo: make this fall through if timing permits it
-  fifo_v2 #(
+  fifo_v3 #(
     .FALL_THROUGH ( 1'b0                  ),
     .DATA_WIDTH   ( $clog2(DCACHE_MAX_TX) ),
     .DEPTH        ( DCACHE_MAX_TX         )
@@ -204,8 +206,7 @@ module wt_dcache_wbuffer #(
     .testmode_i ( 1'b0             ),
     .full_o     (                  ),
     .empty_o    ( rtrn_empty       ),
-    .alm_full_o (                  ),
-    .alm_empty_o(                  ),
+    .usage_o    (                  ),
     .data_i     ( miss_rtrn_id_i   ),
     .push_i     ( miss_rtrn_vld_i  ),
     .data_o     ( rtrn_id          ),
@@ -243,19 +244,23 @@ module wt_dcache_wbuffer #(
 
   assign free_tx_slots = |(~tx_vld_o);
 
-  // get free TX slot
-  rrarbiter #(
-    .NUM_REQ ( DCACHE_MAX_TX ),
-    .LOCK_IN ( 1             )// lock the decision, once request is asserted
+  // next word to lookup in the cache
+  rr_arb_tree #(
+    .NumIn     (DCACHE_MAX_TX),
+    .LockIn    (1'b1),
+    .DataWidth (1)
   ) i_tx_id_rr (
-    .clk_i   ( clk_i         ),
-    .rst_ni  ( rst_ni        ),
-    .flush_i ( 1'b0          ),
-    .en_i    ( dirty_rd_en   ),
-    .req_i   ( ~tx_vld_o     ),
-    .ack_o   (               ),
-    .vld_o   (               ),
-    .idx_o   ( tx_id         )
+    .clk_i  (clk_i       ),
+    .rst_ni (rst_ni      ),
+    .flush_i('0          ),
+    .rr_i   ('0          ),
+    .req_i  (~tx_vld_o   ),
+    .gnt_o  (            ),
+    .data_i ('0          ),
+    .gnt_i  (dirty_rd_en ),
+    .req_o  (            ),
+    .data_o (            ),
+    .idx_o  (tx_id       )
   );
 
 ///////////////////////////////////////////////////////
@@ -266,7 +271,7 @@ module wt_dcache_wbuffer #(
 
   // trigger TAG readout in cache
   assign rd_tag_only_o = 1'b1;
-  assign rd_paddr   = wbuffer_q[check_ptr_d].wtag<<3;
+  assign rd_paddr   = wbuffer_check_mux.wtag<<3;
   assign rd_req_o   = |tocheck;
   assign rd_tag_o   = rd_tag_q;//delay by one cycle
   assign rd_idx_o   = rd_paddr[DCACHE_INDEX_WIDTH-1:DCACHE_OFFSET_WIDTH];
@@ -341,32 +346,40 @@ module wt_dcache_wbuffer #(
   );
 
   // next dirty word to serve
-  rrarbiter #(
-    .NUM_REQ ( DCACHE_WBUF_DEPTH ),
-    .LOCK_IN ( 1                 )// lock the decision, once request is asserted
+  rr_arb_tree #(
+    .NumIn     ( DCACHE_WBUF_DEPTH ),
+    .LockIn    ( 1'b1              ),
+    .DataType  ( wbuffer_t         )
   ) i_dirty_rr (
-    .clk_i   ( clk_i         ),
-    .rst_ni  ( rst_ni        ),
-    .flush_i ( 1'b0          ),
-    .en_i    ( dirty_rd_en   ),
-    .req_i   ( dirty         ),
-    .ack_o   (               ),
-    .vld_o   (               ),
-    .idx_o   ( dirty_ptr     )
+    .clk_i  ( clk_i             ),
+    .rst_ni ( rst_ni            ),
+    .flush_i( '0                ),
+    .rr_i   ( '0                ),
+    .req_i  ( dirty             ),
+    .gnt_o  (                   ),
+    .data_i ( wbuffer_q         ),
+    .gnt_i  ( dirty_rd_en       ),
+    .req_o  (                   ),
+    .data_o ( wbuffer_dirty_mux ),
+    .idx_o  ( dirty_ptr         )
   );
 
   // next word to lookup in the cache
-  rrarbiter #(
-    .NUM_REQ ( DCACHE_WBUF_DEPTH )
+  rr_arb_tree #(
+    .NumIn     ( DCACHE_WBUF_DEPTH ),
+    .DataType  ( wbuffer_t         )
   ) i_clean_rr (
-    .clk_i   ( clk_i         ),
-    .rst_ni  ( rst_ni        ),
-    .flush_i ( 1'b0          ),
-    .en_i    ( check_en_d    ),
-    .req_i   ( tocheck       ),
-    .ack_o   (               ),
-    .vld_o   (               ),
-    .idx_o   ( check_ptr_d   )
+    .clk_i  ( clk_i             ),
+    .rst_ni ( rst_ni            ),
+    .flush_i( '0                ),
+    .rr_i   ( '0                ),
+    .req_i  ( tocheck           ),
+    .gnt_o  (                   ),
+    .data_i ( wbuffer_q         ),
+    .gnt_i  ( check_en_d        ),
+    .req_o  (                   ),
+    .data_o ( wbuffer_check_mux ),
+    .idx_o  ( check_ptr_d       )
   );
 
 ///////////////////////////////////////////////////////
