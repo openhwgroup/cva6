@@ -1,4 +1,4 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2018-2019 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -42,9 +42,9 @@ module perf_counters (
   input  logic                                    eret_i,
   input  bp_resolve_t                             resolved_branch_i
 );
-  localparam logic [6:0] RegOffset = riscv::CSR_ML1_ICACHE_MISS >> 5;
+  localparam logic [6:0] RegOffset = riscv::CSR_MCYCLE >> 5;
 
-  logic [riscv::CSR_MIF_EMPTY : riscv::CSR_ML1_ICACHE_MISS][63:0] perf_counter_d, perf_counter_q;
+  logic [riscv::CSR_MIF_EMPTY : riscv::CSR_MCYCLE][63:0] perf_counter_d, perf_counter_q;
 
   always_comb begin : perf_counters
     perf_counter_d = perf_counter_q;
@@ -52,70 +52,50 @@ module perf_counters (
 
     // don't increment counters in debug mode
     if (!debug_mode_i) begin
+      perf_counter_d[riscv::CSR_MCYCLE] = perf_counter_q[riscv::CSR_MCYCLE] + 1'b1;
       // ------------------------------
       // Update Performance Counters
       // ------------------------------
-      if (l1_icache_miss_i)
-        perf_counter_d[riscv::CSR_ML1_ICACHE_MISS] = perf_counter_q[riscv::CSR_ML1_ICACHE_MISS] + 1'b1;
-
-      if (l1_dcache_miss_i)
-        perf_counter_d[riscv::CSR_ML1_DCACHE_MISS] = perf_counter_q[riscv::CSR_ML1_DCACHE_MISS] + 1'b1;
-
-      if (itlb_miss_i)
-        perf_counter_d[riscv::CSR_MITLB_MISS] = perf_counter_q[riscv::CSR_MITLB_MISS] + 1'b1;
-
-      if (dtlb_miss_i)
-        perf_counter_d[riscv::CSR_MDTLB_MISS] = perf_counter_q[riscv::CSR_MDTLB_MISS] + 1'b1;
-
+      // increase instruction retired counter
+      if (l1_icache_miss_i) perf_counter_d[riscv::CSR_ML1_ICACHE_MISS]++;
+      if (l1_dcache_miss_i)  perf_counter_d[riscv::CSR_ML1_DCACHE_MISS]++;
+      if (itlb_miss_i) perf_counter_d[riscv::CSR_MITLB_MISS]++;
+      if (dtlb_miss_i) perf_counter_d[riscv::CSR_MDTLB_MISS]++;
       // instruction related perf counters
-      for (int unsigned i = 0; i < NR_COMMIT_PORTS-1; i++) begin
+      for (int unsigned i = 0; i < NR_COMMIT_PORTS; i++) begin
         if (commit_ack_i[i]) begin
-          if (commit_instr_i[i].fu == LOAD)
-            perf_counter_d[riscv::CSR_MLOAD] = perf_counter_q[riscv::CSR_MLOAD] + 1'b1;
-
-          if (commit_instr_i[i].fu == STORE)
-            perf_counter_d[riscv::CSR_MSTORE] = perf_counter_q[riscv::CSR_MSTORE] + 1'b1;
-
-          if (commit_instr_i[i].fu == CTRL_FLOW)
-            perf_counter_d[riscv::CSR_MBRANCH_JUMP] = perf_counter_q[riscv::CSR_MBRANCH_JUMP] + 1'b1;
-
-          // The standard software calling convention uses register x1 to hold the return address on a call
-          // the unconditional jump is decoded as ADD op
+          perf_counter_d[riscv::CSR_MINSTRET]++;
+          if (commit_instr_i[i].fu == LOAD) perf_counter_d[riscv::CSR_MLOAD]++;
+          if (commit_instr_i[i].fu == STORE) perf_counter_d[riscv::CSR_MSTORE]++;
+          if (commit_instr_i[i].fu == CTRL_FLOW) perf_counter_d[riscv::CSR_MBRANCH_JUMP]++;
+          // The standard software calling convention uses register x1 to hold the return
+          // address on a call the unconditional jump is decoded as ADD op
           if (commit_instr_i[i].fu == CTRL_FLOW && commit_instr_i[i].op == '0
-                                                && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd1))
-            perf_counter_d[riscv::CSR_MCALL] = perf_counter_q[riscv::CSR_MCALL] + 1'b1;
-
+                && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd1)) begin
+            perf_counter_d[riscv::CSR_MCALL]++;
+          end
           // Return from call
-          if (commit_instr_i[i].op == JALR && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd1))
-            perf_counter_d[riscv::CSR_MRET] = perf_counter_q[riscv::CSR_MRET] + 1'b1;
+          if (commit_instr_i[i].op == JALR
+                && (commit_instr_i[i].rd == 'd1 || commit_instr_i[i].rd == 'd1)) begin
+            perf_counter_d[riscv::CSR_MRET]++;
+          end
         end
       end
 
-      if (ex_i.valid)
-        perf_counter_d[riscv::CSR_MEXCEPTION] = perf_counter_q[riscv::CSR_MEXCEPTION] + 1'b1;
-
-      if (eret_i)
-        perf_counter_d[riscv::CSR_MEXCEPTION_RET] = perf_counter_q[riscv::CSR_MEXCEPTION_RET] + 1'b1;
-
-      if (resolved_branch_i.valid && resolved_branch_i.is_mispredict)
-        perf_counter_d[riscv::CSR_MMIS_PREDICT] = perf_counter_q[riscv::CSR_MMIS_PREDICT] + 1'b1;
-
-      if (sb_full_i) begin
-        perf_counter_d[riscv::CSR_MSB_FULL] = perf_counter_q[riscv::CSR_MSB_FULL] + 1'b1;
+      if (ex_i.valid) perf_counter_d[riscv::CSR_MEXCEPTION]++;
+      if (eret_i) perf_counter_d[riscv::CSR_MEXCEPTION_RET]++;
+      if (resolved_branch_i.valid && resolved_branch_i.is_mispredict) begin
+        perf_counter_d[riscv::CSR_MMIS_PREDICT]++;
       end
-
-      if (if_empty_i) begin
-        perf_counter_d[riscv::CSR_MIF_EMPTY] = perf_counter_q[riscv::CSR_MIF_EMPTY] + 1'b1;
-      end
+      if (sb_full_i) perf_counter_d[riscv::CSR_MSB_FULL]++;
+      if (if_empty_i) perf_counter_d[riscv::CSR_MIF_EMPTY]++;
     end
-
     // write after read
-    data_o = perf_counter_q[{RegOffset,addr_i}];
+    data_o = perf_counter_q[{RegOffset, addr_i}];
     if (we_i) begin
       perf_counter_d[{RegOffset,addr_i}] = data_i;
     end
   end
-
   // ----------------
   // Registers
   // ----------------
@@ -126,5 +106,4 @@ module perf_counters (
       perf_counter_q <= perf_counter_d;
     end
   end
-
 endmodule

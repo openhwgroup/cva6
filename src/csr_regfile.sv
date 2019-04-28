@@ -142,11 +142,7 @@ module csr_regfile #(
 
     logic        wfi_d,       wfi_q;
 
-    logic [63:0] cycle_q,     cycle_d;
-    logic [63:0] instret_q,   instret_d;
-
     riscv::fcsr_t fcsr_q, fcsr_d;
-
     // ----------------
     // CSR Read logic
     // ----------------
@@ -234,9 +230,9 @@ module csr_regfile #(
                 riscv::CSR_MARCHID:            csr_rdata = ARIANE_MARCHID;
                 riscv::CSR_MIMPID:             csr_rdata = 64'b0; // not implemented
                 riscv::CSR_MHARTID:            csr_rdata = hart_id_i;
-                riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
-                riscv::CSR_MINSTRET:           csr_rdata = instret_q;
                 // Counters and Timers
+                riscv::CSR_MCYCLE,
+                riscv::CSR_MINSTRET,
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
@@ -321,27 +317,7 @@ module csr_regfile #(
     logic [63:0] mask;
     always_comb begin : csr_update
         automatic riscv::satp_t sapt;
-        automatic logic [63:0] instret;
-
-
         sapt = satp_q;
-        instret = instret_q;
-
-        // --------------------
-        // Counters
-        // --------------------
-        cycle_d = cycle_q;
-        instret_d = instret_q;
-        if (!debug_mode_q) begin
-            // increase instruction retired counter
-            for (int i = 0; i < NrCommitPorts; i++) begin
-                if (commit_ack_i[i] && !ex_i.valid) instret++;
-            end
-            instret_d = instret;
-            // increment the cycle count
-            if (ENABLE_CYCLE_COUNT) cycle_d = cycle_q + 1'b1;
-            else cycle_d = instret;
-        end
 
         eret_o                  = 1'b0;
         flush_o                 = 1'b0;
@@ -565,8 +541,8 @@ module csr_regfile #(
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
                 // performance counters
-                riscv::CSR_MCYCLE:             cycle_d     = csr_wdata;
-                riscv::CSR_MINSTRET:           instret     = csr_wdata;
+                riscv::CSR_MCYCLE,
+                riscv::CSR_MINSTRET,
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
@@ -1058,9 +1034,6 @@ module csr_regfile #(
             stval_q                <= 64'b0;
             satp_q                 <= 64'b0;
             scounteren_q           <= 64'b0;
-            // timer and counters
-            cycle_q                <= 64'b0;
-            instret_q              <= 64'b0;
             // aux registers
             en_ld_st_translation_q <= 1'b0;
             // wait for interrupt
@@ -1098,8 +1071,6 @@ module csr_regfile #(
             stval_q                <= stval_d;
             satp_q                 <= satp_d;
             // timer and counters
-            cycle_q                <= cycle_d;
-            instret_q              <= instret_d;
             scounteren_q           <= scounteren_d;
             // aux registers
             en_ld_st_translation_q <= en_ld_st_translation_d;

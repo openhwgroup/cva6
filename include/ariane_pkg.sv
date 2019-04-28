@@ -250,9 +250,6 @@ package ariane_pkg;
     // when more than one core is in a system
     localparam logic INVALIDATE_ON_FLUSH = 1'b1;
 `ifdef SPIKE_TANDEM
-    // enable performance cycle counter, if set to zero mcycle will be incremented
-    // with instret (non RISC-V conformal)
-    localparam bit ENABLE_CYCLE_COUNT = 1'b0;
     // mark WIF as nop
     localparam bit ENABLE_WFI = 1'b0;
     // Spike zeros tval on all exception except memory faults

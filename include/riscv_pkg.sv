@@ -352,9 +352,9 @@ package riscv;
         CSR_MARCHID        = 12'hF12,
         CSR_MIMPID         = 12'hF13,
         CSR_MHARTID        = 12'hF14,
+        // Performance counters (Machine Mode)
         CSR_MCYCLE         = 12'hB00,
         CSR_MINSTRET       = 12'hB02,
-        // Performance counters (Machine Mode)
         CSR_ML1_ICACHE_MISS = 12'hB03,  // L1 Instr Cache Miss
         CSR_ML1_DCACHE_MISS = 12'hB04,  // L1 Data Cache Miss
         CSR_MITLB_MISS      = 12'hB05,  // ITLB Miss
