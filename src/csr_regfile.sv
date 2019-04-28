@@ -129,12 +129,14 @@ module csr_regfile #(
     logic [63:0] mepc_q,      mepc_d;
     logic [63:0] mcause_q,    mcause_d;
     logic [63:0] mtval_q,     mtval_d;
+    logic [63:0] mcounteren_q, mcounteren_d;
 
     logic [63:0] stvec_q,     stvec_d;
     logic [63:0] sscratch_q,  sscratch_d;
     logic [63:0] sepc_q,      sepc_d;
     logic [63:0] scause_q,    scause_d;
     logic [63:0] stval_q,     stval_d;
+    logic [63:0] scounteren_q, scounteren_d;
     logic [63:0] dcache_q,    dcache_d;
     logic [63:0] icache_q,    icache_d;
 
@@ -202,7 +204,7 @@ module csr_regfile #(
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
                 riscv::CSR_STVEC:              csr_rdata = stvec_q;
-                riscv::CSR_SCOUNTEREN:         csr_rdata = 64'b0; // not implemented
+                riscv::CSR_SCOUNTEREN:         csr_rdata = scounteren_q;
                 riscv::CSR_SSCRATCH:           csr_rdata = sscratch_q;
                 riscv::CSR_SEPC:               csr_rdata = sepc_q;
                 riscv::CSR_SCAUSE:             csr_rdata = scause_q;
@@ -222,7 +224,7 @@ module csr_regfile #(
                 riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
                 riscv::CSR_MIE:                csr_rdata = mie_q;
                 riscv::CSR_MTVEC:              csr_rdata = mtvec_q;
-                riscv::CSR_MCOUNTEREN:         csr_rdata = 64'b0; // not implemented
+                riscv::CSR_MCOUNTEREN:         csr_rdata = mcounteren_q;
                 riscv::CSR_MSCRATCH:           csr_rdata = mscratch_q;
                 riscv::CSR_MEPC:               csr_rdata = mepc_q;
                 riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
@@ -267,6 +269,48 @@ module csr_regfile #(
                 // custom (non RISC-V) cache control
                 riscv::CSR_DCACHE:             csr_rdata = dcache_q;
                 riscv::CSR_ICACHE:             csr_rdata = icache_q;
+                riscv::CSR_CYCLE,
+                riscv::CSR_TIME,
+                riscv::CSR_INSTRET,
+                riscv::CSR_HPM_COUNTER_3,
+                riscv::CSR_HPM_COUNTER_4,
+                riscv::CSR_HPM_COUNTER_5,
+                riscv::CSR_HPM_COUNTER_6,
+                riscv::CSR_HPM_COUNTER_7,
+                riscv::CSR_HPM_COUNTER_8,
+                riscv::CSR_HPM_COUNTER_9,
+                riscv::CSR_HPM_COUNTER_10,
+                riscv::CSR_HPM_COUNTER_11,
+                riscv::CSR_HPM_COUNTER_12,
+                riscv::CSR_HPM_COUNTER_13,
+                riscv::CSR_HPM_COUNTER_14,
+                riscv::CSR_HPM_COUNTER_15,
+                riscv::CSR_HPM_COUNTER_16,
+                riscv::CSR_HPM_COUNTER_17,
+                riscv::CSR_HPM_COUNTER_18,
+                riscv::CSR_HPM_COUNTER_19,
+                riscv::CSR_HPM_COUNTER_20,
+                riscv::CSR_HPM_COUNTER_21,
+                riscv::CSR_HPM_COUNTER_22,
+                riscv::CSR_HPM_COUNTER_23,
+                riscv::CSR_HPM_COUNTER_24,
+                riscv::CSR_HPM_COUNTER_25,
+                riscv::CSR_HPM_COUNTER_26,
+                riscv::CSR_HPM_COUNTER_27,
+                riscv::CSR_HPM_COUNTER_28,
+                riscv::CSR_HPM_COUNTER_29,
+                riscv::CSR_HPM_COUNTER_30,
+                riscv::CSR_HPM_COUNTER_31: begin
+                  csr_rdata = perf_data_i;
+                  // check for access rights
+                  unique case (priv_lvl_o)
+                    // check that S-Mode is allowed to access the register
+                    riscv::PRIV_LVL_S: if (!mcounteren_q[perf_addr_o]) read_access_exception = 1'b1;
+                    // check that U-Mode is allowed to access the register
+                    riscv::PRIV_LVL_U: if (!mcounteren_q[perf_addr_o] || !scounteren_q[perf_addr_o]) read_access_exception = 1'b1;
+                    default:;
+                  endcase
+                end
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -338,6 +382,7 @@ module csr_regfile #(
         mcause_d                = mcause_q;
         mscratch_d              = mscratch_q;
         mtval_d                 = mtval_q;
+        mcounteren_d            = mcounteren_q;
         dcache_d                = dcache_q;
         icache_d                = icache_q;
 
@@ -347,6 +392,7 @@ module csr_regfile #(
         sscratch_d              = sscratch_q;
         stval_d                 = stval_q;
         satp_d                  = satp_q;
+        scounteren_d            = scounteren_q;
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
         dirty_fp_state_csr      = 1'b0;
@@ -441,7 +487,7 @@ module csr_regfile #(
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
 
-                riscv::CSR_SCOUNTEREN:;
+                riscv::CSR_SCOUNTEREN:         scounteren_d = csr_wdata;
                 riscv::CSR_STVEC:              stvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
                 riscv::CSR_SSCRATCH:           sscratch_d  = csr_wdata;
                 riscv::CSR_SEPC:               sepc_d      = {csr_wdata[63:1], 1'b0};
@@ -508,7 +554,7 @@ module csr_regfile #(
                     // alignment constraint of 64 * 4 bytes
                     if (csr_wdata[0]) mtvec_d = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
                 end
-                riscv::CSR_MCOUNTEREN:;
+                riscv::CSR_MCOUNTEREN:         mcounteren_d = csr_wdata;
 
                 riscv::CSR_MSCRATCH:           mscratch_d  = csr_wdata;
                 riscv::CSR_MEPC:               mepc_d      = {csr_wdata[63:1], 1'b0};
@@ -1001,6 +1047,7 @@ module csr_regfile #(
             mcause_q               <= 64'b0;
             mscratch_q             <= 64'b0;
             mtval_q                <= 64'b0;
+            mcounteren_q           <= 64'b0;
             dcache_q               <= 64'b1;
             icache_q               <= 64'b1;
             // supervisor mode registers
@@ -1010,6 +1057,7 @@ module csr_regfile #(
             sscratch_q             <= 64'b0;
             stval_q                <= 64'b0;
             satp_q                 <= 64'b0;
+            scounteren_q           <= 64'b0;
             // timer and counters
             cycle_q                <= 64'b0;
             instret_q              <= 64'b0;
@@ -1041,6 +1089,7 @@ module csr_regfile #(
             mtval_q                <= mtval_d;
             dcache_q               <= dcache_d;
             icache_q               <= icache_d;
+            mcounteren_q           <= mcounteren_d;
             // supervisor mode registers
             sepc_q                 <= sepc_d;
             scause_q               <= scause_d;
@@ -1051,6 +1100,7 @@ module csr_regfile #(
             // timer and counters
             cycle_q                <= cycle_d;
             instret_q              <= instret_d;
+            scounteren_q           <= scounteren_d;
             // aux registers
             en_ld_st_translation_q <= en_ld_st_translation_d;
             // wait for interrupt
