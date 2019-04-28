@@ -9,7 +9,6 @@
 // specific language governing permissions and limitations under the License.
 
 // Xilinx Peripehrals
-`default_nettype none
 
 module ariane_peripherals #(
     parameter int AxiAddrWidth = -1,
@@ -734,5 +733,3 @@ module ariane_peripherals #(
         assign s_axi_gpio_wlast = 1'b1;
     end
 endmodule
-
-`default_nettype wire
