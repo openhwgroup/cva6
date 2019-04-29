@@ -346,7 +346,7 @@ ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
-    .ArianeCfg ( ArianeSocCfg )
+    .ArianeCfg ( ariane_soc::ArianeSocCfg )
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),

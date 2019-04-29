@@ -47,10 +47,17 @@ module ras #(
             stack_d[DEPTH-1].valid = 1'b0;
             stack_d[DEPTH-1].ra = 'b0;
         end
+        // leave everything untouched and just push the latest value to the
+        // top of the stack
+        if (pop_i && push_i) begin
+           stack_d = stack_q;
+           stack_d[0].ra = data_i;
+           stack_d[0].valid = 1'b1;
+        end
 
         if (flush_i) begin
           stack_d = '0;
-        end  
+        end
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin

@@ -73,7 +73,13 @@ module commit_stage #(
     assign waddr_o[1] = commit_instr_i[1].rd[4:0];
 
     assign pc_o       = commit_instr_i[0].pc;
-    assign dirty_fp_state_o = |we_fpr_o;
+    // Dirty the FP state if we are committing anything related to the FPU
+    always_comb begin : dirty_fp_state
+      dirty_fp_state_o = 1'b0;
+      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+        dirty_fp_state_o |= commit_ack_o[i] & commit_instr_i[i].fu inside {FPU, FPU_VEC};
+      end
+    end
 
     logic instr_0_is_amo;
     assign instr_0_is_amo = is_amo(commit_instr_i[0].op);

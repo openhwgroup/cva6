@@ -21,6 +21,7 @@ module ex_stage #(
     input  logic                                   clk_i,    // Clock
     input  logic                                   rst_ni,   // Asynchronous reset active low
     input  logic                                   flush_i,
+    input  logic                                   debug_mode_i,
 
     input  fu_data_t                               fu_data_i,
     input  logic [63:0]                            pc_i,                  // PC of current instruction
@@ -38,7 +39,7 @@ module ex_stage #(
     // Branch Unit
     input  logic                                   branch_valid_i,        // we are using the branch unit
     input  branchpredict_sbe_t                     branch_predict_i,
-    output branchpredict_t                         resolved_branch_o,     // the branch engine uses the write back from the ALU
+    output bp_resolve_t                            resolved_branch_o,     // the branch engine uses the write back from the ALU
     output logic                                   resolve_branch_o,      // to ID signaling that we resolved the branch
     // CSR
     input  logic                                   csr_valid_i,
@@ -143,6 +144,9 @@ module ex_stage #(
     // we don't silence the branch unit as this is already critical and we do
     // not want to add another layer of logic
     branch_unit branch_unit_i (
+        .clk_i,
+        .rst_ni,
+        .debug_mode_i,
         .fu_data_i,
         .pc_i,
         .is_compressed_instr_i,

@@ -29,13 +29,13 @@ class instruction_trace_item;
     logic [63:0]       result;
     logic [63:0]       paddr;
     string             priv_lvl;
-    branchpredict_t    bp;
+    bp_resolve_t       bp;
 
     logic [4:0] rs1, rs2, rs3, rd;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
     function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] gp_reg_file [32],
-                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, branchpredict_t bp);
+                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
