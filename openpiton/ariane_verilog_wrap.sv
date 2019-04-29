@@ -164,6 +164,9 @@ module ariane_verilog_wrap #(
   /////////////////////////////
 
   localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
+    RASDepth: 2,
+    BTBEntries: 32,
+    BHTEntries: 128,
     // idempotent region
     NrNonIdempotentRules:  NrNonIdempotentRules,
     NonIdempotentAddrBase: NonIdempotentAddrBase,

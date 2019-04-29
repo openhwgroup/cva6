@@ -17,6 +17,9 @@
 // Description: File list for OpenPiton flow
 +incdir+src/common_cells/include/common_cells/
 +incdir+src/util/
+src/common_cells/src/deprecated/rrarbiter.sv
+src/common_cells/src/deprecated/fifo_v1.sv
+src/common_cells/src/deprecated/fifo_v2.sv
 src/common_cells/src/fifo_v3.sv
 src/common_cells/src/lfsr_8bit.sv
 src/common_cells/src/lzc.sv
@@ -26,6 +29,8 @@ src/common_cells/src/sync.sv
 src/common_cells/src/sync_wedge.sv
 src/common_cells/src/cdc_2phase.sv
 src/common_cells/src/shift_reg.sv
+src/common_cells/src/unread.sv
+src/common_cells/src/popcount.sv
 src/register_interface/src/apb_to_reg.sv
 src/register_interface/src/reg_intf_pkg.sv
 src/register_interface/src/reg_intf.sv
@@ -87,13 +92,14 @@ src/csr_buffer.sv
 src/csr_regfile.sv
 src/decoder.sv
 src/ex_stage.sv
+src/instr_realign.sv
 src/frontend/btb.sv
 src/frontend/bht.sv
 src/frontend/ras.sv
 src/frontend/instr_scan.sv
+src/frontend/instr_queue.sv
 src/frontend/frontend.sv
 src/id_stage.sv
-src/instr_realigner.sv
 src/issue_read_operands.sv
 src/issue_stage.sv
 src/load_unit.sv
