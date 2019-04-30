@@ -12,11 +12,20 @@
 // Date: 30.05.2017
 // Description: Instruction tracer single instruction item
 
-class instruction_trace_item;
+function string printPCexpr(input logic [63:0] imm);
+  // check if the sign bit is set
+  if ($signed(imm) > 0) begin
+      return $sformatf("pc + %0d", $signed(imm));
+  end else begin
+      return $sformatf("pc - %0d", $signed(-imm));
+  end
+endfunction
+
+class instr_trace_item;
     // keep a couple of general purpose information inside this instruction item
     time               simtime;
     longint unsigned   cycle;
-    scoreboard_entry_t sbe;
+    ariane_pkg::scoreboard_entry_t sbe;
     logic [31:0]       pc;
     logic [31:0]       instr;
     logic [63:0]       gp_reg_file [32];
@@ -29,13 +38,13 @@ class instruction_trace_item;
     logic [63:0]       result;
     logic [63:0]       paddr;
     string             priv_lvl;
-    bp_resolve_t       bp;
+    ariane_pkg::bp_resolve_t       bp;
 
     logic [4:0] rs1, rs2, rs3, rd;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
-    function new (time simtime, longint unsigned cycle, scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] gp_reg_file [32],
-                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, bp_resolve_t bp);
+    function new (time simtime, longint unsigned cycle, ariane_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] gp_reg_file [32],
+                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -186,172 +195,172 @@ class instruction_trace_item;
 
         case (instr) inside
              // Aliases
-            32'h00_00_00_13:           s = this.printMnemonic("nop");
+            instr_tracer_pkg::INSTR_NOP:      s = this.printMnemonic("nop");
             // Regular opcodes
-            INSTR_LUI:                 s = this.printUInstr("lui");
-            INSTR_AUIPC:               s = this.printUInstr("auipc");
-            INSTR_JAL:                 s = this.printJump("jal");
-            INSTR_JALR:                s = this.printJump("jalr");
+            instr_tracer_pkg::INSTR_LUI:      s = this.printUInstr("lui");
+            instr_tracer_pkg::INSTR_AUIPC:    s = this.printUInstr("auipc");
+            instr_tracer_pkg::INSTR_JAL:      s = this.printJump("jal");
+            instr_tracer_pkg::INSTR_JALR:     s = this.printJump("jalr");
             // BRANCH
-            INSTR_BEQZ:                s = this.printSBInstr("beqz");
-            INSTR_BEQ:                 s = this.printSBInstr("beq");
-            INSTR_BNEZ:                s = this.printSBInstr("bnez");
-            INSTR_BNE:                 s = this.printSBInstr("bne");
-            INSTR_BLTZ:                s = this.printSBInstr("bltz");
-            INSTR_BLT:                 s = this.printSBInstr("blt");
-            INSTR_BGEZ:                s = this.printSBInstr("bgez");
-            INSTR_BGE:                 s = this.printSBInstr("bge");
-            INSTR_BLTU:                s = this.printSBInstr("bltu");
-            INSTR_BGEU:                s = this.printSBInstr("bgeu");
+            instr_tracer_pkg::INSTR_BEQZ:     s = this.printSBInstr("beqz");
+            instr_tracer_pkg::INSTR_BEQ:      s = this.printSBInstr("beq");
+            instr_tracer_pkg::INSTR_BNEZ:     s = this.printSBInstr("bnez");
+            instr_tracer_pkg::INSTR_BNE:      s = this.printSBInstr("bne");
+            instr_tracer_pkg::INSTR_BLTZ:     s = this.printSBInstr("bltz");
+            instr_tracer_pkg::INSTR_BLT:      s = this.printSBInstr("blt");
+            instr_tracer_pkg::INSTR_BGEZ:     s = this.printSBInstr("bgez");
+            instr_tracer_pkg::INSTR_BGE:      s = this.printSBInstr("bge");
+            instr_tracer_pkg::INSTR_BLTU:     s = this.printSBInstr("bltu");
+            instr_tracer_pkg::INSTR_BGEU:     s = this.printSBInstr("bgeu");
             // OPIMM
-            INSTR_LI:                  s = this.printIInstr("li");
-            INSTR_ADDI:                s = this.printIInstr("addi");
-            INSTR_SLTI:                s = this.printIInstr("slti");
-            INSTR_SLTIU:               s = this.printIInstr("sltiu");
-            INSTR_XORI:                s = this.printIInstr("xori");
-            INSTR_ORI:                 s = this.printIInstr("ori");
-            INSTR_ANDI:                s = this.printIInstr("andi");
-            INSTR_SLLI:                s = this.printIuInstr("slli");
-            INSTR_SRLI:                s = this.printIuInstr("srli");
-            INSTR_SRAI:                s = this.printIuInstr("srai");
+            instr_tracer_pkg::INSTR_LI:       s = this.printIInstr("li");
+            instr_tracer_pkg::INSTR_ADDI:     s = this.printIInstr("addi");
+            instr_tracer_pkg::INSTR_SLTI:     s = this.printIInstr("slti");
+            instr_tracer_pkg::INSTR_SLTIU:    s = this.printIInstr("sltiu");
+            instr_tracer_pkg::INSTR_XORI:     s = this.printIInstr("xori");
+            instr_tracer_pkg::INSTR_ORI:      s = this.printIInstr("ori");
+            instr_tracer_pkg::INSTR_ANDI:     s = this.printIInstr("andi");
+            instr_tracer_pkg::INSTR_SLLI:     s = this.printIuInstr("slli");
+            instr_tracer_pkg::INSTR_SRLI:     s = this.printIuInstr("srli");
+            instr_tracer_pkg::INSTR_SRAI:     s = this.printIuInstr("srai");
             // OPIMM32
-            INSTR_ADDIW:               s = this.printIInstr("addiw");
-            INSTR_SLLIW:               s = this.printIuInstr("slliw");
-            INSTR_SRLIW:               s = this.printIuInstr("srliw");
-            INSTR_SRAIW:               s = this.printIuInstr("sraiw");
+            instr_tracer_pkg::INSTR_ADDIW:    s = this.printIInstr("addiw");
+            instr_tracer_pkg::INSTR_SLLIW:    s = this.printIuInstr("slliw");
+            instr_tracer_pkg::INSTR_SRLIW:    s = this.printIuInstr("srliw");
+            instr_tracer_pkg::INSTR_SRAIW:    s = this.printIuInstr("sraiw");
             // OP
-            INSTR_ADD:                 s = this.printRInstr("add");
-            INSTR_SUB:                 s = this.printRInstr("sub");
-            INSTR_SLL:                 s = this.printRInstr("sll");
-            INSTR_SLT:                 s = this.printRInstr("slt");
-            INSTR_SLTU:                s = this.printRInstr("sltu");
-            INSTR_XOR:                 s = this.printRInstr("xor");
-            INSTR_SRL:                 s = this.printRInstr("srl");
-            INSTR_SRA:                 s = this.printRInstr("sra");
-            INSTR_OR:                  s = this.printRInstr("or");
-            INSTR_AND:                 s = this.printRInstr("and");
-            INSTR_MUL:                 s = this.printMulInstr(1'b0);
+            instr_tracer_pkg::INSTR_ADD:      s = this.printRInstr("add");
+            instr_tracer_pkg::INSTR_SUB:      s = this.printRInstr("sub");
+            instr_tracer_pkg::INSTR_SLL:      s = this.printRInstr("sll");
+            instr_tracer_pkg::INSTR_SLT:      s = this.printRInstr("slt");
+            instr_tracer_pkg::INSTR_SLTU:     s = this.printRInstr("sltu");
+            instr_tracer_pkg::INSTR_XOR:      s = this.printRInstr("xor");
+            instr_tracer_pkg::INSTR_SRL:      s = this.printRInstr("srl");
+            instr_tracer_pkg::INSTR_SRA:      s = this.printRInstr("sra");
+            instr_tracer_pkg::INSTR_OR:       s = this.printRInstr("or");
+            instr_tracer_pkg::INSTR_AND:      s = this.printRInstr("and");
+            instr_tracer_pkg::INSTR_MUL:      s = this.printMulInstr(1'b0);
             // OP32
-            INSTR_ADDW:                s = this.printRInstr("addw");
-            INSTR_SUBW:                s = this.printRInstr("subw");
-            INSTR_SLLW:                s = this.printRInstr("sllw");
-            INSTR_SRLW:                s = this.printRInstr("srlw");
-            INSTR_SRAW:                s = this.printRInstr("sraw");
-            INSTR_MULW:                s = this.printMulInstr(1'b1);
+            instr_tracer_pkg::INSTR_ADDW:     s = this.printRInstr("addw");
+            instr_tracer_pkg::INSTR_SUBW:     s = this.printRInstr("subw");
+            instr_tracer_pkg::INSTR_SLLW:     s = this.printRInstr("sllw");
+            instr_tracer_pkg::INSTR_SRLW:     s = this.printRInstr("srlw");
+            instr_tracer_pkg::INSTR_SRAW:     s = this.printRInstr("sraw");
+            instr_tracer_pkg::INSTR_MULW:     s = this.printMulInstr(1'b1);
             // FP
-            INSTR_FMADD:               s = this.printR4Instr("fmadd");
-            INSTR_FMSUB:               s = this.printR4Instr("fmsub");
-            INSTR_FNSMSUB:             s = this.printR4Instr("fnmsub");
-            INSTR_FNMADD:              s = this.printR4Instr("fnmadd");
+            instr_tracer_pkg::INSTR_FMADD:    s = this.printR4Instr("fmadd");
+            instr_tracer_pkg::INSTR_FMSUB:    s = this.printR4Instr("fmsub");
+            instr_tracer_pkg::INSTR_FNSMSUB:  s = this.printR4Instr("fnmsub");
+            instr_tracer_pkg::INSTR_FNMADD:   s = this.printR4Instr("fnmadd");
 
-            INSTR_FADD:                s = this.printRFBCInstr("fadd", 1'b1);
-            INSTR_FSUB:                s = this.printRFBCInstr("fsub", 1'b1);
-            INSTR_FMUL:                s = this.printRFInstr("fmul", 1'b1);
-            INSTR_FDIV:                s = this.printRFInstr("fdiv", 1'b1);
-            INSTR_FSQRT:               s = this.printRFInstr1Op("fsqrt", 1'b1);
-            INSTR_FSGNJ:               s = this.printRFInstr("fsgnj", 1'b0);
-            INSTR_FSGNJN:              s = this.printRFInstr("fsgnjn", 1'b0);
-            INSTR_FSGNJX:              s = this.printRFInstr("fsgnjx", 1'b0);
-            INSTR_FMIN:                s = this.printRFInstr("fmin", 1'b0);
-            INSTR_FMAX:                s = this.printRFInstr("fmax", 1'b0);
-            INSTR_FLE:                 s = this.printRFInstr("fle", 1'b0);
-            INSTR_FLT:                 s = this.printRFInstr("flt", 1'b0);
-            INSTR_FEQ:                 s = this.printRFInstr("feq", 1'b0);
+            instr_tracer_pkg::INSTR_FADD:     s = this.printRFBCInstr("fadd", 1'b1);
+            instr_tracer_pkg::INSTR_FSUB:     s = this.printRFBCInstr("fsub", 1'b1);
+            instr_tracer_pkg::INSTR_FMUL:     s = this.printRFInstr("fmul", 1'b1);
+            instr_tracer_pkg::INSTR_FDIV:     s = this.printRFInstr("fdiv", 1'b1);
+            instr_tracer_pkg::INSTR_FSQRT:    s = this.printRFInstr1Op("fsqrt", 1'b1);
+            instr_tracer_pkg::INSTR_FSGNJ:    s = this.printRFInstr("fsgnj", 1'b0);
+            instr_tracer_pkg::INSTR_FSGNJN:   s = this.printRFInstr("fsgnjn", 1'b0);
+            instr_tracer_pkg::INSTR_FSGNJX:   s = this.printRFInstr("fsgnjx", 1'b0);
+            instr_tracer_pkg::INSTR_FMIN:     s = this.printRFInstr("fmin", 1'b0);
+            instr_tracer_pkg::INSTR_FMAX:     s = this.printRFInstr("fmax", 1'b0);
+            instr_tracer_pkg::INSTR_FLE:      s = this.printRFInstr("fle", 1'b0);
+            instr_tracer_pkg::INSTR_FLT:      s = this.printRFInstr("flt", 1'b0);
+            instr_tracer_pkg::INSTR_FEQ:      s = this.printRFInstr("feq", 1'b0);
 
-            INSTR_FCLASS:              s = this.printRFInstr1Op("fclass", 1'b0);
+            instr_tracer_pkg::INSTR_FCLASS:   s = this.printRFInstr1Op("fclass", 1'b0);
 
-            INSTR_FCVT_F2F,
-            INSTR_FMV_F2X,
-            INSTR_FMV_X2F,
-            INSTR_FCVT_F2I,
-            INSTR_FCVT_I2F:            s = this.printFpSpecialInstr(); // these are a mess to do nicely
+            instr_tracer_pkg::INSTR_FCVT_F2F,
+            instr_tracer_pkg::INSTR_FMV_F2X,
+            instr_tracer_pkg::INSTR_FMV_X2F,
+            instr_tracer_pkg::INSTR_FCVT_F2I,
+            instr_tracer_pkg::INSTR_FCVT_I2F: s = this.printFpSpecialInstr(); // these are a mess to do nicely
             // FENCE
-            INSTR_FENCE:               s = this.printMnemonic("fence");
-            INSTR_FENCEI:              s = this.printMnemonic("fence.i");
+            instr_tracer_pkg::INSTR_FENCE:    s = this.printMnemonic("fence");
+            instr_tracer_pkg::INSTR_FENCEI:   s = this.printMnemonic("fence.i");
             // SYSTEM (CSR manipulation)
-            INSTR_CSRW:                s = this.printCSRInstr("csrw");
-            INSTR_CSRRW:               s = this.printCSRInstr("csrrw");
-            INSTR_CSRR:                s = this.printCSRInstr("csrr");
-            INSTR_CSRRS:               s = this.printCSRInstr("csrrs");
-            INSTR_CSRS:                s = this.printCSRInstr("csrs");
-            INSTR_CSRRC:               s = this.printCSRInstr("csrrc");
-            INSTR_CSRC:                s = this.printCSRInstr("csrc");
+            instr_tracer_pkg::INSTR_CSRW:     s = this.printCSRInstr("csrw");
+            instr_tracer_pkg::INSTR_CSRRW:    s = this.printCSRInstr("csrrw");
+            instr_tracer_pkg::INSTR_CSRR:     s = this.printCSRInstr("csrr");
+            instr_tracer_pkg::INSTR_CSRRS:    s = this.printCSRInstr("csrrs");
+            instr_tracer_pkg::INSTR_CSRS:     s = this.printCSRInstr("csrs");
+            instr_tracer_pkg::INSTR_CSRRC:    s = this.printCSRInstr("csrrc");
+            instr_tracer_pkg::INSTR_CSRC:     s = this.printCSRInstr("csrc");
 
-            INSTR_CSRWI:               s = this.printCSRInstr("csrwi");
-            INSTR_CSRRWI:              s = this.printCSRInstr("csrrwi");
-            INSTR_CSRSI:               s = this.printCSRInstr("csrsi");
-            INSTR_CSRRSI:              s = this.printCSRInstr("csrrsi");
-            INSTR_CSRCI:               s = this.printCSRInstr("csrci");
-            INSTR_CSRRCI:              s = this.printCSRInstr("csrrci");
+            instr_tracer_pkg::INSTR_CSRWI:    s = this.printCSRInstr("csrwi");
+            instr_tracer_pkg::INSTR_CSRRWI:   s = this.printCSRInstr("csrrwi");
+            instr_tracer_pkg::INSTR_CSRSI:    s = this.printCSRInstr("csrsi");
+            instr_tracer_pkg::INSTR_CSRRSI:   s = this.printCSRInstr("csrrsi");
+            instr_tracer_pkg::INSTR_CSRCI:    s = this.printCSRInstr("csrci");
+            instr_tracer_pkg::INSTR_CSRRCI:   s = this.printCSRInstr("csrrci");
             // SYSTEM (others)
-            INSTR_ECALL:               s = this.printMnemonic("ecall");
-            INSTR_EBREAK:              s = this.printMnemonic("ebreak");
-            INSTR_MRET:                s = this.printMnemonic("mret");
-            INSTR_SRET:                s = this.printMnemonic("sret");
-            INSTR_DRET:                s = this.printMnemonic("dret");
-            INSTR_WFI:                 s = this.printMnemonic("wfi");
-            INSTR_SFENCE:              s = this.printMnemonic("sfence.vma");
+            instr_tracer_pkg::INSTR_ECALL:    s = this.printMnemonic("ecall");
+            instr_tracer_pkg::INSTR_EBREAK:   s = this.printMnemonic("ebreak");
+            instr_tracer_pkg::INSTR_MRET:     s = this.printMnemonic("mret");
+            instr_tracer_pkg::INSTR_SRET:     s = this.printMnemonic("sret");
+            instr_tracer_pkg::INSTR_DRET:     s = this.printMnemonic("dret");
+            instr_tracer_pkg::INSTR_WFI:      s = this.printMnemonic("wfi");
+            instr_tracer_pkg::INSTR_SFENCE:   s = this.printMnemonic("sfence.vma");
             // loads and stores
-            LB:                        s = this.printLoadInstr("lb");
-            LH:                        s = this.printLoadInstr("lh");
-            LW:                        s = this.printLoadInstr("lw");
-            LD:                        s = this.printLoadInstr("ld");
-            LBU:                       s = this.printLoadInstr("lbu");
-            LHU:                       s = this.printLoadInstr("lhu");
-            LWU:                       s = this.printLoadInstr("lwu");
-            FLW:                       s = this.printLoadInstr("flw");
-            FLD:                       s = this.printLoadInstr("fld");
-            FLQ:                       s = this.printLoadInstr("flq");
-            FSW:                       s = this.printLoadInstr("fsw");
-            FSD:                       s = this.printLoadInstr("fsd");
-            FSQ:                       s = this.printLoadInstr("fsq");
-            SB:                        s = this.printStoreInstr("sb");
-            SH:                        s = this.printStoreInstr("sh");
-            SW:                        s = this.printStoreInstr("sw");
-            SD:                        s = this.printStoreInstr("sd");
-            FSW:                       s = this.printStoreInstr("fsw");
-            FSD:                       s = this.printStoreInstr("fsd");
-            FSQ:                       s = this.printStoreInstr("fsq");
-            INSTR_AMO:                 s = this.printAMOInstr();
+            instr_tracer_pkg::LB:             s = this.printLoadInstr("lb");
+            instr_tracer_pkg::LH:             s = this.printLoadInstr("lh");
+            instr_tracer_pkg::LW:             s = this.printLoadInstr("lw");
+            instr_tracer_pkg::LD:             s = this.printLoadInstr("ld");
+            instr_tracer_pkg::LBU:            s = this.printLoadInstr("lbu");
+            instr_tracer_pkg::LHU:            s = this.printLoadInstr("lhu");
+            instr_tracer_pkg::LWU:            s = this.printLoadInstr("lwu");
+            instr_tracer_pkg::FLW:            s = this.printLoadInstr("flw");
+            instr_tracer_pkg::FLD:            s = this.printLoadInstr("fld");
+            instr_tracer_pkg::FLQ:            s = this.printLoadInstr("flq");
+            instr_tracer_pkg::FSW:            s = this.printLoadInstr("fsw");
+            instr_tracer_pkg::FSD:            s = this.printLoadInstr("fsd");
+            instr_tracer_pkg::FSQ:            s = this.printLoadInstr("fsq");
+            instr_tracer_pkg::SB:             s = this.printStoreInstr("sb");
+            instr_tracer_pkg::SH:             s = this.printStoreInstr("sh");
+            instr_tracer_pkg::SW:             s = this.printStoreInstr("sw");
+            instr_tracer_pkg::SD:             s = this.printStoreInstr("sd");
+            instr_tracer_pkg::FSW:            s = this.printStoreInstr("fsw");
+            instr_tracer_pkg::FSD:            s = this.printStoreInstr("fsd");
+            instr_tracer_pkg::FSQ:            s = this.printStoreInstr("fsq");
+            instr_tracer_pkg::INSTR_AMO:      s = this.printAMOInstr();
             // Compressed Instructions
-            C_FLD:                     s = this.printLoadInstr("c.fld");
-            C_LW:                      s = this.printLoadInstr("c.lw");
-            C_LD:                      s = this.printLoadInstr("c.ld");
-            C_LWSP:                    s = this.printLoadInstr("c.lwsp");
-            C_LDSP:                    s = this.printLoadInstr("c.ldsp");
-            C_FLDSP:                   s = this.printLoadInstr("c.fldsp");
-            C_SDSP:                    s = this.printStoreInstr("c.sdsp");
-            C_SWSP:                    s = this.printStoreInstr("c.swsp");
-            C_FSDSP:                   s = this.printStoreInstr("c.fsdsp");
-            C_SW:                      s = this.printStoreInstr("c.sw");
-            C_SD:                      s = this.printStoreInstr("c.sd");
-            C_FSD:                     s = this.printStoreInstr("c.fsd");
-            C_J:                       s = this.printJump("c.j");
-            C_JR:                      s = this.printJump("c.jr");
-            C_JALR:                    s = this.printJump("c.jalr");
-            C_MV:                      s = this.printRInstr("c.mv");
-            C_ADD:                     s = this.printRInstr("c.add");
-            C_BEQZ:                    s = this.printSBInstr("c.beqz");
-            C_BNEZ:                    s = this.printSBInstr("c.bnez");
-            C_LUI:                     s = this.printUInstr("c.lui");
-            C_LI:                      s = this.printIInstr("c.li");
-            C_ADDI:                    s = this.printIInstr("c.addi");
-            C_ADDI16SP:                s = this.printIInstr("c.addi16sp");
-            C_ADDIW:                   s = this.printIInstr("c.addiw");
-            C_SLLI:                    s = this.printIInstr("c.slli");
-            C_SRLI:                    s = this.printIInstr("c.srli");
-            C_SRAI:                    s = this.printIInstr("c.srai");
-            C_ANDI:                    s = this.printIInstr("c.andi");
-            C_ADDI4SPN:                s = this.printIInstr("c.addi4spn");
-            C_SUB:                     s = this.printRInstr("c.sub");
-            C_XOR:                     s = this.printRInstr("c.xor");
-            C_OR:                      s = this.printRInstr("c.or");
-            C_AND:                     s = this.printRInstr("c.and");
-            C_SUBW:                    s = this.printRInstr("c.subw");
-            C_ADDW:                    s = this.printRInstr("c.addw");
-            C_NOP:                     s = this.printMnemonic("c.nop");
-            C_EBREAK:                  s = this.printMnemonic("c.ebreak");
-            default:                   s = this.printMnemonic("INVALID");
+            instr_tracer_pkg::C_FLD:          s = this.printLoadInstr("c.fld");
+            instr_tracer_pkg::C_LW:           s = this.printLoadInstr("c.lw");
+            instr_tracer_pkg::C_LD:           s = this.printLoadInstr("c.ld");
+            instr_tracer_pkg::C_LWSP:         s = this.printLoadInstr("c.lwsp");
+            instr_tracer_pkg::C_LDSP:         s = this.printLoadInstr("c.ldsp");
+            instr_tracer_pkg::C_FLDSP:        s = this.printLoadInstr("c.fldsp");
+            instr_tracer_pkg::C_SDSP:         s = this.printStoreInstr("c.sdsp");
+            instr_tracer_pkg::C_SWSP:         s = this.printStoreInstr("c.swsp");
+            instr_tracer_pkg::C_FSDSP:        s = this.printStoreInstr("c.fsdsp");
+            instr_tracer_pkg::C_SW:           s = this.printStoreInstr("c.sw");
+            instr_tracer_pkg::C_SD:           s = this.printStoreInstr("c.sd");
+            instr_tracer_pkg::C_FSD:          s = this.printStoreInstr("c.fsd");
+            instr_tracer_pkg::C_J:            s = this.printJump("c.j");
+            instr_tracer_pkg::C_JR:           s = this.printJump("c.jr");
+            instr_tracer_pkg::C_JALR:         s = this.printJump("c.jalr");
+            instr_tracer_pkg::C_MV:           s = this.printRInstr("c.mv");
+            instr_tracer_pkg::C_ADD:          s = this.printRInstr("c.add");
+            instr_tracer_pkg::C_BEQZ:         s = this.printSBInstr("c.beqz");
+            instr_tracer_pkg::C_BNEZ:         s = this.printSBInstr("c.bnez");
+            instr_tracer_pkg::C_LUI:          s = this.printUInstr("c.lui");
+            instr_tracer_pkg::C_LI:           s = this.printIInstr("c.li");
+            instr_tracer_pkg::C_ADDI:         s = this.printIInstr("c.addi");
+            instr_tracer_pkg::C_ADDI16SP:     s = this.printIInstr("c.addi16sp");
+            instr_tracer_pkg::C_ADDIW:        s = this.printIInstr("c.addiw");
+            instr_tracer_pkg::C_SLLI:         s = this.printIInstr("c.slli");
+            instr_tracer_pkg::C_SRLI:         s = this.printIInstr("c.srli");
+            instr_tracer_pkg::C_SRAI:         s = this.printIInstr("c.srai");
+            instr_tracer_pkg::C_ANDI:         s = this.printIInstr("c.andi");
+            instr_tracer_pkg::C_ADDI4SPN:     s = this.printIInstr("c.addi4spn");
+            instr_tracer_pkg::C_SUB:          s = this.printRInstr("c.sub");
+            instr_tracer_pkg::C_XOR:          s = this.printRInstr("c.xor");
+            instr_tracer_pkg::C_OR:           s = this.printRInstr("c.or");
+            instr_tracer_pkg::C_AND:          s = this.printRInstr("c.and");
+            instr_tracer_pkg::C_SUBW:         s = this.printRInstr("c.subw");
+            instr_tracer_pkg::C_ADDW:         s = this.printRInstr("c.addw");
+            instr_tracer_pkg::C_NOP:          s = this.printMnemonic("c.nop");
+            instr_tracer_pkg::C_EBREAK:       s = this.printMnemonic("c.ebreak");
+            default:                          s = this.printMnemonic("INVALID");
         endcase
 
         s = $sformatf("%8dns %8d %s %h %h %h %-36s", simtime,
@@ -384,13 +393,43 @@ class instruction_trace_item;
 
         case (instr) inside
             // check of the instruction was a load or store
-            C_SDSP, C_SWSP, C_FSWSP, C_FSDSP, C_SW, C_SD, C_FSW, C_FSD,
-            SB, SH, SW, SD, FSW, FSD, FSQ: begin
+            instr_tracer_pkg::C_SDSP,
+            instr_tracer_pkg::C_SWSP,
+            instr_tracer_pkg::C_FSWSP,
+            instr_tracer_pkg::C_FSDSP,
+            instr_tracer_pkg::C_SW,
+            instr_tracer_pkg::C_SD,
+            instr_tracer_pkg::C_FSW,
+            instr_tracer_pkg::C_FSD,
+            instr_tracer_pkg::SB,
+            instr_tracer_pkg::SH,
+            instr_tracer_pkg::SW,
+            instr_tracer_pkg::SD,
+            instr_tracer_pkg::FSW,
+            instr_tracer_pkg::FSD,
+            instr_tracer_pkg::FSQ: begin
                 logic [63:0] vaddress = gp_reg_file[read_regs[1]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
-            C_FLD, C_FLW, C_LW, C_LD, C_LWSP, C_LDSP, C_FLWSP, C_FLDSP,
-            LB, LH, LW, LD, LBU, LHU, LWU, FLW, FLD, FLQ: begin
+
+            instr_tracer_pkg::C_FLD,
+            instr_tracer_pkg::C_FLW,
+            instr_tracer_pkg::C_LW,
+            instr_tracer_pkg::C_LD,
+            instr_tracer_pkg::C_LWSP,
+            instr_tracer_pkg::C_LDSP,
+            instr_tracer_pkg::C_FLWSP,
+            instr_tracer_pkg::C_FLDSP,
+            instr_tracer_pkg::LB,
+            instr_tracer_pkg::LH,
+            instr_tracer_pkg::LW,
+            instr_tracer_pkg::LD,
+            instr_tracer_pkg::LBU,
+            instr_tracer_pkg::LHU,
+            instr_tracer_pkg::LWU,
+            instr_tracer_pkg::FLW,
+            instr_tracer_pkg::FLD,
+            instr_tracer_pkg::FLQ: begin
                 logic [63:0] vaddress = gp_reg_file[read_regs[0]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
@@ -426,44 +465,44 @@ class instruction_trace_item;
     function string printRFBCInstr(input string mnemonic, input bit use_rnd);
 
         result_regs.push_back(rd);
-        result_fpr.push_back(is_rd_fpr(sbe.op));
+        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
         read_regs.push_back(rs2);
-        read_fpr.push_back(is_rs2_fpr(sbe.op));
+        read_fpr.push_back(ariane_pkg::is_rs2_fpr(sbe.op));
         read_regs.push_back(sbe.result[4:0]);
-        read_fpr.push_back(is_imm_fpr(sbe.op));
+        read_fpr.push_back(ariane_pkg::is_imm_fpr(sbe.op));
 
         if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]), fpRmToStr(instr[14:12]));
+            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), ariane_pkg::is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]), fpRmToStr(instr[14:12]));
         else
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]));
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), ariane_pkg::is_imm_fpr(sbe.op)?fpRegAddrToStr(sbe.result[4:0]):regAddrToStr(sbe.result[4:0]));
     endfunction // printRFInstr
 
     function string printRFInstr(input string mnemonic, input bit use_rnd);
 
         result_regs.push_back(rd);
-        result_fpr.push_back(is_rd_fpr(sbe.op));
+        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
-        read_fpr.push_back(is_rs1_fpr(sbe.op));
+        read_fpr.push_back(ariane_pkg::is_rs1_fpr(sbe.op));
         read_regs.push_back(rs2);
-        read_fpr.push_back(is_rs2_fpr(sbe.op));
+        read_fpr.push_back(ariane_pkg::is_rs2_fpr(sbe.op));
 
         if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), fpRmToStr(instr[14:12]));
+            return $sformatf("%-12s %4s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2), fpRmToStr(instr[14:12]));
         else
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2));
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), ariane_pkg::is_rs2_fpr(sbe.op)?fpRegAddrToStr(rs2):regAddrToStr(rs2));
     endfunction // printRFInstr
 
     function string printRFInstr1Op(input string mnemonic, input bit use_rnd);
 
         result_regs.push_back(rd);
-        result_fpr.push_back(is_rd_fpr(sbe.op));
+        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
-        read_fpr.push_back(is_rs1_fpr(sbe.op));
+        read_fpr.push_back(ariane_pkg::is_rs1_fpr(sbe.op));
 
         if (use_rnd && instr[14:12]!=3'b111)
-            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), fpRmToStr(instr[14:12]));
+            return $sformatf("%-12s %4s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1), fpRmToStr(instr[14:12]));
         else
-            return $sformatf("%-12s %4s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1));
+            return $sformatf("%-12s %4s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), ariane_pkg::is_rd_fpr(sbe.op)?fpRegAddrToStr(rd):regAddrToStr(rd), ariane_pkg::is_rs1_fpr(sbe.op)?fpRegAddrToStr(rs1):regAddrToStr(rs1));
     endfunction // printRFInstr1Op
 
     function string printR4Instr(input string mnemonic);
@@ -483,16 +522,16 @@ class instruction_trace_item;
     function string printFpSpecialInstr();
 
         result_regs.push_back(rd);
-        result_fpr.push_back(is_rd_fpr(sbe.op));
+        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
-        read_fpr.push_back(is_rs1_fpr(sbe.op));
+        read_fpr.push_back(ariane_pkg::is_rs1_fpr(sbe.op));
 
         case (sbe.op)
-            FCVT_F2F : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", fpFmtToStr(instr[26:25]), fpFmtToStr(instr[21:20])), fpRegAddrToStr(rd), fpRegAddrToStr(rs1), fpRmToStr(instr[14:12]));
-            FCVT_F2I : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", intFmtToStr(instr[21:20]), fpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1), fpRmToStr(instr[14:12]));
-            FCVT_I2F : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", fpFmtToStr(instr[26:25]), intFmtToStr(instr[21:20])), fpRegAddrToStr(rd), regAddrToStr(rs1), fpRmToStr(instr[14:12]));
-            FMV_F2X  : return $sformatf("%-12s %4s, %s", $sformatf("fmv.x.%s", fmvFpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1));
-            FMV_X2F  : return $sformatf("%-12s %4s, %s", $sformatf("fmv.%s.x", fmvFpFmtToStr(instr[26:25])), fpRegAddrToStr(rd), regAddrToStr(rs1));
+            instr_tracer_pkg::INSTR_FCVT_F2F : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", fpFmtToStr(instr[26:25]), fpFmtToStr(instr[21:20])), fpRegAddrToStr(rd), fpRegAddrToStr(rs1), fpRmToStr(instr[14:12]));
+            instr_tracer_pkg::INSTR_FCVT_F2I : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", intFmtToStr(instr[21:20]), fpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1), fpRmToStr(instr[14:12]));
+            instr_tracer_pkg::INSTR_FCVT_I2F : return $sformatf("%-12s %4s, %s, %s", $sformatf("fcvt.%s.%s", fpFmtToStr(instr[26:25]), intFmtToStr(instr[21:20])), fpRegAddrToStr(rd), regAddrToStr(rs1), fpRmToStr(instr[14:12]));
+            instr_tracer_pkg::INSTR_FMV_F2X  : return $sformatf("%-12s %4s, %s", $sformatf("fmv.x.%s", fmvFpFmtToStr(instr[26:25])), regAddrToStr(rd), fpRegAddrToStr(rs1));
+            instr_tracer_pkg::INSTR_FMV_X2F  : return $sformatf("%-12s %4s, %s", $sformatf("fmv.%s.x", fmvFpFmtToStr(instr[26:25])), fpRegAddrToStr(rd), regAddrToStr(rs1));
         endcase
     endfunction
 
@@ -594,7 +633,7 @@ class instruction_trace_item;
 
     function string printLoadInstr(input string mnemonic);
         result_regs.push_back(rd);
-        result_fpr.push_back(is_rd_fpr(sbe.op));
+        result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
         read_fpr.push_back(1'b0);
         // save the immediate for calculating the virtual address
@@ -608,7 +647,7 @@ class instruction_trace_item;
 
     function string printStoreInstr(input string mnemonic);
         read_regs.push_back(rs2);
-        read_fpr.push_back(is_rs2_fpr(sbe.op));
+        read_fpr.push_back(ariane_pkg::is_rs2_fpr(sbe.op));
         read_regs.push_back(rs1);
         read_fpr.push_back(1'b0);
         // save the immediate for calculating the virtual address
@@ -682,12 +721,3 @@ class instruction_trace_item;
         return this.printRInstr(s);
     endfunction
   endclass
-
-  function string printPCexpr(input logic [63:0] imm);
-    // check if the sign bit is set
-    if ($signed(imm) > 0) begin
-        return $sformatf("pc + %0d", $signed(imm));
-    end else begin
-        return $sformatf("pc - %0d", $signed(-imm));
-    end
-  endfunction

@@ -704,7 +704,7 @@ module ariane #(
 `endif // PITON_ARIANE
 
 `ifndef VERILATOR
-  instruction_tracer_if tracer_if (clk_i);
+  instr_tracer_if tracer_if (clk_i);
   // assign instruction tracer interface
   // control signals
   assign tracer_if.rstn              = rst_ni;
@@ -741,7 +741,7 @@ module ariane #(
   assign tracer_if.priv_lvl          = priv_lvl;
   assign tracer_if.debug_mode        = debug_mode;
 
-  instruction_tracer instr_tracer_i (
+  instr_tracer instr_tracer_i (
     .tracer_if(tracer_if),
     .hart_id_i
   );
