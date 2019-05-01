@@ -12,7 +12,7 @@
 // Date: 17.06.2017
 // Description: Instruction tracer single exception item
 
-class exception_trace_item;
+class ex_trace_item;
     // contains a human readable form of the cause value
     string       cause_s;
     logic [63:0] cause;
@@ -71,4 +71,4 @@ class exception_trace_item;
         return s;
     endfunction
 
-endclass : exception_trace_item
+endclass : ex_trace_item
