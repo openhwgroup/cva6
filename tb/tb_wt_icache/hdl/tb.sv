@@ -40,16 +40,19 @@ module tb;
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
   localparam ariane_cfg_t Cfg = '{
+    RASDepth:              2,
+    BTBEntries:            32,
+    BHTEntries:            128,
     // idempotent region
-    NrNonIdempotentRules: 0,
+    NrNonIdempotentRules:  0,
     NonIdempotentAddrBase: {64'b0},
     NonIdempotentLength:   {64'b0},
     // executable region
-    NrExecuteRegionRules: 0,
+    NrExecuteRegionRules:  0,
     ExecuteRegionAddrBase: {64'h0},
     ExecuteRegionLength:   {64'h0},
     // cached region
-    NrCachedRegionRules:  1,
+    NrCachedRegionRules:   1,
     CachedRegionAddrBase: {CachedAddrBeg},
     CachedRegionLength:   {CachedAddrEnd-CachedAddrBeg+64'b1},
     // cache config
