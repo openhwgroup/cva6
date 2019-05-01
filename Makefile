@@ -67,9 +67,9 @@ ariane_pkg := include/riscv_pkg.sv                          \
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
-util := $(wildcard src/util/*.svh)                          \
-        src/util/instruction_tracer_if.sv                   \
-        src/util/instruction_tracer.sv                      \
+util := include/instr_tracer_pkg.sv                         \
+        src/util/instr_tracer_if.sv                         \
+        src/util/instr_tracer.sv                            \
         src/tech_cells_generic/src/cluster_clock_gating.sv  \
         tb/common/mock_uart.sv                              \
         src/util/sram.sv
@@ -457,7 +457,11 @@ check-torture:
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
 fpga_filter := $(addprefix $(root-dir), bootrom/bootrom.sv)
-fpga_filter += $(addprefix $(root-dir), src/util/instruction_tracer.sv)
+fpga_filter += $(addprefix $(root-dir), include/instr_tracer_pkg.sv)
+fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
+fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
+fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer_if.sv)
+fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer.sv)
 
 fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
 	@echo "[FPGA] Generate sources"

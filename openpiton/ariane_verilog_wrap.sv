@@ -14,21 +14,24 @@
 
 
 module ariane_verilog_wrap #(
+  parameter int unsigned               RASDepth              = 2,
+  parameter int unsigned               BTBEntries            = 32,
+  parameter int unsigned               BHTEntries            = 128,
   // debug module base address
   parameter logic [63:0]               DmBaseAddress         = 64'h0,
   // swap endianess in l15 adapter
   parameter bit                        SwapEndianess         = 1,
   // PMA configuration
   // idempotent region
-  parameter int                        NrNonIdempotentRules  = 0,
+  parameter int unsigned               NrNonIdempotentRules  =  0,
   parameter logic [NrMaxRules*64-1:0]  NonIdempotentAddrBase = '0,
   parameter logic [NrMaxRules*64-1:0]  NonIdempotentLength   = '0,
   // executable regions
-  parameter int                        NrExecuteRegionRules  = 0,
+  parameter int unsigned               NrExecuteRegionRules  =  0,
   parameter logic [NrMaxRules*64-1:0]  ExecuteRegionAddrBase = '0,
   parameter logic [NrMaxRules*64-1:0]  ExecuteRegionLength   = '0,
   // cacheable regions
-  parameter int                        NrCachedRegionRules   = 0,
+  parameter int unsigned               NrCachedRegionRules   =  0,
   parameter logic [NrMaxRules*64-1:0]  CachedRegionAddrBase  = '0,
   parameter logic [NrMaxRules*64-1:0]  CachedRegionLength    = '0
 ) (
@@ -164,6 +167,9 @@ module ariane_verilog_wrap #(
   /////////////////////////////
 
   localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
+    RASDepth:              RASDepth,
+    BTBEntries:            BTBEntries,
+    BHTEntries:            BHTEntries,
     // idempotent region
     NrNonIdempotentRules:  NrNonIdempotentRules,
     NonIdempotentAddrBase: NonIdempotentAddrBase,
