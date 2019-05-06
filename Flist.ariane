@@ -57,7 +57,8 @@ src/fpu/src/fpnew_opgroup_fmt_slice.sv
 src/fpu/src/fpnew_opgroup_multifmt_slice.sv
 src/fpu/src/fpnew_pipe_in.sv
 src/fpu/src/fpnew_pipe_out.sv
-src/fpu/src/fpnew_pipe_fma_inside.sv
+src/fpu/src/fpnew_pipe_inside_fma.sv
+src/fpu/src/fpnew_pipe_inside_cast.sv
 src/fpu/src/fpnew_rounding.sv
 src/fpu/src/fpnew_top.sv
 src/axi/src/axi_pkg.sv
