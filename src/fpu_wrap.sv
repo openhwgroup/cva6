@@ -34,9 +34,7 @@ module fpu_wrap (
 
 // this is a workaround
 // otherwise compilation might issue an error if FLEN=0
-generate
   if (FP_PRESENT) begin : fpu_gen
-
     logic [FLEN-1:0] operand_a_i;
     logic [FLEN-1:0] operand_b_i;
     logic [FLEN-1:0] operand_c_i;
@@ -550,5 +548,4 @@ generate
     assign fpu_valid_o = fpu_out_valid;
 
   end
-endgenerate
 endmodule

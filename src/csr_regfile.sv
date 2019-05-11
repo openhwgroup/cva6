@@ -97,24 +97,14 @@ module csr_regfile #(
     logic  dret;  // return from debug mode
     // CSR write causes us to mark the FPU state as dirty
     logic  dirty_fp_state_csr;
+    riscv::status_rv64_t  mstatus_q,  mstatus_d;
+    riscv::satp_t         satp_q, satp_d;
+    riscv::dcsr_t         dcsr_q,     dcsr_d;
     riscv::csr_t  csr_addr;
-    // ----------------
-    // Assignments
-    // ----------------
-    assign csr_addr = riscv::csr_t'(csr_addr_i);
-    assign fs_o = mstatus_q.fs;
-    // ----------------
-    // CSR Registers
-    // ----------------
     // privilege level register
     riscv::priv_lvl_t   priv_lvl_d, priv_lvl_q;
     // we are in debug
     logic        debug_mode_q, debug_mode_d;
-
-    riscv::status_rv64_t  mstatus_q,  mstatus_d;
-    riscv::satp_t         satp_q, satp_d;
-    riscv::dcsr_t         dcsr_q,     dcsr_d;
-
     logic        mtvec_rst_load_q;// used to determine whether we came out of reset
 
     logic [63:0] dpc_q,       dpc_d;
@@ -144,7 +134,11 @@ module csr_regfile #(
     logic [63:0] instret_q,   instret_d;
 
     riscv::fcsr_t fcsr_q, fcsr_d;
-
+    // ----------------
+    // Assignments
+    // ----------------
+    assign csr_addr = riscv::csr_t'(csr_addr_i);
+    assign fs_o = mstatus_q.fs;
     // ----------------
     // CSR Read logic
     // ----------------
