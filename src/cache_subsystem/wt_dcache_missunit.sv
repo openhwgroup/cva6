@@ -303,7 +303,7 @@ module wt_dcache_missunit #(
 
   // cacheline write port
   assign wr_cl_nc_o      = mshr_q.nc;
-  assign wr_cl_vld_o     = load_ack | |wr_cl_we_o;
+  assign wr_cl_vld_o     = load_ack | (| wr_cl_we_o);
 
   assign wr_cl_we_o      = (flush_en   )  ? '1                                    :
                            (inv_vld_all)   ? '1                                    :
