@@ -220,6 +220,7 @@ module instr_queue (
     fetch_entry_o.ex.cause = riscv::INSTR_PAGE_FAULT;
     fetch_entry_o.ex.tval = '0;
     fetch_entry_o.branch_predict.predict_address = address_out;
+    fetch_entry_o.branch_predict.cf = ariane_pkg::NoCF;
     // output mux select
     for (int unsigned i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
       if (idx_ds_q[i]) begin
