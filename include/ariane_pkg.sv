@@ -91,20 +91,9 @@ package ariane_pkg;
       // pragma translate_on
     endfunction
 
-    // Generate a mask for a given power of two length
-    function logic [63:0] gen_mask (input logic [63:0] len);
-      return {64{1'b1}} << $clog2(len);
-    endfunction
-
     function automatic logic range_check(logic[63:0] base, logic[63:0] len, logic[63:0] address);
       // if len is a power of two, and base is properly aligned, this chack can be simplified
-      automatic logic[63:0] mask;
-      // mask = gen_mask(len);
-      // if ((64'b1<<$clog2(len) == len) && (mask & base == base)) begin
-      //   return (address & mask) == (base & mask);
-      // end else begin
-        return (address >= base) && (address < (base+len));
-      // end
+      return (address >= base) && (address < (base+len));
     endfunction : range_check
 
     function automatic logic is_inside_nonidempotent_regions (ariane_cfg_t Cfg, logic[63:0] address);
