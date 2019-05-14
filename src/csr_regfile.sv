@@ -423,8 +423,6 @@ module csr_regfile #(
                     if (!FP_PRESENT) begin
                         mstatus_d.fs = riscv::Off;
                     end
-                    // hardwired extension registers
-                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
@@ -466,8 +464,6 @@ module csr_regfile #(
 
                 riscv::CSR_MSTATUS: begin
                     mstatus_d      = csr_wdata;
-                    // hardwired zero registers
-                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
                     mstatus_d.xs   = riscv::Off;
                     if (!FP_PRESENT) begin
                         mstatus_d.fs = riscv::Off;
@@ -567,6 +563,8 @@ module csr_regfile #(
         if (FP_PRESENT && (dirty_fp_state_csr || dirty_fp_state_i)) begin
             mstatus_d.fs = riscv::Dirty;
         end
+        // hardwired extension registers
+        mstatus_d.sd   = (mstatus_q.xs == riscv::Dirty) | (mstatus_q.fs == riscv::Dirty);
 
         // write the floating point status register
         if (csr_write_fflags_i) begin
