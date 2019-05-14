@@ -40,7 +40,7 @@ package riscv;
     } xs_t;
 
     typedef struct packed {
-        logic         sd;     // signal dirty - read-only - hardwired zero
+        logic         sd;     // signal dirty - read-only - high if fs field is dirty
         logic [62:36] wpri4;  // writes preserved reads ignored
         xlen_t        sxl;    // variable supervisor mode xlen - hardwired to zero
         xlen_t        uxl;    // variable user mode xlen - hardwired to zero

@@ -424,7 +424,7 @@ module csr_regfile #(
                         mstatus_d.fs = riscv::Off;
                     end
                     // hardwired extension registers
-                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
+                    mstatus_d.sd   = (mstatus_d.fs == riscv::Dirty) | (&mstatus_q.xs) | (&mstatus_q.fs);
                     // this instruction has side-effects
                     flush_o = 1'b1;
                 end
@@ -467,11 +467,11 @@ module csr_regfile #(
                 riscv::CSR_MSTATUS: begin
                     mstatus_d      = csr_wdata;
                     // hardwired zero registers
-                    mstatus_d.sd   = (&mstatus_q.xs) | (&mstatus_q.fs);
                     mstatus_d.xs   = riscv::Off;
                     if (!FP_PRESENT) begin
                         mstatus_d.fs = riscv::Off;
                     end
+                    mstatus_d.sd   = (mstatus_d.fs == riscv::Dirty) | (&mstatus_q.xs) | (&mstatus_q.fs);
                     mstatus_d.upie = 1'b0;
                     mstatus_d.uie  = 1'b0;
                     // this register has side-effects on other registers, flush the pipeline
