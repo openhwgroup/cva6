@@ -32,8 +32,9 @@ module fpu_wrap (
   output exception_t               fpu_exception_o
 );
 
-// this is a workaround
-// otherwise compilation might issue an error if FLEN=0
+  // this is a workaround
+  // otherwise compilation might issue an error if FLEN=0
+  enum logic {READY, STALL} state_q, state_d;
   if (FP_PRESENT) begin : fpu_gen
     logic [FLEN-1:0] operand_a_i;
     logic [FLEN-1:0] operand_b_i;
@@ -94,7 +95,6 @@ module fpu_wrap (
     logic [4:0] fpu_status;
 
     // FSM to handle protocol inversion
-    enum logic {READY, STALL} state_q, state_d;
     logic hold_inputs;
     logic use_hold;
 
