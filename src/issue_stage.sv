@@ -74,8 +74,8 @@ module issue_stage #(
     // ---------------------------------------------------
     // Scoreboard (SB) <-> Issue and Read Operands (IRO)
     // ---------------------------------------------------
-    fu_t  [2**REG_ADDR_SIZE:0] rd_clobber_gpr_sb_iro;
-    fu_t  [2**REG_ADDR_SIZE:0] rd_clobber_fpr_sb_iro;
+    fu_t  [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_sb_iro;
+    fu_t  [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;
 
     logic [REG_ADDR_SIZE-1:0]  rs1_iro_sb;
     logic [63:0]               rs1_sb_iro;

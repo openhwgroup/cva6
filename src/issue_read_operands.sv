@@ -37,8 +37,8 @@ module issue_read_operands #(
     input  logic [FLEN-1:0]                        rs3_i,
     input  logic                                   rs3_valid_i,
     // get clobber input
-    input  fu_t [2**REG_ADDR_SIZE:0]               rd_clobber_gpr_i,
-    input  fu_t [2**REG_ADDR_SIZE:0]               rd_clobber_fpr_i,
+    input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_gpr_i,
+    input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_fpr_i,
     // To FU, just single issue for now
     output fu_data_t                               fu_data_o,
     output logic [63:0]                            pc_o,
