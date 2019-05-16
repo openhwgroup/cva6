@@ -38,13 +38,13 @@ package ariane_pkg;
       int                               BTBEntries;
       int                               BHTEntries;
       // PMAs
-      int                               NrNonIdempotentRules;  // Number of non idempotent rules
+      int unsigned                      NrNonIdempotentRules;  // Number of non idempotent rules
       logic [NrMaxRules-1:0][63:0]      NonIdempotentAddrBase; // base which needs to match
       logic [NrMaxRules-1:0][63:0]      NonIdempotentLength;   // bit mask which bits to consider when matching the rule
-      int                               NrExecuteRegionRules;  // Number of regions which have execute property
+      int unsigned                      NrExecuteRegionRules;  // Number of regions which have execute property
       logic [NrMaxRules-1:0][63:0]      ExecuteRegionAddrBase; // base which needs to match
       logic [NrMaxRules-1:0][63:0]      ExecuteRegionLength;   // bit mask which bits to consider when matching the rule
-      int                               NrCachedRegionRules;   // Number of regions which have cached property
+      int unsigned                      NrCachedRegionRules;   // Number of regions which have cached property
       logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;  // base which needs to match
       logic [NrMaxRules-1:0][63:0]      CachedRegionLength;    // bit mask which bits to consider when matching the rule
       // cache config
@@ -92,7 +92,7 @@ package ariane_pkg;
     endfunction
 
     function automatic logic range_check(logic[63:0] base, logic[63:0] len, logic[63:0] address);
-      // if len is a power of two, and base is properly aligned, this chack can be simplified
+      // if len is a power of two, and base is properly aligned, this check could be simplified
       return (address >= base) && (address < (base+len));
     endfunction : range_check
 
