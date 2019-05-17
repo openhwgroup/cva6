@@ -177,8 +177,8 @@ module instr_queue (
   // shift the inputs
   for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_fifo_input_select
     /* verilator lint_off WIDTH */
-    assign instr_data_in[i].instr = instr[i + idx_is_q];
-    assign instr_data_in[i].cf = cf[i + idx_is_q];
+    assign instr_data_in[i].instr = instr[i + INSTR_PER_FETCH - idx_is_q];
+    assign instr_data_in[i].cf = cf[i + INSTR_PER_FETCH - idx_is_q];
     assign instr_data_in[i].ex = exception_i; // exceptions hold for the whole fetch packet
     /* verilator lint_on WIDTH */
   end
