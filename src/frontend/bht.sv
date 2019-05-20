@@ -83,7 +83,7 @@ module bht #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
-            for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
+            for (int unsigned i = 0; i < NR_ROWS; i++) begin
                 for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
                     bht_q[i][j] <= '0;
                 end
@@ -91,7 +91,7 @@ module bht #(
         end else begin
             // evict all entries
             if (flush_i) begin
-                for (int i = 0; i < NR_ENTRIES; i++) begin
+                for (int i = 0; i < NR_ROWS; i++) begin
                     for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
                         bht_q[i][j].valid <=  1'b0;
                         bht_q[i][j].saturation_counter <= 2'b10;
