@@ -12,6 +12,7 @@
 // Date: 17.06.2017
 // Description: Instruction tracer single exception item
 
+`ifndef VERILATOR
 class ex_trace_item;
     // contains a human readable form of the cause value
     string       cause_s;
@@ -72,3 +73,4 @@ class ex_trace_item;
     endfunction
 
 endclass : ex_trace_item
+`endif
