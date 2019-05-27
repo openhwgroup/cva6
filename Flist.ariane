@@ -15,7 +15,7 @@
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 15.08.2018
 // Description: File list for OpenPiton flow
-+incdir+src/common_cells/include/common_cells/
++incdir+src/common_cells/include/
 +incdir+src/util/
 src/common_cells/src/deprecated/rrarbiter.sv
 src/common_cells/src/deprecated/fifo_v1.sv
