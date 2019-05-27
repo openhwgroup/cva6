@@ -12,6 +12,7 @@
 // Date: 16.05.2017
 // Description: Instruction Tracer Defines
 
+`ifndef VERILATOR
 package instr_tracer_pkg;
 
   parameter INSTR_NOP      = 32'h00_00_00_13;
@@ -198,3 +199,4 @@ package instr_tracer_pkg;
   parameter [31:0] C_SDSP     = 32'b????????????????111???????????10;
 
 endpackage
+`endif

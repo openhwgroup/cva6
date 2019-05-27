@@ -12,6 +12,7 @@
 // Date: 16.05.2017
 // Description: Instruction Tracer Interface
 
+`ifndef VERILATOR
 `ifndef INSTR_TRACER_IF_SV
 `define INSTR_TRACER_IF_SV
 interface instr_tracer_if (
@@ -62,4 +63,5 @@ interface instr_tracer_if (
     //pragma translate_on
 
 endinterface
+`endif
 `endif
