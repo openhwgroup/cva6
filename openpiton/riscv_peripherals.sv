@@ -745,32 +745,6 @@ module riscv_peripherals #(
   assign reg_bus.error = plic_resp.error;
   assign reg_bus.ready = plic_resp.ready;
 
-  // synchronization regs
-  logic [2:0][NumSources-1:0] irq_sources_d, irq_sources_q;
-  assign irq_sources_d = {irq_sources_q[$high(irq_sources_q)-1:0], irq_sources_i};
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_synch
-    if(!rst_ni) begin
-      irq_sources_q <= '0;
-    end else begin
-      irq_sources_q <= irq_sources_d;
-    end
-  end
-
-  // reshape pulse if needed
-  logic [NumSources-1:0] irq_sources_sync;
-  always_comb begin : p_wedge
-    for (int k=0; k<NumSources; k++) begin
-      if (irq_le_i[k]) begin
-        // edge
-        irq_sources_sync[k] = irq_sources_q[$high(irq_sources_q)-1][k] & ~irq_sources_q[$high(irq_sources_q)][k];
-      end else begin
-        // level
-        irq_sources_sync[k] = irq_sources_q[$high(irq_sources_q)][k];
-      end
-    end
-  end
-
   plic_top #(
     .N_SOURCE    ( NumSources      ),
     .N_TARGET    ( 2*NumHarts      ),
@@ -781,7 +755,7 @@ module riscv_peripherals #(
     .req_i         ( plic_req    ),
     .resp_o        ( plic_resp   ),
     .le_i          ( irq_le_i    ), // 0:level 1:edge
-    .irq_sources_i ( irq_sources_sync ),
+    .irq_sources_i,                 // already synchronized
     .eip_targets_o ( irq_o       )
   );
 
