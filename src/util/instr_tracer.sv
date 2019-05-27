@@ -12,6 +12,7 @@
 // Date: 16.05.2017
 // Description: Instruction Tracer Main Class
 
+`ifndef VERILATOR
 //pragma translate_off
 import uvm_pkg::*;
 `include "uvm_macros.svh"
@@ -221,3 +222,4 @@ module instr_tracer (
   // pragma translate_on
 
 endmodule : instr_tracer
+`endif
