@@ -152,8 +152,8 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/spill_register.sv                                 \
         src/common_cells/src/sync_wedge.sv                                     \
         src/common_cells/src/edge_detect.sv                                    \
-        src/common_cells/src/deprecated/stream_arbiter.sv                      \
-        src/common_cells/src/deprecated/stream_arbiter_flushable.sv            \
+        src/common_cells/src/stream_arbiter.sv                                 \
+        src/common_cells/src/stream_arbiter_flushable.sv                       \
         src/common_cells/src/deprecated/fifo_v1.sv                             \
         src/common_cells/src/deprecated/fifo_v2.sv                             \
         src/common_cells/src/fifo_v3.sv                                        \
@@ -201,7 +201,7 @@ riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := src/common_cells/include/common_cells
+incdir := src/common_cells/include/
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
