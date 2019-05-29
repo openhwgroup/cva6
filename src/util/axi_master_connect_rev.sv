@@ -14,7 +14,7 @@
 module axi_master_connect_rev (
     output ariane_axi::req_t    axi_req_o,
     input  ariane_axi::resp_t   axi_resp_i,
-    AXI_BUS.in master
+    AXI_BUS.Slave master
 );
 
     assign  axi_req_o.aw.atop    = '0; // not supported at the moment
