@@ -14,7 +14,7 @@
 module axi_master_connect (
     input  ariane_axi::req_t    axi_req_i,
     output ariane_axi::resp_t   axi_resp_o,
-    AXI_BUS.out master
+    AXI_BUS.Master master
 );
 
     assign master.aw_id         = axi_req_i.aw.id;

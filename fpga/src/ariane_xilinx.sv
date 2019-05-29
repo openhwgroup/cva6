@@ -16,9 +16,9 @@ module ariane_xilinx (
   input  logic         sys_clk_p   ,
   input  logic         sys_clk_n   ,
   input  logic         cpu_resetn  ,
-  inout  logic [31:0]  ddr3_dq     ,
-  inout  logic [ 3:0]  ddr3_dqs_n  ,
-  inout  logic [ 3:0]  ddr3_dqs_p  ,
+  inout  wire  [31:0]  ddr3_dq     ,
+  inout  wire  [ 3:0]  ddr3_dqs_n  ,
+  inout  wire  [ 3:0]  ddr3_dqs_p  ,
   output logic [14:0]  ddr3_addr   ,
   output logic [ 2:0]  ddr3_ba     ,
   output logic         ddr3_ras_n  ,
@@ -79,7 +79,7 @@ module ariane_xilinx (
   input  logic        tms         ,
   input  logic        trst_n      ,
   input  logic        tdi         ,
-  output logic        tdo         ,
+  output wire         tdo         ,
   input  logic        rx          ,
   output logic        tx
 );
