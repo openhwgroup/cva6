@@ -14,7 +14,7 @@
 module axi_slave_connect (
     output ariane_axi::req_t    axi_req_o,
     input  ariane_axi::resp_t   axi_resp_i,
-    AXI_BUS.in slave
+    AXI_BUS.Slave slave
 );
 
     assign  axi_req_o.aw.id      = slave.aw_id;
