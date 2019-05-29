@@ -99,24 +99,6 @@ interface AXI_BUS #(
     output r_id, r_data, r_resp, r_last, r_user, r_valid, input r_ready
   );
 
-  /// The interface as an output (issuing requests, initiator, master).
-  modport out (
-    output aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_atop, aw_region, aw_user, aw_valid, input aw_ready,
-    output w_data, w_strb, w_last, w_user, w_valid, input w_ready,
-    input b_id, b_resp, b_user, b_valid, output b_ready,
-    output ar_id, ar_addr, ar_len, ar_size, ar_burst, ar_lock, ar_cache, ar_prot, ar_qos, ar_region, ar_user, ar_valid, input ar_ready,
-    input r_id, r_data, r_resp, r_last, r_user, r_valid, output r_ready
-  );
-
-  /// The interface as an input (accepting requests, target, slave).
-  modport in (
-    input aw_id, aw_addr, aw_len, aw_size, aw_burst, aw_lock, aw_cache, aw_prot, aw_qos, aw_atop, aw_region, aw_user, aw_valid, output aw_ready,
-    input w_data, w_strb, w_last, w_user, w_valid, output w_ready,
-    output b_id, b_resp, b_user, b_valid, input b_ready,
-    input ar_id, ar_addr, ar_len, ar_size, ar_burst, ar_lock, ar_cache, ar_prot, ar_qos, ar_region, ar_user, ar_valid, output ar_ready,
-    output r_id, r_data, r_resp, r_last, r_user, r_valid, input r_ready
-  );
-
 endinterface
 
 
