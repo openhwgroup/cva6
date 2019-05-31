@@ -96,6 +96,7 @@ module wt_dcache_missunit #(
   logic flush_en, flush_done;
   logic mask_reads, lock_reqs;
   logic amo_sel, miss_is_write;
+  logic amo_req_d, amo_req_q;
   logic [63:0] amo_data, tmp_paddr, amo_rtrn_mux;
 
   logic [$clog2(NumPorts)-1:0] miss_port_idx;
@@ -217,6 +218,8 @@ module wt_dcache_missunit #(
                                                             amo_rtrn_mux[amo_req_i.operand_a[2]*32 +: 32]} :
                                                        amo_rtrn_mux;
 
+  assign amo_req_d = amo_req_i.req;
+
   // outgoing memory requests (AMOs are always uncached)
   assign mem_data_o.tid    = (amo_sel) ? AmoTxId             : miss_id_i[miss_port_idx];
   assign mem_data_o.nc     = (amo_sel) ? 1'b1                : miss_nc_i[miss_port_idx];
@@ -249,6 +252,16 @@ module wt_dcache_missunit #(
 // responses from memory
 ///////////////////////////////////////////////////////
 
+  // keep track of pending stores
+  logic store_sent;
+  logic [$clog2(wt_cache_pkg::DCACHE_MAX_TX + 1)-1:0] stores_inflight_d, stores_inflight_q;
+  assign store_sent = mem_data_req_o   & mem_data_ack_i & (mem_data_o.rtype == DCACHE_STORE_REQ);
+
+  assign stores_inflight_d = (store_ack && store_sent) ? stores_inflight_q     :
+                             (store_ack)               ? stores_inflight_q - 1 :
+                             (store_sent)              ? stores_inflight_q + 1 :
+                                                         stores_inflight_q;
+
   // incoming responses
   always_comb begin : p_rtrn_logic
     load_ack        = 1'b0;
@@ -262,22 +275,28 @@ module wt_dcache_missunit #(
     if (mem_rtrn_vld_i) begin
       unique case (mem_rtrn_i.rtype)
         DCACHE_LOAD_ACK: begin
-          load_ack = 1'b1;
-          miss_rtrn_vld_o[mshr_q.miss_port_idx] = 1'b1;
+          if (mshr_vld_q) begin
+            load_ack = 1'b1;
+            miss_rtrn_vld_o[mshr_q.miss_port_idx] = 1'b1;
+          end
         end
         DCACHE_STORE_ACK: begin
-          store_ack = 1'b1;
-          miss_rtrn_vld_o[NumPorts-1] = 1'b1;
+          if (stores_inflight_q) begin
+            store_ack = 1'b1;
+            miss_rtrn_vld_o[NumPorts-1] = 1'b1;
+          end
         end
         DCACHE_ATOMIC_ACK: begin
-          amo_ack = 1'b1;
-          // need to set SC backoff counter if
-          // this op failed
-          if (amo_req_i.amo_op == AMO_SC) begin
-            if (amo_resp_o.result) begin
-              sc_fail = 1'b1;
-            end else begin
-              sc_pass = 1'b1;
+          if (amo_req_q) begin
+            amo_ack = 1'b1;
+            // need to set SC backoff counter if
+            // this op failed
+            if (amo_req_i.amo_op == AMO_SC) begin
+              if (amo_resp_o.result) begin
+                sc_fail = 1'b1;
+              end else begin
+                sc_pass = 1'b1;
+              end
             end
           end
         end
@@ -496,6 +515,8 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     mshr_q                <= '0;
     mshr_rdrd_collision_q <= '0;
     miss_req_masked_q     <= '0;
+    amo_req_q             <= '0;
+    stores_inflight_q     <= '0;
   end else begin
     state_q               <= state_d;
     cnt_q                 <= cnt_d;
@@ -506,6 +527,8 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     mshr_q                <= mshr_d;
     mshr_rdrd_collision_q <= mshr_rdrd_collision_d;
     miss_req_masked_q     <= miss_req_masked_d;
+    amo_req_q             <= amo_req_d;
+    stores_inflight_q     <= stores_inflight_d;
   end
 end
 
