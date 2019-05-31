@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Several small fixes to get the code running on VCS 
+- Several small fixes to get the code running on VCS
 - Fix compressed instruction decoding in tracer
 - Fix privilege bug in performance counters. The counters have always been accessible in user mode.
 - Fix RISC-V PK simulation bug caused due to insufficient time to init the `a0` and `a1` registers via the bootrom
@@ -23,8 +23,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix VCS elab warning in `load_store_unit`
 - Replace PLIC with implementation from lowRISC
 - Re-work interrupt and debug subsystem to associate requests during decode. This improves stability on for non-idempotent loads.
-- Bump `common_cells` to v1.13.0
-- Bump `riscv-dbq` and `fpnew`
+- Bump `common_cells` to `v1.13.0`
+- Bump `riscv-dbg` to `v0.1` and `fpnew` to `v0.5.3`
 - Improve FPU pipelining and timing around scoreboard
 - Reworked the axilite to PLIC shim for OpenPiton+Ariane
 
