@@ -13,7 +13,7 @@ if [ ! -e "$VERILATOR_ROOT/bin/verilator" ]; then
     wget https://www.veripool.org/ftp/verilator-4.014.tgz
     tar xzf verilator*.tgz
     rm -f verilator*.tgz
-    cd verilator*
+    cd verilator-4.014
     mkdir -p $VERILATOR_ROOT
     # copy scripts
     autoconf && ./configure --prefix="$VERILATOR_ROOT" && make -j${NUM_JOBS}
