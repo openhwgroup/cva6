@@ -26,7 +26,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Bump `common_cells` to `v1.13.0`
 - Bump `riscv-dbg` to `v0.1` and `fpnew` to `v0.5.3`
 - Improve FPU pipelining and timing around scoreboard
-- Reworked the axilite to PLIC shim for OpenPiton+Ariane
+- Reworked the `axilite` to PLIC shim for OpenPiton+Ariane
+- Remove `in` and `out` aliases for AXI interfaces
+- Fix small issues with DC synthesis
+- Fix wrong dirtying of `sd` flag in `mstatus`
+- Synthesis fix for `Vivado 2018.3`
+- Clean-up instruction front-end, small IPC improvement
+- Move to Verilator 4.014
 
 ### 4.1.2
 
