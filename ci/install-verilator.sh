@@ -10,7 +10,7 @@ fi
 if [ ! -e "$VERILATOR_ROOT/bin/verilator" ]; then
     echo "Installing Verilator"
     rm -f verilator*.tgz
-    wget https://www.veripool.org/ftp/verilator-4.008.tgz
+    wget https://www.veripool.org/ftp/verilator-4.014.tgz
     tar xzf verilator*.tgz
     rm -f verilator*.tgz
     cd verilator*
