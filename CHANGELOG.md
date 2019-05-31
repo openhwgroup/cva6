@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### 4.2.0 - 2019-06-04
+
 ### Added
 
 - Check execute PMA on instruction frontend
@@ -18,12 +20,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix compressed instruction decoding in tracer
 - Fix privilege bug in performance counters. The counters have always been accessible in user mode.
 - Fix RISC-V PK simulation bug caused due to insufficient time to init the `a0` and `a1` registers via the bootrom
-- Fix bug in wt_axi_adapter (only appeared when dcache lines were wider than icache lines)
+- Fix bug in `wt_axi_adapter` (only appeared when dcache lines were wider than icache lines)
 - Fix potentially long timing path in `axi_lite_interface`
 - Fix VCS elab warning in `load_store_unit`
 - Replace PLIC with implementation from lowRISC
 - Re-work interrupt and debug subsystem to associate requests during decode. This improves stability on for non-idempotent loads.
-- Several submodules have been updated: `common_cells` to `v1.13.1`, `riscv-dbg` to `v0.1`, `fpnew` to `v0.5.5` and `axi` to `v0.7.0`
+- Bump `fpnew` to `v0.5.5`
+- Bump `axi` to `v0.7.0`
+- Bump `common_cells` to `v1.13.1`
+- Bump `riscv-dbg` to `v0.1`
 - Improve FPU pipelining and timing around scoreboard
 - Reworked the `axilite` to PLIC shim for OpenPiton+Ariane
 - Remove `in` and `out` aliases for AXI interfaces
