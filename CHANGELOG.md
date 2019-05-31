@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Replace PLIC with implementation from lowRISC
 - Re-work interrupt and debug subsystem to associate requests during decode. This improves stability on for non-idempotent loads.
 - Bump `common_cells` to `v1.13.0`
-- Bump `riscv-dbg` to `v0.1` and `fpnew` to `v0.5.1`
+- Bump `riscv-dbg` to `v0.1` and `fpnew` to `v0.5.3`
 - Improve FPU pipelining and timing around scoreboard
 - Reworked the `axilite` to PLIC shim for OpenPiton+Ariane
 - Remove `in` and `out` aliases for AXI interfaces
