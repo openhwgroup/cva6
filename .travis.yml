@@ -36,7 +36,7 @@ addons:
 env:
   global:
     - RISCV="/home/travis/riscv_install"
-    - VERILATOR_ROOT="/home/travis/verilator-3.924/"
+    - VERILATOR_ROOT="/home/travis/verilator-4.014/"
 
 branches:
   only:
