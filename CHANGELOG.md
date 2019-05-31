@@ -23,8 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix VCS elab warning in `load_store_unit`
 - Replace PLIC with implementation from lowRISC
 - Re-work interrupt and debug subsystem to associate requests during decode. This improves stability on for non-idempotent loads.
-- Bump `common_cells` to `v1.13.0`
-- Bump `riscv-dbg` to `v0.1` and `fpnew` to `v0.5.3`
+- Several submodules have been updated: `common_cells` to `v1.13.0`, `riscv-dbg` to `v0.1`, `fpnew` to `v0.5.3` and `axi` to `v0.6.0`
 - Improve FPU pipelining and timing around scoreboard
 - Reworked the `axilite` to PLIC shim for OpenPiton+Ariane
 - Remove `in` and `out` aliases for AXI interfaces
