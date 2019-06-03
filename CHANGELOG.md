@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix VCS elab warning in `load_store_unit`
 - Replace PLIC with implementation from lowRISC
 - Re-work interrupt and debug subsystem to associate requests during decode. This improves stability on for non-idempotent loads.
-- Several submodules have been updated: `common_cells` to `v1.13.0`, `riscv-dbg` to `v0.1`, `fpnew` to `v0.5.3` and `axi` to `v0.7.0`
+- Several submodules have been updated: `common_cells` to `v1.13.1`, `riscv-dbg` to `v0.1`, `fpnew` to `v0.5.5` and `axi` to `v0.7.0`
 - Improve FPU pipelining and timing around scoreboard
 - Reworked the `axilite` to PLIC shim for OpenPiton+Ariane
 - Remove `in` and `out` aliases for AXI interfaces
@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fix wrong dirtying of `sd` flag in `mstatus`
 - Synthesis fix for `Vivado 2018.3`
 - Clean-up instruction front-end, small IPC improvement
-- Move to Verilator 4.014
+- Move to Verilator `4.014`
 
 ### 4.1.2
 
