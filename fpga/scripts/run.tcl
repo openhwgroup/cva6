@@ -15,7 +15,14 @@
 # Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 # hard-coded to Genesys 2 for the moment
-add_files -fileset constrs_1 -norecurse constraints/genesys-2.xdc
+
+if {$::env(BOARD) eq "genesys2"} {
+    add_files -fileset constrs_1 -norecurse constraints/genesys-2.xdc
+} elseif {$::env(BOARD) eq "kc705"} {
+      add_files -fileset constrs_1 -norecurse constraints/kc705.xdc
+} else {
+      exit 1
+}
 
 read_ip xilinx/xlnx_mig_7_ddr3/ip/xlnx_mig_7_ddr3.xci
 read_ip xilinx/xlnx_axi_clock_converter/ip/xlnx_axi_clock_converter.xci
@@ -35,6 +42,10 @@ if {$::env(BOARD) eq "genesys2"} {
     read_verilog -sv {src/genesysii.svh ../src/common_cells/include/common_cells/registers.svh}
     set file "src/genesysii.svh"
     set registers "../src/common_cells/include/common_cells/registers.svh"
+} elseif {$::env(BOARD) eq "kc705"} {
+      read_verilog -sv {src/kc705.svh ../src/common_cells/include/common_cells/registers.svh}
+      set file "src/kc705.svh"
+      set registers "../src/common_cells/include/common_cells/registers.svh"
 } else {
     exit 1
 }

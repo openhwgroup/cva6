@@ -497,7 +497,8 @@ fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
-	cd fpga && make BOARD="genesys2" XILINX_PART="xc7k325tffg900-2" XILINX_BOARD="digilentinc.com:genesys2:part0:1.1" CLK_PERIOD_NS="20"
+	cd fpga && make BOARD="kc705" XILINX_PART="xc7k325tffg900-2" XILINX_BOARD="xilinx.com:kc705:part0:1.5" CLK_PERIOD_NS="20"
+	#cd fpga && make BOARD="genesys2" XILINX_PART="xc7k325tffg900-2" XILINX_BOARD="digilentinc.com:genesys2:part0:1.1" CLK_PERIOD_NS="20"
 
 .PHONY: fpga
 
@@ -516,4 +517,3 @@ clean:
 	check-benchmarks check-asm-tests                                          \
 	torture-gen torture-itest torture-rtest                                   \
 	run-torture run-torture-verilator check-torture check-torture-verilator
-
