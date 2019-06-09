@@ -15,7 +15,8 @@
 
 // branch history table - 2 bit saturation counter
 module bht #(
-    parameter int unsigned NR_ENTRIES = 1024
+    parameter int unsigned NR_ENTRIES = 1024,
+    parameter int unsigned NR_GLOBAL_HISTORIES = 8
 )(
     input  logic                        clk_i,
     input  logic                        rst_ni,
@@ -36,6 +37,9 @@ module bht #(
     localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
     // we are not interested in all bits of the address
     unread i_unread (.d_i(|vpc_i));
+
+    // global history register
+    logic [NR_GLOBAL_HISTORIES-1:0] ghr_d, ghr_q;
 
     struct packed {
         logic       valid;
@@ -60,7 +64,16 @@ module bht #(
         bht_d = bht_q;
         saturation_counter = bht_q[update_pc][update_row_index].saturation_counter;
 
+        ghr_d = ghr_q;
+
         if (bht_update_i.valid && !debug_mode_i) begin
+
+            // shift the new branch result into the global history buffer at least significant bit
+            for (int unsigned i = 1; i < NR_GLOBAL_HISTORIES; i++) begin
+                ghr_d[i] = ghr_q[i-1];
+            end
+            ghr_d[0] = bht_update_i.taken;
+
             bht_d[update_pc][update_row_index].valid = 1'b1;
 
             if (saturation_counter == 2'b11) begin
@@ -88,6 +101,7 @@ module bht #(
                     bht_q[i][j] <= '0;
                 end
             end
+            ghr_q <= '0;
         end else begin
             // evict all entries
             if (flush_i) begin
@@ -97,8 +111,10 @@ module bht #(
                         bht_q[i][j].saturation_counter <= 2'b10;
                     end
                 end
+                ghr_q <= '0;
             end else begin
                 bht_q <= bht_d;
+                ghr_q <= ghr_d;
             end
         end
     end
