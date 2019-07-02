@@ -1,4 +1,4 @@
-//Copyright (C) 2018 to present,
+// Copyright 2018 - 2019 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 2.0 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -13,10 +13,6 @@
 // Migrated: Luis Vitorio Cargnini, IEEE
 // Date: 09.06.2018
 
-// ------------------------------
-// Branch Prediction
-// ------------------------------
-
 // branch target buffer
 module btb #(
     parameter int NR_ENTRIES = 8
@@ -28,23 +24,36 @@ module btb #(
 
     input  logic [63:0]                 vpc_i,           // virtual PC from IF stage
     input  ariane_pkg::btb_update_t     btb_update_i,    // update btb with this information
-    output ariane_pkg::btb_prediction_t btb_prediction_o // prediction from btb
+    output ariane_pkg::btb_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] btb_prediction_o // prediction from btb
 );
-    // number of bits which are not used for indexing
-    localparam OFFSET = 1; // we are using compressed instructions so do use the lower 2 bits for prediction
-    localparam ANTIALIAS_BITS = 8;
+    // the last bit is always zero, we don't need it for indexing
+    localparam OFFSET = 1;
+    // re-shape the branch history table
+    localparam NR_ROWS = NR_ENTRIES / ariane_pkg::INSTR_PER_FETCH;
+    // number of bits needed to index the row
+    localparam ROW_ADDR_BITS = $clog2(ariane_pkg::INSTR_PER_FETCH);
     // number of bits we should use for prediction
-    localparam PREDICTION_BITS = $clog2(NR_ENTRIES) + OFFSET;
+    localparam PREDICTION_BITS = $clog2(NR_ROWS) + OFFSET + ROW_ADDR_BITS;
+    // prevent aliasing to degrade performance
+    localparam ANTIALIAS_BITS = 8;
+    // we are not interested in all bits of the address
+    unread i_unread (.d_i(|vpc_i));
+
     // typedef for all branch target entries
     // we may want to try to put a tag field that fills the rest of the PC in-order to mitigate aliasing effects
-    ariane_pkg::btb_prediction_t btb_d [NR_ENTRIES-1:0], btb_q [NR_ENTRIES-1:0];
-    logic [$clog2(NR_ENTRIES)-1:0]          index, update_pc;
+    ariane_pkg::btb_prediction_t btb_d [NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0],
+                                 btb_q [NR_ROWS-1:0][ariane_pkg::INSTR_PER_FETCH-1:0];
+    logic [$clog2(NR_ROWS)-1:0]  index, update_pc;
+    logic [ROW_ADDR_BITS-1:0]    update_row_index;
 
-    assign index     = vpc_i[PREDICTION_BITS - 1:OFFSET];
-    assign update_pc = btb_update_i.pc[PREDICTION_BITS - 1:OFFSET];
+    assign index     = vpc_i[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
+    assign update_pc = btb_update_i.pc[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
+    assign update_row_index = btb_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
 
     // output matching prediction
-    assign btb_prediction_o = btb_q[index];
+    for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_btb_output
+        assign btb_prediction_o[i] = btb_q[index][i]; // workaround
+    end
 
     // -------------------------
     // Update Branch Prediction
@@ -54,28 +63,25 @@ module btb #(
         btb_d = btb_q;
 
         if (btb_update_i.valid && !debug_mode_i) begin
-            btb_d[update_pc].valid = 1'b1;
+            btb_d[update_pc][update_row_index].valid = 1'b1;
             // the target address is simply updated
-            btb_d[update_pc].target_address = btb_update_i.target_address;
-            // check if we should invalidate this entry, this happens in case we predicted a branch
-            // where actually none-is (aliasing)
-            if (btb_update_i.clear) begin
-                btb_d[update_pc].valid = 1'b0;
-            end
+            btb_d[update_pc][update_row_index].target_address = btb_update_i.target_address;
         end
     end
 
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
+        if (!rst_ni) begin
             // Bias the branches to be taken upon first arrival
-            for (int i = 0; i < NR_ENTRIES; i++)
+            for (int i = 0; i < NR_ROWS; i++)
                 btb_q[i] <= '{default: 0};
         end else begin
             // evict all entries
             if (flush_i) begin
-                for (int i = 0; i < NR_ENTRIES; i++) begin
-                    btb_q[i].valid <=  1'b0;
+                for (int i = 0; i < NR_ROWS; i++) begin
+                    for (int j = 0; j < ariane_pkg::INSTR_PER_FETCH; j++) begin
+                        btb_q[i][j].valid <=  1'b0;
+                    end
                 end
             end else begin
                 btb_q <=  btb_d;

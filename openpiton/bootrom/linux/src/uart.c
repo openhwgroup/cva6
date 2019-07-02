@@ -35,14 +35,18 @@ void init_uart(uint32_t freq, uint32_t baud)
     write_reg_u8(UART_MODEM_CONTROL, 0x20);    // Autoflow mode
 }
 
-void print_uart(const char *str)
+// returns number of characters printed
+int print_uart(const char *str)
 {
+    int num = 0;
     const char *cur = &str[0];
     while (*cur != '\0')
     {
         write_serial((uint8_t)*cur);
         ++cur;
+        ++num;
     }
+    return num;
 }
 
 uint8_t bin_to_hex_table[16] = {
@@ -55,8 +59,9 @@ void bin_to_hex(uint8_t inp, uint8_t res[2])
     return;
 }
 
-void print_uart_dec(uint32_t val, uint32_t digits)
+int print_uart_dec(uint32_t val, uint32_t digits)
 {
+    int num = 0;
     int i;
     uint32_t k = 1000000000;
     for (i = 9; i > -1; i--)
@@ -69,11 +74,13 @@ void print_uart_dec(uint32_t val, uint32_t digits)
             uint8_t dec;
             dec = bin_to_hex_table[cur & 0xf];
             write_serial(dec);
+            num++;
         }
     }
+    return num;
 }
 
-void print_uart_int(uint32_t addr)
+int print_uart_int(uint32_t addr)
 {
     int i;
     for (i = 3; i > -1; i--)
@@ -84,9 +91,10 @@ void print_uart_int(uint32_t addr)
         write_serial(hex[0]);
         write_serial(hex[1]);
     }
+    return 8;
 }
 
-void print_uart_addr(uint64_t addr)
+int print_uart_addr(uint64_t addr)
 {
     int i;
     for (i = 7; i > -1; i--)
@@ -97,12 +105,14 @@ void print_uart_addr(uint64_t addr)
         write_serial(hex[0]);
         write_serial(hex[1]);
     }
+    return 16;
 }
 
-void print_uart_byte(uint8_t byte)
+int print_uart_byte(uint8_t byte)
 {
     uint8_t hex[2];
     bin_to_hex(byte, hex);
     write_serial(hex[0]);
     write_serial(hex[1]);
+    return 2;
 }

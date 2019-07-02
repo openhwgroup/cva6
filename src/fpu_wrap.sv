@@ -32,11 +32,10 @@ module fpu_wrap (
   output exception_t               fpu_exception_o
 );
 
-// this is a workaround
-// otherwise compilation might issue an error if FLEN=0
-generate
+  // this is a workaround
+  // otherwise compilation might issue an error if FLEN=0
+  enum logic {READY, STALL} state_q, state_d;
   if (FP_PRESENT) begin : fpu_gen
-
     logic [FLEN-1:0] operand_a_i;
     logic [FLEN-1:0] operand_b_i;
     logic [FLEN-1:0] operand_c_i;
@@ -71,7 +70,7 @@ generate
                    '{default: fpnew_pkg::MERGED},   // DIVSQRT
                    '{default: fpnew_pkg::PARALLEL}, // NONCOMP
                    '{default: fpnew_pkg::MERGED}},  // CONV
-      PipeConfig: fpnew_pkg::AFTER
+      PipeConfig: fpnew_pkg::DISTRIBUTED
     };
 
     //-------------------------------------------------
@@ -96,7 +95,6 @@ generate
     logic [4:0] fpu_status;
 
     // FSM to handle protocol inversion
-    enum logic {READY, STALL} state_q, state_d;
     logic hold_inputs;
     logic use_hold;
 
@@ -550,5 +548,4 @@ generate
     assign fpu_valid_o = fpu_out_valid;
 
   end
-endgenerate
 endmodule

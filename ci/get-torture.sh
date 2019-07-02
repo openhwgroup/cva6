@@ -16,7 +16,7 @@ git submodule update --init --recursive
 
 # copy ariane specific config
 cp config/default.config config/default.config.bak
-cp $ROOT/ci/default.config config/default.config
+cp $ROOT/ci/float.config config/default.config
 git checkout ./output/Makefile
 git apply $ROOT/ci/torture_make.patch
 

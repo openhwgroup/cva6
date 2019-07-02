@@ -9,10 +9,9 @@
 ../../src/cache_subsystem/wt_dcache_wbuffer.sv
 ../../src/cache_subsystem/wt_dcache.sv
 ../../src/common_cells/src/lfsr_8bit.sv
-../../src/common_cells/src/fifo_v2.sv
 ../../src/common_cells/src/fifo_v3.sv
 ../../src/common_cells/src/lzc.sv
-../../src/common_cells/src/rrarbiter.sv
+../../src/common_cells/src/rr_arb_tree.sv
 ../../src/util/sram.sv
 hdl/tb_pkg.sv
 hdl/tb_mem.sv

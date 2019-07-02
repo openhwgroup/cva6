@@ -28,6 +28,10 @@ rv64ud-p-fcvt_w
 rv64ud-p-fdiv
 rv64ud-p-fmadd
 rv64ud-p-fmin
+rv64ud-p-ldst
+rv64ud-p-move
+rv64ud-p-recoding
+rv64ud-p-structural
 rv64ud-v-fadd
 rv64ud-v-fclass
 rv64ud-v-fcmp
@@ -36,3 +40,7 @@ rv64ud-v-fcvt_w
 rv64ud-v-fdiv
 rv64ud-v-fmadd
 rv64ud-v-fmin
+rv64ud-v-ldst
+rv64ud-v-move
+rv64ud-v-recoding
+rv64ud-v-structural

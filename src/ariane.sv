@@ -1,4 +1,4 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2017-2019 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -13,19 +13,9 @@
 // Description: Ariane Top-level module
 
 import ariane_pkg::*;
-// pragma translate_off
-`ifndef VERILATOR
-import instruction_tracer_pkg::*;
-`endif
-// pragma translate_on
-
 
 module ariane #(
-  parameter logic [63:0] DmBaseAddress = 64'h0,            // debug module base address
-  parameter int unsigned AxiIdWidth    = 4,
-  parameter bit          SwapEndianess = 0,                // swap endianess in l15 adapter
-  parameter logic [63:0] CachedAddrEnd = 64'h80_0000_0000, // end of cached region
-  parameter logic [63:0] CachedAddrBeg = 64'h00_8000_0000  // begin of cached region
+  parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -56,7 +46,7 @@ module ariane #(
   // ------------------------------------------
   riscv::priv_lvl_t           priv_lvl;
   exception_t                 ex_commit; // exception from commit stage
-  branchpredict_t             resolved_branch;
+  bp_resolve_t                resolved_branch;
   logic [63:0]                pc_commit;
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
@@ -69,9 +59,9 @@ module ariane #(
   // --------------
   // IF <-> ID
   // --------------
-  frontend_fetch_t          fetch_entry_if_id;
+  fetch_entry_t             fetch_entry_if_id;
   logic                     fetch_valid_if_id;
-  logic                     decode_ack_id_if;
+  logic                     fetch_ready_id_if;
 
   // --------------
   // ID <-> ISSUE
@@ -171,6 +161,7 @@ module ariane #(
   logic                     tvm_csr_id;
   logic                     tw_csr_id;
   logic                     tsr_csr_id;
+  irq_ctrl_t                irq_ctrl_csr_id;
   logic                     dcache_en_csr_nbdcache;
   logic                     csr_write_fflags_commit_cs;
   logic                     icache_en_csr;
@@ -218,10 +209,6 @@ module ariane #(
   amo_resp_t                amo_resp;
   logic                     sb_full;
 
-  logic debug_req;
-  // Disable debug during AMO commit
-  assign debug_req = debug_req_i & ~amo_valid_commit;
-
   // ----------------
   // DCache <-> *
   // ----------------
@@ -233,10 +220,10 @@ module ariane #(
   // Frontend
   // --------------
   frontend #(
-    .DmBaseAddress       ( DmBaseAddress )
+    .ArianeCfg ( ArianeCfg )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
-    .flush_bp_i          ( flush_ctrl_bp                 ),
+    .flush_bp_i          ( 1'b0                          ),
     .debug_mode_i        ( debug_mode                    ),
     .boot_addr_i         ( boot_addr_i                   ),
     .icache_dreq_i       ( icache_dreq_cache_if          ),
@@ -251,7 +238,7 @@ module ariane #(
     .ex_valid_i          ( ex_commit.valid               ),
     .fetch_entry_o       ( fetch_entry_if_id             ),
     .fetch_entry_valid_o ( fetch_valid_if_id             ),
-    .fetch_ack_i         ( decode_ack_id_if              ),
+    .fetch_entry_ready_i ( fetch_ready_id_if             ),
     .*
   );
 
@@ -259,11 +246,14 @@ module ariane #(
   // ID
   // ---------
   id_stage id_stage_i (
+    .clk_i,
+    .rst_ni,
     .flush_i                    ( flush_ctrl_if              ),
+    .debug_req_i,
 
     .fetch_entry_i              ( fetch_entry_if_id          ),
     .fetch_entry_valid_i        ( fetch_valid_if_id          ),
-    .decoded_instr_ack_o        ( decode_ack_id_if           ),
+    .fetch_entry_ready_o        ( fetch_ready_id_if          ),
 
     .issue_entry_o              ( issue_entry_id_issue       ),
     .issue_entry_valid_o        ( issue_entry_valid_id_issue ),
@@ -273,11 +263,12 @@ module ariane #(
     .priv_lvl_i                 ( priv_lvl                   ),
     .fs_i                       ( fs                         ),
     .frm_i                      ( frm_csr_id_issue_ex        ),
+    .irq_i                      ( irq_i                      ),
+    .irq_ctrl_i                 ( irq_ctrl_csr_id            ),
     .debug_mode_i               ( debug_mode                 ),
     .tvm_i                      ( tvm_csr_id                 ),
     .tw_i                       ( tw_csr_id                  ),
-    .tsr_i                      ( tsr_csr_id                 ),
-    .*
+    .tsr_i                      ( tsr_csr_id                 )
   );
 
   // ---------
@@ -340,9 +331,12 @@ module ariane #(
   // ---------
   // EX
   // ---------
-  ex_stage ex_stage_i (
+  ex_stage #(
+    .ArianeCfg ( ArianeCfg )
+  ) ex_stage_i (
     .clk_i                  ( clk_i                       ),
     .rst_ni                 ( rst_ni                      ),
+    .debug_mode_i           ( debug_mode                  ),
     .flush_i                ( flush_ctrl_ex               ),
     .fu_data_i              ( fu_data_id_ex               ),
     .pc_i                   ( pc_id_ex                    ),
@@ -432,8 +426,6 @@ module ariane #(
     .flush_dcache_i         ( dcache_flush_ctrl_cache       ),
     .exception_o            ( ex_commit                     ),
     .dirty_fp_state_o       ( dirty_fp_state                ),
-    .debug_mode_i           ( debug_mode                    ),
-    .debug_req_i            ( debug_req                     ),
     .single_step_i          ( single_step_csr_commit        ),
     .commit_instr_i         ( commit_instr_id_commit        ),
     .commit_ack_o           ( commit_ack                    ),
@@ -465,7 +457,7 @@ module ariane #(
   // ---------
   csr_regfile #(
     .AsidWidth              ( ASID_WIDTH                    ),
-    .DmBaseAddress          ( DmBaseAddress                 )
+    .DmBaseAddress          ( ArianeCfg.DmBaseAddress       )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),
@@ -489,6 +481,7 @@ module ariane #(
     .fflags_o               ( fflags_csr_commit             ),
     .frm_o                  ( frm_csr_id_issue_ex           ),
     .fprec_o                ( fprec_csr_ex                  ),
+    .irq_ctrl_o             ( irq_ctrl_csr_id               ),
     .ld_st_priv_lvl_o       ( ld_st_priv_lvl_csr_ex         ),
     .en_translation_o       ( enable_translation_csr_ex     ),
     .en_ld_st_translation_o ( en_ld_st_translation_csr_ex   ),
@@ -507,7 +500,7 @@ module ariane #(
     .perf_data_o            ( data_csr_perf                 ),
     .perf_data_i            ( data_perf_csr                 ),
     .perf_we_o              ( we_csr_perf                   ),
-    .debug_req_i            ( debug_req                     ),
+    .debug_req_i,
     .ipi_i,
     .irq_i,
     .time_irq_i,
@@ -578,10 +571,7 @@ module ariane #(
 `ifdef WT_DCACHE
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
-    .AxiIdWidth           ( AxiIdWidth    ),
-    .CachedAddrBeg        ( CachedAddrBeg ),
-    .CachedAddrEnd        ( CachedAddrEnd ),
-    .SwapEndianess        ( SwapEndianess )
+    .ArianeCfg            ( ArianeCfg     )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
@@ -619,7 +609,10 @@ module ariane #(
 `else
 
   std_cache_subsystem #(
-      .CACHE_START_ADDR    ( CachedAddrBeg )
+    // note: this only works with one cacheable region
+    // not as important since this cache subsystem is about to be
+    // deprecated
+    .CACHE_START_ADDR    ( ArianeCfg.CachedRegionAddrBase )
   ) i_cache_subsystem (
     // to D$
     .clk_i                 ( clk_i                       ),
@@ -653,20 +646,74 @@ module ariane #(
 `endif
 
   // -------------------
+  // Parameter Check
+  // -------------------
+  // pragma translate_off
+  `ifndef VERILATOR
+  initial ariane_pkg::check_cfg(ArianeCfg);
+  `endif
+  // pragma translate_on
+
+  // -------------------
   // Instruction Tracer
   // -------------------
   //pragma translate_off
+`ifdef PITON_ARIANE
+  localparam PC_QUEUE_DEPTH = 16;
+
+  logic        piton_pc_vld;
+  logic [63:0] piton_pc;
+  logic [NR_COMMIT_PORTS-1:0][63:0] pc_data;
+  logic [NR_COMMIT_PORTS-1:0] pc_pop, pc_empty;
+
+  for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_pc_fifo
+    fifo_v3 #(
+      .DATA_WIDTH(64),
+      .DEPTH(PC_QUEUE_DEPTH))
+    i_pc_fifo (
+      .clk_i      ( clk_i                                               ),
+      .rst_ni     ( rst_ni                                              ),
+      .flush_i    ( '0                                                  ),
+      .testmode_i ( '0                                                  ),
+      .full_o     (                                                     ),
+      .empty_o    ( pc_empty[i]                                         ),
+      .usage_o    (                                                     ),
+      .data_i     ( commit_instr_id_commit[i].pc                        ),
+      .push_i     ( commit_ack[i] & ~commit_instr_id_commit[i].ex.valid ),
+      .data_o     ( pc_data[i]                                          ),
+      .pop_i      ( pc_pop[i]                                           )
+    );
+  end
+
+  rr_arb_tree #(
+    .NumIn(NR_COMMIT_PORTS),
+    .DataWidth(64))
+  i_rr_arb_tree (
+    .clk_i   ( clk_i        ),
+    .rst_ni  ( rst_ni       ),
+    .flush_i ( '0           ),
+    .rr_i    ( '0           ),
+    .req_i   ( ~pc_empty    ),
+    .gnt_o   ( pc_pop       ),
+    .data_i  ( pc_data      ),
+    .gnt_i   ( piton_pc_vld ),
+    .req_o   ( piton_pc_vld ),
+    .data_o  ( piton_pc     ),
+    .idx_o   (              )
+  );
+`endif // PITON_ARIANE
+
 `ifndef VERILATOR
-  instruction_tracer_if tracer_if (clk_i);
+  instr_tracer_if tracer_if (clk_i);
   // assign instruction tracer interface
   // control signals
   assign tracer_if.rstn              = rst_ni;
   assign tracer_if.flush_unissued    = flush_unissued_instr_ctrl_id;
   assign tracer_if.flush             = flush_ctrl_ex;
   // fetch
-  assign tracer_if.instruction       = id_stage_i.compressed_decoder_i.instr_o;
-  assign tracer_if.fetch_valid       = id_stage_i.instr_realigner_i.fetch_entry_valid_o;
-  assign tracer_if.fetch_ack         = id_stage_i.instr_realigner_i.fetch_ack_i;
+  assign tracer_if.instruction       = id_stage_i.fetch_entry_i.instruction;
+  assign tracer_if.fetch_valid       = id_stage_i.fetch_entry_valid_i;
+  assign tracer_if.fetch_ack         = id_stage_i.fetch_entry_ready_o;
   // Issue
   assign tracer_if.issue_ack         = issue_stage_i.i_scoreboard.issue_ack_i;
   assign tracer_if.issue_sbe         = issue_stage_i.i_scoreboard.issue_instr_o;
@@ -693,58 +740,11 @@ module ariane #(
   // assign current privilege level
   assign tracer_if.priv_lvl          = priv_lvl;
   assign tracer_if.debug_mode        = debug_mode;
-  instr_tracer instr_tracer_i (tracer_if, hart_id_i);
 
-  program instr_tracer (
-      instruction_tracer_if tracer_if,
-      input logic [63:0]    hart_id_i
-    );
-
-    instruction_tracer it = new (tracer_if, 1'b0);
-
-    initial begin
-      #15ns;
-      it.create_file(hart_id_i);
-      it.trace();
-    end
-
-    final begin
-      it.close();
-    end
-  endprogram
-
-`ifdef PITON_ARIANE
-
-  logic        piton_pc_vld;
-  logic [63:0] piton_pc;
-
-  // expose retired PCs to OpenPiton verification environment
-  // note: this only works with single issue, need to adapt this in case of dual issue
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    logic [63:0] pc_queue [$];
-    if (~rst_ni) begin
-      pc_queue.delete();
-      piton_pc_vld <= 1'b0;
-      piton_pc     <= '0;
-    end else begin
-      // serialize retired PCs via queue construct
-      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
-        if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
-          pc_queue.push_back(commit_instr_id_commit[i].pc);
-        end
-      end
-
-      if (pc_queue.size()>0) begin
-        piton_pc_vld <= 1'b1;
-        piton_pc     <= pc_queue.pop_front();
-      end else begin
-        piton_pc_vld <= 1'b0;
-        piton_pc     <= '0;
-      end
-    end
-  end
-
-`endif // PITON_ARIANE
+  instr_tracer instr_tracer_i (
+    .tracer_if(tracer_if),
+    .hart_id_i
+  );
 
 // mock tracer for Verilator, to be used with spike-dasm
 `else
@@ -792,7 +792,7 @@ module ariane #(
     $fclose(f);
   end
 `endif // VERILATOR
-  //pragma translate_on
+//pragma translate_on
 
 endmodule // ariane
 

@@ -300,11 +300,11 @@ module load_unit (
 
 
     // prepare these signals for faster selection in the next cycle
-    assign signed_d  = load_data_d.operator inside {LW, LH, LB};
-    assign fp_sign_d = load_data_d.operator inside {FLW, FLH, FLB};
-    assign idx_d     = (load_data_d.operator inside {LW, FLW}) ? load_data_d.address_offset + 3 :
-                       (load_data_d.operator inside {LH, FLH}) ? load_data_d.address_offset + 1 :
-                                                                 load_data_d.address_offset;
+    assign signed_d  = load_data_d.operator  inside {ariane_pkg::LW,  ariane_pkg::LH,  ariane_pkg::LB};
+    assign fp_sign_d = load_data_d.operator  inside {ariane_pkg::FLW, ariane_pkg::FLH, ariane_pkg::FLB};
+    assign idx_d     = (load_data_d.operator inside {ariane_pkg::LW,  ariane_pkg::FLW}) ? load_data_d.address_offset + 3 :
+                       (load_data_d.operator inside {ariane_pkg::LH,  ariane_pkg::FLH}) ? load_data_d.address_offset + 1 :
+                                                                                          load_data_d.address_offset;
 
 
     assign sign_bits = { req_port_i.data_rdata[63],
@@ -323,9 +323,9 @@ module load_unit (
     // result mux
     always_comb begin
         unique case (load_data_q.operator)
-            LW, LWU, FLW:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
-            LH, LHU, FLH:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
-            LB, LBU, FLB:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
+            ariane_pkg::LW, ariane_pkg::LWU, ariane_pkg::FLW:    result_o = {{32{sign_bit}}, shifted_data[31:0]};
+            ariane_pkg::LH, ariane_pkg::LHU, ariane_pkg::FLH:    result_o = {{48{sign_bit}}, shifted_data[15:0]};
+            ariane_pkg::LB, ariane_pkg::LBU, ariane_pkg::FLB:    result_o = {{56{sign_bit}}, shifted_data[7:0]};
             default:    result_o = shifted_data;
         endcase
     end
@@ -351,11 +351,11 @@ module load_unit (
 `ifndef VERILATOR
     // check invalid offsets
     addr_offset0: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (load_data_q.operator inside {LW, LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
+        valid_o |->  (load_data_q.operator inside {ariane_pkg::LW, ariane_pkg::LWU}) |-> load_data_q.address_offset < 5) else $fatal (1,"invalid address offset used with {LW, LWU}");
     addr_offset1: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (load_data_q.operator inside {LH, LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
+        valid_o |->  (load_data_q.operator inside {ariane_pkg::LH, ariane_pkg::LHU}) |-> load_data_q.address_offset < 7) else $fatal (1,"invalid address offset used with {LH, LHU}");
     addr_offset2: assert property (@(posedge clk_i) disable iff (~rst_ni)
-        valid_o |->  (load_data_q.operator inside {LB, LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
+        valid_o |->  (load_data_q.operator inside {ariane_pkg::LB, ariane_pkg::LBU}) |-> load_data_q.address_offset < 8) else $fatal (1,"invalid address offset used with {LB, LBU}");
 `endif
 //pragma translate_on
 

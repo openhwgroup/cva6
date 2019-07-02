@@ -23,8 +23,6 @@ module commit_stage #(
     input  logic                                    flush_dcache_i,     // request to flush dcache -> also flush the pipeline
     output exception_t                              exception_o,        // take exception to controller
     output logic                                    dirty_fp_state_o,   // mark the F state as dirty
-    input  logic                                    debug_mode_i,       // we are in debug mode
-    input  logic                                    debug_req_i,        // debug unit is requesting to enter debug mode
     input  logic                                    single_step_i,      // we are in single step debug mode
     // from scoreboard
     input  scoreboard_entry_t [NR_COMMIT_PORTS-1:0] commit_instr_i,     // the instruction we want to commit
@@ -75,7 +73,13 @@ module commit_stage #(
     assign waddr_o[1] = commit_instr_i[1].rd[4:0];
 
     assign pc_o       = commit_instr_i[0].pc;
-    assign dirty_fp_state_o = |we_fpr_o;
+    // Dirty the FP state if we are committing anything related to the FPU
+    always_comb begin : dirty_fp_state
+      dirty_fp_state_o = 1'b0;
+      for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
+        dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || is_rd_fpr(commit_instr_i[i].op));
+      end
+    end
 
     logic instr_0_is_amo;
     assign instr_0_is_amo = is_amo(commit_instr_i[0].op);
@@ -84,7 +88,6 @@ module commit_stage #(
     // -------------------
     // write register file or commit instruction in LSU or CSR Buffer
     always_comb begin : commit
-
         // default assignments
         commit_ack_o[0]    = 1'b0;
         commit_ack_o[1]    = 1'b0;
@@ -109,99 +112,131 @@ module commit_stage #(
 
         // we will not commit the instruction if we took an exception
         // and we do not commit the instruction if we requested a halt
-        // furthermore if the debugger is requesting to debug do not commit this instruction if we are not yet in debug mode
-        // also check that there is no atomic memory operation committing, right now this is the only operation
-        // which will take longer than one cycle to commit
-        if (commit_instr_i[0].valid && !halt_i) begin
-            // we have to exclude the AMOs from debug mode as we are not jumping to debug
-            // while committing an AMO
-            if (!debug_req_i || debug_mode_i) begin
+        if (commit_instr_i[0].valid && !commit_instr_i[0].ex.valid && !halt_i) begin
+            // we can definitely write the register file
+            // if the instruction is not committing anything the destination
+            commit_ack_o[0] = 1'b1;
+            if (is_rd_fpr(commit_instr_i[0].op)) begin
+                we_fpr_o[0] = 1'b1;
+            end else begin
+                we_gpr_o[0] = 1'b1;
+            end
+            // check whether the instruction we retire was a store
+            if (commit_instr_i[0].fu == STORE && !instr_0_is_amo) begin
+                // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
+                if (commit_lsu_ready_i) begin
+                    commit_ack_o[0] = 1'b1;
+                    commit_lsu_o = 1'b1;
+                // stall in case the store buffer is not able to accept anymore instructions
+                end else begin
+                    commit_ack_o[0] = 1'b0;
+                end
+            end
+            // ---------
+            // FPU Flags
+            // ---------
+            if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
+                // write the CSR with potential exception flags from retiring floating point instruction
+                csr_wdata_o = {59'b0, commit_instr_i[0].ex.cause[4:0]};
+                csr_write_fflags_o = 1'b1;
                 commit_ack_o[0] = 1'b1;
-                // register will be the all zero register.
-                // and also acknowledge the instruction, this is mainly done for the instruction tracer
-                // as it will listen on the instruction ack signal. For the overall result it does not make any
-                // difference as the whole pipeline is going to be flushed anyway.
-                if (!exception_o.valid) begin
-                    // we can definitely write the register file
-                    // if the instruction is not committing anything the destination
-                    if (is_rd_fpr(commit_instr_i[0].op))
-                        we_fpr_o[0] = 1'b1;
-                    else
-                        we_gpr_o[0] = 1'b1;
-
-                    // check whether the instruction we retire was a store
-                    // do not commit the instruction if we got an exception since the store buffer will be cleared
-                    // by the subsequent flush triggered by an exception
-                    if (commit_instr_i[0].fu == STORE && !instr_0_is_amo) begin
-                        // check if the LSU is ready to accept another commit entry (e.g.: a non-speculative store)
-                        if (commit_lsu_ready_i)
-                            commit_lsu_o = 1'b1;
-                        else // if the LSU buffer is not ready - do not commit, wait
-                            commit_ack_o[0] = 1'b0;
-                    end
-
-                    // ---------
-                    // FPU Flags
-                    // ---------
-                    if (commit_instr_i[0].fu inside {FPU, FPU_VEC}) begin
-                        // write the CSR with potential exception flags from retiring floating point instruction
-                        csr_wdata_o = {59'b0, commit_instr_i[0].ex.cause[4:0]};
-                        csr_write_fflags_o = 1'b1;
-                    end
+            end
+            // ---------
+            // CSR Logic
+            // ---------
+            // check whether the instruction we retire was a CSR instruction and it did not
+            // throw an exception
+            if (commit_instr_i[0].fu == CSR) begin
+                // write the CSR file
+                csr_op_o     = commit_instr_i[0].op;
+                csr_wdata_o  = commit_instr_i[0].result;
+                if (!csr_exception_i.valid) begin
+                  commit_csr_o = 1'b1;
+                  wdata_o[0]   = csr_rdata_i;
+                  commit_ack_o[0] = 1'b1;
+                end else begin
+                  commit_ack_o[0] = 1'b0;
+                  we_gpr_o[0] = 1'b0;
                 end
-
-
-                // ---------
-                // CSR Logic
-                // ---------
-                // check whether the instruction we retire was a CSR instruction
-                // interrupts are never taken on CSR instructions
-                if (commit_instr_i[0].fu == CSR) begin
-                    // write the CSR file
-                    commit_csr_o = 1'b1;
-                    wdata_o[0]   = csr_rdata_i;
-                    csr_op_o     = commit_instr_i[0].op;
-                    csr_wdata_o  = commit_instr_i[0].result;
-                end
-                // ------------------
-                // SFENCE.VMA Logic
-                // ------------------
-                // sfence.vma is idempotent so we can safely re-execute it after returning
-                // from interrupt service routine
-                // check if this instruction was a SFENCE_VMA
-                if (commit_instr_i[0].op == SFENCE_VMA) begin
-                    // no store pending so we can flush the TLBs and pipeline
-                    sfence_vma_o = no_st_pending_i;
-                    // wait for the store buffer to drain until flushing the pipeline
-                    commit_ack_o[0] = no_st_pending_i;
-                end
-                // ------------------
-                // FENCE.I Logic
-                // ------------------
-                // fence.i is idempotent so we can safely re-execute it after returning
-                // from interrupt service routine
-                // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
-                // and the private dcache. This is the most expensive instruction.
-                if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && commit_instr_i[0].fu != STORE)) begin
-                    commit_ack_o[0] = no_st_pending_i;
-                    // tell the controller to flush the I$
-                    fence_i_o = no_st_pending_i;
-                end
-                // ------------------
-                // FENCE Logic
-                // ------------------
-                // fence is idempotent so we can safely re-execute it after returning
-                // from interrupt service routine
-                if (commit_instr_i[0].op == FENCE) begin
-                    commit_ack_o[0] = no_st_pending_i;
-                    // tell the controller to flush the D$
-                    fence_o = no_st_pending_i;
-                end
+            end
+            // ---------
+            // CSR Logic
+            // ---------
+            // check whether the instruction we retire was a CSR instruction
+            // interrupts are never taken on CSR instructions
+            if (commit_instr_i[0].fu == CSR) begin
+                // write the CSR file
+                commit_csr_o = 1'b1;
+                wdata_o[0]   = csr_rdata_i;
+                csr_op_o     = commit_instr_i[0].op;
+                csr_wdata_o  = commit_instr_i[0].result;
+            end
+            // ------------------
+            // SFENCE.VMA Logic
+            // ------------------
+            // sfence.vma is idempotent so we can safely re-execute it after returning
+            // from interrupt service routine
+            // check if this instruction was a SFENCE_VMA
+            if (commit_instr_i[0].op == SFENCE_VMA) begin
+                // no store pending so we can flush the TLBs and pipeline
+                sfence_vma_o = no_st_pending_i;
+                // wait for the store buffer to drain until flushing the pipeline
+                commit_ack_o[0] = no_st_pending_i;
+            end
+            // ------------------
+            // FENCE.I Logic
+            // ------------------
+            // fence.i is idempotent so we can safely re-execute it after returning
+            // from interrupt service routine
+            // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
+            // and the private dcache. This is the most expensive instruction.
+            if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && commit_instr_i[0].fu != STORE)) begin
+                commit_ack_o[0] = no_st_pending_i;
+                // tell the controller to flush the I$
+                fence_i_o = no_st_pending_i;
+            end
+            // ------------------
+            // FENCE Logic
+            // ------------------
+            // fence is idempotent so we can safely re-execute it after returning
+            // from interrupt service routine
+            if (commit_instr_i[0].op == FENCE) begin
+                commit_ack_o[0] = no_st_pending_i;
+                // tell the controller to flush the D$
+                fence_o = no_st_pending_i;
+            end
+            // ------------------
+            // SFENCE.VMA Logic
+            // ------------------
+            // check if this instruction was a SFENCE_VMA
+            if (commit_instr_i[0].op == SFENCE_VMA) begin
+                // no store pending so we can flush the TLBs and pipeline
+                sfence_vma_o = no_st_pending_i;
+                // wait for the store buffer to drain until flushing the pipeline
+                commit_ack_o[0] = no_st_pending_i;
+            end
+            // ------------------
+            // FENCE.I Logic
+            // ------------------
+            // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
+            // and the private dcache. This is the most expensive instruction.
+            if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && commit_instr_i[0].fu != STORE)) begin
+                commit_ack_o[0] = no_st_pending_i;
+                // tell the controller to flush the I$
+                fence_i_o = no_st_pending_i;
+            end
+            // ------------------
+            // FENCE Logic
+            // ------------------
+            if (commit_instr_i[0].op == FENCE) begin
+                commit_ack_o[0] = no_st_pending_i;
+                // tell the controller to flush the D$
+                fence_o = no_st_pending_i;
             end
             // ------------------
             // AMO
             // ------------------
-            if (RVA && instr_0_is_amo && !commit_instr_i[0].ex.valid) begin
+            if (RVA && instr_0_is_amo) begin
                 // AMO finished
                 commit_ack_o[0] = amo_resp_i.ack;
                 // flush the pipeline
@@ -251,7 +286,6 @@ module commit_stage #(
     // -----------------------------
     // Exception & Interrupt Logic
     // -----------------------------
-    // TODO(zarubaf): Move interrupt handling to commit stage.
     // here we know for sure that we are taking the exception
     always_comb begin : exception_handling
         // Multiple simultaneous interrupts and traps at the same privilege level are handled in the following decreasing
@@ -260,44 +294,25 @@ module commit_stage #(
         exception_o.valid = 1'b0;
         exception_o.cause = 64'b0;
         exception_o.tval  = 64'b0;
-        // we need a valid instruction in the commit stage, otherwise we might loose the PC in case of interrupts as they
-        // can happen anywhere in the execution flow and might just happen between two legal instructions - the PC would then
-        // be outdated. The solution here is to defer any exception/interrupt until we get a valid PC again (from where we cane
-        // resume execution afterwards).
+        // we need a valid instruction in the commit stage
         if (commit_instr_i[0].valid) begin
             // ------------------------
             // check for CSR exception
             // ------------------------
-            if (csr_exception_i.valid && !csr_exception_i.cause[63]) begin
+            if (csr_exception_i.valid) begin
                 exception_o      = csr_exception_i;
                 // if no earlier exception happened the commit instruction will still contain
-                // the instruction data from the ID stage. If a earlier exception happened we don't care
+                // the instruction bits from the ID stage. If a earlier exception happened we don't care
                 // as we will overwrite it anyway in the next IF bl
                 exception_o.tval = commit_instr_i[0].ex.tval;
             end
             // ------------------------
             // Earlier Exceptions
             // ------------------------
-            // but we give precedence to exceptions which happened earlier
+            // but we give precedence to exceptions which happened earlier e.g.: instruction page
+            // faults for example
             if (commit_instr_i[0].ex.valid) begin
                 exception_o = commit_instr_i[0].ex;
-            end
-            // ------------------------
-            // Interrupts
-            // ------------------------
-            // check for CSR interrupts (e.g.: normal interrupts which get triggered here)
-            // by putting interrupts here we give them precedence over any other exception
-            // Don't take the interrupt if we are committing an AMO or a CSR.
-            // - Atomics because they are atomic in their nature and should not be interrupted
-            // - CSRs because it makes the implementation easier as CSRs are figured out at the same
-            //   time as interrupts (here in the commit stage). By not allowing them on CSRs we
-            //   reduce the potential critical path length. As all CSRs are single-cycle (plus a
-            //   potential pipeline flush) this only impacts interrupt latency in a couple of cycles.
-            if (csr_exception_i.valid && csr_exception_i.cause[63]
-                                      && !amo_valid_commit_o
-                                      && commit_instr_i[0].fu != CSR) begin
-                exception_o = csr_exception_i;
-                exception_o.tval = commit_instr_i[0].ex.tval;
             end
         end
         // Don't take any exceptions iff:
@@ -306,5 +321,4 @@ module commit_stage #(
             exception_o.valid = 1'b0;
         end
     end
-
 endmodule

@@ -25,6 +25,8 @@ read_ip xilinx/xlnx_axi_quad_spi/ip/xlnx_axi_quad_spi.xci
 read_ip xilinx/xlnx_clk_gen/ip/xlnx_clk_gen.xci
 # read_ip xilinx/xlnx_protocol_checker/ip/xlnx_protocol_checker.xci
 
+set_property include_dirs { "src/axi_sd_bridge/include" "../src/common_cells/include" } [current_fileset]
+
 source scripts/add_sources.tcl
 
 set_property top ${project}_xilinx [current_fileset]
@@ -43,8 +45,6 @@ set_property -dict { file_type {Verilog Header} is_global_include 1} -objects $f
 update_compile_order -fileset sources_1
 
 add_files -fileset constrs_1 -norecurse constraints/$project.xdc
-
-set_property include_dirs src/axi_sd_bridge/include [current_fileset]
 
 synth_design -rtl -name rtl_1
 

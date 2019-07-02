@@ -16,9 +16,9 @@ module ariane_xilinx (
   input  logic         sys_clk_p   ,
   input  logic         sys_clk_n   ,
   input  logic         cpu_resetn  ,
-  inout  logic [31:0]  ddr3_dq     ,
-  inout  logic [ 3:0]  ddr3_dqs_n  ,
-  inout  logic [ 3:0]  ddr3_dqs_p  ,
+  inout  wire  [31:0]  ddr3_dq     ,
+  inout  wire  [ 3:0]  ddr3_dqs_n  ,
+  inout  wire  [ 3:0]  ddr3_dqs_p  ,
   output logic [14:0]  ddr3_addr   ,
   output logic [ 2:0]  ddr3_ba     ,
   output logic         ddr3_ras_n  ,
@@ -79,14 +79,13 @@ module ariane_xilinx (
   input  logic        tms         ,
   input  logic        trst_n      ,
   input  logic        tdi         ,
-  output logic        tdo         ,
+  output wire         tdo         ,
   input  logic        rx          ,
   output logic        tx
 );
 // 24 MByte in 8 byte words
 localparam NumWords = (24 * 1024 * 1024) / 8;
 localparam NBSlave = 2; // debug, ariane
-localparam logic [63:0] CacheStartAddr = 64'h8000_0000;
 localparam AxiAddrWidth = 64;
 localparam AxiDataWidth = 64;
 localparam AxiIdWidthMaster = 4;
@@ -260,7 +259,7 @@ logic [64-1:0]       dm_master_r_rdata;
 dm_top #(
     .NrHarts          ( 1                 ),
     .BusWidth         ( AxiDataWidth      ),
-    .Selectable_Harts ( 1'b1              )
+    .SelectableHarts  ( 1'b1              )
 ) i_dm_top (
     .clk_i            ( clk               ),
     .rst_ni           ( rst_n             ), // PoR
@@ -269,6 +268,7 @@ dm_top #(
     .dmactive_o       ( dmactive          ), // active debug session
     .debug_req_o      ( debug_req_irq     ),
     .unavailable_i    ( '0                ),
+    .hartinfo_i       ( {ariane_pkg::DebugHartInfo} ),
     .slave_req_i      ( dm_slave_req      ),
     .slave_we_i       ( dm_slave_we       ),
     .slave_addr_i     ( dm_slave_addr     ),
@@ -346,7 +346,7 @@ ariane_axi::req_t    axi_ariane_req;
 ariane_axi::resp_t   axi_ariane_resp;
 
 ariane #(
-    .CachedAddrBeg ( CacheStartAddr   )
+    .ArianeCfg ( ariane_soc::ArianeSocCfg )
 ) i_ariane (
     .clk_i        ( clk                 ),
     .rst_ni       ( ndmreset_n          ),

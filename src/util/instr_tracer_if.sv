@@ -12,10 +12,10 @@
 // Date: 16.05.2017
 // Description: Instruction Tracer Interface
 
-import ariane_pkg::*;
+`ifndef VERILATOR
 `ifndef INSTR_TRACER_IF_SV
 `define INSTR_TRACER_IF_SV
-interface instruction_tracer_if (
+interface instr_tracer_if (
         input clk
     );
 
@@ -27,16 +27,16 @@ interface instruction_tracer_if (
     logic             fetch_valid;
     logic             fetch_ack;
     // Issue stage
-    logic               issue_ack; // issue acknowledged
-    scoreboard_entry_t  issue_sbe; // issue scoreboard entry
+    logic                           issue_ack; // issue acknowledged
+    ariane_pkg::scoreboard_entry_t  issue_sbe; // issue scoreboard entry
     // WB stage
     logic [1:0][4:0]  waddr;
     logic [1:0][63:0] wdata;
     logic [1:0]       we_gpr;
     logic [1:0]       we_fpr;
     // commit stage
-    scoreboard_entry_t [1:0] commit_instr; // commit instruction
-    logic              [1:0] commit_ack;
+    ariane_pkg::scoreboard_entry_t [1:0] commit_instr; // commit instruction
+    logic                          [1:0] commit_ack;
     // address translation
     // stores
     logic              st_valid;
@@ -46,9 +46,9 @@ interface instruction_tracer_if (
     logic              ld_kill;
     logic [63:0]       ld_paddr;
     // misprediction
-    branchpredict_t    resolve_branch;
+    ariane_pkg::bp_resolve_t resolve_branch;
     // exceptions
-    exception_t        exception;
+    ariane_pkg::exception_t  exception;
     // current privilege level
     riscv::priv_lvl_t  priv_lvl;
     logic              debug_mode;
@@ -63,4 +63,5 @@ interface instruction_tracer_if (
     //pragma translate_on
 
 endinterface
+`endif
 `endif

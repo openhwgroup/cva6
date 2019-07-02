@@ -15,7 +15,8 @@
 import ariane_pkg::*;
 
 module load_store_unit #(
-    parameter int unsigned ASID_WIDTH = 1
+    parameter int unsigned ASID_WIDTH = 1,
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 )(
     input  logic                     clk_i,
     input  logic                     rst_ni,
@@ -119,7 +120,8 @@ module load_store_unit #(
     mmu #(
         .INSTR_TLB_ENTRIES      ( 16                     ),
         .DATA_TLB_ENTRIES       ( 16                     ),
-        .ASID_WIDTH             ( ASID_WIDTH             )
+        .ASID_WIDTH             ( ASID_WIDTH             ),
+        .ArianeCfg              ( ArianeCfg              )
     ) i_mmu (
             // misaligned bypass
         .misaligned_ex_i        ( misaligned_exception   ),
@@ -435,13 +437,13 @@ module lsu_bypass (
         end
 
         if (pop_st_i && pop_ld_i)
-            mem_n = '{default: 0};
+            mem_n = '0;
 
         if (flush_i) begin
             status_cnt = '0;
             write_pointer = '0;
             read_pointer = '0;
-            mem_n = '{default: 0};
+            mem_n = '0;
         end
         // default assignments
         read_pointer_n  = read_pointer;
@@ -461,7 +463,7 @@ module lsu_bypass (
     // registers
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
-            mem_q           <= '{default: 0};
+            mem_q           <= '0;
             status_cnt_q    <= '0;
             write_pointer_q <= '0;
             read_pointer_q  <= '0;

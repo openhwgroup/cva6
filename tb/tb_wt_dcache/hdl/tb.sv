@@ -40,6 +40,29 @@ module tb;
   parameter logic [63:0] CachedAddrBeg = MemBytes>>3;//1/8th of the memory is NC
   parameter logic [63:0] CachedAddrEnd = 64'hFFFF_FFFF_FFFF_FFFF;
 
+  localparam ariane_cfg_t ArianeDefaultConfig = '{
+    RASDepth: 2,
+    BTBEntries: 32,
+    BHTEntries: 128,
+    // idempotent region
+    NrNonIdempotentRules:  0,
+    NonIdempotentAddrBase: {64'b0},
+    NonIdempotentLength:   {64'b0},
+    // executable region
+    NrExecuteRegionRules:  0,
+    ExecuteRegionAddrBase: {64'h0},
+    ExecuteRegionLength:   {64'h0},
+    // cached region
+    NrCachedRegionRules:   1,
+    CachedRegionAddrBase:  {CachedAddrBeg},//1/8th of the memory is NC
+    CachedRegionLength:    {CachedAddrEnd-CachedAddrBeg+64'b1},
+    // cache config
+    Axi64BitCompliant:     1'b1,
+    SwapEndianess:         1'b0,
+    // debug
+    DmBaseAddress:         64'h0
+  };
+
   // contention and invalidation rates (in %)
   parameter MemRandHitRate   = 75;
   parameter MemRandInvRate   = 10;
@@ -204,9 +227,7 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 
   wt_dcache  #(
-    .CachedAddrBeg     ( CachedAddrBeg ),
-    .CachedAddrEnd     ( CachedAddrEnd ),
-    .Axi64BitCompliant ( 1'b1          )
+    .ArianeCfg ( ArianeDefaultConfig )
   ) i_dut (
     .clk_i           ( clk_i           ),
     .rst_ni          ( rst_ni          ),
@@ -231,12 +252,12 @@ module tb;
 ///////////////////////////////////////////////////////////////////////////////
 
   // get actual paddr from read controllers
-  assign act_paddr[0] = {i_dut.genblk1[0].i_wt_dcache_ctrl.address_tag_d,
-                         i_dut.genblk1[0].i_wt_dcache_ctrl.address_idx_q,
-                         i_dut.genblk1[0].i_wt_dcache_ctrl.address_off_q};
-  assign act_paddr[1] = {i_dut.genblk1[1].i_wt_dcache_ctrl.address_tag_d,
-                         i_dut.genblk1[1].i_wt_dcache_ctrl.address_idx_q,
-                         i_dut.genblk1[1].i_wt_dcache_ctrl.address_off_q};
+  assign act_paddr[0] = {i_dut.gen_rd_ports[0].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.gen_rd_ports[0].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.gen_rd_ports[0].i_wt_dcache_ctrl.address_off_q};
+  assign act_paddr[1] = {i_dut.gen_rd_ports[1].i_wt_dcache_ctrl.address_tag_d,
+                         i_dut.gen_rd_ports[1].i_wt_dcache_ctrl.address_idx_q,
+                         i_dut.gen_rd_ports[1].i_wt_dcache_ctrl.address_off_q};
 
   // generate fifo queues for expected responses
   generate
@@ -249,7 +270,7 @@ module tb;
       assign fifo_flush[k] = req_ports_i[k].kill_req;
       assign fifo_pop[k]   = req_ports_o[k].data_rvalid;
 
-      fifo_v2 #(
+      fifo_v3 #(
         .dtype(resp_fifo_t)
       ) i_resp_fifo (
         .clk_i       ( clk_i            ),
@@ -258,8 +279,7 @@ module tb;
         .testmode_i  ( '0               ),
         .full_o      (                  ),
         .empty_o     (                  ),
-        .alm_full_o  (                  ),
-        .alm_empty_o (                  ),
+        .usage_o     (                  ),
         .data_i      ( fifo_data_in[k]  ),
         .push_i      ( fifo_push[k]     ),
         .data_o      ( fifo_data[k]     ),

@@ -283,7 +283,7 @@ package wt_cache_pkg;
   );
     logic [5:0] cnt= 0;
     foreach (in[k]) begin
-      cnt += in[k];
+      cnt += 6'(in[k]);
     end
     return cnt;
   endfunction : popcnt64

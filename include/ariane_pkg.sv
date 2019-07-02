@@ -28,13 +28,107 @@ package ariane_pkg;
     // ---------------
     // Global Config
     // ---------------
+    // This is the new user config interface system. If you need to parameterize something
+    // within Ariane add a field here and assign a default value to the config. Please make
+    // sure to add a propper parameter check to the `check_cfg` function.
+    localparam NrMaxRules = 16;
+
+    typedef struct packed {
+      int                               RASDepth;
+      int                               BTBEntries;
+      int                               BHTEntries;
+      // PMAs
+      int unsigned                      NrNonIdempotentRules;  // Number of non idempotent rules
+      logic [NrMaxRules-1:0][63:0]      NonIdempotentAddrBase; // base which needs to match
+      logic [NrMaxRules-1:0][63:0]      NonIdempotentLength;   // bit mask which bits to consider when matching the rule
+      int unsigned                      NrExecuteRegionRules;  // Number of regions which have execute property
+      logic [NrMaxRules-1:0][63:0]      ExecuteRegionAddrBase; // base which needs to match
+      logic [NrMaxRules-1:0][63:0]      ExecuteRegionLength;   // bit mask which bits to consider when matching the rule
+      int unsigned                      NrCachedRegionRules;   // Number of regions which have cached property
+      logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;  // base which needs to match
+      logic [NrMaxRules-1:0][63:0]      CachedRegionLength;    // bit mask which bits to consider when matching the rule
+      // cache config
+      bit                               Axi64BitCompliant;     // set to 1 when using in conjunction with 64bit AXI bus adapter
+      bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
+      //
+      logic [63:0]                      DmBaseAddress;         // offset of the debug module
+    } ariane_cfg_t;
+
+    localparam ariane_cfg_t ArianeDefaultConfig = '{
+      RASDepth: 2,
+      BTBEntries: 32,
+      BHTEntries: 128,
+      // idempotent region
+      NrNonIdempotentRules: 2,
+      NonIdempotentAddrBase: {64'b0, 64'b0},
+      NonIdempotentLength:   {64'b0, 64'b0},
+      NrExecuteRegionRules: 3,
+      //                      DRAM,          Boot ROM,   Debug Module
+      ExecuteRegionAddrBase: {64'h8000_0000, 64'h1_0000, 64'h0},
+      ExecuteRegionLength:   {64'h40000000,  64'h10000,  64'h1000},
+      // cached region
+      NrCachedRegionRules:    1,
+      CachedRegionAddrBase:  {64'h8000_0000},
+      CachedRegionLength:    {64'h40000000},
+      //  cache config
+      Axi64BitCompliant:      1'b1,
+      SwapEndianess:          1'b0,
+      // debug
+      DmBaseAddress:          64'h0
+    };
+
+    // Function being called to check parameters
+    function automatic void check_cfg (ariane_cfg_t Cfg);
+      // pragma translate_off
+      `ifndef VERILATOR
+        assert(Cfg.RASDepth > 0);
+        assert(2**$clog2(Cfg.BTBEntries)  == Cfg.BTBEntries);
+        assert(2**$clog2(Cfg.BHTEntries)  == Cfg.BHTEntries);
+        assert(Cfg.NrNonIdempotentRules <= NrMaxRules);
+        assert(Cfg.NrExecuteRegionRules <= NrMaxRules);
+        assert(Cfg.NrCachedRegionRules  <= NrMaxRules);
+      `endif
+      // pragma translate_on
+    endfunction
+
+    function automatic logic range_check(logic[63:0] base, logic[63:0] len, logic[63:0] address);
+      // if len is a power of two, and base is properly aligned, this check could be simplified
+      return (address >= base) && (address < (base+len));
+    endfunction : range_check
+
+    function automatic logic is_inside_nonidempotent_regions (ariane_cfg_t Cfg, logic[63:0] address);
+      logic[NrMaxRules-1:0] pass;
+      pass = '0;
+      for (int unsigned k = 0; k < Cfg.NrNonIdempotentRules; k++) begin
+        pass[k] = range_check(Cfg.NonIdempotentAddrBase[k], Cfg.NonIdempotentLength[k], address);
+      end
+      return |pass;
+    endfunction : is_inside_nonidempotent_regions
+
+    function automatic logic is_inside_execute_regions (ariane_cfg_t Cfg, logic[63:0] address);
+      // if we don't specify any region we assume everything is accessible
+      logic[NrMaxRules-1:0] pass;
+      pass = '0;
+      for (int unsigned k = 0; k < Cfg.NrExecuteRegionRules; k++) begin
+        pass[k] = range_check(Cfg.ExecuteRegionAddrBase[k], Cfg.ExecuteRegionLength[k], address);
+      end
+      return |pass;
+    endfunction : is_inside_execute_regions
+
+    function automatic logic is_inside_cacheable_regions (ariane_cfg_t Cfg, logic[63:0] address);
+      automatic logic[NrMaxRules-1:0] pass;
+      pass = '0;
+      for (int unsigned k = 0; k < Cfg.NrCachedRegionRules; k++) begin
+        pass[k] = range_check(Cfg.CachedRegionAddrBase[k], Cfg.CachedRegionLength[k], address);
+      end
+      return |pass;
+    endfunction : is_inside_cacheable_regions
+
+    // TODO: Slowly move those parameters to the new system.
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
     localparam TRANS_ID_BITS = $clog2(NR_SB_ENTRIES); // depending on the number of scoreboard entries we need that many bits
                                                       // to uniquely identify the entry in the scoreboard
     localparam ASID_WIDTH    = 1;
-    localparam BTB_ENTRIES   = 64;
-    localparam BHT_ENTRIES   = 128;
-    localparam RAS_DEPTH     = 2;
     localparam BITS_SATURATION_COUNTER = 2;
     localparam NR_COMMIT_PORTS = 2;
 
@@ -43,8 +137,8 @@ package ariane_pkg;
     localparam ISSUE_WIDTH = 1;
     // amount of pipeline registers inserted for load/store return path
     // this can be tuned to trade-off IPC vs. cycle time
-    localparam NR_LOAD_PIPE_REGS = 1;
-    localparam NR_STORE_PIPE_REGS = 0;
+    localparam int unsigned NR_LOAD_PIPE_REGS = 1;
+    localparam int unsigned NR_STORE_PIPE_REGS = 0;
 
     // depth of store-buffers, this needs to be a power of two
     localparam int unsigned DEPTH_SPEC   = 4;
@@ -62,12 +156,12 @@ package ariane_pkg;
 
 `ifdef PITON_ARIANE
     // Floating-point extensions configuration
-    localparam bit RVF = 1'b0; // Is F extension enabled
-    localparam bit RVD = 1'b0; // Is D extension enabled
+    localparam bit RVF = 1'b1; // Is F extension enabled
+    localparam bit RVD = 1'b1; // Is D extension enabled
 `else
     // Floating-point extensions configuration
-    localparam bit RVF = 1'b0; // Is F extension enabled
-    localparam bit RVD = 1'b0; // Is D extension enabled
+    localparam bit RVF = 1'b1; // Is F extension enabled
+    localparam bit RVD = 1'b1; // Is D extension enabled
 `endif
     localparam bit RVA = 1'b1; // Is A extension enabled
 
@@ -182,7 +276,7 @@ package ariane_pkg;
     // ---------------
 
     // leave as is (fails with >8 entries and wider fetch width)
-    localparam int unsigned FETCH_FIFO_DEPTH  = 8;
+    localparam int unsigned FETCH_FIFO_DEPTH  = 4;
     localparam int unsigned FETCH_WIDTH       = 32;
     // maximum instructions we can fetch on one request (we support compressed instructions)
     localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH / 16;
@@ -196,38 +290,39 @@ package ariane_pkg;
          logic        valid;
     } exception_t;
 
-    typedef enum logic [1:0] { BHT, BTB, RAS } cf_t;
+    typedef enum logic [2:0] {
+      NoCF,   // No control flow prediction
+      Branch, // Branch
+      Jump,   // Jump to address from immediate
+      JumpR,  // Jump to address from registers
+      Return  // Return Address Prediction
+    } cf_t;
 
     // branch-predict
     // this is the struct we get back from ex stage and we will use it to update
     // all the necessary data structures
+    // bp_resolve_t
     typedef struct packed {
-        logic [63:0] pc;              // pc of predict or mis-predict
+        logic        valid;           // prediction with all its values is valid
+        logic [63:0] pc;              // PC of predict or mis-predict
         logic [63:0] target_address;  // target address at which to jump, or not
         logic        is_mispredict;   // set if this was a mis-predict
         logic        is_taken;        // branch is taken
-                                      // in the lower 16 bit of the word
-        logic        valid;           // prediction with all its values is valid
-        logic        clear;           // invalidate this entry
         cf_t         cf_type;         // Type of control flow change
-    } branchpredict_t;
+    } bp_resolve_t;
 
     // branchpredict scoreboard entry
     // this is the struct which we will inject into the pipeline to guide the various
     // units towards the correct branch decision and resolve
     typedef struct packed {
-        logic        valid;           // this is a valid hint
+        cf_t         cf;              // type of control flow prediction
         logic [63:0] predict_address; // target address at which to jump, or not
-        logic        predict_taken;   // branch is taken
-                                      // in the lower 16 bit of the word
-        cf_t         cf_type;         // Type of control flow change
     } branchpredict_sbe_t;
 
     typedef struct packed {
         logic        valid;
         logic [63:0] pc;             // update at PC
         logic [63:0] target_address;
-        logic        clear;
     } btb_update_t;
 
     typedef struct packed {
@@ -243,14 +338,12 @@ package ariane_pkg;
     typedef struct packed {
         logic        valid;
         logic [63:0] pc;          // update at PC
-        logic        mispredict;
         logic        taken;
     } bht_update_t;
 
     typedef struct packed {
         logic       valid;
         logic       taken;
-        logic       strongly_taken;
     } bht_prediction_t;
 
     typedef enum logic[3:0] {
@@ -266,6 +359,19 @@ package ariane_pkg;
     } fu_t;
 
     localparam EXC_OFF_RST      = 8'h80;
+
+    localparam SupervisorIrq = 1;
+    localparam MachineIrq = 0;
+
+    // All information needed to determine whether we need to associate an interrupt
+    // with the corresponding instruction or not.
+    typedef struct packed {
+      logic [63:0] mie;
+      logic [63:0] mip;
+      logic [63:0] mideleg;
+      logic        sie;
+      logic        global_enable;
+    } irq_ctrl_t;
 
     // ---------------
     // Cache config
@@ -334,7 +440,7 @@ package ariane_pkg;
                                // comparisons
                                LTS, LTU, GES, GEU, EQ, NE,
                                // jumps
-                               JALR,
+                               JALR, BRANCH,
                                // set lower than operations
                                SLTS, SLTU,
                                // CSR functions
@@ -371,6 +477,13 @@ package ariane_pkg;
         logic [63:0]              imm;
         logic [TRANS_ID_BITS-1:0] trans_id;
     } fu_data_t;
+
+    function automatic logic is_branch (input fu_op op);
+        unique case (op) inside
+            EQ, NE, LTS, GES, LTU, GEU: return 1'b1;
+            default                   : return 1'b0; // all other ops
+        endcase
+    endfunction;
 
     // -------------------------------
     // Extract Src/Dst FP Reg from Op
@@ -460,14 +573,6 @@ package ariane_pkg;
     // ---------------
     // IF/ID Stage
     // ---------------
-   typedef struct packed {
-        logic [63:0]                address;        // the address of the instructions from below
-        logic [FETCH_WIDTH-1:0]     instruction;    // instruction word
-        branchpredict_sbe_t         branch_predict; // this field contains branch prediction information regarding the forward branch path
-        logic [INSTR_PER_FETCH-1:0] bp_taken;       // at which instruction is this branch taken?
-        logic                       page_fault;     // an instruction page fault happened
-    } frontend_fetch_t;
-
     // store the decompressed instruction
     typedef struct packed {
         logic [63:0]           address;        // the address of the instructions from below

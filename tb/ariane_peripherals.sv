@@ -21,10 +21,10 @@ module ariane_peripherals #(
 ) (
     input  logic       clk_i           , // Clock
     input  logic       rst_ni          , // Asynchronous reset active low
-    AXI_BUS.in         plic            ,
-    AXI_BUS.in         uart            ,
-    AXI_BUS.in         spi             ,
-    AXI_BUS.in         ethernet        ,
+    AXI_BUS.Slave      plic            ,
+    AXI_BUS.Slave      uart            ,
+    AXI_BUS.Slave      spi             ,
+    AXI_BUS.Slave      ethernet        ,
     output logic [1:0] irq_o           ,
     // UART
     input  logic       rx_i            ,
@@ -148,17 +148,31 @@ module ariane_peripherals #(
         .reg_o     ( reg_bus      )
     );
 
-    plic #(
-        .ID_BITWIDTH        ( ariane_soc::PLICIdWidth       ),
-        .PARAMETER_BITWIDTH ( ariane_soc::ParameterBitwidth ),
-        .NUM_TARGETS        ( ariane_soc::NumTargets        ),
-        .NUM_SOURCES        ( ariane_soc::NumSources        )
+    reg_intf::reg_intf_resp_d32 plic_resp;
+    reg_intf::reg_intf_req_a32_d32 plic_req;
+
+    assign plic_req.addr  = reg_bus.addr;
+    assign plic_req.write = reg_bus.write;
+    assign plic_req.wdata = reg_bus.wdata;
+    assign plic_req.wstrb = reg_bus.wstrb;
+    assign plic_req.valid = reg_bus.valid;
+
+    assign reg_bus.rdata = plic_resp.rdata;
+    assign reg_bus.error = plic_resp.error;
+    assign reg_bus.ready = plic_resp.ready;
+
+    plic_top #(
+      .N_SOURCE    ( ariane_soc::NumSources  ),
+      .N_TARGET    ( ariane_soc::NumTargets  ),
+      .MAX_PRIO    ( ariane_soc::MaxPriority )
     ) i_plic (
-        .clk_i              ( clk_i                  ),
-        .rst_ni             ( rst_ni                 ),
-        .irq_sources_i      ( irq_sources            ),
-        .eip_targets_o      ( irq_o                  ),
-        .external_bus_io    ( reg_bus                )
+      .clk_i,
+      .rst_ni,
+      .req_i         ( plic_req    ),
+      .resp_o        ( plic_resp   ),
+      .le_i          ( '0          ), // 0:level 1:edge
+      .irq_sources_i ( irq_sources ),
+      .eip_targets_o ( irq_o       )
     );
 
     // ---------------

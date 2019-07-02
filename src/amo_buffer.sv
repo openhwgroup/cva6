@@ -60,10 +60,8 @@ module amo_buffer (
     // e.g.: it is not speculative anymore
     assign flush_amo_buffer = flush_i & !amo_valid_commit_i;
 
-    fifo_v2 #(
+    fifo_v3 #(
         .DEPTH        ( 1                ),
-        .ALM_EMPTY_TH ( 0                ),
-        .ALM_FULL_TH  ( 0                ),
         .dtype        ( amo_op_t         )
     ) i_amo_fifo (
         .clk_i        ( clk_i            ),
@@ -72,8 +70,7 @@ module amo_buffer (
         .testmode_i   ( 1'b0             ),
         .full_o       ( amo_valid        ),
         .empty_o      ( ready_o          ),
-        .alm_full_o   (  ), // left open
-        .alm_empty_o  (  ), // left open
+        .usage_o      (  ), // left open
         .data_i       ( amo_data_in      ),
         .push_i       ( valid_i          ),
         .data_o       ( amo_data_out     ),

@@ -52,23 +52,24 @@ endif
 # Sources
 # Package files -> compile first
 ariane_pkg := include/riscv_pkg.sv                          \
-			  src/riscv-dbg/src/dm_pkg.sv                   \
-			  include/ariane_pkg.sv                         \
-			  include/std_cache_pkg.sv                      \
-			  include/wt_cache_pkg.sv                       \
-			  src/axi/src/axi_pkg.sv                        \
-			  src/register_interface/src/reg_intf.sv        \
-			  include/axi_intf.sv                           \
-			  tb/ariane_soc_pkg.sv                          \
-			  include/ariane_axi_pkg.sv                     \
-			  src/fpu/src/fpnew_pkg.sv                      \
-			  src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+              src/riscv-dbg/src/dm_pkg.sv                   \
+              include/ariane_pkg.sv                         \
+              include/std_cache_pkg.sv                      \
+              include/wt_cache_pkg.sv                       \
+              src/axi/src/axi_pkg.sv                        \
+              src/register_interface/src/reg_intf.sv        \
+              src/register_interface/src/reg_intf_pkg.sv    \
+              include/axi_intf.sv                           \
+              tb/ariane_soc_pkg.sv                          \
+              include/ariane_axi_pkg.sv                     \
+              src/fpu/src/fpnew_pkg.sv                      \
+              src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
-util := $(wildcard src/util/*.svh)                          \
-        src/util/instruction_tracer_pkg.sv                  \
-        src/util/instruction_tracer_if.sv                   \
+util := include/instr_tracer_pkg.sv                         \
+        src/util/instr_tracer_if.sv                         \
+        src/util/instr_tracer.sv                            \
         src/tech_cells_generic/src/cluster_clock_gating.sv  \
         tb/common/mock_uart.sv                              \
         src/util/sram.sv
@@ -112,10 +113,13 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         $(wildcard src/clint/*.sv)                                             \
         $(wildcard fpga/src/axi2apb/src/*.sv)                                  \
         $(wildcard fpga/src/axi_slice/src/*.sv)                                \
-        $(wildcard src/plic/*.sv)                                              \
         $(wildcard src/axi_node/src/*.sv)                                      \
         $(wildcard src/axi_riscv_atomics/src/*.sv)                             \
         $(wildcard src/axi_mem_if/src/*.sv)                                    \
+        src/rv_plic/rtl/rv_plic_target.sv                                      \
+        src/rv_plic/rtl/rv_plic_gateway.sv                                     \
+        src/rv_plic/rtl/plic_regmap.sv                                         \
+        src/rv_plic/rtl/plic_top.sv                                            \
         src/riscv-dbg/src/dmi_cdc.sv                                           \
         src/riscv-dbg/src/dmi_jtag.sv                                          \
         src/riscv-dbg/src/dmi_jtag_tap.sv                                      \
@@ -133,8 +137,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/rstgen.sv                                         \
         src/common_cells/src/stream_mux.sv                                     \
         src/common_cells/src/stream_demux.sv                                   \
-        src/common_cells/src/stream_arbiter.sv                                 \
-        src/common_cells/src/stream_arbiter_flushable.sv                       \
         src/util/axi_master_connect.sv                                         \
         src/util/axi_slave_connect.sv                                          \
         src/util/axi_master_connect_rev.sv                                     \
@@ -144,21 +146,27 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/axi/src/axi_delayer.sv                                             \
         src/axi/src/axi_to_axi_lite.sv                                         \
         src/fpga-support/rtl/SyncSpRamBeNx64.sv                                \
+        src/common_cells/src/unread.sv                                         \
         src/common_cells/src/sync.sv                                           \
         src/common_cells/src/cdc_2phase.sv                                     \
         src/common_cells/src/spill_register.sv                                 \
         src/common_cells/src/sync_wedge.sv                                     \
         src/common_cells/src/edge_detect.sv                                    \
+        src/common_cells/src/stream_arbiter.sv                                 \
+        src/common_cells/src/stream_arbiter_flushable.sv                       \
+        src/common_cells/src/deprecated/fifo_v1.sv                             \
+        src/common_cells/src/deprecated/fifo_v2.sv                             \
         src/common_cells/src/fifo_v3.sv                                        \
-        src/common_cells/src/fifo_v2.sv                                        \
-        src/common_cells/src/fifo_v1.sv                                        \
         src/common_cells/src/lzc.sv                                            \
-        src/common_cells/src/rrarbiter.sv                                      \
+        src/common_cells/src/popcount.sv                                       \
+        src/common_cells/src/rr_arb_tree.sv                                    \
+        src/common_cells/src/deprecated/rrarbiter.sv                           \
         src/common_cells/src/stream_delay.sv                                   \
         src/common_cells/src/lfsr_8bit.sv                                      \
         src/common_cells/src/lfsr_16bit.sv                                     \
         src/common_cells/src/counter.sv                                        \
         src/common_cells/src/shift_reg.sv                                      \
+        src/tech_cells_generic/src/pulp_clock_gating.sv                        \
         src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
         tb/ariane_testharness.sv                                               \
@@ -193,7 +201,7 @@ riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := src/common_cells/include/common_cells
+incdir := src/common_cells/include/
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
@@ -337,32 +345,31 @@ check-benchmarks:
 	ci/check-tests.sh tmp/riscv-benchmarks- $(shell wc -l $(riscv-benchmarks-list) | awk -F " " '{ print $1 }')
 
 # verilator-specific
-verilate_command := $(verilator)                                                                       \
-                    $(filter-out %.vhd, $(ariane_pkg))                                                 \
-                    $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                         \
-                    +define+$(defines)                                                                 \
-                    src/util/sram.sv                                                                   \
-                    +incdir+src/axi_node                                                               \
-                    $(if $(verilator_threads), --threads $(verilator_threads))                         \
-                    --unroll-count 256                                                                 \
-                    -Werror-PINMISSING                                                                 \
-                    -Werror-IMPLICIT                                                                   \
-                    -Wno-fatal                                                                         \
-                    -Wno-PINCONNECTEMPTY                                                               \
-                    -Wno-ASSIGNDLY                                                                     \
-                    -Wno-DECLFILENAME                                                                  \
-                    -Wno-UNUSED                                                                        \
-                    -Wno-UNOPTFLAT                                                                     \
-                    -Wno-style                                                                         \
-                    $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                            \
-                    -Wno-lint                                                                          \
-                    $(if $(DEBUG),--trace --trace-structs,)                                            \
-                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -g -pg,)" \
-                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,)" -Wall --cc  --vpi                     \
-                    $(list_incdir) --top-module ariane_testharness                                     \
-                    --Mdir $(ver-library) -O3                                                          \
-                    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                          \
-					          tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
+verilate_command := $(verilator)                                                                                 \
+                    $(filter-out %.vhd, $(ariane_pkg))                                                           \
+                    $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                   \
+                    +define+$(defines)                                                                           \
+                    src/util/sram.sv                                                                             \
+                    +incdir+src/axi_node                                                                         \
+                    $(if $(verilator_threads), --threads $(verilator_threads))                                   \
+                    --unroll-count 256                                                                           \
+                    -Werror-PINMISSING                                                                           \
+                    -Werror-IMPLICIT                                                                             \
+                    -Wno-fatal                                                                                   \
+                    -Wno-PINCONNECTEMPTY                                                                         \
+                    -Wno-ASSIGNDLY                                                                               \
+                    -Wno-DECLFILENAME                                                                            \
+                    -Wno-UNUSED                                                                                  \
+                    -Wno-UNOPTFLAT                                                                               \
+                    -Wno-style                                                                                   \
+                    $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
+                    $(if $(DEBUG),--trace --trace-structs,)                                                      \
+                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -g -pg,) -lpthread" \
+                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,)" -Wall --cc  --vpi                               \
+                    $(list_incdir) --top-module ariane_testharness                                               \
+                    --Mdir $(ver-library) -O3                                                                    \
+                    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                                    \
+					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
@@ -390,12 +397,38 @@ $(addsuffix -verilator,$(riscv-benchmarks)): verilate
 
 run-asm-tests-verilator: $(addsuffix -verilator, $(riscv-asm-tests)) $(addsuffix -verilator, $(riscv-amo-tests)) $(addsuffix -verilator, $(riscv-fp-tests)) $(addsuffix -verilator, $(riscv-fp-tests))
 
-# split into two halfs for travis jobs (otherwise they will time out)
-run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-v-% ,$(riscv-asm-tests)))
+# split into smaller travis jobs (otherwise they will time out)
+riscv-asm-rv64ui-v := $(filter rv64ui-v-%, $(riscv-asm-tests))
 
-run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-v-% ,$(riscv-asm-tests)))
+riscv-asm-rv64ui-p := $(filter rv64ui-p-%, $(riscv-asm-tests))
+
+riscv-asm-rv64mi-p := $(filter rv64mi-p-%, $(riscv-asm-tests))
+
+riscv-asm-rest := $(filter-out $(riscv-asm-rv64ui-v) $(riscv-asm-rv64ui-p) $(riscv-asm-rv64mi-p), $(riscv-asm-tests))
+
+run-asm-tests1-verilator: $(addsuffix -verilator, $(filter rv64ui-v-a% rv64ui-v-b%, $(riscv-asm-rv64ui-v)))
+
+run-asm-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ui-v-a% rv64ui-v-b%, $(riscv-asm-rv64ui-v)))
+
+run-asm-tests3-verilator: $(addsuffix -verilator, $(filter rv64ui-p-a% rv64ui-p-b%, $(riscv-asm-rv64ui-p)))
+
+run-asm-tests4-verilator: $(addsuffix -verilator, $(filter-out rv64ui-p-a% rv64ui-p-b%, $(riscv-asm-rv64ui-p)))
+
+run-asm-tests5-verilator: $(addsuffix -verilator, $(riscv-asm-rv64mi-p))
+
+run-asm-tests6-verilator: $(addsuffix -verilator, $(riscv-asm-rest))
 
 run-amo-verilator: $(addsuffix -verilator, $(riscv-amo-tests))
+
+riscv-amo-rv64ua-v := $(filter rv64ua-v-%, $(riscv-amo-tests))
+
+riscv-amo-rv64ua-p := $(filter rv64ua-p-%, $(riscv-amo-tests))
+
+run-amo-tests1-verilator: $(addsuffix -verilator, $(filter rv64ua-v-amom%, $(riscv-amo-rv64ua-v)))
+
+run-amo-tests2-verilator: $(addsuffix -verilator, $(filter-out rv64ua-v-amom%, $(riscv-amo-rv64ua-v)))
+
+run-amo-tests3-verilator: $(addsuffix -verilator, $(riscv-amo-rv64ua-p))
 
 run-mul-verilator: $(addsuffix -verilator, $(riscv-mul-tests))
 
@@ -450,12 +483,17 @@ check-torture:
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
 fpga_filter := $(addprefix $(root-dir), bootrom/bootrom.sv)
+fpga_filter += $(addprefix $(root-dir), include/instr_tracer_pkg.sv)
+fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
+fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
+fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer_if.sv)
+fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer.sv)
 
-fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(util) $(uart_src)
+fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
 	@echo "[FPGA] Generate sources"
 	@echo read_vhdl        {$(uart_src)}    > fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
-	@echo read_verilog -sv {$(util)}       >> fpga/scripts/add_sources.tcl
+	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(util))}     >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
