@@ -361,6 +361,7 @@ verilate_command := $(verilator)                                                
                     -Wno-DECLFILENAME                                                                            \
                     -Wno-UNUSED                                                                                  \
                     -Wno-UNOPTFLAT                                                                               \
+                    -Wno-BLKANDNBLK                                                                              \
                     -Wno-style                                                                                   \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG),--trace --trace-structs,)                                                      \
