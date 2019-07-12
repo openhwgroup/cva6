@@ -236,17 +236,16 @@ module wt_dcache_missunit #(
 ///////////////////////////////////////////////////////
 
   logic sc_fail, sc_pass, sc_backoff_over;
-  assign sc_backoff_over = 1'b1;
-  // exp_backoff #(
-  //   .Seed(3),
-  //   .MaxExp(16)
-  // ) i_exp_backoff (
-  //   .clk_i,
-  //   .rst_ni,
-  //   .set_i     ( sc_fail         ),
-  //   .clr_i     ( sc_pass         ),
-  //   .is_zero_o ( sc_backoff_over )
-  // );
+  exp_backoff #(
+    .Seed(3),
+    .MaxExp(16)
+  ) i_exp_backoff (
+    .clk_i,
+    .rst_ni,
+    .set_i     ( sc_fail         ),
+    .clr_i     ( sc_pass         ),
+    .is_zero_o ( sc_backoff_over )
+  );
 
 ///////////////////////////////////////////////////////
 // responses from memory
@@ -475,8 +474,8 @@ module wt_dcache_missunit #(
       AMO: begin
         mem_data_o.rtype = DCACHE_ATOMIC_REQ;
         amo_sel          = 1'b1;
-        // if this is an SC, we need to consult the backoff counter
-        if ((amo_req_i.amo_op != AMO_SC) || sc_backoff_over) begin
+        // if this is an LR, we need to consult the backoff counter
+        if ((amo_req_i.amo_op != AMO_LR) || sc_backoff_over) begin
           mem_data_req_o   = 1'b1;
           if (mem_data_ack_i) begin
             state_d = AMO_WAIT;
