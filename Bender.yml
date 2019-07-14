@@ -188,6 +188,7 @@ sources:
     - src/common_cells/src/lfsr_16bit.sv
     - src/common_cells/src/counter.sv
     - src/common_cells/src/shift_reg.sv
+    - src/common_cells/src/exp_backoff.sv
     - src/tech_cells_generic/src/cluster_clock_inverter.sv
     - src/tech_cells_generic/src/pulp_clock_mux2.sv
     - target: test

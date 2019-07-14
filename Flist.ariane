@@ -31,6 +31,7 @@ src/common_cells/src/cdc_2phase.sv
 src/common_cells/src/shift_reg.sv
 src/common_cells/src/unread.sv
 src/common_cells/src/popcount.sv
+src/common_cells/src/exp_backoff.sv
 src/register_interface/src/apb_to_reg.sv
 src/register_interface/src/reg_intf_pkg.sv
 src/register_interface/src/reg_intf.sv
