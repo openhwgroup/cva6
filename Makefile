@@ -436,6 +436,10 @@ run-mul-verilator: $(addsuffix -verilator, $(riscv-mul-tests))
 
 run-fp-verilator: $(addsuffix -verilator, $(riscv-fp-tests))
 
+run-fp-d-verilator: $(addsuffix -verilator, $(filter rv64ud%, $(riscv-fp-tests)))
+
+run-fp-f-verilator: $(addsuffix -verilator, $(filter rv64uf%, $(riscv-fp-tests)))
+
 run-benchmarks-verilator: $(addsuffix -verilator,$(riscv-benchmarks))
 
 # torture-specific

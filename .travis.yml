@@ -131,6 +131,20 @@ jobs:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-mul-verilator defines=WB_DCACHE
 
+    # rv64ud-*-* tests
+    - stage: test
+      name: run fp64 tests (Write-Back Cache)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-fp-d-verilator defines=WB_DCACHE
+
+    # rv64uf-*-* tests
+    - stage: test
+      name: run fp32 tests (Write-Back Cache)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-fp-f-verilator defines=WB_DCACHE
+
     # amo tests
     # rv64ua-v-* tests
     - stage: test
@@ -192,6 +206,27 @@ jobs:
       script:
         - ci/build-riscv-tests.sh
         - make -j${NUM_JOBS} run-asm-tests6-verilator defines=WT_DCACHE
+
+    # rv64um-*-* tests
+    - stage: test
+      name: run mul tests (Write-through Cache)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-mul-verilator defines=WT_DCACHE
+
+    # rv64ud-*-* tests
+    - stage: test
+      name: run fp64 tests (Write-through Cache)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-fp-d-verilator defines=WT_DCACHE
+
+    # rv64uf-*-* tests
+    - stage: test
+      name: run fp32 tests (Write-through Cache)
+      script:
+        - ci/build-riscv-tests.sh
+        - make -j${NUM_JOBS} run-fp-f-verilator defines=WT_DCACHE
 
     # amo tests
     # rv64ua-v-* tests
