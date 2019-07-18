@@ -21,7 +21,7 @@ verilator      ?= verilator
 # traget option
 target-options ?=
 # additional definess
-defines        ?= WT_DCACHE
+defines        ?= WT_DCACHE+RVFI+DII
 # test name for torture runs (binary name)
 test-location  ?= output/test
 # set to either nothing or -log
@@ -170,7 +170,6 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/tech_cells_generic/src/pulp_clock_gating.sv                        \
         src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
-        tb/ariane_testharness.sv                                               \
         tb/ariane_peripherals.sv                                               \
         tb/common/uart.sv                                                      \
         tb/common/SimDTM.sv                                                    \
@@ -365,19 +364,20 @@ verilate_command := $(verilator)                                                
                     -Wno-BLKANDNBLK                                                                              \
                     -Wno-style                                                                                   \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
-                    $(if $(DEBUG),--trace --trace-structs,)                                                      \
-                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -g -pg,) -lpthread" \
-                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,)" -Wall --cc  --vpi                               \
-                    $(list_incdir) --top-module ariane_testharness                                               \
+                    --trace --trace-structs                                                                      \
+                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -pg,) -g -lpthread" \
+                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -pg,) -g" -Wall --cc  --vpi                               \
+                    $(list_incdir) --top-module ariane_core_avalon                                               \
                     --Mdir $(ver-library) -O3                                                                    \
-                    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                                    \
-					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
+                    --exe tb/dii_toplevel_sim.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                             \
+					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc                           \
+					tb/socket_packet_utils.c tb/ariane_core_avalon.sv tb/avalon_ariane_translator.sv
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
 	@echo "[Verilator] Building Model$(if $(PROFILE), for Profiling,)"
 	$(verilate_command)
-	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk
+	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_core_avalon.mk CFG_CXXFLAGS_NO_UNUSED="-std=gnu++11 -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow"
 
 sim-verilator: verilate
 	$(ver-library)/Variane_testharness $(elf-bin)

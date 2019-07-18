@@ -29,6 +29,38 @@ module ariane #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
+
+  // RISC-V Formal Interface
+  // Does not comply with the coding standards of _i/_o suffixes, but follows
+  // the convention of RISC-V Formal Interface Specification.
+`ifdef RVFI
+    output logic        rvfi_valid,
+    output logic [63:0] rvfi_order,
+    output logic [31:0] rvfi_insn,
+    output logic [31:0] rvfi_insn_uncompressed,
+    output logic        rvfi_trap,
+    output logic        rvfi_halt,
+    output logic        rvfi_intr,
+    output logic [ 1:0] rvfi_mode,
+    output logic [ 4:0] rvfi_rs1_addr,
+    output logic [ 4:0] rvfi_rs2_addr,
+    output logic [31:0] rvfi_rs1_rdata,
+    output logic [31:0] rvfi_rs2_rdata,
+    output logic [ 4:0] rvfi_rd_addr,
+    output logic [31:0] rvfi_rd_wdata,
+    output logic [31:0] rvfi_pc_rdata,
+    output logic [31:0] rvfi_pc_wdata,
+    output logic [31:0] rvfi_mem_addr,
+    output logic [ 3:0] rvfi_mem_rmask,
+    output logic [ 3:0] rvfi_mem_wmask,
+    output logic [31:0] rvfi_mem_rdata,
+    output logic [31:0] rvfi_mem_wdata,
+`endif
+
+`ifdef DII
+    output logic        perf_imiss_o,
+`endif  
+
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
