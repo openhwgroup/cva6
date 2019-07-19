@@ -17,60 +17,63 @@ import ariane_pkg::*;
 module ariane #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
 ) (
-  input  logic                         clk_i,
-  input  logic                         rst_ni,
+  input logic         clk_i,
+  input logic         rst_ni,
   // Core ID, Cluster ID and boot address are considered more or less static
-  input  logic [63:0]                  boot_addr_i,  // reset boot address
-  input  logic [63:0]                  hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
+  input logic [63:0]  boot_addr_i, // reset boot address
+  input logic [63:0]  hart_id_i, // hart id in a multicore environment (reflected in a CSR)
 
   // Interrupt inputs
-  input  logic [1:0]                   irq_i,        // level sensitive IR lines, mip & sip (async)
-  input  logic                         ipi_i,        // inter-processor interrupts (async)
+  input logic [1:0]   irq_i, // level sensitive IR lines, mip & sip (async)
+  input logic         ipi_i, // inter-processor interrupts (async)
   // Timer facilities
-  input  logic                         time_irq_i,   // timer interrupt in (async)
-  input  logic                         debug_req_i,  // debug request (async)
+  input logic         time_irq_i, // timer interrupt in (async)
+  input logic         debug_req_i, // debug request (async)
 
   // RISC-V Formal Interface
   // Does not comply with the coding standards of _i/_o suffixes, but follows
   // the convention of RISC-V Formal Interface Specification.
 `ifdef RVFI
-    output logic        rvfi_valid,
-    output logic [63:0] rvfi_order,
-    output logic [31:0] rvfi_insn,
-    output logic [31:0] rvfi_insn_uncompressed,
-    output logic        rvfi_trap,
-    output logic        rvfi_halt,
-    output logic        rvfi_intr,
-    output logic [ 1:0] rvfi_mode,
-    output logic [ 4:0] rvfi_rs1_addr,
-    output logic [ 4:0] rvfi_rs2_addr,
-    output logic [31:0] rvfi_rs1_rdata,
-    output logic [31:0] rvfi_rs2_rdata,
-    output logic [ 4:0] rvfi_rd_addr,
-    output logic [31:0] rvfi_rd_wdata,
-    output logic [31:0] rvfi_pc_rdata,
-    output logic [31:0] rvfi_pc_wdata,
-    output logic [31:0] rvfi_mem_addr,
-    output logic [ 3:0] rvfi_mem_rmask,
-    output logic [ 3:0] rvfi_mem_wmask,
-    output logic [31:0] rvfi_mem_rdata,
-    output logic [31:0] rvfi_mem_wdata,
+  output logic        rvfi_valid,
+  output logic [63:0] rvfi_order,
+  output logic [31:0] rvfi_insn,
+  output logic [31:0] rvfi_insn_uncompressed,
+  output logic        rvfi_trap,
+  output logic        rvfi_halt,
+  output logic        rvfi_intr,
+  output logic [ 1:0] rvfi_mode,
+  output logic [ 4:0] rvfi_rs1_addr,
+  output logic [ 4:0] rvfi_rs2_addr,
+  output logic [63:0] rvfi_rs1_rdata,
+  output logic [63:0] rvfi_rs2_rdata,
+  output logic [ 4:0] rvfi_rd_addr,
+  output logic [63:0] rvfi_rd_wdata,
+  output logic [63:0] rvfi_pc_rdata,
+  output logic [63:0] rvfi_pc_wdata,
+  output logic [63:0] rvfi_mem_addr,
+  output logic [ 3:0] rvfi_mem_rmask,
+  output logic [ 3:0] rvfi_mem_wmask,
+  output logic [63:0] rvfi_mem_rdata,
+  output logic [63:0] rvfi_mem_wdata,
 `endif
 
 `ifdef DII
-    output logic        perf_imiss_o,
+  output logic        perf_imiss_o,
+  input logic [31:0]  instr_dii,
+  input logic         instruction_valid_dii,
+  input logic         enable_dii,
 `endif  
 
 `ifdef PITON_ARIANE
   // L15 (memory side)
-  output wt_cache_pkg::l15_req_t       l15_req_o,
-  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
+  output              wt_cache_pkg::l15_req_t l15_req_o,
+  input               wt_cache_pkg::l15_rtrn_t l15_rtrn_i
 `else
   // memory side, AXI Master
-  output ariane_axi::req_t             axi_req_o,
-  input  ariane_axi::resp_t            axi_resp_i
+  output              ariane_axi::req_t axi_req_o,
+  input               ariane_axi::resp_t axi_resp_i
 `endif
-);
+  );
 
   // ------------------------------------------
   // Global Signals
@@ -791,6 +794,29 @@ module ariane #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       cycles <= 0;
+`ifdef RVFI
+      rvfi_halt              <= '0;
+      rvfi_trap              <= '0;
+      rvfi_intr              <= '0;
+      rvfi_order             <= '0;
+      rvfi_insn              <= '0;
+      rvfi_insn_uncompressed <= '0;
+      rvfi_mode              <= '0;
+      rvfi_rs1_addr          <= '0;
+      rvfi_rs2_addr          <= '0;
+      rvfi_pc_rdata          <= '0;
+      rvfi_pc_wdata          <= '0;
+      rvfi_mem_rmask         <= '0;
+      rvfi_mem_wmask         <= '0;
+      rvfi_valid             <= '0;
+      rvfi_rs1_rdata         <= '0;
+      rvfi_rs2_rdata         <= '0;
+      rvfi_rd_wdata          <= '0;
+      rvfi_rd_addr           <= '0;
+      rvfi_mem_rdata         <= '0;
+      rvfi_mem_wdata         <= '0;
+      rvfi_mem_addr          <= '0;
+`endif
     end else begin
       string mode = "";
       if (debug_mode) mode = "D";
@@ -801,10 +827,41 @@ module ariane #(
         riscv::PRIV_LVL_U: mode = "U";
         endcase
       end
+`ifdef RVFI
+       rvfi_valid             <= '0;
+       rvfi_intr              <= '0;
+       rvfi_mem_rmask         <= '0;
+       rvfi_mem_wmask         <= '0;
+`endif
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
         if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
+`ifdef RVFI
+          rvfi_halt              <= '0;
+          rvfi_valid             <= '1;
+          rvfi_order             <= rvfi_order + 64'h1;
+          rvfi_insn              <= commit_instr_id_commit[i].ex.tval[31:0];
+          rvfi_insn_uncompressed <= commit_instr_id_commit[i].ex.tval[31:0];
+          rvfi_mode              <= priv_lvl;
+          rvfi_pc_rdata          <= commit_instr_id_commit[i].pc;
+          rvfi_pc_wdata          <= commit_instr_id_commit[i].pc+4;
+          rvfi_rs1_addr          <= commit_instr_id_commit[i].rs1;
+          rvfi_rs2_addr          <= commit_instr_id_commit[i].rs2;
+          rvfi_rd_addr           <= commit_instr_id_commit[i].rd;
+          rvfi_rs1_rdata         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[0];
+          rvfi_rs2_rdata         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[1];
+          rvfi_rd_wdata          <= commit_instr_id_commit[i].rd ? issue_stage_i.i_issue_read_operands.i_ariane_regfile.wdata_i[0] : '0;
+
+          rvfi_mem_addr          <= ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i ?
+                                    ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i :
+                                    ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid ?
+                                    ex_stage_i.lsu_i.i_load_unit.paddr_i: '0;
+          rvfi_mem_rdata         <= ex_stage_i.lsu_i.i_load_unit.result_o;
+          rvfi_mem_wdata         <= ex_stage_i.lsu_i.i_store_unit.result_o;
+          
+`endif          
           $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
         end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
+           rvfi_trap      <= '1;
           if (commit_instr_id_commit[i].ex.cause == 2) begin
             $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
           end else begin

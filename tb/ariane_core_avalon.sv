@@ -13,42 +13,35 @@ module ariane_core_avalon #(
     parameter int unsigned DmExceptionAddr  = 32'h1A110808
 ) (
     // Clock and Reset
-    input  logic        clk_i,
-    input  logic        rst_i,
+    input logic         clk_i,
+    input logic         rst_i,
 
-    input  logic        test_en_i,     // enable all clock gates for testing
+    input logic         test_en_i, // enable all clock gates for testing
 
     // Core ID, Cluster ID and boot address are considered more or less static
-    input  logic [ 3:0] core_id_i,
-    input  logic [ 5:0] cluster_id_i,
-    input  logic [31:0] boot_addr_i,
+    input logic [ 3:0]  core_id_i,
+    input logic [ 5:0]  cluster_id_i,
+    input logic [31:0]  boot_addr_i,
 
     // Instruction memory interface (Avalon)
-    output logic [31:0] avm_instr_address,
     output logic        avm_instr_read,
-    input  logic [31:0] avm_instr_readdata,
-    input  logic        avm_instr_waitrequest,
-    input  logic        avm_instr_readdatavalid,
 
     // Data memory interface (Avalon)
     output logic [31:0] avm_main_address,
-    output logic [3:0]  avm_main_byteenable,
+    output logic [7:0]  avm_main_byteenable,
     output logic        avm_main_read,
-    input  logic [31:0] avm_main_readdata,
+    input logic [63:0]  avm_main_readdata,
     output logic        avm_main_write,
-    output logic [31:0] avm_main_writedata,
-    input  logic        avm_main_waitrequest,
-    input  logic        avm_main_readdatavalid,
-    input  logic [1:0]  avm_main_response,
+    output logic [63:0] avm_main_writedata,
+    input logic         avm_main_waitrequest,
+    input logic         avm_main_readdatavalid,
+    input logic [1:0]   avm_main_response,
 
     // Interrupt inputs
-    input  logic        irq_i,                 // level sensitive IR lines
-    input  logic [4:0]  irq_id_i,
-    output logic        irq_ack_o,             // irq ack
+    input logic         irq_i, // level sensitive IR lines
+    input logic [4:0]   irq_id_i,
+    output logic        irq_ack_o, // irq ack
     output logic [4:0]  irq_id_o,
-
-    // Debug Interface
-    input  logic        debug_req_i,
 
     // RISC-V Formal Interface
     // Does not comply with the coding standards of _i/_o suffixes, but follows
@@ -64,50 +57,50 @@ module ariane_core_avalon #(
     output logic [ 1:0] rvfi_mode,
     output logic [ 4:0] rvfi_rs1_addr,
     output logic [ 4:0] rvfi_rs2_addr,
-    output logic [31:0] rvfi_rs1_rdata,
-    output logic [31:0] rvfi_rs2_rdata,
+    output logic [63:0] rvfi_rs1_rdata,
+    output logic [63:0] rvfi_rs2_rdata,
     output logic [ 4:0] rvfi_rd_addr,
-    output logic [31:0] rvfi_rd_wdata,
-    output logic [31:0] rvfi_pc_rdata,
-    output logic [31:0] rvfi_pc_wdata,
-    output logic [31:0] rvfi_mem_addr,
+    output logic [63:0] rvfi_rd_wdata,
+    output logic [63:0] rvfi_pc_rdata,
+    output logic [63:0] rvfi_pc_wdata,
+    output logic [63:0] rvfi_mem_addr,
     output logic [ 3:0] rvfi_mem_rmask,
     output logic [ 3:0] rvfi_mem_wmask,
-    output logic [31:0] rvfi_mem_rdata,
-    output logic [31:0] rvfi_mem_wdata,
+    output logic [63:0] rvfi_mem_rdata,
+    output logic [63:0] rvfi_mem_wdata,
 `endif
 
 `ifdef DII
-    input logic [31:0]  dii_insn,
-    input logic [15:0]  dii_time,
-    input logic [7:0]   dii_cmd,
-    output logic        dii_ready,
-    input logic         dii_valid,
+    input logic [31:0]  instr_dii,
+    input logic         instruction_valid_dii,
+    input logic         enable_dii,
 `endif
 
 `ifdef DII
     output logic        perf_imiss_o,
 `endif
 
+    // Debug Interface
+    input logic         debug_req_i
 );
 
 `ifdef DII
     logic perf_imiss;
     assign perf_imiss_o = perf_imiss;
+    assign avm_instr_read = 1;
 `endif
 
     // set up connections for ariane inputs
     logic         instr_rvalid_i;
-    logic [31:0]  instr_addr_o;
-    logic [31:0]  instr_rdata_i;
-    logic         instr_req_o;
+    logic [31:0]  instr_rdata_i, prdata, prdata_0;
+    logic         psel, pready, pready_0, penable, penable_0;
     logic         instr_gnt_i;
 
     logic         data_rvalid_i;
     logic [3:0]   data_be_o;
-    logic [31:0]  data_addr_o;
-    logic [31:0]  data_wdata_o;
-    logic [31:0]  data_rdata_i;
+    logic [63:0]  data_addr_o;
+    logic [63:0]  data_wdata_o;
+    logic [63:0]  data_rdata_i;
     logic         data_err_i;
     logic         data_we_o;
     logic         data_req_o;
@@ -122,7 +115,7 @@ module ariane_core_avalon #(
         .data_we_i(data_we_o),
         .data_be_i(data_be_o),
         // our main memory interface is word-addressed but the ariane core is byte-addressed
-        .data_addr_i({2'b0, data_addr_o[31:2]}),
+        .data_addr_i({2'b0, data_addr_o[63:2]}),
         .data_wdata_i(data_wdata_o),
         
         .avm_main_waitrequest(avm_main_waitrequest),
@@ -141,28 +134,6 @@ module ariane_core_avalon #(
         .avm_main_read(avm_main_read),
         .avm_main_write(avm_main_write),
         .avm_main_writedata(avm_main_writedata)
-    );
-
-    avalon_ariane_translator_instr translator_instr (
-        .clock(clk_i),
-        .reset_n(~rst_i),
-
-        // inputs to translator
-        .instr_req_i(instr_req_o),
-        // our memory is word-addressed but the ariane core is byte-addressed
-        .instr_addr_i({2'b0, instr_addr_o[31:2]}),
-
-        .avm_instr_readdata(avm_instr_readdata),
-        .avm_instr_waitrequest(avm_instr_waitrequest),
-        .avm_instr_readdatavalid(avm_instr_readdatavalid),
-
-        // outputs from translator
-        .instr_gnt_o(instr_gnt_i),
-        .instr_rvalid_o(instr_rvalid_i),
-        .instr_rdata_o(instr_rdata_i),
-
-        .avm_instr_read(avm_instr_read),
-        .avm_instr_address(avm_instr_address)
     );
 
    ariane_axi::req_t    axi_req;
@@ -231,19 +202,28 @@ module ariane_core_avalon #(
             .RVALID_o   ( axi_resp.r_valid      ),
             .RREADY_i   ( axi_req.r_ready       ),
 
-            .PENABLE    ( instr_req_o           ),
+            .PENABLE    ( penable               ),
             .PWRITE     ( data_we_o             ),
-            .PADDR      ( instr_addr_o          ),
-            .PSEL       ( instr_req_o           ),
+            .PADDR      ( data_addr_o           ),
+            .PSEL       ( psel                  ),
             .PWDATA     ( data_wdata_o          ),
-            .PRDATA     ( instr_rdata_i         ),
-            .PREADY     ( instr_rvalid_i        ),
+            .PRDATA     ( prdata                ),
+            .PREADY     ( pready                ),
             .PSLVERR    ( data_err_i            )
   );
 
+   always @(posedge clk_i)
+     begin
+        pready_0 <= pready;
+        penable_0 <= penable;
+        prdata_0 <= data_rdata_i;
+        prdata <= prdata_0;
+     end
+   
+assign pready = data_rvalid_i;
+   
 /*              
  obsolete ??
-        .instr_gnt_i    (instr_gnt_i),
         .data_rvalid_i  (data_rvalid_i),
         .data_be_o      (data_be_o),
         .data_addr_o    (data_addr_o),
@@ -300,6 +280,9 @@ module ariane_core_avalon #(
 
     `ifdef DII
         .perf_imiss_o   (perf_imiss),
+        .instr_dii,
+        .instruction_valid_dii,
+        .enable_dii,
     `endif
 
         // Special control signal

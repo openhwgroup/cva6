@@ -993,8 +993,13 @@ module csr_regfile #(
             mcause_q               <= 64'b0;
             mscratch_q             <= 64'b0;
             mtval_q                <= 64'b0;
+`ifdef RVFI
+            dcache_q               <= 64'b0;
+            icache_q               <= 64'b0;
+`else
             dcache_q               <= 64'b1;
             icache_q               <= 64'b1;
+`endif           
             // supervisor mode registers
             sepc_q                 <= 64'b0;
             scause_q               <= 64'b0;

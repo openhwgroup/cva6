@@ -113,12 +113,13 @@ int main(int argc, char** argv, char** env) {
     top->avm_main_waitrequest = 0;
     top->eval();
 
-    top->avm_instr_readdatavalid = 0;
-    top->avm_instr_waitrequest = 0;
-         
+    top->enable_dii = 1;
+    top->instruction_valid_dii = 0;
+    top->instr_dii = 0;         
     top->rst_i = 0;
 
     int received = 0;
+    int old_rec = 0;
     int in_count = 0;
     int out_count = 0;
 
@@ -126,13 +127,13 @@ int main(int argc, char** argv, char** env) {
     std::vector<RVFI_DII_Instruction_Packet> instructions;
     std::vector<RVFI_DII_Execution_Packet> returntrace;
     while (1) {
-        std::cout << "main loop begin" << std::endl;
-         
+        // std::cout << "main loop begin" << std::endl;
+           
         // send back execution trace
         // send back execution trace if the number of instructions that have come out is equal to the
         // number that have gone in
         if (returntrace.size() > 0 && out_count == in_count) {
-            std::cout << "send" << std::endl;
+            //std::cout << "send" << std::endl;
             for (int i = 0; i < returntrace.size(); i++) {
                 // loop to make sure that the packet has been properly sent
                 while (
@@ -148,7 +149,9 @@ int main(int argc, char** argv, char** env) {
         // set up a packet and try to receive packets if the number of instructions that we've put in is
         // equal to the number of instructions we've received from TestRIG
         RVFI_DII_Instruction_Packet *packet;
-        while (in_count >= received) {
+        
+        while ((in_count >= received) || (received > old_rec)) {
+            old_rec = received;
             //std::cout << "receive" << std::endl;
             //std::cout << "in_count: " << in_count << " received: " << received << std::endl;
 
@@ -157,17 +160,17 @@ int main(int argc, char** argv, char** env) {
 
             // the last byte received will be 0 if our attempt to receive a packet was successful
             if (recbuf[8] == 0) {
-                std::cout << "received this" << std::endl;
+              /*                std::cout << "received this" << std::endl;
                 for (int i = 0; i < sizeof(recbuf); i++) {
                     std::cout << (int) recbuf[i] << " ";
                 }
                 std::cout << std::endl; 
-
+              */
                 packet = (RVFI_DII_Instruction_Packet *) recbuf;
 
                 //std::cout << "time: " << (int) packet->dii_time << std::endl;
                 //std::cout << "cmd: " << (int) packet->dii_cmd << std::endl;
-                std::cout << "insn: 0x" << std::hex <<  (int) packet->dii_insn << std::endl;
+                //std::cout << "insn: 0x" << std::hex <<  (int) packet->dii_insn << std::dec << std::endl;
 
                 instructions.push_back(*packet);
                 received++;
@@ -180,14 +183,14 @@ int main(int argc, char** argv, char** env) {
       
 
         // need to clock the core while there are still instructions in the buffer
-        std::cout << "clock" << std::endl;
+        //        std::cout << "clock" << std::endl;
         if ((in_count <= received) && received > 0 && ((in_count - out_count > 0) || in_count == 0 || (out_count == in_count && received > in_count))) {
 
-            std::cout << "in_count: " << in_count << " out_count: " << out_count << " diff: " << in_count - out_count << std::endl;
+          // std::cout << "in_count: " << in_count << " out_count: " << out_count << " diff: " << in_count - out_count << std::endl;
             /*
             if (in_count - out_count > 0) {
                 for (int i = out_count + 1; i <= in_count; i++) {
-                    std::cout << "next " << i << ": " << std::hex << instructions[i].dii_insn << std::endl;
+                    std::cout << "next " << i << ": " << std::hex << instructions[i].dii_insn << std::dec << std::endl;
                 }
             }
             */
@@ -199,15 +202,15 @@ int main(int argc, char** argv, char** env) {
             if (in_count - out_count > 0 && top->rvfi_valid) {
                 RVFI_DII_Execution_Packet execpacket = {
                     .rvfi_order = top->rvfi_order,
-                    .rvfi_pc_rdata = top->rvfi_pc_rdata | ((top->rvfi_pc_rdata & 0x80000000) ? 0xffffffff00000000 : 0),
-                    .rvfi_pc_wdata = top->rvfi_pc_wdata | ((top->rvfi_pc_wdata & 0x80000000) ? 0xffffffff00000000 : 0),
+                    .rvfi_pc_rdata = top->rvfi_pc_rdata,
+                    .rvfi_pc_wdata = top->rvfi_pc_wdata,
                     .rvfi_insn = top->rvfi_insn | ((top->rvfi_insn & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_rs1_data = top->rvfi_rs1_rdata | ((top->rvfi_rs1_rdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_rs2_data = top->rvfi_rs2_rdata | ((top->rvfi_rs2_rdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_rd_wdata = top->rvfi_rd_wdata | ((top->rvfi_rd_wdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_mem_addr = top->rvfi_mem_addr | ((top->rvfi_mem_addr & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_mem_rdata = top->rvfi_mem_rdata | ((top->rvfi_mem_rdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_mem_wdata = top->rvfi_mem_wdata | ((top->rvfi_mem_wdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
+                    .rvfi_rs1_data = top->rvfi_rs1_rdata,
+                    .rvfi_rs2_data = top->rvfi_rs2_rdata,
+                    .rvfi_rd_wdata = top->rvfi_rd_wdata,
+                    .rvfi_mem_addr = top->rvfi_mem_addr,
+                    .rvfi_mem_rdata = top->rvfi_mem_rdata,
+                    .rvfi_mem_wdata = top->rvfi_mem_wdata,
                     .rvfi_mem_rmask = top->rvfi_mem_rmask,
                     .rvfi_mem_wmask = top->rvfi_mem_wmask,
                     .rvfi_rs1_addr = top->rvfi_rs1_addr,
@@ -219,8 +222,8 @@ int main(int argc, char** argv, char** env) {
                 };
 
                 returntrace.push_back(execpacket);
-
                 out_count++;
+                std::cout << "\t\t\tcommit\t0x" << std::hex << (int) top->rvfi_insn << std::dec << std::endl;
             }
 
             // detect imiss in order to replay instructions so they don't get lost
@@ -252,28 +255,20 @@ int main(int argc, char** argv, char** env) {
 
             // perform instruction read
             // returns instructions from the DII input from TestRIG
-            top->avm_instr_readdata = instructions[in_count].dii_insn;
             top->rst_i = 0;
             if (instructions[in_count].dii_cmd) {
                 if (top->avm_instr_read) {
                     // if we have instructions to feed into it, then set readdatavalid and waitrequest accordingly
-                    //std::cout << "checking instruction in_count: " << in_count << " received: " << received << std::endl;
+                    // std::cout << "checking instruction in_count: " << in_count << " received: " << received << std::endl;
                     if (received > in_count) {
-                        //std::cout << "inserting instruction @@@@@@@@@@@@@@@@@@@@" << std::endl;
-                        top->avm_instr_readdatavalid = 1;
-                        top->avm_instr_waitrequest = 0;
+                      //                        std::cout << "inserting instruction @@@@@@@@@@@@@@@@@@@@" << std::endl;
+                        top->instr_dii = instructions[in_count].dii_insn;
+                        top->instruction_valid_dii = 1;
+                        std::cout << "insn\t0x" << std::hex << (int) top->instr_dii << std::dec << std::endl;
                         in_count++;
-                        top->boot_addr_i = 0x00000000;
-                    } else {
-                        top->avm_instr_readdatavalid = 0;
-                        top->avm_instr_waitrequest = 1;
                     }
-                } else {
-                    top->avm_instr_readdatavalid = 0;
-                    top->avm_instr_waitrequest = 0;
                 }        
             } else if (in_count - out_count == 0 && in_count < received) {
-                top->boot_addr_i = 0x80000000;
                 top->rst_i = 1;
 
                 // clear memory
@@ -281,7 +276,7 @@ int main(int argc, char** argv, char** env) {
                     memory[i] = 0;
                 }
                 in_count++;
-                top->avm_instr_readdatavalid = 0;
+                top->instruction_valid_dii = 0;
             }
 
 
@@ -291,15 +286,15 @@ int main(int argc, char** argv, char** env) {
             if (in_count - out_count > 0 && top->rst_i) {
                 RVFI_DII_Execution_Packet execpacket = {
                     .rvfi_order = top->rvfi_order,
-                    .rvfi_pc_rdata = top->rvfi_pc_rdata | ((top->rvfi_pc_rdata & 0x80000000) ? 0xffffffff00000000 : 0),
-                    .rvfi_pc_wdata = top->rvfi_pc_wdata | ((top->rvfi_pc_wdata & 0x80000000) ? 0xffffffff00000000 : 0),
+                    .rvfi_pc_rdata = top->rvfi_pc_rdata,
+                    .rvfi_pc_wdata = top->rvfi_pc_wdata,
                     .rvfi_insn = top->rvfi_insn | ((top->rvfi_insn & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_rs1_data = top->rvfi_rs1_rdata | ((top->rvfi_rs1_rdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_rs2_data = top->rvfi_rs2_rdata | ((top->rvfi_rs2_rdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_rd_wdata = top->rvfi_rd_wdata | ((top->rvfi_rd_wdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_mem_addr = top->rvfi_mem_addr | ((top->rvfi_mem_addr & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_mem_rdata = top->rvfi_mem_rdata | ((top->rvfi_mem_rdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_mem_wdata = top->rvfi_mem_wdata | ((top->rvfi_mem_wdata & 0x80000000) ? 0xffffffff00000000 : 0 ),
+                    .rvfi_rs1_data = top->rvfi_rs1_rdata,
+                    .rvfi_rs2_data = top->rvfi_rs2_rdata,
+                    .rvfi_rd_wdata = top->rvfi_rd_wdata,
+                    .rvfi_mem_addr = top->rvfi_mem_addr,
+                    .rvfi_mem_rdata = top->rvfi_mem_rdata,
+                    .rvfi_mem_wdata = top->rvfi_mem_wdata,
                     .rvfi_mem_rmask = top->rvfi_mem_rmask,
                     .rvfi_mem_wmask = top->rvfi_mem_wmask,
                     .rvfi_rs1_addr = top->rvfi_rs1_addr,
@@ -314,7 +309,7 @@ int main(int argc, char** argv, char** env) {
 
                 out_count++;
 
-                std::cout << "resetting, " << "out_count: " << out_count << std::endl;
+                //std::cout << "resetting, " << "out_count: " << out_count << std::endl;
                 
             }
 
@@ -453,8 +448,9 @@ int main(int argc, char** argv, char** env) {
 
             // if we have a large difference between the number of instructions that have gone in
             // and the number that have come out, something's gone wrong; exit the program
-            if (in_count - out_count > 10) {
-              std::cout << "inc_count: " << in_count << "out_count: " << out_count << std::endl;
+            if (in_count - out_count > 20) {
+              std::cout << "inc_count: " << in_count << ", out_count: " << out_count << std::endl;
+              break;
             }
         }
     
