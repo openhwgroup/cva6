@@ -34,27 +34,27 @@ module ariane #(
   // Does not comply with the coding standards of _i/_o suffixes, but follows
   // the convention of RISC-V Formal Interface Specification.
 `ifdef RVFI
-  output logic        rvfi_valid,
-  output logic [63:0] rvfi_order,
-  output logic [31:0] rvfi_insn,
-  output logic [31:0] rvfi_insn_uncompressed,
-  output logic        rvfi_trap,
-  output logic        rvfi_halt,
-  output logic        rvfi_intr,
-  output logic [ 1:0] rvfi_mode,
-  output logic [ 4:0] rvfi_rs1_addr,
-  output logic [ 4:0] rvfi_rs2_addr,
-  output logic [63:0] rvfi_rs1_rdata,
-  output logic [63:0] rvfi_rs2_rdata,
-  output logic [ 4:0] rvfi_rd_addr,
-  output logic [63:0] rvfi_rd_wdata,
-  output logic [63:0] rvfi_pc_rdata,
-  output logic [63:0] rvfi_pc_wdata,
-  output logic [63:0] rvfi_mem_addr,
-  output logic [ 3:0] rvfi_mem_rmask,
-  output logic [ 3:0] rvfi_mem_wmask,
-  output logic [63:0] rvfi_mem_rdata,
-  output logic [63:0] rvfi_mem_wdata,
+  output logic [NR_COMMIT_PORTS-1:0]        rvfi_valid,
+  output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_order,
+  output logic [NR_COMMIT_PORTS-1:0] [31:0] rvfi_insn,
+  output logic [NR_COMMIT_PORTS-1:0] [31:0] rvfi_insn_uncompressed,
+  output logic [NR_COMMIT_PORTS-1:0]        rvfi_trap,
+  output logic [NR_COMMIT_PORTS-1:0]        rvfi_halt,
+  output logic [NR_COMMIT_PORTS-1:0]        rvfi_intr,
+  output logic [NR_COMMIT_PORTS-1:0] [ 1:0] rvfi_mode,
+  output logic [NR_COMMIT_PORTS-1:0] [ 4:0] rvfi_rs1_addr,
+  output logic [NR_COMMIT_PORTS-1:0] [ 4:0] rvfi_rs2_addr,
+  output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_rs1_rdata,
+  output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_rs2_rdata,
+  output logic [NR_COMMIT_PORTS-1:0] [ 4:0] rvfi_rd_addr,
+  output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_rd_wdata,
+  output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_pc_rdata,
+  output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_pc_wdata,
+  output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_addr,
+  output logic [NR_COMMIT_PORTS-1:0] [ 3:0] rvfi_mem_rmask,
+  output logic [NR_COMMIT_PORTS-1:0] [ 3:0] rvfi_mem_wmask,
+  output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_rdata,
+  output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_wdata,
 `endif
 
 `ifdef DII
@@ -836,32 +836,32 @@ module ariane #(
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
         if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
 `ifdef RVFI
-          rvfi_halt              <= '0;
-          rvfi_valid             <= '1;
-          rvfi_order             <= rvfi_order + 64'h1;
-          rvfi_insn              <= commit_instr_id_commit[i].ex.tval[31:0];
-          rvfi_insn_uncompressed <= commit_instr_id_commit[i].ex.tval[31:0];
-          rvfi_mode              <= priv_lvl;
-          rvfi_pc_rdata          <= commit_instr_id_commit[i].pc;
-          rvfi_pc_wdata          <= commit_instr_id_commit[i].pc+4;
-          rvfi_rs1_addr          <= commit_instr_id_commit[i].rs1;
-          rvfi_rs2_addr          <= commit_instr_id_commit[i].rs2;
-          rvfi_rd_addr           <= commit_instr_id_commit[i].rd;
-          rvfi_rs1_rdata         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[0];
-          rvfi_rs2_rdata         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[1];
-          rvfi_rd_wdata          <= commit_instr_id_commit[i].rd ? issue_stage_i.i_issue_read_operands.i_ariane_regfile.wdata_i[0] : '0;
+          rvfi_halt[i]              <= '0;
+          rvfi_valid[i]             <= '1;
+          rvfi_order[i]             <= rvfi_order + 64'h1;
+          rvfi_insn[i]              <= commit_instr_id_commit[i].ex.tval[31:0];
+          rvfi_insn_uncompressed[i] <= commit_instr_id_commit[i].ex.tval[31:0];
+          rvfi_mode[i]              <= priv_lvl;
+          rvfi_pc_rdata[i]          <= commit_instr_id_commit[i].pc;
+          rvfi_pc_wdata[i]          <= commit_instr_id_commit[i].pc+4;
+          rvfi_rs1_addr[i]          <= commit_instr_id_commit[i].rs1;
+          rvfi_rs2_addr[i]          <= commit_instr_id_commit[i].rs2;
+          rvfi_rd_addr[i]           <= commit_instr_id_commit[i].rd;
+          rvfi_rs1_rdata[i]         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[0];
+          rvfi_rs2_rdata[i]         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[1];
+          rvfi_rd_wdata[i]          <= commit_instr_id_commit[i].rd ? issue_stage_i.i_issue_read_operands.i_ariane_regfile.wdata_i[0] : '0;
 
-          rvfi_mem_addr          <= ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i ?
+          rvfi_mem_addr[i]          <= ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i ?
                                     ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i :
                                     ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid ?
                                     ex_stage_i.lsu_i.i_load_unit.paddr_i: '0;
-          rvfi_mem_rdata         <= ex_stage_i.lsu_i.i_load_unit.result_o;
-          rvfi_mem_wdata         <= ex_stage_i.lsu_i.i_store_unit.result_o;
+          rvfi_mem_rdata[i]         <= ex_stage_i.lsu_i.i_load_unit.result_o;
+          rvfi_mem_wdata[i]         <= ex_stage_i.lsu_i.i_store_unit.result_o;
           
 `endif          
           $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
         end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
-           rvfi_trap      <= '1;
+           rvfi_trap[i]      <= '1;
           if (commit_instr_id_commit[i].ex.cause == 2) begin
             $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
           end else begin

@@ -78,6 +78,33 @@ double sc_time_stamp() {
 // It will then try to receive RVFI-DII packets and put the instructions
 // from them into the core and simulate it.
 // The RVFI trace is then sent back
+
+RVFI_DII_Execution_Packet execpacket(Variane_core_avalon* top, int i)
+{
+  std::int32_t insn = (top->rvfi_insn >> i*32) & 0xFFFFFFFF;
+  RVFI_DII_Execution_Packet execpkt = {
+    .rvfi_order = ((std::uint64_t*)(top->rvfi_order))[i],
+    .rvfi_pc_rdata = ((std::uint64_t*)(top->rvfi_pc_rdata))[i],
+    .rvfi_pc_wdata = ((std::uint64_t*)(top->rvfi_pc_wdata))[i],
+    .rvfi_insn = (uint64_t)(int64_t)insn,
+    .rvfi_rs1_data = ((std::uint64_t*)(top->rvfi_rs1_rdata))[i],
+    .rvfi_rs2_data = ((std::uint64_t*)(top->rvfi_rs2_rdata))[i],
+    .rvfi_rd_wdata = ((std::uint64_t*)(top->rvfi_rd_wdata))[i],
+    .rvfi_mem_addr = ((std::uint64_t*)(top->rvfi_mem_addr))[i],
+    .rvfi_mem_rdata = ((std::uint64_t*)(top->rvfi_mem_rdata))[i],
+    .rvfi_mem_wdata = ((std::uint64_t*)(top->rvfi_mem_wdata))[i],
+    .rvfi_mem_rmask = (uint8_t)((top->rvfi_mem_rmask >> i*4) & 15),
+    .rvfi_mem_wmask = (uint8_t)((top->rvfi_mem_wmask >> i*4) & 15),
+    .rvfi_rs1_addr = (uint8_t)((top->rvfi_rs1_addr >> i*5) & 31),
+    .rvfi_rs2_addr = (uint8_t)((top->rvfi_rs2_addr >> i*5) & 31),
+    .rvfi_rd_addr = (uint8_t)((top->rvfi_rd_addr >> i*5) & 31),
+    .rvfi_trap = (uint8_t)((top->rvfi_trap >> i) & 1),
+    .rvfi_halt = top->rst_i,
+    .rvfi_intr = (uint8_t)((top->rvfi_intr >> i) & 1)
+  };
+  return execpkt;
+}
+
 int main(int argc, char** argv, char** env) {
 
     if (argc != 3) {
@@ -185,7 +212,7 @@ int main(int argc, char** argv, char** env) {
         // need to clock the core while there are still instructions in the buffer
         //        std::cout << "clock" << std::endl;
         if ((in_count <= received) && received > 0 && ((in_count - out_count > 0) || in_count == 0 || (out_count == in_count && received > in_count))) {
-
+          int i;
           // std::cout << "in_count: " << in_count << " out_count: " << out_count << " diff: " << in_count - out_count << std::endl;
             /*
             if (in_count - out_count > 0) {
@@ -195,33 +222,12 @@ int main(int argc, char** argv, char** env) {
             }
             */
 
-
+        for (i = 0; i < 2; i++) {
             // read rvfi data and add packet to list of packets to send
             // the condition to read data here is that there is an rvfi valid signal
             // this deals with counting instructions that the core has finished executing
-            if (in_count - out_count > 0 && top->rvfi_valid) {
-                RVFI_DII_Execution_Packet execpacket = {
-                    .rvfi_order = top->rvfi_order,
-                    .rvfi_pc_rdata = top->rvfi_pc_rdata,
-                    .rvfi_pc_wdata = top->rvfi_pc_wdata,
-                    .rvfi_insn = top->rvfi_insn | ((top->rvfi_insn & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_rs1_data = top->rvfi_rs1_rdata,
-                    .rvfi_rs2_data = top->rvfi_rs2_rdata,
-                    .rvfi_rd_wdata = top->rvfi_rd_wdata,
-                    .rvfi_mem_addr = top->rvfi_mem_addr,
-                    .rvfi_mem_rdata = top->rvfi_mem_rdata,
-                    .rvfi_mem_wdata = top->rvfi_mem_wdata,
-                    .rvfi_mem_rmask = top->rvfi_mem_rmask,
-                    .rvfi_mem_wmask = top->rvfi_mem_wmask,
-                    .rvfi_rs1_addr = top->rvfi_rs1_addr,
-                    .rvfi_rs2_addr = top->rvfi_rs2_addr,
-                    .rvfi_rd_addr = top->rvfi_rd_addr,
-                    .rvfi_trap = top->rvfi_trap,
-                    .rvfi_halt = top->rst_i,
-                    .rvfi_intr = top->rvfi_intr
-                };
-
-                returntrace.push_back(execpacket);
+          if (in_count - out_count > 0 && (top->rvfi_valid & (1<<i))) {
+            returntrace.push_back(execpacket(top, i));
                 out_count++;
                 std::cout << "\t\t\tcommit\t0x" << std::hex << (int) top->rvfi_insn << std::dec << std::endl;
             }
@@ -233,7 +239,7 @@ int main(int argc, char** argv, char** env) {
                 // currently, in order for this to work we need to remove illegal_insn from the assignment
                 // to rvfi_trap since when the core is first started the instruction data is garbage so
                 // this is high
-                if (top->rvfi_trap) {
+              if ((top->rvfi_trap >> i) & 1) {
                     // if there has been a trap, then we know that we just tried to do a load/store
                     // we need to go back to out_count
                     in_count = out_count;
@@ -252,7 +258,8 @@ int main(int argc, char** argv, char** env) {
                     }
                 }
             }
-
+        }
+          
             // perform instruction read
             // returns instructions from the DII input from TestRIG
             top->rst_i = 0;
@@ -284,28 +291,7 @@ int main(int argc, char** argv, char** env) {
             // the condition to read data here is that the core has just been reset
             // this deals with counting reset instruction packets from TestRIG
             if (in_count - out_count > 0 && top->rst_i) {
-                RVFI_DII_Execution_Packet execpacket = {
-                    .rvfi_order = top->rvfi_order,
-                    .rvfi_pc_rdata = top->rvfi_pc_rdata,
-                    .rvfi_pc_wdata = top->rvfi_pc_wdata,
-                    .rvfi_insn = top->rvfi_insn | ((top->rvfi_insn & 0x80000000) ? 0xffffffff00000000 : 0 ),
-                    .rvfi_rs1_data = top->rvfi_rs1_rdata,
-                    .rvfi_rs2_data = top->rvfi_rs2_rdata,
-                    .rvfi_rd_wdata = top->rvfi_rd_wdata,
-                    .rvfi_mem_addr = top->rvfi_mem_addr,
-                    .rvfi_mem_rdata = top->rvfi_mem_rdata,
-                    .rvfi_mem_wdata = top->rvfi_mem_wdata,
-                    .rvfi_mem_rmask = top->rvfi_mem_rmask,
-                    .rvfi_mem_wmask = top->rvfi_mem_wmask,
-                    .rvfi_rs1_addr = top->rvfi_rs1_addr,
-                    .rvfi_rs2_addr = top->rvfi_rs2_addr,
-                    .rvfi_rd_addr = top->rvfi_rd_addr,
-                    .rvfi_trap = top->rvfi_trap,
-                    .rvfi_halt = top->rst_i,
-                    .rvfi_intr = top->rvfi_intr
-                };
-
-                returntrace.push_back(execpacket);
+              returntrace.push_back(execpacket(top,0)); // we only need to consult the first commit port
 
                 out_count++;
 
