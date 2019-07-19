@@ -17,18 +17,18 @@ import ariane_pkg::*;
 module ariane #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg     = ariane_pkg::ArianeDefaultConfig
 ) (
-  input logic         clk_i,
-  input logic         rst_ni,
+  input  logic                         clk_i,
+  input  logic                         rst_ni,
   // Core ID, Cluster ID and boot address are considered more or less static
-  input logic [63:0]  boot_addr_i, // reset boot address
-  input logic [63:0]  hart_id_i, // hart id in a multicore environment (reflected in a CSR)
+  input  logic [63:0]                  boot_addr_i,  // reset boot address
+  input  logic [63:0]                  hart_id_i,    // hart id in a multicore environment (reflected in a CSR)
 
   // Interrupt inputs
-  input logic [1:0]   irq_i, // level sensitive IR lines, mip & sip (async)
-  input logic         ipi_i, // inter-processor interrupts (async)
+  input  logic [1:0]                   irq_i,        // level sensitive IR lines, mip & sip (async)
+  input  logic                         ipi_i,        // inter-processor interrupts (async)
   // Timer facilities
-  input logic         time_irq_i, // timer interrupt in (async)
-  input logic         debug_req_i, // debug request (async)
+  input  logic                         time_irq_i,   // timer interrupt in (async)
+  input  logic                         debug_req_i,  // debug request (async)
 
   // RISC-V Formal Interface
   // Does not comply with the coding standards of _i/_o suffixes, but follows
@@ -66,14 +66,14 @@ module ariane #(
 
 `ifdef PITON_ARIANE
   // L15 (memory side)
-  output              wt_cache_pkg::l15_req_t l15_req_o,
-  input               wt_cache_pkg::l15_rtrn_t l15_rtrn_i
+  output wt_cache_pkg::l15_req_t       l15_req_o,
+  input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
 `else
   // memory side, AXI Master
-  output              ariane_axi::req_t axi_req_o,
-  input               ariane_axi::resp_t axi_resp_i
+  output ariane_axi::req_t             axi_req_o,
+  input  ariane_axi::resp_t            axi_resp_i
 `endif
-  );
+);
 
   // ------------------------------------------
   // Global Signals

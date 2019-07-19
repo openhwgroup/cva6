@@ -19,28 +19,28 @@ import ariane_pkg::*;
 module frontend #(
   parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
-  input logic        clk_i, // Clock
-  input logic        rst_ni, // Asynchronous reset active low
-  input logic        flush_i, // flush request for PCGEN
-  input logic        flush_bp_i, // flush branch prediction
-  input logic        debug_mode_i,
+  input  logic               clk_i,              // Clock
+  input  logic               rst_ni,             // Asynchronous reset active low
+  input  logic               flush_i,            // flush request for PCGEN
+  input  logic               flush_bp_i,         // flush branch prediction
+  input  logic               debug_mode_i,
   // global input
-  input logic [63:0] boot_addr_i,
+  input  logic [63:0]        boot_addr_i,
   // Set a new PC
   // mispredict
-  input              bp_resolve_t resolved_branch_i, // from controller signaling a branch_predict -> update BTB
+  input  bp_resolve_t        resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
   // from commit, when flushing the whole pipeline
-  input logic        set_pc_commit_i, // Take the PC from commit stage
-  input logic [63:0] pc_commit_i, // PC of instruction in commit stage
+  input  logic               set_pc_commit_i,    // Take the PC from commit stage
+  input  logic [63:0]        pc_commit_i,        // PC of instruction in commit stage
   // CSR input
-  input logic [63:0] epc_i, // exception PC which we need to return to
-  input logic        eret_i, // return from exception
-  input logic [63:0] trap_vector_base_i, // base of trap vector
-  input logic        ex_valid_i, // exception is valid - from commit
-  input logic        set_debug_pc_i, // jump to debug address
+  input  logic [63:0]        epc_i,              // exception PC which we need to return to
+  input  logic               eret_i,             // return from exception
+  input  logic [63:0]        trap_vector_base_i, // base of trap vector
+  input  logic               ex_valid_i,         // exception is valid - from commit
+  input  logic               set_debug_pc_i,     // jump to debug address
   // Instruction Fetch
-  output             icache_dreq_i_t icache_dreq_o,
-  input              icache_dreq_o_t icache_dreq_i,
+  output icache_dreq_i_t     icache_dreq_o,
+  input  icache_dreq_o_t     icache_dreq_i,
 `ifdef DII
   input logic [31:0] instr_dii,
   input logic        instruction_valid_dii,
@@ -48,9 +48,9 @@ module frontend #(
 `endif
   //
   // instruction output port -> to processor back-end
-  output             fetch_entry_t fetch_entry_o, // fetch entry containing all relevant data for the ID stage
-  output logic       fetch_entry_valid_o, // instruction in IF is valid
-  input logic        fetch_entry_ready_i  // ID acknowledged this instruction
+  output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
+  output logic               fetch_entry_valid_o, // instruction in IF is valid
+  input  logic               fetch_entry_ready_i  // ID acknowledged this instruction
 );
     // Instruction Cache Registers, from I$
     logic [FETCH_WIDTH-1:0] icache_data_q;
