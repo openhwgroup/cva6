@@ -860,9 +860,11 @@ module ariane #(
 `endif          
           $display("%d 0x%0h %s (0x%h) DASM(%h)", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
         end else if (commit_instr_id_commit[i].ex.valid) begin
+`ifdef RVFI
           rvfi_trap[i]              <= '1;
           rvfi_valid[i]             <= '1;
           rvfi_insn[i]              <= commit_instr_id_commit[i].ex.tval[31:0];
+`endif
           if (commit_instr_id_commit[i].ex.cause == 2) begin
             $display("Exception Cause: Illegal Instructions, DASM(%h) PC=%h", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
           end else begin

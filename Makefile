@@ -6,6 +6,7 @@
 library        ?= work
 # verilator lib
 ver-library    ?= work-ver
+ver-library-rvfi ?= work-rvfi
 # library for DPI
 dpi-library    ?= work-dpi
 # Top level module to compile
@@ -21,7 +22,7 @@ verilator      ?= verilator
 # traget option
 target-options ?=
 # additional definess
-defines        ?= WT_DCACHE+RVFI+DII
+defines        ?= WT_DCACHE
 # test name for torture runs (binary name)
 test-location  ?= output/test
 # set to either nothing or -log
@@ -170,6 +171,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/tech_cells_generic/src/pulp_clock_gating.sv                        \
         src/tech_cells_generic/src/cluster_clock_inverter.sv                   \
         src/tech_cells_generic/src/pulp_clock_mux2.sv                          \
+        tb/ariane_testharness.sv                                               \
         tb/ariane_peripherals.sv                                               \
         tb/common/uart.sv                                                      \
         tb/common/SimDTM.sv                                                    \
@@ -344,6 +346,43 @@ run-benchmarks: $(riscv-benchmarks)
 check-benchmarks:
 	ci/check-tests.sh tmp/riscv-benchmarks- $(shell wc -l $(riscv-benchmarks-list) | awk -F " " '{ print $1 }')
 
+CFG_CXXFLAGS_NO_UNUSED="-std=gnu++11 -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow"
+
+# verilator-specific (RVFI)
+verilate_command_rvfi := $(verilator)                                                                            \
+                    $(filter-out %.vhd, $(ariane_pkg))                                                           \
+                    $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                   \
+                    +define+$(defines)+RVFI+DII                                                                  \
+                    src/util/sram.sv                                                                             \
+                    +incdir+src/axi_node                                                                         \
+                    $(if $(verilator_threads), --threads $(verilator_threads))                                   \
+                    --unroll-count 256                                                                           \
+                    -Werror-PINMISSING                                                                           \
+                    -Werror-IMPLICIT                                                                             \
+                    -Wno-fatal                                                                                   \
+                    -Wno-PINCONNECTEMPTY                                                                         \
+                    -Wno-ASSIGNDLY                                                                               \
+                    -Wno-DECLFILENAME                                                                            \
+                    -Wno-UNUSED                                                                                  \
+                    -Wno-UNOPTFLAT                                                                               \
+                    -Wno-BLKANDNBLK                                                                              \
+                    -Wno-style                                                                                   \
+                    $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
+                    --trace --trace-structs                                                                      \
+                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -pg,) -g -lpthread" \
+                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -pg,) -g" -Wall --cc  --vpi                               \
+                    $(list_incdir) --top-module ariane_core_avalon                                               \
+                    --Mdir $(ver-library-rvfi) -O3                                                                    \
+                    --exe tb/dii_toplevel_sim.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                             \
+					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc                           \
+					tb/socket_packet_utils.c tb/ariane_core_avalon.sv tb/avalon_ariane_translator.sv
+
+# User Verilator, at some point in the future this will be auto-generated
+verilate-rvfi:
+	@echo "[Verilator] Building Model$(if $(PROFILE), for Profiling,)"
+	$(verilate_command_rvfi)
+	cd $(ver-library-rvfi) && $(MAKE) -j${NUM_JOBS} -f Variane_core_avalon.mk CFG_CXXFLAGS_NO_UNUSED=$(CFG_CXXFLAGS_NO_UNUSED)
+
 # verilator-specific
 verilate_command := $(verilator)                                                                                 \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
@@ -364,20 +403,19 @@ verilate_command := $(verilator)                                                
                     -Wno-BLKANDNBLK                                                                              \
                     -Wno-style                                                                                   \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
-                    --trace --trace-structs                                                                      \
-                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -pg,) -g -lpthread" \
-                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -pg,) -g" -Wall --cc  --vpi                               \
-                    $(list_incdir) --top-module ariane_core_avalon                                               \
+                    $(if $(DEBUG),--trace --trace-structs,)                                                      \
+                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -g -pg,) -lpthread" \
+                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,)" -Wall --cc  --vpi                               \
+                    $(list_incdir) --top-module ariane_testharness                                               \
                     --Mdir $(ver-library) -O3                                                                    \
-                    --exe tb/dii_toplevel_sim.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                             \
-					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc                           \
-					tb/socket_packet_utils.c tb/ariane_core_avalon.sv tb/avalon_ariane_translator.sv
+                    --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                                    \
+					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
 
 # User Verilator, at some point in the future this will be auto-generated
 verilate:
 	@echo "[Verilator] Building Model$(if $(PROFILE), for Profiling,)"
 	$(verilate_command)
-	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_core_avalon.mk CFG_CXXFLAGS_NO_UNUSED="-std=gnu++11 -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow"
+	cd $(ver-library) && $(MAKE) -j${NUM_JOBS} -f Variane_testharness.mk CFG_CXXFLAGS_NO_UNUSED=$(CFG_CXXFLAGS_NO_UNUSED)
 
 sim-verilator: verilate
 	$(ver-library)/Variane_testharness $(elf-bin)

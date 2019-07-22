@@ -117,9 +117,15 @@ module frontend #(
     logic [INSTR_PER_FETCH-1:0][63:0] addr_o;
     logic [INSTR_PER_FETCH-1:0]       instruction_valid_o;
 
+`ifdef DII   
     assign instr = enable_dii ? instr_dii : instr_o;
     assign instruction_valid = enable_dii ? instruction_valid_dii : instruction_valid_o;
     assign addr = enable_dii ? icache_dreq_o.vaddr : addr_o;
+`else
+    assign instr = instr_o;
+    assign instruction_valid = instruction_valid_o;
+    assign addr = addr_o;
+`endif
    
     // Re-align instructions
     instr_realign i_instr_realign (
