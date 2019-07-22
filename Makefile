@@ -152,6 +152,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         src/common_cells/src/rstgen.sv                                         \
         src/common_cells/src/stream_mux.sv                                     \
         src/common_cells/src/stream_demux.sv                                   \
+	src/common_cells/src/exp_backoff.sv                                    \
         src/util/axi_master_connect.sv                                         \
         src/util/axi_slave_connect.sv                                          \
         src/util/axi_master_connect_rev.sv                                     \
@@ -376,6 +377,7 @@ verilate_command := $(verilator)                                                
                     -Wno-DECLFILENAME                                                                            \
                     -Wno-UNUSED                                                                                  \
                     -Wno-UNOPTFLAT                                                                               \
+                    -Wno-BLKANDNBLK                                                                              \
                     -Wno-style                                                                                   \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG),--trace --trace-structs,)                                                      \
@@ -448,6 +450,10 @@ run-amo-tests3-verilator: $(addsuffix -verilator, $(riscv-amo-rv64ua-p))
 run-mul-verilator: $(addsuffix -verilator, $(riscv-mul-tests))
 
 run-fp-verilator: $(addsuffix -verilator, $(riscv-fp-tests))
+
+run-fp-d-verilator: $(addsuffix -verilator, $(filter rv64ud%, $(riscv-fp-tests)))
+
+run-fp-f-verilator: $(addsuffix -verilator, $(filter rv64uf%, $(riscv-fp-tests)))
 
 run-benchmarks-verilator: $(addsuffix -verilator,$(riscv-benchmarks))
 
