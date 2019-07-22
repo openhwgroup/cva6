@@ -67,9 +67,9 @@ module frontend #(
     logic [63:0]   replay_addr;
 
     // shift amount
-    logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
     // address will always be 16 bit aligned, make this explicit here
-    assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
+    logic shamt;
+    assign shamt = icache_dreq_i.vaddr[1];
 
     // -----------------------
     // Ctrl Flow Speculation
@@ -295,7 +295,7 @@ module frontend #(
         npc_d = predict_address;
       end
       // 1. Default assignment
-      if (if_ready) npc_d = {fetch_address[63:2], 2'b0}  + 'h4;
+      if (if_ready) npc_d = {fetch_address[63:NR_ALIGN_BITS], NR_ALIGN_BITS'(0)}  + (FETCH_WIDTH / 8);
       // 2. Replay instruction fetch
       if (replay) npc_d = replay_addr;
       // 3. Control flow change request
