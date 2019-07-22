@@ -81,6 +81,10 @@ package ariane_soc;
     NrCachedRegionRules:    1,
     CachedRegionAddrBase:  {DRAMBase},
     CachedRegionLength:    {DRAMLength},
+    // physical region
+    NrPhysicalRegionRules:    1,
+    PhysicalRegionAddrBase:  {DRAMBase},
+    PhysicalRegionLength:    {DRAMLength},
     //  cache config
     Axi64BitCompliant:      1'b1,
     SwapEndianess:          1'b0,

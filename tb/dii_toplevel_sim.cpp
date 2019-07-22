@@ -73,11 +73,7 @@ double sc_time_stamp() {
     return main_time;
 }
 
-
-// This will open a socket on the hostname and port provided
-// It will then try to receive RVFI-DII packets and put the instructions
-// from them into the core and simulate it.
-// The RVFI trace is then sent back
+// convert verilator data structures on a given commit port to a DII returntrace structure
 
 RVFI_DII_Execution_Packet execpacket(Variane_core_avalon* top, int i)
 {
@@ -104,6 +100,11 @@ RVFI_DII_Execution_Packet execpacket(Variane_core_avalon* top, int i)
   };
   return execpkt;
 }
+
+// This will open a socket on the hostname and port provided
+// It will then try to receive RVFI-DII packets and put the instructions
+// from them into the core and simulate it.
+// The RVFI trace is then sent back
 
 int main(int argc, char** argv, char** env) {
 
@@ -141,7 +142,6 @@ int main(int argc, char** argv, char** env) {
     top->eval();
 
     top->enable_dii = 1;
-    top->instruction_valid_dii = 0;
     top->instr_dii = 0;         
     top->rst_i = 0;
 
@@ -154,6 +154,7 @@ int main(int argc, char** argv, char** env) {
     std::vector<RVFI_DII_Instruction_Packet> instructions;
     std::vector<RVFI_DII_Execution_Packet> returntrace;
     while (1) {
+        top->instruction_valid_dii = 0;
         // std::cout << "main loop begin" << std::endl;
            
         // send back execution trace
@@ -226,15 +227,19 @@ int main(int argc, char** argv, char** env) {
             // read rvfi data and add packet to list of packets to send
             // the condition to read data here is that there is an rvfi valid signal
             // this deals with counting instructions that the core has finished executing
-          if (in_count - out_count > 0 && (top->rvfi_valid & (1<<i))) {
-            returntrace.push_back(execpacket(top, i));
+          if (in_count > out_count && (top->rvfi_valid & (1<<i) & ~top->rvfi_trap)) {
+                RVFI_DII_Execution_Packet execpkt = execpacket(top, i);
+                returntrace.push_back(execpkt);
                 out_count++;
-                std::cout << "\t\t\tcommit\t0x" << std::hex << (int) top->rvfi_insn << std::dec << std::endl;
+                std::cout << "\t\t\tcommit\t0x" << std::hex << (int) execpkt.rvfi_insn << std::dec << std::endl;
             }
 
-            // detect imiss in order to replay instructions so they don't get lost
-            if (top->perf_imiss_o && in_count > out_count) {
-                //std::cout << "imiss detected" << std::endl;
+            // detect flush in order to replay instructions so they don't get lost
+          if (in_count > out_count && (top->rvfi_valid & (1<<i) & top->rvfi_trap)) {
+                RVFI_DII_Execution_Packet execpkt = execpacket(top, i);
+                returntrace.push_back(execpkt);
+                out_count++;
+                std::cout << "\t\texception detected" << std::endl;
                 // this will need to be reworked
                 // currently, in order for this to work we need to remove illegal_insn from the assignment
                 // to rvfi_trap since when the core is first started the instruction data is garbage so
@@ -242,6 +247,7 @@ int main(int argc, char** argv, char** env) {
               if ((top->rvfi_trap >> i) & 1) {
                     // if there has been a trap, then we know that we just tried to do a load/store
                     // we need to go back to out_count
+                    top->instruction_valid_dii = 0;
                     in_count = out_count;
                 } else {
                     //std::cout << "cmd: " << (instructions[out_count].dii_cmd ? "instr" : "rst") << std::endl;
@@ -264,7 +270,7 @@ int main(int argc, char** argv, char** env) {
             // returns instructions from the DII input from TestRIG
             top->rst_i = 0;
             if (instructions[in_count].dii_cmd) {
-                if (top->avm_instr_read) {
+                if (top->instr_req_dii) {
                     // if we have instructions to feed into it, then set readdatavalid and waitrequest accordingly
                     // std::cout << "checking instruction in_count: " << in_count << " received: " << received << std::endl;
                     if (received > in_count) {

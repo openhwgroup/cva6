@@ -59,6 +59,7 @@ module ariane #(
 
 `ifdef DII
   output logic        perf_imiss_o,
+  output logic        instr_req_dii,
   input logic [31:0]  instr_dii,
   input logic         instruction_valid_dii,
   input logic         enable_dii,
@@ -75,6 +76,9 @@ module ariane #(
 `endif
 );
 
+`ifdef DII
+   assign instr_req_dii = icache_dreq_if_cache.req && !flush_ctrl_ex;
+`endif
   // ------------------------------------------
   // Global Signals
   // Signals connecting more than one module
@@ -784,12 +788,7 @@ module ariane #(
 // mock tracer for Verilator, to be used with spike-dasm
 `else
 
-  int f;
   logic [63:0] cycles;
-
-  initial begin
-    f = $fopen("trace_hart_00.dasm", "w");
-  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
@@ -832,6 +831,7 @@ module ariane #(
        rvfi_intr              <= '0;
        rvfi_mem_rmask         <= '0;
        rvfi_mem_wmask         <= '0;
+       rvfi_trap              <= '0;
 `endif
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
         if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
@@ -856,30 +856,28 @@ module ariane #(
                                     ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid ?
                                     ex_stage_i.lsu_i.i_load_unit.paddr_i: '0;
           rvfi_mem_rdata[i]         <= ex_stage_i.lsu_i.i_load_unit.result_o;
-          rvfi_mem_wdata[i]         <= ex_stage_i.lsu_i.i_store_unit.result_o;
-          
+          rvfi_mem_wdata[i]         <= ex_stage_i.lsu_i.i_store_unit.result_o;          
 `endif          
-          $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
-        end else if (commit_ack[i] && commit_instr_id_commit[i].ex.valid) begin
-           rvfi_trap[i]      <= '1;
+          $display("%d 0x%0h %s (0x%h) DASM(%h)", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+        end else if (commit_instr_id_commit[i].ex.valid) begin
+          rvfi_trap[i]              <= '1;
+          rvfi_valid[i]             <= '1;
+          rvfi_insn[i]              <= commit_instr_id_commit[i].ex.tval[31:0];
           if (commit_instr_id_commit[i].ex.cause == 2) begin
-            $fwrite(f, "Exception Cause: Illegal Instructions, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
+            $display("Exception Cause: Illegal Instructions, DASM(%h) PC=%h", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
           end else begin
             if (debug_mode) begin
-              $fwrite(f, "%d 0x%0h %s (0x%h) DASM(%h)\n", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+              $display("%d 0x%0h %s (0x%h) DASM(%h)", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
             end else begin
-              $fwrite(f, "Exception Cause: %5d, DASM(%h) PC=%h\n", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
+              $display("Exception Cause: %5d, DASM(%h) PC=%h", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);
             end
           end
-        end
+        end // if (commit_ack[i] && commit_instr_id_commit[i].ex.valid)
       end
         cycles <= cycles + 1;
     end
   end
 
-  final begin
-    $fclose(f);
-  end
 `endif // VERILATOR
 //pragma translate_on
 

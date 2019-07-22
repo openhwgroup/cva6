@@ -257,6 +257,7 @@ module mmu #(
     logic        dtlb_hit_n,      dtlb_hit_q;
     logic        dtlb_is_2M_n,    dtlb_is_2M_q;
     logic        dtlb_is_1G_n,    dtlb_is_1G_q;
+    logic match_any_physical_region;
 
     // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
     assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit :  1'b1;
@@ -331,9 +332,17 @@ module mmu #(
                         lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
                     end
                 end
-            end
+            end // if (ptw_active && !walking_instr)
+        end
+        // if it didn't match any physical region throw a (non-standard) `Physical Protection Fault`
+        if (lsu_valid_o && !match_any_physical_region) begin
+          lsu_exception_o = {riscv::PHYSICAL_PROT_FAULT, lsu_paddr_o, 1'b1};
         end
     end
+
+    // check for physical memory presence
+    assign match_any_physical_region = ariane_pkg::is_inside_physical_regions(ArianeCfg, lsu_paddr_o);
+
     // ----------
     // Registers
     // ----------
