@@ -319,7 +319,7 @@ module csr_regfile #(
         // boot_addr_i will be assigned a constant
         // on the top-level.
         if (mtvec_rst_load_q) begin
-            mtvec_d             = boot_addr_i + 'h40;
+            mtvec_d             = 0;
         end else begin
             mtvec_d             = mtvec_q;
         end

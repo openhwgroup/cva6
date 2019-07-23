@@ -839,8 +839,8 @@ module ariane #(
           rvfi_halt[i]              <= '0;
           rvfi_valid[i]             <= '1;
           rvfi_order[i]             <= rvfi_order + 64'h1;
-          rvfi_insn[i]              <= commit_instr_id_commit[i].ex.tval[31:0];
-          rvfi_insn_uncompressed[i] <= commit_instr_id_commit[i].ex.tval[31:0];
+          rvfi_insn[i]              <= commit_instr_id_commit[i].rvfi;
+          rvfi_insn_uncompressed[i] <= commit_instr_id_commit[i].rvfi;
           rvfi_mode[i]              <= priv_lvl;
           rvfi_pc_rdata[i]          <= commit_instr_id_commit[i].pc;
           rvfi_pc_wdata[i]          <= commit_instr_id_commit[i].pc+4;
@@ -863,7 +863,10 @@ module ariane #(
 `ifdef RVFI
           rvfi_trap[i]              <= '1;
           rvfi_valid[i]             <= '1;
-          rvfi_insn[i]              <= commit_instr_id_commit[i].ex.tval[31:0];
+          rvfi_insn[i]              <= commit_instr_id_commit[i].rvfi;
+          rvfi_insn_uncompressed[i] <= commit_instr_id_commit[i].rvfi;
+          rvfi_pc_rdata[i]          <= commit_instr_id_commit[i].pc;
+          rvfi_pc_wdata[i]          <= trap_vector_base_commit_pcgen;
 `endif
           if (commit_instr_id_commit[i].ex.cause == 2) begin
             $display("Exception Cause: Illegal Instructions, DASM(%h) PC=%h", commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].pc);

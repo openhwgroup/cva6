@@ -622,6 +622,7 @@ package ariane_pkg;
         branchpredict_sbe_t       bp;            // branch predict scoreboard data structure
         logic                     is_compressed; // signals a compressed instructions, we need this information at the commit stage if
                                                  // we want jump accordingly e.g.: +4, +2
+        logic [31:0]              rvfi;          // for unfinished instructions this field also holds the immediate,
     } scoreboard_entry_t;
 
     // --------------------
