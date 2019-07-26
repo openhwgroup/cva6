@@ -70,6 +70,7 @@ package ariane_soc;
     RASDepth: 2,
     BTBEntries: 32,
     BHTEntries: 128,
+    GHRLength: 4,
     // idempotent region
     NrNonIdempotentRules:  0,
     NonIdempotentAddrBase: {64'b0},
