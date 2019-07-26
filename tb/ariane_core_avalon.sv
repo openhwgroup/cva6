@@ -71,21 +71,13 @@ module ariane_core_avalon #(
     input logic [31:0]  instr_dii,
     input logic         instruction_valid_dii,
     input logic         enable_dii,
-`endif
-
-`ifdef DII
-    output logic        perf_imiss_o,
+    output logic        flush_dii,
     output logic        instr_req_dii,
 `endif
 
     // Debug Interface
     input logic         debug_req_i
 );
-
-`ifdef DII
-    logic perf_imiss;
-    assign perf_imiss_o = perf_imiss;
-`endif
 
     // set up connections for ariane inputs
     logic         instr_rvalid_i;
@@ -306,7 +298,7 @@ assign pready = data_rvalid_i;
     `endif
 
     `ifdef DII
-        .perf_imiss_o   (perf_imiss),
+        .flush_dii,
         .instr_req_dii,
         .instr_dii,
         .instruction_valid_dii,

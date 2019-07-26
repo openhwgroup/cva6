@@ -44,9 +44,9 @@ module frontend #(
 `ifdef DII
   input logic [31:0] instr_dii,
   input logic        instruction_valid_dii,
+  input logic [63:0] addr_dii,
   input logic        enable_dii,
 `endif
-  //
   // instruction output port -> to processor back-end
   output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
   output logic               fetch_entry_valid_o, // instruction in IF is valid
@@ -120,7 +120,7 @@ module frontend #(
 `ifdef DII   
     assign instr = enable_dii ? instr_dii : instr_o;
     assign instruction_valid = enable_dii ? instruction_valid_dii : instruction_valid_o;
-    assign addr = enable_dii ? icache_dreq_o.vaddr : addr_o;
+    assign addr = enable_dii ? addr_dii : addr_o;
 `else
     assign instr = instr_o;
     assign instruction_valid = instruction_valid_o;
@@ -361,7 +361,11 @@ module frontend #(
         if (icache_dreq_i.valid) begin
           icache_data_q        <= icache_data;
           icache_vaddr_q       <= icache_dreq_i.vaddr;
+`ifdef DII
+          icache_ex_valid_q    <= icache_dreq_i.ex & ~enable_dii;
+`else
           icache_ex_valid_q    <= icache_dreq_i.ex;
+`endif
           // save the uppermost prediction
           btb_q                <= btb_prediction[INSTR_PER_FETCH-1];
           bht_q                <= bht_prediction[INSTR_PER_FETCH-1];

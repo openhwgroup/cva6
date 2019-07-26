@@ -149,6 +149,7 @@ int main(int argc, char** argv, char** env) {
     int old_rec = 0;
     int in_count = 0;
     int out_count = 0;
+    int ret_cnt = 0;
 
     char recbuf[sizeof(RVFI_DII_Instruction_Packet) + 1] = {0};
     std::vector<RVFI_DII_Instruction_Packet> instructions;
@@ -161,8 +162,9 @@ int main(int argc, char** argv, char** env) {
         // send back execution trace if the number of instructions that have come out is equal to the
         // number that have gone in
         if (returntrace.size() > 0 && out_count == in_count) {
-            //std::cout << "send" << std::endl;
             for (int i = 0; i < returntrace.size(); i++) {
+              ++ret_cnt;
+              std::cout << std::hex << (0xFFFFFFFF & returntrace[i].rvfi_insn) << std::dec << std::endl;
                 // loop to make sure that the packet has been properly sent
                 while (
                     !serv_socket_putN(socket, sizeof(RVFI_DII_Execution_Packet), (unsigned int *) &(returntrace[i]))
@@ -170,8 +172,9 @@ int main(int argc, char** argv, char** env) {
                     // empty
                 }
             }
-           
+            std::cout << "sent" << returntrace.size() << ":" << ret_cnt << std::endl;
             returntrace.clear();
+            std::cout << std::flush;
         }
 
         // set up a packet and try to receive packets if the number of instructions that we've put in is
@@ -231,15 +234,21 @@ int main(int argc, char** argv, char** env) {
                 RVFI_DII_Execution_Packet execpkt = execpacket(top, i);
                 returntrace.push_back(execpkt);
                 out_count++;
-                std::cout << "\t\t\tcommit\t0x" << std::hex << (int) execpkt.rvfi_insn << std::dec << std::endl;
+                std::cout << "\t\t\tcommit\t0x" << std::hex << (int) execpkt.rvfi_insn << std::dec << std::endl << std::flush;
+                // detect non-exception flush such as fence.i
+                if (top->flush_dii) {
+                    std::cout << "\t\tnon-exception flush detected" << std::endl << std::flush;
+                    top->instruction_valid_dii = 0;
+                    in_count = out_count;
+                }
             }
 
-            // detect flush in order to replay instructions so they don't get lost
+          // detect exceptions in order to replay instructions so they don't get lost
           if (in_count > out_count && (top->rvfi_valid & (1<<i) & top->rvfi_trap)) {
                 RVFI_DII_Execution_Packet execpkt = execpacket(top, i);
                 returntrace.push_back(execpkt);
                 out_count++;
-                std::cout << "\t\texception detected" << std::endl;
+                std::cout << "\t\texception detected" << std::endl << std::flush;
                 // this will need to be reworked
                 // currently, in order for this to work we need to remove illegal_insn from the assignment
                 // to rvfi_trap since when the core is first started the instruction data is garbage so

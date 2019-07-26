@@ -694,11 +694,11 @@ module ariane_testharness #(
 `endif
 
 `ifdef DII
-    .perf_imiss_o   (),
+    .flush_dii      (),
     .instr_req_dii  (),
-    .instr_dii      (),
-    .instruction_valid_dii (),
-    .enable_dii     (),
+    .instr_dii      (32'b0),
+    .instruction_valid_dii (1'b0),
+    .enable_dii     (1'b0),
 `endif
 
 // Disable Debug when simulating with Spike

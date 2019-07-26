@@ -51,7 +51,7 @@ module controller (
     always_comb begin : flush_ctrl
         fence_active_d         = fence_active_q;
         set_pc_commit_o        = 1'b0;
-        flush_if_o             = 1'b0;
+        flush_if_o             = !rst_ni;
         flush_unissued_instr_o = 1'b0;
         flush_id_o             = 1'b0;
         flush_ex_o             = 1'b0;
@@ -76,7 +76,7 @@ module controller (
         if (fence_i) begin
             // this can be seen as a CSR instruction with side-effect
             set_pc_commit_o        = 1'b1;
-            flush_if_o             = 1'b0;
+            flush_if_o             = 1'b1;
             flush_unissued_instr_o = 1'b1;
             flush_id_o             = 1'b1;
             flush_ex_o             = 1'b1;
