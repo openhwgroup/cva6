@@ -2,8 +2,6 @@
  * Avalon Wrapper for ariane core
  */
 
-`define RVFI
-
 module ariane_core_avalon #(
     parameter int unsigned MHPMCounterNum   = 0,
     parameter int unsigned MHPMCounterWidth = 40,
@@ -67,14 +65,16 @@ module ariane_core_avalon #(
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_wdata,
 `endif
 
-`ifdef DII
-  input logic [31:0]  instr_dii,
-  input logic         instruction_valid_dii,
-  output logic [INSTR_PER_FETCH-1:0][31:0] instr,
-  output logic [INSTR_PER_FETCH-1:0][63:0] addr,
-  output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
-  output logic                             flush_ctrl_if,
-`endif
+    input logic [31:0]  instr_dii,
+    input logic         instruction_valid_dii,
+    output logic [INSTR_PER_FETCH-1:0][31:0] instr,
+    output logic [INSTR_PER_FETCH-1:0][63:0] addr,
+    output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
+    output logic                             flush_ctrl_if,
+
+    output logic                                rom_req,
+    output logic [ariane_axi::AddrWidth-1:0]    rom_addr,
+    input logic  [ariane_axi::DataWidth-1:0]    rom_rdata,
 
     // Debug Interface
     input logic         debug_req_i
@@ -166,10 +166,6 @@ module ariane_core_avalon #(
   // ---------------
   // ROM
   // ---------------
-  logic                                rom_req;
-  logic [ariane_axi::AddrWidth-1:0]    rom_addr;
-  logic [ariane_axi::DataWidth-1:0]    rom_rdata;
-
   axi2mem #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidth      ),
     .AXI_ADDR_WIDTH ( ariane_axi::AddrWidth    ),
@@ -187,13 +183,6 @@ module ariane_core_avalon #(
     .data_i ( rom_rdata               )
   );
 
-  bootrom i_bootrom (
-    .clk_i      ( clk_i     ),
-    .req_i      ( rom_req   ),
-    .addr_i     ( rom_addr  ),
-    .rdata_o    ( rom_rdata )
-  );   
-   
    ariane #(
     .ArianeCfg  ( ArianeRIGCfg )
   ) u_core (

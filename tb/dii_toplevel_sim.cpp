@@ -271,17 +271,45 @@ int main(int argc, char** argv, char** env) {
         }
           
             // perform instruction read
+        if (top->rom_req) {
+          switch(top->rom_addr & 0xFFFFFFFFFFFFFF)
+            {
+            case 0x00000000000330: top->rom_rdata = 0x11E3020261130000; break;
+            case 0x00000000000338: top->rom_rdata = 0xFFFFFFFFFFFF9222; break;
+            case 0x0000007FFFF440: top->rom_rdata = 0x6093004081930000; break;
+            case 0x0000007FFFF448: top->rom_rdata = 0xDEE38C011B630082; break;
+            case 0x0000007FFFF450: top->rom_rdata = 0x00E7504210E35A50; break;
+            case 0x0000007FFFF458: top->rom_rdata = 0x0000000000003330; break;
+            case 0x00000080000000: top->rom_rdata = 0xC2008F6370B1E297; break;
+            case 0x000000F0B1D888: top->rom_rdata = 0x72EFB17901170000; break;
+            case 0x000000F0B1D890: top->rom_rdata = 0x00000000000050B2; break;
+            case 0x000000F0B454C8: top->rom_rdata = 0x47B28067D40215E3; break;
+            case 0x000000F0B45598: top->rom_rdata = 0xFFFFFFFFF202D8E3; break;
+            case 0xFFFFFFFFF32EC0: top->rom_rdata = 0x9763000000000000; break;
+            case 0xFFFFFFFFF32EC8: top->rom_rdata = 0x009362418BE3BC10; break;
+            case 0xFFFFFFFFF32ED0: top->rom_rdata = 0xFFFF88B281670080; break;
+            case 0xFFFFFFFFFFFC58: top->rom_rdata = 0xFFFFFFFFA6E330EF; break;
+            default: top->rom_rdata = 0xDEADBEEFC001F00D; break;
+            }
+        }
+        else top->rom_rdata = 0;
             // returns instructions from the DII input from TestRIG
             top->rst_i = 0;
             if (instructions[in_count].dii_cmd) {
-                if (top->instruction_valid) {
+                if (top->instruction_valid & 1) {
                     // if we have instructions to feed into it, then set readdatavalid and waitrequest accordingly
                     // std::cout << "checking instruction in_count: " << in_count << " received: " << received << std::endl;
                     if (received > in_count) {
+                      int expected = (int) (instructions[in_count].dii_insn & 0xFFFFFFFF);
+                      int insn = (int) (top->instr & 0xFFFFFFFF);
+                      int addr = (int) (((std::uint64_t*)(top->addr))[0] & 0xFFFFFFFF);
                       //                        std::cout << "inserting instruction @@@@@@@@@@@@@@@@@@@@" << std::endl;
                         top->instr_dii = instructions[in_count].dii_insn;
                         top->instruction_valid_dii = 1;
-                        std::cout << "insn\t0x" << std::hex << (int) top->instr_dii << std::dec << std::endl;
+                        std::cout << "addr\t0x" << std::hex << addr << std::dec << std::endl;
+                        std::cout << "insn\t0x" << std::hex << insn << std::dec << std::endl;
+                        std::cout << "expect\t0x" << std::hex << expected << std::dec << std::endl;
+                        if (insn != expected) top->rst_i = 1;
                         in_count++;
                     }
                 }        
