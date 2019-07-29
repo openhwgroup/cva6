@@ -254,7 +254,10 @@ module ariane #(
 
 `ifdef DII
   logic [63:0] addr_dii;
-  assign instr_req_dii = icache_dreq_if_cache.req && !(flush_ctrl_if | flush_dii);
+  logic        flush_dii_comb;
+
+  assign flush_dii_comb = flush_ctrl_if | (resolved_branch_dly.valid & resolved_branch_dly.is_taken);
+  assign instr_req_dii = icache_dreq_if_cache.req && !(flush_dii_comb || flush_dii);
 `endif
 
   // --------------
@@ -844,7 +847,7 @@ module ariane #(
       resolved_branch_dly    <= resolved_branch;
 `endif
 `ifdef DII
-      flush_dii              <= flush_ctrl_if;
+      flush_dii              <= flush_dii_comb;
 `endif  
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
         if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
