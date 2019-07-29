@@ -68,11 +68,12 @@ module ariane_core_avalon #(
 `endif
 
 `ifdef DII
-    input logic [31:0]  instr_dii,
-    input logic         instruction_valid_dii,
-    input logic         enable_dii,
-    output logic        flush_dii,
-    output logic        instr_req_dii,
+  input logic [31:0]  instr_dii,
+  input logic         instruction_valid_dii,
+  output logic [INSTR_PER_FETCH-1:0][31:0] instr,
+  output logic [INSTR_PER_FETCH-1:0][63:0] addr,
+  output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
+  output logic                             flush_ctrl_if,
 `endif
 
     // Debug Interface
@@ -105,8 +106,8 @@ module ariane_core_avalon #(
       NonIdempotentAddrBase: {0},
       NonIdempotentLength:   {0},
       NrExecuteRegionRules:  1,
-      ExecuteRegionAddrBase: {64'h80000000},
-      ExecuteRegionLength:   {64'h10000},
+      ExecuteRegionAddrBase: {64'h00000000},
+      ExecuteRegionLength:   {64'hFFFFFFFFFFFFFFFF},
       // cached region
       NrCachedRegionRules:    1,
       CachedRegionAddrBase:  {64'h80000000},
@@ -155,99 +156,43 @@ module ariane_core_avalon #(
    ariane_axi::req_t    axi_req;
    ariane_axi::resp_t   axi_resp;
 
-   axi2apb #(
-            .AXI4_ADDRESS_WIDTH ( ariane_axi::AddrWidth ),
-            .AXI4_RDATA_WIDTH   ( ariane_axi::DataWidth ),
-            .AXI4_WDATA_WIDTH   ( ariane_axi::DataWidth ),
-            .AXI4_ID_WIDTH      ( ariane_soc::IdWidth   ),
-            .AXI4_USER_WIDTH    ( ariane_axi::UserWidth ),
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH ( ariane_axi::AddrWidth   ),
+    .AXI_DATA_WIDTH ( ariane_axi::DataWidth   ),
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidth     ),
+    .AXI_USER_WIDTH ( ariane_axi::UserWidth   )
+  ) slave();
 
-            .BUFF_DEPTH_SLAVE   ( 2              ),
-            .APB_ADDR_WIDTH     ( ariane_axi::AddrWidth )
-  ) i_axi2apb (
-            .ACLK       ( clk_i                 ),
-            .ARESETn    ( ~rst_i                ),
-            .test_en_i  ( test_en_i             ),
+  // ---------------
+  // ROM
+  // ---------------
+  logic                                rom_req;
+  logic [ariane_axi::AddrWidth-1:0]    rom_addr;
+  logic [ariane_axi::DataWidth-1:0]    rom_rdata;
 
-            .AWID_i     ( axi_req.aw.id         ),
-            .AWADDR_i   ( axi_req.aw.addr       ),
-            .AWLEN_i    ( axi_req.aw.len        ),
-            .AWSIZE_i   ( axi_req.aw.size       ),
-            .AWBURST_i  ( axi_req.aw.burst      ),
-            .AWLOCK_i   ( axi_req.aw.lock       ),
-            .AWCACHE_i  ( axi_req.aw.cache      ),
-            .AWPROT_i   ( axi_req.aw.prot       ),
-            .AWREGION_i ( axi_req.aw.region     ),
-            .AWUSER_i   ( '0                    ),
-            .AWQOS_i    ( axi_req.aw.qos        ),
-            .AWVALID_i  ( axi_req.aw_valid      ),
-            .AWREADY_o  ( axi_resp.aw_ready     ),
-
-            .WDATA_i    ( axi_req.w.data        ),
-            .WSTRB_i    ( axi_req.w.strb        ),
-            .WLAST_i    ( axi_req.w.last        ),
-            .WUSER_i    ( '0                    ),
-            .WVALID_i   ( axi_req.w_valid       ),
-            .WREADY_o   ( axi_resp.w_ready      ),
-
-            .BID_o      ( axi_resp.b.id         ),
-            .BRESP_o    ( axi_resp.b.resp       ),
-            .BVALID_o   ( axi_resp.b_valid      ),
-            .BUSER_o    (                       ),
-            .BREADY_i   ( axi_req.b_ready       ),
-
-            .ARID_i     ( axi_req.ar.id         ),
-            .ARADDR_i   ( axi_req.ar.addr       ),
-            .ARLEN_i    ( axi_req.ar.len        ),
-            .ARSIZE_i   ( axi_req.ar.size       ),
-            .ARBURST_i  ( axi_req.ar.burst      ),
-            .ARLOCK_i   ( axi_req.ar.lock       ),
-            .ARCACHE_i  ( axi_req.ar.cache      ),
-            .ARPROT_i   ( axi_req.ar.prot       ),
-            .ARREGION_i ( axi_req.ar.region     ),
-            .ARUSER_i   ( '0                    ),
-            .ARQOS_i    ( axi_req.ar.qos        ),
-            .ARVALID_i  ( axi_req.ar_valid      ),
-            .ARREADY_o  ( axi_resp.ar_ready     ),
-
-            .RID_o      ( axi_resp.r.id         ),
-            .RDATA_o    ( axi_resp.r.data       ),
-            .RRESP_o    ( axi_resp.r.resp       ),
-            .RLAST_o    ( axi_resp.r.last       ),
-            .RUSER_o    (                       ),
-            .RVALID_o   ( axi_resp.r_valid      ),
-            .RREADY_i   ( axi_req.r_ready       ),
-
-            .PENABLE    ( penable               ),
-            .PWRITE     ( data_we_o             ),
-            .PADDR      ( data_addr_o           ),
-            .PSEL       ( psel                  ),
-            .PWDATA     ( data_wdata_o          ),
-            .PRDATA     ( prdata                ),
-            .PREADY     ( pready                ),
-            .PSLVERR    ( data_err_i            )
+  axi2mem #(
+    .AXI_ID_WIDTH   ( ariane_soc::IdWidth      ),
+    .AXI_ADDR_WIDTH ( ariane_axi::AddrWidth    ),
+    .AXI_DATA_WIDTH ( ariane_axi::DataWidth    ),
+    .AXI_USER_WIDTH ( ariane_axi::UserWidth    )
+  ) i_axi2rom (
+    .clk_i  ( clk_i                   ),
+    .rst_ni ( ~rst_i                  ),
+    .slave  ( slave                   ),
+    .req_o  ( rom_req                 ),
+    .we_o   (                         ),
+    .addr_o ( rom_addr                ),
+    .be_o   (                         ),
+    .data_o (                         ),
+    .data_i ( rom_rdata               )
   );
 
-   always @(posedge clk_i)
-     begin
-        pready_0 <= pready;
-        penable_0 <= penable;
-        prdata_0 <= data_rdata_i;
-        prdata <= prdata_0;
-        data_err_i <= data_err_avalon | (penable && ((data_addr_o < 64'h80000000) || (data_addr_o >= 64'h80010000)));
-     end
-   
-assign pready = data_rvalid_i;
-   
-/*              
- obsolete ??
-        .data_rvalid_i  (data_rvalid_i),
-        .data_be_o      (data_be_o),
-        .data_addr_o    (data_addr_o),
-        .data_rdata_i   (data_rdata_i),
-        .data_req_o     (data_req_o),
-        .data_gnt_i     (data_gnt_i),
-*/
+  bootrom i_bootrom (
+    .clk_i      ( clk_i     ),
+    .req_i      ( rom_req   ),
+    .addr_i     ( rom_addr  ),
+    .rdata_o    ( rom_rdata )
+  );   
    
    ariane #(
     .ArianeCfg  ( ArianeRIGCfg )
@@ -298,11 +243,10 @@ assign pready = data_rvalid_i;
     `endif
 
     `ifdef DII
-        .flush_dii,
-        .instr_req_dii,
-        .instr_dii,
-        .instruction_valid_dii,
-        .enable_dii,
+        .flush_ctrl_if,
+        .instr,
+        .addr,
+        .instruction_valid,
     `endif
 
         // Special control signal
@@ -312,4 +256,10 @@ assign pready = data_rvalid_i;
         .axi_resp_i(axi_resp)
     );
 
+  axi_master_connect i_axi_master_connect_ariane (
+    .axi_req_i(axi_req),
+    .axi_resp_o(axi_resp),
+    .master(slave)
+  );
+   
 endmodule

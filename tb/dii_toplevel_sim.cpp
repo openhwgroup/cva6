@@ -141,8 +141,6 @@ int main(int argc, char** argv, char** env) {
     top->avm_main_waitrequest = 0;
     top->eval();
 
-    top->enable_dii = 1;
-    top->instr_dii = 0;         
     top->rst_i = 0;
 
     int received = 0;
@@ -155,7 +153,6 @@ int main(int argc, char** argv, char** env) {
     std::vector<RVFI_DII_Instruction_Packet> instructions;
     std::vector<RVFI_DII_Execution_Packet> returntrace;
     while (1) {
-        top->instruction_valid_dii = 0;
         // std::cout << "main loop begin" << std::endl;
            
         // send back execution trace
@@ -236,9 +233,8 @@ int main(int argc, char** argv, char** env) {
                 out_count++;
                 std::cout << "\t\t\tcommit\t0x" << std::hex << (int) execpkt.rvfi_insn << std::dec << std::endl << std::flush;
                 // detect non-exception flush such as fence.i
-                if (top->flush_dii) {
+                if (top->flush_ctrl_if) {
                     std::cout << "\t\tnon-exception flush detected" << std::endl << std::flush;
-                    top->instruction_valid_dii = 0;
                     in_count = out_count;
                 }
             }
@@ -256,7 +252,6 @@ int main(int argc, char** argv, char** env) {
               if ((top->rvfi_trap >> i) & 1) {
                     // if there has been a trap, then we know that we just tried to do a load/store
                     // we need to go back to out_count
-                    top->instruction_valid_dii = 0;
                     in_count = out_count;
                 } else {
                     //std::cout << "cmd: " << (instructions[out_count].dii_cmd ? "instr" : "rst") << std::endl;
@@ -279,7 +274,7 @@ int main(int argc, char** argv, char** env) {
             // returns instructions from the DII input from TestRIG
             top->rst_i = 0;
             if (instructions[in_count].dii_cmd) {
-                if (top->instr_req_dii) {
+                if (top->instruction_valid) {
                     // if we have instructions to feed into it, then set readdatavalid and waitrequest accordingly
                     // std::cout << "checking instruction in_count: " << in_count << " received: " << received << std::endl;
                     if (received > in_count) {
@@ -298,7 +293,6 @@ int main(int argc, char** argv, char** env) {
                     memory[i] = 0;
                 }
                 in_count++;
-                top->instruction_valid_dii = 0;
             }
 
 

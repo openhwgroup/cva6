@@ -994,7 +994,7 @@ module csr_regfile #(
             mscratch_q             <= 64'b0;
             mtval_q                <= 64'b0;
             dcache_q               <= 64'b1;
-            icache_q               <= 64'b1;
+            icache_q               <= 64'b0;
             // supervisor mode registers
             sepc_q                 <= 64'b0;
             scause_q               <= 64'b0;

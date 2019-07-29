@@ -31,7 +31,6 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include <fesvr/dtm.h>
 #include "remote_bitbang.h"
 // This software is heavily based on Rocket Chip
 // Checkout this awesome project:
@@ -44,11 +43,9 @@ static vluint64_t main_time = 0;
 
 static const char *verilog_plusargs[] = {"jtag_rbb_enable"};
 
-extern dtm_t* dtm;
 extern remote_bitbang_t * jtag;
 
 void handle_sigterm(int sig) {
-  dtm->stop();
 }
 
 // Called by $time in Verilog converts to double, to match what SystemC does
@@ -80,7 +77,6 @@ EMULATOR DEBUG OPTIONS (only supported in debug build -- try `make debug`)\n",
   -p,                      Print performance statistic at end of test\n\
 ", stdout);
   // fputs("\n" PLUSARG_USAGE_OPTIONS, stdout);
-  fputs("\n" HTIF_USAGE_OPTIONS, stdout);
   printf("\n"
 "EXAMPLES\n"
 "  - run a bare metal test:\n"
@@ -130,7 +126,6 @@ int main(int argc, char **argv) {
       {"vcd",         required_argument, 0, 'v' },
       {"dump-start",  required_argument, 0, 'x' },
 #endif
-      HTIF_LONG_OPTIONS
     };
     int option_index = 0;
 #if VM_TRACE
@@ -205,15 +200,6 @@ int main(int argc, char **argv) {
         // an HTIF (HOST) argument and not an error. If this is the case, then
         // we're done processing EMULATOR and VERILOG arguments.
         else {
-          static struct option htif_long_options [] = { HTIF_LONG_OPTIONS };
-          struct option * htif_option = &htif_long_options[0];
-          while (htif_option->name) {
-            if (arg.substr(1, strlen(htif_option->name)) == htif_option->name) {
-              optind--;
-              goto done_processing;
-            }
-            htif_option++;
-          }
           std::cerr << argv[0] << ": invalid plus-arg (Verilog or HTIF) \""
                     << arg << "\"\n";
           c = '?';
@@ -223,31 +209,17 @@ int main(int argc, char **argv) {
       case 'P': break; // Nothing to do here, Verilog PlusArg
       // Realize that we've hit HTIF (HOST) arguments or error out
       default:
-        if (c >= HTIF_LONG_OPTIONS_OPTIND) {
-          optind--;
-          goto done_processing;
-        }
         c = '?';
         goto retry;
     }
   }
 
 done_processing:
-  if (optind == argc) {
-    std::cerr << "No binary specified for emulator\n";
-    usage(argv[0]);
-    return 1;
-  }
-  int htif_argc = 1 + argc - optind;
-  htif_argv = (char **) malloc((htif_argc) * sizeof (char *));
-  htif_argv[0] = argv[0];
-  for (int i = 1; optind < argc;) htif_argv[i++] = argv[optind++];
 
   const char *vcd_file = NULL;
   Verilated::commandArgs(argc, argv);
 
   jtag = new remote_bitbang_t(rbb_port);
-  dtm = new dtm_t(htif_argc, htif_argv);
   signal(SIGTERM, handle_sigterm);
 
   std::unique_ptr<Variane_testharness> top(new Variane_testharness);
@@ -279,7 +251,7 @@ done_processing:
   }
   top->rst_ni = 1;
 
-  while (!dtm->done() && !jtag->done()) {
+  while (!jtag->done()) {
     top->clk_i = 0;
     top->eval();
 #if VM_TRACE
@@ -308,17 +280,13 @@ done_processing:
     fclose(vcdfile);
 #endif
 
-  if (dtm->exit_code()) {
-    fprintf(stderr, "%s *** FAILED *** (code = %d) after %ld cycles\n", htif_argv[1], dtm->exit_code(), main_time);
-    ret = dtm->exit_code();
-  } else if (jtag->exit_code()) {
+  if (jtag->exit_code()) {
     fprintf(stderr, "%s *** FAILED *** (code = %d, seed %d) after %ld cycles\n", htif_argv[1], jtag->exit_code(), random_seed, main_time);
     ret = jtag->exit_code();
   } else {
     fprintf(stderr, "%s completed after %ld cycles\n", htif_argv[1], main_time);
   }
 
-  if (dtm) delete dtm;
   if (jtag) delete jtag;
 
   std::clock_t c_end = std::clock();

@@ -58,11 +58,11 @@ module ariane #(
 `endif
 
 `ifdef DII
-  output logic        flush_dii,
-  output logic        instr_req_dii,
-  input logic [31:0]  instr_dii,
-  input logic         instruction_valid_dii,
-  input logic         enable_dii,
+  // re-aligned instruction and address (coming from cache - combinationally)
+  output logic [INSTR_PER_FETCH-1:0][31:0] instr,
+  output logic [INSTR_PER_FETCH-1:0][63:0] addr,
+  output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
+  output logic                             flush_ctrl_if,
 `endif  
 
 `ifdef PITON_ARIANE
@@ -83,6 +83,7 @@ module ariane #(
   riscv::priv_lvl_t           priv_lvl;
   exception_t                 ex_commit; // exception from commit stage
   bp_resolve_t                resolved_branch;
+  bp_resolve_t                resolved_branch_dly;
   logic [63:0]                pc_commit;
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
@@ -221,7 +222,9 @@ module ariane #(
   logic                     set_pc_ctrl_pcgen;
   logic                     flush_csr_ctrl;
   logic                     flush_unissued_instr_ctrl_id;
+`ifndef DII
   logic                     flush_ctrl_if;
+`endif
   logic                     flush_ctrl_id;
   logic                     flush_ctrl_ex;
   logic                     flush_ctrl_bp;
@@ -251,14 +254,6 @@ module ariane #(
   dcache_req_i_t [2:0]      dcache_req_ports_ex_cache;
   dcache_req_o_t [2:0]      dcache_req_ports_cache_ex;
   logic                     dcache_commit_wbuffer_empty;
-
-`ifdef DII
-  logic [63:0] addr_dii;
-  logic        flush_dii_comb;
-
-  assign flush_dii_comb = flush_ctrl_if | (resolved_branch_dly.valid & resolved_branch_dly.is_taken);
-  assign instr_req_dii = icache_dreq_if_cache.req && !(flush_dii_comb || flush_dii);
-`endif
 
   // --------------
   // Frontend
@@ -796,8 +791,6 @@ module ariane #(
   logic [63:0] cycles;
   logic [0:1] [63:0] target_pc;
 
-  bp_resolve_t                resolved_branch_dly;
-
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       cycles <= 0;
@@ -824,10 +817,6 @@ module ariane #(
       rvfi_mem_wdata         <= '0;
       rvfi_mem_addr          <= '0;
 `endif
-`ifdef DII
-      flush_dii              <= '0;
-      addr_dii               <= boot_addr_i;
-`endif  
     end else begin
       string mode = "";
       if (debug_mode) mode = "D";
@@ -846,13 +835,9 @@ module ariane #(
       rvfi_trap              <= '0;
       resolved_branch_dly    <= resolved_branch;
 `endif
-`ifdef DII
-      flush_dii              <= flush_dii_comb;
-`endif  
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
         if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
 `ifdef RVFI
-          target_pc[i] = resolved_branch_dly.valid & resolved_branch_dly.is_taken ? resolved_branch_dly.target_address : commit_instr_id_commit[i].pc+4;
           rvfi_halt[i]              <= '0;
           rvfi_valid[i]             <= '1;
           rvfi_order[i]             <= rvfi_order[i] + 64'h1;
@@ -860,8 +845,7 @@ module ariane #(
           rvfi_insn_uncompressed[i] <= commit_instr_id_commit[i].rvfi;
           rvfi_mode[i]              <= priv_lvl;
           rvfi_pc_rdata[i]          <= commit_instr_id_commit[i].pc;
-          rvfi_pc_wdata[i]          <= target_pc[i];
-          addr_dii                  <= target_pc[i];
+          rvfi_pc_wdata[i]          <= resolved_branch_dly.valid & resolved_branch_dly.is_taken ? resolved_branch_dly.target_address : commit_instr_id_commit[i].pc+4;
           rvfi_rs1_addr[i]          <= commit_instr_id_commit[i].rs1;
           rvfi_rs2_addr[i]          <= commit_instr_id_commit[i].rs2;
           rvfi_rd_addr[i]           <= commit_instr_id_commit[i].rd;
@@ -887,7 +871,6 @@ module ariane #(
           rvfi_mode[i]              <= priv_lvl;
           rvfi_pc_rdata[i]          <= commit_instr_id_commit[i].pc;
           rvfi_pc_wdata[i]          <= trap_vector_base_commit_pcgen;
-          addr_dii                  <= trap_vector_base_commit_pcgen;
           rvfi_rs1_addr[i]          <= '0;
           rvfi_rs2_addr[i]          <= '0;
           rvfi_rd_addr[i]           <= '0;

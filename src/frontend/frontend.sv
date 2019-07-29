@@ -42,10 +42,10 @@ module frontend #(
   output icache_dreq_i_t     icache_dreq_o,
   input  icache_dreq_o_t     icache_dreq_i,
 `ifdef DII
-  input logic [31:0] instr_dii,
-  input logic        instruction_valid_dii,
-  input logic [63:0] addr_dii,
-  input logic        enable_dii,
+  // re-aligned instruction and address (coming from cache - combinationally)
+  output logic [INSTR_PER_FETCH-1:0][31:0] instr,
+  output logic [INSTR_PER_FETCH-1:0][63:0] addr,
+  output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
 `endif
   // instruction output port -> to processor back-end
   output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
@@ -88,10 +88,6 @@ module frontend #(
     logic [INSTR_PER_FETCH-1:0]       rvc_branch, rvc_jump, rvc_jr, rvc_return,
                                       rvc_jalr, rvc_call;
     logic [INSTR_PER_FETCH-1:0][63:0] rvc_imm;
-    // re-aligned instruction and address (coming from cache or DII - combinationally)
-    logic [INSTR_PER_FETCH-1:0][31:0] instr;
-    logic [INSTR_PER_FETCH-1:0][63:0] addr;
-    logic [INSTR_PER_FETCH-1:0]       instruction_valid;
     // BHT, BTB and RAS prediction
     bht_prediction_t [INSTR_PER_FETCH-1:0] bht_prediction;
     btb_prediction_t [INSTR_PER_FETCH-1:0] btb_prediction;
@@ -111,22 +107,6 @@ module frontend #(
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvc_cf;
 
     logic serving_unaligned;
-
-    // re-aligned instruction and address (coming from cache - combinationally)
-    logic [INSTR_PER_FETCH-1:0][31:0] instr_o;
-    logic [INSTR_PER_FETCH-1:0][63:0] addr_o;
-    logic [INSTR_PER_FETCH-1:0]       instruction_valid_o;
-
-`ifdef DII   
-    assign instr = enable_dii ? instr_dii : instr_o;
-    assign instruction_valid = enable_dii ? instruction_valid_dii : instruction_valid_o;
-    assign addr = enable_dii ? addr_dii : addr_o;
-`else
-    assign instr = instr_o;
-    assign instruction_valid = instruction_valid_o;
-    assign addr = addr_o;
-`endif
-   
     // Re-align instructions
     instr_realign i_instr_realign (
       .clk_i               ( clk_i                 ),
@@ -136,9 +116,9 @@ module frontend #(
       .serving_unaligned_o ( serving_unaligned     ),
       .address_i           ( icache_vaddr_q        ),
       .data_i              ( icache_data_q         ),
-      .valid_o             ( instruction_valid_o   ),
-      .addr_o              ( addr_o                ),
-      .instr_o             ( instr_o               )
+      .valid_o             ( instruction_valid     ),
+      .addr_o              ( addr                  ),
+      .instr_o             ( instr                 )
     );
     // --------------------
     // Branch Prediction
@@ -361,11 +341,7 @@ module frontend #(
         if (icache_dreq_i.valid) begin
           icache_data_q        <= icache_data;
           icache_vaddr_q       <= icache_dreq_i.vaddr;
-`ifdef DII
-          icache_ex_valid_q    <= icache_dreq_i.ex & ~enable_dii;
-`else
           icache_ex_valid_q    <= icache_dreq_i.ex;
-`endif
           // save the uppermost prediction
           btb_q                <= btb_prediction[INSTR_PER_FETCH-1];
           bht_q                <= bht_prediction[INSTR_PER_FETCH-1];
