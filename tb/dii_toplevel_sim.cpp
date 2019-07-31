@@ -298,6 +298,7 @@ int main(int argc, char** argv, char** env) {
                     // if there has been a trap, then we know that we just tried to do a load/store
                     // we need to go back to out_count
                     in_count = out_count;
+                    cache_count = out_count;
                 } else {
                     //std::cout << "cmd: " << (instructions[out_count].dii_cmd ? "instr" : "rst") << std::endl;
                     if (!instructions[out_count].dii_cmd) {
@@ -306,10 +307,12 @@ int main(int argc, char** argv, char** env) {
                         // the rvfi signals later. we need to go forward 2 places from the out_cout
                         // (the jump has already been performed, so we want the instruction after it)
                         in_count = out_count + 2;
+                        cache_count = out_count + 2;
                     } else {
                         // the last instruction was an actual instruction. we are doing a jump but it hasn't
                         // come out of the rvfi signals yet so we need to skip it when replaying instructions
                         in_count = out_count + 1;
+                        cache_count = out_count + 1;
                     }
                 }
             }
@@ -330,12 +333,12 @@ int main(int argc, char** argv, char** env) {
                         top->instr_dii = instructions[in_count].dii_insn;
                         top->instruction_valid_dii = 1;
                         std::cout << "\taddr\t0x" << std::hex << addr << std::dec << std::endl;
-                        std::cout << "\texpect\t0x" << std::hex << expected << std::dec << std::endl;
-                        std::cout << "\tinsn\t0x" << std::hex << insn << std::dec << std::endl;
                         if (expected != insn)
                           {
-                            std::cout << "CACHE FILL ERROR\n" << std::endl;
+                            std::cout << "CACHE FILL ERROR" << std::endl;
                           }
+                        std::cout << "\texpect\t0x" << std::hex << expected << std::dec << std::endl;
+                        std::cout << "\tinsn\t0x" << std::hex << insn << std::dec << std::endl;
                         in_count++;
                     }
                 }        
@@ -492,6 +495,18 @@ int main(int argc, char** argv, char** env) {
                   std::cout << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
                   switch (shft)
                     {
+                    case 0:
+                      populate(top->rom_addr, actual, 0);
+                      populate(top->rom_addr, actual2, 32);
+                      break;
+                    case 2:
+                      populate(top->rom_addr, actual, 16);
+                      populate(top->rom_addr, actual2, 48);
+                      break;
+                    case 4:
+                      populate(top->rom_addr, actual, 32);
+                      populate(top->rom_addr+8, actual2, 0);
+                      break;
                     case 6:
                       if (top->virtual_request_address < top->rom_addr)
                         {
@@ -505,16 +520,7 @@ int main(int argc, char** argv, char** env) {
                           populate(top->rom_addr+8, actual, -16);
                           populate(top->rom_addr+8, actual2, 16);
                         }
-                      break;
-                    case 2:
-                      populate(top->rom_addr, actual, 16);
-                      populate(top->rom_addr, actual2, 48);
-                      break;
-                    case 0:
-                      populate(top->rom_addr, actual, 0);
-                      populate(top->rom_addr, actual2, 32);
-                      break;
-                      
+                      break;                      
                     }
                 }
               top->rom_rdata = *entered;
@@ -529,7 +535,7 @@ int main(int argc, char** argv, char** env) {
             if (instructions[received-1].dii_cmd)
               rom_wait = 1;
             else
-              top->rom_rdata = 0xDEADBEEFC001F00D;
+              top->rom_rdata = 0;
         }
         else
           {
