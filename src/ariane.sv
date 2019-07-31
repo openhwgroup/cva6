@@ -66,6 +66,8 @@ module ariane #(
   output logic [63:0]                       virtual_request_address,
   output logic                              serving_unaligned_o,
   output logic [63:0]                       serving_unaligned_address_o,
+  // branch-predict update
+  output logic                              is_mispredict,
 `endif  
 
 `ifdef PITON_ARIANE

@@ -48,6 +48,8 @@ module frontend #(
   output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
   output logic                             serving_unaligned_o,
   output logic [63:0]                      serving_unaligned_address_o,
+  // branch-predict update
+  output logic                             is_mispredict,
 `endif
   // instruction output port -> to processor back-end
   output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
@@ -71,13 +73,19 @@ module frontend #(
     // indicates whether we come out of reset (then we need to load boot_addr_i)
     logic          npc_rst_load_q;
 
+    // replay logic
     logic          replay;
     logic [63:0]   replay_addr;
+    logic [63:0]   instr_queue_replay_addr;
+    logic          instr_queue_overflow, ftq_overflow;
+    // replay if any of the queue overflows
+    assign replay = instr_queue_overflow | ftq_overflow;
+    assign replay_addr = ftq_overflow ? addr[0] : instr_queue_replay_addr;
 
     // shift amount
-    logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
     // address will always be 16 bit aligned, make this explicit here
-    assign shamt = icache_dreq_i.vaddr[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
+    logic shamt;
+    assign shamt = icache_dreq_i.vaddr[1];
 
     // -----------------------
     // Ctrl Flow Speculation
@@ -98,7 +106,9 @@ module frontend #(
     ras_t            ras_predict;
 
     // branch-predict update
+`ifndef DII   
     logic            is_mispredict;
+`endif   
     logic            ras_push, ras_pop;
     logic [63:0]     ras_update;
 
@@ -131,8 +141,9 @@ module frontend #(
     // --------------------
     // select the right branch prediction result
     // in case we are serving an unaligned instruction in instr[0] we need to take
-    // the prediction we saved from the previous fetch
-    assign bht_prediction_shifted[0] = (serving_unaligned_o) ? bht_q : bht_prediction[0];
+    // the prediction target we saved, but the for the prediction result we fetch the
+    // first prediction since we store the unaligned update in an alinged address.
+    assign bht_prediction_shifted[0] = (serving_unaligned_o) ? bht_prediction[0] : bht_prediction[addr[0][$clog2(INSTR_PER_FETCH):1]];
     assign btb_prediction_shifted[0] = (serving_unaligned_o) ? btb_q : btb_prediction[0];
     // for all other predictions we can use the generated address to index
     // into the branch prediction data structures
@@ -303,7 +314,7 @@ module frontend #(
         npc_d = predict_address;
       end
       // 1. Default assignment
-      if (if_ready) npc_d = {fetch_address[63:2], 2'b0}  + 'h4;
+      if (if_ready) npc_d = {fetch_address[63:NR_ALIGN_BITS], NR_ALIGN_BITS'(0)}  + (FETCH_WIDTH / 8);
       // 2. Replay instruction fetch
       if (replay) npc_d = replay_addr;
       // 3. Control flow change request
@@ -380,15 +391,25 @@ module frontend #(
     );
 
     bht #(
-      .NR_ENTRIES       ( ArianeCfg.BHTEntries   )
+      .NR_ENTRIES            ( ArianeCfg.BHTEntries              ),
+      .NR_GLOBAL_HISTORIES   ( ArianeCfg.GHRLength               )
     ) i_bht (
       .clk_i,
       .rst_ni,
-      .flush_i          ( flush_bp_i       ),
+      .flush_i                    ( flush_bp_i                       ),
+      .flush_ftq_i                ( flush_i                          ),
       .debug_mode_i,
-      .vpc_i            ( icache_vaddr_q   ),
-      .bht_update_i     ( bht_update       ),
-      .bht_prediction_o ( bht_prediction   )
+      .vpc_i                      ( icache_vaddr_q                   ),
+      .instr_queue_overflow_i     ( instr_queue_overflow             ), // from instruction queue
+      .instr_queue_replay_addr_i  ( instr_queue_replay_addr          ),
+      .is_branch_i                ( is_branch                        ),
+      .valid_i                    ( instruction_valid                ),
+      .serving_unaligned_i        ( serving_unaligned_o              ),
+      .taken_rvc_cf_i             ( taken_rvc_cf                     ),
+      .taken_rvi_cf_i             ( taken_rvi_cf                     ),
+      .bht_update_i               ( bht_update                       ),
+      .ftq_overflow_o             ( ftq_overflow                     ),
+      .bht_prediction_o           ( bht_prediction                   )
     );
 
     // we need to inspect up to INSTR_PER_FETCH instructions for branches
@@ -423,9 +444,10 @@ module frontend #(
       .cf_type_i           ( cf_type              ),
       .valid_i             ( instruction_valid    ), // from re-aligner
       .consumed_o          ( instr_queue_consumed ),
+      .ftq_overflow_i      ( ftq_overflow         ), // from branch predictor
       .ready_o             ( instr_queue_ready    ),
-      .replay_o            ( replay               ),
-      .replay_addr_o       ( replay_addr          ),
+      .overflow_o          ( instr_queue_overflow ),
+      .replay_addr_o       ( instr_queue_replay_addr ),
       .fetch_entry_o       ( fetch_entry_o        ), // to back-end
       .fetch_entry_valid_o ( fetch_entry_valid_o  ), // to back-end
       .fetch_entry_ready_i ( fetch_entry_ready_i  )  // to back-end

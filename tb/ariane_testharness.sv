@@ -131,13 +131,14 @@ module ariane_testharness #(
 `endif
 
 `ifdef DII
-    .flush_ctrl_if     (),
-    .addr              (),
-    .instr             (),
-    .instruction_valid (),
-    .virtual_request_address (),
-    .serving_unaligned_o (),
+    .flush_ctrl_if               (),
+    .addr                        (),
+    .instr                       (),
+    .instruction_valid           (),
+    .virtual_request_address     (),
+    .serving_unaligned_o         (),
     .serving_unaligned_address_o (),
+    .is_mispredict               (),
 `endif
 
     .debug_req_i          ( 1'b0                ),

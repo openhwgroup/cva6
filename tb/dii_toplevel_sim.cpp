@@ -484,29 +484,32 @@ int main(int argc, char** argv, char** env) {
                   old_addr = top->virtual_request_address;
                   std::cout << "newaddr\t0x" << std::hex << top->virtual_request_address << std::dec << std::endl;
                   actual = instructions[cache_count++].dii_insn & 0xFFFFFFFF;
-                  populate(top->virtual_request_address, actual, shft * 8);
                   std::cout << "shift\t" << std::dec << shft << std::endl;
+                  actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
+                  std::cout << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
                   switch (shft)
                     {
                     case 6:
                       if (top->virtual_request_address < top->rom_addr)
                         {
-                          populate(top->rom_addr-8, actual, shft * 8);
+                          populate(top->rom_addr-8, actual, 48);
                           populate(top->rom_addr, actual, -16);
+                          populate(top->rom_addr, actual2, 16);
                         }
-                      actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
-                      populate(top->rom_addr, actual2, 16);
-                      std::cout << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
+                      else
+                        {
+                          populate(top->rom_addr, actual, 48);
+                          populate(top->rom_addr+8, actual, -16);
+                          populate(top->rom_addr+8, actual2, 16);
+                        }
                       break;
                     case 2:
-                      actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
+                      populate(top->rom_addr, actual, 16);
                       populate(top->rom_addr, actual2, 48);
-                      std::cout << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
                       break;
                     case 0:
-                      actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
+                      populate(top->rom_addr, actual, 0);
                       populate(top->rom_addr, actual2, 32);
-                      std::cout << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
                       break;
                       
                     }
@@ -549,6 +552,12 @@ int main(int argc, char** argv, char** env) {
             rom_wait = 0;
           }
 
+        if (top->is_mispredict)
+          {
+              std::cout << "mispred\t" << cache_count << std::endl;
+            --cache_count;
+          }
+            
         if (!rom_wait)
           {
             top->clk_i = 1;

@@ -57,8 +57,10 @@ module instr_queue (
   // branch predict
   input  logic [63:0]                                        predict_address_i,
   input  ariane_pkg::cf_t  [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type_i,
+  // input from branch predictor to see if the fetch target queue overflows
+  input  logic                                               ftq_overflow_i,
   // replay instruction because one of the FIFO was already full
-  output logic                                               replay_o,
+  output logic                                               overflow_o,
   output logic [63:0]                                        replay_addr_o, // address at which to replay this instruction
   // to processor backend
   output ariane_pkg::fetch_entry_t                           fetch_entry_o,
@@ -86,6 +88,7 @@ module instr_queue (
   logic [$clog2(ariane_pkg::FETCH_FIFO_DEPTH)-1:0] address_queue_usage;
   logic [63:0] address_out;
   logic pop_address;
+  logic valid_cf_push;
   logic push_address;
   logic full_address;
   logic empty_address;
@@ -103,8 +106,8 @@ module instr_queue (
   logic branch_empty;
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken;
   // shift amount, e.g.: instructions we want to retire
-  logic [$clog2(ariane_pkg::INSTR_PER_FETCH):0] popcount;
-  logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
+  logic [$clog2(ariane_pkg::INSTR_PER_FETCH):0] popcount, popcount_push_instr;
+  logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt, shamt_push_instr;
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] valid;
   logic [ariane_pkg::INSTR_PER_FETCH*2-1:0] consumed_extended;
   // FIFO mask
@@ -177,8 +180,8 @@ module instr_queue (
   // shift the inputs
   for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_fifo_input_select
     /* verilator lint_off WIDTH */
-    assign instr_data_in[i].instr = instr[i + idx_is_q];
-    assign instr_data_in[i].cf = cf[i + idx_is_q];
+    assign instr_data_in[i].instr = instr[i + ariane_pkg::INSTR_PER_FETCH - idx_is_q];
+    assign instr_data_in[i].cf = cf[i + ariane_pkg::INSTR_PER_FETCH - idx_is_q];
     assign instr_data_in[i].ex = exception_i; // exceptions hold for the whole fetch packet
     /* verilator lint_on WIDTH */
   end
@@ -193,14 +196,22 @@ module instr_queue (
   // if one of the FIFOs was full we need to replay the faulting instruction
   assign instr_overflow_fifo = instr_queue_full & fifo_pos;
   assign instr_overflow = |instr_overflow_fifo; // at least one instruction overflowed
-  assign address_overflow = full_address & push_address;
-  assign replay_o = instr_overflow | address_overflow;
+  assign address_overflow = full_address & valid_cf_push;
+  assign overflow_o = instr_overflow | address_overflow;
 
   // select the address, in the case of an address fifo overflow just
   // use the base of this package
   // if we successfully pushed some instructions we can output the next instruction
   // which we didn't manage to push
-  assign replay_addr_o = (address_overflow) ? addr_i[0] : addr_i[shamt];
+  // this count doesn't include other overflows
+  popcount #(
+    .INPUT_WIDTH   ( ariane_pkg::INSTR_PER_FETCH )
+  ) i_popcount_push_instr (
+    .data_i     ( push_instr          ),
+    .popcount_o ( popcount_push_instr )
+  );
+  assign shamt_push_instr = popcount_push_instr[$bits(shamt_push_instr)-1:0];
+  assign replay_addr_o = address_overflow ? addr_i[0] : addr_i[shamt_push_instr];
 
   // ----------------------
   // Downstream interface
@@ -267,7 +278,7 @@ module instr_queue (
   // FIFOs
   for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin : gen_instr_fifo
     // Make sure we don't save any instructions if we couldn't save the address
-    assign push_instr_fifo[i] = push_instr[i] & ~address_overflow;
+    assign push_instr_fifo[i] = push_instr[i] & ~address_overflow & ~ftq_overflow_i;
     fifo_v3 #(
       .DEPTH      ( ariane_pkg::FETCH_FIFO_DEPTH ),
       .dtype      ( instr_data_t                 )
@@ -288,11 +299,12 @@ module instr_queue (
   // or reduce and check whether we are retiring a taken branch (might be that the corresponding)
   // fifo is full.
   always_comb begin
-    push_address = 1'b0;
+    valid_cf_push = 1'b0;
     // check if we are pushing a ctrl flow change, if so save the address
     for (int i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
-      push_address |= push_instr[i] & (instr_data_in[i].cf != ariane_pkg::NoCF);
+      valid_cf_push |= push_instr[i] & (instr_data_in[i].cf != ariane_pkg::NoCF);
     end
+    push_address = valid_cf_push & ~full_address & ~ftq_overflow_i;
   end
 
   fifo_v3 #(
@@ -307,7 +319,7 @@ module instr_queue (
     .empty_o    ( empty_address                ),
     .usage_o    ( address_queue_usage          ),
     .data_i     ( predict_address_i            ),
-    .push_i     ( push_address & ~full_address ),
+    .push_i     ( push_address                 ),
     .data_o     ( address_out                  ),
     .pop_i      ( pop_address                  )
   );
@@ -343,7 +355,7 @@ module instr_queue (
   // pragma translate_off
   `ifndef VERILATOR
       replay_address_fifo: assert property (
-        @(posedge clk_i) disable iff (!rst_ni) replay_o |-> !i_fifo_address.push_i
+        @(posedge clk_i) disable iff (!rst_ni) (overflow_o & ftq_overflow_i) |-> !i_fifo_address.push_i
       ) else $fatal(1,"[instr_queue] Pushing address although replay asserted");
 
       output_select_onehot: assert property (

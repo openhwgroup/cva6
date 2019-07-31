@@ -74,6 +74,8 @@ module ariane_core_avalon #(
     output logic                      [63:0] virtual_request_address,
     output logic                             serving_unaligned_o,
     output logic [63:0]                      serving_unaligned_address_o,
+    // branch-predict update
+    output logic                             is_mispredict,
 
     output logic                                rom_req,
     output logic [ariane_axi::AddrWidth-1:0]    rom_addr,
@@ -104,6 +106,7 @@ module ariane_core_avalon #(
       RASDepth: 2,
       BTBEntries: 32,
       BHTEntries: 128,
+      GHRLength: 4,
       // idempotent region
       NrNonIdempotentRules:  0,
       NonIdempotentAddrBase: {0},
@@ -242,6 +245,7 @@ module ariane_core_avalon #(
         .virtual_request_address,
         .serving_unaligned_o,
         .serving_unaligned_address_o,
+        .is_mispredict,
     `endif
 
         // Special control signal
