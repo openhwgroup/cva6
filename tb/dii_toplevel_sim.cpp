@@ -189,7 +189,7 @@ int main(int argc, char** argv, char** env) {
     int in_count = 0;
     int out_count = 0;
     int ret_cnt = 0;
-    int cache_count = 0;
+    int cache_count = 1;
     int rom_wait = 0;
     uint64_t old_addr = ~0;
 
@@ -250,7 +250,7 @@ int main(int argc, char** argv, char** env) {
             }
 
             // sleep for 10ms before trying to receive another instruction
-            usleep(10000);
+            usleep(1000);
         }
         while ((in_count >= received) || (received > old_rec));      
 
@@ -330,8 +330,12 @@ int main(int argc, char** argv, char** env) {
                         top->instr_dii = instructions[in_count].dii_insn;
                         top->instruction_valid_dii = 1;
                         std::cout << "\taddr\t0x" << std::hex << addr << std::dec << std::endl;
-                        std::cout << "\tinsn\t0x" << std::hex << insn << std::dec << std::endl;
                         std::cout << "\texpect\t0x" << std::hex << expected << std::dec << std::endl;
+                        std::cout << "\tinsn\t0x" << std::hex << insn << std::dec << std::endl;
+                        if (expected != insn)
+                          {
+                            std::cout << "CACHE FILL ERROR\n" << std::endl;
+                          }
                         in_count++;
                     }
                 }        
@@ -468,10 +472,9 @@ int main(int argc, char** argv, char** env) {
             }
 
         if (top->rom_req) {
-          if (!instructions[cache_count].dii_cmd) ++cache_count;
           if (received > cache_count+1)
             {
-              uint64_t legacy_rdata, actual2, actual = 0xDEADBEEF;
+              uint64_t actual2, actual = 0xDEADBEEF;
               int shft = top->virtual_request_address - top->rom_addr;
               ENTRY *ep = find(top->rom_addr);
               int64_t *entered = (int64_t *)(ep->data);
@@ -521,31 +524,12 @@ int main(int argc, char** argv, char** env) {
               if (actual != 0xDEADBEEF) std::cout << "actual\t0x" << std::hex << actual << std::dec << std::endl;
               std::cout << "shift1\t0x" << std::hex << *entered << std::dec << std::endl;
               std::cout << "shift2\t0x" << std::hex << *entered2 << std::dec << std::endl;
-
-              switch(top->rom_addr & 0xFFFFFFFFFFFFFF)
-                {
-                case 0x00000000000330: legacy_rdata = 0x11E3020261130000; break;
-                case 0x00000000000338: legacy_rdata = 0xFFFFFFFFFFFF9222; break;
-                case 0x0000007FFFF440: legacy_rdata = 0x6093004081930000; break;
-                case 0x0000007FFFF448: legacy_rdata = 0xDEE38C011B630082; break;
-                case 0x0000007FFFF450: legacy_rdata = 0x00E7504210E35A50; break;
-                case 0x0000007FFFF458: legacy_rdata = 0x0000000000003330; break;
-                case 0x00000080000000: legacy_rdata = 0xC2008F6370B1E297; break;
-                case 0x000000F0B1D888: legacy_rdata = 0x72EFB17901170000; break;
-                case 0x000000F0B1D890: legacy_rdata = 0x00000000000050B2; break;
-                case 0x000000F0B454C8: legacy_rdata = 0x47B28067D40215E3; break;
-                case 0x000000F0B45598: legacy_rdata = 0xFFFFFFFFF202D8E3; break;
-                case 0xFFFFFFFFF32EC0: legacy_rdata = 0x9763000000000000; break;
-                case 0xFFFFFFFFF32EC8: legacy_rdata = 0x009362418BE3BC10; break;
-                case 0xFFFFFFFFF32ED0: legacy_rdata = 0xFFFF88B281670080; break;
-                case 0xFFFFFFFFFFFC58: legacy_rdata = 0xFFFFFFFFA6E330EF; break;
-                default: legacy_rdata = 0xDEADBEEFC001F00D; break;
-                }
-
-              std::cout << "legacy\t0x" << std::hex << legacy_rdata << std::dec << std::endl;
             }
           else
-            rom_wait = 1;
+            if (instructions[received-1].dii_cmd)
+              rom_wait = 1;
+            else
+              top->rom_rdata = 0xDEADBEEFC001F00D;
         }
         else
           {

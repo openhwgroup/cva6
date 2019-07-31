@@ -169,6 +169,9 @@ module ariane_core_avalon #(
     .AXI_USER_WIDTH ( ariane_axi::UserWidth   )
   ) slave();
 
+   logic [7:0]         dummy;
+   assign rom_addr[63:56] = {8{rom_addr[55]}};
+   
   // ---------------
   // ROM
   // ---------------
@@ -178,15 +181,15 @@ module ariane_core_avalon #(
     .AXI_DATA_WIDTH ( ariane_axi::DataWidth    ),
     .AXI_USER_WIDTH ( ariane_axi::UserWidth    )
   ) i_axi2rom (
-    .clk_i  ( clk_i                   ),
-    .rst_ni ( ~rst_i                  ),
-    .slave  ( slave                   ),
-    .req_o  ( rom_req                 ),
-    .we_o   (                         ),
-    .addr_o ( rom_addr                ),
-    .be_o   (                         ),
-    .data_o (                         ),
-    .data_i ( rom_rdata               )
+    .clk_i  ( clk_i                       ),
+    .rst_ni ( ~rst_i                      ),
+    .slave  ( slave                       ),
+    .req_o  ( rom_req                     ),
+    .we_o   (                             ),
+    .addr_o ( {dummy,rom_addr[55:0]}      ),
+    .be_o   (                             ),
+    .data_o (                             ),
+    .data_i ( rom_rdata                   )
   );
 
    ariane #(
