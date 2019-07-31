@@ -10,7 +10,47 @@
 #include <vector>
 #include <unistd.h>
 #include "socket_packet_utils.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <search.h>
 
+static uint64_t hashcnt = 0;
+
+static struct sort {
+        struct sort *nxt;
+        uint64_t rnd;
+      } *head = NULL;
+
+ENTRY *find(uint64_t oldaddr)
+{
+  char key[20];
+  ENTRY e, *ep;
+  uint64_t rnd = oldaddr & -8;
+  sprintf(key, "%.14lX", 0xFFFFFFFFFFFFFF & rnd);
+  e.key = (char *)strdup(key);
+  ep = hsearch(e, FIND);
+  if (!ep)
+    {
+      e.data = calloc(1, sizeof(int64_t));
+      ep = hsearch(e, ENTER);
+    }
+  return ep;
+}
+
+void populate(uint64_t oldaddr, int64_t inst, int shft)
+{
+  uint64_t rnd = oldaddr & -8;
+  ENTRY *ep = find(rnd);
+  int64_t *instp = (int64_t *)(ep->data);
+  int64_t old = *instp;
+  int64_t mask = shft < 0 ? ~(0xFFFFFFFFULL >> -shft) : ~(0xFFFFFFFFULL << shft);
+  int64_t shftinst = shft < 0 ? inst >> -shft : inst << shft;
+  *instp = (old & mask) | shftinst;
+  if (0) printf("Find 0x%lx: shft = %d, old = 0x%.16lx mask = 0x%.16lx new = 0x%.16lx *instp = 0x%.16lx\n",
+                oldaddr, shft, old, mask, shftinst, *instp);
+}  
 
 struct RVFI_DII_Execution_Packet {
     std::uint64_t rvfi_order : 64;      // [00 - 07] Instruction number:      INSTRET value after completion.
@@ -131,6 +171,7 @@ int main(int argc, char** argv, char** env) {
     //std::cout << "created" << std::endl;
     serv_socket_init(socket);
     //std::cout << "inited" << std::endl;
+    hcreate(4095);
 
 
     // set up initial core inputs
@@ -148,6 +189,9 @@ int main(int argc, char** argv, char** env) {
     int in_count = 0;
     int out_count = 0;
     int ret_cnt = 0;
+    int cache_count = 0;
+    int rom_wait = 0;
+    uint64_t old_addr = ~0;
 
     char recbuf[sizeof(RVFI_DII_Instruction_Packet) + 1] = {0};
     std::vector<RVFI_DII_Instruction_Packet> instructions;
@@ -178,7 +222,7 @@ int main(int argc, char** argv, char** env) {
         // equal to the number of instructions we've received from TestRIG
         RVFI_DII_Instruction_Packet *packet;
         
-        while ((in_count >= received) || (received > old_rec)) {
+        do {
             old_rec = received;
             //std::cout << "receive" << std::endl;
             //std::cout << "in_count: " << in_count << " received: " << received << std::endl;
@@ -202,13 +246,13 @@ int main(int argc, char** argv, char** env) {
 
                 instructions.push_back(*packet);
                 received++;
-                break;
+                //                break;
             }
 
             // sleep for 10ms before trying to receive another instruction
             usleep(10000);
         }
-      
+        while ((in_count >= received) || (received > old_rec));      
 
         // need to clock the core while there are still instructions in the buffer
         //        std::cout << "clock" << std::endl;
@@ -236,6 +280,7 @@ int main(int argc, char** argv, char** env) {
                 if (top->flush_ctrl_if) {
                     std::cout << "\t\tnon-exception flush detected" << std::endl << std::flush;
                     in_count = out_count;
+                    cache_count = out_count;
                 }
             }
 
@@ -271,28 +316,6 @@ int main(int argc, char** argv, char** env) {
         }
           
             // perform instruction read
-        if (top->rom_req) {
-          switch(top->rom_addr & 0xFFFFFFFFFFFFFF)
-            {
-            case 0x00000000000330: top->rom_rdata = 0x11E3020261130000; break;
-            case 0x00000000000338: top->rom_rdata = 0xFFFFFFFFFFFF9222; break;
-            case 0x0000007FFFF440: top->rom_rdata = 0x6093004081930000; break;
-            case 0x0000007FFFF448: top->rom_rdata = 0xDEE38C011B630082; break;
-            case 0x0000007FFFF450: top->rom_rdata = 0x00E7504210E35A50; break;
-            case 0x0000007FFFF458: top->rom_rdata = 0x0000000000003330; break;
-            case 0x00000080000000: top->rom_rdata = 0xC2008F6370B1E297; break;
-            case 0x000000F0B1D888: top->rom_rdata = 0x72EFB17901170000; break;
-            case 0x000000F0B1D890: top->rom_rdata = 0x00000000000050B2; break;
-            case 0x000000F0B454C8: top->rom_rdata = 0x47B28067D40215E3; break;
-            case 0x000000F0B45598: top->rom_rdata = 0xFFFFFFFFF202D8E3; break;
-            case 0xFFFFFFFFF32EC0: top->rom_rdata = 0x9763000000000000; break;
-            case 0xFFFFFFFFF32EC8: top->rom_rdata = 0x009362418BE3BC10; break;
-            case 0xFFFFFFFFF32ED0: top->rom_rdata = 0xFFFF88B281670080; break;
-            case 0xFFFFFFFFFFFC58: top->rom_rdata = 0xFFFFFFFFA6E330EF; break;
-            default: top->rom_rdata = 0xDEADBEEFC001F00D; break;
-            }
-        }
-        else top->rom_rdata = 0;
             // returns instructions from the DII input from TestRIG
             top->rst_i = 0;
             if (instructions[in_count].dii_cmd) {
@@ -306,10 +329,9 @@ int main(int argc, char** argv, char** env) {
                       //                        std::cout << "inserting instruction @@@@@@@@@@@@@@@@@@@@" << std::endl;
                         top->instr_dii = instructions[in_count].dii_insn;
                         top->instruction_valid_dii = 1;
-                        std::cout << "addr\t0x" << std::hex << addr << std::dec << std::endl;
-                        std::cout << "insn\t0x" << std::hex << insn << std::dec << std::endl;
-                        std::cout << "expect\t0x" << std::hex << expected << std::dec << std::endl;
-                        if (insn != expected) top->rst_i = 1;
+                        std::cout << "\taddr\t0x" << std::hex << addr << std::dec << std::endl;
+                        std::cout << "\tinsn\t0x" << std::hex << insn << std::dec << std::endl;
+                        std::cout << "\texpect\t0x" << std::hex << expected << std::dec << std::endl;
                         in_count++;
                     }
                 }        
@@ -445,8 +467,90 @@ int main(int argc, char** argv, char** env) {
                 top->avm_main_readdatavalid = 0;
             }
 
+        if (top->rom_req) {
+          if (!instructions[cache_count].dii_cmd) ++cache_count;
+          if (received > cache_count+1)
+            {
+              uint64_t legacy_rdata, actual2, actual = 0xDEADBEEF;
+              int shft = top->virtual_request_address - top->rom_addr;
+              ENTRY *ep = find(top->rom_addr);
+              int64_t *entered = (int64_t *)(ep->data);
+              ENTRY *ep2 = find(top->rom_addr+8);
+              int64_t *entered2 = (int64_t *)(ep2->data);
+              rom_wait = 0;
+              if (old_addr != top->virtual_request_address)
+                {
+                  int shft = top->virtual_request_address & 6;
+                  old_addr = top->virtual_request_address;
+                  std::cout << "newaddr\t0x" << std::hex << top->virtual_request_address << std::dec << std::endl;
+                  actual = instructions[cache_count++].dii_insn & 0xFFFFFFFF;
+                  populate(top->virtual_request_address, actual, shft * 8);
+                  std::cout << "shift\t" << std::dec << shft << std::endl;
+                  switch (shft)
+                    {
+                    case 6:
+                      if (top->virtual_request_address < top->rom_addr)
+                        {
+                          populate(top->rom_addr-8, actual, shft * 8);
+                          populate(top->rom_addr, actual, -16);
+                        }
+                      actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
+                      populate(top->rom_addr, actual2, 16);
+                      std::cout << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
+                      break;
+                    case 2:
+                      actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
+                      populate(top->rom_addr, actual2, 48);
+                      std::cout << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
+                      break;
+                    case 0:
+                      actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
+                      populate(top->rom_addr, actual2, 32);
+                      std::cout << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
+                      break;
+                      
+                    }
+                }
+              top->rom_rdata = *entered;
+              
+              std::cout << "romaddr\t0x" << std::hex << top->rom_addr << std::dec << std::endl;
+              std::cout << "vrqaddr\t0x" << std::hex << top->virtual_request_address << std::dec << std::endl;
+              if (actual != 0xDEADBEEF) std::cout << "actual\t0x" << std::hex << actual << std::dec << std::endl;
+              std::cout << "shift1\t0x" << std::hex << *entered << std::dec << std::endl;
+              std::cout << "shift2\t0x" << std::hex << *entered2 << std::dec << std::endl;
 
+              switch(top->rom_addr & 0xFFFFFFFFFFFFFF)
+                {
+                case 0x00000000000330: legacy_rdata = 0x11E3020261130000; break;
+                case 0x00000000000338: legacy_rdata = 0xFFFFFFFFFFFF9222; break;
+                case 0x0000007FFFF440: legacy_rdata = 0x6093004081930000; break;
+                case 0x0000007FFFF448: legacy_rdata = 0xDEE38C011B630082; break;
+                case 0x0000007FFFF450: legacy_rdata = 0x00E7504210E35A50; break;
+                case 0x0000007FFFF458: legacy_rdata = 0x0000000000003330; break;
+                case 0x00000080000000: legacy_rdata = 0xC2008F6370B1E297; break;
+                case 0x000000F0B1D888: legacy_rdata = 0x72EFB17901170000; break;
+                case 0x000000F0B1D890: legacy_rdata = 0x00000000000050B2; break;
+                case 0x000000F0B454C8: legacy_rdata = 0x47B28067D40215E3; break;
+                case 0x000000F0B45598: legacy_rdata = 0xFFFFFFFFF202D8E3; break;
+                case 0xFFFFFFFFF32EC0: legacy_rdata = 0x9763000000000000; break;
+                case 0xFFFFFFFFF32EC8: legacy_rdata = 0x009362418BE3BC10; break;
+                case 0xFFFFFFFFF32ED0: legacy_rdata = 0xFFFF88B281670080; break;
+                case 0xFFFFFFFFFFFC58: legacy_rdata = 0xFFFFFFFFA6E330EF; break;
+                default: legacy_rdata = 0xDEADBEEFC001F00D; break;
+                }
 
+              std::cout << "legacy\t0x" << std::hex << legacy_rdata << std::dec << std::endl;
+            }
+          else
+            rom_wait = 1;
+        }
+        else
+          {
+            rom_wait = 0;
+          }
+
+        if (!rom_wait)
+          {
             top->clk_i = 1;
             top->eval();
 
@@ -468,7 +572,8 @@ int main(int argc, char** argv, char** env) {
             #endif
 
             main_time++;
-
+          }
+        
             // if we have a large difference between the number of instructions that have gone in
             // and the number that have come out, something's gone wrong; exit the program
             if (in_count - out_count > 20) {

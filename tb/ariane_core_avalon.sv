@@ -65,12 +65,15 @@ module ariane_core_avalon #(
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_wdata,
 `endif
 
-    input logic [31:0]  instr_dii,
-    input logic         instruction_valid_dii,
+    input logic [31:0]                       instr_dii,
+    input logic                              instruction_valid_dii,
     output logic [INSTR_PER_FETCH-1:0][31:0] instr,
     output logic [INSTR_PER_FETCH-1:0][63:0] addr,
     output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
     output logic                             flush_ctrl_if,
+    output logic                      [63:0] virtual_request_address,
+    output logic                             serving_unaligned_o,
+    output logic [63:0]                      serving_unaligned_address_o,
 
     output logic                                rom_req,
     output logic [ariane_axi::AddrWidth-1:0]    rom_addr,
@@ -236,6 +239,9 @@ module ariane_core_avalon #(
         .instr,
         .addr,
         .instruction_valid,
+        .virtual_request_address,
+        .serving_unaligned_o,
+        .serving_unaligned_address_o,
     `endif
 
         // Special control signal

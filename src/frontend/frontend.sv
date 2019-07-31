@@ -46,6 +46,8 @@ module frontend #(
   output logic [INSTR_PER_FETCH-1:0][31:0] instr,
   output logic [INSTR_PER_FETCH-1:0][63:0] addr,
   output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
+  output logic                             serving_unaligned_o,
+  output logic [63:0]                      serving_unaligned_address_o,
 `endif
   // instruction output port -> to processor back-end
   output fetch_entry_t       fetch_entry_o,       // fetch entry containing all relevant data for the ID stage
@@ -106,14 +108,18 @@ module frontend #(
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvi_cf;
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvc_cf;
 
-    logic serving_unaligned;
+`ifndef DII
+    logic serving_unaligned_o;
+    logic [63:0] serving_unaligned_address_o;
+`endif
     // Re-align instructions
     instr_realign i_instr_realign (
       .clk_i               ( clk_i                 ),
       .rst_ni              ( rst_ni                ),
       .flush_i             ( icache_dreq_o.kill_s2 ),
       .valid_i             ( icache_valid_q        ),
-      .serving_unaligned_o ( serving_unaligned     ),
+      .serving_unaligned_o ( serving_unaligned_o   ),
+      .serving_unaligned_address_o ( serving_unaligned_address_o ),
       .address_i           ( icache_vaddr_q        ),
       .data_i              ( icache_data_q         ),
       .valid_o             ( instruction_valid     ),
@@ -126,8 +132,8 @@ module frontend #(
     // select the right branch prediction result
     // in case we are serving an unaligned instruction in instr[0] we need to take
     // the prediction we saved from the previous fetch
-    assign bht_prediction_shifted[0] = (serving_unaligned) ? bht_q : bht_prediction[0];
-    assign btb_prediction_shifted[0] = (serving_unaligned) ? btb_q : btb_prediction[0];
+    assign bht_prediction_shifted[0] = (serving_unaligned_o) ? bht_q : bht_prediction[0];
+    assign btb_prediction_shifted[0] = (serving_unaligned_o) ? btb_q : btb_prediction[0];
     // for all other predictions we can use the generated address to index
     // into the branch prediction data structures
     for (genvar i = 1; i < INSTR_PER_FETCH; i++) begin : gen_prediction_address

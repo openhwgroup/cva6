@@ -181,6 +181,7 @@ package ariane_pkg;
     localparam bit RVD = 1'b1; // Is D extension enabled
 `endif
     localparam bit RVA = 1'b1; // Is A extension enabled
+    localparam bit RVC = 1'b0; // Is C extension enabled
 
     // Transprecision floating-point extensions configuration
     localparam bit XF16    = 1'b0; // Is half-precision float extension (Xf16) enabled
@@ -222,7 +223,7 @@ package ariane_pkg;
     localparam logic [63:0] ARIANE_MARCHID = 64'd3;
 
     localparam logic [63:0] ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
-                                     | (1   <<  2)  // C - Compressed extension
+                                     | (RVC <<  2)  // C - Compressed extension
                                      | (RVD <<  3)  // D - Double precsision floating-point extension
                                      | (RVF <<  5)  // F - Single precsision floating-point extension
                                      | (1   <<  8)  // I - RV32I/64I/128I base ISA

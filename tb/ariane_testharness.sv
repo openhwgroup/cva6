@@ -135,6 +135,9 @@ module ariane_testharness #(
     .addr              (),
     .instr             (),
     .instruction_valid (),
+    .virtual_request_address (),
+    .serving_unaligned_o (),
+    .serving_unaligned_address_o (),
 `endif
 
     .debug_req_i          ( 1'b0                ),

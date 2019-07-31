@@ -27,6 +27,7 @@ module instr_realign (
     input  logic                              flush_i,
     input  logic                              valid_i,
     output logic                              serving_unaligned_o, // we have an unaligned instruction in [0]
+    output logic [63:0]                       serving_unaligned_address_o,
     input  logic [63:0]                       address_i,
     input  logic [FETCH_WIDTH-1:0]            data_i,
     output logic [INSTR_PER_FETCH-1:0]        valid_o,
@@ -38,7 +39,7 @@ module instr_realign (
 
     for (genvar i = 0; i < INSTR_PER_FETCH; i ++) begin
         // LSB != 2'b11
-        assign instr_is_compressed[i] = ~&data_i[i * 16 +: 2];
+        assign instr_is_compressed[i] = RVC && (~&data_i[i * 16 +: 2]);
     end
 
     // save the unaligned part of the instruction to this ff
@@ -49,6 +50,7 @@ module instr_realign (
     logic [63:0] unaligned_address_d, unaligned_address_q;
     // we have an unaligned instruction
     assign serving_unaligned_o = unaligned_q;
+    assign serving_unaligned_address_o = unaligned_address_q;
 
     // Instruction re-alignment
     if (FETCH_WIDTH == 32) begin : realign_bp_32
