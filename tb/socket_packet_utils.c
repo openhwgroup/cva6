@@ -190,6 +190,7 @@ uint32_t serv_socket_get8(unsigned long long ptr)
   if (n == 1)
     return (uint32_t) byte;
   else if (!(n == -1 && errno == EAGAIN)) {
+    perror("serv_socket_get8");
     close(s->conn);
     s->conn = -1;
   }
@@ -206,6 +207,7 @@ uint8_t serv_socket_put8(unsigned long long ptr, uint8_t byte)
   if (n == 1)
     return 1;
   else if (!(n == -1 && errno == EAGAIN)) {
+    perror("serv_socket_put8");
     close(s->conn);
     s->conn = -1;
   }
@@ -247,6 +249,7 @@ void serv_socket_getN(unsigned int* result, unsigned long long ptr, int nbytes)
   else {
     bytes[nbytes] = 0xff;
     if (!(count == -1 && errno == EAGAIN)) {
+      perror("serv_socket_getN");
       close(s->conn);
       s->conn = -1;
     }
@@ -282,6 +285,7 @@ uint8_t serv_socket_putN(unsigned long long ptr, int nbytes, unsigned int* data)
   }
   else {
     if (!(count == -1 && errno == EAGAIN)) {
+      perror("serv_socket_putN");
       close(s->conn);
       s->conn = -1;
     }
