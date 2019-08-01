@@ -38,6 +38,11 @@ ENTRY *find(uint64_t oldaddr)
     {
       e.data = calloc(1, sizeof(int64_t));
       ep = hsearch(e, ENTER);
+      if (!ep)
+        {
+          logfile << "hash table full" << std::endl;
+          abort();
+        }
     }
   return ep;
 }
@@ -146,13 +151,24 @@ RVFI_DII_Execution_Packet execpacket(Variane_core_avalon* top, int i)
 
 static int received = 0;
 static int in_count = 0;
+static int high_water = 0;
+static int abort_putn = 0;
+static int out_count = 0;
+static int cache_count = 1;
+static int ret_cnt = 0;
+static int report_cnt = 0;
+
 static unsigned long long socket = 0;
 static std::vector<RVFI_DII_Instruction_Packet> instructions;
+static std::vector<RVFI_DII_Execution_Packet> returntrace;
 
 void receive_packet(void)
 {
   int old_rec = 0;
+  int prev_rec = received;
   char recbuf[sizeof(RVFI_DII_Instruction_Packet) + 1] = {0};
+  // sleep for 1ms before trying to receive another instruction
+  usleep(1000);
         
   do {
     old_rec = received;
@@ -179,14 +195,16 @@ void receive_packet(void)
       //logfile << "insn: 0x" << std::hex <<  (int) packet->dii_insn << std::dec << std::endl;
       
       instructions.push_back(*packet);
+      abort_putn = 0;
       received++;
       //                break;
-    }
-    
-    // sleep for 10ms before trying to receive another instruction
-    usleep(1000);
+    }    
   }
-  while ((in_count >= received) || (received > old_rec));      
+  while ((in_count >= received) || (received > old_rec));
+  if (received > prev_rec)
+    {
+      std::cout << "received: " << received-prev_rec << std::endl;
+    }
 }
 
 void dump_insn(void)
@@ -201,12 +219,27 @@ void dump_insn(void)
   logfile << "temporary file name: " << name1 << '\n';
   std::fstream fs;
   fs.open (name1, std::fstream::binary | std::fstream::out | std::fstream::trunc);
-  for (i = 0; i < in_count; i++)
+  for (i = high_water; i < in_count; i++)
     {
       if (instructions[i].dii_cmd)
         fs << ".4byte 0x" << std::hex << (int) (instructions[i].dii_insn & 0xFFFFFFFF) << std::dec << std::endl;
     }
   fs.close();
+}
+
+void broken_pipe_handler(int signum)
+{
+  std::cerr << "broken pipe handler" << std::endl;
+  returntrace.clear();
+  logfile << std::flush;
+  abort_putn = 1;
+  in_count = 0;
+  out_count = 0;
+  cache_count = 1;
+  received = 0;
+  high_water = 0;
+  ret_cnt = 0;
+  report_cnt = 0;
 }
 
 // This will open a socket on the hostname and port provided
@@ -238,9 +271,9 @@ int main(int argc, char** argv, char** env) {
     //logfile << "init socket" << std::endl;
     socket = serv_socket_create(argv[1], std::atoi(argv[2]));
     //logfile << "created" << std::endl;
-    serv_socket_init(socket);
+    serv_socket_init(socket, broken_pipe_handler);
     //logfile << "inited" << std::endl;
-    hcreate(4095);
+    hcreate((1<<19)-1);
 
 
     // set up initial core inputs
@@ -253,12 +286,8 @@ int main(int argc, char** argv, char** env) {
 
     top->rst_i = 0;
 
-    int out_count = 0;
-    int ret_cnt = 0;
-    int cache_count = 1;
     uint64_t old_addr = ~0;
 
-    std::vector<RVFI_DII_Execution_Packet> returntrace;
     while (1) {
         // logfile << "main loop begin" << std::endl;
            
@@ -266,6 +295,7 @@ int main(int argc, char** argv, char** env) {
         // send back execution trace if the number of instructions that have come out is equal to the
         // number that have gone in
         if (returntrace.size() > 0 && out_count == in_count) {
+            high_water = out_count;
             for (int i = 0; i < returntrace.size(); i++) {
               ++ret_cnt;
               if (!returntrace[i].rvfi_insn)
@@ -273,25 +303,29 @@ int main(int argc, char** argv, char** env) {
               else
                 logfile << std::hex << ".4byte 0x" << (0xFFFFFFFF & returntrace[i].rvfi_insn) << std::dec << std::endl;
                 // loop to make sure that the packet has been properly sent
-                while (
+                while (!abort_putn &&
                     !serv_socket_putN(socket, sizeof(RVFI_DII_Execution_Packet), (unsigned int *) &(returntrace[i]))
                 ) {
                     // empty
                 }
             }
-            logfile << "sent" << returntrace.size() << ":" << ret_cnt << std::endl;
+            if (ret_cnt >= report_cnt+100)
+              {
+                std::cout << "sent: " << ret_cnt << std::endl;
+                report_cnt = ((ret_cnt+99)/100)*100;
+              }
             returntrace.clear();
             logfile << std::flush;
         }
 
-        if ((received < 3) || instructions[received-1].dii_cmd)
+        if ((received < high_water+3) || instructions[received-1].dii_cmd)
                 {
                   receive_packet();
                 }
         
         // need to clock the core while there are still instructions in the buffer
         //        logfile << "clock" << std::endl;
-        if ((in_count <= received) && received > 0 && ((in_count - out_count > 0) || in_count == 0 || (out_count == in_count && received > in_count))) {
+        if ((in_count <= received) && received > high_water && ((in_count - out_count > 0) || in_count == high_water || (out_count == in_count && received > in_count))) {
           int i;
           // logfile << "in_count: " << in_count << " out_count: " << out_count << " diff: " << in_count - out_count << std::endl;
             /*
@@ -306,7 +340,7 @@ int main(int argc, char** argv, char** env) {
             // read rvfi data and add packet to list of packets to send
             // the condition to read data here is that there is an rvfi valid signal
             // this deals with counting instructions that the core has finished executing
-          if (in_count > out_count && (top->rvfi_valid & (1<<i) & ~top->rvfi_trap)) {
+          if (in_count > out_count && (top->rvfi_valid & (1<<i) & ~top->rvfi_trap) && !abort_putn) {
                 RVFI_DII_Execution_Packet execpkt = execpacket(top, i);
                 returntrace.push_back(execpkt);
                 out_count++;
@@ -320,7 +354,7 @@ int main(int argc, char** argv, char** env) {
             }
 
           // detect exceptions in order to replay instructions so they don't get lost
-          if (in_count > out_count && (top->rvfi_valid & (1<<i) & top->rvfi_trap)) {
+          if (in_count > out_count && (top->rvfi_valid & (1<<i) & top->rvfi_trap) && !abort_putn) {
                 RVFI_DII_Execution_Packet execpkt = execpacket(top, i);
                 returntrace.push_back(execpkt);
                 out_count++;
@@ -385,13 +419,15 @@ int main(int argc, char** argv, char** env) {
                     memory[i] = 0;
                 }
                 in_count++;
+                ret_cnt = 0;
+                report_cnt = 0;
             }
 
 
             // read rvfi data and add packet to list of packets to send
             // the condition to read data here is that the core has just been reset
             // this deals with counting reset instruction packets from TestRIG
-            if (in_count - out_count > 0 && top->rst_i) {
+            if (in_count - out_count > 0 && top->rst_i && !abort_putn) {
               returntrace.push_back(execpacket(top,0)); // we only need to consult the first commit port
 
                 out_count++;
@@ -517,8 +553,6 @@ int main(int argc, char** argv, char** env) {
               int shft = top->virtual_request_address - top->rom_addr;
               ENTRY *ep = find(top->rom_addr);
               int64_t *entered = (int64_t *)(ep->data);
-              ENTRY *ep2 = find(top->rom_addr+8);
-              int64_t *entered2 = (int64_t *)(ep2->data);
               while ((received <= cache_count+1) && instructions[received-1].dii_cmd)
                 {
                   receive_packet();
@@ -569,7 +603,6 @@ int main(int argc, char** argv, char** env) {
               logfile << "vrqaddr\t0x" << std::hex << top->virtual_request_address << std::dec << std::endl;
               if (actual != 0xDEADBEEF) logfile << "actual\t0x" << std::hex << actual << std::dec << std::endl;
               logfile << "shift1\t0x" << std::hex << *entered << std::dec << std::endl;
-              logfile << "shift2\t0x" << std::hex << *entered2 << std::dec << std::endl;
         }
 
         if (top->is_mispredict)

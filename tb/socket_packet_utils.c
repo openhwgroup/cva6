@@ -48,7 +48,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <assert.h>
-#include <signal.h>
 
 #include "socket_packet_utils.h"
 
@@ -56,7 +55,7 @@
 // API
 ////////////////////////////////////////////////////////////////////////////////
 unsigned long long serv_socket_create(const char * name, unsigned int dflt_port);
-void serv_socket_init(unsigned long long ptr);
+void serv_socket_init(unsigned long long ptr, sighandler_t handler);
 uint32_t serv_socket_get8(unsigned long long ptr);
 uint8_t serv_socket_put8(unsigned long long ptr, uint8_t byte);
 void serv_socket_getN(unsigned int* result, unsigned long long ptr, int nbytes);
@@ -103,13 +102,14 @@ typedef struct {
   int port;
   int sock;
   int conn;
+  sighandler_t handler;
 } serv_socket_state_t;
 
 // Accept connection
 inline void acceptConnection(serv_socket_state_t * s)
 {
   if (s->conn != -1) return;
-  if (s->sock == -1) serv_socket_init((unsigned long long) s);
+  if (s->sock == -1) serv_socket_init((unsigned long long) s, s->handler);
 
   // Accept connection
   s->conn = accept(s->sock, NULL, NULL);
@@ -138,13 +138,14 @@ unsigned long long serv_socket_create(const char * name, unsigned int dflt_port)
 }
 
 // Open, bind and listen
-extern void serv_socket_init(unsigned long long ptr)
+extern void serv_socket_init(unsigned long long ptr, sighandler_t handler)
 {
   serv_socket_state_t * s = (serv_socket_state_t *) ptr; 
   if (s->sock != -1) return;
-
+  s->handler = handler;
+  
   // Ignore SIGPIPE
-  signal(SIGPIPE, SIG_IGN);
+  signal(SIGPIPE, s->handler);
 
   // Create socket
   s->sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -191,6 +192,7 @@ uint32_t serv_socket_get8(unsigned long long ptr)
     return (uint32_t) byte;
   else if (!(n == -1 && errno == EAGAIN)) {
     perror("serv_socket_get8");
+    broken_pipe_handler(0);
     close(s->conn);
     s->conn = -1;
   }
@@ -208,6 +210,7 @@ uint8_t serv_socket_put8(unsigned long long ptr, uint8_t byte)
     return 1;
   else if (!(n == -1 && errno == EAGAIN)) {
     perror("serv_socket_put8");
+    broken_pipe_handler(0);
     close(s->conn);
     s->conn = -1;
   }
@@ -250,6 +253,7 @@ void serv_socket_getN(unsigned int* result, unsigned long long ptr, int nbytes)
     bytes[nbytes] = 0xff;
     if (!(count == -1 && errno == EAGAIN)) {
       perror("serv_socket_getN");
+      broken_pipe_handler(0);
       close(s->conn);
       s->conn = -1;
     }
@@ -286,6 +290,7 @@ uint8_t serv_socket_putN(unsigned long long ptr, int nbytes, unsigned int* data)
   else {
     if (!(count == -1 && errno == EAGAIN)) {
       perror("serv_socket_putN");
+      broken_pipe_handler(0);
       close(s->conn);
       s->conn = -1;
     }

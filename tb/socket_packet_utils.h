@@ -33,15 +33,17 @@
  * @BERI_LICENSE_HEADER_END@
  */
 
+#include <signal.h>
 
 // API
 ////////////////////////////////////////////////////////////////////////////////
 
 extern "C" {
     unsigned long long serv_socket_create(const char * name, unsigned int dflt_port);
-    void serv_socket_init(unsigned long long ptr);
+    void serv_socket_init(unsigned long long ptr, sighandler_t handler);
     uint32_t serv_socket_get8(unsigned long long ptr);
     uint8_t serv_socket_put8(unsigned long long ptr, uint8_t byte);
     void serv_socket_getN(unsigned int* result, unsigned long long ptr, int nbytes);
     uint8_t serv_socket_putN(unsigned long long ptr, int nbytes, unsigned int* data);
+    void broken_pipe_handler(int signum);
 }

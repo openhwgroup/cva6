@@ -867,7 +867,7 @@ module ariane #(
           rvfi_mem_rdata[i]         <= ex_stage_i.lsu_i.i_load_unit.result_o;
           rvfi_mem_wdata[i]         <= ex_stage_i.lsu_i.i_store_unit.result_o;          
 `endif          
-          $display("%d 0x%0h %s (0x%h) DASM(%h)", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
+//          $display("%d 0x%0h %s (0x%h) DASM(%h)", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
         end else if (ex_commit.valid && commit_instr_id_commit[i].ex.valid) begin
 `ifdef RVFI
           rvfi_trap[i]              <= '1;
@@ -889,12 +889,12 @@ module ariane #(
           rvfi_mem_wdata[i]         <= '0;
 `endif
           if (commit_instr_id_commit[i].ex.cause == 2) begin
-            $display("Exception Cause: Illegal Instructions, DASM(%h) PC=%h", commit_instr_id_commit[i].rvfi, commit_instr_id_commit[i].pc);
+//            $display("Exception Cause: Illegal Instructions, DASM(%h) PC=%h", commit_instr_id_commit[i].rvfi, commit_instr_id_commit[i].pc);
           end else begin
             if (debug_mode) begin
-              $display("%d 0x%0h %s (0x%h) DASM(%h)", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].rvfi, commit_instr_id_commit[i].rvfi);
+//              $display("%d 0x%0h %s (0x%h) DASM(%h)", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].rvfi, commit_instr_id_commit[i].rvfi);
             end else begin
-              $display("Exception Cause: %5d, DASM(%h) PC=%h", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].rvfi, commit_instr_id_commit[i].pc);
+//              $display("Exception Cause: %5d, DASM(%h) PC=%h", commit_instr_id_commit[i].ex.cause, commit_instr_id_commit[i].rvfi, commit_instr_id_commit[i].pc);
             end
           end
         end // if (commit_ack[i] && commit_instr_id_commit[i].ex.valid)
