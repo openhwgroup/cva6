@@ -17,6 +17,8 @@
 #include <search.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <execinfo.h>
 
 static std::fstream logfile;
 static uint64_t hashcnt = 0;
@@ -206,28 +208,31 @@ void receive_packet(void)
   while ((in_count >= received) || (received > old_rec));
   if (received > prev_rec)
     {
-      std::cout << "received: " << received-prev_rec << std::endl;
+      logfile << "received: " << received-prev_rec << std::endl;
     }
 }
 
-void dump_insn(void)
+void dump_insn(int count)
 {
   int i, cnt = 0;
   char name1[L_tmpnam];
-  struct stat buffer;   
-  do {
-    sprintf(name1, "test%d.rig", ++cnt);
-  }
-  while (stat (name1, &buffer) == 0); 
-  logfile << "temporary file name: " << name1 << '\n';
-  std::fstream fs;
-  fs.open (name1, std::fstream::binary | std::fstream::out | std::fstream::trunc);
-  for (i = high_water; i < in_count; i++)
+  struct stat buffer;
+  if (count > high_water + 10)
     {
-      if (instructions[i].dii_cmd)
-        fs << ".4byte 0x" << std::hex << (int) (instructions[i].dii_insn & 0xFFFFFFFF) << std::dec << std::endl;
+      do {
+        sprintf(name1, "test%d.rig", ++cnt);
+      }
+      while (stat (name1, &buffer) == 0); 
+      logfile << "temporary file name: " << name1 << '\n';
+      std::fstream fs;
+      fs.open (name1, std::fstream::binary | std::fstream::out | std::fstream::trunc);
+      for (i = high_water; i < out_count; i++)
+        {
+          if (instructions[i].dii_cmd)
+            fs << ".4byte 0x" << std::hex << (int) (instructions[i].dii_insn & 0xFFFFFFFF) << std::dec << std::endl;
+        }
+      fs.close();
     }
-  fs.close();
 }
 
 void one_clk(int lev)
@@ -245,7 +250,7 @@ void one_clk(int lev)
 
 void broken_pipe_handler(int signum)
 {
-  std::cout << "broken pipe handler: " << signum << std::endl;
+  logfile << "broken pipe handler: " << signum << std::endl;
   returntrace.clear();
   logfile << std::flush;
   abort_putn = 1;
@@ -265,6 +270,40 @@ void broken_pipe_handler(int signum)
   */
 }
 
+void signal_handler(int signum)
+{
+  int fd, nptrs;
+  char nam[20];
+  enum {SIZE=100};
+  void *buffer[100];
+  char **strings;
+  sprintf(nam, "%d.sig", signum);
+  fd = open(nam, O_WRONLY|O_CREAT|O_TRUNC, 0600);
+  write(fd, nam, strlen(nam)+1);
+
+  nptrs = backtrace(buffer, SIZE);
+
+  /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
+     would produce similar output to the following: */
+
+  strings = backtrace_symbols(buffer, nptrs);
+  if (strings == NULL) {
+    char *msg = strerror(errno);
+    write(fd, msg, strlen(msg)+1);
+    close(fd);
+    exit(signum);
+  }
+  
+  for (int j = 0; j < nptrs; j++)
+    {
+    write(fd, strings[j], strlen(strings[j]));
+    write(fd, "\n", 1);
+    }
+  
+  close(fd);
+  exit(signum);
+}
+
 // This will open a socket on the hostname and port provided
 // It will then try to receive RVFI-DII packets and put the instructions
 // from them into the core and simulate it.
@@ -277,6 +316,9 @@ int main(int argc, char** argv, char** env) {
         exit(-1);
     }
 
+    for (int i = 0; i < 16; i++)
+      signal(i, signal_handler);
+    
     Verilated::commandArgs(argc, argv);
     top = new Variane_core_avalon;
     logfile.open ("ariane.log", std::fstream::binary | std::fstream::out | std::fstream::trunc);
@@ -317,23 +359,22 @@ int main(int argc, char** argv, char** env) {
         // send back execution trace if the number of instructions that have come out is equal to the
         // number that have gone in
         if (returntrace.size() > 0 && out_count == in_count) {
-            high_water = out_count;
             for (int i = 0; i < returntrace.size(); i++) {
               ++ret_cnt;
               if (!returntrace[i].rvfi_insn)
                 logfile << "halt token" << std::endl;
               else
                 logfile << std::hex << ".4byte 0x" << (0xFFFFFFFF & returntrace[i].rvfi_insn) << std::dec << std::endl;
-                // loop to make sure that the packet has been properly sent
-                while (!abort_putn &&
-                    !serv_socket_putN(socket, sizeof(RVFI_DII_Execution_Packet), (unsigned int *) &(returntrace[i]))
-                ) {
-                    // empty
-                }
+              // loop to make sure that the packet has been properly sent
+              while (!abort_putn &&
+                     !serv_socket_putN(socket, sizeof(RVFI_DII_Execution_Packet), (unsigned int *) &(returntrace[i]))
+                     ) {
+                // empty
+              }
             }
             if (ret_cnt >= report_cnt+100)
               {
-                std::cout << "sent: " << ret_cnt << std::endl;
+                logfile << "sent: " << ret_cnt << std::endl;
                 report_cnt = ((ret_cnt+99)/100)*100;
               }
             returntrace.clear();
@@ -412,40 +453,41 @@ int main(int argc, char** argv, char** env) {
             // perform instruction read
             // returns instructions from the DII input from TestRIG
             top->rst_i = 0;
-            if (instructions[in_count].dii_cmd) {
-                if (top->instruction_valid & 1) {
-                    // if we have instructions to feed into it, then set readdatavalid and waitrequest accordingly
-                    // logfile << "checking instruction in_count: " << in_count << " received: " << received << std::endl;
-                    if (received > in_count) {
-                      int expected = (int) (instructions[in_count].dii_insn & 0xFFFFFFFF);
-                      int insn = (int) (top->instr & 0xFFFFFFFF);
-                      int addr = (int) (((std::uint64_t*)(top->addr))[0] & 0xFFFFFFFF);
-                      //                        logfile << "inserting instruction @@@@@@@@@@@@@@@@@@@@" << std::endl;
-                        top->instr_dii = instructions[in_count++].dii_insn;
-                        top->instruction_valid_dii = 1;
-                        logfile << "\taddr\t0x" << std::hex << addr << std::dec << std::endl;
-                        if (expected != insn)
-                          {
-                            dump_insn();
-                            abort();
-                          }
-                        logfile << "\texpect\t0x" << std::hex << expected << std::dec << std::endl;
-                        logfile << "\tinsn\t0x" << std::hex << insn << std::dec << std::endl;
+            if (in_count < received) {
+              if (instructions[in_count].dii_cmd) {
+                    if (top->instruction_valid & 1) {
+                        // if we have instructions to feed into it, then set readdatavalid and waitrequest accordingly
+                        // logfile << "checking instruction in_count: " << in_count << " received: " << received << std::endl;
+                        if (received > in_count) {
+                          int expected = (int) (instructions[in_count].dii_insn & 0xFFFFFFFF);
+                          int insn = (int) (top->instr & 0xFFFFFFFF);
+                          int addr = (int) (((std::uint64_t*)(top->addr))[0] & 0xFFFFFFFF);
+                          //                        logfile << "inserting instruction @@@@@@@@@@@@@@@@@@@@" << std::endl;
+                            top->instr_dii = instructions[in_count++].dii_insn;
+                            top->instruction_valid_dii = 1;
+                            logfile << "\taddr\t0x" << std::hex << addr << std::dec << std::endl;
+                            logfile << "\texpect\t0x" << std::hex << expected << std::dec << std::endl;
+                            logfile << "\tinsn\t0x" << std::hex << insn << std::dec << std::endl;
+                            if (expected != insn)
+                              {
+                                logfile << "MISMATCH: " << in_count-high_water << std::endl;
+                                dump_insn(in_count+1);
+                                abort();
+                              }
+                        }
+                    }        
+                } else if (in_count - out_count == 0) {
+                    top->rst_i = 1;
+
+                    // clear memory
+                    for (int i = 0; i < (sizeof(memory)/sizeof(memory[0])); i++) {
+                        memory[i] = 0;
                     }
-                }        
-            } else if (in_count - out_count == 0 && in_count < received) {
-                top->rst_i = 1;
-
-                // clear memory
-                for (int i = 0; i < (sizeof(memory)/sizeof(memory[0])); i++) {
-                    memory[i] = 0;
-                }
-                in_count++;
-                ret_cnt = 0;
-                report_cnt = 0;
+                    in_count++;
+                    ret_cnt = 0;
+                    report_cnt = 0;
+              }
             }
-
-
             // read rvfi data and add packet to list of packets to send
             // the condition to read data here is that the core has just been reset
             // this deals with counting reset instruction packets from TestRIG
@@ -457,8 +499,8 @@ int main(int argc, char** argv, char** env) {
                 cache_count = out_count;
 
                 logfile << "resetting, " << "out_count: " << out_count << std::endl;
-                if (out_count > 2)
-                  dump_insn();
+                dump_insn(received);
+                high_water = received;
             }
 
             // perform main memory read
