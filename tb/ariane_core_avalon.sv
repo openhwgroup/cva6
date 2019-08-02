@@ -121,7 +121,7 @@ module ariane_core_avalon #(
       // physical region
       NrPhysicalRegionRules:    1,
       PhysicalRegionAddrBase:  {64'h80000000},
-      PhysicalRegionLength:    {64'h0},
+      PhysicalRegionLength:    {64'h10000},
       //  cache config
       Axi64BitCompliant:      1'b1,
       SwapEndianess:          1'b0,

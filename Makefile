@@ -368,9 +368,9 @@ verilate_command_rvfi := $(verilator)                                           
                     -Wno-BLKANDNBLK                                                                              \
                     -Wno-style                                                                                   \
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
-                    --trace --trace-structs                                                                      \
-                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -pg,) -g -lpthread" \
-                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -pg,) -g" -Wall --cc  --vpi                               \
+                    $(if $(DEBUG),--trace --trace-structs,)                                                      \
+                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -g -pg,) -lpthread" \
+                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,)" -Wall --cc  --vpi                               \
                     $(list_incdir) --top-module ariane_core_avalon                                               \
                     --Mdir $(ver-library-rvfi) -O3                                                                    \
                     --exe tb/dii_toplevel_sim.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                             \

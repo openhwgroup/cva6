@@ -121,9 +121,25 @@ double sc_time_stamp() {
     return main_time;
 }
 
+static int received = 0;
+static int in_count = 0;
+static int high_water = 0;
+static int abort_putn = 0;
+static int out_count = 0;
+static int cache_count = 1;
+static int ret_cnt = 0;
+static int report_cnt = 0;
+
+static unsigned long long socket = 0;
+static std::vector<RVFI_DII_Instruction_Packet> instructions;
+static std::vector<RVFI_DII_Execution_Packet> returntrace;
+static Variane_core_avalon* top;
+#if VM_TRACE
+static VerilatedVcdC trace_obj;
+#endif
 // convert verilator data structures on a given commit port to a DII returntrace structure
 
-RVFI_DII_Execution_Packet execpacket(Variane_core_avalon* top, int i)
+RVFI_DII_Execution_Packet execpacket(int i)
 {
   std::int32_t insn = (top->rvfi_insn >> i*32) & 0xFFFFFFFF;
   RVFI_DII_Execution_Packet execpkt = {
@@ -148,19 +164,6 @@ RVFI_DII_Execution_Packet execpacket(Variane_core_avalon* top, int i)
   };
   return execpkt;
 }
-
-static int received = 0;
-static int in_count = 0;
-static int high_water = 0;
-static int abort_putn = 0;
-static int out_count = 0;
-static int cache_count = 1;
-static int ret_cnt = 0;
-static int report_cnt = 0;
-
-static unsigned long long socket = 0;
-static std::vector<RVFI_DII_Instruction_Packet> instructions;
-static std::vector<RVFI_DII_Execution_Packet> returntrace;
 
 void receive_packet(void)
 {
@@ -227,9 +230,22 @@ void dump_insn(void)
   fs.close();
 }
 
+void one_clk(int lev)
+{
+        top->clk_i = lev;
+        top->eval();
+        
+        // tracing
+#if VM_TRACE
+        trace_obj.dump(main_time);
+        trace_obj.flush();
+        main_time++;
+#endif        
+}
+
 void broken_pipe_handler(int signum)
 {
-  std::cerr << "broken pipe handler" << std::endl;
+  std::cout << "broken pipe handler: " << signum << std::endl;
   returntrace.clear();
   logfile << std::flush;
   abort_putn = 1;
@@ -240,6 +256,13 @@ void broken_pipe_handler(int signum)
   high_water = 0;
   ret_cnt = 0;
   report_cnt = 0;
+  /*
+  for (int i = 0; i < 100; i++)
+    {
+      one_clk(1);
+      one_clk(0);
+    }
+  */
 }
 
 // This will open a socket on the hostname and port provided
@@ -255,13 +278,12 @@ int main(int argc, char** argv, char** env) {
     }
 
     Verilated::commandArgs(argc, argv);
-    Variane_core_avalon* top = new Variane_core_avalon;
+    top = new Variane_core_avalon;
     logfile.open ("ariane.log", std::fstream::binary | std::fstream::out | std::fstream::trunc);
 
     // set up tracing
     #if VM_TRACE
     Verilated::traceEverOn(true);
-    VerilatedVcdC trace_obj;
     top->trace(&trace_obj, 99);
     trace_obj.open("vlt_d.vcd");
     #endif
@@ -341,7 +363,7 @@ int main(int argc, char** argv, char** env) {
             // the condition to read data here is that there is an rvfi valid signal
             // this deals with counting instructions that the core has finished executing
           if (in_count > out_count && (top->rvfi_valid & (1<<i) & ~top->rvfi_trap) && !abort_putn) {
-                RVFI_DII_Execution_Packet execpkt = execpacket(top, i);
+                RVFI_DII_Execution_Packet execpkt = execpacket(i);
                 returntrace.push_back(execpkt);
                 out_count++;
                 logfile << "\t\t\tcommit\t0x" << std::hex << (int) execpkt.rvfi_insn << std::dec << std::endl << std::flush;
@@ -355,7 +377,7 @@ int main(int argc, char** argv, char** env) {
 
           // detect exceptions in order to replay instructions so they don't get lost
           if (in_count > out_count && (top->rvfi_valid & (1<<i) & top->rvfi_trap) && !abort_putn) {
-                RVFI_DII_Execution_Packet execpkt = execpacket(top, i);
+                RVFI_DII_Execution_Packet execpkt = execpacket(i);
                 returntrace.push_back(execpkt);
                 out_count++;
                 logfile << "\t\texception detected" << std::endl << std::flush;
@@ -428,7 +450,7 @@ int main(int argc, char** argv, char** env) {
             // the condition to read data here is that the core has just been reset
             // this deals with counting reset instruction packets from TestRIG
             if (in_count - out_count > 0 && top->rst_i && !abort_putn) {
-              returntrace.push_back(execpacket(top,0)); // we only need to consult the first commit port
+              returntrace.push_back(execpacket(0)); // we only need to consult the first commit port
 
                 out_count++;
                 in_count = out_count;
@@ -610,28 +632,9 @@ int main(int argc, char** argv, char** env) {
               logfile << "mispred\t" << cache_count << std::endl;
             --cache_count;
           }
-            
-        top->clk_i = 1;
-        top->eval();
-        
-        // tracing
-#if VM_TRACE
-        trace_obj.dump(main_time);
-        trace_obj.flush();
-        main_time++;
-#endif
-        
-        
-        top->clk_i = 0;
-        top->eval();
-            
-        // tracing
-#if VM_TRACE
-        trace_obj.dump(main_time);
-        trace_obj.flush();
-#endif
-        
-        main_time++;
+
+        one_clk(1);
+        one_clk(0);
         
             // if we have a large difference between the number of instructions that have gone in
             // and the number that have come out, something's gone wrong; exit the program

@@ -795,6 +795,18 @@ module ariane #(
 // mock tracer for Verilator, to be used with spike-dasm
 `else
 
+   // This is a temporary bodge, just for machine mode
+   assign rvfi_mem_wmask[0] = dcache_req_ports_ex_cache[2].data_be;
+   assign rvfi_mem_wmask[1] = '0;
+   assign rvfi_mem_rmask[0] = dcache_req_ports_ex_cache[2].data_be;
+   assign rvfi_mem_rmask[1] = '0;
+   assign rvfi_mem_addr[0]  = {dcache_req_ports_ex_cache[2].address_tag,dcache_req_ports_ex_cache[2].address_index};
+   assign rvfi_mem_addr[1]  = '0;
+   assign rvfi_mem_rdata[0] = '0;
+   assign rvfi_mem_rdata[1] = '0;
+   assign rvfi_mem_wdata[0] = dcache_req_ports_ex_cache[2].data_wdata;
+   assign rvfi_mem_wdata[1] = '0;
+   
   logic [63:0] cycles;
   logic [0:1] [63:0] target_pc;
 
@@ -813,16 +825,11 @@ module ariane #(
       rvfi_rs2_addr          <= '0;
       rvfi_pc_rdata          <= '0;
       rvfi_pc_wdata          <= '0;
-      rvfi_mem_rmask         <= '0;
-      rvfi_mem_wmask         <= '0;
       rvfi_valid             <= '0;
       rvfi_rs1_rdata         <= '0;
       rvfi_rs2_rdata         <= '0;
       rvfi_rd_wdata          <= '0;
       rvfi_rd_addr           <= '0;
-      rvfi_mem_rdata         <= '0;
-      rvfi_mem_wdata         <= '0;
-      rvfi_mem_addr          <= '0;
 `endif
     end else begin
       string mode = "";
@@ -838,7 +845,6 @@ module ariane #(
       rvfi_valid             <= '0;
       rvfi_intr              <= '0;
       rvfi_mem_rmask         <= '0;
-      rvfi_mem_wmask         <= '0;
       rvfi_trap              <= '0;
       resolved_branch_dly    <= resolved_branch;
 `endif
@@ -859,13 +865,6 @@ module ariane #(
           rvfi_rs1_rdata[i]         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[0];
           rvfi_rs2_rdata[i]         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[1];
           rvfi_rd_wdata[i]          <= commit_instr_id_commit[i].rd ? issue_stage_i.i_issue_read_operands.i_ariane_regfile.wdata_i[0] : '0;
-
-          rvfi_mem_addr[i]          <= ex_stage_i.lsu_i.i_store_unit.store_buffer_i.valid_i ?
-                                    ex_stage_i.lsu_i.i_store_unit.store_buffer_i.paddr_i :
-                                    ex_stage_i.lsu_i.i_load_unit.req_port_o.tag_valid ?
-                                    ex_stage_i.lsu_i.i_load_unit.paddr_i: '0;
-          rvfi_mem_rdata[i]         <= ex_stage_i.lsu_i.i_load_unit.result_o;
-          rvfi_mem_wdata[i]         <= ex_stage_i.lsu_i.i_store_unit.result_o;          
 `endif          
 //          $display("%d 0x%0h %s (0x%h) DASM(%h)", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
         end else if (ex_commit.valid && commit_instr_id_commit[i].ex.valid) begin
@@ -884,9 +883,6 @@ module ariane #(
           rvfi_rs1_rdata[i]         <= '0;
           rvfi_rs2_rdata[i]         <= '0;
           rvfi_rd_wdata[i]          <= '0;
-          rvfi_mem_addr[i]          <= '0;
-          rvfi_mem_rdata[i]         <= '0;
-          rvfi_mem_wdata[i]         <= '0;
 `endif
           if (commit_instr_id_commit[i].ex.cause == 2) begin
 //            $display("Exception Cause: Illegal Instructions, DASM(%h) PC=%h", commit_instr_id_commit[i].rvfi, commit_instr_id_commit[i].pc);
