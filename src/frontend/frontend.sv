@@ -105,10 +105,6 @@ module frontend #(
     btb_prediction_t [INSTR_PER_FETCH-1:0] btb_prediction_shifted;
     ras_t            ras_predict;
 
-    // branch-predict update
-`ifndef DII   
-    logic            is_mispredict;
-`endif   
     logic            ras_push, ras_pop;
     logic [63:0]     ras_update;
 
@@ -119,6 +115,12 @@ module frontend #(
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvc_cf;
 
 `ifndef DII
+    // branch-predict update
+    logic            is_mispredict;
+    // re-aligned instruction and address (coming from cache - combinationally)
+    logic [INSTR_PER_FETCH-1:0][31:0] instr;
+    logic [INSTR_PER_FETCH-1:0][63:0] addr;
+    logic [INSTR_PER_FETCH-1:0]       instruction_valid;
     logic serving_unaligned_o;
     logic [63:0] serving_unaligned_address_o;
 `endif
