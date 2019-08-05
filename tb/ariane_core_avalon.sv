@@ -14,13 +14,6 @@ module ariane_core_avalon #(
     input logic         clk_i,
     input logic         rst_i,
 
-    input logic         test_en_i, // enable all clock gates for testing
-
-    // Core ID, Cluster ID and boot address are considered more or less static
-    input logic [ 3:0]  core_id_i,
-    input logic [ 5:0]  cluster_id_i,
-    input logic [31:0]  boot_addr_i,
-
     // Data memory interface (Avalon)
     output logic [31:0] avm_main_address,
     output logic [7:0]  avm_main_byteenable,
@@ -28,15 +21,11 @@ module ariane_core_avalon #(
     input logic [63:0]  avm_main_readdata,
     output logic        avm_main_write,
     output logic [63:0] avm_main_writedata,
-    input logic         avm_main_waitrequest,
     input logic         avm_main_readdatavalid,
     input logic [1:0]   avm_main_response,
 
     // Interrupt inputs
     input logic         irq_i, // level sensitive IR lines
-    input logic [4:0]   irq_id_i,
-    output logic        irq_ack_o, // irq ack
-    output logic [4:0]  irq_id_o,
 
     // RISC-V Formal Interface
     // Does not comply with the coding standards of _i/_o suffixes, but follows
@@ -65,8 +54,6 @@ module ariane_core_avalon #(
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_wdata,
 `endif
 
-    input logic [31:0]                       instr_dii,
-    input logic                              instruction_valid_dii,
     output logic [INSTR_PER_FETCH-1:0][31:0] instr,
     output logic [INSTR_PER_FETCH-1:0][63:0] addr,
     output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
@@ -79,10 +66,7 @@ module ariane_core_avalon #(
 
     output logic                                rom_req,
     output logic [ariane_axi::AddrWidth-1:0]    rom_addr,
-    input logic  [ariane_axi::DataWidth-1:0]    rom_rdata,
-
-    // Debug Interface
-    input logic         debug_req_i
+    input logic  [ariane_axi::DataWidth-1:0]    rom_rdata
 );
 
     // set up connections for ariane inputs
@@ -141,7 +125,7 @@ module ariane_core_avalon #(
         .data_addr_i({2'b0, data_addr_o[63:2]}),
         .data_wdata_i(data_wdata_o),
         
-        .avm_main_waitrequest(avm_main_waitrequest),
+        .avm_main_waitrequest(1'b0),
         .avm_main_readdatavalid(avm_main_readdatavalid),
         .avm_main_readdata(avm_main_readdata),
         .avm_main_response(avm_main_response),
@@ -200,18 +184,13 @@ module ariane_core_avalon #(
         .rst_ni         (~rst_i),
 
         // Configuration
-        .hart_id_i      (core_id_i),
-        .boot_addr_i    (boot_addr_i),
+        .hart_id_i      ('0),
+        .boot_addr_i    (64'H80000000),
               
         // Interrupt inputs
         .irq_i          (irq_i),
-/*
-        .irq_id_i       (irq_id_i),
-        .irq_ack_o      (irq_ack_o),
-        .irq_id_o       (irq_id_o),
-*/
         // Debug interface
-        .debug_req_i    (debug_req_i),
+        .debug_req_i    (1'b0),
         
         // RISC-V Formal Interface
         // Does not comply with the coding standards of _i/_o suffixes, but follows

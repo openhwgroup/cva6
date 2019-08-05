@@ -14,46 +14,26 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <search.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <execinfo.h>
 
 static std::fstream logfile;
-static uint64_t hashcnt = 0;
+static int64_t cache[16];
 
-static struct sort {
-        struct sort *nxt;
-        uint64_t rnd;
-      } *head = NULL;
-
-ENTRY *find(uint64_t oldaddr)
+int64_t *find(uint64_t oldaddr)
 {
   char key[20];
-  ENTRY e, *ep;
   uint64_t rnd = oldaddr & -8;
-  sprintf(key, "%.14lX", 0xFFFFFFFFFFFFFF & rnd);
-  e.key = (char *)strdup(key);
-  ep = hsearch(e, FIND);
-  if (!ep)
-    {
-      e.data = calloc(1, sizeof(int64_t));
-      ep = hsearch(e, ENTER);
-      if (!ep)
-        {
-          logfile << "hash table full" << std::endl;
-          abort();
-        }
-    }
-  return ep;
+  int idx = 0xF & rnd;
+  return cache+idx;
 }
 
 void populate(uint64_t oldaddr, int64_t inst, int shft)
 {
   uint64_t rnd = oldaddr & -8;
-  ENTRY *ep = find(rnd);
-  int64_t *instp = (int64_t *)(ep->data);
+  int64_t *instp = find(rnd);
   int64_t old = *instp;
   int64_t mask = shft < 0 ? ~(0xFFFFFFFFULL >> -shft) : ~(0xFFFFFFFFULL << shft);
   int64_t shftinst = shft < 0 ? inst >> -shft : inst << shft;
@@ -98,7 +78,7 @@ struct RVFI_DII_Instruction_Packet {
     std::uint8_t padding : 8;         // [7]
 };
 
-double main_time = 0;
+uint64_t main_time = 0;
 
 unsigned int belu[] = {
     0x00000000,
@@ -120,7 +100,7 @@ unsigned int belu[] = {
 };
 
 double sc_time_stamp() {
-    return main_time;
+  return (double)main_time;
 }
 
 static int received = 0;
@@ -131,6 +111,9 @@ static int out_count = 0;
 static int cache_count = 1;
 static int ret_cnt = 0;
 static int report_cnt = 0;
+static int dump = 0;
+static int replay = 0;
+static int more_data = 0;
 
 static unsigned long long socket = 0;
 static std::vector<RVFI_DII_Instruction_Packet> instructions;
@@ -212,20 +195,26 @@ void receive_packet(void)
     }
 }
 
+char *unique(const char *templ)
+{
+  int cnt = 0;
+  char name1[L_tmpnam];
+  struct stat buffer;
+  do {
+    sprintf(name1, templ, ++cnt);
+  }
+  while (stat (name1, &buffer) == 0); 
+  logfile << "temporary file name: " << name1 << '\n';
+  return strdup(name1);
+}
+
 void dump_insn(int count)
 {
   int i, cnt = 0;
-  char name1[L_tmpnam];
-  struct stat buffer;
   if (count > high_water + 10)
     {
-      do {
-        sprintf(name1, "test%d.rig", ++cnt);
-      }
-      while (stat (name1, &buffer) == 0); 
-      logfile << "temporary file name: " << name1 << '\n';
       std::fstream fs;
-      fs.open (name1, std::fstream::binary | std::fstream::out | std::fstream::trunc);
+      fs.open (unique("test%d.S"), std::fstream::binary | std::fstream::out | std::fstream::trunc);
       for (i = high_water; i < out_count; i++)
         {
           if (instructions[i].dii_cmd)
@@ -235,17 +224,62 @@ void dump_insn(int count)
     }
 }
 
-void one_clk(int lev)
+void one_clk(void)
 {
-        top->clk_i = lev;
-        top->eval();
-        
-        // tracing
+  typedef struct {
+    QData avm_main_readdata;
+    CData avm_main_readdatavalid;
+    CData avm_main_response;
+    CData rst_i;
+    QData rom_rdata;
+    CData irq_i;
+  } in_t;
+  in_t dump_in;
+
+  if (replay)
+    {
+      if (read(replay, &dump_in, sizeof(in_t)) != sizeof(in_t))
+        {
+          std::cout << "End of dump file" << std::endl;
+          close(replay);
+          more_data = 0;
+        }
+      top->avm_main_readdata = dump_in.avm_main_readdata;
+      top->avm_main_readdatavalid = dump_in.avm_main_readdatavalid;
+      top->avm_main_response = dump_in.avm_main_response;
+      top->rst_i = dump_in.rst_i;
+      top->rom_rdata = dump_in.rom_rdata;
+    }
+  else
+    {
+      dump_in.avm_main_readdata = top->avm_main_readdata;
+      dump_in.avm_main_readdatavalid = top->avm_main_readdatavalid;
+      dump_in.avm_main_response = top->avm_main_response;
+      dump_in.rst_i = top->rst_i;
+      dump_in.rom_rdata = top->rom_rdata;
+      write(dump, &dump_in, sizeof(in_t));
+    }
+  if (top->rom_req) logfile << "shift1\t0x" << std::hex << top->rom_rdata << std::dec << std::endl;
+
+  for (int lev = 2; lev--; )
+    {
+      top->clk_i = lev;
+      top->eval();
+      
+      // tracing
 #if VM_TRACE
-        trace_obj.dump(main_time);
-        trace_obj.flush();
-        main_time++;
-#endif        
+      trace_obj.dump((double)main_time);
+      trace_obj.flush();
+#endif
+      main_time++;
+    }
+  if (main_time % 10000 == 0)
+    {
+      logfile << "main_time\t" << main_time << std::endl;
+      logfile.close ();
+      logfile.open (unique(dump?"ariane%d.dump":"ariane%d.replay"), std::fstream::binary | std::fstream::out | std::fstream::trunc);
+      logfile << "main_time\t" << main_time << std::endl;      
+    }
 }
 
 void broken_pipe_handler(int signum)
@@ -261,13 +295,6 @@ void broken_pipe_handler(int signum)
   high_water = 0;
   ret_cnt = 0;
   report_cnt = 0;
-  /*
-  for (int i = 0; i < 100; i++)
-    {
-      one_clk(1);
-      one_clk(0);
-    }
-  */
 }
 
 void signal_handler(int signum)
@@ -277,6 +304,7 @@ void signal_handler(int signum)
   enum {SIZE=100};
   void *buffer[100];
   char **strings;
+  close(dump);
   sprintf(nam, "%d.sig", signum);
   fd = open(nam, O_WRONLY|O_CREAT|O_TRUNC, 0600);
   write(fd, nam, strlen(nam)+1);
@@ -310,19 +338,31 @@ void signal_handler(int signum)
 // The RVFI trace is then sent back
 
 int main(int argc, char** argv, char** env) {
-
     if (argc != 3) {
-        std::cerr << "wrong number of args" << std::endl;
+        std::cerr << "Insufficient args" << std::endl;
         exit(-1);
     }
 
+    if (!strcmp(argv[1], "--replay"))
+      {
+        replay = open(argv[2], O_RDONLY);
+        std::cout << "replay file opened" << std::endl;
+      }
+    else
+      {
+        dump = open(unique("dump%d.bin"), O_WRONLY|O_CREAT|O_TRUNC, 0600);
+        Verilated::commandArgs(argc, argv);
+        socket = serv_socket_create(argv[1], std::atoi(argv[2]));
+        serv_socket_init(socket, broken_pipe_handler);
+        std::cout << "dump output file opened" << std::endl;
+      }
+    
     for (int i = 0; i < 16; i++)
       signal(i, signal_handler);
     
-    Verilated::commandArgs(argc, argv);
     top = new Variane_core_avalon;
-    logfile.open ("ariane.log", std::fstream::binary | std::fstream::out | std::fstream::trunc);
-
+    logfile.open (unique(dump?"ariane%d.dump":"ariane%d.replay"), std::fstream::binary | std::fstream::out | std::fstream::trunc);
+    
     // set up tracing
     #if VM_TRACE
     Verilated::traceEverOn(true);
@@ -332,27 +372,19 @@ int main(int argc, char** argv, char** env) {
 
     uint8_t memory[65536] = {0};
 
-    //logfile << "init socket" << std::endl;
-    socket = serv_socket_create(argv[1], std::atoi(argv[2]));
-    //logfile << "created" << std::endl;
-    serv_socket_init(socket, broken_pipe_handler);
-    //logfile << "inited" << std::endl;
-    hcreate((1<<19)-1);
-
-
     // set up initial core inputs
     top->clk_i = 0;
     top->rst_i = 1;
-    top->test_en_i = 0;
-    top->boot_addr_i = 0x80000000;
-    top->avm_main_waitrequest = 0;
-    top->eval();
+    top->irq_i = 0;
+    one_clk();
 
     top->rst_i = 0;
 
     uint64_t old_addr = ~0;
 
-    while (1) {
+    more_data = 1;
+    
+    while (more_data) {
         // logfile << "main loop begin" << std::endl;
            
         // send back execution trace
@@ -366,7 +398,7 @@ int main(int argc, char** argv, char** env) {
               else
                 logfile << std::hex << ".4byte 0x" << (0xFFFFFFFF & returntrace[i].rvfi_insn) << std::dec << std::endl;
               // loop to make sure that the packet has been properly sent
-              while (!abort_putn &&
+              while (dump && !abort_putn &&
                      !serv_socket_putN(socket, sizeof(RVFI_DII_Execution_Packet), (unsigned int *) &(returntrace[i]))
                      ) {
                 // empty
@@ -381,14 +413,14 @@ int main(int argc, char** argv, char** env) {
             logfile << std::flush;
         }
 
-        if ((received < high_water+3) || instructions[received-1].dii_cmd)
+        if (dump && ((received < high_water+3) || instructions[received-1].dii_cmd))
                 {
                   receive_packet();
                 }
         
         // need to clock the core while there are still instructions in the buffer
         //        logfile << "clock" << std::endl;
-        if ((in_count <= received) && received > high_water && ((in_count - out_count > 0) || in_count == high_water || (out_count == in_count && received > in_count))) {
+        if (replay || ((in_count <= received) && received > high_water && ((in_count - out_count > 0) || in_count == high_water || (out_count == in_count && received > in_count)))) {
           int i;
           // logfile << "in_count: " << in_count << " out_count: " << out_count << " diff: " << in_count - out_count << std::endl;
             /*
@@ -416,7 +448,7 @@ int main(int argc, char** argv, char** env) {
                 }
             }
 
-          // detect exceptions in order to replay instructions so they don't get lost
+          // detect exceptions in order to dump instructions so they don't get lost
           if (in_count > out_count && (top->rvfi_valid & (1<<i) & top->rvfi_trap) && !abort_putn) {
                 RVFI_DII_Execution_Packet execpkt = execpacket(i);
                 returntrace.push_back(execpkt);
@@ -442,7 +474,7 @@ int main(int argc, char** argv, char** env) {
                         cache_count = out_count + 2;
                     } else {
                         // the last instruction was an actual instruction. we are doing a jump but it hasn't
-                        // come out of the rvfi signals yet so we need to skip it when replaying instructions
+                        // come out of the rvfi signals yet so we need to skip it when dumping instructions
                         in_count = out_count + 1;
                         cache_count = out_count + 1;
                     }
@@ -459,12 +491,10 @@ int main(int argc, char** argv, char** env) {
                         // if we have instructions to feed into it, then set readdatavalid and waitrequest accordingly
                         // logfile << "checking instruction in_count: " << in_count << " received: " << received << std::endl;
                         if (received > in_count) {
-                          int expected = (int) (instructions[in_count].dii_insn & 0xFFFFFFFF);
+                          int expected = (int) (instructions[in_count++].dii_insn & 0xFFFFFFFF);
                           int insn = (int) (top->instr & 0xFFFFFFFF);
                           int addr = (int) (((std::uint64_t*)(top->addr))[0] & 0xFFFFFFFF);
                           //                        logfile << "inserting instruction @@@@@@@@@@@@@@@@@@@@" << std::endl;
-                            top->instr_dii = instructions[in_count++].dii_insn;
-                            top->instruction_valid_dii = 1;
                             logfile << "\taddr\t0x" << std::hex << addr << std::dec << std::endl;
                             logfile << "\texpect\t0x" << std::hex << expected << std::dec << std::endl;
                             logfile << "\tinsn\t0x" << std::hex << insn << std::dec << std::endl;
@@ -571,7 +601,6 @@ int main(int argc, char** argv, char** env) {
                     // the core tried to write to an address outside the specified range
                     // set the signals appropriately
                     top->avm_main_response = 0b11;
-                    top->avm_main_waitrequest = 0;
                 } else {
                     // the core tried to read from an address within the specified range
 
@@ -603,7 +632,6 @@ int main(int argc, char** argv, char** env) {
 
                     // set output signals appropriately
                     top->avm_main_response = 0b00;
-                    top->avm_main_waitrequest = 0;
                 }
             }
 
@@ -615,9 +643,8 @@ int main(int argc, char** argv, char** env) {
         if (top->rom_req) {
               uint64_t actual2, actual = 0xDEADBEEF;
               int shft = top->virtual_request_address - top->rom_addr;
-              ENTRY *ep = find(top->rom_addr);
-              int64_t *entered = (int64_t *)(ep->data);
-              while ((received <= cache_count+1) && instructions[received-1].dii_cmd)
+              int64_t *entered = find(top->rom_addr);
+              while (dump && (received <= cache_count+1) && instructions[received-1].dii_cmd)
                 {
                   receive_packet();
                 }
@@ -627,38 +654,41 @@ int main(int argc, char** argv, char** env) {
                   int shft = top->virtual_request_address & 6;
                   old_addr = top->virtual_request_address;
                   logfile << "newaddr\t0x" << std::hex << top->virtual_request_address << std::dec << std::endl;
-                  actual = instructions[cache_count++].dii_insn & 0xFFFFFFFF;
-                  logfile << "shift\t" << std::dec << shft << std::endl;
-                  actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
-                  logfile << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
-                  switch (shft)
+                  if (dump)
                     {
-                    case 0:
-                      populate(top->rom_addr, actual, 0);
-                      populate(top->rom_addr, actual2, 32);
-                      break;
-                    case 2:
-                      populate(top->rom_addr, actual, 16);
-                      populate(top->rom_addr, actual2, 48);
-                      break;
-                    case 4:
-                      populate(top->rom_addr, actual, 32);
-                      populate(top->rom_addr+8, actual2, 0);
-                      break;
-                    case 6:
-                      if (top->virtual_request_address < top->rom_addr)
+                      actual = instructions[cache_count++].dii_insn & 0xFFFFFFFF;
+                      actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
+                      logfile << "shift\t" << std::dec << shft << std::endl;
+                      logfile << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
+                      switch (shft)
                         {
-                          populate(top->rom_addr-8, actual, 48);
-                          populate(top->rom_addr, actual, -16);
-                          populate(top->rom_addr, actual2, 16);
+                        case 0:
+                          populate(top->rom_addr, actual, 0);
+                          populate(top->rom_addr, actual2, 32);
+                          break;
+                        case 2:
+                          populate(top->rom_addr, actual, 16);
+                          populate(top->rom_addr, actual2, 48);
+                          break;
+                        case 4:
+                          populate(top->rom_addr, actual, 32);
+                          populate(top->rom_addr+8, actual2, 0);
+                          break;
+                        case 6:
+                          if (top->virtual_request_address < top->rom_addr)
+                            {
+                              populate(top->rom_addr-8, actual, 48);
+                              populate(top->rom_addr, actual, -16);
+                              populate(top->rom_addr, actual2, 16);
+                            }
+                          else
+                            {
+                              populate(top->rom_addr, actual, 48);
+                              populate(top->rom_addr+8, actual, -16);
+                              populate(top->rom_addr+8, actual2, 16);
+                            }
+                          break;                      
                         }
-                      else
-                        {
-                          populate(top->rom_addr, actual, 48);
-                          populate(top->rom_addr+8, actual, -16);
-                          populate(top->rom_addr+8, actual2, 16);
-                        }
-                      break;                      
                     }
                 }
               top->rom_rdata = *entered;
@@ -666,17 +696,15 @@ int main(int argc, char** argv, char** env) {
               logfile << "romaddr\t0x" << std::hex << top->rom_addr << std::dec << std::endl;
               logfile << "vrqaddr\t0x" << std::hex << top->virtual_request_address << std::dec << std::endl;
               if (actual != 0xDEADBEEF) logfile << "actual\t0x" << std::hex << actual << std::dec << std::endl;
-              logfile << "shift1\t0x" << std::hex << *entered << std::dec << std::endl;
         }
 
-        if (top->is_mispredict)
+        if (dump && top->is_mispredict)
           {
               logfile << "mispred\t" << cache_count << std::endl;
             --cache_count;
           }
 
-        one_clk(1);
-        one_clk(0);
+        one_clk();
         
             // if we have a large difference between the number of instructions that have gone in
             // and the number that have come out, something's gone wrong; exit the program

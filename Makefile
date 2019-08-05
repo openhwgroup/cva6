@@ -349,10 +349,9 @@ check-benchmarks:
 CFG_CXXFLAGS_NO_UNUSED="-std=gnu++11 -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable -Wno-unused-parameter -Wno-unused-variable -Wno-shadow"
 
 # verilator-specific (RVFI)
-verilate_command_rvfi := $(verilator)                                                                            \
+verilate_command_common := $(verilator)                                                                          \
                     $(filter-out %.vhd, $(ariane_pkg))                                                           \
                     $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                   \
-                    +define+$(defines)+RVFI+DII                                                                  \
                     src/util/sram.sv                                                                             \
                     +incdir+src/axi_node                                                                         \
                     $(if $(verilator_threads), --threads $(verilator_threads))                                   \
@@ -370,9 +369,14 @@ verilate_command_rvfi := $(verilator)                                           
                     $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
                     $(if $(DEBUG),--trace --trace-structs,)                                                      \
                     -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -g -pg,) -lpthread" \
-                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,)" -Wall --cc  --vpi                               \
-                    $(list_incdir) --top-module ariane_core_avalon                                               \
-                    --Mdir $(ver-library-rvfi) -O3                                                                    \
+                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,)" -Wall --cc --vpi -O3                            \
+                     $(list_incdir)
+
+# verilator-specific
+verilate_command_rvfi := $(verilate_command_common)                                                              \
+                    +define+$(defines)+RVFI+DII                                                                  \
+                    --top-module ariane_core_avalon                                                              \
+                    --Mdir $(ver-library-rvfi)                                                                   \
                     --exe tb/dii_toplevel_sim.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                             \
 					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc                           \
 					tb/socket_packet_utils.c tb/ariane_core_avalon.sv tb/avalon_ariane_translator.sv
@@ -384,30 +388,10 @@ verilate-rvfi:
 	cd $(ver-library-rvfi) && $(MAKE) -j${NUM_JOBS} -f Variane_core_avalon.mk CFG_CXXFLAGS_NO_UNUSED=$(CFG_CXXFLAGS_NO_UNUSED)
 
 # verilator-specific
-verilate_command := $(verilator)                                                                                 \
-                    $(filter-out %.vhd, $(ariane_pkg))                                                           \
-                    $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                   \
+verilate_command := $(verilate_command_common)                                                                   \
                     +define+$(defines)                                                                           \
-                    src/util/sram.sv                                                                             \
-                    +incdir+src/axi_node                                                                         \
-                    $(if $(verilator_threads), --threads $(verilator_threads))                                   \
-                    --unroll-count 256                                                                           \
-                    -Werror-PINMISSING                                                                           \
-                    -Werror-IMPLICIT                                                                             \
-                    -Wno-fatal                                                                                   \
-                    -Wno-PINCONNECTEMPTY                                                                         \
-                    -Wno-ASSIGNDLY                                                                               \
-                    -Wno-DECLFILENAME                                                                            \
-                    -Wno-UNUSED                                                                                  \
-                    -Wno-UNOPTFLAT                                                                               \
-                    -Wno-BLKANDNBLK                                                                              \
-                    -Wno-style                                                                                   \
-                    $(if $(PROFILE),--stats --stats-vars --profile-cfuncs,)                                      \
-                    $(if $(DEBUG),--trace --trace-structs,)                                                      \
-                    -LDFLAGS "-L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr$(if $(PROFILE), -g -pg,) -lpthread" \
-                    -CFLAGS "$(CFLAGS)$(if $(PROFILE), -g -pg,)" -Wall --cc  --vpi                               \
-                    $(list_incdir) --top-module ariane_testharness                                               \
-                    --Mdir $(ver-library) -O3                                                                    \
+                    --top-module ariane_testharness                                                              \
+                    --Mdir $(ver-library)                                                                        \
                     --exe tb/ariane_tb.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                                    \
 					tb/dpi/remote_bitbang.cc tb/dpi/msim_helper.cc
 
