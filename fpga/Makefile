@@ -25,6 +25,7 @@ $(bit): $(ips)
 	mkdir -p $(work-dir)
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/run.tcl
 	cp ariane.runs/impl_1/ariane_xilinx* ./$(work-dir)
+	python ../bootrom/gen_mim.py reports/ariane.bram.log $(XILINX_PART) $(work-dir)/ariane_xilinx.bootrom.mmi	
 
 $(ips): %.xci :
 	mkdir -p $(work-dir)
@@ -36,6 +37,10 @@ mcs: $(mcs)
 
 program:
 	$(VIVADO) $(VIVADOFLAGS) -source scripts/program.tcl
+
+bram_update:
+	cd src/bootrom && make clean && make bram_update
+	updatemem -meminfo $(work-dir)/ariane_xilinx.bootrom.mmi -data ./src/bootrom/bootrom.mem -bit work-fpga/ariane_xilinx.bit -proc i_bootrom -out work-fpga/ariane_xilinx_updated.bit -debug -force
 
 clean:
 	rm -rf *.log *.jou *.str *.mif *.xpr $(work-dir) ariane.cache ariane.hw ariane.ip_user_files

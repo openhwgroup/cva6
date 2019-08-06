@@ -6,6 +6,7 @@ import os.path
 import sys
 import binascii
 
+romsize = 2**13 # 8192
 
 parser = argparse.ArgumentParser(description='Convert binary file to verilog rom')
 parser.add_argument('filename', metavar='filename', nargs=1,
@@ -40,7 +41,7 @@ license = """\
 // Auto-generated code
 """
 
-module = """\
+module_new = """\
 module $filename (
    input  logic         clk_i,
    input  logic         req_i,
@@ -49,8 +50,12 @@ module $filename (
 );
     localparam int RomSize = $size;
 
-    const logic [RomSize-1:0][63:0] mem = {
-$content
+    const logic [RomSize-1:0][31:0] mem_H = {
+$contentH
+    };
+
+    const logic [RomSize-1:0][31:0] mem_L = {
+$contentL
     };
 
     logic [$$clog2(RomSize)-1:0] addr_q;
@@ -63,7 +68,7 @@ $content
 
     // this prevents spurious Xes from propagating into
     // the speculative fetch stage of the core
-    assign rdata_o = (addr_q < RomSize) ? mem[addr_q] : '0;
+    assign rdata_o = (addr_q < RomSize) ? {mem_H[addr_q],mem_L[addr_q]} : '0;
 endmodule
 """
 
@@ -113,15 +118,21 @@ with open(filename + ".h", "w") as f:
 """ Generate SystemVerilog bootcode for FPGA and ASIC
 """
 with open(filename + ".sv", "w") as f:
-    rom_str = ""
+    romH_str = ""
+    romL_str = ""
     # process in junks of 64 bit (8 byte)
+    for i in range(int((romsize - len(rom))/8)):
+        romH_str += "        32'h00000000,\n"
+        romL_str += "        32'h00000000,\n"
+        
     for i in reversed(range(int(len(rom)/8))):
-        rom_str += "        64'h" + "".join(rom[i*8+4:i*8+8][::-1]) + "_" + "".join(rom[i*8:i*8+4][::-1]) + ",\n"
+        romH_str += "        32'h" + "".join(rom[i*8+4:i*8+8][::-1]) + ",\n"
+        romL_str += "        32'h" + "".join(rom[i*8  :i*8+4][::-1]) + ",\n"
 
     # remove the trailing comma
-    rom_str = rom_str[:-2]
+    romH_str = romH_str[:-2]
+    romL_str = romL_str[:-2]
 
     f.write(license)
-    s = Template(module)
-    f.write(s.substitute(filename=filename, size=int(len(rom)/8), content=rom_str))
-
+    s = Template(module_new)
+    f.write(s.substitute(filename=filename, size=int(romsize/8), contentH=romH_str, contentL=romL_str))

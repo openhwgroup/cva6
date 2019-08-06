@@ -16,6 +16,7 @@ OBJS_S = $(SRCS_ASM:.S=.o)
 MAIN = bootrom.elf
 MAIN_BIN = $(MAIN:.elf=.bin)
 MAIN_IMG = $(MAIN:.elf=.img)
+MAIN_MEM = $(MAIN:.elf=.mem)
 MAIN_SV = $(MAIN:.elf=.sv)
 
 #.PHONY: clean
@@ -45,10 +46,16 @@ $(MAIN): ariane.dtb $(OBJS_C) $(OBJS_S) linker.lds
 	$(PYTHON) ./gen_rom.py $<
 	@echo "PYTHON >= $(MAIN_SV)"
 
-clean:
-	$(RM) $(OBJS_C) $(OBJS_S) $(MAIN) $(MAIN_BIN) $(MAIN_IMG) *.dtb
+%.mem: %.img
+	$(PYTHON) ./gen_mem.py $<
+	@echo "PYTHON >= $(MAIN_MEM)"
 
-all: $(MAIN) $(MAIN_BIN) $(MAIN_IMG) $(MAIN_SV)
+clean:
+	$(RM) $(OBJS_C) $(OBJS_S) $(MAIN) $(MAIN_BIN) $(MAIN_IMG) $(MAIN_MEM) *.mmi updatemem* *.dtb
+
+bram_update: $(MAIN_MEM)
+
+all: $(MAIN) $(MAIN_BIN) $(MAIN_IMG) $(MAIN_SV) $(MAIN_MEM)
 	@echo "zero stage bootloader has been compiled!"
 
 # DO NOT DELETE THIS LINE -- make depend needs it

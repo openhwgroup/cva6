@@ -507,6 +507,9 @@ fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
 
 .PHONY: fpga
 
+fpga_update:
+	cd fpga && make bram_update
+
 build-spike:
 	cd tb/riscv-isa-sim && mkdir -p build && cd build && ../configure --prefix=`pwd`/../install --with-fesvr=$(RISCV) --enable-commitlog && make -j8 install
 
