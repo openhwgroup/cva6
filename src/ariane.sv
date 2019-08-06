@@ -51,10 +51,11 @@ module ariane #(
   output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_pc_rdata,
   output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_pc_wdata,
   output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_addr,
-  output logic [NR_COMMIT_PORTS-1:0] [ 3:0] rvfi_mem_rmask,
-  output logic [NR_COMMIT_PORTS-1:0] [ 3:0] rvfi_mem_wmask,
+  output logic [NR_COMMIT_PORTS-1:0] [ 7:0] rvfi_mem_rmask,
+  output logic [NR_COMMIT_PORTS-1:0] [ 7:0] rvfi_mem_wmask,
   output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_rdata,
   output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_wdata,
+  output logic [1:0]                        rvfi_granted,
 `endif
 
 `ifdef DII
@@ -62,12 +63,12 @@ module ariane #(
   output logic [INSTR_PER_FETCH-1:0][31:0]  instr,
   output logic [INSTR_PER_FETCH-1:0][63:0]  addr,
   output logic [INSTR_PER_FETCH-1:0]        instruction_valid,
-  output logic                              flush_ctrl_if,
   output logic [63:0]                       virtual_request_address,
   output logic                              serving_unaligned_o,
   output logic [63:0]                       serving_unaligned_address_o,
   // branch-predict update
-  output logic                              is_mispredict,
+  output logic                              is_mispredict, rvfi_mem_read, rvfi_mem_write,
+  output logic                              flush_ctrl_if,
 `endif  
 
 `ifdef PITON_ARIANE
@@ -228,8 +229,11 @@ module ariane #(
   logic                     flush_csr_ctrl;
   logic                     flush_unissued_instr_ctrl_id;
 `ifdef DII
+  logic [7:0]               rvfi_strb;
+  logic [63:0]              rvfi_strb_mask;
+  logic                     rvfi_commited;
   assign virtual_request_address = serving_unaligned_o ? serving_unaligned_address_o : icache_dreq_cache_if.vaddr;
-`else   
+`else
   logic                     flush_ctrl_if;
 `endif
   logic                     flush_ctrl_id;
@@ -795,16 +799,53 @@ module ariane #(
 // mock tracer for Verilator, to be used with spike-dasm
 `else
 
+  always_ff @(negedge clk_i or negedge rst_ni)
+    if (~rst_ni) begin
+       rvfi_granted = 0;
+       rvfi_mem_read <= '0;
+       rvfi_mem_write <= '0;
+       rvfi_mem_addr[0] <= '0;
+       rvfi_mem_wmask[0] <= '0;
+       rvfi_commited <= '0;
+       rvfi_strb = '0;
+       rvfi_strb_mask = '0;
+    end
+    else
+      begin
+        rvfi_commited <= |rvfi_valid;
+        rvfi_granted = {dcache_req_ports_cache_ex[2].data_gnt,dcache_req_ports_cache_ex[1].data_gnt};
+        rvfi_strb = ( 1 << (1 << dcache_req_ports_ex_cache[rvfi_granted].data_size)) - 1;
+        rvfi_strb_mask =      {rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],
+                               rvfi_strb[6],rvfi_strb[6],rvfi_strb[6],rvfi_strb[6],rvfi_strb[6],rvfi_strb[6],rvfi_strb[6],rvfi_strb[6],
+                               rvfi_strb[5],rvfi_strb[5],rvfi_strb[5],rvfi_strb[5],rvfi_strb[5],rvfi_strb[5],rvfi_strb[5],rvfi_strb[5],
+                               rvfi_strb[4],rvfi_strb[4],rvfi_strb[4],rvfi_strb[4],rvfi_strb[4],rvfi_strb[4],rvfi_strb[4],rvfi_strb[4],
+                               rvfi_strb[3],rvfi_strb[3],rvfi_strb[3],rvfi_strb[3],rvfi_strb[3],rvfi_strb[3],rvfi_strb[3],rvfi_strb[3],
+                               rvfi_strb[2],rvfi_strb[2],rvfi_strb[2],rvfi_strb[2],rvfi_strb[2],rvfi_strb[2],rvfi_strb[2],rvfi_strb[2],
+                               rvfi_strb[1],rvfi_strb[1],rvfi_strb[1],rvfi_strb[1],rvfi_strb[1],rvfi_strb[1],rvfi_strb[1],rvfi_strb[1],
+                               rvfi_strb[0],rvfi_strb[0],rvfi_strb[0],rvfi_strb[0],rvfi_strb[0],rvfi_strb[0],rvfi_strb[0],rvfi_strb[0]};
+     if (rvfi_granted)
+       begin
+          rvfi_mem_read <= rvfi_granted[0];
+          rvfi_mem_write <= rvfi_granted[1];
+          rvfi_mem_addr[0] <= {dcache_req_ports_ex_cache[rvfi_granted].address_tag,dcache_req_ports_ex_cache[rvfi_granted].address_index};
+          rvfi_mem_wmask[0] <= rvfi_granted == 2 ? rvfi_strb : '0;
+       end
+     else if (rvfi_commited)
+       begin
+          rvfi_mem_read <= '0;
+          rvfi_mem_write <= '0;
+          rvfi_mem_addr[0] <= '0;
+          rvfi_mem_wmask[0] <= '0;
+       end
+     end
+   
    // This is a temporary bodge, just for machine mode
-   assign rvfi_mem_wmask[0] = dcache_req_ports_ex_cache[2].data_be;
    assign rvfi_mem_wmask[1] = '0;
-   assign rvfi_mem_rmask[0] = dcache_req_ports_ex_cache[2].data_be;
+   assign rvfi_mem_rmask[0] = dcache_req_ports_ex_cache[rvfi_granted].data_be;
    assign rvfi_mem_rmask[1] = '0;
-   assign rvfi_mem_addr[0]  = {dcache_req_ports_ex_cache[2].address_tag,dcache_req_ports_ex_cache[2].address_index};
    assign rvfi_mem_addr[1]  = '0;
-   assign rvfi_mem_rdata[0] = '0;
    assign rvfi_mem_rdata[1] = '0;
-   assign rvfi_mem_wdata[0] = dcache_req_ports_ex_cache[2].data_wdata;
+   assign rvfi_mem_wdata[0] = (dcache_req_ports_ex_cache[2].data_wdata >> {dcache_req_ports_ex_cache[2].address_index[2:0],3'b0}) & rvfi_strb_mask;
    assign rvfi_mem_wdata[1] = '0;
    
   logic [63:0] cycles;
@@ -814,6 +855,7 @@ module ariane #(
     if (~rst_ni) begin
       cycles <= 0;
 `ifdef RVFI
+      rvfi_granted           = '0;
       rvfi_halt              <= '0;
       rvfi_trap              <= '0;
       rvfi_intr              <= '0;
@@ -842,6 +884,10 @@ module ariane #(
         endcase
       end
 `ifdef RVFI
+      if (dcache_req_ports_cache_ex[rvfi_granted].data_rvalid)
+        begin
+           rvfi_mem_rdata[0] <= dcache_req_ports_cache_ex[rvfi_granted].data_rdata;
+        end
       rvfi_valid             <= '0;
       rvfi_intr              <= '0;
       rvfi_mem_rmask         <= '0;
@@ -864,11 +910,16 @@ module ariane #(
           rvfi_rd_addr[i]           <= commit_instr_id_commit[i].rd;
           rvfi_rs1_rdata[i]         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[0];
           rvfi_rs2_rdata[i]         <= issue_stage_i.i_issue_read_operands.i_ariane_regfile.rdata_o[1];
-          rvfi_rd_wdata[i]          <= commit_instr_id_commit[i].rd ? issue_stage_i.i_issue_read_operands.i_ariane_regfile.wdata_i[0] : '0;
+          if (i)
+            rvfi_rd_wdata[i]        <= commit_instr_id_commit[i].rd ? commit_instr_id_commit[i].result : '0;
+          else
+            rvfi_rd_wdata[i]        <= commit_instr_id_commit[i].rd ? issue_stage_i.i_issue_read_operands.i_ariane_regfile.wdata_i[0] : '0;
 `endif          
 //          $display("%d 0x%0h %s (0x%h) DASM(%h)", cycles, commit_instr_id_commit[i].pc, mode, commit_instr_id_commit[i].ex.tval[31:0], commit_instr_id_commit[i].ex.tval[31:0]);
         end else if (ex_commit.valid && commit_instr_id_commit[i].ex.valid) begin
 `ifdef RVFI
+          rvfi_granted               = 0;
+          rvfi_mem_addr[i]          <= '0;
           rvfi_trap[i]              <= '1;
           rvfi_valid[i]             <= '1;
           rvfi_order[i]             <= rvfi_order[i];

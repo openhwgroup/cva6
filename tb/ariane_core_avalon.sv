@@ -3,12 +3,6 @@
  */
 
 module ariane_core_avalon #(
-    parameter int unsigned MHPMCounterNum   = 0,
-    parameter int unsigned MHPMCounterWidth = 40,
-    parameter bit RV32E                     = 0,
-    parameter bit RV32M                     = 1,
-    parameter int unsigned DmHaltAddr       = 32'h1A110800,
-    parameter int unsigned DmExceptionAddr  = 32'h1A110808
 ) (
     // Clock and Reset
     input logic         clk_i,
@@ -48,43 +42,27 @@ module ariane_core_avalon #(
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_pc_rdata,
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_pc_wdata,
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_addr,
-    output logic [NR_COMMIT_PORTS-1:0] [ 3:0] rvfi_mem_rmask,
-    output logic [NR_COMMIT_PORTS-1:0] [ 3:0] rvfi_mem_wmask,
+    output logic [NR_COMMIT_PORTS-1:0] [ 7:0] rvfi_mem_rmask,
+    output logic [NR_COMMIT_PORTS-1:0] [ 7:0] rvfi_mem_wmask,
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_rdata,
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_wdata,
+    output logic [1:0]                        rvfi_granted,
+    output logic                              flush_ctrl_if,
 `endif
 
     output logic [INSTR_PER_FETCH-1:0][31:0] instr,
     output logic [INSTR_PER_FETCH-1:0][63:0] addr,
     output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
-    output logic                             flush_ctrl_if,
     output logic                      [63:0] virtual_request_address,
     output logic                             serving_unaligned_o,
     output logic [63:0]                      serving_unaligned_address_o,
     // branch-predict update
-    output logic                             is_mispredict,
+    output logic                             is_mispredict, rvfi_mem_read, rvfi_mem_write,
 
-    output logic                                rom_req,
-    output logic [ariane_axi::AddrWidth-1:0]    rom_addr,
-    input logic  [ariane_axi::DataWidth-1:0]    rom_rdata
+    output logic                                mem_req,
+    output logic [ariane_axi::AddrWidth-1:0]    mem_addr,
+    input logic  [ariane_axi::DataWidth-1:0]    mem_rdata
 );
-
-    // set up connections for ariane inputs
-    logic         instr_rvalid_i;
-    logic [31:0]  instr_rdata_i, prdata, prdata_0;
-    logic         psel, pready, pready_0, penable, penable_0;
-    logic         instr_gnt_i;
-
-    logic         data_rvalid_i;
-    logic [3:0]   data_be_o;
-    logic [63:0]  data_addr_o;
-    logic [63:0]  data_wdata_o;
-    logic [63:0]  data_rdata_i;
-    logic         data_err_i;
-    logic         data_err_avalon;
-    logic         data_we_o;
-    logic         data_req_o;
-    logic         data_gnt_i;
 
     localparam ariane_pkg::ariane_cfg_t ArianeRIGCfg = '{
       RASDepth: 2,
@@ -113,36 +91,6 @@ module ariane_core_avalon #(
       DmBaseAddress:          64'h0
     };
    
-    avalon_ariane_translator_main translator_main (
-        .clock(clk_i),
-        .reset_n(~rst_i),
-
-        // inputs to translator
-        .data_req_i(data_req_o),
-        .data_we_i(data_we_o),
-        .data_be_i(data_be_o),
-        // our main memory interface is word-addressed but the ariane core is byte-addressed
-        .data_addr_i({2'b0, data_addr_o[63:2]}),
-        .data_wdata_i(data_wdata_o),
-        
-        .avm_main_waitrequest(1'b0),
-        .avm_main_readdatavalid(avm_main_readdatavalid),
-        .avm_main_readdata(avm_main_readdata),
-        .avm_main_response(avm_main_response),
-
-        // outputs from translator
-        .data_gnt_o(data_gnt_i),
-        .data_rvalid_o(data_rvalid_i),
-        .data_rdata_o(data_rdata_i),
-        .data_err_o(data_err_avalon),
-
-        .avm_main_address(avm_main_address),
-        .avm_main_byteenable(avm_main_byteenable),
-        .avm_main_read(avm_main_read),
-        .avm_main_write(avm_main_write),
-        .avm_main_writedata(avm_main_writedata)
-    );
-
    ariane_axi::req_t    axi_req;
    ariane_axi::resp_t   axi_resp;
 
@@ -154,10 +102,10 @@ module ariane_core_avalon #(
   ) slave();
 
    logic [7:0]         dummy;
-   assign rom_addr[63:56] = {8{rom_addr[55]}};
+   assign mem_addr[63:56] = {8{mem_addr[55]}};
    
   // ---------------
-  // ROM
+  // MEM
   // ---------------
   axi2mem #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidth      ),
@@ -168,12 +116,12 @@ module ariane_core_avalon #(
     .clk_i  ( clk_i                       ),
     .rst_ni ( ~rst_i                      ),
     .slave  ( slave                       ),
-    .req_o  ( rom_req                     ),
+    .req_o  ( mem_req                     ),
     .we_o   (                             ),
-    .addr_o ( {dummy,rom_addr[55:0]}      ),
+    .addr_o ( {dummy,mem_addr[55:0]}      ),
     .be_o   (                             ),
     .data_o (                             ),
-    .data_i ( rom_rdata                   )
+    .data_i ( mem_rdata                   )
   );
 
    ariane #(
@@ -217,10 +165,10 @@ module ariane_core_avalon #(
         .rvfi_mem_wmask (rvfi_mem_wmask),
         .rvfi_mem_rdata (rvfi_mem_rdata),
         .rvfi_mem_wdata (rvfi_mem_wdata),
+        .rvfi_granted   (rvfi_granted),
     `endif
 
     `ifdef DII
-        .flush_ctrl_if,
         .instr,
         .addr,
         .instruction_valid,
@@ -228,6 +176,9 @@ module ariane_core_avalon #(
         .serving_unaligned_o,
         .serving_unaligned_address_o,
         .is_mispredict,
+        .rvfi_mem_read,
+        .rvfi_mem_write,
+        .flush_ctrl_if,
     `endif
 
         // Special control signal

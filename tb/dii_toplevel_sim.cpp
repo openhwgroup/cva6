@@ -108,6 +108,7 @@ static int in_count = 0;
 static int high_water = 0;
 static int abort_putn = 0;
 static int out_count = 0;
+static int mis_count = 0;
 static int cache_count = 1;
 static int ret_cnt = 0;
 static int report_cnt = 0;
@@ -138,8 +139,8 @@ RVFI_DII_Execution_Packet execpacket(int i)
     .rvfi_mem_addr = ((std::uint64_t*)(top->rvfi_mem_addr))[i],
     .rvfi_mem_rdata = ((std::uint64_t*)(top->rvfi_mem_rdata))[i],
     .rvfi_mem_wdata = ((std::uint64_t*)(top->rvfi_mem_wdata))[i],
-    .rvfi_mem_rmask = (uint8_t)((top->rvfi_mem_rmask >> i*4) & 15),
-    .rvfi_mem_wmask = (uint8_t)((top->rvfi_mem_wmask >> i*4) & 15),
+    .rvfi_mem_rmask = (uint8_t)((top->rvfi_mem_rmask >> i*8) & 255),
+    .rvfi_mem_wmask = (uint8_t)((top->rvfi_mem_wmask >> i*8) & 255),
     .rvfi_rs1_addr = (uint8_t)((top->rvfi_rs1_addr >> i*5) & 31),
     .rvfi_rs2_addr = (uint8_t)((top->rvfi_rs2_addr >> i*5) & 31),
     .rvfi_rd_addr = (uint8_t)((top->rvfi_rd_addr >> i*5) & 31),
@@ -231,7 +232,7 @@ void one_clk(void)
     CData avm_main_readdatavalid;
     CData avm_main_response;
     CData rst_i;
-    QData rom_rdata;
+    QData mem_rdata;
     CData irq_i;
   } in_t;
   in_t dump_in;
@@ -248,7 +249,7 @@ void one_clk(void)
       top->avm_main_readdatavalid = dump_in.avm_main_readdatavalid;
       top->avm_main_response = dump_in.avm_main_response;
       top->rst_i = dump_in.rst_i;
-      top->rom_rdata = dump_in.rom_rdata;
+      top->mem_rdata = dump_in.mem_rdata;
     }
   else
     {
@@ -256,10 +257,10 @@ void one_clk(void)
       dump_in.avm_main_readdatavalid = top->avm_main_readdatavalid;
       dump_in.avm_main_response = top->avm_main_response;
       dump_in.rst_i = top->rst_i;
-      dump_in.rom_rdata = top->rom_rdata;
+      dump_in.mem_rdata = top->mem_rdata;
       write(dump, &dump_in, sizeof(in_t));
     }
-  if (top->rom_req) logfile << "shift1\t0x" << std::hex << top->rom_rdata << std::dec << std::endl;
+  if (top->mem_req) logfile << "shift1\t0x" << std::hex << top->mem_rdata << std::dec << std::endl;
 
   for (int lev = 2; lev--; )
     {
@@ -439,13 +440,7 @@ int main(int argc, char** argv, char** env) {
                 RVFI_DII_Execution_Packet execpkt = execpacket(i);
                 returntrace.push_back(execpkt);
                 out_count++;
-                logfile << "\t\t\tcommit\t0x" << std::hex << (int) execpkt.rvfi_insn << std::dec << std::endl << std::flush;
-                // detect non-exception flush such as fence.i
-                if (top->flush_ctrl_if) {
-                    logfile << "\t\tnon-exception flush detected" << std::endl << std::flush;
-                    in_count = out_count;
-                    cache_count = out_count;
-                }
+                logfile << "\t\t\tcommit\t0x" << std::hex << (int) execpkt.rvfi_insn << std::dec << " out:" << out_count << std::endl << std::flush;
             }
 
           // detect exceptions in order to dump instructions so they don't get lost
@@ -453,7 +448,7 @@ int main(int argc, char** argv, char** env) {
                 RVFI_DII_Execution_Packet execpkt = execpacket(i);
                 returntrace.push_back(execpkt);
                 out_count++;
-                logfile << "\t\texception detected" << std::endl << std::flush;
+                logfile << "\t\texception detected" << " out:" << out_count << std::endl << std::flush;
                 // this will need to be reworked
                 // currently, in order for this to work we need to remove illegal_insn from the assignment
                 // to rvfi_trap since when the core is first started the instruction data is garbage so
@@ -463,6 +458,8 @@ int main(int argc, char** argv, char** env) {
                     // we need to go back to out_count
                     in_count = out_count;
                     cache_count = out_count;
+                    logfile << "in_count: " << in_count << std::endl;
+                    logfile << "cache_count: " << cache_count << " (" << std::hex << instructions[cache_count].dii_insn << ") " << std::endl;
                 } else {
                     //logfile << "cmd: " << (instructions[out_count].dii_cmd ? "instr" : "rst") << std::endl;
                     if (!instructions[out_count].dii_cmd) {
@@ -481,11 +478,11 @@ int main(int argc, char** argv, char** env) {
                 }
             }
         }
-          
-            // perform instruction read
-            // returns instructions from the DII input from TestRIG
-            top->rst_i = 0;
-            if (in_count < received) {
+
+        // perform instruction read
+        // returns instructions from the DII input from TestRIG
+        top->rst_i = 0;
+        if (in_count < received) {
               if (instructions[in_count].dii_cmd) {
                     if (top->instruction_valid & 1) {
                         // if we have instructions to feed into it, then set readdatavalid and waitrequest accordingly
@@ -502,12 +499,17 @@ int main(int argc, char** argv, char** env) {
                               {
                                 logfile << "MISMATCH: " << in_count-high_water << std::endl;
                                 dump_insn(in_count+1);
-                                abort();
                               }
                         }
                     }        
                 } else if (in_count - out_count == 0) {
+                    for (int i = 0; i < 16; i++)
+                      one_clk();
+
                     top->rst_i = 1;
+
+                    for (int i = 0; i < 16; i++)
+                      one_clk();
 
                     // clear memory
                     for (int i = 0; i < (sizeof(memory)/sizeof(memory[0])); i++) {
@@ -534,7 +536,9 @@ int main(int argc, char** argv, char** env) {
             }
 
             // perform main memory read
-            if (top->avm_main_read) {
+            if (top->mem_req & (top->rvfi_mem_read)) {
+                top->mem_rdata = 0;
+
                 // get the address so we can manipulate it
                 int address = top->avm_main_address;
 
@@ -589,7 +593,7 @@ int main(int argc, char** argv, char** env) {
             }
 
             // perform main memory writes
-            if (top->avm_main_write) {
+            if (top->mem_req & (top->rvfi_mem_write)) {
                 // get the address so we can manipulate it
                 int address = top->avm_main_address;
 
@@ -640,15 +644,16 @@ int main(int argc, char** argv, char** env) {
                 top->avm_main_readdatavalid = 0;
             }
 
-        if (top->rom_req) {
-              uint64_t actual2, actual = 0xDEADBEEF;
-              int shft = top->virtual_request_address - top->rom_addr;
-              int64_t *entered = find(top->rom_addr);
+            if (top->mem_req & ~(top->rvfi_mem_read|top->rvfi_mem_write)) {
+              uint64_t actual2, actual = 0x13;
+              int shft = top->virtual_request_address - top->mem_addr;
+              int64_t *entered = find(top->mem_addr);
+              logfile << "mem_req, addr = " << std::hex << top->virtual_request_address << std::dec << std::endl;
               while (dump && (received <= cache_count+1) && instructions[received-1].dii_cmd)
                 {
                   receive_packet();
                 }
-              top->rom_rdata = 0;
+              mis_count = cache_count;
               if (old_addr != top->virtual_request_address)
                 {
                   int shft = top->virtual_request_address & 6;
@@ -656,52 +661,54 @@ int main(int argc, char** argv, char** env) {
                   logfile << "newaddr\t0x" << std::hex << top->virtual_request_address << std::dec << std::endl;
                   if (dump)
                     {
-                      actual = instructions[cache_count++].dii_insn & 0xFFFFFFFF;
-                      actual2 = instructions[cache_count].dii_insn & 0xFFFFFFFF;
+                      logfile << "receive\t" << std::dec << received << std::endl;
+                      logfile << "cachecnt\t" << std::dec << cache_count << std::endl;
+                      actual = received > cache_count+1 ? instructions[cache_count++].dii_insn & 0xFFFFFFFF : 0x13;
+                      actual2 = received > cache_count+1 ? instructions[cache_count].dii_insn & 0xFFFFFFFF : 0x13;
                       logfile << "shift\t" << std::dec << shft << std::endl;
                       logfile << "actual2\t0x" << std::hex << actual2 << std::dec << std::endl;
                       switch (shft)
                         {
                         case 0:
-                          populate(top->rom_addr, actual, 0);
-                          populate(top->rom_addr, actual2, 32);
+                          populate(top->mem_addr, actual, 0);
+                          populate(top->mem_addr, actual2, 32);
                           break;
                         case 2:
-                          populate(top->rom_addr, actual, 16);
-                          populate(top->rom_addr, actual2, 48);
+                          populate(top->mem_addr, actual, 16);
+                          populate(top->mem_addr, actual2, 48);
                           break;
                         case 4:
-                          populate(top->rom_addr, actual, 32);
-                          populate(top->rom_addr+8, actual2, 0);
+                          populate(top->mem_addr, actual, 32);
+                          populate(top->mem_addr+8, actual2, 0);
                           break;
                         case 6:
-                          if (top->virtual_request_address < top->rom_addr)
+                          if (top->virtual_request_address < top->mem_addr)
                             {
-                              populate(top->rom_addr-8, actual, 48);
-                              populate(top->rom_addr, actual, -16);
-                              populate(top->rom_addr, actual2, 16);
+                              populate(top->mem_addr-8, actual, 48);
+                              populate(top->mem_addr, actual, -16);
+                              populate(top->mem_addr, actual2, 16);
                             }
                           else
                             {
-                              populate(top->rom_addr, actual, 48);
-                              populate(top->rom_addr+8, actual, -16);
-                              populate(top->rom_addr+8, actual2, 16);
+                              populate(top->mem_addr, actual, 48);
+                              populate(top->mem_addr+8, actual, -16);
+                              populate(top->mem_addr+8, actual2, 16);
                             }
                           break;                      
                         }
                     }
                 }
-              top->rom_rdata = *entered;
+              top->mem_rdata = *entered;
               
-              logfile << "romaddr\t0x" << std::hex << top->rom_addr << std::dec << std::endl;
+              logfile << "romaddr\t0x" << std::hex << top->mem_addr << std::dec << std::endl;
               logfile << "vrqaddr\t0x" << std::hex << top->virtual_request_address << std::dec << std::endl;
-              if (actual != 0xDEADBEEF) logfile << "actual\t0x" << std::hex << actual << std::dec << std::endl;
+              logfile << "actual\t0x" << std::hex << actual << std::dec << std::endl;
         }
 
         if (dump && top->is_mispredict)
           {
               logfile << "mispred\t" << cache_count << std::endl;
-            --cache_count;
+              cache_count = mis_count;
           }
 
         one_clk();
