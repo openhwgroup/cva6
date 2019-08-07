@@ -55,10 +55,10 @@ module ariane #(
   output logic [NR_COMMIT_PORTS-1:0] [ 7:0] rvfi_mem_wmask,
   output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_rdata,
   output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_wdata,
-  output logic [1:0]                        rvfi_granted,
+  output logic [NR_COMMIT_PORTS-1:0]        rvfi_flush,
 `endif
 
-`ifdef DII
+`ifdef RVFI
   // re-aligned instruction and address (coming from cache - combinationally)
   output logic [INSTR_PER_FETCH-1:0][31:0]  instr,
   output logic [INSTR_PER_FETCH-1:0][63:0]  addr,
@@ -68,7 +68,6 @@ module ariane #(
   output logic [63:0]                       serving_unaligned_address_o,
   // branch-predict update
   output logic                              is_mispredict, rvfi_mem_read, rvfi_mem_write,
-  output logic                              flush_ctrl_if,
 `endif  
 
 `ifdef PITON_ARIANE
@@ -228,14 +227,14 @@ module ariane #(
   logic                     set_pc_ctrl_pcgen;
   logic                     flush_csr_ctrl;
   logic                     flush_unissued_instr_ctrl_id;
-`ifdef DII
+`ifdef RVFI
   logic [7:0]               rvfi_strb;
   logic [63:0]              rvfi_strb_mask;
   logic                     rvfi_commited;
+  logic [1:0]               rvfi_granted;
   assign virtual_request_address = serving_unaligned_o ? serving_unaligned_address_o : icache_dreq_cache_if.vaddr;
-`else
-  logic                     flush_ctrl_if;
 `endif
+  logic                     flush_ctrl_if;
   logic                     flush_ctrl_id;
   logic                     flush_ctrl_ex;
   logic                     flush_ctrl_bp;
@@ -892,11 +891,13 @@ module ariane #(
       rvfi_intr              <= '0;
       rvfi_mem_rmask         <= '0;
       rvfi_trap              <= '0;
+      rvfi_flush             <= '0;
       resolved_branch_dly    <= resolved_branch;
 `endif
       for (int i = 0; i < NR_COMMIT_PORTS; i++) begin
         if (commit_ack[i] && !commit_instr_id_commit[i].ex.valid) begin
 `ifdef RVFI
+          rvfi_flush[i]             <= flush_ctrl_if;
           rvfi_halt[i]              <= '0;
           rvfi_valid[i]             <= '1;
           rvfi_order[i]             <= rvfi_order[i] + 64'h1;

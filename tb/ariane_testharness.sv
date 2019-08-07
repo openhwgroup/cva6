@@ -128,13 +128,9 @@ module ariane_testharness #(
     .rvfi_mem_wmask (),
     .rvfi_mem_rdata (),
     .rvfi_mem_wdata (),
-    .rvfi_granted   (),
+    .rvfi_flush     (),
     .rvfi_mem_read  (),
     .rvfi_mem_write (),
-        
-`endif
-
-`ifdef DII
     .flush_ctrl_if               (),
     .addr                        (),
     .instr                       (),

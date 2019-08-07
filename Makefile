@@ -374,7 +374,7 @@ verilate_command_common := $(verilator)                                         
 
 # verilator-specific
 verilate_command_rvfi := $(verilate_command_common)                                                              \
-                    +define+$(defines)+RVFI+DII                                                                  \
+                    +define+$(defines)+RVFI                                                                      \
                     --top-module ariane_core_avalon                                                              \
                     --Mdir $(ver-library-rvfi)                                                                   \
                     --exe tb/dii_toplevel_sim.cpp tb/dpi/SimDTM.cc tb/dpi/SimJTAG.cc                             \

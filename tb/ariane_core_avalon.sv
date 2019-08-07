@@ -46,18 +46,17 @@ module ariane_core_avalon #(
     output logic [NR_COMMIT_PORTS-1:0] [ 7:0] rvfi_mem_wmask,
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_rdata,
     output logic [NR_COMMIT_PORTS-1:0] [63:0] rvfi_mem_wdata,
-    output logic [1:0]                        rvfi_granted,
-    output logic                              flush_ctrl_if,
+    output logic [NR_COMMIT_PORTS-1:0]        rvfi_flush,
 `endif
 
-    output logic [INSTR_PER_FETCH-1:0][31:0] instr,
-    output logic [INSTR_PER_FETCH-1:0][63:0] addr,
-    output logic [INSTR_PER_FETCH-1:0]       instruction_valid,
-    output logic                      [63:0] virtual_request_address,
-    output logic                             serving_unaligned_o,
-    output logic [63:0]                      serving_unaligned_address_o,
+    output logic [INSTR_PER_FETCH-1:0] [31:0] instr,
+    output logic [INSTR_PER_FETCH-1:0] [63:0] addr,
+    output logic [INSTR_PER_FETCH-1:0]        instruction_valid,
+    output logic                       [63:0] virtual_request_address,
+    output logic                              serving_unaligned_o,
+    output logic [63:0]                       serving_unaligned_address_o,
     // branch-predict update
-    output logic                             is_mispredict, rvfi_mem_read, rvfi_mem_write,
+    output logic                              is_mispredict, rvfi_mem_read, rvfi_mem_write,
 
     output logic                                mem_req,
     output logic [ariane_axi::AddrWidth-1:0]    mem_addr,
@@ -143,7 +142,7 @@ module ariane_core_avalon #(
         // RISC-V Formal Interface
         // Does not comply with the coding standards of _i/_o suffixes, but follows
         // the convention of RISC-V Formal Interface Specification.
-    `ifdef RVFI
+`ifdef RVFI
         .rvfi_valid     (rvfi_valid),
         .rvfi_order     (rvfi_order),
         .rvfi_insn      (rvfi_insn),
@@ -165,10 +164,7 @@ module ariane_core_avalon #(
         .rvfi_mem_wmask (rvfi_mem_wmask),
         .rvfi_mem_rdata (rvfi_mem_rdata),
         .rvfi_mem_wdata (rvfi_mem_wdata),
-        .rvfi_granted   (rvfi_granted),
-    `endif
-
-    `ifdef DII
+        .rvfi_flush     (rvfi_flush),
         .instr,
         .addr,
         .instruction_valid,
@@ -178,8 +174,7 @@ module ariane_core_avalon #(
         .is_mispredict,
         .rvfi_mem_read,
         .rvfi_mem_write,
-        .flush_ctrl_if,
-    `endif
+`endif
 
         // Special control signal
         .ipi_i(0),

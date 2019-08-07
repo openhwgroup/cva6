@@ -41,7 +41,7 @@ module frontend #(
   // Instruction Fetch
   output icache_dreq_i_t     icache_dreq_o,
   input  icache_dreq_o_t     icache_dreq_i,
-`ifdef DII
+`ifdef RVFI
   // re-aligned instruction and address (coming from cache - combinationally)
   output logic [INSTR_PER_FETCH-1:0][31:0] instr,
   output logic [INSTR_PER_FETCH-1:0][63:0] addr,
@@ -114,7 +114,7 @@ module frontend #(
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvi_cf;
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvc_cf;
 
-`ifndef DII
+`ifndef RVFI
     // branch-predict update
     logic            is_mispredict;
     // re-aligned instruction and address (coming from cache - combinationally)

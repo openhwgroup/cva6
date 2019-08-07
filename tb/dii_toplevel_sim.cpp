@@ -123,7 +123,7 @@ static Variane_core_avalon* top;
 #if VM_TRACE
 static VerilatedVcdC trace_obj;
 #endif
-// convert verilator data structures on a given commit port to a DII returntrace structure
+// convert verilator data structures on a given commit port to a direct instruction injection returntrace structure
 
 RVFI_DII_Execution_Packet execpacket(int i)
 {
@@ -334,7 +334,7 @@ void signal_handler(int signum)
 }
 
 // This will open a socket on the hostname and port provided
-// It will then try to receive RVFI-DII packets and put the instructions
+// It will then try to receive RVFI_DII packets and put the instructions
 // from them into the core and simulate it.
 // The RVFI trace is then sent back
 
@@ -480,7 +480,7 @@ int main(int argc, char** argv, char** env) {
         }
 
         // perform instruction read
-        // returns instructions from the DII input from TestRIG
+        // returns instructions from the direct instruction injection input from TestRIG
         top->rst_i = 0;
         if (in_count < received) {
               if (instructions[in_count].dii_cmd) {
@@ -709,6 +709,15 @@ int main(int argc, char** argv, char** env) {
           {
               logfile << "mispred\t" << cache_count << std::endl;
               cache_count = mis_count;
+          }
+
+        if (dump && top->rvfi_flush)
+          {
+              logfile << "flush\t" << cache_count << std::endl;
+              in_count = out_count;
+              cache_count = out_count;
+              logfile << "in_count: " << in_count << std::endl;
+              logfile << "cache_count: " << cache_count << " (" << std::hex << instructions[cache_count].dii_insn << ") " << std::endl;
           }
 
         one_clk();
