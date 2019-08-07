@@ -230,7 +230,7 @@ module ariane #(
 `ifdef RVFI
   logic [7:0]               rvfi_strb;
   logic [63:0]              rvfi_strb_mask;
-  logic                     rvfi_commited;
+  logic                     instr_fetch_valid;
   logic [1:0]               rvfi_granted;
   assign virtual_request_address = serving_unaligned_o ? serving_unaligned_address_o : icache_dreq_cache_if.vaddr;
 `endif
@@ -805,13 +805,13 @@ module ariane #(
        rvfi_mem_write <= '0;
        rvfi_mem_addr[0] <= '0;
        rvfi_mem_wmask[0] <= '0;
-       rvfi_commited <= '0;
+       instr_fetch_valid <= '0;
        rvfi_strb = '0;
        rvfi_strb_mask = '0;
     end
     else
       begin
-        rvfi_commited <= |rvfi_valid;
+        instr_fetch_valid <= icache_areq_ex_cache.fetch_valid;
         rvfi_granted = {dcache_req_ports_cache_ex[2].data_gnt,dcache_req_ports_cache_ex[1].data_gnt};
         rvfi_strb = ( 1 << (1 << dcache_req_ports_ex_cache[rvfi_granted].data_size)) - 1;
         rvfi_strb_mask =      {rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],rvfi_strb[7],
@@ -829,7 +829,7 @@ module ariane #(
           rvfi_mem_addr[0] <= {dcache_req_ports_ex_cache[rvfi_granted].address_tag,dcache_req_ports_ex_cache[rvfi_granted].address_index};
           rvfi_mem_wmask[0] <= rvfi_granted == 2 ? rvfi_strb : '0;
        end
-     else if (rvfi_commited)
+     else if (instr_fetch_valid)
        begin
           rvfi_mem_read <= '0;
           rvfi_mem_write <= '0;

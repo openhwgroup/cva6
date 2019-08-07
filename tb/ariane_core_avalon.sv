@@ -56,14 +56,19 @@ module ariane_core_avalon #(
     output logic                              serving_unaligned_o,
     output logic [63:0]                       serving_unaligned_address_o,
     // branch-predict update
-    output logic                              is_mispredict, rvfi_mem_read, rvfi_mem_write,
+    output logic                              is_mispredict, mem_read_req, mem_write_req, instr_req,
 
-    output logic                                mem_req,
     output logic [ariane_axi::AddrWidth-1:0]    mem_addr,
     input logic  [ariane_axi::DataWidth-1:0]    mem_rdata
 );
 
-    localparam ariane_pkg::ariane_cfg_t ArianeRIGCfg = '{
+   logic                                        rvfi_mem_read, rvfi_mem_write, mem_req;
+   
+   assign mem_read_req = mem_req & rvfi_mem_read;
+   assign mem_write_req = mem_req & rvfi_mem_write;
+   assign instr_req = mem_req & ~(rvfi_mem_read|rvfi_mem_write);
+   
+   localparam ariane_pkg::ariane_cfg_t ArianeRIGCfg = '{
       RASDepth: 2,
       BTBEntries: 32,
       BHTEntries: 128,

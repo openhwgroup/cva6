@@ -260,7 +260,7 @@ void one_clk(void)
       dump_in.mem_rdata = top->mem_rdata;
       write(dump, &dump_in, sizeof(in_t));
     }
-  if (top->mem_req) logfile << "shift1\t0x" << std::hex << top->mem_rdata << std::dec << std::endl;
+  if (top->instr_req) logfile << "shift1\t0x" << std::hex << top->mem_rdata << std::dec << std::endl;
 
   for (int lev = 2; lev--; )
     {
@@ -536,7 +536,7 @@ int main(int argc, char** argv, char** env) {
             }
 
             // perform main memory read
-            if (top->mem_req & (top->rvfi_mem_read)) {
+            if (top->mem_read_req) {
                 top->mem_rdata = 0;
 
                 // get the address so we can manipulate it
@@ -593,7 +593,7 @@ int main(int argc, char** argv, char** env) {
             }
 
             // perform main memory writes
-            if (top->mem_req & (top->rvfi_mem_write)) {
+            if (top->mem_write_req) {
                 // get the address so we can manipulate it
                 int address = top->avm_main_address;
 
@@ -644,11 +644,11 @@ int main(int argc, char** argv, char** env) {
                 top->avm_main_readdatavalid = 0;
             }
 
-            if (top->mem_req & ~(top->rvfi_mem_read|top->rvfi_mem_write)) {
+            if (top->instr_req) {
               uint64_t actual2, actual = 0x13;
               int shft = top->virtual_request_address - top->mem_addr;
               int64_t *entered = find(top->mem_addr);
-              logfile << "mem_req, addr = " << std::hex << top->virtual_request_address << std::dec << std::endl;
+              logfile << "instr_req, addr = " << std::hex << top->virtual_request_address << std::dec << std::endl;
               while (dump && (received <= cache_count+1) && instructions[received-1].dii_cmd)
                 {
                   receive_packet();
@@ -709,6 +709,7 @@ int main(int argc, char** argv, char** env) {
           {
               logfile << "mispred\t" << cache_count << std::endl;
               cache_count = mis_count;
+              old_addr = ~0;
           }
 
         if (dump && top->rvfi_flush)
@@ -718,6 +719,7 @@ int main(int argc, char** argv, char** env) {
               cache_count = out_count;
               logfile << "in_count: " << in_count << std::endl;
               logfile << "cache_count: " << cache_count << " (" << std::hex << instructions[cache_count].dii_insn << ") " << std::endl;
+              old_addr = ~0;
           }
 
         one_clk();

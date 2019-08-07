@@ -100,7 +100,7 @@ module instr_realign (
             // the output instructions will only be valid at 0xabcd0004 and 0xabcd0006, and they are
             // the first 32 bits of the data
             if ((valid_instr_pos[i] < FETCH_WIDTH) &
-                (valid_instr_address[i] < {(address_i[63:NR_ALIGN_BITS]+1'b1), NR_ALIGN_BITS'(0)})) begin
+                (valid_instr_address[i] < {1'b0, address_i[63:NR_ALIGN_BITS], NR_ALIGN_BITS'(0)} + {1'b1,NR_ALIGN_BITS'(0)})) begin
                 valid_o[i] = valid_i;
                 addr_o[i] = valid_instr_address[i];
 
