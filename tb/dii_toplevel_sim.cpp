@@ -503,8 +503,10 @@ int main(int argc, char** argv, char** env) {
                         }
                     }        
                 } else if (in_count - out_count == 0) {
-                    for (int i = 0; i < 16; i++)
-                      one_clk();
+                    top->mem_rdata = 0x1300000013;
+                    if (in_count > 2)
+                      for (int i = 0; i < 256; i++)
+                        one_clk();
 
                     top->rst_i = 1;
 
@@ -537,10 +539,11 @@ int main(int argc, char** argv, char** env) {
 
             // perform main memory read
             if (top->mem_read_req) {
+                logfile << "mem_read_req, addr = " << std::hex << top->mem_addr << std::dec << std::endl;
                 top->mem_rdata = 0;
 
                 // get the address so we can manipulate it
-                int address = top->avm_main_address;
+                int address = top->mem_addr;
 
                 // TestRIG specifies that byte addresses must be between 0x80000000 and 0x80008000
                 // our avalon wrapper divides the byte address by 4 in order to get a word address
@@ -594,8 +597,9 @@ int main(int argc, char** argv, char** env) {
 
             // perform main memory writes
             if (top->mem_write_req) {
+                logfile << "mem_write_req, addr = " << std::hex << top->mem_addr << std::dec << std::endl;
                 // get the address so we can manipulate it
-                int address = top->avm_main_address;
+                int address = top->mem_addr;
 
 
                 // TestRIG specifies that byte addresses must be between 0x80000000 and 0x80008000
