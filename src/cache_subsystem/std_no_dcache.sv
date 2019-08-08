@@ -28,8 +28,10 @@ module std_nbdcache #(
     input  ariane_pkg::dcache_req_i_t [2:0] req_ports_i,  // request ports
     output ariane_pkg::dcache_req_o_t [2:0] req_ports_o,  // request ports
     // Cache AXI refill port
-    AXI_BUS.Master                          data_if,
-    AXI_BUS.Master                          bypass_if
+    output ariane_axi::req_t               axi_data_o,
+    input  ariane_axi::resp_t              axi_data_i,
+    output ariane_axi::req_t               axi_bypass_o,
+    input  ariane_axi::resp_t              axi_bypass_i
 );
 
     localparam PTW = 0;
@@ -61,14 +63,19 @@ module std_nbdcache #(
         logic [1:0]  size;
     } cache_req_t;
 
+    struct packed {
+        logic [63:3] address;
+        logic        valid;
+    } reservation_d, reservation_q;
+
     cache_req_t req_q, req_d;
     logic [63:0] amo_load_d, amo_load_q;
     // tie-off bypass bus
-    assign bypass_if.aw_valid = 1'b0;
-    assign bypass_if.w_valid = 1'b0;
-    assign bypass_if.ar_valid = 1'b0;
-    assign bypass_if.b_ready = 1'b1;
-    assign bypass_if.r_ready = 1'b1;
+    assign axi_bypass_o.aw_valid = 1'b0;
+    assign axi_bypass_o.w_valid = 1'b0;
+    assign axi_bypass_o.ar_valid = 1'b0;
+    assign axi_bypass_o.b_ready = 1'b1;
+    assign axi_bypass_o.r_ready = 1'b1;
 
     // AMOs
     ariane_pkg::amo_t amo_op;
@@ -88,32 +95,29 @@ module std_nbdcache #(
             req_ports_o[i].data_rdata = '0;
         end
 
-        data_if.aw_valid = 1'b0;
-        data_if.aw_id = '0;
-        data_if.aw_addr = '0;
-        data_if.aw_size = '0;
-        data_if.aw_lock = '0;
-        data_if.aw_cache = '0;
-        data_if.aw_prot = '0;
-        data_if.aw_qos = '0;
-        data_if.aw_region = '0;
-        data_if.aw_user = '0;
+        axi_data_o.aw_valid = 1'b0;
+        axi_data_o.aw.id = '0;
+        axi_data_o.aw.addr = '0;
+        axi_data_o.aw.size = '0;
+        axi_data_o.aw.lock = '0;
+        axi_data_o.aw.cache = '0;
+        axi_data_o.aw.prot = '0;
+        axi_data_o.aw.qos = '0;
+        axi_data_o.aw.region = '0;
 
-        data_if.w_valid = 1'b0;
-        data_if.w_data = '0;
-        data_if.w_strb = '0;
-        data_if.w_user = '0;
-        data_if.w_last = 1'b1;
+        axi_data_o.w_valid = 1'b0;
+        axi_data_o.w.data = '0;
+        axi_data_o.w.strb = '0;
+        axi_data_o.w.last = 1'b1;
 
-        data_if.ar_id = '0;
-        data_if.ar_addr = req_q.addr;
-        data_if.ar_size = req_q.size;
-        data_if.ar_lock = '0;
-        data_if.ar_cache = '0;
-        data_if.ar_prot = '0;
-        data_if.ar_qos = '0;
-        data_if.ar_region = '0;
-        data_if.ar_user = '0;
+        axi_data_o.ar.id = '0;
+        axi_data_o.ar.addr = req_q.addr;
+        axi_data_o.ar.size = req_q.size;
+        axi_data_o.ar.lock = '0;
+        axi_data_o.ar.cache = '0;
+        axi_data_o.ar.prot = '0;
+        axi_data_o.ar.qos = '0;
+        axi_data_o.ar.region = '0;
 
         // AMOs
         amo_resp_o.ack = 1'b0;
@@ -123,6 +127,7 @@ module std_nbdcache #(
         amo_operand_a = '0;
         amo_operand_b = '0;
 
+        reservation_d = reservation_q;
         case (state_q)
 
             Idle: begin
@@ -172,79 +177,79 @@ module std_nbdcache #(
             end
 
             ReadPTW: begin
-                data_if.aw_valid = 1'b1;
+                axi_data_o.aw_valid = 1'b1;
 
-                if (data_if.aw_ready) begin
+                if (axi_data_i.aw_ready) begin
                     state_d = WaitReadPTW;
                 end
             end
 
             ReadLoad: begin
-                data_if.aw_valid = 1'b1;
+                axi_data_o.aw_valid = 1'b1;
 
-                if (data_if.aw_ready) begin
+                if (axi_data_i.aw_ready) begin
                     state_d = WaitReadLoad;
                 end
             end
 
             WaitReadPTW: begin
-                data_if.r_ready = 1'b1;
-                if (data_if.r_valid) begin
+                axi_data_o.r_ready = 1'b1;
+                if (axi_data_i.r_valid) begin
                     req_ports_o[PTW].data_rvalid = 1'b1;
-                    req_ports_o[PTW].data_rdata = data_if.r_data;
+                    req_ports_o[PTW].data_rdata = axi_data_i.r.data;
                     state_d = Idle;
                 end
             end
 
             WaitReadLoad: begin
-                data_if.r_ready = 1'b1;
-                if (data_if.r_valid) begin
+                axi_data_o.r_ready = 1'b1;
+                if (axi_data_i.r_valid) begin
                     req_ports_o[LOAD].data_rvalid = 1'b1;
-                    req_ports_o[LOAD].data_rdata = data_if.r_data;
+                    req_ports_o[LOAD].data_rdata = axi_data_i.r.data;
                     state_d = Idle;
                 end
             end
 
             Write: begin
-                data_if.aw_valid = 1'b1;
-                data_if.aw_addr = {req_ports_i[STORE].address_tag, req_ports_i[STORE].address_index};
-                data_if.aw_size = {1'b0, req_ports_i[STORE].data_size};
+                axi_data_o.aw_valid = 1'b1;
+                axi_data_o.aw.addr = {req_ports_i[STORE].address_tag, req_ports_i[STORE].address_index};
+                axi_data_o.aw.size = {1'b0, req_ports_i[STORE].data_size};
 
-                if (data_if.w_ready) state_d = SendWrite;
+                if (axi_data_i.w_ready) state_d = SendWrite;
             end
 
             SendWrite: begin
-                data_if.w_valid = 1'b1;
-                data_if.w_data = req_ports_i[STORE].data_wdata;
-                data_if.w_strb = req_ports_i[STORE].data_be;
+                axi_data_o.w_valid = 1'b1;
+                axi_data_o.w.data = req_ports_i[STORE].data_wdata;
+                axi_data_o.w.strb = req_ports_i[STORE].data_be;
 
-                if (data_if.w_ready) begin
+                if (axi_data_i.w_ready) begin
                     state_d = WaitB;
                     req_ports_o[STORE].data_gnt = 1'b1;
                 end
             end
 
             WaitB: begin
-                data_if.b_ready = 1'b1;
-                if (data_if.b_valid) begin
+                axi_data_o.b_ready = 1'b1;
+                if (axi_data_i.b_valid) begin
                     state_d = Idle;
                     req_ports_o[STORE].data_rvalid = 1'b1;
                 end
             end
 
             AMORead: begin
-                data_if.ar_addr = amo_req_i.operand_a;
-                data_if.ar_size = amo_req_i.size;
-                data_if.ar_valid = 1'b1;
-                if (data_if.ar_ready) state_d = WaitAMORead;
+                axi_data_o.ar.addr = amo_req_i.operand_a;
+                axi_data_o.ar.size = amo_req_i.size;
+                axi_data_o.ar_valid = 1'b1;
+                if (axi_data_i.ar_ready) state_d = WaitAMORead;
             end
 
             WaitAMORead: begin
 
-                data_if.r_ready = 1'b1;
+                axi_data_o.r_ready = 1'b1;
 
-                if (data_if.r_valid) begin
-                    amo_load_d = data_if.r_data;
+                if (axi_data_i.r_valid) begin
+                    amo_load_d = axi_data_i.r.data;
                     state_d = AMOSendAW;
                 end
 
@@ -266,11 +271,11 @@ module std_nbdcache #(
             end
 
             AMOSendAW: begin
-                data_if.aw_valid = 1'b1;
-                data_if.aw_addr = amo_req_i.operand_a;
-                data_if.aw_size = {1'b0, amo_req_i.size};
+                axi_data_o.aw_valid = 1'b1;
+                axi_data_o.aw.addr = amo_req_i.operand_a;
+                axi_data_o.aw.size = {1'b0, amo_req_i.size};
 
-                if (data_if.aw_ready) begin
+                if (axi_data_i.aw_ready) begin
                     state_d = AMOSendW;
                 end
             end
@@ -285,19 +290,19 @@ module std_nbdcache #(
                     amo_operand_b = amo_req_i.operand_b;
                 end
 
-                data_if.w_valid = 1'b1;
-                data_if.w_data = data_align(amo_req_i.operand_a[2:0], amo_result_o);
-                data_if.w_strb = be_gen(amo_req_i.operand_a[2:0], amo_req_i.size);
+                axi_data_o.w_valid = 1'b1;
+                axi_data_o.w.data = data_align(amo_req_i.operand_a[2:0], amo_result_o);
+                axi_data_o.w.strb = be_gen(amo_req_i.operand_a[2:0], amo_req_i.size);
 
-                if (data_if.w_ready) begin
+                if (axi_data_i.w_ready) begin
                     state_d = AMOWaitB;
                 end
 
             end
 
             AMOWaitB: begin
-                data_if.b_ready = 1'b1;
-                if (data_if.b_valid) begin
+                axi_data_o.b_ready = 1'b1;
+                if (axi_data_i.b_valid) begin
                     state_d = Idle;
                 end
             end
@@ -319,10 +324,12 @@ module std_nbdcache #(
             state_q <= Idle;
             req_q <= '0;
             amo_load_q <= '0;
-        end else begin
+            reservation_q <= '0;
+         end else begin
             state_q <= state_d;
             req_q <= req_d;
             amo_load_q <= amo_load_d;
+            reservation_q <= reservation_d;
         end
     end
 endmodule
