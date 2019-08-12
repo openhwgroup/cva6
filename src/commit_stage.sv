@@ -206,34 +206,6 @@ module commit_stage #(
                 fence_o = no_st_pending_i;
             end
             // ------------------
-            // SFENCE.VMA Logic
-            // ------------------
-            // check if this instruction was a SFENCE_VMA
-            if (commit_instr_i[0].op == SFENCE_VMA) begin
-                // no store pending so we can flush the TLBs and pipeline
-                sfence_vma_o = no_st_pending_i;
-                // wait for the store buffer to drain until flushing the pipeline
-                commit_ack_o[0] = no_st_pending_i;
-            end
-            // ------------------
-            // FENCE.I Logic
-            // ------------------
-            // Fence synchronizes data and instruction streams. That means that we need to flush the private icache
-            // and the private dcache. This is the most expensive instruction.
-            if (commit_instr_i[0].op == FENCE_I || (flush_dcache_i && commit_instr_i[0].fu != STORE)) begin
-                commit_ack_o[0] = no_st_pending_i;
-                // tell the controller to flush the I$
-                fence_i_o = no_st_pending_i;
-            end
-            // ------------------
-            // FENCE Logic
-            // ------------------
-            if (commit_instr_i[0].op == FENCE) begin
-                commit_ack_o[0] = no_st_pending_i;
-                // tell the controller to flush the D$
-                fence_o = no_st_pending_i;
-            end
-            // ------------------
             // AMO
             // ------------------
             if (RVA && instr_0_is_amo) begin
