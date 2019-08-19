@@ -504,7 +504,7 @@ module wt_axi_adapter #(
   // assign dcache_rtrn_o.inv.vld  = '0;
   // assign dcache_rtrn_o.inv.all  = '0;
 
-  always_ff @(posedge clk_i) begin : p_rd_buf
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_rd_buf
     if (!rst_ni) begin
       icache_first_q     <= 1'b1;
       dcache_first_q     <= 1'b1;
