@@ -145,6 +145,7 @@ module miss_handler #(
         we_o   = '0;
         // Cache controller
         miss_gnt_o = '0;
+        active_serving_o = '0;
         // LFSR replacement unit
         lfsr_enable = 1'b0;
         // to AXI refill
