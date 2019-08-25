@@ -69,8 +69,8 @@ package ariane_soc;
   localparam ariane_pkg::ariane_cfg_t ArianeSocCfg = '{
     RASDepth: 2,
     BTBEntries: 32,
-    BHTEntries: 128,
-    GHRLength: 4,
+    BHTEntries: 256,
+    GHRLength: 3,
     // idempotent region
     NrNonIdempotentRules:  0,
     NonIdempotentAddrBase: {64'b0},

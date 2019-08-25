@@ -27,33 +27,39 @@ module issue_stage #(
     input  logic                                     flush_unissued_instr_i,
     input  logic                                     flush_i,
     // from ISSUE
-    input  scoreboard_entry_t                        decoded_instr_i,
-    input  logic                                     decoded_instr_valid_i,
-    input  logic                                     is_ctrl_flow_i,
-    output logic                                     decoded_instr_ack_o,
+    input  scoreboard_entry_t [ISSUE_WIDTH-1:0]      decoded_instr_i,
+    input  logic [ISSUE_WIDTH-1:0]                   decoded_instr_valid_i,
+    input  logic [ISSUE_WIDTH-1:0]                   is_ctrl_flow_i,
+    output logic [ISSUE_WIDTH-1:0]                   decoded_instr_ack_o,
     // to EX
-    output fu_data_t                                 fu_data_o,
     output logic [63:0]                              pc_o,
     output logic                                     is_compressed_instr_o,
-    input  logic                                     flu_ready_i,
-    output logic                                     alu_valid_o,
+    input  logic [NR_ALU-1:0]                        flu_ready_i,
+    output fu_data_t [ISSUE_WIDTH-1:0]               fu_data_o,
+    output logic [NR_ALU-1:0]                        alu_valid_o,
+    output logic [NR_ALU-1:0][ISSUE_WIDTH_BITS-1:0]  alu_fu_idx_o,
     // ex just resolved our predicted branch, we are ready to accept new requests
     input  logic                                     resolve_branch_i,
 
     input  logic                                     lsu_ready_i,
+    output logic [ISSUE_WIDTH_BITS-1:0]              lsu_fu_idx_o,
     output logic                                     lsu_valid_o,
     // branch prediction
     output logic                                     branch_valid_o,   // use branch prediction unit
     output branchpredict_sbe_t                       branch_predict_o, // Branch predict Out
+    output logic [ISSUE_WIDTH_BITS-1:0]              branch_fu_idx_o,
 
     output logic                                     mult_valid_o,
+    output logic [ISSUE_WIDTH_BITS-1:0]              mult_fu_idx_o,
 
     input  logic                                     fpu_ready_i,
+    output logic [ISSUE_WIDTH_BITS-1:0]              fpu_fu_idx_o,
     output logic                                     fpu_valid_o,
     output logic [1:0]                               fpu_fmt_o,        // FP fmt field from instr.
     output logic [2:0]                               fpu_rm_o,         // FP rm field from instr.
 
     output logic                                     csr_valid_o,
+    output logic [ISSUE_WIDTH_BITS-1:0]              csr_fu_idx_o,
 
     // write back port
     input logic [NR_WB_PORTS-1:0][TRANS_ID_BITS-1:0] trans_id_i,
@@ -61,7 +67,7 @@ module issue_stage #(
     input logic [NR_WB_PORTS-1:0][63:0]              wbdata_i,
     input exception_t [NR_WB_PORTS-1:0]              ex_ex_i, // exception from execute stage
     input logic [NR_WB_PORTS-1:0]                    wt_valid_i,
-
+    input logic [NR_WB_PORTS-1:0]                    fu_flush_i,
     // commit port
     input  logic [NR_COMMIT_PORTS-1:0][4:0]          waddr_i,
     input  logic [NR_COMMIT_PORTS-1:0][63:0]         wdata_i,
@@ -77,25 +83,25 @@ module issue_stage #(
     fu_t  [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_sb_iro;
     fu_t  [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_sb_iro;
 
-    logic [REG_ADDR_SIZE-1:0]  rs1_iro_sb;
-    logic [63:0]               rs1_sb_iro;
-    logic                      rs1_valid_sb_iro;
+    logic [ISSUE_WIDTH-1:0][REG_ADDR_SIZE-1:0]         rs1_iro_sb;
+    logic [ISSUE_WIDTH-1:0][63:0]                      rs1_sb_iro;
+    logic [ISSUE_WIDTH-1:0]                            rs1_valid_sb_iro;
 
-    logic [REG_ADDR_SIZE-1:0]  rs2_iro_sb;
-    logic [63:0]               rs2_sb_iro;
-    logic                      rs2_valid_iro_sb;
+    logic [ISSUE_WIDTH-1:0][REG_ADDR_SIZE-1:0]         rs2_iro_sb;
+    logic [ISSUE_WIDTH-1:0][63:0]                      rs2_sb_iro;
+    logic [ISSUE_WIDTH-1:0]                            rs2_valid_iro_sb;
 
-    logic [REG_ADDR_SIZE-1:0]  rs3_iro_sb;
-    logic [FLEN-1:0]           rs3_sb_iro;
-    logic                      rs3_valid_iro_sb;
+    logic [ISSUE_WIDTH-1:0][REG_ADDR_SIZE-1:0]         rs3_iro_sb;
+    logic [ISSUE_WIDTH-1:0][FLEN-1:0]                  rs3_sb_iro;
+    logic [ISSUE_WIDTH-1:0]                            rs3_valid_iro_sb;
 
-    scoreboard_entry_t         issue_instr_rename_sb;
-    logic                      issue_instr_valid_rename_sb;
-    logic                      issue_ack_sb_rename;
+    scoreboard_entry_t [ISSUE_WIDTH-1:0]   issue_instr_rename_sb;
+    logic [ISSUE_WIDTH-1:0]                issue_instr_valid_rename_sb;
+    logic [ISSUE_WIDTH-1:0]                issue_ack_sb_rename;
 
-    scoreboard_entry_t         issue_instr_sb_iro;
-    logic                      issue_instr_valid_sb_iro;
-    logic                      issue_ack_iro_sb;
+    scoreboard_entry_t [ISSUE_WIDTH-1:0]   issue_instr_sb_iro;
+    logic [ISSUE_WIDTH-1:0]                issue_instr_valid_sb_iro;
+    logic [ISSUE_WIDTH-1:0]                issue_ack_iro_sb;
 
     // ---------------------------------------------------------
     // 1. Re-name
@@ -156,7 +162,6 @@ module issue_stage #(
         .issue_instr_i       ( issue_instr_sb_iro              ),
         .issue_instr_valid_i ( issue_instr_valid_sb_iro        ),
         .issue_ack_o         ( issue_ack_iro_sb                ),
-        .fu_data_o           ( fu_data_o                       ),
         .flu_ready_i         ( flu_ready_i                     ),
         .rs1_o               ( rs1_iro_sb                      ),
         .rs1_i               ( rs1_sb_iro                      ),

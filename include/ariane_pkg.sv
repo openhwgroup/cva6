@@ -136,7 +136,8 @@ package ariane_pkg;
 
     localparam ENABLE_RENAME = 1'b0;
 
-    localparam ISSUE_WIDTH = 1;
+    localparam ISSUE_WIDTH = 2;
+    localparam ISSUE_WIDTH_BITS = ISSUE_WIDTH == 1 ? 1 : $clog2(ISSUE_WIDTH);
     // amount of pipeline registers inserted for load/store return path
     // this can be tuned to trade-off IPC vs. cycle time
     localparam int unsigned NR_LOAD_PIPE_REGS = 1;
@@ -220,7 +221,12 @@ package ariane_pkg;
 
     // 32 registers + 1 bit for re-naming = 6
     localparam REG_ADDR_SIZE = 6;
-    localparam NR_WB_PORTS = 4;
+    localparam NR_WB_PORTS = 5;
+
+    // number of ALUs
+    localparam NR_ALU = 2;
+    // number of FLU writeback port
+    localparam NR_FLU = 2;
 
     // static debug hartinfo
     localparam dm::hartinfo_t DebugHartInfo = '{
@@ -278,7 +284,7 @@ package ariane_pkg;
     // ---------------
 
     localparam int unsigned FETCH_FIFO_DEPTH  = 4;
-    localparam int unsigned FETCH_WIDTH       = 32;
+    localparam int unsigned FETCH_WIDTH       = 64;
     // the number of bits that the address of fetch block should align to
     localparam NR_ALIGN_BITS = $clog2(FETCH_WIDTH/8);
     // maximum instructions we can fetch on one request (we support compressed instructions)

@@ -24,14 +24,14 @@ module bht #(
     input  logic                                    flush_ftq_i,
     input  logic                                    debug_mode_i,
     input  logic [63:0]                             vpc_i,
+    input  logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] push_instr_cnt_i,
     input  logic                                    instr_queue_overflow_i,
     input  logic [63:0]                             instr_queue_replay_addr_i,
     input  logic                                    serving_unaligned_i, // we have an unalinged instruction at the beginning
     input  ariane_pkg::bht_update_t                 bht_update_i,
     input  logic [ariane_pkg::INSTR_PER_FETCH-1:0]  valid_i,
     input  logic [ariane_pkg::INSTR_PER_FETCH-1:0]  is_branch_i,
-    input  logic [ariane_pkg::INSTR_PER_FETCH-1:0]  taken_rvi_cf_i,
-    input  logic [ariane_pkg::INSTR_PER_FETCH-1:0]  taken_rvc_cf_i,
+    input  cf_t  [ariane_pkg::INSTR_PER_FETCH-1:0]  cf_type_i,
     output logic                                    ftq_overflow_o,
     // we potentially need INSTR_PER_FETCH predictions/cycle
     output ariane_pkg::bht_prediction_t [ariane_pkg::INSTR_PER_FETCH-1:0] bht_prediction_o
@@ -74,7 +74,6 @@ module bht #(
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] valid_taken_cf;
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] is_replay;  // replay logic per instruction
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] is_valid_branch;
-    logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] replay_pos;
 
     // fetch target queue signals
     logic [$clog2(ariane_pkg::FETCH_FIFO_DEPTH)-1:0] ftq_usage;
@@ -107,14 +106,12 @@ module bht #(
     always_comb begin : gen_gshare_index
         gshare_index = realigned_vpc[PREDICTION_BITS - 1:ROW_ADDR_BITS + OFFSET];
         // extend global history register to the length of multiplication of index bits
-        extended_ghr = {{{INDEX_BITS-NR_GLOBAL_HISTORIES_REMAINDER}{1'b1}}, ghr_q};
+        extended_ghr = {{{INDEX_BITS-NR_GLOBAL_HISTORIES_REMAINDER}{1'b0}}, ghr_q};
         for (int unsigned i = 0; i < NR_GLOBAL_HISTORIES; i = i + INDEX_BITS) begin
             gshare_index ^= extended_ghr[i +: INDEX_BITS];
         end
     end
 
-    // check if the instructions are valid control flows
-    assign valid_taken_cf = valid_i & (taken_rvc_cf_i | taken_rvi_cf_i);
     // realigned pc address to fetch block width
     assign realigned_vpc = {vpc_i[63:ROW_ADDR_BITS+1], (ROW_ADDR_BITS+1)'(0)};
     assign ftq_entry_i = { gshare_index,                                                  // gshare index
@@ -124,25 +121,25 @@ module bht #(
                          };
     assign push_ftq = (|is_valid_branch);
 
-    assign realigned_update_pc = bht_update_i.pc + (1<<$clog2(ariane_pkg::INSTR_PER_FETCH));
-    assign is_unaligned_instr = ftq_entry_o.serving_unaligned
-                                & (bht_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET] == {ROW_ADDR_BITS{1'b1}});
+    assign realigned_update_pc = bht_update_i.pc + 2;
+    assign is_unaligned_instr = ftq_entry_o.serving_unaligned & (&bht_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET]);
     assign pop_ftq = bht_update_i.valid & ((bp_count_q == 1) || ftq_entry_o.bp_count == 1);
     assign update_row_index = is_unaligned_instr ? 0 : bht_update_i.pc[ROW_ADDR_BITS + OFFSET - 1:OFFSET];
     assign update_pc = ftq_entry_o.gshare_index;
     assign ftq_overflow_o = full_ftq & push_ftq;
 
-    // if replay starts from an unaglined address, replay position should be 0.
-    assign replay_pos = serving_unaligned_i ? 0 : instr_queue_replay_addr_i[$clog2(ariane_pkg::INSTR_PER_FETCH):1];
     // if the incoming instruction is a replay at the replay address, then the rest of the fetched
     // instruction should also be replay. For example, in 64 bit fetch if the replay starts from 0x42,
     // the replay mask should be 1 1 1 0 from the highest to lowest.
-    assign is_replay = {ariane_pkg::INSTR_PER_FETCH{instr_queue_overflow_i}} << replay_pos;
+    assign is_replay = {ariane_pkg::INSTR_PER_FETCH{instr_queue_overflow_i}} << push_instr_cnt_i;
     // an instruction is a valid branch instruction to push to fetch target queue if:
     // 1) it is a valid branch instruction
     // 2) it is not a replay
     // 3) no taken control flow before it in the same fetch block
     for (genvar i = 0; i < ariane_pkg::INSTR_PER_FETCH; i++) begin
+        // check if the instructions are valid control flows
+        assign valid_taken_cf[i] = valid_i[i] & (cf_type_i[i] != ariane_pkg::NoCF);
+
         if (i == 0) begin
             assign is_valid_branch[i] = is_branch_i[i] & ~is_replay[i];
         end else begin
@@ -217,8 +214,7 @@ module bht #(
                     bht_d[update_pc][update_row_index].saturation_counter = 2'b01;
                 else
                     bht_d[update_pc][update_row_index].saturation_counter = 2'b10;
-            end else
-            if (saturation_counter == 2'b11) begin
+            end else if (saturation_counter == 2'b11) begin
                 // we can safely decrease it
                 if (!bht_update_i.taken)
                     bht_d[update_pc][update_row_index].saturation_counter = saturation_counter - 1;
