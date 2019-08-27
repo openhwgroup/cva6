@@ -68,6 +68,7 @@ module frontend #(
     logic [63:0]   replay_addr;
     logic [63:0]   instr_queue_replay_addr;
     logic          instr_queue_overflow, ftq_overflow;
+    logic [$clog2(INSTR_PER_FETCH)-1:0] push_instr_cnt;
     // replay if any of the queue overflows
     assign replay = instr_queue_overflow | ftq_overflow;
     assign replay_addr = ftq_overflow ? addr[0] : instr_queue_replay_addr;
@@ -388,13 +389,13 @@ module frontend #(
       .flush_ftq_i                ( flush_i                          ),
       .debug_mode_i,
       .vpc_i                      ( icache_vaddr_q                   ),
+      .push_instr_cnt_i           ( push_instr_cnt                   ),
       .instr_queue_overflow_i     ( instr_queue_overflow             ), // from instruction queue
       .instr_queue_replay_addr_i  ( instr_queue_replay_addr          ),
       .is_branch_i                ( is_branch                        ),
       .valid_i                    ( instruction_valid                ),
       .serving_unaligned_i        ( serving_unaligned                ),
-      .taken_rvc_cf_i             ( taken_rvc_cf                     ),
-      .taken_rvi_cf_i             ( taken_rvi_cf                     ),
+      .cf_type_i                  ( cf_type                          ),
       .bht_update_i               ( bht_update                       ),
       .ftq_overflow_o             ( ftq_overflow                     ),
       .bht_prediction_o           ( bht_prediction                   )
@@ -432,6 +433,7 @@ module frontend #(
       .cf_type_i           ( cf_type              ),
       .valid_i             ( instruction_valid    ), // from re-aligner
       .consumed_o          ( instr_queue_consumed ),
+      .push_instr_cnt_o    ( push_instr_cnt       ),
       .ftq_overflow_i      ( ftq_overflow         ), // from branch predictor
       .ready_o             ( instr_queue_ready    ),
       .overflow_o          ( instr_queue_overflow ),
