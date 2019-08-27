@@ -61,6 +61,7 @@ module instr_queue (
   input  logic                                               ftq_overflow_i,
   // replay instruction because one of the FIFO was already full
   output logic                                               overflow_o,
+  output logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0]     push_instr_cnt_o,
   output logic [63:0]                                        replay_addr_o, // address at which to replay this instruction
   // to processor backend
   output ariane_pkg::fetch_entry_t                           fetch_entry_o,
@@ -154,6 +155,7 @@ module instr_queue (
     .popcount_o ( popcount        )
   );
   assign shamt = popcount[$bits(shamt)-1:0];
+  assign push_instr_cnt_o = shamt_push_instr;
 
   // save the shift amount for next cycle
   assign idx_is_d = idx_is_q + shamt;
