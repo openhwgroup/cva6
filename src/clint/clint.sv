@@ -151,10 +151,9 @@ module clint #(
     // -----------------------------
     // 1. Put the RTC input through a classic two stage edge-triggered synchronizer to filter out any
     //    metastability effects (or at least make them unlikely :-))
-    sync_wedge i_sync_edge (
+    clint_sync_wedge i_sync_edge (
         .clk_i,
         .rst_ni,
-        .en_i      ( ~testmode_i    ),
         .serial_i  ( rtc_i          ),
         .r_edge_o  ( increase_timer ),
         .f_edge_o  (                ), // left open
@@ -187,5 +186,63 @@ module clint #(
         end
     `endif
     //pragma translate_on
+
+endmodule
+
+// TODO(zarubaf): Replace by common-cells 2.0
+module clint_sync_wedge #(
+    parameter int unsigned STAGES = 2
+) (
+    input  logic clk_i,
+    input  logic rst_ni,
+    input  logic serial_i,
+    output logic r_edge_o,
+    output logic f_edge_o,
+    output logic serial_o
+);
+    logic serial, serial_q;
+
+    assign serial_o =  serial_q;
+    assign f_edge_o = (~serial) & serial_q;
+    assign r_edge_o =  serial & (~serial_q);
+
+    clint_sync #(
+        .STAGES (STAGES)
+    ) i_sync (
+        .clk_i,
+        .rst_ni,
+        .serial_i,
+        .serial_o ( serial )
+    );
+
+    always_ff @(posedge clk_i, negedge rst_ni) begin
+        if (!rst_ni) begin
+            serial_q <= 1'b0;
+        end else begin
+            serial_q <= serial;
+        end
+    end
+endmodule
+
+module clint_sync #(
+    parameter int unsigned STAGES = 2
+) (
+    input  logic clk_i,
+    input  logic rst_ni,
+    input  logic serial_i,
+    output logic serial_o
+);
+
+   logic [STAGES-1:0] reg_q;
+
+    always_ff @(posedge clk_i, negedge rst_ni) begin
+        if (!rst_ni) begin
+            reg_q <= 'h0;
+        end else begin
+            reg_q <= {reg_q[STAGES-2:0], serial_i};
+        end
+    end
+
+    assign serial_o = reg_q[STAGES-1];
 
 endmodule
