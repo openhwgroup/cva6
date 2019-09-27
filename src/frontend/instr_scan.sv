@@ -33,8 +33,8 @@ module instr_scan (
 );
     logic is_rvc;
     assign is_rvc     = (instr_i[1:0] != 2'b11);
-    // check that rs1 is either x1 or x5 and that rs1 is not x1 or x5
-    assign rvi_return_o = rvi_jalr_o & ((instr_i[11:7] == 5'd1) | instr_i[11:7] == 5'd5)
+    // check that rs1 is either x1 or x5 and that rd is not rs1
+    assign rvi_return_o = rvi_jalr_o & ((instr_i[19:15] == 5'd1) | instr_i[19:15] == 5'd5)
                                      & (instr_i[19:15] != instr_i[11:7]);
     // Opocde is JAL[R] and destination register is either x1 or x5
     assign rvi_call_o   = (rvi_jalr_o | rvi_jump_o) & ((instr_i[11:7] == 5'd1) | instr_i[11:7] == 5'd5);
