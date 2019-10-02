@@ -52,6 +52,7 @@ package ariane_pkg;
       bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
       //
       logic [63:0]                      DmBaseAddress;         // offset of the debug module
+      int unsigned                      NrPMPEntries;          // Number of PMP entries
     } ariane_cfg_t;
 
     localparam ariane_cfg_t ArianeDefaultConfig = '{
@@ -74,7 +75,8 @@ package ariane_pkg;
       Axi64BitCompliant:      1'b1,
       SwapEndianess:          1'b0,
       // debug
-      DmBaseAddress:          64'h0
+      DmBaseAddress:          64'h0,
+      NrPMPEntries:           8
     };
 
     // Function being called to check parameters
@@ -87,6 +89,7 @@ package ariane_pkg;
         assert(Cfg.NrNonIdempotentRules <= NrMaxRules);
         assert(Cfg.NrExecuteRegionRules <= NrMaxRules);
         assert(Cfg.NrCachedRegionRules  <= NrMaxRules);
+        assert(Cfg.PMPEntries <= NrMaxRules);
       `endif
       // pragma translate_on
     endfunction

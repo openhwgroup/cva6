@@ -356,7 +356,25 @@ package riscv;
         CSR_MTVAL          = 12'h343,
         CSR_MIP            = 12'h344,
         CSR_PMPCFG0        = 12'h3A0,
+        CSR_PMPCFG1        = 12'h3A1,
+        CSR_PMPCFG2        = 12'h3A2,
+        CSR_PMPCFG3        = 12'h3A3,
         CSR_PMPADDR0       = 12'h3B0,
+        CSR_PMPADDR1       = 12'h3B1,
+        CSR_PMPADDR2       = 12'h3B2,
+        CSR_PMPADDR3       = 12'h3B3,
+        CSR_PMPADDR4       = 12'h3B4,
+        CSR_PMPADDR5       = 12'h3B5,
+        CSR_PMPADDR6       = 12'h3B6,
+        CSR_PMPADDR7       = 12'h3B7,
+        CSR_PMPADDR8       = 12'h3B8,
+        CSR_PMPADDR9       = 12'h3B9,
+        CSR_PMPADDR10      = 12'h3BA,
+        CSR_PMPADDR11      = 12'h3BB,
+        CSR_PMPADDR12      = 12'h3BC,
+        CSR_PMPADDR13      = 12'h3BD,
+        CSR_PMPADDR14      = 12'h3BE,
+        CSR_PMPADDR15      = 12'h3BF,
         CSR_MVENDORID      = 12'hF11,
         CSR_MARCHID        = 12'hF12,
         CSR_MIMPID         = 12'hF13,
@@ -508,6 +526,23 @@ package riscv;
         logic [2:0]   frm;       // float rounding mode
         logic [4:0]   fflags;    // float exception flags
     } fcsr_t;
+
+    // PMP
+    typedef enum logic [1:0] { 
+        OFF   = 2'b00, 
+        TOR   = 2'b01, 
+        NA4   = 2'b10, 
+        NAPOT = 2'b11 
+    } pmp_addr_mode_t;
+    // packed struct of a PMP configuration register (8bit)
+    typedef struct packed {
+        bit             locked;     // lock this configuration
+        logic [1:0]     reserved;
+        pmp_addr_mode_t addr_mode;  // Off, TOR, NA4, NAPOT
+        logic           x;          // execute
+        logic           w;          // write
+        logic           r;          // read
+    } pmpcfg_t;
 
     // -----
     // Debug

@@ -17,7 +17,8 @@ import ariane_pkg::*;
 module csr_regfile #(
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
     parameter int          AsidWidth       = 1,
-    parameter int unsigned NrCommitPorts   = 2
+    parameter int unsigned NrCommitPorts   = 2,
+    parameter int unsigned NrPMPEntries    = 8
 ) (
     input  logic                  clk_i,                      // Clock
     input  logic                  rst_ni,                     // Asynchronous reset active low
@@ -82,7 +83,10 @@ module csr_regfile #(
     output logic  [4:0]           perf_addr_o,                // read/write address to performance counter module (up to 29 aux counters possible in riscv encoding.h)
     output logic  [63:0]          perf_data_o,                // write data to performance counter module
     input  logic  [63:0]          perf_data_i,                // read data from performance counter module
-    output logic                  perf_we_o
+    output logic                  perf_we_o,
+    // PMPs
+    output riscv::pmpcfg_t [15:0]                   pmpcfg_o,   // PMP configuration containing pmpcfg for max 16 PMPs
+    output logic[NrPMPEntries-1:0][53:0]            pmpaddr_o   // PMP addresses
 );
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception, privilege_violation;
@@ -135,6 +139,9 @@ module csr_regfile #(
     logic [63:0] cycle_q,     cycle_d;
     logic [63:0] instret_q,   instret_d;
 
+    riscv::pmpcfg_t [15:0]         pmpcfg_q,  pmpcfg_d;
+    logic [NrPMPEntries-1:0][53:0] pmpaddr_q,  pmpaddr_d;
+   
     riscv::fcsr_t fcsr_q, fcsr_d;
     // ----------------
     // Assignments
@@ -265,6 +272,17 @@ module csr_regfile #(
                 // custom (non RISC-V) cache control
                 riscv::CSR_DCACHE:             csr_rdata = dcache_q;
                 riscv::CSR_ICACHE:             csr_rdata = icache_q;
+                // PMPs
+                riscv::CSR_PMPCFG0:            csr_rdata = pmpcfg_q[7:0];
+                riscv::CSR_PMPCFG2:            csr_rdata = pmpcfg_q[15:8];
+                riscv::CSR_PMPADDR0:           csr_rdata = {10'b0, pmpaddr_q[0]};
+                riscv::CSR_PMPADDR1:           csr_rdata = {10'b0, pmpaddr_q[1]};
+                riscv::CSR_PMPADDR2:           csr_rdata = {10'b0, pmpaddr_q[2]};
+                riscv::CSR_PMPADDR3:           csr_rdata = {10'b0, pmpaddr_q[3]};
+                riscv::CSR_PMPADDR4:           csr_rdata = {10'b0, pmpaddr_q[4]};
+                riscv::CSR_PMPADDR5:           csr_rdata = {10'b0, pmpaddr_q[5]};
+                riscv::CSR_PMPADDR6:           csr_rdata = {10'b0, pmpaddr_q[6]};
+                riscv::CSR_PMPADDR7:           csr_rdata = {10'b0, pmpaddr_q[7]};
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -350,6 +368,9 @@ module csr_regfile #(
 
         en_ld_st_translation_d  = en_ld_st_translation_q;
         dirty_fp_state_csr      = 1'b0;
+
+        pmpcfg_d                = pmpcfg_q;
+        pmpaddr_d               = pmpaddr_q;
 
         // check for correct access rights and that we are writing
         if (csr_we) begin
@@ -548,8 +569,18 @@ module csr_regfile #(
                                         perf_we_o   = 1'b1;
                 end
 
-                riscv::CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
-                riscv::CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
+                riscv::CSR_DCACHE:             dcache_d       = csr_wdata[0]; // enable bit
+                riscv::CSR_ICACHE:             icache_d       = csr_wdata[0]; // enable bit
+                riscv::CSR_PMPCFG0:            pmpcfg_d[7:0]  = csr_wdata;
+                riscv::CSR_PMPCFG2:            pmpcfg_d[15:8] = csr_wdata;
+                riscv::CSR_PMPADDR0:           pmpaddr_d[0]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR1:           pmpaddr_d[1]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR2:           pmpaddr_d[2]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR3:           pmpaddr_d[3]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR4:           pmpaddr_d[4]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR5:           pmpaddr_d[5]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR6:           pmpaddr_d[6]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR7:           pmpaddr_d[7]   = csr_wdata[53:0];
                 default: update_access_exception = 1'b1;
             endcase
         end
@@ -1031,6 +1062,9 @@ module csr_regfile #(
             en_ld_st_translation_q <= 1'b0;
             // wait for interrupt
             wfi_q                  <= 1'b0;
+            // pmp
+            pmpcfg_q               <= '0;
+            pmpaddr_q              <= '0;
         end else begin
             priv_lvl_q             <= priv_lvl_d;
             // floating-point registers
@@ -1071,6 +1105,9 @@ module csr_regfile #(
             en_ld_st_translation_q <= en_ld_st_translation_d;
             // wait for interrupt
             wfi_q                  <= wfi_d;
+            // pmp
+            pmpcfg_q               <= pmpcfg_d;
+            pmpaddr_q              <= pmpaddr_d;
         end
     end
 
