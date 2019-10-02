@@ -182,6 +182,8 @@ module ariane #(
   logic                     icache_en_csr;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
+  riscv::pmpcfg_t [15:0]                    pmpcfg;
+  logic [ArianeCfg.NrPMPEntries-1:0][53:0]  pmpaddr;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -479,7 +481,8 @@ module ariane #(
   csr_regfile #(
     .AsidWidth              ( ASID_WIDTH                    ),
     .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
-    .NrCommitPorts          ( NR_COMMIT_PORTS               )
+    .NrCommitPorts          ( NR_COMMIT_PORTS               ),
+    .NrPMPEntries           ( ArianeCfg.NrPMPEntries        )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),
@@ -523,6 +526,8 @@ module ariane #(
     .perf_data_o            ( data_csr_perf                 ),
     .perf_data_i            ( data_perf_csr                 ),
     .perf_we_o              ( we_csr_perf                   ),
+    .pmpcfg_o               ( pmpcfg                        ),
+    .pmpaddr_o              ( pmpaddr                       ),
     .debug_req_i,
     .ipi_i,
     .irq_i,
