@@ -428,7 +428,10 @@ module ariane #(
     // DCACHE interfaces
     .dcache_req_ports_i     ( dcache_req_ports_cache_ex   ),
     .dcache_req_ports_o     ( dcache_req_ports_ex_cache   ),
-    .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty )
+    .dcache_wbuffer_empty_i ( dcache_commit_wbuffer_empty ),
+    // PMP
+    .pmpcfg_i               ( pmpcfg                      ),
+    .pmpaddr_i              ( pmpaddr                     )
   );
 
   // ---------
