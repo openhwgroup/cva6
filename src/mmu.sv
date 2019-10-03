@@ -17,48 +17,48 @@
 import ariane_pkg::*;
 
 module mmu #(
-      parameter int unsigned INSTR_TLB_ENTRIES     = 4,
-      parameter int unsigned DATA_TLB_ENTRIES      = 4,
-      parameter int unsigned ASID_WIDTH            = 1,
-      parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
+    parameter int unsigned INSTR_TLB_ENTRIES     = 4,
+    parameter int unsigned DATA_TLB_ENTRIES      = 4,
+    parameter int unsigned ASID_WIDTH            = 1,
+    parameter ariane_pkg::ariane_cfg_t ArianeCfg = ariane_pkg::ArianeDefaultConfig
 ) (
-        input  logic                            clk_i,
-        input  logic                            rst_ni,
-        input  logic                            flush_i,
-        input  logic                            enable_translation_i,
-        input  logic                            en_ld_st_translation_i,   // enable virtual memory translation for load/stores
-        // IF interface
-        input  icache_areq_o_t                  icache_areq_i,
-        output icache_areq_i_t                  icache_areq_o,
-        // LSU interface
-        // this is a more minimalistic interface because the actual addressing logic is handled
-        // in the LSU as we distinguish load and stores, what we do here is simple address translation
-        input  exception_t                      misaligned_ex_i,
-        input  logic                            lsu_req_i,        // request address translation
-        input  logic [riscv::VLEN-1:0]          lsu_vaddr_i,      // virtual address in
-        input  logic                            lsu_is_store_i,   // the translation is requested by a store
-        // if we need to walk the page table we can't grant in the same cycle
-        // Cycle 0
-        output logic                            lsu_dtlb_hit_o,   // sent in the same cycle as the request if translation hits in the DTLB
-        // Cycle 1
-        output logic                            lsu_valid_o,      // translation is valid
-        output logic [riscv::PLEN-1:0]          lsu_paddr_o,      // translated address
-        output exception_t                      lsu_exception_o,  // address translation threw an exception
-        // General control signals
-        input riscv::priv_lvl_t                 priv_lvl_i,
-        input riscv::priv_lvl_t                 ld_st_priv_lvl_i,
-        input logic                             sum_i,
-        input logic                             mxr_i,
-        // input logic flag_mprv_i,
-        input logic [43:0]                      satp_ppn_i,
-        input logic [ASID_WIDTH-1:0]            asid_i,
-        input logic                             flush_tlb_i,
-        // Performance counters
-        output logic                            itlb_miss_o,
-        output logic                            dtlb_miss_o,
-        // PTW memory interface
-        input  dcache_req_o_t                   req_port_i,
-        output dcache_req_i_t                   req_port_o
+    input  logic                            clk_i,
+    input  logic                            rst_ni,
+    input  logic                            flush_i,
+    input  logic                            enable_translation_i,
+    input  logic                            en_ld_st_translation_i,   // enable virtual memory translation for load/stores
+    // IF interface
+    input  icache_areq_o_t                  icache_areq_i,
+    output icache_areq_i_t                  icache_areq_o,
+    // LSU interface
+    // this is a more minimalistic interface because the actual addressing logic is handled
+    // in the LSU as we distinguish load and stores, what we do here is simple address translation
+    input  exception_t                      misaligned_ex_i,
+    input  logic                            lsu_req_i,        // request address translation
+    input  logic [63:0]                     lsu_vaddr_i,      // virtual address in
+    input  logic                            lsu_is_store_i,   // the translation is requested by a store
+    // if we need to walk the page table we can't grant in the same cycle
+    // Cycle 0
+    output logic                            lsu_dtlb_hit_o,   // sent in the same cycle as the request if translation hits in the DTLB
+    // Cycle 1
+    output logic                            lsu_valid_o,      // translation is valid
+    output logic [63:0]                     lsu_paddr_o,      // translated address
+    output exception_t                      lsu_exception_o,  // address translation threw an exception
+    // General control signals
+    input riscv::priv_lvl_t                 priv_lvl_i,
+    input riscv::priv_lvl_t                 ld_st_priv_lvl_i,
+    input logic                             sum_i,
+    input logic                             mxr_i,
+    // input logic flag_mprv_i,
+    input logic [43:0]                      satp_ppn_i,
+    input logic [ASID_WIDTH-1:0]            asid_i,
+    input logic                             flush_tlb_i,
+    // Performance counters
+    output logic                            itlb_miss_o,
+    output logic                            dtlb_miss_o,
+    // PTW memory interface
+    input  dcache_req_o_t                   req_port_i,
+    output dcache_req_i_t                   req_port_o
 );
 
     logic        iaccess_err;   // insufficient privilege to access this instruction page
@@ -151,11 +151,11 @@ module mmu #(
         .dtlb_hit_i             ( dtlb_lu_hit           ),
         .dtlb_vaddr_i           ( lsu_vaddr_i           ),
 
-        .req_port_i            ( req_port_i             ),
-        .req_port_o            ( req_port_o             ),
+        .req_port_i             ( req_port_i            ),
+        .req_port_o             ( req_port_o            ),
 
         .*
-     );
+    );
 
     // ila_1 i_ila_1 (
     //     .clk(clk_i), // input wire clk

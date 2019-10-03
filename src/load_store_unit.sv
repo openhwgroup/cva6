@@ -66,7 +66,10 @@ module load_store_unit #(
     input  logic                     dcache_wbuffer_empty_i,
     // AMO interface
     output amo_req_t                 amo_req_o,
-    input  amo_resp_t                amo_resp_i
+    input  amo_resp_t                amo_resp_i,
+    // PMP
+    input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
+    input  logic[ArianeCfg.NrPMPEntries-1:0]       pmpaddr_i
 );
     // data is misaligned
     logic data_misaligned;

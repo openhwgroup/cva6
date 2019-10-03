@@ -81,6 +81,7 @@ ariane_pkg := include/riscv_pkg.sv                          \
               include/axi_intf.sv                           \
               tb/ariane_soc_pkg.sv                          \
               include/ariane_axi_pkg.sv                     \
+              src/pmp/include/pmp_pkg.sv                    \
               src/fpu/src/fpnew_pkg.sv                      \
               src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
@@ -138,6 +139,7 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
         $(wildcard src/axi_node/src/*.sv)                                      \
         $(wildcard src/axi_riscv_atomics/src/*.sv)                             \
         $(wildcard src/axi_mem_if/src/*.sv)                                    \
+        $(wildcard src/pmp/src/*.sv)                                           \
         src/rv_plic/rtl/rv_plic_target.sv                                      \
         src/rv_plic/rtl/rv_plic_gateway.sv                                     \
         src/rv_plic/rtl/plic_regmap.sv                                         \
