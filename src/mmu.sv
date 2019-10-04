@@ -100,7 +100,7 @@ module mmu #(
 
         .lu_access_i      ( itlb_lu_access             ),
         .lu_asid_i        ( asid_i                     ),
-        .lu_vaddr_i       ( icache_areq_i.fetch_vaddr              ),
+        .lu_vaddr_i       ( icache_areq_i.fetch_vaddr  ),
         .lu_content_o     ( itlb_content               ),
 
         .lu_is_2M_o       ( itlb_is_2M                 ),
