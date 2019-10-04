@@ -27,32 +27,34 @@ module pmp #(
     // Output
     output logic allow_o
 );
-    logic [NR_ENTRIES-1:0] match;
+    if (NR_ENTRIES > 0) begin : gen_pmp
+        logic [NR_ENTRIES-1:0] match;
 
-    for (genvar i = 0; i < NR_ENTRIES; i++) begin
-        pmp_entry #(
-            .XLEN    ( XLEN    ),
-            .PMP_LEN ( PMP_LEN )
-        ) i_pmp_entry(
-            .addr_i           ( addr_i                         ),
-            .conf_addr_i      ( conf_addr_i[i]                 ),
-            .conf_addr_prev_i ( i == 0 ? '0 : conf_addr_i[i-1] ),
-            .conf_addr_mode_i ( conf_i[i].addr_mode            ),
-            .match_o          ( match[i]                       )
-        );
-    end
+        for (genvar i = 0; i < NR_ENTRIES; i++) begin
+            pmp_entry #(
+                .XLEN    ( XLEN    ),
+                .PMP_LEN ( PMP_LEN )
+            ) i_pmp_entry(
+                .addr_i           ( addr_i                         ),
+                .conf_addr_i      ( conf_addr_i[i]                 ),
+                .conf_addr_prev_i ( i == 0 ? '0 : conf_addr_i[i-1] ),
+                .conf_addr_mode_i ( conf_i[i].addr_mode            ),
+                .match_o          ( match[i]                       )
+            );
+        end
 
-    always_comb begin
-        allow_o = 1'b1;
-        if (access_type_i == 3'b000) begin
-            allow_o = 1'b0;
-        end else if (priv_lvl_i != riscv::PRIV_LVL_M) begin
-            for (int j = 0; j < NR_ENTRIES; j++) begin
-                if (match[j]) begin
-                    if ((access_type_i & conf_i[j].access_type) != access_type_i) allow_o &= 1'b0;
-                    else allow_o &= 1'b1;
+        always_comb begin
+            allow_o = 1'b1;
+            if (access_type_i == 3'b000) begin
+                allow_o = 1'b0;
+            end else if (priv_lvl_i != riscv::PRIV_LVL_M) begin
+                for (int j = 0; j < NR_ENTRIES; j++) begin
+                    if (match[j]) begin
+                        if ((access_type_i & conf_i[j].access_type) != access_type_i) allow_o &= 1'b0;
+                        else allow_o &= 1'b1;
+                    end
                 end
             end
         end
-    end
+    end else assign allow_o = 1'b1;
 endmodule
