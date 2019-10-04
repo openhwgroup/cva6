@@ -20,6 +20,7 @@ module pmp #(
     // Input
     input logic [XLEN-1:0] addr_i,
     input riscv::pmp_access_t access_type_i,
+    input riscv::priv_lvl_t priv_lvl_i,
     // Configuration
     input logic [NR_ENTRIES-1:0][PMP_LEN-1:0] conf_addr_i,
     input riscv::pmpcfg_t [NR_ENTRIES-1:0] conf_i,
@@ -30,8 +31,8 @@ module pmp #(
 
     for (genvar i = 0; i < NR_ENTRIES; i++) begin
         pmp_entry #(
-            .XLEN(XLEN),
-            .PMP_LEN(PMP_LEN)
+            .XLEN    ( XLEN    ),
+            .PMP_LEN ( PMP_LEN )
         ) i_pmp_entry(
             .addr_i           ( addr_i                         ),
             .conf_addr_i      ( conf_addr_i[i]                 ),
@@ -45,7 +46,7 @@ module pmp #(
         allow_o = 1'b1;
         if (access_type_i == 3'b000) begin
             allow_o = 1'b0;
-        end else begin
+        end else if (priv_lvl_i != riscv::PRIV_LVL_M) begin
             for (int j = 0; j < NR_ENTRIES; j++) begin
                 if (match[j]) begin
                     if ((access_type_i & conf_i[j].access_type) != access_type_i) allow_o &= 1'b0;

@@ -183,7 +183,7 @@ module mmu #(
     // Instruction Interface
     //-----------------------
     logic match_any_execute_region;
-    logic pmp_instr_access_fault;
+    logic pmp_instr_allow;
 
     // The instruction interface is a simple request response interface
     always_comb begin : instr_interface
@@ -243,7 +243,7 @@ module mmu #(
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
-        if (!match_any_execute_region || pmp_instr_access_fault) begin
+        if (!match_any_execute_region || pmp_instr_access_fault || !pmp_instr_allow) begin
           icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
         end
     end
@@ -258,12 +258,13 @@ module mmu #(
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
     ) i_pmp_if (
         .addr_i        ( icache_areq_o.fetch_paddr ),
+        .priv_lvl_i,
         // we will always execute on the instruction fetch port
         .access_type_i ( riscv::ACCESS_EXEC        ),
         // Configuration
         .conf_addr_i   ( pmpcfg_i                  ),
         .conf_i        ( pmpaddr_i                 ),
-        .allow_o       ( pmp_instr_access_fault    )
+        .allow_o       ( pmp_instr_allow           )
     );
 
     //-----------------------
@@ -281,6 +282,9 @@ module mmu #(
     // check if we need to do translation or if we are always ready (e.g.: we are not translating anything)
     assign lsu_dtlb_hit_o = (en_ld_st_translation_i) ? dtlb_lu_hit :  1'b1;
 
+    // Wires to PMP checks
+    riscv::pmp_access_t pmp_access_type;
+    logic        pmp_data_allow;
     // The data interface is simpler and only consists of a request/response interface
     always_comb begin : data_interface
         // save request and DTLB response
@@ -296,6 +300,8 @@ module mmu #(
         lsu_paddr_o           = lsu_vaddr_q[riscv::PLEN-1:0];
         lsu_valid_o           = lsu_req_q;
         lsu_exception_o       = misaligned_ex_q;
+        pmp_access_type       = lsu_is_store_q ? riscv::ACCESS_WRITE : riscv::ACCESS_READ;
+
         // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
         misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
 
@@ -353,7 +359,32 @@ module mmu #(
                 end
             end
         end
+
+        if (!pmp_data_allow) begin
+            if (lsu_is_store_q) begin
+                lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o, 1'b1};
+            end else begin
+                lsu_exception_o = {riscv::LD_ACCESS_FAULT, lsu_paddr_o, 1'b1};
+            end
+        end
     end
+
+    // Load/store PMP check
+    pmp #(
+        .XLEN       ( 64                     ),
+        .PMP_LEN    ( 54                     ),
+        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
+    ) i_pmp_data (
+        .addr_i        ( lsu_paddr_o         ),
+        .priv_lvl_i    ( ld_st_priv_lvl_i    ),
+        // we will always execute on the instruction fetch port
+        .access_type_i ( pmp_access_type     ),
+        // Configuration
+        .conf_addr_i   ( pmpcfg_i            ),
+        .conf_i        ( pmpaddr_i           ),
+        .allow_o       ( pmp_data_allow      )
+    );
+
     // ----------
     // Registers
     // ----------
