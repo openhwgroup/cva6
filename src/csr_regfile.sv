@@ -139,8 +139,8 @@ module csr_regfile #(
     logic [63:0] cycle_q,     cycle_d;
     logic [63:0] instret_q,   instret_d;
 
-    riscv::pmpcfg_t [15:0]         pmpcfg_q,  pmpcfg_d;
-    logic [NrPMPEntries-1:0][53:0] pmpaddr_q,  pmpaddr_d;
+    riscv::pmpcfg_t [15:0]    pmpcfg_q,  pmpcfg_d;
+    logic [15:0][53:0]        pmpaddr_q,  pmpaddr_d;
 
 
     assign pmpcfg_o = pmpcfg_q;
@@ -287,6 +287,14 @@ module csr_regfile #(
                 riscv::CSR_PMPADDR5:           csr_rdata = {10'b0, pmpaddr_q[5]};
                 riscv::CSR_PMPADDR6:           csr_rdata = {10'b0, pmpaddr_q[6]};
                 riscv::CSR_PMPADDR7:           csr_rdata = {10'b0, pmpaddr_q[7]};
+                riscv::CSR_PMPADDR8:           csr_rdata = {10'b0, pmpaddr_q[8]};
+                riscv::CSR_PMPADDR9:           csr_rdata = {10'b0, pmpaddr_q[9]};
+                riscv::CSR_PMPADDR10:          csr_rdata = {10'b0, pmpaddr_q[10]};
+                riscv::CSR_PMPADDR11:          csr_rdata = {10'b0, pmpaddr_q[11]};
+                riscv::CSR_PMPADDR12:          csr_rdata = {10'b0, pmpaddr_q[12]};
+                riscv::CSR_PMPADDR13:          csr_rdata = {10'b0, pmpaddr_q[13]};
+                riscv::CSR_PMPADDR14:          csr_rdata = {10'b0, pmpaddr_q[14]};
+                riscv::CSR_PMPADDR15:          csr_rdata = {10'b0, pmpaddr_q[15]};
                 default: read_access_exception = 1'b1;
             endcase
         end
@@ -575,16 +583,25 @@ module csr_regfile #(
 
                 riscv::CSR_DCACHE:             dcache_d       = csr_wdata[0]; // enable bit
                 riscv::CSR_ICACHE:             icache_d       = csr_wdata[0]; // enable bit
-                riscv::CSR_PMPCFG0:            pmpcfg_d[7:0]  = csr_wdata;
-                riscv::CSR_PMPCFG2:            pmpcfg_d[15:8] = csr_wdata;
-                riscv::CSR_PMPADDR0:           pmpaddr_d[0]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR1:           pmpaddr_d[1]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR2:           pmpaddr_d[2]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR3:           pmpaddr_d[3]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR4:           pmpaddr_d[4]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR5:           pmpaddr_d[5]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR6:           pmpaddr_d[6]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR7:           pmpaddr_d[7]   = csr_wdata[53:0];
+                // If
+                riscv::CSR_PMPCFG0: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i].locked) pmpcfg_d[i]  = csr_wdata[i*8+:8];
+                riscv::CSR_PMPCFG2: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8]  = csr_wdata[i*8+:8];
+                riscv::CSR_PMPADDR0:   if (!pmpcfg_q[0].locked)  pmpaddr_d[0]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR1:   if (!pmpcfg_q[1].locked)  pmpaddr_d[1]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR2:   if (!pmpcfg_q[2].locked)  pmpaddr_d[2]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR3:   if (!pmpcfg_q[3].locked)  pmpaddr_d[3]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR4:   if (!pmpcfg_q[4].locked)  pmpaddr_d[4]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR5:   if (!pmpcfg_q[5].locked)  pmpaddr_d[5]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR6:   if (!pmpcfg_q[6].locked)  pmpaddr_d[6]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR7:   if (!pmpcfg_q[7].locked)  pmpaddr_d[7]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR8:   if (!pmpcfg_q[8].locked)  pmpaddr_d[8]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR9:   if (!pmpcfg_q[9].locked)  pmpaddr_d[9]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR10:  if (!pmpcfg_q[10].locked)  pmpaddr_d[10]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR11:  if (!pmpcfg_q[11].locked)  pmpaddr_d[11]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR12:  if (!pmpcfg_q[12].locked)  pmpaddr_d[12]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR13:  if (!pmpcfg_q[13].locked)  pmpaddr_d[13]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR14:  if (!pmpcfg_q[14].locked)  pmpaddr_d[14]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR15:  if (!pmpcfg_q[15].locked)  pmpaddr_d[15]  = csr_wdata[53:0];
                 default: update_access_exception = 1'b1;
             endcase
         end

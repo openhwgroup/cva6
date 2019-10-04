@@ -27,6 +27,7 @@ module pmp #(
     // Output
     output logic allow_o
 );
+    // if there are no PMPs we can always grant the access.
     if (NR_ENTRIES > 0) begin : gen_pmp
         logic [NR_ENTRIES-1:0] match;
 
@@ -45,12 +46,12 @@ module pmp #(
 
         always_comb begin
             allow_o = 1'b1;
-            if (access_type_i == 3'b000) begin
-                allow_o = 1'b0;
-            end else if (priv_lvl_i != riscv::PRIV_LVL_M) begin
-                for (int j = 0; j < NR_ENTRIES; j++) begin
-                    if (match[j]) begin
-                        if ((access_type_i & conf_i[j].access_type) != access_type_i) allow_o &= 1'b0;
+            for (int i = 0; i < NR_ENTRIES; i++) begin
+                // either we are in S or U mode or the config is locked in which
+                // case it also applies in M mode
+                if (priv_lvl_i != riscv::PRIV_LVL_M || conf_i[i].locked) begin
+                    if (match[i]) begin
+                        if ((access_type_i & conf_i[i].access_type) != access_type_i) allow_o &= 1'b0;
                         else allow_o &= 1'b1;
                     end
                 end
