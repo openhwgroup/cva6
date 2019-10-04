@@ -69,6 +69,7 @@ module mmu #(
     logic        ptw_active;    // PTW is currently walking a page table
     logic        walking_instr; // PTW is walking because of an ITLB miss
     logic        ptw_error;     // PTW threw an exception
+    logic        ptw_access_exception; // PTW threw an access exception (PMPs)
 
     logic [riscv::VLEN-1:0] update_vaddr;
     tlb_update_t update_ptw_itlb, update_ptw_dtlb;
@@ -133,13 +134,15 @@ module mmu #(
 
 
     ptw  #(
-        .ASID_WIDTH             ( ASID_WIDTH            )
+        .ASID_WIDTH             ( ASID_WIDTH            ),
+        .ArianeCfg              ( ArianeCfg             )
     ) i_ptw (
         .clk_i                  ( clk_i                 ),
         .rst_ni                 ( rst_ni                ),
         .ptw_active_o           ( ptw_active            ),
         .walking_instr_o        ( walking_instr         ),
         .ptw_error_o            ( ptw_error             ),
+        .ptw_access_exception_o ( ptw_access_exception  ),
         .enable_translation_i   ( enable_translation_i  ),
 
         .update_vaddr_o         ( update_vaddr          ),
@@ -148,7 +151,7 @@ module mmu #(
 
         .itlb_access_i          ( itlb_lu_access        ),
         .itlb_hit_i             ( itlb_lu_hit           ),
-        .itlb_vaddr_i           ( icache_areq_i.fetch_vaddr         ),
+        .itlb_vaddr_i           ( icache_areq_i.fetch_vaddr ),
 
         .dtlb_access_i          ( dtlb_lu_access        ),
         .dtlb_hit_i             ( dtlb_lu_hit           ),
@@ -238,8 +241,10 @@ module mmu #(
             // ---------
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
-                icache_areq_o.fetch_valid = ptw_error;
-                icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
+                icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
+                if (ptw_error) icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
+                // TODO(moschn,zarubaf): What should the value of tval be in this case?
+                else icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
@@ -356,6 +361,13 @@ module mmu #(
                     end else begin
                         lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end
+                end
+
+                if (ptw_access_exception) begin
+                    // an error makes the translation valid
+                    lsu_valid_o = 1'b1;
+                    // the page table walker can only throw page faults
+                    lsu_exception_o = {riscv::LD_ACCESS_FAULT, {25'b0, update_vaddr}, 1'b1};
                 end
             end
         end
