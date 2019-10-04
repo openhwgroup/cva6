@@ -286,13 +286,13 @@ package riscv;
     // Exception Cause Codes
     // ----------------------
     localparam logic [63:0] INSTR_ADDR_MISALIGNED = 0;
-    localparam logic [63:0] INSTR_ACCESS_FAULT    = 1;
+    localparam logic [63:0] INSTR_ACCESS_FAULT    = 1;  // Illegal access as governed by PMPs and PMAs
     localparam logic [63:0] ILLEGAL_INSTR         = 2;
     localparam logic [63:0] BREAKPOINT            = 3;
     localparam logic [63:0] LD_ADDR_MISALIGNED    = 4;
-    localparam logic [63:0] LD_ACCESS_FAULT       = 5;
+    localparam logic [63:0] LD_ACCESS_FAULT       = 5;  // Illegal access as governed by PMPs and PMAs
     localparam logic [63:0] ST_ADDR_MISALIGNED    = 6;
-    localparam logic [63:0] ST_ACCESS_FAULT       = 7;
+    localparam logic [63:0] ST_ACCESS_FAULT       = 7;  // Illegal access as governed by PMPs and PMAs
     localparam logic [63:0] ENV_CALL_UMODE        = 8;  // environment call from user mode
     localparam logic [63:0] ENV_CALL_SMODE        = 9;  // environment call from supervisor mode
     localparam logic [63:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
