@@ -528,20 +528,33 @@ package riscv;
     } fcsr_t;
 
     // PMP
-    typedef enum logic [1:0] { 
-        OFF   = 2'b00, 
-        TOR   = 2'b01, 
-        NA4   = 2'b10, 
-        NAPOT = 2'b11 
+    typedef enum logic [1:0] {
+        OFF   = 2'b00,
+        TOR   = 2'b01,
+        NA4   = 2'b10,
+        NAPOT = 2'b11
     } pmp_addr_mode_t;
+
+    // PMP Access Type
+    typedef enum logic [2:0] {
+        ACCESS_NONE  = 3'b000,
+        ACCESS_READ  = 3'b001,
+        ACCESS_WRITE = 3'b010,
+        ACCESS_EXEC  = 3'b100
+    } pmp_access_t;
+
+    typedef struct packed {
+        logic           x;
+        logic           w;
+        logic           r;
+    } pmpcfg_access_t;
+
     // packed struct of a PMP configuration register (8bit)
     typedef struct packed {
         bit             locked;     // lock this configuration
         logic [1:0]     reserved;
         pmp_addr_mode_t addr_mode;  // Off, TOR, NA4, NAPOT
-        logic           x;          // execute
-        logic           w;          // write
-        logic           r;          // read
+        pmpcfg_access_t access_type;
     } pmpcfg_t;
 
     // -----
