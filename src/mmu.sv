@@ -58,7 +58,10 @@ module mmu #(
     output logic                            dtlb_miss_o,
     // PTW memory interface
     input  dcache_req_o_t                   req_port_i,
-    output dcache_req_i_t                   req_port_o
+    output dcache_req_i_t                   req_port_o,
+    // PMP
+    input  riscv::pmpcfg_t [15:0]             pmpcfg_i,
+    input  logic [ArianeCfg.NrPMPEntries-1:0] pmpaddr_i
 );
 
     logic        iaccess_err;   // insufficient privilege to access this instruction page
@@ -180,6 +183,8 @@ module mmu #(
     // Instruction Interface
     //-----------------------
     logic match_any_execute_region;
+    logic pmp_instr_access_fault;
+
     // The instruction interface is a simple request response interface
     always_comb begin : instr_interface
         // MMU disabled: just pass through
@@ -238,13 +243,28 @@ module mmu #(
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
-        if (!match_any_execute_region) begin
+        if (!match_any_execute_region || pmp_instr_access_fault) begin
           icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
         end
     end
 
     // check for execute flag on memory
     assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
+
+    // Instruction fetch
+    pmp #(
+        .XLEN       ( 64                     ),
+        .PMP_LEN    ( 54                     ),
+        .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
+    ) i_pmp_if (
+        .addr_i        ( icache_areq_o.fetch_paddr ),
+        // we will always execute on the instruction fetch port
+        .access_type_i ( riscv::ACCESS_EXEC        ),
+        // Configuration
+        .conf_addr_i   ( pmpcfg_i                  ),
+        .conf_i        ( pmpaddr_i                 ),
+        .allow_o       ( pmp_instr_access_fault    )
+    );
 
     //-----------------------
     // Data Interface
