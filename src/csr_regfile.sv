@@ -141,7 +141,11 @@ module csr_regfile #(
 
     riscv::pmpcfg_t [15:0]         pmpcfg_q,  pmpcfg_d;
     logic [NrPMPEntries-1:0][53:0] pmpaddr_q,  pmpaddr_d;
-   
+
+
+    assign pmpcfg_o = pmpcfg_q;
+    assign pmpaddr_o = pmpaddr_q;
+
     riscv::fcsr_t fcsr_q, fcsr_d;
     // ----------------
     // Assignments
@@ -1106,8 +1110,13 @@ module csr_regfile #(
             // wait for interrupt
             wfi_q                  <= wfi_d;
             // pmp
-            pmpcfg_q               <= pmpcfg_d;
-            pmpaddr_q              <= pmpaddr_d;
+            if (NrPMPEntries > 0) begin
+                pmpcfg_q[NrPMPEntries-1:0]  <= pmpcfg_d[NrPMPEntries-1:0];
+                pmpaddr_q[NrPMPEntries-1:0] <= pmpaddr_d[NrPMPEntries-1:0];
+            end else begin
+                pmpcfg_q <= '0;
+                pmpaddr_q <= '0;
+            end
         end
     end
 
