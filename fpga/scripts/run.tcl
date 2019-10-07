@@ -39,7 +39,7 @@ if {$::env(BOARD) eq "genesys2"} {
     exit 1
 }
 
-set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file" "*$registers"]]
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file" "*/$registers"]]
 set_property -dict { file_type {Verilog Header} is_global_include 1} -objects $file_obj
 
 update_compile_order -fileset sources_1
