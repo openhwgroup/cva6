@@ -143,8 +143,8 @@ module ptw #(
         // ...and they are always loads
         .access_type_i ( riscv::ACCESS_READ        ),
         // Configuration
-        .conf_addr_i   ( pmpcfg_i                  ),
-        .conf_i        ( pmpaddr_i                 ),
+        .conf_addr_i   ( pmpaddr_i                 ),
+        .conf_i        ( pmpcfg_i                  ),
         .allow_o       ( allow_access              )
     );
 
