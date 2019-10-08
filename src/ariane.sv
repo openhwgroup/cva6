@@ -182,8 +182,8 @@ module ariane #(
   logic                     icache_en_csr;
   logic                     debug_mode;
   logic                     single_step_csr_commit;
-  riscv::pmpcfg_t [15:0]                    pmpcfg;
-  logic [ArianeCfg.NrPMPEntries-1:0][53:0]  pmpaddr;
+  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0] pmpcfg;
+  logic [ArianeCfg.NrPMPEntries-1:0][53:0]     pmpaddr;
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------

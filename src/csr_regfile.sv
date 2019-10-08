@@ -85,8 +85,8 @@ module csr_regfile #(
     input  logic  [63:0]          perf_data_i,                // read data from performance counter module
     output logic                  perf_we_o,
     // PMPs
-    output riscv::pmpcfg_t [15:0]                   pmpcfg_o,   // PMP configuration containing pmpcfg for max 16 PMPs
-    output logic[NrPMPEntries-1:0][53:0]            pmpaddr_o   // PMP addresses
+    output riscv::pmpcfg_t [NrPMPEntries-1:0] pmpcfg_o,   // PMP configuration containing pmpcfg for max 16 PMPs
+    output logic [NrPMPEntries-1:0][53:0]     pmpaddr_o   // PMP addresses
 );
     // internal signal to keep track of access exceptions
     logic        read_access_exception, update_access_exception, privilege_violation;
@@ -143,7 +143,7 @@ module csr_regfile #(
     logic [15:0][53:0]        pmpaddr_q,  pmpaddr_d;
 
 
-    assign pmpcfg_o = pmpcfg_q;
+    assign pmpcfg_o = pmpcfg_q[NrPMPEntries-1:0];
     assign pmpaddr_o = pmpaddr_q;
 
     riscv::fcsr_t fcsr_q, fcsr_d;

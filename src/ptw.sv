@@ -61,8 +61,8 @@ module ptw #(
     output logic                    itlb_miss_o,
     output logic                    dtlb_miss_o,
     // PMP
-    input  riscv::pmpcfg_t [15:0]             pmpcfg_i,
-    input  logic [ArianeCfg.NrPMPEntries-1:0] pmpaddr_i
+    input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0]  pmpcfg_i,
+    input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]      pmpaddr_i
 
 );
 
