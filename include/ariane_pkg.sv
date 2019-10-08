@@ -89,7 +89,7 @@ package ariane_pkg;
         assert(Cfg.NrNonIdempotentRules <= NrMaxRules);
         assert(Cfg.NrExecuteRegionRules <= NrMaxRules);
         assert(Cfg.NrCachedRegionRules  <= NrMaxRules);
-        assert(Cfg.PMPEntries <= 16);
+        assert(Cfg.NrPMPEntries <= 16);
       `endif
       // pragma translate_on
     endfunction
