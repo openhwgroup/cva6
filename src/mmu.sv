@@ -268,8 +268,8 @@ module mmu #(
         // we will always execute on the instruction fetch port
         .access_type_i ( riscv::ACCESS_EXEC        ),
         // Configuration
-        .conf_addr_i   ( pmpcfg_i                  ),
-        .conf_i        ( pmpaddr_i                 ),
+        .conf_addr_i   ( pmpaddr_i                 ),
+        .conf_i        ( pmpcfg_i                  ),
         .allow_o       ( pmp_instr_allow           )
     );
 
@@ -393,8 +393,8 @@ module mmu #(
         // we will always execute on the instruction fetch port
         .access_type_i ( pmp_access_type     ),
         // Configuration
-        .conf_addr_i   ( pmpcfg_i            ),
-        .conf_i        ( pmpaddr_i           ),
+        .conf_addr_i   ( pmpaddr_i           ),
+        .conf_i        ( pmpcfg_i            ),
         .allow_o       ( pmp_data_allow      )
     );
 
