@@ -340,9 +340,9 @@ module frontend #(
           icache_data_q        <= icache_data;
           icache_vaddr_q       <= icache_dreq_i.vaddr;
           // Map the only three exceptions which can occur in the frontend to a two bit enum
-          if (icache_dreq_i.ex == riscv::INSTR_ACCESS_FAULT) begin
+          if (icache_dreq_i.ex.cause == riscv::INSTR_PAGE_FAULT) begin
             icache_ex_valid_q <= ariane_pkg::FE_INSTR_PAGE_FAULT;
-          end else if (icache_dreq_i.ex == riscv::INSTR_ACCESS_FAULT) begin
+          end else if (icache_dreq_i.ex.cause == riscv::INSTR_ACCESS_FAULT) begin
             icache_ex_valid_q <= ariane_pkg::FE_INSTR_ACCESS_FAULT;
           end else icache_ex_valid_q <= ariane_pkg::FE_NONE;
           // save the uppermost prediction
