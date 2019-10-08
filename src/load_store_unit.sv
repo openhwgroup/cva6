@@ -68,8 +68,8 @@ module load_store_unit #(
     output amo_req_t                 amo_req_o,
     input  amo_resp_t                amo_resp_i,
     // PMP
-    input  riscv::pmpcfg_t [15:0]                  pmpcfg_i,
-    input  logic [ArianeCfg.NrPMPEntries-1:0]      pmpaddr_i
+    input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0] pmpcfg_i,
+    input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]     pmpaddr_i
 );
     // data is misaligned
     logic data_misaligned;
