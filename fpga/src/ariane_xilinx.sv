@@ -31,6 +31,7 @@ module ariane_xilinx (
   output logic [ 0:0]  ddr3_cs_n   ,
   output logic [ 3:0]  ddr3_dm     ,
   output logic [ 0:0]  ddr3_odt    ,
+
   output wire          eth_rst_n   ,
   input  wire          eth_rxck    ,
   input  wire          eth_rxctl   ,
@@ -42,6 +43,39 @@ module ariane_xilinx (
   output logic         eth_mdc     ,
   output logic [ 7:0]  led         ,
   input  logic [ 7:0]  sw          ,
+  output logic         fan_pwm     ,
+`elsif KC705
+  input  logic         sys_clk_p   ,
+  input  logic         sys_clk_n   ,
+
+  input  logic         cpu_reset  ,
+  inout  logic [63:0]  ddr3_dq     ,
+  inout  logic [ 7:0]  ddr3_dqs_n  ,
+  inout  logic [ 7:0]  ddr3_dqs_p  ,
+  output logic [13:0]  ddr3_addr   ,
+  output logic [ 2:0]  ddr3_ba     ,
+  output logic         ddr3_ras_n  ,
+  output logic         ddr3_cas_n  ,
+  output logic         ddr3_we_n   ,
+  output logic         ddr3_reset_n,
+  output logic [ 0:0]  ddr3_ck_p   ,
+  output logic [ 0:0]  ddr3_ck_n   ,
+  output logic [ 0:0]  ddr3_cke    ,
+  output logic [ 0:0]  ddr3_cs_n   ,
+  output logic [ 7:0]  ddr3_dm     ,
+  output logic [ 0:0]  ddr3_odt    ,
+
+  output wire          eth_rst_n   ,
+  input  wire          eth_rxck    ,
+  input  wire          eth_rxctl   ,
+  input  wire [3:0]    eth_rxd     ,
+  output wire          eth_txck    ,
+  output wire          eth_txctl   ,
+  output wire [3:0]    eth_txd     ,
+  inout  wire          eth_mdio    ,
+  output logic         eth_mdc     ,
+  output logic [ 3:0]  led         ,
+  input  logic [ 3:0]  sw          ,
   output logic         fan_pwm     ,
 `elsif VCU118
   input  wire          c0_sys_clk_p    ,  // 250 MHz Clock for DDR
@@ -133,6 +167,8 @@ assign cpu_resetn = ~cpu_reset;
 `elsif GENESYSII
 logic cpu_reset;
 assign cpu_reset  = ~cpu_resetn;
+`elsif KC705
+assign cpu_resetn = ~cpu_reset;
 `endif
 
 logic pll_locked;
@@ -425,6 +461,11 @@ bootrom i_bootrom (
 // ---------------
 // Peripherals
 // ---------------
+`ifdef KC705
+  logic [7:0] unused_led;
+  logic [3:0] unused_switches = 4'b0000;
+`endif
+
 ariane_peripherals #(
     .AxiAddrWidth ( AxiAddrWidth     ),
     .AxiDataWidth ( AxiDataWidth     ),
@@ -432,9 +473,12 @@ ariane_peripherals #(
     .AxiUserWidth ( AxiUserWidth     ),
     .InclUART     ( 1'b1             ),
     .InclGPIO     ( 1'b1             ),
-    `ifdef GENESYSII
+    `ifdef KINTEX7
     .InclSPI      ( 1'b1         ),
     .InclEthernet ( 1'b1         )
+    `elsif KC705
+    .InclSPI      ( 1'b1         ),
+    .InclEthernet ( 1'b0         ) // Ethernet requires RAMB16 fpga/src/ariane-ethernet/dualmem_widen8.sv to be defined
     `elsif VCU118
     .InclSPI      ( 1'b0         ),
     .InclEthernet ( 1'b0         )
@@ -467,8 +511,13 @@ ariane_peripherals #(
     .spi_mosi       ( spi_mosi                    ),
     .spi_miso       ( spi_miso                    ),
     .spi_ss         ( spi_ss                      ),
-    .leds_o         ( led                         ),
-    .dip_switches_i ( sw                          )
+    `ifdef KC705
+      .leds_o         ( {led[3:0], unused_led[7:4]}),
+      .dip_switches_i ( {sw, unused_switches}     )
+    `else
+      .leds_o         ( led                       ),
+      .dip_switches_i ( sw                        )
+    `endif
 );
 
 
@@ -541,8 +590,6 @@ axi_riscv_atomics_wrap #(
 
 `ifdef PROTOCOL_CHECKER
 logic pc_status;
-// assign led[0] = pc_status;
-// assign led[7:1] = '0;
 
 xlnx_protocol_checker i_xlnx_protocol_checker (
   .pc_status(),
@@ -695,7 +742,7 @@ xlnx_clk_gen i_xlnx_clk_gen (
   .clk_in1  ( ddr_clock_out )
 );
 
-`ifdef GENESYSII
+`ifdef KINTEX7
 fan_ctrl i_fan_ctrl (
     .clk_i         ( clk        ),
     .rst_ni        ( ndmreset_n ),
