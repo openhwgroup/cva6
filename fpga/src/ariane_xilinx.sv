@@ -31,7 +31,6 @@ module ariane_xilinx (
   output logic [ 0:0]  ddr3_cs_n   ,
   output logic [ 3:0]  ddr3_dm     ,
   output logic [ 0:0]  ddr3_odt    ,
-
   output wire          eth_rst_n   ,
   input  wire          eth_rxck    ,
   input  wire          eth_rxctl   ,
@@ -44,14 +43,14 @@ module ariane_xilinx (
   output logic [ 7:0]  led         ,
   input  logic [ 7:0]  sw          ,
   output logic         fan_pwm     ,
-`elsif KC705
+  input  logic        trst_n      ,
+`elsif VC707
   input  logic         sys_clk_p   ,
   input  logic         sys_clk_n   ,
-
-  input  logic         cpu_reset  ,
-  inout  logic [63:0]  ddr3_dq     ,
-  inout  logic [ 7:0]  ddr3_dqs_n  ,
-  inout  logic [ 7:0]  ddr3_dqs_p  ,
+  input  logic         cpu_reset   ,
+  inout  wire  [63:0]  ddr3_dq     ,
+  inout  wire  [ 7:0]  ddr3_dqs_n  ,
+  inout  wire  [ 7:0]  ddr3_dqs_p  ,
   output logic [13:0]  ddr3_addr   ,
   output logic [ 2:0]  ddr3_ba     ,
   output logic         ddr3_ras_n  ,
@@ -64,7 +63,6 @@ module ariane_xilinx (
   output logic [ 0:0]  ddr3_cs_n   ,
   output logic [ 7:0]  ddr3_dm     ,
   output logic [ 0:0]  ddr3_odt    ,
-
   output wire          eth_rst_n   ,
   input  wire          eth_rxck    ,
   input  wire          eth_rxctl   ,
@@ -74,9 +72,10 @@ module ariane_xilinx (
   output wire [3:0]    eth_txd     ,
   inout  wire          eth_mdio    ,
   output logic         eth_mdc     ,
-  output logic [ 3:0]  led         ,
-  input  logic [ 3:0]  sw          ,
+  output logic [ 7:0]  led         ,
+  input  logic [ 7:0]  sw          ,
   output logic         fan_pwm     ,
+  input  logic        trst      ,
 `elsif VCU118
   input  wire          c0_sys_clk_p    ,  // 250 MHz Clock for DDR
   input  wire          c0_sys_clk_n    ,  // 250 MHz Clock for DDR
@@ -102,6 +101,7 @@ module ariane_xilinx (
   output wire [7:0]    pci_exp_txn     ,
   input  wire [7:0]    pci_exp_rxp     ,
   input  wire [7:0]    pci_exp_rxn     ,
+  input  logic        trst_n      ,
 `endif
   // SPI
   output logic        spi_mosi    ,
@@ -111,7 +111,6 @@ module ariane_xilinx (
   // common part
   input  logic        tck         ,
   input  logic        tms         ,
-  input  logic        trst_n      ,
   input  logic        tdi         ,
   output wire         tdo         ,
   input  logic        rx          ,
@@ -167,8 +166,11 @@ assign cpu_resetn = ~cpu_reset;
 `elsif GENESYSII
 logic cpu_reset;
 assign cpu_reset  = ~cpu_resetn;
-`elsif KC705
-assign cpu_resetn = ~cpu_reset;
+`elsif VC707
+logic cpu_resetn;
+assign cpu_resetn  = ~cpu_reset;
+logic trst_n;
+assign trst_n = ~trst;
 `endif
 
 logic pll_locked;
@@ -461,11 +463,6 @@ bootrom i_bootrom (
 // ---------------
 // Peripherals
 // ---------------
-`ifdef KC705
-  logic [7:0] unused_led;
-  logic [3:0] unused_switches = 4'b0000;
-`endif
-
 ariane_peripherals #(
     .AxiAddrWidth ( AxiAddrWidth     ),
     .AxiDataWidth ( AxiDataWidth     ),
@@ -473,12 +470,12 @@ ariane_peripherals #(
     .AxiUserWidth ( AxiUserWidth     ),
     .InclUART     ( 1'b1             ),
     .InclGPIO     ( 1'b1             ),
-    `ifdef KINTEX7
+    `ifdef GENESYSII
     .InclSPI      ( 1'b1         ),
     .InclEthernet ( 1'b1         )
-    `elsif KC705
+    `elsif VC707
     .InclSPI      ( 1'b1         ),
-    .InclEthernet ( 1'b0         ) // Ethernet requires RAMB16 fpga/src/ariane-ethernet/dualmem_widen8.sv to be defined
+    .InclEthernet ( 1'b1         )
     `elsif VCU118
     .InclSPI      ( 1'b0         ),
     .InclEthernet ( 1'b0         )
@@ -511,13 +508,8 @@ ariane_peripherals #(
     .spi_mosi       ( spi_mosi                    ),
     .spi_miso       ( spi_miso                    ),
     .spi_ss         ( spi_ss                      ),
-    `ifdef KC705
-      .leds_o         ( {led[3:0], unused_led[7:4]}),
-      .dip_switches_i ( {sw, unused_switches}     )
-    `else
-      .leds_o         ( led                       ),
-      .dip_switches_i ( sw                        )
-    `endif
+    .leds_o         ( led                         ),
+    .dip_switches_i ( sw                          )
 );
 
 
@@ -590,6 +582,8 @@ axi_riscv_atomics_wrap #(
 
 `ifdef PROTOCOL_CHECKER
 logic pc_status;
+// assign led[0] = pc_status;
+// assign led[7:1] = '0;
 
 xlnx_protocol_checker i_xlnx_protocol_checker (
   .pc_status(),
@@ -742,7 +736,84 @@ xlnx_clk_gen i_xlnx_clk_gen (
   .clk_in1  ( ddr_clock_out )
 );
 
-`ifdef KINTEX7
+`ifdef GENESYSII
+fan_ctrl i_fan_ctrl (
+    .clk_i         ( clk        ),
+    .rst_ni        ( ndmreset_n ),
+    .pwm_setting_i ( '1         ),
+    .fan_pwm_o     ( fan_pwm    )
+);
+
+xlnx_mig_7_ddr3 i_ddr (
+    .sys_clk_p,
+    .sys_clk_n,
+    .ddr3_dq,
+    .ddr3_dqs_n,
+    .ddr3_dqs_p,
+    .ddr3_addr,
+    .ddr3_ba,
+    .ddr3_ras_n,
+    .ddr3_cas_n,
+    .ddr3_we_n,
+    .ddr3_reset_n,
+    .ddr3_ck_p,
+    .ddr3_ck_n,
+    .ddr3_cke,
+    .ddr3_cs_n,
+    .ddr3_dm,
+    .ddr3_odt,
+    .mmcm_locked     (                ), // keep open
+    .app_sr_req      ( '0             ),
+    .app_ref_req     ( '0             ),
+    .app_zq_req      ( '0             ),
+    .app_sr_active   (                ), // keep open
+    .app_ref_ack     (                ), // keep open
+    .app_zq_ack      (                ), // keep open
+    .ui_clk          ( ddr_clock_out  ),
+    .ui_clk_sync_rst ( ddr_sync_reset ),
+    .aresetn         ( ndmreset_n     ),
+    .s_axi_awid,
+    .s_axi_awaddr    ( s_axi_awaddr[29:0] ),
+    .s_axi_awlen,
+    .s_axi_awsize,
+    .s_axi_awburst,
+    .s_axi_awlock,
+    .s_axi_awcache,
+    .s_axi_awprot,
+    .s_axi_awqos,
+    .s_axi_awvalid,
+    .s_axi_awready,
+    .s_axi_wdata,
+    .s_axi_wstrb,
+    .s_axi_wlast,
+    .s_axi_wvalid,
+    .s_axi_wready,
+    .s_axi_bready,
+    .s_axi_bid,
+    .s_axi_bresp,
+    .s_axi_bvalid,
+    .s_axi_arid,
+    .s_axi_araddr     ( s_axi_araddr[29:0] ),
+    .s_axi_arlen,
+    .s_axi_arsize,
+    .s_axi_arburst,
+    .s_axi_arlock,
+    .s_axi_arcache,
+    .s_axi_arprot,
+    .s_axi_arqos,
+    .s_axi_arvalid,
+    .s_axi_arready,
+    .s_axi_rready,
+    .s_axi_rid,
+    .s_axi_rdata,
+    .s_axi_rresp,
+    .s_axi_rlast,
+    .s_axi_rvalid,
+    .init_calib_complete (            ), // keep open
+    .device_temp         (            ), // keep open
+    .sys_rst             ( cpu_resetn )
+);
+`elsif VC707
 fan_ctrl i_fan_ctrl (
     .clk_i         ( clk        ),
     .rst_ni        ( ndmreset_n ),
