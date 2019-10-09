@@ -137,7 +137,7 @@ module ptw #(
         .PMP_LEN    ( 54                     ),
         .NR_ENTRIES ( ArianeCfg.NrPMPEntries )
     ) i_pmp_ptw (
-        .addr_i        ( ptw_pptr_q                ),
+        .addr_i        ( {8'b0, ptw_pptr_q}        ),
         // PTW access are always checked as if in S-Mode...
         .priv_lvl_i    ( riscv::PRIV_LVL_S         ),
         // ...and they are always loads
