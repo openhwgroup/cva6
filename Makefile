@@ -28,6 +28,8 @@ test-location  ?= output/test
 torture-logs   :=
 # custom elf bin to run with sim or sim-verilator
 elf-bin        ?= tmp/riscv-tests/build/benchmarks/dhrystone.riscv
+# board name for bitstream generation. Currently supported: kc705, genesys2
+BOARD          ?= genesys2
 # root path
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 root-dir := $(dir $(mkfile_path))
@@ -39,6 +41,23 @@ endif
 
 ifndef RISCV
 $(error RISCV not set - please point your RISCV variable to your RISCV installation)
+endif
+
+# setting additional xilinx board parameters for the selected board
+ifeq ($(BOARD), genesys2)
+	XILINX_PART              := xc7k325tffg900-2
+	XILINX_BOARD             := digilentinc.com:genesys2:part0:1.1
+	CLK_PERIOD_NS            := 20
+else ifeq ($(BOARD), kc705)
+	XILINX_PART              := xc7k325tffg900-2
+	XILINX_BOARD             := xilinx.com:kc705:part0:1.5
+	CLK_PERIOD_NS            := 20
+else ifeq ($(BOARD), vc707)
+	XILINX_PART              := xc7vx485tffg1761-2
+	XILINX_BOARD             := xilinx.com:vc707:part0:1.3
+	CLK_PERIOD_NS            := 20
+else
+$(error Unknown board - please specify a supported FPGA board)
 endif
 
 # spike tandem verification
@@ -503,8 +522,7 @@ fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> fpga/scripts/add_sources.tcl
 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
-	cd fpga && make BOARD="vc707" XILINX_PART="xc7vx485tffg1761-2" XILINX_BOARD="xilinx.com:vc707:part0:1.3" CLK_PERIOD_NS="20"
-	# cd fpga && make BOARD="genesys2" XILINX_PART="xc7k325tffg900-2" XILINX_BOARD="digilentinc.com:genesys2:part0:1.1" CLK_PERIOD_NS="20"
+	cd fpga && make BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
 
 .PHONY: fpga
 

@@ -14,9 +14,17 @@
 
 # Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-# Genesys II and VC707 available
-# add_files -fileset constrs_1 -norecurse constraints/genesys-2.xdc
-add_files -fileset constrs_1 -norecurse constraints/vc707.xdc
+# hard-coded to Genesys 2 for the moment
+
+if {$::env(BOARD) eq "genesys2"} {
+    add_files -fileset constrs_1 -norecurse constraints/genesys-2.xdc
+} elseif {$::env(BOARD) eq "kc705"} {
+      add_files -fileset constrs_1 -norecurse constraints/kc705.xdc
+} elseif {$::env(BOARD) eq "vc707"} {
+      add_files -fileset constrs_1 -norecurse constraints/vc707.xdc
+} else {
+      exit 1
+}
 
 read_ip xilinx/xlnx_mig_7_ddr3/ip/xlnx_mig_7_ddr3.xci
 read_ip xilinx/xlnx_axi_clock_converter/ip/xlnx_axi_clock_converter.xci
@@ -32,27 +40,23 @@ source scripts/add_sources.tcl
 
 set_property top ${project}_xilinx [current_fileset]
 
-# if {$::env(BOARD) eq "genesys2"} {
-    # read_verilog -sv {src/genesysii.svh ../src/common_cells/include/common_cells/registers.svh}
-    # set file "src/genesysii.svh"
-    # set registers "../src/common_cells/include/common_cells/registers.svh"
-# } else {
-    # exit 1
-# }
-
-#########
-# vc707 #
-#########
-
-if {$::env(BOARD) eq "vc707"} {
-    read_verilog -sv {src/vc707.svh ../src/common_cells/include/common_cells/registers.svh}
-    set file "src/vc707.svh"
+if {$::env(BOARD) eq "genesys2"} {
+    read_verilog -sv {src/genesysii.svh ../src/common_cells/include/common_cells/registers.svh}
+    set file "src/genesysii.svh"
     set registers "../src/common_cells/include/common_cells/registers.svh"
+} elseif {$::env(BOARD) eq "kc705"} {
+      read_verilog -sv {src/kc705.svh ../src/common_cells/include/common_cells/registers.svh}
+      set file "src/kc705.svh"
+      set registers "../src/common_cells/include/common_cells/registers.svh"
+} elseif {$::env(BOARD) eq "vc707"} {
+      read_verilog -sv {src/vc707.svh ../src/common_cells/include/common_cells/registers.svh}
+      set file "src/vc707.svh"
+      set registers "../src/common_cells/include/common_cells/registers.svh"
 } else {
     exit 1
 }
 
-set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file" "*$registers"]]
+set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file" "*/$registers"]]
 set_property -dict { file_type {Verilog Header} is_global_include 1} -objects $file_obj
 
 update_compile_order -fileset sources_1
