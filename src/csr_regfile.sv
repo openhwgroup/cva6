@@ -274,27 +274,27 @@ module csr_regfile #(
                 riscv::CSR_MHPM_COUNTER_30,
                 riscv::CSR_MHPM_COUNTER_31:           csr_rdata   = perf_data_i;
                 // custom (non RISC-V) cache control
-                riscv::CSR_DCACHE:             csr_rdata = dcache_q;
-                riscv::CSR_ICACHE:             csr_rdata = icache_q;
+                riscv::CSR_DCACHE:           csr_rdata = dcache_q;
+                riscv::CSR_ICACHE:           csr_rdata = icache_q;
                 // PMPs
-                riscv::CSR_PMPCFG0:            csr_rdata = pmpcfg_q[7:0];
-                riscv::CSR_PMPCFG2:            csr_rdata = pmpcfg_q[15:8];
-                riscv::CSR_PMPADDR0:           csr_rdata = {10'b0, pmpaddr_q[0]};
-                riscv::CSR_PMPADDR1:           csr_rdata = {10'b0, pmpaddr_q[1]};
-                riscv::CSR_PMPADDR2:           csr_rdata = {10'b0, pmpaddr_q[2]};
-                riscv::CSR_PMPADDR3:           csr_rdata = {10'b0, pmpaddr_q[3]};
-                riscv::CSR_PMPADDR4:           csr_rdata = {10'b0, pmpaddr_q[4]};
-                riscv::CSR_PMPADDR5:           csr_rdata = {10'b0, pmpaddr_q[5]};
-                riscv::CSR_PMPADDR6:           csr_rdata = {10'b0, pmpaddr_q[6]};
-                riscv::CSR_PMPADDR7:           csr_rdata = {10'b0, pmpaddr_q[7]};
-                riscv::CSR_PMPADDR8:           csr_rdata = {10'b0, pmpaddr_q[8]};
-                riscv::CSR_PMPADDR9:           csr_rdata = {10'b0, pmpaddr_q[9]};
-                riscv::CSR_PMPADDR10:          csr_rdata = {10'b0, pmpaddr_q[10]};
-                riscv::CSR_PMPADDR11:          csr_rdata = {10'b0, pmpaddr_q[11]};
-                riscv::CSR_PMPADDR12:          csr_rdata = {10'b0, pmpaddr_q[12]};
-                riscv::CSR_PMPADDR13:          csr_rdata = {10'b0, pmpaddr_q[13]};
-                riscv::CSR_PMPADDR14:          csr_rdata = {10'b0, pmpaddr_q[14]};
-                riscv::CSR_PMPADDR15:          csr_rdata = {10'b0, pmpaddr_q[15]};
+                riscv::CSR_PMPCFG0:          csr_rdata = pmpcfg_q[7:0];
+                riscv::CSR_PMPCFG2:          csr_rdata = pmpcfg_q[15:8];
+                riscv::CSR_PMPADDR0:         csr_rdata = {10'b0, pmpaddr_q[0][53:1], (pmpcfg_q[0].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR1:         csr_rdata = {10'b0, pmpaddr_q[1][53:1], (pmpcfg_q[1].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR2:         csr_rdata = {10'b0, pmpaddr_q[2][53:1], (pmpcfg_q[2].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR3:         csr_rdata = {10'b0, pmpaddr_q[3][53:1], (pmpcfg_q[3].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR4:         csr_rdata = {10'b0, pmpaddr_q[4][53:1], (pmpcfg_q[4].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR5:         csr_rdata = {10'b0, pmpaddr_q[5][53:1], (pmpcfg_q[5].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR6:         csr_rdata = {10'b0, pmpaddr_q[6][53:1], (pmpcfg_q[6].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR7:         csr_rdata = {10'b0, pmpaddr_q[7][53:1], (pmpcfg_q[7].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR8:         csr_rdata = {10'b0, pmpaddr_q[8][53:1], (pmpcfg_q[8].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR9:         csr_rdata = {10'b0, pmpaddr_q[9][53:1], (pmpcfg_q[9].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR10:        csr_rdata = {10'b0, pmpaddr_q[10][53:1], (pmpcfg_q[10].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR11:        csr_rdata = {10'b0, pmpaddr_q[11][53:1], (pmpcfg_q[11].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR12:        csr_rdata = {10'b0, pmpaddr_q[12][53:1], (pmpcfg_q[12].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR13:        csr_rdata = {10'b0, pmpaddr_q[13][53:1], (pmpcfg_q[13].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR14:        csr_rdata = {10'b0, pmpaddr_q[14][53:1], (pmpcfg_q[14].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
+                riscv::CSR_PMPADDR15:        csr_rdata = {10'b0, pmpaddr_q[15][53:1], (pmpcfg_q[15].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
                 default: read_access_exception = 1'b1;
             endcase
         end
