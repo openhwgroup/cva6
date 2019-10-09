@@ -551,7 +551,7 @@ package riscv;
 
     // packed struct of a PMP configuration register (8bit)
     typedef struct packed {
-        bit             locked;     // lock this configuration
+        logic           locked;     // lock this configuration
         logic [1:0]     reserved;
         pmp_addr_mode_t addr_mode;  // Off, TOR, NA4, NAPOT
         pmpcfg_access_t access_type;
