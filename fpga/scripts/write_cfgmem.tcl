@@ -25,9 +25,11 @@ if {$argc < 2 || $argc > 4} {
 lassign $argv mcsfile bitfile
 
 # https://scholar.princeton.edu/jbalkind/blog/programming-genesys-2-qspi-spi-x4-flash
-
-# GENESYS II
-# write_cfgmem -format mcs -interface SPIx4 -size 256  -loadbit "up 0x0 $bitfile" -file $mcsfile -force
-
-# VC707
-write_cfgmem -format mcs -interface bpix16 -size 128 -loadbit "up 0x0 $bitfile" -file $mcsfile -force
+# https://scholar.princeton.edu/jbalkind/blog/programming-vc707-virtex-7-bpi-flash
+if {$::env(BOARD) eq "genesys2"} {
+    write_cfgmem -format mcs -interface SPIx4 -size 256  -loadbit "up 0x0 $bitfile" -file $mcsfile -force
+} elseif {$::env(BOARD) eq "vc707"} {
+    write_cfgmem -format mcs -interface bpix16 -size 128 -loadbit "up 0x0 $bitfile" -file $mcsfile -force
+} else {
+      exit 1
+}
