@@ -8,17 +8,11 @@ export_include_dirs:
 
 sources:
   # packages
-  - include/pmp_pkg.sv
+  - include/riscv.sv
   # sources
-  - src/napot_extract.sv
-  - src/pmp_napot_entry.sv
-  - src/pmp_tor_entry.sv
-  - src/pmp_na4_entry.sv
   - src/pmp_entry.sv
   - src/pmp.sv
 
   - target: simulation
     files:
-      - tb/pmp_napot_entry_tb.sv
-      - tb/pmp_tor_entry_tb.sv
       - tb/pmp_tb.sv
