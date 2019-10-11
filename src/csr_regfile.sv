@@ -586,21 +586,21 @@ module csr_regfile #(
                 // If
                 riscv::CSR_PMPCFG0: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i].locked) pmpcfg_d[i]  = csr_wdata[i*8+:8];
                 riscv::CSR_PMPCFG2: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8]  = csr_wdata[i*8+:8];
-                riscv::CSR_PMPADDR0:   if (!pmpcfg_q[0].locked)  pmpaddr_d[0]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR1:   if (!pmpcfg_q[1].locked)  pmpaddr_d[1]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR2:   if (!pmpcfg_q[2].locked)  pmpaddr_d[2]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR3:   if (!pmpcfg_q[3].locked)  pmpaddr_d[3]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR4:   if (!pmpcfg_q[4].locked)  pmpaddr_d[4]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR5:   if (!pmpcfg_q[5].locked)  pmpaddr_d[5]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR6:   if (!pmpcfg_q[6].locked)  pmpaddr_d[6]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR7:   if (!pmpcfg_q[7].locked)  pmpaddr_d[7]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR8:   if (!pmpcfg_q[8].locked)  pmpaddr_d[8]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR9:   if (!pmpcfg_q[9].locked)  pmpaddr_d[9]   = csr_wdata[53:0];
-                riscv::CSR_PMPADDR10:  if (!pmpcfg_q[10].locked)  pmpaddr_d[10]  = csr_wdata[53:0];
-                riscv::CSR_PMPADDR11:  if (!pmpcfg_q[11].locked)  pmpaddr_d[11]  = csr_wdata[53:0];
-                riscv::CSR_PMPADDR12:  if (!pmpcfg_q[12].locked)  pmpaddr_d[12]  = csr_wdata[53:0];
-                riscv::CSR_PMPADDR13:  if (!pmpcfg_q[13].locked)  pmpaddr_d[13]  = csr_wdata[53:0];
-                riscv::CSR_PMPADDR14:  if (!pmpcfg_q[14].locked)  pmpaddr_d[14]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR0:   if (!pmpcfg_q[ 0].locked && !(pmpcfg_q[ 1].locked && pmpcfg_q[ 1].addr_mode == riscv::TOR))  pmpaddr_d[0]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR1:   if (!pmpcfg_q[ 1].locked && !(pmpcfg_q[ 2].locked && pmpcfg_q[ 2].addr_mode == riscv::TOR))  pmpaddr_d[1]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR2:   if (!pmpcfg_q[ 2].locked && !(pmpcfg_q[ 3].locked && pmpcfg_q[ 3].addr_mode == riscv::TOR))  pmpaddr_d[2]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR3:   if (!pmpcfg_q[ 3].locked && !(pmpcfg_q[ 4].locked && pmpcfg_q[ 4].addr_mode == riscv::TOR))  pmpaddr_d[3]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR4:   if (!pmpcfg_q[ 4].locked && !(pmpcfg_q[ 5].locked && pmpcfg_q[ 5].addr_mode == riscv::TOR))  pmpaddr_d[4]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR5:   if (!pmpcfg_q[ 5].locked && !(pmpcfg_q[ 6].locked && pmpcfg_q[ 6].addr_mode == riscv::TOR))  pmpaddr_d[5]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR6:   if (!pmpcfg_q[ 6].locked && !(pmpcfg_q[ 7].locked && pmpcfg_q[ 7].addr_mode == riscv::TOR))  pmpaddr_d[6]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR7:   if (!pmpcfg_q[ 7].locked && !(pmpcfg_q[ 8].locked && pmpcfg_q[ 8].addr_mode == riscv::TOR))  pmpaddr_d[7]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR8:   if (!pmpcfg_q[ 8].locked && !(pmpcfg_q[ 9].locked && pmpcfg_q[ 9].addr_mode == riscv::TOR))  pmpaddr_d[8]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR9:   if (!pmpcfg_q[ 9].locked && !(pmpcfg_q[10].locked && pmpcfg_q[10].addr_mode == riscv::TOR))  pmpaddr_d[9]   = csr_wdata[53:0];
+                riscv::CSR_PMPADDR10:  if (!pmpcfg_q[10].locked && !(pmpcfg_q[11].locked && pmpcfg_q[11].addr_mode == riscv::TOR))  pmpaddr_d[10]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR11:  if (!pmpcfg_q[11].locked && !(pmpcfg_q[12].locked && pmpcfg_q[12].addr_mode == riscv::TOR))  pmpaddr_d[11]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR12:  if (!pmpcfg_q[12].locked && !(pmpcfg_q[13].locked && pmpcfg_q[13].addr_mode == riscv::TOR))  pmpaddr_d[12]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR13:  if (!pmpcfg_q[13].locked && !(pmpcfg_q[14].locked && pmpcfg_q[14].addr_mode == riscv::TOR))  pmpaddr_d[13]  = csr_wdata[53:0];
+                riscv::CSR_PMPADDR14:  if (!pmpcfg_q[14].locked && !(pmpcfg_q[15].locked && pmpcfg_q[15].addr_mode == riscv::TOR))  pmpaddr_d[14]  = csr_wdata[53:0];
                 riscv::CSR_PMPADDR15:  if (!pmpcfg_q[15].locked)  pmpaddr_d[15]  = csr_wdata[53:0];
                 default: update_access_exception = 1'b1;
             endcase
