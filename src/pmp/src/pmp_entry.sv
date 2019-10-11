@@ -27,54 +27,80 @@ module pmp_entry #(
     // Output
     output logic match_o
 );
-    logic [3:0] match;
-
-    pmp_tor_entry #(
-        .XLEN(XLEN),
-        .PMP_LEN(PMP_LEN)
-    ) i_pmp_tor_entry(
-    	.addr_i,
-        .conf_addr_lo_i (conf_addr_prev_i),
-        .conf_addr_hi_i (conf_addr_i ),
-        .match_o        (match[riscv::TOR])
+    logic [XLEN-1:0] conf_addr_n;
+    logic [$clog2(XLEN)-1:0] trail_ones;
+    assign conf_addr_n = ~conf_addr_i;
+    lzc #(.WIDTH(XLEN), .MODE(1'b0)) i_lzc(
+        .in_i    ( conf_addr_n ),
+        .cnt_o   ( trail_ones  ),
+        .empty_o (             )
     );
-
-    pmp_na4_entry #(
-        .XLEN(XLEN),
-        .PMP_LEN(PMP_LEN)
-    ) i_pmp_na4_entry(
-    	.addr_i,
-        .conf_addr_i,
-        .match_o     (match[riscv::NA4])
-    );
-
-    pmp_napot_entry #(
-        .XLEN(XLEN),
-        .PMP_LEN(PMP_LEN)
-    ) i_pmp_napot_entry(
-    	.addr_i,
-        .conf_addr_i,
-        .match_o     (match[riscv::NAPOT])
-    );
-
-    assign match[riscv::OFF] = 0;
 
     always_comb begin
-        unique case (conf_addr_mode_i)
-            riscv::TOR:     match_o = match[riscv::TOR];
-            riscv::NA4:     match_o = match[riscv::NA4];
-            riscv::NAPOT:   match_o = match[riscv::NAPOT];
-            riscv::OFF:     match_o = match[riscv::OFF];
-            default: match_o = 0;
+        case (conf_addr_mode_i)
+            riscv::TOR:     begin
+                // check that the requested address is in between the two 
+                // configuration addresses
+                if (addr_i >= (conf_addr_prev_i << 2) && addr_i < (conf_addr_i << 2)) begin
+                    match_o = 1'b1;
+                end else match_o = 1'b0;
+
+                `ifdef FORMAL
+                if (match_o == 0) begin
+                    assert(addr_i >= (conf_addr_i << 2) || addr_i < (conf_addr_prev_i << 2));
+                end else begin
+                    assert(addr_i < (conf_addr_i << 2) || addr_i >= (conf_addr_prev_i << 2));
+                end
+                `endif
+            end
+            riscv::NA4, riscv::NAPOT:   begin
+                logic [XLEN-1:0] base;
+                logic [XLEN-1:0] mask;
+                int unsigned size;
+
+                if (conf_addr_mode_i == riscv::NA4) size = 2;
+                else begin
+                    // use the extracted trailing ones
+                    size = trail_ones+3;
+                end
+
+                mask = '1 << size;
+                base = (conf_addr_i << 2) & mask;
+                match_o = (addr_i & mask) == base ? 1'b1 : 1'b0;
+
+                `ifdef FORMAL
+                // size extract checks
+                assert(size >= 2);
+                if (conf_addr_mode_i == riscv::NAPOT) begin
+                    assert(size > 2);
+                    if (size < PMP_LEN) assert(conf_addr_i[size - 3] == 0);
+                    for (int i = 0; i < PMP_LEN; i++) begin
+                        if (size > 3 && i <= size - 4) begin
+                            assert(conf_addr_i[i] == 1); // check that all the rest are ones
+                        end
+                    end
+                end
+
+                if (size < XLEN-1) begin
+                    if (base + 2**size > base) begin // check for overflow
+                        if (match_o == 0) begin
+                            assert(addr_i >= base + 2**size || addr_i < base);
+                        end else begin
+                            assert(addr_i < base + 2**size && addr_i >= base);
+                        end
+                    end else begin
+                        if (match_o == 0) begin
+                            assert(addr_i - 2**size >= base || addr_i < base);
+                        end else begin
+                            assert(addr_i - 2**size < base && addr_i >= base);
+                        end
+                    end
+                end
+                `endif
+            end
+            riscv::OFF: match_o = 1'b0;
+            default:    match_o = 0;
         endcase
     end
-
-    `ifdef FORMAL
-    always @(*) begin
-        if(conf_addr_mode_i == riscv::OFF) begin
-            assert(match_o == '0);
-        end
-    end
-    `endif
 
 endmodule

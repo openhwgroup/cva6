@@ -1,6 +1,6 @@
 [options]
 mode prove
-depth 20
+depth 5
 
 [engines]
 smtbmc boolector
@@ -10,22 +10,14 @@ smtbmc yices
 [script]
 verific -vlog-incdir ./include
 verific -sv -DFORMAL \
-    pmp_pkg.sv \
-    napot_extract.sv \
-    pmp_napot_entry.sv \
-    pmp_tor_entry.sv \
-    pmp_na4_entry.sv \
+    riscv.sv \
     pmp_entry.sv \
     pmp.sv
 
 verific -import -all pmp
-prep -flatten -nordff -top pmp
+prep -nordff -ifx -top pmp
 
 [files]
-include/pmp_pkg.sv
-src/napot_extract.sv
-src/pmp_napot_entry.sv
-src/pmp_tor_entry.sv
-src/pmp_na4_entry.sv
+include/riscv.sv
 src/pmp_entry.sv
 src/pmp.sv
