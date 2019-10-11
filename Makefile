@@ -52,6 +52,10 @@ else ifeq ($(BOARD), kc705)
 	XILINX_PART              := xc7k325tffg900-2
 	XILINX_BOARD             := xilinx.com:kc705:part0:1.5
 	CLK_PERIOD_NS            := 20
+else ifeq ($(BOARD), vc707)
+	XILINX_PART              := xc7vx485tffg1761-2
+	XILINX_BOARD             := xilinx.com:vc707:part0:1.3
+	CLK_PERIOD_NS            := 20
 else
 $(error Unknown board - please specify a supported FPGA board)
 endif
