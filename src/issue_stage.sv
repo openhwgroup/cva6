@@ -97,6 +97,7 @@ module issue_stage #(
     logic                      issue_instr_valid_sb_iro;
     logic                      issue_ack_iro_sb;
 
+  
     // ---------------------------------------------------------
     // 1. Re-name
     // ---------------------------------------------------------
@@ -112,6 +113,7 @@ module issue_stage #(
         .issue_instr_valid_o    ( issue_instr_valid_rename_sb  ),
         .issue_ack_i            ( issue_ack_sb_rename          )
     );
+    
 
     // ---------------------------------------------------------
     // 2. Manage instructions in a scoreboard
@@ -131,9 +133,10 @@ module issue_stage #(
         .rs2_o                 ( rs2_sb_iro                                ),
         .rs2_valid_o           ( rs2_valid_iro_sb                          ),
         .rs3_i                 ( rs3_iro_sb                                ),
+      `ifdef FPU_ENABLE
         .rs3_o                 ( rs3_sb_iro                                ),
         .rs3_valid_o           ( rs3_valid_iro_sb                          ),
-
+      `endif
         .decoded_instr_i       ( issue_instr_rename_sb                     ),
         .decoded_instr_valid_i ( issue_instr_valid_rename_sb               ),
         .decoded_instr_ack_o   ( issue_ack_sb_rename                       ),
@@ -147,6 +150,11 @@ module issue_stage #(
         .ex_i                  ( ex_ex_i                                   ),
         .*
     );
+
+    `ifndef FPU_ENABLE
+       assign rs3_sb_iro = '0;
+       assign rs3_valid_iro_sb = '1;
+    `endif
 
     // ---------------------------------------------------------
     // 3. Issue instruction and read operand, also commit
