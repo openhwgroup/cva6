@@ -153,15 +153,15 @@ package ariane_pkg;
     localparam int unsigned DEPTH_COMMIT = 8;
 `endif
 
-
-`ifdef PITON_ARIANE
+`define FPU_ENABLE // to enable both F and D extensions
+`ifdef FPU_ENABLE
     // Floating-point extensions configuration
     localparam bit RVF = 1'b1; // Is F extension enabled
     localparam bit RVD = 1'b1; // Is D extension enabled
 `else
     // Floating-point extensions configuration
-    localparam bit RVF = 1'b1; // Is F extension enabled
-    localparam bit RVD = 1'b1; // Is D extension enabled
+    localparam bit RVF = 1'b0; // Is F extension disabled
+    localparam bit RVD = 1'b0; // Is D extension disabled
 `endif
     localparam bit RVA = 1'b1; // Is A extension enabled
 
