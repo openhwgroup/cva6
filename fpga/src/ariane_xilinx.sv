@@ -44,11 +44,12 @@ module ariane_xilinx (
   output logic [ 7:0]  led         ,
   input  logic [ 7:0]  sw          ,
   output logic         fan_pwm     ,
+  input  logic         trst_n      ,
 `elsif KC705
   input  logic         sys_clk_p   ,
   input  logic         sys_clk_n   ,
 
-  input  logic         cpu_reset  ,
+  input  logic         cpu_reset   ,
   inout  logic [63:0]  ddr3_dq     ,
   inout  logic [ 7:0]  ddr3_dqs_n  ,
   inout  logic [ 7:0]  ddr3_dqs_p  ,
@@ -77,6 +78,7 @@ module ariane_xilinx (
   output logic [ 3:0]  led         ,
   input  logic [ 3:0]  sw          ,
   output logic         fan_pwm     ,
+  input  logic         trst_n      ,
 `elsif VC707
   input  logic         sys_clk_p   ,
   input  logic         sys_clk_n   ,
@@ -108,6 +110,7 @@ module ariane_xilinx (
   output logic [ 7:0]  led         ,
   input  logic [ 7:0]  sw          ,
   output logic         fan_pwm     ,
+  input  logic         trst        ,
 `elsif VCU118
   input  wire          c0_sys_clk_p    ,  // 250 MHz Clock for DDR
   input  wire          c0_sys_clk_n    ,  // 250 MHz Clock for DDR
@@ -133,6 +136,7 @@ module ariane_xilinx (
   output wire [7:0]    pci_exp_txn     ,
   input  wire [7:0]    pci_exp_rxp     ,
   input  wire [7:0]    pci_exp_rxn     ,
+  input  logic         trst_n          ,
 `endif
   // SPI
   output logic        spi_mosi    ,
@@ -140,9 +144,9 @@ module ariane_xilinx (
   output logic        spi_ss      ,
   output logic        spi_clk_o   ,
   // common part
+  // input logic      trst_n      ,
   input  logic        tck         ,
   input  logic        tms         ,
-  input  logic        trst_n      ,
   input  logic        tdi         ,
   output wire         tdo         ,
   input  logic        rx          ,
@@ -202,6 +206,7 @@ assign cpu_reset  = ~cpu_resetn;
 assign cpu_resetn = ~cpu_reset;
 `elsif VC707
 assign cpu_resetn = ~cpu_reset;
+assign trst_n = ~trst;
 `endif
 
 logic pll_locked;
