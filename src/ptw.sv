@@ -62,7 +62,8 @@ module ptw #(
     output logic                    dtlb_miss_o,
     // PMP
     input  riscv::pmpcfg_t [ArianeCfg.NrPMPEntries-1:0]  pmpcfg_i,
-    input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]      pmpaddr_i
+    input  logic [ArianeCfg.NrPMPEntries-1:0][53:0]      pmpaddr_i,
+    output logic [63:0]             bad_paddr_o
 
 );
 
@@ -131,6 +132,8 @@ module ptw #(
     assign req_port_o.tag_valid      = tag_valid_q;
 
     logic allow_access;
+
+    assign bad_paddr_o = allow_access ? 64'b0 : {8'b0, ptw_pptr_q};
 
     pmp #(
         .XLEN       ( 64                     ),
@@ -324,7 +327,7 @@ module ptw #(
                             end
                         end
                     end
-
+                    
                     // Check if this access was actually allowed from a PMP perspective
                     if (!allow_access) begin
                         itlb_update_o.valid = 1'b0;
