@@ -373,7 +373,7 @@ module mmu #(
             end
         end
 
-        if (!pmp_data_allow) begin
+        if (!misaligned_ex_q.valid && !pmp_data_allow) begin
             if (lsu_is_store_q) begin
                 lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o, 1'b1};
             end else begin
