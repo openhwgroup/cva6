@@ -70,6 +70,7 @@ module mmu #(
     logic        walking_instr; // PTW is walking because of an ITLB miss
     logic        ptw_error;     // PTW threw an exception
     logic        ptw_access_exception; // PTW threw an access exception (PMPs)
+    logic [63:0] ptw_bad_paddr; // PTW PMP exception bad physical addr
 
     logic [riscv::VLEN-1:0] update_vaddr;
     tlb_update_t update_ptw_itlb, update_ptw_dtlb;
@@ -161,6 +162,7 @@ module mmu #(
         .req_port_o             ( req_port_o            ),
         .pmpcfg_i,
         .pmpaddr_i,
+        .bad_paddr_o            ( ptw_bad_paddr         ),
         .*
     );
 
@@ -368,7 +370,7 @@ module mmu #(
                     // an error makes the translation valid
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
-                    lsu_exception_o = {riscv::LD_ACCESS_FAULT, {25'b0, update_vaddr}, 1'b1};
+                    lsu_exception_o = {riscv::LD_ACCESS_FAULT, ptw_bad_paddr, 1'b1};
                 end
             end
         end
