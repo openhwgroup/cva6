@@ -37,9 +37,11 @@ module scoreboard #(
   output logic                                                  rs2_valid_o,
 
   input  logic [ariane_pkg::REG_ADDR_SIZE-1:0]                  rs3_i,
+`ifdef FPU_ENABLE
   output logic [ariane_pkg::FLEN-1:0]                           rs3_o,
   output logic                                                  rs3_valid_o,
-
+`endif
+  
   // advertise instruction to commit stage, if commit_ack_i is asserted advance the commit pointer
   output ariane_pkg::scoreboard_entry_t [NR_COMMIT_PORTS-1:0]   commit_instr_o,
   input  logic              [NR_COMMIT_PORTS-1:0]               commit_ack_i,
@@ -316,6 +318,7 @@ module scoreboard #(
     .idx_o   (             )
   );
 
+`ifdef FPU_ENABLE
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),
     .DataWidth(64),
@@ -334,7 +337,8 @@ module scoreboard #(
     .data_o  ( rs3_o       ),
     .idx_o   (             )
   );
-
+`endif
+  
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin : regs
     if(!rst_ni) begin
