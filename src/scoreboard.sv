@@ -316,6 +316,8 @@ module scoreboard #(
     .idx_o   (             )
   );
 
+  logic [63:0] rs3;
+
   rr_arb_tree #(
     .NumIn(NR_ENTRIES+NR_WB_PORTS),
     .DataWidth(64),
@@ -331,9 +333,11 @@ module scoreboard #(
     .data_i  ( rs_data     ),
     .gnt_i   ( 1'b1        ),
     .req_o   ( rs3_valid_o ),
-    .data_o  ( rs3_o       ),
+    .data_o  ( rs3         ),
     .idx_o   (             )
   );
+
+  assign rs3_o = rs3[ariane_pkg::FLEN-1:0];
 
   // sequential process
   always_ff @(posedge clk_i or negedge rst_ni) begin : regs

@@ -191,7 +191,7 @@ package ariane_pkg;
                          XF16    ? 16 : // Xf16 ext.
                          XF16ALT ? 16 : // Xf16alt ext.
                          XF8     ? 8 :  // Xf8 ext.
-                         0;             // Unused in case of no FP
+                         1;             // Unused in case of no FP
 
     localparam bit NSX = XF16 | XF16ALT | XF8 | XFVEC; // Are non-standard extensions present?
 
