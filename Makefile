@@ -114,7 +114,7 @@ dpi_hdr := $(wildcard tb/dpi/*.h)
 dpi_hdr := $(addprefix $(root-dir), $(dpi_hdr))
 CFLAGS := -I$(QUESTASIM_HOME)/include         \
           -I$(RISCV)/include                  \
-          -std=c++11 -I../tb/dpi
+          -std=c++11 -I../tb/dpi -O2
 
 ifdef spike-tandem
     CFLAGS += -Itb/riscv-isa-sim/install/include/spike
