@@ -133,7 +133,7 @@ module ptw #(
 
     logic allow_access;
 
-    assign bad_paddr_o = allow_access ? 64'b0 : {8'b0, ptw_pptr_q};
+    assign bad_paddr_o = ptw_access_exception_o ? {8'b0, ptw_pptr_q} : 64'b0;
 
     pmp #(
         .XLEN       ( 64                     ),
@@ -332,6 +332,8 @@ module ptw #(
                     if (!allow_access) begin
                         itlb_update_o.valid = 1'b0;
                         dtlb_update_o.valid = 1'b0;
+                        // we have to return the failed address in bad_addr
+                        ptw_pptr_n = ptw_pptr_q; 
                         state_d = PROPAGATE_ACCESS_ERROR;
                     end
                 end
