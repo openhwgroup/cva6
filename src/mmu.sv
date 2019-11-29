@@ -392,7 +392,6 @@ module mmu #(
     ) i_pmp_data (
         .addr_i        ( lsu_paddr_o         ),
         .priv_lvl_i    ( ld_st_priv_lvl_i    ),
-        // we will always execute on the instruction fetch port
         .access_type_i ( pmp_access_type     ),
         // Configuration
         .conf_addr_i   ( pmpaddr_i           ),
