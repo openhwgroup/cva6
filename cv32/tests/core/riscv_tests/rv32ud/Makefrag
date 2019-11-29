@@ -1,0 +1,15 @@
+#=======================================================================
+# Makefrag for rv32ud tests
+#-----------------------------------------------------------------------
+
+rv32ud_sc_tests = \
+	fadd fdiv fclass fcmp fcvt fcvt_w fmadd fmin \
+	ldst recoding \
+
+# TODO: use this line instead of the last of the previous once move and structural tests have been implemented
+#        ldst move structural recoding \
+
+rv32ud_p_tests = $(addprefix rv32ud-p-, $(rv32ud_sc_tests))
+rv32ud_v_tests = $(addprefix rv32ud-v-, $(rv32ud_sc_tests))
+
+spike32_tests += $(rv32ud_p_tests) $(rv32ud_v_tests)

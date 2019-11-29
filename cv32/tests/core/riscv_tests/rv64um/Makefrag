@@ -1,0 +1,13 @@
+#=======================================================================
+# Makefrag for rv64um tests
+#-----------------------------------------------------------------------
+
+rv64um_sc_tests = \
+	div divu divuw divw \
+	mul mulh mulhsu mulhu mulw \
+	rem remu remuw remw \
+
+rv64um_p_tests = $(addprefix rv64um-p-, $(rv64um_sc_tests))
+rv64um_v_tests = $(addprefix rv64um-v-, $(rv64um_sc_tests))
+
+spike_tests += $(rv64um_p_tests) $(rv64um_v_tests)

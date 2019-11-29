@@ -1,0 +1,18 @@
+#=======================================================================
+# Makefrag for rv32mi tests
+#-----------------------------------------------------------------------
+
+rv32mi_sc_tests = \
+	breakpoint \
+	csr \
+	mcsr \
+	illegal \
+	ma_fetch \
+	ma_addr \
+	scall \
+	sbreak \
+	shamt \
+
+rv32mi_p_tests = $(addprefix rv32mi-p-, $(rv32mi_sc_tests))
+
+spike32_tests += $(rv32mi_p_tests)

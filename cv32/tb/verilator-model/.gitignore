@@ -1,0 +1,5 @@
+# Verilator object directory
+obj_dir/
+# Test bench build objects
+testbench
+testbench.o
