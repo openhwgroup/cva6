@@ -237,6 +237,8 @@ module mmu #(
                 if (iaccess_err) begin
                     // throw a page fault
                     icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
+                end else if (!pmp_instr_allow) begin
+                    icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
                 end
             end else
             // ---------
@@ -247,11 +249,12 @@ module mmu #(
                 icache_areq_o.fetch_valid = ptw_error | ptw_access_exception;
                 if (ptw_error) icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
                 // TODO(moschn,zarubaf): What should the value of tval be in this case?
-                else icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
+                else icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::VLEN{1'b0}}, ptw_bad_paddr}, 1'b1};
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
-        if (!match_any_execute_region || pmp_instr_access_fault || !pmp_instr_allow) begin
+        // or: if we are not translating, check PMPs immediately on the paddr
+        if (!match_any_execute_region || (!enable_translation_i && !pmp_instr_allow)) begin
           icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
         end
     end
@@ -335,17 +338,31 @@ module mmu #(
             // --------
             if (dtlb_hit_q && lsu_req_q) begin
                 lsu_valid_o = 1'b1;
+                // exception priority: 
+                // PAGE_FAULTS have higher priority than ACCESS_FAULTS
+                // virtual memory based exceptions are PAGE_FAULTS
+                // physical memory based exceptions are ACCESS_FAULTS (PMA/PMP)
+
                 // this is a store
                 if (lsu_is_store_q) begin
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
                     if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
                         lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
+                    // Check if any PMPs are violated
+                    end else if (!pmp_data_allow) begin
+                        lsu_exception_o = {riscv::ST_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
                     end
 
-                // this is a load, check for sufficient access privileges - throw a page fault if necessary
-                end else if (daccess_err) begin
+                // this is a load
+                end else begin
+                    // check for sufficient access privileges - throw a page fault if necessary
+                    if (daccess_err) begin
                     lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
+                    // Check if any PMPs are violated
+                    end else if (!pmp_data_allow) begin
+                        lsu_exception_o = {riscv::LD_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, lsu_paddr_o}, 1'b1};
+                    end
                 end
             end else
 
@@ -374,8 +391,8 @@ module mmu #(
                 end
             end
         end
-
-        if (!misaligned_ex_q.valid && !pmp_data_allow) begin
+        // If translation is not enabled, check the paddr immediately against PMPs
+        else if (lsu_req_q && !misaligned_ex_q.valid && !pmp_data_allow) begin
             if (lsu_is_store_q) begin
                 lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o, 1'b1};
             end else begin
