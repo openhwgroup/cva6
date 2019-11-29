@@ -279,6 +279,11 @@ module csr_regfile #(
                 // PMPs
                 riscv::CSR_PMPCFG0:          csr_rdata = pmpcfg_q[7:0];
                 riscv::CSR_PMPCFG2:          csr_rdata = pmpcfg_q[15:8];
+                // PMPADDR
+                // Important: we only support granularity 8 bytes (G=2) 
+                // -> last bit of pmpaddr must be set 0/1 based on the mode:
+                // NA4, NAPOT: 1
+                // TOR, OFF:   0
                 riscv::CSR_PMPADDR0:         csr_rdata = {10'b0, pmpaddr_q[0][53:1], (pmpcfg_q[0].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
                 riscv::CSR_PMPADDR1:         csr_rdata = {10'b0, pmpaddr_q[1][53:1], (pmpcfg_q[1].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
                 riscv::CSR_PMPADDR2:         csr_rdata = {10'b0, pmpaddr_q[2][53:1], (pmpcfg_q[2].addr_mode[1] == 1'b1 ? 1'b1 : 1'b0)};
@@ -583,7 +588,10 @@ module csr_regfile #(
 
                 riscv::CSR_DCACHE:             dcache_d       = csr_wdata[0]; // enable bit
                 riscv::CSR_ICACHE:             icache_d       = csr_wdata[0]; // enable bit
-                // If
+                // PMP locked logic
+                // 1. refuse to update any locked entry
+                // 2. also refuse to update the entry below a locked TOR entry
+                // Note that writes to pmpcfg below a locked TOR entry are valid
                 riscv::CSR_PMPCFG0: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i].locked) pmpcfg_d[i]  = csr_wdata[i*8+:8];
                 riscv::CSR_PMPCFG2: for (int i = 0; i < 8; i++) if (!pmpcfg_q[i+8].locked) pmpcfg_d[i+8]  = csr_wdata[i*8+:8];
                 riscv::CSR_PMPADDR0:   if (!pmpcfg_q[ 0].locked && !(pmpcfg_q[ 1].locked && pmpcfg_q[ 1].addr_mode == riscv::TOR))  pmpaddr_d[0]   = csr_wdata[53:0];
