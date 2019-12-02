@@ -285,81 +285,6 @@ start:
 
 	TEST(fence_i)
 
-#ifdef RUN_COMPLIANCE
-	/* running riscv-compliance-tests */
-
-	la a0, riscv_compliance_tests_msg
-	call print_str
-
-	TEST(I_ADD_01)
-	TEST(I_ADDI_01)
-	TEST(I_AND_01)
-	TEST(I_ANDI_01)
-	TEST(I_AUIPC_01)
-	TEST(I_BEQ_01)
-	TEST(I_BGE_01)
-	TEST(I_BGEU_01)
-	TEST(I_BLT_01)
-	TEST(I_BLTU_01)
-	TEST(I_BNE_01)
-
-	TEST(I_CSRRC_01)
-	TEST(I_CSRRCI_01)
-	TEST(I_CSRRS_01)
-	TEST(I_CSRRSI_01)
-	TEST(I_CSRRW_01)
-	TEST(I_CSRRWI_01)
-
-	TEST(I_DELAY_SLOTS_01)
-	TEST(I_EBREAK_01)
-	TEST(I_ECALL_01)
-	TEST(I_ENDIANESS_01)
-	TEST(I_FENCE.I_01)
-	TEST(I_IO)
-
-	TEST(I_JAL_01)
-	TEST(I_JALR_01)
-	TEST(I_LB_01)
-	TEST(I_LBU_01)
-	TEST(I_LH_01)
-	TEST(I_LHU_01)
-	TEST(I_LUI_01)
-	TEST(I_LW_01)
-
-	/* bad test: RI5CY supports C extension meaning no exception on
-	misaligned jumps */
-	/* TEST(I_MISALIGN_JMP_01)  */
-	/* TEST(I_MISALIGN_LDST_01) /* fails */
-
-	TEST(I_NOP_01)
-	TEST(I_OR_01)
-	TEST(I_ORI_01)
-	TEST(I_RF_size_01)
-	TEST(I_RF_width_01)
-	TEST(I_RF_x0_01)
-	TEST(I_SB_01)
-
-	TEST(I_SH_01)
-	TEST(I_SLL_01)
-	TEST(I_SLLI_01)
-	TEST(I_SLT_01)
-	TEST(I_SLTI_01)
-	TEST(I_SLTIU_01)
-	TEST(I_SLTU_01)
-	TEST(I_SRA_01)
-	TEST(I_SRAI_01)
-	TEST(I_SRL_01)
-	TEST(I_SRLI_01)
-	TEST(I_SUB_01)
-	TEST(I_SW_01)
-	TEST(I_XOR_01)
-	TEST(I_XORI_01)
-#else
-	/* NOT running riscv-compliance-tests */
-	la a0, skip_riscv_compliance_tests_msg
-	call print_str
-#endif /* RUN_COMPLIANCE */
-
 	/* set stack pointer */
 	lui sp,(1024*1024)>>12
 
@@ -367,23 +292,6 @@ start:
 	lui gp, %hi(0xdeadbeef)
 	addi gp, gp, %lo(0xdeadbeef)
 	addi tp, gp, 0
-
-#ifdef RUN_COMPLIANCE
-#ifdef ENABLE_SIEVE
-	/* call sieve C code */
-	jal ra,sieve
-#endif
-
-#ifdef ENABLE_MULTST
-	/* call multest C code */
-	jal ra,multest
-#endif
-#endif /* RUN_COMPLIANCE */
-
-#ifdef ENABLE_STATS
-	/* call stats C code */
-	jal ra,stats
-#endif
 
 fast_exit:
 	/* print "DONE\n" */

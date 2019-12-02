@@ -7,7 +7,7 @@ rv32uc) and
 RI5CY in a minimalistic setting. It contains a RAM model and a small pseudo
 peripheral that dumps any writes to `0x1000_0000` to stdout. The small tests
 signal success or failure by writing `12345679` or `1` respectively to
-`0x2000_0000`. Only `vsim` and `verilator` were tested as simulators.
+`0x2000_0000`. At the time, only `dsim` were tested as simulators.
 
 Supported Compilers
 ----------------------
@@ -32,6 +32,16 @@ We have prepared a hello world program which you can run in the testbench. It
 demonstrates how you can run your own programs. Call `custom-vsim-run` or
 `custom-veri-run` to run it with `vsim` or `verilator` respectively.
 
+Running the testbench with [dsim](https://https://metrics.ca)
+----------------------
+Point you environment variable `RISCV` to your RISC-V toolchain. Call
+`make dsim-hello_world` to build and run the testbench with the hello_world
+test in the custom directory. Other rules of interest:
+* `make dsim-cv32_riscv_tests` to build and run the testbench with all the testcases in the riscv_tests directory.
+* TODO: `make dsim-cv32_riscv_compliance_tests` to build and run the tests in riscv_compliance_tests.
+* `make dsim-firmware` to build and run the testbench with all the testcases in the riscv_tests and riscv_compliance_tests directories.
+* You can clean up the mess you made with `make dsim-clean`.
+
 Running the testbench with vsim
 ----------------------
 Point you environment variable `RISCV` to your RISC-V toolchain. Call `make
@@ -52,15 +62,6 @@ Point you environment variable `RISCV` to your RISC-V toolchain. Call `make
 firmware-veri-run` or just `make` to build the testbench and the firmware, and
 run it. Use `VERI_FLAGS` to configure verilator e.g. `make firmware-veri-run
 VERI_FLAGS="+firmware=path_to_firmware"`.
-
-Running the testbench with [dsim](https://https://metrics.ca)
-----------------------
-Point you environment variable `RISCV` to your RISC-V toolchain. Call
-`make dsim-hello_world` to build and run the testbench with the hello_world
-test in the custom directory.  Call `make dsim-firmware` to build and run the
-testbench with the testcases in the riscv_tests and riscv_compliance_tests directories.
-You can clean up the mess you made with `make dsim-clean`.  To remove all generated
-files run `make dsim-clean-all`.
 
 Options
 ----------------------

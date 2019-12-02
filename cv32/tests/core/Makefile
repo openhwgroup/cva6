@@ -97,6 +97,12 @@ RISCV_EXE_PREFIX         = $(RISCV)/bin/riscv32-unknown-elf-
 FIRMWARE                 = firmware/
 RISCV_TEST_INCLUDES      = -Iriscv_tests/ -Iriscv_tests/macros/scalar \
 				-Iriscv_tests/rv64ui -Iriscv_tests/rv64um
+CV32_RISCV_TESTS_FIRMWARE_OBJS		 = $(addprefix cv32_riscv_tests_firmware/, start.o \
+				print.o sieve.o multest.o stats.o)
+RISCV_TESTS_OBJS       = $(addsuffix .o, \
+				$(basename $(wildcard riscv_tests/rv32ui/*.S)) \
+				$(basename $(wildcard riscv_tests/rv32um/*.S)) \
+				$(basename $(wildcard riscv_tests/rv32uc/*.S)))
 FIRMWARE_OBJS		 = $(addprefix firmware/, start.o \
 				print.o sieve.o multest.o stats.o)
 FIRMWARE_TEST_OBJS       = $(addsuffix .o, \
@@ -181,13 +187,27 @@ dsimify-rtl-only: $(RTLSRC_PKG) $(RTLSRC)
 		-genimage $(DSIM_IMAGE)
 
 # dsim simulations
-.PHONY: dsim-hellow_world dsim-firmware
+.PHONY: dsim-hellow_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
 
+# Runs the hello world test
 dsim-hello_world: dsimify custom/hello_world.hex
-	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) +firmware=custom/hello_world.hex
+	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
+		+firmware=custom/hello_world.hex
 
+# Runs tests in riscv_tests/ only
+dsim-cv32_riscv_tests: dsimify cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
+		+firmware=cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+
+# TODO: Runs tests in riscv_compliance_tests/ only
+#dsim-cv32_riscv_compliance_tests: dsimify cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+#	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
+#		+firmware=cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+
+# Runs all tests in riscv_tests/ and riscv_compliance_tests/
 dsim-firmware: dsimify firmware/firmware.hex
-	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) +firmware=firmware/firmware.hex
+	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
+		+firmware=firmware/firmware.hex
 
 # dsim cleanup
 .PHONY: dsim-clean
@@ -201,12 +221,10 @@ dsim-clean:
 	rm -rf dsim_work
 	rm -f dsim.env
 	rm -f $(DSIM_IMAGE)
-	rm -f firmware/firmware.elf
-	rm -f firmware/firmware.hex
-	rm -f firmware/firmware.map
-	rm -f firmware/*.o
-	rm -f custom/hello_world.elf
-	rm -f custom/hello_world.hex
+	find ./ -name *.o   -exec rm {} \;
+	find ./ -name *.hex -exec rm {} \;
+	find ./ -name *.elf -exec rm {} \;
+	find ./ -name *.map -exec rm {} \;
 
 # verilator testbench compilation
 
@@ -303,16 +321,33 @@ custom-veri-run: verilate custom/hello_world.hex
 	./testbench_verilator $(VERI_FLAGS) \
 		"+firmware=custom/hello_world.hex"
 
+# compile and dump riscv_tests only
+cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
+							cv32_riscv_tests_firmware/link.ld
+	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
+		$(RISCV_TEST_INCLUDES) \
+		-Wl,-Bstatic,-T,cv32_riscv_tests_firmware/link.ld,-Map,cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.map,--strip-debug \
+		$(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) -lgcc
+
+cv32_riscv_tests_firmware/start.o: cv32_riscv_tests_firmware/start.S
+	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -o $@ $<
+
+cv32_riscv_tests_firmware/%.o: cv32_riscv_tests_firmware/%.c
+	$(RISCV_EXE_PREFIX)gcc -c -march=rv32ic -g -Os --std=c99 -Wall \
+		$(RISCV_TEST_INCLUDES) \
+		-ffreestanding -nostdlib -o $@ $<
+
 # compile and dump picorv firmware
 firmware/firmware.elf: $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) \
 				firmware/link.ld
 	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
 		$(RISCV_TEST_INCLUDES) \
+		-D RUN_COMPLIANCE \
 		-Wl,-Bstatic,-T,firmware/link.ld,-Map,firmware/firmware.map,--strip-debug \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) -lgcc
 
 firmware/start.o: firmware/start.S
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -o $@ $<
+	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -D RUN_COMPLIANCE -o $@ $<
 
 firmware/%.o: firmware/%.c
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32ic -g -Os --std=c99 -Wall \
