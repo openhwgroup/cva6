@@ -39,7 +39,7 @@ At the time of this writting (2019-12-02) only The Metrics **_dsim_** and Cadenc
 support for Synopsys **_vcs_**.  Support for other SystemVerilog simulators
 is contingent on community interest and support.
 
-Running the testbench with Metrics [dsim](https://https://metrics.ca)
+Running the testbench with Metrics [dsim](https://metrics.ca)
 ----------------------
 Point you environment variable `RISCV` to your RISC-V toolchain. Call
 `make dsim-hello_world` to build and run the testbench with the hello_world
