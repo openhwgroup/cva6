@@ -8,6 +8,25 @@ It has configurable size, separate TLBs, a hardware PTW and branch-prediction (b
 
 ![](docs/img/ariane_overview.png)
 
+## Publication
+
+If you use Ariane in your academic work you can cite us:
+
+```
+@article{8777130,
+   author={F. {Zaruba} and L. {Benini}},
+   journal={IEEE Transactions on Very Large Scale Integration (VLSI) Systems},
+   title={The Cost of Application-Class Processing: Energy and Performance Analysis of a Linux-Ready 1.7-GHz 64-Bit RISC-V Core in 22-nm FDSOI Technology},
+   year={2019},
+   volume={27},
+   number={11},
+   pages={2629-2640},
+   doi={10.1109/TVLSI.2019.2926114},
+   ISSN={1557-9999},
+   month={Nov},
+}
+```
+
 Table of Contents
 =================
 
