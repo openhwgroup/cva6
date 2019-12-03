@@ -579,7 +579,9 @@ module csr_regfile #(
         // -----------------------
         // update exception CSRs
         // we got an exception update cause, pc and stval register
+		`ifndef _VCP // SPT77445
         trap_to_priv_lvl = riscv::PRIV_LVL_M;
+		`endif
         // Exception is taken and we are not in debug mode
         // exceptions in debug mode don't update any fields
         if (!debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) begin
@@ -595,6 +597,12 @@ module csr_regfile #(
                 // so if we are already in M mode, stay there
                 trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
             end
+			`ifdef _VCP //SPT77445
+			else 
+			begin
+				trap_to_priv_lvl = riscv::PRIV_LVL_M;
+			end
+			`endif
 
             // trap to supervisor mode
             if (trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
@@ -639,6 +647,12 @@ module csr_regfile #(
 
             priv_lvl_d = trap_to_priv_lvl;
         end
+		`ifdef _VCP //SPT77445
+		else 
+		begin
+			trap_to_priv_lvl = riscv::PRIV_LVL_M;
+		end
+		`endif
 
         // ------------------------------
         // Debug
@@ -887,23 +901,47 @@ module csr_regfile #(
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
+		`ifndef _VCP // SPT77445
         trap_vector_base_o = {mtvec_q[63:2], 2'b0};
+		`endif
         // output user mode stvec
         if (trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
             trap_vector_base_o = {stvec_q[63:2], 2'b0};
         end
+		`ifdef _VCP // SPT77445
+		else
+		begin
+			trap_vector_base_o = {mtvec_q[63:2], 2'b0};
+		end
+		`endif
 
         // if we are in debug mode jump to a specific address
         if (debug_mode_q) begin
             trap_vector_base_o = DmBaseAddress + dm::ExceptionAddress;
         end
+		`ifdef _VCP // SPT77445
+		else
+		begin
+			trap_vector_base_o = {mtvec_q[63:2], 2'b0};
+		end
+		`endif
 
         // check if we are in vectored mode, if yes then do BASE + 4 * cause
         // we are imposing an additional alignment-constraint of 64 * 4 bytes since
         // we want to spare the costly addition
         if ((mtvec_q[0] || stvec_q[0]) && ex_i.cause[63]) begin
+		`ifdef _VCP // SPT77445
+			trap_vector_base_o = {mtvec_q[63:8], ex_i.cause[5:0], 2'b0};
+		`else
             trap_vector_base_o[7:2] = ex_i.cause[5:0];
+		`endif
         end
+		`ifdef _VCP // SPT77445
+		else
+		begin
+			trap_vector_base_o = {mtvec_q[63:2], 2'b0};
+		end
+		`endif
 
         epc_o = mepc_q;
         // we are returning from supervisor mode, so take the sepc register

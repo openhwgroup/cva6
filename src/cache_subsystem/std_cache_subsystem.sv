@@ -155,8 +155,20 @@ module std_cache_subsystem #(
     ) i_fifo_w_channel (
       .clk_i      ( clk_i           ),
       .rst_ni     ( rst_ni          ),
+`ifdef _VCP // PAK2591
+      .flush_i    (ariane_pkg::ALDEC_1B0),
+
+`else
       .flush_i    ( 1'b0            ),
+
+`endif
+`ifdef _VCP // PAK2591
+      .testmode_i (ariane_pkg::ALDEC_1B0),
+
+`else
       .testmode_i ( 1'b0            ),
+
+`endif
       .full_o     (                 ), // leave open
       .empty_o    ( w_fifo_empty    ),
       .usage_o    (                 ), // leave open

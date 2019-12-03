@@ -821,4 +821,9 @@ package ariane_pkg;
             default:     return 2'b11;
         endcase
     endfunction
+
+`ifdef _VCP // PAK2591
+	localparam ALDEC_1B0 = 1'b0;
+	localparam ALDEC_1B1 = 1'b1;
+`endif
 endpackage

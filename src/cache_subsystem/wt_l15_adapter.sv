@@ -194,8 +194,20 @@ l15_rtrn_t rtrn_fifo_data;
     ) i_icache_data_fifo (
     .clk_i       (  clk_i                   ),
     .rst_ni      (  rst_ni                  ),
+`ifdef _VCP // PAK2591
+    .flush_i     (ariane_pkg::ALDEC_1B0),
+
+`else
     .flush_i     (  1'b0                    ),
+
+`endif
+`ifdef _VCP // PAK2591
+    .testmode_i  (ariane_pkg::ALDEC_1B0),
+
+`else
     .testmode_i  (  1'b0                    ),
+
+`endif
     .full_o      (  icache_data_full        ),
     .empty_o     (  icache_data_empty       ),
     .alm_full_o  (                          ),
@@ -212,8 +224,20 @@ l15_rtrn_t rtrn_fifo_data;
     ) i_dcache_data_fifo (
     .clk_i       (  clk_i                   ),
     .rst_ni      (  rst_ni                  ),
+`ifdef _VCP // PAK2591
+    .flush_i     (ariane_pkg::ALDEC_1B0),
+
+`else
     .flush_i     (  1'b0                    ),
+
+`endif
+`ifdef _VCP // PAK2591
+    .testmode_i  (ariane_pkg::ALDEC_1B0),
+
+`else
     .testmode_i  (  1'b0                    ),
+
+`endif
     .full_o      (  dcache_data_full        ),
     .empty_o     (  dcache_data_empty       ),
     .alm_full_o  (                          ),
@@ -329,8 +353,20 @@ l15_rtrn_t rtrn_fifo_data;
   ) i_rtrn_fifo (
     .clk_i       (  clk_i                    ),
     .rst_ni      (  rst_ni                   ),
+`ifdef _VCP // PAK2591
+    .flush_i     (ariane_pkg::ALDEC_1B0),
+
+`else
     .flush_i     (  1'b0                     ),
+
+`endif
+`ifdef _VCP // PAK2591
+    .testmode_i  (ariane_pkg::ALDEC_1B0),
+
+`else
     .testmode_i  (  1'b0                     ),
+
+`endif
     .full_o      (  rtrn_fifo_full           ),
     .empty_o     (  rtrn_fifo_empty          ),
     .alm_full_o  (                           ),

@@ -62,10 +62,34 @@ module commit_stage #(
 //     .probe3(commit_instr_i[1].valid), // input wire [0:0]  probe3
 //     .probe4(commit_ack_o[0]), // input wire [0:0]  probe4
 //     .probe5(commit_ack_o[0]), // input wire [0:0]  probe5
+`ifdef _VCP // PAK2591
+//     .probe6(ariane_pkg::ALDEC_1B0), // input wire [0:0]  probe6
+
+`else
 //     .probe6(1'b0), // input wire [0:0]  probe6
+
+`endif
+`ifdef _VCP // PAK2591
+//     .probe7(ariane_pkg::ALDEC_1B0), // input wire [0:0]  probe7
+
+`else
 //     .probe7(1'b0), // input wire [0:0]  probe7
+
+`endif
+`ifdef _VCP // PAK2591
+//     .probe8(ariane_pkg::ALDEC_1B0), // input wire [0:0]  probe8
+
+`else
 //     .probe8(1'b0), // input wire [0:0]  probe8
+
+`endif
+`ifdef _VCP // PAK2591
+//     .probe9(ariane_pkg::ALDEC_1B0) // input wire [0:0]  probe9
+
+`else
 //     .probe9(1'b0) // input wire [0:0]  probe9
+
+`endif
 // );
 
     // TODO make these parametric with NR_COMMIT_PORTS

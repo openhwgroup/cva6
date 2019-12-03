@@ -529,6 +529,34 @@ module ariane_testharness #(
   // ---------------
   // AXI Xbar
   // ---------------
+  `ifdef _VCP // PAK2573
+    logic [ariane_soc::NrRegion-1:0][ariane_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0]  start_addr_i_tmp;
+    logic [ariane_soc::NrRegion-1:0][ariane_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0]  end_addr_i_tmp;
+	assign start_addr_i_tmp = {
+      ariane_soc::DebugBase,
+      ariane_soc::ROMBase,
+      ariane_soc::CLINTBase,
+      ariane_soc::PLICBase,
+      ariane_soc::UARTBase,
+      ariane_soc::SPIBase,
+      ariane_soc::EthernetBase,
+      ariane_soc::GPIOBase,
+      ariane_soc::DRAMBase
+    };
+
+	assign end_addr_i_tmp = {
+      ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
+      ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
+      ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
+      ariane_soc::PLICBase     + ariane_soc::PLICLength - 1,
+      ariane_soc::UARTBase     + ariane_soc::UARTLength - 1,
+      ariane_soc::SPIBase      + ariane_soc::SPILength - 1,
+      ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
+      ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
+      ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
+    };
+  `endif
+  
   axi_node_intf_wrap #(
     .NB_SLAVE           ( ariane_soc::NrSlaves       ),
     .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
@@ -545,6 +573,10 @@ module ariane_testharness #(
     .test_en_i    ( test_en    ),
     .slave        ( slave      ),
     .master       ( master     ),
+`ifdef _VCP // PAK2573
+    .start_addr_i (start_addr_i_tmp),
+    .end_addr_i   (end_addr_i_tmp), 
+`else
     .start_addr_i ({
       ariane_soc::DebugBase,
       ariane_soc::ROMBase,
@@ -567,6 +599,7 @@ module ariane_testharness #(
       ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
       ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
     }),
+`endif
     .valid_rule_i (ariane_soc::ValidRule)
   );
 
@@ -650,7 +683,13 @@ module ariane_testharness #(
     .spi_ss    ( )
   );
 
+`ifdef _VCP // PAK2591
+  uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(ariane_pkg::ALDEC_1B1));
+
+`else
   uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));
+
+`endif
 
   // ---------------
   // Core
@@ -670,7 +709,13 @@ module ariane_testharness #(
     .time_irq_i           ( timer_irq           ),
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
+`ifdef _VCP // PAK2591
+    .debug_req_i          (ariane_pkg::ALDEC_1B0),
+
+`else
     .debug_req_i          ( 1'b0                ),
+
+`endif
 `else
     .debug_req_i          ( debug_req_core      ),
 `endif

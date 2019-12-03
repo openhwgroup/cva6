@@ -79,7 +79,13 @@ module ariane_peripherals #(
     ) i_axi2apb_64_32_plic (
         .ACLK      ( clk_i          ),
         .ARESETn   ( rst_ni         ),
+`ifdef _VCP // PAK2591
+        .test_en_i (ariane_pkg::ALDEC_1B0),
+
+`else
         .test_en_i ( 1'b0           ),
+
+`endif
         .AWID_i    ( plic.aw_id     ),
         .AWADDR_i  ( plic.aw_addr   ),
         .AWLEN_i   ( plic.aw_len    ),
@@ -198,7 +204,13 @@ module ariane_peripherals #(
     ) i_axi2apb_64_32_uart (
         .ACLK      ( clk_i          ),
         .ARESETn   ( rst_ni         ),
+`ifdef _VCP // PAK2591
+        .test_en_i (ariane_pkg::ALDEC_1B0),
+
+`else
         .test_en_i ( 1'b0           ),
+
+`endif
         .AWID_i    ( uart.aw_id     ),
         .AWADDR_i  ( uart.aw_addr   ),
         .AWLEN_i   ( uart.aw_len    ),
