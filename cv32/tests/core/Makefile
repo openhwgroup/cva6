@@ -51,6 +51,9 @@ SIMV_FLAGS              =
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
 DSIM_FLAGS              = -timescale 1ns/1ps
+ROOT_DIR                = $(PWD)
+DSIM_RESULTS            = $(PWD)/results
+DSIM_WORK               = $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE		= dsim.out
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
@@ -67,7 +70,7 @@ VERI_DIR                = cobj_dir
 VERI_CFLAGS             = -O2
 
 # TB source files for the RI5CY core (not sure the RTL_TB_TOP variable has any use...)
-RTLSRC_TB_HOME          := ../../tb
+RTLSRC_TB_HOME          := $(PWD)/../../tb
 RTLSRC_TB_PKG		:= $(RTLSRC_TB_HOME)/tb_riscv/include/perturbation_defines.sv
 RTLSRC_TB_TOP		:= $(RTLSRC_TB_HOME)/core/tb_top.sv
 RTLSRC_TB_CORE		:= $(RTLSRC_TB_HOME)/core
@@ -82,7 +85,7 @@ RTLSRC_TB		:= $(filter-out riscv_tb_pkg.sv tb_top_verilator.sv,\
 RTLSRC_VERI_TB          := $(filter-out tb_top.sv, $(wildcard *.sv))
 
 # RTL source files for the RI5CY core
-RTLSRC_HOME             := ../../../rtl
+RTLSRC_HOME             := $(PWD)/../../../rtl
 RTLSRC_INCDIR           := $(RTLSRC_HOME)/include
 RTLSRC_PKG		:= $(addprefix $(RTLSRC_HOME)/include/,\
 				apu_core_package.sv riscv_defines.sv \
@@ -177,42 +180,57 @@ vcs-clean:
 # Metrics dsim testbench compilation 
 .PHONY: dsimify dsimify-rtl-only
 
-dsimify: $(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB)
-	$(DSIM) \
+MKDIR_P = mkdir -p
+
+mk_results: 
+	$(MKDIR_P) $(DSIM_RESULTS)
+
+dsimify: mk_results $(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB)
+	cd $(DSIM_RESULTS) && $(DSIM) \
 		$(DSIM_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB) \
 		+incdir+$(RTLSRC_INCDIR) \
+		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
-dsimify-rtl-only: $(RTLSRC_PKG) $(RTLSRC)
+dsimify-rtl-only: mk_results $(RTLSRC_PKG) $(RTLSRC)
 	$(DSIM) \
 		$(DSIM_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) \
+		-work $(DSIM_WORK) \
 		+incdir+$(RTLSRC_INCDIR) \
 		-genimage $(DSIM_IMAGE)
 
 # Metrics dsim simulations
-.PHONY: dsim-hellow_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
+.PHONY: dsim-hello_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
 
 # Runs the hello world test
 dsim-hello_world: dsimify custom/hello_world.hex
+	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
-		+firmware=custom/hello_world.hex
+		-work $(DSIM_WORK) \
+		+firmware=$(ROOT_DIR)/custom/hello_world.hex
 
 # Runs tests in riscv_tests/ only
 dsim-cv32_riscv_tests: dsimify cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
 	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
-		+firmware=cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+		-work $(DSIM_WORK) \
+		+firmware=$(ROOT_DIR)/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
 
 # TODO: Runs tests in riscv_compliance_tests/ only
 #dsim-cv32_riscv_compliance_tests: dsimify cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+#       mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
 #	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
-#		+firmware=cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+#		-work $(DSIM_RESULTS) \
+#		+firmware=$(ROOT_DIR)/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
 dsim-firmware: dsimify firmware/firmware.hex
+	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
 	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
-		+firmware=firmware/firmware.hex
+		-work $(DSIM_WORK) \
+		+firmware=$(ROOT_DIR)/firmware/firmware.hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -226,6 +244,7 @@ dsim-clean:
 	rm -rf dsim_work
 	rm -f dsim.env
 	rm -f $(DSIM_IMAGE)
+	rm -fr $(DSIM_RESULTS)
 	find ./ -name *.o   -exec rm {} \;
 	find ./ -name *.hex -exec rm {} \;
 	find ./ -name *.elf -exec rm {} \;
