@@ -159,18 +159,6 @@ module commit_stage #(
                   we_gpr_o[0] = 1'b0;
                 end
             end
-            // ---------
-            // CSR Logic
-            // ---------
-            // check whether the instruction we retire was a CSR instruction
-            // interrupts are never taken on CSR instructions
-            if (commit_instr_i[0].fu == CSR) begin
-                // write the CSR file
-                commit_csr_o = 1'b1;
-                wdata_o[0]   = csr_rdata_i;
-                csr_op_o     = commit_instr_i[0].op;
-                csr_wdata_o  = commit_instr_i[0].result;
-            end
             // ------------------
             // SFENCE.VMA Logic
             // ------------------
