@@ -224,7 +224,13 @@ module ariane #(
     .ArianeCfg ( ArianeCfg )
   ) i_frontend (
     .flush_i             ( flush_ctrl_if                 ), // not entirely correct
+`ifdef _VCP // PAK2591
+    .flush_bp_i          (ariane_pkg::ALDEC_1B0),
+
+`else
     .flush_bp_i          ( 1'b0                          ),
+
+`endif
     .debug_mode_i        ( debug_mode                    ),
     .boot_addr_i         ( boot_addr_i                   ),
     .icache_dreq_i       ( icache_dreq_cache_if          ),

@@ -202,8 +202,20 @@ module wt_dcache_wbuffer #(
   ) i_rtrn_id_fifo (
     .clk_i      ( clk_i            ),
     .rst_ni     ( rst_ni           ),
+`ifdef _VCP // PAK2591
+    .flush_i    (ariane_pkg::ALDEC_1B0),
+
+`else
     .flush_i    ( 1'b0             ),
+
+`endif
+`ifdef _VCP // PAK2591
+    .testmode_i (ariane_pkg::ALDEC_1B0),
+
+`else
     .testmode_i ( 1'b0             ),
+
+`endif
     .full_o     (                  ),
     .empty_o    ( rtrn_empty       ),
     .usage_o    (                  ),
@@ -215,7 +227,9 @@ module wt_dcache_wbuffer #(
 
   always_comb begin : p_tx_stat
     tx_stat_d = tx_stat_q;
+	`ifndef _VCP // SPT77445
     evict     = 1'b0;
+	`endif
     wr_req_o  = '0;
 
     // clear entry if it is clear whether it can be pushed to the cache or not
@@ -228,11 +242,24 @@ module wt_dcache_wbuffer #(
           evict    = 1'b1;
           tx_stat_d[rtrn_id].vld = 1'b0;
         end
+		`ifdef _VCP // SPT77445
+		else
+		begin
+			evict     = 1'b0;
+		end
+		`endif
+		
       end else begin
         evict = 1'b1;
         tx_stat_d[rtrn_id].vld = 1'b0;
       end
     end
+	`ifdef _VCP // SPT77445
+	else
+	begin
+		evict     = 1'b0;
+	end
+	`endif
 
     // allocate a new entry
     if (dirty_rd_en) begin
@@ -395,7 +422,9 @@ module wt_dcache_wbuffer #(
   always_comb begin : p_buffer
     wbuffer_d           = wbuffer_q;
     nc_pending_d        = nc_pending_q;
+	`ifndef _VCP // SPT77445
     dirty_rd_en         = 1'b0;
+	`endif
     req_port_o.data_gnt = 1'b0;
     wbuffer_wren        = 1'b0;
 
@@ -446,6 +475,12 @@ module wt_dcache_wbuffer #(
         end
       end
     end
+	`ifdef _VCP // SPT77445
+	else
+	begin
+		dirty_rd_en = 1'b0;
+	end
+	`endif
 
     // write new word into the buffer
     if (req_port_i.data_req && rdy) begin

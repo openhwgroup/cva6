@@ -222,12 +222,24 @@ module scoreboard #(
     ) i_sel_gpr_clobbers (
       .clk_i   ( clk_i               ),
       .rst_ni  ( rst_ni              ),
+`ifdef _VCP // PAK2591
+      .flush_i (ariane_pkg::ALDEC_1B0),
+
+`else
       .flush_i ( 1'b0                ),
+
+`endif
       .rr_i    ( '0                  ),
       .req_i   ( gpr_clobber_vld[k]  ),
       .gnt_o   (                     ),
       .data_i  ( clobber_fu          ),
+`ifdef _VCP // PAK2591
+      .gnt_i   (ariane_pkg::ALDEC_1B1),
+
+`else
       .gnt_i   ( 1'b1                ),
+
+`endif
       .req_o   (                     ),
       .data_o  ( rd_clobber_gpr_o[k] ),
       .idx_o   (                     )
@@ -240,12 +252,24 @@ module scoreboard #(
     ) i_sel_fpr_clobbers (
       .clk_i   ( clk_i               ),
       .rst_ni  ( rst_ni              ),
+`ifdef _VCP // PAK2591
+      .flush_i (ariane_pkg::ALDEC_1B0),
+
+`else
       .flush_i ( 1'b0                ),
+
+`endif
       .rr_i    ( '0                  ),
       .req_i   ( fpr_clobber_vld[k]  ),
       .gnt_o   (                     ),
       .data_i  ( clobber_fu          ),
+`ifdef _VCP // PAK2591
+      .gnt_i   (ariane_pkg::ALDEC_1B1),
+
+`else
       .gnt_i   ( 1'b1                ),
+
+`endif
       .req_o   (                     ),
       .data_o  ( rd_clobber_fpr_o[k] ),
       .idx_o   (                     )
@@ -288,12 +312,24 @@ module scoreboard #(
   ) i_sel_rs1 (
     .clk_i   ( clk_i       ),
     .rst_ni  ( rst_ni      ),
+`ifdef _VCP // PAK2591
+    .flush_i (ariane_pkg::ALDEC_1B0),
+
+`else
     .flush_i ( 1'b0        ),
+
+`endif
     .rr_i    ( '0          ),
     .req_i   ( rs1_fwd_req ),
     .gnt_o   (             ),
     .data_i  ( rs_data     ),
+`ifdef _VCP // PAK2591
+    .gnt_i   (ariane_pkg::ALDEC_1B1),
+
+`else
     .gnt_i   ( 1'b1        ),
+
+`endif
     .req_o   ( rs1_valid   ),
     .data_o  ( rs1_o       ),
     .idx_o   (             )
@@ -307,12 +343,24 @@ module scoreboard #(
   ) i_sel_rs2 (
     .clk_i   ( clk_i       ),
     .rst_ni  ( rst_ni      ),
+`ifdef _VCP // PAK2591
+    .flush_i (ariane_pkg::ALDEC_1B0),
+
+`else
     .flush_i ( 1'b0        ),
+
+`endif
     .rr_i    ( '0          ),
     .req_i   ( rs2_fwd_req ),
     .gnt_o   (             ),
     .data_i  ( rs_data     ),
+`ifdef _VCP // PAK2591
+    .gnt_i   (ariane_pkg::ALDEC_1B1),
+
+`else
     .gnt_i   ( 1'b1        ),
+
+`endif
     .req_o   ( rs2_valid   ),
     .data_o  ( rs2_o       ),
     .idx_o   (             )
@@ -328,12 +376,24 @@ module scoreboard #(
   ) i_sel_rs3 (
     .clk_i   ( clk_i       ),
     .rst_ni  ( rst_ni      ),
+`ifdef _VCP // PAK2591
+    .flush_i (ariane_pkg::ALDEC_1B0),
+
+`else
     .flush_i ( 1'b0        ),
+
+`endif
     .rr_i    ( '0          ),
     .req_i   ( rs3_fwd_req ),
     .gnt_o   (             ),
     .data_i  ( rs_data     ),
+`ifdef _VCP // PAK2591
+    .gnt_i   (ariane_pkg::ALDEC_1B1),
+
+`else
     .gnt_i   ( 1'b1        ),
+
+`endif
     .req_o   ( rs3_valid_o ),
     .data_o  ( rs3         ),
     .idx_o   (             )

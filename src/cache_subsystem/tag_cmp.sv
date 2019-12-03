@@ -60,6 +60,10 @@ module tag_cmp #(
         assign hit_way_o[j] = (sel_tag == rdata_i[j].tag) ? rdata_i[j].valid : 1'b0;
     end
 
+	`ifdef _VCP // PAK2581
+	logic    [NR_PORTS-1:0][DCACHE_SET_ASSOC-1:0]             req_i_tmp; 
+	`endif
+
     always_comb begin
 
         gnt_o     = '0;
@@ -88,9 +92,16 @@ module tag_cmp #(
         `ifndef VERILATOR
         // assert that cache only hits on one way
         // this only needs to be checked one cycle after all ways have been requested
+		`ifdef _VCP // PAK2581
+		req_i_tmp = req_i;
+        onehot: assert property (
+          @(posedge clk_i) disable iff (!rst_ni) &req_i_tmp |=> $onehot0(hit_way_o))
+            else begin $fatal(1,"Hit should be one-hot encoded"); end
+		`else
         onehot: assert property (
           @(posedge clk_i) disable iff (!rst_ni) &req_i |=> $onehot0(hit_way_o))
             else begin $fatal(1,"Hit should be one-hot encoded"); end
+		`endif
         `endif
         `endif
     end

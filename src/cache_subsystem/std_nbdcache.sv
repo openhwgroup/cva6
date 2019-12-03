@@ -13,7 +13,10 @@
 // Description: Nonblocking private L1 dcache
 
 import ariane_pkg::*;
+
+`ifndef _VCP // [known_problem] Common compilation and common scope for each source file
 import std_cache_pkg::*;
+`endif
 
 module std_nbdcache #(
     parameter logic [63:0] CACHE_START_ADDR = 64'h8000_0000
@@ -37,6 +40,10 @@ module std_nbdcache #(
     output ariane_axi::req_t               axi_bypass_o,
     input  ariane_axi::resp_t              axi_bypass_i
 );
+
+`ifdef _VCP // [known_problem] Common compilation and common scope for each source file
+import std_cache_pkg::*;
+`endif
 
     // -------------------------------
     // Controller <-> Arbiter

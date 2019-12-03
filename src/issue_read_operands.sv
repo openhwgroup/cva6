@@ -359,7 +359,13 @@ module issue_read_operands #(
         .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
         .ZERO_REG_ZERO  ( 1               )
     ) i_ariane_regfile (
+`ifdef _VCP // PAK2591
+        .test_en_i (ariane_pkg::ALDEC_1B0),
+
+`else
         .test_en_i ( 1'b0       ),
+
+`endif
         .raddr_i   ( raddr_pack ),
         .rdata_o   ( rdata      ),
         .waddr_i   ( waddr_pack ),
@@ -388,7 +394,13 @@ module issue_read_operands #(
                 .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
                 .ZERO_REG_ZERO  ( 0               )
             ) i_ariane_fp_regfile (
+`ifdef _VCP // PAK2591
+                .test_en_i (ariane_pkg::ALDEC_1B0),
+
+`else
                 .test_en_i ( 1'b0          ),
+
+`endif
                 .raddr_i   ( fp_raddr_pack ),
                 .rdata_o   ( fprdata       ),
                 .waddr_i   ( waddr_pack    ),
@@ -418,7 +430,7 @@ module issue_read_operands #(
             trans_id_q            <= '0;
             pc_o                  <= '0;
             is_compressed_instr_o <= 1'b0;
-            branch_predict_o      <= '{default: 0};
+            branch_predict_o      <= '{default: 0}; // WA ---> use  -err VCP2694 W1 for alog
         end else begin
             operand_a_q           <= operand_a_n;
             operand_b_q           <= operand_b_n;

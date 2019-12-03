@@ -275,7 +275,13 @@ module instr_queue (
       .clk_i      ( clk_i                ),
       .rst_ni     ( rst_ni               ),
       .flush_i    ( flush_i              ),
+`ifdef _VCP // PAK2591
+      .testmode_i (ariane_pkg::ALDEC_1B0),
+
+`else
       .testmode_i ( 1'b0                 ),
+
+`endif
       .full_o     ( instr_queue_full[i]  ),
       .empty_o    ( instr_queue_empty[i] ),
       .usage_o    ( instr_queue_usage[i] ),
@@ -302,7 +308,13 @@ module instr_queue (
     .clk_i      ( clk_i                        ),
     .rst_ni     ( rst_ni                       ),
     .flush_i    ( flush_i                      ),
+`ifdef _VCP // PAK2591
+    .testmode_i (ariane_pkg::ALDEC_1B0),
+
+`else
     .testmode_i ( 1'b0                         ),
+
+`endif
     .full_o     ( full_address                 ),
     .empty_o    ( empty_address                ),
     .usage_o    ( address_queue_usage          ),
