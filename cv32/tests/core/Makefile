@@ -85,8 +85,8 @@ RTLSRC_VERI_TB          := $(filter-out tb_top.sv, $(wildcard *.sv))
 RTLSRC_HOME             := ../../../rtl
 RTLSRC_INCDIR           := $(RTLSRC_HOME)/include
 RTLSRC_PKG		:= $(addprefix $(RTLSRC_HOME)/include/,\
-				apu_core_package.sv riscv_defines.sv \
-				riscv_tracer_defines.sv fpnew_pkg.sv)
+				apu_core_package.sv fpnew_pkg.sv \
+				riscv_defines.sv riscv_tracer_defines.sv)
 RTLSRC			:= $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
 				$(wildcard $(RTLSRC_HOME)/*.sv))
 

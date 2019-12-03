@@ -73,7 +73,7 @@ module dp_ram
         read_byte = mem[byte_addr];
     endfunction
 
-    task write_byte(input integer byte_addr, logic [7:0] val, output logic [7:0] other);
+    task write_byte(input logic [ADDR_WIDTH-1:0] byte_addr, logic [7:0] val, output logic [7:0] other);
         mem[byte_addr] = val;
         other          = mem[byte_addr];
 
