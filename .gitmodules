@@ -12,7 +12,7 @@
 	url = https://github.com/pulp-platform/common_cells.git
 [submodule "src/axi"]
 	path = src/axi
-	url = https://github.com/pulp-platform/axi.git
+	url = https://github.com/danielmlynek/axi.git
 [submodule "src/register_interface"]
 	path = src/register_interface
 	url = https://github.com/pulp-platform/register_interface.git
