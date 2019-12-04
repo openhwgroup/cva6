@@ -1,0 +1,57 @@
+################################################################################
+# Mini Git cheat-sheet.  Written as a set of use-cases.  "$" is the prompt.
+#
+# Useful Conventions:
+#     1. Place all your working copies in easy-to-find directories.  A suggested
+#        nominclature is:
+#             $HOME/GitHubRepos/<GitHub_Account>/<Repository/><Branch>
+#
+#     2. Use unique and easily recognizable names for your branches.  Suggested
+#        nominclature is: <org>_<userid>_yyyymmdd  (e.g ohw_mike_20191120)
+#
+# Examples:
+#    /home/mike/GitHubRepos/openhwgroup/core-v-verif/master
+#    /home/mike/GitHubRepos/openhwgroup/core-v-verif/ohw_mike_20191204
+#    /home/mike/GitHubRepos/pulp-platform/ariane/master
+#    /home/mike/GitHubRepos/MikeOpenHWGroup/riscv-experimental/ohw_mike_20191122
+
+################################################################################
+# Clone from the head of the Repo's master branch on the command-line.
+# Note that this is _not_ a typical use-case (work on a branch instead).
+$ cd $HOME/GitHubRepos/<GitHub_Account>/<Repository>/<branch>
+$ git clone --recursive https://github.com/pulp-platform/riscv
+$ gvim Makefile #...edit file(s)...
+$ git commit -m 'Added support for dsim' Makefile 
+# First time users might be asked to update their info...
+$ git config --global --edit
+$ git commit --amend --reset-author
+
+################################################################################
+# Make a branch on the command-line and switch to it
+$ cd $HOME/GitHubRepos/pulp-platform/riscv/
+$ git clone --recursive https://github.com/pulp-platform/riscv ohw_mike_20191121
+$ git branch ohw_mike_20191121
+$ git checkout ohw_mike_20191121
+     ...or...
+$ git checkout -b ohw_mike_20191121
+# ...edit file(s)...
+# push files back to the branch
+$ git status        # check to see what's different
+$ git remote -v     # check to ensure remote is the branch you want
+$ git commit -m 'Useful commit message'
+$ git push --set-upstream origin ohw_mike_20191122
+
+################################################################################
+# Clone directly from a branch to a directory named for that branch
+$ cd $HOME/GitHubRepos/pulp-platform/riscv/ohw_mike_20191122
+$ git clone --recursive -b ohw_mike_20191122 https://github.com/pulp-platform/riscv ohw_mike_20191122
+
+################################################################################
+# Merging from a branch onto the master (not confident in this yet)
+$ git fetch origin
+$ git checkout -b mike_20191202 origin/mike_20191202
+$ git merge master
+$ git checkout master
+$ git merge --no-ff mike_20191202 
+$ git push origin master
+
