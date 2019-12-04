@@ -438,9 +438,9 @@ unknown_msg:
 no_exception_handler_msg:
 	.string "no exception handler installed\n"
 riscv_tests_msg:
-	.string "running riscv-tests\n"
+	.string "\n\n!!! Running riscv-tests\n\n\n"
 riscv_compliance_tests_msg:
-	.string "running riscv-compliance-tests\n"
+	.string "\n\n!!! Running riscv-compliance-tests\n\n\n"
 skip_riscv_compliance_tests_msg:
 	.string "!!!NOT running riscv-compliance-tests\n"
 timeout_msg:
