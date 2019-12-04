@@ -1,0 +1,31 @@
+{
+    "builds": {
+      "list": [{
+        "name": "cv32",
+        "image": "cv32-verif-toolchain:03122019",
+        "cmd": "cd cv32/tests/core; make dsimify DSIM_WORK=<root_dir>/dsim_work",
+        "wavesCmd": "cd cv32/tests/core; make dsimify DSIM_WORK=<root_dir>/dsim_work WAVES=1"
+      }]
+    },
+    "regressions": [{
+      "name": "hello_world",
+      "description": "Sanity test for CV32",
+      "tests": {
+          "resultsDir": "/mux-flow/results",
+          "builds": ["cv32"],
+	  "list": [
+	      {
+		  "name": "hello_world_test",
+		  "build": "cv32",
+		  "cmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=<root_dir>/dsim_work DSIM_RESULTS=/mux-flow/results",
+		  "wavesCmd": "cmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=<root_dir>/dsim_work DSIM_RESULTS=/mux-flow/results WAVES=1",
+		  "logFile": "dsim-hello_world.log",
+		  "wavesFile": "waves.vcd",
+		  "metricsFile": "metrics.db",
+		  "isPass": "EXIT SUCCESS",
+		  "seed": "random"
+	      }
+	  ]
+      }
+    }]
+}
