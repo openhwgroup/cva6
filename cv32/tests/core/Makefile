@@ -77,11 +77,11 @@ VERI_DIR                = cobj_dir
 VERI_CFLAGS             = -O2
 
 # TB source files for the RI5CY core
-TBSRC_HOME  := ../../tb
+TBSRC_HOME              := $(PWD)/../../tb
 TBSRC_PKG		:= $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
 TBSRC_TOP		:= $(TBSRC_HOME)/core/tb_top.sv
-TBSRC_CORE	:= $(TBSRC_HOME)/core
-TBSRC       := $(filter-out riscv_tb_pkg.sv tb_top_verilator.sv,\
+TBSRC_CORE		:= $(TBSRC_HOME)/core
+TBSRC       		:= $(filter-out riscv_tb_pkg.sv tb_top_verilator.sv,\
 				         $(wildcard *.sv) \
 				         $(TBSRC_CORE)/tb_top.sv \
 				         $(TBSRC_CORE)/riscv_wrapper.sv \
@@ -231,8 +231,8 @@ dsim-cv32_riscv_tests: dsimify cv32_riscv_tests_firmware/cv32_riscv_tests_firmwa
 dsim-cv32_riscv_compliance_tests: dsimify cv32_riscv_compliance_tests_firmware/cv32_riscv_compliance_tests_firmware.hex
 	mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
 	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_RESULTS) $(DSIM_RUN_FLAGS) \
-		+firmware=cv32_riscv_compliance_tests_firmware/cv32_riscv_compliance_tests_firmware.hex
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		+firmware=$(ROOT_DIR)/cv32_riscv_compliance_tests_firmware/cv32_riscv_compliance_tests_firmware.hex
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
 dsim-firmware: dsimify firmware/firmware.hex
