@@ -11,14 +11,14 @@
       "name": "hello_world",
       "description": "Sanity test for CV32",
       "tests": {
-          "resultsDir": "/mux-flow/results",
+          "resultsDir": "/mux-flow/build/results",
           "builds": ["cv32"],
 	  "list": [
 	      {
 		  "name": "hello_world_test",
 		  "build": "cv32",
-		  "cmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/results",
-		  "wavesCmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/results WAVES=1",
+		  "cmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+		  "wavesCmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
 		  "logFile": "dsim-hello_world.log",
 		  "wavesFile": "waves.vcd",
 		  "metricsFile": "metrics.db",
