@@ -20,6 +20,7 @@
 MAKE			= make
 CTAGS			= ctags
 CSMITH			= csmith
+WAVES                   = 0
 
 # vsim configuration
 VVERSION                = "10.7b"
@@ -50,11 +51,16 @@ SIMV_FLAGS              =
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
-DSIM_FLAGS              = -timescale 1ns/1ps
+DSIM_CMP_FLAGS          = -timescale 1ns/1ps
+DSIM_RUN_FLAGS          = 
 ROOT_DIR                = $(PWD)
 DSIM_RESULTS            = $(PWD)/results
 DSIM_WORK               = $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE		= dsim.out
+ifneq (${WAVES}, 0)
+	DSIM_CMP_FLAGS = -timescale 1ns/1ps +acc+b
+	DSIM_RUN_FLAGS = -waves waves.vcd.gz
+endif
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
 XRUN                    = xrun
@@ -187,7 +193,7 @@ mk_results:
 
 dsimify: mk_results $(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB)
 	cd $(DSIM_RESULTS) && $(DSIM) \
-		$(DSIM_FLAGS) \
+		$(DSIM_CMP_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB) \
 		+incdir+$(RTLSRC_INCDIR) \
 		-work $(DSIM_WORK) \
@@ -195,7 +201,7 @@ dsimify: mk_results $(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB)
 
 dsimify-rtl-only: mk_results $(RTLSRC_PKG) $(RTLSRC)
 	$(DSIM) \
-		$(DSIM_FLAGS) \
+		$(DSIM_CMP_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) \
 		-work $(DSIM_WORK) \
 		+incdir+$(RTLSRC_INCDIR) \
@@ -208,21 +214,21 @@ dsimify-rtl-only: mk_results $(RTLSRC_PKG) $(RTLSRC)
 dsim-hello_world: dsimify custom/hello_world.hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		+firmware=$(ROOT_DIR)/custom/hello_world.hex
 
 # Runs tests in riscv_tests/ only
 dsim-cv32_riscv_tests: dsimify cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
 	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
 	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
-		-work $(DSIM_WORK) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		+firmware=$(ROOT_DIR)/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
 
 # TODO: Runs tests in riscv_compliance_tests/ only
 #dsim-cv32_riscv_compliance_tests: dsimify cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
 #       mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
 #	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
-#		-work $(DSIM_RESULTS) \
+#		-work $(DSIM_RESULTS) $(DSIM_RUN_FLAGS) \
 #		+firmware=$(ROOT_DIR)/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/

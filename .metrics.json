@@ -20,7 +20,7 @@
 		  "cmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
 		  "wavesCmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
 		  "logFile": "dsim-hello_world.log",
-		  "wavesFile": "waves.vcd",
+		  "wavesFile": "waves.vcd.gz",
 		  "metricsFile": "metrics.db",
 		  "isPass": "EXIT SUCCESS",
 		  "seed": "random"
