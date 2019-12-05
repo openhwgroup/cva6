@@ -18,7 +18,7 @@
 		  "name": "hello_world_test",
 		  "build": "cv32",
 		  "cmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=<root_dir>/dsim_work DSIM_RESULTS=/mux-flow/results",
-		  "wavesCmd": "cmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=<root_dir>/dsim_work DSIM_RESULTS=/mux-flow/results WAVES=1",
+		  "wavesCmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=<root_dir>/dsim_work DSIM_RESULTS=/mux-flow/results WAVES=1",
 		  "logFile": "dsim-hello_world.log",
 		  "wavesFile": "waves.vcd",
 		  "metricsFile": "metrics.db",
