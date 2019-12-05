@@ -11,7 +11,7 @@
       "name": "hello_world",
       "description": "Sanity test for CV32",
       "tests": {
-          "resultsDir": "/mux-flow/build/results",
+          "resultsDir": "/mux-flow/build/results/hello_world",
           "builds": ["cv32"],
 	  "list": [
 	      {
