@@ -26,9 +26,10 @@
 		  "seed": "random"
 	      }
 	  ]
-      },
-      {
-      "name": "riscv_tests",
+       }
+    },
+    {
+      "name": "riscv_tests_cv32",
       "description": "RISC-V ISA tests",
       "tests": {
           "resultsDir": "/mux-flow/build/results/riscv-tests",
