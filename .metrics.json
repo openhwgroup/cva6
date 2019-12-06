@@ -23,7 +23,7 @@
 		  "wavesFile": "waves.vcd",
 		  "metricsFile": "metrics.xml",
 		  "isPass": "EXIT SUCCESS",
-		  "seed": "1"
+		  "seed": 1
 	      }
 	  ]
        }
@@ -44,7 +44,7 @@
 		  "wavesFile": "waves.vcd",
 		  "metricsFile": "metrics.xml",
 		  "isFail": "/.*Simulation terminated by \$fatal.*/",
-		  "seed": "1"
+		  "seed": 1
 	      }
 	  ]
        }
@@ -65,7 +65,7 @@
 		  "wavesFile": "waves.vcd",
 		  "metricsFile": "metrics.xml",
 		  "isPass": "ALL TESTS PASSED",
-		  "seed": "1"
+		  "seed": 1
 	      }
 	  ]
       }
