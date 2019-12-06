@@ -21,9 +21,9 @@
 		  "wavesCmd": "cd cv32/tests/core; make dsim-hello_world DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
 		  "logFile": "dsim-hello_world.log",
 		  "wavesFile": "waves.vcd",
-		  "metricsFile": "metrics.db",
+		  "metricsFile": "metrics.xml",
 		  "isPass": "EXIT SUCCESS",
-		  "seed": "random"
+		  "seed": "1"
 	      }
 	  ]
        }
@@ -42,9 +42,9 @@
 		  "wavesCmd": "cd cv32/tests/core; make dsim-cv32_riscv_compliance_tests DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
 		  "logFile": "dsim-riscv_compliance_tests.log",
 		  "wavesFile": "waves.vcd",
-		  "metricsFile": "metrics.db",
-		  "isFail": "Simulation terminated by $fatal",
-		  "seed": "random"
+		  "metricsFile": "metrics.xml",
+		  "isFail": "/.*Simulation terminated by \$fatal.*/",
+		  "seed": "1"
 	      }
 	  ]
        }
@@ -63,9 +63,9 @@
 		  "wavesCmd": "cd cv32/tests/core; make dsim-cv32_riscv_tests DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
 		  "logFile": "dsim-riscv_tests.log",
 		  "wavesFile": "waves.vcd",
-		  "metricsFile": "metrics.db",
+		  "metricsFile": "metrics.xml",
 		  "isPass": "ALL TESTS PASSED",
-		  "seed": "random"
+		  "seed": "1"
 	      }
 	  ]
       }

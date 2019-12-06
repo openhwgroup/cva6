@@ -53,14 +53,14 @@ SIMV_FLAGS              =
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
 DSIM_CMP_FLAGS          = -timescale 1ns/1ps
-DSIM_RUN_FLAGS          = 
+DSIM_RUN_FLAGS          = -write-xml
 ROOT_DIR                = $(PWD)
 DSIM_RESULTS            = $(PWD)/results
 DSIM_WORK               = $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE		= dsim.out
 ifneq (${WAVES}, 0)
 	DSIM_CMP_FLAGS = -timescale 1ns/1ps +acc+b
-	DSIM_RUN_FLAGS = -waves waves.vcd
+	DSIM_RUN_FLAGS = -write-xml -waves waves.vcd
 endif
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
