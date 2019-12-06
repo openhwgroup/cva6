@@ -31,6 +31,7 @@
     {
       "name": "riscv_compliance_cv32",
       "description": "RISC-V compliance tests",
+      "verbose": "true",	
       "tests": {
           "resultsDir": "/mux-flow/build/results/riscv-compliance",
           "builds": ["cv32"],
