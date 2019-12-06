@@ -29,6 +29,27 @@
        }
     },
     {
+      "name": "riscv_compliance_cv32",
+      "description": "RISC-V compliance tests",
+      "tests": {
+          "resultsDir": "/mux-flow/build/results/riscv_compliance",
+          "builds": ["cv32"],
+	  "list": [
+	      {
+		  "name": "riscv_compliance_tests_cv32",
+		  "build": "cv32",
+		  "cmd": "cd cv32/tests/core; make dsim-cv32_riscv_compliance_tests DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results",
+		  "wavesCmd": "cd cv32/tests/core; make dsim-cv32_riscv_compliance_tests DSIM_WORK=/mux-flow/build/repo/dsim_work DSIM_RESULTS=/mux-flow/build/results WAVES=1",
+		  "logFile": "dsim-riscv_compliance_tests.log",
+		  "wavesFile": "waves.vcd",
+		  "metricsFile": "metrics.db",
+		  "isFail": "Simulation terminated by $fatal",
+		  "seed": "random"
+	      }
+	  ]
+       }
+    },
+    {
       "name": "riscv_tests_cv32",
       "description": "RISC-V ISA tests",
       "tests": {
