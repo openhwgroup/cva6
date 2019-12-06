@@ -1,0 +1,4 @@
+instance fpnew_pkg +
+instance riscv_alu_basic +
+instance std +
+instance tb_top.riscv_wrapper_i +
