@@ -43,7 +43,7 @@
 		  "logFile": "dsim-riscv_compliance_tests.log",
 		  "wavesFile": "waves.vcd",
 		  "metricsFile": "metrics.xml",
-		  "isFail": "Simulation terminated by \$fatal",
+		  "isFail": "Simulation terminated by \\\\$fatal",
 		  "seed": 1
 	      }
 	  ]
