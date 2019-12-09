@@ -2,7 +2,7 @@
     "builds": {
       "list": [{
         "name": "cv32",
-        "image": "cv32-verif-toolchain:03122019",
+        "image": "cv32-verif-toolchain:06122019",
         "cmd": "cd cv32/tests/core; make dsimify DSIM_WORK=/mux-flow/build/repo/dsim_work",
         "wavesCmd": "cd cv32/tests/core; make dsimify DSIM_WORK=/mux-flow/build/repo/dsim_work WAVES=1"
       }]
