@@ -901,15 +901,23 @@ module csr_regfile #(
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
+		`ifdef _VCP // SPT77445
+		bit f_not_modified;
+		f_not_modified = 1;
+		`endif
+		
 		`ifndef _VCP // SPT77445
         trap_vector_base_o = {mtvec_q[63:2], 2'b0};
 		`endif
         // output user mode stvec
         if (trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
             trap_vector_base_o = {stvec_q[63:2], 2'b0};
+			`ifdef _VCP // SPT77445
+			f_not_modified = 0;
+			`endif
         end
 		`ifdef _VCP // SPT77445
-		else
+		else if(f_not_modified)
 		begin
 			trap_vector_base_o = {mtvec_q[63:2], 2'b0};
 		end
@@ -918,9 +926,12 @@ module csr_regfile #(
         // if we are in debug mode jump to a specific address
         if (debug_mode_q) begin
             trap_vector_base_o = DmBaseAddress + dm::ExceptionAddress;
+			`ifdef _VCP // SPT77445
+			f_not_modified = 0;
+			`endif
         end
 		`ifdef _VCP // SPT77445
-		else
+		else if(f_not_modified)
 		begin
 			trap_vector_base_o = {mtvec_q[63:2], 2'b0};
 		end
@@ -932,12 +943,15 @@ module csr_regfile #(
         if ((mtvec_q[0] || stvec_q[0]) && ex_i.cause[63]) begin
 		`ifdef _VCP // SPT77445
 			trap_vector_base_o = {mtvec_q[63:8], ex_i.cause[5:0], 2'b0};
+			`ifdef _VCP // SPT77445
+			f_not_modified = 0;
+			`endif
 		`else
             trap_vector_base_o[7:2] = ex_i.cause[5:0];
 		`endif
         end
 		`ifdef _VCP // SPT77445
-		else
+		else if(f_not_modified)
 		begin
 			trap_vector_base_o = {mtvec_q[63:2], 2'b0};
 		end
