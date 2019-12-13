@@ -54,6 +54,8 @@ ariane:
     src/debug/dmi_cdc.sv,
     src/debug/dmi_jtag.sv,
     src/debug/dmi_jtag_tap.sv,
+    fpga/apb_timer/apb_timer.sv,
+    fpga/apb_timer/timer.sv,
     ]
 riscv_regfile_rtl:
   targets: [
