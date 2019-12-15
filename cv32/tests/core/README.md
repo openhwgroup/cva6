@@ -33,29 +33,35 @@ Toolchain](https://github.com/riscv/riscv-gnu-toolchain) for that (follow the
 `Installation (Newlib)` section) and point your `RISCV` environment variable to
 it.
 
-Running your own programs
+Running your own C programs
 ---------------------
-A hello world program is available and you can run in the testbench. Its purpose
-is to demonstrate how you can run your own programs. Invoke the `dsim-hello_world` or
-`custom-veri-run` Make rules to run it with `dsim` or `verilator` respectively.
+A hello world program is available and you can run it in the testbench. Invoke the
+`dsim-hello_world` or `custom-veri-run` makefile rules to run it with `dsim` or
+`verilator` respectively.
 
-The hello world program is located in the `custom` folder a runnable example.
-The relevant sections in the Makefile on how to compile and link
-this program can be found under `Running custom programs`.  Make sure you have
-a working C compiler (see above).
+The hello world program is located in the `custom` folder. The relevant sections
+in the Makefile on how to compile and link this program can be found under `Running
+custom programs`.  Make sure you have a working C compiler (see above) and keep in
+mind that you are running on a very basic machine.
+
+Running your own Assembler programs
+---------------------
+Admittedly, this needs work.  Check out the Makefile for `+firmware=path_to_firmware`
+to load a specific firmware. It is a bit tricky to build and link your own program.
+Have a look at `picorv_firmware/start.S` and `picorv_firmware/link.ld` for more insight.
+This will be cleaned up in the future.
 
 Running the testbench with [verilator](https://www.veripool.org/wiki/verilator)
 ----------------------
-Point you environment variable `RISCV` to your RISC-V toolchain. Call `make
+Point your environment variable `RISCV` to your RISC-V toolchain. Call `make
 firmware-veri-run` or just `make` to build the testbench and the firmware, and
 run it. Use `VERI_FLAGS` to configure verilator e.g. `make firmware-veri-run
 VERI_FLAGS="+firmware=path_to_firmware"`.  You can clean up the mess you made
 with `make veri-clean` (yes, it is amusing to say that).
 
-
 Running the testbench with Metrics [dsim](https://metrics.ca)
 ----------------------
-Point you environment variable `RISCV` to your RISC-V toolchain. Call
+Point your environment variable `RISCV` to your RISC-V toolchain. Call
 `make dsim-hello_world` to build and run the testbench with the hello_world
 test in the custom directory. Other rules of interest:
 * `make dsim-cv32_riscv_tests` to build and run the testbench with all the testcases in the riscv_tests directory.
@@ -65,7 +71,7 @@ test in the custom directory. Other rules of interest:
 
 Running the testbench with Cadence Xcelium [xrun](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)
 ----------------------
-Point you environment variable `RISCV` to your RISC-V toolchain. Call
+Point your environment variable `RISCV` to your RISC-V toolchain. Call
 `make xrun-hello_world` to build and run the testbench with the hello_world
 test in the custom directory. Other rules of interest:
 * `make xrun-firmware` to build and run the testbench with all the testcases in the riscv_tests/ and riscv_compliance_tests/ directories.
@@ -73,14 +79,14 @@ test in the custom directory. Other rules of interest:
 
 Running the testbench with vsim (not currently supported)
 ---------------------------------------------------------
-Point you environment variable `RISCV` to your RISC-V toolchain. Call `make
+Point your environment variable `RISCV` to your RISC-V toolchain. Call `make
 firmware-vsim-run` to build the testbench and the firmware, and run it. Use
 `VSIM_FLAGS` to configure the simulator e.g. `make firmware-vsim-run
 VSIM_FLAGS="-gui -debugdb"`.
 
 Running the testbench with vcs (not currently supported)
 ----------------------
-Point you environment variable `RISCV` to your RISC-V toolchain.
+Point your environment variable `RISCV` to your RISC-V toolchain.
 Call `make firmware-vcs-run` to build the testbench and the firmware, and run it.
 Use `SIMV_FLAGS` or `VCS_FLAGS` to configure the simulator and build respectively e.g.
 `make firmware-vcs-run VCS_FLAGS+="-cm line+cond+fsm+tgl+branch" SIMV_FLAGS+="-cm line+cond+fsm+tgl+branch"`
@@ -92,10 +98,6 @@ A few plusarg options are supported.
 
 * `+vcd` to produce a vcd file called `riscy_tb.vcd`. Verilator always produces
   a vcd file called `verilator_tb.vcd`.
-
-* `+firmware=path_to_firmware` to load a specific firmware. It is a bit tricky to
-build and link your own program. Have a look at `picorv_firmware/start.S` and
-`picorv_firmware/link.ld` for more insight.
 
 Examples (out of date)
 -----------------------
