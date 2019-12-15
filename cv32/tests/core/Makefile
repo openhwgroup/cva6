@@ -20,7 +20,7 @@
 
 MAKE			= make
 CTAGS			= ctags
-CSMITH			= csmith
+CSMITH		= csmith
 
 # vsim configuration
 VVERSION                = "10.7b"
@@ -28,46 +28,47 @@ VVERSION                = "10.7b"
 VLIB			= vlib-$(VVERSION)
 VWORK			= work
 
-VLOG			= vlog-$(VVERSION)
+VLOG			    = vlog-$(VVERSION)
 VLOG_FLAGS		= -pedanticerrors -suppress 2577 -suppress 2583
-VLOG_LOG                = vloggy
+VLOG_LOG      = vloggy
 
-VOPT			= vopt-$(VVERSION)
+VOPT			    = vopt-$(VVERSION)
 VOPT_FLAGS		= -debugdb -fsmdebug -pedanticerrors +acc #=mnprft
 
-VSIM			= vsim-$(VVERSION)
-VSIM_HOME               = /usr/pack/modelsim-$(VVERSION)-kgf/questasim
-VSIM_FLAGS              =  # user defined
+VSIM		        	= vsim-$(VVERSION)
+VSIM_HOME         = /usr/pack/modelsim-$(VVERSION)-kgf/questasim
+VSIM_FLAGS       ?=  # user defined
 ALL_VSIM_FLAGS		= $(VSIM_FLAGS)
 VSIM_DEBUG_FLAGS	= -debugdb
-VSIM_GUI_FLAGS          = -gui -debugdb
-VSIM_SCRIPT             = vsim.tcl
+VSIM_GUI_FLAGS    = -gui -debugdb
+VSIM_SCRIPT       = vsim.tcl
 
-VCS                     = vcs-2017.03-kgf vcs
-VCS_HOME                = /usr/pack/vcs-2017.03-kgf
-VCS_FLAGS               =
-SIMV_FLAGS              =
+VCS               = vcs-2017.03-kgf vcs
+VCS_HOME          = /usr/pack/vcs-2017.03-kgf
+VCS_FLAGS         =
+SIMV_FLAGS        =
 
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
-DSIM                    = dsim
-DSIM_HOME               = /tools/Metrics/dsim
-DSIM_FLAGS              = -timescale 1ns/1ps
-DSIM_IMAGE              = dsim.out
+DSIM              = dsim
+DSIM_HOME         = /tools/Metrics/dsim
+DSIM_FLAGS        = -timescale 1ns/1ps
+DSIM_IMAGE        = dsim.out
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
-XRUN                    = xrun
-XRUN_FLAGS              = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1ps
-XRUN_DIR                = xcelium.d
+XRUN              = xrun
+XRUN_FLAGS        = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1ps
+XRUN_DIR          = xcelium.d
 
 # verilator configuration
-VERILATOR		= verilator
-VERI_FLAGS              +=
-VERI_COMPILE_FLAGS      += -Wno-BLKANDNBLK # hope this doesn't hurt us in the long run
+VERILATOR		            = verilator
+VERI_FLAGS             +=
+VERI_COMPILE_FLAGS     += -Wno-BLKANDNBLK # hope this doesn't hurt us in the long run
 VERI_TRACE              =
-VERI_DIR                = cobj_dir
+VERI_OBJ_DIR           ?= cobj_dir
+VERI_LOG_DIR           ?= cobj_dir/logs
 VERI_CFLAGS             = -O2
 
-# TB source files for the RI5CY core
+# TB source files for the CV32E core (TODO: fix the TBSRC variable)
 TBSRC_HOME  := ../../tb
 TBSRC_PKG		:= $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
 TBSRC_TOP		:= $(TBSRC_HOME)/core/tb_top.sv
@@ -80,23 +81,23 @@ TBSRC       := $(filter-out riscv_tb_pkg.sv tb_top_verilator.sv,\
 				         $(TBSRC_CORE)/dp_ram.sv \
 				         $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
 				         $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv)
-TBSRC_VERI  := $(filter-out tb_top.sv, $(wildcard *.sv))
+TBSRC_VERI  := $(filter-out $(TBSRC_CORE)/tb_top.sv, $(wildcard $(TBSRC_CORE)/*.sv))
 
-# RTL source files for the RI5CY core
-RTLSRC_HOME             := ../../../rtl
-RTLSRC_INCDIR           := $(RTLSRC_HOME)/include
+# RTL source files for the CV32E core
+RTLSRC_HOME   := ../../../rtl
+RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 RTLSRC_PKG		:= $(addprefix $(RTLSRC_HOME)/include/,\
-				apu_core_package.sv fpnew_pkg.sv \
-				riscv_defines.sv riscv_tracer_defines.sv)
-RTLSRC			:= $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
-				$(wildcard $(RTLSRC_HOME)/*.sv))
+				         apu_core_package.sv fpnew_pkg.sv \
+				         riscv_defines.sv riscv_tracer_defines.sv)
+RTLSRC			  := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
+				         $(wildcard $(RTLSRC_HOME)/*.sv))
 
 # TODO: clean this up
 RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
 RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
 
 # riscv toolchain install path
-RISCV                    ?= ~/.riscv
+RISCV                   ?= ~/.riscv
 RISCV_EXE_PREFIX         = $(RISCV)/bin/riscv32-unknown-elf-
 
 # firmware vars
@@ -107,21 +108,21 @@ CV32_RISCV_TESTS_FIRMWARE_OBJS = $(addprefix cv32_riscv_tests_firmware/, start.o
                                              print.o sieve.o multest.o stats.o)
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS = $(addprefix cv32_riscv_compliance_tests_firmware/, start.o \
                                                         print.o sieve.o multest.o stats.o)
-RISCV_TESTS_OBJS       = $(addsuffix .o, \
-				$(basename $(wildcard riscv_tests/rv32ui/*.S)) \
-				$(basename $(wildcard riscv_tests/rv32um/*.S)) \
-				$(basename $(wildcard riscv_tests/rv32uc/*.S)))
-FIRMWARE_OBJS		 = $(addprefix firmware/, start.o \
-				print.o sieve.o multest.o stats.o)
+RISCV_TESTS_OBJS         = $(addsuffix .o, \
+				                     $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
+				                     $(basename $(wildcard riscv_tests/rv32um/*.S)) \
+				                     $(basename $(wildcard riscv_tests/rv32uc/*.S)))
+FIRMWARE_OBJS		         = $(addprefix firmware/, start.o \
+				                     print.o sieve.o multest.o stats.o)
 FIRMWARE_TEST_OBJS       = $(addsuffix .o, \
-				$(basename $(wildcard riscv_tests/rv32ui/*.S)) \
-				$(basename $(wildcard riscv_tests/rv32um/*.S)) \
-				$(basename $(wildcard riscv_tests/rv32uc/*.S)))
+				                     $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
+				                     $(basename $(wildcard riscv_tests/rv32um/*.S)) \
+				                     $(basename $(wildcard riscv_tests/rv32uc/*.S)))
 FIRMWARE_SHORT_TEST_OBJS = $(addsuffix .o, \
-				$(basename $(wildcard riscv_tests/rv32ui/*.S)) \
-				$(basename $(wildcard riscv_tests/rv32um/*.S)))
-COMPLIANCE_TEST_OBJS	 = $(addsuffix .o, \
-				$(basename $(wildcard riscv_compliance_tests/*.S)))
+				                     $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
+				                     $(basename $(wildcard riscv_tests/rv32um/*.S)))
+COMPLIANCE_TEST_OBJS	   = $(addsuffix .o, \
+				                     $(basename $(wildcard riscv_compliance_tests/*.S)))
 
 # csmith vars
 CSMITH_INCLUDE           = ~/.local/include/csmith-2.4.0
@@ -279,14 +280,17 @@ testbench_verilator: $(TBSRC_VERI) $(RTLSRC_PKG) $(RTLSRC)
 		--Wno-lint --Wno-UNOPTFLAT \
 		--Wno-MODDUP +incdir+$(RTLSRC_INCDIR) --top-module \
 		tb_top_verilator $(TBSRC_VERI) $(RTLSRC_PKG) $(RTLSRC) \
-		tb_top_verilator.cpp --Mdir $(VERI_DIR) \
+		$(TBSRC_CORE)/tb_top_verilator.cpp --Mdir $(VERI_OBJ_DIR) \
 		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
 		$(VERI_COMPILE_FLAGS)
-	$(MAKE) -C $(VERI_DIR) -f Vtb_top_verilator.mk
-	cp $(VERI_DIR)/Vtb_top_verilator testbench_verilator
+	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
+	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
+
+veri-clean: verilate-clean
 
 verilate-clean:
-	if [ -d $(VERI_DIR) ]; then rm -r $(VERI_DIR); fi
+	if [ -d $(VERI_LOG_DIR) ]; then rm -r $(VERI_LOG_DIR); fi
+	if [ -d $(VERI_OBJ_DIR) ]; then rm -r $(VERI_OBJ_DIR); fi
 	rm -rf testbench_verilator
 
 # fpnew dependencies (no longer needed - fpnew_pkg.sv commited to rtl/include)
@@ -353,8 +357,10 @@ custom-vsim-run-gui: vsim-run-gui
 
 .PHONY: custom-veri-run
 custom-veri-run: verilate custom/hello_world.hex
+	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=custom/hello_world.hex"
+		"+firmware=custom/hello_world.hex" \
+		| tee $(VERI_LOG_DIR)/custom-veri-run.log
 
 # compile and dump RISCV_TESTS only
 cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
@@ -443,8 +449,10 @@ riscv_compliance_tests/%.o: riscv_compliance_tests/%.S riscv_compliance_tests/ri
 # in verilator
 .PHONY: firmware-veri-run
 firmware-veri-run: verilate firmware/firmware.hex
+	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=firmware/firmware.hex"
+		"+firmware=firmware/firmware.hex" \
+		| tee $(VERI_LOG_DIR)/firmware-veri-run.log
 
 # in vsim
 .PHONY: firmware-vsim-run
@@ -567,7 +575,7 @@ csmith-loop: riscv-fesvr/build.ok riscv-isa-sim/build.ok
 
 # general targets
 .PHONY: clean
-clean: tb-clean verilate-clean vcs-clean firmware-clean csmith-clean custom-clean
+clean: tb-clean verilate-clean vcs-clean firmware-clean csmith-clean custom-clean dsim-clean
 
 .PHONY: distclean
 distclean: clean
