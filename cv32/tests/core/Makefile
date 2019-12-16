@@ -292,6 +292,10 @@ verilate-clean:
 	if [ -d $(VERI_LOG_DIR) ]; then rm -r $(VERI_LOG_DIR); fi
 	if [ -d $(VERI_OBJ_DIR) ]; then rm -r $(VERI_OBJ_DIR); fi
 	rm -rf testbench_verilator
+	find ./ -name *.o   -exec rm {} \;
+	find ./ -name *.hex -exec rm {} \;
+	find ./ -name *.elf -exec rm {} \;
+	find ./ -name *.map -exec rm {} \;
 
 # fpnew dependencies (no longer needed - fpnew_pkg.sv commited to rtl/include)
 #fpnew/src/fpnew_pkg.sv:
