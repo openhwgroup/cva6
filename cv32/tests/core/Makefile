@@ -69,12 +69,11 @@ VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
 VERI_CFLAGS         = -O2
 
-# TB source files for the CV32E core (TODO: fix the TBSRC variable)
+# TB source files for the CV32E core
 TBSRC_HOME  := ../../tb
 TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
 TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
 TBSRC_CORE  := $(TBSRC_HOME)/core
-#TBSRC       := $(filter-out riscv_tb_pkg.sv tb_top_verilator.sv, $(wildcard *.sv))
 TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
                $(TBSRC_CORE)/mm_ram.sv \
@@ -89,9 +88,12 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
 # RTL source files for the CV32E core
 RTLSRC_HOME   := ../../../rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
-RTLSRC_PKG    := $(addprefix $(RTLSRC_HOME)/include/,\
-                   apu_core_package.sv fpnew_pkg.sv \
-                   riscv_defines.sv riscv_tracer_defines.sv)
+FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
+RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
+                 $(addprefix $(RTLSRC_HOME)/include/,\
+                   apu_core_package.sv \
+                   riscv_defines.sv \
+                   riscv_tracer_defines.sv)
 RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
                    $(wildcard $(RTLSRC_HOME)/*.sv))
 
@@ -164,7 +166,7 @@ dpiheader: .build-tb
 
 # vcs testbench compilation
 
-vcsify: $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
+vcsify: $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(VCS) +vc -sverilog -race=all -ignore unique_checks -full64 \
 		-timescale=1ns/1ps \
 		-CC "-I$(VCS_HOME)/include -O3 -march=native" $(VCS_FLAGS) \
@@ -184,7 +186,8 @@ vcs-clean:
 # Metrics dsim testbench compilation 
 .PHONY: dsimify dsimify-rtl-only
 
-dsimify: $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
+#dsimify: $(RTLSRC_HOME)/fpnew/src/fpnew_pkg.sv $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
+dsimify: $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(DSIM) \
 		$(DSIM_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
@@ -224,7 +227,7 @@ dsim-firmware: dsimify firmware/firmware.hex
 # Metrics dsim cleanup
 .PHONY: dsim-clean
 
-dsim-clean:
+dsim-clean: tc-clean
 	rm -f dsim.log
 	rm -f dsim-*.log
 	rm -f metrics_history.db
@@ -233,14 +236,10 @@ dsim-clean:
 	rm -rf dsim_work
 	rm -f dsim.env
 	rm -f $(DSIM_IMAGE)
-	find ./ -name *.o   -exec rm {} \;
-	find ./ -name *.hex -exec rm {} \;
-	find ./ -name *.elf -exec rm {} \;
-	find ./ -name *.map -exec rm {} \;
 
 # Cadence Xcelium xrun testbench compilation
 .PHONY: xrun-all
-xrun-all: $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
+xrun-all: $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
@@ -277,7 +276,7 @@ endif
 
 verilate: testbench_verilator
 
-testbench_verilator: $(TBSRC_VERI) $(RTLSRC_PKG) $(RTLSRC)
+testbench_verilator: $(FPNEW_PKG) $(TBSRC_VERI) $(RTLSRC_PKG) $(RTLSRC)
 	$(VERILATOR) --cc --sv --exe \
 		$(VERI_TRACE) \
 		--Wno-lint --Wno-UNOPTFLAT \
@@ -291,18 +290,14 @@ testbench_verilator: $(TBSRC_VERI) $(RTLSRC_PKG) $(RTLSRC)
 
 veri-clean: verilate-clean
 
-verilate-clean:
+verilate-clean: tc-clean
 	if [ -d $(VERI_LOG_DIR) ]; then rm -r $(VERI_LOG_DIR); fi
 	if [ -d $(VERI_OBJ_DIR) ]; then rm -r $(VERI_OBJ_DIR); fi
 	rm -rf testbench_verilator
-	find ./ -name *.o   -exec rm {} \;
-	find ./ -name *.hex -exec rm {} \;
-	find ./ -name *.elf -exec rm {} \;
-	find ./ -name *.map -exec rm {} \;
 
-# fpnew dependencies (no longer needed - fpnew_pkg.sv commited to rtl/include)
-#fpnew/src/fpnew_pkg.sv:
-#	git clone https://github.com/pulp-platform/fpnew --recurse
+# fpnew dependencies
+$(FPNEW_PKG):
+	git clone https://github.com/pulp-platform/fpnew --recurse $(RTLSRC_HOME)/fpnew
 
 # run tb and exit
 .PHONY: vsim-run
@@ -581,9 +576,16 @@ csmith-loop: riscv-fesvr/build.ok riscv-isa-sim/build.ok
 
 
 # general targets
+.PHONY: tc-clean  # clean up toolchain generated files
+tc-clean:
+	find ./ -name *.o   -exec rm {} \;
+	find ./ -name *.hex -exec rm {} \;
+	find ./ -name *.elf -exec rm {} \;
+	find ./ -name *.map -exec rm {} \;
+
 .PHONY: clean
 clean: tb-clean verilate-clean vcs-clean firmware-clean csmith-clean custom-clean dsim-clean
 
 .PHONY: distclean
 distclean: clean
-	rm -rf riscv-fesvr riscv-isa-sim fpnew work
+	rm -rf riscv-fesvr riscv-isa-sim $(FPNEW_PKG) work
