@@ -186,7 +186,6 @@ vcs-clean:
 # Metrics dsim testbench compilation 
 .PHONY: dsimify dsimify-rtl-only
 
-#dsimify: $(RTLSRC_HOME)/fpnew/src/fpnew_pkg.sv $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 dsimify: $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(DSIM) \
 		$(DSIM_FLAGS) \
