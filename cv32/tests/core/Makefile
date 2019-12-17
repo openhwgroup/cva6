@@ -18,8 +18,8 @@
 # Description: All in one. Uses parts of picorv32's makefile for handling the
 # firmware and handling csmith programs
 
-MAKE			= make
-CTAGS			= ctags
+MAKE      = make
+CTAGS     = ctags
 CSMITH    = csmith
 
 # vsim configuration
@@ -71,9 +71,9 @@ VERI_CFLAGS         = -O2
 
 # TB source files for the CV32E core (TODO: fix the TBSRC variable)
 TBSRC_HOME  := ../../tb
-TBSRC_PKG		:= $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
-TBSRC_TOP		:= $(TBSRC_HOME)/core/tb_top.sv
-TBSRC_CORE	:= $(TBSRC_HOME)/core
+TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
+TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
+TBSRC_CORE  := $(TBSRC_HOME)/core
 #TBSRC       := $(filter-out riscv_tb_pkg.sv tb_top_verilator.sv, $(wildcard *.sv))
 TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
@@ -89,11 +89,11 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
 # RTL source files for the CV32E core
 RTLSRC_HOME   := ../../../rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
-RTLSRC_PKG		:= $(addprefix $(RTLSRC_HOME)/include/,\
-				         apu_core_package.sv fpnew_pkg.sv \
-				         riscv_defines.sv riscv_tracer_defines.sv)
-RTLSRC			  := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
-				         $(wildcard $(RTLSRC_HOME)/*.sv))
+RTLSRC_PKG    := $(addprefix $(RTLSRC_HOME)/include/,\
+                   apu_core_package.sv fpnew_pkg.sv \
+                   riscv_defines.sv riscv_tracer_defines.sv)
+RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
+                   $(wildcard $(RTLSRC_HOME)/*.sv))
 
 # TODO: clean this up
 RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
@@ -107,25 +107,25 @@ RISCV_EXE_PREFIX         = $(RISCV)/bin/riscv32-unknown-elf-
 FIRMWARE                 = firmware/
 RISCV_TEST_INCLUDES      = -Iriscv_tests/ -Iriscv_tests/macros/scalar \
                            -Iriscv_tests/rv64ui -Iriscv_tests/rv64um
-CV32_RISCV_TESTS_FIRMWARE_OBJS = $(addprefix cv32_riscv_tests_firmware/, start.o \
-                                             print.o sieve.o multest.o stats.o)
-CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS = $(addprefix cv32_riscv_compliance_tests_firmware/, start.o \
-                                                        print.o sieve.o multest.o stats.o)
+CV32_RISCV_TESTS_FIRMWARE_OBJS = $(addprefix cv32_riscv_tests_firmware/, \
+                                   start.o print.o sieve.o multest.o stats.o)
+CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS = $(addprefix cv32_riscv_compliance_tests_firmware/, \
+                                              start.o print.o sieve.o multest.o stats.o)
 RISCV_TESTS_OBJS         = $(addsuffix .o, \
-				                     $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
-				                     $(basename $(wildcard riscv_tests/rv32um/*.S)) \
-				                     $(basename $(wildcard riscv_tests/rv32uc/*.S)))
-FIRMWARE_OBJS		         = $(addprefix firmware/, start.o \
-				                     print.o sieve.o multest.o stats.o)
+                             $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
+                             $(basename $(wildcard riscv_tests/rv32um/*.S)) \
+                             $(basename $(wildcard riscv_tests/rv32uc/*.S)))
+FIRMWARE_OBJS            = $(addprefix firmware/, \
+                             start.o print.o sieve.o multest.o stats.o)
 FIRMWARE_TEST_OBJS       = $(addsuffix .o, \
-				                     $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
-				                     $(basename $(wildcard riscv_tests/rv32um/*.S)) \
-				                     $(basename $(wildcard riscv_tests/rv32uc/*.S)))
+                             $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
+                             $(basename $(wildcard riscv_tests/rv32um/*.S)) \
+                             $(basename $(wildcard riscv_tests/rv32uc/*.S)))
 FIRMWARE_SHORT_TEST_OBJS = $(addsuffix .o, \
-				                     $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
-				                     $(basename $(wildcard riscv_tests/rv32um/*.S)))
-COMPLIANCE_TEST_OBJS	   = $(addsuffix .o, \
-				                     $(basename $(wildcard riscv_compliance_tests/*.S)))
+                             $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
+                             $(basename $(wildcard riscv_tests/rv32um/*.S)))
+COMPLIANCE_TEST_OBJS     = $(addsuffix .o, \
+                             $(basename $(wildcard riscv_compliance_tests/*.S)))
 
 # csmith vars
 CSMITH_INCLUDE           = ~/.local/include/csmith-2.4.0
