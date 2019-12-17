@@ -20,29 +20,30 @@
 
 MAKE			= make
 CTAGS			= ctags
-CSMITH		= csmith
+CSMITH    = csmith
 
 # vsim configuration
-VVERSION                = "10.7b"
+VVERSION  = "10.7b"
 
-VLIB			= vlib-$(VVERSION)
-VWORK			= work
+VLIB      = vlib-$(VVERSION)
+VWORK     = work
 
-VLOG			    = vlog-$(VVERSION)
-VLOG_FLAGS		= -pedanticerrors -suppress 2577 -suppress 2583
+VLOG          = vlog-$(VVERSION)
+VLOG_FLAGS    = -pedanticerrors -suppress 2577 -suppress 2583
 VLOG_LOG      = vloggy
 
-VOPT			    = vopt-$(VVERSION)
-VOPT_FLAGS		= -debugdb -fsmdebug -pedanticerrors +acc #=mnprft
+VOPT          = vopt-$(VVERSION)
+VOPT_FLAGS    = -debugdb -fsmdebug -pedanticerrors +acc #=mnprft
 
-VSIM		        	= vsim-$(VVERSION)
+VSIM              = vsim-$(VVERSION)
 VSIM_HOME         = /usr/pack/modelsim-$(VVERSION)-kgf/questasim
 VSIM_FLAGS       ?=  # user defined
-ALL_VSIM_FLAGS		= $(VSIM_FLAGS)
-VSIM_DEBUG_FLAGS	= -debugdb
+ALL_VSIM_FLAGS    = $(VSIM_FLAGS)
+VSIM_DEBUG_FLAGS  = -debugdb
 VSIM_GUI_FLAGS    = -gui -debugdb
 VSIM_SCRIPT       = vsim.tcl
 
+# vcs configuration
 VCS               = vcs-2017.03-kgf vcs
 VCS_HOME          = /usr/pack/vcs-2017.03-kgf
 VCS_FLAGS         =
@@ -60,28 +61,30 @@ XRUN_FLAGS        = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1p
 XRUN_DIR          = xcelium.d
 
 # verilator configuration
-VERILATOR		            = verilator
-VERI_FLAGS             +=
-VERI_COMPILE_FLAGS     += -Wno-BLKANDNBLK # hope this doesn't hurt us in the long run
-VERI_TRACE              =
-VERI_OBJ_DIR           ?= cobj_dir
-VERI_LOG_DIR           ?= cobj_dir/logs
-VERI_CFLAGS             = -O2
+VERILATOR           = verilator
+VERI_FLAGS         +=
+VERI_COMPILE_FLAGS += -Wno-BLKANDNBLK # hope this doesn't hurt us in the long run
+VERI_TRACE          =
+VERI_OBJ_DIR       ?= cobj_dir
+VERI_LOG_DIR       ?= cobj_dir/logs
+VERI_CFLAGS         = -O2
 
 # TB source files for the CV32E core (TODO: fix the TBSRC variable)
 TBSRC_HOME  := ../../tb
 TBSRC_PKG		:= $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
 TBSRC_TOP		:= $(TBSRC_HOME)/core/tb_top.sv
 TBSRC_CORE	:= $(TBSRC_HOME)/core
-TBSRC       := $(filter-out riscv_tb_pkg.sv tb_top_verilator.sv,\
-				         $(wildcard *.sv) \
-				         $(TBSRC_CORE)/tb_top.sv \
-				         $(TBSRC_CORE)/riscv_wrapper.sv \
-				         $(TBSRC_CORE)/mm_ram.sv \
-				         $(TBSRC_CORE)/dp_ram.sv \
-				         $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
-				         $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv)
-TBSRC_VERI  := $(filter-out $(TBSRC_CORE)/tb_top.sv, $(wildcard $(TBSRC_CORE)/*.sv))
+#TBSRC       := $(filter-out riscv_tb_pkg.sv tb_top_verilator.sv, $(wildcard *.sv))
+TBSRC       := $(TBSRC_CORE)/tb_top.sv \
+               $(TBSRC_CORE)/riscv_wrapper.sv \
+               $(TBSRC_CORE)/mm_ram.sv \
+               $(TBSRC_CORE)/dp_ram.sv \
+               $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
+               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
+TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
+               $(TBSRC_CORE)/riscv_wrapper.sv \
+               $(TBSRC_CORE)/mm_ram.sv \
+               $(TBSRC_CORE)/dp_ram.sv
 
 # RTL source files for the CV32E core
 RTLSRC_HOME   := ../../../rtl
