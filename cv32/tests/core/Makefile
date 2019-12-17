@@ -60,9 +60,9 @@ DSIM_WORK               = $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE		= dsim.out
 ifneq (${WAVES}, 0)
 	DSIM_CMP_FLAGS = -timescale 1ns/1ps +acc+b
-	DSIM_RUN_FLAGS = -write-xml -waves waves.vcd.gz
+	DSIM_RUN_FLAGS = -write-xml -waves waves.vcd -wave-scope-specs $(PWD)/dsim-waves-spec
 endif
-# DSIM_RUN_FLAGS = -write-xml -waves waves.vcd -wave-scope-specs $(PWD)/dsim-waves-spec
+
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
 XRUN                    = xrun
 XRUN_FLAGS              = -clean -smartorder -sv -top worklib.tb_top -timescale 1ns/1ps
