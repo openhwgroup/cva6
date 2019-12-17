@@ -18,9 +18,10 @@
 # Description: All in one. Uses parts of picorv32's makefile for handling the
 # firmware and handling csmith programs
 
-MAKE      = make
-CTAGS     = ctags
-CSMITH    = csmith
+MAKE			= make
+CTAGS			= ctags
+CSMITH			= csmith
+WAVES                   = 0
 
 # vsim configuration
 VVERSION  = "10.7b"
@@ -50,10 +51,18 @@ VCS_FLAGS         =
 SIMV_FLAGS        =
 
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
-DSIM              = dsim
-DSIM_HOME         = /tools/Metrics/dsim
-DSIM_FLAGS        = -timescale 1ns/1ps
-DSIM_IMAGE        = dsim.out
+DSIM                    = dsim
+DSIM_HOME               = /tools/Metrics/dsim
+DSIM_CMP_FLAGS          = -timescale 1ns/1ps
+DSIM_RUN_FLAGS          = -write-xml
+ROOT_DIR                = $(PWD)
+DSIM_RESULTS            = $(PWD)/results
+DSIM_WORK               = $(DSIM_RESULTS)/dsim_work
+DSIM_IMAGE		= dsim.out
+ifneq (${WAVES}, 0)
+	DSIM_CMP_FLAGS = -timescale 1ns/1ps +acc+b
+	DSIM_RUN_FLAGS = -write-xml -waves waves.vcd -wave-scope-specs $(PWD)/dsim-waves-spec
+endif
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
 XRUN              = xrun
@@ -186,42 +195,57 @@ vcs-clean:
 # Metrics dsim testbench compilation 
 .PHONY: dsimify dsimify-rtl-only
 
-dsimify: $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
-	$(DSIM) \
-		$(DSIM_FLAGS) \
+MKDIR_P = mkdir -p
+
+mk_results: 
+	$(MKDIR_P) $(DSIM_RESULTS)
+
+dsimify: mk_results $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
+	cd $(DSIM_RESULTS) && $(DSIM) \
+		$(DSIM_CMP_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
 		+incdir+$(RTLSRC_INCDIR) \
+		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
-dsimify-rtl-only: $(RTLSRC_PKG) $(RTLSRC)
+dsimify-rtl-only: mk_results $(RTLSRC_PKG) $(RTLSRC)
 	$(DSIM) \
-		$(DSIM_FLAGS) \
+		$(DSIM_CMP_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) \
+		-work $(DSIM_WORK) \
 		+incdir+$(RTLSRC_INCDIR) \
 		-genimage $(DSIM_IMAGE)
 
 # Metrics dsim simulations
-.PHONY: dsim-hellow_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
+.PHONY: dsim-hello_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
 
 # Runs the hello world test
 dsim-hello_world: dsimify custom/hello_world.hex
+	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
-		+firmware=custom/hello_world.hex
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		+firmware=$(ROOT_DIR)/custom/hello_world.hex
 
 # Runs tests in riscv_tests/ only
 dsim-cv32_riscv_tests: dsimify cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
 	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
-		+firmware=cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		+firmware=$(ROOT_DIR)/cv32_riscv_tests_firmware/cv32_riscv_tests_firmware.hex
 
-# TODO: Runs tests in riscv_compliance_tests/ only
+# Runs tests in riscv_compliance_tests/ only
 dsim-cv32_riscv_compliance_tests: dsimify cv32_riscv_compliance_tests_firmware/cv32_riscv_compliance_tests_firmware.hex
+	mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
 	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
-		+firmware=cv32_riscv_compliance_tests_firmware/cv32_riscv_compliance_tests_firmware.hex
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		+firmware=$(ROOT_DIR)/cv32_riscv_compliance_tests_firmware/cv32_riscv_compliance_tests_firmware.hex
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
 dsim-firmware: dsimify firmware/firmware.hex
+	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
 	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
-		+firmware=firmware/firmware.hex
+		-work $(DSIM_WORK) \
+		+firmware=$(ROOT_DIR)/firmware/firmware.hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -235,6 +259,7 @@ dsim-clean: tc-clean
 	rm -rf dsim_work
 	rm -f dsim.env
 	rm -f $(DSIM_IMAGE)
+	rm -fr $(DSIM_RESULTS)
 
 # Cadence Xcelium xrun testbench compilation
 .PHONY: xrun-all
