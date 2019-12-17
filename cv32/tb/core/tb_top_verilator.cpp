@@ -74,6 +74,7 @@ void dump_memory()
         for (size_t i = 0; i < 1048576; i++) {
             addr.aval    = i;
             uint32_t val = read_byte(&addr);
+            //uint32_t val = read_byte(&addr.aval);  // mike@openhwgroup.org: if the above line fails to compile on your system, try this line
             mem_file << std::setfill('0') << std::setw(2) << std::hex << val
                      << std::endl;
         }
