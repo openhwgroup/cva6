@@ -18,10 +18,10 @@
 # Description: All in one. Uses parts of picorv32's makefile for handling the
 # firmware and handling csmith programs
 
-MAKE			= make
-CTAGS			= ctags
-CSMITH			= csmith
-WAVES                   = 0
+MAKE      = make
+CTAGS     = ctags
+CSMITH    = csmith
+WAVES     = 0
 
 # vsim configuration
 VVERSION  = "10.7b"
@@ -54,11 +54,11 @@ SIMV_FLAGS        =
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
 DSIM_CMP_FLAGS          = -timescale 1ns/1ps
-DSIM_RUN_FLAGS          = -write-xml
-ROOT_DIR                = $(PWD)
-DSIM_RESULTS            = $(PWD)/results
-DSIM_WORK               = $(DSIM_RESULTS)/dsim_work
-DSIM_IMAGE		= dsim.out
+DSIM_RUN_FLAGS          = -write-sql
+ROOT_DIR               ?= $(PWD)
+DSIM_RESULTS           ?= $(PWD)/results
+DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
+DSIM_IMAGE               = dsim.out
 ifneq (${WAVES}, 0)
 	DSIM_CMP_FLAGS = -timescale 1ns/1ps +acc+b
 	DSIM_RUN_FLAGS = -write-xml -waves waves.vcd -wave-scope-specs $(PWD)/dsim-waves-spec
@@ -79,7 +79,7 @@ VERI_LOG_DIR       ?= cobj_dir/logs
 VERI_CFLAGS         = -O2
 
 # TB source files for the CV32E core
-TBSRC_HOME  := ../../tb
+TBSRC_HOME  := $(ROOT_DIR)/../../tb
 TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
 TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
 TBSRC_CORE  := $(TBSRC_HOME)/core
@@ -95,7 +95,7 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/dp_ram.sv
 
 # RTL source files for the CV32E core
-RTLSRC_HOME   := ../../../rtl
+RTLSRC_HOME   := $(ROOT_DIR)/../../../rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
 RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
@@ -259,7 +259,7 @@ dsim-clean: tc-clean
 	rm -rf dsim_work
 	rm -f dsim.env
 	rm -f $(DSIM_IMAGE)
-	rm -fr $(DSIM_RESULTS)
+	rm -rf $(DSIM_RESULTS)
 
 # Cadence Xcelium xrun testbench compilation
 .PHONY: xrun-all
@@ -607,9 +607,11 @@ tc-clean:
 	find ./ -name *.elf -exec rm {} \;
 	find ./ -name *.map -exec rm {} \;
 
-.PHONY: clean
+.PHONY: clean clean_all distclean
 clean: tb-clean verilate-clean vcs-clean firmware-clean csmith-clean custom-clean dsim-clean
 
-.PHONY: distclean
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(FPNEW_PKG) work
+
+clean_all: distclean
+
