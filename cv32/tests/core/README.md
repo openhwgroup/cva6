@@ -99,7 +99,8 @@ A few plusarg options are supported.
 * `+vcd` to produce a vcd file called `riscy_tb.vcd`. Verilator always produces
   a vcd file called `verilator_tb.vcd`.
 
-Examples (out of date)
------------------------
-Run all riscv-tests to completion and produce a vcd dump:
-`make firmware-vsim-run VSIM_FLAGS=+vcd`
+Examples
+--------
+Run all riscv_tests to completion with **dsim**, writting compile and simulation results in /data/$USER/results:  
+`make dsim-cv32_riscv_tests DSIM_RESULTS=/data/$USER`  
+
