@@ -3,6 +3,13 @@
 Eventually, this is where you will find the Verification Strategy, Verification Environment
 specification(s) and Verifiction Plan(s) (aka Test Plans) for the various CORE-V cores verified here.
 
+## CV32E40P Schedule
+| Date | Milestone | Description |
+|------|-----------|-------------|
+| 2019-12-30 | Feature Agreement | Not yet signed off |
+| 2020-03-15 | All RTL Features coded | |
+| 2020-07-30 | RTL Frozen | Verification Complete |
+
 ## Proposed Feature List for CV32E40P and CV32E40
 The table below is extracted from CV32E40P-v1.0_draft00.pdf, which is in this directory.  You should consult the PDF for additional information and in case of decrepancy between this table and the PDF, the PDF shall be interpreted as being correct.
 
@@ -67,13 +74,4 @@ The table below is extracted from CV32E40P-v1.0_draft00.pdf, which is in this di
 |---------|-------|----------|---------|---------------|
 | RVI Instruction Bus interface | No 3 | Yes | Yes | ([RVI]) |
 | RVI Data Bus interface | No 3 | Yes | Yes | ([RVI]) |
-
-
-
-## CV32E40P Schedule
-| Date | Milestone | Description |
-|------|-----------|-------------|
-| 2019-12-30 | Feature Agreement | Not yet signed off |
-| 2020-03-15 | All RTL Features coded | |
-| 2020-07-30 | RTL Frozen | Verification Complete |
 
