@@ -53,7 +53,7 @@ The `Verification Comment` columnn in the table is a preliminary assessment by V
 | Bit Manipulation | Yes | Yes | No 7 | [RI5CY_USER_MANUAL] | OK |
 | General ALU | Yes | Yes | Yes | [RI5CY_USER_MANUAL] | OK |
 | Immediate branching | Yes | Yes | Yes | [RI5CY_USER_MANUAL] | OK |
-| SIMD | Yes | TBD 13 | No 8 | [RI5CY_USER_MANUAL] | OK |
+| SIMD | Yes | TBD 13 | No 8 | [RI5CY_USER_MANUAL] | TBD |
 ### Custom circuitry
 | Feature | RI5CY | CV32E40P | CV32E40 | Documentation | Verification Comment |
 |---------|-------|----------|---------|---------------|----------------------|
