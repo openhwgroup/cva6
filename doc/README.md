@@ -38,6 +38,7 @@ The `Verification Comment` columnn in the table is a preliminary assessment by V
 | P extension | No | No | Yes | TBD ([RV_PRIVILEGED_ISA] ) | |
 | N extension | No | No | No | Not standardized yet | |
 | Counters extension | No | Yes 9 | Yes 9 | ([RV_PRIVILEGED_ISA] ) | OK |
+| Instruction Exceptions | Yes | Yes | Yes | ([RV_ISA] ) | OK |
 
 ### Privileged spec
 | Feature | RI5CY | CV32E40P | CV32E40 | Documentation | Verification Comment |
