@@ -1,7 +1,9 @@
-# DOC: Documentation for CORE-V verification.
+# Documentation for CORE-V verification.
 
-Eventually, this is where you will find the Verification Strategy, Verification Environment
-specification(s) and Verifiction Plan(s) (aka Test Plans) for the various CORE-V cores verified here.
+This README captures the current view of the CV32E40P schedule and feature list.
+
+You will find the Verification Strategy, Verification Environment
+specification(s) and Verifiction Plan(s) (aka Test Plans) for the various CORE-V cores in the [OpenHW Group's CORE-V documentation repo](https://github.com/openhwgroup/core-v-docs).
 
 ## CV32E40P Schedule
 | Date | Milestone | Description |
