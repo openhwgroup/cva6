@@ -349,9 +349,11 @@ module issue_read_operands #(
     logic [NR_COMMIT_PORTS-1:0][63:0] wdata_pack;
     logic [NR_COMMIT_PORTS-1:0]       we_pack;
     assign raddr_pack = {issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
-    assign waddr_pack = {waddr_i[1],  waddr_i[0]};
-    assign wdata_pack = {wdata_i[1],  wdata_i[0]};
-    assign we_pack    = {we_gpr_i[1], we_gpr_i[0]};
+    for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_write_back_port
+        assign waddr_pack[i] = waddr_i[i];
+        assign wdata_pack[i] = wdata_i[i];
+        assign we_pack[i]    = we_gpr_i[i];
+    end
 
     ariane_regfile #(
         .DATA_WIDTH     ( 64              ),
@@ -380,7 +382,9 @@ module issue_read_operands #(
     generate
         if (FP_PRESENT) begin : float_regfile_gen
             assign fp_raddr_pack = {issue_instr_i.result[4:0], issue_instr_i.rs2[4:0], issue_instr_i.rs1[4:0]};
-            assign fp_wdata_pack = {wdata_i[1][FLEN-1:0], wdata_i[0][FLEN-1:0]};
+            for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_fp_wdata_pack
+                assign fp_wdata_pack[i] = {wdata_i[i][FLEN-1:0]};
+            end
 
             ariane_regfile #(
                 .DATA_WIDTH     ( FLEN            ),
@@ -438,9 +442,6 @@ module issue_read_operands #(
         @(posedge clk_i) (branch_valid_q) |-> (!$isunknown(operand_a_q) && !$isunknown(operand_b_q)))
         else $warning ("Got unknown value in one of the operands");
 
-    initial begin
-        assert (NR_COMMIT_PORTS == 2) else $error("Only two commit ports are supported at the moment!");
-    end
     `endif
     //pragma translate_on
 endmodule

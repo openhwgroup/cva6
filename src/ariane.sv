@@ -281,7 +281,8 @@ module ariane #(
   // ---------
   issue_stage #(
     .NR_ENTRIES                 ( NR_SB_ENTRIES                ),
-    .NR_WB_PORTS                ( NR_WB_PORTS                  )
+    .NR_WB_PORTS                ( NR_WB_PORTS                  ),
+    .NR_COMMIT_PORTS            ( NR_COMMIT_PORTS              )
   ) issue_stage_i (
     .clk_i,
     .rst_ni,
@@ -426,7 +427,9 @@ module ariane #(
   // used e.g. for fence instructions.
   assign no_st_pending_commit = no_st_pending_ex & dcache_commit_wbuffer_empty;
 
-  commit_stage commit_stage_i (
+  commit_stage #(
+    .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
+  ) commit_stage_i (
     .clk_i,
     .rst_ni,
     .halt_i                 ( halt_ctrl                     ),
@@ -465,7 +468,8 @@ module ariane #(
   // ---------
   csr_regfile #(
     .AsidWidth              ( ASID_WIDTH                    ),
-    .DmBaseAddress          ( ArianeCfg.DmBaseAddress       )
+    .DmBaseAddress          ( ArianeCfg.DmBaseAddress       ),
+    .NrCommitPorts          ( NR_COMMIT_PORTS               )
   ) csr_regfile_i (
     .flush_o                ( flush_csr_ctrl                ),
     .halt_csr_o             ( halt_csr_ctrl                 ),

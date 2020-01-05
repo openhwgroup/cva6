@@ -118,7 +118,8 @@ module issue_stage #(
     // ---------------------------------------------------------
     scoreboard #(
         .NR_ENTRIES (NR_ENTRIES ),
-        .NR_WB_PORTS(NR_WB_PORTS)
+        .NR_WB_PORTS(NR_WB_PORTS),
+        .NR_COMMIT_PORTS(NR_COMMIT_PORTS)
     ) i_scoreboard (
         .sb_full_o             ( sb_full_o                                 ),
         .unresolved_branch_i   ( 1'b0                                      ),
@@ -151,7 +152,9 @@ module issue_stage #(
     // ---------------------------------------------------------
     // 3. Issue instruction and read operand, also commit
     // ---------------------------------------------------------
-    issue_read_operands i_issue_read_operands  (
+    issue_read_operands #(
+      .NR_COMMIT_PORTS ( NR_COMMIT_PORTS )
+    )i_issue_read_operands  (
         .flush_i             ( flush_unissued_instr_i          ),
         .issue_instr_i       ( issue_instr_sb_iro              ),
         .issue_instr_valid_i ( issue_instr_valid_sb_iro        ),
