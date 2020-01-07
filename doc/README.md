@@ -10,7 +10,7 @@ specification(s) and Verifiction Plan(s) (aka Test Plans) for the various CORE-V
 |------|-----------|-------------|
 | 2019-12-30 | Feature Agreement | Not yet signed off |
 | 2020-03-15 | All RTL Features coded | |
-| 2020-07-30 | RTL Frozen | Verification Complete, start of final synthesis |
+| 2020-06-30 | RTL Frozen | Verification Complete, start of final synthesis |
 | 2020-xx-xx | Final Netlist | Last gate-level netlist with extracted timing available |
 | 2020-xx-xx | Tape-out (PG) | GDSII shipped to Fab |
 | 2020-xx-xx | Samples | Initial bring up of first silicon on demo board |
