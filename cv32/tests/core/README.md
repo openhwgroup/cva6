@@ -71,6 +71,7 @@ test in the custom directory. Other rules of interest:
 
 Running the testbench with Cadence Xcelium [xrun](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)
 ----------------------
+**Note:** This testbench is known to require Xcelium 19.09 or later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11) for more info.
 Point your environment variable `RISCV` to your RISC-V toolchain. Call
 `make xrun-hello_world` to build and run the testbench with the hello_world
 test in the custom directory. Other rules of interest:
