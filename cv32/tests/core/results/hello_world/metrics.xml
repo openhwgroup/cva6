@@ -1,0 +1,406 @@
+<UCIS>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../../rtl/riscv_controller.sv" id="7"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../../rtl/riscv_core.sv" id="3"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../../rtl/riscv_ex_stage.sv" id="9"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../../rtl/riscv_hwloop_regs.sv" id="8"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../../rtl/riscv_id_stage.sv" id="6"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../../rtl/riscv_if_stage.sv" id="4"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../../rtl/riscv_load_store_unit.sv" id="11"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../../rtl/riscv_mult.sv" id="10"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../../rtl/riscv_prefetch_L0_buffer.sv" id="5"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../tb/core/mm_ram.sv" id="12"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../tb/core/riscv_wrapper.sv" id="2"/>
+  <sourceFiles fileName="/home2/asutton/repos/demo/corev-verif/cv32/tests/core/../../tb/core/tb_top.sv" id="1"/>
+  <historyNode historyNodeId="1" testStatus="unknown" vendorId="Metrics Technologies" vendorTool="DSim" vendorToolVersion="20191112.4.0.inprog"/>
+  <instanceCoverage name="tb_top" key="4" instanceId="1" moduleName="tb_top">
+    <designParameter name="INSTR_RDATA_WIDTH" value="128"/>
+    <designParameter name="RAM_ADDR_WIDTH" value="22"/>
+    <designParameter name="BOOT_ADDR" value="128"/>
+    <id file="1" line="16" inlineCount="1"/>
+  </instanceCoverage>
+  <instanceCoverage name="riscv_wrapper_i" key="4" instanceId="2" moduleName="riscv_wrapper" parentInstanceId="1">
+    <designParameter name="INSTR_RDATA_WIDTH" value="128"/>
+    <designParameter name="RAM_ADDR_WIDTH" value="22"/>
+    <designParameter name="BOOT_ADDR" value="128"/>
+    <designParameter name="PULP_SECURE" value="1"/>
+    <id file="1" line="148" inlineCount="1"/>
+  </instanceCoverage>
+  <instanceCoverage name="riscv_core_i" key="4" instanceId="3" moduleName="riscv_core" parentInstanceId="2">
+    <designParameter name="N_EXT_PERF_COUNTERS" value="0"/>
+    <designParameter name="INSTR_RDATA_WIDTH" value="128"/>
+    <designParameter name="PULP_SECURE" value="1"/>
+    <designParameter name="N_PMP_ENTRIES" value="16"/>
+    <designParameter name="USE_PMP" value="1"/>
+    <designParameter name="PULP_CLUSTER" value="1"/>
+    <designParameter name="FPU" value="0"/>
+    <designParameter name="Zfinx" value="0"/>
+    <designParameter name="FP_DIVSQRT" value="0"/>
+    <designParameter name="SHARED_FP" value="0"/>
+    <designParameter name="SHARED_DSP_MULT" value="0"/>
+    <designParameter name="SHARED_INT_MULT" value="0"/>
+    <designParameter name="SHARED_INT_DIV" value="0"/>
+    <designParameter name="SHARED_FP_DIVSQRT" value="0"/>
+    <designParameter name="WAPUTYPE" value="0"/>
+    <designParameter name="APU_NARGS_CPU" value="3"/>
+    <designParameter name="APU_WOP_CPU" value="6"/>
+    <designParameter name="APU_NDSFLAGS_CPU" value="15"/>
+    <designParameter name="APU_NUSFLAGS_CPU" value="5"/>
+    <designParameter name="DM_HaltAddress" value="437323776"/>
+    <designParameter name="N_HWLP" value="2"/>
+    <designParameter name="N_HWLP_BITS" value="1"/>
+    <designParameter name="APU" value="0"/>
+    <id file="2" line="65" inlineCount="1"/>
+  </instanceCoverage>
+  <instanceCoverage name="if_stage_i" key="4" instanceId="4" moduleName="riscv_if_stage" parentInstanceId="3">
+    <designParameter name="N_HWLP" value="2"/>
+    <designParameter name="RDATA_WIDTH" value="128"/>
+    <designParameter name="FPU" value="0"/>
+    <designParameter name="DM_HaltAddress" value="437323776"/>
+    <id file="3" line="464" inlineCount="1"/>
+    <assertionCoverage>
+      <assertion name="$PAa13" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="1837" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="3407" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+    </assertionCoverage>
+  </instanceCoverage>
+  <instanceCoverage name="prefetch_buffer_i" key="4" instanceId="5" moduleName="riscv_prefetch_L0_buffer" parentInstanceId="4">
+    <designParameter name="RDATA_IN_WIDTH" value="128"/>
+    <id file="4" line="203" inlineCount="1"/>
+    <assertionCoverage>
+      <assertion name="$PAa25" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="4451" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="793" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+      <assertion name="$PAa26" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="10" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="5234" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+      <assertion name="$PAa27" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="3" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="5241" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+    </assertionCoverage>
+  </instanceCoverage>
+  <instanceCoverage name="id_stage_i" key="4" instanceId="6" moduleName="riscv_id_stage" parentInstanceId="3">
+    <designParameter name="N_HWLP" value="2"/>
+    <designParameter name="N_HWLP_BITS" value="1"/>
+    <designParameter name="PULP_SECURE" value="1"/>
+    <designParameter name="APU" value="0"/>
+    <designParameter name="FPU" value="0"/>
+    <designParameter name="Zfinx" value="0"/>
+    <designParameter name="FP_DIVSQRT" value="0"/>
+    <designParameter name="SHARED_FP" value="0"/>
+    <designParameter name="SHARED_DSP_MULT" value="0"/>
+    <designParameter name="SHARED_INT_MULT" value="0"/>
+    <designParameter name="SHARED_INT_DIV" value="0"/>
+    <designParameter name="SHARED_FP_DIVSQRT" value="0"/>
+    <designParameter name="WAPUTYPE" value="0"/>
+    <designParameter name="APU_NARGS_CPU" value="3"/>
+    <designParameter name="APU_WOP_CPU" value="6"/>
+    <designParameter name="APU_NDSFLAGS_CPU" value="15"/>
+    <designParameter name="APU_NUSFLAGS_CPU" value="5"/>
+    <id file="3" line="558" inlineCount="1"/>
+    <assertionCoverage>
+      <assertion name="$PAa72" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="660" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="4584" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+    </assertionCoverage>
+  </instanceCoverage>
+  <instanceCoverage name="controller_i" key="4" instanceId="7" moduleName="riscv_controller" parentInstanceId="6">
+    <designParameter name="FPU" value="0"/>
+    <id file="6" line="1161" inlineCount="1"/>
+    <assertionCoverage>
+      <assertion name="$PA0" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="439" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="4805" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+      <assertion name="$PAa13" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="5244" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="0" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+    </assertionCoverage>
+  </instanceCoverage>
+  <instanceCoverage name="hwloop_regs_i" key="4" instanceId="8" moduleName="riscv_hwloop_regs" parentInstanceId="6">
+    <designParameter name="N_REGS" value="2"/>
+    <designParameter name="N_REG_BITS" value="1"/>
+    <id file="6" line="1370" inlineCount="1"/>
+    <assertionCoverage>
+      <assertion name="$PAa7" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="0" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="5244" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+      <assertion name="$PAa73" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="4551" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="693" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+    </assertionCoverage>
+  </instanceCoverage>
+  <instanceCoverage name="ex_stage_i" key="4" instanceId="9" moduleName="riscv_ex_stage" parentInstanceId="3">
+    <designParameter name="FPU" value="0"/>
+    <designParameter name="FP_DIVSQRT" value="0"/>
+    <designParameter name="SHARED_FP" value="0"/>
+    <designParameter name="SHARED_DSP_MULT" value="0"/>
+    <designParameter name="SHARED_INT_DIV" value="0"/>
+    <designParameter name="APU_NARGS_CPU" value="3"/>
+    <designParameter name="APU_WOP_CPU" value="6"/>
+    <designParameter name="APU_NDSFLAGS_CPU" value="15"/>
+    <designParameter name="APU_NUSFLAGS_CPU" value="5"/>
+    <id file="3" line="768" inlineCount="1"/>
+  </instanceCoverage>
+  <instanceCoverage name="mult_i" key="4" instanceId="10" moduleName="riscv_mult" parentInstanceId="9">
+    <designParameter name="SHARED_DSP_MULT" value="0"/>
+    <id file="9" line="306" inlineCount="1"/>
+    <assertionCoverage>
+      <assertion name="$PAa25" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="0" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="5244" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+      <assertion name="$PAa26" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="0" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="5244" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+      <assertion name="$PAa27" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="0" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="5244" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+    </assertionCoverage>
+  </instanceCoverage>
+  <instanceCoverage name="load_store_unit_i" key="4" instanceId="11" moduleName="riscv_load_store_unit" parentInstanceId="3">
+    <id file="3" line="893" inlineCount="1"/>
+    <assertionCoverage>
+      <assertion name="$PAa20" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="500" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="4744" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+      <assertion name="$PAa21" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="3841" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="1403" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+      <assertion name="$PAa22" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="1403" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="3841" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="0" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5244" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+    </assertionCoverage>
+  </instanceCoverage>
+  <instanceCoverage name="ram_i" key="4" instanceId="12" moduleName="mm_ram" parentInstanceId="2">
+    <designParameter name="RAM_ADDR_WIDTH" value="22"/>
+    <designParameter name="INSTR_RDATA_WIDTH" value="128"/>
+    <id file="2" line="123" inlineCount="1"/>
+    <assertionCoverage>
+      <assertion name="out_of_bounds_write" typeComponent="17:" assertionKind="assert">
+        <failBin>
+          <contents coverageCount="0" nameComponent="failbin" typeComponent=":2:"/>
+        </failBin>
+        <passBin>
+          <contents coverageCount="650" nameComponent="passbin" typeComponent=":10:"/>
+        </passBin>
+        <vacuousBin>
+          <contents coverageCount="4590" nameComponent="vacuousbin" typeComponent=":15:"/>
+        </vacuousBin>
+        <disabledBin>
+          <contents coverageCount="5" nameComponent="disablebin" typeComponent=":16:"/>
+        </disabledBin>
+        <attemptBin>
+          <contents coverageCount="5245" nameComponent="attemptbin" typeComponent=":17:"/>
+        </attemptBin>
+      </assertion>
+    </assertionCoverage>
+  </instanceCoverage>
+</UCIS>
