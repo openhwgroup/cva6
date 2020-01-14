@@ -321,7 +321,8 @@ verilate-clean: tc-clean
 
 # fpnew dependencies
 $(FPNEW_PKG):
-	git clone https://github.com/pulp-platform/fpnew --recurse $(RTLSRC_HOME)/fpnew
+	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
+#$(RTLSRC_HOME)/fpnew
 
 # run tb and exit
 .PHONY: vsim-run
