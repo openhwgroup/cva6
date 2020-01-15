@@ -55,7 +55,7 @@ DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
 DSIM_CMP_FLAGS          = -timescale 1ns/1ps
 DSIM_RUN_FLAGS          = -write-sql
-ROOT_DIR               ?= $(PWD)
+ROOT_DIR                = $(PWD)
 DSIM_RESULTS           ?= $(PWD)/results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE               = dsim.out
@@ -95,7 +95,7 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/dp_ram.sv
 
 # RTL source files for the CV32E core
-RTLSRC_HOME   = $(ROOT_DIR)/../../../rtl
+RTLSRC_HOME   := $(ROOT_DIR)/../../../rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
 RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
