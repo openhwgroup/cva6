@@ -46,7 +46,7 @@ VSIM_SCRIPT       = vsim.tcl
 
 # vcs configuration
 VCS               = vcs-2017.03-kgf vcs
-VCS_HOME          = /usr/pack/vcs-2017.03-kgf
+VCS_HOME          = /usr/pack/vcs-2017.03-kgf 
 VCS_FLAGS         =
 SIMV_FLAGS        =
 
@@ -95,7 +95,7 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/dp_ram.sv
 
 # RTL source files for the CV32E core
-RTLSRC_HOME   := $(ROOT_DIR)/../../../rtl
+RTLSRC_HOME   = $(ROOT_DIR)/../../../rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
 RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
