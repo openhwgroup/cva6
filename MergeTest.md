@@ -18,3 +18,31 @@ If you are new to git, or unfamiliar with using branches and pull-requests, have
 ## Make your changes below this line.
 Extra marks for creativity and wit.
 Git merge, Take 2 !
+
+### Madcat
+     ____          ____
+    |oooo|        |oooo|
+    |oooo| .----. |oooo|
+    |Oooo|/\_||_/\|oooO|
+    `----' / __ \ `----'
+    ,/ |#|/\/__\/\|#| \,
+   /  \|#|| |/\| ||#|/  \
+  / \_/|_|| |/\| ||_|\_/ \
+ |_\/    o\=----=/o    \/_|
+ <_>      |=\__/=|      <_>
+ <_>      |------|      <_>
+ | |   ___|======|___   | |
+//\\  / |O|======|O| \  //\\
+|  |  | |O+------+O| |  |  |
+|\/|  \_+/        \+_/  |\/|
+\__/  _|||        |||_  \__/
+      | ||        || |
+     [==|]        [|==]
+     [===]        [===]
+      >_<          >_<
+     || ||        || ||
+     || ||        || ||
+     || ||        || ||    -- Jay Thaler 
+   __|\_/|__    __|\_/|__     -- David Poulin
+  /___n_n___\  /___n_n___\
+  
