@@ -1,8 +1,9 @@
-# Use this file to exercise the GitHub portions of the OpenHW Group workflow
+# Merge Test
+Use this file to exercise the GitHub portions of the OpenHW Group workflow
 
 Parts of the [OpenHW Group workflow](https://github.com/openhwgroup/core-v-docs/blob/master/verif/Common/OpenHWGroup_WorkFlow.pdf)
 are modeled after Vincent Driessen's [git branching model](https://nvie.com/posts/a-successful-git-branching-model/).  When
-you first register as a member of OpenHW, you can use this file to safely test whether you have the appropriate GitHub user priviledges for this repo.   Try this:
+you first register as a member of OpenHW, you can use this file to safely test whether you have the appropriate GitHub contributor priviledges for this repo.   Try this:
 * Fork the repository: https://help.github.com/en/github/getting-started-with-github/fork-a-repo
 * Clone repository: `git clone https://github.com/[your_github_username]/core-v-verif`
 * Create your feature branch: `git checkout -b my-new-feature`
