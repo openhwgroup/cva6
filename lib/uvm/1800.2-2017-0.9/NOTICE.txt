@@ -1,0 +1,85 @@
+=========================================================================
+==  NOTICE file corresponding to section 4(d) of the Apache License,   ==
+==  Version 2.0, in this case for the Apache Geronimo distribution.    ==
+=========================================================================
+
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Paradigm Works Notice
+Copyright 2010-2012 Paradigm Works. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Aldec Notice
+Copyright 2012 Aldec. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Mentor Graphics Corporation Notice
+Copyright 2007-2018 Mentor Graphics Corporation. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Qualcomm, Inc. Notice
+Copyright 2018 Qualcomm, Inc.. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Intel Corporation Notice
+Copyright 2014-2018 Intel Corporation. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Analog Devices, Inc. Notice
+Copyright 2015 Analog Devices, Inc.. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Semifore Notice
+Copyright 2011-2014 Semifore. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Synopsys, Inc. Notice
+Copyright 2004-2018 Synopsys, Inc.. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Cadence Design Systems, Inc. Notice
+Copyright 2007-2018 Cadence Design Systems, Inc.. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Verilab Notice
+Copyright 2013 Verilab. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM AMD Notice
+Copyright 2010-2018 AMD. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM NVIDIA Corporation Notice
+Copyright 2012-2018 NVIDIA Corporation. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Cisco Systems, Inc. Notice
+Copyright 2012-2018 Cisco Systems, Inc.. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Cypress Semiconductor Corp. Notice
+Copyright 2011-2012 Cypress Semiconductor Corp.. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Accellera Systems Initiative Notice
+Copyright 2012 Accellera Systems Initiative. All rights reserved.
+---
+Portions of the UVM Reference Library were developed by:
+
+UVM Verific Notice
+Copyright 2017-2018 Verific. All rights reserved.

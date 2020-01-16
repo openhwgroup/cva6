@@ -1,0 +1,8 @@
+// COPYRIGHT HEADER
+
+
+// Directories
++incdir+${DV_UVML_LOGS_PATH}
+
+// Files
+${DV_UVML_LOGS_PATH}/uvml_logs_pkg.sv

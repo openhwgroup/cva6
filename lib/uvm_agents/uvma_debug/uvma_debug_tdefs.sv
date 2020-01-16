@@ -1,0 +1,11 @@
+// COPYRIGHT HEADER
+
+
+`ifndef __UVMA_DEBUG_TDEFS_SV__
+`define __UVMA_DEBUG_TDEFS_SV__
+
+
+
+
+
+`endif // __UVMA_DEBUG_TDEFS_SV__

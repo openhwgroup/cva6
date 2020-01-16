@@ -1,0 +1,17 @@
+// COPYRIGHT HEADER
+
+
+// Directories
++incdir+${UVM_HOME}/src
++incdir+${UVM_HOME}/src/base
++incdir+${UVM_HOME}/src/comps
++incdir+${UVM_HOME}/src/dap
++incdir+${UVM_HOME}/src/deprecated
++incdir+${UVM_HOME}/src/macros
++incdir+${UVM_HOME}/src/reg
++incdir+${UVM_HOME}/src/seq
++incdir+${UVM_HOME}/src/tlm1
++incdir+${UVM_HOME}/src/tlm2
+
+// Target package
+${UVM_HOME}/src/uvm_pkg.sv

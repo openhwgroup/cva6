@@ -1,0 +1,8 @@
+// COPYRIGHT HEADER
+
+
+// Directories
++incdir+${DV_UVML_SB_PATH}
+
+// Files
+${DV_UVML_SB_PATH}/uvml_sb_pkg.sv

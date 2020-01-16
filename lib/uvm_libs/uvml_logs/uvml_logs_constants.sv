@@ -1,0 +1,11 @@
+// COPYRIGHT HEADER
+
+
+`ifndef __UVML_LOGS_CONSTANTS_SV__
+`define __UVML_LOGS_CONSTANTS_SV__
+
+
+
+
+
+`endif // __UVML_LOGS_CONSTANTS_SV__

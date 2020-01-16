@@ -1,0 +1,10 @@
+// COPYRIGHT HEADER
+
+
+// Directories
++incdir+${DV_UVMA_RESET_PATH}
++incdir+${DV_UVMA_RESET_PATH}/cov
++incdir+${DV_UVMA_RESET_PATH}/seq
+
+// Files
+${DV_UVMA_RESET_PATH}/uvma_reset_pkg.sv

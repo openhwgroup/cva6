@@ -1,0 +1,11 @@
+// COPYRIGHT HEADER
+
+
+`ifndef __UVMA_RESET_TDEFS_SV__
+`define __UVMA_RESET_TDEFS_SV__
+
+
+
+
+
+`endif // __UVMA_RESET_TDEFS_SV__

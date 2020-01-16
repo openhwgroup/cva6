@@ -1,0 +1,11 @@
+// COPYRIGHT HEADER
+
+
+`ifndef __UVMT_CV32_MACROS_SV__
+`define __UVMT_CV32_MACROS_SV__
+
+
+
+
+
+`endif // __UVMT_CV32_MACROS_SV__
