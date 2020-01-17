@@ -19,6 +19,7 @@ If you are new to git, or unfamiliar with using branches and pull-requests, have
 Extra marks for creativity and wit.
 
 Git merge, Take 2 !
+And Take 3 !
 
 ### Madcat
 ```
