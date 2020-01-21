@@ -46,6 +46,29 @@ $ git push --set-upstream origin ohw_mike_20191122
 $ cd $HOME/GitHubRepos/pulp-platform/riscv/ohw_mike_20191122
 $ git clone --recursive -b ohw_mike_20191122 https://github.com/pulp-platform/riscv ohw_mike_20191122
 
+###############################################################################
+# Sync a forked repo to make it up-to-date with its upstream repo
+# The following assumes you have previously created a fork of
+#     https://github.com/openhwgroup/core-v-docs
+# to
+#     https://github.com/MikeOpenHWGroup/core-v-docs
+$ cd GitHubRepos/MikeOpenHWGroup/core-v-docs
+$ git clone https://github.com/MikeOpenHWGroup/core-v-docs.git master
+$ cd master
+$ git remote -v
+  > origin	https://github.com/MikeOpenHWGroup/core-v-docs.git (fetch)
+  > origin	https://github.com/MikeOpenHWGroup/core-v-docs.git (push)
+$ git remote add upstream https://github.com/openhwgroup/core-v-docs.git
+$ git remote -v
+  > origin	https://github.com/MikeOpenHWGroup/core-v-docs.git (fetch)
+  > origin	https://github.com/MikeOpenHWGroup/core-v-docs.git (push)
+  > upstream	https://github.com/openhwgroup/core-v-docs.git (fetch)
+  > upstream	https://github.com/openhwgroup/core-v-docs.git (push)
+$ git fetch upstream
+$ git checkout master
+$ git merge upstream/master
+$ git push --set-upstream origin master
+
 ################################################################################
 # Merging from a branch onto the master (not confident in this yet)
 $ git fetch origin
