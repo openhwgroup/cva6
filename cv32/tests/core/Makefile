@@ -199,6 +199,7 @@ MKDIR_P = mkdir -p
 
 mk_results: 
 	$(MKDIR_P) $(DSIM_RESULTS)
+	$(MKDIR_P) $(DSIM_WORK)
 
 dsimify: mk_results $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	cd $(DSIM_RESULTS) && $(DSIM) \
