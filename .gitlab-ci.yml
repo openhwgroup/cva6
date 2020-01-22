@@ -1,0 +1,13 @@
+stages:
+   - test
+
+riscv_tests_cv32:
+   stage: test
+   script:
+      - curl -H 'Private-Token:'$METRICS_CI_SERVICE
+             -H 'Content-Type:application/json' 
+             -d '{"projectId":"openHW-cv32", "regressionName":"riscv_tests_cv32", 
+             "branch":"'$CI_COMMIT_REF_NAME'"}' 
+             -X POST 'https://imperas.metrics.ca/api/jobs/v1/runRegression'
+
+  
