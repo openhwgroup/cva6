@@ -93,6 +93,7 @@ module ex_stage #(
     // interface to dcache
     input  dcache_req_o_t [2:0]                    dcache_req_ports_i,
     output dcache_req_i_t [2:0]                    dcache_req_ports_o,
+    input  logic                                   dcache_wbuffer_empty_i,
     output amo_req_t                               amo_req_o,          // request to cache subsytem
     input  amo_resp_t                              amo_resp_i,         // response from cache subsystem
     // Performance counters
@@ -290,6 +291,7 @@ module ex_stage #(
         .dtlb_miss_o,
         .dcache_req_ports_i,
         .dcache_req_ports_o,
+        .dcache_wbuffer_empty_i,
         .amo_valid_commit_i,
         .amo_req_o,
         .amo_resp_i
