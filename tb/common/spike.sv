@@ -17,7 +17,12 @@ import uvm_pkg::*;
 `include "uvm_macros.svh"
 
 import "DPI-C" function int spike_create(string filename, longint unsigned dram_base, int unsigned size);
+`ifdef _VCP // RNA1176
+typedef riscv::commit_log_t riscv_commit_log_t;
+import "DPI-C" function void spike_tick(output riscv_commit_log_t commit_log);
+`else
 import "DPI-C" function void spike_tick(output riscv::commit_log_t commit_log);
+`endif
 import "DPI-C" function void clint_tick();
 
 module spike #(
@@ -47,8 +52,11 @@ module spike #(
         assert(binary != "") else $error("We need a preloaded binary for tandem verification");
         void'(spike_create(binary, DramBase, Size));
     end
-
+	`ifdef _VCP // RNA1176
+    riscv_commit_log_t commit_log;
+	`else
     riscv::commit_log_t commit_log;
+	`endif
     logic [31:0] instr;
 
     always_ff @(posedge clk_i) begin

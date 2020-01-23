@@ -621,8 +621,11 @@ package riscv;
         end
     endfunction
     // pragma translate_on
-
+`ifdef _VCP // [known_problem][RISC-V Ariane bug] only unpacked structure guarantees match between 'C' sie and 'SV' side
+    typedef struct {
+`else
     typedef struct packed {
+`endif
         byte priv;
         longint unsigned pc;
         byte is_fp;
