@@ -74,7 +74,11 @@ endif
 
 # spike tandem verification
 ifdef spike-tandem
+ifeq ($(simulator), RIVIERA)
+    compile_flag += +define+SPIKE_TANDEM
+else
     compile_flag += -define SPIKE_TANDEM
+endif
     ifndef preload
         $(error Tandem verification requires preloading)
     endif
@@ -338,7 +342,7 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
 ifeq ($(simulator), RIVIERA)
-	ccomp -dpi -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr
+	ccomp -dpi -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -Ltb/riscv-isa-sim/install/lib -Wl,-rpath,$(RISCV)/lib,-rpath,tb/riscv-isa-sim/install/lib -lfesvr -lriscv
 else
 	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr
 endif
