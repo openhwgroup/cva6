@@ -1,0 +1,6 @@
+*~
+*.elf
+*.hex
+*.map
+*.o
+dsim.env
