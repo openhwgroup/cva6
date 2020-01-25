@@ -1,12 +1,11 @@
-## CV32/TB: testbenches for the CV32E40\* CORE-V family of OpenHW RSIC-V cores.
-Each sub-directory has a specific purpose.  Note that some are expected to be
-depricated in the near future.  Derived from the
+## CV32/TB: testbenches for the CV32E40\* CORE-V family of RISC-V cores.
+Derived from the
 [tb](https://github.com/pulp-platform/riscv/tree/master/tb)
 directory of the PULP-Platform RI5CY project.
+Note that some are expected to be depricated in the near future.
 
 ### core
-Modified to remove a few RTL files (placed these in the rtl directory.  Makefile
-has been substantially updated.
+Modified to remove a few RTL files (placed these in the rtl directory).
 
 ### dm
 Unmodified.  The future of this directory is unknown.
