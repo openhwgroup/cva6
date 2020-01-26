@@ -33,10 +33,10 @@ module uvmt_cv32_tb;
    
    // Clocking & Reset
    uvmt_cv32_clk_gen_if  clk_gen_if();
-   uvma_reset_if  reset_if(.clk(clk_gen_if.reset_clk));
+//   uvma_reset_if  reset_if(.clk(clk_gen_if.reset_clk));
    
    // Agent interfaces
-   uvma_debug_if  debug_if(.clk(clk_gen_if.debug_clk), .reset(reset_if.reset));
+//   uvma_debug_if  debug_if(.clk(clk_gen_if.debug_clk), .reset(reset_if.reset));
    
    // DUT instance
    uvmt_cv32_dut_wrap  dut_wrap(.*);
@@ -51,8 +51,8 @@ module uvmt_cv32_tb;
       
       // Add interfaces to uvm_config_db
       uvm_config_db#(virtual uvmt_cv32_clk_gen_if)::set(null, "*", "clk_gen_vif", clk_gen_if);
-      uvm_config_db#(virtual uvma_reset_if)::set(null, "*.env.reset_agent", "vif", reset_if);
-      uvm_config_db#(virtual uvma_debug_if)::set(null, "*.env.debug_agent", "vif", debug_if);
+//      uvm_config_db#(virtual uvma_reset_if)::set(null, "*.env.reset_agent", "vif", reset_if);
+//      uvm_config_db#(virtual uvma_debug_if)::set(null, "*.env.debug_agent", "vif", debug_if);
       
       // Run test
       uvm_top.enable_print_topology = 1;

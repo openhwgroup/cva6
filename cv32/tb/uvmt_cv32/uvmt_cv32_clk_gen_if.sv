@@ -27,9 +27,13 @@ interface uvmt_cv32_clk_gen_if;
    
    bit       start_clk = 0;
    logic     reset_clk        = 0;
-   realtime  reset_clk_period = uvme_cv32_reset_default_clk_period * 1ps;
+//   TODO: fix this
+//   realtime  reset_clk_period = uvme_cv32_reset_default_clk_period * 1ps;
+   realtime  reset_clk_period = 1500ps;
    logic     debug_clk        = 0;
-   realtime  debug_clk_period = uvme_cv32_debug_default_clk_period * 1ps;
+//   TODO: fix this
+//   realtime  debug_clk_period = uvme_cv32_debug_default_clk_period * 1ps;
+   realtime  debug_clk_period = 100ps;
    
    
    /**
@@ -56,7 +60,7 @@ interface uvmt_cv32_clk_gen_if;
    );
       reset_clk_period = reset_period * 1ps;
       debug_clk_period = debug_period * 1ps;
-   endfunction : set_clk_period
+   endfunction : set_clk_periods
    
    /**
     * Triggers the generation of clk.
