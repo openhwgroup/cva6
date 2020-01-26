@@ -34,7 +34,7 @@ DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE               = dsim.out
 
 # UVM Environment
-DV_UVMT_CV32_PATH ?= $(PWD)
+export DV_UVMT_CV32_PATH ?= $(PWD)
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # TB source files for the CV32E core
