@@ -79,7 +79,7 @@ dsim-comp: mk_results
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
-		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
+		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
 		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
