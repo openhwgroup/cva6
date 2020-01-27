@@ -29,8 +29,8 @@
 timeunit       1ns;
 timeprecision  1ps;
 
-// Interfaces
-`include "uvmt_cv32_clk_gen_if.sv"
+// All Interfaces used by the CV32 TB are here
+`include "uvmt_cv32_tb_ifs.sv"
 
 
 /**
