@@ -40,21 +40,12 @@
  */
 module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
                                       RAM_ADDR_WIDTH    =   20,
-                                      BOOT_ADDR         = 'h80,
                                       PULP_SECURE       =    1
                            )
                            (
-                           //   uvma_debug_if  debug_if
-
-                            input  logic        clk_i,
-                            input  logic        rst_ni,
-
-                            input  logic        fetch_enable_i,
-
-                            output logic        tests_passed_o,
-                            output logic        tests_failed_o,
-                            output logic [31:0] exit_value_o,
-                            output logic        exit_valid_o
+                            uvmt_cv32_clk_gen_if    clk_gen_if,
+                            uvmt_cv32_vp_status_if  vp_status_if,
+                            uvmt_cv32_core_cntrl_if core_cntrl_if
                            );
 
     // signals connecting core to memory
@@ -96,57 +87,57 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
                 )
     riscv_core_i
         (
-         .clk_i                  ( clk_i                 ),
-         .rst_ni                 ( rst_ni                ),
+         .clk_i                  ( clk_gen_if.core_clock          ),
+         .rst_ni                 ( clk_gen_if.core_reset_n        ),
 
-         .clock_en_i             ( '1                    ),
-         .test_en_i              ( '0                    ),
+         .clock_en_i             ( core_cntrl_if.clock_en         ),
+         .test_en_i              ( core_cntrl_if.test_en          ),
 
-         .boot_addr_i            ( BOOT_ADDR             ),
-         .core_id_i              ( 4'h0                  ),
-         .cluster_id_i           ( 6'h0                  ),
+         .boot_addr_i            ( core_cntrl_if.boot_addr        ),
+         .core_id_i              ( core_cntrl_if.core_id          ),
+         .cluster_id_i           ( core_cntrl_if.cluster_id       ),
 
-         .instr_addr_o           ( instr_addr            ),
-         .instr_req_o            ( instr_req             ),
-         .instr_rdata_i          ( instr_rdata           ),
-         .instr_gnt_i            ( instr_gnt             ),
-         .instr_rvalid_i         ( instr_rvalid          ),
+         .instr_addr_o           ( instr_addr                     ),
+         .instr_req_o            ( instr_req                      ),
+         .instr_rdata_i          ( instr_rdata                    ),
+         .instr_gnt_i            ( instr_gnt                      ),
+         .instr_rvalid_i         ( instr_rvalid                   ),
 
-         .data_addr_o            ( data_addr             ),
-         .data_wdata_o           ( data_wdata            ),
-         .data_we_o              ( data_we               ),
-         .data_req_o             ( data_req              ),
-         .data_be_o              ( data_be               ),
-         .data_rdata_i           ( data_rdata            ),
-         .data_gnt_i             ( data_gnt              ),
-         .data_rvalid_i          ( data_rvalid           ),
+         .data_addr_o            ( data_addr                      ),
+         .data_wdata_o           ( data_wdata                     ),
+         .data_we_o              ( data_we                        ),
+         .data_req_o             ( data_req                       ),
+         .data_be_o              ( data_be                        ),
+         .data_rdata_i           ( data_rdata                     ),
+         .data_gnt_i             ( data_gnt                       ),
+         .data_rvalid_i          ( data_rvalid                    ),
 
-         .apu_master_req_o       (                       ),
-         .apu_master_ready_o     (                       ),
-         .apu_master_gnt_i       (                       ),
-         .apu_master_operands_o  (                       ),
-         .apu_master_op_o        (                       ),
-         .apu_master_type_o      (                       ),
-         .apu_master_flags_o     (                       ),
-         .apu_master_valid_i     (                       ),
-         .apu_master_result_i    (                       ),
-         .apu_master_flags_i     (                       ),
+         .apu_master_req_o       (                                ),
+         .apu_master_ready_o     (                                ),
+         .apu_master_gnt_i       (                                ),
+         .apu_master_operands_o  (                                ),
+         .apu_master_op_o        (                                ),
+         .apu_master_type_o      (                                ),
+         .apu_master_flags_o     (                                ),
+         .apu_master_valid_i     (                                ),
+         .apu_master_result_i    (                                ),
+         .apu_master_flags_i     (                                ),
 
-         .irq_i                  ( irq                   ),
-         .irq_id_i               ( irq_id_in             ),
-         .irq_ack_o              ( irq_ack               ),
-         .irq_id_o               ( irq_id_out            ),
-         .irq_sec_i              ( irq_sec               ),
+         .irq_i                  ( irq                            ),
+         .irq_id_i               ( irq_id_in                      ),
+         .irq_ack_o              ( irq_ack                        ),
+         .irq_id_o               ( irq_id_out                     ),
+         .irq_sec_i              ( irq_sec                        ),
 
-         .sec_lvl_o              ( sec_lvl_o             ),
+         .sec_lvl_o              ( sec_lvl_o                      ),
 
-         .debug_req_i            ( debug_req_i           ),
+         .debug_req_i            ( debug_req_i                    ),
 
-         .fetch_enable_i         ( fetch_enable_i        ),
-         .core_busy_o            ( core_busy_o           ),
+         .fetch_enable_i         ( fetch_enable_i                 ),
+         .core_busy_o            ( core_busy_o                    ),
 
-         .ext_perf_counters_i    (                       ),
-         .fregfile_disable_i     ( 1'b0                  )
+         .ext_perf_counters_i    ( core_cntrl_if.ext_perf_counters),
+         .fregfile_disable_i     ( core_cntrl_if.fregfile_disable )
         ); //riscv_core_i
 
     // this handles read to RAM and memory mapped virtual (pseudo) peripherals
@@ -154,8 +145,8 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
              .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH)
             )
     ram_i
-        (.clk_i          ( clk_i                          ),
-         .rst_ni         ( rst_ni                         ),
+        (.clk_i          ( clk_gen_if.core_clock          ),
+         .rst_ni         ( clk_gen_if.core_reset_n        ),
 
          .instr_req_i    ( instr_req                      ),
          .instr_addr_i   ( instr_addr[RAM_ADDR_WIDTH-1:0] ),
@@ -179,10 +170,10 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
 
          .pc_core_id_i   ( riscv_core_i.pc_id             ),
 
-         .tests_passed_o ( tests_passed_o                 ),
-         .tests_failed_o ( tests_failed_o                 ),
-         .exit_valid_o   ( exit_valid_o                   ),
-         .exit_value_o   ( exit_value_o                   )
+         .tests_passed_o ( vp_status_if.tests_passed      ),
+         .tests_failed_o ( vp_status_if.tests_failed      ),
+         .exit_valid_o   ( vp_status_if.exit_valid        ),
+         .exit_value_o   ( vp_status_if.exit_value        )
         ); //ram_i
 
 endmodule : uvmt_cv32_dut_wrap
