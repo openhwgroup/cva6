@@ -38,33 +38,35 @@ export DV_UVMT_CV32_PATH ?= $(PWD)
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # TB source files for the CV32E core
-#TBSRC_HOME  := $(ROOT_DIR)/../../tb
-#TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
-#TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
-#TBSRC_CORE  := $(TBSRC_HOME)/core
-#TBSRC       := $(TBSRC_CORE)/tb_top.sv \
-#               $(TBSRC_CORE)/riscv_wrapper.sv \
-#               $(TBSRC_CORE)/mm_ram.sv \
-#               $(TBSRC_CORE)/dp_ram.sv \
-#               $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
-#               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
+TBSRC_HOME  := $(ROOT_DIR)/..
+TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
+TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
+               $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
+               $(TBSRC_HOME)/core/mm_ram.sv \
+               $(TBSRC_HOME)/core/dp_ram.sv \
+               $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
+               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
 
 # RTL source files for the CV32E core
-#RTLSRC_HOME   := $(ROOT_DIR)/../../../rtl
-#RTLSRC_INCDIR := $(RTLSRC_HOME)/include
-#FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
-#RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
-#                 $(addprefix $(RTLSRC_HOME)/include/,\
-#                   apu_core_package.sv \
-#                   riscv_defines.sv \
-#                   riscv_tracer_defines.sv)
-#RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
-#                   $(wildcard $(RTLSRC_HOME)/*.sv))
+RTLSRC_HOME   := $(ROOT_DIR)/../../../rtl
+RTLSRC_INCDIR := $(RTLSRC_HOME)/include
+FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
+RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
+                 $(addprefix $(RTLSRC_HOME)/include/,\
+                   apu_core_package.sv \
+                   riscv_defines.sv \
+                   riscv_tracer_defines.sv)
+RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
+                   $(wildcard $(RTLSRC_HOME)/*.sv))
 
 # assume compile of both ENV and RTL if no target chosen
 .DEFAULT_GOAL := dsim-comp
 
-all:
+all: clean_all dsim-comp
+
+# fpnew dependencies
+$(FPNEW_PKG):
+	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
 
 # Metrics dsim testbench compilation 
 .PHONY: dsim-comp dsim-comp-rtl-only
@@ -75,24 +77,19 @@ mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
-dsim-comp: mk_results
+# TODO: cd $(DSIM_RESULTS) - incompatible with pkg file
+dsim-comp: mk_results $(FPNEW_PKG)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
+		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
+		+incdir+$(RTLSRC_INCDIR) \
 		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
-#dsim-comp-rtl-only: mk_results $(RTLSRC_PKG) $(RTLSRC)
-#	$(DSIM) \
-#		$(DSIM_CMP_FLAGS) \
-#		$(RTLSRC_PKG) $(RTLSRC) \
-#		-work $(DSIM_WORK) \
-#		+incdir+$(RTLSRC_INCDIR) \
-#		-genimage $(DSIM_IMAGE)
-
 # Metrics dsim cleanup
-.PHONY: dsim-clean
+.PHONY: dsim-clean clean_all
 
 dsim-clean:
 	rm -f dsim.log
@@ -105,3 +102,5 @@ dsim-clean:
 	rm -f $(DSIM_IMAGE)
 	rm -rf $(DSIM_RESULTS)
 
+clean_all: dsim-clean
+	rm -rf $(FPNEW_PKG)
