@@ -31,7 +31,7 @@ DSIM_CMP_FLAGS          = -timescale 1ns/1ps
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
-DSIM_IMAGE               = dsim.out
+DSIM_IMAGE              = dsim.out
 
 # UVM Environment
 export DV_UVMT_CV32_PATH ?= $(PWD)
@@ -80,8 +80,8 @@ dsim-comp: mk_results
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
-#		-work $(DSIM_WORK) \
-#		-genimage $(DSIM_IMAGE)
+		-work $(DSIM_WORK) \
+		-genimage $(DSIM_IMAGE)
 
 #dsim-comp-rtl-only: mk_results $(RTLSRC_PKG) $(RTLSRC)
 #	$(DSIM) \
