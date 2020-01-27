@@ -46,7 +46,7 @@ VSIM_SCRIPT       = vsim.tcl
 
 # vcs configuration
 VCS               = vcs-2017.03-kgf vcs
-VCS_HOME          = /usr/pack/vcs-2017.03-kgf
+VCS_HOME          = /usr/pack/vcs-2017.03-kgf 
 VCS_FLAGS         =
 SIMV_FLAGS        =
 
@@ -55,7 +55,7 @@ DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
 DSIM_CMP_FLAGS          = -timescale 1ns/1ps
 DSIM_RUN_FLAGS          = -write-sql
-ROOT_DIR               ?= $(PWD)
+ROOT_DIR                = $(PWD)
 DSIM_RESULTS           ?= $(PWD)/results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE               = dsim.out
@@ -199,6 +199,7 @@ MKDIR_P = mkdir -p
 
 mk_results: 
 	$(MKDIR_P) $(DSIM_RESULTS)
+	$(MKDIR_P) $(DSIM_WORK)
 
 dsimify: mk_results $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	cd $(DSIM_RESULTS) && $(DSIM) \
@@ -321,7 +322,8 @@ verilate-clean: tc-clean
 
 # fpnew dependencies
 $(FPNEW_PKG):
-	git clone https://github.com/pulp-platform/fpnew --recurse $(RTLSRC_HOME)/fpnew
+	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
+#$(RTLSRC_HOME)/fpnew
 
 # run tb and exit
 .PHONY: vsim-run

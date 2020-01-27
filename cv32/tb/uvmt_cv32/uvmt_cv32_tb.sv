@@ -1,4 +1,19 @@
-// COPYRIGHT HEADER
+//
+// Copyright 2020 OpenHW Group
+// Copyright 2020 Datum Technologies
+// 
+// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     https://solderpad.org/licenses/
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// 
 
 
 `ifndef __UVMT_CV32_TB_SV__
@@ -16,15 +31,43 @@ module uvmt_cv32_tb;
    import uvm_pkg::*;
    import uvmt_cv32_pkg::*;
    
+   // temporary I/Os for the dut_wrap()
+   logic        clk;
+   logic        rst_n;
+   logic        fetch_enable;
+   logic        tests_passed;
+   logic        tests_failed;
+   logic [31:0] exit_value;
+   logic        exit_valid;
+
    // Clocking & Reset
    uvmt_cv32_clk_gen_if  clk_gen_if();
-   uvma_reset_if  reset_if(.clk(clk_gen_if.reset_clk));
+//   uvma_reset_if  reset_if(.clk(clk_gen_if.reset_clk));
    
    // Agent interfaces
-   uvma_debug_if  debug_if(.clk(clk_gen_if.debug_clk), .reset(reset_if.reset));
+//   uvma_debug_if  debug_if(.clk(clk_gen_if.debug_clk), .reset(reset_if.reset));
    
-   // DUT instance
-   uvmt_cv32_dut_wrap  dut_wrap(.*);
+  /**
+   * DUT WRAPPER instance:
+   * This is the riscv_wrapper.sv from PULP-Platform RI5CY project
+   * with a few mods to bring unused ports from the CORE to this level.
+   */
+   uvmt_cv32_dut_wrap  #(
+                         .INSTR_RDATA_WIDTH ( 128),
+                         .RAM_ADDR_WIDTH    (  20),
+                         .BOOT_ADDR         ('h80),
+                         .PULP_SECURE       (   1)
+                        )
+                        dut_wrap
+                        (
+                         .clk_i             (clk),
+                         .rst_ni            (rst_n),
+                         .fetch_enable_i    (fetch_enable),
+                         .tests_passed_o    (tests_passed),
+                         .tests_failed_o    (tests_failed),
+                         .exit_value_o      (exit_value),
+                         .exit_valid_o      (exit_valid)
+                        );
    
    
    /**
@@ -36,8 +79,8 @@ module uvmt_cv32_tb;
       
       // Add interfaces to uvm_config_db
       uvm_config_db#(virtual uvmt_cv32_clk_gen_if)::set(null, "*", "clk_gen_vif", clk_gen_if);
-      uvm_config_db#(virtual uvma_reset_if)::set(null, "*.env.reset_agent", "vif", reset_if);
-      uvm_config_db#(virtual uvma_debug_if)::set(null, "*.env.debug_agent", "vif", debug_if);
+//      uvm_config_db#(virtual uvma_reset_if)::set(null, "*.env.reset_agent", "vif", reset_if);
+//      uvm_config_db#(virtual uvma_debug_if)::set(null, "*.env.debug_agent", "vif", debug_if);
       
       // Run test
       uvm_top.enable_print_topology = 1;
@@ -60,12 +103,20 @@ module uvmt_cv32_tb;
       static string  green = "\033[32m\033[1m";
       static string  reset = "\033[0m";
       
+      // Use the Virtual Peripheral's status outputs to update report server status.
+      if (tests_failed)  `uvm_error("WRAPPER FLAGS", "DUT WRAPPER virtual peripheral flagged test failure.")
+      if (!tests_passed) `uvm_error("WRAPPER FLAGS", "DUT WRAPPER virtual peripheral failed to flag test passed.")
+      if (!exit_valid) begin
+        `uvm_error("WRAPPER FLAGS", "DUT WRAPPER virtual peripheral failed to exit properly.")
+      end
+      // TODO: handle exit_value properly
+      
       rs          = uvm_top.get_report_server();
       err_count   = rs.get_severity_count(UVM_ERROR);
       fatal_count = rs.get_severity_count(UVM_FATAL);
       
       void'(uvm_config_db#(bit)::get(null, "", "sim_finished", sim_finished));
-      
+
       $display("\n*** Test Summary ***\n");
       
       if (sim_finished && (err_count == 0) && (fatal_count == 0)) begin

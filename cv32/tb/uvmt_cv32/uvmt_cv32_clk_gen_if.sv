@@ -1,5 +1,19 @@
-// COPYRIGHT HEADER
-
+//
+// Copyright 2020 OpenHW Group
+// Copyright 2020 Datum Technologies
+// 
+// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     https://solderpad.org/licenses/
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// 
 
 `ifndef __UVMT_CV32_CLK_GEN_IF_SV__
 `define __UVMT_CV32_CLK_GEN_IF_SV__
@@ -13,9 +27,13 @@ interface uvmt_cv32_clk_gen_if;
    
    bit       start_clk = 0;
    logic     reset_clk        = 0;
-   realtime  reset_clk_period = uvme_cv32_reset_default_clk_period * 1ps;
+//   TODO: fix this
+//   realtime  reset_clk_period = uvme_cv32_reset_default_clk_period * 1ps;
+   realtime  reset_clk_period = 1500ps;
    logic     debug_clk        = 0;
-   realtime  debug_clk_period = uvme_cv32_debug_default_clk_period * 1ps;
+//   TODO: fix this
+//   realtime  debug_clk_period = uvme_cv32_debug_default_clk_period * 1ps;
+   realtime  debug_clk_period = 100ps;
    
    
    /**
@@ -42,7 +60,7 @@ interface uvmt_cv32_clk_gen_if;
    );
       reset_clk_period = reset_period * 1ps;
       debug_clk_period = debug_period * 1ps;
-   endfunction : set_clk_period
+   endfunction : set_clk_periods
    
    /**
     * Triggers the generation of clk.

@@ -17,9 +17,12 @@ If you are new to git, or unfamiliar with using branches and pull-requests, have
 
 ## Make your changes below this line.
 Extra marks for creativity and wit.
+
 Git merge, Take 2 !
+And Take 3 !
 
 ### Madcat
+```
      ____          ____
     |oooo|        |oooo|
     |oooo| .----. |oooo|
@@ -45,4 +48,4 @@ Git merge, Take 2 !
      || ||        || ||    -- Jay Thaler 
    __|\_/|__    __|\_/|__     -- David Poulin
   /___n_n___\  /___n_n___\
-  
+  ```
