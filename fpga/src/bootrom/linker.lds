@@ -1,10 +1,11 @@
-ENTRY(main)
+ENTRY(_prog_start)
 
 SECTIONS
 {
     ROM_BASE = 0x10000; /* ... but actually position independent */
+    DDR_BASE = 0x87FE0000;
 
-    . = ROM_BASE;
+    . = DDR_BASE;
 
     .text.init : { *(.text.init) }
 
@@ -14,9 +15,17 @@ SECTIONS
     _TEXT_END_ = .;
     }
 
+    .rodata : ALIGN(0x100) {
+    _RODATA_START_ = .;
+        *(.rodata)
+        *(.dtb*)
+        *(.rodata*)
+    _RODATA_END_ = .;
+    }
+
     .data : ALIGN(0x100) {
     _DATA_START_ = .;
-        *(.data)
+        *(.data *.sdata)
     _DATA_END_ = .;
     }
 
@@ -26,15 +35,8 @@ SECTIONS
 
     .bss : ALIGN(0x100) {
     _BSS_START_ = .;
-        *(.bss)
+        *(.bss *.sbss *COMMON)
     _BSS_END_ = .;
     }
 
-    .rodata : ALIGN(0x100) {
-    _RODATA_START_ = .;
-        *(.rodata)
-        *(.dtb*)
-        *(.rodata*)
-    _RODATA_END_ = .;
-    }
 }

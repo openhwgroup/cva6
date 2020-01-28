@@ -1,6 +1,6 @@
 #include "uart.h"
 
-void write_reg_u8(uintptr_t addr, uint8_t value)
+inline void write_reg_u8(uintptr_t addr, uint8_t value)
 {
     volatile uint8_t *loc_addr = (volatile uint8_t *)addr;
     *loc_addr = value;
@@ -95,3 +95,32 @@ int get_uart_byte(void)
   return read_reg_u8(UART_LINE_STATUS) & 0x1 ? read_reg_u8(UART_RBR) : -1;
 }
 
+int hello(void)
+{
+    int ch;
+    /* first of all dump into the IER to fill the icache, then fill the THR */
+    for (int i = UART_INTERRUPT_ENABLE; i >= UART_THR; i -= 4)
+      {
+      write_reg_u8(i, 'H');
+      write_reg_u8(i, 'e');
+      write_reg_u8(i, 'l');
+      write_reg_u8(i, 'l');
+      write_reg_u8(i, 'o');
+      write_reg_u8(i, ' ');
+      write_reg_u8(i, 'W');
+      write_reg_u8(i, 'o');
+      write_reg_u8(i, 'r');
+      write_reg_u8(i, 'l');
+      write_reg_u8(i, 'd');
+      write_reg_u8(i, '!');
+      write_reg_u8(i, '\r');
+      write_reg_u8(i, '\n');
+      }
+    ch = read_reg_u8(UART_RBR);
+    return ch;
+}
+
+void finish(void)
+{
+    write_reg_u8(UART_SIM_FINISH, 0);
+}

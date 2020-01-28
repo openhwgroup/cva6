@@ -32,4 +32,7 @@ uint8_t read_reg_u8(uintptr_t addr);
 int get_uart_byte(void);
 
 void write_serial(char a);
-void write_reg_u8(uintptr_t addr, uint8_t value);
+
+int hello(void);
+
+void finish(void);
