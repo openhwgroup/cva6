@@ -72,6 +72,12 @@ $(info ALDEC_PATH is $(ALDEC_PATH))
 endif
 endif
 
+ifeq ($(simulator), RIVIERA)
+	build_target				:= build_riviera
+else
+	build_target				:= build
+endif
+
 # spike tandem verification
 ifdef spike-tandem
 ifeq ($(simulator), RIVIERA)
@@ -370,6 +376,32 @@ sim_riviera: build_riviera
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) -sv_lib $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi  \
 	${top_level} +permissive-off ++$(elf-bin) ++$(target-options) | tee sim.log
 
+ifeq ($(simulator), RIVIERA)
+$(riscv-asm-tests): build_riviera
+	vsim +permissive $(riviera-flags) $(riviera-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -sv_lib $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	${top_level} +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-asm-tests-$@.log
+
+$(riscv-amo-tests): build_riviera
+	vsim +permissive $(riviera-flags) $(riviera-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -sv_lib $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	${top_level} +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-amo-tests-$@.log
+
+$(riscv-mul-tests): build_riviera
+	vsim +permissive $(riviera-flags) $(riviera-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -sv_lib $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	${top_level} +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-mul-tests-$@.log
+
+$(riscv-fp-tests): build_riviera
+	vsim +permissive $(riviera-flags) $(riviera-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -sv_lib $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
+	${top_level} +permissive-off ++$(riscv-test-dir)/$@ ++$(target-options) | tee tmp/riscv-fp-tests-$@.log
+
+$(riscv-benchmarks): build_riviera
+	vsim +permissive $(riviera-flags) $(riviera-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
+	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) +jtag_rbb_enable=0 -sv_lib $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi   \
+	${top_level} +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
+else
 $(riscv-asm-tests): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-test-dir) $(uvm-flags) +jtag_rbb_enable=0  -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi        \
@@ -394,6 +426,7 @@ $(riscv-benchmarks): build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles) +UVM_TESTNAME=$(test_case) \
 	+BASEDIR=$(riscv-benchmarks-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi   \
 	${top_level}_optimized $(QUESTASIM_FLAGS) +permissive-off ++$(riscv-benchmarks-dir)/$@ ++$(target-options) | tee tmp/riscv-benchmarks-$@.log
+endif
 
 # can use -jX to run ci tests in parallel using X processes
 run-asm-tests: $(riscv-asm-tests)
@@ -531,15 +564,15 @@ torture-gen:
 torture-itest:
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -a output/test.S'
 
-torture-rtest: build
+torture-rtest: $(build_target)
 	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture$(torture-logs) batch-mode=1 defines=$(defines) test-location=$(test-location)" > call.sh && chmod +x call.sh
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a $(test-location).S' | tee $(test-location).log
 	make check-torture test-location=$(test-location)
 
-torture-dummy: build
+torture-dummy: $(build_target)
 	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture batch-mode=1 defines=$(defines) test-location=\$${@: -1}" > call.sh
 
-torture-rnight: build
+torture-rnight: $(build_target)
 	cd $(riscv-torture-dir) && printf "#!/bin/sh\ncd $(root-dir) && $(MAKE) run-torture$(torture-logs) batch-mode=1 defines=$(defines) test-location=\$${@: -1}" > call.sh && chmod +x call.sh
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'overnight/run -r ./call.sh -g none' | tee output/overnight.log
 	$(MAKE) check-torture
@@ -549,6 +582,21 @@ torture-rtest-verilator: verilate
 	cd $(riscv-torture-dir) && $(riscv-torture-bin) 'testrun/run -r ./call.sh -a output/test.S' | tee output/test.log
 	$(MAKE) check-torture
 
+ifeq ($(simulator), RIVIERA)
+run-torture: build_riviera
+	vsim +permissive $(riviera-flags) $(riviera-cmd) -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)                                  \
+	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -sv_lib $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                      \
+	${top_level} +permissive-off +signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
+
+run-torture-log: build_riviera
+	vsim +permissive -l transcript $(riviera-flags) $(riviera-cmd) -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)                                  \
+	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -sv_lib $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                      \
+	${top_level} +permissive-off +signature=$(riscv-torture-dir)/$(test-location).rtlsim.sig ++$(riscv-torture-dir)/$(test-location) ++$(target-options)
+	cp dataset.asdb $(riscv-torture-dir)/$(test-location).asdb
+	cp trace_hart_0000.log $(riscv-torture-dir)/$(test-location).trace
+	cp trace_hart_0000_commit.log $(riscv-torture-dir)/$(test-location).commit
+	cp transcript $(riscv-torture-dir)/$(test-location).transcript
+else
 run-torture: build
 	vsim${questa_version} +permissive $(questa-flags) $(questa-cmd) -lib $(library) +max-cycles=$(max_cycles)+UVM_TESTNAME=$(test_case)                                  \
 	+BASEDIR=$(riscv-torture-dir) $(uvm-flags) +jtag_rbb_enable=0 -gblso $(RISCV)/lib/libfesvr.so -sv_lib $(dpi-library)/ariane_dpi                                      \
@@ -562,6 +610,7 @@ run-torture-log: build
 	cp trace_hart_0000.log $(riscv-torture-dir)/$(test-location).trace
 	cp trace_hart_0000_commit.log $(riscv-torture-dir)/$(test-location).commit
 	cp transcript $(riscv-torture-dir)/$(test-location).transcript
+endif
 
 run-torture-verilator: verilate
 	$(ver-library)/Variane_testharness +max-cycles=$(max_cycles) +signature=$(riscv-torture-dir)/output/test.rtlsim.sig $(riscv-torture-dir)/output/test
