@@ -7,9 +7,6 @@
 [submodule "src/fpga-support"]
 	path = src/fpga-support
 	url = https://github.com/pulp-platform/fpga-support.git
-[submodule "src/common_cells"]
-	path = src/common_cells
-	url = https://github.com/pulp-platform/common_cells.git
 [submodule "src/axi"]
 	path = src/axi
 	url = https://github.com/pulp-platform/axi.git
@@ -49,3 +46,6 @@
 [submodule "fpga/src/apb_timer"]
 	path = fpga/src/apb_timer
 	url = https://github.com/pulp-platform/apb_timer.git
+[submodule "src/common_cells"]
+	path = src/common_cells
+	url = https://github.com/jrrk2/common_cells.git

@@ -320,9 +320,11 @@ simv: $(util) $(src) fpga/src/bootrom/bootrom.sv
 		$(PWD)/src/axi/src/axi_to_axi_lite.sv \
 		$(PWD)/src/common_cells/src/deprecated/find_first_one.sv \
 		$(PWD)/src/common_cells/src/stream_mux.sv \
+		$(PWD)/fpga/src/axi2apb/src/axi2apb_wrap.sv \
 		$(PWD)/bootrom/bootrom.sv \
 		, $(src)) \
 	$(wildcard fpga/src/apb_uart/src/*.sv) \
+	$(PWD)/src/common_cells/src/delta_counter.sv \
 	$(PWD)/src/common_cells/src/sram.sv \
 	$(PWD)/fpga/src/bootrom/bootrom.sv \
 	tb/ariane_tb.sv
