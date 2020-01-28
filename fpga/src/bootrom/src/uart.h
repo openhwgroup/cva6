@@ -15,6 +15,7 @@
 #define UART_MODEM_STATUS UART_BASE + 24
 #define UART_DLAB_LSB UART_BASE + 0
 #define UART_DLAB_MSB UART_BASE + 4
+#define UART_SIM_FINISH UART_BASE + 32
 
 void init_uart();
 
@@ -31,3 +32,4 @@ uint8_t read_reg_u8(uintptr_t addr);
 int get_uart_byte(void);
 
 void write_serial(char a);
+void write_reg_u8(uintptr_t addr, uint8_t value);

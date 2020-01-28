@@ -283,9 +283,11 @@ module ariane_peripherals #(
          if (uart_psel && uart_penable)
            begin
               if (uart_pwrite)
-                $display("%t: UART write (addr=%X,data=%X) %c ", $time, uart_paddr[4:2], uart_pwdata[7:0], uart_pwdata[7:0]);
+                $display("%t: UART write (addr=%X,data=%X) %c ", $time, uart_paddr[5:2], uart_pwdata[7:0], uart_pwdata[7:0]);
               else
-                $display("%t: UART read (addr=%X,data=%X) %c ", $time,  uart_paddr[4:2], uart_prdata[7:0], uart_prdata[7:0]);
+                $display("%t: UART read (addr=%X,data=%X) %c ", $time,  uart_paddr[5:2], uart_prdata[7:0], uart_prdata[7:0]);
+              if (uart_paddr[5:2] == 8)
+                $finish(uart_pwdata[7:0]);
            end
     end else begin
         assign irq_sources[0] = 1'b0;
