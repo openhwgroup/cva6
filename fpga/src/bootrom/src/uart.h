@@ -25,3 +25,9 @@ void print_uart_int(uint32_t addr);
 void print_uart_addr(uint64_t addr);
 
 void print_uart_byte(uint8_t byte);
+
+uint8_t read_reg_u8(uintptr_t addr);
+
+int get_uart_byte(void);
+
+void write_serial(char a);

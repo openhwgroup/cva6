@@ -1,5 +1,5 @@
 # Customise this to a fast local disk
-export TOP=/scratch/$USER/projects
+export TOP=/local/scratch/$USER/lowrisc-chip-ariane-v0.7/ariane
 export CI_BUILD_DIR=$TOP/ariane-repo
 
 #customize this to your setup

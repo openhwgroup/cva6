@@ -12,7 +12,7 @@
 // Date: 16.05.2017
 // Description: Instruction Tracer Main Class
 
-`ifndef VERILATOR
+`ifdef USVM
 //pragma translate_off
 import uvm_pkg::*;
 `include "uvm_macros.svh"

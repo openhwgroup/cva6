@@ -653,7 +653,8 @@ module ariane_testharness #(
     .spi_ss    ( )
   );
 
-  uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));
+//  uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));
+   assign rx = tx;
 
   // ---------------
   // Core

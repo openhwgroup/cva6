@@ -39,6 +39,8 @@ ifeq ($(support_verilator_4), 0)
 	verilator_threads := 2
 endif
 
+export VCS_HOME=/anfs/bigdisc/jrrk2/synopsys/vcs-mx/O-2018.09-SP2-9/vcs-mx/O-2018.09-SP2-9/
+
 ifndef RISCV
 $(error RISCV not set - please point your RISCV variable to your RISCV installation)
 endif
@@ -222,7 +224,7 @@ riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := src/common_cells/include/
+incdir := src/common_cells/include/ src/util
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
@@ -298,6 +300,32 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 	mkdir -p $(dpi-library)
 	# Compile C-code and generate .so file
 	$(CXX) -shared -m64 -o $(dpi-library)/ariane_dpi.so $? -L$(RISCV)/lib -Wl,-rpath,$(RISCV)/lib -lfesvr
+
+# -ntb_opts uvm-1.1 +UVM_NO_RELNOTES 
+simv: $(util) $(src) fpga/src/bootrom/bootrom.sv
+	$(VCS_HOME)/bin/vcs -full64 -sverilog -gui -timescale=1ns/1ps -diag timescale -debug_access+all -assert svaext \
+	$(ariane_pkg) $(list_incdir) \
+	$(filter-out $(PWD)/tb/common/mock_uart.sv \
+		$(PWD)/src/util/sram.sv \
+		, $(util)) +define+WT_DCACHE+ \
+	$(filter-out $(PWD)/fpga/src/axi_slice/src/axi_slice_wrap.sv \
+		$(PWD)/src/fpga-support/rtl/SyncSpRamBeNx64.sv \
+		$(PWD)/src/axi_node/src/axi_node_wrap_with_slices.sv \
+		$(PWD)/src/axi_riscv_atomics/src/axi_riscv_lrsc_wrap.sv \
+		$(PWD)/src/axi/src/axi_multicut.sv \
+		$(PWD)/src/axi/src/axi_cut.sv \
+		$(PWD)/src/axi/src/axi_join.sv \
+		$(PWD)/src/util/axi_master_connect_rev.sv \
+		$(PWD)/src/util/axi_slave_connect_rev.sv \
+		$(PWD)/src/axi/src/axi_to_axi_lite.sv \
+		$(PWD)/src/common_cells/src/deprecated/find_first_one.sv \
+		$(PWD)/src/common_cells/src/stream_mux.sv \
+		$(PWD)/bootrom/bootrom.sv \
+		, $(src)) \
+	$(wildcard fpga/src/apb_uart/src/*.sv) \
+	$(PWD)/src/common_cells/src/sram.sv \
+	$(PWD)/fpga/src/bootrom/bootrom.sv \
+	tb/ariane_tb.sv
 
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list

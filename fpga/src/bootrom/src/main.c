@@ -5,9 +5,16 @@
 
 int main()
 {
+    int ch;
     init_uart(50000000, 115200);
     print_uart("Hello World!\r\n");
-
+    ch = read_reg_u8(UART_RBR);
+    
+    do {
+      ch = get_uart_byte();
+      if (ch != -1) write_serial(ch);
+    } while (ch != '\r');
+        
     int res = gpt_find_boot_partition((uint8_t *)0x80000000UL, 2 * 16384);
 
     if (res == 0)

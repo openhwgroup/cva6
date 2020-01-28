@@ -18,7 +18,7 @@
  * 
  */
 
-import std_cache_pkg::*;
+import wt_cache_pkg::*;
 
 module axi_shim #(
     parameter int unsigned AxiNumWords       = 4, // data width in dwords, this is also the maximum burst length, must be >=2

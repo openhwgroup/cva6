@@ -704,7 +704,7 @@ module ariane #(
   );
 `endif // PITON_ARIANE
 
-`ifndef VERILATOR
+`ifdef UVM
   instr_tracer_if tracer_if (clk_i);
   // assign instruction tracer interface
   // control signals
@@ -747,7 +747,7 @@ module ariane #(
     .hart_id_i
   );
 
-// mock tracer for Verilator, to be used with spike-dasm
+// mock tracer for Verilator and non UVM simulation, to be used with spike-dasm
 `else
 
   int f;

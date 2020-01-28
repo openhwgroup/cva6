@@ -15,6 +15,7 @@
 
 
 import ariane_pkg::*;
+`ifdef DPI
 import uvm_pkg::*;
 
 `include "uvm_macros.svh"
@@ -24,11 +25,12 @@ import uvm_pkg::*;
 import "DPI-C" function read_elf(input string filename);
 import "DPI-C" function byte get_section(output longint address, output longint len);
 import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
+`endif
 
 module ariane_tb;
-
+`ifdef DPI
     static uvm_cmdline_processor uvcl = uvm_cmdline_processor::get_inst();
-
+`endif
     localparam int unsigned CLOCK_PERIOD = 20ns;
     // toggle with RTC period
     localparam int unsigned RTC_CLOCK_PERIOD = 30.517us;
@@ -102,6 +104,7 @@ module ariane_tb;
         end
     end
 
+`ifdef TOHOST   
     initial begin
         forever begin
 
@@ -118,7 +121,7 @@ module ariane_tb;
     end
 
     // for faster simulation we can directly preload the ELF
-    // Note that we are loosing the capabilities to use risc-fesvr though
+    // Note that we are losing the capabilities to use risc-fesvr though
     initial begin
         automatic logic [7:0][7:0] mem_row;
         longint address, len;
@@ -150,5 +153,7 @@ UVM_LOW)
                 end
             end
         end
-    end
+    end // initial begin
+`endif
+   
 endmodule
