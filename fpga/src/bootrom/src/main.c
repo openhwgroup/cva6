@@ -1,33 +1,21 @@
 #include <string.h>
 #include "uart.h"
-#include "spi.h"
-#include "sd.h"
-#include "gpt.h"
+#include "diskio.h"
 
 int main()
 {
     int ch;
+    uint8_t *buff = (uint8_t *)0x80000000UL;
     init_uart(50000000, 115200);
     hello();
+    disk_initialize (0);
+    disk_read(0, buff, 0, 1);
     do {
       ch = get_uart_byte();
       if (ch != -1) write_serial(ch);
     } while (ch != '\r');
     finish();
 
-#if 0    
-        
-    int res = gpt_find_boot_partition((uint8_t *)0x80000000UL, 2 * 16384);
-
-    if (res == 0)
-    {
-        // jump to the address
-        __asm__ volatile(
-            "li s0, 0x80000000;"
-            "la a1, _dtb;"
-            "jr s0");
-    }
-#endif
     while (1)
     {
         // do nothing

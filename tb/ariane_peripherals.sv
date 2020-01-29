@@ -45,10 +45,11 @@ module ariane_peripherals #(
     inout              mdio            ,
     output             mdc             ,
     // SPI
-    output logic       spi_clk_o       ,
-    output logic       spi_mosi        ,
-    input  logic       spi_miso        ,
-    output logic       spi_ss
+    output wire        sd_sclk,
+    input wire         sd_detect,
+    inout wire [3:0]   sd_dat,
+    inout wire         sd_cmd,
+    output wire        sd_reset
 );
 
     // ---------------
@@ -313,179 +314,59 @@ module ariane_peripherals #(
     // 3. SPI
     // ---------------
     if (InclSPI) begin : gen_spi
-        logic [31:0] s_axi_spi_awaddr;
-        logic [7:0]  s_axi_spi_awlen;
-        logic [2:0]  s_axi_spi_awsize;
-        logic [1:0]  s_axi_spi_awburst;
-        logic [0:0]  s_axi_spi_awlock;
-        logic [3:0]  s_axi_spi_awcache;
-        logic [2:0]  s_axi_spi_awprot;
-        logic [3:0]  s_axi_spi_awregion;
-        logic [3:0]  s_axi_spi_awqos;
-        logic        s_axi_spi_awvalid;
-        logic        s_axi_spi_awready;
-        logic [31:0] s_axi_spi_wdata;
-        logic [3:0]  s_axi_spi_wstrb;
-        logic        s_axi_spi_wlast;
-        logic        s_axi_spi_wvalid;
-        logic        s_axi_spi_wready;
-        logic [1:0]  s_axi_spi_bresp;
-        logic        s_axi_spi_bvalid;
-        logic        s_axi_spi_bready;
-        logic [31:0] s_axi_spi_araddr;
-        logic [7:0]  s_axi_spi_arlen;
-        logic [2:0]  s_axi_spi_arsize;
-        logic [1:0]  s_axi_spi_arburst;
-        logic [0:0]  s_axi_spi_arlock;
-        logic [3:0]  s_axi_spi_arcache;
-        logic [2:0]  s_axi_spi_arprot;
-        logic [3:0]  s_axi_spi_arregion;
-        logic [3:0]  s_axi_spi_arqos;
-        logic        s_axi_spi_arvalid;
-        logic        s_axi_spi_arready;
-        logic [31:0] s_axi_spi_rdata;
-        logic [1:0]  s_axi_spi_rresp;
-        logic        s_axi_spi_rlast;
-        logic        s_axi_spi_rvalid;
-        logic        s_axi_spi_rready;
 
-        xlnx_axi_clock_converter i_xlnx_axi_clock_converter_spi (
-            .s_axi_aclk     ( clk_i              ),
-            .s_axi_aresetn  ( rst_ni             ),
+logic                    spi_en, spi_we, spi_int_n, spi_pme_n, spi_mdio_i, spi_mdio_o, spi_mdio_oe;
+logic [AxiAddrWidth-1:0] spi_addr;
+logic [AxiDataWidth-1:0] spi_wrdata, spi_rdata;
+logic [AxiDataWidth/8-1:0] spi_be;
 
-            .s_axi_awid     ( spi.aw_id          ),
-            .s_axi_awaddr   ( spi.aw_addr[31:0]  ),
-            .s_axi_awlen    ( spi.aw_len         ),
-            .s_axi_awsize   ( spi.aw_size        ),
-            .s_axi_awburst  ( spi.aw_burst       ),
-            .s_axi_awlock   ( spi.aw_lock        ),
-            .s_axi_awcache  ( spi.aw_cache       ),
-            .s_axi_awprot   ( spi.aw_prot        ),
-            .s_axi_awregion ( spi.aw_region      ),
-            .s_axi_awqos    ( spi.aw_qos         ),
-            .s_axi_awvalid  ( spi.aw_valid       ),
-            .s_axi_awready  ( spi.aw_ready       ),
-            .s_axi_wdata    ( spi.w_data         ),
-            .s_axi_wstrb    ( spi.w_strb         ),
-            .s_axi_wlast    ( spi.w_last         ),
-            .s_axi_wvalid   ( spi.w_valid        ),
-            .s_axi_wready   ( spi.w_ready        ),
-            .s_axi_bid      ( spi.b_id           ),
-            .s_axi_bresp    ( spi.b_resp         ),
-            .s_axi_bvalid   ( spi.b_valid        ),
-            .s_axi_bready   ( spi.b_ready        ),
-            .s_axi_arid     ( spi.ar_id          ),
-            .s_axi_araddr   ( spi.ar_addr[31:0]  ),
-            .s_axi_arlen    ( spi.ar_len         ),
-            .s_axi_arsize   ( spi.ar_size        ),
-            .s_axi_arburst  ( spi.ar_burst       ),
-            .s_axi_arlock   ( spi.ar_lock        ),
-            .s_axi_arcache  ( spi.ar_cache       ),
-            .s_axi_arprot   ( spi.ar_prot        ),
-            .s_axi_arregion ( spi.ar_region      ),
-            .s_axi_arqos    ( spi.ar_qos         ),
-            .s_axi_arvalid  ( spi.ar_valid       ),
-            .s_axi_arready  ( spi.ar_ready       ),
-            .s_axi_rid      ( spi.r_id           ),
-            .s_axi_rdata    ( spi.r_data         ),
-            .s_axi_rresp    ( spi.r_resp         ),
-            .s_axi_rlast    ( spi.r_last         ),
-            .s_axi_rvalid   ( spi.r_valid        ),
-            .s_axi_rready   ( spi.r_ready        ),
-
-            .m_axi_awaddr   ( s_axi_spi_awaddr   ),
-            .m_axi_awlen    ( s_axi_spi_awlen    ),
-            .m_axi_awsize   ( s_axi_spi_awsize   ),
-            .m_axi_awburst  ( s_axi_spi_awburst  ),
-            .m_axi_awlock   ( s_axi_spi_awlock   ),
-            .m_axi_awcache  ( s_axi_spi_awcache  ),
-            .m_axi_awprot   ( s_axi_spi_awprot   ),
-            .m_axi_awregion ( s_axi_spi_awregion ),
-            .m_axi_awqos    ( s_axi_spi_awqos    ),
-            .m_axi_awvalid  ( s_axi_spi_awvalid  ),
-            .m_axi_awready  ( s_axi_spi_awready  ),
-            .m_axi_wdata    ( s_axi_spi_wdata    ),
-            .m_axi_wstrb    ( s_axi_spi_wstrb    ),
-            .m_axi_wlast    ( s_axi_spi_wlast    ),
-            .m_axi_wvalid   ( s_axi_spi_wvalid   ),
-            .m_axi_wready   ( s_axi_spi_wready   ),
-            .m_axi_bresp    ( s_axi_spi_bresp    ),
-            .m_axi_bvalid   ( s_axi_spi_bvalid   ),
-            .m_axi_bready   ( s_axi_spi_bready   ),
-            .m_axi_araddr   ( s_axi_spi_araddr   ),
-            .m_axi_arlen    ( s_axi_spi_arlen    ),
-            .m_axi_arsize   ( s_axi_spi_arsize   ),
-            .m_axi_arburst  ( s_axi_spi_arburst  ),
-            .m_axi_arlock   ( s_axi_spi_arlock   ),
-            .m_axi_arcache  ( s_axi_spi_arcache  ),
-            .m_axi_arprot   ( s_axi_spi_arprot   ),
-            .m_axi_arregion ( s_axi_spi_arregion ),
-            .m_axi_arqos    ( s_axi_spi_arqos    ),
-            .m_axi_arvalid  ( s_axi_spi_arvalid  ),
-            .m_axi_arready  ( s_axi_spi_arready  ),
-            .m_axi_rdata    ( s_axi_spi_rdata    ),
-            .m_axi_rresp    ( s_axi_spi_rresp    ),
-            .m_axi_rlast    ( s_axi_spi_rlast    ),
-            .m_axi_rvalid   ( s_axi_spi_rvalid   ),
-            .m_axi_rready   ( s_axi_spi_rready   )
+axi2mem #(
+    .AXI_ID_WIDTH   ( AxiIdWidth       ),
+    .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
+    .AXI_DATA_WIDTH ( AxiDataWidth     ),
+    .AXI_USER_WIDTH ( AxiUserWidth     )
+) i_axi2spi (
+    .clk_i  ( clk_i                   ),
+    .rst_ni ( rst_ni                  ),
+    .slave  ( spi                     ),
+    .req_o  ( spi_en                  ),
+    .we_o   ( spi_we                  ),
+    .addr_o ( spi_addr                ),
+    .be_o   ( spi_be                  ),
+    .data_o ( spi_wrdata              ),
+    .data_i ( spi_rdata               )
         );
 
-        xlnx_axi_quad_spi i_xlnx_axi_quad_spi (
-            .ext_spi_clk    ( clk_i                  ),
-            .s_axi4_aclk    ( clk_i                  ),
-            .s_axi4_aresetn ( rst_ni                 ),
-            .s_axi4_awaddr  ( s_axi_spi_awaddr[23:0] ),
-            .s_axi4_awlen   ( s_axi_spi_awlen        ),
-            .s_axi4_awsize  ( s_axi_spi_awsize       ),
-            .s_axi4_awburst ( s_axi_spi_awburst      ),
-            .s_axi4_awlock  ( s_axi_spi_awlock       ),
-            .s_axi4_awcache ( s_axi_spi_awcache      ),
-            .s_axi4_awprot  ( s_axi_spi_awprot       ),
-            .s_axi4_awvalid ( s_axi_spi_awvalid      ),
-            .s_axi4_awready ( s_axi_spi_awready      ),
-            .s_axi4_wdata   ( s_axi_spi_wdata        ),
-            .s_axi4_wstrb   ( s_axi_spi_wstrb        ),
-            .s_axi4_wlast   ( s_axi_spi_wlast        ),
-            .s_axi4_wvalid  ( s_axi_spi_wvalid       ),
-            .s_axi4_wready  ( s_axi_spi_wready       ),
-            .s_axi4_bresp   ( s_axi_spi_bresp        ),
-            .s_axi4_bvalid  ( s_axi_spi_bvalid       ),
-            .s_axi4_bready  ( s_axi_spi_bready       ),
-            .s_axi4_araddr  ( s_axi_spi_araddr[23:0] ),
-            .s_axi4_arlen   ( s_axi_spi_arlen        ),
-            .s_axi4_arsize  ( s_axi_spi_arsize       ),
-            .s_axi4_arburst ( s_axi_spi_arburst      ),
-            .s_axi4_arlock  ( s_axi_spi_arlock       ),
-            .s_axi4_arcache ( s_axi_spi_arcache      ),
-            .s_axi4_arprot  ( s_axi_spi_arprot       ),
-            .s_axi4_arvalid ( s_axi_spi_arvalid      ),
-            .s_axi4_arready ( s_axi_spi_arready      ),
-            .s_axi4_rdata   ( s_axi_spi_rdata        ),
-            .s_axi4_rresp   ( s_axi_spi_rresp        ),
-            .s_axi4_rlast   ( s_axi_spi_rlast        ),
-            .s_axi4_rvalid  ( s_axi_spi_rvalid       ),
-            .s_axi4_rready  ( s_axi_spi_rready       ),
-
-            .io0_i          ( '0                     ),
-            .io0_o          ( spi_mosi               ),
-            .io0_t          ( '0                     ),
-            .io1_i          ( spi_miso               ),
-            .io1_o          (                        ),
-            .io1_t          ( '0                     ),
-            .ss_i           ( '0                     ),
-            .ss_o           ( spi_ss                 ),
-            .ss_t           ( '0                     ),
-            .sck_o          ( spi_clk_o              ),
-            .sck_i          ( '0                     ),
-            .sck_t          (                        ),
-            .ip2intc_irpt   ( irq_sources[1]         )
-            // .ip2intc_irpt   ( irq_sources[1]         )
+sd_bus sd1
+  (
+   .spisd_en     ( spi_en                  ),
+   .spisd_we     ( spi_we                  ),
+   .spisd_addr   ( spi_addr                ),
+   .spisd_be     ( spi_be                  ),
+   .spisd_wrdata ( spi_wrdata              ),
+   .spisd_rddata ( spi_rdata               ),
+   .clk_200MHz   ( clk_i                   ), // Fake this to speed up simulation
+   .msoc_clk     ( clk_i                   ),
+   .rstn         ( rst_ni                  ),
+   .sd_sclk,
+   .sd_detect,
+   .sd_dat,
+   .sd_cmd,
+   .sd_reset,
+   .sd_irq       ( irq_sources[1]          )
         );
-        // assign irq_sources [1] = 1'b0;
+       always @(posedge clk_i)
+         if (spi_en)
+           begin
+              if (spi_we)
+                $display("%t: SPI write (addr=%X,data=%X)", $time, spi_addr, spi_wrdata);
+              else
+                $display("%t: SPI read (addr=%X,data=%X)", $time, spi_addr, spi_rdata);
+           end
     end else begin
-        assign spi_clk_o = 1'b0;
-        assign spi_mosi = 1'b0;
-        assign spi_ss = 1'b0;
+        assign sd_sclk = 1'b0;
+        assign sd_dat = 4'bzzzz;
+        assign sd_cmd = 1'bz;
 
         assign irq_sources [1] = 1'b0;
         assign spi.aw_ready = 1'b1;

@@ -61,6 +61,29 @@ module ariane_testharness #(
   logic        dmi_resp_ready;
   logic        dmi_resp_valid;
 
+  // SPI
+  wire         sd_sclk;
+  wire         sd_detect = 1'b0;
+  tri1 [3:0]   sd_dat;
+  tri1         sd_cmd;
+  wire         sd_reset;
+
+   wire [3:0]   sd_dat_to_host;
+   wire         sd_cmd_to_host;
+   wire         oeCmd, oeDat;
+   wand [3:0]   sd_dat = oeDat ? sd_dat_to_host : 4'b1111;
+   wand         sd_cmd = oeCmd ? sd_cmd_to_host : 4'b1;
+
+sd_verilator_model sdflash1 (
+             .sdClk(sd_sclk),
+             .cmd(sd_cmd),
+             .cmdOut(sd_cmd_to_host),
+             .dat(sd_dat),
+             .datOut(sd_dat_to_host),
+             .oeCmd(oeCmd),
+             .oeDat(oeDat)
+);
+
   dm::dmi_req_t  jtag_dmi_req;
   dm::dmi_req_t  dmi_req;
 
@@ -623,7 +646,11 @@ module ariane_testharness #(
 `else
     .InclUART     ( 1'b0                     ),
 `endif
+`ifdef SIM_SPI
+    .InclSPI      ( 1'b1                     ),
+`else
     .InclSPI      ( 1'b0                     ),
+`endif
     .InclEthernet ( 1'b0                     )
   ) i_ariane_peripherals (
     .clk_i     ( clk_i                        ),
@@ -647,10 +674,11 @@ module ariane_testharness #(
     .eth_mdc   ( ),
     .mdio      ( ),
     .mdc       ( ),
-    .spi_clk_o ( ),
-    .spi_mosi  ( ),
-    .spi_miso  ( ),
-    .spi_ss    ( )
+    .sd_sclk, // SD-Card
+    .sd_detect,
+    .sd_dat,
+    .sd_cmd,
+    .sd_reset
   );
 
 //  uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));

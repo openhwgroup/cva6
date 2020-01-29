@@ -6,9 +6,20 @@ inline void write_reg_u8(uintptr_t addr, uint8_t value)
     *loc_addr = value;
 }
 
-uint8_t read_reg_u8(uintptr_t addr)
+inline void write_reg_u32(uintptr_t addr, uint32_t value)
+{
+    volatile uint32_t *loc_addr = (volatile uint32_t *)addr;
+    *loc_addr = value;
+}
+
+inline uint8_t read_reg_u8(uintptr_t addr)
 {
     return *(volatile uint8_t *)addr;
+}
+
+inline uint32_t read_reg_u32(uintptr_t addr)
+{
+    return *(volatile uint32_t *)addr;
 }
 
 int is_transmit_empty()
@@ -98,29 +109,43 @@ int get_uart_byte(void)
 int hello(void)
 {
     int ch;
+    uint32_t ch0 = 'H';
+    uint32_t ch1 = 'e';
+    uint32_t ch2 = 'l';
+    uint32_t ch3 = 'l';
+    uint32_t ch4 = 'o';
+    uint32_t ch5 = ' ';
+    uint32_t ch6 = 'W';
+    uint32_t ch7 = 'o';
+    uint32_t ch8 = 'r';
+    uint32_t ch9 = 'l';
+    uint32_t chA = 'd';
+    uint32_t chB = '!';
+    uint32_t chC = '\r';
+    uint32_t chD = '\n';
     /* first of all dump into the IER to fill the icache, then fill the THR */
     for (int i = UART_INTERRUPT_ENABLE; i >= UART_THR; i -= 4)
       {
-      write_reg_u8(i, 'H');
-      write_reg_u8(i, 'e');
-      write_reg_u8(i, 'l');
-      write_reg_u8(i, 'l');
-      write_reg_u8(i, 'o');
-      write_reg_u8(i, ' ');
-      write_reg_u8(i, 'W');
-      write_reg_u8(i, 'o');
-      write_reg_u8(i, 'r');
-      write_reg_u8(i, 'l');
-      write_reg_u8(i, 'd');
-      write_reg_u8(i, '!');
-      write_reg_u8(i, '\r');
-      write_reg_u8(i, '\n');
+      write_reg_u32(i, ch0);
+      write_reg_u32(i, ch1);
+      write_reg_u32(i, ch2);
+      write_reg_u32(i, ch3);
+      write_reg_u32(i, ch4);
+      write_reg_u32(i, ch5);
+      write_reg_u32(i, ch6);
+      write_reg_u32(i, ch7);
+      write_reg_u32(i, ch8);
+      write_reg_u32(i, ch9);
+      write_reg_u32(i, chA);
+      write_reg_u32(i, chB);
+      write_reg_u32(i, chC);
+      write_reg_u32(i, chD);
       }
-    ch = read_reg_u8(UART_RBR);
+    ch = read_reg_u32(UART_RBR);
     return ch;
 }
 
 void finish(void)
 {
-    write_reg_u8(UART_SIM_FINISH, 0);
+    write_reg_u32(UART_SIM_FINISH, 0);
 }

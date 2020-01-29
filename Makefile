@@ -224,7 +224,7 @@ riscv-fp-tests            := $(shell xargs printf '\n%s' < $(riscv-fp-tests-list
 riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-list) | cut -b 1-)
 
 # Search here for include files (e.g.: non-standalone components)
-incdir := src/common_cells/include/ src/util
+incdir := src/common_cells/include/ src/util fpga/src/noc_sd_bridge/rtl
 # Compile and sim flags
 compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
@@ -303,11 +303,12 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 
 # -ntb_opts uvm-1.1 +UVM_NO_RELNOTES 
 simv: $(util) $(src) fpga/src/bootrom/bootrom.sv
-	$(VCS_HOME)/bin/vcs -full64 -sverilog -gui -timescale=1ns/1ps -diag timescale -debug_access+all -assert svaext \
+	$(VCS_HOME)/bin/vcs -full64 -sverilog -gui -timescale=1ns/1ps +lint=PCWM \
+	-diag timescale -debug_access+all -assert svaext -v2k_generate -l simv.log \
 	$(ariane_pkg) $(list_incdir) \
 	$(filter-out $(PWD)/tb/common/mock_uart.sv \
 		$(PWD)/src/util/sram.sv \
-		, $(util)) +define+WT_DCACHE+ \
+		, $(util)) +define+WT_DCACHE+ +define+SIM_SPI+ \
 	$(filter-out $(PWD)/fpga/src/axi_slice/src/axi_slice_wrap.sv \
 		$(PWD)/src/fpga-support/rtl/SyncSpRamBeNx64.sv \
 		$(PWD)/src/axi_node/src/axi_node_wrap_with_slices.sv \
@@ -324,10 +325,14 @@ simv: $(util) $(src) fpga/src/bootrom/bootrom.sv
 		$(PWD)/bootrom/bootrom.sv \
 		, $(src)) \
 	$(wildcard fpga/src/apb_uart/src/*.sv) \
+	$(wildcard fpga/src/noc_sd_bridge/rtl/*.sv) \
 	$(PWD)/src/common_cells/src/delta_counter.sv \
 	$(PWD)/src/common_cells/src/sram.sv \
 	$(PWD)/fpga/src/bootrom/bootrom.sv \
-	tb/ariane_tb.sv
+	tb/ariane_tb.sv \
+	-y $(XILINX_VIVADO)/data/verilog/src/unisims \
+	-y $(XILINX_VIVADO)/data/verilog/src/retarget \
+	$(XILINX_VIVADO)/data/verilog/src/glbl.v +libext+.v
 
 # single test runs on Questa can be started by calling make <testname>, e.g. make towers.riscv
 # the test names are defined in ci/riscv-asm-tests.list, and in ci/riscv-benchmarks.list
