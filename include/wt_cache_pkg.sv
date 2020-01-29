@@ -123,7 +123,7 @@ package wt_cache_pkg;
   // icache interface
   typedef struct packed {
     logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] way;         // way to replace
-    logic [63:0]                                     paddr;       // physical address
+    logic [riscv::PLEN-1:0]                          paddr;       // physical address
     logic                                            nc;          // noncacheable
     logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
   } icache_req_t;
@@ -140,7 +140,7 @@ package wt_cache_pkg;
     dcache_out_t                                     rtype;       // see definitions above
     logic [2:0]                                      size;        // transaction size: 000=Byte 001=2Byte; 010=4Byte; 011=8Byte; 111=Cache line (16/32Byte)
     logic [L1D_WAY_WIDTH-1:0]                        way;         // way to replace
-    logic [63:0]                                     paddr;       // physical address
+    logic [riscv::PLEN-1:0]                          paddr;       // physical address
     logic [63:0]                                     data;        // word width of processor (no block stores at the moment)
     logic                                            nc;          // noncacheable
     logic [CACHE_ID_WIDTH-1:0]                       tid;         // threadi id (used as transaction id in Ariane)
@@ -341,11 +341,11 @@ package wt_cache_pkg;
   // 010: word
   // 011: dword
   // 111: DCACHE line
-  function automatic logic [63:0] paddrSizeAlign(
-    input logic [63:0] paddr,
+  function automatic logic [riscv::PLEN-1:0] paddrSizeAlign(
+    input logic [riscv::PLEN-1:0] paddr,
     input logic [2:0]  size
   );
-    logic [63:0] out;
+    logic [riscv::PLEN-1:0] out;
     out = paddr;
     unique case (size)
       3'b001: out[0:0]                     = '0;

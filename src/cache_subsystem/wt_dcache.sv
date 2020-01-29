@@ -76,7 +76,7 @@ module wt_dcache #(
   logic [NumPorts-1:0]                          miss_nc;
   logic [NumPorts-1:0]                          miss_we;
   logic [NumPorts-1:0][63:0]                    miss_wdata;
-  logic [NumPorts-1:0][63:0]                    miss_paddr;
+  logic [NumPorts-1:0][riscv::PLEN-1:0]         miss_paddr;
   logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]    miss_vld_bits;
   logic [NumPorts-1:0][2:0]                     miss_size;
   logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]      miss_id;
@@ -97,7 +97,7 @@ module wt_dcache #(
   logic [DCACHE_SET_ASSOC-1:0]                  rd_hit_oh;
 
   // miss unit <-> wbuffer
-  logic [DCACHE_MAX_TX-1:0][63:0]               tx_paddr;
+  logic [DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]    tx_paddr;
   logic [DCACHE_MAX_TX-1:0]                     tx_vld;
 
   // wbuffer <-> memory

@@ -37,7 +37,7 @@ class instr_trace_item;
     logic              result_fpr [$];
     logic [63:0]       imm;
     logic [63:0]       result;
-    logic [63:0]       paddr;
+    logic [riscv::PLEN-1:0]       paddr;
     string             priv_lvl;
     ariane_pkg::bp_resolve_t       bp;
 
@@ -45,7 +45,7 @@ class instr_trace_item;
 
     // constructor creating a new instruction trace item, e.g.: a single instruction with all relevant information
     function new (time simtime, longint unsigned cycle, ariane_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] gp_reg_file [32],
-                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
+                logic [63:0] fp_reg_file [32], logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
         this.simtime  = simtime;
         this.cycle    = cycle;
         this.pc       = sbe.pc;
@@ -409,7 +409,7 @@ class instr_trace_item;
             instr_tracer_pkg::FSW,
             instr_tracer_pkg::FSD,
             instr_tracer_pkg::FSQ: begin
-                logic [63:0] vaddress = gp_reg_file[read_regs[1]] + this.imm;
+                logic [riscv::VLEN-1:0] vaddress = gp_reg_file[read_regs[1]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
 
@@ -431,7 +431,7 @@ class instr_trace_item;
             instr_tracer_pkg::FLW,
             instr_tracer_pkg::FLD,
             instr_tracer_pkg::FLQ: begin
-                logic [63:0] vaddress = gp_reg_file[read_regs[0]] + this.imm;
+                logic [riscv::VLEN-1:0] vaddress = gp_reg_file[read_regs[0]] + this.imm;
                 s = $sformatf("%s VA: %x PA: %x", s, vaddress, this.paddr);
             end
         endcase

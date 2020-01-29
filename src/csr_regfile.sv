@@ -40,14 +40,14 @@ module csr_regfile #(
     output logic  [63:0]          csr_rdata_o,                // Read data out
     input  logic                  dirty_fp_state_i,           // Mark the FP sate as dirty
     input  logic                  csr_write_fflags_i,         // Write fflags register e.g.: we are retiring a floating point instruction
-    input  logic  [63:0]          pc_i,                       // PC of instruction accessing the CSR
+    input  logic  [riscv::VLEN-1:0]  pc_i,                    // PC of instruction accessing the CSR
     output exception_t            csr_exception_o,            // attempts to access a CSR without appropriate privilege
                                                               // level or to write  a read-only register also
                                                               // raises illegal instruction exceptions.
     // Interrupts/Exceptions
-    output logic  [63:0]          epc_o,                      // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
+    output logic  [riscv::VLEN-1:0] epc_o,                    // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
     output logic                  eret_o,                     // Return from exception, set the PC of epc_o
-    output logic  [63:0]          trap_vector_base_o,         // Output base of exception vector, correct CSR is output (mtvec, stvec)
+    output logic  [riscv::VLEN-1:0] trap_vector_base_o,       // Output base of exception vector, correct CSR is output (mtvec, stvec)
     output riscv::priv_lvl_t      priv_lvl_o,                 // Current privilege level the CPU is in
     // FPU
     output riscv::xs_t            fs_o,                       // Floating point extension status
@@ -606,7 +606,7 @@ module csr_regfile #(
                 // set cause
                 scause_d       = ex_i.cause;
                 // set epc
-                sepc_d         = pc_i;
+                sepc_d         = {{64-riscv::VLEN{1'b0}},pc_i};
                 // set mtval or stval
                 stval_d        = (ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
@@ -625,7 +625,7 @@ module csr_regfile #(
                 mstatus_d.mpp  = priv_lvl_q;
                 mcause_d       = ex_i.cause;
                 // set epc
-                mepc_d         = pc_i;
+                mepc_d         = {{64-riscv::VLEN{1'b0}},pc_i};
                 // set mtval or stval
                 mtval_d        = (ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
@@ -673,14 +673,14 @@ module csr_regfile #(
                     default:;
                 endcase
                 // save PC of next this instruction e.g.: the next one to be executed
-                dpc_d = pc_i;
+                dpc_d = {{64-riscv::VLEN{1'b0}},pc_i};
                 dcsr_d.cause = dm::CauseBreakpoint;
             end
 
             // we've got a debug request
             if (ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
                 // save the PC
-                dpc_d = pc_i;
+                dpc_d = {{64-riscv::VLEN{1'b0}},pc_i};
                 // enter debug mode
                 debug_mode_d = 1'b1;
                 // jump to the base address
@@ -694,16 +694,16 @@ module csr_regfile #(
                 // valid CTRL flow change
                 if (commit_instr_i[0].fu == CTRL_FLOW) begin
                     // we saved the correct target address during execute
-                    dpc_d = commit_instr_i[0].bp.predict_address;
+                    dpc_d = {{64-riscv::VLEN{1'b0}}, commit_instr_i[0].bp.predict_address};
                 // exception valid
                 end else if (ex_i.valid) begin
-                    dpc_d = trap_vector_base_o;
+                    dpc_d = {{64-riscv::VLEN{1'b0}},trap_vector_base_o};
                 // return from environment
                 end else if (eret_o) begin
-                    dpc_d = epc_o;
+                    dpc_d = {{64-riscv::VLEN{1'b0}},epc_o};
                 // consecutive PC
                 end else begin
-                    dpc_d = commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4);
+                    dpc_d = {{64-riscv::VLEN{1'b0}}, commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4)};
                 end
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
@@ -887,15 +887,15 @@ module csr_regfile #(
 
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
-        trap_vector_base_o = {mtvec_q[63:2], 2'b0};
+        trap_vector_base_o = {mtvec_q[riscv::VLEN-1:2], 2'b0};
         // output user mode stvec
         if (trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
-            trap_vector_base_o = {stvec_q[63:2], 2'b0};
+            trap_vector_base_o = {stvec_q[riscv::VLEN-1:2], 2'b0};
         end
 
         // if we are in debug mode jump to a specific address
         if (debug_mode_q) begin
-            trap_vector_base_o = DmBaseAddress + dm::ExceptionAddress;
+            trap_vector_base_o = DmBaseAddress[riscv::VLEN-1:0] + dm::ExceptionAddress[riscv::VLEN-1:0];
         end
 
         // check if we are in vectored mode, if yes then do BASE + 4 * cause
@@ -905,14 +905,14 @@ module csr_regfile #(
             trap_vector_base_o[7:2] = ex_i.cause[5:0];
         end
 
-        epc_o = mepc_q;
+        epc_o = mepc_q[riscv::VLEN-1:0];
         // we are returning from supervisor mode, so take the sepc register
         if (sret) begin
-            epc_o = sepc_q;
+            epc_o = sepc_q[riscv::VLEN-1:0];
         end
         // we are returning from debug mode, to take the dpc register
         if (dret) begin
-            epc_o = dpc_q;
+            epc_o = dpc_q[riscv::VLEN-1:0];
         end
     end
 

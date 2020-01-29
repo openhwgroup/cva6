@@ -33,7 +33,7 @@ module store_buffer (
     input  logic         valid_i,         // this is a valid store
     input  logic         valid_without_flush_i, // just tell if the address is valid which we are current putting and do not take any further action
 
-    input  logic [63:0]  paddr_i,         // physical address of store which needs to be placed in the queue
+    input  logic [riscv::PLEN-1:0]  paddr_i,         // physical address of store which needs to be placed in the queue
     input  logic [63:0]  data_i,          // data which is placed in the queue
     input  logic [7:0]   be_i,            // byte enable in
     input  logic [1:0]   data_size_i,     // type of request we are making (e.g.: bytes to write)
@@ -47,11 +47,11 @@ module store_buffer (
     // 1. Speculative queue
     // 2. Commit queue which is non-speculative, e.g.: the store will definitely happen.
     struct packed {
-        logic [63:0] address;
-        logic [63:0] data;
-        logic [7:0]  be;
-        logic [1:0]  data_size;
-        logic        valid;     // this entry is valid, we need this for checking if the address offset matches
+        logic [riscv::PLEN-1:0] address;
+        logic [63:0]            data;
+        logic [7:0]             be;
+        logic [1:0]             data_size;
+        logic                   valid;     // this entry is valid, we need this for checking if the address offset matches
     } speculative_queue_n [DEPTH_SPEC-1:0], speculative_queue_q [DEPTH_SPEC-1:0],
       commit_queue_n [DEPTH_COMMIT-1:0],    commit_queue_q [DEPTH_COMMIT-1:0];
 

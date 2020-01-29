@@ -24,7 +24,7 @@ module ex_stage #(
     input  logic                                   debug_mode_i,
 
     input  fu_data_t                               fu_data_i,
-    input  logic [63:0]                            pc_i,                  // PC of current instruction
+    input  logic [riscv::VLEN-1:0]                 pc_i,                  // PC of current instruction
     input  logic                                   is_compressed_instr_i, // we need to know if this was a compressed instruction
                                                                           // in order to calculate the next PC on a mis-predict
     // Fixed latency unit(s)
@@ -122,7 +122,8 @@ module ex_stage #(
 
     // from ALU to branch unit
     logic alu_branch_res; // branch comparison result
-    logic [63:0] alu_result, branch_result, csr_result, mult_result;
+    logic [63:0] alu_result, csr_result, mult_result;
+    logic [riscv::VLEN-1:0] branch_result;
     logic csr_ready, mult_ready;
     logic [TRANS_ID_BITS-1:0] mult_trans_id;
     logic mult_valid;
@@ -179,7 +180,7 @@ module ex_stage #(
     // result MUX
     always_comb begin
         // Branch result as default case
-        flu_result_o = branch_result;
+        flu_result_o = {{64-riscv::VLEN{1'b0}}, branch_result};
         flu_trans_id_o = fu_data_i.trans_id;
         // ALU result
         if (alu_valid_i) begin

@@ -303,42 +303,42 @@ package ariane_pkg;
     // all the necessary data structures
     // bp_resolve_t
     typedef struct packed {
-        logic        valid;           // prediction with all its values is valid
-        logic [63:0] pc;              // PC of predict or mis-predict
-        logic [63:0] target_address;  // target address at which to jump, or not
-        logic        is_mispredict;   // set if this was a mis-predict
-        logic        is_taken;        // branch is taken
-        cf_t         cf_type;         // Type of control flow change
+        logic                   valid;           // prediction with all its values is valid
+        logic [riscv::VLEN-1:0] pc;              // PC of predict or mis-predict
+        logic [riscv::VLEN-1:0] target_address;  // target address at which to jump, or not
+        logic                   is_mispredict;   // set if this was a mis-predict
+        logic                   is_taken;        // branch is taken
+        cf_t                    cf_type;         // Type of control flow change
     } bp_resolve_t;
 
     // branchpredict scoreboard entry
     // this is the struct which we will inject into the pipeline to guide the various
     // units towards the correct branch decision and resolve
     typedef struct packed {
-        cf_t         cf;              // type of control flow prediction
-        logic [63:0] predict_address; // target address at which to jump, or not
+        cf_t                    cf;              // type of control flow prediction
+        logic [riscv::VLEN-1:0] predict_address; // target address at which to jump, or not
     } branchpredict_sbe_t;
 
     typedef struct packed {
-        logic        valid;
-        logic [63:0] pc;             // update at PC
-        logic [63:0] target_address;
+        logic                   valid;
+        logic [riscv::VLEN-1:0] pc;             // update at PC
+        logic [riscv::VLEN-1:0] target_address;
     } btb_update_t;
 
     typedef struct packed {
-        logic        valid;
-        logic [63:0] target_address;
+        logic                   valid;
+        logic [riscv::VLEN-1:0] target_address;
     } btb_prediction_t;
 
     typedef struct packed {
-        logic        valid;
-        logic [63:0] ra;
+        logic                   valid;
+        logic [riscv::VLEN-1:0] ra;
     } ras_t;
 
     typedef struct packed {
-        logic        valid;
-        logic [63:0] pc;          // update at PC
-        logic        taken;
+        logic                   valid;
+        logic [riscv::VLEN-1:0] pc;          // update at PC
+        logic                   taken;
     } bht_update_t;
 
     typedef struct packed {
@@ -408,22 +408,22 @@ package ariane_pkg;
     localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
     localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
     localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
-    localparam int unsigned ICACHE_TAG_WIDTH   = 56 - ICACHE_INDEX_WIDTH;
+    localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN - ICACHE_INDEX_WIDTH;
     // D$
     localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
     localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
-    localparam int unsigned DCACHE_TAG_WIDTH   = 56 - DCACHE_INDEX_WIDTH;
+    localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
 `else
     // align to openpiton for the time being (this should be more configurable in the future)
      // I$
     localparam int unsigned ICACHE_INDEX_WIDTH = 12;  // in bit
-    localparam int unsigned ICACHE_TAG_WIDTH   = 44;  // in bit
+    localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN-ICACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned ICACHE_LINE_WIDTH  = 128; // in bit
     localparam int unsigned ICACHE_SET_ASSOC   = 4;
     // D$
     localparam int unsigned DCACHE_INDEX_WIDTH = 12;  // in bit
-    localparam int unsigned DCACHE_TAG_WIDTH   = 44;  // in bit
+    localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN-ICACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
     localparam int unsigned DCACHE_SET_ASSOC   = 8;
 `endif
@@ -562,7 +562,7 @@ package ariane_pkg;
 
     typedef struct packed {
         logic                     valid;
-        logic [63:0]              vaddr;
+        logic [riscv::VLEN-1:0]     vaddr;
         logic [63:0]              data;
         logic [7:0]               be;
         fu_t                      fu;
@@ -575,17 +575,17 @@ package ariane_pkg;
     // ---------------
     // store the decompressed instruction
     typedef struct packed {
-        logic [63:0]           address;        // the address of the instructions from below
-        logic [31:0]           instruction;    // instruction word
-        branchpredict_sbe_t    branch_predict; // this field contains branch prediction information regarding the forward branch path
-        exception_t            ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
+        logic [riscv::VLEN-1:0] address;        // the address of the instructions from below
+        logic [31:0]            instruction;    // instruction word
+        branchpredict_sbe_t     branch_predict; // this field contains branch prediction information regarding the forward branch path
+        exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
     } fetch_entry_t;
 
     // ---------------
     // ID/EX/WB Stage
     // ---------------
     typedef struct packed {
-        logic [63:0]              pc;            // PC of instruction
+        logic [riscv::VLEN-1:0]   pc;            // PC of instruction
         logic [TRANS_ID_BITS-1:0] trans_id;      // this can potentially be simplified, we could index the scoreboard entry
                                                  // with the transaction id in any case make the width more generic
         fu_t                      fu;            // functional unit to use
@@ -649,13 +649,13 @@ package ariane_pkg;
     // I$ address translation requests
     typedef struct packed {
         logic                     fetch_valid;     // address translation valid
-        logic [63:0]              fetch_paddr;     // physical address in
+        logic [riscv::PLEN-1:0]   fetch_paddr;     // physical address in
         exception_t               fetch_exception; // exception occurred during fetch
     } icache_areq_i_t;
 
     typedef struct packed {
         logic                     fetch_req;       // address translation request
-        logic [63:0]              fetch_vaddr;     // virtual address out
+        logic [riscv::VLEN-1:0]   fetch_vaddr;     // virtual address out
     } icache_areq_o_t;
 
     // I$ data requests
@@ -663,14 +663,14 @@ package ariane_pkg;
         logic                     req;                    // we request a new word
         logic                     kill_s1;                // kill the current request
         logic                     kill_s2;                // kill the last request
-        logic [63:0]              vaddr;                  // 1st cycle: 12 bit index is taken for lookup
+        logic [riscv::VLEN-1:0]   vaddr;                  // 1st cycle: 12 bit index is taken for lookup
     } icache_dreq_i_t;
 
     typedef struct packed {
         logic                     ready;                  // icache is ready
         logic                     valid;                  // signals a valid read
         logic [FETCH_WIDTH-1:0]   data;                   // 2+ cycle out: tag
-        logic [63:0]              vaddr;                  // virtual address out
+        logic [riscv::VLEN-1:0]   vaddr;                  // virtual address out
         exception_t               ex;                     // we've encountered an exception
     } icache_dreq_o_t;
 
@@ -721,16 +721,16 @@ package ariane_pkg;
     // ----------------------
     // Immediate functions
     // ----------------------
-    function automatic logic [63:0] uj_imm (logic [31:0] instruction_i);
-        return { {44 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
+    function automatic logic [riscv::VLEN-1:0] uj_imm (logic [31:0] instruction_i);
+        return { {44+riscv::VLEN-64 {instruction_i[31]}}, instruction_i[19:12], instruction_i[20], instruction_i[30:21], 1'b0 };
     endfunction
 
-    function automatic logic [63:0] i_imm (logic [31:0] instruction_i);
-        return { {52 {instruction_i[31]}}, instruction_i[31:20] };
+    function automatic logic [riscv::VLEN-1:0] i_imm (logic [31:0] instruction_i);
+        return { {52+riscv::VLEN-64 {instruction_i[31]}}, instruction_i[31:20] };
     endfunction
 
-    function automatic logic [63:0] sb_imm (logic [31:0] instruction_i);
-        return { {51 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
+    function automatic logic [riscv::VLEN-1:0] sb_imm (logic [31:0] instruction_i);
+        return { {51+riscv::VLEN-64 {instruction_i[31]}}, instruction_i[31], instruction_i[7], instruction_i[30:25], instruction_i[11:8], 1'b0 };
     endfunction
 
     // ----------------------

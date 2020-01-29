@@ -15,12 +15,12 @@
 `ifndef VERILATOR
 class ex_trace_item;
     // contains a human readable form of the cause value
-    string       cause_s;
-    logic [63:0] cause;
-    logic [63:0] tval;
-    logic [63:0] pc;
+    string                  cause_s;
+    logic [63:0]            cause;
+    logic [63:0]            tval;
+    logic [riscv::VLEN-1:0] pc;
 
-    function new (logic [63:0] pc, logic [63:0] cause, logic [63:0] tval);
+    function new (logic [riscv::VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
 
         this.cause = cause;
 
