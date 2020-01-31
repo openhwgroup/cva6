@@ -1,6 +1,9 @@
 ################################################################################
 # Mini Git cheat-sheet.  Written as a set of use-cases.  "$" is the prompt.
 #
+# PLEASE READ CAREFULLY the "CONTRIBUTING.md" file in this directory.
+# You MUST follow the specified flow to contribute to this repository.
+#
 # Useful Conventions:
 #     1. Place all your working copies in easy-to-find directories.  A suggested
 #        nominclature is:
