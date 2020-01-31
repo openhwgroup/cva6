@@ -36,15 +36,32 @@ sources:
   - defines:
       WT_DCACHE: 1
     files:
+        - src/register_interface/src/reg_intf_pkg.sv            # bendergenerated TODO: look if interface is defined in Bender in dependency !!!! <---manually adding makes compile_bender.tcl compilable!
+        # dependency rv_plic, not benderised
+        # Level 0
+        - deps/rv_plic/rtl/top_pkg.sv
+        # Level 1
+        - deps/rv_plic/rtl/plic_regmap.sv             # Was in Ariane: TODO: bederise : src/rv_plic/rtl, depends on reg_intf_pkg
+        - deps/rv_plic/rtl/prim_subreg.sv
+        - deps/rv_plic/rtl/prim_subreg_ext.sv
+        - deps/rv_plic/rtl/rv_plic_gateway.sv         # Was in Ariane: TODO: bederise : src/rv_plic/rtl
+        - deps/rv_plic/rtl/rv_plic_reg_pkg.sv
+        - deps/rv_plic/rtl/rv_plic_target.sv          # Was in Ariane: TODO: bederise : src/rv_plic/rtl
+        - deps/rv_plic/rtl/tlul_pkg.sv
+        # Level 2
+        - deps/rv_plic/rtl/plic_top.sv                # Was in Ariane: TODO: bederise : src/rv_plic/rtl
+        - deps/rv_plic/rtl/rv_plic_reg_top.sv
+        # Level 3
+        - deps/rv_plic/rtl/rv_plic.sv
+        # Ariane itself
         # Level 0
         - include/riscv_pkg.sv
-        - deps/riscv-dbg/src/dm_pkg.sv # TODO: check bendierisation
+        #- deps/riscv-dbg/src/dm_pkg.sv # TODO: bendergenerated
         - src/ariane_regfile_ff.sv
           # - src/axi/src/axi_pkg.sv                                # bendergenerated
           # - src/fpu/src/fpnew_pkg.sv                              # bendergenerated
           # - src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv # bendergenerated
           # - src/register_interface/src/reg_intf.sv                # bendergenerated
-          # - src/register_interface/src/reg_intf_pkg.sv            # bendergenerated TODO: look if interface is defined in Bender in dependency !!!! <---manually adding makes compile_bender.tcl compilable!
         # Level 1
           # - include/axi_intf.sv                                   # bendergenerated
         - include/ariane_pkg.sv                                     # depends on include/riscv_pkg.sv
@@ -122,19 +139,15 @@ sources:
         # Level 9 3/4 TODOS
         #- deps/apb_timer/timer.sv                     # TODO: adapt dependency with version:
         #- deps/apb_timer/apb_timer.sv                 # TODO: adapt dependency with version:
-        - deps/rv_plic/rtl/rv_plic_target.sv          # TODO: bederise : src/rv_plic/rtl
-        - deps/rv_plic/rtl/rv_plic_gateway.sv         # TODO: bederise : src/rv_plic/rtl
-        - deps/rv_plic/rtl/plic_regmap.sv             # TODO: bederise : src/rv_plic/rtl
-        - deps/rv_plic/rtl/plic_top.sv                # TODO: bederise : src/rv_plic/rtl
-        - deps/riscv-dbg/src/dmi_cdc.sv               # TODO: bederise : src/riscv-dbg
-        - deps/riscv-dbg/src/dmi_jtag.sv              # TODO: bederise : src/riscv-dbg
-        - deps/riscv-dbg/src/dmi_jtag_tap.sv          # TODO: bederise : src/riscv-dbg
-        - deps/riscv-dbg/src/dm_csrs.sv               # TODO: bederise : src/riscv-dbg
-        - deps/riscv-dbg/src/dm_mem.sv                # TODO: bederise : src/riscv-dbg
-        - deps/riscv-dbg/src/dm_sba.sv                # TODO: bederise : src/riscv-dbg
-        - deps/riscv-dbg/src/dm_top.sv                # TODO: bederise : src/riscv-dbg
-        - deps/riscv-dbg/debug_rom/debug_rom.sv       # TODO: bederise : src/riscv-dbg
-        # - deps/fpga-support/rtl/SyncSpRamBeNx64.sv    # TODO: see release-0.4
+        # - deps/riscv-dbg/src/dmi_cdc.sv               # TODO: bederise : src/riscv-dbg, updated to v0.3
+        # - deps/riscv-dbg/src/dmi_jtag.sv              # TODO: bederise : src/riscv-dbg, updated to v0.3
+        # - deps/riscv-dbg/src/dmi_jtag_tap.sv          # TODO: bederise : src/riscv-dbg, updated to v0.3
+        # - deps/riscv-dbg/src/dm_csrs.sv               # TODO: bederise : src/riscv-dbg, updated to v0.3
+        # - deps/riscv-dbg/src/dm_mem.sv                # TODO: bederise : src/riscv-dbg, updated to v0.3
+        # - deps/riscv-dbg/src/dm_sba.sv                # TODO: bederise : src/riscv-dbg, updated to v0.3
+        # - deps/riscv-dbg/src/dm_top.sv                # TODO: bederise : src/riscv-dbg, updated to v0.3
+        # - deps/riscv-dbg/debug_rom/debug_rom.sv       # TODO: bederise : src/riscv-dbg, updated to v0.3
+        - deps/fpga-support/rtl/SyncSpRamBeNx64.sv    # TODO: see release-0.4!!!!!!!!!!!!!!!!!!!!!!
         - target: test
           files:
           # Level 0
@@ -148,6 +161,8 @@ sources:
           - tb/ariane_peripherals.sv               # has xilinx ip in it
           # Level 2
           - tb/ariane_testharness.sv
+          # Level 3
+          - tb/ariane_tb.sv
         - target: not(synthesis)
           files:
             - include/instr_tracer_pkg.sv        # not in original Bender.yml
@@ -158,40 +173,50 @@ sources:
             # - src/util/instruction_tracer_defines.svh  # original: TODO: ask zarubaf src/util/instruction_tracer_defines.svh not in folder!!!
         - target: all(fpga, xilinx)
           files:
-          # Level 0
-          - fpga/src/bootrom/bootrom.sv
-          - fpga/src/fan_ctrl.sv
-          # Level 1
-          - fpga/src/ariane_peripherals_xilinx.sv
-          - fpga/src/ariane-ethernet/ssio_ddr_in.sv            # TODO: benderise
-          - fpga/src/ariane-ethernet/rgmii_soc.sv              # TODO: benderise
-          - fpga/src/ariane-ethernet/axis_gmii_rx.sv           # TODO: benderise
-          - fpga/src/ariane-ethernet/oddr.sv                   # TODO: benderise
-          - fpga/src/ariane-ethernet/axis_gmii_tx.sv           # TODO: benderise
-          - fpga/src/ariane-ethernet/dualmem_widen8.sv         # TODO: benderise
-          - fpga/src/ariane-ethernet/rgmii_phy_if.sv           # TODO: benderise
-          - fpga/src/ariane-ethernet/dualmem_widen.sv          # TODO: benderise
-          - fpga/src/ariane-ethernet/rgmii_lfsr.sv             # TODO: benderise
-          - fpga/src/ariane-ethernet/rgmii_core.sv             # TODO: benderise
-          - fpga/src/ariane-ethernet/eth_mac_1g.sv             # TODO: benderise
-          - fpga/src/ariane-ethernet/eth_mac_1g_rgmii.sv       # TODO: benderise
-          - fpga/src/ariane-ethernet/eth_mac_1g_rgmii_fifo.sv  # TODO: benderise
-          - fpga/src/ariane-ethernet/iddr.sv                   # TODO: benderise
-          - fpga/src/ariane-ethernet/framing_top.sv            # TODO: benderise
-          # apb_urat - fpga/src/apb_uart/src/apb_uart.vhd             bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/uart_transmitter.vhd     bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/uart_interrupt.vhd       bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/slib_mv_filter.vhd       bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/slib_input_filter.vhd    bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/slib_counter.vhd         bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/uart_receiver.vhd        bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/slib_input_sync.vhd      bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/slib_edge_detect.vhd     bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/slib_clock_div.vhd       bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/slib_fifo.vhd            bendergenerated
-          # apb_urat - fpga/src/apb_uart/src/uart_baudgen.vhd         bendergenerated
-          # Level 2
-          - fpga/src/ariane_xilinx.sv
+            # Dependency ariane-ethernet: not benderised
+            #Level 0
+            - deps/ariane-ethernet/dualmem_widen8.sv         # TODO: benderise
+            - deps/ariane-ethernet/dualmem_widen.sv          # TODO: benderise
+            - deps/ariane-ethernet/iddr.sv                   # TODO: benderise, depends on XILINX primiteves and Altera primitives
+            - deps/ariane-ethernet/oddr.sv                   # TODO: benderise, depends on XILINX primiteves and Altera primitives
+            - deps/ariane-ethernet/rgmii_lfsr.sv             # TODO: benderise
+            # Level 1
+            - deps/ariane-ethernet/axis_gmii_rx.sv           # TODO: benderise
+            - deps/ariane-ethernet/axis_gmii_tx.sv           # TODO: benderise
+            - deps/ariane-ethernet/ssio_ddr_in.sv            # TODO: benderise, depends on iddr
+            # Level 2
+            - deps/ariane-ethernet/eth_mac_1g.sv             # TODO: benderise
+            - deps/ariane-ethernet/rgmii_phy_if.sv           # TODO: benderise
+            # Level 3
+            - deps/ariane-ethernet/eth_mac_1g_rgmii.sv       # TODO: benderise
+            # Level 4
+            - deps/ariane-ethernet/eth_mac_1g_rgmii_fifo.sv  # TODO: benderise
+            # Level 5
+            - deps/ariane-ethernet/rgmii_core.sv             # TODO: benderise
+            # Level 6
+            - deps/ariane-ethernet/rgmii_soc.sv              # TODO: benderise
+            # Level 7
+            - deps/ariane-ethernet/framing_top.sv            # TODO: benderise
+            # FPGA specific
+            # Level 0
+            - fpga/src/bootrom/bootrom.sv
+            - fpga/src/fan_ctrl.sv
+            # Level 1
+            - fpga/src/ariane_peripherals_xilinx.sv
+            # apb_urat - fpga/src/apb_uart/src/apb_uart.vhd             bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/uart_transmitter.vhd     bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/uart_interrupt.vhd       bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/slib_mv_filter.vhd       bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/slib_input_filter.vhd    bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/slib_counter.vhd         bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/uart_receiver.vhd        bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/slib_input_sync.vhd      bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/slib_edge_detect.vhd     bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/slib_clock_div.vhd       bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/slib_fifo.vhd            bendergenerated
+            # apb_urat - fpga/src/apb_uart/src/uart_baudgen.vhd         bendergenerated
+            # Level 2
+            - fpga/src/ariane_xilinx.sv
 
     # Packages managed from bender
     # Stand-alone source files
