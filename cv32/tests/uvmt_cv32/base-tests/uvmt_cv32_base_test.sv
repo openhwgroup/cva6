@@ -17,13 +17,13 @@ class uvmt_cv32_base_test_c extends uvm_test;
    rand uvmt_cv32_test_cfg_c  test_cfg ;
    rand uvme_cv32_cfg_c       env_cfg  ;
    uvme_cv32_cntxt_c          env_cntxt;
-   uvme_cv32_ral_c            ral      ;
-   uvml_logs_rs_text_c           rs       ;
-   uvml_logs_reg_logger_cbs_c    reg_cbs  ;
+   //uvml_logs_rs_text_c        rs       ;
+   //uvme_cv32_ral_c            ral      ;
+   //uvml_logs_reg_logger_cbs_c    reg_cbs  ;
    
    // Components
    uvme_cv32_env_c   env       ;
-   uvme_cv32_vsqr_c  vsequencer;
+   //uvme_cv32_vsqr_c  vsequencer;
    
    // Handle to clock generation interface
    virtual uvmt_cv32_clk_gen_if  clk_gen_vif;
@@ -33,7 +33,7 @@ class uvmt_cv32_base_test_c extends uvm_test;
    rand int unsigned  watchdog_timeout; // Specified in nanoseconds (ns)
    
    // Default sequences
-   rand uvme_cv32_reset_vseq_c  reset_vseq;
+   //rand uvme_cv32_reset_vseq_c  reset_vseq;
    
    
    `uvm_component_utils_begin(uvmt_cv32_base_test_c)
@@ -51,11 +51,11 @@ class uvmt_cv32_base_test_c extends uvm_test;
       soft watchdog_timeout == 10_000_000; // 10 ms // TODO Set default Watchdog timeout period for uvmt_cv32_base_test_c
    }
    
-   constraint env_cfg_cons {
-      env_cfg.enabled         == 1;
-      env_cfg.is_active       == UVM_ACTIVE;
-      env_cfg.trn_log_enabled == 1;
-   }
+   //constraint env_cfg_cons {
+   //   env_cfg.enabled         == 1;
+   //   env_cfg.is_active       == UVM_ACTIVE;
+   //   env_cfg.trn_log_enabled == 1;
+   //}
    
    
    // Additional, temporary constraints to get around known design bugs/constraints
@@ -182,9 +182,9 @@ function uvmt_cv32_base_test_c::new(string name="uvmt_cv32_base_test", uvm_compo
    
    super.new(name, parent);
    
-   rs = new("rs");
-   uvm_report_server::set_server(rs);
-   reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
+   //rs = new("rs");
+   //uvm_report_server::set_server(rs);
+   //reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
    
 endfunction : new
 
@@ -193,15 +193,15 @@ function void uvmt_cv32_base_test_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
    
-   retrieve_clk_gen_vif();
-   create_cfg          ();
-   randomize_test      ();
-   cfg_hrtbt_monitor   ();
-   assign_cfg          ();
-   create_cntxt        ();
-   assign_cntxt        ();
-   create_env          ();
-   create_components   ();
+   //retrieve_clk_gen_vif();
+   //create_cfg          ();
+   //randomize_test      ();
+   //cfg_hrtbt_monitor   ();
+   //assign_cfg          ();
+   //create_cntxt        ();
+   //assign_cntxt        ();
+   //create_env          ();
+   //create_components   ();
    
 endfunction : build_phase
 
@@ -210,8 +210,8 @@ function void uvmt_cv32_base_test_c::connect_phase(uvm_phase phase);
    
    super.connect_phase(phase);
    
-   vsequencer = env.vsequencer;
-   uvm_reg_cb::add(null, reg_cbs);
+   //vsequencer = env.vsequencer;
+   //uvm_reg_cb::add(null, reg_cbs);
    
 endfunction : connect_phase
 
@@ -221,7 +221,7 @@ task uvmt_cv32_base_test_c::run_phase(uvm_phase phase);
    super.run_phase(phase);
    
    start_clk();
-   watchdog_timer();
+   //watchdog_timer();
    
 endtask : run_phase
 
@@ -230,8 +230,8 @@ task uvmt_cv32_base_test_c::reset_phase(uvm_phase phase);
    
    super.reset_phase(phase);
    
-   `uvm_info("TEST", $sformatf("Starting reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
-   reset_vseq.start(vsequencer);
+   //`uvm_info("TEST", $sformatf("Starting reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
+   //reset_vseq.start(vsequencer);
    `uvm_info("TEST", "Finished reset virtual sequence", UVM_NONE)
    
 endtask : reset_phase
@@ -243,8 +243,8 @@ task uvmt_cv32_base_test_c::configure_phase(uvm_phase phase);
    
    super.configure_phase(phase);
    
-   `uvm_info("TEST", $sformatf("Starting to update DUT with RAL contents:\n%s", ral.sprint()), UVM_NONE)
-   ral.update(status);
+   //`uvm_info("TEST", $sformatf("Starting to update DUT with RAL contents:\n%s", ral.sprint()), UVM_NONE)
+   //ral.update(status);
    `uvm_info("TEST", "Finished updating DUT with RAL contents", UVM_NONE)
    
 endtask : configure_phase
@@ -287,9 +287,10 @@ endfunction : retrieve_clk_gen_vif
 
 function void uvmt_cv32_base_test_c::create_cfg();
    
-   test_cfg = uvmt_cv32_test_cfg_c::type_id::create("test_cfg");
+   //test_cfg = uvmt_cv32_test_cfg_c::type_id::create("test_cfg");
+   test_cfg = new("test_cfg"); // Datum TODO: why doesn't type_id::create() work?
    env_cfg  = uvme_cv32_cfg_c     ::type_id::create("env_cfg" );
-   ral      = env_cfg.ral;
+   //ral      = env_cfg.ral;
    
 endfunction : create_cfg
 
@@ -307,8 +308,8 @@ endfunction : randomize_test
 
 function void uvmt_cv32_base_test_c::cfg_hrtbt_monitor();
    
-   `uvml_hrtbt_set_cfg(startup_timeout , 10_000)
-   `uvml_hrtbt_set_cfg(heartbeat_period, heartbeat_period)
+   //`uvml_hrtbt_set_cfg(startup_timeout , 10_000)
+   //`uvml_hrtbt_set_cfg(heartbeat_period, heartbeat_period)
    
 endfunction : cfg_hrtbt_monitor
 
@@ -343,7 +344,7 @@ endfunction : create_env
 
 function void uvmt_cv32_base_test_c::create_components();
    
-   reg_cbs = uvml_logs_reg_logger_cbs_c::type_id::create("reg_cbs");
+   //reg_cbs = uvml_logs_reg_logger_cbs_c::type_id::create("reg_cbs");
    
 endfunction : create_components
 
@@ -360,10 +361,10 @@ endfunction : print_banner
 
 task uvmt_cv32_base_test_c::start_clk();
    
-   clk_gen_vif.set_clk_period(
-      env_cfg.reset_clk_period,
-      env_cfg.debug_clk_period
-   );
+   //clk_gen_vif.set_clk_period(
+   //   env_cfg.reset_clk_period,
+   //   env_cfg.debug_clk_period
+   //);
    
    clk_gen_vif.start();
    
@@ -375,7 +376,8 @@ task uvmt_cv32_base_test_c::watchdog_timer();
    fork
       begin
          #(watchdog_timeout * 1ns);
-         `uvm_fatal("TIMEOUT", $sformatf("Global timeout after %0dns. Heartbeat list:\n%s", watchdog_timeout, uvml_default_hrtbt.print_comp_names()))
+         //`uvm_fatal("TIMEOUT", $sformatf("Global timeout after %0dns. Heartbeat list:\n%s", watchdog_timeout, uvml_default_hrtbt.print_comp_names()))
+         `uvm_fatal("TIMEOUT", $sformatf("Global timeout after %0dns.\n", watchdog_timeout))
       end
    join_none
    

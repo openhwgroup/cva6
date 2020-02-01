@@ -37,11 +37,11 @@ class uvme_cv32_cfg_c extends uvm_object;
    //       Ex: rand uvme_${sub_env_name}_cfg_c  ${sub_env_name}_cfg;
    
    // Agent cfg handles
-   rand uvma_reset_cfg_c  reset_cfg;
-   rand uvma_debug_cfg_c  debug_cfg;
+   //rand uvma_reset_cfg_c  reset_cfg;
+   //rand uvma_debug_cfg_c  debug_cfg;
    
    // Objects
-   rand uvme_cv32_ral_c  ral;
+   //rand uvme_cv32_ral_c  ral;
    // TODO Add scoreboard configuration handles
    //      Ex: rand uvml_sb_cfg_c  sb_egress_cfg;
    //          rand uvml_sb_cfg_c  sb_ingress_cfg;
@@ -54,15 +54,15 @@ class uvme_cv32_cfg_c extends uvm_object;
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
       `uvm_field_int (                         reset_clk_period            , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                         debug_clk_period, UVM_DEFAULT + UVM_DEC)
+      `uvm_field_int (                         debug_clk_period            , UVM_DEFAULT + UVM_DEC)
       
       // TODO: Add sub-environments configuration field macros
       //       Ex: `uvm_field_object(${sub_env_name}_cfg, UVM_DEFAULT)
       
-      `uvm_field_object(reset_cfg, UVM_DEFAULT)
-      `uvm_field_object(debug_cfg, UVM_DEFAULT)
+      //`uvm_field_object(reset_cfg, UVM_DEFAULT)
+      //`uvm_field_object(debug_cfg, UVM_DEFAULT)
       
-      `uvm_field_object(ral, UVM_DEFAULT)
+      //`uvm_field_object(ral, UVM_DEFAULT)
       // TODO Add scoreboard cfg field macros
       //      Ex: `uvm_field_object(sb_egress_cfg , UVM_DEFAULT)
       //          `uvm_field_object(sb_ingress_cfg, UVM_DEFAULT)
@@ -75,26 +75,26 @@ class uvme_cv32_cfg_c extends uvm_object;
       soft scoreboarding_enabled        == 1;
       soft cov_model_enabled            == 0;
       soft trn_log_enabled              == 1;
-      soft reset_clk_period             == uvme_cv32_reset_default_clk_period;
-      soft debug_clk_period == uvme_cv32_debug_default_clk_period;
+      soft reset_clk_period             == uvme_cv32_reset_default_clk_period; // see uvme_cv32_constants.sv
+      soft debug_clk_period             == uvme_cv32_debug_default_clk_period;
    }
    
-   constraint agent_cfg_cons {
-      if (enabled) {
-         reset_cfg.enabled == 1;
-         debug_cfg.enabled == 1;
-      }
-      
-      if (is_active == UVM_ACTIVE) {
-         reset_cfg.is_active == UVM_ACTIVE;
-         debug_cfg.is_active == UVM_ACTIVE;
-      }
-      
-      if (trn_log_enabled) {
-         reset_cfg.trn_log_enabled == 1;
-         debug_cfg.trn_log_enabled == 1;
-      }
-   }
+   //constraint agent_cfg_cons {
+   //   if (enabled) {
+   //      reset_cfg.enabled == 1;
+   //      debug_cfg.enabled == 1;
+   //   }
+   //   
+   //   if (is_active == UVM_ACTIVE) {
+   //      reset_cfg.is_active == UVM_ACTIVE;
+   //      debug_cfg.is_active == UVM_ACTIVE;
+   //   }
+   //   
+   //   if (trn_log_enabled) {
+   //      reset_cfg.trn_log_enabled == 1;
+   //      debug_cfg.trn_log_enabled == 1;
+   //   }
+   //}
    
    
    /**
@@ -115,12 +115,12 @@ function uvme_cv32_cfg_c::new(string name="uvme_cv32_cfg");
    // TODO Create environment cfg objects
    //      Ex: ${sub_env_name}_cfg  = uvme_${sub_env_name}_cfg_c::type_id::create("${sub_env_name}_cfg");
    
-   debug_cfg = uvma_debug_cfg_c::type_id::create("debug_cfg");
-   reset_cfg = uvma_reset_cfg_c::type_id::create("reset_cfg");
+   //debug_cfg = uvma_debug_cfg_c::type_id::create("debug_cfg");
+   //reset_cfg = uvma_reset_cfg_c::type_id::create("reset_cfg");
    
-   ral = uvme_cv32_ral_c::type_id::create("ral");
-   ral.build();
-   ral.lock_model();
+   //ral = uvme_cv32_ral_c::type_id::create("ral");
+   //ral.build();
+   //ral.lock_model();
    
    // TODO Create scoreboard cfg objects
    //      Ex: sb_egress_cfg  = uvml_sb_cfg_c::type_id::create("sb_egress_cfg" );
