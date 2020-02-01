@@ -70,6 +70,7 @@ interface uvmt_cv32_clk_gen_if (output logic core_clock, output logic core_reset
     */
    function void start();
       start_clk = 1;
+      $display("%m: uvmt_cv32_clk_gen_if.start() called");
    endfunction : start
    
 endinterface : uvmt_cv32_clk_gen_if

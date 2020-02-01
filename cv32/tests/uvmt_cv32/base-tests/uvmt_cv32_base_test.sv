@@ -193,15 +193,15 @@ function void uvmt_cv32_base_test_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
    
-   //retrieve_clk_gen_vif();
-   //create_cfg          ();
-   //randomize_test      ();
+   retrieve_clk_gen_vif();
+   create_cfg          ();
+   randomize_test      ();
    //cfg_hrtbt_monitor   ();
-   //assign_cfg          ();
-   //create_cntxt        ();
-   //assign_cntxt        ();
-   //create_env          ();
-   //create_components   ();
+   assign_cfg          ();
+   create_cntxt        ();
+   assign_cntxt        ();
+   create_env          ();
+   create_components   ();
    
 endfunction : build_phase
 
@@ -221,7 +221,12 @@ task uvmt_cv32_base_test_c::run_phase(uvm_phase phase);
    super.run_phase(phase);
    
    start_clk();
-   //watchdog_timer();
+   watchdog_timer();
+   phase.raise_objection(this);
+   `uvm_info("TEST", "Started RUN", UVM_NONE)
+   repeat (1000) @(posedge clk_gen_vif.core_clock);
+   `uvm_info("TEST", "Finished RUN", UVM_NONE)
+   phase.drop_objection(this);
    
 endtask : run_phase
 
@@ -232,6 +237,13 @@ task uvmt_cv32_base_test_c::reset_phase(uvm_phase phase);
    
    //`uvm_info("TEST", $sformatf("Starting reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
    //reset_vseq.start(vsequencer);
+   
+   phase.raise_objection(this);
+   @(posedge clk_gen_vif.core_clock);
+   @(posedge clk_gen_vif.core_reset_n);
+   repeat (2) @(posedge clk_gen_vif.core_clock);
+   phase.drop_objection(this);
+
    `uvm_info("TEST", "Finished reset virtual sequence", UVM_NONE)
    
 endtask : reset_phase

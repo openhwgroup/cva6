@@ -90,8 +90,11 @@ dsim-comp: mk_results $(FPNEW_PKG)
 		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
 		+incdir+$(RTLSRC_INCDIR) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
-		-genimage $(DSIM_IMAGE)
+		+UVM_TESTNAME=uvmt_cv32_base_test_c
+#		-genimage $(DSIM_IMAGE)
+
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean clean_all
@@ -100,6 +103,7 @@ dsim-clean:
 	rm -f dsim.log
 	rm -f dsim-*.log
 	rm -f metrics_history.db
+	rm -f metrics.db
 	rm -f metrics.xml
 	rm -f trace_core_00_0.log
 	rm -rf dsim_work

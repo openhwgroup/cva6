@@ -110,9 +110,9 @@ module uvmt_cv32_tb;
       // Use the Virtual Peripheral's status outputs to update report server status.
       // TODO: handle exit_value properly
       if (vp_status_if.tests_failed)  `uvm_error("WRAPPER FLAGS", "DUT WRAPPER virtual peripheral flagged test failure.")
-      if (!vp_status_if.tests_passed) `uvm_error("WRAPPER FLAGS", "DUT WRAPPER virtual peripheral failed to flag test passed.")
+      if (!vp_status_if.tests_passed) `uvm_warning("WRAPPER FLAGS", "DUT WRAPPER virtual peripheral failed to flag test passed.")
       if (!vp_status_if.exit_valid) begin
-        `uvm_error("WRAPPER FLAGS", "DUT WRAPPER virtual peripheral failed to exit properly.")
+        `uvm_warning("WRAPPER FLAGS", "DUT WRAPPER virtual peripheral failed to exit properly.")
       end
       
       rs          = uvm_top.get_report_server();
