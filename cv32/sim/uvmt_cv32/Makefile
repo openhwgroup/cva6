@@ -21,8 +21,9 @@
 #
 ###############################################################################
 
-MAKE      = make
-ROOT_DIR  = $(PWD)
+MAKE       = make
+COREV_PROJ = cv32
+ROOT_DIR   = $(PWD)/../../..
 
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
@@ -34,11 +35,12 @@ DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE              = dsim.out
 
 # UVM Environment
-export DV_UVMT_CV32_PATH = $(PWD)
+export DV_UVMT_CV32_PATH = $(ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
+export DV_UVME_CV32_PATH = $(ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # TB source files for the CV32E core
-TBSRC_HOME  := $(ROOT_DIR)/..
+TBSRC_HOME  := $(ROOT_DIR)/$(COREV_PROJ)/tb
 TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
 TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
                $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
@@ -48,7 +50,7 @@ TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
                $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
 
 # RTL source files for the CV32E core
-RTLSRC_HOME   := $(ROOT_DIR)/../../../rtl
+RTLSRC_HOME   := $(ROOT_DIR)/rtl
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
 RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
@@ -82,11 +84,17 @@ dsim-comp: mk_results $(FPNEW_PKG)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
+		+incdir+$(DV_UVMT_CV32_PATH) \
+		+incdir+$(DV_UVME_CV32_PATH) \
 		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
+		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
 		+incdir+$(RTLSRC_INCDIR) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
-		-genimage $(DSIM_IMAGE)
+		+UVM_TESTNAME=uvmt_cv32_base_test_c
+#		-genimage $(DSIM_IMAGE)
+
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean clean_all
@@ -95,6 +103,7 @@ dsim-clean:
 	rm -f dsim.log
 	rm -f dsim-*.log
 	rm -f metrics_history.db
+	rm -f metrics.db
 	rm -f metrics.xml
 	rm -f trace_core_00_0.log
 	rm -rf dsim_work
