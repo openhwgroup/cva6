@@ -21,8 +21,8 @@ module axi_lite_interface #(
     input logic                       clk_i,    // Clock
     input logic                       rst_ni,  // Asynchronous reset active low
 
-    input  ariane_axi::req_t          axi_req_i,
-    output ariane_axi::resp_t         axi_resp_o,
+    input  ariane_axi::req_slv_t      axi_req_i,
+    output ariane_axi::resp_slv_t     axi_resp_o,
 
     output logic [AXI_ADDR_WIDTH-1:0] address_o,
     output logic                      en_o,        // transaction is valid

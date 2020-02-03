@@ -6,10 +6,10 @@ package:
 
 dependencies:
     axi_mem_if:         { git: "https://github.com/pulp-platform/axi_mem_if.git",         version: 0.2.1                 } # <-- bump to version v.0.2.1 from v0.1.2-4-g4650ca9
-    axi_node:           { git: "https://github.com/pulp-platform/axi_node.git",           rev:     atop                  } # to be to be replaced with axi_xbar, was v1.1.2-7-ga29a69a should be the same
+    #axi_node:           { git: "https://github.com/pulp-platform/axi_node.git",           rev:     atop                  } # to be to be replaced with axi_xbar, was v1.1.2-7-ga29a69a should be the same
     fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       rev:     master                } # was master Merge pull request #3 from msfschaffner <-- phase out relese v0.4 has no longer existing Bender reference to common_cells
     common_cells:       { git: "https://github.com/pulp-platform/common_cells.git",       version: 1.16.0                } # <-- bump to version v1.16.0 from vega_v1.10.0-52-g790f238
-    axi:                { git: "https://github.com/pulp-platform/axi.git",                version: 0.7.0                 } # to be updated with axi_xbar
+    axi:                { git: "https://github.com/pulp-platform/axi.git",                version: 0.9.0                 } # <-- bump to version v0.7.0 from v0.7.0
     register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev:     master                } # TODO: release?
     apb_uart:           { git: "https://github.com/pulp-platform/apb_uart.git",           version: 0.1.0                 } # HEAD was here v0.0.1-2-gac3461c same as v0.1.0
     apb_node:           { git: "https://github.com/pulp-platform/apb_node.git",           version: 0.1.1                 } # advanced by one commit which added somthing in src-files.yml
