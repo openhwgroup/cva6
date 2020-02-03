@@ -1,5 +1,5 @@
 venv
-*.elf
+#*.elf
 *.o
 *.img
 *.bin
