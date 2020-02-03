@@ -80,6 +80,7 @@ module ariane_tb;
 
     // Clock process
     initial begin
+        $dumpvars(0, dut);
         clk_i = 1'b0;
         rst_ni = 1'b0;
         repeat(8)

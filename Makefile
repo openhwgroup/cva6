@@ -303,7 +303,7 @@ $(dpi-library)/ariane_dpi.so: $(dpi)
 
 # -ntb_opts uvm-1.1 +UVM_NO_RELNOTES 
 simv: $(util) $(src) fpga/src/bootrom/bootrom.sv
-	$(VCS_HOME)/bin/vcs -full64 -sverilog -gui -timescale=1ns/1ps +lint=PCWM \
+	$(VCS_HOME)/bin/vcs -full64 -sverilog -timescale=1ns/1ps +lint=PCWM \
 	-diag timescale -debug_access+all -assert svaext -v2k_generate -l simv.log \
 	$(ariane_pkg) $(list_incdir) \
 	$(filter-out $(PWD)/tb/common/mock_uart.sv \
