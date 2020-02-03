@@ -1,0 +1,1869 @@
+
+bootrom.elf:     file format elf64-littleriscv
+
+
+Disassembly of section .text.init:
+
+0000000087fe0000 <_prog_start>:
+_prog_start():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:12
+
+  .section .text.init
+  .option norvc
+  .globl _prog_start
+_prog_start:
+  li sp, DRAM_END
+    87fe0000:	0110011b          	addiw	sp,zero,17
+    87fe0004:	01b11113          	slli	sp,sp,0x1b
+    87fe0008:	ff810113          	addi	sp,sp,-8
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:13
+  la a1, _prog_start
+    87fe000c:	00000597          	auipc	a1,0x0
+    87fe0010:	ff458593          	addi	a1,a1,-12 # 87fe0000 <_prog_start>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:14
+  li a2, 0x8000
+    87fe0014:	00008637          	lui	a2,0x8
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:15
+  add a2, a1, a2
+    87fe0018:	00c58633          	add	a2,a1,a2
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:16
+  li a3, DRAM_BASE
+    87fe001c:	0010069b          	addiw	a3,zero,1
+    87fe0020:	01f69693          	slli	a3,a3,0x1f
+
+0000000087fe0024 <_copy>:
+_copy():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:18
+_copy:
+  ld a4, 0(a1)
+    87fe0024:	0005b703          	ld	a4,0(a1)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:19
+  sd a4, 0(a3)
+    87fe0028:	00e6b023          	sd	a4,0(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:20
+  ld a4, 8(a1)
+    87fe002c:	0085b703          	ld	a4,8(a1)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:21
+  sd a4, 8(a3)
+    87fe0030:	00e6b423          	sd	a4,8(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:22
+  ld a4, 16(a1)
+    87fe0034:	0105b703          	ld	a4,16(a1)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:23
+  sd a4, 16(a3)
+    87fe0038:	00e6b823          	sd	a4,16(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:24
+  ld a4, 24(a1)
+    87fe003c:	0185b703          	ld	a4,24(a1)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:25
+  sd a4, 24(a3)
+    87fe0040:	00e6bc23          	sd	a4,24(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:26
+  add a1, a1, 32
+    87fe0044:	02058593          	addi	a1,a1,32
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:27
+  add a3, a3, 32
+    87fe0048:	02068693          	addi	a3,a3,32
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:28
+  blt a1, a2, _copy
+    87fe004c:	fcc5cce3          	blt	a1,a2,87fe0024 <_copy>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:29
+  li a2, DRAM_BASE
+    87fe0050:	0010061b          	addiw	a2,zero,1
+    87fe0054:	01f61613          	slli	a2,a2,0x1f
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:30
+  la a4, _reloc
+    87fe0058:	00000717          	auipc	a4,0x0
+    87fe005c:	01c70713          	addi	a4,a4,28 # 87fe0074 <_reloc>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:31
+  add a2, a2, a4
+    87fe0060:	00e60633          	add	a2,a2,a4
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:32
+  la a4, _prog_start
+    87fe0064:	00000717          	auipc	a4,0x0
+    87fe0068:	f9c70713          	addi	a4,a4,-100 # 87fe0000 <_prog_start>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:33
+  sub a2, a2, a4
+    87fe006c:	40e60633          	sub	a2,a2,a4
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:34
+  jalr ra, a2
+    87fe0070:	000600e7          	jalr	a2 # 8000 <ROM_BASE-0x8000>
+
+0000000087fe0074 <_reloc>:
+_reloc():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:36
+_reloc:
+  li a1, DRAM_BASE
+    87fe0074:	0010059b          	addiw	a1,zero,1
+    87fe0078:	01f59593          	slli	a1,a1,0x1f
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:37
+  add ra, a1, zero
+    87fe007c:	000580b3          	add	ra,a1,zero
+
+0000000087fe0080 <_clr>:
+_clr():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:39
+_clr:
+  sd zero, 0(a3)
+    87fe0080:	0006b023          	sd	zero,0(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:40
+  sd zero, 8(a3)
+    87fe0084:	0006b423          	sd	zero,8(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:41
+  sd zero, 16(a3)
+    87fe0088:	0006b823          	sd	zero,16(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:42
+  sd zero, 24(a3)
+    87fe008c:	0006bc23          	sd	zero,24(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:43
+  add a3, a3, 32
+    87fe0090:	02068693          	addi	a3,a3,32
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:44
+  blt a3, a2, _clr
+    87fe0094:	fec6c6e3          	blt	a3,a2,87fe0080 <_clr>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:46
+        
+  la a5, trap_entry
+    87fe0098:	00000797          	auipc	a5,0x0
+    87fe009c:	01078793          	addi	a5,a5,16 # 87fe00a8 <trap_entry>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:47
+  csrw mtvec, a5  
+    87fe00a0:	30579073          	csrw	mtvec,a5
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:48
+  call main
+    87fe00a4:	07d000ef          	jal	ra,87fe0920 <_TEXT_END_>
+
+0000000087fe00a8 <trap_entry>:
+trap_entry():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:50
+trap_entry:
+  csrr t0, mcause
+    87fe00a8:	342022f3          	csrr	t0,mcause
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:51
+  csrr t1, mepc
+    87fe00ac:	34102373          	csrr	t1,mepc
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:53
+1:      
+  wfi
+    87fe00b0:	10500073          	wfi
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/startup.S:54
+  j 1b
+    87fe00b4:	ffdff06f          	j	87fe00b0 <trap_entry+0x8>
+
+Disassembly of section .text:
+
+0000000087fe0100 <handle_trap>:
+handle_trap():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:28
+}
+
+void handle_trap(void)
+{
+    // print_uart("trap\r\n");
+}
+    87fe0100:	8082                	ret
+
+0000000087fe0102 <read_reg_u8>:
+read_reg_u8():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:17
+    *loc_addr = value;
+}
+
+inline uint8_t read_reg_u8(uintptr_t addr)
+{
+    return *(volatile uint8_t *)addr;
+    87fe0102:	00054503          	lbu	a0,0(a0)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:18
+}
+    87fe0106:	0ff57513          	andi	a0,a0,255
+    87fe010a:	8082                	ret
+
+0000000087fe010c <is_transmit_empty>:
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:17
+    return *(volatile uint8_t *)addr;
+    87fe010c:	100007b7          	lui	a5,0x10000
+    87fe0110:	0147c503          	lbu	a0,20(a5) # 10000014 <ROM_BASE+0xfff0014>
+is_transmit_empty():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:28
+}
+
+int is_transmit_empty()
+{
+    return read_reg_u8(UART_LINE_STATUS) & 0x20;
+}
+    87fe0114:	02057513          	andi	a0,a0,32
+    87fe0118:	8082                	ret
+
+0000000087fe011a <write_serial>:
+read_reg_u8():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:17
+    return *(volatile uint8_t *)addr;
+    87fe011a:	10000737          	lui	a4,0x10000
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:17 (discriminator 1)
+    87fe011e:	01474783          	lbu	a5,20(a4) # 10000014 <ROM_BASE+0xfff0014>
+write_serial():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:32 (discriminator 1)
+
+void write_serial(char a)
+{
+    while (is_transmit_empty() == 0) {};
+    87fe0122:	0207f793          	andi	a5,a5,32
+    87fe0126:	dfe5                	beqz	a5,87fe011e <write_serial+0x4>
+write_reg_u8():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:6
+    *loc_addr = value;
+    87fe0128:	00a70023          	sb	a0,0(a4)
+write_serial():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:35
+
+    write_reg_u8(UART_THR, a);
+}
+    87fe012c:	8082                	ret
+
+0000000087fe012e <init_uart>:
+init_uart():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:39
+
+void init_uart(uint32_t freq, uint32_t baud)
+{
+    uint32_t divisor = freq / (baud << 4);
+    87fe012e:	0045959b          	slliw	a1,a1,0x4
+    87fe0132:	02b5553b          	divuw	a0,a0,a1
+write_reg_u8():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:6
+    *loc_addr = value;
+    87fe0136:	100007b7          	lui	a5,0x10000
+    87fe013a:	00078223          	sb	zero,4(a5) # 10000004 <ROM_BASE+0xfff0004>
+    87fe013e:	f8000713          	li	a4,-128
+    87fe0142:	00e78623          	sb	a4,12(a5)
+init_uart():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:43
+
+    write_reg_u8(UART_INTERRUPT_ENABLE, 0x00); // Disable all interrupts
+    write_reg_u8(UART_LINE_CONTROL, 0x80);     // Enable DLAB (set baud rate divisor)
+    write_reg_u8(UART_DLAB_LSB, divisor);         // divisor (lo byte)
+    87fe0146:	0ff57713          	andi	a4,a0,255
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:44
+    write_reg_u8(UART_DLAB_MSB, (divisor >> 8) & 0xFF);  // divisor (hi byte)
+    87fe014a:	0085551b          	srliw	a0,a0,0x8
+write_reg_u8():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:6
+    *loc_addr = value;
+    87fe014e:	00e78023          	sb	a4,0(a5)
+init_uart():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:44
+    write_reg_u8(UART_DLAB_MSB, (divisor >> 8) & 0xFF);  // divisor (hi byte)
+    87fe0152:	0ff57513          	andi	a0,a0,255
+write_reg_u8():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:6
+    *loc_addr = value;
+    87fe0156:	00a78223          	sb	a0,4(a5)
+    87fe015a:	470d                	li	a4,3
+    87fe015c:	00e78623          	sb	a4,12(a5)
+    87fe0160:	571d                	li	a4,-25
+    87fe0162:	00e78423          	sb	a4,8(a5)
+    87fe0166:	02000713          	li	a4,32
+    87fe016a:	00e78823          	sb	a4,16(a5)
+init_uart():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:48
+    write_reg_u8(UART_LINE_CONTROL, 0x03);     // 8 bits, no parity, one stop bit
+    write_reg_u8(UART_FIFO_CONTROL, 0xE7);     // Enable FIFO, clear them, with 64-byte FIFO
+    write_reg_u8(UART_MODEM_CONTROL, 0x20);    // Autoflow mode
+}
+    87fe016e:	8082                	ret
+
+0000000087fe0170 <print_uart>:
+print_uart():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:51
+
+void print_uart(const char *str)
+{
+    87fe0170:	1141                	addi	sp,sp,-16
+    87fe0172:	e022                	sd	s0,0(sp)
+    87fe0174:	e406                	sd	ra,8(sp)
+    87fe0176:	842a                	mv	s0,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:53
+    const char *cur = &str[0];
+    while (*cur != '\0')
+    87fe0178:	00044503          	lbu	a0,0(s0)
+    87fe017c:	e509                	bnez	a0,87fe0186 <print_uart+0x16>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:58
+    {
+        write_serial((uint8_t)*cur);
+        ++cur;
+    }
+}
+    87fe017e:	60a2                	ld	ra,8(sp)
+    87fe0180:	6402                	ld	s0,0(sp)
+    87fe0182:	0141                	addi	sp,sp,16
+    87fe0184:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:55
+        write_serial((uint8_t)*cur);
+    87fe0186:	f95ff0ef          	jal	ra,87fe011a <write_serial>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:56
+        ++cur;
+    87fe018a:	0405                	addi	s0,s0,1
+    87fe018c:	b7f5                	j	87fe0178 <print_uart+0x8>
+
+0000000087fe018e <bin_to_hex>:
+bin_to_hex():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:65
+uint8_t bin_to_hex_table[16] = {
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+void bin_to_hex(uint8_t inp, uint8_t res[2])
+{
+    res[1] = bin_to_hex_table[inp & 0xf];
+    87fe018e:	00001797          	auipc	a5,0x1
+    87fe0192:	97278793          	addi	a5,a5,-1678 # 87fe0b00 <bin_to_hex_table>
+    87fe0196:	00f57713          	andi	a4,a0,15
+    87fe019a:	973e                	add	a4,a4,a5
+    87fe019c:	00074703          	lbu	a4,0(a4)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:66
+    res[0] = bin_to_hex_table[(inp >> 4) & 0xf];
+    87fe01a0:	8111                	srli	a0,a0,0x4
+    87fe01a2:	97aa                	add	a5,a5,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:65
+    res[1] = bin_to_hex_table[inp & 0xf];
+    87fe01a4:	00e580a3          	sb	a4,1(a1)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:66
+    res[0] = bin_to_hex_table[(inp >> 4) & 0xf];
+    87fe01a8:	0007c783          	lbu	a5,0(a5)
+    87fe01ac:	00f58023          	sb	a5,0(a1)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:68
+    return;
+}
+    87fe01b0:	8082                	ret
+
+0000000087fe01b2 <print_uart_int>:
+print_uart_int():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:71
+
+void print_uart_int(uint32_t addr)
+{
+    87fe01b2:	7179                	addi	sp,sp,-48
+    87fe01b4:	f022                	sd	s0,32(sp)
+    87fe01b6:	ec26                	sd	s1,24(sp)
+    87fe01b8:	e84a                	sd	s2,16(sp)
+    87fe01ba:	f406                	sd	ra,40(sp)
+    87fe01bc:	84aa                	mv	s1,a0
+    87fe01be:	4461                	li	s0,24
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:73
+    int i;
+    for (i = 3; i > -1; i--)
+    87fe01c0:	5961                	li	s2,-8
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:75 (discriminator 3)
+    {
+        uint8_t cur = (addr >> (i * 8)) & 0xff;
+    87fe01c2:	0084d53b          	srlw	a0,s1,s0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:77 (discriminator 3)
+        uint8_t hex[2];
+        bin_to_hex(cur, hex);
+    87fe01c6:	002c                	addi	a1,sp,8
+    87fe01c8:	0ff57513          	andi	a0,a0,255
+    87fe01cc:	fc3ff0ef          	jal	ra,87fe018e <bin_to_hex>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:78 (discriminator 3)
+        write_serial(hex[0]);
+    87fe01d0:	00814503          	lbu	a0,8(sp)
+    87fe01d4:	3461                	addiw	s0,s0,-8
+    87fe01d6:	f45ff0ef          	jal	ra,87fe011a <write_serial>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:79 (discriminator 3)
+        write_serial(hex[1]);
+    87fe01da:	00914503          	lbu	a0,9(sp)
+    87fe01de:	f3dff0ef          	jal	ra,87fe011a <write_serial>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:73 (discriminator 3)
+    for (i = 3; i > -1; i--)
+    87fe01e2:	ff2410e3          	bne	s0,s2,87fe01c2 <print_uart_int+0x10>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:81
+    }
+}
+    87fe01e6:	70a2                	ld	ra,40(sp)
+    87fe01e8:	7402                	ld	s0,32(sp)
+    87fe01ea:	64e2                	ld	s1,24(sp)
+    87fe01ec:	6942                	ld	s2,16(sp)
+    87fe01ee:	6145                	addi	sp,sp,48
+    87fe01f0:	8082                	ret
+
+0000000087fe01f2 <print_uart_addr>:
+print_uart_addr():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:84
+
+void print_uart_addr(uint64_t addr)
+{
+    87fe01f2:	7179                	addi	sp,sp,-48
+    87fe01f4:	f022                	sd	s0,32(sp)
+    87fe01f6:	ec26                	sd	s1,24(sp)
+    87fe01f8:	e84a                	sd	s2,16(sp)
+    87fe01fa:	f406                	sd	ra,40(sp)
+    87fe01fc:	84aa                	mv	s1,a0
+    87fe01fe:	03800413          	li	s0,56
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:86
+    int i;
+    for (i = 7; i > -1; i--)
+    87fe0202:	5961                	li	s2,-8
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:88 (discriminator 3)
+    {
+        uint8_t cur = (addr >> (i * 8)) & 0xff;
+    87fe0204:	0084d533          	srl	a0,s1,s0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:90 (discriminator 3)
+        uint8_t hex[2];
+        bin_to_hex(cur, hex);
+    87fe0208:	002c                	addi	a1,sp,8
+    87fe020a:	0ff57513          	andi	a0,a0,255
+    87fe020e:	f81ff0ef          	jal	ra,87fe018e <bin_to_hex>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:91 (discriminator 3)
+        write_serial(hex[0]);
+    87fe0212:	00814503          	lbu	a0,8(sp)
+    87fe0216:	3461                	addiw	s0,s0,-8
+    87fe0218:	f03ff0ef          	jal	ra,87fe011a <write_serial>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:92 (discriminator 3)
+        write_serial(hex[1]);
+    87fe021c:	00914503          	lbu	a0,9(sp)
+    87fe0220:	efbff0ef          	jal	ra,87fe011a <write_serial>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:86 (discriminator 3)
+    for (i = 7; i > -1; i--)
+    87fe0224:	ff2410e3          	bne	s0,s2,87fe0204 <print_uart_addr+0x12>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:94
+    }
+}
+    87fe0228:	70a2                	ld	ra,40(sp)
+    87fe022a:	7402                	ld	s0,32(sp)
+    87fe022c:	64e2                	ld	s1,24(sp)
+    87fe022e:	6942                	ld	s2,16(sp)
+    87fe0230:	6145                	addi	sp,sp,48
+    87fe0232:	8082                	ret
+
+0000000087fe0234 <print_uart_byte>:
+print_uart_byte():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:97
+
+void print_uart_byte(uint8_t byte)
+{
+    87fe0234:	1101                	addi	sp,sp,-32
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:99
+    uint8_t hex[2];
+    bin_to_hex(byte, hex);
+    87fe0236:	002c                	addi	a1,sp,8
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:97
+{
+    87fe0238:	ec06                	sd	ra,24(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:99
+    bin_to_hex(byte, hex);
+    87fe023a:	f55ff0ef          	jal	ra,87fe018e <bin_to_hex>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:100
+    write_serial(hex[0]);
+    87fe023e:	00814503          	lbu	a0,8(sp)
+    87fe0242:	ed9ff0ef          	jal	ra,87fe011a <write_serial>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:101
+    write_serial(hex[1]);
+    87fe0246:	00914503          	lbu	a0,9(sp)
+    87fe024a:	ed1ff0ef          	jal	ra,87fe011a <write_serial>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:102
+}
+    87fe024e:	60e2                	ld	ra,24(sp)
+    87fe0250:	6105                	addi	sp,sp,32
+    87fe0252:	8082                	ret
+
+0000000087fe0254 <get_uart_byte>:
+read_reg_u8():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:17
+    return *(volatile uint8_t *)addr;
+    87fe0254:	10000737          	lui	a4,0x10000
+    87fe0258:	01474783          	lbu	a5,20(a4) # 10000014 <ROM_BASE+0xfff0014>
+get_uart_byte():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:106
+
+int get_uart_byte(void)
+{
+  return read_reg_u8(UART_LINE_STATUS) & 0x1 ? read_reg_u8(UART_RBR) : -1;
+    87fe025c:	557d                	li	a0,-1
+    87fe025e:	8b85                	andi	a5,a5,1
+    87fe0260:	c789                	beqz	a5,87fe026a <get_uart_byte+0x16>
+read_reg_u8():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:17
+    return *(volatile uint8_t *)addr;
+    87fe0262:	00074503          	lbu	a0,0(a4)
+get_uart_byte():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:106
+  return read_reg_u8(UART_LINE_STATUS) & 0x1 ? read_reg_u8(UART_RBR) : -1;
+    87fe0266:	0ff57513          	andi	a0,a0,255
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:107 (discriminator 4)
+}
+    87fe026a:	8082                	ret
+
+0000000087fe026c <hello>:
+write_reg_u32():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:12
+    *loc_addr = value;
+    87fe026c:	100007b7          	lui	a5,0x10000
+    87fe0270:	04800f13          	li	t5,72
+    87fe0274:	01e7a223          	sw	t5,4(a5) # 10000004 <ROM_BASE+0xfff0004>
+    87fe0278:	06500e93          	li	t4,101
+    87fe027c:	01d7a223          	sw	t4,4(a5)
+    87fe0280:	06c00713          	li	a4,108
+    87fe0284:	c3d8                	sw	a4,4(a5)
+    87fe0286:	c3d8                	sw	a4,4(a5)
+    87fe0288:	06f00693          	li	a3,111
+    87fe028c:	c3d4                	sw	a3,4(a5)
+    87fe028e:	02000e13          	li	t3,32
+    87fe0292:	01c7a223          	sw	t3,4(a5)
+    87fe0296:	05700313          	li	t1,87
+    87fe029a:	0067a223          	sw	t1,4(a5)
+    87fe029e:	c3d4                	sw	a3,4(a5)
+    87fe02a0:	07200893          	li	a7,114
+    87fe02a4:	0117a223          	sw	a7,4(a5)
+    87fe02a8:	c3d8                	sw	a4,4(a5)
+    87fe02aa:	06400813          	li	a6,100
+    87fe02ae:	0107a223          	sw	a6,4(a5)
+    87fe02b2:	02100513          	li	a0,33
+    87fe02b6:	c3c8                	sw	a0,4(a5)
+    87fe02b8:	45b5                	li	a1,13
+    87fe02ba:	c3cc                	sw	a1,4(a5)
+    87fe02bc:	4629                	li	a2,10
+    87fe02be:	c3d0                	sw	a2,4(a5)
+    87fe02c0:	01e7a023          	sw	t5,0(a5)
+    87fe02c4:	01d7a023          	sw	t4,0(a5)
+    87fe02c8:	c398                	sw	a4,0(a5)
+    87fe02ca:	c398                	sw	a4,0(a5)
+    87fe02cc:	c394                	sw	a3,0(a5)
+    87fe02ce:	01c7a023          	sw	t3,0(a5)
+    87fe02d2:	0067a023          	sw	t1,0(a5)
+    87fe02d6:	c394                	sw	a3,0(a5)
+    87fe02d8:	0117a023          	sw	a7,0(a5)
+    87fe02dc:	c398                	sw	a4,0(a5)
+    87fe02de:	0107a023          	sw	a6,0(a5)
+    87fe02e2:	c388                	sw	a0,0(a5)
+    87fe02e4:	c38c                	sw	a1,0(a5)
+    87fe02e6:	c390                	sw	a2,0(a5)
+read_reg_u32():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:22
+    return *(volatile uint32_t *)addr;
+    87fe02e8:	4388                	lw	a0,0(a5)
+hello():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:146
+      write_reg_u32(i, chC);
+      write_reg_u32(i, chD);
+      }
+    ch = read_reg_u32(UART_RBR);
+    return ch;
+}
+    87fe02ea:	2501                	sext.w	a0,a0
+    87fe02ec:	8082                	ret
+
+0000000087fe02ee <finish>:
+write_reg_u32():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:12
+    *loc_addr = value;
+    87fe02ee:	100007b7          	lui	a5,0x10000
+    87fe02f2:	0207a023          	sw	zero,32(a5) # 10000020 <ROM_BASE+0xfff0020>
+finish():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/uart.c:151
+
+void finish(void)
+{
+    write_reg_u32(UART_SIM_FINISH, 0);
+}
+    87fe02f6:	8082                	ret
+
+0000000087fe02f8 <pitonsd_dump_regs>:
+pitonsd_dump_regs():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:33
+static void pitonsd_dump_regs(void)
+{
+  static char init_state_num[10], tran_state_num[10];
+  const char *init_state = init_state_num, *tran_state = tran_state_num;
+  char status[99];
+  int stat = sd_base[_piton_sd_STATUS];
+    87fe02f8:	200007b7          	lui	a5,0x20000
+    87fe02fc:	6b9c                	ld	a5,16(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:29
+{
+    87fe02fe:	7135                	addi	sp,sp,-160
+    87fe0300:	e922                	sd	s0,144(sp)
+    87fe0302:	ed06                	sd	ra,152(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:33
+  int stat = sd_base[_piton_sd_STATUS];
+    87fe0304:	0007841b          	sext.w	s0,a5
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:29
+{
+    87fe0308:	e526                	sd	s1,136(sp)
+    87fe030a:	e14a                	sd	s2,128(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:34
+  *status = 0;
+    87fe030c:	00010c23          	sb	zero,24(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:35
+  if (stat&1) strcat(status," REQ_RD");
+    87fe0310:	8b85                	andi	a5,a5,1
+    87fe0312:	cb81                	beqz	a5,87fe0322 <pitonsd_dump_regs+0x2a>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:35 (discriminator 1)
+    87fe0314:	00000597          	auipc	a1,0x0
+    87fe0318:	6ec58593          	addi	a1,a1,1772 # 87fe0a00 <_RODATA_START_>
+    87fe031c:	0828                	addi	a0,sp,24
+    87fe031e:	4f6000ef          	jal	ra,87fe0814 <strcat>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:36
+  if (stat&2) strcat(status," REQ_WR");
+    87fe0322:	00247793          	andi	a5,s0,2
+    87fe0326:	cb81                	beqz	a5,87fe0336 <pitonsd_dump_regs+0x3e>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:36 (discriminator 1)
+    87fe0328:	00000597          	auipc	a1,0x0
+    87fe032c:	6e058593          	addi	a1,a1,1760 # 87fe0a08 <_RODATA_START_+0x8>
+    87fe0330:	0828                	addi	a0,sp,24
+    87fe0332:	4e2000ef          	jal	ra,87fe0814 <strcat>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:37
+  if (stat&4) strcat(status," IRQ_EN");
+    87fe0336:	00447793          	andi	a5,s0,4
+    87fe033a:	cb81                	beqz	a5,87fe034a <pitonsd_dump_regs+0x52>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:37 (discriminator 1)
+    87fe033c:	00000597          	auipc	a1,0x0
+    87fe0340:	6d458593          	addi	a1,a1,1748 # 87fe0a10 <_RODATA_START_+0x10>
+    87fe0344:	0828                	addi	a0,sp,24
+    87fe0346:	4ce000ef          	jal	ra,87fe0814 <strcat>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:38
+  if (stat&8) strcat(status," SD_IRQ");
+    87fe034a:	00847793          	andi	a5,s0,8
+    87fe034e:	cb81                	beqz	a5,87fe035e <pitonsd_dump_regs+0x66>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:38 (discriminator 1)
+    87fe0350:	00000597          	auipc	a1,0x0
+    87fe0354:	6c858593          	addi	a1,a1,1736 # 87fe0a18 <_RODATA_START_+0x18>
+    87fe0358:	0828                	addi	a0,sp,24
+    87fe035a:	4ba000ef          	jal	ra,87fe0814 <strcat>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:39
+  if (stat&16) strcat(status," REQ_RDY");
+    87fe035e:	01047793          	andi	a5,s0,16
+    87fe0362:	cb81                	beqz	a5,87fe0372 <pitonsd_dump_regs+0x7a>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:39 (discriminator 1)
+    87fe0364:	00000597          	auipc	a1,0x0
+    87fe0368:	6bc58593          	addi	a1,a1,1724 # 87fe0a20 <_RODATA_START_+0x20>
+    87fe036c:	0828                	addi	a0,sp,24
+    87fe036e:	4a6000ef          	jal	ra,87fe0814 <strcat>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:40
+  if (stat&32) strcat(status," INIT_DONE");
+    87fe0372:	02047793          	andi	a5,s0,32
+    87fe0376:	cb81                	beqz	a5,87fe0386 <pitonsd_dump_regs+0x8e>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:40 (discriminator 1)
+    87fe0378:	00000597          	auipc	a1,0x0
+    87fe037c:	6b858593          	addi	a1,a1,1720 # 87fe0a30 <_RODATA_START_+0x30>
+    87fe0380:	0828                	addi	a0,sp,24
+    87fe0382:	492000ef          	jal	ra,87fe0814 <strcat>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:41
+  if (stat&64) strcat(status," HCXC");
+    87fe0386:	04047793          	andi	a5,s0,64
+    87fe038a:	cb81                	beqz	a5,87fe039a <pitonsd_dump_regs+0xa2>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:41 (discriminator 1)
+    87fe038c:	00000597          	auipc	a1,0x0
+    87fe0390:	6b458593          	addi	a1,a1,1716 # 87fe0a40 <_RODATA_START_+0x40>
+    87fe0394:	0828                	addi	a0,sp,24
+    87fe0396:	47e000ef          	jal	ra,87fe0814 <strcat>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:42
+  if (stat&128) strcat(status," DETECT");
+    87fe039a:	08047413          	andi	s0,s0,128
+    87fe039e:	c801                	beqz	s0,87fe03ae <pitonsd_dump_regs+0xb6>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:42 (discriminator 1)
+    87fe03a0:	00000597          	auipc	a1,0x0
+    87fe03a4:	6a858593          	addi	a1,a1,1704 # 87fe0a48 <_RODATA_START_+0x48>
+    87fe03a8:	0828                	addi	a0,sp,24
+    87fe03aa:	46a000ef          	jal	ra,87fe0814 <strcat>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:141
+    case 0xf0: init_state = "ST_INIT_DONE"; break;
+    case 0xff: init_state = "ST_INIT_ERR"; break;
+    default: init_state = "UNKNOWN";
+    }
+#else
+  sprintf(init_state_num, "0x%lx", sd_base[_piton_sd_INIT_STATE]);
+    87fe03ae:	20000437          	lui	s0,0x20000
+    87fe03b2:	7010                	ld	a2,32(s0)
+    87fe03b4:	00001497          	auipc	s1,0x1
+    87fe03b8:	84c48493          	addi	s1,s1,-1972 # 87fe0c00 <_BSS_START_>
+    87fe03bc:	00000597          	auipc	a1,0x0
+    87fe03c0:	69458593          	addi	a1,a1,1684 # 87fe0a50 <_RODATA_START_+0x50>
+    87fe03c4:	8526                	mv	a0,s1
+    87fe03c6:	3e2000ef          	jal	ra,87fe07a8 <sprintf>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:176
+    case 0x27: tran_state = "ST_CMD24_WAIT_DATA_INT"; break;
+    case 0x28: tran_state = "ST_CMD24_RD_DATA_ISR"; break;
+    default: tran_state = "UNKNOWN";
+    }
+#else
+  sprintf(tran_state_num, "0x%lx", sd_base[_piton_sd_TRAN_STATE]);
+    87fe03ca:	7c10                	ld	a2,56(s0)
+    87fe03cc:	01048913          	addi	s2,s1,16
+    87fe03d0:	00000597          	auipc	a1,0x0
+    87fe03d4:	68058593          	addi	a1,a1,1664 # 87fe0a50 <_RODATA_START_+0x50>
+    87fe03d8:	854a                	mv	a0,s2
+    87fe03da:	3ce000ef          	jal	ra,87fe07a8 <sprintf>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:178
+#endif  
+  printf(
+    87fe03de:	600c                	ld	a1,0(s0)
+    87fe03e0:	6410                	ld	a2,8(s0)
+    87fe03e2:	6c18                	ld	a4,24(s0)
+    87fe03e4:	02843803          	ld	a6,40(s0) # 20000028 <ROM_BASE+0x1fff0028>
+    87fe03e8:	03043883          	ld	a7,48(s0)
+    87fe03ec:	603c                	ld	a5,64(s0)
+    87fe03ee:	00000517          	auipc	a0,0x0
+    87fe03f2:	e04a                	sd	s2,0(sp)
+    87fe03f4:	e43e                	sd	a5,8(sp)
+    87fe03f6:	0834                	addi	a3,sp,24
+    87fe03f8:	87a6                	mv	a5,s1
+    87fe03fa:	66a50513          	addi	a0,a0,1642 # 87fe0a58 <_RODATA_START_+0x58>
+    87fe03fe:	3ce000ef          	jal	ra,87fe07cc <printf>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:191
+        init_state,
+        sd_base[_piton_sd_COUNTER],
+        sd_base[_piton_sd_INIT_FSM],
+        tran_state,
+        sd_base[_piton_sd_TRAN_FSM]);
+}
+    87fe0402:	60ea                	ld	ra,152(sp)
+    87fe0404:	644a                	ld	s0,144(sp)
+    87fe0406:	64aa                	ld	s1,136(sp)
+    87fe0408:	690a                	ld	s2,128(sp)
+    87fe040a:	610d                	addi	sp,sp,160
+    87fe040c:	8082                	ret
+
+0000000087fe040e <disk_initialize>:
+disk_initialize():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:195
+#endif
+
+DSTATUS disk_initialize (uint8_t pdrv)
+{
+    87fe040e:	1101                	addi	sp,sp,-32
+    87fe0410:	ec06                	sd	ra,24(sp)
+    87fe0412:	e822                	sd	s0,16(sp)
+    87fe0414:	e426                	sd	s1,8(sp)
+    87fe0416:	e04a                	sd	s2,0(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:198
+        int old_init_state = -1;
+        /* SD sector address */
+        sd_base[ _piton_sd_ADDR_SD ] = 0;
+    87fe0418:	200007b7          	lui	a5,0x20000
+    87fe041c:	0007b023          	sd	zero,0(a5) # 20000000 <ROM_BASE+0x1fff0000>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:200
+        /* always start at beginning of DMA buffer */
+        sd_base[ _piton_sd_ADDR_DMA ] = 0;
+    87fe0420:	0007b423          	sd	zero,8(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:202
+        /* set sector count */
+        sd_base[ _piton_sd_BLKCNT ] = 0;
+    87fe0424:	0007b823          	sd	zero,16(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:203
+        sd_base[ _piton_sd_REQ_RD ] = 0;
+    87fe0428:	0007bc23          	sd	zero,24(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:204
+        sd_base[ _piton_sd_REQ_WR ] = 0;
+    87fe042c:	0207b023          	sd	zero,32(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:205
+        sd_base[ _piton_sd_IRQ_EN ] = 0;
+    87fe0430:	0207b423          	sd	zero,40(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:206
+        sd_base[ _piton_sd_SYS_RST ] = 0;
+    87fe0434:	0207b823          	sd	zero,48(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:209
+
+        /* reset HW state machine */
+        sd_base[ _piton_sd_SYS_RST ] = 1;
+    87fe0438:	4705                	li	a4,1
+    87fe043a:	fb98                	sd	a4,48(a5)
+fence_io():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:24
+        asm volatile ("fence io,io" ::: "memory");
+    87fe043c:	0cc0000f          	fence	io,io
+disk_initialize():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:196
+        int old_init_state = -1;
+    87fe0440:	57fd                	li	a5,-1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:213
+        fence_io();
+        do
+          {
+            int init_state = sd_base[_piton_sd_INIT_STATE];
+    87fe0442:	20000937          	lui	s2,0x20000
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:223
+            if (old_init_state != init_state)
+              pitonsd_dump_regs();
+#endif
+            old_init_state = init_state;
+          }
+          while (old_init_state != 0xf0);
+    87fe0446:	0f000493          	li	s1,240
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:213
+            int init_state = sd_base[_piton_sd_INIT_STATE];
+    87fe044a:	02093403          	ld	s0,32(s2) # 20000020 <ROM_BASE+0x1fff0020>
+    87fe044e:	2401                	sext.w	s0,s0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:218
+            if (old_init_state != init_state)
+    87fe0450:	00878f63          	beq	a5,s0,87fe046e <disk_initialize+0x60>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:219
+              pitonsd_dump_regs();
+    87fe0454:	ea5ff0ef          	jal	ra,87fe02f8 <pitonsd_dump_regs>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:223
+          while (old_init_state != 0xf0);
+    87fe0458:	00941b63          	bne	s0,s1,87fe046e <disk_initialize+0x60>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:225
+#ifdef DUMP_REGS
+        pitonsd_dump_regs();
+    87fe045c:	e9dff0ef          	jal	ra,87fe02f8 <pitonsd_dump_regs>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:228
+#endif
+        return 0;
+}
+    87fe0460:	60e2                	ld	ra,24(sp)
+    87fe0462:	6442                	ld	s0,16(sp)
+    87fe0464:	64a2                	ld	s1,8(sp)
+    87fe0466:	6902                	ld	s2,0(sp)
+    87fe0468:	4501                	li	a0,0
+    87fe046a:	6105                	addi	sp,sp,32
+    87fe046c:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:213
+            int init_state = sd_base[_piton_sd_INIT_STATE];
+    87fe046e:	87a2                	mv	a5,s0
+    87fe0470:	bfe9                	j	87fe044a <disk_initialize+0x3c>
+
+0000000087fe0472 <disk_read>:
+disk_read():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:231
+
+DRESULT disk_read (uint8_t pdrv, uint8_t *buff, uint32_t sector, uint32_t count)
+{
+    87fe0472:	1101                	addi	sp,sp,-32
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:239
+  uint64_t stat2;
+#endif
+  uint64_t stat = 0xDEADBEEF;
+  uint64_t mask = (1 << count) - 1;
+  /* SD sector address */
+  sd_base[ _piton_sd_ADDR_SD ] = sector;
+    87fe0474:	1602                	slli	a2,a2,0x20
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:231
+{
+    87fe0476:	e822                	sd	s0,16(sp)
+    87fe0478:	ec06                	sd	ra,24(sp)
+    87fe047a:	e426                	sd	s1,8(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:239
+  sd_base[ _piton_sd_ADDR_SD ] = sector;
+    87fe047c:	200007b7          	lui	a5,0x20000
+    87fe0480:	9201                	srli	a2,a2,0x20
+    87fe0482:	e390                	sd	a2,0(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:243
+  /* always start at beginning of DMA buffer */
+  sd_base[ _piton_sd_ADDR_DMA ] = 0;
+  /* set sector count */
+  sd_base[ _piton_sd_BLKCNT ] = count;
+    87fe0484:	02069713          	slli	a4,a3,0x20
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:241
+  sd_base[ _piton_sd_ADDR_DMA ] = 0;
+    87fe0488:	0007b423          	sd	zero,8(a5) # 20000008 <ROM_BASE+0x1fff0008>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:243
+  sd_base[ _piton_sd_BLKCNT ] = count;
+    87fe048c:	9301                	srli	a4,a4,0x20
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:237
+  uint64_t mask = (1 << count) - 1;
+    87fe048e:	4405                	li	s0,1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:243
+  sd_base[ _piton_sd_BLKCNT ] = count;
+    87fe0490:	eb98                	sd	a4,16(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:237
+  uint64_t mask = (1 << count) - 1;
+    87fe0492:	00d4143b          	sllw	s0,s0,a3
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:244
+  sd_base[ _piton_sd_REQ_RD ] = 1;
+    87fe0496:	4705                	li	a4,1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:231
+{
+    87fe0498:	852e                	mv	a0,a1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:237
+  uint64_t mask = (1 << count) - 1;
+    87fe049a:	347d                	addiw	s0,s0,-1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:244
+  sd_base[ _piton_sd_REQ_RD ] = 1;
+    87fe049c:	ef98                	sd	a4,24(a5)
+fence_io():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:24
+        asm volatile ("fence io,io" ::: "memory");
+    87fe049e:	0cc0000f          	fence	io,io
+disk_read():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:254 (discriminator 1)
+  do
+    {
+#ifdef ISSUE_356
+      fence(); /* This is needed for a suspected Ariane bug */
+#endif      
+      stat = sd_base[_piton_sd_STATUS];
+    87fe04a2:	6b98                	ld	a4,16(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:260 (discriminator 1)
+#ifdef DUMP_REGS_VERBOSE
+      stat2 = sd_base[_piton_sd_STATUS+32];
+      printf("stat = 0x%x, stat2 = 0x%x\n", stat, stat2);
+#endif
+    }
+  while (_piton_sd_STATUS_REQ_RDY & ~stat);
+    87fe04a4:	8b41                	andi	a4,a4,16
+    87fe04a6:	df75                	beqz	a4,87fe04a2 <disk_read+0x30>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:261
+  sd_base[ _piton_sd_REQ_RD ] = 0;
+    87fe04a8:	0007bc23          	sd	zero,24(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:262
+  vec = sd_base[ _piton_sd_ERROR ] & mask;
+    87fe04ac:	6f84                	ld	s1,24(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:263
+  memcpy(buff, (void *)sd_bram, count*512);
+    87fe04ae:	0096969b          	slliw	a3,a3,0x9
+    87fe04b2:	02069613          	slli	a2,a3,0x20
+    87fe04b6:	9201                	srli	a2,a2,0x20
+    87fe04b8:	200085b7          	lui	a1,0x20008
+    87fe04bc:	408000ef          	jal	ra,87fe08c4 <memcpy>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:262
+  vec = sd_base[ _piton_sd_ERROR ] & mask;
+    87fe04c0:	8ce1                	and	s1,s1,s0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:265
+  if (vec==mask)
+    return 0;
+    87fe04c2:	4501                	li	a0,0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:264
+  if (vec==mask)
+    87fe04c4:	00940563          	beq	s0,s1,87fe04ce <disk_read+0x5c>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:267
+#ifdef DUMP_REGS
+  pitonsd_dump_regs();
+    87fe04c8:	e31ff0ef          	jal	ra,87fe02f8 <pitonsd_dump_regs>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:269
+#endif  
+  return -1;
+    87fe04cc:	557d                	li	a0,-1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/boot.c:270
+}
+    87fe04ce:	60e2                	ld	ra,24(sp)
+    87fe04d0:	6442                	ld	s0,16(sp)
+    87fe04d2:	64a2                	ld	s1,8(sp)
+    87fe04d4:	6105                	addi	sp,sp,32
+    87fe04d6:	8082                	ret
+
+0000000087fe04d8 <_putc.2004>:
+_putc():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:102
+	char bf[24];
+	char ch;
+
+	int _putc(char ch)
+	{
+		if ((unsigned int)((pbuffer - buffer) + 1) >= buffer_len)
+    87fe04d8:	0103b703          	ld	a4,16(t2)
+    87fe04dc:	0083b783          	ld	a5,8(t2)
+    87fe04e0:	0003b683          	ld	a3,0(t2)
+    87fe04e4:	40f707b3          	sub	a5,a4,a5
+    87fe04e8:	2785                	addiw	a5,a5,1
+    87fe04ea:	1782                	slli	a5,a5,0x20
+    87fe04ec:	9381                	srli	a5,a5,0x20
+    87fe04ee:	00d7fe63          	bgeu	a5,a3,87fe050a <_putc.2004+0x32>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:104
+			return 0;
+		*(pbuffer++) = ch;
+    87fe04f2:	00170793          	addi	a5,a4,1
+    87fe04f6:	00f3b823          	sd	a5,16(t2)
+    87fe04fa:	00a70023          	sb	a0,0(a4)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:105
+		*(pbuffer) = '\0';
+    87fe04fe:	0103b783          	ld	a5,16(t2)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:106
+		return 1;
+    87fe0502:	4505                	li	a0,1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:105
+		*(pbuffer) = '\0';
+    87fe0504:	00078023          	sb	zero,0(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:106
+		return 1;
+    87fe0508:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:103
+			return 0;
+    87fe050a:	4501                	li	a0,0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:107
+	}
+    87fe050c:	8082                	ret
+
+0000000087fe050e <_puts.2008>:
+_puts():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:113
+
+	int _puts(char *s, unsigned int len)
+	{
+		unsigned int i;
+
+		if (buffer_len - (pbuffer - buffer) - 1 < len)
+    87fe050e:	0083b703          	ld	a4,8(t2)
+    87fe0512:	0103b783          	ld	a5,16(t2)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:110
+	{
+    87fe0516:	86aa                	mv	a3,a0
+    87fe0518:	852e                	mv	a0,a1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:113
+		if (buffer_len - (pbuffer - buffer) - 1 < len)
+    87fe051a:	0003b583          	ld	a1,0(t2)
+    87fe051e:	8f99                	sub	a5,a5,a4
+    87fe0520:	02051613          	slli	a2,a0,0x20
+    87fe0524:	fff58713          	addi	a4,a1,-1 # 20007fff <ROM_BASE+0x1fff7fff>
+    87fe0528:	8f1d                	sub	a4,a4,a5
+    87fe052a:	9201                	srli	a2,a2,0x20
+    87fe052c:	00c77563          	bgeu	a4,a2,87fe0536 <_puts.2008+0x28>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:114
+			len = buffer_len - (pbuffer - buffer) - 1;
+    87fe0530:	35fd                	addiw	a1,a1,-1
+    87fe0532:	40f5853b          	subw	a0,a1,a5
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:117
+
+		/* Copy to buffer */
+		for (i = 0; i < len; i++)
+    87fe0536:	4781                	li	a5,0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:117 (discriminator 1)
+    87fe0538:	0007861b          	sext.w	a2,a5
+    87fe053c:	0103b703          	ld	a4,16(t2)
+    87fe0540:	00a66563          	bltu	a2,a0,87fe054a <_puts.2008+0x3c>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:119
+			*(pbuffer++) = s[i];
+		*(pbuffer) = '\0';
+    87fe0544:	00070023          	sb	zero,0(a4)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:122
+
+		return len;
+	}
+    87fe0548:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:118 (discriminator 3)
+			*(pbuffer++) = s[i];
+    87fe054a:	00170613          	addi	a2,a4,1
+    87fe054e:	00c3b823          	sd	a2,16(t2)
+    87fe0552:	00f68633          	add	a2,a3,a5
+    87fe0556:	00064603          	lbu	a2,0(a2)
+    87fe055a:	0785                	addi	a5,a5,1
+    87fe055c:	00c70023          	sb	a2,0(a4)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:117 (discriminator 3)
+		for (i = 0; i < len; i++)
+    87fe0560:	bfe1                	j	87fe0538 <_puts.2008+0x2a>
+
+0000000087fe0562 <itoa.part.0>:
+itoa():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:54
+	int	negative = 0;
+    87fe0562:	4881                	li	a7,0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:61
+	if (value < 0 && !unsig) {
+    87fe0564:	00055663          	bgez	a0,87fe0570 <itoa.part.0+0xe>
+    87fe0568:	e681                	bnez	a3,87fe0570 <itoa.part.0+0xe>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:63
+		value = -value;
+    87fe056a:	40a0053b          	negw	a0,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:62
+		negative = 1;
+    87fe056e:	4885                	li	a7,1
+    87fe0570:	06100693          	li	a3,97
+    87fe0574:	c219                	beqz	a2,87fe057a <itoa.part.0+0x18>
+    87fe0576:	04100693          	li	a3,65
+    87fe057a:	0ff6f813          	andi	a6,a3,255
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:69
+		*(pbuffer++) = (digit < 10 ? '0' + digit : (uppercase ? 'A' : 'a') + digit - 10);
+    87fe057e:	4e25                	li	t3,9
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:54
+	int	negative = 0;
+    87fe0580:	86ba                	mv	a3,a4
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:69
+		*(pbuffer++) = (digit < 10 ? '0' + digit : (uppercase ? 'A' : 'a') + digit - 10);
+    87fe0582:	3859                	addiw	a6,a6,-10
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:68
+		int digit = value % radix;
+    87fe0584:	0005031b          	sext.w	t1,a0
+    87fe0588:	02b5753b          	remuw	a0,a0,a1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:69
+		*(pbuffer++) = (digit < 10 ? '0' + digit : (uppercase ? 'A' : 'a') + digit - 10);
+    87fe058c:	0ff57613          	andi	a2,a0,255
+    87fe0590:	06ae6563          	bltu	t3,a0,87fe05fa <itoa.part.0+0x98>
+    87fe0594:	0306061b          	addiw	a2,a2,48
+    87fe0598:	0ff67613          	andi	a2,a2,255
+    87fe059c:	00c68023          	sb	a2,0(a3)
+    87fe05a0:	0685                	addi	a3,a3,1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:70
+		value /= radix;
+    87fe05a2:	02b3553b          	divuw	a0,t1,a1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:71
+	} while (value > 0);
+    87fe05a6:	fcb37fe3          	bgeu	t1,a1,87fe0584 <itoa.part.0+0x22>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:73
+	for (i = (pbuffer - buffer); i < zero_pad; i++)
+    87fe05aa:	40e685bb          	subw	a1,a3,a4
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:69
+		*(pbuffer++) = (digit < 10 ? '0' + digit : (uppercase ? 'A' : 'a') + digit - 10);
+    87fe05ae:	8636                	mv	a2,a3
+    87fe05b0:	40e0083b          	negw	a6,a4
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:74
+		*(pbuffer++) = '0';
+    87fe05b4:	03000313          	li	t1,48
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:73
+	for (i = (pbuffer - buffer); i < zero_pad; i++)
+    87fe05b8:	00c8053b          	addw	a0,a6,a2
+    87fe05bc:	04f56263          	bltu	a0,a5,87fe0600 <itoa.part.0+0x9e>
+    87fe05c0:	4501                	li	a0,0
+    87fe05c2:	00b7e663          	bltu	a5,a1,87fe05ce <itoa.part.0+0x6c>
+    87fe05c6:	9f8d                	subw	a5,a5,a1
+    87fe05c8:	02079513          	slli	a0,a5,0x20
+    87fe05cc:	9101                	srli	a0,a0,0x20
+    87fe05ce:	96aa                	add	a3,a3,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:76
+	if (negative)
+    87fe05d0:	00088763          	beqz	a7,87fe05de <itoa.part.0+0x7c>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:77
+		*(pbuffer++) = '-';
+    87fe05d4:	02d00793          	li	a5,45
+    87fe05d8:	00f68023          	sb	a5,0(a3)
+    87fe05dc:	0685                	addi	a3,a3,1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:83
+	len = (pbuffer - buffer);
+    87fe05de:	40e6853b          	subw	a0,a3,a4
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:79
+	*(pbuffer) = '\0';
+    87fe05e2:	00068023          	sb	zero,0(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:84
+	for (i = 0; i < len / 2; i++) {
+    87fe05e6:	0015559b          	srliw	a1,a0,0x1
+    87fe05ea:	4681                	li	a3,0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:86
+		buffer[i] = buffer[len-i-1];
+    87fe05ec:	fff5081b          	addiw	a6,a0,-1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:84
+	for (i = 0; i < len / 2; i++) {
+    87fe05f0:	0006879b          	sext.w	a5,a3
+    87fe05f4:	00b7ea63          	bltu	a5,a1,87fe0608 <itoa.part.0+0xa6>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:91
+}
+    87fe05f8:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:69
+		*(pbuffer++) = (digit < 10 ? '0' + digit : (uppercase ? 'A' : 'a') + digit - 10);
+    87fe05fa:	00c8063b          	addw	a2,a6,a2
+    87fe05fe:	bf69                	j	87fe0598 <itoa.part.0+0x36>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:74
+		*(pbuffer++) = '0';
+    87fe0600:	0605                	addi	a2,a2,1
+    87fe0602:	fe660fa3          	sb	t1,-1(a2)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:73
+	for (i = (pbuffer - buffer); i < zero_pad; i++)
+    87fe0606:	bf4d                	j	87fe05b8 <itoa.part.0+0x56>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:86
+		buffer[i] = buffer[len-i-1];
+    87fe0608:	40f807bb          	subw	a5,a6,a5
+    87fe060c:	1782                	slli	a5,a5,0x20
+    87fe060e:	9381                	srli	a5,a5,0x20
+    87fe0610:	97ba                	add	a5,a5,a4
+    87fe0612:	00d70633          	add	a2,a4,a3
+    87fe0616:	0007c303          	lbu	t1,0(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:85
+		char j = buffer[i];
+    87fe061a:	00064883          	lbu	a7,0(a2)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:86
+		buffer[i] = buffer[len-i-1];
+    87fe061e:	0685                	addi	a3,a3,1
+    87fe0620:	00660023          	sb	t1,0(a2)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:87
+		buffer[len-i-1] = j;
+    87fe0624:	01178023          	sb	a7,0(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:84
+	for (i = 0; i < len / 2; i++) {
+    87fe0628:	b7e1                	j	87fe05f0 <itoa.part.0+0x8e>
+
+0000000087fe062a <vsnprintf>:
+vsnprintf():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:95
+{
+    87fe062a:	7119                	addi	sp,sp,-128
+    87fe062c:	f0ca                	sd	s2,96(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:94
+vsnprintf(char *buffer, size_t buffer_len, const char *fmt, va_list va)
+    87fe062e:	011c                	addi	a5,sp,128
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:174
+                                        len = itoa(va_arg(va, size_t), 16, 0, 1, bf, zero_pad);
+					_puts(bf, len);
+					break;
+
+				case 's' :
+                                        ptr = (char *)(va_arg(va, size_t) & 0xFFFFFFFF); // a horrible hack
+    87fe0630:	597d                	li	s2,-1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:95
+{
+    87fe0632:	f8a2                	sd	s0,112(sp)
+    87fe0634:	f4a6                	sd	s1,104(sp)
+    87fe0636:	ecce                	sd	s3,88(sp)
+    87fe0638:	e8d2                	sd	s4,80(sp)
+    87fe063a:	e4d6                	sd	s5,72(sp)
+    87fe063c:	fc86                	sd	ra,120(sp)
+    87fe063e:	e0da                	sd	s6,64(sp)
+    87fe0640:	84b2                	mv	s1,a2
+    87fe0642:	8436                	mv	s0,a3
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:94
+vsnprintf(char *buffer, size_t buffer_len, const char *fmt, va_list va)
+    87fe0644:	fc3e                	sd	a5,56(sp)
+    87fe0646:	f42a                	sd	a0,40(sp)
+    87fe0648:	f02e                	sd	a1,32(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:96
+	char *pbuffer = buffer;
+    87fe064a:	f82a                	sd	a0,48(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:127
+		if (ch!='%')
+    87fe064c:	02500993          	li	s3,37
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:135
+                        if (ch == 'l')
+    87fe0650:	06c00a13          	li	s4,108
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:139
+			if (ch=='0') {
+    87fe0654:	03000a93          	li	s5,48
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:174
+                                        ptr = (char *)(va_arg(va, size_t) & 0xFFFFFFFF); // a horrible hack
+    87fe0658:	02095913          	srli	s2,s2,0x20
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:124
+	while ((ch=*(fmt++))) {
+    87fe065c:	7742                	ld	a4,48(sp)
+    87fe065e:	77a2                	ld	a5,40(sp)
+    87fe0660:	0004c503          	lbu	a0,0(s1)
+    87fe0664:	8f1d                	sub	a4,a4,a5
+    87fe0666:	ed09                	bnez	a0,87fe0680 <vsnprintf+0x56>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:186
+			}
+		}
+	}
+end:
+	return pbuffer - buffer;
+}
+    87fe0668:	70e6                	ld	ra,120(sp)
+    87fe066a:	7446                	ld	s0,112(sp)
+    87fe066c:	74a6                	ld	s1,104(sp)
+    87fe066e:	7906                	ld	s2,96(sp)
+    87fe0670:	69e6                	ld	s3,88(sp)
+    87fe0672:	6a46                	ld	s4,80(sp)
+    87fe0674:	6aa6                	ld	s5,72(sp)
+    87fe0676:	6b06                	ld	s6,64(sp)
+    87fe0678:	0007051b          	sext.w	a0,a4
+    87fe067c:	6109                	addi	sp,sp,128
+    87fe067e:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:125
+		if ((unsigned int)((pbuffer - buffer) + 1) >= buffer_len)
+    87fe0680:	0017079b          	addiw	a5,a4,1
+    87fe0684:	7682                	ld	a3,32(sp)
+    87fe0686:	1782                	slli	a5,a5,0x20
+    87fe0688:	9381                	srli	a5,a5,0x20
+    87fe068a:	fcd7ffe3          	bgeu	a5,a3,87fe0668 <vsnprintf+0x3e>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:127
+		if (ch!='%')
+    87fe068e:	01350863          	beq	a0,s3,87fe069e <vsnprintf+0x74>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:124
+	while ((ch=*(fmt++))) {
+    87fe0692:	0485                	addi	s1,s1,1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:179
+					_putc(ch);
+    87fe0694:	02010393          	addi	t2,sp,32
+    87fe0698:	e41ff0ef          	jal	ra,87fe04d8 <_putc.2004>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:180
+					break;
+    87fe069c:	b7c1                	j	87fe065c <vsnprintf+0x32>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:134
+			ch=*(fmt++);
+    87fe069e:	0014c503          	lbu	a0,1(s1)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:135
+                        if (ch == 'l')
+    87fe06a2:	05450f63          	beq	a0,s4,87fe0700 <vsnprintf+0xd6>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:134
+			ch=*(fmt++);
+    87fe06a6:	0489                	addi	s1,s1,2
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:130
+			char zero_pad = 0;
+    87fe06a8:	4781                	li	a5,0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:139
+			if (ch=='0') {
+    87fe06aa:	03551063          	bne	a0,s5,87fe06ca <vsnprintf+0xa0>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:140
+				ch=*(fmt++);
+    87fe06ae:	0004c783          	lbu	a5,0(s1)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:141
+				if (ch == '\0')
+    87fe06b2:	dbdd                	beqz	a5,87fe0668 <vsnprintf+0x3e>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:143
+				if (ch >= '0' && ch <= '9')
+    87fe06b4:	fd07879b          	addiw	a5,a5,-48
+    87fe06b8:	0ff7f793          	andi	a5,a5,255
+    87fe06bc:	46a5                	li	a3,9
+    87fe06be:	00f6f363          	bgeu	a3,a5,87fe06c4 <vsnprintf+0x9a>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:130
+			char zero_pad = 0;
+    87fe06c2:	4781                	li	a5,0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:145
+				ch=*(fmt++);
+    87fe06c4:	0014c503          	lbu	a0,1(s1)
+    87fe06c8:	0489                	addi	s1,s1,2
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:148
+			switch (ch) {
+    87fe06ca:	07000693          	li	a3,112
+    87fe06ce:	0ad50963          	beq	a0,a3,87fe0780 <vsnprintf+0x156>
+    87fe06d2:	06a6e363          	bltu	a3,a0,87fe0738 <vsnprintf+0x10e>
+    87fe06d6:	06300693          	li	a3,99
+    87fe06da:	08d50963          	beq	a0,a3,87fe076c <vsnprintf+0x142>
+    87fe06de:	02a6e563          	bltu	a3,a0,87fe0708 <vsnprintf+0xde>
+    87fe06e2:	d159                	beqz	a0,87fe0668 <vsnprintf+0x3e>
+    87fe06e4:	05800713          	li	a4,88
+    87fe06e8:	fae516e3          	bne	a0,a4,87fe0694 <vsnprintf+0x6a>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:160
+					len = itoa(va_arg(va, unsigned int), 16, (ch=='X'), 1, bf, zero_pad);
+    87fe06ec:	fa850513          	addi	a0,a0,-88
+    87fe06f0:	00840b13          	addi	s6,s0,8
+itoa():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:58
+	if (radix > 16)
+    87fe06f4:	0038                	addi	a4,sp,8
+    87fe06f6:	4685                	li	a3,1
+    87fe06f8:	00153613          	seqz	a2,a0
+    87fe06fc:	45c1                	li	a1,16
+    87fe06fe:	a015                	j	87fe0722 <vsnprintf+0xf8>
+vsnprintf():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:136
+                          ch=*(fmt++);
+    87fe0700:	0024c503          	lbu	a0,2(s1)
+    87fe0704:	048d                	addi	s1,s1,3
+    87fe0706:	b74d                	j	87fe06a8 <vsnprintf+0x7e>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:148
+			switch (ch) {
+    87fe0708:	06400713          	li	a4,100
+    87fe070c:	f8e514e3          	bne	a0,a4,87fe0694 <vsnprintf+0x6a>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:154
+					len = itoa(va_arg(va, unsigned int), 10, 0, (ch=='u'), bf, zero_pad);
+    87fe0710:	f8b50513          	addi	a0,a0,-117
+    87fe0714:	00840b13          	addi	s6,s0,8
+itoa():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:58
+	if (radix > 16)
+    87fe0718:	0038                	addi	a4,sp,8
+    87fe071a:	00153693          	seqz	a3,a0
+    87fe071e:	4601                	li	a2,0
+    87fe0720:	45a9                	li	a1,10
+    87fe0722:	4008                	lw	a0,0(s0)
+    87fe0724:	e3fff0ef          	jal	ra,87fe0562 <itoa.part.0>
+vsnprintf():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:170
+					_puts(bf, len);
+    87fe0728:	0005059b          	sext.w	a1,a0
+    87fe072c:	02010393          	addi	t2,sp,32
+    87fe0730:	0028                	addi	a0,sp,8
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:175
+					_puts(ptr, strlen(ptr));
+    87fe0732:	dddff0ef          	jal	ra,87fe050e <_puts.2008>
+    87fe0736:	a099                	j	87fe077c <vsnprintf+0x152>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:148
+			switch (ch) {
+    87fe0738:	07500713          	li	a4,117
+    87fe073c:	fce50ae3          	beq	a0,a4,87fe0710 <vsnprintf+0xe6>
+    87fe0740:	07800713          	li	a4,120
+    87fe0744:	fae504e3          	beq	a0,a4,87fe06ec <vsnprintf+0xc2>
+    87fe0748:	07300793          	li	a5,115
+    87fe074c:	f4f514e3          	bne	a0,a5,87fe0694 <vsnprintf+0x6a>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:174
+                                        ptr = (char *)(va_arg(va, size_t) & 0xFFFFFFFF); // a horrible hack
+    87fe0750:	00840b13          	addi	s6,s0,8
+    87fe0754:	6000                	ld	s0,0(s0)
+    87fe0756:	01247433          	and	s0,s0,s2
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:175
+					_puts(ptr, strlen(ptr));
+    87fe075a:	8522                	mv	a0,s0
+    87fe075c:	108000ef          	jal	ra,87fe0864 <strlen>
+    87fe0760:	0005059b          	sext.w	a1,a0
+    87fe0764:	02010393          	addi	t2,sp,32
+    87fe0768:	8522                	mv	a0,s0
+    87fe076a:	b7e1                	j	87fe0732 <vsnprintf+0x108>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:165
+					_putc((char)(va_arg(va, int)));
+    87fe076c:	00044503          	lbu	a0,0(s0)
+    87fe0770:	02010393          	addi	t2,sp,32
+    87fe0774:	00840b13          	addi	s6,s0,8
+    87fe0778:	d61ff0ef          	jal	ra,87fe04d8 <_putc.2004>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:174
+                                        ptr = (char *)(va_arg(va, size_t) & 0xFFFFFFFF); // a horrible hack
+    87fe077c:	845a                	mv	s0,s6
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:176
+					break;
+    87fe077e:	bdf9                	j	87fe065c <vsnprintf+0x32>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:169
+                                        len = itoa(va_arg(va, size_t), 16, 0, 1, bf, zero_pad);
+    87fe0780:	00840b13          	addi	s6,s0,8
+itoa():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:58
+	if (radix > 16)
+    87fe0784:	0038                	addi	a4,sp,8
+    87fe0786:	4685                	li	a3,1
+    87fe0788:	4601                	li	a2,0
+    87fe078a:	bf8d                	j	87fe06fc <vsnprintf+0xd2>
+
+0000000087fe078c <snprintf>:
+snprintf():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:190
+
+
+int snprintf(char* buffer, size_t buffer_len, const char *fmt, ...)
+{
+    87fe078c:	715d                	addi	sp,sp,-80
+    87fe078e:	f436                	sd	a3,40(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:193
+	int ret;
+	va_list va;
+	va_start(va, fmt);
+    87fe0790:	1034                	addi	a3,sp,40
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:190
+{
+    87fe0792:	ec06                	sd	ra,24(sp)
+    87fe0794:	f83a                	sd	a4,48(sp)
+    87fe0796:	fc3e                	sd	a5,56(sp)
+    87fe0798:	e0c2                	sd	a6,64(sp)
+    87fe079a:	e4c6                	sd	a7,72(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:193
+	va_start(va, fmt);
+    87fe079c:	e436                	sd	a3,8(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:194
+	ret = vsnprintf(buffer, buffer_len, fmt, va);
+    87fe079e:	e8dff0ef          	jal	ra,87fe062a <vsnprintf>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:198
+	va_end(va);
+
+	return ret;
+}
+    87fe07a2:	60e2                	ld	ra,24(sp)
+    87fe07a4:	6161                	addi	sp,sp,80
+    87fe07a6:	8082                	ret
+
+0000000087fe07a8 <sprintf>:
+sprintf():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:201
+
+int sprintf(char* buffer, const char *fmt, ...)
+{
+    87fe07a8:	715d                	addi	sp,sp,-80
+    87fe07aa:	f032                	sd	a2,32(sp)
+    87fe07ac:	f436                	sd	a3,40(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:205
+	int ret;
+	va_list va;
+	va_start(va, fmt);
+	ret = vsnprintf(buffer, 256, fmt, va);
+    87fe07ae:	862e                	mv	a2,a1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:204
+	va_start(va, fmt);
+    87fe07b0:	1014                	addi	a3,sp,32
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:205
+	ret = vsnprintf(buffer, 256, fmt, va);
+    87fe07b2:	10000593          	li	a1,256
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:201
+{
+    87fe07b6:	ec06                	sd	ra,24(sp)
+    87fe07b8:	f83a                	sd	a4,48(sp)
+    87fe07ba:	fc3e                	sd	a5,56(sp)
+    87fe07bc:	e0c2                	sd	a6,64(sp)
+    87fe07be:	e4c6                	sd	a7,72(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:204
+	va_start(va, fmt);
+    87fe07c0:	e436                	sd	a3,8(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:205
+	ret = vsnprintf(buffer, 256, fmt, va);
+    87fe07c2:	e69ff0ef          	jal	ra,87fe062a <vsnprintf>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:209
+	va_end(va);
+
+	return ret;
+}
+    87fe07c6:	60e2                	ld	ra,24(sp)
+    87fe07c8:	6161                	addi	sp,sp,80
+    87fe07ca:	8082                	ret
+
+0000000087fe07cc <printf>:
+printf():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:212
+
+int printf (const char *fmt, ...)
+{
+    87fe07cc:	710d                	addi	sp,sp,-352
+    87fe07ce:	f62e                	sd	a1,296(sp)
+    87fe07d0:	fa32                	sd	a2,304(sp)
+    87fe07d2:	fe36                	sd	a3,312(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:217
+  char buffer[256];
+  va_list va;
+  int rslt;
+  va_start(va, fmt);
+  rslt = vsnprintf(buffer, sizeof(buffer), fmt, va);
+    87fe07d4:	862a                	mv	a2,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:216
+  va_start(va, fmt);
+    87fe07d6:	1234                	addi	a3,sp,296
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:217
+  rslt = vsnprintf(buffer, sizeof(buffer), fmt, va);
+    87fe07d8:	10000593          	li	a1,256
+    87fe07dc:	0808                	addi	a0,sp,16
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:212
+{
+    87fe07de:	ee06                	sd	ra,280(sp)
+    87fe07e0:	ea22                	sd	s0,272(sp)
+    87fe07e2:	e2ba                	sd	a4,320(sp)
+    87fe07e4:	e6be                	sd	a5,328(sp)
+    87fe07e6:	eac2                	sd	a6,336(sp)
+    87fe07e8:	eec6                	sd	a7,344(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:216
+  va_start(va, fmt);
+    87fe07ea:	e436                	sd	a3,8(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:217
+  rslt = vsnprintf(buffer, sizeof(buffer), fmt, va);
+    87fe07ec:	e3fff0ef          	jal	ra,87fe062a <vsnprintf>
+    87fe07f0:	842a                	mv	s0,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:219
+  va_end(va);
+  print_uart(buffer);
+    87fe07f2:	0808                	addi	a0,sp,16
+    87fe07f4:	97dff0ef          	jal	ra,87fe0170 <print_uart>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/mini-printf.c:221
+  return rslt;
+}
+    87fe07f8:	60f2                	ld	ra,280(sp)
+    87fe07fa:	8522                	mv	a0,s0
+    87fe07fc:	6452                	ld	s0,272(sp)
+    87fe07fe:	6135                	addi	sp,sp,352
+    87fe0800:	8082                	ret
+
+0000000087fe0802 <strcpy>:
+strcpy():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:89
+ */
+char * strcpy(char * dest,const char *src)
+{
+	char *tmp = dest;
+
+	while ((*dest++ = *src++) != '\0')
+    87fe0802:	87aa                	mv	a5,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:89 (discriminator 1)
+    87fe0804:	0005c703          	lbu	a4,0(a1)
+    87fe0808:	0585                	addi	a1,a1,1
+    87fe080a:	0785                	addi	a5,a5,1
+    87fe080c:	fee78fa3          	sb	a4,-1(a5)
+    87fe0810:	fb75                	bnez	a4,87fe0804 <strcpy+0x2>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:92
+		/* nothing */;
+	return tmp;
+}
+    87fe0812:	8082                	ret
+
+0000000087fe0814 <strcat>:
+strcat():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:152
+ */
+char * strcat(char * dest, const char * src)
+{
+	char *tmp = dest;
+
+	while (*dest)
+    87fe0814:	87aa                	mv	a5,a0
+    87fe0816:	0007c683          	lbu	a3,0(a5)
+    87fe081a:	873e                	mv	a4,a5
+    87fe081c:	0785                	addi	a5,a5,1
+    87fe081e:	fee5                	bnez	a3,87fe0816 <strcat+0x2>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:154 (discriminator 1)
+		dest++;
+	while ((*dest++ = *src++) != '\0')
+    87fe0820:	0005c783          	lbu	a5,0(a1)
+    87fe0824:	0585                	addi	a1,a1,1
+    87fe0826:	0705                	addi	a4,a4,1
+    87fe0828:	fef70fa3          	sb	a5,-1(a4)
+    87fe082c:	fbf5                	bnez	a5,87fe0820 <strcat+0xc>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:158
+		;
+
+	return tmp;
+}
+    87fe082e:	8082                	ret
+
+0000000087fe0830 <strcmp>:
+strcmp():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:197
+ * strcmp - Compare two strings
+ * @cs: One string
+ * @ct: Another string
+ */
+int strcmp(const char * cs,const char * ct)
+{
+    87fe0830:	872a                	mv	a4,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:201
+	register signed char __res;
+
+	while (1) {
+		if ((__res = *cs - *ct++) != 0 || !*cs++)
+    87fe0832:	00074683          	lbu	a3,0(a4)
+    87fe0836:	0005c783          	lbu	a5,0(a1)
+    87fe083a:	0585                	addi	a1,a1,1
+    87fe083c:	40f687bb          	subw	a5,a3,a5
+    87fe0840:	0187951b          	slliw	a0,a5,0x18
+    87fe0844:	4185551b          	sraiw	a0,a0,0x18
+    87fe0848:	e119                	bnez	a0,87fe084e <strcmp+0x1e>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:201 (discriminator 1)
+    87fe084a:	0705                	addi	a4,a4,1
+    87fe084c:	f2fd                	bnez	a3,87fe0832 <strcmp+0x2>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:206
+			break;
+	}
+
+	return __res;
+}
+    87fe084e:	8082                	ret
+
+0000000087fe0850 <strchrnul>:
+strchrnul():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:247
+}
+#endif
+
+const char *strchrnul(const char *s, int c)
+{
+	for (; *s != (char)c; ++s)
+    87fe0850:	0ff5f593          	andi	a1,a1,255
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:247 (discriminator 1)
+    87fe0854:	00054783          	lbu	a5,0(a0)
+    87fe0858:	00b79363          	bne	a5,a1,87fe085e <strchrnul+0xe>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:251
+		if (*s == '\0')
+			break;
+	return s;
+}
+    87fe085c:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:248
+		if (*s == '\0')
+    87fe085e:	dffd                	beqz	a5,87fe085c <strchrnul+0xc>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:247
+	for (; *s != (char)c; ++s)
+    87fe0860:	0505                	addi	a0,a0,1
+    87fe0862:	bfcd                	j	87fe0854 <strchrnul+0x4>
+
+0000000087fe0864 <strlen>:
+strlen():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:279
+ */
+size_t strlen(const char * s)
+{
+	const char *sc;
+
+	for (sc = s; *sc != '\0'; ++sc)
+    87fe0864:	87aa                	mv	a5,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:279 (discriminator 1)
+    87fe0866:	0007c703          	lbu	a4,0(a5)
+    87fe086a:	e701                	bnez	a4,87fe0872 <strlen+0xe>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:282
+		/* nothing */;
+	return sc - s;
+}
+    87fe086c:	40a78533          	sub	a0,a5,a0
+    87fe0870:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:279 (discriminator 3)
+	for (sc = s; *sc != '\0'; ++sc)
+    87fe0872:	0785                	addi	a5,a5,1
+    87fe0874:	bfcd                	j	87fe0866 <strlen+0x2>
+
+0000000087fe0876 <memset>:
+memset():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:490
+
+	unsigned long cl = 0;
+	int i;
+
+	/* do it one word at a time (32 bits or 64 bits) while possible */
+	if ( ((ulong)s & (sizeof(*sl) - 1)) == 0) {
+    87fe0876:	00757713          	andi	a4,a0,7
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:483
+	unsigned long *sl = (unsigned long *) s;
+    87fe087a:	87aa                	mv	a5,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:490
+	if ( ((ulong)s & (sizeof(*sl) - 1)) == 0) {
+    87fe087c:	eb05                	bnez	a4,87fe08ac <memset+0x36>
+    87fe087e:	47a1                	li	a5,8
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:493
+		for (i = 0; i < sizeof(*sl); i++) {
+			cl <<= 8;
+			cl |= c & 0xff;
+    87fe0880:	0ff5f693          	andi	a3,a1,255
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:492 (discriminator 3)
+			cl <<= 8;
+    87fe0884:	0722                	slli	a4,a4,0x8
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:493 (discriminator 3)
+			cl |= c & 0xff;
+    87fe0886:	37fd                	addiw	a5,a5,-1
+    87fe0888:	8f55                	or	a4,a4,a3
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:491 (discriminator 3)
+		for (i = 0; i < sizeof(*sl); i++) {
+    87fe088a:	ffed                	bnez	a5,87fe0884 <memset+0xe>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:483
+	unsigned long *sl = (unsigned long *) s;
+    87fe088c:	87aa                	mv	a5,a0
+    87fe088e:	00c508b3          	add	a7,a0,a2
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:495
+		}
+		while (count >= sizeof(*sl)) {
+    87fe0892:	469d                	li	a3,7
+    87fe0894:	40f88833          	sub	a6,a7,a5
+    87fe0898:	0106ee63          	bltu	a3,a6,87fe08b4 <memset+0x3e>
+    87fe089c:	00365793          	srli	a5,a2,0x3
+    87fe08a0:	5761                	li	a4,-8
+    87fe08a2:	02e78733          	mul	a4,a5,a4
+    87fe08a6:	078e                	slli	a5,a5,0x3
+    87fe08a8:	97aa                	add	a5,a5,a0
+    87fe08aa:	963a                	add	a2,a2,a4
+    87fe08ac:	963e                	add	a2,a2,a5
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:502
+			count -= sizeof(*sl);
+		}
+	}
+
+	s8 = (char *)sl;
+	while (count--)
+    87fe08ae:	00c79763          	bne	a5,a2,87fe08bc <memset+0x46>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:506
+		*s8++ = c;
+
+	return s;
+}
+    87fe08b2:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:496
+			*sl++ = cl;
+    87fe08b4:	07a1                	addi	a5,a5,8
+    87fe08b6:	fee7bc23          	sd	a4,-8(a5)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:497
+			count -= sizeof(*sl);
+    87fe08ba:	bfe9                	j	87fe0894 <memset+0x1e>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:503
+		*s8++ = c;
+    87fe08bc:	0785                	addi	a5,a5,1
+    87fe08be:	feb78fa3          	sb	a1,-1(a5)
+    87fe08c2:	b7f5                	j	87fe08ae <memset+0x38>
+
+0000000087fe08c4 <memcpy>:
+memcpy():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:524
+void * memcpy(void *dest, const void *src, size_t count)
+{
+	unsigned long *dl = (unsigned long *)dest, *sl = (unsigned long *)src;
+	char *d8, *s8;
+
+	if (src == dest)
+    87fe08c4:	00b50b63          	beq	a0,a1,87fe08da <memcpy+0x16>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:528
+		return dest;
+
+	/* while all data is aligned (common case), copy a word at a time */
+	if ( (((ulong)dest | (ulong)src) & (sizeof(*dl) - 1)) == 0) {
+    87fe08c8:	00b567b3          	or	a5,a0,a1
+    87fe08cc:	8b9d                	andi	a5,a5,7
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:529
+		while (count >= sizeof(*dl)) {
+    87fe08ce:	471d                	li	a4,7
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:528
+	if ( (((ulong)dest | (ulong)src) & (sizeof(*dl) - 1)) == 0) {
+    87fe08d0:	cf99                	beqz	a5,87fe08ee <memcpy+0x2a>
+    87fe08d2:	872a                	mv	a4,a0
+    87fe08d4:	4781                	li	a5,0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:537
+		}
+	}
+	/* copy the reset one byte at a time */
+	d8 = (char *)dl;
+	s8 = (char *)sl;
+	while (count--)
+    87fe08d6:	02f61b63          	bne	a2,a5,87fe090c <memcpy+0x48>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:541
+		*d8++ = *s8++;
+
+	return dest;
+}
+    87fe08da:	8082                	ret
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:530
+			*dl++ = *sl++;
+    87fe08dc:	00f586b3          	add	a3,a1,a5
+    87fe08e0:	0006b803          	ld	a6,0(a3)
+    87fe08e4:	00f506b3          	add	a3,a0,a5
+    87fe08e8:	07a1                	addi	a5,a5,8
+    87fe08ea:	0106b023          	sd	a6,0(a3)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:529
+		while (count >= sizeof(*dl)) {
+    87fe08ee:	40f606b3          	sub	a3,a2,a5
+    87fe08f2:	fed765e3          	bltu	a4,a3,87fe08dc <memcpy+0x18>
+    87fe08f6:	00365793          	srli	a5,a2,0x3
+    87fe08fa:	5761                	li	a4,-8
+    87fe08fc:	02e78733          	mul	a4,a5,a4
+    87fe0900:	078e                	slli	a5,a5,0x3
+    87fe0902:	95be                	add	a1,a1,a5
+    87fe0904:	963a                	add	a2,a2,a4
+    87fe0906:	00f50733          	add	a4,a0,a5
+    87fe090a:	b7e9                	j	87fe08d4 <memcpy+0x10>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/string.c:538
+		*d8++ = *s8++;
+    87fe090c:	00f586b3          	add	a3,a1,a5
+    87fe0910:	0006c803          	lbu	a6,0(a3)
+    87fe0914:	00f706b3          	add	a3,a4,a5
+    87fe0918:	0785                	addi	a5,a5,1
+    87fe091a:	01068023          	sb	a6,0(a3)
+    87fe091e:	bf65                	j	87fe08d6 <memcpy+0x12>
+
+Disassembly of section .text.startup:
+
+0000000087fe0920 <main>:
+main():
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:9
+    init_uart(50000000, 115200);
+    87fe0920:	65f1                	lui	a1,0x1c
+    87fe0922:	02faf537          	lui	a0,0x2faf
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:6
+{
+    87fe0926:	1101                	addi	sp,sp,-32
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:9
+    init_uart(50000000, 115200);
+    87fe0928:	20058593          	addi	a1,a1,512 # 1c200 <ROM_BASE+0xc200>
+    87fe092c:	08050513          	addi	a0,a0,128 # 2faf080 <ROM_BASE+0x2f9f080>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:6
+{
+    87fe0930:	ec06                	sd	ra,24(sp)
+    87fe0932:	e426                	sd	s1,8(sp)
+    87fe0934:	e04a                	sd	s2,0(sp)
+    87fe0936:	e822                	sd	s0,16(sp)
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:9
+    init_uart(50000000, 115200);
+    87fe0938:	ff6ff0ef          	jal	ra,87fe012e <init_uart>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:10
+    hello();
+    87fe093c:	931ff0ef          	jal	ra,87fe026c <hello>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:11
+    disk_initialize (0);
+    87fe0940:	4501                	li	a0,0
+    87fe0942:	acdff0ef          	jal	ra,87fe040e <disk_initialize>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:12
+    disk_read(0, buff, 0, 1);
+    87fe0946:	4585                	li	a1,1
+    87fe0948:	4685                	li	a3,1
+    87fe094a:	4601                	li	a2,0
+    87fe094c:	05fe                	slli	a1,a1,0x1f
+    87fe094e:	4501                	li	a0,0
+    87fe0950:	b23ff0ef          	jal	ra,87fe0472 <disk_read>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:15
+      if (ch != -1) write_serial(ch);
+    87fe0954:	597d                	li	s2,-1
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:16
+    } while (ch != '\r');
+    87fe0956:	44b5                	li	s1,13
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:14
+      ch = get_uart_byte();
+    87fe0958:	8fdff0ef          	jal	ra,87fe0254 <get_uart_byte>
+    87fe095c:	842a                	mv	s0,a0
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:15
+      if (ch != -1) write_serial(ch);
+    87fe095e:	ff250de3          	beq	a0,s2,87fe0958 <main+0x38>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:15 (discriminator 1)
+    87fe0962:	0ff57513          	andi	a0,a0,255
+    87fe0966:	fb4ff0ef          	jal	ra,87fe011a <write_serial>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:16 (discriminator 1)
+    } while (ch != '\r');
+    87fe096a:	fe9417e3          	bne	s0,s1,87fe0958 <main+0x38>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:17
+    finish();
+    87fe096e:	981ff0ef          	jal	ra,87fe02ee <finish>
+/local/scratch/jrrk2/lowrisc-chip-ariane-v0.7/ariane-buggy/fpga/src/bootrom/src/main.c:19 (discriminator 1)
+    while (1)
+    87fe0972:	a001                	j	87fe0972 <main+0x52>
