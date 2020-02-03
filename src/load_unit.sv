@@ -37,6 +37,8 @@ module load_unit import ariane_pkg::*; #(
     // address checker
     output logic [11:0]              page_offset_o,
     input  logic                     page_offset_matches_i,
+    input  logic                     store_buffer_empty_i, // the entire store-buffer is empty
+    input  logic [TRANS_ID_BITS-1:0] commit_tran_id_i,
     // D$ interface
     input dcache_req_o_t             req_port_i,
     output dcache_req_i_t            req_port_o,
@@ -75,9 +77,11 @@ module load_unit import ariane_pkg::*; #(
 
     logic stall_nc;  // stall because of non-empty WB and address within non-cacheable region.
     // should we stall the request e.g.: is it withing a non-cacheable region
-    // and the write buffer is not empty so that we don't forward anything
+    // and the write buffer (in the cache and in the core) is not empty so that we don't forward anything
     // from the write buffer (e.g. it would essentially be cached).
-    assign stall_nc = ~dcache_wbuffer_empty_i & is_inside_cacheable_regions(ArianeCfg, paddr_i);
+    assign stall_nc = (~(dcache_wbuffer_empty_i | store_buffer_empty_i) & is_inside_cacheable_regions(ArianeCfg, paddr_i))
+                    // this guards the load to be executed non-speculatively (we wait until our transaction id is on port 0
+                    | (commit_tran_id_i != lsu_ctrl_i.trans_id & is_inside_nonidempotent_regions(ArianeCfg, paddr_i));
 
     // ---------------
     // Load Control
