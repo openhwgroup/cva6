@@ -45,6 +45,7 @@ module commit_stage #(
     // commit signals to ex
     output logic                                    commit_lsu_o,       // commit the pending store
     input  logic                                    commit_lsu_ready_i, // commit buffer of LSU is ready
+    output logic [TRANS_ID_BITS-1:0]                commit_tran_id_o,   // transaction id of first commit port
     output logic                                    amo_valid_commit_o, // valid AMO in commit stage
     input  logic                                    no_st_pending_i,    // there is no store pending
     output logic                                    commit_csr_o,       // commit the pending CSR instruction
@@ -80,6 +81,8 @@ module commit_stage #(
         dirty_fp_state_o |= commit_ack_o[i] & (commit_instr_i[i].fu inside {FPU, FPU_VEC} || is_rd_fpr(commit_instr_i[i].op));
       end
     end
+
+    assign commit_tran_id_o = commit_instr_i[0].trans_id;
 
     logic instr_0_is_amo;
     assign instr_0_is_amo = is_amo(commit_instr_i[0].op);

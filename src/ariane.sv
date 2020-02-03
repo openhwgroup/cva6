@@ -125,6 +125,7 @@ module ariane #(
   // LSU Commit
   logic                     lsu_commit_commit_ex;
   logic                     lsu_commit_ready_ex_commit;
+  logic [TRANS_ID_BITS-1:0] lsu_commit_trans_id;
   logic                     no_st_pending_ex;
   logic                     no_st_pending_commit;
   logic                     amo_valid_commit;
@@ -376,6 +377,7 @@ module ariane #(
 
     .lsu_commit_i           ( lsu_commit_commit_ex        ), // from commit
     .lsu_commit_ready_o     ( lsu_commit_ready_ex_commit  ), // to commit
+    .commit_tran_id_i       ( lsu_commit_trans_id         ), // from commit
     .no_st_pending_o        ( no_st_pending_ex            ),
     // FPU
     .fpu_ready_o            ( fpu_ready_ex_id             ),
@@ -437,6 +439,7 @@ module ariane #(
     .we_fpr_o               ( we_fpr_commit_id              ),
     .commit_lsu_o           ( lsu_commit_commit_ex          ),
     .commit_lsu_ready_i     ( lsu_commit_ready_ex_commit    ),
+    .commit_tran_id_o       ( lsu_commit_trans_id           ),
     .amo_valid_commit_o     ( amo_valid_commit              ),
     .amo_resp_i             ( amo_resp                      ),
     .commit_csr_o           ( csr_commit_commit_ex          ),

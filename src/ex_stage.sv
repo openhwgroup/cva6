@@ -62,6 +62,7 @@ module ex_stage #(
 
     input  logic                                   lsu_commit_i,
     output logic                                   lsu_commit_ready_o, // commit queue is ready to accept another commit request
+    input  logic [TRANS_ID_BITS-1:0]               commit_tran_id_i,
     output logic                                   no_st_pending_o,
     input  logic                                   amo_valid_commit_i,
     // FPU
@@ -276,6 +277,7 @@ module ex_stage #(
         .store_exception_o,
         .commit_i              ( lsu_commit_i       ),
         .commit_ready_o        ( lsu_commit_ready_o ),
+        .commit_tran_id_i,
         .enable_translation_i,
         .en_ld_st_translation_i,
         .icache_areq_i,

@@ -19,6 +19,7 @@ module store_unit (
     input  logic                     rst_ni,  // Asynchronous reset active low
     input  logic                     flush_i,
     output logic                     no_st_pending_o,
+    output logic                     store_buffer_empty_o,
     // store unit input port
     input  logic                     valid_i,
     input  lsu_ctrl_t                lsu_ctrl_i,
@@ -217,6 +218,7 @@ module store_unit (
         .rst_ni,
         .flush_i,
         .no_st_pending_o,
+        .store_buffer_empty_o,
         .page_offset_i,
         .page_offset_matches_o,
         .commit_i,

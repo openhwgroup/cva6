@@ -74,9 +74,9 @@ package ariane_soc;
     BTBEntries: 32,
     BHTEntries: 128,
     // idempotent region
-    NrNonIdempotentRules:  0,
+    NrNonIdempotentRules:  1,
     NonIdempotentAddrBase: {64'b0},
-    NonIdempotentLength:   {64'b0},
+    NonIdempotentLength:   {DRAMBase},
     NrExecuteRegionRules:  3,
     ExecuteRegionAddrBase: {DRAMBase,   ROMBase,   DebugBase},
     ExecuteRegionLength:   {DRAMLength, ROMLength, DebugLength},
