@@ -53,32 +53,9 @@ module mock_uart (
     assign pready_o = 1'b1;
     assign pslverr_o = 1'b0;
 
-    // string buffer
-    byte buffer [$];
-
-    function void flush();
-        string s;
-        // dump the buffer out the whole buffer
-        foreach (buffer[i]) begin
-            s = $sformatf("%s%c",s, buffer[i]);
-        end
-
-        $display(s);
-
-        // clear buffer afterwards
-        buffer = {};
-    endfunction : flush
-
-    // put a char into the buffer
-    function void append(byte ch);
-
-        // wait for the new line
-        if (ch == 8'hA)
-            flush();
-        else
-            buffer.push_back(ch);
-
-    endfunction : append
+    function void uart_tx(byte ch);
+        $write("%c", ch);
+    endfunction : uart_tx
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (rst_ni) begin
@@ -86,7 +63,7 @@ module mock_uart (
                 case ((paddr_i >> 'h2) & 'h7)
                     THR: begin
                         if (lcr & 'h80) dll <= byte'(pwdata_i[7:0]);
-                        else append(byte'(pwdata_i[7:0]));
+                        else uart_tx(byte'(pwdata_i[7:0]));
                     end
                     IER: begin
                         if (lcr & 'h80) dlm <= byte'(pwdata_i[7:0]);
