@@ -49,7 +49,7 @@ module branch_unit (
         resolved_branch_o.cf_type        = branch_predict_i.cf;
         // calculate next PC, depending on whether the instruction is compressed or not this may be different
         // TODO(zarubaf): We already calculate this a couple of times, maybe re-use?
-        next_pc                          = pc_i + ((is_compressed_instr_i) ? {{riscv::VLEN-2{1'b0}}, 2'b10} : {{riscv::VLEN-3{1'b0}}, 3'b100});
+        next_pc                          = pc_i + ((is_compressed_instr_i) ? {{riscv::VLEN-2{1'b0}}, 2'h2} : {{riscv::VLEN-3{1'b0}}, 3'h4});
         // calculate target address simple 64 bit addition
         target_address                   = $unsigned($signed(jump_base) + $signed(fu_data_i.imm[riscv::VLEN-1:0]));
         // on a JALR we are supposed to reset the LSB to 0 (according to the specification)
