@@ -43,9 +43,10 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
                                       PULP_SECURE       =    1
                            )
                            (
-                            uvmt_cv32_clk_gen_if    clk_gen_if,
-                            uvmt_cv32_vp_status_if  vp_status_if,
-                            uvmt_cv32_core_cntrl_if core_cntrl_if
+                            uvmt_cv32_clk_gen_if     clk_gen_if,
+                            uvmt_cv32_vp_status_if   vp_status_if,
+                            uvmt_cv32_core_cntrl_if  core_cntrl_if,
+                            uvmt_cv32_core_status_if core_status_if
                            );
 
     // signals connecting core to memory
@@ -129,12 +130,12 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
          .irq_id_o               ( irq_id_out                     ),
          .irq_sec_i              ( irq_sec                        ),
 
-         .sec_lvl_o              ( sec_lvl_o                      ),
+         .sec_lvl_o              ( core_status_if.sec_lvl         ),
 
-         .debug_req_i            ( debug_req_i                    ),
+         .debug_req_i            ( core_cntrl_if.debug_req        ),
 
-         .fetch_enable_i         ( fetch_enable_i                 ),
-         .core_busy_o            ( core_busy_o                    ),
+         .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
+         .core_busy_o            ( core_status_if.core_busy       ),
 
          .ext_perf_counters_i    ( core_cntrl_if.ext_perf_counters),
          .fregfile_disable_i     ( core_cntrl_if.fregfile_disable )

@@ -16,8 +16,8 @@
 # 
 ###############################################################################
 #
-# Makefile to test compilation of the UVM Environment and RTL.  Written
-# specifically for Metrics DSIM.  Not intended to run tests from here.
+# Makefile to run tests and regressions of the CV32E UVM Environment and RTL.
+# Currently only supports Metrics DSIM.
 #
 ###############################################################################
 
@@ -38,6 +38,9 @@ DSIM_IMAGE              = dsim.out
 export DV_UVMT_CV32_PATH = $(ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
 export DV_UVME_CV32_PATH = $(ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
+
+# Testcase name
+TEST ?= uvmt_cv32_smoke_test_c
 
 # TB source files for the CV32E core
 TBSRC_HOME  := $(ROOT_DIR)/$(COREV_PROJ)/tb
@@ -92,7 +95,7 @@ dsim-comp: mk_results $(FPNEW_PKG)
 		+incdir+$(RTLSRC_INCDIR) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
-		+UVM_TESTNAME=uvmt_cv32_base_test_c
+		+UVM_TESTNAME=$(TEST)
 #		-genimage $(DSIM_IMAGE)
 
 

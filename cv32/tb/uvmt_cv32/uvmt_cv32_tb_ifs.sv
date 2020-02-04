@@ -65,12 +65,11 @@ interface uvmt_cv32_clk_gen_if (output logic core_clock, output logic core_reset
       core_clock_period = clk_period * 1ps;
    endfunction : set_clk_period
    
-   /**
-    * Triggers the generation of clk.
-    */
+   /** Triggers the generation of clk. */
    function void start();
       start_clk = 1;
       $display("%m: uvmt_cv32_clk_gen_if.start() called");
+      //`uvm_info("CLK_GEN_IF", "uvmt_cv32_clk_gen_if.start() called", UVM_NONE)
    endfunction : start
    
 endinterface : uvmt_cv32_clk_gen_if
@@ -105,12 +104,13 @@ interface uvmt_cv32_core_cntrl_if (
                                     output logic       test_en,
                                     output logic [7:0] boot_addr,
                                     output logic [3:0] core_id,
-                                    output logic [5:0] cluster_id
+                                    output logic [5:0] cluster_id,
+                                    // no idea what to do with this...
+                                    output logic       debug_req
                                   );
 
-  // TODO: fetch_en should wait a random number of clocks before being asserted.
   initial begin: static_controls
-    fetch_en          = 1'b1;
+    fetch_en          = 1'b0; // Enabled by go_fetch(), below
     fregfile_disable  = 1'b0;
     ext_perf_counters = 1'b0; // TODO: set proper width (currently 0 in the RTL)
   end
@@ -126,6 +126,28 @@ interface uvmt_cv32_core_cntrl_if (
     cluster_id = 6'b00_0000;
   end
 
+  // TODO: waiting for the User Manual to provide some guidance here...
+  initial begin: debug_control
+    debug_req  = 1'b0;
+  end
+
+  /** Sets fetch_en to the core. */
+  function void go_fetch();
+    fetch_en = 1'b1;
+    //`uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_NONE)
+    $display("%m: uvmt_cv32_core_cntrl_if.go_fetch() called");
+  endfunction : go_fetch
+
 endinterface : uvmt_cv32_core_cntrl_if
+
+/**
+ * Core status signals.
+ */
+interface uvmt_cv32_core_status_if (
+                                    input  logic       core_busy,
+                                    input  logic       sec_lvl
+                                  );
+
+endinterface : uvmt_cv32_core_status_if
 
 `endif // __UVMT_CV32_TB_IFS_SV__
