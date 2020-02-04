@@ -282,7 +282,6 @@ module ariane_peripherals #(
     end else begin
         assign irq_sources[0] = 1'b0;
         /* pragma translate_off */
-        `ifndef VERILATOR
         mock_uart i_mock_uart (
             .clk_i     ( clk_i        ),
             .rst_ni    ( rst_ni       ),
@@ -295,7 +294,6 @@ module ariane_peripherals #(
             .pready_o  ( uart_pready  ),
             .pslverr_o ( uart_pslverr )
         );
-        `endif
         /* pragma translate_on */
     end
 
