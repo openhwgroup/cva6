@@ -371,6 +371,7 @@ verilate_command := $(verilator)                                                
                     $(filter-out src/fpu_wrap.sv, $(filter-out %.vhd, $(src)))                                   \
                     +define+$(defines)                                                                           \
                     src/util/sram.sv                                                                             \
+                    tb/common/mock_uart.sv                                                                       \
                     +incdir+src/axi_node                                                                         \
                     $(if $(verilator_threads), --threads $(verilator_threads))                                   \
                     --unroll-count 256                                                                           \
