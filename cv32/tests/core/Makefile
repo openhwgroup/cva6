@@ -281,10 +281,10 @@ xrun-firmware: xrun-all firmware/firmware.hex
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
 		+incdir+$(RTLSRC_INCDIR) +firmware=firmware/firmware.hex
 xrun-compile-only: $(FPNEW_PKG)
-       $(XRUN) \
-               $(XRUN_FLAGS) \
-               $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-               +incdir+$(RTLSRC_INCDIR)
+	$(XRUN) \
+		$(XRUN_FLAGS) \
+		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
+		+incdir+$(RTLSRC_INCDIR)
 
 # Cadence Xcelium xrun cleanup
 .PHONY: xrun-clean xrun-clean-all
