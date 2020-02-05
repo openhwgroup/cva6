@@ -214,7 +214,7 @@ module issue_read_operands #(
 
         // use the PC as operand a
         if (issue_instr_i.use_pc) begin
-            operand_a_n = {{64-riscv::VLEN{1'b0}}, issue_instr_i.pc};
+            operand_a_n = {{64-riscv::VLEN{issue_instr_i.pc[riscv::VLEN-1]}}, issue_instr_i.pc};
         end
 
         // use the zimm as operand a

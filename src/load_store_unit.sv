@@ -83,9 +83,14 @@ module load_store_unit #(
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
     logic [riscv::VLEN-1:0]   vaddr_i;
+    logic [63:0]              vaddr64;
+    logic                     overflow;
     logic [7:0]               be_i;
 
-    assign vaddr_i = $unsigned($signed(fu_data_i.imm[riscv::VLEN-1:0]) + $signed(fu_data_i.operand_a[riscv::VLEN-1:0]));
+    assign vaddr64 = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
+    assign vaddr_i = vaddr64[riscv::VLEN-1:0];
+    // we work with SV39, so if VM is enabled, check that all bits [64:riscv::38] are equal
+    assign overflow = !((&vaddr64[63:riscv::VLEN-1]) == 1'b1 || (|vaddr64[63:riscv::VLEN-1]) == 1'b0);
 
     logic                     st_valid_i;
     logic                     ld_valid_i;
@@ -331,8 +336,7 @@ module load_store_unit #(
             end
         end
 
-        // we work with SV39, so if VM is enabled, check that all bits [riscv::VLEN-1:38] are equal
-        if (en_ld_st_translation_i && !((&lsu_ctrl.vaddr[riscv::VLEN-1:38]) == 1'b1 || (|lsu_ctrl.vaddr[riscv::VLEN-1:38]) == 1'b0)) begin
+        if (en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
@@ -357,7 +361,7 @@ module load_store_unit #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),
