@@ -47,6 +47,9 @@ package ariane_pkg;
       int unsigned                      NrCachedRegionRules;   // Number of regions which have cached property
       logic [NrMaxRules-1:0][63:0]      CachedRegionAddrBase;  // base which needs to match
       logic [NrMaxRules-1:0][63:0]      CachedRegionLength;    // bit mask which bits to consider when matching the rule
+      int unsigned                      NrPhysicalRegionRules;   // Number of regions which have physical memory present
+      logic [NrMaxRules-1:0][63:0]      PhysicalRegionAddrBase;  // base which needs to match
+      logic [NrMaxRules-1:0][63:0]      PhysicalRegionLength;    // bit mask which bits to consider when matching the rule
       // cache config
       bit                               Axi64BitCompliant;     // set to 1 when using in conjunction with 64bit AXI bus adapter
       bit                               SwapEndianess;         // set to 1 to swap endianess inside L1.5 openpiton adapter
@@ -65,11 +68,15 @@ package ariane_pkg;
       NrExecuteRegionRules: 3,
       //                      DRAM,          Boot ROM,   Debug Module
       ExecuteRegionAddrBase: {64'h8000_0000, 64'h1_0000, 64'h0},
-      ExecuteRegionLength:   {64'h40000000,  64'h10000,  64'h1000},
+      ExecuteRegionLength:   {64'h4000_0000, 64'h1_0000, 64'h1000},
       // cached region
       NrCachedRegionRules:    1,
       CachedRegionAddrBase:  {64'h8000_0000},
       CachedRegionLength:    {64'h40000000},
+      // physical region
+      NrPhysicalRegionRules:    1,
+      PhysicalRegionAddrBase:  {64'h0000_0000},
+      PhysicalRegionLength:    {64'hC000_0000},
       //  cache config
       Axi64BitCompliant:      1'b1,
       SwapEndianess:          1'b0,
@@ -87,6 +94,7 @@ package ariane_pkg;
         assert(Cfg.NrNonIdempotentRules <= NrMaxRules);
         assert(Cfg.NrExecuteRegionRules <= NrMaxRules);
         assert(Cfg.NrCachedRegionRules  <= NrMaxRules);
+        assert(Cfg.NrPhysicalRegionRules  <= NrMaxRules);
       `endif
       // pragma translate_on
     endfunction
@@ -123,6 +131,15 @@ package ariane_pkg;
       end
       return |pass;
     endfunction : is_inside_cacheable_regions
+
+    function automatic logic is_inside_physical_regions (ariane_cfg_t Cfg, logic[63:0] address);
+      automatic logic[NrMaxRules-1:0] pass;
+      pass = '0;
+      for (int unsigned k = 0; k < Cfg.NrPhysicalRegionRules; k++) begin
+        pass[k] = range_check(Cfg.PhysicalRegionAddrBase[k], Cfg.PhysicalRegionLength[k], address);
+      end
+      return |pass;
+    endfunction : is_inside_physical_regions
 
     // TODO: Slowly move those parameters to the new system.
     localparam NR_SB_ENTRIES = 8; // number of scoreboard entries
