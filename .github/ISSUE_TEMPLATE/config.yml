@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Tasks
-    url: https://github.com/openhwgroup/core-v-docs/issues/new?template=task.md
+    url: https://github.com/openhwgroup/core-v-verif/issues/new?template=task.md
     about: Tasks to create new or modify existing verification code.
   - name: Bugs
-    url: https://github.com/openhwgroup/core-v-docs/issues/new?template=bug.md
+    url: https://github.com/openhwgroup/core-v-verif/issues/new?template=bug.md
     about: Bugs against existing verification code.
