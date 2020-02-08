@@ -65,10 +65,9 @@ module tb_top
 
         if($value$plusargs("firmware=%s", firmware)) begin
             if($test$plusargs("verbose"))
-                $display("[TESTBENCH] %t: loading firmware %0s ...",
+                $display("[TESTBENCH] @ t=%0t: loading firmware %0s",
                          $time, firmware);
             $readmemh(firmware, riscv_wrapper_i.ram_i.dp_ram_i.mem);
-
         end else begin
             $display("No firmware specified");
             $finish;
