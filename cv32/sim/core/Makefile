@@ -139,28 +139,33 @@ RISCV                   ?= ~/.riscv
 RISCV_EXE_PREFIX         = $(RISCV)/bin/riscv32-unknown-elf-
 
 # firmware vars
-FIRMWARE                 = firmware/
-RISCV_TEST_INCLUDES      = -Iriscv_tests/ -Iriscv_tests/macros/scalar \
-                           -Iriscv_tests/rv64ui -Iriscv_tests/rv64um
-CV32_RISCV_TESTS_FIRMWARE_OBJS = $(addprefix cv32_riscv_tests_firmware/, \
-                                   start.o print.o sieve.o multest.o stats.o)
-CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS = $(addprefix cv32_riscv_compliance_tests_firmware/, \
+# TODO: clean this mess up!
+FIRMWARE                             = ../../tests/core/firmware
+CV32_RISCV_TESTS_FIRMWARE            = ../../tests/core/cv32_riscv_tests_firmware
+CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = ../../tests/core/cv32_riscv_compliance_tests_firmware
+RISCV_TESTS                          = ../../tests/core/riscv_tests
+RISCV_COMPLIANCE_TESTS               = ../../tests/core/riscv_compliance_tests
+RISCV_TEST_INCLUDES                  = -Iriscv_tests/ -Iriscv_tests/macros/scalar \
+                                       -Iriscv_tests/rv64ui -Iriscv_tests/rv64um
+CV32_RISCV_TESTS_FIRMWARE_OBJS       = $(addprefix $(CV32_RISCV_TESTS_FIRMWARE)/, \
+                                         start.o print.o sieve.o multest.o stats.o)
+CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS = $(addprefix $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/, \
                                               start.o print.o sieve.o multest.o stats.o)
 RISCV_TESTS_OBJS         = $(addsuffix .o, \
-                             $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
-                             $(basename $(wildcard riscv_tests/rv32um/*.S)) \
-                             $(basename $(wildcard riscv_tests/rv32uc/*.S)))
-FIRMWARE_OBJS            = $(addprefix firmware/, \
+                             $(basename $(wildcard $(RISCV_TESTS)/rv32ui/*.S)) \
+                             $(basename $(wildcard $(RISCV_TESTS)/rv32um/*.S)) \
+                             $(basename $(wildcard $(RISCV_TESTS)/rv32uc/*.S)))
+FIRMWARE_OBJS            = $(addprefix $(FIRMWARE)/, \
                              start.o print.o sieve.o multest.o stats.o)
 FIRMWARE_TEST_OBJS       = $(addsuffix .o, \
-                             $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
-                             $(basename $(wildcard riscv_tests/rv32um/*.S)) \
-                             $(basename $(wildcard riscv_tests/rv32uc/*.S)))
+                             $(basename $(wildcard $(RISCV_TESTS)/rv32ui/*.S)) \
+                             $(basename $(wildcard $(RISCV_TESTS)/rv32um/*.S)) \
+                             $(basename $(wildcard $(RISCV_TESTS)/rv32uc/*.S)))
 FIRMWARE_SHORT_TEST_OBJS = $(addsuffix .o, \
-                             $(basename $(wildcard riscv_tests/rv32ui/*.S)) \
-                             $(basename $(wildcard riscv_tests/rv32um/*.S)))
+                             $(basename $(wildcard $(RISCV_TESTS)/rv32ui/*.S)) \
+                             $(basename $(wildcard $(RISCV_TESTS)/rv32um/*.S)))
 COMPLIANCE_TEST_OBJS     = $(addsuffix .o, \
-                             $(basename $(wildcard riscv_compliance_tests/*.S)))
+                             $(basename $(wildcard $(RISCV_COMPLIANCE_TESTS)/*.S)))
 
 # csmith vars
 CSMITH_INCLUDE           = ~/.local/include/csmith-2.4.0
@@ -431,7 +436,7 @@ cv32_riscv_tests_firmware/%.o: cv32_riscv_tests_firmware/%.c
 		-ffreestanding -nostdlib -o $@ $<
 
 # compile and dump RISCV_COMPLIANCE_TESTS only
-cv32_riscv_compliance_tests_firmware/cv32_riscv_compliance_tests_firmware.elf: $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS) $(COMPLIANCE_TEST_OBJS) \
+$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf: $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS) $(COMPLIANCE_TEST_OBJS) \
 							cv32_riscv_compliance_tests_firmware/link.ld
 	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
 		-D RUN_COMPLIANCE \
@@ -439,49 +444,49 @@ cv32_riscv_compliance_tests_firmware/cv32_riscv_compliance_tests_firmware.elf: $
 		-Wl,-Bstatic,-T,cv32_riscv_compliance_tests_firmware/link.ld,-Map,cv32_riscv_compliance_tests_firmware/cv32_riscv_compliance_tests_firmware.map,--strip-debug \
 		$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS) $(COMPLIANCE_TEST_OBJS) -lgcc
 
-cv32_riscv_compliance_tests_firmware/start.o: cv32_riscv_compliance_tests_firmware/start.S
+$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/start.o: cv32_riscv_compliance_tests_firmware/start.S
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -D RUN_COMPLIANCE -g -o $@ $<
 
-cv32_riscv_compliance_tests_firmware/%.o: cv32_riscv_compliance_tests_firmware/%.c
+$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/%.o: cv32_riscv_compliance_tests_firmware/%.c
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32ic -g -Os --std=c99 -Wall \
 		$(RISCV_TEST_INCLUDES) \
 		-ffreestanding -nostdlib -o $@ $<
 
 # compile and dump picorv firmware
-firmware/firmware.elf: $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) \
-				firmware/link.ld
+$(FIRMWARE)/firmware.elf: $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) \
+				$(FIRMWARE)/link.ld
 	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-D RUN_COMPLIANCE \
 		-Wl,-Bstatic,-T,firmware/link.ld,-Map,firmware/firmware.map,--strip-debug \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) -lgcc
 
-firmware/start.o: firmware/start.S
+$(FIRMWARE)/start.o: $(FIRMWARE)/start.S
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -D RUN_COMPLIANCE -o $@ $<
 
-firmware/%.o: firmware/%.c
+$(FIRMWARE)/%.o: $(FIRMWARE)/%.c
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32ic -g -Os --std=c99 -Wall \
 		$(RISCV_TEST_INCLUDES) \
 		-ffreestanding -nostdlib -o $@ $<
 
-riscv_tests/rv32ui/%.o: riscv_tests/rv32ui/%.S riscv_tests/riscv_test.h \
-			riscv_tests/macros/scalar/test_macros.h
+$(RISCV_TESTS)/rv32ui/%.o: $(RISCV_TESTS)/rv32ui/%.S $(RISCV_TESTS)/riscv_test.h \
+			$(RISCV_TESTS)/macros/scalar/test_macros.h
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32im -g -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-DTEST_FUNC_NAME=$(notdir $(basename $<)) \
 		-DTEST_FUNC_TXT='"$(notdir $(basename $<))"' \
 		-DTEST_FUNC_RET=$(notdir $(basename $<))_ret $<
 
-riscv_tests/rv32um/%.o: riscv_tests/rv32um/%.S riscv_tests/riscv_test.h \
-			riscv_tests/macros/scalar/test_macros.h
+$(RISCV_TESTS)/rv32um/%.o: $(RISCV_TESTS)/rv32um/%.S $(RISCV_TESTS)/riscv_test.h \
+			$(RISCV_TESTS)/macros/scalar/test_macros.h
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32im -g -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-DTEST_FUNC_NAME=$(notdir $(basename $<)) \
 		-DTEST_FUNC_TXT='"$(notdir $(basename $<))"' \
 		-DTEST_FUNC_RET=$(notdir $(basename $<))_ret $<
 
-riscv_tests/rv32uc/%.o: riscv_tests/rv32uc/%.S riscv_tests/riscv_test.h \
-			riscv_tests/macros/scalar/test_macros.h
+$(RISCV_TESTS)/rv32uc/%.o: $(RISCV_TESTS)/rv32uc/%.S $(RISCV_TESTS)/riscv_test.h \
+			$(RISCV_TESTS)/macros/scalar/test_macros.h
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32im -g -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-DTEST_FUNC_NAME=$(notdir $(basename $<)) \
@@ -500,10 +505,10 @@ riscv_compliance_tests/%.o: riscv_compliance_tests/%.S riscv_compliance_tests/ri
 # run picorv firmware
 # in verilator
 .PHONY: firmware-veri-run
-firmware-veri-run: verilate firmware/firmware.hex
+firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=firmware/firmware.hex" \
+		"+firmware=$(FIRMWARE)/firmware.hex" \
 		| tee $(VERI_LOG_DIR)/firmware-veri-run.log
 
 # in vsim
