@@ -8,8 +8,8 @@ CV32E40P_HOME   := $(ROOT)/core-v-cores/cv32e40p
 CV32E40P_RTLSRC := $(CV32E40P_HOME)/rtl 
 
 # Rule to fetch the latest RTL for CV32E40P
-$(CV32E40P_RTLSRC_HOME):
-	git clone https://github.com/openhwgroup/core-v-verif --recurse $(CV32E40P_HOME)
+$(CV32E40P_RTLSRC):
+	git clone https://github.com/openhwgroup/core-v-verif --recurse $(CV32E40P_RTLSRC)
 ```
 The structure supports multiple CORE-V cores being used in the same working copy
 of CORE-V-VERIF.  For example we could have
