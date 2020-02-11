@@ -16,8 +16,8 @@
 # 
 ###############################################################################
 #
-# Makefile to test compilation of the UVM Environment and RTL.  Written
-# specifically for Metrics DSIM.  Not intended to run tests from here.
+# Makefile for the CV32E40P "core" testbench.  Substantially modified from the
+# original from the RI5CY testbench.
 #
 ###############################################################################
 # 
@@ -35,17 +35,14 @@
 # LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 # OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
-
+#
 # Original Author: Robert Balas (balasr@iis.ee.ethz.ch)
-# Description: All in one. Uses parts of picorv32's makefile for handling the
-# firmware and handling csmith programs
-
-# TODO: just copied this over and it needs to be updated to make it run from here...
+#
+###############################################################################
 
 MAKE      = make
-CTAGS     = ctags
-CSMITH    = csmith
 WAVES     = 0
+ROOT_DIR  = $(PWD)
 
 # vsim configuration
 VVERSION  = "10.7b"
@@ -79,7 +76,6 @@ DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
 DSIM_CMP_FLAGS          = -timescale 1ns/1ps
 DSIM_RUN_FLAGS          = -write-sql
-ROOT_DIR                = $(PWD)
 DSIM_RESULTS           ?= $(PWD)/results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE               = dsim.out
@@ -119,9 +115,11 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/dp_ram.sv
 
 # RTL source files for the CV32E core
-RTLSRC_HOME   := $(ROOT_DIR)/../../../rtl
-RTLSRC_INCDIR := $(RTLSRC_HOME)/include
+#RTLSRC_HOME   := $(ROOT_DIR)/../../../rtl
+CV32E40P_PKG  := $(ROOT_DIR)/../../../core-v-cores/cv32e40p
+RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
 FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
+RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
                  $(addprefix $(RTLSRC_HOME)/include/,\
                    apu_core_package.sv \
@@ -171,12 +169,6 @@ FIRMWARE_SHORT_TEST_OBJS = $(addsuffix .o, \
 COMPLIANCE_TEST_OBJS     = $(addsuffix .o, \
                              $(basename $(wildcard $(RISCV_COMPLIANCE_TESTS)/*.S)))
 
-# csmith vars
-CSMITH_INCLUDE           = ~/.local/include/csmith-2.4.0
-CSMITH_TIMEOUT_REF       = 2
-CSMITH_TIMEOUT_VSIM      = 3000
-CSMITH_TIMEOUT_VERI      = 100
-
 # assume verilator if no target chosen
 .DEFAULT_GOAL := firmware-veri-run
 
@@ -208,7 +200,7 @@ dpiheader: .build-tb
 
 # vcs testbench compilation
 
-vcsify: $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
+vcsify: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(VCS) +vc -sverilog -race=all -ignore unique_checks -full64 \
 		-timescale=1ns/1ps \
 		-CC "-I$(VCS_HOME)/include -O3 -march=native" $(VCS_FLAGS) \
@@ -234,7 +226,7 @@ mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
-dsimify: mk_results $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
+dsimify: mk_results $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	cd $(DSIM_RESULTS) && $(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
@@ -298,7 +290,7 @@ dsim-clean: tc-clean
 
 # Cadence Xcelium xrun testbench compilation
 .PHONY: xrun-all
-xrun-all: $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
+xrun-all: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
@@ -335,7 +327,7 @@ endif
 
 verilate: testbench_verilator
 
-testbench_verilator: $(FPNEW_PKG) $(TBSRC_VERI) $(RTLSRC_PKG) $(RTLSRC)
+testbench_verilator: $(CV32E40P_PKG) $(FPNEW_PKG) $(TBSRC_VERI) $(RTLSRC_PKG) $(RTLSRC)
 	$(VERILATOR) --cc --sv --exe \
 		$(VERI_TRACE) \
 		--Wno-lint --Wno-UNOPTFLAT \
@@ -355,10 +347,10 @@ verilate-clean: tc-clean
 	rm -rf testbench_verilator
 	rm memory_dump.bin
 
-# fpnew dependencies
-$(FPNEW_PKG):
+# CV32E40P RTL dependencies
+$(CV32E40P_PKG):
+	git clone https://github.com/openhwgroup/cv32e40p --recurse $(CV32E40P_PKG)
 	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
-#$(RTLSRC_HOME)/fpnew
 
 # run tb and exit
 .PHONY: vsim-run
@@ -543,99 +535,6 @@ firmware-clean:
 	rm -vrf $(addprefix firmware/firmware., elf bin hex map) \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS)
 
-# csmith targets
-csmith/test.c:
-	echo "integer size = 4" > csmith/platform.info
-	echo "pointer size = 4" >> csmith/platform.info
-	$(CSMITH) --no-packed-struct -o csmith/test.c
-	gawk '/Seed:/ {print$$2,$$3;}' csmith/test.c
-
-csmith/test_ref: csmith/test.c
-	gcc -m32 -o csmith/test_ref -w -Os -I $(CSMITH_INCLUDE) csmith/test.c
-
-csmith/test.elf: csmith/test.c csmith/syscalls.c csmith/start.S
-	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o csmith/test.elf -w -Os \
-		-I $(CSMITH_INCLUDE) \
-		-T csmith/link.ld  \
-		csmith/test.c csmith/syscalls.c csmith/start.S -Wl,--verbose
-	chmod u+x csmith/test.elf
-
-csmith-clean:
-	rm -rf $(addprefix csmith/, test.c test.elf test.hex test_ref)
-
-# simulators and fesvr for csmith
-riscv-fesvr/build.ok:
-	rm -rf riscv-fesvr
-	git clone https://github.com/riscv/riscv-fesvr.git riscv-fesvr
-	+cd riscv-fesvr && git checkout 1c02bd6 && \
-		./configure && make && touch build.ok
-
-riscv-isa-sim/build.ok: riscv-fesvr/build.ok
-	rm -rf riscv-isa-sim
-	git clone https://github.com/riscv/riscv-isa-sim.git riscv-isa-sim
-	cd riscv-isa-sim && git checkout 10ae74e
-	cd riscv-isa-sim && patch -p1 < ../csmith/riscv-isa-sim.diff
-	cd riscv-isa-sim && \
-		LDFLAGS="-L../riscv-fesvr" ./configure --with-isa=RV32IMC
-	+cd riscv-isa-sim \
-		&& ln -s ../riscv-fesvr/fesvr . && make && touch build.ok
-
-.PHONY: csmith-spike
-csmith-spike: riscv-fesvr/build.ok riscv-isa-sim/build.ok csmith/test_ref \
-		 csmith/test.elf
-	timeout $(CSMITH_TIMEOUT_REF) ./csmith/test_ref > csmith/output_ref.txt \
-		&& cat csmith/output_ref.txt
-	LD_LIBRARY_PATH="./riscv-isa-sim:./riscv-fesvr" \
-		./riscv-isa-sim/spike csmith/test.elf > csmith/output_sim.txt
-	diff -u csmith/output_ref.txt csmith/output_sim.txt
-
-# run verilator on csmith/test.compliance_hex and only return the checksum, if any. We also have
-# a timeout mechanism in place to prevent infinite loops
-.PHONY: csmith-veri-rtl
-csmith-veri-rtl: verilate csmith/test.hex
-csmith-veri-rtl: VERI_FLAGS += "+firmware=csmith/test.hex"
-csmith-veri-rtl:
-	timeout $(CSMITH_TIMEOUT_VERI) ./testbench_verilator $(VERI_FLAGS) \
-	| grep 'checksum' > csmith/output_sim.txt
-
-# run vsim on csmith/test.hex and only return the checksum, if any. We also have
-# a timeout mechanism in place to prevent infinite loops
-.PHONY: csmith-vsim-rtl
-csmith-vsim-rtl: vsim-all csmith/test.hex
-csmith-vsim-rtl: ALL_VSIM_FLAGS += "-GBOOT_ADDR=128"
-csmith-vsim-rtl: ALL_VSIM_FLAGS += "+firmware=csmith/test.hex"
-csmith-vsim-rtl:
-	timeout $(CSMITH_TIMEOUT_VSIM) $(VSIM) -work $(VWORK) \
-	$(ALL_VSIM_FLAGS) \
-	$(RTLSRC_VOPT_TB_TOP) -do 'source $(VSIM_SCRIPT); exit -f' \
-	| grep 'checksum' | cut -c 3- > csmith/output_sim.txt
-
-.PHONY: csmith-loop
-csmith-loop: riscv-fesvr/build.ok riscv-isa-sim/build.ok
-# Check if the reference program terminates and if spike produces the same
-# result. Otherwise we just skip the test. Then we check if we produce the same
-# output with the rtl model (ri5cy). Stop on first failed test
-	+set -e; \
-	x() { echo "$$*" >&2; "$$@"; }; \
-	i=1; j=0; k=0;\
-	while true; do \
-		echo; echo; \
-		echo "--- test#$$((i++)) passed:$${j} skipped:$${k} ---"; \
-		x rm -f $(addprefix csmith/, test.hex test.elf \
-			test.c test_ref output_ref.txt output_sim.txt); \
-		x make csmith-spike csmith/test.hex || \
-			{ \
-				echo SKIP; \
-				! ((k++)); \
-				continue; \
-			}; \
-		x rm -f csmith/output_sim.txt; \
-		x make csmith-veri-rtl; \
-		x diff -u csmith/output_ref.txt csmith/output_sim.txt; \
-			echo OK; ! ((j++)); \
-	done
-
-
 # general targets
 .PHONY: tc-clean  # clean up toolchain generated files
 tc-clean:
@@ -645,10 +544,10 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: tb-clean verilate-clean vcs-clean firmware-clean csmith-clean custom-clean dsim-clean
+clean: tb-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean
 
 distclean: clean
-	rm -rf riscv-fesvr riscv-isa-sim $(FPNEW_PKG) work
+	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work
 
 clean_all: distclean
 
