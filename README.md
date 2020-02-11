@@ -19,16 +19,16 @@ If you want to run a simulation there are currently two perferred options:
 Explainer for the CI flow used by CORE-V-VERIF.
 
 ### core-v-cores
-Empty sub-directory into which the RTL from the [CORE-V-CORES](https://github.com/openhwgroup/core-v-cores) repositories is cloned.
+Empty sub-directory into which the RTL from one or more of the [CORE-V-CORES](https://github.com/openhwgroup/core-v-cores) repositories is cloned.
 
 ### cv32
-Verification Environments, testcases and simulation Makefiles for the CV32E cores.
+Verification Environments, testbenches, testcases and simulation Makefiles for the CV32E cores.
 
 ### cv64
-Verification Environments, testcases and simulation Makefiles for the CV32E cores.
+Verification Environments, testbenches, testcases and simulation Makefiles for the CV64A cores.
 
 ### doc
-Docuentation.  Mostly empty, please see the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository.
+Empty.  Please see the [CORE-V-DOCS](https://github.com/openhwgroup/core-v-docs) repository.
 
 ### lib
 Common components for the CV32 and CV64 verification environments.
