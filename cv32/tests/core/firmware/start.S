@@ -11,6 +11,11 @@
 #define ENABLE_MULTST
 #define ENABLE_STATS
 
+#ifndef UNIT_TEST_CMD
+# define UNIT_TEST_CMD 0
+#endif
+
+
 .set timer_irq_mask, 0x15000000
 .set timer_irq_val, 0x15000004
 .set print_port, 0x10000000
@@ -225,6 +230,29 @@ start:
 	la a0, riscv_tests_msg
 	call print_str
 
+
+#if  UNIT_TEST_CMD == 1
+/* running unit test */
+
+
+#ifdef ENABLE_RVTST
+	.global UNIT_TEST
+	/* set timer value */
+	li a0, timer_irq_val
+	li a1, 100000
+	sw a1, 0(a0)
+	/* return from test */
+	jal zero,UNIT_TEST
+	.global UNIT_TEST_RET;
+	UNIT_TEST_RET:
+#else
+	.global UNIT_TEST_RET;	
+	UNIT_TEST_RET:
+	
+#endif
+	
+
+#else
 	TEST(simple)
 
 	TEST(lui)
@@ -384,6 +412,8 @@ start:
 	/* call stats C code */
 	jal ra,stats
 #endif
+
+#endif /*unit test */
 
 fast_exit:
 	/* print "DONE\n" */

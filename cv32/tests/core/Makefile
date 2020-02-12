@@ -26,17 +26,17 @@ WAVES     = 0
 # vsim configuration
 VVERSION  = "10.7b"
 
-VLIB      = vlib-$(VVERSION)
+VLIB      = vlib
 VWORK     = work
 
-VLOG          = vlog-$(VVERSION)
+VLOG          = vlog
 VLOG_FLAGS    = -pedanticerrors -suppress 2577 -suppress 2583
 VLOG_LOG      = vloggy
 
-VOPT          = vopt-$(VVERSION)
+VOPT          = vopt
 VOPT_FLAGS    = -debugdb -fsmdebug -pedanticerrors +acc #=mnprft
 
-VSIM              = vsim-$(VVERSION)
+VSIM              = vsim
 VSIM_HOME         = /usr/pack/modelsim-$(VVERSION)-kgf/questasim
 VSIM_FLAGS       ?=  # user defined
 ALL_VSIM_FLAGS    = $(VSIM_FLAGS)
@@ -162,7 +162,8 @@ vlib: .lib-rtl
 	$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	touch .build-rtl
 
-vsim-all: .opt-rtl
+vsim-all: $(FPNEW_PKG) .opt-rtl
+	
 
 .opt-rtl: .build-rtl
 	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o \
@@ -325,6 +326,28 @@ verilate-clean: tc-clean
 	if [ -d $(VERI_OBJ_DIR) ]; then rm -r $(VERI_OBJ_DIR); fi
 	rm -rf testbench_verilator
 
+
+# verilator testbench compilation
+
+SUPPORTED_COMMANDS := vsim-firmware-unit-test questa-unit-test
+SUPPORTS_MAKE_ARGS := $(findstring $(firstword $(MAKECMDGOALS)), $(SUPPORTED_COMMANDS))
+
+ifneq "$(SUPPORTS_MAKE_ARGS)" ""
+  UNIT_TEST := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(UNIT_TEST):;@:)
+  UNIT_TEST_CMD := 1
+else 
+ UNIT_TEST_CMD := 0
+endif
+
+COMPLIANCE_UNIT_TEST = $(subst _,-,$(UNIT_TEST))
+
+FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
+				$(basename $(wildcard riscv_tests/rv32*/$(UNIT_TEST).S)) \
+				$(basename $(wildcard riscv_compliance_tests*/$(COMPLIANCE_UNIT_TEST).S)))
+				
+
+
 # fpnew dependencies
 $(FPNEW_PKG):
 	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
@@ -429,6 +452,17 @@ cv32_riscv_compliance_tests_firmware/%.o: cv32_riscv_compliance_tests_firmware/%
 		-ffreestanding -nostdlib -o $@ $<
 
 # compile and dump picorv firmware
+
+firmware/firmware_unit_test.elf: $(FIRMWARE_OBJS) $(FIRMWARE_UNIT_TEST_OBJS) firmware/link.ld
+	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
+		$(RISCV_TEST_INCLUDES) \
+		-D RUN_COMPLIANCE \
+		-Wl,-Bstatic,-T,firmware/link.ld,-Map,firmware/firmware.map,--strip-debug \
+		$(FIRMWARE_OBJS) $(FIRMWARE_UNIT_TEST_OBJS) -lgcc
+
+
+
+
 firmware/firmware.elf: $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) \
 				firmware/link.ld
 	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
@@ -438,7 +472,18 @@ firmware/firmware.elf: $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) -lgcc
 
 firmware/start.o: firmware/start.S
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -D RUN_COMPLIANCE -o $@ $<
+ifeq ($(UNIT_TEST_CMD),1)
+ifeq ($(FIRMWARE_UNIT_TEST_OBJS),)
+$(error no existing unit test in argument )
+else
+	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -D RUN_COMPLIANCE  -DUNIT_TEST_CMD=$(UNIT_TEST_CMD) -DUNIT_TEST=$(UNIT_TEST) -DUNIT_TEST_RET=$(UNIT_TEST)_ret -o $@ $<
+endif
+else
+
+	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -D RUN_COMPLIANCE  -DUNIT_TEST_CMD=$(UNIT_TEST_CMD) -o $@ $<
+endif
+
+
 
 firmware/%.o: firmware/%.c
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32ic -g -Os --std=c99 -Wall \
@@ -493,10 +538,30 @@ firmware-vsim-run: vsim-all firmware/firmware.hex
 firmware-vsim-run: ALL_VSIM_FLAGS += "+firmware=firmware/firmware.hex"
 firmware-vsim-run: vsim-run
 
+.PHONY: vsim-firmware-unit-test 
+vsim-firmware-unit-test:  firmware-unit-test-clean 
+vsim-firmware-unit-test:  firmware/firmware_unit_test.hex 
+vsim-firmware-unit-test: ALL_VSIM_FLAGS += "+firmware=firmware/firmware_unit_test.hex"
+vsim-firmware-unit-test: vsim-run
+
 .PHONY: firmware-vsim-run-gui
 firmware-vsim-run-gui: vsim-all firmware/firmware.hex
 firmware-vsim-run-gui: ALL_VSIM_FLAGS += "+firmware=firmware/firmware.hex"
 firmware-vsim-run-gui: vsim-run-gui
+
+# in vsim
+.PHONY: questa-all
+questa-all: vsim-all firmware/firmware.hex
+questa-all: ALL_VSIM_FLAGS += "+firmware=firmware/firmware.hex"
+questa-all: vsim-run
+
+.PHONY: questa-unit-test 
+questa-unit-test:  firmware-unit-test-clean 
+questa-unit-test:  firmware/firmware_unit_test.hex 
+questa-unit-test: ALL_VSIM_FLAGS += "+firmware=firmware/firmware_unit_test.hex"
+questa-unit-test: vsim-run
+
+
 
 # in vcs
 .PHONY: firmware-vcs-run
@@ -513,6 +578,11 @@ firmware-clean:
 	rm -vrf $(addprefix firmware/firmware., elf bin hex map) \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS)
 
+
+.PHONY: firmware-clean
+firmware-unit-test-clean:
+	rm -vrf $(addprefix firmware/firmware_unit_test., elf bin hex map) \
+		$(FIRMWARE_OBJS) $(FIRMWARE_UNIT_TEST_OBJS)
 # csmith targets
 csmith/test.c:
 	echo "integer size = 4" > csmith/platform.info
