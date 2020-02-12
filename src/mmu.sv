@@ -306,12 +306,12 @@ module mmu #(
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
                     if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{1'b0}},lsu_vaddr_q}, 1'b1};
+                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
                     end
 
                 // this is a load, check for sufficient access privileges - throw a page fault if necessary
                 end else if (daccess_err) begin
-                    lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{1'b0}},lsu_vaddr_q}, 1'b1};
+                    lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
                 end
             end else
 
@@ -326,9 +326,9 @@ module mmu #(
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
                     if (lsu_is_store_q) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{1'b0}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end else begin
-                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{1'b0}},update_vaddr}, 1'b1};
+                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end
                 end
             end
