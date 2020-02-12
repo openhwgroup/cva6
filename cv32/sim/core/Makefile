@@ -115,7 +115,6 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/dp_ram.sv
 
 # RTL source files for the CV32E core
-#RTLSRC_HOME   := $(ROOT_DIR)/../../../rtl
 CV32E40P_PKG  := $(ROOT_DIR)/../../../core-v-cores/cv32e40p
 RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
 FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
@@ -345,12 +344,49 @@ verilate-clean: tc-clean
 	if [ -d $(VERI_LOG_DIR) ]; then rm -r $(VERI_LOG_DIR); fi
 	if [ -d $(VERI_OBJ_DIR) ]; then rm -r $(VERI_OBJ_DIR); fi
 	rm -rf testbench_verilator
-	rm memory_dump.bin
+	if [ -e memory_dump.bin ]; then rm memory_dump.bin; fi
 
 # CV32E40P RTL dependencies
+# The variables RTLSRC_PKG and RTLSRC need to be re-evaluated since
+# CV32E40P_PKG was null the first time.
+# TODO: cmd to eval RTLSRC needs to be replaced with a manifest (flist)
 $(CV32E40P_PKG):
 	git clone https://github.com/openhwgroup/cv32e40p --recurse $(CV32E40P_PKG)
 	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
+	$(eval RTLSRC_HOME   = $(CV32E40P_PKG)/rtl)
+	$(eval RTLSRC_PKG = $(FPNEW_PKG)/src/fpnew_pkg.sv \
+	                    $(addprefix $(RTLSRC_HOME)/include/,\
+	                      apu_core_package.sv \
+	                      riscv_defines.sv \
+	                      riscv_tracer_defines.sv))
+	$(eval RTLSRC = $(RTLSRC_HOME)/riscv_alu_div.sv \
+                  $(RTLSRC_HOME)/riscv_controller.sv \
+                  $(RTLSRC_HOME)/riscv_ex_stage.sv \
+                  $(RTLSRC_HOME)/riscv_id_stage.sv \
+                  $(RTLSRC_HOME)/riscv_load_store_unit.sv \
+                  $(RTLSRC_HOME)/riscv_prefetch_L0_buffer.sv \
+                  $(RTLSRC_HOME)/riscv_alu.sv \
+                  $(RTLSRC_HOME)/riscv_core.sv \
+                  $(RTLSRC_HOME)/riscv_fetch_fifo.sv \
+                  $(RTLSRC_HOME)/riscv_if_stage.sv \
+                  $(RTLSRC_HOME)/riscv_mult.sv \
+                  $(RTLSRC_HOME)/register_file_test_wrap.sv \
+                  $(RTLSRC_HOME)/riscv_apu_disp.sv \
+                  $(RTLSRC_HOME)/riscv_cs_registers.sv \
+                  $(RTLSRC_HOME)/riscv_hwloop_controller.sv \
+                  $(RTLSRC_HOME)/riscv_int_controller.sv \
+                  $(RTLSRC_HOME)/riscv_pmp.sv \
+                  $(RTLSRC_HOME)/riscv_register_file.sv \
+                  $(RTLSRC_HOME)/riscv_alu_basic.sv \
+                  $(RTLSRC_HOME)/riscv_compressed_decoder.sv \
+                  $(RTLSRC_HOME)/riscv_decoder.sv \
+                  $(RTLSRC_HOME)/riscv_hwloop_regs.sv \
+                  $(RTLSRC_HOME)/riscv_L0_buffer.sv \
+                  $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
+                  $(RTLSRC_HOME)/riscv_tracer.sv)
+	
+	echo $(RTLSRC_PKG)
+	echo $(RTLSRC)
 
 # run tb and exit
 .PHONY: vsim-run
@@ -544,7 +580,7 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: tb-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean
+clean: tb-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work
