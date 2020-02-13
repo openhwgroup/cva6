@@ -13,6 +13,7 @@
 [submodule "src/axi"]
 	path = src/axi
 	url = https://github.com/danielmlynek/axi.git
+	branch = pullreq_2019_10_stable
 [submodule "src/register_interface"]
 	path = src/register_interface
 	url = https://github.com/pulp-platform/register_interface.git
