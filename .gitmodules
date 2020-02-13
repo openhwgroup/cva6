@@ -37,6 +37,7 @@
 [submodule "src/fpu"]
 	path = src/fpu
 	url = https://github.com/danielmlynek/fpnew.git
+	branch = pullreq_2019_10_stable
 [submodule "fpga/src/ariane-ethernet"]
 	path = fpga/src/ariane-ethernet
 	url = https://github.com/danielmlynek/ariane-ethernet.git
