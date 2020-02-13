@@ -11,6 +11,7 @@
 [submodule "src/common_cells"]
 	path = src/common_cells
 	url = https://github.com/danielmlynek/common_cells.git
+	branch = pullreq_2019_10_stable
 [submodule "src/axi"]
 	path = src/axi
 	url = https://github.com/danielmlynek/axi.git
