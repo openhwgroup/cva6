@@ -34,27 +34,28 @@ class uvmt_cv32_${name}_test_c extends uvmt_cv32_base_test_c;
    
    constraint ${name}_cons {
       // TODO Add constraints to uvmt_cv32_${name}_test_c
-	  // Ex: env_cfg.abc == 100;
-	  //     my_vseq.xyz ==   5;
-	  //     watchdog_timeout == 200_000_000; // 200 ms
+      // Ex: env_cfg.abc == 100;
+      //     my_vseq.xyz ==   5;
+      //     watchdog_timeout == 200_000_000; // 200 ms
    }
    
    
    /**
+    * Contructor function, performs factory overrides and creates all objects.
     * TODO Describe uvmt_cv32_${name}_test_c::new()
     */
    extern function new(string name="uvmt_cv32_${name}_test", uvm_component parent=null);
    
    /**
     * Executes test stimulus.
-	* TODO Describe uvmt_cv32_${name}_test_c::main_phase()
+    * TODO Describe uvmt_cv32_${name}_test_c::main_phase()
     */
    extern virtual task main_phase(uvm_phase phase);
    
    /**
     * Performs test self-check to ensure stimulus, scoreboarding and checking
-	* actually took place.
-	* TODO Describe uvmt_cv32_${name}_test_c::check_phase()
+    * actually took place.
+    * TODO Describe uvmt_cv32_${name}_test_c::check_phase()
     */
    extern virtual function void check_phase(uvm_phase phase);
    
