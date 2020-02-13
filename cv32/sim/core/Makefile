@@ -92,7 +92,7 @@ XRUN_DIR          = xcelium.d
 # verilator configuration
 VERILATOR           = verilator
 VERI_FLAGS         +=
-VERI_COMPILE_FLAGS += -Wno-BLKANDNBLK # hope this doesn't hurt us in the long run
+VERI_COMPILE_FLAGS += -Wno-BLKANDNBLK +define+__USE_COREV_SIMULATION_MODELS__ # hope this doesn't hurt us in the long run
 VERI_TRACE          =
 VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
@@ -113,6 +113,7 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv
+SIM_LIBS    := $(ROOT_DIR)/../../../lib/sim_libs
 
 # RTL source files for the CV32E core
 CV32E40P_PKG  := $(ROOT_DIR)/../../../core-v-cores/cv32e40p
@@ -120,6 +121,7 @@ RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
 FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
+                 $(SIM_LIBS)/cluster_clock_gating.sv \
                  $(addprefix $(RTLSRC_HOME)/include/,\
                    apu_core_package.sv \
                    riscv_defines.sv \
@@ -355,6 +357,7 @@ $(CV32E40P_PKG):
 	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
 	$(eval RTLSRC_HOME   = $(CV32E40P_PKG)/rtl)
 	$(eval RTLSRC_PKG = $(FPNEW_PKG)/src/fpnew_pkg.sv \
+	                    $(SIM_LIBS)/cluster_clock_gating.sv \
 	                    $(addprefix $(RTLSRC_HOME)/include/,\
 	                      apu_core_package.sv \
 	                      riscv_defines.sv \
