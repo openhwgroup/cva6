@@ -42,6 +42,7 @@
 [submodule "fpga/src/ariane-ethernet"]
 	path = fpga/src/ariane-ethernet
 	url = https://github.com/danielmlynek/ariane-ethernet.git
+	branch = pullreq_2019_10
 [submodule "src/axi_riscv_atomics"]
 	path = src/axi_riscv_atomics
 	url = https://github.com/pulp-platform/axi_riscv_atomics.git
