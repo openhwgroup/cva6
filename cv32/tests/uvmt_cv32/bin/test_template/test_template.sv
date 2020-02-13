@@ -16,8 +16,8 @@
 // 
 
 
-`ifndef __UVMT_CV32_${test_name_uppercase}_TEST_SV__
-`define __UVMT_CV32_${test_name_uppercase}_TEST_SV__
+`ifndef __UVMT_CV32_${name_uppercase}_TEST_SV__
+`define __UVMT_CV32_${name_uppercase}_TEST_SV__
 
 
 /**
@@ -100,4 +100,4 @@ function void uvmt_cv32_${name}_test_c::check_phase(uvm_phase phase);
 endfunction : check_phase
 
 
-`endif // __UVMT_CV32_${test_name_uppercase}_SV__
+`endif // __UVMT_CV32_${name_uppercase}_SV__
