@@ -606,7 +606,7 @@ module csr_regfile #(
                 // set cause
                 scause_d       = ex_i.cause;
                 // set epc
-                sepc_d         = {{64-riscv::VLEN{1'b0}},pc_i};
+                sepc_d         = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // set mtval or stval
                 stval_d        = (ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
@@ -625,7 +625,7 @@ module csr_regfile #(
                 mstatus_d.mpp  = priv_lvl_q;
                 mcause_d       = ex_i.cause;
                 // set epc
-                mepc_d         = {{64-riscv::VLEN{1'b0}},pc_i};
+                mepc_d         = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // set mtval or stval
                 mtval_d        = (ariane_pkg::ZERO_TVAL
                                   && (ex_i.cause inside {
@@ -673,14 +673,14 @@ module csr_regfile #(
                     default:;
                 endcase
                 // save PC of next this instruction e.g.: the next one to be executed
-                dpc_d = {{64-riscv::VLEN{1'b0}},pc_i};
+                dpc_d = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 dcsr_d.cause = dm::CauseBreakpoint;
             end
 
             // we've got a debug request
             if (ex_i.valid && ex_i.cause == riscv::DEBUG_REQUEST) begin
                 // save the PC
-                dpc_d = {{64-riscv::VLEN{1'b0}},pc_i};
+                dpc_d = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
                 // enter debug mode
                 debug_mode_d = 1'b1;
                 // jump to the base address
@@ -694,7 +694,7 @@ module csr_regfile #(
                 // valid CTRL flow change
                 if (commit_instr_i[0].fu == CTRL_FLOW) begin
                     // we saved the correct target address during execute
-                    dpc_d = {{64-riscv::VLEN{1'b0}}, commit_instr_i[0].bp.predict_address};
+                    dpc_d = {{64-riscv::VLEN{commit_instr_i[0].bp.predict_address[riscv::VLEN-1]}}, commit_instr_i[0].bp.predict_address};
                 // exception valid
                 end else if (ex_i.valid) begin
                     dpc_d = {{64-riscv::VLEN{1'b0}},trap_vector_base_o};
@@ -703,7 +703,7 @@ module csr_regfile #(
                     dpc_d = {{64-riscv::VLEN{1'b0}},epc_o};
                 // consecutive PC
                 end else begin
-                    dpc_d = {{64-riscv::VLEN{1'b0}}, commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4)};
+                    dpc_d = {{64-riscv::VLEN{commit_instr_i[0].pc[riscv::VLEN-1]}}, commit_instr_i[0].pc + (commit_instr_i[0].is_compressed ? 'h2 : 'h4)};
                 end
                 debug_mode_d = 1'b1;
                 set_debug_pc_o = 1'b1;
