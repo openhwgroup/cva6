@@ -52,6 +52,7 @@
 [submodule "src/rv_plic"]
 	path = src/rv_plic
 	url = https://github.com/danielmlynek/rv_plic.git
+	branch = pullreq_2019_10
 [submodule "fpga/src/apb_timer"]
 	path = fpga/src/apb_timer
 	url = https://github.com/pulp-platform/apb_timer.git
