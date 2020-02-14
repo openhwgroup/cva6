@@ -50,6 +50,15 @@ $ cd $HOME/GitHubRepos/pulp-platform/riscv/ohw_mike_20191122
 $ git clone --recursive -b ohw_mike_20191122 https://github.com/pulp-platform/riscv ohw_mike_20191122
 
 ###############################################################################
+# Sync a branch to the master (same repo)
+$ cd $HOME/GitHubRepos/<GitHub_Account>/<Repository/><Branch>
+$ git checkout master
+$ git pull
+$ git checkout <Branch>
+$ git merge master
+$ git push --set-upstream origin <Branch>
+
+###############################################################################
 # Sync a forked repo to make it up-to-date with its upstream repo
 # The following assumes you have previously created a fork of
 #     https://github.com/openhwgroup/core-v-docs
