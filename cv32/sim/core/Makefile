@@ -398,9 +398,6 @@ $(CV32E40P_PKG):
                   $(RTLSRC_HOME)/riscv_L0_buffer.sv \
                   $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
                   $(RTLSRC_HOME)/riscv_tracer.sv)
-	
-	echo $(RTLSRC_PKG)
-	echo $(RTLSRC)
 
 # run tb and exit
 .PHONY: vsim-run

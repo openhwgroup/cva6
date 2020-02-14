@@ -246,7 +246,7 @@ task uvmt_cv32_base_test_c::reset_phase(uvm_phase phase);
    
    super.reset_phase(phase);
    
-   //`uvm_info("TEST", $sformatf("Starting reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
+   //`uvm_info("BASE TEST", $sformatf("Starting reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
    //reset_vseq.start(vsequencer);
    
    phase.raise_objection(this);
@@ -255,7 +255,7 @@ task uvmt_cv32_base_test_c::reset_phase(uvm_phase phase);
    repeat (2) @(posedge clk_gen_vif.core_clock);
    phase.drop_objection(this);
 
-   `uvm_info("TEST", "Finished reset virtual sequence", UVM_NONE)
+   `uvm_info("BASE TEST", "Finished reset virtual sequence", UVM_NONE)
    
 endtask : reset_phase
 
@@ -266,9 +266,10 @@ task uvmt_cv32_base_test_c::configure_phase(uvm_phase phase);
    
    super.configure_phase(phase);
    
-   //`uvm_info("TEST", $sformatf("Starting to update DUT with RAL contents:\n%s", ral.sprint()), UVM_NONE)
+   //`uvm_info("BASE TEST", $sformatf("Starting to update DUT with RAL contents:\n%s", ral.sprint()), UVM_NONE)
    //ral.update(status);
-   `uvm_info("TEST", "Finished updating DUT with RAL contents", UVM_NONE)
+   //`uvm_info("BASE TEST", "Finished updating DUT with RAL contents", UVM_NONE)
+   `uvm_info("BASE TEST", "configure_phase() complete", UVM_HIGH)
    
 endtask : configure_phase
 
@@ -311,7 +312,6 @@ endfunction : retrieve_clk_gen_vif
 function void uvmt_cv32_base_test_c::create_cfg();
    
    test_cfg = uvmt_cv32_test_cfg_c::type_id::create("test_cfg");
-   //test_cfg = new("test_cfg"); // Datum TODO: why doesn't type_id::create() work?
    env_cfg  = uvme_cv32_cfg_c     ::type_id::create("env_cfg" );
    //ral      = env_cfg.ral;
    
@@ -322,9 +322,9 @@ function void uvmt_cv32_base_test_c::randomize_test();
    
    test_cfg.process_cli_args();
    if (!this.randomize()) begin
-      `uvm_fatal("TEST", "Failed to randomize test");
+      `uvm_fatal("BASE TEST", "Failed to randomize test");
    end
-   `uvm_info("TEST", $sformatf("Top-level environment configuration:\n%s", env_cfg.sprint()), UVM_NONE)
+   `uvm_info("BASE TEST", $sformatf("Top-level environment configuration:\n%s", env_cfg.sprint()), UVM_NONE)
    
 endfunction : randomize_test
 

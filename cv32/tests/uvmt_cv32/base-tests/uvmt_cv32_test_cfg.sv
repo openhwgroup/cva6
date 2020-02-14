@@ -25,7 +25,7 @@ class uvmt_cv32_test_cfg_c extends uvm_object;
    
    // Command line arguments
    string         cli_block_name_str      = "BLKNM";
-   bit            cli_block_name_override = 0;
+   bit           cli_block_name_override = 0;
    //uvm_reg_block  cli_selected_block;
    
    
@@ -70,6 +70,8 @@ function void uvmt_cv32_test_cfg_c::process_cli_args();
    else begin
       cli_block_name_override = 0;
    end
+
+   `uvm_info("uvm_uvmt_cv32_test_cfg_c", "process_cli_args() complete", UVM_HIGH)
    
 endfunction : process_cli_args
 

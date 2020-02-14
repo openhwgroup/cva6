@@ -124,11 +124,20 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
          .apu_master_result_i    (                                ),
          .apu_master_flags_i     (                                ),
 
-         .irq_i                  ( irq                            ),
-         .irq_id_i               ( irq_id_in                      ),
+         // TODO: interrupts significantly updated for CV32E40P
+         //       Connect all interrupt signals to an SV interface
+         //       and pass to ENV for an INTERRUPT AGENT to drive/monitor.
+         //.irq_i                  ( irq                            ),
+         //.irq_id_i               ( irq_id_in                      ),
          .irq_ack_o              ( irq_ack                        ),
          .irq_id_o               ( irq_id_out                     ),
          .irq_sec_i              ( irq_sec                        ),
+         .irq_software_i         (1'b0                            ),
+         .irq_timer_i            (1'b0                            ),
+         .irq_external_i         (1'b0                            ),
+         .irq_fast_i             ({15{1'b0}}                      ),
+         .irq_nmi_i              (1'b0                            ),
+         .irq_fastx_i            ({32{1'b0}}                      ),
 
          .sec_lvl_o              ( core_status_if.sec_lvl         ),
 
