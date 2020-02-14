@@ -9,7 +9,7 @@ To run the testcases you will need a SystemVerilog simulator and RISC-V GCC comp
 Supported SystemVerilog Simulators
 ----------------------------------
 At the time of this writting (2020-02-14) **_Verilator_**, the Metrics
-**_dsim_**, Mentor's **_Quesat_** and Cadence **_Xcelium_** simulators are
+**_dsim_**, Mentor's **_Questa_** and Cadence **_Xcelium_** simulators are
 supported.  Support for other SystemVerilog simulators such as Synopsys
 **_vcs_** and Aldec's **_Riviera-PRO_** is contingent on community interest.
 Note that **_Icarus_** verilog cannot compile the RTL and there are no plans
@@ -62,10 +62,10 @@ test in the custom directory. Other rules of interest:
 * `make dsim-cv32_riscv_tests` to build and run the testbench with all the testcases in the riscv_tests directory.
 * `make dsim-cv32_riscv_compliance_tests` to build and run the tests in riscv_compliance_tests.
 * `make dsim-firmware` to build and run the testbench with all the testcases in the riscv_tests and riscv_compliance_tests directories.
-<br>The Makefile now supports running individual assembler tests from either
+<br><br>The Makefile now supports running individual assembler tests from either
 the riscv_tests or riscv_compliance_tests directories. For example, to run the ADD IMMEDIATE test from riscv_tests:
 * `make make dsim-unit-test addi`
-To run I-LBU-01.S from the riscv_compliance_tests:
+<br>To run I-LBU-01.S from the riscv_compliance_tests:
 * `make dsim-unit-test I_LBU_01`
 <br>You can clean up the mess you made with `make dsim-clean`.
 
@@ -88,7 +88,7 @@ VSIM_FLAGS="-gui -debugdb"`.
 the riscv_tests or riscv_compliance_tests directories using vsim. For example,
 to run the ADD IMMEDIATE test from riscv_tests:
 * `make make questa-unit-test addi`
-To run I-LBU-01.S from the riscv_compliance_tests:
+<br>To run I-LBU-01.S from the riscv_compliance_tests:
 * `make questa-unit-test I_LBU_01`
 
 Running the testbench with vcs (included in the Makefile, but not known to work)
