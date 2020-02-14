@@ -50,17 +50,17 @@ SV_CMP_FLAGS = +define+__USE_COREV_SIMULATION_MODELS__ # workaround for https://
 # vsim configuration
 VVERSION  = "10.7b"
 
-VLIB      = vlib-$(VVERSION)
+VLIB      = vlib
 VWORK     = work
 
-VLOG          = vlog-$(VVERSION)
+VLOG          = vlog
 VLOG_FLAGS    = -pedanticerrors -suppress 2577 -suppress 2583
 VLOG_LOG      = vloggy
 
-VOPT          = vopt-$(VVERSION)
+VOPT          = vopt
 VOPT_FLAGS    = -debugdb -fsmdebug -pedanticerrors +acc #=mnprft
 
-VSIM              = vsim-$(VVERSION)
+VSIM              = vsim
 VSIM_HOME         = /usr/pack/modelsim-$(VVERSION)-kgf/questasim
 VSIM_FLAGS       ?=  # user defined
 ALL_VSIM_FLAGS    = $(VSIM_FLAGS)
@@ -68,7 +68,7 @@ VSIM_DEBUG_FLAGS  = -debugdb
 VSIM_GUI_FLAGS    = -gui -debugdb
 VSIM_SCRIPT       = vsim.tcl
 
-# vcs configuration
+# vcs configuration (hopelessly out of date)
 VCS               = vcs-2017.03-kgf vcs
 VCS_HOME          = /usr/pack/vcs-2017.03-kgf 
 VCS_FLAGS         =
@@ -192,7 +192,7 @@ vlib: .lib-rtl
 	$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	touch .build-rtl
 
-vsim-all: .opt-rtl
+vsim-all: $(CV32E40P_PKG) .opt-rtl
 
 .opt-rtl: .build-rtl
 	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o \
@@ -212,11 +212,11 @@ vcsify: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSR
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
 		+incdir+$(RTLSRC_INCDIR)
 
-vcs-run: vcsify firmware/firmware.hex
+vcs-run: vcsify $(FIRMWARE)/firmware.hex
 	./simv $(SIMV_FLAGS)
 
 vcs-run-gui: VCS_FLAGS+=-debug_all
-vcs-run-gui: vcsify firmware/firmware.hex
+vcs-run-gui: vcsify $(FIRMWARE)/firmware.hex
 	./simv $(SIMV_FLAGS) -gui
 
 vcs-clean:
@@ -285,6 +285,14 @@ dsim-firmware: dsimify $(FIRMWARE)/firmware.hex
 		-work $(DSIM_WORK) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+firmware=$(ROOT_DIR)/$(FIRMWARE)/firmware.hex
+
+# Runs a "unit-test" (see rule dsim-unit-test)
+dsim-firmware-unit-test: dsimify
+	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
+	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+firmware=$(ROOT_DIR)/$(FIRMWARE)/firmware_unit_test.hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -399,6 +407,27 @@ $(CV32E40P_PKG):
                   $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
                   $(RTLSRC_HOME)/riscv_tracer.sv)
 
+# Thales verilator testbench compilation start
+
+SUPPORTED_COMMANDS := vsim-firmware-unit-test questa-unit-test dsim-unit-test
+SUPPORTS_MAKE_ARGS := $(findstring $(firstword $(MAKECMDGOALS)), $(SUPPORTED_COMMANDS))
+
+ifneq "$(SUPPORTS_MAKE_ARGS)" ""
+  UNIT_TEST := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+  $(eval $(UNIT_TEST):;@:)
+  UNIT_TEST_CMD := 1
+else 
+ UNIT_TEST_CMD := 0
+endif
+
+COMPLIANCE_UNIT_TEST = $(subst _,-,$(UNIT_TEST))
+
+FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
+				$(basename $(wildcard $(RISCV_TESTS)/rv32*/$(UNIT_TEST).S)) \
+				$(basename $(wildcard $(RISCV_COMPLIANCE_TESTS)*/$(COMPLIANCE_UNIT_TEST).S)))
+
+# Thales verilator testbench compilation end
+
 # run tb and exit
 .PHONY: vsim-run
 vsim-run: ALL_VSIM_FLAGS += -c
@@ -498,16 +527,38 @@ $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/%.o: $(CV32_RISCV_COMPLIANCE_TESTS_FIRMW
 		-ffreestanding -nostdlib -o $@ $<
 
 # compile and dump picorv firmware
-$(FIRMWARE)/firmware.elf: $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) \
-				$(FIRMWARE)/link.ld
+
+# Thales start
+$(FIRMWARE)/firmware_unit_test.elf: $(FIRMWARE_OBJS) $(FIRMWARE_UNIT_TEST_OBJS) $(FIRMWARE)/link.ld
+	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
+		$(RISCV_TEST_INCLUDES) \
+		-D RUN_COMPLIANCE \
+		-Wl,-Bstatic,-T,$(FIRMWARE)/link.ld,-Map,$(FIRMWARE)/firmware.map,--strip-debug \
+		$(FIRMWARE_OBJS) $(FIRMWARE_UNIT_TEST_OBJS) -lgcc
+# Thales end
+
+$(FIRMWARE)/firmware.elf: $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) $(FIRMWARE)/link.ld
 	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-D RUN_COMPLIANCE \
 		-Wl,-Bstatic,-T,$(FIRMWARE)/link.ld,-Map,$(FIRMWARE)/firmware.map,--strip-debug \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS) -lgcc
 
+#$(FIRMWARE)/start.o: $(FIRMWARE)/start.S
+#	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -D RUN_COMPLIANCE -o $@ $<
+
+# Thales start
 $(FIRMWARE)/start.o: $(FIRMWARE)/start.S
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -D RUN_COMPLIANCE -o $@ $<
+ifeq ($(UNIT_TEST_CMD),1)
+ifeq ($(FIRMWARE_UNIT_TEST_OBJS),)
+$(error no existing unit test in argument )
+else
+	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -D RUN_COMPLIANCE  -DUNIT_TEST_CMD=$(UNIT_TEST_CMD) -DUNIT_TEST=$(UNIT_TEST) -DUNIT_TEST_RET=$(UNIT_TEST)_ret -o $@ $<
+endif
+else
+	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -D RUN_COMPLIANCE  -DUNIT_TEST_CMD=$(UNIT_TEST_CMD) -o $@ $<
+endif
+# Thales end
 
 $(FIRMWARE)/%.o: $(FIRMWARE)/%.c
 	$(RISCV_EXE_PREFIX)gcc -c -march=rv32ic -g -Os --std=c99 -Wall \
@@ -558,29 +609,59 @@ firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
 
 # in vsim
 .PHONY: firmware-vsim-run
-firmware-vsim-run: vsim-all firmware/firmware.hex
-firmware-vsim-run: ALL_VSIM_FLAGS += "+firmware=firmware/firmware.hex"
+firmware-vsim-run: vsim-all $(FIRMWARE)/firmware.hex
+firmware-vsim-run: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware.hex"
 firmware-vsim-run: vsim-run
 
+.PHONY: vsim-firmware-unit-test 
+vsim-firmware-unit-test:  firmware-unit-test-clean 
+vsim-firmware-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+vsim-firmware-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+vsim-firmware-unit-test: vsim-run
+
 .PHONY: firmware-vsim-run-gui
-firmware-vsim-run-gui: vsim-all firmware/firmware.hex
-firmware-vsim-run-gui: ALL_VSIM_FLAGS += "+firmware=firmware/firmware.hex"
+firmware-vsim-run-gui: vsim-all $(FIRMWARE)/firmware.hex
+firmware-vsim-run-gui: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware.hex"
 firmware-vsim-run-gui: vsim-run-gui
+
+# in questa
+.PHONY: questa-all
+questa-all: vsim-all $(FIRMWARE)/firmware.hex
+questa-all: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware.hex"
+questa-all: vsim-run
+
+.PHONY: questa-unit-test 
+questa-unit-test:  firmware-unit-test-clean 
+questa-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+questa-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+questa-unit-test: vsim-run
+
+# in dsim
+.PHONY: dsim-unit-test 
+dsim-unit-test:  firmware-unit-test-clean 
+dsim-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
+dsim-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+dsim-unit-test: dsim-firmware-unit-test
 
 # in vcs
 .PHONY: firmware-vcs-run
-firmware-vcs-run: vcsify firmware/firmware.hex
-	./simv $(SIMV_FLAGS) "+firmware=firmware/firmware.hex"
+firmware-vcs-run: vcsify $(FIRMWARE)/firmware.hex
+	./simv $(SIMV_FLAGS) "+firmware=$(FIRMWARE)/firmware.hex"
 
 .PHONY: firmware-vcs-run-gui
 firmware-vcs-run-gui: VCS_FLAGS+=-debug_all
-firmware-vcs-run-gui: vcsify firmware/firmware.hex
-	./simv $(SIMV_FLAGS) -gui "+firmware=firmware/firmware.hex"
+firmware-vcs-run-gui: vcsify $(FIRMWARE)/firmware.hex
+	./simv $(SIMV_FLAGS) -gui "+firmware=$(FIRMWARE)/firmware.hex"
 
 .PHONY: firmware-clean
 firmware-clean:
-	rm -vrf $(addprefix firmware/firmware., elf bin hex map) \
+	rm -vrf $(addprefix $(FIRMWARE)/firmware., elf bin hex map) \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS)
+
+.PHONY: firmware-unit-test-clean
+firmware-unit-test-clean:
+	rm -vrf $(addprefix $(FIRMWARE)/firmware_unit_test., elf bin hex map) \
+		$(FIRMWARE_OBJS) $(FIRMWARE_UNIT_TEST_OBJS)
 
 # general targets
 .PHONY: tc-clean  # clean up toolchain generated files
