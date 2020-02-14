@@ -310,8 +310,8 @@ endfunction : retrieve_clk_gen_vif
 
 function void uvmt_cv32_base_test_c::create_cfg();
    
-   //test_cfg = uvmt_cv32_test_cfg_c::type_id::create("test_cfg");
-   test_cfg = new("test_cfg"); // Datum TODO: why doesn't type_id::create() work?
+   test_cfg = uvmt_cv32_test_cfg_c::type_id::create("test_cfg");
+   //test_cfg = new("test_cfg"); // Datum TODO: why doesn't type_id::create() work?
    env_cfg  = uvme_cv32_cfg_c     ::type_id::create("env_cfg" );
    //ral      = env_cfg.ral;
    
