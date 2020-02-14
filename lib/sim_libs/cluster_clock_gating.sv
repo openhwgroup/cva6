@@ -33,7 +33,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 `ifndef VERILATOR
-`include "uvm.svh"
+`include "uvm_pkg.sv"
 import uvm_pkg::*;
 `endif
 
@@ -52,9 +52,9 @@ module cluster_clock_gating
 `endif
 
 `ifndef VERILATOR
-initial `uvm_warning("cluster_clock_gating", "You are using an unsanctioned simulation model!")
+initial `uvm_warning("cluster_clock_gating", "You are using CLUSTER_CLOCK_GATING, an unsanctioned simulation model!")
 `else
-initial $write("!!!\n!!!%m: t=%0t\n!!!WARNING!!! You are using an unsanctioned simulation model\n!!!\n", $time);
+initial $write("!!!\n!!! %m: t=%0t\n!!! WARNING!!! You are using CLUSTER_CLOCK_GATING, an unsanctioned simulation model\n!!!\n", $time);
 `endif
 
 `ifdef PULP_FPGA_EMUL

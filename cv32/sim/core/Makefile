@@ -44,6 +44,9 @@ MAKE      = make
 WAVES     = 0
 ROOT_DIR  = $(PWD)
 
+# Compile compile flags for all simulators
+SV_CMP_FLAGS = +define+__USE_COREV_SIMULATION_MODELS__ # workaround for https://github.com/openhwgroup/cv32e40p/issues/208
+
 # vsim configuration
 VVERSION  = "10.7b"
 
@@ -74,8 +77,9 @@ SIMV_FLAGS        =
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
-DSIM_CMP_FLAGS          = -timescale 1ns/1ps
+DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS)
 DSIM_RUN_FLAGS          = -write-sql
+DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE               = dsim.out
@@ -92,7 +96,7 @@ XRUN_DIR          = xcelium.d
 # verilator configuration
 VERILATOR           = verilator
 VERI_FLAGS         +=
-VERI_COMPILE_FLAGS += -Wno-BLKANDNBLK +define+__USE_COREV_SIMULATION_MODELS__ # hope this doesn't hurt us in the long run
+VERI_COMPILE_FLAGS += -Wno-BLKANDNBLK $(SV_CMP_FLAGS) # hope this doesn't hurt us in the long run
 VERI_TRACE          =
 VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
@@ -227,11 +231,14 @@ mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
+#	cd $(DSIM_RESULTS) && $(DSIM)
 dsimify: mk_results $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	cd $(DSIM_RESULTS) && $(DSIM) \
 		$(DSIM_CMP_FLAGS) \
+		$(DSIM_UVM_ARGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
 		+incdir+$(RTLSRC_INCDIR) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
@@ -251,6 +258,7 @@ dsim-hello_world: dsimify $(CUSTOM)/hello_world.hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+firmware=$(ROOT_DIR)/$(CUSTOM)/hello_world.hex
 #		+verbose +firmware=$(ROOT_DIR)/$(CUSTOM)/hello_world.hex
 
@@ -589,4 +597,4 @@ distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work
 
 clean_all: distclean
-
+#endend

@@ -4,3 +4,4 @@
 *.map
 *.o
 dsim.env
+*.swp
