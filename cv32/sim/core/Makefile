@@ -267,6 +267,7 @@ dsim-cv32_riscv_tests: dsimify $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_fir
 	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
 	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+firmware=$(ROOT_DIR)/$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 
 # Runs tests in riscv_compliance_tests/ only
@@ -274,6 +275,7 @@ dsim-cv32_riscv_compliance_tests: dsimify $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE
 	mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
 	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+firmware=$(ROOT_DIR)/$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
@@ -281,6 +283,7 @@ dsim-firmware: dsimify $(FIRMWARE)/firmware.hex
 	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
 	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+firmware=$(ROOT_DIR)/$(FIRMWARE)/firmware.hex
 
 # Metrics dsim cleanup
