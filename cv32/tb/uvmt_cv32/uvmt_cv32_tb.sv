@@ -72,50 +72,38 @@ module uvmt_cv32_tb;
     */
    initial begin : test_bench_entry_point
 
-    // Load the provided firmware
-    // TODO: move this to base test
-    automatic string firmware;
+     // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
+     $timeformat(-9, 3, " ns", 8);
 
-    if($value$plusargs("firmware=%s", firmware)) begin
-      `uvm_info("TEST_BENCH_ENTRY_POINT", $sformatf("loading firmware %0s", firmware), UVM_NONE)
-      $readmemh(firmware, dut_wrap.ram_i.dp_ram_i.mem);
-    end
-    else begin
-      `uvm_error("TEST_BENCH_ENTRY_POINT", "No firmware specified!")
-    end
+     // Create and randomzie top-level configuration object (context is optionally created in the env).
+     top_env_config = uvme_cv32_cfg_c::type_id::create("top_env_config");
+     if (!top_env_config.randomize()) begin
+       `uvm_error("uvmt_cv32_tb", "Failed to randomize top-level configuration object" )
+     end
 
-    // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
-    $timeformat(-9, 3, " ns", 8);
+     // For now - this will prevent the ENV build phase from doing anything...
+     top_env_config.enabled   = 0;
+     top_env_config.is_active = UVM_PASSIVE;
 
-    // Create and randomzie top-level configuration object (context is optionally created in the env).
-    top_env_config = uvme_cv32_cfg_c::type_id::create("top_env_config");
-    if (!top_env_config.randomize()) begin
-      `uvm_error("uvmt_cv32_tb", "Failed to randomize top-level configuration object" )
-    end
-
-    // For now - this will prevent the ENV build phase from doing anything...
-    top_env_config.enabled   = 0;
-    top_env_config.is_active = UVM_PASSIVE;
-
-    // Add environment configuration and context to uvm_config_db
-    uvm_config_db #(uvme_cv32_cfg_c  )::set(null, "*", "config", top_env_config);
-    uvm_config_db #(uvme_cv32_cntxt_c)::set(null, "*", "cntxt",  top_env_cntxt);
+     // Add environment configuration and context to uvm_config_db
+     uvm_config_db #(uvme_cv32_cfg_c  )::set(null, "*", "config", top_env_config);
+     uvm_config_db #(uvme_cv32_cntxt_c)::set(null, "*", "cntxt",  top_env_cntxt);
       
-    // Add interfaces handles to uvm_config_db
-    uvm_config_db#(virtual uvmt_cv32_clk_gen_if        )::set(null, "*", "clk_gen_vif",         clk_gen_if);
-    uvm_config_db#(virtual uvmt_cv32_vp_status_if      )::set(null, "*", "vp_status_vif",       vp_status_if);
-    uvm_config_db#(virtual uvmt_cv32_core_cntrl_if     )::set(null, "*", "core_cntrl_vif",      core_cntrl_if);
-    uvm_config_db#(virtual uvmt_cv32_core_status_if    )::set(null, "*", "core_status_vif",     core_status_if);
-    uvm_config_db#(virtual uvmt_cv32_core_interrupts_if)::set(null, "*", "core_interrupts_vif", core_interrupts_if);
-    //uvm_config_db#(mm_ram)::set("uvmt_cv32_tb.dut_wrap.*", "ram_i", "ram_i",          ram_i);
+     // Add interfaces handles to uvm_config_db
+     uvm_config_db#(virtual uvmt_cv32_clk_gen_if        )::set(null, "*", "clk_gen_vif",         clk_gen_if);
+     uvm_config_db#(virtual uvmt_cv32_vp_status_if      )::set(null, "*", "vp_status_vif",       vp_status_if);
+     uvm_config_db#(virtual uvmt_cv32_core_cntrl_if     )::set(null, "*", "core_cntrl_vif",      core_cntrl_if);
+     uvm_config_db#(virtual uvmt_cv32_core_status_if    )::set(null, "*", "core_status_vif",     core_status_if);
+     uvm_config_db#(virtual uvmt_cv32_core_interrupts_if)::set(null, "*", "core_interrupts_vif", core_interrupts_if);
+     //uvm_config_db#(mm_ram)::set("uvmt_cv32_tb.dut_wrap.*", "ram_i", "ram_i",          ram_i);
       
-    // Run test
-    uvm_top.enable_print_topology = 1;
-    uvm_top.finish_on_completion  = 1;
-    uvm_top.run_test();
+     // Run test
+     uvm_top.enable_print_topology = 1;
+     uvm_top.finish_on_completion  = 1;
+     uvm_top.run_test();
    end : test_bench_entry_point
    
-   // Capture the test status and exit flags
+   // Capture the test status and exit pulse flags
    always @(posedge clk_gen_if.core_clock) begin
      if (!clk_gen_if.core_reset_n) begin
        tp     <= 1'b0;

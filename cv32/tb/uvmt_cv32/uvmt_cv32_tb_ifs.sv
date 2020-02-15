@@ -139,7 +139,7 @@ interface uvmt_cv32_core_cntrl_if (
   /** Sets fetch_en to the core. */
   function void go_fetch();
     fetch_en = 1'b1;
-    `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_NONE)
+    `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_DEBUG)
   endfunction : go_fetch
 
 endinterface : uvmt_cv32_core_cntrl_if

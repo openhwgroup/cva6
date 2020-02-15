@@ -46,39 +46,19 @@ class uvmt_cv32_firmware_test_c extends uvmt_cv32_base_test_c;
    extern function new(string name="uvmt_cv32_firmware_test", uvm_component parent=null);
    
    /**
-    */
-   extern virtual function void build_phase(uvm_phase phase);
-   
-   /**
-    * 1. Assigns environment's virtual sequencer handle to vsequencer.
-    * 2. Add register callback (reg_cbs) to all registers & fields.
-    */
-   extern virtual function void connect_phase(uvm_phase phase);
-   
-   /**
-    */
-   extern virtual task run_phase(uvm_phase phase);
-   
-   /**
     * Runs reset_vseq.
     */
    extern virtual task reset_phase(uvm_phase phase);
    
    /**
-    * Writes contents of RAL to the DUT.
+    * Loads the test program (the "firmware") into memory.
     */
    extern virtual task configure_phase(uvm_phase phase);
    
    /**
-    * Prints out start of phase banners.
+    *  Enable program execution, wait for completion.
     */
-   extern virtual function void phase_started(uvm_phase phase);
-   
-   /**
-    * Indicates to the test bench (uvmt_cv32_tb) that the test has completed.
-    * This is done by checking the properties of the phase argument.
-    */
-   extern virtual function void phase_ended(uvm_phase phase);
+   extern virtual task run_phase(uvm_phase phase);
    
 endclass : uvmt_cv32_firmware_test_c
 
@@ -91,42 +71,6 @@ function uvmt_cv32_firmware_test_c::new(string name="uvmt_cv32_firmware_test", u
 endfunction : new
 
 
-function void uvmt_cv32_firmware_test_c::build_phase(uvm_phase phase);
-   
-   super.build_phase(phase);
-   
-endfunction : build_phase
-
-
-function void uvmt_cv32_firmware_test_c::connect_phase(uvm_phase phase);
-   
-   super.connect_phase(phase);
-   
-endfunction : connect_phase
-
-
-task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
-   
-   // start_clk() and watchdog_timer() are called in the base_test
-   super.run_phase(phase);
-   
-   phase.raise_objection(this);
-   core_cntrl_vif.go_fetch(); // Asset the Core's fetch_en
-   `uvm_info("TEST", "Started RUN", UVM_NONE)
-   // kill some time
-   repeat (1000) @(posedge clk_gen_vif.core_clock);
-   wait (
-          (vp_status_vif.exit_valid    == 1'b1) ||
-          (vp_status_vif.tests_failed  == 1'b1) ||
-          (vp_status_vif.tests_passed  == 1'b1)
-        );
-   `uvm_info("TEST", "Finished RUN", UVM_NONE)
-   repeat (1000) @(posedge clk_gen_vif.core_clock);
-   phase.drop_objection(this);
-   
-endtask : run_phase
-
-
 task uvmt_cv32_firmware_test_c::reset_phase(uvm_phase phase);
    
    super.reset_phase(phase);
@@ -136,25 +80,44 @@ endtask : reset_phase
 
 task uvmt_cv32_firmware_test_c::configure_phase(uvm_phase phase);
    
-   uvm_status_e status;
+   string firmware;
    
    super.configure_phase(phase);
-   
+
+    // Load the pre-compiled firmware
+
+    if($value$plusargs("firmware=%s", firmware)) begin
+      `uvm_info("TEST_BENCH_ENTRY_POINT", $sformatf("loading firmware %0s", firmware), UVM_NONE)
+      $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
+    end
+    else begin
+      `uvm_error("TEST_BENCH_ENTRY_POINT", "No firmware specified!")
+    end
+
 endtask : configure_phase
 
 
-function void uvmt_cv32_firmware_test_c::phase_started(uvm_phase phase);
+task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
    
-   super.phase_started(phase);
+   // start_clk() and watchdog_timer() are called in the base_test
+   super.run_phase(phase);
    
-endfunction : phase_started
-
-
-function void uvmt_cv32_firmware_test_c::phase_ended(uvm_phase phase);
+   phase.raise_objection(this);
+   @(posedge clk_gen_vif.core_reset_n);
+   repeat (33) @(posedge clk_gen_vif.core_clock);
+   core_cntrl_vif.go_fetch(); // Assert the Core's fetch_en
+   `uvm_info("TEST", "Started RUN", UVM_NONE)
+   // The firmware is expected to write exit status and pass/fail indication to the Virtual Peripheral
+   wait (
+          (vp_status_vif.exit_valid    == 1'b1) ||
+          (vp_status_vif.tests_failed  == 1'b1) ||
+          (vp_status_vif.tests_passed  == 1'b1)
+        );
+   repeat (100) @(posedge clk_gen_vif.core_clock);
+   `uvm_info("TEST", $sformatf("Finished RUN: exit status is %0h", uvmt_cv32_tb.evalue), UVM_NONE)
+   phase.drop_objection(this);
    
-   super.phase_ended(phase);
-   
-endfunction : phase_ended
+endtask : run_phase
 
 
 `endif // __UVMT_CV32_FIRMWARE_TEST_SV__
