@@ -33,6 +33,7 @@
 +incdir+${DV_UVMT_CV32_PATH}
 +incdir+${DV_UVMT_CV32_PATH}/../../tests/uvmt_cv32
 +incdir+${DV_UVMT_CV32_PATH}/../../tests/uvmt_cv32/base-tests
++incdir+${DV_UVMT_CV32_PATH}/../../tests/uvmt_cv32/compliance-tests
 //+incdir+${DV_UVMT_CV32_PATH}/../../tests/uvmt_cv32/reg-tests
 //+incdir+${DV_UVMT_CV32_PATH}/../../tests/uvmt_cv32/vseq
 

@@ -28,6 +28,8 @@
  * clocks and reset
  */
 interface uvmt_cv32_clk_gen_if (output logic core_clock, output logic core_reset_n);
+
+   import uvm_pkg::*;
    
    bit       start_clk               = 0;
    // TODO: get the uvme_cv32_* values from random ENV CFG members.
@@ -68,8 +70,7 @@ interface uvmt_cv32_clk_gen_if (output logic core_clock, output logic core_reset
    /** Triggers the generation of clk. */
    function void start();
       start_clk = 1;
-      $display("%m: uvmt_cv32_clk_gen_if.start() called");
-      //`uvm_info("CLK_GEN_IF", "uvmt_cv32_clk_gen_if.start() called", UVM_NONE)
+      `uvm_info("CLK_GEN_IF", "uvmt_cv32_clk_gen_if.start() called", UVM_NONE)
    endfunction : start
    
 endinterface : uvmt_cv32_clk_gen_if
@@ -83,6 +84,8 @@ interface uvmt_cv32_vp_status_if (
                                   inout wire        exit_valid,
                                   inout wire [31:0] exit_value
                                  );
+
+  import uvm_pkg::*;
 
   // TODO: X/Z checks
   initial begin
@@ -109,6 +112,8 @@ interface uvmt_cv32_core_cntrl_if (
                                     output logic       debug_req
                                   );
 
+  import uvm_pkg::*;
+
   initial begin: static_controls
     fetch_en          = 1'b0; // Enabled by go_fetch(), below
     fregfile_disable  = 1'b0;
@@ -134,11 +139,40 @@ interface uvmt_cv32_core_cntrl_if (
   /** Sets fetch_en to the core. */
   function void go_fetch();
     fetch_en = 1'b1;
-    //`uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_NONE)
-    $display("%m: uvmt_cv32_core_cntrl_if.go_fetch() called");
+    `uvm_info("CORE_CNTRL_IF", "uvmt_cv32_core_cntrl_if.go_fetch() called", UVM_NONE)
   endfunction : go_fetch
 
 endinterface : uvmt_cv32_core_cntrl_if
+
+
+/**
+ * Core interrupts
+ */
+interface uvmt_cv32_core_interrupts_if (
+                                    input  logic        irq_ack,        // dut output
+                                    input  logic        irq_id,         // dut output
+                                    output logic        irq_sec,        // dut input
+                                    output logic        irq_software,   // dut input
+                                    output logic        irq_timer,      // dut input
+                                    output logic        irq_external,   // dut input
+                                    output logic [15:0] irq_fast,       // dut input
+                                    output logic        irq_nmi,        // dut input
+                                    output logic [31:0] irq_fastx       // dut input
+                                   );
+  import uvm_pkg::*;
+
+  initial begin
+    irq_sec      = 1'b0;
+    irq_software = 1'b0;
+    irq_timer    = 1'b0;
+    irq_external = 1'b0;
+    irq_fast     = {15{1'b0}};
+    irq_nmi      = 1'b0;
+    irq_fastx    = {32{1'b0}};
+    `uvm_info("CORE_INTERRUPT_IF", "Interrupt inputs to CORE all tied low (for now).", UVM_NONE)
+  end
+
+endinterface : uvmt_cv32_core_interrupts_if
 
 /**
  * Core status signals.
@@ -146,7 +180,9 @@ endinterface : uvmt_cv32_core_cntrl_if
 interface uvmt_cv32_core_status_if (
                                     input  logic       core_busy,
                                     input  logic       sec_lvl
-                                  );
+                                   );
+
+  import uvm_pkg::*;
 
 endinterface : uvmt_cv32_core_status_if
 

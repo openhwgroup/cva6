@@ -27,6 +27,7 @@ PROJ_ROOT_DIR = $(PWD)/../../..
 
 # Compile compile flags for all simulators
 SV_CMP_FLAGS = +define+__USE_COREV_SIMULATION_MODELS__ # workaround for https://github.com/openhwgroup/cv32e40p/issues/208
+UVM_PLUSARGS =
 
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
@@ -43,7 +44,7 @@ export DV_UVME_CV32_PATH = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # Testcase name
-TEST ?= uvmt_cv32_smoke_test_c
+UVM_TESTNAME ?= uvmt_cv32_smoke_test_c
 
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
@@ -70,11 +71,7 @@ RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
 RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
                    $(wildcard $(RTLSRC_HOME)/*.sv))
 
-# assume compile of both ENV and RTL if no target chosen
-.DEFAULT_GOAL := dsim-sim
-
-all: clean_all dsim-sim
-
+###############################################################################
 # CV32E40P RTL dependencies
 # The variables RTLSRC_PKG and RTLSRC need to be re-evaluated since
 # CV32E40P_PKG was null the first time.
@@ -115,7 +112,31 @@ $(CV32E40P_PKG):
                   $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
                   $(RTLSRC_HOME)/riscv_tracer.sv)
 
-# Metrics dsim testbench compilation 
+
+###############################################################################
+# Firmware and the RISCV GCC Toolchain (SDK)
+
+# riscv toolchain install path
+RISCV            ?= ~/.riscv
+RISCV_EXE_PREFIX  = $(RISCV)/bin/riscv32-unknown-elf-
+
+# firmware vars
+CORE_TEST_DIR     = ../../tests/core
+FIRMWARE          = $(CORE_TEST_DIR)/firmware
+CUSTOM            = $(CORE_TEST_DIR)/custom
+
+
+###############################################################################
+# Defaults: assume compile of both ENV and RTL if no target chosen
+.DEFAULT_GOAL := dsim-hello_world
+
+all: clean_all dsim-hello_world
+
+
+###############################################################################
+# SystemVerilog simulator compilation and run
+
+# Metrics dsim
 .PHONY: dsim-sim
 
 MKDIR_P = mkdir -p
@@ -125,7 +146,7 @@ mk_results:
 	$(MKDIR_P) $(DSIM_WORK)
 
 # TODO: cd $(DSIM_RESULTS) - incompatible with pkg file
-dsim-sim: mk_results $(CV32E40P_PKG)
+dsim-comp: mk_results $(CV32E40P_PKG)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
@@ -137,9 +158,22 @@ dsim-sim: mk_results $(CV32E40P_PKG)
 		+incdir+$(RTLSRC_INCDIR) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
-		+UVM_TESTNAME=$(TEST)
-#		-genimage $(DSIM_IMAGE)
+		+UVM_TESTNAME=$(UVM_TESTNAME) \
+		+$(UVM_PLUSARGS) \
+		-genimage $(DSIM_IMAGE)
 
+dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
+	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
+	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=$(UVM_TESTNAME) \
+		+firmware=/data/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/ohw_mike_20200214/cv32/tests/core/custom/hello_world.hex
+#		+verbose +firmware=$(ROOT_DIR)/$(CUSTOM)/hello_world.hex
+
+
+###############################################################################
+# Clean up your mess!
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean clean_all
