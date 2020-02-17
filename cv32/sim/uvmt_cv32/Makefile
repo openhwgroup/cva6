@@ -43,7 +43,8 @@ export DV_UVMT_CV32_PATH = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
 export DV_UVME_CV32_PATH = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
-# Testcase name
+# Testcase name: must be the CLASS name of the testcase (not the filename).
+# Look in ../../tests/uvmt_cv32.
 UVM_TESTNAME ?= uvmt_cv32_smoke_test_c
 
 # TB source files for the CV32E core
@@ -114,16 +115,8 @@ $(CV32E40P_PKG):
 
 
 ###############################################################################
-# Firmware and the RISCV GCC Toolchain (SDK)
-
-# riscv toolchain install path
-RISCV            ?= ~/.riscv
-RISCV_EXE_PREFIX  = $(RISCV)/bin/riscv32-unknown-elf-
-
-# firmware vars
-CORE_TEST_DIR     = ../../tests/core
-FIRMWARE          = $(CORE_TEST_DIR)/firmware
-CUSTOM            = $(CORE_TEST_DIR)/custom
+# Core Firmware and the RISCV GCC Toolchain (SDK)
+include ../Firmware.mk
 
 
 ###############################################################################
@@ -158,27 +151,75 @@ dsim-comp: mk_results $(CV32E40P_PKG)
 		+incdir+$(RTLSRC_INCDIR) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
-		+UVM_TESTNAME=$(UVM_TESTNAME) \
 		+$(UVM_PLUSARGS) \
 		-genimage $(DSIM_IMAGE)
+
+dsim-no-firmware: dsim-comp
+	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
+	$(DSIM) -l dsim-$(UVM_TESTNAME).log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=$(UVM_TESTNAME)
+#		+verbose
 
 dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+UVM_TESTNAME=$(UVM_TESTNAME) \
-		+firmware=/data/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/ohw_mike_20200214/cv32/tests/core/custom/hello_world.hex
-#		+verbose +firmware=$(ROOT_DIR)/$(CUSTOM)/hello_world.hex
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/hello_world.hex
+#		+verbose
+
+# Runs tests in riscv_tests/ only
+dsim-cv32_riscv_tests: dsim-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
+	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+
+# Runs tests in riscv_compliance_tests/ only
+dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+	mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
+	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+
+# Runs all tests in riscv_tests/ and riscv_compliance_tests/
+dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
+	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
+	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(FIRMWARE)/firmware.hex
+
+###############################################################################
+# DSIM UNIT TESTS: run each test individually.
+# DO NOT INVOKE rule "dsim-firmware-unit-test" directly.   It is a support
+# rule for rule "dsim-unit-test" (in included ../Firmware.mk).
+#
+# Example: to run the ADDI test `make dsim-unit-test addi`
+dsim-firmware-unit-test: dsim-comp
+	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
+	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(FIRMWARE)/firmware_unit_test.hex
 
 
 ###############################################################################
 # Clean up your mess!
 
-# Metrics dsim cleanup
-.PHONY: dsim-clean clean_all
+.PHONY: clean_dsim clean_core_tests clean_all
 
-dsim-clean:
+# Metrics dsim cleanup
+clean_dsim:
 	rm -f dsim.log
 	rm -f dsim-*.log
 	rm -f metrics_history.db
@@ -190,5 +231,13 @@ dsim-clean:
 	rm -f $(DSIM_IMAGE)
 	rm -rf $(DSIM_RESULTS)
 
-clean_all: dsim-clean
+# Clean all generated files of the C and assembler tests in tests/core
+clean_core_tests:
+	find $(CORE_TEST_DIR) -name *.o   -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.elf -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
+
+# All generated files plus the clone of the RTL
+clean_all: clean_dsim clean_core_tests
 	rm -rf $(CV32E40P_PKG)

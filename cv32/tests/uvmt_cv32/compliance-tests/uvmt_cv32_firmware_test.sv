@@ -81,17 +81,23 @@ endtask : reset_phase
 task uvmt_cv32_firmware_test_c::configure_phase(uvm_phase phase);
    
    string firmware;
+   int    fd;
    
    super.configure_phase(phase);
 
     // Load the pre-compiled firmware
-
     if($value$plusargs("firmware=%s", firmware)) begin
-      `uvm_info("TEST_BENCH_ENTRY_POINT", $sformatf("loading firmware %0s", firmware), UVM_NONE)
+      // First, check if it exists...
+      fd = $fopen (firmware, "r");   
+      if (fd)  `uvm_info("TEST", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_NONE)
+      else     `uvm_fatal("TEST", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
+      $fclose(fd);
+      // Now load it...
+      `uvm_info("TEST", $sformatf("loading firmware %0s", firmware), UVM_NONE)
       $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
     end
     else begin
-      `uvm_error("TEST_BENCH_ENTRY_POINT", "No firmware specified!")
+      `uvm_error("TEST", "No firmware specified!")
     end
 
 endtask : configure_phase

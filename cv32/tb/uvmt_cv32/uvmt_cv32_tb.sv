@@ -134,14 +134,6 @@ module uvmt_cv32_tb;
       static string  green = "\033[32m\033[1m";
       static string  reset = "\033[0m";
       
-      // Use the Virtual Peripheral's status outputs to update report server status.
-      // TODO: handle exit_value properly
-      if (tf)  `uvm_error("END_OF_TEST", "DUT WRAPPER virtual peripheral flagged test failure.")
-      if (!tp) `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to flag test passed.")
-      if (!evalid) begin
-        `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to exit properly.")
-      end
-      
       rs            = uvm_top.get_report_server();
       err_count     = rs.get_severity_count(UVM_ERROR);
       warning_count = rs.get_severity_count(UVM_WARNING);

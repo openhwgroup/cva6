@@ -293,6 +293,14 @@ function void uvmt_cv32_base_test_c::phase_ended(uvm_phase phase);
    
    if (phase.is(uvm_final_phase::get())) begin
      uvm_config_db#(bit)::set(null, "", "sim_finished", 1);
+     // Use the DUT Wrapper Virtual Peripheral's status outputs to update report server status.
+     // TODO: handle exit_value properly
+     if (uvmt_cv32_tb.tf)  `uvm_error("END_OF_TEST", "DUT WRAPPER virtual peripheral flagged test failure.")
+     if (!uvmt_cv32_tb.tp) `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to flag test passed.")
+     if (!uvmt_cv32_tb.evalid) begin
+       `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to exit properly.")
+     end
+      
      print_banner("test finished");
    end
    
