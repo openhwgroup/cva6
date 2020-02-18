@@ -57,14 +57,7 @@ module uvmt_cv32_tb;
                          .RAM_ADDR_WIDTH    (  20),
                          .PULP_SECURE       (   1)
                         )
-                        dut_wrap
-                        (
-                         .clk_gen_if         (clk_gen_if),
-                         .vp_status_if       (vp_status_if),
-                         .core_cntrl_if      (core_cntrl_if),
-                         .core_status_if     (core_status_if),
-                         .core_interrupts_if (core_interrupts_if)
-                        );
+                        dut_wrap (.*);
    
    
    /**
