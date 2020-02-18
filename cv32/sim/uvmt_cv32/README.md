@@ -9,10 +9,10 @@ To run the testcases you will need a SystemVerilog simulator, the UVM library an
 
 Supported SystemVerilog Simulators
 ----------------------------------
-At the time of this writting (2020-02-08) the Metrics
-**_dsim_** and Cadence **_Xcelium_** simulator are supported by the Makefile.  Support for other
-SystemVerilog simulators such as Synopsys **_vcs_** and Mentor **_Questa_** is contingent
-on community interest and support.  Verilator is not supported.
+Any SystemVerilog simulator that implements complete support for [IEEE-1800-2017](https://ieeexplore.ieee.org/document/8299595) will be able to compile and run this verification environment. At the time of this writting
+(2020-02-08) the Metrics **_dsim_** and Cadence **_Xcelium_** simulator are supported by the Makefile.  Makefile
+support for other SystemVerilog simulators such as Synopsys **_vcs_**, Mentor **_Questa_** and Aldec **RivieraPRO**
+is contingent on community interest.
 
 UVM Libraries
 -------------
