@@ -16,9 +16,13 @@ on community interest and support.  Verilator is not supported.
 
 UVM Libraries
 -------------
-Typically, these come with the distribution of a SystemVerilog simulator.  If they do not, you
-can download the source code from [Accellera](https://www.accellera.org/downloads/standards/uvm).
-The UVM LRM (IEEE-1800.2) can be obtained from the [IEEE Standards Association](https://standards.ieee.org/).
+Typically, these come with the distribution of a SystemVerilog simulator.  Point your environment
+variable `UVM_HOME` to your simulator's UVM library. For example Metrics dsim users will have something
+like this:<br>`export UVM_HOME=/tools/Metrics/dsim/20191112.8.0/uvm-1.2`.
+<br><br>
+If your vendor does not provide the UVM library, you can download the source code from
+[Accellera](https://www.accellera.org/downloads/standards/uvm).  The UVM LRM (IEEE-1800.2) can be obtained
+from the [IEEE Standards Association](https://standards.ieee.org/).
 
 Supported RISC-V GCC Compilers
 -------------------------------
@@ -37,14 +41,14 @@ Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
 Point your environment variable `RISCV` to your RISC-V toolchain. The Makefile rule to run a testcase
 with dsim is `make dsim`.  You can pass the name of the testcase using the `TEST` variable:
-<br> `make dsim-no-firmware UVM_TESTNAME=uvmt_cv32_smoke_test`: compile, run, come of out reset and die.
-<br> `make dsim-hello_world`: run the hello_world program found at `../../tests/core/custom`.
-<br> `make dsim-cv32_riscv_tests`: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
-<br> `make dsim-cv32_riscv_compilance_tests`: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
-<br> `make dsim-firmware`: run all the programs found at `../../tests/core/firmware`.
-<br> `make dsim-riscv_tests`: run the RISC-V tests found at `../../tests/core/riscv_tests`
-<br> `make dsim-riscv_compilance_tests`: run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
-<br> `make dsim-unit-test <prog>`: Run one <prog> from the firmware suite of tests.  For example: `make dsim-unit-test addi`
+* **make dsim-no-firmware UVM_TESTNAME=uvmt_cv32_smoke_test**:compile, run, come of out reset and die.
+* **make dsim-hello_world**: run the hello_world program found at `../../tests/core/custom`.
+* **make dsim-cv32_riscv_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
+* **make dsim-cv32_riscv_compilance_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
+* **make dsim-firmware**: run all the programs found at `../../tests/core/firmware`.
+* **make dsim-riscv_tests**: run the RISC-V tests found at `../../tests/core/riscv_tests`
+* **make dsim-riscv_compilance_tests**: run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
+* **make dsim-unit-test <prog>**: Run one <prog> from the firmware suite of tests.  For example: `make dsim-unit-test addi`
 
 Running the environment with Cadence Xcelium [xrun](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)
 ----------------------
