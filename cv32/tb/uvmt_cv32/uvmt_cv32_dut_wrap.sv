@@ -43,10 +43,11 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
                                       PULP_SECURE       =    1
                            )
                            (
-                            uvmt_cv32_clk_gen_if     clk_gen_if,
-                            uvmt_cv32_vp_status_if   vp_status_if,
-                            uvmt_cv32_core_cntrl_if  core_cntrl_if,
-                            uvmt_cv32_core_status_if core_status_if
+                            uvmt_cv32_clk_gen_if         clk_gen_if,
+                            uvmt_cv32_vp_status_if       vp_status_if,
+                            uvmt_cv32_core_cntrl_if      core_cntrl_if,
+                            uvmt_cv32_core_status_if     core_status_if,
+                            uvmt_cv32_core_interrupts_if core_interrupts_if
                            );
 
     // signals connecting core to memory
@@ -67,17 +68,6 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
 
     // signals to debug unit
     logic                         debug_req_i;
-
-    // irq signals (not used)
-    logic                         irq;
-    logic [0:4]                   irq_id_in;
-    logic                         irq_ack;
-    logic [0:4]                   irq_id_out;
-    logic                         irq_sec;
-
-
-    // interrupts (only timer for now)
-    assign irq_sec     = '0;
 
     assign debug_req_i = 1'b0;
 
@@ -129,25 +119,25 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
          //       and pass to ENV for an INTERRUPT AGENT to drive/monitor.
          //.irq_i                  ( irq                            ),
          //.irq_id_i               ( irq_id_in                      ),
-         .irq_ack_o              ( irq_ack                        ),
-         .irq_id_o               ( irq_id_out                     ),
-         .irq_sec_i              ( irq_sec                        ),
-         .irq_software_i         (1'b0                            ),
-         .irq_timer_i            (1'b0                            ),
-         .irq_external_i         (1'b0                            ),
-         .irq_fast_i             ({15{1'b0}}                      ),
-         .irq_nmi_i              (1'b0                            ),
-         .irq_fastx_i            ({32{1'b0}}                      ),
+         .irq_ack_o              ( irq_ack                           ),
+         .irq_id_o               ( irq_id_out                        ),
+         .irq_sec_i              ( (core_interrupts_if.irq_sec||irq) ),
+         .irq_software_i         ( core_interrupts_if.irq_software   ),
+         .irq_timer_i            ( core_interrupts_if.irq_timer      ),
+         .irq_external_i         ( core_interrupts_if.irq_external   ),
+         .irq_fast_i             ( core_interrupts_if.irq_fast       ),
+         .irq_nmi_i              ( core_interrupts_if.irq_nmi        ),
+         .irq_fastx_i            ( core_interrupts_if.irq_fastx      ),
 
-         .sec_lvl_o              ( core_status_if.sec_lvl         ),
+         .sec_lvl_o              ( core_status_if.sec_lvl            ),
 
-         .debug_req_i            ( core_cntrl_if.debug_req        ),
+         .debug_req_i            ( core_cntrl_if.debug_req           ),
 
-         .fetch_enable_i         ( core_cntrl_if.fetch_en         ),
-         .core_busy_o            ( core_status_if.core_busy       ),
+         .fetch_enable_i         ( core_cntrl_if.fetch_en            ),
+         .core_busy_o            ( core_status_if.core_busy          ),
 
-         .ext_perf_counters_i    ( core_cntrl_if.ext_perf_counters),
-         .fregfile_disable_i     ( core_cntrl_if.fregfile_disable )
+         .ext_perf_counters_i    ( core_cntrl_if.ext_perf_counters   ),
+         .fregfile_disable_i     ( core_cntrl_if.fregfile_disable    )
         ); //riscv_core_i
 
     // this handles read to RAM and memory mapped virtual (pseudo) peripherals

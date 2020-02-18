@@ -59,6 +59,9 @@ package uvmt_cv32_pkg;
    `include "uvmt_cv32_test_cfg.sv"
    `include "uvmt_cv32_base_test.sv"  // all testcases should extend from this testcase
    `include "uvmt_cv32_smoke_test.sv"
+
+   // Compilance tests
+   `include "uvmt_cv32_firmware_test.sv"
    
    // Functional tests
    //`include "uvmt_cv32_reg_base_test.sv"

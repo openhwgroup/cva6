@@ -27,6 +27,7 @@ PROJ_ROOT_DIR = $(PWD)/../../..
 
 # Compile compile flags for all simulators
 SV_CMP_FLAGS = +define+__USE_COREV_SIMULATION_MODELS__ # workaround for https://github.com/openhwgroup/cv32e40p/issues/208
+UVM_PLUSARGS =
 
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
@@ -42,8 +43,9 @@ export DV_UVMT_CV32_PATH = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
 export DV_UVME_CV32_PATH = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
-# Testcase name
-TEST ?= uvmt_cv32_smoke_test_c
+# Testcase name: must be the CLASS name of the testcase (not the filename).
+# Look in ../../tests/uvmt_cv32.
+UVM_TESTNAME ?= uvmt_cv32_smoke_test_c
 
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
@@ -70,11 +72,7 @@ RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
 RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
                    $(wildcard $(RTLSRC_HOME)/*.sv))
 
-# assume compile of both ENV and RTL if no target chosen
-.DEFAULT_GOAL := dsim-sim
-
-all: clean_all dsim-sim
-
+###############################################################################
 # CV32E40P RTL dependencies
 # The variables RTLSRC_PKG and RTLSRC need to be re-evaluated since
 # CV32E40P_PKG was null the first time.
@@ -115,7 +113,23 @@ $(CV32E40P_PKG):
                   $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
                   $(RTLSRC_HOME)/riscv_tracer.sv)
 
-# Metrics dsim testbench compilation 
+
+###############################################################################
+# Core Firmware and the RISCV GCC Toolchain (SDK)
+include ../Firmware.mk
+
+
+###############################################################################
+# Defaults: assume compile of both ENV and RTL if no target chosen
+.DEFAULT_GOAL := dsim-hello_world
+
+all: clean_all dsim-hello_world
+
+
+###############################################################################
+# SystemVerilog simulator compilation and run
+
+# Metrics dsim
 .PHONY: dsim-sim
 
 MKDIR_P = mkdir -p
@@ -125,7 +139,7 @@ mk_results:
 	$(MKDIR_P) $(DSIM_WORK)
 
 # TODO: cd $(DSIM_RESULTS) - incompatible with pkg file
-dsim-sim: mk_results $(CV32E40P_PKG)
+dsim-comp: mk_results $(CV32E40P_PKG)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
@@ -137,14 +151,75 @@ dsim-sim: mk_results $(CV32E40P_PKG)
 		+incdir+$(RTLSRC_INCDIR) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
-		+UVM_TESTNAME=$(TEST)
-#		-genimage $(DSIM_IMAGE)
+		+$(UVM_PLUSARGS) \
+		-genimage $(DSIM_IMAGE)
 
+dsim-no-firmware: dsim-comp
+	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
+	$(DSIM) -l dsim-$(UVM_TESTNAME).log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=$(UVM_TESTNAME)
+#		+verbose
+
+dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
+	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
+	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/hello_world.hex
+#		+verbose
+
+# Runs tests in riscv_tests/ only
+dsim-cv32_riscv_tests: dsim-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
+	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+
+# Runs tests in riscv_compliance_tests/ only
+dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+	mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
+	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+
+# Runs all tests in riscv_tests/ and riscv_compliance_tests/
+dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
+	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
+	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(FIRMWARE)/firmware.hex
+
+###############################################################################
+# DSIM UNIT TESTS: run each test individually.
+# DO NOT INVOKE rule "dsim-firmware-unit-test" directly.   It is a support
+# rule for rule "dsim-unit-test" (in included ../Firmware.mk).
+#
+# Example: to run the ADDI test `make dsim-unit-test addi`
+dsim-firmware-unit-test: dsim-comp
+	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
+	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(FIRMWARE)/firmware_unit_test.hex
+
+
+###############################################################################
+# Clean up your mess!
+
+.PHONY: clean_dsim clean_core_tests clean_all
 
 # Metrics dsim cleanup
-.PHONY: dsim-clean clean_all
-
-dsim-clean:
+clean_dsim:
 	rm -f dsim.log
 	rm -f dsim-*.log
 	rm -f metrics_history.db
@@ -156,5 +231,13 @@ dsim-clean:
 	rm -f $(DSIM_IMAGE)
 	rm -rf $(DSIM_RESULTS)
 
-clean_all: dsim-clean
+# Clean all generated files of the C and assembler tests in tests/core
+clean_core_tests:
+	find $(CORE_TEST_DIR) -name *.o   -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.elf -exec rm {} \;
+	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
+
+# All generated files plus the clone of the RTL
+clean_all: clean_dsim clean_core_tests
 	rm -rf $(CV32E40P_PKG)

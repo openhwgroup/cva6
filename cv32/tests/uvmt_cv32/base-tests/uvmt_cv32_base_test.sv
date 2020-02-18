@@ -41,8 +41,10 @@ class uvmt_cv32_base_test_c extends uvm_test;
    uvme_cv32_env_c   env       ;
    //uvme_cv32_vsqr_c  vsequencer;
    
-   // Handle to clock generation interface
-   virtual uvmt_cv32_clk_gen_if  clk_gen_vif;
+   // Handles testbench interfaces
+   virtual uvmt_cv32_clk_gen_if    clk_gen_vif;    // clocks and resets
+   virtual uvmt_cv32_vp_status_if  vp_status_vif;  // virtual peripheral status
+   virtual uvmt_cv32_core_cntrl_if core_cntrl_vif; // control inputs to the core
    
    // Knobs
    rand int unsigned  heartbeat_period; // Specified in nanoseconds (ns)
@@ -291,12 +293,21 @@ function void uvmt_cv32_base_test_c::phase_ended(uvm_phase phase);
    
    if (phase.is(uvm_final_phase::get())) begin
      uvm_config_db#(bit)::set(null, "", "sim_finished", 1);
+     // Use the DUT Wrapper Virtual Peripheral's status outputs to update report server status.
+     // TODO: handle exit_value properly
+     if (uvmt_cv32_tb.tf)  `uvm_error("END_OF_TEST", "DUT WRAPPER virtual peripheral flagged test failure.")
+     if (!uvmt_cv32_tb.tp) `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to flag test passed.")
+     if (!uvmt_cv32_tb.evalid) begin
+       `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to exit properly.")
+     end
+      
      print_banner("test finished");
    end
    
 endfunction : phase_ended
 
 
+// TODO: give this task a generic name (since its retrieving more than just the clk_gen_if)
 function void uvmt_cv32_base_test_c::retrieve_clk_gen_vif();
    
    if (!uvm_config_db#(virtual uvmt_cv32_clk_gen_if)::get(this, "", "clk_gen_vif", clk_gen_vif)) begin
@@ -304,6 +315,20 @@ function void uvmt_cv32_base_test_c::retrieve_clk_gen_vif();
    end
    else begin
       `uvm_info("VIF", $sformatf("Found clk_gen_vif handle of type %s in uvm_config_db", $typename(clk_gen_vif)), UVM_DEBUG)
+   end
+   
+   if (!uvm_config_db#(virtual uvmt_cv32_vp_status_if)::get(this, "", "vp_status_vif", vp_status_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find vp_status_vif handle of type %s in uvm_config_db", $typename(vp_status_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found vp_status_vif handle of type %s in uvm_config_db", $typename(vp_status_vif)), UVM_DEBUG)
+   end
+   
+   if (!uvm_config_db#(virtual uvmt_cv32_core_cntrl_if)::get(this, "", "core_cntrl_vif", core_cntrl_vif)) begin
+      `uvm_fatal("VIF", $sformatf("Could not find core_cntrl_vif handle of type %s in uvm_config_db", $typename(core_cntrl_vif)))
+   end
+   else begin
+      `uvm_info("VIF", $sformatf("Found core_cntrl_vif handle of type %s in uvm_config_db", $typename(core_cntrl_vif)), UVM_DEBUG)
    end
    
 endfunction : retrieve_clk_gen_vif
