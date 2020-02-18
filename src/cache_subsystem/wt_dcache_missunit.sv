@@ -40,7 +40,7 @@ module wt_dcache_missunit #(
   input  logic [NumPorts-1:0]                        miss_nc_i,
   input  logic [NumPorts-1:0]                        miss_we_i,
   input  logic [NumPorts-1:0][63:0]                  miss_wdata_i,
-  input  logic [NumPorts-1:0][63:0]                  miss_paddr_i,
+  input  logic [NumPorts-1:0][riscv::PLEN-1:0]       miss_paddr_i,
   input  logic [NumPorts-1:0][DCACHE_SET_ASSOC-1:0]  miss_vld_bits_i,
   input  logic [NumPorts-1:0][2:0]                   miss_size_i,
   input  logic [NumPorts-1:0][CACHE_ID_WIDTH-1:0]    miss_id_i,          // used as transaction ID
@@ -50,7 +50,7 @@ module wt_dcache_missunit #(
   output logic [NumPorts-1:0]                        miss_rtrn_vld_o,
   output logic [CACHE_ID_WIDTH-1:0]                  miss_rtrn_id_o,     // only used for writes, set to zero fro reads
   // from writebuffer
-  input  logic [DCACHE_MAX_TX-1:0][63:0]             tx_paddr_i,         // used to check for address collisions with read operations
+  input  logic [DCACHE_MAX_TX-1:0][riscv::PLEN-1:0]  tx_paddr_i,         // used to check for address collisions with read operations
   input  logic [DCACHE_MAX_TX-1:0]                   tx_vld_i,           // used to check for address collisions with read operations
   // write interface to cache memory
   output logic                                       wr_cl_vld_o,        // writes a full cacheline
@@ -76,7 +76,7 @@ module wt_dcache_missunit #(
 
   // MSHR for reads
   typedef struct packed {
-    logic [63:0]                         paddr   ;
+    logic [riscv::PLEN-1:0]              paddr   ;
     logic [2:0]                          size    ;
     logic [DCACHE_SET_ASSOC-1:0]         vld_bits;
     logic [CACHE_ID_WIDTH-1:0]          id      ;
@@ -97,8 +97,8 @@ module wt_dcache_missunit #(
   logic mask_reads, lock_reqs;
   logic amo_sel, miss_is_write;
   logic amo_req_d, amo_req_q;
-  logic [63:0] amo_data, tmp_paddr, amo_rtrn_mux;
-
+  logic [63:0] amo_data, amo_rtrn_mux;
+  logic [riscv::PLEN-1:0] tmp_paddr;
   logic [$clog2(NumPorts)-1:0] miss_port_idx;
   logic [DCACHE_CL_IDX_WIDTH-1:0] cnt_d, cnt_q;
   logic [NumPorts-1:0] miss_req_masked_d, miss_req_masked_q;
@@ -181,19 +181,19 @@ module wt_dcache_missunit #(
 
 
   for(genvar k=0; k<NumPorts; k++) begin : gen_rdrd_collision
-    assign mshr_rdrd_collision[k]   = (mshr_q.paddr[63:DCACHE_OFFSET_WIDTH] == miss_paddr_i[k][63:DCACHE_OFFSET_WIDTH]) && (mshr_vld_q | mshr_vld_q1);
+    assign mshr_rdrd_collision[k]   = (mshr_q.paddr[riscv::PLEN-1:DCACHE_OFFSET_WIDTH] == miss_paddr_i[k][riscv::PLEN-1:DCACHE_OFFSET_WIDTH]) && (mshr_vld_q | mshr_vld_q1);
     assign mshr_rdrd_collision_d[k] = (!miss_req_i[k]) ? 1'b0 : mshr_rdrd_collision_q[k] | mshr_rdrd_collision[k];
   end
 
   // read/write collision, stalls the corresponding request
   // write collides with MSHR
-  assign mshr_rdwr_collision = (mshr_q.paddr[63:DCACHE_OFFSET_WIDTH] == miss_paddr_i[NumPorts-1][63:DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
+  assign mshr_rdwr_collision = (mshr_q.paddr[riscv::PLEN-1:DCACHE_OFFSET_WIDTH] == miss_paddr_i[NumPorts-1][riscv::PLEN-1:DCACHE_OFFSET_WIDTH]) && mshr_vld_q;
 
   // read collides with inflight TX
   always_comb begin : p_tx_coll
     tx_rdwr_collision = 1'b0;
     for(int k=0; k<DCACHE_MAX_TX; k++) begin
-      tx_rdwr_collision |= (miss_paddr_i[miss_port_idx][63:DCACHE_OFFSET_WIDTH] == tx_paddr_i[k][63:DCACHE_OFFSET_WIDTH]) && tx_vld_i[k];
+      tx_rdwr_collision |= (miss_paddr_i[miss_port_idx][riscv::PLEN-1:DCACHE_OFFSET_WIDTH] == tx_paddr_i[k][riscv::PLEN-1:DCACHE_OFFSET_WIDTH]) && tx_vld_i[k];
     end
   end
 
@@ -228,7 +228,7 @@ module wt_dcache_missunit #(
   assign mem_data_o.size   = (amo_sel) ? amo_req_i.size      : miss_size_i [miss_port_idx];
   assign mem_data_o.amo_op = (amo_sel) ? amo_req_i.amo_op    : AMO_NONE;
 
-  assign tmp_paddr         = (amo_sel) ? amo_req_i.operand_a : miss_paddr_i[miss_port_idx];
+  assign tmp_paddr         = (amo_sel) ? amo_req_i.operand_a[riscv::PLEN-1:0] : miss_paddr_i[miss_port_idx];
   assign mem_data_o.paddr  = wt_cache_pkg::paddrSizeAlign(tmp_paddr, mem_data_o.size);
 
 ///////////////////////////////////////////////////////

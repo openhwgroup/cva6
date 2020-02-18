@@ -39,12 +39,12 @@ interface instr_tracer_if (
     logic                          [1:0] commit_ack;
     // address translation
     // stores
-    logic              st_valid;
-    logic [63:0]       st_paddr;
+    logic                         st_valid;
+    logic [riscv::PLEN-1:0]       st_paddr;
     // loads
-    logic              ld_valid;
-    logic              ld_kill;
-    logic [63:0]       ld_paddr;
+    logic                         ld_valid;
+    logic                         ld_kill;
+    logic [riscv::PLEN-1:0]       ld_paddr;
     // misprediction
     ariane_pkg::bp_resolve_t resolve_branch;
     // exceptions

@@ -35,14 +35,14 @@ module mmu #(
         // in the LSU as we distinguish load and stores, what we do here is simple address translation
         input  exception_t                      misaligned_ex_i,
         input  logic                            lsu_req_i,        // request address translation
-        input  logic [63:0]                     lsu_vaddr_i,      // virtual address in
+        input  logic [riscv::VLEN-1:0]          lsu_vaddr_i,      // virtual address in
         input  logic                            lsu_is_store_i,   // the translation is requested by a store
         // if we need to walk the page table we can't grant in the same cycle
         // Cycle 0
         output logic                            lsu_dtlb_hit_o,   // sent in the same cycle as the request if translation hits in the DTLB
         // Cycle 1
         output logic                            lsu_valid_o,      // translation is valid
-        output logic [63:0]                     lsu_paddr_o,      // translated address
+        output logic [riscv::PLEN-1:0]          lsu_paddr_o,      // translated address
         output exception_t                      lsu_exception_o,  // address translation threw an exception
         // General control signals
         input riscv::priv_lvl_t                 priv_lvl_i,
@@ -67,7 +67,7 @@ module mmu #(
     logic        walking_instr; // PTW is walking because of an ITLB miss
     logic        ptw_error;     // PTW threw an exception
 
-    logic [38:0] update_vaddr;
+    logic [riscv::VLEN-1:0] update_vaddr;
     tlb_update_t update_ptw_itlb, update_ptw_dtlb;
 
     logic        itlb_lu_access;
@@ -184,7 +184,7 @@ module mmu #(
     always_comb begin : instr_interface
         // MMU disabled: just pass through
         icache_areq_o.fetch_valid  = icache_areq_i.fetch_req;
-        icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr; // play through in case we disabled address translation
+        icache_areq_o.fetch_paddr  = icache_areq_i.fetch_vaddr[riscv::PLEN-1:0]; // play through in case we disabled address translation
         // two potential exception sources:
         // 1. HPTW threw an exception -> signal with a page fault exception
         // 2. We got an access error because of insufficient permissions -> throw an access exception
@@ -198,9 +198,9 @@ module mmu #(
         // AXI decode error), or when PTW performs walk due to ITLB miss and raises
         // an error.
         if (enable_translation_i) begin
-            // we work with SV39, so if VM is enabled, check that all bits [63:38] are equal
-            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[63:38]) == 1'b1 || (|icache_areq_i.fetch_vaddr[63:38]) == 1'b0)) begin
-                icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, icache_areq_i.fetch_vaddr, 1'b1};
+            // we work with SV39, so if VM is enabled, check that all bits [riscv::VLEN-1:38] are equal
+            if (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:38]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:38]) == 1'b0)) begin
+                icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
             end
 
             icache_areq_o.fetch_valid = 1'b0;
@@ -225,7 +225,7 @@ module mmu #(
                 // we got an access error
                 if (iaccess_err) begin
                     // throw a page fault
-                    icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, icache_areq_i.fetch_vaddr, 1'b1};
+                    icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, icache_areq_i.fetch_vaddr}, 1'b1};
                 end
             end else
             // ---------
@@ -234,22 +234,22 @@ module mmu #(
             // watch out for exceptions happening during walking the page table
             if (ptw_active && walking_instr) begin
                 icache_areq_o.fetch_valid = ptw_error;
-                icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                icache_areq_o.fetch_exception = {riscv::INSTR_PAGE_FAULT, {{64-riscv::VLEN{1'b0}}, update_vaddr}, 1'b1};
             end
         end
         // if it didn't match any execute region throw an `Instruction Access Fault`
         if (!match_any_execute_region) begin
-          icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, icache_areq_o.fetch_paddr, 1'b1};
+          icache_areq_o.fetch_exception = {riscv::INSTR_ACCESS_FAULT, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr}, 1'b1};
         end
     end
 
     // check for execute flag on memory
-    assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, icache_areq_o.fetch_paddr);
+    assign match_any_execute_region = ariane_pkg::is_inside_execute_regions(ArianeCfg, {{64-riscv::PLEN{1'b0}}, icache_areq_o.fetch_paddr});
 
     //-----------------------
     // Data Interface
     //-----------------------
-    logic [63:0] lsu_vaddr_n,     lsu_vaddr_q;
+    logic [riscv::VLEN-1:0] lsu_vaddr_n,     lsu_vaddr_q;
     riscv::pte_t dtlb_pte_n,      dtlb_pte_q;
     exception_t  misaligned_ex_n, misaligned_ex_q;
     logic        lsu_req_n,       lsu_req_q;
@@ -273,7 +273,7 @@ module mmu #(
         dtlb_is_2M_n          = dtlb_is_2M;
         dtlb_is_1G_n          = dtlb_is_1G;
 
-        lsu_paddr_o           = lsu_vaddr_q;
+        lsu_paddr_o           = lsu_vaddr_q[riscv::PLEN-1:0];
         lsu_valid_o           = lsu_req_q;
         lsu_exception_o       = misaligned_ex_q;
         // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
@@ -306,12 +306,12 @@ module mmu #(
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
                     if (!dtlb_pte_q.w || daccess_err || !dtlb_pte_q.d) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, lsu_vaddr_q, 1'b1};
+                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
                     end
 
                 // this is a load, check for sufficient access privileges - throw a page fault if necessary
                 end else if (daccess_err) begin
-                    lsu_exception_o = {riscv::LOAD_PAGE_FAULT, lsu_vaddr_q, 1'b1};
+                    lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
                 end
             end else
 
@@ -326,9 +326,9 @@ module mmu #(
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
                     if (lsu_is_store_q) begin
-                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                        lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end else begin
-                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {25'b0, update_vaddr}, 1'b1};
+                        lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end
                 end
             end

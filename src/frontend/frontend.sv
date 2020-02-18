@@ -31,11 +31,11 @@ module frontend #(
   input  bp_resolve_t        resolved_branch_i,  // from controller signaling a branch_predict -> update BTB
   // from commit, when flushing the whole pipeline
   input  logic               set_pc_commit_i,    // Take the PC from commit stage
-  input  logic [63:0]        pc_commit_i,        // PC of instruction in commit stage
+  input  logic [riscv::VLEN-1:0] pc_commit_i,        // PC of instruction in commit stage
   // CSR input
-  input  logic [63:0]        epc_i,              // exception PC which we need to return to
+  input  logic [riscv::VLEN-1:0] epc_i,              // exception PC which we need to return to
   input  logic               eret_i,             // return from exception
-  input  logic [63:0]        trap_vector_base_i, // base of trap vector
+  input  logic [riscv::VLEN-1:0] trap_vector_base_i, // base of trap vector
   input  logic               ex_valid_i,         // exception is valid - from commit
   input  logic               set_debug_pc_i,     // jump to debug address
   // Instruction Fetch
@@ -50,21 +50,21 @@ module frontend #(
     logic [FETCH_WIDTH-1:0] icache_data_q;
     logic                   icache_valid_q;
     logic                   icache_ex_valid_q;
-    logic [63:0]            icache_vaddr_q;
+    logic [riscv::VLEN-1:0] icache_vaddr_q;
     logic                   instr_queue_ready;
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] instr_queue_consumed;
     // upper-most branch-prediction from last cycle
     btb_prediction_t        btb_q;
     bht_prediction_t        bht_q;
     // instruction fetch is ready
-    logic          if_ready;
-    logic [63:0]   npc_d, npc_q; // next PC
+    logic                   if_ready;
+    logic [riscv::VLEN-1:0] npc_d, npc_q; // next PC
 
     // indicates whether we come out of reset (then we need to load boot_addr_i)
-    logic          npc_rst_load_q;
+    logic                   npc_rst_load_q;
 
-    logic          replay;
-    logic [63:0]   replay_addr;
+    logic                   replay;
+    logic [riscv::VLEN-1:0] replay_addr;
 
     // shift amount
     logic [$clog2(ariane_pkg::INSTR_PER_FETCH)-1:0] shamt;
@@ -77,14 +77,14 @@ module frontend #(
     // RVI ctrl flow prediction
     logic [INSTR_PER_FETCH-1:0]       rvi_return, rvi_call, rvi_branch,
                                       rvi_jalr, rvi_jump;
-    logic [INSTR_PER_FETCH-1:0][63:0] rvi_imm;
+    logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] rvi_imm;
     // RVC branching
     logic [INSTR_PER_FETCH-1:0]       rvc_branch, rvc_jump, rvc_jr, rvc_return,
                                       rvc_jalr, rvc_call;
-    logic [INSTR_PER_FETCH-1:0][63:0] rvc_imm;
+    logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] rvc_imm;
     // re-aligned instruction and address (coming from cache - combinationally)
     logic [INSTR_PER_FETCH-1:0][31:0] instr;
-    logic [INSTR_PER_FETCH-1:0][63:0] addr;
+    logic [INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr;
     logic [INSTR_PER_FETCH-1:0]       instruction_valid;
     // BHT, BTB and RAS prediction
     bht_prediction_t [INSTR_PER_FETCH-1:0] bht_prediction;
@@ -96,10 +96,10 @@ module frontend #(
     // branch-predict update
     logic            is_mispredict;
     logic            ras_push, ras_pop;
-    logic [63:0]     ras_update;
+    logic [riscv::VLEN-1:0]     ras_update;
 
     // Instruction FIFO
-    logic [63:0]                            predict_address;
+    logic [riscv::VLEN-1:0]                 predict_address;
     cf_t  [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type;
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvi_cf;
     logic [ariane_pkg::INSTR_PER_FETCH-1:0] taken_rvc_cf;
@@ -207,8 +207,8 @@ module frontend #(
             // otherwise default to static prediction
             end else begin
               // set if immediate is negative - static prediction
-              taken_rvi_cf[i] = rvi_branch[i] & rvi_imm[i][63];
-              taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][63];
+              taken_rvi_cf[i] = rvi_branch[i] & rvi_imm[i][riscv::VLEN-1];
+              taken_rvc_cf[i] = rvc_branch[i] & rvc_imm[i][riscv::VLEN-1];
             end
             if (taken_rvi_cf[i] || taken_rvc_cf[i]) cf_type[i] = ariane_pkg::Branch;
           end
@@ -274,7 +274,7 @@ module frontend #(
     // Mis-predict handling is a little bit different
     // select PC a.k.a PC Gen
     always_comb begin : npc_select
-      automatic logic [63:0] fetch_address;
+      automatic logic [riscv::VLEN-1:0] fetch_address;
       // check whether we come out of reset
       // this is a workaround. some tools have issues
       // having boot_addr_i in the asynchronous
@@ -282,8 +282,8 @@ module frontend #(
       // boot_addr_i will be assigned a constant
       // on the top-level.
       if (npc_rst_load_q) begin
-        npc_d         = boot_addr_i;
-        fetch_address = boot_addr_i;
+        npc_d         = boot_addr_i[riscv::VLEN-1:0];
+        fetch_address = boot_addr_i[riscv::VLEN-1:0];
       end else begin
         fetch_address    = npc_q;
         // keep stable by default
@@ -295,7 +295,7 @@ module frontend #(
         npc_d = predict_address;
       end
       // 1. Default assignment
-      if (if_ready) npc_d = {fetch_address[63:2], 2'b0}  + 'h4;
+      if (if_ready) npc_d = {fetch_address[riscv::VLEN-1:2], 2'b0}  + 'h4;
       // 2. Replay instruction fetch
       if (replay) npc_d = replay_addr;
       // 3. Control flow change request
@@ -311,10 +311,10 @@ module frontend #(
       // as CSR or AMO instructions do not exist in a compressed form
       // we can unconditionally do PC + 4 here
       // TODO(zarubaf) This adder can at least be merged with the one in the csr_regfile stage
-      if (set_pc_commit_i) npc_d = pc_commit_i + 64'h4;
+      if (set_pc_commit_i) npc_d = pc_commit_i + {{riscv::VLEN-3{1'b0}}, 3'b100};
       // 7. Debug
       // enter debug on a hard-coded base-address
-      if (set_debug_pc_i) npc_d = ArianeCfg.DmBaseAddress + dm::HaltAddress;
+      if (set_debug_pc_i) npc_d = ArianeCfg.DmBaseAddress[riscv::VLEN-1:0] + dm::HaltAddress[riscv::VLEN-1:0];
       icache_dreq_o.vaddr = fetch_address;
     end
 

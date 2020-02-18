@@ -34,8 +34,8 @@ module store_unit (
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o, // request address translation
-    output logic [63:0]              vaddr_o,           // virtual address out
-    input  logic [63:0]              paddr_i,           // physical address in
+    output logic [riscv::VLEN-1:0]   vaddr_o,           // virtual address out
+    input  logic [riscv::PLEN-1:0]   paddr_i,           // physical address in
     input  exception_t               ex_i,
     input  logic                     dtlb_hit_i,       // will be one in the same cycle translation_req was asserted if it hits
     // address checker
