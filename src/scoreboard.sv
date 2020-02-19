@@ -121,6 +121,15 @@ module scoreboard #(
     end
 
     // ------------
+    // FU NONE
+    // ------------
+    for (int unsigned i = 0; i < NR_ENTRIES; i++) begin
+      // The FU is NONE -> this instruction is valid immediately
+      if (mem_q[i].sbe.fu == ariane_pkg::NONE && mem_q[i].issued)
+        mem_n[i].sbe.valid = 1'b1;
+    end
+
+    // ------------
     // Write Back
     // ------------
     for (int unsigned i = 0; i < NR_WB_PORTS; i++) begin
