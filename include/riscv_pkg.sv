@@ -289,7 +289,6 @@ package riscv;
     localparam logic [63:0] ENV_CALL_MMODE        = 11; // environment call from machine mode
     localparam logic [63:0] INSTR_PAGE_FAULT      = 12; // Instruction page fault
     localparam logic [63:0] LOAD_PAGE_FAULT       = 13; // Load page fault
-    localparam logic [63:0] PHYSICAL_PROT_FAULT   = 14; // Physical protection fault (non-standard)
     localparam logic [63:0] STORE_PAGE_FAULT      = 15; // Store page fault
     localparam logic [63:0] DEBUG_REQUEST         = 24; // Debug request
 

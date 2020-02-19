@@ -334,9 +334,13 @@ module mmu #(
                 end
             end // if (ptw_active && !walking_instr)
             end
-        // if it didn't match any physical region throw a (non-standard) `Physical Protection Fault`
+        // if it didn't match any physical region throw the appropriate page fault
         if (lsu_valid_o && !match_any_physical_region) begin
-          lsu_exception_o = {riscv::PHYSICAL_PROT_FAULT, lsu_paddr_o, 1'b1};
+           if (lsu_is_store_q) begin
+              lsu_exception_o = {riscv::STORE_PAGE_FAULT, lsu_paddr_o, 1'b1};
+           end else begin
+              lsu_exception_o = {riscv::LOAD_PAGE_FAULT, lsu_paddr_o, 1'b1};
+           end
         end
     end
 
