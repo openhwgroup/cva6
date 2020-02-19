@@ -41,7 +41,7 @@ module issue_read_operands #(
     input  fu_t [2**REG_ADDR_SIZE-1:0]             rd_clobber_fpr_i,
     // To FU, just single issue for now
     output fu_data_t                               fu_data_o,
-    output logic [63:0]                            pc_o,
+    output logic [riscv::VLEN-1:0]                 pc_o,
     output logic                                   is_compressed_instr_o,
     // ALU 1
     input  logic                                   flu_ready_i,      // Fixed latency unit ready to accept a new request
@@ -214,7 +214,7 @@ module issue_read_operands #(
 
         // use the PC as operand a
         if (issue_instr_i.use_pc) begin
-            operand_a_n = issue_instr_i.pc;
+            operand_a_n = {{64-riscv::VLEN{issue_instr_i.pc[riscv::VLEN-1]}}, issue_instr_i.pc};
         end
 
         // use the zimm as operand a

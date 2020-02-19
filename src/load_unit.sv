@@ -30,8 +30,8 @@ module load_unit import ariane_pkg::*; #(
     output exception_t               ex_o,
     // MMU -> Address Translation
     output logic                     translation_req_o,   // request address translation
-    output logic [63:0]              vaddr_o,             // virtual address out
-    input  logic [63:0]              paddr_i,             // physical address in
+    output logic [riscv::VLEN-1:0]   vaddr_o,             // virtual address out
+    input  logic [riscv::PLEN-1:0]   paddr_i,             // physical address in
     input  exception_t               ex_i,                // exception which may has happened earlier. for example: mis-aligned exception
     input  logic                     dtlb_hit_i,          // hit on the dtlb, send in the same cycle as the request
     // address checker

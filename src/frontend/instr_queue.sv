@@ -48,18 +48,18 @@ module instr_queue (
   input  logic                                               rst_ni,
   input  logic                                               flush_i,
   input  logic [ariane_pkg::INSTR_PER_FETCH-1:0][31:0]       instr_i,
-  input  logic [ariane_pkg::INSTR_PER_FETCH-1:0][63:0]       addr_i,
+  input  logic [ariane_pkg::INSTR_PER_FETCH-1:0][riscv::VLEN-1:0] addr_i,
   input  logic [ariane_pkg::INSTR_PER_FETCH-1:0]             valid_i,
   output logic                                               ready_o,
   output logic [ariane_pkg::INSTR_PER_FETCH-1:0]             consumed_o,
   // we've encountered an exception, at this point the only possible exceptions are page-table faults
   input  logic                                               exception_i,
   // branch predict
-  input  logic [63:0]                                        predict_address_i,
+  input  logic [riscv::VLEN-1:0]                             predict_address_i,
   input  ariane_pkg::cf_t  [ariane_pkg::INSTR_PER_FETCH-1:0] cf_type_i,
   // replay instruction because one of the FIFO was already full
   output logic                                               replay_o,
-  output logic [63:0]                                        replay_addr_o, // address at which to replay this instruction
+  output logic [riscv::VLEN-1:0]                             replay_addr_o, // address at which to replay this instruction
   // to processor backend
   output ariane_pkg::fetch_entry_t                           fetch_entry_o,
   output logic                                               fetch_entry_valid_o,
@@ -84,7 +84,7 @@ module instr_queue (
   logic instr_overflow;
   // address queue
   logic [$clog2(ariane_pkg::FETCH_FIFO_DEPTH)-1:0] address_queue_usage;
-  logic [63:0] address_out;
+  logic [riscv::VLEN-1:0] address_out;
   logic pop_address;
   logic push_address;
   logic full_address;
@@ -95,7 +95,7 @@ module instr_queue (
   // Registers
   // output FIFO select, one-hot
   logic [ariane_pkg::INSTR_PER_FETCH-1:0] idx_ds_d, idx_ds_q;
-  logic [63:0] pc_d, pc_q; // current PC
+  logic [riscv::VLEN-1:0] pc_d, pc_q; // current PC
   logic reset_address_d, reset_address_q; // we need to re-set the address because of a flush
 
   logic [ariane_pkg::INSTR_PER_FETCH*2-2:0] branch_mask_extended;
@@ -226,7 +226,7 @@ module instr_queue (
       if (idx_ds_q[i]) begin
         fetch_entry_o.instruction = instr_data_out[i].instr;
         fetch_entry_o.ex.valid = instr_data_out[i].ex;
-        fetch_entry_o.ex.tval  = pc_q;
+        fetch_entry_o.ex.tval  = {{64-riscv::VLEN{1'b0}}, pc_q};
         fetch_entry_o.branch_predict.cf = instr_data_out[i].cf;
         pop_instr[i] = fetch_entry_valid_o & fetch_entry_ready_i;
       end
@@ -297,7 +297,7 @@ module instr_queue (
 
   fifo_v3 #(
     .DEPTH      ( ariane_pkg::FETCH_FIFO_DEPTH ), // TODO(zarubaf): Fork out to separate param
-    .DATA_WIDTH ( 64                           )
+    .DATA_WIDTH ( riscv::VLEN                  )
   ) i_fifo_address (
     .clk_i      ( clk_i                        ),
     .rst_ni     ( rst_ni                       ),

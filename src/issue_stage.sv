@@ -33,7 +33,7 @@ module issue_stage #(
     output logic                                     decoded_instr_ack_o,
     // to EX
     output fu_data_t                                 fu_data_o,
-    output logic [63:0]                              pc_o,
+    output logic [riscv::VLEN-1:0]                   pc_o,
     output logic                                     is_compressed_instr_o,
     input  logic                                     flu_ready_i,
     output logic                                     alu_valid_o,

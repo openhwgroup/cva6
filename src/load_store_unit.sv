@@ -84,21 +84,26 @@ module load_store_unit #(
     // Address Generation Unit (AGU)
     // ------------------------------
     // virtual address as calculated by the AGU in the first cycle
-    logic [63:0] vaddr_i;
-    logic [7:0]  be_i;
+    logic [riscv::VLEN-1:0]   vaddr_i;
+    logic [63:0]              vaddr64;
+    logic                     overflow;
+    logic [7:0]               be_i;
 
-    assign vaddr_i = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
+    assign vaddr64 = $unsigned($signed(fu_data_i.imm) + $signed(fu_data_i.operand_a));
+    assign vaddr_i = vaddr64[riscv::VLEN-1:0];
+    // we work with SV39, so if VM is enabled, check that all bits [64:riscv::38] are equal
+    assign overflow = !((&vaddr64[63:riscv::VLEN-1]) == 1'b1 || (|vaddr64[63:riscv::VLEN-1]) == 1'b0);
 
     logic                     st_valid_i;
     logic                     ld_valid_i;
     logic                     ld_translation_req;
     logic                     st_translation_req;
-    logic [63:0]              ld_vaddr;
-    logic [63:0]              st_vaddr;
+    logic [riscv::VLEN-1:0]   ld_vaddr;
+    logic [riscv::VLEN-1:0]   st_vaddr;
     logic                     translation_req;
     logic                     translation_valid;
-    logic [63:0]              mmu_vaddr;
-    logic [63:0]              mmu_paddr;
+    logic [riscv::VLEN-1:0]   mmu_vaddr;
+    logic [riscv::PLEN-1:0]   mmu_paddr;
     exception_t               mmu_exception;
     logic                     dtlb_hit;
 
@@ -243,7 +248,7 @@ module load_store_unit #(
         st_valid_i = 1'b0;
 
         translation_req      = 1'b0;
-        mmu_vaddr            = 64'b0;
+        mmu_vaddr            = {riscv::VLEN{1'b0}};
 
         // check the operator to activate the right functional unit accordingly
         unique case (lsu_ctrl.fu)
@@ -327,33 +332,32 @@ module load_store_unit #(
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
                     riscv::LD_ADDR_MISALIGNED,
-                    lsu_ctrl.vaddr,
+                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
                     riscv::ST_ADDR_MISALIGNED,
-                    lsu_ctrl.vaddr,
+                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
             end
         end
 
-        // we work with SV39, so if VM is enabled, check that all bits [63:38] are equal
-        if (en_ld_st_translation_i && !((&lsu_ctrl.vaddr[63:38]) == 1'b1 || (|lsu_ctrl.vaddr[63:38]) == 1'b0)) begin
+        if (en_ld_st_translation_i && lsu_ctrl.overflow) begin
 
             if (lsu_ctrl.fu == LOAD) begin
                 misaligned_exception = {
                     riscv::LD_ACCESS_FAULT,
-                    lsu_ctrl.vaddr,
+                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
 
             end else if (lsu_ctrl.fu == STORE) begin
                 misaligned_exception = {
                     riscv::ST_ACCESS_FAULT,
-                    lsu_ctrl.vaddr,
+                    {{64-riscv::VLEN{1'b0}},lsu_ctrl.vaddr},
                     1'b1
                 };
             end
@@ -366,7 +370,7 @@ module load_store_unit #(
     // new data arrives here
     lsu_ctrl_t lsu_req_i;
 
-    assign lsu_req_i = {lsu_valid_i, vaddr_i, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
+    assign lsu_req_i = {lsu_valid_i, vaddr_i, overflow, fu_data_i.operand_b, be_i, fu_data_i.fu, fu_data_i.operator, fu_data_i.trans_id};
 
     lsu_bypass lsu_bypass_i (
         .lsu_req_i          ( lsu_req_i   ),

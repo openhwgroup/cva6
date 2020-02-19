@@ -47,15 +47,15 @@ module ariane #(
   riscv::priv_lvl_t           priv_lvl;
   exception_t                 ex_commit; // exception from commit stage
   bp_resolve_t                resolved_branch;
-  logic [63:0]                pc_commit;
+  logic [riscv::VLEN-1:0]     pc_commit;
   logic                       eret;
   logic [NR_COMMIT_PORTS-1:0] commit_ack;
 
   // --------------
   // PCGEN <-> CSR
   // --------------
-  logic [63:0]              trap_vector_base_commit_pcgen;
-  logic [63:0]              epc_commit_pcgen;
+  logic [riscv::VLEN-1:0]     trap_vector_base_commit_pcgen;
+  logic [riscv::VLEN-1:0]     epc_commit_pcgen;
   // --------------
   // IF <-> ID
   // --------------
@@ -75,7 +75,7 @@ module ariane #(
   // ISSUE <-> EX
   // --------------
   fu_data_t                 fu_data_id_ex;
-  logic [63:0]              pc_id_ex;
+  logic [riscv::VLEN-1:0]   pc_id_ex;
   logic                     is_compressed_instr_id_ex;
   // fixed latency units
   logic                     flu_ready_ex_id;
@@ -467,6 +467,7 @@ module ariane #(
     .halt_csr_o             ( halt_csr_ctrl                 ),
     .commit_instr_i         ( commit_instr_id_commit        ),
     .commit_ack_i           ( commit_ack                    ),
+    .boot_addr_i            ( boot_addr_i                   ),
     .ex_i                   ( ex_commit                     ),
     .csr_op_i               ( csr_op_commit_csr             ),
     .csr_write_fflags_i     ( csr_write_fflags_commit_cs    ),
@@ -510,7 +511,6 @@ module ariane #(
     .time_irq_i,
     .*
   );
-
   // ------------------------
   // Performance Counters
   // ------------------------
@@ -666,8 +666,8 @@ module ariane #(
   localparam PC_QUEUE_DEPTH = 16;
 
   logic        piton_pc_vld;
-  logic [63:0] piton_pc;
-  logic [NR_COMMIT_PORTS-1:0][63:0] pc_data;
+  logic [riscv::VLEN-1:0] piton_pc;
+  logic [NR_COMMIT_PORTS-1:0][riscv::VLEN-1:0] pc_data;
   logic [NR_COMMIT_PORTS-1:0] pc_pop, pc_empty;
 
   for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_pc_fifo

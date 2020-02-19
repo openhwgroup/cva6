@@ -186,7 +186,7 @@ module instr_tracer (
   endfunction
 
   // pragma translate_off
-  function void printInstr(ariane_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [63:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
+  function void printInstr(ariane_pkg::scoreboard_entry_t sbe, logic [31:0] instr, logic [63:0] result, logic [riscv::PLEN-1:0] paddr, riscv::priv_lvl_t priv_lvl, logic debug_mode, ariane_pkg::bp_resolve_t bp);
     automatic instr_trace_item iti = new ($time, clk_ticks, sbe, instr, gp_reg_file, fp_reg_file, result, paddr, priv_lvl, debug_mode, bp);
     // print instruction to console
     automatic string print_instr = iti.printInstr();
@@ -197,7 +197,7 @@ module instr_tracer (
     $fwrite(f, {print_instr, "\n"});
   endfunction
 
-  function void printException(logic [63:0] pc, logic [63:0] cause, logic [63:0] tval);
+  function void printException(logic [riscv::VLEN-1:0] pc, logic [63:0] cause, logic [63:0] tval);
     automatic ex_trace_item eti = new (pc, cause, tval);
     automatic string print_ex = eti.printException();
     uvm_report_info( "Tracer",  print_ex, UVM_HIGH);

@@ -35,7 +35,7 @@ module commit_stage #(
     // Atomic memory operations
     input  amo_resp_t                               amo_resp_i,         // result of AMO operation
     // to CSR file and PC Gen (because on certain CSR instructions we'll need to flush the whole pipeline)
-    output logic [63:0]                             pc_o,
+    output logic [riscv::VLEN-1:0]                  pc_o,
     // to/from CSR file
     output fu_op                                    csr_op_o,           // decoded CSR operation
     output logic [63:0]                             csr_wdata_o,        // data to write to CSR
