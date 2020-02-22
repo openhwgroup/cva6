@@ -337,9 +337,9 @@ module mmu #(
         // if it didn't match any physical region throw the appropriate page fault
         if (lsu_valid_o && !match_any_physical_region) begin
            if (lsu_is_store_q) begin
-              lsu_exception_o = {riscv::STORE_PAGE_FAULT, lsu_paddr_o, 1'b1};
+             lsu_exception_o = {riscv::ST_ACCESS_FAULT, lsu_paddr_o, 1'b1};
            end else begin
-              lsu_exception_o = {riscv::LOAD_PAGE_FAULT, lsu_paddr_o, 1'b1};
+             lsu_exception_o = {riscv::LD_ACCESS_FAULT, lsu_paddr_o, 1'b1};
            end
         end
     end
