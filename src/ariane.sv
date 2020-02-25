@@ -29,6 +29,10 @@ module ariane #(
   // Timer facilities
   input  logic                         time_irq_i,   // timer interrupt in (async)
   input  logic                         debug_req_i,  // debug request (async)
+`ifdef FIRESIM_TRACE
+  // firesim trace port
+  output traced_instr_pkg::trace_port_t trace_o,
+`endif
 `ifdef PITON_ARIANE
   // L15 (memory side)
   output wt_cache_pkg::l15_req_t       l15_req_o,
@@ -661,6 +665,23 @@ module ariane #(
   // -------------------
   // Instruction Tracer
   // -------------------
+
+  // Instruction trace port (used for FireSim)
+`ifdef FIRESIM_TRACE
+  for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_tp_connect
+    assign trace_o[i].clock = clk_i;
+    assign trace_o[i].reset = rst_ni;
+    assign trace_o[i].valid = commit_ack[i] && !commit_instr_id_commit[i].ex.valid;
+    assign trace_o[i].iaddr = commit_instr_id_commit[i].pc;
+    assign trace_o[i].insn = commit_instr_id_commit[i].ex.tval[31:0];
+    assign trace_o[i].priv = priv_lvl;
+    assign trace_o[i].exception = commit_ack[i] && commit_instr_id_commit[i].ex.valid && !commit_instr_id_commit[i].ex.cause[63];
+    assign trace_o[i].interrupt = commit_ack[i] && commit_instr_id_commit[i].ex.valid && commit_instr_id_commit[i].ex.cause[63];
+    assign trace_o[i].cause = commit_instr_id_commit[i].ex.cause;
+    assign trace_o[i].tval = commit_instr_id_commit[i].ex.tval[31:0];
+  end
+`endif
+
   //pragma translate_off
 `ifdef PITON_ARIANE
   localparam PC_QUEUE_DEPTH = 16;
