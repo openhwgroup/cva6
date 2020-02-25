@@ -45,7 +45,7 @@ WAVES     = 0
 ROOT_DIR  = $(PWD)
 
 # Compile compile flags for all simulators
-SV_CMP_FLAGS = +define+__USE_COREV_SIMULATION_MODELS__ # workaround for https://github.com/openhwgroup/cv32e40p/issues/208
+SV_CMP_FLAGS = 
 
 # vsim configuration
 VVERSION  = "10.7b"
@@ -125,7 +125,7 @@ RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
 FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
 RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
-                 $(SIM_LIBS)/cluster_clock_gating.sv \
+                 $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
                  $(addprefix $(RTLSRC_HOME)/include/,\
                    apu_core_package.sv \
                    riscv_defines.sv \
@@ -376,7 +376,7 @@ $(CV32E40P_PKG):
 	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
 	$(eval RTLSRC_HOME   = $(CV32E40P_PKG)/rtl)
 	$(eval RTLSRC_PKG = $(FPNEW_PKG)/src/fpnew_pkg.sv \
-	                    $(SIM_LIBS)/cluster_clock_gating.sv \
+                            $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
 	                    $(addprefix $(RTLSRC_HOME)/include/,\
 	                      apu_core_package.sv \
 	                      riscv_defines.sv \
