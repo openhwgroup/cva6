@@ -15,7 +15,7 @@
  *
  * Description: Manages communication with the AXI Bus. Note that this unit does not
  *              buffer requests and register the signals.
- * 
+ *
  */
 
 import std_cache_pkg::*;
@@ -75,7 +75,7 @@ module axi_shim #(
     // AXI tx counter
     logic [AddrIndex-1:0] wr_cnt_d, wr_cnt_q;
     logic wr_single_req, wr_cnt_done, wr_cnt_clr, wr_cnt_en;
-    
+
     assign wr_single_req       = (wr_blen_i == 0);
 
     // address
@@ -89,7 +89,7 @@ module axi_shim #(
     assign axi_req_o.aw.lock   = wr_lock_i;
     assign axi_req_o.aw.cache  = 4'b0;
     assign axi_req_o.aw.qos    = 4'b0;
-    assign axi_req_o.aw.atop   = wr_atop_i; 
+    assign axi_req_o.aw.atop   = wr_atop_i;
     // data
     assign axi_req_o.w.data    = wr_data_i[wr_cnt_q];
     assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
@@ -236,7 +236,7 @@ module axi_shim #(
     // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
     // with an incremental transfer we need to output the corresponding base address of the cache line
     assign axi_req_o.ar.burst  = (rd_blen_i == 0)      ? 2'b00 :
-                                                         2'b01;  
+                                                         2'b01;
     assign axi_req_o.ar.addr   = rd_addr_i;
     assign axi_req_o.ar.size   = rd_size_i;
     assign axi_req_o.ar.len    = rd_blen_i;
@@ -257,9 +257,9 @@ module axi_shim #(
     assign rd_last_o           = axi_resp_i.r.last;
     assign rd_valid_o          = axi_resp_i.r_valid;
     assign rd_id_o             = axi_resp_i.r.id;
-    assign rd_exokay_o         = (axi_resp_i.r.resp == axi_pkg::RESP_EXOKAY);        
-    
-    
+    assign rd_exokay_o         = (axi_resp_i.r.resp == axi_pkg::RESP_EXOKAY);
+
+
     // ----------------
     // Registers
     // ----------------
