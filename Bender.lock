@@ -1,0 +1,131 @@
+---
+packages:
+  apb:
+    revision: d077333a7e5cc80008935dc2761440532dfdce81
+    version: 0.1.0
+    source:
+      Git: "https://github.com/pulp-platform/apb.git"
+    dependencies: []
+  apb_node:
+    revision: 4e350ef4980141397e3e17ced00e310e30f8dc95
+    version: 0.1.1
+    source:
+      Git: "https://github.com/pulp-platform/apb_node.git"
+    dependencies:
+      - apb
+  apb_timer:
+    revision: 0cbc6cbc26c94b8e3bf27cc058c48ef89ea3d4c3
+    version: 0.1.0
+    source:
+      Git: "https://github.com/pulp-platform/apb_timer.git"
+    dependencies: []
+  apb_uart:
+    revision: ac3461ce23832e02903b9d2d7d4edd7fcb89bd92
+    version: 0.1.0
+    source:
+      Git: "https://github.com/pulp-platform/apb_uart.git"
+    dependencies: []
+  ariane-ethernet:
+    revision: 6a5436bf110f83ebb13119dbd82650ccd8f947c9
+    version: ~
+    source:
+      Git: "https://github.com/lowRISC/ariane-ethernet.git"
+    dependencies: []
+  axi:
+    revision: 5d1831ce576cb3feed1b6e9d5a631da2c31dfdfe
+    version: -
+    source:
+      Git: "https://github.com/WRoenninger/axi.git"
+    dependencies:
+      - common_cells
+      - common_verification
+  axi2apb:
+    revision: be292ade4f3c027a065e63e85bd7c1927b4a676f
+    version: 0.1.2
+    source:
+      Git: "https://github.com/pulp-platform/axi2apb.git"
+    dependencies:
+      - apb
+      - axi
+  axi_mem_if:
+    revision: 3567273b4f67bd57a81a2a503394a49641bae53a
+    version: 0.2.1
+    source:
+      Git: "https://github.com/pulp-platform/axi_mem_if.git"
+    dependencies:
+      - axi
+  axi_riscv_atomics:
+    revision: 550881f12e22dfae405612fc1df6368f4c003e68
+    version: ~
+    source:
+      Git: "https://github.com/pulp-platform/axi_riscv_atomics.git"
+    dependencies:
+      - axi
+      - common_cells
+  axi_slice:
+    revision: a4f72bc21ac4d7da631e8309d9f8d0c34b735c23
+    version: 1.1.4
+    source:
+      Git: "https://github.com/pulp-platform/axi_slice.git"
+    dependencies:
+      - common_cells
+  common_cells:
+    revision: bbc0bf4699eb2c6babafce5924d86810507189a2
+    version: 1.16.3
+    source:
+      Git: "https://github.com/pulp-platform/common_cells.git"
+    dependencies:
+      - common_verification
+      - tech_cells_generic
+  common_verification:
+    revision: 0143451d43d2026310c802d9c108b6ed2954fcef
+    version: 0.1.2
+    source:
+      Git: "https://github.com/pulp-platform/common_verification.git"
+    dependencies: []
+  fpga-support:
+    revision: a3ba269c0fc6cfcee6f81e5d9af018a08e479d2b
+    version: ~
+    source:
+      Git: "https://github.com/pulp-platform/fpga-support.git"
+    dependencies: []
+  fpu:
+    revision: 4a241d48e7e16ebd146423769828fdcd7e90de61
+    version: 0.6.1
+    source:
+      Git: "https://github.com/pulp-platform/fpnew.git"
+    dependencies:
+      - common_cells
+      - fpu_div_sqrt_mvp
+  fpu_div_sqrt_mvp:
+    revision: 83a601f97934ed5e06d737b9c80d98b08867c5fa
+    version: 1.0.3
+    source:
+      Git: "https://github.com/pulp-platform/fpu_div_sqrt_mvp.git"
+    dependencies:
+      - common_cells
+  register_interface:
+    revision: d8aeccc65fdbbb30ef9dd28e065c2947a2396eab
+    version: ~
+    source:
+      Git: "https://github.com/pulp-platform/register_interface.git"
+    dependencies:
+      - axi
+  riscv-dbg:
+    revision: a502c410b6056d363127b74fd6da58aa2a7091c4
+    version: ~
+    source:
+      Git: "https://github.com/pulp-platform/riscv-dbg.git"
+    dependencies: []
+  rv_plic:
+    revision: ebe3e9888920f1f757b75bab81dc80f804896f57
+    version: ~
+    source:
+      Git: "https://github.com/pulp-platform/rv_plic.git"
+    dependencies: []
+  tech_cells_generic:
+    revision: 04b7b2735d42e4715c1bc9227027a3d8fb770c08
+    version: 0.1.16
+    source:
+      Git: "https://github.com/pulp-platform/tech_cells_generic.git"
+    dependencies: []

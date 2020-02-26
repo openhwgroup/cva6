@@ -8,294 +8,263 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
+`include "axi/assign.svh"
+
 // Xilinx Peripehrals
 module ariane_peripherals #(
-    parameter int AxiAddrWidth = -1,
-    parameter int AxiDataWidth = -1,
-    parameter int AxiIdWidth   = -1,
-    parameter int AxiUserWidth = 1,
-    parameter bit InclUART     = 1,
-    parameter bit InclSPI      = 0,
-    parameter bit InclEthernet = 0,
-    parameter bit InclGPIO     = 0,
-    parameter bit InclTimer    = 1
+  parameter int AxiAddrWidth = -1,
+  parameter int AxiDataWidth = -1,
+  parameter int AxiIdWidth   = -1,
+  parameter int AxiUserWidth = 1,
+  parameter bit InclUART     = 1,
+  parameter bit InclSPI      = 0,
+  parameter bit InclEthernet = 0,
+  parameter bit InclGPIO     = 0,
+  parameter bit InclTimer    = 1
 ) (
-    input  logic       clk_i           , // Clock
-    input  logic       rst_ni          , // Asynchronous reset active low
-    AXI_BUS.Slave      plic            ,
-    AXI_BUS.Slave      uart            ,
-    AXI_BUS.Slave      spi             ,
-    AXI_BUS.Slave      ethernet        ,
-    AXI_BUS.Slave      timer           ,
-    output logic [1:0] irq_o           ,
-    // UART
-    input  logic       rx_i            ,
-    output logic       tx_o            ,
-    // Ethernet
-    input  wire        eth_txck        ,
-    input  wire        eth_rxck        ,
-    input  wire        eth_rxctl       ,
-    input  wire [3:0]  eth_rxd         ,
-    output wire        eth_rst_n       ,
-    output wire        eth_tx_en       ,
-    output wire [3:0]  eth_txd         ,
-    inout  wire        phy_mdio        ,
-    output logic       eth_mdc         ,
-    // MDIO Interface
-    inout              mdio            ,
-    output             mdc             ,
-    // SPI
-    output logic       spi_clk_o       ,
-    output logic       spi_mosi        ,
-    input  logic       spi_miso        ,
-    output logic       spi_ss
+  input  logic       clk_i           , // Clock
+  input  logic       rst_ni          , // Asynchronous reset active low
+  AXI_BUS.Slave      spi             ,
+  AXI_BUS.Slave      ethernet        ,
+  AXI_BUS.Slave      apb_peripherals ,
+  output logic [1:0] irq_o           ,
+  // UART
+  input  logic       rx_i            ,
+  output logic       tx_o            ,
+  // Ethernet
+  input  wire        eth_txck        ,
+  input  wire        eth_rxck        ,
+  input  wire        eth_rxctl       ,
+  input  wire [3:0]  eth_rxd         ,
+  output wire        eth_rst_n       ,
+  output wire        eth_tx_en       ,
+  output wire [3:0]  eth_txd         ,
+  inout  wire        phy_mdio        ,
+  output logic       eth_mdc         ,
+  // MDIO Interface
+  inout              mdio            ,
+  output             mdc             ,
+  // SPI
+  output logic       spi_clk_o       ,
+  output logic       spi_mosi        ,
+  input  logic       spi_miso        ,
+  output logic       spi_ss
 );
+  // ---------------
+  // 0. APB Peripherals
+  // ---------------
+  typedef struct packed {
+      ariane_axi::addr_t    paddr;   // same as AXI4-Lite
+      axi_pkg::prot_t       pprot;   // same as AXI4-Lite, specification is the same
+      logic                 psel;    // onehot, one psel line per connected APB4 slave
+      logic                 penable; // enable signal shows second APB4 cycle
+      logic                 pwrite;  // write enable
+      ariane_axi::data_32_t pwdata;  // write data, comes from W channel
+      ariane_axi::strb_32_t pstrb;   // write strb, comes from W channel
+  } apb_req_t;
 
-    // ---------------
-    // 1. PLIC
-    // ---------------
-    logic [ariane_soc::NumSources-1:0] irq_sources;
+  typedef struct packed {
+      logic                 pready;   // slave signals that it is ready
+      ariane_axi::data_32_t prdata;   // read data, connects to R channel
+      logic                 pslverr;  // gets translated into either `axi_pkg::RESP_OK` or `axi_pkg::RESP_SLVERR`
+  } apb_resp_t;
 
-    REG_BUS #(
-        .ADDR_WIDTH ( 32 ),
-        .DATA_WIDTH ( 32 )
-    ) reg_bus (clk_i);
+  ariane_axi::req_slv_t                    periph_axi_req;
+  ariane_axi::resp_slv_t                   periph_axi_resp;
+  ariane_axi::req_32_t                     periph_axi_32_req;
+  ariane_axi::resp_32_t                    periph_axi_32_resp;
+  ariane_axi::req_lite_t                   periph_axi_lite_req;
+  ariane_axi::resp_lite_t                  periph_axi_lite_resp;
+  apb_req_t  [ariane_soc::NoApbSlaves-1:0] periph_apb_req;
+  apb_resp_t [ariane_soc::NoApbSlaves-1:0] periph_apb_resp;
 
-    logic         plic_penable;
-    logic         plic_pwrite;
-    logic [31:0]  plic_paddr;
-    logic         plic_psel;
-    logic [31:0]  plic_pwdata;
-    logic [31:0]  plic_prdata;
-    logic         plic_pready;
-    logic         plic_pslverr;
+  `AXI_ASSIGN_TO_REQ(periph_axi_req, apb_peripherals)
+  `AXI_ASSIGN_FROM_RESP(apb_peripherals, periph_axi_resp)
 
-    axi2apb_64_32 #(
-        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth  ),
-        .AXI4_RDATA_WIDTH   ( AxiDataWidth  ),
-        .AXI4_WDATA_WIDTH   ( AxiDataWidth  ),
-        .AXI4_ID_WIDTH      ( AxiIdWidth    ),
-        .AXI4_USER_WIDTH    ( AxiUserWidth  ),
-        .BUFF_DEPTH_SLAVE   ( 2             ),
-        .APB_ADDR_WIDTH     ( 32            )
-    ) i_axi2apb_64_32_plic (
-        .ACLK      ( clk_i          ),
-        .ARESETn   ( rst_ni         ),
-        .test_en_i ( 1'b0           ),
-        .AWID_i    ( plic.aw_id     ),
-        .AWADDR_i  ( plic.aw_addr   ),
-        .AWLEN_i   ( plic.aw_len    ),
-        .AWSIZE_i  ( plic.aw_size   ),
-        .AWBURST_i ( plic.aw_burst  ),
-        .AWLOCK_i  ( plic.aw_lock   ),
-        .AWCACHE_i ( plic.aw_cache  ),
-        .AWPROT_i  ( plic.aw_prot   ),
-        .AWREGION_i( plic.aw_region ),
-        .AWUSER_i  ( plic.aw_user   ),
-        .AWQOS_i   ( plic.aw_qos    ),
-        .AWVALID_i ( plic.aw_valid  ),
-        .AWREADY_o ( plic.aw_ready  ),
-        .WDATA_i   ( plic.w_data    ),
-        .WSTRB_i   ( plic.w_strb    ),
-        .WLAST_i   ( plic.w_last    ),
-        .WUSER_i   ( plic.w_user    ),
-        .WVALID_i  ( plic.w_valid   ),
-        .WREADY_o  ( plic.w_ready   ),
-        .BID_o     ( plic.b_id      ),
-        .BRESP_o   ( plic.b_resp    ),
-        .BVALID_o  ( plic.b_valid   ),
-        .BUSER_o   ( plic.b_user    ),
-        .BREADY_i  ( plic.b_ready   ),
-        .ARID_i    ( plic.ar_id     ),
-        .ARADDR_i  ( plic.ar_addr   ),
-        .ARLEN_i   ( plic.ar_len    ),
-        .ARSIZE_i  ( plic.ar_size   ),
-        .ARBURST_i ( plic.ar_burst  ),
-        .ARLOCK_i  ( plic.ar_lock   ),
-        .ARCACHE_i ( plic.ar_cache  ),
-        .ARPROT_i  ( plic.ar_prot   ),
-        .ARREGION_i( plic.ar_region ),
-        .ARUSER_i  ( plic.ar_user   ),
-        .ARQOS_i   ( plic.ar_qos    ),
-        .ARVALID_i ( plic.ar_valid  ),
-        .ARREADY_o ( plic.ar_ready  ),
-        .RID_o     ( plic.r_id      ),
-        .RDATA_o   ( plic.r_data    ),
-        .RRESP_o   ( plic.r_resp    ),
-        .RLAST_o   ( plic.r_last    ),
-        .RUSER_o   ( plic.r_user    ),
-        .RVALID_o  ( plic.r_valid   ),
-        .RREADY_i  ( plic.r_ready   ),
-        .PENABLE   ( plic_penable   ),
-        .PWRITE    ( plic_pwrite    ),
-        .PADDR     ( plic_paddr     ),
-        .PSEL      ( plic_psel      ),
-        .PWDATA    ( plic_pwdata    ),
-        .PRDATA    ( plic_prdata    ),
-        .PREADY    ( plic_pready    ),
-        .PSLVERR   ( plic_pslverr   )
-    );
-
-    apb_to_reg i_apb_to_reg (
-        .clk_i     ( clk_i        ),
-        .rst_ni    ( rst_ni       ),
-        .penable_i ( plic_penable ),
-        .pwrite_i  ( plic_pwrite  ),
-        .paddr_i   ( plic_paddr   ),
-        .psel_i    ( plic_psel    ),
-        .pwdata_i  ( plic_pwdata  ),
-        .prdata_o  ( plic_prdata  ),
-        .pready_o  ( plic_pready  ),
-        .pslverr_o ( plic_pslverr ),
-        .reg_o     ( reg_bus      )
-    );
-
-    reg_intf::reg_intf_resp_d32 plic_resp;
-    reg_intf::reg_intf_req_a32_d32 plic_req;
-
-    assign plic_req.addr  = reg_bus.addr;
-    assign plic_req.write = reg_bus.write;
-    assign plic_req.wdata = reg_bus.wdata;
-    assign plic_req.wstrb = reg_bus.wstrb;
-    assign plic_req.valid = reg_bus.valid;
-
-    assign reg_bus.rdata = plic_resp.rdata;
-    assign reg_bus.error = plic_resp.error;
-    assign reg_bus.ready = plic_resp.ready;
-
-    plic_top #(
-      .N_SOURCE    ( ariane_soc::NumSources  ),
-      .N_TARGET    ( ariane_soc::NumTargets  ),
-      .MAX_PRIO    ( ariane_soc::MaxPriority )
-    ) i_plic (
+  axi_dw_converter #(
+      .AxiMaxReads     ( 32'd8                     ), // Number of outstanding reads
+      .AxiMstDataWidth ( ariane_axi::DataWidth32   ), // Master data width
+      .AxiSlvDataWidth ( AxiDataWidth              ), // Slave data width
+      .AxiAddrWidth    ( AxiAddrWidth              ), // Address width
+      .AxiIdWidth      ( AxiIdWidth                ), // ID width
+      .aw_chan_t       ( ariane_axi::aw_chan_slv_t ), // AW Channel Type
+      .mst_w_chan_t    ( ariane_axi::w_chan_32_t   ), //  W Channel Type for the mst port
+      .slv_w_chan_t    ( ariane_axi::w_chan_t      ), //  W Channel Type for the slv port
+      .b_chan_t        ( ariane_axi::b_chan_slv_t  ), //  B Channel Type
+      .ar_chan_t       ( ariane_axi::ar_chan_slv_t ), // AR Channel Type
+      .mst_r_chan_t    ( ariane_axi::r_chan_32_t   ), //  R Channel Type for the mst port
+      .slv_r_chan_t    ( ariane_axi::r_chan_slv_t  ), //  R Channel Type for the slv port
+      .axi_mst_req_t   ( ariane_axi::req_32_t      ), // AXI Request Type for mst ports
+      .axi_mst_resp_t  ( ariane_axi::resp_32_t     ), // AXI Response Type for mst ports
+      .axi_slv_req_t   ( ariane_axi::req_slv_t     ), // AXI Request Type for slv ports
+      .axi_slv_resp_t  ( ariane_axi::resp_slv_t    )  // AXI Response Type for slv ports
+  ) i_axi_dw_converter_apb_periph (
       .clk_i,
       .rst_ni,
-      .req_i         ( plic_req    ),
-      .resp_o        ( plic_resp   ),
-      .le_i          ( '0          ), // 0:level 1:edge
-      .irq_sources_i ( irq_sources ),
-      .eip_targets_o ( irq_o       )
+      .slv_req_i  ( periph_axi_req     ),
+      .slv_resp_o ( periph_axi_resp    ),
+      .mst_req_o  ( periph_axi_32_req  ),
+      .mst_resp_i ( periph_axi_32_resp )
+  );
+
+  axi_to_axi_lite #(
+      .AxiIdWidth      ( AxiIdWidth              ),
+      .AxiAddrWidth    ( AxiAddrWidth            ),
+      .AxiDataWidth    ( ariane_axi::DataWidth32 ),
+      .AxiUserWidth    ( AxiUserWidth            ),
+      .AxiMaxWriteTxns ( 32'd8                   ),
+      .AxiMaxReadTxns  ( 32'd8                   ),
+      .FallThrough     ( 1'b0                    ),
+      .full_req_t      ( ariane_axi::req_32_t    ),
+      .full_resp_t     ( ariane_axi::resp_32_t   ),
+      .lite_req_t      ( ariane_axi::req_lite_t  ),
+      .lite_resp_t     ( ariane_axi::resp_lite_t )
+  ) i_axi_to_axi_lite_apb_periph (
+      .clk_i,
+      .rst_ni,
+      .test_i     ( 1'b0                 ),
+      .slv_req_i  ( periph_axi_32_req    ),
+      .slv_resp_o ( periph_axi_32_resp   ),
+      .mst_req_o  ( periph_axi_lite_req  ),
+      .mst_resp_i ( periph_axi_lite_resp )
+  );
+
+  axi_lite_to_apb #(
+      .NoApbSlaves     ( ariane_soc::NoApbSlaves     ), // Number of connected APB slaves
+      .NoRules         ( ariane_soc::NoApbSlaves     ), // Number of APB address rules
+      .AddrWidth       ( ariane_axi::AddrWidth       ), // Address width
+      .DataWidth       ( ariane_axi::DataWidth32     ), // Data width
+      .axi_lite_req_t  ( ariane_axi::req_lite_t      ), // AXI4-Lite request struct
+      .axi_lite_resp_t ( ariane_axi::resp_lite_t     ), // AXI4-Lite response sruct
+      .apb_req_t       ( apb_req_t                   ), // APB4 request struct
+      .apb_resp_t      ( apb_resp_t                  ), // APB4 response struct
+      .rule_t          ( axi_pkg::xbar_rule_64_t     )  // Address Decoder rule from `common_cells`
+  ) i_axi_lite_to_apb_periph (
+      .clk_i,
+      .rst_ni,
+      .axi_lite_req_i  ( periph_axi_lite_req    ),
+      .axi_lite_resp_o ( periph_axi_lite_resp   ),
+      .apb_req_o       ( periph_apb_req         ),
+      .apb_resp_i      ( periph_apb_resp        ),
+      .addr_map_i      ( ariane_soc::ApbAddrMap )
+  );
+
+  // Apb Plic
+  logic [ariane_soc::NumSources-1:0] irq_sources;
+
+  REG_BUS #(
+      .ADDR_WIDTH ( 32 ),
+      .DATA_WIDTH ( 32 )
+  ) reg_bus_plic (clk_i);
+  apb_to_reg i_apb_to_reg (
+      .clk_i,
+      .rst_ni,
+      .penable_i ( periph_apb_req [ariane_soc::ApbPlic].penable     ),
+      .pwrite_i  ( periph_apb_req [ariane_soc::ApbPlic].pwrite      ),
+      .paddr_i   ( periph_apb_req [ariane_soc::ApbPlic].paddr[31:0] ),
+      .psel_i    ( periph_apb_req [ariane_soc::ApbPlic].psel        ),
+      .pwdata_i  ( periph_apb_req [ariane_soc::ApbPlic].pwdata      ),
+      .prdata_o  ( periph_apb_resp[ariane_soc::ApbPlic].prdata      ),
+      .pready_o  ( periph_apb_resp[ariane_soc::ApbPlic].pready      ),
+      .pslverr_o ( periph_apb_resp[ariane_soc::ApbPlic].pslverr     ),
+      .reg_o     ( reg_bus_plic      )
+  );
+
+  reg_intf::reg_intf_resp_d32 plic_resp;
+  reg_intf::reg_intf_req_a32_d32 plic_req;
+
+  assign plic_req.addr  = reg_bus_plic.addr;
+  assign plic_req.write = reg_bus_plic.write;
+  assign plic_req.wdata = reg_bus_plic.wdata;
+  assign plic_req.wstrb = reg_bus_plic.wstrb;
+  assign plic_req.valid = reg_bus_plic.valid;
+
+  assign reg_bus_plic.rdata = plic_resp.rdata;
+  assign reg_bus_plic.error = plic_resp.error;
+  assign reg_bus_plic.ready = plic_resp.ready;
+
+  plic_top #(
+    .N_SOURCE    ( ariane_soc::NumSources  ),
+    .N_TARGET    ( ariane_soc::NumTargets  ),
+    .MAX_PRIO    ( ariane_soc::MaxPriority )
+  ) i_plic (
+    .clk_i,
+    .rst_ni,
+    .req_i         ( plic_req    ),
+    .resp_o        ( plic_resp   ),
+    .le_i          ( '0          ), // 0:level 1:edge
+    .irq_sources_i ( irq_sources ),
+    .eip_targets_o ( irq_o       )
+  );
+
+  // APB Uart
+  if (InclUART) begin : gen_uart
+    apb_uart i_apb_uart (
+      .CLK     ( clk_i                                          ),
+      .RSTN    ( rst_ni                                         ),
+      .PSEL    ( periph_apb_req[ariane_soc::ApbUart].psel       ),
+      .PENABLE ( periph_apb_req[ariane_soc::ApbUart].penable    ),
+      .PWRITE  ( periph_apb_req[ariane_soc::ApbUart].pwrite     ),
+      .PADDR   ( periph_apb_req[ariane_soc::ApbUart].paddr[4:2] ),
+      .PWDATA  ( periph_apb_req[ariane_soc::ApbUart].pwdata     ),
+      .PRDATA  ( periph_apb_resp[ariane_soc::ApbUart].prdata    ),
+      .PREADY  ( periph_apb_resp[ariane_soc::ApbUart].pready    ),
+      .PSLVERR ( periph_apb_resp[ariane_soc::ApbUart].pslverr   ),
+      .INT     ( irq_sources[0]                                 ),
+      .OUT1N   (                                                ), // keep open
+      .OUT2N   (                                                ), // keep open
+      .RTSN    (                                                ), // no flow control
+      .DTRN    (                                                ), // no flow control
+      .CTSN    ( 1'b0                                           ),
+      .DSRN    ( 1'b0                                           ),
+      .DCDN    ( 1'b0                                           ),
+      .RIN     ( 1'b0                                           ),
+      .SIN     ( rx_i                                           ),
+      .SOUT    ( tx_o                                           )
     );
-
-    // ---------------
-    // 2. UART
-    // ---------------
-    logic         uart_penable;
-    logic         uart_pwrite;
-    logic [31:0]  uart_paddr;
-    logic         uart_psel;
-    logic [31:0]  uart_pwdata;
-    logic [31:0]  uart_prdata;
-    logic         uart_pready;
-    logic         uart_pslverr;
-
-    axi2apb_64_32 #(
-        .AXI4_ADDRESS_WIDTH ( AxiAddrWidth ),
-        .AXI4_RDATA_WIDTH   ( AxiDataWidth ),
-        .AXI4_WDATA_WIDTH   ( AxiDataWidth ),
-        .AXI4_ID_WIDTH      ( AxiIdWidth   ),
-        .AXI4_USER_WIDTH    ( AxiUserWidth ),
-        .BUFF_DEPTH_SLAVE   ( 2            ),
-        .APB_ADDR_WIDTH     ( 32           )
-    ) i_axi2apb_64_32_uart (
-        .ACLK      ( clk_i          ),
-        .ARESETn   ( rst_ni         ),
-        .test_en_i ( 1'b0           ),
-        .AWID_i    ( uart.aw_id     ),
-        .AWADDR_i  ( uart.aw_addr   ),
-        .AWLEN_i   ( uart.aw_len    ),
-        .AWSIZE_i  ( uart.aw_size   ),
-        .AWBURST_i ( uart.aw_burst  ),
-        .AWLOCK_i  ( uart.aw_lock   ),
-        .AWCACHE_i ( uart.aw_cache  ),
-        .AWPROT_i  ( uart.aw_prot   ),
-        .AWREGION_i( uart.aw_region ),
-        .AWUSER_i  ( uart.aw_user   ),
-        .AWQOS_i   ( uart.aw_qos    ),
-        .AWVALID_i ( uart.aw_valid  ),
-        .AWREADY_o ( uart.aw_ready  ),
-        .WDATA_i   ( uart.w_data    ),
-        .WSTRB_i   ( uart.w_strb    ),
-        .WLAST_i   ( uart.w_last    ),
-        .WUSER_i   ( uart.w_user    ),
-        .WVALID_i  ( uart.w_valid   ),
-        .WREADY_o  ( uart.w_ready   ),
-        .BID_o     ( uart.b_id      ),
-        .BRESP_o   ( uart.b_resp    ),
-        .BVALID_o  ( uart.b_valid   ),
-        .BUSER_o   ( uart.b_user    ),
-        .BREADY_i  ( uart.b_ready   ),
-        .ARID_i    ( uart.ar_id     ),
-        .ARADDR_i  ( uart.ar_addr   ),
-        .ARLEN_i   ( uart.ar_len    ),
-        .ARSIZE_i  ( uart.ar_size   ),
-        .ARBURST_i ( uart.ar_burst  ),
-        .ARLOCK_i  ( uart.ar_lock   ),
-        .ARCACHE_i ( uart.ar_cache  ),
-        .ARPROT_i  ( uart.ar_prot   ),
-        .ARREGION_i( uart.ar_region ),
-        .ARUSER_i  ( uart.ar_user   ),
-        .ARQOS_i   ( uart.ar_qos    ),
-        .ARVALID_i ( uart.ar_valid  ),
-        .ARREADY_o ( uart.ar_ready  ),
-        .RID_o     ( uart.r_id      ),
-        .RDATA_o   ( uart.r_data    ),
-        .RRESP_o   ( uart.r_resp    ),
-        .RLAST_o   ( uart.r_last    ),
-        .RUSER_o   ( uart.r_user    ),
-        .RVALID_o  ( uart.r_valid   ),
-        .RREADY_i  ( uart.r_ready   ),
-        .PENABLE   ( uart_penable   ),
-        .PWRITE    ( uart_pwrite    ),
-        .PADDR     ( uart_paddr     ),
-        .PSEL      ( uart_psel      ),
-        .PWDATA    ( uart_pwdata    ),
-        .PRDATA    ( uart_prdata    ),
-        .PREADY    ( uart_pready    ),
-        .PSLVERR   ( uart_pslverr   )
+  end else begin
+    /* pragma translate_off */
+    `ifndef VERILATOR
+    mock_uart i_mock_uart (
+      .clk_i,
+      .rst_ni,
+      .penable_i ( periph_apb_req[ariane_soc::ApbUart].penable     ),
+      .pwrite_i  ( periph_apb_req[ariane_soc::ApbUart].pwrite      ),
+      .paddr_i   ( periph_apb_req[ariane_soc::ApbUart].paddr[31:0] ),
+      .psel_i    ( periph_apb_req[ariane_soc::ApbUart].psel        ),
+      .pwdata_i  ( periph_apb_req[ariane_soc::ApbUart].pwdata      ),
+      .prdata_o  ( periph_apb_resp[ariane_soc::ApbUart].prdata     ),
+      .pready_o  ( periph_apb_resp[ariane_soc::ApbUart].pready     ),
+      .pslverr_o ( periph_apb_resp[ariane_soc::ApbUart].pslverr    )
     );
+    `endif
+    /* pragma translate_on */
+  end
 
-    if (InclUART) begin : gen_uart
-        apb_uart i_apb_uart (
-            .CLK     ( clk_i           ),
-            .RSTN    ( rst_ni          ),
-            .PSEL    ( uart_psel       ),
-            .PENABLE ( uart_penable    ),
-            .PWRITE  ( uart_pwrite     ),
-            .PADDR   ( uart_paddr[4:2] ),
-            .PWDATA  ( uart_pwdata     ),
-            .PRDATA  ( uart_prdata     ),
-            .PREADY  ( uart_pready     ),
-            .PSLVERR ( uart_pslverr    ),
-            .INT     ( irq_sources[0]  ),
-            .OUT1N   (                 ), // keep open
-            .OUT2N   (                 ), // keep open
-            .RTSN    (                 ), // no flow control
-            .DTRN    (                 ), // no flow control
-            .CTSN    ( 1'b0            ),
-            .DSRN    ( 1'b0            ),
-            .DCDN    ( 1'b0            ),
-            .RIN     ( 1'b0            ),
-            .SIN     ( rx_i            ),
-            .SOUT    ( tx_o            )
-        );
-    end else begin
-        assign irq_sources[0] = 1'b0;
-        /* pragma translate_off */
-        mock_uart i_mock_uart (
-            .clk_i     ( clk_i        ),
-            .rst_ni    ( rst_ni       ),
-            .penable_i ( uart_penable ),
-            .pwrite_i  ( uart_pwrite  ),
-            .paddr_i   ( uart_paddr   ),
-            .psel_i    ( uart_psel    ),
-            .pwdata_i  ( uart_pwdata  ),
-            .prdata_o  ( uart_prdata  ),
-            .pready_o  ( uart_pready  ),
-            .pslverr_o ( uart_pslverr )
-        );
-        /* pragma translate_on */
-    end
+  // Apb Timer
+  if (InclTimer) begin : gen_timer
+    apb_timer #(
+      .APB_ADDR_WIDTH ( 64 ),
+      .TIMER_CNT      ( 2  )
+    ) i_timer (
+      .HCLK    ( clk_i                                         ),
+      .HRESETn ( rst_ni                                        ),
+      .PSEL    ( periph_apb_req[ariane_soc::ApbTimer].psel     ),
+      .PENABLE ( periph_apb_req[ariane_soc::ApbTimer].penable  ),
+      .PWRITE  ( periph_apb_req[ariane_soc::ApbTimer].pwrite   ),
+      .PADDR   ( periph_apb_req[ariane_soc::ApbTimer].paddr    ),
+      .PWDATA  ( periph_apb_req[ariane_soc::ApbTimer].pwdata   ),
+      .PRDATA  ( periph_apb_resp[ariane_soc::ApbTimer].prdata  ),
+      .PREADY  ( periph_apb_resp[ariane_soc::ApbTimer].pready  ),
+      .PSLVERR ( periph_apb_resp[ariane_soc::ApbTimer].pslverr ),
+      .irq_o   ( irq_sources[6:3]                              )
+    );
+  end else begin
+    assign periph_apb_resp[ariane_soc::ApbTimer].prdata  = 32'hdeadbeef;
+    assign periph_apb_resp[ariane_soc::ApbTimer].pready  = 1'b1;
+    assign periph_apb_resp[ariane_soc::ApbTimer].pslverr = 1'b1;
+  end
+
 
     // ---------------
     // 3. SPI
@@ -467,149 +436,62 @@ module ariane_peripherals #(
             .sck_i          ( '0                     ),
             .sck_t          (                        ),
             .ip2intc_irpt   ( irq_sources[1]         )
-            // .ip2intc_irpt   ( irq_sources[1]         )
         );
-        // assign irq_sources [1] = 1'b0;
     end else begin
-        assign spi_clk_o = 1'b0;
-        assign spi_mosi = 1'b0;
-        assign spi_ss = 1'b0;
+        assign spi_clk_o      = 1'b0;
+        assign spi_mosi       = 1'b0;
+        assign spi_ss         = 1'b0;
+        assign irq_sources[1] = 1'b0;
 
-        assign irq_sources [1] = 1'b0;
-        assign spi.aw_ready = 1'b1;
-        assign spi.ar_ready = 1'b1;
-        assign spi.w_ready = 1'b1;
+        ariane_axi::req_slv_t  spi_axi_req;
+        ariane_axi::resp_slv_t spi_axi_resp;
 
-        assign spi.b_valid = spi.aw_valid;
-        assign spi.b_id = spi.aw_id;
-        assign spi.b_resp = axi_pkg::RESP_SLVERR;
-        assign spi.b_user = '0;
+        `AXI_ASSIGN_TO_REQ(spi_axi_req, spi)
+        `AXI_ASSIGN_FROM_RESP(spi, spi_axi_resp)
 
-        assign spi.r_valid = spi.ar_valid;
-        assign spi.r_resp = axi_pkg::RESP_SLVERR;
-        assign spi.r_data = 'hdeadbeef;
-        assign spi.r_last = 1'b1;
+        axi_err_slv #(
+          .AxiIdWidth ( AxiIdWidth             ),
+          .req_t      ( ariane_axi::req_slv_t  ),
+          .resp_t     ( ariane_axi::resp_slv_t ),
+          .Resp       ( axi_pkg::RESP_SLVERR   ),
+          .ATOPs      ( 1'b1                   ),
+          .MaxTrans   ( 32'd1                  )
+        ) i_axi_err_slv_spi (
+          .clk_i,
+          .rst_ni,
+          .test_i     ( 1'b0         ),
+          .slv_req_i  ( spi_axi_req  ),
+          .slv_resp_o ( spi_axi_resp )
+        );
     end
 
 
     // ---------------
     // 4. Ethernet
     // ---------------
-    if (0)
-      begin
-      end
-    else
-      begin
-        assign irq_sources [2] = 1'b0;
-        assign ethernet.aw_ready = 1'b1;
-        assign ethernet.ar_ready = 1'b1;
-        assign ethernet.w_ready = 1'b1;
+    if (0) begin
+    end else begin
+      assign irq_sources [2] = 1'b0;
 
-        assign ethernet.b_valid = ethernet.aw_valid;
-        assign ethernet.b_id = ethernet.aw_id;
-        assign ethernet.b_resp = axi_pkg::RESP_SLVERR;
-        assign ethernet.b_user = '0;
+      ariane_axi::req_slv_t  ethernet_axi_req;
+      ariane_axi::resp_slv_t ethernet_axi_resp;
 
-        assign ethernet.r_valid = ethernet.ar_valid;
-        assign ethernet.r_resp = axi_pkg::RESP_SLVERR;
-        assign ethernet.r_data = 'hdeadbeef;
-        assign ethernet.r_last = 1'b1;
-    end
+      `AXI_ASSIGN_TO_REQ(ethernet_axi_req, ethernet)
+      `AXI_ASSIGN_FROM_RESP(ethernet, ethernet_axi_resp)
 
-    // ---------------
-    // 5. Timer
-    // ---------------
-    if (InclTimer) begin : gen_timer
-        logic         timer_penable;
-        logic         timer_pwrite;
-        logic [31:0]  timer_paddr;
-        logic         timer_psel;
-        logic [31:0]  timer_pwdata;
-        logic [31:0]  timer_prdata;
-        logic         timer_pready;
-        logic         timer_pslverr;
-
-        axi2apb_64_32 #(
-            .AXI4_ADDRESS_WIDTH ( AxiAddrWidth ),
-            .AXI4_RDATA_WIDTH   ( AxiDataWidth ),
-            .AXI4_WDATA_WIDTH   ( AxiDataWidth ),
-            .AXI4_ID_WIDTH      ( AxiIdWidth   ),
-            .AXI4_USER_WIDTH    ( AxiUserWidth ),
-            .BUFF_DEPTH_SLAVE   ( 2            ),
-            .APB_ADDR_WIDTH     ( 32           )
-        ) i_axi2apb_64_32_timer (
-            .ACLK      ( clk_i           ),
-            .ARESETn   ( rst_ni          ),
-            .test_en_i ( 1'b0            ),
-            .AWID_i    ( timer.aw_id     ),
-            .AWADDR_i  ( timer.aw_addr   ),
-            .AWLEN_i   ( timer.aw_len    ),
-            .AWSIZE_i  ( timer.aw_size   ),
-            .AWBURST_i ( timer.aw_burst  ),
-            .AWLOCK_i  ( timer.aw_lock   ),
-            .AWCACHE_i ( timer.aw_cache  ),
-            .AWPROT_i  ( timer.aw_prot   ),
-            .AWREGION_i( timer.aw_region ),
-            .AWUSER_i  ( timer.aw_user   ),
-            .AWQOS_i   ( timer.aw_qos    ),
-            .AWVALID_i ( timer.aw_valid  ),
-            .AWREADY_o ( timer.aw_ready  ),
-            .WDATA_i   ( timer.w_data    ),
-            .WSTRB_i   ( timer.w_strb    ),
-            .WLAST_i   ( timer.w_last    ),
-            .WUSER_i   ( timer.w_user    ),
-            .WVALID_i  ( timer.w_valid   ),
-            .WREADY_o  ( timer.w_ready   ),
-            .BID_o     ( timer.b_id      ),
-            .BRESP_o   ( timer.b_resp    ),
-            .BVALID_o  ( timer.b_valid   ),
-            .BUSER_o   ( timer.b_user    ),
-            .BREADY_i  ( timer.b_ready   ),
-            .ARID_i    ( timer.ar_id     ),
-            .ARADDR_i  ( timer.ar_addr   ),
-            .ARLEN_i   ( timer.ar_len    ),
-            .ARSIZE_i  ( timer.ar_size   ),
-            .ARBURST_i ( timer.ar_burst  ),
-            .ARLOCK_i  ( timer.ar_lock   ),
-            .ARCACHE_i ( timer.ar_cache  ),
-            .ARPROT_i  ( timer.ar_prot   ),
-            .ARREGION_i( timer.ar_region ),
-            .ARUSER_i  ( timer.ar_user   ),
-            .ARQOS_i   ( timer.ar_qos    ),
-            .ARVALID_i ( timer.ar_valid  ),
-            .ARREADY_o ( timer.ar_ready  ),
-            .RID_o     ( timer.r_id      ),
-            .RDATA_o   ( timer.r_data    ),
-            .RRESP_o   ( timer.r_resp    ),
-            .RLAST_o   ( timer.r_last    ),
-            .RUSER_o   ( timer.r_user    ),
-            .RVALID_o  ( timer.r_valid   ),
-            .RREADY_i  ( timer.r_ready   ),
-            .PENABLE   ( timer_penable   ),
-            .PWRITE    ( timer_pwrite    ),
-            .PADDR     ( timer_paddr     ),
-            .PSEL      ( timer_psel      ),
-            .PWDATA    ( timer_pwdata    ),
-            .PRDATA    ( timer_prdata    ),
-            .PREADY    ( timer_pready    ),
-            .PSLVERR   ( timer_pslverr   )
-        );
-
-        apb_timer #(
-                .APB_ADDR_WIDTH ( 32 ),
-                .TIMER_CNT      ( 2  )
-        ) i_timer (
-            .HCLK    ( clk_i            ),
-            .HRESETn ( rst_ni           ),
-            .PSEL    ( timer_psel       ),
-            .PENABLE ( timer_penable    ),
-            .PWRITE  ( timer_pwrite     ),
-            .PADDR   ( timer_paddr      ),
-            .PWDATA  ( timer_pwdata     ),
-            .PRDATA  ( timer_prdata     ),
-            .PREADY  ( timer_pready     ),
-            .PSLVERR ( timer_pslverr    ),
-            .irq_o   ( irq_sources[6:3] )
-        );
+      axi_err_slv #(
+        .AxiIdWidth ( AxiIdWidth             ),
+        .req_t      ( ariane_axi::req_slv_t  ),
+        .resp_t     ( ariane_axi::resp_slv_t ),
+        .Resp       ( axi_pkg::RESP_SLVERR   ),
+        .ATOPs      ( 1'b1                   ),
+        .MaxTrans   ( 32'd1                  )
+      ) i_axi_err_slv_spi (
+        .clk_i,
+        .rst_ni,
+        .test_i     ( 1'b0              ),
+        .slv_req_i  ( ethernet_axi_req  ),
+        .slv_resp_o ( ethernet_axi_resp )
+      );
     end
 endmodule
