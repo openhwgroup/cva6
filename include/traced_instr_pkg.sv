@@ -1,3 +1,5 @@
+// See LICENSE.Berkeley for license details.
+
 // Author: Abraham Gonzalez, UC Berkeley
 // Date: 24.02.2020
 // Description: Traced Instruction and Port (using in Rocket Chip based systems)
