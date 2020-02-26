@@ -671,12 +671,12 @@ module ariane #(
   for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_tp_connect
     assign trace_o[i].clock = clk_i;
     assign trace_o[i].reset = rst_ni;
-    assign trace_o[i].valid = commit_ack[i] && !commit_instr_id_commit[i].ex.valid;
+    assign trace_o[i].valid = commit_ack[i] & ~commit_instr_id_commit[i].ex.valid;
     assign trace_o[i].iaddr = commit_instr_id_commit[i].pc;
     assign trace_o[i].insn = commit_instr_id_commit[i].ex.tval[31:0];
     assign trace_o[i].priv = priv_lvl;
-    assign trace_o[i].exception = commit_ack[i] && commit_instr_id_commit[i].ex.valid && !commit_instr_id_commit[i].ex.cause[63];
-    assign trace_o[i].interrupt = commit_ack[i] && commit_instr_id_commit[i].ex.valid && commit_instr_id_commit[i].ex.cause[63];
+    assign trace_o[i].exception = commit_ack[i] & commit_instr_id_commit[i].ex.valid & ~commit_instr_id_commit[i].ex.cause[63];
+    assign trace_o[i].interrupt = commit_ack[i] & commit_instr_id_commit[i].ex.valid & commit_instr_id_commit[i].ex.cause[63];
     assign trace_o[i].cause = commit_instr_id_commit[i].ex.cause;
     assign trace_o[i].tval = commit_instr_id_commit[i].ex.tval[31:0];
   end
@@ -820,4 +820,3 @@ module ariane #(
 //pragma translate_on
 
 endmodule // ariane
-
