@@ -22,169 +22,53 @@ package ariane_axi;
     // used in axi_adapter.sv
     typedef enum logic { SINGLE_REQ, CACHE_LINE_REQ } ad_req_t;
 
-    localparam UserWidth = 1;
-    localparam AddrWidth = 64;
-    localparam DataWidth = 64;
-    localparam StrbWidth = DataWidth / 8;
+    localparam UserWidth   = 1;
+    localparam AddrWidth   = 64;
+    localparam DataWidth   = 64;
+    localparam DataWidth32 = 32;
+    localparam StrbWidth   = DataWidth / 8;
+    localparam StrbWidth32 = DataWidth32 / 8;
 
     typedef logic [ariane_soc::IdWidth-1:0]      id_t;
     typedef logic [ariane_soc::IdWidthSlave-1:0] id_slv_t;
-    typedef logic [AddrWidth-1:0] addr_t;
-    typedef logic [DataWidth-1:0] data_t;
-    typedef logic [StrbWidth-1:0] strb_t;
-    typedef logic [UserWidth-1:0] user_t;
+    typedef logic [AddrWidth-1:0]   addr_t;
+    typedef logic [DataWidth-1:0]   data_t;
+    typedef logic [DataWidth32-1:0] data_32_t;
+    typedef logic [StrbWidth-1:0]   strb_t;
+    typedef logic [StrbWidth32-1:0] strb_32_t;
+    typedef logic [UserWidth-1:0]   user_t;
 
-    `AXI_TYPEDEF_AW_CHAN_T ( aw_chan_t,     addr_t, id_t,       user_t )
-    `AXI_TYPEDEF_AW_CHAN_T ( aw_chan_slv_t, addr_t, id_slv_t,   user_t )
-    `AXI_TYPEDEF_W_CHAN_T  (  w_chan_t,     data_t, strb_t,     user_t )
-    `AXI_TYPEDEF_B_CHAN_T  (  b_chan_t,             id_t,       user_t )
-    `AXI_TYPEDEF_B_CHAN_T  (  b_chan_slv_t,         id_slv_t,   user_t )
-    `AXI_TYPEDEF_AR_CHAN_T ( ar_chan_t,     addr_t, id_t,       user_t )
-    `AXI_TYPEDEF_AR_CHAN_T ( ar_chan_slv_t, addr_t, id_slv_t,   user_t )
-    `AXI_TYPEDEF_R_CHAN_T  (  r_chan_t,     data_t, id_t,       user_t )
-    `AXI_TYPEDEF_R_CHAN_T  (  r_chan_slv_t, data_t, id_slv_t,   user_t )
+    // Typedefs for data 64 bit AXI4-ATOP
+    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_t, addr_t, id_t, user_t)
+    `AXI_TYPEDEF_AW_CHAN_T(aw_chan_slv_t, addr_t, id_slv_t, user_t)
+    `AXI_TYPEDEF_W_CHAN_T(w_chan_t, data_t, strb_t, user_t)
+    `AXI_TYPEDEF_B_CHAN_T(b_chan_t, id_t, user_t)
+    `AXI_TYPEDEF_B_CHAN_T(b_chan_slv_t, id_slv_t, user_t)
+    `AXI_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t, id_t, user_t)
+    `AXI_TYPEDEF_AR_CHAN_T(ar_chan_slv_t, addr_t, id_slv_t, user_t)
+    `AXI_TYPEDEF_R_CHAN_T(r_chan_t, data_t, id_t, user_t)
+    `AXI_TYPEDEF_R_CHAN_T(r_chan_slv_t, data_t, id_slv_t, user_t)
 
-    `AXI_TYPEDEF_REQ_T  ( req_t, aw_chan_t, w_chan_t, ar_chan_t )
-    `AXI_TYPEDEF_RESP_T ( resp_t, b_chan_t, r_chan_t            )
+    `AXI_TYPEDEF_REQ_T(req_t, aw_chan_t, w_chan_t, ar_chan_t)
+    `AXI_TYPEDEF_RESP_T(resp_t, b_chan_t, r_chan_t)
 
-    `AXI_TYPEDEF_REQ_T  ( req_slv_t, aw_chan_slv_t, w_chan_t,    ar_chan_slv_t )
-    `AXI_TYPEDEF_RESP_T ( resp_slv_t, b_chan_slv_t, r_chan_slv_t               )
+    `AXI_TYPEDEF_REQ_T(req_slv_t, aw_chan_slv_t, w_chan_t, ar_chan_slv_t )
+    `AXI_TYPEDEF_RESP_T(resp_slv_t, b_chan_slv_t, r_chan_slv_t)
 
+    // Typedef for data 32 bit AXI4-ATOP
+    `AXI_TYPEDEF_W_CHAN_T(w_chan_32_t, data_32_t, strb_32_t, user_t )
+    `AXI_TYPEDEF_R_CHAN_T(r_chan_32_t, data_32_t, id_slv_t, user_t )
 
-//    // AW Channel
-//    typedef struct packed {
-//        id_t              id;
-//        addr_t            addr;
-//        axi_pkg::len_t    len;
-//        axi_pkg::size_t   size;
-//        axi_pkg::burst_t  burst;
-//        logic             lock;
-//        axi_pkg::cache_t  cache;
-//        axi_pkg::prot_t   prot;
-//        axi_pkg::qos_t    qos;
-//        axi_pkg::region_t region;
-//        axi_pkg::atop_t   atop;
-//    } aw_chan_t;
-//
-//    // AW Channel - Slave
-//    typedef struct packed {
-//        id_slv_t          id;
-//        addr_t            addr;
-//        axi_pkg::len_t    len;
-//        axi_pkg::size_t   size;
-//        axi_pkg::burst_t  burst;
-//        logic             lock;
-//        axi_pkg::cache_t  cache;
-//        axi_pkg::prot_t   prot;
-//        axi_pkg::qos_t    qos;
-//        axi_pkg::region_t region;
-//        axi_pkg::atop_t   atop;
-//    } aw_chan_slv_t;
-//
-//    // W Channel - AXI4 doesn't define a wid
-//    typedef struct packed {
-//        data_t data;
-//        strb_t strb;
-//        logic  last;
-//    } w_chan_t;
-//
-//    // B Channel
-//    typedef struct packed {
-//        id_t            id;
-//        axi_pkg::resp_t resp;
-//    } b_chan_t;
-//
-//    // B Channel - Slave
-//    typedef struct packed {
-//        id_slv_t        id;
-//        axi_pkg::resp_t resp;
-//    } b_chan_slv_t;
-//
-//    // AR Channel
-//    typedef struct packed {
-//        id_t             id;
-//        addr_t            addr;
-//        axi_pkg::len_t    len;
-//        axi_pkg::size_t   size;
-//        axi_pkg::burst_t  burst;
-//        logic             lock;
-//        axi_pkg::cache_t  cache;
-//        axi_pkg::prot_t   prot;
-//        axi_pkg::qos_t    qos;
-//        axi_pkg::region_t region;
-//    } ar_chan_t;
-//
-//    // AR Channel - Slave
-//    typedef struct packed {
-//        id_slv_t          id;
-//        addr_t            addr;
-//        axi_pkg::len_t    len;
-//        axi_pkg::size_t   size;
-//        axi_pkg::burst_t  burst;
-//        logic             lock;
-//        axi_pkg::cache_t  cache;
-//        axi_pkg::prot_t   prot;
-//        axi_pkg::qos_t    qos;
-//        axi_pkg::region_t region;
-//    } ar_chan_slv_t;
-//
-//    // R Channel
-//    typedef struct packed {
-//        id_t            id;
-//        data_t          data;
-//        axi_pkg::resp_t resp;
-//        logic           last;
-//    } r_chan_t;
-//
-//    // R Channel - Slave
-//    typedef struct packed {
-//        id_slv_t        id;
-//        data_t          data;
-//        axi_pkg::resp_t resp;
-//        logic           last;
-//    } r_chan_slv_t;
-//
-//    // Request/Response structs
-//    typedef struct packed {
-//        aw_chan_t aw;
-//        logic     aw_valid;
-//        w_chan_t  w;
-//        logic     w_valid;
-//        logic     b_ready;
-//        ar_chan_t ar;
-//        logic     ar_valid;
-//        logic     r_ready;
-//    } req_t;
-//
-//    typedef struct packed {
-//        logic     aw_ready;
-//        logic     ar_ready;
-//        logic     w_ready;
-//        logic     b_valid;
-//        b_chan_t  b;
-//        logic     r_valid;
-//        r_chan_t  r;
-//    } resp_t;
-//
-//    typedef struct packed {
-//        aw_chan_slv_t aw;
-//        logic         aw_valid;
-//        w_chan_t      w;
-//        logic         w_valid;
-//        logic         b_ready;
-//        ar_chan_slv_t ar;
-//        logic         ar_valid;
-//        logic         r_ready;
-//    } req_slv_t;
-//
-//    typedef struct packed {
-//        logic         aw_ready;
-//        logic         ar_ready;
-//        logic         w_ready;
-//        logic         b_valid;
-//        b_chan_slv_t  b;
-//        logic         r_valid;
-//        r_chan_slv_t  r;
-//    } resp_slv_t;
+    `AXI_TYPEDEF_REQ_T(req_32_t, aw_chan_t, w_chan_t, ar_chan_t)
+    `AXI_TYPEDEF_RESP_T(resp_32_t, b_chan_t, r_chan_t)
 
+    // Typedef for AXI4-Lite 32 bit data
+    `AXI_LITE_TYPEDEF_AW_CHAN_T(aw_chan_lite_t, addr_t)
+    `AXI_LITE_TYPEDEF_W_CHAN_T(w_chan_lite_t, data_32_t, strb_32_t)
+    `AXI_LITE_TYPEDEF_B_CHAN_T(b_chan_lite_t)
+    `AXI_LITE_TYPEDEF_AR_CHAN_T(ar_chan_lite_t, addr_t)
+    `AXI_LITE_TYPEDEF_R_CHAN_T(r_chan_lite_t, data_32_t)
+
+    `AXI_LITE_TYPEDEF_REQ_T(req_lite_t, aw_chan_lite_t, w_chan_lite_t, ar_chan_lite_t)
+    `AXI_LITE_TYPEDEF_RESP_T(resp_lite_t, b_chan_lite_t, r_chan_lite_t)
 endpackage

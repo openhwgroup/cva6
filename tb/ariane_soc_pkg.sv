@@ -38,6 +38,44 @@ package ariane_soc;
 
   localparam NB_PERIPHERALS = Debug + 1;
 
+  typedef enum int unsigned {
+    AxiDram      = 0,
+    AxiGpio      = 1,
+    AxiEthernet  = 2,
+    AxiSpi       = 3,
+    AxiApbPeriph = 4,
+    AxiClint     = 5,
+    AxiRom       = 6,
+    AxiDebug     = 7
+  } ariane_soc_axi_slaves_e;
+
+  localparam int unsigned NoSocAxiSlaves = AxiDebug + 1;
+
+  typedef enum int unsigned {
+    ApbTimer = 0,
+    ApbUart  = 1,
+    ApbPlic  = 2
+  } apb_peripherals_e;
+
+  localparam int unsigned NoApbSlaves = ApbPlic + 1;
+
+  // This value because the APB slaves share the AxiApbPeriph port
+  localparam int unsigned NoSocAxiAddrRules = AxiDebug + ApbPlic + 1;
+
+  localparam axi_pkg::xbar_cfg_t XbarCfg = '{
+    NoSlvPorts:         NrSlaves,            // # of slave ports, so many masters are connected to the xbar
+    NoMstPorts:         NoSocAxiSlaves,      // # of master ports, so many slaves are connected to the xbar
+    MaxMstTrans:        8,                   // Maxi # of outstanding transactions per r/w per master
+    MaxSlvTrans:        8,                   // Maxi # of outstanding write transactions per slave
+    FallThrough:        1'b0,                // AreAW -> W Fifo's in Fall through mode (1'b0 = long paths)
+    LatencyMode:        axi_pkg::CUT_ALL_AX, // See xbar_latency_t and get_xbarlatmode
+    AxiIdWidthSlvPorts: IdWidth,             // Axi Id Width of the Slave Ports
+    AxiIdUsedSlvPorts:  IdWidth,             // this many LSB's of the SlvPortAxiId get used in demux
+    AxiAddrWidth:       32'd64,              // Axi Address Width
+    AxiDataWidth:       32'd64,              // Axi Data Width
+    NoAddrRules:        NoSocAxiAddrRules    // # of Address Rules in the memory map
+  };
+
 
   localparam logic[63:0] DebugLength    = 64'h1000;
   localparam logic[63:0] ROMLength      = 64'h10000;
@@ -66,8 +104,51 @@ package ariane_soc;
     DRAMBase     = 64'h8000_0000
   } soc_bus_start_t;
 
-  localparam NrRegion = 1;
-  localparam logic [NrRegion-1:0][NB_PERIPHERALS-1:0] ValidRule = {{NrRegion * NB_PERIPHERALS}{1'b1}};
+
+  localparam axi_pkg::xbar_rule_64_t [NoSocAxiAddrRules-1:0] AxiAddrMap = '{
+    '{idx:        AxiDram,
+      start_addr: DRAMBase,
+      end_addr:   DRAMBase     + DRAMLength     },
+    '{idx:        AxiGpio,
+      start_addr: GPIOBase,
+      end_addr:   GPIOBase     + GPIOLength     },
+    '{idx:        AxiEthernet,
+      start_addr: EthernetBase,
+      end_addr:   EthernetBase + EthernetLength },
+    '{idx:        AxiSpi,
+      start_addr: SPIBase,
+      end_addr:   SPIBase      + SPILength      },
+    '{idx:        AxiApbPeriph,
+      start_addr: TimerBase,
+      end_addr:   TimerBase    + TimerLength    },
+    '{idx:        AxiApbPeriph,
+      start_addr: UARTBase,
+      end_addr:   UARTBase     + UARTLength     },
+    '{idx:        AxiApbPeriph,
+      start_addr: PLICBase,
+      end_addr:   PLICBase     + PLICLength     },
+    '{idx:        AxiClint,
+      start_addr: CLINTBase,
+      end_addr:   CLINTBase    + CLINTLength    },
+    '{idx:        AxiRom,
+      start_addr: ROMBase,
+      end_addr:   ROMBase      + ROMLength      },
+    '{idx:        AxiDebug,
+      start_addr: DebugBase,
+      end_addr:   DebugBase    + DebugLength    }
+  };
+
+  localparam axi_pkg::xbar_rule_64_t [NoApbSlaves-1:0] ApbAddrMap = '{
+    '{idx:        ApbTimer,
+      start_addr: TimerBase,
+      end_addr:   TimerBase    + TimerLength    },
+    '{idx:        ApbUart,
+      start_addr: UARTBase,
+      end_addr:   UARTBase     + UARTLength     },
+    '{idx:        ApbPlic,
+      start_addr: PLICBase,
+      end_addr:   PLICBase     + PLICLength     }
+  };
 
   localparam ariane_pkg::ariane_cfg_t ArianeSocCfg = '{
     RASDepth: 2,
