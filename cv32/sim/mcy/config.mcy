@@ -1,0 +1,42 @@
+[options]
+size 10
+tags EXPECTED WEIRD
+
+[script]
+verific -work fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/fpnew/src/fpnew_pkg.sv
+verific -sv ../../../core-v-cores/cv32e40p/rtl/cv32e40p_sim_clock_gating.sv
+verific -work riscv_defines -L fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/include/apu_core_package.sv
+verific -work riscv_defines -L fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/include/riscv_defines.sv
+verific -work riscv_defines -L fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/include/riscv_tracer_defines.sv
+verific -L riscv_defines -L fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/riscv_alu_div.sv
+prep -top riscv_alu_div
+
+
+[files]
+../../../core-v-cores/cv32e40p/rtl/fpnew/src/fpnew_pkg.sv
+../../../core-v-cores/cv32e40p/rtl/cv32e40p_sim_clock_gating.sv
+../../../core-v-cores/cv32e40p/rtl/include/apu_core_package.sv
+../../../core-v-cores/cv32e40p/rtl/include/riscv_defines.sv
+../../../core-v-cores/cv32e40p/rtl/include/riscv_tracer_defines.sv
+../../../core-v-cores/cv32e40p/rtl/riscv_alu_div.sv
+
+[logic]
+if result("test_sim") != "TODO" and result("test_eq") == "TODO":
+	tag("EXPECTED")
+	return
+
+tag("WEIRD")
+
+[report]
+if tags("WEIRD"):
+	print("Something unexpected happened {} times!".format(tags("WEIRD")))
+else:
+	print("All according to keikaku*\n*T/L note: \"keikaku\" means plan")
+
+[test test_sim]
+expect PASS FAIL TODO
+run bash $PRJDIR/test_sim.sh
+
+[test test_eq]
+expect PASS FAIL TODO
+run bash $PRJDIR/test_eq.sh
