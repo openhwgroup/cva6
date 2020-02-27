@@ -40,9 +40,13 @@
 #
 ###############################################################################
 
-MAKE      = make
-WAVES     = 0
-ROOT_DIR  = $(PWD)
+MAKE          = make
+WAVES         = 0
+ROOT_DIR      = $(PWD)
+CV32E40P_REPO = https://github.com/openhwgroup/cv32e40p
+CV32E40P_HASH = 70b666a2f3aae8b4e2a38cb6583a148f50e387bd
+FPNEW_REPO    = https://github.com/pulp-platform/fpnew
+FPNEW_HASH    = da5fd4f0140c45f652c4a82a193f017484e3c72e
 
 # Compile compile flags for all simulators
 SV_CMP_FLAGS = 
@@ -372,8 +376,12 @@ verilate-clean: tc-clean
 # CV32E40P_PKG was null the first time.
 # TODO: cmd to eval RTLSRC needs to be replaced with a manifest (flist)
 $(CV32E40P_PKG):
-	git clone https://github.com/openhwgroup/cv32e40p --recurse $(CV32E40P_PKG)
-	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
+	git clone $(CV32E40P_REPO) --recurse $(CV32E40P_PKG)
+	cd $(CV32E40P_PKG); \
+	git checkout $(CV32E40P_HASH)
+	git clone $(FPNEW_REPO) --recurse $(FPNEW_PKG)
+	cd $(FPNEW_PKG); \
+	git checkout $(FPNEW_HASH)
 	$(eval RTLSRC_HOME   = $(CV32E40P_PKG)/rtl)
 	$(eval RTLSRC_PKG = $(FPNEW_PKG)/src/fpnew_pkg.sv \
                             $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
