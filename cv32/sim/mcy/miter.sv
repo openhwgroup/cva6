@@ -83,10 +83,10 @@ end
 always @(*) begin
   if (init_cycle) assume (!rst_n);
   if (rst_n) begin
-    // assume (out_ready);
+    assume (out_ready); //too slow with backpressure
+    // if (in_valid) begin
     // module depends on inputs not changing even if in_valid is false:
     // have to comment this out or it fails equivalence with itself
-    // if (in_valid) begin
       assume (ref_OpA_DI == uut_OpA_DI);
       assume (ref_OpB_DI == uut_OpB_DI);
       assume (ref_OpBShift_DI == uut_OpBShift_DI);
