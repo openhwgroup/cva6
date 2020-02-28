@@ -32,7 +32,7 @@ This tb/th maintains support for all features of the `core` testbench.
 ### verilator-model
 Unmodified.  There is no reason to remove this, but keep in mind that some of
 the capabilties of the testbench in the `core` directory are not supported by
-Verilator and are `\`ifdef'ed` out.  Verilator does not support the UVM
+Verilator and are `ifdef'ed` out.  Verilator does not support the UVM
 environment at all.  Given that, maintenance of Verilator is a low priority for
 this project and Issues submitted for Verilator support will be a low priorty.
 
