@@ -17,7 +17,7 @@
 ###############################################################################
 #
 # Makefile for the CV32E40P "core" testbench.  Substantially modified from the
-# original from the RI5CY testbench.
+# Makefile original for the RI5CY testbench.
 #
 ###############################################################################
 # 
@@ -42,7 +42,6 @@
 
 MAKE          = make
 WAVES         = 0
-#ROOT_DIR      = $(PWD)
 COREV_PROJ    = cv32
 PROJ_ROOT_DIR = $(PWD)/../../..
 
