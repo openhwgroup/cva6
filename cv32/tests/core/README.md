@@ -11,6 +11,5 @@ rv32uc) and
 
 Running the Testcases
 ---------------------
-Althought there is a Makefile at this location, simulations should be run in
-the **_sim_** directory (cv32/sim/core).  The Makefile located here will be
-removed in the coming weeks and is not currently supported.
+Change directory to either `../../sim/core` or `../../sim/uvmt_cv32` and
+read the README.

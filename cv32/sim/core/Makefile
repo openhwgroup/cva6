@@ -122,21 +122,12 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
 SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 
 # RTL source files for the CV32E core
+# DESIGN_RTL_DIR is used by CV32E40P_MANIFEST file
 CV32E40P_PKG         := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
 FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
 CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
 export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 
-#RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
-#FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
-#RTLSRC_INCDIR := $(RTLSRC_HOME)/include
-#RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
-#                 $(addprefix $(RTLSRC_HOME)/include/,\
-#                   apu_core_package.sv \
-#                   riscv_defines.sv \
-#                   riscv_tracer_defines.sv)
-#RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
-#                   $(wildcard $(RTLSRC_HOME)/*.sv))
 
 ###############################################################################
 # Common Makefile:
@@ -363,9 +354,7 @@ verilate-clean: tc-clean
 
 ###############################################################################
 # CV32E40P RTL dependencies
-# The variables RTLSRC_PKG and RTLSRC need to be re-evaluated since
-# CV32E40P_PKG was null the first time.
-# TODO: cmd to eval RTLSRC needs to be replaced with a manifest (flist)
+
 clone_cv32e40p_rtl:
 	$(CLONE_CV32E40P_CMD)
 
@@ -376,43 +365,12 @@ $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
 	$(CLONE_FPNEW_CMD)
 
-#	$(eval RTLSRC_HOME   = $(CV32E40P_PKG)/rtl)
-#	$(eval RTLSRC_PKG = $(FPNEW_PKG)/src/fpnew_pkg.sv \
-#	                    $(addprefix $(RTLSRC_HOME)/include/,\
-#	                      apu_core_package.sv \
-#	                      riscv_defines.sv \
-#	                      riscv_tracer_defines.sv))
-#	$(eval RTLSRC = $(RTLSRC_HOME)/riscv_alu_div.sv \
-#                  $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
-#                  $(RTLSRC_HOME)/riscv_controller.sv \
-#                  $(RTLSRC_HOME)/riscv_ex_stage.sv \
-#                  $(RTLSRC_HOME)/riscv_id_stage.sv \
-#                  $(RTLSRC_HOME)/riscv_load_store_unit.sv \
-#                  $(RTLSRC_HOME)/riscv_prefetch_L0_buffer.sv \
-#                  $(RTLSRC_HOME)/riscv_alu.sv \
-#                  $(RTLSRC_HOME)/riscv_core.sv \
-#                  $(RTLSRC_HOME)/riscv_fetch_fifo.sv \
-#                  $(RTLSRC_HOME)/riscv_if_stage.sv \
-#                  $(RTLSRC_HOME)/riscv_mult.sv \
-#                  $(RTLSRC_HOME)/register_file_test_wrap.sv \
-#                  $(RTLSRC_HOME)/riscv_apu_disp.sv \
-#                  $(RTLSRC_HOME)/riscv_cs_registers.sv \
-#                  $(RTLSRC_HOME)/riscv_hwloop_controller.sv \
-#                  $(RTLSRC_HOME)/riscv_int_controller.sv \
-#                  $(RTLSRC_HOME)/riscv_pmp.sv \
-#                  $(RTLSRC_HOME)/riscv_register_file.sv \
-#                  $(RTLSRC_HOME)/riscv_alu_basic.sv \
-#                  $(RTLSRC_HOME)/riscv_compressed_decoder.sv \
-#                  $(RTLSRC_HOME)/riscv_decoder.sv \
-#                  $(RTLSRC_HOME)/riscv_hwloop_regs.sv \
-#                  $(RTLSRC_HOME)/riscv_L0_buffer.sv \
-#                  $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
-#                  $(RTLSRC_HOME)/riscv_tracer.sv)
-
 
 ###############################################################################
 # general targets
-.PHONY: tc-clean  # clean up toolchain generated files
+.PHONY: tc-clean
+	
+# clean up toolchain generated files (CORE_TEST_DIR defined in ../Common.mk)
 tc-clean:
 	find $(CORE_TEST_DIR) -name *.o   -exec rm {} \;
 	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;
