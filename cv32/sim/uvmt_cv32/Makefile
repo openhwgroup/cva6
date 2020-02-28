@@ -85,17 +85,23 @@ include ../Common.mk
 # The variables RTLSRC_PKG and RTLSRC need to be re-evaluated since
 # CV32E40P_PKG was null the first time.
 # TODO: cmd to eval RTLSRC needs to be replaced with a manifest (flist)
+clone_cv32e40p_rtl:
+	$(CLONE_CV32E40P_CMD)
+
+clone_fpnew_rtl: clone_cv32e40p_rtl
+	$(CLONE_FPNEW_CMD)
+
 $(CV32E40P_PKG):
-	git clone https://github.com/openhwgroup/cv32e40p --recurse $(CV32E40P_PKG)
-	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
+	$(CLONE_CV32E40P_CMD)
+	$(CLONE_FPNEW_CMD)
 	$(eval RTLSRC_HOME   = $(CV32E40P_PKG)/rtl)
 	$(eval RTLSRC_PKG = $(FPNEW_PKG)/src/fpnew_pkg.sv \
-                            $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
 	                    $(addprefix $(RTLSRC_HOME)/include/,\
 	                      apu_core_package.sv \
 	                      riscv_defines.sv \
 	                      riscv_tracer_defines.sv))
 	$(eval RTLSRC = $(RTLSRC_HOME)/riscv_alu_div.sv \
+                  $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
                   $(RTLSRC_HOME)/riscv_controller.sv \
                   $(RTLSRC_HOME)/riscv_ex_stage.sv \
                   $(RTLSRC_HOME)/riscv_id_stage.sv \
