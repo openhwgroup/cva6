@@ -72,6 +72,14 @@ RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
 RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
                    $(wildcard $(RTLSRC_HOME)/*.sv))
 
+
+###############################################################################
+# Common Makefile:
+#    - Core Firmware and the RISCV GCC Toolchain (SDK)
+#    - Variables for RTL dependencies
+include ../Common.mk
+
+
 ###############################################################################
 # CV32E40P RTL dependencies
 # The variables RTLSRC_PKG and RTLSRC need to be re-evaluated since
@@ -112,11 +120,6 @@ $(CV32E40P_PKG):
                   $(RTLSRC_HOME)/riscv_L0_buffer.sv \
                   $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
                   $(RTLSRC_HOME)/riscv_tracer.sv)
-
-
-###############################################################################
-# Core Firmware and the RISCV GCC Toolchain (SDK)
-include ../Firmware.mk
 
 
 ###############################################################################

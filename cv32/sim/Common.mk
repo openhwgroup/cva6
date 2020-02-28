@@ -16,11 +16,8 @@
 # 
 ###############################################################################
 #
-# Makefile to build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"
-# verification environment.  Substantially modified from the original from the
-# Makefile first developed for the PULP-Platform RI5CY testbench.
-#
-# Intended to be included by the Makefiles in the "core" and "uvmt_cv32" dirs.
+# Common code for simulation Makefiles.  Intended to be included by the
+# Makefiles in the "core" and "uvmt_cv32" dirs.
 #
 ###############################################################################
 # 
@@ -43,6 +40,59 @@
 #
 ###############################################################################
 
+###############################################################################
+# Variables to determine the the command to clone RTL repos.
+# Foreach repo there are three variables:
+#      *_REPO:   URL to the repository in GitHub.
+#      *_BRANCH: Name of the branch you wish to clone;
+#                Set to 'master' to pull the master branch.
+#      *_HASH:   Value of the specific hash you wish to clone;
+#                Set to 'head' to pull the head of the branch you want.
+#                
+#CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
+#CV32E40P_BRANCH ?= master
+#CV32E40P_HASH   ?= 70b666a2f3aae8b4e2a38cb6583a148f50e387bd
+CV32E40P_REPO   ?= https://github.com/MikeOpenHWGroup/cv32e40p
+CV32E40P_BRANCH ?= ohw_mike_20200227_issue239
+CV32E40P_HASH   ?= 6dca7b298cd85dce19eb5bd5444042661573c257
+
+FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
+FPNEW_BRANCH    ?= master
+FPNEW_HASH      ?= da5fd4f0140c45f652c4a82a193f017484e3c72e
+
+# Generate command to clone the CV32E40P RTL
+ifeq ($(CV32E40P_BRANCH), master)
+  TMP = git clone $(CV32E40P_REPO) --recurse $(CV32E40P_PKG)
+else
+  TMP = git clone -b $(CV32E40P_BRANCH) --single-branch $(CV32E40P_REPO) --recurse $(CV32E40P_PKG)
+endif
+
+ifeq ($(CV32E40P_HASH), head)
+  CLONE_CV32E40P_CMD = $(TMP)
+else
+  CLONE_CV32E40P_CMD = $(TMP); cd $(CV32E40P_PKG); git checkout $(CV32E40P_HASH)
+endif
+
+# Generate command to clone the FPNEW RTL
+ifeq ($(FPNEW_BRANCH), master)
+  TMP2 = git clone $(FPNEW_REPO) --recurse $(FPNEW_PKG)
+else
+  TMP2 = git clone -b $(FPNEW_BRANCH) --single-branch $(FPNEW_REPO) --recurse $(FPNEW_PKG)
+endif
+
+ifeq ($(FPNEW_HASH), head)
+  CLONE_FPNEW_CMD = $(TMP2)
+else
+  CLONE_FPNEW_CMD = $(TMP2); cd $(FPNEW_PKG); git checkout $(FPNEW_HASH)
+endif
+# RTL repo vars end
+
+
+###############################################################################
+# Build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"
+# verification environment.  Substantially modified from the original from the
+# Makefile first developed for the PULP-Platform RI5CY testbench.
+#
 # riscv toolchain install path
 RISCV                   ?= ~/.riscv
 RISCV_EXE_PREFIX         = $(RISCV)/bin/riscv32-unknown-elf-
@@ -50,18 +100,22 @@ RISCV_EXE_PREFIX         = $(RISCV)/bin/riscv32-unknown-elf-
 # CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
 # are collectively known as "Core Firmware".  Yes, this is confusing because
 # one of sub-directories of CORE_TEST_DIR is called "firmware".
+#
+# Note that the DSIM targets allow for writing the log-files to arbitrary
+# locations, so all of these paths are absolute, except those used by Verilator.
 # TODO: clean this mess up!
 CORE_TEST_DIR                        = $(PROJ_ROOT_DIR)/cv32/tests/core
 FIRMWARE                             = $(CORE_TEST_DIR)/firmware
+VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
 CV32_RISCV_TESTS_FIRMWARE            = $(CORE_TEST_DIR)/cv32_riscv_tests_firmware
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = $(CORE_TEST_DIR)/cv32_riscv_compliance_tests_firmware
 RISCV_TESTS                          = $(CORE_TEST_DIR)/riscv_tests
 RISCV_COMPLIANCE_TESTS               = $(CORE_TEST_DIR)/riscv_compliance_tests
 RISCV_TEST_INCLUDES                  = -I$(CORE_TEST_DIR)/riscv_tests/ \
-																			 -I$(CORE_TEST_DIR)/riscv_tests/macros/scalar \
+                                       -I$(CORE_TEST_DIR)/riscv_tests/macros/scalar \
                                        -I$(CORE_TEST_DIR)/riscv_tests/rv64ui \
-																			 -I$(CORE_TEST_DIR)/riscv_tests/rv64um
+                                       -I$(CORE_TEST_DIR)/riscv_tests/rv64um
 CV32_RISCV_TESTS_FIRMWARE_OBJS       = $(addprefix $(CV32_RISCV_TESTS_FIRMWARE)/, \
                                          start.o print.o sieve.o multest.o stats.o)
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS = $(addprefix $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/, \
@@ -269,6 +323,14 @@ $(RISCV_COMPLIANCE_TESTS)/%.o: $(RISCV_COMPLIANCE_TESTS)/%.S $(RISCV_COMPLIANCE_
 		-DTEST_FUNC_RET=$(notdir $(subst -,_,$(basename $<)))_ret $<
 
 # run picorv firmware
+# in verilator
+.PHONY: firmware-veri-run
+firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
+	mkdir -p $(VERI_LOG_DIR)
+	./testbench_verilator $(VERI_FLAGS) \
+		"+firmware=$(VERI_FIRMWARE)/firmware.hex" \
+		| tee $(VERI_LOG_DIR)/firmware-veri-run.log
+
 
 # in vsim
 .PHONY: firmware-vsim-run
