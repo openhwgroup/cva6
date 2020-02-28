@@ -323,16 +323,6 @@ $(RISCV_COMPLIANCE_TESTS)/%.o: $(RISCV_COMPLIANCE_TESTS)/%.S $(RISCV_COMPLIANCE_
 		-DTEST_FUNC_TXT='"$(notdir $(subst -,_,$(basename $<)))"' \
 		-DTEST_FUNC_RET=$(notdir $(subst -,_,$(basename $<)))_ret $<
 
-# run picorv firmware
-# in verilator
-.PHONY: firmware-veri-run
-firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
-	mkdir -p $(VERI_LOG_DIR)
-	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=$(VERI_FIRMWARE)/firmware.hex" \
-		| tee $(VERI_LOG_DIR)/firmware-veri-run.log
-
-
 # in vsim
 .PHONY: firmware-vsim-run
 firmware-vsim-run: vsim-all $(FIRMWARE)/firmware.hex

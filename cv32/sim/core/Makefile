@@ -122,20 +122,21 @@ TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
 SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 
 # RTL source files for the CV32E core
-CV32E40P_PKG  := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
-CV32E40P_MANIFEST := $(CV32E40P_PKG)/cv32e40p_manifest.flist
+CV32E40P_PKG         := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
+FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
+CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
 export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 
-RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
-FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
-RTLSRC_INCDIR := $(RTLSRC_HOME)/include
-RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
-                 $(addprefix $(RTLSRC_HOME)/include/,\
-                   apu_core_package.sv \
-                   riscv_defines.sv \
-                   riscv_tracer_defines.sv)
-RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
-                   $(wildcard $(RTLSRC_HOME)/*.sv))
+#RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
+#FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
+#RTLSRC_INCDIR := $(RTLSRC_HOME)/include
+#RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
+#                 $(addprefix $(RTLSRC_HOME)/include/,\
+#                   apu_core_package.sv \
+#                   riscv_defines.sv \
+#                   riscv_tracer_defines.sv)
+#RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
+#                   $(wildcard $(RTLSRC_HOME)/*.sv))
 
 ###############################################################################
 # Common Makefile:
@@ -144,15 +145,17 @@ RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
 include ../Common.mk
 
 
-###############################################################################
-# TODO: clean this up
-RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
-RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
-
 # assume verilator if no target chosen
 .DEFAULT_GOAL := firmware-veri-run
 
-all: firmware-veri-run
+all: clean_all firmware-veri-run
+
+###############################################################################
+# VSIM
+#
+# TODO: clean this up
+RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(TBSRC_TOP)))
+RTLSRC_VOPT_TB_TOP	:= $(addsuffix _vopt, $(RTLSRC_VLOG_TB_TOP))
 
 # vsim testbench compilation and optimization
 vlib: .lib-rtl
@@ -178,7 +181,8 @@ vsim-all: $(CV32E40P_PKG) .opt-rtl
 dpiheader: .build-tb
 	$(VLOG) -work $(VWORK) -l $(VLOG_LOG) -dpiheader $(DPINAME) $(DPISRC)
 
-# vcs testbench compilation
+###############################################################################
+# VCS testbench compilation
 
 vcsify: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(VCS) +vc -sverilog -race=all -ignore unique_checks -full64 \
@@ -197,8 +201,9 @@ vcs-run-gui: vcsify $(FIRMWARE)/firmware.hex
 vcs-clean:
 	rm -rf simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h
 
-# Metrics dsim testbench compilation 
-.PHONY: dsimify dsimify-rtl-only
+###############################################################################
+# Metrics DSIM 
+.PHONY: dsim-comp dsim-comp-rtl-only
 
 MKDIR_P = mkdir -p
 
@@ -206,24 +211,7 @@ mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
-dsimify: mk_results $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
-	cd $(DSIM_RESULTS) && $(DSIM) \
-		$(DSIM_CMP_FLAGS) \
-		$(DSIM_UVM_ARGS) \
-		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(RTLSRC_INCDIR) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-work $(DSIM_WORK) \
-		-genimage $(DSIM_IMAGE)
-
-dsimify-rtl-only: mk_results $(RTLSRC_PKG) $(RTLSRC)
-	$(DSIM) \
-		$(DSIM_CMP_FLAGS) \
-		$(RTLSRC_PKG) $(RTLSRC) \
-		-work $(DSIM_WORK) \
-		+incdir+$(RTLSRC_INCDIR) \
-		-genimage $(DSIM_IMAGE)
-
+# Metrics dsim compile targets
 dsim-comp: mk_results $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
 	cd $(DSIM_RESULTS) && $(DSIM) \
 		$(DSIM_CMP_FLAGS) \
@@ -246,7 +234,7 @@ dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
 .PHONY: dsim-hello_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
 
 # Runs the hello world test
-dsim-hello_world: dsimify $(CUSTOM)/hello_world.hex
+dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
@@ -255,7 +243,7 @@ dsim-hello_world: dsimify $(CUSTOM)/hello_world.hex
 #		+verbose
 
 # Runs tests in riscv_tests/ only
-dsim-cv32_riscv_tests: dsimify $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+dsim-cv32_riscv_tests: dsim-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 	mkdir -p $(DSIM_RESULTS)/riscv-tests && cd $(DSIM_RESULTS)/riscv-tests && \
 	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
@@ -263,7 +251,7 @@ dsim-cv32_riscv_tests: dsimify $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_fir
 		+firmware=$(ROOT_DIR)/$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 
 # Runs tests in riscv_compliance_tests/ only
-dsim-cv32_riscv_compliance_tests: dsimify $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 	mkdir -p $(DSIM_RESULTS)/riscv-compliance && cd $(DSIM_RESULTS)/riscv-compliance && \
 	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
@@ -271,7 +259,7 @@ dsim-cv32_riscv_compliance_tests: dsimify $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE
 		+firmware=$(ROOT_DIR)/$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
-dsim-firmware: dsimify $(FIRMWARE)/firmware.hex
+dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
 	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
 	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \
@@ -279,7 +267,7 @@ dsim-firmware: dsimify $(FIRMWARE)/firmware.hex
 		+firmware=$(ROOT_DIR)/$(FIRMWARE)/firmware.hex
 
 # Runs a "unit-test" (see rule dsim-unit-test)
-dsim-firmware-unit-test: dsimify
+dsim-firmware-unit-test: dsim-comp
 	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
 	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \
@@ -300,6 +288,7 @@ dsim-clean: tc-clean
 	rm -f $(DSIM_IMAGE)
 	rm -rf $(DSIM_RESULTS)
 
+###############################################################################
 # Cadence Xcelium xrun testbench compilation
 .PHONY: xrun-all
 xrun-all: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
@@ -327,7 +316,8 @@ xrun-clean-all: xrun-clean
 	rm -vrf $(addprefix $(FIRMWARE)/firmware., elf bin hex map) \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS)
 
-# verilator testbench compilation
+###############################################################################
+# Verilator
 
 # We first test if the user wants to to vcd dumping. This hacky part is required
 # because we need to conditionally compile the testbench (-DVCD_TRACE) and pass
@@ -339,17 +329,28 @@ endif
 
 verilate: testbench_verilator
 
-testbench_verilator: $(CV32E40P_PKG) $(FPNEW_PKG) $(TBSRC_VERI) $(RTLSRC_PKG) $(RTLSRC)
+testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(VERILATOR) --cc --sv --exe \
 		$(VERI_TRACE) \
 		--Wno-lint --Wno-UNOPTFLAT \
-		--Wno-MODDUP +incdir+$(RTLSRC_INCDIR) --top-module \
-		tb_top_verilator $(TBSRC_VERI) $(RTLSRC_PKG) $(RTLSRC) \
+		--Wno-MODDUP --top-module \
+		tb_top_verilator $(TBSRC_VERI) \
+		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_CORE)/tb_top_verilator.cpp --Mdir $(VERI_OBJ_DIR) \
 		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
 		$(VERI_COMPILE_FLAGS)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
+
+# run picorv firmware
+# in verilator
+.PHONY: firmware-veri-run
+firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
+	mkdir -p $(VERI_LOG_DIR)
+	./testbench_verilator $(VERI_FLAGS) \
+		"+firmware=$(VERI_FIRMWARE)/firmware.hex" \
+		| tee $(VERI_LOG_DIR)/firmware-veri-run.log
+
 
 veri-clean: verilate-clean
 
@@ -359,6 +360,8 @@ verilate-clean: tc-clean
 	rm -rf testbench_verilator
 	if [ -e memory_dump.bin ]; then rm memory_dump.bin; fi
 
+
+###############################################################################
 # CV32E40P RTL dependencies
 # The variables RTLSRC_PKG and RTLSRC need to be re-evaluated since
 # CV32E40P_PKG was null the first time.
@@ -372,40 +375,42 @@ clone_fpnew_rtl: clone_cv32e40p_rtl
 $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
 	$(CLONE_FPNEW_CMD)
-	$(eval RTLSRC_HOME   = $(CV32E40P_PKG)/rtl)
-	$(eval RTLSRC_PKG = $(FPNEW_PKG)/src/fpnew_pkg.sv \
-	                    $(addprefix $(RTLSRC_HOME)/include/,\
-	                      apu_core_package.sv \
-	                      riscv_defines.sv \
-	                      riscv_tracer_defines.sv))
-	$(eval RTLSRC = $(RTLSRC_HOME)/riscv_alu_div.sv \
-                  $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
-                  $(RTLSRC_HOME)/riscv_controller.sv \
-                  $(RTLSRC_HOME)/riscv_ex_stage.sv \
-                  $(RTLSRC_HOME)/riscv_id_stage.sv \
-                  $(RTLSRC_HOME)/riscv_load_store_unit.sv \
-                  $(RTLSRC_HOME)/riscv_prefetch_L0_buffer.sv \
-                  $(RTLSRC_HOME)/riscv_alu.sv \
-                  $(RTLSRC_HOME)/riscv_core.sv \
-                  $(RTLSRC_HOME)/riscv_fetch_fifo.sv \
-                  $(RTLSRC_HOME)/riscv_if_stage.sv \
-                  $(RTLSRC_HOME)/riscv_mult.sv \
-                  $(RTLSRC_HOME)/register_file_test_wrap.sv \
-                  $(RTLSRC_HOME)/riscv_apu_disp.sv \
-                  $(RTLSRC_HOME)/riscv_cs_registers.sv \
-                  $(RTLSRC_HOME)/riscv_hwloop_controller.sv \
-                  $(RTLSRC_HOME)/riscv_int_controller.sv \
-                  $(RTLSRC_HOME)/riscv_pmp.sv \
-                  $(RTLSRC_HOME)/riscv_register_file.sv \
-                  $(RTLSRC_HOME)/riscv_alu_basic.sv \
-                  $(RTLSRC_HOME)/riscv_compressed_decoder.sv \
-                  $(RTLSRC_HOME)/riscv_decoder.sv \
-                  $(RTLSRC_HOME)/riscv_hwloop_regs.sv \
-                  $(RTLSRC_HOME)/riscv_L0_buffer.sv \
-                  $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
-                  $(RTLSRC_HOME)/riscv_tracer.sv)
+
+#	$(eval RTLSRC_HOME   = $(CV32E40P_PKG)/rtl)
+#	$(eval RTLSRC_PKG = $(FPNEW_PKG)/src/fpnew_pkg.sv \
+#	                    $(addprefix $(RTLSRC_HOME)/include/,\
+#	                      apu_core_package.sv \
+#	                      riscv_defines.sv \
+#	                      riscv_tracer_defines.sv))
+#	$(eval RTLSRC = $(RTLSRC_HOME)/riscv_alu_div.sv \
+#                  $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
+#                  $(RTLSRC_HOME)/riscv_controller.sv \
+#                  $(RTLSRC_HOME)/riscv_ex_stage.sv \
+#                  $(RTLSRC_HOME)/riscv_id_stage.sv \
+#                  $(RTLSRC_HOME)/riscv_load_store_unit.sv \
+#                  $(RTLSRC_HOME)/riscv_prefetch_L0_buffer.sv \
+#                  $(RTLSRC_HOME)/riscv_alu.sv \
+#                  $(RTLSRC_HOME)/riscv_core.sv \
+#                  $(RTLSRC_HOME)/riscv_fetch_fifo.sv \
+#                  $(RTLSRC_HOME)/riscv_if_stage.sv \
+#                  $(RTLSRC_HOME)/riscv_mult.sv \
+#                  $(RTLSRC_HOME)/register_file_test_wrap.sv \
+#                  $(RTLSRC_HOME)/riscv_apu_disp.sv \
+#                  $(RTLSRC_HOME)/riscv_cs_registers.sv \
+#                  $(RTLSRC_HOME)/riscv_hwloop_controller.sv \
+#                  $(RTLSRC_HOME)/riscv_int_controller.sv \
+#                  $(RTLSRC_HOME)/riscv_pmp.sv \
+#                  $(RTLSRC_HOME)/riscv_register_file.sv \
+#                  $(RTLSRC_HOME)/riscv_alu_basic.sv \
+#                  $(RTLSRC_HOME)/riscv_compressed_decoder.sv \
+#                  $(RTLSRC_HOME)/riscv_decoder.sv \
+#                  $(RTLSRC_HOME)/riscv_hwloop_regs.sv \
+#                  $(RTLSRC_HOME)/riscv_L0_buffer.sv \
+#                  $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
+#                  $(RTLSRC_HOME)/riscv_tracer.sv)
 
 
+###############################################################################
 # general targets
 .PHONY: tc-clean  # clean up toolchain generated files
 tc-clean:
