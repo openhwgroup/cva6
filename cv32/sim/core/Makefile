@@ -123,6 +123,9 @@ SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 
 # RTL source files for the CV32E core
 CV32E40P_PKG  := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
+CV32E40P_MANIFEST := $(CV32E40P_PKG)/cv32e40p_manifest.flist
+export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
+
 RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
 FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
 RTLSRC_INCDIR := $(RTLSRC_HOME)/include
@@ -203,7 +206,6 @@ mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
-#	cd $(DSIM_RESULTS) && $(DSIM)
 dsimify: mk_results $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	cd $(DSIM_RESULTS) && $(DSIM) \
 		$(DSIM_CMP_FLAGS) \
@@ -221,6 +223,24 @@ dsimify-rtl-only: mk_results $(RTLSRC_PKG) $(RTLSRC)
 		-work $(DSIM_WORK) \
 		+incdir+$(RTLSRC_INCDIR) \
 		-genimage $(DSIM_IMAGE)
+
+dsim-comp: mk_results $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
+	cd $(DSIM_RESULTS) && $(DSIM) \
+		$(DSIM_CMP_FLAGS) \
+		$(DSIM_UVM_ARGS) \
+		$(TBSRC_PKG) $(TBSRC) \
+		-f $(CV32E40P_MANIFEST) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-work $(DSIM_WORK) \
+		-genimage $(DSIM_IMAGE)
+
+dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
+	$(DSIM) \
+		$(DSIM_CMP_FLAGS) \
+		-f $(CV32E40P_MANIFEST) \
+		-work $(DSIM_WORK) \
+		-genimage $(DSIM_IMAGE)
+
 
 # Metrics dsim simulations
 .PHONY: dsim-hello_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware

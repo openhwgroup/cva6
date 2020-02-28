@@ -54,7 +54,8 @@
 #CV32E40P_HASH   ?= 70b666a2f3aae8b4e2a38cb6583a148f50e387bd
 CV32E40P_REPO   ?= https://github.com/MikeOpenHWGroup/cv32e40p
 CV32E40P_BRANCH ?= ohw_mike_20200227_issue239
-CV32E40P_HASH   ?= 6dca7b298cd85dce19eb5bd5444042661573c257
+#CV32E40P_HASH   ?= 6dca7b298cd85dce19eb5bd5444042661573c257
+CV32E40P_HASH   ?= ba863424709d1c61a51573620bba08d2946e0c90
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
