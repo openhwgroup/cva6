@@ -1,6 +1,6 @@
 [options]
 size 10
-tags EXPECTED WEIRD
+tags COVERED UNCOVERED NOCHANGE FMGAP
 
 [script]
 verific -work fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/fpnew/src/fpnew_pkg.sv
@@ -21,22 +21,28 @@ prep -top riscv_alu_div
 ../../../core-v-cores/cv32e40p/rtl/riscv_alu_div.sv
 
 [logic]
-if result("test_sim") != "TODO" and result("test_eq") == "TODO":
-	tag("EXPECTED")
-	return
+sim_okay = result("test_sim") == "PASS"
+eq_okay = result("test_eq") == "PASS"
 
-tag("WEIRD")
+if sim_okay and not eq_okay:
+    tag("UNCOVERED")
+elif not sim_okay and not eq_okay:
+    tag("COVERED")
+elif sim_okay and eq_okay:
+    tag("NOCHANGE")
+else:
+    tag("FMGAP")
 
 [report]
-if tags("WEIRD"):
-	print("Something unexpected happened {} times!".format(tags("WEIRD")))
-else:
-	print("All according to keikaku*\n*T/L note: \"keikaku\" means plan")
+if tags("FMGAP"):
+    print("Found %d mutations exposing a formal gap!")
+if tags("COVERED")+tags("UNCOVERED"):
+    print("Coverage: %.2f%%" % (100.0*tags("COVERED")/(tags("COVERED")+tags("UNCOVERED"))))
 
 [test test_sim]
-expect PASS FAIL TODO
+expect PASS FAIL
 run bash $PRJDIR/test_sim.sh
 
 [test test_eq]
-expect PASS FAIL TODO
+expect PASS FAIL
 run bash $PRJDIR/test_eq.sh
