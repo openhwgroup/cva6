@@ -22,7 +22,7 @@
 
 // Pre-processor macros
 `include "uvm_macros.svh"
-`include "uvml_hrbt_macros.sv"
+`include "uvml_hrtbt_macros.sv"
 `include "uvml_sb_macros.sv"
 
 

@@ -292,7 +292,7 @@ endtask : mode_out_of_order
 task uvml_sb_simplex_c::get_act(output T_TRN act_trn);
    
    act_fifo.get(act_trn);
-   `uvm_hrtbt()
+   `uvml_hrtbt()
    cntxt.act_observed_e.trigger(act_trn);
    
 endtask : get_act
