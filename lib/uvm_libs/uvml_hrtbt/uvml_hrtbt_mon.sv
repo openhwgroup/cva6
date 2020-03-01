@@ -57,9 +57,9 @@ class uvml_hrtbt_mon_c extends uvm_component;
    /**
     * Each phase calls phase_loop()
     */
-   extern virtual task pre_main_phase      (uvm_phase phase);
-   extern virtual task main_phase          (uvm_phase phase);
-   extern virtual task post_main_phase     (uvm_phase phase);
+   extern virtual task pre_reset_phase     (uvm_phase phase);
+   extern virtual task reset_phase         (uvm_phase phase);
+   extern virtual task post_reset_phase    (uvm_phase phase);
    extern virtual task pre_configure_phase (uvm_phase phase);
    extern virtual task configure_phase     (uvm_phase phase);
    extern virtual task post_configure_phase(uvm_phase phase);
@@ -139,6 +139,14 @@ task uvml_hrtbt_mon_c::reset_phase(uvm_phase phase);
 endtask : reset_phase
 
 
+task uvml_hrtbt_mon_c::post_reset_phase(uvm_phase phase);
+   
+   super.post_reset_phase(phase);
+   phase_loop            (phase);
+   
+endtask : post_reset_phase
+
+
 task uvml_hrtbt_mon_c::pre_configure_phase(uvm_phase phase);
    
    super.pre_configure_phase(phase);
@@ -149,7 +157,7 @@ endtask : pre_configure_phase
 
 task uvml_hrtbt_mon_c::configure_phase(uvm_phase phase);
    
-   super.configure_phase(phase)
+   super.configure_phase(phase);
    phase_loop           (phase);
    
 endtask : configure_phase
@@ -161,14 +169,6 @@ task uvml_hrtbt_mon_c::post_configure_phase(uvm_phase phase);
    phase_loop                (phase);
    
 endtask : post_configure_phase
-
-
-task uvml_hrtbt_mon_c::post_reset_phase(uvm_phase phase);
-   
-   super.post_reset_phase(phase);
-   phase_loop            (phase);
-   
-endtask : post_reset_phase
 
 
 task uvml_hrtbt_mon_c::pre_main_phase(uvm_phase phase);
@@ -185,6 +185,14 @@ task uvml_hrtbt_mon_c::main_phase(uvm_phase phase);
    phase_loop      (phase);
    
 endtask : main_phase
+
+
+task uvml_hrtbt_mon_c::post_main_phase(uvm_phase phase);
+   
+   super.post_main_phase(phase);
+   phase_loop           (phase);
+   
+endtask : post_main_phase
 
 
 task uvml_hrtbt_mon_c::pre_shutdown_phase(uvm_phase phase);

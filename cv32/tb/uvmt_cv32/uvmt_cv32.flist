@@ -17,10 +17,10 @@
 
 // Libraries
 //-f ${DV_UVM_PATH}/uvm.flist
-//-f ${DV_UVML_HRTBT_PATH}/uvml_hrtbt_pkg.flist
-//-f ${DV_UVML_TRN_PATH}/uvml_trn_pkg.flist
-//-f ${DV_UVML_LOGS_PATH}/uvml_logs_pkg.flist
-//-f ${DV_UVML_SB_PATH}/uvml_sb_pkg.flist
+-f ${DV_UVML_HRTBT_PATH}/uvml_hrtbt_pkg.flist
+-f ${DV_UVML_TRN_PATH}/uvml_trn_pkg.flist
+-f ${DV_UVML_LOGS_PATH}/uvml_logs_pkg.flist
+-f ${DV_UVML_SB_PATH}/uvml_sb_pkg.flist
 
 // Agents
 //-f ${DV_UVMA_RESET_PATH}/uvma_reset_pkg.flist
