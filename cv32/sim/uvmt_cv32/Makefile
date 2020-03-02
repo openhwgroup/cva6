@@ -16,12 +16,32 @@
 # 
 ###############################################################################
 #
-# Makefile to run tests and regressions of the CV32E UVM Environment and RTL.
-# Currently only supports Metrics DSIM.
+# Makefile for the CV32E40P "uvmt_cv32" testbench.  Substantially modified
+# from the original Makefile for the RI5CY testbench.
+#
+###############################################################################
+# 
+# Copyright 2019 Clifford Wolf
+# Copyright 2019 Robert Balas
+#
+# Permission to use, copy, modify, and/or distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+# INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+# LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+# OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+#
+# Original Author: Robert Balas (balasr@iis.ee.ethz.ch)
 #
 ###############################################################################
 
 MAKE          = make
+WAVES         = 0
 COREV_PROJ    = cv32
 PROJ_ROOT_DIR = $(PWD)/../../..
 
@@ -59,64 +79,34 @@ TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
 SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 
 # RTL source files for the CV32E core
-CV32E40P_PKG  := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
-RTLSRC_HOME   := $(CV32E40P_PKG)/rtl
-FPNEW_PKG     := $(RTLSRC_HOME)/fpnew
-RTLSRC_INCDIR := $(RTLSRC_HOME)/include
-RTLSRC_PKG    := $(FPNEW_PKG)/src/fpnew_pkg.sv \
-                 $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
-                 $(addprefix $(RTLSRC_HOME)/include/,\
-                   apu_core_package.sv \
-                   riscv_defines.sv \
-                   riscv_tracer_defines.sv)
-RTLSRC        := $(filter-out $(RTLSRC_HOME)/riscv_register_file_latch.sv,\
-                   $(wildcard $(RTLSRC_HOME)/*.sv))
+# DESIGN_RTL_DIR is used by CV32E40P_MANIFEST file
+CV32E40P_PKG         := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
+FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
+CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
+export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
+
+
+###############################################################################
+# Common Makefile:
+#    - Core Firmware and the RISCV GCC Toolchain (SDK)
+#    - Variables for RTL dependencies
+include ../Common.mk
+
 
 ###############################################################################
 # CV32E40P RTL dependencies
 # The variables RTLSRC_PKG and RTLSRC need to be re-evaluated since
 # CV32E40P_PKG was null the first time.
 # TODO: cmd to eval RTLSRC needs to be replaced with a manifest (flist)
+clone_cv32e40p_rtl:
+	$(CLONE_CV32E40P_CMD)
+
+clone_fpnew_rtl: clone_cv32e40p_rtl
+	$(CLONE_FPNEW_CMD)
+
 $(CV32E40P_PKG):
-	git clone https://github.com/openhwgroup/cv32e40p --recurse $(CV32E40P_PKG)
-	git clone https://github.com/pulp-platform/fpnew --recurse $(FPNEW_PKG)
-	$(eval RTLSRC_HOME   = $(CV32E40P_PKG)/rtl)
-	$(eval RTLSRC_PKG = $(FPNEW_PKG)/src/fpnew_pkg.sv \
-                            $(RTLSRC_HOME)/cv32e40p_sim_clock_gating.sv \
-	                    $(addprefix $(RTLSRC_HOME)/include/,\
-	                      apu_core_package.sv \
-	                      riscv_defines.sv \
-	                      riscv_tracer_defines.sv))
-	$(eval RTLSRC = $(RTLSRC_HOME)/riscv_alu_div.sv \
-                  $(RTLSRC_HOME)/riscv_controller.sv \
-                  $(RTLSRC_HOME)/riscv_ex_stage.sv \
-                  $(RTLSRC_HOME)/riscv_id_stage.sv \
-                  $(RTLSRC_HOME)/riscv_load_store_unit.sv \
-                  $(RTLSRC_HOME)/riscv_prefetch_L0_buffer.sv \
-                  $(RTLSRC_HOME)/riscv_alu.sv \
-                  $(RTLSRC_HOME)/riscv_core.sv \
-                  $(RTLSRC_HOME)/riscv_fetch_fifo.sv \
-                  $(RTLSRC_HOME)/riscv_if_stage.sv \
-                  $(RTLSRC_HOME)/riscv_mult.sv \
-                  $(RTLSRC_HOME)/register_file_test_wrap.sv \
-                  $(RTLSRC_HOME)/riscv_apu_disp.sv \
-                  $(RTLSRC_HOME)/riscv_cs_registers.sv \
-                  $(RTLSRC_HOME)/riscv_hwloop_controller.sv \
-                  $(RTLSRC_HOME)/riscv_int_controller.sv \
-                  $(RTLSRC_HOME)/riscv_pmp.sv \
-                  $(RTLSRC_HOME)/riscv_register_file.sv \
-                  $(RTLSRC_HOME)/riscv_alu_basic.sv \
-                  $(RTLSRC_HOME)/riscv_compressed_decoder.sv \
-                  $(RTLSRC_HOME)/riscv_decoder.sv \
-                  $(RTLSRC_HOME)/riscv_hwloop_regs.sv \
-                  $(RTLSRC_HOME)/riscv_L0_buffer.sv \
-                  $(RTLSRC_HOME)/riscv_prefetch_buffer.sv \
-                  $(RTLSRC_HOME)/riscv_tracer.sv)
-
-
-###############################################################################
-# Core Firmware and the RISCV GCC Toolchain (SDK)
-include ../Firmware.mk
+	$(CLONE_CV32E40P_CMD)
+	$(CLONE_FPNEW_CMD)
 
 
 ###############################################################################
@@ -147,8 +137,8 @@ dsim-comp: mk_results $(CV32E40P_PKG)
 		+incdir+$(DV_UVME_CV32_PATH) \
 		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
 		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
-		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(RTLSRC_INCDIR) \
+		$(TBSRC_PKG) $(TBSRC) \
+		-f $(CV32E40P_MANIFEST) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
 		+$(UVM_PLUSARGS) \
@@ -232,6 +222,7 @@ clean_dsim:
 	rm -rf $(DSIM_RESULTS)
 
 # Clean all generated files of the C and assembler tests in tests/core
+# CORE_TEST_DIR is defined in ../Common.mk
 clean_core_tests:
 	find $(CORE_TEST_DIR) -name *.o   -exec rm {} \;
 	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;

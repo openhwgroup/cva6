@@ -4,7 +4,7 @@ regressions are located here.  You do not _have_ to do this, but keep in mind
 that the Makefiles assume you are running from a peer level to `core` or
 `uvmt_cv32`.
 <br><br>There is a sub-dir for each supported CV32 verification environment.
-Each sub-dir has its specific Makefile and both include `Firmware.mk` from this
+Each sub-dir has its specific Makefile and both include `Common.mk` from this
 directory.
 
 ### core

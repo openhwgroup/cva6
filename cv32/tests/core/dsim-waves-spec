@@ -1,2 +1,0 @@
-instance riscv_alu_basic +
-instance tb_top.riscv_wrapper_i +
