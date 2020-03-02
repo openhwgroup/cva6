@@ -136,9 +136,9 @@ include ../Common.mk
 
 
 # assume verilator if no target chosen
-.DEFAULT_GOAL := firmware-veri-run
+.DEFAULT_GOAL := sanity-veri-run
 
-all: clean_all firmware-veri-run
+all: clean_all sanity-veri-run dsim-sanity
 
 ###############################################################################
 # VSIM
