@@ -49,12 +49,9 @@
 #      *_HASH:   Value of the specific hash you wish to clone;
 #                Set to 'head' to pull the head of the branch you want.
 #                
-#CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
-#CV32E40P_BRANCH ?= master
-#CV32E40P_HASH   ?= tbd
-CV32E40P_REPO   ?= https://github.com/MikeOpenHWGroup/cv32e40p
-CV32E40P_BRANCH ?= ohw_mike_20200227_issue239
-CV32E40P_HASH   ?= ba863424709d1c61a51573620bba08d2946e0c90
+CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
+CV32E40P_BRANCH ?= master
+CV32E40P_HASH   ?= 9cdf35c8c460a933496b84c5b51f88652981fd5d
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
@@ -108,6 +105,7 @@ CORE_TEST_DIR                        = $(PROJ_ROOT_DIR)/cv32/tests/core
 FIRMWARE                             = $(CORE_TEST_DIR)/firmware
 VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
+VERI_CUSTOM                          = ../../tests/core/custom
 CV32_RISCV_TESTS_FIRMWARE            = $(CORE_TEST_DIR)/cv32_riscv_tests_firmware
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = $(CORE_TEST_DIR)/cv32_riscv_compliance_tests_firmware
 RISCV_TESTS                          = $(CORE_TEST_DIR)/riscv_tests
