@@ -41,6 +41,6 @@
 ${DV_UVMT_CV32_PATH}/uvmt_cv32_pkg.sv
 
 // CV32 test bench files
-${DV_UVMT_CV32_PATH}/uvmt_cv32_dut_wrap.sv
+//${DV_UVMT_CV32_PATH}/uvmt_cv32_dut_wrap.sv
 //${DV_UVMT_CV32_PATH}/uvmt_cv32_dut_chk.sv
-${DV_UVMT_CV32_PATH}/uvmt_cv32_tb.sv
+//${DV_UVMT_CV32_PATH}/uvmt_cv32_tb.sv
