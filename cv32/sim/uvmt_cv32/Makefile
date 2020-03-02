@@ -111,9 +111,9 @@ $(CV32E40P_PKG):
 
 ###############################################################################
 # Defaults: assume compile of both ENV and RTL if no target chosen
-.DEFAULT_GOAL := dsim-hello_world
+.DEFAULT_GOAL := dsim-sanity
 
-all: clean_all dsim-hello_world
+all: clean_all dsim-sanity
 
 
 ###############################################################################
@@ -151,6 +151,8 @@ dsim-no-firmware: dsim-comp
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+UVM_TESTNAME=$(UVM_TESTNAME)
 #		+verbose
+
+dsim-sanity: dsim-hello_world
 
 dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
