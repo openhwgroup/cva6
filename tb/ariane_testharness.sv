@@ -444,54 +444,6 @@ module ariane_testharness #(
   // ---------------
   // AXI Xbar
   // ---------------
-
-//  localparam axi_pkg::xbar_cfg_t XbarCfg = '{
-//    NoSlvPorts:         ariane_soc::NrSlaves,       // # of slave ports, so many masters are connected to the xbar
-//    NoMstPorts:         ariane_soc::NB_PERIPHERALS, // # of master ports, so many slaves are connected to the xbar
-//    MaxMstTrans:        8,                          // Maxi # of outstanding transactions per r/w per master
-//    MaxSlvTrans:        8,                          // Maxi # of outstanding write transactions per slave
-//    FallThrough:        1'b0,                       // AreAW -> W Fifo's in Fall through mode (1'b0 = long paths)
-//    LatencyMode:        axi_pkg::CUT_ALL_AX,        // See xbar_latency_t and get_xbarlatmode
-//    AxiIdWidthSlvPorts: ariane_soc::IdWidth,        // Axi Id Width of the Slave Ports
-//    AxiIdUsedSlvPorts:  ariane_soc::IdWidth - 1,    // this many LSB's of the SlvPortAxiId get used in demux
-//    AxiAddrWidth:       AXI_ADDRESS_WIDTH,          // Axi Address Width
-//    AxiDataWidth:       AXI_DATA_WIDTH,             // Axi Data Width
-//    NoAddrRules:        ariane_soc::NB_PERIPHERALS  // # of Address Rules in the memory map
-//  };
-//
-//  localparam axi_pkg::xbar_rule_64_t [ariane_soc::NB_PERIPHERALS-1:0] AddrMap = '{
-//    '{idx:        ariane_soc::DRAM,
-//      start_addr: ariane_soc::DRAMBase,
-//      end_addr:   ariane_soc::DRAMBase     + ariane_soc::DRAMLength     },
-//    '{idx:        ariane_soc::GPIO,
-//      start_addr: ariane_soc::GPIOBase,
-//      end_addr:   ariane_soc::GPIOBase     + ariane_soc::GPIOLength     },
-//    '{idx:        ariane_soc::Ethernet,
-//      start_addr: ariane_soc::EthernetBase,
-//      end_addr:   ariane_soc::EthernetBase + ariane_soc::EthernetLength },
-//    '{idx:        ariane_soc::SPI,
-//      start_addr: ariane_soc::SPIBase,
-//      end_addr:   ariane_soc::SPIBase      + ariane_soc::SPILength      },
-//    '{idx:        ariane_soc::Timer,
-//      start_addr: ariane_soc::TimerBase,
-//      end_addr:   ariane_soc::TimerBase    + ariane_soc::TimerLength    },
-//    '{idx:        ariane_soc::UART,
-//      start_addr: ariane_soc::UARTBase,
-//      end_addr:   ariane_soc::UARTBase     + ariane_soc::UARTLength     },
-//    '{idx:        ariane_soc::PLIC,
-//      start_addr: ariane_soc::PLICBase,
-//      end_addr:   ariane_soc::PLICBase     + ariane_soc::PLICLength     },
-//    '{idx:        ariane_soc::CLINT,
-//      start_addr: ariane_soc::CLINTBase,
-//      end_addr:   ariane_soc::CLINTBase    + ariane_soc::CLINTLength    },
-//    '{idx:        ariane_soc::ROM,
-//      start_addr: ariane_soc::ROMBase,
-//      end_addr:   ariane_soc::ROMBase      + ariane_soc::ROMLength      },
-//    '{idx:        ariane_soc::Debug,
-//      start_addr: ariane_soc::DebugBase,
-//      end_addr:   ariane_soc::DebugBase    + ariane_soc::DebugLength    }
-//  };
-
   axi_xbar #(
     .Cfg            ( ariane_soc::XbarCfg       ),
     .slv_aw_chan_t  ( ariane_axi::aw_chan_t     ),
@@ -536,14 +488,14 @@ module ariane_testharness #(
     .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
     .NR_CORES       ( 1                        )
   ) i_clint (
-    .clk_i       ( clk_i                             ),
-    .rst_ni      ( ndmreset_n                        ),
-    .testmode_i  ( test_en                           ),
+    .clk_i       ( clk_i                                ),
+    .rst_ni      ( ndmreset_n                           ),
+    .testmode_i  ( test_en                              ),
     .axi_req_i   ( mst_ports_req [ariane_soc::AxiClint] ),
     .axi_resp_o  ( mst_ports_resp[ariane_soc::AxiClint] ),
-    .rtc_i       ( rtc_i                             ),
-    .timer_irq_o ( timer_irq                         ),
-    .ipi_o       ( ipi                               )
+    .rtc_i       ( rtc_i                                ),
+    .timer_irq_o ( timer_irq                            ),
+    .ipi_o       ( ipi                                  )
   );
 
   // ---------------
