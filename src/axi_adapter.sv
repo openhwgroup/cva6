@@ -64,37 +64,49 @@ module axi_adapter #(
 
     always_comb begin : axi_fsm
         // Default assignments
+        axi_req_o.aw = '{
+            id:      id_i,
+            addr:    addr_i,
+         // len:     8'b0,
+            size:    {1'b0, size_i},
+            burst:   (type_i == ariane_axi::SINGLE_REQ) ? (axi_pkg::BURST_FIXED) : (axi_pkg::BURST_INCR), // (Tempfix as FIXED and INCR with LEN = 0 are the same)
+         // lock:    1'b0,
+         // cache:   4'b0,
+         // prot:    3'b0,
+         // qos:     4'b0,
+         // region:  4'b0,
+         // atop:    6'b0, // currently not used
+         // user:    1'b0,
+            default: '0
+        };
         axi_req_o.aw_valid  = 1'b0;
-        axi_req_o.aw.addr   = addr_i;
-        axi_req_o.aw.prot   = 3'b0;
-        axi_req_o.aw.region = 4'b0;
-        axi_req_o.aw.len    = 8'b0;
-        axi_req_o.aw.size   = {1'b0, size_i};
-        axi_req_o.aw.burst  = (type_i == ariane_axi::SINGLE_REQ) ? 2'b00 :  2'b01;  // fixed size for single request and incremental transfer for everything else
-        axi_req_o.aw.lock   = 1'b0;
-        axi_req_o.aw.cache  = 4'b0;
-        axi_req_o.aw.qos    = 4'b0;
-        axi_req_o.aw.id     = id_i;
-        axi_req_o.aw.atop   = '0; // currently not used
 
+        axi_req_o.ar = '{
+            id:      id_i,
+            // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
+            // with an incremental transfer we need to output the corresponding base address of the cache line
+            addr:    (CRITICAL_WORD_FIRST || type_i == ariane_axi::SINGLE_REQ) ? addr_i : { addr_i[63:CACHELINE_BYTE_OFFSET], {{CACHELINE_BYTE_OFFSET}{1'b0}}},
+         // len:     8'b0,
+            size:    {1'b0, size_i},
+            burst:   (type_i == ariane_axi::SINGLE_REQ) ? (axi_pkg::BURST_FIXED) : (CRITICAL_WORD_FIRST ? (axi_pkg::BURST_WRAP) : (axi_pkg::BURST_INCR)),
+         // lock:    1'b0,
+         // cache:   4'b0,
+         // prot:    3'b0,
+         // qos:     4'b0,
+         // region:  4'b0,
+         // user:    1'b0,
+            default: '0
+        };
         axi_req_o.ar_valid  = 1'b0;
-        // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
-        // with an incremental transfer we need to output the corresponding base address of the cache line
-        axi_req_o.ar.addr   = (CRITICAL_WORD_FIRST || type_i == ariane_axi::SINGLE_REQ) ? addr_i : { addr_i[63:CACHELINE_BYTE_OFFSET], {{CACHELINE_BYTE_OFFSET}{1'b0}}};
-        axi_req_o.ar.prot   = 3'b0;
-        axi_req_o.ar.region = 4'b0;
-        axi_req_o.ar.len    = 8'b0;
-        axi_req_o.ar.size   = {1'b0, size_i}; // 8 bytes
-        axi_req_o.ar.burst  = (type_i == ariane_axi::SINGLE_REQ) ? 2'b00 : (CRITICAL_WORD_FIRST ? 2'b10 : 2'b01);  // wrapping transfer in case of a critical word first strategy
-        axi_req_o.ar.lock   = 1'b0;
-        axi_req_o.ar.cache  = 4'b0;
-        axi_req_o.ar.qos    = 4'b0;
-        axi_req_o.ar.id     = id_i;
 
+        axi_req_o.w         = '{
+            data: wdata_i[0],
+            strb: be_i[0],
+         // last: 1'b0,
+         // user: 1'b0,
+            default: '0
+        };
         axi_req_o.w_valid   = 1'b0;
-        axi_req_o.w.data    = wdata_i[0];
-        axi_req_o.w.strb    = be_i[0];
-        axi_req_o.w.last    = 1'b0;
 
         axi_req_o.b_ready   = 1'b0;
         axi_req_o.r_ready   = 1'b0;

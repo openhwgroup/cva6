@@ -18,7 +18,7 @@ module axi_lite_interface #(
     parameter int unsigned AXI_DATA_WIDTH = 64,
     parameter int unsigned AXI_ID_WIDTH   = 10
 ) (
-    input logic                       clk_i,    // Clock
+    input logic                       clk_i,   // Clock
     input logic                       rst_ni,  // Asynchronous reset active low
 
     input  ariane_axi::req_slv_t      axi_req_i,
@@ -38,16 +38,18 @@ module axi_lite_interface #(
     // address register
     logic [AXI_ADDR_WIDTH-1:0] address_n,  address_q;
 
-    // pass through read data on the read data channel
-    assign axi_resp_o.r.data = data_i;
-    // send back the transaction id we've latched
-    assign axi_resp_o.r.id = trans_id_q;
-    assign axi_resp_o.b.id = trans_id_q;
-    // set r_last to one as defined by the AXI4 - Lite standard
-    assign axi_resp_o.r.last = 1'b1;
-    // we do not support any errors so set response flag to all zeros
-    assign axi_resp_o.b.resp = 2'b0;
-    assign axi_resp_o.r.resp = 2'b0;
+    assign axi_resp_o.b = '{
+        id:      trans_id_q,         // send back the transaction id we've latched
+        resp:    axi_pkg::RESP_OKAY, // we do not support any errors so set response flag to all zeros
+        default: '0
+    };
+    assign axi_resp_o.r = '{
+        id:      trans_id_q,         // send back the transaction id we've latched
+        data:    data_i,             // pass through read data on the read data channel
+        last:    1'b1,               // set r_last to one as defined by the AXI4 - Lite standard
+        resp:    axi_pkg::RESP_OKAY, // we do not support any errors so set response flag to all zeros
+        default: '0
+    };
     // output data which we want to write to the slave
     assign data_o = axi_req_i.w.data;
     // ------------------------

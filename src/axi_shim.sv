@@ -18,7 +18,7 @@
  *
  */
 
-import std_cache_pkg::*;
+//import std_cache_pkg::*;
 
 module axi_shim #(
     parameter int unsigned AxiNumWords       = 4, // data width in dwords, this is also the maximum burst length, must be >=2
@@ -78,22 +78,45 @@ module axi_shim #(
 
     assign wr_single_req       = (wr_blen_i == 0);
 
-    // address
-    assign axi_req_o.aw.burst  = (wr_single_req) ? 2'b00 : 2'b01;  // fixed size for single request and incremental transfer for everything else
-    assign axi_req_o.aw.addr   = wr_addr_i;
-    assign axi_req_o.aw.size   = wr_size_i;
-    assign axi_req_o.aw.len    = wr_blen_i;
-    assign axi_req_o.aw.id     = wr_id_i;
-    assign axi_req_o.aw.prot   = 3'b0;
-    assign axi_req_o.aw.region = 4'b0;
-    assign axi_req_o.aw.lock   = wr_lock_i;
-    assign axi_req_o.aw.cache  = 4'b0;
-    assign axi_req_o.aw.qos    = 4'b0;
-    assign axi_req_o.aw.atop   = wr_atop_i;
-    // data
-    assign axi_req_o.w.data    = wr_data_i[wr_cnt_q];
-    assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
-    assign axi_req_o.w.last    = wr_cnt_done;
+    // write address (AW channel), let default handle not used AXI fields
+    assign axi_req_o.aw = '{
+        id:      wr_id_i,
+        addr:    wr_addr_i,
+        len:     wr_blen_i,
+        size:    wr_size_i,
+        burst:   axi_pkg::BURST_INCR, // (wr_single_req) ? axi_pkg::BURST_FIXED : axi_pkg::BURST_INCR, (Tempfix for `axi_size_converter`)
+        lock:    wr_lock_i,
+     // cache:   4'b0,
+     // prot:    3'b0,
+     // qos:     4'b0,
+     // region:  4'b0,
+        atop:    wr_atop_i,
+     // user:    1'b0,
+        default: '0
+    };
+    // assign axi_req_o.aw.burst  = (wr_single_req) ? 2'b00 : 2'b01;  // fixed size for single request and incremental transfer for everything else
+    // assign axi_req_o.aw.addr   = wr_addr_i;
+    // assign axi_req_o.aw.size   = wr_size_i;
+    // assign axi_req_o.aw.len    = wr_blen_i;
+    // assign axi_req_o.aw.id     = wr_id_i;
+    // assign axi_req_o.aw.prot   = 3'b0;
+    // assign axi_req_o.aw.region = 4'b0;
+    // assign axi_req_o.aw.lock   = wr_lock_i;
+    // assign axi_req_o.aw.cache  = 4'b0;
+    // assign axi_req_o.aw.qos    = 4'b0;
+    // assign axi_req_o.aw.atop   = wr_atop_i;
+
+    // write data (W channel), let default handle not used AXI fields
+    assign axi_req_o.w = '{
+        data:    wr_data_i[wr_cnt_q],
+        strb:    wr_be_i[wr_cnt_q],
+        last:    wr_cnt_done,
+     // user:    1'b0,
+        default: '0
+    };
+    // assign axi_req_o.w.data    = wr_data_i[wr_cnt_q];
+    // assign axi_req_o.w.strb    = wr_be_i[wr_cnt_q];
+    // assign axi_req_o.w.last    = wr_cnt_done;
 
     // write response
     assign wr_exokay_o         = (axi_resp_i.b.resp == axi_pkg::RESP_EXOKAY);
@@ -232,20 +255,36 @@ module axi_shim #(
 // read channel
 ///////////////////////////////////////////////////////
 
-    // address
+    // read address (AR channel), let default handle unused fields
+    assign axi_req_o.ar = '{
+        id:      rd_id_i,
+        addr:    rd_addr_i,
+        len:     rd_blen_i,
+        size:    rd_size_i,
+        burst:   axi_pkg::BURST_INCR, // (rd_blen_i == 0) ? axi_pkg::BURST_FIXED : axi_pkg::BURST_INCR, (Tempfix for `axi_size_converter`)
+        lock:    rd_lock_i,
+     // cache:   4'b0,
+     // prot:    3'b0,
+     // qos:     4'b0,
+     // region:  4'b0,
+     // user:    1'b0,
+        default: '0
+    };
+
+
     // in case of a single request or wrapping transfer we can simply begin at the address, if we want to request a cache-line
     // with an incremental transfer we need to output the corresponding base address of the cache line
-    assign axi_req_o.ar.burst  = (rd_blen_i == 0)      ? 2'b00 :
-                                                         2'b01;
-    assign axi_req_o.ar.addr   = rd_addr_i;
-    assign axi_req_o.ar.size   = rd_size_i;
-    assign axi_req_o.ar.len    = rd_blen_i;
-    assign axi_req_o.ar.id     = rd_id_i;
-    assign axi_req_o.ar.prot   = 3'b0;
-    assign axi_req_o.ar.region = 4'b0;
-    assign axi_req_o.ar.lock   = rd_lock_i;
-    assign axi_req_o.ar.cache  = 4'b0;
-    assign axi_req_o.ar.qos    = 4'b0;
+    // assign axi_req_o.ar.burst  = (rd_blen_i == 0)      ? 2'b00 :
+    //                                                      2'b01;
+    // assign axi_req_o.ar.addr   = rd_addr_i;
+    // assign axi_req_o.ar.size   = rd_size_i;
+    // assign axi_req_o.ar.len    = rd_blen_i;
+    // assign axi_req_o.ar.id     = rd_id_i;
+    // assign axi_req_o.ar.prot   = 3'b0;
+    // assign axi_req_o.ar.region = 4'b0;
+    // assign axi_req_o.ar.lock   = rd_lock_i;
+    // assign axi_req_o.ar.cache  = 4'b0;
+    // assign axi_req_o.ar.qos    = 4'b0;
 
     // make the read request
     assign axi_req_o.ar_valid  = rd_req_i;
