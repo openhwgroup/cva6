@@ -52,15 +52,15 @@ package ariane_axi;
     `AXI_TYPEDEF_REQ_T(req_t, aw_chan_t, w_chan_t, ar_chan_t)
     `AXI_TYPEDEF_RESP_T(resp_t, b_chan_t, r_chan_t)
 
-    `AXI_TYPEDEF_REQ_T(req_slv_t, aw_chan_slv_t, w_chan_t, ar_chan_slv_t )
+    `AXI_TYPEDEF_REQ_T(req_slv_t, aw_chan_slv_t, w_chan_t, ar_chan_slv_t)
     `AXI_TYPEDEF_RESP_T(resp_slv_t, b_chan_slv_t, r_chan_slv_t)
 
     // Typedef for data 32 bit AXI4-ATOP
     `AXI_TYPEDEF_W_CHAN_T(w_chan_32_t, data_32_t, strb_32_t, user_t )
     `AXI_TYPEDEF_R_CHAN_T(r_chan_32_t, data_32_t, id_slv_t, user_t )
 
-    `AXI_TYPEDEF_REQ_T(req_32_t, aw_chan_t, w_chan_t, ar_chan_t)
-    `AXI_TYPEDEF_RESP_T(resp_32_t, b_chan_t, r_chan_t)
+    `AXI_TYPEDEF_REQ_T(req_32_t, aw_chan_slv_t, w_chan_32_t, ar_chan_slv_t)
+    `AXI_TYPEDEF_RESP_T(resp_32_t, b_chan_slv_t, r_chan_32_t)
 
     // Typedef for AXI4-Lite 32 bit data
     `AXI_LITE_TYPEDEF_AW_CHAN_T(aw_chan_lite_t, addr_t)
