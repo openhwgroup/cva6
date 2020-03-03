@@ -136,9 +136,9 @@ include ../Common.mk
 
 
 # assume verilator if no target chosen
-.DEFAULT_GOAL := firmware-veri-run
+.DEFAULT_GOAL := sanity-veri-run
 
-all: clean_all firmware-veri-run
+all: clean_all sanity-veri-run dsim-sanity
 
 ###############################################################################
 # VSIM
@@ -222,6 +222,8 @@ dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
 
 # Metrics dsim simulations
 .PHONY: dsim-hello_world dsim-cv32_riscv_tests dsim-cv32_riscv_compliance_tests dsim-firmware
+
+dsim-sanity: dsim-hello_world
 
 # Runs the hello world test
 dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
@@ -319,6 +321,8 @@ endif
 
 verilate: testbench_verilator
 
+sanity-veri-run: hello-world-veri-run
+
 testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(VERILATOR) --cc --sv --exe \
 		$(VERI_TRACE) \
@@ -332,8 +336,7 @@ testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
 
-# run picorv firmware
-# in verilator
+# run picorv firmware in verilator
 .PHONY: firmware-veri-run
 firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
 	mkdir -p $(VERI_LOG_DIR)
@@ -341,7 +344,16 @@ firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
 		"+firmware=$(VERI_FIRMWARE)/firmware.hex" \
 		| tee $(VERI_LOG_DIR)/firmware-veri-run.log
 
+# run hello_world in verilator
+.PHONY: hello-world-veri-run
+hello-world-veri-run: verilate $(CUSTOM)/hello_world.hex
+	mkdir -p $(VERI_LOG_DIR)
+	./testbench_verilator $(VERI_FLAGS) \
+		"+firmware=$(VERI_CUSTOM)/hello_world.hex" \
+		| tee $(VERI_LOG_DIR)/hello-world-veri-run.log
 
+
+# verilator specific cleanup
 veri-clean: verilate-clean
 
 verilate-clean: tc-clean

@@ -10,19 +10,22 @@
 #             $HOME/GitHubRepos/<GitHub_Account>/<Repository/><Branch>
 #
 #     2. Use unique and easily recognizable names for your branches.  Suggested
-#        nominclature is: <org>_<userid>_yyyymmdd  (e.g ohw_mike_20191120)
+#        nominclatures are: <org>_<userid>_yyyymmdd    (e.g ohw_mike_20191120)
+#        or:                <org>_<userid>_issue_<num> (e.g ohw_mike_issue_239)
 #
 # Examples:
 #    /home/mike/GitHubRepos/openhwgroup/core-v-verif/master
 #    /home/mike/GitHubRepos/openhwgroup/core-v-verif/ohw_mike_20191204
-#    /home/mike/GitHubRepos/pulp-platform/ariane/master
-#    /home/mike/GitHubRepos/MikeOpenHWGroup/riscv-experimental/ohw_mike_20191122
+#    /home/mike/GitHubRepos/openhwgroup/cv32e40p/master
+#    /home/mike/GitHubRepos/MikeOpenHWGroup/core-v-docs/ohw_mike_issue_123
 
 ################################################################################
 # Clone from the head of the Repo's master branch on the command-line.
 # Note that this is _not_ a typical use-case (work on a branch instead).
-$ cd $HOME/GitHubRepos/<GitHub_Account>/<Repository>/<branch>
-$ git clone --recursive https://github.com/pulp-platform/riscv
+# Place all your working copies in easy-to-find directory:
+#    e.g. $HOME/GitHubRepos/<GitHub_Account>/<Repository>/<branch>
+$ cd $HOME/GitHubRepos/openhwgroup/cv32e40p
+$ git clone --recursive https://github.com/openhwgroup/cv32e40p
 $ gvim Makefile #...edit file(s)...
 $ git commit -m 'Added support for dsim' Makefile 
 # First time users might be asked to update their info...
@@ -31,8 +34,8 @@ $ git commit --amend --reset-author
 
 ################################################################################
 # Make a branch on the command-line and switch to it
-$ cd $HOME/GitHubRepos/pulp-platform/riscv/
-$ git clone --recursive https://github.com/pulp-platform/riscv ohw_mike_20191121
+$ cd $HOME/GitHubRepos/openhwgroup/cv32e40p
+$ git clone --recursive https://github.com/openhwgroup/cv32e40p ohw_mike_20191121
 $ git branch ohw_mike_20191121
 $ git checkout ohw_mike_20191121
      ...or...
@@ -46,8 +49,8 @@ $ git push --set-upstream origin ohw_mike_20191122
 
 ################################################################################
 # Clone directly from a branch to a directory named for that branch
-$ cd $HOME/GitHubRepos/pulp-platform/riscv/ohw_mike_20191122
-$ git clone --recursive -b ohw_mike_20191122 https://github.com/pulp-platform/riscv ohw_mike_20191122
+$ cd $HOME/GitHubRepos/openhwgroup/cv32e40p
+$ git clone --recursive -b ohw_mike_20191122 https://github.com/openhwgroup/cv32e40p ohw_mike_20191122
 
 ###############################################################################
 # Sync a branch to the master (same repo)
