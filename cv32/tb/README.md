@@ -2,13 +2,15 @@
 Derived from the
 [tb](https://github.com/pulp-platform/riscv/tree/master/tb)
 directory of the PULP-Platform RI5CY project.
-Note that some are expected to be depricated in the near future.
 
 ### core
-Modified to remove a few RTL files (placed these in the rtl directory).
+Modified to remove a few RTL files (placed these in the rtl directory). This
+testbench supports Verilator and we will do what we can to maintain Verilator
+support here.
 
 ### dm
-Unmodified.  The future of this directory is unknown.
+Unmodified.  Future plans for this are to integrate it into the uvmt_cv32
+environment, and perhaps the core testbench.
 
 ### scripts
 Unmodified.  The future of this directory is unknown.
@@ -20,19 +22,17 @@ Unmodified.  The future of this directory is unknown.
 Unmodified.  The future of this directory is unknown.
 
 ### tb_riscv
-Support models and functions for the `core` testbench.  While the future of this
-directory is unknown, at least some of this will find its way into the UVM
-environment (perhaps in a different form).   A good example of this is
-`tb_riscv/riscv_perturbation.sv`.
+Support models and functions for the `core` testbench.  While the future of
+this directory is unknown, at least some of this will find its way into the
+`uvmt_cv32` UVM environment (perhaps in a different form).   A good example
+of this is `tb_riscv/riscv_perturbation.sv`.
 
 ### uvmt_cv32
-**_New_**.  The testbench and testharness for the CV32E40\* UVM verification environments.
-This tb/th maintains support for all features of the `core` testbench.
+**_New_**.  The testbench and testharness for the CV32E40\* UVM verification
+environments.  This tb/th maintains support for all features of the `core`
+testbench. Cannot be run with Verilator.
 
 ### verilator-model
-Unmodified.  There is no reason to remove this, but keep in mind that some of
-the capabilties of the testbench in the `core` directory are not supported by
-Verilator and are `ifdef'ed` out.  Verilator does not support the UVM
-environment at all.  Given that, maintenance of Verilator is a low priority for
-this project and Issues submitted for Verilator support will be a low priorty.
-
+DO NOT USE.  The Makefile has been renamed to make it obvious that this
+directory is no longer maintained and should not be used.  There is no reason
+to remove this, but it does not provide anything that you cannot find in `core`.

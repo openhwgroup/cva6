@@ -1,6 +1,8 @@
 RI5CY Verilator Model
 =====================
 
+**Note: the contents of this directory are no longer maintained.**
+
 The Verilator model of RI5CY instantiates the RI5CY core along with a RAM. A
 testbench accompanies the model, to demonstrate the use of the Verilated model.
 
