@@ -39,16 +39,12 @@ class uvmt_cv32_base_test_c extends uvm_test;
    
    // Components
    uvme_cv32_env_c   env       ;
-   uvme_cv32_vsqr_c  vsequencer;
+   //uvme_cv32_vsqr_c  vsequencer;
    
    // Handles testbench interfaces
    virtual uvmt_cv32_clk_gen_if    clk_gen_vif;    // clocks and resets
    virtual uvmt_cv32_vp_status_if  vp_status_vif;  // virtual peripheral status
    virtual uvmt_cv32_core_cntrl_if core_cntrl_vif; // control inputs to the core
-   
-   // Knobs
-   rand int unsigned  heartbeat_period; // Specified in nanoseconds (ns)
-   rand int unsigned  watchdog_timeout; // Specified in nanoseconds (ns)
    
    // Default sequences
    //rand uvme_cv32_reset_vseq_c  reset_vseq;
@@ -58,16 +54,8 @@ class uvmt_cv32_base_test_c extends uvm_test;
       `uvm_field_object(test_cfg , UVM_DEFAULT)
       `uvm_field_object(env_cfg  , UVM_DEFAULT)
       `uvm_field_object(env_cntxt, UVM_DEFAULT)
-      
-      `uvm_field_int(heartbeat_period, UVM_DEFAULT)
-      `uvm_field_int(watchdog_timeout, UVM_DEFAULT)
    `uvm_component_utils_end
-   
-   
-   constraint timeouts_default_cons {
-      soft heartbeat_period ==    200_000; //  2 us // TODO Set default Heartbeat Monitor period for uvmt_cv32_base_test_c
-      soft watchdog_timeout == 10_000_000; // 10 ms // TODO Set default Watchdog timeout period for uvmt_cv32_base_test_c
-   }
+
    
    //constraint env_cfg_cons {
    //   env_cfg.enabled         == 1;
@@ -356,8 +344,11 @@ endfunction : randomize_test
 
 function void uvmt_cv32_base_test_c::cfg_hrtbt_monitor();
    
-   `uvml_hrtbt_set_cfg(startup_timeout , test_cfg.startup_timeout )
-   `uvml_hrtbt_set_cfg(heartbeat_period, test_cfg.heartbeat_period)
+   uvml_default_hrtbt.enabled = 0;
+   //`uvml_hrtbt_set_cfg(startup_timeout , test_cfg.startup_timeout)
+   uvml_default_hrtbt.startup_timeout = test_cfg.startup_timeout;
+   //`uvml_hrtbt_set_cfg(heartbeat_period, test_cfg.heartbeat_period)
+   uvml_default_hrtbt.startup_timeout = test_cfg.heartbeat_period;
    
 endfunction : cfg_hrtbt_monitor
 
@@ -423,8 +414,8 @@ task uvmt_cv32_base_test_c::watchdog_timer();
    
    fork
       begin
-         #(watchdog_timeout * 1ns);
-         `uvm_fatal("TIMEOUT", $sformatf("Global timeout after %0dns. Heartbeat list:\n%s", watchdog_timeout, uvml_default_hrtbt.print_comp_names()))
+         #(test_cfg.watchdog_timeout * 1ns);
+         `uvm_fatal("TIMEOUT", $sformatf("Global timeout after %0dns. Heartbeat list:\n%s", test_cfg.watchdog_timeout, uvml_default_hrtbt.print_comp_names()))
       end
    join_none
    
