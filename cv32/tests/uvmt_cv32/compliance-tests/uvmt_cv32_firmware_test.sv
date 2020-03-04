@@ -120,7 +120,8 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
           (vp_status_vif.tests_passed  == 1'b1)
         );
    repeat (100) @(posedge clk_gen_vif.core_clock);
-   `uvm_info("TEST", $sformatf("Finished RUN: exit status is %0h", uvmt_cv32_tb.evalue), UVM_NONE)
+   //TODO: exit_value will not be valid - need to add a latch in the vp_status_vif
+   `uvm_info("TEST", $sformatf("Finished RUN: exit status is %0h", vp_status_vif.exit_value), UVM_NONE)
    phase.drop_objection(this);
    
 endtask : run_phase

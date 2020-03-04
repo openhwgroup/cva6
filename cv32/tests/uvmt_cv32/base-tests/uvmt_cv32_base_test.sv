@@ -289,18 +289,51 @@ endfunction : phase_started
 
 function void uvmt_cv32_base_test_c::phase_ended(uvm_phase phase);
    
+   // Local vars for test status outputs from Virtual Peripheral in uvmt_cv32_tb.dut_wrap.mem_i
+   bit        tp;
+   bit        tf;
+   bit        evalid;
+   bit [31:0] evalue;
+
    super.phase_ended(phase);
    
    if (phase.is(uvm_final_phase::get())) begin
+     // Set sim_finished (otherwise tb will flag that sim was aborted)
      uvm_config_db#(bit)::set(null, "", "sim_finished", 1);
+
+     //
+     // Get test status outputs
+     if(!(uvm_config_db#(bit      )::get(null, "*", "tf",     tf    ))) `uvm_error("END_OF_TEST", "Cannot get tf from config_db.")
+     if(!(uvm_config_db#(bit      )::get(null, "*", "tp",     tp    ))) `uvm_error("END_OF_TEST", "Cannot get tp from config_db.")
+     if(!(uvm_config_db#(bit      )::get(null, "*", "evalid", evalid))) `uvm_error("END_OF_TEST", "Cannot get valid from config_db.")
+     if(!(uvm_config_db#(bit[31:0])::get(null, "*", "evalue", evalue))) `uvm_error("END_OF_TEST", "Cannot get evalue from config_db.")
+
      // Use the DUT Wrapper Virtual Peripheral's status outputs to update report server status.
-     // TODO: handle exit_value properly
-     if (uvmt_cv32_tb.tf)  `uvm_error("END_OF_TEST", "DUT WRAPPER virtual peripheral flagged test failure.")
-     if (!uvmt_cv32_tb.tp) `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to flag test passed.")
-     if (!uvmt_cv32_tb.evalid) begin
+     if (!tp) `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to flag test passed.")
+     if (tf)  `uvm_error  ("END_OF_TEST", "DUT WRAPPER virtual peripheral flagged test failure.")
+     if (evalid) begin
+       // TODO: handle exit_value properly
+       `uvm_info("END_OF_TEST", $sformatf("DUT WRAPPER virtual peripheral signaled exit_value=%0h.", evalue), UVM_NONE)
+     end
+     else begin
        `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to exit properly.")
      end
-      
+     //
+
+     /* This does not work because the vp_status signals are all pulses.
+     * TODO: add logic to latch pulses and used the latched values here.
+     // Use the DUT Wrapper Virtual Peripheral's status outputs to update report server status.
+     if (!vp_status_vif.tests_passed) `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to flag test passed.")
+     if (vp_status_vif.tests_failed)  `uvm_error  ("END_OF_TEST", "DUT WRAPPER virtual peripheral flagged test failure.")
+     if (vp_status_vif.exit_valid) begin
+       // TODO: handle exit_value properly
+       `uvm_info("END_OF_TEST", $sformatf("DUT WRAPPER virtual peripheral signaled exit_value=%0h.", vp_status_vif.exit_value), UVM_NONE)
+     end
+     else begin
+       `uvm_warning("END_OF_TEST", "DUT WRAPPER virtual peripheral failed to exit properly.")
+     end
+     */
+
      print_banner("test finished");
    end
    
