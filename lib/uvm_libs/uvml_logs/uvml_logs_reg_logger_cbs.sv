@@ -88,11 +88,7 @@ endclass
 
 function uvml_logs_reg_logger_cbs_c::new(string name="uvml_logs_reg_logger_cbs");
    
-<<<<<<< HEAD
    uvm_cmdline_processor  cli_proc = uvm_cmdline_processor::get_inst();
-=======
-   uvm_cmdline_processor  cli_proc;
->>>>>>> 3f88a4d93395bc9a977a691a2503368f7eda98dc
    
    super.new(name);
    

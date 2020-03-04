@@ -20,15 +20,9 @@
 `define __UVML_HRTBT_CONSTANTS_SV__
 
 
-<<<<<<< HEAD
 const int unsigned  uvml_hrtbt_default_startup_timeout  = 10_000;
 const int unsigned  uvml_hrtbt_default_heartbeat_period = 20_000;
 const int unsigned  uvml_hrtbt_default_refresh_period   =  5_000;
-=======
-const int unsigned  uvm_hrtbt_default_startup_timeout  = 10_000;
-const int unsigned  uvm_hrtbt_default_heartbeat_period = 20_000;
-const int unsigned  uvm_hrtbt_default_refresh_period   =  5_000;
->>>>>>> 3f88a4d93395bc9a977a691a2503368f7eda98dc
 
 
 `endif // __UVML_HRTBT_CONSTANTS_SV__

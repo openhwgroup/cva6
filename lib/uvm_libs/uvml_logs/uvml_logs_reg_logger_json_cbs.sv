@@ -23,11 +23,7 @@
 /**
  * Callback implementation which logs all read/write debug info to disk.
  */
-<<<<<<< HEAD
 class uvml_logs_reg_logger_json_cbs_c extends uvml_logs_reg_logger_cbs_c;
-=======
-class uvml_logs_reg_logger_json_cbs_c extends uvm_logs_reg_logger_cbs_c;
->>>>>>> 3f88a4d93395bc9a977a691a2503368f7eda98dc
    
    `uvm_object_utils(uvml_logs_reg_logger_json_cbs_c)
    

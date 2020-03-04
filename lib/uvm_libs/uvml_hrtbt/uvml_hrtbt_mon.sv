@@ -28,10 +28,7 @@
 class uvml_hrtbt_mon_c extends uvm_component;
    
    // Configuration
-<<<<<<< HEAD
    bit           enabled          = 1;
-=======
->>>>>>> 3f88a4d93395bc9a977a691a2503368f7eda98dc
    int unsigned  startup_timeout  = uvml_hrtbt_default_startup_timeout ;
    int unsigned  heartbeat_period = uvml_hrtbt_default_heartbeat_period;
    int unsigned  refresh_period   = uvml_hrtbt_default_refresh_period  ;
@@ -42,10 +39,7 @@ class uvml_hrtbt_mon_c extends uvm_component;
    
    
    `uvm_component_utils_begin(uvml_hrtbt_mon_c)
-<<<<<<< HEAD
       `uvm_field_int(enabled         , UVM_DEFAULT)
-=======
->>>>>>> 3f88a4d93395bc9a977a691a2503368f7eda98dc
       `uvm_field_int(startup_timeout , UVM_DEFAULT)
       `uvm_field_int(heartbeat_period, UVM_DEFAULT)
       `uvm_field_int(refresh_period  , UVM_DEFAULT)
@@ -116,7 +110,6 @@ endfunction : new
 task uvml_hrtbt_mon_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
-<<<<<<< HEAD
 
    if (enabled) begin
       `uvm_info("HRTBT", $sformatf("Starting heartbeat monitor with startup_timeout=%0t, heartbeat_period=%0t, refresh_period=%0t",
@@ -129,18 +122,6 @@ task uvml_hrtbt_mon_c::run_phase(uvm_phase phase);
       if (!observed_heartbeat) begin
          `uvm_fatal("HRTBT", $sformatf("Did not observe heartbeat in first %0dns", startup_timeout))
       end
-=======
-   
-   `uvm_info("HRTBT", $sformatf("Starting heartbeat monitor with startup_timeout=%0t, heartbeat_period=%0t, refresh_period=%0t",
-      startup_timeout,
-      heartbeat_period,
-      refresh_period
-   ), UVM_NONE)
-   
-   #(startup_timeout * 1ns);
-   if (!observed_heartbeat) begin
-      `uvm_fatal("HRTBT", $sformatf("Did not observe heartbeat in first %0t ns", startup_timeout))
->>>>>>> 3f88a4d93395bc9a977a691a2503368f7eda98dc
    end
    
 endtask : run_phase
@@ -242,7 +223,6 @@ task uvml_hrtbt_mon_c::post_shutdown_phase(uvm_phase phase);
 endtask : post_shutdown_phase
 
 
-<<<<<<< HEAD
 task uvml_hrtbt_mon_c::phase_loop(uvm_phase phase);
 
    if (enabled) begin
@@ -251,14 +231,6 @@ task uvml_hrtbt_mon_c::phase_loop(uvm_phase phase);
       eval_heartbeat();
       phase.drop_objection(this);
    end
-=======
-task uvml_hrtbt_mon_c::phase_loop();
-   
-   reset();
-   phase.raise_objection(this);
-   eval_heartbeat();
-   phase.drop_objection(this);
->>>>>>> 3f88a4d93395bc9a977a691a2503368f7eda98dc
    
 endtask : phase_loop
 
