@@ -346,9 +346,9 @@ function void uvmt_cv32_base_test_c::cfg_hrtbt_monitor();
    
    uvml_default_hrtbt.enabled = 0;
    //`uvml_hrtbt_set_cfg(startup_timeout , test_cfg.startup_timeout)
-   uvml_default_hrtbt.startup_timeout = test_cfg.startup_timeout;
+   uvml_default_hrtbt.startup_timeout = test_cfg.startup_timeout; // TODO DOP: Fix heartbeat macros
    //`uvml_hrtbt_set_cfg(heartbeat_period, test_cfg.heartbeat_period)
-   uvml_default_hrtbt.startup_timeout = test_cfg.heartbeat_period;
+   uvml_default_hrtbt.startup_timeout = test_cfg.heartbeat_period; // TODO DOP: Fix heartbeat macros
    
 endfunction : cfg_hrtbt_monitor
 
