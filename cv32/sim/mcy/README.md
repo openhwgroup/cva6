@@ -14,8 +14,8 @@ Current Status / Issues / Points of relevance:
 - The verilator testbench currently contains some failing tests as well as a
 fatal error. This should be fixed, but right now `test_sim` just suppresses the
 return value and checks for the magic number of errors.
-- A timeout facility needs to be added to either the testbench or `test_sim.sh`
-because it seems that a mutation can occasionally create a deadlock.
+- A timeout facility was added to `test_sim.sh` because mutations can cause
+deadlock (e.g. illegal instruction loop).
 - A large amount of the runtime is currently spent re-compiling the verilator
 testbench with each mutated module. This can be spared by surfacing the `mutsel`
 input as a command line argument to the testbench.

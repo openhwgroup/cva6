@@ -14,8 +14,8 @@ set -ex
 yosys -ql mutate.log mutate.ys
 
 make -f ../../Makefile verilate
-make -f ../../Makefile firmware-build
-./testbench_verilator +firmware=firmware.hex > sim.out || true
+make -f ../../Makefile firmware.hex
+timeout 1m ./testbench_verilator +firmware=firmware.hex > sim.out || true
 NERR=`grep -c "ERROR" sim.out`
 
 if [[ "$NERR" -eq 2 ]]
