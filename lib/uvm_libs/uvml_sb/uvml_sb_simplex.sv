@@ -29,8 +29,13 @@ class uvml_sb_simplex_c#(
 ) extends uvm_scoreboard;
    
    // Objects
+<<<<<<< HEAD
    uvml_sb_cfg_c  cfg;
    T_CNTXT        cntxt;
+=======
+   uvm_sb_cfg_c  cfg;
+   T_CNTXT       cntxt;
+>>>>>>> 3f88a4d93395bc9a977a691a2503368f7eda98dc
    
    // TLM
    uvm_analysis_export  #(T_TRN)  act_export;
@@ -144,7 +149,11 @@ function void uvml_sb_simplex_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
    
+<<<<<<< HEAD
    void'(uvm_config_db#(uvml_sb_cfg_c)::get(this, "", "cfg", cfg));
+=======
+   void'(uvm_config_db#(uvm_sb_cfg_c)::get(this, "", "cfg", cfg));
+>>>>>>> 3f88a4d93395bc9a977a691a2503368f7eda98dc
    if (!cfg) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
