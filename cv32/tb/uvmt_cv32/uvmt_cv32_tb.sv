@@ -35,10 +35,10 @@ module uvmt_cv32_tb;
    uvme_cv32_cntxt_c  top_env_cntxt;
 
    // Capture regs for test status from Virtual Peripheral in dut_wrap.mem_i
-   reg        tp;
-   reg        tf;
-   reg        evalid;
-   reg [31:0] evalue;
+   bit        tp;
+   bit        tf;
+   bit        evalid;
+   bit [31:0] evalue;
 
    // DUT Wrapper Interfaces
    uvmt_cv32_clk_gen_if         clk_gen_if();         // Clock & Reset
@@ -88,7 +88,11 @@ module uvmt_cv32_tb;
      uvm_config_db#(virtual uvmt_cv32_core_cntrl_if     )::set(null, "*", "core_cntrl_vif",      core_cntrl_if);
      uvm_config_db#(virtual uvmt_cv32_core_status_if    )::set(null, "*", "core_status_vif",     core_status_if);
      uvm_config_db#(virtual uvmt_cv32_core_interrupts_if)::set(null, "*", "core_interrupts_vif", core_interrupts_if);
-     //uvm_config_db#(mm_ram)::set("uvmt_cv32_tb.dut_wrap.*", "ram_i", "ram_i",          ram_i);
+     // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
+     uvm_config_db#(bit      )::set(null, "*", "tf",     1'b0);
+     uvm_config_db#(bit      )::set(null, "*", "tp",     1'b0);
+     uvm_config_db#(bit      )::set(null, "*", "evalid", 1'b0);
+     uvm_config_db#(bit[31:0])::set(null, "*", "evalue", 32'h00000000);
       
      // Run test
      uvm_top.enable_print_topology = 1;
@@ -97,6 +101,7 @@ module uvmt_cv32_tb;
    end : test_bench_entry_point
    
    // Capture the test status and exit pulse flags
+   // TODO: put this logic in the vp_status_if (makes it easier to pass to ENV)
    always @(posedge clk_gen_if.core_clock) begin
      if (!clk_gen_if.core_reset_n) begin
        tp     <= 1'b0;
@@ -105,10 +110,22 @@ module uvmt_cv32_tb;
        evalue <= 32'h00000000;
      end
      else begin
-      if (vp_status_if.tests_failed) tf     <= 1'b1;
-      if (vp_status_if.tests_passed) tp     <= 1'b1;
-      if (vp_status_if.exit_valid)   evalid <= 1'b1;
-      if (vp_status_if.exit_valid)   evalue <= vp_status_if.exit_value;
+       if (vp_status_if.tests_passed) begin
+         tp <= 1'b1;
+         uvm_config_db#(bit)::set(null, "*", "tp", 1'b1);
+       end
+       if (vp_status_if.tests_failed) begin
+         tf <= 1'b1;
+         uvm_config_db#(bit)::set(null, "*", "tf", 1'b1);
+       end
+       if (vp_status_if.exit_valid) begin
+         evalid <= 1'b1;
+         uvm_config_db#(bit)::set(null, "*", "evalid", 1'b1);
+       end
+       if (vp_status_if.exit_valid) begin
+         evalue <= vp_status_if.exit_value;
+         uvm_config_db#(bit[31:0])::set(null, "*", "evalue", evalue);
+       end
      end
    end
    
