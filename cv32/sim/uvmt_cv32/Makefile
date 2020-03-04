@@ -61,22 +61,24 @@ DSIM_IMAGE              = dsim.out
 # UVM Environment
 export DV_UVMT_CV32_PATH = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
 export DV_UVME_CV32_PATH = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
-DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
+export TBSRC_HOME        = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
+#DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # Testcase name: must be the CLASS name of the testcase (not the filename).
 # Look in ../../tests/uvmt_cv32.
 UVM_TESTNAME ?= uvmt_cv32_smoke_test_c
 
 # TB source files for the CV32E core
-TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
-TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
-TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
-               $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
-               $(TBSRC_HOME)/core/mm_ram.sv \
-               $(TBSRC_HOME)/core/dp_ram.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
-SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
+# TODO: this was all moved to flist - delete these!
+#TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
+#TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
+#TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
+#               $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
+#               $(TBSRC_HOME)/core/mm_ram.sv \
+#               $(TBSRC_HOME)/core/dp_ram.sv \
+#               $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
+#               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
+#SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 
 # RTL source files for the CV32E core
 # DESIGN_RTL_DIR is used by CV32E40P_MANIFEST file
@@ -137,7 +139,6 @@ dsim-comp: mk_results $(CV32E40P_PKG)
 		+incdir+$(DV_UVME_CV32_PATH) \
 		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
 		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
-		$(TBSRC_PKG) $(TBSRC) \
 		-f $(CV32E40P_MANIFEST) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
