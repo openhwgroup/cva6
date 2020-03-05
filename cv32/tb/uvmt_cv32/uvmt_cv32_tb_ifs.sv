@@ -101,15 +101,16 @@ interface uvmt_cv32_core_cntrl_if (
                                     output logic       fetch_en,
                                     output logic       fregfile_disable,
                                     output logic       ext_perf_counters,
-                                    input  logic       core_busy,
                                     // quasi static values
                                     output logic       clock_en,
                                     output logic       test_en,
                                     output logic [7:0] boot_addr,
                                     output logic [3:0] core_id,
                                     output logic [5:0] cluster_id,
-                                    // no idea what to do with this...
-                                    output logic       debug_req
+                                    // To be driven by future debug module (DM)
+                                    output logic       debug_req,
+                                    // Testcase asserts this to load memory (not really a core control signal)
+                                    output logic       load_instr_mem
                                   );
 
   import uvm_pkg::*;

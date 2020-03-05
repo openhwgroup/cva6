@@ -38,9 +38,17 @@
 //+incdir+${DV_UVMT_CV32_PATH}/../../tests/uvmt_cv32/vseq
 
 // CV32 tests (includes constants/macros/types meant for test bench)
++incdir+${TBSRC_HOME}
 ${DV_UVMT_CV32_PATH}/uvmt_cv32_pkg.sv
 
 // CV32 test bench files
-//${DV_UVMT_CV32_PATH}/uvmt_cv32_dut_wrap.sv
+${DV_UVMT_CV32_PATH}/uvmt_cv32_dut_wrap.sv
 //${DV_UVMT_CV32_PATH}/uvmt_cv32_dut_chk.sv
-//${DV_UVMT_CV32_PATH}/uvmt_cv32_tb.sv
+${DV_UVMT_CV32_PATH}/uvmt_cv32_tb.sv
+${TBSRC_HOME}/tb_riscv/include/perturbation_defines.sv
+${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_tb.sv
+${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_dut_wrap.sv
+${TBSRC_HOME}/core/mm_ram.sv
+${TBSRC_HOME}/core/dp_ram.sv
+${TBSRC_HOME}/tb_riscv/riscv_random_stall.sv
+${TBSRC_HOME}/tb_riscv/riscv_random_interrupt_generator.sv

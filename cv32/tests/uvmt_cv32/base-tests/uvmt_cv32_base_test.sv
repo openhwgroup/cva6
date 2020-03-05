@@ -303,8 +303,8 @@ function void uvmt_cv32_base_test_c::phase_ended(uvm_phase phase);
 
      //
      // Get test status outputs
-     if(!(uvm_config_db#(bit      )::get(null, "*", "tf",     tf    ))) `uvm_error("END_OF_TEST", "Cannot get tf from config_db.")
      if(!(uvm_config_db#(bit      )::get(null, "*", "tp",     tp    ))) `uvm_error("END_OF_TEST", "Cannot get tp from config_db.")
+     if(!(uvm_config_db#(bit      )::get(null, "*", "tf",     tf    ))) `uvm_error("END_OF_TEST", "Cannot get tf from config_db.")
      if(!(uvm_config_db#(bit      )::get(null, "*", "evalid", evalid))) `uvm_error("END_OF_TEST", "Cannot get valid from config_db.")
      if(!(uvm_config_db#(bit[31:0])::get(null, "*", "evalue", evalue))) `uvm_error("END_OF_TEST", "Cannot get evalue from config_db.")
 

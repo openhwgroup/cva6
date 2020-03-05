@@ -79,20 +79,20 @@ module uvmt_cv32_tb;
      top_env_config.is_active = UVM_PASSIVE;
 
      // Add environment configuration and context to uvm_config_db
-     uvm_config_db #(uvme_cv32_cfg_c  )::set(null, "*", "config", top_env_config);
-     uvm_config_db #(uvme_cv32_cntxt_c)::set(null, "*", "cntxt",  top_env_cntxt);
+     uvm_config_db #(uvme_cv32_cfg_c  )::set(.cntxt(null), .inst_name("*"), .field_name("config"), .value(top_env_config));
+     uvm_config_db #(uvme_cv32_cntxt_c)::set(.cntxt(null), .inst_name("*"), .field_name("cntxt"),  .value(top_env_cntxt) );
       
      // Add interfaces handles to uvm_config_db
-     uvm_config_db#(virtual uvmt_cv32_clk_gen_if        )::set(null, "*", "clk_gen_vif",         clk_gen_if);
-     uvm_config_db#(virtual uvmt_cv32_vp_status_if      )::set(null, "*", "vp_status_vif",       vp_status_if);
-     uvm_config_db#(virtual uvmt_cv32_core_cntrl_if     )::set(null, "*", "core_cntrl_vif",      core_cntrl_if);
-     uvm_config_db#(virtual uvmt_cv32_core_status_if    )::set(null, "*", "core_status_vif",     core_status_if);
-     uvm_config_db#(virtual uvmt_cv32_core_interrupts_if)::set(null, "*", "core_interrupts_vif", core_interrupts_if);
+     uvm_config_db#(virtual uvmt_cv32_clk_gen_if        )::set(.cntxt(null), .inst_name("*"), .field_name("clk_gen_vif"),         .value(clk_gen_if)        );
+     uvm_config_db#(virtual uvmt_cv32_vp_status_if      )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
+     uvm_config_db#(virtual uvmt_cv32_core_cntrl_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );
+     uvm_config_db#(virtual uvmt_cv32_core_status_if    )::set(.cntxt(null), .inst_name("*"), .field_name("core_status_vif"),     .value(core_status_if)    );
+     uvm_config_db#(virtual uvmt_cv32_core_interrupts_if)::set(.cntxt(null), .inst_name("*"), .field_name("core_interrupts_vif"), .value(core_interrupts_if));
      // Make the DUT Wrapper Virtual Peripheral's status outputs available to the base_test
-     uvm_config_db#(bit      )::set(null, "*", "tf",     1'b0);
-     uvm_config_db#(bit      )::set(null, "*", "tp",     1'b0);
-     uvm_config_db#(bit      )::set(null, "*", "evalid", 1'b0);
-     uvm_config_db#(bit[31:0])::set(null, "*", "evalue", 32'h00000000);
+     uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tp"),     .value(1'b0)        );
+     uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("tf"),     .value(1'b0)        );
+     uvm_config_db#(bit      )::set(.cntxt(null), .inst_name("*"), .field_name("evalid"), .value(1'b0)        );
+     uvm_config_db#(bit[31:0])::set(.cntxt(null), .inst_name("*"), .field_name("evalue"), .value(32'h00000000));
       
      // Run test
      uvm_top.enable_print_topology = 1;
@@ -112,19 +112,19 @@ module uvmt_cv32_tb;
      else begin
        if (vp_status_if.tests_passed) begin
          tp <= 1'b1;
-         uvm_config_db#(bit)::set(null, "*", "tp", 1'b1);
+         uvm_config_db#(bit)::set(.cntxt(null), .inst_name("*"), .field_name("tp"), .value(1'b1));
        end
        if (vp_status_if.tests_failed) begin
          tf <= 1'b1;
-         uvm_config_db#(bit)::set(null, "*", "tf", 1'b1);
+         uvm_config_db#(bit)::set(.cntxt(null), .inst_name("*"), .field_name("tf"), .value(1'b1));
        end
        if (vp_status_if.exit_valid) begin
          evalid <= 1'b1;
-         uvm_config_db#(bit)::set(null, "*", "evalid", 1'b1);
+         uvm_config_db#(bit)::set(.cntxt(null), .inst_name("*"), .field_name("evalid"), .value(1'b1));
        end
        if (vp_status_if.exit_valid) begin
          evalue <= vp_status_if.exit_value;
-         uvm_config_db#(bit[31:0])::set(null, "*", "evalue", evalue);
+         uvm_config_db#(bit[31:0])::set(.cntxt(null), .inst_name("*"), .field_name("evalue"), .value(evalue));
        end
      end
    end
