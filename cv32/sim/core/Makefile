@@ -206,7 +206,8 @@ dsim-comp: mk_results $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
 	cd $(DSIM_RESULTS) && $(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
-		$(TBSRC_PKG) $(TBSRC) \
+		$(TBSRC_PKG) \
+		$(TBSRC) \
 		-f $(CV32E40P_MANIFEST) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
@@ -389,7 +390,7 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: tb-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean
+clean: tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work

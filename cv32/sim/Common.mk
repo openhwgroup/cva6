@@ -94,7 +94,7 @@ endif
 # Makefile first developed for the PULP-Platform RI5CY testbench.
 #
 # riscv toolchain install path
-RISCV                   = /opt/riscv
+RISCV                   ?= /opt/riscv
 RISCV_EXE_PREFIX         = $(RISCV)/bin/riscv32-unknown-elf-
 
 # CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
@@ -108,6 +108,7 @@ CORE_TEST_DIR                        = $(PROJ_ROOT_DIR)/cv32/tests/core
 FIRMWARE                             = $(CORE_TEST_DIR)/firmware
 VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
+VERI_CUSTOM                          = ../../tests/core/custom
 CV32_RISCV_TESTS_FIRMWARE            = $(CORE_TEST_DIR)/cv32_riscv_tests_firmware
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = $(CORE_TEST_DIR)/cv32_riscv_compliance_tests_firmware
 RISCV_TESTS                          = $(CORE_TEST_DIR)/riscv_tests

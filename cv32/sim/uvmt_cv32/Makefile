@@ -116,13 +116,13 @@ DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 UVM_TESTNAME ?= uvmt_cv32_smoke_test_c
 
 # TB source files for the CV32E core
-#TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
+TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 export TBSRC_HOME  = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
 TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
 TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
                $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
-	       $(TBSRC_HOME)/core/tb_top.sv \
+               $(TBSRC_HOME)/core/tb_top.sv \
                $(TBSRC_HOME)/core/riscv_wrapper.sv \
                $(TBSRC_HOME)/core/mm_ram.sv \
                $(TBSRC_HOME)/core/dp_ram.sv \
@@ -196,7 +196,6 @@ dsim-comp: mk_results $(CV32E40P_PKG)
 		+incdir+$(DV_UVME_CV32_PATH) \
 		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
 		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
-		$(TBSRC_PKG) $(TBSRC) \
 		-f $(CV32E40P_MANIFEST) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
