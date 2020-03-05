@@ -23,6 +23,11 @@
  */
 class uvmt_cv32_test_cfg_c extends uvm_object;
    
+   // Knobs
+   rand int unsigned  startup_timeout ; // Specified in nanoseconds (ns)
+   rand int unsigned  heartbeat_period; // Specified in nanoseconds (ns)
+   rand int unsigned  watchdog_timeout; // Specified in nanoseconds (ns)
+   
    // Command line arguments for controlling RAL
    // (note: its not clear if this ENV will use the RAL)
    string cli_block_name_str      = "BLKNM";
@@ -39,9 +44,19 @@ class uvmt_cv32_test_cfg_c extends uvm_object;
    bit    run_riscv_gcc_toolchain = 0;
    
    `uvm_object_utils_begin(uvmt_cv32_test_cfg_c)
+      `uvm_field_int(heartbeat_period, UVM_DEFAULT)
+      `uvm_field_int(watchdog_timeout, UVM_DEFAULT)
+      
       //`uvm_field_object(cli_selected_block, UVM_DEFAULT)
       `uvm_field_int(run_riscv_gcc_toolchain, UVM_DEFAULT)
    `uvm_object_utils_end
+   
+   
+   constraint timeouts_default_cons {
+      soft startup_timeout  == 100_000_000; // Set to be huge for now so that sim can finish
+      soft heartbeat_period ==    200_000; //  2 us // TODO Set default Heartbeat Monitor period for uvmt_cv32_base_test_c
+      soft watchdog_timeout == 100_000_000; // 10 ms // TODO Set default Watchdog timeout period for uvmt_cv32_base_test_c
+   }
    
    
    /**

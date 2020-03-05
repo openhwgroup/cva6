@@ -1,7 +1,8 @@
+// 
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // 
-// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+// Licensed under the Solderpad Hardware License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
@@ -12,6 +13,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// 
 
 
 `ifndef __UVML_HRTBT_PKG_SV__
@@ -24,7 +26,7 @@
 
 
 /**
- * Encapsulates all the types needed for Heartbeat library.
+ * Encapsulates all the types needed for Heartbeat Monitor library.
  */
 package uvml_hrtbt_pkg;
    
@@ -33,6 +35,12 @@ package uvml_hrtbt_pkg;
    // Constants / Structs / Enums
    `include "uvml_hrtbt_constants.sv"
    `include "uvml_hrtbt_tdefs.sv"
+   
+   // Components
+   `include "uvml_hrtbt_mon.sv"
+   
+   // Default heartbeat monitor
+   uvml_hrtbt_mon_c  uvml_default_hrtbt = new("uvml_default_hrtbt");
    
 endpackage : uvml_hrtbt_pkg
 

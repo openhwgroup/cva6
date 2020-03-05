@@ -33,9 +33,9 @@ class uvmt_cv32_base_test_c extends uvm_test;
    rand uvmt_cv32_test_cfg_c  test_cfg ;
    rand uvme_cv32_cfg_c       env_cfg  ;
    uvme_cv32_cntxt_c          env_cntxt;
-   //uvml_logs_rs_text_c        rs       ;
+   uvml_logs_rs_text_c        rs       ;
    //uvme_cv32_ral_c            ral      ;
-   //uvml_logs_reg_logger_cbs_c reg_cbs  ;
+   uvml_logs_reg_logger_cbs_c reg_cbs  ;
    
    // Components
    uvme_cv32_env_c   env       ;
@@ -46,10 +46,6 @@ class uvmt_cv32_base_test_c extends uvm_test;
    virtual uvmt_cv32_vp_status_if  vp_status_vif;  // virtual peripheral status
    virtual uvmt_cv32_core_cntrl_if core_cntrl_vif; // control inputs to the core
    
-   // Knobs
-   rand int unsigned  heartbeat_period; // Specified in nanoseconds (ns)
-   rand int unsigned  watchdog_timeout; // Specified in nanoseconds (ns)
-   
    // Default sequences
    //rand uvme_cv32_reset_vseq_c  reset_vseq;
    
@@ -58,16 +54,8 @@ class uvmt_cv32_base_test_c extends uvm_test;
       `uvm_field_object(test_cfg , UVM_DEFAULT)
       `uvm_field_object(env_cfg  , UVM_DEFAULT)
       `uvm_field_object(env_cntxt, UVM_DEFAULT)
-      
-      `uvm_field_int(heartbeat_period, UVM_DEFAULT)
-      `uvm_field_int(watchdog_timeout, UVM_DEFAULT)
    `uvm_component_utils_end
-   
-   
-   constraint timeouts_default_cons {
-      soft heartbeat_period ==    200_000; //  2 us // TODO Set default Heartbeat Monitor period for uvmt_cv32_base_test_c
-      soft watchdog_timeout == 10_000_000; // 10 ms // TODO Set default Watchdog timeout period for uvmt_cv32_base_test_c
-   }
+
    
    //constraint env_cfg_cons {
    //   env_cfg.enabled         == 1;
@@ -200,8 +188,8 @@ function uvmt_cv32_base_test_c::new(string name="uvmt_cv32_base_test", uvm_compo
    
    super.new(name, parent);
    
-   //rs = new("rs");
-   //uvm_report_server::set_server(rs);
+   rs = new("rs");
+   uvm_report_server::set_server(rs);
    //reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
    
 endfunction : new
@@ -214,7 +202,7 @@ function void uvmt_cv32_base_test_c::build_phase(uvm_phase phase);
    retrieve_clk_gen_vif();
    create_cfg          ();
    randomize_test      ();
-   //cfg_hrtbt_monitor   ();
+   cfg_hrtbt_monitor   ();
    assign_cfg          ();
    create_cntxt        ();
    assign_cntxt        ();
@@ -356,8 +344,11 @@ endfunction : randomize_test
 
 function void uvmt_cv32_base_test_c::cfg_hrtbt_monitor();
    
-   //`uvml_hrtbt_set_cfg(startup_timeout , 10_000)
-   //`uvml_hrtbt_set_cfg(heartbeat_period, heartbeat_period)
+   uvml_default_hrtbt.enabled = 0;
+   //`uvml_hrtbt_set_cfg(startup_timeout , test_cfg.startup_timeout)
+   uvml_default_hrtbt.startup_timeout = test_cfg.startup_timeout; // TODO DOP: Fix heartbeat macros
+   //`uvml_hrtbt_set_cfg(heartbeat_period, test_cfg.heartbeat_period)
+   uvml_default_hrtbt.startup_timeout = test_cfg.heartbeat_period; // TODO DOP: Fix heartbeat macros
    
 endfunction : cfg_hrtbt_monitor
 
@@ -392,7 +383,7 @@ endfunction : create_env
 
 function void uvmt_cv32_base_test_c::create_components();
    
-   //reg_cbs = uvml_logs_reg_logger_cbs_c::type_id::create("reg_cbs");
+   reg_cbs = uvml_logs_reg_logger_cbs_c::type_id::create("reg_cbs");
    
 endfunction : create_components
 
@@ -423,9 +414,8 @@ task uvmt_cv32_base_test_c::watchdog_timer();
    
    fork
       begin
-         #(watchdog_timeout * 1ns);
-         //`uvm_fatal("TIMEOUT", $sformatf("Global timeout after %0dns. Heartbeat list:\n%s", watchdog_timeout, uvml_default_hrtbt.print_comp_names()))
-         `uvm_fatal("TIMEOUT", $sformatf("Global timeout after %0dns.\n", watchdog_timeout))
+         #(test_cfg.watchdog_timeout * 1ns);
+         `uvm_fatal("TIMEOUT", $sformatf("Global timeout after %0dns. Heartbeat list:\n%s", test_cfg.watchdog_timeout, uvml_default_hrtbt.print_comp_names()))
       end
    join_none
    
