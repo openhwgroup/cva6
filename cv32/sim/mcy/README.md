@@ -23,3 +23,6 @@ input as a command line argument to the testbench.
 it could be cleverer.
 - A separate MCY project will have to be set up for each module/mutation unit,
 so subdirectories should be introduced.
+- It is almost possible to use the Makefile in `sim/core/` unmodified, by just
+overriding the location of the manifest file. The main impediment is the import
+of Common.mk by a relative path

@@ -13,8 +13,12 @@ set -ex
 
 yosys -ql mutate.log mutate.ys
 
-make -f ../../Makefile verilate
-make -f ../../Makefile firmware.hex
+FW_DIR=$PWD/../../../../../cv32/tests/core/firmware
+MAKEFLAGS="CV32E40P_MANIFEST=$PWD/../../cv32e40p_manifest.flist PROJ_ROOT_DIR=$PWD/../../../../.."
+MAKEFILE=../../Makefile
+make -f $MAKEFILE $MAKEFLAGS verilate
+make -f $MAKEFILE $MAKEFLAGS $FW_DIR/firmware.hex
+cp $FW_DIR/firmware.hex firmware.hex
 timeout 1m ./testbench_verilator +firmware=firmware.hex > sim.out || true
 NERR=`grep -c "ERROR" sim.out`
 

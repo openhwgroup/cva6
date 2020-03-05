@@ -1,0 +1,59 @@
+///////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2020 OpenHW Group
+//
+// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://solderpad.org/licenses/
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+///////////////////////////////////////////////////////////////////////////////
+//
+// Manifest for the CV32E40P RTL model.
+//   - Intended to be used by both synthesis and simulation.
+//   - Relevent synthesis and simulation scripts/Makefiles must set the shell
+//     ENV variable DESIGN_RTL_DIR as required.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+//`define SYNTHESIS
+
++incdir+${DESIGN_RTL_DIR}/include
+
+${DESIGN_RTL_DIR}/include/apu_core_package.sv
+${DESIGN_RTL_DIR}/fpnew/src/fpnew_pkg.sv
+${DESIGN_RTL_DIR}/include/riscv_defines.sv
+${DESIGN_RTL_DIR}/include/riscv_tracer_defines.sv
+${DESIGN_RTL_DIR}/riscv_if_stage.sv
+${DESIGN_RTL_DIR}/riscv_tracer.sv
+${DESIGN_RTL_DIR}/cv32e40p_sim_clock_gating.sv
+${DESIGN_RTL_DIR}/riscv_cs_registers.sv
+${DESIGN_RTL_DIR}/riscv_register_file.sv
+${DESIGN_RTL_DIR}/riscv_load_store_unit.sv
+${DESIGN_RTL_DIR}/riscv_id_stage.sv
+${DESIGN_RTL_DIR}/riscv_decoder.sv
+${DESIGN_RTL_DIR}/riscv_compressed_decoder.sv
+${DESIGN_RTL_DIR}/riscv_fetch_fifo.sv
+${DESIGN_RTL_DIR}/riscv_prefetch_buffer.sv
+${DESIGN_RTL_DIR}/riscv_prefetch_L0_buffer.sv
+${DESIGN_RTL_DIR}/riscv_L0_buffer.sv
+${DESIGN_RTL_DIR}/riscv_hwloop_regs.sv
+${DESIGN_RTL_DIR}/riscv_hwloop_controller.sv
+${DESIGN_RTL_DIR}/riscv_mult.sv
+${DESIGN_RTL_DIR}/register_file_test_wrap.sv
+${DESIGN_RTL_DIR}/riscv_int_controller.sv
+${DESIGN_RTL_DIR}/riscv_ex_stage.sv
+//${DESIGN_RTL_DIR}/riscv_alu_div.sv
+${DESIGN_RTL_DIR}/riscv_alu.sv
+${DESIGN_RTL_DIR}/riscv_pmp.sv
+${DESIGN_RTL_DIR}/riscv_apu_disp.sv
+${DESIGN_RTL_DIR}/riscv_controller.sv
+${DESIGN_RTL_DIR}/riscv_core.sv
+mutated.sv

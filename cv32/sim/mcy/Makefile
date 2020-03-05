@@ -21,7 +21,7 @@
 #
 ###############################################################################
 #
-# Copyright 2019 Clifford Wolf
+# Copyright 2019 Claire Wolf
 # Copyright 2019 Robert Balas
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -43,7 +43,7 @@
 MAKE          = make
 WAVES         = 0
 COREV_PROJ    = cv32
-PROJ_ROOT_DIR = $(PWD)/../../../../..
+PROJ_ROOT_DIR = $(PWD)/../../..
 
 # Compile compile flags for all simulators
 SV_CMP_FLAGS =
@@ -124,7 +124,7 @@ SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 # DESIGN_RTL_DIR is used by CV32E40P_MANIFEST file
 CV32E40P_PKG         := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
 FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
-CV32E40P_MANIFEST    := $(PROJ_ROOT_DIR)/cv32/sim/mcy/cv32e40p_manifest.flist
+CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
 export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 
 
@@ -132,7 +132,7 @@ export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 # Common Makefile:
 #    - Core Firmware and the RISCV GCC Toolchain (SDK)
 #    - Variables for RTL dependencies
-include ../../../Common.mk
+include $(PROJ_ROOT_DIR)/cv32/sim/Common.mk
 
 
 # assume verilator if no target chosen
@@ -336,26 +336,20 @@ testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
 
-firmware.hex: $(FIRMWARE)/firmware.hex
-	cp $< $@
-
-hello_world.hex: $(CUSTOM)/hello_world.hex
-	cp $< $@
-
 # run picorv firmware in verilator
 .PHONY: firmware-veri-run
-firmware-veri-run: verilate firmware.hex
+firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=firmware.hex" \
+		"+firmware=$(VERI_FIRMWARE)/firmware.hex" \
 		| tee $(VERI_LOG_DIR)/firmware-veri-run.log
 
 # run hello_world in verilator
 .PHONY: hello-world-veri-run
-hello-world-veri-run: verilate hello_world.hex
+hello-world-veri-run: verilate $(CUSTOM)/hello_world.hex
 	mkdir -p $(VERI_LOG_DIR)
 	./testbench_verilator $(VERI_FLAGS) \
-		"+firmware=hello_world.hex" \
+		"+firmware=$(VERI_CUSTOM)/hello_world.hex" \
 		| tee $(VERI_LOG_DIR)/hello-world-veri-run.log
 
 
