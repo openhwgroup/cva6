@@ -43,6 +43,3 @@
 [submodule "src/rv_plic"]
 	path = src/rv_plic
 	url = https://github.com/pulp-platform/rv_plic.git
-[submodule "fpga/src/apb_timer"]
-	path = fpga/src/apb_timer
-	url = https://github.com/pulp-platform/apb_timer.git
