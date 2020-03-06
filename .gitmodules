@@ -13,9 +13,6 @@
 [submodule "src/fpu"]
 	path = src/fpu
 	url = https://github.com/pulp-platform/fpnew.git
-[submodule "src/axi_riscv_atomics"]
-	path = src/axi_riscv_atomics
-	url = https://github.com/pulp-platform/axi_riscv_atomics.git
 [submodule "src/riscv-dbg"]
 	path = src/riscv-dbg
 	url = https://github.com/pulp-platform/riscv-dbg.git
