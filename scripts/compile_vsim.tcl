@@ -3,6 +3,7 @@ set ROOT [file normalize [file dirname [info script]]/..]
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -22,6 +23,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -37,6 +39,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -56,6 +59,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -111,6 +115,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -124,6 +129,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -146,6 +152,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -171,6 +178,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -209,6 +217,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -222,6 +231,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -246,6 +256,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -266,6 +277,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -295,6 +307,7 @@ vcom -2008 \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -311,6 +324,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -330,6 +344,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -354,6 +369,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -370,6 +386,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -383,6 +400,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -404,6 +422,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -494,6 +513,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -509,11 +529,26 @@ vlog -incr -sv \
     "$ROOT/tb/common/SimDTM.sv" \
     "$ROOT/tb/common/SimJTAG.sv" \
     "$ROOT/tb/common/mock_uart.sv" \
-    "$ROOT/tb/ariane_testharness.sv" \
+    "$ROOT/tb/ariane_testharness.sv"
+
+vlog -incr -sv \
+    +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
+    +define+TARGET_RTL \
+    +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
+    +define+TARGET_TEST \
+    +define+TARGET_VSIM \
+    +define+WT_DCACHE=1 \
+    "+incdir+$ROOT/deps/common_cells/include" \
+    "+incdir+$ROOT/deps/axi/include" \
+    "+incdir+$ROOT/include" \
+    "+incdir+$ROOT/src/util" \
     "$ROOT/tb/ariane_tb.sv"
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
@@ -528,6 +563,7 @@ vlog -incr -sv \
 
 vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_ARIANE_TEST \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
     +define+TARGET_SPIKE \
