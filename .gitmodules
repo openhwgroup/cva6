@@ -28,9 +28,6 @@
 [submodule "src/fpu"]
 	path = src/fpu
 	url = https://github.com/pulp-platform/fpnew.git
-[submodule "fpga/src/ariane-ethernet"]
-	path = fpga/src/ariane-ethernet
-	url = https://github.com/lowRISC/ariane-ethernet.git
 [submodule "src/axi_riscv_atomics"]
 	path = src/axi_riscv_atomics
 	url = https://github.com/pulp-platform/axi_riscv_atomics.git
