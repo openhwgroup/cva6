@@ -505,11 +505,11 @@ check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
-fpga-bender:
+fpga:
 	@echo "[FPGA] Generate Bitstream"
 	cd fpga && make BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
 
-.PHONY: fpga-bender
+.PHONY: fpga
 
 # generate the bender vsim compile script
 scripts/compile_vsim.tcl:
@@ -522,6 +522,8 @@ scripts/compile_vsim.tcl:
 		--vcom-arg="$(compile_flag_vhd)" \
 		| grep -v "set ROOT" >> $@
 
+.PHONY: scripts/compile_vsim.tcl
+
 # generate the bender vivade add_sources script
 fpga/scripts/add_sources.tcl:
 	@echo "[FPGA]      Generate script: ./fpga/scripts/add_sources.tcl"
@@ -531,10 +533,14 @@ fpga/scripts/add_sources.tcl:
 		--target=$(BOARD) \
 		| sed 's:$(mkfile_dir):$$ROOT/:g' >> $@
 
+.PHONY: fpga/scripts/add_sources.tcl
+
 # generate sources json file
 scripts/sources.json:
 	echo "Dumping source list: ./scripts/sources.json"
 	bender sources --flatten --target="test" --target="spike" > $@
+
+.PHONY: scripts/sources.json
 
 build-spike:
 	cd tb/riscv-isa-sim && mkdir -p build && cd build && ../configure --prefix=`pwd`/../install --with-fesvr=$(RISCV) --enable-commitlog && make -j8 install
