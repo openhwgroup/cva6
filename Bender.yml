@@ -4,7 +4,7 @@ package:
     - "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"
     - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
 
-frozen: true # allows for checking in the dependencies
+frozen: false # allows for checking in the dependencies
 
 dependencies:
     #apb_node:           { git: "https://github.com/pulp-platform/apb_node.git",           version: 0.1.1                 } # advanced by one commit which added somthing in src-files.yml <-- no longer needed as functionality is in axi_to_apb
