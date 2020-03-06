@@ -37,7 +37,7 @@ sources:
   - defines:
       WT_DCACHE: 1
     files:
-        - src/register_interface/src/reg_intf_pkg.sv            # bendergenerated TODO: look if interface is defined in Bender in dependency !!!! <---manually adding makes compile_bender.tcl compilable!
+        - deps/register_interface/src/reg_intf_pkg.sv            # bendergenerated TODO: look if interface is defined in Bender in dependency !!!! <---manually adding makes compile_bender.tcl compilable!
         # dependency rv_plic, not benderised
         # Level 0
         - deps/rv_plic/rtl/top_pkg.sv

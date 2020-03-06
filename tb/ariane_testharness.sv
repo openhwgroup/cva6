@@ -504,14 +504,14 @@ module ariane_testharness #(
   logic tx, rx;
   logic [1:0] irqs;
 
-  AXI_BUS #(
-      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-      .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-      .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-      .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
-  ) apb_peripheral_bus();
-  `AXI_ASSIGN_FROM_REQ ( apb_peripheral_bus,             mst_ports_req[ariane_soc::AxiApbPeriph] )
-  `AXI_ASSIGN_TO_RESP  ( mst_ports_resp[ariane_soc::AxiApbPeriph], apb_peripheral_bus            )
+//  AXI_BUS #(
+//      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+//      .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+//      .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+//      .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+//  ) apb_peripheral_bus();
+//  `AXI_ASSIGN_FROM_REQ ( apb_peripheral_bus,             mst_ports_req[ariane_soc::AxiApbPeriph] )
+//  `AXI_ASSIGN_TO_RESP  ( mst_ports_resp[ariane_soc::AxiApbPeriph], apb_peripheral_bus            )
 
 //  AXI_BUS #(
 //      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
@@ -535,25 +535,26 @@ module ariane_testharness #(
       .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
       .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) spi_bus();
-  `AXI_ASSIGN_FROM_REQ ( spi_bus,                          mst_ports_req[ariane_soc::AxiSpi]  )
-  `AXI_ASSIGN_TO_RESP  ( mst_ports_resp[ariane_soc::AxiSpi],  spi_bus                         )
+  `AXI_ASSIGN_FROM_REQ(spi_bus, mst_ports_req[ariane_soc::AxiSpi])
+  `AXI_ASSIGN_TO_RESP(mst_ports_resp[ariane_soc::AxiSpi], spi_bus)
   AXI_BUS #(
       .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
       .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
       .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
       .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
   ) ethernet_bus();
-  `AXI_ASSIGN_FROM_REQ ( ethernet_bus,                         mst_ports_req[ariane_soc::AxiEthernet] )
-  `AXI_ASSIGN_TO_RESP  ( mst_ports_resp[ariane_soc::AxiEthernet], ethernet_bus                        )
-//  AXI_BUS #(
-//      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
-//      .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
-//      .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
-//      .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
-//  ) timer_bus();
-//  `AXI_ASSIGN_FROM_REQ ( timer_bus,                         mst_ports_req[ariane_soc::Timer] )
-//  `AXI_ASSIGN_TO_RESP  ( mst_ports_resp[ariane_soc::Timer], timer_bus                        )
+  `AXI_ASSIGN_FROM_REQ(ethernet_bus, mst_ports_req[ariane_soc::AxiEthernet])
+  `AXI_ASSIGN_TO_RESP(mst_ports_resp[ariane_soc::AxiEthernet], ethernet_bus)
+  AXI_BUS #(
+      .AXI_ADDR_WIDTH ( AXI_ADDRESS_WIDTH        ),
+      .AXI_DATA_WIDTH ( AXI_DATA_WIDTH           ),
+      .AXI_ID_WIDTH   ( ariane_soc::IdWidthSlave ),
+      .AXI_USER_WIDTH ( AXI_USER_WIDTH           )
+  ) gpio_bus();
+  `AXI_ASSIGN_FROM_REQ(gpio_bus, mst_ports_req[ariane_soc::AxiGpio])
+  `AXI_ASSIGN_TO_RESP(mst_ports_resp[ariane_soc::AxiGpio], gpio_bus)
 
+  // from file `fpga/src/ariane_peripherals_xilinx`
   ariane_peripherals #(
     .AxiAddrWidth ( AXI_ADDRESS_WIDTH        ),
     .AxiDataWidth ( AXI_DATA_WIDTH           ),
@@ -569,48 +570,37 @@ module ariane_testharness #(
     .InclUART     ( 1'b0                     ),
 `endif
     .InclSPI      ( 1'b0                     ),
-    .InclEthernet ( 1'b0                     )
+    .InclEthernet ( 1'b0                     ),
+    .InclTimer    ( 1'b1                     )
   ) i_ariane_peripherals (
-    .clk_i     ( clk_i                        ),
-    .rst_ni    ( ndmreset_n                   ),
-    //.plic      ( plic_bus                     ),
-    //.uart      ( uart_bus                     ),
-    .apb_peripherals ( apb_peripheral_bus ),
-    .spi       ( spi_bus                      ),
-    .ethernet  ( ethernet_bus                 ),
-    //.timer     ( timer_bus                    ),
-    .irq_o     ( irqs                         ),
-    .rx_i      ( rx                           ),
-    .tx_o      ( tx                           ),
-    .eth_txck  ( ),
-    .eth_rxck  ( ),
-    .eth_rxctl ( ),
-    .eth_rxd   ( ),
-    .eth_rst_n ( ),
-    .eth_tx_en ( ),
-    .eth_txd   ( ),
-    .phy_mdio  ( ),
-    .eth_mdc   ( ),
-    .mdio      ( ),
-    .mdc       ( ),
-    .spi_clk_o ( ),
-    .spi_mosi  ( ),
-    .spi_miso  ( ),
-    .spi_ss    ( )
-  );
-
-  axi_decerr_slv #(
-    .AxiIdWidth ( ariane_soc::IdWidthSlave ),
-    .req_t      ( ariane_axi::req_slv_t    ),
-    .resp_t     ( ariane_axi::resp_slv_t   ),
-    .FallThrough( 1'b0                     ),
-    .MaxTrans   ( 32'd2                    )
-  ) i_gpio_err (
-    .clk_i      ( clk_i   ),
-    .rst_ni     ( rst_ni  ),
-    .test_i     ( test_en ),
-    .slv_req_i  ( mst_ports_req[ariane_soc::AxiGpio] ),
-    .slv_resp_o ( mst_ports_resp[ariane_soc::AxiGpio])
+    .clk_i             ( clk_i                                    ),
+    .clk_200MHz_i      ( 1'b0                                     ), // not used in tb (eth clk)
+    .rst_ni            ( ndmreset_n                               ),
+    .spi               ( spi_bus                                  ),
+    .gpio              ( gpio_bus                                 ),
+    .ethernet          ( ethernet_bus                             ),
+    .periph_axi_req_i  ( mst_ports_req[ariane_soc::AxiApbPeriph]  ),
+    .periph_axi_resp_o ( mst_ports_resp[ariane_soc::AxiApbPeriph] ),
+    .irq_o             ( irqs                                     ),
+    .rx_i              ( rx                                       ),
+    .tx_o              ( tx                                       ),
+    .eth_clk_i         ( '0                                       ), // not used in tb
+    .eth_rxck          ( '0                                       ),
+    .eth_rxctl         ( '0                                       ),
+    .eth_rxd           ( '0                                       ),
+    .eth_txck          ( /*not used in tb*/                       ), // not used in tb
+    .eth_txctl         ( /*not used in tb*/                       ), // not used in tb
+    .eth_txd           ( /*not used in tb*/                       ), // not used in tb
+    .eth_rst_n         ( /*not used in tb*/                       ), // not used in tb
+    .phy_tx_clk_i      ( '0                                       ), // not used in tb
+    .eth_mdio          ( /*not used in tb*/                       ),
+    .eth_mdc           ( /*not used in tb*/                       ),
+    .spi_clk_o         ( /*not used in tb*/                       ),
+    .spi_mosi          ( /*not used in tb*/                       ),
+    .spi_miso          ( '0                                       ), // not used in tb
+    .spi_ss            ( /*not used in tb*/                       ),
+    .leds_o            ( /*not used in tb*/                       ),
+    .dip_switches_i    ( '0                                       )  // not used in tb
   );
 
   uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));

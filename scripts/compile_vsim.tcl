@@ -395,7 +395,7 @@ vlog -incr -sv \
     "+incdir+$ROOT/deps/axi/include" \
     "+incdir+$ROOT/include" \
     "+incdir+$ROOT/src/util" \
-    "$ROOT/src/register_interface/src/reg_intf_pkg.sv" \
+    "$ROOT/deps/register_interface/src/reg_intf_pkg.sv" \
     "$ROOT/deps/rv_plic/rtl/top_pkg.sv" \
     "$ROOT/deps/rv_plic/rtl/plic_regmap.sv" \
     "$ROOT/deps/rv_plic/rtl/prim_subreg.sv" \
@@ -485,7 +485,7 @@ vlog -incr -sv \
     "$ROOT/tb/common/SimDTM.sv" \
     "$ROOT/tb/common/SimJTAG.sv" \
     "$ROOT/tb/common/mock_uart.sv" \
-    "$ROOT/tb/ariane_peripherals.sv" \
+    "$ROOT/fpga/src/ariane_peripherals_xilinx.sv" \
     "$ROOT/tb/ariane_testharness.sv" \
     "$ROOT/tb/ariane_tb.sv"
 

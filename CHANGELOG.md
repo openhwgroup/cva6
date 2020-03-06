@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `src/axi_adapter`: Changed `AW`, `W` and `AR` default assignments to use zero as default for unused AXI struct fields.
 - `src/axi_shim`: Changed `AW`, `W` and `AR` default assignments to use zero as default for unused AXI struct fields. All AXI transactions are now flagged ad `axi_pkg::BURST_INCR` as it is functionally equivalent to a `axi_pkg::BURST_FIXED` with `axi_pkg::lent_t == 0`, reason: `axi_dw_converter` is only capable of `axi_pkg::BURST_INCR`.
 - `src/clint/axi_lite_interface`: Changed `B` and `R` channel assignments to use default `'0` for unused fields.
+- `tb/ariane_testharness`: changed `ariane_peripherals` to `ariane_peripherals_xilinx`, xilinx specific IPs are disabled and connected through `axi_err_slv`
 
 
 ### 4.2.0 - 2019-06-04
