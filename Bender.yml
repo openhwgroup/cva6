@@ -5,28 +5,27 @@ package:
     - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
 
 dependencies:
-    axi_mem_if:         { git: "https://github.com/pulp-platform/axi_mem_if.git",         version: 0.2.1                 } # <-- bump to version v.0.2.1 from v0.1.2-4-g4650ca9
-    #axi_node:           { git: "https://github.com/pulp-platform/axi_node.git",           rev:     atop                  } # to be to be replaced with axi_xbar, was v1.1.2-7-ga29a69a should be the same
-    fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       rev:     master                } # was master Merge pull request #3 from msfschaffner <-- phase out relese v0.4 has no longer existing Bender reference to common_cells
-    common_cells:       { git: "https://github.com/pulp-platform/common_cells.git",       version: 1.16.1                } # <-- bump to version v1.16.1 from vega_v1.10.0-52-g790f238
-    axi:                { git: "https://github.com/pulp-platform/axi.git",                version: 0.9.0                 } # <-- bump to version v0.7.0 from v0.7.0
-    register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev:     master                } # TODO: release?
+    #apb_node:           { git: "https://github.com/pulp-platform/apb_node.git",           version: 0.1.1                 } # advanced by one commit which added somthing in src-files.yml <-- no longer needed as functionality is in axi_to_apb
+    apb_timer:          { git: "https://github.com/pulp-platform/apb_timer.git",          version: 0.1.0                 } # HEAD was Pulpino_v2.1-4-g6c84f69 same as master
     apb_uart:           { git: "https://github.com/pulp-platform/apb_uart.git",           version: 0.1.0                 } # HEAD was here v0.0.1-2-gac3461c same as v0.1.0
-    apb_node:           { git: "https://github.com/pulp-platform/apb_node.git",           version: 0.1.1                 } # advanced by one commit which added somthing in src-files.yml
-    axi2apb:            { git: "https://github.com/pulp-platform/axi2apb.git",            version: 0.1.1                 } # HEAD was here  v0.1.0-4-g53e7b9f same as v0.1.1, TODO: integration into axi repo
-    axi_slice:          { git: "https://github.com/pulp-platform/axi_slice.git",          version: 1.1.4                 } # bump to version v1.1.4 was v1.1.3-1-gaae8ca4
-    tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1                 } # has error in changelog
-    fpu:                { git: "https://github.com/pulp-platform/fpnew.git",              version: 0.6.1                 } # no issues
     ariane-ethernet:    { git: "https://github.com/lowRISC/ariane-ethernet.git",          rev:     noila_1GHz            } # no tag, position of submodule HEAD : NOT Benderised!!
-    axi_riscv_atomics:  { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",  rev:     master                } # TODO: remove with updated axi repo
+    #axi:                { git: "https://github.com/pulp-platform/axi.git",                version: 0.15.0                } # <-- bump to version v0.14.0 from v0.7.0
+    axi:                { git: "https://github.com/pulp-platform/axi.git",                rev: axi_dwc_publish           } # <-- bump to version v0.7.0 from v0.7.0
+    axi_mem_if:         { git: "https://github.com/pulp-platform/axi_mem_if.git",         version: 0.2.1                 } # <-- bump to version v.0.2.1 from v0.1.2-4-g4650ca9
+    axi_riscv_atomics:  { git: "https://github.com/pulp-platform/axi_riscv_atomics.git",  version: 0.2.2                 } # was @ master, equal to version 0.2.2
+    common_cells:       { git: "https://github.com/pulp-platform/common_cells.git",       version: 1.16.1                } # <-- bump to version v1.16.1 from vega_v1.10.0-52-g790f238
+    fpga-support:       { git: "https://github.com/pulp-platform/fpga-support.git",       rev:     master                } # was master Merge pull request #3 from msfschaffner <-- phase out relese v0.4 has no longer existing Bender reference to common_cells
+    fpu:                { git: "https://github.com/pulp-platform/fpnew.git",              version: 0.6.1                 } # no issues
+    register_interface: { git: "https://github.com/pulp-platform/register_interface.git", rev:     master                } # TODO: release?
     riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git",          rev:    v0.3                   } # : NOT Benderised in original version v0.1!! and version: 0.3 does not work
     rv_plic:            { git: "https://github.com/pulp-platform/rv_plic.git",            rev:     master                } # NOT benderised
-    apb_timer:          { git: "https://github.com/pulp-platform/apb_timer.git",          version: 0.1.0                } # HEAD was Pulpino_v2.1-4-g6c84f69 same as master
+    tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1                 } # has error in changelog
+    #axi_node:           { git: "https://github.com/pulp-platform/axi_node.git",           rev:     atop                  } # to be to be replaced with axi_xbar, was v1.1.2-7-ga29a69a should be the same <-- replaced by axi_xbar
+    #axi2apb:            { git: "https://github.com/pulp-platform/axi2apb.git",            version: 0.1.1                 } # HEAD was here  v0.1.0-4-g53e7b9f same as v0.1.1, TODO: integration into axi repo <-- replaces by _axi_to_apb
+    #axi_slice:          { git: "https://github.com/pulp-platform/axi_slice.git",          version: 1.1.4                 } # bump to version v1.1.4 was v1.1.3-1-gaae8ca4 <-- needed by axi_node
 
 workspace:
     checkout_dir: "./deps"
-
-# WT_DCACHE
 
 export_include_dirs:
   - include/
@@ -66,7 +65,7 @@ sources:
           # - include/axi_intf.sv                                   # bendergenerated
         - include/ariane_pkg.sv                                     # depends on include/riscv_pkg.sv
         # Level 2
-        - include/std_cache_pkg.sv                                  # depends on include/ariane_pkg.sv
+        # - include/std_cache_pkg.sv                                  # depends on include/ariane_pkg.sv
         - include/wt_cache_pkg.sv                                   # depends on include/ariane_pkg.sv
         - src/amo_buffer.sv                                         # depends on include/araine_pkg.sv, common_cells (fifo_v3)
         - src/alu.sv                                                # depends on include/ariane_pkg.sv
@@ -98,9 +97,9 @@ sources:
         # Level 3
         - include/ariane_axi_pkg.sv                                 # depends on tb/ariane_soc_pkg.sv
         - src/cache_subsystem/amo_alu.sv                            # depends on include/ariane_pkg.sv
-        - src/cache_subsystem/cache_ctrl.sv                         # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv
-        - src/cache_subsystem/tag_cmp.sv                            # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv
-        - src/cache_subsystem/std_icache.sv                         # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/riscv_pkg.sv, common_cells(lsfr_8bit, lzc, sram)
+        # - src/cache_subsystem/cache_ctrl.sv                         # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv
+        # - src/cache_subsystem/tag_cmp.sv                            # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv
+        # - src/cache_subsystem/std_icache.sv                         # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/riscv_pkg.sv, common_cells(lsfr_8bit, lzc, sram)
         - src/cache_subsystem/wt_dcache_ctrl.sv                     # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv
         - src/cache_subsystem/wt_dcache_mem.sv                      # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, common_cells(lzc, rr_arb_tree, sram)
         - src/cache_subsystem/wt_dcache_missunit.sv                 # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, common_cells(exp_backoff, lsfr_8bit, lzc)
@@ -124,16 +123,16 @@ sources:
         - src/util/axi_master_connect_rev.sv                        # depends on include/ariane_axi_pkg.sv TODO: update with AXI dependency
         - src/util/axi_slave_connect_rev.sv                         # depends on include/ariane_axi_pkg.sv TODO: update with AXI dependency
         # Level 5
-        - src/cache_subsystem/miss_handler.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/axi_adapter.sv, src/cache_subsystem/amo_alu.sv, common_cells(lfsr_8bit)
+        # - src/cache_subsystem/miss_handler.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/axi_adapter.sv, src/cache_subsystem/amo_alu.sv, common_cells(lfsr_8bit)
         - src/cache_subsystem/wt_axi_adapter.sv                     # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, src/axi_shim.sv, common_cells(fifo_v3, rr_arb_tree)
         - src/clint/clint.sv                                        # depends on include/ariane_axi_pkg.sv, src/clint/axi_lite_interface.sv
         - src/ex_stage.sv                                           # depends on include/ariane_pkg.sv, include/riscv_pkg.sv, src/alu.sv, src/branch_unit.sv, src/csr_buffer.sv, src/mult.sv, src/fpu_wrap.sv, src/load_store_unit.sv
         # Level 6
-        - src/cache_subsystem/std_nbdcache.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/cache_ctrl.sv, src/cache_subsystem/miss_handler.sv, src/cache_subsystem/tag_cmp.sv, common_cells(sram)
+        # - src/cache_subsystem/std_nbdcache.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/cache_ctrl.sv, src/cache_subsystem/miss_handler.sv, src/cache_subsystem/tag_cmp.sv, common_cells(sram)
         - src/cache_subsystem/wt_cache_subsystem.sv                 # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, src/cache_subsystem/wt_icache.sv, src/cache_subsystem/wt_dcache.sv, src/cache_subsystem/wt_l15_adapter.sv, src/include/wt_axi_adapter.sv
             # - src/cache_subsystem/std_no_dcache.sv                # depends on include/ariane_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/amo_alu.sv
         # Level 7
-        - src/cache_subsystem/std_cache_subsystem.sv                # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/riscv_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/std_nbdcache.sv, src/cache_subsystem/std_icache.sv, common_cells(fifo_v3, stream_arbiter, stream_demux, stream_mux)
+        # - src/cache_subsystem/std_cache_subsystem.sv                # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/riscv_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/std_nbdcache.sv, src/cache_subsystem/std_icache.sv, common_cells(fifo_v3, stream_arbiter, stream_demux, stream_mux)
         # Level 8
         - src/ariane.sv
         # Level 9 3/4 TODOS
@@ -147,7 +146,8 @@ sources:
         # - deps/riscv-dbg/src/dm_sba.sv                # TODO: bederise : src/riscv-dbg, updated to v0.3
         # - deps/riscv-dbg/src/dm_top.sv                # TODO: bederise : src/riscv-dbg, updated to v0.3
         # - deps/riscv-dbg/debug_rom/debug_rom.sv       # TODO: bederise : src/riscv-dbg, updated to v0.3
-        - deps/fpga-support/rtl/SyncSpRamBeNx64.sv    # TODO: see release-0.4!!!!!!!!!!!!!!!!!!!!!!
+        - deps/fpga-support/rtl/SyncSpRamBeNx64.sv    # TODO: see release-0.4!!!!!!!!!!!!!!!!!!!!!! <-- to be replaced with tc_sram
+        - src/util/sram.sv                       # does this trigger for FPGA? inside FPGA support stuff <-- to be replaced with tc_sram
         - target: test
           files:
           # Level 0
@@ -156,13 +156,17 @@ sources:
           - tb/common/SimDTM.sv
           - tb/common/SimJTAG.sv
           - tb/common/mock_uart.sv
-          - src/util/sram.sv                       # does this trigger for FPGA? inside FPGA support stuff
+          #- src/util/sram.sv                       # does this trigger for FPGA? inside FPGA support stuff
           # Level 1
           - tb/ariane_peripherals.sv               # has xilinx ip in it
           # Level 2
           - tb/ariane_testharness.sv
           # Level 3
           - tb/ariane_tb.sv
+        - target: spike
+          files:
+          # Level 0
+          - tb/spike.sv
         - target: not(synthesis)
           files:
             - include/instr_tracer_pkg.sv        # not in original Bender.yml
