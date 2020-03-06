@@ -625,8 +625,8 @@ AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidthSlaves ),
     .AXI_USER_WIDTH ( AxiUserWidth     )
 ) dram_atop();
-`AXI_ASSIGN_FROM_REQ(dram_atop, xbar_mst_ports_req[ariane_soc::DRAM])
-`AXI_ASSIGN_TO_RESP(xbar_mst_ports_resp[ariane_soc::DRAM], dram_atop)
+`AXI_ASSIGN_FROM_REQ(dram_atop, xbar_mst_ports_req[ariane_soc::AxiDram])
+`AXI_ASSIGN_TO_RESP(xbar_mst_ports_resp[ariane_soc::AxiDram], dram_atop)
 AXI_BUS #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth     ),
     .AXI_DATA_WIDTH ( AxiDataWidth     ),
