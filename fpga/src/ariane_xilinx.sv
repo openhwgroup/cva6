@@ -182,7 +182,6 @@ logic clk;
 logic eth_clk;
 logic spi_clk_i;
 logic phy_tx_clk;
-logic sd_clk_sys;
 
 logic ddr_sync_reset;
 logic ddr_clock_out;
@@ -560,7 +559,6 @@ ariane_peripherals #(
     .eth_mdio,
     .eth_mdc,
     .phy_tx_clk_i   ( phy_tx_clk   ),
-    .sd_clk_i       ( sd_clk_sys   ),
     .spi_clk_o      ( spi_clk_o    ),
     .spi_mosi       ( spi_mosi     ),
     .spi_miso       ( spi_miso     ),
@@ -798,7 +796,6 @@ xlnx_clk_gen i_xlnx_clk_gen (
   .clk_out1 ( clk           ), // 50 MHz
   .clk_out2 ( phy_tx_clk    ), // 125 MHz (for RGMII PHY)
   .clk_out3 ( eth_clk       ), // 125 MHz quadrature (90 deg phase shift)
-  .clk_out4 ( sd_clk_sys    ), // 50 MHz clock
   .reset    ( cpu_reset     ),
   .locked   ( pll_locked    ),
   .clk_in1  ( ddr_clock_out )
