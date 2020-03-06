@@ -1,6 +1,3 @@
 [submodule "src/tech_cells_generic"]
 	path = src/tech_cells_generic
 	url = https://github.com/pulp-platform/tech_cells_generic.git
-[submodule "src/rv_plic"]
-	path = src/rv_plic
-	url = https://github.com/pulp-platform/rv_plic.git
