@@ -1,4 +1,4 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2018-2020 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License.  You may obtain a copy of the License at
@@ -53,8 +53,7 @@ module ariane_peripherals #(
   output logic                  spi_mosi        ,
   input  logic                  spi_miso        ,
   output logic                  spi_ss          ,
-  // SD Card
-  input  logic                  sd_clk_i        ,
+  // GPIO
   output logic [7:0]            leds_o          ,
   input  logic [7:0]            dip_switches_i
 );
@@ -231,7 +230,7 @@ module ariane_peripherals #(
       .SIN     ( rx_i                                           ),
       .SOUT    ( tx_o                                           )
     );
-  end else begin
+  end else begin : gen_mock_uart
     /* pragma translate_off */
     `ifndef VERILATOR
     mock_uart i_mock_uart (
@@ -270,7 +269,7 @@ module ariane_peripherals #(
       .PSLVERR ( periph_apb_resp[ariane_soc::ApbTimer].pslverr ),
       .irq_o   ( irq_sources[6:3]                              )
     );
-  end else begin
+  end else begin : gen_timer_err
     assign periph_apb_resp[ariane_soc::ApbTimer].prdata  = 32'hdeadbeef;
     assign periph_apb_resp[ariane_soc::ApbTimer].pready  = 1'b1;
     assign periph_apb_resp[ariane_soc::ApbTimer].pslverr = 1'b1;
@@ -279,10 +278,10 @@ module ariane_peripherals #(
   // --------------------
   // 4. SPI
   // --------------------
-  assign spi.b_user = 1'b0;
-  assign spi.r_user = 1'b0;
 
   if (InclSPI) begin : gen_spi
+    assign spi.b_user = 1'b0;
+    assign spi.r_user = 1'b0;
     logic [31:0] s_axi_spi_awaddr;
     logic [7:0]  s_axi_spi_awlen;
     logic [2:0]  s_axi_spi_awsize;
@@ -449,7 +448,7 @@ module ariane_peripherals #(
       .sck_t          (                        ),
       .ip2intc_irpt   ( irq_sources[1]         )
     );
-  end else begin
+  end else begin : gen_spi_err
     assign spi_clk_o      = 1'b0;
     assign spi_mosi       = 1'b0;
     assign spi_ss         = 1'b0;
@@ -547,7 +546,7 @@ module ariane_peripherals #(
       .I  ( eth_mdio_o   ), // Buffer input
       .T  ( ~eth_mdio_oe )  // 3-state enable input, high=input, low=output
     );
-  end else begin
+  end else begin : gen_ethernet_err
     assign irq_sources [2] = 1'b0;
 
     ariane_axi::req_slv_t  ethernet_axi_req;
@@ -715,7 +714,7 @@ module ariane_peripherals #(
 
     assign s_axi_gpio_rlast = 1'b1;
     assign s_axi_gpio_wlast = 1'b1;
-  end else begin
+  end else begin : gen_gpio_err
     ariane_axi::req_slv_t  gpio_axi_req;
     ariane_axi::resp_slv_t gpio_axi_resp;
 

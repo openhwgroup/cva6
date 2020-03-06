@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   - `fpga/src/ariane_peripherals_xilinx`:
     - Merged AXI interfaces for `plic`, `uart` and `timer`, changed port to structs, these APB modules are now connected: `axi_xbar` --> `axi_dw_converter` --> `axi_to_axi_lite` --> `axi_lite_to_apb` --> `APB peripheral`
     - When a peripheral is not included, it gets replaced by `axi_err_slv` to respond to accesses with `axi_pkg::RESP_SLVERR`.
+    - Removed unused port `sp_clk_i`.
 - `src/axi_adapter`: Changed `AW`, `W` and `AR` default assignments to use zero as default for unused AXI struct fields.
 - `src/axi_shim`: Changed `AW`, `W` and `AR` default assignments to use zero as default for unused AXI struct fields. All AXI transactions are now flagged ad `axi_pkg::BURST_INCR` as it is functionally equivalent to a `axi_pkg::BURST_FIXED` with `axi_pkg::lent_t == 0`, reason: `axi_dw_converter` is only capable of `axi_pkg::BURST_INCR`.
 - `src/clint/axi_lite_interface`: Changed `B` and `R` channel assignments to use default `'0` for unused fields.
