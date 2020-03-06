@@ -39,10 +39,9 @@ ifeq ($(support_verilator_4), 0)
 	verilator_threads := 2
 endif
 
-# ifndef RISCV
-# $(error RISCV not set - please point your RISCV variable to your RISCV installation)
-# endif
-RISCV = /home/msc19h13/opt/riscv
+ifndef RISCV
+	$(error RISCV not set - please point your RISCV variable to your RISCV installation)
+endif
 
 
 # setting additional xilinx board parameters for the selected board
@@ -59,7 +58,7 @@ else ifeq ($(BOARD), vc707)
 	XILINX_BOARD             := xilinx.com:vc707:part0:1.3
 	CLK_PERIOD_NS            := 20
 else
-$(error Unknown board - please specify a supported FPGA board)
+	$(error Unknown board - please specify a supported FPGA board)
 endif
 
 # spike tandem verification
@@ -88,21 +87,23 @@ ariane_pkg := include/riscv_pkg.sv                          \
 ariane_pkg := $(addprefix $(root-dir), $(ariane_pkg))
 
 # utility modules
-util := include/instr_tracer_pkg.sv                         \
-		src/util/instr_tracer_if.sv                         \
-		src/util/instr_tracer.sv                            \
-		src/tech_cells_generic/src/cluster_clock_gating.sv  \
-		tb/common/mock_uart.sv                              \
-		src/util/sram.sv
+# util := include/instr_tracer_pkg.sv                         \
+#		src/util/instr_tracer_if.sv                         \
+#		src/util/instr_tracer.sv                            \
+#		src/tech_cells_generic/src/cluster_clock_gating.sv  \
+#		tb/common/mock_uart.sv                              \
+#		src/util/sram.sv
 
-ifdef spike-tandem
-	util += tb/common/spike.sv
-endif
+#ifdef spike-tandem
+#	util += tb/common/spike.sv
+#endif
 
-util := $(addprefix $(root-dir), $(util))
+#util := $(addprefix $(root-dir), $(util))
+
 # Test packages
-test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
-			$(wildcard tb/test/*/*_pkg.sv*)
+# test_pkg := $(wildcard tb/test/*/*sequence_pkg.sv*) \
+#			$(wildcard tb/test/*/*_pkg.sv*)
+
 # DPI
 dpi_list := $(patsubst tb/dpi/%.cc, ${dpi-library}/%.o, $(wildcard tb/dpi/*.cc))
 # filter spike stuff if tandem is not activated
@@ -200,14 +201,15 @@ src :=  $(filter-out src/ariane_regfile.sv, $(wildcard src/*.sv))              \
 
 src := $(addprefix $(root-dir), $(src))
 
-uart_src := $(wildcard fpga/src/apb_uart/src/*.vhd)
-uart_src := $(addprefix $(root-dir), $(uart_src))
+# uart_src := $(wildcard fpga/src/apb_uart/src/*.vhd)
+# uart_src := $(addprefix $(root-dir), $(uart_src))
 
-fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv) $(wildcard fpga/src/ariane-ethernet/*.sv)
-fpga_src := $(addprefix $(root-dir), $(fpga_src))
+# fpga_src :=  $(wildcard fpga/src/*.sv) $(wildcard fpga/src/bootrom/*.sv) $(wildcard fpga/src/ariane-ethernet/*.sv)
+# fpga_src := $(addprefix $(root-dir), $(fpga_src))
 
 # look for testbenches
-tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
+# tbs := tb/ariane_tb.sv tb/ariane_testharness.sv
+
 # RISCV asm tests and benchmark setup (used for CI)
 # there is a definesd test-list with selected CI tests
 riscv-test-dir            := tmp/riscv-tests/build/isa/
@@ -226,12 +228,10 @@ riscv-benchmarks          := $(shell xargs printf '\n%s' < $(riscv-benchmarks-li
 # Search here for include files (e.g.: non-standalone components)
 incdir := src/common_cells/include/
 # Compile and sim flags
-# compile_flag     += +cover=bcfst+/dut -incr -64 -nologo -quiet -suppress 13262 -permissive +define+$(defines)
 compile_flag     += +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat
 
 uvm-flags        += +UVM_NO_RELNOTES +UVM_VERBOSITY=LOW
 questa-flags     += -t 1ns -64 -coverage -classdebug $(gui-sim) $(QUESTASIM_FLAGS)
-#compile_flag_vhd += -64 -nologo -quiet -2008
 compile_flag_vhd += -64 -nologo -2008
 
 
@@ -275,31 +275,13 @@ mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 mkfile_dir := $(dir $(mkfile_path))
 
 # Build the TB and module using QuestaSim
-# $(library)/.build-srcs $(library)/.build-tb
-build: $(library) $(library)/.compile-vsim-bender $(dpi-library)/ariane_dpi.so
+build: $(library) $(library)/.compile-vsim $(dpi-library)/ariane_dpi.so
 	# Optimize top level
 	vopt$(questa_version) $(compile_flag) -work $(library)  $(top_level) -o $(top_level)_optimized +acc -check_synthesis
 
-$(library)/.compile-vsim-bender: $(library)
-	vsim$(questa_version) -batch -do "source ./scripts/compile_vsim_bender.tcl; exit"
-	touch $(library)/.compile-vsim-bender
-
-# src files
-$(library)/.build-srcs: $(util) $(library)
-	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(ariane_pkg)) $(list_incdir) -suppress 2583
-	# vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(ariane_pkg))
-	vlog$(questa_version) $(compile_flag) -work $(library) $(filter %.sv,$(util)) $(list_incdir) -suppress 2583
-	# Suppress message that always_latch may not be checked thoroughly by QuestaSim.
-	vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(uart_src))
-	# vcom$(questa_version) $(compile_flag_vhd) -work $(library) -pedanticerrors $(filter %.vhd,$(src))
-	vlog$(questa_version) $(compile_flag) -work $(library) -pedanticerrors $(filter %.sv,$(src)) $(list_incdir) -suppress 2583
-	touch $(library)/.build-srcs
-
-# build TBs
-$(library)/.build-tb: $(dpi)
-	# Compile top level
-	vlog$(questa_version) $(compile_flag) -sv $(tbs) -work $(library)
-	touch $(library)/.build-tb
+$(library)/.compile-vsim: $(library)
+	vsim$(questa_version) -batch -do "source ./scripts/compile_vsim.tcl; exit"
+	touch $(library)/.compile-vsim
 
 $(library):
 	vlib${questa_version} $(library)
@@ -523,37 +505,11 @@ check-torture:
 	grep 'All signatures match for $(test-location)' $(riscv-torture-dir)/$(test-location).log
 	diff -s $(riscv-torture-dir)/$(test-location).spike.sig $(riscv-torture-dir)/$(test-location).rtlsim.sig
 
-# fpga_filter := $(addprefix $(root-dir), bootrom/bootrom.sv)
-# fpga_filter += $(addprefix $(root-dir), include/instr_tracer_pkg.sv)
-# fpga_filter += $(addprefix $(root-dir), src/util/ex_trace_item.sv)
-# fpga_filter += $(addprefix $(root-dir), src/util/instr_trace_item.sv)
-# fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer_if.sv)
-# fpga_filter += $(addprefix $(root-dir), src/util/instr_tracer.sv)
-
-# fpga: $(ariane_pkg) $(util) $(src) $(fpga_src) $(uart_src)
-# 	@echo "[FPGA] Generate sources"
-# 	@echo read_vhdl        {$(uart_src)}    > fpga/scripts/add_sources.tcl
-# 	@echo read_verilog -sv {$(ariane_pkg)} >> fpga/scripts/add_sources.tcl
-# 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(util))}     >> fpga/scripts/add_sources.tcl
-# 	@echo read_verilog -sv {$(filter-out $(fpga_filter), $(src))} 	   >> fpga/scripts/add_sources.tcl
-# 	@echo read_verilog -sv {$(fpga_src)}   >> fpga/scripts/add_sources.tcl
-# 	@echo "[FPGA] Generate Bitstream"
-# 	cd fpga && make BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
-
 fpga-bender:
-	#@echo "[FPGA] Generate sources fpga-bender"
-	#bender script vivado --target=$(BOARD) > fpga/scripts/add_sources.tcl
 	@echo "[FPGA] Generate Bitstream"
 	cd fpga && make BOARD=$(BOARD) XILINX_PART=$(XILINX_PART) XILINX_BOARD=$(XILINX_BOARD) CLK_PERIOD_NS=$(CLK_PERIOD_NS)
 
-# this updates the compile scripts if bender is installed
-gen-bender-scripts:
-	@echo "[VSIM]      Generate script: ./scripts/compile_vsim_bender.tcl"
-	bender script vsim --target="test" --vlog-arg="$(compile_flag)" --vcom-arg="$(compile_flag_vhd)" > ./scripts/compile_vsim_bender.tcl
-	@echo "[FPGA]      Generate script: ./fpga/scripts/add_sources.tcl"
-	bender script vivado --target=$(BOARD) > ./fpga/scripts/add_sources.tcl
-	@echo "[VERILATOR] Generate script: .scripts/run_verilator.sh"
-	bender sources --flatten --target="test" > scripts/bender_sources.json
+.PHONY: fpga-bender
 
 # generate the bender vsim compile script
 scripts/compile_vsim.tcl:
@@ -569,16 +525,16 @@ scripts/compile_vsim.tcl:
 # generate the bender vivade add_sources script
 fpga/scripts/add_sources.tcl:
 	@echo "[FPGA]      Generate script: ./fpga/scripts/add_sources.tcl"
-
 	echo $(mkfile_dir)
 	echo 'set ROOT [file normalize [file dirname [info script]]/../..]' > $@
 	bender script vivado \
 		--target=$(BOARD) \
 		| sed 's:$(mkfile_dir):$$ROOT/:g' >> $@
 
-
-
-.PHONY: fpga-bender
+# generate sources json file
+scripts/sources.json:
+	echo "Dumping source list: ./scripts/sources.json"
+	bender sources --flatten --target="test" --target="spike" > $@
 
 build-spike:
 	cd tb/riscv-isa-sim && mkdir -p build && cd build && ../configure --prefix=`pwd`/../install --with-fesvr=$(RISCV) --enable-commitlog && make -j8 install
