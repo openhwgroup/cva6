@@ -19,9 +19,6 @@
 [submodule "fpga/src/apb_uart"]
 	path = fpga/src/apb_uart
 	url = https://github.com/pulp-platform/apb_uart.git
-[submodule "fpga/src/apb_node"]
-	path = fpga/src/apb_node
-	url = https://github.com/pulp-platform/apb_node.git
 [submodule "fpga/src/axi2apb"]
     path = fpga/src/axi2apb
     url = https://github.com/pulp-platform/axi2apb.git
