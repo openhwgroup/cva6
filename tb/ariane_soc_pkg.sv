@@ -24,21 +24,6 @@ package ariane_soc;
   localparam IdWidthSlave = IdWidth + $clog2(NrSlaves);
 
   typedef enum int unsigned {
-    DRAM     = 0,
-    GPIO     = 1,
-    Ethernet = 2,
-    SPI      = 3,
-    Timer    = 4,
-    UART     = 5,
-    PLIC     = 6,
-    CLINT    = 7,
-    ROM      = 8,
-    Debug    = 9
-  } axi_slaves_t;
-
-  localparam NB_PERIPHERALS = Debug + 1;
-
-  typedef enum int unsigned {
     AxiDram      = 0,
     AxiGpio      = 1,
     AxiEthernet  = 2,
