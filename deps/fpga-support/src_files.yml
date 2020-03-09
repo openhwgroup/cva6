@@ -1,0 +1,14 @@
+fpga-support:
+  files: [
+    rtl/AxiBramLogger.sv,
+    rtl/AxiToAxiLitePc.sv,
+    rtl/BramDwc.sv,
+    rtl/BramLogger.sv,
+    rtl/BramPort.sv,
+    rtl/SyncDpRam.sv,
+    rtl/SyncSpRam.sv,
+    rtl/SyncSpRamBeNx32.sv,
+    rtl/SyncSpRamBeNx64.sv,
+    rtl/SyncTpRam.sv,
+    rtl/TdpBramArray.sv,
+  ]
