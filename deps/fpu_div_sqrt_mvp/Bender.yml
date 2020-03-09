@@ -1,0 +1,20 @@
+package:
+  name: fpu_div_sqrt_mvp
+
+dependencies:
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.13.1 }
+
+sources:
+  # Level 0
+  - hdl/defs_div_sqrt_mvp.sv
+  - hdl/iteration_div_sqrt_mvp.sv
+  # Level 1
+  - hdl/control_mvp.sv
+  - hdl/norm_div_sqrt_mvp.sv
+  - hdl/preprocess_mvp.sv
+  # Level 2
+  - hdl/nrbd_nrsc_mvp.sv
+  # Level 3
+  - hdl/div_sqrt_top_mvp.sv
+  # Level 4
+  - hdl/div_sqrt_mvp_wrapper.sv
