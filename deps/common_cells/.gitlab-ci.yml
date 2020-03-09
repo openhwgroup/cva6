@@ -1,0 +1,64 @@
+variables:
+  VSIM: vsim-10.6b -64
+  VLIB: vlib-10.6b
+  VMAP: vmap-10.6b
+  VCOM: vcom-10.6b -64
+  VLOG: vlog-10.6b -64
+  VOPT: vopt-10.6b -64
+
+before_script:
+  - export PATH="~fschuiki/.cargo/bin/":$PATH
+  - |
+    echo 'plugins:' > Bender.local
+    echo '  bender-vsim: { git: "git@iis-git.ee.ethz.ch:fschuiki/bender-vsim.git", rev: master }' >> Bender.local
+
+stages:
+  - build
+  - test
+
+compile:
+  stage: build
+  script:
+    - bender vsim
+
+test_fifo:
+  stage: test
+  script:
+    # workaround to prevent simulation from failing due to assertions
+    - bender vsim -t test --vlog-flag="+define+VERILATOR"
+    - cd build
+    - $VSIM -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=0
+    - $VSIM -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=13
+    - $VSIM -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=32 -GFALL_THROUGH=1
+
+test_stream_register:
+  stage: test
+  script:
+    # workaround to prevent simulation from failing due to assertions
+    - bender vsim -t test --vlog-flag="+define+VERILATOR"
+    - cd build
+    - $VSIM -c work.stream_register_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
+
+test_cdc_2phase:
+  stage: test
+  script:
+    - bender vsim -t test
+    - cd build
+    - $VOPT cdc_2phase_tb -o cdc_2phase_tb_opt -GUNTIL=1000000
+    - $VSIM -c cdc_2phase_tb_opt -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
+
+test_cdc_fifo:
+  stage: test
+  script:
+    - bender vsim -t test
+    - cd build
+    - for g in 0 1; do for i in 1 2 3 4 5; do $VOPT cdc_fifo_tb -o cdc_fifo_tb_depth${i}_gray${g} -GDEPTH=$i -GGRAY=$g; done; done
+    - for g in 0 1; do for i in 1 2 3 4 5; do $VSIM -c cdc_fifo_tb_depth${i}_gray${g} -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"; done; done
+
+test_graycode:
+  stage: test
+  script:
+    - bender vsim -t test
+    - cd build
+    - for i in 1 2 3 4 8 16; do $VOPT graycode_tb -o graycode_tb_$i -GN=$i; done
+    - for i in 1 2 3 4 8 16; do $VSIM -c graycode_tb_$i -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"; done

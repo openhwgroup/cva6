@@ -1,0 +1,17 @@
+[options]
+mode prove
+depth 100
+
+[engines]
+smtbmc
+
+[script]
+read -formal delta_counter.sv
+read -formal counter.sv
+read -formal counter_properties.sv
+prep -top counter
+
+[files]
+counter_properties.sv
+../src/counter.sv
+../src/delta_counter.sv
