@@ -1,0 +1,15 @@
+apb_uart:
+  files: [
+    src/apb_uart.vhd,
+    src/slib_clock_div.vhd,
+    src/slib_counter.vhd,
+    src/slib_edge_detect.vhd,
+    src/slib_fifo.vhd,
+    src/slib_input_filter.vhd,
+    src/slib_input_sync.vhd,
+    src/slib_mv_filter.vhd,
+    src/uart_baudgen.vhd,
+    src/uart_interrupt.vhd,
+    src/uart_receiver.vhd,
+    src/uart_transmitter.vhd,
+  ]
