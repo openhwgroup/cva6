@@ -466,6 +466,7 @@ vlog -incr -sv \
     "$ROOT/src/ex_stage.sv" \
     "$ROOT/src/cache_subsystem/wt_cache_subsystem.sv" \
     "$ROOT/src/ariane.sv" \
+    "$ROOT/fpga/src/ariane_peripherals_xilinx.sv" \
     "$ROOT/deps/fpga-support/rtl/SyncSpRamBeNx64.sv" \
     "$ROOT/src/util/sram.sv"
 
@@ -485,7 +486,6 @@ vlog -incr -sv \
     "$ROOT/tb/common/SimDTM.sv" \
     "$ROOT/tb/common/SimJTAG.sv" \
     "$ROOT/tb/common/mock_uart.sv" \
-    "$ROOT/fpga/src/ariane_peripherals_xilinx.sv" \
     "$ROOT/tb/ariane_testharness.sv" \
     "$ROOT/tb/ariane_tb.sv"
 
