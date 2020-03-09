@@ -1,0 +1,9 @@
+package:
+  name: apb_timer
+  authors: ["Florian Zaruba <zarubaf@iis.ee.ethz.ch>"]
+
+sources:
+  # Level 0
+  - src/timer.sv
+  # Level 1
+  - src/apb_timer.sv
