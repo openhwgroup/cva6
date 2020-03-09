@@ -388,24 +388,29 @@ clean_questa:
 xrun-all: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(XRUN) \
 		$(XRUN_FLAGS) \
-		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(RTLSRC_INCDIR)
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC)
+
 .PHONY: xrun-hello_world xrun-firmware
 xrun-hello_world: xrun-all $(CUSTOM)/hello_world.hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
-		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(RTLSRC_INCDIR) +firmware=$(CUSTOM)/hello_world.hex
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC) \
+		+firmware=$(CUSTOM)/hello_world.hex
+
 xrun-firmware: xrun-all $(FIRMWARE)/firmware.hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
-		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(RTLSRC_INCDIR) +firmware=$(FIRMWARE)/firmware.hex
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC) \
+		+firmware=$(FIRMWARE)/firmware.hex
 
 # Cadence Xcelium xrun cleanup
 .PHONY: xrun-clean xrun-clean-all
 xrun-clean:
 	rm -vrf $(XRUN_DIR)
+	rm xrun.history xrun.log
 xrun-clean-all: xrun-clean
 	rm -vrf $(addprefix $(FIRMWARE)/firmware., elf bin hex map) \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS)
