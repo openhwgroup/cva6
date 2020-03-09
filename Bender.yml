@@ -138,6 +138,7 @@ sources:
         # Level 8
         - src/ariane.sv
         # Level 9 3/4 TODOS
+        - fpga/src/ariane_peripherals_xilinx.sv
         #- deps/apb_timer/timer.sv                     # TODO: adapt dependency with version:
         #- deps/apb_timer/apb_timer.sv                 # TODO: adapt dependency with version:
         # - deps/riscv-dbg/src/dmi_cdc.sv               # TODO: bederise : src/riscv-dbg, updated to v0.3
@@ -160,15 +161,13 @@ sources:
           - tb/common/mock_uart.sv
           #- src/util/sram.sv                       # does this trigger for FPGA? inside FPGA support stuff
           # Level 1
-          - tb/ariane_peripherals.sv               # has xilinx ip in it
-          # Level 2
           - tb/ariane_testharness.sv
-          # Level 3
+          # Level 2
           - tb/ariane_tb.sv
         - target: spike
           files:
           # Level 0
-          - tb/spike.sv
+          - tb/common/spike.sv
         - target: not(synthesis)
           files:
             - include/instr_tracer_pkg.sv        # not in original Bender.yml
