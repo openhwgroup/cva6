@@ -1,0 +1,25 @@
+package:
+  name: tech_cells_generic
+  description: "Technology-agnostic building blocks."
+
+sources:
+  - target: all(fpga, xilinx)
+    files:
+      - src/deprecated/cluster_clk_cells_xilinx.sv
+      - src/fpga/tc_clk_xilinx.sv
+
+  - target: not(all(fpga, xilinx))
+    files:
+      - src/deprecated/cluster_clk_cells.sv
+      - src/deprecated/pulp_clk_cells.sv
+      - src/rtl/tc_clk.sv
+
+  - target: not(synthesis)
+    files:
+      - src/deprecated/cluster_pwr_cells.sv
+      - src/deprecated/generic_memory.sv
+      - src/deprecated/generic_rom.sv
+      - src/deprecated/pad_functional.sv
+      - src/deprecated/pulp_buffer.sv
+      - src/deprecated/pulp_pwr_cells.sv
+      - src/tc_pwr.sv

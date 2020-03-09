@@ -1,0 +1,35 @@
+tech_cells_rtl:
+  flags: [
+    skip_synthesis,
+  ]
+  files: [
+    src/deprecated/cluster_clk_cells.sv,
+    src/deprecated/cluster_pwr_cells.sv,
+    src/deprecated/generic_memory.sv,
+    src/deprecated/generic_rom.sv,
+    src/deprecated/pad_functional.sv,
+    src/deprecated/pulp_buffer.sv,
+    src/deprecated/pulp_clk_cells.sv,
+    src/deprecated/pulp_pwr_cells.sv,
+    src/rtl/tc_clk.sv,
+    src/tc_pwr.sv,
+  ]
+
+tech_cells_rtl_synth:
+  files: [
+   src/deprecated/pulp_clock_gating_async.sv,
+]
+
+tech_cells_fpga:
+  targets: [
+    xilinx,
+  ]
+  files: [
+    src/deprecated/cluster_clk_cells_xilinx.sv,
+    src/deprecated/cluster_pwr_cells.sv,
+    src/deprecated/pulp_clk_cells_xilinx.sv,
+    src/deprecated/pulp_pwr_cells.sv,
+    src/deprecated/pulp_buffer.sv,
+    src/fpga/tc_clk_xilinx.sv,
+    src/tc_pwr.sv,
+  ]
