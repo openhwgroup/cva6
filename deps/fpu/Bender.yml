@@ -1,0 +1,21 @@
+package:
+  name: FPnew
+  authors: ["Stefan Mach <smach@iis.ee.ethz.ch>"]
+
+dependencies:
+  common_cells: {git: "https://github.com/pulp-platform/common_cells.git",         version: 1.13.1}
+  fpu_div_sqrt_mvp: {git: "https://github.com/pulp-platform/fpu_div_sqrt_mvp.git", version: 1.0.3}
+
+sources:
+  - src/fpnew_pkg.sv
+  - src/fpnew_cast_multi.sv
+  - src/fpnew_classifier.sv
+  - src/fpnew_divsqrt_multi.sv
+  - src/fpnew_fma.sv
+  - src/fpnew_fma_multi.sv
+  - src/fpnew_noncomp.sv
+  - src/fpnew_opgroup_block.sv
+  - src/fpnew_opgroup_fmt_slice.sv
+  - src/fpnew_opgroup_multifmt_slice.sv
+  - src/fpnew_rounding.sv
+  - src/fpnew_top.sv
