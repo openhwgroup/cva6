@@ -45,6 +45,8 @@ WAVES         = 0
 COREV_PROJ    = cv32
 PROJ_ROOT_DIR = $(PWD)/../../..
 
+
+
 # Compile compile flags for all simulators
 SV_CMP_FLAGS = 
 UVM_PLUSARGS =
@@ -92,9 +94,12 @@ VSIM_FLAGS       ?=  # user defined
 ALL_VSIM_FLAGS    = $(VSIM_FLAGS)
 VSIM_DEBUG_FLAGS  = -debugdb
 VSIM_GUI_FLAGS    = -gui -debugdb
-VSIM_SCRIPT       = vsim.tcl
+VSIM_SCRIPT_DIR	  = ../questa
+VSIM_SCRIPT       = $(VSIM_SCRIPT_DIR)/vsim.tcl
 
 VSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
+
+
 
 
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
