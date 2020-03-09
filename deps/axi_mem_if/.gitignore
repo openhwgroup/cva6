@@ -1,0 +1,6 @@
+.*
+!.git*
+!.editorconfig
+build
+/Bender.local
+/Bender.lock

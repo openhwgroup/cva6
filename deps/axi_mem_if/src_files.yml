@@ -1,0 +1,7 @@
+axi_mem_if:
+  files: [
+    src/axi2mem.sv,
+    src/deprecated/axi_mem_if.sv,
+    src/deprecated/axi_mem_if_wrap.sv,
+    src/deprecated/axi_mem_if_var_latency.sv,
+  ]
