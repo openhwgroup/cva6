@@ -139,10 +139,10 @@ sources:
           - tb/ariane_testharness.sv
           # Level 2
           - tb/ariane_tb.sv
-        #- target: spike
-        #  files:
-        #  # Level 0
-        #  - tb/common/spike.sv
+        - target: spike
+          files:
+          # Level 0
+          - tb/common/spike.sv
         - target: not(synthesis)
           files:
             - include/instr_tracer_pkg.sv        # not in original Bender.yml
