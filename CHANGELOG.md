@@ -46,6 +46,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `tb/ariane_testharness`: changed `ariane_peripherals` to `ariane_peripherals_xilinx`, xilinx specific IPs are disabled and connected through `axi_err_slv`
 - `cache_subsystem_stdcache:` Move global package imports inside module scope.
 
+### Removed
+
+- Modules `src/util/axi_master_connect`, `src/util/axi_master_connect_rev`, `src/util/axi_slave_connect` and `src/util/axi_slave_connect_rev` are replaced by `AXI_ASSIGN` macros.
+
 
 ### 4.2.0 - 2019-06-04
 

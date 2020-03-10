@@ -110,10 +110,6 @@ sources:
         - src/clint/axi_lite_interface.sv                           # depends on include/ariane_axi_pkg.sv
         - src/load_store_unit.sv                                    # depends on include/ariane_pkg.sv, include/riscv_pkg.sv, mmu.sv, store_unit.sv, load_unit.sv, common_cells(shift_reg)
         - src/issue_stage.sv                                        # depends on include/ariane_pkg.sv, src/re_name.sv, src/scoreboard.sv, src/issue_read_operands.sv
-        - src/util/axi_master_connect.sv                            # depends on include/ariane_axi_pkg.sv TODO: replace with AXI macro
-        - src/util/axi_slave_connect.sv                             # depends on include/ariane_axi_pkg.sv TODO: replace with AXI macro
-        - src/util/axi_master_connect_rev.sv                        # depends on include/ariane_axi_pkg.sv TODO: replace with AXI macro
-        - src/util/axi_slave_connect_rev.sv                         # depends on include/ariane_axi_pkg.sv TODO: replace with AXI macro
         # Level 5
         - src/cache_subsystem/miss_handler.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/axi_adapter.sv, src/cache_subsystem/amo_alu.sv, common_cells(lfsr_8bit)
         - src/cache_subsystem/wt_axi_adapter.sv                     # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, src/axi_shim.sv, common_cells(fifo_v3, rr_arb_tree)
