@@ -107,7 +107,7 @@ DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
 DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS)
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
-DSIM_RESULTS           ?= $(PWD)/results
+DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE              = dsim.out
 
@@ -196,17 +196,19 @@ mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
-# TODO: cd $(DSIM_RESULTS) - incompatible with pkg file
+# DSIM compile target
+#      - note that uvme_cv32_pkg.flist *must* be read before uvmt_cv32.flist
+#      - TODO: cd $(DSIM_RESULTS) - incompatible with pkg file
 dsim-comp: mk_results $(CV32E40P_PKG)
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
-		+incdir+$(DV_UVMT_CV32_PATH) \
-		+incdir+$(DV_UVME_CV32_PATH) \
-		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
-		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
-		-f $(CV32E40P_MANIFEST) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+incdir+$(DV_UVME_CV32_PATH) \
+		+incdir+$(DV_UVMT_CV32_PATH) \
+		-f $(CV32E40P_MANIFEST) \
+		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
+		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
 		-work $(DSIM_WORK) \
 		+$(UVM_PLUSARGS) \
 		-genimage $(DSIM_IMAGE)
