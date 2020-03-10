@@ -1,7 +1,6 @@
 .*
 !.gitignore
 /reports
-scripts/add_sources.tcl
 vivado*
 *.cache
 *.hw
