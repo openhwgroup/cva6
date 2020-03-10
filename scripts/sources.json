@@ -515,6 +515,23 @@
   {
     "package": "ariane",
     "independent": false,
+    "target": "all(spike, all(*, all(*)))",
+    "include_dirs": [
+      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
+      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
+      "/scratch/msc19f10/ariane-bender/include/",
+      "/scratch/msc19f10/ariane-bender/src/util/"
+    ],
+    "defines": {
+      "WT_DCACHE": "1"
+    },
+    "files": [
+      "/scratch/msc19f10/ariane-bender/tb/common/spike.sv"
+    ]
+  },
+  {
+    "package": "ariane",
+    "independent": false,
     "target": "all(all(*, all(*)), not(synthesis))",
     "include_dirs": [
       "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
