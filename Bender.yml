@@ -67,7 +67,7 @@ sources:
           # - include/axi_intf.sv                                   # bendergenerated
         - include/ariane_pkg.sv                                     # depends on include/riscv_pkg.sv
         # Level 2
-        # - include/std_cache_pkg.sv                                  # depends on include/ariane_pkg.sv
+        - include/std_cache_pkg.sv                                  # depends on include/ariane_pkg.sv
         - include/wt_cache_pkg.sv                                   # depends on include/ariane_pkg.sv
         - src/amo_buffer.sv                                         # depends on include/araine_pkg.sv, common_cells (fifo_v3)
         - src/alu.sv                                                # depends on include/ariane_pkg.sv
@@ -99,9 +99,9 @@ sources:
         # Level 3
         - include/ariane_axi_pkg.sv                                 # depends on tb/ariane_soc_pkg.sv
         - src/cache_subsystem/amo_alu.sv                            # depends on include/ariane_pkg.sv
-        # - src/cache_subsystem/cache_ctrl.sv                         # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv
-        # - src/cache_subsystem/tag_cmp.sv                            # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv
-        # - src/cache_subsystem/std_icache.sv                         # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/riscv_pkg.sv, common_cells(lsfr_8bit, lzc, sram)
+        - src/cache_subsystem/cache_ctrl.sv                         # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv
+        - src/cache_subsystem/tag_cmp.sv                            # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv
+        - src/cache_subsystem/std_icache.sv                         # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/riscv_pkg.sv, common_cells(lsfr_8bit, lzc, sram)
         - src/cache_subsystem/wt_dcache_ctrl.sv                     # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv
         - src/cache_subsystem/wt_dcache_mem.sv                      # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, common_cells(lzc, rr_arb_tree, sram)
         - src/cache_subsystem/wt_dcache_missunit.sv                 # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, common_cells(exp_backoff, lsfr_8bit, lzc)
@@ -125,16 +125,16 @@ sources:
         - src/util/axi_master_connect_rev.sv                        # depends on include/ariane_axi_pkg.sv TODO: update with AXI dependency
         - src/util/axi_slave_connect_rev.sv                         # depends on include/ariane_axi_pkg.sv TODO: update with AXI dependency
         # Level 5
-        # - src/cache_subsystem/miss_handler.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/axi_adapter.sv, src/cache_subsystem/amo_alu.sv, common_cells(lfsr_8bit)
+        - src/cache_subsystem/miss_handler.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/axi_adapter.sv, src/cache_subsystem/amo_alu.sv, common_cells(lfsr_8bit)
         - src/cache_subsystem/wt_axi_adapter.sv                     # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, src/axi_shim.sv, common_cells(fifo_v3, rr_arb_tree)
         - src/clint/clint.sv                                        # depends on include/ariane_axi_pkg.sv, src/clint/axi_lite_interface.sv
         - src/ex_stage.sv                                           # depends on include/ariane_pkg.sv, include/riscv_pkg.sv, src/alu.sv, src/branch_unit.sv, src/csr_buffer.sv, src/mult.sv, src/fpu_wrap.sv, src/load_store_unit.sv
         # Level 6
-        # - src/cache_subsystem/std_nbdcache.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/cache_ctrl.sv, src/cache_subsystem/miss_handler.sv, src/cache_subsystem/tag_cmp.sv, common_cells(sram)
+        - src/cache_subsystem/std_nbdcache.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/cache_ctrl.sv, src/cache_subsystem/miss_handler.sv, src/cache_subsystem/tag_cmp.sv, common_cells(sram)
         - src/cache_subsystem/wt_cache_subsystem.sv                 # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, src/cache_subsystem/wt_icache.sv, src/cache_subsystem/wt_dcache.sv, src/cache_subsystem/wt_l15_adapter.sv, src/include/wt_axi_adapter.sv
             # - src/cache_subsystem/std_no_dcache.sv                # depends on include/ariane_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/amo_alu.sv
         # Level 7
-        # - src/cache_subsystem/std_cache_subsystem.sv                # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/riscv_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/std_nbdcache.sv, src/cache_subsystem/std_icache.sv, common_cells(fifo_v3, stream_arbiter, stream_demux, stream_mux)
+        - src/cache_subsystem/std_cache_subsystem.sv                # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/riscv_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/std_nbdcache.sv, src/cache_subsystem/std_icache.sv, common_cells(fifo_v3, stream_arbiter, stream_demux, stream_mux)
         # Level 8
         - src/ariane.sv
         # Level 9 3/4 TODOS
@@ -164,10 +164,10 @@ sources:
           - tb/ariane_testharness.sv
           # Level 2
           - tb/ariane_tb.sv
-        - target: spike
-          files:
-          # Level 0
-          - tb/common/spike.sv
+        #- target: spike
+        #  files:
+        #  # Level 0
+        #  - tb/common/spike.sv
         - target: not(synthesis)
           files:
             - include/instr_tracer_pkg.sv        # not in original Bender.yml
