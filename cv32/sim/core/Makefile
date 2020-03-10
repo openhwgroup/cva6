@@ -410,7 +410,7 @@ xrun-firmware: xrun-all $(FIRMWARE)/firmware.hex
 .PHONY: xrun-clean xrun-clean-all
 xrun-clean:
 	rm -vrf $(XRUN_DIR)
-	if [ -d xrun.history ]; then rm xrun.history; fi
+	if [ -e xrun.history ]; then rm xrun.history; fi
 	if [ -e xrun.log ]; then rm xrun.log; fi
 
 xrun-clean-all: xrun-clean
