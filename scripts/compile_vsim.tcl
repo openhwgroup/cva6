@@ -461,10 +461,6 @@ vlog -incr -sv \
     "$ROOT/src/clint/axi_lite_interface.sv" \
     "$ROOT/src/load_store_unit.sv" \
     "$ROOT/src/issue_stage.sv" \
-    "$ROOT/src/util/axi_master_connect.sv" \
-    "$ROOT/src/util/axi_slave_connect.sv" \
-    "$ROOT/src/util/axi_master_connect_rev.sv" \
-    "$ROOT/src/util/axi_slave_connect_rev.sv" \
     "$ROOT/src/cache_subsystem/miss_handler.sv" \
     "$ROOT/src/cache_subsystem/wt_axi_adapter.sv" \
     "$ROOT/src/clint/clint.sv" \
