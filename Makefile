@@ -412,7 +412,12 @@ fpga/scripts/add_sources.tcl:
 # generate sources json file
 scripts/sources.json:
 	echo "Dumping source list: ./scripts/sources.json"
-	bender sources --flatten --target="test" --target="spike" > $@
+	@echo $(mkfile_dir)
+	bender sources \
+		--flatten \
+		--target="test" \
+		--target="spike" \
+		| sed 's:$(mkfile_dir)::g' > $@
 
 .PHONY: scripts/sources.json
 
