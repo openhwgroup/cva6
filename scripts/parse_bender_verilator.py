@@ -28,7 +28,7 @@ for dict in x:
 
 output_string = ""
 
-exclude = [".vhd", "_tb", "tb_", "test/", "_test.", "tc_clk", "pad", "_latency"]
+exclude = [".vhd", "_tb", "tb_", "test/", "_test.", "tc_clk", "pad", "_latency", "spike"]
 
 for file in output_dir["files"]:
     include = True

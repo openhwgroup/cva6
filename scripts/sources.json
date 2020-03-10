@@ -4,16 +4,16 @@
     "independent": false,
     "target": "all(all(*), not(all(fpga, xilinx)))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/deprecated/cluster_clk_cells.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/deprecated/pulp_clk_cells.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/rtl/tc_clk.sv"
+      "./deps/tech_cells_generic/src/deprecated/cluster_clk_cells.sv",
+      "./deps/tech_cells_generic/src/deprecated/pulp_clk_cells.sv",
+      "./deps/tech_cells_generic/src/rtl/tc_clk.sv"
     ]
   },
   {
@@ -21,20 +21,20 @@
     "independent": false,
     "target": "all(all(*), not(synthesis))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/deprecated/cluster_pwr_cells.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/deprecated/generic_memory.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/deprecated/generic_rom.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/deprecated/pad_functional.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/deprecated/pulp_buffer.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/deprecated/pulp_pwr_cells.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/tech_cells_generic/src/tc_pwr.sv"
+      "./deps/tech_cells_generic/src/deprecated/cluster_pwr_cells.sv",
+      "./deps/tech_cells_generic/src/deprecated/generic_memory.sv",
+      "./deps/tech_cells_generic/src/deprecated/generic_rom.sv",
+      "./deps/tech_cells_generic/src/deprecated/pad_functional.sv",
+      "./deps/tech_cells_generic/src/deprecated/pulp_buffer.sv",
+      "./deps/tech_cells_generic/src/deprecated/pulp_pwr_cells.sv",
+      "./deps/tech_cells_generic/src/tc_pwr.sv"
     ]
   },
   {
@@ -42,56 +42,56 @@
     "independent": false,
     "target": "all(*)",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/addr_decode.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/cdc_2phase.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/cf_math_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/clk_div.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/delta_counter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/edge_propagator_tx.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/exp_backoff.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/fifo_v3.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/graycode.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/lfsr.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/lfsr_16bit.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/lfsr_8bit.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/lzc.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/mv_filter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/onehot_to_bin.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/plru_tree.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/popcount.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/rr_arb_tree.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/rstgen_bypass.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/serial_deglitch.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/shift_reg.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/spill_register.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/stream_demux.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/stream_filter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/stream_fork.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/stream_mux.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/sub_per_hash.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/sync.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/sync_wedge.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/unread.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/cb_filter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/cdc_fifo_2phase.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/cdc_fifo_gray.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/counter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/edge_detect.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/id_queue.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/max_counter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/rstgen.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/stream_delay.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/fall_through_register.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/stream_arbiter_flushable.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/stream_register.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/stream_arbiter.sv"
+      "./deps/common_cells/src/addr_decode.sv",
+      "./deps/common_cells/src/cdc_2phase.sv",
+      "./deps/common_cells/src/cf_math_pkg.sv",
+      "./deps/common_cells/src/clk_div.sv",
+      "./deps/common_cells/src/delta_counter.sv",
+      "./deps/common_cells/src/edge_propagator_tx.sv",
+      "./deps/common_cells/src/exp_backoff.sv",
+      "./deps/common_cells/src/fifo_v3.sv",
+      "./deps/common_cells/src/graycode.sv",
+      "./deps/common_cells/src/lfsr.sv",
+      "./deps/common_cells/src/lfsr_16bit.sv",
+      "./deps/common_cells/src/lfsr_8bit.sv",
+      "./deps/common_cells/src/lzc.sv",
+      "./deps/common_cells/src/mv_filter.sv",
+      "./deps/common_cells/src/onehot_to_bin.sv",
+      "./deps/common_cells/src/plru_tree.sv",
+      "./deps/common_cells/src/popcount.sv",
+      "./deps/common_cells/src/rr_arb_tree.sv",
+      "./deps/common_cells/src/rstgen_bypass.sv",
+      "./deps/common_cells/src/serial_deglitch.sv",
+      "./deps/common_cells/src/shift_reg.sv",
+      "./deps/common_cells/src/spill_register.sv",
+      "./deps/common_cells/src/stream_demux.sv",
+      "./deps/common_cells/src/stream_filter.sv",
+      "./deps/common_cells/src/stream_fork.sv",
+      "./deps/common_cells/src/stream_mux.sv",
+      "./deps/common_cells/src/sub_per_hash.sv",
+      "./deps/common_cells/src/sync.sv",
+      "./deps/common_cells/src/sync_wedge.sv",
+      "./deps/common_cells/src/unread.sv",
+      "./deps/common_cells/src/cb_filter.sv",
+      "./deps/common_cells/src/cdc_fifo_2phase.sv",
+      "./deps/common_cells/src/cdc_fifo_gray.sv",
+      "./deps/common_cells/src/counter.sv",
+      "./deps/common_cells/src/edge_detect.sv",
+      "./deps/common_cells/src/id_queue.sv",
+      "./deps/common_cells/src/max_counter.sv",
+      "./deps/common_cells/src/rstgen.sv",
+      "./deps/common_cells/src/stream_delay.sv",
+      "./deps/common_cells/src/fall_through_register.sv",
+      "./deps/common_cells/src/stream_arbiter_flushable.sv",
+      "./deps/common_cells/src/stream_register.sv",
+      "./deps/common_cells/src/stream_arbiter.sv"
     ]
   },
   {
@@ -99,23 +99,23 @@
     "independent": false,
     "target": "all(test, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/addr_decode_tb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/cb_filter_tb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/cdc_2phase_tb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/cdc_fifo_tb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/fifo_tb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/graycode_tb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/id_queue_tb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/popcount_tb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/stream_register_tb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/test/sub_per_hash_tb.sv"
+      "./deps/common_cells/test/addr_decode_tb.sv",
+      "./deps/common_cells/test/cb_filter_tb.sv",
+      "./deps/common_cells/test/cdc_2phase_tb.sv",
+      "./deps/common_cells/test/cdc_fifo_tb.sv",
+      "./deps/common_cells/test/fifo_tb.sv",
+      "./deps/common_cells/test/graycode_tb.sv",
+      "./deps/common_cells/test/id_queue_tb.sv",
+      "./deps/common_cells/test/popcount_tb.sv",
+      "./deps/common_cells/test/stream_register_tb.sv",
+      "./deps/common_cells/test/sub_per_hash_tb.sv"
     ]
   },
   {
@@ -123,26 +123,26 @@
     "independent": false,
     "target": "all(*)",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/clock_divider_counter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/find_first_one.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/generic_LFSR_8bit.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/generic_fifo.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/prioarbiter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/pulp_sync.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/pulp_sync_wedge.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/rrarbiter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/clock_divider.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/fifo_v2.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/deprecated/fifo_v1.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/edge_propagator.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/src/edge_propagator_rx.sv"
+      "./deps/common_cells/src/deprecated/clock_divider_counter.sv",
+      "./deps/common_cells/src/deprecated/find_first_one.sv",
+      "./deps/common_cells/src/deprecated/generic_LFSR_8bit.sv",
+      "./deps/common_cells/src/deprecated/generic_fifo.sv",
+      "./deps/common_cells/src/deprecated/prioarbiter.sv",
+      "./deps/common_cells/src/deprecated/pulp_sync.sv",
+      "./deps/common_cells/src/deprecated/pulp_sync_wedge.sv",
+      "./deps/common_cells/src/deprecated/rrarbiter.sv",
+      "./deps/common_cells/src/deprecated/clock_divider.sv",
+      "./deps/common_cells/src/deprecated/fifo_v2.sv",
+      "./deps/common_cells/src/deprecated/fifo_v1.sv",
+      "./deps/common_cells/src/edge_propagator.sv",
+      "./deps/common_cells/src/edge_propagator_rx.sv"
     ]
   },
   {
@@ -150,39 +150,39 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_intf.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_atop_filter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_burst_splitter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_cdc.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_cut.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_delayer.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_demux.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_dw_downsizer.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_dw_upsizer.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_id_prepend.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_join.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_lite_demux.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_lite_join.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_lite_mailbox.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_lite_mux.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_lite_to_apb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_lite_to_axi.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_modify_address.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_mux.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_err_slv.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_dw_converter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_multicut.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_to_axi_lite.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_lite_xbar.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/src/axi_xbar.sv"
+      "./deps/axi/src/axi_pkg.sv",
+      "./deps/axi/src/axi_intf.sv",
+      "./deps/axi/src/axi_atop_filter.sv",
+      "./deps/axi/src/axi_burst_splitter.sv",
+      "./deps/axi/src/axi_cdc.sv",
+      "./deps/axi/src/axi_cut.sv",
+      "./deps/axi/src/axi_delayer.sv",
+      "./deps/axi/src/axi_demux.sv",
+      "./deps/axi/src/axi_dw_downsizer.sv",
+      "./deps/axi/src/axi_dw_upsizer.sv",
+      "./deps/axi/src/axi_id_prepend.sv",
+      "./deps/axi/src/axi_join.sv",
+      "./deps/axi/src/axi_lite_demux.sv",
+      "./deps/axi/src/axi_lite_join.sv",
+      "./deps/axi/src/axi_lite_mailbox.sv",
+      "./deps/axi/src/axi_lite_mux.sv",
+      "./deps/axi/src/axi_lite_to_apb.sv",
+      "./deps/axi/src/axi_lite_to_axi.sv",
+      "./deps/axi/src/axi_modify_address.sv",
+      "./deps/axi/src/axi_mux.sv",
+      "./deps/axi/src/axi_err_slv.sv",
+      "./deps/axi/src/axi_dw_converter.sv",
+      "./deps/axi/src/axi_multicut.sv",
+      "./deps/axi/src/axi_to_axi_lite.sv",
+      "./deps/axi/src/axi_lite_xbar.sv",
+      "./deps/axi/src/axi_xbar.sv"
     ]
   },
   {
@@ -190,25 +190,25 @@
     "independent": false,
     "target": "all(test, all(*, all(*)))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_atop_filter.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_cdc.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_delayer.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_dw_downsizer.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_dw_upsizer.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_lite_to_apb.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_lite_to_axi.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_lite_mailbox.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_lite_xbar.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_to_axi_lite.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_xbar_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/test/tb_axi_xbar.sv"
+      "./deps/axi/test/tb_axi_atop_filter.sv",
+      "./deps/axi/test/tb_axi_cdc.sv",
+      "./deps/axi/test/tb_axi_delayer.sv",
+      "./deps/axi/test/tb_axi_dw_downsizer.sv",
+      "./deps/axi/test/tb_axi_dw_upsizer.sv",
+      "./deps/axi/test/tb_axi_lite_to_apb.sv",
+      "./deps/axi/test/tb_axi_lite_to_axi.sv",
+      "./deps/axi/test/tb_axi_lite_mailbox.sv",
+      "./deps/axi/test/tb_axi_lite_xbar.sv",
+      "./deps/axi/test/tb_axi_to_axi_lite.sv",
+      "./deps/axi/test/tb_axi_xbar_pkg.sv",
+      "./deps/axi/test/tb_axi_xbar.sv"
     ]
   },
   {
@@ -216,21 +216,21 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu_div_sqrt_mvp/hdl/control_mvp.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv"
+      "./deps/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv",
+      "./deps/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv",
+      "./deps/fpu_div_sqrt_mvp/hdl/control_mvp.sv",
+      "./deps/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv",
+      "./deps/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv",
+      "./deps/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv",
+      "./deps/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv",
+      "./deps/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv"
     ]
   },
   {
@@ -238,15 +238,15 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/apb_timer/src/timer.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_timer/src/apb_timer.sv"
+      "./deps/apb_timer/src/timer.sv",
+      "./deps/apb_timer/src/apb_timer.sv"
     ]
   },
   {
@@ -254,25 +254,25 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/apb_uart.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/slib_clock_div.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/slib_counter.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/slib_edge_detect.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/slib_fifo.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/slib_input_filter.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/slib_input_sync.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/slib_mv_filter.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/uart_baudgen.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/uart_interrupt.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/uart_receiver.vhd",
-      "/scratch/msc19f10/ariane-bender/./deps/apb_uart/src/uart_transmitter.vhd"
+      "./deps/apb_uart/src/apb_uart.vhd",
+      "./deps/apb_uart/src/slib_clock_div.vhd",
+      "./deps/apb_uart/src/slib_counter.vhd",
+      "./deps/apb_uart/src/slib_edge_detect.vhd",
+      "./deps/apb_uart/src/slib_fifo.vhd",
+      "./deps/apb_uart/src/slib_input_filter.vhd",
+      "./deps/apb_uart/src/slib_input_sync.vhd",
+      "./deps/apb_uart/src/slib_mv_filter.vhd",
+      "./deps/apb_uart/src/uart_baudgen.vhd",
+      "./deps/apb_uart/src/uart_interrupt.vhd",
+      "./deps/apb_uart/src/uart_receiver.vhd",
+      "./deps/apb_uart/src/uart_transmitter.vhd"
     ]
   },
   {
@@ -280,17 +280,17 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/axi_mem_if/src/axi2mem.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi_mem_if/src/deprecated/axi_mem_if.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi_mem_if/src/deprecated/axi_mem_if_var_latency.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi_mem_if/src/deprecated/axi_mem_if_wrap.sv"
+      "./deps/axi_mem_if/src/axi2mem.sv",
+      "./deps/axi_mem_if/src/deprecated/axi_mem_if.sv",
+      "./deps/axi_mem_if/src/deprecated/axi_mem_if_var_latency.sv",
+      "./deps/axi_mem_if/src/deprecated/axi_mem_if_wrap.sv"
     ]
   },
   {
@@ -298,20 +298,20 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/axi_riscv_atomics/src/axi_res_tbl.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi_riscv_atomics/src/axi_riscv_amos_alu.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi_riscv_atomics/src/axi_riscv_amos.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi_riscv_atomics/src/axi_riscv_lrsc.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi_riscv_atomics/src/axi_riscv_atomics.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi_riscv_atomics/src/axi_riscv_lrsc_wrap.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv"
+      "./deps/axi_riscv_atomics/src/axi_res_tbl.sv",
+      "./deps/axi_riscv_atomics/src/axi_riscv_amos_alu.sv",
+      "./deps/axi_riscv_atomics/src/axi_riscv_amos.sv",
+      "./deps/axi_riscv_atomics/src/axi_riscv_lrsc.sv",
+      "./deps/axi_riscv_atomics/src/axi_riscv_atomics.sv",
+      "./deps/axi_riscv_atomics/src/axi_riscv_lrsc_wrap.sv",
+      "./deps/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv"
     ]
   },
   {
@@ -319,25 +319,25 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_cast_multi.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_classifier.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_divsqrt_multi.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_fma.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_fma_multi.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_noncomp.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_opgroup_block.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_opgroup_fmt_slice.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_opgroup_multifmt_slice.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_rounding.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/fpu/src/fpnew_top.sv"
+      "./deps/fpu/src/fpnew_pkg.sv",
+      "./deps/fpu/src/fpnew_cast_multi.sv",
+      "./deps/fpu/src/fpnew_classifier.sv",
+      "./deps/fpu/src/fpnew_divsqrt_multi.sv",
+      "./deps/fpu/src/fpnew_fma.sv",
+      "./deps/fpu/src/fpnew_fma_multi.sv",
+      "./deps/fpu/src/fpnew_noncomp.sv",
+      "./deps/fpu/src/fpnew_opgroup_block.sv",
+      "./deps/fpu/src/fpnew_opgroup_fmt_slice.sv",
+      "./deps/fpu/src/fpnew_opgroup_multifmt_slice.sv",
+      "./deps/fpu/src/fpnew_rounding.sv",
+      "./deps/fpu/src/fpnew_top.sv"
     ]
   },
   {
@@ -345,17 +345,17 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/register_interface/src/reg_intf.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/register_interface/src/reg_uniform.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/register_interface/src/axi_lite_to_reg.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/register_interface/src/apb_to_reg.sv"
+      "./deps/register_interface/src/reg_intf.sv",
+      "./deps/register_interface/src/reg_uniform.sv",
+      "./deps/register_interface/src/axi_lite_to_reg.sv",
+      "./deps/register_interface/src/apb_to_reg.sv"
     ]
   },
   {
@@ -363,14 +363,14 @@
     "independent": false,
     "target": "all(test, all(*, all(*)))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/register_interface/src/reg_test.sv"
+      "./deps/register_interface/src/reg_test.sv"
     ]
   },
   {
@@ -378,22 +378,22 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {},
     "files": [
-      "/scratch/msc19f10/ariane-bender/./deps/riscv-dbg/src/dm_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/riscv-dbg/debug_rom/debug_rom.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/riscv-dbg/src/dm_csrs.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/riscv-dbg/src/dm_mem.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/riscv-dbg/src/dm_top.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/riscv-dbg/src/dmi_cdc.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/riscv-dbg/src/dmi_jtag.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/riscv-dbg/src/dmi_jtag_tap.sv",
-      "/scratch/msc19f10/ariane-bender/./deps/riscv-dbg/src/dm_sba.sv"
+      "./deps/riscv-dbg/src/dm_pkg.sv",
+      "./deps/riscv-dbg/debug_rom/debug_rom.sv",
+      "./deps/riscv-dbg/src/dm_csrs.sv",
+      "./deps/riscv-dbg/src/dm_mem.sv",
+      "./deps/riscv-dbg/src/dm_top.sv",
+      "./deps/riscv-dbg/src/dmi_cdc.sv",
+      "./deps/riscv-dbg/src/dmi_jtag.sv",
+      "./deps/riscv-dbg/src/dmi_jtag_tap.sv",
+      "./deps/riscv-dbg/src/dm_sba.sv"
     ]
   },
   {
@@ -401,92 +401,92 @@
     "independent": false,
     "target": "all(*, all(*))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {
       "WT_DCACHE": "1"
     },
     "files": [
-      "/scratch/msc19f10/ariane-bender/deps/register_interface/src/reg_intf_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/top_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/plic_regmap.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/prim_subreg.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/prim_subreg_ext.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/rv_plic_gateway.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/rv_plic_reg_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/rv_plic_target.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/tlul_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/plic_top.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/rv_plic_reg_top.sv",
-      "/scratch/msc19f10/ariane-bender/deps/rv_plic/rtl/rv_plic.sv",
-      "/scratch/msc19f10/ariane-bender/include/riscv_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/src/ariane_regfile_ff.sv",
-      "/scratch/msc19f10/ariane-bender/include/ariane_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/include/std_cache_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/include/wt_cache_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/src/amo_buffer.sv",
-      "/scratch/msc19f10/ariane-bender/src/alu.sv",
-      "/scratch/msc19f10/ariane-bender/src/commit_stage.sv",
-      "/scratch/msc19f10/ariane-bender/src/compressed_decoder.sv",
-      "/scratch/msc19f10/ariane-bender/src/csr_regfile.sv",
-      "/scratch/msc19f10/ariane-bender/src/decoder.sv",
-      "/scratch/msc19f10/ariane-bender/src/branch_unit.sv",
-      "/scratch/msc19f10/ariane-bender/src/controller.sv",
-      "/scratch/msc19f10/ariane-bender/src/csr_buffer.sv",
-      "/scratch/msc19f10/ariane-bender/src/fpu_wrap.sv",
-      "/scratch/msc19f10/ariane-bender/src/frontend/bht.sv",
-      "/scratch/msc19f10/ariane-bender/src/frontend/btb.sv",
-      "/scratch/msc19f10/ariane-bender/src/frontend/instr_queue.sv",
-      "/scratch/msc19f10/ariane-bender/src/frontend/instr_scan.sv",
-      "/scratch/msc19f10/ariane-bender/src/frontend/ras.sv",
-      "/scratch/msc19f10/ariane-bender/src/instr_realign.sv",
-      "/scratch/msc19f10/ariane-bender/src/issue_read_operands.sv",
-      "/scratch/msc19f10/ariane-bender/src/load_unit.sv",
-      "/scratch/msc19f10/ariane-bender/src/multiplier.sv",
-      "/scratch/msc19f10/ariane-bender/src/perf_counters.sv",
-      "/scratch/msc19f10/ariane-bender/src/ptw.sv",
-      "/scratch/msc19f10/ariane-bender/src/re_name.sv",
-      "/scratch/msc19f10/ariane-bender/src/scoreboard.sv",
-      "/scratch/msc19f10/ariane-bender/src/serdiv.sv",
-      "/scratch/msc19f10/ariane-bender/src/store_buffer.sv",
-      "/scratch/msc19f10/ariane-bender/src/tlb.sv",
-      "/scratch/msc19f10/ariane-bender/tb/ariane_soc_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/include/ariane_axi_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/amo_alu.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/cache_ctrl.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/tag_cmp.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/std_icache.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/wt_dcache_ctrl.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/wt_dcache_mem.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/wt_dcache_missunit.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/wt_dcache_wbuffer.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/wt_icache.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/wt_l15_adapter.sv",
-      "/scratch/msc19f10/ariane-bender/src/frontend/frontend.sv",
-      "/scratch/msc19f10/ariane-bender/src/id_stage.sv",
-      "/scratch/msc19f10/ariane-bender/src/mmu.sv",
-      "/scratch/msc19f10/ariane-bender/src/mult.sv",
-      "/scratch/msc19f10/ariane-bender/src/store_unit.sv",
-      "/scratch/msc19f10/ariane-bender/src/axi_adapter.sv",
-      "/scratch/msc19f10/ariane-bender/src/axi_shim.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/wt_dcache.sv",
-      "/scratch/msc19f10/ariane-bender/src/clint/axi_lite_interface.sv",
-      "/scratch/msc19f10/ariane-bender/src/load_store_unit.sv",
-      "/scratch/msc19f10/ariane-bender/src/issue_stage.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/miss_handler.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/wt_axi_adapter.sv",
-      "/scratch/msc19f10/ariane-bender/src/clint/clint.sv",
-      "/scratch/msc19f10/ariane-bender/src/ex_stage.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/std_nbdcache.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/wt_cache_subsystem.sv",
-      "/scratch/msc19f10/ariane-bender/src/cache_subsystem/std_cache_subsystem.sv",
-      "/scratch/msc19f10/ariane-bender/src/ariane.sv",
-      "/scratch/msc19f10/ariane-bender/fpga/src/ariane_peripherals_xilinx.sv",
-      "/scratch/msc19f10/ariane-bender/deps/fpga-support/rtl/SyncSpRamBeNx64.sv",
-      "/scratch/msc19f10/ariane-bender/src/util/sram.sv"
+      "deps/register_interface/src/reg_intf_pkg.sv",
+      "deps/rv_plic/rtl/top_pkg.sv",
+      "deps/rv_plic/rtl/plic_regmap.sv",
+      "deps/rv_plic/rtl/prim_subreg.sv",
+      "deps/rv_plic/rtl/prim_subreg_ext.sv",
+      "deps/rv_plic/rtl/rv_plic_gateway.sv",
+      "deps/rv_plic/rtl/rv_plic_reg_pkg.sv",
+      "deps/rv_plic/rtl/rv_plic_target.sv",
+      "deps/rv_plic/rtl/tlul_pkg.sv",
+      "deps/rv_plic/rtl/plic_top.sv",
+      "deps/rv_plic/rtl/rv_plic_reg_top.sv",
+      "deps/rv_plic/rtl/rv_plic.sv",
+      "include/riscv_pkg.sv",
+      "src/ariane_regfile_ff.sv",
+      "include/ariane_pkg.sv",
+      "include/std_cache_pkg.sv",
+      "include/wt_cache_pkg.sv",
+      "src/amo_buffer.sv",
+      "src/alu.sv",
+      "src/commit_stage.sv",
+      "src/compressed_decoder.sv",
+      "src/csr_regfile.sv",
+      "src/decoder.sv",
+      "src/branch_unit.sv",
+      "src/controller.sv",
+      "src/csr_buffer.sv",
+      "src/fpu_wrap.sv",
+      "src/frontend/bht.sv",
+      "src/frontend/btb.sv",
+      "src/frontend/instr_queue.sv",
+      "src/frontend/instr_scan.sv",
+      "src/frontend/ras.sv",
+      "src/instr_realign.sv",
+      "src/issue_read_operands.sv",
+      "src/load_unit.sv",
+      "src/multiplier.sv",
+      "src/perf_counters.sv",
+      "src/ptw.sv",
+      "src/re_name.sv",
+      "src/scoreboard.sv",
+      "src/serdiv.sv",
+      "src/store_buffer.sv",
+      "src/tlb.sv",
+      "tb/ariane_soc_pkg.sv",
+      "include/ariane_axi_pkg.sv",
+      "src/cache_subsystem/amo_alu.sv",
+      "src/cache_subsystem/cache_ctrl.sv",
+      "src/cache_subsystem/tag_cmp.sv",
+      "src/cache_subsystem/std_icache.sv",
+      "src/cache_subsystem/wt_dcache_ctrl.sv",
+      "src/cache_subsystem/wt_dcache_mem.sv",
+      "src/cache_subsystem/wt_dcache_missunit.sv",
+      "src/cache_subsystem/wt_dcache_wbuffer.sv",
+      "src/cache_subsystem/wt_icache.sv",
+      "src/cache_subsystem/wt_l15_adapter.sv",
+      "src/frontend/frontend.sv",
+      "src/id_stage.sv",
+      "src/mmu.sv",
+      "src/mult.sv",
+      "src/store_unit.sv",
+      "src/axi_adapter.sv",
+      "src/axi_shim.sv",
+      "src/cache_subsystem/wt_dcache.sv",
+      "src/clint/axi_lite_interface.sv",
+      "src/load_store_unit.sv",
+      "src/issue_stage.sv",
+      "src/cache_subsystem/miss_handler.sv",
+      "src/cache_subsystem/wt_axi_adapter.sv",
+      "src/clint/clint.sv",
+      "src/ex_stage.sv",
+      "src/cache_subsystem/std_nbdcache.sv",
+      "src/cache_subsystem/wt_cache_subsystem.sv",
+      "src/cache_subsystem/std_cache_subsystem.sv",
+      "src/ariane.sv",
+      "fpga/src/ariane_peripherals_xilinx.sv",
+      "deps/fpga-support/rtl/SyncSpRamBeNx64.sv",
+      "src/util/sram.sv"
     ]
   },
   {
@@ -494,22 +494,39 @@
     "independent": false,
     "target": "all(test, all(*, all(*)))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {
       "WT_DCACHE": "1"
     },
     "files": [
-      "/scratch/msc19f10/ariane-bender/bootrom/bootrom.sv",
-      "/scratch/msc19f10/ariane-bender/tb/common/uart.sv",
-      "/scratch/msc19f10/ariane-bender/tb/common/SimDTM.sv",
-      "/scratch/msc19f10/ariane-bender/tb/common/SimJTAG.sv",
-      "/scratch/msc19f10/ariane-bender/tb/common/mock_uart.sv",
-      "/scratch/msc19f10/ariane-bender/tb/ariane_testharness.sv",
-      "/scratch/msc19f10/ariane-bender/tb/ariane_tb.sv"
+      "bootrom/bootrom.sv",
+      "tb/common/uart.sv",
+      "tb/common/SimDTM.sv",
+      "tb/common/SimJTAG.sv",
+      "tb/common/mock_uart.sv",
+      "tb/ariane_testharness.sv",
+      "tb/ariane_tb.sv"
+    ]
+  },
+  {
+    "package": "ariane",
+    "independent": false,
+    "target": "all(spike, all(*, all(*)))",
+    "include_dirs": [
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
+    ],
+    "defines": {
+      "WT_DCACHE": "1"
+    },
+    "files": [
+      "tb/common/spike.sv"
     ]
   },
   {
@@ -517,20 +534,20 @@
     "independent": false,
     "target": "all(all(*, all(*)), not(synthesis))",
     "include_dirs": [
-      "/scratch/msc19f10/ariane-bender/./deps/common_cells/include",
-      "/scratch/msc19f10/ariane-bender/./deps/axi/include",
-      "/scratch/msc19f10/ariane-bender/include/",
-      "/scratch/msc19f10/ariane-bender/src/util/"
+      "./deps/common_cells/include",
+      "./deps/axi/include",
+      "include/",
+      "src/util/"
     ],
     "defines": {
       "WT_DCACHE": "1"
     },
     "files": [
-      "/scratch/msc19f10/ariane-bender/include/instr_tracer_pkg.sv",
-      "/scratch/msc19f10/ariane-bender/src/util/instr_trace_item.svh",
-      "/scratch/msc19f10/ariane-bender/src/util/ex_trace_item.svh",
-      "/scratch/msc19f10/ariane-bender/src/util/instr_tracer_if.sv",
-      "/scratch/msc19f10/ariane-bender/src/util/instr_tracer.sv"
+      "include/instr_tracer_pkg.sv",
+      "src/util/instr_trace_item.svh",
+      "src/util/ex_trace_item.svh",
+      "src/util/instr_tracer_if.sv",
+      "src/util/instr_tracer.sv"
     ]
   }
 ]

@@ -5,6 +5,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -23,6 +24,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -37,6 +39,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -55,6 +58,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -109,6 +113,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -121,6 +126,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -142,6 +148,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -166,6 +173,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -203,6 +211,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -215,6 +224,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -238,6 +248,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -257,6 +268,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -285,6 +297,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -300,6 +313,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -318,6 +332,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -341,6 +356,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -356,6 +372,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -368,6 +385,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     "+incdir+$ROOT/deps/common_cells/include" \
@@ -388,6 +406,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     +define+WT_DCACHE=1 \
@@ -477,6 +496,7 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     +define+WT_DCACHE=1 \
@@ -496,6 +516,21 @@ vlog -incr -sv \
     +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
     +define+TARGET_RTL \
     +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
+    +define+TARGET_TEST \
+    +define+TARGET_VSIM \
+    +define+WT_DCACHE=1 \
+    "+incdir+$ROOT/deps/common_cells/include" \
+    "+incdir+$ROOT/deps/axi/include" \
+    "+incdir+$ROOT/include" \
+    "+incdir+$ROOT/src/util" \
+    "$ROOT/tb/common/spike.sv"
+
+vlog -incr -sv \
+    +cover=bcfst+/dut -64 -nologo -suppress 13262,2583 -permissive -pedanticerrors -svinputport=compat \
+    +define+TARGET_RTL \
+    +define+TARGET_SIMULATION \
+    +define+TARGET_SPIKE \
     +define+TARGET_TEST \
     +define+TARGET_VSIM \
     +define+WT_DCACHE=1 \
