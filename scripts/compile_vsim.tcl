@@ -410,6 +410,7 @@ vlog -incr -sv \
     "$ROOT/include/riscv_pkg.sv" \
     "$ROOT/src/ariane_regfile_ff.sv" \
     "$ROOT/include/ariane_pkg.sv" \
+    "$ROOT/include/std_cache_pkg.sv" \
     "$ROOT/include/wt_cache_pkg.sv" \
     "$ROOT/src/amo_buffer.sv" \
     "$ROOT/src/alu.sv" \
@@ -440,6 +441,9 @@ vlog -incr -sv \
     "$ROOT/tb/ariane_soc_pkg.sv" \
     "$ROOT/include/ariane_axi_pkg.sv" \
     "$ROOT/src/cache_subsystem/amo_alu.sv" \
+    "$ROOT/src/cache_subsystem/cache_ctrl.sv" \
+    "$ROOT/src/cache_subsystem/tag_cmp.sv" \
+    "$ROOT/src/cache_subsystem/std_icache.sv" \
     "$ROOT/src/cache_subsystem/wt_dcache_ctrl.sv" \
     "$ROOT/src/cache_subsystem/wt_dcache_mem.sv" \
     "$ROOT/src/cache_subsystem/wt_dcache_missunit.sv" \
@@ -461,10 +465,13 @@ vlog -incr -sv \
     "$ROOT/src/util/axi_slave_connect.sv" \
     "$ROOT/src/util/axi_master_connect_rev.sv" \
     "$ROOT/src/util/axi_slave_connect_rev.sv" \
+    "$ROOT/src/cache_subsystem/miss_handler.sv" \
     "$ROOT/src/cache_subsystem/wt_axi_adapter.sv" \
     "$ROOT/src/clint/clint.sv" \
     "$ROOT/src/ex_stage.sv" \
+    "$ROOT/src/cache_subsystem/std_nbdcache.sv" \
     "$ROOT/src/cache_subsystem/wt_cache_subsystem.sv" \
+    "$ROOT/src/cache_subsystem/std_cache_subsystem.sv" \
     "$ROOT/src/ariane.sv" \
     "$ROOT/fpga/src/ariane_peripherals_xilinx.sv" \
     "$ROOT/deps/fpga-support/rtl/SyncSpRamBeNx64.sv" \
