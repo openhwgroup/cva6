@@ -410,7 +410,9 @@ xrun-firmware: xrun-all $(FIRMWARE)/firmware.hex
 .PHONY: xrun-clean xrun-clean-all
 xrun-clean:
 	rm -vrf $(XRUN_DIR)
-	rm xrun.history xrun.log
+	if [ -d xrun.history ]; then rm xrun.history; fi
+	if [ -e xrun.log ]; then rm xrun.log; fi
+
 xrun-clean-all: xrun-clean
 	rm -vrf $(addprefix $(FIRMWARE)/firmware., elf bin hex map) \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS)
