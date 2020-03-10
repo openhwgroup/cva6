@@ -4,10 +4,9 @@ package:
     - "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"
     - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
 
-frozen: false # allows for checking in the dependencies
+frozen: false # true -> stops bender update
 
 dependencies:
-    #apb_node:           { git: "https://github.com/pulp-platform/apb_node.git",           version: 0.1.1                 } # advanced by one commit which added somthing in src-files.yml <-- no longer needed as functionality is in axi_to_apb
     apb_timer:          { git: "https://github.com/pulp-platform/apb_timer.git",          version: 0.1.0                 } # HEAD was Pulpino_v2.1-4-g6c84f69 same as master
     apb_uart:           { git: "https://github.com/pulp-platform/apb_uart.git",           version: 0.1.0                 } # HEAD was here v0.0.1-2-gac3461c same as v0.1.0
     ariane-ethernet:    { git: "https://github.com/lowRISC/ariane-ethernet.git",          rev:     noila_1GHz            } # no tag, position of submodule HEAD : NOT Benderised!!
@@ -22,9 +21,6 @@ dependencies:
     riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git",          rev:    v0.3                   } # : NOT Benderised in original version v0.1!! and version: 0.3 does not work
     rv_plic:            { git: "https://github.com/pulp-platform/rv_plic.git",            rev:     master                } # NOT benderised
     tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1                 } # has error in changelog
-    #axi_node:           { git: "https://github.com/pulp-platform/axi_node.git",           rev:     atop                  } # to be to be replaced with axi_xbar, was v1.1.2-7-ga29a69a should be the same <-- replaced by axi_xbar
-    #axi2apb:            { git: "https://github.com/pulp-platform/axi2apb.git",            version: 0.1.1                 } # HEAD was here  v0.1.0-4-g53e7b9f same as v0.1.1, TODO: integration into axi repo <-- replaces by _axi_to_apb
-    #axi_slice:          { git: "https://github.com/pulp-platform/axi_slice.git",          version: 1.1.4                 } # bump to version v1.1.4 was v1.1.3-1-gaae8ca4 <-- needed by axi_node
 
 workspace:
     checkout_dir: "./deps"
@@ -37,34 +33,28 @@ sources:
   - defines:
       WT_DCACHE: 1
     files:
-        - deps/register_interface/src/reg_intf_pkg.sv            # bendergenerated TODO: look if interface is defined in Bender in dependency !!!! <---manually adding makes compile_bender.tcl compilable!
-        # dependency rv_plic, not benderised
+        - deps/register_interface/src/reg_intf_pkg.sv            # interface is not defined in Bender dependency! <-- manually adding
+        # dependency rv_plic, not benderized
         # Level 0
         - deps/rv_plic/rtl/top_pkg.sv
         # Level 1
-        - deps/rv_plic/rtl/plic_regmap.sv             # Was in Ariane: TODO: bederise : src/rv_plic/rtl, depends on reg_intf_pkg
+        - deps/rv_plic/rtl/plic_regmap.sv
         - deps/rv_plic/rtl/prim_subreg.sv
         - deps/rv_plic/rtl/prim_subreg_ext.sv
-        - deps/rv_plic/rtl/rv_plic_gateway.sv         # Was in Ariane: TODO: bederise : src/rv_plic/rtl
+        - deps/rv_plic/rtl/rv_plic_gateway.sv
         - deps/rv_plic/rtl/rv_plic_reg_pkg.sv
-        - deps/rv_plic/rtl/rv_plic_target.sv          # Was in Ariane: TODO: bederise : src/rv_plic/rtl
+        - deps/rv_plic/rtl/rv_plic_target.sv
         - deps/rv_plic/rtl/tlul_pkg.sv
         # Level 2
-        - deps/rv_plic/rtl/plic_top.sv                # Was in Ariane: TODO: bederise : src/rv_plic/rtl
+        - deps/rv_plic/rtl/plic_top.sv
         - deps/rv_plic/rtl/rv_plic_reg_top.sv
         # Level 3
         - deps/rv_plic/rtl/rv_plic.sv
-        # Ariane itself
+        # Ariane sourcefiles
         # Level 0
         - include/riscv_pkg.sv
-        #- deps/riscv-dbg/src/dm_pkg.sv # TODO: bendergenerated
         - src/ariane_regfile_ff.sv
-          # - src/axi/src/axi_pkg.sv                                # bendergenerated
-          # - src/fpu/src/fpnew_pkg.sv                              # bendergenerated
-          # - src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv # bendergenerated
-          # - src/register_interface/src/reg_intf.sv                # bendergenerated
         # Level 1
-          # - include/axi_intf.sv                                   # bendergenerated
         - include/ariane_pkg.sv                                     # depends on include/riscv_pkg.sv
         # Level 2
         - include/std_cache_pkg.sv                                  # depends on include/ariane_pkg.sv
@@ -120,10 +110,10 @@ sources:
         - src/clint/axi_lite_interface.sv                           # depends on include/ariane_axi_pkg.sv
         - src/load_store_unit.sv                                    # depends on include/ariane_pkg.sv, include/riscv_pkg.sv, mmu.sv, store_unit.sv, load_unit.sv, common_cells(shift_reg)
         - src/issue_stage.sv                                        # depends on include/ariane_pkg.sv, src/re_name.sv, src/scoreboard.sv, src/issue_read_operands.sv
-        - src/util/axi_master_connect.sv                            # depends on include/ariane_axi_pkg.sv TODO: update with AXI dependency
-        - src/util/axi_slave_connect.sv                             # depends on include/ariane_axi_pkg.sv TODO: update with AXI dependency
-        - src/util/axi_master_connect_rev.sv                        # depends on include/ariane_axi_pkg.sv TODO: update with AXI dependency
-        - src/util/axi_slave_connect_rev.sv                         # depends on include/ariane_axi_pkg.sv TODO: update with AXI dependency
+        - src/util/axi_master_connect.sv                            # depends on include/ariane_axi_pkg.sv TODO: replace with AXI macro
+        - src/util/axi_slave_connect.sv                             # depends on include/ariane_axi_pkg.sv TODO: replace with AXI macro
+        - src/util/axi_master_connect_rev.sv                        # depends on include/ariane_axi_pkg.sv TODO: replace with AXI macro
+        - src/util/axi_slave_connect_rev.sv                         # depends on include/ariane_axi_pkg.sv TODO: replace with AXI macro
         # Level 5
         - src/cache_subsystem/miss_handler.sv                       # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/ariane_axi_pkg.sv, src/axi_adapter.sv, src/cache_subsystem/amo_alu.sv, common_cells(lfsr_8bit)
         - src/cache_subsystem/wt_axi_adapter.sv                     # depends on include/ariane_pkg.sv, include/wt_cache_pkg.sv, src/axi_shim.sv, common_cells(fifo_v3, rr_arb_tree)
@@ -137,20 +127,10 @@ sources:
         - src/cache_subsystem/std_cache_subsystem.sv                # depends on include/ariane_pkg.sv, include/std_cache_pkg.sv, include/riscv_pkg.sv, include/ariane_axi_pkg.sv, src/cache_subsystem/std_nbdcache.sv, src/cache_subsystem/std_icache.sv, common_cells(fifo_v3, stream_arbiter, stream_demux, stream_mux)
         # Level 8
         - src/ariane.sv
-        # Level 9 3/4 TODOS
+        # Level 9 3/4
         - fpga/src/ariane_peripherals_xilinx.sv
-        #- deps/apb_timer/timer.sv                     # TODO: adapt dependency with version:
-        #- deps/apb_timer/apb_timer.sv                 # TODO: adapt dependency with version:
-        # - deps/riscv-dbg/src/dmi_cdc.sv               # TODO: bederise : src/riscv-dbg, updated to v0.3
-        # - deps/riscv-dbg/src/dmi_jtag.sv              # TODO: bederise : src/riscv-dbg, updated to v0.3
-        # - deps/riscv-dbg/src/dmi_jtag_tap.sv          # TODO: bederise : src/riscv-dbg, updated to v0.3
-        # - deps/riscv-dbg/src/dm_csrs.sv               # TODO: bederise : src/riscv-dbg, updated to v0.3
-        # - deps/riscv-dbg/src/dm_mem.sv                # TODO: bederise : src/riscv-dbg, updated to v0.3
-        # - deps/riscv-dbg/src/dm_sba.sv                # TODO: bederise : src/riscv-dbg, updated to v0.3
-        # - deps/riscv-dbg/src/dm_top.sv                # TODO: bederise : src/riscv-dbg, updated to v0.3
-        # - deps/riscv-dbg/debug_rom/debug_rom.sv       # TODO: bederise : src/riscv-dbg, updated to v0.3
-        - deps/fpga-support/rtl/SyncSpRamBeNx64.sv    # TODO: see release-0.4!!!!!!!!!!!!!!!!!!!!!! <-- to be replaced with tc_sram
-        - src/util/sram.sv                       # does this trigger for FPGA? inside FPGA support stuff <-- to be replaced with tc_sram
+        - deps/fpga-support/rtl/SyncSpRamBeNx64.sv # <-- to be replaced with tc_sram
+        - src/util/sram.sv                         # <-- to be replaced with tc_sram
         - target: test
           files:
           # Level 0
@@ -159,7 +139,6 @@ sources:
           - tb/common/SimDTM.sv
           - tb/common/SimJTAG.sv
           - tb/common/mock_uart.sv
-          #- src/util/sram.sv                       # does this trigger for FPGA? inside FPGA support stuff
           # Level 1
           - tb/ariane_testharness.sv
           # Level 2
@@ -178,150 +157,33 @@ sources:
             # - src/util/instruction_tracer_defines.svh  # original: TODO: ask zarubaf src/util/instruction_tracer_defines.svh not in folder!!!
         - target: all(fpga, xilinx)
           files:
-            # Dependency ariane-ethernet: not benderised
+            # Dependency ariane-ethernet: not benderized
             #Level 0
-            - deps/ariane-ethernet/dualmem_widen8.sv         # TODO: benderise
-            - deps/ariane-ethernet/dualmem_widen.sv          # TODO: benderise
-            - deps/ariane-ethernet/iddr.sv                   # TODO: benderise, depends on XILINX primiteves and Altera primitives
-            - deps/ariane-ethernet/oddr.sv                   # TODO: benderise, depends on XILINX primiteves and Altera primitives
-            - deps/ariane-ethernet/rgmii_lfsr.sv             # TODO: benderise
+            - deps/ariane-ethernet/dualmem_widen8.sv
+            - deps/ariane-ethernet/dualmem_widen.sv
+            - deps/ariane-ethernet/iddr.sv                   # depends on XILINX primitives and Altera primitives
+            - deps/ariane-ethernet/oddr.sv                   # depends on XILINX primitives and Altera primitives
+            - deps/ariane-ethernet/rgmii_lfsr.sv
             # Level 1
-            - deps/ariane-ethernet/axis_gmii_rx.sv           # TODO: benderise
-            - deps/ariane-ethernet/axis_gmii_tx.sv           # TODO: benderise
-            - deps/ariane-ethernet/ssio_ddr_in.sv            # TODO: benderise, depends on iddr
+            - deps/ariane-ethernet/axis_gmii_rx.sv
+            - deps/ariane-ethernet/axis_gmii_tx.sv
+            - deps/ariane-ethernet/ssio_ddr_in.sv            # depends on iddr
             # Level 2
-            - deps/ariane-ethernet/eth_mac_1g.sv             # TODO: benderise
-            - deps/ariane-ethernet/rgmii_phy_if.sv           # TODO: benderise
+            - deps/ariane-ethernet/eth_mac_1g.sv
+            - deps/ariane-ethernet/rgmii_phy_if.sv
             # Level 3
-            - deps/ariane-ethernet/eth_mac_1g_rgmii.sv       # TODO: benderise
+            - deps/ariane-ethernet/eth_mac_1g_rgmii.sv
             # Level 4
-            - deps/ariane-ethernet/eth_mac_1g_rgmii_fifo.sv  # TODO: benderise
+            - deps/ariane-ethernet/eth_mac_1g_rgmii_fifo.sv
             # Level 5
-            - deps/ariane-ethernet/rgmii_core.sv             # TODO: benderise
+            - deps/ariane-ethernet/rgmii_core.sv
             # Level 6
-            - deps/ariane-ethernet/rgmii_soc.sv              # TODO: benderise
+            - deps/ariane-ethernet/rgmii_soc.sv
             # Level 7
-            - deps/ariane-ethernet/framing_top.sv            # TODO: benderise
+            - deps/ariane-ethernet/framing_top.sv
             # FPGA specific
             # Level 0
             - fpga/src/bootrom/bootrom.sv
             - fpga/src/fan_ctrl.sv
             # Level 1
-            - fpga/src/ariane_peripherals_xilinx.sv
-            # apb_urat - fpga/src/apb_uart/src/apb_uart.vhd             bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/uart_transmitter.vhd     bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/uart_interrupt.vhd       bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/slib_mv_filter.vhd       bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/slib_input_filter.vhd    bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/slib_counter.vhd         bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/uart_receiver.vhd        bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/slib_input_sync.vhd      bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/slib_edge_detect.vhd     bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/slib_clock_div.vhd       bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/slib_fifo.vhd            bendergenerated
-            # apb_urat - fpga/src/apb_uart/src/uart_baudgen.vhd         bendergenerated
-            # Level 2
             - fpga/src/ariane_xilinx.sv
-
-    # Packages managed from bender
-    # Stand-alone source files
-    # fpnew - src/fpu/src/fpnew_fma.sv                                   # bendergenerated
-    # fpnew - src/fpu/src/fpnew_opgroup_fmt_slice.sv                     # bendergenerated
-    # fpnew - src/fpu/src/fpnew_divsqrt_multi.sv                         # bendergenerated
-    # fpnew - src/fpu/src/fpnew_fma_multi.sv                             # bendergenerated
-    # fpnew - src/fpu/src/fpnew_opgroup_multifmt_slice.sv                # bendergenerated
-    # fpnew - src/fpu/src/fpnew_classifier.sv                            # bendergenerated
-    # fpnew - src/fpu/src/fpnew_noncomp.sv                               # bendergenerated
-    # fpnew - src/fpu/src/fpnew_cast_multi.sv                            # bendergenerated
-    # fpnew - src/fpu/src/fpnew_opgroup_block.sv                         # bendergenerated
-    # fpnew - src/fpu/src/fpnew_rounding.sv                              # bendergenerated
-    # fpnew - src/fpu/src/fpnew_top.sv                                   # bendergenerated
-    # fpnew - src/fpu/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv # bendergenerated
-    # fpnew - src/fpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv          # bendergenerated
-    # fpnew - src/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv       # bendergenerated
-    # fpnew - src/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv         # bendergenerated
-    # fpnew - src/fpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv            # bendergenerated
-    # fpnew - src/fpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv      # bendergenerated
-    # fpnew - src/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv   # bendergenerated
-
-    # axi2abp - fpga/src/axi2apb/src/axi2apb_wrap.sv                     # bendergenerated
-    # axi2abp - fpga/src/axi2apb/src/axi2apb.sv                          # bendergenerated
-    # axi2abp - fpga/src/axi2apb/src/axi2apb_64_32.sv                    # bendergenerated
-
-    # axi_slice - fpga/src/axi_slice/src/axi_w_buffer.sv                 # bendergenerated
-    # axi_slice - fpga/src/axi_slice/src/axi_b_buffer.sv                 # bendergenerated
-    # axi_slice - fpga/src/axi_slice/src/axi_slice_wrap.sv               # bendergenerated
-    # axi_slice - fpga/src/axi_slice/src/axi_slice.sv                    # bendergenerated
-    # axi_slice - fpga/src/axi_slice/src/axi_single_slice.sv             # bendergenerated
-    # axi_slice - fpga/src/axi_slice/src/axi_ar_buffer.sv                # bendergenerated
-    # axi_slice - fpga/src/axi_slice/src/axi_r_buffer.sv                 # bendergenerated
-    # axi_slice - fpga/src/axi_slice/src/axi_aw_buffer.sv                # bendergenerated
-
-
-    # axi_node - src/axi_node/src/axi_regs_top.sv                    # bendergenerated
-    # axi_node - src/axi_node/src/axi_BR_allocator.sv                # bendergenerated
-    # axi_node - src/axi_node/src/axi_BW_allocator.sv                # bendergenerated
-    # axi_node - src/axi_node/src/axi_address_decoder_BR.sv          # bendergenerated
-    # axi_node - src/axi_node/src/axi_DW_allocator.sv                # bendergenerated
-    # axi_node - src/axi_node/src/axi_address_decoder_BW.sv          # bendergenerated
-    # axi_node - src/axi_node/src/axi_address_decoder_DW.sv          # bendergenerated
-    # axi_node - src/axi_node/src/axi_node_arbiter.sv                # bendergenerated
-    # axi_node - src/axi_node/src/axi_response_block.sv              # bendergenerated
-    # axi_node - src/axi_node/src/axi_request_block.sv               # bendergenerated
-    # axi_node - src/axi_node/src/axi_AR_allocator.sv                # bendergenerated
-    # axi_node - src/axi_node/src/axi_AW_allocator.sv                # bendergenerated
-    # axi_node - src/axi_node/src/axi_address_decoder_AR.sv          # bendergenerated
-    # axi_node - src/axi_node/src/axi_address_decoder_AW.sv          # bendergenerated
-    # axi_node - src/axi_node/src/apb_regs_top.sv                    # bendergenerated
-    # axi_node - src/axi_node/src/axi_node_intf_wrap.sv              # bendergenerated
-    # axi_node - src/axi_node/src/axi_node.sv                        # bendergenerated
-    # axi_node - src/axi_node/src/axi_node_wrap_with_slices.sv       # bendergenerated
-    # axi_node - src/axi_node/src/axi_multiplexer.sv                 # bendergenerated
-
-    # axi_riscv_atomics - src/axi_riscv_atomics/src/axi_riscv_amos.sv         # bendergenerated
-    # axi_riscv_atomics - src/axi_riscv_atomics/src/axi_riscv_atomics.sv      # bendergenerated
-    # axi_riscv_atomics - src/axi_riscv_atomics/src/axi_res_tbl.sv            # bendergenerated
-    # axi_riscv_atomics - src/axi_riscv_atomics/src/axi_riscv_lrsc_wrap.sv    # bendergenerated
-    # axi_riscv_atomics - src/axi_riscv_atomics/src/axi_riscv_amos_alu.sv     # bendergenerated
-    # axi_riscv_atomics - src/axi_riscv_atomics/src/axi_riscv_lrsc.sv         # bendergenerated
-    # axi_riscv_atomics - src/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv # bendergenerated
-
-    # axi_mem_if - src/axi_mem_if/src/axi2mem.sv # bendergenerated
-
-    # register_interface - src/register_interface/src/apb_to_reg.sv # Warning: TODO: check interface/package instantiation of dependency!!!!
-
-    # axi - src/axi/src/axi_multicut.sv      # bendergenerated
-    # axi - src/axi/src/axi_cut.sv           # bendergenerated
-    # axi - src/axi/src/axi_join.sv          # bendergenerated
-    # axi - src/axi/src/axi_delayer.sv       # bendergenerated
-    # axi - src/axi/src/axi_to_axi_lite.sv   # bendergenerated
-
-    # common_cells - src/common_cells/src/deprecated/generic_fifo.sv             # bendergenerated
-    # common_cells - src/common_cells/src/deprecated/pulp_sync.sv                # bendergenerated
-    # common_cells - src/common_cells/src/deprecated/find_first_one.sv           # bendergenerated
-    # common_cells - src/common_cells/src/rstgen_bypass.sv                       # bendergenerated
-    # common_cells - src/common_cells/src/rstgen.sv                              # bendergenerated
-    # common_cells - src/common_cells/src/stream_mux.sv                          # bendergenerated
-    # common_cells - src/common_cells/src/stream_demux.sv                        # bendergenerated
-    # common_cells - src/common_cells/src/deprecated/stream_arbiter.sv           # bendergenerated
-    # common_cells - src/common_cells/src/deprecated/stream_arbiter_flushable.sv # bendergenerated
-    # common_cells - src/common_cells/src/popcount.sv                            # bendergenerated
-    # common_cells - src/common_cells/src/unread.sv                              # bendergenerated
-    # common_cells - src/common_cells/src/cdc_2phase.sv                          # bendergenerated
-    # common_cells - src/common_cells/src/spill_register.sv                      # bendergenerated
-    # common_cells - src/common_cells/src/edge_detect.sv                         # bendergenerated
-    # common_cells - src/common_cells/src/fifo_v3.sv                             # bendergenerated
-    # common_cells - src/common_cells/src/deprecated/fifo_v2.sv                  # bendergenerated
-    # common_cells - src/common_cells/src/deprecated/fifo_v1.sv                  # bendergenerated
-    # common_cells - src/common_cells/src/lzc.sv                                 # bendergenerated
-    # common_cells - src/common_cells/src/rr_arb_tree.sv                         # bendergenerated
-    # common_cells - src/common_cells/src/deprecated/rrarbiter.sv                # bendergenerated
-    # common_cells - src/common_cells/src/stream_delay.sv                        # bendergenerated
-    # common_cells - src/common_cells/src/lfsr_8bit.sv                           # bendergenerated
-    # common_cells - src/common_cells/src/lfsr_16bit.sv                          # bendergenerated
-    # common_cells - src/common_cells/src/counter.sv                             # bendergenerated
-    # common_cells - src/common_cells/src/shift_reg.sv                           # bendergenerated
-    # common_cells - src/common_cells/src/exp_backoff.sv                         # bendergenerated
-
-    # tech_cells_generic - src/tech_cells_generic/src/cluster_clock_inverter.sv  # bendergenerated
-    # tech_cells_generic - src/tech_cells_generic/src/pulp_clock_mux2.sv         # bendergenerated
