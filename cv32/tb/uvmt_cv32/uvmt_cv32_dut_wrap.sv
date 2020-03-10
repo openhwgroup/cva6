@@ -50,6 +50,8 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
                             uvmt_cv32_core_interrupts_if core_interrupts_if
                            );
 
+    import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
+
     // signals connecting core to memory
     logic                         instr_req;
     logic                         instr_gnt;
@@ -66,10 +68,31 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
     logic [31:0]                  data_rdata;
     logic [31:0]                  data_wdata;
 
-    // signals to debug unit
-    logic                         debug_req_i;
 
-    assign debug_req_i = 1'b0;
+    // Load the Instruction Memory 
+    initial begin: load_instruction_memory
+      string firmware;
+      int    fd;
+
+      `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_NONE)
+      wait(core_cntrl_if.load_instr_mem === 1'b1);
+      `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
+
+      // Load the pre-compiled firmware
+      if($value$plusargs("firmware=%s", firmware)) begin
+        // First, check if it exists...
+        fd = $fopen (firmware, "r");   
+        if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_NONE)
+        else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
+        $fclose(fd);
+        // Now load it...
+        `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
+        $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
+      end
+      else begin
+        `uvm_error("DUT_WRAP", "No firmware specified!")
+      end
+    end
 
     // instantiate the core
     riscv_core #(.INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),

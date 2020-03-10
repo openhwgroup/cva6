@@ -58,7 +58,7 @@ package uvmt_cv32_pkg;
    // Base test case
    `include "uvmt_cv32_test_cfg.sv"
    `include "uvmt_cv32_base_test.sv"  // all testcases should extend from this testcase
-   `include "uvmt_cv32_smoke_test.sv"
+   //`include "uvmt_cv32_smoke_test.sv" // smoke test has multile XMRs that are illegal according to the LRM
 
    // Compilance tests
    `include "uvmt_cv32_firmware_test.sv"
@@ -67,7 +67,7 @@ package uvmt_cv32_pkg;
    //`include "uvmt_cv32_reg_base_test.sv"
    //`include "uvmt_cv32_reg_hw_reset_test.sv"
    //`include "uvmt_cv32_reg_bit_bash_test.sv"
-   
+
 endpackage : uvmt_cv32_pkg
 
 

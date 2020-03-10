@@ -80,11 +80,19 @@ endtask : reset_phase
 
 task uvmt_cv32_firmware_test_c::configure_phase(uvm_phase phase);
    
-   string firmware;
-   int    fd;
+   //string firmware;
+   //int    fd;
    
    super.configure_phase(phase);
 
+   // Load the pre-compiled firmware
+   // Done in uvmt_cv32_dut_wrap.sv to avoid XMRs across packages.
+   core_cntrl_vif.load_instr_mem = 1'b1;
+
+   /*
+   ** Moved to uvmt_cv32_dut_wrap.sv to avoid XMRs across packages.
+   ** TODO: delete all this once you are confident of the approach.
+   **
     // Load the pre-compiled firmware
     if($value$plusargs("firmware=%s", firmware)) begin
       // First, check if it exists...
@@ -99,6 +107,7 @@ task uvmt_cv32_firmware_test_c::configure_phase(uvm_phase phase);
     else begin
       `uvm_error("TEST", "No firmware specified!")
     end
+   */
 
 endtask : configure_phase
 
@@ -120,7 +129,8 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
           (vp_status_vif.tests_passed  == 1'b1)
         );
    repeat (100) @(posedge clk_gen_vif.core_clock);
-   `uvm_info("TEST", $sformatf("Finished RUN: exit status is %0h", uvmt_cv32_tb.evalue), UVM_NONE)
+   //TODO: exit_value will not be valid - need to add a latch in the vp_status_vif
+   `uvm_info("TEST", $sformatf("Finished RUN: exit status is %0h", vp_status_vif.exit_value), UVM_NONE)
    phase.drop_objection(this);
    
 endtask : run_phase

@@ -49,6 +49,9 @@
 #      *_HASH:   Value of the specific hash you wish to clone;
 #                Set to 'head' to pull the head of the branch you want.
 #                
+#CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
+#CV32E40P_BRANCH ?= master
+#CV32E40P_HASH   ?= tbd
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
 CV32E40P_HASH   ?= 9cdf35c8c460a933496b84c5b51f88652981fd5d
@@ -91,7 +94,7 @@ endif
 # Makefile first developed for the PULP-Platform RI5CY testbench.
 #
 # riscv toolchain install path
-RISCV                   ?= ~/.riscv
+RISCV                   ?= /opt/riscv
 RISCV_EXE_PREFIX         = $(RISCV)/bin/riscv32-unknown-elf-
 
 # CORE FIRMWARE vars. All of the C and assembler programs under CORE_TEST_DIR
@@ -137,7 +140,7 @@ COMPLIANCE_TEST_OBJS     = $(addsuffix .o, \
 
 # Thales verilator testbench compilation start
 
-SUPPORTED_COMMANDS := vsim-firmware-unit-test questa-unit-test dsim-unit-test
+SUPPORTED_COMMANDS := vsim-firmware-unit-test questa-unit-test questa-unit-test-gui dsim-unit-test 
 SUPPORTS_MAKE_ARGS := $(findstring $(firstword $(MAKECMDGOALS)), $(SUPPORTED_COMMANDS))
 
 ifneq "$(SUPPORTS_MAKE_ARGS)" ""
@@ -156,32 +159,7 @@ FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
 
 # Thales verilator testbench compilation end
 
-# run tb and exit
-.PHONY: vsim-run
-vsim-run: ALL_VSIM_FLAGS += -c
-vsim-run: vsim-all
-	$(VSIM) -work $(VWORK) $(ALL_VSIM_FLAGS) \
-	$(RTLSRC_VOPT_TB_TOP) -do 'source $(VSIM_SCRIPT); exit -f'
 
-# run tb and drop into interactive shell
-.PHONY: vsim-run-sh
-vsim-run-sh: ALL_VSIM_FLAGS += -c
-vsim-run-sh: vsim-all
-	$(VSIM) -work $(VWORK) $(ALL_VSIM_FLAGS) \
-	$(RTLSRC_VOPT_TB_TOP) -do $(VSIM_SCRIPT)
-
-# run tb with simulator gui
-.PHONY: vsim-run-gui
-vsim-run-gui: ALL_VSIM_FLAGS += $(VSIM_GUI_FLAGS)
-vsim-run-gui: vsim-all
-	$(VSIM) -work $(VWORK) $(ALL_VSIM_FLAGS) \
-	$(RTLSRC_VOPT_TB_TOP) -do $(VSIM_SCRIPT)
-
-.PHONY: tb-clean
-tb-clean:
-	if [ -d $(VWORK) ]; then rm -r $(VWORK); fi
-	rm -f transcript vsim.wlf vsim.dbg trace_core*.log \
-	.build-rtl .opt-rtl .lib-rtl *.vcd objdump
 
 # rules to generate hex (loadable by simulators) from elf
 %.hex: %.elf
@@ -204,15 +182,6 @@ $(CUSTOM)/hello_world.elf: $(CUSTOM)/hello_world.c
 custom-clean:
 	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
 
-.PHONY: custom-vsim-run
-custom-vsim-run: vsim-all $(CUSTOM)/hello_world.hex
-custom-vsim-run: ALL_VSIM_FLAGS += "+firmware=$(CUSTOM)/hello_world.hex"
-custom-vsim-run: vsim-run
-
-.PHONY: custom-vsim-run-gui
-custom-vsim-run-gui: vsim-all $(CUSTOM)/hello_world.hex
-custom-vsim-run-gui: ALL_VSIM_FLAGS += "+firmware=$(CUSTOM)/hello_world.hex"
-custom-vsim-run-gui: vsim-run-gui
 
 
 # compile and dump RISCV_TESTS only
@@ -338,16 +307,8 @@ firmware-vsim-run-gui: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware.hex"
 firmware-vsim-run-gui: vsim-run-gui
 
 # in questa
-.PHONY: questa-all
-questa-all: vsim-all $(FIRMWARE)/firmware.hex
-questa-all: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware.hex"
-questa-all: vsim-run
 
-.PHONY: questa-unit-test 
-questa-unit-test:  firmware-unit-test-clean 
-questa-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
-questa-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
-questa-unit-test: vsim-run
+
 
 # in dsim
 .PHONY: dsim-unit-test 
