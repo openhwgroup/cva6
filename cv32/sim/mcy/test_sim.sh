@@ -20,15 +20,15 @@ make -f $MAKEFILE $MAKEFLAGS verilate
 make -f $MAKEFILE $MAKEFLAGS $FW_DIR/firmware.hex
 cp $FW_DIR/firmware.hex firmware.hex
 timeout 1m ./testbench_verilator +firmware=firmware.hex > sim.out || true
-NERR=`grep -c "ERROR" sim.out`
 
-if [[ "$NERR" -eq 2 ]]
+if [[ `grep -c "ERROR" sim.out` -eq 2 ]]
 then
   echo "1 PASS" > output.txt
 else
   echo "1 FAIL" > output.txt
 fi
 
+return 0
 # if ./testbench_verilator +firmware=firmware.hex > sim.out
 # then
 # echo "1 TODO" > output.txt
