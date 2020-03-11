@@ -21,7 +21,7 @@
 #
 ###############################################################################
 #
-# Copyright 2019 Claire Wolf
+# Copyright 2019 Clifford Wolf
 # Copyright 2019 Robert Balas
 #
 # Permission to use, copy, modify, and/or distribute this software for any
@@ -67,7 +67,8 @@ VSIM_FLAGS       ?=  # user defined
 ALL_VSIM_FLAGS    = $(VSIM_FLAGS)
 VSIM_DEBUG_FLAGS  = -debugdb
 VSIM_GUI_FLAGS    = -gui -debugdb
-VSIM_SCRIPT       = vsim.tcl
+VSIM_SCRIPT_DIR	  = ../questa
+VSIM_SCRIPT       = $(VSIM_SCRIPT_DIR)/vsim.tcl
 
 # vcs configuration (hopelessly out of date)
 VCS               = vcs-2017.03-kgf vcs
@@ -206,7 +207,8 @@ dsim-comp: mk_results $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
 	cd $(DSIM_RESULTS) && $(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
-		$(TBSRC_PKG) $(TBSRC) \
+		$(TBSRC_PKG) \
+		$(TBSRC) \
 		-f $(CV32E40P_MANIFEST) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
@@ -281,29 +283,136 @@ dsim-clean: tc-clean
 	rm -rf $(DSIM_RESULTS)
 
 ###############################################################################
+# Mentor Questasim
+
+
+.lib-rtl:
+	$(VLIB) $(VWORK)
+	touch .lib-rtl
+
+
+.build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
+	$(VLOG) \
+		-work $(VWORK) \
+		$(VLOG_FLAGS) \
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC)
+
+
+vsim-all:  .opt-rtl
+
+
+.opt-rtl: .build-rtl
+	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o $(RTLSRC_VOPT_TB_TOP)
+	touch .opt-rtl
+
+# run tb and exit
+.PHONY: vsim-run
+vsim-run: ALL_VSIM_FLAGS += -c
+vsim-run: vsim-all
+	$(VSIM) -work $(VWORK) $(DPILIB_VSIM_OPT) $(ALL_VSIM_FLAGS)\
+	$(RTLSRC_VOPT_TB_TOP) -do 'source $(VSIM_SCRIPT); exit -f'
+
+
+
+# run tb and drop into interactive shell
+.PHONY: vsim-run-sh
+vsim-run-sh: ALL_VSIM_FLAGS += -c
+vsim-run-sh: vsim-all
+	$(VSIM) -work $(VWORK) $(DPILIB_VSIM_OPT) $(ALL_VSIM_FLAGS) \
+	$(RTLSRC_VOPT_TB_TOP) -do $(VSIM_SCRIPT)
+
+# run tb with simulator gui
+.PHONY: vsim-run-gui
+vsim-run-gui: ALL_VSIM_FLAGS += $(VSIM_GUI_FLAGS)
+vsim-run-gui: vsim-all
+	$(VSIM) -work $(VWORK) $(DPILIB_VSIM_OPT) $(ALL_VSIM_FLAGS) \
+	$(RTLSRC_VOPT_TB_TOP) -do $(VSIM_SCRIPT)
+
+
+.PHONY: questa-hello_world
+questa-hello_world: vsim-all $(CUSTOM)/hello_world.hex
+questa-hello_world: ALL_VSIM_FLAGS += +firmware=$(CUSTOM)/hello_world.hex
+questa-hello_world: vsim-run
+
+.PHONY: questa-cv32_riscv_tests
+questa-cv32_riscv_tests: vsim-all $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+questa-cv32_riscv_tests: ALL_VSIM_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+questa-cv32_riscv_tests: vsim-run
+
+.PHONY: questa-cv32_riscv_tests-gui
+questa-cv32_riscv_tests-gui: vsim-all $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+questa-cv32_riscv_tests-gui: ALL_VSIM_FLAGS += +firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+questa-cv32_riscv_tests-gui: vsim-run-gui
+
+.PHONY: questa-cv32_riscv_compliance_tests
+questa-cv32_riscv_compliance_tests: vsim-all $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+questa-cv32_riscv_compliance_tests: ALL_VSIM_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+questa-cv32_riscv_compliance_tests: vsim-run
+
+.PHONY: questa-cv32_riscv_compliance_tests-gui
+questa-cv32_riscv_compliance_tests-gui: vsim-all $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+questa-cv32_riscv_compliance_tests-gui: ALL_VSIM_FLAGS += +firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+questa-cv32_riscv_compliance_tests-gui: vsim-run-gui
+
+.PHONY: questa-firmware
+questa-firmware: vsim-all $(FIRMWARE)/firmware.hex
+questa-firmware: ALL_VSIM_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
+questa-firmware: vsim-run
+
+.PHONY: questa-firmware-gui
+questa-firmware-gui: vsim-all $(FIRMWARE)/firmware.hex
+questa-firmware-gui: ALL_VSIM_FLAGS += +firmware=$(FIRMWARE)/firmware.hex
+questa-firmware-gui: vsim-run-gui
+
+.PHONY: questa-unit-test
+questa-unit-test:  firmware-unit-test-clean
+questa-unit-test:  $(FIRMWARE)/firmware_unit_test.hex
+questa-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+questa-unit-test: vsim-run
+
+.PHONY: questa-unit-test-gui
+questa-unit-test-gui:  firmware-unit-test-clean
+questa-unit-test-gui:  $(FIRMWARE)/firmware_unit_test.hex
+questa-unit-test-gui: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+questa-unit-test-gui: vsim-run-gui
+
+clean_questa:
+	if [ -d $(VWORK) ]; then rm -r $(VWORK); fi
+	rm -f transcript vsim.wlf vsim.dbg trace_core*.log \
+	.build-rtl .opt-rtl .lib-rtl *.vcd objdump
+
+###############################################################################
 # Cadence Xcelium xrun testbench compilation
 .PHONY: xrun-all
 xrun-all: $(CV32E40P_PKG) $(FPNEW_PKG) $(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC)
 	$(XRUN) \
 		$(XRUN_FLAGS) \
-		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(RTLSRC_INCDIR)
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC)
+
 .PHONY: xrun-hello_world xrun-firmware
 xrun-hello_world: xrun-all $(CUSTOM)/hello_world.hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
-		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(RTLSRC_INCDIR) +firmware=$(CUSTOM)/hello_world.hex
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC) \
+		+firmware=$(CUSTOM)/hello_world.hex
+
 xrun-firmware: xrun-all $(FIRMWARE)/firmware.hex
 	$(XRUN) \
 		$(XRUN_FLAGS) \
-		$(RTLSRC_PKG) $(RTLSRC) $(TBSRC_PKG) $(TBSRC) \
-		+incdir+$(RTLSRC_INCDIR) +firmware=$(FIRMWARE)/firmware.hex
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_PKG) $(TBSRC) \
+		+firmware=$(FIRMWARE)/firmware.hex
 
 # Cadence Xcelium xrun cleanup
 .PHONY: xrun-clean xrun-clean-all
 xrun-clean:
 	rm -vrf $(XRUN_DIR)
+	if [ -e xrun.history ]; then rm xrun.history; fi
+	if [ -e xrun.log ]; then rm xrun.log; fi
+
 xrun-clean-all: xrun-clean
 	rm -vrf $(addprefix $(FIRMWARE)/firmware., elf bin hex map) \
 		$(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS)
@@ -389,7 +498,7 @@ tc-clean:
 	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
 
 .PHONY: clean clean_all distclean
-clean: tb-clean tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean
+clean: clean_questa tc-clean verilate-clean vcs-clean firmware-clean custom-clean dsim-clean xrun-clean
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work

@@ -28,7 +28,7 @@ else
   echo "1 FAIL" > output.txt
 fi
 
-return 0
+exit 0
 # if ./testbench_verilator +firmware=firmware.hex > sim.out
 # then
 # echo "1 TODO" > output.txt
