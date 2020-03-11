@@ -22,7 +22,7 @@
 
 // Pre-processor macros
 `include "uvm_macros.svh"
-//`include "uvml_hrtbt_macros.sv"
+`include "uvml_hrtbt_macros.sv"
 `include "uvmt_cv32_macros.sv"
 
 // Time units and precision for this test bench
@@ -41,8 +41,8 @@ package uvmt_cv32_pkg;
    
    import uvm_pkg::*;
    import uvme_cv32_pkg::*;
-   //import uvml_hrtbt_pkg::*;
-   //import uvml_logs_pkg::*;
+   import uvml_hrtbt_pkg::*;
+   import uvml_logs_pkg::*;
    //import uvma_debug_pkg::*;
    //import uvma_reset_pkg::*;
    

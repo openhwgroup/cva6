@@ -15,3 +15,7 @@ inherited from the PULP-Platform team and have been modified only slightly.
 ### uvmt_cv32
 The Makefile will run the SystemVerilog/UVM verification environment found in
 `../tb/uvmt_cv32` and the associated tests from `../tests/uvmt_cv32`.
+
+<br><br>There may also be a sub-dir for each simulator used in the CV32
+project.  For example, **_questa_** contains a set of Tcl scripts for GUI and
+waveform viewing support.

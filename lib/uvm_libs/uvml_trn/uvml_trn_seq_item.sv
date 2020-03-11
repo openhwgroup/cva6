@@ -16,15 +16,32 @@
 // 
 
 
-`ifndef __UVML_HRTBT_TDEFS_SV__
-`define __UVML_HRTBT_TDEFS_SV__
+`ifndef __UVML_TRN_SEQ_ITEM_SV__
+`define __UVML_TRN_SEQ_ITEM_SV__
 
 
-typedef struct {
-   uvm_component  owner;
-   int            id;
-   realtime       timestamp;
-} uvml_hrtbt_entry_struct;
+/**
+ * TODO Describe uvml_trn_seq_item_c
+ */
+class uvml_trn_seq_item_c extends uvm_sequence_item;
+  
+  `uvm_object_utils_begin(uvml_trn_mon_trn_c)
+  `uvm_object_utils_end
+  
+  
+  /**
+   * Default constructor
+   */
+  extern function new(string name="uvml_trn_seq_item");
+  
+endclass : uvml_trn_seq_item_c
 
 
-`endif // __UVML_HRTBT_TDEFS_SV__
+function uvml_trn_seq_item_c::new(string name="uvml_trn_seq_item");
+  
+  super.new(name);
+  
+endfunction : new
+
+
+`endif // __UVML_TRN_SEQ_ITEM_SV__

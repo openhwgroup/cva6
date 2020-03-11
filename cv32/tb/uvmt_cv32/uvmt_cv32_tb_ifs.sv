@@ -104,7 +104,7 @@ interface uvmt_cv32_core_cntrl_if (
                                     // quasi static values
                                     output logic       clock_en,
                                     output logic       test_en,
-                                    output logic [7:0] boot_addr,
+                                    output logic [31:0] boot_addr,
                                     output logic [3:0] core_id,
                                     output logic [5:0] cluster_id,
                                     // To be driven by future debug module (DM)
@@ -127,7 +127,7 @@ interface uvmt_cv32_core_cntrl_if (
   initial begin: quasi_static_controls
     clock_en   = 1'b1;
     test_en    = 1'b0;
-    boot_addr  = 8'h80;
+    boot_addr  = 32'h80;
     core_id    = 4'h0;
     cluster_id = 6'b00_0000;
   end
