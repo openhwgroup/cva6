@@ -42,20 +42,19 @@ Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
 Point your environment variable `RISCV` to your RISC-V toolchain. The Makefile rule to run a testcase
 with dsim is `make dsim`.  You can pass the name of the testcase using the `TEST` variable:
-* **make dsim-no-firmware UVM_TESTNAME=uvmt_cv32_smoke_test**:compile, run, come of out reset and die.
+* **make dsim-no-firmware UVM_TESTNAME=uvmt_cv32_\<testname\>**: run uvmt_cv32_\<testname\> without loading any firmware.
 * **make dsim-hello_world**: run the hello_world program found at `../../tests/core/custom`.
 * **make dsim-cv32_riscv_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
 * **make dsim-cv32_riscv_compilance_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
 * **make dsim-firmware**: run all the programs found at `../../tests/core/firmware`.
 * **make dsim-riscv_tests**: run the RISC-V tests found at `../../tests/core/riscv_tests`
 * **make dsim-riscv_compilance_tests**: run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
-* **make dsim-unit-test <prog>**: Run one <prog> from the firmware suite of tests.  For example: `make dsim-unit-test addi`
+* **make dsim-unit-test \<prog\>**: Run one <prog> from the firmware suite of tests.  For example: `make dsim-unit-test addi`
 
-Running the environment with Cadence Xcelium [xrun](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)
+Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)(xrun) or Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/)(vsim)
 ----------------------
-**Note**: this has not yet been fully tested<br>
 **Note:** This testbench is known to require Xcelium 19.09 or later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11) for more info.
-Point your environment variable `RISCV` to your RISC-V toolchain. 
-* To clean up your mess: `make xsim-clean` (deletes xsim intermediate files) and `xrun-clean-all` (deletes xsim intermedaites and all testcase object files).
+Point your environment variable `RISCV` to your RISC-V toolchain.<br>
+Most of the dsim targets specified above have an xrun equivalent, e.g. **make xrun-hello-world** does what you'd expect.
 
 
