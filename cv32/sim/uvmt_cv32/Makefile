@@ -236,7 +236,6 @@ dsim-comp: mk_results $(CV32E40P_PKG)
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
-		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
 		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
 		-work $(DSIM_WORK) \
 		+$(UVM_PLUSARGS) \
