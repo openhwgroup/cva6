@@ -5,7 +5,7 @@ The testbench for the environment is located at `../../tb/uvmt_cv32` and the
 testcases are at `../../tests/uvmt_cv32` (note that some of these testcases use test programs found in
 `cv32/tests/core`).  See the README in those directories for more information.
 <br><br>
-To run the testcases you will need a SystemVerilog simulator, the UVM library and RISC-V GCC compiler.
+To run the testcases you will need a SystemVerilog simulator, the UVM-1.2 library and RISC-V GCC compiler.
 
 SystemVerilog Simulators
 ----------------------------------
@@ -15,9 +15,10 @@ will be able to compile and run this verification environment. At the time of th
 If you have access to other SystemVerilog simulators such as Synopsys **_VCS_**, Aldec **_RivieraPRO_** or some other simulator
 not listed here and would like to add support to the Makefile, your pull-request will be graciously accepted!
 
-UVM Libraries
+UVM-1.2 Libraries
 -------------
-Typically, these come with the distribution of a SystemVerilog simulator.  Point your environment
+The UVM environments in core-v-verif require the use of version 1.2 of the UVM library (1.1 will not suffice). Typically,
+the UVM library comes with the distribution of your SystemVerilog simulator.  Point your environment
 variable `UVM_HOME` to your simulator's UVM library. For example Metrics dsim users will have something
 like this:<br>`export UVM_HOME=/tools/Metrics/dsim/20191112.8.0/uvm-1.2`.
 <br><br>
