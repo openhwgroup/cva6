@@ -53,8 +53,13 @@ class uvml_sb_cntxt_c#(
    realtime          avg_latency            = 0;
    
    // Events
+`ifdef UVM_VERSION_1_2
    uvm_event#(T_TRN)  exp_observed_e;
    uvm_event#(T_TRN)  act_observed_e;
+`else
+   uvm_event  exp_observed_e;
+   uvm_event  act_observed_e;
+`endif
    
    
    `uvm_object_param_utils_begin(uvml_sb_cntxt_c#(T_TRN))
@@ -105,7 +110,7 @@ function uvml_sb_cntxt_c::new(string name="uvml_sb_cntxt");
 endfunction : new
 
 
-function uvml_sb_cntxt_c::reset();
+function void uvml_sb_cntxt_c::reset();
    
    act_q     .delete();
    exp_q     .delete();

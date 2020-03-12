@@ -33,7 +33,7 @@ class uvmt_cv32_base_test_c extends uvm_test;
    rand uvmt_cv32_test_cfg_c  test_cfg ;
    rand uvme_cv32_cfg_c       env_cfg  ;
    uvme_cv32_cntxt_c          env_cntxt;
-   uvml_logs_rs_text_c        rs       ;
+   //uvml_logs_rs_text_c        rs       ;
    //uvme_cv32_ral_c            ral      ;
    uvml_logs_reg_logger_cbs_c reg_cbs  ;
    
@@ -188,8 +188,8 @@ function uvmt_cv32_base_test_c::new(string name="uvmt_cv32_base_test", uvm_compo
    
    super.new(name, parent);
    
-   rs = new("rs");
-   uvm_report_server::set_server(rs);
+   //rs = new("rs");
+   //uvm_report_server::set_server(rs);
    //reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
    
 endfunction : new

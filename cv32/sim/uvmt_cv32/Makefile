@@ -111,11 +111,16 @@ DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE              = dsim.out
 
+# xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
+XRUN              = xrun
+XRUN_FLAGS        = -clean -smartorder -sv -uvm -top worklib.uvmt_cv32_tb -timescale 1ns/1ps
+XRUN_DIR          = xcelium.d
+
 # UVM Environment
 export DV_UVMT_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
 export DV_UVME_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
-export DV_UVMA_CLKNRST_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
 export DV_UVML_HRTBT_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
+export DV_UVMA_CLKNRST_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
 export DV_UVML_TRN_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH    = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
@@ -188,6 +193,29 @@ all: clean_all dsim-hello_world
 ###############################################################################
 # SystemVerilog simulator compilation and run
 
+# Cadence Xcelium
+.PHONY: xrun-hello_world xrun-hello-world
+
+xrun-hello-world: xrun-hello_world
+
+xrun-hello_world: $(CV32E40P_PKG)
+	$(XRUN) \
+		$(XRUN_FLAGS) \
+		+incdir+$(DV_UVME_CV32_PATH) \
+		+incdir+$(DV_UVMT_CV32_PATH) \
+		-f $(CV32E40P_MANIFEST) \
+		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
+		$(UVM_PLUSARGS) \
+		+firmware=$(CUSTOM)/hello_world.hex
+
+
+#		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
+#		-f $(DV_UVML_HRTBT_PATH)/uvml_hrtbt_pkg.flist \
+#		-f $(DV_UVML_TRN_PATH)/uvml_trn_pkg.flist \
+#		-f $(DV_UVML_LOGS_PATH)/uvml_logs_pkg.flist \
+#		-f $(DV_UVML_SB_PATH)/uvml_sb_pkg.flist \
+
+
 # Metrics dsim
 .PHONY: dsim-sim
 
@@ -208,6 +236,7 @@ dsim-comp: mk_results $(CV32E40P_PKG)
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
+		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
 		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
 		-work $(DSIM_WORK) \
 		+$(UVM_PLUSARGS) \

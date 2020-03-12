@@ -31,6 +31,7 @@
 package uvml_logs_pkg;
    
    import uvm_pkg::*;
+   import uvml_trn_pkg::*;
    
    // Constants / Structs / Enums
    `include "uvml_logs_constants.sv"
@@ -41,8 +42,8 @@ package uvml_logs_pkg;
    `include "uvml_logs_reg_logger_json_cbs.sv"
    `include "uvml_logs_seq_item_logger.sv"
    `include "uvml_logs_mon_trn_logger.sv"
-   `include "uvml_logs_rs_json.sv"
-   `include "uvml_logs_rs_text.sv"
+   //`include "uvml_logs_rs_json.sv"
+   //`include "uvml_logs_rs_text.sv"
    
 endpackage : uvml_logs_pkg
 

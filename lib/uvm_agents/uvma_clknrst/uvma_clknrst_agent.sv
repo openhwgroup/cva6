@@ -198,7 +198,7 @@ endfunction : create_components
 
 function void uvma_clknrst_agent_c::connect_sequencer_and_driver();
    
-   sequencer.set_arbitration(cfg.sqr_arb_mode);
+   //sequencer.set_arbitration(cfg.sqr_arb_mode);
    driver.seq_item_port.connect(sequencer.seq_item_export);
    
 endfunction : connect_sequencer_and_driver

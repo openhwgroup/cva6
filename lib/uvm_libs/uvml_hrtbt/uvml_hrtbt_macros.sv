@@ -21,17 +21,17 @@
 
 
 `define uvml_hrtbt(ID) \
-   uvml_default_hrtbt.heartbeat(this, ID);
+   uvml_default_hrtbt.heartbeat(this, ID); \
 
 `define uvml_hrtbt_nowner(ID) \
-   uvml_default_hrtbt.heartbeat(null, ID);
+   uvml_default_hrtbt.heartbeat(null, ID); \
 
 `define uvml_hrtbt_set_cfg(PARAM, VALUE) \
    uvml_default_hrtbt.PARAM = VALUE; \
-   `uvm_info("HRTBT", {"Default heartbeat field '", PARAM, "' set to '", VALUE, "'"}, UVM_NONE)
+   `uvm_info("HRTBT", {"Default heartbeat field '", PARAM, "' set to '", VALUE, "'"}, UVM_NONE) \
 
 `define uvml_hrtbt_reset \
-   uvml_default_hrtbt.reset();
+   uvml_default_hrtbt.reset(); \
 
 
 `endif // __UVML_HRTBT_MACROS_SV__

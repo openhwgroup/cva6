@@ -93,12 +93,12 @@ class uvml_sb_simplex_c#(
    /**
     * TODO Describe uvml_sb_simplex_c::calc_act_stats()
     */
-   extern function void calc_act_stats(ref T_TRN act_stats);
+   extern function void calc_act_stats(ref T_TRN act_trn);
    
    /**
     * TODO Describe uvml_sb_simplex_c::calc_exp_stats()
     */
-   extern function void calc_exp_stats(ref T_TRN exp_stats);
+   extern function void calc_exp_stats(ref T_TRN exp_trn);
    
    /**
     * TODO Describe uvml_sb_simplex_c::log_new_act()
@@ -305,7 +305,7 @@ task uvml_sb_simplex_c::get_exp(output T_TRN exp_trn);
 endtask : get_exp
 
 
-function void uvml_sb_simplex_c::calc_act_stats(ref T_TRN act_stats);
+function void uvml_sb_simplex_c::calc_act_stats(ref T_TRN act_trn);
    
    bit  packed_trn[];
    
@@ -328,7 +328,7 @@ function void uvml_sb_simplex_c::calc_act_stats(ref T_TRN act_stats);
 endfunction : calc_act_stats
 
 
-function void uvml_sb_simplex_c::calc_exp_stats(ref T_TRN exp_stats);
+function void uvml_sb_simplex_c::calc_exp_stats(ref T_TRN exp_trn);
    
    bit  packed_trn[];
    

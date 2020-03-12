@@ -29,7 +29,7 @@ class uvma_clknrst_cfg_c extends uvm_object;
    // Common options
    rand bit                      enabled;
    rand uvm_active_passive_enum  is_active;
-   rand uvm_sequencer_arb_mode   sqr_arb_mode;
+   //rand uvm_sequencer_arb_mode   sqr_arb_mode;
    rand bit                      cov_model_enabled;
    rand bit                      trn_log_enabled;
    
@@ -42,7 +42,7 @@ class uvma_clknrst_cfg_c extends uvm_object;
    `uvm_object_utils_begin(uvma_clknrst_cfg_c)
       `uvm_field_int (                         enabled          , UVM_DEFAULT)
       `uvm_field_enum(uvm_active_passive_enum, is_active        , UVM_DEFAULT)
-      `uvm_field_enum(uvm_sequencer_arb_mode , sqr_arb_mode     , UVM_DEFAULT)
+      //`uvm_field_enum(uvm_sequencer_arb_mode , sqr_arb_mode     , UVM_DEFAULT)
       `uvm_field_int (                         cov_model_enabled, UVM_DEFAULT)
       `uvm_field_int (                         trn_log_enabled  , UVM_DEFAULT)
       
@@ -53,7 +53,7 @@ class uvma_clknrst_cfg_c extends uvm_object;
    constraint defaults_cons {
       soft enabled           == 1;
       soft is_active         == UVM_PASSIVE;
-      soft sqr_arb_mode      == UVM_SEQ_ARB_FIFO;
+      //soft sqr_arb_mode      == UVM_SEQ_ARB_FIFO;
       soft cov_model_enabled == 0;
       soft trn_log_enabled   == 1;
       
