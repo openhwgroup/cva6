@@ -308,17 +308,14 @@ dsim-unit-test: dsim-comp
 
 
 .build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
-	$(VLOG)  -work $(VWORK) $(VLOG_FLAGS) -f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist
-	$(VLOG)  -work $(VWORK) $(VLOG_FLAGS)  -f $(CV32E40P_MANIFEST) -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 	$(VLOG) \
 		-work $(VWORK) \
 		$(VLOG_FLAGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
-		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
-		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
 		-f $(CV32E40P_MANIFEST) \
-		$(TBSRC_PKG) $(TBSRC) 
+		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
+		$(TBSRC_PKG) $(TBSRC)
 		
 
 vsim-all:  .opt-rtl
