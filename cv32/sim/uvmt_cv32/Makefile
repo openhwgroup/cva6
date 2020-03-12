@@ -112,12 +112,13 @@ DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE              = dsim.out
 
 # UVM Environment
-export DV_UVMT_CV32_PATH  = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
-export DV_UVME_CV32_PATH  = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
-export DV_UVML_HRTBT_PATH = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
-export DV_UVML_TRN_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
-export DV_UVML_LOGS_PATH  = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
-export DV_UVML_SB_PATH    = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
+export DV_UVMT_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
+export DV_UVME_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
+export DV_UVMA_CLKNRST_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
+export DV_UVML_HRTBT_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
+export DV_UVML_TRN_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
+export DV_UVML_LOGS_PATH    = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
+export DV_UVML_SB_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # Testcase name: must be the CLASS name of the testcase (not the filename).
@@ -207,7 +208,6 @@ dsim-comp: mk_results $(CV32E40P_PKG)
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
-		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
 		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
 		-work $(DSIM_WORK) \
 		+$(UVM_PLUSARGS) \

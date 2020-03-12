@@ -1,3 +1,4 @@
+// 
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // 
@@ -12,34 +13,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// 
 
 
-`ifndef __UVME_CV32_VSQR_SV__
-`define __UVME_CV32_VSQR_SV__
+`ifndef __UVMA_CLKNRST_SQR_SV__
+`define __UVMA_CLKNRST_SQR_SV__
 
 
 /**
- * Component on which all CV32 virtual sequences are run.
+ * Component running Clock & Reset sequences extending uvma_clknrst_seq_base_c.
+ * Provides sequence items for uvma_clknrst_drv_c.
  */
-class uvme_cv32_vsqr_c extends uvm_sequencer#(
-   .REQ(uvm_sequence_item),
-   .RSP(uvm_sequence_item)
+class uvma_clknrst_sqr_c extends uvm_sequencer#(
+   .REQ(uvma_clknrst_seq_item_c),
+   .RSP(uvma_clknrst_seq_item_c)
 );
    
    // Objects
-   uvme_cv32_cfg_c    cfg;
-   uvme_cv32_cntxt_c  cntxt;
-   
-   // Sub-environments (virtual) sequencer handles
-   uvme_${sub_env_name}_vsqr_c  ${sub_env_name}_vsequencer;
-   
-   // Sequencer handles
-   uvma_debug_sqr_c  debug_sequencer;
-   uvma_reset_sqr_c  reset_sequencer;
-   // TODO Add sequencer handles
+   uvma_clknrst_cfg_c    cfg;
+   uvma_clknrst_cntxt_c  cntxt;
    
    
-   `uvm_component_utils_begin(uvme_cv32_vsqr_c)
+   `uvm_component_utils_begin(uvma_clknrst_sqr_c)
       `uvm_field_object(cfg  , UVM_DEFAULT)
       `uvm_field_object(cntxt, UVM_DEFAULT)
    `uvm_component_utils_end
@@ -48,33 +43,33 @@ class uvme_cv32_vsqr_c extends uvm_sequencer#(
    /**
     * Default constructor.
     */
-   extern function new(string name="uvme_cv32_sqr", uvm_component parent=null);
+   extern function new(string name="uvma_clknrst_sqr", uvm_component parent=null);
    
    /**
-    * Ensures cfg & cntxt handles are not null.
+    * Ensures cfg & cntxt handles are not null
     */
    extern virtual function void build_phase(uvm_phase phase);
    
-endclass : uvme_cv32_vsqr_c
+endclass : uvma_clknrst_sqr_c
 
 
-function uvme_cv32_vsqr_c::new(string name="uvme_cv32_sqr", uvm_component parent=null);
+function uvma_clknrst_sqr_c::new(string name="uvma_clknrst_sqr", uvm_component parent=null);
    
    super.new(name, parent);
    
 endfunction : new
 
 
-function void uvme_cv32_vsqr_c::build_phase(uvm_phase phase);
+function void uvma_clknrst_sqr_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
    
-   void'(uvm_config_db#(uvme_cv32_cfg_c)::get(this, "", "cfg", cfg));
+   void'(uvm_config_db#(uvma_clknrst_cfg_c)::get(this, "", "cfg", cfg));
    if (!cfg) begin
       `uvm_fatal("CFG", "Configuration handle is null")
    end
    
-   void'(uvm_config_db#(uvme_cv32_cntxt_c)::get(this, "", "cntxt", cntxt));
+   void'(uvm_config_db#(uvma_clknrst_cntxt_c)::get(this, "", "cntxt", cntxt));
    if (!cntxt) begin
       `uvm_fatal("CNTXT", "Context handle is null")
    end
@@ -82,4 +77,4 @@ function void uvme_cv32_vsqr_c::build_phase(uvm_phase phase);
 endfunction : build_phase
 
 
-`endif // __UVME_CV32_VSQR_SV__
+`endif // __UVMA_CLKNRST_SQR_SV__
