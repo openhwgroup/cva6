@@ -22,7 +22,7 @@ interface AXI_BUS #(
   parameter AXI_ID_WIDTH   = -1,
   parameter AXI_USER_WIDTH = -1
 );
-  
+
   import axi_pkg::*;
 
   localparam AXI_STRB_WIDTH = AXI_DATA_WIDTH / 8;
@@ -100,7 +100,6 @@ interface AXI_BUS #(
   );
 
 endinterface
-
 
 /// A clocked AXI4 interface for use in design verification.
 interface AXI_BUS_DV #(
@@ -188,6 +187,56 @@ interface AXI_BUS_DV #(
     output r_id, r_data, r_resp, r_last, r_user, r_valid, input r_ready
   );
 
+  // Single-Channel Assertions: Signals including valid must not change between valid and handshake.
+  // pragma translate_off
+  `ifndef VERILATOR
+  // AW
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_id)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_addr)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_len)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_size)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_burst)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_lock)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_cache)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_prot)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_qos)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_region)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_atop)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> $stable(aw_user)));
+  assert property (@(posedge clk_i) (aw_valid && !aw_ready |=> aw_valid));
+  // W
+  assert property (@(posedge clk_i) ( w_valid && ! w_ready |=> $stable(w_data)));
+  assert property (@(posedge clk_i) ( w_valid && ! w_ready |=> $stable(w_strb)));
+  assert property (@(posedge clk_i) ( w_valid && ! w_ready |=> $stable(w_last)));
+  assert property (@(posedge clk_i) ( w_valid && ! w_ready |=> $stable(w_user)));
+  assert property (@(posedge clk_i) ( w_valid && ! w_ready |=> w_valid));
+  // B
+  assert property (@(posedge clk_i) ( b_valid && ! b_ready |=> $stable(b_id)));
+  assert property (@(posedge clk_i) ( b_valid && ! b_ready |=> $stable(b_resp)));
+  assert property (@(posedge clk_i) ( b_valid && ! b_ready |=> $stable(b_user)));
+  assert property (@(posedge clk_i) ( b_valid && ! b_ready |=> b_valid));
+  // AR
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_id)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_addr)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_len)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_size)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_burst)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_lock)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_cache)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_prot)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_qos)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_region)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> $stable(ar_user)));
+  assert property (@(posedge clk_i) (ar_valid && !ar_ready |=> ar_valid));
+  // R
+  assert property (@(posedge clk_i) ( r_valid && ! r_ready |=> $stable(r_id)));
+  assert property (@(posedge clk_i) ( r_valid && ! r_ready |=> $stable(r_data)));
+  assert property (@(posedge clk_i) ( r_valid && ! r_ready |=> $stable(r_resp)));
+  assert property (@(posedge clk_i) ( r_valid && ! r_ready |=> $stable(r_last)));
+  assert property (@(posedge clk_i) ( r_valid && ! r_ready |=> $stable(r_user)));
+  assert property (@(posedge clk_i) ( r_valid && ! r_ready |=> r_valid));
+  `endif
+  // pragma translate_on
 endinterface
 
 /// An asynchronous AXI4 interface.

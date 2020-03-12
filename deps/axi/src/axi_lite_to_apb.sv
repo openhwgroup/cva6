@@ -358,14 +358,16 @@ module axi_lite_to_apb_intf #(
   // APB Slave Address Map
   input  rule_t [NoRules-1:0]     addr_map_i
 );
+  localparam int unsigned SelIdxWidth = NoApbSlaves > 1 ? $clog2(NoApbSlaves) : 1;
+
   typedef struct packed {
-     addr_t          paddr;   // same as AXI4-Lite
-     axi_pkg::prot_t pprot;   // same as AXI4-Lite, specification is the same
-     sel_t           psel;    // onehot, one psel line per connected APB4 slave
-     logic           penable; // enable signal shows second APB4 cycle
-     logic           pwrite;  // write enable
-     data_t          pwdata;  // write data, comes from W channel
-     strb_t          pstrb;   // write strb, comes from W channel
+    addr_t          paddr;   // same as AXI4-Lite
+    axi_pkg::prot_t pprot;   // same as AXI4-Lite, specification is the same
+    logic           psel;    // onehot, one psel line per connected APB4 slave
+    logic           penable; // enable signal shows second APB4 cycle
+    logic           pwrite;  // write enable
+    data_t          pwdata;  // write data, comes from W channel
+    strb_t          pstrb;   // write strb, comes from W channel
   } apb_req_t;
 
   typedef struct packed {
@@ -384,20 +386,28 @@ module axi_lite_to_apb_intf #(
 
   axi_req_t                     axi_req;
   axi_resp_t                    axi_resp;
-  apb_req_t                     apb_req;
+  apb_req_t   [NoApbSlaves-1:0] apb_req;
   apb_resp_t  [NoApbSlaves-1:0] apb_resp;
+  logic       [SelIdxWidth-1:0] apb_sel;
 
   `AXI_LITE_ASSIGN_TO_REQ    ( axi_req,  slv       )
   `AXI_LITE_ASSIGN_FROM_RESP ( slv,       axi_resp )
 
-  assign paddr_o   = apb_req.paddr;
-  assign pprot_o   = apb_req.pprot;
-  assign pselx_o   = apb_req.psel;
-  assign penable_o = apb_req.penable;
-  assign pwrite_o  = apb_req.pwrite;
-  assign pwdata_o  = apb_req.pwdata;
-  assign pstrb_o   = apb_req.pstrb;
+  onehot_to_bin #(
+    .ONEHOT_WIDTH ( NoApbSlaves )
+  ) i_onehot_to_bin (
+    .onehot ( pselx_o ),
+    .bin    ( apb_sel )
+  );
+
+  assign paddr_o   = apb_req[apb_sel].paddr;
+  assign pprot_o   = apb_req[apb_sel].pprot;
+  assign penable_o = apb_req[apb_sel].penable;
+  assign pwrite_o  = apb_req[apb_sel].pwrite;
+  assign pwdata_o  = apb_req[apb_sel].pwdata;
+  assign pstrb_o   = apb_req[apb_sel].pstrb;
   for (genvar i = 0; i < NoApbSlaves; i++) begin : gen_apb_resp_assign
+    assign pselx_o[i]          = apb_req[i].psel;
     assign apb_resp[i].pready  = pready_i[i];
     assign apb_resp[i].prdata  = prdata_i[i];
     assign apb_resp[i].pslverr = pslverr_i[i];

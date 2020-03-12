@@ -49,7 +49,7 @@ module axi_demux #(
   input  resp_t   [NoMstPorts-1:0] mst_resps_i
 );
 
-  localparam int unsigned IdCounterWidth = $clog2(MaxTrans);
+  localparam int unsigned IdCounterWidth = MaxTrans > 1 ? $clog2(MaxTrans) : 1;
 
   //--------------------------------------
   // Typedefs for the FIFOs / Queues

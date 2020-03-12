@@ -176,6 +176,25 @@ module tb_axi_atop_filter #(
     .DW(AXI_DATA_WIDTH), .UW(AXI_USER_WIDTH)
   ) w_beat_t;
 
+  // Put W beats into transfer queue or drop them and inject B responses based on W command.
+  function automatic void process_w_beat(w_beat_t w_beat, ref w_cmd_t w_cmd_queue[$],
+      ref w_beat_t w_xfer_queue[$], ref b_beat_t b_inject_queue[$]
+  );
+    w_cmd_t w_cmd = w_cmd_queue[0];
+    if (w_cmd.thru) begin
+      w_xfer_queue.push_back(w_beat);
+    end
+    if (w_beat.w_last) begin
+      if (!w_cmd.thru) begin
+        automatic b_beat_t b_beat = new;
+        b_beat.b_id = w_cmd.id;
+        b_beat.b_resp = RESP_SLVERR;
+        b_inject_queue.push_back(b_beat);
+      end
+      void'(w_cmd_queue.pop_front());
+    end
+  endfunction
+
   // Monitor and check responses of filter.
   initial begin
     static ax_beat_t  ar_xfer_queue[$],
@@ -185,7 +204,9 @@ module tb_axi_atop_filter #(
     static r_beat_t   r_inject_queue[$],
                       r_xfer_queue[$];
     static w_cmd_t    w_cmd_queue[$];
-    static w_beat_t   w_xfer_queue[$];
+    static w_beat_t   w_act_queue[$],
+                      w_undecided_queue[$],
+                      w_xfer_queue[$];
     forever begin
       @(posedge clk);
       #(TT);
@@ -242,28 +263,22 @@ module tb_axi_atop_filter #(
           end
         end
       end
-      // Push upstream Ws that must go through into transfer queue; push to B and R inject queue for
-      // completed W bursts that must not go through.
+      // Handle undecided upstream W beats if possible.
+      while (w_undecided_queue.size() > 0 && w_cmd_queue.size() > 0) begin
+        automatic w_beat_t w_beat = w_undecided_queue.pop_front();
+        process_w_beat(w_beat, w_cmd_queue, w_xfer_queue, b_inject_queue);
+      end
+      // Process upstream W beats or put them into queue of undecided W beats.
       if (upstream.w_valid && upstream.w_ready) begin
         automatic w_beat_t w_beat = new;
-        automatic w_cmd_t w_cmd;
         w_beat.w_data = upstream.w_data;
         w_beat.w_strb = upstream.w_strb;
         w_beat.w_last = upstream.w_last;
         w_beat.w_user = upstream.w_user;
-        assert (w_cmd_queue.size() > 0) else $fatal(1, "upstream.W: Undecided beat!");
-        w_cmd = w_cmd_queue[0];
-        if (w_cmd.thru) begin
-          w_xfer_queue.push_back(w_beat);
-        end
-        if (w_beat.w_last) begin
-          if (!w_cmd.thru) begin
-            automatic b_beat_t b_beat = new;
-            b_beat.b_id = w_cmd.id;
-            b_beat.b_resp = RESP_SLVERR;
-            b_inject_queue.push_back(b_beat);
-          end
-          void'(w_cmd_queue.pop_front());
+        if (w_cmd_queue.size() > 0) begin
+          process_w_beat(w_beat, w_cmd_queue, w_xfer_queue, b_inject_queue);
+        end else begin
+          w_undecided_queue.push_back(w_beat);
         end
       end
       // Push downstream Rs into transfer queue.
@@ -317,14 +332,29 @@ module tb_axi_atop_filter #(
         assert (downstream.aw_user    == exp_beat.ax_user);
       end
       // Ensure downstream Ws match beats from transfer queue.
+      while (w_act_queue.size() > 0 && w_xfer_queue.size() > 0) begin
+        automatic w_beat_t exp_beat = w_xfer_queue.pop_front();
+        automatic w_beat_t act_beat = w_act_queue.pop_front();
+        assert (act_beat.w_data == exp_beat.w_data);
+        assert (act_beat.w_strb == exp_beat.w_strb);
+        assert (act_beat.w_last == exp_beat.w_last);
+        assert (act_beat.w_user == exp_beat.w_user);
+      end
       if (downstream.w_valid && downstream.w_ready) begin
-        automatic w_beat_t exp_beat;
-        assert (w_xfer_queue.size() > 0) else $fatal(1, "downstream.W: Unknown beat!");
-        exp_beat = w_xfer_queue.pop_front();
-        assert (downstream.w_data == exp_beat.w_data);
-        assert (downstream.w_strb == exp_beat.w_strb);
-        assert (downstream.w_last == exp_beat.w_last);
-        assert (downstream.w_user == exp_beat.w_user);
+        if (w_xfer_queue.size() > 0) begin
+          automatic w_beat_t exp_beat = w_xfer_queue.pop_front();
+          assert (downstream.w_data == exp_beat.w_data);
+          assert (downstream.w_strb == exp_beat.w_strb);
+          assert (downstream.w_last == exp_beat.w_last);
+          assert (downstream.w_user == exp_beat.w_user);
+        end else begin
+          automatic w_beat_t act_beat = new;
+          act_beat.w_data = downstream.w_data;
+          act_beat.w_strb = downstream.w_strb;
+          act_beat.w_last = downstream.w_last;
+          act_beat.w_user = downstream.w_user;
+          w_act_queue.push_back(act_beat);
+        end
       end
       // Ensure upstream Rs match beats from transfer or inject queue.
       if (upstream.r_valid && upstream.r_ready) begin

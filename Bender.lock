@@ -19,7 +19,7 @@ packages:
       Git: "https://github.com/lowRISC/ariane-ethernet.git"
     dependencies: []
   axi:
-    revision: 69118dd1019c88dc43236f7b944caa5697386280
+    revision: dec4bbd05993fb07addbf21dfb39331a1534b721
     version: ~
     source:
       Git: "https://github.com/pulp-platform/axi.git"

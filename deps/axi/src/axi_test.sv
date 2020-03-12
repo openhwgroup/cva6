@@ -642,6 +642,7 @@ package axi_test;
     semaphore cnt_sem;
 
     ax_beat_t aw_queue[$],
+              w_queue[$],
               excl_queue[$];
 
     typedef struct packed {
@@ -1004,7 +1005,7 @@ package axi_test;
       end
     endtask
 
-    task send_aws(input int n_writes);
+    task create_aws(input int n_writes);
       automatic logic rand_success;
       repeat (n_writes) begin
         automatic bit excl = 1'b0;
@@ -1039,18 +1040,27 @@ package axi_test;
         end
         tot_w_flight_cnt++;
         aw_queue.push_back(aw_beat);
+        w_queue.push_back(aw_beat);
+      end
+    endtask
+
+    task send_aws(ref logic aw_done);
+      while (!(aw_done && aw_queue.size() == 0)) begin
+        automatic ax_beat_t aw_beat;
+        wait (aw_queue.size() > 0 || (aw_done && aw_queue.size() == 0));
+        aw_beat = aw_queue.pop_front();
         rand_wait(AX_MIN_WAIT_CYCLES, AX_MAX_WAIT_CYCLES);
         drv.send_aw(aw_beat);
       end
     endtask
 
     task send_ws(ref logic aw_done);
-      while (!(aw_done && aw_queue.size() == 0)) begin
+      while (!(aw_done && w_queue.size() == 0)) begin
         automatic ax_beat_t aw_beat;
         automatic addr_t addr;
         static logic rand_success;
-        wait (aw_queue.size() > 0);
-        aw_beat = aw_queue.pop_front();
+        wait (w_queue.size() > 0 || (aw_done && w_queue.size() == 0));
+        aw_beat = w_queue.pop_front();
         addr = aw_beat.ax_addr;
         for (int unsigned i = 0; i < aw_beat.ax_len + 1; i++) begin
           automatic w_beat_t w_beat = new;
@@ -1103,9 +1113,10 @@ package axi_test;
         end
         recv_rs(ar_done, aw_done);
         begin
-          send_aws(n_writes);
+          create_aws(n_writes);
           aw_done = 1'b1;
         end
+        send_aws(aw_done);
         send_ws(aw_done);
         recv_bs(aw_done);
       join
@@ -1143,9 +1154,9 @@ package axi_test;
     typedef axi_driver_t::w_beat_t w_beat_t;
 
     axi_driver_t          drv;
-    rand_ax_beat_queue_t  ar_queue,
-                          b_queue;
+    rand_ax_beat_queue_t  ar_queue;
     ax_beat_t             aw_queue[$];
+    int unsigned          b_wait_cnt;
 
     function new(
       virtual AXI_BUS_DV #(
@@ -1157,7 +1168,7 @@ package axi_test;
     );
       this.drv = new(axi);
       this.ar_queue = new;
-      this.b_queue = new;
+      this.b_wait_cnt = 0;
       this.reset();
     endfunction
 
@@ -1232,9 +1243,7 @@ package axi_test;
           if (w_beat.w_last)
             break;
         end
-        wait (aw_queue.size() > 0);
-        aw_beat = aw_queue.pop_front();
-        b_queue.push(aw_beat.ax_id, aw_beat);
+        b_wait_cnt++;
       end
     endtask
 
@@ -1243,8 +1252,8 @@ package axi_test;
         automatic ax_beat_t aw_beat;
         automatic b_beat_t b_beat = new;
         automatic logic rand_success;
-        wait (!b_queue.empty());
-        aw_beat = b_queue.pop();
+        wait (b_wait_cnt > 0 && (aw_queue.size() != 0));
+        aw_beat = aw_queue.pop_front();
         rand_success = std::randomize(b_beat); assert(rand_success);
         b_beat.b_id = aw_beat.ax_id;
         if (aw_beat.ax_lock) begin
@@ -1252,6 +1261,7 @@ package axi_test;
         end
         rand_wait(RESP_MIN_WAIT_CYCLES, RESP_MAX_WAIT_CYCLES);
         drv.send_b(b_beat);
+        b_wait_cnt--;
       end
     endtask
 

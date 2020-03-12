@@ -12,9 +12,31 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 
 ### Fixed
-- `axi_top_filter`: The master interface of this module in one case depended on `aw_ready` before
-  applying `w_valid`, which is a violation of the AXI specification that can lead to deadlocks.
-  This issue has been fixed by removing that dependency.
+
+
+## 0.15.1 - 2020-03-09
+
+### Added
+- `axi_intf`: Add single-channel assertions to `AXI_BUS_DV`.
+
+### Fixed
+- `axi_lite_to_apb`: Fix the interface version (`axi_lite_to_apb_intf`) to match the changes from
+  version `0.15.0`.
+- `axi_demux`: When `MaxTrans` was 1, the `IdCounterWidth` became 0.  This has been fixed.
+- `axi_atop_filter`:
+  - The master interface of this module in one case depended on `aw_ready` before applying
+    `w_valid`, which is a violation of the AXI specification that can lead to deadlocks.  This issue
+    has been fixed by removing that dependency.
+  - The slave interface of this module could illegally change the value of B and R beats between
+    valid and handshake.  This has been fixed.
+- `rand_axi_master` (in `axi_test`):
+  - Fix infinite wait in `send_ws` task.
+  - Decouple generation of AWs from sending them.  This allows to apply W beats before or
+    simultaneous with AW beats.
+- `rand_axi_slave` (in `axi_test`):
+  - Decouple receiving of Ws from receiving of AWs.  This allows to receive W beats independent of
+    AW beats.
+- Update `common_cells` to `1.16.4` to fix synthesis warning in `id_queue`.
 
 
 ## 0.15.0 - 2020-02-28

@@ -45,11 +45,10 @@ module axi_dw_downsizer #(
     input  axi_mst_resp_t mst_resp_i
   );
 
-  import axi_pkg::*;
-
   /*****************
    *  DEFINITIONS  *
    *****************/
+  import axi_pkg::aligned_addr;
 
   // Type used to index which adapter is handling each outstanding transaction.
   localparam TranIdWidth = AxiMaxReads > 1 ? $clog2(AxiMaxReads) : 1;
@@ -233,7 +232,7 @@ module axi_dw_downsizer #(
     R_IDLE       ,
     R_PASSTHROUGH,
     R_INCR_DOWNSIZE
-  } r_state_t;
+  } r_state_e;
 
   // Decide which downsizer will handle the incoming AXI transaction
   logic     [AxiMaxReads-1:0] idle_read_downsizer;
@@ -303,20 +302,23 @@ module axi_dw_downsizer #(
     .exists_gnt_o    (/* Unused  */ )
   );
 
+
+
+  typedef struct packed {
+    ar_chan_t ar                ;
+    logic ar_valid              ;
+    logic ar_throw_error        ;
+    axi_pkg::len_t burst_len    ;
+    axi_pkg::size_t orig_ar_size;
+  } r_req_t;
+
   for (genvar t = 0; t < AxiMaxReads; t++) begin: gen_read_downsizer
-    r_state_t r_state_d;
-    r_state_t r_state_q;
+    r_state_e r_state_d, r_state_q;
+    r_req_t r_req_d    , r_req_q  ;
 
     // Are we idle?
     assign idle_read_downsizer[t] = (r_state_q == R_IDLE);
 
-    struct packed {
-      ar_chan_t ar        ;
-      logic ar_valid      ;
-      logic ar_throw_error;
-      len_t burst_len     ;
-      size_t orig_ar_size ;
-    } r_req_d, r_req_q;
 
     always_comb begin
       // Maintain state
@@ -388,10 +390,10 @@ module axi_dw_downsizer #(
               r_req_d.orig_ar_size = slv_req_i.aw.size  ;
             end
 
-            // Modifiable transaction
-            if (|(r_req_d.ar.cache & CACHE_MODIFIABLE)) begin
-              case (r_req_d.ar.burst)
-                BURST_INCR : begin
+            case (r_req_d.ar.burst)
+              axi_pkg::BURST_INCR : begin
+                // Modifiable transaction
+                if (|(r_req_d.ar.cache & axi_pkg::CACHE_MODIFIABLE)) begin
                   // Evaluate output burst length
                   automatic addr_t start_addr = aligned_addr(r_req_d.ar.addr, AxiMstMaxSize)                                                                     ;
                   automatic addr_t end_addr   = aligned_addr(aligned_addr(r_req_d.ar.addr, r_req_d.ar.size) + (r_req_d.ar.len << r_req_d.ar.size), AxiMstMaxSize);
@@ -399,22 +401,36 @@ module axi_dw_downsizer #(
                   r_req_d.ar.len  = (end_addr - start_addr) >> AxiMstMaxSize;
                   r_req_d.ar.size = AxiMstMaxSize                           ;
                   r_state_d       = R_INCR_DOWNSIZE                         ;
+                // Non-modifiable transaction
+                end else begin
+                  // Incoming transaction is wider than the master bus
+                  if (r_req_d.ar.size > AxiMstMaxSize) begin
+                    r_req_d.ar_throw_error = 1'b1         ;
+                    r_state_d              = R_PASSTHROUGH;
+                  end
                 end
-              endcase
-            // Non-modifiable transaction
-            end else begin
-              // Incoming transaction is wider than the master bus
-              if (r_req_d.ar.size > AxiMstMaxSize) begin
-                r_req_d.ar_throw_error = 1'b1         ;
-                r_state_d              = R_PASSTHROUGH;
               end
-            end
 
-            // The DW converter does not support this kind of burst.
-            if (r_req_d.ar.burst inside {BURST_WRAP, BURST_FIXED}) begin
-              r_req_d.ar_throw_error = 1'b1         ;
-              r_state_d              = R_PASSTHROUGH;
-            end
+              axi_pkg::BURST_WRAP: begin
+                // The DW converter does not support this kind of burst ...
+                r_state_d              = R_PASSTHROUGH;
+                r_req_d.ar_throw_error = 1'b1         ;
+
+                // ... but if this is a narrow single beat transaction, it might
+                if (r_req_d.ar.size <= AxiMstMaxSize && r_req_d.ar.len == '0)
+                  r_req_d.ar_throw_error = 1'b0;
+              end
+
+              axi_pkg::BURST_FIXED: begin
+                // The DW converter does not support this kind of burst ...
+                r_state_d              = R_PASSTHROUGH;
+                r_req_d.ar_throw_error = 1'b1         ;
+
+                // ... but if this is a narrow single beat transaction, it might
+                if (r_req_d.ar.size <= AxiMstMaxSize && r_req_d.ar.len == '0)
+                  r_req_d.ar_throw_error = 1'b0;
+              end
+            endcase
           end
         end
 
@@ -478,21 +494,24 @@ module axi_dw_downsizer #(
    *  WRITE  *
    ***********/
 
-  enum logic [1:0] {
+  typedef enum logic [1:0] {
     W_IDLE       ,
     W_PASSTHROUGH,
     W_INCR_DOWNSIZE
-  } w_state_d, w_state_q;
+  } w_state_e;
 
-  struct packed {
-    aw_chan_t aw        ;
-    logic aw_valid      ;
-    logic aw_throw_error;
-    mst_w_chan_t w      ;
-    logic w_valid       ;
-    len_t burst_len     ;
-    size_t orig_aw_size ;
-  } w_req_d, w_req_q;
+  typedef struct packed {
+    aw_chan_t aw                 ;
+    logic aw_valid               ;
+    logic aw_throw_error         ;
+    mst_w_chan_t w               ;
+    logic w_valid                ;
+    axi_pkg::len_t burst_len     ;
+    axi_pkg::size_t orig_aw_size ;
+  } w_req_t;
+
+  w_state_e w_state_d, w_state_q;
+  w_req_t   w_req_d , w_req_q ;
 
   always_comb begin
     inject_aw_into_ar_req = 1'b0;
@@ -606,10 +625,10 @@ module axi_dw_downsizer #(
         w_req_d.burst_len    = slv_req_i.aw.len ;
         w_req_d.orig_aw_size = slv_req_i.aw.size;
 
-        // Modifiable transaction
-        if (|(slv_req_i.aw.cache & CACHE_MODIFIABLE)) begin
-          case (slv_req_i.aw.burst)
-            BURST_INCR: begin
+        case (slv_req_i.aw.burst)
+          axi_pkg::BURST_INCR: begin
+            // Modifiable transaction
+            if (|(slv_req_i.aw.cache & axi_pkg::CACHE_MODIFIABLE)) begin
               // Evaluate output burst length
               automatic addr_t start_addr = aligned_addr(slv_req_i.aw.addr, AxiMstMaxSize)                                                                           ;
               automatic addr_t end_addr   = aligned_addr(aligned_addr(slv_req_i.aw.addr, slv_req_i.aw.size) + (slv_req_i.aw.len << slv_req_i.aw.size), AxiMstMaxSize);
@@ -617,22 +636,36 @@ module axi_dw_downsizer #(
               w_req_d.aw.len  = (end_addr - start_addr) >> AxiMstMaxSize;
               w_req_d.aw.size = AxiMstMaxSize                           ;
               w_state_d       = W_INCR_DOWNSIZE                         ;
+            // Non-modifiable transaction.
+            end else begin
+              // Incoming transaction is wider than the master bus.
+              if (slv_req_i.aw.size > AxiMstMaxSize) begin
+                w_state_d              = W_PASSTHROUGH;
+                w_req_d.aw_throw_error = 1'b1         ;
+              end
             end
-          endcase
-        // Non-modifiable transaction.
-        end else begin
-          // Incoming transaction is wider than the master bus.
-          if (slv_req_i.aw.size > AxiMstMaxSize) begin
+          end
+
+          axi_pkg::BURST_WRAP: begin
+            // The DW converter does not support this kind of burst ...
             w_state_d              = W_PASSTHROUGH;
             w_req_d.aw_throw_error = 1'b1         ;
-          end
-        end
 
-        // The DW converter does not support this kind of burst.
-        if (w_req_d.aw.burst inside {BURST_WRAP, BURST_FIXED}) begin
-          w_state_d              = W_PASSTHROUGH;
-          w_req_d.aw_throw_error = 1'b1         ;
-        end
+            // ... but if this is a narrow single beat transaction, it might
+            if (slv_req_i.aw.size <= AxiMstMaxSize && slv_req_i.aw.len == '0)
+              w_req_d.aw_throw_error = 1'b0;
+          end
+
+          axi_pkg::BURST_FIXED: begin
+            // The DW converter does not support this kind of burst ...
+            w_state_d              = W_PASSTHROUGH;
+            w_req_d.aw_throw_error = 1'b1         ;
+
+            // ... but if this is a narrow single beat transaction, it might
+            if (slv_req_i.aw.size <= AxiMstMaxSize && slv_req_i.aw.len == '0)
+              w_req_d.aw_throw_error = 1'b0;
+          end
+        endcase
       end
     end
   end
