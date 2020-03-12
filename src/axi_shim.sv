@@ -84,7 +84,8 @@ module axi_shim #(
         addr:    wr_addr_i,
         len:     wr_blen_i,
         size:    wr_size_i,
-        burst:   axi_pkg::BURST_INCR, // (wr_single_req) ? axi_pkg::BURST_FIXED : axi_pkg::BURST_INCR, (Tempfix for `axi_size_converter`)
+     // burst:   axi_pkg::BURST_INCR, // (wr_single_req) ? axi_pkg::BURST_FIXED : axi_pkg::BURST_INCR, (Tempfix for `axi_size_converter`)
+        burst:   (wr_single_req) ? axi_pkg::BURST_FIXED : axi_pkg::BURST_INCR,
         lock:    wr_lock_i,
      // cache:   4'b0,
      // prot:    3'b0,
@@ -261,7 +262,8 @@ module axi_shim #(
         addr:    rd_addr_i,
         len:     rd_blen_i,
         size:    rd_size_i,
-        burst:   axi_pkg::BURST_INCR, // (rd_blen_i == 0) ? axi_pkg::BURST_FIXED : axi_pkg::BURST_INCR, (Tempfix for `axi_size_converter`)
+     // burst:   axi_pkg::BURST_INCR, // (rd_blen_i == 0) ? axi_pkg::BURST_FIXED : axi_pkg::BURST_INCR, (Tempfix for `axi_size_converter`)
+        burst:   (rd_blen_i == 0) ? axi_pkg::BURST_FIXED : axi_pkg::BURST_INCR,
         lock:    rd_lock_i,
      // cache:   4'b0,
      // prot:    3'b0,
