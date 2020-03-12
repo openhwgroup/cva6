@@ -176,7 +176,7 @@ endfunction: connect_phase
 
 task uvml_sb_simplex_c::run_phase(uvm_phase phase);
    
-   T_TRN  act_trn, exp_trn, comp_trn;
+   T_TRN  exp_trn;
    
    super.run_phase(phase);
    
@@ -184,8 +184,8 @@ task uvml_sb_simplex_c::run_phase(uvm_phase phase);
       fork
          forever begin
             case (cfg.mode)
-               UVME_SB_MODE_IN_ORDER    : mode_in_order    ();
-               UVME_SB_MODE_OUT_OF_ORDER: mode_out_of_order();
+               UVML_SB_MODE_IN_ORDER    : mode_in_order    ();
+               UVML_SB_MODE_OUT_OF_ORDER: mode_out_of_order();
                 
                default: begin
                   `uvm_error("SB", $sformatf("Invalid cfg.mode:%0d", cfg.mode))
@@ -207,10 +207,10 @@ endtask: run_phase
 function void uvml_sb_simplex_c::check_phase(uvm_phase phase);
 
    if (cfg.enabled) begin
-      if (exp_q.size() != 0) begin
-         `uvm_error("SB", $sformatf("Expected queue is not empty! exp_q.size() = %0d", exp_q.size()))
-         foreach(exp_q[ii]) begin
-            `uvm_info("SB", $sformatf("exp_q[%0d]: \n%s", ii, exp_q[ii].sprint()), UVM_MEDIUM)
+      if (cntxt.exp_q.size() != 0) begin
+         `uvm_error("SB", $sformatf("Expected queue is not empty! exp_q.size() = %0d", cntxt.exp_q.size()))
+         foreach(cntxt.exp_q[ii]) begin
+            `uvm_info("SB", $sformatf("exp_q[%0d]: \n%s", ii, cntxt.exp_q[ii].sprint()), UVM_MEDIUM)
          end
       end
       
@@ -231,11 +231,11 @@ task uvml_sb_simplex_c::mode_in_order();
    calc_act_stats(exp_trn);
    log_new_act   (exp_trn);
    
-   if (exp_q.size() == 0) begin
+   if (cntxt.exp_q.size() == 0) begin
       log_act_before_exp(act_trn, exp_trn);
    end
    else begin
-      exp_trn = exp_q.pop_front();
+      exp_trn = cntxt.exp_q.pop_front();
       if (exp_trn.compare(act_trn)) begin
          log_match(act_trn, exp_trn);
          cntxt.synced = 1;
@@ -247,7 +247,6 @@ task uvml_sb_simplex_c::mode_in_order();
          end
          else begin
             log_mismatch(act_trn, exp_trn);
-            break;
          end
       end
    end
@@ -257,7 +256,7 @@ endtask : mode_in_order
 
 task uvml_sb_simplex_c::mode_out_of_order();
    
-   T_TRN         act_trn, comp_trn;
+   T_TRN         act_trn, exp_trn;
    bit           found_match = 0;
    int unsigned  match_idx   = 0;
    
@@ -306,7 +305,7 @@ task uvml_sb_simplex_c::get_exp(output T_TRN exp_trn);
 endtask : get_exp
 
 
-function void calc_act_stats(ref T_TRN act_stats);
+function void uvml_sb_simplex_c::calc_act_stats(ref T_TRN act_stats);
    
    bit  packed_trn[];
    
@@ -329,7 +328,7 @@ function void calc_act_stats(ref T_TRN act_stats);
 endfunction : calc_act_stats
 
 
-function void calc_exp_stats(ref T_TRN exp_stats);
+function void uvml_sb_simplex_c::calc_exp_stats(ref T_TRN exp_stats);
    
    bit  packed_trn[];
    
@@ -382,14 +381,14 @@ endfunction : log_match
 
 function void uvml_sb_simplex_c::log_mismatch(ref T_TRN act_trn, exp_trn);
    
-   `uvm_error("SB", $sformatf("Actual and Expected do not match: \nActual:\n%s \n Expected:\n%s", act_trn.sprint(), comp_trn.sprint()))
+   `uvm_error("SB", $sformatf("Actual and Expected do not match: \nActual:\n%s \n Expected:\n%s", act_trn.sprint(), exp_trn.sprint()))
    
 endfunction : log_mismatch
 
 
 function void uvml_sb_simplex_c::log_drop(ref T_TRN act_trn, exp_trn);
    
-   `uvm_warning("SB", $sformatf("Actual and Expected do not match, may_drop=1: \nActual:\n%s \n Expected:\n%s", act_trn.sprint(), comp_trn.sprint()))
+   `uvm_warning("SB", $sformatf("Actual and Expected do not match, may_drop=1: \nActual:\n%s \n Expected:\n%s", act_trn.sprint(), exp_trn.sprint()))
    
 endfunction : log_drop
 

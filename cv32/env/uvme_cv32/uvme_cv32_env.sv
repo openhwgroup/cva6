@@ -39,8 +39,8 @@ class uvme_cv32_env_c extends uvm_env;
    //uvme_cv32_vsqr_c       vsequencer;
    
    // Agents
+   uvma_clknrst_agent_c  clknrst_agent;
    //uvma_debug_agent_c  debug_agent;
-   //uvma_reset_agent_c  reset_agent;
    
    
    `uvm_component_utils_begin(uvme_cv32_env_c)
@@ -79,11 +79,6 @@ class uvme_cv32_env_c extends uvm_env;
     * Assigns context handles to components using UVM Configuration Database.
     */
    extern virtual function void assign_cntxt();
-   
-   /**
-    * Creates sub-environment components.
-    */
-   extern virtual function void create_sub_envs();
    
    /**
     * Creates agent components.
@@ -138,9 +133,6 @@ class uvme_cv32_env_c extends uvm_env;
 endclass : uvme_cv32_env_c
 
 
-`pragma protect begin
-
-
 function uvme_cv32_env_c::new(string name="uvme_cv32_env", uvm_component parent=null);
    
    super.new(name, parent);
@@ -169,7 +161,6 @@ function void uvme_cv32_env_c::build_phase(uvm_phase phase);
       
       assign_cfg           ();
       assign_cntxt         ();
-      create_sub_envs      ();
       create_agents        ();
       create_ral_adapter   ();
       create_env_components();
@@ -212,8 +203,8 @@ endfunction: connect_phase
 function void uvme_cv32_env_c::assign_cfg();
    
    uvm_config_db#(uvme_cv32_cfg_c)::set(this, "*", "cfg", cfg);
+   uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
    //uvm_config_db#(uvma_debug_cfg_c)::set(this, "debug_agent", "cfg", cfg.debug_cfg);
-   //uvm_config_db#(uvma_reset_cfg_c)::set(this, "*reset_agent", "cfg", cfg.reset_cfg);
    
 endfunction: assign_cfg
 
@@ -221,23 +212,16 @@ endfunction: assign_cfg
 function void uvme_cv32_env_c::assign_cntxt();
    
    //uvm_config_db#(uvme_cv32_cntxt_c)::set(this, "*", "cntxt", cntxt);
+   uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    //uvm_config_db#(uvma_debug_cntxt_c)::set(this, "debug_agent", "cntxt", cntxt.debug_cntxt);
-   //uvm_config_db#(uvma_reset_cntxt_c)::set(this, "reset_agent", "cntxt", cntxt.reset_cntxt);
    
 endfunction: assign_cntxt
 
 
-function void uvme_cv32_env_c::create_sub_envs();
-   
-   
-   
-endfunction: create_sub_envs
-
-
 function void uvme_cv32_env_c::create_agents();
    
+   clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    //debug_agent = uvma_debug_agent_c::type_id::create("debug_agent", this);
-   //reset_agent = uvma_reset_agent_c::type_id::create("reset_agent", this);
    
 endfunction: create_agents
 
@@ -277,7 +261,7 @@ endfunction: create_cov_model
 function void uvme_cv32_env_c::connect_predictor();
    
    //debug_agent.mon_ap.connect(predictor.debug_export);
-   //reset_agent.mon_ap.connect(predictor.reset_export);
+   //clknrst_agent.mon_ap.connect(predictor.clknrst_export);
    // TODO Connect agents monitor analysis ports to predictor
    
 endfunction: connect_predictor
@@ -313,13 +297,10 @@ endfunction: connect_coverage_model
 function void uvme_cv32_env_c::assemble_vsequencer();
    
    //vsequencer.debug_sequencer = debug_agent.sequencer;
-   //vsequencer.reset_sequencer = reset_agent.sequencer;
+   //vsequencer.clknrst_sequencer = clknrst_agent.sequencer;
    // TODO Assemble virtual sequencer from agent sequencers
    
 endfunction: assemble_vsequencer
-
-
-`pragma protect end
 
 
 `endif // __UVME_CV32_ENV_SV__

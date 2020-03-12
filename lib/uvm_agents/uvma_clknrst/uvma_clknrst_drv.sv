@@ -98,12 +98,12 @@ task uvma_clknrst_drv_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
    
-   case (cfg.initial_value)
+   case (cfg.drv_initial_rst_value)
       UVMA_CLKNRST_SEQ_ITEM_INITIAL_VALUE_1: cntxt.vif.reset_n = '1;
       UVMA_CLKNRST_SEQ_ITEM_INITIAL_VALUE_X: cntxt.vif.reset_n = 'X;
       
       default: begin
-         `uvm_error("CLKNRST", $sformatf("Illegal cfg.initial_value: %s", cfg.initial_value))
+         `uvm_error("CLKNRST", $sformatf("Illegal cfg.initial_value: %s", cfg.drv_initial_rst_value))
       end
    endcase
    

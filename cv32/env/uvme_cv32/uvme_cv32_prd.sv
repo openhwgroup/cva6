@@ -77,9 +77,6 @@ class uvme_cv32_prd_c extends uvm_component;
 endclass : uvme_cv32_prd_c
 
 
-`pragma protect begin
-
-
 function uvme_cv32_prd_c::new(string name="uvme_cv32_prd", uvm_component parent=null);
    
    super.new(name, parent);
@@ -161,9 +158,6 @@ task uvme_cv32_prd_c::process_reset();
    end
    
 endtask : process_reset
-
-
-`pragma protect end
 
 
 `endif // __UVME_CV32_PRD_SV__

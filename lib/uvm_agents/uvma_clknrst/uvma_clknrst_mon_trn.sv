@@ -24,10 +24,10 @@
  * Object rebuilt from the Clock & Reset monitor. Analog of
  * uvma_clknrst_seq_item_c.
  */
-class uvma_clknrst_mon_trn_c extends uvm_trn_mon_trn_c;
+class uvma_clknrst_mon_trn_c extends uvml_trn_mon_trn_c;
    
    // Metadata
-   uvma_clknrst_mon_trn_clock_event_enum  event_type;
+   uvma_clknrst_mon_trn_event_enum  event_type;
    
    // Data
    realtime clk_period          = 0;

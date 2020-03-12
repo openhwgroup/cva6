@@ -20,7 +20,9 @@
 
 // Pre-processor macros
 `include "uvm_macros.svh"
-//`include "uvml_hrtbt_macros.sv"
+`include "uvml_hrtbt_macros.sv"
+`include "uvml_sb_macros.sv"
+`include "uvma_clknrst_macros.sv"
 `include "uvme_cv32_macros.sv"
 
 
@@ -30,13 +32,11 @@
  */
 package uvme_cv32_pkg;
    
-   import uvm_pkg       ::*;
-   // TODO: aren't these redundant?
-   //import uvmt_cv32_pkg ::*;
-   //import uvml_hrtbt_pkg::*;
-   //import uvml_sb_pkg   ::*;
+   import uvm_pkg         ::*;
+   import uvml_hrtbt_pkg  ::*;
+   import uvml_sb_pkg     ::*;
+   import uvma_clknrst_pkg::*;
    //import uvma_debug_pkg::*;
-   //import uvma_reset_pkg::*;
    
    // Constants / Structs / Enums
    `include "uvme_cv32_constants.sv"

@@ -24,7 +24,7 @@
  * Component writing Clock & Reset monitor transactions debug data to disk as
  * plain text.
  */
-class uvma_clknrst_mon_trn_logger_c extends uvm_logs_mon_trn_logger_c#(
+class uvma_clknrst_mon_trn_logger_c extends uvml_logs_mon_trn_logger_c#(
    .T_TRN  (uvma_clknrst_mon_trn_c),
    .T_CFG  (uvma_clknrst_cfg_c    ),
    .T_CNTXT(uvma_clknrst_cntxt_c  )
@@ -51,7 +51,7 @@ class uvma_clknrst_mon_trn_logger_c extends uvm_logs_mon_trn_logger_c#(
       string  clk_period_str  = "";
       string  reset_pulse_str = "";
       
-      case (t.event)
+      case (t.event_type)
          UVMA_CLKNRST_MON_TRN_EVENT_CLK_STARTED: begin
             event_str       = "CLK START";
             clk_period_str  = $sformatf("%0t", t.clk_period);
@@ -117,7 +117,7 @@ class uvma_clknrst_mon_trn_logger_json_c extends uvma_clknrst_mon_trn_logger_c;
       string  clk_period_str  = "";
       string  reset_pulse_str = "";
       
-      case (t.event)
+      case (t.event_type)
          UVMA_CLKNRST_MON_TRN_EVENT_CLK_STARTED: begin
             event_str       = "CLK START";
             clk_period_str  = $sformatf("%0t", t.clk_period);

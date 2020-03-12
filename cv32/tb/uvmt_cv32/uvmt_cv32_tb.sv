@@ -29,10 +29,9 @@ module uvmt_cv32_tb;
    import uvm_pkg::*;
    import uvmt_cv32_pkg::*;
    import uvme_cv32_pkg::*;
-   
-   // Envrionment configuration and context
-   uvme_cv32_cfg_c    top_env_config;
-   uvme_cv32_cntxt_c  top_env_cntxt;
+
+   // Agent interfaces
+   uvma_clknrst_if clknrst_if();
 
    // Capture regs for test status from Virtual Peripheral in dut_wrap.mem_i
    bit        tp;
@@ -67,22 +66,9 @@ module uvmt_cv32_tb;
 
      // Specify time format for simulation (units_number, precision_number, suffix_string, minimum_field_width)
      $timeformat(-9, 3, " ns", 8);
-
-     // Create and randomzie top-level configuration object (context is optionally created in the env).
-     top_env_config = uvme_cv32_cfg_c::type_id::create("top_env_config");
-     if (!top_env_config.randomize()) begin
-       `uvm_error("uvmt_cv32_tb", "Failed to randomize top-level configuration object" )
-     end
-
-     // For now - this will prevent the ENV build phase from doing anything...
-     top_env_config.enabled   = 0;
-     top_env_config.is_active = UVM_PASSIVE;
-
-     // Add environment configuration and context to uvm_config_db
-     uvm_config_db #(uvme_cv32_cfg_c  )::set(.cntxt(null), .inst_name("*"), .field_name("config"), .value(top_env_config));
-     uvm_config_db #(uvme_cv32_cntxt_c)::set(.cntxt(null), .inst_name("*"), .field_name("cntxt"),  .value(top_env_cntxt) );
       
      // Add interfaces handles to uvm_config_db
+     uvm_config_db#(virtual uvma_clknrst_if             )::set(.cntxt(null), .inst_name("*.env.clknrst_agent"), .field_name("vif"),         .value(clknrst_if));
      uvm_config_db#(virtual uvmt_cv32_clk_gen_if        )::set(.cntxt(null), .inst_name("*"), .field_name("clk_gen_vif"),         .value(clk_gen_if)        );
      uvm_config_db#(virtual uvmt_cv32_vp_status_if      )::set(.cntxt(null), .inst_name("*"), .field_name("vp_status_vif"),       .value(vp_status_if)      );
      uvm_config_db#(virtual uvmt_cv32_core_cntrl_if     )::set(.cntxt(null), .inst_name("*"), .field_name("core_cntrl_vif"),      .value(core_cntrl_if)     );

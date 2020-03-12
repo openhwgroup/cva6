@@ -58,9 +58,6 @@ class uvme_cv32_vsqr_c extends uvm_sequencer#(
 endclass : uvme_cv32_vsqr_c
 
 
-`pragma protect begin
-
-
 function uvme_cv32_vsqr_c::new(string name="uvme_cv32_sqr", uvm_component parent=null);
    
    super.new(name, parent);
@@ -83,9 +80,6 @@ function void uvme_cv32_vsqr_c::build_phase(uvm_phase phase);
    end
    
 endfunction : build_phase
-
-
-`pragma protect end
 
 
 `endif // __UVME_CV32_VSQR_SV__

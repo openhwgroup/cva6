@@ -25,13 +25,15 @@
  * (uvma_clknrst_mon_c) and driver (uvma_clknrst_drv_c).
  */
 interface uvma_clknrst_if ();
+
+   import uvm_pkg::*;
    
    // Signals
-   wire clk    ;
-   wire reset_n;
+   logic  clk    ;
+   logic  reset_n;
    
    // Control fields
-   realtime  clk_period = uvma_clknrst_default_clk_period;
+   realtime  clk_period    ;
    bit       clk_active = 0;
    
    
@@ -39,6 +41,7 @@ interface uvma_clknrst_if ();
     * Clock generation loop
     */
    initial begin
+      wait (clk_active);
       forever begin
          #(clk_period);
          if (clk_active) begin

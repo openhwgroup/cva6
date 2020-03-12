@@ -49,11 +49,11 @@ class uvma_clknrst_cntxt_c extends uvm_object;
       `uvm_field_event(sample_cfg_e  , UVM_DEFAULT)
       `uvm_field_event(sample_cntxt_e, UVM_DEFAULT)
       
-      `uvm_field_real(mon_clk_lock        , UVM_DEFAULT          )
-      `uvm_field_real(mon_clk_period      , UVM_DEFAULT          )
-      `uvm_field_int (mon_clk_last_val    , UVM_DEFAULT          )
-      `uvm_field_int (mon_clk_last_edge   , UVM_DEFAULT          )
-      `uvm_field_int (mon_clk_cycle_count , UVM_DEFAULT + UVM_DEC)
+      `uvm_field_int (mon_clk_lock       , UVM_DEFAULT          )
+      `uvm_field_real(mon_clk_period     , UVM_DEFAULT          )
+      `uvm_field_int (mon_clk_last_val   , UVM_DEFAULT          )
+      `uvm_field_real(mon_clk_last_edge  , UVM_DEFAULT          )
+      `uvm_field_int (mon_clk_cycle_count, UVM_DEFAULT + UVM_DEC)
       
       `uvm_field_int (mon_reset_state           , UVM_DEFAULT)
       `uvm_field_real(mon_reset_assert_timestamp, UVM_DEFAULT)
@@ -89,7 +89,6 @@ function void uvma_clknrst_cntxt_c::reset();
    
    mon_clk_lock         =  0;
    mon_clk_period       =  0;
-   mon_clk_active       =  0;
    mon_clk_last_val     = 'X;
    mon_clk_last_edge    =  0;
    mon_clk_cycle_count  =  0;

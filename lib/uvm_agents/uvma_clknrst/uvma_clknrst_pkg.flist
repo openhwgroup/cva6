@@ -16,10 +16,6 @@
 // 
 
 
-// UVM Include REMOVE BEFORE PUSH TO UPSTREAM
--f ${DV_UVMA_CLKNRST_PATH}/../uvm.flist
-
-
 // Directories
 +incdir+${DV_UVMA_CLKNRST_PATH}
 +incdir+${DV_UVMA_CLKNRST_PATH}/cov

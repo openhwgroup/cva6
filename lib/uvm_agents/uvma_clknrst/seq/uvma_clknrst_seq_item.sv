@@ -24,7 +24,7 @@
  * Object created by Clock & Reset agent sequences extending
  * uvma_clknrst_seq_base_c.
  */
-class uvma_clknrst_seq_item_c extends uvm_trn_seq_item_c;
+class uvma_clknrst_seq_item_c extends uvml_trn_seq_item_c;
    
    rand uvma_clknrst_seq_item_action_enum         action         ; ///< What operation to perform
    rand uvma_clknrst_seq_item_initial_value_enum  initial_value  ; ///< The initial value (if starting or asserting)

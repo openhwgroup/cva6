@@ -140,7 +140,7 @@ task uvma_clknrst_cov_model_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
    
-   if (cfg.is_enabled && cfg.cov_model_enabled) begin
+   if (cfg.enabled && cfg.cov_model_enabled) begin
       fork
          // Configuration
          forever begin

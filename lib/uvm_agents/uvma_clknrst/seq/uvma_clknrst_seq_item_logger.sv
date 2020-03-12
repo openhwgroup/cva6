@@ -24,7 +24,7 @@
  * Component writing Clock & Reset sequence items debug data to disk as plain
  * text.
  */
-class uvma_clknrst_seq_item_logger_c extends uvm_logs_seq_item_logger_c#(
+class uvma_clknrst_seq_item_logger_c extends uvml_logs_seq_item_logger_c#(
    .T_TRN  (uvma_clknrst_seq_item_c),
    .T_CFG  (uvma_clknrst_cfg_c     ),
    .T_CNTXT(uvma_clknrst_cntxt_c   )
@@ -66,7 +66,7 @@ class uvma_clknrst_seq_item_logger_c extends uvm_logs_seq_item_logger_c#(
          end
       endcase
       
-      fwrite($sformatf(" %t | %08h | %02b | %04d | %02h |", t.timestamp, action_str, t.b, t.c, t.d));
+      fwrite($sformatf(" %t | %s | %s |", $realtime(), action_str, period_str));
       
    endfunction : write
    
@@ -128,9 +128,9 @@ class uvma_clknrst_seq_item_logger_json_c extends uvma_clknrst_seq_item_logger_c
       endcase
       
       fwrite({"{",
-         $sformatf("\"time\":\"%0t\",", t.timestamp),
+         $sformatf("\"time\":\"%0t\",", $realtime()),
          $sformatf("\"action\":%s,"   , action_str ),
-         $sformatf("\"period\":%t,"   , t.b        ),
+         $sformatf("\"period\":%s,"   , period_str ),
       "},"});
       
    endfunction : write
