@@ -31,3 +31,7 @@ stdout/
 work-dpi/
 tb/riscv-isa-sim/
 work-*/*
+deps/fpu/src/common_cells*
+deps/fpu/src/fpu_div_sqrt_mvp*
+deps/fpu/tb*
+
