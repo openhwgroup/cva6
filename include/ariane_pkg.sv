@@ -423,7 +423,7 @@ package ariane_pkg;
     localparam int unsigned ICACHE_SET_ASSOC   = 4;
     // D$
     localparam int unsigned DCACHE_INDEX_WIDTH = 12;  // in bit
-    localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN-ICACHE_INDEX_WIDTH;  // in bit
+    localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN-DCACHE_INDEX_WIDTH;  // in bit
     localparam int unsigned DCACHE_LINE_WIDTH  = 128; // in bit
     localparam int unsigned DCACHE_SET_ASSOC   = 8;
 `endif
