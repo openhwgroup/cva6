@@ -74,7 +74,7 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
       string firmware;
       int    fd;
 
-      `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_NONE)
+      `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_DEBUG)
       wait(core_cntrl_if.load_instr_mem === 1'b1);
       `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
 
@@ -82,7 +82,7 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
       if($value$plusargs("firmware=%s", firmware)) begin
         // First, check if it exists...
         fd = $fopen (firmware, "r");   
-        if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_NONE)
+        if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_DEBUG)
         else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
         $fclose(fd);
         // Now load it...
