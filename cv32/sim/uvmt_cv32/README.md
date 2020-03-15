@@ -61,8 +61,10 @@ cv32/sim/
 The goal of this structure is to minimize the amount of redundant code in the
 Makefiles and ease the maintance of a given simulator's specific variables,
 rules and targets.<br><br>
-The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim or xrun and
-typically a target selects a specific testcase.
+The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim
+or xrun and typically a target selects a specific testcase.<br>
+**Hint**: define shell ENV variable "SIMULATOR" to match one of the supported
+simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
 
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------

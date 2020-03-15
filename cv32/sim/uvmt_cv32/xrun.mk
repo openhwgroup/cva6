@@ -71,6 +71,12 @@ cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_r
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 
+unit-test:  firmware-unit-test-clean
+unit-test:  $(FIRMWARE)/firmware_unit_test.hex
+unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+unit-test: dsim-firmware-unit-test
+
+
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
 firmware: comp $(FIRMWARE)/firmware.hex
 	$(XRUN) -R -l xrun-firmware.log \
@@ -92,11 +98,7 @@ clean:
 	rm -vrf $(XRUN_DIR)
 	if [ -e xrun.history ]; then rm xrun.history; fi
 	if [ -e xrun.log ]; then rm xru*.log; fi
-
-clean_all: xrun
-	rm -vrf $(addprefix $(FIRMWARE)/firmware., elf bin hex map) \
-	        $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS)
-
+	if [ -e trace_core_00_0.log ]; then rm trace_core_*.log; fi
 
 # All generated files plus the clone of the RTL
 clean_all: clean clean_core_tests
