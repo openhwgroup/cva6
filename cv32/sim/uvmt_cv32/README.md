@@ -47,11 +47,8 @@ rules and targets used to build the command-line to run a specific test. These
 files are organized as shown below:
 ```
 cv32/sim/
-      |
       +--- Common.mk
-      |
       +--- uvmt_cv32/
-              |
               +--- Makefile
               +--- vsim.mk
               +--- dsim.mk
@@ -81,4 +78,4 @@ Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/hom
 ----------------------
 **Note:** This testbench is known to require Xcelium 19.09 or later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11) for more info.
 Point your environment variable `RISCV` to your RISC-V toolchain.<br>
-The command-lines **make SIMULATOR=xrun hello-world** or<br>**make SIMULATOR=vsim hello-world**<br>do what you'd expect.
+The command-lines **make SIMULATOR=xrun hello-world** or **make SIMULATOR=vsim hello-world** do what you'd expect.
