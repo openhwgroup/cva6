@@ -38,23 +38,47 @@ It is strongly recommended you use the [RISC-V GNU
 Toolchain](https://github.com/riscv/riscv-gnu-toolchain) for that (follow the
 `Installation (Newlib)` section) and point your `RISCV` environment variable to it.
 
+Makefiles
+-----------
+`Make` is used to generate the command-lines that compile and run simulations.
+Your cwd is `cv32/sim/uvmt_cv32` and the **Makefile** at this location is the
+'root' Makefile that supports all common and simulator-specific variables,
+rules and targets used to build the command-line to run a specific test. These
+files are organized as shown below:
+```
+cv32/sim/
+      |
+      +--- Common.mk
+      |
+      +--- uvmt_cv32/
+              |
+              +--- Makefile
+              +--- vsim.mk
+              +--- dsim.mk
+              +--- xrun.mk
+              +--- <other_simulators>.mk
+```
+The goal of this structure is to minimize the amount of redundant code in the
+Makefiles and ease the maintance of a given simulator's specific variables,
+rules and targets.<br><br>
+The basic usage is: `make SIMULATOR=<sim> <target>` where typically a target
+selects a specific testcase.
+
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
-Point your environment variable `RISCV` to your RISC-V toolchain. The Makefile rule to run a testcase
-with dsim is `make dsim`.  You can pass the name of the testcase using the `TEST` variable:
-* **make dsim-no-firmware UVM_TESTNAME=uvmt_cv32_\<testname\>**: run uvmt_cv32_\<testname\> without loading any firmware.
-* **make dsim-hello_world**: run the hello_world program found at `../../tests/core/custom`.
-* **make dsim-cv32_riscv_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
-* **make dsim-cv32_riscv_compilance_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
-* **make dsim-firmware**: run all the programs found at `../../tests/core/firmware`.
-* **make dsim-riscv_tests**: run the RISC-V tests found at `../../tests/core/riscv_tests`
-* **make dsim-riscv_compilance_tests**: run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
-* **make dsim-unit-test \<prog\>**: Run one <prog> from the firmware suite of tests.  For example: `make dsim-unit-test addi`
+Point your environment variable `RISCV` to your RISC-V toolchain. The Makefile
+Set make variable SIMULATION to `dsim`.  You can pass the name of the testcase using the `TEST` variable:
+* **make SIMULATOR=dsim no-firmware UVM_TESTNAME=uvmt_cv32_\<testname\>**: run uvmt_cv32_\<testname\> without loading any firmware.
+* **make SIMULATOR=dsim hello-world**: run the hello_world program found at `../../tests/core/custom`.
+* **make SIMULATOR=dsim cv32_riscv_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
+* **make SIMULATOR=dsim cv32_riscv_compilance_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
+* **make SIMULATOR=dsim firmware**: run all the programs found at `../../tests/core/firmware`.
+* **make SIMULATOR=dsim dsim-riscv_tests**: run the RISC-V tests found at `../../tests/core/riscv_tests`
+* **make SIMULATOR=dsim riscv_compilance_tests**: run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
+* **make SIMULATOR=dsim dsim-unit-test \<prog\>**: Run one <prog> from the firmware suite of tests.  For example: `make dsim-unit-test addi`
 
 Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)(xrun) or Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/)(vsim)
 ----------------------
 **Note:** This testbench is known to require Xcelium 19.09 or later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11) for more info.
 Point your environment variable `RISCV` to your RISC-V toolchain.<br>
-Most of the dsim targets specified above have an xrun equivalent, e.g. **make xrun-hello-world** does what you'd expect.
-
-
+The command-lines **make SIMULATOR=xrun hello-world** or<br>**make SIMULATOR=vsim hello-world**<br>do what you'd expect.
