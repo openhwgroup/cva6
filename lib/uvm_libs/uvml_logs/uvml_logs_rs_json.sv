@@ -81,7 +81,6 @@ function uvml_logs_rs_json_c::new(string name="uvml_logs_rs_json", log_filename=
 `ifdef UVM_VERSION_1_2
    super.new(name);
    
-   `ifdef UVM_VERSION_1_2
    global_server = uvm_report_server::get_server();
    install_server();
    logfile_handle = $fopen(log_filename, "w");
