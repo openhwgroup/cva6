@@ -5,7 +5,8 @@ The testbench for the environment is located at `../../tb/uvmt_cv32` and the
 testcases are at `../../tests/uvmt_cv32` (note that some of these testcases use test programs found in
 `cv32/tests/core`).  See the README in those directories for more information.
 <br><br>
-To run the testcases you will need a SystemVerilog simulator, the UVM-1.2 library and RISC-V GCC compiler.
+To run the testcases you will need a SystemVerilog simulator, the UVM-1.2 library and RISC-V GCC compiler, plus
+at least some familiarity with `Make` and Makefiles.
 
 SystemVerilog Simulators
 ----------------------------------
@@ -43,28 +44,30 @@ Makefiles
 `Make` is used to generate the command-lines that compile and run simulations.
 Your cwd is `cv32/sim/uvmt_cv32` and the **Makefile** at this location is the
 'root' Makefile that supports all common and simulator-specific variables,
-rules and targets used to build the command-line to run a specific test. These
+rules and targets used to build the command-line to run a specific test.
+`../Common.mk` supports variable and targets to clone the RTL from
+[cv32e40p](https://github.com/openhwgroup/cv32e40p) as appropriate.  These
 files are organized as shown below:
 ```
 cv32/sim/
-      +--- Common.mk
+      +--- Common.mk                        # Common variables and targets
       +--- uvmt_cv32/
               +--- Makefile
-              +--- vsim.mk
-              +--- dsim.mk
-              +--- xrun.mk
+              +--- vsim.mk                  # Mentor Questa
+              +--- dsim.mk                  # Metrics dsim
+              +--- xrun.mk                  # Cadance Xcelium
               +--- <other_simulators>.mk
 ```
 The goal of this structure is to minimize the amount of redundant code in the
 Makefiles and ease the maintance of a given simulator's specific variables,
 rules and targets.<br><br>
-The basic usage is: `make SIMULATOR=<sim> <target>` where typically a target
-selects a specific testcase.
+The basic usage is: `make SIMULATOR=<sim> <target>` where `sim` is vsim, dsim or xrun and
+typically a target selects a specific testcase.
 
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
-Point your environment variable `RISCV` to your RISC-V toolchain. The Makefile
-Set make variable SIMULATION to `dsim`.  You can pass the name of the testcase using the `TEST` variable:
+Point your environment variable `RISCV` to your RISC-V toolchain. Set the Makefile
+variable SIMULATOR to `dsim`.  You can pass the name of the testcase using the `TEST` variable:
 * **make SIMULATOR=dsim no-firmware UVM_TESTNAME=uvmt_cv32_\<testname\>**: run uvmt_cv32_\<testname\> without loading any firmware.
 * **make SIMULATOR=dsim hello-world**: run the hello_world program found at `../../tests/core/custom`.
 * **make SIMULATOR=dsim cv32_riscv_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
@@ -73,6 +76,7 @@ Set make variable SIMULATION to `dsim`.  You can pass the name of the testcase u
 * **make SIMULATOR=dsim dsim-riscv_tests**: run the RISC-V tests found at `../../tests/core/riscv_tests`
 * **make SIMULATOR=dsim riscv_compilance_tests**: run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
 * **make SIMULATOR=dsim dsim-unit-test \<prog\>**: Run one <prog> from the firmware suite of tests.  For example: `make dsim-unit-test addi`
+* **make SIMULATOR=dsim clean_all**: deletes all dsim generated intermediates, waves and logs.
 
 Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)(xrun) or Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/)(vsim)
 ----------------------
