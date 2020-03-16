@@ -22,8 +22,9 @@
 ###############################################################################
 
 XRUN              = xrun
-XRUN_FLAGS        = -64bit -access +rwc -q -clean -sv -uvm -uvmhome CDNS-1.2 -timescale 1ns/1ps
-XRUN_DIR          = xcelium.d
+XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
+XRUN_FLAGS       ?= -64bit -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) -timescale 1ns/1ps
+XRUN_DIR         ?= xcelium.d
 
 .DEFAULT_GOAL: no_rule 
 
