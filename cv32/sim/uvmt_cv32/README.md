@@ -70,7 +70,7 @@ simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
 Point your environment variable `RISCV` to your RISC-V toolchain. Set the Makefile
-variable SIMULATOR to `dsim`.  You can pass the name of the testcase using the `TEST` variable:
+variable SIMULATOR to `dsim`.  The following is an _almost_ complete list of tests:
 * **make SIMULATOR=dsim hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
 * **make SIMULATOR=dsim cv32-riscv-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
 * **make SIMULATOR=dsim cv32-riscv-compilance-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
@@ -86,6 +86,8 @@ At the time of this writting (2020-03-15) work is on-going to control **UVM_TEST
 
 Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)(xrun) or Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/)(vsim)
 ----------------------
-**Note:** This testbench is known to require Xcelium 19.09 or later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11) for more info.
 Point your environment variable `RISCV` to your RISC-V toolchain.<br>
-The command-lines **make SIMULATOR=xrun hello-world** or **make SIMULATOR=vsim hello-world** do what you'd expect.
+Most of the above targets are known to work for both `xrun` and `vsim`.  For example,
+**make SIMULATOR=xrun hello-world** or **make SIMULATOR=vsim hello-world** do what you'd expect.
+<br><br>
+**Note for Cadence users:** This testbench is known to require Xcelium 19.09 or later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11) for more info.
