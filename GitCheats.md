@@ -1,8 +1,7 @@
-# Mini Git cheat-sheet.
-
-
-PLEASE READ CAREFULLY the "CONTRIBUTING.md" file in this directory.
-You MUST follow the specified flow to contribute to this repository.
+# Git cheat-sheet.
+A few examples to illustrate use of `git` on the command-line.<br><br>
+PLEASE READ CAREFULLY the [CONTRIBUTING.md](https://github.com/openhwgroup/core-v-verif/blob/master/CONTRIBUTING.md)
+file in this directory.  You MUST follow the specified flow to contribute to this repository.
 
 ## Useful Conventions:
 1. Place all your working copies in easy-to-find directories.  A suggested
@@ -21,7 +20,7 @@ nominclatures are:<br>
 -   /home/mike/GitHubRepos/MikeOpenHWGroup/core-v-docs/ohw_mike_issue_123
 
 ## Example Use-cases
-Written as a set of use-cases.  "$" is the prompt.  "#" is a comment line. ">" is git output to stdout.
+"$" is the prompt.  "#" is a comment line. ">" is git output to stdout.
 
 ### Clone from the head of a Repo's master branch on the command-line.
 Note that this is _not_ a typical use-case (work on a branch instead).<br>
@@ -65,7 +64,7 @@ $ git push --set-upstream origin <Branch><br>
 The following assumes you have previously created a fork of<br>
     https://github.com/openhwgroup/core-v-docs<br>
 to<br>
-    https://github.com/MikeOpenHWGroup/core-v-docs<br>
+    https://github.com/MikeOpenHWGroup/core-v-docs<br><br>
 $ cd GitHubRepos/MikeOpenHWGroup/core-v-docs<br>
 $ git clone https://github.com/MikeOpenHWGroup/core-v-docs.git master<br>
 $ cd master<br>
