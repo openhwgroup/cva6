@@ -1,23 +1,28 @@
 # Mini Git cheat-sheet.
-Written as a set of use-cases.  "$" is the prompt.
+
 
 PLEASE READ CAREFULLY the "CONTRIBUTING.md" file in this directory.
 You MUST follow the specified flow to contribute to this repository.
 
 Useful Conventions:
 1. Place all your working copies in easy-to-find directories.  A suggested
-nominclature is:
-            $HOME/GitHubRepos/<GitHub_Account>/<Repository/><Branch>
+nominclature is:<br><br>
+`$HOME/GitHubRepos/<GitHub_Account>/<Repository/><Branch>`
 2. Use unique and easily recognizable names for your branches.  Suggested
-nominclatures are: <org>_<userid>_yyyymmdd    (e.g ohw_mike_20191120)
-or:                <org>_<userid>_issue_<num> (e.g ohw_mike_issue_239)
+nominclatures are:<br><br>
+<org>_<userid>_yyyymmdd    (e.g ohw_mike_20191120)<br>
+or:<br>
+<org>_<userid>_issue_<num> (e.g ohw_mike_issue_239)<br>
 Examples:
-   /home/mike/GitHubRepos/openhwgroup/core-v-verif/master
-   /home/mike/GitHubRepos/openhwgroup/core-v-verif/ohw_mike_20191204
-   /home/mike/GitHubRepos/openhwgroup/cv32e40p/master
-   /home/mike/GitHubRepos/MikeOpenHWGroup/core-v-docs/ohw_mike_issue_123
+<br>   /home/mike/GitHubRepos/openhwgroup/core-v-verif/master
+<br>   /home/mike/GitHubRepos/openhwgroup/core-v-verif/ohw_mike_20191204
+<br>   /home/mike/GitHubRepos/openhwgroup/cv32e40p/master
+<br>   /home/mike/GitHubRepos/MikeOpenHWGroup/core-v-docs/ohw_mike_issue_123
 
-## Clone from the head of the Repo's master branch on the command-line.
+## Example Use-cases
+Written as a set of use-cases.  "$" is the prompt.  "//" is a comment line.
+
+### Clone from the head of a Repo's master branch on the command-line.
 Note that this is _not_ a typical use-case (work on a branch instead).
 Place all your working copies in easy-to-find directory:
 e.g. $HOME/GitHubRepos/<GitHub_Account>/<Repository>/<branch>
