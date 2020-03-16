@@ -103,12 +103,12 @@ firmware: comp $(FIRMWARE)/firmware.hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(FIRMWARE)/firmware.hex
 
+###############################################################################
 # DSIM UNIT TESTS: run each test individually.
+#                  Example: to run the ADDI test `make dsim-unit-test addi`
 # DO NOT INVOKE rule "dsim-firmware-unit-test" directly.   It is a support
-# rule for rule "dsim-unit-test" (in included ../Common.mk).
-#
-# Example: to run the ADDI test `make SIMULATOR=dsim dsim-unit-test addi`
-dsim-unit-test: comp
+# rule for rule "dsim-unit-test" (in included ../Firmware.mk).
+dsim-firmware-unit-test: comp
 	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
 	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \
@@ -116,6 +116,9 @@ dsim-unit-test: comp
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(FIRMWARE)/firmware_unit_test.hex
 
+# Aliases for 'dsim-unit-test' (defined in ../Common.mk)
+.PHONY: unit-test
+unit-test: dsim-unit-test
 
 ###############################################################################
 # Clean up your mess!
