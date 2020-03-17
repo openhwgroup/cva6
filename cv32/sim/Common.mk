@@ -108,6 +108,8 @@ CORE_TEST_DIR                        = $(PROJ_ROOT_DIR)/cv32/tests/core
 FIRMWARE                             = $(CORE_TEST_DIR)/firmware
 VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
+CUSTOM_DIR                          ?= $(CUSTOM)
+CUSTOM_PROG                         ?= hello_world
 VERI_CUSTOM                          = ../../tests/core/custom
 CV32_RISCV_TESTS_FIRMWARE            = $(CORE_TEST_DIR)/cv32_riscv_tests_firmware
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = $(CORE_TEST_DIR)/cv32_riscv_compliance_tests_firmware
@@ -166,10 +168,19 @@ FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
 	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@
 
 # Running custom programs:
-# This is an example for running a hello world in the testbench
 # We link with our custom crt0.s and syscalls.c against newlib so that we can
 # use the c standard library
-#custom/hello_world.elf: ../../tests/core/custom/hello_world.c
+$(CUSTOM_DIR)/$(CUSTOM_PROG).elf: $(CUSTOM_DIR)/$(CUSTOM_PROG).c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		-T $(CUSTOM_DIR)/link.ld  \
+		-static \
+		$(CUSTOM_DIR)/crt0.S \
+		$^ $(CUSTOM_DIR)/syscalls.c $(CUSTOM_DIR)/vectors.S \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc
+
+# HELLO WORLD: custom/hello_world.elf: ../../tests/core/custom/hello_world.c
 $(CUSTOM)/hello_world.elf: $(CUSTOM)/hello_world.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		-T $(CUSTOM)/link.ld  \

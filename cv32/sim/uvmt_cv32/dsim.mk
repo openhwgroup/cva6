@@ -67,6 +67,40 @@ no-firmware: comp
 		+UVM_TESTNAME=$(UVM_TESTNAME)
 #		+verbose
 
+####
+# The 'custom test': this target provides the ability to specify both the
+#                    testcase run by the UVM environment and a C program to
+#                    be executed by the core. Note that this UVM testcase is
+#                    expected to load the compiled program into the core's memory.
+#
+# User defined variables used by this target:
+#   CUSTOM_DIR:   Absolute, not relative, path to the custom C program. Default
+#                 is `pwd`/../../tests/core/custom.
+#   CUSTOM_PROG:  C program that executes on the core. Default is hello_world.c.
+#   UVM_TESTNAME: Class identifer (not file path) of the UVM testcase run by
+#                 environment. Default is uvmt_cv32_firmware_test_c.
+#
+# Use cases:
+#   1: Full specification of the hello-world test:
+#      $ make custom SIMULATOR=dsim CUSTOM_DIR=`pwd`/../../tests/core/custom CUSTOM_PROG=hello_world UVM_TESTNAME=uvmt_cv32_firmware_test_c
+#
+#   2: Same thing, using the defaults in these Makefiles:
+#      $ make custom
+#
+#   3: Run your own "custom program"
+#      $ make custom CUSTOM_PROG=<my_C_program>
+#
+custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
+	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
+	$(DSIM) -l dsim-$(CUSTOM_PROG).log -image $(DSIM_IMAGE) \
+		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		+UVM_TESTNAME=$(UVM_TESTNAME) \
+		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
+
+####
+# Commonly used targets:
+#
 hello-world: comp $(CUSTOM)/hello_world.hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \

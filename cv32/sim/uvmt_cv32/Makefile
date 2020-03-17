@@ -68,7 +68,7 @@ DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # Testcase name: must be the CLASS name of the testcase (not the filename).
 # Look in ../../tests/uvmt_cv32.
-UVM_TESTNAME ?= uvmt_cv32_smoke_test_c
+UVM_TESTNAME ?= uvmt_cv32_firmware_test_c
 
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
