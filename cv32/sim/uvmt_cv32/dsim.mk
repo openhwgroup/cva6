@@ -22,12 +22,12 @@
 ###############################################################################
 
 DSIM                    = dsim
-DSIM_HOME               = /tools/Metrics/dsim
-DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS)
-DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
+DSIM_HOME              ?= /tools/Metrics/dsim
+DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS)
+DSIM_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
-DSIM_IMAGE              = dsim.out
+DSIM_IMAGE             ?= dsim.out
 
 .DEFAULT_GOAL: no_rule 
 .PHONY: sim

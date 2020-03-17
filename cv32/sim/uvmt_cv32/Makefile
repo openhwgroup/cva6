@@ -48,9 +48,10 @@ PROJ_ROOT_DIR = $(PWD)/../../..
 # Useful commands
 MKDIR_P = mkdir -p
 
-# Compile compile flags for all simulators
+# Compile compile flags for all simulators (careful!)
 WAVES        ?= 0
 SV_CMP_FLAGS ?= 
+TIMESCALE    ?= -timescale 1ns/1ps
 UVM_PLUSARGS ?=
 
 # User selectable simulator targets/rules
