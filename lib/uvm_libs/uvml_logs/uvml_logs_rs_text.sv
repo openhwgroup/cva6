@@ -24,18 +24,13 @@
  * Replacement for uvm_report_server to log messages to a JSON format
  * that can be more easily reused and manipulated by external tools/ viewers
  */
-`ifdef UVM_VERSION_1_2
 class uvml_logs_rs_text_c extends uvm_default_report_server;
-`else
-class uvml_logs_rs_text_c extends uvm_report_server;
-`endif
    
    /**
     * 
     */
    extern function new(string name="uvml_logs_rs_text");
    
-`ifdef UVM_VERSION_1_2
    /**
     * 
     */
@@ -45,23 +40,17 @@ class uvml_logs_rs_text_c extends uvm_report_server;
     * 
     */
    extern virtual function void report_summarize(UVM_FILE file=0);
-`endif
    
 endclass : uvml_logs_rs_text_c
 
 
 function uvml_logs_rs_text_c::new(string name="uvml_logs_rs_text");
 
-`ifdef UVM_VERSION_1_2   
    super.new(name);
-`else
-   super.new();
-`endif
    
 endfunction : new
 
 
-`ifdef UVM_VERSION_1_2
 function string uvml_logs_rs_text_c::compose_report_message(uvm_report_message report_message, string report_object_name="");
    
    string sev_string;
@@ -170,7 +159,6 @@ function void uvml_logs_rs_text_c::report_summarize(UVM_FILE file=0);
    `uvm_info("UVM/REPORT/SERVER", `UVM_STRING_QUEUE_STREAMING_PACK(q), UVM_LOW)*/
    
 endfunction : report_summarize
-`endif // UVM_VERSION_1_2
 
 
 `endif // __UVML_LOGS_RS_TEXT_SV__

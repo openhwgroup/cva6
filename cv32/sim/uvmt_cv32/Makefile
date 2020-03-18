@@ -105,7 +105,7 @@ VSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
-DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS)
+DSIM_CMP_FLAGS          = -all-pkgs -timescale 1ns/1ps $(SV_CMP_FLAGS)
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
@@ -113,9 +113,11 @@ DSIM_IMAGE              = dsim.out
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
 XRUN              = xrun
-#XRUN_FLAGS        = -64bit -access +rwc -q -clean -smartorder -sv -uvm -uvmhome CDNS-1.2 -top worklib.uvmt_cv32_tb -timescale 1ns/1ps
-XRUN_FLAGS        = -64bit -access +rwc -q -clean -sv -uvm -uvmhome CDNS-1.2 -timescale 1ns/1ps
-XRUN_DIR          = xcelium.d
+#XRUN_UVMHOME_ARG ?= CDNS-1.2
+XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
+#XRUN_FLAGS       ?= -64bit -access +rwc -q -clean -smartorder -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) -top worklib.uvmt_cv32_tb -timescale 1ns/1ps
+XRUN_FLAGS       ?= -64bit -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) -timescale 1ns/1ps
+XRUN_DIR         ?= xcelium.d
 
 # UVM Environment
 export DV_UVMT_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
