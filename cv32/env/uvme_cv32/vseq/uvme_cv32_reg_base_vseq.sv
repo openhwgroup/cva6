@@ -60,9 +60,6 @@ class uvme_cv32_reg_base_vseq_c extends uvme_cv32_base_vseq_c;
 endclass : uvme_cv32_reg_base_vseq_c
 
 
-`pragma protect begin
-
-
 function uvme_cv32_reg_base_vseq_c::new(string name="uvme_cv32_reg_base_vseq");
    
    super.new(name);
@@ -94,9 +91,6 @@ task uvme_cv32_reg_base_vseq_c::run_all_blocks();
    `uvm_fatal("VSEQ", "Call to pure virtual task")
    
 endtask : run_all_blocks
-
-
-`pragma protect end
 
 
 `endif // __UVME_CV32_REG_BASE_VSEQ_SV__

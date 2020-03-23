@@ -106,12 +106,14 @@ task uvma_clknrst_drv_c::run_phase(uvm_phase phase);
          `uvm_error("CLKNRST", $sformatf("Illegal cfg.initial_value: %s", cfg.drv_initial_rst_value))
       end
    endcase
-   
-   seq_item_port.get_next_item(req);
-   `uvml_hrtbt()
-   drv_req (req);
-   ap.write(req);
-   seq_item_port.item_done();
+
+   forever begin
+      seq_item_port.get_next_item(req);
+      `uvml_hrtbt()
+      drv_req (req);
+      ap.write(req);
+      seq_item_port.item_done();
+   end
    
 endtask : run_phase
 
@@ -146,10 +148,10 @@ task uvma_clknrst_drv_c::drv_req(uvma_clknrst_seq_item_c req);
       end
       
       UVMA_CLKNRST_SEQ_ITEM_ACTION_ASSERT_RESET: begin
-         `uvm_info("CLKNRST", $sformatf("Asserting reset for %0t", (req.rst_deassert_period * 1ps)), UVM_LOW)
+         `uvm_info("CLKNRST", $sformatf("Asserting reset for %0t", (req.rst_deassert_period * 1ps)), UVM_MEDIUM)
          cntxt.vif.reset_n = '0;
          #(req.rst_deassert_period * 1ps);
-         `uvm_info("CLKNRST", "De-asserting reset", UVM_LOW)
+         `uvm_info("CLKNRST", "De-asserting reset", UVM_MEDIUM)
          cntxt.vif.reset_n = '1;
       end
    endcase

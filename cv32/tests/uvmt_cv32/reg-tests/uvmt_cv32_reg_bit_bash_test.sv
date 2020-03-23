@@ -50,7 +50,7 @@ task uvmt_cv32_bit_bash_test_c::main_phase(uvm_phase phase);
    super.main_phase(phase);
    
    `uvm_info("TEST", $sformatf("Starting bit bash virtual sequence:\n%s", bit_bash_vseq.sprint()), UVM_NONE)
-   bit_bash_vseq.single_block = test_cfg.cli_selected_block;
+   //bit_bash_vseq.single_block = test_cfg.cli_selected_block;
    bit_bash_vseq.start(vsequencer);
    `uvm_info("TEST", "Finished bit bash virtual sequence", UVM_NONE)
    
