@@ -43,7 +43,7 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
                                       PULP_SECURE       =    1
                            )
                            (
-                            uvmt_cv32_clk_gen_if         clk_gen_if,
+			    uvma_clknrst_if              clknrst_if,
                             uvmt_cv32_vp_status_if       vp_status_if,
                             uvmt_cv32_core_cntrl_if      core_cntrl_if,
                             uvmt_cv32_core_status_if     core_status_if,
@@ -101,8 +101,8 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
                 )
     riscv_core_i
         (
-         .clk_i                  ( clk_gen_if.core_clock          ),
-         .rst_ni                 ( clk_gen_if.core_reset_n        ),
+         .clk_i                  ( clknrst_if.clk                 ),
+         .rst_ni                 ( clknrst_if.reset_n             ),
 
          .clock_en_i             ( core_cntrl_if.clock_en         ),
          .test_en_i              ( core_cntrl_if.test_en          ),
@@ -168,8 +168,8 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
              .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH)
             )
     ram_i
-        (.clk_i          ( clk_gen_if.core_clock          ),
-         .rst_ni         ( clk_gen_if.core_reset_n        ),
+        (.clk_i          ( clknrst_if.clk                 ),
+         .rst_ni         ( clknrst_if.reset_n             ),
 
          .instr_req_i    ( instr_req                      ),
          .instr_addr_i   ( instr_addr[RAM_ADDR_WIDTH-1:0] ),

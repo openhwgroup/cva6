@@ -1,3 +1,4 @@
+// 
 // Copyright 2020 OpenHW Group
 // Copyright 2020 Datum Technology Corporation
 // 
@@ -12,6 +13,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// 
 
 
 `ifndef __UVME_CV32_COV_MODEL_SV__
@@ -95,9 +97,6 @@ class uvme_cv32_cov_model_c extends uvm_component;
 endclass : uvme_cv32_cov_model_c
 
 
-`pragma protect begin
-
-
 function uvme_cv32_cov_model_c::new(string name="uvme_cv32_cov_model", uvm_component parent=null);
    
    super.new(name, parent);
@@ -178,9 +177,6 @@ endfunction : sample_cntxt
 //             debug_trn_cg.sample();
 //             
 //          endfunction : sample_debug
-
-
-`pragma protect end
 
 
 `endif // __UVME_CV32_COV_MODEL_SV__
