@@ -30,24 +30,23 @@
 class uvmt_cv32_base_test_c extends uvm_test;
    
    // Objects
-   rand uvmt_cv32_test_cfg_c  test_cfg ;
-   rand uvme_cv32_cfg_c       env_cfg  ;
-   uvme_cv32_cntxt_c          env_cntxt;
-   uvml_logs_rs_text_c        rs       ;
-   //uvme_cv32_ral_c            ral      ;
-   uvml_logs_reg_logger_cbs_c reg_cbs  ;
+   rand uvmt_cv32_test_cfg_c   test_cfg ;
+   rand uvme_cv32_cfg_c        env_cfg  ;
+   uvme_cv32_cntxt_c           env_cntxt;
+   uvml_logs_rs_text_c         rs       ;
+   //uvme_cv32_ral_c             ral      ;
+   uvml_logs_reg_logger_cbs_c  reg_cbs  ;
    
    // Components
    uvme_cv32_env_c   env       ;
-   //uvme_cv32_vsqr_c  vsequencer;
+   uvme_cv32_vsqr_c  vsequencer;
    
    // Handles testbench interfaces
-   virtual uvmt_cv32_clk_gen_if    clk_gen_vif;    // clocks and resets
    virtual uvmt_cv32_vp_status_if  vp_status_vif;  // virtual peripheral status
    virtual uvmt_cv32_core_cntrl_if core_cntrl_vif; // control inputs to the core
    
    // Default sequences
-   //rand uvme_cv32_reset_vseq_c  reset_vseq;
+   rand uvme_cv32_reset_vseq_c  reset_vseq;
    
    
    `uvm_component_utils_begin(uvmt_cv32_base_test_c)
@@ -57,11 +56,11 @@ class uvmt_cv32_base_test_c extends uvm_test;
    `uvm_component_utils_end
 
    
-   //constraint env_cfg_cons {
-   //   env_cfg.enabled         == 1;
-   //   env_cfg.is_active       == UVM_ACTIVE;
-   //   env_cfg.trn_log_enabled == 1;
-   //}
+   constraint env_cfg_cons {
+      env_cfg.enabled         == 1;
+      env_cfg.is_active       == UVM_ACTIVE;
+      env_cfg.trn_log_enabled == 1;
+   }
    
    
    // Additional, temporary constraints to get around known design bugs/constraints
@@ -119,9 +118,9 @@ class uvmt_cv32_base_test_c extends uvm_test;
    extern virtual function void phase_ended(uvm_phase phase);
    
    /**
-    * Retrieves clk_gen_vif from UVM configuration database.
+    * Retrieves virtual interfaces from UVM configuration database.
     */
-   extern function void retrieve_clk_gen_vif();
+   extern function void retrieve_vifs();
    
    /**
     * Creates test_cfg and env_cfg. Assigns ral handle to env_cfg's.
@@ -172,11 +171,6 @@ class uvmt_cv32_base_test_c extends uvm_test;
    extern function void print_banner(string text);
    
    /**
-    * Starts clock generation via clk_gen_vif functions.
-    */
-   extern virtual task start_clk();
-   
-   /**
     * Fatals out after watchdog_timeout has elapsed.
     */
    extern virtual task watchdog_timer();
@@ -190,7 +184,7 @@ function uvmt_cv32_base_test_c::new(string name="uvmt_cv32_base_test", uvm_compo
    
    rs = new("rs");
    uvm_report_server::set_server(rs);
-   //reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
+   reset_vseq = uvme_cv32_reset_vseq_c::type_id::create("reset_vseq");
    
 endfunction : new
 
@@ -199,15 +193,15 @@ function void uvmt_cv32_base_test_c::build_phase(uvm_phase phase);
    
    super.build_phase(phase);
    
-   retrieve_clk_gen_vif();
-   create_cfg          ();
-   randomize_test      ();
-   cfg_hrtbt_monitor   ();
-   assign_cfg          ();
-   create_cntxt        ();
-   assign_cntxt        ();
-   create_env          ();
-   create_components   ();
+   retrieve_vifs    ();
+   create_cfg       ();
+   randomize_test   ();
+   cfg_hrtbt_monitor();
+   assign_cfg       ();
+   create_cntxt     ();
+   assign_cntxt     ();
+   create_env       ();
+   create_components();
    
 endfunction : build_phase
 
@@ -216,8 +210,8 @@ function void uvmt_cv32_base_test_c::connect_phase(uvm_phase phase);
    
    super.connect_phase(phase);
    
-   //vsequencer = env.vsequencer;
-   //uvm_reg_cb::add(null, reg_cbs);
+   vsequencer = env.vsequencer;
+   uvm_reg_cb::add(null, reg_cbs);
    
 endfunction : connect_phase
 
@@ -226,7 +220,6 @@ task uvmt_cv32_base_test_c::run_phase(uvm_phase phase);
    
    super.run_phase(phase);
    
-   start_clk();
    watchdog_timer();
    
 endtask : run_phase
@@ -236,17 +229,12 @@ task uvmt_cv32_base_test_c::reset_phase(uvm_phase phase);
    
    super.reset_phase(phase);
    
-   //`uvm_info("BASE TEST", $sformatf("Starting reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
-   //reset_vseq.start(vsequencer);
-   
    phase.raise_objection(this);
-   @(posedge clk_gen_vif.core_clock);
-   @(posedge clk_gen_vif.core_reset_n);
-   repeat (2) @(posedge clk_gen_vif.core_clock);
+   `uvm_info("BASE TEST", $sformatf("Starting reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
+   reset_vseq.start(vsequencer);
+   `uvm_info("BASE TEST", $sformatf("Finished reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
    phase.drop_objection(this);
 
-   `uvm_info("BASE TEST", "Finished reset virtual sequence", UVM_NONE)
-   
 endtask : reset_phase
 
 
@@ -328,15 +316,7 @@ function void uvmt_cv32_base_test_c::phase_ended(uvm_phase phase);
 endfunction : phase_ended
 
 
-// TODO: give this task a generic name (since its retrieving more than just the clk_gen_if)
-function void uvmt_cv32_base_test_c::retrieve_clk_gen_vif();
-   
-   if (!uvm_config_db#(virtual uvmt_cv32_clk_gen_if)::get(this, "", "clk_gen_vif", clk_gen_vif)) begin
-      `uvm_fatal("VIF", $sformatf("Could not find clk_gen_vif handle of type %s in uvm_config_db", $typename(clk_gen_vif)))
-   end
-   else begin
-      `uvm_info("VIF", $sformatf("Found clk_gen_vif handle of type %s in uvm_config_db", $typename(clk_gen_vif)), UVM_DEBUG)
-   end
+function void uvmt_cv32_base_test_c::retrieve_vifs();
    
    if (!uvm_config_db#(virtual uvmt_cv32_vp_status_if)::get(this, "", "vp_status_vif", vp_status_vif)) begin
       `uvm_fatal("VIF", $sformatf("Could not find vp_status_vif handle of type %s in uvm_config_db", $typename(vp_status_vif)))
@@ -352,7 +332,7 @@ function void uvmt_cv32_base_test_c::retrieve_clk_gen_vif();
       `uvm_info("VIF", $sformatf("Found core_cntrl_vif handle of type %s in uvm_config_db", $typename(core_cntrl_vif)), UVM_DEBUG)
    end
    
-endfunction : retrieve_clk_gen_vif
+endfunction : retrieve_vifs
 
 
 function void uvmt_cv32_base_test_c::create_cfg();
@@ -429,18 +409,6 @@ function void uvmt_cv32_base_test_c::print_banner(string text);
    $display("*******************************************************************************");
    
 endfunction : print_banner
-
-
-task uvmt_cv32_base_test_c::start_clk();
-   
-   //clk_gen_vif.set_clk_period(
-   //   env_cfg.reset_clk_period,
-   //   env_cfg.debug_clk_period
-   //);
-   
-   clk_gen_vif.start();
-   
-endtask : start_clk
 
 
 task uvmt_cv32_base_test_c::watchdog_timer();

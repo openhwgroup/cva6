@@ -43,27 +43,28 @@ package uvme_cv32_pkg;
    `include "uvme_cv32_tdefs.sv"
    
    // Register Abstraction Layer
-   //`include "uvme_cv32_ral.sv"
+   `include "uvme_cv32_ral.sv"
    
    // Objects
    `include "uvme_cv32_cfg.sv"
    `include "uvme_cv32_cntxt.sv"
    
    // Predictor
-   //`include "uvme_cv32_prd.sv"
+   `include "uvme_cv32_prd.sv"
    
    // Environment components
-   //`include "uvme_cv32_cov_model.sv"
-   //`include "uvme_cv32_sb.sv"
-   //`include "uvme_cv32_vsqr.sv"
+   `include "uvme_cv32_cov_model.sv"
+   `include "uvme_cv32_sb.sv"
+   `include "uvme_cv32_vsqr.sv"
    `include "uvme_cv32_env.sv"
    
    // Virtual sequences
-   //`include "uvme_cv32_base_vseq.sv"
-   //`include "uvme_cv32_reg_base_vseq.sv"
-   //`include "uvme_cv32_reg_bit_bash_vseq.sv"
-   //`include "uvme_cv32_reg_hw_reset_vseq.sv"
-   //`include "uvme_cv32_vseq_lib.sv"
+   `include "uvme_cv32_base_vseq.sv"
+   `include "uvme_cv32_reset_vseq.sv"
+   `include "uvme_cv32_reg_base_vseq.sv"
+   `include "uvme_cv32_reg_bit_bash_vseq.sv"
+   `include "uvme_cv32_reg_hw_reset_vseq.sv"
+   `include "uvme_cv32_vseq_lib.sv"
    
 endpackage : uvme_cv32_pkg
 

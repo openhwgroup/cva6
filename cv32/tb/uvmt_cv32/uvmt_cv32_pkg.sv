@@ -53,7 +53,7 @@ package uvmt_cv32_pkg;
    // Virtual sequence library
    // TODO Add virtual sequences
    //      Ex: `include "uvmt_cv32_sanity_vseq.sv"
-   //`include "uvmt_cv32_vseq_lib.sv"
+   `include "uvmt_cv32_vseq_lib.sv"
    
    // Base test case
    `include "uvmt_cv32_test_cfg.sv"
@@ -64,9 +64,9 @@ package uvmt_cv32_pkg;
    `include "uvmt_cv32_firmware_test.sv"
    
    // Functional tests
-   //`include "uvmt_cv32_reg_base_test.sv"
-   //`include "uvmt_cv32_reg_hw_reset_test.sv"
-   //`include "uvmt_cv32_reg_bit_bash_test.sv"
+   `include "uvmt_cv32_reg_base_test.sv"
+   `include "uvmt_cv32_reg_hw_reset_test.sv"
+   `include "uvmt_cv32_reg_bit_bash_test.sv"
 
 endpackage : uvmt_cv32_pkg
 

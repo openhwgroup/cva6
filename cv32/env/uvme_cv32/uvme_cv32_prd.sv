@@ -28,10 +28,10 @@ class uvme_cv32_prd_c extends uvm_component;
    uvme_cv32_cntxt_c  cntxt;
    
    // Input TLM
-   uvm_analysis_export  #(uvma_debug_mon_trn_c)  debug_export;
-   uvm_tlm_analysis_fifo#(uvma_debug_mon_trn_c)  debug_fifo;
-   uvm_analysis_export  #(uvma_reset_mon_trn_c)  reset_export;
-   uvm_tlm_analysis_fifo#(uvma_reset_mon_trn_c)  reset_fifo;
+   uvm_analysis_export  #(uvma_clknrst_mon_trn_c)  clknrst_export;
+   uvm_tlm_analysis_fifo#(uvma_clknrst_mon_trn_c)  clknrst_fifo;
+   //uvm_analysis_export  #(uvma_debug_mon_trn_c)    debug_export;
+   //uvm_tlm_analysis_fifo#(uvma_debug_mon_trn_c)    debug_fifo;
    
    // Output TLM
    // TODO Add TLM outputs to uvme_cv32_prd_c
@@ -65,14 +65,14 @@ class uvme_cv32_prd_c extends uvm_component;
    extern virtual task run_phase(uvm_phase phase);
    
    /**
-    * TODO Describe uvme_cv32_prd_c::process_debug()
+    * TODO Describe uvme_cv32_prd_c::process_clknrst()
     */
-   extern task process_debug();
+   extern task process_clknrst();
    
    /**
-    * TODO Describe uvme_cv32_prd_c::process_reset()
+    * TODO Describe uvme_cv32_prd_c::process_debug()
     */
-   extern task process_reset();
+   //extern task process_debug();
    
 endclass : uvme_cv32_prd_c
 
@@ -99,10 +99,10 @@ function void uvme_cv32_prd_c::build_phase(uvm_phase phase);
    end
    
    // Build Input TLM objects
-   debug_export = new("debug_export", this);
-   debug_fifo   = new("debug_fifo"  , this);
-   reset_export = new("reset_export", this);
-   reset_fifo   = new("reset_fifo"  , this);
+   clknrst_export = new("clknrst_export", this);
+   clknrst_fifo   = new("clknrst_fifo"  , this);
+   //debug_export = new("debug_export", this);
+   //debug_fifo   = new("debug_fifo"  , this);
    
    // Build Output TLM objects
    // TODO Create Output TLM objects for uvme_cv32_prd_c
@@ -116,8 +116,8 @@ function void uvme_cv32_prd_c::connect_phase(uvm_phase phase);
    super.connect_phase(phase);
    
    // Connect TLM objects
-   debug_export.connect(debug_fifo.analysis_export);
-   reset_export.connect(reset_fifo.analysis_export);
+   clknrst_export.connect(clknrst_fifo.analysis_export);
+   //debug_export.connect(debug_fifo.analysis_export);
    
 endfunction: connect_phase
 
@@ -127,37 +127,37 @@ task uvme_cv32_prd_c::run_phase(uvm_phase phase);
    super.run_phase(phase);
    
    fork
-      process_debug();
-      process_reset();
+      process_clknrst();
+      //process_debug();
    join_none
    
 endtask: run_phase
 
 
-task uvme_cv32_prd_c::process_debug();
+task uvme_cv32_prd_c::process_clknrst();
    
-   uvma_debug_mon_trn_c  debug_trn;
-   
-   forever begin
-      debug_fifo.get(debug_trn);
-      
-      // TODO Implement uvme_cv32_prd_c::process_debug()
-   end
-   
-endtask : process_debug
-
-
-task uvme_cv32_prd_c::process_reset();
-   
-   uvma_reset_mon_trn_c  reset_trn;
+   uvma_clknrst_mon_trn_c  clknrst_trn;
    
    forever begin
-      reset_fifo.get(reset_trn);
+      clknrst_fifo.get(clknrst_trn);
       
-      // TODO Implement uvme_cv32_prd_c::process_reset()
+      // TODO Implement uvme_cv32_prd_c::process_clknrst()
    end
    
-endtask : process_reset
+endtask : process_clknrst
+
+
+//task uvme_cv32_prd_c::process_debug();
+//   
+//   uvma_debug_mon_trn_c  debug_trn;
+//   
+//   forever begin
+//      debug_fifo.get(debug_trn);
+//      
+//      // TODO Implement uvme_cv32_prd_c::process_debug()
+//   end
+//   
+//endtask : process_debug
 
 
 `endif // __UVME_CV32_PRD_SV__
