@@ -45,7 +45,7 @@ endclass : uvml_logs_rs_text_c
 
 
 function uvml_logs_rs_text_c::new(string name="uvml_logs_rs_text");
-   
+
    super.new(name);
    
 endfunction : new

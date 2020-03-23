@@ -105,17 +105,25 @@ VSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 # dsim is the Metrics Technologies SystemVerilog simulator  (https://metrics.ca/)
 DSIM                    = dsim
 DSIM_HOME               = /tools/Metrics/dsim
-DSIM_CMP_FLAGS          = -timescale 1ns/1ps $(SV_CMP_FLAGS)
+DSIM_CMP_FLAGS          = -all-pkgs -timescale 1ns/1ps $(SV_CMP_FLAGS)
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE              = dsim.out
 
+# xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
+XRUN              = xrun
+#XRUN_UVMHOME_ARG ?= CDNS-1.2
+XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
+#XRUN_FLAGS       ?= -64bit -access +rwc -q -clean -smartorder -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) -top worklib.uvmt_cv32_tb -timescale 1ns/1ps
+XRUN_FLAGS       ?= -64bit -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) -timescale 1ns/1ps
+XRUN_DIR         ?= xcelium.d
+
 # UVM Environment
 export DV_UVMT_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
 export DV_UVME_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/env/uvme_cv32
-export DV_UVMA_CLKNRST_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
 export DV_UVML_HRTBT_PATH   = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_hrtbt
+export DV_UVMA_CLKNRST_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
 export DV_UVML_TRN_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH    = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
@@ -257,7 +265,6 @@ dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(FIRMWARE)/firmware.hex
 
-###############################################################################
 # DSIM UNIT TESTS: run each test individually.
 # DO NOT INVOKE rule "dsim-firmware-unit-test" directly.   It is a support
 # rule for rule "dsim-unit-test" (in included ../Common.mk).
@@ -272,6 +279,62 @@ dsim-unit-test: dsim-comp
 		+firmware=$(FIRMWARE)/firmware_unit_test.hex
 
 
+###############################################################################
+# Cadence Xcelium
+# TODO: check to see if the dependencies for xrun-comp work...
+.PHONY: xrun-comp xrun-hello_world xrun-hello-world
+
+mk_xrun_dir: 
+	$(MKDIR_P) $(XRUN_DIR)
+
+xrun-hello_world: xrun-hello-world
+
+xrun-cv32_riscv_tests: xrun-cv32-riscv-tests 
+
+xrun-cv32_riscv_compliance_tests: xrun-cv32-riscv-compliance-tests 
+
+xrun-comp: mk_xrun_dir $(CV32E40P_PKG)
+	$(XRUN) \
+		$(XRUN_FLAGS) \
+		+incdir+$(DV_UVME_CV32_PATH) \
+		+incdir+$(DV_UVMT_CV32_PATH) \
+		-f $(CV32E40P_MANIFEST) \
+		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
+		$(UVM_PLUSARGS) \
+		-elaborate
+
+xrun-hello-world: xrun-comp $(CUSTOM)/hello_world.hex
+	$(XRUN) -R -l xrun-hello-world.log \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/hello_world.hex
+
+# Runs tests in cv32_riscv_tests/ only
+xrun-cv32-riscv-tests: xrun-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+	$(XRUN) -R -l xrun-riscv-tests.log \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+
+# Runs tests in cv32_riscv_compliance_tests/ only
+xrun-cv32-riscv-compliance-tests: xrun-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+	$(XRUN) -R -l xrun-riscv-compliance-tests.log \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+
+# Runs all tests in riscv_tests/ and riscv_compliance_tests/
+xrun-firmware: xrun-comp $(FIRMWARE)/firmware.hex
+	$(XRUN) -R -l xrun-firmware.log \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(FIRMWARE)/firmware.hex
+
+# XRUN UNIT TESTS: run each test individually. See comment header for dsim-unit-test for more info.
+# TODO: update ../Common.mk to create "xrun-firmware-unit-test" target.
+# Example: to run the ADDI test `make xrun-unit-test addi`
+#xrun-unit-test: xrun-comp
+#	$(XRUN) -R -l xrun-$(UNIT_TEST).log \
+#		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+#		+firmware=$(FIRMWARE)/firmware_unit_test.hex
+
+###############################################################################
 # Mentor Questasim
 
 .lib-rtl:
@@ -280,17 +343,14 @@ dsim-unit-test: dsim-comp
 
 
 .build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
-	$(VLOG)  -work $(VWORK) $(VLOG_FLAGS) -f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist
-	$(VLOG)  -work $(VWORK) $(VLOG_FLAGS)  -f $(CV32E40P_MANIFEST) -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 	$(VLOG) \
 		-work $(VWORK) \
 		$(VLOG_FLAGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
-		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
-		-f $(DV_UVME_CV32_PATH)/uvme_cv32_pkg.flist \
 		-f $(CV32E40P_MANIFEST) \
-		$(TBSRC_PKG) $(TBSRC) 
+		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
+		$(TBSRC_PKG) $(TBSRC)
 		
 
 vsim-all:  .opt-rtl
@@ -403,6 +463,18 @@ clean_core_tests:
 	find $(CORE_TEST_DIR) -name *.elf -exec rm {} \;
 	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
 
+# Cadence Xcelium xrun cleanup
+.PHONY: xrun-clean xrun-clean-all
+xrun_clean:
+	rm -vrf $(XRUN_DIR)
+	if [ -e xrun.history ]; then rm xrun.history; fi
+	if [ -e xrun.log ]; then rm xru*.log; fi
+
+xrun_clean_all: xrun_clean
+	rm -vrf $(addprefix $(FIRMWARE)/firmware., elf bin hex map) \
+	        $(FIRMWARE_OBJS) $(FIRMWARE_TEST_OBJS) $(COMPLIANCE_TEST_OBJS)
+
+
 # All generated files plus the clone of the RTL
-clean_all: clean_questa clean_dsim clean_core_tests custom-clean firmware-clean
+clean_all: clean_questa xrun_clean clean_dsim clean_core_tests custom-clean firmware-clean
 	rm -rf $(CV32E40P_PKG)

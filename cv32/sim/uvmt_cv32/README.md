@@ -5,7 +5,7 @@ The testbench for the environment is located at `../../tb/uvmt_cv32` and the
 testcases are at `../../tests/uvmt_cv32` (note that some of these testcases use test programs found in
 `cv32/tests/core`).  See the README in those directories for more information.
 <br><br>
-To run the testcases you will need a SystemVerilog simulator, the UVM library and RISC-V GCC compiler.
+To run the testcases you will need a SystemVerilog simulator, the UVM-1.2 library and RISC-V GCC compiler.
 
 SystemVerilog Simulators
 ----------------------------------
@@ -15,9 +15,10 @@ will be able to compile and run this verification environment. At the time of th
 If you have access to other SystemVerilog simulators such as Synopsys **_VCS_**, Aldec **_RivieraPRO_** or some other simulator
 not listed here and would like to add support to the Makefile, your pull-request will be graciously accepted!
 
-UVM Libraries
+UVM-1.2 Libraries
 -------------
-Typically, these come with the distribution of a SystemVerilog simulator.  Point your environment
+The UVM environments in core-v-verif require the use of version 1.2 of the UVM library (1.1 will not suffice). Typically,
+the UVM library comes with the distribution of your SystemVerilog simulator.  Point your environment
 variable `UVM_HOME` to your simulator's UVM library. For example Metrics dsim users will have something
 like this:<br>`export UVM_HOME=/tools/Metrics/dsim/20191112.8.0/uvm-1.2`.
 <br><br>
@@ -41,20 +42,19 @@ Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
 Point your environment variable `RISCV` to your RISC-V toolchain. The Makefile rule to run a testcase
 with dsim is `make dsim`.  You can pass the name of the testcase using the `TEST` variable:
-* **make dsim-no-firmware UVM_TESTNAME=uvmt_cv32_smoke_test**:compile, run, come of out reset and die.
+* **make dsim-no-firmware UVM_TESTNAME=uvmt_cv32_\<testname\>**: run uvmt_cv32_\<testname\> without loading any firmware.
 * **make dsim-hello_world**: run the hello_world program found at `../../tests/core/custom`.
 * **make dsim-cv32_riscv_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
 * **make dsim-cv32_riscv_compilance_tests**: run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
 * **make dsim-firmware**: run all the programs found at `../../tests/core/firmware`.
 * **make dsim-riscv_tests**: run the RISC-V tests found at `../../tests/core/riscv_tests`
 * **make dsim-riscv_compilance_tests**: run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
-* **make dsim-unit-test <prog>**: Run one <prog> from the firmware suite of tests.  For example: `make dsim-unit-test addi`
+* **make dsim-unit-test \<prog\>**: Run one <prog> from the firmware suite of tests.  For example: `make dsim-unit-test addi`
 
-Running the environment with Cadence Xcelium [xrun](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)
+Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)(xrun) or Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/)(vsim)
 ----------------------
-**Note**: this has not yet been fully tested<br>
 **Note:** This testbench is known to require Xcelium 19.09 or later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11) for more info.
-Point your environment variable `RISCV` to your RISC-V toolchain. 
-* To clean up your mess: `make xsim-clean` (deletes xsim intermediate files) and `xrun-clean-all` (deletes xsim intermedaites and all testcase object files).
+Point your environment variable `RISCV` to your RISC-V toolchain.<br>
+Most of the dsim targets specified above have an xrun equivalent, e.g. **make xrun-hello-world** does what you'd expect.
 
 

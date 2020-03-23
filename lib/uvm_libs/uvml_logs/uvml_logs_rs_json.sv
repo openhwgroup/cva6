@@ -25,7 +25,7 @@
  * that can be more easily reused and manipulated by external tools/ viewers
  */
 class uvml_logs_rs_json_c extends uvm_default_report_server;
-   
+
    uvm_report_server  old_report_server;
    uvm_report_server  global_server;
    
@@ -66,7 +66,7 @@ class uvml_logs_rs_json_c extends uvm_default_report_server;
     * 
     */
    extern virtual function string compose_report_message(uvm_report_message report_message, string report_object_name="");
-   
+
 endclass : uvml_logs_rs_json_c
 
 
@@ -137,7 +137,7 @@ function string uvml_logs_rs_json_c::compose_report_message(uvm_report_message r
    string severity_str;
    string verbosity_str;
    
-   severity_str  = report_message.get_severity().name();
+   severity_str  = report_message.get_severity();
    verbosity_str = convert_verbosity_to_string(report_message.get_verbosity());
    
    final_msg_str = {"{",

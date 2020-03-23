@@ -24,7 +24,7 @@
  * Logger writing sequence items debug info to disk.
  */
 class uvml_logs_seq_item_logger_c#(
-   type T_TRN   = uvm_trn_seq_item_c,
+   type T_TRN   = uvml_trn_seq_item_c,
    type T_CFG   = uvm_object        ,
    type T_CNTXT = uvm_object
 ) extends uvm_subscriber#(
