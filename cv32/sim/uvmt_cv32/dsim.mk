@@ -29,13 +29,16 @@ DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE             ?= dsim.out
 
-.DEFAULT_GOAL: no_rule 
 .PHONY: sim
 
 no_rule:
-	@echo '$(SIMULATOR): no rule/target specified.'
+	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
+	@echo 'try "make SIMULATOR=dsim sanity" (or just "make sanity" if shell ENV variable SIMULATOR is already set).'
 
-all: clean_all hello-world
+# The sanity test will change over time
+sanity: hello-world
+
+all: clean_all sanity
 
 help:
 	dsim -help
@@ -129,7 +132,7 @@ cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_r
 		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
-firmware: comp $(FIRMWARE)/firmware.hex
+cv32-firmware: comp $(FIRMWARE)/firmware.hex
 	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
 	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \

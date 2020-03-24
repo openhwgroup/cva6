@@ -30,7 +30,8 @@ from the [IEEE Standards Association](https://standards.ieee.org/).
 
 RISC-V GCC Compilers
 --------------------
-Compiling the riscv-tests and riscv-compliance-tests requires either the upstream
+This is sometimes refered to as the "toolchain". Compiling the riscv-tests and
+riscv-compliance-tests requires either the upstream
 [riscv-gcc](https://github.com/riscv/riscv-gcc) or if you want to use the custom
 PULP instructions the PULP
 [riscv-gcc](https://github.com/pulp-platform/pulp-riscv-gcc) (recommended to be
@@ -39,6 +40,8 @@ For compiling C programs you need gcc with RISC-V support and a fitting newlib i
 It is strongly recommended you use the [RISC-V GNU
 Toolchain](https://github.com/riscv/riscv-gnu-toolchain) for that (follow the
 `Installation (Newlib)` section) and point your `RISCV` environment variable to it.
+<br><br>**IMPORTANT:** Once the toolchain is set up, define a shell environment
+variable `RISCV` to the path of your RISC-V toolchain (e.g. `export RISCV=/opt/riscv`).
 
 Makefiles
 -----------
@@ -46,14 +49,15 @@ Makefiles
 Your cwd is `cv32/sim/uvmt_cv32` and the **Makefile** at this location is the
 'root' Makefile.  `../Common.mk` supports all common variables, rules
 and targets, including specific targets to clone the RTL from
-[cv32e40p](https://github.com/openhwgroup/cv32e40p) as appropriate. Simulator-specific
-Makefiles are used to build the command-line to run a specific test wth a specific
+[cv32e40p](https://github.com/openhwgroup/cv32e40p) and
+[fpnew](https://github.com/pulp-platform/fpnew) as appropriate. Simulator-specific
+Makefiles are used to build the command-line to run a specific test with a specific
 simulator.  These files are organized as shown below:
 ```
 cv32/sim/
       +--- Common.mk                        # Common variables and targets
       +--- uvmt_cv32/
-              +--- Makefile
+              +--- Makefile                 # 'Root' Makefile
               +--- vsim.mk                  # Mentor Questa
               +--- dsim.mk                  # Metrics dsim
               +--- xrun.mk                  # Cadance Xcelium
@@ -69,25 +73,37 @@ simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
 
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
-Point your environment variable `RISCV` to your RISC-V toolchain. Set the Makefile
-variable SIMULATOR to `dsim`.  The following is an _almost_ complete list of tests:
-* **make SIMULATOR=dsim hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
-* **make SIMULATOR=dsim cv32-riscv-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
-* **make SIMULATOR=dsim cv32-riscv-compilance-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
-* **make SIMULATOR=dsim firmware**:<br>run all the programs found at `../../tests/core/firmware`.
-* **make SIMULATOR=dsim dsim-riscv-tests**:<br>run the RISC-V tests found at `../../tests/core/riscv_tests`
-* **make SIMULATOR=dsim riscv-compilance-tests**:<br>run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
-* **make SIMULATOR=dsim unit-test \<prog\>**:<br>run one <prog> from the firmware suite of tests.  For example: `make SIMULATOR=dsim unit-test addi`
-* **make SIMULATOR=dsim clean\_all**:<br>deletes all dsim generated intermediates, waves and logs.
-At the time of this writting (2020-03-15) work is on-going to control **UVM_TESTNAME** as a make variable.  The following _might_ work:
-* **make SIMULATOR=dsim firmware UVM\_TESTNAME=uvmt\_cv32\_\<testname\> firmware=<path-to-hexfile>**:
-<br>run uvmt\_cv32\_\<testname\> and load the compiled firmware into memory.
-* **make SIMULATOR=dsim no-firmware UVM\_TESTNAME=uvmt\_cv32\_\<testname\>**:<br>run uvmt\_cv32\_\<testname\> without loading any firmware.
+The command **make SIMULATOR=dsim sanity**: will run the sanity testcase using _dsim_.  The
+definition of "sanity" will change over time as the stability of the core and
+environment improves.<br><br>
+Setting a shell environment variable `SIMULATOR` to "dsim" will also define the
+Makefile variable SIMULATOR to `dsim` and you can save yourself a lot of typing.
 
-Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html)(xrun) or Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/)(vsim)
+Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html) (xrun)
 ----------------------
-Point your environment variable `RISCV` to your RISC-V toolchain.<br>
-Most of the above targets are known to work for both `xrun` and `vsim`.  For example,
-**make SIMULATOR=xrun hello-world** or **make SIMULATOR=vsim hello-world** do what you'd expect.
+The command **make SIMULATOR=xrun sanity**:<br>will run the sanity testcase
+using _xrun_.
 <br><br>
-**Note for Cadence users:** This testbench is known to require Xcelium 19.09 or later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11) for more info.
+**Note for Cadence users:** This testbench is known to require Xcelium 19.09 or
+later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11)
+for more info.
+
+Running the environment with Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/) (vsim)
+----------------------
+The command **make SIMULATOR=vsim sanity** will run the sanity testcase using _vsim_.
+<br><br>
+**Note for Mentor Graphics users:** This testbench has not been compiled/run
+with _vsim_ in several weeks.  If you need to update the Makefiles, please do
+so and issue a Pull Request.
+
+Available Tests
+---------------
+Below is an _almost_ complete list of tests (wich assumes the shell environment variable is set properly:
+* **make hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
+* **make cv32-riscv-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
+* **make cv32-riscv-compilance-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
+* **make firmware**:<br>run all the programs found at `../../tests/core/firmware`.
+* **make riscv-compilance-tests**:<br>run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
+* **make clean\_all**:<br>deletes all dsim generated intermediates, waves and logs.
+Some tests are simulator specific:
+* **make make dsim-unit-test \<prog\>**:<br>run one <prog> from the firmware suite of tests.  For example: `make SIMULATOR=dsim dsim-unit-test addi`

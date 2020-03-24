@@ -40,10 +40,11 @@
 #
 ###############################################################################
 
-# "Constrants"
-MAKE          = make
-COREV_PROJ    = cv32
-PROJ_ROOT_DIR = $(PWD)/../../..
+# "Constants"
+MAKE           = make
+COREV_PROJ     = cv32
+PROJ_ROOT_DIR  = $(PWD)/../../..
+.DEFAULT_GOAL := no_rule 
 
 # Useful commands
 MKDIR_P = mkdir -p
