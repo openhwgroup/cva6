@@ -50,9 +50,6 @@ class uvme_cv32_base_vseq_c extends uvm_sequence#(
 endclass : uvme_cv32_base_vseq_c
 
 
-`pragma protect begin
-
-
 function uvme_cv32_base_vseq_c::new(string name="uvme_cv32_base_vseq");
    
    super.new(name);
@@ -62,13 +59,10 @@ endfunction : new
 
 task uvme_cv32_base_vseq_c::pre_start();
    
-   cfg   = p_sequencer.cfg;
+   cfg   = p_sequencer.cfg  ;
    cntxt = p_sequencer.cntxt;
    
 endtask : pre_start
-
-
-`pragma protect end
 
 
 `endif // __UVME_CV32_BASE_VSEQ_SV__

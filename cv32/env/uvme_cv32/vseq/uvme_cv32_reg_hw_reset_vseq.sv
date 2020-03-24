@@ -32,8 +32,8 @@ class uvme_cv32_reg_hw_reset_vseq_c extends uvme_cv32_reg_base_vseq_c;
    
    
    `uvm_object_utils_begin(uvme_cv32_reg_hw_reset_vseq_c)
-      `uvm_field_object      (UVM_DEFAULT, single_block_hw_reset_seq)
-      `uvm_field_array_object(UVM_DEFAULT, all_blocks_hw_reset_seq  )
+      `uvm_field_object      (single_block_hw_reset_seq, UVM_DEFAULT)
+      `uvm_field_array_object(all_blocks_hw_reset_seq  , UVM_DEFAULT)
    `uvm_object_utils_end
    
    
@@ -61,9 +61,6 @@ class uvme_cv32_reg_hw_reset_vseq_c extends uvme_cv32_reg_base_vseq_c;
 endclass : uvme_cv32_reg_hw_reset_vseq_c
 
 
-`pragma protect begin
-
-
 function uvme_cv32_reg_hw_reset_vseq_c::new(string name="uvme_cv32_reg_hw_reset_vseq");
    
    super.new(name);
@@ -79,7 +76,7 @@ function uvme_cv32_reg_hw_reset_vseq_c::new(string name="uvme_cv32_reg_hw_reset_
 endfunction : new
 
 
-task uvme_cv32_reg_base_vseq_c::run_single_block();
+task uvme_cv32_reg_hw_reset_vseq_c::run_single_block();
    
    // TODO Implement uvme_cv32_reg_base_vseq_c::run_single_block()
    //      Ex: single_block_hw_reset_seq.model = single_block;
@@ -88,7 +85,7 @@ task uvme_cv32_reg_base_vseq_c::run_single_block();
 endtask : run_single_block
 
 
-task uvme_cv32_reg_base_vseq_c::run_all_blocks();
+task uvme_cv32_reg_hw_reset_vseq_c::run_all_blocks();
    
    // TODO Implement uvme_cv32_reg_base_vseq_c::run_all_blocks()
    //      Ex: fork
@@ -108,9 +105,6 @@ task uvme_cv32_reg_base_vseq_c::run_all_blocks();
    //          join
    
 endtask : run_all_blocks
-
-
-`pragma protect end
 
 
 `endif // __UVME_CV32_REG_HW_RESET_VSEQ_SV__

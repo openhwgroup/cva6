@@ -30,15 +30,15 @@ class uvme_cv32_cfg_c extends uvm_object;
    rand bit                      scoreboarding_enabled;
    rand bit                      cov_model_enabled;
    rand bit                      trn_log_enabled;
-   rand int unsigned             reset_clk_period;
-   rand int unsigned             debug_clk_period;
+   rand int unsigned             sys_clk_period;
+   //rand int unsigned             debug_clk_period;
    
    // Agent cfg handles
    rand uvma_clknrst_cfg_c  clknrst_cfg;
    //rand uvma_debug_cfg_c    debug_cfg;
    
    // Objects
-   //rand uvme_cv32_ral_c  ral;
+   rand uvme_cv32_ral_c  ral;
    // TODO Add scoreboard configuration handles
    //      Ex: rand uvml_sb_cfg_c  sb_egress_cfg;
    //          rand uvml_sb_cfg_c  sb_ingress_cfg;
@@ -50,8 +50,8 @@ class uvme_cv32_cfg_c extends uvm_object;
       `uvm_field_int (                         scoreboarding_enabled       , UVM_DEFAULT          )
       `uvm_field_int (                         cov_model_enabled           , UVM_DEFAULT          )
       `uvm_field_int (                         trn_log_enabled             , UVM_DEFAULT          )
-      `uvm_field_int (                         reset_clk_period            , UVM_DEFAULT + UVM_DEC)
-      `uvm_field_int (                         debug_clk_period            , UVM_DEFAULT + UVM_DEC)
+      `uvm_field_int (                         sys_clk_period            , UVM_DEFAULT + UVM_DEC)
+      //`uvm_field_int (                         debug_clk_period            , UVM_DEFAULT + UVM_DEC)
       
       `uvm_field_object(clknrst_cfg, UVM_DEFAULT)
       //`uvm_field_object(debug_cfg  , UVM_DEFAULT)
@@ -64,13 +64,13 @@ class uvme_cv32_cfg_c extends uvm_object;
    
    
    constraint defaults_cons {
-      soft enabled                      == 0;
-      soft is_active                    == UVM_PASSIVE;
-      soft scoreboarding_enabled        == 1;
-      soft cov_model_enabled            == 0;
-      soft trn_log_enabled              == 1;
-      soft reset_clk_period             == uvme_cv32_reset_default_clk_period; // see uvme_cv32_constants.sv
-      soft debug_clk_period             == uvme_cv32_debug_default_clk_period;
+      soft enabled                == 0;
+      soft is_active              == UVM_PASSIVE;
+      soft scoreboarding_enabled  == 1;
+      soft cov_model_enabled      == 0;
+      soft trn_log_enabled        == 1;
+      soft sys_clk_period       == uvme_cv32_sys_default_clk_period; // see uvme_cv32_constants.sv
+      //soft debug_clk_period       == uvme_cv32_debug_default_clk_period;
    }
    
    constraint agent_cfg_cons {
@@ -106,9 +106,9 @@ function uvme_cv32_cfg_c::new(string name="uvme_cv32_cfg");
    clknrst_cfg = uvma_clknrst_cfg_c::type_id::create("clknrst_cfg");
    //debug_cfg = uvma_debug_cfg_c    ::type_id::create("debug_cfg");
    
-   //ral = uvme_cv32_ral_c::type_id::create("ral");
-   //ral.build();
-   //ral.lock_model();
+   ral = uvme_cv32_ral_c::type_id::create("ral");
+   ral.build();
+   ral.lock_model();
    
    // TODO Create scoreboard cfg objects
    //      Ex: sb_egress_cfg  = uvml_sb_cfg_c::type_id::create("sb_egress_cfg" );

@@ -50,7 +50,7 @@ task uvmt_cv32_hw_reset_test_c::main_phase(uvm_phase phase);
    super.main_phase(phase);
    
    `uvm_info("TEST", $sformatf("Starting hw_reset virtual sequence:\n%s", hw_reset_vseq.sprint()), UVM_NONE)
-   hw_reset_vseq.single_block = test_cfg.cli_selected_block;
+   //hw_reset_vseq.single_block = test_cfg.cli_selected_block;
    hw_reset_vseq.start(vsequencer);
    `uvm_info("TEST", "Finished hw_reset virtual sequence", UVM_NONE)
    

@@ -30,13 +30,9 @@ class uvme_cv32_vsqr_c extends uvm_sequencer#(
    uvme_cv32_cfg_c    cfg;
    uvme_cv32_cntxt_c  cntxt;
    
-   // Sub-environments (virtual) sequencer handles
-   uvme_${sub_env_name}_vsqr_c  ${sub_env_name}_vsequencer;
-   
    // Sequencer handles
-   uvma_debug_sqr_c  debug_sequencer;
-   uvma_reset_sqr_c  reset_sequencer;
-   // TODO Add sequencer handles
+   uvma_clknrst_sqr_c  clknrst_sequencer;
+   //uvma_debug_sqr_c    debug_sequencer;
    
    
    `uvm_component_utils_begin(uvme_cv32_vsqr_c)

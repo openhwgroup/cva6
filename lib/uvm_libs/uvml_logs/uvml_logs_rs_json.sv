@@ -24,11 +24,7 @@
  * Replacement for uvm_report_server to log messages to a JSON format
  * that can be more easily reused and manipulated by external tools/ viewers
  */
-`ifdef UVM_VERSION_1_2
 class uvml_logs_rs_json_c extends uvm_default_report_server;
-`else
-class uvml_logs_rs_json_c extends uvm_report_server;
-`endif   
 
    uvm_report_server  old_report_server;
    uvm_report_server  global_server;
@@ -41,7 +37,6 @@ class uvml_logs_rs_json_c extends uvm_report_server;
     */
    extern function new(string name="uvml_logs_rs_json", log_filename="log.json");
    
-`ifdef UVM_VERSION_1_2
    /**
     * 
     */
@@ -71,29 +66,22 @@ class uvml_logs_rs_json_c extends uvm_report_server;
     * 
     */
    extern virtual function string compose_report_message(uvm_report_message report_message, string report_object_name="");
-`endif   
 
 endclass : uvml_logs_rs_json_c
 
 
 function uvml_logs_rs_json_c::new(string name="uvml_logs_rs_json", log_filename="log.json");
    
-`ifdef UVM_VERSION_1_2
    super.new(name);
    
-   `ifdef UVM_VERSION_1_2
    global_server = uvm_report_server::get_server();
    install_server();
    logfile_handle = $fopen(log_filename, "w");
    report_header(logfile_handle);
-`else
-   super.new();
-`endif
    
 endfunction : new
 
 
-`ifdef UVM_VERSION_1_2
 function void uvml_logs_rs_json_c::install_server();
    
    old_report_server = global_server;
@@ -149,7 +137,7 @@ function string uvml_logs_rs_json_c::compose_report_message(uvm_report_message r
    string severity_str;
    string verbosity_str;
    
-   severity_str  = report_message.get_severity().name();
+   severity_str  = report_message.get_severity();
    verbosity_str = convert_verbosity_to_string(report_message.get_verbosity());
    
    final_msg_str = {"{",
@@ -166,7 +154,6 @@ function string uvml_logs_rs_json_c::compose_report_message(uvm_report_message r
    return final_msg_str;
    
 endfunction : compose_report_message
-`endif //UVM_VERSION_1_2
 
 
 `endif // __UVML_RS_JSON_SV__

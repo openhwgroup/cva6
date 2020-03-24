@@ -29,14 +29,14 @@ class uvme_cv32_env_c extends uvm_env;
    uvme_cv32_cntxt_c  cntxt;
    
    // Register Abstraction Layer (RAL)
-   //uvme_cv32_ral_c           ral;
+   uvme_cv32_ral_c           ral;
    //uvma_debug_reg_adapter_c  reg_adapter;
    
    // Components
-   //uvme_cv32_cov_model_c  cov_model;
-   //uvme_cv32_prd_c        predictor;
-   //uvme_cv32_sb_c         sb;
-   //uvme_cv32_vsqr_c       vsequencer;
+   uvme_cv32_cov_model_c  cov_model;
+   uvme_cv32_prd_c        predictor;
+   uvme_cv32_sb_c         sb;
+   uvme_cv32_vsqr_c       vsequencer;
    
    // Agents
    uvma_clknrst_agent_c  clknrst_agent;
@@ -181,21 +181,21 @@ function void uvme_cv32_env_c::connect_phase(uvm_phase phase);
    
    super.connect_phase(phase);
    
-   //if (cfg.enabled) begin
-   //   if (cfg.scoreboarding_enabled) begin
-   //      connect_predictor ();
-   //      connect_scoreboard();
-   //   end
-   //   
-   //   if (cfg.is_active) begin
-   //      connect_ral();
-   //      assemble_vsequencer();
-   //   end
-   //   
-   //   if (cfg.cov_model_enabled) begin
-   //      connect_coverage_model();
-   //   end
-   //end
+   if (cfg.enabled) begin
+      if (cfg.scoreboarding_enabled) begin
+         connect_predictor ();
+         connect_scoreboard();
+      end
+      
+      if (cfg.is_active) begin
+         connect_ral();
+         assemble_vsequencer();
+      end
+      
+      if (cfg.cov_model_enabled) begin
+         connect_coverage_model();
+      end
+   end
    
 endfunction: connect_phase
 
@@ -211,7 +211,7 @@ endfunction: assign_cfg
 
 function void uvme_cv32_env_c::assign_cntxt();
    
-   //uvm_config_db#(uvme_cv32_cntxt_c)::set(this, "*", "cntxt", cntxt);
+   uvm_config_db#(uvme_cv32_cntxt_c)::set(this, "*", "cntxt", cntxt);
    uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    //uvm_config_db#(uvma_debug_cntxt_c)::set(this, "debug_agent", "cntxt", cntxt.debug_cntxt);
    
@@ -228,10 +228,10 @@ endfunction: create_agents
 
 function void uvme_cv32_env_c::create_env_components();
    
-   //if (cfg.scoreboarding_enabled) begin
-   //   predictor = uvme_cv32_prd_c::type_id::create("predictor", this);
-   //   sb        = uvme_cv32_sb_c ::type_id::create("sb"       , this);
-   //end
+   if (cfg.scoreboarding_enabled) begin
+      predictor = uvme_cv32_prd_c::type_id::create("predictor", this);
+      sb        = uvme_cv32_sb_c ::type_id::create("sb"       , this);
+   end
    
 endfunction: create_env_components
 
@@ -239,21 +239,21 @@ endfunction: create_env_components
 function void uvme_cv32_env_c::create_ral_adapter();
    
    //reg_adapter = uvma_debug_reg_adapter_c::type_id::create("reg_adapter");
-   //ral = cfg.ral;
+   ral = cfg.ral;
    
 endfunction: create_ral_adapter
 
 
 function void uvme_cv32_env_c::create_vsequencer();
    
-   //vsequencer = uvme_cv32_vsqr_c::type_id::create("vsequencer", this);
+   vsequencer = uvme_cv32_vsqr_c::type_id::create("vsequencer", this);
    
 endfunction: create_vsequencer
 
 
 function void uvme_cv32_env_c::create_cov_model();
    
-   //cov_model = uvme_cv32_cov_model_c::type_id::create("cov_model", this);
+   cov_model = uvme_cv32_cov_model_c::type_id::create("cov_model", this);
    
 endfunction: create_cov_model
 
@@ -296,9 +296,8 @@ endfunction: connect_coverage_model
 
 function void uvme_cv32_env_c::assemble_vsequencer();
    
-   //vsequencer.debug_sequencer = debug_agent.sequencer;
-   //vsequencer.clknrst_sequencer = clknrst_agent.sequencer;
-   // TODO Assemble virtual sequencer from agent sequencers
+   vsequencer.clknrst_sequencer = clknrst_agent.sequencer;
+   //vsequencer.debug_sequencer   = debug_agent.sequencer;
    
 endfunction: assemble_vsequencer
 
