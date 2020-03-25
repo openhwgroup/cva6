@@ -73,7 +73,7 @@ simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
 
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
-The command **make SIMULATOR=dsim sanity**: will run the sanity testcase using _dsim_.
+The command **make SIMULATOR=dsim sanity** will run the sanity testcase using _dsim_.
 <br><br>
 Setting a shell environment variable `SIMULATOR` to "dsim" will also define the
 Makefile variable SIMULATOR to `dsim` and you can save yourself a lot of typing. For
@@ -83,7 +83,7 @@ example, in a bash shell:
 
 Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html) (xrun)
 ----------------------
-The command **make SIMULATOR=xrun sanity**:<br>will run the sanity testcase
+The command **make SIMULATOR=xrun sanity** will run the sanity testcase
 using _xrun_.  Set the shell variable SIMULATOR to `xrun` to simply that to **make <target>**.
 <br><br>
 **Note for Cadence users:** This testbench is known to require Xcelium 19.09 or
