@@ -127,9 +127,9 @@ $(CV32E40P_PKG):
 
 ###############################################################################
 # Include the targets/rules for the selected SystemVerilog simulator
-ifeq ($(SIMULATOR), unsim)
-include unsim.mk
-else
+#ifeq ($(SIMULATOR), unsim)
+#include unsim.mk
+#else
 ifeq ($(SIMULATOR), dsim)
 include dsim.mk
 else
@@ -147,7 +147,7 @@ endif
 endif
 endif
 endif
-endif
+#endif
 
 ###############################################################################
 # Clean up your mess!

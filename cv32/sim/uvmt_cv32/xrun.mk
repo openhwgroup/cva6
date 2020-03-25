@@ -26,10 +26,9 @@ XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
 XRUN_FLAGS       ?= -64bit -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_DIR         ?= xcelium.d
 
-.DEFAULT_GOAL: no_rule 
-
 no_rule:
-	@echo '$(SIMULATOR): no rule/target specified.'
+	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
+	@echo 'try "make SIMULATOR=xrun sanity" (or just "make sanity" if shell ENV variable SIMULATOR is already set).'
 
 help:
 	xrun -help
@@ -85,7 +84,7 @@ unit-test: dsim-firmware-unit-test
 
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
-firmware: comp $(FIRMWARE)/firmware.hex
+cv32-firmware: comp $(FIRMWARE)/firmware.hex
 	$(XRUN) -R -l xrun-firmware.log \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(FIRMWARE)/firmware.hex
@@ -106,6 +105,7 @@ clean:
 	if [ -e xrun.history ]; then rm xrun.history; fi
 	if [ -e xrun.log ]; then rm xru*.log; fi
 	if [ -e trace_core_00_0.log ]; then rm trace_core_*.log; fi
+	if [ -e waves.shm ]; then rm -rf waves.shm; fi
 
 # All generated files plus the clone of the RTL
 clean_all: clean clean_core_tests

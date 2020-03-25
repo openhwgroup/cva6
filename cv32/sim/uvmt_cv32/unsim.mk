@@ -20,8 +20,6 @@
 #
 ###############################################################################
 
-.DEFAULT_GOAL: no_rule 
-
 no_rule:
 	@echo 'no SIMULATOR and rule/target specified.'
 	@echo 'Usage: make SIMULATOR=<simulator> <target>'

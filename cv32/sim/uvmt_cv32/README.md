@@ -73,16 +73,18 @@ simulator-specific Makefiles (e.g. vsim) to save yourself a lot of typing.
 
 Running the envrionment with Metrics [dsim](https://metrics.ca)
 ----------------------
-The command **make SIMULATOR=dsim sanity**: will run the sanity testcase using _dsim_.  The
-definition of "sanity" will change over time as the stability of the core and
-environment improves.<br><br>
+The command **make SIMULATOR=dsim sanity**: will run the sanity testcase using _dsim_.
+<br><br>
 Setting a shell environment variable `SIMULATOR` to "dsim" will also define the
-Makefile variable SIMULATOR to `dsim` and you can save yourself a lot of typing.
+Makefile variable SIMULATOR to `dsim` and you can save yourself a lot of typing. For
+example, in a bash shell:
+<br>**export SIMULATOR=dsim**
+<br>**make sanity**
 
 Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html) (xrun)
 ----------------------
 The command **make SIMULATOR=xrun sanity**:<br>will run the sanity testcase
-using _xrun_.
+using _xrun_.  Set the shell variable SIMULATOR to `xrun` to simply that to **make <target>**.
 <br><br>
 **Note for Cadence users:** This testbench is known to require Xcelium 19.09 or
 later.  See [Issue 11](https://github.com/openhwgroup/core-v-verif/issues/11)
@@ -91,6 +93,7 @@ for more info.
 Running the environment with Mentor Graphics [Questa](https://www.mentor.com/products/fv/questa/) (vsim)
 ----------------------
 The command **make SIMULATOR=vsim sanity** will run the sanity testcase using _vsim_.
+Set the shell variable SIMULATOR to `vsim` to simply that to **make <target>**.
 <br><br>
 **Note for Mentor Graphics users:** This testbench has not been compiled/run
 with _vsim_ in several weeks.  If you need to update the Makefiles, please do
@@ -98,12 +101,30 @@ so and issue a Pull Request.
 
 Available Tests
 ---------------
-Below is an _almost_ complete list of tests (wich assumes the shell environment variable is set properly:
+The `make` commands here assume you have set your shell SIMULATION
+environment variable to your specific simulator (see above).
+<br><br>
+Before making changes to the code in your local branch, it is a good idea to run the sanity
+test to ensure you are starting from a stable code-base.  The code (both RTL
+and verification) should _always_ pass sanity, so if it does not, please
+raise an issue and assign it to @mikeopenhwgroup.  The definition of "sanity"
+will change over time as the ability of the verification environment to
+stress the RTL improves.  Running sanity is trivial:
+<br><br>
+**make sanity**
+<br><br>
+Before issuing a pull-request for either the RTL or verification code, please
+re-run the sanity test.   Your pull-request will be rejected if sanity does not
+compile and run successfully.
+<br><br>
+Below is an _almost_ complete list of available tests (which assumes the shell environment variable SIMULATOR is set properly):
 * **make hello-world**:<br>run the hello_world program found at `../../tests/core/custom`.
 * **make cv32-riscv-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_tests_firmware`
 * **make cv32-riscv-compilance-tests**:<br>run the CV32-specific RISC-V tests found at `../../tests/core/cv32_riscv_compliance_tests_firmware`
-* **make firmware**:<br>run all the programs found at `../../tests/core/firmware`.
-* **make riscv-compilance-tests**:<br>run the RISC-V tests found at `../../tests/core/riscv_compliance_tests`
-* **make clean\_all**:<br>deletes all dsim generated intermediates, waves and logs.
+* **make cv32-firmware**:<br>run all the programs found at `../../tests/core/firmware`.
 Some tests are simulator specific:
-* **make make dsim-unit-test \<prog\>**:<br>run one <prog> from the firmware suite of tests.  For example: `make SIMULATOR=dsim dsim-unit-test addi`
+* **make make dsim-unit-test <prog>**:<br>run one <prog> from the firmware suite
+of tests.  For example: `make SIMULATOR=dsim dsim-unit-test addi`.
+<br><br>
+There are also a few targets that do something other than run a test:
+* **make clean\_all**:<br>deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.

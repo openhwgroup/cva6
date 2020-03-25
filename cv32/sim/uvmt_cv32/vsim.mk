@@ -67,10 +67,9 @@ VSIM_SCRIPT       = $(VSIM_SCRIPT_DIR)/vsim.tcl
 
 VSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 
-.DEFAULT_GOAL: no_rule 
-
 no_rule:
-	@echo '$(SIMULATOR): no rule/target specified.'
+	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
+	@echo 'try "make SIMULATOR=vsim sanity" (or just "make sanity" if shell ENV variable SIMULATOR is already set).'
 
 help:
 	vsim -help
