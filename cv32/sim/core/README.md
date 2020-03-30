@@ -17,16 +17,16 @@ to support Icarus in the future.  On-going support for Verilator is not guarante
 
 RISC-V GCC Compilers
 --------------------
-Compiling the riscv-tests and riscv-compliance-tests requires either
-[riscv-gcc](https://github.com/riscv/riscv-gcc) or if you want to use the custom
-PULP instructions the PULP
-[riscv-gcc](https://github.com/pulp-platform/pulp-riscv-gcc) (recommended to be
-installed through PULP's [sdk](https://github.com/pulp-platform/pulp-sdk)).
-For compiling C programs you need gcc with RISC-V support and a fitting newlib installed.
-It is strongly recommended you use the [RISC-V GNU
-Toolchain](https://github.com/riscv/riscv-gnu-toolchain) for that (follow the
-`Installation (Newlib)` section) and point your `RISCV` environment variable to
-it.
+Compiling the riscv-tests and riscv-compliance-tests requires a cross-compiler,
+often refered to as the "toolchain".  It is recommended that you use the
+[PULP RISCV GNU Toolchain](https://github.com/pulp-platform/pulp-riscv-gnu-toolchain)
+from the Pulp Platform team.
+<br><br>
+Some teams use the [riscv-gcc](https://github.com/riscv/riscv-gcc) toolchain, but this
+does not support the custom PULP instructions.
+<br><br>
+**IMPORTANT:** Once the toolchain is set up, define a shell environment
+variable `RISCV` to the path of your RISC-V toolchain (e.g. `export RISCV=/opt/riscv`).
 
 Running your own C programs
 ---------------------
