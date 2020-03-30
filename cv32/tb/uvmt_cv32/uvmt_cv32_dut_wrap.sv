@@ -75,22 +75,27 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
       int    fd;
 
       `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_DEBUG)
-      wait(core_cntrl_if.load_instr_mem === 1'b1);
-      `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
+      wait(core_cntrl_if.load_instr_mem !== 1'bX);
+      if(core_cntrl_if.load_instr_mem === 1'b1) begin
+        `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
 
-      // Load the pre-compiled firmware
-      if($value$plusargs("firmware=%s", firmware)) begin
-        // First, check if it exists...
-        fd = $fopen (firmware, "r");   
-        if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_DEBUG)
-        else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
-        $fclose(fd);
-        // Now load it...
-        `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
-        $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
+        // Load the pre-compiled firmware
+        if($value$plusargs("firmware=%s", firmware)) begin
+          // First, check if it exists...
+          fd = $fopen (firmware, "r");   
+          if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_DEBUG)
+          else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
+          $fclose(fd);
+          // Now load it...
+          `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
+          $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
+        end
+        else begin
+          `uvm_error("DUT_WRAP", "No firmware specified!")
+        end
       end
       else begin
-        `uvm_error("DUT_WRAP", "No firmware specified!")
+        `uvm_info("DUT_WRAP", "NO TEST PROGRAM", UVM_NONE)
       end
     end
 

@@ -60,6 +60,10 @@ FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
 FPNEW_HASH      ?= da5fd4f0140c45f652c4a82a193f017484e3c72e
 
+RISCVDV_REPO    ?= https://github.com/google/riscv-dv
+RISCVDV_BRANCH  ?= master
+RISCVDV_HASH    ?= head
+
 # Generate command to clone the CV32E40P RTL
 ifeq ($(CV32E40P_BRANCH), master)
   TMP = git clone $(CV32E40P_REPO) --recurse $(CV32E40P_PKG)
@@ -87,6 +91,19 @@ else
 endif
 # RTL repo vars end
 
+# Generate command to clone RISCV-DV (Google's random instruction generator)
+ifeq ($(RISCVDV_BRANCH), master)
+  TMP3 = git clone $(RISCVDV_REPO) --recurse $(RISCVDV_PKG)
+else
+  TMP3 = git clone -b $(RISCVDV_BRANCH) --single-branch $(RISCVDV_REPO) --recurse $(RISCVDV_PKG)
+endif
+
+ifeq ($(RISCVDV_HASH), head)
+  CLONE_RISCVDV_CMD = $(TMP3)
+else
+  CLONE_RISCVDV_CMD = $(TMP3); cd $(RISCVDV_PKG); git checkout $(RISCVDV_HASH)
+endif
+# RISCV-DV repo var end
 
 ###############################################################################
 # Build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"

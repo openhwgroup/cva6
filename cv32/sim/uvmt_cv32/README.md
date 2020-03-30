@@ -126,3 +126,19 @@ of tests.  For example: `make SIMULATOR=dsim dsim-unit-test addi`.
 <br><br>
 There are also a few targets that do something other than run a test:
 * **make clean\_all**:<br>deletes all SIMULATOR generated intermediates, waves and logs **plus** the cloned RTL code.
+
+Custom Test Programs
+--------------------
+The `uvmt_cv32` environment supports the ability to run any arbitrary test program that can run on the cv32e40p core, as long as it has
+been pre-compiled into a hex-file.  These are called `Type 1` tests in the
+[Verification Strategy](https://github.com/openhwgroup/core-v-docs/blob/master/verif/Common/OpenHWGroup_CORE-V_Verif_Strategy.pdf).
+<br><br>
+The Makefile implements a rule called `custom` that will compile a test-program and pass it to the SystemVerilog simulation.  The user
+must specify `CUSTOM_DIR`, the _absolute_ path to the compiled program, and `CUSTOM_PROG`, the filename of the test program (no extension).
+For example:<br>
+**make custom CUSTOM_DIR=/data/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/test_programs/cv32/tests/uvmt_cv32/test-programs CUSTOM_PROJ=hello_world**
+This is a lot of typing, so its useful to pre-define the path:
+`export CUSTOM_DIR=/data/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/test_programs/cv32/tests/uvmt_cv32/test-programs`<br>
+You can now run any test program in that directory:<br>
+**make custom CUSTOM_PROJ=hello_world**
+**make custom CUSTOM_PROJ=smoke**

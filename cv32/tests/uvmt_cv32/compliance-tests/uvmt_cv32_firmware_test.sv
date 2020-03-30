@@ -38,6 +38,11 @@ class uvmt_cv32_firmware_test_c extends uvmt_cv32_base_test_c;
    //   env_cfg.is_active       == UVM_ACTIVE;
    //   env_cfg.trn_log_enabled == 1;
    //}
+
+   constraint test_type_cons {
+     test_cfg.tpt == PREEXISTING_SELFCHECKING;
+   }
+   
    
    `uvm_component_utils(uvmt_cv32_firmware_test_c)
    
@@ -84,10 +89,6 @@ task uvmt_cv32_firmware_test_c::configure_phase(uvm_phase phase);
    //int    fd;
    
    super.configure_phase(phase);
-
-   // Load the pre-compiled firmware
-   // Done in uvmt_cv32_dut_wrap.sv to avoid XMRs across packages.
-   core_cntrl_vif.load_instr_mem = 1'b1;
 
    /*
    ** Moved to uvmt_cv32_dut_wrap.sv to avoid XMRs across packages.
