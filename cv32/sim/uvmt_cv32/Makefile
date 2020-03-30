@@ -72,6 +72,9 @@ DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 # Look in ../../tests/uvmt_cv32.
 UVM_TESTNAME ?= uvmt_cv32_firmware_test_c
 
+# Google's random instruction generator
+RISCVDV_PKG  := $(PROJ_ROOT_DIR)/cv32/env/uvme_cv32/riscv-dv
+
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 export TBSRC_HOME  = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
@@ -110,10 +113,7 @@ include ../Common.mk
 
 
 ###############################################################################
-# CV32E40P RTL dependencies
-# The variables RTLSRC_PKG and RTLSRC need to be re-evaluated since
-# CV32E40P_PKG was null the first time.
-# TODO: cmd to eval RTLSRC needs to be replaced with a manifest (flist)
+# Clone CV32E40P RTL and DV dependencies
 clone_cv32e40p_rtl:
 	$(CLONE_CV32E40P_CMD)
 
@@ -123,6 +123,7 @@ clone_fpnew_rtl: clone_cv32e40p_rtl
 $(CV32E40P_PKG):
 	$(CLONE_CV32E40P_CMD)
 	$(CLONE_FPNEW_CMD)
+#	$(CLONE_RISCVDV_CMD)
 
 
 ###############################################################################
@@ -159,4 +160,13 @@ clean_core_tests:
 	find $(CORE_TEST_DIR) -name *.hex -exec rm {} \;
 	find $(CORE_TEST_DIR) -name *.elf -exec rm {} \;
 	find $(CORE_TEST_DIR) -name *.map -exec rm {} \;
+
+clean_test_programs:
+	find ../../tests/uvmt_cv32/test-programs -name *.o   -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.hex -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.elf -exec rm {} \;
+	find ../../tests/uvmt_cv32/test-programs -name *.map -exec rm {} \;
+
+clean_riscvdv:
+	rm -rf $(RISCVDV_PKG)
 

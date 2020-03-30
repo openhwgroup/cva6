@@ -22,12 +22,24 @@
  * Configuration object for testcases
  */
 class uvmt_cv32_test_cfg_c extends uvm_object;
+
+   //typedef enum {
+   //              PREEXISTING_SELFCHECKING,
+   //              PREEXISTING_NOTSELFCHECKING,
+   //              GENERATED_SELFCHECKING,
+   //              GENERATED_NOTSELFCHECKING,
+   //              NONE
+   //             } test_program_type; 
+
    
-   // Knobs
+   // Knobs for environment control
    rand int unsigned  startup_timeout ; // Specified in nanoseconds (ns)
    rand int unsigned  heartbeat_period; // Specified in nanoseconds (ns)
    rand int unsigned  watchdog_timeout; // Specified in nanoseconds (ns)
    
+   // Knobs for test-program control
+   rand test_program_type tpt;
+
    // Command line arguments for controlling RAL
    // (note: its not clear if this ENV will use the RAL)
    string cli_block_name_str      = "BLKNM";
@@ -46,6 +58,8 @@ class uvmt_cv32_test_cfg_c extends uvm_object;
    `uvm_object_utils_begin(uvmt_cv32_test_cfg_c)
       `uvm_field_int(heartbeat_period, UVM_DEFAULT)
       `uvm_field_int(watchdog_timeout, UVM_DEFAULT)
+
+      `uvm_field_enum(test_program_type, tpt, UVM_DEFAULT)
       
       //`uvm_field_object(cli_selected_block, UVM_DEFAULT)
       `uvm_field_int(run_riscv_gcc_toolchain, UVM_DEFAULT)
@@ -58,6 +72,9 @@ class uvmt_cv32_test_cfg_c extends uvm_object;
       soft watchdog_timeout == 100_000_000; // 10 ms // TODO Set default Watchdog timeout period for uvmt_cv32_base_test_c
    }
    
+   //constraint test_type_default_cons {
+   //  soft tpt == NONE;
+   //}
    
    /**
     * Default constructor.

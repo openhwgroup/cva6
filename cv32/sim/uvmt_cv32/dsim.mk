@@ -174,5 +174,5 @@ clean:
 	rm -rf $(DSIM_RESULTS)
 
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests
+clean_all: clean clean_core_tests clean_riscvdv clean_test_programs
 	rm -rf $(CV32E40P_PKG)

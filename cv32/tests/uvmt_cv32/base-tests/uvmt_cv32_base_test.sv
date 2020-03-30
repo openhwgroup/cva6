@@ -62,6 +62,10 @@ class uvmt_cv32_base_test_c extends uvm_test;
       env_cfg.trn_log_enabled == 1;
    }
    
+   constraint test_type_default_cons {
+     soft test_cfg.tpt == NO_TEST_PROGRAM;
+   }
+   
    
    // Additional, temporary constraints to get around known design bugs/constraints
    `include "uvmt_cv32_base_test_workarounds.sv"
@@ -102,7 +106,9 @@ class uvmt_cv32_base_test_c extends uvm_test;
    extern virtual task reset_phase(uvm_phase phase);
    
    /**
-    * Writes contents of RAL to the DUT.
+    * In a typical UVM env, this task writes contents of RAL to the DUT.
+    * Here, test_cfg is used to determine if the test program is loaded into
+    * the TB's instruction memory.
     */
    extern virtual task configure_phase(uvm_phase phase);
    
@@ -233,9 +239,13 @@ task uvmt_cv32_base_test_c::reset_phase(uvm_phase phase);
    super.reset_phase(phase);
    
    phase.raise_objection(this);
+
+   core_cntrl_vif.load_instr_mem = 1'bX; // Using 'X to signal uvmt_cv32_dut_wrap.sv to wait...
+
    `uvm_info("BASE TEST", $sformatf("Starting reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
    reset_vseq.start(vsequencer);
    `uvm_info("BASE TEST", $sformatf("Finished reset virtual sequence:\n%s", reset_vseq.sprint()), UVM_NONE)
+
    phase.drop_objection(this);
 
 endtask : reset_phase
@@ -245,11 +255,25 @@ task uvmt_cv32_base_test_c::configure_phase(uvm_phase phase);
    
    uvm_status_e status;
    
-   super.configure_phase(phase);
+   //super.configure_phase(phase);
    
    //`uvm_info("BASE TEST", $sformatf("Starting to update DUT with RAL contents:\n%s", ral.sprint()), UVM_NONE)
    //ral.update(status);
    //`uvm_info("BASE TEST", "Finished updating DUT with RAL contents", UVM_NONE)
+   
+   // Control the loading of the pre-compiled firmware
+   // Actual loading done in uvmt_cv32_dut_wrap.sv to avoid XMRs across packages.
+   if (test_cfg.tpt == NO_TEST_PROGRAM) begin
+     core_cntrl_vif.load_instr_mem = 1'b0;
+     `uvm_info("BASE TEST", "clear load_instr_mem", UVM_NONE)
+   end
+   else begin
+     core_cntrl_vif.load_instr_mem = 1'b1;
+     `uvm_info("BASE TEST", "set load_instr_mem", UVM_NONE)
+   end
+
+   //TODO: is this OK?!?
+   super.configure_phase(phase);
    `uvm_info("BASE TEST", "configure_phase() complete", UVM_HIGH)
    
 endtask : configure_phase
@@ -354,6 +378,7 @@ function void uvmt_cv32_base_test_c::randomize_test();
       `uvm_fatal("BASE TEST", "Failed to randomize test");
    end
    `uvm_info("BASE TEST", $sformatf("Top-level environment configuration:\n%s", env_cfg.sprint()), UVM_NONE)
+   `uvm_info("BASE TEST", $sformatf("Testcase configuration:\n%s", test_cfg.sprint()), UVM_NONE)
    
 endfunction : randomize_test
 
