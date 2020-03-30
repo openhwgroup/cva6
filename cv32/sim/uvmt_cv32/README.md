@@ -136,9 +136,15 @@ been pre-compiled into a hex-file.  These are called `Type 1` tests in the
 The Makefile implements a rule called `custom` that will compile a test-program and pass it to the SystemVerilog simulation.  The user
 must specify `CUSTOM_DIR`, the _absolute_ path to the compiled program, and `CUSTOM_PROG`, the filename of the test program (no extension).
 For example:<br>
-**make custom CUSTOM_DIR=/data/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/test_programs/cv32/tests/uvmt_cv32/test-programs CUSTOM_PROJ=hello_world**
-This is a lot of typing, so its useful to pre-define the path:
-`export CUSTOM_DIR=/data/mike/GitHubRepos/MikeOpenHWGroup/core-v-verif/test_programs/cv32/tests/uvmt_cv32/test-programs`<br>
+```
+make custom CUSTOM_DIR=/your-abs-path-to-core-v-verif/cv32/tests/uvmt_cv32/test-programs CUSTOM_PROJ=hello_world
+```
+This could be a lot of typing, so its useful to pre-define the path as a shell environment variable:
+<br>
+`export CUSTOM_DIR=/your-abs-path-to-core-v-verif/cv32/tests/uvmt_cv32/test-programs`
+<br>
 You can now run any test program in that directory:<br>
-**make custom CUSTOM_PROJ=hello_world**
-**make custom CUSTOM_PROJ=smoke**
+```
+make custom CUSTOM_PROJ=hello_world
+make custom CUSTOM_PROJ=smoke
+```
