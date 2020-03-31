@@ -250,20 +250,8 @@ module tb_mem #(
   ) i_outfifo (
     .clk_i       ( clk_i         ),
     .rst_ni      ( rst_ni        ),
-`ifdef _VCP // PAK2591
-    .flush_i     (ariane_pkg::ALDEC_1B0),
-
-`else
     .flush_i     ( 1'b0          ),
-
-`endif
-`ifdef _VCP // PAK2591
-    .testmode_i  (ariane_pkg::ALDEC_1B0),
-
-`else
     .testmode_i  ( 1'b0          ),
-
-`endif
     .full_o      ( outfifo_full  ),
     .empty_o     ( outfifo_empty ),
     .usage_o     (               ),
@@ -282,20 +270,8 @@ module tb_mem #(
   ) i_infifo (
     .clk_i       ( clk_i         ),
     .rst_ni      ( rst_ni        ),
-`ifdef _VCP // PAK2591
-    .flush_i     (ariane_pkg::ALDEC_1B0),
-
-`else
     .flush_i     ( 1'b0          ),
-
-`endif
-`ifdef _VCP // PAK2591
-    .testmode_i  (ariane_pkg::ALDEC_1B0),
-
-`else
     .testmode_i  ( 1'b0          ),
-
-`endif
     .full_o      ( infifo_full   ),
     .empty_o     ( infifo_empty  ),
     .usage_o     (               ),

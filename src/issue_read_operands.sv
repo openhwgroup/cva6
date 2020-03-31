@@ -359,13 +359,7 @@ module issue_read_operands #(
         .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
         .ZERO_REG_ZERO  ( 1               )
     ) i_ariane_regfile (
-`ifdef _VCP // PAK2591
-        .test_en_i (ariane_pkg::ALDEC_1B0),
-
-`else
         .test_en_i ( 1'b0       ),
-
-`endif
         .raddr_i   ( raddr_pack ),
         .rdata_o   ( rdata      ),
         .waddr_i   ( waddr_pack ),
@@ -394,13 +388,7 @@ module issue_read_operands #(
                 .NR_WRITE_PORTS ( NR_COMMIT_PORTS ),
                 .ZERO_REG_ZERO  ( 0               )
             ) i_ariane_fp_regfile (
-`ifdef _VCP // PAK2591
-                .test_en_i (ariane_pkg::ALDEC_1B0),
-
-`else
                 .test_en_i ( 1'b0          ),
-
-`endif
                 .raddr_i   ( fp_raddr_pack ),
                 .rdata_o   ( fprdata       ),
                 .waddr_i   ( waddr_pack    ),

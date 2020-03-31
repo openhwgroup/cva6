@@ -237,20 +237,8 @@ module wt_axi_adapter #(
   ) i_icache_data_fifo (
     .clk_i       (  clk_i                   ),
     .rst_ni      (  rst_ni                  ),
-`ifdef _VCP // PAK2591
-    .flush_i     (ariane_pkg::ALDEC_1B0),
-
-`else
     .flush_i     (  1'b0                    ),
-
-`endif
-`ifdef _VCP // PAK2591
-    .testmode_i  (ariane_pkg::ALDEC_1B0),
-
-`else
     .testmode_i  (  1'b0                    ),
-
-`endif
     .full_o      (  icache_data_full        ),
     .empty_o     (  icache_data_empty       ),
     .usage_o     (                          ),
@@ -266,20 +254,8 @@ module wt_axi_adapter #(
   ) i_dcache_data_fifo (
     .clk_i       (  clk_i                   ),
     .rst_ni      (  rst_ni                  ),
-`ifdef _VCP // PAK2591
-    .flush_i     (ariane_pkg::ALDEC_1B0),
-
-`else
     .flush_i     (  1'b0                    ),
-
-`endif
-`ifdef _VCP // PAK2591
-    .testmode_i  (ariane_pkg::ALDEC_1B0),
-
-`else
     .testmode_i  (  1'b0                    ),
-
-`endif
     .full_o      (  dcache_data_full        ),
     .empty_o     (  dcache_data_empty       ),
     .usage_o     (                          ),
@@ -302,20 +278,8 @@ module wt_axi_adapter #(
   ) i_rd_icache_id (
     .clk_i      ( clk_i                   ),
     .rst_ni     ( rst_ni                  ),
-`ifdef _VCP // PAK2591
-    .flush_i    (ariane_pkg::ALDEC_1B0),
-
-`else
     .flush_i    ( 1'b0                    ),
-
-`endif
-`ifdef _VCP // PAK2591
-    .testmode_i (ariane_pkg::ALDEC_1B0),
-
-`else
     .testmode_i ( 1'b0                    ),
-
-`endif
     .full_o     ( icache_rd_full          ),
     .empty_o    ( icache_rd_empty         ),
     .usage_o    (                         ),
@@ -331,20 +295,8 @@ module wt_axi_adapter #(
   ) i_rd_dcache_id (
     .clk_i      ( clk_i                   ),
     .rst_ni     ( rst_ni                  ),
-`ifdef _VCP // PAK2591
-    .flush_i    (ariane_pkg::ALDEC_1B0),
-
-`else
     .flush_i    ( 1'b0                    ),
-
-`endif
-`ifdef _VCP // PAK2591
-    .testmode_i (ariane_pkg::ALDEC_1B0),
-
-`else
     .testmode_i ( 1'b0                    ),
-
-`endif
     .full_o     ( dcache_rd_full          ),
     .empty_o    ( dcache_rd_empty         ),
     .usage_o    (                         ),
@@ -360,20 +312,8 @@ module wt_axi_adapter #(
   ) i_wr_dcache_id (
     .clk_i      ( clk_i                   ),
     .rst_ni     ( rst_ni                  ),
-`ifdef _VCP // PAK2591
-    .flush_i    (ariane_pkg::ALDEC_1B0),
-
-`else
     .flush_i    ( 1'b0                    ),
-
-`endif
-`ifdef _VCP // PAK2591
-    .testmode_i (ariane_pkg::ALDEC_1B0),
-
-`else
     .testmode_i ( 1'b0                    ),
-
-`endif
     .full_o     ( dcache_wr_full          ),
     .empty_o    ( dcache_wr_empty         ),
     .usage_o    (                         ),
@@ -402,20 +342,8 @@ module wt_axi_adapter #(
   ) i_b_fifo (
     .clk_i      ( clk_i      ),
     .rst_ni     ( rst_ni     ),
-`ifdef _VCP // PAK2591
-    .flush_i    (ariane_pkg::ALDEC_1B0),
-
-`else
     .flush_i    ( 1'b0       ),
-
-`endif
-`ifdef _VCP // PAK2591
-    .testmode_i (ariane_pkg::ALDEC_1B0),
-
-`else
     .testmode_i ( 1'b0       ),
-
-`endif
     .full_o     ( b_full     ),
     .empty_o    ( b_empty    ),
     .usage_o    (            ),

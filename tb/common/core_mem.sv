@@ -42,23 +42,11 @@ module core_mem #(
         .DATA_WIDTH    ( 64                                                 )
     ) ram_i (
         .clk           ( clk_i                                              ),
-`ifdef _VCP // PAK2591
-        .en_a_i        (ariane_pkg::ALDEC_1B0),
-
-`else
         .en_a_i        ( 1'b0                                               ),
-
-`endif
         .addr_a_i      (                                                    ),
         .wdata_a_i     (                                                    ), // not connected
         .rdata_a_o     (                                                    ),
-`ifdef _VCP // PAK2591
-        .we_a_i        (ariane_pkg::ALDEC_1B0), // r/o interface
-
-`else
         .we_a_i        ( 1'b0                                               ), // r/o interface
-
-`endif
         .be_a_i        (                                                    ),
         // data RAM
         .en_b_i        ( data_if_data_req_i                                 ),

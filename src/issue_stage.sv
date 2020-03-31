@@ -121,13 +121,7 @@ module issue_stage #(
         .NR_WB_PORTS(NR_WB_PORTS)
     ) i_scoreboard (
         .sb_full_o             ( sb_full_o                                 ),
-`ifdef _VCP // PAK2591
-        .unresolved_branch_i   (ariane_pkg::ALDEC_1B0),
-
-`else
         .unresolved_branch_i   ( 1'b0                                      ),
-
-`endif
         .rd_clobber_gpr_o      ( rd_clobber_gpr_sb_iro                     ),
         .rd_clobber_fpr_o      ( rd_clobber_fpr_sb_iro                     ),
         .rs1_i                 ( rs1_iro_sb                                ),

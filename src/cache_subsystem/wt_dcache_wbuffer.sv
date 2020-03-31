@@ -202,20 +202,8 @@ module wt_dcache_wbuffer #(
   ) i_rtrn_id_fifo (
     .clk_i      ( clk_i            ),
     .rst_ni     ( rst_ni           ),
-`ifdef _VCP // PAK2591
-    .flush_i    (ariane_pkg::ALDEC_1B0),
-
-`else
     .flush_i    ( 1'b0             ),
-
-`endif
-`ifdef _VCP // PAK2591
-    .testmode_i (ariane_pkg::ALDEC_1B0),
-
-`else
     .testmode_i ( 1'b0             ),
-
-`endif
     .full_o     (                  ),
     .empty_o    ( rtrn_empty       ),
     .usage_o    (                  ),

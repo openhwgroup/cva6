@@ -688,13 +688,7 @@ module ariane_testharness #(
     .spi_ss    ( )
   );
 
-`ifdef _VCP // PAK2591
-  uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(ariane_pkg::ALDEC_1B1));
-
-`else
   uart_bus #(.BAUD_RATE(115200), .PARITY_EN(0)) i_uart_bus (.rx(tx), .tx(rx), .rx_en(1'b1));
-
-`endif
 
   // ---------------
   // Core
@@ -714,13 +708,7 @@ module ariane_testharness #(
     .time_irq_i           ( timer_irq           ),
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM
-`ifdef _VCP // PAK2591
-    .debug_req_i          (ariane_pkg::ALDEC_1B0),
-
-`else
     .debug_req_i          ( 1'b0                ),
-
-`endif
 `else
     .debug_req_i          ( debug_req_core      ),
 `endif

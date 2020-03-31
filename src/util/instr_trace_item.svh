@@ -240,26 +240,14 @@ class instr_trace_item;
             instr_tracer_pkg::INSTR_SRA:      s = this.printRInstr("sra");
             instr_tracer_pkg::INSTR_OR:       s = this.printRInstr("or");
             instr_tracer_pkg::INSTR_AND:      s = this.printRInstr("and");
-`ifdef _VCP // PAK2591
-            instr_tracer_pkg::INSTR_MUL:      s = this.printMulInstr(ariane_pkg::ALDEC_1B0);
-
-`else
             instr_tracer_pkg::INSTR_MUL:      s = this.printMulInstr(1'b0);
-
-`endif
             // OP32
             instr_tracer_pkg::INSTR_ADDW:     s = this.printRInstr("addw");
             instr_tracer_pkg::INSTR_SUBW:     s = this.printRInstr("subw");
             instr_tracer_pkg::INSTR_SLLW:     s = this.printRInstr("sllw");
             instr_tracer_pkg::INSTR_SRLW:     s = this.printRInstr("srlw");
             instr_tracer_pkg::INSTR_SRAW:     s = this.printRInstr("sraw");
-`ifdef _VCP // PAK2591
-            instr_tracer_pkg::INSTR_MULW:     s = this.printMulInstr(ariane_pkg::ALDEC_1B1);
-
-`else
             instr_tracer_pkg::INSTR_MULW:     s = this.printMulInstr(1'b1);
-
-`endif
             // FP
             instr_tracer_pkg::INSTR_FMADD:    s = this.printR4Instr("fmadd");
             instr_tracer_pkg::INSTR_FMSUB:    s = this.printR4Instr("fmsub");
@@ -466,29 +454,11 @@ class instr_trace_item;
     function string printRInstr(input string mnemonic);
 
         result_regs.push_back(rd);
-`ifdef _VCP // PAK2591
-        result_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         result_fpr.push_back(1'b0);
-
-`endif
         read_regs.push_back(rs1);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         read_fpr.push_back(1'b0);
-
-`endif
         read_regs.push_back(rs2);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         read_fpr.push_back(1'b0);
-
-`endif
 
         return $sformatf("%-12s %4s, %s, %s", mnemonic, regAddrToStr(rd), regAddrToStr(rs1), regAddrToStr(rs2));
     endfunction // printRInstr
@@ -539,37 +509,13 @@ class instr_trace_item;
     function string printR4Instr(input string mnemonic);
 
         result_regs.push_back(rd);
-`ifdef _VCP // PAK2591
-        result_fpr.push_back(ariane_pkg::ALDEC_1B1);
-
-`else
         result_fpr.push_back(1'b1);
-
-`endif
         read_regs.push_back(rs1);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B1);
-
-`else
         read_fpr.push_back(1'b1);
-
-`endif
         read_regs.push_back(rs2);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B1);
-
-`else
         read_fpr.push_back(1'b1);
-
-`endif
         read_regs.push_back(rs3);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B1);
-
-`else
         read_fpr.push_back(1'b1);
-
-`endif
 
         return $sformatf("%-12s %4s, %s, %s, %s, %s", $sformatf("%s.%s",mnemonic, fpFmtToStr(instr[26:25])), fpRegAddrToStr(rd), fpRegAddrToStr(rs1), fpRegAddrToStr(rs2), fpRegAddrToStr(instr[31:27]), fpRmToStr(instr[14:12]));
     endfunction // printR4Instr
@@ -593,21 +539,9 @@ class instr_trace_item;
     function string printIInstr(input string mnemonic);
 
         result_regs.push_back(rd);
-`ifdef _VCP // PAK2591
-        result_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         result_fpr.push_back(1'b0);
-
-`endif
         read_regs.push_back(rs1);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         read_fpr.push_back(1'b0);
-
-`endif
 
         if (rs1 == 0)
             return $sformatf("%-12s %4s, %0d", mnemonic, regAddrToStr(rd), $signed(sbe.result));
@@ -618,21 +552,9 @@ class instr_trace_item;
     function string printIuInstr(input string mnemonic);
 
         result_regs.push_back(rd);
-`ifdef _VCP // PAK2591
-        result_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         result_fpr.push_back(1'b0);
-
-`endif
         read_regs.push_back(rs1);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         read_fpr.push_back(1'b0);
-
-`endif
 
         return $sformatf("%-12s %4s, %s, 0x%0x", mnemonic, regAddrToStr(rd), regAddrToStr(rs1), sbe.result);
     endfunction // printIuInstr
@@ -640,21 +562,9 @@ class instr_trace_item;
     function string printSBInstr(input string mnemonic);
 
         read_regs.push_back(rs1);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         read_fpr.push_back(1'b0);
-
-`endif
         read_regs.push_back(rs2);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         read_fpr.push_back(1'b0);
-
-`endif
 
         if (rs2 == 0) begin
             return $sformatf("%-12s %4s, %s", mnemonic, regAddrToStr(rs1), printPCexpr(sbe.result));
@@ -666,13 +576,7 @@ class instr_trace_item;
     function string printUInstr(input string mnemonic);
 
         result_regs.push_back(rd);
-`ifdef _VCP // PAK2591
-        result_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         result_fpr.push_back(1'b0);
-
-`endif
 
         return $sformatf("%-12s %4s, 0x%0h", mnemonic, regAddrToStr(rd), sbe.result[31:12]);
     endfunction // printUInstr
@@ -693,13 +597,7 @@ class instr_trace_item;
     function string printUJInstr(input string mnemonic);
 
         result_regs.push_back(rd);
-`ifdef _VCP // PAK2591
-        result_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         result_fpr.push_back(1'b0);
-
-`endif
         // jump instruction
         if (rd == 0)
             return $sformatf("%-12s   %s", mnemonic, printPCexpr(sbe.result));
@@ -710,22 +608,10 @@ class instr_trace_item;
     function string printCSRInstr(input string mnemonic);
 
         result_regs.push_back(rd);
-`ifdef _VCP // PAK2591
-        result_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         result_fpr.push_back(1'b0);
-
-`endif
         if (instr[14] == 0) begin
         read_regs.push_back(rs1);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         read_fpr.push_back(1'b0);
-
-`endif
             if (rd != 0 && rs1 != 0) begin
                   return $sformatf("%-12s %4s, %s, %s", mnemonic, regAddrToStr(rd), regAddrToStr(rs1), csrAddrToStr(sbe.result[11:0]));
             // don't display instructions which write to zero
@@ -750,13 +636,7 @@ class instr_trace_item;
         result_regs.push_back(rd);
         result_fpr.push_back(ariane_pkg::is_rd_fpr(sbe.op));
         read_regs.push_back(rs1);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         read_fpr.push_back(1'b0);
-
-`endif
         // save the immediate for calculating the virtual address
         this.imm = sbe.result;
 
@@ -770,13 +650,7 @@ class instr_trace_item;
         read_regs.push_back(rs2);
         read_fpr.push_back(ariane_pkg::is_rs2_fpr(sbe.op));
         read_regs.push_back(rs1);
-`ifdef _VCP // PAK2591
-        read_fpr.push_back(ariane_pkg::ALDEC_1B0);
-
-`else
         read_fpr.push_back(1'b0);
-
-`endif
         // save the immediate for calculating the virtual address
         this.imm = sbe.result;
 

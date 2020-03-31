@@ -67,13 +67,7 @@ module amo_buffer (
         .clk_i        ( clk_i            ),
         .rst_ni       ( rst_ni           ),
         .flush_i      ( flush_amo_buffer ),
-`ifdef _VCP // PAK2591
-        .testmode_i   (ariane_pkg::ALDEC_1B0),
-
-`else
         .testmode_i   ( 1'b0             ),
-
-`endif
         .full_o       ( amo_valid        ),
         .empty_o      ( ready_o          ),
         .usage_o      (  ), // left open
