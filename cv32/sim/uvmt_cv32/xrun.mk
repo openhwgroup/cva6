@@ -23,7 +23,7 @@
 
 XRUN              = xrun
 XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
-XRUN_FLAGS       ?= -64bit -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
+XRUN_FLAGS       ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_DIR         ?= xcelium.d
 
 no_rule:

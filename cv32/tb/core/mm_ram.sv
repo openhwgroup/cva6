@@ -296,7 +296,7 @@ module mm_ram
       || data_addr_i == 32'h2000_000c
       || data_addr_i == 32'h2000_0010
       || data_addr_i[31:16] == 16'h1600))
-        else $fatal("out of bounds write to %08x with %08x",
+        else $fatal(1, "out of bounds write to %08x with %08x",
                     data_addr_i, data_wdata_i);
 `endif
 
