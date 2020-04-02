@@ -33,7 +33,8 @@
 	url = https://github.com/pulp-platform/tech_cells_generic.git
 [submodule "src/fpu"]
 	path = src/fpu
-	url = https://github.com/pulp-platform/fpnew.git
+	url = https://github.com/danielmlynek/fpnew.git
+	branch = pullreq_2020_04_beta
 [submodule "fpga/src/ariane-ethernet"]
 	path = fpga/src/ariane-ethernet
 	url = https://github.com/lowRISC/ariane-ethernet.git
@@ -42,10 +43,12 @@
 	url = https://github.com/pulp-platform/axi_riscv_atomics.git
 [submodule "src/riscv-dbg"]
 	path = src/riscv-dbg
-	url = https://github.com/pulp-platform/riscv-dbg.git
+	url = https://github.com/danielmlynek/riscv-dbg.git
+	branch = pullreq_2020_04_beta
 [submodule "src/rv_plic"]
 	path = src/rv_plic
 	url = https://github.com/pulp-platform/rv_plic.git
 [submodule "fpga/src/apb_timer"]
 	path = fpga/src/apb_timer
 	url = https://github.com/pulp-platform/apb_timer.git
+

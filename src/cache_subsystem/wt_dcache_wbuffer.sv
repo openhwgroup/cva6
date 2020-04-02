@@ -215,8 +215,10 @@ module wt_dcache_wbuffer #(
 
   always_comb begin : p_tx_stat
     tx_stat_d = tx_stat_q;
+	`ifndef _VCP // SPT77445
     evict     = 1'b0;
     wr_req_o  = '0;
+	`endif
 
     // clear entry if it is clear whether it can be pushed to the cache or not
     if ((!rtrn_empty) && wbuffer_q[rtrn_ptr].checked) begin
@@ -228,11 +230,28 @@ module wt_dcache_wbuffer #(
           evict    = 1'b1;
           tx_stat_d[rtrn_id].vld = 1'b0;
         end
+		`ifdef _VCP // SPT77445
+		else
+		begin
+			evict     = 1'b0;
+		end
+		`endif
+		
       end else begin
         evict = 1'b1;
+		`ifdef _VCP // SPT77445
+		wr_req_o  = '0;
+		`endif
         tx_stat_d[rtrn_id].vld = 1'b0;
       end
     end
+	`ifdef _VCP // SPT77445
+	else
+	begin
+		evict     = 1'b0;
+		wr_req_o  = '0;
+	end
+	`endif
 
     // allocate a new entry
     if (dirty_rd_en) begin
@@ -393,17 +412,30 @@ module wt_dcache_wbuffer #(
 
   // TODO: rewrite and separate into MUXES and write strobe logic
   always_comb begin : p_buffer
+`ifdef _VCP // SPT77445
+    automatic bit [DCACHE_WBUF_DEPTH-1:0]modified_wbuffer_d ='0;
+    automatic bit modified_dirty_rd_en ='0;
+    automatic bit modified_req_port_o_data_gnt ='0;
+    automatic bit modified_wbuffer_wren ='0;
+    automatic bit modified_nc_pending_d ='0;
+    wbuffer_d           = wbuffer_q;
+	`else
     wbuffer_d           = wbuffer_q;
     nc_pending_d        = nc_pending_q;
     dirty_rd_en         = 1'b0;
     req_port_o.data_gnt = 1'b0;
     wbuffer_wren        = 1'b0;
+	`endif
+
 
     // TAG lookup returns, mark corresponding word
     if (check_en_q1) begin
       if (wbuffer_q[check_ptr_q1].valid) begin
         wbuffer_d[check_ptr_q1].checked = 1'b1;
         wbuffer_d[check_ptr_q1].hit_oh = rd_hit_oh_q;
+`ifdef _VCP // SPT77445
+		modified_wbuffer_d[check_ptr_q1]=1;
+`endif
       end
     end
 
@@ -412,6 +444,9 @@ module wt_dcache_wbuffer #(
     for (int k=0; k<DCACHE_WBUF_DEPTH; k++) begin
       if (inval_hit[k]) begin
         wbuffer_d[k].checked = 1'b0;
+`ifdef _VCP // SPT77445
+		modified_wbuffer_d[k]=1;
+`endif
       end
     end
 
@@ -421,8 +456,14 @@ module wt_dcache_wbuffer #(
       for (int k=0; k<8; k++) begin
         if (tx_stat_q[rtrn_id].be[k]) begin
           wbuffer_d[rtrn_ptr].txblock[k] = 1'b0;
+`ifdef _VCP // SPT77445
+		  modified_wbuffer_d[rtrn_ptr]=1;
+`endif
           if (!wbuffer_q[rtrn_ptr].dirty[k]) begin
             wbuffer_d[rtrn_ptr].valid[k] = 1'b0;
+`ifdef _VCP // SPT77445
+			modified_wbuffer_d[rtrn_ptr]=1;
+`endif
 
             // NOTE: this is not strictly needed, but makes it much
             // easier to debug, since no invalid data remains in the buffer
@@ -433,19 +474,30 @@ module wt_dcache_wbuffer #(
       // if all bytes are evicted, clear the cache status flag
       if (wbuffer_d[rtrn_ptr].valid == 0) begin
         wbuffer_d[rtrn_ptr].checked = 1'b0;
+`ifdef _VCP // SPT77445
+		modified_wbuffer_d[rtrn_ptr]=1;
+`endif
       end
     end
 
     // mark bytes sent out to the memory system
     if (miss_req_o && miss_ack_i) begin
       dirty_rd_en = 1'b1;
+`ifdef _VCP // SPT77445
+	  modified_dirty_rd_en=1;
+`endif
       for (int k=0; k<8; k++) begin
         if (tx_be[k]) begin
           wbuffer_d[dirty_ptr].dirty[k]   = 1'b0;
           wbuffer_d[dirty_ptr].txblock[k] = 1'b1;
+`ifdef _VCP // SPT77445
+		  modified_wbuffer_d[dirty_ptr]=1;
+`endif
         end
       end
     end
+	
+	
 
     // write new word into the buffer
     if (req_port_i.data_req && rdy) begin
@@ -453,12 +505,24 @@ module wt_dcache_wbuffer #(
       // in case we are serving an NC address,  we block until it is written to memory
       if (empty_o || !(addr_is_nc || nc_pending_q)) begin
         wbuffer_wren              = 1'b1;
+`ifdef _VCP // SPT77445
+		modified_wbuffer_wren=1;
+`endif
 
         req_port_o.data_gnt       = 1'b1;
+`ifdef _VCP // SPT77445
+		modified_req_port_o_data_gnt=1;
+`endif
         nc_pending_d              = addr_is_nc;
+`ifdef _VCP // SPT77445
+		modified_nc_pending_d=1;
+`endif
 
         wbuffer_d[wr_ptr].checked = 1'b0;
         wbuffer_d[wr_ptr].wtag    = {req_port_i.address_tag, req_port_i.address_index[DCACHE_INDEX_WIDTH-1:3]};
+`ifdef _VCP // SPT77445
+		modified_wbuffer_d[wr_ptr]=1;
+`endif
 
         // mark bytes as dirty
         for (int k=0; k<8; k++) begin
@@ -466,10 +530,27 @@ module wt_dcache_wbuffer #(
             wbuffer_d[wr_ptr].valid[k]       = 1'b1;
             wbuffer_d[wr_ptr].dirty[k]       = 1'b1;
             wbuffer_d[wr_ptr].data[k*8 +: 8] = req_port_i.data_wdata[k*8 +: 8];
+`ifdef _VCP // SPT77445
+			modified_wbuffer_d[wr_ptr]=1;
+`endif
           end
         end
       end
     end
+`ifdef _VCP // SPT77445
+	//for (int k=0; k<8; k++) begin
+//		if(!modified_wbuffer_d[k])
+//			wbuffer_d[k]           = wbuffer_q[k];
+//    end
+	if(!modified_dirty_rd_en)
+		dirty_rd_en = 1'b0;
+	if(!modified_req_port_o_data_gnt)
+       	req_port_o.data_gnt       = 1'b0;
+	if(!modified_wbuffer_wren)
+       	wbuffer_wren              = 1'b0;
+	if(!modified_nc_pending_d)
+		nc_pending_d        = nc_pending_q;
+`endif		
   end
 
 

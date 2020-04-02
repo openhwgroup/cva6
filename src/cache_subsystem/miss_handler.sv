@@ -17,6 +17,10 @@
 // --------------
 import ariane_pkg::*;
 import std_cache_pkg::*;
+`ifdef _VCP // APO2939
+import std_cache_pkg::DCACHE_NUM_WORDS;
+`endif
+
 
 module miss_handler #(
     parameter int unsigned NR_PORTS         = 3

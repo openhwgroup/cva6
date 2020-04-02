@@ -630,7 +630,6 @@ package riscv;
         end
     endfunction
     // pragma translate_on
-
     typedef struct {
         byte priv;
         longint unsigned pc;
