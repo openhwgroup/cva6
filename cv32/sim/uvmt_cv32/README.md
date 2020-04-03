@@ -78,6 +78,15 @@ Makefile variable SIMULATOR to `dsim` and you can save yourself a lot of typing.
 example, in a bash shell:
 <br>**export SIMULATOR=dsim**
 <br>**make sanity**
+<br><br>
+The Makefile for dsim also supports variables to control wave dumping.  For example:
+<br>**make sanity WAVES=1**
+<br>Have a look at `dsim.mk` to see additional variables to control the filename
+of the dumpfile, etc.
+<br><br>
+The Makefile variable DSIM_RUN_FLAGS can be used to pass user define arguments
+to dsim at run-time.  For example:
+<br>**make sanity DSIM\_RUN\_FLAGS=+print\_uvm\_runflow\_banner=1**
 
 Running the environment with Cadence [Xcelium](https://www.cadence.com/en_US/home/tools/system-design-and-verification/simulation-and-testbench-verification/xcelium-parallel-simulator.html) (xrun)
 ----------------------

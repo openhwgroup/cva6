@@ -431,10 +431,17 @@ endfunction : create_components
 
 function void uvmt_cv32_base_test_c::print_banner(string text);
    
-   $display("");
-   $display("*******************************************************************************");
-   $display(text.toupper());
-   $display("*******************************************************************************");
+  if (test_cfg != null) begin
+    if (test_cfg.print_uvm_runflow_banner) begin
+      $display("");
+      $display("*******************************************************************************");
+      $display(text.toupper());
+      $display("*******************************************************************************");
+    end
+    else begin
+      `uvm_info("BASE_TEST", "Printing of UVM run-flow banner disabled", UVM_HIGH)
+    end
+  end
    
 endfunction : print_banner
 

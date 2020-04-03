@@ -52,8 +52,16 @@ class uvmt_cv32_test_cfg_c extends uvm_object;
    bit    cli_firmware_select_override = 0;
    string cli_firmware_name_str        = "";
 
+   // Command line arguments to control whether the UVM run-flow banner is
+   // written to stdout. (A bit overkill for on/off control.)
+   // +print_uvm_runflow_banner=1
+   string cli_uvm_banner_select_str      = "print_uvm_runflow_banner";
+   bit    cli_uvm_banner_select_override = 0;
+   string cli_uvm_banner_name_str        = "";
+
    // Run-time control
-   bit    run_riscv_gcc_toolchain = 0;
+   bit    run_riscv_gcc_toolchain  = 0;
+   bit    print_uvm_runflow_banner = 0;
    
    `uvm_object_utils_begin(uvmt_cv32_test_cfg_c)
       `uvm_field_int(heartbeat_period, UVM_DEFAULT)
@@ -63,6 +71,7 @@ class uvmt_cv32_test_cfg_c extends uvm_object;
       
       //`uvm_field_object(cli_selected_block, UVM_DEFAULT)
       `uvm_field_int(run_riscv_gcc_toolchain, UVM_DEFAULT)
+      `uvm_field_int(print_uvm_runflow_banner, UVM_DEFAULT)
    `uvm_object_utils_end
    
    
@@ -100,7 +109,7 @@ function void uvmt_cv32_test_cfg_c::process_cli_args();
    
    string  cli_block_name_parsed_str           = "";
    
-   // Process plusarg for RAL control
+   // RAL control
    cli_block_name_override = 0; //default
    if (uvm_cmdline_proc.get_arg_value({"+", cli_block_name_str, "="}, cli_block_name_parsed_str)) begin
       if (cli_block_name_parsed_str != "") begin
@@ -110,13 +119,24 @@ function void uvmt_cv32_test_cfg_c::process_cli_args();
       end
    end
 
-   // Process plusarg for Firmware selection
+   // Test program (firmware) selection
    cli_firmware_select_override = 0; // default
    if (uvm_cmdline_proc.get_arg_value({"+", cli_firmware_select_str, "="}, cli_firmware_name_str)) begin
       if (cli_firmware_name_str != "") begin
          cli_firmware_select_override = 1;
          run_riscv_gcc_toolchain      = 1;
          `uvm_info("TEST_CFG", $sformatf("process_cli_args() firmware=%s", cli_firmware_name_str), UVM_LOW)
+      end
+   end
+
+   // Turn on printing of UVM run-flow banner (any arg will work)
+   // void'($value$plusargs("print_uvm_runflow_banner=%0d", print_uvm_runflow_banner));
+   cli_uvm_banner_select_override = 0; // default
+   if (uvm_cmdline_proc.get_arg_value({"+", cli_uvm_banner_select_str, "="}, cli_uvm_banner_name_str)) begin
+      if (cli_firmware_name_str != "") begin
+         cli_uvm_banner_select_override = 1;
+         print_uvm_runflow_banner       = 1;
+         `uvm_info("TEST_CFG", $sformatf("process_cli_args() cli_uvm_banner_select_str=%s", cli_uvm_banner_name_str), UVM_LOW)
       end
    end
 
