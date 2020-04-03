@@ -54,11 +54,13 @@
 #CV32E40P_HASH   ?= tbd
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH   ?= 9cdf35c8c460a933496b84c5b51f88652981fd5d
+CV32E40P_HASH   ?= 74262e8f1fde682c2db71e6ad7e7ed143b6409a0
+#OLDCV32E40P_HASH   ?= 9cdf35c8c460a933496b84c5b51f88652981fd5d
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
-FPNEW_HASH      ?= da5fd4f0140c45f652c4a82a193f017484e3c72e
+FPNEW_HASH      ?= c15c54887b3bc6d0965606c487e9f1bf43237e45
+#OLDFPNEW_HASH      ?= da5fd4f0140c45f652c4a82a193f017484e3c72e
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
