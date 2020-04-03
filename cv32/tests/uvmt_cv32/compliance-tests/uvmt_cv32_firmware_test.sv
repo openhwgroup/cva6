@@ -38,6 +38,11 @@ class uvmt_cv32_firmware_test_c extends uvmt_cv32_base_test_c;
    //   env_cfg.is_active       == UVM_ACTIVE;
    //   env_cfg.trn_log_enabled == 1;
    //}
+
+   constraint test_type_cons {
+     test_cfg.tpt == PREEXISTING_SELFCHECKING;
+   }
+   
    
    `uvm_component_utils(uvmt_cv32_firmware_test_c)
    
@@ -85,10 +90,6 @@ task uvmt_cv32_firmware_test_c::configure_phase(uvm_phase phase);
    
    super.configure_phase(phase);
 
-   // Load the pre-compiled firmware
-   // Done in uvmt_cv32_dut_wrap.sv to avoid XMRs across packages.
-   core_cntrl_vif.load_instr_mem = 1'b1;
-
    /*
    ** Moved to uvmt_cv32_dut_wrap.sv to avoid XMRs across packages.
    ** TODO: delete all this once you are confident of the approach.
@@ -118,8 +119,8 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
    super.run_phase(phase);
    
    phase.raise_objection(this);
-   @(posedge clk_gen_vif.core_reset_n);
-   repeat (33) @(posedge clk_gen_vif.core_clock);
+   @(posedge env_cntxt.clknrst_cntxt.vif.reset_n);
+   repeat (33) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
    core_cntrl_vif.go_fetch(); // Assert the Core's fetch_en
    `uvm_info("TEST", "Started RUN", UVM_NONE)
    // The firmware is expected to write exit status and pass/fail indication to the Virtual Peripheral
@@ -128,7 +129,7 @@ task uvmt_cv32_firmware_test_c::run_phase(uvm_phase phase);
           (vp_status_vif.tests_failed  == 1'b1) ||
           (vp_status_vif.tests_passed  == 1'b1)
         );
-   repeat (100) @(posedge clk_gen_vif.core_clock);
+   repeat (100) @(posedge env_cntxt.clknrst_cntxt.vif.clk);
    //TODO: exit_value will not be valid - need to add a latch in the vp_status_vif
    `uvm_info("TEST", $sformatf("Finished RUN: exit status is %0h", vp_status_vif.exit_value), UVM_NONE)
    phase.drop_objection(this);

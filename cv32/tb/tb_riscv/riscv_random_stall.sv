@@ -28,10 +28,11 @@ import perturbation_defines::*;
 
 module riscv_random_stall
 
-#(
-    parameter MAX_STALL_N = 1,
-    parameter DATA_WIDTH  = 32
-)
+ #(
+    parameter MAX_STALL_N    = 1,
+              RAM_ADDR_WIDTH = 32,
+              DATA_WIDTH     = 32
+  )
 
 (
     input logic                             clk_i,
@@ -48,8 +49,8 @@ module riscv_random_stall
     input logic                             req_core_i,
     output logic                            req_mem_o,
 
-    input logic [31:0]                      addr_core_i,
-    output logic [31:0]                     addr_mem_o,
+    input logic  [RAM_ADDR_WIDTH-1:0]       addr_core_i,
+    output logic [RAM_ADDR_WIDTH-1:0]       addr_mem_o,
 
     input logic [DATA_WIDTH-1:0]            wdata_core_i,
     output logic [DATA_WIDTH-1:0]           wdata_mem_o,
@@ -89,30 +90,33 @@ mailbox #(stall_mem_t) core_resps         = new (4);
 mailbox #(logic)       core_resps_granted = new (4);
 mailbox #(stall_mem_t) memory_transfers   = new (4);
 
- always_latch
- begin
-   if (req_core_i)
-       req_per_q    <= 1'b1;
-   else
-       req_per_q    <= 1'b0;
+ always_comb begin
+   if (req_core_i) begin
+     req_per_q <= 1'b1;
+   end
+   else begin
+     req_per_q <= 1'b0;
+   end
  end
 
- always_latch
- begin
-   if (rvalid_mem_i)
-       rvalid_per_q    <= 1'b1;
-   else
-       rvalid_per_q    <= 1'b0;
+ always_comb begin
+   if (rvalid_mem_i) begin
+     rvalid_per_q <= 1'b1;
+   end
+   else begin
+     rvalid_per_q <= 1'b0;
+   end
  end
 
 
-always_latch
- begin
-   if (grant_mem_i)
-       grant_per_q    <= 1'b1;
-   else
-       grant_per_q    <= 1'b0;
- end
+ always_comb begin
+   if (grant_mem_i) begin
+     grant_per_q <= 1'b1;
+   end
+   else begin
+     grant_per_q <= 1'b0;
+   end
+  end
 
 
 

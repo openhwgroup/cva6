@@ -23,7 +23,8 @@
 // Pre-processor macros
 `include "uvm_macros.svh"
 `include "uvml_hrtbt_macros.sv"
-`include "uvml_sb_macros.sv"
+//`include "uvml_trn_macros.sv"
+//`include "uvml_sb_macros.sv"
 
 
 /**
@@ -31,8 +32,9 @@
  */
 package uvml_sb_pkg;
    
-   import uvm_pkg::*;
-   import uvml_hrtbt_pkg ::*;
+   import uvm_pkg       ::*;
+   import uvml_hrtbt_pkg::*;
+   import uvml_trn_pkg  ::*;
    
    // Constants / Structs / Enums
    `include "uvml_sb_constants.sv"

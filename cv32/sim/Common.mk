@@ -54,11 +54,17 @@
 #CV32E40P_HASH   ?= tbd
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH   ?= 9cdf35c8c460a933496b84c5b51f88652981fd5d
+CV32E40P_HASH   ?= 74262e8f1fde682c2db71e6ad7e7ed143b6409a0
+#OLDCV32E40P_HASH   ?= 9cdf35c8c460a933496b84c5b51f88652981fd5d
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
-FPNEW_HASH      ?= da5fd4f0140c45f652c4a82a193f017484e3c72e
+FPNEW_HASH      ?= c15c54887b3bc6d0965606c487e9f1bf43237e45
+#OLDFPNEW_HASH      ?= da5fd4f0140c45f652c4a82a193f017484e3c72e
+
+RISCVDV_REPO    ?= https://github.com/google/riscv-dv
+RISCVDV_BRANCH  ?= master
+RISCVDV_HASH    ?= head
 
 # Generate command to clone the CV32E40P RTL
 ifeq ($(CV32E40P_BRANCH), master)
@@ -87,6 +93,19 @@ else
 endif
 # RTL repo vars end
 
+# Generate command to clone RISCV-DV (Google's random instruction generator)
+ifeq ($(RISCVDV_BRANCH), master)
+  TMP3 = git clone $(RISCVDV_REPO) --recurse $(RISCVDV_PKG)
+else
+  TMP3 = git clone -b $(RISCVDV_BRANCH) --single-branch $(RISCVDV_REPO) --recurse $(RISCVDV_PKG)
+endif
+
+ifeq ($(RISCVDV_HASH), head)
+  CLONE_RISCVDV_CMD = $(TMP3)
+else
+  CLONE_RISCVDV_CMD = $(TMP3); cd $(RISCVDV_PKG); git checkout $(RISCVDV_HASH)
+endif
+# RISCV-DV repo var end
 
 ###############################################################################
 # Build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"
@@ -108,6 +127,8 @@ CORE_TEST_DIR                        = $(PROJ_ROOT_DIR)/cv32/tests/core
 FIRMWARE                             = $(CORE_TEST_DIR)/firmware
 VERI_FIRMWARE                        = ../../tests/core/firmware
 CUSTOM                               = $(CORE_TEST_DIR)/custom
+CUSTOM_DIR                          ?= $(CUSTOM)
+CUSTOM_PROG                         ?= my_hello_world
 VERI_CUSTOM                          = ../../tests/core/custom
 CV32_RISCV_TESTS_FIRMWARE            = $(CORE_TEST_DIR)/cv32_riscv_tests_firmware
 CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE = $(CORE_TEST_DIR)/cv32_riscv_compliance_tests_firmware
@@ -159,17 +180,29 @@ FIRMWARE_UNIT_TEST_OBJS   =  	$(addsuffix .o, \
 
 # Thales verilator testbench compilation end
 
-
+###############################################################################
+# The sanity rule runs whatever is currently deemed to be the minimal test that
+# must be able to run (and pass!) prior to generating a pull-request.
+sanity: hello-world
 
 # rules to generate hex (loadable by simulators) from elf
 %.hex: %.elf
 	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@
 
 # Running custom programs:
-# This is an example for running a hello world in the testbench
 # We link with our custom crt0.s and syscalls.c against newlib so that we can
 # use the c standard library
-#custom/hello_world.elf: ../../tests/core/custom/hello_world.c
+$(CUSTOM_DIR)/$(CUSTOM_PROG).elf: $(CUSTOM_DIR)/$(CUSTOM_PROG).c
+	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		-T $(CUSTOM_DIR)/link.ld  \
+		-static \
+		$(CUSTOM_DIR)/crt0.S \
+		$^ $(CUSTOM_DIR)/syscalls.c $(CUSTOM_DIR)/vectors.S \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc
+
+# HELLO WORLD: custom/hello_world.elf: ../../tests/core/custom/hello_world.c
 $(CUSTOM)/hello_world.elf: $(CUSTOM)/hello_world.c
 	$(RISCV_EXE_PREFIX)gcc -march=rv32imc -o $@ -w -Os -g -nostdlib \
 		-T $(CUSTOM)/link.ld  \

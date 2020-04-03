@@ -38,12 +38,36 @@
 /**
  * Module wrapper for CV32 RTL DUT.
  */
-module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
-                                      RAM_ADDR_WIDTH    =   20,
-                                      PULP_SECURE       =    1
+module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
+                            // https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/CV32E40P_and%20CV32E40_Features_Parameters.pdf
+                            parameter N_EXT_PERF_COUNTERS =   1, // TODO: this is 0 in riscv_core, which is wrong
+                                      INSTR_RDATA_WIDTH   = 128,
+                                      PULP_SECURE         =   0,
+                                      N_PMP_ENTRIES       =  16,
+                                      USE_PMP             =   1, //if PULP_SECURE is 1, you can still not use the PMP
+                                      PULP_CLUSTER        =   1,
+                                      A_EXTENSION         =   0,
+                                      FPU                 =   0,
+                                      Zfinx               =   0,
+                                      FP_DIVSQRT          =   1,
+                                      SHARED_FP           =   0,
+                                      SHARED_DSP_MULT     =   0,
+                                      SHARED_INT_MULT     =   0,
+                                      SHARED_INT_DIV      =   0,
+                                      SHARED_FP_DIVSQRT   =   0,
+                                      WAPUTYPE            =   0,
+                                      APU_NARGS_CPU       =   3,
+                                      APU_WOP_CPU         =   6,
+                                      APU_NDSFLAGS_CPU    =  15,
+                                      APU_NUSFLAGS_CPU    =   5,
+                                      DM_HaltAddress      =  32'h1A110800,
+                            // Remaining parameters are used by TB components only
+                                      INSTR_ADDR_WIDTH    =  32,
+                                      RAM_ADDR_WIDTH      =  20
                            )
+
                            (
-                            uvmt_cv32_clk_gen_if         clk_gen_if,
+                            uvma_clknrst_if              clknrst_if,
                             uvmt_cv32_vp_status_if       vp_status_if,
                             uvmt_cv32_core_cntrl_if      core_cntrl_if,
                             uvmt_cv32_core_status_if     core_status_if,
@@ -56,7 +80,7 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
     logic                         instr_req;
     logic                         instr_gnt;
     logic                         instr_rvalid;
-    logic [31:0]                  instr_addr;
+    logic [INSTR_ADDR_WIDTH-1 :0] instr_addr;
     logic [INSTR_RDATA_WIDTH-1:0] instr_rdata;
 
     logic                         data_req;
@@ -68,41 +92,67 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
     logic [31:0]                  data_rdata;
     logic [31:0]                  data_wdata;
 
+    logic [ 4:0]                  irq_id_out;
+    logic [ 4:0]                  irq_id_in;
 
     // Load the Instruction Memory 
     initial begin: load_instruction_memory
       string firmware;
       int    fd;
 
-      `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_NONE)
-      wait(core_cntrl_if.load_instr_mem === 1'b1);
-      `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
+      `uvm_info("DUT_WRAP", "waiting for load_instr_mem to be asserted.", UVM_DEBUG)
+      wait(core_cntrl_if.load_instr_mem !== 1'bX);
+      if(core_cntrl_if.load_instr_mem === 1'b1) begin
+        `uvm_info("DUT_WRAP", "load_instr_mem asserted!", UVM_NONE)
 
-      // Load the pre-compiled firmware
-      if($value$plusargs("firmware=%s", firmware)) begin
-        // First, check if it exists...
-        fd = $fopen (firmware, "r");   
-        if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_NONE)
-        else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
-        $fclose(fd);
-        // Now load it...
-        `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
-        $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
+        // Load the pre-compiled firmware
+        if($value$plusargs("firmware=%s", firmware)) begin
+          // First, check if it exists...
+          fd = $fopen (firmware, "r");   
+          if (fd)  `uvm_info ("DUT_WRAP", $sformatf("%s was opened successfully : (fd=%0d)", firmware, fd), UVM_DEBUG)
+          else     `uvm_fatal("DUT_WRAP", $sformatf("%s was NOT opened successfully : (fd=%0d)", firmware, fd))
+          $fclose(fd);
+          // Now load it...
+          `uvm_info("DUT_WRAP", $sformatf("loading firmware %0s", firmware), UVM_NONE)
+          $readmemh(firmware, uvmt_cv32_tb.dut_wrap.ram_i.dp_ram_i.mem);
+        end
+        else begin
+          `uvm_error("DUT_WRAP", "No firmware specified!")
+        end
       end
       else begin
-        `uvm_error("DUT_WRAP", "No firmware specified!")
+        `uvm_info("DUT_WRAP", "NO TEST PROGRAM", UVM_NONE)
       end
     end
 
     // instantiate the core
-    riscv_core #(.INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),
-                 .PULP_SECURE       (PULP_SECURE),
-                 .FPU               (0)
+    riscv_core #(
+                 .N_EXT_PERF_COUNTERS    (N_EXT_PERF_COUNTERS),
+                 .INSTR_RDATA_WIDTH      (INSTR_RDATA_WIDTH),
+                 .PULP_SECURE            (PULP_SECURE),
+                 .N_PMP_ENTRIES          (N_PMP_ENTRIES),
+                 .USE_PMP                (USE_PMP),
+                 .PULP_CLUSTER           (PULP_CLUSTER),
+                 .A_EXTENSION            (A_EXTENSION),
+                 .FPU                    (FPU),
+                 .Zfinx                  (Zfinx),
+                 .FP_DIVSQRT             (FP_DIVSQRT),
+                 .SHARED_FP              (SHARED_FP),
+                 .SHARED_DSP_MULT        (SHARED_DSP_MULT),
+                 .SHARED_INT_MULT        (SHARED_INT_MULT),
+                 .SHARED_INT_DIV         (SHARED_INT_DIV),
+                 .SHARED_FP_DIVSQRT      (SHARED_FP_DIVSQRT),
+                 .WAPUTYPE               (WAPUTYPE),
+                 .APU_NARGS_CPU          (APU_NARGS_CPU),
+                 .APU_WOP_CPU            (APU_WOP_CPU),
+                 .APU_NDSFLAGS_CPU       (APU_NDSFLAGS_CPU),
+                 .APU_NUSFLAGS_CPU       (APU_NUSFLAGS_CPU),
+                 .DM_HaltAddress         (DM_HaltAddress)
                 )
     riscv_core_i
         (
-         .clk_i                  ( clk_gen_if.core_clock          ),
-         .rst_ni                 ( clk_gen_if.core_reset_n        ),
+         .clk_i                  ( clknrst_if.clk                 ),
+         .rst_ni                 ( clknrst_if.reset_n             ),
 
          .clock_en_i             ( core_cntrl_if.clock_en         ),
          .test_en_i              ( core_cntrl_if.test_en          ),
@@ -168,8 +218,8 @@ module uvmt_cv32_dut_wrap #(parameter INSTR_RDATA_WIDTH =  128,
              .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH)
             )
     ram_i
-        (.clk_i          ( clk_gen_if.core_clock          ),
-         .rst_ni         ( clk_gen_if.core_reset_n        ),
+        (.clk_i          ( clknrst_if.clk                 ),
+         .rst_ni         ( clknrst_if.reset_n             ),
 
          .instr_req_i    ( instr_req                      ),
          .instr_addr_i   ( instr_addr[RAM_ADDR_WIDTH-1:0] ),

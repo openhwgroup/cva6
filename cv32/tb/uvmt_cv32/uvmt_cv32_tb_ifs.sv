@@ -98,19 +98,19 @@ endinterface : uvmt_cv32_vp_status_if
  * Quasi-static core control signals.
  */
 interface uvmt_cv32_core_cntrl_if (
-                                    output logic       fetch_en,
-                                    output logic       fregfile_disable,
-                                    output logic       ext_perf_counters,
+                                    output logic        fetch_en,
+                                    output logic        fregfile_disable,
+                                    output logic        ext_perf_counters,
                                     // quasi static values
-                                    output logic       clock_en,
-                                    output logic       test_en,
+                                    output logic        clock_en,
+                                    output logic        test_en,
                                     output logic [31:0] boot_addr,
-                                    output logic [3:0] core_id,
-                                    output logic [5:0] cluster_id,
+                                    output logic [ 3:0] core_id,
+                                    output logic [ 5:0] cluster_id,
                                     // To be driven by future debug module (DM)
-                                    output logic       debug_req,
+                                    output logic        debug_req,
                                     // Testcase asserts this to load memory (not really a core control signal)
-                                    output logic       load_instr_mem
+                                    output logic        load_instr_mem
                                   );
 
   import uvm_pkg::*;
@@ -149,17 +149,23 @@ endinterface : uvmt_cv32_core_cntrl_if
 /**
  * Core interrupts
  */
-interface uvmt_cv32_core_interrupts_if (
-                                    input  logic        irq_ack,        // dut output
-                                    input  logic        irq_id,         // dut output
-                                    output logic        irq_sec,        // dut input
-                                    output logic        irq_software,   // dut input
-                                    output logic        irq_timer,      // dut input
-                                    output logic        irq_external,   // dut input
-                                    output logic [15:0] irq_fast,       // dut input
-                                    output logic        irq_nmi,        // dut input
-                                    output logic [31:0] irq_fastx       // dut input
-                                   );
+interface uvmt_cv32_core_interrupts_if
+ #(
+   parameter NUM_FAST_INTR   = 15, //TODO: pass these in from the TB/DUT_WRAP
+             NUM_XFASTX_INTR = 32  // _XFASTX_ deliberately choosen to make it visually distinct from _FAST_
+  )
+  (
+   input  logic                       irq_ack,        // dut output
+   input  logic                       irq_id,         // dut output
+   output logic                       irq_sec,        // dut input
+   output logic                       irq_software,   // dut input
+   output logic                       irq_timer,      // dut input
+   output logic                       irq_external,   // dut input
+   output logic [NUM_FAST_INTR-1:0]   irq_fast,       // dut input
+   output logic                       irq_nmi,        // dut input
+   output logic [NUM_XFASTX_INTR-1:0] irq_fastx       // dut input
+  );
+
   import uvm_pkg::*;
 
   initial begin
@@ -167,9 +173,9 @@ interface uvmt_cv32_core_interrupts_if (
     irq_software = 1'b0;
     irq_timer    = 1'b0;
     irq_external = 1'b0;
-    irq_fast     = {15{1'b0}};
+    irq_fast     = {NUM_FAST_INTR{1'b0}};
     irq_nmi      = 1'b0;
-    irq_fastx    = {32{1'b0}};
+    irq_fastx    = {NUM_XFASTX_INTR{1'b0}};
     `uvm_info("CORE_INTERRUPT_IF", "Interrupt inputs to CORE all tied low (for now).", UVM_NONE)
   end
 

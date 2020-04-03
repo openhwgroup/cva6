@@ -24,7 +24,7 @@
  * Logger writing sequence items debug info to disk.
  */
 class uvml_logs_seq_item_logger_c#(
-   type T_TRN   = uvm_trn_seq_item_c,
+   type T_TRN   = uvml_trn_seq_item_c,
    type T_CFG   = uvm_object        ,
    type T_CNTXT = uvm_object
 ) extends uvm_subscriber#(
@@ -113,9 +113,6 @@ endfunction : new
 
 function void uvml_logs_seq_item_logger_c::build_phase(uvm_phase phase);
    
-   string                 cli_arg_pattern;
-   uvm_cmdline_processor  cli_proc;
-   
    super.build_phase(phase);
    
    void'(uvm_config_db#(T_CFG)::get(this, "", "cfg", cfg));
@@ -129,8 +126,7 @@ function void uvml_logs_seq_item_logger_c::build_phase(uvm_phase phase);
    end
    
    // Retrieve simulation path from CLI argument
-   cli_arg_pattern = {cli_args, "=%s"};
-   void'(cli_proc.get_arg_value({"+", cli_args}, cli_args_result));
+   void'(uvm_cmdline_proc.get_arg_value({"+", cli_args}, cli_args_result));
    
 endfunction : build_phase
 

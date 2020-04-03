@@ -207,10 +207,10 @@ dsim-comp: mk_results $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
 	cd $(DSIM_RESULTS) && $(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
+		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-f $(CV32E40P_MANIFEST) \
 		$(TBSRC_PKG) \
 		$(TBSRC) \
-		-f $(CV32E40P_MANIFEST) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
@@ -286,25 +286,25 @@ dsim-clean: tc-clean
 # Mentor Questasim
 
 
-.lib-rtl:
-	$(VLIB) $(VWORK)
-	touch .lib-rtl
+#.lib-rtl:
+#	$(VLIB) $(VWORK)
+#	touch .lib-rtl
 
 
-.build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
-	$(VLOG) \
-		-work $(VWORK) \
-		$(VLOG_FLAGS) \
-		-f $(CV32E40P_MANIFEST) \
-		$(TBSRC_PKG) $(TBSRC) 
+#.build-rtl: .lib-rtl $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
+#	$(VLOG) \
+#		-work $(VWORK) \
+#		$(VLOG_FLAGS) \
+#		-f $(CV32E40P_MANIFEST) \
+#		$(TBSRC_PKG) $(TBSRC) 
 		
 
-vsim-all:  .opt-rtl
+#vsim-all:  .opt-rtl
 	
 
-.opt-rtl: .build-rtl
-	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o $(RTLSRC_VOPT_TB_TOP)
-	touch .opt-rtl
+#.opt-rtl: .build-rtl
+#	$(VOPT) -work $(VWORK) $(VOPT_FLAGS) $(RTLSRC_VLOG_TB_TOP) -o $(RTLSRC_VOPT_TB_TOP)
+#	touch .opt-rtl
 
 # run tb and exit
 .PHONY: vsim-run

@@ -22,12 +22,24 @@
  * Configuration object for testcases
  */
 class uvmt_cv32_test_cfg_c extends uvm_object;
+
+   //typedef enum {
+   //              PREEXISTING_SELFCHECKING,
+   //              PREEXISTING_NOTSELFCHECKING,
+   //              GENERATED_SELFCHECKING,
+   //              GENERATED_NOTSELFCHECKING,
+   //              NONE
+   //             } test_program_type; 
+
    
-   // Knobs
+   // Knobs for environment control
    rand int unsigned  startup_timeout ; // Specified in nanoseconds (ns)
    rand int unsigned  heartbeat_period; // Specified in nanoseconds (ns)
    rand int unsigned  watchdog_timeout; // Specified in nanoseconds (ns)
    
+   // Knobs for test-program control
+   rand test_program_type tpt;
+
    // Command line arguments for controlling RAL
    // (note: its not clear if this ENV will use the RAL)
    string cli_block_name_str      = "BLKNM";
@@ -46,6 +58,8 @@ class uvmt_cv32_test_cfg_c extends uvm_object;
    `uvm_object_utils_begin(uvmt_cv32_test_cfg_c)
       `uvm_field_int(heartbeat_period, UVM_DEFAULT)
       `uvm_field_int(watchdog_timeout, UVM_DEFAULT)
+
+      `uvm_field_enum(test_program_type, tpt, UVM_DEFAULT)
       
       //`uvm_field_object(cli_selected_block, UVM_DEFAULT)
       `uvm_field_int(run_riscv_gcc_toolchain, UVM_DEFAULT)
@@ -58,6 +72,9 @@ class uvmt_cv32_test_cfg_c extends uvm_object;
       soft watchdog_timeout == 100_000_000; // 10 ms // TODO Set default Watchdog timeout period for uvmt_cv32_base_test_c
    }
    
+   //constraint test_type_default_cons {
+   //  soft tpt == NONE;
+   //}
    
    /**
     * Default constructor.
@@ -84,36 +101,26 @@ function void uvmt_cv32_test_cfg_c::process_cli_args();
    string  cli_block_name_parsed_str           = "";
    
    // Process plusarg for RAL control
+   cli_block_name_override = 0; //default
    if (uvm_cmdline_proc.get_arg_value({"+", cli_block_name_str, "="}, cli_block_name_parsed_str)) begin
       if (cli_block_name_parsed_str != "") begin
          cli_block_name_override = 1;
          //cli_selected_block = ral.get_block_by_name(cli_block_name_parsed_str);
-         `uvm_info("uvm_uvmt_cv32_test_cfg_c", $sformatf("process_cli_args() RAL block_name=%s", cli_block_name_str), UVM_LOW)
+         `uvm_info("TEST_CFG", $sformatf("process_cli_args() RAL block_name=%s", cli_block_name_str), UVM_LOW)
       end
-      else begin
-         cli_block_name_override = 0;
-      end
-   end
-   else begin
-      cli_block_name_override = 0;
    end
 
    // Process plusarg for Firmware selection
+   cli_firmware_select_override = 0; // default
    if (uvm_cmdline_proc.get_arg_value({"+", cli_firmware_select_str, "="}, cli_firmware_name_str)) begin
       if (cli_firmware_name_str != "") begin
          cli_firmware_select_override = 1;
          run_riscv_gcc_toolchain      = 1;
-         `uvm_info("uvm_uvmt_cv32_test_cfg_c", $sformatf("process_cli_args() firmware=%s", cli_firmware_name_str), UVM_LOW)
+         `uvm_info("TEST_CFG", $sformatf("process_cli_args() firmware=%s", cli_firmware_name_str), UVM_LOW)
       end
-      else begin
-         cli_firmware_select_override = 0;
-      end
-   end
-   else begin
-      cli_firmware_select_override = 0;
    end
 
-   `uvm_info("uvm_uvmt_cv32_test_cfg_c", "process_cli_args() complete", UVM_HIGH)
+   `uvm_info("TEST_CFG", "process_cli_args() complete", UVM_HIGH)
    
 endfunction : process_cli_args
 

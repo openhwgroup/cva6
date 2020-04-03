@@ -31,6 +31,7 @@
 package uvml_logs_pkg;
    
    import uvm_pkg::*;
+   import uvml_trn_pkg::*;
    
    // Constants / Structs / Enums
    `include "uvml_logs_constants.sv"

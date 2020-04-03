@@ -29,18 +29,18 @@ class uvme_cv32_env_c extends uvm_env;
    uvme_cv32_cntxt_c  cntxt;
    
    // Register Abstraction Layer (RAL)
-   //uvme_cv32_ral_c           ral;
+   uvme_cv32_ral_c           ral;
    //uvma_debug_reg_adapter_c  reg_adapter;
    
    // Components
-   //uvme_cv32_cov_model_c  cov_model;
-   //uvme_cv32_prd_c        predictor;
-   //uvme_cv32_sb_c         sb;
-   //uvme_cv32_vsqr_c       vsequencer;
+   uvme_cv32_cov_model_c  cov_model;
+   uvme_cv32_prd_c        predictor;
+   uvme_cv32_sb_c         sb;
+   uvme_cv32_vsqr_c       vsequencer;
    
    // Agents
+   uvma_clknrst_agent_c  clknrst_agent;
    //uvma_debug_agent_c  debug_agent;
-   //uvma_reset_agent_c  reset_agent;
    
    
    `uvm_component_utils_begin(uvme_cv32_env_c)
@@ -79,11 +79,6 @@ class uvme_cv32_env_c extends uvm_env;
     * Assigns context handles to components using UVM Configuration Database.
     */
    extern virtual function void assign_cntxt();
-   
-   /**
-    * Creates sub-environment components.
-    */
-   extern virtual function void create_sub_envs();
    
    /**
     * Creates agent components.
@@ -138,9 +133,6 @@ class uvme_cv32_env_c extends uvm_env;
 endclass : uvme_cv32_env_c
 
 
-`pragma protect begin
-
-
 function uvme_cv32_env_c::new(string name="uvme_cv32_env", uvm_component parent=null);
    
    super.new(name, parent);
@@ -169,7 +161,6 @@ function void uvme_cv32_env_c::build_phase(uvm_phase phase);
       
       assign_cfg           ();
       assign_cntxt         ();
-      create_sub_envs      ();
       create_agents        ();
       create_ral_adapter   ();
       create_env_components();
@@ -190,21 +181,21 @@ function void uvme_cv32_env_c::connect_phase(uvm_phase phase);
    
    super.connect_phase(phase);
    
-   //if (cfg.enabled) begin
-   //   if (cfg.scoreboarding_enabled) begin
-   //      connect_predictor ();
-   //      connect_scoreboard();
-   //   end
-   //   
-   //   if (cfg.is_active) begin
-   //      connect_ral();
-   //      assemble_vsequencer();
-   //   end
-   //   
-   //   if (cfg.cov_model_enabled) begin
-   //      connect_coverage_model();
-   //   end
-   //end
+   if (cfg.enabled) begin
+      if (cfg.scoreboarding_enabled) begin
+         connect_predictor ();
+         connect_scoreboard();
+      end
+      
+      if (cfg.is_active) begin
+         connect_ral();
+         assemble_vsequencer();
+      end
+      
+      if (cfg.cov_model_enabled) begin
+         connect_coverage_model();
+      end
+   end
    
 endfunction: connect_phase
 
@@ -212,42 +203,35 @@ endfunction: connect_phase
 function void uvme_cv32_env_c::assign_cfg();
    
    uvm_config_db#(uvme_cv32_cfg_c)::set(this, "*", "cfg", cfg);
+   uvm_config_db#(uvma_clknrst_cfg_c)::set(this, "*clknrst_agent", "cfg", cfg.clknrst_cfg);
    //uvm_config_db#(uvma_debug_cfg_c)::set(this, "debug_agent", "cfg", cfg.debug_cfg);
-   //uvm_config_db#(uvma_reset_cfg_c)::set(this, "*reset_agent", "cfg", cfg.reset_cfg);
    
 endfunction: assign_cfg
 
 
 function void uvme_cv32_env_c::assign_cntxt();
    
-   //uvm_config_db#(uvme_cv32_cntxt_c)::set(this, "*", "cntxt", cntxt);
+   uvm_config_db#(uvme_cv32_cntxt_c)::set(this, "*", "cntxt", cntxt);
+   uvm_config_db#(uvma_clknrst_cntxt_c)::set(this, "clknrst_agent", "cntxt", cntxt.clknrst_cntxt);
    //uvm_config_db#(uvma_debug_cntxt_c)::set(this, "debug_agent", "cntxt", cntxt.debug_cntxt);
-   //uvm_config_db#(uvma_reset_cntxt_c)::set(this, "reset_agent", "cntxt", cntxt.reset_cntxt);
    
 endfunction: assign_cntxt
 
 
-function void uvme_cv32_env_c::create_sub_envs();
-   
-   
-   
-endfunction: create_sub_envs
-
-
 function void uvme_cv32_env_c::create_agents();
    
+   clknrst_agent = uvma_clknrst_agent_c::type_id::create("clknrst_agent", this);
    //debug_agent = uvma_debug_agent_c::type_id::create("debug_agent", this);
-   //reset_agent = uvma_reset_agent_c::type_id::create("reset_agent", this);
    
 endfunction: create_agents
 
 
 function void uvme_cv32_env_c::create_env_components();
    
-   //if (cfg.scoreboarding_enabled) begin
-   //   predictor = uvme_cv32_prd_c::type_id::create("predictor", this);
-   //   sb        = uvme_cv32_sb_c ::type_id::create("sb"       , this);
-   //end
+   if (cfg.scoreboarding_enabled) begin
+      predictor = uvme_cv32_prd_c::type_id::create("predictor", this);
+      sb        = uvme_cv32_sb_c ::type_id::create("sb"       , this);
+   end
    
 endfunction: create_env_components
 
@@ -255,21 +239,21 @@ endfunction: create_env_components
 function void uvme_cv32_env_c::create_ral_adapter();
    
    //reg_adapter = uvma_debug_reg_adapter_c::type_id::create("reg_adapter");
-   //ral = cfg.ral;
+   ral = cfg.ral;
    
 endfunction: create_ral_adapter
 
 
 function void uvme_cv32_env_c::create_vsequencer();
    
-   //vsequencer = uvme_cv32_vsqr_c::type_id::create("vsequencer", this);
+   vsequencer = uvme_cv32_vsqr_c::type_id::create("vsequencer", this);
    
 endfunction: create_vsequencer
 
 
 function void uvme_cv32_env_c::create_cov_model();
    
-   //cov_model = uvme_cv32_cov_model_c::type_id::create("cov_model", this);
+   cov_model = uvme_cv32_cov_model_c::type_id::create("cov_model", this);
    
 endfunction: create_cov_model
 
@@ -277,7 +261,7 @@ endfunction: create_cov_model
 function void uvme_cv32_env_c::connect_predictor();
    
    //debug_agent.mon_ap.connect(predictor.debug_export);
-   //reset_agent.mon_ap.connect(predictor.reset_export);
+   //clknrst_agent.mon_ap.connect(predictor.clknrst_export);
    // TODO Connect agents monitor analysis ports to predictor
    
 endfunction: connect_predictor
@@ -312,14 +296,10 @@ endfunction: connect_coverage_model
 
 function void uvme_cv32_env_c::assemble_vsequencer();
    
-   //vsequencer.debug_sequencer = debug_agent.sequencer;
-   //vsequencer.reset_sequencer = reset_agent.sequencer;
-   // TODO Assemble virtual sequencer from agent sequencers
+   vsequencer.clknrst_sequencer = clknrst_agent.sequencer;
+   //vsequencer.debug_sequencer   = debug_agent.sequencer;
    
 endfunction: assemble_vsequencer
-
-
-`pragma protect end
 
 
 `endif // __UVME_CV32_ENV_SV__

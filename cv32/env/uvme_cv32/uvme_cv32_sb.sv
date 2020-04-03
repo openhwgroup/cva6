@@ -75,9 +75,6 @@ class uvme_cv32_sb_c extends uvm_scoreboard;
 endclass : uvme_cv32_sb_c
 
 
-`pragma protect begin
-
-
 function uvme_cv32_sb_c::new(string name="uvme_cv32_sb", uvm_component parent=null);
    
    super.new(name, parent);
@@ -131,9 +128,6 @@ function void uvme_cv32_sb_c::create_sbs();
    //          ingress_sb = uvme_cv32_sb_simplex_c::type_id::create("ingress_sb", this);
    
 endfunction : create_sbs
-
-
-`pragma protect end
 
 
 `endif // __UVME_CV32_SB_SV__

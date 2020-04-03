@@ -105,7 +105,7 @@ function uvml_sb_cntxt_c::new(string name="uvml_sb_cntxt");
 endfunction : new
 
 
-function uvml_sb_cntxt_c::reset();
+function void uvml_sb_cntxt_c::reset();
    
    act_q     .delete();
    exp_q     .delete();
