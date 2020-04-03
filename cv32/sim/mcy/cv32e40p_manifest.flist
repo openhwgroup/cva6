@@ -33,7 +33,7 @@ ${DESIGN_RTL_DIR}/include/riscv_defines.sv
 ${DESIGN_RTL_DIR}/include/riscv_tracer_defines.sv
 ${DESIGN_RTL_DIR}/riscv_if_stage.sv
 ${DESIGN_RTL_DIR}/riscv_tracer.sv
-${DESIGN_RTL_DIR}/cv32e40p_sim_clock_gating.sv
+${DESIGN_RTL_DIR}/cv32e40p_sim_clock_gate.sv
 ${DESIGN_RTL_DIR}/riscv_cs_registers.sv
 ${DESIGN_RTL_DIR}/riscv_register_file.sv
 ${DESIGN_RTL_DIR}/riscv_load_store_unit.sv

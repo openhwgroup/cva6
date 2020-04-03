@@ -25,4 +25,6 @@ it could be cleverer.
 so subdirectories should be introduced.
 - It is almost possible to use the Makefile in `sim/core/` unmodified, by just
 overriding the location of the manifest file. The main impediment is the import
-of Common.mk by a relative path
+`include ../Common.mk` which prevents it from being called from a different
+location. The make rule for building the firmware is also fragile as it relies
+on giving the path exactly as it is derived in the make variables.
