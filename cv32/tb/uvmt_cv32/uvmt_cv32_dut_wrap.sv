@@ -41,7 +41,7 @@
 module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                             // https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/CV32E40P_and%20CV32E40_Features_Parameters.pdf
                             parameter N_EXT_PERF_COUNTERS =   1, // TODO: this is 0 in riscv_core, which is wrong
-                                      INSTR_RDATA_WIDTH   = 128,
+                                      INSTR_RDATA_WIDTH   =  32,
                                       PULP_SECURE         =   0,
                                       N_PMP_ENTRIES       =  16,
                                       USE_PMP             =   1, //if PULP_SECURE is 1, you can still not use the PMP
