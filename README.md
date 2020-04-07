@@ -1,5 +1,6 @@
 # core-v-verif
 Functional verification project for the CORE-V family of RISC-V cores. This project is under active development.
+***This branch is being used to facilitate a significant integration - please do not use it unless specifically directed to.***
 
 ## NEWS FLASH
 The OpenHW Group CV32E40P is now live!<br>This repository no longer contains a local copy of the RTL.  The RTL is cloned from the appropriate [core-v-cores](https://github.com/openhwgroup/core-v-cores) repository as needed.  The specific branch and hash of the RTL is controlled by a set of variables in `cv32/sim/Common.mk`.
