@@ -146,7 +146,7 @@ module csr_regfile #(
         // a read access exception can only occur if we attempt to read a CSR which does not exist
         read_access_exception = 1'b0;
         csr_rdata = 64'b0;
-        perf_addr_o = csr_addr.address[4:0];;
+        perf_addr_o = csr_addr.address[4:0];
 
         if (csr_read) begin
             unique case (csr_addr.address)
