@@ -50,6 +50,9 @@ DSIM_DMP_FILE  ?= dsim.fst
 DSIM_DMP_FLAGS ?= -waves $(DSIM_DMP_FILE)
 endif
 
+# TODO: move to either ./Makefile (../Common.mk)
+OVPM_DIR   ?= ../../../vendor_lib/imperas_iss/OVPmodel_encapsulation
+C_OVPMODEL ?= $(OVPM_DIR)/C_OVPmodel/libriscv_sv.Linux64.so
 
 .PHONY: sim
 
@@ -73,11 +76,13 @@ mk_results:
 # DSIM compile target
 #      - TODO: cd $(DSIM_RESULTS) - incompatible with pkg file
 comp: mk_results $(CV32E40P_PKG)
+	make -C $(OVPM_DIR) compileOVPmodel 
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		$(DSIM_ACC_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib $(C_OVPMODEL) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
@@ -133,8 +138,10 @@ hello-world: comp $(CUSTOM)/hello_world.hex
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
+		-sv_lib ../../$(C_OVPMODEL) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
-		+firmware=$(CUSTOM)/hello_world.hex
+		+firmware=$(CUSTOM)/hello_world.hex \
+		+elf_file=$(CUSTOM)/hello_world.elf
 #		+verbose
 
 # Runs tests in riscv_tests/ only
@@ -200,3 +207,5 @@ clean:
 # All generated files plus the clone of the RTL
 clean_all: clean clean_core_tests clean_riscvdv clean_test_programs
 	rm -rf $(CV32E40P_PKG)
+	rm $(OVPM_DIR)/C_OVPmodel/libriscv_sv.*.so
+	rm -rf $(OVPM_DIR)/C_OVPmodel/obj

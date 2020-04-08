@@ -1,0 +1,47 @@
+#
+# Setup for Metrics DSIM
+#
+
+ifeq ($(TESTBENCH),testbench)
+   $(info Setting memory characteristics for TESTBENCH=testbench)
+   DEFPARAM  = -defparam testbench.ROM_START_ADDR=$(ROM_START_ADDR) 
+   DEFPARAM += -defparam testbench.ROM_BYTE_SIZE=$(ROM_BYTE_SIZE) 
+   DEFPARAM += -defparam testbench.RAM_BYTE_SIZE=$(RAM_BYTE_SIZE) 
+   DEFPARAM += -defparam testbench.MIF_FILE=\"$(MIF_FILE)\"
+endif
+
+SV_LIB   = sv_work
+
+VCOMPILE = dsim +acc -work $(SV_LIB) $(SV_FILES) $(SV_DEFS) $(DEFPARAM) -genimage image $(PLUSDEFS)
+
+VELAB    =  
+
+VCFLAGS  = -DDSIM -I$(DSIM_HOME)/include
+
+VRUN     = dsim -work $(SV_LIB) -image image -sv_lib ./C_OVPmodel/libriscv_sv.$(IMPERAS_ARCH).so
+
+VCOVERAGE  =
+
+#
+# Checks
+#
+ifndef DSIM_HOME
+    IMPERAS_ERROR := $(error Error: Please check environment, DSIM_HOME is not set)
+endif
+
+DSIM_VERSION := $(shell which dsim)
+ifndef DSIM_VERSION
+    IMPERAS_ERROR := $(error Error: Please check environment, Metrics DSIM not found SHELL=$(SHELL))
+endif
+
+
+VALIDTARGET=1
+
+#
+# Specific clean targets
+#
+clean::
+	$(V) - rm -rf $(SV_LIB) dsim.env dsim.log
+	$(V) - rm -rf metrics_history.db metrics.db
+	$(V) - rm -rf out
+

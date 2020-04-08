@@ -1,7 +1,10 @@
 *~
+*.nm
 *.elf
 *.hex
 *.map
 *.o
+*.objdump
+*.readelf
 dsim.env
 *.swp

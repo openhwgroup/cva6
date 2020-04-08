@@ -1,0 +1,4 @@
+#
+# Set variable defining the available TARGET settings
+#
+SUPPORTED_TARGETS = QUESTA INCISIVE DSIM VCS
