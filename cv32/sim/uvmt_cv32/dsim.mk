@@ -81,8 +81,6 @@ comp: mk_results $(CV32E40P_PKG)
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		$(DSIM_ACC_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(C_OVPMODEL) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
@@ -142,6 +140,9 @@ hello-world: comp $(CUSTOM)/hello_world.hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello_world.hex \
 		+elf_file=$(CUSTOM)/hello_world.elf
+
+#		+elf_file=$(CUSTOM)/hello_world.elf
+#		+elf_file=/data/mike/GitHubRepos/openhwgroup/core-v-verif/iss_integration/vendor_lib/imperas_iss/OVPmodel_encapsulation/application/C_applications/hello.RISCV32.elf
 #		+verbose
 
 # Runs tests in riscv_tests/ only

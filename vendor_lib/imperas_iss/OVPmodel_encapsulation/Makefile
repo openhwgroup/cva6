@@ -40,7 +40,8 @@ SV_DEFS  += +incdir+verilog_testbench
 SV_DEFS  += +define+COVERAGE
 endif
 
-V?=@
+#V?=@
+V=
 ifeq ($(VERBOSE),1)
     V=
 endif
