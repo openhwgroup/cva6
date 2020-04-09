@@ -41,26 +41,25 @@
 ###############################################################################
 
 ###############################################################################
-# Variables to determine the the command to clone RTL repos.
-# Foreach repo there are three variables:
+# Variables to determine the the command to clone external repositories.
+# For each repo there are a set of variables:
 #      *_REPO:   URL to the repository in GitHub.
 #      *_BRANCH: Name of the branch you wish to clone;
 #                Set to 'master' to pull the master branch.
 #      *_HASH:   Value of the specific hash you wish to clone;
 #                Set to 'head' to pull the head of the branch you want.
+#      *_TAG:    Not yet supported (coming soon).
 #                
 #CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 #CV32E40P_BRANCH ?= master
-#CV32E40P_HASH   ?= tbd
+#CV32E40P_HASH   ?= head
 CV32E40P_REPO   ?= https://github.com/openhwgroup/cv32e40p
 CV32E40P_BRANCH ?= master
-CV32E40P_HASH   ?= 74262e8f1fde682c2db71e6ad7e7ed143b6409a0
-#OLDCV32E40P_HASH   ?= 9cdf35c8c460a933496b84c5b51f88652981fd5d
+CV32E40P_HASH   ?= 62073bb3c8c5073203b16a24df9f6cef8958cba6 
 
 FPNEW_REPO      ?= https://github.com/pulp-platform/fpnew
 FPNEW_BRANCH    ?= master
 FPNEW_HASH      ?= c15c54887b3bc6d0965606c487e9f1bf43237e45
-#OLDFPNEW_HASH      ?= da5fd4f0140c45f652c4a82a193f017484e3c72e
 
 RISCVDV_REPO    ?= https://github.com/google/riscv-dv
 RISCVDV_BRANCH  ?= master
