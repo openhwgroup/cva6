@@ -84,7 +84,7 @@ DSIM_RUN_FLAGS          = -write-sql
 DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
-DSIM_IMAGE               = dsim.out
+DSIM_IMAGE              = dsim.out
 ifneq (${WAVES}, 0)
 	DSIM_CMP_FLAGS = -timescale 1ns/1ps +acc+b
 	DSIM_RUN_FLAGS = -write-xml -waves waves.vcd -wave-scope-specs $(PWD)/dsim-waves-spec
@@ -104,6 +104,7 @@ VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
 VERI_CFLAGS         = -O2
 
+DV_OVPM_ENCAP_PATH  = $(PROJ_ROOT_DIR)/vendor_lib/imperas_iss/OVPmodel_encapsulation
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
@@ -114,7 +115,15 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv \
                $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
+               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/monitor.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/typedefs.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/interface.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/cpu.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_model/intc.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_model/ram.sv  \
+							 $(PROJ_ROOT_DIR)/cv32/tb/uvmt_cv32/uvmt_cv32_iss_wrap.sv
+
 TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
                $(TBSRC_CORE)/mm_ram.sv \
@@ -202,13 +211,18 @@ mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
+# TODO: move to either ./Makefile (../Common.mk)
+OVPM_DIR   ?= ../../../vendor_lib/imperas_iss/OVPmodel_encapsulation
+C_OVPMODEL ?= $(OVPM_DIR)/C_OVPmodel/libriscv_sv.Linux64.so
 # Metrics dsim compile targets
 dsim-comp: mk_results $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
-	cd $(DSIM_RESULTS) && $(DSIM) \
+	make -C $(OVPM_DIR) compileOVPmodel 
+		cd $(DSIM_RESULTS) && $(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-f $(CV32E40P_MANIFEST) \
+		+incdir+$(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel \
 		$(TBSRC_PKG) \
 		$(TBSRC) \
 		-work $(DSIM_WORK) \
@@ -228,12 +242,17 @@ dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
 dsim-sanity: dsim-hello_world
 
 # Runs the hello world test
+#	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
+
+
 dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+firmware=$(CUSTOM)/hello_world.hex
+		-sv_lib ../../$(C_OVPMODEL)  \
+		+firmware=$(CUSTOM)/hello_world.hex \
+		+elf_file=$(CUSTOM)/hello_world.elf
 #		+verbose
 
 # Runs tests in riscv_tests/ only

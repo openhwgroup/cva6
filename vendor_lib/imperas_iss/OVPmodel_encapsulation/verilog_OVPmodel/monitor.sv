@@ -148,7 +148,7 @@ module MONITOR
     endfunction
 
     initial begin
-        nm_load();
+        //nm_load();
         
         nm_get("trap_vector"    , trap_vector);
         nm_get("begin_signature", begin_signature);

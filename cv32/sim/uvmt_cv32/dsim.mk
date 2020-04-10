@@ -124,7 +124,6 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-$(CUSTOM_PROG).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		+UVM_TESTNAME=$(UVM_TESTNAME) \
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 

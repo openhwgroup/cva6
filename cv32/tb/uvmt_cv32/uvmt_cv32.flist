@@ -56,7 +56,7 @@ ${TBSRC_HOME}/tb_riscv/riscv_random_stall.sv
 ${TBSRC_HOME}/tb_riscv/riscv_random_interrupt_generator.sv
 // Vendor Libraries
 +incdir+${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel
-//${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/monitor.sv
+${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/monitor.sv
 ${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/typedefs.sv
 ${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/interface.sv
 ${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/cpu.sv
