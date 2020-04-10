@@ -115,8 +115,8 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv \
                $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv \
-               $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/monitor.sv \
+               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
+OVPTBSRC    := $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/monitor.sv \
                $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/typedefs.sv \
                $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/interface.sv \
                $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/cpu.sv \
@@ -211,20 +211,17 @@ mk_results:
 	$(MKDIR_P) $(DSIM_RESULTS)
 	$(MKDIR_P) $(DSIM_WORK)
 
-# TODO: move to either ./Makefile (../Common.mk)
-OVPM_DIR   ?= ../../../vendor_lib/imperas_iss/OVPmodel_encapsulation
-C_OVPMODEL ?= $(OVPM_DIR)/C_OVPmodel/libriscv_sv.Linux64.so
 # Metrics dsim compile targets
-dsim-comp: mk_results $(CV32E40P_PKG) $(TBSRC_PKG) $(TBSRC)
-	make -C $(OVPM_DIR) compileOVPmodel 
-		cd $(DSIM_RESULTS) && $(DSIM) \
+dsim-comp: mk_results $(CV32E40P_PKG) $(C_OVPMODEL) $(TBSRC_PKG) $(TBSRC)
+		cd $(DSIM_RESULTS) && \
+		$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
-		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
 		-f $(CV32E40P_MANIFEST) \
 		+incdir+$(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel \
 		$(TBSRC_PKG) \
 		$(TBSRC) \
+		$(OVPTBSRC) \
 		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
@@ -250,7 +247,7 @@ dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib ../../$(C_OVPMODEL)  \
+		-sv_lib $(C_OVPMODEL)  \
 		+firmware=$(CUSTOM)/hello_world.hex \
 		+elf_file=$(CUSTOM)/hello_world.elf
 #		+verbose
@@ -521,6 +518,8 @@ clean: clean_questa tc-clean verilate-clean vcs-clean firmware-clean custom-clea
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work
+	rm $(OVPM_DIR)/C_OVPmodel/libriscv_sv.*.so
+	rm -rf $(OVPM_DIR)/C_OVPmodel/obj
 
 clean_all: distclean
 #endend

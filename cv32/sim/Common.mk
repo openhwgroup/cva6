@@ -107,6 +107,14 @@ endif
 # RISCV-DV repo var end
 
 ###############################################################################
+# Imperas Instruction Set Simulator
+OVPM_DIR   ?= $(PROJ_ROOT_DIR)/vendor_lib/imperas_iss/OVPmodel_encapsulation
+C_OVPMODEL ?= $(OVPM_DIR)/C_OVPmodel/libriscv_sv.Linux64.so
+
+$(C_OVPMODEL):
+	make -C $(OVPM_DIR) compileOVPmodel 
+
+###############################################################################
 # Build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"
 # verification environment.  Substantially modified from the original from the
 # Makefile first developed for the PULP-Platform RI5CY testbench.
