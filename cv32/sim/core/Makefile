@@ -258,7 +258,9 @@ dsim-cv32_riscv_tests: dsim-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_f
 	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+firmware=$(ROOT_DIR)/$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
+		-sv_lib $(C_OVPMODEL)  \
+		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex \
+		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
 
 # Runs tests in riscv_compliance_tests/ only
 dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
@@ -266,7 +268,7 @@ dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWA
 	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+firmware=$(ROOT_DIR)/$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
 dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
@@ -274,7 +276,7 @@ dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
 	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+firmware=$(ROOT_DIR)/$(FIRMWARE)/firmware.hex
+		+firmware=$(FIRMWARE)/firmware.hex
 
 # Runs a "unit-test" (see rule dsim-unit-test)
 dsim-firmware-unit-test: dsim-comp
@@ -282,7 +284,7 @@ dsim-firmware-unit-test: dsim-comp
 	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+firmware=$(ROOT_DIR)/$(FIRMWARE)/firmware_unit_test.hex
+		+firmware=$(FIRMWARE)/firmware_unit_test.hex
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
