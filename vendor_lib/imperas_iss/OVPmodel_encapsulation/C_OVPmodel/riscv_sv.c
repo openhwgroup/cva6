@@ -28,6 +28,7 @@
 
 /* DPI imports */
 int cpu_init(const int , const char *, const char *, const char *, const char *, const int );
+int cpu_term(/*const int,  const char * */);
 
 /* DPI exports */
 extern int busWait();
@@ -605,6 +606,18 @@ int cpu_init(int id, const char *args, const char *vendor, const char *variant, 
             return 0;
         }
     }
+    return 0;
+}
+
+/*
+ * Explictly call opSessionTerminate
+ * TODO: do something intelligent with "id"
+ *
+ */
+int cpu_term(int id, const char *caller) {
+    printf("[RISCV_SV INFO]: Explicit termination called by %s\n", caller);
+    //printf("[RISCV_SV INFO]: Explicit termination\n");
+    opSessionTerminate();
     return 0;
 }
 

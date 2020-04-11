@@ -109,10 +109,16 @@ endif
 ###############################################################################
 # Imperas Instruction Set Simulator
 OVPM_DIR   ?= $(PROJ_ROOT_DIR)/vendor_lib/imperas_iss/OVPmodel_encapsulation
-C_OVPMODEL ?= $(OVPM_DIR)/C_OVPmodel/libriscv_sv.Linux64.so
+C_OVP_MODEL ?= $(OVPM_DIR)/C_OVPmodel/libriscv_sv.Linux64.so
 
-$(C_OVPMODEL):
+$(C_OVP_MODEL):
 	make -C $(OVPM_DIR) compileOVPmodel 
+
+c_ovp_model: $(C_OVP_MODEL)
+
+clean_c_ovp_model:
+	rm $(OVPM_DIR)/C_OVPmodel/libriscv_sv.*.so
+	rm -rf $(OVPM_DIR)/C_OVPmodel/obj
 
 ###############################################################################
 # Build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"
@@ -354,7 +360,7 @@ firmware-vsim-run-gui: vsim-run-gui
 .PHONY: dsim-unit-test 
 dsim-unit-test:  firmware-unit-test-clean 
 dsim-unit-test:  $(FIRMWARE)/firmware_unit_test.hex 
-dsim-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex"
+dsim-unit-test: ALL_VSIM_FLAGS += "+firmware=$(FIRMWARE)/firmware_unit_test.hex +elf_file=$(FIRMWARE)/firmware_unit_test.elf"
 dsim-unit-test: dsim-firmware-unit-test
 
 # in vcs

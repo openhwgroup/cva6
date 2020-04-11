@@ -22,6 +22,7 @@
 
 /**
  * Module wrapper for Imperas ISS.
+ * Instanitates "CPU", the ISS wrapper, and "RAM" a spare memory model.
  */
 module uvmt_cv32_iss_wrap
   #(
@@ -33,23 +34,14 @@ module uvmt_cv32_iss_wrap
    )
 
    (
-   // uvma_clknrst_if  clknrst_if
+    // uvma_clknrst_if  clknrst_if
+    input wire clk_i
    ); // module uvmt_cv32_iss_wrap
 
   //import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
 
   BUS  b1();
   RAM  ram(b1);
-  INTC intc(b1);
-//
-  MONITOR
-     #(
-       .ID         (ID),
-       .VARIANT    (VARIANT),
-       .STOPONTRAP (STOPONTRAP)
-      )
-       mon(b1);
-//
   CPU
      #(
        .ID      (ID), 
@@ -59,37 +51,7 @@ module uvmt_cv32_iss_wrap
       )
        cpu(b1);
 
-  reg Clk;
-  assign Clk = b1.Clk;
-    
-  reg [31:0] Addr;
-  assign Addr = b1.Addr;
-
-  reg [31:0] Data;
-  assign Data = b1.Data;
-    
-  reg [2:0] Size;
-  assign Size = b1.Size;
-
-  reg [1:0] Transfer;
-  assign Transfer = b1.Transfer;
-    
-  reg Load, Store, Fetch;
-    
-  always @Transfer begin
-    Load  = (Transfer == 1) ? 1 : 0;
-    Store = (Transfer == 2) ? 1 : 0;
-    Fetch = (Transfer == 3) ? 1 : 0;
-  end
-   
-  //assign b1.Clk = clknrst_if.clk;
-
-  initial begin
-    b1.Clk = 0;
-    forever begin
-      #10 b1.Clk <= ~b1.Clk;
-    end
-  end
+  assign b1.Clk = clk_i;
 
 endmodule : uvmt_cv32_iss_wrap
 

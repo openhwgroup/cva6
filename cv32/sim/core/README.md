@@ -64,7 +64,7 @@ test in the custom directory. Other rules of interest:
 * `make dsim-firmware` to build and run the testbench with all the testcases in the riscv_tests and riscv_compliance_tests directories.
 <br><br>The Makefile now supports running individual assembler tests from either
 the riscv_tests or riscv_compliance_tests directories. For example, to run the ADD IMMEDIATE test from riscv_tests:
-* `make make dsim-unit-test addi`
+* `make dsim-unit-test addi`
 <br>To run I-LBU-01.S from the riscv_compliance_tests:
 * `make dsim-unit-test I_LBU_01`
 <br>You can clean up the mess you made with `make dsim-clean`.
@@ -87,7 +87,7 @@ VSIM_FLAGS="-gui -debugdb"`.
 <br>The Makefile also supports running individual assembler tests from either
 the riscv_tests or riscv_compliance_tests directories using vsim. For example,
 to run the ADD IMMEDIATE test from riscv_tests:
-* `make make questa-unit-test addi`
+* `make questa-unit-test addi`
 <br>To run I-LBU-01.S from the riscv_compliance_tests:
 * `make questa-unit-test I_LBU_01`
 

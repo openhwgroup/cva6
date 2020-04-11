@@ -34,9 +34,11 @@ module CPU
     BUS SysBus
 );
 `ifdef VCS
-    import "DPI-C" context task cpu_init (int,string,string,string,string,int);
+    import "DPI-C" context task cpu_init (int, string, string, string, string, int);
+    import "DPI-C" function int cpu_term (int, string);
 `else
-    import "DPI-C" context task cpu_init(input int, input string, input string, input string, input string, input int);
+    import "DPI-C" context task cpu_init (input int, input string, input string, input string, input string, input int);
+    import "DPI-C" function int cpu_term (input int, input string);
 `endif
 
     export "DPI-C" task     busWrite;
@@ -360,7 +362,10 @@ module CPU
         elf_load();
         cpu_cfg();
         cpu_init(ID, ovpcfg, VENDOR, VARIANT, elf_file, (mode_disass || COMPARE));
-        $finish;
+    end
+
+    final begin
+        void'(cpu_term(ID, "cpu.sv"));
     end
  
 endmodule

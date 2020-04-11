@@ -116,13 +116,11 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/dp_ram.sv \
                $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
                $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
-OVPTBSRC    := $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/monitor.sv \
-               $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/typedefs.sv \
+OVPMSRC     := $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/typedefs.sv \
                $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/interface.sv \
                $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/cpu.sv \
-               $(DV_OVPM_ENCAP_PATH)/verilog_model/intc.sv \
-               $(DV_OVPM_ENCAP_PATH)/verilog_model/ram.sv  \
-							 $(PROJ_ROOT_DIR)/cv32/tb/uvmt_cv32/uvmt_cv32_iss_wrap.sv
+               $(DV_OVPM_ENCAP_PATH)/verilog_model/ram.sv
+ISS_WRAP    := $(PROJ_ROOT_DIR)/cv32/tb/uvmt_cv32/uvmt_cv32_iss_wrap.sv
 
 TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
@@ -136,6 +134,13 @@ CV32E40P_PKG         := $(PROJ_ROOT_DIR)/core-v-cores/cv32e40p
 FPNEW_PKG            := $(CV32E40P_PKG)/rtl/fpnew
 CV32E40P_MANIFEST    := $(CV32E40P_PKG)/cv32e40p_manifest.flist
 export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
+
+# Shorthand rules for convience
+cv32e40p_pkg: $(CV32E40P_PKG)
+
+tbsrc_pkg: $(TBSRC_PKG)
+
+tbsrc: $(TBSRC)
 
 
 ###############################################################################
@@ -212,7 +217,7 @@ mk_results:
 	$(MKDIR_P) $(DSIM_WORK)
 
 # Metrics dsim compile targets
-dsim-comp: mk_results $(CV32E40P_PKG) $(C_OVPMODEL) $(TBSRC_PKG) $(TBSRC)
+dsim-comp: mk_results cv32e40p_pkg c_ovp_model tbsrc_pkg tbsrc $(ISS_WRAP)
 		cd $(DSIM_RESULTS) && \
 		$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
@@ -221,7 +226,8 @@ dsim-comp: mk_results $(CV32E40P_PKG) $(C_OVPMODEL) $(TBSRC_PKG) $(TBSRC)
 		+incdir+$(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel \
 		$(TBSRC_PKG) \
 		$(TBSRC) \
-		$(OVPTBSRC) \
+		$(OVPMSRC) \
+		$(ISS_WRAP) \
 		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
@@ -239,15 +245,12 @@ dsim-comp-rtl-only: mk_results $(CV32E40P_PKG)
 dsim-sanity: dsim-hello_world
 
 # Runs the hello world test
-#	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
-
-
 dsim-hello_world: dsim-comp $(CUSTOM)/hello_world.hex
 	mkdir -p $(DSIM_RESULTS)/hello_world && cd $(DSIM_RESULTS)/hello_world  && \
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(C_OVPMODEL)  \
+		-sv_lib $(C_OVP_MODEL)  \
 		+firmware=$(CUSTOM)/hello_world.hex \
 		+elf_file=$(CUSTOM)/hello_world.elf
 #		+verbose
@@ -258,7 +261,7 @@ dsim-cv32_riscv_tests: dsim-comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_f
 	$(DSIM) -l dsim-riscv_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(C_OVPMODEL)  \
+		-sv_lib $(C_OVP_MODEL)  \
 		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex \
 		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf
 
@@ -268,7 +271,9 @@ dsim-cv32_riscv_compliance_tests: dsim-comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWA
 	$(DSIM) -l dsim-riscv_compliance_tests.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
+		-sv_lib $(C_OVP_MODEL)  \
+		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex \
+		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf
 
 # Runs all tests in riscv_tests/ and riscv_compliance_tests/
 dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
@@ -276,15 +281,19 @@ dsim-firmware: dsim-comp $(FIRMWARE)/firmware.hex
 	$(DSIM) -l dsim-firmware.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+firmware=$(FIRMWARE)/firmware.hex
+		-sv_lib $(C_OVP_MODEL)  \
+		+firmware=$(FIRMWARE)/firmware.hex \
+		+elf_file=$(FIRMWARE)/firmware.elf
 
-# Runs a "unit-test" (see rule dsim-unit-test)
+# Runs a "unit-test" (see rule dsim-unit-test in ../Common.mk)
 dsim-firmware-unit-test: dsim-comp
 	mkdir -p $(DSIM_RESULTS)/firmware && cd $(DSIM_RESULTS)/firmware && \
 	$(DSIM) -l dsim-$(UNIT_TEST).log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		+firmware=$(FIRMWARE)/firmware_unit_test.hex
+		-sv_lib $(C_OVP_MODEL)  \
+		+firmware=$(FIRMWARE)/firmware_unit_test.hex \
+		+elf_file=$(FIRMWARE)/firmware_unit_test.elf
 
 # Metrics dsim cleanup
 .PHONY: dsim-clean
@@ -520,7 +529,7 @@ clean: clean_questa tc-clean verilate-clean vcs-clean firmware-clean custom-clea
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work
-	rm $(OVPM_DIR)/C_OVPmodel/libriscv_sv.*.so
+	rm -f $(OVPM_DIR)/C_OVPmodel/libriscv_sv.*.so
 	rm -rf $(OVPM_DIR)/C_OVPmodel/obj
 
 clean_all: distclean
