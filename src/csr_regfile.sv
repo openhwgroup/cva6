@@ -115,12 +115,14 @@ module csr_regfile #(
     logic [63:0] mideleg_q,   mideleg_d;
     logic [63:0] mip_q,       mip_d;
     logic [63:0] mie_q,       mie_d;
+    logic [63:0] mcounteren_q,mcounteren_d;
     logic [63:0] mscratch_q,  mscratch_d;
     logic [63:0] mepc_q,      mepc_d;
     logic [63:0] mcause_q,    mcause_d;
     logic [63:0] mtval_q,     mtval_d;
 
     logic [63:0] stvec_q,     stvec_d;
+    logic [63:0] scounteren_q,scounteren_d;
     logic [63:0] sscratch_q,  sscratch_d;
     logic [63:0] sepc_q,      sepc_d;
     logic [63:0] scause_q,    scause_d;
@@ -196,7 +198,7 @@ module csr_regfile #(
                 riscv::CSR_SIE:                csr_rdata = mie_q & mideleg_q;
                 riscv::CSR_SIP:                csr_rdata = mip_q & mideleg_q;
                 riscv::CSR_STVEC:              csr_rdata = stvec_q;
-                riscv::CSR_SCOUNTEREN:         csr_rdata = 64'b0; // not implemented
+                riscv::CSR_SCOUNTEREN:         csr_rdata = scounteren_q;
                 riscv::CSR_SSCRATCH:           csr_rdata = sscratch_q;
                 riscv::CSR_SEPC:               csr_rdata = sepc_q;
                 riscv::CSR_SCAUSE:             csr_rdata = scause_q;
@@ -216,7 +218,7 @@ module csr_regfile #(
                 riscv::CSR_MIDELEG:            csr_rdata = mideleg_q;
                 riscv::CSR_MIE:                csr_rdata = mie_q;
                 riscv::CSR_MTVEC:              csr_rdata = mtvec_q;
-                riscv::CSR_MCOUNTEREN:         csr_rdata = 64'b0; // not implemented
+                riscv::CSR_MCOUNTEREN:         csr_rdata = mcounteren_q;
                 riscv::CSR_MSCRATCH:           csr_rdata = mscratch_q;
                 riscv::CSR_MEPC:               csr_rdata = mepc_q;
                 riscv::CSR_MCAUSE:             csr_rdata = mcause_q;
@@ -229,6 +231,8 @@ module csr_regfile #(
                 riscv::CSR_MCYCLE:             csr_rdata = cycle_q;
                 riscv::CSR_MINSTRET:           csr_rdata = instret_q;
                 // Counters and Timers
+                riscv::CSR_CYCLE:              csr_rdata = cycle_q;
+                riscv::CSR_INSTRET:            csr_rdata = instret_q;
                 riscv::CSR_ML1_ICACHE_MISS,
                 riscv::CSR_ML1_DCACHE_MISS,
                 riscv::CSR_MITLB_MISS,
@@ -330,6 +334,7 @@ module csr_regfile #(
         mie_d                   = mie_q;
         mepc_d                  = mepc_q;
         mcause_d                = mcause_q;
+        mcounteren_d            = mcounteren_q;
         mscratch_d              = mscratch_q;
         mtval_d                 = mtval_q;
         dcache_d                = dcache_q;
@@ -338,6 +343,7 @@ module csr_regfile #(
         sepc_d                  = sepc_q;
         scause_d                = scause_q;
         stvec_d                 = stvec_q;
+        scounteren_d            = scounteren_q;
         sscratch_d              = sscratch_q;
         stval_d                 = stval_q;
         satp_d                  = satp_q;
@@ -433,8 +439,8 @@ module csr_regfile #(
                     mip_d = (mip_q & ~mask) | (csr_wdata & mask);
                 end
 
-                riscv::CSR_SCOUNTEREN:;
                 riscv::CSR_STVEC:              stvec_d     = {csr_wdata[63:2], 1'b0, csr_wdata[0]};
+                riscv::CSR_SCOUNTEREN:         scounteren_d = {{32'b0}, csr_wdata[31:0]};
                 riscv::CSR_SSCRATCH:           sscratch_d  = csr_wdata;
                 riscv::CSR_SEPC:               sepc_d      = {csr_wdata[63:1], 1'b0};
                 riscv::CSR_SCAUSE:             scause_d    = csr_wdata;
@@ -498,7 +504,7 @@ module csr_regfile #(
                     // alignment constraint of 64 * 4 bytes
                     if (csr_wdata[0]) mtvec_d = {csr_wdata[63:8], 7'b0, csr_wdata[0]};
                 end
-                riscv::CSR_MCOUNTEREN:;
+                riscv::CSR_MCOUNTEREN:         mcounteren_d = {{32'b0}, csr_wdata[31:0]};
 
                 riscv::CSR_MSCRATCH:           mscratch_d  = csr_wdata;
                 riscv::CSR_MEPC:               mepc_d      = {csr_wdata[63:1], 1'b0};
@@ -841,6 +847,15 @@ module csr_regfile #(
             if (csr_addr_i[11:4] == 8'h7b && !debug_mode_q) begin
                 privilege_violation = 1'b1;
             end
+            // check counter-enabled counter CSR accesses
+            // counter address range is C00 to C1F
+            if (csr_addr_i[11:5] == 7'b1100000) begin
+                unique case (csr_addr.csr_decode.priv_lvl)
+                    riscv::PRIV_LVL_M: privilege_violation = 1'b0;
+                    riscv::PRIV_LVL_S: privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
+                    riscv::PRIV_LVL_U: privilege_violation = ~mcounteren_q[csr_addr_i[4:0]] & ~scounteren_q[csr_addr_i[4:0]];
+                endcase
+            end
         end
     end
     // ----------------------
@@ -991,6 +1006,7 @@ module csr_regfile #(
             mie_q                  <= 64'b0;
             mepc_q                 <= 64'b0;
             mcause_q               <= 64'b0;
+            mcounteren_q           <= 64'b0;
             mscratch_q             <= 64'b0;
             mtval_q                <= 64'b0;
             dcache_q               <= 64'b1;
@@ -999,6 +1015,7 @@ module csr_regfile #(
             sepc_q                 <= 64'b0;
             scause_q               <= 64'b0;
             stvec_q                <= 64'b0;
+            scounteren_q           <= 64'b0;
             sscratch_q             <= 64'b0;
             stval_q                <= 64'b0;
             satp_q                 <= 64'b0;
@@ -1029,6 +1046,7 @@ module csr_regfile #(
             mie_q                  <= mie_d;
             mepc_q                 <= mepc_d;
             mcause_q               <= mcause_d;
+            mcounteren_q           <= mcounteren_d;
             mscratch_q             <= mscratch_d;
             mtval_q                <= mtval_d;
             dcache_q               <= dcache_d;
@@ -1037,6 +1055,7 @@ module csr_regfile #(
             sepc_q                 <= sepc_d;
             scause_q               <= scause_d;
             stvec_q                <= stvec_d;
+            scounteren_q           <= scounteren_d;
             sscratch_q             <= sscratch_d;
             stval_q                <= stval_d;
             satp_q                 <= satp_d;
