@@ -23,10 +23,10 @@ module CPU
     parameter ID      = 0,
 `ifdef DSIM
     parameter string VENDOR  = "riscv.ovpworld.org",
-    parameter string VARIANT = "RV32GC",
+    parameter string VARIANT = "RV32IMC",//"RV32GC",
 `else
     parameter VENDOR  = "riscv.ovpworld.org",
-    parameter VARIANT = "RV32GC",
+    parameter VARIANT = "RV32IMC",//"RV32GC",
 `endif
     parameter COMPARE = 0
 )

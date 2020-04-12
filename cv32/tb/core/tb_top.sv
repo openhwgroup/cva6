@@ -74,25 +74,47 @@ module tb_top
         end
     end
 
-    // clock generation
+`ifdef VERILATOR
+    // When not using the ISS, run the
+    // clock with a 50% duty-cycle.
     initial begin: clock_gen
         forever begin
             #CLK_PHASE_HI clk = 1'b0;
             #CLK_PHASE_LO clk = 1'b1;
         end
     end: clock_gen
+`else
+    // When using the ISS, run riscv_core.clk
+    // only if step_compare.riscv_core_step==1.
+    initial begin
+      forever begin
+         #2ns; // For riscv_core_step to update
+         if (step_compare.riscv_core_step) begin
+            #8ns clk <= !clk;
+            #10ns clk <= !clk; // Keep period at 20ns
+            end
+         else
+           @(step_compare.compare_ev);
+      end
+    end
+ `endif
+   
 
     // reset generation
     initial begin: reset_gen
-        rst_n          = 1'b0;
+        rst_n = 1'b0;
 
         // wait a few cycles
-        repeat (RESET_WAIT_CYCLES) begin
-            @(posedge clk); //TODO: was posedge, see below
-        end
+        //repeat (RESET_WAIT_CYCLES) begin
+        //    @(posedge clk); //TODO: was posedge, see below
+        //end
 
         // start running
-        #RESET_DEL rst_n = 1'b1;
+        //#RESET_DEL rst_n = 1'b1;
+
+        repeat (2) @(negedge clk);
+        rst_n = 1'b1;
+
         if($test$plusargs("verbose"))
             $display("reset deasserted", $time);
 

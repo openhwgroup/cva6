@@ -61,7 +61,7 @@ import compare_pkg::*;
 
 module uvmt_cv32_step_compare
          #(
-           parameter int     ROM_START_ADDR = 0,      // Must set, no sane default
+           parameter int     ROM_START_ADDR = 'h80,//0,      // Must set, no sane default
            parameter int     ROM_BYTE_SIZE  = 4,      // Must be >= 4 for lsu_dp to compile
            parameter int     RAM_BYTE_SIZE  = 4,      // Must be >= 4 for lsu_dp to compile
 `ifdef INCISIVE
@@ -89,8 +89,9 @@ module uvmt_cv32_step_compare
         .COMPARE(1)) 
         iss();
 */
-   bit  Clk = clk_i;
-   bit  riscv_core_step;
+   wire   Clk;
+   assign Clk = clk_i;
+   bit    riscv_core_step;
 
    // Instantiate interface and bind_pc
    pc_if pc_if_i();

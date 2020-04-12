@@ -85,9 +85,12 @@ DSIM_UVM_ARGS           = +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE              = dsim.out
+
 ifneq (${WAVES}, 0)
-	DSIM_CMP_FLAGS = -timescale 1ns/1ps +acc+b
-	DSIM_RUN_FLAGS = -write-xml -waves waves.vcd -wave-scope-specs $(PWD)/dsim-waves-spec
+  DSIM_CMP_FLAGS += +acc+b
+  DSIM_DMP_FILE  ?= dsim.fst
+#  DSIM_RUN_FLAGS += -waves $(DSIM_DMP_FILE) +disass +disass_display
+  DSIM_RUN_FLAGS += -waves $(DSIM_DMP_FILE)
 endif
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)
