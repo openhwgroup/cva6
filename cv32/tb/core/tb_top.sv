@@ -158,7 +158,8 @@ module tb_top
 
 `ifndef VERILATOR
      // wrapper for the Imperas Instruction Set Simulator (ISS)
-     uvmt_cv32_iss_wrap iss_wrap ( .clk_i (clk) );
+     uvmt_cv32_iss_wrap     iss_wrap     ( .clk_i (clk) );
+     uvmt_cv32_step_compare step_compare ( .clk_i (clk) );
 `endif
 
 `ifndef VERILATOR

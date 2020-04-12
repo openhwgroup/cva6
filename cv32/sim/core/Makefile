@@ -119,7 +119,12 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
 OVPMSRC     := $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/typedefs.sv \
                $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/interface.sv \
                $(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel/cpu.sv \
-               $(DV_OVPM_ENCAP_PATH)/verilog_model/ram.sv
+               $(DV_OVPM_ENCAP_PATH)/verilog_model/ram.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_model/params_pkg.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_model/compare_pkg.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_model/pc_if.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_model/bind_pc.sv \
+               $(DV_OVPM_ENCAP_PATH)/verilog_model/step_compare.sv
 ISS_WRAP    := $(PROJ_ROOT_DIR)/cv32/tb/uvmt_cv32/uvmt_cv32_iss_wrap.sv
 
 TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
