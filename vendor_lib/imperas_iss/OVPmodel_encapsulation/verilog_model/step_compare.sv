@@ -100,10 +100,10 @@ module uvmt_cv32_step_compare
    function void check_32bit(input string compared, input bit [31:0] expected, input logic [31:0] actual);
       if (expected !== actual)
         $display("%0t: ERROR: %s expected=0x%8h and actual=0x%8h", $time, compared, expected, actual);
-      `ifdef DEBUG
+      //`ifdef DEBUG
       else
         $display("%0t: SUCCESS: %s expected=0x%8h==actual", $time, compared, actual);
-      `endif    
+      //`endif    
    endfunction // check_32bit
    
    
@@ -136,10 +136,14 @@ module uvmt_cv32_step_compare
       // Ignore insn_regs_write_addr=0 just like in riscv_tracer.sv
       for (idx=0; idx<32; idx++) begin
          compared_str = $sformatf("GPR[%0d]", idx);
-         if ((idx == insn_regs_write_addr) && (idx != 0) && (insn_regs_write_size == 1)) // Use register in insn_regs_write queue if it exists
+         if ((idx == insn_regs_write_addr) && (idx != 0) && (insn_regs_write_size == 1)) begin// Use register in insn_regs_write queue if it exists
+            $display("%m @ %0t: calling check_32bit() using register in insn_regs_write queue", $time);
             check_32bit(.compared(compared_str), .expected(iss_wrap.cpu.GPR[idx][31:0]), .actual(insn_regs_write_value));
-         else // Use actual value from RTL.
+         end
+         else begin // Use actual value from RTL.
+            $display("%m @ %0t: calling check_32bit() using actual value from RTL", $time);
             check_32bit(.compared(compared_str), .expected(iss_wrap.cpu.GPR[idx][31:0]), .actual(riscy_GPR[idx]));
+         end
       end
 
 /*

@@ -69,12 +69,14 @@ module CPU
     bit mode_disass_display = 0;
     
     task busWait;
+        //$display("%m entering busWait @ %0t", $time);
         @(posedge SysBus.Clk);
         if (StepEnable) begin
             while (!Step) begin
                 @(posedge SysBus.Clk);
             end
         end
+        //$display("%m exiting busWait @ %0t", $time);
     endtask
     
     // Called at end of instruction transaction
@@ -152,6 +154,7 @@ module CPU
     endfunction
     
     function automatic void setGPR (input int index, input longint value);
+        $display("[%m] @%0t: setGPR 'd%0d 'h%x\n", $time, index, value);
         GPR[index] = value;
         if (mode_disass == 1) begin
             string ch;
@@ -170,7 +173,7 @@ module CPU
     endfunction
     
     function automatic void setCSR (input string index, input longint value);
-        //$display("[%m] setCSR %16s %x\n", index, value);
+        $display("[%m] setCSR %16s %x\n", index, value);
         CSR[index] = value;
         if (mode_disass == 1) begin
             string ch;
@@ -180,6 +183,7 @@ module CPU
     endfunction
     
     function automatic void setPC (input longint value);
+        //$display("%m (setPC) @ %0t\n", $time);
         PCr = PC;
         PC  = value;
     endfunction
@@ -306,11 +310,11 @@ module CPU
         automatic Uns32 ble = getBLE(address, size);
         
         if (artifact) begin
-            //if (ifetch) $display("AR FETCH %d %08X", size, address);
+            if (ifetch) $display("AR FETCH %d %08X", size, address);
             dmiRead(address, size, data);
 
         end else begin
-            //if (ifetch) $display("RL FETCH %d %08X", size, address);
+            if (ifetch) $display("RL FETCH %d %08X", size, address);
             SysBus.Addr <= address;
             SysBus.Size <= size;
             SysBus.Dbe  <= ble;

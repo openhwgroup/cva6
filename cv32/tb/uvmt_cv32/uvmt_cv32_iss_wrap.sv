@@ -29,7 +29,7 @@ module uvmt_cv32_iss_wrap
     parameter ID         = 0,
               VENDOR     = "riscv.ovpworld.org",
               VARIANT    = "RV32IMC",//"RV32GC",
-              COMPARE    = 0,
+              COMPARE    = 1,
               STOPONTRAP = 1
    )
 

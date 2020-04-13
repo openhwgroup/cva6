@@ -201,6 +201,7 @@ sanity: hello-world
 # rules to generate hex (loadable by simulators) from elf
 %.hex: %.elf
 	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@
+	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
 
 # Running custom programs:
 # We link with our custom crt0.s and syscalls.c against newlib so that we can

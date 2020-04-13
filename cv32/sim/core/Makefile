@@ -89,8 +89,7 @@ DSIM_IMAGE              = dsim.out
 ifneq (${WAVES}, 0)
   DSIM_CMP_FLAGS += +acc+b
   DSIM_DMP_FILE  ?= dsim.fst
-#  DSIM_RUN_FLAGS += -waves $(DSIM_DMP_FILE) +disass +disass_display
-  DSIM_RUN_FLAGS += -waves $(DSIM_DMP_FILE)
+  DSIM_RUN_FLAGS += -waves $(DSIM_DMP_FILE) +disass +disass_display
 endif
 
 # xrun is the Cadence xcelium SystemVerilog simulator (https://cadence.com/)

@@ -591,6 +591,7 @@ int cpu_init(int id, const char *args, const char *vendor, const char *variant, 
 
         // State after Execution
         if (save_state) {
+            //opPrintf("Entered save_state\n");
             cpu_putState(id);
         }
 

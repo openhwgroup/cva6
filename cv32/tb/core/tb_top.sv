@@ -31,8 +31,9 @@ module tb_top
 
 
     // clock and reset for tb
-    logic                   clk   = 'b1;
-    logic                   rst_n = 'b0;
+    logic                   core_clk   = 'b1;
+    logic                   iss_clk    = 'b1;
+    logic                   core_rst_n = 'b0;
 
     // cycle counter
     int unsigned            cycle_cnt_q;
@@ -74,62 +75,37 @@ module tb_top
         end
     end
 
-`ifdef VERILATOR
-    // When not using the ISS, run the
-    // clock with a 50% duty-cycle.
-    initial begin: clock_gen
-        forever begin
-            #CLK_PHASE_HI clk = 1'b0;
-            #CLK_PHASE_LO clk = 1'b1;
-        end
-    end: clock_gen
-`else
-    // When using the ISS, run riscv_core.clk
-    // only if step_compare.riscv_core_step==1.
-    initial begin
-      forever begin
-         #2ns; // For riscv_core_step to update
-         if (step_compare.riscv_core_step) begin
-            #8ns clk <= !clk;
-            #10ns clk <= !clk; // Keep period at 20ns
-            end
-         else
-           @(step_compare.compare_ev);
-      end
-    end
- `endif
-   
 
-    // reset generation
-    initial begin: reset_gen
-        rst_n = 1'b0;
+    // timing format, reset generation and parameter check
+    initial begin
+        $timeformat(-9, 0, "ns", 9);
+        core_rst_n = 1'b0;
 
         // wait a few cycles
         //repeat (RESET_WAIT_CYCLES) begin
-        //    @(posedge clk); //TODO: was posedge, see below
+        //    @(posedge core_clk); //TODO: was posedge, see below
         //end
 
         // start running
         //#RESET_DEL rst_n = 1'b1;
 
-        repeat (2) @(negedge clk);
-        rst_n = 1'b1;
+        repeat (2) @(negedge core_clk);
+        core_rst_n = 1'b1;
 
-        if($test$plusargs("verbose"))
+        if($test$plusargs("verbose")) begin
             $display("reset deasserted", $time);
+        end
 
-    end: reset_gen
-
-    // set timing format
-    initial begin: timing_format
-        $timeformat(-9, 0, "ns", 9);
-    end: timing_format
+        if ( !( (INSTR_RDATA_WIDTH == 128) || (INSTR_RDATA_WIDTH == 32) ) ) begin
+         $fatal(2, "invalid INSTR_RDATA_WIDTH, choose 32 or 128");
+        end
+    end
 
     // abort after n cycles, if we want to
-    always_ff @(posedge clk, negedge rst_n) begin
+    always_ff @(posedge core_clk, negedge core_rst_n) begin
         automatic int maxcycles;
         if($value$plusargs("maxcycles=%d", maxcycles)) begin
-            if (~rst_n) begin
+            if (~core_rst_n) begin
                 cycle_cnt_q <= 0;
             end else begin
                 cycle_cnt_q     <= cycle_cnt_q + 1;
@@ -141,7 +117,7 @@ module tb_top
     end
 
     // check if we succeded
-    always_ff @(posedge clk, negedge rst_n) begin
+    always_ff @(posedge core_clk, negedge core_rst_n) begin
         if (tests_passed) begin
             $display("ALL TESTS PASSED");
             $finish;
@@ -169,8 +145,8 @@ module tb_top
          )
     riscv_wrapper_i
          (
-          .clk_i          ( clk          ),
-          .rst_ni         ( rst_n        ),
+          .clk_i          ( core_clk     ),
+          .rst_ni         ( core_rst_n   ),
           .fetch_enable_i ( fetch_enable ),
           .tests_passed_o ( tests_passed ),
           .tests_failed_o ( tests_failed ),
@@ -180,15 +156,38 @@ module tb_top
 
 `ifndef VERILATOR
      // wrapper for the Imperas Instruction Set Simulator (ISS)
-     uvmt_cv32_iss_wrap     iss_wrap     ( .clk_i (clk) );
-     uvmt_cv32_step_compare step_compare ( .clk_i (clk) );
-`endif
+     uvmt_cv32_iss_wrap     iss_wrap     ( .clk_i (iss_clk) );
+     uvmt_cv32_step_compare step_compare ( .clk_i (iss_clk) );  // Its not clear that step_compare will ever need a clock
 
-`ifndef VERILATOR
+    // When using the ISS, run core_clk
+    // only if step_compare.riscv_core_step==1.
     initial begin
-        assert (INSTR_RDATA_WIDTH == 128 || INSTR_RDATA_WIDTH == 32)
-            else $fatal("invalid INSTR_RDATA_WIDTH, choose 32 or 128");
+      forever begin
+         #2ns; // For riscv_core_step to update
+         if (step_compare.riscv_core_step) begin
+            #8ns  core_clk  = ~core_clk;
+            #10ns core_clk  = ~core_clk; // Keep period at 20ns
+            end
+         else
+           @(step_compare.compare_ev);
+      end
     end
-`endif
 
+    // ISS clock is always free-running
+    initial begin
+      forever begin
+        #10ns iss_clk = ~iss_clk; // Keep period at 20ns
+      end
+    end
+`else
+    // When not using the ISS, run the
+    // clock with a 50% duty-cycle.
+    initial begin: clock_gen
+        forever begin
+            #CLK_PHASE_HI core_clk = 1'b0;
+            #CLK_PHASE_LO core_clk = 1'b1;
+        end
+    end: clock_gen
+`endif // ifndef VERILATOR
+   
 endmodule // tb_top
