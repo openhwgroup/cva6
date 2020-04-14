@@ -23,7 +23,7 @@
 
 DSIM                    = dsim
 DSIM_HOME              ?= /tools/Metrics/dsim
-DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS)
+DSIM_CMP_FLAGS         ?= $(TIMESCALE) $(SV_CMP_FLAGS) -top uvmt_cv32_tb
 DSIM_UVM_ARGS          ?= +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv
 DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
@@ -71,7 +71,7 @@ mk_results:
 
 # DSIM compile target
 #      - TODO: cd $(DSIM_RESULTS) - incompatible with pkg file
-comp: mk_results $(CV32E40P_PKG) $(C_OVPMODEL)
+comp: mk_results $(CV32E40P_PKG) $(C_OVP_MODEL)
 	make -C $(OVPM_DIR) compileOVPmodel 
 	$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
@@ -131,7 +131,7 @@ hello-world: comp $(CUSTOM)/hello_world.hex
 	$(DSIM) -l dsim-hello_world.log -image $(DSIM_IMAGE) \
 		-work $(DSIM_WORK) $(DSIM_RUN_FLAGS) $(DSIM_DMP_FLAGS) \
 		-sv_lib $(UVM_HOME)/src/dpi/libuvm_dpi.so \
-		-sv_lib $(C_OVPMODEL) \
+		-sv_lib $(C_OVP_MODEL) \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello_world.hex \
 		+elf_file=$(CUSTOM)/hello_world.elf
