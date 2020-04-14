@@ -418,7 +418,7 @@ module issue_read_operands #(
             trans_id_q            <= '0;
             pc_o                  <= '0;
             is_compressed_instr_o <= 1'b0;
-            branch_predict_o      <= '{default: 0};
+            branch_predict_o      <= {cf_t'(0), 64'd0};
         end else begin
             operand_a_q           <= operand_a_n;
             operand_b_q           <= operand_b_n;
