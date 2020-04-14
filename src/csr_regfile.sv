@@ -849,7 +849,7 @@ module csr_regfile #(
             end
             // check counter-enabled counter CSR accesses
             // counter address range is C00 to C1F
-            if (csr_addr_i[11:5] == 7'b1100000) begin
+            if (csr_addr_i inside {[riscv::CSR_CYCLE:riscv::CSR_HPM_COUNTER_31]}) begin
                 unique case (csr_addr.csr_decode.priv_lvl)
                     riscv::PRIV_LVL_M: privilege_violation = 1'b0;
                     riscv::PRIV_LVL_S: privilege_violation = ~mcounteren_q[csr_addr_i[4:0]];
