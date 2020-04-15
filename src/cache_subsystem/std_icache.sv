@@ -429,7 +429,7 @@ module std_icache (
             tag_q       <= '0;
             evict_way_q <= '0;
             flushing_q  <= 1'b0;
-            burst_cnt_q <= '0;;
+            burst_cnt_q <= '0;
         end else begin
             state_q     <= state_d;
             cnt_q       <= cnt_d;

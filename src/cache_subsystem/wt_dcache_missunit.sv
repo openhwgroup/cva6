@@ -438,7 +438,7 @@ module wt_dcache_missunit #(
         mem_data_o.rtype          = DCACHE_LOAD_REQ;
         if (mem_data_ack_i) begin
           update_lfsr   = all_ways_valid;// need to evict a random way
-          mshr_allocate = 1'b1;;
+          mshr_allocate = 1'b1;
           state_d       = IDLE;
         end
       end
