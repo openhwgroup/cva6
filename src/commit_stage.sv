@@ -69,9 +69,9 @@ module commit_stage #(
 //     .probe9(1'b0) // input wire [0:0]  probe9
 // );
 
-    // TODO make these parametric with NR_COMMIT_PORTS
-    assign waddr_o[0] = commit_instr_i[0].rd[4:0];
-    assign waddr_o[1] = commit_instr_i[1].rd[4:0];
+    for (genvar i = 0; i < NR_COMMIT_PORTS; i++) begin : gen_waddr
+      assign waddr_o[i] = commit_instr_i[i].rd[4:0];
+    end
 
     assign pc_o       = commit_instr_i[0].pc;
     // Dirty the FP state if we are committing anything related to the FPU
@@ -209,38 +209,40 @@ module commit_stage #(
             end
         end
 
-        // -----------------
-        // Commit Port 2
-        // -----------------
-        // check if the second instruction can be committed as well and the first wasn't a CSR instruction
-        // also if we are in single step mode don't retire the second instruction
-        if (commit_ack_o[0] && commit_instr_i[1].valid
-                            && !halt_i
-                            && !(commit_instr_i[0].fu inside {CSR})
-                            && !flush_dcache_i
-                            && !instr_0_is_amo
-                            && !single_step_i) begin
-            // only if the first instruction didn't throw an exception and this instruction won't throw an exception
-            // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
-            if (!exception_o.valid && !commit_instr_i[1].ex.valid
-                                   && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
+        if (NR_COMMIT_PORTS > 1) begin
+            // -----------------
+            // Commit Port 2
+            // -----------------
+            // check if the second instruction can be committed as well and the first wasn't a CSR instruction
+            // also if we are in single step mode don't retire the second instruction
+            if (commit_ack_o[0] && commit_instr_i[1].valid
+                                && !halt_i
+                                && !(commit_instr_i[0].fu inside {CSR})
+                                && !flush_dcache_i
+                                && !instr_0_is_amo
+                                && !single_step_i) begin
+                // only if the first instruction didn't throw an exception and this instruction won't throw an exception
+                // and the functional unit is of type ALU, LOAD, CTRL_FLOW, MULT, FPU or FPU_VEC
+                if (!exception_o.valid && !commit_instr_i[1].ex.valid
+                                       && (commit_instr_i[1].fu inside {ALU, LOAD, CTRL_FLOW, MULT, FPU, FPU_VEC})) begin
 
-                if (is_rd_fpr(commit_instr_i[1].op))
-                    we_fpr_o[1] = 1'b1;
-                else
-                    we_gpr_o[1] = 1'b1;
-
-                commit_ack_o[1] = 1'b1;
-
-                // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
-                // exception flags
-                if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
-                    if (csr_write_fflags_o)
-                        csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
+                    if (is_rd_fpr(commit_instr_i[1].op))
+                        we_fpr_o[1] = 1'b1;
                     else
-                        csr_wdata_o = {59'b0, commit_instr_i[1].ex.cause[4:0]};
+                        we_gpr_o[1] = 1'b1;
 
-                    csr_write_fflags_o = 1'b1;
+                    commit_ack_o[1] = 1'b1;
+
+                    // additionally check if we are retiring an FPU instruction because we need to make sure that we write all
+                    // exception flags
+                    if (commit_instr_i[1].fu inside {FPU, FPU_VEC}) begin
+                        if (csr_write_fflags_o)
+                            csr_wdata_o = {59'b0, (commit_instr_i[0].ex.cause[4:0] | commit_instr_i[1].ex.cause[4:0])};
+                        else
+                            csr_wdata_o = {59'b0, commit_instr_i[1].ex.cause[4:0]};
+
+                        csr_write_fflags_o = 1'b1;
+                    end
                 end
             end
         end
