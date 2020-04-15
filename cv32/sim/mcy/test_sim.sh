@@ -8,6 +8,7 @@ set -ex
 	while read -r idx mut; do
 		echo "mutate ${mut#* }"
 	done < input.txt
+	echo "opt_rmdff"
 	echo "write_verilog -attr2comment mutated.sv"
 } > mutate.ys
 

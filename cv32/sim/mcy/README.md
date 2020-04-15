@@ -28,3 +28,7 @@ overriding the location of the manifest file. The main impediment is the import
 `include ../Common.mk` which prevents it from being called from a different
 location. The make rule for building the firmware is also fragile as it relies
 on giving the path exactly as it is derived in the make variables.
+- Verilator does not support arbitrary expressions in events yet
+(https://github.com/verilator/verilator/issues/2184), so mutations that affect
+the clock or reset signal lead to compilation errors. As a workaround,
+`opt_rmdff` was added to the mutation script in `test_sim.sh`.
