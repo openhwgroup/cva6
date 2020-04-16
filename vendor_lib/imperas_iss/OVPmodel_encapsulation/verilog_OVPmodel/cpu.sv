@@ -16,6 +16,11 @@
  *
  */
 
+`ifndef __UVMT_CV32_CPUISS_SV__
+`define __UVMT_CV32_CPUISS_SV__
+
+
+import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), etc.)
  
 `include "interface.sv"
 module CPU 
@@ -55,6 +60,41 @@ module CPU
     
     bit [63:0] PC, PCr;
     bit [63:0] GPR[32];
+
+    // these are here for GTKWAVE
+    bit [31:0] GRP00;
+    bit [31:0] GRP01;
+    bit [31:0] GRP02;
+    bit [31:0] GRP03;
+    bit [31:0] GRP04;
+    bit [31:0] GRP05;
+    bit [31:0] GRP06;
+    bit [31:0] GRP07;
+    bit [31:0] GRP08;
+    bit [31:0] GRP09;
+    bit [31:0] GRP10;
+    bit [31:0] GRP11;
+    bit [31:0] GRP12;
+    bit [31:0] GRP13;
+    bit [31:0] GRP14;
+    bit [31:0] GRP15;
+    bit [31:0] GRP16;
+    bit [31:0] GRP17;
+    bit [31:0] GRP18;
+    bit [31:0] GRP19;
+    bit [31:0] GRP20;
+    bit [31:0] GRP21;
+    bit [31:0] GRP22;
+    bit [31:0] GRP23;
+    bit [31:0] GRP24;
+    bit [31:0] GRP25;
+    bit [31:0] GRP26;
+    bit [31:0] GRP27;
+    bit [31:0] GRP28;
+    bit [31:0] GRP29;
+    bit [31:0] GRP30;
+    bit [31:0] GRP31;
+
     bit [63:0] FPR[32];
     // ToDo Vector
     bit [63:0] CSR[string];
@@ -154,13 +194,50 @@ module CPU
     endfunction
     
     function automatic void setGPR (input int index, input longint value);
-        $display("[%m] @%0t: setGPR 'd%0d 'h%x\n", $time, index, value);
+        `uvm_info ("CPU (ISS)", $sformatf("setGPR 'd%0d 'h%x", index, value), UVM_DEBUG)
         GPR[index] = value;
         if (mode_disass == 1) begin
             string ch;
             $sformat(ch, "\n  R GPR[%0d]=0x%X", index, value);
             Change = {Change, ch};
         end
+        case (index)
+           0: GRP00 = value;
+           1: GRP01 = value;
+           2: GRP02 = value;
+           3: GRP03 = value;
+           4: GRP04 = value;
+           5: GRP05 = value;
+           6: GRP06 = value;
+           7: GRP07 = value;
+           8: GRP08 = value;
+           9: GRP09 = value;
+          10: GRP10 = value;
+          11: GRP11 = value;
+          12: GRP12 = value;
+          13: GRP13 = value;
+          14: GRP14 = value;
+          15: GRP15 = value;
+          16: GRP16 = value;
+          17: GRP17 = value;
+          18: GRP18 = value;
+          19: GRP19 = value;
+          20: GRP20 = value;
+          21: GRP21 = value;
+          22: GRP22 = value;
+          23: GRP23 = value;
+          24: GRP24 = value;
+          25: GRP25 = value;
+          26: GRP26 = value;
+          27: GRP27 = value;
+          28: GRP28 = value;
+          29: GRP29 = value;
+          30: GRP30 = value;
+          31: GRP31 = value;
+          default begin
+            `uvm_fatal ("CPU (ISS)", $sformatf("illegal GPR index %0d", index))
+          end
+        endcase
     endfunction
     
     function automatic void setFPR (input int index, input longint value);
@@ -173,7 +250,7 @@ module CPU
     endfunction
     
     function automatic void setCSR (input string index, input longint value);
-        $display("[%m] setCSR %16s %x\n", index, value);
+        `uvm_info ("CPU (ISS)", $sformatf("setCSR %16s %x\n", index, value), UVM_DEBUG)
         CSR[index] = value;
         if (mode_disass == 1) begin
             string ch;
@@ -183,7 +260,7 @@ module CPU
     endfunction
     
     function automatic void setPC (input longint value);
-        //$display("%m (setPC) @ %0t\n", $time);
+        `uvm_info ("CPU (ISS)", $sformatf("setPC %x", value), UVM_DEBUG)
         PCr = PC;
         PC  = value;
     endfunction
@@ -310,11 +387,11 @@ module CPU
         automatic Uns32 ble = getBLE(address, size);
         
         if (artifact) begin
-            if (ifetch) $display("AR FETCH %d %08X", size, address);
+            //if (ifetch) $display("AR FETCH %d %08X", size, address);
             dmiRead(address, size, data);
 
         end else begin
-            if (ifetch) $display("RL FETCH %d %08X", size, address);
+            //if (ifetch) $display("RL FETCH %d %08X", size, address);
             SysBus.Addr <= address;
             SysBus.Size <= size;
             SysBus.Dbe  <= ble;
@@ -373,3 +450,5 @@ module CPU
     end
  
 endmodule
+
+`endif // __UVMT_CV32_CPUISS_SV__

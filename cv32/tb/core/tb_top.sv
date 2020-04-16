@@ -31,9 +31,9 @@ module tb_top
 
 
     // clock and reset for tb
-    logic                   core_clk   = 'b1;
-    logic                   iss_clk    = 'b1;
-    logic                   core_rst_n = 'b0;
+    logic                   core_clk;
+    logic                   iss_clk;
+    logic                   core_rst_n;
 
     // cycle counter
     int unsigned            cycle_cnt_q;
@@ -89,7 +89,7 @@ module tb_top
         // start running
         //#RESET_DEL rst_n = 1'b1;
 
-        repeat (2) @(negedge core_clk);
+        repeat (3) @(negedge core_clk);
         core_rst_n = 1'b1;
 
         if($test$plusargs("verbose")) begin
@@ -162,6 +162,7 @@ module tb_top
     // When using the ISS, run core_clk
     // only if step_compare.riscv_core_step==1.
     initial begin
+      core_clk = 1'b1;
       forever begin
          #2ns; // For riscv_core_step to update
          if (step_compare.riscv_core_step) begin
@@ -169,12 +170,16 @@ module tb_top
             #10ns core_clk  = ~core_clk; // Keep period at 20ns
             end
          else
-           @(step_compare.compare_ev);
+           fork
+             @(step_compare.compare_ev);
+             @(step_compare.advance_clk_ev);
+           join_any
       end
     end
 
     // ISS clock is always free-running
     initial begin
+      iss_clk = 1'b1;
       forever begin
         #10ns iss_clk = ~iss_clk; // Keep period at 20ns
       end

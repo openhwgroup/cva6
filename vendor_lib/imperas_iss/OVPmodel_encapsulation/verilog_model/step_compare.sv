@@ -55,6 +55,8 @@
 
 import params_pkg::*;
 import compare_pkg::*;
+import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), etc.)
+
 
 //`define RTL
 //`define ISS 
@@ -99,11 +101,9 @@ module uvmt_cv32_step_compare
 
    function void check_32bit(input string compared, input bit [31:0] expected, input logic [31:0] actual);
       if (expected !== actual)
-        $display("%0t: ERROR: %s expected=0x%8h and actual=0x%8h", $time, compared, expected, actual);
-      //`ifdef DEBUG
+        `uvm_error ("STEP COMPARE", $sformatf("%s expected=0x%8h and actual=0x%8h", compared, expected, actual))
       else
-        $display("%0t: SUCCESS: %s expected=0x%8h==actual", $time, compared, actual);
-      //`endif    
+        `uvm_info ("STEP COMPARE", $sformatf("SUCCESS: %s expected=0x%8h==actual", compared, actual), UVM_DEBUG)
    endfunction // check_32bit
    
    
@@ -122,13 +122,11 @@ module uvmt_cv32_step_compare
       // Assuming that riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write size is never > 1.  Check this.
       insn_regs_write_size = riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write.size();
       if (insn_regs_write_size > 1)
-        $display("ERROR: Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size);
+        `uvm_error ("STEP COMPARE", $sformatf("Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size))
       else if (insn_regs_write_size == 1) begin // Get riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write fields if size is 1
          insn_regs_write_addr = riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write[0].addr;
          insn_regs_write_value = riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write[0].value;
-         `ifdef DEBUG
-         $display("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value);
-         `endif
+         `uvm_info ("STEP COMPARE", $sformatf("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value), UVM_DEBUG)
       end
       
       riscy_GPR = riscv_wrapper_i.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem;
@@ -137,11 +135,11 @@ module uvmt_cv32_step_compare
       for (idx=0; idx<32; idx++) begin
          compared_str = $sformatf("GPR[%0d]", idx);
          if ((idx == insn_regs_write_addr) && (idx != 0) && (insn_regs_write_size == 1)) begin// Use register in insn_regs_write queue if it exists
-            $display("%m @ %0t: calling check_32bit() using register in insn_regs_write queue", $time);
+            `uvm_info ("STEP COMPARE", $sformatf("calling check_32bit() using register in insn_regs_write queue"), UVM_DEBUG)
             check_32bit(.compared(compared_str), .expected(iss_wrap.cpu.GPR[idx][31:0]), .actual(insn_regs_write_value));
          end
          else begin // Use actual value from RTL.
-            $display("%m @ %0t: calling check_32bit() using actual value from RTL", $time);
+            `uvm_info ("STEP COMPARE", $sformatf("calling check_32bit() using actual value from RTL"), UVM_DEBUG)
             check_32bit(.compared(compared_str), .expected(iss_wrap.cpu.GPR[idx][31:0]), .actual(riscy_GPR[idx]));
          end
       end
@@ -239,6 +237,7 @@ module uvmt_cv32_step_compare
    bit ret_riscv = 0;
    event ev_iss, ev_riscv;
    event compare_ev;
+   event advance_clk_ev;
 
 `ifdef COVERAGE
    coverage cov1;
@@ -301,15 +300,28 @@ module uvmt_cv32_step_compare
     always @(ev_iss or ev_riscv) begin
         if (ret_iss && ret_riscv) begin
            fork
-             iss_wrap.cpu.busWait();
-             #60ns;
-            join_any;
-            compare();
-            ret_iss = 0;
-            ret_riscv = 0;
-            iss_wrap.cpu.Step = 1;
-            riscv_core_step = 1;
-            ->compare_ev;
+             begin: waiting
+               iss_wrap.cpu.busWait();
+               disable delaying;
+               `uvm_info ("STEP COMPARE", "busWait actually returned", UVM_DEBUG)
+             end
+
+             begin: delaying
+               //#60ns;
+               repeat(3) @(posedge Clk);
+               disable waiting;
+               `uvm_info ("STEP COMPARE", "busWait never returned", UVM_DEBUG)
+               ->advance_clk_ev;
+               riscv_core_step = 1;
+               repeat(2) @(posedge Clk);
+             end
+           join_any;
+           compare();
+           ret_iss = 0;
+           ret_riscv = 0;
+           iss_wrap.cpu.Step = 1;
+           riscv_core_step = 1;
+           ->compare_ev;
         end
     end
 
