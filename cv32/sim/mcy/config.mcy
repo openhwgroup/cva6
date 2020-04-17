@@ -1,5 +1,5 @@
 [options]
-size 10
+size 1000
 tags COVERED UNCOVERED NOCHANGE FMGAP
 
 [script]
@@ -35,7 +35,7 @@ else:
 
 [report]
 if tags("FMGAP"):
-    print("Found %d mutations exposing a formal gap!")
+    print("Found %d mutations exposing a formal gap!" % tags("FMGAP"))
 if tags("COVERED")+tags("UNCOVERED"):
     print("Coverage: %.2f%%" % (100.0*tags("COVERED")/(tags("COVERED")+tags("UNCOVERED"))))
 
