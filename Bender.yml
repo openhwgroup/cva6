@@ -127,7 +127,7 @@ sources:
         - fpga/src/ariane_peripherals_xilinx.sv
         - deps/fpga-support/rtl/SyncSpRamBeNx64.sv # <-- to be replaced with tc_sram
         - src/util/sram.sv                         # <-- to be replaced with tc_sram
-        - target: test
+        - target: ariane_test
           files:
           # Level 0
           - bootrom/bootrom.sv
@@ -137,6 +137,8 @@ sources:
           - tb/common/mock_uart.sv
           # Level 1
           - tb/ariane_testharness.sv
+        - target: test
+          files:
           # Level 2
           - tb/ariane_tb.sv
         - target: spike

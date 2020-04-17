@@ -234,7 +234,7 @@ check-benchmarks:
 	ci/check-tests.sh tmp/riscv-benchmarks- $(shell wc -l $(riscv-benchmarks-list) | awk -F " " '{ print $1 }')
 
 # verilator-specific
-verilate_sources := $(shell python3 scripts/parse_bender_verilator.py)
+verilate_sources := $(shell less scripts/verilate_sources.txt)
 
 verilate_command := $(verilator)                                                                                 \
 					$(verilate_sources)                                                                          \
@@ -390,6 +390,7 @@ scripts/compile_vsim.tcl:
 	echo 'set ROOT [file normalize [file dirname [info script]]/..]' > $@
 	bender script vsim \
 		--target="rtl" \
+		--target="ariane_test" \
 		--target="test" \
 		--target="spike" \
 		--vlog-arg="$(compile_flag)" \
@@ -397,6 +398,20 @@ scripts/compile_vsim.tcl:
 		| grep -v "set ROOT" >> $@
 
 .PHONY: scripts/compile_vsim.tcl
+
+# generate the bender verilator sources list
+# `deps/tech_cells_generic/src/rtl/tc_clk.sv` and `deps/axi_mem_if/src/deprecated/axi_mem_if_var_latency.sv`
+# are crashing verilator, are not needed in ariane -> filter out of verilator sources
+scripts/verilate_sources.txt:
+	@echo "[VERILATOR] Generate script: ./scripts/verilate_sources.txt"
+	echo $(mkfile_dir)
+	bender script verilator \
+		--target="ariane_test" \
+		| sed 's:$(mkfile_dir)::g' \
+		| sed -n '/tc_clk.sv/!p' \
+		| sed -n '/axi_mem_if_var_latency.sv/!p' > $@
+
+.PHONY: scripts/verilate_sources.txt
 
 # generate the bender vivado add_sources script
 fpga/scripts/add_sources.tcl:
@@ -415,6 +430,7 @@ scripts/sources.json:
 	@echo $(mkfile_dir)
 	bender sources \
 		--flatten \
+		--target="ariane_test" \
 		--target="test" \
 		--target="spike" \
 		| sed 's:$(mkfile_dir)::g' > $@
@@ -422,7 +438,7 @@ scripts/sources.json:
 .PHONY: scripts/sources.json
 
 # generates the compilation scripts new, use this when there was a change in the source files in `Bender.yml`
-generate-bender: scripts/compile_vsim.tcl fpga/scripts/add_sources.tcl scripts/sources.json
+generate-bender: scripts/compile_vsim.tcl fpga/scripts/add_sources.tcl scripts/sources.json scripts/verilate_sources.txt
 
 update-bender:
 	bender update
