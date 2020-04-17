@@ -109,14 +109,14 @@ module CPU
     bit mode_disass_display = 0;
     
     task busWait;
-        //$display("%m entering busWait @ %0t", $time);
+        `uvm_info("CPU (ISS)", $sformatf("entering busWait"), UVM_HIGH)
         @(posedge SysBus.Clk);
         if (StepEnable) begin
             while (!Step) begin
                 @(posedge SysBus.Clk);
             end
         end
-        //$display("%m exiting busWait @ %0t", $time);
+        `uvm_info("CPU (ISS)", $sformatf("exiting busWait"), UVM_HIGH)
     endtask
     
     // Called at end of instruction transaction
@@ -417,17 +417,19 @@ module CPU
     endtask
 
     function automatic void cpu_cfg();
-        if ($test$plusargs("disass"))
+        //if ($test$plusargs("disass"))
             mode_disass = 1;
-        if ($test$plusargs("disass_display"))
+        //if ($test$plusargs("disass_display"))
             mode_disass_display = 1;
     endfunction
 
     string elf_file;
     function automatic void elf_load();
         if (!($value$plusargs("elf_file=%s", elf_file))) begin
-            $display("FATAL: +elf_file=<elf filename> is required");
-            $fatal;
+          `uvm_fatal("CPU (ISS)", "+elf_file=<elf filename> is required")
+        end
+        else begin
+          `uvm_info("CPU (ISS)", $sformatf("+elf_file=%s", elf_file), UVM_NONE)
         end
     endfunction
     
@@ -435,6 +437,10 @@ module CPU
     function automatic void ovpcfg_load();
         ovpcfg = "";
         if ($value$plusargs("ovpcfg=%s", ovpcfg)) begin
+          `uvm_info("CPU (ISS)", $sformatf("+ovpcfg=%s", ovpcfg), UVM_NONE)
+        end
+        else begin
+          `uvm_info("CPU (ISS)", "No ovpcfg provided", UVM_NONE)
         end
     endfunction
     
@@ -442,6 +448,7 @@ module CPU
         ovpcfg_load();
         elf_load();
         cpu_cfg();
+        `uvm_info("CPU (ISS)", "Calling cpu_init()", UVM_NONE)
         cpu_init(ID, ovpcfg, VENDOR, VARIANT, elf_file, (mode_disass || COMPARE));
     end
 

@@ -62,6 +62,11 @@ ${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/interface.sv
 ${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/cpu.sv
 ${DV_OVPM_ENCAP_PATH}/verilog_model/intc.sv
 ${DV_OVPM_ENCAP_PATH}/verilog_model/ram.sv
+$(DV_OVPM_ENCAP_PATH)/verilog_model/params_pkg.sv
+$(DV_OVPM_ENCAP_PATH)/verilog_model/compare_pkg.sv
+$(DV_OVPM_ENCAP_PATH)/verilog_model/pc_if.sv
+$(DV_OVPM_ENCAP_PATH)/verilog_model/bind_pc.sv
+${DV_OVPM_ENCAP_PATH}/verilog_model/step_compare.sv
 // replaced by uvmt_cv32_iss_wrap
 //${DV_OVPM_ENCAP_PATH}/verilog_testbench/dut.sv
 //${DV_OVPM_ENCAP_PATH}/verilog_testbench/testbench.sv

@@ -99,6 +99,26 @@ module uvmt_cv32_step_compare
    pc_if pc_if_i();
    bind_pc bind_pc_i(pc_if_i);
 
+   initial begin
+     string lstr;
+     lstr = $sformatf("\tROM_START_ADDR = 0x%0x\n", ROM_START_ADDR);
+     lstr = {lstr, $sformatf("\tROM_BYTE_SIZE  = 0x%0x\n", ROM_BYTE_SIZE)};
+     lstr = {lstr, $sformatf("\tRAM_BYTE_SIZE  = 0x%0x\n", RAM_BYTE_SIZE)};
+     lstr = {lstr, $sformatf("\tinit_file      = %0s\n",   init_file)};
+     lstr = {lstr, $sformatf("\tCOMP_CSR       = %0b",     COMP_CSR)};
+     `uvm_info ("STEP COMPARE", $sformatf("Parameters:\n%s", lstr), UVM_NONE)
+
+      iss_wrap.cpu.Step = 1;
+      riscv_core_step = 1;
+      iss_wrap.cpu.StepEnable = 1;
+   end
+    
+   bit ret_iss = 0;
+   bit ret_riscv = 0;
+   event ev_iss, ev_riscv;
+   event compare_ev;
+   event advance_clk_ev;
+
    function void check_32bit(input string compared, input bit [31:0] expected, input logic [31:0] actual);
       if (expected !== actual)
         `uvm_error ("STEP COMPARE", $sformatf("%s expected=0x%8h and actual=0x%8h", compared, expected, actual))
@@ -115,21 +135,23 @@ module uvmt_cv32_step_compare
       int          insn_regs_write_size;
       string       compared_str;
 
+      `uvm_info ("STEP COMPARE", "compare() called", UVM_NONE)
+
       // Compare PC
       compare_pc(.pc_if_i(pc_if_i));
 
       // Compare GPR's
       // Assuming that riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write size is never > 1.  Check this.
-      insn_regs_write_size = riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write.size();
+      insn_regs_write_size = `P2C.riscv_core_i.riscv_tracer_i.insn_regs_write.size();
       if (insn_regs_write_size > 1)
         `uvm_error ("STEP COMPARE", $sformatf("Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size))
       else if (insn_regs_write_size == 1) begin // Get riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write fields if size is 1
-         insn_regs_write_addr = riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write[0].addr;
-         insn_regs_write_value = riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_regs_write[0].value;
+         insn_regs_write_addr = `P2C.riscv_core_i.riscv_tracer_i.insn_regs_write[0].addr;
+         insn_regs_write_value = `P2C.riscv_core_i.riscv_tracer_i.insn_regs_write[0].value;
          `uvm_info ("STEP COMPARE", $sformatf("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value), UVM_DEBUG)
       end
       
-      riscy_GPR = riscv_wrapper_i.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem;
+      riscy_GPR = `P2C.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem;
 
       // Ignore insn_regs_write_addr=0 just like in riscv_tracer.sv
       for (idx=0; idx<32; idx++) begin
@@ -165,45 +187,45 @@ module uvmt_cv32_step_compare
            ignore = 0;
            csr_val = 0;
            case (index)
-             "mstatus": csr_val = {riscv_wrapper_i.riscv_core_i.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.3 of user_manual.doc but is in the design
+             "mstatus": csr_val = {`P2C.riscv_core_i.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.3 of user_manual.doc but is in the design
                                    4'b0,
-                                   riscv_wrapper_i.riscv_core_i.cs_registers_i.mstatus_q.mpp,
+                                   `P2C.riscv_core_i.cs_registers_i.mstatus_q.mpp,
                                    3'b0,
-                                   riscv_wrapper_i.riscv_core_i.cs_registers_i.mstatus_q.mpie,
+                                   `P2C.riscv_core_i.cs_registers_i.mstatus_q.mpie,
                                    2'b0,
-                                   riscv_wrapper_i.riscv_core_i.cs_registers_i.mstatus_q.upie,
-                                   riscv_wrapper_i.riscv_core_i.cs_registers_i.mstatus_q.mie,
+                                   `P2C.riscv_core_i.cs_registers_i.mstatus_q.upie,
+                                   `P2C.riscv_core_i.cs_registers_i.mstatus_q.mie,
                                    2'b0,
-                                   riscv_wrapper_i.riscv_core_i.cs_registers_i.mstatus_q.uie};
-             "misa"    : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.MISA_VALUE;
-             "mie"     : csr_val = {riscv_wrapper_i.riscv_core_i.cs_registers_i.mie_q.irq_external,
+                                   `P2C.riscv_core_i.cs_registers_i.mstatus_q.uie};
+             "misa"    : csr_val = `P2C.riscv_core_i.cs_registers_i.MISA_VALUE;
+             "mie"     : csr_val = {`P2C.riscv_core_i.cs_registers_i.mie_q.irq_external,
                                    3'b0,
-                                   riscv_wrapper_i.riscv_core_i.cs_registers_i.mie_q.irq_timer,
+                                   `P2C.riscv_core_i.cs_registers_i.mie_q.irq_timer,
                                    3'b0,
-                                   riscv_wrapper_i.riscv_core_i.cs_registers_i.mie_q.irq_software,
+                                   `P2C.riscv_core_i.cs_registers_i.mie_q.irq_software,
                                    3'b0};
-             "miex"    : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.miex_q;
-             "mtvec"   : csr_val = {riscv_wrapper_i.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mtvecx"  : csr_val = {riscv_wrapper_i.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mscratch": csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.mscratch_q;
-             "mepc"    : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.mepc_q;
-             "mcause"  : csr_val = {riscv_wrapper_i.riscv_core_i.cs_registers_i.mcause_q[6], 
+             "miex"    : csr_val = `P2C.riscv_core_i.cs_registers_i.miex_q;
+             "mtvec"   : csr_val = {`P2C.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mtvecx"  : csr_val = {`P2C.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mscratch": csr_val = `P2C.riscv_core_i.cs_registers_i.mscratch_q;
+             "mepc"    : csr_val = `P2C.riscv_core_i.cs_registers_i.mepc_q;
+             "mcause"  : csr_val = {`P2C.riscv_core_i.cs_registers_i.mcause_q[6], 
                                     25'b0, 
-                                    riscv_wrapper_i.riscv_core_i.cs_registers_i.mcause_q[5:0]};
-             "mip"     : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.mip;
-             "mipx"    : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.mipx;
+                                    `P2C.riscv_core_i.cs_registers_i.mcause_q[5:0]};
+             "mip"     : csr_val = `P2C.riscv_core_i.cs_registers_i.mip;
+             "mipx"    : csr_val = `P2C.riscv_core_i.cs_registers_i.mipx;
              "mhartid" : csr_val = {21'b0, 
-                                    riscv_wrapper_i.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
+                                    `P2C.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
                                     1'b0, 
-                                    riscv_wrapper_i.riscv_core_i.cs_registers_i.core_id_i[3:0]};
-             "dcsr"      : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.dcsr_q;     
-             "dpc"       : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.depc_q;       
-             "dscratch0" : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.dscratch0_q;
-             "dscratch1" : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.dscratch1_q;
-             "pmpcfg0"   : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
-             "pmpcfg1"   : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
-             "pmpcfg2"   : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
-             "pmpcfg3"   : csr_val = riscv_wrapper_i.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
+                                    `P2C.riscv_core_i.cs_registers_i.core_id_i[3:0]};
+             "dcsr"      : csr_val = `P2C.riscv_core_i.cs_registers_i.dcsr_q;     
+             "dpc"       : csr_val = `P2C.riscv_core_i.cs_registers_i.depc_q;       
+             "dscratch0" : csr_val = `P2C.riscv_core_i.cs_registers_i.dscratch0_q;
+             "dscratch1" : csr_val = `P2C.riscv_core_i.cs_registers_i.dscratch1_q;
+             "pmpcfg0"   : csr_val = `P2C.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
+             "pmpcfg1"   : csr_val = `P2C.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
+             "pmpcfg2"   : csr_val = `P2C.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
+             "pmpcfg3"   : csr_val = `P2C.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
              "time"   : ignore = 1;
              default: begin
                  $display("%0t: ERROR: index=%s does not match a CSR name", $time, index);
@@ -211,33 +233,15 @@ module uvmt_cv32_step_compare
              end
            endcase // case (index)
 
-           if (!ignore)
-              check_32bit(.compared(index), .expected(iss_wrap.cpu.CSR[index]), .actual(csr_val));
+           if (!ignore) begin
+             `uvm_info ("STEP COMPARE", "Comparing CSRs", UVM_NONE)
+             check_32bit(.compared(index), .expected(iss_wrap.cpu.CSR[index]), .actual(csr_val));
+           end
         end // foreach (iss_wrap.cpu.CSR[index])
       end // if (COMP_CSR)
 
        // Compare Vector's ToDo
     endfunction
-
-   initial begin
-      $display("ROM_START_ADDR = 0x%0x", ROM_START_ADDR);
-      $display("ROM_BYTE_SIZE  = 0x%0x", ROM_BYTE_SIZE);
-      $display("RAM_BYTE_SIZE  = 0x%0x", RAM_BYTE_SIZE);
-      $display("init_file      = %0s",   init_file);
-
-      if (COMP_CSR != 1)
-         $display("NOTE! CSRs not compared because COMP_CSR=%0b", COMP_CSR);
-      
-      iss_wrap.cpu.Step = 1;
-      riscv_core_step = 1;
-      iss_wrap.cpu.StepEnable = 1;
-   end
-    
-   bit ret_iss = 0;
-   bit ret_riscv = 0;
-   event ev_iss, ev_riscv;
-   event compare_ev;
-   event advance_clk_ev;
 
 `ifdef COVERAGE
    coverage cov1;
@@ -252,8 +256,7 @@ module uvmt_cv32_step_compare
                 break;
          end
          if (i==0 ) begin
-            $display("ERROR not : found in split '%0s'", in_s);
-            $finish(-1);
+            `uvm_fatal("STEP COMPARE", $sformatf(": not found in split '%0s'", in_s))
          end
          s1 = in_s.substr(0,i-1);
          s2 = in_s.substr(i+1,in_s.len()-1);
@@ -278,6 +281,7 @@ module uvmt_cv32_step_compare
 
 
    always @iss_wrap.cpu.Retire begin
+      `uvm_info ("STEP COMPARE", "ISS Retired", UVM_NONE)
       iss_wrap.cpu.Step = 0;
       ret_iss = 1;
       ->ev_iss;
@@ -291,7 +295,8 @@ module uvmt_cv32_step_compare
    end
 
 // riscv_core
-   always @(riscv_wrapper_i.riscv_core_i.riscv_tracer_i.retire) begin
+   always @(`P2C.riscv_core_i.riscv_tracer_i.retire) begin
+      `uvm_info ("STEP COMPARE", "DUT Retired", UVM_DEBUG)
       riscv_core_step = 0;
       ret_riscv=1;
       ->ev_riscv;

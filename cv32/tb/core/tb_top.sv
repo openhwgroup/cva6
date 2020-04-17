@@ -13,6 +13,8 @@
 // Contributor: Robert Balas <balasr@student.ethz.ch>
 //              Jeremy Bennett <jeremy.bennett@embecosm.com>
 
+`define TB_CORE
+
 module tb_top
     #(parameter INSTR_RDATA_WIDTH = 128,
       parameter RAM_ADDR_WIDTH = 22,

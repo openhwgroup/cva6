@@ -6,5 +6,7 @@
 *.o
 *.objdump
 *.readelf
+*.gtkw
+*.vcd
 dsim.env
 *.swp

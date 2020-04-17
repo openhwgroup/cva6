@@ -19,10 +19,21 @@
  */
 
 `default_nettype none
+
+`ifdef TB_CORE
+  `define TB tb_top
+  `define P2C tb_top.riscv_wrapper_i
+`else
+  // Module name of top level testbench
+  `define TB uvmt_cv32_tb
+  // Hierachical path to the core (riscv_core_i)
+  `define P2C uvmt_cv32_tb.dut_wrap
+`endif
+
 module bind_pc(pc_if pc_if_i);
 
-   assign pc_if_i.insn_pc = tb_top.riscv_wrapper_i.riscv_core_i.riscv_tracer_i.insn_pc;
-   assign pc_if_i.iss_pc  = tb_top.iss_wrap.cpu.PCr;
+   assign pc_if_i.insn_pc = `P2C.riscv_core_i.riscv_tracer_i.insn_pc;
+   assign pc_if_i.iss_pc  = `TB.iss_wrap.cpu.PCr;
                              
 endmodule // bind_pc
 `default_nettype wire
