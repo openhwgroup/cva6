@@ -1,3 +1,23 @@
+//
+// Copyright 2020 OpenHW Group
+// 
+// Licensed under the Solderpad Hardware Licence, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//     https://solderpad.org/licenses/
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// 
+//
+
+`ifndef __UVMT_CV32_CPUISS_SV__
+`define __UVMT_CV32_CPUISS_SV__
+
 /*
  *
  * Copyright (c) 2005-2020 Imperas Software Ltd., www.imperas.com
@@ -15,9 +35,6 @@
  * for the location of the open source models.
  *
  */
-
-`ifndef __UVMT_CV32_CPUISS_SV__
-`define __UVMT_CV32_CPUISS_SV__
 
 
 import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), etc.)
@@ -123,9 +140,9 @@ module CPU
     task setRETIRE;
         if (mode_disass_display == 1) begin
             if (Icount==0) 
-                $display("[%0d] Initial State : %s", ID, Change);
+                `uvm_info ("CPU (ISS)", $sformatf("[%0d] Initial State : %s", ID, Change), UVM_DEBUG)
             else
-                $display("I [%0d] %0d PCr=0x%x %s : %s", ID, Icount, PCr, Decode, Change);
+                `uvm_info ("CPU (ISS)", $sformatf("I [%0d] %0d PCr=0x%x %s : %s", ID, Icount, PCr, Decode, Change), UVM_DEBUG)
             Change = "";
         end
         Icount++;
@@ -201,6 +218,7 @@ module CPU
             $sformat(ch, "\n  R GPR[%0d]=0x%X", index, value);
             Change = {Change, ch};
         end
+        // Added by miket just for waveform viewing with gtkwave
         case (index)
            0: GRP00 = value;
            1: GRP01 = value;
@@ -294,8 +312,7 @@ module CPU
         endcase
 
         if (enable == 0) begin
-            $display("[%m][%0d]Data Misaligned address=0x%x size=%0d", ID, address, size);
-            $fatal;
+            `uvm_fatal("CPU (ISS)", $sformatf("[%m][%0d]Data Misaligned address=0x%x size=%0d", ID, address, size))
         end
         return enable;
     endfunction
@@ -351,9 +368,7 @@ module CPU
             dmiWrite(address, size, data);
 
         end else begin
-        	`ifdef DEBUG
-            $display("%m [%x]<=(%0d)%x Store", address, size, dValue);
-            `endif
+            `uvm_info ("CPU (ISS)", $sformatf("%m [%x]<=(%0d)%x Store", address, size, dValue), UVM_DEBUG)
             SysBus.Addr     <= address;
             SysBus.Size     <= size;
             SysBus.Transfer <= Store;
@@ -407,12 +422,10 @@ module CPU
             data = setData(address, SysBus.Data);
             SysBus.Transfer <= Null;
             
-            `ifdef DEBUG
             if (ifetch) 
-                $display("%m [%x]=>(%0d)%x Fetch", address, size, data);
+                `uvm_info ("CPU (ISS)", $sformatf("%m [%x]=>(%0d)%x Fetch", address, size, data), UVM_DEBUG)
             else
-                $display("%m [%x]=>(%0d)%x Load", address, size, data);
-            `endif
+                `uvm_info ("CPU (ISS)", $sformatf("%m [%x]=>(%0d)%x Load", address, size, data), UVM_DEBUG)
         end
     endtask
 

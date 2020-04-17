@@ -135,7 +135,7 @@ module uvmt_cv32_step_compare
       int          insn_regs_write_size;
       string       compared_str;
 
-      `uvm_info ("STEP COMPARE", "compare() called", UVM_NONE)
+      `uvm_info ("STEP COMPARE", "compare() called", UVM_HIGH)
 
       // Compare PC
       compare_pc(.pc_if_i(pc_if_i));
@@ -153,6 +153,7 @@ module uvmt_cv32_step_compare
       
       riscy_GPR = `P2C.riscv_core_i.id_stage_i.registers_i.riscv_register_file_i.mem;
 
+`ifdef COMPARE_GPRS
       // Ignore insn_regs_write_addr=0 just like in riscv_tracer.sv
       for (idx=0; idx<32; idx++) begin
          compared_str = $sformatf("GPR[%0d]", idx);
@@ -165,6 +166,7 @@ module uvmt_cv32_step_compare
             check_32bit(.compared(compared_str), .expected(iss_wrap.cpu.GPR[idx][31:0]), .actual(riscy_GPR[idx]));
          end
       end
+`endif // COMPARE_GPRS
 
 /*
         // Compare FPR's
@@ -234,7 +236,7 @@ module uvmt_cv32_step_compare
            endcase // case (index)
 
            if (!ignore) begin
-             `uvm_info ("STEP COMPARE", "Comparing CSRs", UVM_NONE)
+             `uvm_info ("STEP COMPARE", "Comparing CSRs", UVM_DEBUG)
              check_32bit(.compared(index), .expected(iss_wrap.cpu.CSR[index]), .actual(csr_val));
            end
         end // foreach (iss_wrap.cpu.CSR[index])
@@ -281,7 +283,7 @@ module uvmt_cv32_step_compare
 
 
    always @iss_wrap.cpu.Retire begin
-      `uvm_info ("STEP COMPARE", "ISS Retired", UVM_NONE)
+      `uvm_info ("STEP COMPARE", "ISS Retired", UVM_DEBUG)
       iss_wrap.cpu.Step = 0;
       ret_iss = 1;
       ->ev_iss;
