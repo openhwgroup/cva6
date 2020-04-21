@@ -135,6 +135,23 @@ export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 #    - Variables for RTL dependencies
 include $(PROJ_ROOT_DIR)/cv32/sim/Common.mk
 
+DIV_ONLY_FIRMWARE = $(CORE_TEST_DIR)/div_only_firmware
+DIV_ONLY_FIRMWARE_OBJS = $(addprefix $(DIV_ONLY_FIRMWARE)/, start.o print.o stats.o)
+DIV_ONLY_TEST_OBJS =$(RISCV_TESTS)/rv32um/div.o $(RISCV_TESTS)/rv32um/divu.o $(RISCV_TESTS)/rv32um/rem.o $(RISCV_TESTS)/rv32um/remu.o
+
+$(DIV_ONLY_FIRMWARE)/div_only_firmware.elf: $(DIV_ONLY_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) $(DIV_ONLY_FIRMWARE)/link.ld
+	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
+	$(RISCV_TEST_INCLUDES) \
+	-Wl,-Bstatic,-T,$(DIV_ONLY_FIRMWARE)/link.ld,-Map,$(DIV_ONLY_FIRMWARE)/div_only_firmware.map,--strip-debug \
+	$(DIV_ONLY_FIRMWARE_OBJS) $(DIV_ONLY_TEST_OBJS) -lgcc
+
+$(DIV_ONLY_FIRMWARE)/start.o: $(DIV_ONLY_FIRMWARE)/start.S
+	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -o $@ $<
+
+$(DIV_ONLY_FIRMWARE)/%.o: $(DIV_ONLY_FIRMWARE)/%.c
+	$(RISCV_EXE_PREFIX)gcc -c -march=rv32ic -g -Os --std=c99 -Wall \
+		$(RISCV_TEST_INCLUDES) \
+		-ffreestanding -nostdlib -o $@ $<
 
 # assume verilator if no target chosen
 .DEFAULT_GOAL := sanity-veri-run
@@ -445,6 +462,19 @@ testbench_verilator: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
 
+testbench_verilator_mut: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
+	$(VERILATOR) --cc --sv --exe \
+		$(VERI_TRACE) \
+		--Wno-lint --Wno-UNOPTFLAT \
+		--Wno-MODDUP --top-module \
+		tb_top_verilator $(TBSRC_VERI) \
+		-f $(CV32E40P_MANIFEST) \
+		$(TBSRC_CORE)/tb_top_verilator_mut.cpp --Mdir $(VERI_OBJ_DIR) \
+		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
+		$(VERI_COMPILE_FLAGS)
+	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
+	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
+
 # run picorv firmware in verilator
 .PHONY: firmware-veri-run
 firmware-veri-run: verilate $(FIRMWARE)/firmware.hex
@@ -461,6 +491,12 @@ hello-world-veri-run: verilate $(CUSTOM)/hello_world.hex
 		"+firmware=$(VERI_CUSTOM)/hello_world.hex" \
 		| tee $(VERI_LOG_DIR)/hello-world-veri-run.log
 
+.PHONY: div-only-veri-run
+div-only-veri-run: verilate $(DIV_ONLY_FIRMWARE)/div_only_firmware.hex
+	mkdir -p $(VERI_LOG_DIR)
+	./testbench_verilator $(VERI_FLAGS) \
+		"+firmware=$(DIV_ONLY_FIRMWARE)/div_only_firmware.hex" \
+		| tee $(VERI_LOG_DIR)/div-only-veri-run.log
 
 # verilator specific cleanup
 veri-clean: verilate-clean

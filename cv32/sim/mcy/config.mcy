@@ -1,6 +1,6 @@
 [options]
-size 1000
-tags COVERED UNCOVERED NOCHANGE FMGAP
+size 100
+tags COVERED UNCOVERED NOCHANGE PROBE FMGAP
 
 [script]
 verific -work fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/fpnew/src/fpnew_pkg.sv
@@ -21,17 +21,19 @@ prep -top riscv_alu_div
 ../../../core-v-cores/cv32e40p/rtl/riscv_alu_div.sv
 
 [logic]
-sim_okay = result("test_sim") == "PASS"
-eq_okay = result("test_eq") == "PASS"
+if result("test_sim") == "FAIL":
+  tag("COVERED")
+  if rng(100) < 20:
+    tag("PROBE")
+    if result("test_eq") == "PASS":
+      tag("FMGAP")
+  return
 
-if sim_okay and not eq_okay:
-    tag("UNCOVERED")
-elif not sim_okay and not eq_okay:
-    tag("COVERED")
-elif sim_okay and eq_okay:
-    tag("NOCHANGE")
-else:
-    tag("FMGAP")
+if result("test_eq") == "FAIL":
+  tag("UNCOVERED")
+  return
+
+tag("NOCHANGE")
 
 [report]
 if tags("FMGAP"):
@@ -40,6 +42,7 @@ if tags("COVERED")+tags("UNCOVERED"):
     print("Coverage: %.2f%%" % (100.0*tags("COVERED")/(tags("COVERED")+tags("UNCOVERED"))))
 
 [test test_sim]
+maxbatchsize 10
 expect PASS FAIL
 run bash $PRJDIR/test_sim.sh
 

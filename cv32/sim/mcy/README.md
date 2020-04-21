@@ -16,18 +16,15 @@ fatal error. This should be fixed, but right now `test_sim` just suppresses the
 return value and checks for the magic number of errors.
 - A timeout facility was added to `test_sim.sh` because mutations can cause
 deadlock (e.g. illegal instruction loop).
-- A large amount of the runtime is currently spent re-compiling the verilator
-testbench with each mutated module. This can be spared by surfacing the `mutsel`
-input as a command line argument to the testbench.
-- The current tagging logic always runs all tests. If unit tests are available,
-it could be cleverer.
+- `test_sim` now runs a modified version of the verilator testbench that can
+test multiple mutations with a single compiled binary using a command line
+argument.
+- `test_sim` will also run a reduced firmware first and only run the full
+firmware if the first test passes.
+- To implement these two changes the makefile diverged further from the core
+Makefile again.
 - A separate MCY project will have to be set up for each module/mutation unit,
 so subdirectories should be introduced.
-- It is almost possible to use the Makefile in `sim/core/` unmodified, by just
-overriding the location of the manifest file. The main impediment is the import
-`include ../Common.mk` which prevents it from being called from a different
-location. The make rule for building the firmware is also fragile as it relies
-on giving the path exactly as it is derived in the make variables.
 - Verilator does not support arbitrary expressions in events yet
 (https://github.com/verilator/verilator/issues/2184), so mutations that affect
 the clock or reset signal lead to compilation errors. As a workaround,

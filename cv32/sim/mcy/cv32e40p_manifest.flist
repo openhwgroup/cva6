@@ -56,4 +56,5 @@ ${DESIGN_RTL_DIR}/riscv_pmp.sv
 ${DESIGN_RTL_DIR}/riscv_apu_disp.sv
 ${DESIGN_RTL_DIR}/riscv_controller.sv
 ${DESIGN_RTL_DIR}/riscv_core.sv
+../../riscv_alu_div_mutated_wrapper.sv
 mutated.sv
