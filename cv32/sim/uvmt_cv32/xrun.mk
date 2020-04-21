@@ -45,6 +45,7 @@ cv32_riscv_tests: cv32-riscv-tests
 cv32_riscv_compliance_tests: cv32-riscv-compliance-tests 
 
 comp: mk_xrun_dir $(CV32E40P_PKG)
+	make -C $(OVPM_DIR) compileOVPmodel
 	$(XRUN) \
 		$(XRUN_FLAGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
@@ -61,7 +62,9 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 hello-world: comp $(CUSTOM)/hello_world.hex
-	$(XRUN) -R -l xrun-hello-world.log \
+	$(XRUN) -64bit -R -l xrun-hello-world.log \
+		-sv_lib $(C_OVP_MODEL) \
+		+elf_file=$(CUSTOM)/hello_world.elf \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello_world.hex
 

@@ -1,0 +1,56 @@
+#
+# Setup for Cadence Incisive
+#
+
+ifeq ($(TESTBENCH),testbench)
+   $(info Setting memory characteristics for TESTBENCH=testbench)
+   DEFPARAM  = -defparam testbench.ROM_START_ADDR=$(ROM_START_ADDR) 
+   DEFPARAM += -defparam testbench.ROM_BYTE_SIZE=$(ROM_BYTE_SIZE) 
+   DEFPARAM += -defparam testbench.RAM_BYTE_SIZE=$(RAM_BYTE_SIZE) 
+   DEFPARAM += -defparam testbench.MIF_FILE="$(MIF_FILE)"
+endif
+
+SV_LIB   = worklib
+
+VCOMPILE = xmvlog -nowarn NONPRT -64BIT -SV $(SV_FILES) $(SV_DEFS)  +define+XCELIUM
+
+ifneq ($COVERAGE),)
+#
+# Additional settings to run coverage
+#
+VELABCOVERAGE = -covdut $(TESTBENCH) -coverage all 
+VRUNCOVERAGE  = -covoverwrite -covtest $(TESTBENCH) -covscope $(TESTBENCH)
+VCOVERAGE     = imc -load cov_work/$(TESTBENCH)/$(TESTBENCH) -execcmd "report -summary"
+endif
+
+VELAB    = xmelab -64BIT $(DEFPARAM) -access +rwc -disable_sem2009 $(TESTBENCH) -dpiheader C_OVPmodel/DPI.h $(VELABCOVERAGE)
+
+VCFLAGS  = -DDPI_COMPATIBILITY_VERSION_1800v2012 -I$(XCELIUM_HOME)/include -DXCELIUM
+
+VRUN     = xmsim $(TESTBENCH) \
+            -sv_lib C_OVPmodel/libriscv_sv.$(IMPERAS_ARCH).so $(VRUNCOVERAGE)
+
+#
+# Checks
+#
+ifndef XCELIUM_HOME
+    IMPERAS_ERROR := $(error Error: Please check environment, XCELIUM_HOME is not set)
+endif
+
+XMSIM_VERSION := $(shell which xmsim)
+ifndef XMSIM_VERSION
+    IMPERAS_ERROR := $(error Error: Please check environment, Cadence XMSIM not found)
+endif
+
+
+VALIDTARGET=1
+
+#
+# Specifc clean targets
+#
+clean::
+	$(V) - rm -rf INCA_libs
+	$(V) - rm -f  C_OVPmodel/DPI.h
+	$(V) - rm -rf .simvision
+	$(V) - rm -rf waves.shm
+	$(V) - rm -rf cov_work imc.key

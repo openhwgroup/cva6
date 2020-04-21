@@ -123,7 +123,7 @@ module MONITOR
             fd_signature = $fopen(sig_file, "w");
     
             while (addr < end_signature.addr) begin
-                $fwrite(fd_signature, "%x\n", ram.mem[addr>>2]);
+                //$fwrite(fd_signature, "%x\n", ram.mem[addr>>2]);
                 addr = addr + 4;
             end
       
