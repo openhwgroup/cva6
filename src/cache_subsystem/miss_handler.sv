@@ -17,6 +17,7 @@
 // --------------
 import ariane_pkg::*;
 import std_cache_pkg::*;
+import std_cache_pkg::DCACHE_NUM_WORDS;
 
 module miss_handler #(
     parameter int unsigned NR_PORTS         = 3
