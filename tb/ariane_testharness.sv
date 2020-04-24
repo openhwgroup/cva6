@@ -529,6 +529,8 @@ module ariane_testharness #(
   // ---------------
   // AXI Xbar
   // ---------------
+  typedef logic [ariane_soc::NrRegion-1:0][ariane_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0] T_start_end_memory_map;
+  
   axi_node_intf_wrap #(
     .NB_SLAVE           ( ariane_soc::NrSlaves       ),
     .NB_MASTER          ( ariane_soc::NB_PERIPHERALS ),
@@ -545,7 +547,7 @@ module ariane_testharness #(
     .test_en_i    ( test_en    ),
     .slave        ( slave      ),
     .master       ( master     ),
-    .start_addr_i ({
+    .start_addr_i (T_start_end_memory_map'({
       ariane_soc::DebugBase,
       ariane_soc::ROMBase,
       ariane_soc::CLINTBase,
@@ -556,8 +558,8 @@ module ariane_testharness #(
       ariane_soc::EthernetBase,
       ariane_soc::GPIOBase,
       ariane_soc::DRAMBase
-    }),
-    .end_addr_i   ({
+    })),
+    .end_addr_i   (T_start_end_memory_map'({
       ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
       ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
       ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
@@ -568,7 +570,7 @@ module ariane_testharness #(
       ariane_soc::EthernetBase + ariane_soc::EthernetLength -1,
       ariane_soc::GPIOBase     + ariane_soc::GPIOLength - 1,
       ariane_soc::DRAMBase     + ariane_soc::DRAMLength - 1
-    }),
+    })),
     .valid_rule_i (ariane_soc::ValidRule)
   );
 
