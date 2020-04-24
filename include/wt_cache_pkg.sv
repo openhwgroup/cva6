@@ -250,7 +250,7 @@ package wt_cache_pkg;
     return out;
   endfunction
 
-  function automatic logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh (
+  function logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] icache_way_bin2oh (
     input logic [$clog2(ariane_pkg::ICACHE_SET_ASSOC)-1:0] in
   );
     logic [ariane_pkg::ICACHE_SET_ASSOC-1:0] out;
@@ -259,7 +259,7 @@ package wt_cache_pkg;
     return out;
   endfunction
 
-  function automatic logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh (
+  function logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] dcache_way_bin2oh (
     input logic [$clog2(ariane_pkg::DCACHE_SET_ASSOC)-1:0] in
   );
     logic [ariane_pkg::DCACHE_SET_ASSOC-1:0] out;
@@ -268,7 +268,7 @@ package wt_cache_pkg;
     return out;
   endfunction
 
-  function automatic logic [DCACHE_NUM_BANKS-1:0] dcache_cl_bin2oh (
+  function logic [DCACHE_NUM_BANKS-1:0] dcache_cl_bin2oh (
     input logic [$clog2(DCACHE_NUM_BANKS)-1:0] in
   );
     logic [DCACHE_NUM_BANKS-1:0] out;
