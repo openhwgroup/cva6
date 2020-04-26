@@ -270,7 +270,7 @@ package riscv;
     // memory management, pte
     typedef struct packed {
         logic [9:0]  reserved;
-        logic [riscv::PLEN-12-1:0] ppn;
+        logic [PLEN-12-1:0] ppn;
         logic [1:0]  rsw;
         logic d;
         logic a;
