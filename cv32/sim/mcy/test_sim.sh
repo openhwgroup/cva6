@@ -15,7 +15,7 @@ set -ex
 
 yosys -ql mutate.log mutate.ys
 
-TEST_DIR=$PWD/../../../../../cv32/tests/core/
+TEST_DIR=$PWD/../../../../../cv32/tests/core
 MAKEFLAGS="CV32E40P_MANIFEST=$PWD/../../cv32e40p_manifest.flist PROJ_ROOT_DIR=$PWD/../../../../.."
 MAKEFILE=../../Makefile
 make -f $MAKEFILE $MAKEFLAGS testbench_verilator_mut
