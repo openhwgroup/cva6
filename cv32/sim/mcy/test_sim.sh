@@ -8,7 +8,7 @@ set -ex
 	while read -r idx mut; do
 		echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
 	done < input.txt
-	echo "opt_rmdff"
+	echo "opt_rmdff" # workaround for verilator not supporting posedge 1'b1
 	echo "rename riscv_alu_div mutated"
 	echo "write_verilog -attr2comment mutated.sv"
 } > mutate.ys

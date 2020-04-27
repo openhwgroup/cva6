@@ -8,6 +8,7 @@ set -ex
 	while read -r idx mut; do
 		echo "mutate -ctrl mutsel 8 ${idx} ${mut#* }"
 	done < input.txt
+	echo "pmuxtree" # workaround for possible source of fmgap
 	echo "write_ilang mutated.il"
 } > mutate.ys
 
