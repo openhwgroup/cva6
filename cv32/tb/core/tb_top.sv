@@ -14,7 +14,7 @@
 //              Jeremy Bennett <jeremy.bennett@embecosm.com>
 
 module tb_top
-    #(parameter INSTR_RDATA_WIDTH = 128,
+    #(parameter INSTR_RDATA_WIDTH = 32,
       parameter RAM_ADDR_WIDTH = 22,
       parameter BOOT_ADDR  = 'h80);
 
@@ -139,19 +139,21 @@ module tb_top
 
     // wrapper for riscv, the memory system and stdout peripheral
     riscv_wrapper
-        #(.INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),
-          .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH),
-          .BOOT_ADDR (BOOT_ADDR),
-          .PULP_SECURE (1))
-
+        #(
+          .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),
+          .RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
+          .BOOT_ADDR         (BOOT_ADDR)
+         )
     riscv_wrapper_i
-        (.clk_i          ( clk          ),
+        (
+         .clk_i          ( clk          ),
          .rst_ni         ( rst_n        ),
          .fetch_enable_i ( fetch_enable ),
          .tests_passed_o ( tests_passed ),
          .tests_failed_o ( tests_failed ),
          .exit_valid_o   ( exit_valid   ),
-         .exit_value_o   ( exit_value   ));
+         .exit_value_o   ( exit_value   )
+        );
 
 `ifndef VERILATOR
     initial begin

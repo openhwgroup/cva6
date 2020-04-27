@@ -51,9 +51,9 @@ module uvmt_cv32_tb;
    * a few mods to bring unused ports from the CORE to this level using SV interfaces.
    */
    uvmt_cv32_dut_wrap  #(
-                         .INSTR_RDATA_WIDTH ( 128),
-                         .RAM_ADDR_WIDTH    (  20),
-                         .PULP_SECURE       (   1)
+                         .INSTR_ADDR_WIDTH  (32),
+                         .INSTR_RDATA_WIDTH (32),
+                         .RAM_ADDR_WIDTH    (20)
                         )
                         dut_wrap (.*);
    

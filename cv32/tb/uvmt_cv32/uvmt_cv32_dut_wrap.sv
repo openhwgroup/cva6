@@ -40,29 +40,13 @@
  */
 module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                             // https://github.com/openhwgroup/core-v-docs/blob/master/cores/cv32e40p/CV32E40P_and%20CV32E40_Features_Parameters.pdf
-                            parameter N_EXT_PERF_COUNTERS =   1, // TODO: this is 0 in riscv_core, which is wrong
-                                      INSTR_RDATA_WIDTH   =  32,
-                                      PULP_SECURE         =   0,
-                                      N_PMP_ENTRIES       =  16,
-                                      USE_PMP             =   1, //if PULP_SECURE is 1, you can still not use the PMP
-                                      PULP_CLUSTER        =   1,
-                                      A_EXTENSION         =   0,
+                            parameter PULP_CLUSTER        =   0, //changed
                                       FPU                 =   0,
-                                      Zfinx               =   0,
-                                      FP_DIVSQRT          =   1,
-                                      SHARED_FP           =   0,
-                                      SHARED_DSP_MULT     =   0,
-                                      SHARED_INT_MULT     =   0,
-                                      SHARED_INT_DIV      =   0,
-                                      SHARED_FP_DIVSQRT   =   0,
-                                      WAPUTYPE            =   0,
-                                      APU_NARGS_CPU       =   3,
-                                      APU_WOP_CPU         =   6,
-                                      APU_NDSFLAGS_CPU    =  15,
-                                      APU_NUSFLAGS_CPU    =   5,
-                                      DM_HaltAddress      =  32'h1A110800,
+                                      PULP_ZFINX          =   0,
+                                      DM_HALTADDRESS      =  32'h1A110800,
                             // Remaining parameters are used by TB components only
                                       INSTR_ADDR_WIDTH    =  32,
+                                      INSTR_RDATA_WIDTH   =  32,
                                       RAM_ADDR_WIDTH      =  20
                            )
 
@@ -127,27 +111,10 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
     // instantiate the core
     riscv_core #(
-                 .N_EXT_PERF_COUNTERS    (N_EXT_PERF_COUNTERS),
-                 .INSTR_RDATA_WIDTH      (INSTR_RDATA_WIDTH),
-                 .PULP_SECURE            (PULP_SECURE),
-                 .N_PMP_ENTRIES          (N_PMP_ENTRIES),
-                 .USE_PMP                (USE_PMP),
-                 .PULP_CLUSTER           (PULP_CLUSTER),
-                 .A_EXTENSION            (A_EXTENSION),
-                 .FPU                    (FPU),
-                 .Zfinx                  (Zfinx),
-                 .FP_DIVSQRT             (FP_DIVSQRT),
-                 .SHARED_FP              (SHARED_FP),
-                 .SHARED_DSP_MULT        (SHARED_DSP_MULT),
-                 .SHARED_INT_MULT        (SHARED_INT_MULT),
-                 .SHARED_INT_DIV         (SHARED_INT_DIV),
-                 .SHARED_FP_DIVSQRT      (SHARED_FP_DIVSQRT),
-                 .WAPUTYPE               (WAPUTYPE),
-                 .APU_NARGS_CPU          (APU_NARGS_CPU),
-                 .APU_WOP_CPU            (APU_WOP_CPU),
-                 .APU_NDSFLAGS_CPU       (APU_NDSFLAGS_CPU),
-                 .APU_NUSFLAGS_CPU       (APU_NUSFLAGS_CPU),
-                 .DM_HaltAddress         (DM_HaltAddress)
+                 .PULP_CLUSTER    (PULP_CLUSTER),
+                 .FPU             (FPU),
+                 .PULP_ZFINX      (PULP_ZFINX),
+                 .DM_HALTADDRESS  (DM_HALTADDRESS)
                 )
     riscv_core_i
         (
@@ -157,24 +124,26 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .clock_en_i             ( core_cntrl_if.clock_en         ),
          .test_en_i              ( core_cntrl_if.test_en          ),
 
+         .fregfile_disable_i     ( core_cntrl_if.fregfile_disable ),
+
          .boot_addr_i            ( core_cntrl_if.boot_addr        ),
          .core_id_i              ( core_cntrl_if.core_id          ),
          .cluster_id_i           ( core_cntrl_if.cluster_id       ),
 
-         .instr_addr_o           ( instr_addr                     ),
          .instr_req_o            ( instr_req                      ),
-         .instr_rdata_i          ( instr_rdata                    ),
          .instr_gnt_i            ( instr_gnt                      ),
          .instr_rvalid_i         ( instr_rvalid                   ),
+         .instr_addr_o           ( instr_addr                     ),
+         .instr_rdata_i          ( instr_rdata                    ),
 
-         .data_addr_o            ( data_addr                      ),
-         .data_wdata_o           ( data_wdata                     ),
-         .data_we_o              ( data_we                        ),
          .data_req_o             ( data_req                       ),
-         .data_be_o              ( data_be                        ),
-         .data_rdata_i           ( data_rdata                     ),
          .data_gnt_i             ( data_gnt                       ),
          .data_rvalid_i          ( data_rvalid                    ),
+         .data_we_o              ( data_we                        ),
+         .data_be_o              ( data_be                        ),
+         .data_addr_o            ( data_addr                      ),
+         .data_wdata_o           ( data_wdata                     ),
+         .data_rdata_i           ( data_rdata                     ),
 
          .apu_master_req_o       (                                ),
          .apu_master_ready_o     (                                ),
@@ -192,9 +161,9 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          //       and pass to ENV for an INTERRUPT AGENT to drive/monitor.
          //.irq_i                  ( irq                            ),
          //.irq_id_i               ( irq_id_in                      ),
+         //.irq_sec_i              ( (core_interrupts_if.irq_sec||irq) ),
          .irq_ack_o              ( irq_ack                           ),
          .irq_id_o               ( irq_id_out                        ),
-         .irq_sec_i              ( (core_interrupts_if.irq_sec||irq) ),
          .irq_software_i         ( core_interrupts_if.irq_software   ),
          .irq_timer_i            ( core_interrupts_if.irq_timer      ),
          .irq_external_i         ( core_interrupts_if.irq_external   ),
@@ -202,15 +171,10 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .irq_nmi_i              ( core_interrupts_if.irq_nmi        ),
          .irq_fastx_i            ( core_interrupts_if.irq_fastx      ),
 
-         .sec_lvl_o              ( core_status_if.sec_lvl            ),
-
          .debug_req_i            ( core_cntrl_if.debug_req           ),
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en            ),
-         .core_busy_o            ( core_status_if.core_busy          ),
-
-         .ext_perf_counters_i    ( core_cntrl_if.ext_perf_counters   ),
-         .fregfile_disable_i     ( core_cntrl_if.fregfile_disable    )
+         .core_busy_o            ( core_status_if.core_busy          )
         ); //riscv_core_i
 
     // this handles read to RAM and memory mapped virtual (pseudo) peripherals
