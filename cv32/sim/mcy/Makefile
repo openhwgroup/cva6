@@ -469,8 +469,8 @@ testbench_verilator_mut: $(CV32E40P_PKG) $(TBSRC_VERI) $(TBSRC_PKG)
 		--Wno-MODDUP --top-module \
 		tb_top_verilator $(TBSRC_VERI) \
 		-f $(CV32E40P_MANIFEST) \
-		$(TBSRC_CORE)/tb_top_verilator_mut.cpp --Mdir $(VERI_OBJ_DIR) \
-		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" \
+		$(TBSRC_CORE)/tb_top_verilator.cpp --Mdir $(VERI_OBJ_DIR) \
+		-CFLAGS "-std=gnu++11 -DMCY $(VERI_CFLAGS)" \
 		$(VERI_COMPILE_FLAGS)
 	$(MAKE) -C $(VERI_OBJ_DIR) -f Vtb_top_verilator.mk
 	cp $(VERI_OBJ_DIR)/Vtb_top_verilator testbench_verilator
