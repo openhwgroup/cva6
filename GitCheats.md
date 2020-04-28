@@ -3,6 +3,8 @@ A few examples to illustrate use of `git` on the command-line.<br><br>
 PLEASE READ CAREFULLY the [CONTRIBUTING.md](https://github.com/openhwgroup/core-v-verif/blob/master/CONTRIBUTING.md)
 file in this directory.  You MUST follow the specified flow to contribute to this repository.
 
+If you have a suggestion to improve this document please either submit a pull-request, open an issue or email mike@openhwgroup.org.
+
 ## Useful Conventions:
 1. Place all your working copies in easy-to-find directories.  A suggested
 nominclature is:<br>
@@ -82,11 +84,4 @@ $ git checkout master<br>
 $ git merge upstream/master<br>
 $ git push --set-upstream origin master<br>
 
-## Merging from a branch onto the master (not confident in this yet)
-$ git fetch origin<br>
-$ git checkout -b mike_20191202 origin/mike_20191202<br>
-$ git merge master<br>
-$ git checkout master<br>
-$ git merge --no-ff mike_20191202 <br>
-$ git push origin master<br>
 
