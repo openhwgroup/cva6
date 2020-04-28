@@ -62,11 +62,7 @@ module uvmt_cv32_tb;
    * TODO: finalize the parameters passed in.
    */
    uvmt_cv32_iss_wrap  #(
-                         .ID           (0),
-                         .VENDOR       ("riscv.ovpworld.org"),
-                         .VARIANT      ("RV32GC"),
-                         .COMPARE      (1),
-                         .STOPONTRAP   (1)
+                         .ID (0)
                         )
                         iss_wrap ( .clk_i (clknrst_if.clk) );
 
@@ -74,7 +70,7 @@ module uvmt_cv32_tb;
    * Step-and-Compare logic 
    * TODO: determine whether step_compare will ever need a clock
    */
-   uvmt_cv32_step_compare step_compare ( .clk_i (clknrst_if.clk) );
+   //uvmt_cv32_step_compare step_compare ( .clk_i (clknrst_if.clk) );
    
    
    /**

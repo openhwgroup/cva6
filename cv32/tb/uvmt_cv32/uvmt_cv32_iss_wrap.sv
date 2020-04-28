@@ -26,30 +26,30 @@
  */
 module uvmt_cv32_iss_wrap
   #(
-    parameter ID         = 0,
-              VENDOR     = "riscv.ovpworld.org",
-              VARIANT    = "RV32IMC",//"RV32GC",
-              COMPARE    = 1,
-              STOPONTRAP = 1
+    //parameter int ROM_START_ADDR = 'h8000,
+    //parameter int ROM_BYTE_SIZE  = 'h20000,
+    //parameter int RAM_BYTE_SIZE  = 'h20000,
+    parameter int ROM_START_ADDR = 'h00000000,
+    parameter int ROM_BYTE_SIZE  = 'h0,
+    parameter int RAM_BYTE_SIZE  = 'h400000,
+    parameter int ID = 0
    )
 
    (
-    // uvma_clknrst_if  clknrst_if
     input wire clk_i
-   ); // module uvmt_cv32_iss_wrap
+   );
 
   //import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
 
-  BUS  b1();
-  RAM  ram(b1);
-  CPU
-     #(
-       .ID      (ID), 
-       .VENDOR  (VENDOR), 
-       .VARIANT (VARIANT),
-       .COMPARE (COMPARE)
-      )
-       cpu(b1);
+    BUS         b1();
+    
+    MONITOR     mon(b1);
+    RAM         #(
+                .ROM_START_ADDR(ROM_START_ADDR),
+                .ROM_BYTE_SIZE(ROM_BYTE_SIZE),
+                .RAM_BYTE_SIZE(RAM_BYTE_SIZE)) ram(b1);
+   
+    CPU #(.ID(ID)) cpu(b1);
 
   assign b1.Clk = clk_i;
 

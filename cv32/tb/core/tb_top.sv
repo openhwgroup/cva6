@@ -157,27 +157,27 @@ module tb_top
          );
 
 `ifndef VERILATOR
+
      // wrapper for the Imperas Instruction Set Simulator (ISS)
      uvmt_cv32_iss_wrap     iss_wrap     ( .clk_i (iss_clk) );
-     uvmt_cv32_step_compare step_compare ( .clk_i (iss_clk) );  // Its not clear that step_compare will ever need a clock
 
-    // When using the ISS, run core_clk
-    // only if step_compare.riscv_core_step==1.
-    initial begin
-      core_clk = 1'b1;
-      forever begin
-         #2ns; // For riscv_core_step to update
-         if (step_compare.riscv_core_step) begin
-            #8ns  core_clk  = ~core_clk;
-            #10ns core_clk  = ~core_clk; // Keep period at 20ns
-            end
-         else
-           fork
-             @(step_compare.compare_ev);
-             @(step_compare.advance_clk_ev);
-           join_any
-      end
-    end
+//    // When using the ISS, run core_clk
+//    // only if step_compare.riscv_core_step==1.
+//    initial begin
+//      core_clk = 1'b1;
+//      forever begin
+//         #2ns; // For riscv_core_step to update
+//         if (step_compare.riscv_core_step) begin
+//            #8ns  core_clk  = ~core_clk;
+//            #10ns core_clk  = ~core_clk; // Keep period at 20ns
+//            end
+//         else
+//           fork
+//             @(step_compare.compare_ev);
+//             @(step_compare.advance_clk_ev);
+//           join_any
+//      end
+//    end
 
     // ISS clock is always free-running
     initial begin
@@ -186,6 +186,7 @@ module tb_top
         #10ns iss_clk = ~iss_clk; // Keep period at 20ns
       end
     end
+    
 `else
     // When not using the ISS, run the
     // clock with a 50% duty-cycle.
