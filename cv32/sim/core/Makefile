@@ -102,7 +102,7 @@ VERI_COMPILE_FLAGS += -Wno-BLKANDNBLK $(SV_CMP_FLAGS) # hope this doesn't hurt u
 VERI_TRACE          =
 VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
-VERI_CFLAGS         = -O2
+VERI_CFLAGS        += -O2
 
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
@@ -133,7 +133,7 @@ export DESIGN_RTL_DIR = $(CV32E40P_PKG)/rtl
 # Common Makefile:
 #    - Core Firmware and the RISCV GCC Toolchain (SDK)
 #    - Variables for RTL dependencies
-include ../Common.mk
+include $(PROJ_ROOT_DIR)/cv32/sim/Common.mk
 
 
 # assume verilator if no target chosen
