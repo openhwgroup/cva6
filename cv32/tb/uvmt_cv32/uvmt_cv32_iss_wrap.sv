@@ -36,11 +36,12 @@ module uvmt_cv32_iss_wrap
    )
 
    (
-    input realtime  clk_period,
-    uvma_clknrst_if              clknrst_if,
-    input bit           Step,
-    input bit           Stepping,
-    output logic [31:0] PCr
+    input realtime      clk_period,
+    uvma_clknrst_if clknrst_if,
+    uvmt_cv32_step_compare_if step_compare_if
+//    input bit           Step,
+//    input bit           Stepping,
+//    output logic [31:0] PCr
    );
 
     BUS         b1();
@@ -54,10 +55,13 @@ module uvmt_cv32_iss_wrap
     CPU #(.ID(ID)) cpu(b1);
 
    assign b1.Clk = clknrst_if.clk;
-   assign PCr = cpu.PCr;
-   always @(Step) b1.Step = Step;
-   assign b1.Stepping = Stepping;
+   assign step_compare_if.ovp_cpu_PCr = cpu.PCr;
+   always @(step_compare_if.ovp_b1_Step) b1.Step = step_compare_if.ovp_b1_Step;
+   assign b1.Stepping = step_compare_if.ovp_b1_Stepping;
 
+   always @(step_compare_if.ovp_cpu_busWait) cpu.busWait();
+   always @(cpu.Retire) -> step_compare_if.ovp_cpu_retire;
+   
    initial begin
       #1;  // time for clknrst_if_dut to set the clk_period
       clknrst_if.set_period(clk_period);

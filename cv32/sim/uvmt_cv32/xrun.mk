@@ -25,6 +25,8 @@ XRUN              = xrun
 XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
 XRUN_FLAGS       ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_DIR         ?= xcelium.d
+XRUN_GUI         ?=
+XRUN_UVM_VERBOSITY ?= UVM_LOW
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
@@ -63,6 +65,7 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 hello-world: comp $(CUSTOM)/hello_world.hex
 	$(XRUN) -64bit -R -l xrun-hello-world.log \
+                $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+elf_file=$(CUSTOM)/hello_world.elf \
 		+nm_file=$(CUSTOM)/hello_world.nm \

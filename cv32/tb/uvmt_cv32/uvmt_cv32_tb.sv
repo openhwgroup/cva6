@@ -57,8 +57,7 @@ module uvmt_cv32_tb;
    */
    uvmt_cv32_dut_wrap  #(
                          .INSTR_RDATA_WIDTH ( 128),
-                         .RAM_ADDR_WIDTH    (  20),
-                         .PULP_SECURE       (   1)
+                         .RAM_ADDR_WIDTH    (  20)
                         )
                         dut_wrap (.*);
    
@@ -70,11 +69,9 @@ module uvmt_cv32_tb;
                          .ID (0)
                         )
                         iss_wrap ( .clk_period(clknrst_if.clk_period),
-                                   .clknrst_if (clknrst_if_iss),
-                                   .Step(step_compare_if.ovp_b1_Step),   
-                                   .Stepping(step_compare_if.ovp_b1_Stepping),
-                                   .PCr (step_compare_if.ovp_cpu_PCr)
-                         );
+                                   .clknrst_if(clknrst_if_iss),
+                                   .step_compare_if(step_compare_if)
+                          );
 
   /**
    * Step-and-Compare logic 
@@ -82,9 +79,7 @@ module uvmt_cv32_tb;
    uvmt_cv32_step_compare step_compare (.clknrst_if(clknrst_if),
                                         .step_compare_if(step_compare_if) );
 
-   always @(step_compare_if.ovp_cpu_busWait) iss_wrap.cpu.busWait();
    always @(dut_wrap.riscv_core_i.riscv_tracer_i.retire) -> step_compare_if.riscv_retire;
-   always @(iss_wrap.cpu.Retire) -> step_compare_if.ovp_cpu_retire;
    assign step_compare_if.insn_pc = dut_wrap.riscv_core_i.riscv_tracer_i.insn_pc;
    
    /**
