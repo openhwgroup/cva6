@@ -47,6 +47,8 @@ module mm_ram
 
      input logic [31:0]                   pc_core_id_i,
 
+     output logic                         debug_req_o,
+   
      output logic                         tests_passed_o,
      output logic                         tests_failed_o,
      output logic                         exit_valid_o,
@@ -111,6 +113,10 @@ module mm_ram
     logic                          timer_val_valid;
     logic [31:0]                   timer_wdata;
 
+    // debugger control signals
+    logic [31:0]                   debugger_wdata;
+    logic                          debugger_valid;
+ 
     // signals to rnd_stall
     logic [31:0]                   rnd_stall_regs [0:RND_STALL_REGS-1];
 
@@ -138,8 +144,8 @@ module mm_ram
 
     //random or monitor interrupt request
     logic rnd_irq;
-
-    // uhh, align?
+   
+   // uhh, align?
     always_comb data_addr_aligned = {data_addr_i[31:2], 2'b0};
 
     // handle the mapping of read and writes to either memory or pseudo
@@ -159,6 +165,8 @@ module mm_ram
         timer_wdata         = '0;
         timer_reg_valid     = '0;
         timer_val_valid     = '0;
+        debugger_wdata      = '0;
+        debugger_valid      = '0;
         sig_end_d           = sig_end_q;
         sig_begin_d         = sig_begin_q;
         rnd_stall_req       = '0;
@@ -249,6 +257,10 @@ module mm_ram
                     timer_wdata = data_wdata_i;
                     timer_val_valid = '1;
 
+                end else if (data_addr_i == 32'h1500_0008) begin
+                    debugger_wdata = data_wdata_i;
+                    debugger_valid = '1;
+
                 end else if (data_addr_i[31:16] == 16'h1600) begin
                     rnd_stall_req   = data_req_i;
                     rnd_stall_wdata = data_wdata_i;
@@ -290,6 +302,7 @@ module mm_ram
       || data_addr_i == 32'h1000_0000
       || data_addr_i == 32'h1500_0000
       || data_addr_i == 32'h1500_0004
+      || data_addr_i == 32'h1500_0008
       || data_addr_i == 32'h2000_0000
       || data_addr_i == 32'h2000_0004
       || data_addr_i == 32'h2000_0008
@@ -375,7 +388,7 @@ module mm_ram
 
                 if(timer_cnt_q == 1)
                     irq_q <= 1'b1 && timer_irq_mask_q[TIMER_IRQ_ID];
-
+                   
                 if(irq_ack_i == 1'b1 && irq_id_i == TIMER_IRQ_ID)
                     irq_q <= '0;
 
@@ -383,6 +396,74 @@ module mm_ram
         end
     end
 
+   // -------------------------------------------------------------
+   // Control debug_req. Writing to this alias will change or create 
+   // a debug_req pulse. The debug_req can be a pulse or level change,
+   // can have a delay when to assert, and also have pulse duration
+   // determined by the values in the wdata field:
+   //
+   // wdata[31]    = debug_req signal value
+   // wdata[30]    = debug request mode, 0= level, 1= pulse
+   // wdata[29]    = debug pulse duration random
+   // wdata[28:16] = debug pulse duration or pulse random max range
+   // wdata[15]    = random start
+   // wdata[14:0]  = start delay or start random max range
+
+   logic [14:0] debugger_start_cnt_q;
+   logic        debug_req_value_q;
+   logic [12:0] debug_req_duration_q;
+    always_ff @(posedge clk_i, negedge rst_ni) begin: tb_debugger
+        if(~rst_ni) begin
+           debugger_start_cnt_q <= '0;
+           debug_req_value_q    <= '0;
+           debug_req_duration_q <= '0;
+        end else begin
+
+            if(debugger_valid && (debugger_start_cnt_q==0) && (debug_req_duration_q==0)) begin
+               if(debugger_wdata[15]) //If random start
+                 // then set max random delay range to wdata[14:0]
+                 // note, if wdata[14:0] == 0, then assign max random range to 128
+                 debugger_start_cnt_q <= $urandom_range(1,~|debugger_wdata[14:0] ? 128 : debugger_wdata[14:0]);
+               else
+                 // else, the delay is determined by wdata[14:0]
+                 //  note, if wdata[14:0] == 0, then assign value to 1
+                 debugger_start_cnt_q <= ~|debugger_wdata[14:0] ? 1 : debugger_wdata[14:0];
+
+               debug_req_value_q <= debugger_wdata[31]; // value to be applied to debug_req
+               
+               if(!debugger_wdata[30]) // If mode is level then set duration to 0
+                 debug_req_duration_q <= 'b0;
+               else // Else mode is pulse
+                 if(debugger_wdata[29]) // If random pulse width
+                   // then set max random pulse width to wdata[28:16]
+                   //  note, if wdata[28:16] ==0, then assign max to 128
+                   debug_req_duration_q <= $urandom_range(1,~|debugger_wdata[28:16] ? 128 : debugger_wdata[28:16]);
+                 else
+                   // else, the pulse is determined by wdata[28:16]
+                   //  note, if wdata[28:16]==0, then set pulse width to 1
+                   debug_req_duration_q <= ~|debugger_wdata[28:16] ? 1 : debugger_wdata[28:16];
+                 
+            end else begin
+                // Count down the delay to start
+                if(debugger_start_cnt_q > 0)begin
+                    debugger_start_cnt_q <= debugger_start_cnt_q - 1;
+                   // At count == 1, then assert the debug_req
+                   if(debugger_start_cnt_q == 1) 
+                     debug_req_o = debug_req_value_q;
+                end
+                // Count down debug_req pulse duration
+                else if(debug_req_duration_q > 0)begin
+                   debug_req_duration_q <= debug_req_duration_q - 1;
+                   // At count == 1, then de-assert debug_req
+                   if(debug_req_duration_q == 1) 
+                     debug_req_o = !debug_req_value_q;
+                end
+               
+            end
+        end
+    end
+   
+    // -------------------------------------------------------------
     // show writes if requested
     always_ff @(posedge clk_i, negedge rst_ni) begin: verbose_writes
         if ($test$plusargs("verbose") && data_req_i && data_we_i)

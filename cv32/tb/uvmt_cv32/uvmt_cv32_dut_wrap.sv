@@ -43,7 +43,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
                             parameter PULP_CLUSTER        =   0, //changed
                                       FPU                 =   0,
                                       PULP_ZFINX          =   0,
-                                      DM_HALTADDRESS      =  32'h1A110800,
+                                      DM_HALTADDRESS      =  32'h000F_0000,
                             // Remaining parameters are used by TB components only
                                       INSTR_ADDR_WIDTH    =  32,
                                       INSTR_RDATA_WIDTH   =  32,
@@ -79,6 +79,8 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
     logic [ 4:0]                  irq_id_out;
     logic [ 4:0]                  irq_id_in;
 
+    logic                         debug_req;
+   
     // Load the Instruction Memory 
     initial begin: load_instruction_memory
       string firmware;
@@ -111,8 +113,8 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
     // instantiate the core
     riscv_core #(
-                 .PULP_CLUSTER    (PULP_CLUSTER),
-                 .FPU             (FPU),
+                 .PULP_CLUSTER           (PULP_CLUSTER),
+                 .FPU                    (FPU),
                  .PULP_ZFINX      (PULP_ZFINX),
                  .DM_HALTADDRESS  (DM_HALTADDRESS)
                 )
@@ -171,7 +173,7 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .irq_nmi_i              ( core_interrupts_if.irq_nmi        ),
          .irq_fastx_i            ( core_interrupts_if.irq_fastx      ),
 
-         .debug_req_i            ( core_cntrl_if.debug_req           ),
+         .debug_req_i            ( debug_req                         ),
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en            ),
          .core_busy_o            ( core_status_if.core_busy          )
@@ -204,6 +206,8 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          .irq_ack_i      ( irq_ack                        ),
          .irq_id_o       ( irq_id_in                      ),
          .irq_o          ( irq                            ),
+
+         .debug_req_o    ( debug_req                            ),
 
          .pc_core_id_i   ( riscv_core_i.pc_id             ),
 
