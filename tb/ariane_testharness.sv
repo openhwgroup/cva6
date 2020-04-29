@@ -547,7 +547,7 @@ module ariane_testharness #(
     .test_en_i    ( test_en    ),
     .slave        ( slave      ),
     .master       ( master     ),
-    .start_addr_i (T_start_end_memory_map'({
+    .start_addr_i (addr_map_t'({
       ariane_soc::DebugBase,
       ariane_soc::ROMBase,
       ariane_soc::CLINTBase,
