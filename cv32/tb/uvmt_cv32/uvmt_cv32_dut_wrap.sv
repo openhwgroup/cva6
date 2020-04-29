@@ -127,27 +127,10 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
 
     // instantiate the core
     riscv_core #(
-                 .N_EXT_PERF_COUNTERS    (N_EXT_PERF_COUNTERS),
-                 .INSTR_RDATA_WIDTH      (INSTR_RDATA_WIDTH),
-                 .PULP_SECURE            (PULP_SECURE),
-                 .N_PMP_ENTRIES          (N_PMP_ENTRIES),
-                 .USE_PMP                (USE_PMP),
                  .PULP_CLUSTER           (PULP_CLUSTER),
-                 .A_EXTENSION            (A_EXTENSION),
                  .FPU                    (FPU),
-                 .Zfinx                  (Zfinx),
-                 .FP_DIVSQRT             (FP_DIVSQRT),
-                 .SHARED_FP              (SHARED_FP),
-                 .SHARED_DSP_MULT        (SHARED_DSP_MULT),
-                 .SHARED_INT_MULT        (SHARED_INT_MULT),
-                 .SHARED_INT_DIV         (SHARED_INT_DIV),
-                 .SHARED_FP_DIVSQRT      (SHARED_FP_DIVSQRT),
-                 .WAPUTYPE               (WAPUTYPE),
-                 .APU_NARGS_CPU          (APU_NARGS_CPU),
-                 .APU_WOP_CPU            (APU_WOP_CPU),
-                 .APU_NDSFLAGS_CPU       (APU_NDSFLAGS_CPU),
-                 .APU_NUSFLAGS_CPU       (APU_NUSFLAGS_CPU),
-                 .DM_HaltAddress         (DM_HaltAddress)
+                 .PULP_ZFINX             (Zfinx),
+                 .DM_HALTADDRESS        (DM_HaltAddress)
                 )
     riscv_core_i
         (
@@ -194,22 +177,17 @@ module uvmt_cv32_dut_wrap #(// DUT (riscv_core) parameters.
          //.irq_id_i               ( irq_id_in                      ),
          .irq_ack_o              ( irq_ack                           ),
          .irq_id_o               ( irq_id_out                        ),
-         .irq_sec_i              ( (core_interrupts_if.irq_sec||irq) ),
          .irq_software_i         ( core_interrupts_if.irq_software   ),
          .irq_timer_i            ( core_interrupts_if.irq_timer      ),
          .irq_external_i         ( core_interrupts_if.irq_external   ),
          .irq_fast_i             ( core_interrupts_if.irq_fast       ),
          .irq_nmi_i              ( core_interrupts_if.irq_nmi        ),
          .irq_fastx_i            ( core_interrupts_if.irq_fastx      ),
-
-         .sec_lvl_o              ( core_status_if.sec_lvl            ),
-
          .debug_req_i            ( core_cntrl_if.debug_req           ),
 
          .fetch_enable_i         ( core_cntrl_if.fetch_en            ),
          .core_busy_o            ( core_status_if.core_busy          ),
 
-         .ext_perf_counters_i    ( core_cntrl_if.ext_perf_counters   ),
          .fregfile_disable_i     ( core_cntrl_if.fregfile_disable    )
         ); //riscv_core_i
 

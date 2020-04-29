@@ -193,4 +193,21 @@ interface uvmt_cv32_core_status_if (
 
 endinterface : uvmt_cv32_core_status_if
 
+/**
+ * Step and compare interface
+ * Necessary because Xcelium does not support event in the module port list
+ */
+interface uvmt_cv32_step_compare_if;
+
+   event        ovp_cpu_retire; // Was ovp.cpu.Retire
+   event        riscv_retire;   // Was riscv_core.riscv_tracer_i.retire
+   bit   [31:0] ovp_cpu_PCr;    // Was iss_wrap.cpu.PCr
+   logic [31:0] insn_pc;
+   bit         ovp_b1_Step;    // Was ovp.b1.Step = 0;
+   bit         ovp_b1_Stepping; // Was ovp.b1.Stepping = 1;
+   event       ovp_cpu_busWait;  // Was call to ovp.cpu.busWait();
+
+endinterface // uvmt_cv32_step_compare_if
+
+
 `endif // __UVMT_CV32_TB_IFS_SV__

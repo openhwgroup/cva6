@@ -36,10 +36,12 @@ module uvmt_cv32_iss_wrap
    )
 
    (
-    input wire clk_i
+    input realtime  clk_period,
+    uvma_clknrst_if              clknrst_if,
+    input bit           Step,
+    input bit           Stepping,
+    output logic [31:0] PCr
    );
-
-  //import uvm_pkg::*; // needed for the UVM messaging service (`uvm_info(), etc.)
 
     BUS         b1();
     
@@ -51,8 +53,17 @@ module uvmt_cv32_iss_wrap
    
     CPU #(.ID(ID)) cpu(b1);
 
-  assign b1.Clk = clk_i;
+   assign b1.Clk = clknrst_if.clk;
+   assign PCr = cpu.PCr;
+   always @(Step) b1.Step = Step;
+   assign b1.Stepping = Stepping;
 
+   initial begin
+      #1;  // time for clknrst_if_dut to set the clk_period
+      clknrst_if.set_period(clk_period);
+      clknrst_if.start_clk();
+   end
+   
 endmodule : uvmt_cv32_iss_wrap
 
 `endif // __UVMT_CV32_ISS_WRAP_SV__

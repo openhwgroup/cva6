@@ -48,6 +48,7 @@ ${DV_UVMT_CV32_PATH}/uvmt_cv32_dut_wrap.sv
 ${DV_UVMT_CV32_PATH}/uvmt_cv32_tb.sv
 ${TBSRC_HOME}/tb_riscv/include/perturbation_defines.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_tb.sv
+$(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_step_compare.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_dut_wrap.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_iss_wrap.sv
 ${TBSRC_HOME}/core/mm_ram.sv
