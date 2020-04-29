@@ -559,7 +559,7 @@ module ariane_testharness #(
       ariane_soc::GPIOBase,
       ariane_soc::DRAMBase
     })),
-    .end_addr_i   (T_start_end_memory_map'({
+    .end_addr_i   (addr_map_t'({
       ariane_soc::DebugBase    + ariane_soc::DebugLength - 1,
       ariane_soc::ROMBase      + ariane_soc::ROMLength - 1,
       ariane_soc::CLINTBase    + ariane_soc::CLINTLength - 1,
