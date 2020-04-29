@@ -529,7 +529,7 @@ module ariane_testharness #(
   // ---------------
   // AXI Xbar
   // ---------------
-  typedef logic [ariane_soc::NrRegion-1:0][ariane_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0] T_start_end_memory_map;
+  typedef logic [ariane_soc::NrRegion-1:0][ariane_soc::NB_PERIPHERALS-1:0][AXI_ADDRESS_WIDTH-1:0] addr_map_t;
   
   axi_node_intf_wrap #(
     .NB_SLAVE           ( ariane_soc::NrSlaves       ),
