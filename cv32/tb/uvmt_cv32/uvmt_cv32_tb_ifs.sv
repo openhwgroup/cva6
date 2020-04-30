@@ -212,7 +212,7 @@ interface uvmt_cv32_step_compare_if;
    bit         ovp_b1_Step;    // Was ovp.b1.Step = 0;
    bit         ovp_b1_Stepping; // Was ovp.b1.Stepping = 1;
    event       ovp_cpu_busWait;  // Was call to ovp.cpu.busWait();
-   bit   [31:0] ovp_cpu_GPR[32];
+   logic   [31:0] ovp_cpu_GPR[32];
    logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
    
 endinterface: uvmt_cv32_step_compare_if
