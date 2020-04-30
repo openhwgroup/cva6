@@ -71,7 +71,9 @@ module uvmt_cv32_step_compare
    
    bit  Clk;
    bit  miscompare;
-
+   int  num_pc_checks;
+   int  num_gpr_checks;
+   
   function void check_32bit(input string compared, input bit [31:0] expected, input logic [31:0] actual);
       static int now = 0;
       if (now != $time) begin
@@ -89,7 +91,6 @@ module uvmt_cv32_step_compare
    
    function automatic void compare();
       int idx;
-      logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
       logic [ 5:0] insn_regs_write_addr;
       logic [31:0] insn_regs_write_value;
       int          insn_regs_write_size;
@@ -98,6 +99,30 @@ module uvmt_cv32_step_compare
       // Compare PC
       check_32bit(.compared("PC"), .expected(step_compare_if.ovp_cpu_PCr), 
                                    .actual(step_compare_if.insn_pc));
+      num_pc_checks++;
+
+      // Compare GPR's
+      // Assuming that dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write size is never > 1.  Check this.
+      // Note that dut_wrap is found 1 level up
+      insn_regs_write_size = dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write.size();
+      if (insn_regs_write_size > 1) begin
+        `uvm_error("",  $sformatf("Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size));
+      end
+      else if (insn_regs_write_size == 1) begin // Get dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write fields if size is 1
+         insn_regs_write_addr = dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write[0].addr;
+         insn_regs_write_value = dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write[0].value;
+         `uvm_info("", $sformatf("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value), UVM_DEBUG);
+      end
+      
+      // Ignore insn_regs_write_addr=0 just like in riscv_tracer.sv
+      for (idx=0; idx<32; idx++) begin
+         compared_str = $sformatf("GPR[%0d]", idx);
+         if ((idx == insn_regs_write_addr) && (idx != 0) && (insn_regs_write_size == 1)) // Use register in insn_regs_write queue if it exists
+            check_32bit(.compared(compared_str), .expected(step_compare_if.ovp_cpu_GPR[idx][31:0]), .actual(insn_regs_write_value));
+         else // Use actual value from RTL to compare registers which should have not changed
+            check_32bit(.compared(compared_str), .expected(step_compare_if.ovp_cpu_GPR[idx][31:0]), .actual(step_compare_if.riscy_GPR[idx]));
+         num_gpr_checks++;
+      end
 
     endfunction // compare
 
@@ -160,23 +185,35 @@ module uvmt_cv32_step_compare
     always @(step_ovp) begin
         step_compare_if.ovp_b1_Step = step_ovp;
     end
-    
-   // Run riscv_core.Clk if step_rtl=1
+
+   // After reset start the clock to the riscv
+   // Any time the RTL flags retire, stop the clock
+   // Then wait for the next compare event and start the clocks again
    initial begin
-      #1; // To get uvmt_cv32_base_test_c::reset_phase to execute
+      @(negedge clknrst_if.reset_n) ;// To allow uvmt_cv32_base_test_c::reset_phase to execute and set clk_period
+      clknrst_if.start_clk();
       forever begin
-         if (step_rtl) begin
-            clknrst_if.start_clk();
-            #(clknrst_if.clk_period);
-         end
-         else begin
-            clknrst_if.stop_clk();
-            @(ev_compare);
-         end
+         @(step_compare_if.riscv_retire);
+         clknrst_if.stop_clk();
+         @(ev_compare);
+         clknrst_if.start_clk();
       end
    end
    
-
+// Report on the checkers at the end of simulation
+// Do not use uvm_info or uvm_error or get many:
+// "xmsim: *W,SLFINV: Call to process::self() from invalid process; returning null"
+final begin
+   if (num_pc_checks > 0)
+     $display("step_compare: Checked PC 0d%0d times", num_pc_checks);
+   else
+     $display("step_compare: ERROR: PC was checked 0 times!");   
+   if (num_gpr_checks > 0)
+     $display("step_compare: Checked GPR 0d%0d times", num_gpr_checks);
+   else
+     $display("step_compare: ERROR: GPR was checked 0 times!");   
+end
+   
 
 
 

@@ -56,6 +56,7 @@ module uvmt_cv32_iss_wrap
 
    assign b1.Clk = clknrst_if.clk;
    assign step_compare_if.ovp_cpu_PCr = cpu.PCr;
+   assign step_compare_if.ovp_cpu_GPR = cpu.GPR;
    always @(step_compare_if.ovp_b1_Step) b1.Step = step_compare_if.ovp_b1_Step;
    assign b1.Stepping = step_compare_if.ovp_b1_Stepping;
 

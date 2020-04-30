@@ -195,9 +195,15 @@ endinterface : uvmt_cv32_core_status_if
 
 /**
  * Step and compare interface
- * Necessary because Xcelium does not support event in the module port list
+ * Xcelium does not support event types in the module port list
  */
 interface uvmt_cv32_step_compare_if;
+
+ // From RTL riscv_tracer.sv
+ typedef struct {
+    logic [ 5:0] addr;
+    logic [31:0] value;
+  } reg_t;
 
    event        ovp_cpu_retire; // Was ovp.cpu.Retire
    event        riscv_retire;   // Was riscv_core.riscv_tracer_i.retire
@@ -206,8 +212,10 @@ interface uvmt_cv32_step_compare_if;
    bit         ovp_b1_Step;    // Was ovp.b1.Step = 0;
    bit         ovp_b1_Stepping; // Was ovp.b1.Stepping = 1;
    event       ovp_cpu_busWait;  // Was call to ovp.cpu.busWait();
-
-endinterface // uvmt_cv32_step_compare_if
+   bit   [31:0] ovp_cpu_GPR[32];
+   logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
+   
+endinterface: uvmt_cv32_step_compare_if
 
 
 `endif // __UVMT_CV32_TB_IFS_SV__
