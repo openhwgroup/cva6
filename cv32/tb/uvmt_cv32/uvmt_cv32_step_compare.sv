@@ -73,6 +73,7 @@ module uvmt_cv32_step_compare
    bit  miscompare;
    int  num_pc_checks;
    int  num_gpr_checks;
+   int  num_csr_checks;
    
   function void check_32bit(input string compared, input bit [31:0] expected, input logic [31:0] actual);
       static int now = 0;
@@ -102,15 +103,15 @@ module uvmt_cv32_step_compare
       num_pc_checks++;
 
       // Compare GPR's
-      // Assuming that dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write size is never > 1.  Check this.
+      // Assuming that $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write size is never > 1.  Check this.
       // Note that dut_wrap is found 1 level up
-      insn_regs_write_size = dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write.size();
+      insn_regs_write_size = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write.size();
       if (insn_regs_write_size > 1) begin
         `uvm_error("",  $sformatf("Assume insn_regs_write size is 0 or 1 but is %0d", insn_regs_write_size));
       end
-      else if (insn_regs_write_size == 1) begin // Get dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write fields if size is 1
-         insn_regs_write_addr = dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write[0].addr;
-         insn_regs_write_value = dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write[0].value;
+      else if (insn_regs_write_size == 1) begin // Get $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write fields if size is 1
+         insn_regs_write_addr = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write[0].addr;
+         insn_regs_write_value = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write[0].value;
          `uvm_info("", $sformatf("insn_regs_write queue[0] addr=0x%0x, value=0x%0x", insn_regs_write_addr, insn_regs_write_value), UVM_DEBUG);
       end
       
@@ -129,56 +130,57 @@ module uvmt_cv32_step_compare
         bit ignore;
         logic [31:0] csr_val;
         foreach(iss_wrap.cpu.CSR[index]) begin
+           num_csr_checks++;
            ignore = 0;
            csr_val = 0;
            case (index)
-             "mstatus": csr_val = {dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
+             "mstatus": csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
                                    4'b0,
-                                   dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpp,
+                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpp,
                                    3'b0,
-                                   dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpie,
+                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpie,
                                    2'b0,
-                                   dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.upie,
-                                   dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mie,
+                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.upie,
+                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mie,
                                    2'b0,
-                                   dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.uie};
-             "misa"    : csr_val = dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE;
-             "mie"     : csr_val = {dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_external,
+                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.uie};
+             "misa"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE;
+             "mie"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_external,
                                    3'b0,
-                                   dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_timer,
+                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_timer,
                                    3'b0,
-                                   dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_software,
+                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_software,
                                    3'b0};
-             "miex"    : csr_val = dut_wrap.riscv_core_i.cs_registers_i.miex_q;
-             "mtvec"   : csr_val = {dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mtvecx"  : csr_val = {dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mscratch": csr_val = dut_wrap.riscv_core_i.cs_registers_i.mscratch_q;
-             "mepc"    : csr_val = dut_wrap.riscv_core_i.cs_registers_i.mepc_q;
-             "mcause"  : csr_val = {dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6], 
+             "miex"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.miex_q;
+             "mtvec"   : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mtvecx"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+             "mscratch": csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mscratch_q;
+             "mepc"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mepc_q;
+             "mcause"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6], 
                                     25'b0, 
-                                    dut_wrap.riscv_core_i.cs_registers_i.mcause_q[5:0]};
-             "mip"     : csr_val = {dut_wrap.riscv_core_i.cs_registers_i.mip.irq_nmi,  
-                                    dut_wrap.riscv_core_i.cs_registers_i.mip.irq_fast,
+                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[5:0]};
+             "mip"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_nmi,  
+                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_fast,
                                     4'b0, // [15:12] not defined
-                                    dut_wrap.riscv_core_i.cs_registers_i.mip.irq_external,
+                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_external,
                                     3'b0, // [10:8] not defined
-                                    dut_wrap.riscv_core_i.cs_registers_i.mip.irq_timer,
+                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_timer,
                                     3'b0, // [6:4] not defined
-                                    dut_wrap.riscv_core_i.cs_registers_i.mip.irq_software,
+                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_software,
                                     3'b0}; // [2:0] not defined
-             "mipx"    : csr_val = dut_wrap.riscv_core_i.cs_registers_i.mipx;
+             "mipx"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mipx;
              "mhartid" : csr_val = {21'b0, 
-                                    dut_wrap.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
+                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
                                     1'b0, 
-                                    dut_wrap.riscv_core_i.cs_registers_i.core_id_i[3:0]};
-             "dcsr"      : csr_val = dut_wrap.riscv_core_i.cs_registers_i.dcsr_q;     
-             "dpc"       : csr_val = dut_wrap.riscv_core_i.cs_registers_i.depc_q;       
-             "dscratch0" : csr_val = dut_wrap.riscv_core_i.cs_registers_i.dscratch0_q;
-             "dscratch1" : csr_val = dut_wrap.riscv_core_i.cs_registers_i.dscratch1_q;
-             "pmpcfg0"   : csr_val = dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
-             "pmpcfg1"   : csr_val = dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
-             "pmpcfg2"   : csr_val = dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
-             "pmpcfg3"   : csr_val = dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
+                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.core_id_i[3:0]};
+             "dcsr"      : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dcsr_q;     
+             "dpc"       : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.depc_q;       
+             "dscratch0" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dscratch0_q;
+             "dscratch1" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dscratch1_q;
+             "pmpcfg0"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
+             "pmpcfg1"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
+             "pmpcfg2"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
+             "pmpcfg3"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
              "time"   : ignore = 1;
              default: begin
                  $display("%0t: ERROR: index=%s does not match a CSR name", $time, index);
@@ -273,13 +275,19 @@ module uvmt_cv32_step_compare
 // "xmsim: *W,SLFINV: Call to process::self() from invalid process; returning null"
 final begin
    if (num_pc_checks > 0)
-     $display("step_compare: Checked PC 0d%0d times", num_pc_checks);
+     $display("%m: Checked PC 0d%0d times", num_pc_checks);
    else
-     $display("step_compare: ERROR: PC was checked 0 times!");   
+     $display("%m: ERROR: PC was checked 0 times!");   
    if (num_gpr_checks > 0)
-     $display("step_compare: Checked GPR 0d%0d times", num_gpr_checks);
+     $display("%m: Checked GPR 0d%0d times", num_gpr_checks);
    else
-     $display("step_compare: ERROR: GPR was checked 0 times!");   
+     $display("%m: ERROR: GPR was checked 0 times!");
+   if (COMP_CSR) begin
+      if (num_csr_checks > 0)
+        $display("%m: Checked CSR 0d%0d times", num_csr_checks);
+      else
+        $display("%m: ERROR: CSR was checked 0 times!");
+   end
 end
    
 
