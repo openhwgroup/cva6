@@ -42,9 +42,15 @@ _start:
 	call __libc_init_array
 
 /* call main */
-	lw a0, 0(sp)                    /* a0 = argc */
-	addi a1, sp, __SIZEOF_POINTER__ /* a1 = argv */
-	li a2, 0                        /* a2 = envp = NULL */
+//	lw a0, 0(sp)                    /* a0 = argc */
+//	addi a1, sp, __SIZEOF_POINTER__ /* a1 = argv */
+//	li a2, 0                        /* a2 = envp = NULL */
+// Initialize these variables to 0. Cannot use argc or argv
+// since the stack is not initialized
+	li a0, 0
+	li a1, 0
+	li a2, 0
+
 	call main
 	tail exit
 
