@@ -61,19 +61,15 @@ import uvm_pkg::*;      // needed for the UVM messaging service (`uvm_info(), et
 //`define RTL
 //`define ISS 
 
+
 module uvmt_cv32_step_compare
   (
    uvma_clknrst_if    clknrst_if,
    uvmt_cv32_step_compare_if step_compare_if
 );
 
-   parameter bit                 COMP_CSR=1; // By default compare CSRs
-   
    bit  Clk;
    bit  miscompare;
-   int  num_pc_checks;
-   int  num_gpr_checks;
-   int  num_csr_checks;
    
   function void check_32bit(input string compared, input bit [31:0] expected, input logic [31:0] actual);
       static int now = 0;
@@ -96,11 +92,13 @@ module uvmt_cv32_step_compare
       logic [31:0] insn_regs_write_value;
       int          insn_regs_write_size;
       string       compared_str;
+      bit ignore;
+      logic [31:0] csr_val;
 
       // Compare PC
       check_32bit(.compared("PC"), .expected(step_compare_if.ovp_cpu_PCr), 
                                    .actual(step_compare_if.insn_pc));
-      num_pc_checks++;
+      step_compare_if.num_pc_checks++;
 
       // Compare GPR's
       // Assuming that $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.riscv_tracer_i.insn_regs_write size is never > 1.  Check this.
@@ -122,77 +120,73 @@ module uvmt_cv32_step_compare
             check_32bit(.compared(compared_str), .expected(step_compare_if.ovp_cpu_GPR[idx][31:0]), .actual(insn_regs_write_value));
          else // Use actual value from RTL to compare registers which should have not changed
             check_32bit(.compared(compared_str), .expected(step_compare_if.ovp_cpu_GPR[idx][31:0]), .actual(step_compare_if.riscy_GPR[idx]));
-         num_gpr_checks++;
+         step_compare_if.num_gpr_checks++;
       end
 
       // Compare CSR's
-      if (COMP_CSR) begin
-        bit ignore;
-        logic [31:0] csr_val;
-        foreach(iss_wrap.cpu.CSR[index]) begin
-           num_csr_checks++;
-           ignore = 0;
-           csr_val = 0;
-           case (index)
-             "mstatus": csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
-                                   4'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpp,
-                                   3'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpie,
-                                   2'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.upie,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mie,
-                                   2'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.uie};
-             "misa"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE;
-             "mie"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_external,
-                                   3'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_timer,
-                                   3'b0,
-                                   $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_software,
-                                   3'b0};
-             "miex"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.miex_q;
-             "mtvec"   : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mtvecx"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
-             "mscratch": csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mscratch_q;
-             "mepc"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mepc_q;
-             "mcause"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6], 
-                                    25'b0, 
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[5:0]};
-             "mip"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_nmi,  
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_fast,
-                                    4'b0, // [15:12] not defined
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_external,
-                                    3'b0, // [10:8] not defined
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_timer,
-                                    3'b0, // [6:4] not defined
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_software,
-                                    3'b0}; // [2:0] not defined
-             "mipx"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mipx;
-             "mhartid" : csr_val = {21'b0, 
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
-                                    1'b0, 
-                                    $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.core_id_i[3:0]};
-             "dcsr"      : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dcsr_q;     
-             "dpc"       : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.depc_q;       
-             "dscratch0" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dscratch0_q;
-             "dscratch1" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dscratch1_q;
-             "pmpcfg0"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
-             "pmpcfg1"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
-             "pmpcfg2"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
-             "pmpcfg3"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
-             "time"   : ignore = 1;
-             default: begin
-                 $display("%0t: ERROR: index=%s does not match a CSR name", $time, index);
-                 ignore = 1;
-             end
-           endcase // case (index)
+      foreach(iss_wrap.cpu.CSR[index]) begin
+         step_compare_if.num_csr_checks++;
+         ignore = 0;
+         csr_val = 0;
+         case (index)
+           "mstatus": csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mprv, // Not documented in Rev 4.5 of user_manual.doc but is in the design
+                                 4'b0,
+                                 $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpp,
+                                 3'b0,
+                                 $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mpie,
+                                 2'b0,
+                                 $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.upie,
+                                 $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.mie,
+                                 2'b0,
+                                 $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q.uie};
+           "misa"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE;
+           "mie"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_external,
+                                  3'b0,
+                                  $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_timer,
+                                  3'b0,
+                                  $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mie_q.irq_software,
+                                  3'b0};
+           "miex"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.miex_q;
+           "mtvec"   : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+           "mtvecx"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q, 6'h0, 2'b01};
+           "mscratch": csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mscratch_q;
+           "mepc"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mepc_q;
+           "mcause"  : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[6], 
+                                  25'b0, 
+                                  $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mcause_q[5:0]};
+           "mip"     : csr_val = {$root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_nmi,  
+                                  $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_fast,
+                                  4'b0, // [15:12] not defined
+                                  $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_external,
+                                  3'b0, // [10:8] not defined
+                                  $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_timer,
+                                  3'b0, // [6:4] not defined
+                                  $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mip.irq_software,
+                                  3'b0}; // [2:0] not defined
+           "mipx"    : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mipx;
+           "mhartid" : csr_val = {21'b0, 
+                                  $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.cluster_id_i[5:0], 
+                                  1'b0, 
+                                  $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.core_id_i[3:0]};
+           "dcsr"      : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dcsr_q;     
+           "dpc"       : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.depc_q;       
+           "dscratch0" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dscratch0_q;
+           "dscratch1" : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.dscratch1_q;
+           "pmpcfg0"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[0];
+           "pmpcfg1"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[1];
+           "pmpcfg2"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[2];
+           "pmpcfg3"   : csr_val = $root.uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.pmp_reg_q.pmpcfg_packed[3];
+           "time"   : ignore = 1;
+           default: begin
+              $display("%0t: ERROR: index=%s does not match a CSR name", $time, index);
+              ignore = 1;
+           end
+         endcase // case (index)
 
-           if (!ignore)
-              check_32bit(.compared(index), .expected(iss_wrap.cpu.CSR[index]), .actual(csr_val));
+         if (!ignore)
+           check_32bit(.compared(index), .expected(iss_wrap.cpu.CSR[index]), .actual(csr_val));
 
-        end // foreach (ovp.cpu.CSR[index])
-      end // if (COMP_CSR)
+      end // foreach (ovp.cpu.CSR[index])
       
     endfunction // compare
 
@@ -210,15 +204,12 @@ module uvmt_cv32_step_compare
     event ev_ovp, ev_rtl;
     event ev_compare;
 
-    initial begin
-        if (COMP_CSR != 1)
-            $display("NOTE! CSRs not compared because COMP_CSR=%0b", COMP_CSR);
-      
-        step_compare_if.ovp_b1_Step = 0;
-        step_compare_if.ovp_b1_Stepping = 1;
-        step_ovp = 0;
-        step_rtl = 1;
-    end
+   initial begin
+      step_compare_if.ovp_b1_Step = 0;
+      step_compare_if.ovp_b1_Stepping = 1;
+      step_ovp = 0;
+      step_rtl = 1;
+   end
     
     // ovp_core
     always @(step_compare_if.ovp_cpu_retire) begin
@@ -269,31 +260,6 @@ module uvmt_cv32_step_compare
          clknrst_if.start_clk();
       end
    end
-   
-// Report on the checkers at the end of simulation
-// Do not use uvm_info or uvm_error or get many:
-// "xmsim: *W,SLFINV: Call to process::self() from invalid process; returning null"
-final begin
-   if (num_pc_checks > 0)
-     $display("%m: Checked PC 0d%0d times", num_pc_checks);
-   else
-     $display("%m: ERROR: PC was checked 0 times!");   
-   if (num_gpr_checks > 0)
-     $display("%m: Checked GPR 0d%0d times", num_gpr_checks);
-   else
-     $display("%m: ERROR: GPR was checked 0 times!");
-   if (COMP_CSR) begin
-      if (num_csr_checks > 0)
-        $display("%m: Checked CSR 0d%0d times", num_csr_checks);
-      else
-        $display("%m: ERROR: CSR was checked 0 times!");
-   end
-end
-   
-
-
-
-
 
 `ifdef COVERAGE
    coverage cov1;
