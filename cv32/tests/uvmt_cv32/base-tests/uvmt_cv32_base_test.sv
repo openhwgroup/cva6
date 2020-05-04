@@ -324,8 +324,8 @@ function void uvmt_cv32_base_test_c::phase_ended(uvm_phase phase);
      end
      //
 
-      // Report on number of ISS step and compare checks
-      step_compare_vif.report_step_compare();
+      // Report on number of ISS step and compare checks if the ISS is used
+      `ifdef ISS step_compare_vif.report_step_compare(); `endif
 
      /* This does not work because the vp_status signals are all pulses.
      * TODO: add logic to latch pulses and used the latched values here.

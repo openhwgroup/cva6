@@ -27,6 +27,16 @@ XRUN_FLAGS       ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm -uvm
 XRUN_DIR         ?= xcelium.d
 XRUN_GUI         ?=
 XRUN_UVM_VERBOSITY ?= UVM_LOW
+XRUN_USER_COMPILE_ARGS ?=
+XRUN_PLUSARGS ?=
+XRUN_USE_ISS ?= NO
+
+XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
+ifeq ($(XRUN_USE_ISS),YES)
+    XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
+    XRUN_USER_COMPILE_ARGS += "+define+ISS"
+    XRUN_PLUSARGS += +="+USE_ISS"
+endif
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
@@ -50,10 +60,11 @@ comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 	#make -C $(OVPM_DIR) compileOVPmodel
 	$(XRUN) \
 		$(XRUN_FLAGS) \
+                $(XRUN_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
-		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
+                $(XRUN_FILE_LIST) \
 		$(UVM_PLUSARGS) \
 		-elaborate
 
@@ -66,6 +77,7 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 hello-world: comp $(CUSTOM)/hello_world.hex
 	$(XRUN) -64bit -R -l xrun-hello-world.log \
                 $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
+                $(XRUN_PLUSARGS) \
 		-sv_lib $(OVP_MODEL_DPI) \
 		+elf_file=$(CUSTOM)/hello_world.elf \
 		+nm_file=$(CUSTOM)/hello_world.nm \

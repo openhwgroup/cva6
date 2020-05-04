@@ -48,21 +48,8 @@ ${DV_UVMT_CV32_PATH}/uvmt_cv32_dut_wrap.sv
 ${DV_UVMT_CV32_PATH}/uvmt_cv32_tb.sv
 ${TBSRC_HOME}/tb_riscv/include/perturbation_defines.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_tb.sv
-$(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_step_compare.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_dut_wrap.sv
-${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_iss_wrap.sv
 ${TBSRC_HOME}/core/mm_ram.sv
 ${TBSRC_HOME}/core/dp_ram.sv
 ${TBSRC_HOME}/tb_riscv/riscv_random_stall.sv
 ${TBSRC_HOME}/tb_riscv/riscv_random_interrupt_generator.sv
-// Vendor Libraries
-+incdir+${DV_OVPM_ENCAP_PATH}
-${DV_OVPM_ENCAP_PATH}/typedefs.sv
-${DV_OVPM_ENCAP_PATH}/interface.sv
-${DV_OVPM_ENCAP_PATH}/monitor.sv
-${DV_OVPM_ENCAP_PATH}/ram.sv
-${DV_OVPM_ENCAP_PATH}/riscv_CV32E40P.sv
-// replaced by uvmt_cv32_iss_wrap
-//${DV_OVPM_ENCAP_PATH}/verilog_testbench/dut.sv
-//${DV_OVPM_ENCAP_PATH}/verilog_testbench/testbench.sv
-//${DV_OVPM_ENCAP_PATH}/verilog_testbench/class_simple_coverage.svh
