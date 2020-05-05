@@ -23,7 +23,7 @@
 
 XRUN              = xrun
 XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
-XRUN_FLAGS       ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
+XRUN_COMP_FLAGS       ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_DIR         ?= xcelium.d
 XRUN_GUI         ?=
 XRUN_UVM_VERBOSITY ?= UVM_LOW
@@ -37,6 +37,8 @@ ifeq ($(XRUN_USE_ISS),YES)
     XRUN_USER_COMPILE_ARGS += "+define+ISS"
     XRUN_PLUSARGS += +="+USE_ISS"
 endif
+
+XRUN_RUN_FLAGS   ?= -64bit -R $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
 
 no_rule:
 	@echo 'makefile: SIMULATOR is set to $(SIMULATOR), but no rule/target specified.'
@@ -57,9 +59,8 @@ cv32_riscv_tests: cv32-riscv-tests
 cv32_riscv_compliance_tests: cv32-riscv-compliance-tests 
 
 comp: mk_xrun_dir $(CV32E40P_PKG) $(OVP_MODEL_DPI)
-	#make -C $(OVPM_DIR) compileOVPmodel
 	$(XRUN) \
-		$(XRUN_FLAGS) \
+		$(XRUN_COMP_FLAGS) \
                 $(XRUN_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
@@ -75,18 +76,24 @@ custom: comp $(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 		+firmware=$(CUSTOM_DIR)/$(CUSTOM_PROG).hex
 
 hello-world: comp $(CUSTOM)/hello_world.hex
-	$(XRUN) -64bit -R -l xrun-hello-world.log \
-                $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) \
-                $(XRUN_PLUSARGS) \
-		-sv_lib $(OVP_MODEL_DPI) \
+	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/hello_world.elf \
 		+nm_file=$(CUSTOM)/hello_world.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/hello_world.hex
 
+misalign: comp $(CUSTOM)/misalign.hex
+	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
+		+elf_file=$(CUSTOM)/misalign.elf \
+		+nm_file=$(CUSTOM)/misalign.nm \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/misalign.hex
+
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
-	$(XRUN) -R -l xrun-riscv-tests.log \
+	$(XRUN) -l xrun-riscv-tests.log $(XRUN_RUN_FLAGS) \
+		+elf_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf \
+		+nm_file=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 

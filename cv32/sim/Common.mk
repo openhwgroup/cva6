@@ -238,6 +238,17 @@ $(CUSTOM)/hello_world.elf: $(CUSTOM)/hello_world.c
 		-I $(RISCV)/riscv32-unknown-elf/include \
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc
+
+$(CUSTOM)/misalign.elf: $(CUSTOM)/misalign.c
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		-T $(CUSTOM)/link.ld  \
+		-static \
+		$(CUSTOM)/crt0.S \
+		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc
+
 custom-clean:
 	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
 
@@ -246,16 +257,16 @@ custom-clean:
 # compile and dump RISCV_TESTS only
 $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.elf: $(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) \
 							$(CV32_RISCV_TESTS_FIRMWARE)/link.ld
-	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -g -Os -mabi=ilp32 -march=rv32imc -ffreestanding -nostdlib -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-Wl,-Bstatic,-T,$(CV32_RISCV_TESTS_FIRMWARE)/link.ld,-Map,$(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.map,--strip-debug \
 		$(CV32_RISCV_TESTS_FIRMWARE_OBJS) $(RISCV_TESTS_OBJS) -lgcc
 
 $(CV32_RISCV_TESTS_FIRMWARE)/start.o: $(CV32_RISCV_TESTS_FIRMWARE)/start.S
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -g -o $@ $<
+	$(RISCV_EXE_PREFIX)gcc -c -mabi=ilp32 -march=rv32imc -g -o $@ $<
 
 $(CV32_RISCV_TESTS_FIRMWARE)/%.o: $(CV32_RISCV_TESTS_FIRMWARE)/%.c
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32ic -g -Os --std=c99 -Wall \
+	$(RISCV_EXE_PREFIX)gcc -c -mabi=ilp32 -march=rv32imc -g -Os --std=c99 -Wall \
 		$(RISCV_TEST_INCLUDES) \
 		-ffreestanding -nostdlib -o $@ $<
 
@@ -317,7 +328,7 @@ $(FIRMWARE)/%.o: $(FIRMWARE)/%.c
 
 $(RISCV_TESTS)/rv32ui/%.o: $(RISCV_TESTS)/rv32ui/%.S $(RISCV_TESTS)/riscv_test.h \
 			$(RISCV_TESTS)/macros/scalar/test_macros.h
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32im -g -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -c -mabi=ilp32 -march=rv32imc -g -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-DTEST_FUNC_NAME=$(notdir $(basename $<)) \
 		-DTEST_FUNC_TXT='"$(notdir $(basename $<))"' \
@@ -325,7 +336,7 @@ $(RISCV_TESTS)/rv32ui/%.o: $(RISCV_TESTS)/rv32ui/%.S $(RISCV_TESTS)/riscv_test.h
 
 $(RISCV_TESTS)/rv32um/%.o: $(RISCV_TESTS)/rv32um/%.S $(RISCV_TESTS)/riscv_test.h \
 			$(RISCV_TESTS)/macros/scalar/test_macros.h
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32im -g -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -c -mabi=ilp32 -march=rv32imc -g -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-DTEST_FUNC_NAME=$(notdir $(basename $<)) \
 		-DTEST_FUNC_TXT='"$(notdir $(basename $<))"' \
