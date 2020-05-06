@@ -249,6 +249,15 @@ $(CUSTOM)/misalign.elf: $(CUSTOM)/misalign.c
 		-L $(RISCV)/riscv32-unknown-elf/lib \
 		-lc -lm -lgcc
 
+$(CUSTOM)/illegal.elf: $(CUSTOM)/illegal.c
+	$(RISCV_EXE_PREFIX)gcc -mabi=ilp32 -march=rv32imc -o $@ -w -Os -g -nostdlib \
+		-T $(CUSTOM)/link.ld  \
+		-static \
+		$(CUSTOM)/crt0.S \
+		$^ $(CUSTOM)/syscalls.c $(CUSTOM)/vectors.S \
+		-I $(RISCV)/riscv32-unknown-elf/include \
+		-L $(RISCV)/riscv32-unknown-elf/lib \
+		-lc -lm -lgcc
 custom-clean:
 	rm -rf $(CUSTOM)/hello_world.elf $(CUSTOM)/hello_world.hex
 

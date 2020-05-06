@@ -89,6 +89,13 @@ misalign: comp $(CUSTOM)/misalign.hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/misalign.hex
 
+illegal: comp $(CUSTOM)/illegal.hex
+	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
+		+elf_file=$(CUSTOM)/illegal.elf \
+		+nm_file=$(CUSTOM)/illegal.nm \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/illegal.hex
+
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 	$(XRUN) -l xrun-riscv-tests.log $(XRUN_RUN_FLAGS) \
