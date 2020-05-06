@@ -10,7 +10,7 @@ testbench supports Verilator and we will do what we can to maintain Verilator
 support here.  Note that `tb_riscv` is now a sub-directory of `core`.
 
 ### uvmt_cv32
-**_New_**.  The testbench and testharness for the CV32E40\* UVM verification
+The testbench and testharness for the CV32E40\* UVM verification
 environments.  This tb/th maintains support for all features of the `core`
 testbench. Cannot be run with Verilator.
 
