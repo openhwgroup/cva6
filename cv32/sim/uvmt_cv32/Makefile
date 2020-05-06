@@ -78,16 +78,17 @@ RISCVDV_PKG  := $(PROJ_ROOT_DIR)/cv32/env/uvme_cv32/riscv-dv
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
 export TBSRC_HOME  = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
-TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
-TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
-TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
-               $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
-               $(TBSRC_HOME)/core/tb_top.sv \
-               $(TBSRC_HOME)/core/riscv_wrapper.sv \
-               $(TBSRC_HOME)/core/mm_ram.sv \
-               $(TBSRC_HOME)/core/dp_ram.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
+# Looks like these are redundant redundant
+#TBSRC_PKG   := $(TBSRC_HOME)/core/tb_riscv/include/perturbation_defines.sv
+#TBSRC_TOP   := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv
+#TBSRC       := $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_tb.sv \
+#               $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_dut_wrap.sv \
+#               $(TBSRC_HOME)/core/tb_top.sv \
+#               $(TBSRC_HOME)/core/riscv_wrapper.sv \
+#               $(TBSRC_HOME)/core/mm_ram.sv \
+#               $(TBSRC_HOME)/core/dp_ram.sv \
+#               $(TBSRC_HOME)/core/tb_riscv/riscv_random_stall.sv \
+#               $(TBSRC_HOME)/core/tb_riscv/riscv_random_interrupt_generator.sv
 
 SIM_LIBS    := $(PROJ_ROOT_DIR)/lib/sim_libs
 
