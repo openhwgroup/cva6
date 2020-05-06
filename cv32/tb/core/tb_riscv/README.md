@@ -1,6 +1,8 @@
 # TB_RISCV: VERIFICATION ENVIRONMENT FOR THE PULP CORES
 
-Verification environment for the PULP RI5CY cores is implemented.
+Files and directories foundn here are adopted from the testbench for the PULP
+cores.   They are now known as the `core` testbench of the CV32E40P testbench.
+Note that some information in this file may be out of date.
 
 ## Description
 
