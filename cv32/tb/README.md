@@ -12,7 +12,9 @@ support here.  Note that `tb_riscv` is now a sub-directory of `core`.
 ### uvmt_cv32
 The testbench and testharness for the CV32E40\* UVM verification
 environments.  This tb/th maintains support for all features of the `core`
-testbench. Cannot be run with Verilator.
+testbench.  Future releases of `uvmt_cv32` will support features such as
+an Instruction Set Simulator reference model of the cv32, an instruction
+generator, and functional coverage. Cannot be run with Verilator.
 
 ## Retired Testbenches
 A set of directories inherited from the RI5CY project have fallen into disuse
