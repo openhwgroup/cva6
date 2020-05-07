@@ -20,13 +20,9 @@ $(TBSRC_HOME)/uvmt_cv32/uvmt_cv32_step_compare.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_iss_wrap.sv
 
 // Vendor Libraries
-+incdir+${DV_OVPM_ENCAP_PATH}
-${DV_OVPM_ENCAP_PATH}/typedefs.sv
-${DV_OVPM_ENCAP_PATH}/interface.sv
-${DV_OVPM_ENCAP_PATH}/monitor.sv
-${DV_OVPM_ENCAP_PATH}/ram.sv
-${DV_OVPM_ENCAP_PATH}/riscv_CV32E40P.sv
-// replaced by uvmt_cv32_iss_wrap
-//${DV_OVPM_ENCAP_PATH}/verilog_testbench/dut.sv
-//${DV_OVPM_ENCAP_PATH}/verilog_testbench/testbench.sv
-//${DV_OVPM_ENCAP_PATH}/verilog_testbench/class_simple_coverage.svh
++incdir+${DV_OVPM_DESIGN}
+${DV_OVPM_DESIGN}/typedefs.sv
+${DV_OVPM_DESIGN}/interface.sv
+${DV_OVPM_DESIGN}/monitor.sv
+${DV_OVPM_DESIGN}/ram.sv
+${DV_OVPM_MODEL}/sv/riscv_CV32E40P.sv

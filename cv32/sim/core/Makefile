@@ -106,7 +106,9 @@ VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
 VERI_CFLAGS         = -O2
 
-DV_OVPM_ENCAP_PATH  = $(PROJ_ROOT_DIR)/../riscvImperasDV/imperas/verilog/design
+DV_OVPM_HOME        = $(PROJ_ROOT_DIR)/../riscvImperasDV
+DV_OVPM_MODEL       = $(DV_OVPM_HOME)/imperas/riscv_CV32E40P_OVPsim
+DV_OVPM_DESIGN      = $(DV_OVPM_HOME)/imperas/verilog/design
 
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
@@ -119,11 +121,11 @@ TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/dp_ram.sv \
                $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
                $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
-OVPMSRC     := $(DV_OVPM_ENCAP_PATH)/typedefs.sv \
-               $(DV_OVPM_ENCAP_PATH)/interface.sv \
-               $(DV_OVPM_ENCAP_PATH)/riscv_CV32E40P.sv \
-               $(DV_OVPM_ENCAP_PATH)/ram.sv \
-               $(DV_OVPM_ENCAP_PATH)/monitor.sv \
+OVPMSRC     := $(DV_OVPM_DESIGN)/typedefs.sv \
+               $(DV_OVPM_DESIGN)/interface.sv \
+               $(DV_OVPM_DESIGN)/ram.sv \
+               $(DV_OVPM_DESIGN)/monitor.sv \
+               $(DV_OVPM_MODEL)/sv/riscv_CV32E40P.sv
 ISS_WRAP    := $(PROJ_ROOT_DIR)/cv32/tb/uvmt_cv32/uvmt_cv32_iss_wrap.sv
 
 TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
@@ -227,7 +229,7 @@ dsim-comp: mk_results cv32e40p_pkg c_ovp_model tbsrc_pkg tbsrc $(ISS_WRAP)
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		-f $(CV32E40P_MANIFEST) \
-		+incdir+$(DV_OVPM_ENCAP_PATH)/verilog_OVPmodel \
+		+incdir+$(DV_OVPM_DESIGN)/verilog_OVPmodel \
 		$(TBSRC_PKG) \
 		$(TBSRC) \
 		$(OVPMSRC) \

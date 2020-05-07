@@ -109,28 +109,9 @@ endif
 ###############################################################################
 # Imperas Instruction Set Simulator
 
-#OVPM_DIR   ?= $(PROJ_ROOT_DIR)/vendor_lib/imperas_iss/OVPmodel_encapsulation
-#OVP_MODEL_DPI ?= $(OVPM_DIR)/C_OVPmodel/libriscv_sv.Linux64.so
-
-OVP_HOME     ?= $(PROJ_ROOT_DIR)/../riscvImperasDV/imperas
-OVP_MODEL_DPI = $(OVP_HOME)/ovp_riscv/obj/Linux64/riscv_CV32E40P.dpi.Linux64.so
-OVP_HOME_VLNV = $(OVP_HOME)/ovp_vlnv
-OVP_HOME_WRAP = $(OVP_HOME)/ovp_riscv
-
-export IMPERAS_VLNV := ${IMPERAS_VLNV}:$(OVP_HOME_VLNV)/obj
-
-$(OVP_MODEL_DPI):
-	#make -C $(OVPM_DIR) compileOVPmodel 
-	$(MAKE) -C $(OVP_HOME_VLNV) VLNVSRC=$(OVP_HOME_VLNV) VLNVROOT=$(OVP_HOME_VLNV)/obj 
-	$(MAKE) -C $(OVP_HOME_WRAP) SRC=riscv_CV32E40P.dpi.c
-
-c_ovp_model: $(OVP_MODEL_DPI)
-
-clean_c_ovp_model:
-	#rm $(OVPM_DIR)/C_OVPmodel/libriscv_sv.*.so
-	#rm -rf $(OVPM_DIR)/C_OVPmodel/obj
-	$(MAKE) clean -C $(OVP_HOME_VLNV) VLNVSRC=$(OVP_HOME_VLNV) VLNVROOT=$(OVP_HOME_VLNV)/obj 
-	$(MAKE) clean -C $(OVP_HOME_WRAP) SRC=riscv_CV32E40P.dpi.c
+DV_OVPM_HOME ?= $(PROJ_ROOT_DIR)/../riscvImperasDV
+DV_OVPM_MODEL = $(DV_OVPM_HOME)/imperas/riscv_CV32E40P_OVPsim
+OVP_MODEL_DPI = $(DV_OVPM_MODEL)/bin/Linux64/riscv_CV32E40P.dpi.so
 
 ###############################################################################
 # Build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"
