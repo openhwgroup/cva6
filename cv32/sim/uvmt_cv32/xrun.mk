@@ -96,6 +96,20 @@ illegal: comp $(CUSTOM)/illegal.hex
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/illegal.hex
 
+fibonacci: comp $(CUSTOM)/fibonacci.hex
+	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
+		+elf_file=$(CUSTOM)/fibonacci.elf \
+		+nm_file=$(CUSTOM)/fibonacci.nm \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/fibonacci.hex
+
+dhrystone: comp $(CUSTOM)/dhrystone.hex
+	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
+		+elf_file=$(CUSTOM)/dhrystone.elf \
+		+nm_file=$(CUSTOM)/dhrystone.nm \
+		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
+		+firmware=$(CUSTOM)/dhrystone.hex
+
 # Runs tests in cv32_riscv_tests/ only
 cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.hex
 	$(XRUN) -l xrun-riscv-tests.log $(XRUN_RUN_FLAGS) \

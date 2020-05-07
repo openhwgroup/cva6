@@ -122,7 +122,7 @@ mailbox #(stall_mem_t) memory_transfers   = new (4);
 
  //Grant Process
  initial
- begin
+ begin : grant_process
      stall_mem_t mem_acc;
      automatic rand_gnt_cycles wait_cycles = new ();
 
@@ -173,7 +173,7 @@ mailbox #(stall_mem_t) memory_transfers   = new (4);
  end
 
  initial
- begin
+ begin : data_process
      stall_mem_t mem_acc;
      automatic rand_data_cycles wait_cycles = new ();
      logic granted;
@@ -216,7 +216,7 @@ mailbox #(stall_mem_t) memory_transfers   = new (4);
  end
 
  initial
- begin
+ begin : wait_for_grant
      stall_mem_t mem_acc;
      we_mem_o    = 1'b0;
      req_mem_o   = 1'b0;
@@ -244,7 +244,7 @@ mailbox #(stall_mem_t) memory_transfers   = new (4);
  end
 
  initial
- begin
+ begin : wait_for_valid
      stall_mem_t mem_acc;
      while(1) begin
          memory_transfers.get(mem_acc);
