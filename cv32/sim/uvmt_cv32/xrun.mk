@@ -120,7 +120,9 @@ cv32-riscv-tests: comp $(CV32_RISCV_TESTS_FIRMWARE)/cv32_riscv_tests_firmware.he
 
 # Runs tests in cv32_riscv_compliance_tests/ only
 cv32-riscv-compliance-tests: comp $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
-	$(XRUN) -R -l xrun-riscv-compliance-tests.log \
+	$(XRUN) -l xrun-riscv-compliance-tests.log $(XRUN_RUN_FLAGS) \
+		+elf_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf \
+		+nm_file=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.hex
 

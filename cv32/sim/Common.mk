@@ -283,17 +283,17 @@ $(CV32_RISCV_TESTS_FIRMWARE)/%.o: $(CV32_RISCV_TESTS_FIRMWARE)/%.c
 # compile and dump RISCV_COMPLIANCE_TESTS only
 $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.elf: $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS) $(COMPLIANCE_TEST_OBJS) \
 							$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/link.ld
-	$(RISCV_EXE_PREFIX)gcc -g -Os -march=rv32imc -ffreestanding -nostdlib -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -g -Os -mabi=ilp32 -march=rv32imc -ffreestanding -nostdlib -o $@ \
 		-D RUN_COMPLIANCE \
 		$(RISCV_TEST_INCLUDES) \
 		-Wl,-Bstatic,-T,$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/link.ld,-Map,$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/cv32_riscv_compliance_tests_firmware.map,--strip-debug \
 		$(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE_OBJS) $(COMPLIANCE_TEST_OBJS) -lgcc
 
 $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/start.o: $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/start.S
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32imc -D RUN_COMPLIANCE -g -o $@ $<
+	$(RISCV_EXE_PREFIX)gcc -c -mabi=ilp32 -march=rv32imc -D RUN_COMPLIANCE -g -o $@ $<
 
 $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/%.o: $(CV32_RISCV_COMPLIANCE_TESTS_FIRMWARE)/%.c
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32ic -g -Os --std=c99 -Wall \
+	$(RISCV_EXE_PREFIX)gcc -c -mabi=ilp32 -march=rv32imc -g -Os --std=c99 -Wall \
 		$(RISCV_TEST_INCLUDES) \
 		-ffreestanding -nostdlib -o $@ $<
 
@@ -354,7 +354,7 @@ $(RISCV_TESTS)/rv32um/%.o: $(RISCV_TESTS)/rv32um/%.S $(RISCV_TESTS)/riscv_test.h
 
 $(RISCV_TESTS)/rv32uc/%.o: $(RISCV_TESTS)/rv32uc/%.S $(RISCV_TESTS)/riscv_test.h \
 			$(RISCV_TESTS)/macros/scalar/test_macros.h
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32im -g -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -c -mabi=ilp32 -march=rv32imc -g -o $@ \
 		$(RISCV_TEST_INCLUDES) \
 		-DTEST_FUNC_NAME=$(notdir $(basename $<)) \
 		-DTEST_FUNC_TXT='"$(notdir $(basename $<))"' \
@@ -364,7 +364,7 @@ $(RISCV_TESTS)/rv32uc/%.o: $(RISCV_TESTS)/rv32uc/%.S $(RISCV_TESTS)/riscv_test.h
 $(RISCV_COMPLIANCE_TESTS)/%.o: $(RISCV_COMPLIANCE_TESTS)/%.S $(RISCV_COMPLIANCE_TESTS)/riscv_test.h \
 			$(RISCV_COMPLIANCE_TESTS)/test_macros.h $(RISCV_COMPLIANCE_TESTS)/compliance_io.h \
 			$(RISCV_COMPLIANCE_TESTS)/compliance_test.h
-	$(RISCV_EXE_PREFIX)gcc -c -march=rv32im -g -o $@ \
+	$(RISCV_EXE_PREFIX)gcc -c -mabi=ilp32 -march=rv32imc -g -o $@ \
 		-DTEST_FUNC_NAME=$(notdir $(subst -,_,$(basename $<))) \
 		-DTEST_FUNC_TXT='"$(notdir $(subst -,_,$(basename $<)))"' \
 		-DTEST_FUNC_RET=$(notdir $(subst -,_,$(basename $<)))_ret $<
