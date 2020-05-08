@@ -1,4 +1,0 @@
-#
-# Set variable defining the available TARGET settings
-#
-SUPPORTED_TARGETS = QUESTA INCISIVE XCELIUM DSIM VCS
