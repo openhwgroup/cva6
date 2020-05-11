@@ -31,7 +31,7 @@ variable `RISCV` to the path of your RISC-V toolchain (e.g. `export RISCV=/opt/r
 Running your own C programs
 ---------------------
 A hello world program is available and you can run it in the CV32E Core testbench.
-Invoke the `dsim-hello_world` or `custom-veri-run` makefile rules to run it with
+Invoke the `dsim-hello_world` or `hello-world-veri-run` makefile rules to run it with
 `dsim` or `verilator` respectively.
 
 The hello world program is located in the `custom` folder. The relevant sections

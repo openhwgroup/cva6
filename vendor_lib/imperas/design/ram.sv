@@ -25,7 +25,13 @@ module RAM
 (
     BUS SysBus
 );
-    reg [31:0] mem [0:'h0FFFFFFF]; /* sparse */ 
+
+`ifdef DSIM
+    reg [31:0] mem [bit [29:0] ]; /* sparse */
+`else
+    reg /*sparse*/ [31:0] mem ['h00000000:'h3FFFFFFF]; /* sparse */
+`endif
+
     Uns32 daddr4, iaddr4;
     Uns32 value;
     bit isROM, isRAM;
@@ -55,6 +61,13 @@ module RAM
         daddr4 = SysBus.DAddr >> 2;
         iaddr4 = SysBus.IAddr >> 2;
         
+`ifdef DSIM
+        if (!mem.exists(daddr4))
+            mem[daddr4] = 'h0;
+        if (!mem.exists(iaddr4))
+            mem[iaddr4] = 'h0;
+`endif
+
         // READ (ROM & RAM)
         if (isROM || isRAM) begin
             if (SysBus.Drd==1) begin

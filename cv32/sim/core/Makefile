@@ -104,29 +104,28 @@ VERI_COMPILE_FLAGS += -Wno-BLKANDNBLK $(SV_CMP_FLAGS) # hope this doesn't hurt u
 VERI_TRACE          =
 VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
-VERI_CFLAGS         = -O2
+VERI_CFLAGS        += -O2
 
-DV_OVPM_HOME        = $(PROJ_ROOT_DIR)/vendor_lib/imperas
-DV_OVPM_MODEL       = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
-DV_OVPM_DESIGN      = $(DV_OVPM_HOME)/verilog/design
+#DV_OVPM_HOME        = $(PROJ_ROOT_DIR)/vendor_lib/imperas
+#DV_OVPM_MODEL       = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
+#DV_OVPM_DESIGN      = $(DV_OVPM_HOME)/verilog/design
 
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
-TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
 TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
 TBSRC_CORE  := $(TBSRC_HOME)/core
+TBSRC_PKG   := $(TBSRC_CORE)/tb_riscv/include/perturbation_defines.sv
 TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
-OVPMSRC     := $(DV_OVPM_DESIGN)/typedefs.sv \
-               $(DV_OVPM_DESIGN)/interface.sv \
-               $(DV_OVPM_DESIGN)/ram.sv \
-               $(DV_OVPM_DESIGN)/monitor.sv \
-               $(DV_OVPM_MODEL)/sv/riscv_CV32E40P.sv
-ISS_WRAP    := $(PROJ_ROOT_DIR)/cv32/tb/uvmt_cv32/uvmt_cv32_iss_wrap.sv
+               $(TBSRC_CORE)/tb_riscv/riscv_random_stall.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_random_interrupt_generator.sv
+#OVPMSRC     := $(DV_OVPM_DESIGN)/typedefs.sv \
+#               $(DV_OVPM_DESIGN)/interface.sv \
+#               $(DV_OVPM_DESIGN)/ram.sv \
+#               $(DV_OVPM_DESIGN)/monitor.sv \
+#               $(DV_OVPM_MODEL)/sv/riscv_CV32E40P.sv
 
 TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
@@ -153,7 +152,7 @@ tbsrc: $(TBSRC)
 # Common Makefile:
 #    - Core Firmware and the RISCV GCC Toolchain (SDK)
 #    - Variables for RTL dependencies
-include ../Common.mk
+include $(PROJ_ROOT_DIR)/cv32/sim/Common.mk
 
 
 # assume verilator if no target chosen
@@ -223,17 +222,14 @@ mk_results:
 	$(MKDIR_P) $(DSIM_WORK)
 
 # Metrics dsim compile targets
-dsim-comp: mk_results cv32e40p_pkg c_ovp_model tbsrc_pkg tbsrc $(ISS_WRAP)
+dsim-comp: mk_results cv32e40p_pkg tbsrc_pkg tbsrc
 		cd $(DSIM_RESULTS) && \
 		$(DSIM) \
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		-f $(CV32E40P_MANIFEST) \
-		+incdir+$(DV_OVPM_DESIGN)/verilog_OVPmodel \
 		$(TBSRC_PKG) \
 		$(TBSRC) \
-		$(OVPMSRC) \
-		$(ISS_WRAP) \
 		-work $(DSIM_WORK) \
 		-genimage $(DSIM_IMAGE)
 
