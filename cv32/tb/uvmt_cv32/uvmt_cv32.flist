@@ -49,25 +49,7 @@ ${DV_UVMT_CV32_PATH}/uvmt_cv32_tb.sv
 ${TBSRC_HOME}/tb_riscv/include/perturbation_defines.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_tb.sv
 ${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_dut_wrap.sv
-${TBSRC_HOME}/uvmt_cv32/uvmt_cv32_iss_wrap.sv
 ${TBSRC_HOME}/core/mm_ram.sv
 ${TBSRC_HOME}/core/dp_ram.sv
 ${TBSRC_HOME}/tb_riscv/riscv_random_stall.sv
 ${TBSRC_HOME}/tb_riscv/riscv_random_interrupt_generator.sv
-// Vendor Libraries
-+incdir+${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel
-${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/monitor.sv
-${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/typedefs.sv
-${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/interface.sv
-${DV_OVPM_ENCAP_PATH}/verilog_OVPmodel/cpu.sv
-${DV_OVPM_ENCAP_PATH}/verilog_model/intc.sv
-${DV_OVPM_ENCAP_PATH}/verilog_model/ram.sv
-$(DV_OVPM_ENCAP_PATH)/verilog_model/params_pkg.sv
-$(DV_OVPM_ENCAP_PATH)/verilog_model/compare_pkg.sv
-$(DV_OVPM_ENCAP_PATH)/verilog_model/pc_if.sv
-$(DV_OVPM_ENCAP_PATH)/verilog_model/bind_pc.sv
-${DV_OVPM_ENCAP_PATH}/verilog_model/step_compare.sv
-// replaced by uvmt_cv32_iss_wrap
-//${DV_OVPM_ENCAP_PATH}/verilog_testbench/dut.sv
-//${DV_OVPM_ENCAP_PATH}/verilog_testbench/testbench.sv
-//${DV_OVPM_ENCAP_PATH}/verilog_testbench/class_simple_coverage.svh

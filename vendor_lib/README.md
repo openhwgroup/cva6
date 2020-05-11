@@ -8,5 +8,5 @@ Makefiles that compile the verification environment and launch simulations.
 
 # Directories
 
-# imperas_iss
+# imperas
 Source files used to support the Imperas Instruction Set Simulator.

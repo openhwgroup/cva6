@@ -66,7 +66,11 @@ export DV_UVMA_CLKNRST_PATH = $(PROJ_ROOT_DIR)/lib/uvm_agents/uvma_clknrst
 export DV_UVML_TRN_PATH     = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_trn
 export DV_UVML_LOGS_PATH    = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_logs
 export DV_UVML_SB_PATH      = $(PROJ_ROOT_DIR)/lib/uvm_libs/uvml_sb
-export DV_OVPM_ENCAP_PATH   = $(PROJ_ROOT_DIR)/vendor_lib/imperas_iss/OVPmodel_encapsulation
+
+export DV_OVPM_HOME         = $(PROJ_ROOT_DIR)/vendor_lib/imperas
+export DV_OVPM_MODEL        = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
+export DV_OVPM_DESIGN       = $(DV_OVPM_HOME)/verilog/design
+
 DV_UVMT_CV32_SRCS  = $(wildcard $(DV_UVMT_CV32_PATH)/*.sv))
 
 # Testcase name: must be the CLASS name of the testcase (not the filename).
