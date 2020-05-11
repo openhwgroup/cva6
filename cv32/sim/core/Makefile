@@ -106,15 +106,15 @@ VERI_CFLAGS        += -O2
 
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
-TBSRC_PKG   := $(TBSRC_HOME)/tb_riscv/include/perturbation_defines.sv
 TBSRC_TOP   := $(TBSRC_HOME)/core/tb_top.sv
 TBSRC_CORE  := $(TBSRC_HOME)/core
+TBSRC_PKG   := $(TBSRC_CORE)/tb_riscv/include/perturbation_defines.sv
 TBSRC       := $(TBSRC_CORE)/tb_top.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
                $(TBSRC_CORE)/mm_ram.sv \
                $(TBSRC_CORE)/dp_ram.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_stall.sv \
-               $(TBSRC_HOME)/tb_riscv/riscv_random_interrupt_generator.sv
+               $(TBSRC_CORE)/tb_riscv/riscv_random_stall.sv \
+               $(TBSRC_CORE)/tb_riscv/riscv_random_interrupt_generator.sv
 TBSRC_VERI  := $(TBSRC_CORE)/tb_top_verilator.sv \
                $(TBSRC_CORE)/riscv_wrapper.sv \
                $(TBSRC_CORE)/mm_ram.sv \
