@@ -70,15 +70,14 @@ module MONITOR
         string linesplit[$];
         string name_sym;
         
+        // simply return if not provided
         if (!($value$plusargs("nm_file=%s", fn_sym))) begin
-            $display("FATAL: %m +nm_file=<nm filename> is required");
-            //$finish(-1);
             return;
         end
+
         fd_sym = $fopen(fn_sym, "r");
+        // simply return if not provided
         if (fd_sym == 0) begin
-            $display("FATAL: %m nm_file(%0s) can not be opened r", fn_sym);
-            //$finish(-1);
             return;
         end
         

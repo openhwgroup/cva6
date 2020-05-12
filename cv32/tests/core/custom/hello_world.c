@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     /* inline assembly: read mvendorid and misa */
     asm volatile("ecall");
-    __asm__ volatile("csrr %0, 0xF11" : "=r"(mvendorid_rval));
+    // __asm__ volatile("csrr %0, 0xF11" : "=r"(mvendorid_rval));
     __asm__ volatile("csrr %0, 0x301" : "=r"(misa_rval));
 
     /* Check MISA CSR: if its zero, it might not be implemented at all */
