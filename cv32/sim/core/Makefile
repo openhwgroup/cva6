@@ -106,9 +106,9 @@ VERI_OBJ_DIR       ?= cobj_dir
 VERI_LOG_DIR       ?= cobj_dir/logs
 VERI_CFLAGS         = -O2
 
-DV_OVPM_HOME        = $(PROJ_ROOT_DIR)/../riscvImperasDV
-DV_OVPM_MODEL       = $(DV_OVPM_HOME)/imperas/riscv_CV32E40P_OVPsim
-DV_OVPM_DESIGN      = $(DV_OVPM_HOME)/imperas/verilog/design
+DV_OVPM_HOME        = $(PROJ_ROOT_DIR)/vendor_lib/imperas
+DV_OVPM_MODEL       = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
+DV_OVPM_DESIGN      = $(DV_OVPM_HOME)/verilog/design
 
 # TB source files for the CV32E core
 TBSRC_HOME  := $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb
