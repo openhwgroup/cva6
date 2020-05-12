@@ -29,6 +29,15 @@ DSIM_RESULTS           ?= $(PWD)/dsim_results
 DSIM_WORK              ?= $(DSIM_RESULTS)/dsim_work
 DSIM_IMAGE             ?= dsim.out
 DSIM_RUN_FLAGS         ?=
+DSIM_USE_ISS           ?= YES
+
+DSIM_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
+ifeq ($(DSIM_USE_ISS),YES)
+    DSIM_FILE_LIST         += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
+    DSIM_USER_COMPILE_ARGS += "+define+ISS"
+    DSIM_RUN_FLAGS         +="+USE_ISS"
+endif
+
 
 # Variables to control wave dumping from command the line
 # Humans _always_ forget the "S", so you can have it both ways...
@@ -77,10 +86,11 @@ comp: mk_results $(CV32E40P_PKG) $(OVP_MODEL_DPI)
 		$(DSIM_CMP_FLAGS) \
 		$(DSIM_UVM_ARGS) \
 		$(DSIM_ACC_FLAGS) \
+		$(DSIM_USER_COMPILE_ARGS) \
 		+incdir+$(DV_UVME_CV32_PATH) \
 		+incdir+$(DV_UVMT_CV32_PATH) \
 		-f $(CV32E40P_MANIFEST) \
-		-f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist \
+		$(DSIM_FILE_LIST) \
 		-work $(DSIM_WORK) \
 		+$(UVM_PLUSARGS) \
 		-genimage $(DSIM_IMAGE)

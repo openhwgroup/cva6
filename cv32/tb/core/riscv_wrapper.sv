@@ -12,10 +12,14 @@
 // Contributor: Robert Balas <balasr@student.ethz.ch>
 
 module riscv_wrapper
-    #(parameter INSTR_RDATA_WIDTH = 128,
-      parameter RAM_ADDR_WIDTH = 20,
-      parameter BOOT_ADDR = 'h80,
-      parameter PULP_SECURE = 1)
+    #(parameter INSTR_RDATA_WIDTH = 32,
+                RAM_ADDR_WIDTH    = 20,
+                BOOT_ADDR         = 'h80,
+                PULP_CLUSTER      = 0,
+                FPU               = 0,
+                PULP_ZFINX        = 0,
+                DM_HALTADDRESS    = 32'h1A110800
+    )
     (input logic         clk_i,
      input logic         rst_ni,
 
@@ -58,10 +62,12 @@ module riscv_wrapper
     assign debug_req_i = 1'b0;
 
     // instantiate the core
-    riscv_core
-        #(.INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),
-          .PULP_SECURE(PULP_SECURE),
-          .FPU(0))
+    riscv_core #(
+                 .PULP_CLUSTER    (PULP_CLUSTER),
+                 .FPU             (FPU),
+                 .PULP_ZFINX      (PULP_ZFINX),
+                 .DM_HALTADDRESS  (DM_HALTADDRESS)
+                )
     riscv_core_i
         (
          .clk_i                  ( clk_i                 ),
@@ -70,24 +76,26 @@ module riscv_wrapper
          .clock_en_i             ( '1                    ),
          .test_en_i              ( '0                    ),
 
+         .fregfile_disable_i     ( '0                    ),
+
          .boot_addr_i            ( BOOT_ADDR             ),
          .core_id_i              ( 4'h0                  ),
          .cluster_id_i           ( 6'h0                  ),
 
-         .instr_addr_o           ( instr_addr            ),
          .instr_req_o            ( instr_req             ),
-         .instr_rdata_i          ( instr_rdata           ),
          .instr_gnt_i            ( instr_gnt             ),
          .instr_rvalid_i         ( instr_rvalid          ),
+         .instr_addr_o           ( instr_addr            ),
+         .instr_rdata_i          ( instr_rdata           ),
 
-         .data_addr_o            ( data_addr             ),
-         .data_wdata_o           ( data_wdata            ),
-         .data_we_o              ( data_we               ),
          .data_req_o             ( data_req              ),
-         .data_be_o              ( data_be               ),
-         .data_rdata_i           ( data_rdata            ),
          .data_gnt_i             ( data_gnt              ),
          .data_rvalid_i          ( data_rvalid           ),
+         .data_we_o              ( data_we               ),
+         .data_be_o              ( data_be               ),
+         .data_addr_o            ( data_addr             ),
+         .data_wdata_o           ( data_wdata            ),
+         .data_rdata_i           ( data_rdata            ),
 
          .apu_master_req_o       (                       ),
          .apu_master_ready_o     (                       ),
@@ -100,12 +108,8 @@ module riscv_wrapper
          .apu_master_result_i    (                       ),
          .apu_master_flags_i     (                       ),
 
-         //.irq_i                  ( irq                   ),
-         //.irq_id_i               ( irq_id_in             ),
          .irq_ack_o              ( irq_ack               ),
          .irq_id_o               ( irq_id_out            ),
-         .irq_sec_i              ( irq_sec               ),
-
          .irq_software_i         (1'b0                   ),
          .irq_timer_i            (1'b0                   ),
          .irq_external_i         (1'b0                   ),
@@ -113,15 +117,11 @@ module riscv_wrapper
          .irq_nmi_i              (1'b0                   ),
          .irq_fastx_i            ({32{1'b0}}             ),
 
-         .sec_lvl_o              ( sec_lvl_o             ),
-
          .debug_req_i            ( debug_req_i           ),
 
          .fetch_enable_i         ( fetch_enable_i        ),
-         .core_busy_o            ( core_busy_o           ),
-
-         .ext_perf_counters_i    (                       ),
-         .fregfile_disable_i     ( 1'b0                  ));
+         .core_busy_o            ( core_busy_o           )
+       );
 
     // this handles read to RAM and memory mapped pseudo peripherals
     mm_ram

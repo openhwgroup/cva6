@@ -20,6 +20,20 @@ Vtb_top_verilator *top;
 
 int main(int argc, char **argv, char **env)
 {
+
+#ifdef MCY
+    int mutidx = 0;
+    for (int i = 1; i < argc; i++)
+    {
+      if (!strcmp(argv[i], "--mutidx") && i+1 < argc)
+      {
+        i++;
+        std::string s(argv[i]);
+        mutidx = std::stoi(s);
+      }
+    }
+#endif
+
     Verilated::commandArgs(argc, argv);
     Verilated::traceEverOn(true);
     top = new Vtb_top_verilator();
@@ -39,6 +53,15 @@ int main(int argc, char **argv, char **env)
 
     top->eval();
     dump_memory();
+
+#ifdef MCY
+    svSetScope(svGetScopeFromName(
+        "TOP.tb_top_verilator.riscv_wrapper_i.riscv_core_i.ex_stage_i.alu_i.int_div.div_i"));
+    svLogicVecVal idx = {0};
+    idx.aval = mutidx;
+    set_mutidx(&idx);
+    std::cout << "mutsel = " << idx.aval << "\n";
+#endif
 
     while (!Verilated::gotFinish()) {
         if (t > 40)

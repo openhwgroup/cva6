@@ -1,0 +1,46 @@
+[options]
+size 100
+tags COVERED UNCOVERED NOCHANGE PROBE FMGAP
+
+[script]
+verific -work fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/fpnew/src/fpnew_pkg.sv
+verific -sv ../../../core-v-cores/cv32e40p/rtl/cv32e40p_sim_clock_gate.sv
+verific -work riscv_defines -L fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/include/apu_core_package.sv
+verific -work riscv_defines -L fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/include/riscv_defines.sv
+verific -work riscv_defines -L fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/include/riscv_tracer_defines.sv
+verific -L riscv_defines -L fpnew_pkg -sv ../../../core-v-cores/cv32e40p/rtl/riscv_alu_div.sv
+prep -top riscv_alu_div
+
+
+[files]
+../../../core-v-cores/cv32e40p/rtl/riscv_alu_div.sv
+
+[logic]
+if result("test_sim") == "FAIL":
+  tag("COVERED")
+  if rng(100) < 20:
+    tag("PROBE")
+    if result("test_eq") == "PASS":
+      tag("FMGAP")
+  return
+
+if result("test_eq") == "FAIL":
+  tag("UNCOVERED")
+  return
+
+tag("NOCHANGE")
+
+[report]
+if tags("FMGAP"):
+    print("Found %d mutations exposing a formal gap!" % tags("FMGAP"))
+if tags("COVERED")+tags("UNCOVERED"):
+    print("Coverage: %.2f%%" % (100.0*tags("COVERED")/(tags("COVERED")+tags("UNCOVERED"))))
+
+[test test_sim]
+maxbatchsize 10
+expect PASS FAIL
+run bash $PRJDIR/test_sim.sh
+
+[test test_eq]
+expect PASS FAIL
+run bash $PRJDIR/test_eq.sh

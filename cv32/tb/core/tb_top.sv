@@ -16,7 +16,7 @@
 `define TB_CORE
 
 module tb_top
-    #(parameter INSTR_RDATA_WIDTH = 128,
+    #(parameter INSTR_RDATA_WIDTH = 32,
       parameter RAM_ADDR_WIDTH = 22,
       parameter BOOT_ADDR  = 'h80);
 
@@ -77,6 +77,13 @@ module tb_top
         end
     end
 
+    initial begin: clock_gen
+        forever begin
+            #CLK_PHASE_HI core_clk = 1'b0;
+            #CLK_PHASE_LO core_clk = 1'b1;
+        end
+    end: clock_gen
+   
 
     // timing format, reset generation and parameter check
     initial begin
@@ -84,12 +91,12 @@ module tb_top
         core_rst_n = 1'b0;
 
         // wait a few cycles
-        //repeat (RESET_WAIT_CYCLES) begin
-        //    @(posedge core_clk); //TODO: was posedge, see below
-        //end
+        repeat (RESET_WAIT_CYCLES) begin
+            @(posedge core_clk); //TODO: was posedge, see below
+        end
 
         // start running
-        //#RESET_DEL rst_n = 1'b1;
+        #RESET_DEL core_rst_n = 1'b1;
 
         repeat (3) @(negedge core_clk);
         core_rst_n = 1'b1;
@@ -142,60 +149,17 @@ module tb_top
         #(
           .INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),
           .RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
-          .BOOT_ADDR         (BOOT_ADDR),
-          .PULP_SECURE       (1)
+          .BOOT_ADDR         (BOOT_ADDR)
          )
     riscv_wrapper_i
-         (
-          .clk_i          ( core_clk     ),
-          .rst_ni         ( core_rst_n   ),
-          .fetch_enable_i ( fetch_enable ),
-          .tests_passed_o ( tests_passed ),
-          .tests_failed_o ( tests_failed ),
-          .exit_valid_o   ( exit_valid   ),
-          .exit_value_o   ( exit_value   )
-         );
+        (
+         .clk_i          ( core_clk     ),
+         .rst_ni         ( core_rst_n   ),
+         .fetch_enable_i ( fetch_enable ),
+         .tests_passed_o ( tests_passed ),
+         .tests_failed_o ( tests_failed ),
+         .exit_valid_o   ( exit_valid   ),
+         .exit_value_o   ( exit_value   )
+        );
 
-`ifndef VERILATOR
-
-     // wrapper for the Imperas Instruction Set Simulator (ISS)
-     uvmt_cv32_iss_wrap     iss_wrap     ( .clk_i (iss_clk) );
-
-//    // When using the ISS, run core_clk
-//    // only if step_compare.riscv_core_step==1.
-//    initial begin
-//      core_clk = 1'b1;
-//      forever begin
-//         #2ns; // For riscv_core_step to update
-//         if (step_compare.riscv_core_step) begin
-//            #8ns  core_clk  = ~core_clk;
-//            #10ns core_clk  = ~core_clk; // Keep period at 20ns
-//            end
-//         else
-//           fork
-//             @(step_compare.compare_ev);
-//             @(step_compare.advance_clk_ev);
-//           join_any
-//      end
-//    end
-
-    // ISS clock is always free-running
-    initial begin
-      iss_clk = 1'b1;
-      forever begin
-        #10ns iss_clk = ~iss_clk; // Keep period at 20ns
-      end
-    end
-    
-`else
-    // When not using the ISS, run the
-    // clock with a 50% duty-cycle.
-    initial begin: clock_gen
-        forever begin
-            #CLK_PHASE_HI core_clk = 1'b0;
-            #CLK_PHASE_LO core_clk = 1'b1;
-        end
-    end: clock_gen
-`endif // ifndef VERILATOR
-   
 endmodule // tb_top
