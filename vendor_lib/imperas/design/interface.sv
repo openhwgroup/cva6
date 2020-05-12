@@ -57,6 +57,7 @@ interface BUS;
     // Bus direct transactors
     //
     function automatic int read(input int address);
+        if (!ram.mem.exists(address)) ram.mem[address] = 'h0;
         return ram.mem[address];
     endfunction
     function automatic void write(input int address, input int data);
