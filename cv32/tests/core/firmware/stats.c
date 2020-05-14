@@ -28,7 +28,7 @@ static void stats_print_dec(unsigned int val, int digits, bool zero_pad)
 
 void init_stats(void)
 {
-    unsigned int inhibit = 3; /* cycles and instr count enable */
+    unsigned int inhibit = 0; /* cycles and instr count enable */
     __asm__ volatile("csrw 0x320, %0" ::"r"(inhibit));
 }
 
