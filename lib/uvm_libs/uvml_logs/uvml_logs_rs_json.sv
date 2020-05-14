@@ -137,7 +137,10 @@ function string uvml_logs_rs_json_c::compose_report_message(uvm_report_message r
    string severity_str;
    string verbosity_str;
    
-   severity_str  = report_message.get_severity();
+   uvm_severity temp_sev;
+
+   temp_sev = report_message.get_severity();
+   severity_str  = temp_sev.name();
    verbosity_str = convert_verbosity_to_string(report_message.get_verbosity());
    
    final_msg_str = {"{",

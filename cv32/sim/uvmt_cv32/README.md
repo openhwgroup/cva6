@@ -6,8 +6,9 @@ use test programs found in `cv32/tests/core`).  See the README in those
 directories for more information.
 <br><br>
 To run the testcases you will need a SystemVerilog simulator, the UVM-1.2
-library, the RISC-V GCC compiler and at least some familiarity with
-[Make](https://www.gnu.org/software/make/manual/) and Makefiles.
+library, the RISC-V GCC compiler, a run-time license for the Imperas OVPsim
+Instruction Set Simulator (free to OpenHW Group members) and at least some
+familiarity with [Make](https://www.gnu.org/software/make/manual/) and Makefiles.
 
 SystemVerilog Simulators
 ----------------------------------
@@ -40,6 +41,13 @@ does not support the custom PULP instructions.
 <br><br>
 **IMPORTANT:** Once the toolchain is set up, define a shell environment
 variable `RISCV` to the path of your RISC-V toolchain (e.g. `export RISCV=/opt/riscv`).
+
+Imperas OVPsim Instruction Set Simulator
+----------------------------------------
+The UVM verification environment uses the Imperas OVPsim Instruction Set Simulator
+(ISS) as a reference model.   The run-time license for this ISS is free to OpenHW
+Group members).  Go to the [Imperas website](http://www.imperas.com/) for
+installation instructions.
 
 Makefiles
 -----------

@@ -87,11 +87,13 @@ module tb_top_verilator
     // wrapper for riscv, the memory system and stdout peripheral
     riscv_wrapper
         #(.INSTR_RDATA_WIDTH (INSTR_RDATA_WIDTH),
-          .RAM_ADDR_WIDTH (RAM_ADDR_WIDTH),
-          .BOOT_ADDR (BOOT_ADDR),
-          .PULP_SECURE (1)) // need to enable -Wno-BLKANDNBLK to silence warnin
-                            // about assignment from blk to non-blk
-
+          .RAM_ADDR_WIDTH    (RAM_ADDR_WIDTH),
+          .BOOT_ADDR         (BOOT_ADDR),
+          .PULP_CLUSTER      (0),
+          .FPU               (0),
+          .PULP_ZFINX        (0),
+          .DM_HALTADDRESS    (32'h1A110800)
+         )
     riscv_wrapper_i
         (.clk_i          ( clk_i          ),
          .rst_ni         ( rst_ni         ),
