@@ -113,6 +113,7 @@ DV_OVPM_HOME    = $(PROJ_ROOT_DIR)/vendor_lib/imperas
 DV_OVPM_MODEL   = $(DV_OVPM_HOME)/riscv_CV32E40P_OVPsim
 DV_OVPM_DESIGN  = $(DV_OVPM_HOME)/design
 OVP_MODEL_DPI   = $(DV_OVPM_MODEL)/bin/Linux64/riscv_CV32E40P.dpi.so
+OVP_CTRL_FILE   = $(DV_OVPM_DESIGN)/riscv_CV32E40P.ic
 
 ###############################################################################
 # Build "firmware" for the CV32E40P "core" testbench and "uvmt_cv32"

@@ -35,7 +35,8 @@ XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(XRUN_USE_ISS),YES)
     XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
     XRUN_USER_COMPILE_ARGS += "+define+ISS"
-    XRUN_PLUSARGS += +="+USE_ISS"
+#    XRUN_PLUSARGS += +="+USE_ISS"
+     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
 
 XRUN_RUN_FLAGS   ?= -64bit -R $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
@@ -83,28 +84,28 @@ hello-world: comp $(CUSTOM)/hello_world.hex
 		+firmware=$(CUSTOM)/hello_world.hex
 
 misalign: comp $(CUSTOM)/misalign.hex
-	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
+	$(XRUN) -l xrun-misalign.log $(XRUN_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/misalign.elf \
 		+nm_file=$(CUSTOM)/misalign.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/misalign.hex
 
 illegal: comp $(CUSTOM)/illegal.hex
-	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
+	$(XRUN) -l xrun-illegal.log $(XRUN_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/illegal.elf \
 		+nm_file=$(CUSTOM)/illegal.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/illegal.hex
 
 fibonacci: comp $(CUSTOM)/fibonacci.hex
-	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
+	$(XRUN) -l xrun-fibonacci.log $(XRUN_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/fibonacci.elf \
 		+nm_file=$(CUSTOM)/fibonacci.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \
 		+firmware=$(CUSTOM)/fibonacci.hex
 
 dhrystone: comp $(CUSTOM)/dhrystone.hex
-	$(XRUN) -l xrun-hello-world.log $(XRUN_RUN_FLAGS) \
+	$(XRUN) -l xrun-dhrystone.log $(XRUN_RUN_FLAGS) \
 		+elf_file=$(CUSTOM)/dhrystone.elf \
 		+nm_file=$(CUSTOM)/dhrystone.nm \
 		+UVM_TESTNAME=uvmt_cv32_firmware_test_c \

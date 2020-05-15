@@ -1,10 +1,10 @@
-# SimVision Command Script (Tue May 12 12:49:02 MDT 2020)
+# SimVision Command Script (Fri May 15 14:26:58 MDT 2020)
 #
 # Version 19.09.s007
 #
 # You can restore this configuration with:
 #
-#      xrun -l xrun-hello-world.log -64bit -R -input restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../../riscvImperasDV/imperas/riscv_CV32E40P_OVPsim/bin/Linux64/riscv_CV32E40P.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/hello_world.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/hello_world.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/hello_world.hex
+#      xrun -l xrun-hello-world.log -64bit -R -input ../xrun/restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../vendor_lib/imperas/riscv_CV32E40P_OVPsim/bin/Linux64/riscv_CV32E40P.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.hex -input /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/xrun/restore.tcl
 #
 
 
@@ -90,7 +90,7 @@ preferences set toolbar-sendToIndago-WaveWindow {
 # Simulator
 #
 database require simulator -hints {
-	simulator "xrun -l xrun-hello-world.log -64bit -R -gui -input restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../../riscvImperasDV/imperas/riscv_CV32E40P_OVPsim/bin/Linux64/riscv_CV32E40P.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/hello_world.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/hello_world.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/hello_world.hex -input restore.tcl"
+	simulator "xrun -l xrun-hello-world.log -64bit -R -gui -input ../xrun/restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../vendor_lib/imperas/riscv_CV32E40P_OVPsim/bin/Linux64/riscv_CV32E40P.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.hex -input restore.tcl"
 }
 
 #
@@ -108,9 +108,11 @@ catch {group new -name RTL -overlay 0}
 catch {group new -name step_compare_if -overlay 0}
 catch {group new -name clknrst_if -overlay 0}
 catch {group new -name {RISCV RAM} -overlay 0}
-catch {group new -name data_bus -overlay 0}
 catch {group new -name instr_bus -overlay 0}
 catch {group new -name registers -overlay 0}
+catch {group new -name {ISS RAM} -overlay 0}
+catch {group new -name {data bus} -overlay 0}
+catch {group new -name {inst _bus} -overlay 0}
 group using ISS
 group set -overlay 0
 group set -comment {}
@@ -178,7 +180,6 @@ group clear 0 end
 
 group insert \
      simulator::uvmt_cv32_tb.dut_wrap.ram_i.clk_i  \
-    data_bus \
     instr_bus \
      simulator::uvmt_cv32_tb.dut_wrap.ram_i.exit_valid_o  \
      {simulator::uvmt_cv32_tb.dut_wrap.ram_i.exit_value_o[31:0]}  \
@@ -190,24 +191,6 @@ group insert \
      simulator::uvmt_cv32_tb.dut_wrap.ram_i.rst_ni  \
      simulator::uvmt_cv32_tb.dut_wrap.ram_i.tests_failed_o  \
      simulator::uvmt_cv32_tb.dut_wrap.ram_i.tests_passed_o 
-group using data_bus
-group set -overlay 0
-group set -comment {}
-group clear 0 end
-
-group insert \
-     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_addr_i[31:0]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_be_i[3:0]}  \
-     simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_req_i  \
-     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_wdata_i[31:0]}  \
-     simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_we_i  \
-     simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_gnt_o  \
-     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_rdata_o[31:0]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.core_data_rdata[31:0]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.ram_data_rdata[31:0]}  \
-     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.rnd_stall_data_rdata[31:0]}  \
-     simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_random_stalls.data_process.mem_acc  \
-     simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_rvalid_o 
 group using instr_bus
 group set -overlay 0
 group set -comment {}
@@ -217,7 +200,6 @@ group insert \
      {simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_addr_i[19:0]}  \
      simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_req_i  \
      simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_gnt_o  \
-     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_rdata_o[127:0]}  \
      simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_rvalid_o 
 group using registers
 group set -overlay 0
@@ -239,6 +221,37 @@ group insert \
      {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.MISA_VALUE[31:0]}  \
      simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mstatus_q  \
      {simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.cs_registers_i.mtvec_q[23:0]} 
+group using {ISS RAM}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+    {data bus} \
+    {inst _bus}
+group using {data bus}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.DAddr  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.DSize  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Dbe  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Drd  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Dwr  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.DData 
+group using {inst _bus}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+
+group insert \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.IAddr  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.IData  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.ISize  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Ibe  \
+     simulator::uvmt_cv32_tb.iss_wrap.b1.Ird 
 
 #
 # Mnemonic Maps
@@ -265,17 +278,17 @@ if {[catch {window new WatchList -name "Design Browser 1" -geometry 856x639+893+
 }
 window target "Design Browser 1" on
 browser using {Design Browser 1}
-browser set -scope  simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i 
+browser set -scope  simulator::uvmt_cv32_tb.iss_wrap.ram 
 browser set \
     -signalsort name
-browser yview see  simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i 
+browser yview see  simulator::uvmt_cv32_tb.iss_wrap.ram 
 browser timecontrol set -lock 0
 
 #
 # Waveform windows
 #
-if {[catch {window new WaveWindow -name "Waveform 1" -geometry 1700x755+116+21}] != ""} {
-    window geometry "Waveform 1" 1700x755+116+21
+if {[catch {window new WaveWindow -name "Waveform 1" -geometry 1181x782+116+21}] != ""} {
+    window geometry "Waveform 1" 1181x782+116+21
 }
 window target "Waveform 1" on
 waveform using {Waveform 1}
@@ -285,7 +298,7 @@ waveform set \
     -signalnames name \
     -signalwidth 258 \
     -units ns \
-    -valuewidth 354
+    -valuewidth 1
 waveform baseline set -time 2,884,000,000fs
 
 set id [waveform add -signals  {
@@ -460,7 +473,13 @@ foreach {name attrs}  {
     {}
     {}
     {}
-    {}
+    {
+        set id $gpID0
+        waveform hierarchy expand $id
+        set id2 [lindex [waveform hierarchy content $id] 0]
+        waveform format $id2 -radix %x
+        waveform hierarchy collapse $id
+    }
     {}
     {}
     {}
@@ -479,6 +498,7 @@ foreach {name attrs}  {
     set gpGlist0 [lrange $gpGlist0 1 end]
     set gpID0 [lindex $gpGlist0 0]
 }
+waveform hierarchy collapse $groupId0
 
 
 set groupId0 [waveform add -groups ISS]
@@ -523,36 +543,20 @@ foreach {name attrs}  {
 }
 waveform hierarchy collapse $groupId0
 
-set id [waveform add -signals  {
-	simulator::uvmt_cv32_tb.iss_wrap.b1.DData
-	} ]
-waveform format $id -radix %x
 
-set groupId0 [waveform add -groups {{RISCV RAM}}]
+set groupId0 [waveform add -groups {{ISS RAM}}]
 
-set groupId1 [waveform find -name data_bus]
+set groupId1 [waveform find -name {data bus}]
 set gpGlist1 [waveform hierarchy contents $groupId1]
 set gpID1 [lindex $gpGlist1 0]
 foreach {name attrs}  {
-    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_addr_i[31:0]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_be_i[3:0]} {-radix %x}
-    simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_req_i {}
-    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_wdata_i[31:0]} {-radix %x}
-    simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_we_i {}
-    simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_gnt_o {}
-    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_rdata_o[31:0]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.core_data_rdata[31:0]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.ram_data_rdata[31:0]} {-radix %x}
-    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.rnd_stall_data_rdata[31:0]} {-radix %x}
-    simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_random_stalls.data_process.mem_acc {-radix %x}
-    simulator::uvmt_cv32_tb.dut_wrap.ram_i.data_rvalid_o {}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.DAddr {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.DSize {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Dbe {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Drd {}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Dwr {}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.DData {-radix %x}
 } childcmds {
-    {}
-    {}
-    {}
-    {}
-    {}
-    {}
     {}
     {}
     {}
@@ -572,7 +576,43 @@ foreach {name attrs}  {
     set gpGlist1 [lrange $gpGlist1 1 end]
     set gpID1 [lindex $gpGlist1 0]
 }
+waveform hierarchy collapse $groupId1
 
+
+set groupId1 [waveform find -name {inst _bus}]
+set gpGlist1 [waveform hierarchy contents $groupId1]
+set gpID1 [lindex $gpGlist1 0]
+foreach {name attrs}  {
+    simulator::uvmt_cv32_tb.iss_wrap.b1.IAddr {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.IData {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.ISize {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Ibe {-radix %x}
+    simulator::uvmt_cv32_tb.iss_wrap.b1.Ird {}
+} childcmds {
+    {}
+    {}
+    {}
+    {}
+    {}
+} {
+    set expected [ join [waveform signals -format fullpath $gpID1] ]
+    if {[string equal $name $expected] || $name == "cdivider"} {
+        if {$attrs != ""} {
+            eval waveform format $gpID1 $attrs
+        }
+        if { $childcmds != ""} {
+            eval $childcmds
+        }
+    }
+    set gpGlist1 [lrange $gpGlist1 1 end]
+    set gpID1 [lindex $gpGlist1 0]
+}
+waveform hierarchy collapse $groupId1
+
+waveform hierarchy collapse $groupId0
+
+
+set groupId0 [waveform add -groups {{RISCV RAM}}]
 
 set groupId1 [waveform find -name instr_bus]
 set gpGlist1 [waveform hierarchy contents $groupId1]
@@ -581,10 +621,8 @@ foreach {name attrs}  {
     {simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_addr_i[19:0]} {-radix %x}
     simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_req_i {}
     simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_gnt_o {}
-    {simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_rdata_o[127:0]} {-radix %x}
     simulator::uvmt_cv32_tb.dut_wrap.ram_i.instr_rvalid_o {}
 } childcmds {
-    {}
     {}
     {}
     {}
@@ -643,6 +681,7 @@ foreach {name attrs}  {
     set gpGlist0 [lrange $gpGlist0 1 end]
     set gpID0 [lindex $gpGlist0 0]
 }
+waveform hierarchy collapse $groupId0
 
 
 set groupId0 [waveform add -groups clknrst_if]
@@ -795,7 +834,7 @@ set id [waveform add -signals  {
 	simulator::uvmt_cv32_tb.dut_wrap.riscv_core_i.clk
 	} ]
 
-waveform xview limits 24337.912ns 24474.111ns
+waveform xview limits 1308.568422ns 1367.430905ns
 
 #
 # Waveform Window Links
