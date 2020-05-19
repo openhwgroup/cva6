@@ -4,8 +4,8 @@ A Complete, Fully Functional, Configurable CV32E40P Simulation Model
 ===
 
 Author: Imperas Software, Ltd., using OVP Open Standard APIs  
-Date   : 20200507 
-Version: 20200507.0  
+Date   : 20200513 
+Version: 20200513.0  
 License: Simulation Model CV32E40P licensed under [Software License Agreement for Open Virtual Platforms Technology](OVP_IMPERAS_LICENSE.pdf)
 RISC-V Specifications currently supported:
 TBD

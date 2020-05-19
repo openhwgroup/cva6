@@ -5,7 +5,7 @@
 #
 # You can restore this configuration with:
 #
-#      xrun -l xrun-hello-world.log -64bit -R -input restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../../riscvImperasDV/imperas/riscv_CV32E40P_OVPsim/bin/Linux64/riscv_CV32E40P.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/hello_world.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/hello_world.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/hello_world.hex
+#      xrun -l xrun-hello-world.log -64bit -R -input ../xrun/restore.tcl +UVM_VERBOSITY=UVM_LOW +=+USE_ISS -sv_lib /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../vendor_lib/imperas/riscv_CV32E40P_OVPsim/bin/Linux64/riscv_CV32E40P.dpi.so +elf_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.elf +nm_file=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.nm +UVM_TESTNAME=uvmt_cv32_firmware_test_c +firmware=/wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/uvmt_cv32/../../../cv32/tests/core/custom/illegal.hex -input /wrk/gtumbush/mcu/OpenHW/iss_integration_fork/cv32/sim/xrun/restore.tcl
 #
 
 set tcl_prompt1 {puts -nonewline "xcelium> "}
@@ -61,5 +61,6 @@ probe -create -database waves uvmt_cv32_tb.dut_wrap.ram_i.core_data_rdata uvmt_c
 probe -create -database waves uvmt_cv32_tb.dut_wrap.ram_i.data_random_stalls.data_process.mem_acc
 probe -create -database waves uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.csr_illegal uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.illegal_insn_o uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.illegal_c_insn_i
 probe -create -database waves uvmt_cv32_tb.dut_wrap.riscv_core_i.id_stage_i.decoder_i.instr_rdata_i
+probe -create -database waves uvmt_cv32_tb.iss_wrap.b1.DAddr uvmt_cv32_tb.iss_wrap.b1.DSize uvmt_cv32_tb.iss_wrap.b1.Dbe uvmt_cv32_tb.iss_wrap.b1.Drd uvmt_cv32_tb.iss_wrap.b1.Dwr uvmt_cv32_tb.iss_wrap.b1.IAddr uvmt_cv32_tb.iss_wrap.b1.IData uvmt_cv32_tb.iss_wrap.b1.ISize uvmt_cv32_tb.iss_wrap.b1.Ibe uvmt_cv32_tb.iss_wrap.b1.Ird
 
-simvision -input restore.tcl.svcf
+simvision -input ../xrun/restore.tcl.svcf

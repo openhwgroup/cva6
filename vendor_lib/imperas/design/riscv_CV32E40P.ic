@@ -1,6 +1,6 @@
 # Control file for RI5CY configuration
 --output simulate.log
-#--showoverrides
+# --showoverrides
 
 #
 # taken from riscv_cs_registers.sv MISA_VALUE
@@ -15,3 +15,4 @@
 
 # TIME undefined
 #--override root/cpu0/time_undefined=T
+# --override root/cpu0/CLICLEVELS=2
