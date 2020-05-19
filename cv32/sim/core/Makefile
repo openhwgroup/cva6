@@ -536,8 +536,6 @@ clean: clean_questa tc-clean verilate-clean vcs-clean firmware-clean custom-clea
 
 distclean: clean
 	rm -rf riscv-fesvr riscv-isa-sim $(CV32E40P_PKG) work
-	rm -f $(OVPM_DIR)/C_OVPmodel/libriscv_sv.*.so
-	rm -rf $(OVPM_DIR)/C_OVPmodel/obj
 
 clean_all: distclean
 #endend
