@@ -55,8 +55,11 @@ SV_CMP_FLAGS ?=
 TIMESCALE    ?= -timescale 1ns/1ps
 UVM_PLUSARGS ?=
 
-# User selectable simulator targets/rules
-SIMULATOR    ?= unsim 
+# User selectable SystemVerilog simulator targets/rules
+SIMULATOR    ?= unsim
+
+# Optionally exclude the OVPsim (not recommended)
+USE_ISS      ?= NO
 
 # UVM Environment
 export DV_UVMT_CV32_PATH    = $(PROJ_ROOT_DIR)/$(COREV_PROJ)/tb/uvmt_cv32
