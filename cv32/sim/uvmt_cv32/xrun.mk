@@ -32,7 +32,7 @@ XRUN_PLUSARGS ?=
 XRUN_USE_ISS ?= YES
 
 XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
-ifeq ($(XRUN_USE_ISS),YES)
+ifeq ($(USE_ISS),YES)
     XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
     XRUN_USER_COMPILE_ARGS += "+define+ISS"
 #    XRUN_PLUSARGS += +="+USE_ISS"
