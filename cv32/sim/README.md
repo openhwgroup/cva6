@@ -25,12 +25,19 @@ inherited from the PULP-Platform team and have been modified only slightly.
 The Makefile will run the SystemVerilog/UVM verification environment found in
 `../tb/uvmt_cv32` and the associated tests from `../tests/uvmt_cv32`.
 
+#### tools
+Tool specific sub-dirs for some of the tools used in the CV32.  For example,
+Tcl control files for waveform viewing support.
+
 ### Other directories
 There are also specific sub-dirs for some of the tools used in the CV32
-project:
+project.  These will be moved the the `tools` directory in a future update:
+
+#### xrun
+Cadence Xcelium Tcl scripts for GUI and waveform viewing support.
 
 #### questa
-Tcl scripts for GUI and waveform viewing support.
+Mentor Questa Tcl scripts for GUI and waveform viewing support.
 
 #### mcy
 Setup and configuration for [Mutual Coverage with Yosys](https://github.com/YosysHQ/mcy) from [SymbioticEDA](https://www.symbioticeda.com/).

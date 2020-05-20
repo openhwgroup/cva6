@@ -35,8 +35,8 @@ XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(USE_ISS),YES)
     XRUN_FILE_LIST += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
     XRUN_USER_COMPILE_ARGS += "+define+ISS"
-#    XRUN_PLUSARGS += +="+USE_ISS"
-     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
+    XRUN_PLUSARGS +="+USE_ISS"
+#     XRUN_PLUSARGS += +USE_ISS +ovpcfg="--controlfile $(OVP_CTRL_FILE)"
 endif
 
 XRUN_RUN_FLAGS   ?= -64bit -R $(XRUN_GUI) +UVM_VERBOSITY=$(XRUN_UVM_VERBOSITY) $(XRUN_PLUSARGS) -sv_lib $(OVP_MODEL_DPI)
@@ -157,6 +157,14 @@ clean:
 	if [ -e trace_core_00_0.log ]; then rm trace_core_*.log; fi
 	if [ -e waves.shm ]; then rm -rf waves.shm; fi
 
+# Files created by Eclipse when using the Imperas ISS + debugger
+clean_eclipse:
+	rm  -f eguieclipse.log
+	rm  -f idebug.log
+	rm  -f stdout.txt
+	rm  -rf workspace
+
 # All generated files plus the clone of the RTL
-clean_all: clean clean_core_tests clean_riscvdv clean_test_programs
+clean_all: clean clean_eclipse clean_core_tests clean_riscvdv clean_test_programs
 	rm -rf $(CV32E40P_PKG)
+
