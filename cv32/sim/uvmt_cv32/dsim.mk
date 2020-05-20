@@ -32,7 +32,7 @@ DSIM_RUN_FLAGS         ?=
 DSIM_USE_ISS           ?= YES
 
 DSIM_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
-ifeq ($(DSIM_USE_ISS),YES)
+ifeq ($(USE_ISS),YES)
     DSIM_FILE_LIST         += -f $(DV_UVMT_CV32_PATH)/imperas_iss.flist
     DSIM_USER_COMPILE_ARGS += "+define+ISS"
     DSIM_RUN_FLAGS         +="+USE_ISS"
