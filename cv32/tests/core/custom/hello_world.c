@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     /* inline assembly: read mvendorid and misa */
     asm volatile("ecall");
-    __asm__ volatile("csrr %0, 0xF11" : "=r"(mvendorid_rval));
+    // __asm__ volatile("csrr %0, 0xF11" : "=r"(mvendorid_rval));
     __asm__ volatile("csrr %0, 0x301" : "=r"(misa_rval));
 
     /* Check MISA CSR: if its zero, it might not be implemented at all */
@@ -45,7 +45,9 @@ int main(int argc, char *argv[])
     }
 
     /* Print a banner to stdout and interpret MISA CSR */
-    printf("\nThis is the OpenHW Group CV32E40P RISC-V processor core.\n");
+    printf("\nHELLO WORLD!!!\n");
+    printf("This is the OpenHW Group CV32E40P CORE-V processor core.\n");
+    printf("CV32E40P is a RISC-V ISA compliant core with the following attributes:\n");
     printf("\tmvendorid = 0x%0x\n", mvendorid_rval);
     printf("\tmisa      = 0x%0x\n", misa_rval);
     mxl = ((misa_rval & 0xC0000000) >> 30); // MXL == MISA[31:30]
@@ -66,7 +68,7 @@ int main(int argc, char *argv[])
     printf("\tSupported Instructions: ");
     if ((misa_rval >> 25) & 0x00000001) ++reserved;
     if ((misa_rval >> 24) & 0x00000001) ++reserved;
-    if ((misa_rval >> 23) & 0x00000001) ++nonstd;
+    if ((misa_rval >> 23) & 0x00000001) printf("X"); ++nonstd;
     if ((misa_rval >> 22) & 0x00000001) ++reserved;
     if ((misa_rval >> 21) & 0x00000001) ++tentative;
     if ((misa_rval >> 20) & 0x00000001) ++user;

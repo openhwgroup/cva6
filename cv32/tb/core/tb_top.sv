@@ -13,6 +13,8 @@
 // Contributor: Robert Balas <balasr@student.ethz.ch>
 //              Jeremy Bennett <jeremy.bennett@embecosm.com>
 
+`define TB_CORE
+
 module tb_top
     #(parameter INSTR_RDATA_WIDTH = 32,
       parameter RAM_ADDR_WIDTH = 22,
@@ -31,8 +33,9 @@ module tb_top
 
 
     // clock and reset for tb
-    logic                   clk   = 'b1;
-    logic                   rst_n = 'b0;
+    logic                   core_clk;
+    logic                   iss_clk;
+    logic                   core_rst_n;
 
     // cycle counter
     int unsigned            cycle_cnt_q;
@@ -74,40 +77,44 @@ module tb_top
         end
     end
 
-    // clock generation
     initial begin: clock_gen
         forever begin
-            #CLK_PHASE_HI clk = 1'b0;
-            #CLK_PHASE_LO clk = 1'b1;
+            #CLK_PHASE_HI core_clk = 1'b0;
+            #CLK_PHASE_LO core_clk = 1'b1;
         end
     end: clock_gen
+   
 
-    // reset generation
-    initial begin: reset_gen
-        rst_n          = 1'b0;
+    // timing format, reset generation and parameter check
+    initial begin
+        $timeformat(-9, 0, "ns", 9);
+        core_rst_n = 1'b0;
 
         // wait a few cycles
         repeat (RESET_WAIT_CYCLES) begin
-            @(posedge clk); //TODO: was posedge, see below
+            @(posedge core_clk); //TODO: was posedge, see below
         end
 
         // start running
-        #RESET_DEL rst_n = 1'b1;
-        if($test$plusargs("verbose"))
+        #RESET_DEL core_rst_n = 1'b1;
+
+        repeat (3) @(negedge core_clk);
+        core_rst_n = 1'b1;
+
+        if($test$plusargs("verbose")) begin
             $display("reset deasserted", $time);
+        end
 
-    end: reset_gen
-
-    // set timing format
-    initial begin: timing_format
-        $timeformat(-9, 0, "ns", 9);
-    end: timing_format
+        if ( !( (INSTR_RDATA_WIDTH == 128) || (INSTR_RDATA_WIDTH == 32) ) ) begin
+         $fatal(2, "invalid INSTR_RDATA_WIDTH, choose 32 or 128");
+        end
+    end
 
     // abort after n cycles, if we want to
-    always_ff @(posedge clk, negedge rst_n) begin
+    always_ff @(posedge core_clk, negedge core_rst_n) begin
         automatic int maxcycles;
         if($value$plusargs("maxcycles=%d", maxcycles)) begin
-            if (~rst_n) begin
+            if (~core_rst_n) begin
                 cycle_cnt_q <= 0;
             end else begin
                 cycle_cnt_q     <= cycle_cnt_q + 1;
@@ -119,7 +126,7 @@ module tb_top
     end
 
     // check if we succeded
-    always_ff @(posedge clk, negedge rst_n) begin
+    always_ff @(posedge core_clk, negedge core_rst_n) begin
         if (tests_passed) begin
             $display("ALL TESTS PASSED");
             $finish;
@@ -146,20 +153,13 @@ module tb_top
          )
     riscv_wrapper_i
         (
-         .clk_i          ( clk          ),
-         .rst_ni         ( rst_n        ),
+         .clk_i          ( core_clk     ),
+         .rst_ni         ( core_rst_n   ),
          .fetch_enable_i ( fetch_enable ),
          .tests_passed_o ( tests_passed ),
          .tests_failed_o ( tests_failed ),
          .exit_valid_o   ( exit_valid   ),
          .exit_value_o   ( exit_value   )
         );
-
-`ifndef VERILATOR
-    initial begin
-        assert (INSTR_RDATA_WIDTH == 128 || INSTR_RDATA_WIDTH == 32)
-            else $fatal("invalid INSTR_RDATA_WIDTH, choose 32 or 128");
-    end
-`endif
 
 endmodule // tb_top

@@ -30,8 +30,8 @@ void init_stats(void)
 {
     unsigned int pcmr = 1; /* global enable without saturation */
     unsigned int pcer = 3; /* cycles and instr count enable */
-    __asm__ volatile("csrw 0x7e0, %0" ::"r"(pcer));
-    __asm__ volatile("csrw 0x7e1, %0" ::"r"(pcmr));
+    //__asm__ volatile("csrw 0x7e0, %0" ::"r"(pcer));
+    //__asm__ volatile("csrw 0x7e1, %0" ::"r"(pcmr));
 }
 
 void stats(void)

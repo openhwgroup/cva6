@@ -193,4 +193,57 @@ interface uvmt_cv32_core_status_if (
 
 endinterface : uvmt_cv32_core_status_if
 
+/**
+ * Step and compare interface
+ * Xcelium does not support event types in the module port list
+ */
+interface uvmt_cv32_step_compare_if;
+
+  import uvm_pkg::*;
+
+  // From RTL riscv_tracer.sv
+  typedef struct {
+     logic [ 5:0] addr;
+     logic [31:0] value;
+   } reg_t;
+
+   event        ovp_cpu_retire; // Was ovp.cpu.Retire
+   event        riscv_retire;   // Was riscv_core.riscv_tracer_i.retire
+   bit   [31:0] ovp_cpu_PCr;    // Was iss_wrap.cpu.PCr
+   logic [31:0] insn_pc;
+   bit         ovp_b1_Step;    // Was ovp.b1.Step = 0;
+   bit         ovp_b1_Stepping; // Was ovp.b1.Stepping = 1;
+   event       ovp_cpu_busWait;  // Was call to ovp.cpu.busWait();
+   logic   [31:0] ovp_cpu_GPR[32];
+   logic [31:0][31:0] riscy_GPR; // packed dimensions, register index by data width
+
+   int  num_pc_checks;
+   int  num_gpr_checks;
+   int  num_csr_checks;
+
+   // Report on the checkers at the end of simulation
+   function void report_step_compare();
+      if (num_pc_checks > 0) begin
+         `uvm_info("step_compare", $sformatf("Checked PC 0d%0d times", num_pc_checks), UVM_LOW);
+      end
+      else begin
+         `uvm_error("step_compare", "PC was checked 0 times!");
+      end
+      if (num_gpr_checks > 0) begin
+         `uvm_info("step_compare", $sformatf("Checked GPR 0d%0d times", num_gpr_checks), UVM_LOW);
+      end
+      else begin
+         `uvm_error("step_compare", "GPR was checked 0 times!");
+      end
+      if (num_csr_checks > 0) begin
+         `uvm_info("step_compare", $sformatf("Checked CSR 0d%0d times", num_csr_checks), UVM_LOW);
+      end
+      else begin
+         `uvm_error("step_compare", "CSR was checked 0 times!");
+      end
+   endfunction // report_step_compare
+   
+endinterface: uvmt_cv32_step_compare_if
+
+
 `endif // __UVMT_CV32_TB_IFS_SV__
