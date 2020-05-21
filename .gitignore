@@ -10,3 +10,5 @@
 *.vcd
 dsim.env
 *.swp
+/.cproject
+/.project
