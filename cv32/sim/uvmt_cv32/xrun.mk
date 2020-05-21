@@ -26,10 +26,6 @@ XRUN_UVMHOME_ARG ?= CDNS-1.2-ML
 XRUN_COMP_FLAGS       ?= -64bit -disable_sem2009 -access +rwc -q -clean -sv -uvm -uvmhome $(XRUN_UVMHOME_ARG) $(TIMESCALE) $(SV_CMP_FLAGS)
 XRUN_DIR         ?= xcelium.d
 XRUN_GUI         ?=
-XRUN_UVM_VERBOSITY ?= UVM_LOW
-XRUN_USER_COMPILE_ARGS ?=
-XRUN_PLUSARGS ?=
-XRUN_USE_ISS ?= YES
 
 XRUN_FILE_LIST ?= -f $(DV_UVMT_CV32_PATH)/uvmt_cv32.flist
 ifeq ($(USE_ISS),YES)

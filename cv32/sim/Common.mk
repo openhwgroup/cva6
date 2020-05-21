@@ -197,6 +197,7 @@ sanity: hello-world
 %.hex: %.elf
 	$(RISCV_EXE_PREFIX)objcopy -O verilog $< $@
 	$(RISCV_EXE_PREFIX)readelf -a $< > $*.readelf
+	$(RISCV_EXE_PREFIX)objdump -D $*.elf > $*.objdump
 
 # Running custom programs:
 # We link with our custom crt0.s and syscalls.c against newlib so that we can
